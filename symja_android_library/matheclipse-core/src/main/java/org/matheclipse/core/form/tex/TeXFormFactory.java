@@ -171,7 +171,7 @@ public class TeXFormFactory {
     @Override
     public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
       if (f.size() == 1) {
-        buffer.append("\\left(\\right)");
+        buffer.append("\\emptyset ");
       } else {
         for (int i = 1; i < f.size(); i++) {
           IExpr expr = f.get(i);
@@ -194,12 +194,12 @@ public class TeXFormFactory {
           buffer.append(", ");
           fFactory.convertInternal(buffer, max, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
           if (right == S.Less) {
-            buffer.append("\\right)");
+            buffer.append("\\right) ");
           } else {
-            buffer.append("\\right]");
+            buffer.append("\\right] ");
           }
           if (i < f.size() - 1) {
-            buffer.append(" \\cup ");
+            buffer.append("\\cup ");
           }
         }
       }

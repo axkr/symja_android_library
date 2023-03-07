@@ -1,6 +1,9 @@
 package org.matheclipse.core.system;
 
+import org.junit.jupiter.api.Assertions;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.form.tex.TeXFormFactory;
 
 public class TeXFormTest extends ExprEvaluatorTestCase {
   public TeXFormTest(String name) {
@@ -176,14 +179,38 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
   }
 
   public void testIntervalData() {
-    check(
-        "TeXForm(IntervalData({1,LessEqual,LessEqual,2},{5/2,LessEqual,LessEqual,42}))", //
-        "\\left[1, 2\\right] \\cup \\left[\\frac{5}{2}, 42\\right]");
+    check("TeXForm(IntervalData())", //
+        "\\emptyset ");
+
+    check("TeXForm(IntervalData({1,LessEqual,LessEqual,2},{5/2,LessEqual,LessEqual,42}))", //
+        "\\left[1, 2\\right] \\cup \\left[\\frac{5}{2}, 42\\right] ");
     check("TeXForm(IntervalData({-42,Less,Less,3/4}))", //
-        "\\left(-42, \\frac{3}{4}\\right)");
+        "\\left(-42, \\frac{3}{4}\\right) ");
     check("TeXForm(IntervalData({-Infinity,LessEqual,LessEqual,Infinity}))", //
-        "\\left(-\\infty, \\infty\\right)");
+        "\\left(-\\infty, \\infty\\right) ");
   }
+
+  public void testIntervalData001() {
+    TeXFormFactory fTeXFactory = new TeXFormFactory();
+    StringBuilder sb = new StringBuilder();
+    fTeXFactory.convert(sb,
+        F.eval(F.IntervalIntersection(F.IntervalData(F.List(F.ZZ(0), F.Less, F.Less, F.ZZ(1))),
+            F.IntervalData(F.List(F.ZZ(1), F.LessEqual, F.LessEqual, F.ZZ(1))))),
+        0);
+    Assertions.assertEquals("\\emptyset ", sb.toString());
+  }
+
+  public void testIntervalData002() {
+    TeXFormFactory fTeXFactory = new TeXFormFactory();
+    StringBuilder sb = new StringBuilder();
+    fTeXFactory.convert(sb,
+        F.eval(
+            F.IntervalComplement(F.IntervalData(F.List(F.ZZ(0), F.LessEqual, F.LessEqual, F.ZZ(2))),
+                F.IntervalData(F.List(F.ZZ(1), F.LessEqual, F.LessEqual, F.ZZ(1))))),
+        0);
+    Assertions.assertEquals("\\left[0, 1\\right) \\cup \\left(1, 2\\right] ", sb.toString());
+  }
+
   public void testInverseBetaRegularized() {
     check("TeXForm(InverseBetaRegularized(a,b,c))", //
         "I_a^{-1}(b,c)");

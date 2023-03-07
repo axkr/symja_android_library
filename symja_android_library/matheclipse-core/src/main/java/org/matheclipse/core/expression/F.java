@@ -193,9 +193,15 @@ public class F extends S {
     return PREDEFINED_PATTERNSEQUENCE_MAP.get(key);
   }
 
-  public static final ISymbolObserver SYMBOL_OBSERVER=new ISymbolObserver(){@Override public final boolean createPredefinedSymbol(String symbol){return false;}
+  public static final ISymbolObserver SYMBOL_OBSERVER = new ISymbolObserver() {
+    @Override
+    public final boolean createPredefinedSymbol(String symbol) {
+      return false;
+    }
 
-  @Override public void createUserSymbol(ISymbol symbol){}};
+    @Override
+    public void createUserSymbol(ISymbol symbol) {}
+  };
 
   /**
    * The constant object <code>NIL</code> (not in list) indicates in the evaluation process that no
@@ -5092,6 +5098,18 @@ public class F extends S {
     return ast(intervals, IntervalUnion);
   }
 
+  /**
+   * <p>
+   * Intervals will be represented by objects with head {@link S#IntervalData} wrapped around a
+   * sequence of quadruples of the form, e.g., <code>{a,Less,LessEqual,b}</code> representing the
+   * half open interval <code>(a,b]</code>. The empty interval is represented by
+   * <code>Interval()</code>.
+   * 
+   * <p>
+   * See: <a href=
+   * "https://mathematica.stackexchange.com/questions/162486/operating-with-real-intervals/162505#162505">162486/operating-with-real-intervals/162505#162505</a>
+   *
+   */
   public static IAST IntervalData(final IAST list) {
     return new AST1(IntervalData, list);
   }

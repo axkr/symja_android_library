@@ -15,6 +15,12 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISignedNumber;
 
 /**
+ * <p>
+ * Intervals will be represented by objects with head {@link S#IntervalData} wrapped around a
+ * sequence of quadruples of the form, e.g., <code>{a,Less,LessEqual,b}</code> representing the half
+ * open interval <code>(a,b]</code>. The empty interval is represented by <code>Interval()</code>.
+ * 
+ * <p>
  * See: <a href=
  * "https://mathematica.stackexchange.com/questions/162486/operating-with-real-intervals/162505#162505">162486/operating-with-real-intervals/162505#162505</a>
  *
@@ -107,15 +113,28 @@ public class IntervalDataSym {
         IBuiltInSymbol left2 = (IBuiltInSymbol) list2.arg2();
         IBuiltInSymbol right2 = (IBuiltInSymbol) list2.arg3();
         IExpr max2 = list2.arg4();
-        if (max1.less(min2).isTrue()) {
-          result.set(j++, list1);
-          list1 = list2;
-          min1 = list1.arg1();
-          left1 = (IBuiltInSymbol) list1.arg2();
-          right1 = (IBuiltInSymbol) list1.arg3();
-          max1 = list1.arg4();
-          i++;
-          continue;
+        if (max1.lessEqual(min2).isTrue()) {
+          if (S.Equal.ofQ(max1, min2)) {
+            if (precedenceUnion(right1, left2) == S.Less) {
+              result.set(j++, list1);
+              list1 = list2;
+              min1 = list1.arg1();
+              left1 = (IBuiltInSymbol) list1.arg2();
+              right1 = (IBuiltInSymbol) list1.arg3();
+              max1 = list1.arg4();
+              i++;
+              continue;
+            }
+          } else {
+            result.set(j++, list1);
+            list1 = list2;
+            min1 = list1.arg1();
+            left1 = (IBuiltInSymbol) list1.arg2();
+            right1 = (IBuiltInSymbol) list1.arg3();
+            max1 = list1.arg4();
+            i++;
+            continue;
+          }
         }
         if (min2.lessEqual(max1).isTrue()) {
           if (min1.lessEqual(min2).isTrue()) {
