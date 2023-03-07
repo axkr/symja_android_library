@@ -178,11 +178,11 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
   public void testIntervalData() {
     check(
         "TeXForm(IntervalData({1,LessEqual,LessEqual,2},{5/2,LessEqual,LessEqual,42}))", //
-        "\\left[1, 2\\right]\\, \\left[\\frac{5}{2}, 42\\right]");
+        "\\left[1, 2\\right] \\cup \\left[\\frac{5}{2}, 42\\right]");
     check("TeXForm(IntervalData({-42,Less,Less,3/4}))", //
-        "\\left]-42, \\frac{3}{4}\\right[");
+        "\\left(-42, \\frac{3}{4}\\right)");
     check("TeXForm(IntervalData({-Infinity,LessEqual,LessEqual,Infinity}))", //
-        "\\left]-\\infty, \\infty\\right[");
+        "\\left(-\\infty, \\infty\\right)");
   }
   public void testInverseBetaRegularized() {
     check("TeXForm(InverseBetaRegularized(a,b,c))", //
