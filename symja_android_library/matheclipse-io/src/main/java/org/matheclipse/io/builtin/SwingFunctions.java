@@ -27,8 +27,8 @@ import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileSystemView;
-import org.apache.commons.lang3.StringUtils;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -410,7 +410,7 @@ public class SwingFunctions {
             (!dynamic.isVariable() || dynamic.isBuiltInSymbol())) {
           // Cannot assign to raw object `1`.
           throw new ArgumentTypeException(
-              SwingFunctions.getMessage("setraw", F.List(dynamic), EvalEngine.get()));
+              IOFunctions.getMessage("setraw", F.List(dynamic), EvalEngine.get()));
         }
         this.inputField = inputField;
         this.dynamic = dynamic;
@@ -515,90 +515,7 @@ public class SwingFunctions {
     Initializer.init();
   }
 
-  public static IExpr message(ISymbol symbol, String messageShortcut, final IAST list) {
-    IExpr temp = symbol.evalMessage(messageShortcut);
-    String message = null;
-    if (temp.isPresent()) {
-      message = temp.toString();
-    } else {
-      temp = S.General.evalMessage(messageShortcut);
-      if (temp.isPresent()) {
-        message = temp.toString();
-      }
-    }
-    if (message != null) {
-      message = rawMessage(list, message);
-      return F.stringx(symbol.toString() + ": " + message);
-    }
-    return F.NIL;
-  }
-
-  public static String getMessage(String messageShortcut, final IAST listOfArgs) {
-    return getMessage(messageShortcut, listOfArgs, EvalEngine.get());
-  }
-
-  public static String getMessage(String messageShortcut, final IAST listOfArgs,
-      EvalEngine engine) {
-    IExpr temp = S.General.evalMessage(messageShortcut);
-    String message = null;
-    if (temp.isPresent()) {
-      message = temp.toString();
-    }
-    if (message == null) {
-      message = "Undefined message shortcut: " + messageShortcut;
-      engine.setMessageShortcut(messageShortcut);
-      return message;
-    }
-    for (int i = 1; i < listOfArgs.size(); i++) {
-      message = StringUtils.replace(message, "`" + (i) + "`", shorten(listOfArgs.get(i)));
-    }
-    engine.setMessageShortcut(messageShortcut);
-    return message;
-  }
-
-  private static String rawMessage(final IAST list, String message) {
-    for (int i = 2; i < list.size(); i++) {
-      message = StringUtils.replace(message, "`" + (i - 1) + "`", shorten(list.get(i)));
-    }
-    return message;
-  }
-
-  /**
-   * Shorten the output string generated from <code>expr</code> to a maximum length of <code>80
-   * </code> characters. Print &lt;&lt;SHORT&gt;&gt; as substitute of the middle of the expression
-   * if necessary.
-   *
-   * @param expr
-   * @return
-   */
-  public static String shorten(IExpr expr) {
-    return shorten(expr, 80);
-  }
-
-  /**
-   * Shorten the output string generated from <code>expr</code> to a maximum length of <code>
-   * maximuLength</code> characters. Print &lt;&lt;SHORT&gt;&gt; as substitute of the middle of the
-   * expression if necessary.
-   *
-   * @param expr
-   * @param maximuLength the maximum length of the result string.
-   * @return
-   */
-  public static String shorten(IExpr expr, int maximuLength) {
-    String str = expr.toString();
-    if (str.length() > maximuLength) {
-      StringBuilder buf = new StringBuilder(maximuLength);
-      int halfLength = (maximuLength / 2) - 14;
-      buf.append(str.substring(0, halfLength));
-      buf.append("<<SHORT>>");
-      buf.append(str.substring(str.length() - halfLength));
-      return buf.toString();
-    }
-    return str;
-  }
-
   public static IAST getNamesByPrefix(String name) {
-
     if (name.length() == 0) {
       return F.List();
     }
