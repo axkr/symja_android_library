@@ -177,7 +177,7 @@ public class GraphicsOptions {
     arrayNode.add(red);
     arrayNode.add(green);
     arrayNode.add(blue);
-    json.put("color", arrayNode);
+    json.set("color", arrayNode);
   }
 
   public static void setColor(ObjectNode json, IAST color, IAST defaultColor, boolean color3D) {

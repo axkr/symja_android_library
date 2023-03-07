@@ -1482,9 +1482,60 @@ public class GraphicsFunctions {
             if (export2DRecursive(arrayNode, ast, 1, 2, styledGraphicsOptions)) {
             }
           }
-          // } else if (ast.isASTSizeGE(S.EdgeForm, 2)) {
-          // if (export2DRecursive(arrayNode, ast, 1, ast.size(), graphicsOptions)) {
-          // }
+        } else if (ast.isASTSizeGE(S.EdgeForm, 2)) {
+          IAST edgeFormList = ast.arg1().makeList();
+          ObjectNode edgeForm = JSON_OBJECT_MAPPER.createObjectNode();
+          ObjectNode edgeList = JSON_OBJECT_MAPPER.createObjectNode();
+          for (int j = 1; j < edgeFormList.size(); j++) {
+            IExpr expr = edgeFormList.get(i);
+            if (expr.isAST(S.Opacity, 2)) {
+              ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+              double opacity = expr.toDoubleDefault(1.0);
+              edgeList.put("opacity", opacity);
+            } else if (expr.isAST(S.RGBColor)) {
+              ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+              if (expr.isAST(S.RGBColor, 4, 5)) {
+                double red = ((IAST) expr).arg1().toDoubleDefault(0.0);
+                double green = ((IAST) expr).arg2().toDoubleDefault(0.0);
+                double blue = ((IAST) expr).arg3().toDoubleDefault(0.0);
+                ArrayNode array = g.arrayNode();
+                array.add(red);
+                array.add(green);
+                array.add(blue);
+                edgeList.set("color", array);
+              } else if (expr.isAST(S.RGBColor, 1) && expr.first().isAST(S.List, 4)) {
+                IAST list4 = (IAST) expr.first();
+                double red = list4.arg1().toDoubleDefault(0.0);
+                double green = list4.arg2().toDoubleDefault(0.0);
+                double blue = list4.arg3().toDoubleDefault(0.0);
+                ArrayNode array = g.arrayNode();
+                array.add(red);
+                array.add(green);
+                array.add(blue);
+                edgeList.set("color", array);
+              }
+            } else if (expr.isAST(S.GrayLevel, 2, 3)) {
+              RGBColor rgb = null;
+              IAST grayLevel = (IAST) expr;
+              if (grayLevel.isAST1() || grayLevel.isAST2()) {
+                ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
+                rgb = RGBColor.getGrayLevel((float) grayLevel.arg1().evalf());
+                ArrayNode array = g.arrayNode();
+                array.add(rgb.getRed() / 255.0);
+                array.add(rgb.getGreen() / 255.0);
+                array.add(rgb.getBlue() / 255.0);
+                edgeList.set("color", array);
+
+                if (grayLevel.isAST2()) {
+                  g = JSON_OBJECT_MAPPER.createObjectNode();
+                  double opacity = grayLevel.arg2().toDoubleDefault(1.0);
+                  edgeList.put("opacity", opacity);
+                }
+              }
+            }
+          }
+          edgeForm.set("edgeForm", edgeList);
+          arrayNode.add(edgeForm);
         } else if (ast.isAST(S.Hue, 2, 5)) {
           ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
           if (graphicsOptions.setHueColor(arrayNode, ast)) {
