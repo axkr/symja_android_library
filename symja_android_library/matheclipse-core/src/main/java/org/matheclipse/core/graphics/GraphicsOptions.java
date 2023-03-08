@@ -87,7 +87,7 @@ public class GraphicsOptions {
         return x -> F.Log(x, F.C10);
       }
     }
-    array.add("None");
+    array.add("none");
     // Identity
     return x -> x;
   }
@@ -401,7 +401,7 @@ public class GraphicsOptions {
       if (scalingFunctions.isList1()) {
         scalingArray = GraphicsFunctions.JSON_OBJECT_MAPPER.createArrayNode();
         setXFunction(GraphicsOptions.getScaling(scalingArray, scalingFunctions.first()));
-        scalingArray.add("None");
+        scalingArray.add("none");
         setYFunction(y -> y);
       } else if (scalingFunctions.isList2()) {
         scalingArray = GraphicsFunctions.JSON_OBJECT_MAPPER.createArrayNode();
@@ -409,7 +409,7 @@ public class GraphicsOptions {
         setYFunction(GraphicsOptions.getScaling(scalingArray, scalingFunctions.second()));
       } else if (!scalingFunctions.isList()) {
         scalingArray = GraphicsFunctions.JSON_OBJECT_MAPPER.createArrayNode();
-        scalingArray.add("None");
+        scalingArray.add("none");
         setXFunction(x -> x);
         setYFunction(GraphicsOptions.getScaling(scalingArray, scalingFunctions));
       } else {

@@ -211,6 +211,20 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     Assertions.assertEquals("\\left[0, 1\\right) \\cup \\left(1, 2\\right] ", sb.toString());
   }
 
+  public void testIntervalData003() {
+    TeXFormFactory fTeXFactory = new TeXFormFactory();
+    StringBuilder sb = new StringBuilder();
+    fTeXFactory.convert(sb,
+        F.eval(F.IntervalUnion(F.IntervalData(F.List(F.CNInfinity, F.Less, F.LessEqual, F.ZZ(-1))),
+            F.IntervalData(F.List(F.ZZ(1), F.LessEqual, F.Less, F.ZZ(2))),
+            F.IntervalData(F.List(F.ZZ(2), F.Less, F.Less, F.ZZ(4))),
+            F.IntervalData(F.List(F.ZZ(6), F.LessEqual, F.LessEqual, F.ZZ(9))))),
+        0);
+    Assertions.assertEquals( //
+        "\\left(-\\infty, -1\\right] \\cup \\left[1, 2\\right) \\cup \\left(2, 4\\right) \\cup \\left[6, 9\\right] ", //
+        sb.toString());
+  }
+
   public void testInverseBetaRegularized() {
     check("TeXForm(InverseBetaRegularized(a,b,c))", //
         "I_a^{-1}(b,c)");
