@@ -1,5 +1,5 @@
 
-Test the `Graphics3D` function for creating correct JSON output for the `json2D_JSXGraph` project:
+Test the `Graphics` function for creating correct JSON output for the `json2D_JSXGraph` project:
 - [https://github.com/jsxgraph/json2D_JSXGraph](https://github.com/jsxgraph/json2D_JSXGraph)
 
 ```mma
@@ -55,6 +55,10 @@ ListLogLogPlot[{Range[20], Sqrt[Range[20]], Log[Range[20]]}, Joined -> True]
 
 ```mma
 ListLogLogPlot[Range[20]^3, Filling -> Bottom]
+```
+
+```mma
+ListLogLogPlot[Range[20]^3, Filling -> Axis]
 ```
  
 ```mma
