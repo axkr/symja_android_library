@@ -242,35 +242,33 @@ public abstract class ExprEvaluatorTestCase extends TestCase {
   @Override
   protected void setUp() {
     try {
-      if (evaluator == null) {
-        ToggleFeature.COMPILE = true;
-        ToggleFeature.COMPILE_PRINT = true;
-        Config.SHORTEN_STRING_LENGTH = 80;
-        Config.MAX_AST_SIZE = 20000;
-        Config.MAX_MATRIX_DIMENSION_SIZE = 100;
-        Config.MAX_BIT_LENGTH = 200000;
-        Config.MAX_POLYNOMIAL_DEGREE = 100;
-        Config.FILESYSTEM_ENABLED = false;
-        // fScriptEngine = fScriptManager.getEngineByExtension("m");
-        // fScriptEngine.put("PRINT_STACKTRACE", Boolean.TRUE);
-        // fScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
-        // fScriptEngine.put("DECIMAL_FORMAT", "0.0####");
-        //
-        // fNumericScriptEngine = fScriptManager.getEngineByExtension("m");
-        // fNumericScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
-        F.await();
+      ToggleFeature.COMPILE = true;
+      ToggleFeature.COMPILE_PRINT = true;
+      Config.SHORTEN_STRING_LENGTH = 80;
+      Config.MAX_AST_SIZE = 20000;
+      Config.MAX_MATRIX_DIMENSION_SIZE = 100;
+      Config.MAX_BIT_LENGTH = 200000;
+      Config.MAX_POLYNOMIAL_DEGREE = 100;
+      Config.FILESYSTEM_ENABLED = false;
+      // fScriptEngine = fScriptManager.getEngineByExtension("m");
+      // fScriptEngine.put("PRINT_STACKTRACE", Boolean.TRUE);
+      // fScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
+      // fScriptEngine.put("DECIMAL_FORMAT", "0.0####");
+      //
+      // fNumericScriptEngine = fScriptManager.getEngineByExtension("m");
+      // fNumericScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
+      F.await();
 
-        boolean relaxedSyntax = true;
-        EvalEngine engine = new EvalEngine(relaxedSyntax);
-        EvalEngine.set(engine);
-        engine.init();
-        engine.setRecursionLimit(512);
-        engine.setIterationLimit(500);
-        engine.setOutListDisabled(false, (short) 10);
+      boolean relaxedSyntax = true;
+      EvalEngine engine = new EvalEngine(relaxedSyntax);
+      EvalEngine.set(engine);
+      engine.init();
+      engine.setRecursionLimit(512);
+      engine.setIterationLimit(500);
+      engine.setOutListDisabled(false, (short) 10);
 
-        evaluator = new ExprEvaluator(engine, false, (short) 100);
-        evaluatorN = new ExprEvaluator(engine, false, (short) 100);
-      }
+      evaluator = new ExprEvaluator(engine, false, (short) 100);
+      evaluatorN = new ExprEvaluator(engine, false, (short) 100);
     } catch (Exception e) {
       e.printStackTrace();
     }
