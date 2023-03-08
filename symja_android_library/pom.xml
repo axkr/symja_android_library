@@ -160,7 +160,7 @@
 			<dependency>
 				<groupId>io.javalin</groupId>
 				<artifactId>javalin</artifactId>
-				<version>5.4.1</version>
+				<version>5.4.2</version>
 			</dependency>
 			<dependency>
 				<groupId>io.pebbletemplates</groupId>
@@ -180,12 +180,12 @@
 			<dependency>
 				<groupId>it.unimi.dsi</groupId>
 				<artifactId>fastutil</artifactId>
-				<version>8.5.11</version>
+				<version>8.5.12</version>
 			</dependency>
 			<dependency>
 				<groupId>it.unimi.dsi</groupId>
 				<artifactId>fastutil-core</artifactId>
-				<version>8.5.11</version>
+				<version>8.5.12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
