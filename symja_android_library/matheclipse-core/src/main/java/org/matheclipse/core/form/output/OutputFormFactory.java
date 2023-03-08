@@ -629,76 +629,6 @@ public class OutputFormFactory {
     }
   }
 
-  private void convertPlusOperatorReversed(final Appendable buf, final IAST plusAST,
-      final InfixOperator oper, final int precedence) throws IOException {
-    int operPrecedence = oper.getPrecedence();
-    if (operPrecedence < precedence) {
-      append(buf, "(");
-    }
-
-    String operatorStr = oper.getOperatorString();
-
-    IExpr plusArg;
-    int size = plusAST.argSize();
-    // print Plus[] in reverse order (i.e. numbers at last)
-    for (int i = size; i > 0; i--) {
-      plusArg = plusAST.get(i);
-
-      if (plusArg.isTimes()) {
-        final String multCh = ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getOperatorString();
-        boolean showOperator = true;
-        final IAST timesAST = (IAST) plusArg;
-        IExpr arg1 = timesAST.arg1();
-
-        if (arg1.isNumber() && (((INumber) arg1).complexSign() < 0)) {
-          if (((INumber) arg1).isOne()) {
-            showOperator = false;
-          } else {
-            if (arg1.isMinusOne()) {
-              append(buf, fInputForm ? " - " : "-");
-              showOperator = false;
-            } else {
-              convertNumber(buf, (INumber) arg1, operPrecedence, NO_PLUS_CALL);
-            }
-          }
-        } else {
-          if (i < size) {
-            append(buf, operatorStr);
-          }
-          convert(buf, arg1, Precedence.TIMES, false);
-        }
-
-        IExpr timesArg;
-        for (int j = 2; j < timesAST.size(); j++) {
-          timesArg = timesAST.get(j);
-
-          if (showOperator) {
-            append(buf, multCh);
-          } else {
-            showOperator = true;
-          }
-
-          convert(buf, timesArg, Precedence.TIMES, false);
-        }
-      } else {
-        if (plusArg.isNumber() && (((INumber) plusArg).complexSign() < 0)) {
-          // special case negative number:
-          convert(buf, plusArg, Integer.MIN_VALUE, false);
-        } else {
-          if (i < size) {
-            append(buf, operatorStr);
-          }
-
-          convert(buf, plusArg, Precedence.PLUS, false);
-        }
-      }
-    }
-
-    if (operPrecedence < precedence) {
-      append(buf, ")");
-    }
-  }
-
   private void convertTimesFraction(final Appendable buf, final IAST timesAST,
       final InfixOperator oper, final int precedence, boolean caller) throws IOException {
     IExpr[] parts =
@@ -1409,11 +1339,11 @@ public class OutputFormFactory {
     if ((operator instanceof InfixOperator) && (list.size() > 2)) {
       InfixOperator infixOperator = (InfixOperator) operator;
       if (head.equals(S.Plus)) {
+        IAST plusAST = list;
         if (fPlusReversed) {
-          convertPlusOperatorReversed(buf, list, infixOperator, precedence);
-        } else {
-          convertPlusOperator(buf, list, infixOperator, precedence);
+          plusAST = plusAST.reverse(F.NIL);
         }
+        convertPlusOperator(buf, plusAST, infixOperator, precedence);
         return true;
       } else if (head.equals(S.Times)) {
         convertTimesFraction(buf, list, infixOperator, precedence, NO_PLUS_CALL);
