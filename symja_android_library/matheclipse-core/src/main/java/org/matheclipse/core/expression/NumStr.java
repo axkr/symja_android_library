@@ -107,6 +107,14 @@ public final class NumStr extends Num {
   }
 
   @Override
+  public Num negate() {
+    if (fFloatStr.length() > 0 && fFloatStr.charAt(0) == '-') {
+      return new NumStr(fFloatStr.substring(1));
+    }
+    return new NumStr("-" + fFloatStr);
+  }
+
+  @Override
   public IExpr plus(final IExpr that) {
     if (EvalEngine.isApfloat(fPrecision)) {
       long precision = fPrecision;
