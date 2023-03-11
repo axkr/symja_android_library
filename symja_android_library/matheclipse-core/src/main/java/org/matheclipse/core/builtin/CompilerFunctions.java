@@ -281,7 +281,6 @@ public class CompilerFunctions {
           variables.append(args[i].argument);
           types.append(args[i].type);
         }
-        // IAST ranks = vars[2];
         String source = compilePrint(ast, args, engine);
         if (source != null) {
           SimpleCompiler comp = new SimpleCompiler();

@@ -2,18 +2,25 @@ package org.matheclipse.core.expression.data;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.visit.IVisitor;
+import org.matheclipse.core.visit.IVisitorBoolean;
+import org.matheclipse.core.visit.IVisitorInt;
+import org.matheclipse.core.visit.IVisitorLong;
 
-public class CompiledFunctionExpr extends DataExpr<Class<?>> {
+public class CompiledFunctionExpr implements IDataExpr<Class<?>> {
   private static final Logger LOGGER = LogManager.getLogger();
 
   private static final long serialVersionUID = 3098987741558862963L;
+
+  protected transient Class<?> compiledJavaClass = null;
 
   public static CompiledFunctionExpr newInstance(IAST variables, IAST types, IExpr expr,
       Class<?> clazz) {
@@ -22,11 +29,10 @@ public class CompiledFunctionExpr extends DataExpr<Class<?>> {
 
   private IAST variables;
   private IAST types;
-
   private IExpr expr;
 
   protected CompiledFunctionExpr(IAST variables, IAST types, IExpr expr, Class<?> clazz) {
-    super(S.CompiledFunction, clazz);
+    this.compiledJavaClass = clazz;
     this.variables = variables;
     this.types = types;
     this.expr = expr;
@@ -34,7 +40,7 @@ public class CompiledFunctionExpr extends DataExpr<Class<?>> {
 
   @Override
   public IExpr copy() {
-    return new CompiledFunctionExpr(variables, types, expr, fData);
+    return new CompiledFunctionExpr(variables, types, expr, compiledJavaClass);
   }
 
   @Override
@@ -42,17 +48,47 @@ public class CompiledFunctionExpr extends DataExpr<Class<?>> {
     if (this == obj) {
       return true;
     }
-    if (obj instanceof CompiledFunctionExpr) {
-      return fData.equals(((CompiledFunctionExpr) obj).fData);
+    if (obj instanceof CompiledFunctionExpr //
+        && compiledJavaClass != null //
+        && ((CompiledFunctionExpr) obj).compiledJavaClass != null) {
+      CompiledFunctionExpr compiledFunctionExpr = ((CompiledFunctionExpr) obj);
+      return expr.equals(compiledFunctionExpr.expr) //
+          && variables.equals(compiledFunctionExpr.variables) //
+          && types.equals(compiledFunctionExpr.types);
     }
     return false;
   }
 
-  public IExpr evaluate(IAST ast, EvalEngine engine) {
+  @Override
+  public int compareTo(IExpr expr) {
+    if (expr instanceof CompiledFunctionExpr) {
+      CompiledFunctionExpr compiledFunctionExpr = ((CompiledFunctionExpr) expr);
+      int exprCmp = expr.compareTo(compiledFunctionExpr.expr);
+      if (exprCmp != 0) {
+        return exprCmp;
+      }
+      int variablesCmp = variables.compareTo(compiledFunctionExpr.variables);
+      if (variablesCmp != 0) {
+        return variablesCmp;
+      }
+      return types.compareTo(compiledFunctionExpr.types);
+    }
+    if (expr.isAST()) {
+      return -1 * expr.compareTo(this);
+    }
+    final int x = hierarchy();
+    final int y = expr.hierarchy();
+    return (x < y) ? -1 : ((x == y) ? 0 : 1);
+  }
 
+  public IExpr evaluate(IAST ast, EvalEngine engine) {
+    if (compiledJavaClass == null) {
+      // Non deserialized expression `1`.
+      return IOFunctions.printMessage(S.CompiledFunction, "zzdsex", ast, engine);
+    }
     AbstractFunctionEvaluator fun;
     try {
-      fun = (AbstractFunctionEvaluator) fData.getDeclaredConstructor().newInstance();
+      fun = (AbstractFunctionEvaluator) compiledJavaClass.getDeclaredConstructor().newInstance();
       return fun.evaluate(ast, engine);
     } catch (ReflectiveOperationException rex) {
       LOGGER.error("CompiledFunctionExpr.evaluate() failed", rex);
@@ -70,7 +106,7 @@ public class CompiledFunctionExpr extends DataExpr<Class<?>> {
 
   @Override
   public int hashCode() {
-    return (fData == null) ? 461 : 461 + fData.hashCode();
+    return 461 + expr.hashCode();
   }
 
   @Override
@@ -102,5 +138,35 @@ public class CompiledFunctionExpr extends DataExpr<Class<?>> {
     buf.append("}");
     buf.append(")");
     return buf.toString();
+  }
+
+  @Override
+  public IExpr accept(IVisitor visitor) {
+    return visitor.visit(this);
+  }
+
+  @Override
+  public boolean accept(IVisitorBoolean visitor) {
+    return visitor.visit(this);
+  }
+
+  @Override
+  public int accept(IVisitorInt visitor) {
+    return visitor.visit(this);
+  }
+
+  @Override
+  public long accept(IVisitorLong visitor) {
+    return visitor.visit(this);
+  }
+
+  @Override
+  public IExpr head() {
+    return S.CompiledFunction;
+  }
+
+  @Override
+  public Class<?> toData() {
+    return compiledJavaClass;
   }
 }
