@@ -2642,19 +2642,49 @@ public class F extends S {
    */
   public static INumber chopNumber(INumber arg, double delta) {
     if (arg instanceof INum) {
-      if (isZero(((INum) arg).getRealPart(), delta)) {
-        return C0;
-      }
-    } else if (arg instanceof IComplexNum) {
-      Complex c = ((IComplexNum) arg).evalfc();
-      if (isZero(c.getReal(), delta)) {
-        if (isZero(c.getImaginary(), delta)) {
+      if (arg instanceof ApfloatNum) {
+        if (isZero(((ApfloatNum) arg).apfloatValue(), delta)) {
           return C0;
         }
-        return complexNum(0.0, c.getImaginary());
+      } else {
+        if (isZero(((INum) arg).getRealPart(), delta)) {
+          return C0;
+        }
       }
-      if (isZero(c.getImaginary(), delta)) {
-        return num(((IComplexNum) arg).getRealPart());
+    } else if (arg instanceof IComplexNum) {
+      if (arg instanceof ApcomplexNum) {
+        Apcomplex apcomplexValue = ((ApcomplexNum) arg).apcomplexValue();
+        Apfloat eps = new Apfloat(delta, apcomplexValue.precision());
+        Apfloat epsNegate = eps.negate();
+        Apfloat real = apcomplexValue.real();
+        Apfloat imag = apcomplexValue.imag();
+        Apfloat newReal = null;
+        Apfloat newImag = null;
+        if (real.compareTo(epsNegate) > 0 && real.compareTo(eps) < 0) {
+          newReal = Apfloat.ZERO;
+        }
+        if (imag.compareTo(epsNegate) > 0 && imag.compareTo(eps) < 0) {
+          newImag = Apfloat.ZERO;
+        }
+        if (newImag != null) {
+          if (newReal != null) {
+            return F.C0;
+          }
+          return F.complexNum(real, Apfloat.ZERO);
+        } else if (newReal != null) {
+          return F.complexNum(Apfloat.ZERO, imag);
+        }
+      } else {
+        Complex c = ((IComplexNum) arg).evalfc();
+        if (isZero(c.getReal(), delta)) {
+          if (isZero(c.getImaginary(), delta)) {
+            return C0;
+          }
+          return complexNum(0.0, c.getImaginary());
+        }
+        if (isZero(c.getImaginary(), delta)) {
+          return num(((IComplexNum) arg).getRealPart());
+        }
       }
     }
     return arg;
@@ -3770,10 +3800,12 @@ public class F extends S {
       IAST ast = (IAST) expr;
       if (ast.isPlus()) {
         if (ast.exists(IExpr::isPlusTimesPower)) {
-          return engine.evaluate(Expand(expr));
+          return Expand(expr)//
+              .eval(engine);
         }
       } else if (ast.isTimes() || ast.isPower()) {
-        return engine.evaluate(Expand(expr));
+        return Expand(expr)//
+            .eval(engine);
       }
     }
     return expr;
@@ -3782,7 +3814,8 @@ public class F extends S {
   public static IExpr evalCollect(IExpr expr, IExpr x) {
     if (expr.isAST()) {
       EvalEngine engine = EvalEngine.get();
-      return engine.evaluate(Collect(expr, x));
+      return Collect(expr, x)//
+          .eval(engine);
     }
     return expr;
   }
@@ -3790,7 +3823,8 @@ public class F extends S {
   public static IExpr evalSimplify(IExpr expr) {
     if (expr.isAST()) {
       EvalEngine engine = EvalEngine.get();
-      return engine.evaluate(Simplify(expr));
+      return Simplify(expr)//
+          .eval(engine);
     }
     return expr;
   }
@@ -3816,7 +3850,8 @@ public class F extends S {
    * @see EvalEngine#evaluate(IExpr)
    */
   public static IExpr evalExpandAll(IExpr a, EvalEngine engine) {
-    return engine.evaluate(ExpandAll(a));
+    return ExpandAll(a)//
+        .eval(engine);
   }
 
   /**
@@ -4643,7 +4678,8 @@ public class F extends S {
     if (arg.isZero()) {
       return defaultValue;
     }
-    return engine.evaluate(new AST1(HeavisideTheta, arg));
+    return F.HeavisideTheta(arg)//
+        .eval(engine);
   }
 
   public static IAST HermitianMatrixQ(final IExpr a0) {
@@ -5511,6 +5547,26 @@ public class F extends S {
    */
   public static boolean isZero(org.hipparchus.complex.Complex x, double epsilon) {
     return org.hipparchus.complex.Complex.equals(x, org.hipparchus.complex.Complex.ZERO, epsilon);
+  }
+
+  public static boolean isZero(Apfloat x, double epsilon) {
+    Apfloat eps = new Apfloat(epsilon, x.precision());
+    return x.compareTo(eps.negate()) > 0 && x.compareTo(eps) < 0;
+  }
+
+  public static boolean isZero(Apfloat x, Apfloat epsilon) {
+    return x.compareTo(epsilon.negate()) > 0 && x.compareTo(epsilon) < 0;
+  }
+
+  public static boolean isZero(Apcomplex x, double epsilon) {
+    Apfloat eps = new Apfloat(epsilon, x.precision());
+    return isZero(x, eps);
+  }
+
+  public static boolean isZero(Apcomplex x, Apfloat epsilon) {
+    Apfloat epsNegate = epsilon.negate();
+    return x.real().compareTo(epsNegate) > 0 && x.real().compareTo(epsilon) < 0 //
+        && x.imag().compareTo(epsNegate) > 0 && x.imag().compareTo(epsilon) < 0;
   }
 
   /**
