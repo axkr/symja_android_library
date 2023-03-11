@@ -344,13 +344,9 @@ public class D extends AbstractFunctionEvaluator implements DRules {
               return F.Piecewise(
                   F.list(F.list(fx, F.Equal(arg2, F.C0)), F.list(F.C1, F.Equal(arg2, F.C1))), F.C0);
             }
-            if (fx.isAST()) {
-              final IAST function = (IAST) fx;
-              // final IExpr header = function.head();
-              if (function.isPlus()) {
-                // D(a_+b_+c_,x_) -> D(a,x)+D(b,x)+D(c,x)
-                return function.mapThread(F.D(F.Slot1, xList), 1);
-              }
+            if (fx.isPlus()) {
+              // D(a_+b_+c_,x_) -> D(a,x)+D(b,x)+D(c,x)
+              return fx.mapThread(F.D(F.Slot1, xList), 1);
             }
             return F.NIL;
           }
@@ -425,8 +421,8 @@ public class D extends AbstractFunctionEvaluator implements DRules {
       final IExpr header = function.head();
       if (function.isPlus()) {
         // D(a_+b_+c_,x_) -> D(a,x)+D(b,x)+D(c,x)
-        IExpr result = function.mapThread(F.D(F.Slot1, x), 1);
-        return engine.evaluate(result);
+        return function.mapThread(F.D(F.Slot1, x), 1)//
+            .eval(engine);
       } else if (function.isTimes()) {
         return function.map(F.PlusAlloc(16), new BinaryBindIth1st(function, F.D(S.Null, x)));
       } else if (function.isPower()) {

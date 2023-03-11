@@ -1848,7 +1848,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
 
   /** {@inheritDoc} */
   @Override
-  public final SparseArrayExpr mapThread(final IAST replacement, int position) {
+  public final SparseArrayExpr mapThreadSparse(final IAST replacement, int position) {
     final Function<IExpr, IExpr> function = x -> replacement.setAtCopy(position, x);
     return map(function);
   }

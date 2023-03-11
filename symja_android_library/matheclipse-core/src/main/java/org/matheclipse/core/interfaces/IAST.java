@@ -1416,29 +1416,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
   public IAST mapRight(IASTAppendable list, BiFunction<IExpr, IExpr, IExpr> binaryFunction,
       IExpr rightArg);
 
-  /**
-   * Maps the elements of this {@link IAST} on the first level of arguments with the unary functor
-   * <code>
-   * Functors.replaceArg(replacement, position)</code>, there <code>replacement</code> is an IAST at
-   * which the argument at the given position will be replaced by the currently mapped element. This
-   * can be used to create an effect as if &quot;the <code>position</code>-th argument of an IAST
-   * object would be <code>Listable</code>&quot;.
-   *
-   * <p>
-   * Example for mapping with <code>Functors#replaceArg()</code>, where the argument at the given
-   * position will be replaced by the current argument of this AST:
-   *
-   * <pre>
-   * plusAST.mapThread(F.D(F.Slot1, F.x), 1);
-   * </pre>
-   *
-   * @param replacement an IAST there the argument at the given position is replaced by the
-   *        currently mapped argument of this {@link IAST}.
-   * @param positionInReplacement the position in <code>replacement</code> which should be replaced
-   *        by the corresponding argument of this {@link IAST}
-   * @return
-   * @see IAST#map(Function, int)
-   */
+  /** {@inheritDoc} */
+  @Override
   public IASTMutable mapThread(final IAST replacement, int positionInReplacement);
 
   /**

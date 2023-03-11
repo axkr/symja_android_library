@@ -676,7 +676,7 @@ public class AssociationFunctions {
         }
 
         // thread over Lists in first argument
-        return ((IAST) arg1).mapThread(ast.setAtCopy(1, F.Slot1), 1);
+        return arg1.mapThread(ast.setAtCopy(1, F.Slot1), 1);
       }
       return F.NIL;
     }
@@ -956,7 +956,7 @@ public class AssociationFunctions {
           if (arg1.isListOfRules(true)) {
             IExpr key = engine.evaluate(ast.arg2());
             if (key.isList()) {
-              return ((IAST) key).mapThread(ast, 2);
+              return key.mapThread(ast, 2);
             }
             if (key.isAST(S.Key, 2)) {
               key = key.first();
@@ -1197,7 +1197,7 @@ public class AssociationFunctions {
         }
 
         // thread over Lists in first argument
-        return ((IAST) arg1).mapThread(ast.setAtCopy(1, F.Slot1), 1);
+        return arg1.mapThread(ast.setAtCopy(1, F.Slot1), 1);
       }
       return F.NIL;
     }

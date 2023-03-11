@@ -61,10 +61,13 @@ public class Config {
   public static String SYSTEM_CHARACTER_ENCODING = "UTF-8";
 
   /**
+   * <p>
    * A global expression cache which compares keys with <code>==</code> object identity instead of
    * <code>equals()</code>. The keys and values are weak references.
+   * 
+   * @see #getExprCache()
    */
-  public static Cache<IExpr, Object> EXPR_CACHE;
+  private static Cache<IExpr, Object> EXPR_CACHE = null;
 
   private static final int MAX_EXPR_CACHE_SIZE = 10000;
 
@@ -129,9 +132,19 @@ public class Config {
    */
   public static final int MIN_LIMIT_PERSISTENT_LIST = 32;
 
-  static {
-    EXPR_CACHE =
-        CacheBuilder.newBuilder().maximumSize(MAX_EXPR_CACHE_SIZE).weakKeys().weakValues().build();
+
+  /**
+   * <p>
+   * Get the global expression cache which compares keys with <code>==</code> object identity
+   * instead of <code>equals()</code>. The keys and values are weak references.
+   * 
+   */
+  public static Cache<IExpr, Object> getExprCache() {
+    if (EXPR_CACHE == null) {
+      EXPR_CACHE = CacheBuilder.newBuilder().maximumSize(MAX_EXPR_CACHE_SIZE).weakKeys()
+          .weakValues().build();
+    }
+    return EXPR_CACHE;
   }
 
   /**

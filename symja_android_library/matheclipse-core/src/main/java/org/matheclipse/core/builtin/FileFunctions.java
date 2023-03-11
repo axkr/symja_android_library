@@ -133,8 +133,7 @@ public class FileFunctions {
       if (ast.isAST2()) {
         IExpr arg2 = ast.arg2();
         if (arg2.isList()) {
-          IAST needs = ((IAST) arg2).mapThread(F.Needs(F.Slot1), 1);
-          return engine.evaluate(needs);
+          return arg2.mapThread(F.Needs(F.Slot1), 1).eval(engine);
         }
         return engine.evaluate(F.Needs(arg2));
       }

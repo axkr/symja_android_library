@@ -1441,7 +1441,8 @@ public final class BooleanFunctions {
       }
 
       private final IExpr evalSlotTrue(BDDExpr expr) {
-        return engine.evaluate(slotValues.setAtCopy(0, expr));
+        return slotValues.setAtCopy(0, expr)//
+            .eval(engine);
       }
 
       public IAST booleanTableBDDRecursive(BDDExpr expr, int position) {
@@ -2901,11 +2902,7 @@ public final class BooleanFunctions {
           IAST formula = (IAST) x;
           if (x.isNot() && x.first().isOr()) {
             IAST result = ((IAST) x.first()).apply(S.And);
-            result = result.map(arg -> F.Not(arg));
-            // for (int i = 1; i < result.size(); i++) {
-            // result.set(i, F.Not(result.get(i)));
-            // }
-            return engine.evaluate(result);
+            return result.map(arg -> F.Not(arg)).eval(engine);
           }
           if (formula.isSameHeadSizeGE(S.Xor, 3)) {
             return xorToDNF(formula);

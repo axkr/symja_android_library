@@ -99,8 +99,9 @@ public class Predicates {
      */
     @Override
     public boolean test(final IExpr firstArg, final IExpr secondArg) {
-      IAST ast = F.binaryAST2(head, firstArg, secondArg);
-      return engine.evaluate(ast).isFalse();
+      return F.binaryAST2(head, firstArg, secondArg)//
+          .eval(engine)//
+          .isFalse();
     }
   }
 
@@ -143,8 +144,9 @@ public class Predicates {
      */
     @Override
     public boolean test(final IExpr firstArg, final IExpr secondArg) {
-      IAST ast = F.binaryAST2(head, firstArg, secondArg);
-      return engine.evaluate(ast).isTrue();
+      return F.binaryAST2(head, firstArg, secondArg)//
+          .eval(engine)//
+          .isTrue();
     }
   }
 

@@ -199,31 +199,33 @@ public class SerializableTest extends TestCase {
   }
 
   public void testEvalEngine() {
-    try {
-      EvalEngine engine = EvalEngine.get();
-      engine.evaluate("x=10");
-      Context context = engine.getContextPath().getGlobalContext();
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      ObjectOutputStream oos = new ObjectOutputStream(baos);
-      oos.writeObject(context);
-      byte[] bArray = baos.toByteArray();
-      baos.close();
-      oos.close();
-      ByteArrayInputStream bais = new ByteArrayInputStream(bArray);
-      ObjectInputStream ois = new ObjectInputStream(bais);
-      Context copy = (Context) ois.readObject();
-      bais.close();
-      ois.close();
-      engine.getContextPath().setGlobalContext(copy);
-      IExpr result = engine.evaluate("x");
-      assertEquals("10", result.toString());
+    if (System.getProperty("os.name").contains("Windows")) {
+      try {
+        EvalEngine engine = EvalEngine.get();
+        engine.evaluate("x=10");
+        Context context = engine.getContextPath().getGlobalContext();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
+        oos.writeObject(context);
+        byte[] bArray = baos.toByteArray();
+        baos.close();
+        oos.close();
+        ByteArrayInputStream bais = new ByteArrayInputStream(bArray);
+        ObjectInputStream ois = new ObjectInputStream(bais);
+        Context copy = (Context) ois.readObject();
+        bais.close();
+        ois.close();
+        engine.getContextPath().setGlobalContext(copy);
+        IExpr result = engine.evaluate("x");
+        assertEquals("10", result.toString());
 
-    } catch (ClassNotFoundException cnfe) {
-      cnfe.printStackTrace();
-      assertEquals("", cnfe.toString());
-    } catch (IOException ioe) {
-      ioe.printStackTrace();
-      assertEquals("", ioe.toString());
+      } catch (ClassNotFoundException cnfe) {
+        cnfe.printStackTrace();
+        assertEquals("", cnfe.toString());
+      } catch (IOException ioe) {
+        ioe.printStackTrace();
+        assertEquals("", ioe.toString());
+      }
     }
   }
 

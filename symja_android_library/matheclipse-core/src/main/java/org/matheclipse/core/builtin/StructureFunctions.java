@@ -746,7 +746,7 @@ public class StructureFunctions {
       if (ast.isAST2()) {
         return F.unaryAST1(engine.evaluate(ast.arg2()), engine.evaluate(ast.arg1()).head());
       }
-      return engine.evaluate(ast.arg1()).head();
+      return ast.arg1().eval(engine).head();
     }
 
     @Override

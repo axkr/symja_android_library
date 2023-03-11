@@ -908,7 +908,7 @@ public class Algebra {
         IExpr expandedArg1 = F.evalExpandAll(arg1, engine);
 
         if (expandedArg1.isPlus()) {
-          return ((IAST) expandedArg1).mapThread(F.Cancel(F.Slot1), 1);
+          return expandedArg1.mapThread(F.Cancel(F.Slot1), 1);
         } else if (expandedArg1.isTimes() || expandedArg1.isPower()) {
           IExpr result = cancelPowerTimes(expandedArg1, engine);
           if (result.isPresent()) {
@@ -3014,7 +3014,7 @@ public class Algebra {
         if (expr.isPlus()) {
           IRational gcd = factorTermsGCD((IAST) expr, engine);
           if (gcd != null) {
-            return engine.evaluate(F.List(gcd, F.Expand(F.Times(gcd.inverse(), expr))));
+            return F.List(gcd, F.Expand(F.Times(gcd.inverse(), expr))).eval(engine);
           }
         }
         eVar = new VariablesSet(arg1);
@@ -3022,7 +3022,7 @@ public class Algebra {
           // FactorTerms only possible for univariate polynomials
           if (eVar.isSize(0)) {
             if (arg1.isTimes() && arg1.first().isNumber()) {
-              return engine.evaluate(F.List(arg1.first(), arg1.rest()));
+              return F.List(arg1.first(), arg1.rest()).eval(engine);
             }
           }
           return F.List(F.C1, arg1);
@@ -4217,7 +4217,7 @@ public class Algebra {
           if (x1.isTimes()) {
             // Power[x_ * y_, z_] :> x^z * y^z
             IAST timesAST = (IAST) x1;
-            IASTMutable timesResult = timesAST.mapThread(Power(F.Slot1, x2), 1);
+            IASTMutable timesResult = x1.mapThread(Power(F.Slot1, x2), 1);
             if (assumptions) {
               IASTAppendable plusResult = F.PlusAlloc(timesAST.size() + 1);
               plusResult.append(C1D2);
@@ -4310,7 +4310,6 @@ public class Algebra {
       @Override
       public IExpr visit(IASTMutable ast) {
         if (!ast.isAST(S.Root)) {
-          // IAST copied = replacement.setAtCopy(1, null);
           return ast.mapThread(replacement, 1);
         }
         return F.NIL;
@@ -5097,7 +5096,7 @@ public class Algebra {
         ComplexRing<BigRational> cfac = new ComplexRing<BigRational>(BigRational.ZERO);
         JASConvert<Complex<BigRational>> jas = new JASConvert<Complex<BigRational>>(varList, cfac);
         GenPolynomial<Complex<BigRational>> polyRat = jas.expr2JAS(expr, numeric2Rational);
-        return engine.evaluate(factorComplex(expr, polyRat, jas, head, cfac));
+        return factorComplex(expr, polyRat, jas, head, cfac).eval(engine);
       } else {
         JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
         GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numeric2Rational);
@@ -5231,7 +5230,7 @@ public class Algebra {
     if (gcd1 == null) {
       return F.NIL;
     }
-    return engine.evaluate(F.Times(gcd1, F.Expand(F.Times(gcd1.inverse(), plusAST))));
+    return F.Times(gcd1, F.Expand(F.Times(gcd1.inverse(), plusAST))).eval(engine);
   }
 
   private static IRational factorTermsGCD(IAST plusAST, EvalEngine engine) {

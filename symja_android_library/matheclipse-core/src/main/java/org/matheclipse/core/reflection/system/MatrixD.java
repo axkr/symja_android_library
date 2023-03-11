@@ -88,11 +88,8 @@ public class MatrixD extends AbstractFunctionEvaluator implements MatrixDRules {
             return S.$SingleEntryMatrix;
           }
           if (fx.isAST()) {
-            final IAST function = (IAST) fx;
-            if (function.isPlus()) {
-              // MatrixD(a_+b_+c_,x_) -> MatrixD(a,x)+MatrixD(b,x)+MatrixD(c,x)
-              return function.mapThread(F.MatrixD(F.Slot1, xList), 1); // (35)
-            }
+            // MatrixD(a_+b_+c_,x_) -> MatrixD(a,x)+MatrixD(b,x)+MatrixD(c,x)
+            return fx.mapThread(F.MatrixD(F.Slot1, xList), 1); // (35)
           }
           return F.NIL;
         }

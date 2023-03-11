@@ -70,7 +70,7 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator
             // PartialFractionGenerator(),
             // parts,s);
             if (temp.isPlus()) {
-              return ((IAST) temp).mapThread(F.InverseLaplaceTransform(F.Slot1, s, t), 1);
+              return temp.mapThread(F.InverseLaplaceTransform(F.Slot1, s, t), 1);
             }
           }
         }

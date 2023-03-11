@@ -635,7 +635,7 @@ public final class PatternMatching {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.size() == 2) {
-        return engine.evaluate(ast.arg1());
+        return ast.arg1().eval(engine);
       }
       IASTMutable sequence = ast.copy();
       sequence.set(0, S.Identity);
@@ -2789,7 +2789,7 @@ public final class PatternMatching {
       IExpr arg2 = ast.arg2();
       IExpr arg3 = ast.arg3();
       if (arg3.isList()) {
-        return ((IAST) arg3).mapThread(ast, 3);
+        return arg3.mapThread(ast, 3);
       }
       optionsPattern = F.ListAlloc(10);
       extractRules(arg2, optionsPattern);
@@ -2814,7 +2814,7 @@ public final class PatternMatching {
     } else if (ast.isAST2()) {
       IExpr arg2 = ast.arg2();
       if (arg2.isList()) {
-        return ((IAST) arg2).mapThread(ast, 2);
+        return arg2.mapThread(ast, 2);
       }
       optionValue = arg2;
       if (arg2.isSymbol()) {

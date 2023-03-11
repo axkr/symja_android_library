@@ -285,7 +285,7 @@ public class IntervalFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isOr()) {
         IAST orAST = (IAST) ast.arg1();
-        return engine.evaluate(orAST.mapThread(x -> F.ToIntervalData(x, ast.arg2())));
+        return orAST.mapThread(x -> F.ToIntervalData(x, ast.arg2())).eval(engine);
       }
       return F.NIL;
     }

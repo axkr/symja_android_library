@@ -45,15 +45,11 @@ public class InverseZTransform extends AbstractFunctionEvaluator implements Inve
         if (fx.isNumber()) {
           return F.Times(fx, F.DiscreteDelta(z));
         }
-        if (fx.isAST()) {
-          final IAST function = (IAST) fx;
-          final IExpr header = function.head();
-          if (function.isPlus()) {
-            // InverseZTransform(a_+b_+c_,z_,n_) ->
-            // InverseZTransform(a,z,n)+InverseZTransform(b,z,n)+InverseZTransform(c,z,n)
-            IExpr result = function.mapThread(F.InverseZTransform(F.Slot1, n, z), 1);
-            return engine.evaluate(result);
-          }
+        if (fx.isPlus()) {
+          // InverseZTransform(a_+b_+c_,z_,n_) ->
+          // InverseZTransform(a,z,n)+InverseZTransform(b,z,n)+InverseZTransform(c,z,n)
+          return fx.mapThread(F.InverseZTransform(F.Slot1, n, z), 1) //
+              .eval(engine);
         }
       }
     } catch (final ValidateException ve) {

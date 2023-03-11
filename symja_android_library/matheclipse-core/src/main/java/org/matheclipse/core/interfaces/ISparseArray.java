@@ -29,6 +29,7 @@ public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>>, ITensorAcce
    */
   public IExpr getDefaultValue();
 
+  @Override
   public IExpr get(int position);
 
   /**
@@ -89,7 +90,8 @@ public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>>, ITensorAcce
    */
   public ISparseArray map(final Function<IExpr, IExpr> function);
 
-  public ISparseArray mapThread(final IAST replacement, int position);
+
+  public ISparseArray mapThreadSparse(final IAST replacement, int position);
 
   /**
    * Convert this sparse array to a FieldMatrix. If conversion is not possible, return <code>null

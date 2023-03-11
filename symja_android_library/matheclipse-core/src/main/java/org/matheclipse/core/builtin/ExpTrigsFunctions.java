@@ -949,7 +949,7 @@ public class ExpTrigsFunctions {
       }
       // Handling branch points (-I*oo, -I) U (I, I*oo)
       if (x0.isImaginaryUnit() || x0.isNegativeImaginaryUnit() || x0.isComplexInfinity()) {
-        return engine.evaluate(rewriteLog(arg, engine)).evalAsLeadingTerm(x, logx, cdir);
+        return rewriteLog(arg, engine).eval(engine).evalAsLeadingTerm(x, logx, cdir);
       }
       if (cdir != 0) {
         // cdir = arg.dir(x, cdir)

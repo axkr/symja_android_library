@@ -62,7 +62,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
-import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -935,7 +934,7 @@ public class SpecialFunctions {
         }
       }
       if (engine.isArbitraryMode()) {
-        if (s instanceof INumber && a instanceof ApfloatNum) {
+        if (s instanceof ApfloatNum && a instanceof ApfloatNum) {
           return e2ApfloatArg(((ApfloatNum) s), ((ApfloatNum) a));
         }
         if (s instanceof ApcomplexNum && a instanceof ApcomplexNum) {
@@ -1302,7 +1301,7 @@ public class SpecialFunctions {
         IExpr arg2 = ast.arg2();
         IExpr z = ast.arg3();
         if (z.isList()) {
-          return ((IAST) z).mapThread(ast.setAtCopy(3, F.Slot1), 3);
+          return z.mapThread(ast.setAtCopy(3, F.Slot1), 3);
         }
         if (arg1.isList() && arg2.isList()) {
           IAST list1 = (IAST) arg1;

@@ -189,8 +189,8 @@ public class ChocoConvert {
         IExpr listOfZZVariables = F.NIL;
         IExpr complement = S.Complement.of(engine, userDefinedVariables, equationVariables);
         if (complement.size() > 1 && complement.isList()) {
-          listOfZZVariables = S.Apply.of(engine, S.And,
-              ((IAST) complement).mapThread(F.Element(F.Slot1, S.Integers), 1));
+          listOfZZVariables =
+              S.Apply.of(engine, S.And, complement.mapThread(F.Element(F.Slot1, S.Integers), 1));
         }
 
         Set<Entry<ISymbol, IntVar>> set = map.entrySet();
@@ -396,8 +396,8 @@ public class ChocoConvert {
       IExpr listOfRRVariables = F.NIL;
       IExpr complement = F.Complement.of(engine, userDefinedVariables, equationVariables);
       if (complement.size() > 1 && complement.isList()) {
-        listOfRRVariables = S.Apply.of(engine, S.And,
-            ((IAST) complement).mapThread(F.Element(F.Slot1, S.Reals), 1));
+        listOfRRVariables =
+            S.Apply.of(engine, S.And, complement.mapThread(F.Element(F.Slot1, S.Reals), 1));
       }
 
       Set<Entry<ISymbol, RealVar>> set = map.entrySet();

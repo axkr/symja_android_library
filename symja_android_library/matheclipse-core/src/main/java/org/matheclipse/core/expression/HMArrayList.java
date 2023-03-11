@@ -928,10 +928,7 @@ public abstract class HMArrayList extends AbstractAST
       final IAST replacement, int position) {
     // final Function<IExpr, IExpr> function = Functors.replaceArg(replacement,
     // position);
-    final Function<IExpr, IExpr> function = x -> {
-      IAST a = replacement.setAtCopy(position, x);
-      return engine.evaluate(a);
-    };
+    final Function<IExpr, IExpr> function = x -> replacement.setAtCopy(position, x).eval(engine);
     IExpr temp;
     for (int i = firstIndex + 1; i < lastIndex; i++) {
       temp = function.apply(array[i]);

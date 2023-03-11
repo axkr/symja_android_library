@@ -169,7 +169,7 @@ public class QuantityFunctions {
         if (ast.isAST1()) {
           IExpr arg1 = ast.arg1();
           if (ast.arg1().isList()) {
-            return ((IAST) ast.arg1()).mapThread(ast, 1);
+            return ast.arg1().mapThread(ast, 1);
           }
           if (arg1.isString()) {
             String str = ((IStringX) arg1).toString();
@@ -184,7 +184,7 @@ public class QuantityFunctions {
           IExpr arg1 = ast.arg1();
           IExpr arg2 = ast.arg2();
           if (arg2.isList()) {
-            return ((IAST) ast.arg2()).mapThread(ast, 2);
+            return ast.arg2().mapThread(ast, 2);
           }
           if (arg1 instanceof DateObjectExpr && arg2.isString()) {
             LocalDateTime ldt = ((DateObjectExpr) arg1).toData();
@@ -285,7 +285,7 @@ public class QuantityFunctions {
         if (ast.size() == 3) {
           IExpr arg1 = engine.evaluate(ast.arg1());
           if (arg1.isList()) {
-            return ((IAST) arg1).mapThread(F.Quantity(F.Slot1, ast.arg2()), 1);
+            return arg1.mapThread(F.Quantity(F.Slot1, ast.arg2()), 1);
           }
           IExpr arg2 = engine.evaluate(ast.arg2());
           if (arg2.isString()) {

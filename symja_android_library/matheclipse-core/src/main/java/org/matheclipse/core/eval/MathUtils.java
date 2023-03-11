@@ -29,14 +29,6 @@ public class MathUtils {
   }
 
   public static double arcLength(String f, String v, String a, String b) throws MathException {
-    // Expression fun;
-    // Variable var = new Variable(v);
-    // Parser parser = new Parser(Parser.STANDARD_FUNCTIONS |
-    // Parser.OPTIONAL_PARENS
-    // | Parser.OPTIONAL_STARS | Parser.OPTIONAL_SPACES
-    // | Parser.BRACES | Parser.BRACKETS| Parser.BOOLEANS);
-    // parser.add(var);
-    // setUpParser(parser);
     ASTNode fun;
     String var = v;
     EvalDouble parser = new EvalDouble(true);
@@ -113,16 +105,6 @@ public class MathUtils {
    */
   public static double integrate(String fun, String v1, String v2, String[] bounds) {
     double x1, x2;
-    // Expression y1, y2, integFun;
-    // Variable integVarX = new Variable(v1);
-    // Variable integVarY = new Variable(v2);
-    // Parser integParser = new Parser(Parser.STANDARD_FUNCTIONS |
-    // Parser.OPTIONAL_PARENS | Parser.OPTIONAL_STARS
-    // | Parser.OPTIONAL_SPACES | Parser.BRACES | Parser.BRACKETS |
-    // Parser.BOOLEANS);
-    // integParser.add(integVarX);
-    // integParser.add(integVarY);
-    // setUpParser(integParser);
     ASTNode y1, y2, integFun;
     String integVarX = v1;
     String integVarY = v2;
@@ -277,27 +259,6 @@ public class MathUtils {
   }
 
   public static double getFunctionVal(String f, String v, String x) {
-    // StringBuilder command = new StringBuilder();
-    // command.append("ReplaceAll(");
-    // command.append(f);
-    // command.append(",");
-    // command.append(v);
-    // command.append("-> (");
-    // command.append(x);
-    // command.append(")");
-    // command.append(")");
-    // String result = evaluate(command.toString(), "N");
-    //
-    // EvalDouble dEval = new EvalDouble(true);
-    // return dEval.evaluate(result);
-    // Variable var = new Variable(v);
-    // Expression fun,val;
-    // Parser parser = new Parser(Parser.STANDARD_FUNCTIONS |
-    // Parser.OPTIONAL_PARENS
-    // | Parser.OPTIONAL_STARS | Parser.OPTIONAL_SPACES
-    // | Parser.BRACES | Parser.BRACKETS| Parser.BOOLEANS);
-    // parser.add(var);
-    // setUpParser(parser);
     EvalDouble parser = new EvalDouble(true);
     String var = v;
     ASTNode fun, val;
@@ -325,29 +286,6 @@ public class MathUtils {
 
   public static String getFunctionVal(String fun, String[] var, String resp, String[] vals)
       throws MathException {
-    // if (var.length != vals.length) {
-    // return "Failure";
-    // // throw new ParseError(context.getString(R.string.insufArgs) +
-    // " f'.",
-    // // new ParserContext(resp, 0, null));
-    // }
-    // StringBuilder command = new StringBuilder();
-    // command.append("ReplaceAll(");
-    // command.append(fun);
-    // command.append(",");
-    // command.append("{");
-    // for (int i = 0; i < vals.length; i++) {
-    // command.append(var[i]);
-    // command.append("-> (");
-    // command.append(vals[i]);
-    // command.append(")");
-    // if (i < vals.length - 1) {
-    // command.append(",");
-    // }
-    // }
-    // command.append("}");
-    // command.append(")");
-    // return evaluate(command.toString(), null);
     try {
       EvalDouble parParser = new EvalDouble(true);
       double values[] = new double[vals.length];
@@ -420,19 +358,8 @@ public class MathUtils {
     IExpr sym = parse(resp, null);
     if (sym instanceof ISymbol) {
       return evaluateReaplaceAll(fun, F.D(F.Slot1, sym));
-      // EvalDouble parser = new EvalDouble(true);
-      // parser.defineVariable(resp);
-      // ASTNode f = parser.parse(fun);
-      // return parser.derivative(f, resp).toString();
     }
     return "error in MathUtils#getDerivative()";
-    // StringBuilder command = new StringBuilder();
-    // command.append("D(");
-    // command.append(fun);
-    // command.append(",");
-    // command.append(resp);
-    // command.append(")");
-    // return evaluate(command.toString(), null);
   }
 
   // public static String evaluate(final String codeString, final String
@@ -479,79 +406,10 @@ public class MathUtils {
       }
     }
     return "error in MathUtils#getPowerSeries()";
-    // StringBuilder command = new StringBuilder();
-    // command.append("Taylor(");
-    // command.append(fun);
-    // command.append(",");
-    // command.append("{");
-    // command.append(v);
-    // command.append(", 0, ");
-    // command.append(iter);
-    // command.append("}");
-    // command.append(")");
-    // return evaluate(command.toString(), null);
-
-    // Variable var = new Variable(v);
-    // Parser parser = new Parser(Parser.STANDARD_FUNCTIONS |
-    // Parser.OPTIONAL_PARENS
-    // | Parser.OPTIONAL_STARS | Parser.OPTIONAL_SPACES
-    // | Parser.BRACES | Parser.BRACKETS| Parser.BOOLEANS);
-    // parser.add(var);
-    // setUpParser(parser);
-    // Expression f;
-
-    // ASTNode f;
-    // String var = v;
-    // EvalDouble parser = new EvalDouble(true);
-    // parser.defineVariable(var);
-    //
-    // try {
-    // f = parser.parse(fun);
-    // } catch (MathException e) {
-    // // throw new ParseError(context.getString(R.string.invalidfunction) +
-    // // e.getMessage(), e.context);
-    // throw e;
-    // }
-    // // Expression cenExp;
-    // ASTNode cenExp;
-    // try {
-    // cenExp = parser.parse(cen);
-    // } catch (MathException e) {
-    // // throw new ParseError(context.getString(R.string.invalidCenter) +
-    // // e.getMessage(), e.context);
-    // throw e;
-    // }
-    //
-    // String output = "";
-    //
-    // output += parser.evaluateNode(f);// .getVal();
-    //
-    // // Expression fDer = f.derivative(var);
-    // ASTNode fDer = parser.derivative(f, var);
-    // for (int i = 1; i <= iter; i++) {
-    // output += " +\n" + parser.evaluateNode(fDer) + "*";
-    // if (parser.evaluateNode(cenExp) != 0)
-    // output += "(";
-    // output += var;
-    // if (parser.evaluateNode(cenExp) != 0)
-    // output += "-" + cen + ")";
-    // output += "^" + i + " / " + i + "!";
-    // fDer = parser.derivative(fDer, var);
-    // }
-    // return output;
-
   }
 
   // (y-y0)=m(x-x0)
   public static String tangentLine(String f, String x, String v) throws MathException {
-    // Variable var = new Variable(v);
-    // Parser parser = new Parser(Parser.STANDARD_FUNCTIONS |
-    // Parser.OPTIONAL_PARENS | Parser.OPTIONAL_STARS |
-    // Parser.OPTIONAL_SPACES
-    // | Parser.BRACES | Parser.BRACKETS | Parser.BOOLEANS);
-    // parser.add(var);
-    // setUpParser(parser);
-    // Expression fun;
     ASTNode fun;
     String var = v;
     EvalDouble parser = new EvalDouble(true);
@@ -608,15 +466,6 @@ public class MathUtils {
 
   public static double surfaceArea(String fun, String v1, String v2, String[] bounds)
       throws MathException {
-    // Variable integVarX = new Variable(v1);
-    // Variable integVarY = new Variable(v2);
-    // Parser integParser = new Parser(Parser.STANDARD_FUNCTIONS |
-    // Parser.OPTIONAL_PARENS | Parser.OPTIONAL_STARS
-    // | Parser.OPTIONAL_SPACES | Parser.BRACES | Parser.BRACKETS |
-    // Parser.BOOLEANS);
-    // integParser.add(integVarX);
-    // integParser.add(integVarY);
-    // setUpParser(integParser);
     String integVarX = v1;
     String integVarY = v2;
     EvalDouble integParser = new EvalDouble(true);

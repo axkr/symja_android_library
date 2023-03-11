@@ -578,7 +578,7 @@ public final class Arithmetic {
         arg1 = ast.arg1();
       }
       if (arg1.isList()) {
-        return ((IAST) arg1).mapThread(F.Arg(F.Slot1), 1);
+        return arg1.mapThread(F.Arg(F.Slot1), 1);
       }
       if (arg1.isNumber()) {
         return ((INumber) arg1).complexArg();
@@ -686,8 +686,6 @@ public final class Arithmetic {
   }
 
   /**
-   *
-   *
    * <pre>
    * Chop(numerical - expr)
    * </pre>
@@ -711,26 +709,30 @@ public final class Arithmetic {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
+      IExpr expr = ast.arg1();
       double delta = Config.DEFAULT_CHOP_DELTA;
-      if (ast.isAST2() && ast.arg2() instanceof INum) {
-        delta = ((INum) ast.arg2()).getRealPart();
+      if (ast.isAST2()) {
+        IExpr tolerance = ast.arg2();
+        if (tolerance instanceof ISignedNumber && tolerance.isPositive()) {
+          delta = tolerance.evalf();
+        } else {
+          // Tolerance specification `1` must be a non-negative number.
+          return IOFunctions.printMessage(S.Chop, "tolnn", F.List(tolerance), engine);
+        }
       }
       try {
-        // arg1 = engine.evaluate(arg1);
-        if (arg1.isAST()) {
-          IAST list = (IAST) arg1;
-          // Chop[{a,b,c}] -> {Chop[a],Chop[b],Chop[c]}
-          return list.mapThread(F.Chop(F.Slot1), 1);
+        if (expr.isAST()) {
+          // Chop({a,b,c}) -> {Chop(a),Chop(b),Chop(c)}
+          return expr.mapThread(F.Chop(F.Slot1), 1);
         }
-        if (arg1.isNumber()) {
-          return F.chopNumber((INumber) arg1, delta);
+        if (expr.isNumber()) {
+          return F.chopNumber((INumber) expr, delta);
         }
       } catch (Exception e) {
         LOGGER.debug("Chop.evaluate() failed", e);
       }
 
-      return arg1;
+      return expr;
     }
 
     @Override
@@ -1209,7 +1211,7 @@ public final class Arithmetic {
         }
       }
       if (arg1.isPlus()) {
-        return ((IAST) arg1).mapThread(F.Conjugate(F.Slot1), 1);
+        return arg1.mapThread(F.Conjugate(F.Slot1), 1);
       }
       if (arg1.isTimes()) {
         IASTAppendable result = F.NIL;
@@ -2348,7 +2350,7 @@ public final class Arithmetic {
         }
       }
       if (arg1.isPlus()) {
-        return ((IAST) arg1).mapThread((IAST) F.Im(F.Slot1), 1);
+        return arg1.mapThread((IAST) F.Im(F.Slot1), 1);
       }
       if (arg1.isPower()) {
         IExpr base = arg1.base();
@@ -3529,14 +3531,11 @@ public final class Arithmetic {
           EvalEngine engine = EvalEngine.get();
           if (ni > 0) {
             // Product(a + k, {k, 0, n - 1})
-            IAST product = F.product(k -> F.Plus(a, k), 0, ni - 1);
-            return engine.evaluate(product);
+            return F.product(k -> F.Plus(a, k), 0, ni - 1).eval(engine);
           }
           if (ni < 0) {
             // Product(1/(a - k), {k, 1, -n})
-            IExpr temp = Power(F.product(k -> F.Plus(a, k.negate()), 1, -ni), -1);
-            IExpr result = engine.evaluate(temp);
-            return result;
+            return Power(F.product(k -> F.Plus(a, k.negate()), 1, -ni), -1).eval(engine);
           }
         }
       }
@@ -5308,7 +5307,7 @@ public final class Arithmetic {
         }
       }
       if (expr.isPlus()) {
-        return ((IAST) expr).mapThread((IAST) F.Re(F.Slot1), 1);
+        return expr.mapThread((IAST) F.Re(F.Slot1), 1);
       }
       if (expr.isPower()) {
         IExpr base = expr.base();
@@ -5530,7 +5529,7 @@ public final class Arithmetic {
         arg1 = ast.arg1();
       }
       if (arg1.isList()) {
-        return ((IAST) arg1).mapThread(F.Sign(F.Slot1), 1);
+        return arg1.mapThread(F.Sign(F.Slot1), 1);
       }
 
       if (arg1.isNumber()) {
@@ -6638,9 +6637,8 @@ public final class Arithmetic {
           if (arg1.isOne()) {
             return ast.arg2();
           }
-          final IAST arg2 = (IAST) ast.arg2();
           // distribute the number over the sum:
-          return arg2.mapThread(F.Times(arg1, F.Slot1), 2);
+          return ast.arg2().mapThread(F.Times(arg1, F.Slot1), 2);
         }
         final IExpr arg2 = ast.arg2();
         IExpr temp = distributeLeadingFactor(binaryOperator(ast, arg1, arg2, engine), ast);

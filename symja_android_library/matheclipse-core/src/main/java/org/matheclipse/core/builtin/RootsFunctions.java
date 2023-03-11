@@ -749,8 +749,7 @@ public class RootsFunctions {
       // odd
       IExpr zNumerator;
       if (rhsNumerator.isTimes()) {
-        IASTMutable temp =
-            ((IAST) rhsNumerator).mapThread(F.Power(F.Slot1, F.fraction(1, varDegree)), 1);
+        IASTMutable temp = rhsNumerator.mapThread(F.Power(F.Slot1, F.fraction(1, varDegree)), 1);
         if (rhsNumerator.first().isNegative()) {
           isNegative = true;
           temp.set(1, rhsNumerator.first().negate());
@@ -765,8 +764,7 @@ public class RootsFunctions {
       }
       IExpr zDenominator;
       if (rhsDenominator.isTimes()) {
-        IASTMutable temp =
-            ((IAST) rhsDenominator).mapThread(F.Power(F.Slot1, F.QQ(-1, varDegree)), 1);
+        IASTMutable temp = rhsDenominator.mapThread(F.Power(F.Slot1, F.QQ(-1, varDegree)), 1);
         if (rhsDenominator.first().isNegative()) {
           isNegative = !isNegative;
           temp.set(1, rhsDenominator.first().negate());
@@ -777,8 +775,7 @@ public class RootsFunctions {
           isNegative = !isNegative;
           rhsDenominator = rhsDenominator.negate();
         }
-        zDenominator =
-            EvalEngine.get().evaluate(F.Power(rhsDenominator, F.QQ(-1, varDegree)));
+        zDenominator = EvalEngine.get().evaluate(F.Power(rhsDenominator, F.QQ(-1, varDegree)));
       }
       final int increment = isNegative ? 1 : 0;
       return F.mapRange(0, varDegree, i -> //
@@ -788,19 +785,17 @@ public class RootsFunctions {
       // even
       IExpr zNumerator;
       if (rhsNumerator.isTimes()) {
-        IExpr temp = ((IAST) rhsNumerator).mapThread(F.Power(F.Slot1, F.QQ(1, varDegree)), 1);
+        IExpr temp = rhsNumerator.mapThread(F.Power(F.Slot1, F.QQ(1, varDegree)), 1);
         zNumerator = EvalEngine.get().evaluate(temp);
       } else {
         zNumerator = EvalEngine.get().evaluate(F.Power(rhsNumerator, F.QQ(1, varDegree)));
       }
       IExpr zDenominator;
       if (rhsDenominator.isTimes()) {
-        IExpr temp =
-            ((IAST) rhsDenominator).mapThread(F.Power(F.Slot1, F.QQ(-1, varDegree)), 1);
+        IExpr temp = rhsDenominator.mapThread(F.Power(F.Slot1, F.QQ(-1, varDegree)), 1);
         zDenominator = EvalEngine.get().evaluate(temp);
       } else {
-        zDenominator =
-            EvalEngine.get().evaluate(F.Power(rhsDenominator, F.QQ(-1, varDegree)));
+        zDenominator = EvalEngine.get().evaluate(F.Power(rhsDenominator, F.QQ(-1, varDegree)));
       }
 
       IASTAppendable result = F.ListAlloc(varDegree);

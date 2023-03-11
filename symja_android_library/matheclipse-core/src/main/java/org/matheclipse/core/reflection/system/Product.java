@@ -131,7 +131,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
     }
     if (arg1.isTimes()) {
       // IASTMutable prod = ast.setAtCopy(1, null);
-      return ((IAST) arg1).mapThread(ast, 1);
+      return arg1.mapThread(ast, 1);
     }
     IAST preevaledProduct = engine.preevalForwardBackwardAST(ast, 1);
     arg1 = preevaledProduct.arg1();

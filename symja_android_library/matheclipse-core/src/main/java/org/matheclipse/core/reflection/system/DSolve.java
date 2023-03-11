@@ -275,11 +275,13 @@ public class DSolve extends AbstractFunctionEvaluator {
     IExpr pInt = engine.evaluate(F.Exp(F.Integrate(coefficient1, xVar)));
 
     if (coefficient0.isZero()) {
-      return engine.evaluate(F.Divide(C_1, pInt));
+      return F.Divide(C_1, pInt) //
+          .eval(engine);
     } else {
       IExpr qInt = engine
           .evaluate(F.Plus(C_1, F.Expand(F.Integrate(F.Times(F.CN1, coefficient0, pInt), xVar))));
-      return engine.evaluate(F.Expand(F.Divide(qInt, pInt)));
+      return F.Expand(F.Divide(qInt, pInt)) //
+          .eval(engine);
     }
   }
 

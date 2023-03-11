@@ -1972,7 +1972,7 @@ public final class Combinatoric {
       IExpr arg2 = ast.arg2();
       if (arg2.isList()) {
         // arg2 is Listable
-        return ((IAST) arg2).mapThread(ast, 2);
+        return arg2.mapThread(ast, 2);
       }
       if (arg2.isAST(S.Cycles, 2)) {
         IAST cycles;

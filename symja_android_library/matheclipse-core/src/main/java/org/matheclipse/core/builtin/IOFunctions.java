@@ -733,6 +733,7 @@ public class IOFunctions {
       "tdlen", "Objects of unequal length in `1` cannot be combined.", //
       "tllen", "Lists of unequal length in `1` cannot be added.", //
       "toggle", "ToggleFeature `1` is disabled.", //
+      "tolnn", "Tolerance specification `1` must be a non-negative number.",
       "udist", "The specification `1` is not a random distribution recognized by the system.", //
       "unsupported", "`1` currently not supported in `2`.", //
       "usraw", "Cannot unset object `1`.", //
@@ -749,8 +750,8 @@ public class IOFunctions {
       "zznotimpl", "Function `1` not implemented.", //
       "zzprime", "Maximum Prime limit `1` exceeded.", //
       "zzregex", "Regex expression `1` error message: `2`.", //
-      "zzapfloatcld", "Complete loss of accurate digits (apfloat)." //
-
+      "zzapfloatcld", "Complete loss of accurate digits (apfloat).", //
+      "zzdsex", "Non deserialized expression `1`." //
   };
 
   public static void initialize() {

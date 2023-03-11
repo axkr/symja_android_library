@@ -623,7 +623,7 @@ public final class StringFunctions {
         if (ast.isAST2()) {
           IExpr arg2 = ast.arg2();
           if (arg2.isList()) {
-            return ((IAST) arg2).mapThread(ast, 2);
+            return arg2.mapThread(ast, 2);
           }
           if (arg2.isString()) {
             String str = ast.arg2().toString();
@@ -816,7 +816,7 @@ public final class StringFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isList()) {
-        return ((IAST) ast.arg1()).mapThread(ast, 1);
+        return ast.arg1().mapThread(ast, 1);
       }
       if (ast.arg1().isString()) {
         String characters = ast.arg1().toString().toLowerCase();
@@ -1151,7 +1151,7 @@ public final class StringFunctions {
       if (argSize >= 2) {
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
-          return ((IAST) arg1).mapThread(ast, 1);
+          return arg1.mapThread(ast, 1);
         }
         if (arg1.isString()) {
           boolean ignoreCase = option[0].isTrue();
@@ -1231,7 +1231,7 @@ public final class StringFunctions {
       if (argSize >= 2) {
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
-          return ((IAST) arg1).mapThread(ast, 1);
+          return arg1.mapThread(ast, 1);
         }
         if (arg1.isString()) {
           boolean ignoreCase = option[0].isTrue();
@@ -1304,7 +1304,7 @@ public final class StringFunctions {
         boolean ignoreCase = option[0].isTrue();
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
-          return ((IAST) arg1).mapThread(ast, 1);
+          return arg1.mapThread(ast, 1);
         }
         if (arg1.isString() && !ast.arg2().isRuleAST()) {
           IExpr arg2 = ast.arg2();
@@ -1450,7 +1450,7 @@ public final class StringFunctions {
 
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
-          return ((IAST) arg1).mapThread(ast, 1);
+          return arg1.mapThread(ast, 1);
         }
         if (!arg1.isString()) {
           // String or list of strings expected at position `1` in `2`.
@@ -1568,7 +1568,7 @@ public final class StringFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
-        return ((IAST) arg1).mapThread(ast, 1);
+        return arg1.mapThread(ast, 1);
       }
       if (!arg1.isString()) {
         return F.NIL;
@@ -1793,7 +1793,7 @@ public final class StringFunctions {
 
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
-          return ((IAST) arg1).mapThread(ast, 1);
+          return arg1.mapThread(ast, 1);
         }
         if (!arg1.isString()) {
           // String or list of strings expected at position `1` in `2`.
@@ -1882,7 +1882,7 @@ public final class StringFunctions {
 
       IExpr arg2 = ast.arg2();
       if (arg2.isList()) {
-        return ((IAST) arg2).mapThread(ast, 2);
+        return arg2.mapThread(ast, 2);
       }
       String str = ((IStringX) ast.arg1()).toString();
       int part = arg2.toIntDefault();
@@ -1925,7 +1925,7 @@ public final class StringFunctions {
 
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
-          return ((IAST) arg1).mapThread(ast, 1);
+          return arg1.mapThread(ast, 1);
         }
         if (!arg1.isString()) {
           // String or list of strings expected at position `1` in `2`.
@@ -2074,7 +2074,7 @@ public final class StringFunctions {
         boolean ignoreCase = option[0].isTrue();
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
-          return ((IAST) arg1).mapThread(ast, 1);
+          return arg1.mapThread(ast, 1);
         }
         if (!arg1.isString()) {
           return F.NIL;
@@ -2383,7 +2383,7 @@ public final class StringFunctions {
       IExpr arg1 = engine.evaluate(ast.arg1());
       if (!arg1.isString()) {
         if (arg1.isListOfStrings()) {
-          return ((IAST) arg1).mapThread(ast, 1);
+          return arg1.mapThread(ast, 1);
         }
         // String or list of strings expected at position `1` in `2`.
         return IOFunctions.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
@@ -2447,7 +2447,7 @@ public final class StringFunctions {
       try {
         if (!arg1.isString()) {
           if (arg1.isListOfStrings()) {
-            return ((IAST) arg1).mapThread(ast, 1);
+            return arg1.mapThread(ast, 1);
           }
           // String or list of strings expected at position `1` in `2`.
           return IOFunctions.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
@@ -2600,7 +2600,7 @@ public final class StringFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
-        return ((IAST) arg1).mapThread(ast, 1);
+        return arg1.mapThread(ast, 1);
       }
       if (!arg1.isString()) {
         return F.NIL;
@@ -2627,7 +2627,7 @@ public final class StringFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
-        return ((IAST) arg1).mapThread(ast, 1);
+        return arg1.mapThread(ast, 1);
       }
       if (arg1.isString()) {
         if (ast.isAST1()) {
@@ -2672,7 +2672,7 @@ public final class StringFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
-        return ((IAST) arg1).mapThread(ast, 1);
+        return arg1.mapThread(ast, 1);
       }
       if (!arg1.isString()) {
         return F.NIL;
@@ -2920,7 +2920,7 @@ public final class StringFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
-        return ((IAST) arg1).mapThread(ast, 1);
+        return arg1.mapThread(ast, 1);
       }
       if (!arg1.isString()) {
         return F.NIL;
@@ -3120,7 +3120,7 @@ public final class StringFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
-        return ((IAST) arg1).mapThread(ast, 1);
+        return arg1.mapThread(ast, 1);
       }
       if (!arg1.isString()) {
         return F.NIL;

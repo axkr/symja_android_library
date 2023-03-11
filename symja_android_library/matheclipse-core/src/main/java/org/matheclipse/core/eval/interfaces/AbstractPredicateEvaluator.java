@@ -36,7 +36,7 @@ public abstract class AbstractPredicateEvaluator extends AbstractFunctionEvaluat
     if (arg1.isList() || arg1.isAssociation()) {
       // thread over list?
       if ((ast.topHead().getAttributes() & ISymbol.LISTABLE) == ISymbol.LISTABLE) {
-        return ((IAST) arg1).mapThread(ast, 1);
+        return arg1.mapThread(ast, 1);
       }
     }
     if (ast.size() == 3) {

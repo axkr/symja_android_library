@@ -291,7 +291,7 @@ public class PolynomialFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.arg1().isList()) {
-        return ((IAST) arg1).mapThread(ast, 1);
+        return arg1.mapThread(ast, 1);
       }
       IExpr expr = F.evalExpandAll(arg1, engine).normal(false);
       IAST list = ast.arg2().makeList();
@@ -315,7 +315,7 @@ public class PolynomialFunctions {
     public IExpr evaluate(final IAST ast, final EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.arg1().isList()) {
-        return ((IAST) arg1).mapThread(ast, 1);
+        return arg1.mapThread(ast, 1);
       }
       IExpr expr = F.evalExpandAll(ast.arg1(), engine);
       VariablesSet eVar;
@@ -776,7 +776,7 @@ public class PolynomialFunctions {
 
       IExpr form = engine.evalPattern(ast.arg2());
       if (form.isList()) {
-        return ((IAST) form).mapThread(ast, 2);
+        return form.mapThread(ast, 2);
       }
 
       IExpr sym = S.Max;
@@ -1981,7 +1981,7 @@ public class PolynomialFunctions {
         if ((m < symbols.size()) && !symbols.get(m).isZero()) {
           IExpr bellY = bellY(n - m, k - 1, symbols, ast, engine);
           if (bellY.isPlus()) {
-            bellY = ((IAST) bellY).mapThread(F.Times(a, F.Slot1, symbols.get(m)), 2);
+            bellY = bellY.mapThread(F.Times(a, F.Slot1, symbols.get(m)), 2);
           } else {
             bellY = F.Times(a, bellY, symbols.get(m));
           }

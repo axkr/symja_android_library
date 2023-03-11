@@ -55,7 +55,6 @@ import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
-import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IEvalStepListener;
@@ -902,9 +901,9 @@ public class EvalEngine implements Serializable {
           return EvalAttributes.threadList(ast, S.List, ast.head(), ((IAST) arg1).argSize());
         } else if (arg1.isAssociation()) {
           // thread over the association
-          return ((IAssociation) arg1).mapThread(ast, 1);
+          return arg1.mapThread(ast, 1);
         } else if (arg1.isSparseArray()) {
-          return ((ISparseArray) arg1).mapThread(ast, 1);
+          return ((ISparseArray) arg1).mapThreadSparse(ast, 1);
         } else if (arg1.isConditionalExpression()) {
           IExpr temp = ast.extractConditionalExpression(true);
           if (temp.isPresent()) {
@@ -1176,7 +1175,7 @@ public class EvalEngine implements Serializable {
         }
         int indx = mutableAST.indexOf(x -> x.isAssociation());
         if (indx > 0) {
-          return ((IAssociation) mutableAST.get(indx)).mapThread(mutableAST, indx);
+          return mutableAST.get(indx).mapThread(mutableAST, indx);
         }
       }
 

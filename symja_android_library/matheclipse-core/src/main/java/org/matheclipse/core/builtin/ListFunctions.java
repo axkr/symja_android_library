@@ -5747,7 +5747,7 @@ public final class ListFunctions {
       IExpr arg1 = ast.arg1();
       IExpr rules = engine.evaluate(ast.arg2());
       if (rules.isListOfLists()) {
-        return ((IAST) rules).mapThread(ast, 2);
+        return rules.mapThread(ast, 2);
       }
 
       if (ast.isAST3()) {
@@ -5821,7 +5821,7 @@ public final class ListFunctions {
         IExpr arg1 = ast.arg1();
         IExpr arg2 = ast.arg2();
         if (arg2.isListOfLists()) {
-          return ((IAST) arg2).mapThread(ast, 2);
+          return arg2.mapThread(ast, 2);
         }
 
         VisitorReplaceAll visitor = VisitorReplaceAll.createVisitor(arg2);
@@ -6147,7 +6147,7 @@ public final class ListFunctions {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (arg2.isListOfLists()) {
-        return ((IAST) arg2).mapThread(ast, 2);
+        return arg2.mapThread(ast, 2);
       }
 
       int maxIterations = -1;

@@ -6312,10 +6312,11 @@ public class StatisticsFunctions {
               IExpr ymin = list2.first();
               IExpr ymax = list2.second();
               // (arg1*(ymax - ymin))/(max - min) - (min*ymax - max*ymin)/(max - min)
-              return engine.evaluate(F.Plus(
+              return F.Plus(
                   F.Times(x, F.Power(F.Plus(max, F.Negate(min)), -1), F.Plus(ymax, F.Negate(ymin))),
                   F.Times(F.CN1, F.Power(F.Plus(max, F.Negate(min)), -1),
-                      F.Plus(F.Times(min, ymax), F.Times(F.CN1, max, ymin)))));
+                      F.Plus(F.Times(min, ymax), F.Times(F.CN1, max, ymin))))
+                  .eval(engine);
             }
             return F.NIL;
           }
@@ -6530,7 +6531,7 @@ public class StatisticsFunctions {
       if (standardDeviation.isPresent() && !standardDeviation.isZero()) {
         IExpr mean = engine.evaluate(F.unaryAST1(f1, arg1));
         if (mean.isPresent()) {
-          return engine.evaluate(F.Divide(F.Subtract(arg1, mean), standardDeviation));
+          return F.Divide(F.Subtract(arg1, mean), standardDeviation).eval(engine);
         }
       }
       return F.NIL;
@@ -6721,7 +6722,7 @@ public class StatisticsFunctions {
         IAST dist = (IAST) ast.arg1();
         if (isDistribution(dist)) {
           if (ast.arg2().isList()) {
-            return ((IAST) ast.arg2()).mapThread(ast, 2);
+            return ast.arg2().mapThread(ast, 2);
           }
           return F.Expand(F.Subtract(F.C1, F.CDF(dist, ast.arg2())));
         }

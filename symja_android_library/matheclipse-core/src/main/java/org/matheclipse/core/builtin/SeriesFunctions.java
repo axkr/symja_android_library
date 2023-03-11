@@ -215,7 +215,7 @@ public class SeriesFunctions {
         // return evalLimit(expr, data, true);
         IExpr direction =
             data.direction() == Direction.TWO_SIDED ? S.Reals : F.ZZ(data.direction().toInt());
-        return engine.evaluate(F.Limit(expr, data.rule(), F.Rule(S.Direction, direction)));
+        return F.Limit(expr, data.rule(), F.Rule(S.Direction, direction)).eval(engine);
       } finally {
         engine.setQuietMode(quiet);
       }
@@ -903,9 +903,7 @@ public class SeriesFunctions {
         return F.NIL;
       }
       if (arg1.isList()) {
-        // IASTMutable clone = ast.copy();
-        // clone.set(1, F.Slot1);
-        return ((IAST) arg1).mapThread(ast, 1);
+        return arg1.mapThread(ast, 1);
       }
       boolean numericMode = engine.isNumericMode();
       try {

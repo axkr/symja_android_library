@@ -352,7 +352,7 @@ public class IntegerFunctions {
         result = S.IntegerDigits.of(engine, ast.arg1());
       } else if (ast.size() >= 3) {
         if (ast.isAST3() && ast.arg3().isList()) {
-          return ((IAST) ast.arg3()).mapThread(ast, 3);
+          return ast.arg3().mapThread(ast, 3);
         }
 
         radix = ast.arg2().toIntDefault();
@@ -1645,7 +1645,7 @@ public class IntegerFunctions {
         }
 
         if (expr.isList()) {
-          return ((IAST) expr).mapThread(ast.setAtCopy(1, F.Slot1), 1);
+          return expr.mapThread(ast.setAtCopy(1, F.Slot1), 1);
         }
         if (ast.isAST2()) {
           // Round(expr, k)

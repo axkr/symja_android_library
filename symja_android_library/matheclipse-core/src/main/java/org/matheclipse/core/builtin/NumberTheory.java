@@ -2739,7 +2739,7 @@ public final class NumberTheory {
       for (int i = 1; i < n; i++) {
         IExpr temp = fibonacci;
         if (fibonacci.isPlus()) {
-          fibonacci = ((IAST) fibonacci).mapThread(F.Times(x, F.Slot1), 2);
+          fibonacci = fibonacci.mapThread(F.Times(x, F.Slot1), 2);
         } else {
           fibonacci = F.Times(x, fibonacci);
         }
@@ -3333,7 +3333,7 @@ public final class NumberTheory {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
-        return ((IAST) arg1).mapThread(ast, 1);
+        return arg1.mapThread(ast, 1);
       }
       if (arg1.isOne()) {
         return F.C1;
@@ -3434,15 +3434,15 @@ public final class NumberTheory {
         PolynomialDegreeLimitExceeded.throwIt(n);
       }
       IExpr previousLucasL = F.C2;
-      IExpr lucalsL = x;
+      IExpr lucasL = x;
       if (n == 0) {
         return previousLucasL;
       }
       if (n == 1) {
         if (iArg < 0) {
-          return F.Negate(lucalsL);
+          return F.Negate(lucasL);
         }
-        return lucalsL;
+        return lucasL;
       }
 
       int iterationLimit = engine.getIterationLimit();
@@ -3450,19 +3450,19 @@ public final class NumberTheory {
         IterationLimitExceeded.throwIt(n, ast);
       }
       for (int i = 1; i < n; i++) {
-        IExpr temp = lucalsL;
-        if (lucalsL.isPlus()) {
-          lucalsL = ((IAST) lucalsL).mapThread(F.Times(x, F.Slot1), 2);
+        IExpr temp = lucasL;
+        if (lucasL.isPlus()) {
+          lucasL = lucasL.mapThread(F.Times(x, F.Slot1), 2);
         } else {
-          lucalsL = F.Times(x, lucalsL);
+          lucasL = F.Times(x, lucasL);
         }
-        lucalsL = S.Expand.of(engine, F.Plus(lucalsL, previousLucasL));
+        lucasL = S.Expand.of(engine, F.Plus(lucasL, previousLucasL));
         previousLucasL = temp;
       }
       if (iArg < 0 && ((iArg & 0x00000001) == 0x00000001)) {
-        return F.Negate(lucalsL);
+        return F.Negate(lucasL);
       }
-      return lucalsL;
+      return lucasL;
     }
 
     @Override
@@ -3509,7 +3509,7 @@ public final class NumberTheory {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.arg1().isList()) {
-        return ((IAST) arg1).mapThread(ast, 1);
+        return arg1.mapThread(ast, 1);
       }
       if (arg1.isInteger()) {
         if (arg1.isZero() || arg1.isOne() || arg1.isNegative()) {
@@ -4265,7 +4265,7 @@ public final class NumberTheory {
       if (sum2.isNIL()) {
         return F.NIL;
       }
-      return engine.evaluate(Plus(Times(nInverse, sum1), Times(F.CN2, nInverse, sum2)));
+      return Plus(Times(nInverse, sum1), Times(F.CN2, nInverse, sum2)).eval(engine);
     }
 
     private static IExpr sumPartitionsQ1(EvalEngine engine, IInteger n) {
@@ -4291,8 +4291,8 @@ public final class NumberTheory {
 
     private static IExpr termPartitionsQ1(EvalEngine engine, IInteger n, int k) {
       // DivisorSigma(1, k)*PartitionsQ(n - k)
-      IInteger k2 = F.ZZ(k);
-      return engine.evaluate(Times(F.DivisorSigma(C1, k2), F.PartitionsQ(Plus(Negate(k2), n))));
+      final IInteger k2 = F.ZZ(k);
+      return Times(F.DivisorSigma(C1, k2), F.PartitionsQ(Plus(Negate(k2), n))).eval(engine);
     }
 
     private static IExpr sumPartitionsQ2(EvalEngine engine, IInteger n) {
@@ -4550,7 +4550,7 @@ public final class NumberTheory {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.arg1().isList()) {
-        return ((IAST) arg1).mapThread(ast, 1);
+        return arg1.mapThread(ast, 1);
       }
       if (arg1.isZero()) {
         return F.NIL;

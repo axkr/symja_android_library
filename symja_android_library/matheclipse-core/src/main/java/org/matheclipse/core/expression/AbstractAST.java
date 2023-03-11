@@ -851,6 +851,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     @Override
+    public final IASTMutable mapThread(final IAST replacement, int position) {
+      return this;
+    }
+
+    @Override
     public IExpr mapExpr(Function<? super IExpr, ? extends IExpr> mapper) {
       return this;
     }
@@ -5146,7 +5151,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public final IASTMutable mapThread(final IAST replacement, int position) {
+  public IASTMutable mapThread(final IAST replacement, int position) {
     final Function<IExpr, IExpr> function = x -> replacement.setAtCopy(position, x);
     return (IASTMutable) map(function, 1);
   }

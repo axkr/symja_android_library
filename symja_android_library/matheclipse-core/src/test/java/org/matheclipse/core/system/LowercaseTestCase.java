@@ -1659,8 +1659,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "I*Sqrt(2/Pi)*Sin(1)");
     check("BesselJ(-1/2,-Infinity)", //
         "0");
-    checkNumeric("BesselJ(-1.9999999999999998,3.0)", //
-        "0.486091260585958");
+    checkNumeric("BesselJ(-1.9999999999998,3.0)", //
+        "0.4860912605858071");
     checkNumeric("BesselJ(-1.999888,3.0)", //
         "0.48604418359704343");
     checkNumeric("BesselJ(0,0.001)", //
@@ -1891,7 +1891,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{BetaRegularized(0.25,0.5,2.14748*10^9),BetaRegularized(0.5,0.5,2.14748*10^9),BetaRegularized(0.75,0.5,2.14748*10^9)}");
 
     check("BetaRegularized(-1.5707963267948966,-I,-I)", //
-        "BetaRegularized(-1.5708,I*(-1.0),I*(-1.0))");
+        "BetaRegularized(-1.5707963267948966,I*(-1),I*(-1))");
     check("BetaRegularized(2,-2147483648,17)", //
         "1");
     check("BetaRegularized(0,1+I,b)", //
@@ -2741,6 +2741,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testChop() {
+    check("Chop(abc)", //
+        "abc");
+    check("Chop(Sin(3/7))", //
+        "Sin(3/7)");
+    check("Chop(Sin(1/1000000000000000))", //
+        "Sin(1/1000000000000000)");
+
     check("{{2.02.77556*10^-16, -3.88578*10^-16, -5.55112*10^-16}}=={{0,0,0}}", //
         "True");
     check("Chop(x)", //
@@ -2749,6 +2756,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
     check("Chop(18.35051+I*1.32213*10^-11)", //
         "18.35051");
+
+    check("Exp(N(Range(4)*Pi*I))", //
+        "{-1.0,1.0+I*(-2.44929*10^-16),-1.0+I*3.67394*10^-16,1.0+I*(-4.89859*10^-16)}");
+    check("Chop(Exp(N(Range(4)*Pi*I)))", //
+        "{-1.0,1.0,-1.0,1.0}");
+
+    check("x=N(Pi);r=Rationalize(x,10^-12)", //
+        "4272943/1360120");
+    check("Chop(x-r)==0", //
+        "True");
+    check("Chop(x-r,10^-14)==0", //
+        "False");
+
+    check("Chop(10.^-12+2*I)", //
+        "I*2.0");
+    check("Chop(2. + 10.^-12*I)", //
+        "2.0");
   }
 
   public void testClear() {
@@ -10670,6 +10694,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testHypergeometric0F1() {
+    check("N(Hypergeometric0F1(1, -2), 50)", //
+        "-0.19654809527046820004079337208793223132588978731089");
+    check("Hypergeometric0F1(1, -2.00000000000000000000000000000)", //
+        "-0.1965480952704682000407933720879");
+
     check("Hypergeometric0F1(b, 0)", //
         "1");
     check("Hypergeometric0F1(b, Infinity)", //
@@ -10693,6 +10722,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testHypergeometric1F1() {
+    check("N(Hypergeometric1F1(10, 1/3, -1), 50)", //
+        "1.0856469662771144181060999200053894821341819655654");
+    check("Hypergeometric1F1(10, 1/3, -1.000000000000000000000000000000000000)", //
+        "1.085646966277114418106099920005389482");
+
     check("Hypergeometric1F1(-2,-1-a,-a)", //
         "1+(2*a)/(-1-a)+a/(1+a)");
     check("Hypergeometric1F1(-3,b,z)", //
@@ -10742,10 +10776,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testHypergeometric2F1() {
+    check("N(Hypergeometric2F1(1/2, 1/3, 2, 1), 50)", //
+        "1.1595952669639283657699920515700208819451652634397");
+    check("Hypergeometric2F1(1/2, 1/3, 2, 1.000000000000000000000000000000000)", //
+        "1.159595266963928365769992051570021");
+
     // iteration limit of exceeded.
     // https://github.com/paulmasson/math/issues/29#issuecomment-1120230707
     check("Hypergeometric2F1(1, 0.5, 1.5, -0.9999999999999976)", //
-        "Hypergeometric2F1(0.5,1.0,1.5,-1.0)");
+        "0.785398163397448651");
 
 
     check("Hypergeometric2F1(n,n,2*n+1,1)", //
@@ -12296,7 +12335,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testKleinInvariantJ() {
     //
     check("KleinInvariantJ(-1.5707963267948966)", //
-        "KleinInvariantJ(-1.5708)");
+        "KleinInvariantJ(-1.5707963267948966)");
     check("KleinInvariantJ( (1 + I*3*Sqrt(3))/2 )", //
         "-64000/9");
     check("KleinInvariantJ( (1 + I*Sqrt(163))/2 )", //
@@ -16039,7 +16078,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testNormalize() {
     check(
         "Normalize({0.9999999999999999, -0.12609662354252538+I*0.3870962681438435, 0.3692814336284687+I*0.0968290630091466})", //
-        "{0.873208,-0.110109+I*0.338016,0.32246+I*0.0845519}");
+        "{0.8732080940136610352,-0.1101085923051267364+I*0.33801559450568667,0.3224595368133474565+I*0.0845519215553456008}");
 
     check("Normalize({0})", //
         "{0}");

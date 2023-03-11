@@ -56,8 +56,7 @@ public class ZTransform extends AbstractFunctionEvaluator implements ZTransformR
           final IExpr header = function.head();
           if (function.isPlus()) {
             // ZTransform(a_+b_+c_,n_,z_) -> ZTransform(a,n,z)+ZTransform(b,n,z)+ZTransform(c,n,z)
-            IExpr result = function.mapThread(F.ZTransform(F.Slot1, n, z), 1);
-            return engine.evaluate(result);
+            return function.mapThread(F.ZTransform(F.Slot1, n, z), 1).eval(engine);
           } else if (function.isTimes()) {
             int indx = function.indexOf(x -> x.isFree(n, true));
             if (indx > 0) {

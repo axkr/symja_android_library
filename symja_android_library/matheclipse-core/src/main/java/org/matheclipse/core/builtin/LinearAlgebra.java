@@ -4235,12 +4235,10 @@ public final class LinearAlgebra {
         }
 
         // Gram-Schmidt orthogonalization
-        IExpr result = F.Map(F.Function(F.Normalize(F.Slot1)), //
+        return F.Map(F.Function(F.Normalize(F.Slot1)), //
             F.Fold(F.Function(F.Append(F.Slot1, F.binaryAST2(oneStep, F.Slot2, F.Slot1))),
-                F.CEmptyList, arg1));
-
-        return engine.evaluate(result);
-
+                F.CEmptyList, arg1))
+            .eval(engine);
       }
       return F.NIL;
     }
@@ -4339,7 +4337,8 @@ public final class LinearAlgebra {
      * @return the evaluated <code>head(u,v)</code> AST.
      */
     private static IExpr dotProduct(IExpr head, IExpr u, IExpr v, EvalEngine engine) {
-      return engine.evaluate(F.binaryAST2(head, u, v));
+      return F.binaryAST2(head, u, v)//
+          .eval(engine);
     }
 
     @Override
