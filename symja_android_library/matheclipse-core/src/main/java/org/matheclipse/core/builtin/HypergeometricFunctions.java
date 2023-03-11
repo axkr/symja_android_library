@@ -760,6 +760,18 @@ public class HypergeometricFunctions {
       if (z.isInfinity()) {
         return F.CComplexInfinity;
       }
+      if (engine.isArbitraryMode()) {
+        try {
+          IExpr res = b.hypergeometric0F1(z);
+          if (res.isNumber()) {
+            return res;
+          }
+        } catch (ValidateException ve) {
+          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+        } catch (RuntimeException rex) {
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        }
+      }
       if (engine.isDoubleMode()) {
         try {
           double bDouble = Double.NaN;
@@ -840,9 +852,18 @@ public class HypergeometricFunctions {
           // (E^z * (-1 + a + z)) / (-1 + a)
           return F.Times(F.Power(S.E, z), F.Divide(F.Plus(F.CN1, a, z), F.Plus(a, F.CN1)));
         }
-        // if (engine.isArbitraryMode()) {
-        // HypergeometricHelper
-        // }
+        if (engine.isArbitraryMode()) {
+          try {
+            IExpr res = a.hypergeometric1F1(b, z);
+            if (res.isNumber()) {
+              return res;
+            }
+          } catch (ValidateException ve) {
+            return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          } catch (RuntimeException rex) {
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          }
+        }
         if (engine.isDoubleMode()) {
 
           double aDouble = Double.NaN;
@@ -963,29 +984,18 @@ public class HypergeometricFunctions {
       }
 
       try {
-        // IExpr temp = engine.evaluate(F.ExpandAll(F.Subtract(c, b)));
-        // int diff = temp.toIntDefault();
-        // if (diff != Integer.MIN_VALUE) {
-        // if (diff == 0) {
-        // return
-        // // [$ (1 - z)^(-a) $]
-        // F.Power(F.Subtract(F.C1, z), F.Negate(a)); // $$;
-        // }
-        // // if (diff == 1 && !a.isOne()) {
-        // // return
-        // // // [$ (b*Beta(z, b, 1 - a))/z^b $]
-        // // F.Times(b, F.Power(F.Power(z, b), F.CN1), F.Beta(z, b, F.Subtract(F.C1, a))); // $$;
-        // // }
-        // if (diff == -1) {
-        // return
-        // // [$ ((1-z)^(-1-a)*(z*(a-b+1)+b-1))/(b-1) $]
-        // F.Times(F.Power(F.Plus(F.CN1, b), F.CN1),
-        // F.Plus(F.CN1, F.Times(z, F.Plus(a, F.Negate(b), F.C1)), b),
-        // F.Power(F.Subtract(F.C1, z), F.Subtract(F.CN1, a))); // $$;
-        // }
-        //
-        // }
-
+        if (engine.isArbitraryMode()) {
+          try {
+            IExpr res = a.hypergeometric2F1(b, c, z);
+            if (res.isNumber()) {
+              return res;
+            }
+          } catch (ValidateException ve) {
+            return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          } catch (RuntimeException rex) {
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          }
+        }
         if (engine.isDoubleMode()) {
 
           double aDouble = Double.NaN;
@@ -1012,20 +1022,6 @@ public class HypergeometricFunctions {
             return F.num(HypergeometricJS.hypergeometric2F1(aDouble, bDouble, cDouble, zDouble));
           }
         }
-        //
-        // if (a.isReal() && b.isReal() && c.isReal() && z.isReal()) {
-        // double aDouble = ((ISignedNumber) a).doubleValue();
-        // double bDouble = ((ISignedNumber) b).doubleValue();
-        // double cDouble = ((ISignedNumber) c).doubleValue();
-        // double zDouble = ((ISignedNumber) z).doubleValue();
-        // try {
-        // return F.num(de.lab4inf.math.functions.HypergeometricGaussSeries.gaussSeries(aDouble,
-        // bDouble,
-        // cDouble, zDouble));
-        // } catch (RuntimeException rex) {
-        // return engine.printMessage(ast.topHead() + ": " + rex.getMessage());
-        // }
-        // }
       } catch (ResultException te) {
         LOGGER.debug("Hypergeometric2F1.evaluate() failed", te);
         return te.getValue();
@@ -1064,7 +1060,7 @@ public class HypergeometricFunctions {
       IExpr c = ast.arg3();
       if (c.isList()) {
         // thread elementwise over list in arg3
-        return ((IAST) c).mapThread(ast.setAtCopy(3, F.Slot1), 3);
+        return c.mapThread(ast.setAtCopy(3, F.Slot1), 3);
       }
       if (c.isZero() && a.isList() && b.isList()) {
         return F.C1;
@@ -1078,6 +1074,7 @@ public class HypergeometricFunctions {
           }
           aVector.addEvalFlags(IAST.IS_SORTED);
         }
+        a = aVector;
       }
       if (b.isVector() > 0) {
         IAST bVector = (IAST) b.normal(false);
@@ -1088,7 +1085,18 @@ public class HypergeometricFunctions {
           }
           bVector.addEvalFlags(IAST.IS_SORTED);
         }
+        b = bVector;
       }
+
+      // if (engine.isArbitraryMode() && a.isVector() > 0 && b.isVector() > 0) {
+      // try {
+      // HypergeometricHelper.hypergeometricPFQ();
+      // } catch (ValidateException ve) {
+      // return IOFunctions.printMessage(ast.topHead(), ve, engine);
+      // } catch (RuntimeException rex) {
+      // LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+      // }
+      // }
 
       if (engine.isDoubleMode() && a.isVector() > 0 && b.isVector() > 0) {
         try {

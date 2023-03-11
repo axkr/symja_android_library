@@ -85,6 +85,60 @@ public class ApfloatNum implements INum {
     return DOUBLEID;
   }
 
+  @Override
+  public IExpr hypergeometric0F1(IExpr arg2) {
+    if (arg2 instanceof ISignedNumber) {
+      try {
+        return valueOf(EvalEngine.getApfloat().hypergeometric0F1(fApfloat,
+            ((ISignedNumber) arg2).apfloatValue()));
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
+    }
+    if (arg2 instanceof INumber) {
+      return F.complexNum(
+          EvalEngine.getApfloat().hypergeometric0F1(fApfloat, ((INumber) arg2).apcomplexValue()));
+    }
+    return INum.super.hypergeometric0F1(arg2);
+  }
+
+  @Override
+  public IExpr hypergeometric1F1(IExpr arg2, IExpr arg3) {
+    if (arg2 instanceof ISignedNumber && arg3 instanceof ISignedNumber) {
+      try {
+        return valueOf(EvalEngine.getApfloat().hypergeometric1F1(fApfloat,
+            ((ISignedNumber) arg2).apfloatValue(), ((ISignedNumber) arg3).apfloatValue()));
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
+    }
+    if (arg2 instanceof INumber && arg3 instanceof INumber) {
+      return F.complexNum(EvalEngine.getApfloat().hypergeometric1F1(fApfloat,
+          ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue()));
+    }
+    return INum.super.hypergeometric1F1(arg2, arg3);
+  }
+
+  @Override
+  public IExpr hypergeometric2F1(IExpr arg2, IExpr arg3, IExpr arg4) {
+    if (arg2 instanceof ISignedNumber && arg3 instanceof ISignedNumber
+        && arg4 instanceof ISignedNumber) {
+      try {
+        return valueOf(EvalEngine.getApfloat().hypergeometric2F1(fApfloat,
+            ((ISignedNumber) arg2).apfloatValue(), ((ISignedNumber) arg3).apfloatValue(),
+            ((ISignedNumber) arg4).apfloatValue()));
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
+    }
+    if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
+      return F.complexNum(
+          EvalEngine.getApfloat().hypergeometric2F1(fApfloat, ((INumber) arg2).apcomplexValue(),
+              ((INumber) arg3).apcomplexValue(), ((INumber) arg3).apcomplexValue()));
+    }
+    return INum.super.hypergeometric2F1(arg2, arg3, arg4);
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {

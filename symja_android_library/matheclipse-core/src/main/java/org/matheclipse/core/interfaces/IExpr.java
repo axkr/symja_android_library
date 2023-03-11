@@ -701,17 +701,22 @@ public interface IExpr
     EvalEngine engine = EvalEngine.get();
     if (engine.isTogetherMode() && (this.isPlusTimesPower() || inverse.isPlusTimesPower())) {
       if (this.isNumber() && inverse.isPlus()) {
-        return engine.evaluate(F.Expand(F.Times(this, inverse)));
+        return F.Expand(F.Times(this, inverse))//
+            .eval(engine);
       }
       if (inverse.isNumber() && this.isPlus()) {
-        return engine.evaluate(F.Expand(F.Times(inverse, this)));
+        return F.Expand(F.Times(inverse, this))//
+            .eval(engine);
       }
       if ((this.isNumber() && inverse.isTimes()) || (inverse.isNumber() && this.isTimes())) {
-        return engine.evaluate(F.Times(this, inverse));
+        return F.Times(this, inverse)//
+            .eval(engine);
       }
-      return engine.evaluate(F.Together(F.Times(this, inverse)));
+      return F.Together(F.Times(this, inverse))//
+          .eval(engine);
     }
-    return engine.evaluate(F.Times(this, inverse));
+    return F.Times(this, inverse)//
+        .eval(engine);
   }
 
   @Override
@@ -838,6 +843,38 @@ public interface IExpr
   default IExpr equalTo(IExpr that) {
     COMPARE_TERNARY temp = this.equalTernary(that, EvalEngine.get());
     return convertToExpr(temp);
+  }
+
+  /**
+   * Evaluate the expression in symbolic mode with the {@link EvalEngine} associated with the
+   * current thread.
+   * 
+   * @return the evaluated expression or <code>this</code> {@link F#NIL} if no evaluation was
+   *         possible.
+   */
+  default IExpr eval() {
+    return eval(EvalEngine.get());
+  }
+
+  /**
+   * Evaluate the expression in symbolic mode with the specified {@link EvalEngine}.
+   * 
+   * @param engine
+   * @return the evaluated expression or <code>this</code> {@link F#NIL} if no evaluation was
+   *         possible.
+   */
+  default IExpr eval(EvalEngine engine) {
+    return engine.evaluate(this);
+  }
+
+  /**
+   * Evaluate the expression in symbolic mode with the specified {@link EvalEngine}.
+   * 
+   * @param engine
+   * @return {@link F#NIL} if no evaluation was possible.
+   */
+  default IExpr evalNIL(EvalEngine engine) {
+    return engine.evaluateNIL(this);
   }
 
   /**
@@ -1137,8 +1174,8 @@ public interface IExpr
     if (isReal() && a1.isReal()) {
       return ((ISignedNumber) this).isGT(((ISignedNumber) a1)) ? S.True : S.False;
     }
-    EvalEngine engine = EvalEngine.get();
-    return engine.evaluate(F.Greater(this, a1));
+    return F.Greater(this, a1)//
+        .eval();
   }
 
   /**
@@ -1152,8 +1189,8 @@ public interface IExpr
     if (isReal() && a1.isReal()) {
       return ((ISignedNumber) this).isLT(((ISignedNumber) a1)) ? S.False : S.True;
     }
-    EvalEngine engine = EvalEngine.get();
-    return engine.evaluate(F.GreaterEqual(this, a1));
+    return F.GreaterEqual(this, a1)//
+        .eval();
   }
 
   /**
@@ -4150,8 +4187,8 @@ public interface IExpr
     if (isReal() && a1.isReal()) {
       return ((ISignedNumber) this).isLT(((ISignedNumber) a1)) ? S.True : S.False;
     }
-    EvalEngine engine = EvalEngine.get();
-    return engine.evaluate(F.Less(this, a1));
+    return F.Less(this, a1)//
+        .eval();
   }
 
   /**
@@ -4164,9 +4201,9 @@ public interface IExpr
   default IExpr lessEqual(final IExpr a1) {
     if (isReal() && a1.isReal()) {
       return ((ISignedNumber) this).isGT(((ISignedNumber) a1)) ? S.False : S.True;
-    }
-    EvalEngine engine = EvalEngine.get();
-    return engine.evaluate(F.LessEqual(this, a1));
+    } 
+    return F.LessEqual(this, a1)//
+        .eval( );
   }
 
   /**
@@ -4341,6 +4378,41 @@ public interface IExpr
   }
 
   /**
+   * <p>
+   * If <code>this</code> is an {@link IAST}:
+   * <p>
+   * Maps the elements of this {@link IAST} on the first level of arguments with the code
+   * <code>replacement.setAtCopy(position, this)</code>, there <code>replacement</code> is an IAST
+   * at which the argument at the given position will be replaced by the currently mapped element.
+   * This can be used to create an effect as if &quot;the <code>position</code>-th argument of an
+   * IAST object would be <code>Listable</code>&quot;.
+   *
+   * <p>
+   * If <code>this</code> is an {@link IExpr}:
+   * 
+   * <p>
+   * Return <code>replacement.setAtCopy(position, this)</code>
+   *
+   * <p>
+   * Example for mapping, where the argument at the given position will be replaced by the current
+   * argument of this AST:
+   *
+   * <pre>
+   * plusAST.mapThread(F.D(F.Slot1, F.x), 1);
+   * </pre>
+   *
+   * @param replacement an IAST there the argument at the given position is replaced by the
+   *        currently mapped argument of this {@link IAST}.
+   * @param position the position in <code>replacement</code> which should be replaced by the
+   *        corresponding argument of this {@link IAST}
+   * @return
+   * @see IAST#map(Function, int)
+   */
+  default IASTMutable mapThread(final IAST replacement, int position) {
+    return replacement.setAtCopy(position, this);
+  }
+
+  /**
    * If a value is present (i.e. this unequals F.NIL), apply the provided mapping function to it,
    * and if the result is non-NIL, return the result. Otherwise return <code>F.NIL</code>
    *
@@ -4469,10 +4541,10 @@ public interface IExpr
         IExpr temp = ((IAST) this).map(x -> x.multiplyDistributed(that), 1);
         return EvalEngine.get().evaluate(temp);
       }
-      IExpr temp = ((IAST) this).mapThread(F.binaryAST2(S.Times, F.Slot1, that), 1);
+      IExpr temp = mapThread(F.binaryAST2(S.Times, F.Slot1, that), 1);
       return EvalEngine.get().evaluate(temp);
     } else if (that.isPlus()) {
-      IExpr temp = ((IAST) that).mapThread(F.binaryAST2(S.Times, this, F.Slot1), 2);
+      IExpr temp = that.mapThread(F.binaryAST2(S.Times, this, F.Slot1), 2);
       return EvalEngine.get().evaluate(temp);
     }
     return times(that);
@@ -4703,9 +4775,11 @@ public interface IExpr
     }
     EvalEngine engine = EvalEngine.get();
     if (engine.isTogetherMode() && (this.isPlusTimesPower() || that.isPlusTimesPower())) {
-      return engine.evaluate(F.Together(F.Plus(this, that)));
+      return F.Together(F.Plus(this, that))//
+          .eval(engine);
     }
-    return engine.evaluate(F.Plus(this, that));
+    return F.Plus(this, that)//
+        .eval(engine);
   }
 
   @Override
@@ -4721,6 +4795,19 @@ public interface IExpr
   @Override
   default IExpr pow(int n) {
     return S.Power.of(this, F.ZZ(n));
+  }
+
+
+  default IExpr hypergeometric0F1(IExpr that) {
+    return F.Hypergeometric0F1(this, that);
+  }
+
+  default IExpr hypergeometric1F1(IExpr arg2, IExpr arg3) {
+    return F.Hypergeometric1F1(this, arg2, arg3);
+  }
+
+  default IExpr hypergeometric2F1(IExpr arg2, IExpr arg3, IExpr arg4) {
+    return F.Hypergeometric2F1(this, arg2, arg3, arg4);
   }
 
   /**
@@ -5166,17 +5253,22 @@ public interface IExpr
     EvalEngine engine = EvalEngine.get();
     if (engine.isTogetherMode() && (this.isPlusTimesPower() || that.isPlusTimesPower())) {
       if (this.isNumber() && that.isPlus()) {
-        return engine.evaluate(F.Expand(F.Times(this, that)));
+        return F.Expand(F.Times(this, that)) //
+            .eval(engine);
       }
       if (that.isNumber() && this.isPlus()) {
-        return engine.evaluate(F.Expand(F.Times(that, this)));
+        return F.Expand(F.Times(that, this)) //
+            .eval(engine);
       }
       if ((this.isNumber() && that.isTimes()) || (that.isNumber() && this.isTimes())) {
-        return engine.evaluate(F.Times(that, this));
+        return F.Times(that, this)//
+            .eval(engine);
       }
-      return engine.evaluate(F.Together(F.Times(this, that)));
+      return F.Together(F.Times(this, that)) //
+          .eval(engine);
     }
-    return engine.evaluate(F.Times(this, that));
+    return F.Times(this, that) //
+        .eval(engine);
   }
 
   /**

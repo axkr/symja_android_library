@@ -195,6 +195,34 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr hypergeometric0F1(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      return valueOf(
+          EvalEngine.getApfloat().hypergeometric0F1(fApcomplex, ((INumber) arg2).apcomplexValue()));
+    }
+    return IComplexNum.super.hypergeometric0F1(arg2);
+  }
+
+  @Override
+  public IExpr hypergeometric1F1(IExpr arg2, IExpr arg3) {
+    if (arg2 instanceof INumber && arg3 instanceof INumber) {
+      return valueOf(EvalEngine.getApfloat().hypergeometric1F1(fApcomplex,
+          ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue()));
+    }
+    return IComplexNum.super.hypergeometric1F1(arg2, arg3);
+  }
+
+  @Override
+  public IExpr hypergeometric2F1(IExpr arg2, IExpr arg3, IExpr arg4) {
+    if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
+      return valueOf(
+          EvalEngine.getApfloat().hypergeometric2F1(fApcomplex, ((INumber) arg2).apcomplexValue(),
+              ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue()));
+    }
+    return IComplexNum.super.hypergeometric2F1(arg2, arg3, arg4);
+  }
+
+  @Override
   public IComplexNum add(final IComplexNum val) {
     return valueOf(EvalEngine.getApfloat().add(fApcomplex, val.apcomplexValue()));
   }
