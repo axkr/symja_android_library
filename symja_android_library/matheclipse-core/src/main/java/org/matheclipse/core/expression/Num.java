@@ -7,8 +7,10 @@ import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
+import org.hipparchus.complex.Complex;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.form.DoubleToMMA;
@@ -404,6 +406,64 @@ public class Num implements INum {
   }
 
   @Override
+  public IExpr hypergeometric0F1(IExpr arg2) {
+    try {
+      return F.num(HypergeometricJS.hypergeometric0F1(value, arg2.evalf()));
+    } catch (RuntimeException e) {
+      // try as computation with complex numbers
+    }
+    try {
+      return F.complexNum(
+          HypergeometricJS.hypergeometric0F1(new Complex(value), ((ComplexNum) arg2).evalfc()));
+    } catch (RuntimeException e) {
+      // try as computation with complex numbers
+    }
+    return INum.super.hypergeometric0F1(arg2);
+  }
+
+  @Override
+  public IExpr hypergeometric1F1(IExpr arg2, IExpr arg3) {
+    try {
+      return F.num(HypergeometricJS.hypergeometric1F1(value, //
+          arg2.evalf(), //
+          arg3.evalf()));
+    } catch (RuntimeException e) {
+      // try as computation with complex numbers
+    }
+
+    try {
+      return F.complexNum(HypergeometricJS.hypergeometric1F1(new Complex(value), //
+          arg2.evalfc(), //
+          arg3.evalfc()));
+    } catch (RuntimeException e) {
+      // try as computation with complex numbers
+    }
+    return INum.super.hypergeometric1F1(arg2, arg3);
+  }
+
+  @Override
+  public IExpr hypergeometric2F1(IExpr arg2, IExpr arg3, IExpr arg4) {
+    try {
+      return F.num(HypergeometricJS.hypergeometric2F1(value, //
+          arg2.evalf(), //
+          arg3.evalf(), //
+          arg4.evalf()));
+    } catch (RuntimeException e) {
+      // try as computation with complex numbers
+    }
+
+    try {
+      return F.complexNum(HypergeometricJS.hypergeometric2F1(new Complex(value), //
+          arg2.evalfc(), //
+          arg3.evalfc(), //
+          arg4.evalfc()));
+    } catch (RuntimeException e) {
+      // try as computation with complex numbers
+    }
+    return INum.super.hypergeometric2F1(arg2, arg3, arg4);
+  }
+
+  @Override
   public CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
     SourceCodeProperties p = AbstractAST.stringFormProperties(symbolsAsFactoryMethod);
     return internalJavaString(p, depth, x -> null);
@@ -668,14 +728,13 @@ public class Num implements INum {
   @Override
   public ISignedNumber roundClosest(ISignedNumber multiple) {
     if (multiple.isRational()) {
-      return F.ZZ(
-          DoubleMath.roundToBigInteger(value / multiple.doubleValue(), RoundingMode.HALF_EVEN))
+      return F
+          .ZZ(DoubleMath.roundToBigInteger(value / multiple.doubleValue(), RoundingMode.HALF_EVEN))
           .multiply((IRational) multiple);
     }
     double factor = multiple.doubleValue();
-    return F
-        .num(DoubleMath.roundToBigInteger(value / factor, RoundingMode.HALF_EVEN).doubleValue()
-            * factor);
+    return F.num(DoubleMath.roundToBigInteger(value / factor, RoundingMode.HALF_EVEN).doubleValue()
+        * factor);
   }
 
   @Override
