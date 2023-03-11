@@ -12,6 +12,7 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.form.DoubleToMMA;
@@ -585,6 +586,42 @@ public class ComplexNum implements IComplexNum {
   @Override
   public int hierarchy() {
     return DOUBLECOMPLEXID;
+  }
+
+  @Override
+  public IExpr hypergeometric0F1(IExpr arg2) {
+    try {
+      return F
+          .complexNum(HypergeometricJS.hypergeometric0F1(fComplex, ((ComplexNum) arg2).evalfc()));
+    } catch (RuntimeException e) {
+      // try as computation with complex numbers
+    }
+    return IComplexNum.super.hypergeometric0F1(arg2);
+  }
+
+  @Override
+  public IExpr hypergeometric1F1(IExpr arg2, IExpr arg3) {
+    try {
+      return F.complexNum(HypergeometricJS.hypergeometric1F1(fComplex, //
+          arg2.evalfc(), //
+          arg3.evalfc()));
+    } catch (RuntimeException e) {
+      // try as computation with complex numbers
+    }
+    return IComplexNum.super.hypergeometric1F1(arg2, arg3);
+  }
+
+  @Override
+  public IExpr hypergeometric2F1(IExpr arg2, IExpr arg3, IExpr arg4) {
+    try {
+      return F.complexNum(HypergeometricJS.hypergeometric2F1(fComplex, //
+          arg2.evalfc(), //
+          arg3.evalfc(), //
+          arg4.evalfc()));
+    } catch (RuntimeException e) {
+      // try as computation with complex numbers
+    }
+    return IComplexNum.super.hypergeometric2F1(arg2, arg3, arg4);
   }
 
   @Override
