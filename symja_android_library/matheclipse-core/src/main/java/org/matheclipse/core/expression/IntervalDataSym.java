@@ -243,6 +243,9 @@ public class IntervalDataSym {
           }
           boolean evaled = false;
           if (min.isInfinity() || min.isNegativeInfinity()) {
+            if (min.equals(max)) {
+              return F.INVALID;
+            }
             left = S.Less;
             evaled = true;
           }

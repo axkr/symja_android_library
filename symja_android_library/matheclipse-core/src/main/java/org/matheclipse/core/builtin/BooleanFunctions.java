@@ -2102,10 +2102,16 @@ public final class BooleanFunctions {
           return compareGreaterIntervalTernary(a0.lower(), a0.upper(), a1.lower(), a1.upper());
         }
       } else if (a0.isInfinity()) {
+        if (a1.isInfinity()) {
+          return IExpr.COMPARE_TERNARY.FALSE;
+        }
         if (a1.isRealResult() || a1.isNegativeInfinity()) {
           return IExpr.COMPARE_TERNARY.TRUE;
         }
       } else if (a0.isNegativeInfinity()) {
+        if (a1.isNegativeInfinity()) {
+          return IExpr.COMPARE_TERNARY.FALSE;
+        }
         if (a1.isRealResult() || a1.isInfinity()) {
           return IExpr.COMPARE_TERNARY.FALSE;
         }

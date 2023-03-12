@@ -238,6 +238,20 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
   }
 
   public void testIntervalData() {
+    check("Infinity > Infinity", //
+        "False");
+    check("-Infinity > -Infinity", //
+        "False");
+
+    // print message IntervalData: The expression {Infinity,Less,Less,Infinity} is not a valid
+    // interval.
+    check("IntervalData({Infinity,Less,  Less, Infinity })", //
+        "IntervalData({Infinity,Less,Less,Infinity})");
+    // print message IntervalData: The expression {-Infinity,Less,Less,-Infinity} is not a valid
+    // interval.
+    check("IntervalData({-Infinity,Less,  Less, -Infinity })", //
+        "IntervalData({-Infinity,Less,Less,-Infinity})");
+
     check("IntervalData({1,LessEqual,  Less, -1 })", //
         "IntervalData({-1,Less,LessEqual,1})");
     check("IntervalData({0,Less,  Less, 0 })", //
