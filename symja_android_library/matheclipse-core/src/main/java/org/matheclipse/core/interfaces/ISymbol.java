@@ -452,6 +452,15 @@ public interface ISymbol extends IExpr {
   }
 
   /**
+   * 
+   * @return <code>true</code> if this is of type {@link IBuiltInSymbol} and the symbol name starts
+   *         with a '$'; <code>false</code> otherwise.
+   */
+  default boolean isDollarSymbol() {
+    return false;
+  }
+
+  /**
    * Gives <code>true</code> if the system is in server mode and cannot be modified
    *
    * @return

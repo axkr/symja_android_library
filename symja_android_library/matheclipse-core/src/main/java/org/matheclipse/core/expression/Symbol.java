@@ -123,7 +123,7 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final IExpr assignedValue() {
+  public IExpr assignedValue() {
     if (this instanceof IBuiltInSymbol) {
       return fValue;
     }

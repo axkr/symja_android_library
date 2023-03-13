@@ -331,6 +331,8 @@ public class EvalEngine implements Serializable {
    */
   transient Map<ISymbol, ISymbol> fOnOffMap = null;
 
+  transient Map<IBuiltInSymbol, IExpr> fDollarSymbolMap = null;
+
   transient Deque<IExpr> fStack;
 
   /** The history list for the <code>Out[]</code> function. */
@@ -597,6 +599,7 @@ public class EvalEngine implements Serializable {
     engine.fOutListDisabled = fOutListDisabled;
     engine.fOutPrintStream = fOutPrintStream;
     engine.fOnOffMap = fOnOffMap;
+    engine.fDollarSymbolMap = fDollarSymbolMap;
     engine.fOnOffMode = fOnOffMode;
     engine.fOnOffUnique = fOnOffUnique;
     engine.fOnOffUniqueMap = fOnOffUniqueMap;
@@ -2843,6 +2846,7 @@ public class EvalEngine implements Serializable {
     fOnOffUnique = false;
     fOnOffUniqueMap = null;
     fOnOffMap = null;
+    fDollarSymbolMap = null;
     fTraceMode = false;
     fTraceStack = null;
     fStopRequested = false;
@@ -3105,6 +3109,33 @@ public class EvalEngine implements Serializable {
    */
   public void setAssumptions(IAssumptions assumptions) {
     this.fAssumptions = assumptions;
+  }
+
+  /**
+   * Return the assigned value for a '$...' {@link IBuiltInSymbol}.
+   * 
+   * @param dollarSymbol
+   * @return {@link F#NIL} if no value is assigned.
+   */
+  public IExpr getDollarValue(IBuiltInSymbol dollarSymbol) {
+    if (fDollarSymbolMap != null) {
+      IExpr expr = fDollarSymbolMap.get(dollarSymbol);
+      return expr == null ? F.NIL : expr;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Set the assigned value for a '$...' {@link IBuiltInSymbol}.
+   * 
+   * @param dollarSymbol
+   * @param value
+   */
+  public void setDollarValue(IBuiltInSymbol dollarSymbol, IExpr value) {
+    if (fDollarSymbolMap == null) {
+      fDollarSymbolMap = new HashMap<IBuiltInSymbol, IExpr>();
+    }
+    fDollarSymbolMap.put(dollarSymbol, value);
   }
 
   public void setContextPath(ContextPath contextPath) {

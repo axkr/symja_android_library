@@ -104,12 +104,25 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
   /** {@inheritDoc} */
   @Override
+  public final IExpr assignedValue() {
+    if (isDollarSymbol()) {
+      IExpr dollarValue = EvalEngine.get().getDollarValue(this);
+      if (dollarValue.isPresent()) {
+        return dollarValue;
+      }
+      return null;
+    }
+    return super.assignedValue();
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public final void assignValue(final IExpr value, boolean setDelayed) {
-    super.assignValue(value, setDelayed);
-    // if (Config.FUZZ_TESTING) {
-    // // Cannot assign to raw object `1`.
-    // throw new NullPointerException();
-    // }
+    if (isDollarSymbol()) {
+      EvalEngine.get().setDollarValue(this, value);
+    } else {
+      super.assignValue(value, setDelayed);
+    }
   }
 
   /** {@inheritDoc} */
@@ -261,6 +274,12 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   @Override
   public final boolean isHoldOrHoldFormOrDefer() {
     return this.equals(S.Defer) || this.equals(S.Hold) || this.equals(S.HoldForm);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final boolean isDollarSymbol() {
+    return fSymbolName.startsWith("$");
   }
 
   /** {@inheritDoc} */
