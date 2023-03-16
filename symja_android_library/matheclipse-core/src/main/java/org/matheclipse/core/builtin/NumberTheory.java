@@ -4785,7 +4785,13 @@ public final class NumberTheory {
       @Override
       public IExpr visit(IComplexNum element) {
         if (useConvergenceMethod) {
-          return F.complexConvergent(element.getRealPart(), element.getImaginaryPart());
+          IComplex complexConvergent =
+              F.complexConvergent(element.getRealPart(), element.getImaginaryPart());
+          if ((complexConvergent.getRealPart().isZero() && !element.re().isZero()) //
+              || (complexConvergent.getImaginaryPart().isZero() && !element.im().isZero())) {
+            return element;
+          }
+          return complexConvergent;
         }
         return F.complex(element.getRealPart(), element.getImaginaryPart(), epsilon);
       }
@@ -4793,7 +4799,11 @@ public final class NumberTheory {
       @Override
       public IExpr visit(INum element) {
         if (useConvergenceMethod) {
-          return F.fractionConvergent(element.getRealPart());
+          IFraction fractionConvergent = F.fractionConvergent(element.getRealPart());
+          if (fractionConvergent.isZero() && !element.isZero()) {
+            return element;
+          }
+          return fractionConvergent;
         }
         return F.fraction(element.getRealPart(), epsilon);
       }
