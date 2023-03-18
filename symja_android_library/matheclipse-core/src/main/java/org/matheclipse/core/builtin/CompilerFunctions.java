@@ -987,6 +987,74 @@ public class CompilerFunctions {
     return generateClassSource(cf, expression, variablesBuf, args.length);
   }
 
+  public static String compilePrintJavaParser(final IAST ast, CompiledFunctionArg[] args,
+      EvalEngine engine) {
+    if (ToggleFeature.COMPILE_WITH_JAVAPARSER) {
+      // com.github.javaparser.ast.CompilationUnit javaCu =
+      // new com.github.javaparser.ast.CompilationUnit("org.matheclipse.core.compile");
+      // javaCu.addImport(ArrayList.class);
+      // javaCu.addImport("org.matheclipse.core.interfaces.*");
+      // javaCu.addImport("org.matheclipse.core.expression.F");
+      // javaCu.addImport("static org.matheclipse.core.expression.F.*");
+      // javaCu.addImport("org.matheclipse.core.expression.S");
+      // javaCu.addImport("static org.matheclipse.core.expression.S.*");
+      //
+      // ClassOrInterfaceDeclaration javaClass = javaCu.addClass("CompiledFunction");
+      // javaClass.addExtendedType(AbstractFunctionEvaluator.class);
+      // javaClass.addField(EvalEngine.class, "engine", Keyword.PRIVATE);
+      // javaClass.addField(IASTAppendable.class, "stack", Keyword.PRIVATE);
+      // javaClass.addField(ExprTrie.class, "vars", Keyword.PRIVATE);
+      // javaClass.addField(int.class, "top", Keyword.PRIVATE);
+      // MethodDeclaration method = javaClass.addMethod("evaluate", Keyword.PUBLIC);
+      // method.setType(IAST.class);
+      // method.addModifier(Keyword.PUBLIC);
+      // method.addParameter(IAST.class, "ast");
+      // method.addParameter(EvalEngine.class, "engine");
+      //
+      // BlockStmt body = method.getBody().get();
+      // AssignExpr topInit =
+      // new AssignExpr(new NameExpr("this.top"), new NameExpr("1"), Operator.ASSIGN);
+      // body.addStatement(topInit);
+      //
+      // AssignExpr engineInit =
+      // new AssignExpr(new NameExpr("this.engine"), new NameExpr("engine"), Operator.ASSIGN);
+      // body.addStatement(engineInit);
+      //
+      // MethodCallExpr methodAST = new MethodCallExpr("F.ast");
+      // methodAST.addArgument("S.List");
+      // methodAST.addArgument("100");
+      // methodAST.addArgument("true");
+      // AssignExpr stackInit = new AssignExpr(new NameExpr("this.stack"), methodAST,
+      // Operator.ASSIGN);
+      // body.addStatement(stackInit);
+      //
+      // AssignExpr varsInit = new AssignExpr(new NameExpr("this.vars"),
+      // new MethodCallExpr("new ExprTrie"), Operator.ASSIGN);
+      // body.addStatement(varsInit);
+      //
+      // MethodCallExpr methodASTget = new MethodCallExpr("ast.get");
+      // methodASTget.addArgument("1");
+      // body.addStatement(new AssignExpr(new NameExpr("IExpr x"), methodASTget, Operator.ASSIGN));
+      //
+      // MethodCallExpr methodEngineEvalDouble = new MethodCallExpr("engine.evalDouble");
+      // methodEngineEvalDouble.addArgument("x");
+      // body.addStatement(
+      // new AssignExpr(new NameExpr("double xd"), methodEngineEvalDouble, Operator.ASSIGN));
+      // //
+      // // stack.set(top++, F.num(xd));
+      // MethodCallExpr methodNum = new MethodCallExpr("F.num");
+      // methodNum.addArgument("xd");
+      // MethodCallExpr methodStackSet = new MethodCallExpr("stack.set");
+      // methodStackSet.addArgument("top++");
+      // methodStackSet.addArgument(methodNum);
+      // body.addStatement(methodStackSet);
+      // // ParseResult<Expression> parseExpression = new JavaParser().parseExpression("top = 1");
+      //
+      // return javaCu.toString(new DefaultPrinterConfiguration());
+    }
+    return "";
+  }
+
   private static String generateClassSource(CompileFactory cf, IExpr expression,
       StringBuilder variablesBuf, int argsSize) {
     StringBuilder expressionBuf = new StringBuilder();

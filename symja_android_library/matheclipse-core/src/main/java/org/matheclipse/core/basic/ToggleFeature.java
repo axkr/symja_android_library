@@ -20,6 +20,8 @@ public class ToggleFeature {
    */
   public static boolean COMPILE_PRINT = false;
 
+  public static boolean COMPILE_WITH_JAVAPARSER = false;
+
   /**
    * If <code>true</code>, enable <code>org.matheclipse.core.builtin.function.Defer</code> function.
    */
