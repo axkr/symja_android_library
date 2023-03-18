@@ -8,6 +8,7 @@ import java.util.TreeMap;
 import org.chocosolver.solver.Model;
 import org.chocosolver.solver.Solution;
 import org.chocosolver.solver.Solver;
+import org.chocosolver.solver.exception.ContradictionException;
 import org.chocosolver.solver.expression.continuous.arithmetic.CArExpression;
 import org.chocosolver.solver.expression.continuous.relational.CReExpression;
 import org.chocosolver.solver.expression.discrete.arithmetic.ArExpression;
@@ -88,12 +89,88 @@ public class ChocoConvert {
       } else if (temp.isAST(S.Unequal, 3)) {
         return lhs.ne(rhs);
       } else if (temp.isAST(S.Greater, 3)) {
+        if (lhs instanceof IntVar) {
+          IntVar lhsVar = (IntVar) lhs;
+          try {
+            int lowerBound = temp.arg2().toIntDefault();
+            if (lowerBound != Integer.MIN_VALUE) {
+              lhsVar.updateLowerBound(lowerBound + 1, lhsVar);
+            }
+          } catch (ContradictionException e) {
+          }
+        } else if (rhs instanceof IntVar) {
+          IntVar rhsVar = (IntVar) rhs;
+          try {
+            int upperBound = temp.arg1().toIntDefault();
+            if (upperBound != Integer.MIN_VALUE) {
+              rhsVar.updateUpperBound(upperBound - 1, rhsVar);
+            }
+          } catch (ContradictionException e) {
+          }
+        }
         return lhs.gt(rhs);
       } else if (temp.isAST(S.GreaterEqual, 3)) {
+        if (lhs instanceof IntVar) {
+          IntVar lhsVar = (IntVar) lhs;
+          try {
+            int lowerBound = temp.arg2().toIntDefault();
+            if (lowerBound != Integer.MIN_VALUE) {
+              lhsVar.updateLowerBound(lowerBound, lhsVar);
+            }
+          } catch (ContradictionException e) {
+          }
+        } else if (rhs instanceof IntVar) {
+          IntVar rhsVar = (IntVar) rhs;
+          try {
+            int upperBound = temp.arg1().toIntDefault();
+            if (upperBound != Integer.MIN_VALUE) {
+              rhsVar.updateUpperBound(upperBound, rhsVar);
+            }
+          } catch (ContradictionException e) {
+          }
+        }
         return lhs.ge(rhs);
       } else if (temp.isAST(S.LessEqual, 3)) {
+        if (lhs instanceof IntVar) {
+          IntVar lhsVar = (IntVar) lhs;
+          try {
+            int upperBound = temp.arg2().toIntDefault();
+            if (upperBound != Integer.MIN_VALUE) {
+              lhsVar.updateUpperBound(upperBound, lhsVar);
+            }
+          } catch (ContradictionException e) {
+          }
+        } else if (rhs instanceof IntVar) {
+          IntVar rhsVar = (IntVar) rhs;
+          try {
+            int lowerBound = temp.arg1().toIntDefault();
+            if (lowerBound != Integer.MIN_VALUE) {
+              rhsVar.updateLowerBound(lowerBound, rhsVar);
+            }
+          } catch (ContradictionException e) {
+          }
+        }
         return lhs.le(rhs);
       } else if (temp.isAST(S.Less, 3)) {
+        if (lhs instanceof IntVar) {
+          IntVar lhsVar = (IntVar) lhs;
+          try {
+            int upperBound = temp.arg2().toIntDefault();
+            if (upperBound != Integer.MIN_VALUE) {
+              lhsVar.updateUpperBound(upperBound - 1, lhsVar);
+            }
+          } catch (ContradictionException e) {
+          }
+        } else if (rhs instanceof IntVar) {
+          IntVar rhsVar = (IntVar) rhs;
+          try {
+            int lowerBound = temp.arg1().toIntDefault();
+            if (lowerBound != Integer.MIN_VALUE) {
+              rhsVar.updateLowerBound(lowerBound + 1, rhsVar);
+            }
+          } catch (ContradictionException e) {
+          }
+        }
         return lhs.lt(rhs);
       }
     }
@@ -136,7 +213,11 @@ public class ChocoConvert {
           if (value > 0) {
             IExpr base = ast.base();
             ArExpression result = integerExpression(net, base, map);
-            result = result.pow(value);
+            if (value == 2) {
+              result = result.sqr();
+            } else {
+              result = result.pow(value);
+            }
             return result;
           }
         }
@@ -152,6 +233,9 @@ public class ChocoConvert {
           result = result.min(integerExpression(net, ast.get(i), map));
         }
         return result;
+      } else if (ast.isAST(S.Mod, 3)) {
+        ArExpression result = integerExpression(net, ast.arg1(), map);
+        return result.mod(integerExpression(net, ast.arg2(), map));
       } else if (ast.isAbs()) {
         return integerExpression(net, ast.arg1(), map).abs();
         // } else if (ast.isAST(F.Sign, 2)) {

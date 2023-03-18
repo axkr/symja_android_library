@@ -13,6 +13,7 @@ import org.matheclipse.core.expression.IntegerSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
@@ -808,6 +809,22 @@ public final class Validate {
           IAST eq = (IAST) arg;
           checkEquationAndInequation(eq, termsEqualZeroList);
         } else {
+          if (arg.size() > 3 //
+              && arg.isAST(S.Less) //
+              || arg.isAST(S.LessEqual) //
+              || arg.isAST(S.Greater) //
+              || arg.isAST(S.GreaterEqual)) {
+            // split n-ary funtion in binary functions
+            IAST function = (IAST) arg;
+            IBuiltInSymbol head = (IBuiltInSymbol) function.head();
+            IExpr lastArg = function.arg1();
+            for (int j = 2; j < function.size(); j++) {
+              IExpr fj = function.get(j);
+              termsEqualZeroList.append(F.binaryAST2(head, lastArg, fj));
+              lastArg = fj;
+            }
+            continue;
+          }
           // not an equation or inequation
           throw new ArgumentTypeException(
               "binary equation or inequation expression expected at position " + i);

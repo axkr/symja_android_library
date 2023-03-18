@@ -1103,7 +1103,7 @@ public class Solve extends AbstractFunctionEvaluator {
         return F.NIL;
       }
       try {
-        if (equationsAndInequations.isFreeAST(x -> x.equals(S.Power))) {
+        if (equationsAndInequations.isFreeAST(x -> (x.isPower() && !x.second().equals(F.C2)))) {
           // choco-solver doesn't handle Power() expressions very well at the moment!
           try {
             IAST resultList = ChocoConvert.integerSolve(equationsAndInequations, equationVariables,
@@ -1114,9 +1114,9 @@ public class Solve extends AbstractFunctionEvaluator {
             }
           } catch (RuntimeException rex) {
             // try 2nd solver
-            if (Config.SHOW_STACKTRACE) {
-              rex.printStackTrace();
-            }
+            // if (Config.SHOW_STACKTRACE) {
+            rex.printStackTrace();
+            // }
           }
         } else {
           // call cream solver
