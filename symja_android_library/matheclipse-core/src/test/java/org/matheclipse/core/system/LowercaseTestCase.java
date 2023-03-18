@@ -19949,6 +19949,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "101449/500000");
     // check("Rationalize(1.1/2147483647 *2.5,0)", //
     // "245850922/78256779");
+
+    check("Rationalize(0.000000000008854187817)", //
+        "8.85419*10^-12");
     check("Rationalize(N(Pi), 0)", //
         "884279719003555/281474976710656");
     check("Rationalize(0.202898)", //

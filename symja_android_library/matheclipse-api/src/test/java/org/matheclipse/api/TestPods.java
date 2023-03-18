@@ -307,8 +307,7 @@ public class TestPods {
 
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"numpods\" : 3,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
+            + "    \"numpods\" : 3,\n" + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
             + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"Sin(30*Degree)\",\n"
@@ -336,8 +335,7 @@ public class TestPods {
 
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"numpods\" : 34,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
+            + "    \"numpods\" : 34,\n" + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
             + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"cs\",\n"
@@ -1225,8 +1223,7 @@ public class TestPods {
 
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
+            + "    \"numpods\" : 2,\n" + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
             + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"Yellow\",\n"
@@ -1253,8 +1250,7 @@ public class TestPods {
 
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
+            + "    \"numpods\" : 2,\n" + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
             + "      \"subpods\" : [ {\n"
@@ -1965,8 +1961,7 @@ public class TestPods {
     final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"numpods\" : 3,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
+            + "    \"numpods\" : 3,\n" + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
             + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"Transliterate(Càfé)\",\n"
@@ -1981,7 +1976,7 @@ public class TestPods {
             + "      \"title\" : \"Documentation\",\n" + "      \"scanner\" : \"help\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
             + "      \"subpods\" : [ {\n"
-            + "        \"markdown\" : \"## Chop\\n\\n```\\nChop(numerical-expr)\\n```\\n\\n> replaces numerical values in the `numerical-expr` which are close to zero with symbolic value `0`.\\n\\n### Examples\\n\\n```\\n>> Chop(0.00000000001)\\n0\\n```\\n\\n### Github\\n\\n* [Implementation of Chop](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L696) \\n[Github master](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L972)\\n\\n\"\n"
+            + "        \"markdown\" : \"## Chop\\n\\n```\\nChop(numerical-expr)\\n```\\n\\n> replaces numerical values in the `numerical-expr` which are close to zero with symbolic value `0`.\\n\\n### Examples\\n\\n```\\n>> Chop(0.00000000001)\\n0\\n```\\n\\n### Github\\n\\n* [Implementation of Chop](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L696) \\n[Github master](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L986)\\n\\n\"\n"
             + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
   }
 
@@ -2455,8 +2450,7 @@ public class TestPods {
 
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
+            + "    \"numpods\" : 2,\n" + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
             + "      \"subpods\" : [ {\n"
@@ -2850,8 +2844,7 @@ public class TestPods {
 
     assertEquals(jsonStr, //
         "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
+            + "    \"numpods\" : 2,\n" + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
             + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
             + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
             + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"1/0\",\n"

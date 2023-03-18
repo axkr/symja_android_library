@@ -34,7 +34,7 @@ public class TestExprTools extends ExprEvaluatorTestCase {
     assertEquals(
         new Factors(F.assoc(F.List(F.Rule(x, F.C2), F.Rule(y, F.C3), F.Rule(F.Sin(x), F.C4))))
             .asExpr().toString(),
-        "Sin(x)^4*x^2*y^3");
+        "x^2*y^3*Sin(x)^4");
 
 
     // Factors(S.Infinity) == Factors({oo: 1})
