@@ -197,6 +197,11 @@ public abstract class AbstractFractionSym implements IFraction {
     return fraction != null ? fraction : valueOf(new BigFraction(value));
   }
 
+  /**
+   * Returns the last element of the series of convergent-steps to approximate the given value.
+   * 
+   * @param value value to approximate
+   */
   public static IFraction valueOfConvergent(double value) {
     IFraction fraction = convergeFraction(value, 20, 0.5E-4);
     if (fraction == null) {
@@ -205,11 +210,19 @@ public abstract class AbstractFractionSym implements IFraction {
     return fraction;
   }
 
-  private static IFraction convergeFraction(double value, int maxIterations, double lhs) {
+  /**
+   * Returns the last element of the series of convergent-steps to approximate the given value.
+   * 
+   * @param value value to approximate
+   * @param maxConvergents maximum number of convergents to examine
+   * @param limit
+   * @return the fraction of last element of the series of convergents and a boolean if that element
+   *         satisfies the specified convergent test
+   */
+  private static IFraction convergeFraction(double value, int maxConvergents, double limit) {
     return rationalize(value, v -> {
       org.hipparchus.util.Pair<BigFraction, Boolean> convergent = BigFraction.convergent(v,
-          maxIterations,
-          (p, q) -> FastMath.abs(p * q - v * q * q) <= lhs);
+          maxConvergents, (p, q) -> FastMath.abs(p * q - v * q * q) <= limit);
       return convergent.getSecond().booleanValue() ? convergent.getFirst() : null;
     });
   }
@@ -217,7 +230,7 @@ public abstract class AbstractFractionSym implements IFraction {
   private static IFraction rationalize(double value, DoubleFunction<BigFraction> f) {
     try {
       BigFraction fraction = f.apply(value < 0 ? -value : value);
-      if (fraction != null) {
+      if (fraction != null) {// && !fraction.getNumerator().equals(BigInteger.ZERO)) {
         return valueOf(value < 0 ? fraction.negate() : fraction);
       }
     } catch (MathRuntimeException e) { // assume no solution
@@ -230,6 +243,7 @@ public abstract class AbstractFractionSym implements IFraction {
    * <p>
    * This methods returns an {@link IExpr} that, when being evaluated to a double value (using
    * {@link IExpr#evalf()}), results to the exact same value (per bit) as the given one.
+   * </p>
    * <p>
    * Although it is not possible to express all real numbers as a fraction of two integers, it is
    * possible for all finite floating-point numbers to be expressed as fraction with exact same
@@ -237,7 +251,6 @@ public abstract class AbstractFractionSym implements IFraction {
    * express all real numbers exactly. But this allows the exact representation as a fraction.<br>
    * Nevertheless this may lead to unexpected results. For example the value {@code 0.7} is
    * rationalized to {@code 3152519739159347/4503599627370496} and not the expected {@code 7/10}.
-   * </p>
    * </p>
    * There is no guarantee made about the specific type of the returned expression. Not all possible
    * values of a double, especially small ones, can be expressed as {@link IFraction} in such way

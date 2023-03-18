@@ -331,7 +331,7 @@ public class EvalEngine implements Serializable {
    */
   transient Map<ISymbol, ISymbol> fOnOffMap = null;
 
-  transient Map<IBuiltInSymbol, IExpr> fDollarSymbolMap = null;
+  transient IdentityHashMap<IBuiltInSymbol, IExpr> fDollarSymbolMap = null;
 
   transient Deque<IExpr> fStack;
 
@@ -3112,20 +3112,6 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Return the assigned value for a '$...' {@link IBuiltInSymbol}.
-   * 
-   * @param dollarSymbol
-   * @return {@link F#NIL} if no value is assigned.
-   */
-  public IExpr getDollarValue(IBuiltInSymbol dollarSymbol) {
-    if (fDollarSymbolMap != null) {
-      IExpr expr = fDollarSymbolMap.get(dollarSymbol);
-      return expr == null ? F.NIL : expr;
-    }
-    return F.NIL;
-  }
-
-  /**
    * Set the assigned value for a '$...' {@link IBuiltInSymbol}.
    * 
    * @param dollarSymbol
@@ -3133,7 +3119,7 @@ public class EvalEngine implements Serializable {
    */
   public void setDollarValue(IBuiltInSymbol dollarSymbol, IExpr value) {
     if (fDollarSymbolMap == null) {
-      fDollarSymbolMap = new HashMap<IBuiltInSymbol, IExpr>();
+      fDollarSymbolMap = new IdentityHashMap<IBuiltInSymbol, IExpr>();
     }
     fDollarSymbolMap.put(dollarSymbol, value);
   }
@@ -3534,6 +3520,20 @@ public class EvalEngine implements Serializable {
       h = new FixedPrecisionApfloatHelper(Config.MAX_PRECISION_APFLOAT - 1);
     }
     return h;
+  }
+
+  /**
+   * Return the assigned value for a '$...' {@link IBuiltInSymbol}.
+   * 
+   * @param dollarSymbol
+   * @return {@link F#NIL} if no value is assigned.
+   */
+  public IExpr getDollarValue(IBuiltInSymbol dollarSymbol) {
+    if (fDollarSymbolMap != null) {
+      IExpr expr = fDollarSymbolMap.get(dollarSymbol);
+      return expr == null ? F.NIL : expr;
+    }
+    return F.NIL;
   }
 
   /**
