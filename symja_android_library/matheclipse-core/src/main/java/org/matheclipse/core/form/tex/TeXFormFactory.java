@@ -514,13 +514,14 @@ public class TeXFormFactory {
       if (f.size() != 2) {
         return false;
       }
-      int[] dims = f.arg1().isMatrix();
+      IExpr arg1 = f.arg1();
+      int[] dims = arg1.isMatrix();
       if (dims == null) {
-        int dim = f.arg1().isVector();
+        int dim = arg1.isVector();
         if (dim < 0) {
           return false;
         } else {
-          final IAST vector = (IAST) f.arg1();
+          final IAST vector = (IAST) arg1.normal(false);
           buffer.append("\\begin{pmatrix}\n");
           IExpr element;
           for (int i = 1; i < vector.size(); i++) {
@@ -535,7 +536,7 @@ public class TeXFormFactory {
           buffer.append("\\end{pmatrix}");
         }
       } else {
-        final IAST matrix = (IAST) f.arg1().normal(false);
+        final IAST matrix = (IAST) arg1.normal(false);
         if (Config.MATRIX_TEXFORM) {
           // problem with KaTeX?
           buffer.append("\\left(\n\\begin{array}{");
