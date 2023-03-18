@@ -3425,7 +3425,11 @@ public final class LinearAlgebra {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       int[] dim = ast.arg1().isMatrix();
-      if (dim != null && dim[0] == dim[1] && dim[0] > 0) {
+      if (dim != null && dim[0] > 0) {
+        if (dim[0] != dim[1]) {
+          // Argument `1` at position `2` is not a non-empty square matrix.
+          return IOFunctions.printMessage(S.MatrixExp, "matsq", F.List(ast.arg1(), F.C1), engine);
+        }
         RealMatrix matrix = ast.arg1().toRealMatrix();
         if (matrix != null) {
           try {
