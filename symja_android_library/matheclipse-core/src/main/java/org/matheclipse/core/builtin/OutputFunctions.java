@@ -62,14 +62,92 @@ public final class OutputFunctions {
       S.FullForm.setEvaluator(new FullForm());
       S.HoldForm.setEvaluator(new HoldForm());
       S.HornerForm.setEvaluator(new HornerForm());
+      S.Infix.setEvaluator(new InfixEvaluator());
       S.InputForm.setEvaluator(new InputForm());
       S.JavaForm.setEvaluator(new JavaForm());
       S.JSForm.setEvaluator(new JSForm());
       S.MathMLForm.setEvaluator(new MathMLForm());
+      S.Prefix.setEvaluator(new PrefixEvaluator());
+      S.Postfix.setEvaluator(new PostfixEvaluator());
       S.RomanNumeral.setEvaluator(new RomanNumeral());
       S.TableForm.setEvaluator(new TableForm());
       S.TeXForm.setEvaluator(new TeXForm());
       S.TreeForm.setEvaluator(new TreeForm());
+    }
+  }
+
+  private static class InfixEvaluator extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isAST() && arg1.argSize() > 1) {
+        IAST function = (IAST) arg1;
+        if (ast.isAST2()) {
+          String infixOperator = ast.arg2().toString();
+          StringBuilder buf = new StringBuilder();
+          buf.append(function.arg1().toString());
+          for (int i = 2; i < function.size(); i++) {
+            buf.append(" " + infixOperator + " ");
+            buf.append(function.get(i).toString());
+          }
+          return F.stringx(buf.toString());
+        }
+        StringBuilder buf = new StringBuilder();
+        buf.append(function.arg1().toString());
+        for (int i = 2; i < function.size(); i++) {
+          buf.append(" ~ ");
+          buf.append(function.get(i).toString());
+        }
+        return F.stringx(buf.toString());
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  private static class PrefixEvaluator extends AbstractFunctionEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isAST1()) {
+        if (ast.isAST2()) {
+          String postfixOperator = ast.arg2().toString();
+          return F.stringx(postfixOperator + " " + arg1.first().toString());
+        }
+        return F.stringx(arg1.head() + " @ " + arg1.first().toString());
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  private static class PostfixEvaluator extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isAST1()) {
+        if (ast.isAST2()) {
+          String prefixOperator = ast.arg2().toString();
+          return F.stringx(arg1.first().toString() + " " + prefixOperator);
+        }
+        return F.stringx(arg1.first().toString() + " // " + arg1.head());
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
   }
 

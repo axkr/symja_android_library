@@ -8008,6 +8008,9 @@ public class S {
    */
   public final static IBuiltInSymbol PowerMod = F.initFinalSymbol("PowerMod", ID.PowerMod);
 
+  public final static IBuiltInSymbol PrecedenceForm =
+      F.initFinalSymbol("PrecedenceForm", ID.PrecedenceForm);
+
   public final static IBuiltInSymbol Precision = F.initFinalSymbol("Precision", ID.Precision);
 
   public final static IBuiltInSymbol PrecisionGoal =

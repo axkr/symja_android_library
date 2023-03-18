@@ -1140,6 +1140,12 @@ public class OutputFormFactory {
                 return;
               }
               break;
+            case ID.PrecedenceForm:
+              if (list.size() == 3) {
+                convertPrecedenceForm(buf, list, precedence);
+                return;
+              }
+              break;
             case ID.Slot:
               if (list.isAST1() && list.arg1().isInteger()) {
                 convertSlot(buf, list);
@@ -1508,6 +1514,19 @@ public class OutputFormFactory {
       }
     }
     append(buf, "]]");
+  }
+
+  public void convertPrecedenceForm(final Appendable buf, final IAST list, int precedence)
+      throws IOException {
+    final IExpr arg1 = list.arg1();
+    final int formPrecedence = list.arg2().toIntDefault();
+    if (formPrecedence > 0 && precedence >= formPrecedence) {
+      append(buf, "(");
+      convert(buf, arg1, Integer.MIN_VALUE, false);
+      append(buf, ")");
+    } else {
+      convert(buf, arg1, precedence, false);
+    }
   }
 
   /**

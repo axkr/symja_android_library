@@ -29,11 +29,65 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
     String str2 = outputFormFactory2.toString(input);
     assertEquals(str2, "27*Sqrt(3)+(-46+I*46)*Sqrt(2)+I*27");
 
-    // junit.framework.AssertionFailedError:
-    // Expected :(-18.28845206480269, 92.05382386916237)
-    // Actual :(0.7653718043596811, 92.05382386916237)
     assertEquals(evaluator.evalComplex(str), evaluator.evalComplex(str2));
 
+  }
+
+  public void testInfix() {
+    check("Infix(f(x,y,z))", //
+        "x ~ y ~ z");
+    check("Infix(f(x,y,z), \"$~$\")", //
+        "x $~$ y $~$ z");
+  }
+
+  public void testPrecedenceForm() {
+    // Times precedence == 400
+    check("Times(b, PrecedenceForm(3*A ,400))", //
+        "b*(3*A)");
+    check("Times(b, PrecedenceForm(3*A ,401))", //
+        "b*3*A");
+
+    check("Times(b, PrecedenceForm(A ,400))", //
+        "b*(A)");
+    check("Times(b, PrecedenceForm(A ,401))", //
+        "b*A");
+    check("Times(b, PrecedenceForm(A ,399))", //
+        "b*(A)");
+
+    check("a+PrecedenceForm(b*c, 10)", //
+        "a+(b*c)");
+
+    check("s=Infix(f(a,b), \"|>\")", //
+        "a |> b");
+    check("PrecedenceForm(s, 350)+y", //
+        "y+a |> b");
+    check("PrecedenceForm(s, 350)*y", //
+        "y*(a |> b)");
+
+    check("PrecedenceForm(s, 500)+y", //
+        "y+a |> b");
+    check("PrecedenceForm(s, 500)*y", //
+        "y*a |> b");
+
+    check("PrecedenceForm(s, 1)+y", //
+        "y+(a |> b)");
+    check("PrecedenceForm(s, 1)*y", //
+        "y*(a |> b)");
+  }
+
+  public void testPreFix() {
+    check("PreFix(f(x))", //
+        "f @ x");
+    check("PreFix(f(x), \"$-$\")", //
+        "$-$ x");
+  }
+
+
+  public void testPostFix() {
+    check("PostFix(f(x))", //
+        "x // f");
+    check("PostFix(f(x), \"$+$\")", //
+        "x $+$");
   }
 
   @Override
