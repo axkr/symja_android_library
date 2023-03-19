@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.hipparchus.util.Pair;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -1632,9 +1633,25 @@ public interface IPatternMap {
     if (lhsPatternExpr.isAlternatives() || lhsPatternExpr.isExcept()) {
       ruleWithoutPattern[0] = false;
     }
-
-    lhsPatternExpr.forEachRule(x -> determinePatternsRecursive(x, patternIndexMap, priority,
-        ruleWithoutPattern, listEvalFlags, treeLevel), 0);
+    if (lhsPatternExpr.isCondition()) {
+      // For Condition(arg1,arg2) determine the priority only from the first (pattern-) argument
+      IExpr pattern = lhsPatternExpr.arg1();
+      IExpr condition = lhsPatternExpr.arg2();
+      determinePatternsRecursive(pattern, patternIndexMap, priority, ruleWithoutPattern,
+          listEvalFlags, treeLevel);
+      if (pattern instanceof IPatternObject) {
+        if (!condition.isFree(x -> x.equals(pattern), true)) {
+          // Pattern `1` appears on the right-hand-side of condition `2`.
+          IOFunctions.printMessage(S.Condition, "condp", F.List(pattern, lhsPatternExpr));
+        }
+      }
+      int[] dummyPriority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};
+      determinePatternsRecursive(condition, patternIndexMap, dummyPriority, ruleWithoutPattern,
+          listEvalFlags, treeLevel);
+    } else {
+      lhsPatternExpr.forEachRule(x -> determinePatternsRecursive(x, patternIndexMap, priority,
+          ruleWithoutPattern, listEvalFlags, treeLevel), 0);
+    }
     lhsPatternExpr.setEvalFlags(listEvalFlags[0]);
     // disable flag "pattern with default value"
     // listEvalFlags &= IAST.CONTAINS_NO_DEFAULT_PATTERN_MASK;

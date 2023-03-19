@@ -1743,9 +1743,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("BesselK(1317624576693539401,3.0-2*I)", //
         "BesselK(1.31762*10^18,3.0+I*(-2.0))");
     check("BesselK(-1/2, z)", //
-        "Sqrt(2/Pi)/(E^z*Sqrt(z))");
+        "Sqrt(Pi/2)/(E^z*Sqrt(z))");
     check("BesselK(1/2, z)", //
-        "Sqrt(2/Pi)/(E^z*Sqrt(z))");
+        "Sqrt(Pi/2)/(E^z*Sqrt(z))");
 
     checkNumeric("BesselK(I+1, -I*Infinity)", //
         "0");
@@ -1763,7 +1763,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.8765603804164712");
     checkNumeric("BesselK(0,4.0)", //
         "0.011159676082607452");
-    checkNumeric("BesselK(1 + I, 3.0  - 2* I)", //
+    checkNumeric("BesselK(1 + I, 3.0 - 2* I)", //
         "-0.022510755137173367+I*0.016960737347051363");
     checkNumeric("BesselK(23, 1.0)", //
         "4.6611455737443955E27");
@@ -17074,6 +17074,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testPatternTest() {
+    // warning message: Pattern p_ appears on the right-hand-side of condition p_/;EvenQ(p_).
+    check("{1, 2, 3, 4, 5} /. (p_ /; EvenQ(p_)) :> 0", //
+        "{1,2,3,4,5}");
+    check("{1, 2, 3, 4, 5} /. (p_ /; EvenQ(p)) :> 0", //
+        "{1,0,3,0,5}");
+
     check("MatchQ({1,8,Pi},{__?Positive})", //
         "True");
 

@@ -504,6 +504,7 @@ public class IOFunctions {
       "coef", "The first argument `1` of `2` should be a non-empty list of positive integers.", //
       "color", "`1` is not a valid color or gray-level specification.", //
       "compat", "`1` and `2` are incompatible units", //
+      "condp", "Pattern `1` appears on the right-hand-side of condition `2`.",
       "cxt", "`1` is not a valid context name.", //
       "depth",
       "The array depth of the expression at position `1` of `2` must be at least equal to the specified rank `3`.", //
