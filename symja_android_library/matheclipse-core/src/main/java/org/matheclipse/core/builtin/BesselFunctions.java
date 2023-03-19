@@ -24,7 +24,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.FunctionExpand;
 import org.matheclipse.core.reflection.system.rules.BesselIRules;
@@ -298,44 +297,44 @@ public class BesselFunctions {
      * @param z
      * @return
      */
-    private IExpr besselJHalf(IExpr n, IExpr z) {
-      // (1/Sqrt(z))*Sqrt(2/Pi)*(Cos((1/2)*Pi*(n - 1/2) - z)*Sum(((-1)^j*(2*j + Abs(n) + 1/2)! *
-      // (2*z)^(-2*j -
-      // 1))/
-      // ((2*j + 1)! * (-2*j + Abs(n) - 3/2)!), {j, 0, Floor((1/4)*(2*Abs(n) - 3))}) -
-      // Sin((1/2)*Pi*(n - 1/2) -
-      // z)*Sum(((-1)^j*(2*j + Abs(n) - 1/2)!)/ ((2*j)!*(-2*j + Abs(n) - 1/2)!*(2*z)^(2*j)), {j, 0,
-      // Floor((1/4)*(2*Abs(n) - 1))}))
-      ISymbol j = F.Dummy("j");
-      return F
-          .Times(
-              F.CSqrt2, F.Power(S.Pi, F.CN1D2), F.Power(z, F.CN1D2), F
-                  .Plus(
-                      F.Times(
-                          F.Cos(F.Plus(F.Times(F.C1D2, F.Plus(F.CN1D2, n), S.Pi),
-                              F.Negate(z))),
-                          F.Sum(F.Times(F.Power(F.CN1, j),
-                              F.Power(F.Times(F.C2, z), F.Plus(F.CN1, F.Times(F.CN2, j))),
-                              F.Factorial(F.Plus(F.Times(F.C2, j), F.Abs(n), F.C1D2)),
-                              F.Power(
-                                  F.Times(F.Factorial(F.Plus(F.Times(F.C2, j), F.C1)),
-                                      F.Factorial(
-                                          F.Plus(F.QQ(-3L, 2L), F.Times(F.CN2, j), F.Abs(n)))),
-                                  -1)),
-                              F.list(j, F.C0,
-                                  F.Floor(
-                                      F.Times(F.C1D4, F.Plus(F.CN3, F.Times(F.C2, F.Abs(n)))))))),
-                      F.Times(F.CN1,
-                          F.Sin(F.Plus(F.Times(F.C1D2, F.Plus(F.CN1D2, n), S.Pi),
-                              F.Negate(z))),
-                          F.Sum(F.Times(F.Power(F.CN1, j),
-                              F.Power(F.Times(F.Factorial(F.Times(F.C2, j)),
-                                  F.Factorial(F.Plus(F.CN1D2, F.Times(F.CN2, j), F.Abs(n))),
-                                  F.Power(F.Times(F.C2, z), F.Times(F.C2, j))), -1),
-                              F.Factorial(F.Plus(F.CN1D2, F.Times(F.C2, j), F.Abs(n)))),
-                              F.list(j, F.C0, F.Floor(
-                                  F.Times(F.C1D4, F.Plus(F.CN1, F.Times(F.C2, F.Abs(n))))))))));
-    }
+    // private IExpr besselJHalf(IExpr n, IExpr z) {
+    // // (1/Sqrt(z))*Sqrt(2/Pi)*(Cos((1/2)*Pi*(n - 1/2) - z)*Sum(((-1)^j*(2*j + Abs(n) + 1/2)! *
+    // // (2*z)^(-2*j -
+    // // 1))/
+    // // ((2*j + 1)! * (-2*j + Abs(n) - 3/2)!), {j, 0, Floor((1/4)*(2*Abs(n) - 3))}) -
+    // // Sin((1/2)*Pi*(n - 1/2) -
+    // // z)*Sum(((-1)^j*(2*j + Abs(n) - 1/2)!)/ ((2*j)!*(-2*j + Abs(n) - 1/2)!*(2*z)^(2*j)), {j, 0,
+    // // Floor((1/4)*(2*Abs(n) - 1))}))
+    // ISymbol j = F.Dummy("j");
+    // return F
+    // .Times(
+    // F.CSqrt2, F.Power(S.Pi, F.CN1D2), F.Power(z, F.CN1D2), F
+    // .Plus(
+    // F.Times(
+    // F.Cos(F.Plus(F.Times(F.C1D2, F.Plus(F.CN1D2, n), S.Pi),
+    // F.Negate(z))),
+    // F.Sum(F.Times(F.Power(F.CN1, j),
+    // F.Power(F.Times(F.C2, z), F.Plus(F.CN1, F.Times(F.CN2, j))),
+    // F.Factorial(F.Plus(F.Times(F.C2, j), F.Abs(n), F.C1D2)),
+    // F.Power(
+    // F.Times(F.Factorial(F.Plus(F.Times(F.C2, j), F.C1)),
+    // F.Factorial(
+    // F.Plus(F.QQ(-3L, 2L), F.Times(F.CN2, j), F.Abs(n)))),
+    // -1)),
+    // F.list(j, F.C0,
+    // F.Floor(
+    // F.Times(F.C1D4, F.Plus(F.CN3, F.Times(F.C2, F.Abs(n)))))))),
+    // F.Times(F.CN1,
+    // F.Sin(F.Plus(F.Times(F.C1D2, F.Plus(F.CN1D2, n), S.Pi),
+    // F.Negate(z))),
+    // F.Sum(F.Times(F.Power(F.CN1, j),
+    // F.Power(F.Times(F.Factorial(F.Times(F.C2, j)),
+    // F.Factorial(F.Plus(F.CN1D2, F.Times(F.CN2, j), F.Abs(n))),
+    // F.Power(F.Times(F.C2, z), F.Times(F.C2, j))), -1),
+    // F.Factorial(F.Plus(F.CN1D2, F.Times(F.C2, j), F.Abs(n)))),
+    // F.list(j, F.C0, F.Floor(
+    // F.Times(F.C1D4, F.Plus(F.CN1, F.Times(F.C2, F.Abs(n))))))))));
+    // }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -362,23 +361,15 @@ public class BesselFunctions {
           return S.Indeterminate;
         }
       }
-      if (n.isReal()) {
-        IExpr in = engine.evaluate(((ISignedNumber) n).add(F.CN1D2));
-        if (in.isNumIntValue()) {
-          if (z.isInfinity() || z.isNegativeInfinity()) {
-            return F.C0;
-          }
-          return besselJHalf(n, z);
-          // if (n.equals(F.CN1D2) || n.equals(F.num(-0.5))) {
-          // // (Sqrt(2/Pi)* Cos(z))/Sqrt(z)
-          // return F.Times(F.Sqrt(F.Divide(F.C2, F.Pi)), F.Cos(z), F.Power(z, F.CN1D2));
-          // }
-          // if (n.equals(F.C1D2) || n.equals(F.num(0.5))) {
-          // // (Sqrt(2/Pi)* Sin(z))/Sqrt(z)
-          // return F.Times(F.Sqrt(F.Divide(F.C2, F.Pi)), F.Sin(z), F.Power(z, F.CN1D2));
-          // }
-        }
-      }
+      // if (n.isReal()) {
+      // IExpr in = engine.evaluate(((ISignedNumber) n).add(F.CN1D2));
+      // if (in.isNumIntValue()) {
+      // if (z.isInfinity() || z.isNegativeInfinity()) {
+      // return F.C0;
+      // }
+      // return besselJHalf(n, z);
+      // }
+      // }
 
       if (n.isInteger() || order != Integer.MIN_VALUE) {
         if (n.isNegative()) {
@@ -826,6 +817,9 @@ public class BesselFunctions {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
 
+      if (z.isZero()) {
+        return F.CComplexInfinity;
+      }
       if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
         try {
           double nDouble = Double.NaN;
@@ -872,6 +866,9 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
+      if (z.isZero()) {
+        return F.CComplexInfinity;
+      }
       if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
         try {
           double nDouble = Double.NaN;

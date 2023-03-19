@@ -31,11 +31,11 @@ public interface BesselJRules {
     // BesselJ(1/2,z_):=(Sqrt(2/Pi)*Sin(z))/Sqrt(z)
     ISetDelayed(BesselJ(C1D2,z_),
       Times(Sqrt(Times(C2,Power(Pi,CN1))),Power(z,CN1D2),Sin(z))),
-    // BesselJ(x_/;x>0&&IntegerQ(2*x),z_/;z!=0&&FreeQ(z,DirectedInfinity)):=Module({u,f,k=-1/2+x},f=Sin(u)/u;While(k>0,k=-1+k;f=D(f,u)/u);Sqrt(2/Pi*z)*f/(-u)^(1/2-x)/.u->z)
-    ISetDelayed(BesselJ(Condition(x_,And(Greater(x,C0),IntegerQ(Times(C2,x)))),Condition(z_,And(Unequal(z,C0),FreeQ(z,DirectedInfinity)))),
+    // BesselJ(x_/;x>0&&FractionalPart(x)==0.5&&!IntegerQ(x),z_/;!PossibleZeroQ(z)&&FreeQ(z,DirectedInfinity)):=Module({u,f,k=-1/2+x},f=Sin(u)/u;While(k>0,k=-1+k;f=D(f,u)/u);Sqrt(2/Pi*z)*f/(-u)^(1/2-x)/.u->z)
+    ISetDelayed(BesselJ(Condition(x_,And(Greater(x,C0),Equal(FractionalPart(x),num(0.5)),Not(IntegerQ(x)))),Condition(z_,And(Not(PossibleZeroQ(z)),FreeQ(z,DirectedInfinity)))),
       Module(list(u,f,Set(k,Plus(CN1D2,x))),CompoundExpression(Set(f,Times(Power(u,CN1),Sin(u))),While(Greater(k,C0),CompoundExpression(Set(k,Plus(CN1,k)),Set(f,Times(Power(u,CN1),D(f,u))))),ReplaceAll(Times(Sqrt(Times(C2,Power(Pi,CN1),z)),Power(Negate(u),Plus(CN1D2,x)),f),Rule(u,z))))),
-    // BesselJ(x_/;x<0&&IntegerQ(2*x),z_/;z!=0&&FreeQ(z,DirectedInfinity)):=Module({u,f,k=-1/2-x},f=Cos(u)/u;While(k>0,k=-1+k;f=-D(f,u)/u);Sqrt(2/Pi*z)*f/(-u)^(1/2+x)/.u->z)
-    ISetDelayed(BesselJ(Condition(x_,And(Less(x,C0),IntegerQ(Times(C2,x)))),Condition(z_,And(Unequal(z,C0),FreeQ(z,DirectedInfinity)))),
+    // BesselJ(x_/;x<0&&FractionalPart(x)==-0.5&&!IntegerQ(x),z_/;!PossibleZeroQ(z)&&FreeQ(z,DirectedInfinity)):=Module({u,f,k=-1/2-x},f=Cos(u)/u;While(k>0,k=-1+k;f=-D(f,u)/u);Sqrt(2/Pi*z)*f/(-u)^(1/2+x)/.u->z)
+    ISetDelayed(BesselJ(Condition(x_,And(Less(x,C0),Equal(FractionalPart(x),num(-0.5)),Not(IntegerQ(x)))),Condition(z_,And(Not(PossibleZeroQ(z)),FreeQ(z,DirectedInfinity)))),
       Module(list(u,f,Set(k,Subtract(CN1D2,x))),CompoundExpression(Set(f,Times(Power(u,CN1),Cos(u))),While(Greater(k,C0),CompoundExpression(Set(k,Plus(CN1,k)),Set(f,Times(CN1,Power(u,CN1),D(f,u))))),ReplaceAll(Times(Sqrt(Times(C2,Power(Pi,CN1),z)),Power(Negate(u),Subtract(CN1D2,x)),f),Rule(u,z))))),
     // BesselJ(x_,-Infinity)=0
     ISet(BesselJ(x_,Noo),

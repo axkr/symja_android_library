@@ -89,7 +89,7 @@ public class BesselJS extends JS {
     ISymbol x = F.Dummy("x");
     UnivariateDifferentiableFunction f =
         new UnaryNumerical(F.BesselJ(F.num(n), x), x, EvalEngine.get(), true);
-    return solver.solve(100, f, m == 1 ? 1e-10 : e - delta, e + delta);
+    return solver.solve(100, f, e - delta < 0 ? 0 : e - delta, e + delta);
   }
 
   public static Complex besselY(double n, double x) {
