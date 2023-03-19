@@ -42,6 +42,12 @@ public interface BesselYRules {
       Times(Sqrt(Times(C2,Power(Pi,CN1))),Power(z,CN1D2),Plus(Times(CN1,C3,Power(z,CN1),Cos(z)),Negate(Sin(z)),Times(C3,Power(z,CN2),Sin(z))))),
     // BesselY(5/2,z_):=(Sqrt(2/Pi)*(Cos(z)+(-3*Cos(z))/z^2+(-3*Sin(z))/z))/Sqrt(z)
     ISetDelayed(BesselY(QQ(5L,2L),z_),
-      Times(Sqrt(Times(C2,Power(Pi,CN1))),Power(z,CN1D2),Plus(Cos(z),Times(CN3,Power(z,CN2),Cos(z)),Times(CN3,Power(z,CN1),Sin(z)))))
+      Times(Sqrt(Times(C2,Power(Pi,CN1))),Power(z,CN1D2),Plus(Cos(z),Times(CN3,Power(z,CN2),Cos(z)),Times(CN3,Power(z,CN1),Sin(z))))),
+    // BesselY(x_/;x>0&&IntegerQ(2*x),z_/;z!=0&&FreeQ(z,DirectedInfinity)):=Module({u,f,k=-1/2+x},f=Cos(u)/u;While(k>0,k=-1+k;f=D(f,u)/u);-Sqrt(2/Pi*z)*f/(-u)^(1/2-x)/.u->z)
+    ISetDelayed(BesselY(Condition(x_,And(Greater(x,C0),IntegerQ(Times(C2,x)))),Condition(z_,And(Unequal(z,C0),FreeQ(z,DirectedInfinity)))),
+      Module(list(u,f,Set(k,Plus(CN1D2,x))),CompoundExpression(Set(f,Times(Power(u,CN1),Cos(u))),While(Greater(k,C0),CompoundExpression(Set(k,Plus(CN1,k)),Set(f,Times(Power(u,CN1),D(f,u))))),ReplaceAll(Times(CN1,Sqrt(Times(C2,Power(Pi,CN1),z)),Power(Negate(u),Plus(CN1D2,x)),f),Rule(u,z))))),
+    // BesselY(x_/;x<0&&IntegerQ(2*x),z_/;z!=0&&FreeQ(z,DirectedInfinity)):=Module({u,f,k=-1/2-x},f=Sin(u)/u;While(k>0,k=-1+k;f=D(f,u)/u);Sqrt(2/Pi*z)*f/(-u)^(1/2+x)/.u->z)
+    ISetDelayed(BesselY(Condition(x_,And(Less(x,C0),IntegerQ(Times(C2,x)))),Condition(z_,And(Unequal(z,C0),FreeQ(z,DirectedInfinity)))),
+      Module(list(u,f,Set(k,Subtract(CN1D2,x))),CompoundExpression(Set(f,Times(Power(u,CN1),Sin(u))),While(Greater(k,C0),CompoundExpression(Set(k,Plus(CN1,k)),Set(f,Times(Power(u,CN1),D(f,u))))),ReplaceAll(Times(Sqrt(Times(C2,Power(Pi,CN1),z)),Power(Negate(u),Subtract(CN1D2,x)),f),Rule(u,z)))))
   );
 }

@@ -25,11 +25,17 @@ public interface BesselKRules {
     // BesselK(x_,Undefined):=Undefined
     ISetDelayed(BesselK(x_,Undefined),
       Undefined),
-    // BesselK(-1/2,z_):=Sqrt(2/Pi)/(E^z*Sqrt(z))
+    // BesselK(-1/2,z_):=Sqrt(Pi/2)/(E^z*Sqrt(z))
     ISetDelayed(BesselK(CN1D2,z_),
-      Times(Sqrt(Times(C2,Power(Pi,CN1))),Power(Times(Exp(z),Sqrt(z)),CN1))),
-    // BesselK(1/2,z_):=Sqrt(2/Pi)/(E^z*Sqrt(z))
+      Times(Sqrt(CPiHalf),Power(Times(Exp(z),Sqrt(z)),CN1))),
+    // BesselK(1/2,z_):=Sqrt(Pi/2)/(E^z*Sqrt(z))
     ISetDelayed(BesselK(C1D2,z_),
-      Times(Sqrt(Times(C2,Power(Pi,CN1))),Power(Times(Exp(z),Sqrt(z)),CN1)))
+      Times(Sqrt(CPiHalf),Power(Times(Exp(z),Sqrt(z)),CN1))),
+    // BesselK(x_/;x>0&&IntegerQ(2*x),z_/;z!=0&&FreeQ(z,DirectedInfinity)):=Module({u,f,k=-1/2+x},f=1/(E^u*u);While(k>0,k=-1+k;f=D(f,u)/u);Sqrt(Pi/2*z)*f/(-u)^(1/2-x)/.u->z)
+    ISetDelayed(BesselK(Condition(x_,And(Greater(x,C0),IntegerQ(Times(C2,x)))),Condition(z_,And(Unequal(z,C0),FreeQ(z,DirectedInfinity)))),
+      Module(list(u,f,Set(k,Plus(CN1D2,x))),CompoundExpression(Set(f,Times(Exp(Negate(u)),Power(u,CN1))),While(Greater(k,C0),CompoundExpression(Set(k,Plus(CN1,k)),Set(f,Times(Power(u,CN1),D(f,u))))),ReplaceAll(Times(Sqrt(Times(C1D2,Pi,z)),Power(Negate(u),Plus(CN1D2,x)),f),Rule(u,z))))),
+    // BesselK(x_/;x<0&&IntegerQ(2*x),z_/;z!=0&&FreeQ(z,DirectedInfinity)):=Module({u,f,k=-1/2-x},f=1/(E^u*u);While(k>0,k=-1+k;f=D(f,u)/u);Sqrt(Pi/2*z)*f/(-u)^(1/2+x)/.u->z)
+    ISetDelayed(BesselK(Condition(x_,And(Less(x,C0),IntegerQ(Times(C2,x)))),Condition(z_,And(Unequal(z,C0),FreeQ(z,DirectedInfinity)))),
+      Module(list(u,f,Set(k,Subtract(CN1D2,x))),CompoundExpression(Set(f,Times(Exp(Negate(u)),Power(u,CN1))),While(Greater(k,C0),CompoundExpression(Set(k,Plus(CN1,k)),Set(f,Times(Power(u,CN1),D(f,u))))),ReplaceAll(Times(Sqrt(Times(C1D2,Pi,z)),Power(Negate(u),Subtract(CN1D2,x)),f),Rule(u,z)))))
   );
 }
