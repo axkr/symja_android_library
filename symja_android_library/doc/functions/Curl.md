@@ -3,13 +3,13 @@
 ```
 Curl({f1, f2}, {x1, x2})
 ```
-> returns the curl `D(f2, v1) - D(f1, v2)`
+> returns the curl `D(f2, x1) - D(f1, x2)`
 
 ```
 Curl({f1, f2, f3}, {x1, x2, x3})
 ```
 
-> returns the curl vector `{D(f3, v3) - D(f2, v3),  D(f1, v3) - D(f3, v1), D(f2, v1) - D(f1, v2)}`
+> returns the curl vector `{D(f3, x2) - D(f2, x3),  D(f1, x3) - D(f3, x1), D(f2, x1) - D(f1, x2)}`
  
 
 See:  
