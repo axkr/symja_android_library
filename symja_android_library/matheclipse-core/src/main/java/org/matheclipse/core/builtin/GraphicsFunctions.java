@@ -59,6 +59,7 @@ public class GraphicsFunctions {
         IAST list = (IAST) ast.arg1();
         ObjectNode g = GraphicsFunctions.JSON_OBJECT_MAPPER.createObjectNode();
         g.put("type", "arrow");
+        g.put("thickness", options.thickness());
         if (list.isListOfLists() && graphics2DCoords(g, list, options)) {
           arrayNode.add(g);
           return true;

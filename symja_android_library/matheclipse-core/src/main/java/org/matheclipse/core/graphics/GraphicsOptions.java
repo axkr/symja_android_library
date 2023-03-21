@@ -348,6 +348,7 @@ public class GraphicsOptions {
     rgbColor = GraphicsOptions.BLACK;
 
     options = new OptionArgs(engine);
+    thickness = TINY_THICKNESS;
   }
 
   public void addPadding() {
