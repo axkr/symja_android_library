@@ -71,7 +71,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.logicng</groupId>
-			<artifactId>logicng</artifactId>
+			<artifactId>logicng-j11</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.gavaghan</groupId>

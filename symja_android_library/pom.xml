@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.matheclipse</groupId>
 	<artifactId>matheclipse</artifactId>
@@ -13,13 +15,15 @@
 			<name>GNU General Public License, Version 3</name>
 			<url>https://www.gnu.org/licenses/gpl-3.0.html</url>
 			<distribution>repo</distribution>
-			<comments>A free, copyleft license for software and other kinds of works</comments>
+			<comments>A free, copyleft license for software and other kinds of
+				works</comments>
 		</license>
 		<license>
 			<name>GNU Lesser General Public License, Version 3</name>
 			<url>https://www.gnu.org/licenses/lgpl-3.0.html</url>
 			<distribution>repo</distribution>
-			<comments>A free, copyleft license for software and other kinds of works</comments>
+			<comments>A free, copyleft license for software and other kinds of
+				works</comments>
 		</license>
 	</licenses>
 	<developers>
@@ -32,8 +36,10 @@
 	</developers>
 	<modules>
 		<!-- Internal modules (not deployed).
-		Must not be last to not break deployment entirely.
-		See description of 'skipNexusStagingDeployMojo' in 
+		Must not be last to not break
+		deployment entirely.
+		See description of 'skipNexusStagingDeployMojo'
+		in
 		https://github.com/sonatype/nexus-maven-plugins/blob/master/staging/maven-plugin/README.md#plugin-flags-->
 		<module>matheclipse-beakerx</module>
 		<module>matheclipse-jar</module>
@@ -53,7 +59,8 @@
 	</modules>
 	<scm>
 		<connection>scm:git:git://github.com/axkr/symja_android_library.git</connection>
-		<developerConnection>scm:git:git@github.com:axkr/symja_android_library.git</developerConnection>
+		<developerConnection>
+			scm:git:git@github.com:axkr/symja_android_library.git</developerConnection>
 		<url>https://github.com/axkr/symja_android_library.git</url>
 		<tag>HEAD</tag>
 	</scm>
@@ -98,7 +105,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>11</java.version>
 		<release.build>false</release.build>
-		<deployment.suppress>false</deployment.suppress> <!-- child modules can set this true to not be published -->
+		<deployment.suppress>false</deployment.suppress> <!-- child modules can
+		set this true to not be published -->
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -260,7 +268,7 @@
 			<dependency>
 				<groupId>org.jgrapht</groupId>
 				<artifactId>jgrapht-io</artifactId>
-				<version>1.5.1</version>
+				<version>1.5.2-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jsoup</groupId>
@@ -269,8 +277,8 @@
 			</dependency>
 			<dependency>
 				<groupId>org.logicng</groupId>
-				<artifactId>logicng</artifactId>
-				<version>2.4.1</version>
+				<artifactId>logicng-j11</artifactId>
+				<version>2.4.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.owasp.encoder</groupId>
