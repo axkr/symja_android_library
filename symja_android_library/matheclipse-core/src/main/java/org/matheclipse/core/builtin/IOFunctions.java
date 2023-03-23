@@ -581,12 +581,15 @@ public class IOFunctions {
       "itraw", "Raw object `1` cannot be used as an iterator.", //
       "ivar", "`1` is not a valid variable.", //
       "ldata", "`1` is not a valid dataset or a list of datasets.", //
+      "ldir",
+      "Value of `1` should be a number, Reals, Complexes, FromAbove, FromBelow, TwoSided or a list of these.", //
       "lend",
       "The argument at position `1` in `2` should be a vector of unsigned byte values or a Base64 encoded string.", //
       "length", "The vectors `1` and `2` have different lengths.", //
       "level", "Level specification `1` is not of the form n, {n}, or {m, n}.", //
       "levelpad",
       "The padding specification `1` involves `2` levels, the list `3` has only `4` level.", //
+      "lim", "Limit specification `1` is not of the form x->x0.", //
       "limset",
       "Cannot set $RecursionLimit to `1`; value must be Infinity or an integer at least 20.", //
       "list", "List expected at position `1` in `2`.", //

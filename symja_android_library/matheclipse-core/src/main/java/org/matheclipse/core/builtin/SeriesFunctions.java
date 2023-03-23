@@ -891,16 +891,13 @@ public class SeriesFunctions {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (!arg2.isRuleAST()) {
-        LOGGER.log(engine.getLogLevel(), "{}: rule definition expected at position 2!",
-            ast.topHead());
-        return F.NIL;
+        // Limit specification `1` is not of the form x->x0.
+        return IOFunctions.printMessage(S.Limit, "lim", F.List(arg2), engine);
       }
       IAST rule = (IAST) arg2;
-
       if (!(rule.arg1().isSymbol())) {
-        LOGGER.log(engine.getLogLevel(),
-            "{}: variable symbol for rule definition expected at position 2!", ast.topHead());
-        return F.NIL;
+        // `1` is not a valid variable.
+        return IOFunctions.printMessage(S.Limit, "ivar", F.List(arg2), engine);
       }
       if (arg1.isList()) {
         return arg1.mapThread(ast, 1);
@@ -920,9 +917,7 @@ public class SeriesFunctions {
             } else if (option.equals(S.Automatic) || option.equals(S.Reals)) {
               direction = Direction.TWO_SIDED;
             } else {
-              LOGGER.log(engine.getLogLevel(), "{}: direction option expected at position 2!",
-                  ast.topHead());
-              return F.NIL;
+              return IOFunctions.printMessage(S.Limit, "ldir", F.List(ast.arg3()), engine);
             }
           } else {
             LOGGER.log(engine.getLogLevel(), "{}: direction option expected at position 2!",
@@ -937,14 +932,14 @@ public class SeriesFunctions {
           }
         }
         ISymbol symbol = (ISymbol) rule.arg1();
-        IExpr limit = null;
-        if (rule.isFreeAt(2, symbol)) {
-          limit = rule.arg2();
-        } else {
-          LOGGER.log(engine.getLogLevel(),
-              "{}: limit value is not free of variable symbol at position 2!", ast.topHead());
-          return F.NIL;
-        }
+        IExpr limit = rule.arg2();
+        // if (rule.isFreeAt(2, symbol)) {
+        // limit = rule.arg2();
+        // } else {
+        // LOGGER.log(engine.getLogLevel(),
+        // "{}: limit value is not free of variable symbol at position 2!", ast.topHead());
+        // return F.NIL;
+        // }
 
         LimitData data = new LimitData(symbol, limit, rule, direction);
         return evalLimit(arg1, data);
@@ -1997,6 +1992,7 @@ public class SeriesFunctions {
     }
     return null;
   }
+
   public static void initialize() {
     Initializer.init();
   }
