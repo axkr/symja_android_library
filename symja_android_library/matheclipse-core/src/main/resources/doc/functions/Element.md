@@ -1,10 +1,10 @@
 ## Element 
 
 ```
-Element(symbol, dom)
+Element(symbol, domain)
 ```
 
-> assume (or test) that the `symbol` is in the domain `dom`.
+> assume (or test) that the `symbol` is in the domain `domain`.
 
 See:
 * [Wikipedia - Domain of a function](https://en.wikipedia.org/wiki/Domain_of_a_function)

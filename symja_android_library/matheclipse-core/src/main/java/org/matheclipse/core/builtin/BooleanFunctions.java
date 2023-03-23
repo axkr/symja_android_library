@@ -455,7 +455,7 @@ public final class BooleanFunctions {
     public static IExpr variableToExpr(Variable variable) {
       String name = variable.name();
       final IExpr v;
-      if (name.charAt(0) == '#') {
+      if (name.length() > 0 && name.charAt(0) == '#') {
         int slotNumber = 1;
         if (name.length() > 1) {
           String slotString = name.substring(1);

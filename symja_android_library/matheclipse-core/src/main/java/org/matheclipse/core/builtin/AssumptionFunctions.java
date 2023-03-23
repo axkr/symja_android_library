@@ -140,7 +140,7 @@ public class AssumptionFunctions {
             boolean evaled = false;
             for (int i = 1; i < arg1AST.size(); i++) {
               final IExpr arg = arg1AST.get(i);
-              IExpr assumeDomain = assumeDomain(arg, domain);
+              IExpr assumeDomain = assumeDomain(arg, domain, engine);
               if (assumeDomain.isFalse()) {
                 evaled = true;
                 return S.False;
@@ -154,7 +154,7 @@ public class AssumptionFunctions {
             return evaled ? F.Element(result, domain) : F.NIL;
           }
         }
-        return assumeDomain(arg1, domain);
+        return assumeDomain(arg1, domain, engine);
       }
       return F.NIL;
     }
@@ -173,7 +173,7 @@ public class AssumptionFunctions {
      * @return S.True or S.False if expr is assumed to be in the <code>domain</code> or not to be in
      *         the <code>domain</code>. In all other cases return {@link F#NIL}.
      */
-    private IExpr assumeDomain(final IExpr arg1, final ISymbol domain) {
+    private IExpr assumeDomain(final IExpr arg1, final ISymbol domain, EvalEngine engine) {
       if (domain.isBuiltInSymbol()) {
         ISymbol truthValue;
         final int symbolID = ((IBuiltInSymbol) domain).ordinal();
@@ -203,6 +203,22 @@ public class AssumptionFunctions {
             return (truthValue != null) ? truthValue : F.NIL;
           default:
             break;
+        }
+      }
+      if (domain.isSymbol()) {
+        String domainString = domain.toString().toLowerCase();
+        if (domainString.equals("real") //
+            || domainString.equals("prime") //
+            || domainString.equals("integer") //
+            || domainString.equals("rational") //
+            || domainString.equals("algebraic") //
+            || domainString.equals("complex") //
+            || domainString.equals("boolean") //
+        ) {
+          // print warning:
+          // The second argument `1` of Element should be one of: Primes, Integers, Rationals,
+          // Algebraics, Reals, Complexes or Booleans.
+          return IOFunctions.printMessage(S.Element, "bset", F.List(domain), engine);
         }
       }
       return F.NIL;

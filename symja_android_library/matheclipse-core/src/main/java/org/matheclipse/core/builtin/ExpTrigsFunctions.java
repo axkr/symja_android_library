@@ -2526,7 +2526,7 @@ public class ExpTrigsFunctions {
         }
         if (engine.isDoubleMode() || engine.isArbitraryMode()) {
           if (z.isNumber()) {
-            // 1 / (1 + Exp(-arg1))
+            // 1 / (1 + Exp(-z))
             return F.Power.of(engine, F.Plus(F.C1, F.Power(S.E, F.Times(F.CN1, z))), F.CN1);
           }
         }

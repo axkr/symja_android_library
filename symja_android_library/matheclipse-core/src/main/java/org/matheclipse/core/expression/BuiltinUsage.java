@@ -109,7 +109,8 @@ public class BuiltinUsage {
     USAGE[ID.Definition] = "give values of a symbol in a form that can be stored in a package";
     USAGE[ID.DSolve] = "differential equation analytical solver";
 
-    USAGE[ID.EditDistance] = "Edit distance";
+    USAGE[ID.EditDistance] = "edit distance";
+    USAGE[ID.Element] = "check whether the element belongs to the domain";
     USAGE[ID.EllipticE] = "elliptic integral of the second kind E(ϕ|m)";
     USAGE[ID.EllipticF] = "elliptic integral F(ϕ|m)";
     USAGE[ID.EllipticK] = "elliptic integral of the first kind K(m)";

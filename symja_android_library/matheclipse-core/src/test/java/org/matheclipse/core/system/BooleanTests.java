@@ -172,6 +172,12 @@ public class BooleanTests extends ExprEvaluatorTestCase {
   }
 
   public void testBooleanFunction001() {
+
+    // test with wrong var name lenght()==0
+    check("BooleanFunction(127,{\"\", x, y})", //
+        "!||!x||!y");
+
+
     check("f=BooleanFunction(42,3);", //
         "");
     // message BooleanFunction: BooleanFunction(Index: 17 Number of variables: 3) called with 2

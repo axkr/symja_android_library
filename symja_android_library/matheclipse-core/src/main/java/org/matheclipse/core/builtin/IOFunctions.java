@@ -498,6 +498,8 @@ public class IOFunctions {
       "asm", "The sum of angles `1` and `2` should be less than `3`.", //
       "attnf", "`1` is not a known attribute.", //
       "base", "Requested base `1` in `2` should be between 2 and `3`.", //
+      "bset",
+      "The second argument `1` of Element should be one of: Primes, Integers, Rationals, Algebraics, Reals, Complexes or Booleans.", //
       "bfun", "`1` is not a boolean-valued pure function.", //
       "boxfmt", "`1` is not a box formatting type.", //
       "cfn", "Numerical error encountered, proceeding with uncompiled evaluation.", //
