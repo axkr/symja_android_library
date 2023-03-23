@@ -958,12 +958,6 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     @Override
-    @Deprecated
-    public IExpr replaceSlots(final IAST slotsList) {
-      return F.NIL;
-    }
-
-    @Override
     public IExpr set(int location, IExpr object) {
       ArgumentTypeException.throwNIL();
       return F.NIL;

@@ -58,7 +58,6 @@ import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.core.visit.VisitorBooleanLevelSpecification;
 import org.matheclipse.core.visit.VisitorReplaceAll;
 import org.matheclipse.core.visit.VisitorReplacePart;
-import org.matheclipse.core.visit.VisitorReplaceSlots;
 import org.matheclipse.parser.client.ParserConfig;
 import edu.jas.structure.ElemFactory;
 import edu.jas.structure.GcdRingElem;
@@ -4201,9 +4200,9 @@ public interface IExpr
   default IExpr lessEqual(final IExpr a1) {
     if (isReal() && a1.isReal()) {
       return ((ISignedNumber) this).isGT(((ISignedNumber) a1)) ? S.False : S.True;
-    } 
+    }
     return F.LessEqual(this, a1)//
-        .eval( );
+        .eval();
   }
 
   /**
@@ -4946,7 +4945,14 @@ public interface IExpr
    * @return <code>F.NIL</code> if no substitution of a (sub-)expression was possible.
    */
   default IExpr replaceAll(final Function<IExpr, IExpr> function) {
-    return accept(new VisitorReplaceAll(function));
+    try {
+      return accept(new VisitorReplaceAll(function));
+    } catch (RuntimeException rex) {
+      if (Config.SHOW_STACKTRACE) {
+        rex.printStackTrace();
+      }
+    }
+    return F.NIL;
   }
 
   /**
@@ -4958,7 +4964,14 @@ public interface IExpr
    * @return <code>F.NIL</code> if no substitution of a (sub-)expression was possible.
    */
   default IExpr replaceAll(final IAST listOfRules) {
-    return accept(new VisitorReplaceAll(listOfRules));
+    try {
+      return accept(new VisitorReplaceAll(listOfRules));
+    } catch (RuntimeException rex) {
+      if (Config.SHOW_STACKTRACE) {
+        rex.printStackTrace();
+      }
+    }
+    return F.NIL;
   }
 
   /**
@@ -4970,7 +4983,14 @@ public interface IExpr
    * @return <code>F.NIL</code> if no substitution of a (sub-)expression was possible.
    */
   default IExpr replaceAll(final Map<? extends IExpr, ? extends IExpr> map) {
-    return accept(new VisitorReplaceAll(map));
+    try {
+      return accept(new VisitorReplaceAll(map));
+    } catch (RuntimeException rex) {
+      if (Config.SHOW_STACKTRACE) {
+        rex.printStackTrace();
+      }
+    }
+    return F.NIL;
   }
 
   /**
@@ -4984,7 +5004,14 @@ public interface IExpr
    * @return <code>F.NIL</code> if no substitution of a subexpression was possible.
    */
   default IExpr replacePart(final IAST astRules, IExpr.COMPARE_TERNARY heads) {
-    return this.accept(new VisitorReplacePart(astRules, heads));
+    try {
+      return this.accept(new VisitorReplacePart(astRules, heads));
+    } catch (RuntimeException rex) {
+      if (Config.SHOW_STACKTRACE) {
+        rex.printStackTrace();
+      }
+    }
+    return F.NIL;
   }
 
   /**
@@ -5017,45 +5044,36 @@ public interface IExpr
    *
    * @param visitor
    * @param maxIterations the maximum number of iterations
-   * @return
+   * @return <code>this</code> if no substitution of a (sub-)expression was possible.
    */
   default IExpr replaceRepeated(VisitorReplaceAll visitor, int maxIterations) {
-    IExpr result = this;
-    IExpr temp = accept(visitor);
-    final EvalEngine engine = EvalEngine.get();
-    int iterationLimit = engine.getIterationLimit();
-    if (maxIterations > 0 && maxIterations < iterationLimit) {
-      iterationLimit = maxIterations;
-    }
-    int iterationCounter = 0;
-    while (temp.isPresent()) {
-      result = engine.evaluate(temp);
-      if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
-        // Exiting after `1` scanned `2` times.
-        IOFunctions.printMessage(S.ReplaceRepeated, "rrlim", F.List(this, F.ZZ(iterationLimit)),
-            engine);
-        return result;
+    try {
+      IExpr result = this;
+      IExpr temp = accept(visitor);
+      final EvalEngine engine = EvalEngine.get();
+      int iterationLimit = engine.getIterationLimit();
+      if (maxIterations > 0 && maxIterations < iterationLimit) {
+        iterationLimit = maxIterations;
       }
+      int iterationCounter = 0;
+      while (temp.isPresent()) {
+        result = engine.evaluate(temp);
+        if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+          // Exiting after `1` scanned `2` times.
+          IOFunctions.printMessage(S.ReplaceRepeated, "rrlim", F.List(this, F.ZZ(iterationLimit)),
+              engine);
+          return result;
+        }
 
-      temp = result.accept(visitor);
+        temp = result.accept(visitor);
+      }
+      return result;
+    } catch (RuntimeException rex) {
+      if (Config.SHOW_STACKTRACE) {
+        rex.printStackTrace();
+      }
     }
-    return result;
-  }
-
-  /**
-   * Replace all occurrences of Slot[&lt;index&gt;] expressions with the expression at the
-   * appropriate <code>index</code> in the given <code>slotsList</code>.
-   *
-   * <p>
-   * <b>Note:</b> If a slot value is <code>null</code> the Slot will not be substituted.
-   *
-   * @param slotsList the values for the slots.
-   * @return <code>null</code> if no substitution occurred.
-   * @deprecated use org.matheclipse.core.eval.util.Lambda#replaceSlots() instead
-   */
-  @Deprecated
-  default IExpr replaceSlots(final IAST slotsList) {
-    return accept(new VisitorReplaceSlots(slotsList));
+    return this;
   }
 
   /**
