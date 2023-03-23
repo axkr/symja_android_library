@@ -499,6 +499,12 @@ public class Assumptions extends AbstractAssumptions {
     return false;
   }
 
+  /**
+   * 
+   * @param ast
+   * @param assumptions
+   * @return <code>null</code> if assumptions couldn't be assigned
+   */
   private static IAssumptions addList(IAST ast, Assumptions assumptions) {
     for (int i = 1; i < ast.size(); i++) {
       if (ast.get(i).isAST()) {
@@ -524,7 +530,12 @@ public class Assumptions extends AbstractAssumptions {
             return null;
           }
         } else if (temp.isAST(S.Equal, 3)) {
-          if (!addLess(temp, assumptions)) {
+          if (!addEqual(temp, assumptions)) {
+            return null;
+          }
+        } else if (temp.isAnd()) {
+          IAssumptions assum = addList(temp, assumptions);
+          if (assum == null) {
             return null;
           }
         }
@@ -545,7 +556,7 @@ public class Assumptions extends AbstractAssumptions {
     if (expr.isAST()) {
       Assumptions assumptions = new Assumptions();
       assumptions.$assumptions = expr;
-      if (expr.isList()) {
+      if (expr.isAnd() || expr.isSameHeadSizeGE(S.List, 2)) {
         Assumptions.addList((IAST) expr, assumptions);
       } else if (expr.isAST()) {
         assumptions.addAssumption(expr);

@@ -401,6 +401,11 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
         "a \\cup b \\cup c");
   }
 
+  public void testTeXFormLogisticSigmoid() {
+    check("TeXForm(LogisticSigmoid(a+(b*c)))", //
+        "\\sigma (a + b \\cdot c)");
+  }
+
   @Override
   protected void setUp() {
     super.setUp();

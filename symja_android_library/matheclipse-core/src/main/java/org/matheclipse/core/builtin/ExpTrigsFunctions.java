@@ -2517,18 +2517,18 @@ public class ExpTrigsFunctions {
       if (z.isNegativeInfinity()) {
         return F.C0;
       }
-      if (z.isNumericFunction(true)) {
+      if (z.isNumericFunction(true) || z.isInterval()) {
         if (z.isZero()) {
           return F.C1D2;
         }
         if (z.equals(F.Times(F.CI, S.Pi))) {
           return F.NIL;
         }
-        if (engine.isDoubleMode() || engine.isArbitraryMode()) {
-          if (z.isNumber()) {
-            // 1 / (1 + Exp(-z))
-            return F.Power.of(engine, F.Plus(F.C1, F.Power(S.E, F.Times(F.CN1, z))), F.CN1);
-          }
+        IExpr exp = engine.evaluate(F.Power(S.E, F.Times(F.CN1, z)));
+        if (exp.isNumber() || exp.isInterval() || engine.isDoubleMode()
+            || engine.isArbitraryMode()) {
+          // 1 / (1 + Exp(-z))
+          return F.Power.of(engine, F.Plus(F.C1, exp), F.CN1);
         }
       }
       return F.NIL;

@@ -1278,6 +1278,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testAssuming001() {
+    check("Assuming(a < 0 && b > 0, Refine(HeavisideTheta(b, b, a)))", //
+        "0");
+
     check("$Assumptions = { x > 0 }", //
         "{x>0}");
     check("Assuming(y>0, $Assumptions)", //

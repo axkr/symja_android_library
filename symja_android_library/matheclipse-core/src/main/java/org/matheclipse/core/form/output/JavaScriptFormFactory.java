@@ -480,11 +480,14 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
         if (dim != null && convertPiecewise(dim, function, buf)) {
           return;
         }
-      } else if (function.head() == S.ConditionalExpression && function.size() == 3) {
+      } else if (function.isAST(S.ConditionalExpression, 3)) {
         convertConditionalExpression(function, buf);
         return;
       } else if (function.head() == S.HeavisideTheta && function.size() >= 2) {
         convertHeavisideTheta(function, buf);
+        return;
+      } else if (function.isAST(S.LogisticSigmoid, 2)) {
+        convertLogisticSigmoid(function, buf);
         return;
       }
       IAST piecewiseExpand = Arithmetic.piecewiseExpand(function, S.Reals);
@@ -507,18 +510,23 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
         if (dim != null && convertPiecewise(dim, function, buf)) {
           return;
         }
-      } else if (function.head() == S.ConditionalExpression && function.size() == 3) {
+      } else if (function.isAST(S.ConditionalExpression, 3)) {
         convertConditionalExpression(function, buf);
         return;
-      } else if (function.head() == S.Cot && function.size() == 2) {
+      } else if (function.isAST(S.Cot, 2)) {
         buf.append("(1/Math.tan(");
         convertInternal(buf, function.arg1());
         buf.append("))");
         return;
-      } else if (function.head() == S.ArcCot && function.size() == 2) {
+      } else if (function.isAST(S.ArcCot, 2)) {
         buf.append("((Math.PI/2.0)-Math.atan(");
         convertInternal(buf, function.arg1());
         buf.append("))");
+        return;
+      } else if (function.isAST(S.LogisticSigmoid, 2)) {
+        buf.append("(1/(1+Math.exp(-(");
+        convertInternal(buf, function.arg1());
+        buf.append("))))");
         return;
       }
       IAST piecewiseExpand = Arithmetic.piecewiseExpand(function, S.Reals);
@@ -640,7 +648,6 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
   private void convertConditionalExpression(final IAST function, final StringBuilder buf) {
     IExpr arg1 = function.arg1();
     IExpr arg2 = function.arg2();
-    // use the ternary operator
     buf.append("((");
     convertInternal(buf, arg2);
     buf.append(") ? (");
@@ -650,7 +657,6 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 
   private void convertHeavisideTheta(final IAST function, final StringBuilder buf) {
     IExpr arg1 = function.arg1();
-    // use the ternary operator
     buf.append("((");
     convertInternal(buf, arg1);
     buf.append(" > 0 ) ");
@@ -660,6 +666,13 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
       buf.append(" > 0 ) ");
     }
     buf.append("? 1:0)");
+  }
+
+  private void convertLogisticSigmoid(final IAST function, final StringBuilder buf) {
+    IExpr arg1 = function.arg1();
+    buf.append("div(1,add(1,exp(neg(");
+    convertInternal(buf, arg1);
+    buf.append("))))");
   }
 
   private boolean convertPiecewise(int dim[], final IAST function, final StringBuilder buffer) {

@@ -2182,16 +2182,6 @@ public class TeXFormFactory {
     initTeXConverter(S.CenterDot, new AbstractOperator(this, Precedence.CENTERDOT, " \\cdot "));
     initTeXConverter(S.CircleDot, new AbstractOperator(this, Precedence.CIRCLEDOT, " \\odot "));
 
-    initTeXConverter(S.Sin, new TeXFunction(this, "sin "));
-    initTeXConverter(S.Cos, new TeXFunction(this, "cos "));
-    initTeXConverter(S.Tan, new TeXFunction(this, "tan "));
-    initTeXConverter(S.Cot, new TeXFunction(this, "cot "));
-    initTeXConverter(S.Sinh, new TeXFunction(this, "sinh "));
-    initTeXConverter(S.Cosh, new TeXFunction(this, "cosh "));
-    initTeXConverter(S.Tanh, new TeXFunction(this, "tanh "));
-    initTeXConverter(S.Coth, new TeXFunction(this, "coth "));
-    initTeXConverter(S.Csc, new TeXFunction(this, "csc "));
-    initTeXConverter(S.Sec, new TeXFunction(this, "sec "));
     initTeXConverter(S.ArcSin, new TeXFunction(this, "arcsin "));
     initTeXConverter(S.ArcCos, new TeXFunction(this, "arccos "));
     initTeXConverter(S.ArcTan, new TeXFunction(this, "arctan "));
@@ -2200,7 +2190,18 @@ public class TeXFormFactory {
     initTeXConverter(S.ArcCosh, new TeXFunction(this, "arccosh "));
     initTeXConverter(S.ArcTanh, new TeXFunction(this, "arctanh "));
     initTeXConverter(S.ArcCoth, new TeXFunction(this, "arccoth "));
+    initTeXConverter(S.Cos, new TeXFunction(this, "cos "));
+    initTeXConverter(S.Cosh, new TeXFunction(this, "cosh "));
+    initTeXConverter(S.Cot, new TeXFunction(this, "cot "));
+    initTeXConverter(S.Coth, new TeXFunction(this, "coth "));
+    initTeXConverter(S.Csc, new TeXFunction(this, "csc "));
     initTeXConverter(S.Log, new TeXFunction(this, "log "));
+    initTeXConverter(S.LogisticSigmoid, new TeXFunction(this, "sigma "));
+    initTeXConverter(S.Sec, new TeXFunction(this, "sec "));
+    initTeXConverter(S.Sin, new TeXFunction(this, "sin "));
+    initTeXConverter(S.Sinh, new TeXFunction(this, "sinh "));
+    initTeXConverter(S.Tan, new TeXFunction(this, "tan "));
+    initTeXConverter(S.Tanh, new TeXFunction(this, "tanh "));
 
     CONSTANT_SYMBOLS.put("Alpha", "\\alpha");
     CONSTANT_SYMBOLS.put("Beta", "\\beta");
