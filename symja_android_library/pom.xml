@@ -146,11 +146,6 @@
 				<version>72.1</version>
 			</dependency>
 			<dependency>
-				<groupId>com.tngtech.archunit</groupId>
-				<artifactId>archunit-junit4</artifactId>
-				<version>1.0.1</version>
-			</dependency>
-			<dependency>
 				<groupId>com.univocity</groupId>
 				<artifactId>univocity-parsers</artifactId>
 				<version>2.9.1</version>
@@ -266,6 +261,11 @@
 				<version>3.0-SNAPSHOT</version>
 			</dependency>
 			<dependency>
+				<groupId>org.antlr</groupId>
+				<artifactId>antlr4-runtime</artifactId>
+				<version>4.11.1</version>
+			</dependency>
+			<dependency>
 				<groupId>org.jgrapht</groupId>
 				<artifactId>jgrapht-io</artifactId>
 				<version>1.5.2-SNAPSHOT</version>
@@ -355,6 +355,12 @@
 	</dependencyManagement>
 	<dependencies>
 		<dependency>
+			<groupId>com.tngtech.archunit</groupId>
+			<artifactId>archunit-junit5</artifactId>
+			<version>1.0.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
 			<version>5.9.2</version>
@@ -367,6 +373,7 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -411,7 +418,8 @@
 					<version>3.3.0</version>
 					<configuration>
 						<archive>
-							<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+							<manifestFile>
+								${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
 						</archive>
 					</configuration>
 				</plugin>
@@ -470,7 +478,8 @@
 						<includes>
 							<include>**/Test*.java</include>
 							<include>**/*Test.java</include>
-							<!-- TODO: fix those tests and enable them too <include>**/*Tests.java</include>	-->
+							<!-- TODO: fix those tests and enable them too
+							<include>**/*Tests.java</include>	-->
 							<include>**/*TestCase.java</include>
 						</includes>
 					</configuration>
@@ -499,14 +508,14 @@
 					<release>${java.version}</release>
 					<!--				<compilerArgs>
 						<arg>-XDcompilePolicy=simple</arg>
-						<arg>-Xplugin:ErrorProne</arg>
+					<arg>-Xplugin:ErrorProne</arg>
 					</compilerArgs>
 					<annotationProcessorPaths>
 						<path>
-							<groupId>com.google.errorprone</groupId>
-							<artifactId>error_prone_core</artifactId>
-							<version>2.16</version>
-						</path> 
+					<groupId>com.google.errorprone</groupId>
+					<artifactId>error_prone_core</artifactId>
+					<version>2.16</version>
+						</path>
 					</annotationProcessorPaths> 
   -->
 				</configuration>
@@ -538,7 +547,8 @@
 							<skip>${release.build}</skip>
 							<rules>
 								<requireSnapshotVersion>
-									<message>Release versions only permitted for releases!</message>
+									<message>Release versions only permitted for
+										releases!</message>
 								</requireSnapshotVersion>
 							</rules>
 						</configuration>
@@ -582,7 +592,8 @@
 								</goals>
 								<configuration>
 									<doclint>none</doclint>
-									<quiet>true</quiet> <!-- only show warnings/errors -->
+									<quiet>true</quiet> <!-- only show
+									warnings/errors -->
 									<failOnError>false</failOnError>
 								</configuration>
 							</execution>
@@ -618,7 +629,8 @@
 						<extensions>true</extensions>
 						<configuration>
 							<skipNexusStagingDeployMojo>${deployment.suppress}</skipNexusStagingDeployMojo>
-							<!-- Documentation: https://github.com/sonatype/nexus-maven-plugins/blob/master/staging/maven-plugin/README.md-->
+							<!-- Documentation:
+							https://github.com/sonatype/nexus-maven-plugins/blob/master/staging/maven-plugin/README.md-->
 							<autoReleaseAfterClose>false</autoReleaseAfterClose>
 						</configuration>
 					</plugin>

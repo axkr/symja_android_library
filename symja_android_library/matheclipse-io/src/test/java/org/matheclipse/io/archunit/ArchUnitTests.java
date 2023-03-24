@@ -3,16 +3,13 @@ package org.matheclipse.io.archunit;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
-import org.junit.runner.RunWith;
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchIgnore;
 import com.tngtech.archunit.junit.ArchTest;
-import com.tngtech.archunit.junit.ArchUnitRunner;
 import com.tngtech.archunit.lang.ArchRule;
 
-@RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org")
 public class ArchUnitTests {
 
@@ -95,6 +92,7 @@ public class ArchUnitTests {
   public static final ArchRule jGraphT = classes().that().resideInAPackage("org.jgrapht..") //
       .should().onlyBeAccessed().byAnyPackage( //
           "org.jgrapht..", //
+          "org.chocosolver..", //
           "..io.builtin..", //
           "..core.builtin..", //
           "..core.expression", //
@@ -105,6 +103,7 @@ public class ArchUnitTests {
   public static final ArchRule apfloatRule = classes().that().resideInAPackage("org.apfloat..") //
       .should().onlyBeAccessed().byAnyPackage( //
           "org.apfloat..", //
+          "org.jgrapht..", //
           "..core.builtin..", //
           "..core.convert..", //
           "..core.eval..", //

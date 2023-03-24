@@ -2,17 +2,14 @@ package org.matheclipse.io.archunit;
 
 
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
-import org.junit.runner.RunWith;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchIgnore;
 import com.tngtech.archunit.junit.ArchTest;
-import com.tngtech.archunit.junit.ArchUnitRunner;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.library.dependencies.SliceAssignment;
 import com.tngtech.archunit.library.dependencies.SliceIdentifier;
 
-@RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.matheclipse")
 public class CyclicDependencyRulesTest {
 
