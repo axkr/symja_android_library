@@ -62,6 +62,9 @@
  
  Gudermannian(z_) := Piecewise({{(1/2)*(Pi - 4*ArcCot(E^z)), Re(z)>0||(Re(z)==0&&Im(z)>=0 )}}, (1/2)*(-Pi + 4*ArcTan(E^z))), 
  
+ HankelH1(n_, z_) := BesselJ(n,z) + I*BesselY(n,z),
+ HankelH2(n_, z_) := BesselJ(n,z) - I*BesselY(n,z),
+  
  HarmonicNumber(n_) := EulerGamma + FunctionExpand(PolyGamma(0, 1 + n)),
  HarmonicNumber(z_, n_) := -HurwitzZeta(n, 1 + z) + Zeta(n),
  Haversine(z_) := (1/2)*(1-Cos(z)),

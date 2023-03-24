@@ -140,6 +140,12 @@ public interface FunctionExpandRules {
     // Gudermannian(z_):=Piecewise({{1/2*(Pi-4*ArcCot(E^z)),Re(z)>0||(Re(z)==0&&Im(z)>=0)}},1/2*(-Pi+4*ArcTan(E^z)))
     SetDelayed(Gudermannian(z_),
       Piecewise(list(list(Times(C1D2,Plus(Pi,Times(CN4,ArcCot(Exp(z))))),Or(Greater(Re(z),C0),And(Equal(Re(z),C0),GreaterEqual(Im(z),C0))))),Times(C1D2,Plus(CNPi,Times(C4,ArcTan(Exp(z))))))),
+    // HankelH1(n_,z_):=BesselJ(n,z)+I*BesselY(n,z)
+    SetDelayed(HankelH1(n_,z_),
+      Plus(BesselJ(n,z),Times(CI,BesselY(n,z)))),
+    // HankelH2(n_,z_):=BesselJ(n,z)-I*BesselY(n,z)
+    SetDelayed(HankelH2(n_,z_),
+      Plus(BesselJ(n,z),Times(CNI,BesselY(n,z)))),
     // HarmonicNumber(n_):=EulerGamma+FunctionExpand(PolyGamma(0,1+n))
     SetDelayed(HarmonicNumber(n_),
       Plus(EulerGamma,FunctionExpand(PolyGamma(C0,Plus(C1,n))))),

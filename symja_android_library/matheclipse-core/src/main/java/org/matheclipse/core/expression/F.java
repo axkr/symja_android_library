@@ -518,11 +518,12 @@ public class F extends S {
   public static final IInteger C1000 = new IntegerSym(1000);
 
   /**
-   * Complex imaginary unit. The parsed symbol &quot;I&quot; is converted on input to this constant.
+   * Complex imaginary unit &quot;0 + I&quot;. The parsed symbol &quot;I&quot; is converted on input
+   * to this constant.
    */
   public static final IComplex CI = ComplexSym.valueOf(0, 1, 1, 1);
 
-  /** Complex negative imaginary unit. */
+  /** Complex negative imaginary unit &quot;0 - I&quot;. */
   public static final IComplex CNI = ComplexSym.valueOf(0, 1, -1, 1);
 
   /** Constant fraction &quot;1/2&quot; */
