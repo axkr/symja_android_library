@@ -64,7 +64,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.polynomials.IPartialFractionGenerator;
@@ -411,7 +411,7 @@ public class Algebra {
       IExpr base = powerAST.base();
       IExpr exponent = powerAST.exponent();
       if (exponent.isReal()) {
-        ISignedNumber sn = (ISignedNumber) exponent;
+        IReal sn = (IReal) exponent;
         if (sn.isMinusOne()) {
           parts[1] = base;
           return parts;
@@ -715,9 +715,9 @@ public class Algebra {
               }
 
               if (t0Base.equals(t1Base) && t0Exponent.isReal() && t1Exponent.isReal()) {
-                ISignedNumber exp0 = (ISignedNumber) t0Exponent;
-                ISignedNumber exp1 = (ISignedNumber) t1Exponent;
-                final ISignedNumber subtracted;
+                IReal exp0 = (IReal) t0Exponent;
+                IReal exp1 = (IReal) t1Exponent;
+                final IReal subtracted;
                 if (exp0.isGE(exp1)) {
                   subtracted = exp0.subtractFrom(exp1);
                   t0.set(i, F.Power(t0Base, subtracted));
@@ -3232,7 +3232,7 @@ public class Algebra {
         if (option.isInteger() && !option.isZero()) {
           try {
             // found "Modulus" option => use ModIntegerRing
-            ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
+            ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
             JASModInteger jas = new JASModInteger(varList, modIntegerRing);
             GenPolynomial<ModLong> poly1 = jas.expr2JAS(expr1);
             GenPolynomial<ModLong> poly2 = jas.expr2JAS(expr2);
@@ -3466,10 +3466,10 @@ public class Algebra {
         // found "Modulus" option => use ModIntegerRing
         // ASTRange r = new ASTRange(eVar.getVarList(), 1);
         // ModIntegerRing modIntegerRing =
-        // JASConvert.option2ModIntegerRing((ISignedNumber) option);
+        // JASConvert.option2ModIntegerRing((IReal) option);
         // JASConvert<ModInteger> jas = new
         // JASConvert<ModInteger>(r.toList(), modIntegerRing);
-        ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
+        ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
         JASModInteger jas = new JASModInteger(eVar.getArrayList(), modIntegerRing);
         GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
         GenPolynomial<ModLong> temp;
@@ -3562,7 +3562,7 @@ public class Algebra {
             try {
               // found "Modulus" option => use ModIntegerRing
               List<IExpr> varList = eVar.getVarList().copyTo();
-              ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
+              ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
               JASModInteger jas = new JASModInteger(varList, modIntegerRing);
               GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
               GenPolynomial<ModLong> temp;
@@ -3981,7 +3981,7 @@ public class Algebra {
         IExpr option) {
       try {
         // found "Modulus" option => use ModIntegerRing
-        ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
+        ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
         JASModInteger jas = new JASModInteger(variable, modIntegerRing);
         GenPolynomial<ModLong> poly1 = jas.expr2JAS(arg1);
         GenPolynomial<ModLong> poly2 = jas.expr2JAS(arg2);
@@ -5141,7 +5141,7 @@ public class Algebra {
       IExpr option) throws JASConversionException {
     try {
       // found "Modulus" option => use ModIntegerRing
-      ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
+      ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
       JASModInteger jas = new JASModInteger(varList, modIntegerRing);
       GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
 

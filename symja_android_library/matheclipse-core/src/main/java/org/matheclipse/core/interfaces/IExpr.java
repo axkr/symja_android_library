@@ -80,7 +80,7 @@ import edu.jas.structure.GcdRingElem;
  *            |                   implements IComplexNum, INumber, IExpr
  *            |
  *            |--- org.matheclipse.core.expression.ApfloatNum - Apfloat number
- *            |                   implements INum, ISignedNumber, INumber, IExpr
+ *            |                   implements INum, IReal, INumber, IExpr
  *            |
  *            |--- org.matheclipse.core.expression.ComplexNum - a complex number with real and imaginary part represented by Java <code>double</code>
  *            |                   implements IComplexNum, INumber, IExpr
@@ -89,13 +89,13 @@ import edu.jas.structure.GcdRingElem;
  *            |                   implements IComplex, IBigNumber, INumber, IExpr
  *            |
  *            |--- org.matheclipse.core.expression.FractionSym - exact fraction number
- *            |                   implements IFraction, IRational, ISignedNumber, IBigNumber, INumber, IExpr
+ *            |                   implements IFraction, IRational, IReal, IBigNumber, INumber, IExpr
  *            |
  *            |--- org.matheclipse.core.expression.IntegerSym - exact integer number
- *            |                   implements IInteger, IRational, ISignedNumber, IBigNumber, INumber, IExpr
+ *            |                   implements IInteger, IRational, IReal, IBigNumber, INumber, IExpr
  *            |
  *            |--- org.matheclipse.core.expression.Num - a real number which is represented by a Java <code>double</code> value
- *            |                   implements INum, ISignedNumber, INumber, IExpr
+ *            |                   implements INum, IReal, INumber, IExpr
  *            |
  *            |--- org.matheclipse.core.expression.Pattern - a pattern object (i.e. <code>x_</code>)
  *            |                   implements IPattern, IPatternObject, IExpr
@@ -477,7 +477,7 @@ public interface IExpr
     } else if (clazz.equals(Integer.class)) {
       if (isReal()) {
         try {
-          return Integer.valueOf(((ISignedNumber) this).toInt());
+          return Integer.valueOf(((IReal) this).toInt());
         } catch (final ArithmeticException e) {
         }
       }
@@ -622,7 +622,7 @@ public interface IExpr
    * @param number
    * @return
    */
-  default IExpr copySign(ISignedNumber number) {
+  default IExpr copySign(IReal number) {
     return number.complexSign() < 0 ? negate() : this;
   }
 
@@ -967,25 +967,25 @@ public interface IExpr
   }
 
   /**
-   * Evaluate the expression to a <code>ISignedNumber</code> value.
+   * Evaluate the expression to a <code>IReal</code> value.
    *
    * @return <code>null</code> if the conversion is not possible.
    */
-  default ISignedNumber evalReal() {
+  default IReal evalReal() {
     if (isReal()) {
-      return (ISignedNumber) this;
+      return (IReal) this;
     }
     return null;
   }
 
   /**
-   * Evaluate the expression to a <code>ISignedNumber</code> value.
+   * Evaluate the expression to a <code>IReal</code> value.
    *
    * @return <code>null</code> if the conversion is not possible.
    * @deprecated use {@link #evalReal()} instead
    */
   @Deprecated
-  default ISignedNumber evalSignedNumber() {
+  default IReal evalSignedNumber() {
     return evalReal();
   }
 
@@ -1171,7 +1171,7 @@ public interface IExpr
    */
   default IExpr greater(final IExpr a1) {
     if (isReal() && a1.isReal()) {
-      return ((ISignedNumber) this).isGT(((ISignedNumber) a1)) ? S.True : S.False;
+      return ((IReal) this).isGT(((IReal) a1)) ? S.True : S.False;
     }
     return F.Greater(this, a1)//
         .eval();
@@ -1186,7 +1186,7 @@ public interface IExpr
    */
   default IExpr greaterEqual(final IExpr a1) {
     if (isReal() && a1.isReal()) {
-      return ((ISignedNumber) this).isLT(((ISignedNumber) a1)) ? S.False : S.True;
+      return ((IReal) this).isLT(((IReal) a1)) ? S.False : S.True;
     }
     return F.GreaterEqual(this, a1)//
         .eval();
@@ -3655,12 +3655,12 @@ public interface IExpr
    * @return
    */
   default boolean isReal() {
-    return this instanceof ISignedNumber;
+    return this instanceof IReal;
   }
 
   /**
    * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the evaluator implements
-   * the <code>ISignedNumberConstant</code> interface (see package <code>
+   * the <code>IRealConstant</code> interface (see package <code>
    * org.matheclipse.core.builtin.constant</code>).
    *
    * @return
@@ -3703,7 +3703,7 @@ public interface IExpr
     if (S.True.equals(AbstractAssumptions.assumeReal(this))) {
       return true;
     }
-    return this instanceof ISignedNumber;
+    return this instanceof IReal;
   }
 
   /**
@@ -3817,7 +3817,7 @@ public interface IExpr
 
   /**
    * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the evaluator implements
-   * the <code>ISignedNumberConstant</code> interface (see package <code>
+   * the <code>IRealConstant</code> interface (see package <code>
    * org.matheclipse.core.builtin.constant</code>).
    *
    * @return
@@ -4184,7 +4184,7 @@ public interface IExpr
    */
   default IExpr less(final IExpr a1) {
     if (isReal() && a1.isReal()) {
-      return ((ISignedNumber) this).isLT(((ISignedNumber) a1)) ? S.True : S.False;
+      return ((IReal) this).isLT(((IReal) a1)) ? S.True : S.False;
     }
     return F.Less(this, a1)//
         .eval();
@@ -4199,7 +4199,7 @@ public interface IExpr
    */
   default IExpr lessEqual(final IExpr a1) {
     if (isReal() && a1.isReal()) {
-      return ((ISignedNumber) this).isGT(((ISignedNumber) a1)) ? S.False : S.True;
+      return ((IReal) this).isGT(((IReal) a1)) ? S.False : S.True;
     }
     return F.LessEqual(this, a1)//
         .eval();
@@ -4357,7 +4357,7 @@ public interface IExpr
 
   /**
    * If this is a <code>Interval[{lower, upper}]</code> expression return the <code>lower</code>
-   * value. If this is a <code>ISignedNumber</code> expression return <code>this</code>.
+   * value. If this is a <code>IReal</code> expression return <code>this</code>.
    *
    * @return <code>F.NIL</code> if this expression is no interval and no signed number.
    */
@@ -5624,7 +5624,7 @@ public interface IExpr
 
   /**
    * If this is a <code>Interval({lower, upper})</code> expression return the <code>upper</code>
-   * value. If this is a <code>ISignedNumber</code> expression return <code>this</code>.
+   * value. If this is a <code>IReal</code> expression return <code>this</code>.
    *
    * @return <code>F.NIL</code> if this expression is no interval and no signed number.
    */

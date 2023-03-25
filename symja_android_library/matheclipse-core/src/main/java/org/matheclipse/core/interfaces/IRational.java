@@ -5,7 +5,7 @@ import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.expression.F;
 
 /** Interface for "rational" numbers (i.e. numbers implementing IInteger or IFraction) */
-public interface IRational extends ISignedNumber, IBigNumber {
+public interface IRational extends IReal, IBigNumber {
 
   /** {@inheritDoc} */
   @Override
@@ -179,7 +179,7 @@ public interface IRational extends ISignedNumber, IBigNumber {
   }
 
   @Override
-  public IRational roundClosest(ISignedNumber factor);
+  public IRational roundClosest(IReal factor);
 
   public IRational subtract(IRational parm1);
 

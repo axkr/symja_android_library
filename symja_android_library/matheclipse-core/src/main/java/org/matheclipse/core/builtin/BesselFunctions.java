@@ -362,7 +362,7 @@ public class BesselFunctions {
         }
       }
       // if (n.isReal()) {
-      // IExpr in = engine.evaluate(((ISignedNumber) n).add(F.CN1D2));
+      // IExpr in = engine.evaluate(((IReal) n).add(F.CN1D2));
       // if (in.isNumIntValue()) {
       // if (z.isInfinity() || z.isNegativeInfinity()) {
       // return F.C0;

@@ -12,7 +12,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 
 /**
  * functionality to convert {@link VisualSet} to a dataset for the instantiation of a JFreeChart
@@ -57,7 +57,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 
   /**
    * @param visualSet
-   * @param naming for instance ISignedNumber::toString
+   * @param naming for instance IReal::toString
    * @return
    */
   public static CategoryDataset defaultCategoryDataset(VisualSet visualSet,
@@ -96,7 +96,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
       for (int i = 1; i < points.size(); i++) {
         IAST point = (IAST) points.get(i);
         timeTableXYDataset.add( //
-            StaticHelper.timePeriod((ISignedNumber) point.arg1()), //
+            StaticHelper.timePeriod((IReal) point.arg1()), //
             toRealsY.apply(point.arg2()).toNumber(), //
             visualRow.getLabel(), //
             true);

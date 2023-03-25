@@ -17,7 +17,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -87,10 +87,10 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr hypergeometric0F1(IExpr arg2) {
-    if (arg2 instanceof ISignedNumber) {
+    if (arg2 instanceof IReal) {
       try {
         return valueOf(EvalEngine.getApfloat().hypergeometric0F1(fApfloat,
-            ((ISignedNumber) arg2).apfloatValue()));
+            ((IReal) arg2).apfloatValue()));
       } catch (ArithmeticException | ApfloatRuntimeException e) {
         // try as computation with complex numbers
       }
@@ -104,10 +104,10 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr hypergeometric1F1(IExpr arg2, IExpr arg3) {
-    if (arg2 instanceof ISignedNumber && arg3 instanceof ISignedNumber) {
+    if (arg2 instanceof IReal && arg3 instanceof IReal) {
       try {
         return valueOf(EvalEngine.getApfloat().hypergeometric1F1(fApfloat,
-            ((ISignedNumber) arg2).apfloatValue(), ((ISignedNumber) arg3).apfloatValue()));
+            ((IReal) arg2).apfloatValue(), ((IReal) arg3).apfloatValue()));
       } catch (ArithmeticException | ApfloatRuntimeException e) {
         // try as computation with complex numbers
       }
@@ -121,12 +121,12 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr hypergeometric2F1(IExpr arg2, IExpr arg3, IExpr arg4) {
-    if (arg2 instanceof ISignedNumber && arg3 instanceof ISignedNumber
-        && arg4 instanceof ISignedNumber) {
+    if (arg2 instanceof IReal && arg3 instanceof IReal
+        && arg4 instanceof IReal) {
       try {
         return valueOf(EvalEngine.getApfloat().hypergeometric2F1(fApfloat,
-            ((ISignedNumber) arg2).apfloatValue(), ((ISignedNumber) arg3).apfloatValue(),
-            ((ISignedNumber) arg4).apfloatValue()));
+            ((IReal) arg2).apfloatValue(), ((IReal) arg3).apfloatValue(),
+            ((IReal) arg4).apfloatValue()));
       } catch (ArithmeticException | ApfloatRuntimeException e) {
         // try as computation with complex numbers
       }
@@ -192,7 +192,7 @@ public class ApfloatNum implements INum {
   }
 
   @Override
-  public ISignedNumber evalReal() {
+  public IReal evalReal() {
     return this;
   }
 
@@ -296,12 +296,12 @@ public class ApfloatNum implements INum {
   }
 
   @Override
-  public ISignedNumber divideBy(ISignedNumber that) {
+  public IReal divideBy(IReal that) {
     return valueOf(EvalEngine.getApfloat().divide(fApfloat, that.apfloatValue()));
   }
 
   @Override
-  public ISignedNumber subtractFrom(ISignedNumber that) {
+  public IReal subtractFrom(IReal that) {
     return valueOf(EvalEngine.getApfloat().subtract(fApfloat, that.apfloatValue()));
   }
 
@@ -498,7 +498,7 @@ public class ApfloatNum implements INum {
   }
 
   @Override
-  public ISignedNumber roundClosest(ISignedNumber multiple) {
+  public IReal roundClosest(IReal multiple) {
     throw new ArithmeticException("Apfloat: Round closest not implemented");
     // final long precision = precision();
     // Apfloat factor = multiple.apfloatNumValue(precision).fApfloat;
@@ -530,7 +530,7 @@ public class ApfloatNum implements INum {
 
   /** {@inheritDoc} */
   @Override
-  public ISignedNumber fractionalPart() {
+  public IReal fractionalPart() {
     return F.num(fApfloat.frac());
   }
 
@@ -578,7 +578,7 @@ public class ApfloatNum implements INum {
     }
     if (expr.isNumber()) {
       if (expr.isReal()) {
-        return fApfloat.compareTo(((ISignedNumber) expr).apfloatValue());
+        return fApfloat.compareTo(((IReal) expr).apfloatValue());
       }
       int c = this.compareTo(((INumber) expr).re());
       if (c != 0) {
@@ -589,7 +589,7 @@ public class ApfloatNum implements INum {
   }
 
   @Override
-  public boolean isLT(ISignedNumber that) {
+  public boolean isLT(IReal that) {
     if (that instanceof ApfloatNum) {
       return fApfloat.compareTo(((ApfloatNum) that).fApfloat) < 0;
     }
@@ -597,7 +597,7 @@ public class ApfloatNum implements INum {
   }
 
   @Override
-  public boolean isGT(ISignedNumber that) {
+  public boolean isGT(IReal that) {
     if (that instanceof ApfloatNum) {
       return fApfloat.compareTo(((ApfloatNum) that).fApfloat) > 0;
     }
@@ -650,13 +650,13 @@ public class ApfloatNum implements INum {
 
   /** {@inheritDoc} */
   @Override
-  public ISignedNumber im() {
+  public IReal im() {
     return F.CD0;
   }
 
   /** {@inheritDoc} */
   @Override
-  public ISignedNumber re() {
+  public IReal re() {
     return this;
   }
 

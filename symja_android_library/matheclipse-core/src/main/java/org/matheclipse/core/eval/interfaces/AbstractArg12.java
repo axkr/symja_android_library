@@ -19,7 +19,7 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /** Evaluate a function with 1 or 2 arguments. */
@@ -143,19 +143,19 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 
         if (arg1 instanceof ApfloatNum) {
           if (arg2.isReal()) {
-            result = e2ApfloatArg((ApfloatNum) arg1, ((ISignedNumber) arg2).apfloatNumValue());
+            result = e2ApfloatArg((ApfloatNum) arg1, ((IReal) arg2).apfloatNumValue());
           }
         } else if (arg2 instanceof ApfloatNum) {
           if (arg1.isReal()) {
-            result = e2ApfloatArg(((ISignedNumber) arg1).apfloatNumValue(), (ApfloatNum) arg2);
+            result = e2ApfloatArg(((IReal) arg1).apfloatNumValue(), (ApfloatNum) arg2);
           }
         } else if (arg1 instanceof Num) {
           if (arg2.isReal()) {
-            result = e2DblArg((Num) arg1, ((ISignedNumber) arg2).numValue());
+            result = e2DblArg((Num) arg1, ((IReal) arg2).numValue());
           }
         } else if (arg2 instanceof Num) {
           if (arg1.isReal()) {
-            result = e2DblArg(((ISignedNumber) arg1).numValue(), (Num) arg2);
+            result = e2DblArg(((IReal) arg1).numValue(), (Num) arg2);
           }
         }
         if (result.isPresent()) {

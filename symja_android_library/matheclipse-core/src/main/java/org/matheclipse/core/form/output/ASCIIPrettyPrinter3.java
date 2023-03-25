@@ -6,7 +6,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.Precedence;
 
@@ -154,7 +154,7 @@ public class ASCIIPrettyPrinter3 {
       }
     } else {
       if (expr.isReal()) {
-        convertNumber((ISignedNumber) expr, caller);
+        convertNumber((IReal) expr, caller);
       } else {
         if (caller == PLUS_CALL) {
           print(" + ");
@@ -174,7 +174,7 @@ public class ASCIIPrettyPrinter3 {
       if (arg1.isMinusOne()) {
         print(" - ");
       } else {
-        if (convertNumber((ISignedNumber) arg1, caller)) {
+        if (convertNumber((IReal) arg1, caller)) {
           print(" * ");
         }
       }
@@ -227,7 +227,7 @@ public class ASCIIPrettyPrinter3 {
    * @param caller
    * @return <code>true</code> if the number is not equal <code>-1</code> or <code>1</code>
    */
-  private boolean convertNumber(ISignedNumber number, boolean caller) {
+  private boolean convertNumber(IReal number, boolean caller) {
     boolean negative = false;
     if (number.isNegative()) {
       number = number.negate();

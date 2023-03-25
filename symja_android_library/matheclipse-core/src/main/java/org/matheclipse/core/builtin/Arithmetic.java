@@ -109,7 +109,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numbertheory.Primality;
@@ -323,7 +323,7 @@ public final class Arithmetic {
       if (arg1.isNumericFunction(true)) {
         IExpr temp = engine.evalN(arg1);
         if (temp.isReal()) {
-          return arg1.copySign((ISignedNumber) temp);
+          return arg1.copySign((IReal) temp);
         }
       }
       if (arg1.isNegativeResult()) {
@@ -713,7 +713,7 @@ public final class Arithmetic {
       double delta = Config.DEFAULT_CHOP_DELTA;
       if (ast.isAST2()) {
         IExpr tolerance = ast.arg2();
-        if (tolerance instanceof ISignedNumber && tolerance.isPositive()) {
+        if (tolerance instanceof IReal && tolerance.isPositive()) {
           delta = tolerance.evalf();
         } else {
           // Tolerance specification `1` must be a non-negative number.
@@ -872,11 +872,11 @@ public final class Arithmetic {
           }
           try {
             if (min.isReal() && max.isReal()) {
-              return clip(x, (ISignedNumber) min, (ISignedNumber) max, vMin, vMax);
+              return clip(x, (IReal) min, (IReal) max, vMin, vMax);
             }
-            ISignedNumber minEvaled = min.evalReal();
+            IReal minEvaled = min.evalReal();
             if (minEvaled != null) {
-              ISignedNumber maxEvaled = max.evalReal();
+              IReal maxEvaled = max.evalReal();
               if (maxEvaled != null) {
                 return clip(x, minEvaled, maxEvaled, vMin, vMax);
               }
@@ -896,7 +896,7 @@ public final class Arithmetic {
 
     private static IExpr clipX(IExpr x) {
       if (x.isReal()) {
-        ISignedNumber real = (ISignedNumber) x;
+        IReal real = (IReal) x;
         if (real.isGT(F.C1)) {
           return F.C1;
         }
@@ -905,7 +905,7 @@ public final class Arithmetic {
         }
         return x;
       }
-      ISignedNumber real = x.evalReal();
+      IReal real = x.evalReal();
       if (real != null) {
         if (real.isGT(F.C1)) {
           return F.C1;
@@ -3831,7 +3831,7 @@ public final class Arithmetic {
               // return powerInterval(base, ii);
             }
             if (exponent.isReal()) {
-              return IntervalSym.power((IAST) base, (ISignedNumber) exponent);
+              return IntervalSym.power((IAST) base, (IReal) exponent);
               // return powerInterval(base, ii);
             }
             // } else if (base.isQuantity()) {
@@ -4049,19 +4049,19 @@ public final class Arithmetic {
 
       if (o0 instanceof ApfloatNum) {
         if (o1.isReal()) {
-          result = e2ApfloatArg((ApfloatNum) o0, ((ISignedNumber) o1).apfloatNumValue());
+          result = e2ApfloatArg((ApfloatNum) o0, ((IReal) o1).apfloatNumValue());
         }
       } else if (o1 instanceof ApfloatNum) {
         if (o0.isReal()) {
-          result = e2ApfloatArg(((ISignedNumber) o0).apfloatNumValue(), (ApfloatNum) o1);
+          result = e2ApfloatArg(((IReal) o0).apfloatNumValue(), (ApfloatNum) o1);
         }
       } else if (o0 instanceof Num) {
         if (o1.isReal()) {
-          result = e2DblArg((Num) o0, ((ISignedNumber) o1).numValue());
+          result = e2DblArg((Num) o0, ((IReal) o1).numValue());
         }
       } else if (o1 instanceof Num) {
         if (o0.isReal()) {
-          result = e2DblArg(((ISignedNumber) o0).numValue(), (Num) o1);
+          result = e2DblArg(((IReal) o0).numValue(), (Num) o1);
         }
       }
       if (result.isPresent()) {
@@ -4305,7 +4305,7 @@ public final class Arithmetic {
       }
       if (base.isReal() || exponent.isReal()) {
         if (exponent.isReal()) {
-          ISignedNumber realExponent = (ISignedNumber) exponent;
+          IReal realExponent = (IReal) exponent;
           if (base.isPower()) {
             if (powerPowerRealExponent((IAST) base, realExponent)) {
               return Power(base.base(), base.exponent().times(realExponent));
@@ -4370,7 +4370,7 @@ public final class Arithmetic {
                 }
               }
               if (exponent.isMinusOne() && base.isTimes()) {
-                IExpr temp = powerTimesInverse((IAST) base, (ISignedNumber) exponent);
+                IExpr temp = powerTimesInverse((IAST) base, (IReal) exponent);
                 if (temp.isPresent()) {
                   return temp;
                 }
@@ -4503,7 +4503,7 @@ public final class Arithmetic {
                     restAST.append(F.CN1);
                   } else {
                     if (exponent.isReal() && x.isPower() && x.base().isNumber()) {
-                      if (powerPowerRealExponent((IAST) x, (ISignedNumber) exponent)) {
+                      if (powerPowerRealExponent((IAST) x, (IReal) exponent)) {
                         simplifiedTimesArgs.append(F.Power(x.base(), x.exponent().times(exponent)));
                         return;
                       }
@@ -4605,7 +4605,7 @@ public final class Arithmetic {
      * @param exponent
      * @return <code>true</code> if the operation can be performed; <code>false</code> otherwise.
      */
-    private static boolean powerPowerRealExponent(final IAST powerAST, ISignedNumber exponent) {
+    private static boolean powerPowerRealExponent(final IAST powerAST, IReal exponent) {
       final IExpr baseArg1 = powerAST.base();
       final IExpr exponentArg1 = powerAST.exponent();
       if (exponentArg1.isReal() && baseArg1.isNonNegativeResult()) {
@@ -4748,7 +4748,7 @@ public final class Arithmetic {
      * @param arg2 equals <code>-1</code> or <code>-1.0</code>
      * @return {@link F#NIL} if the transformation isn't possible.
      */
-    private static IExpr powerTimesInverse(final IAST timesAST, final ISignedNumber arg2) {
+    private static IExpr powerTimesInverse(final IAST timesAST, final IReal arg2) {
       IASTAppendable resultAST = F.NIL;
       for (int i = 1; i < timesAST.size(); i++) {
         final IExpr arg = timesAST.get(i);
@@ -5618,7 +5618,7 @@ public final class Arithmetic {
 
     public static IExpr numberSign(INumber arg1) {
       if (arg1.isReal()) {
-        final int signum = ((ISignedNumber) arg1).complexSign();
+        final int signum = ((IReal) arg1).complexSign();
         return F.ZZ(signum);
       } else if (arg1.isComplex()) {
         IComplex c = (IComplex) arg1;
@@ -7277,7 +7277,7 @@ public final class Arithmetic {
    * @param max
    * @return
    */
-  public static IExpr clip(IExpr x, ISignedNumber min, ISignedNumber max) {
+  public static IExpr clip(IExpr x, IReal min, IReal max) {
     return clip(x, min, max, min, max);
   }
 
@@ -7293,7 +7293,7 @@ public final class Arithmetic {
    * @return x if x is in the range min to max. Return vMin if x is less than min.Return vMax if x
    *         is greater than max.
    */
-  public static IExpr clip(IExpr x, ISignedNumber min, ISignedNumber max, IExpr vMin, IExpr vMax) {
+  public static IExpr clip(IExpr x, IReal min, IReal max, IExpr vMin, IExpr vMax) {
     if (x.isSparseArray()) {
       x = x.normal(false);
     }
@@ -7310,7 +7310,7 @@ public final class Arithmetic {
       return result;
     }
     if (x.isReal()) {
-      ISignedNumber real = (ISignedNumber) x;
+      IReal real = (IReal) x;
       if (real.isGT(max)) {
         return vMax;
       }
@@ -7319,7 +7319,7 @@ public final class Arithmetic {
       }
       return x;
     }
-    ISignedNumber real = x.evalReal();
+    IReal real = x.evalReal();
     if (real != null) {
       if (real.isGT(max)) {
         return vMax;

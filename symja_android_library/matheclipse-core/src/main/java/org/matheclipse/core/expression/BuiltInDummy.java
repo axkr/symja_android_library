@@ -28,7 +28,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap;
@@ -388,11 +388,11 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final ISignedNumber evalReal() {
+  public final IReal evalReal() {
     if (isNumericFunction(true)) {
       IExpr result = F.evaln(this);
       if (result.isReal()) {
-        return (ISignedNumber) result;
+        return (IReal) result;
       }
       // } else if (fValue != null) {
     } else {
@@ -400,17 +400,9 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
       if (temp != null && temp.isNumericFunction(true)) {
         IExpr result = F.evaln(this);
         if (result.isReal()) {
-          return (ISignedNumber) result;
+          return (IReal) result;
         }
       }
-      // } else {
-      // IExpr temp = evalDownRule(EvalEngine.get(), this);
-      // if (temp.isPresent() && temp.isNumericFunction()) {
-      // IExpr result = F.evaln(this);
-      // if (result.isReal()) {
-      // return (ISignedNumber) result;
-      // }
-      // }
     }
     return null;
   }

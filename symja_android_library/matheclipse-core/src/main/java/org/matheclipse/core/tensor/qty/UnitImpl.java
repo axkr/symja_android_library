@@ -10,7 +10,7 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 
 /* package */ class UnitImpl implements IUnit, Serializable {
 
@@ -37,7 +37,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 
   @Override // from Unit
   public IUnit multiply(IExpr factor) {
-    if (factor instanceof ISignedNumber) {
+    if (factor instanceof IReal) {
       NavigableMap<String, IExpr> map = new TreeMap<>();
       navigableMap.forEach((key, value) -> {
         // TODO this may not always use the defined UnitHelper.EvalEngine

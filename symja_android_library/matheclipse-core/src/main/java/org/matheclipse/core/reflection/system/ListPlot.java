@@ -15,7 +15,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
@@ -434,8 +434,8 @@ public class ListPlot extends AbstractEvaluator {
   private static boolean addSinglePoint(IASTAppendable pointPrimitives,
       IASTAppendable graphicsExtraPrimitives, double[] boundingbox, EvalEngine engine,
       IExpr xScaled, IExpr yScaled, IAST arg) {
-    ISignedNumber x = xScaled.evalReal();
-    ISignedNumber y = yScaled.evalReal();
+    IReal x = xScaled.evalReal();
+    IReal y = yScaled.evalReal();
     if (x != null && y != null) {
       if (xBoundingBox(boundingbox, x, engine) && yBoundingBox(boundingbox, y, engine)) {
         pointPrimitives.append(F.List(x, y));
@@ -454,7 +454,7 @@ public class ListPlot extends AbstractEvaluator {
   private static boolean addIndexedYPoint(IASTAppendable pointPrimitives,
       IASTAppendable textPrimitives, double[] boundingbox, EvalEngine engine, IExpr xScaled,
       IExpr yScaled, IExpr currentYPrimitive) {
-    ISignedNumber y = yScaled.evalReal();
+    IReal y = yScaled.evalReal();
     if (y != null && yBoundingBox(boundingbox, yScaled, engine)) {
       if (currentYPrimitive.isAST(S.Labeled, 3)) {
         textPrimitives.append(GraphicsFunctions.textAtPoint(currentYPrimitive, xScaled, y));

@@ -4,7 +4,7 @@ import java.util.Map;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 
 public interface IAssumptions {
 
@@ -71,7 +71,7 @@ public interface IAssumptions {
    * @param number
    * @return
    */
-  public boolean isEqual(IExpr expr, ISignedNumber number);
+  public boolean isEqual(IExpr expr, IReal number);
 
   /**
    * Gives <code>true</code>, if the expression is assumed to be greater equal number, <code>false
@@ -81,7 +81,7 @@ public interface IAssumptions {
    * @param number
    * @return
    */
-  public boolean isGreaterEqual(IExpr expr, ISignedNumber number);
+  public boolean isGreaterEqual(IExpr expr, IReal number);
 
   /**
    * Gives <code>true</code>, if the expression is assumed to be greater than number, <code>false
@@ -91,7 +91,7 @@ public interface IAssumptions {
    * @param number
    * @return
    */
-  public boolean isGreaterThan(IExpr expr, ISignedNumber number);
+  public boolean isGreaterThan(IExpr expr, IReal number);
 
   /**
    * Gives <code>true</code>, if the expression is assumed to be an integer value (i.e. an element
@@ -110,7 +110,7 @@ public interface IAssumptions {
    * @param number
    * @return
    */
-  public boolean isLessEqual(IExpr expr, ISignedNumber number);
+  public boolean isLessEqual(IExpr expr, IReal number);
 
   /**
    * Gives <code>true</code>, if the expression is assumed to be less than number, <code>false
@@ -120,7 +120,7 @@ public interface IAssumptions {
    * @param number
    * @return
    */
-  public boolean isLessThan(IExpr expr, ISignedNumber number);
+  public boolean isLessThan(IExpr expr, IReal number);
 
   /**
    * Gives <code>true</code>, if the expression is assumed to be a negative value, <code>false

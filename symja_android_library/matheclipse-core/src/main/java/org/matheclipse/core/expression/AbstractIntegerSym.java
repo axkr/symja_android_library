@@ -28,7 +28,7 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.core.visit.IVisitor;
@@ -705,7 +705,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   }
 
   @Override
-  public IRational roundClosest(ISignedNumber multiple) {
+  public IRational roundClosest(IReal multiple) {
     if (!multiple.isRational()) {
       multiple = F.fraction(multiple.doubleValue(), Config.DOUBLE_EPSILON);
     }
@@ -1077,7 +1077,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   }
 
   @Override
-  public ISignedNumber subtractFrom(ISignedNumber that) {
+  public IReal subtractFrom(IReal that) {
     if (that instanceof IRational) {
       return this.add((IRational) that.negate());
     }

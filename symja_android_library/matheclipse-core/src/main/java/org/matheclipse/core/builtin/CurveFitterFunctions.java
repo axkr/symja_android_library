@@ -22,7 +22,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 
 public class CurveFitterFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -199,7 +199,7 @@ public class CurveFitterFunctions {
           initialGuess[i - 1] = 1.0;
           return temp;
         } else if (temp.isAST(S.List, 3) && temp.first().isSymbol()) {
-          ISignedNumber signedNumber = temp.second().evalReal();
+          IReal signedNumber = temp.second().evalReal();
           if (signedNumber != null) {
             initialGuess[i - 1] = signedNumber.doubleValue();
           } else {
@@ -215,7 +215,7 @@ public class CurveFitterFunctions {
       // initialGuess[i - 1] = 1.0;
       // newListOfSymbols.append(temp);
       // } else if (temp.isAST(S.List, 3) && temp.first().isSymbol()) {
-      // ISignedNumber signedNumber = temp.second().evalReal();
+      // IReal signedNumber = temp.second().evalReal();
       // if (signedNumber != null) {
       // initialGuess[i - 1] = signedNumber.doubleValue();
       // } else {

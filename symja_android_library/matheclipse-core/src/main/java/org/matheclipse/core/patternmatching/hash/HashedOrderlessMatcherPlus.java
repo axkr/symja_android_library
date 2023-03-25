@@ -6,7 +6,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.visit.HashValueVisitor;
 
 /**
@@ -52,15 +52,15 @@ public class HashedOrderlessMatcherPlus extends HashedOrderlessMatcher {
       AbstractHashedPatternRules hashRule, int[] hashValues, int i, int j, EvalEngine engine) {
     IExpr temp;
     IExpr arg1 = orderlessAST.get(i + 1);
-    ISignedNumber intFactor1 = F.C1;
+    IReal intFactor1 = F.C1;
     if (arg1.isTimes2() && arg1.first().isInteger()) {
-      intFactor1 = (ISignedNumber) ((IAST) arg1).arg1();
+      intFactor1 = (IReal) ((IAST) arg1).arg1();
       arg1 = ((IAST) arg1).arg2();
     }
     IExpr arg2 = orderlessAST.get(j + 1);
-    ISignedNumber intFactor2 = F.C1;
+    IReal intFactor2 = F.C1;
     if (arg2.isTimes2() && arg2.first().isInteger()) {
-      intFactor2 = (ISignedNumber) arg2.first();
+      intFactor2 = (IReal) arg2.first();
       arg2 = arg2.second();
     }
     if ((temp = hashRule.evalDownRule(arg1, null, arg2, null, engine)).isPresent()) {
@@ -70,7 +70,7 @@ public class HashedOrderlessMatcherPlus extends HashedOrderlessMatcher {
       IInteger plusMinusOne = F.C1;
 
       if (hashRule.isLHS2Negate()) {
-        ISignedNumber intFactor2Negated = intFactor2.negate();
+        IReal intFactor2Negated = intFactor2.negate();
         if (intFactor1.equals(intFactor2Negated)) {
           result.append(F.Times(intFactor1, temp));
           return true;
@@ -82,7 +82,7 @@ public class HashedOrderlessMatcherPlus extends HashedOrderlessMatcher {
         }
         if (intFactor1.isPositive() && intFactor2.isNegative()) {
           intFactor2 = intFactor2.negate();
-          ISignedNumber diff = intFactor1.subtractFrom(intFactor2);
+          IReal diff = intFactor1.subtractFrom(intFactor2);
           if (diff.isPositive()) {
             // num1 > num2
             result.append(
@@ -106,7 +106,7 @@ public class HashedOrderlessMatcherPlus extends HashedOrderlessMatcher {
           plusMinusOne = F.CN1;
         }
         if (intFactor1.isPositive() && intFactor2.isPositive()) {
-          ISignedNumber diff = intFactor1.subtractFrom(intFactor2);
+          IReal diff = intFactor1.subtractFrom(intFactor2);
           if (diff.isPositive()) {
             // num1 > num2
             result.append(

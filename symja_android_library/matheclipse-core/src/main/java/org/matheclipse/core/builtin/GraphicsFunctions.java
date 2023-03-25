@@ -23,7 +23,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -301,8 +301,8 @@ public class GraphicsFunctions {
         if (ast.arg1().isAST(S.List, 3)) {
           IAST list1 = (IAST) ast.arg1();
 
-          double cx = ((ISignedNumber) list1.arg1()).doubleValue();
-          double cy = ((ISignedNumber) list1.arg2()).doubleValue();
+          double cx = ((IReal) list1.arg1()).doubleValue();
+          double cy = ((IReal) list1.arg2()).doubleValue();
           double rx = 1.0;
           double ry = 1.0;
 
@@ -313,10 +313,10 @@ public class GraphicsFunctions {
         IAST list1 = (IAST) ast.arg1();
         IAST list2 = (IAST) ast.arg2();
 
-        double cx = ((ISignedNumber) list1.arg1()).doubleValue();
-        double cy = ((ISignedNumber) list1.arg2()).doubleValue();
-        double rx = ((ISignedNumber) list2.arg1()).doubleValue();
-        double ry = ((ISignedNumber) list2.arg2()).doubleValue();
+        double cx = ((IReal) list1.arg1()).doubleValue();
+        double cy = ((IReal) list1.arg2()).doubleValue();
+        double rx = ((IReal) list2.arg1()).doubleValue();
+        double ry = ((IReal) list2.arg2()).doubleValue();
 
         dim.minMax(cx - rx, cx + rx, cy - ry, cy + ry);
         return true;
@@ -805,14 +805,14 @@ public class GraphicsFunctions {
         for (int i = 0; i < numberOfPoints; i++) {
           point = pointList.get(i + 1);
           if (point.isList() && point.isAST2()) {
-            x[i] = ((ISignedNumber) point.first()).doubleValue();
+            x[i] = ((IReal) point.first()).doubleValue();
             if (x[i] < xMin) {
               xMin = x[i];
             }
             if (x[i] > xMax) {
               xMax = x[i];
             }
-            y[i] = ((ISignedNumber) point.second()).doubleValue();
+            y[i] = ((IReal) point.second()).doubleValue();
             if (y[i] < yMin) {
               yMin = y[i];
             }
@@ -869,8 +869,8 @@ public class GraphicsFunctions {
   private static class Point extends AbstractEvaluator implements IGraphics2D, IGraphics3D {
 
     private static void singlePointDimensions(IAST point, Dimensions2D dim) {
-      double x1 = ((ISignedNumber) point.arg1()).doubleValue();
-      double y1 = ((ISignedNumber) point.arg2()).doubleValue();
+      double x1 = ((IReal) point.arg1()).doubleValue();
+      double y1 = ((IReal) point.arg2()).doubleValue();
 
       dim.minMax(x1 - Config.DOUBLE_TOLERANCE, x1 + Config.DOUBLE_TOLERANCE,
           y1 - Config.DOUBLE_TOLERANCE, y1 + Config.DOUBLE_TOLERANCE);
@@ -1097,8 +1097,8 @@ public class GraphicsFunctions {
         if (ast.arg1().isList2()) {
           IAST list1 = (IAST) ast.arg1();
 
-          double x1 = ((ISignedNumber) list1.arg1()).doubleValue();
-          double y1 = ((ISignedNumber) list1.arg2()).doubleValue();
+          double x1 = ((IReal) list1.arg1()).doubleValue();
+          double y1 = ((IReal) list1.arg2()).doubleValue();
           double x2 = x1 + 1.0;
           double y2 = y1 + 1.0;
 
@@ -1109,10 +1109,10 @@ public class GraphicsFunctions {
         IAST list1 = (IAST) ast.arg1();
         IAST list2 = (IAST) ast.arg2();
 
-        double x1 = ((ISignedNumber) list1.arg1()).doubleValue();
-        double y1 = ((ISignedNumber) list1.arg2()).doubleValue();
-        double x2 = ((ISignedNumber) list2.arg1()).doubleValue();
-        double y2 = ((ISignedNumber) list2.arg2()).doubleValue();
+        double x1 = ((IReal) list1.arg1()).doubleValue();
+        double y1 = ((IReal) list1.arg2()).doubleValue();
+        double x2 = ((IReal) list2.arg1()).doubleValue();
+        double y2 = ((IReal) list2.arg2()).doubleValue();
 
         dim.minMax(x1, x2, y1, y2);
         return true;
@@ -1632,7 +1632,7 @@ public class GraphicsFunctions {
     option = options.getOption(S.AspectRatio);
     if (option.isPresent()) {
       ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
-      ISignedNumber value = option.evalReal();
+      IReal value = option.evalReal();
       if (value != null) {
         g.put("factor", option.evalf());
       } else {

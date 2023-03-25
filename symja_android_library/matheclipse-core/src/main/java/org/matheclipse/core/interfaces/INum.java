@@ -3,7 +3,7 @@ package org.matheclipse.core.interfaces;
 import org.matheclipse.core.expression.F;
 
 /** A numeric (double) number. */
-public interface INum extends ISignedNumber {
+public interface INum extends IReal {
   public static final double Catalan = 0.91596559417721901505460351493238411077414937428167;
   /** <code> Math.PI / 180.0</code> */
   public static final double Degree = 0.01745329251994329576923690768488612713442871888541;
@@ -16,7 +16,7 @@ public interface INum extends ISignedNumber {
   public double getRealPart();
 
   @Override
-  default ISignedNumber add(ISignedNumber val) {
+  default IReal add(IReal val) {
     return add(F.num(val.reDoubleValue()));
   }
 
@@ -31,7 +31,7 @@ public interface INum extends ISignedNumber {
 
 
   @Override
-  default ISignedNumber multiply(ISignedNumber val) {
+  default IReal multiply(IReal val) {
     return multiply(F.num(val.reDoubleValue()));
   }
 

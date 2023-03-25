@@ -20,7 +20,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -608,7 +608,7 @@ public class TensorFunctions {
           IExpr arg2 = ast.arg2();
           if (arg2.equals(S.All)) {
           } else if (arg2.isReal()) {
-            ISignedNumber sn = (ISignedNumber) arg2;
+            IReal sn = (IReal) arg2;
             n = sn.toIntDefault();
           }
         }

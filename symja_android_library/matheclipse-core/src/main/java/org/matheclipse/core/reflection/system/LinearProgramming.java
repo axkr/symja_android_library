@@ -22,7 +22,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 
 /**
  *
@@ -133,7 +133,7 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
                   constraints.add(new LinearConstraint(arg2D, Relationship.GEQ, arg3D[0]));
                 }
               } else {
-                ISignedNumber sn = arg3.get(i).evalReal();
+                IReal sn = arg3.get(i).evalReal();
                 if (sn != null) {
                   constraints.add(new LinearConstraint(arg2D, Relationship.GEQ, sn.doubleValue()));
                 } else {

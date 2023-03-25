@@ -1,7 +1,7 @@
 package org.matheclipse.core.eval.interfaces;
 
 /** Interface for &quot;real numeric constants&quot;. */
-public interface ISignedNumberConstant {
+public interface IRealConstant {
   /**
    * Evaluate the symbol to a double number
    *

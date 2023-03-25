@@ -13,7 +13,7 @@ import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.Precedence;
 
@@ -161,8 +161,8 @@ public class BoxesFunctions {
           return F.$str(expr.toString());
         } else if (expr.isComplexNumeric()) {
           IComplexNum complex = (IComplexNum) expr;
-          ISignedNumber re = complex.re();
-          ISignedNumber im = complex.im();
+          IReal re = complex.re();
+          IReal im = complex.im();
           if (re.isZero()) {
             return F.RowBox(F.list(F.$str(im.toString()), F.$str(" "), F.$str("\\[ImaginaryI]")));
           }

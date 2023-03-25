@@ -7,7 +7,7 @@ import java.awt.geom.Point2D;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 
 /**
  * GeometricLayer transforms from model to pixel coordinates
@@ -150,7 +150,7 @@ public class GeometricLayer {
    * @param modelWidth
    * @return non-negative value
    */
-  public float model2pixelWidth(ISignedNumber modelWidth) {
+  public float model2pixelWidth(IReal modelWidth) {
     return (float) (Math.sqrt(Math.abs(deque.peek().det())) * modelWidth.evalf());
   }
 

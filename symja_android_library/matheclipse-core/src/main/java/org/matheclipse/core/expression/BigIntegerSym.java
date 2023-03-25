@@ -17,7 +17,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPair;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.Primality;
 import com.google.common.math.BigIntegerMath;
@@ -121,7 +121,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public ISignedNumber add(ISignedNumber that) {
+  public IReal add(IReal that) {
     if (that instanceof IRational) {
       return add((IRational) that);
     }
@@ -185,7 +185,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
       }
     }
     if (expr.isReal()) {
-      return Double.compare(fBigIntValue.doubleValue(), ((ISignedNumber) expr).doubleValue());
+      return Double.compare(fBigIntValue.doubleValue(), ((IReal) expr).doubleValue());
     }
     return super.compareTo(expr);
   }
@@ -243,7 +243,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public ISignedNumber divideBy(ISignedNumber that) {
+  public IReal divideBy(IReal that) {
     if (that instanceof BigIntegerSym) {
       return AbstractFractionSym.valueOf(this).divideBy(that);
     }
@@ -352,7 +352,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
   /** {@inheritDoc} */
   @Override
-  public ISignedNumber im() {
+  public IReal im() {
     return F.C0;
   }
 
@@ -459,7 +459,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public boolean isGT(ISignedNumber obj) {
+  public boolean isGT(IReal obj) {
     if (obj instanceof BigIntegerSym) {
       return fBigIntValue.compareTo(((BigIntegerSym) obj).fBigIntValue) > 0;
     }
@@ -479,7 +479,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public boolean isLT(ISignedNumber obj) {
+  public boolean isLT(IReal obj) {
     if (obj instanceof BigIntegerSym) {
       return fBigIntValue.compareTo(((BigIntegerSym) obj).fBigIntValue) < 0;
     }
@@ -612,7 +612,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public ISignedNumber multiply(ISignedNumber that) {
+  public IReal multiply(IReal that) {
     if (that instanceof IRational) {
       return multiply((IRational) that);
     }
@@ -703,7 +703,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
   /** {@inheritDoc} */
   @Override
-  public ISignedNumber re() {
+  public IReal re() {
     return this;
   }
 

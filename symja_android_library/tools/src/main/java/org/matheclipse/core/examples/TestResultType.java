@@ -3,7 +3,7 @@ package org.matheclipse.core.examples;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class TestResultType {
@@ -44,7 +44,7 @@ public class TestResultType {
       ISymbol sym = (ISymbol) result;
       System.out.println("Symbol result: " + sym.toString());
     } else if (result.isReal()) {
-      ISignedNumber sn = (ISignedNumber) result;
+      IReal sn = (IReal) result;
       System.out.println("Real number result: " + result.toString());
     } else if (result.isAST()) {
       IAST ast = (IAST) result;

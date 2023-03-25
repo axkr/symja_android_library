@@ -8,19 +8,19 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /** Generate the horner scheme for univariate polynomials */
 public class HornerScheme {
 
-  private TreeMap<ISignedNumber, IASTAppendable> map;
+  private TreeMap<IReal, IASTAppendable> map;
 
   public HornerScheme() {
-    Comparator<ISignedNumber> comp = new Comparator<ISignedNumber>() {
+    Comparator<IReal> comp = new Comparator<IReal>() {
 
       @Override
-      public int compare(ISignedNumber arg0, ISignedNumber arg1) {
+      public int compare(IReal arg0, IReal arg1) {
         if (arg0.isGT(arg1)) {
           return 1;
         }
@@ -30,7 +30,7 @@ public class HornerScheme {
         return 0;
       }
     };
-    map = new TreeMap<ISignedNumber, IASTAppendable>(comp);
+    map = new TreeMap<IReal, IASTAppendable>(comp);
   }
 
   public IAST generate(boolean numericMode, IAST poly, IExpr sym) {
@@ -42,9 +42,9 @@ public class HornerScheme {
       IASTAppendable result = F.PlusAlloc(16);
       IAST startResult = result;
       IASTAppendable temp;
-      ISignedNumber start = F.CD0;
-      for (Iterator<ISignedNumber> iter = map.keySet().iterator(); iter.hasNext();) {
-        ISignedNumber exponent = iter.next();
+      IReal start = F.CD0;
+      for (Iterator<IReal> iter = map.keySet().iterator(); iter.hasNext();) {
+        IReal exponent = iter.next();
         IExpr coefficient = getCoefficient(exponent);
         if (exponent.isLT(F.CD1)) {
           if (exponent.compareTo(F.CD0) == 0) {
@@ -54,7 +54,7 @@ public class HornerScheme {
           }
         } else {
           temp = F.TimesAlloc(2);
-          ISignedNumber currentExponent = exponent.subtractFrom(start);
+          IReal currentExponent = exponent.subtractFrom(start);
           if (currentExponent.equals(F.CD1)) {
             temp.append(sym);
           } else {
@@ -76,9 +76,9 @@ public class HornerScheme {
       IASTAppendable result = F.PlusAlloc(16);
       IAST startResult = result;
       IASTAppendable temp;
-      ISignedNumber start = F.C0;
-      for (Iterator<ISignedNumber> iter = map.keySet().iterator(); iter.hasNext();) {
-        ISignedNumber exponent = iter.next();
+      IReal start = F.C0;
+      for (Iterator<IReal> iter = map.keySet().iterator(); iter.hasNext();) {
+        IReal exponent = iter.next();
         IExpr coefficient = getCoefficient(exponent);
         if (exponent.isLT(F.C1)) {
           if (exponent.compareTo(F.C0) == 0) {
@@ -88,7 +88,7 @@ public class HornerScheme {
           }
         } else {
           temp = F.TimesAlloc(2);
-          ISignedNumber currentExponent = exponent.subtractFrom(start);
+          IReal currentExponent = exponent.subtractFrom(start);
           if (currentExponent.equals(F.C1)) {
             temp.append(sym);
           } else {
@@ -105,7 +105,7 @@ public class HornerScheme {
     }
   }
 
-  private IExpr getCoefficient(ISignedNumber key) {
+  private IExpr getCoefficient(IReal key) {
     IAST value = map.get(key);
     IExpr coefficient;
     if (value.isAST(S.Plus, 2)) {
@@ -130,16 +130,16 @@ public class HornerScheme {
             return;
           } else if (term.get(i).isAST(S.Power, 3)) {
             IAST pow = (IAST) term.get(i);
-            if (pow.arg1().equals(sym) && pow.arg2() instanceof ISignedNumber) {
+            if (pow.arg1().equals(sym) && pow.arg2() instanceof IReal) {
               IAST temp = F.ast(term, S.Times, false, i, i + 1);
-              addToMap((ISignedNumber) pow.arg2(), temp);
+              addToMap((IReal) pow.arg2(), temp);
               return;
             }
           }
         }
       } else if (term.isAST(S.Power, 3)) {
-        if (term.arg1().equals(sym) && term.arg2() instanceof ISignedNumber) {
-          addToMap((ISignedNumber) term.arg2(), F.C1);
+        if (term.arg1().equals(sym) && term.arg2() instanceof IReal) {
+          addToMap((IReal) term.arg2(), F.C1);
           return;
         }
       }
@@ -163,14 +163,14 @@ public class HornerScheme {
             IAST pow = (IAST) term.get(i);
             if (pow.arg1().equals(sym) && pow.arg2().isReal()) {
               IAST temp = F.ast(term, S.Times, false, i, i + 1);
-              addToMap((ISignedNumber) pow.arg2(), temp);
+              addToMap((IReal) pow.arg2(), temp);
               return;
             }
           }
         }
       } else if (term.isAST(S.Power, 3)) {
         if (term.arg1().equals(sym) && term.arg2().isReal()) {
-          addToMap((ISignedNumber) term.arg2(), F.CD1);
+          addToMap((IReal) term.arg2(), F.CD1);
           return;
         }
       }
@@ -181,7 +181,7 @@ public class HornerScheme {
     addToMap(F.CD0, expr);
   }
 
-  public IAST addToMap(final ISignedNumber key, final IExpr value) {
+  public IAST addToMap(final IReal key, final IExpr value) {
     IASTAppendable temp = map.get(key);
     if (temp == null) {
       temp = F.PlusAlloc(8);

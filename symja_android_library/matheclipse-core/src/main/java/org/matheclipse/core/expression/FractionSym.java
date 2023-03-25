@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ParserConfig;
 import edu.jas.arith.BigRational;
@@ -197,7 +197,7 @@ public class FractionSym extends AbstractFractionSym {
         return -expr.compareTo(this);
       }
     } else if (expr.isReal()) {
-      return Double.compare(doubleValue(), ((ISignedNumber) expr).doubleValue());
+      return Double.compare(doubleValue(), ((IReal) expr).doubleValue());
     }
     return -1;
   }

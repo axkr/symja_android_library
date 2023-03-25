@@ -14,7 +14,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.math.MathException;
@@ -116,7 +116,7 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
   }
 
   @Override
-  public ISignedNumber evalReal() {
+  public IReal evalReal() {
     return value.evalReal();
   }
 

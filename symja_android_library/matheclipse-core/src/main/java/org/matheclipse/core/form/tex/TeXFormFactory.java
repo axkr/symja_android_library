@@ -36,7 +36,7 @@ import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.Characters;
 import org.matheclipse.parser.client.ParserConfig;
@@ -1444,8 +1444,8 @@ public class TeXFormFactory {
 
   private boolean convertNumber(final StringBuilder buf, final Object o, final int precedence,
       boolean caller) {
-    if (o instanceof ISignedNumber) {
-      ISignedNumber number = (ISignedNumber) o;
+    if (o instanceof IReal) {
+      IReal number = (IReal) o;
       boolean isNegative = number.isNegative();
       if (isNegative) {
         number = number.negate();

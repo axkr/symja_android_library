@@ -3,7 +3,7 @@ package org.matheclipse.core.tensor.sca;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 
 /**
  * clip to a single point
@@ -17,7 +17,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
   }
 
   @Override // from ClipInterval
-  public ISignedNumber rescale(IExpr scalar) {
+  public IReal rescale(IExpr scalar) {
     apply(scalar);
     return F.C0;
   }

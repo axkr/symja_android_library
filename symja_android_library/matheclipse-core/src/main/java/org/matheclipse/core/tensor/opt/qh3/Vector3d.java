@@ -18,7 +18,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.tensor.nrm.Vector2Norm;
 import org.matheclipse.core.tensor.nrm.Vector2NormSquared;
 
@@ -83,7 +83,7 @@ public class Vector3d {
    * @param value element value
    * @return element value throws ArrayIndexOutOfBoundsException if i is not in the range 0 to 2.
    */
-  public void set(int i, ISignedNumber value) {
+  public void set(int i, IReal value) {
     switch (i) {
       case 0: {
         x = value;
@@ -268,7 +268,7 @@ public class Vector3d {
    * @param upper upper random value (exclusive)
    * @param generator random number generator
    */
-  protected void setRandom(ISignedNumber lower, ISignedNumber upper, Random generator) {
+  protected void setRandom(IReal lower, IReal upper, Random generator) {
     EvalEngine engine = EvalEngine.get();
     IExpr distribution = S.UniformDistribution.of(engine, lower, upper);
     set((IAST) S.RandomVariate.of(engine, distribution, 3));

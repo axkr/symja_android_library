@@ -20,7 +20,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -595,13 +595,13 @@ public class ApcomplexNum implements IComplexNum {
 
   /** {@inheritDoc} */
   @Override
-  public ISignedNumber im() {
+  public IReal im() {
     return F.num(fApcomplex.imag());
   }
 
   /** {@inheritDoc} */
   @Override
-  public ISignedNumber re() {
+  public IReal re() {
     return F.num(fApcomplex.real());
   }
 

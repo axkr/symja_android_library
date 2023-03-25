@@ -4,7 +4,7 @@ package org.matheclipse.core.tensor.sca;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 
 /**
  * Clip to an interval of non-zero width
@@ -55,7 +55,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
   }
 
   @Override // from Clip
-  public final ISignedNumber requireInside(ISignedNumber scalar) {
+  public final IReal requireInside(IReal scalar) {
     if (isInside(scalar)) {
       return scalar;
     }

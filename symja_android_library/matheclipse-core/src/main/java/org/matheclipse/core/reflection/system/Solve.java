@@ -42,7 +42,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPair;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.QuarticSolver;
 
@@ -579,7 +579,7 @@ public class Solve extends AbstractFunctionEvaluator {
     private IExpr rewritePowerFractions(IAST plusAST, int i, IExpr num, IExpr base,
         IExpr exponent) {
       if (exponent.isFraction() || (exponent.isReal() && !exponent.isNumIntValue())) {
-        ISignedNumber arg2 = (ISignedNumber) exponent;
+        IReal arg2 = (IReal) exponent;
         if (arg2.isPositive()) {
           IExpr plus = plusAST.splice(i).oneIdentity0();
           if (plus.isPositiveResult()) {

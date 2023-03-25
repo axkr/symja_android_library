@@ -21,7 +21,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModIntegerRing;
@@ -101,7 +101,7 @@ public class JASConvert<C extends RingElem<C>> {
     return F.chopNumber(F.complexNum(red, imd), epsilon);
   }
 
-  public static ModIntegerRing option2ModIntegerRing(ISignedNumber option) {
+  public static ModIntegerRing option2ModIntegerRing(IReal option) {
     // TODO convert to long value
     long longValue = option.toLong();
     final BigInteger value = BigInteger.valueOf(longValue);

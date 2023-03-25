@@ -24,7 +24,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.SyntaxError;
@@ -548,7 +548,7 @@ public class ExprEvaluator {
       if (fExpr != null) {
         IExpr temp = eval(F.N(fExpr));
         if (temp.isReal()) {
-          return ((ISignedNumber) temp).doubleValue();
+          return ((IReal) temp).doubleValue();
         }
       }
     }
@@ -600,7 +600,7 @@ public class ExprEvaluator {
     EvalEngine.setReset(fEngine);
     IExpr temp = eval(F.N(expr));
     if (temp.isReal()) {
-      return ((ISignedNumber) temp).doubleValue();
+      return ((IReal) temp).doubleValue();
     }
     return Double.NaN;
   }

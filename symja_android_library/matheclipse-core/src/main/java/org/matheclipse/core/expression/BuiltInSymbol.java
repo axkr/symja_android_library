@@ -10,7 +10,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractPredicateEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
+import org.matheclipse.core.eval.interfaces.IRealConstant;
 import org.matheclipse.core.eval.interfaces.ISymbolEvaluator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBooleanFormula;
@@ -309,7 +309,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   @Override
   public final boolean isNegative() {
     if (isRealConstant()) {
-      return ((ISignedNumberConstant) fEvaluator).isNegative();
+      return ((IRealConstant) fEvaluator).isNegative();
     }
     return false;
   }
@@ -317,7 +317,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   @Override
   public final boolean isPositive() {
     if (isRealConstant()) {
-      return ((ISignedNumberConstant) fEvaluator).isPositive();
+      return ((IRealConstant) fEvaluator).isPositive();
     }
     return false;
   }
@@ -325,7 +325,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   /** {@inheritDoc} */
   @Override
   public final boolean isRealConstant() {
-    return fEvaluator instanceof ISignedNumberConstant;
+    return fEvaluator instanceof IRealConstant;
   }
 
   /** {@inheritDoc} */
@@ -395,8 +395,8 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   /** {@inheritDoc} */
   @Override
   public IExpr mapConstantDouble(DoubleFunction<IExpr> function) {
-    if (fEvaluator instanceof ISignedNumberConstant) {
-      double value = ((ISignedNumberConstant) fEvaluator).evalReal();
+    if (fEvaluator instanceof IRealConstant) {
+      double value = ((IRealConstant) fEvaluator).evalReal();
       if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
         return function.apply(value);
       }

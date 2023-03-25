@@ -5,7 +5,7 @@ import java.awt.Color;
 import java.util.function.Function;
 import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 
 /**
  * Function maps {@link Scalar}s to vectors of the form {R, G, B, A} with entries in the interval
@@ -19,7 +19,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
  * The tensor library provides the color data {@link ColorDataLists}
  * 
  */
-public interface ColorDataIndexed extends Function<ISignedNumber, IAST> {
+public interface ColorDataIndexed extends Function<IReal, IAST> {
   /**
    * @param index
    * @return color associated to given index

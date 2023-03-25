@@ -62,7 +62,7 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPatternObject;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -1400,7 +1400,7 @@ public class EvalEngine implements Serializable {
    */
   public final double evalDouble(IExpr expr, Function<IExpr, IExpr> function, double defaultValue) {
     if (expr.isReal()) {
-      return ((ISignedNumber) expr).doubleValue();
+      return ((IReal) expr).doubleValue();
     }
     boolean quietMode = fQuietMode;
     try {
@@ -1410,7 +1410,7 @@ public class EvalEngine implements Serializable {
       }
       IExpr result = evalN(expr);
       if (result.isReal()) {
-        return ((ISignedNumber) result).doubleValue();
+        return ((IReal) result).doubleValue();
       }
       if (result.isComplexNumeric()) {
         IComplexNum cc = (IComplexNum) result;
@@ -1492,7 +1492,7 @@ public class EvalEngine implements Serializable {
   public final Complex evalComplex(IExpr expr, final Function<IExpr, IExpr> function)
       throws ArgumentTypeException {
     if (expr.isReal()) {
-      return new Complex(((ISignedNumber) expr).doubleValue());
+      return new Complex(((IReal) expr).doubleValue());
     }
     if (expr.isNumber()) {
       return new Complex(((INumber) expr).reDoubleValue(), ((INumber) expr).imDoubleValue());
@@ -1505,7 +1505,7 @@ public class EvalEngine implements Serializable {
       }
       IExpr result = evalN(expr);
       if (result.isReal()) {
-        return new Complex(((ISignedNumber) result).doubleValue());
+        return new Complex(((IReal) result).doubleValue());
       }
       if (result.isQuantity()) {
         return new Complex(result.evalReal().doubleValue());

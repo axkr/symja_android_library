@@ -26,7 +26,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -161,7 +161,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       }
       option = options.getOption(S.MaxPoints);
       if (option.isReal()) {
-        maxPoints = ((ISignedNumber) option).toIntDefault(-1);
+        maxPoints = ((IReal) option).toIntDefault(-1);
         if (maxPoints <= 0) {
           LOGGER.log(engine.getLogLevel(),
               "NIntegrate: Error in option MaxPoints. Using default value: {}", maxPoints);
@@ -177,7 +177,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       }
       option = options.getOption(S.PrecisionGoal);
       if (option.isReal()) {
-        precisionGoal = ((ISignedNumber) option).toIntDefault(-1);
+        precisionGoal = ((IReal) option).toIntDefault(-1);
         if (precisionGoal <= 0) {
           LOGGER.log(engine.getLogLevel(),
               "NIntegrate: Error in option PrecisionGoal. Using default value: {}", precisionGoal);
@@ -190,8 +190,8 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       IAST list = (IAST) ast.arg2();
       IExpr function = ast.arg1();
       if (list.isAST3() && list.arg1().isSymbol()) {
-        ISignedNumber min = list.arg2().evalReal();
-        ISignedNumber max = list.arg3().evalReal();
+        IReal min = list.arg2().evalReal();
+        IReal max = list.arg3().evalReal();
         if (min != null && max != null) {
           if (function.isEqual()) {
             IAST equalAST = (IAST) function;

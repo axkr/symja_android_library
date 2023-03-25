@@ -9,7 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -40,7 +40,7 @@ public class Expr2LP {
       IAST ast = (IAST) fExpr;
       if (ast.isEqual()) {
         IExpr expr = F.eval(F.Subtract(ast.arg1(), ast.arg2()));
-        ISignedNumber num = expr2ObjectiveFunction(expr, coefficients);
+        IReal num = expr2ObjectiveFunction(expr, coefficients);
         if (num == null) {
           return new LinearConstraint(coefficients, Relationship.EQ, 0);
         }
@@ -48,7 +48,7 @@ public class Expr2LP {
       }
       if (ast.isAST(S.GreaterEqual, 3)) {
         IExpr expr = F.eval(F.Subtract(ast.arg1(), ast.arg2()));
-        ISignedNumber num = expr2ObjectiveFunction(expr, coefficients);
+        IReal num = expr2ObjectiveFunction(expr, coefficients);
         if (num == null) {
           return new LinearConstraint(coefficients, Relationship.GEQ, 0);
         }
@@ -56,7 +56,7 @@ public class Expr2LP {
       }
       if (ast.isAST(S.LessEqual, 3)) {
         IExpr expr = F.eval(F.Subtract(ast.arg1(), ast.arg2()));
-        ISignedNumber num = expr2ObjectiveFunction(expr, coefficients);
+        IReal num = expr2ObjectiveFunction(expr, coefficients);
         if (num == null) {
           return new LinearConstraint(coefficients, Relationship.LEQ, 0);
         }
@@ -70,14 +70,14 @@ public class Expr2LP {
 
   public LinearObjectiveFunction expr2ObjectiveFunction() {
     double[] coefficients = new double[fVariables.size()];
-    ISignedNumber num = expr2ObjectiveFunction(fExpr, coefficients);
+    IReal num = expr2ObjectiveFunction(fExpr, coefficients);
     if (num == null) {
       return new LinearObjectiveFunction(coefficients, 0);
     }
     return new LinearObjectiveFunction(coefficients, num.doubleValue());
   }
 
-  private ISignedNumber expr2ObjectiveFunction(final IExpr expr, double[] coefficients)
+  private IReal expr2ObjectiveFunction(final IExpr expr, double[] coefficients)
       throws ArithmeticException, ClassCastException {
     if (expr instanceof IAST) {
       final IAST ast = (IAST) expr;
@@ -85,7 +85,7 @@ public class Expr2LP {
         double constantTerm = 0.0;
         for (int i = 1; i < ast.size(); i++) {
           IExpr temp = ast.get(i);
-          ISignedNumber num = expr2ObjectiveFunction(temp, coefficients);
+          IReal num = expr2ObjectiveFunction(temp, coefficients);
           if (num != null) {
             constantTerm += num.doubleValue();
           }
@@ -105,7 +105,7 @@ public class Expr2LP {
             variable = (ISymbol) temp;
             continue;
           }
-          ISignedNumber num = temp.evalReal();
+          IReal num = temp.evalReal();
           if (num != null) {
             value *= num.doubleValue();
             continue;
@@ -140,7 +140,7 @@ public class Expr2LP {
               + expr.toString());
     }
 
-    ISignedNumber num = expr.evalReal();
+    IReal num = expr.evalReal();
     if (num != null) {
       return num;
     }

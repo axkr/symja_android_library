@@ -8,19 +8,19 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IPair;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.sympy.exception.ValueError;
 
 public class Factor {
-  public static IPair perfectPower(ISignedNumber n) {
+  public static IPair perfectPower(IReal n) {
     return perfectPower(n, F.NIL, true, true);
   }
 
-  public static IPair perfectPower(ISignedNumber n, IAST candidates) {
+  public static IPair perfectPower(IReal n, IAST candidates) {
     return perfectPower(n, candidates, true, true);
   }
 
-  public static IPair perfectPower(ISignedNumber n, IAST candidates, boolean big, boolean factor) {
+  public static IPair perfectPower(IReal n, IAST candidates, boolean big, boolean factor) {
     // https://github.com/sympy/sympy/blob/0c4cc831ab88b6ba39685540f74d9551544d06e5/sympy/ntheory/factor_.py#L400
 
     // Return ``(b, e)`` such that ``n`` == ``b**e`` if ``n`` is a unique

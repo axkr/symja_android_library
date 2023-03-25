@@ -26,7 +26,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.sympy.core.ExprTools;
 import org.matheclipse.core.sympy.core.ExprTools.Factors;
@@ -649,12 +649,12 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
   // }
 
   public static IExpr tr56(IExpr expr, IExpr f, IExpr g, Function<IExpr, IExpr> h,
-      ISignedNumber max, boolean pow) {
+      IReal max, boolean pow) {
     return Traversal.bottomUp(expr, x -> tr56Step(x, f, g, h, max, pow));
   }
 
   private static IExpr tr56Step(IExpr rv, IExpr f, IExpr g, Function<IExpr, IExpr> h,
-      ISignedNumber max, boolean pow) {
+      IReal max, boolean pow) {
     if (!rv.isPower() || !rv.base().head().equals(f)) {
       return F.NIL;
     }
@@ -662,7 +662,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     if (!rv.exponent().isReal()) {
       return F.NIL;
     }
-    ISignedNumber exp = (ISignedNumber) rv.exponent();
+    IReal exp = (IReal) rv.exponent();
     if (exp.isNegative()) {
       return F.NIL;
     }
@@ -1574,12 +1574,12 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       if (process.argSize() > 0) {
         IAST B = (IAST) process.first();
         if (A.get(en).isReal() && B.get(en).isReal()) {
-          ISignedNumber aen = (ISignedNumber) A.get(en);
+          IReal aen = (IReal) A.get(en);
           if (A.get(fn).equals(B.get(fn))) {
             if (!A.get(sn).equals(B.get(sn))) {
               B = (IAST) process.remove(1);
-              ISignedNumber ben = (ISignedNumber) B.get(en);
-              ISignedNumber take = aen.min(ben);
+              IReal ben = (IReal) B.get(en);
+              IReal take = aen.min(ben);
               // reinsert any remainder
               // the B will likely sort after A so check it first
               IASTMutable rem;

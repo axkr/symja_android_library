@@ -21,7 +21,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.core.tensor.qty.IUnit;
@@ -389,11 +389,11 @@ public class Iterator {
 
     IExpr variableValue;
 
-    final IExpr originalLowerLimit;
+    final Num lowerLimitNum;
 
-    final IExpr originalUpperLimit;
+    final Num upperLimitNum;
 
-    final IExpr originalStep;
+    final Num stepNum;
 
     public DoubleIterator(final ISymbol symbol, final double lowerLimit, final double upperLimit,
         final double step) {
@@ -401,9 +401,9 @@ public class Iterator {
       this.lowerLimit = lowerLimit;
       this.upperLimit = upperLimit;
       this.step = step;
-      this.originalLowerLimit = F.num(lowerLimit);
-      this.originalUpperLimit = F.num(upperLimit);
-      this.originalStep = F.num(step);
+      this.lowerLimitNum = F.num(lowerLimit);
+      this.upperLimitNum = F.num(upperLimit);
+      this.stepNum = F.num(step);
     }
 
     @Override
@@ -415,18 +415,18 @@ public class Iterator {
     }
 
     @Override
-    public IExpr getLowerLimit() {
-      return originalLowerLimit;
+    public Num getLowerLimit() {
+      return lowerLimitNum;
     }
 
     @Override
-    public IExpr getStep() {
-      return originalStep;
+    public Num getStep() {
+      return stepNum;
     }
 
     @Override
-    public IExpr getUpperLimit() {
-      return originalUpperLimit;
+    public Num getUpperLimit() {
+      return upperLimitNum;
     }
 
     @Override
@@ -472,7 +472,7 @@ public class Iterator {
      */
     @Override
     public IExpr next() {
-      final IExpr temp = F.num(count);
+      final Num temp = F.num(count);
       if (variable != null) {
         variable.assignValue(temp, false);
       }
@@ -503,7 +503,7 @@ public class Iterator {
       }
 
       if (variable != null) {
-        variable.assignValue(originalLowerLimit, false);
+        variable.assignValue(lowerLimitNum, false);
       }
       return true;
     }
@@ -530,11 +530,11 @@ public class Iterator {
 
     IExpr variableValue = null;
 
-    final IRational originalLowerLimit;
+    final IRational lowerLimitQQ;
 
-    final IRational originalUpperLimit;
+    final IRational upperLimitQQ;
 
-    final IRational originalStep;
+    final IRational stepQQ;
 
     public RationalIterator(final ISymbol symbol, final IRational lowerLimit,
         final IRational upperLimit, final IRational step) {
@@ -542,9 +542,9 @@ public class Iterator {
       this.lowerLimit = lowerLimit;
       this.upperLimit = upperLimit;
       this.step = step;
-      this.originalLowerLimit = lowerLimit;
-      this.originalUpperLimit = upperLimit;
-      this.originalStep = step;
+      this.lowerLimitQQ = lowerLimit;
+      this.upperLimitQQ = upperLimit;
+      this.stepQQ = step;
     }
 
     @Override
@@ -559,18 +559,18 @@ public class Iterator {
     }
 
     @Override
-    public IExpr getLowerLimit() {
-      return originalLowerLimit;
+    public IRational getLowerLimit() {
+      return lowerLimitQQ;
     }
 
     @Override
-    public IExpr getStep() {
-      return originalStep;
+    public IRational getStep() {
+      return stepQQ;
     }
 
     @Override
-    public IExpr getUpperLimit() {
-      return originalUpperLimit;
+    public IRational getUpperLimit() {
+      return upperLimitQQ;
     }
 
     @Override
@@ -614,11 +614,11 @@ public class Iterator {
      */
     @Override
     public IExpr next() {
-      final ISignedNumber temp = count;
+      final IRational temp = count;
       if (variable != null) {
         variable.assignValue(temp, false);
       }
-      count = (IRational) count.plus(step);
+      count = count.add(step);
       return temp;
     }
 
@@ -642,7 +642,7 @@ public class Iterator {
       }
       if (variable != null) {
         variableValue = variable.assignedValue();
-        variable.assignValue(originalLowerLimit, false);
+        variable.assignValue(lowerLimitQQ, false);
       }
       return true;
     }
@@ -838,34 +838,34 @@ public class Iterator {
     }
   }
 
-  private static class ISignedNumberIterator implements IIterator<IExpr> {
-    ISignedNumber count;
+  private static class IRealIterator implements IIterator<IExpr> {
+    IReal count;
 
-    ISignedNumber lowerLimit;
+    IReal lowerLimit;
 
-    ISignedNumber upperLimit;
+    IReal upperLimit;
 
-    ISignedNumber step;
+    IReal step;
 
     final ISymbol variable;
 
     IExpr variableValue;
 
-    final ISignedNumber originalLowerLimit;
+    final IReal lowerLimitReal;
 
-    final ISignedNumber originalUpperLimit;
+    final IReal upperLimitReal;
 
-    final ISignedNumber originalStep;
+    final IReal stepReal;
 
-    public ISignedNumberIterator(final ISymbol symbol, final ISignedNumber lowerLimit,
-        final ISignedNumber upperLimit, final ISignedNumber step) {
+    public IRealIterator(final ISymbol symbol, final IReal lowerLimit,
+        final IReal upperLimit, final IReal step) {
       this.variable = symbol;
       this.lowerLimit = lowerLimit;
       this.upperLimit = upperLimit;
       this.step = step;
-      this.originalLowerLimit = lowerLimit;
-      this.originalUpperLimit = upperLimit;
-      this.originalStep = step;
+      this.lowerLimitReal = lowerLimit;
+      this.upperLimitReal = upperLimit;
+      this.stepReal = step;
     }
 
     @Override
@@ -875,17 +875,17 @@ public class Iterator {
 
     @Override
     public IExpr getLowerLimit() {
-      return originalLowerLimit;
+      return lowerLimitReal;
     }
 
     @Override
     public IExpr getStep() {
-      return originalStep;
+      return stepReal;
     }
 
     @Override
     public IExpr getUpperLimit() {
-      return originalUpperLimit;
+      return upperLimitReal;
     }
 
     @Override
@@ -929,11 +929,11 @@ public class Iterator {
      */
     @Override
     public IExpr next() {
-      final ISignedNumber temp = count;
+      final IReal temp = count;
       if (variable != null) {
         variable.assignValue(temp, false);
       }
-      count = (ISignedNumber) count.plus(step);
+      count = (IReal) count.plus(step);
       return temp;
     }
 
@@ -960,7 +960,7 @@ public class Iterator {
       }
 
       if (variable != null) {
-        variable.assignValue(originalLowerLimit, false);
+        variable.assignValue(lowerLimitReal, false);
       }
       return true;
     }
@@ -975,7 +975,11 @@ public class Iterator {
   }
 
   private static class IntIterator implements IIterator<IExpr> {
-    int count;
+
+    /**
+     * The element which will be returned by {@link #next()} and incremented by step afterwards.
+     */
+    int nextElement;
 
     int lowerLimit;
 
@@ -987,11 +991,11 @@ public class Iterator {
 
     IExpr variableValue = null;
 
-    final IExpr originalLowerLimit;
+    final IInteger lowerLimitZZ;
 
-    final IExpr originalUpperLimit;
+    final IInteger upperLimitZZ;
 
-    final IExpr originalStep;
+    final IInteger stepZZ;
 
     public IntIterator(final ISymbol symbol, final int lowerLimit, final int upperLimit,
         final int step) {
@@ -999,21 +1003,21 @@ public class Iterator {
       this.lowerLimit = lowerLimit;
       this.upperLimit = upperLimit;
       this.step = step;
-      this.originalLowerLimit = F.ZZ(lowerLimit);
-      this.originalUpperLimit = F.ZZ(upperLimit);
-      this.originalStep = F.ZZ(step);
-    }
 
-    public IntIterator(final int lowerLimit, final int upperLimit, final int step) {
-      this(null, lowerLimit, upperLimit, step);
-    }
-
-    public IntIterator(final int lowerLimit, final int upperLimit) {
-      this(null, lowerLimit, upperLimit, 1);
-    }
-
-    public IntIterator(final int upperLimit) {
-      this(null, 1, upperLimit, 1);
+      if (step < 0) {
+        int limit = Integer.MIN_VALUE - step;
+        if (limit > upperLimit) {
+          throw new ArithmeticException("IntIterator out of int range (MIN_VALUE)");
+        }
+      } else {
+        int limit = Integer.MAX_VALUE - step;
+        if (limit < upperLimit) {
+          throw new ArithmeticException("IntIterator out of int range (MAX_VALUE)");
+        }
+      }
+      this.lowerLimitZZ = F.ZZ(lowerLimit);
+      this.upperLimitZZ = F.ZZ(upperLimit);
+      this.stepZZ = F.ZZ(step);
     }
 
     @Override
@@ -1025,18 +1029,18 @@ public class Iterator {
     }
 
     @Override
-    public IExpr getLowerLimit() {
-      return originalLowerLimit;
+    public IInteger getLowerLimit() {
+      return lowerLimitZZ;
     }
 
     @Override
-    public IExpr getStep() {
-      return originalStep;
+    public IInteger getStep() {
+      return stepZZ;
     }
 
     @Override
-    public IExpr getUpperLimit() {
-      return originalUpperLimit;
+    public IInteger getUpperLimit() {
+      return upperLimitZZ;
     }
 
     @Override
@@ -1053,9 +1057,9 @@ public class Iterator {
     @Override
     public boolean hasNext() {
       if (step < 0) {
-        return count >= upperLimit;
+        return nextElement >= upperLimit;
       }
-      return count <= upperLimit;
+      return nextElement <= upperLimit;
     }
 
     @Override
@@ -1080,11 +1084,11 @@ public class Iterator {
      */
     @Override
     public IExpr next() {
-      final IExpr temp = F.ZZ(count);
+      final IInteger temp = F.ZZ(nextElement);
       if (variable != null) {
         variable.assignValue(temp, false);
       }
-      count += step;
+      nextElement += step;
       return temp;
     }
 
@@ -1099,7 +1103,7 @@ public class Iterator {
       if (variable != null) {
         variableValue = variable.assignedValue();
       }
-      count = lowerLimit;
+      nextElement = lowerLimit;
       if (step < 0) {
         if (lowerLimit < upperLimit) {
           return false;
@@ -1111,7 +1115,7 @@ public class Iterator {
       }
 
       if (variable != null) {
-        variable.assignValue(originalLowerLimit, false);
+        variable.assignValue(lowerLimitZZ, false);
       }
       return true;
     }
@@ -1171,7 +1175,8 @@ public class Iterator {
             } catch (ArithmeticException ae) {
               //
             }
-          } else if (upperLimit.isRational()) {
+          }
+          if (upperLimit.isRational()) {
             try {
               int iUpperLimit = ((IRational) upperLimit).floor().toInt();
               if (iUpperLimit > iterationLimit && iterationLimit > 0) {
@@ -1184,7 +1189,7 @@ public class Iterator {
           } else if (upperLimit.isQuantity()) {
             return new QuantityIterator(variable, (IQuantity) upperLimit);
           } else if (upperLimit.isReal()) {
-            return new ISignedNumberIterator(variable, F.C1, (ISignedNumber) upperLimit, F.C1);
+            return new IRealIterator(variable, F.C1, (IReal) upperLimit, F.C1);
           }
           if (!list.arg1().isVariable()) {
             throw new ArgumentTypeException(
@@ -1222,7 +1227,8 @@ public class Iterator {
             } catch (ArithmeticException ae) {
               //
             }
-          } else if (upperLimit.isRational()) {
+          }
+          if (upperLimit.isRational()) {
             try {
               return new RationalIterator(variable, F.C1, (IRational) upperLimit, F.C1);
             } catch (ArithmeticException ae) {
@@ -1231,7 +1237,7 @@ public class Iterator {
           } else if (upperLimit.isQuantity()) {
             return new QuantityIterator(variable, (IQuantity) upperLimit);
           } else if (upperLimit.isReal()) {
-            return new ISignedNumberIterator(variable, F.C1, (ISignedNumber) upperLimit, F.C1);
+            return new IRealIterator(variable, F.C1, (IReal) upperLimit, F.C1);
           }
 
           break;
@@ -1265,7 +1271,8 @@ public class Iterator {
             } catch (ArithmeticException ae) {
               //
             }
-          } else if (lowerLimit.isRational() && upperLimit.isRational()) {
+          }
+          if (lowerLimit.isRational() && upperLimit.isRational()) {
             try {
               return new RationalIterator(variable, (IRational) lowerLimit, (IRational) upperLimit,
                   F.C1);
@@ -1275,9 +1282,9 @@ public class Iterator {
           } else if (lowerLimit.isQuantity() && upperLimit.isQuantity()) {
             return new QuantityIterator(variable, (IQuantity) lowerLimit, (IQuantity) upperLimit);
           } else if (lowerLimit.isReal() && upperLimit.isReal()) {
-            ISignedNumber iLowerLimit = (ISignedNumber) lowerLimit;
-            ISignedNumber iUpperLimit = (ISignedNumber) upperLimit;
-            return new ISignedNumberIterator(variable, iLowerLimit, iUpperLimit, F.C1);
+            IReal iLowerLimit = (IReal) lowerLimit;
+            IReal iUpperLimit = (IReal) upperLimit;
+            return new IRealIterator(variable, iLowerLimit, iUpperLimit, F.C1);
           }
           break;
 
@@ -1311,7 +1318,8 @@ public class Iterator {
             } catch (ArithmeticException ae) {
               //
             }
-          } else if (lowerLimit.isRational() && upperLimit.isRational() && step.isRational()) {
+          }
+          if (lowerLimit.isRational() && upperLimit.isRational() && step.isRational()) {
             try {
               return new RationalIterator(variable, (IRational) lowerLimit, (IRational) upperLimit,
                   (IRational) step);
@@ -1322,8 +1330,8 @@ public class Iterator {
             return new QuantityIterator(variable, (IQuantity) lowerLimit, (IQuantity) upperLimit,
                 (IQuantity) step);
           } else if (lowerLimit.isReal() && upperLimit.isReal() && step.isReal()) {
-            return new ISignedNumberIterator(variable, (ISignedNumber) lowerLimit,
-                (ISignedNumber) upperLimit, (ISignedNumber) step);
+            return new IRealIterator(variable, (IReal) lowerLimit,
+                (IReal) upperLimit, (IReal) step);
           }
 
           break;
@@ -1399,7 +1407,8 @@ public class Iterator {
             } catch (ArithmeticException ae) {
               //
             }
-          } else if (upperLimit.isRational()) {
+          }
+          if (upperLimit.isRational()) {
             try {
               return new RationalIterator(symbol, F.C1, (IRational) upperLimit, F.C1);
             } catch (ArithmeticException ae) {
@@ -1408,7 +1417,7 @@ public class Iterator {
           } else if (upperLimit.isQuantity()) {
             return new QuantityIterator(symbol, (IQuantity) upperLimit);
           } else if (upperLimit.isReal()) {
-            return new ISignedNumberIterator(variable, F.C1, (ISignedNumber) upperLimit, F.C1);
+            return new IRealIterator(variable, F.C1, (IReal) upperLimit, F.C1);
           }
           break;
         case 3:
@@ -1442,7 +1451,8 @@ public class Iterator {
             } catch (ArithmeticException ae) {
               //
             }
-          } else if (lowerLimit.isRational() && upperLimit.isRational()) {
+          }
+          if (lowerLimit.isRational() && upperLimit.isRational()) {
             try {
               return new RationalIterator(symbol, (IRational) lowerLimit, (IRational) upperLimit,
                   F.C1);
@@ -1452,8 +1462,8 @@ public class Iterator {
           } else if (lowerLimit.isQuantity() && upperLimit.isQuantity()) {
             return new QuantityIterator(symbol, (IQuantity) lowerLimit, (IQuantity) upperLimit);
           } else if (lowerLimit.isReal() && upperLimit.isReal()) {
-            return new ISignedNumberIterator(variable, (ISignedNumber) lowerLimit,
-                (ISignedNumber) upperLimit, F.C1);
+            return new IRealIterator(variable, (IReal) lowerLimit,
+                (IReal) upperLimit, F.C1);
           }
           break;
         case 4:
@@ -1474,7 +1484,8 @@ public class Iterator {
             } catch (ArithmeticException ae) {
               //
             }
-          } else if (lowerLimit.isRational() && upperLimit.isRational() && step.isRational()) {
+          }
+          if (lowerLimit.isRational() && upperLimit.isRational() && step.isRational()) {
             try {
               return new RationalIterator(symbol, (IRational) lowerLimit, (IRational) upperLimit,
                   (IRational) step);
@@ -1485,8 +1496,8 @@ public class Iterator {
             return new QuantityIterator(symbol, (IQuantity) lowerLimit, (IQuantity) upperLimit,
                 (IQuantity) step);
           } else if (lowerLimit.isReal() && upperLimit.isReal() && step.isReal()) {
-            return new ISignedNumberIterator(variable, (ISignedNumber) lowerLimit,
-                (ISignedNumber) upperLimit, (ISignedNumber) step);
+            return new IRealIterator(variable, (IReal) lowerLimit,
+                (IReal) upperLimit, (IReal) step);
           }
           break;
         default:

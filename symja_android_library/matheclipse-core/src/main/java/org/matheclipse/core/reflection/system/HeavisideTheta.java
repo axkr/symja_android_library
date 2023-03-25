@@ -5,7 +5,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -22,7 +22,7 @@ public class HeavisideTheta extends AbstractEvaluator {
     if (size > 1) {
       for (int i = 1; i < size; i++) {
         IExpr expr = ast.get(i);
-        ISignedNumber temp = expr.evalReal();
+        IReal temp = expr.evalReal();
         if (temp != null) {
           if (temp.complexSign() < 0) {
             return F.C0;

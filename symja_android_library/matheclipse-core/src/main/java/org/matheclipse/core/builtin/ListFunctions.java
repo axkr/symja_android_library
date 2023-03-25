@@ -64,7 +64,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -5924,7 +5924,7 @@ public final class ListFunctions {
           if (ast.isAST3()) {
             IExpr arg3 = engine.evaluate(ast.arg3());
             if (arg3.isReal()) {
-              maxNumberOfResults = ((ISignedNumber) arg3).toInt();
+              maxNumberOfResults = ((IReal) arg3).toInt();
             }
           }
           IASTAppendable result = F.ListAlloc();
@@ -8102,7 +8102,7 @@ public final class ListFunctions {
         quantities++;
         continue;
       }
-      ISignedNumber r = element.evalReal();
+      IReal r = element.evalReal();
       if (r == null //
           && !(element.isInfinity() || element.isNegativeInfinity())) {
         for (int j = i; j < listOrAssociation.size(); j++) {

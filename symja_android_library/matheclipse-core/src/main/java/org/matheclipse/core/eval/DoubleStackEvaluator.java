@@ -1,14 +1,14 @@
 package org.matheclipse.core.eval;
 
 import org.matheclipse.core.eval.interfaces.INumeric;
-import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
+import org.matheclipse.core.eval.interfaces.IRealConstant;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -20,16 +20,16 @@ public class DoubleStackEvaluator {
   public static double evalSymbol(final ISymbol symbol) {
     IExpr value = symbol.assignedValue();
     if (value != null) {
-      return ((ISignedNumber) value).doubleValue();
+      return ((IReal) value).doubleValue();
     }
     if (symbol.isRealConstant()) {
       // fast evaluation path
-      return ((ISignedNumberConstant) ((IBuiltInSymbol) symbol).getEvaluator()).evalReal();
+      return ((IRealConstant) ((IBuiltInSymbol) symbol).getEvaluator()).evalReal();
     }
     // slow evaluation path
     final IExpr result = F.evaln(symbol);
     if (result.isReal()) {
-      return ((ISignedNumber) result).doubleValue();
+      return ((IReal) result).doubleValue();
     }
     if (result.isInfinity()) {
       return Double.POSITIVE_INFINITY;
@@ -65,7 +65,7 @@ public class DoubleStackEvaluator {
     // slow evaluation path
     final IExpr result = F.evaln(ast);
     if (result.isReal()) {
-      return ((ISignedNumber) result).doubleValue();
+      return ((IReal) result).doubleValue();
     }
     if (result instanceof IComplexNum && F.isZero(((IComplexNum) result).imDoubleValue())) {
       return ((IComplexNum) result).reDoubleValue();
@@ -78,8 +78,8 @@ public class DoubleStackEvaluator {
     if (expr instanceof IAST) {
       return evalAST(stack, top, (IAST) expr);
     }
-    if (expr instanceof ISignedNumber) {
-      return ((ISignedNumber) expr).doubleValue();
+    if (expr instanceof IReal) {
+      return ((IReal) expr).doubleValue();
     }
     if (expr instanceof IComplexNum && F.isZero(((IComplexNum) expr).imDoubleValue())) {
       return ((IComplexNum) expr).reDoubleValue();

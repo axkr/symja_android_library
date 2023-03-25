@@ -43,7 +43,7 @@ import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.Characters;
 import org.matheclipse.parser.client.ParserConfig;
@@ -609,7 +609,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
           if (i < size) {
             if (expr.isReal() && expr.isNegative()) {
               fFactory.tag(buf, "mo", "-");
-              expr = ((ISignedNumber) expr).negate();
+              expr = ((IReal) expr).negate();
             } else {
               fFactory.tag(buf, "mo", "+");
             }
@@ -1056,7 +1056,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
             if (arg1.isReal() && arg1.isNegative()) {
               fFactory.tag(buf, "mo", "-");
               fFactory.tagStart(buf, fFirstTag);
-              arg1 = ((ISignedNumber) arg1).negate();
+              arg1 = ((IReal) arg1).negate();
             } else {
               fFactory.tag(buf, "mo", "+");
               fFactory.tagStart(buf, fFirstTag);
@@ -2300,7 +2300,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
   public void convertSlot(final StringBuilder buf, final IAST list) {
     try {
-      final int slot = ((ISignedNumber) list.arg1()).toInt();
+      final int slot = ((IReal) list.arg1()).toInt();
       // append(buf, "#" + slot);
       tag(buf, "mi", "#" + slot);
     } catch (final ArithmeticException e) {
@@ -2310,7 +2310,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
   public void convertSlotSequence(final StringBuilder buf, final IAST list) {
     try {
-      final int slotSequenceStartPosition = ((ISignedNumber) list.arg1()).toInt();
+      final int slotSequenceStartPosition = ((IReal) list.arg1()).toInt();
       // append(buf, "##" + slotSequenceStartPosition);
       tag(buf, "mi", "##" + slotSequenceStartPosition);
     } catch (final ArithmeticException e) {

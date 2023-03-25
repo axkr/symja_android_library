@@ -125,7 +125,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -2770,12 +2770,12 @@ public class F extends S {
   }
 
   public static int compareTo(IExpr a, IExpr b) throws UnsupportedOperationException {
-    if (a instanceof ISignedNumber && b instanceof ISignedNumber) {
+    if (a instanceof IReal && b instanceof IReal) {
       return a.compareTo(b);
     }
     IExpr tempA = eval(a);
     IExpr tempB = eval(b);
-    if (tempA instanceof ISignedNumber && tempB instanceof ISignedNumber) {
+    if (tempA instanceof IReal && tempB instanceof IReal) {
       return tempA.compareTo(tempB);
     }
     throw new UnsupportedOperationException(
@@ -2783,11 +2783,11 @@ public class F extends S {
   }
 
   public static int compareTo(IExpr a, Integer i) throws UnsupportedOperationException {
-    if (a instanceof ISignedNumber) {
+    if (a instanceof IReal) {
       return a.compareTo(ZZ(i.longValue()));
     }
     IExpr temp = eval(a);
-    if (temp instanceof ISignedNumber) {
+    if (temp instanceof IReal) {
       return temp.compareTo(ZZ(i.longValue()));
     }
     throw new UnsupportedOperationException(
@@ -2796,11 +2796,11 @@ public class F extends S {
 
   public static int compareTo(IExpr a, java.math.BigInteger i)
       throws UnsupportedOperationException {
-    if (a instanceof ISignedNumber) {
+    if (a instanceof IReal) {
       return a.compareTo(ZZ(i));
     }
     IExpr temp = eval(a);
-    if (temp instanceof ISignedNumber) {
+    if (temp instanceof IReal) {
       return temp.compareTo(ZZ(i));
     }
     throw new UnsupportedOperationException(
@@ -2808,11 +2808,11 @@ public class F extends S {
   }
 
   public static int compareTo(Integer i, IExpr b) throws UnsupportedOperationException {
-    if (b instanceof ISignedNumber) {
+    if (b instanceof IReal) {
       return ZZ(i.longValue()).compareTo(b);
     }
     IExpr temp = eval(b);
-    if (temp instanceof ISignedNumber) {
+    if (temp instanceof IReal) {
       return ZZ(i.longValue()).compareTo(temp);
     }
     throw new UnsupportedOperationException(
@@ -2821,11 +2821,11 @@ public class F extends S {
 
   public static int compareTo(java.math.BigInteger i, IExpr b)
       throws UnsupportedOperationException {
-    if (b instanceof ISignedNumber) {
+    if (b instanceof IReal) {
       return ZZ(i).compareTo(b);
     }
     IExpr temp = eval(b);
-    if (temp instanceof ISignedNumber) {
+    if (temp instanceof IReal) {
       return ZZ(i).compareTo(temp);
     }
     throw new UnsupportedOperationException(
@@ -3860,7 +3860,7 @@ public class F extends S {
    *
    * @param a0
    * @return
-   * @deprecated use EvalEngine.get().evalN() instead
+   * @deprecated use {@link EvalEngine#evalN(IExpr)} instead
    */
   @Deprecated
   public static IExpr evaln(final IExpr a0) {
@@ -3990,7 +3990,7 @@ public class F extends S {
    * @return scalar with best possible accuracy to encode given number
    * @throws Exception if number is null, or instance of an unsupported type
    */
-  public static ISignedNumber expr(Number number) {
+  public static IReal expr(Number number) {
     if (number instanceof Integer || number instanceof Long || number instanceof Short
         || number instanceof Byte)
       return ZZ(number.longValue());
@@ -6052,7 +6052,7 @@ public class F extends S {
    * <p>
    * for instance,
    * <ul>
-   * <li>if the stream consists of {@link ISignedNumber}s, the return value represents a vector,
+   * <li>if the stream consists of {@link IReal}s, the return value represents a vector,
    * <li>if the stream consists of vectors, the return value represents a matrix.
    * <li>if the stream consists of matrices, the return value represents a tensor with rank 3.
    * <li>etc.

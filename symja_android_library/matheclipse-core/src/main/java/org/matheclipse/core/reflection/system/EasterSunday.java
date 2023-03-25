@@ -6,7 +6,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class EasterSunday extends AbstractFunctionEvaluator {
@@ -17,7 +17,7 @@ public class EasterSunday extends AbstractFunctionEvaluator {
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     try {
       IExpr arg1 = ast.arg1();
-      ISignedNumber signedNumber = arg1.evalReal();
+      IReal signedNumber = arg1.evalReal();
       if (signedNumber != null) {
         int y = signedNumber.toInt();
         // "Anonymous Gregorian algorithm", see

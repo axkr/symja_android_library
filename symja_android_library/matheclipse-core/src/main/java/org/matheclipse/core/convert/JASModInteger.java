@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModLong;
@@ -313,7 +313,7 @@ public class JASModInteger {
     return true;
   }
 
-  public static ModLongRing option2ModLongRing(ISignedNumber option) throws ArithmeticException {
+  public static ModLongRing option2ModLongRing(IReal option) throws ArithmeticException {
     // maybe throw ArithmeticException
     long longValue = option.toLong();
     final BigInteger value = BigInteger.valueOf(longValue);

@@ -5,7 +5,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.visit.HashValueVisitor;
 
 /**
@@ -58,15 +58,15 @@ public class HashedOrderlessMatcherTimes extends HashedOrderlessMatcher {
     }
     IExpr temp;
     IExpr arg1 = orderlessAST.get(i + 1);
-    ISignedNumber num1 = F.C1;
+    IReal num1 = F.C1;
     if (arg1.isPower() && arg1.exponent().isInteger()) {
-      num1 = (ISignedNumber) arg1.exponent();
+      num1 = (IReal) arg1.exponent();
       arg1 = arg1.base();
     }
     IExpr arg2 = orderlessAST.get(j + 1);
-    ISignedNumber num2 = F.C1;
+    IReal num2 = F.C1;
     if (arg2.isPower() && arg2.exponent().isInteger()) {
-      num2 = (ISignedNumber) arg2.exponent();
+      num2 = (IReal) arg2.exponent();
       arg2 = arg2.base();
     }
     if ((temp = hashRule.evalDownRule(arg1, num1, arg2, num2, engine)).isPresent()) {

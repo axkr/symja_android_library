@@ -34,7 +34,7 @@ import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -210,12 +210,12 @@ public class FindRoot extends AbstractFunctionEvaluator {
      * Starting point or minimum of a user defined interval; <code>min</code> is not allowed to be
      * <code>null</code>
      */
-    final ISignedNumber min;
+    final IReal min;
     /**
      * Maximum of a user defined interval; the maximum can be <code>null</code>, if no interval was
      * defined
      */
-    final ISignedNumber maxMaybeNull;
+    final IReal maxMaybeNull;
     final int maxIterations;
     final String method;
     final EvalEngine engine;
@@ -232,8 +232,8 @@ public class FindRoot extends AbstractFunctionEvaluator {
      * @param method
      * @param engine
      */
-    public UnivariateSolverSupplier(IExpr function, IAST variableList, ISignedNumber min,
-        ISignedNumber max, int maxIterations, String method, EvalEngine engine) {
+    public UnivariateSolverSupplier(IExpr function, IAST variableList, IReal min,
+        IReal max, int maxIterations, String method, EvalEngine engine) {
       this.originalFunction = function;
       this.variableList = variableList;
       this.min = min;
@@ -362,9 +362,9 @@ public class FindRoot extends AbstractFunctionEvaluator {
     } else if (arg2.isList()) {
       IAST list = (IAST) arg2;
       if (list.size() >= 3 && list.arg1().isSymbol()) {
-        ISignedNumber min = list.arg2().evalReal();
+        IReal min = list.arg2().evalReal();
         if (min != null) {
-          ISignedNumber max = null;
+          IReal max = null;
           if (list.size() > 3) {
             max = list.arg3().evalReal();
           }

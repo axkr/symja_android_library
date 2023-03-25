@@ -2,7 +2,7 @@ package org.matheclipse.core.eval;
 
 import org.matheclipse.core.eval.interfaces.INumericComplex;
 import org.matheclipse.core.eval.interfaces.INumericComplexConstant;
-import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
+import org.matheclipse.core.eval.interfaces.IRealConstant;
 import org.matheclipse.core.eval.util.DoubleStack;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class EvalComplex {
@@ -19,9 +19,9 @@ public class EvalComplex {
     if (expr instanceof IAST) {
       return evalAST(stack, top, (IAST) expr);
     }
-    if (expr instanceof ISignedNumber) {
+    if (expr instanceof IReal) {
       final double[] result = new double[2];
-      result[0] = ((ISignedNumber) expr).doubleValue();
+      result[0] = ((IReal) expr).doubleValue();
       result[1] = 0.0;
       return result;
     }
@@ -75,9 +75,9 @@ public class EvalComplex {
     if (expr != null) {
       // if (symbol.hasLocalVariableStack()) {
       // final IExpr expr = symbol.get();
-      if (expr instanceof ISignedNumber) {
+      if (expr instanceof IReal) {
         final double[] result = new double[2];
-        result[0] = ((ISignedNumber) expr).doubleValue();
+        result[0] = ((IReal) expr).doubleValue();
         result[1] = 0.0;
         return result;
       }
@@ -91,7 +91,7 @@ public class EvalComplex {
     if (symbol.isRealConstant()) {
       // fast evaluation path
       final double[] result = new double[2];
-      result[0] = ((ISignedNumberConstant) ((IBuiltInSymbol) symbol).getEvaluator()).evalReal();
+      result[0] = ((IRealConstant) ((IBuiltInSymbol) symbol).getEvaluator()).evalReal();
       result[1] = 0.0;
       return result;
     }

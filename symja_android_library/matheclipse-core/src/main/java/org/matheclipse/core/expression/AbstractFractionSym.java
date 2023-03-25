@@ -28,7 +28,7 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -371,7 +371,7 @@ public abstract class AbstractFractionSym implements IFraction {
 
   /** {@inheritDoc} */
   @Override
-  public ISignedNumber add(ISignedNumber that) {
+  public IReal add(IReal that) {
     if (that instanceof IRational) {
       return add((IRational) that);
     }
@@ -455,7 +455,7 @@ public abstract class AbstractFractionSym implements IFraction {
 
   /** {@inheritDoc} */
   @Override
-  public ISignedNumber divideBy(ISignedNumber that) {
+  public IReal divideBy(IReal that) {
     if (that instanceof IRational) {
       return this.divideBy((IRational) that);
     }
@@ -542,7 +542,7 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   @Override
-  public ISignedNumber im() {
+  public IReal im() {
     return F.C0;
   }
 
@@ -562,7 +562,7 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   @Override
-  public ISignedNumber re() {
+  public IReal re() {
     return this;
   }
 
@@ -572,7 +572,7 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   @Override
-  public IRational roundClosest(ISignedNumber multiple) {
+  public IRational roundClosest(IReal multiple) {
     if (!multiple.isRational()) {
       multiple = F.fraction(multiple.doubleValue(), Config.DOUBLE_EPSILON);
     }
@@ -591,7 +591,7 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   @Override
-  public boolean isGT(ISignedNumber obj) {
+  public boolean isGT(IReal obj) {
     if (obj instanceof FractionSym) {
       return compareTo((obj)) > 0;
     }
@@ -610,7 +610,7 @@ public abstract class AbstractFractionSym implements IFraction {
   public abstract boolean isIntegral();
 
   @Override
-  public boolean isLT(ISignedNumber obj) {
+  public boolean isLT(IReal obj) {
     if (obj instanceof FractionSym) {
       return compareTo((obj)) < 0;
     }
@@ -680,7 +680,7 @@ public abstract class AbstractFractionSym implements IFraction {
 
   /** {@inheritDoc} */
   @Override
-  public ISignedNumber multiply(ISignedNumber that) {
+  public IReal multiply(IReal that) {
     if (that instanceof IRational) {
       return multiply((IRational) that);
     }
@@ -698,7 +698,7 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   @Override
-  public ISignedNumber opposite() {
+  public IReal opposite() {
     return ((IFraction) this).negate();
   }
 
@@ -841,7 +841,7 @@ public abstract class AbstractFractionSym implements IFraction {
 
   /** {@inheritDoc} */
   @Override
-  public ISignedNumber subtractFrom(ISignedNumber that) {
+  public IReal subtractFrom(IReal that) {
     if (that instanceof IRational) {
       return this.add((IRational) that.negate());
     }

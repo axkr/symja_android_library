@@ -30,7 +30,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -413,7 +413,7 @@ public class PolynomialFunctions {
         final TermOrder termOrder, IExpr option) throws JASConversionException {
       try {
         // found "Modulus" option => use ModIntegerRing
-        ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
+        ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
         JASModInteger jas = new JASModInteger(variablesList, modIntegerRing);
         GenPolynomial<ModLong> polyExpr = jas.expr2JAS(polynomial);
         IASTAppendable resultList = F.ListAlloc(polyExpr.length());
@@ -1934,7 +1934,7 @@ public class PolynomialFunctions {
         final TermOrder termOrder, IExpr option) throws JASConversionException {
       try {
         // found "Modulus" option => use ModIntegerRing
-        ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
+        ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
         JASModInteger jas = new JASModInteger(variablesList, modIntegerRing);
         GenPolynomial<ModLong> polyExpr = jas.expr2JAS(polynomial);
         IASTAppendable list = F.ListAlloc(polyExpr.length());

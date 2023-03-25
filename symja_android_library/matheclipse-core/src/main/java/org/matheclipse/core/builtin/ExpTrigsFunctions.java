@@ -69,7 +69,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPair;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.ArcCosRules;
 import org.matheclipse.core.reflection.system.rules.ArcCoshRules;
@@ -1048,8 +1048,8 @@ public class ExpTrigsFunctions {
 
           if (x.isReal() && y.isReal()) {
             // long precision = engine.getNumericPrecision();
-            Apfloat xa = ((ISignedNumber) x).apfloatValue();
-            Apfloat ya = ((ISignedNumber) y).apfloatValue();
+            Apfloat xa = ((IReal) x).apfloatValue();
+            Apfloat ya = ((IReal) y).apfloatValue();
             return F.num(engine.apfloatHelper().atan2(ya, xa));
           }
           if (x.isNumber() && y.isNumber()) {
@@ -2367,8 +2367,8 @@ public class ExpTrigsFunctions {
         IExpr temp = F.eval(Times(exponent, F.Log(base)));
         IExpr imTemp = F.eval(F.Im(temp));
         if (imTemp.isReal()) {
-          if (((ISignedNumber) imTemp).isGT(F.num(-1 * Math.PI))
-              && ((ISignedNumber) imTemp).isLT(F.num(Math.PI))) {
+          if (((IReal) imTemp).isGT(F.num(-1 * Math.PI))
+              && ((IReal) imTemp).isLT(F.num(Math.PI))) {
             // Log(arg1 ^ arg2) == arg2*Log(arg1) ||| -Pi <
             // Im(arg2*Log(arg1)) < Pi
             return temp;

@@ -8,12 +8,19 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 
-/** Interface for "rational" numbers (i.e. IInteger, IFraction or INum) */
-public interface ISignedNumber extends INumber {
+/**
+ * <p>
+ * Interface for "real" numbers (i.e. IInteger, IFraction or INum)
+ * 
+ * 
+ * <p>
+ * <b>Note:</b> the name was refactored from <code>ISignedNumber</code> (Symja 2.x) to <code>IReal</code> (Symja 3.x) 
+ */
+public interface IReal extends INumber {
 
   /** {@inheritDoc} */
   @Override
-  public ISignedNumber abs();
+  public IReal abs();
 
   /**
    * Get a {@link Apfloat} number wrapped into an <code>ApfloatNum</code> object.
@@ -35,7 +42,7 @@ public interface ISignedNumber extends INumber {
 
   /** {@inheritDoc} */
   @Override
-  default ISignedNumber conjugate() {
+  default IReal conjugate() {
     return this;
   }
 
@@ -45,11 +52,11 @@ public interface ISignedNumber extends INumber {
    * @param that a signed number
    * @return
    */
-  public ISignedNumber divideBy(ISignedNumber that);
+  public IReal divideBy(IReal that);
 
-  public ISignedNumber add(ISignedNumber parm1);
+  public IReal add(IReal parm1);
 
-  public ISignedNumber multiply(ISignedNumber parm1);
+  public IReal multiply(IReal parm1);
 
   /**
    * Returns the value of the specified number as a {@code double}, which may involve rounding.
@@ -89,7 +96,7 @@ public interface ISignedNumber extends INumber {
    * @return
    */
   @Override
-  public ISignedNumber fractionalPart();
+  public IReal fractionalPart();
 
   /**
    * Return the integer part of this number
@@ -104,21 +111,21 @@ public interface ISignedNumber extends INumber {
 
   /** {@inheritDoc} */
   @Override
-  public ISignedNumber inverse();
+  public IReal inverse();
 
   /**
    * Test if <code>this</code> signed number is greater than <code>that</code> signed number..
    *
    * @return <code>this > that</code>
    */
-  public boolean isGT(ISignedNumber that);
+  public boolean isGT(IReal that);
 
   /**
    * Test if <code>this</code> signed number is greater equal than <code>that</code> signed number.
    *
    * @return <code>this > that</code>
    */
-  default boolean isGE(ISignedNumber that) {
+  default boolean isGE(IReal that) {
     return !isLT(that);
   }
 
@@ -128,7 +135,7 @@ public interface ISignedNumber extends INumber {
    * @deprecated use #isGT()
    */
   @Deprecated
-  default boolean isGreaterThan(ISignedNumber that) {
+  default boolean isGreaterThan(IReal that) {
     return isGT(that);
   }
 
@@ -137,14 +144,14 @@ public interface ISignedNumber extends INumber {
    *
    * @return <code>this < that</code>
    */
-  public boolean isLT(ISignedNumber that);
+  public boolean isLT(IReal that);
 
   /**
    * Test if <code>this</code> signed number is less equal than <code>that</code> signed number.
    *
    * @return <code>this > that</code>
    */
-  default boolean isLE(ISignedNumber that) {
+  default boolean isLE(IReal that) {
     return !isGT(that);
   }
 
@@ -154,15 +161,15 @@ public interface ISignedNumber extends INumber {
    * @deprecated use #isLT()
    */
   @Deprecated
-  default boolean isLessThan(ISignedNumber that) {
+  default boolean isLessThan(IReal that) {
     return isLT(that);
   }
 
-  default ISignedNumber max(ISignedNumber that) {
+  default IReal max(IReal that) {
     return isGT(that) ? this : that;
   }
 
-  default ISignedNumber min(ISignedNumber that) {
+  default IReal min(IReal that) {
     return isLT(that) ? this : that;
   }
 
@@ -203,7 +210,7 @@ public interface ISignedNumber extends INumber {
 
   /**
    * If this is a <code>Interval[{lower, upper}]</code> expression return the <code>lower</code>
-   * value. If this is a <code>ISignedNUmber</code> expression return <code>this</code>.
+   * value. If this is a <code>IReal</code> expression return <code>this</code>.
    *
    * @return <code>F.NIL</code> if this expression is no interval and no signed number.
    */
@@ -218,7 +225,7 @@ public interface ISignedNumber extends INumber {
    * @return
    */
   @Override
-  public ISignedNumber negate();
+  public IReal negate();
 
   /**
    * Get a Java double number wrapped into a <code>Num</code> object.
@@ -228,7 +235,7 @@ public interface ISignedNumber extends INumber {
   public INum numValue();
 
   @Override
-  public ISignedNumber opposite();
+  public IReal opposite();
 
   /**
    * Returns the closest <code>IInteger</code> to the argument. The result is rounded to an integer
@@ -242,14 +249,14 @@ public interface ISignedNumber extends INumber {
   public IInteger roundExpr();
 
   /**
-   * Round <code>this</code> number to the closest <code>ISignedNumber</code> multiple of the <code>
+   * Round <code>this</code> number to the closest <code>IReal</code> multiple of the <code>
    * factor</code>.
    *
    * @param factor
    * @return the closest integer to the argument.
    * @throws ArithmeticException
    */
-  public ISignedNumber roundClosest(ISignedNumber factor);
+  public IReal roundClosest(IReal factor);
 
   /**
    * Returns the signum function of this number (i.e., -1, 0 or 1 as the value of this number is
@@ -268,7 +275,7 @@ public interface ISignedNumber extends INumber {
    * @param that a signed number
    * @return
    */
-  public ISignedNumber subtractFrom(ISignedNumber that);
+  public IReal subtractFrom(IReal that);
 
   /**
    * Converts this number to <code>int</code>; unlike {@link #intValue} this method raises
@@ -287,7 +294,7 @@ public interface ISignedNumber extends INumber {
    * @param to
    * @return
    */
-  default boolean isRange(ISignedNumber from, ISignedNumber to) {
+  default boolean isRange(IReal from, IReal to) {
     return isGE(from) && isLE(to);
   }
 
@@ -298,7 +305,7 @@ public interface ISignedNumber extends INumber {
    * @param to
    * @return
    */
-  default boolean isRangeExclExcl(ISignedNumber from, ISignedNumber to) {
+  default boolean isRangeExclExcl(IReal from, IReal to) {
     return isGT(from) && isLT(to);
   }
 
@@ -309,7 +316,7 @@ public interface ISignedNumber extends INumber {
    * @param to
    * @return
    */
-  default boolean isRangeExclIncl(ISignedNumber from, ISignedNumber to) {
+  default boolean isRangeExclIncl(IReal from, IReal to) {
     return isGT(from) && isLE(to);
   }
 
@@ -320,7 +327,7 @@ public interface ISignedNumber extends INumber {
    * @param to
    * @return
    */
-  default boolean isRangeInclExcl(ISignedNumber from, ISignedNumber to) {
+  default boolean isRangeInclExcl(IReal from, IReal to) {
     return isGE(from) && isLT(to);
   }
 
@@ -341,7 +348,7 @@ public interface ISignedNumber extends INumber {
 
   /**
    * If this is a <code>Interval[{lower, upper}]</code> expression return the <code>upper</code>
-   * value. If this is a <code>ISignedNUmber</code> expression return <code>this</code>.
+   * value. If this is a <code>IReal</code> expression return <code>this</code>.
    *
    * @return <code>F.NIL</code> if this expression is no interval and no signed number.
    */
@@ -359,12 +366,12 @@ public interface ISignedNumber extends INumber {
   }
 
   @Override
-  default ISignedNumber zero() {
+  default IReal zero() {
     return F.C0;
   }
 
   @Override
-  default ISignedNumber one() {
+  default IReal one() {
     return F.C1;
   }
 }

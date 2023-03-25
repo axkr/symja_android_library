@@ -20,7 +20,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -111,7 +111,7 @@ public class Num implements INum {
   }
 
   @Override
-  public ISignedNumber add(final ISignedNumber val) {
+  public IReal add(final IReal val) {
     if (val instanceof INum) {
       return multiply((INum) val);
     }
@@ -199,7 +199,7 @@ public class Num implements INum {
     }
     if (expr.isNumber()) {
       if (expr.isReal()) {
-        return Double.compare(value, ((ISignedNumber) expr).doubleValue());
+        return Double.compare(value, ((IReal) expr).doubleValue());
       }
       int c = this.compareTo(((INumber) expr).re());
       if (c != 0) {
@@ -226,7 +226,7 @@ public class Num implements INum {
   }
 
   @Override
-  public ISignedNumber divideBy(ISignedNumber that) {
+  public IReal divideBy(IReal that) {
     if (that instanceof Num) {
       return valueOf(value / ((Num) that).value);
     }
@@ -304,7 +304,7 @@ public class Num implements INum {
   }
 
   @Override
-  public ISignedNumber evalReal() {
+  public IReal evalReal() {
     return this;
   }
 
@@ -315,7 +315,7 @@ public class Num implements INum {
 
   /** {@inheritDoc} */
   @Override
-  public ISignedNumber fractionalPart() {
+  public IReal fractionalPart() {
     return F.num(getRealPart() % 1);
   }
 
@@ -357,7 +357,7 @@ public class Num implements INum {
 
   /** {@inheritDoc} */
   @Override
-  public ISignedNumber im() {
+  public IReal im() {
     return F.CD0;
   }
 
@@ -368,7 +368,7 @@ public class Num implements INum {
 
   /** {@inheritDoc} */
   @Override
-  public ISignedNumber re() {
+  public IReal re() {
     return this;
   }
 
@@ -496,7 +496,7 @@ public class Num implements INum {
   }
 
   @Override
-  public ISignedNumber inverse() {
+  public IReal inverse() {
     if (isOne()) {
       return this;
     }
@@ -516,7 +516,7 @@ public class Num implements INum {
   }
 
   @Override
-  public boolean isGT(ISignedNumber that) {
+  public boolean isGT(IReal that) {
     return value > that.doubleValue();
   }
 
@@ -526,7 +526,7 @@ public class Num implements INum {
   }
 
   @Override
-  public boolean isLT(ISignedNumber that) {
+  public boolean isLT(IReal that) {
     return value < that.doubleValue();
   }
 
@@ -632,7 +632,7 @@ public class Num implements INum {
   }
 
   @Override
-  public ISignedNumber multiply(final ISignedNumber val) {
+  public IReal multiply(final IReal val) {
     if (val instanceof INum) {
       return multiply((INum) val);
     }
@@ -659,7 +659,7 @@ public class Num implements INum {
   }
 
   @Override
-  public ISignedNumber opposite() {
+  public IReal opposite() {
     return valueOf(-value);
   }
 
@@ -726,7 +726,7 @@ public class Num implements INum {
   }
 
   @Override
-  public ISignedNumber roundClosest(ISignedNumber multiple) {
+  public IReal roundClosest(IReal multiple) {
     if (multiple.isRational()) {
       return F
           .ZZ(DoubleMath.roundToBigInteger(value / multiple.doubleValue(), RoundingMode.HALF_EVEN))
@@ -752,7 +752,7 @@ public class Num implements INum {
   }
 
   @Override
-  public ISignedNumber subtractFrom(ISignedNumber that) {
+  public IReal subtractFrom(IReal that) {
     if (that instanceof Num) {
       return valueOf(value - ((Num) that).value);
     }

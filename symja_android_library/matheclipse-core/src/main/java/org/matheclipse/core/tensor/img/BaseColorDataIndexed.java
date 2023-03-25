@@ -8,7 +8,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 
 /* package */ abstract class BaseColorDataIndexed implements ColorDataIndexed {
 
@@ -23,7 +23,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
   }
 
   @Override // from ScalarTensorFunction
-  public final IAST apply(ISignedNumber scalar) {
+  public final IAST apply(IReal scalar) {
     // if (scalar instanceof MultiplexScalar)
     // throw TensorRuntimeException.of(scalar);
     return (IAST) tensor.get(scalar.toIntDefault() + 1);
@@ -38,7 +38,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
    * @param scalar
    * @return
    */
-  protected abstract int toInt(ISignedNumber scalar);
+  protected abstract int toInt(IReal scalar);
 
   /**
    * @param alpha in the range [0, 1, ..., 255]

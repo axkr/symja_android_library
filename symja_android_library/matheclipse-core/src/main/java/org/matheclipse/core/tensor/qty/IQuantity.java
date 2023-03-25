@@ -4,7 +4,7 @@ package org.matheclipse.core.tensor.qty;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.parser.client.math.MathException;
 import com.univocity.parsers.csv.CsvFormat;
 
@@ -73,7 +73,7 @@ public interface IQuantity extends IExpr, Comparable<IExpr> {
   }
 
   /**
-   * creates quantity with number encoded as {@link ISignedNumber}
+   * creates quantity with number encoded as {@link IReal}
    *
    * <p>
    * Hint: function does not check parameters for null, although null as input is likely to cause
@@ -89,7 +89,7 @@ public interface IQuantity extends IExpr, Comparable<IExpr> {
   }
 
   /**
-   * creates quantity with number encoded as {@link ISignedNumber}
+   * creates quantity with number encoded as {@link IReal}
    *
    * @param number
    * @param unit for instance "kg^3*m*s^-2"

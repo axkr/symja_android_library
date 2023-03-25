@@ -30,7 +30,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.parser.client.ParserConfig;
@@ -592,12 +592,12 @@ public abstract class DoubleFormFactory {
       }
       final IExpr fraction = parts[2];
       if (fraction != null) {
-        convertNumber(buf, (ISignedNumber) fraction, Precedence.PLUS, caller);
+        convertNumber(buf, (IReal) fraction, Precedence.PLUS, caller);
         append(buf, "*");
         caller = NO_PLUS_CALL;
       }
       if (numerator.isReal()) {
-        convertNumber(buf, (ISignedNumber) numerator, Precedence.PLUS, caller);
+        convertNumber(buf, (IReal) numerator, Precedence.PLUS, caller);
       } else if (numerator.isComplex() || numerator.isComplexNumeric()) {
         convertNumber(buf, (INumber) numerator, Precedence.DIVIDE, caller);
       } else {
@@ -646,7 +646,7 @@ public abstract class DoubleFormFactory {
           append(buf, "-");
           showOperator = false;
         } else {
-          convertNumber(buf, (ISignedNumber) arg1, Precedence.PLUS, caller);
+          convertNumber(buf, (IReal) arg1, Precedence.PLUS, caller);
         }
       } else if (arg1.isComplex() && timesAST.size() > 2) {
         convertComplex(buf, (IComplex) arg1, oper.getPrecedence(), caller);
@@ -911,8 +911,8 @@ public abstract class DoubleFormFactory {
       convertAST(buf, list, eval);
       return;
     }
-    if (o instanceof ISignedNumber) {
-      convertNumber(buf, (ISignedNumber) o, precedence, NO_PLUS_CALL);
+    if (o instanceof IReal) {
+      convertNumber(buf, (IReal) o, precedence, NO_PLUS_CALL);
       return;
     }
     if (o instanceof IComplexNum) {
@@ -992,7 +992,7 @@ public abstract class DoubleFormFactory {
 
   public void convertSlot(final StringBuilder buf, final IAST list) {
     try {
-      final int slot = ((ISignedNumber) list.arg1()).toInt();
+      final int slot = ((IReal) list.arg1()).toInt();
       append(buf, "#" + slot);
     } catch (final ArithmeticException e) {
       // add message to evaluation problemReporter
@@ -1001,7 +1001,7 @@ public abstract class DoubleFormFactory {
 
   public void convertSlotSequence(final StringBuilder buf, final IAST list) {
     try {
-      final int slotSequenceStartPosition = ((ISignedNumber) list.arg1()).toInt();
+      final int slotSequenceStartPosition = ((IReal) list.arg1()).toInt();
       append(buf, "##" + slotSequenceStartPosition);
     } catch (final ArithmeticException e) {
       // add message to evaluation problemReporter

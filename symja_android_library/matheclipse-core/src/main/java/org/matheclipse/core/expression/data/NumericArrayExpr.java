@@ -22,7 +22,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumericArray;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.parser.trie.Trie;
 import com.google.common.primitives.UnsignedBytes;
 import com.google.common.primitives.UnsignedInts;
@@ -271,7 +271,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
         if (!arg.isInteger()) {
           throw new TypeException("Not a valid Integers type");
         }
-        int value = ((ISignedNumber) arg).toInt();
+        int value = ((IReal) arg).toInt();
         if (value < (Short.MIN_VALUE) || value > Short.MAX_VALUE) {
           throw new RangeException("Value " + value + " out of Integer16 range");
         }
@@ -294,7 +294,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
         if (!arg.isInteger()) {
           throw new TypeException("Not a valid Integers type");
         }
-        intArr[index[0]++] = ((ISignedNumber) arg).toInt();
+        intArr[index[0]++] = ((IReal) arg).toInt();
       } else {
         if (!arg.isList() || !arrayIntRecursive((IAST) arg, level, intArr, index)) {
           return false;
@@ -313,7 +313,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
         if (!arg.isInteger()) {
           throw new TypeException("Not a valid Integers type");
         }
-        longArr[index[0]++] = ((ISignedNumber) arg).toLong();
+        longArr[index[0]++] = ((IReal) arg).toLong();
       } else {
         if (!arg.isList() || !arrayLongRecursive((IAST) arg, level, longArr, index)) {
           return false;
@@ -356,7 +356,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     if (!arg.isInteger()) {
       throw new TypeException("Not a valid Integers type");
     }
-    long value = ((ISignedNumber) arg).toLong();
+    long value = ((IReal) arg).toLong();
     byte b = UnsignedBytes.checkedCast(value);
     return b;
   }
@@ -385,7 +385,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
         if (!arg.isInteger()) {
           throw new TypeException("Not a valid Integers type");
         }
-        int value = ((ISignedNumber) arg).toInt();
+        int value = ((IReal) arg).toInt();
         shortArr[index[0]++] = checkedCastUnsignedShort(value);
       } else {
         if (!arg.isList() || !arrayUnsignedShortRecursive((IAST) arg, level, shortArr, index)) {
@@ -405,7 +405,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
         if (!arg.isInteger()) {
           throw new TypeException("Not a valid Integers type");
         }
-        long value = ((ISignedNumber) arg).toLong();
+        long value = ((IReal) arg).toLong();
         intArr[index[0]++] = UnsignedInts.checkedCast(value);
       } else {
         if (!arg.isList() || !arrayUnsignedIntRecursive((IAST) arg, level, intArr, index)) {

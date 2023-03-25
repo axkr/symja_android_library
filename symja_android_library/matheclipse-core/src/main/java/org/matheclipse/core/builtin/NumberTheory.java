@@ -70,7 +70,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISeqBase;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numbertheory.Primality;
@@ -1321,7 +1321,7 @@ public final class NumberTheory {
       if (size > 1) {
         for (int i = 1; i < size; i++) {
           IExpr expr = ast.get(i);
-          ISignedNumber temp = expr.evalReal();
+          IReal temp = expr.evalReal();
           if (temp != null) {
             if (temp.isZero()) {
               return F.NIL;
@@ -1492,7 +1492,7 @@ public final class NumberTheory {
           return S.False;
         }
         if (result.isReal()) {
-          return isSignedNumberDivisible((ISignedNumber) result);
+          return isSignedNumberDivisible((IReal) result);
         }
         return S.False;
       }
@@ -1516,7 +1516,7 @@ public final class NumberTheory {
      * @param result
      * @return
      */
-    private IExpr isSignedNumberDivisible(ISignedNumber result) {
+    private IExpr isSignedNumberDivisible(IReal result) {
       if (result.isInteger()) {
         return S.True;
       }
@@ -4466,9 +4466,9 @@ public final class NumberTheory {
       if (arg1.isInteger()) {
         x = arg1;
       } else if (arg1.isReal() && arg1.isPositive()) {
-        x = engine.evaluate(((ISignedNumber) arg1).floorFraction());
+        x = engine.evaluate(((IReal) arg1).floorFraction());
       } else {
-        ISignedNumber sn = arg1.evalReal();
+        IReal sn = arg1.evalReal();
         if (sn != null) {
           x = engine.evaluate(sn.floorFraction());
         }
@@ -4816,7 +4816,7 @@ public final class NumberTheory {
       boolean useConvergenceMethod = true;
       try {
         if (ast.isAST2()) {
-          ISignedNumber epsilonExpr = ast.arg2().evalReal();
+          IReal epsilonExpr = ast.arg2().evalReal();
           if (epsilonExpr == null) {
             return F.NIL;
           }
@@ -4964,7 +4964,7 @@ public final class NumberTheory {
       if (option.isReal()) {
 
         // found "Modulus" option => use ModIntegerRing
-        ModIntegerRing modIntegerRing = JASConvert.option2ModIntegerRing((ISignedNumber) option);
+        ModIntegerRing modIntegerRing = JASConvert.option2ModIntegerRing((IReal) option);
         JASConvert<ModInteger> jas = new JASConvert<ModInteger>(varList, modIntegerRing);
         GenPolynomial<ModInteger> poly = jas.expr2JAS(expr, false);
 

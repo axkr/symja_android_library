@@ -55,7 +55,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPredicate;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITernaryComparator;
@@ -2044,7 +2044,7 @@ public final class BooleanFunctions {
           return S.False;
         }
       }
-      ISignedNumber a2 = arg2.evalReal();
+      IReal a2 = arg2.evalReal();
       if (a2 != null && AbstractAssumptions.assumeGreaterThan(arg1, a2)) {
         return S.True;
       }
@@ -2084,7 +2084,7 @@ public final class BooleanFunctions {
       // don't compare strings
       if (a0.isReal()) {
         if (a1.isReal()) {
-          return ((ISignedNumber) a0).isGT((ISignedNumber) a1) ? IExpr.COMPARE_TERNARY.TRUE
+          return ((IReal) a0).isGT((IReal) a1) ? IExpr.COMPARE_TERNARY.TRUE
               : IExpr.COMPARE_TERNARY.FALSE;
         } else if (a1.isInfinity()) {
           return IExpr.COMPARE_TERNARY.FALSE;
@@ -2431,7 +2431,7 @@ public final class BooleanFunctions {
           return S.False;
         }
       }
-      ISignedNumber a2 = arg2.evalReal();
+      IReal a2 = arg2.evalReal();
       if (a2 != null && AbstractAssumptions.assumeGreaterEqual(arg1, a2)) {
         return S.True;
       }
@@ -2734,7 +2734,7 @@ public final class BooleanFunctions {
           return S.True;
         }
       }
-      ISignedNumber a2 = arg2.evalReal();
+      IReal a2 = arg2.evalReal();
       if (a2 != null && AbstractAssumptions.assumeLessThan(arg1, a2)) {
         return S.True;
       }
@@ -2822,7 +2822,7 @@ public final class BooleanFunctions {
           return S.True;
         }
       }
-      ISignedNumber a2 = arg2.evalReal();
+      IReal a2 = arg2.evalReal();
       if (a2 != null && AbstractAssumptions.assumeLessEqual(arg1, a2)) {
         return S.True;
       }
@@ -3430,7 +3430,7 @@ public final class BooleanFunctions {
       if (arg1.isNumber()) {
         return S.False;
       }
-      ISignedNumber signedNumber = arg1.evalReal();
+      IReal signedNumber = arg1.evalReal();
       if (signedNumber != null) {
         return F.booleSymbol(signedNumber.isNegative());
       }
@@ -3586,7 +3586,7 @@ public final class BooleanFunctions {
       if (arg1.isNumber()) {
         return S.False;
       }
-      ISignedNumber signedNumber = arg1.evalReal();
+      IReal signedNumber = arg1.evalReal();
       if (signedNumber != null) {
         return F.booleSymbol(!signedNumber.isNegative());
       }
@@ -3643,7 +3643,7 @@ public final class BooleanFunctions {
       if (arg1.isNumber()) {
         return S.False;
       }
-      ISignedNumber signedNumber = arg1.evalReal();
+      IReal signedNumber = arg1.evalReal();
       if (signedNumber != null) {
         return F.booleSymbol(signedNumber.isNegative() || signedNumber.isZero());
       }
@@ -3979,7 +3979,7 @@ public final class BooleanFunctions {
       if (arg1.isNumber()) {
         return S.False;
       }
-      ISignedNumber signedNumber = arg1.evalReal();
+      IReal signedNumber = arg1.evalReal();
       if (signedNumber != null) {
         return F.booleSymbol(signedNumber.isPositive());
       }

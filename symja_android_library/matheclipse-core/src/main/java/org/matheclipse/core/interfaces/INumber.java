@@ -183,7 +183,7 @@ public interface INumber extends IExpr {
    * @return real part
    */
   @Override
-  public ISignedNumber im();
+  public IReal im();
 
   /**
    * Returns the imaginary part of a complex number
@@ -224,7 +224,7 @@ public interface INumber extends IExpr {
    * @return real part
    */
   @Override
-  public ISignedNumber re();
+  public IReal re();
 
   /**
    * Returns the real part of a complex number

@@ -32,7 +32,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -268,8 +268,8 @@ public class IntegerFunctions {
     }
 
     /**
-     * Returns the smallest (closest to negative infinity) <code>ISignedNumber</code> value that is
-     * not less than <code>this</code> and is equal to a mathematical integer.
+     * Returns the smallest (closest to negative infinity) <code>IReal</code> value that is not less
+     * than <code>this</code> and is equal to a mathematical integer.
      *
      * <p>
      * See <a href="http://en.wikipedia.org/wiki/Floor_and_ceiling_functions">Wikipedia - Floor and
@@ -287,7 +287,7 @@ public class IntegerFunctions {
         }
         return evalCeiling(ast.arg1());
       } catch (ArithmeticException ae) {
-        // ISignedNumber#floor() or #ceil() may throw ArithmeticException
+        // IReal#floor() or #ceil() may throw ArithmeticException
       }
       return F.NIL;
     }
@@ -639,8 +639,8 @@ public class IntegerFunctions {
     }
 
     /**
-     * Returns the largest (closest to positive infinity) <code>ISignedNumber</code> value that is
-     * not greater than <code>this</code> and is equal to a mathematical integer.
+     * Returns the largest (closest to positive infinity) <code>IReal</code> value that is not
+     * greater than <code>this</code> and is equal to a mathematical integer.
      *
      * <p>
      * See <a href="http://en.wikipedia.org/wiki/Floor_and_ceiling_functions">Wikipedia - Floor and
@@ -658,7 +658,7 @@ public class IntegerFunctions {
         }
         return evalFloor(ast.arg1());
       } catch (ArithmeticException ae) {
-        // ISignedNumber#floor() may throw ArithmeticException
+        // IReal#floor() may throw ArithmeticException
       }
       return F.NIL;
     }
@@ -765,7 +765,7 @@ public class IntegerFunctions {
       // if (arg1.isPlus() && arg1.first().isInteger()) {
       // }
       try {
-        ISignedNumber signedNumber = arg1.evalReal();
+        IReal signedNumber = arg1.evalReal();
         if (signedNumber != null) {
           if (signedNumber.isRangeExclExcl(F.CN1, F.C1)) {
             // arg1 is in the interval ]-1, 1[
@@ -1029,7 +1029,7 @@ public class IntegerFunctions {
           return IntervalSym.mapSymbol(S.IntegerPart, (IAST) arg1);
         }
 
-        ISignedNumber signedNumber = arg1.evalReal();
+        IReal signedNumber = arg1.evalReal();
         if (signedNumber != null) {
           return signedNumber.integerPart();
         } else {
@@ -1039,7 +1039,7 @@ public class IntegerFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        // ISignedNumber#floor() or #ceil() may throw ArithmeticException
+        // IReal#floor() or #ceil() may throw ArithmeticException
         LOGGER.debug("IntegerPart.evaluate() failed", rex);
       }
       return F.NIL;
@@ -1109,7 +1109,7 @@ public class IntegerFunctions {
         IExpr d = ast.arg3();
         if (m.isNumber() && n.isNumber() && d.isNumber()) {
           if (m.isInteger() && n.isInteger() && d.isInteger()) {
-            IExpr subExpr = ((ISignedNumber) m.subtract(d).divide(n)).floorFraction();
+            IExpr subExpr = ((IReal) m.subtract(d).divide(n)).floorFraction();
             return m.plus(F.CN1.times(n).times(subExpr));
           }
           if (m.isComplex() || n.isComplex() || d.isComplex() || m.isComplexNumeric()
@@ -1135,7 +1135,7 @@ public class IntegerFunctions {
       }
 
       if (m.isReal() && n.isReal()) {
-        return F.Subtract(m, F.Times(n, F.Floor(((ISignedNumber) m).divideBy((ISignedNumber) n))));
+        return F.Subtract(m, F.Times(n, F.Floor(((IReal) m).divideBy((IReal) n))));
       }
 
       IExpr div = S.Divide.of(engine, m, n);
@@ -1295,7 +1295,7 @@ public class IntegerFunctions {
           return ((IInteger) z).quotient((IInteger) n);
         }
         if (z.isReal() && n.isReal()) {
-          return ((ISignedNumber) z).divideBy((ISignedNumber) n).floorFraction();
+          return ((IReal) z).divideBy((IReal) n).floorFraction();
         }
         if (z.isComplex() || n.isComplex()) {
           IComplex c1 = null;
@@ -1516,9 +1516,9 @@ public class IntegerFunctions {
         return F.list(list, F.ZZ(list.size() - 1));
       }
       try {
-        ISignedNumber number = null;
+        IReal number = null;
         if (arg1.isReal()) {
-          number = (ISignedNumber) arg1;
+          number = (IReal) arg1;
         } else {
           number = arg1.evalReal();
         }
@@ -1713,7 +1713,7 @@ public class IntegerFunctions {
           }
         }
       } catch (ArithmeticException ae) {
-        // ISignedNumber#round() may throw ArithmeticException
+        // IReal#round() may throw ArithmeticException
       }
       return res;
     }
@@ -1793,7 +1793,7 @@ public class IntegerFunctions {
       if (size > 1) {
         for (int i = 1; i < size; i++) {
           IExpr expr = ast.get(i);
-          ISignedNumber temp = expr.evalReal();
+          IReal temp = expr.evalReal();
           if (temp != null) {
             if (temp.complexSign() < 0) {
               return F.C0;
@@ -1818,8 +1818,8 @@ public class IntegerFunctions {
               IExpr l = expr.lower();
               IExpr u = expr.upper();
               if (l.isReal() && u.isReal()) {
-                ISignedNumber min = (ISignedNumber) l;
-                ISignedNumber max = (ISignedNumber) u;
+                IReal min = (IReal) l;
+                IReal max = (IReal) u;
                 if (min.complexSign() < 0) {
                   if (max.complexSign() < 0) {
                     return F.Interval(F.list(F.C0, F.C0));

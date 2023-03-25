@@ -8,7 +8,7 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import com.google.common.escape.Escaper;
 import com.google.common.html.HtmlEscapers;
 
@@ -119,7 +119,7 @@ public class Show3D2ThreeJS {
       } else if (option.isList() && option.isAST3()) {
         IAST list = (IAST) option;
         for (int i = 1; i < list.size(); i++) {
-          viewpoints[i - 1] = ((ISignedNumber) list.getAt(i)).doubleValue();
+          viewpoints[i - 1] = ((IReal) list.getAt(i)).doubleValue();
         }
       }
     }
@@ -183,7 +183,7 @@ public class Show3D2ThreeJS {
       // null]]
       buf.append("[[");
       for (int j = 1; j < point.size(); j++) {
-        buf.append(Show2SVG.FORMATTER.format(((ISignedNumber) point.getAt(j)).doubleValue()));
+        buf.append(Show2SVG.FORMATTER.format(((IReal) point.getAt(j)).doubleValue()));
         if (j < point.argSize()) {
           buf.append(", ");
         }

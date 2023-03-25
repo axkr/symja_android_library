@@ -15,7 +15,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPair;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.Primality;
 import com.google.common.math.IntMath;
@@ -89,7 +89,7 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public ISignedNumber add(ISignedNumber that) {
+  public IReal add(IReal that) {
     if (that instanceof IRational) {
       return add((IRational) that);
     }
@@ -157,7 +157,7 @@ public class IntegerSym extends AbstractIntegerSym {
         return -expr.compareTo(this);
       }
     } else if (expr.isReal()) {
-      return Double.compare(fIntValue, ((ISignedNumber) expr).doubleValue());
+      return Double.compare(fIntValue, ((IReal) expr).doubleValue());
     }
     return super.compareTo(expr);
   }
@@ -214,7 +214,7 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public ISignedNumber divideBy(ISignedNumber that) {
+  public IReal divideBy(IReal that) {
     if (that instanceof IntegerSym) {
       return AbstractFractionSym.valueOf(this).divideBy(that);
     }
@@ -325,7 +325,7 @@ public class IntegerSym extends AbstractIntegerSym {
 
   /** {@inheritDoc} */
   @Override
-  public ISignedNumber im() {
+  public IReal im() {
     return F.C0;
   }
 
@@ -428,7 +428,7 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public boolean isGT(ISignedNumber obj) {
+  public boolean isGT(IReal obj) {
     if (obj instanceof IntegerSym) {
       return fIntValue > ((IntegerSym) obj).fIntValue;
     }
@@ -450,7 +450,7 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public boolean isLT(ISignedNumber obj) {
+  public boolean isLT(IReal obj) {
     if (obj instanceof IntegerSym) {
       return fIntValue < ((IntegerSym) obj).fIntValue;
     }
@@ -641,7 +641,7 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public ISignedNumber multiply(ISignedNumber that) {
+  public IReal multiply(IReal that) {
     if (that instanceof IRational) {
       return multiply((IRational) that);
     }
@@ -783,7 +783,7 @@ public class IntegerSym extends AbstractIntegerSym {
 
   /** {@inheritDoc} */
   @Override
-  public ISignedNumber re() {
+  public IReal re() {
     return this;
   }
 

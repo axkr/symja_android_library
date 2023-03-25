@@ -74,7 +74,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPair;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IPatternSequence;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.IUnaryIndexFunction;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -1514,7 +1514,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       IExpr temp = F.eval(this);
       if (temp.isReal()) {
         try {
-          return Integer.valueOf(((ISignedNumber) this).toInt());
+          return Integer.valueOf(((IReal) this).toInt());
         } catch (final ArithmeticException e) {
         }
       }
@@ -1966,11 +1966,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public final ISignedNumber evalReal() {
+  public final IReal evalReal() {
     if (isNumericFunction(true)) {
       IExpr result = EvalEngine.get().evalN(this);
       if (result.isReal()) {
-        return (ISignedNumber) result;
+        return (IReal) result;
       }
       if (result.isComplexNumeric()) {
         IComplexNum cc = (IComplexNum) result;
@@ -1983,7 +1983,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       if (arg1.isNumericFunction(true)) {
         IExpr result = EvalEngine.get().evalN(arg1);
         if (result.isReal()) {
-          return (ISignedNumber) result;
+          return (IReal) result;
         }
         if (result.isComplexNumeric()) {
           IComplexNum cc = (IComplexNum) result;
@@ -4210,7 +4210,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (isNumericFunction(true)) {
       IExpr result = EvalEngine.get().evalN(this);
       if (result.isReal()) {
-        return ((ISignedNumber) result).isPositive();
+        return ((IReal) result).isPositive();
       }
     }
     return false;
@@ -4342,7 +4342,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         return true;
       }
     }
-    ISignedNumber e = evalReal();
+    IReal e = evalReal();
     if (e != null) {
       return true;
     }
@@ -5681,7 +5681,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
     try {
       double[][] result = new double[dim[0]][dim[1]];
-      ISignedNumber signedNumber;
+      IReal signedNumber;
       for (int i = 1; i <= dim[0]; i++) {
         IAST row = (IAST) get(i);
         for (int j = 1; j <= dim[1]; j++) {
@@ -5808,7 +5808,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
     double[][] result = new double[dim[0]][dim[1]];
     int rowIndex = 0;
-    ISignedNumber signedNumber;
+    IReal signedNumber;
     for (int i = 1; i < size(); i++) {
       IExpr row = get(i);
       if (row.isList()) {
@@ -6000,7 +6000,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
       } else if (isAST(S.Slot, 2) && (arg1().isReal())) {
 
-        final int slot = ((ISignedNumber) arg1()).toIntDefault();
+        final int slot = ((IReal) arg1()).toIntDefault();
         if (slot <= 0) {
           return toFullFormString();
         }

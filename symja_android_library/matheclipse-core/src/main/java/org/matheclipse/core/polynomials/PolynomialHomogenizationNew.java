@@ -13,7 +13,7 @@ import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -175,7 +175,7 @@ public class PolynomialHomogenizationNew {
         if (exp.isReal()) {
 
           IInteger lcm = F.C1;
-          IRational rat = ((ISignedNumber) exp).rationalFactor();
+          IRational rat = ((IReal) exp).rationalFactor();
           if (rat == null) {
             return;
           }
@@ -279,7 +279,7 @@ public class PolynomialHomogenizationNew {
         IExpr b = replaceForwardRecursive(ast.base());
         IExpr exp = ast.exponent();
         if (exp.isReal()) {
-          IExpr base = replacePower(b, (ISignedNumber) exp);
+          IExpr base = replacePower(b, (IReal) exp);
           if (base.isPresent()) {
             return base;
           }
@@ -375,7 +375,7 @@ public class PolynomialHomogenizationNew {
     return F.NIL;
   }
 
-  private IExpr replacePower(final IExpr exprPoly, ISignedNumber exp) {
+  private IExpr replacePower(final IExpr exprPoly, IReal exp) {
     ISymbol symbol = substitutedExpr.get(exprPoly);
     if (symbol != null) {
       IInteger lcm = getLCM(symbol);

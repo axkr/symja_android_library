@@ -15,7 +15,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class IntervalSym {
@@ -191,7 +191,7 @@ public class IntervalSym {
         return F.list(F.num(values[0]), //
             F.num(values[1]));
       }
-      double value = ((ISignedNumber) arg).doubleValue();
+      double value = ((IReal) arg).doubleValue();
       return F.list(F.num(Math.nextDown(value)), //
           F.num(Math.nextUp(value)));
     }
@@ -938,7 +938,7 @@ public class IntervalSym {
    * @param exponent
    * @return
    */
-  public static IExpr power(final IAST baseInterval, ISignedNumber exponent) {
+  public static IExpr power(final IAST baseInterval, IReal exponent) {
     IAST interval = normalize(baseInterval);
     if (interval.isPresent()) {
       boolean negative = false;

@@ -26,7 +26,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.parser.client.ParserConfig;
@@ -608,7 +608,7 @@ public abstract class ComplexFormFactory {
       convertAST(buf, list);
       return;
     }
-    if (o instanceof ISignedNumber) {
+    if (o instanceof IReal) {
       double d = o.evalf();
       if (fPackagePrefix) {
         buf.append("org.hipparchus.complex.");
@@ -697,7 +697,7 @@ public abstract class ComplexFormFactory {
 
   public void convertSlot(final StringBuilder buf, final IAST list) {
     try {
-      final int slot = ((ISignedNumber) list.arg1()).toInt();
+      final int slot = ((IReal) list.arg1()).toInt();
       append(buf, "#" + slot);
     } catch (final ArithmeticException e) {
       // add message to evaluation problemReporter
@@ -706,7 +706,7 @@ public abstract class ComplexFormFactory {
 
   public void convertSlotSequence(final StringBuilder buf, final IAST list) {
     try {
-      final int slotSequenceStartPosition = ((ISignedNumber) list.arg1()).toInt();
+      final int slotSequenceStartPosition = ((IReal) list.arg1()).toInt();
       append(buf, "##" + slotSequenceStartPosition);
     } catch (final ArithmeticException e) {
       // add message to evaluation problemReporter

@@ -28,7 +28,7 @@ import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
@@ -987,7 +987,7 @@ public class RootsFunctions {
       int degree = list.size() - 2;
       double[] result = new double[degree + 1];
       for (int i = 1; i < list.size(); i++) {
-        ISignedNumber temp = list.get(i).evalReal();
+        IReal temp = list.get(i).evalReal();
         if (temp != null) {
           result[i - 1] = temp.doubleValue();
         } else {

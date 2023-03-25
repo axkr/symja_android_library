@@ -5,7 +5,7 @@ import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FunctionNode;
 import org.matheclipse.parser.client.ast.SymbolNode;
@@ -32,7 +32,7 @@ public class CoreCallbackFunction implements IDoubleCallbackFunction {
       // }
       final IExpr result = F.evaln(fun);
       if (result.isReal()) {
-        return ((ISignedNumber) result).doubleValue();
+        return ((IReal) result).doubleValue();
       }
     } else if (node instanceof FunctionNode) {
       AST2Expr ast2Expr = new AST2Expr();
@@ -43,7 +43,7 @@ public class CoreCallbackFunction implements IDoubleCallbackFunction {
       }
       final IExpr result = F.evaln(fun);
       if (result.isReal()) {
-        return ((ISignedNumber) result).doubleValue();
+        return ((IReal) result).doubleValue();
       }
     }
     throw new SymjaMathException(

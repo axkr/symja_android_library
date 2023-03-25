@@ -12,7 +12,7 @@ import org.jfree.data.time.Second;
 import org.jfree.data.time.TimePeriod;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.tensor.qty.IUnit;
 import org.matheclipse.core.tensor.qty.QuantityMagnitude;
 import org.matheclipse.core.tensor.qty.UnitConvert;
@@ -28,7 +28,7 @@ import org.matheclipse.core.tensor.sca.Clips;
    * @param time
    * @return
    */
-  public static TimePeriod timePeriod(ISignedNumber time) {
+  public static TimePeriod timePeriod(IReal time) {
     long timeL = time.toLongDefault();
     int hours = Math.toIntExact(TimeUnit.SECONDS.toHours(timeL));
     int minutes = Math.toIntExact(TimeUnit.SECONDS.toMinutes(timeL) - 60 * hours);
@@ -48,7 +48,7 @@ import org.matheclipse.core.tensor.sca.Clips;
    * @return
    */
   public static VisualImage create(BufferedImage bufferedImage, VisualSet visualSet, IAST domain,
-      ISignedNumber yhi) {
+      IReal yhi) {
     IUnit unitX = visualSet.getAxisX().getUnit();
     UnaryOperator<IExpr> suoX = UnitConvert.SI().to(unitX);
     Clip clipX = Clips.interval(suoX.apply(domain.first()),

@@ -23,7 +23,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -523,7 +523,7 @@ public class ComplexNum implements IComplexNum {
 
   /** {@inheritDoc} */
   @Override
-  public ISignedNumber im() {
+  public IReal im() {
     return F.num(getImaginaryPart());
   }
 
@@ -544,7 +544,7 @@ public class ComplexNum implements IComplexNum {
 
   /** {@inheritDoc} */
   @Override
-  public ISignedNumber re() {
+  public IReal re() {
     return F.num(getRealPart());
   }
 
@@ -806,7 +806,7 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IComplexNum pow(final IComplexNum val) {
     if (Complex.equals(fComplex, Complex.ZERO, Config.DOUBLE_EPSILON)) {
-      ISignedNumber sn = val.re();
+      IReal sn = val.re();
       if (sn.isNegative()) {
         IOFunctions.printMessage(S.Power, "infy", F.list(F.Power(F.C0, sn)), EvalEngine.get());
         // EvalEngine.get().printMessage("Infinite expression 0^(negative number)");

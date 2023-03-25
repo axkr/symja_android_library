@@ -14,7 +14,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -70,12 +70,12 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
    */
   public static boolean checkPartialRealOrder(IExpr[] val, OrderDirection dir, boolean strict,
       boolean abort) throws MathIllegalArgumentException {
-    ISignedNumber previous = F.C0;
+    IReal previous = F.C0;
     final int max = val.length;
     int start = max;
     for (int i = 0; i < val.length; i++) {
-      if (val[i] instanceof ISignedNumber) {
-        previous = (ISignedNumber) val[i];
+      if (val[i] instanceof IReal) {
+        previous = (IReal) val[i];
         start = i + 1;
         break;
       }
@@ -83,26 +83,26 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
 
     int index;
     ITEM: for (index = start; index < max; index++) {
-      if (val[index] instanceof ISignedNumber) {
+      if (val[index] instanceof IReal) {
         switch (dir) {
           case INCREASING:
             if (strict) {
-              if (((ISignedNumber) val[index]).isLE(previous)) {
+              if (((IReal) val[index]).isLE(previous)) {
                 break ITEM;
               }
             } else {
-              if (((ISignedNumber) val[index]).isLT(previous)) {
+              if (((IReal) val[index]).isLT(previous)) {
                 break ITEM;
               }
             }
             break;
           case DECREASING:
             if (strict) {
-              if (((ISignedNumber) val[index]).isGE(previous)) {
+              if (((IReal) val[index]).isGE(previous)) {
                 break ITEM;
               }
             } else {
-              if (((ISignedNumber) val[index]).isGT(previous)) {
+              if (((IReal) val[index]).isGT(previous)) {
                 break ITEM;
               }
             }
@@ -112,7 +112,7 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
             throw MathRuntimeException.createInternalError();
         }
 
-        previous = (ISignedNumber) val[index];
+        previous = (IReal) val[index];
       }
     }
 

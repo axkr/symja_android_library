@@ -609,6 +609,8 @@ public class IOFunctions {
       "Local variable specification `1` contains `2` which is not a symbol or an assignment to a symbol.", //
       "matrix", "Argument `1` at position `2` is not a non-empty rectangular matrix.", //
       "matsq", "Argument `1` at position `2` is not a non-empty square matrix.", //
+      "memlimit",
+      "This computation has exceeded the memeory limit settings of this evaluation engines instance.", //
       "meprec", "Internal precision limit `1` reached while evaluating `2`.", //
       "minv", "The `1` arguments to `2` must be ordinary integers.", // or gaussian
       "mseqs",

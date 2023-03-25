@@ -53,7 +53,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.InterquartileRangeRules;
@@ -812,8 +812,8 @@ public class StatisticsFunctions {
     public IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST2()) {
         // exception handling in RandonmVariate() function
-        ISignedNumber a = dist.arg1().evalReal();
-        ISignedNumber b = dist.arg2().evalReal();
+        IReal a = dist.arg1().evalReal();
+        IReal b = dist.arg2().evalReal();
         if (a != null && b != null) {
           RandomDataGenerator rdg = new RandomDataGenerator();
           double[] vector =
@@ -985,12 +985,12 @@ public class StatisticsFunctions {
           IExpr temp = vector.get(i);
           int index = -1;
           if (dx != Integer.MIN_VALUE) {
-            index = (((ISignedNumber) temp).floorFraction()).div(dx).toIntDefault();
+            index = (((IReal) temp).floorFraction()).div(dx).toIntDefault();
             if ((dx > 1) && temp.isInteger() && ((IInteger) temp).mod(dx).isZero()) {
               index--;
             }
           } else {
-            index = S.Floor.of(engine, (((ISignedNumber) temp).divide(dxNum))).toIntDefault();
+            index = S.Floor.of(engine, (((IReal) temp).divide(dxNum))).toIntDefault();
           }
           if (index == Integer.MIN_VALUE) {
             return F.NIL;
@@ -6011,7 +6011,7 @@ public class StatisticsFunctions {
               int dim2 = q.isVector();
               if (dim2 >= 0 && q.isList()) {
                 final IAST vector = ((IAST) q);
-                if (vector.exists(x -> x.isReal() && !((ISignedNumber) x).isRange(F.C0, F.C1))) {
+                if (vector.exists(x -> x.isReal() && !((IReal) x).isRange(F.C0, F.C1))) {
                   // The Quantile specification `1` should be a number or a list of numbers between
                   // `2` and `3`.
                   return IOFunctions.printMessage(ast.topHead(), "nquan", F.list(q, F.C0, F.C1),
@@ -6020,7 +6020,7 @@ public class StatisticsFunctions {
                 return vector.mapThread(ast, 2);
               } else {
                 if (q.isReal()) {
-                  ISignedNumber qi = (ISignedNumber) q;
+                  IReal qi = (IReal) q;
                   if (!qi.isRange(F.C0, F.C1)) {
                     // The Quantile specification `1` should be a number or a list of numbers
                     // between `2` and `3`.
@@ -6041,7 +6041,7 @@ public class StatisticsFunctions {
                     }
                   }
                   if (x.isReal()) {
-                    ISignedNumber xi = (ISignedNumber) x;
+                    IReal xi = (IReal) x;
                     int xFloor = xi.floorFraction().toIntDefault();
                     int xCeiling = xi.ceilFraction().toIntDefault();
                     if (xFloor != Integer.MIN_VALUE && xCeiling != Integer.MIN_VALUE) {
@@ -6085,7 +6085,7 @@ public class StatisticsFunctions {
       return ARGS_1_3;
     }
 
-    // private IExpr of(IAST sorted, IInteger length, ISignedNumber scalar) {
+    // private IExpr of(IAST sorted, IInteger length, IReal scalar) {
     // if (scalar.isReal()) {
     // int index = 0;
     // if (scalar instanceof INum) {

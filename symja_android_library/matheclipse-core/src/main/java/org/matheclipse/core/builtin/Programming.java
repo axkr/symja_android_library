@@ -44,7 +44,7 @@ import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IIterator;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -3038,8 +3038,8 @@ public final class Programming {
       long seconds = 0L;
       try {
         if (arg2.isReal()) {
-          arg2 = ((ISignedNumber) arg2).ceilFraction();
-          seconds = ((ISignedNumber) arg2).toLong();
+          arg2 = ((IReal) arg2).ceilFraction();
+          seconds = ((IReal) arg2).toLong();
         } else {
           // Positive machine-sized integer expected at position `2` in `1`.
           return IOFunctions.printMessage(ast.topHead(), "intpm", F.list(F.C2, ast), engine);

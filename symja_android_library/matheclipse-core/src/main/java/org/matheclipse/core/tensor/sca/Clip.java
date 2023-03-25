@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 
 /**
  * Clip encodes a non-empty, closed interval in an ordered set of scalars.
@@ -51,7 +51,7 @@ public interface Clip extends Function<IExpr, IExpr> {
    * @return scalar that is guaranteed to be invariant under this clip
    * @throws Exception if given scalar is not invariant under this clip
    */
-  ISignedNumber requireInside(ISignedNumber scalar);
+  IReal requireInside(IReal scalar);
 
   /**
    * @param scalar
@@ -66,7 +66,7 @@ public interface Clip extends Function<IExpr, IExpr> {
    * 
    * <p>
    * When using Clip with {@link Quantity}s, all three scalars min, max, and the given scalar, must
-   * be of identical unit. {@link #rescale(ISignedNumber)} always returns a {@link RealScalar}.
+   * be of identical unit. {@link #rescale(IReal)} always returns a {@link RealScalar}.
    * 
    * @param scalar
    * @return value in interval [0, 1] relative to position of scalar in clip interval. If the clip

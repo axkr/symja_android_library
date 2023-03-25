@@ -3,7 +3,7 @@ package org.matheclipse.core.graphics;
 import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 
 public class Dimensions2D {
 
@@ -101,10 +101,10 @@ public class Dimensions2D {
   }
 
   public void setPlotRange(IAST p1, IAST p2) {
-    double x1 = ((ISignedNumber) p1.arg1()).doubleValue();
-    double y1 = ((ISignedNumber) p1.arg2()).doubleValue();
-    double x2 = ((ISignedNumber) p2.arg1()).doubleValue();
-    double y2 = ((ISignedNumber) p2.arg2()).doubleValue();
+    double x1 = ((IReal) p1.arg1()).doubleValue();
+    double y1 = ((IReal) p1.arg2()).doubleValue();
+    double x2 = ((IReal) p2.arg1()).doubleValue();
+    double y2 = ((IReal) p2.arg2()).doubleValue();
     minMax(x1, y1, x2, y2);
     plotRange = true;
   }

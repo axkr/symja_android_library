@@ -12,7 +12,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 
 /**
  * <p>
@@ -276,7 +276,7 @@ public class IntervalDataSym {
             S.LessEqual, //
             F.num(values[1]));
       }
-      double value = ((ISignedNumber) arg).doubleValue();
+      double value = ((IReal) arg).doubleValue();
       return F.List(F.num(Math.nextDown(value)), //
           S.LessEqual, //
           S.LessEqual, //

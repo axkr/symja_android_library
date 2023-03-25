@@ -4,7 +4,7 @@ package org.matheclipse.core.tensor.sca;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.tensor.qty.QuantityUnit;
 
 /**
@@ -46,7 +46,7 @@ public class Clips {
    * @return function that clips the input to the closed interval [0, max]
    * @throws Exception if max is negative
    */
-  public static Clip positive(ISignedNumber max) {
+  public static Clip positive(IReal max) {
     return create(max.zero(), max);
   }
 
@@ -67,7 +67,7 @@ public class Clips {
    * @return function that clips the input to the closed interval [-max, max]
    * @throws Exception if max is negative
    */
-  public static Clip absolute(ISignedNumber max) {
+  public static Clip absolute(IReal max) {
     return create(max.negate(), max);
   }
 

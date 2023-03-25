@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ParserConfig;
 import edu.jas.arith.BigRational;
@@ -173,7 +173,7 @@ public class BigFractionSym extends AbstractFractionSym {
       }
     }
     if (expr.isReal()) {
-      return Double.compare(fFraction.doubleValue(), ((ISignedNumber) expr).doubleValue());
+      return Double.compare(fFraction.doubleValue(), ((IReal) expr).doubleValue());
     }
     return -1;
     // return super.compareTo(expr);

@@ -6,7 +6,7 @@ import java.util.Arrays;
 import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IReal;
 
 /** reference implementation of a {@link ColorDataIndexed} with cyclic indexing */
 public class CyclicColorDataIndexed extends BaseColorDataIndexed {
@@ -50,7 +50,7 @@ public class CyclicColorDataIndexed extends BaseColorDataIndexed {
   }
 
   @Override // from BaseColorDataIndexed
-  protected int toInt(ISignedNumber scalar) {
+  protected int toInt(IReal scalar) {
     return mod.applyAsInt(scalar.toIntDefault());
   }
 }
