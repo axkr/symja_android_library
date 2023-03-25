@@ -4,8 +4,6 @@
 [![Symja](https://img.shields.io/docker/pulls/symja/symja-2.0?logo=docker&style=for-the-badge)](https://hub.docker.com/r/symja/symja-2.0)
 [![Maven Central](https://img.shields.io/maven-central/v/org.matheclipse/matheclipse?style=for-the-badge)](https://search.maven.org/search?q=g:org.matheclipse)
 
-[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/axkr/symja_android_library)
-[![LGTM Alerts](https://img.shields.io/lgtm/alerts/github/axkr/symja_android_library)](https://lgtm.com/projects/g/axkr/symja_android_library/)
 [![Build Master Snapshot](https://github.com/axkr/symja_android_library/actions/workflows/maven-build-master-and-publish-snapshot.yml/badge.svg)](https://github.com/axkr/symja_android_library/actions/workflows/maven-build-master-and-publish-snapshot.yml)
 [![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/org.matheclipse/matheclipse?server=https%3A%2F%2Foss.sonatype.org)](https://oss.sonatype.org/content/repositories/snapshots/org/matheclipse/)
 
