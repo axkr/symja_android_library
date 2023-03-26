@@ -765,13 +765,13 @@ public class IntegerFunctions {
       // if (arg1.isPlus() && arg1.first().isInteger()) {
       // }
       try {
-        IReal signedNumber = arg1.evalReal();
-        if (signedNumber != null) {
-          if (signedNumber.isRangeExclExcl(F.CN1, F.C1)) {
+        IReal realNumber = arg1.evalReal();
+        if (realNumber != null) {
+          if (realNumber.isRangeExclExcl(F.CN1, F.C1)) {
             // arg1 is in the interval ]-1, 1[
             return arg1;
           }
-          IInteger intValue = signedNumber.integerPart();
+          IInteger intValue = realNumber.integerPart();
           return F.Subtract(arg1, intValue);
         } else {
           Complex complexNumber = arg1.evalfc();
@@ -1029,9 +1029,9 @@ public class IntegerFunctions {
           return IntervalSym.mapSymbol(S.IntegerPart, (IAST) arg1);
         }
 
-        IReal signedNumber = arg1.evalReal();
-        if (signedNumber != null) {
-          return signedNumber.integerPart();
+        final IReal realNumber = arg1.evalReal();
+        if (realNumber != null) {
+          return realNumber.integerPart();
         } else {
           Complex complexNumber = arg1.evalfc();
           if (complexNumber != null) {

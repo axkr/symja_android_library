@@ -199,9 +199,9 @@ public class CurveFitterFunctions {
           initialGuess[i - 1] = 1.0;
           return temp;
         } else if (temp.isAST(S.List, 3) && temp.first().isSymbol()) {
-          IReal signedNumber = temp.second().evalReal();
-          if (signedNumber != null) {
-            initialGuess[i - 1] = signedNumber.doubleValue();
+          final IReal realNumber = temp.second().evalReal();
+          if (realNumber != null) {
+            initialGuess[i - 1] = realNumber.doubleValue();
           } else {
             return null;
           }
@@ -209,24 +209,6 @@ public class CurveFitterFunctions {
         }
         return F.NIL;
       });
-      // for (int i = 1; i < listOfSymbolsOrPairs.size(); i++) {
-      // IExpr temp = listOfSymbolsOrPairs.get(i);
-      // if (temp.isSymbol()) {
-      // initialGuess[i - 1] = 1.0;
-      // newListOfSymbols.append(temp);
-      // } else if (temp.isAST(S.List, 3) && temp.first().isSymbol()) {
-      // IReal signedNumber = temp.second().evalReal();
-      // if (signedNumber != null) {
-      // initialGuess[i - 1] = signedNumber.doubleValue();
-      // } else {
-      // return F.NIL;
-      // }
-      // newListOfSymbols.append(temp.first());
-      // } else {
-      // return F.NIL;
-      // }
-      // }
-      // return newListOfSymbols;
     }
 
     /**

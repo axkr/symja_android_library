@@ -3430,9 +3430,9 @@ public final class BooleanFunctions {
       if (arg1.isNumber()) {
         return S.False;
       }
-      IReal signedNumber = arg1.evalReal();
-      if (signedNumber != null) {
-        return F.booleSymbol(signedNumber.isNegative());
+      final IReal realNumber = arg1.evalReal();
+      if (realNumber != null) {
+        return F.booleSymbol(realNumber.isNegative());
       }
       if (arg1.isNegativeInfinity()) {
         return S.True;
@@ -3586,9 +3586,9 @@ public final class BooleanFunctions {
       if (arg1.isNumber()) {
         return S.False;
       }
-      IReal signedNumber = arg1.evalReal();
-      if (signedNumber != null) {
-        return F.booleSymbol(!signedNumber.isNegative());
+      final IReal realNumber = arg1.evalReal();
+      if (realNumber != null) {
+        return F.booleSymbol(!realNumber.isNegative());
       }
       if (arg1.isNegativeInfinity()) {
         return S.False;
@@ -3643,9 +3643,9 @@ public final class BooleanFunctions {
       if (arg1.isNumber()) {
         return S.False;
       }
-      IReal signedNumber = arg1.evalReal();
-      if (signedNumber != null) {
-        return F.booleSymbol(signedNumber.isNegative() || signedNumber.isZero());
+      final IReal realNumber = arg1.evalReal();
+      if (realNumber != null) {
+        return F.booleSymbol(realNumber.isNegative() || realNumber.isZero());
       }
       return F.NIL;
     }
@@ -3979,9 +3979,9 @@ public final class BooleanFunctions {
       if (arg1.isNumber()) {
         return S.False;
       }
-      IReal signedNumber = arg1.evalReal();
-      if (signedNumber != null) {
-        return F.booleSymbol(signedNumber.isPositive());
+      final IReal realNumber = arg1.evalReal();
+      if (realNumber != null) {
+        return F.booleSymbol(realNumber.isPositive());
       }
       if (arg1.isNegativeInfinity()) {
         return S.False;

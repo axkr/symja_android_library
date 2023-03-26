@@ -5681,13 +5681,13 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
     try {
       double[][] result = new double[dim[0]][dim[1]];
-      IReal signedNumber;
+      IReal realNumber;
       for (int i = 1; i <= dim[0]; i++) {
         IAST row = (IAST) get(i);
         for (int j = 1; j <= dim[1]; j++) {
-          signedNumber = row.get(j).evalReal();
-          if (signedNumber != null) {
-            result[i - 1][j - 1] = signedNumber.evalf();
+          realNumber = row.get(j).evalReal();
+          if (realNumber != null) {
+            result[i - 1][j - 1] = realNumber.evalf();
           } else {
             return null;
           }
@@ -5808,15 +5808,15 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
     double[][] result = new double[dim[0]][dim[1]];
     int rowIndex = 0;
-    IReal signedNumber;
+    IReal realNumber;
     for (int i = 1; i < size(); i++) {
       IExpr row = get(i);
       if (row.isList()) {
         IAST list = (IAST) row;
         for (int j = 1; j <= dim[1]; j++) {
-          signedNumber = list.get(j).evalReal();
-          if (signedNumber != null) {
-            result[rowIndex][j - 1] = signedNumber.doubleValue();
+          realNumber = list.get(j).evalReal();
+          if (realNumber != null) {
+            result[rowIndex][j - 1] = realNumber.doubleValue();
           } else {
             return null;
           }

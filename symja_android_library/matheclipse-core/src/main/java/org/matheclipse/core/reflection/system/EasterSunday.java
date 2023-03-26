@@ -17,9 +17,9 @@ public class EasterSunday extends AbstractFunctionEvaluator {
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     try {
       IExpr arg1 = ast.arg1();
-      IReal signedNumber = arg1.evalReal();
-      if (signedNumber != null) {
-        int y = signedNumber.toInt();
+      final IReal realNumber = arg1.evalReal();
+      if (realNumber != null) {
+        int y = realNumber.toInt();
         // "Anonymous Gregorian algorithm", see
         // https://en.wikipedia.org/wiki/Computus
         int a = y % 19;

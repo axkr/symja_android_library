@@ -1485,14 +1485,14 @@ public final class NumberTheory {
       if (result.isNumber()) {
         if (result.isComplex()) {
           IComplex comp = (IComplex) result;
-          if (isSignedNumberDivisible(comp.re()).isTrue()
-              && isSignedNumberDivisible(comp.im()).isTrue()) {
+          if (isRealDivisible(comp.re()).isTrue()
+              && isRealDivisible(comp.im()).isTrue()) {
             return S.True;
           }
           return S.False;
         }
         if (result.isReal()) {
-          return isSignedNumberDivisible((IReal) result);
+          return isRealDivisible((IReal) result);
         }
         return S.False;
       }
@@ -1516,7 +1516,7 @@ public final class NumberTheory {
      * @param result
      * @return
      */
-    private IExpr isSignedNumberDivisible(IReal result) {
+    private IExpr isRealDivisible(IReal result) {
       if (result.isInteger()) {
         return S.True;
       }

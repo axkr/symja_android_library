@@ -16,7 +16,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class Assumptions extends AbstractAssumptions {
 
-  private static class SignedNumberRelations {
+  private static class RealRelations {
 
     static final int GREATER_ID = 0;
     static final int GREATEREQUAL_ID = 1;
@@ -26,7 +26,7 @@ public class Assumptions extends AbstractAssumptions {
 
     private final IReal[] values;
 
-    public SignedNumberRelations() {
+    public RealRelations() {
       this.values = new IReal[5];
     }
 
@@ -234,9 +234,9 @@ public class Assumptions extends AbstractAssumptions {
     if (equalsAST.arg2().isReal()) {
       IReal num = (IReal) equalsAST.arg2();
       IExpr key = equalsAST.arg1();
-      SignedNumberRelations gla = assumptions.valueMap.get(key);
+      RealRelations gla = assumptions.valueMap.get(key);
       if (gla == null) {
-        gla = new SignedNumberRelations();
+        gla = new RealRelations();
       }
       gla.addEquals(num);
       assumptions.valueMap.put(key, gla);
@@ -245,9 +245,9 @@ public class Assumptions extends AbstractAssumptions {
     if (equalsAST.arg1().isReal()) {
       IReal num = (IReal) equalsAST.arg1();
       IExpr key = equalsAST.arg2();
-      SignedNumberRelations gla = assumptions.valueMap.get(key);
+      RealRelations gla = assumptions.valueMap.get(key);
       if (gla == null) {
-        gla = new SignedNumberRelations();
+        gla = new RealRelations();
       }
       gla.addEquals(num);
       assumptions.valueMap.put(key, gla);
@@ -267,9 +267,9 @@ public class Assumptions extends AbstractAssumptions {
           IReal num1 = (IReal) arg1;
           IReal num3 = (IReal) arg3;
           IExpr key = arg2;
-          SignedNumberRelations gla = assumptions.valueMap.get(key);
+          RealRelations gla = assumptions.valueMap.get(key);
           if (gla == null) {
-            gla = new SignedNumberRelations();
+            gla = new RealRelations();
           }
           gla.addLess(num1);
           gla.addGreater(num3);
@@ -289,9 +289,9 @@ public class Assumptions extends AbstractAssumptions {
     }
     if (num != null) {
       IExpr key = greaterAST.arg1();
-      SignedNumberRelations gla = assumptions.valueMap.get(key);
+      RealRelations gla = assumptions.valueMap.get(key);
       if (gla == null) {
-        gla = new SignedNumberRelations();
+        gla = new RealRelations();
       }
       gla.addGreater(num);
       assumptions.valueMap.put(key, gla);
@@ -306,9 +306,9 @@ public class Assumptions extends AbstractAssumptions {
     }
     if (num != null) {
       IExpr key = greaterAST.arg2();
-      SignedNumberRelations gla = assumptions.valueMap.get(key);
+      RealRelations gla = assumptions.valueMap.get(key);
       if (gla == null) {
-        gla = new SignedNumberRelations();
+        gla = new RealRelations();
       }
       gla.addLess(num);
       assumptions.valueMap.put(key, gla);
@@ -328,9 +328,9 @@ public class Assumptions extends AbstractAssumptions {
           IReal num1 = (IReal) arg1;
           IReal num3 = (IReal) arg3;
           IExpr key = arg2;
-          SignedNumberRelations gla = assumptions.valueMap.get(key);
+          RealRelations gla = assumptions.valueMap.get(key);
           if (gla == null) {
-            gla = new SignedNumberRelations();
+            gla = new RealRelations();
           }
           gla.addLessEqual(num1);
           gla.addGreaterEqual(num3);
@@ -350,9 +350,9 @@ public class Assumptions extends AbstractAssumptions {
     }
     if (num != null) {
       IExpr key = greaterEqualAST.arg1();
-      SignedNumberRelations gla = assumptions.valueMap.get(key);
+      RealRelations gla = assumptions.valueMap.get(key);
       if (gla == null) {
-        gla = new SignedNumberRelations();
+        gla = new RealRelations();
       }
       gla.addGreaterEqual(num);
       assumptions.valueMap.put(key, gla);
@@ -367,9 +367,9 @@ public class Assumptions extends AbstractAssumptions {
     }
     if (num != null) {
       IExpr key = greaterEqualAST.arg2();
-      SignedNumberRelations gla = assumptions.valueMap.get(key);
+      RealRelations gla = assumptions.valueMap.get(key);
       if (gla == null) {
-        gla = new SignedNumberRelations();
+        gla = new RealRelations();
       }
       gla.addLessEqual(num);
       assumptions.valueMap.put(key, gla);
@@ -389,9 +389,9 @@ public class Assumptions extends AbstractAssumptions {
           IReal num1 = (IReal) arg1;
           IReal num3 = (IReal) arg3;
           IExpr key = arg2;
-          SignedNumberRelations gla = assumptions.valueMap.get(key);
+          RealRelations gla = assumptions.valueMap.get(key);
           if (gla == null) {
-            gla = new SignedNumberRelations();
+            gla = new RealRelations();
           }
           gla.addGreater(num1);
           gla.addLess(num3);
@@ -411,9 +411,9 @@ public class Assumptions extends AbstractAssumptions {
     }
     if (num != null) {
       IExpr key = lessAST.arg1();
-      SignedNumberRelations gla = assumptions.valueMap.get(key);
+      RealRelations gla = assumptions.valueMap.get(key);
       if (gla == null) {
-        gla = new SignedNumberRelations();
+        gla = new RealRelations();
       }
       gla.addLess(num);
       assumptions.valueMap.put(key, gla);
@@ -427,9 +427,9 @@ public class Assumptions extends AbstractAssumptions {
     }
     if (num != null) {
       IExpr key = lessAST.arg2();
-      SignedNumberRelations gla = assumptions.valueMap.get(key);
+      RealRelations gla = assumptions.valueMap.get(key);
       if (gla == null) {
-        gla = new SignedNumberRelations();
+        gla = new RealRelations();
       }
       gla.addGreater(num);
       assumptions.valueMap.put(key, gla);
@@ -450,9 +450,9 @@ public class Assumptions extends AbstractAssumptions {
           IReal num1 = (IReal) arg1;
           IReal num3 = (IReal) arg3;
           IExpr key = arg2;
-          SignedNumberRelations gla = assumptions.valueMap.get(key);
+          RealRelations gla = assumptions.valueMap.get(key);
           if (gla == null) {
-            gla = new SignedNumberRelations();
+            gla = new RealRelations();
           }
           gla.addGreaterEqual(num1);
           gla.addLessEqual(num3);
@@ -472,9 +472,9 @@ public class Assumptions extends AbstractAssumptions {
     }
     if (num != null) {
       IExpr key = lessEqualAST.arg1();
-      SignedNumberRelations gla = assumptions.valueMap.get(key);
+      RealRelations gla = assumptions.valueMap.get(key);
       if (gla == null) {
-        gla = new SignedNumberRelations();
+        gla = new RealRelations();
       }
       gla.addLessEqual(num);
       assumptions.valueMap.put(key, gla);
@@ -488,9 +488,9 @@ public class Assumptions extends AbstractAssumptions {
     }
     if (num != null) {
       IExpr key = lessEqualAST.arg2();
-      SignedNumberRelations gla = assumptions.valueMap.get(key);
+      RealRelations gla = assumptions.valueMap.get(key);
       if (gla == null) {
-        gla = new SignedNumberRelations();
+        gla = new RealRelations();
       }
       gla.addGreaterEqual(num);
       assumptions.valueMap.put(key, gla);
@@ -574,8 +574,8 @@ public class Assumptions extends AbstractAssumptions {
 
   private Map<IExpr, IAST> tensorsMap = new HashMap<IExpr, IAST>();
 
-  private HashMap<IExpr, SignedNumberRelations> valueMap =
-      new HashMap<IExpr, SignedNumberRelations>();
+  private HashMap<IExpr, RealRelations> valueMap =
+      new HashMap<IExpr, RealRelations>();
 
   private IExpr $assumptions = F.NIL;
 
@@ -669,7 +669,7 @@ public class Assumptions extends AbstractAssumptions {
   @Override
   public boolean isEqual(IExpr expr, IReal number) {
     IReal num;
-    SignedNumberRelations gla = valueMap.get(expr);
+    RealRelations gla = valueMap.get(expr);
     if (gla != null) {
       num = gla.getEquals();
       if (num != null) {
@@ -684,7 +684,7 @@ public class Assumptions extends AbstractAssumptions {
   @Override
   public boolean isGreaterEqual(IExpr expr, IReal number) {
     IReal num;
-    SignedNumberRelations gla = valueMap.get(expr);
+    RealRelations gla = valueMap.get(expr);
     if (gla != null) {
       boolean result = false;
       num = gla.getGreater();
@@ -712,7 +712,7 @@ public class Assumptions extends AbstractAssumptions {
   @Override
   public boolean isGreaterThan(IExpr expr, IReal number) {
     IReal num;
-    SignedNumberRelations gla = valueMap.get(expr);
+    RealRelations gla = valueMap.get(expr);
     if (gla != null) {
       boolean result = false;
       num = gla.getGreater();
@@ -746,7 +746,7 @@ public class Assumptions extends AbstractAssumptions {
   @Override
   public boolean isLessEqual(IExpr expr, IReal number) {
     IReal num;
-    SignedNumberRelations gla = valueMap.get(expr);
+    RealRelations gla = valueMap.get(expr);
     if (gla != null) {
       boolean result = false;
       num = gla.getLess();
@@ -774,7 +774,7 @@ public class Assumptions extends AbstractAssumptions {
   @Override
   public boolean isLessThan(IExpr expr, IReal number) {
     IReal num;
-    SignedNumberRelations gla = valueMap.get(expr);
+    RealRelations gla = valueMap.get(expr);
     if (gla != null) {
       boolean result = false;
       num = gla.getLess();
@@ -857,7 +857,7 @@ public class Assumptions extends AbstractAssumptions {
 
   @Override
   public boolean isReal(IExpr expr) {
-    SignedNumberRelations relation = valueMap.get(expr);
+    RealRelations relation = valueMap.get(expr);
     if (relation != null && relation.isLessOrGreaterRelation()) {
       return true;
     }
@@ -874,7 +874,7 @@ public class Assumptions extends AbstractAssumptions {
     if (temp != null) {
       return null;
     }
-    SignedNumberRelations rr = valueMap.get(x);
+    RealRelations rr = valueMap.get(x);
     if (rr != null) {
       int[] newXRange = new int[] {xRange[0], xRange[1]};
       boolean evaled = false;

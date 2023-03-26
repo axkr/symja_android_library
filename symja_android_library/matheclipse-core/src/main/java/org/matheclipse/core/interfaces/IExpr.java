@@ -979,17 +979,6 @@ public interface IExpr
   }
 
   /**
-   * Evaluate the expression to a <code>IReal</code> value.
-   *
-   * @return <code>null</code> if the conversion is not possible.
-   * @deprecated use {@link #evalReal()} instead
-   */
-  @Deprecated
-  default IReal evalSignedNumber() {
-    return evalReal();
-  }
-
-  /**
    * Evaluate an expression
    *
    * @param engine the evaluation engine
@@ -3801,31 +3790,6 @@ public interface IExpr
    */
   default boolean isSequence() {
     return false;
-  }
-
-  /**
-   * Test if this expression is a signed real number. I.e. an instance of type <code>IFraction
-   * </code> for exact number values or <code>INum</code> for approximated numbers.
-   *
-   * @return
-   * @deprecated use {@link #isReal()};
-   */
-  @Deprecated
-  default boolean isSignedNumber() {
-    return isReal();
-  }
-
-  /**
-   * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the evaluator implements
-   * the <code>IRealConstant</code> interface (see package <code>
-   * org.matheclipse.core.builtin.constant</code>).
-   *
-   * @return
-   * @deprecated use {@link #isRealConstant()}
-   */
-  @Deprecated
-  default boolean isSignedNumberConstant() {
-    return isRealConstant();
   }
 
   /**
