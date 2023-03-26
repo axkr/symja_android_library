@@ -583,6 +583,12 @@ public class AssociationTest extends ExprEvaluatorTestCase {
     check(timing1, //
         "");
   }
+
+  public void testSet() {
+    check("yy=<||>;For(i=2023,i<=2025,i++,yy(i)=i-1);yy", //
+        "<|2023->2022,2024->2023,2025->2024|>");
+  }
+
   /** The JUnit setup method */
   @Override
   protected void setUp() {

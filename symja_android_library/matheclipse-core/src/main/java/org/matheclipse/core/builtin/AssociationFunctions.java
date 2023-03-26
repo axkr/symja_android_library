@@ -316,7 +316,8 @@ public class AssociationFunctions {
             if (lhsHead.isAssociation()) {
               IAssociation assoc = ((IAssociation) lhsHead);
               assoc = assoc.copy();
-              assoc.appendRule(F.Rule(((IAST) leftHandSide).arg1(), rightHandSide));
+              IExpr part = engine.evaluate(((IAST) leftHandSide).arg1());
+              assoc.appendRule(F.Rule(part, rightHandSide));
               symbol.assignValue(assoc, false);
               return rightHandSide;
             }
