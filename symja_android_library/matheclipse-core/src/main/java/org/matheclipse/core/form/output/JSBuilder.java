@@ -1,5 +1,6 @@
 package org.matheclipse.core.form.output;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 
 /** Build a page to show a JavaScript graphic. */
@@ -316,7 +317,7 @@ public class JSBuilder {
     jsxGraphArgs[0] = libraries.toString();
     jsxGraphArgs[1] = manipulateStr;
     jsxGraphArgs[2] = "";
-    if (manipulateStr.length() < MAX_JSFIDDLE_SOURCE_CODE) {
+    if (Config.DISPLAY_JSFIDDLE_BUTTON && manipulateStr.length() < MAX_JSFIDDLE_SOURCE_CODE) {
       String[] jsFiddleArgs = new String[3];
       jsFiddleArgs[0] = htmlStr;
       jsFiddleArgs[1] = manipulateStr;

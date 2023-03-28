@@ -38,6 +38,9 @@ public class Config {
   /** Show the stack trace, if an exception is thrown in evaluation */
   public static final boolean SHOW_STACKTRACE = false;
 
+  /** Enable JSFiddle in JavaScript IFRAME output */
+  public static boolean DISPLAY_JSFIDDLE_BUTTON = true;
+
   /** Symja ASCII Art String */
   public static final String SYMJA = //
       "     _______.____    ____ .___  ___.        __       ___      \n"
