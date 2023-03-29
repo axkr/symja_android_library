@@ -1249,19 +1249,32 @@ public class TestPods {
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
 
     assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"numpods\" : 2,\n" + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"ComplexPlot3D((1+z^2)/(-1+z^2),{z,-2+(-2)*I,2+I*2},PlotRange-&gt;{0,3})\",\n"
-            + "        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mi>ComplexPlot3D</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mfrac><mrow><msup><mi>z</mi><mn>2</mn></msup><mo>+</mo><mn>1</mn></mrow><mrow><msup><mi>z</mi><mn>2</mn></msup><mo>-</mo><mn>1</mn></mrow></mfrac><mo>,</mo><mrow><mo>{</mo><mrow><mi>z</mi><mo>,</mo><mrow><mrow><mrow><mo>(</mo><mn>-2</mn><mo>)</mo></mrow><mo>&#0183;</mo><mrow><mi>&#x2148;</mi></mrow></mrow><mo>-</mo><mn>2</mn></mrow><mo>,</mo><mrow><mrow><mrow><mi>&#x2148;</mi></mrow><mo>&#0183;</mo><mn>2</mn></mrow><mo>+</mo><mn>2</mn></mrow></mrow><mo>}</mo></mrow><mo>,</mo><mrow><mi>PlotRange</mi><mo>-&gt;</mo><mrow><mo>{</mo><mrow><mn>0</mn><mo>,</mo><mn>3</mn></mrow><mo>}</mo></mrow></mrow></mrow><mo>)</mo></mrow></mrow></math>\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Function\",\n"
-            + "      \"scanner\" : \"Plotter\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"sinput\" : \"ComplexPlot3D((1 + z^2)/(-1 + z^2),{z,-2 + (-2)*I,2 + I*2},PlotRange-&gt;{0,3})\",\n"
-            + "        \"mathcell\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;MathCell&lt;/title&gt;\\n&lt;/head&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.10.0/build/mathcell.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML&quot;&gt;&lt;/script&gt;\\n\\n&lt;div class=&quot;mathcell&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar parent = document.currentScript.parentNode;\\nvar id = generateId();\\nparent.id = id;\\nMathCell( id, [  ] );\\n\\nparent.update = function( id ) {\\n\\n\\nfunction z1(z) { try { return  mul(add(1,pow(z,2)),inv(add(-1,pow(z,2))));}catch(e){return complex(Number.NaN);} }\\n\\nvar p1 = parametric( (re,im) =&gt; [ re, im, z1(complex(re,im)) ], [-2.0, 2.0], [-2.0, 2.0], { complexFunction: 'abs', colormap: 'complexArgument' } );\\n\\n  var config = { type: 'threejs', aspectRatio: [1.0,1,1], zMin: 0, zMax: 3 };\\n  var data = [p1];\\nevaluate( id, data, config );\\n\\n}\\nparent.update( id );\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div class=&quot;mathcell&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var parent = document.currentScript.parentNode;\\nvar id = generateId();\\nparent.id = id;\\nMathCell( id, [  ] );\\n\\nparent.update = function( id ) {\\n\\n\\nfunction z1(z) { try { return  mul(add(1,pow(z,2)),inv(add(-1,pow(z,2))));}catch(e){return complex(Number.NaN);} }\\n\\nvar p1 = parametric( (re,im) =&gt; [ re, im, z1(complex(re,im)) ], [-2.0, 2.0], [-2.0, 2.0], { complexFunction: 'abs', colormap: 'complexArgument' } );\\n\\n  var config = { type: 'threejs', aspectRatio: [1.0,1,1], zMin: 0, zMax: 3 };\\n  var data = [p1];\\nevaluate( id, data, config );\\n\\n}\\nparent.update( id );\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.10.0/build/mathcell.js,https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
+        "{\n" //
+            + "  \"queryresult\" : {\n" //
+            + "    \"success\" : \"true\",\n" //
+            + "    \"numpods\" : 2,\n" //
+            + "    \"version\" : \"0.1\",\n" //
+            + "    \"pods\" : [ {\n" //
+            + "      \"title\" : \"Input\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"ComplexPlot3D((1+z^2)/(-1+z^2),{z,-2+(-2)*I,2+I*2},PlotRange-&gt;{0,3})\",\n" //
+            + "        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mi>ComplexPlot3D</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mfrac><mrow><msup><mi>z</mi><mn>2</mn></msup><mo>+</mo><mn>1</mn></mrow><mrow><msup><mi>z</mi><mn>2</mn></msup><mo>-</mo><mn>1</mn></mrow></mfrac><mo>,</mo><mrow><mo>{</mo><mrow><mi>z</mi><mo>,</mo><mrow><mrow><mrow><mo>(</mo><mn>-2</mn><mo>)</mo></mrow><mo>&#0183;</mo><mrow><mi>&#x2148;</mi></mrow></mrow><mo>-</mo><mn>2</mn></mrow><mo>,</mo><mrow><mrow><mrow><mi>&#x2148;</mi></mrow><mo>&#0183;</mo><mn>2</mn></mrow><mo>+</mo><mn>2</mn></mrow></mrow><mo>}</mo></mrow><mo>,</mo><mrow><mi>PlotRange</mi><mo>-&gt;</mo><mrow><mo>{</mo><mrow><mn>0</mn><mo>,</mo><mn>3</mn></mrow><mo>}</mo></mrow></mrow></mrow><mo>)</mo></mrow></mrow></math>\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Function\",\n" //
+            + "      \"scanner\" : \"Plotter\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"sinput\" : \"ComplexPlot3D((1 + z^2)/(-1 + z^2),{z,-2 + (-2)*I,2 + I*2},PlotRange-&gt;{0,3})\",\n" //
+            + "        \"mathcell\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;MathCell&lt;/title&gt;\\n&lt;/head&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.10.0/build/mathcell.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML&quot;&gt;&lt;/script&gt;\\n\\n&lt;div class=&quot;mathcell&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; padding: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar parent = document.currentScript.parentNode;\\nvar id = generateId();\\nparent.id = id;\\nMathCell( id, [  ] );\\n\\nparent.update = function( id ) {\\n\\n\\nfunction z1(z) { try { return  mul(add(1,pow(z,2)),inv(add(-1,pow(z,2))));}catch(e){return complex(Number.NaN);} }\\n\\nvar p1 = parametric( (re,im) =&gt; [ re, im, z1(complex(re,im)) ], [-2.0, 2.0], [-2.0, 2.0], { complexFunction: 'abs', colormap: 'complexArgument' } );\\n\\n  var config = { type: 'threejs', aspectRatio: [1.0,1,1], zMin: 0, zMax: 3 };\\n  var data = [p1];\\nevaluate( id, data, config );\\n\\n}\\nparent.update( id );\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div class=&quot;mathcell&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var parent = document.currentScript.parentNode;\\nvar id = generateId();\\nparent.id = id;\\nMathCell( id, [  ] );\\n\\nparent.update = function( id ) {\\n\\n\\nfunction z1(z) { try { return  mul(add(1,pow(z,2)),inv(add(-1,pow(z,2))));}catch(e){return complex(Number.NaN);} }\\n\\nvar p1 = parametric( (re,im) =&gt; [ re, im, z1(complex(re,im)) ], [-2.0, 2.0], [-2.0, 2.0], { complexFunction: 'abs', colormap: 'complexArgument' } );\\n\\n  var config = { type: 'threejs', aspectRatio: [1.0,1,1], zMin: 0, zMax: 3 };\\n  var data = [p1];\\nevaluate( id, data, config );\\n\\n}\\nparent.update( id );\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js,https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.10.0/build/mathcell.js,https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n" //
+            + "      } ]\n" //
+            + "    } ]\n" //
+            + "  }\n" //
+            + "}"); //
   }
 
   @Test
@@ -2855,5 +2868,19 @@ public class TestPods {
             + "        \"plaintext\" : \"ComplexInfinity\",\n" + "        \"sinput\" : \"1/0\",\n"
             + "        \"latex\" : \"ComplexInfinity\"\n" + "      } ]\n" + "    } ]\n" + "  }\n"
             + "}"); //
+  }
+
+
+  @Test
+  public void testHelloWorld() {
+    // assumeTrue(System.getProperty("os.name").contains("Windows"));
+    EvalEngine.resetModuleCounter4JUnit();
+
+    // parser gets internally a syntax error
+    ObjectNode messageJSON = TestPods.createJUnitResult("Hello world.", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+    // but result gives no error
+    assertEquals(queryResult.isError(), false);
   }
 }

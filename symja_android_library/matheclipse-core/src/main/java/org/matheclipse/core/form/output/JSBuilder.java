@@ -25,20 +25,28 @@ public class JSBuilder {
           + "`3`\n" + "</div>\n" + "</body>\n" + "</html>";
 
   public static final String MATHCELL_IFRAME_TEMPLATE = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" //
+          + "\n" //
+          + "<!DOCTYPE html PUBLIC\n" //
           + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + "\n"
-          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>MathCell</title>\n" + "</head>\n"
-          + "\n" + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" //
+          + "\n" //
+          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n" //
+          + "<head>\n" + "<meta charset=\"utf-8\">\n" //
+          + "<title>MathCell</title>\n" + "</head>\n" + "\n"
+          + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
           // 1 - libraries
           + "`1`\n"
-          + "<div class=\"mathcell\" style=\"display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden\">\n"
+          + "<div class=\"mathcell\" style=\"display: flex; width: 100%; height: 100%; margin: 0; padding: 0; flex-direction: column; overflow: hidden\">\n"
           + "<script>\n"
           // 2 - JavaScript string
-          + "`2`\n" + "</script>\n"
+          + "`2`\n" //
+          + "</script>\n"
           // 3 - JSFiddle string
-          + "`3`\n" + "</div>\n" + "</body>\n" + "</html>";
+          + "`3`\n" //
+          + "</div>\n" //
+          + "</body>\n" //
+          + "</html>";
 
   public static final String GRAPHICS2D_IFRAME_TEMPLATE = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
@@ -229,38 +237,38 @@ public class JSBuilder {
           + "<textarea name='resources' style='display:none;'>`3`</textarea>\n" + "</form>";
 
   public static final String VISJS_IFRAME = //
-  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
-      "\n" + //
-      "<!DOCTYPE html PUBLIC\n" + //
-      "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n" + //
-      "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + //
-      "\n" + //
-      "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-      + //
-      "<head>\n" + //
-      "<meta charset=\"utf-8\">\n" + //
-      "<title>VIS-NetWork</title>\n" + //
-      "\n" + //
-      "  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@6.0.0/dist/vis-network.min.js\"></script>\n"
-      + //
-      "</head>\n" + //
-      "<body>\n" + //
-      "\n" + //
-      "<div id=\"vis\" style=\"width: 600px; height: 400px; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
-      + //
-      "<script type=\"text/javascript\">\n" + //
-      "`1`\n" + //
-      "  var container = document.getElementById('vis');\n" + //
-      "  var data = {\n" + //
-      "    nodes: nodes,\n" + //
-      "    edges: edges\n" + //
-      "  };\n" + //
-      "`2`\n" + //
-      "  var network = new vis.Network(container, data, options);\n" + //
-      "</script>\n" + //
-      "</div>\n" + //
-      "</body>\n" + //
-      "</html>"; //
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
+          "\n" + //
+          "<!DOCTYPE html PUBLIC\n" + //
+          "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n" + //
+          "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + //
+          "\n" + //
+          "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          + //
+          "<head>\n" + //
+          "<meta charset=\"utf-8\">\n" + //
+          "<title>VIS-NetWork</title>\n" + //
+          "\n" + //
+          "  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@6.0.0/dist/vis-network.min.js\"></script>\n"
+          + //
+          "</head>\n" + //
+          "<body>\n" + //
+          "\n" + //
+          "<div id=\"vis\" style=\"width: 600px; height: 400px; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
+          + //
+          "<script type=\"text/javascript\">\n" + //
+          "`1`\n" + //
+          "  var container = document.getElementById('vis');\n" + //
+          "  var data = {\n" + //
+          "    nodes: nodes,\n" + //
+          "    edges: edges\n" + //
+          "  };\n" + //
+          "`2`\n" + //
+          "  var network = new vis.Network(container, data, options);\n" + //
+          "</script>\n" + //
+          "</div>\n" + //
+          "</body>\n" + //
+          "</html>"; //
 
   private JSBuilder() {}
 
