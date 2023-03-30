@@ -614,9 +614,11 @@ public abstract class Scanner {
           return;
         }
         if (fCurrentChar == '.') {
-          if (Character.isDigit(charAtPosition())) {
-            fToken = TT_DIGIT;
-            return;
+          if (isValidPosition()) {
+            if (Character.isDigit(charAtPosition())) {
+              fToken = TT_DIGIT;
+              return;
+            }
           }
         }
         if (fCurrentChar == '(') {
