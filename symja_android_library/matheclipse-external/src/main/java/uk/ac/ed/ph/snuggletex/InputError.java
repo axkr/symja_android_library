@@ -5,10 +5,9 @@
  */
 package uk.ac.ed.ph.snuggletex;
 
+import java.util.Arrays;
 import uk.ac.ed.ph.snuggletex.internal.FrozenSlice;
 import uk.ac.ed.ph.snuggletex.utilities.MessageFormatter;
-
-import java.util.Arrays;
 
 /**
  * Encapsulates an error in the LaTeX input, providing information about what the error is and where
@@ -73,7 +72,7 @@ public final class InputError {
         + "(errorCode="
         + errorCode.toString()
         + ",slice="
-        + slice.toString()
+        + (slice == null ? "null" : slice.toString())
         + ",arguments="
         + Arrays.toString(arguments)
         + ")";

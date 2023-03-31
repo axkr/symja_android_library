@@ -20,6 +20,7 @@ public class BuiltinUsage {
     USAGE[ID.Abort] = "generate an abort";
     USAGE[ID.Abs] = "absolute value of a number";
     USAGE[ID.Accumulate] = "accumulates the values of $list$, returning a new list";
+    USAGE[ID.Algebraics] = "domain of the Algebraic numbers";
     USAGE[ID.All] = "option value that specify using everything";
     USAGE[ID.AllTrue] = "all the elements are True";
     USAGE[ID.Alphabet] = "lowercase letters in an alphabet";
@@ -53,6 +54,7 @@ public class BuiltinUsage {
     USAGE[ID.BaseEncode] = "encode an element as a base64 string";
     USAGE[ID.Beta] = "Euler's Beta function";
     USAGE[ID.Boole] = "translate 'True' to 1, and 'False' to 0";
+    USAGE[ID.Booleans] = "domain of boolean values";
     USAGE[ID.BooleanQ] = "test whether the expression evaluates to a boolean constant";
     USAGE[ID.Binomial] = "binomial coefficients";
     USAGE[ID.Break] = "exit a 'For', 'While', or 'Do' loop";
@@ -75,7 +77,7 @@ public class BuiltinUsage {
     USAGE[ID.ContainsOnly] = "test if all the elements of a list appear into another list";
     USAGE[ID.Complement] = "find the complement with respect to a universal set";
     USAGE[ID.Complex] = "head for complex numbers";
-    USAGE[ID.Complexes] = "the domain complex numbers";
+    USAGE[ID.Complexes] = "the domain of Complex numbers";
     USAGE[ID.CompoundExpression] = "execute expressions in sequence";
     USAGE[ID.Conjugate] = "complex conjugate value";
     USAGE[ID.Context] = "give the name of the context of a symbol";
@@ -191,7 +193,7 @@ public class BuiltinUsage {
     USAGE[ID.InputForm] = "plain-text input format";
     USAGE[ID.Insert] = "insert an element at a given position";
     USAGE[ID.Integer] = "head for integer numbers";
-    USAGE[ID.Integers] = "the domain integers numbers";
+    USAGE[ID.Integers] = "the domain of Integer numbers";
     USAGE[ID.Integrate] = "indefinite or definite integral of a function";
     USAGE[ID.Interrupt] = "interrupt evaluation and return '$Aborted'";
     USAGE[ID.Intersection] = "enumerate common elements";
@@ -312,6 +314,7 @@ public class BuiltinUsage {
     USAGE[ID.Prepend] = "add an element at the beginning";
     USAGE[ID.PrependTo] = "add an element at the beginning of an stored list or expression";
     USAGE[ID.Prime] = "n-th prime number";
+    USAGE[ID.Primes] = "the domain of the prime numbers";
     USAGE[ID.PrimePi] = "amount of prime numbers less than or equal";
     USAGE[ID.PrimePowerQ] = "test if a number is a power of a prime number";
     USAGE[ID.PrimeQ] = "test whether elements are prime numbers";
@@ -339,6 +342,7 @@ public class BuiltinUsage {
     USAGE[ID.RankedMax] = "the n-th largest item";
     USAGE[ID.RankedMin] = "the n-th smallest item";
     USAGE[ID.Rational] = "head for rational numbers";
+    USAGE[ID.Rationals] = "the domain of Rational numbers";
     USAGE[ID.Re] = "returns the real component of the complex number $z$";
     USAGE[ID.ReadProtected] = "attribute of symbols with hidden definitions";
     USAGE[ID.Reals] = "the domain of the Real numbers";

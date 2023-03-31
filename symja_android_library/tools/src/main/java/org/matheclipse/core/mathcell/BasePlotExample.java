@@ -13,10 +13,10 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.ManipulateFunction;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.image.expression.data.ImageExpr;
 import org.matheclipse.io.IOInit;
 import org.matheclipse.parser.client.ParserConfig;
@@ -97,18 +97,26 @@ public abstract class BasePlotExample {
         System.out.println(js);
         F.openHTMLOnDesktop(js);
       } else {
-        if (result.isString()) {
-          IStringX str = (IStringX) result;
-          if (str.getMimeType() == IStringX.TEXT_HTML) {
-            String htmlSnippet = str.toString();
-            String htmlPage = Config.HTML_PAGE;
-            htmlPage = StringUtils.replace(htmlPage, "`1`", htmlSnippet);
-            System.out.println(htmlPage);
-            F.openHTMLOnDesktop(htmlPage);
-            return;
-          }
+        IExpr outExpr = result;
+        if (result.isAST(S.Graphics)//
+            || result.isAST(F.Graphics3D)) {
+          outExpr = F.Show(outExpr);
         }
-        System.out.println(result.toString());
+        String html = F.show(outExpr);
+        System.out.println(html);
+         return;
+         // if (result.isString()) {
+         // IStringX str = (IStringX) result;
+         // if (str.getMimeType() == IStringX.TEXT_HTML) {
+         // String htmlSnippet = str.toString();
+         // String htmlPage = Config.HTML_PAGE;
+         // htmlPage = StringUtils.replace(htmlPage, "`1`", htmlSnippet);
+         // System.out.println(htmlPage);
+         // F.openHTMLOnDesktop(htmlPage);
+         // return;
+         // }
+         // }
+         // System.out.println(result.toString());
       }
     } catch (SyntaxError e) {
       // catch Symja parser errors here
