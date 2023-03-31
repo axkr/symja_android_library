@@ -11,7 +11,7 @@ public class LogPlot extends Plot {
   protected IAST listOfOptionRules(GraphicsOptions listPlotOptions) {
     IAST listOfOptions = F.List(//
         F.Rule(S.$Scaling, //
-            F.List(S.None, F.stringx("Log"))), //
+            F.List(S.None, F.stringx("Log10"))), //
         F.Rule(S.Axes, S.True), //
         listPlotOptions.plotRange());
     return listOfOptions;
@@ -20,7 +20,7 @@ public class LogPlot extends Plot {
   @Override
   protected void setGraphicOptions(GraphicsOptions graphicsOptions) {
     graphicsOptions.setYFunction(y -> F.Log(y));
-    graphicsOptions.setYScale("Log");
+    graphicsOptions.setYScale("Log10");
     graphicsOptions.setJoined(true);
   }
 

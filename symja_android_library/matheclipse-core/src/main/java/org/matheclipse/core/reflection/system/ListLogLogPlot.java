@@ -11,16 +11,16 @@ public class ListLogLogPlot extends ListPlot {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
-    graphicsOptions.setXFunction(x -> F.Log(x));
-    graphicsOptions.setYFunction(y -> F.Log(y));
-    graphicsOptions.setXScale("Log");
-    graphicsOptions.setYScale("Log");
+    graphicsOptions.setXFunction(x -> F.Log10(x));
+    graphicsOptions.setYFunction(y -> F.Log10(y));
+    graphicsOptions.setXScale("Log10");
+    graphicsOptions.setYScale("Log10");
     IAST graphicsPrimitives = listPlot(ast, graphicsOptions, engine);
     if (graphicsPrimitives.isPresent()) {
       graphicsOptions.addPadding();
       IAST listOfOptions = F.List(//
           F.Rule(S.$Scaling, //
-              F.List(F.stringx("Log"), F.stringx("Log"))), //
+              F.List(F.stringx("Log10"), F.stringx("Log10"))), //
           F.Rule(S.Axes, S.True), //
           graphicsOptions.plotRange());
       return createGraphicsFunction(graphicsPrimitives, listOfOptions, graphicsOptions);

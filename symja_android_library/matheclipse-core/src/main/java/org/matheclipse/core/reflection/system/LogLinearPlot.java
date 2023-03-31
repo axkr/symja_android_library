@@ -13,7 +13,7 @@ public class LogLinearPlot extends Plot {
   @Override
   protected void setGraphicOptions(GraphicsOptions graphicsOptions) {
     graphicsOptions.setXFunction(x -> F.Log(x));
-    graphicsOptions.setXScale("Log");
+    graphicsOptions.setXScale("Log10");
     graphicsOptions.setJoined(true);
   }
 
@@ -21,7 +21,7 @@ public class LogLinearPlot extends Plot {
   protected IAST listOfOptionRules(GraphicsOptions listPlotOptions) {
     IAST listOfOptions = F.List(//
         F.Rule(S.$Scaling, //
-            F.List(F.stringx("Log"), S.None)), //
+            F.List(F.stringx("Log10"), S.None)), //
         F.Rule(S.Axes, S.True), //
         listPlotOptions.plotRange());
     return listOfOptions;

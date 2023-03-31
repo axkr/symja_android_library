@@ -14,10 +14,10 @@ public class LogLogPlot extends Plot {
 
   @Override
   protected void setGraphicOptions(GraphicsOptions graphicsOptions) {
-    graphicsOptions.setXFunction(x -> F.Log(x));
-    graphicsOptions.setYFunction(y -> F.Log(y));
-    graphicsOptions.setXScale("Log");
-    graphicsOptions.setYScale("Log");
+    graphicsOptions.setXFunction(x -> F.Log10(x));
+    graphicsOptions.setYFunction(y -> F.Log10(y));
+    graphicsOptions.setXScale("Log10");
+    graphicsOptions.setYScale("Log10");
     graphicsOptions.setJoined(true);
   }
 
@@ -25,7 +25,8 @@ public class LogLogPlot extends Plot {
   protected IAST listOfOptionRules(GraphicsOptions listPlotOptions) {
     IAST listOfOptions = F.List(//
         F.Rule(S.$Scaling, //
-            F.List(F.stringx("Log"), F.stringx("Log"))), //
+            F.List(F.stringx("Log10"), //
+                F.stringx("Log10"))), //
         F.Rule(S.Axes, S.True), //
         listPlotOptions.plotRange());
     return listOfOptions;
