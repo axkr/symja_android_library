@@ -28,6 +28,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -36,6 +37,16 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <a href="https://github.com/chocoteam/choco-solver">Choco solver</a>
  */
 public class ChocoConvert {
+
+  /**
+   * Default minimum lower bound for <code>int</code> variables.
+   */
+  final private static short CHOCO_MIN_VALUE = Short.MIN_VALUE / 2;
+
+  /**
+   * Default maximum upper bound for <code>int</code> variables.
+   */
+  final private static short CHOCO_MAX_VALUE = Short.MAX_VALUE / 2;
 
   private ChocoConvert() {}
 
@@ -47,10 +58,11 @@ public class ChocoConvert {
     Solver solver = net.getSolver();
     for (int i = 1; i < variables.size(); i++) {
       if (variables.get(i) instanceof ISymbol) {
+
         map.put((ISymbol) variables.get(i), new IntervalIntVarImpl(//
             variables.get(i).toString(), //
-            Short.MIN_VALUE + 1, // +1 to avoid java.lang.IndexOutOfBoundsException in bitset range
-            Short.MAX_VALUE, //
+            CHOCO_MIN_VALUE, //
+            CHOCO_MAX_VALUE, //
             net));
       }
     }
@@ -93,7 +105,7 @@ public class ChocoConvert {
           IntVar lhsVar = (IntVar) lhs;
           try {
             int lowerBound = temp.arg2().toIntDefault();
-            if (lowerBound != Integer.MIN_VALUE) {
+            if (isIntRange(lowerBound)) {
               lhsVar.updateLowerBound(lowerBound + 1, lhsVar);
             }
           } catch (ContradictionException e) {
@@ -102,7 +114,7 @@ public class ChocoConvert {
           IntVar rhsVar = (IntVar) rhs;
           try {
             int upperBound = temp.arg1().toIntDefault();
-            if (upperBound != Integer.MIN_VALUE) {
+            if (isIntRange(upperBound)) {
               rhsVar.updateUpperBound(upperBound - 1, rhsVar);
             }
           } catch (ContradictionException e) {
@@ -114,7 +126,7 @@ public class ChocoConvert {
           IntVar lhsVar = (IntVar) lhs;
           try {
             int lowerBound = temp.arg2().toIntDefault();
-            if (lowerBound != Integer.MIN_VALUE) {
+            if (isIntRange(lowerBound)) {
               lhsVar.updateLowerBound(lowerBound, lhsVar);
             }
           } catch (ContradictionException e) {
@@ -123,7 +135,7 @@ public class ChocoConvert {
           IntVar rhsVar = (IntVar) rhs;
           try {
             int upperBound = temp.arg1().toIntDefault();
-            if (upperBound != Integer.MIN_VALUE) {
+            if (isIntRange(upperBound)) {
               rhsVar.updateUpperBound(upperBound, rhsVar);
             }
           } catch (ContradictionException e) {
@@ -135,7 +147,7 @@ public class ChocoConvert {
           IntVar lhsVar = (IntVar) lhs;
           try {
             int upperBound = temp.arg2().toIntDefault();
-            if (upperBound != Integer.MIN_VALUE) {
+            if (isIntRange(upperBound)) {
               lhsVar.updateUpperBound(upperBound, lhsVar);
             }
           } catch (ContradictionException e) {
@@ -144,7 +156,7 @@ public class ChocoConvert {
           IntVar rhsVar = (IntVar) rhs;
           try {
             int lowerBound = temp.arg1().toIntDefault();
-            if (lowerBound != Integer.MIN_VALUE) {
+            if (isIntRange(lowerBound)) {
               rhsVar.updateLowerBound(lowerBound, rhsVar);
             }
           } catch (ContradictionException e) {
@@ -156,7 +168,7 @@ public class ChocoConvert {
           IntVar lhsVar = (IntVar) lhs;
           try {
             int upperBound = temp.arg2().toIntDefault();
-            if (upperBound != Integer.MIN_VALUE) {
+            if (isIntRange(upperBound)) {
               lhsVar.updateUpperBound(upperBound - 1, lhsVar);
             }
           } catch (ContradictionException e) {
@@ -165,7 +177,7 @@ public class ChocoConvert {
           IntVar rhsVar = (IntVar) rhs;
           try {
             int lowerBound = temp.arg1().toIntDefault();
-            if (lowerBound != Integer.MIN_VALUE) {
+            if (isIntRange(lowerBound)) {
               rhsVar.updateLowerBound(lowerBound + 1, rhsVar);
             }
           } catch (ContradictionException e) {
@@ -178,12 +190,22 @@ public class ChocoConvert {
         temp.toString() + " is no relational expression found for Solve(..., Integers)");
   }
 
+  /**
+   * Return <code>true</code>, if the int <code>value</code> unequals {@link Integer#MIN_VALUE}.
+   * 
+   * @param value
+   * @return
+   */
+  private static boolean isIntRange(int value) {
+    return value != Integer.MIN_VALUE;
+  }
+
   private static ArExpression integerExpression(Model net, IExpr expr, Map<ISymbol, IntVar> map)
       throws ArgumentTypeException {
     if (expr instanceof ISymbol) {
       IntVar temp = map.get(expr);
       if (temp == null) {
-        temp = net.intVar(Short.MIN_VALUE, Short.MAX_VALUE);
+        temp = net.intVar(CHOCO_MIN_VALUE, CHOCO_MAX_VALUE);
         map.put((ISymbol) expr, temp);
       }
       return temp;
@@ -191,6 +213,15 @@ public class ChocoConvert {
     if (expr instanceof IInteger) {
       int value = ((IInteger) expr).toInt(); // throws ArithmeticException
       return net.intVar(value);
+    }
+    if (expr instanceof IFraction) {
+      IFraction fraction = (IFraction) expr;
+      IExpr numerator = fraction.numerator();
+      IExpr denominator = fraction.denominator();
+      ArExpression result = integerExpression(net, numerator, map);
+      result = result.div(integerExpression(net, denominator, map));
+      return result;
+
     }
     if (expr.isAST()) {
       IAST ast = (IAST) expr;
@@ -220,6 +251,13 @@ public class ChocoConvert {
             }
             return result;
           }
+          // if (value == -1) {
+          // IExpr base = ast.base();
+          // ArExpression one = integerExpression(net, F.C1, map);
+          // ArExpression result = integerExpression(net, base, map);
+          // result = one.div(result);
+          // return result;
+          // }
         }
       } else if (ast.isSameHeadSizeGE(S.Max, 3)) {
         ArExpression result = integerExpression(net, ast.arg1(), map);
@@ -300,7 +338,7 @@ public class ChocoConvert {
     if (expr instanceof ISymbol) {
       RealVar temp = map.get(expr);
       if (temp == null) {
-        temp = net.realVar(Short.MIN_VALUE, Short.MAX_VALUE);
+        temp = net.realVar(CHOCO_MIN_VALUE, CHOCO_MAX_VALUE);
         map.put((ISymbol) expr, temp);
       }
       return temp;

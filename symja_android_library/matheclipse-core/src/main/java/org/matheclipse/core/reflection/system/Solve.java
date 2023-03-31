@@ -1103,9 +1103,10 @@ public class Solve extends AbstractFunctionEvaluator {
         return F.NIL;
       }
       try {
-        if (equationsAndInequations.isFreeAST(x -> (x.isPower() && !x.second().equals(F.C2)))) {
+        if (equationsAndInequations.isFreeAST(x -> chocoSolver(x))) {
           // choco-solver doesn't handle Power() expressions very well at the moment!
           try {
+            LOGGER.debug("Choco solver");
             IAST resultList = ChocoConvert.integerSolve(equationsAndInequations, equationVariables,
                 userDefinedVariables, maximumNumberOfResults, engine);
             if (resultList.isPresent()) {
@@ -1120,6 +1121,7 @@ public class Solve extends AbstractFunctionEvaluator {
           }
         } else {
           // call cream solver
+          LOGGER.debug("Cream solver");
           CreamConvert converter = new CreamConvert();
           IAST resultList = converter.integerSolve(equationsAndInequations, equationVariables,
               userDefinedVariables, maximumNumberOfResults, engine);
@@ -1137,6 +1139,10 @@ public class Solve extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  private static boolean chocoSolver(IExpr x) {
+    return x.isPower() && (!x.second().isInteger() || x.second().greaterEqualThan(3).isTrue());
   }
 
   /**

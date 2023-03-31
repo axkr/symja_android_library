@@ -744,7 +744,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
   public void testNSolve() {
     // github #261 - JUnit test for Apfloat switching to complex Power calculation
     check("NSolve(0.00004244131815783 == x^5 , x)", //
-        "{{x->-0.10802279680851234+I*0.07848315587546605},{x->-0.10802279680851212+I*(-0.07848315587546605)},{x->0.04126103682102799+I*(-0.1269884137508598)}," //
+        "{{x->-0.10802279680851234+I*0.07848315587546605},{x->-0.10802279680851212+I*(-0.07848315587546605)},{x->0.04126103682102799+I*(-0.1269884137508598)},"
+            //
             + "{x->0.04126103682102799+I*0.1269884137508598},{x->0.1335235199749684}}");
     // github #247
     check("NSolve((k+3)/(4)==(k)/2,{k})", //
@@ -781,7 +782,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->1.0,y->2.0,z->3.0}}");
     // github #201 begin
     check(
-        "NSolve({m1*u1^2 + m2*u2^2 == m1*v1^2 + m2*v2^2, m1*u1 + m2*u2 == m1*v1 + m2*v2}, {v1, v2})", //
+        "NSolve({m1*u1^2 + m2*u2^2 == m1*v1^2 + m2*v2^2, m1*u1 + m2*u2 == m1*v1 + m2*v2}, {v1, v2})",
+        //
         "{{v2->u2,v1->u1},{v2->(2.0*m1*u1-m1*u2+m2*u2)/(m1+m2),v1->(m1*u1+m2*u2+(-m2*(2.0*m1*u1-m1*u2+m2*u2))/(m1+m2))/m1}}");
     check("NSolve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == v2 - v1}, {v1, v2})", //
         "{{v1->(-m1*u1-m2*u2+m2*(-u1+u2))/(-m1-m2),v2->(-m1*u1+m1*(u1-u2)-m2*u2)/(-m1-m2)}}");
@@ -1137,6 +1139,18 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   public void testChocoSolver001() {
+    check("Together(1/x+1/y-1/20 )", //
+        "(20*x+20*y-x*y)/(20*x*y)");
+    check("Solve(20*x+20*y-x*y==0,{x,y},Integers)", //
+        "{{x->-380,y->19},{x->-180,y->18},{x->-80,y->16},{x->-60,y->15},{x->-30,y->12},{x->-\n"
+            + "20,y->10},{x->-5,y->4},{x->0,y->0},{x->4,y->-5},{x->10,y->-20},{x->12,y->-30},{x->\n"
+            + "15,y->-60},{x->16,y->-80},{x->18,y->-180},{x->19,y->-380},{x->21,y->420},{x->22,y->\n"
+            + "220},{x->24,y->120},{x->25,y->100},{x->28,y->70},{x->30,y->60},{x->36,y->45},{x->\n"
+            + "40,y->40},{x->45,y->36},{x->60,y->30},{x->70,y->28},{x->100,y->25},{x->120,y->24},{x->\n"
+            + "220,y->22},{x->420,y->21}}");
+    check("Solve(1/x+1/y==1/20,{x,y},Integers)", //
+        "Solve(1/x+1/y==1/20,{x,y},Integers)");
+
     // https://github.com/chocoteam/choco-solver/blob/a0b4b67949f59f4f4d0063d15d0393a59acc45ad/solver/src/test/java/org/chocosolver/solver/expression/discrete/ExpressionTest.java#L498
     check(
         "Solve({ ((x1-x2)^2+(y1-y2)^2)^2 == d, 0<d<100, 0 < x1 <2,0 < y1 < 2, 0 < x2 <2, 0 < y2 <2 }, {d,x1,x2,y1,y2}, Integers)", //
@@ -1190,12 +1204,12 @@ public class SolveTest extends ExprEvaluatorTestCase {
   public void testSolveIntegers() {
     check("Solve({x > 0, y > 0, x^2 + 2*y^3 == 3681}, {x, y}, Integers)", //
         "{{x->15,y->12},{x->41,y->10},{x->57,y->6}}");
-    // check(
-    // "Solve(2 x + 3 y - 5 z == 1 && 3 x - 4 y + 7 z == 3, {x, y, z}, Integers)", //
-    // "{{x->-1129,y->32763,z->19206},{x->-1128,y->32734,z->19189},{x->-1127,y->32705,z->\n"
-    // +
-    // "19172},{x->-1126,y->32676,z->19155},{x->-1125,y->32647,z->19138},{x->-1124,y-><<SHORT>>",
-    // 160);
+    if (Config.EXPENSIVE_JUNIT_TESTS) {
+      check("Solve(2 x + 3 y - 5 z == 1 && 3 x - 4 y + 7 z == 3, {x, y, z}, Integers)", //
+          "{{x->-564,y->16378,z->9601},{x->-563,y->16349,z->9584},{x->-562,y->16320,z->9567},{x->-\n"
+              + "561,y->16291,z->9550},{x->-560,y->16262,z->9533},{x->-559,y->16233,z->95<<SHORT>>",
+          160);
+    }
 
     // check("Roots(x^4 == 1 - I, x)", //
     // "x==-(-1+I)^(1/4)||x==(-1+I)^(1/4)||x==I*(-1+I)^(1/4)||x==-I*(-1+I)^(1/4)");
