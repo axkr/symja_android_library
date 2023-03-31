@@ -6308,6 +6308,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testElement() {
+    check("Element(Sqrt(2), #) & /@ {Complexes, Algebraics, Reals, Rationals, Integers, Primes}", //
+        "{True,Sqrt(2)∈Algebraics,True,Sqrt(2)∈Rationals,False,False}");
     check("Element(ComplexInfinity, Complexes)", //
         "False");
     check("{x} \\[Element] Reals", //

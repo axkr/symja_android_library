@@ -2,8 +2,10 @@ package org.matheclipse.core.eval.util;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.IRealConstant;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -24,12 +26,20 @@ public abstract class AbstractAssumptions implements IAssumptions {
    * @return
    */
   public static ISymbol assumeAlgebraic(final IExpr expr) {
-    if (expr.isRational()) {
+    if (expr.isInteger() //
+        || expr.isRational() //
+        || expr.isComplex()) {
       return S.True;
     }
-    if (expr.isNumber()) {
-      return S.True;
+    if (expr.isTrue()//
+        || expr.isFalse() //
+    ) {
+      return S.False;
     }
+    if (expr == S.E || expr == S.EulerGamma || expr == S.Khinchin || expr == S.Pi) {
+      return S.False;
+    }
+
     if (expr.isDirectedInfinity()) {
       return S.False;
     }
@@ -46,11 +56,6 @@ public abstract class AbstractAssumptions implements IAssumptions {
       if (expr.equals(S.E)) {
         return S.False;
       }
-
-      // if (((ISymbol) expr).getEvaluator() instanceof
-      // IRealConstant) {
-      // return S.True;
-      // }
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -99,7 +104,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
     if (expr.isTrue() || expr.isFalse()) {
       return S.True;
     }
-    if (expr.isNumber()) {
+    if (expr.isNumericFunction()) {
       return S.False;
     }
     if (expr.isDirectedInfinity()) {
@@ -158,6 +163,14 @@ public abstract class AbstractAssumptions implements IAssumptions {
         return S.True;
       }
     }
+    if (expr.isNumericFunction()) {
+      try {
+        Complex c = expr.evalfc();
+        return S.True;
+      } catch (ArgumentTypeException ate) {
+
+      }
+    }
     return null;
   }
 
@@ -166,8 +179,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
       return ((INumber) expr).equals(number);
     }
     if (expr.isRealConstant()) {
-      return F.isFuzzyEquals(
-          ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal(),
+      return F.isFuzzyEquals(((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal(),
           number.doubleValue(), Config.MACHINE_EPSILON);
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
@@ -227,11 +239,24 @@ public abstract class AbstractAssumptions implements IAssumptions {
    *         integer or no integer. In all other cases return <code>null</code>.
    */
   public static ISymbol assumeInteger(final IExpr expr) {
+    if (expr.isTrue()//
+        || expr.isFalse() //
+        || expr.isFraction() //
+        || expr.isComplex()) {
+      return S.False;
+    }
     if (expr.isInteger()) {
       return S.True;
     }
-    if (expr.isNumber()) {
-      return S.False;
+    if (expr.isNumericFunction()) {
+      try {
+        Complex c = expr.evalfc();
+        if (!c.isMathematicalInteger()) {
+          return S.False;
+        }
+      } catch (ArgumentTypeException ate) {
+        // fall through
+      }
     }
     if (expr.isDirectedInfinity()) {
       return S.False;
@@ -391,7 +416,9 @@ public abstract class AbstractAssumptions implements IAssumptions {
     if (expr.isInteger() && ((IInteger) expr).isProbablePrime()) {
       return S.True;
     }
-    if (expr.isNumber()) {
+    if (expr.isTrue()//
+        || expr.isFalse() //
+        || expr.isNumber()) {
       return S.False;
     }
     if (expr.isDirectedInfinity()) {
@@ -404,6 +431,16 @@ public abstract class AbstractAssumptions implements IAssumptions {
     if (assumptions != null) {
       if (assumptions.isPrime(expr)) {
         return S.True;
+      }
+    }
+    if (expr.isNumericFunction()) {
+      try {
+        Complex c = expr.evalfc();
+        if (!c.isMathematicalInteger()) {
+          return S.False;
+        }
+      } catch (ArgumentTypeException ate) {
+
       }
     }
     return F.NIL;
@@ -420,7 +457,15 @@ public abstract class AbstractAssumptions implements IAssumptions {
     if (expr.isRational()) {
       return S.True;
     }
+    if (expr.isTrue()//
+        || expr.isFalse() //
+        || expr.isComplex()) {
+      return S.False;
+    }
     if (expr.isNumber()) {
+      return S.False;
+    }
+    if (expr == S.E || expr == S.EulerGamma || expr == S.Khinchin || expr == S.Pi) {
       return S.False;
     }
     if (expr.isDirectedInfinity()) {
@@ -428,6 +473,16 @@ public abstract class AbstractAssumptions implements IAssumptions {
     }
     if (expr == S.Undefined) {
       return S.Undefined;
+    }
+    if (expr.isNumericFunction()) {
+      try {
+        Complex c = expr.evalfc();
+        if (!F.isZero(c.getImaginary())) {
+          return S.False;
+        }
+      } catch (ArgumentTypeException ate) {
+
+      }
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -440,6 +495,9 @@ public abstract class AbstractAssumptions implements IAssumptions {
       if (assumptions.isPrime(expr)) {
         return S.True;
       }
+    }
+    if (expr.isNumericFunction()) {
+      //
     }
     return null;
   }
@@ -480,6 +538,16 @@ public abstract class AbstractAssumptions implements IAssumptions {
       }
       if (assumptions.isRational(expr)) {
         return S.True;
+      }
+    }
+    if (expr.isNumericFunction()) {
+      try {
+        Complex c = expr.evalfc();
+        if (F.isZero(c.getImaginaryPart())) {
+          return S.True;
+        }
+      } catch (ArgumentTypeException ate) {
+
       }
     }
     return null;
