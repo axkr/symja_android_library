@@ -25,6 +25,7 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.matheclipse.api.parser.FuzzyParser;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.GraphFunctions;
+import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.builtin.StringFunctions;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.data.ElementData1;
@@ -113,6 +114,8 @@ public class Pods {
   public static final int JSXGRAPH = 0x0080;
   public static final int PLOTLY = 0x0100;
   public static final int VISJS = 0x0200;
+  public static final int GRAPHICS = 0x0400;
+  public static final int GRAPHICS3D = 0x0800;
 
   public static final Soundex SOUNDEX = new Soundex();
   public static final TrieBuilder<String, ArrayList<IPod>, ArrayList<ArrayList<IPod>>> builder =
@@ -524,7 +527,39 @@ public class Pods {
               + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
           json.put(JSXGRAPH_STR, html);
         } catch (Exception ex) {
-          LOGGER.debug("ChineseRemainder.chineseRemainderBigInteger() failed", ex);
+          LOGGER.debug("JSON API JSXGRAPH", ex);
+        }
+
+      } else {
+
+      }
+    }
+
+    if ((formats & GRAPHICS) != 0x00) {
+      if (plainText != null && plainText.length() > 0) {
+        try {
+          String html = StringEscapeUtils.escapeHtml4(plainText);
+          html = "<iframe srcdoc=\"" + html
+              + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
+          json.put(JSXGRAPH_STR, html);
+        } catch (Exception ex) {
+          LOGGER.debug("JSON API GRAPHICS", ex);
+        }
+
+      } else {
+
+      }
+    }
+
+    if ((formats & GRAPHICS3D) != 0x00) {
+      if (plainText != null && plainText.length() > 0) {
+        try {
+          String html = StringEscapeUtils.escapeHtml4(plainText);
+          html = "<iframe srcdoc=\"" + html
+              + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
+          json.put(JSXGRAPH_STR, html);
+        } catch (Exception ex) {
+          LOGGER.debug("JSON API GRAPHICS3D", ex);
         }
 
       } else {
@@ -886,7 +921,13 @@ public class Pods {
               IExpr expr = inExpr;
               // outExpr = engine.evaluate(expr);
 
-              if (outExpr.isAST(S.JSFormData, 3)) {
+              if (outExpr.isSameHeadSizeGE(S.Graphics, 2)) {
+                numpods = addGraphicsPod(numpods, inExpr, outExpr, inExpr, "Function", "Plotter",
+                    podsArray, engine);
+              } else if (outExpr.isSameHeadSizeGE(S.Graphics3D, 2)) {
+                numpods = addGraphics3DPod(numpods, inExpr, outExpr, inExpr, "Function", "Plotter",
+                    podsArray, engine);
+              } else if (outExpr.isAST(S.JSFormData, 3)) {
                 podOut = outExpr;
                 int form = internFormat(SYMJA, podOut.second().toString());
                 addPod(podsArray, inExpr, podOut, podOut.first().toString(),
@@ -931,12 +972,15 @@ public class Pods {
                       IExpr plot2D = F.Plot(F.List(arg1, arg2),
                           F.List(variables.arg1(), F.num(-20), F.num(20)));
                       podOut = engine.evaluate(plot2D);
-                      if (podOut.isAST(S.JSFormData, 3)) {
-                        int form = internFormat(SYMJA, podOut.second().toString());
-                        addPod(podsArray, inExpr, podOut, podOut.first().toString(),
-                            StringFunctions.inputForm(plot2D), "Function", "Plotter", form, engine);
-                        numpods++;
-                      }
+                      numpods = addGraphicsPod(numpods, inExpr, podOut, plot2D, "Function",
+                          "Plotter", podsArray, engine);
+
+                      // if (podOut.isAST(S.JSFormData, 3)) {
+                      // int form = internFormat(SYMJA, podOut.second().toString());
+                      // addPod(podsArray, inExpr, podOut, podOut.first().toString(),
+                      // StringFunctions.inputForm(plot2D), "Function", "Plotter", form, engine);
+                      // numpods++;
+                      // }
                     }
                     if (!arg1.isZero() && !arg2.isZero()) {
                       inExpr = F.Equal(engine.evaluate(F.Subtract(arg1, arg2)), F.C0);
@@ -965,23 +1009,15 @@ public class Pods {
                   if (variables.argSize() == 1) {
                     IExpr plot2D = F.Plot(outExpr, F.List(variables.arg1(), F.num(-7), F.num(7)));
                     podOut = engine.evaluate(plot2D);
-                    if (podOut.isAST(S.JSFormData, 3)) {
-                      int form = internFormat(SYMJA, podOut.second().toString());
-                      addPod(podsArray, inExpr, podOut, podOut.first().toString(),
-                          StringFunctions.inputForm(plot2D), "Function", "Plotter", form, engine);
-                      numpods++;
-                    }
+                    numpods = addGraphicsPod(numpods, inExpr, podOut, plot2D, "Function", "Plotter",
+                        podsArray, engine);
                   } else if (variables.argSize() == 2) {
                     IExpr plot3D =
                         F.Plot3D(outExpr, F.List(variables.arg1(), F.num(-3.5), F.num(3.5)),
                             F.List(variables.arg2(), F.num(-3.5), F.num(3.5)));
                     podOut = engine.evaluate(plot3D);
-                    if (podOut.isAST(S.JSFormData, 3)) {
-                      int form = internFormat(SYMJA, podOut.second().toString());
-                      addPod(podsArray, inExpr, podOut, podOut.first().toString(),
-                          StringFunctions.inputForm(plot3D), "3D plot", "Plot", form, engine);
-                      numpods++;
-                    }
+                    numpods = addGraphics3DPod(numpods, inExpr, podOut, plot3D, "3D plot",
+                        "Plotter", podsArray, engine);
                   }
                 }
                 if (!outExpr.isFreeAST(x -> x.isTrigFunction())) {
@@ -1088,6 +1124,58 @@ public class Pods {
 
     // queryresult.put("error", error ? "true" : "false");
     return messageJSON;
+  }
+
+  private static int addGraphicsPod(int numpods, IExpr inExpr, IExpr podOut, IExpr plot2D,
+      String title, String scanner, ArrayNode podsArray, EvalEngine engine) {
+    int form = GRAPHICS;
+    String html = null;
+    if (podOut.isSameHeadSizeGE(S.Graphics, 2)) {
+      StringBuilder buf = new StringBuilder();
+      if (GraphicsFunctions.renderGraphics2D(buf, (IAST) podOut, engine)) {
+        try {
+          String graphicsStr = buf.toString();
+          html = JSBuilder.buildGraphics2D(JSBuilder.GRAPHICS2D_TEMPLATE, graphicsStr);
+        } catch (Exception ex) {
+          LOGGER.debug("JSBuilder.buildGraphics2D() failed", ex);
+        }
+      }
+    } else if (podOut.isAST(S.JSFormData, 3)) {
+      html = podOut.first().toString();
+      form = internFormat(SYMJA, podOut.second().toString());
+    }
+    if (html != null) {
+      addPod(podsArray, inExpr, podOut, html, StringFunctions.inputForm(plot2D), title, scanner,
+          form, engine);
+      numpods++;
+    }
+    return numpods;
+  }
+
+  private static int addGraphics3DPod(int numpods, IExpr inExpr, IExpr podOut, IExpr plot3D,
+      String title, String scanner, ArrayNode podsArray, EvalEngine engine) {
+    int form = GRAPHICS3D;
+    String html = null;
+    if (podOut.isSameHeadSizeGE(S.Graphics3D, 2)) {
+      StringBuilder buf = new StringBuilder();
+      if (GraphicsFunctions.renderGraphics3D(buf, (IAST) podOut, engine)) {
+        try {
+          String graphicsStr = buf.toString();
+          html = JSBuilder.buildGraphics3D(JSBuilder.GRAPHICS3D_TEMPLATE, graphicsStr);
+        } catch (Exception ex) {
+          LOGGER.debug("JSBuilder.buildGraphics3D() failed", ex);
+        }
+      }
+    } else if (podOut.isAST(S.JSFormData, 3)) {
+      html = podOut.second().toString();
+      form = internFormat(SYMJA, html);
+    }
+    if (html != null) {
+      addPod(podsArray, inExpr, podOut, html,
+          StringFunctions.inputForm(plot3D), title, scanner, form, engine);
+      numpods++;
+    }
+    return numpods;
   }
 
   /**
