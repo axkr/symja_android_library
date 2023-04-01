@@ -1,7 +1,7 @@
-/* $Id: LaTeXTokeniser.java 567 2010-05-20 14:21:46Z davemckain $
+/*
+ * $Id: LaTeXTokeniser.java 567 2010-05-20 14:21:46Z davemckain $
  *
- * Copyright (c) 2010, The University of Edinburgh.
- * All Rights Reserved
+ * Copyright (c) 2010, The University of Edinburgh. All Rights Reserved
  */
 package uk.ac.ed.ph.snuggletex.internal;
 
@@ -50,7 +50,8 @@ import uk.ac.ed.ph.snuggletex.tokens.TokenType;
 /**
  * This class reads in SnuggleTeX input and builds a tree of literal parsed {@link Token}s.
  *
- * <p>This is probably the most complex class in SnuggleTeX!
+ * <p>
+ * This is probably the most complex class in SnuggleTeX!
  *
  * @author David McKain
  * @version $Revision: 567 $
@@ -58,36 +59,27 @@ import uk.ac.ed.ph.snuggletex.tokens.TokenType;
 public final class LaTeXTokeniser {
 
   /**
-   * Set of reserved commands. These cannot be redefined and are not all listed in {@link
-   * CorePackageDefinitions}.
+   * Set of reserved commands. These cannot be redefined and are not all listed in
+   * {@link CorePackageDefinitions}.
    */
   public static final Set<String> reservedCommands =
-      new HashSet<String>(
-          Arrays.asList(
-              new String[] {
-                "begin",
-                "end",
-                "(",
-                ")",
-                "[",
-                "]",
-                "newcommand",
-                "renewcommand",
-                "newenvironment",
-                "renewenvironment"
-              }));
+      new HashSet<String>(Arrays.asList(new String[] {"begin", "end", "(", ")", "[", "]",
+          "newcommand", "renewcommand", "newenvironment", "renewenvironment"}));
 
   /**
    * Name of internal command that gets temporarily appended after the begin clauses of a
-   * user-defined environment has been substituted in order to make sure the {@link
-   * #openEnvironmentStack} is kept in the correct order.
+   * user-defined environment has been substituted in order to make sure the
+   * {@link #openEnvironmentStack} is kept in the correct order.
    *
-   * <p>No trace of this command will exist once tokenisation has finished.
+   * <p>
+   * No trace of this command will exist once tokenisation has finished.
    *
-   * <p>I've chosen a non-ASCII name for this command so as to make it impossible to be used in
-   * "real" inputs.
+   * <p>
+   * I've chosen a non-ASCII name for this command so as to make it impossible to be used in "real"
+   * inputs.
    *
-   * <p>See {@link #handleUserDefinedEnvironmentControl()}
+   * <p>
+   * See {@link #handleUserDefinedEnvironmentControl()}
    */
   private static final String UDE_POST_BEGIN = "\u00a3";
 
@@ -165,8 +157,7 @@ public final class LaTeXTokeniser {
 
     @Override
     public int matchesAt(final WorkingDocument workingDocument, int index) {
-      return workingDocument.matchesAt(index, terminatorString)
-          ? index + terminatorString.length()
+      return workingDocument.matchesAt(index, terminatorString) ? index + terminatorString.length()
           : -1;
     }
 
@@ -217,12 +208,7 @@ public final class LaTeXTokeniser {
    * for documentation during debugging!
    */
   public static enum TokenisationMode {
-    TOP_LEVEL,
-    BRACE,
-    MATH,
-    BUILTIN_COMMAND_ARGUMENT,
-    BUILTIN_ENVIRONMENT_CONTENT,
-    ;
+    TOP_LEVEL, BRACE, MATH, BUILTIN_COMMAND_ARGUMENT, BUILTIN_ENVIRONMENT_CONTENT,;
   }
 
   /** Trivial "struct" encapsulating information about the state of a tokenisation mode. */
@@ -249,11 +235,8 @@ public final class LaTeXTokeniser {
      */
     public boolean foundTerminator;
 
-    public ModeState(
-        final TokenisationMode tokenisationMode,
-        final LaTeXMode latexMode,
-        final int startPosition,
-        final Terminator terminator) {
+    public ModeState(final TokenisationMode tokenisationMode, final LaTeXMode latexMode,
+        final int startPosition, final Terminator terminator) {
       this.tokenisationMode = tokenisationMode;
       this.latexMode = latexMode;
       this.startPosition = startPosition;
@@ -294,8 +277,8 @@ public final class LaTeXTokeniser {
   }
 
   /**
-   * Tokenises the input specified by the given {@link SnuggleInputReader}, returning an {@link
-   * ArgumentContainerToken} containing the roots of the parsed token tree.
+   * Tokenises the input specified by the given {@link SnuggleInputReader}, returning an
+   * {@link ArgumentContainerToken} containing the roots of the parsed token tree.
    */
   public ArgumentContainerToken tokenise(final SnuggleInputReader reader)
       throws SnuggleParseException, IOException {
@@ -310,17 +293,17 @@ public final class LaTeXTokeniser {
       ModeState topLevelResult =
           tokeniseInNewState(TokenisationMode.TOP_LEVEL, null, LaTeXMode.PARAGRAPH);
 
-      /* Check that all environments have been closed, recording a client error for each that is not */
+      /*
+       * Check that all environments have been closed, recording a client error for each that is not
+       */
       while (!openEnvironmentStack.isEmpty()) {
-        topLevelResult.tokens.add(
-            createError(CoreErrorCode.TTEE04, position, position, openEnvironmentStack.pop()));
+        topLevelResult.tokens
+            .add(createError(CoreErrorCode.TTEE04, position, position, openEnvironmentStack.pop()));
       }
 
       /* That's it! Simply reset state and return the tokens that have been accrued */
-      return new ArgumentContainerToken(
-          workingDocument.freezeSlice(0, workingDocument.length()),
-          LaTeXMode.PARAGRAPH,
-          topLevelResult.tokens);
+      return new ArgumentContainerToken(workingDocument.freezeSlice(0, workingDocument.length()),
+          LaTeXMode.PARAGRAPH, topLevelResult.tokens);
     } finally {
       /* Tidy up state for next run */
       reset();
@@ -328,21 +311,19 @@ public final class LaTeXTokeniser {
   }
 
   /**
-   * Tokenises the {@link #workingDocument} from the current {@link #position} in the given {@link
-   * LaTeXMode} using the newly provided {@link TokenisationMode} and terminator.
+   * Tokenises the {@link #workingDocument} from the current {@link #position} in the given
+   * {@link LaTeXMode} using the newly provided {@link TokenisationMode} and terminator.
    *
-   * <p>When this returns, {@link #position} will either be at the end of input or after the
-   * provided terminator.
+   * <p>
+   * When this returns, {@link #position} will either be at the end of input or after the provided
+   * terminator.
    *
    * @param tokenisationMode
    * @param terminator
    * @throws SnuggleParseException
    */
-  private ModeState tokeniseInNewState(
-      final TokenisationMode tokenisationMode,
-      final Terminator terminator,
-      final LaTeXMode latexMode)
-      throws SnuggleParseException {
+  private ModeState tokeniseInNewState(final TokenisationMode tokenisationMode,
+      final Terminator terminator, final LaTeXMode latexMode) throws SnuggleParseException {
     /* Create new parsing state */
     currentModeState = new ModeState(tokenisationMode, latexMode, position, terminator);
     modeStack.push(currentModeState);
@@ -354,23 +335,22 @@ public final class LaTeXTokeniser {
     }
 
     /*
-     * When parsing in VERBATIM Mode, if there was no real content before
-     * the terminator (or end of input) then the list of resulting tokens will be empty. In
-     * this case, it is more useful to add a token representing the empty content.
+     * When parsing in VERBATIM Mode, if there was no real content before the terminator (or end of
+     * input) then the list of resulting tokens will be empty. In this case, it is more useful to
+     * add a token representing the empty content.
      */
     if (currentModeState.latexMode == LaTeXMode.VERBATIM && currentModeState.tokens.isEmpty()) {
-      FrozenSlice emptySlice =
-          workingDocument.freezeSlice(
-              currentModeState.startPosition, currentModeState.startPosition);
-      currentModeState.tokens.add(
-          new SimpleToken(emptySlice, TokenType.VERBATIM_MODE_TEXT, LaTeXMode.VERBATIM, null));
+      FrozenSlice emptySlice = workingDocument.freezeSlice(currentModeState.startPosition,
+          currentModeState.startPosition);
+      currentModeState.tokens
+          .add(new SimpleToken(emptySlice, TokenType.VERBATIM_MODE_TEXT, LaTeXMode.VERBATIM, null));
     }
 
     /* Check that we got the required terminator */
     if (terminator != null && !currentModeState.foundTerminator) {
       /* Error: Input ended before required terminator */
-      currentModeState.tokens.add(
-          createError(CoreErrorCode.TTEG00, position, position, terminator));
+      currentModeState.tokens
+          .add(createError(CoreErrorCode.TTEG00, position, position, terminator));
     }
 
     /* Revert to previous parsing state and return results of this parse */
@@ -385,35 +365,39 @@ public final class LaTeXTokeniser {
    * Reads the next token before the current terminator, returning null on end of input or if the
    * terminator is discovered.
    *
-   * <p>The value of {@link #position} is advanced to just after the found token, or if no token is
+   * <p>
+   * The value of {@link #position} is advanced to just after the found token, or if no token is
    * found then it will be the end of input or after the terminator, whichever is appropriate.
    *
-   * <p>The caller should be prepared to handle the case where input ended before a required
-   * terminator was discovered. In this case, a null will have been returned and {@link
-   * ModeState#foundTerminator} will be false.
+   * <p>
+   * The caller should be prepared to handle the case where input ended before a required terminator
+   * was discovered. In this case, a null will have been returned and
+   * {@link ModeState#foundTerminator} will be false.
    *
    * @throws SnuggleParseException
    * @return next token read in, or null if the input ended or we hit the terminator for the current
-   *     {@link ModeState}. (You can test whether we hit a terminator by checking {@link
-   *     ModeState#foundTerminator}.)
+   *         {@link ModeState}. (You can test whether we hit a terminator by checking
+   *         {@link ModeState#foundTerminator}.)
    */
   private FlowToken readNextToken() throws SnuggleParseException {
-    //        /* Uncomment these lines when debugging the tokeniser. This is often
-    //         * sufficient to work out what is going wrong... honest!
-    //         */
-    //        System.out.println("rNT: position=" + position
-    //                + ", length=" + workingDocument.length()
-    //                + ", tokMode=" + currentModeState.tokenisationMode
-    //                + ", latexMode=" + currentModeState.latexMode
-    //                + ", terminator=" + currentModeState.terminator
-    //                + ", modeStackSize=" + modeStack.size()
-    //                + ", envsOpen=" + openEnvironmentStack
-    //                + ", errorCount=" + sessionContext.getErrors().size()
-    //                + ", remainder='" + workingDocument.extract(position, Math.min(position+20,
+    // /* Uncomment these lines when debugging the tokeniser. This is often
+    // * sufficient to work out what is going wrong... honest!
+    // */
+    // System.out.println("rNT: position=" + position
+    // + ", length=" + workingDocument.length()
+    // + ", tokMode=" + currentModeState.tokenisationMode
+    // + ", latexMode=" + currentModeState.latexMode
+    // + ", terminator=" + currentModeState.terminator
+    // + ", modeStackSize=" + modeStack.size()
+    // + ", envsOpen=" + openEnvironmentStack
+    // + ", errorCount=" + sessionContext.getErrors().size()
+    // + ", remainder='" + workingDocument.extract(position, Math.min(position+20,
     // workingDocument.length())) + "'");
 
-    /* In MATH Mode, we skip over any leading whitespace and comments; in TEXT modes we skip
-     * over any comments */
+    /*
+     * In MATH Mode, we skip over any leading whitespace and comments; in TEXT modes we skip over
+     * any comments
+     */
     if (currentModeState.latexMode == LaTeXMode.MATH) {
       skipOverCommentsAndWhitespace();
     } else if (currentModeState.latexMode != LaTeXMode.VERBATIM) {
@@ -435,8 +419,9 @@ public final class LaTeXTokeniser {
       return null;
     }
 
-    /* Record position of the start of this token so that 'position' can be messed
-     * about incrementally in the parsing methods below.
+    /*
+     * Record position of the start of this token so that 'position' can be messed about
+     * incrementally in the parsing methods below.
      */
     startTokenIndex = position;
 
@@ -470,23 +455,24 @@ public final class LaTeXTokeniser {
   }
 
   /**
-   * Makes a substitution within the working document, replacing the position of the {@link
-   * WorkingDocument} from startIndex to endIndex with the given replacement {@link CharSequence}.
+   * Makes a substitution within the working document, replacing the position of the
+   * {@link WorkingDocument} from startIndex to endIndex with the given replacement
+   * {@link CharSequence}.
    *
-   * <p>The value of {@link #position} is updated to point to the start of the replacement
-   * afterwards.
+   * <p>
+   * The value of {@link #position} is updated to point to the start of the replacement afterwards.
    *
-   * <p>The given {@link SourceContext} provides optional contextual information about where the
+   * <p>
+   * The given {@link SourceContext} provides optional contextual information about where the
    * substitution came from, if required.
    */
-  private ErrorToken makeSubstitutionAndRewind(
-      final int startIndex, final int endIndex, final CharSequence replacement)
-      throws SnuggleParseException {
+  private ErrorToken makeSubstitutionAndRewind(final int startIndex, final int endIndex,
+      final CharSequence replacement) throws SnuggleParseException {
     int expansionLimit = sessionContext.getConfiguration().getExpansionLimit();
     if (expansionLimit > 0 && workingDocument.getSubstitutionDepth(startIndex) >= expansionLimit) {
       /* Fail: Substitution limit exceeded (avoids infinite recursion) */
-      return createError(
-          CoreErrorCode.TTEU00, startIndex, endIndex, Integer.valueOf(expansionLimit));
+      return createError(CoreErrorCode.TTEU00, startIndex, endIndex,
+          Integer.valueOf(expansionLimit));
     }
     workingDocument.substitute(startIndex, endIndex, replacement);
     position = startIndex;
@@ -510,8 +496,8 @@ public final class LaTeXTokeniser {
     }
 
     FrozenSlice verbatimContentSlice = workingDocument.freezeSlice(startTokenIndex, endIndex);
-    return new SimpleToken(
-        verbatimContentSlice, TokenType.VERBATIM_MODE_TEXT, LaTeXMode.VERBATIM, null);
+    return new SimpleToken(verbatimContentSlice, TokenType.VERBATIM_MODE_TEXT, LaTeXMode.VERBATIM,
+        null);
   }
 
   // -----------------------------------------
@@ -525,8 +511,10 @@ public final class LaTeXTokeniser {
         return null;
 
       case '\\':
-        /* Macro or special characters. Read in macro name, look it up and then
-         * read in arguments and report back */
+        /*
+         * Macro or special characters. Read in macro name, look it up and then read in arguments
+         * and report back
+         */
         return readSlashToken();
 
       case '{':
@@ -539,11 +527,8 @@ public final class LaTeXTokeniser {
 
       case '&':
         /* 'Tab' character */
-        return new SimpleToken(
-            workingDocument.freezeSlice(position, position + 1),
-            TokenType.TAB_CHARACTER,
-            currentModeState.latexMode,
-            null);
+        return new SimpleToken(workingDocument.freezeSlice(position, position + 1),
+            TokenType.TAB_CHARACTER, currentModeState.latexMode, null);
 
       case '#':
         /* Error: This is only allowed inside command/environment definitions */
@@ -566,8 +551,10 @@ public final class LaTeXTokeniser {
       return numberToken;
     }
 
-    /* If still here, then it wasn't a number. So we'll look again at the first non-whitespace
-     * character */
+    /*
+     * If still here, then it wasn't a number. So we'll look again at the first non-whitespace
+     * character
+     */
     char c = (char) workingDocument.charAt(position);
     FrozenSlice thisCharSlice = workingDocument.freezeSlice(position, position + 1);
 
@@ -575,20 +562,12 @@ public final class LaTeXTokeniser {
     EnumMap<InterpretationType, Interpretation> interpretationMap =
         Globals.getMathCharacterInterpretationMap(c);
     if (interpretationMap != null) {
-      return new SimpleToken(
-          thisCharSlice,
-          TokenType.SINGLE_CHARACTER_MATH_SPECIAL,
-          LaTeXMode.MATH,
-          null,
-          interpretationMap);
+      return new SimpleToken(thisCharSlice, TokenType.SINGLE_CHARACTER_MATH_SPECIAL, LaTeXMode.MATH,
+          null, interpretationMap);
     }
     /* If still here, then we'll treat this as an identifier (e.g. 'x', 'y' etc.) */
-    return new SimpleToken(
-        thisCharSlice,
-        TokenType.SINGLE_CHARACTER_MATH_IDENTIFIER,
-        LaTeXMode.MATH,
-        null,
-        new MathIdentifierInterpretation(String.valueOf(c)));
+    return new SimpleToken(thisCharSlice, TokenType.SINGLE_CHARACTER_MATH_IDENTIFIER,
+        LaTeXMode.MATH, null, new MathIdentifierInterpretation(String.valueOf(c)));
   }
 
   /**
@@ -598,11 +577,12 @@ public final class LaTeXTokeniser {
    * @return SimpleToken representing the number, or null if input wasn't a number.
    */
   private SimpleToken tryReadMathNumber() {
-    /* See if we can reasonably parse a number, returning null if we couldn't
-     * or an appropriate token if we could.
+    /*
+     * See if we can reasonably parse a number, returning null if we couldn't or an appropriate
+     * token if we could.
      *
-     * TODO: Localisation! This is assuming the number is using '.' as decimal separator.
-     * How does LaTeX do this?
+     * TODO: Localisation! This is assuming the number is using '.' as decimal separator. How does
+     * LaTeX do this?
      */
     int index = position; /* Current number search index */
     int c;
@@ -645,11 +625,7 @@ public final class LaTeXTokeniser {
       return null;
     }
     FrozenSlice numberSlice = workingDocument.freezeSlice(position, index);
-    return new SimpleToken(
-        numberSlice,
-        TokenType.MATH_NUMBER,
-        LaTeXMode.MATH,
-        null,
+    return new SimpleToken(numberSlice, TokenType.MATH_NUMBER, LaTeXMode.MATH, null,
         new MathNumberInterpretation(numberSlice.extract()));
   }
 
@@ -657,11 +633,12 @@ public final class LaTeXTokeniser {
   // Tokenisation in PARAGRAPH or LR mode
 
   private FlowToken readNextTokenTextMode() throws SnuggleParseException {
-    /* Look at first character to decide what type of token we're going to read.
+    /*
+     * Look at first character to decide what type of token we're going to read.
      *
-     * NB: If adding any trigger characters to the switch below, then you'll need to add
-     * them to {@link #readNextSimpleTextParaMode()} as well to ensure that they terminate
-     * regions of plain text as well.
+     * NB: If adding any trigger characters to the switch below, then you'll need to add them to
+     * {@link #readNextSimpleTextParaMode()} as well to ensure that they terminate regions of plain
+     * text as well.
      */
     int c = workingDocument.charAt(position);
     switch (c) {
@@ -686,11 +663,8 @@ public final class LaTeXTokeniser {
 
       case '&':
         /* 'Tab' character */
-        return new SimpleToken(
-            workingDocument.freezeSlice(position, position + 1),
-            TokenType.TAB_CHARACTER,
-            currentModeState.latexMode,
-            null);
+        return new SimpleToken(workingDocument.freezeSlice(position, position + 1),
+            TokenType.TAB_CHARACTER, currentModeState.latexMode, null);
 
       case '_':
       case '^':
@@ -717,8 +691,10 @@ public final class LaTeXTokeniser {
     int whitespaceStartIndex;
     int index, c;
 
-    /* See if we start with blanks containing at least 2 newlines, consuming as many
-     * newlines as we possibly can. */
+    /*
+     * See if we start with blanks containing at least 2 newlines, consuming as many newlines as we
+     * possibly can.
+     */
     for (index = position; index < workingDocument.length(); index++) {
       c = workingDocument.charAt(index);
       if (c == '\n') {
@@ -729,14 +705,13 @@ public final class LaTeXTokeniser {
     }
     if (newLineCount >= 2) {
       /* We started with a paragraph break so return token. */
-      return new SimpleToken(
-          workingDocument.freezeSlice(position, index),
-          TokenType.NEW_PARAGRAPH,
-          currentModeState.latexMode,
-          TextFlowContext.ALLOW_INLINE);
+      return new SimpleToken(workingDocument.freezeSlice(position, index), TokenType.NEW_PARAGRAPH,
+          currentModeState.latexMode, TextFlowContext.ALLOW_INLINE);
     }
-    /* If still here then it's normal text. Read until the start of something more interesting,
-     * such as 2 newlines or a 'start' character */
+    /*
+     * If still here then it's normal text. Read until the start of something more interesting, such
+     * as 2 newlines or a 'start' character
+     */
     newLineCount = 0;
     whitespaceStartIndex = -1;
     for (index = position; index < workingDocument.length(); index++) {
@@ -766,20 +741,12 @@ public final class LaTeXTokeniser {
     }
     if (newLineCount == 2) {
       /* Found a newline, return everything until the whitespace started. */
-      result =
-          new SimpleToken(
-              workingDocument.freezeSlice(position, whitespaceStartIndex),
-              TokenType.TEXT_MODE_TEXT,
-              currentModeState.latexMode,
-              TextFlowContext.ALLOW_INLINE);
+      result = new SimpleToken(workingDocument.freezeSlice(position, whitespaceStartIndex),
+          TokenType.TEXT_MODE_TEXT, currentModeState.latexMode, TextFlowContext.ALLOW_INLINE);
     } else {
       /* Just text */
-      result =
-          new SimpleToken(
-              workingDocument.freezeSlice(position, index),
-              TokenType.TEXT_MODE_TEXT,
-              currentModeState.latexMode,
-              TextFlowContext.ALLOW_INLINE);
+      result = new SimpleToken(workingDocument.freezeSlice(position, index),
+          TokenType.TEXT_MODE_TEXT, currentModeState.latexMode, TextFlowContext.ALLOW_INLINE);
     }
     return result;
   }
@@ -797,16 +764,14 @@ public final class LaTeXTokeniser {
     /* Advance past the delimiter */
     position += delimiter.length();
 
-    /* Now we parse this as an environment until we find the delimiter again. This works OK
-     * with nested delimiters since they will always be the argument of a command, which
-     * are tokenised separately so we don't have to worry.
+    /*
+     * Now we parse this as an environment until we find the delimiter again. This works OK with
+     * nested delimiters since they will always be the argument of a command, which are tokenised
+     * separately so we don't have to worry.
      */
     int startContentIndex = position; /* And record this position as we're going to move on */
-    ModeState contentResult =
-        tokeniseInNewState(
-            TokenisationMode.BUILTIN_ENVIRONMENT_CONTENT,
-            new StringTerminator(delimiter),
-            LaTeXMode.MATH);
+    ModeState contentResult = tokeniseInNewState(TokenisationMode.BUILTIN_ENVIRONMENT_CONTENT,
+        new StringTerminator(delimiter), LaTeXMode.MATH);
 
     /* position now points just after the delimiter. */
     int endContentIndex = contentResult.foundTerminator ? position - delimiter.length() : position;
@@ -838,9 +803,8 @@ public final class LaTeXTokeniser {
     position++; /* Advance over the '{' */
 
     /* Go out and tokenise from this point onwards until the end of the '}' */
-    ModeState result =
-        tokeniseInNewState(
-            TokenisationMode.BRACE, new StringTerminator("}"), currentModeState.latexMode);
+    ModeState result = tokeniseInNewState(TokenisationMode.BRACE, new StringTerminator("}"),
+        currentModeState.latexMode);
 
     int endInnerIndex = result.foundTerminator ? position - 1 : position;
     FrozenSlice braceOuterSlice =
@@ -872,24 +836,16 @@ public final class LaTeXTokeniser {
         position += 2;
         int startContentIndex = position;
         String closer = (c == '(') ? "\\)" : "\\]";
-        ModeState contentResult =
-            tokeniseInNewState(
-                TokenisationMode.BUILTIN_ENVIRONMENT_CONTENT,
-                new StringTerminator(closer),
-                LaTeXMode.MATH);
+        ModeState contentResult = tokeniseInNewState(TokenisationMode.BUILTIN_ENVIRONMENT_CONTENT,
+            new StringTerminator(closer), LaTeXMode.MATH);
         if (!contentResult.foundTerminator) {
-          /* Error: We didn't find the required terminator so we'll register an error. There
-           * are probably lots of other errors caused by the missing terminator so we'll
-           * add this error *first* in the list for the environment.
+          /*
+           * Error: We didn't find the required terminator so we'll register an error. There are
+           * probably lots of other errors caused by the missing terminator so we'll add this error
+           * *first* in the list for the environment.
            */
-          contentResult.tokens.add(
-              0,
-              createError(
-                  CoreErrorCode.TTEM02,
-                  startCommandIndex,
-                  position,
-                  "\\" + Character.valueOf((char) c),
-                  closer));
+          contentResult.tokens.add(0, createError(CoreErrorCode.TTEM02, startCommandIndex, position,
+              "\\" + Character.valueOf((char) c), closer));
         }
         int endContentIndex = contentResult.computeLastTokenEndIndex();
         FrozenSlice contentSlice = workingDocument.freezeSlice(startContentIndex, endContentIndex);
@@ -902,16 +858,12 @@ public final class LaTeXTokeniser {
             new EnvironmentToken(mathSlice, currentModeState.latexMode, environment, contentToken);
       }
     } else if (c == ')' || c == ']') {
-      /* Close of a math environment specified using \) or \]. This should have
-       * been discovered at the time the environment was opened (above), so this is
-       * always an error if we get here.
+      /*
+       * Close of a math environment specified using \) or \]. This should have been discovered at
+       * the time the environment was opened (above), so this is always an error if we get here.
        */
-      result =
-          createError(
-              CoreErrorCode.TTEG03,
-              position,
-              position + 2,
-              workingDocument.freezeSlice(position, position + 2).extract());
+      result = createError(CoreErrorCode.TTEG03, position, position + 2,
+          workingDocument.freezeSlice(position, position + 2).extract());
     } else {
       /* It's not math, so must be \verb(*), \command or environment control */
       result = readCommandOrEnvironmentOrVerb();
@@ -924,15 +876,14 @@ public final class LaTeXTokeniser {
 
   /** Reads in a command, <tt>\\verb(*)</tt> or environment control token. */
   private FlowToken readCommandOrEnvironmentOrVerb() throws SnuggleParseException {
-    /* We are handling either:
+    /*
+     * We are handling either:
      *
-     * 1. \command[opt]{arg}{...}
-     * 2. \verb(*)...
-     * 3. \begin{env}[opt]{arg}{...}...\end{env}
+     * 1. \command[opt]{arg}{...} 2. \verb(*)... 3. \begin{env}[opt]{arg}{...}...\end{env}
      *
-     * Get the first character after '\' - which the caller has already checked existence of -
-     * and turn this into a command name. The name 'begin' indicates that this is the
-     * start of an environment.
+     * Get the first character after '\' - which the caller has already checked existence of - and
+     * turn this into a command name. The name 'begin' indicates that this is the start of an
+     * environment.
      */
     int startCommandNameIndex = position + 1;
     String commandName = readCommandOrEnvironmentName(startCommandNameIndex);
@@ -945,8 +896,9 @@ public final class LaTeXTokeniser {
     /* Advance over the command name */
     position += 1 + commandName.length();
 
-    /* Convert whitespace-only command name to ' ', which allows a trailing '\' on a line
-     * to be equivalent to '\ '
+    /*
+     * Convert whitespace-only command name to ' ', which allows a trailing '\' on a line to be
+     * equivalent to '\ '
      */
     boolean isWhitespaceCommand = true;
     for (int i = 0; i < commandName.length(); i++) {
@@ -987,14 +939,16 @@ public final class LaTeXTokeniser {
    * Helper to read in the command or environment name starting at the given index, obeying the
    * esoteric rules of naming.
    *
-   * <p>Note that this might return '(', ')', '[' and ']' which are considered special by the
-   * parsing process so may not be re-defined.
+   * <p>
+   * Note that this might return '(', ')', '[' and ']' which are considered special by the parsing
+   * process so may not be re-defined.
    *
-   * <p>This DOES NOT change position or any other component of the current parsing state.
+   * <p>
+   * This DOES NOT change position or any other component of the current parsing state.
    *
    * @param startCommandNameIndex index to start reading from.
    * @return command name String, which will contain at least one character, or null if there were
-   *     no further characters in the Slice.
+   *         no further characters in the Slice.
    */
   private String readCommandOrEnvironmentName(final int startCommandNameIndex) {
     int index = startCommandNameIndex;
@@ -1004,7 +958,8 @@ public final class LaTeXTokeniser {
       /* Nothing to read! */
       commandName = null;
     } else if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))) {
-      /* Funny symbols are always exactly one character, which may be whitespace and include
+      /*
+       * Funny symbols are always exactly one character, which may be whitespace and include
        * reserved characters (,),[ or ].
        */
       commandName = Character.toString((char) c);
@@ -1032,10 +987,12 @@ public final class LaTeXTokeniser {
    * This is called once it has become clear that the next token is <tt>\verb</tt> or
    * <tt>\verb*</tt>.
    *
-   * <p>As with LaTeX, this next character is used to delimit the verbatim region, which must end on
+   * <p>
+   * As with LaTeX, this next character is used to delimit the verbatim region, which must end on
    * the same line. No whitespace can occur after \verb.
    *
-   * <p>PRE-CONDITION: position will point to the character immediately after <tt>\verb</tt>.
+   * <p>
+   * PRE-CONDITION: position will point to the character immediately after <tt>\verb</tt>.
    *
    * @throws SnuggleParseException
    */
@@ -1050,16 +1007,14 @@ public final class LaTeXTokeniser {
       /* Error: delimiter is whitespace */
       return createError(CoreErrorCode.TTEV00, startTokenIndex, startDelimitIndex + 1);
     }
-    /* Now parse from the character after the delimiter until the next instance of
-     * the delimiter is found. This should result in zero or one content tokens, plus
-     * a possible error token if the end delimiter was not found.
+    /*
+     * Now parse from the character after the delimiter until the next instance of the delimiter is
+     * found. This should result in zero or one content tokens, plus a possible error token if the
+     * end delimiter was not found.
      */
     position++; /* Advance over delimiter */
-    ModeState contentState =
-        tokeniseInNewState(
-            TokenisationMode.BUILTIN_COMMAND_ARGUMENT,
-            new StringTerminator(Character.toString((char) delimitChar)),
-            LaTeXMode.VERBATIM);
+    ModeState contentState = tokeniseInNewState(TokenisationMode.BUILTIN_COMMAND_ARGUMENT,
+        new StringTerminator(Character.toString((char) delimitChar)), LaTeXMode.VERBATIM);
     List<FlowToken> contentTokens = contentState.tokens;
     SimpleToken verbatimContentToken = null;
     boolean endDelimiterNotFound = false;
@@ -1085,45 +1040,40 @@ public final class LaTeXTokeniser {
       throw new SnuggleLogicException("\\verb had no proper content token");
     }
 
-    /* Recall that the content of \\verb must be on a single line, so make sure that is the
-     * case.
+    /*
+     * Recall that the content of \\verb must be on a single line, so make sure that is the case.
      */
     FrozenSlice contentSlice = verbatimContentToken.getSlice();
     int newlineIndex = workingDocument.indexOf(contentSlice.startIndex, '\n');
     if (newlineIndex != -1 && newlineIndex < contentSlice.endIndex) {
       /* Error: Line ended before end of \\verb content */
-      return createError(
-          CoreErrorCode.TTEV01,
-          startTokenIndex,
+      return createError(CoreErrorCode.TTEV01, startTokenIndex,
           contentSlice.endIndex + (endDelimiterNotFound ? 0 : 1));
     }
 
     /* That's it! */
     FrozenSlice verbatimSlice = workingDocument.freezeSlice(startTokenIndex, position);
-    return new CommandToken(
-        verbatimSlice,
-        currentModeState.latexMode,
-        verbCommand,
-        null,
+    return new CommandToken(verbatimSlice, currentModeState.latexMode, verbCommand, null,
         new ArgumentContainerToken[] {
-          new ArgumentContainerToken(contentSlice, LaTeXMode.VERBATIM, contentTokens)
-        });
+            new ArgumentContainerToken(contentSlice, LaTeXMode.VERBATIM, contentTokens)});
   }
 
   // -----------------------------------------
   // Commands
 
   /**
-   * Finishes reading a Command, which will either be a {@link BuiltinCommand} or a {@link
-   * UserDefinedCommand}.
+   * Finishes reading a Command, which will either be a {@link BuiltinCommand} or a
+   * {@link UserDefinedCommand}.
    *
-   * <p>PRE-CONDITION: position will point to the character immediately after <tt>\commandName</tt>.
+   * <p>
+   * PRE-CONDITION: position will point to the character immediately after <tt>\commandName</tt>.
    *
    * @param commandName name of the command being read in
    */
   private FlowToken finishCommand(final String commandName) throws SnuggleParseException {
-    /* First resolve the command as either a user-defined or built-in. We search
-     * for user-defined commands first, and then built-ins.
+    /*
+     * First resolve the command as either a user-defined or built-in. We search for user-defined
+     * commands first, and then built-ins.
      */
     FlowToken result = null;
     UserDefinedCommand userCommand = sessionContext.getUserCommandMap().get(commandName);
@@ -1154,23 +1104,7 @@ public final class LaTeXTokeniser {
     /* Make sure we can use this command in the current mode */
     if (!command.getAllowedModes().contains(currentModeState.latexMode)) {
       // issue #712 START update
-      command.texName = "normalsize";
-      switch (command.getType()) {
-        case SIMPLE:
-          /* Not expecting any more to read so bail out now */
-          return finishSimpleCommand(command);
-
-        case COMBINER:
-          /* Read in next token and combine up */
-          return finishCombiningCommand(command);
-
-        case COMPLEX:
-          /* Read arguments */
-          return finishComplexCommand(command);
-
-        default:
-          throw new SnuggleLogicException("Unexpected switch case " + command.getType());
-      }
+      return finishSimpleCommand(CorePackageDefinitions.NORMALSIZE_COMMAND);  
       /* Not allowed to use this command in this mode */
       // return createError(
       // CoreErrorCode.TTEC01,
@@ -1181,20 +1115,22 @@ public final class LaTeXTokeniser {
       // issue #712 END update
     }
 
-    /* Command and environment definitions need to be handled specifically as their structure is quite
-     * specific
-     */
-    if (command == CorePackageDefinitions.CMD_NEWCOMMAND
-        || command == CorePackageDefinitions.CMD_RENEWCOMMAND) {
-      return finishCommandDefinition(command);
-    }
-    if (command == CorePackageDefinitions.CMD_NEWENVIRONMENT
-        || command == CorePackageDefinitions.CMD_RENEWENVIRONMENT) {
-      return finishEnvironmentDefinition(command);
-    }
+  /*
+   * Command and environment definitions need to be handled specifically as their structure is quite
+   * specific
+   */
+  if(command==CorePackageDefinitions.CMD_NEWCOMMAND||command==CorePackageDefinitions.CMD_RENEWCOMMAND)
 
-    /* All other commands are handled according to their type */
-    switch (command.getType()) {
+  {
+    return finishCommandDefinition(command);
+  }if(command==CorePackageDefinitions.CMD_NEWENVIRONMENT||command==CorePackageDefinitions.CMD_RENEWENVIRONMENT)
+  {
+    return finishEnvironmentDefinition(command);
+  }
+
+  /* All other commands are handled according to their type */
+  switch(command.getType())
+  {
       case SIMPLE:
         /* Not expecting any more to read so bail out now */
         return finishSimpleCommand(command);
@@ -1283,15 +1219,17 @@ public final class LaTeXTokeniser {
    * Finishes the process or reading in a "complex" command, by searching for any required and
    * optional arguments.
    *
-   * <p>PRE-CONDITION: position will point to the character immediately after <tt>\commandName</tt>.
+   * <p>
+   * PRE-CONDITION: position will point to the character immediately after <tt>\commandName</tt>.
    */
   private FlowToken finishComplexCommand(final BuiltinCommand command)
       throws SnuggleParseException {
     int startCommandIndex = startTokenIndex; /* Record this as we'll be parsing following tokens */
 
-    /* Read in and tokenise arguments, passing a "struct" to store the results in.
-     * I've done it this way as this process is used in a number of different places but
-     * we still need to be able to return an error if required.
+    /*
+     * Read in and tokenise arguments, passing a "struct" to store the results in. I've done it this
+     * way as this process is used in a number of different places but we still need to be able to
+     * return an error if required.
      *
      * We preserve trailing whitespace after these types of commands.
      */
@@ -1305,12 +1243,8 @@ public final class LaTeXTokeniser {
 
     /* That's it! */
     FrozenSlice commandSlice = workingDocument.freezeSlice(startCommandIndex, position);
-    return new CommandToken(
-        commandSlice,
-        currentModeState.latexMode,
-        command,
-        argumentSearchResult.optionalArgument,
-        argumentSearchResult.requiredArguments);
+    return new CommandToken(commandSlice, currentModeState.latexMode, command,
+        argumentSearchResult.optionalArgument, argumentSearchResult.requiredArguments);
   }
 
   /**
@@ -1318,7 +1252,7 @@ public final class LaTeXTokeniser {
    * arguments.
    *
    * @see LaTeXTokeniser#advanceOverBuiltinCommandOrEnvironmentArguments(CommandOrEnvironment,
-   *     BuiltinCommandOrEnvironmentArgumentSearchResult)
+   *      BuiltinCommandOrEnvironmentArgumentSearchResult)
    */
   static class BuiltinCommandOrEnvironmentArgumentSearchResult {
 
@@ -1336,9 +1270,11 @@ public final class LaTeXTokeniser {
    * This helper reads in the optional and required arguments for a Command or Environment, starting
    * at the current position.
    *
-   * <p>Trailing whitespace is always preserved after the command/environment.
+   * <p>
+   * Trailing whitespace is always preserved after the command/environment.
    *
-   * <p>PRE-CONDITION: position will point to the character immediately after <tt>\commandName</tt>.
+   * <p>
+   * PRE-CONDITION: position will point to the character immediately after <tt>\commandName</tt>.
    * POST-CONDITION: position will point to immediately after the last argument.
    *
    * @param commandOrEnvironment
@@ -1348,8 +1284,7 @@ public final class LaTeXTokeniser {
    */
   private ErrorToken advanceOverBuiltinCommandOrEnvironmentArguments(
       final CommandOrEnvironment commandOrEnvironment,
-      final BuiltinCommandOrEnvironmentArgumentSearchResult result)
-      throws SnuggleParseException {
+      final BuiltinCommandOrEnvironmentArgumentSearchResult result) throws SnuggleParseException {
     /* First of all see if we're expecting arguments and bail if not */
     if (commandOrEnvironment.getArgumentCount() == 0
         && !commandOrEnvironment.isAllowingOptionalArgument()) {
@@ -1358,7 +1293,10 @@ public final class LaTeXTokeniser {
       return null;
     }
 
-    /* If still here, we're expecting arguments so skip any comments/whitespace before first argument */
+    /*
+     * If still here, we're expecting arguments so skip any comments/whitespace before first
+     * argument
+     */
     skipOverCommentsAndWhitespace();
 
     /* Consider optional argument, if allowed */
@@ -1369,8 +1307,10 @@ public final class LaTeXTokeniser {
     LaTeXMode argumentMode;
     ModeState argumentResult;
     if (commandOrEnvironment.isAllowingOptionalArgument()) {
-      /* Decide what mode we'll be parsing this argument in, defaulting to current mode if
-       * nothing is specified */
+      /*
+       * Decide what mode we'll be parsing this argument in, defaulting to current mode if nothing
+       * is specified
+       */
       argumentMode = commandOrEnvironment.getArgumentMode(argumentIndex++);
       if (argumentMode == null) {
         argumentMode = currentModeState.latexMode;
@@ -1381,9 +1321,8 @@ public final class LaTeXTokeniser {
         int startArgumentContentIndex = ++position; /* Skip over '[' */
 
         /* Go out and tokenise from this point onwards until the end of the ']' */
-        argumentResult =
-            tokeniseInNewState(
-                TokenisationMode.BUILTIN_COMMAND_ARGUMENT, new StringTerminator("]"), argumentMode);
+        argumentResult = tokeniseInNewState(TokenisationMode.BUILTIN_COMMAND_ARGUMENT,
+            new StringTerminator("]"), argumentMode);
         int endArgumentContentIndex = (argumentResult.foundTerminator) ? position - 1 : position;
         optionalArgumentSlice =
             workingDocument.freezeSlice(startArgumentContentIndex, endArgumentContentIndex);
@@ -1392,12 +1331,13 @@ public final class LaTeXTokeniser {
       }
     }
 
-    /* Look for required arguments.
+    /*
+     * Look for required arguments.
      *
      * These must all be specified using {....}
      *
-     * HOWEVER: If the command takes no 1 argument and no optional argument has been provided,
-     * then LaTeX allows the next single token to be taken as the argument if it is not a brace.
+     * HOWEVER: If the command takes no 1 argument and no optional argument has been provided, then
+     * LaTeX allows the next single token to be taken as the argument if it is not a brace.
      *
      * E.g. \sqrt x is interpreted the same way as \sqrt{x}
      *
@@ -1426,23 +1366,19 @@ public final class LaTeXTokeniser {
         int startArgumentContentIndex = ++position; /* Skip over '{' */
 
         /* Go out and tokenise from this point onwards until the end of the '}' */
-        argumentResult =
-            tokeniseInNewState(
-                TokenisationMode.BUILTIN_COMMAND_ARGUMENT, new StringTerminator("}"), argumentMode);
+        argumentResult = tokeniseInNewState(TokenisationMode.BUILTIN_COMMAND_ARGUMENT,
+            new StringTerminator("}"), argumentMode);
         int endArgumentContentIndex = argumentResult.foundTerminator ? position - 1 : position;
         requiredArgumentSlices[i] =
             workingDocument.freezeSlice(startArgumentContentIndex, endArgumentContentIndex);
-        requiredArguments[i] =
-            new ArgumentContainerToken(
-                requiredArgumentSlices[i], argumentMode, argumentResult.tokens);
-      } else if (c != -1
-          && i == 0
-          && argCount == 1
-          && optionalArgument == null
+        requiredArguments[i] = new ArgumentContainerToken(requiredArgumentSlices[i], argumentMode,
+            argumentResult.tokens);
+      } else if (c != -1 && i == 0 && argCount == 1 && optionalArgument == null
           && commandOrEnvironment instanceof Command) {
-        /* Special case listed above: command with 1 argument as a single token with no braces.
-         * Temporarily change LaTeX mode to that of the argument, pull in the next
-         * token and revert the mode to what we had initially.
+        /*
+         * Special case listed above: command with 1 argument as a single token with no braces.
+         * Temporarily change LaTeX mode to that of the argument, pull in the next token and revert
+         * the mode to what we had initially.
          */
         LaTeXMode currentLaTeXMode = currentModeState.latexMode;
         currentModeState.latexMode = argumentMode;
@@ -1454,23 +1390,17 @@ public final class LaTeXTokeniser {
           requiredArgumentSlices[i] = requiredArguments[i].getSlice();
         } else {
           /* Error: Missing first (and only) argument. */
-          return createError(
-              CoreErrorCode.TTEC02,
-              startTokenIndex,
-              position,
-              commandOrEnvironment.getTeXName(),
-              Integer.valueOf(1));
+          return createError(CoreErrorCode.TTEC02, startTokenIndex, position,
+              commandOrEnvironment.getTeXName(), Integer.valueOf(1));
         }
       } else {
-        /* Error: Missing '#n' argument (where n=i+1).
-         * (There is one variant of this for commands and one for environments)
+        /*
+         * Error: Missing '#n' argument (where n=i+1). (There is one variant of this for commands
+         * and one for environments)
          */
         return createError(
             (commandOrEnvironment instanceof Command) ? CoreErrorCode.TTEC02 : CoreErrorCode.TTEE06,
-            startTokenIndex,
-            position,
-            commandOrEnvironment.getTeXName(),
-            Integer.valueOf(i + 1));
+            startTokenIndex, position, commandOrEnvironment.getTeXName(), Integer.valueOf(i + 1));
       }
     }
 
@@ -1483,15 +1413,16 @@ public final class LaTeXTokeniser {
   /**
    * Finishes the process of reading in and evaluating a {@link UserDefinedCommand}.
    *
-   * <p>PRE-CONDITION: position will point to the character immediately after <tt>\commandName</tt>.
+   * <p>
+   * PRE-CONDITION: position will point to the character immediately after <tt>\commandName</tt>.
    */
   private FlowToken finishUserDefinedCommand(final UserDefinedCommand command)
       throws SnuggleParseException {
-    /* Read in argument as raw Slices, since we're going to perform parameter
-     * interpolation on them.
+    /*
+     * Read in argument as raw Slices, since we're going to perform parameter interpolation on them.
      *
-     * We also KEEP the final trailing whitespace after the last part of the
-     * command so that when it is substituted, there is whitespace left for further parsing.
+     * We also KEEP the final trailing whitespace after the last part of the command so that when it
+     * is substituted, there is whitespace left for further parsing.
      */
     UserDefinedCommandOrEnvironmentArgumentSearchResult argumentSearchResult =
         new UserDefinedCommandOrEnvironmentArgumentSearchResult();
@@ -1501,16 +1432,18 @@ public final class LaTeXTokeniser {
       return errorToken;
     }
 
-    /* Right... what we now do is create a temporary document with the place-holders in the
-     * command definition replaced with the arguments. This is then tokenised along with
-     * enough of the rest of the existing document to ensure tokens are correctly balanced
-     * or finished, and the resulting token becomes the final result. Phew!
+    /*
+     * Right... what we now do is create a temporary document with the place-holders in the command
+     * definition replaced with the arguments. This is then tokenised along with enough of the rest
+     * of the existing document to ensure tokens are correctly balanced or finished, and the
+     * resulting token becomes the final result. Phew!
      */
     String replacement =
         substituteArguments(command.getDefinitionSlice(), command, argumentSearchResult);
 
-    /* Now we rewind to the start of the command and replace it with our substitution, and
-     * then continue parsing as normal.
+    /*
+     * Now we rewind to the start of the command and replace it with our substitution, and then
+     * continue parsing as normal.
      */
     int afterCommandIndex = position;
     errorToken = makeSubstitutionAndRewind(startTokenIndex, afterCommandIndex, replacement);
@@ -1522,11 +1455,11 @@ public final class LaTeXTokeniser {
    * content of the given {@link FrozenSlice}, handling correctly escaped arguments such as
    * <tt>\#1</tt>.
    *
-   * <p>As with built-in commands, the arguments are substituted into occurrences of #n, which
-   * denotes the n'th argument (with the optional argument counting first, if applicable).
+   * <p>
+   * As with built-in commands, the arguments are substituted into occurrences of #n, which denotes
+   * the n'th argument (with the optional argument counting first, if applicable).
    */
-  private String substituteArguments(
-      final FrozenSlice slice,
+  private String substituteArguments(final FrozenSlice slice,
       final UserDefinedCommandOrEnvironment commandOrEnvironment,
       final UserDefinedCommandOrEnvironmentArgumentSearchResult argumentSearchResult) {
     boolean inEscape = false; /* Whether we are in the middle of a character escape */
@@ -1558,8 +1491,7 @@ public final class LaTeXTokeniser {
         } else {
           /* Optional argument */
           substitutionBuilder.append(
-              argumentSearchResult.optionalArgument != null
-                  ? argumentSearchResult.optionalArgument
+              argumentSearchResult.optionalArgument != null ? argumentSearchResult.optionalArgument
                   : commandOrEnvironment.getOptionalArgument());
         }
       } else {
@@ -1571,8 +1503,8 @@ public final class LaTeXTokeniser {
 
   /**
    * Trivial "struct" Object to hold the results of searching for user-defined command and/or
-   * environment arguments, which are initially treated as unparsed but balanced {@link
-   * WorkingDocument}s.
+   * environment arguments, which are initially treated as unparsed but balanced
+   * {@link WorkingDocument}s.
    */
   static class UserDefinedCommandOrEnvironmentArgumentSearchResult {
 
@@ -1587,11 +1519,14 @@ public final class LaTeXTokeniser {
    * This helper reads in the optional and required arguments for a Command or Environment, starting
    * at the current position.
    *
-   * <p>The value of {@link #position} will be updated by this.
+   * <p>
+   * The value of {@link #position} will be updated by this.
    *
-   * <p>Trailing whitespace is always preserved after the command/environment.
+   * <p>
+   * Trailing whitespace is always preserved after the command/environment.
    *
-   * <p>PRE-CONDITION: position will point to the character immediately after <tt>\commandName</tt>.
+   * <p>
+   * PRE-CONDITION: position will point to the character immediately after <tt>\commandName</tt>.
    * POST-CONDITION: position will point to immediately after the last argument.
    *
    * @param commandOrEnvironment
@@ -1601,8 +1536,7 @@ public final class LaTeXTokeniser {
    */
   private ErrorToken advanceOverUserDefinedCommandOrEnvironmentArguments(
       final CommandOrEnvironment commandOrEnvironment,
-      UserDefinedCommandOrEnvironmentArgumentSearchResult result)
-      throws SnuggleParseException {
+      UserDefinedCommandOrEnvironmentArgumentSearchResult result) throws SnuggleParseException {
     /* First of all see if we're expecting arguments and bail if not */
     if (commandOrEnvironment.getArgumentCount() == 0
         && !commandOrEnvironment.isAllowingOptionalArgument()) {
@@ -1632,7 +1566,8 @@ public final class LaTeXTokeniser {
       }
     }
 
-    /* Look for required arguments in the same way that we do it for built-in commands and
+    /*
+     * Look for required arguments in the same way that we do it for built-in commands and
      * environments.
      */
     int argCount = commandOrEnvironment.getArgumentCount();
@@ -1653,22 +1588,19 @@ public final class LaTeXTokeniser {
         requiredArguments[i] = workingDocument.extract(openBraceIndex + 1, closeBraceIndex);
         position = closeBraceIndex + 1; /* Move past '}' */
       } else if (c != -1 && i == 0 && argCount == 1 && result.optionalArgument == null) {
-        /* Special case listed above: 1 argument as a single token with no braces.
+        /*
+         * Special case listed above: 1 argument as a single token with no braces.
          *
-         * NOTE: This one is slightly complicated here in that we need to read the next token
-         * in now, which has an unwelcome side-effect of freezing the working document up
-         * to the end of this token. Since all we want is the content of this token, we
-         * "unfreeze" the working document back to the start of the current command.
+         * NOTE: This one is slightly complicated here in that we need to read the next token in
+         * now, which has an unwelcome side-effect of freezing the working document up to the end of
+         * this token. Since all we want is the content of this token, we "unfreeze" the working
+         * document back to the start of the current command.
          */
         FlowToken nextToken = readNextToken();
         if (nextToken == null) {
           /* Error: Missing first (and only) argument. */
-          return createError(
-              CoreErrorCode.TTEC02,
-              startTokenIndex,
-              position,
-              commandOrEnvironment.getTeXName(),
-              Integer.valueOf(1));
+          return createError(CoreErrorCode.TTEC02, startTokenIndex, position,
+              commandOrEnvironment.getTeXName(), Integer.valueOf(1));
         }
         FrozenSlice nextSlice = nextToken.getSlice();
         requiredArguments[i] = nextSlice.extract();
@@ -1677,10 +1609,7 @@ public final class LaTeXTokeniser {
         /* Error: Missing '#n' argument (where n=i+1) */
         return createError(
             commandOrEnvironment instanceof Command ? CoreErrorCode.TTEC02 : CoreErrorCode.TTEE06,
-            startTokenIndex,
-            position,
-            commandOrEnvironment.getTeXName(),
-            Integer.valueOf(i + 1));
+            startTokenIndex, position, commandOrEnvironment.getTeXName(), Integer.valueOf(i + 1));
       }
     }
     /* Record result and return null indicating success */
@@ -1695,7 +1624,8 @@ public final class LaTeXTokeniser {
   /**
    * Handles <tt>\\begin...</tt>
    *
-   * <p>POST-CONDITION: position will point to the character immediately after <tt>\\begin</tt>.
+   * <p>
+   * POST-CONDITION: position will point to the character immediately after <tt>\\begin</tt>.
    */
   private FlowToken finishBeginEnvironment() throws SnuggleParseException {
     /* Read {envName} */
@@ -1728,7 +1658,8 @@ public final class LaTeXTokeniser {
   /**
    * Handles <tt>\\end...</tt>
    *
-   * <p>PRE-CONDITION: position will point to the character immediately after <tt>\\end</tt>.
+   * <p>
+   * PRE-CONDITION: position will point to the character immediately after <tt>\\end</tt>.
    */
   private FlowToken finishEndEnvironment() throws SnuggleParseException {
     /* Read {envName} */
@@ -1745,8 +1676,8 @@ public final class LaTeXTokeniser {
       return createError(CoreErrorCode.TTEE05, startTokenIndex, position);
     } else if (!environmentName.equals(lastOpenName)) {
       /* Got end of envName, rather than one in the stack */
-      return createError(
-          CoreErrorCode.TTEE00, startTokenIndex, position, environmentName, lastOpenName);
+      return createError(CoreErrorCode.TTEE00, startTokenIndex, position, environmentName,
+          lastOpenName);
 
     } else {
       openEnvironmentStack.pop();
@@ -1762,9 +1693,9 @@ public final class LaTeXTokeniser {
       BuiltinEnvironment builtinEnvironment =
           sessionContext.getBuiltinEnvironmentByTeXName(environmentName);
       if (builtinEnvironment != null) {
-        /* The end of a build-in environment is special as the \\begin{env} will have
-         * started a new tokenisation level. We simply return null to indicate there's
-         * no more at this level.
+        /*
+         * The end of a build-in environment is special as the \\begin{env} will have started a new
+         * tokenisation level. We simply return null to indicate there's no more at this level.
          */
       } else {
         /* Undefined environment name */
@@ -1778,9 +1709,11 @@ public final class LaTeXTokeniser {
    * Reads text of the form '{envName}' from the current position onwards, skipping any leading
    * comments/whitespace and advancing the current position to just after the final '}'.
    *
-   * <p>Returns null if this information was not found.
+   * <p>
+   * Returns null if this information was not found.
    *
-   * <p>PRE-CONDITION: position will point to the character immediately after <tt>\\begin</tt> or
+   * <p>
+   * PRE-CONDITION: position will point to the character immediately after <tt>\\begin</tt> or
    * <tt>\\end</tt> POST-CONDITION: position will point to just after the <tt>{envName}</tt>, if
    * found
    */
@@ -1808,7 +1741,8 @@ public final class LaTeXTokeniser {
   /**
    * Finishes off reading a built-in environment.
    *
-   * <p>PRE-CONDITION: position will point to the character immediately after
+   * <p>
+   * PRE-CONDITION: position will point to the character immediately after
    * <tt>\\begin{envName}</tt>.
    *
    * @param environment environment being read in
@@ -1821,21 +1755,18 @@ public final class LaTeXTokeniser {
     /* Record where the \\begin token starts as we're going to advance */
     int startEnvironmentIndex = startTokenIndex;
 
-    /* Check whether we can use this environment in this mode.
+    /*
+     * Check whether we can use this environment in this mode.
      *
-     * We won't bail immediately on error here as it is prudent to pull in the content
-     * anyway to ensure things match up */
+     * We won't bail immediately on error here as it is prudent to pull in the content anyway to
+     * ensure things match up
+     */
     LaTeXMode startLatexMode = currentModeState.latexMode;
     ErrorToken errorToken = null;
     if (!environment.getAllowedModes().contains(currentModeState.latexMode)) {
       /* Error: this environment can't be used in the current mode */
-      errorToken =
-          createError(
-              CoreErrorCode.TTEE03,
-              startTokenIndex,
-              position,
-              environment.getTeXName(),
-              startLatexMode);
+      errorToken = createError(CoreErrorCode.TTEE03, startTokenIndex, position,
+          environment.getTeXName(), startLatexMode);
     }
 
     /* Read in arguments, the same way that we do with commands. */
@@ -1856,32 +1787,33 @@ public final class LaTeXTokeniser {
     /* We now pull in the content. The non-VERBATIM and VERBATIM cases differ here */
     ArgumentContainerToken contentToken;
     if (contentMode == LaTeXMode.VERBATIM) {
-      /* Parse looking for the explicit \\end{envName} terminator. Because whitespace is
-       * allowed, we use a PatternTerminator for this.
+      /*
+       * Parse looking for the explicit \\end{envName} terminator. Because whitespace is allowed, we
+       * use a PatternTerminator for this.
        */
       int startContentIndex = position; /* Record this position as we're going to move on */
       Pattern terminatorPattern =
           Pattern.compile("\\\\end\\s*\\{" + environment.getTeXName() + "\\}\\s*");
-      ModeState contentResult =
-          tokeniseInNewState(
-              TokenisationMode.BUILTIN_ENVIRONMENT_CONTENT,
-              new PatternTerminator(terminatorPattern),
-              LaTeXMode.VERBATIM);
+      ModeState contentResult = tokeniseInNewState(TokenisationMode.BUILTIN_ENVIRONMENT_CONTENT,
+          new PatternTerminator(terminatorPattern), LaTeXMode.VERBATIM);
       int endContentIndex = contentResult.computeLastTokenEndIndex();
       FrozenSlice contentSlice = workingDocument.freezeSlice(startContentIndex, endContentIndex);
       contentToken = new ArgumentContainerToken(contentSlice, contentMode, contentResult.tokens);
 
-      /* The above will have pulled in the end environment, so we need to explicitly pop the stack
-       * of what is open */
+      /*
+       * The above will have pulled in the end environment, so we need to explicitly pop the stack
+       * of what is open
+       */
       openEnvironmentStack.pop();
     } else {
       /* Gobble up any comments/whitespace before the start of the content */
       skipOverCommentsAndWhitespace();
 
-      /* Now we parse the environment content. We don't set a terminator here - the tokenisation
-       * logic knows to search for \\end and make sure things are balanced up with whatever
-       * is open. When an \\end is encountered, it returns a null token and leaves the
-       * position just after the \\end.
+      /*
+       * Now we parse the environment content. We don't set a terminator here - the tokenisation
+       * logic knows to search for \\end and make sure things are balanced up with whatever is open.
+       * When an \\end is encountered, it returns a null token and leaves the position just after
+       * the \\end.
        */
       int startContentIndex = position; /* And record this position as we're going to move on */
       ModeState contentResult =
@@ -1897,25 +1829,19 @@ public final class LaTeXTokeniser {
 
     /* Bail now if we encountered any errors */
     if (errorToken != null) {
-      /* We'll recreate the ErrorToken so that it ends at the current position so that
-       * parsing will continue from after \\end{envName}.
+      /*
+       * We'll recreate the ErrorToken so that it ends at the current position so that parsing will
+       * continue from after \\end{envName}.
        */
       sessionContext.getErrors().remove(errorToken.getError()); /* Remove entry added above */
-      return createError(
-          errorToken.getError().getErrorCode(),
-          startTokenIndex,
-          position,
+      return createError(errorToken.getError().getErrorCode(), startTokenIndex, position,
           errorToken.getError().getArguments());
     }
 
     /* Success! */
     FrozenSlice environmentSlice = workingDocument.freezeSlice(startEnvironmentIndex, position);
-    return new EnvironmentToken(
-        environmentSlice,
-        startLatexMode,
-        environment,
-        argumentSearchResult.optionalArgument,
-        argumentSearchResult.requiredArguments,
+    return new EnvironmentToken(environmentSlice, startLatexMode, environment,
+        argumentSearchResult.optionalArgument, argumentSearchResult.requiredArguments,
         contentToken);
   }
 
@@ -1926,7 +1852,8 @@ public final class LaTeXTokeniser {
    * Finishes the handling of the start of a user-defined environment. This replaces the
    * <tt>\\begin{envName}</tt> with the appropriate substitution and reparses.
    *
-   * <p>PRE-CONDITION: position will point to the character immediately after
+   * <p>
+   * PRE-CONDITION: position will point to the character immediately after
    * <tt>\\begin{envName}</tt>.
    */
   private FlowToken finishBeginUserDefinedEnvironment(final UserDefinedEnvironment environment)
@@ -1944,8 +1871,9 @@ public final class LaTeXTokeniser {
     FrozenSlice beginSlice = environment.getBeginDefinitionSlice();
     String resolvedBegin = substituteArguments(beginSlice, environment, argumentSearchResult);
 
-    /* We add an extra command after the replacement to do housekeeping once the environment
-     * has finished opening up.
+    /*
+     * We add an extra command after the replacement to do housekeeping once the environment has
+     * finished opening up.
      */
     resolvedBegin += "\\" + UDE_POST_BEGIN + "{" + environment.getTeXName() + "}";
 
@@ -1964,16 +1892,16 @@ public final class LaTeXTokeniser {
    * Finishes the handling of the end of a user-defined environment. This replaces the
    * <tt>\\end{envName}</tt> with the appropriate substitution and reparses.
    *
-   * <p>PRE-CONDITION: position will point to the character immediately after
+   * <p>
+   * PRE-CONDITION: position will point to the character immediately after
    * <tt>\\begin{envName}</tt>.
    */
   private FlowToken finishEndUserDefinedEnvironment(final UserDefinedEnvironment environment)
       throws SnuggleParseException {
     /* Substitute the whole \end{...} clause with the definition */
     int endEndIndex = position;
-    ErrorToken errorToken =
-        makeSubstitutionAndRewind(
-            startTokenIndex, endEndIndex, environment.getEndDefinitionSlice().extract());
+    ErrorToken errorToken = makeSubstitutionAndRewind(startTokenIndex, endEndIndex,
+        environment.getEndDefinitionSlice().extract());
     return errorToken == null ? readNextToken() : errorToken;
   }
 
@@ -1982,7 +1910,8 @@ public final class LaTeXTokeniser {
    * substituted into the input when processing the start of a user-defined environment. This
    * prompts some house-keeping, which is performed here.
    *
-   * <p>PRE-CONDITION: position will point to the character immediately after <tt>\\end</tt>.
+   * <p>
+   * PRE-CONDITION: position will point to the character immediately after <tt>\\end</tt>.
    */
   private FlowToken handleUserDefinedEnvironmentControl() throws SnuggleParseException {
     /* Read {envName} */
@@ -2014,14 +1943,16 @@ public final class LaTeXTokeniser {
    * Finishes reading the definition of a user-defined command specified using <tt>\\newcommand</tt>
    * or similar.
    *
-   * <p>PRE-CONDITION: position will point to the character immediately after <tt>\\newcommand</tt>.
+   * <p>
+   * PRE-CONDITION: position will point to the character immediately after <tt>\\newcommand</tt>.
    */
   private FlowToken finishCommandDefinition(final BuiltinCommand definitionCommand)
       throws SnuggleParseException {
     /* Skip whitespace/comments after \\newcommand or whatever. */
     skipOverCommentsAndWhitespace();
 
-    /* First thing to read is the name of the command, which is written as either
+    /*
+     * First thing to read is the name of the command, which is written as either
      *
      * {\name} or \name
      */
@@ -2047,8 +1978,8 @@ public final class LaTeXTokeniser {
       return createError(CoreErrorCode.TTEUC0, startTokenIndex, position);
     } else if (reservedCommands.contains(commandName)) {
       /* Error: Not allowed to redefine reserved command */
-      return createError(
-          CoreErrorCode.TTEUC8, startTokenIndex, position + commandName.length(), commandName);
+      return createError(CoreErrorCode.TTEUC8, startTokenIndex, position + commandName.length(),
+          commandName);
     }
     position += commandName.length();
     if (nameIsInBraces) {
@@ -2063,9 +1994,8 @@ public final class LaTeXTokeniser {
 
     /* Read in specification of arguments. */
     ArgumentDefinitionResult argumentDefinitionResult = new ArgumentDefinitionResult();
-    ErrorToken error =
-        advanceOverUserDefinedCommandOrEnvironmentArgumentDefinition(
-            commandName, argumentDefinitionResult);
+    ErrorToken error = advanceOverUserDefinedCommandOrEnvironmentArgumentDefinition(commandName,
+        argumentDefinitionResult);
     if (error != null) {
       return error;
     }
@@ -2089,28 +2019,25 @@ public final class LaTeXTokeniser {
 
     /* Extract command definition and make sure parameter references are sane */
     FrozenSlice definitionSlice = workingDocument.freezeSlice(startCurlyIndex + 1, endCurlyIndex);
-    error =
-        checkDefinitionArguments(
-            definitionSlice, commandName, argumentDefinitionResult, CoreErrorCode.TTEUCA);
+    error = checkDefinitionArguments(definitionSlice, commandName, argumentDefinitionResult,
+        CoreErrorCode.TTEUCA);
     if (error != null) {
       return error;
     }
 
     /* Now create the new command */
     UserDefinedCommand userCommand =
-        new UserDefinedCommand(
-            commandName,
-            argumentDefinitionResult.optionalArgument,
-            argumentDefinitionResult.requiredArgumentCount,
-            definitionSlice);
+        new UserDefinedCommand(commandName, argumentDefinitionResult.optionalArgument,
+            argumentDefinitionResult.requiredArgumentCount, definitionSlice);
 
-    /* Register the command so that it can be used, depending on whether we are doing a renew
-     * or not. */
+    /*
+     * Register the command so that it can be used, depending on whether we are doing a renew or
+     * not.
+     */
     Map<String, UserDefinedCommand> userCommandMap = sessionContext.getUserCommandMap();
     boolean isRenewing = definitionCommand == CorePackageDefinitions.CMD_RENEWCOMMAND;
-    boolean isCommandAlreadyDefined =
-        userCommandMap.containsKey(commandName)
-            || sessionContext.getBuiltinCommandByTeXName(commandName) != null;
+    boolean isCommandAlreadyDefined = userCommandMap.containsKey(commandName)
+        || sessionContext.getBuiltinCommandByTeXName(commandName) != null;
     if (isRenewing && !isCommandAlreadyDefined) {
       /* Command does not already exist so can't be renewed */
       return createError(CoreErrorCode.TTEUC4, startTokenIndex, position, commandName);
@@ -2121,17 +2048,16 @@ public final class LaTeXTokeniser {
     userCommandMap.put(commandName, userCommand);
 
     /* Finally, return token representing the definition */
-    return new CommandToken(
-        workingDocument.freezeSlice(startTokenIndex, position),
-        currentModeState.latexMode,
-        definitionCommand);
+    return new CommandToken(workingDocument.freezeSlice(startTokenIndex, position),
+        currentModeState.latexMode, definitionCommand);
   }
 
   /**
    * Finishes reading the definition of a user-defined environment specified using
    * <tt>\\newenvironment</tt> or similar.
    *
-   * <p>PRE-CONDITION: position will point to the character immediately after
+   * <p>
+   * PRE-CONDITION: position will point to the character immediately after
    * <tt>\\newenvironment</tt>.
    */
   private FlowToken finishEnvironmentDefinition(final BuiltinCommand definitionCommand)
@@ -2146,11 +2072,8 @@ public final class LaTeXTokeniser {
       return createError(CoreErrorCode.TTEUE0, startTokenIndex, position);
     } else if (reservedCommands.contains(environmentName)) {
       /* Error: Cannot redefine these special commands */
-      return createError(
-          CoreErrorCode.TTEUC8,
-          startTokenIndex,
-          position + 2 + environmentName.length() /* Skip {envName} */,
-          environmentName);
+      return createError(CoreErrorCode.TTEUC8, startTokenIndex,
+          position + 2 + environmentName.length() /* Skip {envName} */, environmentName);
     }
 
     /* Skip whitespace after name */
@@ -2158,9 +2081,8 @@ public final class LaTeXTokeniser {
 
     /* Read in specification of arguments. */
     ArgumentDefinitionResult argumentDefinitionResult = new ArgumentDefinitionResult();
-    ErrorToken error =
-        advanceOverUserDefinedCommandOrEnvironmentArgumentDefinition(
-            environmentName, argumentDefinitionResult);
+    ErrorToken error = advanceOverUserDefinedCommandOrEnvironmentArgumentDefinition(environmentName,
+        argumentDefinitionResult);
     if (error != null) {
       return error;
     }
@@ -2172,12 +2094,8 @@ public final class LaTeXTokeniser {
       c = workingDocument.charAt(position);
       if (c != '{') {
         /* Missing definition for begin/end */
-        return createError(
-            CoreErrorCode.TTEUE1,
-            startTokenIndex,
-            position,
-            ((i == 0) ? "begin" : "end"),
-            environmentName);
+        return createError(CoreErrorCode.TTEUE1, startTokenIndex, position,
+            ((i == 0) ? "begin" : "end"), environmentName);
       }
       int startCurlyIndex = position;
       int endCurlyIndex = findEndCurlyBrackets(position);
@@ -2191,34 +2109,29 @@ public final class LaTeXTokeniser {
     }
 
     /* Check parameters in definitions */
-    error =
-        checkDefinitionArguments(
-            definitionSlices[0], environmentName, argumentDefinitionResult, CoreErrorCode.TTEUE5);
+    error = checkDefinitionArguments(definitionSlices[0], environmentName, argumentDefinitionResult,
+        CoreErrorCode.TTEUE5);
     if (error == null) {
-      error =
-          checkDefinitionArguments(
-              definitionSlices[1], environmentName, null, CoreErrorCode.TTEUE6);
+      error = checkDefinitionArguments(definitionSlices[1], environmentName, null,
+          CoreErrorCode.TTEUE6);
     }
     if (error != null) {
       return error;
     }
 
     /* Now create new environment */
-    UserDefinedEnvironment userEnvironment =
-        new UserDefinedEnvironment(
-            environmentName,
-            argumentDefinitionResult.optionalArgument,
-            argumentDefinitionResult.requiredArgumentCount,
-            definitionSlices[0],
-            definitionSlices[1]);
+    UserDefinedEnvironment userEnvironment = new UserDefinedEnvironment(environmentName,
+        argumentDefinitionResult.optionalArgument, argumentDefinitionResult.requiredArgumentCount,
+        definitionSlices[0], definitionSlices[1]);
 
-    /* Register the environment so that it can be used, depending on whether we are doing a renew
-     * or not. */
+    /*
+     * Register the environment so that it can be used, depending on whether we are doing a renew or
+     * not.
+     */
     Map<String, UserDefinedEnvironment> userEnvironmentMap = sessionContext.getUserEnvironmentMap();
     boolean isRenewing = definitionCommand == CorePackageDefinitions.CMD_RENEWENVIRONMENT;
-    boolean isEnvAlreadyDefined =
-        userEnvironmentMap.containsKey(environmentName)
-            || sessionContext.getBuiltinEnvironmentByTeXName(environmentName) != null;
+    boolean isEnvAlreadyDefined = userEnvironmentMap.containsKey(environmentName)
+        || sessionContext.getBuiltinEnvironmentByTeXName(environmentName) != null;
     if (isRenewing && !isEnvAlreadyDefined) {
       /* Error: Environment is not already defined so can't be renewed */
       return createError(CoreErrorCode.TTEUE2, startTokenIndex, position, environmentName);
@@ -2229,11 +2142,8 @@ public final class LaTeXTokeniser {
     userEnvironmentMap.put(environmentName, userEnvironment);
 
     /* Finally, return token representing the definition */
-    CommandToken result =
-        new CommandToken(
-            workingDocument.freezeSlice(startTokenIndex, position),
-            currentModeState.latexMode,
-            definitionCommand);
+    CommandToken result = new CommandToken(workingDocument.freezeSlice(startTokenIndex, position),
+        currentModeState.latexMode, definitionCommand);
     return result;
   }
 
@@ -2241,11 +2151,9 @@ public final class LaTeXTokeniser {
    * This helper checks the definition of a user-defined command or environment to make sure that
    * any argument references are in line with what is defined.
    */
-  private ErrorToken checkDefinitionArguments(
-      final FrozenSlice definitionSlice,
+  private ErrorToken checkDefinitionArguments(final FrozenSlice definitionSlice,
       final String commandOrEnvironmentName,
-      final ArgumentDefinitionResult argumentDefinitionResult,
-      final ErrorCode errorCode)
+      final ArgumentDefinitionResult argumentDefinitionResult, final ErrorCode errorCode)
       throws SnuggleParseException {
     int argumentCount =
         argumentDefinitionResult != null
@@ -2268,34 +2176,23 @@ public final class LaTeXTokeniser {
       } else if (inArgument) {
         if (argumentCount == 0 || !(c >= '1' && c <= '0' + argumentCount)) {
           /* Error: Illegal argument */
-          return createError(
-              errorCode,
-              index - 1,
-              index,
-              commandOrEnvironmentName,
-              Character.valueOf((char) c),
-              Integer.valueOf(argumentCount));
+          return createError(errorCode, index - 1, index, commandOrEnvironmentName,
+              Character.valueOf((char) c), Integer.valueOf(argumentCount));
         }
         inArgument = false;
       }
     }
     if (inArgument) {
       /* Error: # at end of command. For simplicity, we'll handle the same way as above */
-      return createError(
-          errorCode,
-          index - 1,
-          index,
-          commandOrEnvironmentName,
-          null,
+      return createError(errorCode, index - 1, index, commandOrEnvironmentName, null,
           Integer.valueOf(argumentCount));
     }
     return null;
   }
 
   /**
-   * Trivial result Object for {@link
-   * LaTeXTokeniser#advanceOverUserDefinedCommandOrEnvironmentArgumentDefinition(String,
-   * ArgumentDefinitionResult)}
+   * Trivial result Object for
+   * {@link LaTeXTokeniser#advanceOverUserDefinedCommandOrEnvironmentArgumentDefinition(String, ArgumentDefinitionResult)}
    */
   static final class ArgumentDefinitionResult {
 
@@ -2310,7 +2207,8 @@ public final class LaTeXTokeniser {
    * Reads in the argument specification for a new command or environment. This will be of the form:
    * <tt>[n]</tt> OR <tt>[n][opt]</tt>.
    *
-   * <p>PRE-CONDITION: position should be set to just after <tt>\\newcommand{name}</tt> or
+   * <p>
+   * PRE-CONDITION: position should be set to just after <tt>\\newcommand{name}</tt> or
    * <tt>\\newenvironment{name}</tt> POST-CONDITION: position will now be directly after the
    * arguments
    *
@@ -2324,8 +2222,9 @@ public final class LaTeXTokeniser {
     /* Skip initial comments/whitespace */
     skipOverCommentsAndWhitespace();
 
-    /* Next we read in the number of arguments, specified as [<1-9>],
-     * then whether the first argument is optional (specified as a further [<anything>])
+    /*
+     * Next we read in the number of arguments, specified as [<1-9>], then whether the first
+     * argument is optional (specified as a further [<anything>])
      *
      * Also note that the number of arguments includes whether there is an optional argument!
      *
@@ -2333,8 +2232,8 @@ public final class LaTeXTokeniser {
      *
      * Examples:
      *
-     * [2] -> no optional argument, 2 required arguments
-     * [2][opt] -> 1 optional argument, 2-1=1 required argument
+     * [2] -> no optional argument, 2 required arguments [2][opt] -> 1 optional argument, 2-1=1
+     * required argument
      */
     int requiredArgumentCount = 0;
     String optionalArgument = null;
@@ -2353,13 +2252,13 @@ public final class LaTeXTokeniser {
         requiredArgumentCount = Integer.parseInt(rawArgCount);
       } catch (NumberFormatException e) {
         /* Error: Not an integer! */
-        return createError(
-            CoreErrorCode.TTEUC7, startTokenIndex, position, commandOrEnvironmentName, rawArgCount);
+        return createError(CoreErrorCode.TTEUC7, startTokenIndex, position,
+            commandOrEnvironmentName, rawArgCount);
       }
       if (requiredArgumentCount < 1 || requiredArgumentCount > 9) {
         /* Error: Number of args must be between 1 and 9 inclusive */
-        return createError(
-            CoreErrorCode.TTEUC7, startTokenIndex, position, commandOrEnvironmentName, rawArgCount);
+        return createError(CoreErrorCode.TTEUC7, startTokenIndex, position,
+            commandOrEnvironmentName, rawArgCount);
       }
       skipOverCommentsAndWhitespace();
       if (workingDocument.charAt(position) == '[') {
@@ -2413,8 +2312,9 @@ public final class LaTeXTokeniser {
         /* Start of an escape */
         inEscape = true;
       } else if (c == '{') {
-        /* We have started {....}, which will protect any square brackets inside.
-         * Let's move over this.
+        /*
+         * We have started {....}, which will protect any square brackets inside. Let's move over
+         * this.
          */
         index = findEndCurlyBrackets(index);
       } else if (c == '%') {
@@ -2499,9 +2399,10 @@ public final class LaTeXTokeniser {
   /**
    * Advances the current position past a comment, indicated by a '%' symbol.
    *
-   * <p>As per LaTeX convention, comments continue until the end of the current line. Moreover, if
-   * the next line contains non-whitespace characters then LaTeX comments also absorb the newline at
-   * the end of the original line plus any leading whitespace on the next line(!)
+   * <p>
+   * As per LaTeX convention, comments continue until the end of the current line. Moreover, if the
+   * next line contains non-whitespace characters then LaTeX comments also absorb the newline at the
+   * end of the original line plus any leading whitespace on the next line(!)
    */
   private void skipOverComment() {
     /* Read to end of current line */
@@ -2533,8 +2434,7 @@ public final class LaTeXTokeniser {
   private void skipOverTrailingWhitespace() {
     int c;
     while (position < workingDocument.length()
-        && Character.isWhitespace(c = workingDocument.charAt(position))
-        && c != '\n') {
+        && Character.isWhitespace(c = workingDocument.charAt(position)) && c != '\n') {
       position++;
     }
   }
@@ -2542,16 +2442,12 @@ public final class LaTeXTokeniser {
   // -----------------------------------------
   // Error Handling
 
-  private ErrorToken createError(
-      final ErrorCode errorCode,
-      final int errorStartIndex,
-      final int errorEndIndex,
-      final Object... arguments)
-      throws SnuggleParseException {
+  private ErrorToken createError(final ErrorCode errorCode, final int errorStartIndex,
+      final int errorEndIndex, final Object... arguments) throws SnuggleParseException {
     FrozenSlice errorSlice = workingDocument.freezeSlice(errorStartIndex, errorEndIndex);
     InputError error = new InputError(errorCode, errorSlice, arguments);
     sessionContext.registerError(error);
-    return new ErrorToken(
-        error, currentModeState != null ? currentModeState.latexMode : LaTeXMode.PARAGRAPH);
+    return new ErrorToken(error,
+        currentModeState != null ? currentModeState.latexMode : LaTeXMode.PARAGRAPH);
   }
 }

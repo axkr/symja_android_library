@@ -16,7 +16,8 @@ import static uk.ac.ed.ph.snuggletex.definitions.LaTeXMode.VERBATIM;
 import static uk.ac.ed.ph.snuggletex.definitions.TextFlowContext.ALLOW_INLINE;
 import static uk.ac.ed.ph.snuggletex.definitions.TextFlowContext.IGNORE;
 import static uk.ac.ed.ph.snuggletex.definitions.TextFlowContext.START_NEW_XHTML_BLOCK;
-
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import uk.ac.ed.ph.snuggletex.SnugglePackage;
 import uk.ac.ed.ph.snuggletex.SnuggleRuntimeException;
 import uk.ac.ed.ph.snuggletex.dombuilding.AccentHandler;
@@ -64,6 +65,7 @@ import uk.ac.ed.ph.snuggletex.semantics.Interpretation;
 import uk.ac.ed.ph.snuggletex.semantics.InterpretationType;
 import uk.ac.ed.ph.snuggletex.semantics.MathBigLimitOwnerInterpretation;
 import uk.ac.ed.ph.snuggletex.semantics.MathBracketInterpretation;
+import uk.ac.ed.ph.snuggletex.semantics.MathBracketInterpretation.BracketType;
 import uk.ac.ed.ph.snuggletex.semantics.MathFunctionInterpretation;
 import uk.ac.ed.ph.snuggletex.semantics.MathIdentifierInterpretation;
 import uk.ac.ed.ph.snuggletex.semantics.MathMLSymbol;
@@ -71,11 +73,7 @@ import uk.ac.ed.ph.snuggletex.semantics.MathNegatableInterpretation;
 import uk.ac.ed.ph.snuggletex.semantics.MathOperatorInterpretation;
 import uk.ac.ed.ph.snuggletex.semantics.StyleDeclarationInterpretation;
 import uk.ac.ed.ph.snuggletex.semantics.TabularInterpretation;
-import uk.ac.ed.ph.snuggletex.semantics.MathBracketInterpretation.BracketType;
 import uk.ac.ed.ph.snuggletex.tokens.FlowToken;
-
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 
 /**
  * This defines the default {@link SnugglePackage} (containing {@link BuiltinCommand} and {@link
@@ -136,6 +134,8 @@ public final class CorePackageDefinitions {
   public static BuiltinEnvironment ENV_BRACKETED;
 
   private static final SnugglePackage corePackage;
+
+  public static final BuiltinCommand NORMALSIZE_COMMAND;
 
   public static final SnugglePackage getPackage() {
     return corePackage;
@@ -418,7 +418,7 @@ public final class CorePackageDefinitions {
         "footnotesize", TEXT_MODE_ONLY, StyleDeclarationInterpretation.FOOTNOTESIZE, null, null);
     corePackage.addSimpleCommand(
         "small", TEXT_MODE_ONLY, StyleDeclarationInterpretation.SMALL, null, null);
-    corePackage.addSimpleCommand(
+    NORMALSIZE_COMMAND = corePackage.addSimpleCommand(
         "normalsize", TEXT_MODE_ONLY, StyleDeclarationInterpretation.NORMALSIZE, null, null);
     corePackage.addSimpleCommand(
         "large", TEXT_MODE_ONLY, StyleDeclarationInterpretation.LARGE, null, null);
@@ -996,6 +996,7 @@ public final class CorePackageDefinitions {
      */
     CombinerTargetMatcher notTargetMatcher =
         new CombinerTargetMatcher() {
+          @Override
           public boolean isAllowed(FlowToken target) {
             return target.hasInterpretationType(InterpretationType.MATH_NEGATABLE);
           }

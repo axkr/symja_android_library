@@ -20,7 +20,7 @@ import uk.ac.ed.ph.snuggletex.semantics.InterpretationType;
  */
 abstract class BuiltinCommandOrEnvironment<H> implements CommandOrEnvironment {
 
-  public String texName;
+  protected final String texName;
   protected final boolean allowingOptionalArgument;
   protected final int argumentCount;
   protected final EnumSet<LaTeXMode> allowedModes;
