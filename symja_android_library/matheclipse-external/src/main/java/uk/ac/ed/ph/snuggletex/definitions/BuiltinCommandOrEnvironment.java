@@ -5,12 +5,11 @@
  */
 package uk.ac.ed.ph.snuggletex.definitions;
 
+import java.util.EnumMap;
+import java.util.EnumSet;
 import uk.ac.ed.ph.snuggletex.internal.util.ConstraintUtilities;
 import uk.ac.ed.ph.snuggletex.semantics.Interpretation;
 import uk.ac.ed.ph.snuggletex.semantics.InterpretationType;
-
-import java.util.EnumMap;
-import java.util.EnumSet;
 
 /**
  * Partial base class for {@link BuiltinCommand} and {@link BuiltinEnvironment}.
@@ -21,7 +20,7 @@ import java.util.EnumSet;
  */
 abstract class BuiltinCommandOrEnvironment<H> implements CommandOrEnvironment {
 
-  protected final String texName;
+  public String texName;
   protected final boolean allowingOptionalArgument;
   protected final int argumentCount;
   protected final EnumSet<LaTeXMode> allowedModes;
@@ -48,14 +47,17 @@ abstract class BuiltinCommandOrEnvironment<H> implements CommandOrEnvironment {
     this.domBuildingHandler = domBuildingHandler;
   }
 
+  @Override
   public String getTeXName() {
     return texName;
   }
 
+  @Override
   public boolean isAllowingOptionalArgument() {
     return allowingOptionalArgument;
   }
 
+  @Override
   public int getArgumentCount() {
     return argumentCount;
   }

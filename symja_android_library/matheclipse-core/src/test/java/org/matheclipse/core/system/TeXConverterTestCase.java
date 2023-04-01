@@ -248,7 +248,12 @@ public class TeXConverterTestCase extends TestCase {
         "Log(e)/2");
   }
 
-  public void testTeXIssue712() {
+  public void testTeXIssue712a() {
+    check("\\large 6666", //
+        "6666");
+  }
+
+  public void testTeXIssue712b() {
     check("\\log_{22}5", //
         "Log(22,5)");
   }

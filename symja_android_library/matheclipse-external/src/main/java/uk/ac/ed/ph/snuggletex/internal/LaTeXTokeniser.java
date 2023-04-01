@@ -5,6 +5,16 @@
  */
 package uk.ac.ed.ph.snuggletex.internal;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import uk.ac.ed.ph.snuggletex.ErrorCode;
 import uk.ac.ed.ph.snuggletex.InputError;
 import uk.ac.ed.ph.snuggletex.SnuggleInput;
@@ -36,17 +46,6 @@ import uk.ac.ed.ph.snuggletex.tokens.FlowToken;
 import uk.ac.ed.ph.snuggletex.tokens.SimpleToken;
 import uk.ac.ed.ph.snuggletex.tokens.Token;
 import uk.ac.ed.ph.snuggletex.tokens.TokenType;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * This class reads in SnuggleTeX input and builds a tree of literal parsed {@link Token}s.
@@ -164,12 +163,14 @@ public final class LaTeXTokeniser {
       this.terminatorString = terminatorString;
     }
 
+    @Override
     public int matchesAt(final WorkingDocument workingDocument, int index) {
       return workingDocument.matchesAt(index, terminatorString)
           ? index + terminatorString.length()
           : -1;
     }
 
+    @Override
     public int nextMatchFrom(WorkingDocument workingDocument, int index) {
       return workingDocument.indexOf(index, terminatorString);
     }
@@ -193,11 +194,13 @@ public final class LaTeXTokeniser {
       this.terminatorPattern = terminatorPattern;
     }
 
+    @Override
     public int matchesAt(final WorkingDocument workingDocument, int index) {
       Matcher matcher = terminatorPattern.matcher(workingDocument.extract());
       return matcher.find(index) && matcher.start() == index ? matcher.end() : -1;
     }
 
+    @Override
     public int nextMatchFrom(WorkingDocument workingDocument, int index) {
       Matcher matcher = terminatorPattern.matcher(workingDocument.extract());
       return matcher.find(index) ? matcher.start() : -1;
@@ -1150,13 +1153,32 @@ public final class LaTeXTokeniser {
       throws SnuggleParseException {
     /* Make sure we can use this command in the current mode */
     if (!command.getAllowedModes().contains(currentModeState.latexMode)) {
+      // issue #712 START update
+      command.texName = "normalsize";
+      switch (command.getType()) {
+        case SIMPLE:
+          /* Not expecting any more to read so bail out now */
+          return finishSimpleCommand(command);
+
+        case COMBINER:
+          /* Read in next token and combine up */
+          return finishCombiningCommand(command);
+
+        case COMPLEX:
+          /* Read arguments */
+          return finishComplexCommand(command);
+
+        default:
+          throw new SnuggleLogicException("Unexpected switch case " + command.getType());
+      }
       /* Not allowed to use this command in this mode */
-      return createError(
-          CoreErrorCode.TTEC01,
-          startTokenIndex,
-          position,
-          command.getTeXName(),
-          currentModeState.latexMode);
+      // return createError(
+      // CoreErrorCode.TTEC01,
+      // startTokenIndex,
+      // position,
+      // command.getTeXName(),
+      // currentModeState.latexMode);
+      // issue #712 END update
     }
 
     /* Command and environment definitions need to be handled specifically as their structure is quite

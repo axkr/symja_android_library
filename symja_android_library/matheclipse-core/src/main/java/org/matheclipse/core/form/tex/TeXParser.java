@@ -775,6 +775,7 @@ public class TeXParser {
         LOGGER.log(fEngine.getLogLevel(), errors.get(i));
       }
     } catch (Exception e) {
+      e.printStackTrace();
       LOGGER.debug("TeXParser.toExpression() failed", e);
     }
     return S.$Aborted;

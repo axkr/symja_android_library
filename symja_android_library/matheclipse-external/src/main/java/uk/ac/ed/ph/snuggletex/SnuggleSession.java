@@ -1,10 +1,20 @@
-/* $Id: SnuggleSession.java 577 2010-05-21 14:36:50Z davemckain $
+/*
+ * $Id: SnuggleSession.java 577 2010-05-21 14:36:50Z davemckain $
  *
- * Copyright (c) 2010, The University of Edinburgh.
- * All Rights Reserved
+ * Copyright (c) 2010, The University of Edinburgh. All Rights Reserved
  */
 package uk.ac.ed.ph.snuggletex;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.xml.parsers.DocumentBuilder;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import uk.ac.ed.ph.snuggletex.definitions.BuiltinCommand;
 import uk.ac.ed.ph.snuggletex.definitions.BuiltinEnvironment;
 import uk.ac.ed.ph.snuggletex.definitions.UserDefinedCommand;
@@ -23,36 +33,23 @@ import uk.ac.ed.ph.snuggletex.tokens.FlowToken;
 import uk.ac.ed.ph.snuggletex.utilities.SerializationOptions;
 import uk.ac.ed.ph.snuggletex.utilities.StylesheetManager;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.xml.parsers.DocumentBuilder;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
 /**
  * This represents a single "job" for SnuggleTeX.
  *
  * <h2>Usage</h2>
  *
  * <ul>
- *   <li>Create a session with {@link SnuggleEngine#createSession()}, optionally passing
- *       configuration details for this session.
- *   <li>Call {@link #parseInput(SnuggleInput)} on one or more input documents to tokenise and
- *       fix-up the LaTeX contained therein.
- *   <li>Call one or more of the DOM and/or web page building methods to generate the appropriate
- *       type of output.
- *   <li>Call {@link #getErrors()} to get at the errors that have arisen during this session.
- *   <li>Call {@link #createSnapshot()} at any time to make a "snapshot" of the current state for
- *       later reuse.
- *   <li>An instance of this Class should only be used by one Thread at a time. It is stateful and
- *       intended to be discarded after use.
+ * <li>Create a session with {@link SnuggleEngine#createSession()}, optionally passing configuration
+ * details for this session.
+ * <li>Call {@link #parseInput(SnuggleInput)} on one or more input documents to tokenise and fix-up
+ * the LaTeX contained therein.
+ * <li>Call one or more of the DOM and/or web page building methods to generate the appropriate type
+ * of output.
+ * <li>Call {@link #getErrors()} to get at the errors that have arisen during this session.
+ * <li>Call {@link #createSnapshot()} at any time to make a "snapshot" of the current state for
+ * later reuse.
+ * <li>An instance of this Class should only be used by one Thread at a time. It is stateful and
+ * intended to be discarded after use.
  * </ul>
  *
  * @author David McKain
@@ -105,15 +102,15 @@ public final class SnuggleSession implements SessionContext {
   private final List<FlowToken> parsedTokens;
 
   /**
-   * (This package-private constructor is used when creating a new session via {@link
-   * SnuggleEngine#createSession()} et al.)
+   * (This package-private constructor is used when creating a new session via
+   * {@link SnuggleEngine#createSession()} et al.)
    */
   SnuggleSession(final SnuggleEngine engine, final SessionConfiguration configuration) {
     this.engine = engine;
 
-    /* We'll clone the supplied configuration, if supplied, so that
-     * any run-time changes made to it do not affect the caller's version
-     * of the configuration.
+    /*
+     * We'll clone the supplied configuration, if supplied, so that any run-time changes made to it
+     * do not affect the caller's version of the configuration.
      */
     this.configuration = configuration;
 
@@ -129,8 +126,8 @@ public final class SnuggleSession implements SessionContext {
   }
 
   /**
-   * (This package-private constructor is used when creating a session from an existing {@link
-   * SnuggleSnapshot} via {@link SnuggleSnapshot#createSession()}.)
+   * (This package-private constructor is used when creating a session from an existing
+   * {@link SnuggleSnapshot} via {@link SnuggleSnapshot#createSession()}.)
    */
   SnuggleSession(final SnuggleSnapshot snapshot) {
     /* Set up main worker Objects */
@@ -149,10 +146,12 @@ public final class SnuggleSession implements SessionContext {
 
   // -------------------------------------------------
 
+  @Override
   public SessionConfiguration getConfiguration() {
     return configuration;
   }
 
+  @Override
   public List<InputError> getErrors() {
     return errors;
   }
@@ -170,7 +169,7 @@ public final class SnuggleSession implements SessionContext {
    *
    * @param snuggleInput input to parse, which must not be null
    * @return true if parsing finished, false if it was terminated by an error in the input LaTeX and
-   *     if the session was configured to fail on the first error.
+   *         if the session was configured to fail on the first error.
    */
   public boolean parseInput(SnuggleInput snuggleInput) throws IOException {
     ConstraintUtilities.ensureNotNull(snuggleInput, "snuggleInput");
@@ -181,6 +180,7 @@ public final class SnuggleSession implements SessionContext {
       tokenFixer.fixTokenTree(result);
       parsedTokens.addAll(result.getContents());
     } catch (SnuggleParseException e) {
+      // e.printStackTrace();
       return false;
     }
     return true;
@@ -191,11 +191,8 @@ public final class SnuggleSession implements SessionContext {
    * later used to recreate a session having exactly the same state.
    */
   public SnuggleSnapshot createSnapshot() {
-    return new SnuggleSnapshot(
-        engine,
-        (SessionConfiguration) configuration.clone(),
-        new ArrayList<InputError>(errors),
-        new HashMap<String, UserDefinedCommand>(userCommandMap),
+    return new SnuggleSnapshot(engine, (SessionConfiguration) configuration.clone(),
+        new ArrayList<InputError>(errors), new HashMap<String, UserDefinedCommand>(userCommandMap),
         new HashMap<String, UserDefinedEnvironment>(userEnvironmentMap),
         new ArrayList<FlowToken>(parsedTokens));
   }
@@ -216,11 +213,12 @@ public final class SnuggleSession implements SessionContext {
    * of the given target root Element. The given {@link DOMOutputOptions} Object is used to
    * configure the process.
    *
-   * <p>If the {@link DOMOutputOptions} specifies that MathML should be down-converted to XHTML
-   * where possible, then this will also happen.
+   * <p>
+   * If the {@link DOMOutputOptions} specifies that MathML should be down-converted to XHTML where
+   * possible, then this will also happen.
    *
    * @return true if completed successfully, false if the process was terminated by an error in the
-   *     input LaTeX and if the session was configured to fail on the first error.
+   *         input LaTeX and if the session was configured to fail on the first error.
    */
   public boolean buildDOMSubtree(final Element targetRoot, final DOMOutputOptions options) {
     ConstraintUtilities.ensureNotNull(targetRoot, "targetRoot");
@@ -239,7 +237,7 @@ public final class SnuggleSession implements SessionContext {
    * with this engine.
    *
    * @return true if completed successfully, false if the process was terminated by an error in the
-   *     input LaTeX and if the session was configured to fail on the first error.
+   *         input LaTeX and if the session was configured to fail on the first error.
    */
   public boolean buildDOMSubtree(final Element targetRoot) {
     return buildDOMSubtree(targetRoot, engine.getDefaultDOMOutputOptions());
@@ -250,11 +248,12 @@ public final class SnuggleSession implements SessionContext {
    * Nodes will belong to a "fake root" element in the {@link SnuggleConstants#SNUGGLETEX_NAMESPACE}
    * namespace called "root".
    *
-   * <p>The default {@link DOMOutputOptions} specified in the {@link SnuggleEngine} will be used.
+   * <p>
+   * The default {@link DOMOutputOptions} specified in the {@link SnuggleEngine} will be used.
    *
    * @return resulting {@link NodeList} if the process completed successfully, null if the process
-   *     was terminated by an error in the input LaTeX and if the session was configured to fail on
-   *     the first error.
+   *         was terminated by an error in the input LaTeX and if the session was configured to fail
+   *         on the first error.
    */
   public NodeList buildDOMSubtree() {
     return buildDOMSubtree(engine.getDefaultDOMOutputOptions());
@@ -265,13 +264,14 @@ public final class SnuggleSession implements SessionContext {
    * Nodes will belong to a "fake root" element in the {@link SnuggleConstants#SNUGGLETEX_NAMESPACE}
    * namespace called "root".
    *
-   * <p>The given {@link DOMOutputOptions} Object is used to configure the process, which must not
-   * be null.
+   * <p>
+   * The given {@link DOMOutputOptions} Object is used to configure the process, which must not be
+   * null.
    *
    * @param options {@link DOMOutputOptions} to use, which must not be null
    * @return resulting {@link NodeList} if the process completed successfully, null if the process
-   *     was terminated by an error in the input LaTeX and if the session was configured to fail on
-   *     the first error.
+   *         was terminated by an error in the input LaTeX and if the session was configured to fail
+   *         on the first error.
    */
   public NodeList buildDOMSubtree(final DOMOutputOptions options) {
     ConstraintUtilities.ensureNotNull(options, "DOMOutputOptions");
@@ -289,12 +289,12 @@ public final class SnuggleSession implements SessionContext {
   /**
    * Creates a well-formed external general parsed entity out of the currently parsed tokens.
    *
-   * <p>The default {@link XMLStringOutputOptions} specified in the {@link SnuggleEngine} will be
-   * used.
+   * <p>
+   * The default {@link XMLStringOutputOptions} specified in the {@link SnuggleEngine} will be used.
    *
    * @return resulting XML if the process completed successfully, null if the process was terminated
-   *     by an error in the input LaTeX and if the session was configured to fail on the first
-   *     error.
+   *         by an error in the input LaTeX and if the session was configured to fail on the first
+   *         error.
    */
   public String buildXMLString() {
     return buildXMLString(engine.getDefaultXMLStringOutputOptions());
@@ -303,12 +303,13 @@ public final class SnuggleSession implements SessionContext {
   /**
    * Creates a well-formed external general parsed entity out of the currently parsed tokens.
    *
-   * <p>The given {@link XMLStringOutputOptions} Object is used to configure the process.
+   * <p>
+   * The given {@link XMLStringOutputOptions} Object is used to configure the process.
    *
    * @param options {@link XMLStringOutputOptions} to use, which must not be null.
    * @return resulting XML if the process completed successfully, null if the process was terminated
-   *     by an error in the input LaTeX and if the session was configured to fail on the first
-   *     error.
+   *         by an error in the input LaTeX and if the session was configured to fail on the first
+   *         error.
    */
   public String buildXMLString(final XMLStringOutputOptions options) {
     ConstraintUtilities.ensureNotNull(options, "XMLStringOutputOptions");
@@ -326,12 +327,13 @@ public final class SnuggleSession implements SessionContext {
    * Convenience method to create a well-formed external general parsed entity out of the currently
    * parsed tokens.
    *
-   * <p>The default {@link DOMOutputOptions} specified in the {@link SnuggleEngine} will be used.
+   * <p>
+   * The default {@link DOMOutputOptions} specified in the {@link SnuggleEngine} will be used.
    *
    * @param indent whether to indent the resulting XML or not
    * @return resulting XML if the process completed successfully, null if the process was terminated
-   *     by an error in the input LaTeX and if the session was configured to fail on the first
-   *     error.
+   *         by an error in the input LaTeX and if the session was configured to fail on the first
+   *         error.
    * @deprecated Use {@link #buildXMLString(XMLStringOutputOptions)} instead
    */
   @Deprecated
@@ -343,11 +345,12 @@ public final class SnuggleSession implements SessionContext {
    * Convenience method to create a well-formed external general parsed entity out of the currently
    * parsed tokens.
    *
-   * <p>The given {@link DOMOutputOptions} Object is used to configure the process.
+   * <p>
+   * The given {@link DOMOutputOptions} Object is used to configure the process.
    *
    * @return resulting XML if the process completed successfully, null if the process was terminated
-   *     by an error in the input LaTeX and if the session was configured to fail on the first
-   *     error.
+   *         by an error in the input LaTeX and if the session was configured to fail on the first
+   *         error.
    * @deprecated Use {@link #buildXMLString(XMLStringOutputOptions)} instead.
    */
   @Deprecated
@@ -359,12 +362,13 @@ public final class SnuggleSession implements SessionContext {
    * Convenience method to create a well-formed external general parsed entity out of the currently
    * parsed tokens.
    *
-   * <p>The given {@link DOMOutputOptions} Object is used to configure the process.
+   * <p>
+   * The given {@link DOMOutputOptions} Object is used to configure the process.
    *
    * @param indent whether to indent the resulting XML or not
    * @return resulting XML if the process completed successfully, null if the process was terminated
-   *     by an error in the input LaTeX and if the session was configured to fail on the first
-   *     error.
+   *         by an error in the input LaTeX and if the session was configured to fail on the first
+   *         error.
    * @deprecated Use {@link #buildXMLString(XMLStringOutputOptions)} instead.
    */
   @Deprecated
@@ -379,27 +383,29 @@ public final class SnuggleSession implements SessionContext {
     SerializationSpecifier serializationOptions = new SerializationOptions();
     serializationOptions.setEncoding(XMLStringOutputOptions.DEFAULT_ENCODING);
     serializationOptions.setIndenting(indent);
-    return XMLUtilities.serializeNodeChildren(
-        getStylesheetManager(), temporaryRoot, serializationOptions);
+    return XMLUtilities.serializeNodeChildren(getStylesheetManager(), temporaryRoot,
+        serializationOptions);
   }
 
   // ---------------------------------------------
 
   /**
-   * Builds a complete web page based on the currently parsed tokens, returning a DOM {@link
-   * Document} Object.
+   * Builds a complete web page based on the currently parsed tokens, returning a DOM
+   * {@link Document} Object.
    *
-   * <p>The provided {@link WebPageOutputOptions} Object is used to determine which type of web page
-   * to generate and how it should be configured.
+   * <p>
+   * The provided {@link WebPageOutputOptions} Object is used to determine which type of web page to
+   * generate and how it should be configured.
    *
-   * <p>Any XSLT stylesheet specified by {@link WebPageOutputOptions#getStylesheets()} will have
-   * been applied to the result before it is returned. On the other hand, serialisation options in
-   * the {@link WebPageOutputOptions} (such as Content Type and encoding) will not have been applied
+   * <p>
+   * Any XSLT stylesheet specified by {@link WebPageOutputOptions#getStylesheets()} will have been
+   * applied to the result before it is returned. On the other hand, serialisation options in the
+   * {@link WebPageOutputOptions} (such as Content Type and encoding) will not have been applied
    * when this method returns.
    *
    * @return resulting Document if the process completed successfully, null if the process was
-   *     terminated by an error in the input LaTeX and if the session was configured to fail on the
-   *     first error.
+   *         terminated by an error in the input LaTeX and if the session was configured to fail on
+   *         the first error.
    */
   public Document createWebPage(final WebPageOutputOptions options) {
     ConstraintUtilities.ensureNotNull(options, "options");
@@ -414,11 +420,12 @@ public final class SnuggleSession implements SessionContext {
    * Builds a complete web page based on the currently parsed tokens, sending the results to the
    * given {@link OutputStream}, which is closed afterwards.
    *
-   * <p>The provided {@link WebPageOutputOptions} Object is used to determine which type of web page
-   * to generate and how it should be configured.
+   * <p>
+   * The provided {@link WebPageOutputOptions} Object is used to determine which type of web page to
+   * generate and how it should be configured.
    *
    * @return true if completed successfully, false if the process was terminated by an error in the
-   *     input LaTeX and if the session was configured to fail on the first error.
+   *         input LaTeX and if the session was configured to fail on the first error.
    */
   public boolean writeWebPage(final WebPageOutputOptions options, final OutputStream outputStream)
       throws IOException {
@@ -430,18 +437,16 @@ public final class SnuggleSession implements SessionContext {
    * given {@link OutputStream} and performing the given {@link EndOutputAction} to it afterwards
    * (i.e. close, flush or do nothing).
    *
-   * <p>The provided {@link WebPageOutputOptions} Object is used to determine which type of web page
-   * to generate and how it should be configured.
+   * <p>
+   * The provided {@link WebPageOutputOptions} Object is used to determine which type of web page to
+   * generate and how it should be configured.
    *
    * @since 1.2.2
    * @return true if completed successfully, false if the process was terminated by an error in the
-   *     input LaTeX and if the session was configured to fail on the first error.
+   *         input LaTeX and if the session was configured to fail on the first error.
    */
-  public boolean writeWebPage(
-      final WebPageOutputOptions options,
-      final OutputStream outputStream,
-      final EndOutputAction endOutputAction)
-      throws IOException {
+  public boolean writeWebPage(final WebPageOutputOptions options, final OutputStream outputStream,
+      final EndOutputAction endOutputAction) throws IOException {
     return writeWebPage(options, null, outputStream, endOutputAction);
   }
 
@@ -449,24 +454,23 @@ public final class SnuggleSession implements SessionContext {
    * Builds a complete web page based on the currently parsed tokens, sending the results to the
    * given {@link OutputStream}, which is closed afterwards.
    *
-   * <p>The provided {@link WebPageOutputOptions} Object is used to determine which type of web page
-   * to generate and how it should be configured.
+   * <p>
+   * The provided {@link WebPageOutputOptions} Object is used to determine which type of web page to
+   * generate and how it should be configured.
    *
-   * <p>If the <tt>contentTypeSettable</tt> Object has a property called <tt>contentType</tt>, then
-   * it is set in advance to the appropriate HTTP <tt>Content-Type</tt> header for the resulting
-   * page before the web page data is written.
+   * <p>
+   * If the <tt>contentTypeSettable</tt> Object has a property called <tt>contentType</tt>, then it
+   * is set in advance to the appropriate HTTP <tt>Content-Type</tt> header for the resulting page
+   * before the web page data is written.
    *
    * @return true if completed successfully, false if the process was terminated by an error in the
-   *     input LaTeX and if the session was configured to fail on the first error.
+   *         input LaTeX and if the session was configured to fail on the first error.
    * @throws IOException if an I/O problem arose whilst writing out the web page data.
    * @throws SnuggleRuntimeException if calling <tt>setContentType()</tt> on the contentTypeSettable
-   *     Object failed, with the underlying Exception wrapped up.
+   *         Object failed, with the underlying Exception wrapped up.
    */
-  public boolean writeWebPage(
-      final WebPageOutputOptions options,
-      final Object contentTypeSettable,
-      final OutputStream outputStream)
-      throws IOException {
+  public boolean writeWebPage(final WebPageOutputOptions options, final Object contentTypeSettable,
+      final OutputStream outputStream) throws IOException {
     return writeWebPage(options, contentTypeSettable, outputStream, EndOutputAction.CLOSE);
   }
 
@@ -475,32 +479,30 @@ public final class SnuggleSession implements SessionContext {
    * given {@link OutputStream} and performing the given {@link EndOutputAction} to it afterwards
    * (i.e. close, flush or do nothing).
    *
-   * <p>The provided {@link WebPageOutputOptions} Object is used to determine which type of web page
-   * to generate and how it should be configured.
+   * <p>
+   * The provided {@link WebPageOutputOptions} Object is used to determine which type of web page to
+   * generate and how it should be configured.
    *
-   * <p>If the <tt>contentTypeSettable</tt> Object has a property called <tt>contentType</tt>, then
-   * it is set in advance to the appropriate HTTP <tt>Content-Type</tt> header for the resulting
-   * page before the web page data is written.
+   * <p>
+   * If the <tt>contentTypeSettable</tt> Object has a property called <tt>contentType</tt>, then it
+   * is set in advance to the appropriate HTTP <tt>Content-Type</tt> header for the resulting page
+   * before the web page data is written.
    *
    * @since 1.2.2
    * @return true if completed successfully, false if the process was terminated by an error in the
-   *     input LaTeX and if the session was configured to fail on the first error.
+   *         input LaTeX and if the session was configured to fail on the first error.
    * @throws IOException if an I/O problem arose whilst writing out the web page data.
    * @throws SnuggleRuntimeException if calling <tt>setContentType()</tt> on the contentTypeSettable
-   *     Object failed, with the underlying Exception wrapped up.
+   *         Object failed, with the underlying Exception wrapped up.
    */
-  public boolean writeWebPage(
-      final WebPageOutputOptions options,
-      final Object contentTypeSettable,
-      final OutputStream outputStream,
-      final EndOutputAction endOutputAction)
-      throws IOException {
+  public boolean writeWebPage(final WebPageOutputOptions options, final Object contentTypeSettable,
+      final OutputStream outputStream, final EndOutputAction endOutputAction) throws IOException {
     ConstraintUtilities.ensureNotNull(options, "options");
     ConstraintUtilities.ensureNotNull(outputStream, "outputStream");
     ConstraintUtilities.ensureNotNull(endOutputAction, "endOutputAction");
     try {
-      new WebPageBuilder(this, options)
-          .writeWebPage(parsedTokens, contentTypeSettable, outputStream, endOutputAction);
+      new WebPageBuilder(this, options).writeWebPage(parsedTokens, contentTypeSettable,
+          outputStream, endOutputAction);
       return true;
     } catch (SnuggleParseException e) {
       return false;
@@ -511,13 +513,14 @@ public final class SnuggleSession implements SessionContext {
    * Calls the <tt>setContentType</tt> of the given Object to something appropriate for the given
    * {@link WebPageOutputOptions}. This may be useful in some cases.
    *
-   * <p>The main example for this would be passing a <tt>javax.servlet.http.HttpResponse</tt>
-   * Object, which I want to avoid a compile-time dependency on.
+   * <p>
+   * The main example for this would be passing a <tt>javax.servlet.http.HttpResponse</tt> Object,
+   * which I want to avoid a compile-time dependency on.
    *
    * @see #writeWebPage(WebPageOutputOptions, Object, OutputStream)
    */
-  public void setWebPageContentType(
-      final WebPageOutputOptions options, final Object contentTypeSettable) {
+  public void setWebPageContentType(final WebPageOutputOptions options,
+      final Object contentTypeSettable) {
     ConstraintUtilities.ensureNotNull(options, "options");
     ConstraintUtilities.ensureNotNull(contentTypeSettable, "contentTypeSettable");
     new WebPageBuilder(this, options).setWebPageContentType(contentTypeSettable);
@@ -531,6 +534,7 @@ public final class SnuggleSession implements SessionContext {
    *
    * @see SnuggleEngine#getBuiltinCommandByTeXName(String)
    */
+  @Override
   public BuiltinCommand getBuiltinCommandByTeXName(String texName) {
     return engine.getBuiltinCommandByTeXName(texName);
   }
@@ -540,32 +544,37 @@ public final class SnuggleSession implements SessionContext {
    *
    * @see SnuggleEngine#getBuiltinEnvironmentByTeXName(String)
    */
+  @Override
   public BuiltinEnvironment getBuiltinEnvironmentByTeXName(String texName) {
     return engine.getBuiltinEnvironmentByTeXName(texName);
   }
 
   /** Gets the {@link Map} of all user-defined commands created in this session. */
+  @Override
   public Map<String, UserDefinedCommand> getUserCommandMap() {
     return userCommandMap;
   }
 
   /** Gets the {@link Map} of all user-defined environments created in this session. */
+  @Override
   public Map<String, UserDefinedEnvironment> getUserEnvironmentMap() {
     return userEnvironmentMap;
   }
 
   /** Gets the {@link StylesheetManager} being used by the underlying {@link SnuggleEngine} */
+  @Override
   public StylesheetManager getStylesheetManager() {
     return engine.getStylesheetManager();
   }
 
   /**
-   * Records a new error, throwing a {@link SnuggleParseException} if the current {@link
-   * SessionConfiguration} deems that we should fail on the first error.
+   * Records a new error, throwing a {@link SnuggleParseException} if the current
+   * {@link SessionConfiguration} deems that we should fail on the first error.
    *
    * @param inputError {@link InputError} to register, which must not be null.
    * @throws SnuggleParseException if this session is configured to fail fast
    */
+  @Override
   public void registerError(InputError inputError) throws SnuggleParseException {
     ConstraintUtilities.ensureNotNull(inputError, "InputError");
     errors.add(inputError);
