@@ -2059,7 +2059,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         }
       }
     } else if (head.isAssociation() && argSize() == 1) {
-      return ((IAssociation) head).getValue(arg1());
+      return ((IAssociation) head).getValue(engine.evaluate(arg1()));
     } else if (head instanceof ISymbol) {
       ISymbol headSymbol = (ISymbol) head;
       Class<?> clazz = headSymbol.getContext().getJavaClass();
