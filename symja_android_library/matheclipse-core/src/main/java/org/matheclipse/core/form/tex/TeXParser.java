@@ -325,7 +325,13 @@ public class TeXParser {
         currPrec = Precedence.TIMES;
         IExpr rhs = convert(list, position, end, null, currPrec);
         // invisible times?
-        result = F.Times(lhs, rhs);
+        if (lhs.isAST(S.Log, 3) && lhs.second() == F.Slot1) {
+          // issue #712
+          lhs = F.subs(lhs, F.Slot1, rhs);
+          result = lhs;
+        } else {
+          result = F.Times(lhs, rhs);
+        }
       }
       if (result.isPresent() && position[0] >= end) {
         return result;
@@ -625,6 +631,9 @@ public class TeXParser {
       if (a1.equals(S.Limit)) {
         // Limit(#,a2)&
         return F.Function(F.Limit(F.Slot1, a2));
+      }
+      if (a1 == S.Log) {
+        return F.binaryAST2(S.Log, a2, F.Slot1);
       }
       return F.binaryAST2(S.Subscript, a1, a2);
     }

@@ -1,4 +1,4 @@
-package org.matheclipse.io.form.tex;
+package org.matheclipse.core.system;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -246,6 +246,11 @@ public class TeXConverterTestCase extends TestCase {
         "Limit((-1+e^x)/(2*x),x->0)");
     checkEval("\\lim_{x\\to 0}{\\frac{e^x-1}{2x}}", //
         "Log(e)/2");
+  }
+
+  public void testTeXIssue712() {
+    check("\\log_{22}5", //
+        "Log(22,5)");
   }
 
   public void check(String strEval, String strResult) {
