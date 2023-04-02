@@ -929,6 +929,31 @@ public final class LaTeXTokeniser {
       /* Same with \\verb* */
       result = finishVerbToken(CorePackageDefinitions.CMD_VERBSTAR);
     } else {
+      // issue #712 start
+      if (commandName.equals("operatorname")) {
+        skipOverCommentsAndWhitespace();
+        int afterWhitespaceIndex = position;
+        FlowToken nextToken = readNextToken();
+        if (nextToken == null) {
+          /* Could not find target for this combiner */
+          return createError(CoreErrorCode.TTEC03, startTokenIndex, afterWhitespaceIndex,
+              "operatorname");
+        }
+        CharSequence extract = nextToken.getSlice().extract();
+        if (extract.length() > 4) {
+          // remove braces left and right
+          String texName = extract.subSequence(1, extract.length() - 1).toString().trim();
+          System.out.println(texName);
+          BuiltinCommand builtinCommandByTeXName =
+              sessionContext.getBuiltinCommandByTeXName(texName);
+          if (builtinCommandByTeXName != null) {
+            commandName = texName;
+          }
+        }
+        // issue #712 end
+      }
+
+
       /* It's a built-in or user-defined command. */
       result = finishCommand(commandName);
     }
@@ -1077,29 +1102,7 @@ public final class LaTeXTokeniser {
      */
     FlowToken result = null;
     UserDefinedCommand userCommand = sessionContext.getUserCommandMap().get(commandName);
-    // issue #712 start
-    if (commandName.equals("operatorname")) {
-      skipOverCommentsAndWhitespace();
-      int afterWhitespaceIndex = position;
-      FlowToken nextToken = readNextToken();
-      if (nextToken == null) {
-        /* Could not find target for this combiner */
-        return createError(CoreErrorCode.TTEC03, startTokenIndex, afterWhitespaceIndex,
-            "operatorname");
-      }
-      CharSequence extract = nextToken.getSlice().extract();
-      if (extract.length() > 4) {
-        // remove braces left and right
-        String texName = extract.subSequence(1, extract.length() - 1).toString().trim();
-        System.out.println(texName);
-        BuiltinCommand builtinCommandByTeXName = sessionContext.getBuiltinCommandByTeXName(texName);
-        if (builtinCommandByTeXName != null) {
-          return finishBuiltinCommand(builtinCommandByTeXName);
-        }
-      }
-      return nextToken;
-      // issue #712 end
-    } else if (userCommand != null) {
+    if (userCommand != null) {
       result = finishUserDefinedCommand(userCommand);
     } else {
       BuiltinCommand builtinCommand = sessionContext.getBuiltinCommandByTeXName(commandName);

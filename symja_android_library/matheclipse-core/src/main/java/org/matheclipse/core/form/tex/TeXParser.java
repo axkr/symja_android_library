@@ -294,6 +294,15 @@ public class TeXParser {
           if (SHOW_UNICODE) {
             LOGGER.info("mo: {} - {}", () -> text, () -> toUnicodeString(text, "UTF-8"));
           }
+          // issue #712 start
+          if (text.equals("|")) {
+            IExpr sequence = convertArgs(list, 1, list.getLength() - 1, position);
+            if (sequence.isSequence()) {
+              sequence = ((IAST) sequence).setAtCopy(0, S.Times);
+            }
+            return F.Abs(sequence);
+          }
+          // issue #712 end
           BinaryOperator binaryOperator = BINARY_OPERATOR_MAP.get(text);
           if (binaryOperator != null) {
             currPrec = binaryOperator.getPrecedence();
@@ -559,17 +568,6 @@ public class TeXParser {
     for (int i = 0; i < list.getLength(); i++) {
       Node temp = list.item(i);
       String n = temp.getNodeName();
-      // issue #712 start
-      String text2 = temp.getTextContent();
-      if (text2.equals("|")) {
-        int[] position = new int[] {0};
-        IExpr sequence = convertArgs(list, 1, list.getLength() - 1, position);
-        if (sequence.isSequence()) {
-          sequence = ((IAST) sequence).setAtCopy(0, S.Times);
-        }
-        return F.Abs(sequence);
-      }
-      // issue #712 end
       if (!n.equals("mi") || !(temp instanceof Element)) {
         isSymbol = false;
         break;
@@ -638,6 +636,7 @@ public class TeXParser {
   }
 
   private IExpr msub(NodeList list) {
+
     if (list.getLength() == 2) {
       Node arg1 = list.item(0);
       Node arg2 = list.item(1);
@@ -648,6 +647,26 @@ public class TeXParser {
         // Limit(#,a2)&
         if (a2.isAST(S.Implies, 3)) { // \Rightarrow
           a2 = F.Rule(a2.first(), a2.second());
+        }
+        IExpr direction = F.NIL;
+        if (a2.isRule() && a2.second().isPower()) {
+          IAST pow = (IAST) a2.second();
+          if (pow.exponent() instanceof BuiltInDummy) {
+
+            String directionString = pow.exponent().toString();
+            if (directionString.equals("+")) {
+              // from below
+              a2 = F.Rule(a2.first(), pow.first());
+              direction = F.Rule(S.Direction, F.C1);
+            } else if (directionString.equals("-")) {
+              // from above
+              a2 = F.Rule(a2.first(), pow.first());
+              direction = F.Rule(S.Direction, F.CN1);
+            }
+          }
+        }
+        if (direction.isPresent()) {
+          return F.Function(F.Limit(F.Slot1, a2, direction));
         }
         return F.Function(F.Limit(F.Slot1, a2));
       }

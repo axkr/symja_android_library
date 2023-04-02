@@ -265,11 +265,16 @@ public class TeXConverterTestCase extends TestCase {
   }
 
   public void testTeXIssue712d() {
+    check("|x|", //
+        "Abs(x)");
     check("\\pi^{|xy|}+3", //
         "3+Pi^Abs(x*y)");
   }
 
   public void testTeXIssue712e() {
+    check(
+        "\\lim_{x \\to 3^{+}} a", //
+        "Limit(a,x->3,Direction->1)");
     check(
         "\\lim_{x \\longrightarrow 3} a", //
         "Limit(a,x->3)");
@@ -277,6 +282,23 @@ public class TeXConverterTestCase extends TestCase {
         "\\lim_{x \\Rightarrow 3} a", //
         "Limit(a,x->3)");
   }
+
+  // public void testTeXIssue712f() {
+  // check(
+  // " \\operatorname { det } \\left| \\begin{array} { l l } { 4 } & { 5 } \\\\ { 7 } & { 2 }
+  // \\end{array} \\right|", //
+  // "Limit(a,x->3,Direction->1)");
+  // }
+
+  public void testTeXIssue712g() {
+    check(
+        "f ( x ) = 2 \\cos x ( \\sin x + \\cos x)", //
+        "f(x)==2*Cos(x(Sin(x+Cos(x))))");
+    check(
+        "f ( x ) = 2 \\operatorname { cos } x ( \\operatorname { sin } x + \\operatorname { cos } x)", //
+        "f(x)==2*Cos(x(Sin(x+Cos(x))))");
+  }
+
 
 
   public void check(String strEval, String strResult) {
