@@ -68,7 +68,7 @@ public class TeXConverterTestCase extends TestCase {
     // this will print an error message in the console
     // \operatorname isn't supported:
     check("\\operatorname{ sin } \\frac { \\pi } { 2 }", //
-        "$Aborted");
+        "Sin(Pi*1/2)");
   }
 
   public void testTeX008() {
@@ -257,6 +257,27 @@ public class TeXConverterTestCase extends TestCase {
     check("\\log_{22}5", //
         "Log(22,5)");
   }
+
+  public void testTeXIssue712c() {
+    check(
+        "\\operatorname { lim } _ { n \\rightarrow 0 } \\frac { ( - 3 ) ^ { n } + 2.5 ^ { n } } { 1 - 5 ^ { n } }", //
+        "Limit(((-3)^n+2.5^n)/(1-5^n),n->0)");
+  }
+
+  public void testTeXIssue712d() {
+    check("\\pi^{|xy|}+3", //
+        "3+Pi^Abs(x*y)");
+  }
+
+  public void testTeXIssue712e() {
+    check(
+        "\\lim_{x \\longrightarrow 3} a", //
+        "Limit(a,x->3)");
+    check(
+        "\\lim_{x \\Rightarrow 3} a", //
+        "Limit(a,x->3)");
+  }
+
 
   public void check(String strEval, String strResult) {
     IExpr expr = texConverter.toExpression(strEval);

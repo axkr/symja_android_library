@@ -1077,7 +1077,29 @@ public final class LaTeXTokeniser {
      */
     FlowToken result = null;
     UserDefinedCommand userCommand = sessionContext.getUserCommandMap().get(commandName);
-    if (userCommand != null) {
+    // issue #712 start
+    if (commandName.equals("operatorname")) {
+      skipOverCommentsAndWhitespace();
+      int afterWhitespaceIndex = position;
+      FlowToken nextToken = readNextToken();
+      if (nextToken == null) {
+        /* Could not find target for this combiner */
+        return createError(CoreErrorCode.TTEC03, startTokenIndex, afterWhitespaceIndex,
+            "operatorname");
+      }
+      CharSequence extract = nextToken.getSlice().extract();
+      if (extract.length() > 4) {
+        // remove braces left and right
+        String texName = extract.subSequence(1, extract.length() - 1).toString().trim();
+        System.out.println(texName);
+        BuiltinCommand builtinCommandByTeXName = sessionContext.getBuiltinCommandByTeXName(texName);
+        if (builtinCommandByTeXName != null) {
+          return finishBuiltinCommand(builtinCommandByTeXName);
+        }
+      }
+      return nextToken;
+      // issue #712 end
+    } else if (userCommand != null) {
       result = finishUserDefinedCommand(userCommand);
     } else {
       BuiltinCommand builtinCommand = sessionContext.getBuiltinCommandByTeXName(commandName);
@@ -1095,7 +1117,8 @@ public final class LaTeXTokeniser {
    * Finishes reading in a {@link BuiltinCommand}, catering for the different types of those
    * commands.
    *
-   * <p>PRE-CONDITION: position will point to the character immediately after <tt>\commandName</tt>.
+   * <p>
+   * PRE-CONDITION: position will point to the character immediately after <tt>\commandName</tt>.
    *
    * @throws SnuggleParseException
    */
@@ -1104,7 +1127,7 @@ public final class LaTeXTokeniser {
     /* Make sure we can use this command in the current mode */
     if (!command.getAllowedModes().contains(currentModeState.latexMode)) {
       // issue #712 START update
-      return finishSimpleCommand(CorePackageDefinitions.NORMALSIZE_COMMAND);  
+      return finishSimpleCommand(CorePackageDefinitions.NORMALSIZE_COMMAND);
       /* Not allowed to use this command in this mode */
       // return createError(
       // CoreErrorCode.TTEC01,
@@ -1115,22 +1138,23 @@ public final class LaTeXTokeniser {
       // issue #712 END update
     }
 
-  /*
-   * Command and environment definitions need to be handled specifically as their structure is quite
-   * specific
-   */
-  if(command==CorePackageDefinitions.CMD_NEWCOMMAND||command==CorePackageDefinitions.CMD_RENEWCOMMAND)
+    /*
+     * Command and environment definitions need to be handled specifically as their structure is
+     * quite specific
+     */
+    if (command == CorePackageDefinitions.CMD_NEWCOMMAND
+        || command == CorePackageDefinitions.CMD_RENEWCOMMAND)
 
-  {
-    return finishCommandDefinition(command);
-  }if(command==CorePackageDefinitions.CMD_NEWENVIRONMENT||command==CorePackageDefinitions.CMD_RENEWENVIRONMENT)
-  {
-    return finishEnvironmentDefinition(command);
-  }
+    {
+      return finishCommandDefinition(command);
+    }
+    if (command == CorePackageDefinitions.CMD_NEWENVIRONMENT
+        || command == CorePackageDefinitions.CMD_RENEWENVIRONMENT) {
+      return finishEnvironmentDefinition(command);
+    }
 
-  /* All other commands are handled according to their type */
-  switch(command.getType())
-  {
+    /* All other commands are handled according to their type */
+    switch (command.getType()) {
       case SIMPLE:
         /* Not expecting any more to read so bail out now */
         return finishSimpleCommand(command);
@@ -1153,12 +1177,13 @@ public final class LaTeXTokeniser {
    * non-alphanumeric) commands which leave trailing whitespace intact so we need to be a little bit
    * careful here.
    *
-   * <p>PRE-CONDITION: position will point to the character immediately after <tt>\commandName</tt>.
+   * <p>
+   * PRE-CONDITION: position will point to the character immediately after <tt>\commandName</tt>.
    */
   private FlowToken finishSimpleCommand(final BuiltinCommand command) {
-    /* Work out the next significant index after the command:
-     * single non-alpha (=funny) commands do not eat up trailing whitespace;
-     * all other commands do.
+    /*
+     * Work out the next significant index after the command: single non-alpha (=funny) commands do
+     * not eat up trailing whitespace; all other commands do.
      */
     boolean isFunnyCommand = false;
     String commandName = command.getTeXName();
@@ -1169,16 +1194,15 @@ public final class LaTeXTokeniser {
     if (!isFunnyCommand) {
       skipOverTrailingWhitespace();
     }
-    return new CommandToken(
-        workingDocument.freezeSlice(startTokenIndex, position),
-        currentModeState.latexMode,
-        command);
+    return new CommandToken(workingDocument.freezeSlice(startTokenIndex, position),
+        currentModeState.latexMode, command);
   }
 
   /**
    * Deals with pulling in the next token after something like <tt>\not</tt>
    *
-   * <p>PRE-CONDITION: position will point to the character immediately after <tt>\commandName</tt>.
+   * <p>
+   * PRE-CONDITION: position will point to the character immediately after <tt>\commandName</tt>.
    *
    * @throws SnuggleParseException
    */
@@ -1195,24 +1219,19 @@ public final class LaTeXTokeniser {
     FlowToken nextToken = readNextToken();
     if (nextToken == null) {
       /* Could not find target for this combiner */
-      return createError(
-          CoreErrorCode.TTEC03, startTokenIndex, afterWhitespaceIndex, command.getTeXName());
+      return createError(CoreErrorCode.TTEC03, startTokenIndex, afterWhitespaceIndex,
+          command.getTeXName());
     }
     /* Make sure this next token is allowed to be combined with this one */
     if (!command.getCombinerTargetMatcher().isAllowed(nextToken)) {
       /* Inappropriate combiner target */
-      return createError(
-          CoreErrorCode.TTEC04,
-          startTokenIndex,
-          nextToken.getSlice().endIndex,
+      return createError(CoreErrorCode.TTEC04, startTokenIndex, nextToken.getSlice().endIndex,
           command.getTeXName());
     }
     /* Create combined token spanning the two "raw" tokens */
     return new CommandToken(
         workingDocument.freezeSlice(startCommandIndex, nextToken.getSlice().endIndex),
-        currentModeState.latexMode,
-        command,
-        nextToken);
+        currentModeState.latexMode, command, nextToken);
   }
 
   /**

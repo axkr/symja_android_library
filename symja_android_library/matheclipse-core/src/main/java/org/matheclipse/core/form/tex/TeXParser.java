@@ -15,6 +15,7 @@ import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.BuiltInDummy;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -342,8 +343,12 @@ public class TeXParser {
   }
 
   public IExpr convertArgs(NodeList list, int[] position) {
+    return convertArgs(list, 0, list.getLength(), position);
+  }
+
+  public IExpr convertArgs(NodeList list, int start, int end, int[] position) {
     IASTAppendable ast = F.Sequence();
-    for (int i = 0; i < list.getLength(); i++) {
+    for (int i = start; i < end; i++) {
       Node temp = list.item(i);
       IExpr ex = toExpr(temp);
       ast.append(ex);
@@ -554,6 +559,17 @@ public class TeXParser {
     for (int i = 0; i < list.getLength(); i++) {
       Node temp = list.item(i);
       String n = temp.getNodeName();
+      // issue #712 start
+      String text2 = temp.getTextContent();
+      if (text2.equals("|")) {
+        int[] position = new int[] {0};
+        IExpr sequence = convertArgs(list, 1, list.getLength() - 1, position);
+        if (sequence.isSequence()) {
+          sequence = ((IAST) sequence).setAtCopy(0, S.Times);
+        }
+        return F.Abs(sequence);
+      }
+      // issue #712 end
       if (!n.equals("mi") || !(temp instanceof Element)) {
         isSymbol = false;
         break;
@@ -630,6 +646,9 @@ public class TeXParser {
       IExpr a2 = toExpr(arg2);
       if (a1.equals(S.Limit)) {
         // Limit(#,a2)&
+        if (a2.isAST(S.Implies, 3)) { // \Rightarrow
+          a2 = F.Rule(a2.first(), a2.second());
+        }
         return F.Function(F.Limit(F.Slot1, a2));
       }
       if (a1 == S.Log) {
