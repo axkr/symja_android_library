@@ -93,21 +93,49 @@ public class TestPodsStrict {
 
     final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
     assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"numpods\" : 3,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"Sin(30*Degree)\",\n"
-            + "        \"sinput\" : \"Sin(30*Degree)\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Exact result\",\n" + "      \"scanner\" : \"Rational\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"1/2\",\n"
-            + "        \"sinput\" : \"Sin(30*Degree)\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Decimal form\",\n" + "      \"scanner\" : \"Numeric\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"0.5\",\n"
-            + "        \"sinput\" : \"N(Sin(30*Degree))\"\n" + "      } ]\n" + "    } ]\n" + "  }\n"
+        "{\n" //
+            + "  \"queryresult\" : {\n" //
+            + "    \"success\" : \"true\",\n" //
+            + "    \"numpods\" : 4,\n" //
+            + "    \"version\" : \"0.1\",\n" //
+            + "    \"pods\" : [ {\n" //
+            + "      \"title\" : \"Input\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"Degree*Sin(30)\",\n" //
+            + "        \"sinput\" : \"Degree*Sin(30)\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Decimal form\",\n" //
+            + "      \"scanner\" : \"Numeric\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"-0.0172444\",\n" //
+            + "        \"sinput\" : \"N(Degree*Sin(30))\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Result\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"1/180*Pi*Sin(30)\",\n" //
+            + "        \"sinput\" : \"Degree*Sin(30)\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Alternate form\",\n" //
+            + "      \"scanner\" : \"Simplification\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"1/180*((I*1/2)/E^(I*30)-I*1/2*E^(I*30))*Pi\",\n" //
+            + "        \"sinput\" : \"TrigToExp(1/180*Pi*Sin(30))\"\n" //
+            + "      } ]\n" //
+            + "    } ]\n" //
+            + "  }\n" //
             + "}"); //
   }
 

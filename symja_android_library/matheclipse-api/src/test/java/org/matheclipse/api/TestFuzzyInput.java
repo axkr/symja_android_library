@@ -91,6 +91,6 @@ public class TestFuzzyInput {
   @Test
   public void testTeX001() {
     IExpr expr = Pods.parseInput("\\sin 30 ^ { \\circ }", EvalEngine.get());
-    assertEquals("Sin(30*Degree)", expr.toString());
+    assertEquals("Degree*Sin(30)", expr.toString());
   }
 }
