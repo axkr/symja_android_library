@@ -45,8 +45,9 @@ public class MD2Symja {
       + "    <script defer src=\"https://cdn.jsdelivr.net/npm/katex@0.16.3/dist/katex.min.js\" integrity=\"sha384-97gW6UIJxnlKemYavrqDHSX3SiygeOwIZhwyOKRfSaf0JWKRVj9hLASHgFTzT+0O\" crossorigin=\"anonymous\"></script>\n" //
       + "    <script defer src=\"https://cdn.jsdelivr.net/npm/katex@0.16.3/dist/contrib/auto-render.min.js\" integrity=\"sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05\" crossorigin=\"anonymous\"\n" //
       + "        onload=\"renderMathInElement(document.body);\"></script>" //
-      + "    <script src=\"https://cdn.jsdelivr.net/npm/highlightjs@9.16.2/highlight.pack.min.js\"></script>\n" //
-      + "<script>hljs.highlightAll();</script>\n" //
+      + "    <script src=\"https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js\"></script>\n" //
+      + "    <script src=\"https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/languages/mathematica.min.js\"></script>" //
+      + "    <script>hljs.highlightAll();</script>\n" //
       + "\n" //
       + "</head>\n" //
       + "\n" //

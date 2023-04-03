@@ -3,6 +3,7 @@ package org.matheclipse.md2html;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
@@ -76,7 +77,10 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
 
     WolframFormFactory wolframForm = WolframFormFactory.get();
     String code = codeStr.trim();
-    if (info.equals("mma")) {
+    if (info.equals("mma") || info.equals("mathematica")) {
+      Map<String, String> attributes = new LinkedHashMap<>();
+      attributes.put("class", "language-mathematica");
+      context.extendAttributes(fencedCodeBlock, "code", attributes);
       visit(fencedCodeBlock);
       if (renderMMA(wolframForm, code)) {
         return;
