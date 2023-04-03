@@ -35,6 +35,8 @@ import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.AbstractAST.NILPointer;
+import org.matheclipse.core.expression.BuiltInDummy;
+import org.matheclipse.core.expression.BuiltInSymbol;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.DefaultDict;
 import org.matheclipse.core.expression.F;
@@ -1852,12 +1854,23 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a symbol (instanceof IBuiltInSymbol)
+   * Test if this expression is a symbol (instanceof {@link BuiltInSymbol}, {@link BuiltInDummy},
+   * {@link IBuiltInSymbol})
    *
    * @return
    */
   default boolean isBuiltInSymbol() {
     return this instanceof IBuiltInSymbol;
+  }
+
+  /**
+   * Test if this expression is a symbol, which has an int ID number in {@link ID} (also instanceof
+   * {@link BuiltInSymbol})
+   *
+   * @return
+   */
+  default boolean isBuiltInSymbolID() {
+    return this instanceof BuiltInSymbol;
   }
 
   /**

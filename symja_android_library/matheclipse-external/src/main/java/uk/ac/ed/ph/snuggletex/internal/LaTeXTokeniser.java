@@ -943,7 +943,7 @@ public final class LaTeXTokeniser {
         if (extract.length() > 4) {
           // remove braces left and right
           String texName = extract.subSequence(1, extract.length() - 1).toString().trim();
-          System.out.println(texName);
+          // System.out.println(texName);
           BuiltinCommand builtinCommandByTeXName =
               sessionContext.getBuiltinCommandByTeXName(texName);
           if (builtinCommandByTeXName != null) {

@@ -1506,12 +1506,9 @@ public class F extends S {
   }
 
   /**
+   * <p>
    * Get or create a global predefined symbol which is retrieved from the SYSTEM context map or
    * created or retrieved from the SYSTEM context variables map.
-   *
-   * <p>
-   * <b>Note:</b> user defined variables on the context path are defined with method <code>
-   * userSymbol()</code>
    *
    * @param symbolName the name of the symbol
    */

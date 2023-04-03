@@ -57,7 +57,7 @@ public class TeXConverterTestCase extends TestCase {
 
   public void testTeX006() {
     check("\\sin 30 ^ { \\circ }", //
-        "Sin(30*Degree)");
+        "Degree*Sin(30)");
   }
 
   public void testTeX007() {
@@ -110,10 +110,12 @@ public class TeXConverterTestCase extends TestCase {
   }
 
   public void testTeX014() {
-    check("\\sum_{i = 1}^{n} i", //
-        "Sum(i,{i,1,n})");
     check("\\sum_{n=1}^{\\infty} 2^{-n} = 1", //
         "Sum(2^(-n),{n,1,Infinity})==1");
+    checkFullForm("\\sum_{n=1}^{\\infty} 2^{-n} = 1", //
+        "Equal(Sum(Power(2, Times(-1, n)), List(n, 1, DirectedInfinity(1))), 1)");
+    check("\\sum_{i = 1}^{n} i", //
+        "Sum(i,{i,1,n})");
   }
 
   public void testTeX015() {
@@ -248,6 +250,11 @@ public class TeXConverterTestCase extends TestCase {
         "Log(e)/2");
   }
 
+  public void testTeXIssueSinTimesCos() {
+    check("\\sin a \\cos b", //
+        "Cos(b)*Sin(a)");
+  }
+
   public void testTeXIssue712a() {
     check("\\large 6666", //
         "6666");
@@ -272,15 +279,12 @@ public class TeXConverterTestCase extends TestCase {
   }
 
   public void testTeXIssue712e() {
-    check(
-        "\\lim_{x \\to 3^{+}} a", //
-        "Limit(a,x->3,Direction->1)");
-    check(
-        "\\lim_{x \\longrightarrow 3} a", //
-        "Limit(a,x->3)");
-    check(
-        "\\lim_{x \\Rightarrow 3} a", //
-        "Limit(a,x->3)");
+    checkFullForm("\\lim_{x \\to 3^{+}} a", //
+        "Limit(a, Rule(x, 3), Rule(Direction, 1))");
+    checkFullForm("\\lim_{x \\longrightarrow 3} a", //
+        "Limit(a, Rule(x, 3))");
+    checkFullForm("\\lim_{x \\Rightarrow 3} a", //
+        "Limit(a, Rule(x, 3))");
   }
 
   // public void testTeXIssue712f() {
@@ -291,19 +295,66 @@ public class TeXConverterTestCase extends TestCase {
   // }
 
   public void testTeXIssue712g() {
-    check(
-        "f ( x ) = 2 \\cos x ( \\sin x + \\cos x)", //
-        "f(x)==2*Cos(x(Sin(x+Cos(x))))");
+    // checkFullForm(
+    // "\\cos{x} ( \\sin{x} + \\cos{x})", //
+    // "Cos(x(Sin(Plus(x, Cos(x)))))");
+    check("f ( x ) = 2 \\cos x ( \\sin x + \\cos x)", //
+        "f(x)==2*Cos(x)*(Cos(x)+Sin(x))");
     check(
         "f ( x ) = 2 \\operatorname { cos } x ( \\operatorname { sin } x + \\operatorname { cos } x)", //
         "f(x)==2*Cos(x(Sin(x+Cos(x))))");
   }
 
+  public void testTeXIssue712h() {
+    checkFullForm(
+        "g \\left(\\right. x \\left.\\right) = \\ln \\left(\\right. \\left|\\right. x + 1 \\right|\\right. \\left.\\right)", //
+        "Equal(g(x), Log(Abs(Plus(1, x))))");
+  }
 
+  public void testTeXIssue712i() {
+    checkFullForm("\\sin x", //
+        "Sin(x)");
+    checkFullForm("\\sqrt[3]{\\sin {x}}", //
+        "Power(Sin(x), Rational(1, 3))");
+  }
+
+
+  public void testTeXIssue712j() {
+    checkFullForm("\\operatorname { tan } ( 2 x - \\frac { \\pi } { 4 } )", //
+        "Tan(Plus(Times(-1, Pi, Rational(1,4)), Times(2, x)))");
+  }
+
+  public void testTeXIssue712k() {
+    checkFullForm("2 \\operatorname { cos } ^ { 2 } x - \\operatorname { cos } x - 1 = 0", //
+        "Equal(Plus(Times(2, Power(Cos, 2), x), Times(-1, Cos(Plus(-1, x)))), 0)");
+  }
+
+  public void testTeXIssue712l() {
+    checkFullForm(
+        " \\operatorname { log } _ { 2 } ^ { 3 } a + \\operatorname { log } _ { 2 } ^ { 3 } b + \\operatorname { log } _ { 2 } ^ { 3 } c \\leq 1", //
+        "LessEqual(Plus(Power(Log(2, a), 3), Power(Log(2, b), 3), Power(Log(2, c), 3)), 1)");
+  }
+
+  public void testTeXIssue712m() {
+    checkFullForm(
+        "64 ^ { \\frac { 1 } { 2 } } \\cdot 64 ^ { \\frac { 1 } { 3 } } \\cdot \\sqrt [ 6 ] { 6 }", //
+        "Times(Power(6, Rational(1, 6)), Power(64, Times(1, Rational(1,3))), Power(64, Times(1, Rational(1,2))))");
+  }
+
+  public void testTeXIssue712n() {
+    checkFullForm(//
+        "\\log x", //
+        "Log10(x)");
+  }
 
   public void check(String strEval, String strResult) {
     IExpr expr = texConverter.toExpression(strEval);
     assertEquals(expr.toString(), strResult);
+  }
+
+  public void checkFullForm(String strEval, String strResult) {
+    IExpr expr = texConverter.toExpression(strEval);
+    assertEquals(expr.fullFormString(), strResult);
   }
 
   public void checkEval(String strEval, String strResult) {

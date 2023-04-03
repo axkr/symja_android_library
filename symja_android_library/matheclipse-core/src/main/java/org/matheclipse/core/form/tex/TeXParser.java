@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.BuiltInDummy;
 import org.matheclipse.core.expression.F;
@@ -18,6 +19,8 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.Operator;
@@ -106,6 +109,7 @@ public class TeXParser {
       new BinaryOperator("+", "Plus", Precedence.PLUS, (lhs, rhs) -> F.Plus(lhs, rhs)), //
       new BinaryOperator("-", "Subtract", Precedence.PLUS, (lhs, rhs) -> F.Subtract(lhs, rhs)), //
       new BinaryOperator("*", "Times", Precedence.TIMES, (lhs, rhs) -> F.Times(lhs, rhs)), //
+      new BinaryOperator("⋅", "Times", Precedence.TIMES, (lhs, rhs) -> F.Times(lhs, rhs)), //
       // x multiplication sign
       new BinaryOperator("\u00d7", "Times", Precedence.TIMES, (lhs, rhs) -> F.Times(lhs, rhs)), //
       // InvisibleTimes
@@ -130,7 +134,7 @@ public class TeXParser {
   private static class Initializer {
 
     private static void init() {
-      UNICODE_OPERATOR_MAP = Config.TRIE_STRING2EXPR_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
+      UNICODE_OPERATOR_MAP = Config.TRIE_STRING2EXPR_BUILDER.withMatch(TrieMatch.EXACT).build();
       UNICODE_OPERATOR_MAP.put("\u2218", S.Degree);
       UNICODE_OPERATOR_MAP.put("\u00B0", S.Degree);
       UNICODE_OPERATOR_MAP.put("\u222b", S.Integrate);
@@ -142,13 +146,14 @@ public class TeXParser {
       UNICODE_OPERATOR_MAP.put("\u2149", F.CI); // double-struck italic letter j
       UNICODE_OPERATOR_MAP.put("\u2107", S.E); // euler's constant
 
-      FUNCTION_HEADER_MAP = Config.TRIE_STRING2EXPR_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
+      FUNCTION_HEADER_MAP = Config.TRIE_STRING2EXPR_BUILDER.withMatch(TrieMatch.EXACT).build();
       FUNCTION_HEADER_MAP.put("ln", S.Log);
+      FUNCTION_HEADER_MAP.put("log", S.Log10);
       FUNCTION_HEADER_MAP.put("lim", S.Limit);
 
       TrieBuilder<String, BinaryOperator, ArrayList<BinaryOperator>> binaryBuilder =
           TrieBuilder.create();
-      BINARY_OPERATOR_MAP = binaryBuilder.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
+      BINARY_OPERATOR_MAP = binaryBuilder.withMatch(TrieMatch.EXACT).build();
       for (int i = 0; i < BINARY_OPERATORS.length; i++) {
         String headStr = BINARY_OPERATORS[i].getOperatorString();
         BINARY_OPERATOR_MAP.put(headStr, BINARY_OPERATORS[i]);
@@ -156,7 +161,7 @@ public class TeXParser {
 
       TrieBuilder<String, PrefixOperator, ArrayList<PrefixOperator>> prefixBuilder =
           TrieBuilder.create();
-      PREFIX_OPERATOR_MAP = prefixBuilder.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
+      PREFIX_OPERATOR_MAP = prefixBuilder.withMatch(TrieMatch.EXACT).build();
       for (int i = 0; i < PREFIX_OPERATORS.length; i++) {
         String headStr = PREFIX_OPERATORS[i].getOperatorString();
         PREFIX_OPERATOR_MAP.put(headStr, PREFIX_OPERATORS[i]);
@@ -164,7 +169,7 @@ public class TeXParser {
 
       TrieBuilder<String, PostfixOperator, ArrayList<PostfixOperator>> postfixBuilder =
           TrieBuilder.create();
-      POSTFIX_OPERATOR_MAP = postfixBuilder.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
+      POSTFIX_OPERATOR_MAP = postfixBuilder.withMatch(TrieMatch.EXACT).build();
       for (int i = 0; i < POSTFIX_OPERATORS.length; i++) {
         String headStr = POSTFIX_OPERATORS[i].getOperatorString();
         POSTFIX_OPERATOR_MAP.put(headStr, POSTFIX_OPERATORS[i]);
@@ -219,6 +224,18 @@ public class TeXParser {
       if (lhs == null) {
         Node lhsNode = list.item(position[0]++);
         String name = lhsNode.getNodeName();
+        // if (name.equals("mi") || name.equals("mo")) {
+        // String text = lhsNode.getTextContent();
+        // PrefixOperator operator = PREFIX_OPERATOR_MAP.get(text);
+        // if (operator != null) {
+        // int currPrec = operator.getPrecedence();
+        // IExpr x = convert(list, position, end, null, currPrec);
+        // lhs = operator.createFunction(x);
+        // if (position[0] >= listSize) {
+        // return lhs;
+        // }
+        // }
+        // }
         if (name.equals("mo")) {
           String text = lhsNode.getTextContent();
           PrefixOperator operator = PREFIX_OPERATOR_MAP.get(text);
@@ -258,8 +275,7 @@ public class TeXParser {
               if (position[0] == listSize) {
                 return lhs;
               }
-            } else if (isNumericFunction
-                || (lhs.isBuiltInSymbol() && !(lhs instanceof BuiltInDummy)) || lhs.isFunction()) {
+            } else if (isNumericFunction || (lhs.isBuiltInSymbolID()) || lhs.isFunction()) {
               if (lhs.equals(S.Integrate)) {
                 ISymbol test = F.Dummy("test");
                 return integrate(list, position, test, test);
@@ -335,7 +351,7 @@ public class TeXParser {
         currPrec = Precedence.TIMES;
         IExpr rhs = convert(list, position, end, null, currPrec);
         // invisible times?
-        if (lhs.isAST(S.Log, 3) && lhs.second() == F.Slot1) {
+        if (!lhs.isFree(F.Slot1)) {
           // issue #712
           lhs = F.subs(lhs, F.Slot1, rhs);
           result = lhs;
@@ -355,19 +371,31 @@ public class TeXParser {
     return convertArgs(list, 0, list.getLength(), position);
   }
 
-  public IExpr convertArgs(NodeList list, int start, int end, int[] position) {
+  private IExpr convertArgs(NodeList list, int start, int end, int[] position) {
     IASTAppendable ast = F.Sequence();
-    for (int i = start; i < end; i++) {
-      Node temp = list.item(i);
-      IExpr ex = toExpr(temp);
-      ast.append(ex);
-    }
-    if (ast.size() == 2) {
-      return ast.arg1();
-    }
-    if (ast.size() > 1) {
-      if (ast.arg1().isBuiltInSymbol()) {
-        return F.unaryAST1(ast.arg1(), ast.arg2());
+    return convertArgs(ast, list, start, end);
+  }
+
+  private IExpr convertArgs(IASTAppendable ast, NodeList list, int start, int end) {
+    if (ast.isSequence()) {
+      for (int i = start; i < end; i++) {
+        Node temp = list.item(i);
+        IExpr ex = toExpr(temp);
+        ast.append(ex);
+      }
+      if (ast.argSize() == 1) {
+        return ast.arg1();
+      }
+      if (ast.argSize() == 2) {
+        if (ast.arg1().isBuiltInSymbol()) {
+          return F.unaryAST1(ast.arg1(), ast.arg2());
+        }
+      }
+    } else {
+      for (int i = start; i < end; i++) {
+        Node temp = list.item(i);
+        IExpr ex = toExpr(temp);
+        ast.append(ex);
       }
     }
     return ast;
@@ -541,7 +569,7 @@ public class TeXParser {
       if (text.contains(".") || text.contains("E")) {
         return F.num(text);
       }
-      return F.integer(text, 10);
+      return F.ZZ(text, 10);
     } catch (RuntimeException rex) {
       LOGGER.debug("TeXParser.mn() failed", rex);
     }
@@ -564,6 +592,42 @@ public class TeXParser {
 
   private IExpr mrow(Node node) {
     NodeList list = node.getChildNodes();
+    if (list.getLength() > 1) {
+      Node temp = list.item(0);
+      IExpr headExpr = toExpr(temp);
+      if (headExpr.isBuiltInSymbolID()) {
+        IBuiltInSymbol symbol = (IBuiltInSymbol) headExpr;
+
+        IEvaluator evaluator = symbol.getEvaluator();
+        if (evaluator instanceof IFunctionEvaluator) {
+          int[] expectedArgSize = ((IFunctionEvaluator) evaluator).expectedArgSize(null);
+          if (expectedArgSize != null && expectedArgSize[0] == 1) {
+            IExpr arg1 = toExpr(list.item(1));
+            if (list.getLength() == 2) {
+              return F.unaryAST1(headExpr, arg1);
+            }
+            int[] position = new int[] {1};
+            IExpr args = convert(list, position, null, 0);
+            return F.unaryAST1(headExpr, args);
+          }
+        }
+      }
+    }
+    IExpr dummySymbol = getDummySymbol(list);
+    if (dummySymbol.isPresent()) {
+      return dummySymbol;
+    }
+    int[] position = new int[] {0};
+    return convert(list, position, null, 0);
+  }
+
+  /**
+   * If the list contains only text symbols return a {@link BuiltInDummy} symbol.
+   * 
+   * @param list
+   * @return
+   */
+  private static IExpr getDummySymbol(NodeList list) {
     boolean isSymbol = true;
     for (int i = 0; i < list.getLength(); i++) {
       Node temp = list.item(i);
@@ -574,6 +638,7 @@ public class TeXParser {
       }
     }
     if (isSymbol) {
+      // generate a symbol name from the tokens
       StringBuilder buf = new StringBuilder();
       for (int i = 0; i < list.getLength(); i++) {
         Node temp = list.item(i);
@@ -581,14 +646,22 @@ public class TeXParser {
       }
       return F.$s(buf.toString());
     }
-    int[] position = new int[] {0};
-    return convert(list, position, null, 0);
+    return F.NIL;
   }
 
   private IExpr msqrt(NodeList list) {
     if (list.getLength() > 0) {
       Node temp = list.item(0);
       return F.Power(toExpr(temp), F.C1D2);
+    }
+    return F.NIL;
+  }
+
+  private IExpr mroot(NodeList list) {
+    if (list.getLength() == 2) {
+      IExpr base = toExpr(list.item(0));
+      IExpr expDenominator = toExpr(list.item(1));
+      return F.Power(base, F.Rational(F.C1, expDenominator));
     }
     return F.NIL;
   }
@@ -601,19 +674,35 @@ public class TeXParser {
       if (head.isBuiltInSymbol()) {
         ISymbol dummySymbol = F.Dummy("msubsup$" + counter++);
         IExpr arg2 = dummySymbol;
-        if (list.getLength() >= 2) {
-          Node arg1 = list.item(1);
-          IExpr a1 = toExpr(arg1);
-          if (list.getLength() == 3) {
-            IExpr a2 = toExpr(list.item(2));
-            arg2 = F.list(dummySymbol, a1, a2);
-          } else if (list.getLength() == 2) {
-            arg2 = F.list(dummySymbol, a1);
+        if (head.isBuiltInSymbolID() && head != S.Integrate) {
+          if (list.getLength() >= 2) {
+            Node arg1 = list.item(1);
+            IExpr a1 = toExpr(arg1);
+            if (list.getLength() == 3) {
+              IExpr a2 = toExpr(list.item(2));
+              if (head == S.Log10) {
+                head = S.Log;
+              }
+              return F.Power(F.binaryAST2(head, a1, F.Slot1), a2);
+            } else if (list.getLength() == 2) {
+              return F.binaryAST2(head, a1, F.Slot1);
+            }
+          }
+        } else {
+          if (list.getLength() >= 2) {
+            Node arg1 = list.item(1);
+            IExpr a1 = toExpr(arg1);
+            if (list.getLength() == 3) {
+              IExpr a2 = toExpr(list.item(2));
+              arg2 = F.list(dummySymbol, a1, a2);
+            } else if (list.getLength() == 2) {
+              arg2 = F.list(dummySymbol, a1);
+            }
           }
         }
         if (parentList != null) {
           while (position[0] < parentList.getLength()) {
-            if (head.equals(S.Integrate)) {
+            if (head == S.Integrate) {
               return integrate(parentList, position, dummySymbol, arg2);
             } else {
               IExpr arg1 = convert(parentList, position, null, Integer.MAX_VALUE);
@@ -670,7 +759,7 @@ public class TeXParser {
         }
         return F.Function(F.Limit(F.Slot1, a2));
       }
-      if (a1 == S.Log) {
+      if (a1 == S.Log10) {
         return F.binaryAST2(S.Log, a2, F.Slot1);
       }
       return F.binaryAST2(S.Subscript, a1, a2);
@@ -713,6 +802,8 @@ public class TeXParser {
         if (parentList != null && position[0] < parentList.getLength()) {
           IExpr arg1 = convert(parentList, position, null, Integer.MAX_VALUE);
           return F.binaryAST2(head, arg1, arg2);
+        } else {
+          return F.binaryAST2(head, F.Slot1, arg2);
         }
       }
     }
@@ -771,6 +862,8 @@ public class TeXParser {
       return mfrac(node.getChildNodes());
     } else if (name.equals("msqrt")) {
       return msqrt(node.getChildNodes());
+    } else if (name.equals("mroot")) {
+      return mroot(node.getChildNodes());
     } else if (name.equals("msub")) {
       return msub(node.getChildNodes());
     } else if (name.equals("msup")) {
@@ -789,6 +882,109 @@ public class TeXParser {
     return convert(list, position, null, 0);
   }
 
+  private static String preParse(String texStr, StringBuilder buf) {
+    char ch;
+    int i = 0;
+    int bracketLevel = 0;
+    StringBuilder eqCommand = null;
+    while (i < texStr.length()) {
+      ch = texStr.charAt(i);
+      if (ch == '{') {
+        bracketLevel++;
+      } else if (ch == '}') {
+        bracketLevel--;
+      }
+      if (ch == '\\' && i < texStr.length() - 1) {
+        // command
+        int commandStart = i;
+        StringBuilder command = new StringBuilder();
+        ch = texStr.charAt(++i);
+        while (Character.isLetter(ch) && i < texStr.length() - 1) {
+          command.append(ch);
+          ch = texStr.charAt(++i);
+        }
+
+        String commandStr = command.toString();
+        if (commandStr.equalsIgnoreCase("huge")//
+            || commandStr.equalsIgnoreCase("large") //
+            || commandStr.equalsIgnoreCase("small") //
+            || commandStr.equalsIgnoreCase("tiny") //
+        ) {
+          // ignore command
+          continue;
+        }
+        if (i < texStr.length() - 1) {
+          StringBuilder variable = new StringBuilder();
+          if (commandStr.equals("sin") || commandStr.equals("cos")) {
+            boolean isVariable = false;
+            while ((ch == ' ' || Character.isJavaIdentifierPart(ch))) {
+              if (ch != ' ') {
+                isVariable = true;
+              }
+              variable.append(ch);
+              if (i >= texStr.length() - 1) {
+                break;
+              }
+              ch = texStr.charAt(++i);
+            }
+            if (isVariable) {
+              buf.append("{");
+              buf.append(texStr.substring(commandStart, i));
+              buf.append("}");
+              continue;
+            }
+          }
+          if (commandStr.equals("operatorname")) {
+            // getCommand()
+          }
+          if (commandStr.equals("left")) {
+            if (ch == '.') {
+              // ignore command
+              i++;
+              continue;
+            }
+            if (ch == '|') {
+              buf.append("| {"); // simulate opening Abs()
+              i++;
+              continue;
+            }
+          }
+          if (commandStr.equals("right")) {
+            if (ch == '.') {
+              // ignore command
+              i++;
+              continue;
+            }
+            if (ch == '|') {
+              buf.append("} |"); // simulate closing Abs()
+              i++;
+              continue;
+            }
+          }
+        }
+        buf.append("\\" + command.toString());
+      } else if (bracketLevel == 0 && ch == '=' && i < texStr.length() - 1) {
+        int indexOf = texStr.indexOf('=', i + 1);
+        if (indexOf < 0 && eqCommand == null) {
+          eqCommand = new StringBuilder();
+          eqCommand.append("{");
+          eqCommand.append(buf.toString());
+          eqCommand.append("} = ");
+          eqCommand.append("{");
+          buf = eqCommand;
+        }
+        i++;
+      } else {
+        buf.append(ch);
+        i++;
+      }
+    }
+    if (eqCommand != null) {
+      buf.append("}");
+    }
+    return buf.toString();
+  }
+
   /**
    * Convert a tex math formula into a Symja expression. The SnuggleTeX engine first converts the
    * TeX expression in a MathML expression. This MathML expression is then converted to Symja.
@@ -801,8 +997,11 @@ public class TeXParser {
     SnuggleSession session = engine.createSession();
     session.getConfiguration().setFailingFast(true);
 
-    SnuggleInput input = new SnuggleInput("$$ " + texStr + " $$");
+    StringBuilder inputPass2 = new StringBuilder();
+    String preParsedInput = preParse(texStr, inputPass2);
+    SnuggleInput input = new SnuggleInput("$$ " + preParsedInput + " $$");
     try {
+
       if (session.parseInput(input)) {
         NodeList nodes = session.buildDOMSubtree();
         int[] position = new int[] {0};
@@ -833,6 +1032,8 @@ public class TeXParser {
       return mfrac(node.getChildNodes());
     } else if (name.equals("msqrt")) {
       return msqrt(node.getChildNodes());
+    } else if (name.equals("mroot")) {
+      return mroot(node.getChildNodes());
     } else if (name.equals("msub")) {
       return msub(node.getChildNodes());
     } else if (name.equals("msup")) {
