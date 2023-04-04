@@ -9,6 +9,7 @@ import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -904,10 +905,16 @@ public class TeXParser {
           ch = texStr.charAt(++i);
         }
         String commandStr = command.toString();
-        if (commandStr.equalsIgnoreCase("huge")//
-            || commandStr.equalsIgnoreCase("large") //
-            || commandStr.equalsIgnoreCase("small") //
-            || commandStr.equalsIgnoreCase("tiny") //
+        if (commandStr.equals("Huge")//
+            || commandStr.equals("huge") //
+            || commandStr.equals("LARGE") //
+            || commandStr.equals("Large") //
+            || commandStr.equals("large") //
+            || commandStr.equals("normalsize") //
+            || commandStr.equals("small") //
+            || commandStr.equals("footnotesize") //
+            || commandStr.equals("scriptsize") //
+            || commandStr.equals("tiny") //
         ) {
           // ignore command
           continue;
@@ -1030,11 +1037,14 @@ public class TeXParser {
       }
       List<InputError> errors = session.getErrors();
       for (int i = 0; i < errors.size(); i++) {
-        LOGGER.log(fEngine.getLogLevel(), errors.get(i));
+        // LOGGER.log(fEngine.getLogLevel(), errors.get(i));
+        IOFunctions.printMessage(S.ToExpression, "error",
+            F.List(F.stringx(errors.get(i).toString())));
       }
     } catch (Exception e) {
       e.printStackTrace();
-      LOGGER.debug("TeXParser.toExpression() failed", e);
+      // `1`.
+      IOFunctions.printMessage(S.ToExpression, "error", F.List(F.stringx(texStr)));
     }
     return S.$Aborted;
   }

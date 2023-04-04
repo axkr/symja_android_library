@@ -356,6 +356,15 @@ public class TeXConverterTestCase extends TestCase {
         "Log10(x)");
   }
 
+  public void testTeXElementOf() {
+    checkFullForm(//
+        "\\beta \\in \\reals", //
+        "Element(β, Reals)");
+    checkFullForm(//
+        "\\beta \\in \\Reals", //
+        "Element(β, Reals)");
+  }
+
   public void check(String strEval, String strResult) {
     IExpr expr = texConverter.toExpression(strEval);
     assertEquals(expr.toString(), strResult);

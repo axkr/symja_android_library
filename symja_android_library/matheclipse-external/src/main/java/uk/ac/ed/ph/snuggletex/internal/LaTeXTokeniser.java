@@ -950,28 +950,12 @@ public final class LaTeXTokeniser {
         }
         CharSequence extract = nextToken.getSlice().extract();
         if (extract.length() > 4) {
-          // remove braces left and right
+          // remove braces left and right from operatorname { texName }
           String texName = extract.subSequence(1, extract.length() - 1).toString().trim();
-          // System.out.println(texName);
-          BuiltinCommand builtinCommandByTeXName =
-              sessionContext.getBuiltinCommandByTeXName(texName);
-          if (builtinCommandByTeXName != null) {
-            commandName = texName;
-          } else {
-            BuiltinCommand simpleMathCommand = tokenizerCommandMap.get(texName);
-            if (simpleMathCommand == null) {
-              simpleMathCommand = new BuiltinCommand(texName, CommandType.SIMPLE, false, 0,
-                  Globals.MATH_MODE_ONLY, null,
-                  SnugglePackage.makeInterpretationMap(new MathFunctionInterpretation(texName)),
-                  SnugglePackage.interpretableSimpleMathBuilder, null, null);
-              tokenizerCommandMap.put(texName, simpleMathCommand);
-            }
-            return finishBuiltinCommand(simpleMathCommand);
-          }
+          return finishTokenCommand(texName);
         }
         // issue #712 end
       }
-
 
       /* It's a built-in or user-defined command. */
       result = finishCommand(commandName);
@@ -1128,11 +1112,32 @@ public final class LaTeXTokeniser {
       if (builtinCommand != null) {
         result = finishBuiltinCommand(builtinCommand);
       } else {
-        /* Undefined command */
-        result = createError(CoreErrorCode.TTEC00, startTokenIndex, position, commandName);
+        return finishTokenCommand(commandName);
+        // /* Undefined command */
+        // result = createError(CoreErrorCode.TTEC00, startTokenIndex, position, commandName);
       }
     }
     return result;
+  }
+
+  /**
+   * Use {@link #tokenizerCommandMap} instead o the global command map to create
+   * {@link MathFunctionInterpretation} while parsing.
+   * 
+   * @param commandName
+   * @return
+   * @throws SnuggleParseException
+   */
+  private FlowToken finishTokenCommand(final String commandName) throws SnuggleParseException {
+    BuiltinCommand simpleMathCommand = tokenizerCommandMap.get(commandName);
+    if (simpleMathCommand == null) {
+      simpleMathCommand = new BuiltinCommand(commandName, CommandType.SIMPLE, false, 0,
+          Globals.MATH_MODE_ONLY, null,
+          SnugglePackage.makeInterpretationMap(new MathFunctionInterpretation(commandName)),
+          SnugglePackage.interpretableSimpleMathBuilder, null, null);
+      tokenizerCommandMap.put(commandName, simpleMathCommand);
+    }
+    return finishBuiltinCommand(simpleMathCommand);
   }
 
   /**
