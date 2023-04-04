@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ import uk.ac.ed.ph.snuggletex.definitions.BuiltinCommand;
 import uk.ac.ed.ph.snuggletex.definitions.BuiltinEnvironment;
 import uk.ac.ed.ph.snuggletex.definitions.Command;
 import uk.ac.ed.ph.snuggletex.definitions.CommandOrEnvironment;
+import uk.ac.ed.ph.snuggletex.definitions.CommandType;
 import uk.ac.ed.ph.snuggletex.definitions.CoreErrorCode;
 import uk.ac.ed.ph.snuggletex.definitions.CorePackageDefinitions;
 import uk.ac.ed.ph.snuggletex.definitions.Globals;
@@ -87,6 +89,11 @@ public final class LaTeXTokeniser {
 
   /** Provides access to the current {@link SessionContext}. */
   private final SessionContext sessionContext;
+
+
+  /** Map of built-in commands, keyed on name */
+  private final Map<String, BuiltinCommand> tokenizerCommandMap =
+      new HashMap<String, BuiltinCommand>();
 
   // -----------------------------------------
   // Tokenisation state
@@ -951,11 +958,15 @@ public final class LaTeXTokeniser {
           if (builtinCommandByTeXName != null) {
             commandName = texName;
           } else {
-            BuiltinCommand addSimpleMathCommand =
-                CorePackageDefinitions.getPackage().addSimpleMathCommand(texName,
-                new MathFunctionInterpretation(texName),
-                SnugglePackage.interpretableSimpleMathBuilder);
-            return finishBuiltinCommand(addSimpleMathCommand);
+            BuiltinCommand simpleMathCommand = tokenizerCommandMap.get(texName);
+            if (simpleMathCommand == null) {
+              simpleMathCommand = new BuiltinCommand(texName, CommandType.SIMPLE, false, 0,
+                  Globals.MATH_MODE_ONLY, null,
+                  SnugglePackage.makeInterpretationMap(new MathFunctionInterpretation(texName)),
+                  SnugglePackage.interpretableSimpleMathBuilder, null, null);
+              tokenizerCommandMap.put(texName, simpleMathCommand);
+            }
+            return finishBuiltinCommand(simpleMathCommand);
           }
         }
         // issue #712 end
