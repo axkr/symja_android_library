@@ -885,14 +885,14 @@ public class TeXParser {
   private static String preParse(String texStr, StringBuilder buf) {
     char ch;
     int i = 0;
-    int bracketLevel = 0;
+    int curlyBracesLevel = 0;
     StringBuilder eqCommand = null;
     while (i < texStr.length()) {
       ch = texStr.charAt(i);
       if (ch == '{') {
-        bracketLevel++;
+        curlyBracesLevel++;
       } else if (ch == '}') {
-        bracketLevel--;
+        curlyBracesLevel--;
       }
       if (ch == '\\' && i < texStr.length() - 1) {
         // command
@@ -903,7 +903,6 @@ public class TeXParser {
           command.append(ch);
           ch = texStr.charAt(++i);
         }
-
         String commandStr = command.toString();
         if (commandStr.equalsIgnoreCase("huge")//
             || commandStr.equalsIgnoreCase("large") //
@@ -913,11 +912,57 @@ public class TeXParser {
           // ignore command
           continue;
         }
+        if (commandStr.equals("left")) {
+          if (ch == '.') {
+            // ignore command
+            i++;
+            continue;
+          }
+          if (ch == '|') {
+            buf.append("| {"); // simulate opening Abs()
+            i++;
+            continue;
+          }
+        } else if (commandStr.equals("right")) {
+          if (ch == '.') {
+            // ignore command
+            i++;
+            continue;
+          }
+          if (ch == '|') {
+            buf.append("} |"); // simulate closing Abs()
+            i++;
+            continue;
+          }
+        }
         if (i < texStr.length() - 1) {
-          StringBuilder variable = new StringBuilder();
-          if (commandStr.equals("sin") || commandStr.equals("cos")) {
+          if (commandStr.equals("log") && texStr.charAt(i) == '_') {
+            StringBuilder number = new StringBuilder();
+            ch = texStr.charAt(++i);
+            int numberStart = i - 1;
+            while (Character.isDigit(ch)) {
+              number.append(ch);
+              if (i >= texStr.length() - 1) {
+                break;
+              }
+              ch = texStr.charAt(++i);
+            }
+            if (number.length() > 1) {
+              String numStr = number.toString();
+              buf.append(texStr.substring(commandStart, numberStart + 1));
+              buf.append(numStr.charAt(0));
+              buf.append("{");
+              buf.append(numStr.substring(1));
+              buf.append("}");
+            } else {
+              buf.append(texStr.substring(commandStart, i));
+            }
+            continue;
+          } else if (commandStr.equals("sin") || commandStr.equals("cos")) {
+            // TODO make this for all numeric builtin commands?
+            StringBuilder variable = new StringBuilder();
             boolean isVariable = false;
-            while ((ch == ' ' || Character.isJavaIdentifierPart(ch))) {
+            while (ch == ' ' || Character.isJavaIdentifierPart(ch)) {
               if (ch != ' ') {
                 isVariable = true;
               }
@@ -937,33 +982,9 @@ public class TeXParser {
           if (commandStr.equals("operatorname")) {
             // getCommand()
           }
-          if (commandStr.equals("left")) {
-            if (ch == '.') {
-              // ignore command
-              i++;
-              continue;
-            }
-            if (ch == '|') {
-              buf.append("| {"); // simulate opening Abs()
-              i++;
-              continue;
-            }
-          }
-          if (commandStr.equals("right")) {
-            if (ch == '.') {
-              // ignore command
-              i++;
-              continue;
-            }
-            if (ch == '|') {
-              buf.append("} |"); // simulate closing Abs()
-              i++;
-              continue;
-            }
-          }
         }
         buf.append("\\" + command.toString());
-      } else if (bracketLevel == 0 && ch == '=' && i < texStr.length() - 1) {
+      } else if (curlyBracesLevel == 0 && ch == '=' && i < texStr.length() - 1) {
         int indexOf = texStr.indexOf('=', i + 1);
         if (indexOf < 0 && eqCommand == null) {
           eqCommand = new StringBuilder();
@@ -999,7 +1020,7 @@ public class TeXParser {
 
     StringBuilder inputPass2 = new StringBuilder();
     String preParsedInput = preParse(texStr, inputPass2);
-    SnuggleInput input = new SnuggleInput("$$ " + preParsedInput + " $$");
+    SnuggleInput input = new SnuggleInput("\\[ " + preParsedInput + " \\]");
     try {
 
       if (session.parseInput(input)) {

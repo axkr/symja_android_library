@@ -198,6 +198,8 @@ public class TeXConverterTestCase extends TestCase {
   }
 
   public void testTeX029() {
+    check("\\log_2345+3 ", //
+        "3+Log(2,345)");
     check("\\ln(x)", //
         "Log(x)");
   }
@@ -294,15 +296,16 @@ public class TeXConverterTestCase extends TestCase {
   // "Limit(a,x->3,Direction->1)");
   // }
 
-  public void testTeXIssue712g() {
-    // checkFullForm(
-    // "\\cos{x} ( \\sin{x} + \\cos{x})", //
-    // "Cos(x(Sin(Plus(x, Cos(x)))))");
+  public void testTeXTimesSinCos() {
+    checkFullForm("\\cos{x} ( \\sin{x} + \\cos{x})", //
+        "Cos(x(Sin(Plus(x, Cos(x)))))");
     check("f ( x ) = 2 \\cos x ( \\sin x + \\cos x)", //
         "f(x)==2*Cos(x)*(Cos(x)+Sin(x))");
     check(
         "f ( x ) = 2 \\operatorname { cos } x ( \\operatorname { sin } x + \\operatorname { cos } x)", //
         "f(x)==2*Cos(x(Sin(x+Cos(x))))");
+    check("\\sin(\\cos \\theta)", //
+        "Sin(Cos(θ))");
   }
 
   public void testTeXIssue712h() {
@@ -330,6 +333,12 @@ public class TeXConverterTestCase extends TestCase {
   }
 
   public void testTeXIssue712l() {
+    checkFullForm(
+        "\\operatorname{GCD}(3,5)", //
+        "GCD(3, 5)");
+    checkFullForm(
+        "\\operatorname{gcd}(3,5)", //
+        "GCD(3, 5)");
     checkFullForm(
         " \\operatorname { log } _ { 2 } ^ { 3 } a + \\operatorname { log } _ { 2 } ^ { 3 } b + \\operatorname { log } _ { 2 } ^ { 3 } c \\leq 1", //
         "LessEqual(Plus(Power(Log(2, a), 3), Power(Log(2, b), 3), Power(Log(2, c), 3)), 1)");
