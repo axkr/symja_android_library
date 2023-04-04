@@ -1,8 +1,3 @@
-/*
- * $Id: CorePackageDefinitions.java 548 2010-04-15 16:10:35Z davemckain $
- *
- * Copyright (c) 2010, The University of Edinburgh. All Rights Reserved
- */
 package uk.ac.ed.ph.snuggletex.definitions;
 
 import static uk.ac.ed.ph.snuggletex.definitions.Globals.ALL_MODES;
@@ -88,7 +83,6 @@ import uk.ac.ed.ph.snuggletex.tokens.FlowToken;
  * </ul>
  *
  * @author David McKain
- * @version $Revision: 548 $
  */
 public final class CorePackageDefinitions {
 
@@ -413,11 +407,6 @@ public final class CorePackageDefinitions {
         new MathVariantMapHandler(MathVariantMaps.DOUBLE_STRUCK), null);
     corePackage.addComplexCommandSameArgMode("mathfrak", false, 1, MATH_MODE_ONLY,
         new MathVariantMapHandler(MathVariantMaps.FRAKTUR), null);
-
-    // issue #712 start
-    corePackage.addSimpleMathCommand("GCD", new MathFunctionInterpretation("gcd"));
-    corePackage.addSimpleMathCommand("LCM", new MathFunctionInterpretation("lcm"));
-    // issue #712 end
 
     /* Ellipses (Math-mode only) */
     corePackage.addSimpleMathCommand("cdots", new MathIdentifierInterpretation(MathMLSymbol.CDOTS));

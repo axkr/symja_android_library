@@ -19,6 +19,7 @@ import uk.ac.ed.ph.snuggletex.ErrorCode;
 import uk.ac.ed.ph.snuggletex.InputError;
 import uk.ac.ed.ph.snuggletex.SnuggleInput;
 import uk.ac.ed.ph.snuggletex.SnuggleLogicException;
+import uk.ac.ed.ph.snuggletex.SnugglePackage;
 import uk.ac.ed.ph.snuggletex.definitions.BuiltinCommand;
 import uk.ac.ed.ph.snuggletex.definitions.BuiltinEnvironment;
 import uk.ac.ed.ph.snuggletex.definitions.Command;
@@ -35,6 +36,7 @@ import uk.ac.ed.ph.snuggletex.internal.WorkingDocument.SourceContext;
 import uk.ac.ed.ph.snuggletex.internal.util.ArrayListStack;
 import uk.ac.ed.ph.snuggletex.semantics.Interpretation;
 import uk.ac.ed.ph.snuggletex.semantics.InterpretationType;
+import uk.ac.ed.ph.snuggletex.semantics.MathFunctionInterpretation;
 import uk.ac.ed.ph.snuggletex.semantics.MathIdentifierInterpretation;
 import uk.ac.ed.ph.snuggletex.semantics.MathNumberInterpretation;
 import uk.ac.ed.ph.snuggletex.tokens.ArgumentContainerToken;
@@ -948,6 +950,12 @@ public final class LaTeXTokeniser {
               sessionContext.getBuiltinCommandByTeXName(texName);
           if (builtinCommandByTeXName != null) {
             commandName = texName;
+          } else {
+            BuiltinCommand addSimpleMathCommand =
+                CorePackageDefinitions.getPackage().addSimpleMathCommand(texName,
+                new MathFunctionInterpretation(texName),
+                SnugglePackage.interpretableSimpleMathBuilder);
+            return finishBuiltinCommand(addSimpleMathCommand);
           }
         }
         // issue #712 end
