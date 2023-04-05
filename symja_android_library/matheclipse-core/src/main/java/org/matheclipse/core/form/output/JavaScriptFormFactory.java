@@ -669,9 +669,12 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
   }
 
   private void convertLogisticSigmoid(final IAST function, final StringBuilder buf) {
-    IExpr arg1 = function.arg1();
+    // wait for releasing: https://github.com/paulmasson/math/issues/33
+    // buf.append("logisticSigmoid(");
+    // convertInternal(buf, function.arg1());
+    // buf.append(")");
     buf.append("div(1,add(1,exp(neg(");
-    convertInternal(buf, arg1);
+    convertInternal(buf, function.arg1());
     buf.append("))))");
   }
 

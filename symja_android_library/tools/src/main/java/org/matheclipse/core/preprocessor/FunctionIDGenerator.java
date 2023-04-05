@@ -23,6 +23,7 @@ public class FunctionIDGenerator {
           "/**\n" //
           + " * Generated with class <code>org.matheclipse.core.preprocessor.FunctionIDGenerator</code>\n"
           + " * Don't change manually.\n"//
+          + " * Contains int IDs for every instanceof {@link BuiltInSymbol}).\n"//
           + //
           " */\n" + //
           "public class ID {\n";

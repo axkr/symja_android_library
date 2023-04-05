@@ -154,20 +154,6 @@ public class Pods {
   private static com.google.common.base.Supplier<Trie<String, ArrayList<IPod>>> LAZY_SOUNDEX =
       Suppliers.memoize(SOUNDEX_SUPPLIER);
 
-  static final String JSXGRAPH_IFRAME = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
-          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + "\n"
-          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>JSXGraph</title>\n" + "\n"
-          + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n" + "\n"
-          + "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraph.css\" />\n"
-          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js\"></script>\n"
-          + "<script src=\"https://cdn.jsdelivr.net/npm/jsxgraph@1.4.6/distrib/jsxgraphcore.js\"\n"
-          + "        type=\"text/javascript\"></script>\n" + "\n"
-          + "<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
-          + "<script>\n" + "`1`\n" + "</script>\n" + "</div>\n" + "\n" + "</body>\n" + "</html>";
-
   protected static final String PLOTLY_IFRAME = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
           + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
