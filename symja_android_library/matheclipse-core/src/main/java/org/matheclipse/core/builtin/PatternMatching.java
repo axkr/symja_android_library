@@ -2230,14 +2230,37 @@ public final class PatternMatching {
 
       IAST lhsAST = Validate.checkASTUpRuleType(leftHandSide);
       boolean found = false;
+      boolean putDownRule = false;
       if (lhsAST.head().equals(tagSetSymbol)) {
         found = true;
       } else {
         if (lhsAST.isCondition() && lhsAST.first().isAST()) {
-          found = isTagAvailable(tagSetSymbol, (IAST) lhsAST.first());
+          if (lhsAST.first().head().equals(tagSetSymbol)) {
+            putDownRule = true;
+          } else {
+            found = isTagAvailable(tagSetSymbol, (IAST) lhsAST.first());
+          }
         } else {
-          found = isTagAvailable(tagSetSymbol, lhsAST);
+          if (lhsAST.head().equals(tagSetSymbol)) {
+            putDownRule = true;
+          } else {
+            found = isTagAvailable(tagSetSymbol, lhsAST);
+          }
         }
+      }
+      if (putDownRule) {
+        boolean pMode = packageMode;
+        if (!packageMode && tagSetSymbol.isProtected()) {
+          // Tag `1` in `2` is Protected.
+          IOFunctions.printMessage(tagSymbol.topHead(), "write", F.list(tagSetSymbol, leftHandSide),
+              EvalEngine.get());
+          throw new FailedException();
+        }
+        pMode = true;
+        result[0] =
+            tagSetSymbol.putDownRule(flags[0] | IPatternMatcher.SET, false, lhsAST, rightHandSide,
+                pMode);
+        return result;
       }
       if (found) {
         result[0] =

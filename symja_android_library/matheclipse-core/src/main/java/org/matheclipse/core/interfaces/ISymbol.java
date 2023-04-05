@@ -725,10 +725,10 @@ public interface ISymbol extends IExpr {
    * @param leftHandSide
    * @param rightHandSide
    * @param packageMode <code>true</code> if we are on &quot;package mode&quot;
-   * @return
+   * @return <code>null</code> if no pattern matcher was generated
    * @see PatternMap#DEFAULT_RULE_PRIORITY
    */
-  public void putDownRule(final int setSymbol, boolean equalRule, IExpr leftHandSide,
+  public IPatternMatcher putDownRule(final int setSymbol, boolean equalRule, IExpr leftHandSide,
       IExpr rightHandSide, boolean packageMode);
 
   /**
@@ -742,10 +742,10 @@ public interface ISymbol extends IExpr {
    * @param rightHandSide
    * @param priority the priority of the rule
    * @param packageMode <code>true</code> if we are on &quot;package mode&quot;
-   * @return
+   * @return <code>null</code> if no pattern matcher was generated
    * @see PatternMap#DEFAULT_RULE_PRIORITY
    */
-  public void putDownRule(final int setSymbol, boolean equalRule, IExpr leftHandSide,
+  public IPatternMatcher putDownRule(final int setSymbol, boolean equalRule, IExpr leftHandSide,
       IExpr rightHandSide, int priority, boolean packageMode);
 
   /**
@@ -766,7 +766,7 @@ public interface ISymbol extends IExpr {
    * @param equalRule <code>true</code> if the leftHandSide could be matched with equality
    * @param leftHandSide
    * @param rightHandSide
-   * @return
+   * @return <code>null</code> if no pattern matcher was generated
    * @see PatternMap#DEFAULT_RULE_PRIORITY
    */
   public IPatternMatcher putUpRule(final int setSymbol, boolean equalRule, IAST leftHandSide,
@@ -782,7 +782,7 @@ public interface ISymbol extends IExpr {
    * @param leftHandSide
    * @param rightHandSide
    * @param priority the priority of the rule
-   * @return
+   * @return <code>null</code> if no pattern matcher was generated
    * @see PatternMap#DEFAULT_RULE_PRIORITY
    */
   public IPatternMatcher putUpRule(final int setSymbol, final boolean equalRule,

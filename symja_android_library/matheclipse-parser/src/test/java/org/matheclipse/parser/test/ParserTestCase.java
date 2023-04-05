@@ -781,4 +781,14 @@ class ParserTestCase {
     ASTNode obj = p.parse("x \\[Function] (x^3)");
     assertEquals("Function(x, Power(x, 3))", obj.toString());
   }
+
+  @Test
+  void testParser83() {
+    Parser p = new Parser();
+    ASTNode obj = p.parse(
+        "ProductLog/:ProductLog[k_,z_]/;NumericQ[k]&&!IntegerQ[k]:=WrightOmega[Log[z]+2 Pi I k]");
+    assertEquals(
+        "TagSetDelayed(ProductLog, Condition(ProductLog(k_, z_), And(NumericQ(k), Not(IntegerQ(k)))), WrightOmega(Plus(Log(z), Times(Times(Times(2, Pi), I), k))))",
+        obj.toString());
+  }
 }

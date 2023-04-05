@@ -860,9 +860,9 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final void putDownRule(final int setSymbol, final boolean equalRule,
+  public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule,
       final IExpr leftHandSide, final IExpr rightHandSide, boolean packageMode) {
-    putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide,
+    return putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide,
         IPatternMap.DEFAULT_RULE_PRIORITY, packageMode);
   }
 
@@ -880,7 +880,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final void putDownRule(final int setSymbol, final boolean equalRule,
+  public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule,
       final IExpr leftHandSide, final IExpr rightHandSide, final int priority,
       boolean packageMode) {
     if (!packageMode) {
@@ -892,7 +892,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     if (fRulesData == null) {
       fRulesData = new RulesData();
     }
-    fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
+    return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
   }
 
   /** {@inheritDoc} */

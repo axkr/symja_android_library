@@ -845,15 +845,15 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final void putDownRule(int setSymbol, boolean equalRule, IExpr leftHandSide,
+  public final IPatternMatcher putDownRule(int setSymbol, boolean equalRule, IExpr leftHandSide,
       IExpr rightHandSide, boolean packageMode) {
-    putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide,
+    return putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide,
         IPatternMap.DEFAULT_RULE_PRIORITY, packageMode);
   }
 
   /** {@inheritDoc} */
   @Override
-  public final void putDownRule(int setSymbol, boolean equalRule, IExpr leftHandSide,
+  public final IPatternMatcher putDownRule(int setSymbol, boolean equalRule, IExpr leftHandSide,
       IExpr rightHandSide, int priority, boolean packageMode) {
     if (!packageMode) {
       if (isLocked(packageMode)) {
@@ -863,12 +863,12 @@ public class Symbol implements ISymbol, Serializable {
     }
     if (leftHandSide.isSymbol()) {
       assignValue(rightHandSide, false);
-      return;
+      return null;
     }
     if (fRulesData == null) {
       fRulesData = new RulesData();
     }
-    fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
+    return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
   }
 
   /** {@inheritDoc} */

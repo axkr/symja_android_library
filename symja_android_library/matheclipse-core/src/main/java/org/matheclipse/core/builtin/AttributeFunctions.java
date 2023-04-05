@@ -294,7 +294,8 @@ public class AttributeFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IASTMutable mutable = ast.copyAST();
       for (int i = 1; i < ast.size(); i++) {
-        IExpr x = Validate.checkIdentifierHoldPattern(ast.get(i), ast, engine);
+        IExpr expr = ast.get(i);
+        IExpr x = Validate.checkIdentifierHoldPattern(expr, ast, engine);
         if (x.isNIL()) {
           return F.NIL;
         }
@@ -326,13 +327,13 @@ public class AttributeFunctions {
       if (Config.UNPROTECT_ALLOWED) {
         IASTMutable mutable = ast.copyAST();
         for (int i = 1; i < ast.size(); i++) {
-          IExpr x = Validate.checkIdentifierHoldPattern(ast.get(i), ast, engine);
+          IExpr expr = ast.get(i);
+          IExpr x = Validate.checkIdentifierHoldPattern(expr, ast, engine);
           if (x.isNIL()) {
             return F.NIL;
           }
           mutable.set(i, x);
         }
-
         final IASTAppendable result = F.ListAlloc(mutable.size());
         mutable.forEach(x -> appendUnprotected(result, x));
         return result;
