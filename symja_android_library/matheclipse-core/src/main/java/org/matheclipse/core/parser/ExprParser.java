@@ -1126,7 +1126,7 @@ public class ExprParser extends Scanner {
     initialize(expression);
     if (fToken == TT_EOF) {
       // empty expression string or only a comment available in the string
-      return F.Null;
+      return S.Null;
     }
     final IExpr temp = parseExpression();
     if (fToken != TT_EOF) {

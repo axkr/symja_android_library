@@ -1,32 +1,12 @@
-/*
- * Copyright 2005-2008 Axel Kramer (axelclk@gmail.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
- */
-package org.matheclipse.parser.client;
+package org.matheclipse.core.form.tex;
 
-import java.util.List;
-import java.util.Stack;
-import org.matheclipse.parser.client.operator.Operator;
+import org.matheclipse.parser.client.Characters;
 
-public abstract class Scanner {
+public abstract class TeXScanner {
 
   /** Token type: End-of_File */
   protected static final int TT_EOF = 0;
 
-  /** Token type: opening bracket for associations */
-  protected static final int TT_ASSOCIATION_OPEN = 10;
-
-  /** Token type: closing bracket for associations */
-  protected static final int TT_ASSOCIATION_CLOSE = 11;
 
   /** Token type: opening bracket for function arguments */
   protected static final int TT_ARGUMENTS_OPEN = 12;
@@ -46,23 +26,14 @@ public abstract class Scanner {
   /** Token type: closing curly braces '}' for ending lists */
   protected static final int TT_LIST_CLOSE = 17;
 
-  /** Token type: opening brackets for starting the &quot;index part&quot; of an expression */
-  protected static final int TT_PARTOPEN = 18;
-
-  /** Token type: closing brackets for ending the &quot;index part&quot; of an expression */
-  protected static final int TT_PARTCLOSE = 19;
-
-  /** Token type: operator ';;' */
-  protected static final int TT_SPAN = 30;
-
   /** Token type: operator found in input string */
-  protected static final int TT_OPERATOR = 31;
+  // protected static final int TT_OPERATOR = 31;
 
   /** ',' operator */
   protected static final int TT_COMMA = 134;
 
   /** '%' operator */
-  protected static final int TT_PERCENT = 135;
+  // protected static final int TT_PERCENT = 135;
 
   /** Token type: string surrounded by &quot;....&quot; */
   protected static final int TT_STRING = 136;
@@ -74,25 +45,10 @@ public abstract class Scanner {
   protected static final int TT_DIGIT = 138;
 
   /** Token type: slot # */
-  protected static final int TT_SLOT = 140;
-
-  /** Token type: slot sequence ## */
-  protected static final int TT_SLOTSEQUENCE = 141;
+  // protected static final int TT_SLOT = 140;
 
   /** Token type: pattern '_' */
   protected static final int TT_BLANK = 142;
-
-  /** Token type: pattern '__' */
-  protected static final int TT_BLANK_BLANK = 143;
-
-  /** Token type: pattern '___' */
-  protected static final int TT_BLANK_BLANK_BLANK = 144;
-
-  /** Token type: pattern '_.' */
-  protected static final int TT_BLANK_OPTIONAL = 145;
-
-  /** Token type: pattern '_:' */
-  protected static final int TT_BLANK_COLON = 146;
 
   /** Token type: pattern ''' (single apostrophe) for writing derivatives */
   protected static final int TT_DERIVATIVE = 147;
@@ -103,6 +59,22 @@ public abstract class Scanner {
    * nodes has depth <code>0</code>. Otherwise the newline is scanned like a whitespace character.
    */
   protected static final int TT_NEWLINE = 150;
+
+  /** Token type: TeX command name */
+  protected static final int TT_COMMAND = 151;
+
+  /** Token type: single backslash character */
+  protected static final int TT_BACKSLASH = 152;
+
+  protected static final int TT_DOUBLE_BACKSLASH = 153;
+
+  protected static final int TT_BEGIN = 154;
+
+  protected static final int TT_END = 155;
+
+  protected static final int TT_CHARACTER = 156;
+
+  protected static final int TT_AMPERSAND = 157;
 
   // ----------------optimized identifier management------------------
   private static final String string_a = "a", string_b = "b", string_c = "c", string_d = "d",
@@ -123,173 +95,6 @@ public abstract class Scanner {
       var_r = "$r", var_s = "$s", var_t = "$t", var_u = "$u", var_v = "$v", var_w = "$w",
       var_x = "$x", var_y = "$y", var_z = "$z";
 
-  /**
-   * Simple bracket balancer for pairs of &quot;( )&quot;, &quot;[ ]&quot;, &quot;{ }&quot;
-   * brackets.
-   *
-   * <p>
-   * Doesn't work for comments or strings at the moment.
-   *
-   * @param sourceCode the source which should be checked for balanced brackets
-   * @return the resulting String which can close the "open brackets" or <code>null</code> if the
-   *         brackets are unbalanced.
-   */
-  public static String balanceCode(CharSequence sourceCode) {
-    Stack<Character> openBracketStack = new Stack<Character>();
-
-    for (int j = 0; j < sourceCode.length(); j++) {
-      char ch = sourceCode.charAt(j);
-      switch (ch) {
-        case '{':
-        case '(':
-        case '[':
-          openBracketStack.push(ch);
-          break;
-        case '}':
-          if (openBracketStack.isEmpty()) {
-            return null;
-          }
-          ch = openBracketStack.pop();
-          if (!(ch == '{')) {
-            return null;
-          }
-          break;
-        case ')':
-          if (openBracketStack.isEmpty()) {
-            return null;
-          }
-          ch = openBracketStack.pop();
-          if (!(ch == '(')) {
-            return null;
-          }
-          break;
-        case ']':
-          if (openBracketStack.isEmpty()) {
-            return null;
-          }
-          ch = openBracketStack.pop();
-          if (!(ch == '[')) {
-            return null;
-          }
-          break;
-        default:
-          // do nothing
-      }
-    }
-    if (!openBracketStack.isEmpty()) {
-      StringBuilder builder = new StringBuilder();
-      char ch = 0;
-      while (!openBracketStack.isEmpty()) {
-        ch = openBracketStack.pop();
-        switch (ch) {
-          case '{':
-            builder.append('}');
-            break;
-          case '(':
-            builder.append(')');
-            break;
-          case '[':
-            builder.append(']');
-            break;
-        }
-      }
-      return builder.toString();
-    }
-    return "";
-  }
-
-  /**
-   * Call method <code>balanceCode()</code>, and if missing closing &quot;( )&quot;, &quot;[
-   * ]&quot;, &quot;{ }&quot; brackets are found, append them to the end of <code>sourceCode</code>.
-   *
-   * @param sourceCode the (unbalanced) source code string
-   * @return
-   */
-  public static String appendMissingBrackets(String sourceCode) {
-    String balanceCode = balanceCode(sourceCode);
-    if (balanceCode != null && balanceCode.length() > 0) {
-      return sourceCode + balanceCode;
-    }
-    return sourceCode;
-  }
-
-  /**
-   *
-   *
-   * <ul>
-   * <li><code>0</code> - means all bracket levels are balanced
-   * <li><code>-1</code> - means a closing bracket is missing
-   * <li><code>1</code> - means the brackets are not balanced brackets
-   * </ul>
-   *
-   * @param sourceCode
-   * @return
-   */
-  public static int isBalancedCode(CharSequence sourceCode) {
-    Stack<Character> openBracketStack = new Stack<Character>();
-
-    int length = sourceCode.length();
-    for (int j = 0; j < length; j++) {
-      char ch = sourceCode.charAt(j);
-      switch (ch) {
-        case '{':
-        case '(':
-        case '[':
-          openBracketStack.push(ch);
-          break;
-        case '<':
-          if (j < length - 1 && sourceCode.charAt(j + 1) == '|') {
-            openBracketStack.push(ch);
-          }
-          break;
-        case '}':
-          if (openBracketStack.isEmpty()) {
-            return 1;
-          }
-          ch = openBracketStack.pop();
-          if (ch != '{') {
-            return 1;
-          }
-          break;
-        case ')':
-          if (openBracketStack.isEmpty()) {
-            return 1;
-          }
-          ch = openBracketStack.pop();
-          if (ch != '(') {
-            return 1;
-          }
-          break;
-        case ']':
-          if (openBracketStack.isEmpty()) {
-            return 1;
-          }
-          ch = openBracketStack.pop();
-          if (ch != '[') {
-            return 1;
-          }
-          break;
-        case '|':
-          if (j < length - 1 && sourceCode.charAt(j + 1) == '>') {
-            if (openBracketStack.isEmpty()) {
-              return 1;
-            }
-            ch = openBracketStack.pop();
-            if (ch != '<') {
-              return 1;
-            }
-          }
-          break;
-        default:
-          // do nothing
-      }
-    }
-    if (!openBracketStack.isEmpty()) {
-      return -1;
-    }
-    return 0;
-  }
-
   /** Current parser input string */
   protected char[] fInputString;
 
@@ -306,10 +111,13 @@ public abstract class Scanner {
   protected int fToken;
 
   /** The last determined operator string */
-  protected String fOperatorString;
+  // protected String fOperatorString;
 
   /** protected List<Operator> fOperList; */
-  protected List<Operator> fOperList;
+  // protected List<Operator> fOperList;
+
+  /** The last determined command string */
+  protected String fCommandString;
 
   /** Row counter for reporting the row where a syntax error occurred. */
   protected int fRowCounter;
@@ -345,7 +153,7 @@ public abstract class Scanner {
   protected final boolean fExplicitTimes;
 
   /** Initialize Scanner without a math-expression */
-  protected Scanner(boolean packageMode, boolean explicitTimes) {
+  protected TeXScanner(boolean packageMode, boolean explicitTimes) {
     fPackageMode = packageMode;
     fExplicitTimes = explicitTimes;
     initializeNullScanner();
@@ -402,41 +210,6 @@ public abstract class Scanner {
     fToken = TT_EOF;
   }
 
-  /** Parse a multiline comment <code>(* ... *)</code> */
-  private void getComment() {
-    int startPosition = fCurrentPosition;
-    int level = 0;
-    fCurrentPosition++;
-    try {
-      while (true) {
-        char charAtPosition = charAtPosition();
-        if (charAtPosition == '*' && fInputString[fCurrentPosition + 1] == ')') {
-          fCurrentPosition++;
-          fCurrentPosition++;
-          if (level == 0) {
-            break;
-          }
-          level--;
-          continue;
-        } else if (charAtPosition == '(' && fInputString[fCurrentPosition + 1] == '*') {
-          fCurrentPosition++;
-          fCurrentPosition++;
-          level++;
-          continue;
-        } else if (charAtPosition == '\n') {
-          fCurrentPosition++;
-          fRowCounter++;
-          fCurrentColumnStartPosition = fCurrentPosition;
-          continue;
-        }
-        fCurrentPosition++;
-      }
-    } catch (IndexOutOfBoundsException ioobe) {
-      fCurrentPosition = startPosition;
-      throwSyntaxError("Comment doesn't end with '*)' (open multiline comment)");
-    }
-  }
-
   /**
    * Get the error line which should be thrown in a <code>SyntaxError</code> exception.
    *
@@ -469,9 +242,6 @@ public abstract class Scanner {
     int startPosition = fCurrentPosition - 1;
 
     getChar();
-    if (fCurrentChar == '$') {
-      getChar();
-    }
     int contextIndex = -1;
     while (Characters.isSymjaIdentifierPart(fCurrentChar)) {
       if (fCurrentChar == '`') {
@@ -515,9 +285,9 @@ public abstract class Scanner {
    * Parse a Java <code>int</code> value.
    *
    * @return
-   * @throws SyntaxError if the number couldn't be parsed as Java <code>int</code> value.
+   * @throws TeXSyntaxError if the number couldn't be parsed as Java <code>int</code> value.
    */
-  protected int getJavaInt() throws SyntaxError {
+  protected int getJavaInt() throws TeXSyntaxError {
     final String number = getIntegerString();
     int intValue = 0;
     try {
@@ -533,9 +303,9 @@ public abstract class Scanner {
    * Parse a Java <code>int</code> value.
    *
    * @return
-   * @throws SyntaxError if the number couldn't be parsed as Java <code>int</code> value.
+   * @throws TeXSyntaxError if the number couldn't be parsed as Java <code>int</code> value.
    */
-  protected long getJavaLong() throws SyntaxError {
+  protected long getJavaLong() throws TeXSyntaxError {
     final String number = getIntegerString();
     long longValue = 0;
     try {
@@ -565,41 +335,63 @@ public abstract class Scanner {
   /** @return <code>true</code> if a '\' (backslash) + new-line are detected */
   private boolean getNextChar() {
     fCurrentChar = fInputString[fCurrentPosition++];
-    if (fCurrentChar == '\\') {
-      // search next non-whitespace character
-      if (isValidPosition()) {
-        char ch = fInputString[fCurrentPosition++];
-        if (ch == '\n') { // linux line break
-          fRowCounter++;
-          fCurrentColumnStartPosition = fCurrentPosition;
-          if (isValidPosition()) {
-            fCurrentChar = fInputString[fCurrentPosition++];
-            return true;
-          }
-        } else if (ch == '\r') { // windows line break
-          if (isValidPosition()) {
-            ch = fInputString[fCurrentPosition++];
-            if (ch == '\n') {
-              fRowCounter++;
-              fCurrentColumnStartPosition = fCurrentPosition;
-              if (isValidPosition()) {
-                fCurrentChar = fInputString[fCurrentPosition++];
-                return true;
-              }
-            }
-          }
+    return true;
+  }
+
+  /**
+   * 
+   * 
+   * @throws TeXSyntaxError
+   */
+
+  /**
+   * Try to find the closing token recursively.
+   * 
+   * @param openToken
+   * @param closeToken
+   * @return
+   * @throws TeXSyntaxError
+   */
+  protected int indexOfToken(int openToken, int closeToken) throws TeXSyntaxError {
+    int nestingLevel = 1;
+    while (nestingLevel != 0 && fToken != TT_EOF) {
+      getNextToken();
+      if (fToken == openToken) {
+        nestingLevel++;
+      } else if (fToken == closeToken) {
+        nestingLevel--;
+      }
+    }
+    if (fToken == TT_EOF) {
+      return -1;
+    }
+    return fCurrentPosition - 1;
+  }
+
+  protected int indexOfCommand(String openCommand, String closeCommand) throws TeXSyntaxError {
+    int nestingLevel = 1;
+    while (nestingLevel != 0 && fToken != TT_EOF) {
+      getNextToken();
+      if (fToken == TT_COMMAND) {
+        if (fCommandString.equals(openCommand)) {
+          nestingLevel++;
+        } else if (fCommandString.equals(closeCommand)) {
+          nestingLevel--;
         }
       }
     }
-    return false;
+    if (fToken == TT_EOF) {
+      return -1;
+    }
+    return fCurrentPosition - closeCommand.length() - 1;
   }
 
   /**
    * Get the next token from the input string
    *
-   * @throws SyntaxError
+   * @throws TeXSyntaxError
    */
-  protected void getNextToken() throws SyntaxError {
+  protected void getNextToken() throws TeXSyntaxError {
 
     while (isValidPosition()) {
       getNextChar();
@@ -609,7 +401,7 @@ public abstract class Scanner {
         if (fCurrentChar == '\n') {
           fRowCounter++;
           fCurrentColumnStartPosition = fCurrentPosition;
-          if (fPackageMode && fRecursionDepth == 0) {
+          if (fPackageMode) {
             fToken = TT_NEWLINE;
             return;
           }
@@ -627,18 +419,49 @@ public abstract class Scanner {
           fToken = TT_DIGIT;
           return;
         }
+        if (fCurrentChar == '\\') {
+          if (isValidPosition()) {
+            char specialChar = charAtPosition();
+            if (specialChar == '\\') {
+              fCurrentPosition++;
+              fToken = TT_DOUBLE_BACKSLASH;
+              return;
+            }
+            if (specialChar == '{' || specialChar == '}') {
+              fCurrentPosition++;
+              fToken = TT_CHARACTER;
+              return;
+            }
+          }
+          // TeX command?
+          getNextChar();
+          StringBuilder command = new StringBuilder();
+          while (isValidPosition() && Character.isJavaIdentifierPart(fCurrentChar) //
+              && !(fCurrentChar == '_')) {
+            command.append(fCurrentChar);
+            getNextChar();
+          }
+
+          if (command.length() > 0) {
+            fCurrentPosition--;
+            fToken = TT_COMMAND;
+            fCommandString = command.toString();
+            if (fCommandString.equals("begin")) {
+              fToken = TT_BEGIN;
+            } else if (fCommandString.equals("end")) {
+              fToken = TT_END;
+            }
+            return;
+          }
+          fToken = TT_BACKSLASH;
+          return;
+        }
         if (fCurrentChar == '.') {
           if (isValidPosition()) {
             if (Character.isDigit(charAtPosition())) {
               fToken = TT_DIGIT;
               return;
             }
-          }
-        }
-        if (fCurrentChar == '(') {
-          if (checkedCharAtPosition() == '*') {
-            getComment();
-            continue;
           }
         }
 
@@ -649,7 +472,6 @@ public abstract class Scanner {
             break;
           case ')':
             fToken = TT_PRECEDENCE_CLOSE;
-
             break;
           case '{':
             fToken = TT_LIST_OPEN;
@@ -657,25 +479,16 @@ public abstract class Scanner {
             break;
           case '}':
             fToken = TT_LIST_CLOSE;
-
             break;
           case '[':
             fToken = TT_ARGUMENTS_OPEN;
             skipWhitespace();
-            if (checkedCharAtPosition() == '[') {
-              fCurrentPosition++;
-              fToken = TT_PARTOPEN;
-              break;
-            }
             break;
           case ']':
             fToken = TT_ARGUMENTS_CLOSE;
             break;
-          case '\u301A': // LeftDoubleBracket
-            fToken = TT_PARTOPEN;
-            break;
-          case '\u301B': // RightDoubleBracket
-            fToken = TT_PARTCLOSE;
+          case '&':
+            fToken = TT_AMPERSAND;
             break;
           case '.':
             if (isValidPosition()) {
@@ -685,124 +498,123 @@ public abstract class Scanner {
                 break;
               }
             }
-            if (isOperatorCharacters()) {
-              fOperList = getOperator();
-              fToken = TT_OPERATOR;
-              return;
-            }
+            // if (isOperatorCharacters()) {
+            // fOperList = getOperator();
+            // fToken = TT_OPERATOR;
+            // return;
+            // }
+            fToken = TT_CHARACTER;
+            break;
+          // case '<':
+          // if (checkedCharAtPosition() == '|') {
+          // fCurrentPosition++;
+          // fToken = TT_ASSOCIATION_OPEN;
+          // skipWhitespace();
+          // } else
+          // if (isOperatorCharacters()) {
+          // fOperList = getOperator();
+          // fToken = TT_OPERATOR;
+          // return;
+          // }
 
-            break;
-          case '<':
-            if (checkedCharAtPosition() == '|') {
-              fCurrentPosition++;
-              fToken = TT_ASSOCIATION_OPEN;
-              skipWhitespace();
-            } else if (isOperatorCharacters()) {
-              fOperList = getOperator();
-              fToken = TT_OPERATOR;
-              return;
-            }
-
-            break;
-          case ':':
-            if (isOperatorCharacters()) {
-              fOperList = getOperator();
-              fToken = TT_OPERATOR;
-              return;
-            }
-            break;
-          case ';':
-            if (checkedCharAtPosition() == ';') {
-              fCurrentPosition++;
-              fToken = TT_SPAN;
-            } else if (isOperatorCharacters()) {
-              fOperList = getOperator();
-              fToken = TT_OPERATOR;
-              return;
-            }
-            break;
-          case '|':
-            if (checkedCharAtPosition() == '>') {
-              fCurrentPosition++;
-              fToken = TT_ASSOCIATION_CLOSE;
-            } else if (isOperatorCharacters()) {
-              fOperList = getOperator();
-              fToken = TT_OPERATOR;
-              return;
-            }
-            break;
+          // break;
+          // case ':':
+          // if (isOperatorCharacters()) {
+          // fOperList = getOperator();
+          // fToken = TT_OPERATOR;
+          // return;
+          // }
+          // break;
+          // case ';':
+          // // if (checkedCharAtPosition() == ';') {
+          // // fCurrentPosition++;
+          // // fToken = TT_SPAN;
+          // // } else
+          // if (isOperatorCharacters()) {
+          // fOperList = getOperator();
+          // fToken = TT_OPERATOR;
+          // return;
+          // }
+          // break;
+          // case '|':
+          // if (checkedCharAtPosition() == '>') {
+          // fCurrentPosition++;
+          // fToken = TT_ASSOCIATION_CLOSE;
+          // } else
+          // if (isOperatorCharacters()) {
+          // fOperList = getOperator();
+          // fToken = TT_OPERATOR;
+          // return;
+          // }
+          // break;
           case ',':
             fToken = TT_COMMA;
             break;
           case '_':
             fToken = TT_BLANK;
-            if (isValidPosition()) {
-              if (charAtPosition() == '_') {
-                fCurrentPosition++;
-                if (checkedCharAtPosition() == '_') {
-                  fCurrentPosition++;
-                  fToken = TT_BLANK_BLANK_BLANK;
-                  break;
-                }
-                fToken = TT_BLANK_BLANK;
-              } else if (charAtPosition() == '.') {
-                fCurrentPosition++;
-                fToken = TT_BLANK_OPTIONAL;
-              } else if (charAtPosition() == ':') {
-                fCurrentPosition++;
-                if (checkedCharAtPosition() == '>') {
-                  fCurrentPosition--;
-                } else {
-                  fToken = TT_BLANK_COLON;
-                }
-              }
-              break;
-            }
-
+            // if (isValidPosition()) {
+            // if (charAtPosition() == '_') {
+            // fCurrentPosition++;
+            // if (checkedCharAtPosition() == '_') {
+            // fCurrentPosition++;
+            // fToken = TT_BLANK_BLANK_BLANK;
+            // break;
+            // }
+            // fToken = TT_BLANK_BLANK;
+            // } else if (charAtPosition() == '.') {
+            // fCurrentPosition++;
+            // fToken = TT_BLANK_OPTIONAL;
+            // } else if (charAtPosition() == ':') {
+            // fCurrentPosition++;
+            // if (checkedCharAtPosition() == '>') {
+            // fCurrentPosition--;
+            // } else {
+            // fToken = TT_BLANK_COLON;
+            // }
+            // }
+            // break;
+            // }
             break;
           case '"':
             fToken = TT_STRING;
-
             break;
           case '\'':
             fToken = TT_DERIVATIVE;
             break;
-          case '%':
-            fToken = TT_PERCENT;
-
-            break;
-          case '#':
-            fToken = TT_SLOT;
-            if (checkedCharAtPosition() == '#') {
-              fCurrentPosition++;
-              fToken = TT_SLOTSEQUENCE;
-            }
-            break;
+          // case '%':
+          // fToken = TT_PERCENT;
+          //
+          // break;
+          // case '#':
+          // fToken = TT_SLOT;
+          // break;
           default:
-            if (isOperatorCharacters()) {
-              fOperList = getOperator();
-              fToken = TT_OPERATOR;
-              return;
-            }
+            // if (isOperatorCharacters()) {
+            // fOperList = getOperator();
+            // fToken = TT_OPERATOR;
+            // return;
+            // }
             if (Characters.CharacterNamesMap.containsKey(String.valueOf(fCurrentChar))) {
               fToken = TT_IDENTIFIER;
               return;
             }
-            if (isValidPosition()) {
-              int codePoint = Character.codePointAt(fInputString, fCurrentPosition - 1);
-              String str = Characters.unicodePoint(codePoint);
-              if (str != null) {
-                throwSyntaxError("unexpected (named unicode) character: '\\[" + str + "]'");
-                // fCurrentPosition++;
-                // fToken = TT_IDENTIFIER;
-                // return;
-              }
-            }
-            String str = Characters.unicodeName(fCurrentChar);
-            if (str != null) {
-              throwSyntaxError("unexpected (named unicode) character: '\\[" + str + "]'");
-            }
-            throwSyntaxError("unexpected character: '" + fCurrentChar + "'");
+            // if (isValidPosition()) {
+            // int codePoint = Character.codePointAt(fInputString, fCurrentPosition - 1);
+            // String str = Characters.unicodePoint(codePoint);
+            // if (str != null) {
+            // throwSyntaxError("unexpected (named unicode) character: '\\[" + str + "]'");
+            // // fCurrentPosition++;
+            // // fToken = TT_IDENTIFIER;
+            // // return;
+            // }
+            // }
+            fToken = TT_CHARACTER;
+            return;
+          // String str = Characters.unicodeName(fCurrentChar);
+          // if (str != null) {
+          // throwSyntaxError("unexpected (named unicode) character: '\\[" + str + "]'");
+          // }
+          // throwSyntaxError("unexpected character: '" + fCurrentChar + "'");
         }
 
         if (fToken == TT_EOF) {
@@ -1028,15 +840,15 @@ public abstract class Scanner {
    *
    * @return
    */
-  protected abstract List<Operator> getOperator();
+  // protected abstract List<Operator> getOperator();
 
   /**
    * Create a StringBuilder from the current parsed <code>&quot;...&quot;</code> string expression.
    *
    * @return
-   * @throws SyntaxError
+   * @throws TeXSyntaxError
    */
-  protected StringBuilder getStringBuilder() throws SyntaxError {
+  protected StringBuilder getStringBuilder() throws TeXSyntaxError {
     final StringBuilder ident = new StringBuilder();
 
     if (isValidPosition()) {
@@ -1116,9 +928,9 @@ public abstract class Scanner {
     return ident;
   }
 
-  protected void initialize(final String s) throws SyntaxError {
+  protected void initialize(final String s) throws TeXSyntaxError {
     initializeNullScanner();
-    fInputString = Characters.substituteCharacters(s).toCharArray();
+    fInputString = s.toCharArray();// Characters.substituteCharacters(s).toCharArray();
     getNextToken();
   }
 
@@ -1131,9 +943,9 @@ public abstract class Scanner {
     fRecursionDepth = 0;
   }
 
-  protected abstract boolean isOperatorCharacters();
-
-  protected abstract boolean isOperatorCharacters(char ch);
+  // protected abstract boolean isOperatorCharacters();
+  //
+  // protected abstract boolean isOperatorCharacters(char ch);
 
   public static boolean isIdentifier(String ident) {
     if (ident.length() == 0) {
@@ -1380,13 +1192,13 @@ public abstract class Scanner {
     }
   }
 
-  public void throwSyntaxError(final String error) throws SyntaxError {
-    throw new SyntaxError(fCurrentPosition - 1, fRowCounter,
+  public void throwSyntaxError(final String error) throws TeXSyntaxError {
+    throw new TeXSyntaxError(fCurrentPosition - 1, fRowCounter,
         fCurrentPosition - fCurrentColumnStartPosition, getErrorLine(), error, 1);
   }
 
-  protected void throwSyntaxError(final String error, final int errorLength) throws SyntaxError {
-    throw new SyntaxError(fCurrentPosition - errorLength, fRowCounter,
+  protected void throwSyntaxError(final String error, final int errorLength) throws TeXSyntaxError {
+    throw new TeXSyntaxError(fCurrentPosition - errorLength, fRowCounter,
         fCurrentPosition - fCurrentColumnStartPosition, getErrorLine(), error, errorLength);
   }
 
@@ -1432,10 +1244,6 @@ public abstract class Scanner {
     switch (token) {
       case TT_EOF:
         return "TT_EOF";
-      case TT_ASSOCIATION_OPEN:
-        return "TT_ASSOCIATION_OPEN";
-      case TT_ASSOCIATION_CLOSE:
-        return "TT_ASSOCIATION_CLOSE";
       case TT_ARGUMENTS_OPEN:
         return "TT_ARGUMENTS_OPEN";
       case TT_ARGUMENTS_CLOSE:
@@ -1448,44 +1256,43 @@ public abstract class Scanner {
         return "TT_LIST_OPEN";
       case TT_LIST_CLOSE:
         return "TT_LIST_CLOSE";
-      case TT_PARTOPEN:
-        return "TT_PARTOPEN";
-      case TT_PARTCLOSE:
-        return "TT_PARTCLOSE";
-      case TT_SPAN:
-        return "TT_SPAN";
-      case TT_OPERATOR:
-        return "TT_OPERATOR";
+      // case TT_OPERATOR:
+      // return "TT_OPERATOR";
       case TT_COMMA:
         return "TT_COMMA";
-      case TT_PERCENT:
-        return "TT_PERCENT";
+      // case TT_PERCENT:
+      // return "TT_PERCENT";
       case TT_STRING:
         return "TT_STRING";
       case TT_IDENTIFIER:
         return "TT_IDENTIFIER";
       case TT_DIGIT:
         return "TT_DIGIT";
-      case TT_SLOT:
-        return "TT_SLOT";
-      case TT_SLOTSEQUENCE:
-        return "TT_SLOTSEQUENCE";
+      // case TT_SLOT:
+      // return "TT_SLOT";
       case TT_BLANK:
         return "TT_BLANK";
-      case TT_BLANK_BLANK:
-        return "TT_BLANK_BLANK";
-      case TT_BLANK_BLANK_BLANK:
-        return "TT_BLANK_BLANK_BLANK";
-      case TT_BLANK_OPTIONAL:
-        return "TT_BLANK_OPTIONAL";
-      case TT_BLANK_COLON:
-        return "TT_BLANK_COLON";
       case TT_DERIVATIVE:
         return "TT_DERIVATIVE";
       case TT_NEWLINE:
         return "TT_NEWLINE";
+      case TT_COMMAND:
+        return "TT_COMMAND";
+      case TT_BACKSLASH:
+        return "TT_BACKSLASH";
+      case TT_DOUBLE_BACKSLASH:
+        return "TT_DOUBLE_BACKSLASH";
+      case TT_BEGIN:
+        return "TT_BEGIN";
+      case TT_END:
+        return "TT_END";
+      case TT_CHARACTER:
+        return "TT_CHARACTER";
+      case TT_AMPERSAND:
+        return "TT_AMPERSAND";
       default:
         return "token undefined";
     }
   }
+
 }

@@ -2,14 +2,14 @@ package org.matheclipse.core.system;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.form.tex.TeXParser;
+import org.matheclipse.core.form.tex.TeXSliceParser;
 import org.matheclipse.core.interfaces.IExpr;
 import junit.framework.TestCase;
 
 /** Tests LaTeX import (parsing) function */
 public class TeXConverterTestCase extends TestCase {
 
-  TeXParser texConverter;
+  TeXSliceParser texConverter;
 
   public TeXConverterTestCase(String name) {
     super(name);
@@ -333,11 +333,9 @@ public class TeXConverterTestCase extends TestCase {
   }
 
   public void testTeXIssue712l() {
-    checkFullForm(
-        "\\operatorname{GCD}(3,5)", //
+    checkFullForm("\\operatorname{GCD}(3,5)", //
         "GCD(3, 5)");
-    checkFullForm(
-        "\\operatorname{gcd}(3,5)", //
+    checkFullForm("\\operatorname{gcd}(3,5)", //
         "GCD(3, 5)");
     checkFullForm(
         " \\operatorname { log } _ { 2 } ^ { 3 } a + \\operatorname { log } _ { 2 } ^ { 3 } b + \\operatorname { log } _ { 2 } ^ { 3 } c \\leq 1", //
@@ -365,20 +363,33 @@ public class TeXConverterTestCase extends TestCase {
         "Element(β, Reals)");
   }
 
+  public void testTeXArray() {
+    checkFullForm(//
+        "\\left\\{ \\begin{array} { l } { y - x = 1814 } \\\\ { y = 9 x + 182 } \\end{array}\\right.", //
+        "List(Equal(Plus(Times(-1, x), y), 1814), Equal(y, Plus(182, Times(9, x))))");
+    checkFullForm(//
+        " \\begin{array} { l } { y - x = 1814 } \\\\ { y = 9 x + 182 } \\end{array} ", //
+        "List(Equal(Plus(Times(-1, x), y), 1814), Equal(y, Plus(182, Times(9, x))))");
+
+    checkFullForm(//
+        "\\begin{array} {ll} { 2 } & {3} \\\\ { 3 } & {4} \\end{array}", //
+        "List(List(2, 3), List(3, 4))");
+  }
+
   public void check(String strEval, String strResult) {
-    IExpr expr = texConverter.toExpression(strEval);
+    IExpr expr = texConverter.parse(strEval);
     assertEquals(expr.toString(), strResult);
   }
 
   public void checkFullForm(String strEval, String strResult) {
-    IExpr expr = texConverter.toExpression(strEval);
+    IExpr expr = texConverter.parse(strEval);
     assertEquals(expr.fullFormString(), strResult);
   }
 
   public void checkEval(String strEval, String strResult) {
     EvalEngine engine = EvalEngine.get();
     EvalEngine.setReset(engine);
-    IExpr expr = texConverter.toExpression(strEval);
+    IExpr expr = texConverter.parse(strEval);
     expr = engine.evaluate(expr);
     assertEquals(expr.toString(), strResult);
   }
@@ -390,7 +401,7 @@ public class TeXConverterTestCase extends TestCase {
       // F.initSymbols();
       F.await();
       EvalEngine.get().setRelaxedSyntax(true);
-      texConverter = new TeXParser(EvalEngine.get());
+      texConverter = new TeXSliceParser();
     } catch (Exception e) {
       e.printStackTrace();
     }

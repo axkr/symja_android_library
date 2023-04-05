@@ -883,136 +883,6 @@ public class TeXParser {
     return convert(list, position, null, 0);
   }
 
-  private static String preParse(String texStr, StringBuilder buf) {
-    char ch;
-    int i = 0;
-    int curlyBracesLevel = 0;
-    StringBuilder eqCommand = null;
-    while (i < texStr.length()) {
-      ch = texStr.charAt(i);
-      if (ch == '{') {
-        curlyBracesLevel++;
-      } else if (ch == '}') {
-        curlyBracesLevel--;
-      }
-      if (ch == '\\' && i < texStr.length() - 1) {
-        // command
-        int commandStart = i;
-        StringBuilder command = new StringBuilder();
-        ch = texStr.charAt(++i);
-        while (Character.isLetter(ch) && i < texStr.length() - 1) {
-          command.append(ch);
-          ch = texStr.charAt(++i);
-        }
-        String commandStr = command.toString();
-        if (commandStr.equals("Huge")//
-            || commandStr.equals("huge") //
-            || commandStr.equals("LARGE") //
-            || commandStr.equals("Large") //
-            || commandStr.equals("large") //
-            || commandStr.equals("normalsize") //
-            || commandStr.equals("small") //
-            || commandStr.equals("footnotesize") //
-            || commandStr.equals("scriptsize") //
-            || commandStr.equals("tiny") //
-        ) {
-          // ignore command
-          continue;
-        }
-        if (commandStr.equals("left")) {
-          if (ch == '.') {
-            // ignore command
-            i++;
-            continue;
-          }
-          if (ch == '|') {
-            buf.append("| {"); // simulate opening Abs()
-            i++;
-            continue;
-          }
-        } else if (commandStr.equals("right")) {
-          if (ch == '.') {
-            // ignore command
-            i++;
-            continue;
-          }
-          if (ch == '|') {
-            buf.append("} |"); // simulate closing Abs()
-            i++;
-            continue;
-          }
-        }
-        if (i < texStr.length() - 1) {
-          if (commandStr.equals("log") && texStr.charAt(i) == '_') {
-            StringBuilder number = new StringBuilder();
-            ch = texStr.charAt(++i);
-            int numberStart = i - 1;
-            while (Character.isDigit(ch)) {
-              number.append(ch);
-              if (i >= texStr.length() - 1) {
-                break;
-              }
-              ch = texStr.charAt(++i);
-            }
-            if (number.length() > 1) {
-              String numStr = number.toString();
-              buf.append(texStr.substring(commandStart, numberStart + 1));
-              buf.append(numStr.charAt(0));
-              buf.append("{");
-              buf.append(numStr.substring(1));
-              buf.append("}");
-            } else {
-              buf.append(texStr.substring(commandStart, i));
-            }
-            continue;
-          } else if (commandStr.equals("sin") || commandStr.equals("cos")) {
-            // TODO make this for all numeric builtin commands?
-            StringBuilder variable = new StringBuilder();
-            boolean isVariable = false;
-            while (ch == ' ' || Character.isJavaIdentifierPart(ch)) {
-              if (ch != ' ') {
-                isVariable = true;
-              }
-              variable.append(ch);
-              if (i >= texStr.length() - 1) {
-                break;
-              }
-              ch = texStr.charAt(++i);
-            }
-            if (isVariable) {
-              buf.append("{");
-              buf.append(texStr.substring(commandStart, i));
-              buf.append("}");
-              continue;
-            }
-          }
-          if (commandStr.equals("operatorname")) {
-            // getCommand()
-          }
-        }
-        buf.append("\\" + command.toString());
-      } else if (curlyBracesLevel == 0 && ch == '=' && i < texStr.length() - 1) {
-        int indexOf = texStr.indexOf('=', i + 1);
-        if (indexOf < 0 && eqCommand == null) {
-          eqCommand = new StringBuilder();
-          eqCommand.append("{");
-          eqCommand.append(buf.toString());
-          eqCommand.append("} = ");
-          eqCommand.append("{");
-          buf = eqCommand;
-        }
-        i++;
-      } else {
-        buf.append(ch);
-        i++;
-      }
-    }
-    if (eqCommand != null) {
-      buf.append("}");
-    }
-    return buf.toString();
-  }
-
   /**
    * Convert a tex math formula into a Symja expression. The SnuggleTeX engine first converts the
    * TeX expression in a MathML expression. This MathML expression is then converted to Symja.
@@ -1025,9 +895,7 @@ public class TeXParser {
     SnuggleSession session = engine.createSession();
     session.getConfiguration().setFailingFast(true);
 
-    StringBuilder inputPass2 = new StringBuilder();
-    String preParsedInput = preParse(texStr, inputPass2);
-    SnuggleInput input = new SnuggleInput("\\[ " + preParsedInput + " \\]");
+    SnuggleInput input = new SnuggleInput("\\[ " + texStr + " \\]");
     try {
 
       if (session.parseInput(input)) {
@@ -1037,14 +905,12 @@ public class TeXParser {
       }
       List<InputError> errors = session.getErrors();
       for (int i = 0; i < errors.size(); i++) {
-        // LOGGER.log(fEngine.getLogLevel(), errors.get(i));
-        IOFunctions.printMessage(S.ToExpression, "error",
-            F.List(F.stringx(errors.get(i).toString())));
+        LOGGER.warn(errors.get(i));
       }
     } catch (Exception e) {
       e.printStackTrace();
       // `1`.
-      IOFunctions.printMessage(S.ToExpression, "error", F.List(F.stringx(texStr)));
+      IOFunctions.printMessage(S.ToExpression, "error", F.List(F.stringx(e.getMessage())));
     }
     return S.$Aborted;
   }

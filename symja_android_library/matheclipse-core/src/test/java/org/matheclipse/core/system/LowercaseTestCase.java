@@ -23681,10 +23681,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testToExpression() {
-    // check(
-    // "ToExpression(\"\\\\begin{matrix}\n1 & 2 \\\\\n 7 & 8\n\\\\end{matrix}\", TeXForm)",
-    // //
-    // "x/Sqrt(5)");
+    check("ToExpression(\"\\\\begin{matrix}\n" //
+        + "1 & 2 \\\\\n" //
+        + " 7 & 8\n" //
+        + "\\\\end{matrix}\"" //
+        + ", TeXForm)", //
+        "{{1,2},{7,8}}");
     check("ToExpression(\"\\\\frac{x}{\\\\sqrt{5}}\", TeXForm)", //
         "x/Sqrt(5)");
     check("ToExpression(\"1 + 2 - x \\\\times 4 \\\\div 5\", TeXForm)", //
