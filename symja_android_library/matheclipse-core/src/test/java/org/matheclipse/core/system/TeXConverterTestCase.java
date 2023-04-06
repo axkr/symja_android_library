@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.tex.TeXSliceParser;
 import org.matheclipse.core.interfaces.IExpr;
@@ -374,6 +375,17 @@ public class TeXConverterTestCase extends TestCase {
     checkFullForm(//
         "\\begin{array} {ll} { 2 } & {3} \\\\ { 3 } & {4} \\end{array}", //
         "List(List(2, 3), List(3, 4))");
+  }
+  
+  public void testRec01() {
+      ExprEvaluator evaluator = new ExprEvaluator();
+      evaluator.eval("Pol[x_, y_] := FromPolarCoordinates[{x, y}]");
+
+      TeXSliceParser teXSliceParser = new TeXSliceParser();
+      IExpr input = teXSliceParser.parse("\\operatorname{Pol}(3,2)");
+
+      IExpr result = evaluator.eval(F.N(input));
+      assertEquals(result.toString(), "{-1.2484405096414273,2.727892280477045}");
   }
 
   public void check(String strEval, String strResult) {

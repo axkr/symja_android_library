@@ -31,6 +31,7 @@ import org.matheclipse.parser.trie.TrieMatch;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import com.google.common.base.CharMatcher;
 import uk.ac.ed.ph.snuggletex.InputError;
 import uk.ac.ed.ph.snuggletex.SnuggleEngine;
 import uk.ac.ed.ph.snuggletex.SnuggleInput;
@@ -423,9 +424,16 @@ public class TeXParser {
       }
     }
     if (evaled) {
-      return F.$s(buf.toString());
+      return createSymbol(buf.toString());
     }
     throw new AbortException();
+  }
+
+  private static ISymbol createSymbol(String str) {
+    if (CharMatcher.javaLetterOrDigit().matchesAllOf(str)) {
+      return F.symbol(str);
+    }
+    return F.$s(str);
   }
 
   /**
@@ -471,7 +479,7 @@ public class TeXParser {
             // dx/x
             dxStart = dxPosition1[0];
             dxEnd = dxPosition1[0];
-            x = F.$s(dStr.substring(1));
+            x = createSymbol(dStr.substring(1));
             dxValue = frac.second();
             break;
           }
@@ -518,7 +526,7 @@ public class TeXParser {
           String str = ((ISymbol) dDenominator).getSymbolName();
           if (str.startsWith("d")) {
             str = str.substring(1);
-            return F.Function(F.D(F.Slot1, F.$s(str)));
+            return F.Function(F.D(F.Slot1, createSymbol(str)));
           }
         }
       }
@@ -561,7 +569,7 @@ public class TeXParser {
     if (x != null) {
       return x;
     }
-    return F.$s(text);
+    return createSymbol(text);
   }
 
   private IExpr mn(Node node) {
@@ -588,7 +596,7 @@ public class TeXParser {
         return x;
       }
     }
-    return F.$s(text);
+    return createSymbol(text);
   }
 
   private IExpr mrow(Node node) {
@@ -645,7 +653,7 @@ public class TeXParser {
         Node temp = list.item(i);
         buf.append(temp.getTextContent());
       }
-      return F.$s(buf.toString());
+      return createSymbol(buf.toString());
     }
     return F.NIL;
   }
