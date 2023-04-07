@@ -2326,34 +2326,44 @@ public final class LinearAlgebra {
         if (arg1.isAST()) {
           IAST list = (IAST) arg1;
           if (dim == 2) {
-            IExpr r = list.arg1();
-            IExpr theta = list.arg2();
-            return F.list(F.Times(r, F.Cos(theta)), F.Times(r, F.Sin(theta)));
+            return fromPolarCoordinates2(list.arg1(), list.arg2(), ast, engine);
           } else if (dim == 3) {
-            IExpr r = list.arg1();
-            IExpr theta = list.arg2();
-            IExpr phi = list.arg3();
-            return F.list(F.Times(r, F.Cos(theta)), F.Times(r, F.Cos(phi), F.Sin(theta)),
-                F.Times(r, F.Sin(theta), F.Sin(phi)));
+            return fromPolarCoordinates3(list.arg1(), list.arg2(), list.arg3(), ast, engine);
           }
         } else {
           FieldVector<IExpr> vector = Convert.list2Vector(arg1);
           if (dim == 2) {
-            IExpr r = vector.getEntry(0);
-            IExpr theta = vector.getEntry(1);
-            return F.list(F.Times(r, F.Cos(theta)), F.Times(r, F.Sin(theta)));
+            return fromPolarCoordinates2(vector.getEntry(0), vector.getEntry(1), ast, engine);
           } else if (dim == 3) {
-            IExpr r = vector.getEntry(0);
-            IExpr theta = vector.getEntry(1);
-            IExpr phi = vector.getEntry(2);
-            return F.list(F.Times(r, F.Cos(theta)), F.Times(r, F.Cos(phi), F.Sin(theta)),
-                F.Times(r, F.Sin(theta), F.Sin(phi)));
+            return fromPolarCoordinates3(vector.getEntry(0), vector.getEntry(1), vector.getEntry(2),
+                ast, engine);
           }
         }
       } else if (arg1.isList()) {
         return ((IAST) arg1).mapThreadEvaled(engine, F.ListAlloc(ast.size()), ast, 1);
       }
       return F.NIL;
+    }
+
+    private IExpr fromPolarCoordinates3(IExpr r, IExpr theta, IExpr phi, final IAST ast,
+        EvalEngine engine) {
+      if (r.lessEqualThan(F.C0).isTrue() //
+          || (theta.greaterEqualThan(S.Pi).isTrue() || theta.lessEqualThan(F.C0).isTrue()) //
+          || (phi.greaterThan(S.Pi).isTrue() || phi.lessEqualThan(F.CNPi).isTrue())) {
+        // Evaluation point `1` is not a valid set of polar or hyperspherical coordinates.
+        return IOFunctions.printMessage(ast.topHead(), "bdpt", F.List(ast.arg1()), engine);
+      }
+      return F.list(F.Times(r, F.Cos(theta)), F.Times(r, F.Cos(phi), F.Sin(theta)),
+          F.Times(r, F.Sin(theta), F.Sin(phi)));
+    }
+
+    private IExpr fromPolarCoordinates2(IExpr r, IExpr theta, final IAST ast, EvalEngine engine) {
+      if (r.lessEqualThan(F.C0).isTrue() //
+          || (theta.greaterThan(S.Pi).isTrue() || theta.lessEqualThan(F.CNPi).isTrue())) {
+        // Evaluation point `1` is not a valid set of polar or hyperspherical coordinates.
+        return IOFunctions.printMessage(ast.topHead(), "bdpt", F.List(ast.arg1()), engine);
+      }
+      return F.list(F.Times(r, F.Cos(theta)), F.Times(r, F.Sin(theta)));
     }
 
     @Override

@@ -598,7 +598,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("FourierDSTMatrix(3, 1)", //
         "{{1/2,1/Sqrt(2),1/2},\n"//
             + " {1/Sqrt(2),0,-1/Sqrt(2)},\n"//
-        + " {1/2,-1/Sqrt(2),1/2}}");
+            + " {1/2,-1/Sqrt(2),1/2}}");
     check("FourierDSTMatrix(7, 1)", //
         "{{Sqrt(2-Sqrt(2))/4,1/(2*Sqrt(2)),Sqrt(2+Sqrt(2))/4,1/2,Sqrt(2+Sqrt(2))/4,1/(2*Sqrt(\n" //
             + "2)),Sqrt(2-Sqrt(2))/4},\n" //
@@ -653,9 +653,17 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             + " {Sin(3/14*Pi)/Sqrt(7),-Sin(3/7*Pi)/Sqrt(7),Sin(5/14*Pi)/Sqrt(7),-Sin(Pi/7)/Sqrt(\n" //
             + "7),-Sin(Pi/14)/Sqrt(7),Sin(2/7*Pi)/Sqrt(7),-1/Sqrt(7)},\n" //
             + " {Sin(Pi/14)/Sqrt(7),-Sin(Pi/7)/Sqrt(7),Sin(3/14*Pi)/Sqrt(7),-Sin(2/7*Pi)/Sqrt(7),Sin(\n" //
-        + "5/14*Pi)/Sqrt(7),-Sin(3/7*Pi)/Sqrt(7),1/Sqrt(7)}}");
+            + "5/14*Pi)/Sqrt(7),-Sin(3/7*Pi)/Sqrt(7),1/Sqrt(7)}}");
   }
+
   public void testFromPolarCoordinates() {
+    // Evaluation point {r,5} is not a valid set of polar or hyperspherical coordinates.
+    check("FromPolarCoordinates({r, 5})", //
+        "FromPolarCoordinates({r,5})");
+    // Evaluation point {r,Pi,p} is not a valid set of polar or hyperspherical coordinates.
+    check("FromPolarCoordinates({r, Pi, p})", //
+        "FromPolarCoordinates({r,Pi,p})");
+
     check("FromPolarCoordinates(SparseArray({r, t}))", //
         "{r*Cos(t),r*Sin(t)}");
     check("FromPolarCoordinates(SparseArray({r, t, p}))", //
