@@ -97,7 +97,7 @@ public class TeXSliceParser extends TeXScanner {
     return F.Null;
   }
 
-  public IExpr parseMatrixAsList(int lastIndex) {
+  public IExpr parseMatrixAsList(String typeOfMatrix, int lastIndex) {
     try {
       fPackageMode = true;
       IASTAppendable list = F.ListAlloc();
@@ -145,7 +145,7 @@ public class TeXSliceParser extends TeXScanner {
                 String[] identifier = getIdentifier();
                 getNextToken();
                 if (fToken == TT_LIST_CLOSE) {
-                  if (identifier[0].equals("matrix")) {
+                  if (identifier[0].equals(typeOfMatrix)) {
                     return list;
                   }
                 }
@@ -206,13 +206,17 @@ public class TeXSliceParser extends TeXScanner {
           // ignore text
           endTeXIndex = fCurrentPosition - fCommandString.length() - 1;
           getNextToken();
-          int endOfSubExpr = indexOfToken(TT_LIST_OPEN, TT_LIST_CLOSE);
-          if (endOfSubExpr < 0) {
-            return S.Null;
+          if (fToken == TT_LIST_OPEN) {
+            int startText = fCurrentPosition;
+            int endOfSubExpr = indexOfToken(TT_LIST_OPEN, TT_LIST_CLOSE);
+            if (endOfSubExpr < 0) {
+              return S.Null;
+            }
+            String textString = texStr.substring(startText, endOfSubExpr);
+            ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
+            lastTeXIndex = addSlotValue(F.stringx(textString), texStr, lastTeXIndex, endTeXIndex,
+                endOfSubExpr + 1, ptBuf);
           }
-          ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
-          lastTeXIndex = endOfSubExpr + 1;
-
         } else if (fCommandString.equals("left")) {
           endTeXIndex = fCurrentPosition - fCommandString.length() - 1;
           getNextToken();
@@ -227,7 +231,7 @@ public class TeXSliceParser extends TeXScanner {
             endOfSubExpr = fCurrentPosition;
 
             lastTeXIndex =
-                addSlotValue(texStr, ptBuf, lastTeXIndex, endTeXIndex, endOfSubExpr, temp);
+                addSlotValue(temp, texStr, lastTeXIndex, endTeXIndex, endOfSubExpr, ptBuf);
           }
         }
       } else if (fToken == TT_BEGIN) {
@@ -246,12 +250,14 @@ public class TeXSliceParser extends TeXScanner {
                 IExpr temp = parseArrayAsList(startIndex);
                 int endOfSubExpr = fCurrentPosition;
                 lastTeXIndex =
-                    addSlotValue(texStr, ptBuf, lastTeXIndex, endTeXIndex, endOfSubExpr, temp);
-              } else if (typeOfList.equals("matrix")) {
-                IExpr temp = parseMatrixAsList(startIndex);
+                    addSlotValue(temp, texStr, lastTeXIndex, endTeXIndex, endOfSubExpr, ptBuf);
+              } else if (typeOfList.equals("bmatrix") //
+                  || typeOfList.equals("matrix") //
+                  || typeOfList.equals("pmatrix")) {
+                IExpr temp = parseMatrixAsList(typeOfList, startIndex);
                 int endOfSubExpr = fCurrentPosition;
                 lastTeXIndex =
-                    addSlotValue(texStr, ptBuf, lastTeXIndex, endTeXIndex, endOfSubExpr, temp);
+                    addSlotValue(temp, texStr, lastTeXIndex, endTeXIndex, endOfSubExpr, ptBuf);
               }
             }
           }
@@ -272,14 +278,13 @@ public class TeXSliceParser extends TeXScanner {
     return result;
   }
 
-  private int addSlotValue(String texStr, StringBuilder ptBuf, int lastTeXIndex, int endTeXIndex,
-      int endOfSubExpr, IExpr temp) {
-    fMapOfVariables.put(fVariableCounter, temp);
-    ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
-    lastTeXIndex = endOfSubExpr;
+  private int addSlotValue(IExpr expr, String texStr, int lastTeXIndex, int nextLastTeXIndex,
+      int endOfSubExpr, StringBuilder ptBuf) {
+    fMapOfVariables.put(fVariableCounter, expr);
+    ptBuf.append(texStr.substring(lastTeXIndex, nextLastTeXIndex));
     ptBuf.append("{\\Slot{" + fVariableCounter + "}}");
     fVariableCounter++;
-    return lastTeXIndex;
+    return endOfSubExpr;
   }
 
   private IExpr parseMathExpr(String texStr) {
