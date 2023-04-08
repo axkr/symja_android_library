@@ -7,14 +7,37 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 public class TeXSliceParser extends TeXScanner {
+
+  public static String[] FUNCTION_NAMES = new String[] {"f", "g", "h"};
+
+  public static String[] FUNCTION_NAME_MAP = new String[] {//
+      "sin", "Sin", //
+      "cos", "Cos", //
+      "tan", "Tan"};
+
+  public static Map<String, String> FUNCTION_NAMES_MAP = new HashMap<String, String>();
 
   protected EvalEngine fEngine;
 
   // protected IParserFactory fFactory;
 
   Map<Integer, IExpr> fMapOfVariables = new HashMap<Integer, IExpr>();
+
+
+
+  static {
+    for (int i = 0; i < FUNCTION_NAMES.length; i++) {
+      FUNCTION_NAMES_MAP.put(FUNCTION_NAMES[i], FUNCTION_NAMES[i]);
+    }
+    int i = 0;
+    while (i < FUNCTION_NAME_MAP.length) {
+      FUNCTION_NAMES_MAP.put(FUNCTION_NAME_MAP[i], FUNCTION_NAME_MAP[i + 1]);
+      i = i + 2;
+    }
+  }
 
   int fVariableCounter = 1;
 
@@ -36,10 +59,10 @@ public class TeXSliceParser extends TeXScanner {
     if (fToken == TT_LIST_OPEN) {
       getNextToken();
       if (fToken == TT_IDENTIFIER) {
-        String[] identifier = getIdentifier();
+        String identifier = getIdentifier();
         getNextToken();
         if (fToken == TT_LIST_CLOSE) {
-          numberOfColumns = identifier[0].length();
+          numberOfColumns = identifier.length();
           if (numberOfColumns == 0) {
             return list;
           }
@@ -83,10 +106,10 @@ public class TeXSliceParser extends TeXScanner {
         if (fToken == TT_LIST_OPEN) {
           getNextToken();
           if (fToken == TT_IDENTIFIER) {
-            String[] identifier = getIdentifier();
+            String identifier = getIdentifier();
             getNextToken();
             if (fToken == TT_LIST_CLOSE) {
-              if (identifier[0].equals("array")) {
+              if (identifier.equals("array")) {
                 return list;
               }
             }
@@ -142,10 +165,10 @@ public class TeXSliceParser extends TeXScanner {
             if (fToken == TT_LIST_OPEN) {
               getNextToken();
               if (fToken == TT_IDENTIFIER) {
-                String[] identifier = getIdentifier();
+                String identifier = getIdentifier();
                 getNextToken();
                 if (fToken == TT_LIST_CLOSE) {
-                  if (identifier[0].equals(typeOfMatrix)) {
+                  if (identifier.equals(typeOfMatrix)) {
                     return list;
                   }
                 }
@@ -201,7 +224,27 @@ public class TeXSliceParser extends TeXScanner {
     int lastTeXIndex = 0;
     int endTeXIndex = -1;
     while (fToken != TT_EOF) {
-      if (fToken == TT_COMMAND) {
+      if (fToken == TT_IDENTIFIER) {
+        endTeXIndex = fCurrentPosition - 1;
+        String identifier = getIdentifier();
+        String functionName = FUNCTION_NAMES_MAP.get(identifier);
+        if (functionName != null) {
+          getNextToken();
+          if (fToken == TT_COMMAND) {
+            if (fCommandString.equals("left")) {
+              IExpr temp = convertLeftRight(texStr, lastTeXIndex);
+              if (temp.isPresent()) {
+                ISymbol head = TeXParser.createSymbol(functionName);
+                temp = F.unaryAST1(head, temp);
+                int endOfSubExpr = fCurrentPosition - 1;
+                // ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
+                lastTeXIndex =
+                    addSlotValue(temp, texStr, lastTeXIndex, endTeXIndex, endOfSubExpr + 1, ptBuf);
+              }
+            }
+          }
+        }
+      } else if (fToken == TT_COMMAND) {
         if (fCommandString.equals("text")) {
           // ignore text
           endTeXIndex = fCurrentPosition - fCommandString.length() - 1;
@@ -218,20 +261,25 @@ public class TeXSliceParser extends TeXScanner {
                 endOfSubExpr + 1, ptBuf);
           }
         } else if (fCommandString.equals("left")) {
-          endTeXIndex = fCurrentPosition - fCommandString.length() - 1;
-          getNextToken();
-          int startOfSubExpr = fCurrentPosition;
-          getNextToken();
-          int endOfSubExpr = indexOfCommand("left", "right");
-          if (endOfSubExpr > 0) {
+          lastTeXIndex = parseLeftRight(texStr, ptBuf, lastTeXIndex);
+        } else {
+          String functionName = FUNCTION_NAMES_MAP.get(fCommandString);
+          if (functionName != null) {
+            endTeXIndex = fCurrentPosition - fCommandString.length() - 1;
             getNextToken();
-            String exprStr =
-                new String(fInputString, startOfSubExpr, endOfSubExpr - startOfSubExpr);
-            IExpr temp = TeXSliceParser.convert(exprStr);
-            endOfSubExpr = fCurrentPosition;
-
-            lastTeXIndex =
-                addSlotValue(temp, texStr, lastTeXIndex, endTeXIndex, endOfSubExpr, ptBuf);
+            if (fToken == TT_COMMAND) {
+              if (fCommandString.equals("left")) {
+                IExpr temp = convertLeftRight(texStr, lastTeXIndex);
+                if (temp.isPresent()) {
+                  ISymbol head = TeXParser.createSymbol(functionName);
+                  temp = F.unaryAST1(head, temp);
+                  int endOfSubExpr = fCurrentPosition - 1;
+                  // ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
+                  lastTeXIndex = addSlotValue(temp, texStr, lastTeXIndex, endTeXIndex,
+                      endOfSubExpr + 1, ptBuf);
+                }
+              }
+            }
           }
         }
       } else if (fToken == TT_BEGIN) {
@@ -240,12 +288,12 @@ public class TeXSliceParser extends TeXScanner {
         if (fToken == TT_LIST_OPEN) {
           getNextToken();
           if (fToken == TT_IDENTIFIER) {
-            String[] identifier = getIdentifier();
+            String identifier = getIdentifier();
             getNextToken();
             if (fToken == TT_LIST_CLOSE) {
               int startIndex = fCurrentPosition;
               getNextToken();
-              String typeOfList = identifier[0];
+              String typeOfList = identifier;
               if (typeOfList.equals("array")) {
                 IExpr temp = parseArrayAsList(startIndex);
                 int endOfSubExpr = fCurrentPosition;
@@ -276,6 +324,37 @@ public class TeXSliceParser extends TeXScanner {
       return parseMathExpr(texStr);
     }
     return result;
+  }
+
+  private int parseLeftRight(String texStr, StringBuilder ptBuf, int lastTeXIndex) {
+    int endTeXIndex;
+    endTeXIndex = fCurrentPosition - fCommandString.length() - 1;
+    getNextToken();
+    int startOfSubExpr = fCurrentPosition;
+    getNextToken();
+    int endOfSubExpr = indexOfCommand("left", "right");
+    if (endOfSubExpr > 0) {
+      getNextToken();
+      String exprStr = new String(fInputString, startOfSubExpr, endOfSubExpr - startOfSubExpr);
+      IExpr temp = TeXSliceParser.convert(exprStr);
+      endOfSubExpr = fCurrentPosition;
+
+      lastTeXIndex = addSlotValue(temp, texStr, lastTeXIndex, endTeXIndex, endOfSubExpr, ptBuf);
+    }
+    return lastTeXIndex;
+  }
+
+  private IExpr convertLeftRight(String texStr, int lastTeXIndex) {
+    getNextToken();
+    int startOfSubExpr = fCurrentPosition;
+    getNextToken();
+    int endOfSubExpr = indexOfCommand("left", "right");
+    if (endOfSubExpr > 0) {
+      getNextToken();
+      String exprStr = new String(fInputString, startOfSubExpr, endOfSubExpr - startOfSubExpr);
+      return TeXSliceParser.convert(exprStr);
+    }
+    return F.NIL;
   }
 
   private int addSlotValue(IExpr expr, String texStr, int lastTeXIndex, int nextLastTeXIndex,

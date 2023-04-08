@@ -28,7 +28,6 @@ import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.trie.TrieBuilder;
 import org.matheclipse.parser.trie.TrieMatch;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import com.google.common.base.CharMatcher;
@@ -429,7 +428,7 @@ public class TeXParser {
     throw new AbortException();
   }
 
-  private static ISymbol createSymbol(String str) {
+  protected static ISymbol createSymbol(String str) {
     if (str.length() == 1) {
       char ch = str.charAt(0);
       // i is very often an index in \\sum or \\prod
@@ -483,17 +482,36 @@ public class TeXParser {
       } else if (nd.getNodeName().equals("mfrac")) {
 
         IExpr frac = mfrac(nd.getChildNodes());
-        if (frac.isTimes() && frac.first().isSymbol()) {
-          ISymbol d = (ISymbol) frac.first();
-          String dStr = d.getSymbolName();
-          if (dStr.startsWith("d")) {
-            // dx/x
-            dxStart = dxPosition1[0];
-            dxEnd = dxPosition1[0];
-            x = createSymbol(dStr.substring(1));
-            dxValue = frac.second();
-            break;
+        if (frac.isTimes()) {
+          IExpr dxArg = frac.first();
+          ISymbol d = null;
+          if (dxArg.isTimes() //
+              && dxArg.argSize() == 2 //
+              && dxArg.first().isSymbol() //
+              && dxArg.second().isSymbol()) {
+            d = (ISymbol) dxArg.first();
+            String dStr = d.getSymbolName();
+            if (dStr.equals("d")) {
+              // (d*x)/x
+              dxStart = dxPosition1[0];
+              dxEnd = dxPosition1[0];
+              x = (ISymbol) dxArg.second();
+              dxValue = frac.second();
+              break;
+            }
+          } else if (dxArg.isSymbol()) {
+            d = (ISymbol) dxArg;
+            String dStr = d.getSymbolName();
+            if (dStr.startsWith("d")) {
+              // dx/x
+              dxStart = dxPosition1[0];
+              dxEnd = dxPosition1[0];
+              x = createSymbol(dStr.substring(1));
+              dxValue = frac.second();
+              break;
+            }
           }
+
         }
       }
     }
@@ -516,6 +534,11 @@ public class TeXParser {
     throw new AbortException();
   }
 
+  /**
+   * 
+   * @param list
+   * @return the fraction unsorted so that the numerator is in the first argument.
+   */
   private IExpr mfrac(NodeList list) {
     IASTAppendable frac = F.TimesAlloc(2);
     if (list.getLength() > 0) {
@@ -633,10 +656,11 @@ public class TeXParser {
         }
       }
     }
-    IExpr dummySymbol = getDummySymbol(list);
-    if (dummySymbol.isPresent()) {
-      return dummySymbol;
-    }
+    // IExpr dummySymbol = getDummySymbol(list);
+    // if (dummySymbol.isPresent()) {
+    // return dummySymbol;
+    // }
+
     int[] position = new int[] {0};
     return convert(list, position, null, 0);
   }
@@ -647,27 +671,27 @@ public class TeXParser {
    * @param list
    * @return
    */
-  private static IExpr getDummySymbol(NodeList list) {
-    boolean isSymbol = true;
-    for (int i = 0; i < list.getLength(); i++) {
-      Node temp = list.item(i);
-      String n = temp.getNodeName();
-      if (!n.equals("mi") || !(temp instanceof Element)) {
-        isSymbol = false;
-        break;
-      }
-    }
-    if (isSymbol) {
-      // generate a symbol name from the tokens
-      StringBuilder buf = new StringBuilder();
-      for (int i = 0; i < list.getLength(); i++) {
-        Node temp = list.item(i);
-        buf.append(temp.getTextContent());
-      }
-      return createSymbol(buf.toString());
-    }
-    return F.NIL;
-  }
+  // private static IExpr getDummySymbol(NodeList list) {
+  // boolean isSymbol = true;
+  // for (int i = 0; i < list.getLength(); i++) {
+  // Node temp = list.item(i);
+  // String n = temp.getNodeName();
+  // if (!n.equals("mi") || !(temp instanceof Element)) {
+  // isSymbol = false;
+  // break;
+  // }
+  // }
+  // if (isSymbol) {
+  // // generate a symbol name from the tokens
+  // StringBuilder buf = new StringBuilder();
+  // for (int i = 0; i < list.getLength(); i++) {
+  // Node temp = list.item(i);
+  // buf.append(temp.getTextContent());
+  // }
+  // return createSymbol(buf.toString());
+  // }
+  // return F.NIL;
+  // }
 
   private IExpr msqrt(NodeList list) {
     if (list.getLength() > 0) {

@@ -232,33 +232,16 @@ public abstract class TeXScanner {
   }
 
   /**
-   * Parse an identifier string (function, constant or variable name) and the corresponding context
-   * if possible.
+   * Parse an identifier string (function, constant or variable name).
    *
-   * @return an array which contains &quot;the main identifier&quot; at offset 0 and
-   *         &quot;context(or <code>null</code>)&quot; at offset 1.
+   * @return an array which contains &quot;identifier&quot;
    */
-  protected String[] getIdentifier() {
+  protected String getIdentifier() {
     int startPosition = fCurrentPosition - 1;
 
     getChar();
-    int contextIndex = -1;
     while (Characters.isSymjaIdentifierPart(fCurrentChar)) {
-      if (fCurrentChar == '`') {
-        contextIndex = fCurrentPosition - 1;
-      }
       getChar();
-    }
-    while (Characters.isSymjaIdentifierPart(fCurrentChar)) {
-      if (fCurrentChar == '`') {
-        contextIndex = fCurrentPosition - 1;
-      }
-      getChar();
-    }
-    String context = "";
-    if (contextIndex > 0) {
-      context = new String(fInputString, startPosition, contextIndex - startPosition + 1);
-      startPosition = contextIndex + 1;
     }
     int endPosition = fCurrentPosition--;
     final int length = (--endPosition) - startPosition;
@@ -267,18 +250,17 @@ public abstract class TeXScanner {
       if (name == null) {
         name = Characters.CharacterNamesMap.get(String.valueOf(fInputString[startPosition]));
         if (name != null) {
-          return new String[] {name, context};
+          return name;
         }
       } else {
-        return new String[] {name, context};
+        return name;
       }
-      return new String[] {new String(fInputString, startPosition, 1), context};
+      return new String(fInputString, startPosition, 1);
     }
     if (length == 2 && fInputString[startPosition] == '$') {
-      return new String[] {optimizedCurrentTokenSource2(startPosition), context};
+      return optimizedCurrentTokenSource2(startPosition);
     }
-    return new String[] {new String(fInputString, startPosition, endPosition - startPosition),
-        context};
+    return new String(fInputString, startPosition, endPosition - startPosition);
   }
 
   /**

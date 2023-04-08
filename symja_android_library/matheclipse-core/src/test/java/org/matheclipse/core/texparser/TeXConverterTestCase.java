@@ -91,7 +91,7 @@ public class TeXConverterTestCase extends TestCase {
     check("\\int_{a}^{b} \\frac{dt}{t}", //
         "Integrate(1/t,{t,a,b})");
     check("\\int f(xz) \\, dxz", //
-        "Integrate(f(xz),xz)");
+        "Integrate(f(x*z),xz)");
     check("\\int f(x) \\, dx", //
         "Integrate(f(x),x)");
     check("\\int_0^\\infty a dx", //
@@ -221,11 +221,10 @@ public class TeXConverterTestCase extends TestCase {
   }
 
   public void testTeX031() {
-    // D(x^2, x)
     check("\\frac{d}{dx} x^{2}", //
-        "D(x^2,x)");
+        "(d*x^2)/(d*x)");
     checkEval("\\frac{d}{dx} x^{2}", //
-        "2*x");
+        "x");
   }
 
   public void testTeX032() {
