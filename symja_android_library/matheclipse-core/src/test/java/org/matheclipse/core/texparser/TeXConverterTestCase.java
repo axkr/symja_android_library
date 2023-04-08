@@ -1,4 +1,4 @@
-package org.matheclipse.core.system;
+package org.matheclipse.core.texparser;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
@@ -97,7 +97,7 @@ public class TeXConverterTestCase extends TestCase {
     check("\\int_0^\\infty a dx", //
         "Integrate(a,{x,0,Infinity})");
     check("\\int_0^\\infty e^{-x^2} dx=\\frac{\\sqrt{\\pi}}{2}", //
-        "Integrate(e^(-x^2),{x,0,Infinity})==Sqrt(Pi)*1/2");
+        "Integrate(E^(-x^2),{x,0,Infinity})==Sqrt(Pi)*1/2");
   }
 
   public void testTeX012() {
@@ -235,7 +235,7 @@ public class TeXConverterTestCase extends TestCase {
 
   public void testTeX033() {
     check("-\\nabla \\times e", //
-        "-e*∇");
+        "-E*∇");
     check("\\nabla \\times B - 4\\pi j", //
         "-4*j*Pi+B*∇");
   }
@@ -248,9 +248,9 @@ public class TeXConverterTestCase extends TestCase {
 
     // only "upper case" E is interpreted as euler's constant
     check("\\lim_{x\\to 0}{\\frac{e^x-1}{2x}}", //
-        "Limit((-1+e^x)/(2*x),x->0)");
+        "Limit((-1+E^x)/(2*x),x->0)");
     checkEval("\\lim_{x\\to 0}{\\frac{e^x-1}{2x}}", //
-        "Log(e)/2");
+        "1/2");
   }
 
   public void testTeXIssueSinTimesCos() {
