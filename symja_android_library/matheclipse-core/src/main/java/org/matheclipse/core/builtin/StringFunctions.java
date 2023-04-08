@@ -2995,8 +2995,7 @@ public final class StringFunctions {
             }
             return temp;
           } else if (form.equals(S.TeXForm)) {
-            TeXSliceParser tpParser = new TeXSliceParser();
-            IExpr temp = tpParser.parse(arg1.toString());
+            IExpr temp = TeXSliceParser.convert(arg1.toString());
             // TeXParser texParser = new TeXParser(engine);
             // IExpr temp = texParser.toExpression(arg1.toString());
             if (head.isPresent()) {

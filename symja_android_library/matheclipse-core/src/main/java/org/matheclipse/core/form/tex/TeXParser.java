@@ -430,10 +430,21 @@ public class TeXParser {
   }
 
   private static ISymbol createSymbol(String str) {
+    if (str.length() == 1) {
+      char ch = str.charAt(0);
+      // i is very often an index in \\sum or \\prod
+      // if (ch == 'i') {
+      // return S.I;
+      // }
+      if (ch == 'e') {
+        return S.E;
+      }
+    }
     if (CharMatcher.javaLetterOrDigit().matchesAllOf(str)) {
       return F.symbol(str);
     }
     return F.$s(str);
+
   }
 
   /**

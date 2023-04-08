@@ -58,7 +58,8 @@ public class TeXSliceParser extends TeXScanner {
         }
 
         String exprStr = new String(fInputString, startOfSubExpr, endOfSubExpr - startOfSubExpr);
-        IExpr expr = toExpr(exprStr);
+        // IExpr expr = toExpr(exprStr);
+        IExpr expr = TeXSliceParser.convert(exprStr);
         if (numberOfColumns == 1) {
           list.append(expr);
         } else {
@@ -104,10 +105,11 @@ public class TeXSliceParser extends TeXScanner {
       int lastTeXIndex = lastIndex;
       int endTeXIndex = -1;
       int texIndex = -1;
+      int columns = -1;
+      getNextToken();
       while (fToken != TT_EOF) {
-        getNextToken();
         int token = fToken;
-        if (token == TT_AMPERSAND || token == TT_BACKSLASH || token == TT_END) {
+        if (token == TT_AMPERSAND || token == TT_DOUBLE_BACKSLASH || token == TT_END) {
           if (token == TT_END) {
             endTeXIndex = fCurrentPosition - "\\end".length();
           } else {
@@ -118,13 +120,24 @@ public class TeXSliceParser extends TeXScanner {
 
           String exprStr = new String(fInputString, lastTeXIndex, endTeXIndex - lastTeXIndex);
           lastTeXIndex = texIndex + 1;
-          IExpr expr = toExpr(exprStr);
+          // IExpr expr = toExpr(exprStr);
+          IExpr expr = TeXSliceParser.convert(exprStr);
           subList.append(expr);
-          if (token == TT_BACKSLASH) {
-            list.append(subList);
+          if (token == TT_DOUBLE_BACKSLASH) {
+            if (columns < 0) {
+              columns = subList.argSize();
+            }
+            if (columns == subList.argSize()) {
+              list.append(subList);
+            }
             subList = F.ListAlloc();
           } else if (token == TT_END) {
-            list.append(subList);
+            if (columns < 0) {
+              columns = subList.argSize();
+            }
+            if (columns == subList.argSize()) {
+              list.append(subList);
+            }
             subList = F.ListAlloc();
             if (fToken == TT_LIST_OPEN) {
               getNextToken();
@@ -141,11 +154,16 @@ public class TeXSliceParser extends TeXScanner {
           }
           continue;
         }
+        getNextToken();
       }
     } finally {
       fPackageMode = false;
     }
     return F.Null;
+  }
+
+  public static IExpr convert(String texStr) {
+    return new TeXSliceParser().parse(texStr);
   }
 
   public IExpr parse(String texStr) {
@@ -184,7 +202,18 @@ public class TeXSliceParser extends TeXScanner {
     int endTeXIndex = -1;
     while (fToken != TT_EOF) {
       if (fToken == TT_COMMAND) {
-        if (fCommandString.equals("left")) {
+        if (fCommandString.equals("text")) {
+          // ignore text
+          endTeXIndex = fCurrentPosition - fCommandString.length() - 1;
+          getNextToken();
+          int endOfSubExpr = indexOfToken(TT_LIST_OPEN, TT_LIST_CLOSE);
+          if (endOfSubExpr < 0) {
+            return S.Null;
+          }
+          ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
+          lastTeXIndex = endOfSubExpr + 1;
+
+        } else if (fCommandString.equals("left")) {
           endTeXIndex = fCurrentPosition - fCommandString.length() - 1;
           getNextToken();
           int startOfSubExpr = fCurrentPosition;
@@ -194,8 +223,7 @@ public class TeXSliceParser extends TeXScanner {
             getNextToken();
             String exprStr =
                 new String(fInputString, startOfSubExpr, endOfSubExpr - startOfSubExpr);
-            TeXSliceParser parser = new TeXSliceParser();
-            IExpr temp = parser.parse(exprStr);
+            IExpr temp = TeXSliceParser.convert(exprStr);
             endOfSubExpr = fCurrentPosition;
 
             lastTeXIndex =
@@ -231,9 +259,10 @@ public class TeXSliceParser extends TeXScanner {
       }
       getNextToken();
     }
-    if (ptBuf.length() == 0) {
-      ptBuf.append(texStr);
-    } else if (lastTeXIndex < texStr.length()) {
+    // if (ptBuf.length() == 0) {
+    // ptBuf.append(texStr);
+    // } else
+    if (lastTeXIndex < texStr.length()) {
       ptBuf.append(texStr.substring(lastTeXIndex));
     }
     IExpr result = parseMathExpr(ptBuf.toString());
@@ -290,6 +319,7 @@ public class TeXSliceParser extends TeXScanner {
           // ignore command
           continue;
         }
+
         if (commandStr.equals("left")) {
           if (ch == '.') {
             // ignore command

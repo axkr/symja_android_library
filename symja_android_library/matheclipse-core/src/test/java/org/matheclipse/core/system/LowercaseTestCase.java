@@ -23682,7 +23682,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   public void testToExpression() {
     check("ToExpression(\"\\\\begin{matrix}\n" //
-        + "1 & 2 \\\\\n" //
+        + "1 & 2 \\\\\\\\\n" //
         + " 7 & 8\n" //
         + "\\\\end{matrix}\"" //
         + ", TeXForm)", //
