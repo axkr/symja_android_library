@@ -4396,6 +4396,10 @@ public class F extends S {
     return new AST1(FresnelS, a);
   }
 
+  public static IAST FromPolarCoordinates(final IExpr a) {
+    return new AST1(FromPolarCoordinates, a);
+  }
+
   public static IAST FullForm(final IExpr a0) {
     return new AST1(FullForm, a0);
   }

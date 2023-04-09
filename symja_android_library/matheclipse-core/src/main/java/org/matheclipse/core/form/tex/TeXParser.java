@@ -95,6 +95,9 @@ public class TeXParser {
 
   static final BinaryOperator[] BINARY_OPERATORS = { //
       new BinaryOperator("=", "Equal", Precedence.EQUAL, (lhs, rhs) -> F.Equal(lhs, rhs)), //
+      // angle sign
+      new BinaryOperator("\u2220", "FromPolarCoordinates", Precedence.EQUAL,
+          (lhs, rhs) -> F.FromPolarCoordinates(F.List(lhs, rhs))), //
       new BinaryOperator("\u2264", "LessEqual", Precedence.EQUAL,
           (lhs, rhs) -> F.LessEqual(lhs, rhs)), //
       new BinaryOperator("\u2265", "GreaterEqual", Precedence.EQUAL,

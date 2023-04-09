@@ -376,6 +376,11 @@ public class TeXConverterTestCase extends TestCase {
         "List(List(2, 3), List(3, 4))");
   }
   
+  public void testTeXAngle() {
+    checkFullForm(//
+        "3\\angle2", //
+        "FromPolarCoordinates(List(3, 2))");
+  }
   public void testRec01() {
       ExprEvaluator evaluator = new ExprEvaluator();
       evaluator.eval("Pol[x_, y_] := FromPolarCoordinates[{x, y}]");
