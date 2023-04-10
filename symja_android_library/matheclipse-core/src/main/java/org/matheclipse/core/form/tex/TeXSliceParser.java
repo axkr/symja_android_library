@@ -191,6 +191,7 @@ public class TeXSliceParser extends TeXScanner {
 
   public IExpr parse(String texStr) {
     IExpr expression = parseTeXExpression(texStr);
+    // IExpr expression = Lambda.replaceSlots(expression, x->.TeXSliceParser.class.);
     return expression.replaceAll(x -> {
       if (x.isSlot()) {
         int slot = x.first().toIntDefault();
@@ -224,7 +225,18 @@ public class TeXSliceParser extends TeXScanner {
     int lastTeXIndex = 0;
     int endTeXIndex = -1;
     while (fToken != TT_EOF) {
-      if (fToken == TT_IDENTIFIER) {
+      if (fToken == TT_CHARACTER) {
+        if (fCurrentChar == 0x2061) { // apply function
+          endTeXIndex = fCurrentPosition - 1;
+          ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
+          lastTeXIndex = fCurrentPosition;
+        } else if (fCurrentChar == 0x221E) { // infinity
+          endTeXIndex = fCurrentPosition - 1;
+          ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
+          ptBuf.append(" \\infty ");
+          lastTeXIndex = fCurrentPosition;
+        }
+      } else if (fToken == TT_IDENTIFIER) {
         endTeXIndex = fCurrentPosition - 1;
         String identifier = getIdentifier();
         String functionName = FUNCTION_NAMES_MAP.get(identifier);
@@ -234,7 +246,7 @@ public class TeXSliceParser extends TeXScanner {
             if (fCommandString.equals("left")) {
               IExpr temp = convertLeftRight(texStr, lastTeXIndex);
               if (temp.isPresent()) {
-                ISymbol head = TeXParser.createSymbol(functionName);
+                ISymbol head = TeXParser.createFunction(functionName);
                 temp = F.unaryAST1(head, temp);
                 int endOfSubExpr = fCurrentPosition - 1;
                 // ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
@@ -245,8 +257,12 @@ public class TeXSliceParser extends TeXScanner {
           }
         }
       } else if (fToken == TT_COMMAND) {
-        if (fCommandString.equals("text")) {
-          // ignore text
+        if (fCommandString.equals("limits")) {
+          endTeXIndex = fCurrentPosition - fCommandString.length() - 1;
+          ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
+          lastTeXIndex = fCurrentPosition;
+        } else if (fCommandString.equals("text")) {
+          // create Symja string
           endTeXIndex = fCurrentPosition - fCommandString.length() - 1;
           getNextToken();
           if (fToken == TT_LIST_OPEN) {
@@ -271,7 +287,7 @@ public class TeXSliceParser extends TeXScanner {
               if (fCommandString.equals("left")) {
                 IExpr temp = convertLeftRight(texStr, lastTeXIndex);
                 if (temp.isPresent()) {
-                  ISymbol head = TeXParser.createSymbol(functionName);
+                  ISymbol head = TeXParser.createFunction(functionName);
                   temp = F.unaryAST1(head, temp);
                   int endOfSubExpr = fCurrentPosition - 1;
                   // ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));

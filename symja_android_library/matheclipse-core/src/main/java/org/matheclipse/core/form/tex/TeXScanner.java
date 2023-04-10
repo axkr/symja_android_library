@@ -47,9 +47,6 @@ public abstract class TeXScanner {
   /** Token type: slot # */
   // protected static final int TT_SLOT = 140;
 
-  /** Token type: pattern '_' */
-  protected static final int TT_BLANK = 142;
-
   /** Token type: pattern ''' (single apostrophe) for writing derivatives */
   protected static final int TT_DERIVATIVE = 147;
 
@@ -75,6 +72,12 @@ public abstract class TeXScanner {
   protected static final int TT_CHARACTER = 156;
 
   protected static final int TT_AMPERSAND = 157;
+
+  /** Token type: '_' */
+  protected static final int TT_SUBSCRIPT = 158;
+
+  /** Token type: '^' */
+  protected static final int TT_SUPERSCRIPT = 159;
 
   // ----------------optimized identifier management------------------
   private static final String string_a = "a", string_b = "b", string_c = "c", string_d = "d",
@@ -532,8 +535,11 @@ public abstract class TeXScanner {
           case ',':
             fToken = TT_COMMA;
             break;
+          case '^':
+            fToken = TT_SUPERSCRIPT;
+            break;
           case '_':
-            fToken = TT_BLANK;
+            fToken = TT_SUBSCRIPT;
             // if (isValidPosition()) {
             // if (charAtPosition() == '_') {
             // fCurrentPosition++;
@@ -576,10 +582,10 @@ public abstract class TeXScanner {
             // fToken = TT_OPERATOR;
             // return;
             // }
-            if (Characters.CharacterNamesMap.containsKey(String.valueOf(fCurrentChar))) {
-              fToken = TT_IDENTIFIER;
-              return;
-            }
+            // if (Characters.CharacterNamesMap.containsKey(String.valueOf(fCurrentChar))) {
+            // fToken = TT_IDENTIFIER;
+            // return;
+            // }
             // if (isValidPosition()) {
             // int codePoint = Character.codePointAt(fInputString, fCurrentPosition - 1);
             // String str = Characters.unicodePoint(codePoint);
@@ -1252,7 +1258,7 @@ public abstract class TeXScanner {
         return "TT_DIGIT";
       // case TT_SLOT:
       // return "TT_SLOT";
-      case TT_BLANK:
+      case TT_SUBSCRIPT:
         return "TT_BLANK";
       case TT_DERIVATIVE:
         return "TT_DERIVATIVE";

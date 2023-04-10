@@ -13,7 +13,6 @@ import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
-import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.BuiltInDummy;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -38,6 +37,12 @@ import uk.ac.ed.ph.snuggletex.SnuggleSession;
 
 public class TeXParser {
   private static final Logger LOGGER = LogManager.getLogger();
+
+  /**
+   * Because the {@link TeXSliceParser} uses the default slots, use this "dummy slot" inside this
+   * class.
+   */
+  private static ISymbol DUMMY_SUB_SLOT = F.Dummy("$SLOT$");
 
   static class BinaryOperator extends Operator {
     BiFunction<IExpr, IExpr, IExpr> binaryFunction;
@@ -95,8 +100,11 @@ public class TeXParser {
 
   static final BinaryOperator[] BINARY_OPERATORS = { //
       new BinaryOperator("=", "Equal", Precedence.EQUAL, (lhs, rhs) -> F.Equal(lhs, rhs)), //
+
+      // new BinaryOperator("\u2061", "Apply", Precedence.APPLY, //
+      // (lhs, rhs) -> F.Apply(lhs, rhs)), //
       // angle sign
-      new BinaryOperator("\u2220", "FromPolarCoordinates", Precedence.EQUAL,
+      new BinaryOperator("\u2220", "FromPolarCoordinates", Precedence.EQUAL, //
           (lhs, rhs) -> F.FromPolarCoordinates(F.List(lhs, rhs))), //
       new BinaryOperator("\u2264", "LessEqual", Precedence.EQUAL,
           (lhs, rhs) -> F.LessEqual(lhs, rhs)), //
@@ -214,6 +222,11 @@ public class TeXParser {
   int counter = 0;
   EvalEngine fEngine;
 
+  /**
+   * If <code>true</code>, a <code>msub, msup, msubsup, munderover</code> expression is parsed;
+   */
+  private boolean subOrSup;
+
   public TeXParser(EvalEngine engine) {
     fEngine = engine;
   }
@@ -290,7 +303,8 @@ public class TeXParser {
                 return args;
               }
               if (lhs.isFunction() && lhs.size() == 2) {
-                IExpr temp = Lambda.replaceSlots(lhs.first(), F.list(args));
+                IExpr temp = F.subs(lhs.first(), DUMMY_SUB_SLOT, args);
+                // IExpr temp = Lambda.replaceSlots(lhs.first(), F.list(args));
                 if (temp.isPresent()) {
                   lhs = temp;
                 }
@@ -355,9 +369,9 @@ public class TeXParser {
         currPrec = Precedence.TIMES;
         IExpr rhs = convert(list, position, end, null, currPrec);
         // invisible times?
-        if (!lhs.isFree(F.Slot1)) {
+        if (!lhs.isFree(DUMMY_SUB_SLOT)) {
           // issue #712
-          lhs = F.subs(lhs, F.Slot1, rhs);
+          lhs = F.subs(lhs, DUMMY_SUB_SLOT, rhs);
           result = lhs;
         } else {
           result = F.Times(lhs, rhs);
@@ -431,13 +445,23 @@ public class TeXParser {
     throw new AbortException();
   }
 
-  protected static ISymbol createSymbol(String str) {
+  protected static ISymbol createFunction(String str) {
+    if (CharMatcher.javaLetterOrDigit().matchesAllOf(str)) {
+      return F.symbol(str);
+    }
+    return F.$s(str);
+
+  }
+
+  protected ISymbol createSymbol(String str) {
     if (str.length() == 1) {
       char ch = str.charAt(0);
-      // i is very often an index in \\sum or \\prod
-      // if (ch == 'i') {
-      // return S.I;
-      // }
+      if (!subOrSup) {
+        // i is very often an index in \\sum or \\prod
+        if (ch == 'i') {
+          return S.I;
+        }
+      }
       if (ch == 'e') {
         return S.E;
       }
@@ -563,7 +587,7 @@ public class TeXParser {
           String str = ((ISymbol) dDenominator).getSymbolName();
           if (str.startsWith("d")) {
             str = str.substring(1);
-            return F.Function(F.D(F.Slot1, createSymbol(str)));
+            return F.Function(F.D(DUMMY_SUB_SLOT, createSymbol(str)));
           }
         }
       }
@@ -641,22 +665,14 @@ public class TeXParser {
     if (list.getLength() > 1) {
       Node temp = list.item(0);
       IExpr headExpr = toExpr(temp);
-      if (headExpr.isBuiltInSymbolID()) {
-        IBuiltInSymbol symbol = (IBuiltInSymbol) headExpr;
-
-        IEvaluator evaluator = symbol.getEvaluator();
-        if (evaluator instanceof IFunctionEvaluator) {
-          int[] expectedArgSize = ((IFunctionEvaluator) evaluator).expectedArgSize(null);
-          if (expectedArgSize != null && expectedArgSize[0] == 1) {
-            IExpr arg1 = toExpr(list.item(1));
-            if (list.getLength() == 2) {
-              return F.unaryAST1(headExpr, arg1);
-            }
-            int[] position = new int[] {1};
-            IExpr args = convert(list, position, null, 0);
-            return F.unaryAST1(headExpr, args);
-          }
+      if (isFunctionArg1(headExpr)) {
+        IExpr arg1 = toExpr(list.item(1));
+        if (list.getLength() == 2) {
+          return F.unaryAST1(headExpr, arg1);
         }
+        int[] position = new int[] {1};
+        IExpr args = convert(list, position, null, 0);
+        return F.unaryAST1(headExpr, args);
       }
     }
     // IExpr dummySymbol = getDummySymbol(list);
@@ -666,6 +682,25 @@ public class TeXParser {
 
     int[] position = new int[] {0};
     return convert(list, position, null, 0);
+  }
+
+  /**
+   * The <code>symbol</code> is a built-in function with one possible argument.
+   * 
+   * @param symbol
+   * @return
+   */
+  private boolean isFunctionArg1(IExpr head) {
+    if (head.isBuiltInSymbolID()) {
+      IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
+      if (evaluator instanceof IFunctionEvaluator) {
+        int[] expectedArgSize = ((IFunctionEvaluator) evaluator).expectedArgSize(null);
+        if (expectedArgSize != null && expectedArgSize[0] == 1) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /**
@@ -714,145 +749,169 @@ public class TeXParser {
   }
 
   private IExpr msubsup(NodeList list, NodeList parentList, int[] position, int precedence) {
-    // \\int_0^\\infty a dx
-    if (list.getLength() > 0) {
-      Node arg0 = list.item(0);
-      IExpr head = toExpr(arg0);
-      if (head.isBuiltInSymbol()) {
-        ISymbol dummySymbol = F.Dummy("msubsup$" + counter++);
-        IExpr arg2 = dummySymbol;
-        if (head.isBuiltInSymbolID() && head != S.Integrate) {
-          if (list.getLength() >= 2) {
-            Node arg1 = list.item(1);
-            IExpr a1 = toExpr(arg1);
-            if (list.getLength() == 3) {
-              IExpr a2 = toExpr(list.item(2));
-              if (head == S.Log10) {
-                head = S.Log;
+    boolean oldSubOrSup = subOrSup;
+    try {
+      subOrSup = true;
+      // \\int_0^\\infty a dx
+      if (list.getLength() > 0) {
+        Node arg0 = list.item(0);
+        IExpr head = toExpr(arg0);
+        if (head.isBuiltInSymbol()) {
+          ISymbol dummySymbol = F.Dummy("msubsup$" + counter++);
+          IExpr arg2 = dummySymbol;
+          if (head.isBuiltInSymbolID() && head != S.Integrate) {
+            if (list.getLength() >= 2) {
+              Node arg1 = list.item(1);
+              IExpr a1 = toExpr(arg1);
+              if (list.getLength() == 3) {
+                IExpr a2 = toExpr(list.item(2));
+                if (head == S.Log10) {
+                  head = S.Log;
+                }
+                return F.Power(F.binaryAST2(head, a1, DUMMY_SUB_SLOT), a2);
+              } else if (list.getLength() == 2) {
+                return F.binaryAST2(head, a1, DUMMY_SUB_SLOT);
               }
-              return F.Power(F.binaryAST2(head, a1, F.Slot1), a2);
-            } else if (list.getLength() == 2) {
-              return F.binaryAST2(head, a1, F.Slot1);
+            }
+          } else {
+            if (list.getLength() >= 2) {
+              Node arg1 = list.item(1);
+              IExpr a1 = toExpr(arg1);
+              if (list.getLength() == 3) {
+                IExpr a2 = toExpr(list.item(2));
+                arg2 = F.list(dummySymbol, a1, a2);
+              } else if (list.getLength() == 2) {
+                arg2 = F.list(dummySymbol, a1);
+              }
             }
           }
-        } else {
-          if (list.getLength() >= 2) {
-            Node arg1 = list.item(1);
-            IExpr a1 = toExpr(arg1);
-            if (list.getLength() == 3) {
-              IExpr a2 = toExpr(list.item(2));
-              arg2 = F.list(dummySymbol, a1, a2);
-            } else if (list.getLength() == 2) {
-              arg2 = F.list(dummySymbol, a1);
-            }
-          }
-        }
-        if (parentList != null) {
-          while (position[0] < parentList.getLength()) {
-            if (head == S.Integrate) {
-              return integrate(parentList, position, dummySymbol, arg2);
-            } else {
-              IExpr arg1 = convert(parentList, position, null, Integer.MAX_VALUE);
-              return F.binaryAST2(head, arg1, arg2);
+          if (parentList != null) {
+            while (position[0] < parentList.getLength()) {
+              if (head == S.Integrate) {
+                return integrate(parentList, position, dummySymbol, arg2);
+              } else {
+                IExpr arg1 = convert(parentList, position, null, Integer.MAX_VALUE);
+                return F.binaryAST2(head, arg1, arg2);
+              }
             }
           }
         }
       }
-    }
-    if (list.getLength() == 3) {
-      Node node = list.item(0);
-      IExpr a1 = toExpr(node);
-      node = list.item(1);
-      IExpr a2 = toExpr(node);
-      node = list.item(2);
-      IExpr a3 = toExpr(node);
-      return F.ternaryAST3(S.Subsuperscript, a1, a2, a3);
+      if (list.getLength() == 3) {
+        Node node = list.item(0);
+        IExpr a1 = toExpr(node);
+        node = list.item(1);
+        IExpr a2 = toExpr(node);
+        node = list.item(2);
+        IExpr a3 = toExpr(node);
+        return F.ternaryAST3(S.Subsuperscript, a1, a2, a3);
+      }
+    } finally {
+      subOrSup = oldSubOrSup;
     }
     throw new AbortException();
   }
 
   private IExpr msub(NodeList list) {
+    boolean oldSubOrSup = subOrSup;
+    try {
+      subOrSup = true;
+      if (list.getLength() == 2) {
+        Node arg1 = list.item(0);
+        Node arg2 = list.item(1);
 
-    if (list.getLength() == 2) {
-      Node arg1 = list.item(0);
-      Node arg2 = list.item(1);
+        IExpr a1 = toExpr(arg1);
+        IExpr a2 = toExpr(arg2);
+        if (a1.equals(S.Limit)) {
+          // Limit(#,a2)&
+          if (a2.isAST(S.Implies, 3)) { // \Rightarrow
+            a2 = F.Rule(a2.first(), a2.second());
+          }
+          IExpr direction = F.NIL;
+          if (a2.isRule() && a2.second().isPower()) {
+            IAST pow = (IAST) a2.second();
+            if (pow.exponent() instanceof BuiltInDummy) {
 
-      IExpr a1 = toExpr(arg1);
-      IExpr a2 = toExpr(arg2);
-      if (a1.equals(S.Limit)) {
-        // Limit(#,a2)&
-        if (a2.isAST(S.Implies, 3)) { // \Rightarrow
-          a2 = F.Rule(a2.first(), a2.second());
-        }
-        IExpr direction = F.NIL;
-        if (a2.isRule() && a2.second().isPower()) {
-          IAST pow = (IAST) a2.second();
-          if (pow.exponent() instanceof BuiltInDummy) {
-
-            String directionString = pow.exponent().toString();
-            if (directionString.equals("+")) {
-              // from below
-              a2 = F.Rule(a2.first(), pow.first());
-              direction = F.Rule(S.Direction, F.C1);
-            } else if (directionString.equals("-")) {
-              // from above
-              a2 = F.Rule(a2.first(), pow.first());
-              direction = F.Rule(S.Direction, F.CN1);
+              String directionString = pow.exponent().toString();
+              if (directionString.equals("+")) {
+                // from below
+                a2 = F.Rule(a2.first(), pow.first());
+                direction = F.Rule(S.Direction, F.C1);
+              } else if (directionString.equals("-")) {
+                // from above
+                a2 = F.Rule(a2.first(), pow.first());
+                direction = F.Rule(S.Direction, F.CN1);
+              }
             }
           }
+          if (direction.isPresent()) {
+            return F.Function(F.Limit(DUMMY_SUB_SLOT, a2, direction));
+          }
+          return F.Function(F.Limit(DUMMY_SUB_SLOT, a2));
         }
-        if (direction.isPresent()) {
-          return F.Function(F.Limit(F.Slot1, a2, direction));
+        if (a1 == S.Log10) {
+          return F.binaryAST2(S.Log, a2, DUMMY_SUB_SLOT);
         }
-        return F.Function(F.Limit(F.Slot1, a2));
+        return F.binaryAST2(S.Subscript, a1, a2);
       }
-      if (a1 == S.Log10) {
-        return F.binaryAST2(S.Log, a2, F.Slot1);
-      }
-      return F.binaryAST2(S.Subscript, a1, a2);
+    } finally {
+      subOrSup = oldSubOrSup;
     }
     throw new AbortException();
+
   }
 
   private IExpr msup(NodeList list) {
-    if (list.getLength() == 2) {
-      Node arg1 = list.item(0);
-      Node arg2 = list.item(1);
-      return power(arg1, arg2);
+    boolean oldSubOrSup = subOrSup;
+    try {
+      subOrSup = true;
+      if (list.getLength() == 2) {
+        Node arg1 = list.item(0);
+        Node arg2 = list.item(1);
+        return power(arg1, arg2);
+      }
+    } finally {
+      subOrSup = oldSubOrSup;
     }
     throw new AbortException();
   }
 
   private IExpr munderover(NodeList list, NodeList parentList, int[] position, int precedence) {
-    if (list.getLength() > 0) {
-      Node arg0 = list.item(0);
-      IExpr head = toExpr(arg0);
-      if (head.isBuiltInSymbol()) {
-        ISymbol sym = F.Dummy("munderover$" + counter++);
-        IExpr arg2 = sym;
-        if (list.getLength() >= 2) {
-          Node arg1 = list.item(1);
-          IExpr a1 = toExpr(arg1);
-          if (a1.isEqual() && a1.first().isSymbol()) {
-            sym = (ISymbol) a1.first();
-            arg2 = sym;
-            a1 = a1.second();
+    boolean oldSubOrSup = subOrSup;
+    try {
+      subOrSup = true;
+      if (list.getLength() > 0) {
+        Node arg0 = list.item(0);
+        IExpr head = toExpr(arg0);
+        if (head.isBuiltInSymbol()) {
+          ISymbol sym = F.Dummy("munderover$" + counter++);
+          IExpr arg2 = sym;
+          if (list.getLength() >= 2) {
+            Node arg1 = list.item(1);
+            IExpr a1 = toExpr(arg1);
+            if (a1.isEqual() && a1.first().isSymbol()) {
+              sym = (ISymbol) a1.first();
+              arg2 = sym;
+              a1 = a1.second();
+            }
+            if (list.getLength() == 3) {
+              IExpr a2 = toExpr(list.item(2));
+              arg2 = F.list(sym, a1, a2);
+            } else if (list.getLength() == 2) {
+              arg2 = F.list(sym, a1);
+            }
           }
-          if (list.getLength() == 3) {
-            IExpr a2 = toExpr(list.item(2));
-            arg2 = F.list(sym, a1, a2);
-          } else if (list.getLength() == 2) {
-            arg2 = F.list(sym, a1);
-          }
-        }
 
-        if (parentList != null && position[0] < parentList.getLength()) {
-          IExpr arg1 = convert(parentList, position, null, Integer.MAX_VALUE);
-          return F.binaryAST2(head, arg1, arg2);
-        } else {
-          return F.binaryAST2(head, F.Slot1, arg2);
+          if (parentList != null && position[0] < parentList.getLength()) {
+            IExpr arg1 = convert(parentList, position, null, Integer.MAX_VALUE);
+            return F.binaryAST2(head, arg1, arg2);
+          } else {
+            return F.binaryAST2(head, DUMMY_SUB_SLOT, arg2);
+          }
         }
       }
+    } finally {
+      subOrSup = oldSubOrSup;
     }
     // if (list.getLength() == 3) {
     // Node node = list.item(0);
@@ -890,6 +949,9 @@ public class TeXParser {
     } else if (a2.equals(S.Degree)) {
       // case \sin 30 ^ { \circ } ==> Sin(30*Degree)
       return F.Times(a1, a2);
+    }
+    if (isFunctionArg1(a1)) {
+      return F.Power(F.unaryAST1(a1, DUMMY_SUB_SLOT), a2);
     }
     return F.Power(a1, a2);
   }
