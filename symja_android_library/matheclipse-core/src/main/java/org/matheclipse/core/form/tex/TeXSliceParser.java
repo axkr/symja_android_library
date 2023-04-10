@@ -16,6 +16,11 @@ public class TeXSliceParser extends TeXScanner {
   public static String[] FUNCTION_NAME_MAP = new String[] {//
       "sin", "Sin", //
       "cos", "Cos", //
+      "cot", "Cot", //
+      "csc", "Csc", //
+      "ln", "Log", //
+      "log", "Log10", //
+      "sec", "Sec", //
       "tan", "Tan"};
 
   public static Map<String, String> FUNCTION_NAMES_MAP = new HashMap<String, String>();
@@ -130,6 +135,7 @@ public class TeXSliceParser extends TeXScanner {
       int texIndex = -1;
       int columns = -1;
       getNextToken();
+      int lastToken = TT_EOF;
       while (fToken != TT_EOF) {
         int token = fToken;
         if (token == TT_AMPERSAND || token == TT_DOUBLE_BACKSLASH || token == TT_END) {
@@ -158,7 +164,7 @@ public class TeXSliceParser extends TeXScanner {
             if (columns < 0) {
               columns = subList.argSize();
             }
-            if (columns == subList.argSize()) {
+            if (lastToken != TT_DOUBLE_BACKSLASH && columns == subList.argSize()) {
               list.append(subList);
             }
             subList = F.ListAlloc();
@@ -175,6 +181,7 @@ public class TeXSliceParser extends TeXScanner {
               }
             }
           }
+          lastToken = token;
           continue;
         }
         getNextToken();
@@ -225,7 +232,11 @@ public class TeXSliceParser extends TeXScanner {
     int lastTeXIndex = 0;
     int endTeXIndex = -1;
     while (fToken != TT_EOF) {
-      if (fToken == TT_CHARACTER) {
+      if (fToken == TT_BACKSLASH_SPACE) {
+        endTeXIndex = fCurrentPosition - 2;
+        ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
+        lastTeXIndex = fCurrentPosition;
+      } else if (fToken == TT_CHARACTER) {
         if (fCurrentChar == 0x2061) { // apply function
           endTeXIndex = fCurrentPosition - 1;
           ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
@@ -234,6 +245,11 @@ public class TeXSliceParser extends TeXScanner {
           endTeXIndex = fCurrentPosition - 1;
           ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
           ptBuf.append(" \\infty ");
+          lastTeXIndex = fCurrentPosition;
+        } else if (fCurrentChar == 0x00B0) { // degree
+          endTeXIndex = fCurrentPosition - 1;
+          ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
+          ptBuf.append(" \\degree ");
           lastTeXIndex = fCurrentPosition;
         }
       } else if (fToken == TT_IDENTIFIER) {
@@ -257,7 +273,20 @@ public class TeXSliceParser extends TeXScanner {
           }
         }
       } else if (fToken == TT_COMMAND) {
-        if (fCommandString.equals("limits")) {
+        if (fCommandString.equals("Huge")//
+            || fCommandString.equals("huge") //
+            || fCommandString.equals("LARGE") //
+            || fCommandString.equals("Large") //
+            || fCommandString.equals("large") //
+            || fCommandString.equals("normalsize") //
+            || fCommandString.equals("small") //
+            || fCommandString.equals("footnotesize") //
+            || fCommandString.equals("scriptsize") //
+            || fCommandString.equals("tiny") //
+            || fCommandString.equals("limits") //
+            || fCommandString.equals("quad") // spacing
+            || fCommandString.equals("qquad") // spacing
+        ) {
           endTeXIndex = fCurrentPosition - fCommandString.length() - 1;
           ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
           lastTeXIndex = fCurrentPosition;
@@ -405,20 +434,6 @@ public class TeXSliceParser extends TeXScanner {
           ch = texStr.charAt(++i);
         }
         String commandStr = command.toString();
-        if (commandStr.equals("Huge")//
-            || commandStr.equals("huge") //
-            || commandStr.equals("LARGE") //
-            || commandStr.equals("Large") //
-            || commandStr.equals("large") //
-            || commandStr.equals("normalsize") //
-            || commandStr.equals("small") //
-            || commandStr.equals("footnotesize") //
-            || commandStr.equals("scriptsize") //
-            || commandStr.equals("tiny") //
-        ) {
-          // ignore command
-          continue;
-        }
 
         if (commandStr.equals("left")) {
           if (ch == '.') {

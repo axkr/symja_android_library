@@ -343,9 +343,9 @@ public class TeXConverterTestCase extends TestCase {
   }
 
   public void testTeXIssue712m() {
-    checkFullForm(
+    checkFullForm(//
         "64 ^ { \\frac { 1 } { 2 } } \\cdot 64 ^ { \\frac { 1 } { 3 } } \\cdot \\sqrt [ 6 ] { 6 }", //
-        "Times(Power(6, Rational(1, 6)), Power(64, Times(1, Rational(1,3))), Power(64, Times(1, Rational(1,2))))");
+        "Times(Power(6, Rational(1, 6)), Power(64, Rational(1,3)), Power(64, Rational(1,2)))");
   }
 
   public void testTeXIssue712n() {

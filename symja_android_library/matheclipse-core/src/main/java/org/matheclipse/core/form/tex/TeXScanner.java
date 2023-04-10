@@ -65,19 +65,21 @@ public abstract class TeXScanner {
 
   protected static final int TT_DOUBLE_BACKSLASH = 153;
 
-  protected static final int TT_BEGIN = 154;
+  protected static final int TT_BACKSLASH_SPACE = 154;
 
-  protected static final int TT_END = 155;
+  protected static final int TT_BEGIN = 155;
 
-  protected static final int TT_CHARACTER = 156;
+  protected static final int TT_END = 156;
 
-  protected static final int TT_AMPERSAND = 157;
+  protected static final int TT_CHARACTER = 157;
+
+  protected static final int TT_AMPERSAND = 158;
 
   /** Token type: '_' */
-  protected static final int TT_SUBSCRIPT = 158;
+  protected static final int TT_SUBSCRIPT = 159;
 
   /** Token type: '^' */
-  protected static final int TT_SUPERSCRIPT = 159;
+  protected static final int TT_SUPERSCRIPT = 160;
 
   // ----------------optimized identifier management------------------
   private static final String string_a = "a", string_b = "b", string_c = "c", string_d = "d",
@@ -410,6 +412,16 @@ public abstract class TeXScanner {
             if (specialChar == '\\') {
               fCurrentPosition++;
               fToken = TT_DOUBLE_BACKSLASH;
+              return;
+            }
+            if (specialChar == '!' //
+                || specialChar == ',' //
+                || specialChar == ':' //
+                || specialChar == ';' //
+                || specialChar == ':' //
+                || specialChar == ':') {
+              fCurrentPosition++;
+              fToken = TT_BACKSLASH_SPACE;
               return;
             }
             if (specialChar == '{' || specialChar == '}') {

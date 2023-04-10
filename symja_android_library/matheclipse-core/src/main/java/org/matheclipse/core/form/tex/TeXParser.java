@@ -22,6 +22,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.Precedence;
@@ -239,20 +240,29 @@ public class TeXParser {
     final int listSize = list.getLength();
     if (end > 1) {
       if (lhs == null) {
+        IASTAppendable resultList = F.Sequence();
+        int i = position[0];
+        while (i < end) {
+          Node op = list.item(i);
+          String name = op.getNodeName();
+          if (name.equals("mo")) {
+            String text = op.getTextContent();
+            if (text.equals(",")) {
+              IExpr temp = convert(list, position, i, null, Precedence.NO_PRECEDENCE);
+              resultList.append(temp);
+              position[0] = i + 1;
+            }
+          }
+          i++;
+        }
+        if (resultList.argSize() > 0) {
+          IExpr temp = convert(list, position, i, null, Precedence.NO_PRECEDENCE);
+          resultList.append(temp);
+          return resultList;
+        }
+
         Node lhsNode = list.item(position[0]++);
         String name = lhsNode.getNodeName();
-        // if (name.equals("mi") || name.equals("mo")) {
-        // String text = lhsNode.getTextContent();
-        // PrefixOperator operator = PREFIX_OPERATOR_MAP.get(text);
-        // if (operator != null) {
-        // int currPrec = operator.getPrecedence();
-        // IExpr x = convert(list, position, end, null, currPrec);
-        // lhs = operator.createFunction(x);
-        // if (position[0] >= listSize) {
-        // return lhs;
-        // }
-        // }
-        // }
         if (name.equals("mo")) {
           String text = lhsNode.getTextContent();
           PrefixOperator operator = PREFIX_OPERATOR_MAP.get(text);
@@ -382,7 +392,7 @@ public class TeXParser {
       }
     }
 
-    return convertArgs(list, position);
+    return convertArgs(list, position[0], end, position);
   }
 
   public IExpr convertArgs(NodeList list, int[] position) {
@@ -569,11 +579,14 @@ public class TeXParser {
   private IExpr mfrac(NodeList list) {
     IASTAppendable frac = F.TimesAlloc(2);
     if (list.getLength() > 0) {
-      Node temp = list.item(0);
-      frac.append(toExpr(temp));
+      IExpr numerator = toExpr(list.item(0));
+      frac.append(numerator);
       if (1 < list.getLength()) {
-        temp = list.item(1);
-        frac.append(F.Power(toExpr(temp), -1));
+        IExpr denominator = toExpr(list.item(1));
+        if (numerator.isInteger() && denominator.isInteger() && !denominator.isZero()) {
+          return F.QQ((IInteger) numerator, (IInteger) denominator);
+        }
+        frac.append(F.Power(denominator, -1));
       } else {
         throw new AbortException();
       }
@@ -813,66 +826,66 @@ public class TeXParser {
   }
 
   private IExpr msub(NodeList list) {
-    boolean oldSubOrSup = subOrSup;
-    try {
-      subOrSup = true;
-      if (list.getLength() == 2) {
-        Node arg1 = list.item(0);
-        Node arg2 = list.item(1);
+    // boolean oldSubOrSup = subOrSup;
+    // try {
+    // subOrSup = true;
+    if (list.getLength() == 2) {
+      Node arg1 = list.item(0);
+      Node arg2 = list.item(1);
 
-        IExpr a1 = toExpr(arg1);
-        IExpr a2 = toExpr(arg2);
-        if (a1.equals(S.Limit)) {
-          // Limit(#,a2)&
-          if (a2.isAST(S.Implies, 3)) { // \Rightarrow
-            a2 = F.Rule(a2.first(), a2.second());
-          }
-          IExpr direction = F.NIL;
-          if (a2.isRule() && a2.second().isPower()) {
-            IAST pow = (IAST) a2.second();
-            if (pow.exponent() instanceof BuiltInDummy) {
+      IExpr a1 = toExpr(arg1);
+      IExpr a2 = toExpr(arg2);
+      if (a1.equals(S.Limit)) {
+        // Limit(#,a2)&
+        if (a2.isAST(S.Implies, 3)) { // \Rightarrow
+          a2 = F.Rule(a2.first(), a2.second());
+        }
+        IExpr direction = F.NIL;
+        if (a2.isRule() && a2.second().isPower()) {
+          IAST pow = (IAST) a2.second();
+          if (pow.exponent() instanceof BuiltInDummy) {
 
-              String directionString = pow.exponent().toString();
-              if (directionString.equals("+")) {
-                // from below
-                a2 = F.Rule(a2.first(), pow.first());
-                direction = F.Rule(S.Direction, F.C1);
-              } else if (directionString.equals("-")) {
-                // from above
-                a2 = F.Rule(a2.first(), pow.first());
-                direction = F.Rule(S.Direction, F.CN1);
-              }
+            String directionString = pow.exponent().toString();
+            if (directionString.equals("+")) {
+              // from below
+              a2 = F.Rule(a2.first(), pow.first());
+              direction = F.Rule(S.Direction, F.C1);
+            } else if (directionString.equals("-")) {
+              // from above
+              a2 = F.Rule(a2.first(), pow.first());
+              direction = F.Rule(S.Direction, F.CN1);
             }
           }
-          if (direction.isPresent()) {
-            return F.Function(F.Limit(DUMMY_SUB_SLOT, a2, direction));
-          }
-          return F.Function(F.Limit(DUMMY_SUB_SLOT, a2));
         }
-        if (a1 == S.Log10) {
-          return F.binaryAST2(S.Log, a2, DUMMY_SUB_SLOT);
+        if (direction.isPresent()) {
+          return F.Function(F.Limit(DUMMY_SUB_SLOT, a2, direction));
         }
-        return F.binaryAST2(S.Subscript, a1, a2);
+        return F.Function(F.Limit(DUMMY_SUB_SLOT, a2));
       }
-    } finally {
-      subOrSup = oldSubOrSup;
+      if (a1 == S.Log10) {
+        return F.binaryAST2(S.Log, a2, DUMMY_SUB_SLOT);
+      }
+      return F.binaryAST2(S.Subscript, a1, a2);
     }
+    // } finally {
+    // subOrSup = oldSubOrSup;
+    // }
     throw new AbortException();
 
   }
 
   private IExpr msup(NodeList list) {
-    boolean oldSubOrSup = subOrSup;
-    try {
-      subOrSup = true;
-      if (list.getLength() == 2) {
-        Node arg1 = list.item(0);
-        Node arg2 = list.item(1);
-        return power(arg1, arg2);
-      }
-    } finally {
-      subOrSup = oldSubOrSup;
+    // boolean oldSubOrSup = subOrSup;
+    // try {
+    // subOrSup = true;
+    if (list.getLength() == 2) {
+      Node arg1 = list.item(0);
+      Node arg2 = list.item(1);
+      return power(arg1, arg2);
     }
+    // } finally {
+    // subOrSup = oldSubOrSup;
+    // }
     throw new AbortException();
   }
 
