@@ -410,7 +410,7 @@ public class TestExpr extends ExprEvaluatorTestCase {
     // assert Mul(x, x**2, evaluate=False).args_cnc(cset=True, warn=False) == \
     // [{x, x**2}, []]
     assertEquals(((IAST) argsCnc(F.Times(x, F.Power(x, 2))).first()).asSet().toString(), //
-        "[x^2, x]");
+        "[x, x^2]");
     assertEquals(((IAST) argsCnc(F.Times(x, F.Power(x, 2))).second()).toString(), //
         "{}");
     // raises(ValueError, lambda: Mul(x, x, evaluate=False).args_cnc(cset=True))

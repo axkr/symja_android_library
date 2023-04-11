@@ -135,8 +135,7 @@ public class TeXParser {
       new BinaryOperator("\u2229", "Intersection", Precedence.INTERSECTION,
           (lhs, rhs) -> F.Intersection(lhs, rhs)),
       // \cup
-      new BinaryOperator("\u222A", "Union", Precedence.UNION, (lhs, rhs) -> F.Union(lhs, rhs)),
-  };
+      new BinaryOperator("\u222A", "Union", Precedence.UNION, (lhs, rhs) -> F.Union(lhs, rhs)),};
 
   private static Map<String, IExpr> UNICODE_OPERATOR_MAP;
 

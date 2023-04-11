@@ -6,6 +6,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -60,7 +61,11 @@ public class Predicates {
     }
   }
 
-  /** Check if the evaluation of a binary AST object gives <code>False</code> */
+  /**
+   * Implement a {@link Comparator} and check if the evaluation of a binary AST object gives
+   * {@link S#False} or <code>-1</code> and return <code>1</code>, or {@link S#True} or
+   * <code>1</code> and return <code>-1</code>.
+   */
   public static class IsBinaryFalse implements BiPredicate<IExpr, IExpr>, Comparator<IExpr> {
     protected final EvalEngine engine;
 
@@ -105,7 +110,12 @@ public class Predicates {
     }
   }
 
-  /** Check if the evaluation of a binary AST object gives <code>True</code> */
+  /**
+   * Implement a {@link Comparator} and check if the evaluation of a binary AST object gives
+   * {@link S#True} or <code>1</code> and return <code>1</code>, or {@link S#False} or
+   * <code>-1</code> and return <code>-1</code>.
+   * 
+   */
   public static class IsBinaryTrue implements BiPredicate<IExpr, IExpr>, Comparator<IExpr> {
     protected final EvalEngine engine;
 
