@@ -5,6 +5,7 @@ import java.util.Map;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -382,6 +383,9 @@ public class TeXSliceParser extends TeXScanner {
       getNextToken();
       String exprStr = new String(fInputString, startOfSubExpr, endOfSubExpr - startOfSubExpr);
       IExpr temp = TeXSliceParser.convert(exprStr);
+      if (temp.isSequence()) {
+        temp = ((IAST) temp).setAtCopy(0, S.List);
+      }
       endOfSubExpr = fCurrentPosition;
 
       lastTeXIndex = addSlotValue(temp, texStr, lastTeXIndex, endTeXIndex, endOfSubExpr, ptBuf);

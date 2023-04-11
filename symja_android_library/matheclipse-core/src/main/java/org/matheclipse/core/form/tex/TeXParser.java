@@ -131,6 +131,11 @@ public class TeXParser {
       // &#xf7; Division sign
       new BinaryOperator("\u00f7", "Divide", Precedence.DIVIDE, (lhs, rhs) -> F.Divide(lhs, rhs)), //
       new BinaryOperator("\u2208", "Element", 250, (lhs, rhs) -> F.Element(lhs, rhs)), //
+      // \cap
+      new BinaryOperator("\u2229", "Intersection", Precedence.INTERSECTION,
+          (lhs, rhs) -> F.Intersection(lhs, rhs)),
+      // \cup
+      new BinaryOperator("\u222A", "Union", Precedence.UNION, (lhs, rhs) -> F.Union(lhs, rhs)),
   };
 
   private static Map<String, IExpr> UNICODE_OPERATOR_MAP;
