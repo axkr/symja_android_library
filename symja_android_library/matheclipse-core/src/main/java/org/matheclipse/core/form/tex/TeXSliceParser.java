@@ -12,7 +12,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class TeXSliceParser extends TeXScanner {
 
-  public static String[] FUNCTION_NAMES = new String[] {"f", "g", "h"};
+  public static String[] FUNCTION_NAMES = new String[] {"f", "g", "h", //
+      "C", "D", "F", "G", "H"};
 
   public static String[] FUNCTION_NAME_MAP = new String[] {//
       "sin", "Sin", //
@@ -238,7 +239,12 @@ public class TeXSliceParser extends TeXScanner {
         ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
         lastTeXIndex = fCurrentPosition;
       } else if (fToken == TT_CHARACTER) {
-        if (fCurrentChar == 0x2061) { // apply function
+        if (fCurrentChar == 0x2032) { // derivative
+          endTeXIndex = fCurrentPosition - 1;
+          ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
+          ptBuf.append("'");
+          lastTeXIndex = fCurrentPosition;
+        } else if (fCurrentChar == 0x2061) { // apply function
           endTeXIndex = fCurrentPosition - 1;
           ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
           lastTeXIndex = fCurrentPosition;
@@ -258,19 +264,28 @@ public class TeXSliceParser extends TeXScanner {
         String identifier = getIdentifier();
         String functionName = FUNCTION_NAMES_MAP.get(identifier);
         if (functionName != null) {
+          IExpr head = TeXParser.createFunction(functionName);
           getNextToken();
+          if (fToken == TT_CHARACTER //
+              && (fCurrentChar == 0x2032 || fCurrentChar == '\'')) { // derivative
+            head = F.unaryAST1(F.Derivative(F.C1), head);
+            getNextToken();
+          }
           if (fToken == TT_COMMAND) {
             if (fCommandString.equals("left")) {
               IExpr temp = convertLeftRight(texStr, lastTeXIndex);
               if (temp.isPresent()) {
-                ISymbol head = TeXParser.createFunction(functionName);
                 temp = F.unaryAST1(head, temp);
                 int endOfSubExpr = fCurrentPosition - 1;
                 // ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
                 lastTeXIndex =
                     addSlotValue(temp, texStr, lastTeXIndex, endTeXIndex, endOfSubExpr + 1, ptBuf);
+              } else {
+                continue;
               }
             }
+          } else {
+            continue;
           }
         }
       } else if (fToken == TT_COMMAND) {
@@ -307,7 +322,21 @@ public class TeXSliceParser extends TeXScanner {
                 endOfSubExpr + 1, ptBuf);
           }
         } else if (fCommandString.equals("left")) {
-          lastTeXIndex = parseLeftRight(texStr, ptBuf, lastTeXIndex);
+          if (fCurrentChar == '.') {
+            // ignore \left.
+            endTeXIndex = fCurrentPosition - fCommandString.length() - 1;
+            ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
+            lastTeXIndex = fCurrentPosition + 1;
+          } else {
+            lastTeXIndex = parseLeftRight(texStr, ptBuf, lastTeXIndex);
+          }
+        } else if (fCommandString.equals("right")) {
+          if (fCurrentChar == '.') {
+            // ignore \right.
+            endTeXIndex = fCurrentPosition - fCommandString.length() - 1;
+            ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
+            lastTeXIndex = fCurrentPosition + 1;
+          }
         } else {
           String functionName = FUNCTION_NAMES_MAP.get(fCommandString);
           if (functionName != null) {
@@ -377,7 +406,6 @@ public class TeXSliceParser extends TeXScanner {
     endTeXIndex = fCurrentPosition - fCommandString.length() - 1;
     getNextToken();
     int startOfSubExpr = fCurrentPosition;
-    getNextToken();
     int endOfSubExpr = indexOfCommand("left", "right");
     if (endOfSubExpr > 0) {
       getNextToken();
