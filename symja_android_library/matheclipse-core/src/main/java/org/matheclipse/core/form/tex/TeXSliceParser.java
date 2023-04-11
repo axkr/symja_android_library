@@ -16,14 +16,28 @@ public class TeXSliceParser extends TeXScanner {
       "C", "D", "F", "G", "H"};
 
   public static String[] FUNCTION_NAME_MAP = new String[] {//
-      "sin", "Sin", //
+      "arccos", "ArcCos", //
+      "arcsin", "ArcSin", //
+      "arctan", "ArcTan", //
+      "arg", "Arg", //
       "cos", "Cos", //
       "cot", "Cot", //
       "csc", "Csc", //
+      "sec", "Sec", //
+      "sin", "Sin", //
+      "tan", "Tan", //
+      "cosh", "Cosh", //
+      "coth", "Coth", //
+      "sinh", "Sinh", //
+      "tanh", "Tanh", //
+      "det", "Det", //
+      "exp", "Exp", //
+      "lg", "Log2", //
       "ln", "Log", //
       "log", "Log10", //
-      "sec", "Sec", //
-      "tan", "Tan"};
+      "max", "Max", //
+      "min", "Min", //
+  };
 
   public static Map<String, String> FUNCTION_NAMES_MAP = new HashMap<String, String>();
 

@@ -294,7 +294,8 @@ public class TeXParser {
             boolean isNumericFunction =
                 ((attribute & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION);
             Node arg2 = list.item(position[0]);
-            if (arg2.getNodeName().equals("mfenced")) {
+            String arg2NodeName = arg2.getNodeName();
+            if (arg2NodeName.equals("mfenced")) {
               position[0]++;
               int[] position2 = new int[] {0};
               NodeList childNodes = arg2.getChildNodes();
@@ -307,7 +308,8 @@ public class TeXParser {
               if (position[0] == listSize) {
                 return lhs;
               }
-            } else if (isNumericFunction || (lhs.isBuiltInSymbolID()) || lhs.isFunction()) {
+            } else if (!arg2NodeName.equals("mo") //
+                && (isNumericFunction || lhs.isBuiltInSymbolID() || lhs.isFunction())) {
               if (lhs.equals(S.Integrate)) {
                 ISymbol test = F.Dummy("test");
                 return integrate(list, position, test, test);
