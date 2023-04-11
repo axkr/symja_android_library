@@ -69,8 +69,8 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISeqBase;
 import org.matheclipse.core.interfaces.IReal;
+import org.matheclipse.core.interfaces.ISeqBase;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numbertheory.Primality;
@@ -1485,8 +1485,7 @@ public final class NumberTheory {
       if (result.isNumber()) {
         if (result.isComplex()) {
           IComplex comp = (IComplex) result;
-          if (isRealDivisible(comp.re()).isTrue()
-              && isRealDivisible(comp.im()).isTrue()) {
+          if (isRealDivisible(comp.re()).isTrue() && isRealDivisible(comp.im()).isTrue()) {
             return S.True;
           }
           return S.False;
@@ -5239,7 +5238,7 @@ public final class NumberTheory {
    * 176214841
    * </pre>
    */
-  private static class Subfactorial extends AbstractTrigArg1 {
+  private static class Subfactorial extends AbstractFunctionEvaluator {
 
     /**
      * Iterative subfactorial algorithm based on the recurrence: <code>
@@ -5283,7 +5282,8 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
       if (arg1.isInteger() && arg1.isPositive()) {
         try {
           long n = ((IInteger) arg1).toLong();
@@ -5291,13 +5291,30 @@ public final class NumberTheory {
         } catch (ArithmeticException ae) {
           LOGGER.log(engine.getLogLevel(), "Subfactorial: argument n is to big.");
         }
+        return F.NIL;
+      }
+      if (arg1.isZero()) {
+        return F.C1;
+      }
+      if (arg1.isInexactNumber()) {
+        // Gamma(1+arg1, -1) / E
+        return F.Times(F.Gamma(F.Plus(F.C1, arg1), F.CN1), F.Power(S.E, F.CN1));
+      }
+      if (engine.isNumericMode() && arg1.isNumericFunction()) {
+        // Gamma(1+arg1, -1) / E
+        return F.Times(F.Gamma(F.Plus(F.C1, arg1), F.CN1), F.Power(S.E, F.CN1));
       }
       return F.NIL;
     }
 
     @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
     }
   }
 

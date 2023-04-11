@@ -251,6 +251,9 @@ public interface FunctionExpandRules {
     // SphericalHarmonicY(a_,b_,t_,p_):=(Sqrt(1+2*a)*E^(I*b*p)*(1+Cos(t))^(b/2)*Sqrt(Gamma(1+a-b))*Hypergeometric2F1(-a,1+a,1-b,Sin(t/2)^2)*Sin(t)^b)/((1-Cos(t))^(b/2)*(1-Cos(t)^2)^(b/2)*2*Sqrt(Pi)*Gamma(1-b)*Sqrt(Gamma(1+a+b)))
     SetDelayed(SphericalHarmonicY(a_,b_,t_,p_),
       Times(Sqrt(Plus(C1,Times(C2,a))),Exp(Times(CI,b,p)),Power(Plus(C1,Cos(t)),Times(C1D2,b)),Sqrt(Gamma(Plus(C1,a,Negate(b)))),Power(Times(Power(Subtract(C1,Cos(t)),Times(C1D2,b)),Power(Subtract(C1,Sqr(Cos(t))),Times(C1D2,b)),C2,CSqrtPi,Gamma(Subtract(C1,b)),Sqrt(Gamma(Plus(C1,a,b)))),CN1),Hypergeometric2F1(Negate(a),Plus(C1,a),Subtract(C1,b),Sqr(Sin(Times(C1D2,t)))),Power(Sin(t),b))),
+    // Subfactorial(n_):=Gamma(1+n,-1)/E
+    SetDelayed(Subfactorial(n_),
+      Times(Exp(CN1),Gamma(Plus(C1,n),CN1))),
     // WeberE(a_,b_):=(2*b*Cos(1/2*a*Pi)^2*HypergeometricPFQ({1},{3/2-a/2,3/2+a/2},(-1)*1/4*b^2))/((-1+a)*(1+a)*Pi)+(2*HypergeometricPFQ({1},{1-a/2,1+a/2},(-1)*1/4*b^2)*Sin(1/2*a*Pi)^2)/(a*Pi)
     SetDelayed(WeberE(a_,b_),
       Plus(Times(C2,b,Power(Times(Plus(CN1,a),Plus(C1,a),Pi),CN1),Sqr(Cos(Times(C1D2,a,Pi))),HypergeometricPFQ(list(C1),list(Plus(QQ(3L,2L),Times(CN1D2,a)),Plus(QQ(3L,2L),Times(C1D2,a))),Times(CN1,C1D4,Sqr(b)))),Times(C2,Power(Times(a,Pi),CN1),HypergeometricPFQ(list(C1),list(Plus(C1,Times(CN1D2,a)),Plus(C1,Times(C1D2,a))),Times(CN1,C1D4,Sqr(b))),Sqr(Sin(Times(C1D2,a,Pi)))))),

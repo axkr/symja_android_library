@@ -127,6 +127,8 @@
  SphericalHarmonicY(a_,1,t_,p_) := -((a*(1 + a)*Sqrt(1 + 2*a)*E^(I*p)*Sqrt(1 - Cos(t))*Sqrt(1 + Cos(t))*Sqrt(Gamma(a))*Hypergeometric2F1(1 - a, 2 + a, 2, Sin(t/2)^2)*Sin(t))/(4*Sqrt(Pi)*Sqrt(1 - Cos(t)^2)*Sqrt(Gamma(2 + a)))),
  SphericalHarmonicY(a_,b_,t_,p_) := (Sqrt(1 + 2*a)*E^(I*b*p)*(1 + Cos(t))^(b/2)*Sqrt(Gamma(1 + a - b))*Hypergeometric2F1(-a, 1 + a, 1 - b, Sin(t/2)^2)*Sin(t)^b)/((1 - Cos(t))^(b/2)*(1 - Cos(t)^2)^(b/2)*(2*Sqrt(Pi)*Gamma(1 - b)*Sqrt(Gamma(1 + a + b)))),
  
+ Subfactorial(n_) :=  Gamma(1+n, -1) / E,
+  
  WeberE(a_,b_) := (2*b*Cos((a*Pi)/2)^2*HypergeometricPFQ({1},{3/2-a/2,3/2+a/2},-(b^2/4)))/((-1+a)*(1+a)*Pi)+(2*HypergeometricPFQ({1},{1-a/2,1+a/2},-(b^2/4))*Sin((a*Pi)/2)^2)/(a*Pi),
  WeberE(a_,b_,c_) := -((c*Cos((a*Pi)/2)*Gamma(2+b)*HypergeometricPFQ({1+b/2,3/2+b/2},{3/2,3/2-a/2+b/2,3/2+a/2+b/2},-(c^2/4)))/(2*Gamma(3/2-a/2+b/2)*Gamma(3/2+a/2+b/2)))+(Gamma(1+b)*HypergeometricPFQ({1/2+b/2,1+b/2},{1/2,1-a/2+b/2,1+a/2+b/2},-(c^2/4))*Sin((a*Pi)/2))/(Gamma(1-a/2+b/2)*Gamma(1+a/2+b/2)), 
  
