@@ -81,6 +81,8 @@ public abstract class TeXScanner {
   /** Token type: '^' */
   protected static final int TT_SUPERSCRIPT = 160;
 
+  protected static final int TT_PERCENT = 161;
+
   // ----------------optimized identifier management------------------
   private static final String string_a = "a", string_b = "b", string_c = "c", string_d = "d",
       string_e = "e", string_f = "f", string_g = "g", string_h = "h", string_i = "i",
@@ -428,7 +430,12 @@ public abstract class TeXScanner {
               fCurrentPosition++;
               fToken = TT_CHARACTER;
               return;
+            } else if (specialChar == '%') {
+              fCurrentPosition++;
+              fToken = TT_PERCENT;
+              return;
             }
+            
           }
           // TeX command?
           getNextChar();

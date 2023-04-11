@@ -259,6 +259,12 @@ public class TeXSliceParser extends TeXScanner {
           ptBuf.append(" \\degree ");
           lastTeXIndex = fCurrentPosition;
         }
+
+      } else if (fToken == TT_PERCENT) {
+        endTeXIndex = fCurrentPosition - 2;
+        ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
+        ptBuf.append(" \\frac{1}{100} ");
+        lastTeXIndex = fCurrentPosition;
       } else if (fToken == TT_IDENTIFIER) {
         endTeXIndex = fCurrentPosition - 1;
         String identifier = getIdentifier();
