@@ -13,7 +13,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class TeXSliceParser extends TeXScanner {
 
   public static String[] FUNCTION_NAMES = new String[] {"f", "g", "h", //
-      "C", "D", "F", "G", "H"};
+      "C", "D", "F", "G", "H", "P"};
 
   public static String[] FUNCTION_NAME_MAP = new String[] {//
       "arccos", "ArcCos", //
@@ -253,7 +253,11 @@ public class TeXSliceParser extends TeXScanner {
         ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
         lastTeXIndex = fCurrentPosition;
       } else if (fToken == TT_CHARACTER) {
-        if (fCurrentChar == 0x2032) { // derivative
+        if (fCurrentChar == 0x2026) { // ellipsis
+          endTeXIndex = fCurrentPosition - 1;
+          ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
+          lastTeXIndex = fCurrentPosition;
+        } else if (fCurrentChar == 0x2032) { // derivative
           endTeXIndex = fCurrentPosition - 1;
           ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
           ptBuf.append("'");

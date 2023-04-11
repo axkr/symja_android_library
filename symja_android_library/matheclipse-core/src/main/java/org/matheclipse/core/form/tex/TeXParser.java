@@ -165,6 +165,7 @@ public class TeXParser {
       UNICODE_OPERATOR_MAP.put("\u2107", S.E); // euler's constant
 
       FUNCTION_HEADER_MAP = Config.TRIE_STRING2EXPR_BUILDER.withMatch(TrieMatch.EXACT).build();
+      FUNCTION_HEADER_MAP.put("lg", S.Log2);
       FUNCTION_HEADER_MAP.put("ln", S.Log);
       FUNCTION_HEADER_MAP.put("log", S.Log10);
       FUNCTION_HEADER_MAP.put("lim", S.Limit);
@@ -754,15 +755,15 @@ public class TeXParser {
   private IExpr msqrt(NodeList list) {
     if (list.getLength() > 0) {
       Node temp = list.item(0);
-      return F.Power(toExpr(temp), F.C1D2);
+      return F.Power(toExprList(temp), F.C1D2);
     }
     return F.NIL;
   }
 
   private IExpr mroot(NodeList list) {
     if (list.getLength() == 2) {
-      IExpr base = toExpr(list.item(0));
-      IExpr expDenominator = toExpr(list.item(1));
+      IExpr base = toExprList(list.item(0));
+      IExpr expDenominator = toExprList(list.item(1));
       return F.Power(base, F.Rational(F.C1, expDenominator));
     }
     return F.NIL;
@@ -953,13 +954,13 @@ public class TeXParser {
    * @return
    */
   public IExpr power(Node arg1, Node arg2) {
-    IExpr a1 = toExpr(arg1);
+    IExpr a1 = toExprList(arg1);
     String name2 = arg2.getNodeName();
     String text2 = arg2.getTextContent();
     if (name2.equals("mi") && text2.equals("'")) {
       return F.unaryAST1(F.Derivative(F.C1), a1);
     }
-    IExpr a2 = toExpr(arg2);
+    IExpr a2 = toExprList(arg2);
     if (a1.isBuiltInSymbol() && a2.isMinusOne()) {
       IExpr value = F.getUnaryInverseFunction(a1);
       if (value != null) {
@@ -974,6 +975,14 @@ public class TeXParser {
       return F.Power(F.unaryAST1(a1, DUMMY_SUB_SLOT), a2);
     }
     return F.Power(a1, a2);
+  }
+
+  private IExpr toExprList(Node node) {
+    IExpr expr = toExpr(node);
+    if (expr.isSequence()) {
+      return ((IAST) expr).setAtCopy(0, S.List);
+    }
+    return expr;
   }
 
   private IExpr toExpr(Node node) {
