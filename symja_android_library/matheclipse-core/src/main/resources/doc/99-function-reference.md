@@ -643,6 +643,7 @@
 * [NumberQ](functions/NumberQ.md)
 * [NumberString](functions/NumberString.md)
 * [Numerator](functions/Numerator.md)
+* [NumericalOrder](functions/NumericalOrder.md)
 * [NumericQ](functions/NumericQ.md)
 * [OddQ](functions/OddQ.md)
 * [Off](functions/Off.md)

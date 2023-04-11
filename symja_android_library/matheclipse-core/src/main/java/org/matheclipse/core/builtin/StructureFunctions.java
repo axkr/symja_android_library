@@ -75,6 +75,7 @@ public class StructureFunctions {
       S.MapAt.setEvaluator(new MapAt());
       S.MapIndexed.setEvaluator(new MapIndexed());
       S.MapThread.setEvaluator(new MapThread());
+      S.NumericalOrder.setEvaluator(new NumericalOrder());
       S.Order.setEvaluator(new Order());
       S.OrderedQ.setEvaluator(new OrderedQ());
       S.Operate.setEvaluator(new Operate());
@@ -1325,7 +1326,7 @@ public class StructureFunctions {
    * -1
    * </pre>
    */
-  private static final class Order extends AbstractFunctionEvaluator {
+  private static class Order extends AbstractFunctionEvaluator {
 
     /**
      * Compares the first expression with the second expression for order. Returns 1, 0, -1 as this
@@ -1338,19 +1339,48 @@ public class StructureFunctions {
      */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final int cp = ast.arg1().compareTo(ast.arg2());
+      return F.ZZ(compareTo(ast.arg1(), ast.arg2()));
+    }
+
+    public int compareTo(final IExpr arg1, final IExpr arg2) {
+      final int cp = arg1.compareTo(arg2);
       if (cp < 0) {
-        return F.C1;
+        return 1;
       } else if (cp > 0) {
-        return F.CN1;
+        return -1;
       }
-      return F.C0;
+      return 0;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
+  }
+
+  private static final class NumericalOrder extends Order {
+
+    @Override
+    public int compareTo(final IExpr arg1, final IExpr arg2) {
+      if (arg1.greater(arg2).isTrue()) {
+        return -1;
+      }
+      if (arg1.less(arg2).isTrue()) {
+        return 1;
+      }
+      if (arg1.equals(arg2)) {
+        return 0;
+      }
+      // canonical order
+      final int cp = arg1.compareTo(arg2);
+      if (cp < 0) {
+        return 1;
+      } else if (cp > 0) {
+        return -1;
+      }
+      return 0;
+    }
+
   }
 
   /**
@@ -1929,6 +1959,7 @@ public class StructureFunctions {
             return F.mapFunction(arg1.head(), sortAST, t -> {
               int sortedIndex = t.second().toIntDefault(-1);
               if (sortedIndex < 0) {
+                // stop iterating and return fFalse
                 return null;
               }
               return arg1.get(sortedIndex);

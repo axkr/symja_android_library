@@ -7158,6 +7158,9 @@ public class S {
    */
   public final static IBuiltInSymbol Numerator = F.initFinalSymbol("Numerator", ID.Numerator);
 
+  public final static IBuiltInSymbol NumericalOrder =
+      F.initFinalSymbol("NumericalOrder", ID.NumericalOrder);
+
   public final static IBuiltInSymbol NumericArray =
       F.initFinalSymbol("NumericArray", ID.NumericArray);
 

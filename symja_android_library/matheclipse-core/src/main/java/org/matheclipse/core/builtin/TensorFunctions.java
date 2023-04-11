@@ -596,7 +596,9 @@ public class TensorFunctions {
         ArrayIndexComparator comparator;
         if (ast.size() >= 4) {
           // use the 3rd argument as a head for the comparator operation:
-          comparator = new PredicateComparator(list, new Predicates.IsBinaryFalse(ast.arg3()));
+          IExpr comparatorFunction = ast.arg3();
+          comparator =
+              new PredicateComparator(list, new Predicates.IsBinaryFalse(comparatorFunction));
         } else {
           // use the default IExpr#compareTo() method
           comparator = new ArrayIndexComparator(list);

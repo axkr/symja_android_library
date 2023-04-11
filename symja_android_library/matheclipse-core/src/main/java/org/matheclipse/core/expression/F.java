@@ -6479,10 +6479,9 @@ public class F extends S {
   }
 
   /**
-   * Iterates over the <code>asts</code> elements and calls the function. Append the functions
-   * result expression at the end of the result list, if the function results is not equal
-   * {@link F#NIL}. If the function results is <code>null</code> stop iterating and return
-   * <code>false</code>.
+   * Iterates over the <code>ast</code> elements and calls the function. Append the functions result
+   * expression at the end of the result list, if the function results is not equal {@link F#NIL}.
+   * If the function results is <code>null</code> stop iterating and return <code>F.NIL</code>.
    * 
    * @param head the head of the result ast
    * @param ast

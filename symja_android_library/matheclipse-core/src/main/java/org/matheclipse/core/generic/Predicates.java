@@ -84,10 +84,10 @@ public class Predicates {
     public int compare(final IExpr firstArg, final IExpr secondArg) {
       IAST ast = F.binaryAST2(head, firstArg, secondArg);
       IExpr temp = engine.evaluate(ast);
-      if (temp.isFalse()) {
+      if (temp.isFalse() || temp.isMinusOne()) {
         return 1;
       }
-      if (temp.isTrue()) {
+      if (temp.isTrue() || temp.isOne()) {
         return -1;
       }
       return 0;
@@ -129,10 +129,10 @@ public class Predicates {
     public int compare(final IExpr firstArg, final IExpr secondArg) {
       IAST ast = F.binaryAST2(head, firstArg, secondArg);
       IExpr temp = engine.evaluate(ast);
-      if (temp.isTrue()) {
+      if (temp.isTrue() || temp.isOne()) {
         return 1;
       }
-      if (temp.isFalse()) {
+      if (temp.isFalse() || temp.isMinusOne()) {
         return -1;
       }
       return 0;
