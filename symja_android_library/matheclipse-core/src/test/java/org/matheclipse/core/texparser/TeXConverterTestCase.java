@@ -411,6 +411,13 @@ public class TeXConverterTestCase extends TestCase {
       assertEquals(result.toString(), "{-1.2484405096414273,2.727892280477045}");
   }
 
+  public void testDet() {
+    check(
+        "\\operatorname { det } \\left| \\begin{array} { l l } { 4 } & { 5 } \\\\ { 7 } & { 2 } \\end{array} \\right|", //
+        "Det({{4,5},{7,2}})");
+
+  }
+
   public void check(String strEval, String strResult) {
     IExpr expr = texConverter.parse(strEval);
     assertEquals(expr.toString(), strResult);

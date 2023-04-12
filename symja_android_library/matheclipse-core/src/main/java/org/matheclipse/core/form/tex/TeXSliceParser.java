@@ -79,11 +79,11 @@ public class TeXSliceParser extends TeXScanner {
     int numberOfColumns = 0;
     if (fToken == TT_LIST_OPEN) {
       getNextToken();
-      if (fToken == TT_IDENTIFIER) {
+      while (fToken == TT_IDENTIFIER) {
         String identifier = getIdentifier();
+        numberOfColumns += identifier.length();
         getNextToken();
         if (fToken == TT_LIST_CLOSE) {
-          numberOfColumns = identifier.length();
           if (numberOfColumns == 0) {
             return list;
           }
