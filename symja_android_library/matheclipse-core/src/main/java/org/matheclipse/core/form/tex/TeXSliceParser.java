@@ -290,10 +290,14 @@ public class TeXSliceParser extends TeXScanner {
         if (functionName != null) {
           IExpr head = TeXParser.createFunction(functionName);
           getNextToken();
-          if (fToken == TT_CHARACTER //
+          int derivativeCounter = 0;
+          while (fToken == TT_CHARACTER //
               && (fCurrentChar == 0x2032 || fCurrentChar == '\'')) { // derivative
-            head = F.unaryAST1(F.Derivative(F.C1), head);
+            derivativeCounter++;
             getNextToken();
+          }
+          if (derivativeCounter > 0) {
+            head = F.unaryAST1(F.Derivative(F.ZZ(derivativeCounter)), head);
           }
           if (fToken == TT_COMMAND) {
             if (fCommandString.equals("left")) {

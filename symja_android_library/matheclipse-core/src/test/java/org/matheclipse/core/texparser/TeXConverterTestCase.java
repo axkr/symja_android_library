@@ -382,7 +382,13 @@ public class TeXConverterTestCase extends TestCase {
         "FromPolarCoordinates(List(3, 2))");
   }
 
-  public void testTeXBinomial() {
+  public void testTeXBinomial001() {
+    checkEval(//
+        "_{2}^{\\\\:}C_{4}^{\\\\:}", //
+        "0");
+  }
+
+  public void testTeXBinomial002() {
     checkFullForm(//
         "_{6}^{\\\\:}C_{2}^{\\\\:}", //
         "Binomial(6, 2)");
@@ -415,7 +421,11 @@ public class TeXConverterTestCase extends TestCase {
     check(
         "\\operatorname { det } \\left| \\begin{array} { l l } { 4 } & { 5 } \\\\ { 7 } & { 2 } \\end{array} \\right|", //
         "Det({{4,5},{7,2}})");
+  }
 
+  public void testUnequal() {
+    check("h \\neq 0", //
+        "h!=0");
   }
 
   public void check(String strEval, String strResult) {

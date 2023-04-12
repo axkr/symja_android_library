@@ -107,6 +107,8 @@ public class TeXParser {
       // angle sign
       new BinaryOperator("\u2220", "FromPolarCoordinates", Precedence.EQUAL, //
           (lhs, rhs) -> F.FromPolarCoordinates(F.List(lhs, rhs))), //
+      new BinaryOperator("\u2260", "Unequal", Precedence.UNEQUAL,
+          (lhs, rhs) -> F.Unequal(lhs, rhs)), //
       new BinaryOperator("\u2264", "LessEqual", Precedence.EQUAL,
           (lhs, rhs) -> F.LessEqual(lhs, rhs)), //
       new BinaryOperator("\u2265", "GreaterEqual", Precedence.EQUAL,
@@ -267,6 +269,9 @@ public class TeXParser {
         }
 
         Node lhsNode = list.item(position[0]++);
+        if (lhsNode == null) {
+          return S.Null;
+        }
         String name = lhsNode.getNodeName();
         if (name.equals("mo")) {
           String text = lhsNode.getTextContent();
@@ -1058,7 +1063,10 @@ public class TeXParser {
         LOGGER.warn(errors.get(i));
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      if (Config.SHOW_STACKTRACE) {
+        System.out.println(texStr);
+        e.printStackTrace();
+      }
       // `1`.
       IOFunctions.printMessage(S.ToExpression, "error", F.List(F.stringx(e.getMessage())));
     }
