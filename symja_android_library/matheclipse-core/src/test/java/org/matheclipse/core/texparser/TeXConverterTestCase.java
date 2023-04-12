@@ -382,6 +382,18 @@ public class TeXConverterTestCase extends TestCase {
         "FromPolarCoordinates(List(3, 2))");
   }
 
+  public void testTeXBinomial() {
+    checkFullForm(//
+        "_{6}^{\\\\:}C_{2}^{\\\\:}", //
+        "Binomial(6, 2)");
+  }
+
+  public void testTeXPermuatations() {
+    checkFullForm(//
+        "_{3}^{\\\\:}P_{2}^{\\\\:}", //
+        "Pochhammer(2, Plus(-2, 1, 3))");
+  }
+
   public void testTeXPercent() {
     checkFullForm(//
         "20\\% ", //

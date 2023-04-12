@@ -385,6 +385,20 @@ public class TeXParser {
         // try to build a Times(...) expression
         currPrec = Precedence.TIMES;
         IExpr rhs = convert(list, position, end, null, currPrec);
+        if (lhs.isASTSizeGE(S.Subsuperscript, 3) && rhs.isASTSizeGE(S.Subsuperscript, 3)
+            && lhs.first().isSequence() && rhs.first().isSymbol()) {
+          IExpr n = lhs.second();
+          ISymbol functionHead = (ISymbol) rhs.first();
+          IExpr k = rhs.second();
+          if (functionHead.isString("C")) {
+            // combinations counting: C(n,k) ==> F.Binomial(n, k)
+            return F.Binomial(n, k);
+          } else if (functionHead.isString("P")) {
+            // permutations counting: P(n,k) ==> Pochhammer(k, n-k+1)
+            return F.Pochhammer(k, F.Plus(F.C1, n, F.Negate(k)));
+          }
+        }
+
         // invisible times?
         if (!lhs.isFree(DUMMY_SUB_SLOT)) {
           // issue #712
@@ -779,7 +793,7 @@ public class TeXParser {
         if (head.isBuiltInSymbol()) {
           ISymbol dummySymbol = F.Dummy("msubsup$" + counter++);
           IExpr arg2 = dummySymbol;
-          if (head.isBuiltInSymbolID() && head != S.Integrate) {
+          if (head.isBuiltInSymbolID() && head != S.Integrate && !head.isString("C")) {
             if (list.getLength() >= 2) {
               Node arg1 = list.item(1);
               IExpr a1 = toExpr(arg1);
