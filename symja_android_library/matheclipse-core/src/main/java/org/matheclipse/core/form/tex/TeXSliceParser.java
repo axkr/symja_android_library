@@ -471,15 +471,8 @@ public class TeXSliceParser extends TeXScanner {
     StringBuilder buf = new StringBuilder();
     char ch;
     int i = 0;
-    int curlyBracesLevel = 0;
-    StringBuilder eqCommand = null;
     while (i < texStr.length()) {
       ch = texStr.charAt(i);
-      if (ch == '{') {
-        curlyBracesLevel++;
-      } else if (ch == '}') {
-        curlyBracesLevel--;
-      }
       if (ch == '\\' && i < texStr.length() - 1) {
         // command
         int commandStart = i;
@@ -563,24 +556,10 @@ public class TeXSliceParser extends TeXScanner {
           }
         }
         buf.append("\\" + command.toString());
-      } else if (curlyBracesLevel == 0 && ch == '=' && i < texStr.length() - 1) {
-        int indexOf = texStr.indexOf('=', i + 1);
-        if (indexOf < 0 && eqCommand == null) {
-          eqCommand = new StringBuilder();
-          eqCommand.append("{");
-          eqCommand.append(buf.toString());
-          eqCommand.append("} = ");
-          eqCommand.append("{");
-          buf = eqCommand;
-        }
-        i++;
       } else {
         buf.append(ch);
         i++;
       }
-    }
-    if (eqCommand != null) {
-      buf.append("}");
     }
     return toExpr(buf.toString());
   }

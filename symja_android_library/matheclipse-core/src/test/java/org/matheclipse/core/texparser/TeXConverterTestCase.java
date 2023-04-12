@@ -328,8 +328,8 @@ public class TeXConverterTestCase extends TestCase {
   }
 
   public void testTeXIssue712k() {
-    check("2 \\operatorname { cos } ^ { 2 } x - \\operatorname { cos } x - 1 = 0", //
-        "-Cos(-1+x)+2*Cos(x)^2==0");
+    checkFullForm("2 \\operatorname { cos } ^ { 2 } x - \\operatorname { cos } x - 1 = 0", //
+        "Equal(Plus(-1, Plus(Times(-1, Cos(x)), Times(2, Power(Cos(x), 2)))), 0)");
   }
 
   public void testTeXIssue712l() {

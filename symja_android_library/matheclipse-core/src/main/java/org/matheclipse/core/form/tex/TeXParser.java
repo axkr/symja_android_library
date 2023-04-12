@@ -314,7 +314,7 @@ public class TeXParser {
                 ISymbol test = F.Dummy("test");
                 return integrate(list, position, test, test);
               }
-              IExpr args = convert(list, position, end, null, 0);
+              IExpr args = convert(list, position, end, null, precedence);
               if (args.isSequence()) {
                 ((IASTMutable) args).set(0, lhs);
                 return args;
