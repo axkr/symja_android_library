@@ -1362,17 +1362,8 @@ public class StructureFunctions {
 
     @Override
     public int compareTo(final IExpr arg1, final IExpr arg2) {
-      if (arg1.greater(arg2).isTrue()) {
-        return -1;
-      }
-      if (arg1.less(arg2).isTrue()) {
-        return 1;
-      }
-      if (arg1.equals(arg2)) {
-        return 0;
-      }
       // canonical order
-      final int cp = arg1.compareTo(arg2);
+      final int cp = arg1.compareToNumerical(arg2);
       if (cp < 0) {
         return 1;
       } else if (cp > 0) {

@@ -542,9 +542,12 @@ public interface IExpr
   }
 
   /**
-   * Compares this expression with the specified expression for order. Returns a negative integer,
-   * zero, or a positive integer as this expression is canonical less than, equal to, or greater
-   * than the specified expression.
+   * Compares this expression with the specified expression for canonical order. Returns a negative
+   * integer, zero, or a positive integer as this expression is canonical less than, equal to, or
+   * greater than the specified expression.
+   * 
+   * @see S#Order
+   * @see S#NumericalOrder
    */
   @Override
   default int compareTo(IExpr expr) {
@@ -556,6 +559,28 @@ public interface IExpr
     final int x = hierarchy();
     final int y = expr.hierarchy();
     return (x < y) ? -1 : ((x == y) ? 0 : 1);
+  }
+
+  /**
+   * Compares this expression with the specified expression for numerical order. Returns a negative
+   * integer, zero, or a positive integer as this expression is numerical less than, equal to, or
+   * greater than the specified expression. If numerical order could not determined switch to
+   * canonical order.
+   * 
+   * @see S#NumericalOrder
+   * @see S#Order
+   */
+  default int compareToNumerical(IExpr expr) {
+    if (greater(expr).isTrue()) {
+      return 1;
+    }
+    if (less(expr).isTrue()) {
+      return -1;
+    }
+    if (equals(expr)) {
+      return 0;
+    }
+    return compareTo(expr);
   }
 
   /**
