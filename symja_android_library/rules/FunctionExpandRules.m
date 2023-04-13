@@ -94,6 +94,8 @@
  
  Log((1 + I*Sqrt(3))/2) = I*Pi/3,
  Log(ProductLog(x_)) = x,
+ Log(x_^(a_)) = a*Log(x) 
+   /; (x>0 && Element(a, Reals)),
  
  LogisticSigmoid(x_) := 1/(1 + E^(-x)),
  

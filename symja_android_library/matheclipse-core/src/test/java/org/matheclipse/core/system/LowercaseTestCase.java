@@ -13566,6 +13566,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testLog() {
+
+    check("N(Log({2, E, 10}, 5/2),50)", //
+        "{1.3219280948873623478703194294893901758648313930245," //
+            + "0.91629073187415506518352721176801107145010121990826," //
+            + "0.39794000867203760957252221055101394646362023707578}");
+
+    check("N(Log({2, E, 10}, -5/2),50)", //
+        "{1.3219280948873623478703194294893901758648313930245+I*4.5323601418271938096276829457166668101718614677237," //
+            + "0.9162907318741550651835272117680110714501012199082+I*3.1415926535897932384626433832795028841971693993751," //
+            + "0.3979400086720376095725222105510139464636202370757+I*1.3643763538418413474857836254313557702101274837239}");
+
     check("Log((-1)^(1/8))", //
         "I*1/8*Pi");
     // check("Log(-(-1)^(1/8))", //
@@ -13584,6 +13595,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Log(27) / Log(9)", //
         "Log(27)/Log(9)");
 
+    check("Log(Interval({1/3, E}))", //
+        "Interval({-Log(3),1})");
     check("Log(Interval({0, 3}))", //
         "Interval({-Infinity,Log(3)})");
     check("Log(Interval({-1, 3}))", //
@@ -21388,6 +21401,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   // }
 
   public void testSimplify() {
+    check("Simplify(Log(E^n))", //
+        "Log(E^n)");
+    check("Simplify(Log(E^n),n>0)", //
+        "n");
 
     check("Simplify(0^x, x==0)", //
         "Indeterminate");

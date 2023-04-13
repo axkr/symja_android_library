@@ -1181,7 +1181,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      return F.num(ApfloatMath.atanh(arg1));
+      try {
+        return F.num(ApfloatMath.atanh(arg1));
+      } catch (ArithmeticException ae) {
+        // Logarithm of negative number; result would be complex
+        return F.complexNum(ApcomplexMath.atanh(arg1));
+      }
     }
 
     @Override
@@ -2307,16 +2312,22 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
+    /**
+     * Use swapped args in call to {@link FixedPrecisionApfloatHelper#log(Apfloat, Apfloat)}
+     */
     @Override
-    public IExpr e2ApfloatArg(final ApfloatNum d0, final ApfloatNum d1) {
+    public IExpr e2ApfloatArg(final ApfloatNum base, final ApfloatNum z) {
       FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-      return F.complexNum(h.log(d0.apfloatValue(), d1.apfloatValue()));
+      return F.complexNum(h.log(z.apfloatValue(), base.apfloatValue()));
     }
 
+    /**
+     * Use swapped args in call to {@link FixedPrecisionApfloatHelper#log(Apcomplex, Apcomplex)}
+     */
     @Override
-    public IExpr e2ApcomplexArg(final ApcomplexNum c0, final ApcomplexNum c1) {
+    public IExpr e2ApcomplexArg(final ApcomplexNum base, final ApcomplexNum z) {
       FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-      return F.complexNum(h.log(c0.apcomplexValue(), c1.apcomplexValue()));
+      return F.complexNum(h.log(z.apcomplexValue(), base.apcomplexValue()));
     }
 
     @Override
@@ -2367,8 +2378,7 @@ public class ExpTrigsFunctions {
         IExpr temp = F.eval(Times(exponent, F.Log(base)));
         IExpr imTemp = F.eval(F.Im(temp));
         if (imTemp.isReal()) {
-          if (((IReal) imTemp).isGT(F.num(-1 * Math.PI))
-              && ((IReal) imTemp).isLT(F.num(Math.PI))) {
+          if (((IReal) imTemp).isGT(F.num(-1 * Math.PI)) && ((IReal) imTemp).isLT(F.num(Math.PI))) {
             // Log(arg1 ^ arg2) == arg2*Log(arg1) ||| -Pi <
             // Im(arg2*Log(arg1)) < Pi
             return temp;

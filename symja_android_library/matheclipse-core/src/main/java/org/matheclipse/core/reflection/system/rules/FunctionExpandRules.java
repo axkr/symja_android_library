@@ -206,6 +206,9 @@ public interface FunctionExpandRules {
     // Log(ProductLog(x_))=x
     Set(Log(ProductLog(x_)),
       x),
+    // Log(x_^a_)=a*Log(x)/;x>0&&a∈Reals
+    Set(Log(Power(x_,a_)),
+      Condition(Times(a,Log(x)),And(Greater(x,C0),Element(a,Reals)))),
     // LogisticSigmoid(x_):=1/(1+E^(-x))
     SetDelayed(LogisticSigmoid(x_),
       Power(Plus(C1,Exp(Negate(x))),CN1)),
