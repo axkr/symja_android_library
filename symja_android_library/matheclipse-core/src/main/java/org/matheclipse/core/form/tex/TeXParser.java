@@ -247,25 +247,9 @@ public class TeXParser {
     final int listSize = list.getLength();
     if (end > 1) {
       if (lhs == null) {
-        IASTAppendable resultList = F.Sequence();
-        int i = position[0];
-        while (i < end) {
-          Node op = list.item(i);
-          String name = op.getNodeName();
-          if (name.equals("mo")) {
-            String text = op.getTextContent();
-            if (text.equals(",")) {
-              IExpr temp = convert(list, position, i, null, Precedence.NO_PRECEDENCE);
-              resultList.append(temp);
-              position[0] = i + 1;
-            }
-          }
-          i++;
-        }
-        if (resultList.argSize() > 0) {
-          IExpr temp = convert(list, position, i, null, Precedence.NO_PRECEDENCE);
-          resultList.append(temp);
-          return resultList;
+        IExpr commaSeparatedSequence = commaSeparatedSequence(list, position, end);
+        if (commaSeparatedSequence.isPresent()) {
+          return commaSeparatedSequence;
         }
 
         Node lhsNode = list.item(position[0]++);
@@ -357,6 +341,12 @@ public class TeXParser {
               sequence = ((IAST) sequence).setAtCopy(0, S.Times);
             }
             return F.Abs(sequence);
+          } else if (text.equals("∫")) {
+            ISymbol test = F.Dummy("test");
+            position[0]++;
+            IExpr rhs = integrate(list, position, test, test);
+            result = F.Times(lhs, rhs);
+            continue;
           }
           // issue #712 end
           BinaryOperator binaryOperator = BINARY_OPERATOR_MAP.get(text);
@@ -419,6 +409,38 @@ public class TeXParser {
     }
 
     return convertArgs(list, position[0], end, position);
+  }
+
+  /**
+   * Parse a comma separated {@link S#Sequence} if possible, otherwise return {@link F#NIL}.
+   * 
+   * @param list
+   * @param position
+   * @param end
+   * @return
+   */
+  private IExpr commaSeparatedSequence(NodeList list, int[] position, int end) {
+    IASTAppendable resultList = F.Sequence();
+    int i = position[0];
+    while (i < end) {
+      Node op = list.item(i);
+      String name = op.getNodeName();
+      if (name.equals("mo")) {
+        String text = op.getTextContent();
+        if (text.equals(",")) {
+          IExpr temp = convert(list, position, i, null, Precedence.NO_PRECEDENCE);
+          resultList.append(temp);
+          position[0] = i + 1;
+        }
+      }
+      i++;
+    }
+    if (resultList.argSize() > 0) {
+      IExpr temp = convert(list, position, i, null, Precedence.NO_PRECEDENCE);
+      resultList.append(temp);
+      return resultList;
+    }
+    return F.NIL;
   }
 
   public IExpr convertArgs(NodeList list, int[] position) {

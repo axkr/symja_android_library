@@ -98,6 +98,12 @@ public class TeXConverterTestCase extends TestCase {
         "Integrate(a,{x,0,Infinity})");
     check("\\int_0^\\infty e^{-x^2} dx=\\frac{\\sqrt{\\pi}}{2}", //
         "Integrate(E^(-x^2),{x,0,Infinity})==Sqrt(Pi)*1/2");
+    check("\\int \\sqrt{4 - \\frac{3}{5}x}dx", //
+        "Integrate(Sqrt(4-3/5*x),x)");
+    check("\\frac{2}{3}\\int \\sqrt{4 - \\frac{3}{5}x}dx", //
+        "2/3*Integrate(Sqrt(4-3/5*x),x)");
+    check("\\frac{2}{3}\\int \\sqrt{4 - \\frac{3}{5}x}dx + \\sin x", //
+        "2/3*Integrate(Sqrt(4-3/5*x),x)+Sin(x)");
   }
 
   public void testTeX012() {
