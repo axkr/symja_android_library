@@ -983,9 +983,7 @@ public abstract class DoubleFormFactory {
     if (head == S.Plus || head == S.Times || head == S.Equal || head == S.Unequal || head == S.Less
         || head == S.LessEqual || head == S.Greater || head == S.GreaterEqual || head == S.And
         || head == S.Or || head == S.Not) {
-      return OutputFormFactory.getOperator(head);
-      // String str = head.toString();
-      // operator = ASTNodeFactory.MMA_STYLE_FACTORY.get(str);
+      return OutputFormFactory.getOperator(head, head == S.Not ? 1 : 2);
     }
     return null;
   }

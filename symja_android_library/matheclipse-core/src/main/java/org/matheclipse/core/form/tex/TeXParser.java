@@ -93,7 +93,7 @@ public class TeXParser {
       new PrefixOperator("+", "Plus", 670, (x) -> x), //
       new PrefixOperator("-", "Minus", 485, (x) -> F.Negate(x)), //
       new PrefixOperator("\u00ac", "Not", 230, (x) -> F.Not(x)), //
-  };
+      new PrefixOperator("\u00b1", "PlusMinus", Precedence.PLUSMINUS, (x) -> F.PlusMinus(x)),};
 
   static final PostfixOperator[] POSTFIX_OPERATORS = { //
       new PostfixOperator("!", "Factorial", Precedence.FACTORIAL, (x) -> F.Factorial(x)), //
@@ -121,6 +121,9 @@ public class TeXParser {
       new BinaryOperator("\u2192", "Rule", 120, (lhs, rhs) -> F.Rule(lhs, rhs)), // rightarrow
       new BinaryOperator("\u21d4", "Equivalent", 120, (lhs, rhs) -> F.Equivalent(lhs, rhs)), // Leftrightarrow
       new BinaryOperator("\u2261", "Equivalent", 120, (lhs, rhs) -> F.Equivalent(lhs, rhs)), // equiv
+      new BinaryOperator("\u00b1", "PlusMinus", Precedence.PLUSMINUS,
+          (lhs, rhs) -> F.PlusMinus(lhs, rhs)),
+      // //
       new BinaryOperator("+", "Plus", Precedence.PLUS, (lhs, rhs) -> F.Plus(lhs, rhs)), //
       new BinaryOperator("-", "Subtract", Precedence.PLUS, (lhs, rhs) -> F.Subtract(lhs, rhs)), //
       new BinaryOperator("*", "Times", Precedence.TIMES, (lhs, rhs) -> F.Times(lhs, rhs)), //

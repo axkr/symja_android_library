@@ -434,6 +434,20 @@ public class TeXConverterTestCase extends TestCase {
         "h!=0");
   }
 
+  public void testPlusMinus() {
+    check("\\frac{ \\pm \\sqrt{5^{2} - 4 \\cdot 1 \\cdot 2}}{2\\left(1\\right)}", //
+        "(±Sqrt((-1)*2*4+5^2))/(2*1)");
+
+    check("\\frac{ - 5 \\pm \\sqrt{5^{2} - 4 \\cdot 1 \\cdot 2}}{2\\left(1\\right)}", //
+        "(-5±Sqrt((-1)*2*4+5^2))/(2*1)");
+  }
+
+  public void testDegreeO() {
+    check("\\sin \\left( - 330\\right)^{o}", //
+        "Sin(-330)^o");
+    check("\\sin^{o} \\left( - 330\\right)", //
+        "Sin(-330)^o");
+  }
   public void check(String strEval, String strResult) {
     IExpr expr = texConverter.parse(strEval);
     assertEquals(expr.toString(), strResult);

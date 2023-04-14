@@ -785,7 +785,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     if (javascriptFlavor == USE_MATHCELL) {
       if (head.isSymbolID(ID.Equal, ID.Unequal, ID.Less, ID.LessEqual, ID.Greater, ID.GreaterEqual,
           ID.And, ID.Or, ID.Not)) {
-        return OutputFormFactory.getOperator(head);
+        return OutputFormFactory.getOperator(head, head == S.Not ? 1 : 2);
       }
       return null;
     }

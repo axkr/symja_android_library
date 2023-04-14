@@ -7783,6 +7783,8 @@ public class S {
    */
   public final static IBuiltInSymbol Plus = F.initFinalSymbol("Plus", ID.Plus);
 
+  public final static IBuiltInSymbol PlusMinus = F.initFinalSymbol("PlusMinus", ID.PlusMinus);
+
   /**
    * Pochhammer(a, n) - returns the pochhammer symbol for a rational number `a` and an integer
    * number `n`.

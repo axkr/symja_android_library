@@ -1371,7 +1371,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
     ISymbol head = list.topHead();
     final org.matheclipse.parser.client.operator.Operator operator =
-        OutputFormFactory.getOperator(head);
+        OutputFormFactory.getOperator(head, list.argSize());
     if (operator != null) {
       if (operator instanceof PostfixOperator) {
         if (list.isAST1()) {

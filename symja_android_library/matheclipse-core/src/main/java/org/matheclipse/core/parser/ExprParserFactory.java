@@ -278,7 +278,7 @@ public class ExprParserFactory implements IParserFactory {
       "Repeated", "ReplaceAll", "TagSet", "Composition", "RightComposition", "StringExpression",
       "Pattern", "TwoWayRule", "TwoWayRule", "DirectedEdge", "UndirectedEdge", "CenterDot",
       "CircleDot", "CircleTimes", "Distributed", "Element", "Intersection", "NotEqual", "Wedge",
-      "TensorProduct", "Equivalent", "Implies", "§TILDE§"};
+      "TensorProduct", "Equivalent", "Implies", "PlusMinus", "PlusMinus", "§TILDE§"};
 
   static final String[] OPERATOR_STRINGS = {"::", "<<", "?", "??", "?", "//@", "*=", "+", "^=", ";",
       "@", "/@", "=.", "@@", "@@@", "//.", "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*",
@@ -301,6 +301,8 @@ public class ExprParserFactory implements IParserFactory {
       "\uF3DA", // TensorProduct
       "\u29E6", // Equivalent
       "\uF523", // Implies
+      "\u001b", // PlusMinus infix operator
+      "\u001b", // PlusMinus prefix operator
       "~"};
   private static Operator[] OPERATORS;
 
@@ -438,6 +440,9 @@ public class ExprParserFactory implements IParserFactory {
           new InfixExprOperator("\u29E6", "Equivalent", Precedence.EQUIVALENT, InfixOperator.NONE),
           new InfixExprOperator("\uF523", "Implies", Precedence.IMPLIES,
               InfixOperator.RIGHT_ASSOCIATIVE),
+          new InfixExprOperator("\u00b1", "PlusMinus", Precedence.PLUSMINUS,
+              InfixOperator.LEFT_ASSOCIATIVE),
+          new PrefixExprOperator("\u00b1", "PlusMinus", Precedence.PLUSMINUS),
           new TildeExprOperator("~", "§TILDE§", Precedence.TILDE_OPERATOR, InfixOperator.NONE)};
       StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
 

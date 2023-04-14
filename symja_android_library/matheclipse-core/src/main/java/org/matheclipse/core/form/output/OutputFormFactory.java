@@ -2,6 +2,7 @@ package org.matheclipse.core.form.output;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
@@ -814,7 +815,7 @@ public class OutputFormFactory {
         append(buf, "(");
       } else {
         if (operatorString.equals("^")) {
-          final Operator operator = getOperator(arg1.topHead());
+          final Operator operator = getOperator(arg1.topHead(), arg1.argSize());
           if (operator instanceof PostfixOperator) {
             append(buf, "(");
           }
@@ -832,7 +833,7 @@ public class OutputFormFactory {
         append(buf, ")");
       } else {
         if (operatorString.equals("^")) {
-          final Operator operator = getOperator(arg1.topHead());
+          final Operator operator = getOperator(arg1.topHead(), arg1.argSize());
           if (operator instanceof PostfixOperator) {
             append(buf, ")");
           }
@@ -1059,7 +1060,7 @@ public class OutputFormFactory {
           }
         }
 
-        final Operator operator = getOperator(head);
+        final Operator operator = getOperator(head, list.argSize());
         if (operator != null) {
           if (operator instanceof PostfixOperator) {
             if (list.isAST1()) {
@@ -1380,7 +1381,7 @@ public class OutputFormFactory {
     return false;
   }
 
-  public static Operator getOperator(ISymbol head) {
+  public static Operator getOperator(ISymbol head, int argSize) {
     String headerStr = head.getSymbolName();
     if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS && head.getContext().equals(Context.SYSTEM)) {
       String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headerStr);
@@ -1388,8 +1389,20 @@ public class OutputFormFactory {
         headerStr = str;
       }
     }
-    final Operator operator = ASTNodeFactory.MMA_STYLE_FACTORY.get(headerStr);
-    return operator;
+    Operator op = ASTNodeFactory.MMA_STYLE_FACTORY.get(headerStr);
+    if (op != null && argSize > 1 && !(op instanceof InfixOperator)) {
+      List<Operator> operatorList =
+          ASTNodeFactory.MMA_STYLE_FACTORY.getOperatorList(op.getOperatorString());
+      if (operatorList != null) {
+        for (int i = 0; i < operatorList.size(); i++) {
+          final Operator operator = operatorList.get(i);
+          if (operator instanceof InfixOperator) {
+            return operator;
+          }
+        }
+      }
+    }
+    return op;
   }
 
   public void convertSlot(final Appendable buf, final IAST list) throws IOException {
@@ -1492,7 +1505,7 @@ public class OutputFormFactory {
 
     boolean parentheses = false;
     if (arg1.isASTOrAssociation()) {
-      final Operator operator = getOperator(arg1.topHead());
+      final Operator operator = getOperator(arg1.topHead(), arg1.argSize());
       if (operator != null) {
         parentheses = true;
       }

@@ -244,7 +244,7 @@ public class ASTNodeFactory implements INodeParserFactory {
       "Repeated", "ReplaceAll", "TagSet", "Composition", "RightComposition", "StringExpression",
       "Pattern", "TwoWayRule", "TwoWayRule", "DirectedEdge", "UndirectedEdge", "CenterDot",
       "CircleDot", "CircleTimes", "Distributed", "Element", "Intersection", "NotEqual", "Wedge",
-      "TensorProduct", "Equivalent", "Implies", "§TILDE§"};
+      "TensorProduct", "Equivalent", "Implies", "PlusMinus", "PlusMinus", "§TILDE§"};
 
   static final String[] OPERATOR_STRINGS =
       {"::", "<<", "?", "//@", "*=", "+", "^=", ";", "@", "/@", "=.", "@@", "@@@", "//.", "<", "&&",
@@ -268,6 +268,8 @@ public class ASTNodeFactory implements INodeParserFactory {
           "\uF3DA", // TensorProduct
           "\u29E6", // Equivalent
           "\uF523", // Implies
+          "\u00b1", // PlusMinus infix operator
+          "\u00b1", // PlusMinus prefix operator
           "~"};
 
   public static final ApplyOperator APPLY_HEAD_OPERATOR =
@@ -400,6 +402,9 @@ public class ASTNodeFactory implements INodeParserFactory {
           new InfixOperator("\u29E6", "Equivalent", Precedence.EQUIVALENT, InfixOperator.NONE),
           new InfixOperator("\uF523", "Implies", Precedence.IMPLIES,
               InfixOperator.RIGHT_ASSOCIATIVE),
+          new InfixOperator("\u00b1", "PlusMinus", Precedence.PLUSMINUS,
+              InfixOperator.LEFT_ASSOCIATIVE),
+          new PrefixOperator("\u00b1", "PlusMinus", Precedence.PLUSMINUS),
           new TildeOperator("~", "§TILDE§", Precedence.TILDE_OPERATOR, InfixOperator.NONE)};
       StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
 

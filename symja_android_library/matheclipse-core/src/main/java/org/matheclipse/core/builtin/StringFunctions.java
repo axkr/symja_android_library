@@ -225,9 +225,9 @@ public final class StringFunctions {
       S.UpperCaseQ.setEvaluator(new UpperCaseQ());
 
       TeXParser.initialize();
-      if (!Config.FUZZY_PARSER) {
+      // if (!Config.FUZZY_PARSER) {
         S.ToExpression.setEvaluator(new ToExpression());
-      }
+      // }
     }
   }
 

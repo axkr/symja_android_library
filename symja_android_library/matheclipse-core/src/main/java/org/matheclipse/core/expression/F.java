@@ -7613,6 +7613,19 @@ public class F extends S {
     }
   }
 
+  public static IAST PlusMinus(final IExpr... a) {
+    switch (a.length) {
+      case 1:
+        return new AST1(PlusMinus, a[0]);
+      case 2:
+        return new AST2(PlusMinus, a[0], a[1]);
+      case 3:
+        return new AST3(PlusMinus, a[0], a[1], a[2]);
+      default:
+        return new AST(PlusMinus, a);
+    }
+  }
+
   /**
    * Define a <code>Plus()</code> expression <code>x + y</code> for addition.
    *

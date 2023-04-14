@@ -63,6 +63,8 @@ public class Precedence {
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    */
   public static final int PLUS = 310;
+  public static final int PLUSMINUS = 310;
+
   /**
    * See <a href=
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Power.md">Power</a>
