@@ -381,7 +381,7 @@ public class TeXConverterTestCase extends TestCase {
         "\\begin{array} {ll} { 2 } & {3} \\\\ { 3 } & {4} \\end{array}", //
         "List(List(2, 3), List(3, 4))");
   }
-  
+
   public void testTeXAngle() {
     checkFullForm(//
         "3\\angle2", //
@@ -413,14 +413,14 @@ public class TeXConverterTestCase extends TestCase {
   }
 
   public void testRec01() {
-      ExprEvaluator evaluator = new ExprEvaluator();
-      evaluator.eval("Pol[x_, y_] := FromPolarCoordinates[{x, y}]");
+    ExprEvaluator evaluator = new ExprEvaluator();
+    evaluator.eval("Pol[x_, y_] := FromPolarCoordinates[{x, y}]");
 
-      TeXSliceParser teXSliceParser = new TeXSliceParser();
-      IExpr input = teXSliceParser.parse("\\operatorname{Pol}(3,2)");
+    TeXSliceParser teXSliceParser = new TeXSliceParser();
+    IExpr input = teXSliceParser.parse("\\operatorname{Pol}(3,2)");
 
-      IExpr result = evaluator.eval(F.N(input));
-      assertEquals(result.toString(), "{-1.2484405096414273,2.727892280477045}");
+    IExpr result = evaluator.eval(F.N(input));
+    assertEquals(result.toString(), "{-1.2484405096414273,2.727892280477045}");
   }
 
   public void testDet() {
@@ -448,6 +448,13 @@ public class TeXConverterTestCase extends TestCase {
     check("\\sin^{o} \\left( - 330\\right)", //
         "Sin(-330)^o");
   }
+
+  public void testPartial() {
+    check(
+        "\\{ \\frac { \\partial ( x ^ { 2 } y ^ { 4 } ) } { \\partial x } , \\frac { \\partial ( x ^ { 2 } y ^ { 4 } ) } { \\partial y } \\}", //
+        "Sequence(D(x^2*y^4,x),D(x^2*y^4,y))");
+  }
+
   public void check(String strEval, String strResult) {
     IExpr expr = texConverter.parse(strEval);
     assertEquals(expr.toString(), strResult);

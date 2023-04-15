@@ -637,6 +637,16 @@ public class TeXParser {
         if (numerator.isInteger() && denominator.isInteger() && !denominator.isZero()) {
           return F.QQ((IInteger) numerator, (IInteger) denominator);
         }
+        if (numerator.argSize() == 1 && numerator.isAST() && numerator.head().isSymbol()
+            && denominator.isTimes()) {
+          ISymbol head = (ISymbol) numerator.head();
+          if (head.isString("\u2202")) {// \[PartialD]
+            int indx = denominator.indexOf(head);
+            if (indx > 0) {
+              return F.D(numerator.first(), ((IAST) denominator).removeAtCopy(indx).oneIdentity1());
+            }
+          }
+        }
         frac.append(F.Power(denominator, -1));
       } else {
         throw new AbortException();
