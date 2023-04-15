@@ -31,6 +31,8 @@ public enum Extension {
   M, //
   /** compressed image format with alpha channel */
   PNG, //
+  /** RawJSON */
+  RAWJSON, //
   /** text format */
   STRING,
   /** table format */
@@ -126,6 +128,9 @@ public enum Extension {
         }
         if (extensionString.equals("JPG")) {
           return JPEG;
+        }
+        if (extensionString.equals("JSON")) {
+          return JSON;
         }
         return valueOf(extensionString);
       }

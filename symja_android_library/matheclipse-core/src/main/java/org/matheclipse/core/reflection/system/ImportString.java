@@ -46,7 +46,7 @@ public class ImportString extends AbstractEvaluator {
     try {
       switch (format) {
         case JSON:
-          return JSONConvert.importJSON(str1);
+          return JSONConvert.importJSON(str1, false);
         case EXPRESSIONJSON:
           return ExpressionJSONConvert.importExpressionJSON(str1);
         case TABLE:
@@ -66,6 +66,8 @@ public class ImportString extends AbstractEvaluator {
             rowList.append(columnList);
           }
           return rowList;
+        case RAWJSON:
+          return JSONConvert.importJSON(str1, true);
         case STRING:
           return ofString(str1, engine);
         case TXT:

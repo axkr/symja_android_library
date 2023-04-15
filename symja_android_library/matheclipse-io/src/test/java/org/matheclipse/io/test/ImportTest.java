@@ -5,9 +5,12 @@ import java.io.File;
 import java.util.Arrays;
 import javax.imageio.ImageIO;
 import org.matheclipse.core.builtin.LinearAlgebra;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.io.Extension;
+import org.matheclipse.io.builtin.Import;
 import org.matheclipse.io.tensor.io.ImageFormat;
 import junit.framework.TestCase;
 
@@ -35,6 +38,20 @@ public class ImportTest extends TestCase {
     // verified with gimp
     System.out.println(part.toString());
     assertEquals(F.List(F.ZZ(180), F.ZZ(46), F.ZZ(47), F.ZZ(255)), part);
+  }
+
+  public void testRawJSON() throws Exception {
+    File file = new File(ImportTest.class.getResource("/io/java_wikipedia.json").getFile());
+
+    IExpr importResult =
+        Import.importFromPath(F.stringx("dummy"), Extension.RAWJSON, file, EvalEngine.get());
+    assertEquals(importResult.toString(), //
+        "<|continue-><|plcontinue->15881|0|Android_application,continue->|||>,query-><|pages-><|15881-><|pageid->\n" //
+            + "15881,ns->0,title->Java (programming language),links->{<|ns->0,title->\"Hello, world!\" program|>,<|ns->\n" //
+            + "0,title->ALGOL|>,<|ns->0,title->APL (programming language)|>,<|ns->0,title->ARM architecture family|>,<|ns->\n" //
+            + "0,title->Abstract Window Toolkit|>,<|ns->0,title->Acquisition of Sun Microsystems by Oracle Corporation|>,<|ns->\n" //
+            + "0,title->Ada (programming language)|>,<|ns->0,title->Android (operating system)|>,<|ns->\n" //
+            + "0,title->Android Runtime|>,<|ns->0,title->Android SDK|>}|>|>|>|>");
   }
 
   // public void testObject() throws ClassNotFoundException, DataFormatException, IOException {

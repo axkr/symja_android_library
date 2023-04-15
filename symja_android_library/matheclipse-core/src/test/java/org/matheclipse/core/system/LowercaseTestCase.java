@@ -11097,6 +11097,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("ImportString(\"{\\\"id\\\":1,\\\"text\\\":\\\"ñía\\\"}\", \"JSON\") // InputForm", //
         "{\"id\"->1,\"text\"->\"ñía\"}");
+    check("ImportString(\"{\\\"id\\\":1,\\\"text\\\":\\\"ñía\\\"}\", \"RawJSON\") // InputForm", //
+        "<|\"id\"->1,\"text\"->\"ñía\"|>");
+
+    check("ImportString(\"[1,2,3]\", \"JSON\") // InputForm", //
+        "{1,2,3}");
+    check("ImportString(\"[1,2,3]\", \"RawJSON\") // InputForm", //
+        "{1,2,3}");
+    check("ImportString(\"{\\\"x\\\":1, \\\"y\\\":2, \\\"z\\\":3}\", \"JSON\") // InputForm", //
+        "{\"x\"->1,\"y\"->2,\"z\"->3}");
+    check("ImportString(\"{\\\"x\\\":1, \\\"y\\\":2, \\\"z\\\":3}\", \"RawJSON\") // InputForm", //
+        "<|\"x\"->1,\"y\"->2,\"z\"->3|>");
+
+
     check("ImportString(\"3,4,6\\na,b,c\", \"Table\")", //
         "{{3,4,6},{a,b,c}}");
     check("ImportString(\"3,4,6\\na,b,c\", \"Text\") // InputForm", //

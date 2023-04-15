@@ -56,7 +56,6 @@ public class Import extends AbstractEvaluator {
 
       IStringX arg1 = (IStringX) ast.arg1();
       Extension format = Extension.importFilename(arg1.toString());
-      String fileName = arg1.toString();
 
       if (ast.size() > 2) {
         if (!(ast.arg2() instanceof IStringX)) {
@@ -64,57 +63,78 @@ public class Import extends AbstractEvaluator {
         }
         format = Extension.importExtension(((IStringX) ast.arg2()).toString());
       }
-      FileReader reader = null;
 
-      try {
-        File file = new File(fileName);
-        switch (format) {
-          case BMP:
-          case GIF:
-          case JPEG:
-          case PNG:
-            try (
-                InputStream inputStream = new ReaderInputStream(reader, Charset.defaultCharset())) {
-              return ImageFormat.from(ImageIO.read(inputStream));
-            }
-          case DOT:
-          case GRAPHML:
-            // graph Format
-            reader = new FileReader(fileName);
-            return graphImport(reader, format, engine);
-          case EXPRESSIONJSON:
-            return expressionJSONImport(fileName);
-          case JSON:
-            return jsonImport(fileName);
-          case M:
-            if (ast.isAST1()) {
-              return S.Get.of(engine, ast.arg1());
-            }
-            break;
-          case TABLE:
-            reader = new FileReader(fileName);
-            return Convert.fromCSV(reader);
-          case STRING:
-            return ofString(file, engine);
-          case TXT:
-            return ofText(file, engine);
-          case WXF:
-            byte[] byteArray = com.google.common.io.Files.toByteArray(file);
-            return WL.deserialize(byteArray);
-          default:
-        }
-      } catch (IOException ioe) {
-        LOGGER.log(engine.getLogLevel(), "Import: file {} not found!", fileName, ioe);
-      } catch (SyntaxError se) {
-        LOGGER.log(engine.getLogLevel(), "Import: file {} syntax error!", fileName, se);
-      } catch (Exception ex) {
-        LOGGER.log(engine.getLogLevel(), "Import: file {} ", fileName, ex);
-      } finally {
-        if (reader != null) {
-          try {
-            reader.close();
-          } catch (IOException e) {
+      return importFromPath(arg1, format, null, engine);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Import data from a file or URL specification.
+   * 
+   * @param pathName full pathName to a file or URL
+   * @param format the format of the input data
+   * @param dataFile if <code>dataFile!=null</code>, ignore pathName and use this {@link File}
+   *        directly
+   * @param engine
+   * @return
+   */
+  public static IExpr importFromPath(IStringX pathName, Extension format, File dataFile,
+      EvalEngine engine) {
+    FileReader reader = null;
+    String fileName = pathName.toString();
+    try {
+      File file = dataFile != null ? dataFile : new File(fileName);
+      switch (format) {
+        case BMP:
+        case GIF:
+        case JPEG:
+        case PNG:
+          try (InputStream inputStream = new ReaderInputStream(reader, Charset.defaultCharset())) {
+            return ImageFormat.from(ImageIO.read(inputStream));
           }
+        case DOT:
+        case GRAPHML:
+          // graph Format
+          reader = new FileReader(fileName);
+          return graphImport(reader, format, engine);
+        case EXPRESSIONJSON:
+          return expressionJSONImport(fileName);
+        case JSON:
+          if (dataFile != null) {
+            return jsonImport(dataFile, false);
+          }
+          return jsonImport(fileName, false);
+        case M:
+          return S.Get.of(engine, pathName);
+        case TABLE:
+          reader = new FileReader(fileName);
+          return Convert.fromCSV(reader);
+        case RAWJSON:
+          if (dataFile != null) {
+            return jsonImport(dataFile, true);
+          }
+          return jsonImport(fileName, true);
+        case STRING:
+          return ofString(file, engine);
+        case TXT:
+          return ofText(file, engine);
+        case WXF:
+          byte[] byteArray = com.google.common.io.Files.toByteArray(file);
+          return WL.deserialize(byteArray);
+        default:
+      }
+    } catch (IOException ioe) {
+      LOGGER.log(engine.getLogLevel(), "Import: file {} not found!", fileName, ioe);
+    } catch (SyntaxError se) {
+      LOGGER.log(engine.getLogLevel(), "Import: file {} syntax error!", fileName, se);
+    } catch (Exception ex) {
+      LOGGER.log(engine.getLogLevel(), "Import: file {} ", fileName, ex);
+    } finally {
+      if (reader != null) {
+        try {
+          reader.close();
+        } catch (IOException e) {
         }
       }
     }
@@ -148,10 +168,18 @@ public class Import extends AbstractEvaluator {
     return ExpressionJSONConvert.importExpressionJSONRecursive(node);
   }
 
-  private static IExpr jsonImport(String fileName) throws MalformedURLException, IOException {
+  private static IExpr jsonImport(File file, boolean rawJSON)
+      throws MalformedURLException, IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode node = mapper.readTree(file);
+    return JSONConvert.importJSONRecursive(node, rawJSON);
+  }
+
+  private static IExpr jsonImport(String fileName, boolean rawJSON)
+      throws MalformedURLException, IOException {
     ObjectMapper mapper = new ObjectMapper();
     JsonNode node = mapper.readTree(new URL(fileName));
-    return JSONConvert.importJSONRecursive(node);
+    return JSONConvert.importJSONRecursive(node, rawJSON);
   }
 
   @Override
@@ -197,7 +225,7 @@ public class Import extends AbstractEvaluator {
     return F.stringx(str);
   }
 
-  private IExpr graphImport(Reader reader, Extension format, EvalEngine engine)
+  private static IExpr graphImport(Reader reader, Extension format, EvalEngine engine)
       throws ImportException {
     Graph<IExpr, ExprEdge> result;
     switch (format) {
