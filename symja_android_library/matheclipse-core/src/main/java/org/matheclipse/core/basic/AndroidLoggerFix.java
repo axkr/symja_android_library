@@ -13,7 +13,7 @@ public final class AndroidLoggerFix {
     // Windows: Oracle Corporation
     // Android: The Android Project
     String vendorString = System.getProperty("java.specification.vendor");
-    if (vendorString.contains("Android")) {
+    if (vendorString != null && vendorString.contains("Android")) {
       try {
         // noinspection ResultOfMethodCallIgnored
         StackLocator.getInstance(); // call static init
