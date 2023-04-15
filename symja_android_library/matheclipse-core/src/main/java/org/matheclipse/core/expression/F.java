@@ -33,6 +33,7 @@ import org.apfloat.ApfloatContext;
 import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.fraction.BigFraction;
+import org.matheclipse.core.basic.AndroidLoggerFix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.Arithmetic;
@@ -4909,6 +4910,7 @@ public class F extends S {
   public static synchronized void initSymbols() {
 
     if (!isSystemStarted) {
+      AndroidLoggerFix.fix();
       try {
         isSystemStarted = true;
 
