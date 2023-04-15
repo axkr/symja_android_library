@@ -701,6 +701,7 @@
 * [Plot](functions/Plot.md)
 * [Plot3D](functions/Plot3D.md)
 * [Plus](functions/Plus.md)
+* [PlusMinus](functions/PlusMinus.md)
 * [Pochhammer](functions/Pochhammer.md)
 * [Point](functions/Point.md)
 * [PoissonDistribution](functions/PoissonDistribution.md)
