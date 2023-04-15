@@ -3572,10 +3572,10 @@ public final class NumberTheory {
       if (arg1.isInteger() && arg1.isPositive()) {
         int n = ((IInteger) arg1).toIntDefault();
         if (n > 0) {
-          if (n > NumberTheory.MPE_47.length) {
+          if (n > NumberTheory.MPE_51.length) {
             return F.NIL;
           }
-          return F.ZZ(NumberTheory.MPE_47[n - 1]);
+          return F.ZZ(NumberTheory.MPE_51[n - 1]);
         }
       }
       return F.NIL;
@@ -3624,9 +3624,9 @@ public final class NumberTheory {
 
       try {
         long n = ((IInteger) arg1).toLong();
-        if (n <= MPE_47[MPE_47.length - 1]) {
-          for (int i = 0; i < MPE_47.length; i++) {
-            if (MPE_47[i] == n) {
+        if (n <= MPE_51[MPE_51.length - 1]) {
+          for (int i = 0; i < MPE_51.length; i++) {
+            if (MPE_51[i] == n) {
               return S.True;
             }
           }
@@ -4334,14 +4334,14 @@ public final class NumberTheory {
       if (arg1.isInteger() && arg1.isPositive()) {
         int n = ((IInteger) arg1).toIntDefault();
         if (n >= 0) {
-          if (n > NumberTheory.MPE_47.length) {
+          if (n > NumberTheory.MPE_51.length) {
             return F.NIL;
           }
           if (n <= NumberTheory.PN_8.length) {
             return F.ZZ(NumberTheory.PN_8[n - 1]);
           }
           // 2^p
-          BigInteger b2p = BigInteger.ONE.shiftLeft(NumberTheory.MPE_47[n - 1]);
+          BigInteger b2p = BigInteger.ONE.shiftLeft(NumberTheory.MPE_51[n - 1]);
           // 2^(p-1)
           BigInteger b2pm1 = b2p.shiftRight(1);
           return F.ZZ(b2p.subtract(BigInteger.ONE).multiply(b2pm1));
@@ -5878,15 +5878,16 @@ public final class NumberTheory {
       {6, 28, 496, 8128, 33550336L, 8589869056L, 137438691328L, 2305843008139952128L};
 
   /**
-   * The first 47 mersenne prime exponents.
+   * The first 51 mersenne prime exponents.
    *
    * <p>
    * See <a href="https://en.wikipedia.org/wiki/Mersenne_prime">Mersenne prime</a>
    */
-  private static final int[] MPE_47 = {2, 3, 5, 7, 13, 17, 19, 31, 61, 89, 107, 127, 521, 607, 1279,
+  private static final int[] MPE_51 = {2, 3, 5, 7, 13, 17, 19, 31, 61, 89, 107, 127, 521, 607, 1279,
       2203, 2281, 3217, 4253, 4423, 9689, 9941, 11213, 19937, 21701, 23209, 44497, 86243, 110503,
       132049, 216091, 756839, 859433, 1257787, 1398269, 2976221, 3021377, 6972593, 13466917,
-      20996011, 24036583, 25964951, 30402457, 32582657, 37156667, 42643801, 43112609};
+      20996011, 24036583, 25964951, 30402457, 32582657, 37156667, 42643801, 43112609, 57885161,
+      74207281, 77232917, 82589933};
 
   private NumberTheory() {}
 
