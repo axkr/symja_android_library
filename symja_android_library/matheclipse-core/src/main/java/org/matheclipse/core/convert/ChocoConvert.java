@@ -345,7 +345,7 @@ public class ChocoConvert {
     }
     if (expr.isNumericFunction(true)) {
       try {
-        double value = expr.evalDouble();
+        double value = expr.evalf();
         return net.realVar(value);
       } catch (ArgumentTypeException ate) {
         // fall through
@@ -399,7 +399,7 @@ public class ChocoConvert {
         }
         if (exponent.isInteger()) {
           int value = ((IInteger) exponent).toIntDefault();
-          if (value >= -1) {
+          if (value >= -3) {
             if (value == -1) {
               CArExpression result = realExpression(net, base, map);
               result = net.realVar(1.0).div(result);

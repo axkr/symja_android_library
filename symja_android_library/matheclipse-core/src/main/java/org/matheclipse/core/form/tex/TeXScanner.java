@@ -419,9 +419,7 @@ public abstract class TeXScanner {
             if (specialChar == '!' //
                 || specialChar == ',' //
                 || specialChar == ':' //
-                || specialChar == ';' //
-                || specialChar == ':' //
-                || specialChar == ':') {
+                || specialChar == ';') {
               fCurrentPosition++;
               fToken = TT_BACKSLASH_SPACE;
               return;

@@ -70,7 +70,7 @@ public class Config {
    * 
    * @see #getExprCache()
    */
-  private static Cache<IExpr, Object> EXPR_CACHE = null;
+  private static volatile Cache<IExpr, Object> EXPR_CACHE = null;
 
   private static final int MAX_EXPR_CACHE_SIZE = 10000;
 
