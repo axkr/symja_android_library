@@ -1581,10 +1581,18 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int degree = ast.arg1().toIntDefault();
-      if (degree >= 0) {
-        return PolynomialsUtils.createHermitePolynomial(degree, ast.arg2());
+      IExpr n = ast.arg1();
+      IExpr x = ast.arg2();
+      if (x.isZero()) {
+        // (2^n * Sqrt(Pi))/Gamma((1 - n)/2)
+        return F.Times(F.Power(F.C2, n), F.CSqrtPi,
+            F.Power(F.Gamma(F.Times(F.C1D2, F.Subtract(F.C1, n))), F.CN1));
       }
+      int degree = n.toIntDefault();
+      if (degree >= 0) {
+        return PolynomialsUtils.createHermitePolynomial(degree, x);
+      }
+
       return F.NIL;
     }
 
