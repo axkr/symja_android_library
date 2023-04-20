@@ -520,27 +520,30 @@ public class EvalEngine implements Serializable {
    * @return
    */
   public IExpr addEvaluatedTraceStep(IExpr inputExpr, IExpr rewrittenExpr, IExpr... list) {
-    if (fTraceStack != null) {
-      IASTAppendable listOfHints = F.ast(S.List, list.length + 1);
-      listOfHints.appendAll(list, 0, list.length);
-      fTraceStack.add(inputExpr, rewrittenExpr, getRecursionCounter(), -1, listOfHints);
-      IExpr evaluatedResult = evaluate(rewrittenExpr);
-      listOfHints.append(evaluatedResult);
-      return evaluatedResult;
+    if (rewrittenExpr.isPresent()) {
+      if (fTraceStack != null) {
+        IASTAppendable listOfHints = F.ast(S.List, list.length + 1);
+        listOfHints.appendAll(list, 0, list.length);
+        fTraceStack.add(inputExpr, rewrittenExpr, getRecursionCounter(), -1, listOfHints);
+        IExpr evaluatedResult = evaluate(rewrittenExpr);
+        listOfHints.append(evaluatedResult);
+        return evaluatedResult;
+      }
+      return evaluate(rewrittenExpr);
     }
-    return evaluate(rewrittenExpr);
+    return rewrittenExpr;
   }
 
   /**
    * Add a single step to the currently defined trace stack.
    *
-   * @param inputExpr
-   * @param rewrittenExpr
-   * @param listOfHints
+   * @param inputExpr the input expression
+   * @param rewrittenExpr the rewritten input expression
+   * @param listOfHints this hints will be used in the eval trace listener
    * @see #setStepListener(IEvalStepListener)
    */
   public void addTraceStep(IExpr inputExpr, IExpr rewrittenExpr, IAST listOfHints) {
-    if (fTraceStack != null) {
+    if (fTraceStack != null && rewrittenExpr.isPresent()) {
       fTraceStack.add(inputExpr, rewrittenExpr, getRecursionCounter(), -1, listOfHints);
     }
   }

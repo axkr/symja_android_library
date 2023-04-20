@@ -1308,7 +1308,7 @@ public class TeXFormFactory {
    * @param exponentFigures
    * @param significantFigures
    * @param timesOperator timesOperator the current operator which will be used for {@link S#Times}
-   *        conversion. <code>\cdot</code> isa used as the default operator
+   *        conversion. <code>\cdot</code> is used as the default operator
    */
   public TeXFormFactory(int exponentFigures, int significantFigures, String timesOperator) {
     this.exponentFigures = exponentFigures;
