@@ -40,7 +40,6 @@ import org.hipparchus.linear.BlockFieldMatrix;
 import org.hipparchus.linear.ComplexEigenDecomposition;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.DependentVectorsHandler;
-import org.hipparchus.linear.EigenDecomposition;
 import org.hipparchus.linear.FieldDecompositionSolver;
 import org.hipparchus.linear.FieldLUDecomposition;
 import org.hipparchus.linear.FieldMatrix;
@@ -48,6 +47,7 @@ import org.hipparchus.linear.FieldQRDecomposition;
 import org.hipparchus.linear.FieldVector;
 import org.hipparchus.linear.HessenbergTransformer;
 import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.OrderedComplexEigenDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.linear.RiccatiEquationSolver;
@@ -1983,14 +1983,18 @@ public final class LinearAlgebra {
 
     @Override
     public IAST realMatrixEval(RealMatrix matrix) {
-      EigenDecomposition ed = new EigenDecomposition(matrix);
-      double[] realValues = ed.getRealEigenvalues();
-      double[] imagValues = ed.getImagEigenvalues();
-      return F.mapRange(0, realValues.length, (int i) -> {
-        if (F.isZero(imagValues[i])) {
-          return F.num(realValues[i]);
+      // TODO https://github.com/Hipparchus-Math/hipparchus/issues/174
+      ComplexEigenDecomposition ced = new OrderedComplexEigenDecomposition(matrix, //
+          ComplexEigenDecomposition.DEFAULT_EIGENVECTORS_EQUALITY, //
+          ComplexEigenDecomposition.DEFAULT_EPSILON, //
+          ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK, //
+          (c1, c2) -> Double.compare(c2.norm(), c1.norm()));
+      Complex[] eigenvalues = ced.getEigenvalues();
+      return F.mapRange(0, eigenvalues.length, (int i) -> {
+        if (F.isZero(eigenvalues[i].getImaginary())) {
+          return F.num(eigenvalues[i].getReal());
         }
-        return F.complexNum(realValues[i], imagValues[i]);
+        return F.complexNum(eigenvalues[i].getReal(), eigenvalues[i].getImaginary());
       });
     }
   }
@@ -2021,13 +2025,7 @@ public final class LinearAlgebra {
    * </pre>
    */
   private static class Eigenvectors extends AbstractMatrix1Expr {
-    /**
-     * Given a matrix A, it computes a complex eigen decomposition A = VDV^{T}.
-     *
-     * <p>
-     * Eigenvectors with numeric eigenvalues are sorted in order of decreasing absolute value of
-     * their eigenvalues.
-     */
+
     // private static class OrderedComplexAbsEigenDecomposition extends ComplexEigenDecomposition {
     //
     // /**
@@ -2243,7 +2241,11 @@ public final class LinearAlgebra {
     @Override
     public IAST realMatrixEval(RealMatrix matrix) {
       // TODO https://github.com/Hipparchus-Math/hipparchus/issues/174
-      ComplexEigenDecomposition ced = new ComplexEigenDecomposition(matrix);
+      ComplexEigenDecomposition ced = new OrderedComplexEigenDecomposition(matrix, //
+          ComplexEigenDecomposition.DEFAULT_EIGENVECTORS_EQUALITY, //
+          ComplexEigenDecomposition.DEFAULT_EPSILON, //
+          ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK, //
+          (c1, c2) -> Double.compare(c2.norm(), c1.norm()));
       return F.mapRange(0, matrix.getColumnDimension(),
           j -> F.Normalize(Convert.complexVector2List(ced.getEigenvector(j))));
     }

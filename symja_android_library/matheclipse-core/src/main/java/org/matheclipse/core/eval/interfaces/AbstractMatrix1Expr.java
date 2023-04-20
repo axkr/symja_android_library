@@ -114,7 +114,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
         // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
         LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
       } catch (final RuntimeException e) {
-        LOGGER.debug("AbstractMatrix1Expr.numericEval() failed", e);
+        LOGGER.error("AbstractMatrix1Expr.numericEval() failed", e);
       }
     }
     return F.NIL;
