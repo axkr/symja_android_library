@@ -7,15 +7,15 @@
 [![Build Master Snapshot](https://github.com/axkr/symja_android_library/actions/workflows/maven-build-master-and-publish-snapshot.yml/badge.svg)](https://github.com/axkr/symja_android_library/actions/workflows/maven-build-master-and-publish-snapshot.yml)
 [![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/org.matheclipse/matheclipse?server=https%3A%2F%2Foss.sonatype.org)](https://oss.sonatype.org/content/repositories/snapshots/org/matheclipse/)
 
-**Note**: this repository contains the **Java 11** version of the project. The [NCalc](https://github.com/tranleduy2000/ncalc) Android calculator project 
-maintains a **[Java 7 Android branch](https://github.com/tranleduy2000/symja_android_library)** of the [Android *.AAR library](https://github.com/tranleduy2000/symja_android_library/releases).
+**Note**: this repository contains the **Java 11** sources of the core modules. A minmal Android app example can be found in the [symja-example repository ](https://github.com/axkr/symja-example).
 
 Try the Android or iOS apps:
-
-<a href="https://play.google.com/store/apps/details?id=com.duy.calculator.free">
-	<img src="https://raw.githubusercontent.com/axkr/symja_android_library/master/screenshots/google_playstore_badge.png" alt="Google Play" width="200"></a>
-<a href="https://itunes.apple.com/us/app/ncalc-scientific-calculator/id1449106995">
-    <img src="https://raw.githubusercontent.com/axkr/symja_android_library/master/screenshots/appstore_badge.png" alt="App Store" width="200"></a>
+<ul>
+<li><a href="https://play.google.com/store/apps/details?id=com.duy.calculator.free">
+	<img src="https://raw.githubusercontent.com/axkr/symja_android_library/master/screenshots/google_playstore_badge.png" alt="Google Play" width="200"></a></li>
+<li><a href="https://itunes.apple.com/us/app/ncalc-scientific-calculator/id1449106995">
+    <img src="https://raw.githubusercontent.com/axkr/symja_android_library/master/screenshots/appstore_badge.png" alt="App Store" width="200"></a></li>
+</ul>
 
 or help testing the latest [Android BETA version](https://github.com/axkr/symja_android_library/wiki/BETA-tests) or the web demo at [matheclipse.org](https://matheclipse.org/).
 
