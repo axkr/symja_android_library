@@ -420,7 +420,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
           return prefix + "ZZ(" + intValue + ")";
       }
     } else if (NumberUtil.hasLongValue(fBigIntValue)) {
-      return prefix + "ZZ(" + fBigIntValue.longValueExact() + "L)";
+      // Android doesn't know method longValueExact
+      return prefix + "ZZ(" + fBigIntValue.longValue() + "L)";
     } else {
       return prefix + "ZZ(\"" + fBigIntValue.toString() + "\", 10)";
     }
@@ -826,16 +827,24 @@ public class BigIntegerSym extends AbstractIntegerSym {
   @Override
   public long toLongDefault(long defaultValue) {
     try {
-      return fBigIntValue.longValueExact();
+      if (NumberUtil.hasLongValue(fBigIntValue)) {
+        // Android doesn't know method longValueExact
+        return fBigIntValue.longValue();
+      }
     } catch (java.lang.ArithmeticException aex) {
-      return defaultValue;
+      //
     }
+    return defaultValue;
   }
 
   /** {@inheritDoc} */
   @Override
   public long toLong() throws ArithmeticException {
-    return fBigIntValue.longValueExact();
+    if (NumberUtil.hasLongValue(fBigIntValue)) {
+      // Android doesn't know method longValueExact
+      return fBigIntValue.longValue();
+    }
+    throw new ArithmeticException("BigInteger out of long range");
   }
 
   @Override

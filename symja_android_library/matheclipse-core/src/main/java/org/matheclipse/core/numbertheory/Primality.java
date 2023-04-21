@@ -18,6 +18,7 @@ import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntegerSym;
+import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -1342,9 +1343,12 @@ public class Primality implements IPrimality {
 
     BigInteger big = b.toBigNumerator();
     try {
-      long longValue = big.longValueExact();
-      if (longValue < PrimeInteger.BETA) {
-        return AbstractIntegerSym.factorizeLong(longValue);
+      if (NumberUtil.hasLongValue(big)) {
+        // Android doesn't know method longValueExact
+        long longValue = big.longValue();
+        if (longValue < PrimeInteger.BETA) {
+          return AbstractIntegerSym.factorizeLong(longValue);
+        }
       }
     } catch (ArithmeticException aex) {
       // go on with big integers

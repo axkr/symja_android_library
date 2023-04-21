@@ -7,6 +7,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntegerSym;
+import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IInteger;
@@ -46,13 +47,13 @@ public class BigIntegerPrimality extends Primality {
   public void factorInteger(BigInteger n, SortedMultiset<BigInteger> sortedMap) {
 
     // Do trial division by all primes < 131072.
-    //    TDiv tdiv = new TDiv();
-    //    n = tdiv.findSmallFactors(n, 131072, map);
-    //    if (n.equals(BigInteger.ONE)) {
-    //      return;
-    //    }
+    // TDiv tdiv = new TDiv();
+    // n = tdiv.findSmallFactors(n, 131072, map);
+    // if (n.equals(BigInteger.ONE)) {
+    // return;
+    // }
 
-    //    if (n.compareTo(BigInteger.ONE) > 0) {
+    // if (n.compareTo(BigInteger.ONE) > 0) {
     getFactorizer().factor(n, sortedMap);
   }
 
@@ -67,15 +68,15 @@ public class BigIntegerPrimality extends Primality {
   public SortedMap<BigInteger, Integer> factorInteger(BigInteger n) {
     SortedMultiset<BigInteger> map = new SortedMultiset_BottomUp<>();
     // Do trial division by all primes < 131072.
-    //    TDiv tdiv = new TDiv();
-    //    n = tdiv.findSmallFactors(n, 131072, map);
-    //    if (n.equals(BigInteger.ONE)) {
-    //      return map;
-    //    }
+    // TDiv tdiv = new TDiv();
+    // n = tdiv.findSmallFactors(n, 131072, map);
+    // if (n.equals(BigInteger.ONE)) {
+    // return map;
+    // }
 
-    //    if (n.compareTo(BigInteger.ONE) > 0) {
+    // if (n.compareTo(BigInteger.ONE) > 0) {
     getFactorizer().factor(n, map);
-    //    }
+    // }
     return map;
   }
 
@@ -100,9 +101,12 @@ public class BigIntegerPrimality extends Primality {
 
     BigInteger big = b.toBigNumerator();
     try {
-      long longValue = big.longValueExact();
-      if (longValue < PrimeInteger.BETA) {
-        return AbstractIntegerSym.factorizeLong(longValue);
+      if (NumberUtil.hasLongValue(big)) {
+        // Android doesn't know method longValueExact
+        long longValue = big.longValue();
+        if (longValue < PrimeInteger.BETA) {
+          return AbstractIntegerSym.factorizeLong(longValue);
+        }
       }
     } catch (ArithmeticException aex) {
       // go on with big integers

@@ -618,10 +618,15 @@ public class BigFractionSym extends AbstractFractionSym {
   public long toLongDefault(long defaultValue) {
     if (toBigDenominator().equals(BigInteger.ONE)) {
       try {
-        return toBigNumerator().longValueExact();
+        BigInteger numerator = toBigNumerator();
+        if (NumberUtil.hasLongValue(numerator)) {
+          // Android doesn't know method longValueExact
+          return numerator.longValue();
+        }
       } catch (java.lang.ArithmeticException aex) {
-        return defaultValue;
+        //
       }
+      return defaultValue;
     }
     return fFraction.equals(BigFraction.ZERO) ? 0 : defaultValue;
   }
@@ -630,9 +635,11 @@ public class BigFractionSym extends AbstractFractionSym {
   @Override
   public long toLong() throws ArithmeticException {
     if (toBigDenominator().equals(BigInteger.ONE)) {
-      return toBigNumerator().longValueExact();
-    }
-    if (toBigNumerator().equals(BigInteger.ZERO)) {
+      if (NumberUtil.hasLongValue(toBigNumerator())) {
+        // Android doesn't know method longValueExact
+        return toBigNumerator().longValue();
+      }
+    } else if (toBigNumerator().equals(BigInteger.ZERO)) {
       return 0L;
     }
     throw new ArithmeticException("toLong: denominator != 1");

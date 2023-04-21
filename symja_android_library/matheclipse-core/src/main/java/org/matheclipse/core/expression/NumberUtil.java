@@ -160,7 +160,7 @@ public class NumberUtil {
   }
 
   public static boolean hasLongValue(BigInteger value) {
-    // This is simlar to what is checked in BigInteger.longValueExact()
+    // This is similar to what is checked in BigInteger.longValueExact()
     return value.bitLength() <= 63;
   }
 
@@ -413,8 +413,9 @@ public class NumberUtil {
    * @return <code>true</code> if the number is a perfect square.
    */
   public static final boolean isPerfectSquare(BigInteger bi) {
-    if (hasLongValue(bi))  {
-      return isPerfectSquare(bi.longValueExact());
+    if (hasLongValue(bi)) {
+      // Android doesn't know method longValueExact
+      return isPerfectSquare(bi.longValue());
     }
     return false; // number out of range exception
   }
@@ -432,7 +433,8 @@ public class NumberUtil {
     BigInteger num = bf.getNumerator();
     BigInteger den = bf.getDenominator();
     if (hasLongValue(num) && hasLongValue(den)) {
-      return isPerfectSquare(den.longValueExact()) && isPerfectSquare(num.longValueExact());
+      // Android doesn't know method longValueExact
+      return isPerfectSquare(den.longValue()) && isPerfectSquare(num.longValue());
     }
     return false; // number out of range exception
   }
@@ -450,7 +452,8 @@ public class NumberUtil {
     BigInteger num = bf.toBigNumerator();
     BigInteger den = bf.toBigDenominator();
     if (hasLongValue(num) && hasLongValue(den)) {
-      return isPerfectSquare(den.longValueExact()) && isPerfectSquare(num.longValueExact());
+      // Android doesn't know method longValueExact
+      return isPerfectSquare(den.longValue()) && isPerfectSquare(num.longValue());
     }
     return false; // number out of range exception
   }
