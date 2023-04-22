@@ -15,8 +15,19 @@ See
 ```
 >> Eigenvectors({{1,0,0},{0,1,0},{0,0,1}})
 {{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}}
-```  
+```
 
-### Github
+**Note:** Symjas implementation of the `Eigenvectors` function adds zero vectors when the geometric multiplicity of the eigenvalue is smaller than its algebraic multiplicity (hence the regular eigenvector matrix should be non-square).
+With these additional null vectors, the `Eigenvectors` result matrix becomes square. 
+This happens for example with the following square matrix:
 
-* [Implementation of Eigenvectors](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L1759) 
+```
+>> Eigenvectors({{1,0,0},{-2,1,0},{0,0,1}}) 
+{{-2.50055*10^-13,1.0,0.0},{0.0,0.0,1.0},{0.0,0.0,0.0}} 
+
+>> Eigenvalues({{1,0,0},{-2,1,0},{0,0,1}}) 
+{1.0,1.0,1.0}
+```
+
+### Related terms 
+[Eigenvalues](Eigenvalues.md), [CharacteristicPolynomial](CharacteristicPolynomial.md)

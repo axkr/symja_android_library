@@ -1170,8 +1170,13 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "{2.0,-1.0,1.0}");
     check("Eigenvalues({{1,0,0},{0,1,0},{0,0,1}})", //
         "{1.0,1.0,1.0}");
-    // check("Eigenvalues({{1,0,0},{-2,1,0},{0,0,1}})", //
-    // "{1.0,1.0,1.0}");
+
+    // only 2 eigenvectors => fill up with 0.0 vector
+    // see https://github.com/Hipparchus-Math/hipparchus/issues/249
+    check("Eigenvectors({{1,0,0},{-2,1,0},{0,0,1}})", //
+        "{{-2.50055*10^-13,1.0,0.0},{0.0,0.0,1.0},{0.0,0.0,0.0}}");
+    check("Eigenvalues({{1,0,0},{-2,1,0},{0,0,1}})", //
+        "{1.0,1.0,1.0}");
 
     check("Fit({2,3,5,7,11,13},3,x)", //
         "3.0-1.95238*x+1.10714*x^2-0.0833333*x^3");
