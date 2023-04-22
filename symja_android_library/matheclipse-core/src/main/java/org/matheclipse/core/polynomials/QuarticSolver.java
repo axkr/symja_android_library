@@ -64,17 +64,10 @@ public class QuarticSolver {
           }
         }
         return true;
-      } else {
-        if (convertTerm2Coefficients(ast, x, coefficients)) {
-          return true;
-        }
       }
-    } else {
-      if (convertTerm2Coefficients(exprPoly, x, coefficients)) {
-        return true;
-      }
+      return convertTerm2Coefficients(ast, x, coefficients);
     }
-    return false;
+    return convertTerm2Coefficients(exprPoly, x, coefficients);
   }
 
   private static boolean convertTerm2Coefficients(final IExpr exprPoly, IExpr x,
@@ -129,18 +122,18 @@ public class QuarticSolver {
   }
 
   public static IAST quarticSolveN(IExpr a, IExpr b, IExpr c, IExpr d, IExpr e) {
-    return (IAST) F.evaln(quarticSolve(a, b, c, d, e));
+    return (IAST) EvalEngine.get().evalN(quarticSolve(a, b, c, d, e));
   }
 
   /**
    * <code>Solve(a*x^4+b*x^3+c*x^2+d*x+e==0,x)</code>. See
    * <a href="http://en.wikipedia.org/wiki/Quartic_equation">Wikipedia - Quartic equation</a>
    *
-   * @param e
-   * @param a
-   * @param b
-   * @param c
-   * @param d
+   * @param a coefficient for <code>x^4</code>
+   * @param b coefficient for <code>x^3</code>
+   * @param c coefficient for <code>x^2</code>
+   * @param d coefficient for <code>x</code>
+   * @param e coefficient for <code>1</code>
    * @return
    */
   public static IASTAppendable quarticSolve(IExpr a, IExpr b, IExpr c, IExpr d, IExpr e) {
@@ -444,10 +437,10 @@ public class QuarticSolver {
    * <a href= "http://en.wikipedia.org/wiki/Cubic_function#General_formula_of_roots"> Wikipedia -
    * Cubic function</a>
    *
-   * @param a
-   * @param b
-   * @param c
-   * @param d
+   * @param a coefficient for <code>x^3</code>
+   * @param b coefficient for <code>x^2</code>
+   * @param c coefficient for <code>x</code>
+   * @param d coefficient for <code>1</code>
    * @param additionalSolution ann additional solution, which should be appended to the result
    * @return
    */
@@ -566,9 +559,9 @@ public class QuarticSolver {
    * <code>Solve(a*x^2+b*x+c==0,x)</code>. See
    * <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Wikipedia - Quadratic equation</a>
    *
-   * @param a
-   * @param b
-   * @param c
+   * @param a coefficient for <code>x^2</code>
+   * @param b coefficient for <code>x</code>
+   * @param c coefficient for <code>1</code>
    * @param solution1 possible first solution from
    *        {@link #cubicSolve(IExpr, IExpr, IExpr, IExpr, IExpr)}
    * @param solution2 possible second solution from
@@ -696,9 +689,9 @@ public class QuarticSolver {
    * <a href="http://en.wikipedia.org/wiki/Quartic_equation">Wikipedia - Quartic equation</a>. See
    * Bronstein 1.6.2.4
    *
-   * @param a
-   * @param b
-   * @param c
+   * @param a coefficient for <code>x^4</code> and <code>x</code>
+   * @param b coefficient for <code>x^3</code> and <code>x</code>
+   * @param c coefficient for <code>x^2</code>
    * @return
    */
   public static IASTAppendable quasiSymmetricQuarticSolve(IExpr a, IExpr b, IExpr c) {

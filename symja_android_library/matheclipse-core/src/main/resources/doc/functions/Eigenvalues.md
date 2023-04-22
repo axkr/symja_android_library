@@ -29,5 +29,10 @@ This happens for example with the following square matrix:
 {1.0,1.0,1.0}
 ```
 
+Its characteristic polynomial is `(1.0-\[lambda])^3.0`, hence is has one eigen value `\[lambda]==1.0`
+with algebraic multiplicity `3`. However, this eigenvalue leads to only two eigenvectors
+`v1 = {0.0, 1.0, 0.0}` and `v2 = {0.0, 0.0, 1.0}`, hence its geometric multiplicity is only `2`, not `3`.
+So we add a third zero vector `v3 = {0.0, 0.0, 0.0}`.
+
 ### Related terms 
 [Eigenvectors](Eigenvectors.md), [CharacteristicPolynomial](CharacteristicPolynomial.md)
