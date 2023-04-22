@@ -61,57 +61,6 @@ public class TeXFormFactory {
    */
   public static final boolean PLUS_CALL = true;
 
-  private static class AbstractOperator extends AbstractTeXConverter {
-    protected int fPrecedence;
-    protected String fOperator;
-
-    public AbstractOperator(final int precedence, final String oper) {
-      fPrecedence = precedence;
-      fOperator = oper;
-    }
-
-    public AbstractOperator(final TeXFormFactory factory, final int precedence, final String oper) {
-      super(factory);
-      fPrecedence = precedence;
-      fOperator = oper;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
-      final boolean isOr = f.isOr();
-      precedenceOpen(buffer, precedence);
-      for (int i = 1; i < f.size(); i++) {
-        if (isOr && f.get(i).isAnd()) {
-          buffer.append("\\left( ");
-        }
-        fFactory.convertInternal(buffer, f.get(i), fPrecedence, NO_PLUS_CALL);
-        if (isOr && f.get(i).isAnd()) {
-          buffer.append("\\right) ");
-        }
-        if (i < f.argSize()) {
-          if (fOperator.compareTo("") != 0) {
-            buffer.append(fOperator);
-          }
-        }
-      }
-      precedenceClose(buffer, precedence);
-      return true;
-    }
-
-    public void precedenceClose(final StringBuilder buf, final int precedence) {
-      if (precedence > fPrecedence) {
-        buf.append("\\right) ");
-      }
-    }
-
-    public void precedenceOpen(final StringBuilder buf, final int precedence) {
-      if (precedence > fPrecedence) {
-        buf.append("\\left( ");
-      }
-    }
-  }
-
   private static final class Binomial extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
@@ -129,7 +78,7 @@ public class TeXFormFactory {
     }
   }
 
-  private static final class Complex extends AbstractOperator {
+  private static final class Complex extends TeXFormOperator {
 
     public Complex() {
       super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence(), " + ");
@@ -208,7 +157,7 @@ public class TeXFormFactory {
 
   }
 
-  private static final class Conjugate extends AbstractOperator {
+  private static final class Conjugate extends TeXFormOperator {
     public Conjugate() {
       super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence(), "^*");
     }
@@ -690,7 +639,7 @@ public class TeXFormFactory {
     }
   }
 
-  private static final class Plus extends AbstractOperator {
+  private static final class Plus extends TeXFormOperator {
 
     public Plus() {
       super(Precedence.PLUS, " + ");
@@ -776,7 +725,7 @@ public class TeXFormFactory {
    * See: <a href="http://en.wikibooks.org/wiki/LaTeX/Mathematics#Powers_and_indices">Wikibooks -
    * LaTeX/Mathematics - Powers and indices</a>
    */
-  private static final class Power extends AbstractOperator {
+  private static final class Power extends TeXFormOperator {
 
     public Power() {
       super(Precedence.POWER, "^");
@@ -884,7 +833,7 @@ public class TeXFormFactory {
     }
   }
 
-  private static final class Rational extends AbstractOperator {
+  private static final class Rational extends TeXFormOperator {
 
     public Rational() {
       super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence(), "/");
@@ -1104,7 +1053,7 @@ public class TeXFormFactory {
     }
   }
 
-  private static final class Times extends AbstractOperator {
+  private static final class Times extends TeXFormOperator {
     /** The conversion wasn't called with an operator preceding the <code>IExpr</code> object. */
 
     public final InfixOperator TIMES_OPERATOR;
@@ -2027,7 +1976,7 @@ public class TeXFormFactory {
     initTeXConverter(S.Ceiling, new UnaryFunction(" \\left \\lceil ", " \\right \\rceil "));
     initTeXConverter(S.Conjugate, new Conjugate());
     initTeXConverter(S.Complex, new Complex());
-    initTeXConverter(S.CompoundExpression, new AbstractOperator(
+    initTeXConverter(S.CompoundExpression, new TeXFormOperator(
         ASTNodeFactory.MMA_STYLE_FACTORY.get("CompoundExpression").getPrecedence(), ", "));
     initTeXConverter(S.D, new D());
     initTeXConverter(S.Defer, new HoldForm());
@@ -2109,78 +2058,78 @@ public class TeXFormFactory {
 
     initTeXConverter(S.Zeta, new Zeta());
 
-    initTeXConverter(S.Condition, new AbstractOperator(this, Precedence.CONDITION, "\\text{/;}"));
+    initTeXConverter(S.Condition, new TeXFormOperator(this, Precedence.CONDITION, "\\text{/;}"));
     initTeXConverter(S.Unset, new PostOperator(this, Precedence.UNSET, "\\text{=.}"));
     initTeXConverter(S.UpSetDelayed,
-        new AbstractOperator(this, Precedence.UPSETDELAYED, "\\text{^:=}"));
-    initTeXConverter(S.UpSet, new AbstractOperator(this, Precedence.UPSET, "\\text{^=}"));
+        new TeXFormOperator(this, Precedence.UPSETDELAYED, "\\text{^:=}"));
+    initTeXConverter(S.UpSet, new TeXFormOperator(this, Precedence.UPSET, "\\text{^=}"));
     initTeXConverter(S.NonCommutativeMultiply,
-        new AbstractOperator(this, Precedence.NONCOMMUTATIVEMULTIPLY, "\\text{**}"));
+        new TeXFormOperator(this, Precedence.NONCOMMUTATIVEMULTIPLY, "\\text{**}"));
     initTeXConverter(S.PreDecrement, new PreOperator(this, Precedence.PREDECREMENT, "\\text{--}"));
     initTeXConverter(S.ReplaceRepeated,
-        new AbstractOperator(this, Precedence.REPLACEREPEATED, "\\text{//.}"));
-    initTeXConverter(S.MapAll, new AbstractOperator(this, Precedence.MAPALL, "\\text{//@}"));
-    initTeXConverter(S.AddTo, new AbstractOperator(this, Precedence.ADDTO, "\\text{+=}"));
-    initTeXConverter(S.Greater, new AbstractOperator(this, Precedence.GREATER, " > "));
-    initTeXConverter(S.GreaterEqual, new AbstractOperator(this, Precedence.GREATEREQUAL, "\\geq "));
+        new TeXFormOperator(this, Precedence.REPLACEREPEATED, "\\text{//.}"));
+    initTeXConverter(S.MapAll, new TeXFormOperator(this, Precedence.MAPALL, "\\text{//@}"));
+    initTeXConverter(S.AddTo, new TeXFormOperator(this, Precedence.ADDTO, "\\text{+=}"));
+    initTeXConverter(S.Greater, new TeXFormOperator(this, Precedence.GREATER, " > "));
+    initTeXConverter(S.GreaterEqual, new TeXFormOperator(this, Precedence.GREATEREQUAL, "\\geq "));
     initTeXConverter(S.SubtractFrom,
-        new AbstractOperator(this, Precedence.SUBTRACTFROM, "\\text{-=}"));
-    initTeXConverter(S.Subtract, new AbstractOperator(this, Precedence.SUBTRACT, " - "));
+        new TeXFormOperator(this, Precedence.SUBTRACTFROM, "\\text{-=}"));
+    initTeXConverter(S.Subtract, new TeXFormOperator(this, Precedence.SUBTRACT, " - "));
     initTeXConverter(S.CompoundExpression,
-        new AbstractOperator(this, Precedence.COMPOUNDEXPRESSION, ";"));
-    initTeXConverter(S.DivideBy, new AbstractOperator(this, Precedence.DIVIDEBY, "\\text{/=}"));
-    initTeXConverter(S.StringJoin, new AbstractOperator(this, Precedence.STRINGJOIN, "\\text{<>}"));
-    initTeXConverter(S.UnsameQ, new AbstractOperator(this, Precedence.UNSAMEQ, "\\text{=!=}"));
+        new TeXFormOperator(this, Precedence.COMPOUNDEXPRESSION, ";"));
+    initTeXConverter(S.DivideBy, new TeXFormOperator(this, Precedence.DIVIDEBY, "\\text{/=}"));
+    initTeXConverter(S.StringJoin, new TeXFormOperator(this, Precedence.STRINGJOIN, "\\text{<>}"));
+    initTeXConverter(S.UnsameQ, new TeXFormOperator(this, Precedence.UNSAMEQ, "\\text{=!=}"));
     initTeXConverter(S.Decrement, new PostOperator(this, Precedence.DECREMENT, "\\text{--}"));
-    initTeXConverter(S.LessEqual, new AbstractOperator(this, Precedence.LESSEQUAL, "\\leq "));
-    initTeXConverter(S.Colon, new AbstractOperator(this, Precedence.COLON, "\\text{:}"));
+    initTeXConverter(S.LessEqual, new TeXFormOperator(this, Precedence.LESSEQUAL, "\\leq "));
+    initTeXConverter(S.Colon, new TeXFormOperator(this, Precedence.COLON, "\\text{:}"));
     initTeXConverter(S.Increment, new PostOperator(this, Precedence.INCREMENT, "\\text{++}"));
     initTeXConverter(S.Alternatives,
-        new AbstractOperator(this, Precedence.ALTERNATIVES, "\\text{|}"));
-    initTeXConverter(S.Equal, new AbstractOperator(this, Precedence.EQUAL, " == "));
-    initTeXConverter(S.DirectedEdge, new AbstractOperator(this, Precedence.DIRECTEDEDGE, "\\to "));
-    initTeXConverter(S.Divide, new AbstractOperator(this, Precedence.DIVIDE, "\\text{/}"));
-    initTeXConverter(S.Apply, new AbstractOperator(this, Precedence.APPLY, "\\text{@@}"));
-    initTeXConverter(S.Set, new AbstractOperator(this, Precedence.SET, " = "));
+        new TeXFormOperator(this, Precedence.ALTERNATIVES, "\\text{|}"));
+    initTeXConverter(S.Equal, new TeXFormOperator(this, Precedence.EQUAL, " == "));
+    initTeXConverter(S.DirectedEdge, new TeXFormOperator(this, Precedence.DIRECTEDEDGE, "\\to "));
+    initTeXConverter(S.Divide, new TeXFormOperator(this, Precedence.DIVIDE, "\\text{/}"));
+    initTeXConverter(S.Apply, new TeXFormOperator(this, Precedence.APPLY, "\\text{@@}"));
+    initTeXConverter(S.Set, new TeXFormOperator(this, Precedence.SET, " = "));
     // initTeXConverter(F.Minus,
     // new PreOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("Minus").getPrecedence(),
     // "\\text{-}"));
-    initTeXConverter(S.Map, new AbstractOperator(this, Precedence.MAP, "\\text{/@}"));
-    initTeXConverter(S.SameQ, new AbstractOperator(this, Precedence.SAMEQ, "\\text{===}"));
-    initTeXConverter(S.Less, new AbstractOperator(this, Precedence.LESS, " < "));
+    initTeXConverter(S.Map, new TeXFormOperator(this, Precedence.MAP, "\\text{/@}"));
+    initTeXConverter(S.SameQ, new TeXFormOperator(this, Precedence.SAMEQ, "\\text{===}"));
+    initTeXConverter(S.Less, new TeXFormOperator(this, Precedence.LESS, " < "));
     initTeXConverter(S.PreIncrement, new PreOperator(this, Precedence.PREINCREMENT, "\\text{++}"));
-    initTeXConverter(S.Unequal, new AbstractOperator(this, Precedence.UNEQUAL, "\\neq "));
-    initTeXConverter(S.Or, new AbstractOperator(this, Precedence.OR, " \\lor "));
+    initTeXConverter(S.Unequal, new TeXFormOperator(this, Precedence.UNEQUAL, "\\neq "));
+    initTeXConverter(S.Or, new TeXFormOperator(this, Precedence.OR, " \\lor "));
 
     initTeXConverter(S.Intersection,
-        new AbstractOperator(this, Precedence.INTERSECTION, " \\cap "));
-    initTeXConverter(S.Union, new AbstractOperator(this, Precedence.UNION, " \\cup "));
+        new TeXFormOperator(this, Precedence.INTERSECTION, " \\cap "));
+    initTeXConverter(S.Union, new TeXFormOperator(this, Precedence.UNION, " \\cup "));
 
     // initTeXConverter(F.PrePlus,
     // new PreOperator(this, ASTNodeFactory.MMA_STYLE_FACTORY.get("PrePlus").getPrecedence(),
     // "\\text{+}"));
-    initTeXConverter(S.TimesBy, new AbstractOperator(this, Precedence.TIMESBY, "\\text{*=}"));
-    initTeXConverter(S.And, new AbstractOperator(this, Precedence.AND, " \\land "));
+    initTeXConverter(S.TimesBy, new TeXFormOperator(this, Precedence.TIMESBY, "\\text{*=}"));
+    initTeXConverter(S.And, new TeXFormOperator(this, Precedence.AND, " \\land "));
     initTeXConverter(S.Not, new PreOperator(this, Precedence.NOT, "\\neg "));
-    initTeXConverter(S.Implies, new AbstractOperator(this, Precedence.IMPLIES, "\\Rightarrow "));
+    initTeXConverter(S.Implies, new TeXFormOperator(this, Precedence.IMPLIES, "\\Rightarrow "));
     initTeXConverter(S.Factorial, new PostOperator(this, Precedence.FACTORIAL, " ! "));
     initTeXConverter(S.Factorial2, new PostOperator(this, Precedence.FACTORIAL2, " !! "));
 
     initTeXConverter(S.ReplaceAll,
-        new AbstractOperator(this, Precedence.REPLACEALL, "\\text{/.}\\,"));
+        new TeXFormOperator(this, Precedence.REPLACEALL, "\\text{/.}\\,"));
     initTeXConverter(S.ReplaceRepeated,
-        new AbstractOperator(this, Precedence.REPLACEREPEATED, "\\text{//.}\\,"));
-    initTeXConverter(S.Rule, new AbstractOperator(this, Precedence.RULE, "\\to "));
-    initTeXConverter(S.RuleDelayed, new AbstractOperator(this, Precedence.RULEDELAYED, ":\\to "));
-    initTeXConverter(S.Set, new AbstractOperator(this, Precedence.SET, " = "));
+        new TeXFormOperator(this, Precedence.REPLACEREPEATED, "\\text{//.}\\,"));
+    initTeXConverter(S.Rule, new TeXFormOperator(this, Precedence.RULE, "\\to "));
+    initTeXConverter(S.RuleDelayed, new TeXFormOperator(this, Precedence.RULEDELAYED, ":\\to "));
+    initTeXConverter(S.Set, new TeXFormOperator(this, Precedence.SET, " = "));
     initTeXConverter(S.SetDelayed,
-        new AbstractOperator(this, Precedence.SETDELAYED, "\\text{:=}\\,"));
+        new TeXFormOperator(this, Precedence.SETDELAYED, "\\text{:=}\\,"));
     initTeXConverter(S.UndirectedEdge,
-        new AbstractOperator(this, Precedence.UNDIRECTEDEDGE, "\\leftrightarrow "));
+        new TeXFormOperator(this, Precedence.UNDIRECTEDEDGE, "\\leftrightarrow "));
     initTeXConverter(S.TwoWayRule,
-        new AbstractOperator(this, Precedence.TWOWAYRULE, "\\leftrightarrow "));
-    initTeXConverter(S.CenterDot, new AbstractOperator(this, Precedence.CENTERDOT, " \\cdot "));
-    initTeXConverter(S.CircleDot, new AbstractOperator(this, Precedence.CIRCLEDOT, " \\odot "));
+        new TeXFormOperator(this, Precedence.TWOWAYRULE, "\\leftrightarrow "));
+    initTeXConverter(S.CenterDot, new TeXFormOperator(this, Precedence.CENTERDOT, " \\cdot "));
+    initTeXConverter(S.CircleDot, new TeXFormOperator(this, Precedence.CIRCLEDOT, " \\odot "));
 
     initTeXConverter(S.ArcSin, new TeXFunction(this, "arcsin "));
     initTeXConverter(S.ArcCos, new TeXFunction(this, "arccos "));
