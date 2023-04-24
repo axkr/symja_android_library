@@ -535,6 +535,20 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * Add a single information step to the currently defined trace stack. The <code>inputExpr</code>
+   * hasn't changed but an additional information was inserted.
+   *
+   * @param inputExpr the input expression
+   * @param listOfHints this hints will be used in the eval trace listener
+   * @see #setStepListener(IEvalStepListener)
+   */
+  public void addTraceInfoStep(IExpr inputExpr, IAST listOfHints) {
+    if (fTraceStack != null && inputExpr.isPresent()) {
+      fTraceStack.add(inputExpr, inputExpr, getRecursionCounter(), -1, listOfHints);
+    }
+  }
+
+  /**
    * Add a single step to the currently defined trace stack.
    *
    * @param inputExpr the input expression
