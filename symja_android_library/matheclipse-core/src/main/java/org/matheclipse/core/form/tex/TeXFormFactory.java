@@ -685,6 +685,26 @@ public class TeXFormFactory {
     }
   }
 
+  private static final class PlusMinus extends TeXFormOperator {
+
+    public PlusMinus() {
+      super(ASTNodeFactory.MMA_STYLE_FACTORY.get("PlusMinus").getPrecedence(), " \\pm ");
+    }
+
+    @Override
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      if (f.size() != 2) {
+        return super.convert(buffer, f, precedence);
+      }
+      precedenceOpen(buffer, precedence);
+      buffer.append("\\pm{");
+      fFactory.convertInternal(buffer, f.arg1(), fPrecedence, NO_PLUS_CALL);
+      buffer.append("}");
+      precedenceClose(buffer, precedence);
+      return true;
+    }
+  }
+
   private static final class PostOperator extends AbstractTeXConverter {
     protected int fPrecedence;
     protected String fOperator;
@@ -2100,6 +2120,7 @@ public class TeXFormFactory {
     initTeXConverter(S.PreIncrement, new PreOperator(this, Precedence.PREINCREMENT, "\\text{++}"));
     initTeXConverter(S.Unequal, new TeXFormOperator(this, Precedence.UNEQUAL, "\\neq "));
     initTeXConverter(S.Or, new TeXFormOperator(this, Precedence.OR, " \\lor "));
+    initTeXConverter(S.PlusMinus, new PlusMinus());
 
     initTeXConverter(S.Intersection,
         new TeXFormOperator(this, Precedence.INTERSECTION, " \\cap "));

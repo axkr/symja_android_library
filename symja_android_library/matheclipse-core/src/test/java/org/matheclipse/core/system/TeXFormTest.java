@@ -406,6 +406,17 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
         "\\sigma (a + b \\cdot c)");
   }
 
+  public void testTeXFormPlusMinus() {
+    check("TeXForm(PlusMinus(a,(b*c)))", //
+        "a \\pm b \\cdot c");
+    check("TeXForm(PlusMinus(a,b)*c)", //
+        "c \\cdot \\left( a \\pm b\\right) ");
+    check("TeXForm(PlusMinus(a)*c)", //
+        "c \\cdot \\left( \\pm{a}\\right) ");
+    check("TeXForm(PlusMinus(a)+c)", //
+        "c + \\pm{a}");
+  }
+
   @Override
   protected void setUp() {
     super.setUp();
