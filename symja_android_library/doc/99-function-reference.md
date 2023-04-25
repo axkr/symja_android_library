@@ -595,6 +595,7 @@
 * [Min](functions/Min.md)
 * [MinFilter](functions/MinFilter.md)
 * [Minimize](functions/Minimize.md)
+* [Minors](functions/Minors.md)
 * [Minus](functions/Minus.md)
 * [MissingQ](functions/MissingQ.md)
 * [Mod](functions/Mod.md)
