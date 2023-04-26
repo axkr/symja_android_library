@@ -274,6 +274,12 @@ public class TeXParser {
           if (position[0] >= listSize) {
             return lhs;
           }
+          // if (lhs.isAST(S.Log, 3) && !lhs.isFree(DUMMY_SUB_SLOT)) {
+          if (!lhs.isFree(DUMMY_SUB_SLOT)) {
+            // IExpr rhs = convert(list, position, end, null, Precedence.NO_PRECEDENCE);
+            IExpr rhs = convertNextArg(list, position);
+            lhs = F.subs(lhs, DUMMY_SUB_SLOT, rhs);
+          }
         }
 
         int attribute = ISymbol.NOATTRIBUTE;
@@ -285,43 +291,66 @@ public class TeXParser {
               position[0] < listSize) {
             boolean isNumericFunction =
                 ((attribute & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION);
-            Node arg2 = list.item(position[0]);
-            String arg2NodeName = arg2.getNodeName();
-            if (arg2NodeName.equals("mfenced")) {
-              position[0]++;
-              int[] position2 = new int[] {0};
-              NodeList childNodes = arg2.getChildNodes();
-              IExpr args = convertArgs(childNodes, position2);
-              if (args.isSequence()) {
-                ((IASTMutable) args).set(0, lhs);
-                return args;
-              }
-              lhs = F.unaryAST1(lhs, args);
+            if (isFunctionArg1(lhs)) {
+              IExpr nextArg = convertNextArg(list, position);
+              lhs = F.unaryAST1(lhs, nextArg);
               if (position[0] == listSize) {
                 return lhs;
               }
-            } else if (!arg2NodeName.equals("mo") //
-                && (isNumericFunction || lhs.isBuiltInSymbolID() || lhs.isFunction())) {
-              if (lhs.equals(S.Integrate)) {
-                ISymbol test = F.Dummy("test");
-                return integrate(list, position, test, test);
-              }
-              IExpr args = convert(list, position, end, null, precedence);
-              if (args.isSequence()) {
-                ((IASTMutable) args).set(0, lhs);
-                return args;
-              }
-              if (lhs.isFunction() && lhs.size() == 2) {
-                IExpr temp = F.subs(lhs.first(), DUMMY_SUB_SLOT, args);
-                // IExpr temp = Lambda.replaceSlots(lhs.first(), F.list(args));
-                if (temp.isPresent()) {
+            } else {
+
+              Node arg2 = list.item(position[0]);
+              String arg2NodeName = arg2.getNodeName();
+              if (arg2NodeName.equals("mfenced")) {
+                if (lhs.equals(S.Integrate)) {
+                  ISymbol test = F.Dummy("test");
+                  IExpr temp = integrate(list, position, test, test);
+                  if (position[0] == listSize) {
+                    return temp;
+                  }
                   lhs = temp;
+                } else {
+                  position[0]++;
+                  int[] position2 = new int[] {0};
+                  NodeList childNodes = arg2.getChildNodes();
+                  IExpr args = convertArgs(childNodes, position2);
+                  if (args.isSequence()) {
+                    ((IASTMutable) args).set(0, lhs);
+                    return args;
+                  }
+                  lhs = F.unaryAST1(lhs, args);
+                  if (position[0] == listSize) {
+                    return lhs;
+                  }
                 }
-              } else {
-                lhs = F.unaryAST1(lhs, args);
-              }
-              if (position[0] == listSize) {
-                return lhs;
+              } else if (!arg2NodeName.equals("mo") //
+                  && (isNumericFunction || lhs.isBuiltInSymbolID() || lhs.isFunction())) {
+                if (lhs.equals(S.Integrate)) {
+                  ISymbol test = F.Dummy("test");
+                  IExpr temp = integrate(list, position, test, test);
+                  if (position[0] == listSize) {
+                    return temp;
+                  }
+                  lhs = temp;
+                } else {
+                  IExpr args = convert(list, position, end, null, precedence);
+                  if (args.isSequence()) {
+                    ((IASTMutable) args).set(0, lhs);
+                    return args;
+                  }
+                  if (lhs.isFunction() && lhs.size() == 2) {
+                    IExpr temp = F.subs(lhs.first(), DUMMY_SUB_SLOT, args);
+                    // IExpr temp = Lambda.replaceSlots(lhs.first(), F.list(args));
+                    if (temp.isPresent()) {
+                      lhs = temp;
+                    }
+                  } else {
+                    lhs = F.unaryAST1(lhs, args);
+                  }
+                  if (position[0] == listSize) {
+                    return lhs;
+                  }
+                }
               }
             }
           }
@@ -339,7 +368,7 @@ public class TeXParser {
           }
           // issue #712 start
           if (text.equals("|")) {
-            IExpr sequence = convertArgs(list, 1, list.getLength() - 1, position);
+            IExpr sequence = convertArgs(list, 1, list.getLength() - 1);
             if (sequence.isSequence()) {
               sequence = ((IAST) sequence).setAtCopy(0, S.Times);
             }
@@ -369,7 +398,7 @@ public class TeXParser {
               if (precedence >= currPrec) {
                 return result;
               }
-              result = postfixOperator.createFunction(lhs);
+              result = postfixOperator.createFunction(result);
               position[0]++;
               continue;
             }
@@ -411,7 +440,7 @@ public class TeXParser {
       }
     }
 
-    return convertArgs(list, position[0], end, position);
+    return convertArgs(list, position[0], end);
   }
 
   /**
@@ -447,10 +476,10 @@ public class TeXParser {
   }
 
   public IExpr convertArgs(NodeList list, int[] position) {
-    return convertArgs(list, 0, list.getLength(), position);
+    return convertArgs(list, 0, list.getLength());
   }
 
-  private IExpr convertArgs(NodeList list, int start, int end, int[] position) {
+  private IExpr convertArgs(NodeList list, int start, int end) {
     IASTAppendable ast = F.Sequence();
     return convertArgs(ast, list, start, end);
   }
@@ -478,6 +507,36 @@ public class TeXParser {
       }
     }
     return ast;
+  }
+
+  private IExpr convertNextArg(NodeList list, int[] position) {
+    Node arg1 = list.item(position[0]++);
+    String arg1NodeName = arg1.getNodeName();
+    IExpr expr1 = toExpr(arg1);
+    if (list.getLength() > position[0]) {
+      Node arg2 = list.item(position[0]);
+      String arg2NodeName = arg2.getNodeName();
+      if (arg2NodeName.equals("mfenced")) {
+        position[0]++;
+        IExpr expr2 = toExpr(arg2);
+        return F.unaryAST1(expr1, expr2);
+      } else if (arg1NodeName.equals("mi") && arg2NodeName.equals("mi")) {
+        IASTAppendable times = F.TimesAlloc(5);
+        times.append(expr1);
+        while (arg2NodeName.equals("mi")) {
+          position[0]++;
+          IExpr expr2 = toExpr(arg2);
+          times.append(expr2);
+          if (list.getLength() <= position[0]) {
+            break;
+          }
+          arg2 = list.item(position[0]);
+          arg2NodeName = arg2.getNodeName();
+        }
+        return times;
+      }
+    }
+    return expr1;
   }
 
   /**
@@ -604,7 +663,8 @@ public class TeXParser {
       }
     }
     if (x == null) {
-      throw new AbortException();
+      return F.unaryAST1(S.Integrate, DUMMY_SUB_SLOT);
+      // throw new AbortException();
     }
 
     dxStart--;
@@ -646,7 +706,20 @@ public class TeXParser {
               return F.D(numerator.first(), ((IAST) denominator).removeAtCopy(indx).oneIdentity1());
             }
           }
+        } else if (numerator.isTimes() && numerator.first().isString("d")
+            && denominator.isTimes()) {
+          int indx = denominator.indexOf(numerator.first());
+          if (indx > 0) {
+            return F.D(((IAST) numerator).removeAtCopy(1).oneIdentity1(),
+                ((IAST) denominator).removeAtCopy(indx).oneIdentity1());
+          }
+        } else if (numerator.isSymbol() && numerator.isString("d") && denominator.isTimes()) {
+          int indx = denominator.indexOf(numerator);
+          if (indx > 0) {
+            return F.D(DUMMY_SUB_SLOT, ((IAST) denominator).removeAtCopy(indx).oneIdentity1());
+          }
         }
+
         frac.append(F.Power(denominator, -1));
       } else {
         throw new AbortException();
@@ -919,9 +992,9 @@ public class TeXParser {
           }
         }
         if (direction.isPresent()) {
-          return F.Function(F.Limit(DUMMY_SUB_SLOT, a2, direction));
+          return F.Limit(DUMMY_SUB_SLOT, a2, direction);
         }
-        return F.Function(F.Limit(DUMMY_SUB_SLOT, a2));
+        return F.Limit(DUMMY_SUB_SLOT, a2);
       }
       if (a1 == S.Log10) {
         return F.binaryAST2(S.Log, a2, DUMMY_SUB_SLOT);
@@ -1010,7 +1083,7 @@ public class TeXParser {
     IExpr a1 = toExprList(arg1);
     String name2 = arg2.getNodeName();
     String text2 = arg2.getTextContent();
-    if (name2.equals("mi") && text2.equals("'")) {
+    if (name2.equals("mi") && (text2.equals("'") || text2.equals("′"))) {
       return F.unaryAST1(F.Derivative(F.C1), a1);
     }
     IExpr a2 = toExprList(arg2);
@@ -1091,7 +1164,11 @@ public class TeXParser {
       if (session.parseInput(input)) {
         NodeList nodes = session.buildDOMSubtree();
         int[] position = new int[] {0};
-        return convert(nodes, position, null, 0);
+        IExpr temp = convert(nodes, position, null, 0);
+        if (temp.isSequence()) {
+          return ((IAST) temp).setAtCopy(0, S.List);
+        }
+        return temp;
       }
       List<InputError> errors = session.getErrors();
       for (int i = 0; i < errors.size(); i++) {

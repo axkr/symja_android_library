@@ -228,9 +228,9 @@ public class TeXConverterTestCase extends TestCase {
 
   public void testTeX031() {
     check("\\frac{d}{dx} x^{2}", //
-        "(d*x^2)/(d*x)");
+        "D(x^2,x)");
     checkEval("\\frac{d}{dx} x^{2}", //
-        "x");
+        "2*x");
   }
 
   public void testTeX032() {
@@ -452,7 +452,7 @@ public class TeXConverterTestCase extends TestCase {
   public void testPartial() {
     check(
         "\\{ \\frac { \\partial ( x ^ { 2 } y ^ { 4 } ) } { \\partial x } , \\frac { \\partial ( x ^ { 2 } y ^ { 4 } ) } { \\partial y } \\}", //
-        "Sequence(D(x^2*y^4,x),D(x^2*y^4,y))");
+        "{D(x^2*y^4,x),D(x^2*y^4,y)}");
   }
 
   public void check(String strEval, String strResult) {
