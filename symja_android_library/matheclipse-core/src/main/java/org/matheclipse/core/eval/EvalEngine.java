@@ -2984,7 +2984,6 @@ public class EvalEngine implements Serializable {
    * are shown in the evaluation).
    *
    * @return
-   * @see org.matheclipse.core.builtin.function.Quiet
    */
   public final boolean isQuietMode() {
     return fQuietMode;

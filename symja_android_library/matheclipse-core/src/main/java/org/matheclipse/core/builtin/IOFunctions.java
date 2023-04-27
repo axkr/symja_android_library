@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.exception.MathRuntimeException;
@@ -507,8 +508,8 @@ public class IOFunctions {
       "coef", "The first argument `1` of `2` should be a non-empty list of positive integers.", //
       "color", "`1` is not a valid color or gray-level specification.", //
       "compat", "`1` and `2` are incompatible units", //
-      "condp", "Pattern `1` appears on the right-hand-side of condition `2`.",
-      "cxt", "`1` is not a valid context name.", //
+      "condp", "Pattern `1` appears on the right-hand-side of condition `2`.", "cxt",
+      "`1` is not a valid context name.", //
       "depth",
       "The array depth of the expression at position `1` of `2` must be at least equal to the specified rank `3`.", //
       "divz", "The argument `1` should be nonzero.", //
@@ -742,8 +743,8 @@ public class IOFunctions {
       "tdlen", "Objects of unequal length in `1` cannot be combined.", //
       "tllen", "Lists of unequal length in `1` cannot be added.", //
       "toggle", "ToggleFeature `1` is disabled.", //
-      "tolnn", "Tolerance specification `1` must be a non-negative number.",
-      "udist", "The specification `1` is not a random distribution recognized by the system.", //
+      "tolnn", "Tolerance specification `1` must be a non-negative number.", "udist",
+      "The specification `1` is not a random distribution recognized by the system.", //
       "unsupported", "`1` currently not supported in `2`.", //
       "usraw", "Cannot unset object `1`.", //
       "vloc",
@@ -926,10 +927,11 @@ public class IOFunctions {
         message = temp.toString();
       }
     }
+    Level logLevel = engine.getLogLevel();
     if (message == null) {
       message = "Undefined message shortcut: " + messageShortcut;
       engine.setMessageShortcut(messageShortcut);
-      LOGGER.log(engine.getLogLevel(), "{}: {}", symbol, message);
+      logMessage(symbol, message, engine);
     } else {
       try {
         Writer writer = new StringWriter();
@@ -942,12 +944,20 @@ public class IOFunctions {
 
         templateApply(message, writer, context);
         engine.setMessageShortcut(messageShortcut);
-        LOGGER.log(engine.getLogLevel(), "{}: {}", symbol, writer);
+        logMessage(symbol, writer.toString(), engine);
       } catch (IOException e) {
         LOGGER.error("IOFunctions.printMessage() failed", e);
       }
     }
     return F.NIL;
+  }
+
+  private static void logMessage(ISymbol symbol, String str, EvalEngine engine) {
+    if (engine.isQuietMode()) {
+      LOGGER.log(engine.getLogLevel(), "{}: {}", symbol, str);
+    } else {
+      engine.getErrorPrintStream().append(symbol.toString() + ": " + str + "\n");
+    }
   }
 
   public static IAST printRuntimeException(ISymbol symbol, RuntimeException exception,
@@ -956,7 +966,7 @@ public class IOFunctions {
       String message = exception.getMessage();
       Writer writer = new StringWriter();
       writer.append(message);
-      LOGGER.log(engine.getLogLevel(), "{}: {}", symbol, writer);
+      logMessage(symbol, writer.toString(), engine);
     } catch (IOException e) {
       LOGGER.error("IOFunctions.printMessage() failed", e);
     }

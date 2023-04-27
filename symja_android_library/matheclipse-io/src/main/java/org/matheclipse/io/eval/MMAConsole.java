@@ -310,6 +310,8 @@ public class MMAConsole {
     evalEngine.setFileSystemEnabled(true);
     evalEngine.setRecursionLimit(Config.DEFAULT_RECURSION_LIMIT);
     evalEngine.setIterationLimit(Config.DEFAULT_ITERATION_LIMIT);
+    evalEngine.setErrorPrintStream(System.err);
+    evalEngine.setOutPrintStream(System.out);
     fOutputFactory = OutputFormFactory.get(false, false, 5, 7);
     fOutputTraditionalFactory = OutputFormFactory.get(true, false, 5, 7);
     fInputFactory = OutputFormFactory.get(false, false, 5, 7);

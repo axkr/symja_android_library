@@ -304,6 +304,8 @@ public class Console {
     evalEngine.setFileSystemEnabled(true);
     evalEngine.setRecursionLimit(Config.DEFAULT_RECURSION_LIMIT);
     evalEngine.setIterationLimit(Config.DEFAULT_ITERATION_LIMIT);
+    evalEngine.setErrorPrintStream(System.err);
+    evalEngine.setOutPrintStream(System.out);
     fOutputFactory = OutputFormFactory.get(true, false, 5, 7);
     fEvaluator.getEvalEngine().setFileSystemEnabled(true);
     fOutputTraditionalFactory = OutputFormFactory.get(true, false, 5, 7);

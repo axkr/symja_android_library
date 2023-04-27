@@ -5,11 +5,13 @@ import static org.matheclipse.core.expression.F.D;
 import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.S.x;
+import java.io.PrintStream;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.eval.util.WriterOutputStream;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
@@ -339,4 +341,19 @@ public class ExprEvaluatorTest extends TestCase {
 
     assertEquals("(0.2890254822222363, -0.09199966835037525)", c.toString());
   }
+
+  public void testSetErrorPrintStream() {
+    ExprEvaluator exprEvaluator = new ExprEvaluator();
+    EvalEngine evalEngine = exprEvaluator.getEvalEngine();
+    final StringWriter errorWriter = new StringWriter();
+    WriterOutputStream stdErr = new WriterOutputStream(errorWriter);
+    PrintStream errors = new PrintStream(stdErr);
+    evalEngine.setErrorPrintStream(errors);
+
+    exprEvaluator.eval("Inverse({{1, 0}, {0, 0}})");
+
+    assertEquals("Inverse: Matrix {{1,0},{0,0}} is singular.\n", //
+        errorWriter.toString());
+  }
+
 }
