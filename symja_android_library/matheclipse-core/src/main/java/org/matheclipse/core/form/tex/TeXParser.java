@@ -851,6 +851,18 @@ public class TeXParser {
   }
 
   /**
+   * Test if the node is the operator in the text form.
+   * 
+   * @param node
+   * @param textForm
+   * @return
+   */
+  private static boolean isOperator(Node node, String textForm) {
+    return node.getNodeName().equals("mo") //
+        && node.getTextContent().equals(textForm);
+  }
+
+  /**
    * If the list contains only text symbols return a {@link BuiltInDummy} symbol.
    * 
    * @param list

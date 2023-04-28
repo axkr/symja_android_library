@@ -430,6 +430,7 @@ public class TeXSliceParser extends TeXScanner {
   }
 
   private int parseLeftRight(String texStr, StringBuilder ptBuf, int lastTeXIndex) {
+    boolean isAbs = fCurrentChar == '|';
     int endTeXIndex;
     endTeXIndex = fCurrentPosition - fCommandString.length() - 1;
     getNextToken();
@@ -441,6 +442,9 @@ public class TeXSliceParser extends TeXScanner {
       IExpr temp = TeXSliceParser.convert(exprStr);
       if (temp.isSequence()) {
         temp = ((IAST) temp).setAtCopy(0, S.List);
+      }
+      if (!temp.isList() && isAbs) {
+        temp = F.Abs(temp);
       }
       endOfSubExpr = fCurrentPosition;
 
