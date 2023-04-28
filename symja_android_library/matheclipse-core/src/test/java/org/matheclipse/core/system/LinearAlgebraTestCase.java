@@ -480,7 +480,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Eigenvectors({{1.1, 2.2, 3.25}, {0.76, 4.6, 5}, {0.1, 0.1, 6.1}}) // MatrixForm", //
         "{{0.48687,0.833694,0.260598},\n" //
             + " {0.479424,0.873368,-0.085911},\n" //
-        + " {0.985096,-0.171352,-0.0149803}}");
+            + " {0.985096,-0.171352,-0.0149803}}");
     check("Eigenvectors({{4.2, 7.2, 9.3}, {-2.1, 5.2, 1.3}, {1.5, 4.4, 3.2}}) // MatrixForm", //
         "{{0.873208,-0.110109+I*0.338016,0.32246+I*0.0845519},\n"
             + " {0.873208,-0.110109+I*(-0.338016),0.32246+I*(-0.0845519)},\n"
@@ -1055,6 +1055,20 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testMinors() {
+    check("Minors({ {a} })", //
+        "{{1}}");
+    check("Minors({ {a},{b},{c}  })", //
+        "{{1}}");
+    check("Minors({ {  }  })", //
+        "{}");
+    check("Minors({ {  },{}  })", //
+        "{}");
+
+
+    // https://en.wikipedia.org/wiki/Minor_(linear_algebra)
+    check("Minors({{1,4,7},{3,0,5},{-1,9,11}})", //
+        "{{-12,-16,20},{13,18,-19},{27,38,-45}}");
+
     check("m0 = Array(Subscript(a, ##) &, {3, 3})", //
         "{{Subscript(a,1,1),Subscript(a,1,2),Subscript(a,1,3)},{Subscript(a,2,1),Subscript(a,\n"
             + "2,2),Subscript(a,2,3)},{Subscript(a,3,1),Subscript(a,3,2),Subscript(a,3,3)}}");
@@ -1072,6 +1086,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{3,11,31,69},{7,16,37,76},{13,23,45,85},{21,32,55,96}}");
     check("Minors(m1)", //
         "{{-24,-84,-96,-36},{-72,-252,-288,-108},{-72,-252,-288,-108},{-24,-84,-96,-36}}");
+
+    check("Minors(Partition(Range(9), 3))", //
+        "{{-3,-6,-3},{-6,-12,-6},{-3,-6,-3}}");
 
     check("m2 = Partition(Range(16), 4)", //
         "{{1,2,3,4},{5,6,7,8},{9,10,11,12},{13,14,15,16}}");

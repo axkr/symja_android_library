@@ -3816,17 +3816,35 @@ public final class LinearAlgebra {
       int[] dims = arg1.isMatrix();
       if (dims != null) {
         if (dims[0] != dims[1]) {
+          if (dims[1] == 0) {
+            return F.CEmptyList;
+          }
+          if (dims[1] == 1) {
+            return F.List(F.List(F.C1));
+          }
           // TODO error message
           return F.NIL;
+        } else {
+          if (dims[0] == 1) {
+            return F.List(F.List(F.C1));
+          }
         }
         if (dims[0] <= 1) {
           // TODO error message
           return F.NIL;
         }
+        int n = dims[0] < dims[1] ? dims[0] : dims[1];
+        if (ast.argSize() >= 2) {
+          int intValue = ast.arg2().toIntDefault();
+          if (intValue < 0) {
+            return F.NIL;
+          }
+        } else {
+
+        }
         if (arg1.isSparseArray()) {
           arg1 = arg1.normal(false);
         }
-        int n = dims[0];
         IAST matrix = (IAST) arg1;
         IASTAppendable result = F.ListAlloc(n + 1);
         for (int i = 1; i <= n; i++) {
@@ -3845,7 +3863,7 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
   /**
