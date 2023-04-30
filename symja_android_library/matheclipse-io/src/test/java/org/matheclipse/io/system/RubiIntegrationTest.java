@@ -895,4 +895,10 @@ public class RubiIntegrationTest extends AbstractTestCase {
     // check("Integrate(Sqrt(d+e*x)/((f+g*x)^(3/2)*Sqrt(a*d*e+(c*d^2+a*e^2)*x+c*d*e*x^2)), x)", //
     // "(2*Sqrt(a*d*e+(c*d^2+a*e^2)*x+c*d*e*x^2))/((c*d*f-a*e*g)*Sqrt(d+e*x)*Sqrt(f+g*x))");
   }
+
+
+  public void testDoLoop() {
+    check("h=x;Integrate(Do(h=x*h,{5}); h,x)", //
+        "x^7/7");
+  }
 }
