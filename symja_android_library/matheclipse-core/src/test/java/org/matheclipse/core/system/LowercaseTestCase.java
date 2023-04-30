@@ -4681,6 +4681,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testD() {
+    check("D(Sin(x)==x^2==y*x^4,x )", //
+        "Cos(x)==2*x==4*x^3*y");
+
     // message - D: D called with 0 arguments; 1 or more arguments are expected.
     check("D( )", //
         "D()");
@@ -15340,7 +15343,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{\"And\",\"Composition\",\"Dot\",\"GCD\",\"Intersection\",\"Join\",\"KroneckerProduct\",\"Max\",\"Min\",\"Or\",\"Plus\",\"Power\",\"RightComposition\",\"StringExpression\",\"StringJoin\",\"TensorProduct\",\"Times\",\"Union\",\"Xor\"}");
 
     check("Names(\"System`\" ~~ _ ~~ _) // InputForm", //
-        "{\"Do\",\"If\",\"Im\",\"In\",\"ND\",\"On\",\"Or\",\"Pi\",\"Re\",\"Tr\"}");
+        "{\"Do\",\"Dt\",\"If\",\"Im\",\"In\",\"ND\",\"On\",\"Or\",\"Pi\",\"Re\",\"Tr\"}");
     check("Names(RegularExpression(\"System`...\")) // InputForm", //
         "{\"Abs\",\"All\",\"And\",\"Arg\",\"CDF\",\"Cos\",\"Cot\",\"Csc\",\"Det\",\"Div\",\"Dot\",\"End\",\"Erf\",\"Exp\"," //
             + "\"Fit\",\"For\",\"GCD\",\"Get\",\"Hue\",\"Key\",\"LCM\",\"Log\",\"Map\",\"Max\",\"Min\",\"Mod\",\"Nor\",\"Not\"," //

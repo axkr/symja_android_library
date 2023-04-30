@@ -286,8 +286,11 @@ public class D extends AbstractFunctionEvaluator implements DRules {
         // reduce arguments by folding D[fxy, x, y] to D[ D[fxy, x], y] ...
         return ast.foldLeft((x, y) -> engine.evaluateNIL(F.D(x, y)), fx, 2);
       }
-
       IExpr x = ast.arg2();
+      if (fx.isAST(S.Equal)) {
+        return fx.mapThread(F.D(F.Slot1, x), 1);
+      }
+
       if (!(x.isVariable() || x.isList())) {
         // `1` is not a valid variable.
         return IOFunctions.printMessage(ast.topHead(), "ivar", F.list(x), engine);

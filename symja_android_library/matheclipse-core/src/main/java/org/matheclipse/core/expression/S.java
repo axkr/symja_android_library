@@ -2913,6 +2913,8 @@ public class S {
    */
   public final static IBuiltInSymbol DSolve = F.initFinalSymbol("DSolve", ID.DSolve);
 
+  public final static IBuiltInSymbol Dt = F.initFinalSymbol("Dt", ID.Dt);
+
   public final static IBuiltInSymbol DuplicateFreeQ =
       F.initFinalSymbol("DuplicateFreeQ", ID.DuplicateFreeQ);
 
@@ -4827,6 +4829,8 @@ public class S {
   public final static IBuiltInSymbol ImageSize = F.initFinalSymbol("ImageSize", ID.ImageSize);
 
   public final static IBuiltInSymbol ImageType = F.initFinalSymbol("ImageType", ID.ImageType);
+
+  public final static IBuiltInSymbol ImplicitD = F.initFinalSymbol("ImplicitD", ID.ImplicitD);
 
   /**
    * Implies(arg1, arg2) - Logical implication.
