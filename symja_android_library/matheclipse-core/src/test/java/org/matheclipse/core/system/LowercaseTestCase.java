@@ -4681,6 +4681,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testD() {
+    check("D(Sin(f(x)),{x,3})", //
+        "-Cos(f(x))*f'(x)^3-3*Sin(f(x))*f'(x)*f''(x)+Cos(f(x))*Derivative(3)[f][x]");
+    check("D(Sin(#), {#,-1+n})", //
+        "D(Sin(#1),{#1,-1+n})");
+    check("D(f(x), {x, n})", //
+        "D(f(x),{x,n})");
+    check("D(Polygamma(x),{x,n})", //
+        "PolyGamma(n,x)");
+
     check("D(Sin(x)==x^2==y*x^4,x )", //
         "Cos(x)==2*x==4*x^3*y");
 
@@ -4725,7 +4734,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("D(Sin(x),{x,0.5})", //
         "D(Sin(x),{x,0.5})");
     check("D(Sin(x),{x,f(a)})", //
-        "Sin(x+1/2*Pi*f(a))");
+        "D(Sin(x),{x,f(a)})");
     check("D(Sin(x),{x,f(a)+I})", //
         "D(Sin(x),{x,I+f(a)})");
     check("D(x^a, {x,n})", //
@@ -4958,6 +4967,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("D(CatalanNumber(x),x)", //
         "CatalanNumber(x)*(Log(4)+PolyGamma(0,1/2+x)-PolyGamma(0,2+x))");
+    check("D(Sin(x^5)/x^10,x)", //
+        "(5*Cos(x^5))/x^6+(-10*Sin(x^5))/x^11");
   }
 
   public void testDefault() {
@@ -5301,13 +5312,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Derivative(0,0,0)[]");
     check("Derivative(1)[Abs]", //
         "Derivative(1)[Abs]");
-    check("Derivative(10)[Sin]", //
-        "-Sin(#1)&");
+
     check("Derivative(1,0)[StruveH][#1,#2]", //
         "Derivative(1,0)[StruveH][#1,#2]");
 
     check("f1(x_) := Sin(x)", //
         "");
+
     check("Derivative(n)[f1][x]", //
         "Sin(1/2*n*Pi+x)");
     check("f2(x_, y_) := Cos(x)*Sin(y)", //
@@ -5321,10 +5332,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Derivative(0,1)[f][x,x]+Derivative(1,0)[f][x,x]");
     check("Derivative(2147483647)[x[[-1,1,1]]]", //
         "Derivative(2147483647)[x[[-1,1,1]]]");
-    check("Derivative(n)[Sin]", //
-        "Sin(1/2*n*Pi+#1)&");
     check("Derivative(10)[Sin]", //
         "-Sin(#1)&");
+    check("Derivative(10)[Sin][x]", //
+        "-Sin(x)");
+    check("Derivative(n)[Sin]", //
+        "Sin(1/2*n*Pi+#1)&");
+
     check("Derivative(I+a)[Sin]", //
         "Derivative(I+a)[Sin]");
     check("f''(k^(1/3) x) - f(k^(1/3) x) == 0 /. x -> (x k^(-1/3))", //
@@ -9791,6 +9805,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "q+#1&");
     // check("fufufu=Function({x},Function({y},Function({z},x+y+z)))", //
     // "Function({x},Function({y},Function({z},x+y+z)))");
+
+    // message: Parameter specification f(x) in Function(f(x),g(a)) should be a symbol or a list of
+    // symbols.
+    check("Function(f(x), g(a))", //
+        "Function(f(x),g(a))");
 
     // Function: Function called with 4 arguments; between 1 and 3 arguments are expected.
     check("Function(a,b,c,d)", //
@@ -24943,7 +24962,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{y,z,3}");
 
     check("With({x=z},Module({x},x+y))", //
-        "x$20+y");
+        "x$24+y");
 
     check("f(x_) := With({q = False},  test /; q==0) /;  x==1", //
         "");
@@ -24966,6 +24985,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "6");
     check("With({y = Sin(1.0)}, Sum(y^i, {i, 0, 10}))", //
         "5.36323");
+
+    check("With({t=Sin(10/2*Pi+#)}, t &)", //
+        "-Sin(#1)&");
   }
 
   public void testYuleDissimilarity() {

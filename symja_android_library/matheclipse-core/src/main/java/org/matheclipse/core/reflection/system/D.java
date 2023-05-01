@@ -257,6 +257,41 @@ public class D extends AbstractFunctionEvaluator implements DRules {
     return derivativeAST;
   }
 
+  /**
+   * Find rule for <code>Derivative(0,...,n,...,n,...)[header]</code>. Set <code>0</code> where the
+   * arguments in <code>args</code> are free of <code>x</code>. Set <code>1</code> where the
+   * arguments in <code>args</code> equals <code>x</code>. Return {@link F.NIL} otherwise.
+   * 
+   * @param header
+   * @param args
+   * @param x
+   * @param n
+   * @return
+   */
+  private static IAST createDerivativeN(final IExpr header, final IAST args, IExpr x, IExpr n) {
+    final int size = args.size();
+    IASTAppendable derivativeHead1 = F.ast(S.Derivative, size);
+    boolean evaled = false;
+    for (int i = 1; i < size; i++) {
+      if (args.get(i).equals(x)) {
+        derivativeHead1.append(n);
+        evaled = true;
+      } else if (args.get(i).isFree(x)) {
+        derivativeHead1.append(F.C0);
+      } else {
+        return F.NIL;
+      }
+    }
+    if (evaled) {
+      IASTAppendable derivativeHead2 = F.ast(derivativeHead1);
+      derivativeHead2.append(header);
+      IASTAppendable derivativeAST = F.ast(derivativeHead2, size);
+      derivativeAST.appendArgs(args);
+      return derivativeAST;
+    }
+    return F.NIL;
+  }
+
   private static IAST addDerivative(final int pos, IAST deriveHead, final IExpr header,
       final IAST args) {
     IASTMutable derivativeHead1 = deriveHead.copyAppendable();
@@ -321,6 +356,13 @@ public class D extends AbstractFunctionEvaluator implements DRules {
             x = F.list(xList.arg1());
           } else {
             x = xList.arg1();
+            if (fx.isAST()) {
+              IAST derivativeN = createDerivativeN(fx.head(), (IAST) fx, x, xList.arg2());
+              IExpr derivativeNEvaled = engine.evaluateNIL(derivativeN);
+              if (derivativeNEvaled.isPresent()) {
+                return derivativeNEvaled;
+              }
+            }
           }
           IExpr arg2 = xList.arg2();
           int n = arg2.toIntDefault();

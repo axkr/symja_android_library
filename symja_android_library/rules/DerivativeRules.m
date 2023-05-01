@@ -1,4 +1,4 @@
-{
+{ 
 Derivative(1)[AiryAi] := AiryAiPrime(#) &,
 Derivative(1)[AiryAiPrime] := AiryAi(#)*# &,
 Derivative(1)[AiryBi] := AiryBiPrime(#) &,
@@ -46,7 +46,10 @@ Derivative(1)[KelvinBer] := ((2*KelvinBei(1, #) + 2*KelvinBer(1, #))/(2*Sqrt(2))
 Derivative(1)[Log] := #^(-1) &,
 Derivative(1)[LogGamma] := PolyGamma(0,#) &,
 Derivative(1)[LogisticSigmoid] := LogisticSigmoid(#)*(1-LogisticSigmoid(#)) &,
-Derivative(1)[PolyGamma] := PolyGamma(1,#) &,
+Derivative(1)[PolyGamma] := PolyGamma(1,#) &, 
+Derivative(0,n_)[PolyGamma] := PolyGamma(n+#1, #2) &
+    /; (IntegerQ(n) && n >= 0)||SymbolQ(n),
+    
 Derivative(1)[ProductLog] := ProductLog(#)/((1 + ProductLog(#))*#) &,
 Derivative(1)[Cot] := (-1)*Csc(#)^2 &,
 Derivative(1)[Coth] := (-1)*Sinh(#)^(-2) &,
@@ -71,11 +74,15 @@ Derivative(1)[LogIntegral] := 1/Log(#) &,
 Derivative(1)[SinIntegral] := Sinc(#) &,
 Derivative(1)[SinhIntegral] := Sinh(#)/# &,
 
-Derivative(n_Symbol)[Cos] := Cos((n*Pi)/2+#) &,
-Derivative(n_Symbol)[Sin] := Sin((n*Pi)/2+#) &,
-Derivative(n_Symbol)[Cosh] := (-I)^n*Cos((n*Pi)/2 - I*#) &,
-Derivative(n_Symbol)[Sinh] := I*(-I)^n*Sin((n*Pi)/2 - I*#) &,
-
+Derivative(n_)[Cos] := With({t=Cos(n/2*Pi+#)}, t &  
+    /; (IntegerQ(n) && n >= 0)||SymbolQ(n)), 
+Derivative(n_)[Sin] := With({t=Sin(n/2*Pi+#)}, t &
+    /; (IntegerQ(n) && n >= 0)||SymbolQ(n)), 
+Derivative(n_)[Cosh] := With({t=(-I)^n*Cos((n*Pi)/2 - I*#)}, t &
+    /; (IntegerQ(n) && n >= 0)||SymbolQ(n)), 
+Derivative(n_)[Sinh] := With({t=I*(-I)^n*Sin((n*Pi)/2 - I*#)}, t &
+    /; (IntegerQ(n) && n >= 0)||SymbolQ(n)), 
+    
 Derivative(0,1)[BesselJ] := 1/2*(BesselJ(-1+#,#2)-BesselJ(1+#,#2)) &,
 Derivative(0,1)[BesselY] := 1/2*(BesselY(-1+#,#2)-BesselY(1+#,#2)) &,
 Derivative(0,1)[BesselI] := ((BesselI(-1+#, #2) + BesselI(1+#, #2))/2) &,

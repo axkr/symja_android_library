@@ -163,6 +163,9 @@ public interface DerivativeRules {
     // Derivative(1)[PolyGamma]:=PolyGamma(1,#1)&
     ISetDelayed($(Derivative(C1),PolyGamma),
       Function(PolyGamma(C1,Slot1))),
+    // Derivative(0,n_)[PolyGamma]:=(PolyGamma(n+#1,#2)&)/;(IntegerQ(n)&&n>=0)||SymbolQ(n)
+    ISetDelayed($(Derivative(C0,n_),PolyGamma),
+      Condition(Function(PolyGamma(Plus(n,Slot1),Slot2)),Or(And(IntegerQ(n),GreaterEqual(n,C0)),SymbolQ(n)))),
     // Derivative(1)[ProductLog]:=ProductLog(#1)/((1+ProductLog(#1))*#1)&
     ISetDelayed($(Derivative(C1),ProductLog),
       Function(Times(ProductLog(Slot1),Power(Times(Plus(C1,ProductLog(Slot1)),Slot1),CN1)))),
@@ -229,18 +232,18 @@ public interface DerivativeRules {
     // Derivative(1)[SinhIntegral]:=Sinh(#1)/#1&
     ISetDelayed($(Derivative(C1),SinhIntegral),
       Function(Times(Sinh(Slot1),Power(Slot1,CN1)))),
-    // Derivative(n_Symbol)[Cos]:=Cos(1/2*n*Pi+#1)&
-    ISetDelayed($(Derivative(n_Symbol),Cos),
-      Function(Cos(Plus(Times(C1D2,n,Pi),Slot1)))),
-    // Derivative(n_Symbol)[Sin]:=Sin(1/2*n*Pi+#1)&
-    ISetDelayed($(Derivative(n_Symbol),Sin),
-      Function(Sin(Plus(Times(C1D2,n,Pi),Slot1)))),
-    // Derivative(n_Symbol)[Cosh]:=-I^n*Cos(1/2*n*Pi-I*#1)&
-    ISetDelayed($(Derivative(n_Symbol),Cosh),
-      Function(Times(Power(CNI,n),Cos(Plus(Times(C1D2,n,Pi),Times(CNI,Slot1)))))),
-    // Derivative(n_Symbol)[Sinh]:=I*-I^n*Sin(1/2*n*Pi-I*#1)&
-    ISetDelayed($(Derivative(n_Symbol),Sinh),
-      Function(Times(CI,Power(CNI,n),Sin(Plus(Times(C1D2,n,Pi),Times(CNI,Slot1)))))),
+    // Derivative(n_)[Cos]:=With({t=Cos(n/2*Pi+#1)},(t&)/;(IntegerQ(n)&&n>=0)||SymbolQ(n))
+    ISetDelayed($(Derivative(n_),Cos),
+      With(list(Set(t,Cos(Plus(Times(C1D2,n,Pi),Slot1)))),Condition(Function(t),Or(And(IntegerQ(n),GreaterEqual(n,C0)),SymbolQ(n))))),
+    // Derivative(n_)[Sin]:=With({t=Sin(n/2*Pi+#1)},(t&)/;(IntegerQ(n)&&n>=0)||SymbolQ(n))
+    ISetDelayed($(Derivative(n_),Sin),
+      With(list(Set(t,Sin(Plus(Times(C1D2,n,Pi),Slot1)))),Condition(Function(t),Or(And(IntegerQ(n),GreaterEqual(n,C0)),SymbolQ(n))))),
+    // Derivative(n_)[Cosh]:=With({t=-I^n*Cos(1/2*n*Pi-I*#1)},(t&)/;(IntegerQ(n)&&n>=0)||SymbolQ(n))
+    ISetDelayed($(Derivative(n_),Cosh),
+      With(list(Set(t,Times(Power(CNI,n),Cos(Plus(Times(C1D2,n,Pi),Times(CNI,Slot1)))))),Condition(Function(t),Or(And(IntegerQ(n),GreaterEqual(n,C0)),SymbolQ(n))))),
+    // Derivative(n_)[Sinh]:=With({t=I*-I^n*Sin(1/2*n*Pi-I*#1)},(t&)/;(IntegerQ(n)&&n>=0)||SymbolQ(n))
+    ISetDelayed($(Derivative(n_),Sinh),
+      With(list(Set(t,Times(CI,Power(CNI,n),Sin(Plus(Times(C1D2,n,Pi),Times(CNI,Slot1)))))),Condition(Function(t),Or(And(IntegerQ(n),GreaterEqual(n,C0)),SymbolQ(n))))),
     // Derivative(0,1)[BesselJ]:=1/2*(BesselJ(-1+#1,#2)-BesselJ(1+#1,#2))&
     ISetDelayed($(Derivative(C0,C1),BesselJ),
       Function(Times(C1D2,Subtract(BesselJ(Plus(CN1,Slot1),Slot2),BesselJ(Plus(C1,Slot1),Slot2))))),
