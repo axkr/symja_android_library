@@ -101,6 +101,7 @@ Derivative(0,0,1)[CarlsonRG] := ((1/4)*CarlsonRF(#,#2,#3) - (1/12)*CarlsonRD(#,#
 
 Derivative(0,1)[Gamma] := (-E^(-#2))*#2^(-1+#) &,
 Derivative(1,0)[Gamma] :=  Gamma(#, #2)*Log(#2) + MeijerG({{}, {1, 1}}, {{0, 0, #}, {}}, #2) &,
+Derivative(1,0)[HarmonicNumber] := #2*(Zeta(#2+1) - HarmonicNumber(#1,#2+1)) &,
 Derivative(0,1)[HankelH1] := ((HankelH1(-1+#, #2) - HankelH1(1 + #, #2))/2) &,
 Derivative(0,1)[HankelH2] := ((HankelH2(-1+#, #2) - HankelH2(1 + #, #2))/2) &,
 

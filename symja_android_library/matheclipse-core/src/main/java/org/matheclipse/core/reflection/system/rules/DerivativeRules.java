@@ -15,7 +15,7 @@ public interface DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 111 };
+  final public static int[] SIZES = { 0, 112 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -286,6 +286,9 @@ public interface DerivativeRules {
     // Derivative(1,0)[Gamma]:=Gamma(#1,#2)*Log(#2)+MeijerG({{},{1,1}},{{0,0,#1},{}},#2)&
     ISetDelayed($(Derivative(C1,C0),Gamma),
       Function(Plus(Times(Gamma(Slot1,Slot2),Log(Slot2)),MeijerG(list(List(),list(C1,C1)),list(list(C0,C0,Slot1),List()),Slot2)))),
+    // Derivative(1,0)[HarmonicNumber]:=#2*(-HarmonicNumber(#1,#2+1)+Zeta(#2+1))&
+    ISetDelayed($(Derivative(C1,C0),HarmonicNumber),
+      Function(Times(Slot2,Plus(Negate(HarmonicNumber(Slot1,Plus(Slot2,C1))),Zeta(Plus(Slot2,C1)))))),
     // Derivative(0,1)[HankelH1]:=1/2*(HankelH1(-1+#1,#2)-HankelH1(1+#1,#2))&
     ISetDelayed($(Derivative(C0,C1),HankelH1),
       Function(Times(C1D2,Subtract(HankelH1(Plus(CN1,Slot1),Slot2),HankelH1(Plus(C1,Slot1),Slot2))))),

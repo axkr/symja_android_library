@@ -4681,6 +4681,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testD() {
+    check("D(HarmonicNumber(Sin(Cos(x)), y), x)", //
+        "y*Cos(Cos(x))*Sin(x)*(HarmonicNumber(Sin(Cos(x)),1+y)-Zeta(1+y))");
     check("D(Sin(f(x)),{x,3})", //
         "-Cos(f(x))*f'(x)^3-3*Sin(f(x))*f'(x)*f''(x)+Cos(f(x))*Derivative(3)[f][x]");
     check("D(Sin(#), {#,-1+n})", //
