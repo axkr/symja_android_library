@@ -532,6 +532,7 @@ public class IOFunctions {
       "exdims", "The dimensions cannot be determined from the position `1`.", //
       "experimental", "Experimental implementation (search in Github issues for identifier `1`).",
       "fdup", "Duplicate parameter `1` found in `2`.", //
+      "flpar", "Parameter specification `1` in `2` should be a symbol or a list of symbols.", //
       "fftl", "Argument `1` is not a non-empty list or rectangular array of numeric quantities.", //
       "fttype", "The transform type `1` should be 1, 2, 3 or 4.", //
       "fpct", "To many parameters in `1` to be filled from `2`.", //

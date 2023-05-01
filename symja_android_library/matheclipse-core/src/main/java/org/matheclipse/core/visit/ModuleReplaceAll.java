@@ -92,10 +92,21 @@ public class ModuleReplaceAll extends VisitorExpr {
    */
   private IAST visitNestedScope(IAST ast, boolean isFunction) {
     IAST localVariablesList = F.NIL;
-    if (ast.arg1().isSymbol()) {
-      localVariablesList = F.list(ast.arg1());
-    } else if (ast.arg1().isList()) {
-      localVariablesList = (IAST) ast.arg1();
+    if (isFunction) {
+      if (ast.isAST2()) {
+        // extract formal parameters of Function(x,body)
+        if (ast.arg1().isSymbol()) {
+          localVariablesList = F.list(ast.arg1());
+        } else if (ast.arg1().isList()) {
+          localVariablesList = (IAST) ast.arg1();
+        }
+      }
+    } else {
+      if (ast.arg1().isSymbol()) {
+        localVariablesList = F.list(ast.arg1());
+      } else if (ast.arg1().isList()) {
+        localVariablesList = (IAST) ast.arg1();
+      }
     }
     ModuleReplaceAll visitor = this;
     if (localVariablesList.isPresent()) {
