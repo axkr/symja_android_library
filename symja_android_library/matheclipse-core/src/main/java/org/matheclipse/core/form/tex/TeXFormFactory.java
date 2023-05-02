@@ -407,14 +407,10 @@ public class TeXFormFactory {
                 buffer.append(" & ");
               }
             }
-            if (i < ast.argSize()) {
-              buffer.append(" \\\\\n");
-            } else {
-              buffer.append(" \\\n");
-            }
+            buffer.append(" \\\\\n");
           }
         }
-        buffer.append("\\\\\n\\end{array}\n\\right) ");
+        buffer.append("\\end{array}\n\\right) ");
       } else {
         buffer.append("\\begin{pmatrix}\n");
         IAST row;
@@ -2122,8 +2118,7 @@ public class TeXFormFactory {
     initTeXConverter(S.Or, new TeXFormOperator(this, Precedence.OR, " \\lor "));
     initTeXConverter(S.PlusMinus, new PlusMinus());
 
-    initTeXConverter(S.Intersection,
-        new TeXFormOperator(this, Precedence.INTERSECTION, " \\cap "));
+    initTeXConverter(S.Intersection, new TeXFormOperator(this, Precedence.INTERSECTION, " \\cap "));
     initTeXConverter(S.Union, new TeXFormOperator(this, Precedence.UNION, " \\cup "));
 
     // initTeXConverter(F.PrePlus,

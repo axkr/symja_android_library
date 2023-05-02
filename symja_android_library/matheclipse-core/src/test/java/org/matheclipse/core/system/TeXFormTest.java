@@ -1,7 +1,10 @@
 package org.matheclipse.core.system;
 
+import java.io.StringWriter;
 import org.junit.jupiter.api.Assertions;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.tex.TeXFormFactory;
 
@@ -299,12 +302,11 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     check("TeXForm({{a, b}, {c}})", //
         "\\{\\{a,b\\},\\{c\\}\\}");
     check("TeXForm({{a, b, c}, {d, e, f}})", //
-        "\\left(\n"//
-            + "\\begin{array}{ccc}\n"//
-            + "a & b & c \\\\\n"//
-            + "d & e & f \\\n"//
-            + "\\\\\n"//
-            + "\\end{array}\n"//
+        "\\left(\n" //
+            + "\\begin{array}{ccc}\n" //
+            + "a & b & c \\\\\n" //
+            + "d & e & f \\\\\n" //
+            + "\\end{array}\n" //
             + "\\right) ");
     check("TeXForm(Expand((x + y)^3))", //
         "{x}^{3}+3 \\cdot {x}^{2} \\cdot y+3 \\cdot x \\cdot {y}^{2} + {y}^{3}");
@@ -415,6 +417,22 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
         "c \\cdot \\left( \\pm{a}\\right) ");
     check("TeXForm(PlusMinus(a)+c)", //
         "c + \\pm{a}");
+  }
+
+  public void testMapIndexed() {
+    String input = "MapIndexed(f, {{a, b, c}, {x, y, z}})";
+
+    ExprEvaluator exprEvaluator = new ExprEvaluator();
+    TeXUtilities teXUtilities = new TeXUtilities(exprEvaluator.getEvalEngine(), true);
+    StringWriter buf = new StringWriter();
+    teXUtilities.toTeX(exprEvaluator.parse(input), buf);
+    String latex = buf.toString();
+    assertEquals(latex, //
+        "\\text{MapIndexed}(f,\\left(\n" //
+            + "\\begin{array}{ccc}\n"//
+            + "a & b & c \\\\\n" //
+            + "x & y & z \\\\\n" //
+            + "\\end{array}\n" + "\\right) )");
   }
 
   @Override
