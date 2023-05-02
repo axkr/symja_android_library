@@ -6997,13 +6997,24 @@ public class F extends S {
   }
 
   /**
-   * Evaluate the given expression in numeric mode
+   * Evaluate the given (symbolic) expression in numeric mode.
    *
-   * @param a0
+   * @param symbolicExpr
    * @return
    */
-  public static IAST N(final IExpr a0) {
-    return new AST1(N, a0);
+  public static IAST N(final IExpr symbolicExpr) {
+    return new AST1(N, symbolicExpr);
+  }
+
+  /**
+   * Evaluate the given (symbolic) expression in numeric mode with <code>precision</code> digits .
+   * 
+   * @param symbolicExpr
+   * @param precision
+   * @return
+   */
+  public static IAST N(final IExpr symbolicExpr, final IExpr precision) {
+    return new AST2(N, symbolicExpr, precision);
   }
 
   public static IAST NakagamiDistribution(final IExpr a0, final IExpr a1) {
