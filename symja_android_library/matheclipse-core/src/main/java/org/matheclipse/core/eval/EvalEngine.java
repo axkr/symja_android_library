@@ -55,6 +55,7 @@ import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IEvalStepListener;
@@ -1191,11 +1192,10 @@ public class EvalEngine implements Serializable {
         // thread over the lists
         resultList = threadASTListArgs(mutableAST, S.Thread, "tdlen");
         if (resultList.isPresent()) {
+          if (resultList.isAssociation()) {
+            return resultList;
+          }
           return evalArgs(resultList, ISymbol.NOATTRIBUTE).orElse(resultList);
-        }
-        int indx = mutableAST.indexOf(x -> x.isAssociation());
-        if (indx > 0) {
-          return mutableAST.get(indx).mapThread(mutableAST, indx);
         }
       }
 
@@ -3415,53 +3415,91 @@ public class EvalEngine implements Serializable {
    */
   public IASTMutable threadASTListArgs(final IAST ast, ISymbol commandHead,
       String messageShortcut) {
-    ISymbol[] head = new ISymbol[] {null};
-    int[] listLength = new int[] {-1};
-    if (ast.exists(x -> {
-      if (x.isList()) {
-        if (head[0] == null) {
-          head[0] = S.List;
-        }
-        if (listLength[0] < 0) {
-          listLength[0] = ((IAST) x).argSize();
-        } else {
-          if (listLength[0] != ((IAST) x).argSize()) {
-            // tdlen: Objects of unequal length in `1` cannot be combined.
-            IOFunctions.printMessage(commandHead, messageShortcut, F.list(ast), EvalEngine.get());
-            // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
-            return true;
-          }
-        }
-      } else if (x.isSparseArray()) {
-        if (head[0] == null) {
-          head[0] = S.SparseArray;
-        }
-        ISparseArray sp = (ISparseArray) x;
-        int[] dimensions = sp.getDimension();
-        if (dimensions.length > 0) {
-          if (listLength[0] < 0) {
-            listLength[0] = dimensions[0];
-          } else {
-            if (listLength[0] != dimensions[0]) {
-              // Objects of unequal length in `1` cannot be combined.
-              IOFunctions.printMessage(S.Thread, "tdlen", F.list(ast), EvalEngine.get());
-              // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
-              return true;
-            }
-          }
-        }
-      }
-      return false;
-    })) {
+    ISymbol[] refHeadType = new ISymbol[] {null};
+    int[] refArgSize = new int[] {-1};
+    IAssociation[] refAssociation = new IAssociation[] {null};
+    if (ast.exists(
+        x -> isValidListable(x, ast, commandHead, messageShortcut, refHeadType, refArgSize, refAssociation))) {
       return F.NIL;
     }
-    if (listLength[0] != -1) {
-      IASTMutable result = EvalAttributes.threadList(ast, head[0], ast.head(), listLength[0]);
+    if (refArgSize[0] != -1) {
+      IASTMutable result =
+          EvalAttributes.threadList(ast, refHeadType[0], ast.head(), refArgSize[0], refAssociation[0]);
       result.addEvalFlags(IAST.IS_LISTABLE_THREADED);
       return result;
     }
     ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
     return F.NIL;
+  }
+
+  private boolean isValidListable(IExpr expr, final IAST ast, ISymbol commandHead,
+      String messageShortcut, ISymbol[] refHeadType, int[] refArgSize,
+      IAssociation[] refAssociation) {
+    if (expr.isList()) {
+      if (refHeadType[0] == null) {
+        refHeadType[0] = S.List;
+      }
+      if (refArgSize[0] < 0) {
+        refArgSize[0] = ((IAST) expr).argSize();
+      } else {
+        if (refArgSize[0] != ((IAST) expr).argSize()) {
+          // tdlen: Objects of unequal length in `1` cannot be combined.
+          IOFunctions.printMessage(commandHead, messageShortcut, F.list(ast), EvalEngine.get());
+          // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
+          return true;
+        }
+      }
+    } else if (expr.isSparseArray()) {
+      if (refHeadType[0] == null) {
+        refHeadType[0] = S.SparseArray;
+      }
+      ISparseArray sp = (ISparseArray) expr;
+      int[] dimensions = sp.getDimension();
+      if (dimensions.length > 0) {
+        if (refArgSize[0] < 0) {
+          refArgSize[0] = dimensions[0];
+        } else {
+          if (refArgSize[0] != dimensions[0]) {
+            // Objects of unequal length in `1` cannot be combined.
+            IOFunctions.printMessage(S.Thread, "tdlen", F.list(ast), EvalEngine.get());
+            // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
+            return true;
+          }
+        }
+      }
+    } else {
+      if (expr.isAssociation()) {
+        IAssociation association = (IAssociation) expr;
+        refHeadType[0] = S.Association;
+        if (refArgSize[0] < 0) {
+          refArgSize[0] = association.argSize();
+        }
+        if (refArgSize[0] != association.argSize()) {
+          // tdlen: Objects of unequal length in `1` cannot be combined.
+          IOFunctions.printMessage(commandHead, messageShortcut, F.list(ast), EvalEngine.get());
+          // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
+          return true;
+        }
+        if (refAssociation[0] != null) {
+          if (refAssociation[0].size() != association.size()) {
+            // The arguments `1` and `2` in `3` are incompatible.
+            IOFunctions.printMessage(S.Association, "incmp",
+                F.List(refAssociation[0], association, ast), this);
+            return true;
+          }
+          for (int i = 1; i < association.size(); i++) {
+            if (!refAssociation[0].isKey(association.getRule(i).first())) {
+              // The arguments `1` and `2` in `3` are incompatible.
+              IOFunctions.printMessage(S.Association, "incmp",
+                  F.List(refAssociation[0], association, ast), this);
+              return true;
+            }
+          }
+        }
+        refAssociation[0] = association;
+      }
+    }
+    return false;
   }
 
   /**

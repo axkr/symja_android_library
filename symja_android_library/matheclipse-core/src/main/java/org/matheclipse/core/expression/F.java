@@ -1944,6 +1944,31 @@ public class F extends S {
     return new ASTAssociation(listOfRules);
   }
 
+  /**
+   * Create an association data structure <code>&lt;| x0-&gt;y0, x1-&gt;y1, ... |&gt;</code> from a
+   * map of rules.
+   * 
+   * @param templateAssociation the template association, which determines the type of rule
+   *        (<code>Rule</code> or <code>RuleDelayed</code> and the key of the new rule.
+   * @param mapOfRules a map of keys to {@link IASTMutable} values
+   * @return
+   */
+  public static IAssociation assoc(final IAssociation templateAssociation,
+      final Map<IExpr, IASTMutable> mapOfRules) {
+    ASTAssociation association = new ASTAssociation();
+    for (int i = 1; i < templateAssociation.size(); i++) {
+      IAST rule1 = templateAssociation.getRule(i);
+      IExpr rule1Key = rule1.arg1();
+      IExpr newRuleRHS = mapOfRules.get(rule1Key);
+      if (newRuleRHS == null) {
+        newRuleRHS = S.Nonexistent;
+      }
+      association.appendRule(F.binaryAST2(rule1.head(), rule1Key, newRuleRHS));
+    }
+
+    return association;
+  }
+
   public static IAssociation assoc() {
     return new ASTAssociation();
   }

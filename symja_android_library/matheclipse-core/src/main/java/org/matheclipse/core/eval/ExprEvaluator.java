@@ -358,6 +358,7 @@ public class ExprEvaluator {
       LOGGER.debug("syntax error", e);
       return F.stringx(e.getMessage());
     } catch (SymjaMathException sma) {
+      // sma.printStackTrace();
       LOGGER.debug("ExprEvaluator.evalTopLevel() failed", sma);
       IOFunctions.printMessage(expr.topHead(), sma, engineRef[0]);
       return expr;

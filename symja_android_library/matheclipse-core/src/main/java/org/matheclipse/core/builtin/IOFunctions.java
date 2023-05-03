@@ -545,6 +545,7 @@ public class IOFunctions {
       "ilsmn",
       "Single or list of non-negative machine-sized integers expected at position `1` of `2`.", //
       "ilsnn", "Single or list of non-negative integers expected at position `1`.", //
+      "incmp", "The arguments `1` and `2` in `3` are incompatible.", //
       "incom",
       "Length `1` of dimension `2` in `3` is incommensurate with length `4` of dimension `5` in `6`.", //
       "incomp", "Expressions `1` and `2` have incompatible shapes.", //
