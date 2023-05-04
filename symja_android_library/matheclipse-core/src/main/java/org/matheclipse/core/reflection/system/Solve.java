@@ -1277,6 +1277,12 @@ public class Solve extends AbstractFunctionEvaluator {
       if (!res.isList() || !res.isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(), true)) {
         return F.NIL;
       }
+      IASTAppendable resultList = F.ListAlloc(1);
+      resultList.append(res);
+      IASTMutable crossChecking = crossChecking(termsEqualZeroList, resultList, engine);
+      if (crossChecking.argSize() != 1) {
+        return F.CEmptyList;
+      }
       return solveNumeric(res, numericFlag, engine);
     }
 
@@ -1560,6 +1566,21 @@ public class Solve extends AbstractFunctionEvaluator {
   private static IASTMutable crossChecking(IASTMutable termsEqualZero, Set<IExpr> subSolutionSet,
       EvalEngine engine) {
     IASTAppendable result = F.ListAlloc(subSolutionSet);
+    return crossChecking(termsEqualZero, result, engine);
+  }
+
+  /**
+   * After finding a possible solution, the process of cross-checking involves substituting the
+   * values of the variables into each equation in the system and checking to see if both sides of
+   * each equation are equal.
+   * 
+   * @param termsEqualZero terms which should be equal to <code>0</code>
+   * @param engine
+   * @param result list of result values which should be cross checked
+   * @return
+   */
+  private static IASTMutable crossChecking(IASTMutable termsEqualZero, IASTAppendable result,
+      EvalEngine engine) {
     int[] removedPositions = new int[result.size()];
     int untilPosition = 0;
     for (int j = 1; j < result.size(); j++) {

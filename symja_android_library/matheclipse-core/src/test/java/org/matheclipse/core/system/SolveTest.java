@@ -1562,6 +1562,15 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x1->2,x2->-3,x3->-1,x4->0}}");
   }
 
+  public void testSolveIssue731() {
+    // issue #731
+    // check("Eliminate(1-2*x+Sqrt(-15*x+4*x^2)==0,x)", //
+    // "");
+    check("Solve((4*x^2-15*x)^(1/2) - 2*x == -1, x)", //
+        "{}");
+  }
+
+
   // public void testSolveFindRoot() {
   // // multivariate FindRoot cases
   // check("Solve({2*x1+x2==E^(-x1), -x1+2*x2==E^(-x2)},{x1,x2})", //
