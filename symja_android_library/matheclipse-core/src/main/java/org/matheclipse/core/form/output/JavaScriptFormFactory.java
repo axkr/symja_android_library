@@ -106,6 +106,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 
     FUNCTIONS_STR_MATHCELL.put(S.Factorial, "factorial");
     FUNCTIONS_STR_MATHCELL.put(S.Factorial2, "factorial2");
+    FUNCTIONS_STR_MATHCELL.put(S.Subfactorial, "subfactorial");
     FUNCTIONS_STR_MATHCELL.put(S.Floor, "floor");
     FUNCTIONS_STR_MATHCELL.put(S.FractionalPart, "fractionalPart");
     FUNCTIONS_STR_MATHCELL.put(S.FresnelC, "fresnelC");
