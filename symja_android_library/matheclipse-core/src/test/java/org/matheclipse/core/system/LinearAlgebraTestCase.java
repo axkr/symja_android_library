@@ -747,6 +747,22 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             + " {1/2,1/3}}");
   }
 
+  public void testIdentityMatrix() {
+    check("IdentityMatrix(3,SparseArray) // MatrixForm", //
+        "{{1,0,0},\n" //
+            + " {0,1,0},\n" //
+            + " {0,0,1}}");
+
+    check("IdentityMatrix(3,List)", //
+        "{{1,0,0},\n" //
+            + " {0,1,0},\n" //
+            + " {0,0,1}}");
+
+    check("IdentityMatrix(3)", //
+        "{{1,0,0},\n" //
+            + " {0,1,0},\n" //
+            + " {0,0,1}}");
+  }
   public void testInverse() {
     check("Inverse(SparseArray({{1, 2, 0}, {2, 3, 0}, {3, 4, 1}}))", //
         "{{-3,2,0},\n" //

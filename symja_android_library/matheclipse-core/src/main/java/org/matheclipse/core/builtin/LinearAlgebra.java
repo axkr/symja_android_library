@@ -2497,6 +2497,15 @@ public final class LinearAlgebra {
         // Positive integer (less equal 2147483647) expected at position `2` in `1`.
         return IOFunctions.printMessage(S.IdentityMatrix, "intpm", F.list(ast, F.C1), engine);
       }
+      if (ast.isAST2()) {
+        if (ast.arg2() == S.SparseArray) {
+          return F.sparseMatrix((i, j) -> i == j ? F.C1 : F.C0, dimension[0], dimension[1]);
+        }
+        if (ast.arg2() != S.List) {
+          // Argument `1` at position `2` is not List or SparseArray.
+          return IOFunctions.printMessage(S.IdentityMatrix, "targ", F.list(ast, F.C1), engine);
+        }
+      }
       return F.matrix((i, j) -> i == j ? F.C1 : F.C0, dimension[0], dimension[1]);
     }
 

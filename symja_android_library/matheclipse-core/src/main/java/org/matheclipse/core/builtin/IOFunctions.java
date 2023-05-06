@@ -740,6 +740,7 @@ public class IOFunctions {
       "tag", "Rule for `1` can only be attached to `2`.", //
       "tagnf", "Tag `1` not found in `2`.", //
       "take", "Cannot take positions `1` through `2` in `3`.", //
+      "targ", "Argument `1` at position `2` is not List or SparseArray.", //
       "tbnval",
       "Values `1` produced by the function `2` cannot be used for numerical sorting because they are not all real.", //
       "tdlen", "Objects of unequal length in `1` cannot be combined.", //
