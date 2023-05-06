@@ -3443,7 +3443,7 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is the multiplication function <code>
+   * Test if this expression is the {@link S#Plus} function <code>
    * Plus[&lt;arg1&gt;, &lt;arg2&gt;]</code> with exactly 2 arguments.
    *
    * @return
@@ -3453,7 +3453,7 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is the multiplication function <code>
+   * Test if this expression is the {@link S#Plus} function <code>
    * Plus[&lt;arg1&gt;, &lt;arg2&gt;, &lt;arg3&gt;]</code> with exactly 3 arguments.
    *
    * @return
@@ -3999,7 +3999,7 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is the multiplication function <code>
+   * Test if this expression is the {@link S#Times} function <code>
    * Times[&lt;arg1&gt;, &lt;arg2&gt;]</code> with exactly 2 arguments.
    *
    * @return
@@ -4009,7 +4009,7 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is the multiplication function <code>
+   * Test if this expression is the {@link S#Times} function <code>
    * Times[&lt;arg1&gt;, &lt;arg2&gt;, &lt;arg3&gt;]</code> with exactly 3 arguments.
    *
    * @return

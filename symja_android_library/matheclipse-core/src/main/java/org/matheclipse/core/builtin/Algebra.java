@@ -1672,11 +1672,6 @@ public class Algebra {
       private IExpr expandPower(final IAST plusAST, final int n) {
         if (n == 1) {
           return expandPlus(plusAST).orElseGet(() -> addExpanded(plusAST));
-          // IExpr temp = expandPlus(plusAST);
-          // if (temp.isPresent()) {
-          // return temp;
-          // }
-          // return addExpanded(plusAST);
         }
         if (n == 0) {
           return F.C1;
@@ -1686,6 +1681,14 @@ public class Algebra {
           addExpanded(plusAST);
           return F.NIL;
         }
+
+        if (plusAST.isPlus2() && n == 2) {
+          IExpr a = plusAST.arg1();
+          IExpr b = plusAST.arg2();
+          // Use binomial theorem (a+b)^2 = a^2 + 2 * a * b + b^2
+          return F.Plus(a.times(a), F.C2.times(a).times(b), b.times(b));
+        }
+
         int k = plusAST.argSize();
         long numberOfTerms = LongMath.binomial(n + k - 1, k - 1);
         if (numberOfTerms >= Integer.MAX_VALUE || numberOfTerms > Config.MAX_AST_SIZE) {
@@ -1742,7 +1745,7 @@ public class Algebra {
           }
           result = expandTimesBinary(result, arg, engine);
         }
-        if (evaled == false && timesAST.equals(result)) {
+        if (!evaled && timesAST.equals(result)) {
           addExpanded(timesAST);
           return F.NIL;
         }
@@ -1791,19 +1794,26 @@ public class Algebra {
           PlusOp plusOp = new PlusOp(plusAST1.argSize());
           final IExpr t =
               plusAST0.isPlusTimesPower() ? expandAST(plusAST0).orElse(plusAST0) : plusAST0;
-          plusAST1.forEach(x -> {
-            evalAndExpandAST(t, false, x, true, plusOp, engine);
-          });
+          plusAST1.forEach(x -> evalAndExpandAST(t, false, x, true, plusOp, engine));
           return plusOp.getSum();
         } else if (isPatternFree(plusAST1)) {
           // result = F.ast(S.Plus, plusAST0.argSize());
           PlusOp plusOp = new PlusOp(plusAST0.argSize());
           final IExpr t =
               plusAST1.isPlusTimesPower() ? expandAST(plusAST1).orElse(plusAST1) : plusAST1;
-          plusAST0.forEach(x -> {
-            evalAndExpandAST(x, true, t, false, plusOp, engine);
-          });
+          plusAST0.forEach(x -> evalAndExpandAST(x, true, t, false, plusOp, engine));
           return plusOp.getSum();
+        }
+        if (plusAST0.isPlus2() && plusAST1.isPlus2()
+            && plusAST0.second().equals(plusAST1.second())) {
+          IExpr p00 = plusAST0.arg1();
+          IExpr p01 = plusAST0.arg2();
+          IExpr p10 = plusAST1.arg1();
+          if (p00.equals(p10.negate())) {
+            // Multiplication can be transformed into difference of squares
+            // (a+b)*(a-b) == a^2 - b^2
+            return F.Plus(p01.times(p01), p10.times(p10).negate());
+          }
         }
         long numberOfTerms = (long) (plusAST0.argSize()) * (long) (plusAST1.argSize());
         if (numberOfTerms > Config.MAX_AST_SIZE) {
@@ -5351,7 +5361,7 @@ public class Algebra {
         result[1] = denominator.oneIdentity1();
       }
       if (negateNumerDenom && result[0].isNumber() && result[0].isNegative() && result[1].isPlus()
-          && ((IAST) result[1]).isAST2()) {
+          && result[1].isAST2()) {
         // negate numerator and denominator:
         result[0] = result[0].negate();
         result[1] = result[1].negate();
@@ -5364,8 +5374,7 @@ public class Algebra {
         result[1] = denominator.oneIdentity1();
         return result;
       }
-      if (result[0].isTimes() && ((IAST) result[0]).isAST2()
-          && ((IAST) result[0]).arg1().isMinusOne()) {
+      if (result[0].isTimes() && result[0].isAST2() && ((IAST) result[0]).arg1().isMinusOne()) {
         result[1] = denominator.oneIdentity1();
         return result;
       }
