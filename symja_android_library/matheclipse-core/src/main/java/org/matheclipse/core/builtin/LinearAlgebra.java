@@ -1596,11 +1596,14 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int maximumLevel = Integer.MAX_VALUE;
-      if (ast.isAST2() && ast.arg2().isInteger()) {
+      if (ast.isAST2()) {
         maximumLevel = ast.arg2().toIntDefault();
         if (maximumLevel < 0) {
-          // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return IOFunctions.printMessage(S.Dimensions, "intpm", F.list(ast, F.C2), engine);
+          if (ast.arg2().isNumber()) {
+            // Positive integer (less equal 2147483647) expected at position `2` in `1`.
+            return IOFunctions.printMessage(S.Dimensions, "intpm", F.list(ast, F.C2), engine);
+          }
+          return F.NIL;
         }
       }
       IExpr arg1 = ast.arg1();
@@ -2265,16 +2268,17 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isInteger()) {
-        final int m = ast.arg1().toIntDefault();
-        if (m <= 0) {
+      IExpr arg1 = ast.arg1();
+      final int m = arg1.toIntDefault();
+      if (m <= 0) {
+        if (arg1.isNumber()) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
           return IOFunctions.printMessage(S.FourierMatrix, "intpm", F.list(ast, F.C1), engine);
         }
-        IAST scalar = F.Sqrt(F.QQ(1, m));
-        return F.matrix((i, j) -> unit(F.QQ(2L * (i) * (j), m).times(S.Pi)).times(scalar), m, m);
+        return F.NIL;
       }
-      return F.NIL;
+      IAST scalar = F.Sqrt(F.QQ(1, m));
+      return F.matrix((i, j) -> unit(F.QQ(2L * (i) * (j), m).times(S.Pi)).times(scalar), m, m);
     }
 
     @Override
@@ -4253,27 +4257,26 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isInteger()) {
-        int m = ast.arg1().toIntDefault();
-        if (m < 0) {
-          return F.NIL;
-        }
-        switch (m) {
-          case 0:
-            // identity matrix
-            return F.list(F.list(F.C1, F.C0), F.list(F.C0, F.C1));
-          case 1:
-            return F.list(F.list(F.C0, F.C1), F.list(F.C1, F.C0));
-          case 2:
-            return F.list(F.list(F.C0, F.CNI), F.list(F.CI, F.C0));
-          case 3:
-            return F.list(F.list(F.C1, F.C0), F.list(F.C0, F.CN1));
-          case 4:
-            // identity matrix
-            return F.list(F.list(F.C1, F.C0), F.list(F.C0, F.C1));
-          default:
-            break;
-        }
+
+      int m = ast.arg1().toIntDefault();
+      if (m < 0) {
+        return F.NIL;
+      }
+      switch (m) {
+        case 0:
+          // identity matrix
+          return F.list(F.list(F.C1, F.C0), F.list(F.C0, F.C1));
+        case 1:
+          return F.list(F.list(F.C0, F.C1), F.list(F.C1, F.C0));
+        case 2:
+          return F.list(F.list(F.C0, F.CNI), F.list(F.CI, F.C0));
+        case 3:
+          return F.list(F.list(F.C1, F.C0), F.list(F.C0, F.CN1));
+        case 4:
+          // identity matrix
+          return F.list(F.list(F.C1, F.C0), F.list(F.C0, F.C1));
+        default:
+          break;
       }
       return F.NIL;
     }
@@ -4964,17 +4967,20 @@ public final class LinearAlgebra {
         return F.matrix((i, j) -> i <= j ? vector.get(j - i + 1) : vector.get(i - j + 1), m, m);
       }
 
-      if (ast.arg1().isInteger()) {
-        int m = ast.arg1().toIntDefault();
-        if (m < 0) {
+
+      int m = ast.arg1().toIntDefault();
+      if (m < 0) {
+        if (ast.arg1().isNumber()) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
           return IOFunctions.printMessage(S.ToeplitzMatrix, "intpm", F.list(ast, F.C1), engine);
         }
-        int[] count = new int[1];
-        count[0] = 1;
-        return F.matrix((i, j) -> i <= j ? F.ZZ(j - i + 1) : F.ZZ(i - j + 1), m, m);
+        return F.NIL;
       }
-      return F.NIL;
+      int[] count = new int[1];
+      count[0] = 1;
+      return F.matrix((i, j) -> i <= j ? F.ZZ(j - i + 1) : F.ZZ(i - j + 1), m, m);
+
+
     }
 
     @Override
@@ -5411,7 +5417,7 @@ public final class LinearAlgebra {
       if (ast.isAST2()) {
         int n = arg1.toIntDefault();
         if (n <= 0) {
-          if (n == Integer.MIN_VALUE && !arg1.isInteger()) {
+          if (n == Integer.MIN_VALUE && !arg1.isNumber()) {
             return F.NIL;
           }
           // Positive machine-sized integer expected at position `2` in `1`.
@@ -5434,19 +5440,21 @@ public final class LinearAlgebra {
         return F.NIL;
       }
 
-      if (arg1.isInteger()) {
-        int k = arg1.toIntDefault();
-        if (k <= 0) {
+      int k = arg1.toIntDefault();
+      if (k <= 0) {
+        if (arg1.isNumber()) {
           // Positive machine-sized integer expected at position `2` in `1`.
           return IOFunctions.printMessage(S.UnitVector, "intpm", F.list(ast, F.C1), engine);
         }
-        if (k == 1) {
-          return F.list(F.C1, F.C0);
-        }
-        if (k == 2) {
-          return F.list(F.C0, F.C1);
-        }
+        return F.NIL;
       }
+      if (k == 1) {
+        return F.list(F.C1, F.C0);
+      }
+      if (k == 2) {
+        return F.list(F.C0, F.C1);
+      }
+
       return F.NIL;
     }
 
