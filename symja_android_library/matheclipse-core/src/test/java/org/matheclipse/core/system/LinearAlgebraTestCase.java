@@ -1,5 +1,12 @@
 package org.matheclipse.core.system;
 
+import org.apfloat.Apint;
+import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
+
 /** Tests built-in functions */
 public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
@@ -726,7 +733,18 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   public void testHilbertMatrix() {
     check("Inverse(HilbertMatrix(3))", //
-        "{{9,-36,30},\n" + " {-36,192,-180},\n" + " {30,-180,180}}");
+        "{{9,-36,30},\n" //
+            + " {-36,192,-180},\n" //
+            + " {30,-180,180}}");
+  }
+
+  public void testHilbertMatrixApfloat() {
+    IAST expr = F.HilbertMatrix(ApfloatNum.valueOf(new Apint("2")));
+    ExprEvaluator exprEvaluator = new ExprEvaluator();
+    IExpr result = exprEvaluator.eval(expr);
+    assertEquals(result.toString(), //
+        "{{1,1/2},\n" //
+            + " {1/2,1/3}}");
   }
 
   public void testInverse() {

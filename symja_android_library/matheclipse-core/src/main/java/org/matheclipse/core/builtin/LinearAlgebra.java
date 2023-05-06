@@ -2453,31 +2453,12 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int rowSize = 0;
-      int columnSize = 0;
-      IExpr arg1 = ast.arg1();
-      if (arg1.isInteger()) {
-        rowSize = arg1.toIntDefault();
-        if (rowSize < 0) {
-          // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return IOFunctions.printMessage(S.HilbertMatrix, "intpm", F.list(ast, F.C1), engine);
-        }
-        columnSize = rowSize;
-      } else if (arg1.isList2() && arg1.first().isInteger() && arg1.second().isInteger()) {
-        rowSize = arg1.first().toIntDefault();
-        if (rowSize < 0) {
-          // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return IOFunctions.printMessage(S.HilbertMatrix, "intpm", F.list(ast, F.C1), engine);
-        }
-        columnSize = arg1.second().toIntDefault();
-        if (columnSize < 0) {
-          // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return IOFunctions.printMessage(S.HilbertMatrix, "intpm", F.list(ast, F.C2), engine);
-        }
-      } else {
-        return F.NIL;
+      int[] dimension = dimensionMatrix(ast.arg1(), engine);
+      if (dimension == null) {
+        // Positive integer (less equal 2147483647) expected at position `2` in `1`.
+        return IOFunctions.printMessage(S.HilbertMatrix, "intpm", F.list(ast, F.C1), engine);
       }
-      return F.matrix((i, j) -> F.QQ(1, i + j + 1), rowSize, columnSize);
+      return F.matrix((i, j) -> F.QQ(1, i + j + 1), dimension[0], dimension[1]);
     }
 
     @Override
@@ -2511,39 +2492,12 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int rowSize = 0;
-      int columnSize = 0;
-      IExpr arg1 = ast.arg1();
-      if (ast.arg1().isInteger()) {
-        rowSize = ast.arg1().toIntDefault();
-        if (rowSize < 0) {
-          // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return IOFunctions.printMessage(S.IdentityMatrix, "intpm", F.list(ast, F.C1), engine);
-        }
-        columnSize = rowSize;
-      } else if (arg1.isList2() && arg1.first().isInteger() && arg1.second().isInteger()) {
-        rowSize = arg1.first().toIntDefault();
-        if (rowSize < 0) {
-          // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return IOFunctions.printMessage(S.HilbertMatrix, "intpm", F.list(ast, F.C1), engine);
-        }
-        columnSize = arg1.second().toIntDefault();
-        if (columnSize < 0) {
-          // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return IOFunctions.printMessage(S.HilbertMatrix, "intpm", F.list(ast, F.C2), engine);
-        }
-      } else {
-        return F.NIL;
+      int[] dimension = dimensionMatrix(ast.arg1(), engine);
+      if (dimension == null) {
+        // Positive integer (less equal 2147483647) expected at position `2` in `1`.
+        return IOFunctions.printMessage(S.IdentityMatrix, "intpm", F.list(ast, F.C1), engine);
       }
-      if (ast.isAST2()) {
-        if (ast.arg2().equals(S.SparseArray)) {
-          int[] dimension = new int[] {rowSize, columnSize};
-          // {{i_,i_} -> 1}
-          return F.sparseArray(F.list(F.Rule(List(F.i_, F.i_), F.C1)), dimension);
-        }
-        return F.NIL;
-      }
-      return F.matrix((i, j) -> i == j ? F.C1 : F.C0, rowSize, columnSize);
+      return F.matrix((i, j) -> i == j ? F.C1 : F.C0, dimension[0], dimension[1]);
     }
 
     @Override
@@ -5881,6 +5835,39 @@ public final class LinearAlgebra {
     }
 
     return new IntArrayList();
+  }
+
+  /**
+   * Validate <code>intOrListOf2Ints</code> to get the dimension parameters.
+   * 
+   * @param intOrListOf2Ints
+   * @param engine
+   * @return <code>null</code> if the dimension couldn't be determined
+   */
+  public static int[] dimensionMatrix(final IExpr intOrListOf2Ints, EvalEngine engine) {
+    int[] dimension = new int[2];
+    dimension[0] = intOrListOf2Ints.toIntDefault();
+    if (dimension[0] < 0) {
+      if (intOrListOf2Ints.isNumber()) {
+        return null;
+      }
+      if (intOrListOf2Ints.isList2() && intOrListOf2Ints.first().isNumber()
+          && intOrListOf2Ints.second().isNumber()) {
+        dimension[0] = intOrListOf2Ints.first().toIntDefault();
+        if (dimension[0] < 0) {
+          return null;
+        }
+        dimension[1] = intOrListOf2Ints.second().toIntDefault();
+        if (dimension[1] < 0) {
+          return null;
+        }
+      } else {
+        return null;
+      }
+    } else {
+      dimension[1] = dimension[0];
+    }
+    return dimension;
   }
 
   private final static class DimensionsData {
