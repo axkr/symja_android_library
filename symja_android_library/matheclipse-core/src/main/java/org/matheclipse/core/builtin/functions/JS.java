@@ -50,6 +50,11 @@ public abstract class JS {
     return div(add(f.apply(add(x, offset)), f.apply(sub(x, offset))), 2);
   }
 
+  protected static boolean isZero(Complex x) {
+    return org.hipparchus.complex.Complex.equals(x, org.hipparchus.complex.Complex.ZERO,
+        Config.MACHINE_EPSILON);
+  }
+
   protected static boolean isUnity(Complex x) {
     return org.hipparchus.complex.Complex.equals(x, org.hipparchus.complex.Complex.ONE,
         Config.MACHINE_EPSILON);

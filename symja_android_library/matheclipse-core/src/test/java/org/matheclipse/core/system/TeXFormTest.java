@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.tex.TeXFormFactory;
+import org.matheclipse.core.interfaces.IExpr;
 
 public class TeXFormTest extends ExprEvaluatorTestCase {
   public TeXFormTest(String name) {
@@ -433,6 +434,19 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
             + "a & b & c \\\\\n" //
             + "x & y & z \\\\\n" //
             + "\\end{array}\n" + "\\right) )");
+  }
+
+
+  public void testNonNegativePower() {
+    IExpr input = F.Times(F.a, F.Power(F.x, F.HoldForm(F.Plus(F.C1, F.CN1))));
+
+    ExprEvaluator exprEvaluator = new ExprEvaluator();
+    TeXUtilities teXUtilities = new TeXUtilities(exprEvaluator.getEvalEngine(), true);
+    StringWriter buf = new StringWriter();
+    teXUtilities.toTeX(input, buf);
+    String latex = buf.toString();
+    assertEquals(latex, //
+        "a \\cdot {x}^{-1 + 1}");
   }
 
   @Override

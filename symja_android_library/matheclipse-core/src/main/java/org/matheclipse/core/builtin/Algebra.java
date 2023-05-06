@@ -391,74 +391,6 @@ public class Algebra {
    */
   private static class Apart extends AbstractFunctionEvaluator {
 
-    /**
-     * Return the denominator for the given <code>Power[...]</code> AST, by separating positive and
-     * negative powers.
-     *
-     * @param powerAST a power expression (a^b)
-     * @param trig if <code>true</code> get the "trigonometric form" of the given function. Example:
-     *        Csc[x] gives Sin[x].
-     * @param splitPowerPlusExponents split <code>Power()</code> expressions with <code>Plus()
-     *     </code> exponents like <code>a^(-x+y)</code> into numerator <code>a^y</code> and
-     *        denominator <code>a^x</code>
-     * @return the numerator and denominator expression
-     */
-    private static IExpr[] fractionalPartsPower(final IAST powerAST, boolean trig,
-        boolean splitPowerPlusExponents) {
-      IExpr[] parts = new IExpr[2];
-      parts[0] = F.C1;
-
-      IExpr base = powerAST.base();
-      IExpr exponent = powerAST.exponent();
-      if (exponent.isReal()) {
-        IReal sn = (IReal) exponent;
-        if (sn.isMinusOne()) {
-          parts[1] = base;
-          return parts;
-        } else if (sn.isNegative()) {
-          parts[1] = F.Power(base, sn.negate());
-          return parts;
-        } else {
-          if (sn.isInteger() && base.isAST()) {
-            // positive integer
-            IAST function = (IAST) base;
-            // if (function.isTimes()) {
-            // IExpr[] partsArg1 = fractionalPartsTimesPower(function, true, true, trig,
-            // true);
-            // if (partsArg1 != null) {
-            // parts[0] = F.Power(partsArg1[0], sn);
-            // parts[1] = F.Power(partsArg1[1], sn);
-            // return parts;
-            // }
-            // }
-            IExpr numerForm = Numerator.getTrigForm(function, trig);
-            if (numerForm.isPresent()) {
-              IExpr denomForm = Denominator.getTrigForm(function, trig);
-              if (denomForm.isPresent()) {
-                parts[0] = F.Power(numerForm, sn);
-                parts[1] = F.Power(denomForm, sn);
-                return parts;
-              }
-            }
-          }
-        }
-      } else if (splitPowerPlusExponents && exponent.isPlus()) {
-        // base ^ (a+b+c...)
-        IAST plusAST = (IAST) exponent;
-        IAST[] result =
-            plusAST.filterNIL(AbstractFunctionEvaluator::getNormalizedNegativeExpression);
-        parts[1] = base.power(result[0].oneIdentity0());
-        parts[0] = base.power(result[1].oneIdentity0());
-        return parts;
-      }
-      IExpr positiveExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(exponent);
-      if (positiveExpr.isPresent()) {
-        parts[1] = F.Power(base, positiveExpr);
-        return parts;
-      }
-      return null;
-    }
-
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
@@ -1323,34 +1255,7 @@ public class Algebra {
           F.list(F.Rule(S.Trig, S.False)));
     }
 
-    /**
-     * Get the &quot;denominator form&quot; of the given function. Example: <code>Csc[x]</code>
-     * gives <code>Sin[x]</code>.
-     *
-     * @param function the function which should be transformed to &quot;denominator form&quot;
-     *        determine the denominator by splitting up functions like <code>Tan[],Cot[], Csc[],...
-     *     </code>
-     * @param trig
-     * @return {@link F#NIL} if <code>trig</code> is false or no form is found; may return
-     *         <code>1</code> if no denominator form is available (Example Cos[]).
-     */
-    public static IExpr getTrigForm(IAST function, boolean trig) {
-      if (trig) {
-        if (function.isAST1()) {
-          for (int i = 0; i < F.DENOMINATOR_NUMERATOR_SYMBOLS.size(); i++) {
-            final ISymbol symbol = F.DENOMINATOR_NUMERATOR_SYMBOLS.get(i);
-            if (function.head().equals(symbol)) {
-              IExpr result = F.DENOMINATOR_TRIG_TRUE_EXPRS.get(i);
-              if (result.isSymbol()) {
-                return F.unaryAST1(result, function.arg1());
-              }
-              return result;
-            }
-          }
-        }
-      }
-      return F.NIL;
-    }
+
   }
 
   /**
@@ -3127,33 +3032,7 @@ public class Algebra {
           F.list(F.Rule(S.Trig, S.False)));
     }
 
-    /**
-     * Get the &quot;numerator form&quot; of the given function. Example: <code>Csc[x]</code> gives
-     * <code>Sin[x]</code>.
-     *
-     * @param function the function which should be transformed to &quot;denominator form&quot;
-     *        determine the denominator by splitting up functions like <code>Tan[9,Cot[], Csc[],...
-     *     </code>
-     * @param trig
-     * @return
-     */
-    public static IExpr getTrigForm(IAST function, boolean trig) {
-      if (trig) {
-        if (function.isAST1()) {
-          for (int i = 0; i < F.DENOMINATOR_NUMERATOR_SYMBOLS.size(); i++) {
-            final ISymbol symbol = F.DENOMINATOR_NUMERATOR_SYMBOLS.get(i);
-            if (function.head().equals(symbol)) {
-              final IExpr result = F.NUMERATOR_TRIG_TRUE_EXPRS.get(i);
-              if (result.isSymbol()) {
-                return F.unaryAST1(result, function.arg1());
-              }
-              return result;
-            }
-          }
-        }
-      }
-      return F.NIL;
-    }
+
   }
 
   /**
@@ -5301,6 +5180,73 @@ public class Algebra {
   }
 
   /**
+   * Return the denominator for the given <code>Power[...]</code> {@link IAST} by separating
+   * positive and negative powers.
+   *
+   * @param powerAST a power expression (a^b)
+   * @param trig if <code>true</code> get the "trigonometric form" of the given function. Example:
+   *        Csc[x] gives Sin[x].
+   * @param splitPowerPlusExponents split <code>Power()</code> expressions with <code>Plus()
+   *     </code> exponents like <code>a^(-x+y)</code> into numerator <code>a^y</code> and
+   *        denominator <code>a^x</code>
+   * @return the numerator and denominator expression
+   */
+  public static IExpr[] fractionalPartsPower(final IAST powerAST, boolean trig,
+      boolean splitPowerPlusExponents) {
+    IExpr[] parts = new IExpr[2];
+    parts[0] = F.C1;
+
+    IExpr base = powerAST.base();
+    IExpr exponent = powerAST.exponent();
+    if (exponent.isReal()) {
+      IReal sn = (IReal) exponent;
+      if (sn.isMinusOne()) {
+        parts[1] = base;
+        return parts;
+      } else if (sn.isNegative()) {
+        parts[1] = F.Power(base, sn.negate());
+        return parts;
+      } else {
+        if (sn.isInteger() && base.isAST()) {
+          // positive integer
+          IAST function = (IAST) base;
+          // if (function.isTimes()) {
+          // IExpr[] partsArg1 = fractionalPartsTimesPower(function, true, true, trig,
+          // true);
+          // if (partsArg1 != null) {
+          // parts[0] = F.Power(partsArg1[0], sn);
+          // parts[1] = F.Power(partsArg1[1], sn);
+          // return parts;
+          // }
+          // }
+          IExpr numerForm = numeratorTrigForm(function, trig);
+          if (numerForm.isPresent()) {
+            IExpr denomForm = denominatorTrigForm(function, trig);
+            if (denomForm.isPresent()) {
+              parts[0] = F.Power(numerForm, sn);
+              parts[1] = F.Power(denomForm, sn);
+              return parts;
+            }
+          }
+        }
+      }
+    } else if (splitPowerPlusExponents && exponent.isPlus()) {
+      // base ^ (a+b+c...)
+      IAST plusAST = (IAST) exponent;
+      IAST[] result = plusAST.filterNIL(AbstractFunctionEvaluator::getNormalizedNegativeExpression);
+      parts[1] = base.power(result[0].oneIdentity0());
+      parts[0] = base.power(result[1].oneIdentity0());
+      return parts;
+    }
+    IExpr positiveExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(exponent);
+    if (positiveExpr.isPresent()) {
+      parts[1] = F.Power(base, positiveExpr);
+      return parts;
+    }
+    return null;
+  }
+
+  /**
    * Return the numerator and denominator for the given <code>Times[...]</code> or <code>Power[a, b]
    * </code> AST, by separating positive and negative powers.
    *
@@ -5324,7 +5270,7 @@ public class Algebra {
       boolean splitFractionalNumbers, boolean trig, boolean evalParts, boolean negateNumerDenom,
       boolean splitPowerPlusExponents) {
     if (timesPower.isPower()) {
-      return Apart.fractionalPartsPower(timesPower, trig, splitPowerPlusExponents);
+      return fractionalPartsPower(timesPower, trig, splitPowerPlusExponents);
     }
 
     IAST timesAST = timesPower;
@@ -5341,9 +5287,9 @@ public class Algebra {
       if (arg.isAST()) {
         argAST = (IAST) arg;
         if (trig && argAST.isAST1()) {
-          IExpr numerForm = Numerator.getTrigForm(argAST, trig);
+          IExpr numerForm = numeratorTrigForm(argAST, trig);
           if (numerForm.isPresent()) {
-            IExpr denomForm = Denominator.getTrigForm(argAST, trig);
+            IExpr denomForm = denominatorTrigForm(argAST, trig);
             if (denomForm.isPresent()) {
               if (!numerForm.isOne()) {
                 numerator.append(numerForm);
@@ -5356,7 +5302,7 @@ public class Algebra {
             }
           }
         } else if (arg.isPower()) {
-          IExpr[] parts = Apart.fractionalPartsPower((IAST) arg, trig, splitPowerPlusExponents);
+          IExpr[] parts = fractionalPartsPower((IAST) arg, trig, splitPowerPlusExponents);
           if (parts != null) {
             if (!parts[0].isOne()) {
               numerator.append(parts[0]);
@@ -5459,11 +5405,11 @@ public class Algebra {
       if (arg.isTimes()) {
         parts = fractionalPartsTimesPower(ast, false, true, trig, evalParts, true, true);
       } else if (arg.isPower()) {
-        parts = Apart.fractionalPartsPower(ast, trig, true);
+        parts = fractionalPartsPower(ast, trig, true);
       } else {
-        IExpr numerForm = Numerator.getTrigForm(ast, trig);
+        IExpr numerForm = numeratorTrigForm(ast, trig);
         if (numerForm.isPresent()) {
-          IExpr denomForm = Denominator.getTrigForm(ast, trig);
+          IExpr denomForm = denominatorTrigForm(ast, trig);
           if (denomForm.isPresent()) {
             parts = new IExpr[2];
             parts[0] = numerForm;
@@ -5752,6 +5698,63 @@ public class Algebra {
     // }
     // }
     // return temp;
+  }
+
+  /**
+   * Get the &quot;numerator form&quot; of the given function. Example: <code>Csc[x]</code> gives
+   * <code>1</code>.
+   *
+   * @param function the function which should be transformed to &quot;denominator form&quot;
+   *        determine the denominator by splitting up functions like <code>Tan[9,Cot[], Csc[],...
+   *     </code>
+   * @param trig
+   * @return
+   */
+  public static IExpr numeratorTrigForm(IAST function, boolean trig) {
+    if (trig) {
+      if (function.isAST1()) {
+        for (int i = 0; i < F.DENOMINATOR_NUMERATOR_SYMBOLS.size(); i++) {
+          final ISymbol symbol = F.DENOMINATOR_NUMERATOR_SYMBOLS.get(i);
+          if (function.head().equals(symbol)) {
+            final IExpr result = F.NUMERATOR_TRIG_TRUE_EXPRS.get(i);
+            if (result.isSymbol()) {
+              return F.unaryAST1(result, function.arg1());
+            }
+            return result;
+          }
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Get the &quot;denominator form&quot; of the given function. Example: <code>Csc[x]</code> gives
+   * <code>Sin[x]</code>.
+   *
+   * @param function the function which should be transformed to &quot;denominator form&quot;
+   *        determine the denominator by splitting up functions like <code>Tan[],Cot[], Csc[],...
+   *     </code>
+   * @param trig
+   * @return {@link F#NIL} if <code>trig</code> is false or no form is found; may return
+   *         <code>1</code> if no denominator form is available (Example Cos[]).
+   */
+  public static IExpr denominatorTrigForm(IAST function, boolean trig) {
+    if (trig) {
+      if (function.isAST1()) {
+        for (int i = 0; i < F.DENOMINATOR_NUMERATOR_SYMBOLS.size(); i++) {
+          final ISymbol symbol = F.DENOMINATOR_NUMERATOR_SYMBOLS.get(i);
+          if (function.head().equals(symbol)) {
+            IExpr result = F.DENOMINATOR_TRIG_TRUE_EXPRS.get(i);
+            if (result.isSymbol()) {
+              return F.unaryAST1(result, function.arg1());
+            }
+            return result;
+          }
+        }
+      }
+    }
+    return F.NIL;
   }
 
   /**
