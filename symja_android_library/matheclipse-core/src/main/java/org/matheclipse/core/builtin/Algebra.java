@@ -481,10 +481,6 @@ public class Algebra {
    */
   private static class Cancel extends AbstractFunctionEvaluator {
 
-    public static boolean isPolynomial(IExpr expr) {
-      return expr.isPolynomial(F.CEmptyList);
-    }
-
     /**
      * Return the result divided by the gcd value.
      *
@@ -560,119 +556,6 @@ public class Algebra {
         }
       }
       return false;
-    }
-
-    /**
-     * @param powerTimesAST an <code>Times[...] or Power[...]</code> AST, where common factors
-     *        should be canceled out.
-     * @return {@link F#NIL} is no evaluation was possible
-     * @throws JASConversionException
-     */
-    public static IExpr cancelFractionalParts(IExpr powerTimesAST) throws JASConversionException {
-      IExpr[] parts = fractionalParts(powerTimesAST, false);
-      IExpr cancelResult = F.NIL;
-      if (parts != null) {
-        if (parts[0].isPlus() || parts[0].isTimes() || parts[1].isPlus() || parts[1].isTimes()) {
-          IAST temp = cancelCommonFactors(parts[0], parts[1]);
-          if (temp.isPresent()) {
-            parts[0] = temp.first();
-            parts[1] = temp.second();
-            cancelResult = F.Divide(temp.first(), temp.second());
-          }
-        }
-
-        if (parts[0].isPlus() && parts[1].isPlus()) {
-          IAST numParts = ((IAST) parts[0]).partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
-          IAST denParts = ((IAST) parts[1]).partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
-          if (denParts.isPresent() && !denParts.arg1().isOne()) {
-            IExpr[] result = cancelGCD(numParts.arg1(), denParts.arg1());
-            if (result != null) {
-              return F.Times(result[0], result[1], numParts.arg2(),
-                  F.Power(F.Times(result[2], denParts.arg2()), F.CN1));
-            }
-          }
-        }
-      }
-      return cancelResult;
-    }
-
-    private static IAST cancelCommonFactors(IExpr part0, IExpr part1) {
-      IExpr p0 = part0;
-      if (part0.isPlus() || part0.isTimes()) {
-        if (VariablesSet.isUnivariate(part0)) {
-          p0 = S.Factor.of(part0);
-        }
-      }
-      IExpr p1 = part1;
-      if (part1.isPlus() || part1.isTimes()) {
-        if (VariablesSet.isUnivariate(part1)) {
-          p1 = S.Factor.of(part1);
-        }
-      }
-      if (p0.isTimes() || p1.isTimes()) {
-        final IAST p0Times = p0.isTimes() ? (IAST) p0 : F.Times(p0);
-        final IAST p1Times = p1.isTimes() ? (IAST) p1 : F.Times(p1);
-        IASTAppendable t0 = p0Times.copyAppendable();
-        IASTAppendable t1 = p1Times.copyAppendable();
-        int i = 1;
-        boolean evaled = false;
-        termChanged: while (i < t0.size()) {
-          IExpr t0Arg = t0.get(i);
-          int j = 1;
-          while (j < t1.size()) {
-            IExpr t1Arg = t1.get(j);
-            if (t0Arg.equals(t1Arg)) {
-              t0.remove(i);
-              t1.remove(j);
-              evaled = true;
-              break termChanged;
-            } else if (t0Arg.isPower() || t1Arg.isPower()) {
-              final IExpr t0Base;
-              final IExpr t0Exponent;
-              if (!t0Arg.isPower()) {
-                t0Base = t0Arg;
-                t0Exponent = F.C1;
-              } else {
-                t0Base = t0Arg.base();
-                t0Exponent = t0Arg.exponent();
-              }
-              final IExpr t1Base;
-              final IExpr t1Exponent;
-              if (!t1Arg.isPower()) {
-                t1Base = t1Arg;
-                t1Exponent = F.C1;
-              } else {
-                t1Base = t1Arg.base();
-                t1Exponent = t1Arg.exponent();
-              }
-
-              if (t0Base.equals(t1Base) && t0Exponent.isReal() && t1Exponent.isReal()) {
-                IReal exp0 = (IReal) t0Exponent;
-                IReal exp1 = (IReal) t1Exponent;
-                final IReal subtracted;
-                if (exp0.isGE(exp1)) {
-                  subtracted = exp0.subtractFrom(exp1);
-                  t0.set(i, F.Power(t0Base, subtracted));
-                  t1.remove(j);
-                  i++;
-                } else {
-                  subtracted = exp1.subtractFrom(exp0);
-                  t0.remove(i);
-                  t1.set(j, F.Power(t1Base, subtracted));
-                }
-                evaled = true;
-                break termChanged;
-              }
-            }
-            j++;
-          }
-          i++;
-        }
-        if (evaled) {
-          return F.List(t0.oneIdentity1(), t1.oneIdentity1());
-        }
-      }
-      return F.NIL;
     }
 
     private static IExpr cancelPowerTimes(IExpr powerTimesAST, EvalEngine engine)
@@ -4509,11 +4392,11 @@ public class Algebra {
           if (result.isPresent()) {
             IExpr temp = engine.evaluate(result);
             if (temp.isTimes() || temp.isPower()) {
-              return Cancel.cancelFractionalParts(temp).orElse(temp);
+              return cancelFractionalParts(temp).orElse(temp);
             }
             return temp;
           }
-          return Cancel.cancelFractionalParts(ast);
+          return cancelFractionalParts(ast);
         } catch (JASConversionException jce) {
           LOGGER.debug("Together.togetherPlusTimesPower() failed", jce);
         }
@@ -4794,6 +4677,123 @@ public class Algebra {
       LOGGER.debug("Algebra.cancelGCD() failed", e);
     }
     return null;
+  }
+
+  private static boolean isPolynomial(IExpr expr) {
+    return expr.isPolynomial(F.CEmptyList);
+  }
+
+  private static IAST cancelCommonFactors(IExpr part0, IExpr part1) {
+    IExpr p0 = part0;
+    if (part0.isPlus() || part0.isTimes()) {
+      if (VariablesSet.isUnivariate(part0)) {
+        p0 = S.Factor.of(part0);
+      }
+    }
+    IExpr p1 = part1;
+    if (part1.isPlus() || part1.isTimes()) {
+      if (VariablesSet.isUnivariate(part1)) {
+        p1 = S.Factor.of(part1);
+      }
+    }
+    if (p0.isTimes() || p1.isTimes()) {
+      final IAST p0Times = p0.isTimes() ? (IAST) p0 : F.Times(p0);
+      final IAST p1Times = p1.isTimes() ? (IAST) p1 : F.Times(p1);
+      IASTAppendable t0 = p0Times.copyAppendable();
+      IASTAppendable t1 = p1Times.copyAppendable();
+      int i = 1;
+      boolean evaled = false;
+      termChanged: while (i < t0.size()) {
+        IExpr t0Arg = t0.get(i);
+        int j = 1;
+        while (j < t1.size()) {
+          IExpr t1Arg = t1.get(j);
+          if (t0Arg.equals(t1Arg)) {
+            t0.remove(i);
+            t1.remove(j);
+            evaled = true;
+            break termChanged;
+          } else if (t0Arg.isPower() || t1Arg.isPower()) {
+            final IExpr t0Base;
+            final IExpr t0Exponent;
+            if (!t0Arg.isPower()) {
+              t0Base = t0Arg;
+              t0Exponent = F.C1;
+            } else {
+              t0Base = t0Arg.base();
+              t0Exponent = t0Arg.exponent();
+            }
+            final IExpr t1Base;
+            final IExpr t1Exponent;
+            if (!t1Arg.isPower()) {
+              t1Base = t1Arg;
+              t1Exponent = F.C1;
+            } else {
+              t1Base = t1Arg.base();
+              t1Exponent = t1Arg.exponent();
+            }
+
+            if (t0Base.equals(t1Base) && t0Exponent.isReal() && t1Exponent.isReal()) {
+              IReal exp0 = (IReal) t0Exponent;
+              IReal exp1 = (IReal) t1Exponent;
+              final IReal subtracted;
+              if (exp0.isGE(exp1)) {
+                subtracted = exp0.subtractFrom(exp1);
+                t0.set(i, F.Power(t0Base, subtracted));
+                t1.remove(j);
+                i++;
+              } else {
+                subtracted = exp1.subtractFrom(exp0);
+                t0.remove(i);
+                t1.set(j, F.Power(t1Base, subtracted));
+              }
+              evaled = true;
+              break termChanged;
+            }
+          }
+          j++;
+        }
+        i++;
+      }
+      if (evaled) {
+        return F.List(t0.oneIdentity1(), t1.oneIdentity1());
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * @param powerTimesAST an <code>Times[...] or Power[...]</code> AST, where common factors should
+   *        be canceled out.
+   * @return {@link F#NIL} is no evaluation was possible
+   * @throws JASConversionException
+   */
+  public static IExpr cancelFractionalParts(IExpr powerTimesAST) throws JASConversionException {
+    IExpr[] parts = fractionalParts(powerTimesAST, false);
+    IExpr cancelResult = F.NIL;
+    if (parts != null) {
+      if (parts[0].isPlus() || parts[0].isTimes() || parts[1].isPlus() || parts[1].isTimes()) {
+        IAST temp = cancelCommonFactors(parts[0], parts[1]);
+        if (temp.isPresent()) {
+          parts[0] = temp.first();
+          parts[1] = temp.second();
+          cancelResult = F.Divide(temp.first(), temp.second());
+        }
+      }
+
+      if (parts[0].isPlus() && parts[1].isPlus()) {
+        IAST numParts = ((IAST) parts[0]).partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
+        IAST denParts = ((IAST) parts[1]).partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
+        if (denParts.isPresent() && !denParts.arg1().isOne()) {
+          IExpr[] result = cancelGCD(numParts.arg1(), denParts.arg1());
+          if (result != null) {
+            return F.Times(result[0], result[1], numParts.arg2(),
+                F.Power(F.Times(result[2], denParts.arg2()), F.CN1));
+          }
+        }
+      }
+    }
+    return cancelResult;
   }
 
   /**
