@@ -134,11 +134,11 @@ public class StatisticsFunctions {
     }
   }
 
-  private static IDistribution getDistribution(final IExpr arg1) {
+  public static IDistribution getDistribution(final IExpr arg1) {
     return (IDistribution) ((IBuiltInSymbol) arg1.head()).getEvaluator();
   }
 
-  private static IDiscreteDistribution getDiscreteDistribution(final IExpr arg1) {
+  public static IDiscreteDistribution getDiscreteDistribution(final IExpr arg1) {
     return (IDiscreteDistribution) ((IBuiltInSymbol) arg1.head()).getEvaluator();
   }
 
