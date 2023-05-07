@@ -611,10 +611,16 @@ public class Pods {
     createJSONFormat(json, engine, outExpr, plaintext, sinput, formats);
   }
 
-  public static ObjectNode createResult(String inputStr, int formats, boolean strictSymja) {
+  public static ObjectNode createResult(String inputStr, int formats, boolean strictSymja, EvalEngine evalEngine) {
+    final EvalEngine engine;
+    if (evalEngine != null) {
+      engine = evalEngine;
+    } else {
+      engine = EvalEngine.get();
+    }
 
     if (strictSymja) {
-      return createStrictResult(inputStr, formats);
+      return createStrictResult(inputStr, formats, engine);
     }
     ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
 
@@ -629,7 +635,6 @@ public class Pods {
     int numpods = 0;
     IExpr inExpr = S.Null;
     IExpr outExpr = S.Null;
-    EvalEngine engine = EvalEngine.get();
 
     ArrayNode podsArray = JSON_OBJECT_MAPPER.createArrayNode();
     inExpr = parseInput(inputStr, engine);
@@ -1171,9 +1176,10 @@ public class Pods {
    * @param inputStr the Symja expression string
    * @param formats bit mask combination of {@link #HTML}, {@link #MATHML}, {@link #MARKDOWN},
    *        {@link #LATEX},
+   * @param evalEngine TODO
    * @return
    */
-  private static ObjectNode createStrictResult(String inputStr, int formats) {
+  private static ObjectNode createStrictResult(String inputStr, int formats, EvalEngine evalEngine) {
     ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
 
     ObjectNode queryresult = JSON_OBJECT_MAPPER.createObjectNode();
@@ -1187,7 +1193,7 @@ public class Pods {
     int numpods = 0;
     IExpr inExpr = S.Null;
     IExpr outExpr = S.Null;
-    EvalEngine engine = EvalEngine.get();
+    EvalEngine engine = evalEngine;
 
     ArrayNode podsArray = JSON_OBJECT_MAPPER.createArrayNode();
     engine.setPackageMode(false);

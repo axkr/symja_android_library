@@ -63,7 +63,7 @@ public class TestPodsStrict {
 
   @Test
   public void testMarkdownHelp() {
-    ObjectNode messageJSON = Pods.createResult("Sin", formatsHTML, true);
+    ObjectNode messageJSON = Pods.createResult("Sin", formatsHTML, true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -681,7 +681,7 @@ public class TestPodsStrict {
   @Ignore
   public void testSin() {
     String s = System.getProperty("os.name");
-    ObjectNode messageJSON = Pods.createResult("Sin(Pi+1/2) // N", formatsTEX, true);
+    ObjectNode messageJSON = Pods.createResult("Sin(Pi+1/2) // N", formatsTEX, true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -848,7 +848,7 @@ public class TestPodsStrict {
     ObjectNode messageJSON = Pods.createResult( //
         "Yellow", //
         formatsTEX, //
-        true);
+        true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -876,7 +876,7 @@ public class TestPodsStrict {
     ObjectNode messageJSON = Pods.createResult(
         "ComplexPlot3D((z^2 + 1)/(z^2 - 1),  {z, -2 - 2*I, 2 + 2*I}, PlotRange->{0,3})",
         formatsMATHML, //
-        true);
+        true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -903,7 +903,7 @@ public class TestPodsStrict {
   public void testHistogram() {
     ObjectNode messageJSON =
         Pods.createResult("Histogram(RandomVariate(NormalDistribution(0, 1), 200))", formatsMATHML, //
-            true);
+            true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -918,7 +918,7 @@ public class TestPodsStrict {
   @Test
   public void testList() {
     ObjectNode messageJSON = Pods.createResult("1,2,3", formatsMATHML, //
-        true);
+        true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), true);
@@ -935,7 +935,7 @@ public class TestPodsStrict {
   @Ignore
   public void testSolve001() {
     ObjectNode messageJSON = Pods.createResult("3+x==10", formatsTEX, //
-        true);
+        true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -960,7 +960,7 @@ public class TestPodsStrict {
   @Ignore
   public void testSolve002() {
     ObjectNode messageJSON = Pods.createResult("x^2+1==0", formatsTEX, //
-        true);
+        true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -986,7 +986,7 @@ public class TestPodsStrict {
   @Ignore
   public void testSolve003() {
     ObjectNode messageJSON = Pods.createResult("Solve(x+3==10,x)", formatsTEX, //
-        true);
+        true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -1014,7 +1014,7 @@ public class TestPodsStrict {
   @Ignore
   public void testInteger4294967295() {
     ObjectNode messageJSON = Pods.createResult("2^32-1", formatsTEX, //
-        true);
+        true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -1039,7 +1039,7 @@ public class TestPodsStrict {
   @Test
   public void testNormalDistribution() {
     ObjectNode messageJSON = Pods.createResult("NormalDistribution(a,b)", formatsTEX, //
-        true);
+        true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -1067,7 +1067,7 @@ public class TestPodsStrict {
   @Test
   public void testLogic001() {
     ObjectNode messageJSON = Pods.createResult("a&&b||c", formatsTEX, //
-        true);
+        true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -1095,7 +1095,7 @@ public class TestPodsStrict {
   @Ignore
   public void testLogic002() {
     ObjectNode messageJSON = Pods.createResult("a&b|c", formatsTEX, //
-        true);
+        true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -1122,7 +1122,7 @@ public class TestPodsStrict {
   @Ignore
   public void testTimes() {
     ObjectNode messageJSON = Pods.createResult("10*11*12", formatsTEX, //
-        true);
+        true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -1148,7 +1148,7 @@ public class TestPodsStrict {
   @Ignore
   public void testSimplify() {
     ObjectNode messageJSON = Pods.createResult("FullSimplify(Sqrt(9-4*Sqrt(5)))", formatsTEX, //
-        true);
+        true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -1177,7 +1177,7 @@ public class TestPodsStrict {
   @Test
   public void testIntegrate001() {
     ObjectNode messageJSON = Pods.createResult("Integrate(Sin(x),x)", formatsTEX, //
-        true);
+        true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -1205,7 +1205,7 @@ public class TestPodsStrict {
   @Ignore
   public void testIntegrate002() {
     ObjectNode messageJSON = Pods.createResult("integrate(Tan(x)*Cos(x)*Pi,x)", formatsTEX, //
-        true);
+        true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -1234,7 +1234,7 @@ public class TestPodsStrict {
   @Ignore
   public void testDerivative001() {
     ObjectNode messageJSON = Pods.createResult("D(tan(x^3),x)", formatsTEX, //
-        true);
+        true, null);
     final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
@@ -1264,7 +1264,7 @@ public class TestPodsStrict {
     EvalEngine.resetModuleCounter4JUnit();
 
     ObjectNode messageJSON = Pods.createResult("ListPlot({3,Sin(1),Pi,3/4,42,1.2})", formatsTEX, //
-        true);
+        true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -1296,7 +1296,7 @@ public class TestPodsStrict {
 
     ObjectNode messageJSON =
         Pods.createResult("Table({Sin(t*0.33), Cos(t*1.1)}, {t, 100})", formatsTEX, //
-            true);
+            true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -1327,7 +1327,7 @@ public class TestPodsStrict {
     EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON =
         Pods.createResult("Histogram({1, 2, 3, None, 3, 5, f(), 2, 1, foo, 2, 3})", formatsTEX, //
-            true);
+            true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -1359,7 +1359,7 @@ public class TestPodsStrict {
     EvalEngine.resetModuleCounter4JUnit();
 
     ObjectNode messageJSON = Pods.createResult("ListPlot({1, 2, 3, 4, 5})", formatsTEX, //
-        true);
+        true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -1388,7 +1388,7 @@ public class TestPodsStrict {
   public void testListPlot003() {
     EvalEngine.resetModuleCounter4JUnit();
     ObjectNode messageJSON = Pods.createResult("plot({x,x^2,x^3,x^4},{x,-5,5})", formatsTEX, //
-        true);
+        true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -1439,7 +1439,7 @@ public class TestPodsStrict {
     ObjectNode messageJSON = Pods.createResult( //
         "Graph({DirectedEdge(1, 2), DirectedEdge(2, 3), DirectedEdge(3, 1),  DirectedEdge(3, 4), DirectedEdge(4, 5), DirectedEdge(5, 3)})", //
         formatsTEX, //
-        true);
+        true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -1467,7 +1467,7 @@ public class TestPodsStrict {
   @Ignore
   public void testHornerForm() {
     ObjectNode messageJSON = Pods.createResult("HornerForm(x^2+x^3+2*x^14)", formatsTEX, //
-        true);
+        true, null);
     final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
@@ -1497,7 +1497,7 @@ public class TestPodsStrict {
     ObjectNode messageJSON = Pods.createResult( //
         "E*Pi", //
         formatsTEX, //
-        true);
+        true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -1525,7 +1525,7 @@ public class TestPodsStrict {
     ObjectNode messageJSON = Pods.createResult( //
         "CoshIntegral", //
         formatsTEX, //
-        true);
+        true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);
@@ -1551,7 +1551,7 @@ public class TestPodsStrict {
   @Ignore
   public void testPolynomial001() {
     ObjectNode messageJSON = Pods.createResult("-x^2 + 4*x + 4", formatsTEX, //
-        true);
+        true, null);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);

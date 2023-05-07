@@ -106,7 +106,7 @@ public class TestPods {
 
   public static ObjectNode createJUnitResult(String inputStr, int formats) {
     try {
-      return Pods.createResult(inputStr, formats, false);
+      return Pods.createResult(inputStr, formats, false, null);
     } catch (RuntimeException rex) {
       rex.printStackTrace();
       return Pods.errorJSON("0", "JSON Export Failed");

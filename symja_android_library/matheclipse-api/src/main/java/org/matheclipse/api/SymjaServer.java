@@ -49,7 +49,7 @@ public class SymjaServer {
               SymjaServer.getParams(queryParameters, "format", "f", Pods.PLAIN_STR);
           int formats = Pods.internFormat(formformatStrs);
           try {
-            ObjectNode messageJSON = Pods.createResult(inputStr, formats, !strict.isEmpty());
+            ObjectNode messageJSON = Pods.createResult(inputStr, formats, !strict.isEmpty(), null);
             jsonStr = messageJSON.toString();
           } catch (RuntimeException rex) {
             rex.printStackTrace();
