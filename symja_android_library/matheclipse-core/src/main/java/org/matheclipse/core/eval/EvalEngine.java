@@ -1554,7 +1554,7 @@ public class EvalEngine implements Serializable {
    * @param ast
    * @return <code>F.NIL</code> if no evaluation was possible
    */
-  public IAST evalFlatOrderlessAttributesRecursive(final IAST ast) {
+  public IAST evalFlatOrderlessAttrsRecursive(final IAST ast) {
     if (ast.isEvalFlagOn(IAST.IS_FLAT_ORDERLESS_EVALED)) {
       return F.NIL;
     }
@@ -1572,7 +1572,7 @@ public class EvalEngine implements Serializable {
           IExpr expr = ast.arg1();
           if (ast.arg1().isAST()) {
             IAST temp = (IAST) ast.arg1();
-            expr = evalFlatOrderlessAttributesRecursive(temp);
+            expr = evalFlatOrderlessAttrsRecursive(temp);
             if (expr.isPresent()) {
               resultList = ast.setAtCopy(1, expr);
             } else {
@@ -1587,7 +1587,7 @@ public class EvalEngine implements Serializable {
           for (int i = 2; i < astSize; i++) {
             if (ast.get(i).isAST()) {
               IAST temp = (IAST) ast.get(i);
-              IExpr expr = evalFlatOrderlessAttributesRecursive(temp);
+              IExpr expr = evalFlatOrderlessAttrsRecursive(temp);
               if (expr.isPresent()) {
                 if (resultList.isNIL()) {
                   resultList = ast.copy();
