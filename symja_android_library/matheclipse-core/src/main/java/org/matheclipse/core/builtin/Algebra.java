@@ -4173,7 +4173,7 @@ public class Algebra {
    */
   private static class Together extends AbstractFunctionEvaluator {
 
-    private static IBuiltInSymbol reduceConstantTerm =
+    private static final IBuiltInSymbol reduceConstantTerm =
         F.localFunction("reduceConstantTerm", (c) -> {
           if (c.isNumber()) {
             return F.list(c, F.C1);
@@ -4199,7 +4199,7 @@ public class Algebra {
             c = c.negate();
           }
           IExpr gcd;
-          if (!c.isFree(x -> x.isInexactNumber(), false)) {
+          if (!c.isFree(IExpr::isInexactNumber, false)) {
             gcd = engine.evaluate(F.Rationalize(c));
             gcd = engine.evalN(gcd);
           } else {
@@ -4882,7 +4882,7 @@ public class Algebra {
     IAST localAST = ast;
     IAST tempAST = F.NIL;
     if (localAST.isEvalFlagOff(IAST.IS_SORTED)) {
-      tempAST = engine.evalFlatOrderlessAttributesRecursive(localAST);
+      tempAST = engine.evalFlatOrderlessAttrsRecursive(localAST);
       if (tempAST.isPresent()) {
         localAST = tempAST;
       }

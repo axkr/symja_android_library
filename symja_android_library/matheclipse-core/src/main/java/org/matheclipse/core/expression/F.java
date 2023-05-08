@@ -4073,7 +4073,7 @@ public class F extends S {
       boolean evalParts) {
     if (a.isAST()) {
       EvalEngine engine = EvalEngine.get();
-      IAST ast = engine.evalFlatOrderlessAttributesRecursive((IAST) a).orElse((IAST) a);
+      IAST ast = engine.evalFlatOrderlessAttrsRecursive((IAST) a).orElse((IAST) a);
       return Algebra.expand(ast, null, expandNegativePowers, distributePlus, evalParts).orElse(a);
     }
     return a;
@@ -4122,7 +4122,7 @@ public class F extends S {
   public static IExpr expandAll(IExpr a, boolean expandNegativePowers, boolean distributePlus) {
     if (a.isAST()) {
       EvalEngine engine = EvalEngine.get();
-      IAST ast = engine.evalFlatOrderlessAttributesRecursive((IAST) a).orElse((IAST) a);
+      IAST ast = engine.evalFlatOrderlessAttrsRecursive((IAST) a).orElse((IAST) a);
       return Algebra.expandAll(ast, null, expandNegativePowers, distributePlus, false, engine)
           .orElse(ast);
     }
