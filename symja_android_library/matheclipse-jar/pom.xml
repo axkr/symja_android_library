@@ -45,7 +45,7 @@
 					<version>3.3.1</version>
 					<configuration>
 						<from>
-							<image>openjdk:17-alpine</image>
+							<image>eclipse-temurin:17.0.7_7-jre-jammy</image>
 						</from>
 						<to>
 							<image>registry.hub.docker.com/symja/symja-3.0</image>
