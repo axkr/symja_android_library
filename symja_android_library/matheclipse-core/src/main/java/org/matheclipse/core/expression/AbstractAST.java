@@ -15,6 +15,7 @@ import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
@@ -1323,11 +1324,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return 1;
   }
 
-  private static void internalFormOrderless(IAST ast, StringBuilder text, final String sep,
+  private static void internalFormOrderless(final IAST ast, StringBuilder text, final String sep,
       SourceCodeProperties properties, int depth,
       Function<ISymbol, ? extends CharSequence> variables) {
+    final IExpr head = ast.head();
     for (int i = 1; i < ast.size(); i++) {
-      if ((ast.get(i) instanceof IAST) && ast.head().equals(ast.get(i).head())) {
+      if ((ast.get(i) instanceof IAST) && Objects.equals(head, ast.get(i).head())) {
         internalFormOrderless((IAST) ast.get(i), text, sep, properties, depth, variables);
       } else {
         text.append(ast.get(i).internalJavaString(properties, depth + 1, variables));
@@ -1936,7 +1938,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         return IExpr.COMPARE_TERNARY.TRUE;
       } else {
         int size1 = size();
-        if (size1 == list2.size() && size1 > 0 && head().equals(list2.head())) {
+        if (size1 == list2.size() && size1 > 0 && Objects.equals(head(), list2.head())) {
           IExpr.COMPARE_TERNARY b = IExpr.COMPARE_TERNARY.TRUE;
           for (int i = 1; i < size1; i++) {
             b = get(i).equalTernary(list2.get(i), engine);
@@ -2370,7 +2372,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public boolean forAllLeaves(IExpr head, Predicate<? super IExpr> predicate, int startOffset) {
     final int size = size();
-    if (!head().equals(head)) {
+    if (!Objects.equals(head(), head)) {
       return predicate.test(this);
     }
     for (int i = startOffset; i < size; i++) {
@@ -3073,13 +3075,13 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isAST(final IExpr header) {
-    return head().equals(header);
+    return Objects.equals(head(), header);
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isAST(final IExpr header, final int length) {
-    return head().equals(header) && length == size();
+    return Objects.equals(head(), header) && length == size();
   }
 
   /** {@inheritDoc} */
@@ -3100,7 +3102,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public boolean isAST(IExpr head, int minLength, int maxLength) {
     int size = size();
-    return head().equals(head) && minLength <= size && maxLength >= size;
+    return Objects.equals(head(), head) && minLength <= size && maxLength >= size;
   }
 
   /** {@inheritDoc} */
@@ -3160,7 +3162,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isASTSizeGE(final IExpr header, final int length) {
-    return head().equals(header) && length <= size();
+    return Objects.equals(head(), header) && length <= size();
   }
 
   @Override
@@ -3438,7 +3440,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public final boolean isFunction() {
-    return size() >= 2 && head().equals(S.Function);
+    return size() >= 2 && S.Function == head();
   }
 
   /** {@inheritDoc} */
@@ -3703,7 +3705,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public GraphType isListOfEdges() {
-    if (head().equals(S.List)) {
+    if (S.List == head()) {
       boolean directed = true;
       for (int i = 1; i < size(); i++) {
         IExpr temp = get(i);
@@ -3745,7 +3747,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isListOfRules(boolean ignoreEmptySublists) {
-    if (head().equals(S.List)) {
+    if (S.List == head()) {
       for (int i = 1; i < size(); i++) {
         if (!get(i).isRuleAST()) {
           if (ignoreEmptySublists && get(i).isEmptyList()) {
@@ -3766,7 +3768,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (isAssociation()) {
       return true;
     }
-    if (head().equals(S.List)) {
+    if (S.List == head()) {
       for (int i = 1; i < size(); i++) {
         if (!get(i).isRuleAST()) {
           if (get(i).isAssociation()) {
@@ -3965,7 +3967,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public final boolean isNot() {
-    return size() == 2 && head().equals(S.Not);
+    return size() == 2 && S.Not == head();
   }
 
   /** {@inheritDoc} */
@@ -4237,7 +4239,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public final boolean isPureFunction() {
-    return size() == 2 && head().equals(S.Function);
+    return size() == 2 && S.Function == head();
   }
 
   /** {@inheritDoc} */
@@ -4399,19 +4401,19 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isRule() {
-    return head().equals(S.Rule) && size() == 3;
+    return S.Rule == head() && size() == 3;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isRuleAST() {
-    return (head().equals(S.Rule) || head().equals(S.RuleDelayed)) && size() == 3;
+    return (S.Rule == head() || S.RuleDelayed == head()) && size() == 3;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isRuleDelayed() {
-    return head().equals(S.RuleDelayed) && size() == 3;
+    return S.RuleDelayed == head() && size() == 3;
   }
 
   /** {@inheritDoc} */
@@ -4461,7 +4463,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
    */
   public boolean isSameHead(ISymbol head, int minLength, int maxLength) {
     int size = size();
-    return head().equals(head) && minLength <= size && maxLength >= size;
+    return Objects.equals(head(), head) && minLength <= size && maxLength >= size;
   }
 
   /** {@inheritDoc} */
@@ -5289,7 +5291,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public final IAST partition(ISymbol operator, Predicate<? super IExpr> predicate, IExpr init1,
       IExpr init2, ISymbol combiner, ISymbol action) {
-    if (head().equals(operator)) {
+    if (Objects.equals(head(), operator)) {
       IASTAppendable result = F.ast(action, 3);
       final int size = size();
       int newSize = (size + 1) / 2;
