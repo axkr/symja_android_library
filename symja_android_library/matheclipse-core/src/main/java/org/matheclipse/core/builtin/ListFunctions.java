@@ -1504,7 +1504,7 @@ public final class ListFunctions {
           }
         }
 
-        IASTAppendable tallyResult = Tally.tally1Arg(list);
+        IASTAppendable tallyResult = tally(list);
         EvalAttributes.sort(tallyResult, new Comparator<IExpr>() {
           @Override
           public int compare(IExpr o1, IExpr o2) {
@@ -3331,7 +3331,8 @@ public final class ListFunctions {
               new TreeMap<IExpr, IExpr>(Comparators.binaryPredicateComparator(arg2)),
               () -> F.ListAlloc());
         } else {
-          defaultdict = new DefaultDict<IASTAppendable>(new TreeMap<IExpr, IExpr>(), () -> F.ListAlloc());
+          defaultdict =
+              new DefaultDict<IASTAppendable>(new TreeMap<IExpr, IExpr>(), () -> F.ListAlloc());
         }
         IASTAppendable result = F.ListAlloc(arg1AST.size());
         for (int i = 1; i < arg1AST.size(); i++) {
@@ -7220,25 +7221,16 @@ public final class ListFunctions {
    */
   private static final class Tally extends AbstractEvaluator {
 
-    private static IASTAppendable createResultList(java.util.Map<IExpr, Integer> map) {
-      IASTAppendable result = F.ListAlloc(map.size());
-      for (java.util.Map.Entry<IExpr, Integer> entry : map.entrySet()) {
-        result.append(F.list(entry.getKey(), F.ZZ(entry.getValue())));
-      }
-      return result;
-    }
-
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST list = Validate.checkListType(ast, 1, engine);
       if (list.isPresent()) {
         int size = ast.size();
-
         if (size == 2) {
-          return tally1Arg(list);
+          return tally(list);
         } else if (size == 3) {
           BiPredicate<IExpr, IExpr> biPredicate = Predicates.isBinaryTrue(ast.arg2());
-          return tally2Args(list, biPredicate);
+          return tally(list, biPredicate);
         }
       }
       return F.NIL;
@@ -7252,30 +7244,6 @@ public final class ListFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {}
 
-    public static IASTAppendable tally1Arg(IAST list) {
-      java.util.Map<IExpr, Integer> map = new LinkedHashMap<IExpr, Integer>();
-      for (int i = 1; i < list.size(); i++) {
-        IExpr arg = list.get(i);
-        Integer value = map.get(arg);
-        map.put(arg, value == null ? 1 : value + 1);
-      }
-      return createResultList(map);
-    }
-
-    private static IAST tally2Args(IAST list, BiPredicate<IExpr, IExpr> test) {
-      java.util.Map<IExpr, Integer> map = new LinkedHashMap<IExpr, Integer>();
-      iLoop: for (int i = 1; i < list.size(); i++) {
-        IExpr arg = list.get(i);
-        for (java.util.Map.Entry<IExpr, Integer> entry : map.entrySet()) {
-          if (test.test(entry.getKey(), arg)) {
-            map.put(entry.getKey(), entry.getValue() + 1);
-            continue iLoop;
-          }
-        }
-        map.put(arg, 1);
-      }
-      return createResultList(map);
-    }
   }
 
   /**
@@ -8131,6 +8099,54 @@ public final class ListFunctions {
    */
   public static IAST reverse(IAST list) {
     return list.reverse(F.ast(list.head(), list.size()));
+  }
+
+  private static IASTAppendable createResultList(java.util.Map<IExpr, Integer> map) {
+    IASTAppendable result = F.ListAlloc(map.size());
+    for (java.util.Map.Entry<IExpr, Integer> entry : map.entrySet()) {
+      result.append(F.list(entry.getKey(), F.ZZ(entry.getValue())));
+    }
+    return result;
+  }
+
+  /**
+   * Tallies the elements in <code>list</code>, listing all distinct elements together with their
+   * multiplicities.
+   * 
+   * @param list
+   * @return
+   */
+  public static IASTAppendable tally(IAST list) {
+    java.util.Map<IExpr, Integer> map = new LinkedHashMap<IExpr, Integer>();
+    for (int i = 1; i < list.size(); i++) {
+      IExpr arg = list.get(i);
+      Integer value = map.get(arg);
+      map.put(arg, value == null ? 1 : value + 1);
+    }
+    return createResultList(map);
+  }
+
+  /**
+   * Tallies the elements in <code>list</code>, listing all distinct elements together with their
+   * multiplicities. Test is used for determining equivalent elements.
+   * 
+   * @param list
+   * @param test
+   * @return
+   */
+  public static IAST tally(IAST list, BiPredicate<IExpr, IExpr> test) {
+    java.util.Map<IExpr, Integer> map = new LinkedHashMap<IExpr, Integer>();
+    iLoop: for (int i = 1; i < list.size(); i++) {
+      IExpr arg = list.get(i);
+      for (java.util.Map.Entry<IExpr, Integer> entry : map.entrySet()) {
+        if (test.test(entry.getKey(), arg)) {
+          map.put(entry.getKey(), entry.getValue() + 1);
+          continue iLoop;
+        }
+      }
+      map.put(arg, 1);
+    }
+    return createResultList(map);
   }
 
   public static void initialize() {
