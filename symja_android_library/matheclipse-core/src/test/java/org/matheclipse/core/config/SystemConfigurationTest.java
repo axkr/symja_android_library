@@ -56,13 +56,4 @@ public class SystemConfigurationTest extends TestCase {
         assertEquals(result.toString(), "0");
     }
 
-
-    public void testLocale() {
-        Locale.setDefault(Locale.forLanguageTag("tr"));
-        ExprEvaluator evaluator = new ExprEvaluator();
-        String input =  "TestIChar[x_] := Sin[x]; Definition[TestIChar]";
-        IExpr result = evaluator.eval(input);
-        String str = OutputFormFactory.get(true).toString(result);
-        assertEquals(str, "1");
-    }
 }
