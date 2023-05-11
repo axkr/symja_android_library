@@ -418,7 +418,7 @@ public class ConstantDefinitions {
       if (operatingSystem == null) {
         return F.stringx("Unknown");
       }
-      operatingSystem = operatingSystem.toLowerCase();
+      operatingSystem = operatingSystem.toLowerCase(Locale.US);
       if (operatingSystem.contains("mac") //
           || operatingSystem.contains("os2") //
           || operatingSystem.contains("darwin")) {

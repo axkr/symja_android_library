@@ -3,6 +3,8 @@ package org.matheclipse.core.preprocessor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Locale;
+
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -93,7 +95,7 @@ public class JavaObjectFunctionGenerator {
               continue;
             }
 
-            String lowerCaseArg = arg.toLowerCase();
+            String lowerCaseArg = arg.toLowerCase(Locale.US);
             if (KEYWORDS_SET.contains(lowerCaseArg)) {
               lowerCaseArg = "$" + lowerCaseArg;
             } else {

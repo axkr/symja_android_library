@@ -1636,7 +1636,7 @@ public class GraphicsFunctions {
       if (value != null) {
         g.put("factor", option.evalf());
       } else {
-        g.put("symbol", option.toString().toLowerCase());
+        g.put("symbol", option.toString().toLowerCase(Locale.US));
       }
       ObjectNode aspectRatio = JSON_OBJECT_MAPPER.createObjectNode();
       aspectRatio.set("aspectRatio", g);

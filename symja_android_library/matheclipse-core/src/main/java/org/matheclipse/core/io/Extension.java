@@ -1,5 +1,7 @@
 package org.matheclipse.core.io;
 
+import java.util.Locale;
+
 /**
  * File extensions format.
  *
@@ -46,7 +48,7 @@ public enum Extension {
 
   public static boolean isAllowedExtension(String extensionString) {
     try {
-      Extension ext = valueOf(extensionString.toUpperCase());
+      Extension ext = valueOf(extensionString.toUpperCase(Locale.US));
       if (ext != null) {
         return true;
       }
@@ -67,7 +69,7 @@ public enum Extension {
     try {
       int pos = filename.lastIndexOf('.');
       if (pos >= 1) {
-        String ucExtension = filename.substring(pos + 1).toUpperCase();
+        String ucExtension = filename.substring(pos + 1).toUpperCase(Locale.US);
         if (ucExtension.equals("DATA")) {
           return DAT;
         }
@@ -97,14 +99,14 @@ public enum Extension {
       if (extensionString.equals("ExpressionJSON")) {
         return EXPRESSIONJSON;
       }
-      String ucExtension = extensionString.toUpperCase();
+      String ucExtension = extensionString.toUpperCase(Locale.US);
       if (ucExtension.equals("DATA")) {
         return DAT;
       }
       if (ucExtension.equals("JPG")) {
         return JPEG;
       }
-      return valueOf(extensionString.toUpperCase());
+      return valueOf(extensionString.toUpperCase(Locale.US));
     } catch (RuntimeException rex) {
       //
     }
@@ -122,7 +124,7 @@ public enum Extension {
     try {
       int pos = filename.lastIndexOf('.');
       if (pos >= 1) {
-        String extensionString = filename.substring(pos + 1).toUpperCase();
+        String extensionString = filename.substring(pos + 1).toUpperCase(Locale.US);
         if (extensionString.equals("TEXT")) {
           return TXT;
         }
@@ -149,7 +151,7 @@ public enum Extension {
    */
   public static Extension importExtension(String extensionString) {
     try {
-      return valueOf(extensionString.toUpperCase());
+      return valueOf(extensionString.toUpperCase(Locale.US));
     } catch (RuntimeException rex) {
       //
     }
@@ -168,6 +170,6 @@ public enum Extension {
    * @throws IllegalArgumentException if given string does not match any known file types
    */
   public static Extension of(String string) {
-    return valueOf(string.toUpperCase());
+    return valueOf(string.toUpperCase(Locale.US));
   }
 }

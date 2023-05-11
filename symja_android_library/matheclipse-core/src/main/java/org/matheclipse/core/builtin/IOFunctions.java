@@ -4,10 +4,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -1274,7 +1272,7 @@ public class IOFunctions {
     }
     SuggestTree suggestTree = AST2Expr.getSuggestTree();
     // name = ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? name.toLowerCase() : name;
-    name = name.toLowerCase();
+    name = name.toLowerCase(Locale.US);
     final String autocompleteStr = name;
     Node suggestions = suggestTree.getAutocompleteSuggestions(autocompleteStr);
     if (suggestions != null) {
@@ -1285,7 +1283,7 @@ public class IOFunctions {
           identifierStr = str;
         }
         if (exact) {
-          if (autocompleteStr.equals(identifierStr.toLowerCase())) {
+          if (autocompleteStr.equals(identifierStr.toLowerCase(Locale.US))) {
             return F.$s(identifierStr);
           }
           return F.NIL;
@@ -1302,7 +1300,7 @@ public class IOFunctions {
       return list;
     }
     SuggestTree suggestTree = AST2Expr.getSuggestTree();
-    namePrefix = ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? namePrefix.toLowerCase() : namePrefix;
+    namePrefix = ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? namePrefix.toLowerCase(Locale.US) : namePrefix;
     Node n = suggestTree.getAutocompleteSuggestions(namePrefix);
     if (n != null) {
       for (int i = 0; i < n.listLength(); i++) {

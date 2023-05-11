@@ -4,11 +4,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -41,7 +37,7 @@ public class Row implements Iterator<Row> {
     }
 
     T get(String columnName) {
-      T column = columnMap.get(columnName.toLowerCase());
+      T column = columnMap.get(columnName.toLowerCase(Locale.US));
       if (column == null) {
         throwWrongTypeError(columnName);
         throwColumnNotPresentError(columnName);
@@ -50,7 +46,7 @@ public class Row implements Iterator<Row> {
     }
 
     void put(String columnName, T column) {
-      columnMap.put(columnName.toLowerCase(), column);
+      columnMap.put(columnName.toLowerCase(Locale.US), column);
     }
 
     /**

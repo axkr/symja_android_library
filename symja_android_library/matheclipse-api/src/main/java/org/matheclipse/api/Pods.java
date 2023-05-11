@@ -4,12 +4,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
 import org.apache.commons.codec.language.Soundex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
@@ -133,12 +129,12 @@ public class Pods {
           IAST[] list = ElementData1.ELEMENTS;
           for (int i = 0; i < list.length; i++) {
             String keyWord = list[i].arg3().toString();
-            addElementData(list[i].arg2().toString().toLowerCase(), keyWord);
+            addElementData(list[i].arg2().toString().toLowerCase(Locale.US), keyWord);
             soundexElementData(list[i].arg3().toString(), keyWord);
           }
           for (int i = 0; i < ID.Zeta; i++) {
             ISymbol sym = S.symbol(i);
-            soundexHelp(sym.toString().toLowerCase(), sym);
+            soundexHelp(sym.toString().toLowerCase(Locale.US), sym);
           }
           // for (Map.Entry<String, String> entry : map.entrySet()) {
           // soundexHelp(entry.getKey(), entry.getKey());
@@ -1640,7 +1636,7 @@ public class Pods {
 
   private static ArrayList<IPod> listOfPods(String inputWord) {
     Map<String, ArrayList<IPod>> map = LAZY_SOUNDEX.get();
-    ArrayList<IPod> soundsLike = map.get(inputWord.toLowerCase());
+    ArrayList<IPod> soundsLike = map.get(inputWord.toLowerCase(Locale.US));
     if (soundsLike == null) {
       soundsLike = map.get(SOUNDEX.encode(inputWord));
     }
@@ -1684,7 +1680,7 @@ public class Pods {
         inExpr = flattenTimes((IAST) inExpr).orElse(inExpr);
         IAST rest = ((IAST) inExpr).setAtClone(0, S.List);
         IASTAppendable specialFunction = F.NIL;
-        String stemForm = getStemForm(rest.arg1().toString().toLowerCase());
+        String stemForm = getStemForm(rest.arg1().toString().toLowerCase(Locale.US));
         IExpr head = rest.head();
         if (stemForm != null) {
           head = STEM.getSymbol(stemForm);
@@ -1694,7 +1690,7 @@ public class Pods {
           }
         }
         if (specialFunction.isNIL()) {
-          stemForm = getStemForm(rest.last().toString().toLowerCase());
+          stemForm = getStemForm(rest.last().toString().toLowerCase(Locale.US));
           if (stemForm != null) {
             head = STEM.getSymbol(stemForm);
             if (head != null) {
@@ -1715,7 +1711,7 @@ public class Pods {
 
               int i = 1;
               while (i < specialFunction.size()) {
-                String argStr = specialFunction.get(i).toString().toLowerCase();
+                String argStr = specialFunction.get(i).toString().toLowerCase(Locale.US);
                 if (argStr.equalsIgnoreCase("by") || argStr.equalsIgnoreCase("for")) {
                   specialFunction.remove(i);
                   continue;

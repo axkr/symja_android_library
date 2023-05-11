@@ -1,6 +1,7 @@
 // code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor.img;
 
+import java.util.Locale;
 import java.util.Optional;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -135,7 +136,7 @@ public enum ColorDataGradients implements ColorDataGradient {
    * @throws Exception if this color data gradient is not backed by such a table
    */
   private IAST _tableRgba() {
-    return ResourceData.of("/img/colorscheme/" + name().toLowerCase() + ".csv");
+    return ResourceData.of("/img/colorscheme/" + name().toLowerCase(Locale.US) + ".csv");
   }
 
   /**

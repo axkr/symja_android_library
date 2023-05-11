@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -141,7 +142,7 @@ public class SwingFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Desktop.isDesktopSupported() && ast.arg1().isString()) {
-        String type = ast.arg1().toString().toLowerCase();
+        String type = ast.arg1().toString().toLowerCase(Locale.US);
         if (type.equals("fileopen")) {
           JFileChooser j = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
           j.setApproveButtonText("Open");
@@ -528,7 +529,7 @@ public class SwingFunctions {
       exact = false;
     }
     SuggestTree suggestTree = AST2Expr.getSuggestTree();
-    name = ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? name.toLowerCase() : name;
+    name = ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? name.toLowerCase(Locale.US) : name;
     Node n = suggestTree.getAutocompleteSuggestions(name);
     if (n != null) {
       IASTAppendable list = F.ListAlloc(n.listLength());
@@ -552,7 +553,7 @@ public class SwingFunctions {
       return list;
     }
     SuggestTree suggestTree = AST2Expr.getSuggestTree();
-    namePrefix = ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? namePrefix.toLowerCase() : namePrefix;
+    namePrefix = ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? namePrefix.toLowerCase(Locale.US) : namePrefix;
     Node n = suggestTree.getAutocompleteSuggestions(namePrefix);
     if (n != null) {
       for (int i = 0; i < n.listLength(); i++) {

@@ -20,6 +20,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import tech.tablesaw.api.CategoricalColumn;
@@ -382,7 +383,7 @@ public class Summarizer {
 
   private boolean tableDoesNotContain(String columnName, Table table) {
     List<String> upperCase =
-        table.columnNames().stream().map(String::toUpperCase).collect(Collectors.toList());
-    return !upperCase.contains(columnName.toUpperCase());
+        table.columnNames().stream().map(s -> s.toUpperCase(Locale.US)).collect(Collectors.toList());
+    return !upperCase.contains(columnName.toUpperCase(Locale.US));
   }
 }

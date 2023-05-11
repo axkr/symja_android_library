@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import java.util.IdentityHashMap;
+import java.util.Locale;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -11274,7 +11275,7 @@ public class S {
   public static IBuiltInSymbol initFinalSymbol(final String symbolName, int ordinal) {
     String str;
     if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-      str = (symbolName.length() == 1) ? symbolName : symbolName.toLowerCase();
+      str = (symbolName.length() == 1) ? symbolName : symbolName.toLowerCase(Locale.US);
     } else {
       str = symbolName;
     }

@@ -27,13 +27,8 @@ import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
 import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.ints.IntComparator;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -262,9 +257,9 @@ public class Table extends Relation implements Iterable<Row> {
         newColumn, "Attempted to add a null to the columns in table " + name);
     List<String> stringList = new ArrayList<>();
     for (String name : columnNames()) {
-      stringList.add(name.toLowerCase());
+      stringList.add(name.toLowerCase(Locale.US));
     }
-    if (stringList.contains(newColumn.name().toLowerCase())) {
+    if (stringList.contains(newColumn.name().toLowerCase(Locale.US))) {
       String message =
           String.format(
               "Cannot add column with duplicate name %s to table %s", newColumn.name(), name);

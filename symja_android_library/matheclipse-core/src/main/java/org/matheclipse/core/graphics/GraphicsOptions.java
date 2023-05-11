@@ -1,5 +1,6 @@
 package org.matheclipse.core.graphics;
 
+import java.util.Locale;
 import java.util.function.Function;
 import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.convert.Convert;
@@ -75,7 +76,7 @@ public class GraphicsOptions {
   public static Function<IExpr, IExpr> getScaling(ArrayNode array, IExpr scale) {
     if (scale.isString()) {
       String scaleStr = scale.toString();
-      String lowerScaleStr = scale.toString().toLowerCase();
+      String lowerScaleStr = scale.toString().toLowerCase(Locale.US);
       if (scaleStr.equals("Log")) {
         array.add(lowerScaleStr);
         return x -> F.Log(x);

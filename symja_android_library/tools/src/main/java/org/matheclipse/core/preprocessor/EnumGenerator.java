@@ -2,6 +2,8 @@ package org.matheclipse.core.preprocessor;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Locale;
+
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.interfaces.IStringX;
 
@@ -47,7 +49,7 @@ public class EnumGenerator {
       if (str.length() == 1) {
         System.out.print(" " + str + "( \"" + str + "\", " + i);
       } else {
-        System.out.print(" " + str + "( \"" + str.toLowerCase() + "\", " + i);
+        System.out.print(" " + str + "( \"" + str.toLowerCase(Locale.US) + "\", " + i);
       }
       if (i < list.size() - 1) {
         System.out.println(" ), //");

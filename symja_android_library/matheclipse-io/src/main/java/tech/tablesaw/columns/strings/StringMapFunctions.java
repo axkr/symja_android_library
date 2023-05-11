@@ -20,6 +20,7 @@ import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.FloatColumn;
@@ -45,7 +46,7 @@ public interface StringMapFunctions extends Column<String> {
       if (value == null) {
         newColumn.append(StringColumnType.missingValueIndicator());
       } else {
-        newColumn.append(value.toUpperCase());
+        newColumn.append(value.toUpperCase(Locale.US));
       }
     }
     return newColumn;
@@ -57,7 +58,7 @@ public interface StringMapFunctions extends Column<String> {
 
     for (int r = 0; r < size(); r++) {
       String value = getString(r);
-      newColumn.append(value.toLowerCase());
+      newColumn.append(value.toLowerCase(Locale.US));
     }
     return newColumn;
   }

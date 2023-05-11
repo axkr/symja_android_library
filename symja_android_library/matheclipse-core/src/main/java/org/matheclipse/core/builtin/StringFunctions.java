@@ -4,10 +4,7 @@ import java.io.File;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -687,7 +684,7 @@ public final class StringFunctions {
         }
 
         if (ignoreCase) {
-          return F.ZZ(hammingDistance.apply(str1.toLowerCase(), str2.toLowerCase()));
+          return F.ZZ(hammingDistance.apply(str1.toLowerCase(Locale.US), str2.toLowerCase(Locale.US)));
         }
         return F.ZZ(hammingDistance.apply(str1, str2));
       }
@@ -820,7 +817,7 @@ public final class StringFunctions {
         return ast.arg1().mapThread(ast, 1);
       }
       if (ast.arg1().isString()) {
-        String characters = ast.arg1().toString().toLowerCase();
+        String characters = ast.arg1().toString().toLowerCase(Locale.US);
         String alphabet = LATIN_ALPHABET;
         if (ast.isAST2()) {
           String str = ast.arg2().toString();
@@ -1032,8 +1029,8 @@ public final class StringFunctions {
 
         LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
         if (ignoreCase) {
-          return F.ZZ(levenshteinDistance.apply(arg1.toString().toLowerCase(),
-              arg2.toString().toLowerCase()));
+          return F.ZZ(levenshteinDistance.apply(arg1.toString().toLowerCase(Locale.US),
+              arg2.toString().toLowerCase(Locale.US)));
         }
         return F.ZZ(levenshteinDistance.apply(arg1.toString(), arg2.toString()));
       }

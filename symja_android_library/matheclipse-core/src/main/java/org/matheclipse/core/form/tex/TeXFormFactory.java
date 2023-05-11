@@ -2,6 +2,7 @@ package org.matheclipse.core.form.tex;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -885,7 +886,7 @@ public class TeXFormFactory {
         if (((IBuiltInSymbol) arg2).isSymbolID(ID.Black, ID.Brown, ID.Blue, ID.Cyan, ID.Green,
             ID.Pink, ID.Red, ID.Yellow, ID.White)) {
           buffer.append("\\textcolor{");
-          buffer.append(arg2.toString().toLowerCase());
+          buffer.append(arg2.toString().toLowerCase(Locale.US));
           buffer.append("}{");
           fFactory.convertInternal(buffer, arg1, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
           buffer.append("}");
