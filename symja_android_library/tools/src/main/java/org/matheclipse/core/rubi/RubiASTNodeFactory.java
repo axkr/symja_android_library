@@ -7,6 +7,8 @@ import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.ast.SymbolNode;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
+import java.util.Locale;
+
 public class RubiASTNodeFactory extends ASTNodeFactory {
   public static final RubiASTNodeFactory RUBI_STYLE_FACTORY = new RubiASTNodeFactory(false);
 
@@ -19,7 +21,7 @@ public class RubiASTNodeFactory extends ASTNodeFactory {
     String name = symbolName;
     if (fIgnoreCase) {
       if (name.length() > 1) {
-        name = symbolName.toLowerCase();
+        name = symbolName.toLowerCase(Locale.US);
       }
     }
     if (Config.RUBI_CONVERT_SYMBOLS) {
@@ -36,7 +38,7 @@ public class RubiASTNodeFactory extends ASTNodeFactory {
       if (nodeStr.length() == 1) {
         return nodeStr;
       }
-      String lowercaseName = nodeStr.toLowerCase();
+      String lowercaseName = nodeStr.toLowerCase(Locale.US);
       String temp = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(lowercaseName);
       if (temp != null) {
         if (!temp.equals(nodeStr)) {
@@ -55,7 +57,7 @@ public class RubiASTNodeFactory extends ASTNodeFactory {
           }
         }
       } else {
-        if (!nodeStr.equals(nodeStr.toLowerCase())) {
+        if (!nodeStr.equals(nodeStr.toLowerCase(Locale.US))) {
           temp = F.PREDEFINED_INTERNAL_FORM_STRINGS.get(nodeStr);
           if (temp == null) {
             if (lowercaseName.length() > 1) {

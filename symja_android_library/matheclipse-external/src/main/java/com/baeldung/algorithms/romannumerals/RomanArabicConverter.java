@@ -1,6 +1,7 @@
 package com.baeldung.algorithms.romannumerals;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * @see <a href="https://www.baeldung.com/java-convert-roman-arabic">Baeldung: Converting Between
@@ -11,7 +12,7 @@ public class RomanArabicConverter {
   public static final int MAX_VALUE = 4000;
 
   public static int romanToArabic(String input) {
-    String romanNumeral = input.toUpperCase();
+    String romanNumeral = input.toUpperCase(Locale.US);
     int result = 0;
 
     List<RomanNumeral> romanNumerals = RomanNumeral.getReverseSortedValues();

@@ -15,6 +15,7 @@ package org.matheclipse.parser.client.operator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.Scanner;
@@ -588,7 +589,7 @@ public class ASTNodeFactory implements INodeParserFactory {
     String name = symbolName;
     if (fIgnoreCase) {
       if (name.length() > 1) {
-        name = symbolName.toLowerCase();
+        name = symbolName.toLowerCase(Locale.US);
       }
     }
     // if (ParserConfig.RUBI_CONVERT_SYMBOLS) {

@@ -1,6 +1,7 @@
 package org.matheclipse.core.preprocessor;
 
 import java.io.File;
+import java.util.Locale;
 
 /**
  * Generate java init sources for Symja symbol names.
@@ -29,7 +30,7 @@ public class SymbolnamePreprocessor {
           // we are only interested in .java files
           if (files[i].endsWith(".java")) {
             String className = files[i].substring(0, files[i].length() - 5);
-            String lcClassName = className.length() == 1 ? className : className.toLowerCase();
+            String lcClassName = className.length() == 1 ? className : className.toLowerCase(Locale.US);
 
             // public final static ISymbol Collect =
             // initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ?
@@ -61,7 +62,7 @@ public class SymbolnamePreprocessor {
           // we are only interested in .m files
           if (files[i].endsWith(".java")) {
             String className = files[i].substring(0, files[i].length() - 5);
-            String lcClassName = className.length() == 1 ? className : className.toLowerCase();
+            String lcClassName = className.length() == 1 ? className : className.toLowerCase(Locale.US);
             // public final static ISymbol NestWhile =
             // initFinalSymbol(
             // Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nestwhile" :

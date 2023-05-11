@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.Random;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
@@ -6213,7 +6214,7 @@ public class StatisticsFunctions {
     private static IExpr printMessageUdist(ISymbol head, final IAST ast, IAST dist,
         EvalEngine engine) {
       // The specification `1` is not a random distribution recognized by the system.
-      if (head.getSymbolName().toLowerCase().endsWith("distribution")) {
+      if (head.getSymbolName().toLowerCase(Locale.US).endsWith("distribution")) {
         return IOFunctions.printMessage(ast.topHead(), "udist", F.list(dist), engine);
       }
       return F.NIL;

@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
+
 import org.matheclipse.parser.client.eval.DoubleEvaluator;
 import org.matheclipse.parser.client.math.MathException;
 
@@ -28,10 +30,10 @@ public class Console {
       try {
         expr = console.readString(System.out, ">> ");
         if (expr != null) {
-          if ((expr.length() >= 4) && expr.toLowerCase().substring(0, 4).equals("exit")) {
+          if ((expr.length() >= 4) && expr.toLowerCase(Locale.US).substring(0, 4).equals("exit")) {
             break;
           }
-          if ((expr.length() >= 6) && expr.toLowerCase().substring(0, 6).equals("double")) {
+          if ((expr.length() >= 6) && expr.toLowerCase(Locale.US).substring(0, 6).equals("double")) {
             // console.fComplexEvaluatorMode = false;
             System.out
                 .println("Double evaluation mode (switch to other mode with keyword 'complex')");

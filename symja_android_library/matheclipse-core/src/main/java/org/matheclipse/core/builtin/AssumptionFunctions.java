@@ -15,6 +15,8 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
+import java.util.Locale;
+
 public class AssumptionFunctions {
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -206,7 +208,7 @@ public class AssumptionFunctions {
         }
       }
       if (domain.isSymbol()) {
-        String domainString = domain.toString().toLowerCase();
+        String domainString = domain.toString().toLowerCase(Locale.US);
         if (domainString.equals("real") //
             || domainString.equals("prime") //
             || domainString.equals("integer") //

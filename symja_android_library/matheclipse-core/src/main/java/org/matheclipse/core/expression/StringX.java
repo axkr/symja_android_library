@@ -525,7 +525,7 @@ public class StringX implements IStringX {
   /** @return */
   @Override
   public String toLowerCase() {
-    return fString.toLowerCase();
+    return fString.toLowerCase(Locale.US);
   }
 
   /**
@@ -544,7 +544,7 @@ public class StringX implements IStringX {
   /** @return */
   @Override
   public String toUpperCase() {
-    return fString.toUpperCase();
+    return fString.toUpperCase(Locale.US);
   }
 
   /**

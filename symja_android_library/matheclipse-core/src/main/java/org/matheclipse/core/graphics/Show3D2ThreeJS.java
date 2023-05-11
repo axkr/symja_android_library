@@ -1,6 +1,8 @@
 package org.matheclipse.core.graphics;
 
 import java.io.IOException;
+import java.util.Locale;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.EvalEngine;
@@ -90,7 +92,7 @@ public class Show3D2ThreeJS {
     IExpr option = options.getOption(S.ViewPoint);
     if (option.isPresent()) {
       if (option.isSymbol()) {
-        String viewpoint = option.toString().toLowerCase();
+        String viewpoint = option.toString().toLowerCase(Locale.US);
         if (viewpoint.equals("above")) {
           viewpoints[0] = 0.0;
           viewpoints[1] = 0.0;

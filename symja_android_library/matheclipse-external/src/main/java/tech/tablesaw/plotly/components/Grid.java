@@ -2,6 +2,7 @@ package tech.tablesaw.plotly.components;
 
 import com.google.common.base.Preconditions;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class Grid extends Component {
@@ -13,7 +14,7 @@ public class Grid extends Component {
 
     @Override
     public String toString() {
-      return this.name().toLowerCase().replaceAll("_", " ");
+      return this.name().toLowerCase(Locale.US).replaceAll("_", " ");
     }
   }
 
@@ -25,7 +26,7 @@ public class Grid extends Component {
 
     @Override
     public String toString() {
-      return this.name().toLowerCase().replaceAll("_", " ");
+      return this.name().toLowerCase(Locale.US).replaceAll("_", " ");
     }
   }
 
@@ -37,7 +38,7 @@ public class Grid extends Component {
 
     @Override
     public String toString() {
-      return this.name().toLowerCase().replaceAll("_", " ");
+      return this.name().toLowerCase(Locale.US).replaceAll("_", " ");
     }
   }
 
@@ -47,7 +48,7 @@ public class Grid extends Component {
 
     @Override
     public String toString() {
-      return this.name().toLowerCase();
+      return this.name().toLowerCase(Locale.US);
     }
   }
 

@@ -2,10 +2,8 @@ package tech.tablesaw.joining;
 
 import com.google.common.collect.Streams;
 import com.google.common.primitives.Ints;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import tech.tablesaw.api.*;
@@ -815,14 +813,14 @@ public class DataFrameJoiner {
       Set<String> table1ColNames =
           Arrays.stream(cols)
               .map(Column::name)
-              .map(String::toLowerCase)
+              .map(s -> s.toLowerCase(Locale.US))
               .limit(table1.columnCount())
               .collect(Collectors.toSet());
 
       String table2Alias = TABLE_ALIAS + joinTableId.getAndIncrement();
       for (int c = table1.columnCount(); c < cols.length; c++) {
         String columnName = cols[c].name();
-        if (table1ColNames.contains(columnName.toLowerCase())) {
+        if (table1ColNames.contains(columnName.toLowerCase(Locale.US))) {
           cols[c].setName(newName(table2Alias, columnName));
         }
       }

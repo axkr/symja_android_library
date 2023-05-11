@@ -18,11 +18,9 @@ import static java.util.stream.Collectors.toSet;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+
+import java.util.*;
+
 import tech.tablesaw.api.Table;
 
 /**
@@ -74,23 +72,23 @@ public class Sort implements Iterable<Map.Entry<String, Sort.Order>> {
     Preconditions.checkArgument(columnNames.length > 0, "At least one sort column must provided.");
 
     Sort key = null;
-    Set<String> names = table.columnNames().stream().map(String::toUpperCase).collect(toSet());
+    Set<String> names = table.columnNames().stream().map(s -> s.toUpperCase(Locale.US)).collect(toSet());
 
     for (String columnName : columnNames) {
       Sort.Order order = Sort.Order.ASCEND;
-      if (!names.contains(columnName.toUpperCase())) {
+      if (!names.contains(columnName.toUpperCase(Locale.US))) {
         // the column name has been annotated with a prefix.
         // get the prefix which could be - or +
         String prefix = columnName.substring(0, 1);
         Optional<Order> orderOptional = getOrder(prefix);
 
         // Invalid prefix, column name exists on table.
-        if (!orderOptional.isPresent() && names.contains(columnName.substring(1).toUpperCase())) {
+        if (!orderOptional.isPresent() && names.contains(columnName.substring(1).toUpperCase(Locale.US))) {
           throw new IllegalStateException("Column prefix: " + prefix + " is unknown.");
         }
 
         // Valid prefix, column name does not exist on table.
-        if (orderOptional.isPresent() && !names.contains(columnName.substring(1).toUpperCase())) {
+        if (orderOptional.isPresent() && !names.contains(columnName.substring(1).toUpperCase(Locale.US))) {
           throw new IllegalStateException(
               String.format(
                   "Column %s does not exist in table %s", columnName.substring(1), table.name()));

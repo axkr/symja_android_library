@@ -353,17 +353,17 @@ public class AST2Expr {
         synchronized (SUGGEST_TREE) {
           for (String str : FUNCTION_STRINGS) {
             if (str.length() > 1) {
-              SUGGEST_TREE.put(str.toLowerCase(), 2);
+              SUGGEST_TREE.put(str.toLowerCase(Locale.US), 2);
             }
           }
           for (String str : SYMBOL_STRINGS) {
             if (str.length() > 1) {
-              SUGGEST_TREE.put(str.toLowerCase(), 1);
+              SUGGEST_TREE.put(str.toLowerCase(Locale.US), 1);
             }
           }
           for (String str : DOLLAR_STRINGS) {
             if (str.length() > 1) {
-              SUGGEST_TREE.put(str.toLowerCase(), 1);
+              SUGGEST_TREE.put(str.toLowerCase(Locale.US), 1);
             }
           }
         }
