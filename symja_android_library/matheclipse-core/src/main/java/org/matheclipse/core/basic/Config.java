@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apfloat.ApfloatContext;
 import org.hipparchus.util.Precision;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ComplexNum;
@@ -81,6 +82,17 @@ public class Config {
   public static final int MAX_FACTOR_LEAFCOUNT = 1000;
 
   public static int MAX_GRAPH_VERTICES_SIZE = 100;
+
+  /**
+   * Maximum memory block size for the {@link ApfloatContext}
+   */
+  public static final long MAX_APFLOAT_MEMORY_BLOCKSIZE = 1_000_000;
+
+  /**
+   * Maximum processors for the {@link ApfloatContext}
+   */
+  public static final int MAX_APFLOAT_PROCESSORS = 1;
+
   /**
    * Maximum number for the leaf count of an expression so that <code>PossibleZeroQ()</code> will
    * try a factoring. Has to be an int value greater 0.

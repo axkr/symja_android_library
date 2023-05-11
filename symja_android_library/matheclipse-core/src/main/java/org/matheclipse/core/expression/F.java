@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatContext;
+import org.apfloat.spi.Util;
 import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.fraction.BigFraction;
@@ -821,8 +822,7 @@ public class F extends S {
       JASConfig.MAX_ITERATIONS_KRONECKER_FACTORIZATION = 100;
       ComputerThreads.NO_THREADS = Config.JAS_NO_THREADS;
 
-      ApfloatContext ctx = ApfloatContext.getContext();
-      ctx.setNumberOfProcessors(1);
+      initApfloat();
 
       Slot.setAttributes(ISymbol.NHOLDALL);
       Slot.setEvaluator(ICoreFunctionEvaluator.ARGS_EVALUATOR);
@@ -1007,6 +1007,31 @@ public class F extends S {
       LOGGER.error("F-class initilaization failed", th);
       throw th;
     }
+  }
+
+  /**
+   * Initialize the {@link ApfloatContext}
+   */
+  private static void initApfloat() {
+    int numberOfProcessors = Config.MAX_APFLOAT_PROCESSORS;
+    long maxMemoryBlockSize = Config.MAX_APFLOAT_MEMORY_BLOCKSIZE;
+    long memoryThreshold = Math.max(maxMemoryBlockSize >> 10, 65536);
+    int blockSize = Util.round2down(
+        (int) Math.min(memoryThreshold, java.lang.Integer.MAX_VALUE));
+    ApfloatContext ctx = ApfloatContext.getContext();
+    ctx.setProperty(ApfloatContext.BUILDER_FACTORY, "org.apfloat.internal.LongBuilderFactory");
+    ctx.setProperty(ApfloatContext.CACHE_L1_SIZE, "8192");
+    ctx.setProperty(ApfloatContext.CACHE_L2_SIZE, "262144");
+    ctx.setProperty(ApfloatContext.CACHE_BURST, "32");
+    ctx.setProperty(ApfloatContext.SHARED_MEMORY_TRESHOLD,
+        java.lang.String.valueOf(maxMemoryBlockSize / numberOfProcessors / 32));
+    ctx.setProperty(ApfloatContext.BLOCK_SIZE, java.lang.String.valueOf(blockSize));
+    ctx.setProperty(ApfloatContext.FILE_INITIAL_VALUE, "0");
+
+    ctx.setMemoryThreshold(memoryThreshold);
+    ctx.setCleanupAtExit(false);
+    ctx.setNumberOfProcessors(numberOfProcessors);
+    ctx.setMaxMemoryBlockSize(maxMemoryBlockSize);
   }
 
   private static void createInverseFunctionMap() {
