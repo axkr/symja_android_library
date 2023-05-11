@@ -1,12 +1,18 @@
 package org.matheclipse.core.system;
 
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatContext;
+import org.apfloat.ApfloatMath;
+import org.apfloat.OverflowException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -550,8 +556,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   public void testArcCos() {
 
-    // TODO negative imaginary part
-    // https://github.com/mtommila/apfloat/issues/18
+    // see https://github.com/mtommila/apfloat/issues/18
     checkNumeric("N(ArcCos(-2),30)", //
         "3.1415926535897932384626433832+I*(-1.3169578969248167086250463473)");
     checkNumeric("N(ArcCos(2),30)", //
@@ -15275,6 +15280,34 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3");
     check("Select(Range(43), MultiplicativeOrder(#, 43) == EulerPhi(43) &)", //
         "{3,5,12,18,19,20,26,28,29,30,33,34}");
+  }
+
+  public void testNApfloat() {
+    ApfloatContext ac = ApfloatContext.getContext();
+    // messages
+    // General: Overflow occurred in computation.
+    // General: Overflow occurred in computation.
+    // General: Overflow occurred in computation.
+    // General: Overflow occurred in computation.
+    // ApfloatContext MaxMemoryBlockSize: 786432
+    check("IntegerPart(N(3, 1000)^N(3, 3000)^N(3, 3000)^N(3, 3000)^N(3, 3000));", //
+        "");
+    ac = ApfloatContext.getContext();
+
+    // System.out.println("ApfloatContext MaxMemoryBlockSize: " + ac.getMaxMemoryBlockSize());
+  }
+
+  public void testApfloatStorage() {
+    try {
+      Apfloat apfloat = new Apfloat("9".repeat(1_000_000) + "." + "9".repeat(1_000_000));
+      apfloat = ApfloatMath.pow(apfloat, new Apfloat("91212312" + ".1231236"));
+      ApfloatNum apfloatNum = ApfloatNum.valueOf(apfloat);
+      IInteger integerPart = apfloatNum.integerPart();
+      System.out.println(integerPart.bitLength());
+      fail("Should be fail");
+    } catch (OverflowException e) {
+      // e.printStackTrace();
+    }
   }
 
   public void testN() {

@@ -1,18 +1,14 @@
 package org.matheclipse.core.config;
 
-import junit.framework.TestCase;
 import org.apfloat.Apfloat;
-import org.apfloat.ApfloatContext;
 import org.apfloat.ApfloatMath;
-import org.apfloat.spi.FilenameGenerator;
+import org.apfloat.OverflowException;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-
-import java.util.Locale;
+import junit.framework.TestCase;
 
 public class SystemConfigurationTest extends TestCase {
 
@@ -23,12 +19,13 @@ public class SystemConfigurationTest extends TestCase {
     }
 
     public void testApfloatStorage() {
-        ApfloatContext.getContext().setFilenameGenerator(new FilenameGenerator("default", "0", "default") {
-            @Override
-            public synchronized String generateFilename() {
-                throw new UnsupportedOperationException();
-            }
-        });
+      // ApfloatContext.getContext().setFilenameGenerator(new FilenameGenerator("default", "0",
+      // "default") {
+      // @Override
+      // public synchronized String generateFilename() {
+      // throw new OverflowException("Apfloat disk file storage is disabled");
+      // }
+      // });
 
         try {
             Apfloat apfloat = new Apfloat("9".repeat(1_000_000) + "." + "9".repeat(1_000_000));
@@ -37,7 +34,7 @@ public class SystemConfigurationTest extends TestCase {
             IInteger integerPart = apfloatNum.integerPart();
             System.out.println(integerPart.bitLength());
             fail("Should be fail");
-        } catch (UnsupportedOperationException e) {
+          } catch (OverflowException e) {
             e.printStackTrace();
         }
     }
