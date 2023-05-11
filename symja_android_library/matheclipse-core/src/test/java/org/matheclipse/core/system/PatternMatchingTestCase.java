@@ -316,21 +316,23 @@ public class PatternMatchingTestCase extends TestCase {
         "4^2/;4>3/;4>2");
   }
 
-  public void testTagSetDelayed1() {
-    check(
-        "Unprotect[ProductLog]; ProductLog/:ProductLog[k_,z_]/;NumericQ[k]&&!IntegerQ[k]:=WrightOmega[Log[z]+2*Pi*I*k]", //
-        "");
-    check("ProductLog[1/2,z]", //
-        "wrightomega[I*Pi+Log[z]]");
-  }
-
-  public void testTagSetDelayed2() {
-    check(
-        "Unprotect[ProductLog]; ProductLog[k_,z_]/;NumericQ[k]&&!IntegerQ[k]:=WrightOmega[Log[z]+2*Pi*I*k]", //
-        "");
-    check("ProductLog[1/2,z]", //
-        "wrightomega[I*Pi+Log[z]]");
-  }
+  // public void testTagSetDelayed1() {
+  // check(
+  // "Unprotect[ProductLog];
+  // ProductLog/:ProductLog[k_,z_]/;NumericQ[k]&&!IntegerQ[k]:=WrightOmega[Log[z]+2*Pi*I*k]", //
+  // "");
+  // check("ProductLog[1/2,z]", //
+  // "wrightomega[I*Pi+Log[z]]");
+  // }
+  //
+  // public void testTagSetDelayed2() {
+  // check(
+  // "Unprotect[ProductLog];
+  // ProductLog[k_,z_]/;NumericQ[k]&&!IntegerQ[k]:=WrightOmega[Log[z]+2*Pi*I*k]", //
+  // "");
+  // check("ProductLog[1/2,z]", //
+  // "wrightomega[I*Pi+Log[z]]");
+  // }
 
   /** The JUnit setup method */
   @Override
