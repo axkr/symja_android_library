@@ -30,6 +30,8 @@ import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatContext;
+import org.apfloat.OverflowException;
+import org.apfloat.spi.FilenameGenerator;
 import org.apfloat.spi.Util;
 import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
@@ -1026,8 +1028,12 @@ public class F extends S {
     ctx.setProperty(ApfloatContext.SHARED_MEMORY_TRESHOLD,
         java.lang.String.valueOf(maxMemoryBlockSize / numberOfProcessors / 32));
     ctx.setProperty(ApfloatContext.BLOCK_SIZE, java.lang.String.valueOf(blockSize));
-    ctx.setProperty(ApfloatContext.FILE_INITIAL_VALUE, "0");
-
+    ctx.setFilenameGenerator(new FilenameGenerator("default", "0", "default") {
+      @Override
+      public synchronized String generateFilename() {
+        throw new OverflowException("Apfloat disk file storage is disabled");
+      }
+    });
     ctx.setMemoryThreshold(memoryThreshold);
     ctx.setCleanupAtExit(false);
     ctx.setNumberOfProcessors(numberOfProcessors);
