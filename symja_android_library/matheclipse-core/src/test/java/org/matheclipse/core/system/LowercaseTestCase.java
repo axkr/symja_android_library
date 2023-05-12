@@ -1,5 +1,7 @@
 package org.matheclipse.core.system;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatContext;
 import org.apfloat.ApfloatMath;
@@ -12,6 +14,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ParserConfig;
@@ -15308,6 +15311,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     } catch (OverflowException e) {
       // e.printStackTrace();
     }
+  }
+
+  public void testDeterminePrecision() {
+    ApfloatNum zero = ApfloatNum.valueOf(new Apfloat(new BigDecimal(BigInteger.ZERO), 30));
+    ApfloatNum num = ApfloatNum.valueOf("1.7", 30);
+
+    IASTMutable times = F.Times(num, zero);
+    assertEquals(times.determinePrecision(), 30);
   }
 
   public void testN() {

@@ -27,6 +27,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apfloat.Apfloat;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.RealMatrix;
@@ -1817,7 +1818,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
     for (int i = 1; i < size(); i++) {
       long p = get(i).determinePrecision();
-      if (p > precision) {
+      if (p > precision && p != Apfloat.INFINITE) {
         precision = p;
       }
     }
