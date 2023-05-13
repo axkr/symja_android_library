@@ -608,10 +608,8 @@ public class ApcomplexNum implements IComplexNum {
   /** {@inheritDoc} */
   @Override
   public INumber roundExpr() {
-    Apfloat re = ApfloatMath.round(fApcomplex.real(), 1, RoundingMode.HALF_EVEN);
-    Apfloat im = ApfloatMath.round(fApcomplex.imag(), 1, RoundingMode.HALF_EVEN);
-    return F.complex(F.ZZ(ApfloatMath.floor(re).toBigInteger()),
-        F.ZZ(ApfloatMath.floor(im).toBigInteger()));
+    return F.complex(F.ZZ(NumberUtil.round(fApcomplex.real(), RoundingMode.HALF_UP)),
+        F.ZZ(NumberUtil.round(fApcomplex.imag(), RoundingMode.HALF_UP)));
   }
 
   @Override

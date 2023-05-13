@@ -2,7 +2,10 @@ package org.matheclipse.core.expression;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.math.RoundingMode;
+
+import org.apfloat.Apfloat;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
@@ -599,5 +602,15 @@ public class NumberUtil {
       throw new IllegalArgumentException(role + " (" + x + ") must be >= 0");
     }
     return x;
+  }
+
+  /**
+   * Replacement of {@link org.apfloat.ApfloatMath#round(Apfloat, long, RoundingMode)}
+   * This is trivial implementation and poor performance.
+   */
+  public static BigInteger round(Apfloat apfloat, RoundingMode roundingMode) {
+    String s = apfloat.toString(true);
+    BigDecimal bigDecimal = new BigDecimal(s);
+    return bigDecimal.setScale(0, roundingMode).toBigInteger();
   }
 }

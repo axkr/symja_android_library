@@ -225,14 +225,18 @@ public class SeriesFunctions {
      * Evaluate the limit for the given limit data.
      *
      * @param expr
-     * @param data the limits data definition
+     * @param data   the limits data definition
+     * @param engine
      * @return
      */
-    private static IExpr evalLimit(final IExpr expr, LimitData data) {
+    private static IExpr evalLimit(final IExpr expr, LimitData data, EvalEngine engine) {
       IExpr expression = expr;
       final IExpr limitValue = data.limitValue();
 
-      EvalEngine engine = EvalEngine.get();
+      // Android-changed: do not use shared EvalEngine
+      if (engine == null) {
+        engine = EvalEngine.get();
+      }
       IExpr result = engine.evalQuiet(expression);
       if (result.isNumericFunction(true)) {
         return result;
@@ -250,14 +254,14 @@ public class SeriesFunctions {
       }
 
       if (limitValue.isNumericFunction(true)) {
-        IExpr temp = evalReplaceAll(expression, data);
+        IExpr temp = evalReplaceAll(expression, data, engine);
         if (temp.isPresent()) {
           return temp;
         }
       } else if ((limitValue.isInfinity() || limitValue.isNegativeInfinity()) && expression.isAST()
           && expression.size() > 1) {
         if (limitValue.isInfinity() || limitValue.isNegativeInfinity()) {
-          IExpr temp = evalReplaceAll(expression, data);
+          IExpr temp = evalReplaceAll(expression, data, engine);
           if (temp.isNumericFunction(true)) {
             return temp;
           }
@@ -285,13 +289,13 @@ public class SeriesFunctions {
         if (arg1.isSin() || arg1.isCos()) {
           return F.unaryAST1(arg1.head(), data.limit(arg1.arg1()));
         } else if (arg1.isPlus()) {
-          return plusLimit(arg1, data);
+          return plusLimit(arg1, data, engine);
         } else if (arg1.isTimes()) {
-          return timesLimit(arg1, data);
+          return timesLimit(arg1, data, engine);
         } else if (arg1.isLog()) {
-          return logLimit(arg1, data);
+          return logLimit(arg1, data, engine);
         } else if (arg1.isPower()) {
-          return powerLimit(arg1, data);
+          return powerLimit(arg1, data, engine);
         }
       }
 
@@ -331,10 +335,10 @@ public class SeriesFunctions {
       return F.NIL;
     }
 
-    private static IExpr evalReplaceAll(IExpr expression, LimitData data) {
+    private static IExpr evalReplaceAll(IExpr expression, LimitData data, EvalEngine engine) {
       IExpr result = expression.replaceAll(data.rule());
       if (result.isPresent()) {
-        result = EvalEngine.get().evalQuiet(result);
+        result = engine.evalQuiet(result);
         if (result.isNumericFunction(true) || result.isInfinity() || result.isNegativeInfinity()) {
           return result;
         }
@@ -388,11 +392,11 @@ public class SeriesFunctions {
      *
      * @param numerator
      * @param denominator
-     * @param data the limits data definition
+     * @param data        the limits data definition
+     * @param engine
      * @return
      */
-    private static IExpr lHospitalesRule(IExpr numerator, IExpr denominator, LimitData data) {
-      EvalEngine engine = EvalEngine.get();
+    private static IExpr lHospitalesRule(IExpr numerator, IExpr denominator, LimitData data, EvalEngine engine) {
       final ISymbol x = data.variable();
       int recursionLimit = engine.getRecursionLimit();
       try {
@@ -409,7 +413,7 @@ public class SeriesFunctions {
               IInteger exp = frac.denominator(); // == 2
               IExpr expr = engine.evalQuiet(F.Times(F.D(F.Power(numerator, exp), x),
                   F.Power(F.D(denominator.base(), x), F.CN1)));
-              expr = evalLimit(expr, data);
+              expr = evalLimit(expr, data, engine);
               if (expr.isNumber()) {
                 // Sqrt( expr )
                 return F.Power(expr, frac);
@@ -422,7 +426,7 @@ public class SeriesFunctions {
         }
         IExpr expr =
             engine.evalQuiet(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
-        return evalLimit(expr, data);
+        return evalLimit(expr, data, engine);
       } catch (RecursionLimitExceeded rle) {
         engine.setRecursionLimit(recursionLimit);
       } finally {
@@ -453,7 +457,7 @@ public class SeriesFunctions {
       final IExpr newDenominator = engine.evalQuiet(F.Power(denominator, root));
       final IExpr expr =
           engine.evalQuiet(F.Times(F.D(newNumerator, x), F.Power(F.D(newDenominator, x), F.CN1)));
-      final IExpr temp = evalLimit(expr, data);
+      final IExpr temp = evalLimit(expr, data, engine);
       if (temp.isPresent()) {
         return F.Power(temp, F.QQ(F.C1, root));
       }
@@ -513,16 +517,16 @@ public class SeriesFunctions {
      *
      * @param numerator
      * @param denominator
-     * @param data the limit data definition
+     * @param data        the limit data definition
+     * @param engine
      * @return <code>F.NIL</code> if no limit found
      */
     private static IExpr numeratorDenominatorLimit(IExpr numerator, IExpr denominator,
-        LimitData data) {
+                                                   LimitData data, EvalEngine engine) {
       IExpr numValue;
       IExpr denValue;
       IExpr limitValue = data.limitValue();
       // IAST rule = data.getRule();
-      EvalEngine engine = EvalEngine.get();
       if (denominator.isOne() && numerator.isTimes()) {
         // Limit[a_*b_*c_,sym->lim] ->
         // Limit[a,sym->lim]*Limit[b,sym->lim]*Limit[c,sym->lim]
@@ -537,18 +541,18 @@ public class SeriesFunctions {
         } else if (denValue.isZero()) {
           numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
           if (numValue.isZero()) {
-            return lHospitalesRule(numerator, denominator, data);
+            return lHospitalesRule(numerator, denominator, data, engine);
           }
           return F.NIL;
         } else if (denValue.isInfinity()) {
           numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
           if (numValue.isInfinity()) {
-            return lHospitalesRule(numerator, denominator, data);
+            return lHospitalesRule(numerator, denominator, data, engine);
           } else if (numValue.isNegativeInfinity()) {
             numerator = engine.evaluate(numerator.negate());
             numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
             if (numValue.isInfinity()) {
-              result = lHospitalesRule(numerator, denominator, data);
+              result = lHospitalesRule(numerator, denominator, data, engine);
               if (result.isPresent()) {
                 return result.negate();
               }
@@ -561,7 +565,7 @@ public class SeriesFunctions {
           if (denValue.isInfinity()) {
             numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
             if (numValue.isInfinity()) {
-              result = lHospitalesRule(numerator, denominator, data);
+              result = lHospitalesRule(numerator, denominator, data, engine);
               if (result.isPresent()) {
                 // negate because denominator.negate()
                 return result.negate();
@@ -571,7 +575,7 @@ public class SeriesFunctions {
               numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
               if (numValue.isInfinity()) {
                 // tried both cases numerator.negate() and denominator.negate()
-                return lHospitalesRule(numerator, denominator, data);
+                return lHospitalesRule(numerator, denominator, data, engine);
               }
             }
             return F.NIL;
@@ -605,7 +609,7 @@ public class SeriesFunctions {
       return F.Times(data.limit(numerator), F.Power(data.limit(denominator), F.CN1));
     }
 
-    private static IExpr plusLimit(final IAST arg1, LimitData data) {
+    private static IExpr plusLimit(final IAST arg1, LimitData data, EvalEngine engine) {
       // Limit[a_+b_+c_,sym->lim] ->
       // Limit[a,sym->lim]+Limit[b,sym->lim]+Limit[c,sym->lim]
       // IAST rule = data.getRule();
@@ -630,7 +634,7 @@ public class SeriesFunctions {
       return data.mapLimit(arg1);
     }
 
-    private static IExpr powerLimit(final IAST powerAST, LimitData data) {
+    private static IExpr powerLimit(final IAST powerAST, LimitData data, EvalEngine engine) {
       // IAST rule = data.getRule();
       IExpr base = powerAST.arg1();
       IExpr exponent = powerAST.arg2();
@@ -653,7 +657,7 @@ public class SeriesFunctions {
         }
       }
       if (base.isRealResult() && !base.isZero()) {
-        IExpr temp = evalReplaceAll(powerAST, data);
+        IExpr temp = evalReplaceAll(powerAST, data, engine);
         if (temp.isPresent()) {
           return temp;
         }
@@ -756,10 +760,11 @@ public class SeriesFunctions {
      * </code> or <code>-Infinity</code>, <code>y</code> approaches <code>0</code>.
      *
      * @param arg1
-     * @param data (the datas limit must be Infinity or -Infinity)
+     * @param data   (the datas limit must be Infinity or -Infinity)
+     * @param engine
      * @return <code>F.NIL</code> if the substitution didn't succeed.
      */
-    private static IExpr substituteInfinity(final IAST arg1, LimitData data) {
+    private static IExpr substituteInfinity(final IAST arg1, LimitData data, EvalEngine engine) {
       ISymbol x = data.variable();
       IExpr y = F.Power(x, F.CN1); // substituting by 1/x
       IExpr temp = F.evalQuiet(F.subst(arg1, x, y));
@@ -769,7 +774,7 @@ public class SeriesFunctions {
         if (parts != null) {
           if (!parts[1].isOne()) { // denominator != 1
             LimitData ndData = new LimitData(x, F.C0, F.Rule(x, F.C0), data.direction());
-            temp = numeratorDenominatorLimit(parts[0], parts[1], ndData);
+            temp = numeratorDenominatorLimit(parts[0], parts[1], ndData, engine);
             if (temp.isPresent()) {
               return temp;
             }
@@ -779,8 +784,7 @@ public class SeriesFunctions {
       return F.NIL;
     }
 
-    private static IExpr timesLimit(final IAST timesAST, LimitData data) {
-      EvalEngine engine = EvalEngine.get();
+    private static IExpr timesLimit(final IAST timesAST, LimitData data, EvalEngine engine) {
       IAST isFreeResult =
           timesAST.partitionTimes(x -> x.isFree(data.variable(), true), F.C1, F.C1, S.List);
       if (!isFreeResult.arg1().isOne()) {
@@ -848,13 +852,13 @@ public class SeriesFunctions {
 
         if (denominator.isOne()) {
           if (limit.isInfinity() || limit.isNegativeInfinity()) {
-            IExpr temp = substituteInfinity(timesAST, data);
+            IExpr temp = substituteInfinity(timesAST, data, engine);
             if (temp.isPresent()) {
               return temp;
             }
           }
         }
-        IExpr temp = numeratorDenominatorLimit(numerator, denominator, data);
+        IExpr temp = numeratorDenominatorLimit(numerator, denominator, data, engine);
         if (temp.isPresent()) {
           return temp;
         }
@@ -862,7 +866,7 @@ public class SeriesFunctions {
       return data.mapLimit(timesAST);
     }
 
-    private static IExpr logLimit(final IAST logAST, LimitData data) {
+    private static IExpr logLimit(final IAST logAST, LimitData data, EvalEngine engine) {
       if (logAST.isAST2() && !logAST.isFree(data.variable())) {
         return F.NIL;
       }
@@ -942,7 +946,7 @@ public class SeriesFunctions {
         // }
 
         LimitData data = new LimitData(symbol, limit, rule, direction);
-        return evalLimit(arg1, data);
+        return evalLimit(arg1, data, engine);
       } finally {
         engine.setNumericMode(numericMode);
       }

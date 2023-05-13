@@ -20942,6 +20942,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-4");
     check("Round(-3.6)", //
         "-4");
+
+    check("Round(N[0.03306158858189456, 30] * 100, 10^-2) // N", //
+      "3.31");
+
   }
 
   public void testRussellRaoDissimilarity() {
