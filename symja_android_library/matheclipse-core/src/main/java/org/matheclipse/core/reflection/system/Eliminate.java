@@ -491,7 +491,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
               IExpr c1 = F.C(1);
               // ConditionalExpression(2*I*Pi*c1 + Log(exprwovar), Element(c1, Integers))
               final IExpr exprwovar = exprWithoutVariable;
-              IExpr expr = engine.evaluate(F.Plus(F.Times(F.C2, F.CI, S.Pi, c1), F.Log(exprwovar)));
+              IExpr expr = F.Plus(F.Times(F.C2, F.CI, S.Pi, c1), engine.evaluate(F.Log(exprwovar)));
               IExpr temp = F.ConditionalExpression(expr, F.Element(c1, S.Integers));
               return extractVariableRecursive(exponent, temp, predicate, variable, multipleValues,
                   engine);

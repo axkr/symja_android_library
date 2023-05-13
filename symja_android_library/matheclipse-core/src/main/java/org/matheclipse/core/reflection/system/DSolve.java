@@ -126,7 +126,7 @@ public class DSolve extends AbstractFunctionEvaluator {
       IExpr[] boundaryCondition, EvalEngine engine) {
     IAST listOfVariables = F.list(uFunction1Arg);
     if (listOfEquations.size() == 2) {
-      IExpr C_1 = F.unaryAST1(S.C, F.C1); // constant C(1)
+      IExpr C_1 = F.C(1); // constant C(1)
       IExpr equation = listOfEquations.arg1();
       IExpr temp = solveSingleODE(equation, xVar, listOfVariables, C_1, engine);
       if (temp.isNIL()) {
