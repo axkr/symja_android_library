@@ -1,18 +1,21 @@
 package org.matheclipse.core.system;
 
-import java.math.BigInteger;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
+import junit.framework.TestCase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.expression.AbstractFractionSym;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
-import junit.framework.TestCase;
+import org.matheclipse.core.interfaces.IInteger;
+
+import java.math.BigInteger;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 
 public class NumberTest extends TestCase {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -22,12 +25,12 @@ public class NumberTest extends TestCase {
     // https://github.com/tranleduy2000/symja_android_library/commit/2f03d0b6c8095c2c71b1f56c8e5fc5f0b30f927d
     // 3802951800684688204490109616127/1267650600228229401496703205376
     IFraction f = AbstractFractionSym.valueOf(new BigInteger("3802951800684688204490109616127"),
-        new BigInteger("1267650600228229401496703205376"));
+      new BigInteger("1267650600228229401496703205376"));
     ComplexNum cn = f.complexNumValue();
     assertEquals(cn.toString(), "(3.0)");
     // 2535301200456458802993406410751/1267650600228229401496703205376
     f = AbstractFractionSym.valueOf(new BigInteger("2535301200456458802993406410751"),
-        new BigInteger("1267650600228229401496703205376"));
+      new BigInteger("1267650600228229401496703205376"));
     cn = f.complexNumValue();
     assertEquals(cn.toString(), "(2.0)");
   }
@@ -80,4 +83,21 @@ public class NumberTest extends TestCase {
     // prints 0.3
     // System.out.println(decimalFormat.format(result));
   }
+
+  public void testApfloatRounding() {
+    int precision = 30;
+    ApfloatNum num = (ApfloatNum) ApfloatNum.valueOf("3.306158858189456", precision)
+      .divide(ApfloatNum.valueOf("0.01", precision));
+    IInteger round = num.roundExpr();
+    assertEquals(round.toString(), "331");
+  }
+
+  public void testApfloatRounding2() {
+    int precision = 30;
+    ApfloatNum num = (ApfloatNum) ApfloatNum.valueOf("3.304158858189456", precision)
+      .divide(ApfloatNum.valueOf("0.01", precision));
+    IInteger round = num.roundExpr();
+    assertEquals(round.toString(), "330");
+  }
+
 }

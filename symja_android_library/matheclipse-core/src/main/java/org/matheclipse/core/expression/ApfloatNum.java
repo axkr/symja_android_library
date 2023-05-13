@@ -493,8 +493,8 @@ public class ApfloatNum implements INum {
 
   @Override
   public IInteger roundExpr() {
-    Apfloat f = ApfloatMath.round(fApfloat, 1, RoundingMode.HALF_EVEN);
-    return F.ZZ(ApfloatMath.floor(f).toBigInteger());
+    BigInteger round = NumberUtil.round(fApfloat, RoundingMode.HALF_UP);
+    return F.ZZ(round);
   }
 
   @Override
