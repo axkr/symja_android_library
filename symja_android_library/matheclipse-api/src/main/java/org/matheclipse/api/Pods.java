@@ -4,8 +4,19 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.apache.commons.codec.language.Soundex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
@@ -607,7 +618,36 @@ public class Pods {
     createJSONFormat(json, engine, outExpr, plaintext, sinput, formats);
   }
 
-  public static ObjectNode createResult(String inputStr, int formats, boolean strictSymja, EvalEngine evalEngine) {
+  public static String calculateResult(String inputStr, int formats, boolean strictSymja,
+      final EvalEngine engine) {
+    ExecutorService executors = Executors.newSingleThreadExecutor();
+
+    Future<String> task = executors.submit(() -> {
+      String jsonStr;
+      try {
+        ObjectNode messageJSON = Pods.createResult(inputStr, formats, strictSymja, engine);
+        jsonStr = messageJSON.toString();
+      } catch (RuntimeException rex) {
+        rex.printStackTrace();
+        jsonStr = Pods.errorJSONString("0", "JSON Export Failed");
+      }
+      return jsonStr;
+    });
+
+    try {
+      String jsonStr =
+          task.get(Config.SERVER_REQUEST_TIMEOUT_SECONDS * 1000, TimeUnit.MILLISECONDS);
+      return jsonStr;
+    } catch (InterruptedException e) {
+      return Pods.errorJSONString("0", "Timeout exceeded. Calculation interrupted!");
+    } catch (ExecutionException | TimeoutException e) {
+      engine.setStopRequested(true);
+      return Pods.errorJSONString("0", "Timeout exceeded. Calculation aborted!");
+    }
+  }
+
+  public static ObjectNode createResult(String inputStr, int formats, boolean strictSymja,
+      EvalEngine evalEngine) {
     final EvalEngine engine;
     if (evalEngine != null) {
       engine = evalEngine;
@@ -1158,8 +1198,8 @@ public class Pods {
       form = internFormat(SYMJA, html);
     }
     if (html != null) {
-      addPod(podsArray, inExpr, podOut, html,
-          StringFunctions.inputForm(plot3D), title, scanner, form, engine);
+      addPod(podsArray, inExpr, podOut, html, StringFunctions.inputForm(plot3D), title, scanner,
+          form, engine);
       numpods++;
     }
     return numpods;
@@ -1175,7 +1215,8 @@ public class Pods {
    * @param evalEngine TODO
    * @return
    */
-  private static ObjectNode createStrictResult(String inputStr, int formats, EvalEngine evalEngine) {
+  private static ObjectNode createStrictResult(String inputStr, int formats,
+      EvalEngine evalEngine) {
     ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
 
     ObjectNode queryresult = JSON_OBJECT_MAPPER.createObjectNode();

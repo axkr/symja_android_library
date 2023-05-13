@@ -13,7 +13,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -49,8 +48,8 @@ public class SymjaServer {
               SymjaServer.getParams(queryParameters, "format", "f", Pods.PLAIN_STR);
           int formats = Pods.internFormat(formformatStrs);
           try {
-            ObjectNode messageJSON = Pods.createResult(inputStr, formats, !strict.isEmpty(), null);
-            jsonStr = messageJSON.toString();
+            jsonStr = Pods.calculateResult(inputStr, formats, !strict.isEmpty(), EvalEngine.get());
+            // jsonStr = messageJSON.toString();
           } catch (RuntimeException rex) {
             rex.printStackTrace();
             jsonStr = Pods.errorJSONString("0", "JSON Export Failed");
@@ -125,6 +124,7 @@ public class SymjaServer {
     Config.FILESYSTEM_ENABLED = false;
     Config.MAX_INPUT_LEAVES = 100L;
     Config.MAX_MATRIX_DIMENSION_SIZE = 100;
+    Config.SERVER_REQUEST_TIMEOUT_SECONDS = 10;
     EvalEngine.get().setPackageMode(true);
     F.initSymbols();
     S.IntegerName.setEvaluator(new org.matheclipse.io.builtin.IntegerName());
