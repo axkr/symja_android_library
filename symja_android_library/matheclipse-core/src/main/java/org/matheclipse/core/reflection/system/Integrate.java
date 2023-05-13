@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
@@ -584,12 +583,7 @@ public class Integrate extends AbstractFunctionEvaluator {
         // Integrate[a_*y_,x_Symbol] -> a*Integrate[y,x] /; FreeQ[a,x]
         IASTAppendable filterCollector = F.TimesAlloc(arg1AST.size());
         IASTAppendable restCollector = F.TimesAlloc(arg1AST.size());
-        arg1AST.filter(filterCollector, restCollector, new Predicate<IExpr>() {
-          @Override
-          public boolean test(IExpr input) {
-            return input.isFree(x, true);
-          }
-        });
+        arg1AST.filter(filterCollector, restCollector, input -> input.isFree(x, true));
         if (filterCollector.size() > 1) {
           if (restCollector.size() > 1) {
             filterCollector.append(F.Integrate(restCollector.oneIdentity0(), x));

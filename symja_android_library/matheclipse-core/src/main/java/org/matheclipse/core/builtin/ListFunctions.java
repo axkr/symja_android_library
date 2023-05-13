@@ -1505,12 +1505,9 @@ public final class ListFunctions {
         }
 
         IASTAppendable tallyResult = tally(list);
-        EvalAttributes.sort(tallyResult, new Comparator<IExpr>() {
-          @Override
-          public int compare(IExpr o1, IExpr o2) {
-            return o2.second().compareTo(o1.second());
-          }
-        });
+        EvalAttributes.sort(//
+            tallyResult, //
+            (o1, o2) -> o2.second().compareTo(o1.second()));
 
         int size = tallyResult.size();
         if (size > 1) {

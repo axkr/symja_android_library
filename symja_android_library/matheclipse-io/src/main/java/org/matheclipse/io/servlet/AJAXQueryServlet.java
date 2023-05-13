@@ -6,6 +6,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
@@ -165,7 +171,7 @@ public class AJAXQueryServlet extends HttpServlet {
         engine.setOutPrintStream(outs);
         engine.setErrorPrintStream(errors);
       }
-      result = evaluateString(engine, expression, numericMode, function, outWriter, errorWriter);
+      result = calculateString(engine, expression, numericMode, function, outWriter, errorWriter);
     } finally {
       // tear down associated ThreadLocal from EvalEngine
       EvalEngine.remove();
@@ -174,6 +180,33 @@ public class AJAXQueryServlet extends HttpServlet {
       return JSONBuilder.createJSONError("Calculation result is undefined")[1];
     }
     return result[1].toString();
+  }
+
+  private String[] calculateString(EvalEngine engine, final String inputString,
+      final String numericMode, final String function, StringWriter outWriter,
+      StringWriter errorWriter) {
+    ExecutorService executors = Executors.newSingleThreadExecutor();
+
+    Future<String[]> task = executors.submit(() -> {
+      String[] temp;
+      try {
+        temp = evaluateString(engine, inputString, numericMode, function, outWriter, errorWriter);
+      } catch (RuntimeException rex) {
+        // rex.printStackTrace();
+        temp = JSONBuilder.createJSONError("RuntimeException: " + rex.getMessage());
+      }
+      return temp;
+    });
+
+    try {
+      return
+          task.get(Config.SERVER_REQUEST_TIMEOUT_SECONDS * 1000, TimeUnit.MILLISECONDS);
+    } catch (InterruptedException e) {
+      return JSONBuilder.createJSONError("Timeout exceeded. Calculation interrupted!");
+    } catch (ExecutionException | TimeoutException e) {
+      engine.setStopRequested(true);
+      return JSONBuilder.createJSONError("Timeout exceeded. Calculation aborted!");
+    }
   }
 
   private String[] evaluateString(EvalEngine engine, final String inputString,

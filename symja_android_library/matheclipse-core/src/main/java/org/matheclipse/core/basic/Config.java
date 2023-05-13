@@ -183,6 +183,11 @@ public class Config {
    */
   public static final long TIME_CONSTRAINED_SLEEP_MILLISECONDS = 500;
 
+  /**
+   * The time in seconds a server request can evaluate an expression.
+   */
+  public static long SERVER_REQUEST_TIMEOUT_SECONDS = 30;
+
   /** Switch debug mode on/off */
   public static final boolean DEBUG = false;
 

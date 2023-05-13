@@ -82,6 +82,9 @@ public class BigFractionSym extends AbstractFractionSym {
     if (other.isZero()) {
       return this;
     }
+    if (this.isZero()) {
+      return other;
+    }
 
     if (other instanceof BigFractionSym) {
       BigFraction res = fFraction.add(((BigFractionSym) other).toBigFraction());

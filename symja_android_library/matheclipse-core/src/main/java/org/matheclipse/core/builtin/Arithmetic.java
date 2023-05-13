@@ -2008,6 +2008,7 @@ public final class Arithmetic {
         if (ast.arg1().isExactNumber()) {
           return ast.arg1().abs();
         }
+        return F.NIL;
       }
       return super.evaluate(ast, engine);
     }
@@ -2492,6 +2493,7 @@ public final class Arithmetic {
         if (ast.arg1().isExactNumber()) {
           return ast.arg1().abs();
         }
+        return F.NIL;
       }
       return super.evaluate(ast, engine);
     }
