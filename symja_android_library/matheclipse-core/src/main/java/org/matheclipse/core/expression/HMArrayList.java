@@ -19,13 +19,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.RandomAccess;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -509,7 +503,7 @@ public abstract class HMArrayList extends AbstractAST
   @Override
   public Set<IExpr> asSet() {
     int size = size();
-    Set<IExpr> set = new HashSet<IExpr>(size > 16 ? size : 16);
+    Set<IExpr> set = new TreeSet<>();
     for (int i = 1; i < size; i++) {
       set.add(array[firstIndex + i]);
     }

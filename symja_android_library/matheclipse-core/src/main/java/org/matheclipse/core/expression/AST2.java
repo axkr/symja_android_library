@@ -1,18 +1,19 @@
 package org.matheclipse.core.expression;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.function.BiPredicate;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.ObjIntConsumer;
-import java.util.function.Predicate;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.BiPredicate;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.ObjIntConsumer;
+import java.util.function.Predicate;
 
 /**
  * Immutable (A)bstract (S)yntax (T)ree of a given function with <b>exactly 2 arguments</b>.
@@ -81,7 +82,7 @@ public class AST2 extends AST1 {
 
   @Override
   public Set<IExpr> asSet() {
-    Set<IExpr> set = new HashSet<IExpr>();
+    Set<IExpr> set = new TreeSet<>();
     set.add(arg1);
     set.add(arg2);
     return set;
