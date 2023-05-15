@@ -30,6 +30,8 @@ import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
+import static org.matheclipse.core.expression.NumberUtil.intValueExact;
+
 /**
  * Provides primality probabilistic methods for small prime factors.
  *
@@ -392,7 +394,7 @@ public class Primality implements IPrimality {
    */
   public static BigInteger countPrimes1021(BigInteger val, Map<Integer, Integer> map) {
     try {
-      int num = val.intValueExact();
+      int num = intValueExact(val);
       return BigInteger.valueOf(countPrimes1021(num, map));
     } catch (java.lang.ArithmeticException aex) {
       // fall through
