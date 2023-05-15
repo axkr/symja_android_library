@@ -23,6 +23,8 @@ import org.matheclipse.core.numbertheory.Primality;
 import com.google.common.math.BigIntegerMath;
 import edu.jas.arith.BigRational;
 
+import static org.matheclipse.core.expression.NumberUtil.intValueExact;
+
 /**
  * IInteger implementation which delegates most of the methods to the {@link BigInteger} methods.
  *
@@ -372,7 +374,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
       Function<ISymbol, ? extends CharSequence> variables) {
     String prefix = AbstractAST.getPrefixF(properties);
     if (NumberUtil.hasIntValue(fBigIntValue)) {
-      int intValue = fBigIntValue.intValueExact();
+      int intValue = intValueExact(fBigIntValue);
       switch (intValue) {
         case -1:
           return prefix + "CN1";
@@ -810,14 +812,14 @@ public class BigIntegerSym extends AbstractIntegerSym {
   /** {@inheritDoc} */
   @Override
   public int toInt() throws ArithmeticException {
-    return fBigIntValue.intValueExact();
+    return intValueExact(fBigIntValue);
   }
 
   /** {@inheritDoc} */
   @Override
   public int toIntDefault(int defaultValue) {
     try {
-      return fBigIntValue.intValueExact();
+      return intValueExact(fBigIntValue);
     } catch (java.lang.ArithmeticException aex) {
       return defaultValue;
     }

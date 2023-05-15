@@ -592,7 +592,7 @@ public class BigFractionSym extends AbstractFractionSym {
   @Override
   public int toInt() throws ArithmeticException {
     if (toBigDenominator().equals(BigInteger.ONE)) {
-      return toBigNumerator().intValueExact();
+      return NumberUtil.intValueExact(toBigNumerator());
       // int val = NumberUtil.toIntDefault(toBigNumerator());
       // if (val != Integer.MIN_VALUE) {
       // return val;
@@ -608,7 +608,7 @@ public class BigFractionSym extends AbstractFractionSym {
   public int toIntDefault(int defaultValue) {
     if (toBigDenominator().equals(BigInteger.ONE)) {
       try {
-        return toBigNumerator().intValueExact();
+        return NumberUtil.intValueExact(toBigNumerator());
       } catch (java.lang.ArithmeticException aex) {
         return defaultValue;
       }
