@@ -264,3 +264,7 @@ Here are some of the associated **JavaScript** licenses:
 
 [1]: mailto:axelclk@gmail.com
 [2]: http://www.vogella.com/tutorials/EclipseGit/article.html
+
+<a href = https://github.com/axkr/symja_android_library/graphs/contributors>
+  <img src = https://contrib.rocks/image?repo=axkr/symja_android_library>
+</a>
