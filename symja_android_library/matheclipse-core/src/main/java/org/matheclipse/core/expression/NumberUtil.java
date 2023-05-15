@@ -615,6 +615,7 @@ public class NumberUtil {
     return bigDecimal.setScale(0, roundingMode).toBigInteger();
   }
 
+
   public static int intValueExact(BigInteger bigInteger) {
     long num = bigInteger.longValue();
     if ((int) num != num)

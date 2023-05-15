@@ -985,7 +985,8 @@ public class Solve extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    return of(ast, false, engine);
+    boolean isNumericArgument = ast.arg1().isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG);
+    return of(ast, isNumericArgument, engine);
   }
 
   @Override
@@ -1266,7 +1267,8 @@ public class Solve extends AbstractFunctionEvaluator {
 
     if (inequationsList.isEmpty() && termsEqualZeroList.size() == 2 && variables.size() == 2) {
       IExpr firstVariable = variables.arg1();
-      IExpr res = eliminateOneVariable(termsEqualZeroList, firstVariable, true, engine);
+      IExpr res =
+          eliminateOneVariable(termsEqualZeroList, firstVariable, true, numericFlag, engine);
       if (res.isNIL()) {
         if (numericFlag) {
           // find numerically with start value 0
@@ -1342,10 +1344,12 @@ public class Solve extends AbstractFunctionEvaluator {
    *
    * @param termsEqualZeroList a list of expressions which equals zero.
    * @param variable the variable which should be eliminated in the term
+   * @param numeric evaluate in numericMode
+   * @param engine
    * @return
    */
   private static IAST eliminateOneVariable(IAST termsEqualZeroList, IExpr variable,
-      boolean multipleValues, EvalEngine engine) {
+      boolean multipleValues, boolean numeric, EvalEngine engine) {
     if (!termsEqualZeroList.arg1().isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(),
         true)) {
       return F.NIL;
@@ -1362,12 +1366,61 @@ public class Solve extends AbstractFunctionEvaluator {
             && lastRuleUsedForVariableElimination.second().isTrue()) {
           return F.CEmptyList;
         }
+        if (numeric && lastRuleUsedForVariableElimination.arg2().isConditionalExpression()) {
+          // evaluate numerically
+          IAST conditionalExpression = (IAST) lastRuleUsedForVariableElimination.arg2();
+          if (conditionalExpression.arg2().isAST(S.Element, 3)) {
+            IAST element = (IAST) conditionalExpression.arg2();
+            IExpr constantSymbol = element.arg1();
+            IExpr domain = element.arg2();
+            if (constantSymbol.isAST(S.C, 2) //
+                && (domain == S.Integers || domain == S.Reals || domain == S.Complexes)) {
+              // try constant value = 0.0
+              IAST temp = substituteConstantSymbolByValue(conditionalExpression.arg1(),
+                  constantSymbol, F.CD0, lastRuleUsedForVariableElimination, engine);
+              if (temp.isPresent()) {
+                lastRuleUsedForVariableElimination = temp;
+              } else {
+                // try constant value = 1.0
+                lastRuleUsedForVariableElimination =
+                    substituteConstantSymbolByValue(conditionalExpression.arg1(), constantSymbol,
+                        F.CD1, lastRuleUsedForVariableElimination, engine)
+                            .orElse(lastRuleUsedForVariableElimination);
+              }
+            }
+          }
+
+        }
+
         if (lastRuleUsedForVariableElimination.isList()) {
           IAST list = lastRuleUsedForVariableElimination;
           return F.mapList(list, x -> F.list(x));
         }
         return F.list(F.list(lastRuleUsedForVariableElimination));
       }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Substitute all (sub-) expressions <code>constantSymbol</code> in <code>expr</code> with
+   * <code>numericValue</code>. If the substitution result is no number, the method returns
+   * {@link F#NIL}
+   * 
+   * @param expr
+   * @param constantSymbol
+   * @param numericValue
+   * @param lastRuleUsedForVariableElimination
+   * @param engine
+   * @return {@link F#NIL} if the substitution result is no number
+   */
+  private static IAST substituteConstantSymbolByValue(IExpr expr, IExpr constantSymbol,
+      IExpr numericValue, IAST lastRuleUsedForVariableElimination, EvalEngine engine) {
+    IExpr numericResult = engine.evalN(F.subs(expr, constantSymbol, numericValue));
+    if (numericResult.isNumber()) {
+      // Inverse functions are being used. Values may be lost for multivalued inverses.
+      IOFunctions.printMessage(S.Solve, "ifun", F.List());
+      return lastRuleUsedForVariableElimination.setAtCopy(2, numericResult);
     }
     return F.NIL;
   }
@@ -1640,8 +1693,8 @@ public class Solve extends AbstractFunctionEvaluator {
 
           if (clonedEqualZeroList.size() == 2 && variables.size() == 2) {
             IExpr firstVariable = variables.arg1();
-            IExpr res =
-                eliminateOneVariable(clonedEqualZeroList, firstVariable, multipleValues, engine);
+            IExpr res = eliminateOneVariable(clonedEqualZeroList, firstVariable, multipleValues,
+                numericFlag, engine);
             if (res.isNIL()) {
               if (numericFlag) {
                 // find numerically with start value 0
