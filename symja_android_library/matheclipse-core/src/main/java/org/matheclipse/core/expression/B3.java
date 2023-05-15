@@ -7,6 +7,7 @@ import java.io.ObjectOutput;
 import java.util.HashSet;
 import java.util.RandomAccess;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -450,7 +451,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
 
   @Override
   public Set<IExpr> asSet() {
-    Set<IExpr> set = new HashSet<IExpr>();
+    Set<IExpr> set = new TreeSet<>();
     set.add(arg1);
     set.add(arg2);
     set.add(arg3);

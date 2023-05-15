@@ -4,14 +4,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.RandomAccess;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.ObjIntConsumer;
@@ -213,7 +206,7 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public Set<IExpr> asSet() {
     int size = size();
-    Set<IExpr> set = new HashSet<IExpr>(size > 16 ? size : 16);
+    Set<IExpr> set = new TreeSet<>();
     for (int i = 1; i < size; i++) {
       set.add(get(i));
     }

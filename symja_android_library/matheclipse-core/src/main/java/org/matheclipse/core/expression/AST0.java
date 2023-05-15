@@ -4,9 +4,9 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.HashSet;
 import java.util.RandomAccess;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -155,7 +155,7 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
   @Override
   public Set<IExpr> asSet() {
     // empty set:
-    return new HashSet<IExpr>();
+    return new TreeSet<>();
   }
 
   /**
