@@ -1571,14 +1571,16 @@ public class Solve extends AbstractFunctionEvaluator {
             // try factoring
             if (variables.argSize() == 1) {
               IExpr variable = variables.arg1();
-              IExpr temp = Algebra.Factor.evaluateSolve(termEQZero, engine);
-              if (temp.isList()) {
-                IAST listOfValues = (IAST) temp;
-                IASTAppendable listOfLists = F.ListAlloc(listOfValues.argSize());
-                listOfValues.forEach(x -> listOfLists.append(F.List(F.Rule(variable, x))));
-                solveInequations(listOfLists, inequationsList, engine)
-                    .forEach(x -> subSolutionSet.add(x));
-                continue;
+              if (!termEQZero.isFree(variable)) {
+                IExpr temp = Algebra.Factor.evaluateSolve(termEQZero, engine);
+                if (temp.isList()) {
+                  IAST listOfValues = (IAST) temp;
+                  IASTAppendable listOfLists = F.ListAlloc(listOfValues.argSize());
+                  listOfValues.forEach(x -> listOfLists.append(F.List(F.Rule(variable, x))));
+                  solveInequations(listOfLists, inequationsList, engine)
+                      .forEach(x -> subSolutionSet.add(x));
+                  continue;
+                }
               }
             }
             termEQZero = S.Factor.of(engine, termEQZero);

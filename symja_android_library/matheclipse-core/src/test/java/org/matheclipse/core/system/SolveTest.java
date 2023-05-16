@@ -1581,6 +1581,17 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->1.44463*10^-9}}");
   }
 
+  public void testSolveIssue746() {
+    check("Solve({a==b+c, b==3, c==d*e, d==3, e==5}, a)", //
+        "Solve({a==b+c,b==3,c==d*e,d==3,e==5},a)");
+    check("Solve({a==b+c, b==3, c==d*e, d==3, e==5}, {a,b,c,d,e})", //
+        "{{a->18,b->3,c->15,d->3,e->5}}");
+  }
+
+  public void testFactorQuadratic001() {
+    check("Factor(4x^2+20x+16)", //
+        "4*(1+x)*(4+x)");
+  }
 
 
   // public void testSolveFindRoot() {
