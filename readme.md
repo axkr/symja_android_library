@@ -11,7 +11,7 @@
 
 <img src="https://github.com/axkr/symja-example/blob/main/docs/img_1.png" width="200" height="auto"> <img src="https://github.com/axkr/symja-example/blob/main/docs/img_2.png" width="200" height="auto">
 
-Try the Android or iOS apps:
+Try the full-blown Android or iOS apps:
 <ul>
 <li><a href="https://play.google.com/store/apps/details?id=com.duy.calculator.free">
 	<img src="https://raw.githubusercontent.com/axkr/symja_android_library/master/screenshots/google_playstore_badge.png" alt="Google Play" width="200"></a></li>
