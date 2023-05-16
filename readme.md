@@ -7,7 +7,9 @@
 [![Build Master Snapshot](https://github.com/axkr/symja_android_library/actions/workflows/maven-build-master-and-publish-snapshot.yml/badge.svg)](https://github.com/axkr/symja_android_library/actions/workflows/maven-build-master-and-publish-snapshot.yml)
 [![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/org.matheclipse/matheclipse?server=https%3A%2F%2Foss.sonatype.org)](https://oss.sonatype.org/content/repositories/snapshots/org/matheclipse/)
 
-**Note**: this repository contains the **Java 11** sources of the core modules. A minmal Android app example can be found in the [symja-example repository ](https://github.com/axkr/symja-example).
+**Note**: this repository contains the **Java 11** sources of the core modules. A minmal Android app example can be found in the [symja-example repository ](https://github.com/axkr/symja-example):
+
+<img src="https://github.com/axkr/symja-example/blob/main/docs/img_1.png" width="200" height="auto"> <img src="https://github.com/axkr/symja-example/blob/main/docs/img_2.png" width="200" height="auto">
 
 Try the Android or iOS apps:
 <ul>
