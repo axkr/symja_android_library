@@ -3332,6 +3332,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // distinct elements 5. Only 5 elements will be returned.
     check("Commonest({b, a, c, 2, a, b, 1, 2}, 6)", //
         "{b,a,2,c,1}");
+
+    check("Commonest({1, 1, N[2, 300], N[4,400], 4})", //
+      "{1.0,4.0}");
   }
 
   public void testComplement() {
@@ -22367,6 +22370,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2.27183");
     check("StandardDeviation(LogNormalDistribution(0, 1))", //
         "Sqrt((-1+E)*E)");
+    check("StandardDeviation({7, -5, N[101, 100], 100})", //
+      "57.65630928181234");
   }
 
   public void testStieltjesGamma() {

@@ -6,6 +6,7 @@ import org.hipparchus.util.Binary64;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.expression.S;
 
 /**

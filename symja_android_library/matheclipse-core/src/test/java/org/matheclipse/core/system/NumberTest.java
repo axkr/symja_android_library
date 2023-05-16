@@ -3,11 +3,14 @@ package org.matheclipse.core.system;
 import junit.framework.TestCase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -54,6 +57,8 @@ public class NumberTest extends TestCase {
   public void testNumberFormat() {
     StringBuilder buf = new StringBuilder();
     try {
+      ExprEvaluator evaluator = new ExprEvaluator();
+      EvalEngine.set(evaluator.getEvalEngine());
       // DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
       // DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
       OutputFormFactory factory = OutputFormFactory.get(true, false, 5, 7);
@@ -100,4 +105,48 @@ public class NumberTest extends TestCase {
     assertEquals(round.toString(), "330");
   }
 
+  public void testIsMachineNumber() {
+    assertFalse(ApfloatNum.valueOf("12E1233333", 30).isMachineDouble());
+    assertTrue(ApfloatNum.valueOf("1E32", 30).isMachineDouble());
+
+    assertFalse(ApfloatNum.valueOf("1.8E308", 30).isMachineDouble());
+    assertTrue(ApfloatNum.valueOf("0.1", 30)
+      .pow(ApfloatNum.valueOf("10000", 30)).isMachineDouble());
+    assertTrue(ApfloatNum.valueOf("1.7976931348621E308", 30).isMachineDouble());
+
+    assertTrue(ApfloatNum.valueOf("-0.4161468365471423869975682295", 30).isMachineDouble());
+
+    IAST ast0 = F.List(ApfloatNum.valueOf("1.8E308", 30), ApfloatNum.valueOf("1.8E308", 30));
+    assertFalse(ast0.isRealVector());
+
+    IAST ast1 = F.List(ApfloatNum.valueOf("12E1233333", 30), ApfloatNum.valueOf("12E1233333", 30));
+    assertFalse(ast1.isRealVector());
+
+    IAST ast2 = F.List(ApfloatNum.valueOf("1.7976931348621E308", 30), ApfloatNum.valueOf("1.7976931348621E308", 30));
+    assertTrue(ast2.isRealVector());
+
+    double[] doubleVector = ast2.toDoubleVector();
+    assertEquals(doubleVector[0], 1.7976931348621E308, 1E-12);
+    assertEquals(doubleVector[1], 1.7976931348621E308, 1E-12);
+  }
+
+  public void testIsMachineNumber2() {
+    ExprEvaluator evaluator = new ExprEvaluator();
+    IExpr res = evaluator.eval("Table({Sin[N[i, 30]], Cos[N[i, 30]]}, {i, 1, 3})");
+    // assertEquals(res.toString(),
+    //   "{{{0.84147098480789650665250232163,0.5403023058681397174009366074429}," +
+    //     "{0.84147098480789650665250232163,-0.4161468365471423869975682295}," +
+    //     "{0.84147098480789650665250232163,-0.9899924966004454572715727947312}}," +
+    //     "{{0.141120008059867222100744802808,0.5403023058681397174009366074429}," +
+    //     "{0.141120008059867222100744802808,-0.4161468365471423869975682295}," +
+    //     "{0.141120008059867222100744802808,-0.9899924966004454572715727947312}}}");
+
+    assertTrue(res.isRealMatrix());
+    assertFalse(res.isRealVector());
+
+    res = evaluator.eval("Table(Sin[N[i, 30]], {i, 1, 2})");
+    assertFalse(res.isRealMatrix());
+    assertTrue(res.isRealVector());
+
+  }
 }

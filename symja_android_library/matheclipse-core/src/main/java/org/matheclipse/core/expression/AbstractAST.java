@@ -4283,9 +4283,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           dim[1] = row.argSize();
           boolean containsNum = false;
           for (int j = 1; j < row.size(); j++) {
-            if (row.get(j).isReal()) {
-              if (row.get(j) instanceof INum) {
-                if (!(row.get(j) instanceof Num)) {
+            IExpr argJ = row.get(j);
+            if (argJ.isReal()) {
+              if (argJ instanceof INum) {
+                if (!argJ.isMachineDouble()) {
                   // Apfloat number
                   return false;
                 }
@@ -4307,9 +4308,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
               return false;
             }
             for (int j = 1; j < row.size(); j++) {
-              if (row.get(j).isReal()) {
-                if (row.get(j) instanceof INum) {
-                  if (!(row.get(j) instanceof Num)) {
+              IExpr argJ = row.get(j);
+              if (argJ.isReal()) {
+                if (argJ instanceof INum) {
+                  if (!argJ.isMachineDouble()) {
                     // Apfloat number
                     return false;
                   }
@@ -4383,9 +4385,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (isList()) {
       boolean containsNum = false;
       for (int i = 1; i < size(); i++) {
-        if (get(i).isReal()) {
-          if (get(i) instanceof INum) {
-            if (!(get(i) instanceof Num)) {
+        IExpr arg = get(i);
+        if (arg.isReal()) {
+          if (arg instanceof INum) {
+            if (!arg.isMachineDouble()) {
               return false;
             }
             containsNum = true;

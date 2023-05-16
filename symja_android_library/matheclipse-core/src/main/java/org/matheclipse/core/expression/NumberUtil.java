@@ -630,4 +630,7 @@ public class NumberUtil {
       throw new ArithmeticException("BigInteger out of long range");
   }
 
+  public static boolean isMachineDouble(double v) {
+    return !Double.isNaN(v) && !Double.isInfinite(v) && Double.isFinite(v);
+  }
 }

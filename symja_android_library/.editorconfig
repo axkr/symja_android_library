@@ -1,3 +1,4 @@
 [*.java]
 indent_size = 2
 indent_style = space
+ij_java_doc_do_not_wrap_if_one_line = true

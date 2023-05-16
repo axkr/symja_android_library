@@ -503,6 +503,11 @@ public class Num implements INum {
     return valueOf(1 / value);
   }
 
+  @Override
+  public boolean isMachineDouble() {
+    return true;
+  }
+
   /** {@inheritDoc} */
   @Override
   public long determinePrecision() {

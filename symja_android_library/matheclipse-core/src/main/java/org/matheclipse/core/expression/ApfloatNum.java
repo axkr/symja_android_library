@@ -434,6 +434,13 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public boolean isMachineDouble() {
+    double value = this.fApfloat.doubleValue();
+    return Double.isFinite(value);
+  }
+
+
+  @Override
   public IExpr sqrt() {
     if (isNegative()) {
       return F.complexNum(EvalEngine.getApfloat().sqrt(apcomplexValue()));

@@ -2819,6 +2819,13 @@ public interface IExpr
   }
 
   /**
+   * @return true if this expression can store in Java Double
+   */
+  default boolean isMachineDouble() {
+    return false;
+  }
+
+  /**
    * If this object mathematical has a negative integer number as the result return
    * <code>true</code>.
    * 
