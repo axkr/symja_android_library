@@ -1044,7 +1044,7 @@ public class TeXFormFactory {
     }
   }
 
-  private static final class TeXFunction extends AbstractTeXConverter {
+  public static final class TeXFunction extends AbstractTeXConverter {
 
     String fFunctionName;
 
