@@ -3697,7 +3697,7 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a real matrix (i.e. an ASTRealMatrix) or a <code>
+   * Test if this expression is a real matrix (i.e. an instance of {@link ASTRealMatrix} or a <code>
    * List[List[...],...,List[...]]</code> matrix with elements of type <code>
    * org.matheclipse.core.expression.Num</code>.
    *
@@ -3734,8 +3734,8 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a real vector (i.e. an ASTRealVector) or a <code>List[...]</code>
-   * with elements of type <code>org.matheclipse.core.expression.Num</code>.
+   * Test if this expression is a real vector (i.e. an instance of {@link ASTRealVector} or a
+   * <code>List[...]</code> with elements of type <code>org.matheclipse.core.expression.Num</code>.
    *
    * @return
    */

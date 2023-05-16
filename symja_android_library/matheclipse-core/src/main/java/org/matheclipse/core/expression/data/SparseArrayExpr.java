@@ -1456,12 +1456,18 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   @Override
   public IExpr evaluate(EvalEngine engine) {
     if (isEvalFlagOff(IAST.BUILT_IN_EVALED)) {
+      boolean containsNumericArg = false;
       boolean evaled = false;
       IExpr newDefaultValue = fDefaultValue;
       IExpr temp = engine.evaluateNIL(fDefaultValue);
       if (temp.isPresent()) {
         evaled = true;
+        if (temp.isNumericArgument()) {
+          containsNumericArg = true;
+        }
         newDefaultValue = temp;
+      } else if (fDefaultValue.isNumericArgument()) {
+        containsNumericArg = true;
       }
       final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
       for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
@@ -1469,17 +1475,31 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         temp = engine.evaluateNIL(value);
         if (temp.isPresent()) {
           evaled = true;
+          if (temp.isNumericArgument()) {
+            containsNumericArg = true;
+          }
           trie.put(entry.getKey(), temp);
         } else {
+          if (value.isNumericArgument()) {
+            containsNumericArg = true;
+          }
           trie.put(entry.getKey(), value);
         }
       }
       if (evaled) {
         SparseArrayExpr result = new SparseArrayExpr(trie, fDimension, newDefaultValue, false);
-        result.addEvalFlags(IAST.BUILT_IN_EVALED);
+        if (containsNumericArg) {
+          result.addEvalFlags(IAST.BUILT_IN_EVALED | IAST.CONTAINS_NUMERIC_ARG);
+        } else {
+          result.addEvalFlags(IAST.BUILT_IN_EVALED);
+        }
         return result;
       }
-      addEvalFlags(IAST.BUILT_IN_EVALED);
+      if (containsNumericArg) {
+        addEvalFlags(IAST.BUILT_IN_EVALED | IAST.CONTAINS_NUMERIC_ARG);
+      } else {
+        addEvalFlags(IAST.BUILT_IN_EVALED);
+      }
     }
     return F.NIL;
   }
@@ -1772,6 +1792,12 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   @Override
   public int hierarchy() {
     return SPARSEARRAYID;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final boolean isEvalFlagOn(final int i) {
+    return (fEvalFlags & i) == i;
   }
 
   @Override

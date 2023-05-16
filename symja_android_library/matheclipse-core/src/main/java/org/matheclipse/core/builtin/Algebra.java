@@ -2189,9 +2189,6 @@ public class Algebra {
             }
           }
 
-          // TimeStatus.setActive();
-          // TimeStatus.restart();
-          // TimeStatus.setLimit(20000);
           FactorAbstract<edu.jas.arith.BigInteger> factorAbstract =
               FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
           if (factorSquareFree) {

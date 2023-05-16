@@ -491,7 +491,7 @@ public class RootsFunctions {
     return F.NIL;
   }
 
-  protected static IAST roots(final IExpr arg1, boolean numericSolutions, IAST variables,
+  public static IAST roots(final IExpr arg1, boolean numericSolutions, IAST variables,
       EvalEngine engine) {
 
     IExpr expr = evalExpandAll(arg1, engine);
@@ -507,7 +507,11 @@ public class RootsFunctions {
         expr = S.Numerator.of(engine, expr);
       }
     }
-    return rootsOfVariable(expr, denom, variables, numericSolutions, engine);
+    IAST result = rootsOfVariable(expr, denom, variables, numericSolutions, engine);
+    if (result.isPresent()) {
+      result = (IAST) engine.evaluate(result);
+    }
+    return result;
   }
 
   /**
