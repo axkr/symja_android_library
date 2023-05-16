@@ -334,12 +334,12 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
     // message Dot: Nonrectangular tensor encountered
     check("Dot({{0,2},{-8,2}},{{{0},0},{0,3}})", //
-        "{{0,2},\n" //
-            + " {-8,2}}.{{{0},0},{0,3}}");
+        "{{0,2}," //
+            + "{-8,2}}.{{{0},0},{0,3}}");
 
     // message Dot: Tensors {{}} and {{}} have incompatible shapes.
     check("{{}}.{{}}", //
-        "{{}}.\n" + "{{}}");
+        "{{}}." + "{{}}");
 
 
     check("#1.#123 // FullForm", //
@@ -359,7 +359,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Dimensions(c.a.b.c)", //
         "{3,5}");
     check("{}.{{}}", //
-        "{}.\n" + "{{}}");
+        "{}." + "{{}}");
     check("{}.{ }", //
         "0");
     check("{}.{4,5.0,6}", //
@@ -368,13 +368,13 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "HoldForm(Times(Times(0.17583681`, 0.41125407852`), 0.0`))");
 
     check("{{1, 2}, {3.0, 4}, {5, 6}}.{1,1}", //
-        "{3.0,7.0,11.0}");
+        "{3,7.0,11}");
     check("{{1, 2}, {3.0, 4}, {5, 6}}.{{1},{1}}", //
-        "{{3.0},\n" + " {7.0},\n" + " {11.0}}");
+        "{{3},\n" + " {7.0},\n" + " {11}}");
     check("{1,1,1}.{{1, 2}, {3.0, 4}, {5, 6}}", //
-        "{9.0,12.0}");
+        "{9.0,12}");
     check("{{1,1,1}}.{{1, 2}, {3.0, 4}, {5, 6}}", //
-        "{{9.0,12.0}}");
+        "{{9.0,12}}");
     check("{1,2,3.0}.{4,5.0,6}", //
         "32.0");
 

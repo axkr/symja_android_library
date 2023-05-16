@@ -1731,10 +1731,6 @@ public final class LinearAlgebra {
           IExpr b = arg2.first();
           return F.TransformationFunction(F.Dot(a, b));
         }
-        IExpr temp = numericalDot(arg1, arg2);
-        if (temp.isPresent()) {
-          return temp;
-        }
 
         final IntList dimensions1 = dimensions(arg1, S.List, Integer.MAX_VALUE, true);
         final int dims1Size = dimensions1.size();
@@ -1792,6 +1788,12 @@ public final class LinearAlgebra {
             }
           }
         }
+
+        IExpr temp = numericalDot(arg1, arg2);
+        if (temp.isPresent()) {
+          return temp;
+        }
+
 
         return S.Inner.ofNIL(EvalEngine.get(), S.Times, arg1, arg2, S.Plus);
       } catch (IllegalArgumentException iae) {
