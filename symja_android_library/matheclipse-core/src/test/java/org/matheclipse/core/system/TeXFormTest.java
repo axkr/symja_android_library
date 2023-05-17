@@ -273,6 +273,14 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
         "f \\cdot (a)_b \\cdot z(a,b)");
   }
 
+  public void testPlusReversed001() {
+    TeXFormFactory fTeXFactory = new TeXFormFactory(true, -1, -1, " \\cdot ");
+    IExpr expr = evaluator.eval("1+x-x^2");
+    StringBuilder sb = new StringBuilder();
+    fTeXFactory.convert(sb, expr);
+    Assertions.assertEquals(" - {x}^{2} + x + 1", sb.toString());
+  }
+
   public void testSinIntegral() {
     check("TeXForm(SinIntegral(a))", //
         "\\text{Si}(a)");

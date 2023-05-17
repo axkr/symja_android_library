@@ -636,7 +636,7 @@ public class TeXFormFactory {
     }
   }
 
-  private static final class Plus extends TeXFormOperator {
+  private final class Plus extends TeXFormOperator {
 
     public Plus() {
       super(Precedence.PLUS, " + ");
@@ -644,10 +644,14 @@ public class TeXFormFactory {
 
     /** {@inheritDoc} */
     @Override
-    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buffer, final IAST plusAST, final int precedence) {
       IExpr expr;
+      IAST f = plusAST;
       int size = f.size();
       if (size > 0) {
+        if (fPlusReversed) {
+          f = f.reverse(F.NIL);
+        }
         precedenceOpen(buffer, precedence);
         final Times timesConverter = new Times();
         timesConverter.setFactory(fFactory);
@@ -1244,6 +1248,8 @@ public class TeXFormFactory {
 
   public static final boolean USE_IDENTIFIERS = false;
 
+  private final boolean fPlusReversed;
+
   private boolean useSignificantFigures = false;
 
   private int exponentFigures;
@@ -1273,11 +1279,43 @@ public class TeXFormFactory {
    *        conversion. <code>\cdot</code> is used as the default operator
    */
   public TeXFormFactory(int exponentFigures, int significantFigures, String timesOperator) {
-    this(exponentFigures, significantFigures, new TexFormSymbolOptions());
+    this(false, exponentFigures, significantFigures, timesOperator);
+  }
+
+  /**
+   * @param plusReversed if <code>true</code> print {@link S#Plus} expressions in reversed order
+   * @param exponentFigures
+   * @param significantFigures
+   * @param timesOperator timesOperator the current operator which will be used for {@link S#Times}
+   *        conversion. <code>\cdot</code> is used as the default operator
+   */
+  public TeXFormFactory(final boolean plusReversed, int exponentFigures, int significantFigures,
+      String timesOperator) {
+    this(plusReversed, exponentFigures, significantFigures, new TexFormSymbolOptions());
     this.symbolOptions.setTimesSymbol(timesOperator);
   }
 
-  public TeXFormFactory(int exponentFigures, int significantFigures, TexFormSymbolOptions symbolOptions) {
+  /**
+   * 
+   * @param exponentFigures
+   * @param significantFigures
+   * @param symbolOptions
+   */
+  public TeXFormFactory(int exponentFigures, int significantFigures,
+      TexFormSymbolOptions symbolOptions) {
+    this(false, exponentFigures, significantFigures, symbolOptions);
+  }
+
+  /**
+   * 
+   * @param plusReversed if <code>true</code> print {@link S#Plus} expressions in reversed order
+   * @param exponentFigures
+   * @param significantFigures
+   * @param symbolOptions
+   */
+  public TeXFormFactory(final boolean plusReversed, int exponentFigures, int significantFigures,
+      TexFormSymbolOptions symbolOptions) {
+    this.fPlusReversed = plusReversed;
     this.exponentFigures = exponentFigures;
     this.significantFigures = significantFigures;
     this.symbolOptions = symbolOptions;
@@ -1293,7 +1331,7 @@ public class TeXFormFactory {
   }
 
   public void convertApcomplex(final StringBuilder buf, final Apcomplex dc, final int precedence,
-                               boolean caller) {
+      boolean caller) {
     if (Precedence.PLUS < precedence) {
       if (caller == PLUS_CALL) {
         buf.append(" + ");
@@ -2112,7 +2150,8 @@ public class TeXFormFactory {
     initTeXConverter(S.Increment, new PostOperator(this, Precedence.INCREMENT, "\\text{++}"));
     initTeXConverter(S.Alternatives,
         new TeXFormOperator(this, Precedence.ALTERNATIVES, "\\text{|}"));
-    initTeXConverter(S.Equal, new TeXFormOperator(this, Precedence.EQUAL, this.symbolOptions.getEqualSymbol()));
+    initTeXConverter(S.Equal,
+        new TeXFormOperator(this, Precedence.EQUAL, this.symbolOptions.getEqualSymbol()));
     initTeXConverter(S.DirectedEdge, new TeXFormOperator(this, Precedence.DIRECTEDEDGE, "\\to "));
     initTeXConverter(S.Divide, new TeXFormOperator(this, Precedence.DIVIDE, "\\text{/}"));
     initTeXConverter(S.Apply, new TeXFormOperator(this, Precedence.APPLY, "\\text{@@}"));
