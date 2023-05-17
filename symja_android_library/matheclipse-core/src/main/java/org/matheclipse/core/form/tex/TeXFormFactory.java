@@ -192,12 +192,12 @@ public class TeXFormFactory {
           }
           arg2 = arg2.first();
         }
-        buffer.append("\\frac{\\partial ");
+        buffer.append("\\frac{" + fFactory.symbolOptions.getDerivativeSymbol() + " ");
         if (n > 1) {
           buffer.append("^" + n + " ");
         }
         fFactory.convertInternal(buffer, f.arg1(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
-        buffer.append("}{\\partial ");
+        buffer.append("}{" + fFactory.symbolOptions.getDerivativeSymbol() + " ");
         fFactory.convertInternal(buffer, arg2, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
         if (n > 1) {
           buffer.append("^" + n);
@@ -1116,7 +1116,7 @@ public class TeXFormFactory {
         final IExpr fraction = parts[2];
         if (fraction != null) {
           fFactory.convertNumber(buf, fraction, Precedence.PLUS, caller);
-          buf.append(fFactory.timesOperator);
+          buf.append(fFactory.symbolOptions.getTimesSymbol());
           caller = NO_PLUS_CALL;
         }
         if (isNegative) {
@@ -1191,7 +1191,7 @@ public class TeXFormFactory {
       }
       for (int i = 2; i < size; i++) {
         if (showOperator) {
-          buf.append(fFactory.timesOperator);
+          buf.append(fFactory.symbolOptions.getTimesSymbol());
         } else {
           showOperator = true;
         }
@@ -1250,19 +1250,15 @@ public class TeXFormFactory {
 
   private int significantFigures;
 
-  /**
-   * The current operator which will be used for {@link S#Times} conversion. <code>\cdot</code> isa
-   * used as the default operator.
-   */
-  private final String timesOperator;
+  private TexFormSymbolOptions symbolOptions = new TexFormSymbolOptions();
 
   public TeXFormFactory() {
     this(" \\cdot ");
   }
 
   /**
-   * 
-   * 
+   *
+   *
    * @param timesOperator the current operator which will be used for {@link S#Times} conversion.
    *        <code>\cdot</code> isa used as the default operator
    */
@@ -1277,14 +1273,27 @@ public class TeXFormFactory {
    *        conversion. <code>\cdot</code> is used as the default operator
    */
   public TeXFormFactory(int exponentFigures, int significantFigures, String timesOperator) {
+    this(exponentFigures, significantFigures, new TexFormSymbolOptions());
+    this.symbolOptions.setTimesSymbol(timesOperator);
+  }
+
+  public TeXFormFactory(int exponentFigures, int significantFigures, TexFormSymbolOptions symbolOptions) {
     this.exponentFigures = exponentFigures;
     this.significantFigures = significantFigures;
-    this.timesOperator = timesOperator;
+    this.symbolOptions = symbolOptions;
     init();
   }
 
+  public TexFormSymbolOptions getSymbolOptions() {
+    return symbolOptions;
+  }
+
+  public void setSymbolOptions(TexFormSymbolOptions symbolOptions) {
+    this.symbolOptions = symbolOptions;
+  }
+
   public void convertApcomplex(final StringBuilder buf, final Apcomplex dc, final int precedence,
-      boolean caller) {
+                               boolean caller) {
     if (Precedence.PLUS < precedence) {
       if (caller == PLUS_CALL) {
         buf.append(" + ");
@@ -1339,7 +1348,7 @@ public class TeXFormFactory {
   /**
    * Convert the <code>expression</code> into a LaTeX math string representation and appedn it to
    * the <code>buffer</code>.
-   * 
+   *
    * @param buffer the buffer, to which the TeX string will be appended
    * @param expression the expression which should be converted to a TeX string
    * @return <code>false</code> if the conversion couldn't be terminated
@@ -1349,7 +1358,7 @@ public class TeXFormFactory {
   }
 
   /**
-   * 
+   *
    * @param buffer the buffer, to which the TeX string will be appended
    * @param expression the expression which should be converted to a TeX string
    * @param precedence the precedence of the &quot;calling operator&quot;
@@ -1659,7 +1668,7 @@ public class TeXFormFactory {
         int id = ((IBuiltInSymbol) head).ordinal();
         switch (id) {
           case ID.Equal:
-            tempBuffer.append(" == ");
+            tempBuffer.append(this.symbolOptions.getEqualSymbol());
             break;
           case ID.Greater:
             tempBuffer.append(" > ");
@@ -1949,7 +1958,7 @@ public class TeXFormFactory {
     if (EvalEngine.get().getContextPath().contains(context)) {
       buf.append(sym.getSymbolName());
     } else {
-      buf.append(context.toString() + sym.getSymbolName());
+      buf.append(context + sym.getSymbolName());
     }
   }
 
@@ -1964,7 +1973,7 @@ public class TeXFormFactory {
       ((Operator) convertedSymbol).convert(buf);
       return;
     }
-    buf.append(convertedSymbol.toString());
+    buf.append(convertedSymbol);
   }
 
   private void init() {
@@ -2103,7 +2112,7 @@ public class TeXFormFactory {
     initTeXConverter(S.Increment, new PostOperator(this, Precedence.INCREMENT, "\\text{++}"));
     initTeXConverter(S.Alternatives,
         new TeXFormOperator(this, Precedence.ALTERNATIVES, "\\text{|}"));
-    initTeXConverter(S.Equal, new TeXFormOperator(this, Precedence.EQUAL, " == "));
+    initTeXConverter(S.Equal, new TeXFormOperator(this, Precedence.EQUAL, this.symbolOptions.getEqualSymbol()));
     initTeXConverter(S.DirectedEdge, new TeXFormOperator(this, Precedence.DIRECTEDEDGE, "\\to "));
     initTeXConverter(S.Divide, new TeXFormOperator(this, Precedence.DIVIDE, "\\text{/}"));
     initTeXConverter(S.Apply, new TeXFormOperator(this, Precedence.APPLY, "\\text{@@}"));
@@ -2161,7 +2170,7 @@ public class TeXFormFactory {
     initTeXConverter(S.Cot, new TeXFunction(this, "cot "));
     initTeXConverter(S.Coth, new TeXFunction(this, "coth "));
     initTeXConverter(S.Csc, new TeXFunction(this, "csc "));
-    initTeXConverter(S.Log, new TeXFunction(this, "log "));
+    initTeXConverter(S.Log, new TeXFunction(this, symbolOptions.getLogFunction()));
     initTeXConverter(S.LogisticSigmoid, new TeXFunction(this, "sigma "));
     initTeXConverter(S.Sec, new TeXFunction(this, "sec "));
     initTeXConverter(S.Sin, new TeXFunction(this, "sin "));
