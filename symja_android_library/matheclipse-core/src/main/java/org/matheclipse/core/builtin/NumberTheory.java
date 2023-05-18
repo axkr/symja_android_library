@@ -2592,7 +2592,7 @@ public final class NumberTheory {
    * {{2, 1}, {3, 1}, {5, 1}, {67, 1}, {2011, -1}}
    * </pre>
    */
-  private static class FactorInteger extends AbstractEvaluator {
+  public static class FactorInteger extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
