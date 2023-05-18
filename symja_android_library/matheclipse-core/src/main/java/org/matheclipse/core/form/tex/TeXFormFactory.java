@@ -1416,18 +1416,17 @@ public class TeXFormFactory {
     return false;
   }
 
-  void convertInternal(final StringBuilder buf, final IExpr o, final int precedence,
+  void convertInternal(final StringBuilder buf, final IExpr expr, final int precedence,
       boolean caller) {
-    if (o instanceof IExpr) {
-      IExpr expr = o;
-      String str = CONSTANT_EXPRS.get(expr);
-      if (str != null) {
-        buf.append(str);
-        return;
-      }
+
+    String str = CONSTANT_EXPRS.get(expr);
+    if (str != null) {
+      buf.append(str);
+      return;
     }
-    if (o instanceof IAST) {
-      final IAST f = ((IAST) o);
+
+    if (expr instanceof IAST) {
+      final IAST f = (IAST) expr;
       IExpr h = f.head();
       if (h.isSymbol()) {
         final AbstractTeXConverter converter = symbolToConverterMap.get((h));
@@ -1441,18 +1440,14 @@ public class TeXFormFactory {
       convertAST(buf, f, precedence);
       return;
     }
-    if (convertNumber(buf, o, precedence, caller)) {
+    if (convertNumber(buf, expr, precedence, caller)) {
       return;
     }
-    if (o instanceof ISymbol) {
-      convertSymbol(buf, (ISymbol) o);
+    if (expr instanceof ISymbol) {
+      convertSymbol(buf, (ISymbol) expr);
       return;
     }
-    // if (o instanceof BigFraction) {
-    // convertFraction(buf, (BigFraction) o, precedence);
-    // return;
-    // }
-    convertString(buf, o.toString());
+    convertString(buf, expr.toString());
   }
 
   private boolean convertNumber(final StringBuilder buf, final Object o, final int precedence,

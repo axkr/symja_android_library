@@ -2454,7 +2454,7 @@ public final class ListFunctions {
         }
       } catch (ValidateException ve) {
         return IOFunctions.printMessage(ast.topHead(), ve, engine);
-      } catch (IndexOutOfBoundsException | NullPointerException e) {
+      } catch (IndexOutOfBoundsException e) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
       }
       return F.NIL;

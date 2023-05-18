@@ -11,8 +11,8 @@ public class ListLogLogPlot extends ListPlot {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
-    graphicsOptions.setXFunction(x -> F.Log10(x));
-    graphicsOptions.setYFunction(y -> F.Log10(y));
+    graphicsOptions.setXFunction(x -> F.Log(x));
+    graphicsOptions.setYFunction(y -> F.Log(y));
     graphicsOptions.setXScale("Log10");
     graphicsOptions.setYScale("Log10");
     IAST graphicsPrimitives = listPlot(ast, graphicsOptions, engine);

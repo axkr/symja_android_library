@@ -205,38 +205,36 @@ public final class BooleanFunctions {
     }
 
     public Variable[] ast2Variable(final IAST listOfSymbols) {
-      if (listOfSymbols instanceof IAST) {
-        Variable[] result = new Variable[listOfSymbols.argSize()];
-        for (int i = 1; i < listOfSymbols.size(); i++) {
-          final IExpr arg = listOfSymbols.get(i);
-          if (arg.isSymbol()) {
-            ISymbol symbol = (ISymbol) arg;
-            if (symbol.isFalse() || symbol.isTrue()) {
-              // `1` is not a valid variable.
-              String str = IOFunctions.getMessage("ivar", F.list(symbol), EvalEngine.get());
-              throw new ArgumentTypeException(str);
-            }
-            Variable v = symbol2variableMap.get(symbol);
-            if (v == null) {
-              final Variable value = factory.variable(symbol.getSymbolName());
-              symbol2variableMap.put(symbol, value);
-              variable2symbolMap.put(value, symbol);
-              result[i - 1] = value;
-            } else {
-              result[i - 1] = v;
-            }
-          } else {
+      Variable[] result = new Variable[listOfSymbols.argSize()];
+      for (int i = 1; i < listOfSymbols.size(); i++) {
+        final IExpr arg = listOfSymbols.get(i);
+        if (arg.isSymbol()) {
+          ISymbol symbol = (ISymbol) arg;
+          if (symbol.isFalse() || symbol.isTrue()) {
             // `1` is not a valid variable.
-            String str = IOFunctions.getMessage("ivar", F.list(arg), EvalEngine.get());
+            String str = IOFunctions.getMessage("ivar", F.list(symbol), EvalEngine.get());
             throw new ArgumentTypeException(str);
           }
+          Variable v = symbol2variableMap.get(symbol);
+          if (v == null) {
+            final Variable value = factory.variable(symbol.getSymbolName());
+            symbol2variableMap.put(symbol, value);
+            variable2symbolMap.put(value, symbol);
+            result[i - 1] = value;
+          } else {
+            result[i - 1] = v;
+          }
+        } else {
+          // `1` is not a valid variable.
+          String str = IOFunctions.getMessage("ivar", F.list(arg), EvalEngine.get());
+          throw new ArgumentTypeException(str);
         }
-        return result;
       }
+      return result;
 
-      // `1` is not a valid variable.
-      String str = IOFunctions.getMessage("ivar", F.list(listOfSymbols), EvalEngine.get());
-      throw new ArgumentTypeException(str);
+      // // `1` is not a valid variable.
+      // String str = IOFunctions.getMessage("ivar", F.list(listOfSymbols), EvalEngine.get());
+      // throw new ArgumentTypeException(str);
     }
 
     /**
@@ -2993,7 +2991,7 @@ public final class BooleanFunctions {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IASTMutable copy = ast.setAtCopy(0, getDummySymbol());
       IExpr dummyEvaled = engine.evaluate(copy);
-      if (dummyEvaled.isAST(getDummySymbol()) && copy instanceof IASTMutable) {
+      if (dummyEvaled.isAST(getDummySymbol())) {
         copy = (IASTMutable) dummyEvaled;
         copy.set(0, S.Max);
         ast = copy;
@@ -3150,7 +3148,7 @@ public final class BooleanFunctions {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IASTMutable copy = ast.setAtCopy(0, getDummySymbol());
       IExpr dummyEvaled = engine.evaluate(copy);
-      if (dummyEvaled.isAST(getDummySymbol()) && copy instanceof IASTMutable) {
+      if (dummyEvaled.isAST(getDummySymbol())) {
         copy = (IASTMutable) dummyEvaled;
         copy.set(0, S.Min);
         ast = copy;

@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.Function;
 import org.matheclipse.core.eval.EvalEngine;
@@ -51,21 +52,43 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
 
   private static class ReferenceCounter implements Comparable<ReferenceCounter> {
     IASTMutable reference;
+
     int counter;
+
 
     public ReferenceCounter(IASTMutable reference) {
       this.reference = reference;
       counter = 1;
     }
 
-    public void incCounter() {
-      ++counter;
-    }
-
     @Override
     public int compareTo(ReferenceCounter o) {
       return counter > o.counter ? 1 : counter == o.counter ? 0 : -1;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj)
+        return true;
+      if (obj == null)
+        return false;
+      if (getClass() != obj.getClass())
+        return false;
+      ReferenceCounter other = (ReferenceCounter) obj;
+      return counter == other.counter;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(counter);
+    }
+
+
+    public void incCounter() {
+      ++counter;
+    }
+
+
   }
 
   private static class ShareFunction implements Function<IASTMutable, IASTMutable> {
@@ -138,19 +161,28 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
     }
   }
 
-  public OptimizeExpression() {}
+  public static IAST cseArray(final IAST ast, int minReferences, int minLeafCounter) {
+    ShareFunction function = new ShareFunction();
+    ShareReplaceAll sra = new ShareReplaceAll(function);
+    IExpr sharedExpr = ast.accept(sra);
+    if (sharedExpr.isPresent()) {
+      ArrayList<ReferenceCounter> list = new ArrayList<ReferenceCounter>();
+      for (Map.Entry<IASTMutable, ReferenceCounter> entry : function.map.entrySet()) {
+        ReferenceCounter rc = entry.getValue();
+        if (rc.counter >= minReferences && rc.reference.leafCount() > minLeafCounter) {
+          list.add(rc);
+        }
+      }
 
-  @Override
-  public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    if (ast.arg1() instanceof IASTMutable) {
-      return optimizeExpression((IASTMutable) ast.arg1());
+      Collections.sort(list, Collections.reverseOrder());
+      IASTAppendable result = F.ListAlloc(list.size());
+      for (ReferenceCounter rc : list) {
+        IASTMutable ref = rc.reference;
+        result.append(ref);
+      }
+      return result;
     }
     return F.NIL;
-  }
-
-  @Override
-  public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_1_1;
   }
 
   /**
@@ -193,27 +225,18 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
     return F.list(ast);
   }
 
-  public static IAST cseArray(final IAST ast, int minReferences, int minLeafCounter) {
-    ShareFunction function = new ShareFunction();
-    ShareReplaceAll sra = new ShareReplaceAll(function);
-    IExpr sharedExpr = ast.accept(sra);
-    if (sharedExpr.isPresent()) {
-      ArrayList<ReferenceCounter> list = new ArrayList<ReferenceCounter>();
-      for (Map.Entry<IASTMutable, ReferenceCounter> entry : function.map.entrySet()) {
-        ReferenceCounter rc = entry.getValue();
-        if (rc.counter >= minReferences && rc.reference.leafCount() > minLeafCounter) {
-          list.add(rc);
-        }
-      }
+  public OptimizeExpression() {}
 
-      Collections.sort(list, Collections.reverseOrder());
-      IASTAppendable result = F.ListAlloc(list.size());
-      for (ReferenceCounter rc : list) {
-        IASTMutable ref = rc.reference;
-        result.append(ref);
-      }
-      return result;
+  @Override
+  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    if (ast.arg1() instanceof IASTMutable) {
+      return optimizeExpression((IASTMutable) ast.arg1());
     }
     return F.NIL;
+  }
+
+  @Override
+  public int[] expectedArgSize(IAST ast) {
+    return IFunctionEvaluator.ARGS_1_1;
   }
 }

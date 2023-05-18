@@ -2483,44 +2483,26 @@ public class GraphFunctions {
    * @return <code>null</code> if no eulerian cycle can be created
    */
   private static GraphPath<IExpr, ?> eulerianCycle(GraphExpr<?> gex) {
-    if (gex.isWeightedGraph()) {
-      Graph<IExpr, ExprWeightedEdge> g = (Graph<IExpr, ExprWeightedEdge>) gex.toData();
-      EulerianCycleAlgorithm<IExpr, ExprWeightedEdge> eca = new HierholzerEulerianCycle<>();
-      try {
-        return eca.getEulerianCycle(g);
-      } catch (IllegalArgumentException iae) {
-        // Graph is not Eulerian
-      }
-    } else {
-      Graph<IExpr, ExprEdge> g = (Graph<IExpr, ExprEdge>) gex.toData();
-      EulerianCycleAlgorithm<IExpr, ExprEdge> eca = new HierholzerEulerianCycle<>();
-      try {
-        return eca.getEulerianCycle(g);
-      } catch (IllegalArgumentException iae) {
-        // Graph is not Eulerian
-      }
+    Graph<IExpr, IExprEdge> g = (Graph<IExpr, IExprEdge>) gex.toData();
+    EulerianCycleAlgorithm<IExpr, IExprEdge> eca = new HierholzerEulerianCycle<>();
+    try {
+      return eca.getEulerianCycle(g);
+    } catch (IllegalArgumentException iae) {
+      // Graph is not Eulerian
     }
     return null;
   }
 
   private static GraphPath<IExpr, ?> hamiltonianCycle(GraphExpr<?> gex) {
-    if (gex.isWeightedGraph()) {
-      Graph<IExpr, ExprWeightedEdge> g = (Graph<IExpr, ExprWeightedEdge>) gex.toData();
-      HamiltonianCycleAlgorithm<IExpr, ExprWeightedEdge> eca = new HeldKarpTSP<>();
-      try {
-        return eca.getTour(g);
-      } catch (IllegalArgumentException iae) {
-        // Graph is not Hamiltonian
-      }
-    } else {
-      Graph<IExpr, ExprEdge> g = (Graph<IExpr, ExprEdge>) gex.toData();
-      HamiltonianCycleAlgorithm<IExpr, ExprEdge> eca = new HeldKarpTSP<>();
-      try {
-        return eca.getTour(g);
-      } catch (IllegalArgumentException iae) {
-        // Graph is not Hamiltonian
-      }
+
+    Graph<IExpr, IExprEdge> g = (Graph<IExpr, IExprEdge>) gex.toData();
+    HamiltonianCycleAlgorithm<IExpr, IExprEdge> eca = new HeldKarpTSP<>();
+    try {
+      return eca.getTour(g);
+    } catch (IllegalArgumentException iae) {
+      // Graph is not Hamiltonian
     }
+
     return null;
   }
 

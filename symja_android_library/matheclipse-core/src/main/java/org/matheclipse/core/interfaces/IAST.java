@@ -723,7 +723,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
   /** {@inheritDoc} */
   @Override
   default IExpr first() {
-    if (this instanceof IAST && size() < 2) {
+    if (size() < 2) {
       return F.NIL;
     }
     return arg1();

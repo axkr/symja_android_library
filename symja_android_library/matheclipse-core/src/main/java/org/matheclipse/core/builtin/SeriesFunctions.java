@@ -225,7 +225,7 @@ public class SeriesFunctions {
      * Evaluate the limit for the given limit data.
      *
      * @param expr
-     * @param data   the limits data definition
+     * @param data the limits data definition
      * @param engine
      * @return
      */
@@ -392,11 +392,12 @@ public class SeriesFunctions {
      *
      * @param numerator
      * @param denominator
-     * @param data        the limits data definition
+     * @param data the limits data definition
      * @param engine
      * @return
      */
-    private static IExpr lHospitalesRule(IExpr numerator, IExpr denominator, LimitData data, EvalEngine engine) {
+    private static IExpr lHospitalesRule(IExpr numerator, IExpr denominator, LimitData data,
+        EvalEngine engine) {
       final ISymbol x = data.variable();
       int recursionLimit = engine.getRecursionLimit();
       try {
@@ -517,12 +518,12 @@ public class SeriesFunctions {
      *
      * @param numerator
      * @param denominator
-     * @param data        the limit data definition
+     * @param data the limit data definition
      * @param engine
      * @return <code>F.NIL</code> if no limit found
      */
     private static IExpr numeratorDenominatorLimit(IExpr numerator, IExpr denominator,
-                                                   LimitData data, EvalEngine engine) {
+        LimitData data, EvalEngine engine) {
       IExpr numValue;
       IExpr denValue;
       IExpr limitValue = data.limitValue();
@@ -760,7 +761,7 @@ public class SeriesFunctions {
      * </code> or <code>-Infinity</code>, <code>y</code> approaches <code>0</code>.
      *
      * @param arg1
-     * @param data   (the datas limit must be Infinity or -Infinity)
+     * @param data (the datas limit must be Infinity or -Infinity)
      * @param engine
      * @return <code>F.NIL</code> if the substitution didn't succeed.
      */
@@ -1895,26 +1896,19 @@ public class SeriesFunctions {
       }
     }
     ASTSeriesData series = null;
-    IExpr arg;
+    ASTSeriesData arg;
     int start = 1;
     if (temp != null) {
       series = temp;
     } else {
       arg = seriesDataRecursive(rest.arg1(), x, x0, n, engine);
-      if (arg instanceof ASTSeriesData) {
-        series = (ASTSeriesData) arg;
-        start = 2;
-      }
+      series = arg;
+      start = 2;
     }
     if (series != null) {
       for (int i = start; i < rest.size(); i++) {
         arg = seriesDataRecursive(rest.get(i), x, x0, n, engine);
-        if (arg instanceof ASTSeriesData) {
-          series = series.plusPS((ASTSeriesData) arg);
-        } else {
-          series = null;
-          break;
-        }
+        series = series.plusPS(arg);
       }
       if (series != null) {
         return series;
@@ -1957,9 +1951,7 @@ public class SeriesFunctions {
     int exp = exponent.toIntDefault();
     if (exp != Integer.MIN_VALUE) {
       ASTSeriesData series = seriesDataRecursive(base, x, x0, n, engine);
-      if (series instanceof ASTSeriesData) {
-        return series.powerSeries(exp);
-      }
+      return series.powerSeries(exp);
     }
     return null;
   }

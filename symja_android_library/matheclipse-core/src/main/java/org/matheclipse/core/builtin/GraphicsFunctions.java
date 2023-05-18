@@ -633,7 +633,7 @@ public class GraphicsFunctions {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST(S.Graphics3D)) {
         StringBuilder graphics3DBuffer = new StringBuilder();
-        if (renderGraphics3D(graphics3DBuffer, (IAST) arg1, false, true, engine)) {
+        if (renderGraphics3D(graphics3DBuffer, (IAST) arg1, false, engine)) {
           return F.stringx(graphics3DBuffer.toString(), IStringX.TEXT_JSON);
         }
       }
@@ -1870,7 +1870,7 @@ public class GraphicsFunctions {
   }
 
   private static boolean graphics3DJSON(StringBuilder graphics3DBuffer, IExpr lighting,
-      IExpr data3D, boolean javaScript, boolean prettyPrint) {
+      IExpr data3D, boolean javaScript) {
     ObjectNode json = JSON_OBJECT_MAPPER.createObjectNode();
     ArrayNode arrayNode = JSON_OBJECT_MAPPER.createArrayNode();
     if (GraphicsFunctions.exportGraphics3DRecursive(arrayNode, (IAST) data3D)) {
@@ -1885,11 +1885,7 @@ public class GraphicsFunctions {
         vp.add(-2.4);
         vp.add(2.0);
         json.set("viewpoint", vp);
-        if (prettyPrint) {
-          graphics3DBuffer.append(json.toString());
-        } else {
-          graphics3DBuffer.append(json.toString());
-        }
+        graphics3DBuffer.append(json.toString());
         // graphics3DBuffer.append("{");
         // graphics3DBuffer.append("\naxes: {},");
         // graphics3DBuffer.append("\nelements: [");
@@ -2122,11 +2118,11 @@ public class GraphicsFunctions {
 
   public static boolean renderGraphics3D(StringBuilder graphics3DBuffer, IAST graphics3DAST,
       EvalEngine engine) {
-    return renderGraphics3D(graphics3DBuffer, graphics3DAST, true, false, engine);
+    return renderGraphics3D(graphics3DBuffer, graphics3DAST, true, engine);
   }
 
   public static boolean renderGraphics3D(StringBuilder graphics3DBuffer, IAST graphics3DAST,
-      boolean javaScript, boolean prettyPrint, EvalEngine engine) {
+      boolean javaScript, EvalEngine engine) {
     IExpr arg1 = graphics3DAST.first();
     if (!arg1.isList()) {
       arg1 = F.list(arg1);
@@ -2142,7 +2138,7 @@ public class GraphicsFunctions {
     }
 
     if (arg1.isAST() && arg1.head().isBuiltInSymbol()
-        && graphics3DJSON(graphics3DBuffer, lighting, arg1, javaScript, prettyPrint)) {
+        && graphics3DJSON(graphics3DBuffer, lighting, arg1, javaScript)) {
       return true;
     }
     return false;

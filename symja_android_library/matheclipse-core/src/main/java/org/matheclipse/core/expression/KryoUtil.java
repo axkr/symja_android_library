@@ -123,10 +123,8 @@ public class KryoUtil {
     }
 
     @Override
-    public void write(Kryo kryo, Output stream, BuiltInRubi object) {
-      if (object instanceof BuiltInRubi) {
-        stream.writeString(object.getSymbolName());
-      }
+    public void write(Kryo kryo, Output stream, BuiltInRubi rubISymbol) {
+      stream.writeString(rubISymbol.getSymbolName());
     }
 
     @Override
@@ -143,19 +141,16 @@ public class KryoUtil {
   private static class ContextSerializer extends Serializer<Context> {
 
     @Override
-    public void write(Kryo kryo, Output stream, Context object) {
-      if (object instanceof Context) {
-        Context context = object;
-        stream.writeString(context.getContextName());
-        Set<Entry<String, ISymbol>> entrySet = context.entrySet();
-        stream.writeInt(entrySet.size());
-        for (Entry<String, ISymbol> entry : entrySet) {
-          stream.writeString(entry.getKey());
-          kryo.writeClassAndObject(stream, entry.getValue());
-        }
-        for (Entry<String, ISymbol> entry : entrySet) {
-          kryo.writeClassAndObject(stream, entry.getValue().getRulesData());
-        }
+    public void write(Kryo kryo, Output stream, Context context) {
+      stream.writeString(context.getContextName());
+      Set<Entry<String, ISymbol>> entrySet = context.entrySet();
+      stream.writeInt(entrySet.size());
+      for (Entry<String, ISymbol> entry : entrySet) {
+        stream.writeString(entry.getKey());
+        kryo.writeClassAndObject(stream, entry.getValue());
+      }
+      for (Entry<String, ISymbol> entry : entrySet) {
+        kryo.writeClassAndObject(stream, entry.getValue().getRulesData());
       }
     }
 
@@ -216,54 +211,52 @@ public class KryoUtil {
   private static class IASTSerializer extends Serializer<IAST> {
 
     @Override
-    public void write(Kryo kryo, Output stream, IAST object) {
-      if (object instanceof IAST) {
-        IAST ast = object;
-        if (ast instanceof ASTRealVector) {
-          RealVector vector = ((ASTRealVector) ast).getRealVector();
-          stream.writeInt(WXF_CONSTANTS.PackedArray);
-          stream.write(NumericArrayExpr.Real64);
-          stream.write(0x01);
-          stream.write(varintBytes(vector.getDimension()));
-          for (int i = 0; i < vector.getDimension(); i++) {
-            writeDouble(stream, vector.getEntry(i));
-          }
-          return;
-        } else if (ast instanceof ASTRealMatrix) {
-          RealMatrix matrix = ((ASTRealMatrix) ast).getRealMatrix();
-          stream.writeInt(WXF_CONSTANTS.PackedArray);
-          stream.write(NumericArrayExpr.Real64);
-          stream.write(0x02);
-          stream.write(varintBytes(matrix.getRowDimension()));
-          stream.write(varintBytes(matrix.getColumnDimension()));
-          for (int i = 0; i < matrix.getRowDimension(); i++) {
-            for (int j = 0; j < matrix.getColumnDimension(); j++) {
-              writeDouble(stream, matrix.getEntry(i, j));
-            }
-          }
-          return;
-        } else if (ast instanceof ASTAssociation) {
-          // <|a->b, c:>d,...|>
-          stream.writeInt(WXF_CONSTANTS.Association);
-          stream.write(varintBytes(ast.argSize()));
-          for (int i = 1; i < ast.size(); i++) {
-            IAST rule = (IAST) ast.getRule(i);
-            if (rule.isRuleDelayed()) {
-              stream.write(WXF_CONSTANTS.RuleDelayed);
-            } else {
-              stream.write(WXF_CONSTANTS.Rule);
-            }
-            kryo.writeObject(stream, rule.arg1());
-            kryo.writeObject(stream, rule.arg2());
-          }
-          return;
+    public void write(Kryo kryo, Output stream, IAST ast) {
+      if (ast instanceof ASTRealVector) {
+        RealVector vector = ((ASTRealVector) ast).getRealVector();
+        stream.writeInt(WXF_CONSTANTS.PackedArray);
+        stream.write(NumericArrayExpr.Real64);
+        stream.write(0x01);
+        stream.write(varintBytes(vector.getDimension()));
+        for (int i = 0; i < vector.getDimension(); i++) {
+          writeDouble(stream, vector.getEntry(i));
         }
-        stream.writeInt(WXF_CONSTANTS.Function);
-        stream.writeInt(ast.argSize());
-        for (int i = 0; i < ast.size(); i++) {
-          kryo.writeClassAndObject(stream, ast.get(i));
+        return;
+      } else if (ast instanceof ASTRealMatrix) {
+        RealMatrix matrix = ((ASTRealMatrix) ast).getRealMatrix();
+        stream.writeInt(WXF_CONSTANTS.PackedArray);
+        stream.write(NumericArrayExpr.Real64);
+        stream.write(0x02);
+        stream.write(varintBytes(matrix.getRowDimension()));
+        stream.write(varintBytes(matrix.getColumnDimension()));
+        for (int i = 0; i < matrix.getRowDimension(); i++) {
+          for (int j = 0; j < matrix.getColumnDimension(); j++) {
+            writeDouble(stream, matrix.getEntry(i, j));
+          }
         }
+        return;
+      } else if (ast instanceof ASTAssociation) {
+        // <|a->b, c:>d,...|>
+        stream.writeInt(WXF_CONSTANTS.Association);
+        stream.write(varintBytes(ast.argSize()));
+        for (int i = 1; i < ast.size(); i++) {
+          IAST rule = (IAST) ast.getRule(i);
+          if (rule.isRuleDelayed()) {
+            stream.write(WXF_CONSTANTS.RuleDelayed);
+          } else {
+            stream.write(WXF_CONSTANTS.Rule);
+          }
+          kryo.writeObject(stream, rule.arg1());
+          kryo.writeObject(stream, rule.arg2());
+        }
+        return;
       }
+      stream.writeInt(WXF_CONSTANTS.Function);
+      stream.writeInt(ast.argSize());
+      for (int i = 0; i < ast.size(); i++) {
+        kryo.writeClassAndObject(stream, ast.get(i));
+      }
+
     }
 
     private void writeDouble(Output stream, double d) {
