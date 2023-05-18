@@ -3211,24 +3211,7 @@ public final class Arithmetic {
             ast = temp;
           }
         }
-
-        PlusOp plusOp = new PlusOp(size);
-        IExpr temp = ast.findFirst(x -> plusOp.plus(x));
-        if (temp.isPresent()) {
-          return temp;
-        }
-        if (plusOp.isEvaled()) {
-          return plusOp.getSum();
-        }
-
-        if (!engine.isNumericMode()) {
-          temp = evaluateHashsRepeated(ast, engine);
-          if (temp.isAST(S.Plus, 2)) {
-            return temp.first();
-          }
-          return temp;
-        }
-        return F.NIL;
+        return evaluatePlusOp(ast, engine);
       } else {
         if (size == 1) {
           if (ast.head() == S.Plus) {
@@ -3245,6 +3228,26 @@ public final class Arithmetic {
       }
       if (engine.isSymbolicMode(S.Plus.getAttributes())) {
         ast.addEvalFlags(IAST.BUILT_IN_EVALED);
+      }
+      return F.NIL;
+    }
+
+    protected IExpr evaluatePlusOp(IAST ast, EvalEngine engine) {
+      PlusOp plusOp = new PlusOp(ast.size());
+      IExpr temp = ast.findFirst(x -> plusOp.plus(x));
+      if (temp.isPresent()) {
+        return temp;
+      }
+      if (plusOp.isEvaled()) {
+        return plusOp.getSum();
+      }
+
+      if (!engine.isNumericMode()) {
+        temp = evaluateHashsRepeated(ast, engine);
+        if (temp.isAST(S.Plus, 2)) {
+          return temp.first();
+        }
+        return temp;
       }
       return F.NIL;
     }
@@ -3790,7 +3793,7 @@ public final class Arithmetic {
       return F.NIL;
     }
 
-    public static IExpr binaryOperator(IAST ast, final IExpr base, final IExpr exponent,
+    public IExpr binaryOperator(IAST ast, final IExpr base, final IExpr exponent,
         EvalEngine engine) {
       try {
         if (base.isInexactNumber() && exponent.isInexactNumber()) {
@@ -6607,17 +6610,16 @@ public final class Arithmetic {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      int size = ast.size();
+      final int size = ast.size();
       if (size == 1) {
         if (ast.head() == S.Times) {
           return F.C1;
         }
         return F.NIL;
       }
-      IExpr arg1 = ast.arg1();
       if (size == 2) {
         // OneIdentity ?
-        return (ast.head() == S.Times) ? arg1 : F.NIL;
+        return (ast.head() == S.Times) ? ast.arg1() : F.NIL;
       }
       if (size > 2 && !engine.isNumericMode()) {
         IAST temp = evaluateHashsRepeated(ast, engine);
@@ -6630,9 +6632,15 @@ public final class Arithmetic {
         if (temp.isPresent()) {
           // reassign because of resorted arguments
           ast = temp;
-          arg1 = ast.arg1();
         }
       }
+
+      return evaluateTimesOp(ast, engine);
+    }
+
+    protected IExpr evaluateTimesOp(IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      int size = ast.size();
       if (size == 3) {
         // if ((ast1.arg1().isNumeric() || ast1.arg1().isOne() || ast1.arg1().isMinusOne())
         if ((arg1.isOne() || arg1.isMinusOne()) && ast.arg2().isPlus()) {

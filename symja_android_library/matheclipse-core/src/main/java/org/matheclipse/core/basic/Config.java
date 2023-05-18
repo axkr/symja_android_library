@@ -65,6 +65,12 @@ public class Config {
   public static String SYSTEM_CHARACTER_ENCODING = "UTF-8";
 
   /**
+   * if {@link EvalEngine#isTraceMode()} is <code>true</code> and this configuration setting is also
+   * true, trace some basic arithmetic steps.
+   */
+  public static boolean TRACE_BASIC_ARITHMETIC = false;
+
+  /**
    * <p>
    * A global expression cache which compares keys with <code>==</code> object identity instead of
    * <code>equals()</code>. The keys and values are weak references.

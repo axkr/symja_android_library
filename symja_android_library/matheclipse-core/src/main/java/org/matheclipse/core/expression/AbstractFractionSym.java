@@ -119,8 +119,17 @@ public abstract class AbstractFractionSym implements IFraction {
         if (denominator < 0) {
           gcd = -gcd;
         }
-        numerator /= gcd;
-        denominator /= gcd;
+        if (gcd != 1L) {
+          if (Config.TRACE_BASIC_ARITHMETIC && EvalEngine.get().isTraceMode()) {
+            if (EvalEngine.get().isTraceMode()) {
+              IAST divide = F.Rational(F.ZZ(numerator), F.ZZ(denominator));
+              EvalEngine.get().addTraceStep(divide, divide,
+                  F.List(S.Rational, F.$str("FractionCancelGCD"), divide, F.ZZ(gcd)));
+            }
+          }
+          numerator /= gcd;
+          denominator /= gcd;
+        }
       }
 
       if (denominator == 1) {
