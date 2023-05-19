@@ -177,7 +177,7 @@ public class TeXFormFactory {
     }
   }
 
-  private static final class D extends AbstractTeXConverter {
+  public static final class D extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
     @Override
@@ -1416,7 +1416,7 @@ public class TeXFormFactory {
     return false;
   }
 
-  void convertInternal(final StringBuilder buf, final IExpr expr, final int precedence,
+  public void convertInternal(final StringBuilder buf, final IExpr expr, final int precedence,
       boolean caller) {
 
     String str = CONSTANT_EXPRS.get(expr);
