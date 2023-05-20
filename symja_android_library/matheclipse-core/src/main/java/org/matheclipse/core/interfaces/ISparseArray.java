@@ -58,6 +58,8 @@ public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>>, ITensorAcce
    */
   public IAST arrayRules();
 
+  public IAST arrayRules(IExpr defaultValue);
+
   /** Returns <code>true</code> for a sparse array object */
   @Override
   public boolean isSparseArray();

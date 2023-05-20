@@ -2528,7 +2528,7 @@ public class ManipulateFunction {
       if (nRanges > 100) {
         nRanges = 100;
       }
-      defaultRange = (max - min) / (nRanges);
+      // defaultRange = (max - min) / (nRanges);
       int[] buckets = calcHistogram(dData, min, max, nRanges);
 
       boundingbox = new double[] {min, 0.0, max, 0.0};

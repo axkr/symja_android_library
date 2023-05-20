@@ -82,20 +82,18 @@ public class SparseArrayFunctions {
         defaultValue = ast.arg2();
       }
       if (arg1.isSparseArray()) {
-
         ISparseArray sparseArray = (ISparseArray) arg1;
-        IExpr d = sparseArray.getDefaultValue();
         if (ast.isAST1()) {
-          defaultValue = d;
-        } else if (ast.isAST2()) {
-          if (!d.equals(defaultValue)) {
-            LOGGER.log(engine.getLogLevel(),
-                "{}: Sparse array default value: {} unequals default value {}", ast.topHead(), d,
-                defaultValue);
-            return F.NIL;
-          }
+          defaultValue = sparseArray.getDefaultValue();
+//        } else if (ast.isAST2()) {
+//          if (!d.equals(defaultValue)) {
+//            LOGGER.log(engine.getLogLevel(),
+//                "{}: Sparse array default value: {} unequals default value {}", ast.topHead(), d,
+//                defaultValue);
+//            return F.NIL;
+// }
         }
-        return sparseArray.arrayRules();
+        return sparseArray.arrayRules(defaultValue);
       }
       if (arg1.isList()) {
         return SparseArrayExpr.arrayRules((IAST) arg1, defaultValue);

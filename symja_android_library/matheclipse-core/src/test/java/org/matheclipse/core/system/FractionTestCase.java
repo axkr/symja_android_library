@@ -18,10 +18,6 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 
-/**
- * Tests for the Java port of the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based
- * integrator</a>.
- */
 class FractionTestCase {
 
   @Test

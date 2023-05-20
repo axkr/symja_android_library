@@ -1795,11 +1795,11 @@ public class SeriesFunctions {
 
   private static ASTSeriesData timesSeriesData(IAST timesAST, IExpr x, IExpr x0, final int n,
       EvalEngine engine) {
-    Map<IExpr, IExpr> coefficientMap = new HashMap<IExpr, IExpr>();
     IASTAppendable rest = F.PlusAlloc(4);
-    coefficientMap = new HashMap<IExpr, IExpr>();
+    Map<IExpr, IExpr> coefficientMap = new HashMap<IExpr, IExpr>();
     rest = F.TimesAlloc(4);
-    coefficientMap = ExprPolynomialRing.createTimes(timesAST, x, coefficientMap, rest);
+    coefficientMap =
+        ExprPolynomialRing.createTimes(timesAST, x, coefficientMap, rest);
     int shift = 0;
     IExpr coefficient = F.C1;
     if (coefficientMap.size() == 1) {

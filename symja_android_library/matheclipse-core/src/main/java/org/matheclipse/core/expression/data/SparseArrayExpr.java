@@ -1404,18 +1404,25 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     return this;
   }
 
-  /** Convert this sparse array to array rules list format. */
   @Override
   public IAST arrayRules() {
+    return arrayRules(fDefaultValue);
+  }
+
+  /** Convert this sparse array to array rules list format. */
+  @Override
+  public IAST arrayRules(IExpr defaultValue) {
     IASTAppendable result = F.ListAlloc(fData.size() + 1);
 
     for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
       int[] key = entry.getKey();
       IExpr value = entry.getValue();
-      IAST lhs = F.ast(S.List, key);
-      result.append(F.Rule(lhs, value));
+      if (!value.equals(defaultValue)) {
+        IAST lhs = F.ast(S.List, key);
+        result.append(F.Rule(lhs, value));
+      }
     }
-    result.append(F.Rule(F.constantArray(F.$b(), fDimension.length), fDefaultValue));
+    result.append(F.Rule(F.constantArray(F.$b(), fDimension.length), defaultValue));
     return result;
   }
 

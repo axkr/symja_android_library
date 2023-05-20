@@ -18,7 +18,11 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
 
     check("s1=SparseArray({{1, 1} -> 1, {2, 2} -> 2, {4, 3} -> 3, {1, 4} -> 4, {3, 5} -> 2} )", //
         "SparseArray(Number of elements: 5 Dimensions: {4,5} Default value: 0)");
+    check("ar=ArrayRules(s1, 2)", //
+        "{{1,1}->1,{1,4}->4,{4,3}->3,{_,_}->2}");
     check("ar=ArrayRules(s1)", //
+        "{{1,1}->1,{1,4}->4,{2,2}->2,{3,5}->2,{4,3}->3,{_,_}->0}");
+    check("ar=ArrayRules(s1,0)", //
         "{{1,1}->1,{1,4}->4,{2,2}->2,{3,5}->2,{4,3}->3,{_,_}->0}");
     check("s2=SparseArray(ar)", //
         "SparseArray(Number of elements: 5 Dimensions: {4,5} Default value: 0)");
