@@ -5,6 +5,12 @@ ArrayRules(sparse-array)
 ```
 
 > return the array of rules which define the sparse array.
+
+```
+ArrayRules(sparse-array, default-value)
+```
+
+> return the array of rules which define the sparse array and set the new `default-value`.
  
 ```
 ArrayRules(nested-lists)
