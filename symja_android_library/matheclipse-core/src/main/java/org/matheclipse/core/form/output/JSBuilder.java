@@ -209,7 +209,7 @@ public class JSBuilder {
 
   /** CDN JavaScript libraries */
   private static final String[] JS_CDN_JSXGRAPH =
-      {"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js",
+      {"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.10/build/math.js",
           "https://cdn.jsdelivr.net/npm/jsxgraph@1.5.0/distrib/jsxgraphcore.js",
           "https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js"};
 
@@ -217,7 +217,7 @@ public class JSBuilder {
   private static final String[] CSS_CDN_MATHCELL = {};
 
   private static final String[] JS_CDN_MATHCELL =
-      {"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.9/build/math.js",
+      {"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.10/build/math.js",
           "https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.10.0/build/mathcell.js",
           "https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML"};
 
