@@ -140,16 +140,16 @@ public final class RulesData implements Serializable {
    * @return
    */
   public void accept(AbstractVisitor visitor) {
-    Iterator<IExpr> iter;
-    IExpr key;
+    Iterator<Map.Entry<IExpr, PatternMatcherEquals>> iter;
     PatternMatcherEquals pmEquals;
     IAST ast;
     PatternMatcherAndEvaluator pmEvaluator;
     if (fEqualUpRules != null && fEqualUpRules.size() > 0) {
-      iter = fEqualUpRules.keySet().iterator();
+      iter = fEqualUpRules.entrySet().iterator();
       while (iter.hasNext()) {
-        key = iter.next();
-        pmEquals = fEqualUpRules.get(key);
+        Map.Entry<IExpr, PatternMatcherEquals> next = iter.next();
+        IExpr key = next.getKey();
+        pmEquals = next.getValue();
         if (key.isASTOrAssociation()) {
           key.accept(visitor);
         }
@@ -178,10 +178,11 @@ public final class RulesData implements Serializable {
     }
 
     if (fEqualDownRules != null && fEqualDownRules.size() > 0) {
-      iter = fEqualDownRules.keySet().iterator();
+      iter = fEqualDownRules.entrySet().iterator();
       while (iter.hasNext()) {
-        key = iter.next();
-        pmEquals = fEqualDownRules.get(key);
+        Map.Entry<IExpr, PatternMatcherEquals> next = iter.next();
+        IExpr key = next.getKey();
+        pmEquals = next.getValue();
         ast = pmEquals.getAsAST();
         if (key.isASTOrAssociation()) {
           key.accept(visitor);
@@ -264,15 +265,13 @@ public final class RulesData implements Serializable {
       size += fPatternDownRules.size();
     }
     ArrayList<IAST> definitionList = new ArrayList<IAST>(size);
-    Iterator<IExpr> iter;
-    IExpr key;
+    Iterator<Map.Entry<IExpr, PatternMatcherEquals>> iter;
     PatternMatcherEquals pmEquals;
     PatternMatcherAndEvaluator pmEvaluator;
     if (fEqualUpRules != null && fEqualUpRules.size() > 0) {
-      iter = fEqualUpRules.keySet().iterator();
+      iter = fEqualUpRules.entrySet().iterator();
       while (iter.hasNext()) {
-        key = iter.next();
-        pmEquals = fEqualUpRules.get(key);
+        pmEquals = iter.next().getValue();
         definitionList.add(pmEquals.getAsAST());
       }
     }
@@ -287,10 +286,9 @@ public final class RulesData implements Serializable {
     }
 
     if (fEqualDownRules != null && fEqualDownRules.size() > 0) {
-      iter = fEqualDownRules.keySet().iterator();
+      iter = fEqualDownRules.entrySet().iterator();
       while (iter.hasNext()) {
-        key = iter.next();
-        pmEquals = fEqualDownRules.get(key);
+        pmEquals = iter.next().getValue();
         definitionList.add(pmEquals.getAsAST());
       }
     }

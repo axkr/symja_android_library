@@ -191,6 +191,7 @@ public abstract class Scanner {
           case '[':
             builder.append(']');
             break;
+          default:
         }
       }
       return builder.toString();
@@ -874,6 +875,7 @@ public abstract class Scanner {
             startPosition = fCurrentPosition;
             getChar();
             break;
+          default:
         }
       }
     }

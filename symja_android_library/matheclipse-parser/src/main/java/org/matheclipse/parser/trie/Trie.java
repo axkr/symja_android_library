@@ -179,7 +179,7 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
       return putReturnNull(root, updater.apply(defaultPrevious), query, queryOffset, queryLength);
     }
 
-    while (node != null) {
+    while (true) {
       final S nodeSequence = node.sequence;
       final int nodeLength = node.end - node.start;
       final int max = Math.min(nodeLength, queryLength - queryOffset);
@@ -225,7 +225,6 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
       node = next;
     }
 
-    return null;
   }
 
   /**

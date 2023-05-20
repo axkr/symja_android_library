@@ -20,17 +20,17 @@ public class QuantityMagnitude {
    * @param unit
    * @return operator that extracts the value from a Quantity of given unit
    */
-  private static UnaryOperator<IExpr> singleton(IUnit unit) {
-    return EMPTY.in(unit);
-  }
+  // private static UnaryOperator<IExpr> singleton(IUnit unit) {
+  // return EMPTY.in(unit);
+  // }
 
   /**
    * @param string
    * @return operator that extracts the value from a Quantity of unit specified by given string
    */
-  private static UnaryOperator<IExpr> singleton(String string) {
-    return singleton(IUnit.ofPutIfAbsent(string));
-  }
+  // private static UnaryOperator<IExpr> singleton(String string) {
+  // return singleton(IUnit.ofPutIfAbsent(string));
+  // }
 
   // ---
   private final UnitSystem unitSystem;

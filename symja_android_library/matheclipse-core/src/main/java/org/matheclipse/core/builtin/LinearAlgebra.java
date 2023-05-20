@@ -4976,11 +4976,7 @@ public final class LinearAlgebra {
         }
         return F.NIL;
       }
-      int[] count = new int[1];
-      count[0] = 1;
       return F.matrix((i, j) -> i <= j ? F.ZZ(j - i + 1) : F.ZZ(i - j + 1), m, m);
-
-
     }
 
     @Override
@@ -5345,28 +5341,24 @@ public final class LinearAlgebra {
      * @param cols number of columns of the matrix
      * @return
      */
-    private IAST transpose(final IAST matrix, int rows, int cols) {
-      final IASTMutable transposedMatrix = F.astMutable(S.List, cols);
-      transposedMatrix.setArgs(cols + 1, i -> F.astMutable(S.List, rows));
-      // for (int i = 1; i <= cols; i++) {
-      // transposedMatrix.set(i, F.ast(F.List, rows, true));
-      // }
-
-      IAST originalRow;
-      IASTMutable transposedResultRow;
-      for (int i = 1; i <= rows; i++) {
-        originalRow = (IAST) matrix.get(i);
-        for (int j = 1; j <= cols; j++) {
-          transposedResultRow = (IASTMutable) transposedMatrix.get(j);
-          transposedResultRow.set(i, transform(originalRow.get(j)));
-        }
-      }
-      // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
-      // isMatrix() must be
-      // used!
-      transposedMatrix.isMatrix(true);
-      return transposedMatrix;
-    }
+    // private IAST transpose(final IAST matrix, int rows, int cols) {
+    // final IASTMutable transposedMatrix = F.astMutable(S.List, cols);
+    // transposedMatrix.setArgs(cols + 1, i -> F.astMutable(S.List, rows));
+    // IAST originalRow;
+    // IASTMutable transposedResultRow;
+    // for (int i = 1; i <= rows; i++) {
+    // originalRow = (IAST) matrix.get(i);
+    // for (int j = 1; j <= cols; j++) {
+    // transposedResultRow = (IASTMutable) transposedMatrix.get(j);
+    // transposedResultRow.set(i, transform(originalRow.get(j)));
+    // }
+    // }
+    // // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
+    // // isMatrix() must be
+    // // used!
+    // transposedMatrix.isMatrix(true);
+    // return transposedMatrix;
+    // }
   }
 
   /**

@@ -335,6 +335,7 @@ public class Parser extends Scanner {
       case TT_ASSOCIATION_CLOSE:
         throwSyntaxError("Too much closing |> in factor.");
         break;
+      default:
     }
 
     throwSyntaxError("Error in factor at character: '" + fCurrentChar + "' (Token:" + fToken

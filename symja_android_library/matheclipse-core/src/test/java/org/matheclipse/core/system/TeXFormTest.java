@@ -428,6 +428,12 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
         "c + \\pm{a}");
   }
 
+  public void testTeXDivide() {
+    check("TeXForm((x+1)/( 3- 2x))", //
+        "\\frac{1 + x}{3-2 \\cdot x}");
+  }
+
+
   public void testMapIndexed() {
     String input = "MapIndexed(f, {{a, b, c}, {x, y, z}})";
 

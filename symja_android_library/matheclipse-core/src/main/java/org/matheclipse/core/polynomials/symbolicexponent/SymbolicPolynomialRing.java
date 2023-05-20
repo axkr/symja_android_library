@@ -165,7 +165,7 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
     }
 
     /** IExpr iterator. */
-    class IExprIterator implements Iterator<IExpr> {
+    static class IExprIterator implements Iterator<IExpr> {
 
       /** data structure. */
       IExpr current;

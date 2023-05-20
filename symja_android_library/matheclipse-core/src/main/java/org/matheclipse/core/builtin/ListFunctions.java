@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -21,7 +22,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.stat.StatUtils;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -886,6 +886,9 @@ public final class ListFunctions {
 
       @Override
       public IExpr next() {
+        if (fCounter >= fLength) {
+          throw new NoSuchElementException();
+        }
         return F.Plus(fOrigin, F.ZZ(fCounter++));
       }
 
@@ -2781,41 +2784,41 @@ public final class ListFunctions {
      * @param headOffset
      * @return
      */
-    private static IExpr extract(final IAST list, final IAST positions, int headOffset) {
-      int p = 0;
-      IAST temp = list;
-      if (temp.isNIL()) {
-        return F.NIL;
-      }
-      int posSize = positions.argSize();
-      IExpr expr = list;
-      for (int i = headOffset; i <= posSize; i++) {
-        p = positions.get(i).toIntDefault(); // positionConverter.toInt(positions.get(i));
-        if (p >= 0) {
-          if (temp.size() <= p) {
-            return F.NIL;
-          }
-          expr = temp.get(p);
-          if (expr.isASTOrAssociation()) {
-            temp = (IAST) expr;
-          } else {
-            if (i < positions.size()) {
-              temp = F.NIL;
-            }
-          }
-        } else if (positions.get(i).isAST(S.Key, 2)) {
-          expr = temp.get(p);
-          if (expr.isASTOrAssociation()) {
-            temp = (IAST) expr;
-          } else {
-            if (i < positions.size()) {
-              temp = F.NIL;
-            }
-          }
-        }
-      }
-      return expr;
-    }
+    // private static IExpr extract(final IAST list, final IAST positions, int headOffset) {
+    // int p = 0;
+    // IAST temp = list;
+    // if (temp.isNIL()) {
+    // return F.NIL;
+    // }
+    // int posSize = positions.argSize();
+    // IExpr expr = list;
+    // for (int i = headOffset; i <= posSize; i++) {
+    // p = positions.get(i).toIntDefault(); // positionConverter.toInt(positions.get(i));
+    // if (p >= 0) {
+    // if (temp.size() <= p) {
+    // return F.NIL;
+    // }
+    // expr = temp.get(p);
+    // if (expr.isASTOrAssociation()) {
+    // temp = (IAST) expr;
+    // } else {
+    // if (i < positions.size()) {
+    // temp = F.NIL;
+    // }
+    // }
+    // } else if (positions.get(i).isAST(S.Key, 2)) {
+    // expr = temp.get(p);
+    // if (expr.isASTOrAssociation()) {
+    // temp = (IAST) expr;
+    // } else {
+    // if (i < positions.size()) {
+    // temp = F.NIL;
+    // }
+    // }
+    // }
+    // }
+    // return expr;
+    // }
   }
 
   /**
@@ -5907,10 +5910,6 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (!ToggleFeature.REPLACE_LIST) {
-        return F.NIL;
-      }
-
       if (ast.size() == 2 && ast.head().isAST(S.ReplaceList, 2)) {
         return F.ReplaceList(ast.first(), ast.head().first());
       }
@@ -5939,11 +5938,6 @@ public final class ListFunctions {
       return ARGS_2_3_1;
     }
 
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      if (!ToggleFeature.REPLACE_LIST) {
-      }
-    }
   }
 
   /**

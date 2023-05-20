@@ -488,11 +488,11 @@ public class ChocoConvert {
             net.realVar("x", Double.MIN_VALUE, Double.MAX_VALUE, 0.000001d));
       }
     }
-    RealVar[] vars = new RealVar[map.size()];
-    int k = 0;
-    for (Entry<ISymbol, RealVar> entry : map.entrySet()) {
-      vars[k++] = entry.getValue();
-    }
+    // RealVar[] vars = new RealVar[map.size()];
+    // int k = 0;
+    // for (Entry<ISymbol, RealVar> entry : map.entrySet()) {
+    // vars[k++] = entry.getValue();
+    // }
     IAST temp;
     for (int i = 1; i < list.size(); i++) {
       if (list.get(i) instanceof IAST) {

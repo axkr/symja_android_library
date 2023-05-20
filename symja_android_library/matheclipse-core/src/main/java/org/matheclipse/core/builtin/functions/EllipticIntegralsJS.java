@@ -3,7 +3,6 @@ package org.matheclipse.core.builtin.functions;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.special.elliptic.carlson.CarlsonEllipticIntegral;
 import org.hipparchus.special.elliptic.legendre.LegendreEllipticIntegral;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 
 /**
  * Ported from JavaScript file <a href=
@@ -72,57 +71,49 @@ public class EllipticIntegralsJS extends JS {
     // return carlsonRF(x, y, z, Config.SPECIAL_FUNCTIONS_TOLERANCE);
   }
 
-  private static Complex carlsonRF(Complex x, Complex y, Complex z, double tolerance) {
-
-    // if ( isComplex(x) || isComplex(y) || isComplex(z) ) {
-    // if (y.getImaginary()==0.0) {
-    // y = new Complex(y.getReal());
-    // }
-    Complex xm = x;
-    Complex ym = y;
-    Complex zm = z;
-    Complex A0 = x.add(y).add(z).divide(3.0);
-    Complex Am = A0;
-
-    double Q = Math.pow(3.0 * tolerance, -1.0 / 6.0)
-        * Math.max(cabs(A0.subtract(x)), Math.max(cabs(A0.subtract(y)), cabs(A0.subtract(z))));
-    double g = 0.25;
-    double pow4 = 1.0;
-
-    while (true) {
-      double absAm = cabs(Am);
-      if (Double.isNaN(absAm) || Double.isInfinite(absAm)) {
-        throw new ArgumentTypeException("carlsonRF: Am is undefined");
-      }
-      Complex xs = xm.sqrt();
-      Complex ys = ym.sqrt();
-      Complex zs = zm.sqrt();
-      Complex lm = xs.multiply(ys).add(xs.multiply(zs)).add(ys.multiply(zs));
-      // Complex Am1 = Am.add(lm).multiply(g);
-      xm = xm.add(lm).multiply(g);
-      ym = ym.add(lm).multiply(g);
-      zm = zm.add(lm).multiply(g);
-      if (pow4 * Q < absAm) {
-        break;
-      }
-      // Am=Am1;
-      Am = Am.add(lm).multiply(g);
-      pow4 *= g;
-    }
-
-    Complex t = new Complex(pow4).divide(Am);
-    Complex X = A0.subtract(x).multiply(t);
-    Complex Y = A0.subtract(y).multiply(t);
-    Complex Z = X.add(Y).negate();
-    Complex E2 = X.multiply(Y).subtract(Z.multiply(Z));
-    Complex E3 = X.multiply(Y).multiply(Z);
-    // Am.pow(-0.5)
-    Complex AmPow = Am.pow(-0.5);
-
-    return AmPow.multiply(E2.multiply(-924.0).add(E2.multiply(E2).multiply(385.0))
-        .add(E3.multiply(660.0)).add(E2.multiply(E3).multiply(-630.0)).add(9240.0))
-        .multiply(1.0 / 9240.0);
-  }
+  // private static Complex carlsonRF(Complex x, Complex y, Complex z, double tolerance) {
+  // Complex xm = x;
+  // Complex ym = y;
+  // Complex zm = z;
+  // Complex A0 = x.add(y).add(z).divide(3.0);
+  // Complex Am = A0;
+  //
+  // double Q = Math.pow(3.0 * tolerance, -1.0 / 6.0)
+  // * Math.max(cabs(A0.subtract(x)), Math.max(cabs(A0.subtract(y)), cabs(A0.subtract(z))));
+  // double g = 0.25;
+  // double pow4 = 1.0;
+  //
+  // while (true) {
+  // double absAm = cabs(Am);
+  // if (Double.isNaN(absAm) || Double.isInfinite(absAm)) {
+  // throw new ArgumentTypeException("carlsonRF: Am is undefined");
+  // }
+  // Complex xs = xm.sqrt();
+  // Complex ys = ym.sqrt();
+  // Complex zs = zm.sqrt();
+  // Complex lm = xs.multiply(ys).add(xs.multiply(zs)).add(ys.multiply(zs));
+  // xm = xm.add(lm).multiply(g);
+  // ym = ym.add(lm).multiply(g);
+  // zm = zm.add(lm).multiply(g);
+  // if (pow4 * Q < absAm) {
+  // break;
+  // }
+  // Am = Am.add(lm).multiply(g);
+  // pow4 *= g;
+  // }
+  //
+  // Complex t = new Complex(pow4).divide(Am);
+  // Complex X = A0.subtract(x).multiply(t);
+  // Complex Y = A0.subtract(y).multiply(t);
+  // Complex Z = X.add(Y).negate();
+  // Complex E2 = X.multiply(Y).subtract(Z.multiply(Z));
+  // Complex E3 = X.multiply(Y).multiply(Z);
+  // Complex AmPow = Am.pow(-0.5);
+  //
+  // return AmPow.multiply(E2.multiply(-924.0).add(E2.multiply(E2).multiply(385.0))
+  // .add(E3.multiply(660.0)).add(E2.multiply(E3).multiply(-630.0)).add(9240.0))
+  // .multiply(1.0 / 9240.0);
+  // }
 
   public static double carlsonRF(double x, double y, double z) {
     return CarlsonEllipticIntegral.rF(x, y, z);
@@ -149,68 +140,66 @@ public class EllipticIntegralsJS extends JS {
     // return carlsonRJ(x, y, z, p, Config.SPECIAL_FUNCTIONS_TOLERANCE);
   }
 
-  private static Complex carlsonRJ(Complex x, Complex y, Complex z, Complex p, double tolerance) {
-
-    // if ( isComplex(x) || isComplex(y) || isComplex(z) || isComplex(p) ) {
-
-    Complex xm = x;
-    Complex ym = y;
-    Complex zm = z;
-    Complex pm = p;
-
-    Complex Am = x.add(y).add(z).add(p.multiply(2)).divide(5.0);
-    Complex A0 = Am;
-    Complex delta = p.subtract(x).multiply(p.subtract(y)).multiply(p.subtract(z));
-    double Q = Math.pow(0.25 * tolerance, -1.0 / 6.0) * Math.max(cabs(A0.subtract(x)),
-        Math.max(cabs(A0.subtract(y)), Math.max(cabs(A0.subtract(z)), cabs(A0.subtract(p)))));
-    double m = 0.0;
-    double g = 0.25;
-    double pow4 = 1.0;
-    Complex S = Complex.ZERO;
-
-    while (true) {
-      Complex sx = xm.sqrt();
-      Complex sy = ym.sqrt();
-      Complex sz = zm.sqrt();
-      Complex sp = pm.sqrt();
-      Complex lm = sx.multiply(sy).add(sx.multiply(sz)).add(sy.multiply(sz));
-      Complex Am1 = Am.add(lm).multiply(g);
-      xm = xm.add(lm).multiply(g);
-      ym = ym.add(lm).multiply(g);
-      zm = zm.add(lm).multiply(g);
-      pm = pm.add(lm).multiply(g);
-      Complex dm = sp.add(sx).multiply(sp.add(sy)).multiply(sp.add(sz));
-      Complex em = dm.reciprocal().multiply(dm.reciprocal()).multiply(delta)
-          .multiply(Math.pow(4.0, -3.0 * m));
-      if (pow4 * Q < cabs(Am)) {
-        break;
-      }
-      Complex T = carlsonRC(Complex.ONE, em.add(1)).multiply(pow4).multiply(dm.reciprocal());
-      S = S.add(T);
-      pow4 *= g;
-      m += 1;
-      Am = Am1;
-    }
-
-    Complex t = Am.reciprocal().multiply(Math.pow(2, -2 * m));
-    Complex X = A0.subtract(x).multiply(t);
-    Complex Y = A0.subtract(y).multiply(t);
-    Complex Z = A0.subtract(z).multiply(t);
-    Complex P = X.add(Y.add(Z)).divide(-2);
-    Complex E2 =
-        X.multiply(Y).add(X.multiply(Z)).add(Y.multiply(Z)).add(P.multiply(P).multiply(-3));
-    Complex E3 = X.multiply(Y).multiply(Z).add(E2.multiply(P).multiply(2))
-        .add(P.multiply(P).multiply(P).multiply(4));
-    Complex E4 = X.multiply(Y).multiply(Z).multiply(2).add(E2.multiply(P))
-        .add(P.multiply(P).multiply(P).multiply(3)).multiply(P);
-    Complex E5 = X.multiply(Y).multiply(Z).multiply(P).multiply(P);
-    P = E2.multiply(-5148).add(E2.multiply(E2).multiply(2457)).add(E3.multiply(4004))
-        .add(E2.multiply(E3).multiply(-4158)).add(E4.multiply(-3276)).add(E5.multiply(2772))
-        .add(24024);
-    Complex v1 = Am.pow(-1.5).multiply(Math.pow(g, m)).multiply(P).multiply(1.0 / 24024.0);
-
-    return S.multiply(6.0).add(v1);
-  }
+  // private static Complex carlsonRJ(Complex x, Complex y, Complex z, Complex p, double tolerance)
+  // {
+  // Complex xm = x;
+  // Complex ym = y;
+  // Complex zm = z;
+  // Complex pm = p;
+  //
+  // Complex Am = x.add(y).add(z).add(p.multiply(2)).divide(5.0);
+  // Complex A0 = Am;
+  // Complex delta = p.subtract(x).multiply(p.subtract(y)).multiply(p.subtract(z));
+  // double Q = Math.pow(0.25 * tolerance, -1.0 / 6.0) * Math.max(cabs(A0.subtract(x)),
+  // Math.max(cabs(A0.subtract(y)), Math.max(cabs(A0.subtract(z)), cabs(A0.subtract(p)))));
+  // double m = 0.0;
+  // double g = 0.25;
+  // double pow4 = 1.0;
+  // Complex S = Complex.ZERO;
+  //
+  // while (true) {
+  // Complex sx = xm.sqrt();
+  // Complex sy = ym.sqrt();
+  // Complex sz = zm.sqrt();
+  // Complex sp = pm.sqrt();
+  // Complex lm = sx.multiply(sy).add(sx.multiply(sz)).add(sy.multiply(sz));
+  // Complex Am1 = Am.add(lm).multiply(g);
+  // xm = xm.add(lm).multiply(g);
+  // ym = ym.add(lm).multiply(g);
+  // zm = zm.add(lm).multiply(g);
+  // pm = pm.add(lm).multiply(g);
+  // Complex dm = sp.add(sx).multiply(sp.add(sy)).multiply(sp.add(sz));
+  // Complex em = dm.reciprocal().multiply(dm.reciprocal()).multiply(delta)
+  // .multiply(Math.pow(4.0, -3.0 * m));
+  // if (pow4 * Q < cabs(Am)) {
+  // break;
+  // }
+  // Complex T = carlsonRC(Complex.ONE, em.add(1)).multiply(pow4).multiply(dm.reciprocal());
+  // S = S.add(T);
+  // pow4 *= g;
+  // m += 1;
+  // Am = Am1;
+  // }
+  //
+  // Complex t = Am.reciprocal().multiply(Math.pow(2, -2 * m));
+  // Complex X = A0.subtract(x).multiply(t);
+  // Complex Y = A0.subtract(y).multiply(t);
+  // Complex Z = A0.subtract(z).multiply(t);
+  // Complex P = X.add(Y.add(Z)).divide(-2);
+  // Complex E2 =
+  // X.multiply(Y).add(X.multiply(Z)).add(Y.multiply(Z)).add(P.multiply(P).multiply(-3));
+  // Complex E3 = X.multiply(Y).multiply(Z).add(E2.multiply(P).multiply(2))
+  // .add(P.multiply(P).multiply(P).multiply(4));
+  // Complex E4 = X.multiply(Y).multiply(Z).multiply(2).add(E2.multiply(P))
+  // .add(P.multiply(P).multiply(P).multiply(3)).multiply(P);
+  // Complex E5 = X.multiply(Y).multiply(Z).multiply(P).multiply(P);
+  // P = E2.multiply(-5148).add(E2.multiply(E2).multiply(2457)).add(E3.multiply(4004))
+  // .add(E2.multiply(E3).multiply(-4158)).add(E4.multiply(-3276)).add(E5.multiply(2772))
+  // .add(24024);
+  // Complex v1 = Am.pow(-1.5).multiply(Math.pow(g, m)).multiply(P).multiply(1.0 / 24024.0);
+  //
+  // return S.multiply(6.0).add(v1);
+  // }
 
   public static double carlsonRJ(double x, double y, double z, double p) {
     return CarlsonEllipticIntegral.rJ(x, y, z, p);

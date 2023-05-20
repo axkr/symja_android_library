@@ -29,7 +29,7 @@ public class SymbolicPolynomial
     implements RingElem<SymbolicPolynomial>, Iterable<SymbolicMonomial> {
 
   /** Iterator over monomials of a polynomial. Adaptor for val.entrySet().iterator(). */
-  public class SymbolicPolyIterator implements Iterator<SymbolicMonomial> {
+  public static class SymbolicPolyIterator implements Iterator<SymbolicMonomial> {
 
     /** Internal iterator over polynomial map. */
     protected final Iterator<Map.Entry<ExpVectorSymbolic, IExpr>> ms;

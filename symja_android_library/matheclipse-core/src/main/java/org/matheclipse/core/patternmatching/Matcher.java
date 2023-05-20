@@ -102,7 +102,8 @@ public class Matcher implements Function<IExpr, IExpr> {
   private static class PatternMatcherBiFunctionMethod extends AbstractPatternMatcherMethod {
     BiFunction<IExpr, IExpr, IExpr> fRightHandSide;
 
-    private PatternMatcherBiFunctionMethod() {
+    /** public for serialization */
+    public PatternMatcherBiFunctionMethod() {
       super();
     }
 
@@ -140,7 +141,8 @@ public class Matcher implements Function<IExpr, IExpr> {
   private static class PatternMatcherBiPredicateMethod extends AbstractPatternMatcherMethod {
     BiPredicate<IExpr, IExpr> fRightHandSide;
 
-    private PatternMatcherBiPredicateMethod() {
+    /** public for serialization */
+    public PatternMatcherBiPredicateMethod() {
       super();
     }
 
@@ -177,7 +179,8 @@ public class Matcher implements Function<IExpr, IExpr> {
   private static class PatternMatcherFunctionMethod extends AbstractPatternMatcherMethod {
     Function<IExpr, IExpr> fRightHandSide;
 
-    private PatternMatcherFunctionMethod() {
+    /** public for serialization */
+    public PatternMatcherFunctionMethod() {
       super();
     }
 
@@ -213,7 +216,8 @@ public class Matcher implements Function<IExpr, IExpr> {
   private static class PatternMatcherMapMethod extends AbstractPatternMatcherMethod {
     IPatternMethod fRightHandSide;
 
-    private PatternMatcherMapMethod() {
+    /** public for serialization */
+    public PatternMatcherMapMethod() {
       super();
     }
 
@@ -247,7 +251,8 @@ public class Matcher implements Function<IExpr, IExpr> {
   private static class PatternMatcherPredicateMethod extends AbstractPatternMatcherMethod {
     Predicate<IExpr> fRightHandSide;
 
-    private PatternMatcherPredicateMethod() {
+    /** public for serialization */
+    public PatternMatcherPredicateMethod() {
       super();
     }
 

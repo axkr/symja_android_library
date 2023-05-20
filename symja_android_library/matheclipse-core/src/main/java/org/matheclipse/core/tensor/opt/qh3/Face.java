@@ -34,7 +34,7 @@ class Face {
   IExpr area;
   private Vector3d centroid;
   IExpr planeOffset;
-  int index;
+  // int index;
   int numVerts;
   Face next;
   static final int VISIBLE = 1;
@@ -260,17 +260,18 @@ class Face {
   }
 
   public String getVertexString() {
-    String s = null;
+    StringBuilder buf = null;
     HalfEdge he = he0;
     do {
-      if (s == null) {
-        s = "" + he.head().index;
+      if (buf == null) {
+        buf = new StringBuilder();
       } else {
-        s += " " + he.head().index;
+        buf.append(" ");
       }
+      buf.append(he.head().index);
       he = he.next;
     } while (he != he0);
-    return s;
+    return buf.toString();
   }
 
   public void getVertexIndices(int[] idxs) {

@@ -28,12 +28,6 @@ public class ToggleFeature {
   // public static boolean DEFER = true;
 
   /**
-   * If <code>true</code>, enable <code>org.matheclipse.core.reflection.system.ReplaceList</code>
-   * function.
-   */
-  public static boolean REPLACE_LIST = true;
-
-  /**
    * If <code>true</code>, enable <code>org.matheclipse.core.reflection.system.DSolve</code>
    * function.
    */

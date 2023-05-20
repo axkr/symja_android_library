@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.Random;
-import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
@@ -1840,7 +1839,7 @@ public class StatisticsFunctions {
     @Override
     public IExpr mean(IAST dist) {
       if (dist.isAST2()) {
-        IExpr n = dist.arg1();
+        // IExpr n = dist.arg1();
         IExpr m = dist.arg2();
         return
         // [$ Piecewise({{m/(-2 + m), m > 2}}, Indeterminate) $]
@@ -2146,7 +2145,7 @@ public class StatisticsFunctions {
     public IExpr skewness(IAST dist) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
-        IExpr m = dist.arg2();
+        // IExpr m = dist.arg2();
         return
         // [$ Piecewise({{(Gamma(1 - 3/n) - 3*Gamma(1 - 2/n)*Gamma(1 - 1/n) +
         // 2*Gamma(1 - 1/n)^3)/(Gamma(1 - 2/n) - Gamma(1 - 1/n)^2)^(3/2), n > 3}},
@@ -3582,7 +3581,7 @@ public class StatisticsFunctions {
     public IExpr skewness(IAST dist) {
       if (dist.isAST2()) {
         IExpr n = dist.arg1();
-        IExpr m = dist.arg2();
+        // IExpr m = dist.arg2();
         // 2/Sqrt(n)
         return F.Divide(F.C2, F.Sqrt(n));
       }
@@ -5535,9 +5534,9 @@ public class StatisticsFunctions {
     @Override
     public IExpr skewness(IAST dist) {//
       if (dist.isAST2() || dist.isAST3()) {
-        IExpr k = dist.arg1();
+        // IExpr k = dist.arg1();
         IExpr a = dist.arg2();
-        //
+
         IExpr function =
             // [$ Piecewise({{(2*Sqrt[(-2 + a)/a]*(1 + a))/(-3 + a), a > 3}}, Indeterminate) $]
             F.Piecewise(F.list(F.list(
@@ -5549,7 +5548,7 @@ public class StatisticsFunctions {
         IExpr k = dist.arg1();
         IExpr a = dist.arg2();
         IExpr g = dist.arg3();
-        IExpr m = dist.arg4();
+        // IExpr m = dist.arg4();
         //
         IExpr function =
             // [$ Piecewise({{(k^3*(2*Gamma(a - g)^3*Gamma(1 + g)^3 - 3*Gamma(a)*Gamma(a -
@@ -7384,14 +7383,14 @@ public class StatisticsFunctions {
    * @param size the number of values to return
    * @return an array of {@code size} values following the given unary function distribution
    */
-  private static double[] nextDeviates(Random random, DoubleUnaryOperator function, int size) {
-    double[] out = new double[size];
-    for (int i = 0; i < size; i++) {
-      double p = random.nextDouble();
-      out[i] = function.applyAsDouble(p);
-    }
-    return out;
-  }
+  // private static double[] nextDeviates(Random random, DoubleUnaryOperator function, int size) {
+  // double[] out = new double[size];
+  // for (int i = 0; i < size; i++) {
+  // double p = random.nextDouble();
+  // out[i] = function.applyAsDouble(p);
+  // }
+  // return out;
+  // }
 
   public static void initialize() {
     Initializer.init();

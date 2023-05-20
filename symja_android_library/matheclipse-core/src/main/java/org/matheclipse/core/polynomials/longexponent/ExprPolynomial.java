@@ -2383,13 +2383,14 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
         arr[j] = (int) degree(j) + 1;
       }
       IASTMutable constantArray = F.C0.constantArray(S.List, 0, arr);
-      for (ExpVectorLong expArray : val.keySet()) {
+      for (Map.Entry<ExpVectorLong, IExpr> entry : val.entrySet()) {
+        ExpVectorLong expArray = entry.getKey();
         int[] positions = new int[argsSize];
         for (int i = 0; i < expArray.length(); i++) {
           exp = expArray.getVal(i);
           positions[expArray.varIndex(i)] = (int) exp + 1;
         }
-        constantArray.setPart(val.get(expArray), positions);
+        constantArray.setPart(entry.getValue(), positions);
       }
       return constantArray;
     }
@@ -2407,12 +2408,14 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     long exp;
     IExpr coefficient;
     ExpVectorLong copy;
-    for (ExpVectorLong expArray : val.keySet()) {
+    for (Map.Entry<ExpVectorLong, IExpr> entry : val.entrySet()) {
+      // for (ExpVectorLong expArray : val.keySet()) {
+      ExpVectorLong expArray = entry.getKey();
       exp = expArray.getVal(0);
       if (exp != 0) {
         copy = expArray.copy();
         copy.val[0] = exp - 1;
-        coefficient = val.get(expArray).times(F.ZZ(exp));
+        coefficient = entry.getValue().times(F.ZZ(exp));
         result.doAddTo(coefficient, copy);
       }
     }

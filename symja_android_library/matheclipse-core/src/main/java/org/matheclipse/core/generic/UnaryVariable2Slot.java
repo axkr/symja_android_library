@@ -58,6 +58,6 @@ public class UnaryVariable2Slot implements Function<IExpr, IExpr> {
       fMap.put(firstArg, result);
       fVariableList.add(firstArg);
     }
-    return result != null ? result : F.NIL;
+    return result;
   }
 }

@@ -1111,8 +1111,6 @@ public class SeriesFunctions {
       if (bf == null) {
         return F.NIL;
       }
-      String[] varListStr = new String[1];
-      varListStr[0] = x.toString();
       GenPolynomial<BigRational> numerator = jas.expr2JAS(numeratorDenominatorParts[0], false);
       GenPolynomial<BigRational> denominator = jas.expr2JAS(numeratorDenominatorParts[1], false);
 
@@ -1928,9 +1926,9 @@ public class SeriesFunctions {
           int numerator = rat.numerator().toIntDefault();
           int denominator = rat.denominator().toIntDefault();
           if (denominator != Integer.MIN_VALUE) {
-            IExpr temp = seriesDataRecursive(F.Power(base, x), x, x0, n * denominator, engine);
+            ASTSeriesData temp = seriesDataRecursive(F.Power(base, x), x, x0, n * denominator, engine);
             if (temp instanceof ASTSeriesData) {
-              ASTSeriesData series = (ASTSeriesData) temp;
+              ASTSeriesData series = temp;
               if (numerator != 1) {
                 series = series.shiftTimes(numerator, F.C1, series.order());
               }

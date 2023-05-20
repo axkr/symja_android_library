@@ -20,7 +20,7 @@ public final class ExprTermOrder implements Serializable {
   /** */
   private static final long serialVersionUID = 360644493672021694L;
 
-  private final boolean debug = Config.DEBUG;
+  private static final boolean debug = Config.DEBUG;
 
   // ExprTermOrder index values
 

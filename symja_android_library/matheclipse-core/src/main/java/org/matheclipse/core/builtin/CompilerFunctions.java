@@ -191,11 +191,12 @@ public class CompilerFunctions {
      * @return The Java program as a string
      */
     public String indentProgram() {
-      String res = "";
+      StringBuilder buf = new StringBuilder();
       for (JavaSourceLine line : programLines) {
-        res += line.returnIndentedLine() + "\n";
+        buf.append(line.returnIndentedLine());
+        buf.append("\n");
       }
-      return res;
+      return buf.toString();
     }
 
   }

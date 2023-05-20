@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.exception.MathRuntimeException;
@@ -928,7 +930,6 @@ public class IOFunctions {
         message = temp.toString();
       }
     }
-    Level logLevel = engine.getLogLevel();
     if (message == null) {
       message = "Undefined message shortcut: " + messageShortcut;
       engine.setMessageShortcut(messageShortcut);

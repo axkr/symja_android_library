@@ -122,7 +122,7 @@ public final class RandomFunctions {
   private static final class RandomChoice extends AbstractFunctionEvaluator {
 
     /** Sampler for enumerated distributions. */
-    private final class EnumeratedDistributionSampler {
+    private static final class EnumeratedDistributionSampler {
       /** Probabilities */
       private final double[] weights;
 

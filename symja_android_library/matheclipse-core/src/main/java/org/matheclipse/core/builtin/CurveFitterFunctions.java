@@ -331,8 +331,6 @@ public class CurveFitterFunctions {
           // double[][] data = { { 1, 3 }, { 2, 5 }, { 3, 7 }, { 4, 14 }, { 5, 11 } };
           SimpleRegression model = new SimpleRegression();
           model.addData(data);
-          double[] values = new double[] {model.getIntercept(), model.getSlope()};
-          // return FittedModelExpr.newInstance(model);
           return F.Plus(F.num(model.getIntercept()), F.Times(F.num(model.getSlope()), ast.arg3()));
           // return new ASTRealVector(values, false);
 

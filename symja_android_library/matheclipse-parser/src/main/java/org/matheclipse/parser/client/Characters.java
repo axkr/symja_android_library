@@ -4,13 +4,13 @@ import java.util.Map;
 import org.matheclipse.parser.trie.TrieMatch;
 
 public class Characters {
-  public static Map<String, String> NamedCharactersMap =
+  public final static Map<String, String> NamedCharactersMap =
       ParserConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
-  private static Map<String, String> ReversedNamedCharactersMap =
+  private final static Map<String, String> ReversedNamedCharactersMap =
       ParserConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
-  public static Map<String, String> CharacterNamesMap =
+  public final static Map<String, String> CharacterNamesMap =
       ParserConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
   /**

@@ -2120,11 +2120,11 @@ public class EvalEngine implements Serializable {
       symbol = (ISymbol) head;
     }
 
-    if (symbol.isBuiltInSymbol()) {
-      // call so that attributes may be set in
-      // AbstractFunctionEvaluator#setUp() method
-      ((IBuiltInSymbol) symbol).getEvaluator();
-    }
+    // if (symbol.isBuiltInSymbol()) {
+    // call so that attributes may be set in
+    // AbstractFunctionEvaluator#setUp() method
+    // ((IBuiltInSymbol) symbol).getEvaluator();
+    // }
     int headID = ast.headID();
     if (headID >= 0) {
       if (headID == ID.Blank || headID == ID.BlankSequence || headID == ID.BlankNullSequence
@@ -3418,13 +3418,13 @@ public class EvalEngine implements Serializable {
     ISymbol[] refHeadType = new ISymbol[] {null};
     int[] refArgSize = new int[] {-1};
     IAssociation[] refAssociation = new IAssociation[] {null};
-    if (ast.exists(
-        x -> isValidListable(x, ast, commandHead, messageShortcut, refHeadType, refArgSize, refAssociation))) {
+    if (ast.exists(x -> isValidListable(x, ast, commandHead, messageShortcut, refHeadType,
+        refArgSize, refAssociation))) {
       return F.NIL;
     }
     if (refArgSize[0] != -1) {
-      IASTMutable result =
-          EvalAttributes.threadList(ast, refHeadType[0], ast.head(), refArgSize[0], refAssociation[0]);
+      IASTMutable result = EvalAttributes.threadList(ast, refHeadType[0], ast.head(), refArgSize[0],
+          refAssociation[0]);
       result.addEvalFlags(IAST.IS_LISTABLE_THREADED);
       return result;
     }

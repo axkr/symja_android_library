@@ -899,7 +899,7 @@ public class WL {
         } else if (Short.MIN_VALUE <= bits && bits <= Short.MAX_VALUE) {
           stream.write(WXF_CONSTANTS.Integer16);
           writeInteger16((short) bits);
-        } else if (Integer.MIN_VALUE <= bits && bits <= Integer.MAX_VALUE) {
+        } else {
           stream.write(WXF_CONSTANTS.Integer32);
           writeInteger32(bits);
         }

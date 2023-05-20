@@ -1819,29 +1819,29 @@ public class GraphicsFunctions {
     return true;
   }
 
-  private static boolean graphics3DCoords(StringBuilder buf, IAST ast) {
-    return graphics3DCoords(buf, ast, "coords");
-  }
+  // private static boolean graphics3DCoords(StringBuilder buf, IAST ast) {
+  // return graphics3DCoords(buf, ast, "coords");
+  // }
 
-  private static boolean graphics3DCoords(StringBuilder buf, IAST ast, String coordStr) {
-    buf.append(coordStr + ": [");
-
-    for (int i = 1; i < ast.size(); i++) {
-      IExpr arg = ast.get(i);
-      if (!arg.isList3()) {
-        return false;
-      }
-      IAST coords = (IAST) arg;
-      buf.append("[[");
-      coords.joinToString(buf, ",");
-      buf.append("]]");
-      if (i < ast.size() - 1) {
-        buf.append(",");
-      }
-    }
-    buf.append("]");
-    return true;
-  }
+  // private static boolean graphics3DCoords(StringBuilder buf, IAST ast, String coordStr) {
+  // buf.append(coordStr + ": [");
+  //
+  // for (int i = 1; i < ast.size(); i++) {
+  // IExpr arg = ast.get(i);
+  // if (!arg.isList3()) {
+  // return false;
+  // }
+  // IAST coords = (IAST) arg;
+  // buf.append("[[");
+  // coords.joinToString(buf, ",");
+  // buf.append("]]");
+  // if (i < ast.size() - 1) {
+  // buf.append(",");
+  // }
+  // }
+  // buf.append("]");
+  // return true;
+  // }
 
   private static boolean graphics3DCoordsOrListOfCoords(ObjectNode json, IAST coordsOrListOfCoords,
       String coordStr) {

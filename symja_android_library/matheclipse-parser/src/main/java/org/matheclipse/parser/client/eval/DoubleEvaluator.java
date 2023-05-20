@@ -603,7 +603,6 @@ public class DoubleEvaluator {
           }
         }
       } else if (functionNode.getNode(0) instanceof FunctionNode) {
-        FunctionNode function = (FunctionNode) functionNode.getNode(0);
         if (fCallbackFunction != null) {
           double doubleArgs[] = new double[functionNode.size() - 1];
           for (int i = 0; i < doubleArgs.length; i++) {

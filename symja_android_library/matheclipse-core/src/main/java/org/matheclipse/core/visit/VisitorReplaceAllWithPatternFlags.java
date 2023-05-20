@@ -15,16 +15,10 @@ import org.matheclipse.core.interfaces.IPatternSequence;
  * F.NIL</code> if no substitution occurred.
  */
 public class VisitorReplaceAllWithPatternFlags extends VisitorReplaceAll {
-  private boolean onlyNamedPatterns;
+  // private boolean onlyNamedPatterns;
 
   public VisitorReplaceAllWithPatternFlags(Function<IExpr, IExpr> function) {
-    this(function,true); 
-  }
-
-  public VisitorReplaceAllWithPatternFlags(Function<IExpr, IExpr> function,
-      boolean onlyNamedPatterns) {
     super(function);
-    this.onlyNamedPatterns = onlyNamedPatterns;
   }
 
   private IExpr visitPatternObject(IPatternObject element) {
@@ -71,23 +65,7 @@ public class VisitorReplaceAllWithPatternFlags extends VisitorReplaceAll {
 
         if (result.isAST()) {
           return EvalAttributes.simpleEval(result);
-          // if (result.isFlatAST()) {
-          // IASTAppendable flattened = EvalAttributes.flattenDeep((IAST) result);
-          // if (flattened.isPresent()) {
-          // result = flattened;
-          // }
-          // }
-          // if (result.isOneIdentityAST1()) {
-          // return result.first();
-          // } else if (result.isOrderlessAST()) {
-          // EvalAttributes.sort((IASTMutable) result);
-          // }
-          // ((IAST) result).addEvalFlags(ast.getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR);
-
         }
-        // if (result instanceof IASTMutable) {
-        // ((IASTMutable) result).setEvalFlags(ast.getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR);
-        // }
         return result;
       }
       i++;

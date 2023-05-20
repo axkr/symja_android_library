@@ -540,13 +540,11 @@ public class TeXSliceParser extends TeXScanner {
             continue;
           } else if (commandStr.equals("sin") || commandStr.equals("cos")) {
             // TODO make this for all numeric builtin commands?
-            StringBuilder variable = new StringBuilder();
             boolean isVariable = false;
             while (ch == ' ' || Character.isJavaIdentifierPart(ch)) {
               if (ch != ' ') {
                 isVariable = true;
               }
-              variable.append(ch);
               if (i >= texStr.length() - 1) {
                 break;
               }

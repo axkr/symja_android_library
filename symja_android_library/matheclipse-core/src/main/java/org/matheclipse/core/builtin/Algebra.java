@@ -5556,8 +5556,6 @@ public class Algebra {
       // List<IExpr> varList = r;
       List<IExpr> varList = variableList.copyTo();
 
-      String[] varListStr = new String[1];
-      varListStr[0] = variableList.arg1().toString();
       JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
       GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator, false);
       GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator, false);
@@ -5626,9 +5624,6 @@ public class Algebra {
 
   public static UnivPowerSeries<BigRational> quotientPS(IExpr exprNumerator, IExpr exprDenominator,
       IExpr x) {
-    String[] varListStr = new String[1];
-    varListStr[0] = x.toString();
-    // IAST varList = F.List(x);
     JASConvert<BigRational> jas = new JASConvert<BigRational>(x, BigRational.ZERO);
     GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator, false);
 

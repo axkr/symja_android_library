@@ -158,8 +158,6 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   /** {@inheritDoc} */
   @Override
   public String definitionToString() {
-    // call to ensure, that the associated rules are loaded:
-    getEvaluator();
     return super.definitionToString();
   }
 

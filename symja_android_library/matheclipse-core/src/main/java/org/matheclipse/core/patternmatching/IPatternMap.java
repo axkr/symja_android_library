@@ -1848,7 +1848,7 @@ public interface IPatternMap {
         return substitute(symbolOrPatternObject);
       }
       return F.NIL;
-    }, onlyNamedPatterns);
+    });
     IExpr result = lhsPatternExpr.accept(visitor);
 
     if (result.isPresent()) {

@@ -2089,12 +2089,14 @@ public final class Programming {
         if (arg1.isList()) {
           list = (IAST) arg1;
         }
-        map = new IdentityHashMap<ISymbol, ISymbol>();
-        for (int i = 1; i < list.size(); i++) {
-          if (list.get(i).isSymbol()) {
-            map.put((ISymbol) list.get(i), S.Null);
-          } else {
-            map.put(list.get(i).topHead(), S.Null);
+        // map = new IdentityHashMap<ISymbol, ISymbol>();
+        if (map != null) {
+          for (int i = 1; i < list.size(); i++) {
+            if (list.get(i).isSymbol()) {
+              map.put((ISymbol) list.get(i), S.Null);
+            } else {
+              map.put(list.get(i).topHead(), S.Null);
+            }
           }
         }
       }

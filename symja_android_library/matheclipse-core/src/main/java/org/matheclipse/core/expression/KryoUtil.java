@@ -193,9 +193,7 @@ public class KryoUtil {
 
     @Override
     public void write(Kryo kryo, Output output, BuiltInDummy object) {
-      if (object instanceof BuiltInDummy) {
-        output.writeString(object.getSymbolName());
-      }
+      output.writeString(object.getSymbolName());
     }
 
     @Override

@@ -105,9 +105,6 @@ public abstract class TeXScanner {
   /** Current parser input string */
   protected char[] fInputString;
 
-  /** Recursion depth for brackets. */
-  protected int fRecursionDepth;
-
   /** Current input character */
   protected char fCurrentChar;
 
@@ -945,7 +942,6 @@ public abstract class TeXScanner {
     fCurrentPosition = 0;
     fRowCounter = 0;
     fCurrentColumnStartPosition = 0;
-    fRecursionDepth = 0;
   }
 
   // protected abstract boolean isOperatorCharacters();

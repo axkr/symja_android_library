@@ -38,7 +38,6 @@ public class SequenceFunctions {
 
       try {
         IExpr overlapsOption = S.False;
-        int lastPosition = ast.argSize();
         final OptionArgs options = OptionArgs.createOptionArgs(ast, engine);
         if (options != null) {
           IExpr option = options.getOption(S.Overlaps);

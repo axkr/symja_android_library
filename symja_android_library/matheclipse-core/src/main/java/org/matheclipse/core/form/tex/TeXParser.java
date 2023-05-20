@@ -231,7 +231,7 @@ public class TeXParser {
   }
 
   int counter = 0;
-  EvalEngine fEngine;
+  // EvalEngine fEngine;
 
   /**
    * If <code>true</code>, a <code>msub, msup, msubsup, munderover</code> expression is parsed;
@@ -239,7 +239,7 @@ public class TeXParser {
   private boolean subOrSup;
 
   public TeXParser(EvalEngine engine) {
-    fEngine = engine;
+    // fEngine = engine;
   }
 
   private IExpr convert(NodeList list, int[] position, IExpr lhs, int precedence) {
