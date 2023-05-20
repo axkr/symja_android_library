@@ -678,7 +678,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
         action.accept(arg3);
         break;
       default:
-        throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(startOffset) + ", Size: 2");
+        throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(startOffset) + ", Size: 4");
     }
   }
 
@@ -719,7 +719,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
           break;
         default:
           throw new IndexOutOfBoundsException(
-              "Index: " + Integer.valueOf(startOffset) + ", Size: 2");
+              "Index: " + Integer.valueOf(startOffset) + ", Size: 4");
       }
     }
   }
@@ -759,8 +759,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
           action.accept(arg3, 3);
           break;
         default:
-          throw new IndexOutOfBoundsException(
-              "Index: " + Integer.valueOf(start) + ", Size: 2");
+          throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(start) + ", Size: 4");
       }
     }
   }

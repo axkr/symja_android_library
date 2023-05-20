@@ -884,6 +884,7 @@ public class SimplifyFunctions {
                       // 1+Tan(x)^2....
                       transformResult = F.Sec(arg1);
                       break;
+                    default:
                   }
                 } else {
                   // -1+....
@@ -924,6 +925,7 @@ public class SimplifyFunctions {
                       transformResult = F.Sech(arg1);
                       negate = true;
                       break;
+                    default:
                   }
                 }
               } else if (indx[1] == NEGATIVE_SQR_ARG) {
@@ -970,6 +972,7 @@ public class SimplifyFunctions {
                       // 1-Tanh(x)^2....
                       transformResult = F.Sech(arg1);
                       break;
+                    default:
                   }
                 } else {
                   // -1 - ...
@@ -994,6 +997,7 @@ public class SimplifyFunctions {
                       transformResult = F.Cosh(arg1);
                       negate = true;
                       break;
+                    default:
                   }
                 }
               }

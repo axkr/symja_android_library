@@ -51,7 +51,7 @@ public class BuiltinGenerator {
           out.println();
         }
       }
-      out.println("        public final static IBuiltInSymbol " + sym + " = F.initFinalSymbol(\""
+      out.println("        public final static IBuiltInSymbol " + sym + " = S.initFinalSymbol(\""
           + sym + "\", ID." + sym + ");");
     }
   }

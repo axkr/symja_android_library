@@ -884,6 +884,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
         return predicate.test(arg1, 1) && predicate.test(arg2, 2);
       case 2:
         return predicate.test(arg2, 2);
+      default:
     }
     return true;
   }
@@ -898,6 +899,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
         return predicate.test(arg1) && predicate.test(arg2);
       case 2:
         return predicate.test(arg2);
+      default:
     }
     return true;
   }
@@ -925,6 +927,8 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
       case 2:
         action.accept(arg2);
         break;
+      default:
+        throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(startOffset) + ", Size: 3");
     }
   }
 
@@ -953,7 +957,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
           break;
         default:
           throw new IndexOutOfBoundsException(
-              "Index: " + Integer.valueOf(startOffset) + ", Size: 2");
+              "Index: " + Integer.valueOf(startOffset) + ", Size: 3");
       }
     }
   }
@@ -982,7 +986,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
           break;
         default:
           throw new IndexOutOfBoundsException(
-              "Index: " + Integer.valueOf(start) + ", Size: 2");
+              "Index: " + Integer.valueOf(start) + ", Size: 3");
       }
     }
   }

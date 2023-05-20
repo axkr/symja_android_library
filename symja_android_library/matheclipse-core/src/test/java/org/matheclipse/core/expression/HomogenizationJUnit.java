@@ -1,4 +1,4 @@
-package org.matheclipse.io.others;
+package org.matheclipse.core.expression;
 
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -13,9 +13,9 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
-import org.matheclipse.io.system.AbstractTestCase;
+import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
-public class HomogenizationJUnit extends AbstractTestCase {
+public class HomogenizationJUnit extends ExprEvaluatorTestCase {
   public HomogenizationJUnit() {
     super("HomogenizationTest");
   }

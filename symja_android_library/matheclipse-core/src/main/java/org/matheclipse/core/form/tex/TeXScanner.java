@@ -688,6 +688,7 @@ public abstract class TeXScanner {
             startPosition = fCurrentPosition;
             getChar();
             break;
+          default:
         }
       }
     }

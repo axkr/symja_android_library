@@ -1000,6 +1000,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
       case ComplexReal64:
         normalRecursiveComplex((double[]) fData, list, dims, 0, index);
         break;
+      default:
     }
 
     return list;

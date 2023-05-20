@@ -146,6 +146,7 @@ public class SidesFunctions {
               case ID.GreaterEqual:
                 arg2 = a1.last();
                 break;
+              default:
             }
           }
         } else {
@@ -355,6 +356,7 @@ public class SidesFunctions {
               case ID.GreaterEqual:
                 arg2 = a1.last();
                 break;
+              default:
             }
           }
         } else {

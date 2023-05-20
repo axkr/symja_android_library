@@ -375,6 +375,7 @@ public class IntervalDataSym {
       case 3:
         left = precedence(symbols[1], symbols[3]);
         break;
+      default:
     }
     IBuiltInSymbol right = S.LessEqual;
     switch (index[1]) {
@@ -390,6 +391,7 @@ public class IntervalDataSym {
       case 3:
         right = precedence(symbols[1], symbols[3]);
         break;
+      default:
     }
     return F.List(min, left, right, max);
   }

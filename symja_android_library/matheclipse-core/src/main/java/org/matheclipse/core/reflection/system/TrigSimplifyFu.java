@@ -541,6 +541,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
           case ID.Sec:
             newHead = S.Csc;
             break;
+          default:
         }
         if (newHead != null) {
           if (tr3IsPositive(arg1.subtract(F.CPiQuarter))

@@ -651,6 +651,9 @@ public class WL {
           return;
         case IExpr.NUMERICARRAYID:
           writeNumericArray((NumericArrayExpr) arg1);
+          return;
+        default:
+          throw new IllegalArgumentException("Unknown hierarchy ID: " + hier);
       }
     }
 

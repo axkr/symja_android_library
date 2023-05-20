@@ -219,6 +219,7 @@ public class ExprParser extends Scanner {
         case ID.Rational:
           expr = Arithmetic.CONST_RATIONAL.evaluate(ast, fEngine);
           break;
+        default:
       }
       return expr.orElse(ast);
     }
@@ -450,7 +451,7 @@ public class ExprParser extends Scanner {
           final IAST slot = F.Slot(identifierContext[0]);
           getNextToken();
           return parseArguments(slot);
-        } else if (fToken == TT_STRING) { 
+        } else if (fToken == TT_STRING) {
           return parseArguments(F.Slot(getString()));
         }
         return parseArguments(F.Slot1);
@@ -521,6 +522,8 @@ public class ExprParser extends Scanner {
       case TT_ASSOCIATION_CLOSE:
         throwSyntaxError("Too much closing |> in factor.");
         break;
+
+      default:
     }
 
     throwSyntaxError("Error in factor at character: '" + fCurrentChar + "' (Token:" + fToken
@@ -613,6 +616,7 @@ public class ExprParser extends Scanner {
         IExpr defaultValue = parseExpression();
         temp = F.Optional(F.$b(), defaultValue);
         break;
+      default:
     }
 
     if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
@@ -699,6 +703,7 @@ public class ExprParser extends Scanner {
         IExpr defaultValue = parseExpression();
         temp = F.Optional(F.$p(symbol), defaultValue);
         break;
+      default:
     }
     if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
       getNextToken();
