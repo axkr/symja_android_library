@@ -323,6 +323,8 @@ public final class AST3 extends AST2 {
       case 3:
         action.accept(arg3);
         break;
+      default:
+        throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(startOffset) + ", Size: 2");
     }
   }
 
@@ -361,6 +363,9 @@ public final class AST3 extends AST2 {
         case 3:
           action.accept(arg3);
           break;
+        default:
+          throw new IndexOutOfBoundsException(
+              "Index: " + Integer.valueOf(startOffset) + ", Size: 2");
       }
     }
   }
@@ -399,6 +404,9 @@ public final class AST3 extends AST2 {
         case 3:
           action.accept(arg3, 3);
           break;
+        default:
+          throw new IndexOutOfBoundsException(
+              "Index: " + Integer.valueOf(start) + ", Size: 2");
       }
     }
   }

@@ -54,7 +54,7 @@ public abstract class DoubleFormFactory {
 
   protected final boolean fRelaxedSyntax;
   protected final boolean fPlusReversed;
-  protected boolean fIgnoreNewLine = false;
+  // protected boolean fIgnoreNewLine = false;
   /** If <code>true</code> print leading and trailing quotes in Symja strings */
   private boolean fQuotes = false;
 
@@ -1320,9 +1320,9 @@ public abstract class DoubleFormFactory {
   }
 
   /** @param ignoreNewLine The ignoreNewLine to set. */
-  public void setIgnoreNewLine(final boolean ignoreNewLine) {
-    fIgnoreNewLine = ignoreNewLine;
-  }
+  // public void setIgnoreNewLine(final boolean ignoreNewLine) {
+  // fIgnoreNewLine = ignoreNewLine;
+  // }
 
   /**
    * If <code>true</code> print leading and trailing quotes in Symja strings

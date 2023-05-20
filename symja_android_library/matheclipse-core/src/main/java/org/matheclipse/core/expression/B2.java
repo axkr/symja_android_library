@@ -4,7 +4,6 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.HashSet;
 import java.util.RandomAccess;
 import java.util.Set;
 import java.util.TreeSet;
@@ -952,6 +951,9 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
         case 2:
           action.accept(arg2);
           break;
+        default:
+          throw new IndexOutOfBoundsException(
+              "Index: " + Integer.valueOf(startOffset) + ", Size: 2");
       }
     }
   }
@@ -978,6 +980,9 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
         case 2:
           action.accept(arg2, 2);
           break;
+        default:
+          throw new IndexOutOfBoundsException(
+              "Index: " + Integer.valueOf(start) + ", Size: 2");
       }
     }
   }

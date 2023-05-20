@@ -215,8 +215,9 @@ public class AST1 extends AST0 {
         return predicate.test(arg0, 0) && predicate.test(arg1, 1);
       case 1:
         return predicate.test(arg1, 1);
+      default:
+        throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(startOffset) + ", Size: 2");
     }
-    return true;
   }
 
   /** {@inheritDoc} */
@@ -227,8 +228,9 @@ public class AST1 extends AST0 {
         return predicate.test(arg0) && predicate.test(arg1);
       case 1:
         return predicate.test(arg1);
+      default:
+        throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(startOffset) + ", Size: 2");
     }
-    return true;
   }
 
   /** {@inheritDoc} */
@@ -248,6 +250,8 @@ public class AST1 extends AST0 {
       case 1:
         action.accept(arg1);
         break;
+      default:
+        throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(startOffset) + ", Size: 2");
     }
   }
 
@@ -265,6 +269,9 @@ public class AST1 extends AST0 {
         case 1:
           action.accept(arg1);
           break;
+        default:
+          throw new IndexOutOfBoundsException(
+              "Index: " + Integer.valueOf(startOffset) + ", Size: 2");
       }
     }
   }
@@ -282,6 +289,8 @@ public class AST1 extends AST0 {
         case 1:
           action.accept(arg1, 1);
           break;
+        default:
+          throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(start) + ", Size: 2");
       }
     }
   }
