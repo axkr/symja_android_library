@@ -8,12 +8,9 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.graphics.IGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplexNum;
-import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.parser.client.Scanner;
@@ -135,31 +132,31 @@ public class ExpressionJSONConvert {
     return temp;
   }
 
-  private static JsonNode exportGraphics3DJSON(IExpr data3D) {
-    if (data3D.isList()) {
-      IAST list = (IAST) data3D;
-      ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
-      for (int i = 1; i < list.size(); i++) {
-        IExpr arg = list.getAST(i);
-        if (arg.isAST()) {
-          IAST ast = (IAST) arg;
-          if (ast.head().isBuiltInSymbol()) {
-            StringBuilder buf = new StringBuilder();
-            IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
-            IEvaluator evaluator = symbol.getEvaluator();
-            if (evaluator instanceof IGraphics3D) {
-              // JsonNode n = ((IGraphics3D) evaluator).graphics3D(buf, (IAST) ast);
-              // temp.add(n);
-            }
-          }
-        }
-      }
-      return temp;
-    }
-    ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
-    temp.add(temp.toString());
-    return temp;
-  }
+  // private static JsonNode exportGraphics3DJSON(IExpr data3D) {
+  // if (data3D.isList()) {
+  // IAST list = (IAST) data3D;
+  // ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
+  // for (int i = 1; i < list.size(); i++) {
+  // IExpr arg = list.getAST(i);
+  // if (arg.isAST()) {
+  // IAST ast = (IAST) arg;
+  // if (ast.head().isBuiltInSymbol()) {
+  // StringBuilder buf = new StringBuilder();
+  // IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
+  // IEvaluator evaluator = symbol.getEvaluator();
+  // if (evaluator instanceof IGraphics3D) {
+  // // JsonNode n = ((IGraphics3D) evaluator).graphics3D(buf, (IAST) ast);
+  // // temp.add(n);
+  // }
+  // }
+  // }
+  // }
+  // return temp;
+  // }
+  // ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
+  // temp.add(temp.toString());
+  // return temp;
+  // }
 
   public static IExpr importExpressionJSONRecursive(JsonNode node) {
     if (node instanceof ArrayNode) {

@@ -12,7 +12,6 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -236,7 +235,7 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
           // see org.hipparchus.analysis.interpolation.DividedDifferenceInterpolator
           IExpr[] a = computeDividedDifference(xv, yv, engine);
 
-          IASTAppendable polynomial = F.PlusAlloc(16);
+          // IASTAppendable polynomial = F.PlusAlloc(16);
           n = c.length;
           IExpr value = a[n];
           for (int i = n - 1; i >= 0; i--) {

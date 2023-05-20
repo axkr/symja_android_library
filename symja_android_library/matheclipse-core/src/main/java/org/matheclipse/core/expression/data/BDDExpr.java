@@ -80,7 +80,6 @@ public class BDDExpr extends DataExpr<BDD> implements Externalizable {
   @Override
   public String toString() {
     if (fData instanceof BDD) {
-      BDD bdd = fData;
       List<Variable> variableOrder = fData.getVariableOrder();
       return "BooleanFunction(Index: " + fData.index() + " Number of variables: "
           + variableOrder.size() + ")";

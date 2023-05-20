@@ -4274,7 +4274,7 @@ public class StatisticsFunctions {
     @Override
     public IExpr skewness(IAST dist) {
       if (dist.isAST2()) {
-        IExpr n = dist.arg1();
+        // IExpr n = dist.arg1();
         IExpr m = dist.arg2();
         return
         // [$ Sqrt(-1+E^m^2)*(2+E^m^2) $]

@@ -214,18 +214,18 @@ public final class RulesData implements Serializable {
    */
   private PatternMatcher addSimplePatternUpRule(final IExpr leftHandSide,
       final PatternMatcher pmEvaluator) {
-    IExpr head = ((IAST) leftHandSide).head();
-    if (head.isFreeOfPatterns()) {
-      final int hash = ((IAST) leftHandSide).topHead().hashCode();
-      if (F.isSystemInitialized()) {
-        int indx = fSimplePatternUpRules.indexOf(pmEvaluator);
-        if (indx >= 0) {
-          fSimplePatternUpRules.remove(indx);
-        }
-      }
-      fSimplePatternUpRules.add(pmEvaluator);
-      return pmEvaluator;
-    }
+    // IExpr head = ((IAST) leftHandSide).head();
+    // if (head.isFreeOfPatterns()) {
+    // final int hash = ((IAST) leftHandSide).topHead().hashCode();
+    // if (F.isSystemInitialized()) {
+    // int indx = fSimplePatternUpRules.indexOf(pmEvaluator);
+    // if (indx >= 0) {
+    // fSimplePatternUpRules.remove(indx);
+    // }
+    // }
+    // fSimplePatternUpRules.add(pmEvaluator);
+    // return pmEvaluator;
+    // }
 
     if (F.isSystemInitialized()) {
       int indx = fSimplePatternUpRules.indexOf(pmEvaluator);

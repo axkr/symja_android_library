@@ -2401,21 +2401,18 @@ public class GraphFunctions {
     if (gex.isWeightedGraph()) {
       Graph<IExpr, ExprWeightedEdge> g = (Graph<IExpr, ExprWeightedEdge>) gex.toData();
       DirectedSimpleCycles<IExpr, ExprWeightedEdge> algorithm =
-          new SzwarcfiterLauerSimpleCycles<IExpr, ExprWeightedEdge>(
-              (Graph<IExpr, ExprWeightedEdge>) gex.toData());
+          new SzwarcfiterLauerSimpleCycles<IExpr, ExprWeightedEdge>(g);
       return findCyclesList(algorithm, minCycleLength, maxCycleLength, atMostCycles);
     } else {
       if (gex.isUndirectedGraph()) {
         Graph<IExpr, ExprEdge> g = (Graph<IExpr, ExprEdge>) gex.toData();
         GraphType type = g.getType();
-        CycleBasisAlgorithm<IExpr, ExprEdge> algorithm =
-            new PatonCycleBase<IExpr, ExprEdge>((Graph<IExpr, ExprEdge>) gex.toData());
+        CycleBasisAlgorithm<IExpr, ExprEdge> algorithm = new PatonCycleBase<IExpr, ExprEdge>(g);
         return findCyclesSet(algorithm, minCycleLength, maxCycleLength, atMostCycles, type);
       } else {
         Graph<IExpr, ExprEdge> g = (Graph<IExpr, ExprEdge>) gex.toData();
         DirectedSimpleCycles<IExpr, ExprEdge> algorithm =
-            new SzwarcfiterLauerSimpleCycles<IExpr, ExprEdge>(
-                (Graph<IExpr, ExprEdge>) gex.toData());
+            new SzwarcfiterLauerSimpleCycles<IExpr, ExprEdge>(g);
         return findCyclesList(algorithm, minCycleLength, maxCycleLength, atMostCycles);
       }
     }
@@ -2604,7 +2601,7 @@ public class GraphFunctions {
     Set<Object> edgeSet = (Set<Object>) graph.edgeSet();
     IASTAppendable edges = F.ListAlloc(edgeSet.size());
     IASTAppendable weights = null;
-    GraphType type = graph.getType();
+    // GraphType type = graph.getType();
 
     for (Object edge : edgeSet) {
       if (edge instanceof ExprWeightedEdge) {

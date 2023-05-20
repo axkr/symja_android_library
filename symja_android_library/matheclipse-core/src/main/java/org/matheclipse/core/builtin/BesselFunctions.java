@@ -1210,6 +1210,7 @@ public class BesselFunctions {
       IExpr z = ast.arg2();
       if (engine.isNumericMode() && n.isNumber() && z.isNumber()) {
         try {
+          // side effect - throw ArgumentTypeException if no Complex value can be evaluated
           Complex nc = n.evalfc();
           Complex zc = z.evalfc();
           if (ast.isAST3()) {

@@ -52,9 +52,9 @@ public final class NumStr extends Num {
     long precision = EvalEngine.getApfloat().precision();
     precision = (fPrecision > precision) ? fPrecision : precision;
     if (fExponent == 0) {
-      return ApfloatNum.valueOf(fFloatStr, fPrecision);
+      return ApfloatNum.valueOf(fFloatStr, precision);
     }
-    return ApfloatNum.valueOf(fFloatStr + "E" + fExponent, fPrecision);
+    return ApfloatNum.valueOf(fFloatStr + "E" + fExponent, precision);
   }
 
   @Override
@@ -62,9 +62,9 @@ public final class NumStr extends Num {
     long precision = EvalEngine.getApfloat().precision();
     precision = (fPrecision > precision) ? fPrecision : precision;
     if (fExponent == 0) {
-      return new Apfloat(fFloatStr, fPrecision);
+      return new Apfloat(fFloatStr, precision);
     }
-    return new Apfloat(fFloatStr + "E" + fExponent, fPrecision);
+    return new Apfloat(fFloatStr + "E" + fExponent, precision);
   }
 
   /** {@inheritDoc} */

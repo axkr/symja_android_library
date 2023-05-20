@@ -39,7 +39,7 @@ public class Unicode {
       return quantity.toString();// (quantity.value()) + SPACE + valueOf(quantity.unit());
     }
     if (scalar instanceof INum) {
-      INum doubleScalar = (INum) scalar;
+      // INum doubleScalar = (INum) scalar;
       String string = scalar.toString();
       int index = string.indexOf('.');
       return 0 <= index //

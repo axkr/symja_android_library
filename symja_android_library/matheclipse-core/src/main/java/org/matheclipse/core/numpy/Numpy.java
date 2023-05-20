@@ -19,7 +19,8 @@ public class Numpy {
     if (endpoint) {
       result[result.length - 1] = stop;
     } else {
-      result[result.length - 1] = x += step;
+      x += step;
+      result[result.length - 1] = x;
     }
     return result;
   }

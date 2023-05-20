@@ -167,7 +167,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testBeep() {
-    String s = System.getProperty("os.name");
+    // String s = System.getProperty("os.name");
     // if (s.contains("Windows")) {
     // check(
     // "Beep()", //

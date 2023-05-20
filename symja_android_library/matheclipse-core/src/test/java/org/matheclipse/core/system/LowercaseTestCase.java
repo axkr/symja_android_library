@@ -9576,6 +9576,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "12,4,1,0},{12,6,0,0},{17,0,0,1},{17,1,2,0},{17,3,1,0},{17,5,0,0},{22,0,2,0},{22,\n"
             + "2,1,0},{22,4,0,0},{27,1,1,0},{27,3,0,0},{32,0,1,0},{32,2,0,0},{37,1,0,0},{42,0,0,\n"
             + "0}}");
+
+    check("FrobeniusSolve({12, 16, 20, 27}, 123, 2)", //
+        "{{0,1,4,1},{0,6,0,1}}");
   }
 
   public void testFromCharacterCode() {
@@ -20945,7 +20948,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-4");
 
     check("Round(N[0.03306158858189456, 30] * 100, 10^-2) // N", //
-      "3.31");
+        "3.31");
 
   }
 
