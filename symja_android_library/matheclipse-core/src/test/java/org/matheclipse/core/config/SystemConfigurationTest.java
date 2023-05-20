@@ -1,6 +1,7 @@
 package org.matheclipse.core.config;
 
-import junit.framework.TestCase;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.OverflowException;
@@ -10,16 +11,12 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
+public class SystemConfigurationTest extends ExprEvaluatorTestCase {
 
-public class SystemConfigurationTest extends TestCase {
-
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-    F.initSymbols();
+  public SystemConfigurationTest(String name) {
+    super(name);
   }
 
   public void testApfloatStorage() {
@@ -36,15 +33,17 @@ public class SystemConfigurationTest extends TestCase {
   }
 
   public void testOverflowError() {
-    String expr = "N(1.7*10^1,100)/N(2.5*10^1,100)*N(0,100)";
     ExprEvaluator evaluator = new ExprEvaluator();
+    String expr = "N(1.7*10^1,100)/N(2.5*10^1,100)*N(0,100)";
+
     IExpr result = evaluator.eval(expr);
     assertEquals(result.toString(), "0");
   }
 
   public void testOverflowError02() {
-    String expr = "ArcSin(N(1.7*10^1,100)/N(2.5*10^1,100)*N(0,100))";
     ExprEvaluator evaluator = new ExprEvaluator();
+    String expr = "ArcSin(N(1.7*10^1,100)/N(2.5*10^1,100)*N(0,100))";
+
     IExpr result = evaluator.eval(expr);
     assertEquals(result.toString(), "0");
   }

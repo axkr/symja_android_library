@@ -1,13 +1,16 @@
 package org.matheclipse.core.config;
 
-import junit.framework.TestCase;
+import java.util.Locale;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.system.ExprEvaluatorTestCase;
 import org.matheclipse.parser.trie.SuggestTree;
 
-import java.util.Locale;
+public class LocaleTest extends ExprEvaluatorTestCase {
 
-public class LocaleTest extends TestCase {
+  public LocaleTest(String name) {
+    super(name);
+  }
 
   @Override
   protected void tearDown() throws Exception {
