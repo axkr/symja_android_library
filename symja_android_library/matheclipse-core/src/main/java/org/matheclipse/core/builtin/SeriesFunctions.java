@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
@@ -1630,6 +1631,7 @@ public class SeriesFunctions {
    * @param engine the evaluation engine
    * @return the series or <code>null</code> if no series is found
    */
+  @Nullable
   public static ASTSeriesData seriesDataRecursive(final IExpr function, IExpr x, IExpr x0,
       final int n, EvalEngine engine) {
     final int denominator = 1;
@@ -1825,14 +1827,14 @@ public class SeriesFunctions {
       timesAST = rest;
       if (temp != null) {
         arg = seriesDataRecursive(timesAST.arg1(), x, x0, ni, engine);
-        if (arg instanceof ASTSeriesData) {
+        if (arg != null) {
           series = temp.timesPS((ASTSeriesData) arg);
         } else {
           return null;
         }
       } else {
         arg = seriesDataRecursive(timesAST.arg1(), x, x0, ni, engine);
-        if (arg instanceof ASTSeriesData) {
+        if (arg != null) {
           series = (ASTSeriesData) arg;
         } else {
           return null;
@@ -1840,7 +1842,7 @@ public class SeriesFunctions {
       }
     } else {
       arg = seriesDataRecursive(timesAST.arg1(), x, x0, ni, engine);
-      if (arg instanceof ASTSeriesData) {
+      if (arg != null) {
         series = (ASTSeriesData) arg;
       } else {
         return null;
@@ -1857,7 +1859,7 @@ public class SeriesFunctions {
               if (exp == -1) {
                 // arg1.divide(arg2.base())
                 arg = seriesDataRecursive(timesArg.base(), x, x0, ni, engine);
-                if (arg instanceof ASTSeriesData) {
+                if (arg != null) {
                   series = series.dividePS((ASTSeriesData) arg);
                   continue;
                 }
@@ -1867,7 +1869,7 @@ public class SeriesFunctions {
           }
 
           arg = seriesDataRecursive(timesArg, x, x0, ni, engine);
-          if (arg instanceof ASTSeriesData) {
+          if (arg != null) {
             series = series.timesPS((ASTSeriesData) arg);
             continue;
           }
@@ -1927,7 +1929,7 @@ public class SeriesFunctions {
           int denominator = rat.denominator().toIntDefault();
           if (denominator != Integer.MIN_VALUE) {
             ASTSeriesData temp = seriesDataRecursive(F.Power(base, x), x, x0, n * denominator, engine);
-            if (temp instanceof ASTSeriesData) {
+            if (temp != null) {
               ASTSeriesData series = temp;
               if (numerator != 1) {
                 series = series.shiftTimes(numerator, F.C1, series.order());
