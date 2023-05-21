@@ -273,12 +273,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr copy() {
-    try {
-      return (IExpr) clone();
-    } catch (CloneNotSupportedException e) {
-      LOGGER.error("ApcomplexNum.copy() failed", e);
-      return null;
-    }
+    return this;
   }
 
   public ApcomplexNum divide(final ApcomplexNum that) throws ArithmeticException {

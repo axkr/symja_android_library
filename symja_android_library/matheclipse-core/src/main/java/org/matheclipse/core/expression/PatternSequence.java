@@ -275,12 +275,7 @@ public class PatternSequence extends AbstractPatternSequence {
 
   @Override
   public IExpr copy() {
-    try {
-      return (IExpr) clone();
-    } catch (CloneNotSupportedException e) {
-      LOGGER.error("PatternSequence.copy() failed", e);
-      return null;
-    }
+    return this;
   }
 
   @Override

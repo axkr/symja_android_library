@@ -217,12 +217,7 @@ public class Num implements INum {
 
   @Override
   public IExpr copy() {
-    try {
-      return (IExpr) clone();
-    } catch (CloneNotSupportedException e) {
-      LOGGER.error("Num.copy() failed", e);
-      return null;
-    }
+    return this;
   }
 
   @Override

@@ -520,12 +520,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr copy() {
-    try {
-      return (IExpr) clone();
-    } catch (CloneNotSupportedException e) {
-      LOGGER.error("ApfloatNum.copy() failed", e);
-      return null;
-    }
+    return this;
   }
 
   /** {@inheritDoc} */

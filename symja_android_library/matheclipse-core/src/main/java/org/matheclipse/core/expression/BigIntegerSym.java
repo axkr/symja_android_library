@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import static org.matheclipse.core.expression.NumberUtil.intValueExact;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -22,8 +23,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.Primality;
 import com.google.common.math.BigIntegerMath;
 import edu.jas.arith.BigRational;
-
-import static org.matheclipse.core.expression.NumberUtil.intValueExact;
 
 /**
  * IInteger implementation which delegates most of the methods to the {@link BigInteger} methods.
@@ -190,11 +189,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
       return Double.compare(fBigIntValue.doubleValue(), ((IReal) expr).doubleValue());
     }
     return super.compareTo(expr);
-  }
-
-  @Override
-  public IExpr copy() {
-    return new BigIntegerSym(this.fBigIntValue);
   }
 
   @Override

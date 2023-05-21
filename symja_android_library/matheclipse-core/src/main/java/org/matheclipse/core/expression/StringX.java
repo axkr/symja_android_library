@@ -257,12 +257,7 @@ public class StringX implements IStringX {
 
   @Override
   public IExpr copy() {
-    try {
-      return (IExpr) clone();
-    } catch (CloneNotSupportedException e) {
-      LOGGER.error("StringX.copy() failed", e);
-      return null;
-    }
+    return this;
   }
 
   /**

@@ -50,7 +50,7 @@ public class PatternNested extends Pattern {
 
   @Override
   public IExpr copy() {
-    return new PatternNested(fSymbol, fPatternExpr);
+    return this;
   }
 
   @Override

@@ -247,12 +247,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   @Override
   public IExpr copy() {
-    try {
-      return (IExpr) clone();
-    } catch (CloneNotSupportedException e) {
-      LOGGER.error("BuiltInDummy.copy() failed", e);
-      return null;
-    }
+    return this;
   }
 
   /** {@inheritDoc} */

@@ -63,12 +63,7 @@ public class OptionsPattern extends AbstractPatternSequence {
 
   @Override
   public IExpr copy() {
-    try {
-      return (IExpr) clone();
-    } catch (CloneNotSupportedException e) {
-      LOGGER.error("OptionsPattern.copy() failed", e);
-      return null;
-    }
+    return this;
   }
 
   @Override

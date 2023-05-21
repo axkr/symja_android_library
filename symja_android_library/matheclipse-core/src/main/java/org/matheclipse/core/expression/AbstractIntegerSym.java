@@ -385,12 +385,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
   @Override
   public IExpr copy() {
-    try {
-      return (IExpr) clone();
-    } catch (CloneNotSupportedException e) {
-      LOGGER.error("AbstractIntegerSym.copy() failed", e);
-      return null;
-    }
+    return this;
   }
 
   @Override

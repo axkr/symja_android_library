@@ -81,12 +81,7 @@ import org.matheclipse.core.visit.IVisitorLong;
 
   @Override
   public IExpr copy() {
-    try {
-      return (IExpr) clone();
-    } catch (CloneNotSupportedException e) {
-      LOGGER.error("ExprID.copy() failed", e);
-      return null;
-    }
+    return this;
   }
 
   /**

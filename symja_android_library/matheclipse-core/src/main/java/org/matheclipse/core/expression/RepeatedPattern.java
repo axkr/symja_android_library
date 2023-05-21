@@ -67,12 +67,7 @@ public class RepeatedPattern extends AbstractPatternSequence {
 
   @Override
   public IExpr copy() {
-    try {
-      return (IExpr) clone();
-    } catch (CloneNotSupportedException e) {
-      LOGGER.error("RepeatedPattern.copy() failed", e);
-      return null;
-    }
+    return this;
   }
 
   @Override

@@ -110,7 +110,7 @@ public class Pattern extends Blank {
 
   @Override
   public IExpr copy() {
-    return new Pattern(fSymbol, fHeadTest, fDefault);
+    return this;
   }
 
   @Override

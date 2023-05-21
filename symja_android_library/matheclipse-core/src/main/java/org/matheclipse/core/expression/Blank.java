@@ -127,7 +127,7 @@ public class Blank implements IPattern {
 
   @Override
   public IExpr copy() {
-    return new Blank(fHeadTest, fDefault);
+    return this;
   }
 
   @Override

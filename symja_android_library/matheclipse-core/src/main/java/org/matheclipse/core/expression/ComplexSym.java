@@ -284,12 +284,7 @@ public class ComplexSym implements IComplex {
 
   @Override
   public IExpr copy() {
-    try {
-      return (IExpr) clone();
-    } catch (CloneNotSupportedException e) {
-      LOGGER.error("ComplexSym.copy() failed", e);
-      return null;
-    }
+    return this;
   }
 
   /** {@inheritDoc} */

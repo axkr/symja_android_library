@@ -237,12 +237,7 @@ public class Symbol implements ISymbol, Serializable {
 
   @Override
   public IExpr copy() {
-    try {
-      return (IExpr) clone();
-    } catch (CloneNotSupportedException e) {
-      LOGGER.error("Symbol.copy() failed", e);
-      return null;
-    }
+    return this;
   }
 
   /** {@inheritDoc} */
