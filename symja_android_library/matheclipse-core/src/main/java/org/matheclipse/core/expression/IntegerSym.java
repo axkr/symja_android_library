@@ -163,6 +163,11 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
+  public IExpr copy() {
+    return new IntegerSym(this.fIntValue);
+  }
+
+  @Override
   public ComplexNum complexNumValue() {
     // double precision complex number
     return ComplexNum.valueOf(doubleValue());

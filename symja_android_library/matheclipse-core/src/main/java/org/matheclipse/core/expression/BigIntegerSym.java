@@ -193,6 +193,11 @@ public class BigIntegerSym extends AbstractIntegerSym {
   }
 
   @Override
+  public IExpr copy() {
+    return new BigIntegerSym(this.fBigIntValue);
+  }
+
+  @Override
   public ComplexNum complexNumValue() {
     // double precision complex number
     return ComplexNum.valueOf(doubleValue());
