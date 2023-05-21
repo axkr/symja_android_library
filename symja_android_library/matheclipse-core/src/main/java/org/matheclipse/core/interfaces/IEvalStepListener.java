@@ -3,6 +3,8 @@ package org.matheclipse.core.interfaces;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 
+import javax.annotation.Nullable;
+
 /**
  * A listener which could listen to the <code>EvalEngine#evalLoop()</code> steps, to implement an
  * evaluation trace or a step by step evaluation.
@@ -36,10 +38,11 @@ public interface IEvalStepListener {
   /**
    * Tear down this evaluation step (called finally at the evaluation loop).
    *
+   * @param result the result after evaluating the input from {@link #setUp(IExpr, int)}
    * @param recursionDepth the current recursion depth of this evaluation step
    * @param commitTraceFrame set to <code>true</code> if the current trace frame should be stored.
    */
-  public abstract void tearDown(int recursionDepth, boolean commitTraceFrame);
+  public abstract void tearDown(@Nullable IExpr result, int recursionDepth, boolean commitTraceFrame);
 
   /**
    * Add a new step in which the <code>inputExpr</code> was evaluated to the new <code>resultExpr

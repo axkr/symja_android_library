@@ -1703,6 +1703,7 @@ public class EvalEngine implements Serializable {
       throw TimeoutException.TIMED_OUT;
     }
 
+    long iterationCounter = 0;
     if (fTraceMode) {
       return evalLoopTraceMode(expr);
     } else {
@@ -1710,7 +1711,6 @@ public class EvalEngine implements Serializable {
       try {
         fRecursionCounter++;
         stackPush(expr);
-        long iterationCounter = 0;
         while (true) {
           if (result.isUnevaluated()) {
             return result.first();
@@ -1747,7 +1747,7 @@ public class EvalEngine implements Serializable {
       } finally {
         stackPop();
         if (fTraceMode) {
-          fTraceStack.tearDown(fRecursionCounter, true);
+          fTraceStack.tearDown(iterationCounter == 0 ? F.NIL : result, fRecursionCounter, true);
         }
         fRecursionCounter--;
         if (fStopRequested) {
@@ -1825,7 +1825,7 @@ public class EvalEngine implements Serializable {
     } finally {
       stackPop();
       if (fTraceMode) {
-        fTraceStack.tearDown(fRecursionCounter, true);
+        fTraceStack.tearDown(result, fRecursionCounter, true);
       }
       fRecursionCounter--;
       if (fStopRequested) {

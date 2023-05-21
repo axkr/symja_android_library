@@ -8,6 +8,8 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
+import javax.annotation.Nullable;
+
 public final class TraceStack extends AbstractEvalStepListener {
 
   final Stack<IASTAppendable> fStack = new Stack<IASTAppendable>();
@@ -79,7 +81,7 @@ public final class TraceStack extends AbstractEvalStepListener {
   }
 
   @Override
-  public void tearDown(int recursionDepth, boolean commitTraceFrame) {
+  public void tearDown(@Nullable IExpr result, int recursionDepth, boolean commitTraceFrame) {
     popList(commitTraceFrame);
   }
 

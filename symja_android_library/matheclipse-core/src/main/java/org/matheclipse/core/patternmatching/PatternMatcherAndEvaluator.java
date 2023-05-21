@@ -194,7 +194,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
           engine.popOptionsStack();
         }
         if (Config.TRACE_REWRITE_RULE && stepListener != null) {
-          stepListener.tearDown(0, matched);
+          stepListener.tearDown(null, 0, matched);
         }
         patternMap.setRHSEvaluated(matched);
         return matched;

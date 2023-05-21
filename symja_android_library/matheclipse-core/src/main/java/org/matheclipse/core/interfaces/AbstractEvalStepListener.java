@@ -1,5 +1,7 @@
 package org.matheclipse.core.interfaces;
 
+import javax.annotation.Nullable;
+
 /**
  * An abstract listener which could listen to the <code>EvalEngine#evalLoop()</code> steps, to
  * implement an evaluation trace or a step by step evaluation.
@@ -31,5 +33,5 @@ public abstract class AbstractEvalStepListener implements IEvalStepListener {
 
   /** {@inheritDoc} */
   @Override
-  public void tearDown(int recursionDepth, boolean commitTraceFrame) {}
+  public void tearDown(@Nullable IExpr result, int recursionDepth, boolean commitTraceFrame) {}
 }
