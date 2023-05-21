@@ -111,7 +111,7 @@ public class ServletServer {
 
         String portStr = args[i + 1];
         i++;
-        PORT = Integer.valueOf(portStr);
+        PORT = Integer.parseInt(portStr);
       } else if (arg.equals("-help") || arg.equals("-h")) {
         printUsage(serverClass);
         return -1;

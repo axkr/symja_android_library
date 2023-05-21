@@ -807,7 +807,7 @@ public class ExprEvaluatorTests {
     try {
       IFunctionEvaluator evaluator =
           (IFunctionEvaluator) ((IBuiltInSymbol) ast.topHead()).getEvaluator();
-      if (evaluator instanceof IFunctionEvaluator) {
+      if (evaluator instanceof IFunctionEvaluator) {// evaluator may be null
         IExpr result = evaluator.evaluate(ast, engine);
         assertEquals(expected, result.toString());
         return;
