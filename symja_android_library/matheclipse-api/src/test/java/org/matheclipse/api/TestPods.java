@@ -1790,6 +1790,78 @@ public class TestPods {
   }
 
   @Test
+  public void testNumber001() {
+    EvalEngine.resetModuleCounter4JUnit();
+    ObjectNode messageJSON = TestPods
+        .createJUnitResult("Sqrt(2)", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
+    final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
+    assertEquals(jsonStr, //
+        "{\n" //
+            + "  \"queryresult\" : {\n" //
+            + "    \"success\" : \"true\",\n" //
+            + "    \"numpods\" : 4,\n" //
+            + "    \"version\" : \"0.1\",\n" //
+            + "    \"pods\" : [ {\n" //
+            + "      \"title\" : \"Input\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"Sqrt(2)\",\n" //
+            + "        \"sinput\" : \"Sqrt(2)\",\n" //
+            + "        \"latex\" : \"\\\\sqrt{2}\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Decimal form\",\n" //
+            + "      \"scanner\" : \"Numeric\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"1.41421\",\n" //
+            + "        \"sinput\" : \"N(Sqrt(2))\",\n" //
+            + "        \"latex\" : \"1.41421\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Rational form\",\n" //
+            + "      \"scanner\" : \"Numeric\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"Rationalize(1.4142135623730951)\",\n" //
+            + "        \"sinput\" : \"Rationalize(1.4142135623730951`)\",\n" //
+            + "        \"latex\" : \"\\\\text{Rationalize}(1.41421)\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Continued fraction\",\n" //
+            + "      \"scanner\" : \"Numeric\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"{1,{2}}\",\n" //
+            + "        \"sinput\" : \"ContinuedFraction(Sqrt(2))\",\n" //
+            + "        \"latex\" : \"\\\\{1,\\\\{2\\\\}\\\\}\"\n" //
+            + "      } ]\n" //
+            + "    } ]\n" //
+            + "  }\n" //
+            + "}");
+  }
+
+  @Test
+  public void testNumber002() {
+    EvalEngine.resetModuleCounter4JUnit();
+    ObjectNode messageJSON = TestPods.createJUnitResult("0.33", formatsTEX);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+
+    final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
+    // assertEquals(jsonStr, //
+    // "");
+  }
+
+  @Test
   public void testLogic001() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
     ObjectNode messageJSON = TestPods.createJUnitResult("a&&b||c", formatsTEX);

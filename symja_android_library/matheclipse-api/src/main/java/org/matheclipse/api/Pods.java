@@ -705,7 +705,7 @@ public class Pods {
           numExpr = inExpr.isAST(S.N) ? inExpr : F.N(inExpr);
           evaledNumExpr = engine.evaluate(F.N(outExpr));
         }
-        if (outExpr.isNumber() || outExpr.isQuantity()) {
+        if (outExpr.isNumericFunction() || outExpr.isQuantity()) {
           if (outExpr.isInteger()) {
             numpods += integerPods(podsArray, inExpr, (IInteger) outExpr, formats, engine);
             // resultStatistics(queryresult, error, numpods, podsArray);
@@ -730,6 +730,14 @@ public class Pods {
                   addSymjaPod(podsArray, inExpr, podOut, "Rational form", "Numeric", formats,
                       engine);
                   numpods++;
+
+                  inExpr = F.ContinuedFraction(outExpr);
+                  podOut = engine.evaluate(inExpr);
+                  if (podOut.isList()) {
+                    addSymjaPod(podsArray, inExpr, podOut, "Continued fraction", "Numeric", formats,
+                        engine);
+                    numpods++;
+                  }
                 }
               }
             }
