@@ -1068,11 +1068,33 @@ public class Pods {
                 }
 
                 if (isNumericFunction && variables.argSize() == 1) {
+                  IExpr nroots = F.NRoots(F.Equal(outExpr, F.C0), variables.arg1());
+                  podOut = engine.evaluate(nroots);
+                  if (podOut.isNonEmptyList()) {
+                    IAST list = (IAST) podOut;
+                    IASTAppendable[] realOrComplex = list.filter(x -> x.isReal());
+                    if (realOrComplex[0].isNonEmptyList())
+                      addSymjaPod(podsArray, inExpr, realOrComplex[0], "Real roots", "Polynomial",
+                          formats,
+                          engine);
+                    numpods++;
+
+                    if (realOrComplex[1].isNonEmptyList()) {
+                      addSymjaPod(podsArray, inExpr, realOrComplex[1], "Complex roots",
+                          "Polynomial", formats,
+                          engine);
+                      numpods++;
+                    }
+                  }
+
                   if (outExpr.isPolynomial(variables) && !outExpr.isAtom()) {
                     inExpr = F.Factor(outExpr);
                     podOut = engine.evaluate(inExpr);
-                    addSymjaPod(podsArray, inExpr, podOut, "Factor", "Polynomial", formats, engine);
-                    numpods++;
+                    if (!outExpr.equals(podOut)) {
+                      addSymjaPod(podsArray, inExpr, podOut, "Factor", "Polynomial", formats,
+                          engine);
+                      numpods++;
+                    }
 
                     IExpr x = variables.first();
                     inExpr = F.Minimize(outExpr, x);

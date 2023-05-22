@@ -1792,8 +1792,7 @@ public class TestPods {
   @Test
   public void testNumber001() {
     EvalEngine.resetModuleCounter4JUnit();
-    ObjectNode messageJSON = TestPods
-        .createJUnitResult("Sqrt(2)", formatsTEX);
+    ObjectNode messageJSON = TestPods.createJUnitResult("Sqrt(2)", formatsTEX);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
 
@@ -1908,7 +1907,7 @@ public class TestPods {
             + "      } ]\n" //
             + "    } ]\n" //
             + "  }\n" //
-        + "}"); //
+            + "}"); //
   }
 
   @Test
@@ -1958,7 +1957,7 @@ public class TestPods {
             + "      } ]\n" //
             + "    } ]\n" //
             + "  }\n" //
-        + "}"); //
+            + "}"); //
   }
 
   @Test
@@ -2962,6 +2961,23 @@ public class TestPods {
             + "}"); //
   }
 
+  @Test
+  public void testNRoots001() {
+    // assumeTrue(System.getProperty("os.name").contains("Windows"));
+    EvalEngine.resetModuleCounter4JUnit();
+    // ObjectNode messageJSON =
+    // TestPods.createJUnitResult("1+2*x+3*x^2+4*x^3", formatsTEX);
+
+    ObjectNode messageJSON =
+        TestPods.createJUnitResult("x^2+2*x-3/(2*x^2)-5", formatsTEX);
+    final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
+
+    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+    assertEquals(queryResult.isError(), false);
+
+    // assertEquals(jsonStr, //
+    // ""); //
+  }
 
   @Test
   public void testHelloWorld() {

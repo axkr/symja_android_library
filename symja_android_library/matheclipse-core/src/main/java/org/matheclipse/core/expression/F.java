@@ -7212,6 +7212,10 @@ public class F extends S {
     return new AST2(NotElement, x, domain);
   }
 
+  public static IAST NRoots(final IExpr a0, final IExpr a1) {
+    return new AST2(NRoots, a0, a1);
+  }
+
   public static IAST NullSpace(final IExpr a0) {
     return new AST1(NullSpace, a0);
   }
