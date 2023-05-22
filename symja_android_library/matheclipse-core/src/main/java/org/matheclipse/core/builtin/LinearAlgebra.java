@@ -1918,6 +1918,7 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg2 = ast.argSize() > 1 ? ast.arg2() : F.NIL;
       if (ast.isAST1() && !engine.isNumericMode()) {
         FieldMatrix<IExpr> matrix;
         try {
@@ -1941,20 +1942,27 @@ public final class LinearAlgebra {
                     Times(C4, matrix.getEntry(0, 1), matrix.getEntry(1, 0)),
                     Times(CN2, matrix.getEntry(0, 0), matrix.getEntry(1, 1)),
                     Sqr(matrix.getEntry(1, 1))));
-                return List(
+                IExpr eigenValues = List(
                     Times(C1D2,
                         Plus(Negate(sqrtExpr), matrix.getEntry(0, 0), matrix.getEntry(1, 1))),
                     Times(C1D2, Plus(sqrtExpr, matrix.getEntry(0, 0), matrix.getEntry(1, 1))));
+                return sortValuesIfNumeric((IAST) eigenValues, arg2);
               }
+              // } else {
+              // boolean hasNumericArgument = arg1.isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG);
+              // if (!hasNumericArgument) {
+              // ISymbol x = F.Dummy("x");
+              // IExpr m = engine.evaluate(F.CharacteristicPolynomial(arg1, x));
+              // if (m.isPolynomial(x)) {
+              // IExpr eigenValues = RootsFunctions.roots(m, false, F.List(x), engine);
+              // if (eigenValues.isList()) {
+              // if (eigenValues.forAll(v -> v.isNumericFunction())) {
+              // return sortValuesIfNumeric((IAST) eigenValues, arg2);
+              // }
+              // }
+              // }
+              // }
             }
-            // if (((IAST) arg1).forAllLeaves(x->x.isExactNumber(), 1)) {
-            // ISymbol x = F.Dummy("x");
-            // IExpr m = engine.evaluate(F.CharacteristicPolynomial(arg1, x));
-            // IAST list = PolynomialFunctions.roots(m, false, F.list(x), engine);
-            // if (list.isPresent()) {
-            // return F.Reverse(list);
-            // }
-            // }
           }
 
         } catch (final RuntimeException e) {
@@ -1964,19 +1972,35 @@ public final class LinearAlgebra {
       // switch to numeric calculation
       IExpr eigenValues = numericEval(ast, engine);
       if (eigenValues.isList()) {
-        if (ast.isAST2()) {
-          int n = ast.arg2().toIntDefault();
+        return sortValuesIfNumeric((IAST) eigenValues, arg2);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * If the <code>eigenValuesList</code> entries are numeric, the elements are sorted in order of
+     * decreasing absolute value.
+     * 
+     * @param eigenValuesList
+     * @param arg2 the specification of how the values are sorte; if {@link F#NIL} the numeric
+     *        elements are sorted in order of decreasing absolute value.
+     * @return
+     */
+    private IExpr sortValuesIfNumeric(IAST eigenValuesList, final IExpr arg2) {
+      if (eigenValuesList.forAll(v -> v.isNumericFunction())) {
+        if (arg2 != null && arg2.isPresent()) {
+          int n = arg2.toIntDefault();
           if (n < 0) {
             if (n == Integer.MIN_VALUE) {
               return F.NIL;
             }
-            return F.Reverse(F.TakeSmallestBy(eigenValues, S.Abs, F.ZZ(-n)));
+            return F.Reverse(F.TakeSmallestBy(eigenValuesList, S.Abs, F.ZZ(-n)));
           }
-          return F.TakeLargestBy(eigenValues, S.Abs, F.ZZ(n));
+          return F.TakeLargestBy(eigenValuesList, S.Abs, F.ZZ(n));
         }
-        return eigenValues;
+        return F.TakeLargestBy(eigenValuesList, S.Abs, F.ZZ(eigenValuesList.argSize()));
       }
-      return F.NIL;
+      return eigenValuesList;
     }
 
     @Override
