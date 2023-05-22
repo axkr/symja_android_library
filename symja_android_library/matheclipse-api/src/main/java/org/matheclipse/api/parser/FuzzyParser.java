@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
+import javax.annotation.Nullable;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
@@ -175,6 +176,7 @@ public class FuzzyParser extends Scanner {
     return ast;
   }
 
+  @Nullable
   private static List<String> split(String sourceCode) {
     List<String> list = new ArrayList<String>();
     int startPosition = 0;
@@ -250,6 +252,9 @@ public class FuzzyParser extends Scanner {
   public IExpr parseFuzzyList(final String expression) throws SyntaxError {
     // String[] lines = expression.split("\\n");
     List<String> lines = split(expression);
+    if (lines == null) {
+      return F.CEmptyList;
+    }
     IASTAppendable function = F.NIL;
     IASTAppendable result = F.ListAlloc(16);
     for (int i = 0; i < lines.size(); i++) {
