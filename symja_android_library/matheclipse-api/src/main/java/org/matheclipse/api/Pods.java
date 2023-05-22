@@ -674,7 +674,7 @@ public class Pods {
 
     ArrayNode podsArray = JSON_OBJECT_MAPPER.createArrayNode();
     inExpr = parseInput(inputStr, engine);
-    if (inExpr.isPresent()) {
+    if (inExpr.isPresent() && !inExpr.isEmptyList()) {
       long numberOfLeaves = inExpr.leafCount();
       if (numberOfLeaves < Config.MAX_INPUT_LEAVES) {
         outExpr = inExpr;
