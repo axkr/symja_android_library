@@ -2,6 +2,7 @@ package org.matheclipse.io.archunit;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
@@ -33,7 +34,7 @@ public class ArchUnitTests {
   @ArchTest
   public static final ArchRule expression_access =
       classes().that().resideInAPackage("org.matheclipse.core.expression..")
-          .and(new DescribedPredicate<JavaClass>("") { 
+          .and(new DescribedPredicate<JavaClass>("") {
 
             @Override
             public boolean test(JavaClass arg0) {
@@ -113,6 +114,26 @@ public class ArchUnitTests {
           "..io.form.mathml", //
           "..io.others", //
           "..io.system");
+
+
+  /**
+   * Don't use a log4j Logger in Config startup methods
+   * 
+   */
+  @ArchTest
+  public static final ArchRule configClass = noClasses().that().haveSimpleName("Config") //
+      .should().dependOnClassesThat().haveFullyQualifiedName("org.apache.logging.log4j.LogManager");
+
+
+  // @ArchTest
+  // method added with API level 31
+  // public static final ArchRule noLongValueExactMethodOnAndroid = noClasses().should()
+  // .callMethod(java.math.BigInteger.class, "longValueExact", new Class<?>[0]);
+
+  // @ArchTest
+  // method added with API level 31
+  // public static final ArchRule noIntValueExactMethodOnAndroid = noClasses().should()
+  // .callMethod(java.math.BigInteger.class, "intValueExact", new Class<?>[0]);
 
   @ArchIgnore
   @ArchTest

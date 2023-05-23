@@ -41,7 +41,8 @@ public class CodingRulesTest {
       fields().that().haveRawType(Logger.class) //
           .should().bePrivate() //
           .andShould().beStatic() //
-          .andShould().beFinal() //
+          // disable final because of Android fix
+          // .andShould().beFinal() //
           .because("we agreed on this convention");
 
   @ArchTest
