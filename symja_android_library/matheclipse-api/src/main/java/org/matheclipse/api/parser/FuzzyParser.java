@@ -170,6 +170,7 @@ public class FuzzyParser extends Scanner {
         case ID.Rational:
           expr = Arithmetic.CONST_RATIONAL.evaluate(ast, fEngine);
           break;
+        default:
       }
       return expr.orElse(ast);
     }
@@ -575,6 +576,7 @@ public class FuzzyParser extends Scanner {
       case TT_ASSOCIATION_CLOSE:
         throwSyntaxError("Too much closing |> in factor.");
         break;
+      default:
     }
 
     throwSyntaxError("Error in factor at character: '" + fCurrentChar + "' (Token:" + fToken
@@ -667,6 +669,7 @@ public class FuzzyParser extends Scanner {
         IExpr defaultValue = parseExpression();
         temp = F.Optional(F.$b(), defaultValue);
         break;
+      default:
     }
 
     if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
@@ -753,6 +756,7 @@ public class FuzzyParser extends Scanner {
         IExpr defaultValue = parseExpression();
         temp = F.Optional(F.$p(symbol), defaultValue);
         break;
+      default:
     }
     if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
       getNextToken();
@@ -987,7 +991,7 @@ public class FuzzyParser extends Scanner {
       fCurrentPosition = lastOperatorPosition;
       return lastList;
     }
-    final int endPosition = fCurrentPosition--;
+    final int endPosition = fCurrentPosition;
     fCurrentPosition = startPosition;
     throwSyntaxError("Operator token not found: "
         + new String(fInputString, startPosition, endPosition - 1 - startPosition));

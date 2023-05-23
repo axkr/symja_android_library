@@ -147,7 +147,7 @@ public class SymjaServer {
 
         String portStr = args[i + 1];
         i++;
-        PORT = Integer.valueOf(portStr);
+        PORT = Integer.parseInt(portStr);
       } else if (arg.equals("-test") || arg.equals("-t")) {
         TEST = true;
       } else if (arg.equals("-help") || arg.equals("-h")) {
