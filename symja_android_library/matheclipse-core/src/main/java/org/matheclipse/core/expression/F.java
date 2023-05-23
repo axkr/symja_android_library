@@ -816,6 +816,7 @@ public class F extends S {
 
   static {
     try {
+      AndroidLoggerFix.fix();
       AST2Expr.initialize();
       ExprParserFactory.initialize();
 
@@ -1006,7 +1007,7 @@ public class F extends S {
       COUNT_DOWN_LATCH.countDown();
 
     } catch (Throwable th) {
-      LOGGER.error("F-class initilaization failed", th);
+      LOGGER.error("F-class initialization failed", th);
       throw th;
     }
   }
@@ -1018,8 +1019,7 @@ public class F extends S {
     int numberOfProcessors = Config.MAX_APFLOAT_PROCESSORS;
     long maxMemoryBlockSize = Config.MAX_APFLOAT_MEMORY_BLOCKSIZE;
     long memoryThreshold = Math.max(maxMemoryBlockSize >> 10, 65536);
-    int blockSize = Util.round2down(
-        (int) Math.min(memoryThreshold, java.lang.Integer.MAX_VALUE));
+    int blockSize = Util.round2down((int) Math.min(memoryThreshold, java.lang.Integer.MAX_VALUE));
     ApfloatContext ctx = ApfloatContext.getContext();
     ctx.setProperty(ApfloatContext.BUILDER_FACTORY, "org.apfloat.internal.LongBuilderFactory");
     ctx.setProperty(ApfloatContext.CACHE_L1_SIZE, "8192");
@@ -4966,7 +4966,7 @@ public class F extends S {
   public static synchronized void initSymbols() {
 
     if (!isSystemStarted) {
-      AndroidLoggerFix.fix();
+      // AndroidLoggerFix.fix();
       try {
         isSystemStarted = true;
 
