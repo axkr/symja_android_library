@@ -1231,7 +1231,7 @@ public final class LinearAlgebra {
    * Cross({1, 2}, {3, 4, 5})
    * </pre>
    */
-  private static final class Cross extends AbstractFunctionEvaluator {
+  public static final class Cross extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3942,7 +3942,7 @@ public final class LinearAlgebra {
    * 0
    * </pre>
    */
-  private static final class Norm extends AbstractEvaluator {
+  public static final class Norm extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -5606,7 +5606,7 @@ public final class LinearAlgebra {
    * 0
    * </pre>
    */
-  private static class VectorAngle extends AbstractFunctionEvaluator {
+  public static class VectorAngle extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
