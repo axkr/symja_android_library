@@ -7,8 +7,6 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.ApfloatContext;
 import org.hipparchus.util.Precision;
 import org.matheclipse.core.eval.EvalEngine;
@@ -34,7 +32,6 @@ import com.google.common.cache.CacheBuilder;
 
 /** General configuration settings. */
 public class Config {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /** Show the stack trace, if an exception is thrown in evaluation */
   public static final boolean SHOW_STACKTRACE = false;
@@ -591,7 +588,8 @@ public class Config {
         return prop.getProperty("version");
       }
     } catch (IOException e) {
-      LOGGER.error("Config.getVersion() failed", e);
+      // don't use a Logger in Config startup methods. Print the message to console instead:
+      System.out.println("Config.getVersion() failed: " + e.getMessage());
     }
     return "0.0.0";
   }
@@ -642,7 +640,6 @@ public class Config {
     for (int i = 0; i < args.length; i++) {
       commandLine.append(args[i]);
     }
-    LOGGER.info(commandLine);
     SCRIPT_COMMAND_LINE = commandLine;
   }
 }
