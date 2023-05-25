@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.AttributeFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
@@ -42,8 +40,6 @@ import org.matheclipse.parser.client.ParserConfig;
 
 public class Symbol implements ISymbol, Serializable {
   private static final long serialVersionUID = 6048546131696113624L;
-
-  private static final Logger LOGGER = LogManager.getLogger();
 
   protected transient Context fContext;
 
