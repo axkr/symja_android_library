@@ -2346,7 +2346,7 @@ public final class LinearAlgebra {
    * {r*Cos(t),r*Cos(p)*Sin(t),r*Sin(p)*Sin(t)}
    * </pre>
    */
-  private static final class FromPolarCoordinates extends AbstractEvaluator {
+  public static class FromPolarCoordinates extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -5044,7 +5044,7 @@ public final class LinearAlgebra {
    * {Sqrt(x^2+y^2+z^2),ArcCos(x/Sqrt(x^2+y^2+z^2)),ArcTan(y,z)}
    * </pre>
    */
-  private static final class ToPolarCoordinates extends AbstractEvaluator {
+  public static class ToPolarCoordinates extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
