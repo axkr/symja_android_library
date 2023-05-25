@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
-
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -15,6 +14,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.io.IOInit;
 
 public class JavaObjectFunctionGenerator {
+  private static final boolean GENERATE_JAVADOC = true;
+
   static final String[] KEYWORDS = new String[] {"break", "catch", "continue", "default", "do",
       "for", "if", "import", "instanceof", "return", "short", "switch", "throw", "while"};
   static final HashSet<String> KEYWORDS_SET = new HashSet<String>();
@@ -23,11 +24,14 @@ public class JavaObjectFunctionGenerator {
       "package org.matheclipse.core.expression;\n" + //
           "\n" + //
           "import org.matheclipse.core.convert.Object2Expr;\n"
-          + "import org.matheclipse.core.interfaces.IAST;\n" + //
-          "\n" //
+          + "import org.matheclipse.core.interfaces.IAST;\n" //
+          + "import org.matheclipse.core.expression.F;\n" //
+          + "\n" //
           + "/**\n" //
           + " * Automatically generated with class <code>org.matheclipse.core.preprocessor.JavaObjectFunctionGenerator</code>.\n"//
           + " * Don't change manually.\n"//
+          + " * The methods in this class use <code>Object2Expr.convert(oject)</code> to convert a Java object into a Symja object " //
+          + "and may be slower than the methods used in the {@link F} class. \n"//
           + " */\n" //
           + "public class J extends S {\n" //
           + "\n"//
@@ -103,7 +107,7 @@ public class JavaObjectFunctionGenerator {
                 lowerCaseArg = lowerCaseArg.charAt(0) + arg.substring(1);
               }
             }
-            for (int j = 1; j <= max; j++) {
+            for (int j = min; j <= max; j++) {
               if (j == 1) {
                 ast1(arg, lowerCaseArg);
               } else if (j == 2) {
@@ -122,6 +126,9 @@ public class JavaObjectFunctionGenerator {
 
   private static void ast1(String arg, String lowerCaseArg) {
     System.out.println("");
+    if (GENERATE_JAVADOC) {
+      BuiltinGenerator.createJavadocFromFunctionDoc(System.out, arg);
+    }
     System.out.println("    public static IAST " + lowerCaseArg + "(final Object a1) {");
     System.out.println("      return new AST1(" + arg + ", Object2Expr.convert(a1));");
     System.out.println("    }");
@@ -129,6 +136,9 @@ public class JavaObjectFunctionGenerator {
 
   private static void ast2(String arg, String lowerCaseArg) {
     System.out.println("");
+    if (GENERATE_JAVADOC) {
+      BuiltinGenerator.createJavadocFromFunctionDoc(System.out, arg);
+    }
     System.out
         .println("    public static IAST " + lowerCaseArg + "(final Object a1, final Object a2) {");
     System.out.println(
@@ -138,6 +148,9 @@ public class JavaObjectFunctionGenerator {
 
   private static void ast3(String arg, String lowerCaseArg) {
     System.out.println("");
+    if (GENERATE_JAVADOC) {
+      BuiltinGenerator.createJavadocFromFunctionDoc(System.out, arg);
+    }
     System.out.println("    public static IAST " + lowerCaseArg
         + "(final Object a1, final Object a2, final Object a3) {");
     System.out.println("      return new AST3(" + arg

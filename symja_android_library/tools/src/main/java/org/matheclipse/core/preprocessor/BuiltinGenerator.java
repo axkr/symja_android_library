@@ -36,23 +36,27 @@ public class BuiltinGenerator {
       // System.out.println(" public final static IBuiltInSymbol " + sym.name()
       // + " = BuiltIns.valueOf(BuiltIns." + sym.name() + ");");
       if (GENERATE_JAVADOC) {
-        StringBuilder buf = new StringBuilder();
-        int status = Documentation.extraxtJavadoc(buf, sym);
-        if (status == 1) {
-          out.println(buf.toString());
-        } else if (status == 0) {
-          out.println();
-          out.print("\n        /**");
-          out.print(
-              " @see <a href=\"https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/"
-                  + sym + ".md\">" + sym + " documentation</a>");
-          out.print(" */\n");
-        } else {
-          out.println();
-        }
+        createJavadocFromFunctionDoc(out, sym);
       }
       out.println("        public final static IBuiltInSymbol " + sym + " = S.initFinalSymbol(\""
           + sym + "\", ID." + sym + ");");
+    }
+  }
+
+  public static void createJavadocFromFunctionDoc(PrintStream out, String sym) {
+    StringBuilder buf = new StringBuilder();
+    int status = Documentation.extraxtJavadoc(buf, sym);
+    if (status == 1) {
+      out.println(buf.toString());
+    } else if (status == 0) {
+      out.println();
+      out.print("\n        /**");
+      out.print(
+          " @see <a href=\"https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/"
+              + sym + ".md\">" + sym + " documentation</a>\n");
+      out.println("         */");
+    } else {
+      out.println();
     }
   }
 }

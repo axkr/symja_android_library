@@ -196,8 +196,8 @@ public class Documentation {
             out.append("\n         * ");
             out.append(
                 "@see <a href=\"https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/"
-                    + symbolName + ".md\">" + symbolName + " documentation</a>");
-            out.append(" */");
+                    + symbolName + ".md\">" + symbolName + " documentation</a>\n");
+            out.append("         */");
             return 1;
           }
         }
