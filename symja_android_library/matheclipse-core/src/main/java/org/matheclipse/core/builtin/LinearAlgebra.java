@@ -114,6 +114,7 @@ public final class LinearAlgebra {
       S.Eigenvectors.setEvaluator(new Eigenvectors());
       S.FourierMatrix.setEvaluator(new FourierMatrix());
       S.FromPolarCoordinates.setEvaluator(new FromPolarCoordinates());
+      S.FromSphericalCoordinates.setEvaluator(new FromSphericalCoordinates());
       S.HessenbergDecomposition.setEvaluator(new HessenbergDecomposition());
       S.HilbertMatrix.setEvaluator(new HilbertMatrix());
       S.IdentityMatrix.setEvaluator(new IdentityMatrix());
@@ -148,6 +149,7 @@ public final class LinearAlgebra {
       S.SingularValueList.setEvaluator(new SingularValueList());
       S.ToeplitzMatrix.setEvaluator(new ToeplitzMatrix());
       S.ToPolarCoordinates.setEvaluator(new ToPolarCoordinates());
+      S.ToSphericalCoordinates.setEvaluator(new ToSphericalCoordinates());
       S.Tr.setEvaluator(new Tr());
       S.Transpose.setEvaluator(new Transpose());
       S.UpperTriangularize.setEvaluator(new UpperTriangularize());
@@ -2394,6 +2396,53 @@ public final class LinearAlgebra {
         return IOFunctions.printMessage(ast.topHead(), "bdpt", F.List(ast.arg1()), engine);
       }
       return F.list(F.Times(r, F.Cos(theta)), F.Times(r, F.Sin(theta)));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
+  public static class FromSphericalCoordinates extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      int dim = arg1.isVector();
+      if (dim > 0) {
+        if (arg1.isAST()) {
+          IAST list = (IAST) arg1;
+          if (dim == 3) {
+            return fromSphericalCoordinates(list.arg1(), list.arg2(), list.arg3(), ast, engine);
+          }
+        } else {
+          FieldVector<IExpr> vector = Convert.list2Vector(arg1);
+          if (dim == 3) {
+            return fromSphericalCoordinates(vector.getEntry(0), vector.getEntry(1),
+                vector.getEntry(2), ast, engine);
+          }
+        }
+      } else if (arg1.isList()) {
+        return ((IAST) arg1).mapThreadEvaled(engine, F.ListAlloc(ast.size()), ast, 1);
+      }
+      return F.NIL;
+    }
+
+    private IExpr fromSphericalCoordinates(IExpr r, IExpr theta, IExpr phi, final IAST ast,
+        EvalEngine engine) {
+      if (r.lessEqualThan(F.C0).isTrue() //
+          || (theta.greaterEqualThan(S.Pi).isTrue() || theta.lessEqualThan(F.C0).isTrue()) //
+          || (phi.greaterThan(S.Pi).isTrue() || phi.lessEqualThan(F.CNPi).isTrue())) {
+        // Evaluation point `1` is not a valid set of polar or hyperspherical coordinates.
+        return IOFunctions.printMessage(ast.topHead(), "bdpt", F.List(ast.arg1()), engine);
+      }
+      return F.list(F.Times(r, F.Sin(theta), F.Cos(phi)), //
+          F.Times(r, F.Sin(theta), F.Sin(phi)), //
+          F.Times(r, F.Cos(theta)));
     }
 
     @Override
@@ -5056,26 +5105,74 @@ public final class LinearAlgebra {
           if (dim == 2) {
             IExpr x = list.arg1();
             IExpr y = list.arg2();
-            return F.list(F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y))), F.ArcTan(x, y));
+            return toPolarCoordinates(x, y);
           } else if (dim == 3) {
             IExpr x = list.arg1();
             IExpr y = list.arg2();
             IExpr z = list.arg3();
-            IAST sqrtExpr = F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y), F.Sqr(z)));
-            return F.list(sqrtExpr, F.ArcCos(F.Divide(x, sqrtExpr)), F.ArcTan(y, z));
+            return toPolarCoordinates(x, y, z);
           }
         } else {
           FieldVector<IExpr> vector = Convert.list2Vector(arg1);
           if (dim == 2) {
             IExpr x = vector.getEntry(0);
             IExpr y = vector.getEntry(1);
-            return F.list(F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y))), F.ArcTan(x, y));
+            return toPolarCoordinates(x, y);
           } else if (dim == 3) {
             IExpr x = vector.getEntry(0);
             IExpr y = vector.getEntry(1);
             IExpr z = vector.getEntry(2);
-            IAST sqrtExpr = F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y), F.Sqr(z)));
-            return F.list(sqrtExpr, F.ArcCos(F.Divide(x, sqrtExpr)), F.ArcTan(y, z));
+            return toPolarCoordinates(x, y, z);
+          }
+        }
+      } else if (arg1.isList()) {
+        IAST list = (IAST) arg1;
+        return list.mapThreadEvaled(engine, F.ListAlloc(list.size()), ast, 1);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
+  public static class ToSphericalCoordinates extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      final IExpr arg1 = ast.arg1();
+      int dim = arg1.isVector();
+      if (dim > 0) {
+        if (arg1.isAST()) {
+          IAST list = (IAST) arg1;
+          // if (dim == 2) {
+          // IExpr x = list.arg1();
+          // IExpr y = list.arg2();
+          // return F.list(F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y))), F.ArcTan(x, y));
+          // } else
+          if (dim == 3) {
+            IExpr x = list.arg1();
+            IExpr y = list.arg2();
+            IExpr z = list.arg3();
+            return toSphericalCoordinates(x, y, z);
+          }
+        } else {
+          FieldVector<IExpr> vector = Convert.list2Vector(arg1);
+          // if (dim == 2) {
+          // IExpr x = vector.getEntry(0);
+          // IExpr y = vector.getEntry(1);
+          // return F.list(F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y))), F.ArcTan(x, y));
+          // } else
+          if (dim == 3) {
+            IExpr x = vector.getEntry(0);
+            IExpr y = vector.getEntry(1);
+            IExpr z = vector.getEntry(2);
+            return toSphericalCoordinates(x, y, z);
           }
         }
       } else if (arg1.isList()) {
@@ -6218,6 +6315,22 @@ public final class LinearAlgebra {
     }
     resultList.append(list);
     return resultList;
+  }
+
+  public static IExpr toPolarCoordinates(IExpr x, IExpr y) {
+    return F.list(F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y))), F.ArcTan(x, y));
+  }
+
+  public static IExpr toPolarCoordinates(IExpr x, IExpr y, IExpr z) {
+    IAST sqrtExpr = F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y), F.Sqr(z)));
+    return F.list(sqrtExpr, F.ArcCos(F.Divide(x, sqrtExpr)), F.ArcTan(y, z));
+  }
+
+  public static IExpr toSphericalCoordinates(IExpr x, IExpr y, IExpr z) {
+    IAST sqrtExpr = F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y), F.Sqr(z)));
+    return F.list(sqrtExpr, //
+        F.ArcTan(z, F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y)))), //
+        F.ArcTan(x, y));
   }
 
   private LinearAlgebra() {}

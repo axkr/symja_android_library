@@ -694,6 +694,13 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{{r*Cos(t),r*Sin(t)},{1,0}},{{-2,0},{0,1}}}");
   }
 
+  public void testFromSphericalCoordinates() {
+    check("FromSphericalCoordinates( {r, t, p} )", //
+        "{r*Cos(p)*Sin(t),r*Sin(p)*Sin(t),r*Cos(t)}");
+    check("FromSphericalCoordinates({{1, Pi/2, 0}, {2, 3/4*Pi, Pi}, {1, Pi/4, Pi/4}})", //
+        "{{1,0,0},{-Sqrt(2),0,-Sqrt(2)},{1/2,1/2,1/Sqrt(2)}}");
+  }
+
   public void testHermitianMatrixQ() {
     // example from https://en.wikipedia.org/wiki/Hermitian_matrix
     check("HermitianMatrixQ({{2, 2 + I, 4}, {2-I, 3, I}, {4, -I, 1}})", //
@@ -763,6 +770,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             + " {0,1,0},\n" //
             + " {0,0,1}}");
   }
+
   public void testInverse() {
     check("Inverse(SparseArray({{1, 2, 0}, {2, 3, 0}, {3, 4, 1}}))", //
         "{{-3,2,0},\n" //
@@ -1794,6 +1802,13 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{{Sqrt(2),-Pi/4}}}");
     check("ToPolarCoordinates({{} , {}})", //
         "{{},{}}");
+  }
+
+  public void testToSphericalCoordinates() {
+    check("ToSphericalCoordinates({x, y, z})", //
+        "{Sqrt(x^2+y^2+z^2),ArcTan(z,Sqrt(x^2+y^2)),ArcTan(x,y)}");
+    check("ToSphericalCoordinates({{{1, 1, 1}}, {{-2, 0, 0}, {0, 1, -1}}})", //
+        "{{{Sqrt(3),ArcTan(Sqrt(2)),Pi/4}},{{2,Pi/2,Pi},{Sqrt(2),3/4*Pi,Pi/2}}}");
   }
 
   public void testTr() {
