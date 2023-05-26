@@ -1,10 +1,10 @@
 package org.matheclipse.core.expression;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -27,12 +27,12 @@ public class DefaultDict<T extends IExpr> {
 
   public DefaultDict() {
     this.defaultFactory = () -> F.ListAlloc();
-    this.map = new HashMap<IExpr, IExpr>();
+    this.map = new TreeMap<IExpr, IExpr>();
   }
 
   public DefaultDict(Supplier<T> defaultFactory) {
     this.defaultFactory = (Supplier<IExpr>) defaultFactory;
-    this.map = new HashMap<IExpr, IExpr>();
+    this.map = new TreeMap<IExpr, IExpr>();
   }
 
   public DefaultDict(Map<IExpr, IExpr> map, Supplier<T> defaultFactory) {

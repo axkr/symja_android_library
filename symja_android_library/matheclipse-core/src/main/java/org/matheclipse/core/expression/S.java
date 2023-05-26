@@ -4026,6 +4026,9 @@ public class S {
   public final static IBuiltInSymbol FromPolarCoordinates =
       S.initFinalSymbol("FromPolarCoordinates", ID.FromPolarCoordinates);
 
+  public final static IBuiltInSymbol FromSphericalCoordinates =
+      S.initFinalSymbol("FromSphericalCoordinates", ID.FromSphericalCoordinates);
+
   public final static IBuiltInSymbol Full = S.initFinalSymbol("Full", ID.Full);
 
   /**
@@ -10458,6 +10461,9 @@ public class S {
       S.initFinalSymbol("ToPolarCoordinates", ID.ToPolarCoordinates);
 
   public final static IBuiltInSymbol ToRadicals = S.initFinalSymbol("ToRadicals", ID.ToRadicals);
+
+  public final static IBuiltInSymbol ToSphericalCoordinates =
+      S.initFinalSymbol("ToSphericalCoordinates", ID.ToSphericalCoordinates);
 
   /**
    * ToString(expr) - converts `expr` into a string.

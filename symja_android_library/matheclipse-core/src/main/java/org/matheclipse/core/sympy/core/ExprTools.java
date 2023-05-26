@@ -104,7 +104,7 @@ public class ExprTools {
           c.remove(F.CI);
         }
         DefaultDict<IExpr> asPowersDict = c.apply(S.Times).asPowersDict();
-        HashMap<IExpr, IExpr> powersDict = (HashMap<IExpr, IExpr>) asPowersDict.getMap();
+        Map<IExpr, IExpr> powersDict = asPowersDict.getMap();
         Iterator<Entry<IExpr, IExpr>> it = powersDict.entrySet().iterator();
         while (it.hasNext()) {
           Entry<IExpr, IExpr> entry = it.next();

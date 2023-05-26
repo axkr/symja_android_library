@@ -747,8 +747,6 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
         "Sin(a)*Cos(b)*Cos(c)+Sin(a)*-Sin(b)*Sin(c)+Cos(a)*Cos(c)*Sin(b)+Cos(a)*Cos(b)*Sin(c)");
   }
 
-
-
   public void testTrigSimplifyTR10i() {
     // cos(1)*cos(3) + sin(1)*sin(3)
     IExpr tr10i = TrigSimplifyFu

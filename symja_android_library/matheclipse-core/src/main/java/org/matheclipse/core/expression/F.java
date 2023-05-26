@@ -4459,6 +4459,10 @@ public class F extends S {
     return new AST1(FromPolarCoordinates, a);
   }
 
+  public static IAST FromSphericalCoordinates(final IExpr a) {
+    return new AST1(FromSphericalCoordinates, a);
+  }
+
   public static IAST FullForm(final IExpr a0) {
     return new AST1(FullForm, a0);
   }
@@ -9755,6 +9759,14 @@ public class F extends S {
    */
   public static IAST Together(final IExpr a0) {
     return new AST1(Together, a0);
+  }
+
+  public static IAST ToPolarCoordinates(final IExpr a0) {
+    return new AST1(ToPolarCoordinates, a0);
+  }
+
+  public static IAST ToSphericalCoordinates(final IExpr a0) {
+    return new AST1(ToSphericalCoordinates, a0);
   }
 
   /**
