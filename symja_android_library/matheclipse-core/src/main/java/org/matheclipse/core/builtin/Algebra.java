@@ -4700,6 +4700,8 @@ public class Algebra {
       IASTAppendable t1 = p1Times.copyAppendable();
       int i = 1;
       boolean evaled = false;
+
+      IASTAppendable commonFactors = F.NIL;
       termChanged: while (i < t0.size()) {
         IExpr t0Arg = t0.get(i);
         int j = 1;
@@ -4709,6 +4711,14 @@ public class Algebra {
             t0.remove(i);
             t1.remove(j);
             evaled = true;
+            if (Config.TRACE_BASIC_ARITHMETIC) {
+              if (EvalEngine.get().isTraceMode()) {
+                if (commonFactors.isNIL()) {
+                  commonFactors = F.TimesAlloc(i);
+                }
+                commonFactors.append(t0Arg);
+              }
+            }
             break termChanged;
           } else if (t0Arg.isPower() || t1Arg.isPower()) {
             final IExpr t0Base;
@@ -4739,10 +4749,26 @@ public class Algebra {
                 t0.set(i, F.Power(t0Base, subtracted));
                 t1.remove(j);
                 i++;
+                if (Config.TRACE_BASIC_ARITHMETIC) {
+                  if (EvalEngine.get().isTraceMode()) {
+                    if (commonFactors.isNIL()) {
+                      commonFactors = F.TimesAlloc(i);
+                    }
+                    commonFactors.append(F.Power(t0Base, exp1));
+                  }
+                }
               } else {
                 subtracted = exp1.subtractFrom(exp0);
                 t0.remove(i);
                 t1.set(j, F.Power(t1Base, subtracted));
+                if (Config.TRACE_BASIC_ARITHMETIC) {
+                  if (EvalEngine.get().isTraceMode()) {
+                    if (commonFactors.isNIL()) {
+                      commonFactors = F.TimesAlloc(i);
+                    }
+                    commonFactors.append(F.Power(t0Base, exp0));
+                  }
+                }
               }
               evaled = true;
               break termChanged;
@@ -4753,7 +4779,23 @@ public class Algebra {
         i++;
       }
       if (evaled) {
-        return F.List(t0.oneIdentity1(), t1.oneIdentity1());
+        IExpr p0Result = t0.oneIdentity1();
+        IExpr p1Result = t1.oneIdentity1();
+        if (Config.TRACE_BASIC_ARITHMETIC && EvalEngine.get().isTraceMode()) {
+          if (EvalEngine.get().isTraceMode()) {
+            if (!p0.equals(part0)) {
+              EvalEngine.get().addTraceStep(F.Divide(part0, part1), F.Divide(p0, part1),
+                  F.List(S.Cancel, F.$str("Factor"), part0, p0));
+            }
+            if (!p1.equals(part1)) {
+              EvalEngine.get().addTraceStep(F.Divide(p0, part1), F.Divide(p0, p1),
+                  F.List(S.Cancel, F.$str("Factor"), part1, p1));
+            }
+            EvalEngine.get().addTraceStep(F.Divide(p0, p1), F.Divide(p0Result, p1Result),
+                F.List(S.Cancel, F.$str("CancelCommonFactors"), commonFactors));
+          }
+        }
+        return F.List(p0Result, p1Result);
       }
     }
     return F.NIL;
