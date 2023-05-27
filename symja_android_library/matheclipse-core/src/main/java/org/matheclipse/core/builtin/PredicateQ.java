@@ -1714,8 +1714,9 @@ public class PredicateQ {
         return expr.isZero();
       }
       if (expr.isTimes()) {
-        IExpr denominator = engine.evaluate(F.Denominator(expr));
-        if (!denominator.isOne()) {
+        IExpr denominator = engine.evalN(F.Denominator(expr));
+        if (!denominator.isZero() //
+            && !denominator.isOne()) {
           IExpr numerator = engine.evaluate(F.Numerator(expr));
           if (numerator.isAST()) {
             return isPossibleZeroQ((IAST) numerator, false, engine);
@@ -1750,6 +1751,28 @@ public class PredicateQ {
         return true;
       } else {
         if (function.isNumericFunction(varSet)) {
+          if (variables.argSize() == 1) {
+            IExpr derived = engine.evaluate(F.D(function, variables.get(1)));
+            if (derived.isNumericFunction()) {
+              if (!derived.isNumber()) {
+                derived = engine.evalN(derived);
+              }
+              if (derived.isNumber()) {
+                if (derived.isZero()) {
+                  COMPARE_TERNARY possibeZero =
+                      isPossibeZeroFixedValues(F.C0, function, variables, engine);
+                  if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+                    return true;
+                  }
+                  if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+                    return false;
+                  }
+                } else {
+                  return false;
+                }
+              }
+            }
+          }
 
           if (function.isFreeAST(h -> isSpecialNumericFunction(h))) {
             int trueCounter = 0;
