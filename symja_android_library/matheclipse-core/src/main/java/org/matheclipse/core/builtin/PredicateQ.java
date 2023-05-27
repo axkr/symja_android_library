@@ -15,6 +15,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -1087,6 +1088,24 @@ public class PredicateQ {
    */
   private static final class PossibleZeroQ extends AbstractCorePredicateEvaluator
       implements IPredicate {
+    @Override
+    public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine, OptionArgs options) {
+      IExpr assumptionExpr = options.getOption(S.Assumptions);
+      if (assumptionExpr.isPresent() && assumptionExpr.isAST()) {
+        IAssumptions oldAssumptions = engine.getAssumptions();
+        try {
+          IAssumptions assumptions =
+              org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
+          if (assumptions != null) {
+            engine.setAssumptions(assumptions);
+            return evalArg1Boole(arg1, engine);
+          }
+        } finally {
+          engine.setAssumptions(oldAssumptions);
+        }
+      }
+      return evalArg1Boole(arg1, engine);
+    }
 
     @Override
     public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -1103,6 +1122,8 @@ public class PredicateQ {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
+      setOptions(newSymbol, //
+          F.list(F.Rule(S.Assumptions, S.$Assumptions)));
     }
   }
 

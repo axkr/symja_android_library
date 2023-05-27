@@ -2976,6 +2976,16 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression has a negative result (i.e. <code>Re(this)<0</code>) for it's real part
+   * or is assumed to have a negative real part.
+   *
+   * @return <code>true</code>, if the given expression is a negative real part function or value.
+   */
+  default boolean isReNegativeResult() {
+    return AbstractAssumptions.assumeReNegative(this);
+  }
+
+  /**
    * <p>
    * Check if the expression is a negative signed expression. This method is used in output forms of
    * <code>Plus[...]</code> expressions.
@@ -3537,6 +3547,16 @@ public interface IExpr
    */
   default boolean isPositiveResult() {
     return AbstractAssumptions.assumePositive(this);
+  }
+
+  /**
+   * Test if this expression has a positive result (i.e. <code>Re(this)>0</<code></code>) for it's
+   * real part or is assumed to have a positive real part.
+   *
+   * @return <code>true</code>, if the given expression is a positive real part function or value.
+   */
+  default boolean isRePositiveResult() {
+    return AbstractAssumptions.assumeRePositive(this);
   }
 
   /**

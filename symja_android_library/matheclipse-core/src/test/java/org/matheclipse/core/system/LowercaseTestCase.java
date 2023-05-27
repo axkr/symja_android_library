@@ -18238,6 +18238,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testPossibleZeroQ() {
+    check("PossibleZeroQ(Sqrt(x^2)-x,Assumptions -> Re(x)>0)", //
+        "True");
+    check("PossibleZeroQ((x + 1) (x - 1) - x^2 + 1)", //
+        "True");
+    check("PossibleZeroQ(Sqrt(x^2)-x)", //
+        "False");
+
     // check(
     // "(-99.12580575458303)*I", //
     // "I*(-99.12581)");
@@ -20401,6 +20408,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "True");
     // check("Refine((-1)^(x+y), Element(k/2, Integers))", //
     // "(-1)^y");
+
+    check("Refine(Sqrt(x^2),Assumptions -> Re(x)>0)", //
+        "x");
+    check("Refine(Sqrt(x^2),Assumptions -> Re(x)<0)", //
+        "-x");
+    check("Refine((x^4)^(1/4),Assumptions -> Re(x)>0)", //
+        "(x^4)^(1/4)");
+    check("Refine((x^3)^(1/3),Assumptions -> Re(x)>0)", //
+        "(x^3)^(1/3)");
 
     check("Refine(Abs(a^b),Element(b,Reals))", //
         "Abs(a)^b");
