@@ -4533,7 +4533,7 @@ public class StatisticsFunctions {
    * E^m
    * </pre>
    */
-  private static final class Median extends AbstractTrigArg1 {
+  public static class Median extends AbstractTrigArg1 {
     /**
      * See <a href="https://stackoverflow.com/a/4859279/24819">Get the indices of an array after
      * sorting?</a>
