@@ -3,6 +3,7 @@ package org.matheclipse.core.interfaces;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -45,6 +46,18 @@ public interface IEvalStepListener {
   public abstract void tearDown(@Nullable IExpr result, int recursionDepth, boolean commitTraceFrame);
 
   /**
+   * Tear down this evaluation step (called finally at the evaluation loop).
+   *
+   * @param result the result after evaluating the input from {@link #setUp(IExpr, int)}
+   * @param hints additional information for this step
+   * @param recursionDepth the current recursion depth of this evaluation step
+   * @param commitTraceFrame set to <code>true</code> if the current trace frame should be stored.
+   */
+  default void tearDown(@Nonnull IExpr result, @Nonnull IAST hints, int recursionDepth, boolean commitTraceFrame) {
+    tearDown(result, recursionDepth, commitTraceFrame);
+  }
+
+  /**
    * Add a new step in which the <code>inputExpr</code> was evaluated to the new <code>resultExpr
    * </code>.
    *
@@ -52,7 +65,7 @@ public interface IEvalStepListener {
    * @param resultExpr the evaluated result expression
    * @param recursionDepth the current recursion depth
    * @param iterationCounter the current iteration counter
-   * @param IAST listOfHints this hints will be used in the listener
+   * @param listOfHints this hints will be used in the listener
    * @see IEvalStepListener#setHint(String)
    */
   public abstract void add(IExpr inputExpr, IExpr resultExpr, int recursionDepth,
