@@ -355,6 +355,27 @@ public abstract class AbstractAssumptions implements IAssumptions {
   }
 
   /**
+   * Test if <code>expr</code> is assumed to have a negative real part.
+   *
+   * @param expr
+   * @return <code>true</code> if <code>expr</code> is assumed to be a negative real part. Return
+   *         <code>false</code> in all other cases.
+   */
+  public static boolean assumeReNegative(final IExpr expr) {
+    if (assumeNegative(expr)) {
+      return true;
+    }
+    IAssumptions assumptions = EvalEngine.get().getAssumptions();
+    if (assumptions != null) {
+      IExpr temp = expr.re();
+      if (assumptions.isNegative(temp)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Test if <code>expr</code> is assumed to be an non negative number.
    *
    * @param expr
@@ -374,6 +395,27 @@ public abstract class AbstractAssumptions implements IAssumptions {
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
       if (assumptions.isNonNegative(expr)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Test if <code>expr</code> is assumed to have a positive real part.
+   *
+   * @param expr
+   * @return <code>true</code> if <code>expr</code> is assumed to be a positive real part. Return
+   *         <code>false</code> in all other cases.
+   */
+  public static boolean assumeRePositive(final IExpr expr) {
+    if (assumePositive(expr)) {
+      return true;
+    }
+    IAssumptions assumptions = EvalEngine.get().getAssumptions();
+    if (assumptions != null) {
+      IExpr temp = expr.re();
+      if (assumptions.isPositive(temp)) {
         return true;
       }
     }

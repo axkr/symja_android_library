@@ -15,6 +15,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -1087,6 +1088,24 @@ public class PredicateQ {
    */
   private static final class PossibleZeroQ extends AbstractCorePredicateEvaluator
       implements IPredicate {
+    @Override
+    public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine, OptionArgs options) {
+      IExpr assumptionExpr = options.getOption(S.Assumptions);
+      if (assumptionExpr.isPresent() && assumptionExpr.isAST()) {
+        IAssumptions oldAssumptions = engine.getAssumptions();
+        try {
+          IAssumptions assumptions =
+              org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
+          if (assumptions != null) {
+            engine.setAssumptions(assumptions);
+            return evalArg1Boole(arg1, engine);
+          }
+        } finally {
+          engine.setAssumptions(oldAssumptions);
+        }
+      }
+      return evalArg1Boole(arg1, engine);
+    }
 
     @Override
     public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -1103,6 +1122,8 @@ public class PredicateQ {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
+      setOptions(newSymbol, //
+          F.list(F.Rule(S.Assumptions, S.$Assumptions)));
     }
   }
 
@@ -1693,8 +1714,9 @@ public class PredicateQ {
         return expr.isZero();
       }
       if (expr.isTimes()) {
-        IExpr denominator = engine.evaluate(F.Denominator(expr));
-        if (!denominator.isOne()) {
+        IExpr denominator = engine.evalN(F.Denominator(expr));
+        if (!denominator.isZero() //
+            && !denominator.isOne()) {
           IExpr numerator = engine.evaluate(F.Numerator(expr));
           if (numerator.isAST()) {
             return isPossibleZeroQ((IAST) numerator, false, engine);
@@ -1729,6 +1751,28 @@ public class PredicateQ {
         return true;
       } else {
         if (function.isNumericFunction(varSet)) {
+          if (variables.argSize() == 1) {
+            IExpr derived = engine.evaluate(F.D(function, variables.get(1)));
+            if (derived.isNumericFunction()) {
+              if (!derived.isNumber()) {
+                derived = engine.evalN(derived);
+              }
+              if (derived.isNumber()) {
+                if (derived.isZero()) {
+                  COMPARE_TERNARY possibeZero =
+                      isPossibeZeroFixedValues(F.C0, function, variables, engine);
+                  if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+                    return true;
+                  }
+                  if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+                    return false;
+                  }
+                } else {
+                  return false;
+                }
+              }
+            }
+          }
 
           if (function.isFreeAST(h -> isSpecialNumericFunction(h))) {
             int trueCounter = 0;

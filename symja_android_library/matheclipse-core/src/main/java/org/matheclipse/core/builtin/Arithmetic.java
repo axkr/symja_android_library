@@ -4533,15 +4533,25 @@ public final class Arithmetic {
           }
         } else if (base.isPower()) {
           if (base.exponent().isReal() && exponent.isReal()) {
-            IExpr temp = base.exponent().times(exponent);
+            IExpr baseBase = base.base();
+            IExpr baseExponent = base.exponent();
+            IExpr temp = baseExponent.times(exponent);
             if (temp.isOne()) {
-              // (a ^ b )^exponent => a ^ (b * exponent) && b*exponent==1
-              if (base.base().isNonNegativeResult()) {
-                return base.base();
+              if (baseExponent.isNumEqualInteger(C2)) {
+                if (baseBase.isRePositiveResult()) {
+                  return baseBase;
+                }
+                if (baseBase.isReNegativeResult()) {
+                  return F.Negate(baseBase);
+                }
               }
-              if (base.base().isRealResult() && //
+              // (a ^ b )^exponent => a ^ (b * exponent) && b*exponent==1
+              if (baseBase.isNonNegativeResult()) {
+                return baseBase;
+              }
+              if (baseBase.isRealResult() && //
                   base.exponent().isEvenResult()) {
-                return F.Abs(base.base());
+                return F.Abs(baseBase);
               }
             }
           }
