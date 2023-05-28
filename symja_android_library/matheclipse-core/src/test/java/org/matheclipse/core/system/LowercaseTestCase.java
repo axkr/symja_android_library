@@ -9913,6 +9913,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  public void testFunctionDomain() {
+    check("FunctionDomain(Tan(a+x), x)", //
+        "!1/2+(a+x)/Pi∈Integers");
+    check("FunctionDomain(x/(x^4 - 1), x)", //
+        "x<-1||(-1<x&&x<1)||x>1");
+    check("FunctionDomain(x/(x^4 - 1)+Tan(a+x), x)", //
+        "(!1/2+(a+x)/Pi∈Integers&&x<-1)||(!1/2+(a+x)/Pi∈Integers&&-1<x&&x<1)||(!1/2+(a+x)/Pi∈Integers&&x>\n"
+            + "1)");
+  }
+
   public void testFunctionRange() {
     // TODO
     // check("FunctionRange(Sqrt(x^2 - 1)/x, x, y)", //

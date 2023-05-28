@@ -288,6 +288,18 @@ public class IntervalDataSym {
         arg);
   }
 
+  public static IAST notInRange(final IExpr arg) {
+    return F.IntervalData(//
+        F.List(F.CNInfinity, //
+            S.Less, //
+            S.Less, //
+            arg), //
+        F.List(arg, //
+            S.Less, //
+            S.Less, //
+            F.CInfinity));
+  }
+
   public static IExpr plus(final IAST ast1, final IAST ast2) {
     IAST interval1 = normalize(ast1);
     IAST interval2 = normalize(ast2);

@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.visit.IVisitor;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -1852,4 +1853,12 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
    */
   @Override
   public ISymbol topHead();
+
+  default boolean isRealsIntervalData() {
+    return isAST(S.IntervalData, 5)//
+        && arg1().equals(F.CNIInfinity)//
+        && arg2() == S.Less //
+        && arg3() == S.Less //
+        && arg4().equals(F.CIInfinity);
+  }
 }

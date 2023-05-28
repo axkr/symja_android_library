@@ -5217,6 +5217,22 @@ public class F extends S {
   }
 
   /**
+   * <p>
+   * Intervals will be represented by objects with head {@link S#IntervalData} wrapped around a
+   * sequence of quadruples of the form, e.g., <code>{a,Less,LessEqual,b}</code> representing the
+   * half open interval <code>(a,b]</code>. The empty interval is represented by
+   * <code>Interval()</code>.
+   * 
+   * <p>
+   * See: <a href=
+   * "https://mathematica.stackexchange.com/questions/162486/operating-with-real-intervals/162505#162505">162486/operating-with-real-intervals/162505#162505</a>
+   *
+   */
+  public static IAST IntervalData(final IAST... lists) {
+    return new AST(IntervalData, lists);
+  }
+
+  /**
    * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code>.
    *
    * @param head the header symbol of the result

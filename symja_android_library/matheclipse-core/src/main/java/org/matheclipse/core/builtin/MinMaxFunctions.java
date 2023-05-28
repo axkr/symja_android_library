@@ -18,11 +18,14 @@ import org.hipparchus.optim.nonlinear.scalar.GoalType;
 import org.matheclipse.core.convert.Expr2LP;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -52,6 +55,7 @@ public class MinMaxFunctions {
     private static void init() {
       S.ArgMax.setEvaluator(new ArgMax());
       S.ArgMin.setEvaluator(new ArgMin());
+      S.FunctionDomain.setEvaluator(new FunctionDomain());
       S.FunctionRange.setEvaluator(new FunctionRange());
       S.Maximize.setEvaluator(new Maximize());
       S.Minimize.setEvaluator(new Minimize());
@@ -358,6 +362,185 @@ public class MinMaxFunctions {
       LAZY_MATCHER = Suppliers.memoize(Initializer::init);
     }
   }
+  private static final class FunctionDomain extends AbstractFunctionEvaluator {
+    // private static Supplier<Matcher> LAZY_MATCHER;
+
+    static final class FunctionDomainRealsVisitor extends VisitorExpr {
+      final EvalEngine engine;
+      IAST resultInterval;
+      IASTAppendable notElementList;
+      IExpr variable;
+
+      public FunctionDomainRealsVisitor(EvalEngine engine, IExpr variable) {
+        super();
+        this.engine = engine;
+        this.resultInterval = F.IntervalData(F.List(F.CNInfinity, F.Less, F.Less, F.CInfinity));
+        this.notElementList = F.ListAlloc();
+        this.variable = variable;
+      }
+
+      /** {@inheritDoc} */
+      @Override
+      public IExpr visit(IASTMutable ast) {
+        if (ast.isFree(variable)) {
+          return F.NIL;
+        }
+        if (ast.isTimes()) {
+          IExpr[] parts = Algebra.fractionalParts(ast, true);
+          if (parts != null) {
+            IExpr numerator = parts[0];
+            IExpr denominator = parts[1];
+            if (!denominator.isOne()) {
+              numerator.accept(this);
+              return roots(denominator);
+            }
+          }
+          determineIntervalSequence(ast);
+        } else if (ast.isPlus()) {
+          determineIntervalSequence(ast);
+        } else if (ast.isPower()) {
+          IExpr exponent = ast.exponent();
+          IExpr base = ast.base();
+          if (exponent.isNegative()) {
+            IExpr denominator = base;
+            return roots(denominator);
+          }
+          if (base.isAST()) {
+            determineIntervalSequence((IAST) base);
+          }
+        } else {
+          int headID = ast.headID();
+          if (headID >= 0) {
+            int argSize = ast.argSize();
+            switch (argSize) {
+              case 1:
+                IExpr arg1 = ast.arg1();
+                arg1.accept(this);
+
+                switch (headID) {
+                  case ID.Cos:
+                  case ID.Sin:
+                    break;
+                  case ID.Cot:
+                    notElementList
+                        .append(F.NotElement(F.Times(arg1, F.Power(S.Pi, F.CN1)), S.Integers));
+                    break;
+                  case ID.Tan:
+                    notElementList.append(F.NotElement(
+                        F.Plus(F.C1D2, F.Times(arg1, F.Power(S.Pi, F.CN1))), S.Integers));
+                    break;
+                  default:
+                }
+                break;
+              default:
+            }
+          }
+        }
+        return F.NIL;
+      }
+
+      private IExpr roots(IExpr denominator) {
+        IExpr roots = RootsFunctions.roots(denominator, false, variable.makeList(), engine);
+        if (roots.isNonEmptyList()) {
+          IAST list = (IAST) roots;
+          for (int i = 1; i < list.size(); i++) {
+            IExpr arg = list.get(i);
+            if (arg.isReal()) {
+              IAST notInRange = IntervalDataSym.notInRange(arg);
+              IExpr temp = F.IntervalIntersection.of(engine, resultInterval, notInRange);
+              if (!temp.isAST(S.IntervalData)) {
+                throw new ArgumentTypeStopException("IntervalIntersection failed");
+              }
+              resultInterval = (IAST) temp;
+            }
+          }
+          return F.NIL;
+        }
+        throw new ArgumentTypeStopException("Roots failed");
+      }
+
+      private void determineIntervalSequence(IAST ast) {
+        for (int i = 1; i < ast.size(); i++) {
+          IExpr arg = ast.get(i);
+          if (arg.isFree(variable)) {
+            continue;
+          }
+          arg.accept(this);
+        }
+      }
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr function = ast.arg1();
+      IExpr xExpr = ast.arg2();
+      // IBuiltInSymbol domain = S.Reals;
+      if (xExpr.isVariable()) {
+        try {
+          VariablesSet vset = new VariablesSet(function);
+          if (function.isNumericFunction(vset)) {
+            FunctionDomainRealsVisitor domainVisitor = functionDomain(function, xExpr, engine);
+            IAST resultInterval = domainVisitor.resultInterval;
+            IAST notElementList = domainVisitor.notElementList;
+            if (resultInterval.isPresent() && notElementList.isPresent()) {
+              return intervalToRelation(resultInterval, notElementList, xExpr);
+            }
+          }
+        } catch (ArgumentTypeStopException atse) {
+          // `1`.
+          return IOFunctions.printMessage(S.FunctionDomain, "error",
+              F.List(F.stringx(atse.getMessage())), engine);
+        }
+      }
+      return F.NIL;
+    }
+
+    public IExpr intervalToRelation(IAST interval, IAST notElementList, IExpr variable) {
+      if (interval.isRealsIntervalData() && notElementList.argSize() == 0) {
+        return S.True;
+      }
+
+      IASTAppendable andAST = F.ast(S.And, notElementList.argSize() + 2);
+      andAST.appendArgs(notElementList);
+      IASTAppendable orAST = F.ast(S.Or, interval.argSize());
+      for (int i = 1; i < interval.size(); i++) {
+        IAST list = (IAST) interval.get(i);
+        if (list.isEmptyList() || list.argSize() != 4) {
+          return S.False;
+        }
+        IASTAppendable andArg = andAST.copyAppendable();
+        if (list.arg1().isNegativeInfinity()) {
+          if (list.arg4().isInfinity()) {
+            //
+          } else if (list.arg3() == S.Less) {
+            andArg.append(F.Less(variable, list.arg4()));
+          } else if (list.arg3() == S.LessEqual) {
+            andArg.append(F.LessEqual(variable, list.arg4()));
+          }
+        } else if (list.arg4().isInfinity()) {
+          if (list.arg2() == S.Less) {
+            andArg.append(F.Greater(variable, list.arg1()));
+          } else if (list.arg2() == S.LessEqual) {
+            andArg.append(F.GreaterEqual(variable, list.arg1()));
+          }
+        } else {
+          andArg.append(F.binaryAST2(list.arg2(), list.arg1(), variable));
+          andArg.append(F.binaryAST2(list.arg3(), variable, list.arg4()));
+        }
+        orAST.append(andArg);
+      }
+      return orAST;
+    }
+
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+
+  }
+
 
   /**
    *
@@ -427,6 +610,7 @@ public class MinMaxFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -485,6 +669,7 @@ public class MinMaxFunctions {
       return ARGS_2_2;
     }
   }
+
 
   /**
    *
@@ -574,6 +759,7 @@ public class MinMaxFunctions {
       return ARGS_2_2;
     }
   }
+
 
   /**
    *
@@ -697,6 +883,23 @@ public class MinMaxFunctions {
       IAST result = F.list(F.num(f.value(values)), list);
       return result;
     }
+  }
+
+  /**
+   * Determine the domain of a function by creating {@link S.IntervalData} results for the
+   * <code>function</code>.
+   * 
+   * @param function
+   * @param xExpr
+   * @param engine
+   * @return {@link F#NIL} if the domain couldn't be determined by current methods
+   */
+  public static FunctionDomain.FunctionDomainRealsVisitor functionDomain(IExpr function,
+      IExpr variable, EvalEngine engine) {
+    FunctionDomain.FunctionDomainRealsVisitor visitor =
+        new FunctionDomain.FunctionDomainRealsVisitor(engine, variable);
+    function.accept(visitor);
+    return visitor;
   }
 
   private static IExpr maximize(ISymbol head, IExpr function, IExpr x, EvalEngine engine) {
