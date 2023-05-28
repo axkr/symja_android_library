@@ -32,6 +32,7 @@ public class Precedence {
   public static final int DIVIDEBY = 100;
   public static final int DOT = 490;
   public static final int ELEMENT = 250;
+  public static final int NOTELEMENT = 250;
   /**
    * See <a href=
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Equal.md">Equal</a>

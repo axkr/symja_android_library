@@ -9915,11 +9915,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   public void testFunctionDomain() {
     check("FunctionDomain(Tan(a+x), x)", //
-        "!1/2+(a+x)/Pi∈Integers");
+        "1/2+(a+x)/Pi∉Integers");
     check("FunctionDomain(x/(x^4 - 1), x)", //
         "x<-1||(-1<x&&x<1)||x>1");
     check("FunctionDomain(x/(x^4 - 1)+Tan(a+x), x)", //
-        "(!1/2+(a+x)/Pi∈Integers&&x<-1)||(!1/2+(a+x)/Pi∈Integers&&-1<x&&x<1)||(!1/2+(a+x)/Pi∈Integers&&x>\n"
+        "(1/2+(a+x)/Pi∉Integers&&x<-1)||(1/2+(a+x)/Pi∉Integers&&-1<x&&x<1)||(1/2+(a+x)/Pi∉Integers&&x>\n"
             + "1)");
   }
 
@@ -16275,6 +16275,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "ForAll(x,!f(x))");
     check("!ForAll(x, f(x))", //
         "Exists(x,!f(x))");
+  }
+
+  public void testNotElement() {
+    check("NotElement(Pi, Integers)", //
+        "True");
+    check("NotElement(a, Reals)", //
+        "a∉Reals");
+    // TODO improve Rationals and Algebraics domains
+    check("NotElement(Sqrt(2), #)& /@ {Complexes, Algebraics, Reals, Rationals, Integers, Primes}", //
+        "{False,Sqrt(2)∉Algebraics,False,Sqrt(2)∉Rationals,True,True}");
   }
 
   public void testNothing() {

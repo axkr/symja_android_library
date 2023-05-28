@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import java.util.Locale;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -14,8 +15,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-
-import java.util.Locale;
 
 public class AssumptionFunctions {
   /**
@@ -235,12 +234,31 @@ public class AssumptionFunctions {
       if (arg2.isSymbol()) {
         final IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isAST(S.Alternatives)) {
+          boolean[] evaled = new boolean[] {false};
           IAST alternatives = (IAST) arg1;
           IASTAppendable andList = F.And();
-          alternatives.forEach(x -> andList.append(F.Not(F.Element(x, arg2))));
-          return andList;
+          alternatives.forEach(x -> {
+            IExpr temp = notElement(x, arg2, engine);
+            if (temp.isPresent()) {
+              evaled[0] = true;
+              andList.append(temp);
+            } else {
+              andList.append(F.NotElement(x, arg2));
+            }
+          });
+          return evaled[0] == true ? andList : F.NIL;
         }
-        return F.Not(F.Element(arg1, arg2));
+        return notElement(arg1, arg2, engine);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr notElement(final IExpr arg1, final IExpr arg2, final EvalEngine engine) {
+      IExpr element = engine.evaluate(F.Element(arg1, arg2));
+      if (element.isTrue()) {
+        return S.False;
+      } else if (element.isFalse()) {
+        return S.True;
       }
       return F.NIL;
     }
