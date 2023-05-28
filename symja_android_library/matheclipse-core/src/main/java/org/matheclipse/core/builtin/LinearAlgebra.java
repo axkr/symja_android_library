@@ -1705,7 +1705,7 @@ public final class LinearAlgebra {
    * a.b
    * </pre>
    */
-  private static class Dot extends AbstractNonOrderlessArgMultiple {
+  public static class Dot extends AbstractNonOrderlessArgMultiple {
 
     @Override
     public IExpr evaluateAST1(final IAST ast, EvalEngine engine) {
@@ -3991,7 +3991,7 @@ public final class LinearAlgebra {
    * 0
    * </pre>
    */
-  public static final class Norm extends AbstractEvaluator {
+  public static class Norm extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
