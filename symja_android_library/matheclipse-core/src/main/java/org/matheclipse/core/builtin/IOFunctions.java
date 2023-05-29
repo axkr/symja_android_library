@@ -628,6 +628,7 @@ public class IOFunctions {
       "nliter", "Non-list iterator `1` at position `2` does not evaluate to a real numeric value.", //
       "nil", "unexpected NIL expression encountered.", //
       "ninv", "`1` is not invertible modulo `2`.", //
+      "nmet", "Unable to find the domain with the available methods.", //
       "nmtx", "The first two levels of `1` cannot be transposed.", //
       "nocatch", "Uncaught `1` returned to top level.", //
       "nofirst", "`1` has zero length and no first element.", //

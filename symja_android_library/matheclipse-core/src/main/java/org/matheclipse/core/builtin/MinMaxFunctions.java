@@ -414,29 +414,74 @@ public class MinMaxFunctions {
             int argSize = ast.argSize();
             switch (argSize) {
               case 1:
-                IExpr arg1 = ast.arg1();
-                arg1.accept(this);
-
-                switch (headID) {
-                  case ID.Cos:
-                  case ID.Sin:
-                    break;
-                  case ID.Cot:
-                    notElementList
-                        .append(F.NotElement(F.Times(arg1, F.Power(S.Pi, F.CN1)), S.Integers));
-                    break;
-                  case ID.Tan:
-                    notElementList.append(F.NotElement(
-                        F.Plus(F.C1D2, F.Times(arg1, F.Power(S.Pi, F.CN1))), S.Integers));
-                    break;
-                  default:
-                }
+                arg1FunctionDomain(headID, ast);
                 break;
               default:
+                throw new ArgumentTypeStopException("Not implemented");
             }
           }
         }
         return F.NIL;
+      }
+
+      private void arg1FunctionDomain(int headID, IASTMutable ast) {
+        IExpr arg1 = ast.arg1();
+        arg1.accept(this);
+
+        switch (headID) {
+          case ID.ArcCot:
+          case ID.ArcTan:
+          case ID.ArcSinh:
+          case ID.Cos:
+          case ID.Sin:
+            break;
+          case ID.ArcCos:
+          case ID.ArcSin:
+            intervalIntersection(
+                F.IntervalData(F.List(F.CN1, S.LessEqual, S.LessEqual, F.C1)));
+            break;
+          case ID.ArcCsc:
+          case ID.ArcSec:
+            intervalIntersection(F.IntervalData(//
+                F.List(F.C1, S.LessEqual, S.Less, F.CInfinity), //
+                F.List(F.CNInfinity, S.Less, S.LessEqual, F.CN1)));
+            break;
+          case ID.ArcCosh:
+            intervalIntersection(
+                F.IntervalData(F.List(F.C1, S.LessEqual, S.Less, F.CInfinity)));
+            break;
+          case ID.ArcCoth:
+            intervalIntersection(F.IntervalData(//
+                F.List(F.C1, S.Less, S.Less, F.CInfinity), //
+                F.List(F.CNInfinity, S.Less, S.Less, F.CN1)));
+            break;
+          case ID.ArcTanh:
+            intervalIntersection(F.IntervalData(F.List(F.CN1, S.Less, S.Less, F.C1)));
+            break;
+          case ID.Cot:
+          case ID.Csc:
+            notElementList
+                .append(F.NotElement(F.Times(arg1, F.Power(S.Pi, F.CN1)), S.Integers));
+            break;
+          case ID.Sec:
+          case ID.Tan:
+            notElementList.append(F.NotElement(
+                F.Plus(F.C1D2, F.Times(arg1, F.Power(S.Pi, F.CN1))), S.Integers));
+            break;
+          case ID.Log:
+            intervalIntersection(F.IntervalData(F.List(F.C0, S.Less, S.Less, F.CInfinity)));
+            break;
+          default:
+            throw new ArgumentTypeStopException("Not implemented");
+        }
+      }
+
+      private void intervalIntersection(IAST logInterval) {
+        IExpr temp = F.IntervalIntersection.of(engine, resultInterval, logInterval);
+        if (!temp.isAST(S.IntervalData)) {
+          throw new ArgumentTypeStopException("IntervalIntersection failed");
+        }
+        resultInterval = (IAST) temp;
       }
 
       private IExpr roots(IExpr denominator) {
@@ -487,9 +532,8 @@ public class MinMaxFunctions {
             }
           }
         } catch (ArgumentTypeStopException atse) {
-          // `1`.
-          return IOFunctions.printMessage(S.FunctionDomain, "error",
-              F.List(F.stringx(atse.getMessage())), engine);
+          // Unable to find the domain with the available methods.
+          return IOFunctions.printMessage(S.FunctionDomain, "nmet", F.CEmptyList, engine);
         }
       }
       return F.NIL;

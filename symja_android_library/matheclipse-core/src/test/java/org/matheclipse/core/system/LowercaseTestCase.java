@@ -9914,6 +9914,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testFunctionDomain() {
+    check("FunctionDomain(ArcCoth(x)*ArcSec(x), x)", //
+        "x<-1||x>1");
+    check("FunctionDomain(ArcCos(x)*Log(x), x)", //
+        "0<x&&x<=1");
+    check("FunctionDomain(ArcSec(a+x), x)", //
+        "x<=-1||x>=1");
     check("FunctionDomain(Tan(a+x), x)", //
         "1/2+(a+x)/Pi∉Integers");
     check("FunctionDomain(x/(x^4 - 1), x)", //
