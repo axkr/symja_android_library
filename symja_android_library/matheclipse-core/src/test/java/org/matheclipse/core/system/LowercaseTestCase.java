@@ -9914,6 +9914,24 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testFunctionDomain() {
+    check("FunctionDomain((x^2+x+1)/(-7+x^2), x)", //
+        "x<-Sqrt(7)||(-Sqrt(7)<x&&x<Sqrt(7))||x>Sqrt(7)");
+    check("FunctionDomain((x^2+x+1)/x, x)", //
+        "x<0||x>0");
+    check("FunctionDomain(1/(x^2), x)", //
+        "x<0||x>0");
+    check("FunctionDomain(Sqrt(-3-x), x)", //
+        "x<=-3");
+    check("FunctionDomain(Sqrt(x-3), x)", //
+        "x>=3");
+    check("FunctionDomain(Sqrt(x+3), x)", //
+        "x>=-3");
+    check("FunctionDomain((x+3)^-3, x)", //
+        "x<-3||x>-3");
+    check("FunctionDomain((x+3)^3, x)", //
+        "True");
+    check("FunctionDomain((2+x)^(-3), x)", //
+        "x<-2||x>-2");
     check("FunctionDomain(Gamma(x+2), x)", //
         "x∉Integers&&x<-2");
     check("FunctionDomain(ArcCosh(x-1), x)", //

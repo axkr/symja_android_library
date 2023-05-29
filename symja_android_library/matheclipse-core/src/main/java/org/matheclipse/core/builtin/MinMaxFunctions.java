@@ -34,7 +34,6 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.Matcher;
 import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
@@ -504,8 +503,7 @@ public class MinMaxFunctions {
             case ID.Gamma:
               intervalIntersection(F.IntervalData(//
                   F.List(F.CNInfinity, S.Less, S.Less, F.C0.plus(diff))));
-              notElementList.append(
-                  F.NotElement(!diff.isInteger() ? arg1 : variable, S.Integers));
+              notElementList.append(F.NotElement(!diff.isInteger() ? arg1 : variable, S.Integers));
               return;
             case ID.Sec:
             case ID.Tan:
@@ -530,33 +528,64 @@ public class MinMaxFunctions {
 
         switch (headID) {
           case ID.Power:
-            IExpr exponent = arg1;
-            IExpr base = arg2;
+            IExpr base = arg1;
+            IExpr exponent = arg2;
             if (base.isFree(variable)) {
               if (base.isPositive()) {
                 return;
               }
-            }
-            if (exponent.isFree(variable)) {
+            } else if (exponent.isFree(variable)) {
               if (exponent.isInteger()) {
-                IInteger b = (IInteger) exponent;
-                if (!b.isGE(F.C1)) {
-                  // not b >= 1 && x != 0
-                  intervalIntersection(F.IntervalData(//
-                      F.List(F.CNInfinity, S.Less, S.Less, F.C0), //
-                      F.List(F.C0, S.Less, S.Less, F.CInfinity)));
+                if (exponent.isNegative()) {
+                  // exponent < 0 && x != 0
+                  intervalIntersection(relationToInterval(S.Unequal, base, F.C0));
                   return;
                 }
+                return;
+              } else if (exponent.isPositive()) {
+                intervalIntersection(relationToInterval(S.GreaterEqual, base, F.C0));
+                return;
               }
               if (exponent.isNegativeResult()) {
                 IExpr denominator = base;
                 roots(denominator);
+                return;
               }
             }
-            break;
+            throw new ArgumentTypeStopException("Not implemented");
           default:
             throw new ArgumentTypeStopException("Not implemented");
         }
+      }
+
+      private IAST relationToInterval(IBuiltInSymbol symbol, IExpr expr, IExpr value) {
+        IExpr temp = engine.evaluate(F.Simplify(F.binaryAST2(symbol, expr, value)));
+        if (temp.isAST2() && temp.first().equals(variable)) {
+          IExpr rhs = temp.second();
+          int headID = temp.headID();
+          switch (headID) {
+            case ID.Greater:
+              return F.IntervalData(//
+                  F.List(rhs, S.Less, S.Less, F.CInfinity));
+            case ID.GreaterEqual:
+              return F.IntervalData(//
+                  F.List(rhs, S.LessEqual, S.Less, F.CInfinity));
+            case ID.Less:
+              return F.IntervalData(//
+                  F.List(F.CNInfinity, S.Less, S.Less, rhs));
+            case ID.LessEqual:
+              return F.IntervalData(//
+                  F.List(F.CNInfinity, S.Less, S.LessEqual, rhs));
+            case ID.Equal:
+              return F.IntervalData(//
+                  F.List(rhs, S.LessEqual, S.LessEqual, rhs));
+            case ID.Unequal:
+              return F.IntervalData(//
+                  F.List(F.CNInfinity, S.Less, S.Less, rhs), //
+                  F.List(rhs, S.Less, S.Less, F.CInfinity));
+          }
+        }
+        throw new ArgumentTypeStopException("Not implemented");
       }
 
       private void intervalIntersection(IAST logInterval) {
@@ -573,7 +602,7 @@ public class MinMaxFunctions {
           IAST list = (IAST) roots;
           for (int i = 1; i < list.size(); i++) {
             IExpr arg = list.get(i);
-            if (arg.isReal()) {
+            if (arg.isRealResult()) {
               IAST notInRange = IntervalDataSym.notInRange(arg);
               IExpr temp = F.IntervalIntersection.of(engine, resultInterval, notInRange);
               if (!temp.isAST(S.IntervalData)) {
