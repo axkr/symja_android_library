@@ -15,6 +15,7 @@ import org.hipparchus.optim.linear.NonNegativeConstraint;
 import org.hipparchus.optim.linear.PivotSelectionRule;
 import org.hipparchus.optim.linear.SimplexSolver;
 import org.hipparchus.optim.nonlinear.scalar.GoalType;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Expr2LP;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
@@ -33,6 +34,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.Matcher;
 import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
@@ -386,7 +388,7 @@ public class MinMaxFunctions {
           return F.NIL;
         }
         if (ast.isTimes()) {
-          IExpr[] parts = Algebra.fractionalParts(ast, true);
+          IExpr[] parts = Algebra.fractionalParts(ast, false);
           if (parts != null) {
             IExpr numerator = parts[0];
             IExpr denominator = parts[1];
@@ -398,16 +400,6 @@ public class MinMaxFunctions {
           determineIntervalSequence(ast);
         } else if (ast.isPlus()) {
           determineIntervalSequence(ast);
-        } else if (ast.isPower()) {
-          IExpr exponent = ast.exponent();
-          IExpr base = ast.base();
-          if (exponent.isNegative()) {
-            IExpr denominator = base;
-            return roots(denominator);
-          }
-          if (base.isAST()) {
-            determineIntervalSequence((IAST) base);
-          }
         } else {
           int headID = ast.headID();
           if (headID >= 0) {
@@ -415,6 +407,9 @@ public class MinMaxFunctions {
             switch (argSize) {
               case 1:
                 arg1FunctionDomain(headID, ast);
+                break;
+              case 2:
+                arg2FunctionDomain(headID, ast);
                 break;
               default:
                 throw new ArgumentTypeStopException("Not implemented");
@@ -427,49 +422,137 @@ public class MinMaxFunctions {
       private void arg1FunctionDomain(int headID, IASTMutable ast) {
         IExpr arg1 = ast.arg1();
         arg1.accept(this);
-
         switch (headID) {
           case ID.ArcCot:
           case ID.ArcTan:
           case ID.ArcSinh:
           case ID.Cos:
           case ID.Sin:
-            break;
-          case ID.ArcCos:
-          case ID.ArcSin:
-            intervalIntersection(
-                F.IntervalData(F.List(F.CN1, S.LessEqual, S.LessEqual, F.C1)));
-            break;
-          case ID.ArcCsc:
-          case ID.ArcSec:
-            intervalIntersection(F.IntervalData(//
-                F.List(F.C1, S.LessEqual, S.Less, F.CInfinity), //
-                F.List(F.CNInfinity, S.Less, S.LessEqual, F.CN1)));
-            break;
-          case ID.ArcCosh:
-            intervalIntersection(
-                F.IntervalData(F.List(F.C1, S.LessEqual, S.Less, F.CInfinity)));
-            break;
-          case ID.ArcCoth:
-            intervalIntersection(F.IntervalData(//
-                F.List(F.C1, S.Less, S.Less, F.CInfinity), //
-                F.List(F.CNInfinity, S.Less, S.Less, F.CN1)));
-            break;
-          case ID.ArcTanh:
-            intervalIntersection(F.IntervalData(F.List(F.CN1, S.Less, S.Less, F.C1)));
-            break;
-          case ID.Cot:
-          case ID.Csc:
-            notElementList
-                .append(F.NotElement(F.Times(arg1, F.Power(S.Pi, F.CN1)), S.Integers));
-            break;
-          case ID.Sec:
-          case ID.Tan:
-            notElementList.append(F.NotElement(
-                F.Plus(F.C1D2, F.Times(arg1, F.Power(S.Pi, F.CN1))), S.Integers));
-            break;
-          case ID.Log:
-            intervalIntersection(F.IntervalData(F.List(F.C0, S.Less, S.Less, F.CInfinity)));
+            return;
+        }
+
+        if (arg1.equals(variable)) {
+          arg1FunctionDomain(headID, arg1, F.C0);
+          return;
+        } else if (arg1.isPlus()) {
+          if (arg1.isPolynomial(variable)) {
+            IExpr diff = F.NIL;
+            IExpr roots = RootsFunctions.roots(arg1, false, variable.makeList(), engine);
+            if (roots.isNonEmptyList()) {
+              IAST list = (IAST) roots;
+              for (int i = 1; i < list.size(); i++) {
+                diff = list.get(i);
+                if (diff.isRealResult()) {
+                  arg1FunctionDomain(headID, arg1, diff);
+                } else {
+                  switch (headID) {
+                    case ID.Cot:
+                    case ID.Csc:
+                    case ID.Sec:
+                    case ID.Tan:
+                      arg1FunctionDomain(headID, arg1, F.C0);
+                      return;
+                  }
+                  throw new ArgumentTypeStopException("Not implemented");
+                }
+              }
+              return;
+            }
+          }
+        }
+
+        throw new ArgumentTypeStopException("Not implemented");
+      }
+
+      private void arg1FunctionDomain(int headID, IExpr arg1, IExpr diff) {
+        if (diff.isPresent()) {
+          switch (headID) {
+            // case ID.ArcCot:
+            // case ID.ArcTan:
+            // case ID.ArcSinh:
+            // case ID.Cos:
+            // case ID.Sin:
+            // return;
+            case ID.ArcCos:
+            case ID.ArcSin:
+              intervalIntersection(F.IntervalData(
+                  F.List(F.CN1.plus(diff), S.LessEqual, S.LessEqual, F.C1.plus(diff))));
+              return;
+            case ID.ArcCsc:
+            case ID.ArcSec:
+              intervalIntersection(F.IntervalData(//
+                  F.List(F.C1.plus(diff), S.LessEqual, S.Less, F.CInfinity), //
+                  F.List(F.CNInfinity, S.Less, S.LessEqual, F.CN1.plus(diff))));
+              return;
+            case ID.ArcCosh:
+              intervalIntersection(
+                  F.IntervalData(F.List(F.C1.plus(diff), S.LessEqual, S.Less, F.CInfinity)));
+              return;
+            case ID.ArcCoth:
+              intervalIntersection(F.IntervalData(//
+                  F.List(F.C1.plus(diff), S.Less, S.Less, F.CInfinity), //
+                  F.List(F.CNInfinity, S.Less, S.Less, F.CN1.plus(diff))));
+              return;
+            case ID.ArcTanh:
+              intervalIntersection(
+                  F.IntervalData(F.List(F.CN1.plus(diff), S.Less, S.Less, F.C1.plus(diff))));
+              return;
+            case ID.Cot:
+            case ID.Csc:
+              notElementList.append(F.NotElement(F.Times(arg1, F.Power(S.Pi, F.CN1)), S.Integers));
+              return;
+            case ID.Gamma:
+              intervalIntersection(F.IntervalData(//
+                  F.List(F.CNInfinity, S.Less, S.Less, F.C0.plus(diff))));
+              notElementList.append(
+                  F.NotElement(!diff.isInteger() ? arg1 : variable, S.Integers));
+              return;
+            case ID.Sec:
+            case ID.Tan:
+              notElementList.append(
+                  F.NotElement(F.Plus(F.C1D2, F.Times(arg1, F.Power(S.Pi, F.CN1))), S.Integers));
+              return;
+            case ID.Log:
+              intervalIntersection(
+                  F.IntervalData(F.List(F.C0.plus(diff), S.Less, S.Less, F.CInfinity)));
+              return;
+            default:
+          }
+        }
+        throw new ArgumentTypeStopException("Not implemented");
+      }
+
+      private void arg2FunctionDomain(int headID, IASTMutable ast) {
+        IExpr arg1 = ast.arg1();
+        IExpr arg2 = ast.arg2();
+        arg1.accept(this);
+        arg2.accept(this);
+
+        switch (headID) {
+          case ID.Power:
+            IExpr exponent = arg1;
+            IExpr base = arg2;
+            if (base.isFree(variable)) {
+              if (base.isPositive()) {
+                return;
+              }
+            }
+            if (exponent.isFree(variable)) {
+              if (exponent.isInteger()) {
+                IInteger b = (IInteger) exponent;
+                if (!b.isGE(F.C1)) {
+                  // not b >= 1 && x != 0
+                  intervalIntersection(F.IntervalData(//
+                      F.List(F.CNInfinity, S.Less, S.Less, F.C0), //
+                      F.List(F.C0, S.Less, S.Less, F.CInfinity)));
+                  return;
+                }
+              }
+              if (exponent.isNegativeResult()) {
+                IExpr denominator = base;
+                roots(denominator);
+              }
+            }
             break;
           default:
             throw new ArgumentTypeStopException("Not implemented");
@@ -532,6 +615,9 @@ public class MinMaxFunctions {
             }
           }
         } catch (ArgumentTypeStopException atse) {
+          if (Config.SHOW_STACKTRACE) {
+            atse.printStackTrace();
+          }
           // Unable to find the domain with the available methods.
           return IOFunctions.printMessage(S.FunctionDomain, "nmet", F.CEmptyList, engine);
         }
