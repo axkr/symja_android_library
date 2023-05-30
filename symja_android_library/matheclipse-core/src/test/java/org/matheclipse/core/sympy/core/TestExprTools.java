@@ -1,6 +1,9 @@
 package org.matheclipse.core.sympy.core;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
+
 import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
@@ -106,9 +109,9 @@ public class TestExprTools extends ExprEvaluatorTestCase {
         new Factors(F.assoc(F.List(F.Rule(F.CN1, F.C1), F.Rule(F.CI, F.C5))))).asExpr().toString(),
         //
         "I");
-    HashMap<IExpr, IExpr> aMap = new HashMap<IExpr, IExpr>();
+    TreeMap<IExpr, IExpr> aMap = new TreeMap<IExpr, IExpr>();
     aMap.put(F.CN1, F.C3);
-    HashMap<IExpr, IExpr> bMap = new HashMap<IExpr, IExpr>();
+    TreeMap<IExpr, IExpr> bMap = new TreeMap<IExpr, IExpr>();
     bMap.put(F.CN1, F.C1);
     bMap.put(F.CI, F.C5);
     assertEquals(new Factors(aMap).mul(//
@@ -184,7 +187,7 @@ public class TestExprTools extends ExprEvaluatorTestCase {
         "{I=1}");
 
     // assert Factors({-1.0: 2, I: 1}) == Factors({S(1.0): 1, I: 1})
-    HashMap<IExpr, IExpr> cMap = new HashMap<IExpr, IExpr>();
+    TreeMap<IExpr, IExpr> cMap = new TreeMap<IExpr, IExpr>();
     cMap.clear();
     cMap.put(F.CND1, F.C2);
     cMap.put(F.CI, F.C1);
