@@ -1,9 +1,9 @@
 package org.matheclipse.core.sympy.core;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.DefaultDict;
 import org.matheclipse.core.expression.F;
@@ -29,9 +29,9 @@ public class ExprTools {
    */
   public final static class Factors {
     // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/exprtools.py#L284
-    private HashMap<IExpr, IExpr> dict;
+    private TreeMap<IExpr, IExpr> dict;
 
-    public Factors(HashMap<IExpr, IExpr> dict) {
+    public Factors(TreeMap<IExpr, IExpr> dict) {
       this(dict, false);
     }
 
@@ -39,9 +39,9 @@ public class ExprTools {
       this(S.None);
     }
 
-    public Factors(HashMap<IExpr, IExpr> dictionary, boolean copy) {
+    public Factors(TreeMap<IExpr, IExpr> dictionary, boolean copy) {
       if (copy) {
-        this.dict = (HashMap<IExpr, IExpr>) dictionary.clone();
+        this.dict = (TreeMap<IExpr, IExpr>) dictionary.clone();
       } else {
         this.dict = dictionary;
       }
@@ -57,7 +57,7 @@ public class ExprTools {
       if (factors instanceof IAssociation) {
         // should be a dict-like association
         IAssociation assoc = (IAssociation) factors;
-        HashMap<IExpr, IExpr> map = new HashMap<IExpr, IExpr>();
+        TreeMap<IExpr, IExpr> map = new TreeMap<IExpr, IExpr>();
         for (int i = 1; i < assoc.size(); i++) {
           IAST rule = assoc.getRule(i);
           IExpr k = rule.first();
@@ -67,7 +67,7 @@ public class ExprTools {
         normalize(map);
         return;
       }
-      this.dict = new HashMap<IExpr, IExpr>();
+      this.dict = new TreeMap<IExpr, IExpr>();
       if (factors.isOne() || factors == S.None || factors.isEmptyList()) {
         //
       } else if (factors.isZero()) {
@@ -132,7 +132,7 @@ public class ExprTools {
       }
     }
 
-    private void normalize(HashMap<IExpr, IExpr> dictionary) {
+    private void normalize(TreeMap<IExpr, IExpr> dictionary) {
       this.dict = dictionary;
       IExpr i1 = F.C1;
       Iterator<IExpr> it = dictionary.keySet().iterator();
@@ -233,11 +233,11 @@ public class ExprTools {
     }
 
     public Factors mul(Factors other) {
-      HashMap<IExpr, IExpr> factors;
+      TreeMap<IExpr, IExpr> factors;
       if (isZero() || other.isZero()) {
         return new Factors(F.C0);
       }
-      factors = (HashMap<IExpr, IExpr>) dict.clone();
+      factors = (TreeMap<IExpr, IExpr>) dict.clone();
 
       for (Map.Entry<IExpr, IExpr> entry : other.dict.entrySet()) {
         IExpr factor = entry.getKey();
@@ -266,8 +266,8 @@ public class ExprTools {
       if (isZero()) {
         return new Factors[] {new Factors(F.C0), new Factors()};
       }
-      HashMap<IExpr, IExpr> self_factors = (HashMap<IExpr, IExpr>) dict.clone();
-      HashMap<IExpr, IExpr> other_factors = (HashMap<IExpr, IExpr>) that.dict.clone();
+      TreeMap<IExpr, IExpr> self_factors = (TreeMap<IExpr, IExpr>) dict.clone();
+      TreeMap<IExpr, IExpr> other_factors = (TreeMap<IExpr, IExpr>) that.dict.clone();
 
       for (Map.Entry<IExpr, IExpr> entry : dict.entrySet()) {
         IExpr factor = entry.getKey();
@@ -345,8 +345,8 @@ public class ExprTools {
         return new Factors[] {new Factors(F.C0), new Factors()};
       }
 
-      HashMap<IExpr, IExpr> quo = (HashMap<IExpr, IExpr>) dict.clone();
-      HashMap<IExpr, IExpr> rem = new HashMap<IExpr, IExpr>();
+      TreeMap<IExpr, IExpr> quo = (TreeMap<IExpr, IExpr>) dict.clone();
+      TreeMap<IExpr, IExpr> rem = new TreeMap<IExpr, IExpr>();
 
       for (Map.Entry<IExpr, IExpr> entry : other.dict.entrySet()) {
         IExpr factor = entry.getKey();
@@ -442,7 +442,7 @@ public class ExprTools {
 
     private Factors pow(int n) {
       if (n >= 0) {
-        HashMap<IExpr, IExpr> factors = new HashMap<IExpr, IExpr>();
+        TreeMap<IExpr, IExpr> factors = new TreeMap<IExpr, IExpr>();
         IExpr other = F.ZZ(n);
         for (Map.Entry<IExpr, IExpr> entry : dict.entrySet()) {
           IExpr factor = entry.getKey();
@@ -462,7 +462,7 @@ public class ExprTools {
       if (other.isZero()) {
         return this;
       }
-      HashMap<IExpr, IExpr> factors = new HashMap<IExpr, IExpr>();
+      TreeMap<IExpr, IExpr> factors = new TreeMap<IExpr, IExpr>();
 
       for (Map.Entry<IExpr, IExpr> entry : dict.entrySet()) {
         IExpr factor = entry.getKey();
@@ -488,7 +488,7 @@ public class ExprTools {
       if (isZero() || other.isZero()) {
         return new Factors(F.C0);
       }
-      HashMap<IExpr, IExpr> factors = (HashMap<IExpr, IExpr>) dict.clone();
+      TreeMap<IExpr, IExpr> factors = (TreeMap<IExpr, IExpr>) dict.clone();
 
       for (Map.Entry<IExpr, IExpr> entry : other.dict.entrySet()) {
         IExpr factor = entry.getKey();
@@ -502,7 +502,7 @@ public class ExprTools {
       return new Factors(factors);
     }
 
-    public HashMap<IExpr, IExpr> factorsMap() {
+    public TreeMap<IExpr, IExpr> factorsMap() {
       return dict;
     }
 
