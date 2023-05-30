@@ -686,11 +686,6 @@ public class IOFunctions {
       "pllim", "Range specification `1` is not of the form {x, xmin, xmax}.", //
       "plln", "Limiting value `1` in `2` is not a machine-size real number.", //
       "pkspec1", "The expression `1` cannot be used as a part specification.", //
-      "preal", "The parameter `1` should be real.", //
-      "prng",
-      "Value of option `1` is not All, Full, Automatic, a positive machine number, or an appropriate list of range specifications.",
-      "psl1", "Position specification `1` in `2` is not applicable.", //
-      "pspec", "Part specification `1` is neither an integer nor a list of integer.", //
       "poly", "`1` is not a polynomial.", //
       "polynomial", "Polynomial expected at position `1` in `2`.", //
       "posdim",
@@ -702,7 +697,13 @@ public class IOFunctions {
       "preal", "The parameter `1` should be real-valued.", //
       "precsm", "Requested precision `1` is smaller than `2`.", //
       "precgt", "Requested precision `1` is greater than `2`.", //
+      "prng",
+      "Value of option `1` is not All, Full, Automatic, a positive machine number, or an appropriate list of range specifications.",
+      "psl1", "Position specification `1` in `2` is not applicable.", //
+      "pspec", "Part specification `1` is neither an integer nor a list of integer.", //
       "pts", "`1` should be a non-empty list of points.", //
+      "ptype",
+      "The second argument of Norm, `1`, should be a symbol, Infinity, or a number greater equal 1 for p-norms, or \"Frobenius\" for matrix norms.",
       "range", "Range specification in `1` does not have appropriate bounds.", //
       "rbase", "Base `1` is not a real number greater than 1.", //
       "rank", "The rank `1` is not an integer between `2` and  `3`.", //

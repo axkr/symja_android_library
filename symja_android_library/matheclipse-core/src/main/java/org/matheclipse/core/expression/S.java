@@ -4158,6 +4158,9 @@ public class S {
 
   public final static IBuiltInSymbol General = S.initFinalSymbol("General", ID.General);
 
+  public final static IBuiltInSymbol GenerateConditions =
+      S.initFinalSymbol("GenerateConditions", ID.GenerateConditions);
+
   public final static IBuiltInSymbol GeodesyData = S.initFinalSymbol("GeodesyData", ID.GeodesyData);
 
   /**

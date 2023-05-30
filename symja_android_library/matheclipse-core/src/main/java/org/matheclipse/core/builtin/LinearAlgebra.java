@@ -4012,18 +4012,15 @@ public final class LinearAlgebra {
             } else if (p.isInfinity()) {
               return vector.map(S.Max, x -> F.Abs(x));
             } else if (p.isSymbol() || p.isReal()) {
-              if (p.isZero()) {
-                LOGGER.log(engine.getLogLevel(), "Norm: 0 not allowed as second argument!");
-                return F.NIL;
-              }
-              if (p.isReal() && p.lessThan(F.C1).isTrue()) {
-                LOGGER.log(engine.getLogLevel(), "Norm: Second argument is < 1!");
-                return F.NIL;
+              if (p.isZero() //
+                  || (p.isReal() && p.lessThan(F.C1).isTrue())) {
+                return IOFunctions.printMessage(S.Norm, "ptype", F.List(p), engine);
               }
               return F.Power(vector.map(S.Plus, x -> F.Power(F.Abs(x), p)), p.inverse());
             }
-
-            return F.NIL;
+            // The second argument of Norm, `1`, should be a symbol, Infinity, or a number greater
+            // equal 1 for p-norms, or \"Frobenius\" for matrix norms.
+            return IOFunctions.printMessage(S.Norm, "ptype", F.List(p), engine);
           }
           return F.Sqrt(vector.map(S.Plus, x -> F.Sqr(F.Abs(x))));
         }
