@@ -2804,7 +2804,7 @@ public final class LinearAlgebra {
    *  {0,1/2,1/(1/(2*Sqrt(3))+Sqrt(3)/2)}}
    * </pre>
    */
-  private static final class Inverse extends AbstractMatrix1Matrix {
+  public static class Inverse extends AbstractMatrix1Matrix {
 
     @Override
     public int[] checkMatrixDimensions(IExpr arg1) {
@@ -3656,7 +3656,7 @@ public final class LinearAlgebra {
    * MatrixPower({{1, 0}, {0}}, 2)
    * </pre>
    */
-  private static final class MatrixPower extends AbstractFunctionEvaluator {
+  public static class MatrixPower extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -5338,7 +5338,7 @@ public final class LinearAlgebra {
    * Transpose(x)
    * </pre>
    */
-  private static class Transpose extends AbstractEvaluator {
+  public static class Transpose extends AbstractEvaluator {
 
     private static class TransposePermute {
       /** The current tensor. */
@@ -5522,7 +5522,7 @@ public final class LinearAlgebra {
    * {0,0,1,0}
    * </pre>
    */
-  private static final class UnitVector extends AbstractFunctionEvaluator {
+  public static class UnitVector extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
