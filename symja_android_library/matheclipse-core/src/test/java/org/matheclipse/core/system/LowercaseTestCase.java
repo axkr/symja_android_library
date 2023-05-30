@@ -9914,6 +9914,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testFunctionDomain() {
+    check("FunctionDomain(ArcCoth(2+3*x)*ArcSec(7+2/3*x), x)", //
+        "x<=-12||(-9<=x&&x<-1)||x>-1/3");
+    check("FunctionDomain(ArcSin(2+3*x), x)", //
+        "-1<=x&&x<=-1/3");
+    check("FunctionDomain(Sqrt(2+3*x), x)", //
+        "x>=-2/3");
+    check("FunctionDomain(Sqrt(-2-3*x), x)", //
+        "x<=-2/3");
     check("FunctionDomain((x^2+x+1)/(-7+x^2), x)", //
         "x<-Sqrt(7)||(-Sqrt(7)<x&&x<Sqrt(7))||x>Sqrt(7)");
     check("FunctionDomain((x^2+x+1)/x, x)", //
@@ -9932,20 +9940,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
     check("FunctionDomain((2+x)^(-3), x)", //
         "x<-2||x>-2");
-    check("FunctionDomain(Gamma(x+2), x)", //
-        "x∉Integers&&x<-2");
+    check("FunctionDomain(Gamma(-3*x+2), x)", //
+        "2-3*x∉Integers&&x<2/3");
     check("FunctionDomain(ArcCosh(x-1), x)", //
         "x>=2");
     check("FunctionDomain(Tan(3+x^2), x)", //
         "1/2+(3+x^2)/Pi∉Integers");
     check("FunctionDomain(Log(x-1), x)", //
         "x>1");
-    // message FunctionDomain: Unable to find the domain with the available methods.
-    check("FunctionDomain(Log(Tan(x) - 1), x)", //
-        "FunctionDomain(Log(-1+Tan(x)),x)");
 
-    check("FunctionDomain(ArcCoth(x)*ArcSec(x), x)", //
-        "x<-1||x>1");
     check("FunctionDomain(ArcCos(x)*Log(x), x)", //
         "0<x&&x<=1");
     check("FunctionDomain(ArcSec(2+x), x)", //
@@ -9957,6 +9960,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FunctionDomain(x/(x^4 - 1)+Tan(2+x), x)", //
         "(1/2+(2+x)/Pi∉Integers&&x<-1)||(1/2+(2+x)/Pi∉Integers&&-1<x&&x<1)||(1/2+(2+x)/Pi∉Integers&&x>\n"
             + "1)");
+    // message FunctionDomain: Unable to find the domain with the available methods.
+    check("FunctionDomain(Log(Tan(x) - 1), x)", //
+        "FunctionDomain(Log(-1+Tan(x)),x)");
   }
 
   public void testFunctionRange() {

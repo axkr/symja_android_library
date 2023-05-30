@@ -364,7 +364,6 @@ public class MinMaxFunctions {
     }
   }
   private static final class FunctionDomain extends AbstractFunctionEvaluator {
-    // private static Supplier<Matcher> LAZY_MATCHER;
 
     static final class FunctionDomainRealsVisitor extends VisitorExpr {
       final EvalEngine engine;
@@ -391,7 +390,7 @@ public class MinMaxFunctions {
           if (parts != null) {
             IExpr numerator = parts[0];
             IExpr denominator = parts[1];
-            if (!denominator.isOne()) {
+            if (!denominator.isFree(variable)) {
               numerator.accept(this);
               return roots(denominator);
             }
@@ -430,93 +429,65 @@ public class MinMaxFunctions {
             return;
         }
 
-        if (arg1.equals(variable)) {
-          arg1FunctionDomain(headID, arg1, F.C0);
+        if (arg1.isPolynomial(variable)) {
+          arg1FunctionDomain(headID, arg1);
           return;
-        } else if (arg1.isPlus()) {
-          if (arg1.isPolynomial(variable)) {
-            IExpr diff = F.NIL;
-            IExpr roots = RootsFunctions.roots(arg1, false, variable.makeList(), engine);
-            if (roots.isNonEmptyList()) {
-              IAST list = (IAST) roots;
-              for (int i = 1; i < list.size(); i++) {
-                diff = list.get(i);
-                if (diff.isRealResult()) {
-                  arg1FunctionDomain(headID, arg1, diff);
-                } else {
-                  switch (headID) {
-                    case ID.Cot:
-                    case ID.Csc:
-                    case ID.Sec:
-                    case ID.Tan:
-                      arg1FunctionDomain(headID, arg1, F.C0);
-                      return;
-                  }
-                  throw new ArgumentTypeStopException("Not implemented");
-                }
-              }
-              return;
-            }
-          }
         }
 
         throw new ArgumentTypeStopException("Not implemented");
       }
 
-      private void arg1FunctionDomain(int headID, IExpr arg1, IExpr diff) {
-        if (diff.isPresent()) {
-          switch (headID) {
-            // case ID.ArcCot:
-            // case ID.ArcTan:
-            // case ID.ArcSinh:
-            // case ID.Cos:
-            // case ID.Sin:
-            // return;
-            case ID.ArcCos:
-            case ID.ArcSin:
-              intervalIntersection(F.IntervalData(
-                  F.List(F.CN1.plus(diff), S.LessEqual, S.LessEqual, F.C1.plus(diff))));
-              return;
-            case ID.ArcCsc:
-            case ID.ArcSec:
-              intervalIntersection(F.IntervalData(//
-                  F.List(F.C1.plus(diff), S.LessEqual, S.Less, F.CInfinity), //
-                  F.List(F.CNInfinity, S.Less, S.LessEqual, F.CN1.plus(diff))));
-              return;
-            case ID.ArcCosh:
-              intervalIntersection(
-                  F.IntervalData(F.List(F.C1.plus(diff), S.LessEqual, S.Less, F.CInfinity)));
-              return;
-            case ID.ArcCoth:
-              intervalIntersection(F.IntervalData(//
-                  F.List(F.C1.plus(diff), S.Less, S.Less, F.CInfinity), //
-                  F.List(F.CNInfinity, S.Less, S.Less, F.CN1.plus(diff))));
-              return;
-            case ID.ArcTanh:
-              intervalIntersection(
-                  F.IntervalData(F.List(F.CN1.plus(diff), S.Less, S.Less, F.C1.plus(diff))));
-              return;
-            case ID.Cot:
-            case ID.Csc:
-              notElementList.append(F.NotElement(F.Times(arg1, F.Power(S.Pi, F.CN1)), S.Integers));
-              return;
-            case ID.Gamma:
-              intervalIntersection(F.IntervalData(//
-                  F.List(F.CNInfinity, S.Less, S.Less, F.C0.plus(diff))));
-              notElementList.append(F.NotElement(!diff.isInteger() ? arg1 : variable, S.Integers));
-              return;
-            case ID.Sec:
-            case ID.Tan:
-              notElementList.append(
-                  F.NotElement(F.Plus(F.C1D2, F.Times(arg1, F.Power(S.Pi, F.CN1))), S.Integers));
-              return;
-            case ID.Log:
-              intervalIntersection(
-                  F.IntervalData(F.List(F.C0.plus(diff), S.Less, S.Less, F.CInfinity)));
-              return;
-            default:
-          }
+      private void arg1FunctionDomain(int headID, IExpr arg1) {
+
+        switch (headID) {
+          // case ID.ArcCot:
+          // case ID.ArcTan:
+          // case ID.ArcSinh:
+          // case ID.Cos:
+          // case ID.Sin:
+          // return;
+          case ID.ArcCos:
+          case ID.ArcSin:
+            // -1 <= x <= 1
+            intervalIntersection(
+                relationToInterval(arg1, S.GreaterEqual, F.CN1, S.LessEqual, F.C1));
+            return;
+          case ID.ArcCsc:
+          case ID.ArcSec:
+            intervalIntersection(intervalUnion(//
+                relationToInterval(arg1, S.GreaterEqual, F.C1), //
+                relationToInterval(arg1, S.LessEqual, F.CN1)));
+            return;
+          case ID.ArcCosh:
+            intervalIntersection(relationToInterval(arg1, S.GreaterEqual, F.C1));
+            return;
+          case ID.ArcCoth:
+            intervalIntersection(intervalUnion(//
+                relationToInterval(arg1, S.Greater, F.C1), //
+                relationToInterval(arg1, S.Less, F.CN1)));
+            return;
+          case ID.ArcTanh:
+            intervalIntersection(relationToInterval(arg1, S.Greater, F.CN1, S.Less, F.C1));
+            return;
+          case ID.Cot:
+          case ID.Csc:
+            notElementList.append(F.NotElement(F.Times(arg1, F.Power(S.Pi, F.CN1)), S.Integers));
+            return;
+          case ID.Gamma:
+            intervalIntersection(relationToInterval(arg1, S.Greater, F.C0));
+            notElementList.append(F.NotElement(arg1, S.Integers));
+            return;
+          case ID.Sec:
+          case ID.Tan:
+            notElementList.append(
+                F.NotElement(F.Plus(F.C1D2, F.Times(arg1, F.Power(S.Pi, F.CN1))), S.Integers));
+            return;
+          case ID.Log:
+            intervalIntersection(relationToInterval(arg1, S.Greater, F.C0));
+            return;
+          default:
         }
+
         throw new ArgumentTypeStopException("Not implemented");
       }
 
@@ -538,12 +509,12 @@ public class MinMaxFunctions {
               if (exponent.isInteger()) {
                 if (exponent.isNegative()) {
                   // exponent < 0 && x != 0
-                  intervalIntersection(relationToInterval(S.Unequal, base, F.C0));
+                  intervalIntersection(relationToInterval(base, S.Unequal, F.C0));
                   return;
                 }
                 return;
               } else if (exponent.isPositive()) {
-                intervalIntersection(relationToInterval(S.GreaterEqual, base, F.C0));
+                intervalIntersection(relationToInterval(base, S.GreaterEqual, F.C0));
                 return;
               }
               if (exponent.isNegativeResult()) {
@@ -558,8 +529,18 @@ public class MinMaxFunctions {
         }
       }
 
-      private IAST relationToInterval(IBuiltInSymbol symbol, IExpr expr, IExpr value) {
-        IExpr temp = engine.evaluate(F.Simplify(F.binaryAST2(symbol, expr, value)));
+      /**
+       * Create an {@link F#IntervalData(IAST...)} from the relation
+       * <code>F.binaryAST2(relationalSymbol, expr, value)</code>.
+       * 
+       * @param expr
+       * @param relationalSymbol one of the symbols
+       *        {@link S#Greater},{@link S#GreaterEqual}{@link S#Less}{@link S#LessEqual}{@link S#Unequal}
+       * @param value
+       * @return
+       */
+      private IAST relationToInterval(IExpr expr, IBuiltInSymbol relationalSymbol, IExpr value) {
+        IExpr temp = engine.evaluate(F.Simplify(F.binaryAST2(relationalSymbol, expr, value)));
         if (temp.isAST2() && temp.first().equals(variable)) {
           IExpr rhs = temp.second();
           int headID = temp.headID();
@@ -588,12 +569,33 @@ public class MinMaxFunctions {
         throw new ArgumentTypeStopException("Not implemented");
       }
 
-      private void intervalIntersection(IAST logInterval) {
-        IExpr temp = F.IntervalIntersection.of(engine, resultInterval, logInterval);
+      private IAST relationToInterval(IExpr expr, IBuiltInSymbol symbol1, IExpr value1,
+          IBuiltInSymbol symbol2, IExpr value2) {
+        IAST f1 = relationToInterval(expr, symbol1, value1);
+        IAST f2 = relationToInterval(expr, symbol2, value2);
+        if (f1.isPresent() && f2.isPresent()) {
+          IExpr temp = F.IntervalIntersection.of(engine, f1, f2);
+          if (temp.isAST(S.IntervalData)) {
+            return (IAST) temp;
+          }
+        }
+        throw new ArgumentTypeStopException("IntervalIntersection failed");
+      }
+
+      private void intervalIntersection(IAST interval) {
+        IExpr temp = F.IntervalIntersection.of(engine, resultInterval, interval);
         if (!temp.isAST(S.IntervalData)) {
           throw new ArgumentTypeStopException("IntervalIntersection failed");
         }
         resultInterval = (IAST) temp;
+      }
+
+      private IAST intervalUnion(IAST interval1, IAST interval2) {
+        IExpr temp = F.IntervalUnion.of(engine, interval1, interval2);
+        if (!temp.isAST(S.IntervalData)) {
+          throw new ArgumentTypeStopException("IntervalIntersection failed");
+        }
+        return (IAST) temp;
       }
 
       private IExpr roots(IExpr denominator) {
