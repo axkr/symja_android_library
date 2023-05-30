@@ -1387,7 +1387,7 @@ public final class LinearAlgebra {
    * -c*e*g+b*f*g+c*d*h-a*f*h-b*d*i+a*e*i
    * </pre>
    */
-  private static class Det extends AbstractMatrix1Expr {
+  public static class Det extends AbstractMatrix1Expr {
 
     @Override
     public int[] checkMatrixDimensions(IExpr arg1) {
@@ -3773,7 +3773,7 @@ public final class LinearAlgebra {
    * MatrixRank({{1, 0}, {0}})
    * </pre>
    */
-  private static final class MatrixRank extends AbstractFunctionEvaluator {
+  public static class MatrixRank extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
