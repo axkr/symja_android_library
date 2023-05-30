@@ -37,7 +37,7 @@ public class TestExprTools extends ExprEvaluatorTestCase {
     assertEquals(
         new Factors(F.assoc(F.List(F.Rule(x, F.C2), F.Rule(y, F.C3), F.Rule(F.Sin(x), F.C4))))
             .asExpr().toString(),
-        "Sin(x)^4*x^2*y^3");
+        "x^2*y^3*Sin(x)^4");
 
 
     // Factors(S.Infinity) == Factors({oo: 1})
@@ -56,7 +56,7 @@ public class TestExprTools extends ExprEvaluatorTestCase {
 
     // assert a.mul(b) == a*b == Factors({x: 5, y: 7, z: 10, t: 10})
     assertEquals(a.mul(b).asExpr().toString(), //
-        "x^5*y^7*z^10*t^10");
+        "t^10*x^5*y^7*z^10");
 
     // assert a.div(b) == divmod(a, b) == \
     // (Factors({x: 5, z: 4}), Factors({y: 1, t: 10}))
@@ -86,14 +86,14 @@ public class TestExprTools extends ExprEvaluatorTestCase {
 
     // assert a.lcm(b) == Factors({x: 5, y: 4, z: 7, t: 10})
     assertEquals(a.lcm(b).asExpr().toString(), //
-        "x^5*y^4*z^7*t^10");
+        "t^10*x^5*y^4*z^7");
 
     a = new Factors(F.assoc(F.List(F.Rule(x, F.C4), F.Rule(y, F.C7), F.Rule(t, F.C7))));
     b = new Factors(F.assoc(F.List(F.Rule(z, F.C1), F.Rule(t, F.C3))));
 
     // assert a.normal(b) == (Factors({x: 4, y: 7, t: 4}), Factors({z: 1}))
     assertEquals(a.normal(b)[0].toString(), //
-        "{x=4, y=7, t=4}");
+        "{t=4, x=4, y=7}");
     assertEquals(a.normal(b)[1].toString(), //
         "{z=1}");
 
@@ -192,7 +192,7 @@ public class TestExprTools extends ExprEvaluatorTestCase {
     cMap.put(F.CND1, F.C2);
     cMap.put(F.CI, F.C1);
     assertEquals(new Factors(cMap).toString(), //
-        "{1.0=1, I=1}");
+        "{I=1, 1.0=1}");
 
     // assert Factors({S.NegativeOne: Rational(-3, 2)}).as_expr() == I
     cMap.clear();
@@ -230,7 +230,7 @@ public class TestExprTools extends ExprEvaluatorTestCase {
     }
     // assert Factors(x).mul(S(2)) == Factors(2*x)
     assertEquals(new Factors(x).mul(F.C2).toString(), //
-        "{x=1, 2=1}");
+        "{2=1, x=1}");
     assertEquals(new Factors(F.Times(F.C2, F.x)).toString(), //
         "{2=1, x=1}");
 
