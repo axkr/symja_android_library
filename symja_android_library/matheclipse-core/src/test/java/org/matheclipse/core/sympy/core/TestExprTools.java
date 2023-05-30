@@ -1,9 +1,6 @@
 package org.matheclipse.core.sympy.core;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.TreeMap;
-
 import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
