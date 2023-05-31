@@ -193,7 +193,7 @@ public interface DerivativeRules {
     // Derivative(1)[RealSign]:=Piecewise({{0,#1!=0}},Indeterminate)&
     ISetDelayed($(Derivative(C1),RealSign),
       Function(Piecewise(list(list(C0,Unequal(Slot1,C0))),Indeterminate))),
-    // Derivative(1)[Round]:=Piecewise({{0,NotElement(-1/2+Re(#1),Integers)&&NotElement(-1/2+Im(#1),Integers)}},Indeterminate)&
+    // Derivative(1)[Round]:=Piecewise({{0,-1/2+Re(#1)∉Integers&&-1/2+Im(#1)∉Integers}},Indeterminate)&
     ISetDelayed($(Derivative(C1),Round),
       Function(Piecewise(list(list(C0,And(NotElement(Plus(CN1D2,Re(Slot1)),Integers),NotElement(Plus(CN1D2,Im(Slot1)),Integers)))),Indeterminate))),
     // Derivative(1)[Sin]:=Cos(#1)&

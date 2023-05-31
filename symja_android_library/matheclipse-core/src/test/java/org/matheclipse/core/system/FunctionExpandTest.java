@@ -268,6 +268,13 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "(Sqrt(Pi/2)*BesselJ(1/2*(1+2*a),b))/Sqrt(b)+(-I*Sqrt(Pi/2)*BesselY(1/2*(1+2*a),b))/Sqrt(b)");
   }
 
+  public void testFunctionExpandPower() {
+    check("FunctionExpand(I^(x+y))", //
+        "E^(I*1/2*Pi*x+I*1/2*Pi*y)");
+    check("FunctionExpand(I^(3*x))", //
+        "E^(I*3/2*Pi*x)");
+  }
+
   /** The JUnit setup method */
   @Override
   protected void setUp() {

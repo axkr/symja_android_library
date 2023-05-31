@@ -221,6 +221,9 @@ public interface FunctionExpandRules {
     // Abs(x_)^y_Integer:=x^y/;EvenQ(y)&&x∈Reals
     SetDelayed(Power(Abs(x_),$p(y, Integer)),
       Condition(Power(x,y),And(EvenQ(y),Element(x,Reals)))),
+    // I^x_:=E^Distribute(1/2*I*Pi*x)
+    SetDelayed(Power(CI,x_),
+      Exp(Distribute(Times(C1D2,CI,Pi,x)))),
     // ProductLog(x_*Log(x_)):=Log(x)/;x>1/E
     SetDelayed(ProductLog(Times(Log(x_),x_)),
       Condition(Log(x),Greater(x,Exp(CN1)))),

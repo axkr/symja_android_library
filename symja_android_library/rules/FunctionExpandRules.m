@@ -107,6 +107,7 @@
   
  Power(Abs(x_),y_Integer) := x^y
   /; EvenQ(y) && Element(x,Reals),
+ Power(I,x_) := E^Distribute(1/2*I*Pi*x),
   
  ProductLog(x_*Log(x_)) := Log(x) 
   /; x > 1/E,
