@@ -90,21 +90,35 @@ public class SidesFunctions {
         return arg2;
       }
       if (arg2.isComparatorFunction()) {
-        IAST comparator = (IAST) arg2;
-        int headID = comparator.headID();
-        switch (headID) {
-          case ID.Equal:
-          case ID.Unequal:
-          case ID.Less:
-          case ID.LessEqual:
-          case ID.Greater:
-          case ID.GreaterEqual:
-            return comparator.map(x -> F.unaryAST1(arg1, x));
+        return applyComparatorSides(arg1, arg2, engine);
+      } else if (arg2.isConditionalExpression()) {
+        if (arg2.first().isComparatorFunction()) {
+          IAST temp = applyComparatorSides(arg1, arg2.first(), engine);
+          if (temp.isPresent()) {
+            return F.ConditionalExpression(temp, arg2.second());
+          }
         }
       }
 
       // `1` should be an equation or inequality.
-      return IOFunctions.printMessage(ast.topHead(), "eqin", F.list(arg2), engine);
+      return IOFunctions.printMessage(S.ApplySides, "eqin", F.list(arg2), engine);
+    }
+
+    private static IAST applyComparatorSides(final IExpr arg1, IExpr arg2, EvalEngine engine) {
+      IAST comparator = (IAST) arg2;
+      int headID = comparator.headID();
+      switch (headID) {
+        case ID.Equal:
+        case ID.Unequal:
+        case ID.Less:
+        case ID.LessEqual:
+        case ID.Greater:
+        case ID.GreaterEqual:
+          return comparator.map(x -> F.unaryAST1(arg1, x));
+        default:
+      }
+      // `1` should be an equation or inequality.
+      return IOFunctions.printMessage(S.ApplySides, "eqin", F.list(arg2), engine);
     }
 
     @Override

@@ -18,6 +18,8 @@ public class SidesFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   public void testApplySides001() {
+    check("ApplySides(Log10, ConditionalExpression(a/c == b/d, c != 0)) ", //
+        "ConditionalExpression(Log(a/c)/Log(10)==Log(b/d)/Log(10),c!=0)");
     check("ApplySides(f, a==a) ", //
         "True");
     check("ApplySides(Log, E^2==b)", //
