@@ -893,14 +893,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("NSolve(30*x/0.000000002==30,x)", //
         "{{x->0.0}}");
 
-    // check("Factor(E^(3*x)-4*E^x+3*E^(-x))", //
-    // "((-1+E^x)*(1+E^x)*(-3+E^(2*x)))/E^x");
     check("NSolve((-3+E^(2*x))==0,x)", //
         "{{x->0.549306}}");
-    check("NSolve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
-        "{{x->ConditionalExpression((I*6.28319)*C(1.0),C(1)∈Integers)},{x->ConditionalExpression(I*3.14159+(I*6.28319)*C(1.0),C(\n"
-            + "1)∈Integers)},{x->ConditionalExpression(0.549306+(I*6.28319)*C(1.0),C(1)∈Integers)},{x->ConditionalExpression(0.549306+I*3.14159+(I*6.28319)*C(1.0),C(\n"
-            + "1)∈Integers)}}");
     check("NSolve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
         "{{x->ConditionalExpression((I*6.28319)*C(1.0),C(1)∈Integers)},{x->ConditionalExpression(I*3.14159+(I*6.28319)*C(1.0),C(\n"
             + "1)∈Integers)},{x->ConditionalExpression(0.549306+(I*6.28319)*C(1.0),C(1)∈Integers)},{x->ConditionalExpression(0.549306+I*3.14159+(I*6.28319)*C(1.0),C(\n"

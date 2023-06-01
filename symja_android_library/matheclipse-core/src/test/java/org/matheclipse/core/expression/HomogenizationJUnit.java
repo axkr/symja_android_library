@@ -5,9 +5,6 @@ import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
-import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
-import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -53,7 +50,11 @@ public class HomogenizationJUnit extends ExprEvaluatorTestCase {
 
   public void testHomogenization() {
     EvalEngine.resetModuleCounter4JUnit();
+    check("Homogenization( (E^x)^3 - 4*E^x + 3/(E^x))", //
+        "{3/jas$1-4*jas$1+jas$1^3,{jas$1->E^x}}");
+
     // TODO jas$1->Sqrt(x)
+    EvalEngine.resetModuleCounter4JUnit();
     check("Homogenization(x+2*Sqrt(x)+1)", //
         "{1+2*jas$1+jas$1^2,{jas$1->Sqrt(x)}}");
     EvalEngine.resetModuleCounter4JUnit();

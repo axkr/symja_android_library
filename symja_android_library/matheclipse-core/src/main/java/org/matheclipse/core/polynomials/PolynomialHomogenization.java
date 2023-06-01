@@ -236,7 +236,7 @@ public class PolynomialHomogenization {
     if (exponent == Integer.MIN_VALUE) {
       replaceExpressionLCM(ast, F.C1);
       return;
-    } else if (exponent > 0) {
+    } else if (exponent > 0 || base.isNumericFunction()) {
       IExpr rest = timesExponent.rest().oneIdentity1();
       replaceExpressionLCM(base.power(rest), F.C1);
       return;
@@ -320,8 +320,9 @@ public class PolynomialHomogenization {
     int exponent = first.toIntDefault();
     if (exponent == Integer.MIN_VALUE) {
       return replaceExpression(ast);
-    } else if (exponent > 0) {
-      IExpr rest = exp.rest().oneIdentity1();
+    }
+    if (exponent > 0 || base.isNumericFunction()) {
+      final IExpr rest = exp.rest().oneIdentity1();
       return F.Power(replaceExpression(base.power(rest)), exponent);
     }
     return replaceExpression(ast).orElse(ast);
