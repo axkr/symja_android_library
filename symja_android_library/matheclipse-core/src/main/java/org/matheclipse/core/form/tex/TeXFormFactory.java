@@ -672,6 +672,16 @@ public class TeXFormFactory {
             if (expr.isNumber() && (((INumber) expr).complexSign() < 0)) {
               buffer.append("-");
               expr = ((INumber) expr).negate();
+            } else if (expr.isASTSizeGE(S.Plus, 2)) {
+              if (fPlusReversed) {
+                if (!expr.last().isNegativeSigned()) {
+                  buffer.append(" + ");
+                }
+              } else {
+                if (!expr.first().isNegativeSigned()) {
+                  buffer.append(" + ");
+                }
+              }
             } else if (expr.isNegativeSigned()) {
             } else {
               buffer.append(" + ");

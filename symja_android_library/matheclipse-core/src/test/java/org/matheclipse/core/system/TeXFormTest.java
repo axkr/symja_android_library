@@ -6,7 +6,9 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.tex.TeXFormFactory;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class TeXFormTest extends ExprEvaluatorTestCase {
@@ -279,6 +281,29 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     StringBuilder sb = new StringBuilder();
     fTeXFactory.convert(sb, expr);
     Assertions.assertEquals(" - {x}^{2} + x + 1", sb.toString());
+  }
+
+  public void testPlusReversed002() {
+    // issue #753
+    TeXFormFactory teXFormFactory = new TeXFormFactory(true, -1, -1, " \\cdot ");
+    IExpr term = F.Plus(F.ZZ(-6), S.a);
+    IASTAppendable ast = F.PlusAlloc(2);
+    ast.append(term);
+    ast.append(F.Style(F.ZZ(4), S.Red));
+    StringBuilder buffer = new StringBuilder();
+    teXFormFactory.convert(buffer, ast);
+    assertEquals(buffer.toString(), "\\textcolor{red}{4} + a-6");
+  }
+
+  public void testPlusReversed003() {
+    // issue #753
+    TeXFormFactory teXFormFactory = new TeXFormFactory(true, -1, -1, " \\cdot ");
+    IExpr[] args = new IExpr[] {F.Style(F.ZZ(4), S.Red), F.ZZ(-6), S.a};
+    IExpr term = F.ast(args, S.Plus);
+    StringBuilder buffer = new StringBuilder();
+    teXFormFactory.convert(buffer, term);
+    assertEquals(buffer.toString(), //
+        "a-6 + \\textcolor{red}{4}");
   }
 
   public void testSinIntegral() {
