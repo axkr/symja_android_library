@@ -3848,7 +3848,7 @@ public final class LinearAlgebra {
   // }
   // }
 
-  private static final class Minors extends AbstractFunctionEvaluator {
+  public static class Minors extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
