@@ -79,6 +79,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testCofactor() {
+    check(
+        "Cofactor({{6, 0, 4, 9, 5}, {1, 9, 3, 1, 2}, {5, 4, 5, 3, 8}, {3, 9, 8, 2, 5}, {4, 1, 6, 6, 4}},{1,3})", //
+        "-30");
     check("Cofactor({{1, 2, 3, 4}, {5, 6, 7, 8}, {8, 7, 6, 4}, {5, 3, 2, 1}}, {3, 2})", //
         "4");
   }
