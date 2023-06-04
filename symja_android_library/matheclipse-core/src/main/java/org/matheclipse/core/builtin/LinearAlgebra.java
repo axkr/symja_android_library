@@ -1148,7 +1148,7 @@ public final class LinearAlgebra {
     }
   }
 
-  private static final class Cofactor extends AbstractFunctionEvaluator {
+  public static class Cofactor extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
