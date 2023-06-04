@@ -691,10 +691,10 @@ public final class LinearAlgebra {
 
     @Override
     public int[] checkMatrixDimensions(IExpr arg1) {
-      return Convert.checkNonEmptySquareMatrix(S.Inverse, arg1);
+      return Convert.checkNonEmptySquareMatrix(S.Adjugate, arg1);
     }
 
-    public static FieldMatrix<IExpr> inverseMatrix(FieldMatrix<IExpr> matrix,
+    public static FieldMatrix<IExpr> adjugateMatrix(FieldMatrix<IExpr> matrix,
         Predicate<IExpr> zeroChecker) {
       // @since version 1.9
       // final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix,
@@ -713,13 +713,7 @@ public final class LinearAlgebra {
       return inverse.scalarMultiply(det);
     }
 
-    @Override
-    public FieldMatrix<IExpr> matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
-      return inverseMatrix(matrix, zeroChecker);
-    }
-
-    @Override
-    public RealMatrix realMatrixEval(RealMatrix matrix) {
+    public static RealMatrix adjugateMatrix(RealMatrix matrix) {
       final org.hipparchus.linear.LUDecomposition lu =
           new org.hipparchus.linear.LUDecomposition(matrix);
       DecompositionSolver solver = lu.getSolver();
@@ -733,6 +727,17 @@ public final class LinearAlgebra {
       double det = lu.getDeterminant();
       return inverse.scalarMultiply(det);
     }
+
+    @Override
+    public FieldMatrix<IExpr> matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
+      return adjugateMatrix(matrix, zeroChecker);
+    }
+
+    @Override
+    public RealMatrix realMatrixEval(RealMatrix matrix) {
+      return adjugateMatrix(matrix);
+    }
+
   }
 
   /**
