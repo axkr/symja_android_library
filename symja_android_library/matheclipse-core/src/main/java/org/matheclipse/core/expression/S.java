@@ -307,6 +307,8 @@ public class S {
   public final static IBuiltInSymbol AdjacencyMatrix =
       S.initFinalSymbol("AdjacencyMatrix", ID.AdjacencyMatrix);
 
+  public final static IBuiltInSymbol Adjugate = S.initFinalSymbol("Adjugate", ID.Adjugate);
+
   /**
    * AiryAi(z) - returns the Airy function of the first kind of `z`.
    * 

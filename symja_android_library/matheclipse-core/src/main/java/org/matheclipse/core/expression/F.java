@@ -7113,8 +7113,8 @@ public class F extends S {
 
   /**
    * Multiplies the given argument by <code>-1</code>. The <code>IExpr#negate()</code> method does
-   * evaluations, which don't agree with pattern matching assumptions (in left-hand-sige
-   * expressions). so it is only called called for <code>INumber</code> objects, otherwis a <code>
+   * evaluations, which don't agree with pattern matching assumptions (in left-hand-sides
+   * expressions). so it is only called for <code>INumber</code> objects, otherwise a <code>
    * Times(CN1, x)</code> AST would be created.
    *
    * @param x the expression which should be negated.

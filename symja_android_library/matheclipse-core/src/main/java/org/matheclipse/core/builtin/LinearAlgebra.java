@@ -97,6 +97,7 @@ public final class LinearAlgebra {
   private static class Initializer {
 
     private static void init() {
+      S.Adjugate.setEvaluator(new Adjugate());
       S.ArrayDepth.setEvaluator(new ArrayDepth());
       S.ArrayFlatten.setEvaluator(new ArrayFlatten());
       S.CharacteristicPolynomial.setEvaluator(new CharacteristicPolynomial());
@@ -683,6 +684,54 @@ public final class LinearAlgebra {
       for (int i = 0; i < numCols; i++) {
         rowReducedMatrix.multiplyEntry(x.row, i, factor);
       }
+    }
+  }
+
+  public static class Adjugate extends AbstractMatrix1Matrix {
+
+    @Override
+    public int[] checkMatrixDimensions(IExpr arg1) {
+      return Convert.checkNonEmptySquareMatrix(S.Inverse, arg1);
+    }
+
+    public static FieldMatrix<IExpr> inverseMatrix(FieldMatrix<IExpr> matrix,
+        Predicate<IExpr> zeroChecker) {
+      // @since version 1.9
+      // final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix,
+      // zeroChecker);
+      final FieldLUDecomposition<IExpr> lu =
+          new FieldLUDecomposition<IExpr>(matrix, zeroChecker, false);
+      FieldDecompositionSolver<IExpr> solver = lu.getSolver();
+      if (!solver.isNonSingular()) {
+        // Matrix `1` is singular.
+        IOFunctions.printMessage(S.Adjugate, "sing", F.list(Convert.matrix2List(matrix, false)),
+            EvalEngine.get());
+        return null;
+      }
+      FieldMatrix<IExpr> inverse = solver.getInverse();
+      IExpr det = lu.getDeterminant();
+      return inverse.scalarMultiply(det);
+    }
+
+    @Override
+    public FieldMatrix<IExpr> matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
+      return inverseMatrix(matrix, zeroChecker);
+    }
+
+    @Override
+    public RealMatrix realMatrixEval(RealMatrix matrix) {
+      final org.hipparchus.linear.LUDecomposition lu =
+          new org.hipparchus.linear.LUDecomposition(matrix);
+      DecompositionSolver solver = lu.getSolver();
+      if (!solver.isNonSingular()) {
+        // Matrix `1` is singular.
+        IOFunctions.printMessage(S.Adjugate, "sing", F.list(Convert.matrix2List(matrix, false)),
+            EvalEngine.get());
+        return null;
+      }
+      RealMatrix inverse = solver.getInverse();
+      double det = lu.getDeterminant();
+      return inverse.scalarMultiply(det);
     }
   }
 

@@ -95,8 +95,8 @@ public class AST2Expr {
 
   public static final String[] FUNCTION_STRINGS = {"AASTriangle", "Abort", "Abs", "AbsArg",
       "AbsoluteCorrelation", "AbsoluteTime", "AbsoluteTiming", "Accumulate", "AddTo", "AddSides",
-      "AddToClassPath", "AdjacencyMatrix", "AiryAi", "AiryAiPrime", "AiryBi", "AiryBiPrime",
-      "AllTrue", "Alphabet", "AmbientLight", "And", "AngleVector", "AnyTrue",
+      "AddToClassPath", "AdjacencyMatrix", "Adjugate", "AiryAi", "AiryAiPrime", "AiryBi",
+      "AiryBiPrime", "AllTrue", "Alphabet", "AmbientLight", "And", "AngleVector", "AnyTrue",
       "AntihermitianMatrixQ", "AntiSymmetric", "AntisymmetricMatrixQ", "Annotation", "Annuity",
       "AnnuityDue", "AlgebraicNumber", "Alternatives", "Apart", "AppellF1", "Append", "AppendTo",
       "Apply", "ApplySides", "Area", "ArcCos", "ArcCosh", "ArcCot", "ArcCoth", "ArcCsc", "ArcCsch",
