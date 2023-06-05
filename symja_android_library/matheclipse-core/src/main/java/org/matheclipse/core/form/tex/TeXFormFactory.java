@@ -810,7 +810,7 @@ public class TeXFormFactory {
       }
 
       buffer.append('{');
-      fFactory.convertInternal(buffer, arg2, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+      fFactory.convertInternal(buffer, arg2, fPrecedence, NO_PLUS_CALL);
       buffer.append('}');
       precedenceClose(buffer, precedence);
       return true;
@@ -1468,7 +1468,8 @@ public class TeXFormFactory {
       if (isNegative) {
         number = number.negate();
       }
-      if (caller && isNegative && precedence > Precedence.PLUS) {
+      final boolean setBraces = isNegative && precedence > Precedence.PLUS;
+      if (setBraces) {
         buf.append("\\left( ");
       }
       if (isNegative) {
@@ -1478,21 +1479,21 @@ public class TeXFormFactory {
       }
       if (number instanceof IInteger) {
         convertInteger(buf, (IInteger) number, precedence);
-        if (caller && isNegative && precedence > Precedence.PLUS) {
+        if (setBraces) {
           buf.append("\\right) ");
         }
         return true;
       }
       if (number instanceof IFraction) {
         convertFraction(buf, (IFraction) number, precedence);
-        if (caller && isNegative && precedence > Precedence.PLUS) {
+        if (setBraces) {
           buf.append("\\right) ");
         }
         return true;
       }
       if (number instanceof INum) {
         convertDouble(buf, (INum) number, precedence);
-        if (caller && isNegative && precedence > Precedence.PLUS) {
+        if (setBraces) {
           buf.append("\\right) ");
         }
         return true;

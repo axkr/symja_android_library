@@ -330,7 +330,7 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     check("TeXForm /@ {Subscript(x, a), x^a, Subsuperscript(x,a,b)}", //
         "{{x}_{a},{x}^{a},{x}_{a}^{b}}");
     check("TeXForm /@ {Subscript(x, 2*k+1), x^(2*k+1)}", //
-        "{{x}_{1+2 \\cdot k},{x}^{1+2 \\cdot k}}");
+        "{{x}_{1+2 \\cdot k},{x}^{\\left( 1+2 \\cdot k\\right) }}");
     check("TeXForm({a,b,c})", //
         "\\{a,b,c\\}");
     check("TeXForm({{a, b}, {c}})", //
@@ -486,6 +486,16 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     String latex = buf.toString();
     assertEquals(latex, //
         "a \\cdot {x}^{-1 + 1}");
+  }
+
+  public void testMinusOnePower() {
+    // issue #770
+    IExpr ast = F.Power(F.CN1, F.Plus(F.ZZ(1), F.ZZ(2)));
+    TeXFormFactory teXFormFactory = new TeXFormFactory(false, -1, -1, " \\cdot ");
+    StringBuilder buffer = new StringBuilder();
+    teXFormFactory.convert(buffer, ast);
+    assertEquals(buffer.toString(), //
+        "{\\left( -1\\right) }^{\\left( 1 + 2\\right) }");
   }
 
   @Override
