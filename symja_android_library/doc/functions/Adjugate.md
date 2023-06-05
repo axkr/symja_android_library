@@ -11,7 +11,7 @@ See:
 
 ### Examples
 
-The sparse array can be converted to an adjacency matrix in `List` format with the `Normal` function:
+The 3 × 3 matrix example from Wikipedia:
 
 ```
 >> Adjugate({{-3,2,-5}, {-1,0,-2}, {3,-4,1}}) 
