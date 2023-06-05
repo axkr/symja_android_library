@@ -14,6 +14,29 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     super(name);
   }
 
+
+  public void testAdjugate() {
+    // https: // en.wikipedia.org/wiki/Adjugate_matrix
+    check("Adjugate({{-3,2,-5},\n" //
+        + " {-1,0,-2}," //
+        + " {3,-4,1}})", //
+        "{{-8,18,-4},\n" //
+            + " {-5,12,-1},\n" //
+            + " {4,-6,2}}");
+    check("Adjugate({{-3.0,2,-5.1},\n" //
+        + " {-1,0,-2}," //
+        + " {3,-4,1}})", //
+        "{{-8.0,18.4,-4.0},\n"//
+            + " {-5.0,12.3,-0.9},\n"//
+            + " {4.0,-6.0,2.0}}");
+    check("Adjugate({{5, 4}, {4, 11}})", //
+        "{{11,-4},\n" //
+            + " {-4,5}}");
+    check("Adjugate({{5, 4}, {4, 11.0}})", //
+        "{{11.0,-4.0},\n"//
+            + " {-4.0,5.0}}");
+  }
+
   public void testAngleVector() {
     check("AngleVector(x)", //
         "{Cos(x),Sin(x)}");
