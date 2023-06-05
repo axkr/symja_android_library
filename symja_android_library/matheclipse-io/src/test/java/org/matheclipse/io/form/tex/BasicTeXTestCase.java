@@ -81,7 +81,7 @@ public class BasicTeXTestCase {
     check("Integrate(f(x),{x,1,10})", //
         "\\int_{1}^{10} f(x)\\,\\mathrm{d}x");
     check("Integrate(E^(-x),{x,0,Infinity})", //
-        "\\int_{0}^{\\infty} {e}^{ - x}\\,\\mathrm{d}x");
+        "\\int_{0}^{\\infty} {e}^{\\left(  - x\\right) }\\,\\mathrm{d}x");
   }
 
   @Test
@@ -105,7 +105,7 @@ public class BasicTeXTestCase {
   @Test
   public void testTeX011() {
     check("x^(3/4*y)", //
-        "{x}^{\\frac{3}{4} \\cdot y}");
+        "{x}^{\\left( \\frac{3}{4} \\cdot y\\right) }");
   }
 
   @Test
@@ -304,7 +304,7 @@ public class BasicTeXTestCase {
   public void testTeX023() {
     // issue #117
     check("5*3^(5*x)*Log(3)", //
-        "5 \\cdot {3}^{5 \\cdot x} \\cdot \\log (3)");
+        "5 \\cdot {3}^{\\left( 5 \\cdot x\\right) } \\cdot \\log (3)");
   }
 
   @Test
