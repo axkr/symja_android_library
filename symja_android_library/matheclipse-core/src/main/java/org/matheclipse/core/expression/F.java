@@ -8531,6 +8531,10 @@ public class F extends S {
     return contextPath.removeSymbol(symbolName);
   }
 
+  public static IAST ReleaseHold(final IExpr z) {
+    return new AST1(ReleaseHold, z);
+  }
+
   public static IAST Return(final IExpr a) {
     if (a.isFalse()) {
       return CReturnFalse;
