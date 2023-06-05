@@ -5234,6 +5234,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testDenominator() {
+    check("Denominator(ConditionalExpression(a/13,Element(C1,Integers)))", //
+        "1");
+
     check("Denominator(-1/p^(1-n))", //
         "p");
     check("Numerator(-1/p^(1-n))", //
@@ -16451,6 +16454,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testNumerator() {
+    check("Numerator(ConditionalExpression(a/13,Element(C1,Integers)))", //
+        "ConditionalExpression(a/13,c1∈Integers)");
 
     check("Numerator( a*x^n*y^- m*Exp(a - b - 2 c + 3 d) )", //
         "a*E^(a+3*d)*x^n");

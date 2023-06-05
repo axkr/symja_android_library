@@ -6041,6 +6041,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public IExpr extractConditionalExpression(boolean isUnaryConditionalExpression) {
     if (isUnaryConditionalExpression) {
+      int headID = headID();
+      if (headID == ID.Denominator || headID == ID.Numerator) {
+        return F.NIL;
+      }
       // mergeConditionalExpression
       IAST conditionalExpr = (IAST) arg1();
       IASTMutable copy = copy();
