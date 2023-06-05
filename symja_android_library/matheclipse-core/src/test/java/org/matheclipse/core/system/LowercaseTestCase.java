@@ -20411,6 +20411,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3");
     check("ReleaseHold(y)", //
         "y");
+    check("ReleaseHold(Hold(x)+y)", //
+        "3+y");
 
     check("ReleaseHold /@ {Hold(1 + 2), HoldForm(2 + 3), HoldComplete(3 + 4), HoldPattern(_*_)}", //
         "{3,5,7,_^2}");

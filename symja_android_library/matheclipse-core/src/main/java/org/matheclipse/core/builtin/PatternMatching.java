@@ -1434,11 +1434,8 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (arg1.isAST()) {
-        return arg1.replaceAll(ReleaseHold::releaseHold);
-      }
-      return arg1;
+      final IExpr arg1 = ast.arg1();
+      return arg1.replaceAll(ReleaseHold::releaseHold).orElse(arg1);
     }
 
     private static IExpr releaseHold(IExpr expr) {
@@ -2257,9 +2254,8 @@ public final class PatternMatching {
           throw new FailedException();
         }
         pMode = true;
-        result[0] =
-            tagSetSymbol.putDownRule(flags[0] | IPatternMatcher.SET, false, lhsAST, rightHandSide,
-                pMode);
+        result[0] = tagSetSymbol.putDownRule(flags[0] | IPatternMatcher.SET, false, lhsAST,
+            rightHandSide, pMode);
         return result;
       }
       if (found) {
