@@ -307,13 +307,15 @@ public class AssumptionFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       OptionArgs options = null;
-      IAssumptions assumptions = null;
       if (ast.size() > 2) {
         options = new OptionArgs(S.Refine, ast, 2, engine);
       }
+      final IAssumptions assumptions;
       IExpr assumptionExpr = OptionArgs.determineAssumptions(ast, 2, options);
       if (assumptionExpr.isPresent() && assumptionExpr.isAST()) {
         assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
+      } else {
+        assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance();
       }
       return refineAssumptions(ast.arg1(), assumptions, engine);
     }

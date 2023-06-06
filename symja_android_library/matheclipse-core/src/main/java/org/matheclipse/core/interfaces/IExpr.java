@@ -1648,10 +1648,10 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is an AST function, which contains the given <b>header element</b> at
-   * index position <code>0</code> and optional <b>argument elements</b> at the index positions
-   * <code>1..(length-1)</code>. If this test gives <code>true</code> this expression is not an
-   * <b>atomic expression</b>.
+   * Test if this expression is an {@link IAST} function, which contains the given <b>header
+   * element</b> at index position <code>0</code> and optional <b>argument elements</b> at the index
+   * positions <code>1..(length-1)</code>. If this test gives <code>true</code> this expression is
+   * not an <b>atomic expression</b>.
    *
    * @param header the header element at position 0, which should be tested
    * @param length the size the AST expression must have (<b>inclusive head element</b>)
@@ -1663,10 +1663,10 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is an AST function, which contains the given <b>header element</b> at
-   * index position <code>0</code> and optional <b>argument elements</b> at the index positions
-   * <code>1..(length-1)</code>. If this test gives <code>true</code> this expression is not an
-   * <b>atomic expression</b>.
+   * Test if this expression is an {@link IAST} function, which contains the given <b>header
+   * element</b> at index position <code>0</code> and optional <b>argument elements</b> at the index
+   * positions <code>1..(length-1)</code>. If this test gives <code>true</code> this expression is
+   * not an <b>atomic expression</b>.
    *
    * @param header the header element at position 0, which should be tested
    * @param length the size the AST expression must have
@@ -1680,10 +1680,10 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is an AST function, which contains the given <b>header element</b> at
-   * index position <code>0</code> and optional <b>argument elements</b> at the index positions
-   * <code>1..(length-1)</code>. If this test gives <code>true</code> this expression is not an
-   * <b>atomic expression</b>.
+   * Test if this expression is an {@link IAST} function, which contains the given <b>header
+   * element</b> at index position <code>0</code> and optional <b>argument elements</b> at the index
+   * positions <code>1..(length-1)</code>. If this test gives <code>true</code> this expression is
+   * not an <b>atomic expression</b>.
    *
    * @param header the header element at position 0, which should be tested
    * @param minLength the minimum size the AST expression must have
@@ -1696,10 +1696,10 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is an AST function, where the string representation of the <b>header
-   * element</b> at index position <code>0</code> equals the given <code>symbol</code> and some
-   * optional <b>argument elements</b> at the index positions <code>1..(size()-1)</code>. If this
-   * test gives <code>true</code> this expression is not an <b>atomic expression</b>.
+   * Test if this expression is an {@link IAST} function, where the string representation of the
+   * <b>header element</b> at index position <code>0</code> equals the given <code>symbol</code> and
+   * some optional <b>argument elements</b> at the index positions <code>1..(size()-1)</code>. If
+   * this test gives <code>true</code> this expression is not an <b>atomic expression</b>.
    *
    * <p>
    * Example: <code>isAST("Sin")</code> gives <code>true</code> for <code>Sin(Pi/2)</code>.
@@ -1718,9 +1718,9 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is an AST function, where the string representation of the <b>header
-   * element</b> at index position <code>0</code> equals the given <code>symbol</code> and some
-   * optional <b>argument elements</b> at the index positions <code>1..(length-1)</code>.<br>
+   * Test if this expression is an {@link IAST} function, where the string representation of the
+   * <b>header element</b> at index position <code>0</code> equals the given <code>symbol</code> and
+   * some optional <b>argument elements</b> at the index positions <code>1..(length-1)</code>.<br>
    * Therefore this expression is no <b>atomic expression</b>. <br>
    * Example: <code>isAST("Sin", 2)</code> gives <code>true</code> for <code>Sin(0)</code>.
    *
@@ -1735,8 +1735,8 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is an AST function, which contains a <b>header element</b> (i.e. the
-   * function name) at index position <code>0</code> and no <b>argument elements</b>. <br>
+   * Test if this expression is an {@link IAST} function, which contains a <b>header element</b>
+   * (i.e. the function name) at index position <code>0</code> and no <b>argument elements</b>. <br>
    * Therefore this expression is no <b>atomic expression</b>.
    *
    * @return
@@ -1747,9 +1747,9 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is an AST function, which contains a <b>header element</b> (i.e. the
-   * function name) at index position <code>0</code> and one <b>argument element</b> at the index
-   * position <code>1</code>.<br>
+   * Test if this expression is an {@link IAST} function, which contains a <b>header element</b>
+   * (i.e. the function name) at index position <code>0</code> and one <b>argument element</b> at
+   * the index position <code>1</code>.<br>
    * Therefore this expression is no <b>atomic expression</b>.
    *
    * @return
@@ -1760,9 +1760,9 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is an AST function, which contains a <b>header element</b> (i.e. the
-   * function name) at index position <code>0</code> and two <b>argument elements</b> at the index
-   * positions <code>1, 2</code>.<br>
+   * Test if this expression is an {@link IAST} function, which contains a <b>header element</b>
+   * (i.e. the function name) at index position <code>0</code> and two <b>argument elements</b> at
+   * the index positions <code>1, 2</code>.<br>
    * Therefore this expression is no <b>atomic expression</b>.
    *
    * @return
@@ -1773,9 +1773,9 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is an AST function, which contains a <b>header element</b> (i.e. the
-   * function name) at index position <code>0</code> and three <b>argument elements</b> at the index
-   * positions <code>1, 2, 3</code>.<br>
+   * Test if this expression is an {@link IAST} function, which contains a <b>header element</b>
+   * (i.e. the function name) at index position <code>0</code> and three <b>argument elements</b> at
+   * the index positions <code>1, 2, 3</code>.<br>
    * Therefore this expression is no <b>atomic expression</b>.
    *
    * @return
@@ -1786,9 +1786,9 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is an AST function or an Association, which contains a <b>header
-   * element</b> (i.e. the function name) at index position <code>0</code> and some optional
-   * <b>argument elements</b> at the index positions <code>1..n</code>.
+   * Test if this expression is an {@link IAST} function or an {@link IAssociation}, which contains
+   * a <b>header element</b> (i.e. the function name) at index position <code>0</code> and some
+   * optional <b>argument elements</b> at the index positions <code>1..n</code>.
    *
    * @return
    */
@@ -1797,9 +1797,10 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is an AST function, which contains the given <b>header element</b> at
-   * index position <code>0</code> and optional <b>argument elements</b> at the index positions
-   * <code>1..n</code>. <code>n</code> must be greater equal than the given <code>length</code>.<br>
+   * Test if this expression is an {@link IAST} function, which contains the given <b>header
+   * element</b> at index position <code>0</code> and optional <b>argument elements</b> at the index
+   * positions <code>1..n</code>. <code>n</code> must be greater equal than the given
+   * <code>length</code>.<br>
    * Therefore this expression is no <b>atomic expression</b>.
    *
    * @param header the header element at position 0, which should be tested

@@ -1086,18 +1086,42 @@ public final class Arithmetic {
     }
   }
 
-  private static final class ConditionalExpression extends AbstractFunctionEvaluator {
+  private static final class ConditionalExpression extends AbstractCoreFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
-      if (arg2.isTrue()) {
+      IExpr arg2Evaled = engine.evaluate(arg2);
+      if (arg2Evaled.isTrue()) {
         return ast.arg1();
       }
-      if (arg2.isFalse()) {
+      if (arg2Evaled.isFalse()) {
         return S.Undefined;
       }
-      return F.NIL;
+
+      IAssumptions oldAssumptions = engine.getAssumptions();
+      if (oldAssumptions != null) {
+        try {
+          IAssumptions assumptions = oldAssumptions.copy();
+          assumptions = assumptions.addAssumption(arg2Evaled);
+          engine.setAssumptions(assumptions);
+
+          IExpr arg1Evaled = engine.evaluate(arg1);
+          if (arg1Evaled.equals(arg1) && arg2Evaled.equals(arg2)) {
+            return F.NIL;
+          }
+          return F.ConditionalExpression(arg1Evaled, arg2Evaled);
+        } finally {
+          engine.setAssumptions(oldAssumptions);
+        }
+      } else {
+        IExpr arg1Evaled = engine.evaluate(arg1);
+        if (arg1Evaled.equals(arg1) && arg2Evaled.equals(arg2)) {
+          return F.NIL;
+        }
+        return F.ConditionalExpression(arg1Evaled, arg2Evaled);
+      }
     }
 
     @Override
@@ -3883,8 +3907,8 @@ public final class Arithmetic {
             }
 
             if (exponent.isNegative() && base.isAST1()) {
-              if (base.isFunctionID(new int[] {ID.Cos, ID.Cosh, ID.Cot, ID.Coth, ID.Csc, ID.Csch,
-                  ID.Sec, ID.Sech, ID.Sin, ID.Sinh, ID.Tan, ID.Tanh})) {
+              if (base.isFunctionID(ID.Cos, ID.Cosh, ID.Cot, ID.Coth, ID.Csc, ID.Csch, ID.Sec,
+                  ID.Sech, ID.Sin, ID.Sinh, ID.Tan, ID.Tanh)) {
                 IExpr x = ((IAST) base).arg1();
                 IExpr mNeg = exponent.negate();
                 boolean disabledTrigRules = engine.isDisabledTrigRules();

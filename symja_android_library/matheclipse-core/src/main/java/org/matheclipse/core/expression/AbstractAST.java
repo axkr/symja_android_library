@@ -4584,16 +4584,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isTrigFunction() {
-    int id = headID();
-    if (id >= 0) {
-      if (size() == 2) {
-        return id == ID.Cos || id == ID.ArcCos || id == ID.Cot || id == ID.ArcCot || id == ID.Csc
-            || id == ID.ArcCsc || id == ID.Sec || id == ID.ArcSec || id == ID.Sin || id == ID.ArcSin
-            || id == ID.Tan || id == ID.ArcTan;
-      }
-      if (size() == 3) {
-        return id == ID.ArcTan;
-      }
+    if (size() == 2) {
+      return isFunctionID(ID.Cos, ID.ArcCos, ID.Cot, ID.ArcCot, ID.Csc, ID.ArcCsc, ID.Sec,
+          ID.ArcSec, ID.Sin, ID.ArcSin, ID.Tan, ID.ArcTan);
+    } else if (size() == 3) {
+      return isFunctionID(ID.ArcTan);
     }
     return false;
   }
@@ -6041,10 +6036,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public IExpr extractConditionalExpression(boolean isUnaryConditionalExpression) {
     if (isUnaryConditionalExpression) {
-      int headID = headID();
-      if (headID == ID.Denominator || headID == ID.Numerator) {
+      if (isFunctionID(ID.Denominator, ID.Numerator, ID.PossibleZeroQ)) {
         return F.NIL;
       }
+
       // mergeConditionalExpression
       IAST conditionalExpr = (IAST) arg1();
       IASTMutable copy = copy();

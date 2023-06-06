@@ -32,7 +32,7 @@ public interface IAssumptions {
    */
   public IAST distribution(IExpr expr);
 
-  public IExpr get$Assumptions();
+  // public IExpr get$Assumptions();
 
   public Map<IExpr, IAST> getTensorsMap();
 
@@ -238,7 +238,7 @@ public interface IAssumptions {
    */
   public int[] reduceRange(IExpr x, final int[] range);
 
-  public void set$Assumptions(IExpr expr);
+  // public void set$Assumptions(IExpr expr);
 
   /**
    * Get some assumptions about tensor symbols

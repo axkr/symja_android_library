@@ -3612,6 +3612,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testConditionalExpression() {
+    check("Refine(Sin(2*Pi*C(1)),Element(C(1),Integers))", //
+        "0");
+    check("Refine(Cos(2*Pi*C(1)),Element(C(1),Integers))", //
+        "1");
+    check(
+        "cd=Sin(x) /. {{x -> ConditionalExpression(2*Pi*C(1), Element(C(1), Integers))}, \n"
+            + "  {x -> ConditionalExpression(Pi + 2*Pi*C(1), Element(C(1), Integers))}}  ", //
+        "{ConditionalExpression(Sin(2*Pi*C(1)),C(1)∈Integers),ConditionalExpression(-Sin(\n" //
+            + "2*Pi*C(1)),C(1)∈Integers)}");
+    check("ref=Refine(cd)", //
+        "{ConditionalExpression(0,C(1)∈Integers),ConditionalExpression(0,C(1)∈Integers)}");
+    check("PossibleZeroQ(ref)", //
+        "{True,True}");
     check("ConditionalExpression(x, x > 0)^2 == 1 && ConditionalExpression(y, y < 0) > -1", //
         "ConditionalExpression(x^2==1&&y>-1,x>0&&y<0)");
     check("{ConditionalExpression(x^2, x > 0) == 1, ConditionalExpression(x^a, a > 0) < 2}", //

@@ -545,6 +545,15 @@ public class Assumptions extends AbstractAssumptions {
   }
 
   /**
+   * Create a new empty <code>IAssumptions</code>.
+   * 
+   * @return the empty assumptions instance
+   */
+  public static IAssumptions getInstance() {
+    return new Assumptions();
+  }
+
+  /**
    * Create a new <code>IAssumptions</code> from the given expression. If the creation is not
    * possible return <code>null</code>
    *
@@ -555,7 +564,7 @@ public class Assumptions extends AbstractAssumptions {
   public static IAssumptions getInstance(IExpr expr) {
     if (expr.isAST()) {
       Assumptions assumptions = new Assumptions();
-      assumptions.$assumptions = expr;
+      // assumptions.$assumptions = expr;
       if (expr.isAnd() || expr.isSameHeadSizeGE(S.List, 2)) {
         Assumptions.addList((IAST) expr, assumptions);
       } else if (expr.isAST()) {
@@ -574,10 +583,9 @@ public class Assumptions extends AbstractAssumptions {
 
   private Map<IExpr, IAST> tensorsMap = new HashMap<IExpr, IAST>();
 
-  private HashMap<IExpr, RealRelations> valueMap =
-      new HashMap<IExpr, RealRelations>();
+  private HashMap<IExpr, RealRelations> valueMap = new HashMap<IExpr, RealRelations>();
 
-  private IExpr $assumptions = F.NIL;
+  // private IExpr $assumptions = F.NIL;
 
   private Assumptions() {}
 
@@ -626,7 +634,11 @@ public class Assumptions extends AbstractAssumptions {
     assumptions.distributionsMap = new HashMap<>(distributionsMap);
     assumptions.elementsMap = new HashMap<>(elementsMap);
     assumptions.valueMap = new HashMap<>(valueMap);
-    assumptions.$assumptions = $assumptions.copy();
+    // if ($assumptions.isPresent()) {
+    // assumptions.$assumptions = $assumptions.copy();
+    // } else {
+    // assumptions.$assumptions = F.NIL;;
+    // }
     return assumptions;
   }
 
@@ -636,10 +648,10 @@ public class Assumptions extends AbstractAssumptions {
     return (dist == null) ? F.NIL : dist;
   }
 
-  @Override
-  public IExpr get$Assumptions() {
-    return $assumptions;
-  }
+  // @Override
+  // public IExpr get$Assumptions() {
+  // return $assumptions;
+  // }
 
   @Override
   public Map<IExpr, IAST> getTensorsMap() {
@@ -955,10 +967,10 @@ public class Assumptions extends AbstractAssumptions {
   }
 
 
-  @Override
-  public void set$Assumptions(IExpr $assumptions) {
-    this.$assumptions = $assumptions;
-  }
+  // @Override
+  // public void set$Assumptions(IExpr $assumptions) {
+  // this.$assumptions = $assumptions;
+  // }
 
   @Override
   public final IAST tensors(IExpr expr) {

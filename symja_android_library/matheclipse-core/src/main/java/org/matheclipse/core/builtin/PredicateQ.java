@@ -1728,6 +1728,16 @@ public class PredicateQ {
   }
 
   public static boolean isPossibleZeroQ(IAST function, boolean fastTest, EvalEngine engine) {
+    if (function.isConditionalExpression()) {
+      IExpr arg1 = function.arg1();
+      if (arg1.isZero()) {
+        return true;
+      }
+      if (arg1.isPossibleZero(fastTest)) {
+        return true;
+      }
+      return false;
+    }
     try {
       VariablesSet varSet = new VariablesSet(function);
       IAST variables = varSet.getVarList();

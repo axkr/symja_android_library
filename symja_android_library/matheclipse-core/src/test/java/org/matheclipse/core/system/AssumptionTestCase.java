@@ -65,13 +65,13 @@ public class AssumptionTestCase extends TestCase {
       return range;
     }
 
-    @Override
-    public IExpr get$Assumptions() {
-      return F.NIL;
-    }
+    // @Override
+    // public IExpr get$Assumptions() {
+    // return F.NIL;
+    // }
 
-    @Override
-    public void set$Assumptions(IExpr expr) {}
+    // @Override
+    // public void set$Assumptions(IExpr expr) {}
   }
 
   public AssumptionTestCase(String name) {
