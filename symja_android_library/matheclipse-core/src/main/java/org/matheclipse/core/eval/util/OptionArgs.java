@@ -124,6 +124,9 @@ public class OptionArgs {
       for (int i = startIndex; i < size; i++) {
         IExpr arg = currentOptionsList.get(i);
         if (arg.isRule()) {
+          if (fLastPosition < 0) {
+            fLastPosition = i;
+          }
           if (checkOptionRule(i, (IAST) arg)) {
             allocSize += 1;
           } else {

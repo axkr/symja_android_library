@@ -1587,6 +1587,25 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "4*(1+x)*(4+x)");
   }
 
+  public void testSolveGenerateConditions() {
+    // check("Solve(Sin(a+x)==b, x, GenerateConditions->False)", //
+    // "{{x->ConditionalExpression(Pi-ArcSin(b)+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(ArcSin(b)+\n"
+    // + "{{x->-a+ArcSin(b)}}");
+
+    // check("Solve(Cos(a+x)==b, x, GenerateConditions->True)", //
+    // "{{x->ConditionalExpression(Pi-ArcSin(b)+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(ArcSin(b)+\n"
+    // + "2*Pi*C(1),C(1)∈Integers)}}");
+    // check("Solve(Sin(a+x)==b, x, GenerateConditions->True)", //
+    // "{{x->ConditionalExpression(Pi-ArcSin(b)+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(ArcSin(b)+\n"
+    // + "2*Pi*C(1),C(1)∈Integers)}}");
+
+  }
+
+
+  // public void testHomogenization() {
+  // check("Solve(9*6^(2*x) - 10*6^x + 1 == 0, x)", //
+  // "");
+  // }
 
   // public void testSolveFindRoot() {
   // // multivariate FindRoot cases

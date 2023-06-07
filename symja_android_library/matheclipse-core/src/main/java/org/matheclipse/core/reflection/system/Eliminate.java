@@ -523,7 +523,9 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
     IExpr termsEqualZero = engine.evaluateNIL(F.TrigToExp(plusAST));
     if (termsEqualZero.isPresent()) {
       IASTMutable newList = F.unaryAST1(S.List, termsEqualZero);
-      IExpr result = Solve.solveRecursive(newList, F.CEmptyList, false, F.List(variable), engine);
+      Solve.SolveData solveData = new Solve.SolveData();
+      IExpr result =
+          solveData.solveRecursive(newList, F.CEmptyList, false, F.List(variable), engine);
       if (result.isListOfLists()) {
         // Inverse functions are being used. Values may be lost for multivalued inverses.
         IOFunctions.printMessage(S.Solve, "ifun", F.CEmptyList, engine);
@@ -564,7 +566,9 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
         }
         IExpr termsEqualZero = engine.evaluate(F.Subtract(powerExpandLHS, powerExpandRHS));
         IASTMutable newList = F.unaryAST1(S.List, termsEqualZero);
-        IExpr result = Solve.solveRecursive(newList, F.CEmptyList, false, F.List(variable), engine);
+        Solve.SolveData solveData = new Solve.SolveData();
+        IExpr result =
+            solveData.solveRecursive(newList, F.CEmptyList, false, F.List(variable), engine);
         if (result.isListOfLists()) {
           // Inverse functions are being used. Values may be lost for multivalued inverses.
           IOFunctions.printMessage(S.Solve, "ifun", F.CEmptyList, engine);

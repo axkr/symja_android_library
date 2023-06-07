@@ -94,8 +94,8 @@ public class FindInstance extends Solve {
         return F.NIL;
       }
       IASTMutable termsEqualZeroList = Validate.checkEquations(ast, 1);
-
-      return solveEquations(termsEqualZeroList, F.List(), vars, maxChoices, engine);
+      SolveData solveData = new Solve.SolveData();
+      return solveData.solveEquations(termsEqualZeroList, F.List(), vars, maxChoices, engine);
     } catch (final ValidateException ve) {
       return IOFunctions.printMessage(ast.topHead(), ve, engine);
     } catch (RuntimeException rex) {
