@@ -1588,17 +1588,19 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   public void testSolveGenerateConditions() {
-    // check("Solve(Sin(a+x)==b, x, GenerateConditions->False)", //
-    // "{{x->ConditionalExpression(Pi-ArcSin(b)+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(ArcSin(b)+\n"
-    // + "{{x->-a+ArcSin(b)}}");
+    check("Solve(Coth(2*a+3*x)==b, x, GenerateConditions->True)", //
+        "{{x->ConditionalExpression(-2/3*a+ArcCoth(b)/3+I*1/3*Pi*C(1),C(1)∈Integers)}}");
 
-    // check("Solve(Cos(a+x)==b, x, GenerateConditions->True)", //
-    // "{{x->ConditionalExpression(Pi-ArcSin(b)+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(ArcSin(b)+\n"
-    // + "2*Pi*C(1),C(1)∈Integers)}}");
-    // check("Solve(Sin(a+x)==b, x, GenerateConditions->True)", //
-    // "{{x->ConditionalExpression(Pi-ArcSin(b)+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(ArcSin(b)+\n"
-    // + "2*Pi*C(1),C(1)∈Integers)}}");
+    check("Solve(Cos(a+x)==b, x, GenerateConditions->True)", //
+        "{{x->ConditionalExpression(-a-ArcCos(b)+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-a+ArcCos(b)+\n"
+            + "2*Pi*C(1),C(1)∈Integers)}}");
+    check("Solve(Sin(a+x)==b, x, GenerateConditions->True)", //
+        "{{x->ConditionalExpression(-a+Pi-ArcSin(b)+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-a+ArcSin(b)+\n"
+            + "2*Pi*C(1),C(1)∈Integers)}}");
 
+
+    check("Solve(Sin(a+x)==b, x, GenerateConditions->False)", //
+        "{{x->-a+ArcSin(b)}}");
   }
 
 

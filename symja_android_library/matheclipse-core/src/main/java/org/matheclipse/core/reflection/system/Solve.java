@@ -35,6 +35,7 @@ import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
@@ -519,14 +520,11 @@ public class Solve extends AbstractFunctionEvaluator {
           IExpr arg1 = lhs.arg1();
           IExpr generateConditions = generateConditions();
           if (generateConditions.isTrue()) {
-            int headID = lhs.headID();
-            if (headID >= 0) {
-              // switch (headID) {
-              // case ID.Cos:
-              // return fEngine.evaluate(F.Subtract(arg1, $InverseFunction(S.Cos, rhs)));
-              // case ID.Sin:
-              // return fEngine.evaluate(F.Subtract(arg1, $InverseFunction(S.Sin, rhs)));
-              // }
+            if (lhs.isFunctionID(ID.Cos, ID.Cosh, ID.Cot, ID.Coth, ID.Csc, ID.Csch, ID.Sec, ID.Sech,
+                ID.Sin, ID.Sinh, ID.Tan, ID.Tanh)) {
+              // return dummy placeholder function
+              return fEngine
+                  .evaluate(F.Subtract(arg1, $InverseFunction((IBuiltInSymbol) lhs.head(), rhs)));
             }
           }
           IASTAppendable inverseFunction = InverseFunction.getUnaryInverseFunction(lhs, true);
@@ -868,6 +866,7 @@ public class Solve extends AbstractFunctionEvaluator {
           IAST listOfRules = rootsOfUnivariatePolynomial(exprAnalyzer, engine);
           if (listOfRules.isPresent()) {
             listOfRules = exprAnalyzer.mapOnOriginal(listOfRules);
+            listOfRules = substituteInverseResults(listOfRules, engine);
             boolean evaled = false;
             ++currEquation;
             for (int k = 1; k < listOfRules.size(); k++) {
@@ -915,6 +914,134 @@ public class Solve extends AbstractFunctionEvaluator {
         currEquation++;
       }
       return resultList;
+    }
+
+    /**
+     * Substitute possible dummy {@link Solve#$InverseFunction(IBuiltInSymbol, IExpr)} objects in
+     * the <code>listOfRules</code> with the inverse functions.
+     * 
+     * @param listOfRules
+     * @param engine
+     * @return
+     */
+    private static IASTAppendable substituteInverseResults(IAST listOfRules, EvalEngine engine) {
+      IASTAppendable newListOfRules = F.ListAlloc(listOfRules.size() + 4);
+      for (int i = 1; i < listOfRules.size(); i++) {
+        IAST rule = (IAST) listOfRules.get(i);
+        IExpr rhs = F.subst(rule.arg2(), SolveData::substitute$InverseFunction);
+        rhs = engine.evaluate(rhs);
+        if (rhs.isList()) {
+          IAST rhsList = (IAST) rhs;
+          for (int j = 1; j < rhsList.size(); j++) {
+            newListOfRules.append(rule.setAtCopy(2, rhsList.get(j)));
+          }
+        } else {
+          newListOfRules.append(rule.setAtCopy(2, rhs));
+        }
+      }
+      return newListOfRules;
+    }
+
+    /**
+     * Substitute the dummy {@link Solve#$InverseFunction(IBuiltInSymbol, IExpr)} in the
+     * <code>expr</code> with the inverse function associated with the <code>symbol</code>.
+     * 
+     * @param expr
+     * @return
+     */
+    private static IExpr substitute$InverseFunction(IExpr expr) {
+      if (expr.isAST2() && expr.head() == $InverseFunction) {
+        IAST c1 = F.C(1);
+        IAST c1Integers = F.Element(c1, S.Integers);
+        IBuiltInSymbol symbol = (IBuiltInSymbol) expr.first();
+        IExpr arg = expr.second();
+        int headID = symbol.ordinal();
+        switch (headID) {
+          case ID.Cos:
+            return F.List(//
+                F.ConditionalExpression(//
+                    F.Plus(F.Negate(F.ArcCos(arg)), F.Times(2, S.Pi, c1)), //
+                    c1Integers), //
+                F.ConditionalExpression(//
+                    F.Plus(F.ArcCos(arg), F.Times(2, S.Pi, c1)), //
+                    c1Integers));
+          case ID.Cosh:
+            return F.List(//
+                F.ConditionalExpression(//
+                    F.Plus(F.Negate(F.ArcCosh(arg)), F.Times(2, F.CI, S.Pi, c1)), //
+                    c1Integers), //
+                F.ConditionalExpression(//
+                    F.Plus(F.ArcCosh(arg), F.Times(2, F.CI, S.Pi, c1)), //
+                    c1Integers));
+          case ID.Cot:
+            return F.ConditionalExpression(//
+                F.Plus(F.ArcCot(arg), F.Times(S.Pi, c1)), //
+                c1Integers);
+          case ID.Coth:
+            return F.ConditionalExpression(//
+                F.Plus(F.ArcCoth(arg), F.Times(F.CI, S.Pi, c1)), //
+                c1Integers);
+          case ID.Csc:
+            return F.List(//
+                F.ConditionalExpression(//
+                    F.Plus(S.Pi, F.Negate(F.ArcSin(F.Power(arg, F.CN1))), F.Times(2, S.Pi, c1)), //
+                    c1Integers), //
+                F.ConditionalExpression(//
+                    F.Plus(F.ArcSin(F.Power(arg, F.CN1)), F.Times(2, S.Pi, c1)), //
+                    c1Integers));
+          case ID.Csch:
+            return F.List(//
+                F.ConditionalExpression(//
+                    F.Plus(F.Times(F.CI, S.Pi), F.Negate(F.ArcSinh(F.Power(arg, F.CN1))),
+                        F.Times(2, F.CI, S.Pi, c1)), //
+                    c1Integers), //
+                F.ConditionalExpression(//
+                    F.Plus(F.ArcSinh(F.Power(arg, F.CN1)), F.Times(2, F.CI, S.Pi, c1)), //
+                    c1Integers));
+          case ID.Sec:
+            return F.List(//
+                F.ConditionalExpression(//
+                    F.Plus(F.Negate(F.ArcCos(F.Power(arg, F.CN1))), F.Times(2, S.Pi, c1)), //
+                    c1Integers), //
+                F.ConditionalExpression(//
+                    F.Plus(F.ArcCos(F.Power(arg, F.CN1)), F.Times(2, S.Pi, c1)), //
+                    c1Integers));
+          case ID.Sech:
+            return F.List(//
+                F.ConditionalExpression(//
+                    F.Plus(F.Negate(F.ArcCosh(F.Power(arg, F.CN1))), F.Times(2, F.CI, S.Pi, c1)), //
+                    c1Integers), //
+                F.ConditionalExpression(//
+                    F.Plus(F.ArcCosh(F.Power(arg, F.CN1)), F.Times(2, F.CI, S.Pi, c1)), //
+                    c1Integers));
+          case ID.Sin:
+            return F.List(//
+                F.ConditionalExpression(//
+                    F.Plus(S.Pi, F.Negate(F.ArcSin(arg)), F.Times(2, S.Pi, c1)), //
+                    c1Integers), //
+                F.ConditionalExpression(//
+                    F.Plus(F.ArcSin(arg), F.Times(2, S.Pi, c1)), //
+                    c1Integers));
+          case ID.Sinh:
+            return F.List(//
+                F.ConditionalExpression(//
+                    F.Plus(F.Times(F.CI, S.Pi), F.Negate(F.ArcSinh(arg)),
+                        F.Times(2, F.CI, S.Pi, c1)), //
+                    c1Integers), //
+                F.ConditionalExpression(//
+                    F.Plus(F.ArcSinh(arg), F.Times(2, F.CI, S.Pi, c1)), //
+                    c1Integers));
+          case ID.Tan:
+            return F.ConditionalExpression(//
+                F.Plus(F.ArcTan(arg), F.Times(S.Pi, c1)), //
+                c1Integers);
+          case ID.Tanh:
+            return F.ConditionalExpression(//
+                F.Plus(F.ArcTanh(arg), F.Times(F.CI, S.Pi, c1)), //
+                c1Integers);
+        }
+      }
+      return F.NIL;
     }
 
     /**
