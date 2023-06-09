@@ -4514,10 +4514,12 @@ public final class Arithmetic {
             // (a * b * c)^n => a^n * b^n * c^n
             return powBase.mapThread(Power(F.Slot1, exponent), 1);
           }
-          if (base.first().isMinusOne() && exponent.isReal() && base.isRealResult()) {
-            // ((-1) * rest) ^ (exponent) ;rest is real result
-            return F.Times(F.Power(base.first(), exponent), F.Power(base.rest(), exponent));
-          }
+          // following rule produces "iteration limit exceeded"
+          // if (powBase.first().isMinusOne() && exponent.isReal() && powBase.isNegativeResult()) {
+          // // ((-1) * rest) ^ (exponent) ;rest is real result
+          // return F.Times(F.Power(powBase.first(), exponent),
+          // F.Power(powBase.rest().oneIdentity1(), exponent));
+          // }
           if ((base.size() > 2)) {
             IASTAppendable filterAST = powBase.copyHead();
             IASTAppendable restAST = powBase.copyHead();
@@ -4544,7 +4546,7 @@ public final class Arithmetic {
                 restAST.append(x);
               }
             });
-            IExpr temp = restAST.oneIdentity1(); // powBase is Times()
+            IExpr temp = EvalEngine.get().evaluate(restAST);
             if (simplifiedTimesArgs.size() > 1 || (filterAST.size() > 1 && !temp.isNumber())) {
               if (filterAST.size() > 1) {
                 simplifiedTimesArgs.append(Power(filterAST, exponent));
@@ -5913,13 +5915,7 @@ public final class Arithmetic {
       if (arg2.isNumber()) {
         if (arg2.isInteger()) {
           IInteger root = (IInteger) arg2;
-          if (base.isNegative()) {
-            if (root.isEven()) {
-              // Surd is not defined for even roots of negative values.
-              IOFunctions.printMessage(ast.topHead(), "nonegs", F.CEmptyList, engine);
-              return S.Indeterminate;
-            }
-          }
+
           if (base.isInfinity()) {
             if (root.isNegative()) {
               return F.C0;
@@ -5933,6 +5929,25 @@ public final class Arithmetic {
               return F.CNInfinity;
             }
           }
+          if (base.isNegativeResult()) {
+            if (root.isEven()) {
+              // Surd is not defined for even roots of negative values.
+              IOFunctions.printMessage(ast.topHead(), "nonegs", F.CEmptyList, engine);
+              return S.Indeterminate;
+            }
+            if (root.isNegative()) {
+              return F.Times(F.CN1, F.Power(F.Times(F.CN1, base), F.QQ(F.CN1, root.negate())));
+            } else {
+              return F.Times(F.CN1, F.Power(F.Times(F.CN1, base), F.QQ(F.C1, root)));
+            }
+          } else if (base.isPositiveResult()) {
+            if (root.isNegative()) {
+              return F.Power(base, F.QQ(F.CN1, root.negate()));
+            } else {
+              return F.Power(base, F.QQ(F.C1, root));
+            }
+          }
+
           if (root.isNegative()) {
             if (root.isMinusOne()) {
               return F.Power(base, F.CN1);
