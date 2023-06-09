@@ -603,6 +603,7 @@ public class AttributeFunctions {
             case ID.SequenceHold:
               attributes |= ISymbol.SEQUENCEHOLD;
               break;
+            default:
           }
         }
       }

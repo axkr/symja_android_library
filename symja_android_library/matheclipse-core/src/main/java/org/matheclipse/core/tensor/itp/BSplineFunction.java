@@ -1,7 +1,6 @@
 // code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor.itp;
 
-import java.io.Serializable;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -78,7 +77,7 @@ public abstract class BSplineFunction implements Function<IExpr, IExpr> {
     return deBoor;
   }
 
-  private class Inner extends CacheLoader<Integer, DeBoor> implements Serializable {
+  private class Inner extends CacheLoader<Integer, DeBoor> {
     @Override
     public DeBoor load(Integer k) {
       return createDeBoor(k);

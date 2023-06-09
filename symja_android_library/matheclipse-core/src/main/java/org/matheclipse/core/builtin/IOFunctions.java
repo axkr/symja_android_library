@@ -578,7 +578,7 @@ public class IOFunctions {
       "ipnf", "Positive integer or Infinity expected at position `1` in `2`.", //
       "iterb", "Iterator does not have appropriate bounds.", //
       "itform", "Argument `1` at position `2` does not have the correct form for an iterator.", //
-      "itlim", "Iteration limit of `1` exceeded.", //
+      "itlim", "Iteration limit of `1` exceeded for `2`.", //
       "itlimpartial", "Iteration limit of `1` exceeded. Returning partial results.", //
       "itendless", "Endless iteration detected in `1` in evaluation loop.", //
       "intnz", "Nonzero integer expected at position `1` in `2`.", //

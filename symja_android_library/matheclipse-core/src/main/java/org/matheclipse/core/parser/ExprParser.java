@@ -991,7 +991,7 @@ public class ExprParser extends Scanner {
       fCurrentPosition = lastOperatorPosition;
       return lastList;
     }
-    final int endPosition = fCurrentPosition--;
+    final int endPosition = fCurrentPosition;
     fCurrentPosition = startPosition;
     throwSyntaxError("Operator token not found: "
         + new String(fInputString, startPosition, endPosition - 1 - startPosition));

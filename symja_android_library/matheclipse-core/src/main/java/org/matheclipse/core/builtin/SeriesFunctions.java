@@ -1800,8 +1800,7 @@ public class SeriesFunctions {
     IASTAppendable rest = F.PlusAlloc(4);
     Map<IExpr, IExpr> coefficientMap = new HashMap<IExpr, IExpr>();
     rest = F.TimesAlloc(4);
-    coefficientMap =
-        ExprPolynomialRing.createTimes(timesAST, x, coefficientMap, rest);
+    coefficientMap = ExprPolynomialRing.createTimes(timesAST, x, coefficientMap, rest);
     int shift = 0;
     IExpr coefficient = F.C1;
     if (coefficientMap.size() == 1) {
@@ -1849,7 +1848,7 @@ public class SeriesFunctions {
       }
     }
     if (timesAST.size() != 1) {
-      if (arg instanceof ASTSeriesData) {
+      if (arg != null) {
 
         for (int i = 2; i < timesAST.size(); i++) {
           IExpr timesArg = timesAST.get(i);
@@ -1928,7 +1927,8 @@ public class SeriesFunctions {
           int numerator = rat.numerator().toIntDefault();
           int denominator = rat.denominator().toIntDefault();
           if (denominator != Integer.MIN_VALUE) {
-            ASTSeriesData temp = seriesDataRecursive(F.Power(base, x), x, x0, n * denominator, engine);
+            ASTSeriesData temp =
+                seriesDataRecursive(F.Power(base, x), x, x0, n * denominator, engine);
             if (temp != null) {
               ASTSeriesData series = temp;
               if (numerator != 1) {

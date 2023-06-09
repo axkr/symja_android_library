@@ -18587,7 +18587,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     // github #114
     check("Sqrt(1/(2*Surd(-Cos(9/20*Pi),3)))", //
-        "Sqrt(1/(2*Surd(-Cos(9/20*Pi),3)))");
+        "Sqrt(-1/(2*Cos(9/20*Pi)^(1/3)))");
     check("0^(13+n)/a", //
         "0^(13+n)/a");
     check(" 2^(2*I) - 2^(-2*I) - 2*I*Sin(Log(4)) ", //
@@ -20874,6 +20874,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testRoots() {
+    check("(-EulerGamma)^(1/3)", //
+        "(-EulerGamma)^(1/3)");
+    check("Roots(x^3==EulerGamma,x)", //
+        "x==EulerGamma^(1/3)||x==-(-EulerGamma)^(1/3)||x==(-1)^(2/3)*EulerGamma^(1/3)");
     check("Roots(a*x^2+b*x+c==0,2)", //
         "Roots(c+b*x+a*x^2==0,2)");
 
@@ -22823,6 +22827,21 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testSurd() {
+    check("Surd(EulerGamma,3)", //
+        "EulerGamma^(1/3)");
+    check("Surd(EulerGamma,-7)", //
+        "1/EulerGamma^(1/7)");
+    check("Table(E^(n*I*Pi/3),{n,{0,2,-2}})", //
+        "{1,-1/2+I*1/2*Sqrt(3),-1/2-I*1/2*Sqrt(3)}");
+    check("Table(Surd(EulerGamma,3)*E^(n*I*Pi/3),{n,{0,2,-2}})", //
+        "{EulerGamma^(1/3),(-1/2+I*1/2*Sqrt(3))*EulerGamma^(1/3),(-1/2-I*1/2*Sqrt(3))*EulerGamma^(\n"
+            + "1/3)}");
+    check("Refine((-x)^(1/3),x<0)", //
+        "(-x)^(1/3)");
+    check("Refine(Surd(x,3),x<0)", //
+        "-(-x)^(1/3)");
+    check("Refine(Surd(x,-7),x<0) // FullForm", //
+        "Times(-1, Power(Times(-1, x), Rational(-1,7)))");
     check("Surd(x,3)^14", //
         "x^4*Surd(x,3)^2");
     check("Surd(x,3)^(-14)", //
