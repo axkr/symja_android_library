@@ -509,53 +509,90 @@ public class Algebra {
       if (!error[0]) {
         if (arg.isInteger()) {
           numeratorPlus.set(position, ((IInteger) arg).div(gcd));
-        } else if (arg.isTimes() && arg.first().isInteger()) {
-          IASTMutable times = ((IAST) arg).copy();
-          times.set(1, ((IInteger) times.arg1()).div(gcd));
-          numeratorPlus.set(position, times);
-        } else {
-          error[0] = true;
+          return;
+        } else if (arg.isTimes()) {
+          IExpr arg1 = arg.first();
+          if (arg1.isInteger()) {
+            IInteger factor = ((IInteger) arg1).div(gcd);
+            if (factor.isOne()) {
+              IASTMutable times = ((IAST) arg).removeAtCopy(1);
+              numeratorPlus.set(position, times.oneIdentity1());
+              return;
+            } else {
+              IASTMutable times = ((IAST) arg).copy();
+              times.set(1, factor);
+              numeratorPlus.set(position, times);
+              return;
+            }
+          } else if (arg1.isComplex()) {
+            IComplex cmp = ((IComplex) arg1);
+            if (cmp.re().isInteger() && cmp.im().isInteger()) {
+              IInteger factorRe = ((IInteger) cmp.re()).div(gcd);
+              IInteger factorIm = ((IInteger) cmp.im()).div(gcd);
+              IASTMutable times = ((IAST) arg).copy();
+              times.set(1, F.CC(factorRe, factorIm));
+              numeratorPlus.set(position, times);
+              return;
+            }
+          }
         }
+        error[0] = true;
       }
     }
 
     /**
      * Calculate the GCD[] of the integer factors in each element of the <code>numeratorPlus</code>
-     * expression with the <code>denominatorInt</code>. After that return the result divided by the
-     * gcd value, if possible.
+     * expression with the <code>denominator</code>. After that return the result divided by the gcd
+     * value, if possible.
      *
      * @param numeratorPlus a <code>Plus[...]</code> expression as the numerator
-     * @param denominatorInt an integer value for the denominator
+     * @param denominator an integer value for the denominator
      * @return <code>null</code> if no gcd value was found
      */
-    private static IExpr[] cancelPlusIntegerGCD(IAST numeratorPlus, IInteger denominatorInt) {
+    private static IExpr[] cancelPlusIntegerGCD(IAST numeratorPlus, IInteger denominator) {
       IASTAppendable plus = numeratorPlus.copyAppendable();
       IASTAppendable gcd = F.ast(S.GCD, plus.size() + 1);
-      gcd.append(denominatorInt);
-      boolean evaled = !plus.exists((IExpr x) -> plusExtractGCD(x, gcd));
+      gcd.append(denominator);
+      boolean evaled = !plus.exists((IExpr x) -> collectGCDFactors(x, gcd));
       if (evaled) {
         // GCD() has attribute Orderless, so the arguments will
         // be sorted by evaluation!
-        IExpr temp = F.eval(gcd);
-        if (temp.isInteger() && !temp.isOne()) {
-          IInteger igcd = (IInteger) temp;
-          return calculatePlusIntegerGCD(plus, denominatorInt, igcd);
+        IExpr igcd = F.eval(gcd);
+        if (igcd.isInteger() && !igcd.isOne()) {
+          return calculatePlusIntegerGCD(plus, denominator, (IInteger) igcd);
         }
       }
       return null;
     }
 
-    private static boolean plusExtractGCD(IExpr argument, IASTAppendable gcd) {
-      if (argument.isInteger()) {
-        gcd.append(argument);
+    /**
+     * Append the gcd factors from <code>expr</code> in <code>gcdFactors</code>
+     * 
+     * @param expr
+     * @param gcdFactors
+     * @return <code>false</code> if a gcd factor could be collected; <code>true</code> otherwise.
+     */
+    private static boolean collectGCDFactors(IExpr expr, IASTAppendable gcdFactors) {
+      if (expr.isInteger()) {
+        gcdFactors.append(expr);
+        return false;
       } else {
-        if (argument.isTimes() && argument.first().isInteger()) {
-          gcd.append(argument.first());
-        } else {
-          return true;
+        if (expr.isTimes()) {
+          IExpr arg1 = expr.first();
+          if (arg1.isInteger()) {
+            gcdFactors.append(arg1);
+            return false;
+          } else if (arg1.isComplex()) {
+            IComplex cmp = (IComplex) arg1;
+            if (cmp.re().isInteger() && cmp.im().isInteger()) {
+              gcdFactors.append(cmp.re());
+              gcdFactors.append(cmp.im());
+              return false;
+            }
+          }
         }
       }
-      return false;
+      return true;
     }
 
     private static IExpr cancelPowerTimes(IExpr powerTimesAST, EvalEngine engine)
@@ -4272,33 +4309,33 @@ public class Algebra {
         return F.NIL;
       }
       IASTAppendable numerator = F.ast(S.Plus, plusAST.size());
-      IASTAppendable denominator = F.ast(S.Times, plusAST.size());
+      IASTAppendable denominatorList = F.ast(S.Times, plusAST.size());
       boolean[] evaled = new boolean[1];
-      plusAST.forEach((IExpr x, int i) -> togetherPlusArg(x, i, numerator, denominator, evaled));
+      plusAST
+          .forEach((IExpr x, int i) -> togetherPlusArg(x, i, numerator, denominatorList, evaled));
       if (!evaled[0]) {
         return F.NIL;
       }
       numerator.forEach(
-          (IExpr x, int i) -> togetherPlusNumeratorArg(x, i, numerator, denominator, plusAST));
+          (IExpr x, int i) -> togetherPlusNumeratorArg(x, i, numerator, denominatorList, plusAST));
       int i = 1;
-      while (denominator.size() > i) {
-        if (denominator.get(i).isOne()) {
-          denominator.remove(i);
+      while (denominatorList.size() > i) {
+        if (denominatorList.get(i).isOne()) {
+          denominatorList.remove(i);
           continue;
         }
         i++;
       }
-      if (denominator.isAST0()) {
+      if (denominatorList.isAST0()) {
         return F.NIL;
       }
 
       IExpr exprNumerator = F.evalExpand(numerator.oneIdentity0());
-      IExpr denom = F.eval(denominator.oneIdentity1());
+      IExpr denom = F.eval(denominatorList.oneIdentity1());
       IExpr exprDenominator = F.evalExpand(denom);
       if (exprNumerator.isZero()) {
         if (exprDenominator.isZero()) {
-          // let the standard evaluation handle the division by zero
-          // 0^0
+          // let the standard evaluation handle the division by zero 0^0
           return F.Times(exprNumerator, F.Power(exprDenominator, F.CN1));
         }
         return F.C0;
@@ -5363,30 +5400,69 @@ public class Algebra {
             continue;
           }
         }
-      } else if (i == 1 && arg.isFraction()) {
-        if (splitNumeratorOne) {
-          IFraction fr = (IFraction) arg;
-          if (fr.numerator().isOne()) {
+      } else if (i == 1) {
+        if (arg.isFraction()) {
+          if (splitNumeratorOne) {
+            IFraction fr = (IFraction) arg;
+            if (fr.numerator().isOne()) {
+              denominator.append(fr.denominator());
+              splitFractionEvaled = true;
+              continue;
+            }
+            if (fr.numerator().isMinusOne()) {
+              numerator.append(fr.numerator());
+              denominator.append(fr.denominator());
+              splitFractionEvaled = true;
+              continue;
+            }
+            result[2] = fr;
+            continue;
+          } else if (splitFractionalNumbers) {
+            IFraction fr = (IFraction) arg;
+            if (!fr.numerator().isOne()) {
+              numerator.append(fr.numerator());
+            }
             denominator.append(fr.denominator());
-            splitFractionEvaled = true;
+            evaled = true;
             continue;
           }
-          if (fr.numerator().isMinusOne()) {
-            numerator.append(fr.numerator());
-            denominator.append(fr.denominator());
-            splitFractionEvaled = true;
-            continue;
+        } else if (arg.isComplex()) {
+          IComplex cmp = (IComplex) arg;
+          if (splitFractionalNumbers) {
+            IRational re = cmp.getRealPart();
+            IRational im = cmp.getImaginaryPart();
+            if (re.isFraction() || im.isFraction()) {
+              numerator.append(re.numerator().times(im.denominator())
+                  .add(im.numerator().times(re.denominator()).times(F.CI)));
+              denominator.append(re.denominator().times(im.denominator()));
+              evaled = true;
+              continue;
+            }
           }
-          result[2] = fr;
-          continue;
-        } else if (splitFractionalNumbers) {
-          IFraction fr = (IFraction) arg;
-          if (!fr.numerator().isOne()) {
-            numerator.append(fr.numerator());
-          }
-          denominator.append(fr.denominator());
-          evaled = true;
-          continue;
+
+          // if (cmp.re().isZero() && cmp.im().isFraction()) {
+          // IFraction fr = (IFraction) cmp.im();
+          // if (splitNumeratorOne) {
+          // if (fr.numerator().isOne()) {
+          // numerator.append(F.CI);
+          // denominator.append(fr.denominator());
+          // splitFractionEvaled = true;
+          // continue;
+          // }
+          // if (fr.numerator().isMinusOne()) {
+          // numerator.append(F.CNI);
+          // denominator.append(fr.denominator());
+          // splitFractionEvaled = true;
+          // continue;
+          // }
+          // } else
+          // if (splitFractionalNumbers) {
+          // numerator.append(F.CC(F.C0, fr.numerator()));
+          // denominator.append(fr.denominator());
+          // evaled = true;
+          // continue;
+          // }
+          // }
         }
       }
       numerator.append(arg);

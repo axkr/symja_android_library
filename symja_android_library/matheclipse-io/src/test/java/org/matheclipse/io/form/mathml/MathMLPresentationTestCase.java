@@ -200,12 +200,12 @@ public class MathMLPresentationTestCase extends TestCase {
         "<mrow><mi>a</mi><mo>&#0183;</mo><mrow><mrow><mo>(</mo><mi>x</mi><mo>-</mo><mrow><mfrac><mn>1</mn><mn>3</mn></mfrac></mrow><mo>)</mo></mrow></mrow></mrow>");
     expr = EvalEngine.get().evaluate("a*((- 1/3 )*I)");
     check(expr,
-        "<mrow><mrow><mrow><mo>-</mo><mrow><mfrac><mn>1</mn><mn>3</mn></mfrac></mrow><mo>&#0183;</mo><mi>&#x2148;</mi></mrow></mrow><mo>&#0183;</mo><mi>a</mi></mrow>");
+        "<mfrac><mrow><mrow><mrow><mo>-</mo><mi>&#x2148;</mi></mrow></mrow><mo>&#0183;</mo><mi>a</mi></mrow><mn>3</mn></mfrac>");
 
     expr = EvalEngine.get().evaluate("a*((- 1/3 )+I)");
     System.out.println(expr.toString());
     check(expr,
-        "<mrow><mrow><mo>(</mo><mrow><mo>-</mo><mfrac><mn>1</mn><mn>3</mn></mfrac></mrow><mrow><mo>+</mo><mi>&#x2148;</mi></mrow><mo>)</mo></mrow><mo>&#0183;</mo><mi>a</mi></mrow>");
+        "<mfrac><mrow><mrow><mo>(</mo><mrow><mo>-</mo><mn>1</mn></mrow><mrow><mo>+</mo><mrow><mn>3</mn></mrow><mo>&#0183;</mo><mi>&#x2148;</mi></mrow><mo>)</mo></mrow><mo>&#0183;</mo><mi>a</mi></mrow><mn>3</mn></mfrac>");
 
     // (-I*a)^x
     expr = EvalEngine.get().evaluate("(a*(-I))^x");
@@ -216,8 +216,8 @@ public class MathMLPresentationTestCase extends TestCase {
     // -I*1/2*Pi
     expr = EvalEngine.get().evaluate("ArcTanh(Infinity)");
     System.out.println(expr.toString());
-    check(expr,
-        "<mrow><mrow><mrow><mo>-</mo><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow><mo>&#0183;</mo><mi>&#x2148;</mi></mrow></mrow><mo>&#0183;</mo><mi>&#x03C0;</mi></mrow>");
+    check(expr, //
+        "<mfrac><mrow><mrow><mrow><mo>-</mo><mi>&#x2148;</mi></mrow></mrow><mo>&#0183;</mo><mi>&#x03C0;</mi></mrow><mn>2</mn></mfrac>");
 
     expr = EvalEngine.get().evaluate("1-I");
     check(expr, "<mrow><mrow><mn>1</mn></mrow><mrow><mo>-</mo><mi>&#x2148;</mi></mrow></mrow>");

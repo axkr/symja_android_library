@@ -23835,6 +23835,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testTogether() {
+    check("Together(1/2+(1/3+I*1/2)*Sqrt(3))", //
+        "1/6*(3+(2+I*3)*Sqrt(3))");
+    check("Together(1/2+I*1/2*Sqrt(3))", //
+        "1/2*(1+I*Sqrt(3))");
+    check("Together(1/2*x+1/2*y+1/2*z)", //
+        "1/2*(x+y+z)");
+    check("Together(1/2*x+1/6*y+1/4*z)", //
+        "1/12*(6*x+2*y+3*z)");
+
     check("Together( 8-8*Cos(2/7*Pi))", //
         "8*(1-Cos(2/7*Pi))");
     check("Together(6/5*c*f+6/5*b*g+2/5*c*f*m+1/5*b*g*m+2/5*c*f*n+3/5*b*g*n)", //
@@ -24368,8 +24377,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   public void testTrigToExp() {
     check("TrigToExp(Cos(Sin(x)))", //
-        "1/(2*E^(I*((I*1/2)/E^(I*x)-I*1/2*E^(I*x))))+" + //
-            "E^(I*((I*1/2)/E^(I*x)-I*1/2*E^(I*x)))/\n" + "2");
+        "1/(2*E^(I*((I*1/2)/E^(I*x)-I*1/2*E^(I*x))))+E^(I*((I*1/2)/E^(I*x)-I*1/2*E^(I*x)))/\n" //
+            + "2");
     String expected = String.join("\n", //
         "                ArcSinh(x)==Log(x+Sqrt(1+x^2)) ", //
         "       ArcCosh(x)==Log(x+Sqrt(-1+x)*Sqrt(1+x)) ", //
