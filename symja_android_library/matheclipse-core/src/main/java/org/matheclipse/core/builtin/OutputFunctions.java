@@ -25,6 +25,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.Blank;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.output.DoubleFormFactory;
@@ -32,6 +33,7 @@ import org.matheclipse.core.form.output.JavaComplexFormFactory;
 import org.matheclipse.core.form.output.JavaDoubleFormFactory;
 import org.matheclipse.core.form.output.JavaScriptFormFactory;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -551,7 +553,14 @@ public final class OutputFunctions {
         if (ast.isAST2() && ast.arg2().isStringIgnoreCase("mathcell")) {
           javascriptFlavor = JavaScriptFormFactory.USE_MATHCELL;
         }
-        IExpr arg1 = engine.evaluate(ast.arg1());
+        IExpr arg1 = ast.arg1();
+        if (arg1.isFunctionID(ID.Plot, ID.ParametricPlot, ID.ParametricPlot)) {
+          IASTAppendable temp = ((IAST)arg1).copyAppendable();
+          temp.append(F.Rule(S.JSForm, S.True));
+          arg1 = temp;
+        }
+        arg1 = engine.evaluate(arg1);
+
         if (arg1.isAST(S.JSFormData, 3)) {
           String manipulateStr = ((IAST) arg1).arg1().toString();
           return F.$str(manipulateStr, IStringX.APPLICATION_JAVASCRIPT);

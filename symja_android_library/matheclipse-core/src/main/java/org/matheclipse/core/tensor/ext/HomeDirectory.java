@@ -95,9 +95,14 @@ public class HomeDirectory {
   // helper function
   @SafeVarargs
   private static File subfolder(String folder, String... strings) {
-    File file = file(folder);
-    file.mkdir();
-    return concat(file, strings);
+    try {
+      File file = file(folder);
+      file.mkdir();
+      return concat(file, strings);
+    } catch (SecurityException se) {
+
+    }
+    return null;
   }
 
   private static File concat(File file, String[] strings) {

@@ -381,12 +381,14 @@ public class ManipulateFunction {
             optionPlotRange = F.list(F.list(plotRange.negate(), plotRange), //
                 F.list(plotRange.negate(), plotRange));
           }
-        }
-        if (optionPlotRange.isNIL()) {
-          // Value of option `1` is not All, Full, Automatic, a positive machine
-          // number, or an appropriate list of range specifications.
-          IOFunctions.printMessage(plot.topHead(), "prng", F.list(F.Rule(S.PlotRange, plotRange)),
-              engine);
+        } else if (plotRange == S.Automatic) {
+        } else {
+          if (optionPlotRange.isNIL()) {
+            // Value of option `1` is not All, Full, Automatic, a positive machine
+            // number, or an appropriate list of range specifications.
+            IOFunctions.printMessage(plot.topHead(), "prng", F.list(F.Rule(S.PlotRange, plotRange)),
+                engine);
+          }
         }
       }
 
@@ -1087,6 +1089,8 @@ public class ManipulateFunction {
             } catch (RuntimeException rex) {
             }
           }
+        } else if (plotRangeY == S.Automatic) {
+          plotRangeEvaled = true;
         }
 
         if (!plotRangeEvaled) {

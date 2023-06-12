@@ -10,12 +10,14 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -165,7 +167,27 @@ public class Plot extends ListPlot {
 
 
   @Override
-  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
+      final EvalEngine engine) {
+    if (options[0].isTrue()) { // JSForm option
+      IExpr temp = S.Manipulate.of(engine, ast);
+      if (temp.headID() == ID.JSFormData) {
+        return temp;
+      }
+      return F.NIL;
+    }
+    if (argSize > 0 && argSize < ast.argSize()) {
+      ast = ast.copyUntil(argSize + 1);
+    }
+    final OptionArgs optionArgs = new OptionArgs(ast.topHead(), ast, 3, engine, true);
+
+    if (optionArgs.isTrue(S.JSForm)) {
+      IExpr temp = S.Manipulate.of(engine, ast);
+      if (temp.headID() == ID.JSFormData) {
+        return temp;
+      }
+      return F.NIL;
+    }
     IExpr function = ast.arg1();
     if (ast.arg2().isList3()) {
       final IAST rangeList = (IAST) ast.arg2();
@@ -175,8 +197,7 @@ public class Plot extends ListPlot {
           if (rangeList.isList3()) {
             GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
             setGraphicOptions(graphicsOptions);
-            final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine, true);
-            graphicsOptions.setOptions(options);
+            graphicsOptions.setOptions(optionArgs);
             final IAST listOfLines =
                 plotToListPoints(function, rangeList, ast, graphicsOptions, engine);
             if (listOfLines.isNIL()) {
@@ -603,4 +624,11 @@ public class Plot extends ListPlot {
   // public void setUp(final ISymbol newSymbol) {
   // newSymbol.setAttributes(ISymbol.HOLDALL);
   // }
+
+  @Override
+  public void setUp(final ISymbol newSymbol) {
+    newSymbol.setAttributes(ISymbol.HOLDALL);
+    setOptions(newSymbol, new IBuiltInSymbol[] {S.JSForm, S.Axes, S.PlotRange},
+        new IExpr[] {S.False, S.True, S.Automatic});
+  }
 }

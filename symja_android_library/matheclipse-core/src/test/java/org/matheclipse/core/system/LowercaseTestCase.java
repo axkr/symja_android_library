@@ -21599,6 +21599,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   // }
 
   public void testSimplify() {
+    check("Simplify(r0/.{r0->r})", //
+        "r");
     check("Simplify(Log(E^n))", //
         "Log(E^n)");
     check("Simplify(Log(E^n),n>0)", //

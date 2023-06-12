@@ -1056,7 +1056,8 @@ public class EvalEngine implements Serializable {
    */
   public OptionsResult checkBuiltinArguments(IAST ast, final IFunctionEvaluator functionEvaluator) {
     int[] expected;
-    OptionsResult opres = new OptionsResult(ast, ast.argSize(), null);
+    int argSize = ast.argSize();
+    OptionsResult opres = new OptionsResult(ast, argSize, null);
     if ((expected = functionEvaluator.expectedArgSize(ast)) != null) {
       if (expected.length == 2 && !ast.head().isBuiltInSymbol()) {
         return null;
@@ -1083,19 +1084,28 @@ public class EvalEngine implements Serializable {
       }
 
       ast = opres.result;
-      if (ast.argSize() < expected[0] || ast.argSize() > expected[1]) {
+      argSize = ast.argSize();
+      if (argSize < expected[0] || argSize > expected[1]
+          || (expected[1] == Integer.MAX_VALUE && expected.length == 2)) {
         if (ast.isAST1() && expected.length > 2) {
           // because an operator form is allowed do not print a message
           return null;
         }
-        if (ast.argSize() > expected[0]) {
-          opres = getOptions(functionEvaluator, opres, ast, expected);
-          if (opres != null) {
-            return opres;
+        if (argSize < expected[0]) {
+          IOFunctions.printArgMessage(ast, expected, this);
+          return null;
+        }
+        if (argSize > expected[0]) {
+          OptionsResult temp = getOptions(functionEvaluator, opres, ast, expected);
+          if (temp != null) {
+            return temp;
           }
         }
-        IOFunctions.printArgMessage(ast, expected, this);
-        return null;
+        if (argSize > expected[1]) {
+          IOFunctions.printArgMessage(ast, expected, this);
+          return null;
+        }
+
       }
     }
     if (functionEvaluator instanceof AbstractFunctionOptionEvaluator

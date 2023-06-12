@@ -2431,12 +2431,12 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a function with one of the built-in head IDs.
+   * Test if this expression is an {@link IAST} function with one of the built-in head IDs.
    *
    * @return
    * @see #isPureFunction()
    */
-  default boolean isFunctionID(int... ids) {
+  default boolean isFunctionID(int... builtinIDs) {
     return false;
   }
 

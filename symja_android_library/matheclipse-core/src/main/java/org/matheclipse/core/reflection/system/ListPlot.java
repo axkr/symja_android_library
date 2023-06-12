@@ -4,35 +4,41 @@ import java.util.function.Function;
 import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 /** Plot a list of Points */
-public class ListPlot extends AbstractEvaluator {
+public class ListPlot extends AbstractFunctionOptionEvaluator {
 
   public ListPlot() {}
 
   @Override
-  public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    // if (Config.USE_MANIPULATE_JS) {
-    // IExpr temp = S.Manipulate.of(engine, ast);
-    // if (temp.headID() == ID.JSFormData) {
-    // return temp;
-    // }
-    // return F.NIL;
-    // }
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
+      final EvalEngine engine) {
+    if (argSize > 0 && argSize < ast.size()) {
+      ast = ast.copyUntil(argSize + 1);
+    }
+    if (options[0].isTrue()) {
+      IExpr temp = S.Manipulate.of(engine, ast);
+      if (temp.headID() == ID.JSFormData) {
+        return temp;
+      }
+      return F.NIL;
+    }
 
 
     GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
@@ -623,6 +629,8 @@ public class ListPlot extends AbstractEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-
+    IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.JSForm, S.Filling, S.Axes};
+    IExpr[] optionValues = new IExpr[] {S.False, S.None, S.True};
+    setOptions(newSymbol, optionKeys, optionValues);
   }
 }

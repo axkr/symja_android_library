@@ -5,16 +5,17 @@ import static org.matheclipse.core.expression.F.Show;
 import static org.matheclipse.core.expression.F.SurfaceGraphics;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.BinaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -24,7 +25,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  * @see org.matheclipse.core.eval.util.OptionArgs
  */
-public class Plot3D extends AbstractEvaluator {
+public class Plot3D extends AbstractFunctionOptionEvaluator {
   private static final Logger LOGGER = LogManager.getLogger();
 
   /** Constructor for the singleton */
@@ -35,14 +36,19 @@ public class Plot3D extends AbstractEvaluator {
   public Plot3D() {}
 
   @Override
-  public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    if (Config.USE_MANIPULATE_JS) {
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
+      final EvalEngine engine) {
+    if (argSize > 0 && argSize < ast.size()) {
+      ast = ast.copyUntil(argSize + 1);
+    }
+    if (options[0].isTrue()) {
       IExpr temp = S.Manipulate.of(engine, ast);
       if (temp.headID() == ID.JSFormData) {
         return temp;
       }
       return F.NIL;
     }
+
     // ISymbol optionsArray[] = new ISymbol[] { f.BoxRatios, f.PlotRange };
     if ((ast.size() >= 4) && ast.arg2().isList() && ast.arg3().isList()) {
       try {
@@ -85,14 +91,14 @@ public class Plot3D extends AbstractEvaluator {
               (ISymbol) lst2.arg1(), engine);
           graphics.append(temp);
 
-          final IASTAppendable options = F.ListAlloc();
+          final IASTAppendable optionsList = F.ListAlloc();
           // for (int i = 0; i < optionsArray.length; i++) {
-          // options.add(Rule(optionsArray[i], allOptions.get(i)));
+          // optionsList.add(Rule(optionsArray[i], allOptions.get(i)));
           // }
-          options.append(Rule(S.PlotRange, S.Automatic));
-          options.append(Rule(S.MeshRange, F.list(F.list(xMin, xMax), F.List(yMin, yMax))));
+          optionsList.append(Rule(S.PlotRange, S.Automatic));
+          optionsList.append(Rule(S.DataRange, F.list(F.list(xMin, xMax), F.List(yMin, yMax))));
 
-          graphics.appendAll(options, 1, options.size());
+          graphics.appendAll(optionsList, 1, optionsList.size());
           return Show(graphics);
         }
       } catch (RuntimeException rex) {
@@ -145,7 +151,15 @@ public class Plot3D extends AbstractEvaluator {
   }
 
   @Override
+  public int[] expectedArgSize(IAST ast) {
+    return IFunctionEvaluator.ARGS_2_INFINITY;
+  }
+
+  @Override
   public void setUp(final ISymbol newSymbol) {
     newSymbol.setAttributes(ISymbol.HOLDALL);
+    setOptions(newSymbol,
+        new IBuiltInSymbol[] {S.JSForm, S.PlotRange, S.ColorFunction, S.DataRange},
+        new IExpr[] {S.False, S.Automatic, S.Automatic, S.Automatic});
   }
 }

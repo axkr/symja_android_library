@@ -229,14 +229,14 @@ public interface IFunctionEvaluator extends IEvaluator {
   int[] ARGS_6_6 = new int[] {6, 6};
 
   /**
-   * The function is allowed to have 0 or n arguments and the head must be the built-in symbol name
-   * of the function.
+   * The function is allowed to have between <code>0</code> and {@link Integer#MAX_VALUE} arguments
+   * and the head must be the built-in symbol name of the function.
    */
   int[] ARGS_0_INFINITY = new int[] {0, Integer.MAX_VALUE};
 
   /**
-   * The function is allowed to have 1 or n arguments and the head must be the built-in symbol name
-   * of the function.
+   * The function is allowed to have between <code>1</code> and {@link Integer#MAX_VALUE} arguments
+   * and the head must be the built-in symbol name of the function.
    */
   int[] ARGS_1_INFINITY = new int[] {1, Integer.MAX_VALUE};
 
@@ -253,14 +253,14 @@ public interface IFunctionEvaluator extends IEvaluator {
   int[] ARGS_1_INFINITY_1 = new int[] {1, Integer.MAX_VALUE, 1};
 
   /**
-   * The function is allowed to have 2 or n arguments and the head must be the built-in symbol name
-   * of the function.
+   * The function is allowed to have between <code>2</code> and {@link Integer#MAX_VALUE} arguments
+   * and the head must be the built-in symbol name of the function.
    */
   int[] ARGS_2_INFINITY = new int[] {2, Integer.MAX_VALUE};
 
   /**
-   * The function is allowed to have 3 or n arguments and the head must be the built-in symbol name
-   * of the function.
+   * The function is allowed to have between <code>3</code> and {@link Integer#MAX_VALUE} arguments
+   * and the head must be the built-in symbol name of the function.
    */
   int[] ARGS_3_INFINITY = new int[] {3, Integer.MAX_VALUE};
 
