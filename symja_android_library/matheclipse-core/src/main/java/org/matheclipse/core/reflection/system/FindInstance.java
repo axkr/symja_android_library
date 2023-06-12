@@ -13,6 +13,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  *
@@ -53,7 +54,8 @@ public class FindInstance extends Solve {
    * expressions).
    */
   @Override
-  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
+      final EvalEngine engine) {
     IAST vars = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
     if (vars.isNIL()) {
       return F.NIL;
@@ -61,12 +63,15 @@ public class FindInstance extends Solve {
     try {
       boolean formula = false;
       int maxChoices = 1;
-      if (ast.argSize() >= 4) {
+      if (argSize > 0 && argSize < ast.size()) {
+        ast = ast.copyUntil(argSize + 1);
+      }
+      if (argSize >= 4) {
         maxChoices = ast.arg4().toIntDefault();
         if (maxChoices < 0) {
           maxChoices = 1;
         }
-      } else if (ast.argSize() >= 3) {
+      } else if (argSize >= 3) {
         maxChoices = ast.arg3().toIntDefault();
         if (maxChoices < 0) {
           maxChoices = 1;
@@ -83,7 +88,7 @@ public class FindInstance extends Solve {
       } catch (RuntimeException rex) {
       }
 
-      if (ast.argSize() >= 3) {
+      if (argSize >= 3) {
         if (ast.arg3().equals(S.Booleans) || formula) {
           return BooleanFunctions.solveInstances(ast.arg1(), vars, maxChoices);
         } else if (ast.arg3().equals(S.Integers)) {
@@ -94,7 +99,7 @@ public class FindInstance extends Solve {
         return F.NIL;
       }
       IASTMutable termsEqualZeroList = Validate.checkEquations(ast, 1);
-      SolveData solveData = new Solve.SolveData();
+      SolveData solveData = new Solve.SolveData(options);
       return solveData.solveEquations(termsEqualZeroList, F.List(), vars, maxChoices, engine);
     } catch (final ValidateException ve) {
       return IOFunctions.printMessage(ast.topHead(), ve, engine);
@@ -107,5 +112,10 @@ public class FindInstance extends Solve {
   @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_2_4;
+  }
+
+  @Override
+  public void setUp(final ISymbol newSymbol) {
+    setOptions(newSymbol, S.GenerateConditions, S.False);
   }
 }

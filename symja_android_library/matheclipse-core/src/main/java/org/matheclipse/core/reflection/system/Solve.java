@@ -28,11 +28,10 @@ import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.Assumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
-import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -43,6 +42,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPair;
 import org.matheclipse.core.interfaces.IReal;
@@ -95,7 +95,7 @@ import org.matheclipse.core.polynomials.QuarticSolver;
  * <a href="GroebnerBasis.md">GroebnerBasis</a>, <a href="FindRoot.md">FindRoot</a>,
  * <a href="NRoots.md">NRoots</a>
  */
-public class Solve extends AbstractFunctionEvaluator {
+public class Solve extends AbstractFunctionOptionEvaluator {
   private static final Logger LOGGER = LogManager.getLogger();
 
 
@@ -157,7 +157,7 @@ public class Solve extends AbstractFunctionEvaluator {
   }
 
   protected static class SolveData {
-    OptionArgs options;
+    final IExpr[] options;
 
     /** Analyze an expression, if it has linear, polynomial or other form. */
     protected class ExprAnalyzer implements Comparable<ExprAnalyzer> {
@@ -603,15 +603,14 @@ public class Solve extends AbstractFunctionEvaluator {
                 return temp;
               }
             } else if (function.isPower()) {
-              // function is Power(x, fraction)
-              return rewritePowerFractions(plusAST, i, F.C1, function.base(), function.exponent());
+              return rewritePower(plusAST, i, F.C1, function.base(), function.exponent());
             } else if (function.isTimes() && function.size() == 3
                 && function.arg1().isNumericFunction(true)) {
               if (function.arg2().isPower()) {
                 // function is num*Power(x, fraction)
                 IAST power = (IAST) function.arg2();
-                IExpr temp = rewritePowerFractions(plusAST, i, function.arg1(), power.base(),
-                    power.exponent());
+                IExpr temp =
+                    rewritePower(plusAST, i, function.arg1(), power.base(), power.exponent());
                 if (temp.isPresent()) {
                   return fEngine.evaluate(temp);
                 }
@@ -650,8 +649,7 @@ public class Solve extends AbstractFunctionEvaluator {
        * @param exponent
        * @return
        */
-      private IExpr rewritePowerFractions(IAST plusAST, int i, IExpr num, IExpr base,
-          IExpr exponent) {
+      private IExpr rewritePower(IAST plusAST, int i, IExpr num, IExpr base, IExpr exponent) {
         if (exponent.isFraction() || (exponent.isReal() && !exponent.isNumIntValue())) {
           IReal arg2 = (IReal) exponent;
           if (arg2.isPositive()) {
@@ -678,6 +676,38 @@ public class Solve extends AbstractFunctionEvaluator {
         }
         if (fListOfVariables.size() == 2) {
           IExpr variable = fListOfVariables.arg1();
+          if (exponent.equals(variable) && base.isInteger()) {
+            IExpr plusRest = plusAST.splice(i).oneIdentity0().negate().divide(num);
+            if (plusRest.isFree(variable)) {
+              IInteger b = (IInteger) base;
+              IAST c1 = F.C(1);
+              if (b.isNegative()) {
+                // if (generateConditions().isTrue()) {
+                return F.ConditionalExpression(F.Times( //
+                    // (2*I*Pi*c1 + Log(plusRest))/(I*Pi + Log(-b)
+                    F.Plus(F.Times(F.CC(0, 2), S.Pi, c1), F.Log(plusRest)),
+                    F.Power(F.Plus(F.Times(F.CI, S.Pi), F.Log(b.negate())), F.CN1)), //
+                    F.Element(c1, S.Integers));
+                // } else {
+                // return F.Times( //
+                // // Log(plusRest)/(I*Pi + Log(-b)
+                // F.Log(plusRest), //
+                // F.Power(F.Plus(F.Times(F.CI, S.Pi), F.Log(b.negate())), F.CN1));
+                // }
+              } else {
+                // if (generateConditions().isTrue()) {
+                return F.ConditionalExpression(F.Plus(//
+                    F.Times(F.CC(0, 2), S.Pi, c1, F.Power(F.Log(b), F.CN1)), //
+                    F.Divide(F.Log(plusRest), F.Log(b))), //
+                    F.Element(c1, S.Integers));
+                // } else {
+                // return F.ConditionalExpression(F.Plus(//
+                // F.Divide(F.Log(plusRest), F.Log(b))), //
+                // F.Element(c1, S.Integers));
+                // }
+              }
+            }
+          }
           return rewritePower2ProductLog(plusAST, i, num, base, exponent, variable);
         }
         return F.NIL;
@@ -712,7 +742,7 @@ public class Solve extends AbstractFunctionEvaluator {
             if (indx > 0) {
               IExpr restOfPlus2 = ((IAST) restOfPlus).splice(indx).oneIdentity1();
               if (restOfPlus2.isFree(variable)) {
-                a = determineFactor(((IAST) restOfPlus).get(i), variable);
+                a = determineFactor(((IAST) restOfPlus).get(indx), variable);
                 b = restOfPlus2;
               }
             }
@@ -812,20 +842,21 @@ public class Solve extends AbstractFunctionEvaluator {
       }
     }
 
-
     public SolveData() {
-      this(null);
+      this(defaultOptionValues());
     }
 
-    public SolveData(OptionArgs options) {
+    public SolveData(IExpr[] options) {
       this.options = options;
     }
 
+    /**
+     * Get the value for the option {@link S#GenerateConditions}
+     * 
+     * @return
+     */
     protected IExpr generateConditions() {
-      if (options != null) {
-        return options.getOption(S.GenerateConditions);
-      }
-      return F.NIL;
+      return options[0];
     }
 
     /**
@@ -1692,7 +1723,7 @@ public class Solve extends AbstractFunctionEvaluator {
      * @param engine
      * @return
      */
-    public IExpr of(final IAST ast, boolean numeric, EvalEngine engine) {
+    public IExpr of(final IAST ast, final boolean numeric, EvalEngine engine) {
       boolean[] isNumeric = new boolean[] {numeric};
       try {
         if (ast.arg1().isEmptyList()) {
@@ -1755,7 +1786,7 @@ public class Solve extends AbstractFunctionEvaluator {
             IExpr result = solveRecursive(termsEqualZeroList, lists[1], numericFlag,
                 userDefinedVariables, engine);
             if (result.isNIL()) {
-              // The system cannot be solved with the methods available to Solve.)
+              // The system cannot be solved with the methods available to Solve.
               return IOFunctions.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()),
                   engine);
             }
@@ -1869,12 +1900,11 @@ public class Solve extends AbstractFunctionEvaluator {
   }
 
   @Override
-  public IExpr evaluate(IAST ast, EvalEngine engine) {
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
+      final EvalEngine engine) {
     boolean isNumericArgument = ast.arg1().isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG);
-    final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
-    int lastPosition = options.getLastPosition();
-    if (lastPosition > 0 && lastPosition < ast.size()) {
-      ast = ast.removeAtCopy(lastPosition);
+    if (argSize > 0 && argSize < ast.size()) {
+      ast = ast.copyUntil(argSize + 1);
     }
     SolveData sd = new SolveData(options);
     return sd.of(ast, isNumericArgument, engine);
@@ -1900,4 +1930,14 @@ public class Solve extends AbstractFunctionEvaluator {
     return null;
   }
 
+  private static IExpr[] defaultOptionValues() {
+    return new IExpr[] {S.False};
+  }
+
+  @Override
+  public void setUp(final ISymbol newSymbol) {
+    IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.GenerateConditions};
+    IExpr[] optionValues = defaultOptionValues();
+    setOptions(newSymbol, optionKeys, optionValues);
+  }
 }

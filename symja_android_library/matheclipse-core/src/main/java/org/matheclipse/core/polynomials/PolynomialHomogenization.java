@@ -3,6 +3,7 @@ package org.matheclipse.core.polynomials;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -108,7 +109,8 @@ public class PolynomialHomogenization {
    * @return the polynomial expression
    */
   public IExpr replaceForward(final IExpr expression) {
-    determineLCM(expression);
+    IExpr expr = F.subst(expression, PolynomialHomogenization::unifyIntegerPowers);
+    determineLCM(expr);
     if (variablesLCMAST != null) {
       for (Map.Entry<ISymbol, IASTAppendable> entry : variablesLCMAST.entrySet()) {
         IASTAppendable denominatorLCMAST = entry.getValue();
@@ -124,7 +126,71 @@ public class PolynomialHomogenization {
         }
       }
     }
-    return replaceForwardRecursive(expression);
+    return replaceForwardRecursive(expr);
+  }
+
+  /**
+   * Unify powers in two steps like <code>3^(2+2*x)</code> to <code>3^2 * 3^(2*x)</code>. Merge
+   * powers like <code>2^(2*x)*3^(2*x)</code> to <code>6^(2*x)</code>
+   * 
+   * @param x
+   * @return
+   */
+  private static IExpr unifyIntegerPowers(IExpr x) {
+    if (x.isTimes()) {
+      IAST timesAST = (IAST) x;
+      boolean evaled = false;
+      // first step
+      IASTAppendable times = F.TimesAlloc(timesAST.argSize());
+      for (int i = 1; i < timesAST.size(); i++) {
+        IExpr arg = timesAST.get(i);
+        if (arg.isPower() && arg.base().isInteger()) {
+          IInteger base = (IInteger) arg.base();
+          if (base.isPositive()) {
+            IExpr exp = arg.exponent();
+
+            if (exp.isPlus() && exp.first().isInteger() && exp.first().isPositive()) {
+              evaled = true;
+              IExpr rest = exp.rest().oneIdentity1();
+              times.append(base.pow(exp.first()));
+              times.append(F.Power(base, rest));
+              continue;
+            }
+          }
+        }
+        times.append(arg);
+      }
+
+      // second step
+      Map<IExpr, IInteger> exponentMap = new TreeMap<IExpr, IInteger>();
+      IASTAppendable timesMapped = F.TimesAlloc(times.argSize());
+      for (int i = 1; i < times.size(); i++) {
+        IExpr arg = times.get(i);
+        if (arg.isPower() && arg.base().isInteger() && arg.base().isPositive()) {
+          evaled = true;
+          IExpr exponent = arg.exponent();
+          IInteger value = exponentMap.get(exponent);
+          if (value != null) {
+            value = value.multiply((IInteger) arg.base());
+          } else {
+            value = (IInteger) arg.base();
+          }
+          exponentMap.put(exponent, value);
+        } else {
+          timesMapped.append(arg);
+        }
+      }
+      if (evaled) {
+        for (Map.Entry<IExpr, IInteger> entry : exponentMap.entrySet()) {
+          IExpr key = entry.getKey();
+          IInteger val = entry.getValue();
+          timesMapped.append(F.Power(val, key));
+        }
+        timesMapped.sortInplace();
+        return timesMapped.oneIdentity1();
+      }
+    }
+    return F.NIL;
   }
 
   /**

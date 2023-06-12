@@ -13,6 +13,7 @@ import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
 public class HomogenizationJUnit extends ExprEvaluatorTestCase {
+
   public HomogenizationJUnit() {
     super("HomogenizationTest");
   }
@@ -48,7 +49,14 @@ public class HomogenizationJUnit extends ExprEvaluatorTestCase {
     }
   }
 
-  public void testHomogenization() {
+
+  public void testHomogenization001() {
+    EvalEngine.resetModuleCounter4JUnit();
+    check("Homogenization(9*6^(2*x) - 10*6^x + 1)", //
+        "{1-10*jas$1+9*jas$1^2,{jas$1->6^x}}");
+  }
+
+  public void testHomogenization002() {
     EvalEngine.resetModuleCounter4JUnit();
     check("Homogenization( (E^x)^3 - 4*E^x + 3/(E^x))", //
         "{3/jas$1-4*jas$1+jas$1^3,{jas$1->E^x}}");

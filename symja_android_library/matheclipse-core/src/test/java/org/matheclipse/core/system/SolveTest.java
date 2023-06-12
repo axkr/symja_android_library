@@ -1604,10 +1604,12 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
 
-  // public void testHomogenization() {
-  // check("Solve(9*6^(2*x) - 10*6^x + 1 == 0, x)", //
-  // "");
-  // }
+  public void testHomogenization() {
+    check("Solve(9*6^(2*x) - 10*6^x + 1 == 0, x)", //
+        "{{x->0},{x->-Log(9)/Log(6)}}");
+    check("Solve( 10*(-6)^x + 1 == 0, x)", //
+        "{{x->(I*Pi-Log(10))/(I*Pi+Log(6))}}");
+  }
 
   // public void testSolveFindRoot() {
   // // multivariate FindRoot cases

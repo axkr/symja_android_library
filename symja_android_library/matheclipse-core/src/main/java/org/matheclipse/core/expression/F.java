@@ -2620,28 +2620,29 @@ public class F extends S {
   }
 
   /**
-   * Create a symbolic complex number
+   * Create a symbolic complex number <code>re + I * 0</code>
    *
    * @param re
    * @return
    */
   public static IComplex CC(final IFraction re) {
-    return complex(re, fraction(0L, 1L));
+    return complex(re, F.C0);
   }
 
   /**
-   * Create a symbolic complex number
+   * Create a symbolic complex number <code>real + I * imag</code>
    *
-   * @param re
-   * @param im
+   * @param real the real part of the complex number
+   * @param imag the imaginary part of the complex number
    * @return
    */
-  public static IComplex CC(final IRational re, final IRational im) {
-    return ComplexSym.valueOf(re, im);
+  public static IComplex CC(final IRational real, final IRational imag) {
+    return ComplexSym.valueOf(real, imag);
   }
 
   /**
    * Create a symbolic complex number
+   * <code>(realNumerator/realDenominator) + I * (imagNumerator/imagDenominator)</code>
    *
    * @param realNumerator
    * @param realDenominator
@@ -2652,6 +2653,17 @@ public class F extends S {
   public static IComplex CC(final long realNumerator, final long realDenominator,
       final long imagNumerator, final long imagDenominator) {
     return ComplexSym.valueOf(realNumerator, realDenominator, imagNumerator, imagDenominator);
+  }
+
+  /**
+   * Create a symbolic complex number <code>real + I * imag</code>.
+   * 
+   * @param real the real part of the complex number
+   * @param imag the imaginary part of the complex number
+   * @return
+   */
+  public static IComplex CC(final long real, final long imag) {
+    return ComplexSym.valueOf(real, 1, imag, 1);
   }
 
   public static IAST CDF(final IExpr distribution) {
@@ -7999,7 +8011,7 @@ public class F extends S {
   }
 
   /**
-   * Create a "fractional" number
+   * Create a "fractional" number from a Hipparchus {@link BigFraction} number.
    *
    * @param frac a big fractional number
    * @return IFraction
@@ -8009,7 +8021,7 @@ public class F extends S {
   }
 
   /**
-   * Create a "fractional" number
+   * Create a "fractional" number <code>numerator / denominator</code>
    *
    * @param numerator numerator of the fractional number
    * @param denominator denominator of the fractional number
@@ -8020,7 +8032,7 @@ public class F extends S {
   }
 
   /**
-   * Create a "fractional" number
+   * Create a "fractional" number <code>numerator / denominator</code>
    *
    * @param numerator numerator of the fractional number
    * @param denominator denominator of the fractional number

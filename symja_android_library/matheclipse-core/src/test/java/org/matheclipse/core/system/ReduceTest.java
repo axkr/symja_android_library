@@ -104,4 +104,9 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     check("Reduce(a*x^2 + b*x + c == 0&&x>0, x)", //
         "(x==(-b-Sqrt(b^2-4*a*c))/(2*a)||x==(-b+Sqrt(b^2-4*a*c))/(2*a))&&x>0");
   }
+
+  public void testReduceConstant() {
+    check("Reduce(x^3==EulerGamma,x)", //
+        "x==EulerGamma^(1/3)||x==-(-EulerGamma)^(1/3)||x==(-1)^(2/3)*EulerGamma^(1/3)");
+  }
 }
