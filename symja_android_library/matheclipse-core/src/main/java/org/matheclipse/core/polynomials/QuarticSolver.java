@@ -45,31 +45,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class QuarticSolver {
 
-  // IExpr[] coefficients;
-  // final IExpr x;
-  // final boolean valid;
-  // final boolean createSet;
-  //
-  // public boolean isValid() {
-  // return valid;
-  // }
-  //
-  // public QuarticSolver(IExpr exprPoly, IExpr x) {
-  // this(exprPoly, x, true);
-  // }
-  //
-  // public QuarticSolver(IExpr exprPoly, IExpr x, boolean createSet) {
-  // this.x = x;
-  // this.createSet = createSet;
-  // coefficients = new IExpr[] {F.C0, F.C0, F.C0, F.C0, F.C0};
-  // valid = convert2Coefficients(exprPoly, x, coefficients);
-  // }
-  //
-  // public IASTMutable solve() {
-  // return quarticSolve(coefficients[4], coefficients[3], coefficients[2], coefficients[1],
-  // coefficients[0], createSet);
-  // }
-
   public static IASTMutable solve(IExpr exprPoly, IExpr x) throws ArithmeticException {
     IExpr[] coefficients = new IExpr[] {F.C0, F.C0, F.C0, F.C0, F.C0};
     if (convert2Coefficients(exprPoly, x, coefficients)) {
@@ -162,7 +137,7 @@ public class QuarticSolver {
    * @return
    */
   public static IASTAppendable quarticSolve(IExpr a, IExpr b, IExpr c, IExpr d, IExpr e) {
-    return quarticSolve(a, b, c, d, e, true);
+    return quarticSolve(a, b, c, d, e, true, true);
   }
 
   /**
@@ -178,21 +153,21 @@ public class QuarticSolver {
    * @return
    */
   public static IASTAppendable quarticSolve(IExpr a, IExpr b, IExpr c, IExpr d, IExpr e,
-      boolean createSet) {
+      boolean createSet, boolean sort) {
     if (a.isPossibleZero(false)) {
-      return cubicSolve(b, c, d, e, null, createSet);
+      return cubicSolve(b, c, d, e, null, createSet, sort);
     } else {
       if (e.isPossibleZero(false)) {
-        return cubicSolve(a, b, c, d, C0, createSet);
+        return cubicSolve(a, b, c, d, C0, createSet, sort);
       }
       if (b.isPossibleZero(false) && d.isPossibleZero(false)) {
-        return biQuadraticSolve(a, c, e, null, createSet);
+        return biQuadraticSolve(a, c, e, null, createSet, sort);
       }
       IExpr temp = a.subtract(e);
       if (temp.isPossibleZero(false)) {
         temp = b.subtract(d);
         if (temp.isPossibleZero(false)) {
-          return quasiSymmetricQuarticSolve(a, b, c, createSet);
+          return quasiSymmetricQuarticSolve(a, b, c, createSet, sort);
         }
       }
       // -3*b^2/(8*a^2) + c/a
@@ -207,45 +182,11 @@ public class QuarticSolver {
           Times(CN1, b, d, Power(Times(C4, Power(a, C2)), CN1)), Times(e, Power(a, CN1))));
       if (beta.isPossibleZero(false)) {
         // -1/4 * b/a
-        return biQuadraticSolve(C1, alpha, gamma, Times(CN1D4, b, Power(a, CN1)), createSet);
+        return biQuadraticSolve(C1, alpha, gamma, Times(CN1D4, b, Power(a, CN1)), createSet, sort);
       }
 
       // return depressedQuarticSolve(a, b, alpha, beta, gamma);
       IASTAppendable result = F.ListAlloc(6);
-
-      // 256*a^3*e^3 - 192*a^2*b*d*e^2 - 128*a^2*c^2*e^2 +144*a^2*c*d^2*e
-      // - 27*a^2*d^4 + 144*a*b^2*c*e^2 - 6*a*b^2*d^2*e -
-      // 80*a*b*c^2*d*e + 18*a*b*c*d^3 + 16*a*c^4*e - 4*a*c^3*d^2 -
-      // 27*b^4*e^2 + 18*b^3*c*d*e - 4*b^3*d^3 - 4*b^2*c^3*e +
-      // b^2*c^2*d^2
-
-      // IExpr discriminant = F.eval(Plus(Times(ZZ(256L), Power(a,
-      // C3), Power(e, C3)),
-      // Times(CN1, ZZ(192L), Power(a, C2), b, d, Power(e, C2)),
-      // Times(CN1, ZZ(128L), Power(a, C2), Power(c, C2), Power(e,
-      // C2)),
-      // Times(ZZ(144L), Power(a, C2), c, Power(d, C2), e),
-      // Times(CN1, ZZ(27L), Power(a, C2), Power(d, C4)),
-      // Times(ZZ(144L), a, Power(b, C2), c, Power(e, C2)),
-      // Times(CN1, ZZ(6L), a, Power(b, C2), Power(d, C2), e),
-      // Times(CN1, ZZ(80L), a, b, Power(c, C2), d, e),
-      // Times(ZZ(18L), a, b, c, Power(d, C3)), Times(ZZ(16L),
-      // a, Power(c, C4), e),
-      // Times(CN1, C4, a, Power(c, C3), Power(d, C2)), Times(CN1,
-      // ZZ(27L), Power(b, C4), Power(e, C2)),
-      // Times(ZZ(18L), Power(b, C3), c, d, e), Times(CN1, C4,
-      // Power(b, C3), Power(d, C3)),
-      // Times(CN1, C4, Power(b, C2), Power(c, C3), e), Times(Power(b,
-      // C2), Power(c, C2), Power(d, C2))));
-
-      // 64*a^3*e - 16*a^2*c^2 + 16*a*b^2*c + 16*a^2*b*d - 3*b^4
-
-      // IExpr dd = F
-      // .eval(Plus(Times(ZZ(64L), Power(a, C3), e), Times(CN1,
-      // ZZ(16L), Power(a, C2), Power(c, C2)),
-      // Times(ZZ(16L), a, Power(b, C2), c), Times(ZZ(16L),
-      // Power(a, C2), b, d),
-      // Times(CN1, C3, Power(b, C4))));
 
       // c^2 - 3*b*d + 12*a*e
       IExpr delta0 = F.eval(Plus(Power(c, C2), Times(CN1, C3, b, d), Times(ZZ(12L), a, e)));
@@ -425,58 +366,10 @@ public class QuarticSolver {
       if (createSet) {
         return createSet(result);
       }
-      result.sortInplace();
-      return result;
+      return evalAndSort(result, sort);
     }
   }
 
-  // private static IAST depressedQuarticSolve(IExpr A, IExpr B, IExpr a, IExpr b, IExpr c) {
-  // IASTAppendable result = F.ListAlloc(5);
-  // // -(a^2/12+c)
-  // IExpr P = F.eval(Times(CN1, Plus(Times(QQ(1L, 12L), Power(a, C2)), c)));
-  // // -a^3/108 + (a*c)/3 - (b^2)/8
-  // IExpr Q = F.eval(Plus(Times(QQ(-1L, 108L), Power(a, C3)), Times(C1D3, a, c), Times(QQ(-1L, 8L),
-  // Power(b, C2))));
-  //
-  // IExpr y;
-  // if (P.isZero()) {
-  // // -5/6*a - Q^(1/3)
-  // y = F.eval(Plus(Times(QQ(-5L, 6L), a), Times(CN1, Power(Q, C1D3))));
-  // } else {
-  // // (-Q/2 + Sqrt[Q^2/4 + P^3/27])^(1/3)
-  // IExpr U = F.eval(Power(
-  // Plus(Times(C1D2, CN1, Q), Sqrt(Plus(Times(C1D4, Power(Q, C2)), Times(QQ(1L, 27L), Power(P,
-  // C3))))),
-  // C1D3));
-  // // -5/6*a - U - P/(3*U)
-  // y = Plus(Times(QQ(-5L, 6L), a), Times(CN1, U), Times(CN1, P, Power(Times(C3, U), CN1)));
-  // }
-  // // Sqrt[a+2*y]
-  // IExpr w = Sqrt(Plus(a, Times(C2, y)));
-  // // b/(2*w)
-  // // IExpr z = Times(b, Power(Times(C2, w), CN1));
-  //
-  // // -B/(4*A) + 1/2 * (w + Sqrt[-(a+2*y)-2*(a+b/w)])
-  // result.append(Plus(Times(CN1, B, Power(Times(C4, A), CN1)), Times(C1D2, Plus(w,
-  // Sqrt(Plus(Times(CN1, Plus(a, Times(C2, y))), Times(CN1, C2, Plus(a, Times(b, Power(w,
-  // CN1))))))))));
-  // // -B/(4*A) + 1/2 * (w - Sqrt[-(a+2*y)-2*(a+b/w)])
-  // result.append(Plus(Times(CN1, B, Power(Times(C4, A), CN1)), Times(C1D2, Plus(w, Times(CN1,
-  // Sqrt(Plus(Times(CN1, Plus(a, Times(C2, y))), Times(CN1, C2, Plus(a, Times(b, Power(w,
-  // CN1)))))))))));
-  // // -B/(4*A) + 1/2 * (-w + Sqrt[-(a+2*y)-2*(a-b/w)])
-  // result.append(Plus(Times(CN1, B, Power(Times(C4, A), CN1)), Times(C1D2, Plus(Times(CN1, w),
-  // Sqrt(
-  // Plus(Times(CN1, Plus(a, Times(C2, y))), Times(CN1, C2, Plus(a, Times(CN1, b, Power(w,
-  // CN1))))))))));
-  // // -B/(4*A) + 1/2 * (-w - Sqrt[-(a+2*y)-2*(a-b/w)])
-  // result.append(Plus(Times(CN1, B, Power(Times(C4, A), CN1)), Times(C1D2, Plus(Times(CN1, w),
-  // Times(CN1, Sqrt(
-  // Plus(Times(CN1, Plus(a, Times(C2, y))), Times(CN1, C2, Plus(a, Times(CN1, b, Power(w,
-  // CN1)))))))))));
-  // //
-  // return createSet(result);
-  // }
   /**
    * <code>Solve(a*x^3+b*x^2+c*x+d==0,x)</code>. See
    * <a href= "http://en.wikipedia.org/wiki/Cubic_function#General_formula_of_roots"> Wikipedia -
@@ -491,7 +384,7 @@ public class QuarticSolver {
    */
   public static IASTAppendable cubicSolve(IExpr a, IExpr b, IExpr c, IExpr d,
       IExpr additionalSolution) {
-    return cubicSolve(a, b, c, d, additionalSolution, true);
+    return cubicSolve(a, b, c, d, additionalSolution, true, true);
   }
 
   /**
@@ -507,12 +400,12 @@ public class QuarticSolver {
    * @return
    */
   public static IASTAppendable cubicSolve(IExpr a, IExpr b, IExpr c, IExpr d,
-      IExpr additionalSolution, boolean createSet) {
+      IExpr additionalSolution, boolean createSet, boolean sort) {
     if (a.isPossibleZero(false)) {
-      return quadraticSolve(b, c, d, additionalSolution, null, createSet, false);
+      return quadraticSolve(b, c, d, additionalSolution, null, createSet, sort);
     } else {
       if (d.isPossibleZero(false)) {
-        return quadraticSolve(a, b, c, additionalSolution, C0, createSet, false);
+        return quadraticSolve(a, b, c, additionalSolution, C0, createSet, sort);
       }
       IASTAppendable result = F.ListAlloc(4);
       if (additionalSolution != null) {
@@ -532,7 +425,6 @@ public class QuarticSolver {
           F.eval(Plus(delta1, Sqrt(Plus(Power(delta1, C2), Times(CN1, C4, Power(delta0, C3))))));
       IExpr delta3 = F.eval(Power(argDelta3, C1D3));
 
-      // IExpr C = F.eval(Times(ZZ(-27L), a.power(C2), discriminant));
       if (discriminant.isPossibleZero(false)) {
         if (delta0.isPossibleZero(false)) {
           // the three roots are equal
@@ -574,8 +466,7 @@ public class QuarticSolver {
       if (createSet) {
         return createSet(result);
       }
-      result.sortInplace();
-      return result;
+      return evalAndSort(result, sort);
     }
   }
 
@@ -583,12 +474,7 @@ public class QuarticSolver {
     Set<IExpr> set1 = new TreeSet<IExpr>();
     for (int i = 1; i < result.size(); i++) {
       IExpr temp = result.get(i);
-      if (temp.isPlus() || temp.isTimes() || temp.isPower()) {
-        temp = F.evalExpandAll(temp); // org.matheclipse.core.reflection.system.PowerExpand.powerExpand((IAST)
-        // temp, false);
-      } else {
-        temp = F.eval(temp);
-      }
+      temp = F.eval(temp);
       if (!temp.isIndeterminate()) {
         set1.add(temp);
         continue;
@@ -605,15 +491,7 @@ public class QuarticSolver {
     int i = 1;
     while (i < result.size()) {
       IExpr temp = result.get(i);
-      if (temp.isIndeterminate()) {
-        result.remove(i);
-        continue;
-      }
-      if (temp.isPlus() || temp.isTimes() || temp.isPower()) {
-        temp = F.evalExpandAll(temp);
-      } else {
-        temp = F.eval(temp);
-      }
+      temp = F.eval(temp);
       if (temp.isIndeterminate()) {
         result.remove(i);
         continue;
@@ -801,7 +679,7 @@ public class QuarticSolver {
    * @return
    */
   public static IASTAppendable biQuadraticSolve(IExpr a, IExpr c, IExpr e, IExpr sum) {
-    return biQuadraticSolve(a, c, e, sum, true);
+    return biQuadraticSolve(a, c, e, sum, true, true);
   }
 
   /**
@@ -818,7 +696,7 @@ public class QuarticSolver {
    * @return
    */
   public static IASTAppendable biQuadraticSolve(IExpr a, IExpr c, IExpr e, IExpr sum,
-      boolean createSet) {
+      boolean createSet, boolean sort) {
     IASTAppendable result = F.ListAlloc(4);
     // Sqrt[c^2-4*a*e]
     IExpr sqrt = F.eval(Sqrt(Plus(Power(c, C2), Times(CN1, C4, a, e))));
@@ -842,8 +720,7 @@ public class QuarticSolver {
     if (createSet) {
       return createSet(result);
     }
-    result.sortInplace();
-    return result;
+    return evalAndSort(result, sort);
   }
 
   /**
@@ -858,7 +735,7 @@ public class QuarticSolver {
    * @return
    */
   public static IASTAppendable quasiSymmetricQuarticSolve(IExpr a, IExpr b, IExpr c) {
-    return quasiSymmetricQuarticSolve(a, b, c, true);
+    return quasiSymmetricQuarticSolve(a, b, c, true, true);
   }
 
   /**
@@ -873,7 +750,7 @@ public class QuarticSolver {
    * @return
    */
   public static IASTAppendable quasiSymmetricQuarticSolve(IExpr a, IExpr b, IExpr c,
-      boolean createSet) {
+      boolean createSet, boolean sort) {
     IASTAppendable result = F.ListAlloc(4);
     // Sqrt[b^2-4*a*c+8*a^2]
     IExpr sqrt =
@@ -895,8 +772,7 @@ public class QuarticSolver {
     if (createSet) {
       return createSet(result);
     }
-    result.sortInplace();
-    return result;
+    return evalAndSort(result, sort);
   }
 
   /**

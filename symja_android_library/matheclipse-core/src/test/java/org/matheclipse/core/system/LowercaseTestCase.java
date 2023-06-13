@@ -3983,10 +3983,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("period // Together", //
         "(17460+39041*t)/(161+360*t)");
     check("y=Solve(period-t==0,t) [[2,1,2]]", //
-        "54+77/Sqrt(2)");
+        "1/720*(38880+27720*Sqrt(2))");
     // TODO
     check("FromContinuedFraction({0,1,x}) /. x->y  // Simplify", //
-        "1/(1+1/(54+77/Sqrt(2)))");
+        "1/11*(1+7*Sqrt(2))");
     // END ContinuedFraction -> FromContinuedFraction
 
     check("ContinuedFraction(Pi, 10)", //
@@ -14531,8 +14531,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   public void testMaximize() {
     check("Maximize(-x^4-7*x^3+2*x^2 - 42,x)", //
-        "{-42-7*(-21/8-Sqrt(505)/8)^3+2*(21/8+Sqrt(505)/8)^2-(21/8+Sqrt(505)/8)^4,{x->-21/\n"
-            + "8-Sqrt(505)/8}}");
+        "{-42-7/512*(-21-Sqrt(505))^3+(21+Sqrt(505))^2/32-(21+Sqrt(505))^4/4096,{x->1/8*(-\n"
+            + "21-Sqrt(505))}}");
     check("Maximize(x^4+7*Tan(x)-2*x^2 + 42, x)", //
         "Maximize(42-2*x^2+x^4+7*Tan(x),x)");
     check("Maximize(x^4+7*x^3-2*x^2 + 42, x)", //
@@ -14969,8 +14969,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{0,{x->-2}}");
 
     check("Minimize(x^4+7*x^3-2*x^2 + 42, x)", //
-        "{42+7*(-21/8-Sqrt(505)/8)^3-2*(21/8+Sqrt(505)/8)^2+(21/8+Sqrt(505)/8)^4,{x->-21/\n"
-            + "8-Sqrt(505)/8}}");
+        "{42+7/512*(-21-Sqrt(505))^3-(21+Sqrt(505))^2/32+(21+Sqrt(505))^4/4096,{x->1/8*(-\n"
+            + "21-Sqrt(505))}}");
     check("Minimize(2*x^2 - 3*x + 5, x)", //
         "{31/8,{x->3/4}}");
   }
@@ -16388,7 +16388,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     checkNumeric("NSolve(x^3 + 2.0*x^2 - 5*x -3.0 ==0,x)", //
         "{{x->-3.253418039587852},{x->-0.5199693720627907},{x->1.7733874116506425}}");
     checkNumeric("NSolve(x^3 + 2*x^2 - 5*x -3 ==0,x)", //
-        "{{x->1.773387411650643},{x->-0.5199693720627907+I*2.220446049250313E-16},{x->-3.253418039587852}}");
+        "{{x->1.773387411650643},{x->-0.5199693720627908+I*4.440892098500626E-16},{x->-3.2534180395878516+I*(-3.3306690738754696E-16)}}");
   }
 
   public void testNumberQ() {
@@ -20892,13 +20892,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Roots(x^2-2*x-3==0,x)", //
         "x==-1||x==3");
     check("Roots(a*x^2+b*x+c==0, x)", //
-        "x==-b/(2*a)-Sqrt(b^2-4*a*c)/(2*a)||x==-b/(2*a)+Sqrt(b^2-4*a*c)/(2*a)");
+        "x==(-b-Sqrt(b^2-4*a*c))/(2*a)||x==(-b+Sqrt(b^2-4*a*c))/(2*a)");
     check("Roots(3*x^3-8*x^2+-11*x+10==0,x)", //
-        "x==2/3||x==1-Sqrt(6)||x==1+Sqrt(6)");
+        "x==2/3||x==1/2*(2-2*Sqrt(6))||x==1/2*(2+2*Sqrt(6))");
     check("Roots(3*x^3-5*x^2+5*x-2==0,x)", //
-        "x==2/3||x==1/2-I*1/2*Sqrt(3)||x==1/2+I*1/2*Sqrt(3)");
+        "x==2/3||x==1/2*(1-I*Sqrt(3))||x==1/2*(1+I*Sqrt(3))");
     check("Roots(x^3 - 5*x + 4==0,x)", //
-        "x==1||x==-1/2-Sqrt(17)/2||x==-1/2+Sqrt(17)/2");
+        "x==1||x==1/2*(-1-Sqrt(17))||x==1/2*(-1+Sqrt(17))");
   }
 
   public void testRotateLeft() {

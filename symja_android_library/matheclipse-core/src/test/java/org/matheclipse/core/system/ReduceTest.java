@@ -99,10 +99,10 @@ public class ReduceTest extends ExprEvaluatorTestCase {
 
   public void testReduceQuadratic() {
     check("Reduce(a*x^2 + b*x + c == 0, x)", //
-        "x==-b/(2*a)-Sqrt(b^2-4*a*c)/(2*a)||x==-b/(2*a)+Sqrt(b^2-4*a*c)/(2*a)");
+        "x==(-b-Sqrt(b^2-4*a*c))/(2*a)||x==(-b+Sqrt(b^2-4*a*c))/(2*a)");
     // TODO add a != 0 condition
     check("Reduce(a*x^2 + b*x + c == 0&&x>0, x)", //
-        "(x==-b/(2*a)-Sqrt(b^2-4*a*c)/(2*a)||x==-b/(2*a)+Sqrt(b^2-4*a*c)/(2*a))&&x>0");
+        "(x==(-b-Sqrt(b^2-4*a*c))/(2*a)||x==(-b+Sqrt(b^2-4*a*c))/(2*a))&&x>0");
   }
 
   public void testReduceConstant() {

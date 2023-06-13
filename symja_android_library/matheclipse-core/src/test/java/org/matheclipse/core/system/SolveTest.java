@@ -334,7 +334,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(x+Sqrt(x+a) == y, x)", //
         "{{x->1/2*(1+2*y-Sqrt(1+4*a+4*y))},{x->1/2*(1+2*y+Sqrt(1+4*a+4*y))}}");
     check("Solve(-2+Sqrt(-2*x+x^2+3) == 0, x)", //
-        "{{x->1-Sqrt(2)},{x->1+Sqrt(2)}}");
+        "{{x->1/2*(2-2*Sqrt(2))},{x->1/2*(2+2*Sqrt(2))}}");
   }
 
   public void testSolveInequality() {
@@ -363,7 +363,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // https://en.wikipedia.org/wiki/Lambert_W_function#Solving_equations
     // TODO generate 2 solutions
     check("Solve(3^x==2*x+2, x)", //
-        "{{x->-1-ProductLog(-Log(3)/6)/Log(3)}}");
+        "{{x->-(Log(3)+ProductLog(-Log(3)/6))/Log(3)}}");
     check("Solve(3^x==2*x, x)", //
         "{{x->-ProductLog(-Log(3)/2)/Log(3)}}");
     check("Solve(3^x==-4*x, x)", //
@@ -392,8 +392,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // github #201 begin
     check(
         "Solve({m1*u1^2 + m2*u2^2 == m1*v1^2 + m2*v2^2, m1*u1 + m2*u2 == m1*v1 + m2*v2}, {v1, v2})", //
-        "{{v2->u2,v1->u1},{v2->(2*m1*u1)/(m1+m2)+(-m1*u2)/(m1+m2)+(m2*u2)/(m1+m2),v1->(m1*u1-m2*u1+\n"
-            + "2*m2*u2)/(m1+m2)}}");
+        "{{v2->u2,v1->u1},{v2->(2*m1*u1-m1*u2+m2*u2)/(m1+m2),v1->(m1*u1-m2*u1+2*m2*u2)/(m1+m2)}}");
     check("Solve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == v2 - v1}, {v1, v2})", //
         "{{v1->(-m1*u1-m2*u2+m2*(-u1+u2))/(-m1-m2),v2->(-m1*u1+m1*(u1-u2)-m2*u2)/(-m1-m2)}}");
     check("Solve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == -(v2 - v1)}, {v1, v2})", //
@@ -406,7 +405,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve({x^2+y^2==5, x+y^2==-7, x>0}, {x,y})", //
         "{{x->4,y->-I*Sqrt(11)},{x->4,y->I*Sqrt(11)}}");
     check("Solve({x^2+5x+3==0, x<0}, x)", //
-        "{{x->-5/2-Sqrt(13)/2},{x->-5/2+Sqrt(13)/2}}");
+        "{{x->1/2*(-5-Sqrt(13))},{x->1/2*(-5+Sqrt(13))}}");
     check("Solve({x^2+5x+3==0, x>0}, x)", //
         "{}");
     check("Solve({x^2 == 4, x > 0}, x)", //
@@ -438,11 +437,11 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(3*x^x==7,x)", //
         "{{x->Log(7/3)/ProductLog(Log(7/3))}}");
     check("Solve(3*x^x==-7,x)", //
-        "{{x->(I*Pi)/ProductLog(I*Pi+Log(7/3))+Log(7/3)/ProductLog(I*Pi+Log(7/3))}}");
+        "{{x->(I*Pi+Log(7/3))/ProductLog(I*Pi+Log(7/3))}}");
     check("Solve(x^x==7,x)", //
         "{{x->Log(7)/ProductLog(Log(7))}}");
     check("Solve(x^x==-7,x)", //
-        "{{x->(I*Pi)/ProductLog(I*Pi+Log(7))+Log(7)/ProductLog(I*Pi+Log(7))}}");
+        "{{x->(I*Pi+Log(7))/ProductLog(I*Pi+Log(7))}}");
     check(
         "ReplaceAll(x^3-89, {{x->-(-89)^(1/3)},{x->(-89)^(1/3)*(-1)^(1/3)},{x->-(-89)^(1/3)*(-1)^(2/3)}})", //
         "{0,0,0}");
@@ -475,8 +474,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->-1}}");
     // TODO simplify result
     check("Solve(-5*Sqrt(14)*x-14*x^2*Sqrt(83)-10==0,x)", //
-        "{{x->-5/2*1/Sqrt(1162)-Sqrt(350-560*Sqrt(83))/(28*Sqrt(83))},{x->-5/2*1/Sqrt(\n"
-            + "1162)+Sqrt(350-560*Sqrt(83))/(28*Sqrt(83))}}");
+        "{{x->(-5*Sqrt(14)-Sqrt(350-560*Sqrt(83)))/(28*Sqrt(83))},{x->(-5*Sqrt(14)+Sqrt(\n"
+            + "350-560*Sqrt(83)))/(28*Sqrt(83))}}");
 
     check("Solve(8*x^3-26x^2+3x+9==0,x)", //
         "{{x->-1/2},{x->3/4},{x->3}}");
@@ -486,12 +485,10 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(Sqrt(x)-2*x+x^2==0,x)", //
         "{{x->0},{x->1}}");
     check("Solve((2*x+x^2)^2-x==0,x)", //
-        "{{x->0},{x->-4/3+(43/2+3/2*Sqrt(177))^(1/3)/3+4/3*2^(1/3)/(43+3*Sqrt(177))^(1/3)},{x->-\n"
-            + "4/3-2/3*2^(1/3)/(43+3*Sqrt(177))^(1/3)+(I*2*2^(1/3))/(Sqrt(3)*(43+3*Sqrt(177))^(\n"
-            + "1/3))-(43+3*Sqrt(177))^(1/3)/(6*2^(1/3))+(-I*1/2*(43+3*Sqrt(177))^(1/3))/(2^(1/3)*Sqrt(\n"
-            + "3))},{x->-4/3-2/3*2^(1/3)/(43+3*Sqrt(177))^(1/3)+(-I*2*2^(1/3))/(Sqrt(3)*(43+3*Sqrt(\n"
-            + "177))^(1/3))-(43+3*Sqrt(177))^(1/3)/(6*2^(1/3))+(I*1/2*(43+3*Sqrt(177))^(1/3))/(\n"
-            + "2^(1/3)*Sqrt(3))}}");
+        "{{x->0},{x->-4/3+(43/2+3/2*Sqrt(177))^(1/3)/3+4/3*2^(1/3)/(43+3*Sqrt(177))^(1/3)},{x->-\n"//
+            + "4/3+2/3*(2^(1/3)*(-1+I*Sqrt(3)))/(43+3*Sqrt(177))^(1/3)+((-1-I*Sqrt(3))*(43+3*Sqrt(\n"//
+            + "177))^(1/3))/(6*2^(1/3))},{x->-4/3+2/3*(2^(1/3)*(-1-I*Sqrt(3)))/(43+3*Sqrt(177))^(\n"//
+            + "1/3)+((-1+I*Sqrt(3))*(43+3*Sqrt(177))^(1/3))/(6*2^(1/3))}}");
 
     check("Solve({x^2-11==y, x+y==-9}, {x,y})", //
         "{{x->-2,y->-7},{x->1,y->-10}}");
@@ -567,7 +564,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // checkNumeric("Solve(30*x/0.000002==30,x)", //
     // "{{x->2.0E-6}}");
     check("Solve((a*x + b)/(c*x + d)==y,x)", //
-        "{{x->-b/(a-c*y)+(d*y)/(a-c*y)}}");
+        "{{x->(-b+d*y)/(a-c*y)}}");
 
     check("E^((Log(a)+Log(b))/m)", //
         "E^((Log(a)+Log(b))/m)");
@@ -720,7 +717,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(x^2-2500.00==0,x)", //
         "{{x->-50.0},{x->50.0}}");
     check("Solve(x^2+a*x+1 == 0, x)", //
-        "{{x->-a/2-Sqrt(-4+a^2)/2},{x->-a/2+Sqrt(-4+a^2)/2}}");
+        "{{x->1/2*(-a-Sqrt(-4+a^2))},{x->1/2*(-a+Sqrt(-4+a^2))}}");
     check("Solve((-3)*x^3 +10*x^2-11*x == (-4), {x})", //
         "{{x->1},{x->4/3}}");
 
@@ -787,7 +784,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check(
         "NSolve({m1*u1^2 + m2*u2^2 == m1*v1^2 + m2*v2^2, m1*u1 + m2*u2 == m1*v1 + m2*v2}, {v1, v2})",
         //
-        "{{v2->u2,v1->u1},{v2->(2.0*m1*u1)/(m1+m2)+(-m1*u2)/(m1+m2)+(m2*u2)/(m1+m2),v1->(m1*u1+m2*u2+(-m2*(2.0*m1*u1-m1*u2+m2*u2))/(m1+m2))/m1}}");
+        "{{v2->u2,v1->u1},{v2->(2.0*m1*u1-m1*u2+m2*u2)/(m1+m2),v1->(m1*u1+m2*u2+(-m2*(2.0*m1*u1-m1*u2+m2*u2))/(m1+m2))/m1}}");
     check("NSolve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == v2 - v1}, {v1, v2})", //
         "{{v1->(-m1*u1-m2*u2+m2*(-u1+u2))/(-m1-m2),v2->(-m1*u1+m1*(u1-u2)-m2*u2)/(-m1-m2)}}");
     check("NSolve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == -(v2 - v1)}, {v1, v2})", //
@@ -1318,7 +1315,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "129)},{x->(-1)^(127/129)},{x->-(-1)^(128/129)},{x->(-1)^(128/129)}}");
 
     check("Solve(y==x+((1)/(x)),y)", //
-        "{{y->1/x+x}}");
+        "{{y->(1+x^2)/x}}");
     check("Solve(y==((1-x)^(1/(2)))+((x+3)^(1/(2))),y)", //
         "{{y->Sqrt(1-x)+Sqrt(3+x)}}");
   }
@@ -1341,8 +1338,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // check("Eliminate(-x-y+x*y==27,x)", //
     // "True");
     check("Solve({-x+x^2-y+y^2==814,-x-y+x*y==27},{x,y})", //
-        "{{y->2,x->29},{y->29,x->2},{y->-14-Sqrt(197),x->-14+Sqrt(197)},{y->-14+Sqrt(197),x->-\n"
-            + "14-Sqrt(197)}}");
+        "{{y->2,x->29},{y->29,x->2},{y->1/2*(-28-2*Sqrt(197)),x->-14+Sqrt(197)},{y->1/2*(-\n"
+            + "28+2*Sqrt(197)),x->-14-Sqrt(197)}}");
   }
 
   public void testSolveConditionalExpression() {
@@ -1366,7 +1363,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // https: //
     // www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
     check("Solve(4^(2*x+1)*5^(x-2)-6^(1-x)==0,x)", //
-        "{{x->Log(2)/(-5*Log(2)-Log(15))-Log(75)/(-5*Log(2)-Log(15))}}");
+        "{{x->(Log(2)-Log(75))/(-5*Log(2)-Log(15))}}");
   }
 
   public void testSolveHO3() {
@@ -1536,7 +1533,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(x+5==10,x)", "{{x->5}}");
     check("Solve(x^2==a,x)", "{{x->-Sqrt(a)},{x->Sqrt(a)}}");
     check("Solve(x^2+b*c*x+3==0, x)", //
-        "{{x->-1/2*b*c-Sqrt(-12+b^2*c^2)/2},{x->-1/2*b*c+Sqrt(-12+b^2*c^2)/2}}");
+        "{{x->1/2*(-b*c-Sqrt(-12+b^2*c^2))},{x->1/2*(-b*c+Sqrt(-12+b^2*c^2))}}");
     check("Solve({x+2*y==10,3*x+y==20},{x,y})", "{{x->6,y->2}}");
     check("Solve(x^2==0,{x,y,z})", "{{x->0}}");
     check("Solve(x^2==0,x)", "{{x->0}}");
