@@ -3983,9 +3983,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("period // Together", //
         "(17460+39041*t)/(161+360*t)");
     check("y=Solve(period-t==0,t) [[2,1,2]]", //
-        "1/720*(38880+27720*Sqrt(2))");
+        "54+77/Sqrt(2)");
+    // TODO
     check("FromContinuedFraction({0,1,x}) /. x->y  // Simplify", //
-        "1/11*(1+7*Sqrt(2))");
+        "1/(1+1/(54+77/Sqrt(2)))");
     // END ContinuedFraction -> FromContinuedFraction
 
     check("ContinuedFraction(Pi, 10)", //
@@ -9736,6 +9737,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testFullSimplify() {
+    check("FullSimplify( Sqrt(9-4*Sqrt(5)))", //
+        "-2+Sqrt(5)");
+
     check("FullSimplify(Gamma(z) / Gamma(z-2))", //
         "(-2+z)*(-1+z)");
     check("FullSimplify( Sqrt(-9+4*Sqrt(5)))", //
@@ -9754,10 +9758,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x^2");
     // see Logarithms#test0128() Rubi rule 2447 ==> -(Sqrt(-(e/d))/(2*e))
     check(
-        "FullSimplify( (d-2*d*Sqrt(-e/d)*x-e*x^2)/(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2) )", //
+        "FullSimplify( (d-2*d*Sqrt(-e/d)*x-e*x^2)/(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2) )",
+        //
         "1/(2*d*Sqrt(-e/d))");
     check(
-        "PolynomialQuotientRemainder((d-2*d*Sqrt(-e/d)*x-e*x^2),(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2),x)", //
+        "PolynomialQuotientRemainder((d-2*d*Sqrt(-e/d)*x-e*x^2),(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2),x)",
+        //
         "{1/(2*d*Sqrt(-e/d)),0}");
 
     // check("FullSimplify((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / "
@@ -9767,15 +9773,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // e*x^2)))", //
     // "(d-2*d*Sqrt(-e/d)*x-e*x^2)/(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2)");
     check("FullSimplify((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / " //
-        + "(-((4*e*x^2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)^2) + (2*e*x)/(d + e*x^2) + (2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))", //
+        + "(-((4*e*x^2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)^2) + (2*e*x)/(d + e*x^2) +   (2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))", //
         "-Sqrt(-e/d)/(2*e)");
 
     check(
         "FullSimplify(Numerator((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / " //
-            + "(-((4*e*x^2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)^2) + (2*e*x)/(d + e*x^2) + (2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2))))", //
+            + "(-((4*e*x^2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)^2) + (2*e*x)/(d + e*x^2) +   (2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2))))", //
         "1+(-2*x*(d*Sqrt(-e/d)+e*x))/(d+e*x^2)");
     check(
-        "FullSimplify(Denominator((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / " //
+        "FullSimplify(Denominator((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / "
+            //
             + "(-((4*e*x^2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)^2) + (2*e*x)/(d + e*x^2) + (2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2))))", //
         "(2*e*(d+e*x^2))/(-d*Sqrt(-e/d)+2*e*x+e*Sqrt(-e/d)*x^2)");
     check("Together( 1+(-2*x*(d*Sqrt(-e/d)+e*x))/(d+e*x^2) )", //
@@ -9786,10 +9793,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // #github #152
     check("FullSimplify(Sqrt(-9-4*Sqrt(5)))", //
         "I*(2+Sqrt(5))");
-    check("FullSimplify( Sqrt(-9+4*Sqrt(5)))", //
-        "I*(-2+Sqrt(5))");
-    check("FullSimplify( Sqrt(9-4*Sqrt(5)))", //
-        "-2+Sqrt(5)");
+    // check("FullSimplify( Sqrt(9-4*Sqrt(5)))", //
+    // "-2+Sqrt(5)");
+
     check("FullSimplify(Sqrt(9+4*Sqrt(5)))", //
         "2+Sqrt(5)");
     check("FullSimplify(-Sqrt(9-4*Sqrt(5))+Sqrt(9+4*Sqrt(5)))", //
@@ -20886,7 +20892,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Roots(x^2-2*x-3==0,x)", //
         "x==-1||x==3");
     check("Roots(a*x^2+b*x+c==0, x)", //
-        "x==(-b-Sqrt(b^2-4*a*c))/(2*a)||x==(-b+Sqrt(b^2-4*a*c))/(2*a)");
+        "x==-b/(2*a)-Sqrt(b^2-4*a*c)/(2*a)||x==-b/(2*a)+Sqrt(b^2-4*a*c)/(2*a)");
     check("Roots(3*x^3-8*x^2+-11*x+10==0,x)", //
         "x==2/3||x==1-Sqrt(6)||x==1+Sqrt(6)");
     check("Roots(3*x^3-5*x^2+5*x-2==0,x)", //

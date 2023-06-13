@@ -275,6 +275,35 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "E^(I*3/2*Pi*x)");
   }
 
+  public void testFunctionExpandSqrtDenest() {
+    check("FunctionExpand( Sqrt(5+4*Sqrt(9)) )", //
+        "Sqrt(17)");
+    check("FunctionExpand( Sqrt(9+4*Sqrt(5)) )", //
+        "2+Sqrt(5)");
+    check("FunctionExpand( Sqrt(5+4*Sqrt(-9)) )", //
+        "3+I*2");
+    check("FunctionExpand( Sqrt(9+4*Sqrt(-5)) )", //
+        "Sqrt(9+I*4*Sqrt(5))");
+
+    check("FunctionExpand( Sqrt(-5+4*Sqrt(-9)) )", //
+        "2+I*3");
+    check("FunctionExpand( Sqrt(-9+4*Sqrt(-5)) )", //
+        "Sqrt(-9+I*4*Sqrt(5))");
+    check("FunctionExpand( Sqrt(5-4*Sqrt(-9)) )", //
+        "3-I*2");
+    check("FunctionExpand( Sqrt(9-4*Sqrt(-5)) )", //
+        "Sqrt(9-I*4*Sqrt(5))");
+
+    check("FunctionExpand( Sqrt(-5+4*Sqrt(9)) )", //
+        "Sqrt(7)");
+    check("FunctionExpand( Sqrt(-9+4*Sqrt(5)) )", //
+        "I*(-2+Sqrt(5))");
+    check("FunctionExpand( Sqrt(5-4*Sqrt(9)) )", //
+        "I*Sqrt(7)");
+    check("FunctionExpand( Sqrt(9-4*Sqrt(5)) )", //
+        "-2+Sqrt(5)");
+  }
+
   /** The JUnit setup method */
   @Override
   protected void setUp() {

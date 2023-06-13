@@ -3799,7 +3799,8 @@ public final class Arithmetic {
         // (arg2/2) ^ 2
         IExpr squared = engine.evaluate(F.Sqr(F.Divide(arg2, F.C2)));
         if (squared.isRealResult()) {
-          IAST list = QuarticSolver.quadraticSolve(F.C1, arg1.negate(), squared);
+          // 1*x^2 + arg1.negate() * x + squared == 0
+          IAST list = QuarticSolver.quadraticSolve(F.C1, arg1.negate(), squared, false, false);
           if (list.isAST2()) {
             IExpr a = engine.evaluate(list.arg1());
             if (a.isRational()) {

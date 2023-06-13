@@ -35,7 +35,7 @@ public class FindInstanceTest extends ExprEvaluatorTestCase {
 
 
     check("FindInstance(Sin((-3+x^2)/x) ==2,{x})", //
-        "{{x->1/2*(ArcSin(2)+Sqrt(12+ArcSin(2)^2))}}");
+        "{{x->ArcSin(2)/2-Sqrt(12+ArcSin(2)^2)/2}}");
     // check("FindInstance(Abs((-3+x^2)/x) ==2,{x})", "{{x->-3}}");
     check("FindInstance({x^2-11==y, x+y==-9}, {x,y})", //
         "{{x->-2,y->-7}}");
@@ -53,7 +53,7 @@ public class FindInstanceTest extends ExprEvaluatorTestCase {
     check("FindInstance(x^2-2500.00==0,x)", //
         "{{x->-50.0}}");
     check("FindInstance(x^2+a*x+1 == 0, x)", //
-        "{{x->1/2*(-a-Sqrt(-4+a^2))}}");
+        "{{x->-a/2-Sqrt(-4+a^2)/2}}");
     check("FindInstance((-3)*x^3 +10*x^2-11*x == (-4), {x})", //
         "{{x->1}}");
 

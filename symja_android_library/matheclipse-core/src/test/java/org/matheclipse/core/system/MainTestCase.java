@@ -3753,7 +3753,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     // + "2-Sqrt(-I*6)/2||x==1/2+I*1/2+Sqrt(-I*6)/2");
 
     check("Roots(x^2 + 5*x + 10==0, x)", //
-        "x==1/2*(-5-I*Sqrt(15))||x==1/2*(-5+I*Sqrt(15))");
+        "x==-5/2-I*1/2*Sqrt(15)||x==-5/2+I*1/2*Sqrt(15)");
     check("Roots(4+x^2+2*x+3*x^3==0, x)", //
         "x==-1||x==1/3-I*1/3*Sqrt(11)||x==1/3+I*1/3*Sqrt(11)");
     check("Roots(x^3-4*x^2+x+6==0, x)", //

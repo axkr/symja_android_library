@@ -45,6 +45,31 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class QuarticSolver {
 
+  // IExpr[] coefficients;
+  // final IExpr x;
+  // final boolean valid;
+  // final boolean createSet;
+  //
+  // public boolean isValid() {
+  // return valid;
+  // }
+  //
+  // public QuarticSolver(IExpr exprPoly, IExpr x) {
+  // this(exprPoly, x, true);
+  // }
+  //
+  // public QuarticSolver(IExpr exprPoly, IExpr x, boolean createSet) {
+  // this.x = x;
+  // this.createSet = createSet;
+  // coefficients = new IExpr[] {F.C0, F.C0, F.C0, F.C0, F.C0};
+  // valid = convert2Coefficients(exprPoly, x, coefficients);
+  // }
+  //
+  // public IASTMutable solve() {
+  // return quarticSolve(coefficients[4], coefficients[3], coefficients[2], coefficients[1],
+  // coefficients[0], createSet);
+  // }
+
   public static IASTMutable solve(IExpr exprPoly, IExpr x) throws ArithmeticException {
     IExpr[] coefficients = new IExpr[] {F.C0, F.C0, F.C0, F.C0, F.C0};
     if (convert2Coefficients(exprPoly, x, coefficients)) {
@@ -137,20 +162,37 @@ public class QuarticSolver {
    * @return
    */
   public static IASTAppendable quarticSolve(IExpr a, IExpr b, IExpr c, IExpr d, IExpr e) {
+    return quarticSolve(a, b, c, d, e, true);
+  }
+
+  /**
+   * <code>Solve(a*x^4+b*x^3+c*x^2+d*x+e==0,x)</code>. See
+   * <a href="http://en.wikipedia.org/wiki/Quartic_equation">Wikipedia - Quartic equation</a>
+   *
+   * @param a coefficient for <code>x^4</code>
+   * @param b coefficient for <code>x^3</code>
+   * @param c coefficient for <code>x^2</code>
+   * @param d coefficient for <code>x</code>
+   * @param e coefficient for <code>1</code>
+   * @param createSet delete duplicates from result list
+   * @return
+   */
+  public static IASTAppendable quarticSolve(IExpr a, IExpr b, IExpr c, IExpr d, IExpr e,
+      boolean createSet) {
     if (a.isPossibleZero(false)) {
-      return cubicSolve(b, c, d, e, null);
+      return cubicSolve(b, c, d, e, null, createSet);
     } else {
       if (e.isPossibleZero(false)) {
-        return cubicSolve(a, b, c, d, C0);
+        return cubicSolve(a, b, c, d, C0, createSet);
       }
       if (b.isPossibleZero(false) && d.isPossibleZero(false)) {
-        return biQuadraticSolve(a, c, e, null);
+        return biQuadraticSolve(a, c, e, null, createSet);
       }
       IExpr temp = a.subtract(e);
       if (temp.isPossibleZero(false)) {
         temp = b.subtract(d);
         if (temp.isPossibleZero(false)) {
-          return quasiSymmetricQuarticSolve(a, b, c);
+          return quasiSymmetricQuarticSolve(a, b, c, createSet);
         }
       }
       // -3*b^2/(8*a^2) + c/a
@@ -165,7 +207,7 @@ public class QuarticSolver {
           Times(CN1, b, d, Power(Times(C4, Power(a, C2)), CN1)), Times(e, Power(a, CN1))));
       if (beta.isPossibleZero(false)) {
         // -1/4 * b/a
-        return biQuadraticSolve(C1, alpha, gamma, Times(CN1D4, b, Power(a, CN1)));
+        return biQuadraticSolve(C1, alpha, gamma, Times(CN1D4, b, Power(a, CN1)), createSet);
       }
 
       // return depressedQuarticSolve(a, b, alpha, beta, gamma);
@@ -380,7 +422,11 @@ public class QuarticSolver {
                                               Times(delta3,
                                                   Power(Times(C3, Power(C2, C1D3), a), CN1))))),
                                       CN1)))))));
-      return createSet(result);
+      if (createSet) {
+        return createSet(result);
+      }
+      result.sortInplace();
+      return result;
     }
   }
 
@@ -431,7 +477,6 @@ public class QuarticSolver {
   // //
   // return createSet(result);
   // }
-
   /**
    * <code>Solve(a*x^3+b*x^2+c*x+d==0,x)</code>. See
    * <a href= "http://en.wikipedia.org/wiki/Cubic_function#General_formula_of_roots"> Wikipedia -
@@ -446,11 +491,28 @@ public class QuarticSolver {
    */
   public static IASTAppendable cubicSolve(IExpr a, IExpr b, IExpr c, IExpr d,
       IExpr additionalSolution) {
+    return cubicSolve(a, b, c, d, additionalSolution, true);
+  }
+
+  /**
+   * <code>Solve(a*x^3+b*x^2+c*x+d==0,x)</code>. See
+   * <a href= "http://en.wikipedia.org/wiki/Cubic_function#General_formula_of_roots"> Wikipedia -
+   * Cubic function</a>
+   *
+   * @param a coefficient for <code>x^3</code>
+   * @param b coefficient for <code>x^2</code>
+   * @param c coefficient for <code>x</code>
+   * @param d coefficient for <code>1</code>
+   * @param additionalSolution ann additional solution, which should be appended to the result
+   * @return
+   */
+  public static IASTAppendable cubicSolve(IExpr a, IExpr b, IExpr c, IExpr d,
+      IExpr additionalSolution, boolean createSet) {
     if (a.isPossibleZero(false)) {
-      return quadraticSolve(b, c, d, additionalSolution, null);
+      return quadraticSolve(b, c, d, additionalSolution, null, createSet, false);
     } else {
       if (d.isPossibleZero(false)) {
-        return quadraticSolve(a, b, c, additionalSolution, C0);
+        return quadraticSolve(a, b, c, additionalSolution, C0, createSet, false);
       }
       IASTAppendable result = F.ListAlloc(4);
       if (additionalSolution != null) {
@@ -509,7 +571,11 @@ public class QuarticSolver {
             Times(CN1, Plus(C1, Times(CI, Sqrt(C3))), delta3,
                 Power(Times(ZZ(6L), Power(C2, C1D3), a), CN1))));
       }
-      return createSet(result);
+      if (createSet) {
+        return createSet(result);
+      }
+      result.sortInplace();
+      return result;
     }
   }
 
@@ -520,24 +586,43 @@ public class QuarticSolver {
       if (temp.isPlus() || temp.isTimes() || temp.isPower()) {
         temp = F.evalExpandAll(temp); // org.matheclipse.core.reflection.system.PowerExpand.powerExpand((IAST)
         // temp, false);
+      } else {
+        temp = F.eval(temp);
       }
-      if (temp.isAtom() && !temp.isIndeterminate()) {
-        set1.add(temp);
-        continue;
-      }
-      temp = F.eval(temp);
-      if (temp.isAtom() && !temp.isIndeterminate()) {
-        set1.add(temp);
-        continue;
-      }
-      temp = F.evalExpandAll(temp);
       if (!temp.isIndeterminate()) {
         set1.add(temp);
+        continue;
       }
     }
     result = F.ListAlloc(set1.size());
     for (IExpr e : set1) {
       result.append(e);
+    }
+    return result;
+  }
+
+  private static IASTAppendable evalAndSort(IASTAppendable result, boolean sort) {
+    int i = 1;
+    while (i < result.size()) {
+      IExpr temp = result.get(i);
+      if (temp.isIndeterminate()) {
+        result.remove(i);
+        continue;
+      }
+      if (temp.isPlus() || temp.isTimes() || temp.isPower()) {
+        temp = F.evalExpandAll(temp);
+      } else {
+        temp = F.eval(temp);
+      }
+      if (temp.isIndeterminate()) {
+        result.remove(i);
+        continue;
+      }
+      result.set(i, temp);
+      i++;
+    }
+    if (sort) {
+      result.sortInplace();
     }
     return result;
   }
@@ -552,7 +637,37 @@ public class QuarticSolver {
    * @return
    */
   public static IASTAppendable quadraticSolve(IExpr a, IExpr b, IExpr c) {
-    return quadraticSolve(a, b, c, null, null);
+    return quadraticSolve(a, b, c, null, null, true, false);
+  }
+
+  /**
+   * <code>Solve(a*x^2+b*x+c==0,x)</code>. See
+   * <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Wikipedia - Quadratic equation</a>
+   *
+   * @param a
+   * @param b
+   * @param c
+   * @param createSet
+   * @return
+   */
+  public static IASTAppendable quadraticSolve(IExpr a, IExpr b, IExpr c, boolean createSet) {
+    return quadraticSolve(a, b, c, null, null, createSet, true);
+  }
+
+  /**
+   * <code>Solve(a*x^2+b*x+c==0,x)</code>. See
+   * <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Wikipedia - Quadratic equation</a>
+   *
+   * @param a
+   * @param b
+   * @param c
+   * @param createSet
+   * @param sort the result
+   * @return
+   */
+  public static IASTAppendable quadraticSolve(IExpr a, IExpr b, IExpr c, boolean createSet,
+      boolean sort) {
+    return quadraticSolve(a, b, c, null, null, createSet, sort);
   }
 
   /**
@@ -570,6 +685,26 @@ public class QuarticSolver {
    */
   public static IASTAppendable quadraticSolve(IExpr a, IExpr b, IExpr c, IExpr solution1,
       IExpr solution2) {
+    return quadraticSolve(a, b, c, solution1, solution2, true, true);
+  }
+
+  /**
+   * <code>Solve(a*x^2+b*x+c==0,x)</code>. See
+   * <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Wikipedia - Quadratic equation</a>
+   *
+   * @param a coefficient for <code>x^2</code>
+   * @param b coefficient for <code>x</code>
+   * @param c coefficient for <code>1</code>
+   * @param solution1 possible first solution from
+   *        {@link #cubicSolve(IExpr, IExpr, IExpr, IExpr, IExpr)}
+   * @param solution2 possible second solution from
+   *        {@link #cubicSolve(IExpr, IExpr, IExpr, IExpr, IExpr)}
+   * @param createSet delete duplicate values in the result
+   * @param sortResult sort the result values
+   * @return
+   */
+  public static IASTAppendable quadraticSolve(IExpr a, IExpr b, IExpr c, IExpr solution1,
+      IExpr solution2, boolean createSet, boolean sort) {
     IASTAppendable result = F.ListAlloc(5);
     if (solution1 != null) {
       result.append(solution1);
@@ -605,14 +740,20 @@ public class QuarticSolver {
           result.append(Times(Plus(b.negate(), discriminant), Power(a.times(F.C2), -1L)));
           result.append(Times(Plus(b.negate(), discriminant.negate()), Power(a.times(F.C2), -1L)));
         }
-        return result;
+        if (createSet) {
+          return createSet(result);
+        }
+        return evalAndSort(result, sort);
       }
     } else {
       if (!b.isPossibleZero(false)) {
         result.append(Times(CN1, c, Power(b, -1L)));
       }
     }
-    return result;
+    if (createSet) {
+      return createSet(result);
+    }
+    return evalAndSort(result, sort);
   }
 
   private static IExpr surdSqrt(IExpr arg) {
@@ -660,6 +801,24 @@ public class QuarticSolver {
    * @return
    */
   public static IASTAppendable biQuadraticSolve(IExpr a, IExpr c, IExpr e, IExpr sum) {
+    return biQuadraticSolve(a, c, e, sum, true);
+  }
+
+  /**
+   * Solve the bi-quadratic expression. <code>Solve(a*x^4+bc*x^2+e==0,x)</code>.
+   *
+   * <p>
+   * See Bronstein 1.6.2.4
+   *
+   * @param a
+   * @param c
+   * @param e
+   * @param sum
+   * @param createSet
+   * @return
+   */
+  public static IASTAppendable biQuadraticSolve(IExpr a, IExpr c, IExpr e, IExpr sum,
+      boolean createSet) {
     IASTAppendable result = F.ListAlloc(4);
     // Sqrt[c^2-4*a*e]
     IExpr sqrt = F.eval(Sqrt(Plus(Power(c, C2), Times(CN1, C4, a, e))));
@@ -680,11 +839,15 @@ public class QuarticSolver {
       result.append(Plus(sum, Sqrt(y2)));
       result.append(Plus(sum, Times(CN1, Sqrt(y2))));
     }
-    return createSet(result);
+    if (createSet) {
+      return createSet(result);
+    }
+    result.sortInplace();
+    return result;
   }
 
   /**
-   * Solve the special case of a "Quasi-symmetric equations" <code>
+   * Solve the special case of a "Quasi-symmetric equation" <code>
    * Solve(a*x^4+b*x^3+c*x^2+b*x+a==0,x)</code>. See
    * <a href="http://en.wikipedia.org/wiki/Quartic_equation">Wikipedia - Quartic equation</a>. See
    * Bronstein 1.6.2.4
@@ -695,6 +858,22 @@ public class QuarticSolver {
    * @return
    */
   public static IASTAppendable quasiSymmetricQuarticSolve(IExpr a, IExpr b, IExpr c) {
+    return quasiSymmetricQuarticSolve(a, b, c, true);
+  }
+
+  /**
+   * Solve the special case of a "Quasi-symmetric equation" <code>
+   * Solve(a*x^4+b*x^3+c*x^2+b*x+a==0,x)</code>. See
+   * <a href="http://en.wikipedia.org/wiki/Quartic_equation">Wikipedia - Quartic equation</a>. See
+   * Bronstein 1.6.2.4
+   *
+   * @param a coefficient for <code>x^4</code> and <code>x</code>
+   * @param b coefficient for <code>x^3</code> and <code>x</code>
+   * @param c coefficient for <code>x^2</code>
+   * @return
+   */
+  public static IASTAppendable quasiSymmetricQuarticSolve(IExpr a, IExpr b, IExpr c,
+      boolean createSet) {
     IASTAppendable result = F.ListAlloc(4);
     // Sqrt[b^2-4*a*c+8*a^2]
     IExpr sqrt =
@@ -713,8 +892,11 @@ public class QuarticSolver {
     result.append(Times(C1D2, Plus(y2, Sqrt(Plus(Power(y2, C2), Times(CN1, C4))))));
     // (y2-Sqrt[y2^2-4])/2
     result.append(Times(C1D2, Plus(y2, Times(CN1, Sqrt(Plus(Power(y2, C2), Times(CN1, C4)))))));
-
-    return createSet(result);
+    if (createSet) {
+      return createSet(result);
+    }
+    result.sortInplace();
+    return result;
   }
 
   /**
