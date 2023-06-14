@@ -20901,7 +20901,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Roots(a*x^2+b*x+c==0, x)", //
         "x==(-b-Sqrt(b^2-4*a*c))/(2*a)||x==(-b+Sqrt(b^2-4*a*c))/(2*a)");
     check("Roots(3*x^3-8*x^2+-11*x+10==0,x)", //
-        "x==2/3||x==1/2*(2-2*Sqrt(6))||x==1/2*(2+2*Sqrt(6))");
+        "x==2/3||x==1-Sqrt(6)||x==1+Sqrt(6)");
     check("Roots(3*x^3-5*x^2+5*x-2==0,x)", //
         "x==2/3||x==1/2*(1-I*Sqrt(3))||x==1/2*(1+I*Sqrt(3))");
     check("Roots(x^3 - 5*x + 4==0,x)", //

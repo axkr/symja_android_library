@@ -1338,8 +1338,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // check("Eliminate(-x-y+x*y==27,x)", //
     // "True");
     check("Solve({-x+x^2-y+y^2==814,-x-y+x*y==27},{x,y})", //
-        "{{y->2,x->29},{y->29,x->2},{y->1/2*(-28-2*Sqrt(197)),x->-14+Sqrt(197)},{y->1/2*(-\n"
-            + "28+2*Sqrt(197)),x->-14-Sqrt(197)}}");
+        "{{y->2,x->29},{y->29,x->2},{y->-14-Sqrt(197),x->-14+Sqrt(197)},{y->-14+Sqrt(197),x->-\n"
+            + "14-Sqrt(197)}}");
   }
 
   public void testSolveConditionalExpression() {

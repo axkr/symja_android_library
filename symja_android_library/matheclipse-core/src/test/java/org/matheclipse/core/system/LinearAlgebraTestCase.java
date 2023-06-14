@@ -481,7 +481,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   public void testEigenvalues() {
     check("Eigenvalues({{-2,-2,4}, {-1,-3,7}, {2,4,6}})", //
-        "{1/2*(2+2*Sqrt(61)),1/2*(2-2*Sqrt(61)),-1}");
+        "{1+Sqrt(61),1-Sqrt(61),-1}");
     check("Eigenvalues({{0,1,-1},{1,1,0},{-1,0,1}})", //
         "{2,-1,1}");
     check("Eigenvalues({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}})", //
@@ -542,7 +542,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Eigenvalues({{a,b}, {c,d}})", //
         "{1/2*(a+d-Sqrt(a^2+4*b*c-2*a*d+d^2)),1/2*(a+d+Sqrt(a^2+4*b*c-2*a*d+d^2))}");
     check("Eigenvalues({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", //
-        "{1/2*(15+3*Sqrt(33)),1/2*(15-3*Sqrt(33)),0}");
+        "{3/2*(5+Sqrt(33)),3/2*(5-Sqrt(33)),0}");
     check("Eigenvalues({{0.0,1.0,-1.0},{1.0,1.0,0.0},{-1.0,0.0,1.0}})", //
         "{2.0,-1.0,1.0}");
   }

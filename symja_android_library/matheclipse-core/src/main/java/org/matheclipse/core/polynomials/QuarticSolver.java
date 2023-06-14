@@ -504,6 +504,12 @@ public class QuarticSolver {
     int i = 1;
     while (i < result.size()) {
       IExpr temp = result.get(i);
+      if (temp.isTimes2() && temp.second().isPlus()) {
+        IExpr f = F.FactorTerms.ofNIL(EvalEngine.get(), temp.second());
+        if (f.isPresent()) {
+          temp = F.Times(temp.first(), f);
+        }
+      }
       temp = F.eval(temp);
       if (temp.isIndeterminate()) {
         result.remove(i);
