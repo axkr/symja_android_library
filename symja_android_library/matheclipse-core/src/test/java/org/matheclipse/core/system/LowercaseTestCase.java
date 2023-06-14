@@ -8958,6 +8958,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testFit() {
+    check("Fit({2,3,5,7,11,13},3,x)", //
+        "3.0-1.95238*x+1.10714*x^2-0.0833333*x^3");
+    check("Fit({{1,1},{2,4},{3,9},{4,16}},2,x)", //
+        "x^2");
+    check("Fit({1,4,9,16},2,x)", //
+        "x^2");
+
     check("Fit({x,-3,-1/2},2147483647,ComplexInfinity)", //
         "Fit({x,-3,-1/2},2147483647,ComplexInfinity)");
     check("Fit({1->0},1,x)", //
@@ -20883,7 +20890,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("(-EulerGamma)^(1/3)", //
         "(-EulerGamma)^(1/3)");
     check("Roots(x^3==EulerGamma,x)", //
-        "x==EulerGamma^(1/3)||x==-(-EulerGamma)^(1/3)||x==(-1)^(2/3)*EulerGamma^(1/3)");
+        "x==-(-EulerGamma)^(1/3)||x==EulerGamma^(1/3)||x==(-1)^(2/3)*EulerGamma^(1/3)");
     check("Roots(a*x^2+b*x+c==0,2)", //
         "Roots(c+b*x+a*x^2==0,2)");
 
@@ -23262,6 +23269,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testTakeLargestBy() {
+    check("TakeLargestBy({254/315+(14954373125000+I*7875000*Sqrt(9477810222))^(1/3)/31500+\n" //
+        + "      1215035/63*2^(1/3)/(29908746250000+I*15750000*Sqrt(9477810222))^(1/3),254/315+\n" //
+        + "      1215035/63*(-1+I*Sqrt(3))/(2^(2/3)*(29908746250000+I*15750000*Sqrt(9477810222))^(\n" //
+        + "      1/3))+((-1-I*Sqrt(3))*(29908746250000+I*15750000*Sqrt(9477810222))^(1/3))/(63000*\n" //
+        + "      2^(1/3))},Abs,2)", //
+        "{254/315+(14954373125000+I*7875000*Sqrt(9477810222))^(1/3)/31500+1215035/63*2^(1/\n"//
+            + "3)/(29908746250000+I*15750000*Sqrt(9477810222))^(1/3),254/315+1215035/63*(-1+I*Sqrt(\n"//
+            + "3))/(2^(2/3)*(29908746250000+I*15750000*Sqrt(9477810222))^(1/3))+((-1-I*Sqrt(3))*(\n"//
+            + "29908746250000+I*15750000*Sqrt(9477810222))^(1/3))/(63000*2^(1/3))}");
+
+
     // print message
     check("TakeLargestBy({2.0383668,3.96078,4.5547},Abs, 4)", //
         "TakeLargestBy({2.03837,3.96078,4.5547},Abs,4)");
@@ -23296,6 +23314,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testTakeSmallestBy() {
+    check("TakeSmallestBy({254/315+(14954373125000+I*7875000*Sqrt(9477810222))^(1/3)/31500+\n" //
+        + "      1215035/63*2^(1/3)/(29908746250000+I*15750000*Sqrt(9477810222))^(1/3),254/315+\n" //
+        + "      1215035/63*(-1+I*Sqrt(3))/(2^(2/3)*(29908746250000+I*15750000*Sqrt(9477810222))^(\n" //
+        + "      1/3))+((-1-I*Sqrt(3))*(29908746250000+I*15750000*Sqrt(9477810222))^(1/3))/(63000*\n" //
+        + "      2^(1/3))},Abs,2)", //
+        "{254/315+1215035/63*(-1+I*Sqrt(3))/(2^(2/3)*(29908746250000+I*15750000*Sqrt(\n"
+            + "9477810222))^(1/3))+((-1-I*Sqrt(3))*(29908746250000+I*15750000*Sqrt(9477810222))^(\n"
+            + "1/3))/(63000*2^(1/3)),254/315+(14954373125000+I*7875000*Sqrt(9477810222))^(1/3)/\n"
+            + "31500+1215035/63*2^(1/3)/(29908746250000+I*15750000*Sqrt(9477810222))^(1/3)}");
+
     // print message
     check("TakeSmallestBy({1, 3, 5, None, Indeterminate, Missing(),a,b}, Abs, 2)", //
         "TakeSmallestBy({1,3,5,None,Indeterminate,Missing(),a,b},Abs,2)");

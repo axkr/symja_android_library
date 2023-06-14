@@ -624,7 +624,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
   @Override
   public IAST getItems(int[] items, int length) {
     if (length == 0) {
-      return this;
+      return new AST0(head());
     }
     AST result = new AST(length, true);
     result.set(0, head());

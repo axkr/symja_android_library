@@ -493,6 +493,11 @@ public class RootsFunctions {
 
   public static IAST roots(final IExpr arg1, boolean numericSolutions, IAST variables,
       EvalEngine engine) {
+    return roots(arg1, numericSolutions, variables, true, true, engine);
+  }
+
+  public static IAST roots(final IExpr arg1, boolean numericSolutions, IAST variables,
+      boolean createSet, boolean sort, EvalEngine engine) {
 
     IExpr expr = evalExpandAll(arg1, engine);
 
@@ -507,7 +512,8 @@ public class RootsFunctions {
         expr = S.Numerator.of(engine, expr);
       }
     }
-    IAST result = rootsOfVariable(expr, denom, variables, numericSolutions, engine);
+    IAST result =
+        rootsOfVariable(expr, denom, variables, numericSolutions, createSet, sort, engine);
     if (result.isPresent()) {
       result = (IAST) engine.evaluate(result);
     }
@@ -883,6 +889,20 @@ public class RootsFunctions {
    */
   public static IAST rootsOfVariable(final IExpr expr, final IExpr denominator,
       final IAST variables, boolean numericSolutions, EvalEngine engine) {
+    return rootsOfVariable(expr, denominator, variables, numericSolutions, true, true, engine);
+  }
+
+  /**
+   * @param expr
+   * @param denominator
+   * @param variables
+   * @param numericSolutions
+   * @param engine
+   * @return <code>F.NIL</code> if no evaluation was possible.
+   */
+  public static IAST rootsOfVariable(final IExpr expr, final IExpr denominator,
+      final IAST variables, boolean numericSolutions, boolean createSet, boolean sort,
+      EvalEngine engine) {
     IASTMutable result = F.NIL;
     List<IExpr> varList = variables.copyTo();
     try {
@@ -907,7 +927,7 @@ public class RootsFunctions {
       for (int i = 1; i < factorRational.size(); i++) {
         IExpr factor = factorRational.get(i);
         IExpr temp = F.evalExpand(factor);
-        IAST quarticResultList = QuarticSolver.solve(temp, variables.arg1());
+        IAST quarticResultList = QuarticSolver.solve(temp, variables.arg1(), false, true);
         if (quarticResultList.isPresent()) {
           for (int j = 1; j < quarticResultList.size(); j++) {
             if (numericSolutions) {
@@ -944,8 +964,10 @@ public class RootsFunctions {
           }
         }
       }
-      newResult = QuarticSolver.createSet(newResult);
-      return newResult;
+      if (createSet) {
+        return QuarticSolver.createSet(newResult);
+      }
+      return QuarticSolver.evalAndSort(newResult, sort);
     } catch (RuntimeException rex) {
       // JAS or "findRoots" may throw RuntimeExceptions
       result = rootsOfExprPolynomial(expr, variables, true);
@@ -969,7 +991,11 @@ public class RootsFunctions {
           i++;
         }
       }
-      return result;
+      IASTAppendable newResult = result.copyAppendable();
+      if (createSet) {
+        return QuarticSolver.createSet(newResult);
+      }
+      return QuarticSolver.evalAndSort(newResult, sort);
     }
     return F.NIL;
   }

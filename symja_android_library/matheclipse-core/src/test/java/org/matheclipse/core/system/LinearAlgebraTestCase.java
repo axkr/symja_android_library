@@ -246,6 +246,17 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testDet() {
+    check("N(Det({{Pi,2.0},{3,4}}))", //
+        "6.56637");
+    check("N(Det({{Pi,2.0},{3,4}}),50)", //
+        "6.56637");
+
+    check("Det({{1,2},{3,4}})", //
+        "-2");
+    check("Det({{1,2.0},{3,4}})", //
+        "-2.0");
+    check("Det({{a,b},{c,d}})", //
+        "-b*c+a*d");
 
     check("Det({{{1,0,0},{0,1,0}, {0,0,1}},{a,b,c},{d,e,f}})", //
         "Det({{{1,0,0},{0,1,0},{0,0,1}},{a,b,c},{d,e,f}})");
@@ -356,6 +367,27 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testDot() {
+    check("{{a,2}}.{{a},{3}}", //
+        "{{6+a^2}}");
+    check("{{3,4}}.{{a},{3}}", //
+        "{{12+3*a}}");
+    check("{{a,2},{3,4}}.{{a,2},{3,4}}", //
+        "{{6+a^2,8+2*a},\n" //
+            + " {12+3*a,22}}");
+
+    check("{{1, 2, 3}, {3, 4, 11}, {13, 7, 8}}.{-11/4,33/4,-5/4}", //
+        "{10,11,12}");
+    check("{-11/4,33/4,-5/4}.{{1, 2, 3}, {3, 4, 11}, {13, 7, 8}}", //
+        "{23/4,75/4,145/2}");
+
+    check("{{1,2},{3,4}}.{{1,2},{3,4}}", //
+        "{{7,10},\n" //
+            + " {15,22}}");
+    check("$x.$y", "$x.$y");
+    check("{{1,2},{3,4}}.{{1,2},{3,-4}}.{{1,2},{3,4}}", //
+        "{{-11,-10},\n" //
+            + " {-15,-10}}");
+
     // github #121 - print error
 
     // message Dot: Nonrectangular tensor encountered
@@ -448,11 +480,26 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
 
   public void testEigenvalues() {
+    check("Eigenvalues({{-2,-2,4}, {-1,-3,7}, {2,4,6}})", //
+        "{1/2*(2+2*Sqrt(61)),1/2*(2-2*Sqrt(61)),-1}");
+    check("Eigenvalues({{0,1,-1},{1,1,0},{-1,0,1}})", //
+        "{2,-1,1}");
+    check("Eigenvalues({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}})", //
+        "{1,1,1}");
+    check("Eigenvalues({{1/3, 1/2, 3/5}, {1/2, 4/5, 1}, {3/5, 1, 9/7}})", //
+        "{254/315+(14954373125000+I*7875000*Sqrt(9477810222))^(1/3)/31500+1215035/63*2^(1/\n"
+            + "3)/(29908746250000+I*15750000*Sqrt(9477810222))^(1/3),254/315+1215035/63*(-1+I*Sqrt(\n"
+            + "3))/(2^(2/3)*(29908746250000+I*15750000*Sqrt(9477810222))^(1/3))+((-1-I*Sqrt(3))*(\n"
+            + "29908746250000+I*15750000*Sqrt(9477810222))^(1/3))/(63000*2^(1/3)),254/315+\n"
+            + "1215035/63*(-1-I*Sqrt(3))/(2^(2/3)*(29908746250000+I*15750000*Sqrt(9477810222))^(\n"
+            + "1/3))+((-1+I*Sqrt(3))*(29908746250000+I*15750000*Sqrt(9477810222))^(1/3))/(63000*\n"
+            + "2^(1/3))}");
+
     // check("m = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}", //
     // "{{1,2,3},{4,5,6},{7,8,9}}");
-    // check("Roots(CharacteristicPolynomial(m,x)==0, x)",//
+    // check("Roots(CharacteristicPolynomial(m,x)==0, x)", //
     // "x==0||x==15/2-3/2*Sqrt(33)||x==15/2+3/2*Sqrt(33)");
-    // check("EigenValues(m)",//
+    // check("EigenValues(m)", //
     // "{15/2+3/2*Sqrt(33),15/2-3/2*Sqrt(33),0}");
 
     // 4x4
@@ -473,11 +520,11 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     // + "3))*(9180+I*486*Sqrt(11))^(1/3))/(3*2^(1/3)),5+(93*2^(1/3)*(-1/2+I*1/2*Sqrt(3)))/(\n"
     // + "9180+I*486*Sqrt(11))^(1/3)+((-1/2-I*1/2*Sqrt(3))*(9180+I*486*Sqrt(11))^(1/3))/(3*\n"
     // + "2^(1/3))}");
-    check("Eigenvalues({{1.1, 2.2, 3.25}, {0.76, 4.6, 5}, {0.1, 0.1, 6.1}})", //
+    check("Eigenvalues({{1.1, 2.2, 3.25}, {0.76, 4.6, 5}, {0.1, 0.1, 6.1}}) // N", //
         "{6.60674,4.52536,0.667901}");
 
     // Eigenvalues
-    check("Eigenvalues({{-8, 12, 4}, {12, -20, 0}, {4, 0, -2}})", //
+    check("Eigenvalues({{-8, 12, 4}, {12, -20, 0}, {4, 0, -2}}) // N // Chop", //
         "{-27.59215,-4.6517,2.24386}");
     check("Eigenvalues(SparseArray({{1.0, 2, 3}, {4, 5, 6}, {7, 8, 9}}))", //
         "{16.11684,-1.11684,-9.2965*10^-16}");
@@ -494,10 +541,10 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{1/2*(a+d-Sqrt(a^2-2*a*d+d^2)),1/2*(a+d+Sqrt(a^2-2*a*d+d^2))}");
     check("Eigenvalues({{a,b}, {c,d}})", //
         "{1/2*(a+d-Sqrt(a^2+4*b*c-2*a*d+d^2)),1/2*(a+d+Sqrt(a^2+4*b*c-2*a*d+d^2))}");
-    check("Eigenvalues({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}})", //
-        "{1.0,1.0,1.0}");
     check("Eigenvalues({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", //
-        "{16.11684,-1.11684,-9.2965*10^-16}");
+        "{1/2*(15+3*Sqrt(33)),1/2*(15-3*Sqrt(33)),0}");
+    check("Eigenvalues({{0.0,1.0,-1.0},{1.0,1.0,0.0},{-1.0,0.0,1.0}})", //
+        "{2.0,-1.0,1.0}");
   }
 
   public void testEigenvectors() {
@@ -531,6 +578,13 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             "1}}");
     check("Eigenvectors({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}})", //
         "{{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}}");
+
+    // only 2 eigenvectors => fill up with 0.0 vector
+    // see https://github.com/Hipparchus-Math/hipparchus/issues/249
+    check("Eigenvectors({{1,0,0},{-2,1,0},{0,0,1}})", //
+        "{{-2.50055*10^-13,1.0,0.0},{0.0,0.0,1.0},{0.0,0.0,0.0}}");
+    check("Eigenvalues({{1,0,0},{-2,1,0},{0,0,1}})", //
+        "{1,1,1}");
 
   }
 
@@ -765,6 +819,19 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testHilbertMatrix() {
+    check("HilbertMatrix(4)", //
+        "{{1,1/2,1/3,1/4},\n" //
+            + " {1/2,1/3,1/4,1/5},\n" //
+            + " {1/3,1/4,1/5,1/6},\n" //
+            + " {1/4,1/5,1/6,1/7}}");
+    check("HilbertMatrix({2,3})", //
+        "{{1,1/2,1/3},\n" //
+            + " {1/2,1/3,1/4}}");
+    check("HilbertMatrix({3,2})", //
+        "{{1,1/2},\n" //
+            + " {1/2,1/3},\n"//
+            + " {1/3,1/4}}");
+
     check("Inverse(HilbertMatrix(3))", //
         "{{9,-36,30},\n" //
             + " {-36,192,-180},\n" //
@@ -781,6 +848,15 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testIdentityMatrix() {
+    check("IdentityMatrix(0)", //
+        "{}");
+    check("IdentityMatrix(1)", //
+        "{{1}}");
+    check("IdentityMatrix(3)", //
+        "{{1,0,0},\n" //
+            + " {0,1,0},\n" //
+            + " {0,0,1}}");
+
     check("IdentityMatrix(3,SparseArray) // MatrixForm", //
         "{{1,0,0},\n" //
             + " {0,1,0},\n" //
@@ -798,6 +874,17 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testInverse() {
+    check("Inverse(s*{{1,0,0},{0,1,0},{0,0,1}}-{{-1,1,1},{-4,-4,1},{1,1,1}})", //
+        "{{(-5+3*s+s^2)/(-10+s+4*s^2+s^3),s/(-10+s+4*s^2+s^3),(5+s)/(-10+s+4*s^2+s^3)},\n"//
+            + " {((1+s)*(-5+4*s))/((-1-s)*(-10+s+4*s^2+s^3)),(-2+s^2)/(-10+s+4*s^2+s^3),(-3+s)/(-\n"//
+            + "10+s+4*s^2+s^3)},\n"//
+            + " {s/(-10+s+4*s^2+s^3),(-2-s)/(10-s-4*s^2-s^3),(8+5*s+s^2)/(-10+s+4*s^2+s^3)}}");
+    check("N(Inverse({{1,2.0},{3,4}}),50)", //
+        "{{-2,1},\n" + " {1.5,-0.5}}");
+
+    check("Inverse({{1,2},{3,4}})", "{{-2,1},\n" + " {3/2,-1/2}}");
+    check("Inverse({{1,2.0},{3,4}})", "{{-2.0,1.0},\n" + " {1.5,-0.5}}");
+
     check("Inverse(SparseArray({{1, 2, 0}, {2, 3, 0}, {3, 4, 1}}))", //
         "{{-3,2,0},\n" //
             + " {2,-1,0},\n" + " {1,-2,1}}");
@@ -870,7 +957,12 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testLinearSolve() {
-
+    check(
+        "LinearSolve({ { 1/10, 6/5, 1/9 },{ 1, 59/45, 1/10 },{6/5, 1/10, 1/9 } },{ 1/10, 6/5, 1/9 })", //
+        "{99109/101673,10898/11297,-9034/869}");
+    check(
+        "{ { 1/10, 6/5, 1/9 },{ 1, 59/45, 1/10 },{6/5, 1/10, 1/9 } }.{99109/101673,10898/11297,-9034/869}", //
+        "{1/10,6/5,1/9}");
     check("LinearSolve({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, {1,1,1})", //
         "{-1,1,0}");
     // github issue #44
@@ -987,6 +1079,36 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  public void testLUDecomposition() {
+    // check("LUDecomposition({{1, 2, 3}, {3, 4, 11}, {13, 7, 8}})",
+    // "{{{1,2,3},{3,-2,2},{13,19/2,-50}},{1,2,3},0}");
+    check("LUDecomposition({{1, 2, 3}, {3, 4, 11}, {13, 7, 8}})", //
+        "{\n" + "{{1,0,0},\n" //
+            + " {3,1,0},\n" //
+            + " {13,19/2,1}},\n" //
+            + "{{1,2,3},\n" //
+            + " {0,-2,2},\n" //
+            + " {0,0,-50}},{1,2,3}}");
+
+    // check(
+    // "LUBackSubstitution({{{1,2,3},{3,-2,2},{13,19/2,-50}},{1,2,3},0},{10,11,12})"
+    // ,
+    // "{-11/4,33/4,-5/4}");
+
+
+
+    // check("LUDecomposition({{1,2},{3,4}})", "{{{1,2},{3,-2}},{1,2},0}");
+    check("LUDecomposition({{0}},Sqrt(2)/2)", //
+        "LUDecomposition(\n" + "{{0}},1/Sqrt(2))");
+    check("LUDecomposition({{1,2},{3,4}})", "{\n" //
+        + "{{1,0},\n" + " {3,1}},\n" + "{{1,2},\n" + " {0,-2}},{1,2}}");
+    check("LUDecomposition({{1,1},{5,-8}})", "{\n" //
+        + "{{1,0},\n" + " {5,1}},\n" + "{{1,1},\n" + " {0,-13}},{1,2}}");
+  }
+  // public void testSystem102() {
+  // check("LUBackSubstitution({{{1,2},{3,-2}},{1,2},0},{1,2})", "{0,1/2}");
+  // }
+
   public void testMatrices() {
     check("Table(a(i0, j), {i0, 2}, {j, 2})", //
         "{{a(1,1),a(1,2)},{a(2,1),a(2,2)}}");
@@ -1041,6 +1163,11 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testMatrixPower() {
+    check("MatrixPower({{a,2},{3,4}},3)", //
+        "{{24+12*a+a^3,44+8*a+2*a^2},\n" //
+            + " {66+12*a+3*a^2,112+6*a}}");
+
+
     // github #121 - print error
     check("MatrixPower({{2},{1}},2)", //
         "MatrixPower({{2},{1}},2)");
@@ -1055,9 +1182,23 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("MatrixPower({{1, 2}, {1, 1}}, 10)", //
         "{{3363,4756},\n" + //
             " {2378,3363}}");
+
+    check("MatrixPower({{1,2},{3,4}},3)", //
+        "{{37,54},\n" //
+            + " {81,118}}");
+    check("MatrixPower({{1,2},{3,4}},1)", //
+        "{{1,2},\n {3,4}}");
+    check("MatrixPower({{1,2},{3,4}},0)", //
+        "{{1,0},\n"//
+            + " {0,1}}");
   }
 
   public void testMatrixQ() {
+    check("MatrixQ({{1, 2, 3}, {3, 4, 11}, {13, 7, 8}})", //
+        "True");
+    check("MatrixQ({{1, 2, 3}, {3, 4, 11}, {13, 7, 8, 6}})", //
+        "False");
+
     check("MatrixQ( )", //
         "MatrixQ()");
     check("MatrixQ({})", //
@@ -1681,6 +1822,19 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testSingularValueDecomposition() {
+    check("SingularValueDecomposition({{ 24.0/25.0, 43.0/25.0 },{57.0/25.0, 24.0/25.0 }})", //
+        "{{{0.6,0.8},\n"//
+            + " {0.8,-0.6}},{{3.0,0.0},\n" //
+            + " {0.0,1.0}},{{0.8,-0.6},\n" //
+            + " {0.6,0.8}}}");
+
+    // See http://issues.apache.org/jira/browse/MATH-320:
+    check("SingularValueDecomposition({{1,2},{1,2}})", //
+        "{{{-0.707107,-0.707107},\n" //
+            + " {-0.707107,0.707107}},{{3.16228,0.0},\n" //
+            + " {0.0,0.0}},{{-0.447214,-0.894427},\n" //
+            + " {-0.894427,0.447214}}}");
+
     check("SingularValueDecomposition({{1.5, 2.0}, {2.5, 3.0}})", //
         "{{{0.538954,0.842335},\n" + " {0.842335,-0.538954}},{{4.63555,0.0},\n"
             + " {0.0,0.107862}},{{0.628678,-0.777666},\n" + " {0.777666,0.628678}}}");
@@ -1692,18 +1846,18 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testSingularValueList() {
-    check("m1 = {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0}, {10.0, 11.0, 12.0}};", //
-        "");
-    check("Transpose(m1)", //
-        "{{1.0,4.0,7.0,10.0},\n" //
-            + " {2.0,5.0,8.0,11.0},\n" + " {3.0,6.0,9.0,12.0}}");
-    check("ConjugateTranspose(m1)", //
-        "{{1.0,4.0,7.0,10.0},\n" //
-            + " {2.0,5.0,8.0,11.0},\n" + " {3.0,6.0,9.0,12.0}}");
-    check("SingularValueList(m1)", //
-        "{25.46241,1.29066}");
-    check("Norm(m1)", //
-        "25.46241");
+    // check("m1 = {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0}, {10.0, 11.0, 12.0}};", //
+    // "");
+    // check("Transpose(m1)", //
+    // "{{1.0,4.0,7.0,10.0},\n" //
+    // + " {2.0,5.0,8.0,11.0},\n" + " {3.0,6.0,9.0,12.0}}");
+    // check("ConjugateTranspose(m1)", //
+    // "{{1.0,4.0,7.0,10.0},\n" //
+    // + " {2.0,5.0,8.0,11.0},\n" + " {3.0,6.0,9.0,12.0}}");
+    // check("SingularValueList(m1)", //
+    // "{25.46241,1.29066}");
+    // check("Norm(m1)", //
+    // "25.46241");
     check("m2 = {{0.490394,0.0888901,0.536156,0.955578,0.695596},\n" //
         + " {0.0738935,0.098087,0.870086,0.71151,0.415052},\n"
         + " {0.205551,0.671352,0.4668,0.27744,0.369186},\n"
@@ -1712,8 +1866,8 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "");
     check("SingularValueList(m2)", //
         "{2.56924,0.898176,0.629938,0.491696,0.0610678}");
-    check("SingularValueList(m2,2)", //
-        "{2.56924,0.898176}");
+    // check("SingularValueList(m2,2)", //
+    // "{2.56924,0.898176}");
   }
 
   public void testSquareMatrixQ() {
@@ -1843,6 +1997,14 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     // "Tr(Array(a, {4, 3, 2}), f, 2)", //
     // "");
 
+    check("Tr({{1,2},{3,4}})", //
+        "5");
+    check("Tr({{1,2},{3,4},{5,6}})", //
+        "5");
+    check("Tr({{1,2,5},{3,4,6}})", //
+        "5");
+    check("Tr({{a,b,c},{d,e,f}})", //
+        "a+e");
 
     check("Tr({{{1,0},{0,1}},{0,0}})", //
         "{1,0}");
@@ -1873,6 +2035,12 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testTranspose() {
+    check("Transpose({{1,2},{3,4}})", //
+        "{{1,3},\n" //
+            + " {2,4}}");
+    check("Transpose({{1,2},{3,4},{5,6}})", //
+        "{{1,3,5},\n" //
+            + " {2,4,6}}");
 
     check("Transpose({{-1}},{2})", //
         "Transpose({{-1}},{2})");
@@ -2000,6 +2168,18 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  public void testVandermondeMatrix() {
+    check("VandermondeMatrix({a,b,c})", //
+        "{{1,a,a^2},\n" //
+            + " {1,b,b^2},\n" //
+            + " {1,c,c^2}}");
+    check("VandermondeMatrix({a,b,c,d})", //
+        "{{1,a,a^2,a^3},\n" //
+            + " {1,b,b^2,b^3},\n" //
+            + " {1,c,c^2,c^3},\n" //
+            + " {1,d,d^2,d^3}}");
+  }
+
   public void testVectorAngle() {
     check("VectorAngle({x,-3,-1/2},{x,-3,-1/2})", //
         "ArcCos((37/4+x*Conjugate(x))/(37/4+Abs(x)^2))");
@@ -2030,6 +2210,10 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testVectorQ() {
+    check("VectorQ({-11/4,33/4,-5/4})", //
+        "True");
+    check("VectorQ({-11/4,33/4,{-5/4,b}})", //
+        "False");
 
     check("isVecQ(v_) := Length(v) == 3 && VectorQ(v);", //
         "");

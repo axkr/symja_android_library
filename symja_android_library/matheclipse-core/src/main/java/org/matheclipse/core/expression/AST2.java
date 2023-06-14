@@ -338,8 +338,7 @@ public class AST2 extends AST1 {
           action.accept(arg2, 2);
           break;
         default:
-          throw new IndexOutOfBoundsException(
-              "Index: " + Integer.valueOf(start) + ", Size: 2");
+          throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(start) + ", Size: 2");
       }
     }
   }
@@ -396,13 +395,17 @@ public class AST2 extends AST1 {
     if (length == 0) {
       return new AST0(head());
     }
-    if (length == 2 && items[0] == 1 && items[1] == 2) {
-      return this;
-    }
-    if (length == 1) {
+    if (length == 2) {
+      if (items[0] == 1 && items[1] == 2) {
+        return this;
+      } else {
+        return new AST2(head(), get(items[0]), get(items[1]));
+      }
+    } else if (length == 1) {
       return new AST1(head(), get(items[0]));
     }
-    throw new IndexOutOfBoundsException("Index: 1, Size: " + size());
+
+    throw new IndexOutOfBoundsException("Index: 0, Size: " + size());
   }
 
   @Override

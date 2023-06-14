@@ -54,6 +54,7 @@ public class ASTRealMatrix extends AbstractAST implements Externalizable, Random
     // the void
     // constructor. Since this class does not have one, serialization and deserialization will fail
     // at runtime.
+    setEvalFlags(IAST.CONTAINS_NUMERIC_ARG);
   }
 
   /**
@@ -96,6 +97,7 @@ public class ASTRealMatrix extends AbstractAST implements Externalizable, Random
       throw new ASTElementLimitExceeded(matrix.length, matrix[0].length);
     }
     this.matrix = new Array2DRowRealMatrix(matrix, deepCopy);
+    setEvalFlags(IAST.CONTAINS_NUMERIC_ARG);
   }
 
   /**
@@ -112,6 +114,7 @@ public class ASTRealMatrix extends AbstractAST implements Externalizable, Random
     } else {
       this.matrix = matrix;
     }
+    setEvalFlags(IAST.CONTAINS_NUMERIC_ARG);
   }
 
   /**

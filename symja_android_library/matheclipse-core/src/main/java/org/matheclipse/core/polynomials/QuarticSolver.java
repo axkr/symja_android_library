@@ -49,7 +49,17 @@ public class QuarticSolver {
     IExpr[] coefficients = new IExpr[] {F.C0, F.C0, F.C0, F.C0, F.C0};
     if (convert2Coefficients(exprPoly, x, coefficients)) {
       return quarticSolve(coefficients[4], coefficients[3], coefficients[2], coefficients[1],
-          coefficients[0]);
+          coefficients[0], true, true);
+    }
+    return F.NIL;
+  }
+
+  public static IASTMutable solve(IExpr exprPoly, IExpr x, boolean createSet, boolean sort)
+      throws ArithmeticException {
+    IExpr[] coefficients = new IExpr[] {F.C0, F.C0, F.C0, F.C0, F.C0};
+    if (convert2Coefficients(exprPoly, x, coefficients)) {
+      return quarticSolve(coefficients[4], coefficients[3], coefficients[2], coefficients[1],
+          coefficients[0], createSet, sort);
     }
     return F.NIL;
   }
@@ -425,11 +435,14 @@ public class QuarticSolver {
           F.eval(Plus(delta1, Sqrt(Plus(Power(delta1, C2), Times(CN1, C4, Power(delta0, C3))))));
       IExpr delta3 = F.eval(Power(argDelta3, C1D3));
 
+      IAST value = Times(CN1, b, Power(Times(C3, a), CN1));
       if (discriminant.isPossibleZero(false)) {
         if (delta0.isPossibleZero(false)) {
           // the three roots are equal
           // (-b)/(3*a)
-          result.append(Times(CN1, b, Power(Times(C3, a), CN1)));
+          result.append(value);
+          result.append(value);
+          result.append(value);
         } else {
           // the double root
           // (9*a*d-b*c)/(2*delta0)
@@ -449,7 +462,7 @@ public class QuarticSolver {
 
         // -(b/(3*a)) + ((1 + I Sqrt[3]) (-delta0))/(3*2^(2/3)*a*delta3)
         // - ((1 - I Sqrt[3]) delta3)/(6*2^(1/3)*a)
-        result.append(Plus(Times(CN1, b, Power(Times(C3, a), CN1)),
+        result.append(Plus(value,
             Times(Plus(C1, Times(CI, Sqrt(C3))), CN1, delta0,
                 Power(Times(C3, Power(C2, fraction(2L, 3L)), a, delta3), CN1)),
             Times(CN1, Plus(C1, Times(CN1, CI, Sqrt(C3))), delta3,
@@ -457,7 +470,7 @@ public class QuarticSolver {
 
         // -(b/(3*a)) + ((1 - I Sqrt[3]) (-delta0))/(3*2^(2/3)*a*delta3)
         // - ((1 + I Sqrt[3]) delta3)/(6*2^(1/3)*a)
-        result.append(Plus(Times(CN1, b, Power(Times(C3, a), CN1)),
+        result.append(Plus(value,
             Times(Plus(C1, Times(CN1, CI, Sqrt(C3))), CN1, delta0,
                 Power(Times(C3, Power(C2, fraction(2L, 3L)), a, delta3), CN1)),
             Times(CN1, Plus(C1, Times(CI, Sqrt(C3))), delta3,
@@ -487,7 +500,7 @@ public class QuarticSolver {
     return result;
   }
 
-  private static IASTAppendable evalAndSort(IASTAppendable result, boolean sort) {
+  public static IASTAppendable evalAndSort(IASTAppendable result, boolean sort) {
     int i = 1;
     while (i < result.size()) {
       IExpr temp = result.get(i);

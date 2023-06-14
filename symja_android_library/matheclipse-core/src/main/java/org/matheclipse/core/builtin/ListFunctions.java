@@ -7539,14 +7539,18 @@ public final class ListFunctions {
                   return IOFunctions.printMessage(ast.topHead(), "insuff",
                       F.List(n, cleanedList.argSize()), engine);
                 }
-                LargestIndexComparator comparator = new LargestIndexComparator(cleanedList, engine);
-                Integer[] indexes = comparator.createIndexArray();
-                Arrays.sort(indexes, comparator);
-                int[] largestIndexes = new int[n];
-                for (int i = 0; i < n; i++) {
-                  largestIndexes[i] = indexes[i];
+                IExpr temp = engine.evalN(cleanedList);
+                if (temp.isListOrAssociation()) {
+                  LargestIndexComparator comparator =
+                      new LargestIndexComparator((IAST) temp, engine);
+                  Integer[] indexes = comparator.createIndexArray();
+                  Arrays.sort(indexes, comparator);
+                  int[] largestIndexes = new int[n];
+                  for (int i = 0; i < n; i++) {
+                    largestIndexes[i] = indexes[i];
+                  }
+                  return cleanedList.getItems(largestIndexes, largestIndexes.length);
                 }
-                return cleanedList.getItems(largestIndexes, largestIndexes.length);
               }
             } catch (NoEvalException neex) {
               // Input `1` is not a real-valued vector.
@@ -7589,21 +7593,26 @@ public final class ListFunctions {
                 return IOFunctions.printMessage(ast.topHead(), "insuff",
                     F.List(n, cleanedList.argSize()), engine);
               }
-              IAST list = cleanedList.mapThreadEvaled(engine, F.unary(ast.arg2(), F.Slot1), 1);
-              try {
-                LargestIndexComparator comparator = new LargestIndexComparator(list, engine);
-                Integer[] indexes = comparator.createIndexArray();
-                Arrays.sort(indexes, comparator);
-                int[] largestIndexes = new int[n];
-                for (int i = 0; i < n; i++) {
-                  largestIndexes[i] = indexes[i];
+              IAST list = cleanedList.mapThread(F.unary(ast.arg2(), F.Slot1), 1);
+              IExpr temp = engine.evalN(list);
+              if (temp.isListOrAssociation()) {
+                list = (IAST) temp;
+                try {
+                  LargestIndexComparator comparator = new LargestIndexComparator(list, engine);
+                  Integer[] indexes = comparator.createIndexArray();
+                  Arrays.sort(indexes, comparator);
+                  int[] largestIndexes = new int[n];
+                  for (int i = 0; i < n; i++) {
+                    largestIndexes[i] = indexes[i];
+                  }
+                  return cleanedList.getItems(largestIndexes, largestIndexes.length);
+                } catch (NoEvalException neex) {
+                  // neex.printStackTrace();
+                  // Values `1` produced by the function `2` cannot be used for numerical sorting
+                  // because they are not all real.
+                  return IOFunctions.printMessage(ast.topHead(), "tbnval", F.list(list, ast.arg2()),
+                      engine);
                 }
-                return cleanedList.getItems(largestIndexes, largestIndexes.length);
-              } catch (NoEvalException neex) {
-                // Values `1` produced by the function `2` cannot be used for numerical sorting
-                // because they are not all real.
-                return IOFunctions.printMessage(ast.topHead(), "tbnval", F.list(list, ast.arg2()),
-                    engine);
               }
             }
           }
@@ -7638,15 +7647,18 @@ public final class ListFunctions {
                   return IOFunctions.printMessage(ast.topHead(), "insuff",
                       F.List(n, cleanedList.argSize()), engine);
                 }
-                SmallestIndexComparator comparator =
-                    new SmallestIndexComparator(cleanedList, engine);
-                Integer[] indexes = comparator.createIndexArray();
-                Arrays.sort(indexes, comparator);
-                int[] smallestIndexes = new int[n];
-                for (int i = 0; i < n; i++) {
-                  smallestIndexes[i] = indexes[i];
+                IExpr temp = engine.evalN(cleanedList);
+                if (temp.isListOrAssociation()) {
+                  SmallestIndexComparator comparator =
+                      new SmallestIndexComparator((IAST) temp, engine);
+                  Integer[] indexes = comparator.createIndexArray();
+                  Arrays.sort(indexes, comparator);
+                  int[] smallestIndexes = new int[n];
+                  for (int i = 0; i < n; i++) {
+                    smallestIndexes[i] = indexes[i];
+                  }
+                  return cleanedList.getItems(smallestIndexes, smallestIndexes.length);
                 }
-                return cleanedList.getItems(smallestIndexes, smallestIndexes.length);
               }
             } catch (NoEvalException neex) {
               // Input `1` is not a real-valued vector.
@@ -7689,21 +7701,25 @@ public final class ListFunctions {
                 return IOFunctions.printMessage(ast.topHead(), "insuff",
                     F.List(n, cleanedList.argSize()), engine);
               }
-              IAST list = cleanedList.mapThreadEvaled(engine, F.unary(ast.arg2(), F.Slot1), 1);
-              try {
-                SmallestIndexComparator comparator = new SmallestIndexComparator(list, engine);
-                Integer[] indexes = comparator.createIndexArray();
-                Arrays.sort(indexes, comparator);
-                int[] smallestIndexes = new int[n];
-                for (int i = 0; i < n; i++) {
-                  smallestIndexes[i] = indexes[i];
+              IAST list = cleanedList.mapThread(F.unary(ast.arg2(), F.Slot1), 1);
+              IExpr temp = engine.evalN(list);
+              if (temp.isListOrAssociation()) {
+                list = (IAST) temp;
+                try {
+                  SmallestIndexComparator comparator = new SmallestIndexComparator(list, engine);
+                  Integer[] indexes = comparator.createIndexArray();
+                  Arrays.sort(indexes, comparator);
+                  int[] smallestIndexes = new int[n];
+                  for (int i = 0; i < n; i++) {
+                    smallestIndexes[i] = indexes[i];
+                  }
+                  return cleanedList.getItems(smallestIndexes, smallestIndexes.length);
+                } catch (NoEvalException neex) {
+                  // Values `1` produced by the function `2` cannot be used for numerical sorting
+                  // because they are not all real.
+                  return IOFunctions.printMessage(ast.topHead(), "tbnval", F.list(list, ast.arg2()),
+                      engine);
                 }
-                return cleanedList.getItems(smallestIndexes, smallestIndexes.length);
-              } catch (NoEvalException neex) {
-                // Values `1` produced by the function `2` cannot be used for numerical sorting
-                // because they are not all real.
-                return IOFunctions.printMessage(ast.topHead(), "tbnval", F.list(list, ast.arg2()),
-                    engine);
               }
             }
           }

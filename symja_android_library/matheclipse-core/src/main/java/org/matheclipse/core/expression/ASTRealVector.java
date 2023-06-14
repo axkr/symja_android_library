@@ -55,6 +55,7 @@ public class ASTRealVector extends AbstractAST implements Externalizable, Random
     // the void
     // constructor. Since this class does not have one, serialization and deserialization will fail
     // at runtime.
+    setEvalFlags(IAST.CONTAINS_NUMERIC_ARG);
   }
 
   /**
@@ -83,6 +84,7 @@ public class ASTRealVector extends AbstractAST implements Externalizable, Random
     if (Config.MAX_AST_SIZE < vector.length) {
       throw new ASTElementLimitExceeded(vector.length);
     }
+    setEvalFlags(IAST.CONTAINS_NUMERIC_ARG);
     this.vector = new ArrayRealVector(vector, deepCopy);
   }
 
@@ -94,6 +96,7 @@ public class ASTRealVector extends AbstractAST implements Externalizable, Random
     if (Config.MAX_AST_SIZE < vector.getDimension()) {
       throw new ASTElementLimitExceeded(vector.getDimension());
     }
+    setEvalFlags(IAST.CONTAINS_NUMERIC_ARG);
     if (deepCopy) {
       this.vector = vector.copy();
     } else {

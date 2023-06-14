@@ -107,6 +107,6 @@ public class ReduceTest extends ExprEvaluatorTestCase {
 
   public void testReduceConstant() {
     check("Reduce(x^3==EulerGamma,x)", //
-        "x==EulerGamma^(1/3)||x==-(-EulerGamma)^(1/3)||x==(-1)^(2/3)*EulerGamma^(1/3)");
+        "x==-(-EulerGamma)^(1/3)||x==EulerGamma^(1/3)||x==(-1)^(2/3)*EulerGamma^(1/3)");
   }
 }

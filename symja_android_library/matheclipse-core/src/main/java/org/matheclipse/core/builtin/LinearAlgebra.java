@@ -2004,20 +2004,21 @@ public final class LinearAlgebra {
                     Times(C1D2, Plus(sqrtExpr, matrix.getEntry(0, 0), matrix.getEntry(1, 1))));
                 return sortValuesIfNumeric((IAST) eigenValues, arg2);
               }
-              // } else {
-              // boolean hasNumericArgument = arg1.isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG);
-              // if (!hasNumericArgument) {
-              // ISymbol x = F.Dummy("x");
-              // IExpr m = engine.evaluate(F.CharacteristicPolynomial(arg1, x));
-              // if (m.isPolynomial(x)) {
-              // IExpr eigenValues = RootsFunctions.roots(m, false, F.List(x), engine);
-              // if (eigenValues.isList()) {
-              // if (eigenValues.forAll(v -> v.isNumericFunction())) {
-              // return sortValuesIfNumeric((IAST) eigenValues, arg2);
-              // }
-              // }
-              // }
-              // }
+            } else {
+              boolean hasNumericArgument = arg1.isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG);
+              if (!hasNumericArgument) {
+                ISymbol x = F.Dummy("x");
+                IExpr m = engine.evaluate(F.CharacteristicPolynomial(arg1, x));
+                if (m.isPolynomial(x)) {
+                  IExpr eigenValues =
+                      RootsFunctions.roots(m, false, F.List(x), false, true, engine);
+                  if (eigenValues.isList()) {
+                    if (eigenValues.forAll(v -> v.isNumericFunction())) {
+                      return sortValuesIfNumeric((IAST) eigenValues, arg2);
+                    }
+                  }
+                }
+              }
             }
           }
 

@@ -2686,8 +2686,16 @@ public class F extends S {
     return new AST2(ChebyshevU, a0, a1);
   }
 
-  public static IAST CharacteristicPolynomial(final IExpr a0, final IExpr a1) {
-    return new AST2(CharacteristicPolynomial, a0, a1);
+  /**
+   * CharacteristicPolynomial(matrix, var) - computes the characteristic polynomial of a `matrix`
+   * for the variable `var`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CharacteristicPolynomial.md">CharacteristicPolynomial
+   *      documentation</a>
+   */
+  public static IAST CharacteristicPolynomial(final IExpr matrix, final IExpr variable) {
+    return new AST2(CharacteristicPolynomial, matrix, variable);
   }
 
   public static IAST Chop(final IExpr a0) {
