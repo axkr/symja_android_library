@@ -37,7 +37,7 @@
 		<dependency>
 			<groupId>com.discord4j</groupId>
 			<artifactId>discord4j-core</artifactId>
-			<version>3.2.4</version>
+			<version>3.2.5</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
