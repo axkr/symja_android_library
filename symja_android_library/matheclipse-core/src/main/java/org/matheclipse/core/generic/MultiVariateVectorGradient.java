@@ -1,7 +1,5 @@
 package org.matheclipse.core.generic;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 import org.hipparchus.analysis.MultivariateVectorFunction;
 import org.matheclipse.core.builtin.IOFunctions;
@@ -11,13 +9,17 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
+/**
+ * A class representing a multivariate vectorial function.
+ */
 public class MultiVariateVectorGradient implements MultivariateVectorFunction {
   final IExpr fFunction;
   final IAST fGradientFunctions;
   final IAST fVariableList;
   final EvalEngine fEngine;
-  final Map<IExpr, Integer> indexMap;
+  final Object2IntOpenHashMap<IExpr> fIndexMap;
 
   public MultiVariateVectorGradient(final IExpr function, final IAST variablesList) {
     this(function, variablesList, EvalEngine.get());
@@ -27,9 +29,9 @@ public class MultiVariateVectorGradient implements MultivariateVectorFunction {
       final EvalEngine engine) {
 
     fVariableList = variablesList;
-    indexMap = new HashMap<IExpr, Integer>();
+    fIndexMap = new Object2IntOpenHashMap<IExpr>(fVariableList.argSize());
     for (int i = 1; i < fVariableList.size(); i++) {
-      indexMap.put(variablesList.get(i), i);
+      fIndexMap.put(variablesList.get(i), i);
     }
     fEngine = engine;
     fFunction = function;
@@ -52,21 +54,24 @@ public class MultiVariateVectorGradient implements MultivariateVectorFunction {
 
   }
 
+  /**
+   * Compute the gradient value for the function at the given point.
+   * 
+   * @param point point at which the function must be evaluated
+   * @return function gradient value for the given point
+   */
   @Override
   public double[] value(double[] point) throws IllegalArgumentException {
     double result[] = new double[point.length];
     Function<IExpr, IExpr> function = x -> {
-      Integer i = indexMap.get(x);
-      if (i != null) {
+      int i = fIndexMap.getInt(x);
+      if (i > 0l) {
         return F.num(point[i - 1]);
       }
       return F.NIL;
     };
-    // IASTAppendable rules =
-    // F.mapRange(0, point.length, i -> F.Rule(fVariableList.get(i + 1), F.num(point[i])));
     for (int i = 1; i < fGradientFunctions.size(); i++) {
       try {
-        // IExpr temp = F.subst(fGradientFunctions.get(i), rules);
         result[i - 1] = fGradientFunctions.get(i).evalf(function);
       } catch (RuntimeException rex) {
         result[i - 1] = Double.NaN;

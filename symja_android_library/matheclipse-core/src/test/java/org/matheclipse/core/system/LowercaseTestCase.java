@@ -10394,9 +10394,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   public void testGrad() {
     // create Jacobian matrix
+
+    // https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant
+    check("Grad({x1,5*x3,4*x2^2-2*x3,x3*Sin[x1]},{x1,x2,x3})", //
+        "{{1,0,0},{0,0,5},{0,8*x2,-2},{x3*Cos(x1),0,Sin(x1)}}");
+
     check("Grad({f(x, y),g(x,y)}, {x, y})", //
         "{{Derivative(1,0)[f][x,y],Derivative(0,1)[f][x,y]},{Derivative(1,0)[g][x,y],Derivative(\n" //
             + "0,1)[g][x,y]}}");
+
     check("Grad({f(x, y, z), g(x, y, z), h(x, y, z)}, {x, y, z})", //
         "{{Derivative(1,0,0)[f][x,y,z],Derivative(0,1,0)[f][x,y,z],Derivative(0,0,1)[f][x,y,z]},{Derivative(\n" //
             + "1,0,0)[g][x,y,z],Derivative(0,1,0)[g][x,y,z],Derivative(0,0,1)[g][x,y,z]},{Derivative(\n" //
@@ -16100,6 +16106,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testNMinimize() {
     // TODO non-linear not supported
     // check("NMinimize({x^2 - (y - 1)^2, x^2 + y^2 <= 4}, {x, y})", "");
+
+    // check("NMinimize(x^4-x^2,x)", //
+    // " ");
+    check("NMinimize({-2*y+x-5, x+2*y<=6 && 3*x + 2*y <= 12 }, {x, y})", //
+        "{-11.0,{x->0.0,y->3.0}}");
     check("NMinimize({-2*y+x-5, x+2*y<=6 && 3*x + 2*y <= 12 }, {x, y})", //
         "{-11.0,{x->0.0,y->3.0}}");
     check("NMinimize({-2*x+y-5, x+2*y<=6 && 3*x + 2*y <= 12 }, {x, y})", //
