@@ -65,7 +65,7 @@ public class MultiVariateVectorGradient implements MultivariateVectorFunction {
     double result[] = new double[point.length];
     Function<IExpr, IExpr> function = x -> {
       int i = fIndexMap.getInt(x);
-      if (i > 0l) {
+      if (i > 0) {
         return F.num(point[i - 1]);
       }
       return F.NIL;

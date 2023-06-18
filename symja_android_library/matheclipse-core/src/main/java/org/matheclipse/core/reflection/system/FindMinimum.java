@@ -25,7 +25,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.generic.MultiVariateFunction;
+import org.matheclipse.core.generic.MultiVariateNumerical;
 import org.matheclipse.core.generic.MultiVariateVectorGradient;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -219,7 +219,7 @@ public class FindMinimum extends AbstractFunctionEvaluator {
         final PowellOptimizer optim = new PowellOptimizer(1e-10, Math.ulp(1d), 1e-10, Math.ulp(1d));
         optimum = optim.optimize( //
             new MaxEval(1000), //
-            new ObjectiveFunction(new MultiVariateFunction(function, variableList)), //
+            new ObjectiveFunction(new MultiVariateNumerical(function, variableList)), //
             goalType, //
             initialGuess);
       } else if (method.equals("ConjugateGradient")) {
@@ -244,7 +244,7 @@ public class FindMinimum extends AbstractFunctionEvaluator {
 
         optimum = optimizer.optimize(//
             new MaxEval(1000), //
-            new ObjectiveFunction(new MultiVariateFunction(function, variableList)), //
+            new ObjectiveFunction(new MultiVariateNumerical(function, variableList)), //
             new ObjectiveFunctionGradient(new MultiVariateVectorGradient(function, variableList)), //
             goalType, //
             initialGuess);

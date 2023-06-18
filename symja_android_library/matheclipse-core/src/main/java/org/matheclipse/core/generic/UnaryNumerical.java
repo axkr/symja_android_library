@@ -67,8 +67,7 @@ public class UnaryNumerical
   public double value(double d) {
     try {
       // substitution is more thread safe than direct value assigning to global variable
-      final Num num = Num.valueOf(d);
-      return fFunction.evalf(x -> x.equals(fVariable) ? num : F.NIL);
+      return fFunction.evalf(x -> x.equals(fVariable) ? Num.valueOf(d) : F.NIL);
     } catch (RuntimeException rex) {
       return Double.NaN;
     }
