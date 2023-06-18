@@ -35,4 +35,4 @@ with algebraic multiplicity `3`. However, this eigenvalue leads to only two eige
 So we add a third zero vector `v3 = {0.0, 0.0, 0.0}`.
  
 ### Related terms 
-[Eigensystem.md](Eigensystem.md), [Eigenvalues](Eigenvalues.md), [CharacteristicPolynomial](CharacteristicPolynomial.md)
+[Eigensystem](Eigensystem.md), [Eigenvalues](Eigenvalues.md), [CharacteristicPolynomial](CharacteristicPolynomial.md)

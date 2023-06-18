@@ -18,4 +18,4 @@ See:
 ```
 
 ### Related terms 
-[Eigensystem.md](Eigensystem.md), [Eigenvalues](Eigenvalues.md), [Eigenvectors](Eigenvectors.md)
+[Eigensystem](Eigensystem.md), [Eigenvalues](Eigenvalues.md), [Eigenvectors](Eigenvectors.md)
