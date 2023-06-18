@@ -446,8 +446,10 @@ public class QuarticSolver {
         } else {
           // the double root
           // (9*a*d-b*c)/(2*delta0)
-          result.append(
-              Times(Plus(Times(ZZ(9L), a, d), Times(CN1, b, c)), Power(Times(C2, delta0), CN1)));
+          IASTMutable doubledRoot =
+              Times(Plus(Times(ZZ(9L), a, d), Times(CN1, b, c)), Power(Times(C2, delta0), CN1));
+          result.append(doubledRoot);
+          result.append(doubledRoot);
           // and a simple root
           // (4*a*b*c-9*a^2*d-b^3)/(a*delta0)
           result.append(Times(Plus(Times(C4, a, b, c), Times(CN1, ZZ(9L), Power(a, C2), d),
@@ -612,7 +614,9 @@ public class QuarticSolver {
     if (!a.isPossibleZero(false)) {
       if (c.isPossibleZero(false)) {
         result.append(F.C0);
-        if (!b.isZero()) {
+        if (b.isPossibleZero(false) {
+          result.append(F.C0);
+        } else {
           result.append(F.Times(F.CN1, b, Power(a, -1L)));
         }
       } else {

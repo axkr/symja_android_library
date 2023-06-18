@@ -480,6 +480,8 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
 
   public void testEigenvalues() {
+    check("Eigenvalues({{1,1,1},{2,2,2},{3,3,3}})", //
+        "{6,0,0}");
     check("Eigenvalues({{-2,-2,4}, {-1,-3,7}, {2,4,6}})", //
         "{1+Sqrt(61),1-Sqrt(61),-1}");
     check("Eigenvalues({{0,1,-1},{1,1,0},{-1,0,1}})", //
