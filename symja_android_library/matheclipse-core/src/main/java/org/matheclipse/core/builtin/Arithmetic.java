@@ -710,7 +710,7 @@ public final class Arithmetic {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr expr = ast.arg1();
-      double delta = Config.DEFAULT_CHOP_DELTA;
+      double delta;
       if (ast.isAST2()) {
         IExpr tolerance = ast.arg2();
         if (tolerance instanceof IReal && tolerance.isPositive()) {
@@ -719,20 +719,20 @@ public final class Arithmetic {
           // Tolerance specification `1` must be a non-negative number.
           return IOFunctions.printMessage(S.Chop, "tolnn", F.List(tolerance), engine);
         }
+      } else {
+        delta = Config.DEFAULT_CHOP_DELTA;
       }
       try {
-        if (expr.isAST()) {
-          // Chop({a,b,c}) -> {Chop(a),Chop(b),Chop(c)}
-          return expr.mapThread(ast.setAtCopy(1, F.Slot1), 1);
-        }
-        if (expr.isNumber()) {
-          return F.chopNumber((INumber) expr, delta);
-        }
+        return F.subst(expr, x -> chopNumber(x, delta));
       } catch (Exception e) {
         LOGGER.debug("Chop.evaluate() failed", e);
       }
 
       return expr;
+    }
+
+    private static IExpr chopNumber(final IExpr x, final double tolerance) {
+      return x.isNumber() ? F.chopNumber((INumber) x, tolerance) : F.NIL;
     }
 
     @Override
