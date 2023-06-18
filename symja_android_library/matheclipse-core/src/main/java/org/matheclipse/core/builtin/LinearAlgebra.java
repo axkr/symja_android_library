@@ -2306,34 +2306,46 @@ public final class LinearAlgebra {
               return C1;
             }
             if (dim[0] == 2 && dim[1] == 2) {
-              matrix = Convert.list2Matrix(ast.arg1());
-              if (matrix != null) {
-                if (matrix.getEntry(1, 0).isZero()) {
-                  if (matrix.getEntry(0, 0).equals(matrix.getEntry(1, 1))) {
-                    // Eigenvectors({{a, b}, {0, a}})
-                    return List(List(C1, C0), List(C0, C0));
+              RealMatrix realMatrix = ast.arg1().toRealMatrix();
+              if (realMatrix == null) {
+                matrix = Convert.list2Matrix(ast.arg1());
+                if (matrix != null) {
+                  IAST result2X2 = F.NIL;
+                  if (matrix.getEntry(1, 0).isZero()) {
+                    if (matrix.getEntry(0, 0).equals(matrix.getEntry(1, 1))) {
+                      // Eigenvectors({{a, b}, {0, a}})
+                      result2X2 = List(List(C1, C0), List(C0, C0));
+                    } else {
+                      // Eigenvectors({{a, b}, {0, d}})
+                      result2X2 = List(List(C1, C0), List(Divide(Negate(matrix.getEntry(0, 1)),
+                          Subtract(matrix.getEntry(0, 0), matrix.getEntry(1, 1))), C1));
+                    }
                   } else {
-                    // Eigenvectors({{a, b}, {0, d}})
-                    return List(List(C1, C0), List(Divide(Negate(matrix.getEntry(0, 1)),
-                        Subtract(matrix.getEntry(0, 0), matrix.getEntry(1, 1))), C1));
+                    // Eigenvectors({{a, b}, {c, d}}) =>
+                    // {
+                    // { - (1/(2*c)) * (-a + d + Sqrt(a^2 + 4*b*c - 2*a*d + d^2)), 1},
+                    // { - (1/(2*c)) * (-a + d - Sqrt(a^2 + 4*b*c - 2*a*d + d^2)), 1}
+                    // }
+                    IExpr sqrtExpr = Sqrt(Plus(Sqr(matrix.getEntry(0, 0)),
+                        Times(C4, matrix.getEntry(0, 1), matrix.getEntry(1, 0)),
+                        Times(CN2, matrix.getEntry(0, 0), matrix.getEntry(1, 1)),
+                        Sqr(matrix.getEntry(1, 1))));
+                    result2X2 =
+                        List(
+                            List(Times(
+                                CN1D2, Power(matrix.getEntry(1, 0), CN1),
+                                Plus(sqrtExpr, Negate(matrix.getEntry(0, 0)),
+                                    matrix.getEntry(1, 1))),
+                                C1),
+                            List(Times(CN1D2, Power(matrix.getEntry(1, 0), CN1),
+                                Plus(Negate(sqrtExpr), Negate(matrix.getEntry(0, 0)),
+                                    matrix.getEntry(1, 1))),
+                                C1));
                   }
-                } else {
-                  // Eigenvectors({{a, b}, {c, d}}) =>
-                  // {
-                  // { - (1/(2*c)) * (-a + d + Sqrt(a^2 + 4*b*c - 2*a*d + d^2)), 1},
-                  // { - (1/(2*c)) * (-a + d - Sqrt(a^2 + 4*b*c - 2*a*d + d^2)), 1}
-                  // }
-                  IExpr sqrtExpr = Sqrt(Plus(Sqr(matrix.getEntry(0, 0)),
-                      Times(C4, matrix.getEntry(0, 1), matrix.getEntry(1, 0)),
-                      Times(CN2, matrix.getEntry(0, 0), matrix.getEntry(1, 1)),
-                      Sqr(matrix.getEntry(1, 1))));
-                  return List(
-                      List(
-                          Times(CN1D2, Power(matrix.getEntry(1, 0), CN1),
-                              Plus(sqrtExpr, Negate(matrix.getEntry(0, 0)), matrix.getEntry(1, 1))),
-                          C1),
-                      List(Times(CN1D2, Power(matrix.getEntry(1, 0), CN1), Plus(Negate(sqrtExpr),
-                          Negate(matrix.getEntry(0, 0)), matrix.getEntry(1, 1))), C1));
+
+                  if (result2X2.isPresent()) {
+                    return result2X2;
+                  }
                 }
               }
             }
@@ -2365,7 +2377,7 @@ public final class LinearAlgebra {
           ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK, //
           (c1, c2) -> Double.compare(c2.norm(), c1.norm()));
       return F.mapRange(0, matrix.getColumnDimension(),
-          j -> F.Normalize(Convert.complexVector2List(ced.getEigenvector(j))));
+          j -> S.Normalize.of(engine, Convert.complexVector2List(ced.getEigenvector(j))));
     }
   }
 

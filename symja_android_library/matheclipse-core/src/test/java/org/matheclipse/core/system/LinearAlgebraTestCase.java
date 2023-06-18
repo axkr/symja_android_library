@@ -577,7 +577,6 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{0.231971,0.525322,0.818673},\n" //
             + " {0.78583,0.0867513,-0.612328},\n" + " {-0.408248,0.816497,-0.408248}}");
 
-
     check("Eigenvalues({{1.1, 2.2, 3.25}, {0.76, 4.6, 5}, {0.1, 0.1, 6.1}}) // MatrixForm", //
         "{6.60674,4.52536,0.667901}");
     check("Eigenvectors({{1.1, 2.2, 3.25}, {0.76, 4.6, 5}, {0.1, 0.1, 6.1}}) // MatrixForm", //
@@ -612,6 +611,10 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testEigenvectorsIssue718() {
+    check("Eigenvectors({{-1,-5},{0,4}})", //
+        "{{-0.707107,0.707107},{1.0,0.0}}");
+    check("{Normalize[{-1,1}],Normalize[{1,0}] }", //
+        "{{-1/Sqrt(2),1/Sqrt(2)},{1,0}}");
     check("Eigenvectors({{-2,-2,4}, {-1,-3,7}, {2, 4, 6.00001}})", //
         "{{0.223932,0.482825,0.846602},{0.580105,0.74736,-0.323932},{0.894427,-0.447214,0.0}}");
   }
