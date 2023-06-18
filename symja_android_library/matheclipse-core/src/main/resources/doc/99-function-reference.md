@@ -271,6 +271,7 @@
 * [EdgeRules](functions/EdgeRules.md)
 * [EditDistance](functions/EditDistance.md)
 * [EffectiveInterest](functions/EffectiveInterest.md)
+* [Eigensystem](functions/Eigensystem.md)
 * [Eigenvalues](functions/Eigenvalues.md)
 * [Eigenvectors](functions/Eigenvectors.md)
 * [Element](functions/Element.md)

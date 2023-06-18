@@ -3260,7 +3260,7 @@ public class StatisticsFunctions {
     }
 
     @Override
-    public IExpr realMatrixEval(RealMatrix matrix) {
+    public IExpr realMatrixEval(RealMatrix matrix, EvalEngine engine) {
       if (matrix.getRowDimension() <= 1) {
         // The argument `1` should have at least `2` arguments.
         return IOFunctions.printMessage(S.Covariance, "shlen",

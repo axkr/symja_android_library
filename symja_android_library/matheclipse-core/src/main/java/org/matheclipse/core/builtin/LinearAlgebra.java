@@ -111,6 +111,7 @@ public final class LinearAlgebra {
       S.DiagonalMatrix.setEvaluator(new DiagonalMatrix());
       S.Dimensions.setEvaluator(new Dimensions());
       S.Dot.setEvaluator(new Dot());
+      S.Eigensystem.setEvaluator(new Eigensystem());
       S.Eigenvalues.setEvaluator(new Eigenvalues());
       S.Eigenvectors.setEvaluator(new Eigenvectors());
       S.FourierMatrix.setEvaluator(new FourierMatrix());
@@ -1454,7 +1455,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr realMatrixEval(RealMatrix matrix) {
+    public IExpr realMatrixEval(RealMatrix matrix, EvalEngine engine) {
       final org.hipparchus.linear.LUDecomposition lu =
           new org.hipparchus.linear.LUDecomposition(matrix);
       return F.num(lu.getDeterminant());
@@ -1937,6 +1938,39 @@ public final class LinearAlgebra {
     }
   }
 
+  private static class Eigensystem extends AbstractMatrix1Expr {
+
+    @Override
+    public int[] checkMatrixDimensions(IExpr arg1) {
+      return Convert.checkNonEmptySquareMatrix(S.Eigensystem, arg1);
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // switch to numeric calculation
+      return numericEval(ast, engine);
+    }
+
+    @Override
+    public IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
+      return F.NIL;
+    }
+
+    @Override
+    public IAST realMatrixEval(RealMatrix matrix, EvalEngine engine) {
+      ComplexEigenDecomposition ced = new OrderedComplexEigenDecomposition(matrix, //
+          ComplexEigenDecomposition.DEFAULT_EIGENVECTORS_EQUALITY, //
+          ComplexEigenDecomposition.DEFAULT_EPSILON, //
+          ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK, //
+          (c1, c2) -> Double.compare(c2.norm(), c1.norm()));
+      IAST eigenvalues = Convert.complexValues2List(ced.getEigenvalues());
+      IAST eigenvectors = F.mapRange(0, matrix.getColumnDimension(),
+          j -> S.Normalize.of(engine, Convert.complexVector2List(ced.getEigenvector(j))));
+      return F.List(eigenvalues, eigenvectors);
+    }
+
+  }
+
   /**
    *
    *
@@ -2066,7 +2100,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IAST realMatrixEval(RealMatrix matrix) {
+    public IAST realMatrixEval(RealMatrix matrix, EvalEngine engine) {
       // TODO https://github.com/Hipparchus-Math/hipparchus/issues/174
       ComplexEigenDecomposition ced = new OrderedComplexEigenDecomposition(matrix, //
           ComplexEigenDecomposition.DEFAULT_EIGENVECTORS_EQUALITY, //
@@ -2323,7 +2357,7 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IAST realMatrixEval(RealMatrix matrix) {
+    public IAST realMatrixEval(RealMatrix matrix, EvalEngine engine) {
       // TODO https://github.com/Hipparchus-Math/hipparchus/issues/174
       ComplexEigenDecomposition ced = new OrderedComplexEigenDecomposition(matrix, //
           ComplexEigenDecomposition.DEFAULT_EIGENVECTORS_EQUALITY, //

@@ -49,7 +49,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
         if (ast.arg1().isNumericArgument()) {
           RealMatrix m = ast.arg1().toRealMatrix();
           if (m != null) {
-            return realMatrixEval(m);
+            return realMatrixEval(m, engine);
           }
         }
         matrix = Convert.list2Matrix(ast.arg1());
@@ -100,7 +100,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
         }
         matrix = arg1.toRealMatrix();
         if (matrix != null) {
-          return realMatrixEval(matrix);
+          return realMatrixEval(matrix, engine);
         } else {
           FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(arg1);
           if (fieldMatrix != null) {
@@ -138,7 +138,8 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
    * Evaluate the numeric matrix for this algorithm.
    *
    * @param matrix the matrix which contains numeric values
+   * @param engine TODO
    * @return <code>F.NIL</code> if the evaluation isn't possible
    */
-  public abstract IExpr realMatrixEval(RealMatrix matrix);
+  public abstract IExpr realMatrixEval(RealMatrix matrix, EvalEngine engine);
 }

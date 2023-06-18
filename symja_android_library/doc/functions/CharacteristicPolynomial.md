@@ -8,6 +8,7 @@ CharacteristicPolynomial(matrix, var)
 
 See:  
 * [Wikipedia - Characteristic polynomial](https://en.wikipedia.org/wiki/Characteristic_polynomial)
+* [Wikipedia - Eigenvalues and Eigenvectors](https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors)
 
 ### Examples
  
@@ -17,4 +18,4 @@ See:
 ```
 
 ### Related terms 
-[Eigenvalues](Eigenvalues.md), [Eigenvectors](Eigenvectors.md)
+[Eigensystem.md](Eigensystem.md), [Eigenvalues](Eigenvalues.md), [Eigenvectors](Eigenvectors.md)

@@ -3030,6 +3030,8 @@ public class S {
   public final static IBuiltInSymbol EigenvectorCentrality =
       S.initFinalSymbol("EigenvectorCentrality", ID.EigenvectorCentrality);
 
+  public final static IBuiltInSymbol Eigensystem = S.initFinalSymbol("Eigensystem", ID.Eigensystem);
+
   /**
    * Eigenvectors(matrix) - get the numerical eigenvectors of the `matrix`.
    * 

@@ -802,9 +802,8 @@ public class Convert {
   }
 
   /**
-   * Convert a RealVector to a IAST list.
+   * Convert a {@link FieldVector} to an {@link IAST} list.
    *
-   * @param vector
    * @return <code>F.NIL</code> if no conversion was possible
    */
   public static IASTAppendable complexVector2List(final FieldVector<Complex> vector) {
@@ -812,9 +811,8 @@ public class Convert {
   }
 
   /**
-   * Convert a RealVector to a IAST list.
+   * Convert a {@link FieldVector} to an {@link IAST} list.
    *
-   * @param vector
    * @param vectorFormat set flag for isVector() method
    * @return <code>F.NIL</code> if no conversion was possible
    */
@@ -825,7 +823,36 @@ public class Convert {
     }
     final int rowSize = vector.getDimension();
     final IASTAppendable out = F.mapRange(0, rowSize, i -> F.complexNum(vector.getEntry(i)));
-    out.addEvalFlags(IAST.IS_VECTOR);
+    if (vectorFormat) {
+      out.addEvalFlags(IAST.IS_VECTOR);
+    }
+    return out;
+  }
+
+  /**
+   * Convert an array of {@link Complex} values to an {@link IAST} list.
+   * 
+   * @return
+   */
+  public static IASTAppendable complexValues2List(final Complex[] vector) {
+    return complexValues2List(vector, true);
+  }
+
+  /**
+   * Convert an array of {@link Complex} values to an {@link IAST} list.
+   * 
+   * @param vectorFormat set flag for isVector() method
+   * @return
+   */
+  public static IASTAppendable complexValues2List(final Complex[] vector, boolean vectorFormat) {
+    if (vector == null) {
+      return F.NIL;
+    }
+    final int rowSize = vector.length;
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> F.complexNum(vector[i]));
+    if (vectorFormat) {
+      out.addEvalFlags(IAST.IS_VECTOR);
+    }
     return out;
   }
 

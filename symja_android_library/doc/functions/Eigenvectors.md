@@ -7,7 +7,7 @@ Eigenvectors(matrix)
 > get the numerical eigenvectors of the `matrix`.
 
 See
-* [Wikipedia - Eigenvalue](http://en.wikipedia.org/wiki/Eigenvalue)
+* [Wikipedia - Eigenvalues and Eigenvectors](https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors)
 * [Youtube - Eigenvectors and eigenvalues | Essence of linear algebra, chapter 14](https://youtu.be/PFDu9oVAE-g)
 
 ### Examples
@@ -35,4 +35,4 @@ with algebraic multiplicity `3`. However, this eigenvalue leads to only two eige
 So we add a third zero vector `v3 = {0.0, 0.0, 0.0}`.
  
 ### Related terms 
-[Eigenvalues](Eigenvalues.md), [CharacteristicPolynomial](CharacteristicPolynomial.md)
+[Eigensystem.md](Eigensystem.md), [Eigenvalues](Eigenvalues.md), [CharacteristicPolynomial](CharacteristicPolynomial.md)

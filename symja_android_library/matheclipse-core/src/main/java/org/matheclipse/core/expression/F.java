@@ -3711,6 +3711,10 @@ public class F extends S {
     return new AST3(DSolve, a0, a1, a2);
   }
 
+  public static IAST Eigensystem(final IExpr m) {
+    return new AST1(Eigensystem, m);
+  }
+
   public static IAST Eigenvalues(final IExpr m) {
     return new AST1(Eigenvalues, m);
   }
@@ -8265,6 +8269,18 @@ public class F extends S {
 
   public static IAST Reap(final IExpr a) {
     return new AST1(Reap, a);
+  }
+
+  /**
+   * Reduce(logic-expression, var) - returns the reduced `logic-expression` for the variable `var`.
+   * Reduce works only for the `Reals` domain.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Reduce.md">Reduce
+   *      documentation</a>
+   */
+  public static IAST Reduce(final IExpr logicExpr, final IExpr variable) {
+    return new AST2(Reduce, logicExpr, variable);
   }
 
   public static IAST Refine(final IExpr a) {
