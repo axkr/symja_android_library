@@ -479,6 +479,11 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testEigensystem() {
+    // example from https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors
+    check(//
+        "Chop(Eigensystem({{2.0,0.0,0.0,0.0},{1.0,2.0,0.0,0.0},{0.0,1.0,3.0,0.0},{0.0,0.0,1.0,3.0}}), 10^-7)", //
+        "{{3.0,3.0,2.0,2.0},{{0,0,0,1.0},{0,0,0,0},{0,0.57735,-0.57735,0.57735},{0,0,0,0}}}");
+
     check("Eigensystem({{1,0,0},{0,1,0},{0,0,1}})", //
         "{{1.0,1.0,1.0},{{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}}}");
     check("Eigensystem({{1,0,0},{-2,1,0},{0,0,1}})", //
@@ -491,6 +496,11 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testEigenvalues() {
+    // example from https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors
+    check("Eigenvalues({{2,0,0,0},{1,2,0,0},{0,1,3,0},{0,0,1,3}})", //
+        "{3,3,2,2}");
+
+
     check("Eigenvalues({{1,1,1},{2,2,2},{3,3,3}})", //
         "{6,0,0}");
     check("Eigenvalues({{-2,-2,4}, {-1,-3,7}, {2,4,6}})", //

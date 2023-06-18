@@ -2747,7 +2747,7 @@ public class F extends S {
           if (newReal != null) {
             return F.C0;
           }
-          return F.complexNum(real, Apfloat.ZERO);
+          return F.num(real);
         } else if (newReal != null) {
           return F.complexNum(Apfloat.ZERO, imag);
         }

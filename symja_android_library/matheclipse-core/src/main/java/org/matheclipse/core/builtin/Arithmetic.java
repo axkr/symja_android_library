@@ -723,7 +723,7 @@ public final class Arithmetic {
       try {
         if (expr.isAST()) {
           // Chop({a,b,c}) -> {Chop(a),Chop(b),Chop(c)}
-          return expr.mapThread(F.Chop(F.Slot1), 1);
+          return expr.mapThread(ast.setAtCopy(1, F.Slot1), 1);
         }
         if (expr.isNumber()) {
           return F.chopNumber((INumber) expr, delta);

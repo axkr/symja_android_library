@@ -16,12 +16,12 @@ public final class NumStr extends Num {
   private int fExponent;
 
   public NumStr(String floatStr) {
-    this(floatStr, 1);
+    this(floatStr, 0);
   }
 
   public NumStr(String floatStr, int exponent) {
     int index = floatStr.indexOf("*^");
-    fExponent = 0;
+    fExponent = exponent;
     fFloatStr = floatStr;
     if (index > 0) {
       fFloatStr = floatStr.substring(0, index);
@@ -109,9 +109,9 @@ public final class NumStr extends Num {
   @Override
   public Num negate() {
     if (fFloatStr.length() > 0 && fFloatStr.charAt(0) == '-') {
-      return new NumStr(fFloatStr.substring(1));
+      return new NumStr(fFloatStr.substring(1), fExponent);
     }
-    return new NumStr("-" + fFloatStr);
+    return new NumStr("-" + fFloatStr, fExponent);
   }
 
   @Override

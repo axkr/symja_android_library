@@ -2768,6 +2768,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testChop() {
+    check(
+        "-4.898587196589413*^-16*I ", //
+        "I*(-0.0000000000000004898587196589413)");
+    check(
+        "Chop(  1. - 4.898587196589413*^-16*I)", //
+        "1");
+    check(
+        "Chop(f( {-1. + 1.2246467991473532*^-16*I, 1. - 2.4492935982947064*^-16*I, -1. + 3.6739403974420594*^-16*I, 1. - 4.898587196589413*^-16*I} ))", //
+        "f({-1,1,-1,1})");
     check("Chop(abc)", //
         "abc");
     check("Chop(Sin(3/7))", //
