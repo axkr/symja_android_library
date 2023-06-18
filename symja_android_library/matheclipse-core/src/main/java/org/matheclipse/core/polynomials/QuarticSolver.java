@@ -614,7 +614,7 @@ public class QuarticSolver {
     if (!a.isPossibleZero(false)) {
       if (c.isPossibleZero(false)) {
         result.append(F.C0);
-        if (b.isPossibleZero(false) {
+        if (b.isPossibleZero(false)) {
           result.append(F.C0);
         } else {
           result.append(F.Times(F.CN1, b, Power(a, -1L)));
