@@ -2,6 +2,7 @@ package org.matheclipse.core.basic;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Properties;
@@ -625,6 +626,9 @@ public class Config {
 
   /** Global switch to make all symbols unprotected if set to {@link ISymbol#NOATTRIBUTE} */
   public static int BUILTIN_PROTECTED = ISymbol.PROTECTED;
+
+  /** Allow to control rounding mode used in Symja, dependent libraries may not allow to change rounding mode*/
+  public static RoundingMode ROUNDING_MODE = RoundingMode.HALF_EVEN;
 
   /** Global dynamic classloader */
   public static ClassLoader URL_CLASS_LOADER = null;

@@ -555,8 +555,8 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public INumber roundExpr() throws ArithmeticException {
-    return F.complex(F.ZZ(DoubleMath.roundToBigInteger(fComplex.getReal(), RoundingMode.HALF_EVEN)), //
-        F.ZZ(DoubleMath.roundToBigInteger(fComplex.getImaginary(), RoundingMode.HALF_EVEN)));
+    return F.complex(F.ZZ(DoubleMath.roundToBigInteger(fComplex.getReal(), Config.ROUNDING_MODE)), //
+        F.ZZ(DoubleMath.roundToBigInteger(fComplex.getImaginary(), Config.ROUNDING_MODE)));
   }
 
   @Override

@@ -717,18 +717,18 @@ public class Num implements INum {
 
   @Override
   public IInteger roundExpr() {
-    return F.ZZ(DoubleMath.roundToBigInteger(value, RoundingMode.HALF_EVEN));
+    return F.ZZ(DoubleMath.roundToBigInteger(value, Config.ROUNDING_MODE));
   }
 
   @Override
   public IReal roundClosest(IReal multiple) {
     if (multiple.isRational()) {
       return F
-          .ZZ(DoubleMath.roundToBigInteger(value / multiple.doubleValue(), RoundingMode.HALF_EVEN))
+          .ZZ(DoubleMath.roundToBigInteger(value / multiple.doubleValue(), Config.ROUNDING_MODE))
           .multiply((IRational) multiple);
     }
     double factor = multiple.doubleValue();
-    return F.num(DoubleMath.roundToBigInteger(value / factor, RoundingMode.HALF_EVEN).doubleValue()
+    return F.num(DoubleMath.roundToBigInteger(value / factor, Config.ROUNDING_MODE).doubleValue()
         * factor);
   }
 

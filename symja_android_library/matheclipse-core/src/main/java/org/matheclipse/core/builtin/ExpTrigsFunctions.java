@@ -42,6 +42,7 @@ import org.apfloat.Apint;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
@@ -3675,7 +3676,7 @@ public class ExpTrigsFunctions {
         }
         double numericResult = Math.log(l2) / Math.log(l1);
         if (F.isNumIntValue(numericResult)) {
-          long symbolicResult = DoubleMath.roundToLong(numericResult, RoundingMode.HALF_UP);
+          long symbolicResult = DoubleMath.roundToLong(numericResult, Config.ROUNDING_MODE);
           if (inverse) {
             if (b.equals(arg.powerRational(symbolicResult))) {
               // cross checked result
