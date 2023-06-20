@@ -2768,11 +2768,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testChop() {
-    check(
-        "-4.898587196589413*^-16*I ", //
+    check("-4.898587196589413*^-16*I ", //
         "I*(-0.0000000000000004898587196589413)");
-    check(
-        "Chop(  1. - 4.898587196589413*^-16*I)", //
+    check("Chop(  1. - 4.898587196589413*^-16*I)", //
         "1");
     check(
         "Chop(f( {-1. + 1.2246467991473532*^-16*I, 1. - 2.4492935982947064*^-16*I, -1. + 3.6739403974420594*^-16*I, 1. - 4.898587196589413*^-16*I} ))", //
@@ -3405,6 +3403,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testComplexExpand() {
+    check("ComplexExpand(a^(I*b), {a,b})", //
+        "Cos(Arg(a)*Im(b)-1/2*Log(Im(a)^2+Re(a)^2)*Re(b))/(E^(Arg(a)*Re(b))*(Im(a)^2+Re(a)^\n"
+            + "2)^(Im(b)/2))+(-I*Sin(Arg(a)*Im(b)-1/2*Log(Im(a)^2+Re(a)^2)*Re(b)))/(E^(Arg(a)*Re(b))*(Im(a)^\n"
+            + "2+Re(a)^2)^(Im(b)/2))");
+    check("ComplexExpand(a^(I*b) )", //
+        "Cos(1/2*b*Log(a^2))/E^(b*Arg(a))+(I*Sin(1/2*b*Log(a^2)))/E^(b*Arg(a))");
+
+    check("Refine(Arg(a+I*x),{Element(a,Reals), Element(x,Reals)})", //
+        "Arg(a+I*x)");
     check("ComplexExpand(Sqrt(1+I))", //
         "(I*Sqrt(2-Sqrt(2)))/2^(3/4)+Sqrt(2+Sqrt(2))/2^(3/4)");
     check("ComplexExpand((-42.0)^y)", //
@@ -14552,6 +14559,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testMaximize() {
+    // print message - Maximize: The maximum is not attained at any point satisfying the
+    // constraints.
+    check("Maximize(1/x, x)", //
+        "{}");
+
     check("Maximize(-x^4-7*x^3+2*x^2 - 42,x)", //
         "{-42-7/512*(-21-Sqrt(505))^3+(21+Sqrt(505))^2/32-(21+Sqrt(505))^4/4096,{x->1/8*(-\n"
             + "21-Sqrt(505))}}");
@@ -14986,6 +14998,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testMinimize() {
     // check("Minimize(Sin(x),x)", //
     // "");
+
+    // print message - Minimize: The minimum is not attained at any point satisfying the
+    // constraints.
+    check("Minimize(1/x, x)", //
+        "{}");
+
 
     check("Minimize(x^2+4*x+4, {x})", //
         "{0,{x->-2}}");

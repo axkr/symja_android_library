@@ -1164,7 +1164,8 @@ public class MinMaxFunctions {
           // quadratic
           if (c.isPossibleZero(false)) {
             if (d.isPossibleZero(false)) {
-              return F.list(e, F.CEmptyList);
+              // The `1` is not attained at any point satisfying the constraints.
+              return IOFunctions.printMessage(S.Maximize, "natt", F.List("maximum"));
             } else {
               // linear
               return F.list(F.Piecewise(F.list(F.list(e, F.Equal(d, F.C0))), F.CInfinity), F.list(
@@ -1318,7 +1319,8 @@ public class MinMaxFunctions {
           // quadratic
           if (c.isPossibleZero(false)) {
             if (d.isPossibleZero(false)) {
-              return F.list(e, F.CEmptyList);
+              // The `1` is not attained at any point satisfying the constraints.
+              return IOFunctions.printMessage(S.Minimize, "natt", F.List("minimum"));
             } else {
               // linear
               return F.list(F.Piecewise(F.list(F.list(e, F.Equal(d, F.C0))), F.CNInfinity), F.list(

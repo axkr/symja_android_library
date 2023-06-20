@@ -621,6 +621,7 @@ public class IOFunctions {
       "Sequence specification or a list of sequence specifications expected at position `1` in `2`.", //
       "nalph", "The alphabet `1` is not known or not available.", //
       "nas", "The argument `1` is not a string.", //
+      "natt", "The `1` is not attained at any point satisfying the constraints.", //
       "needsjdk",
       "For compiling functions, Symja needs to be executed on a Java Development Kit with javax.tools.JavaCompiler installed.", //
       "nconvss",
