@@ -648,16 +648,8 @@ public final class Arithmetic {
           }
         }
       }
-      if (arg1.isNumericFunction(true)) {
-        IExpr temp = engine.evalN(arg1);
-        if (temp.isRealResult()) {
-          if (temp.isNegative()) {
-            return S.Pi;
-          }
-          return F.C0;
-        } else if (temp.isNumber() && engine.isNumericMode()) {
-          return ((INumber) temp).complexArg();
-        }
+      if (arg1.isNumericFunction()) {
+        return F.ArcTan(arg1.re(), arg1.im());
       }
 
       if (AbstractAssumptions.assumeNegative(arg1)) {
@@ -665,10 +657,6 @@ public final class Arithmetic {
       }
       if (AbstractAssumptions.assumePositive(arg1)) {
         return F.C0;
-      }
-      IExpr imPart = AbstractFunctionEvaluator.imaginaryPart(arg1, true);
-      if (imPart.isPresent()) {
-        return F.ArcTan(F.Re(arg1), imPart);
       }
       return result;
     }
@@ -3022,7 +3010,7 @@ public final class Arithmetic {
           if (assumptions != null) {
             engine.setAssumptions(assumptions);
           }
-          return arg1.accept(visitor).orElse(arg1);
+          return arg1.accept(visitor).evaluateOrElse(engine, arg1);
         } finally {
           engine.setAssumptions(oldAssumptions);
         }

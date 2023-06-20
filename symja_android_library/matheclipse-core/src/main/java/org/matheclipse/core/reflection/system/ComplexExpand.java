@@ -24,6 +24,8 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.visit.VisitorExpr;
 
 /**
@@ -78,50 +80,57 @@ public class ComplexExpand extends AbstractEvaluator {
       }
 
       if (ast.isPower()) {
-        IExpr x = ast.base();
-        IExpr y = ast.exponent();
+        IExpr base = ast.base();
+        IExpr exp = ast.exponent();
+        IExpr baseRe = base.re();
+        IExpr baseIm = base.im();
 
-        if (y.isRational()) {
-          if (x.isInteger() && x.isNegative()) {
+        if (exp.isRational()) {
+          if (base.isInteger() && base.isNegative()) {
             IExpr exponent = ast.exponent();
             // ((base^2)^(exponent/2))
-            IExpr coeff = F.Power(F.Power(x, F.C2), F.C1D2.times(exponent));
+            IExpr coeff = F.Power(F.Power(base, F.C2), F.C1D2.times(exponent));
             // exponent*Arg(base)
-            IExpr inner = exponent.times(F.Arg(x));
+            IExpr inner = exponent.times(F.Arg(base));
             // coeff*Cos(inner) + I*coeff*Sin(inner);
             IExpr temp = S.Expand.of(fEngine,
                 F.Plus(F.Times(coeff, F.Cos(inner)), F.Times(F.CI, coeff, F.Sin(inner))));
             return temp;
-          } else if (!(x.isComplex() || x.isComplexNumeric())) {
-            return F.NIL;
+          } else if (exp.isFraction()) {
+            IInteger n = ((IFraction) exp).numerator();
+            IInteger d = ((IFraction) exp).denominator();
+            IFraction expHalf = F.QQ(n, d.multiply(2));
+            // complex expand base^(n/d) with {base} in Complexes and {n,d} in Integers
+            IAST baseSqrSum = F.Plus(F.Sqr(baseIm), F.Sqr(baseRe));
+            return F.Plus(F.Times(F.Cos(F.Times(exp, F.Arg(base))), F.Power(baseSqrSum, expHalf)),
+                F.Times(F.CI, F.Power(baseSqrSum, expHalf), F.Sin(F.Times(exp, F.Arg(base)))));
           }
         }
 
-        IExpr a = x.re();
-        IExpr b = x.im();
-        if (a.isNegative()) {
-          if (b.isZero()) {
-            a = a.negate();
-            // a^y*Cos(y*Arg(x))+I*a^y*Sin(y*Arg(x))
+        IExpr expRe = exp.re();
+        IExpr expIm = exp.im();
+        if (baseRe.isNegative()) {
+          if (baseIm.isZero()) {
+            baseRe = baseRe.negate();
             return F.Plus(//
-                F.Times(F.Power(a, y), F.Cos(F.Times(y, F.Arg(x)))), //
-                F.Times(F.CI, F.Power(a, y), F.Sin(F.Times(y, F.Arg(x)))));
+                F.Times(F.Power(baseRe, exp), F.Cos(F.Times(exp, F.Arg(base)))), //
+                F.Times(F.CI, F.Power(baseRe, exp), F.Sin(F.Times(exp, F.Arg(base)))));
           }
           return F.NIL;
         }
-        if (b.isZero()) {
-          // (x^2)^(y/2)*Cos(y*Arg(x))+I*(x^2)^(y/2)*Sin(y*Arg(x))
-          return F.Plus(//
-              F.Times(F.Power(F.Power(x, 2), F.Times(F.C1D2, y)), F.Cos(F.Times(y, F.Arg(x)))), //
-              F.Times(F.CI, F.Power(F.Power(x, 2), F.Times(F.C1D2, y)),
-                  F.Sin(F.Times(y, F.Arg(x)))));
+
+        if (!exp.isNumber()) {
+          // complex expand base^(exp) with {base,exp} in Complexes
+          final IAST baseSqrSum2 = F.Plus(F.Sqr(baseIm), F.Sqr(baseRe));
+          final IAST eInversed = F.Power(F.Exp(F.Times(F.Arg(base), expIm)), F.CN1);
+          final IAST argBaseTimesexpRe = F.Times(F.Arg(base), expRe);
+          return F.Plus(
+              F.Times(eInversed,
+                  F.Cos(F.Plus(F.Times(F.C1D2, expIm, F.Log(baseSqrSum2)), argBaseTimesexpRe)),
+                  F.Power(baseSqrSum2, F.Times(F.C1D2, expRe))),
+              F.Times(F.CI, eInversed, F.Power(baseSqrSum2, F.Times(F.C1D2, expRe)),
+                  F.Sin(F.Plus(F.Times(F.C1D2, expIm, F.Log(baseSqrSum2)), argBaseTimesexpRe))));
         }
-        // (a^2+b^2)^(y/2)*Cos(y*Arg(a + I*b))+I*(a^2+b^2)^(y/2)*Sin(y*Arg(a+I*b))
-        return F.Plus(//
-            F.Times(F.Power(F.Plus(F.Power(a, 2), F.Power(b, 2)), F.Times(F.C1D2, y)),
-                F.Cos(F.Times(y, F.Arg(x)))), //
-            F.Times(F.CI, F.Power(F.Plus(F.Power(a, 2), F.Power(b, 2)), F.Times(F.C1D2, y)),
-                F.Sin(F.Times(y, F.Arg(x)))));
       }
       return super.visit(ast);
     }
@@ -245,7 +254,7 @@ public class ComplexExpand extends AbstractEvaluator {
       ComplexExpandVisitor tteVisitor = new ComplexExpandVisitor(engine);
       IExpr result = arg1.accept(tteVisitor);
       if (result.isPresent()) {
-        return result;
+        return engine.evaluate(result);
       }
       return arg1;
     } finally {

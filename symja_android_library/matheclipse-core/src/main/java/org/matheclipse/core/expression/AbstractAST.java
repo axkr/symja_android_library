@@ -384,6 +384,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     @Override
+    public final IExpr evaluateOrElse(EvalEngine engine, final IExpr other) {
+      return other;
+    }
+
+    @Override
     public IExpr evalEvaluate(EvalEngine engine) {
       ArgumentTypeException.throwNIL();
       return F.NIL;

@@ -1016,6 +1016,17 @@ public interface IExpr
     return F.NIL;
   }
 
+  /**
+   * Evaluate an expression if unequal {@link F#NIL} or otherwise return <code>other</code>
+   * 
+   * @param engine
+   * @param other
+   * @return
+   */
+  default IExpr evaluateOrElse(EvalEngine engine, final IExpr other) {
+    return engine.evaluate(this);
+  }
+
   default IExpr evaluateHead(IAST ast, EvalEngine engine) {
     IExpr result = engine.evaluateNIL(this);
     if (result.isPresent()) {
