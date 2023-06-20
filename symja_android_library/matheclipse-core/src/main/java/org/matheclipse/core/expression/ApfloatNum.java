@@ -10,6 +10,7 @@ import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.Apint;
 import org.apfloat.FixedPrecisionApfloatHelper;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -493,7 +494,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public IInteger roundExpr() {
-    BigInteger round = NumberUtil.round(fApfloat, RoundingMode.HALF_UP);
+    BigInteger round = NumberUtil.round(fApfloat, Config.ROUNDING_MODE);
     return F.ZZ(round);
   }
 
@@ -858,7 +859,7 @@ public class ApfloatNum implements INum {
 
   static Apfloat apfloatRint(Apfloat fApfloat) {
     if (fApfloat.scale() > 0) {
-      return ApfloatMath.round(fApfloat, fApfloat.scale(), RoundingMode.HALF_EVEN);
+      return ApfloatMath.round(fApfloat, fApfloat.scale(), Config.ROUNDING_MODE);
     }
     if (ApfloatMath.abs(fApfloat).compareTo(new Apfloat("0.5")) <= 0) {
       return Apfloat.ZERO;

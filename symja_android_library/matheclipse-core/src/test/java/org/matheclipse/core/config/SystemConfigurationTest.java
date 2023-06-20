@@ -2,12 +2,14 @@ package org.matheclipse.core.config;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
+
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.OverflowException;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.ExprEvaluator;
-import org.matheclipse.core.expression.ApfloatNum;
-import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.*;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -54,6 +56,24 @@ public class SystemConfigurationTest extends ExprEvaluatorTestCase {
 
     IASTMutable times = F.Times(num, zero);
     assertEquals(times.determinePrecision(), 30);
+  }
+
+  public void testRoundingMode() {
+    Config.ROUNDING_MODE = RoundingMode.HALF_EVEN;
+    assertEquals(ApfloatNum.valueOf("394.5", 30).roundExpr().toString(),
+      "394");
+    assertEquals(ComplexNum.valueOf(394.5, 0).roundExpr().toString(),
+      "394+I*0");
+    assertEquals(Num.valueOf(394.5).roundExpr().toString(),
+      "394");
+
+    Config.ROUNDING_MODE = RoundingMode.HALF_UP;
+    assertEquals(ApfloatNum.valueOf("394.5", 30).roundExpr().toString(),
+      "395");
+    assertEquals(ComplexNum.valueOf(394.5, 0).roundExpr().toString(),
+      "395+I*0");
+    assertEquals(Num.valueOf(394.5).roundExpr().toString(),
+      "395");
   }
 
 }

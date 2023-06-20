@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.math.RoundingMode;
 import java.util.Locale;
 import java.util.regex.Pattern;
 import org.matheclipse.core.basic.Config;
@@ -250,6 +251,7 @@ public abstract class ExprEvaluatorTestCase extends TestCase {
       Config.MAX_BIT_LENGTH = 200000;
       Config.MAX_POLYNOMIAL_DEGREE = 100;
       Config.FILESYSTEM_ENABLED = false;
+      Config.ROUNDING_MODE = RoundingMode.HALF_EVEN;
       // fScriptEngine = fScriptManager.getEngineByExtension("m");
       // fScriptEngine.put("PRINT_STACKTRACE", Boolean.TRUE);
       // fScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);

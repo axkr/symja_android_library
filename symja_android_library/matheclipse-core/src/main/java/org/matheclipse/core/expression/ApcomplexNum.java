@@ -11,6 +11,7 @@ import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
@@ -603,8 +604,8 @@ public class ApcomplexNum implements IComplexNum {
   /** {@inheritDoc} */
   @Override
   public INumber roundExpr() {
-    return F.complex(F.ZZ(NumberUtil.round(fApcomplex.real(), RoundingMode.HALF_UP)),
-        F.ZZ(NumberUtil.round(fApcomplex.imag(), RoundingMode.HALF_UP)));
+    return F.complex(F.ZZ(NumberUtil.round(fApcomplex.real(), Config.ROUNDING_MODE)),
+        F.ZZ(NumberUtil.round(fApcomplex.imag(), Config.ROUNDING_MODE)));
   }
 
   @Override
