@@ -1357,103 +1357,6 @@ public final class NumberTheory {
    *
    *
    * <pre>
-   * DiscreteDelta(n1, n2, n3, ...)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * <code>DiscreteDelta</code> function returns <code>1</code> if all the <code>ni</code> are
-   * <code>0</code>. Returns <code>0</code> otherwise.
-   *
-   * </blockquote>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; DiscreteDelta(0, 0, 0.0)
-   * 1
-   * </pre>
-   */
-  private static class DiscreteDelta extends AbstractFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int size = ast.size();
-      if (size == 1) {
-        return F.C1;
-      }
-      if (size > 1) {
-        IExpr arg1 = engine.evaluate(ast.arg1());
-
-        if (size == 2) {
-          INumber temp = arg1.evalNumber();
-          if (temp != null) {
-            if (temp.isZero()) {
-              return F.C1;
-            }
-            if (temp.isNumber()) {
-              return F.C0;
-            }
-          }
-          if (arg1.isNonZeroComplexResult()) {
-            return F.C0;
-          }
-          return F.NIL;
-        }
-
-        IExpr result = removeEval(ast, engine);
-        if (result.isPresent()) {
-          if (result.isAST()) {
-            if (result.isAST() && ((IAST) result).size() > 1) {
-              return result;
-            }
-            return F.C1;
-          }
-          return result;
-        }
-      }
-      return F.NIL;
-    }
-
-    private static IExpr removeEval(final IAST ast, EvalEngine engine) {
-      IASTAppendable result = F.NIL;
-      int size = ast.size();
-      int j = 1;
-      for (int i = 1; i < size; i++) {
-        IExpr expr = engine.evaluate(ast.get(i));
-        INumber temp = expr.evalNumber();
-        if (temp != null) {
-          if (temp.isZero()) {
-            if (result.isNIL()) {
-              result = ast.removeAtClone(i);
-            } else {
-              result.remove(j);
-            }
-            continue;
-          }
-          if (temp.isNumber()) {
-            return F.C0;
-          }
-        }
-        if (expr.isNonZeroComplexResult()) {
-          return F.C0;
-        }
-        j++;
-      }
-      return result;
-    }
-
-    @Override
-    public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.ORDERLESS | ISymbol.NUMERICFUNCTION);
-    }
-  }
-
-  /**
-   *
-   *
-   * <pre>
    * Divisible(n, m)
    * </pre>
    *
@@ -3128,81 +3031,6 @@ public final class NumberTheory {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
-  }
-
-  /**
-   *
-   *
-   * <pre>
-   * KroneckerDelta(arg1, arg2, ... argN)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * if all arguments <code>arg1</code> to <code>argN</code> are equal return <code>1</code>,
-   * otherwise return <code>0</code>.
-   *
-   * </blockquote>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; KroneckerDelta(42)
-   * 0
-   *
-   * &gt;&gt; KroneckerDelta(42, 42.0, 42)
-   * 1
-   * </pre>
-   */
-  private static class KroneckerDelta extends AbstractEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int size = ast.size();
-      if (size == 1) {
-        return F.C1;
-      }
-      if (size > 1) {
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        IExpr temp = arg1.evalNumber();
-        if (temp == null) {
-          temp = arg1;
-        }
-        if (size == 2) {
-          if (temp.isZero()) {
-            return F.C1;
-          }
-          if (temp.isNonZeroComplexResult()) {
-            return F.C0;
-          }
-          return F.NIL;
-        }
-        arg1 = temp;
-        for (int i = 2; i < size; i++) {
-          IExpr expr = engine.evaluate(ast.get(i));
-          if (expr.equals(arg1)) {
-            continue;
-          }
-          temp = expr.evalNumber();
-          if (temp == null) {
-            return F.NIL;
-          } else {
-            if (temp.equals(arg1)) {
-              continue;
-            }
-          }
-          return F.C0;
-        }
-        return F.C1;
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.ORDERLESS | ISymbol.NUMERICFUNCTION);
     }
   }
 
@@ -5319,103 +5147,6 @@ public final class NumberTheory {
   }
 
   /**
-   *
-   *
-   * <pre>
-   * Unitize(expr)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * maps a non-zero <code>expr</code> to <code>1</code>, and a zero <code>expr</code> to <code>0
-   * </code>.
-   *
-   * </blockquote>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; Unitize((E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi)
-   * 0
-   * </pre>
-   */
-  private static class Unitize extends AbstractEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr x = ast.arg1();
-      if (ast.isAST2()) {
-        IExpr dx = ast.arg2();
-        if (dx.isNegativeResult()) {
-          // The threshold `1` should be positive.
-          return IOFunctions.printMessage(ast.topHead(), "post", F.List(dx), engine);
-        }
-        return unitize(x, dx, engine);
-      }
-      return unitize(x, engine);
-    }
-
-    private IExpr unitize(IExpr x, EvalEngine engine) {
-      if (x.isNumber()) {
-        return x.isZero() ? F.C0 : F.C1;
-      }
-      if (S.PossibleZeroQ.ofQ(engine, x)) {
-        return F.C0;
-      }
-      if (x.isNegativeResult() || x.isPositiveResult()) {
-        return F.C1;
-      }
-      IExpr temp = x.evalNumber();
-      if (temp != null) {
-        if (temp.isNegative()) {
-          return F.C1;
-        }
-        if (S.PossibleZeroQ.ofQ(engine, temp)) {
-          return F.C1;
-        }
-        return F.C0;
-      }
-      return F.NIL;
-    }
-
-    private IExpr unitize(IExpr x, IExpr dx, EvalEngine engine) {
-      // Piecewise({{1, dx-Abs(x)<= 0}}, 0)
-      IExpr temp = engine.evaluate(F.Subtract(dx, F.Abs(x)));
-      if (temp.isNegativeResult()) {
-        return F.C1;
-      }
-      if (temp.isPositiveResult()) {
-        return F.C0;
-      }
-      if (S.PossibleZeroQ.ofQ(engine, temp)) {
-        return F.C1;
-      }
-      temp = temp.evalNumber();
-      if (temp != null) {
-        if (temp.isNegative()) {
-          return F.C1;
-        }
-        if (S.PossibleZeroQ.ofQ(engine, temp)) {
-          return F.C1;
-        }
-        return F.C0;
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
-    }
-
-    @Override
-    public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
-  }
-
-  /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
    */
@@ -5432,7 +5163,6 @@ public final class NumberTheory {
       S.ContinuedFraction.setEvaluator(new ContinuedFraction());
       S.CoprimeQ.setEvaluator(new CoprimeQ());
       S.DiracDelta.setEvaluator(new DiracDelta());
-      S.DiscreteDelta.setEvaluator(new DiscreteDelta());
       S.Divisible.setEvaluator(new Divisible());
       S.Divisors.setEvaluator(new Divisors());
       S.DivisorSum.setEvaluator(new DivisorSum());
@@ -5450,7 +5180,6 @@ public final class NumberTheory {
       S.FromContinuedFraction.setEvaluator(new FromContinuedFraction());
       S.Hyperfactorial.setEvaluator(new Hyperfactorial());
       S.JacobiSymbol.setEvaluator(new JacobiSymbol());
-      S.KroneckerDelta.setEvaluator(new KroneckerDelta());
       S.LinearRecurrence.setEvaluator(new LinearRecurrence());
       S.LiouvilleLambda.setEvaluator(new LiouvilleLambda());
       S.LucasL.setEvaluator(new LucasL());
@@ -5479,7 +5208,6 @@ public final class NumberTheory {
       S.StirlingS1.setEvaluator(new StirlingS1());
       S.StirlingS2.setEvaluator(new StirlingS2());
       S.Subfactorial.setEvaluator(new Subfactorial());
-      S.Unitize.setEvaluator(new Unitize());
     }
   }
 

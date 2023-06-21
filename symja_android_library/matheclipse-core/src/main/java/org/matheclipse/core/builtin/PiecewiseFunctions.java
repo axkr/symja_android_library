@@ -6,6 +6,8 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.util.Assumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.F;
@@ -17,13 +19,14 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorExpr;
 
 public class PiecewiseFunctions {
 
-  static class BernsteinBasis extends AbstractEvaluator {
+  private static class BernsteinBasis extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -147,7 +150,7 @@ public class PiecewiseFunctions {
    * b
    * </pre>
    */
-  static final class Clip extends AbstractFunctionEvaluator {
+  private static final class Clip extends AbstractFunctionEvaluator {
 
     private static IExpr clipX(IExpr x) {
       if (x.isReal()) {
@@ -262,21 +265,197 @@ public class PiecewiseFunctions {
     }
   }
 
+  /**
+   *
+   *
+   * <pre>
+   * DiscreteDelta(n1, n2, n3, ...)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * <code>DiscreteDelta</code> function returns <code>1</code> if all the <code>ni</code> are
+   * <code>0</code>. Returns <code>0</code> otherwise.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * &gt;&gt; DiscreteDelta(0, 0, 0.0)
+   * 1
+   * </pre>
+   */
+  private static class DiscreteDelta extends AbstractFunctionEvaluator {
+
+    private static IExpr removeEval(final IAST ast, EvalEngine engine) {
+      IASTAppendable result = F.NIL;
+      int size = ast.size();
+      int j = 1;
+      for (int i = 1; i < size; i++) {
+        IExpr expr = engine.evaluate(ast.get(i));
+        INumber temp = expr.evalNumber();
+        if (temp != null) {
+          if (temp.isZero()) {
+            if (result.isNIL()) {
+              result = ast.removeAtClone(i);
+            } else {
+              result.remove(j);
+            }
+            continue;
+          }
+          if (temp.isNumber()) {
+            return F.C0;
+          }
+        }
+        if (expr.isNonZeroComplexResult()) {
+          return F.C0;
+        }
+        j++;
+      }
+      return result;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int size = ast.size();
+      if (size == 1) {
+        return F.C1;
+      }
+      if (size > 1) {
+        IExpr arg1 = engine.evaluate(ast.arg1());
+
+        if (size == 2) {
+          INumber temp = arg1.evalNumber();
+          if (temp != null) {
+            if (temp.isZero()) {
+              return F.C1;
+            }
+            if (temp.isNumber()) {
+              return F.C0;
+            }
+          }
+          if (arg1.isNonZeroComplexResult()) {
+            return F.C0;
+          }
+          return F.NIL;
+        }
+
+        IExpr result = removeEval(ast, engine);
+        if (result.isPresent()) {
+          if (result.isAST()) {
+            if (result.isAST() && ((IAST) result).size() > 1) {
+              return result;
+            }
+            return F.C1;
+          }
+          return result;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.ORDERLESS | ISymbol.NUMERICFUNCTION);
+    }
+  }
+
 
   private static class Initializer {
 
     private static void init() {
       S.BernsteinBasis.setEvaluator(new BernsteinBasis());
       S.Clip.setEvaluator(new Clip());
-      S.SawtoothWave.setEvaluator(new SawtoothWave());
+      S.DiscreteDelta.setEvaluator(new DiscreteDelta());
+      S.KroneckerDelta.setEvaluator(new KroneckerDelta());
       S.Piecewise.setEvaluator(new Piecewise());
       S.PiecewiseExpand.setEvaluator(new PiecewiseExpand());
-
+      S.Ramp.setEvaluator(new Ramp());
       S.RealAbs.setEvaluator(new RealAbs());
       S.RealSign.setEvaluator(new RealSign());
+      S.SawtoothWave.setEvaluator(new SawtoothWave());
+      S.Unitize.setEvaluator(new Unitize());
+      S.UnitStep.setEvaluator(new UnitStep());
     }
   }
 
+
+  /**
+   *
+   *
+   * <pre>
+   * KroneckerDelta(arg1, arg2, ... argN)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * if all arguments <code>arg1</code> to <code>argN</code> are equal return <code>1</code>,
+   * otherwise return <code>0</code>.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * &gt;&gt; KroneckerDelta(42)
+   * 0
+   *
+   * &gt;&gt; KroneckerDelta(42, 42.0, 42)
+   * 1
+   * </pre>
+   */
+  private static class KroneckerDelta extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int size = ast.size();
+      if (size == 1) {
+        return F.C1;
+      }
+      if (size > 1) {
+        IExpr arg1 = engine.evaluate(ast.arg1());
+        IExpr temp = arg1.evalNumber();
+        if (temp == null) {
+          temp = arg1;
+        }
+        if (size == 2) {
+          if (temp.isZero()) {
+            return F.C1;
+          }
+          if (temp.isNonZeroComplexResult()) {
+            return F.C0;
+          }
+          return F.NIL;
+        }
+        arg1 = temp;
+        for (int i = 2; i < size; i++) {
+          IExpr expr = engine.evaluate(ast.get(i));
+          if (expr.equals(arg1)) {
+            continue;
+          }
+          temp = expr.evalNumber();
+          if (temp == null) {
+            return F.NIL;
+          } else {
+            if (temp.equals(arg1)) {
+              continue;
+            }
+          }
+          return F.C0;
+        }
+        return F.C1;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.ORDERLESS | ISymbol.NUMERICFUNCTION);
+    }
+  }
 
   /**
    *
@@ -336,7 +515,7 @@ public class PiecewiseFunctions {
    * -1
    * </pre>
    */
-  static final class Piecewise extends AbstractFunctionEvaluator {
+  private static final class Piecewise extends AbstractFunctionEvaluator {
 
     private static IASTAppendable appendPiecewise(IASTAppendable list, IExpr function,
         IExpr predicate, int matrixSize) {
@@ -458,8 +637,6 @@ public class PiecewiseFunctions {
       newSymbol.setAttributes(ISymbol.HOLDALL);
     }
   }
-
-
   private static final class PiecewiseExpand extends AbstractFunctionEvaluator {
     private static class PiecewiseExpandVisitor extends VisitorExpr {
       // private final EvalEngine engine;
@@ -524,7 +701,35 @@ public class PiecewiseFunctions {
   }
 
 
-  static final class RealAbs extends AbstractEvaluator {
+  private static final class Ramp extends AbstractEvaluator {
+
+    public Ramp() {}
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr expr = ast.arg1();
+      if (expr.isPositiveResult() || expr.isInfinity()) {
+        return expr;
+      }
+      if (expr.isNegativeResult() || expr.isNegativeInfinity() || expr.isZero()) {
+        return F.C0;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return IFunctionEvaluator.ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+    }
+  }
+
+
+  private static final class RealAbs extends AbstractEvaluator {
     private static final class AbsNumericFunction implements DoubleFunction<IExpr> {
       final ISymbol symbol;
 
@@ -595,7 +800,7 @@ public class PiecewiseFunctions {
   }
 
 
-  static final class RealSign extends AbstractEvaluator {
+  private static final class RealSign extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -647,6 +852,211 @@ public class PiecewiseFunctions {
       return ARGS_1_2;
     }
 
+  }
+
+
+  /**
+   *
+   *
+   * <pre>
+   * Unitize(expr)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * maps a non-zero <code>expr</code> to <code>1</code>, and a zero <code>expr</code> to <code>0
+   * </code>.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * &gt;&gt; Unitize((E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi)
+   * 0
+   * </pre>
+   */
+  private static class Unitize extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr x = ast.arg1();
+      if (ast.isAST2()) {
+        IExpr dx = ast.arg2();
+        if (dx.isNegativeResult()) {
+          // The threshold `1` should be positive.
+          return IOFunctions.printMessage(ast.topHead(), "post", F.List(dx), engine);
+        }
+        return unitize(x, dx, engine);
+      }
+      return unitize(x, engine);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+
+    private IExpr unitize(IExpr x, EvalEngine engine) {
+      if (x.isNumber()) {
+        return x.isZero() ? F.C0 : F.C1;
+      }
+      if (S.PossibleZeroQ.ofQ(engine, x)) {
+        return F.C0;
+      }
+      if (x.isNegativeResult() || x.isPositiveResult()) {
+        return F.C1;
+      }
+      IExpr temp = x.evalNumber();
+      if (temp != null) {
+        if (temp.isNegative()) {
+          return F.C1;
+        }
+        if (S.PossibleZeroQ.ofQ(engine, temp)) {
+          return F.C1;
+        }
+        return F.C0;
+      }
+      return F.NIL;
+    }
+
+    private IExpr unitize(IExpr x, IExpr dx, EvalEngine engine) {
+      // Piecewise({{1, dx-Abs(x)<= 0}}, 0)
+      IExpr temp = engine.evaluate(F.Subtract(dx, F.Abs(x)));
+      if (temp.isNegativeResult()) {
+        return F.C1;
+      }
+      if (temp.isPositiveResult()) {
+        return F.C0;
+      }
+      if (S.PossibleZeroQ.ofQ(engine, temp)) {
+        return F.C1;
+      }
+      temp = temp.evalNumber();
+      if (temp != null) {
+        if (temp.isNegative()) {
+          return F.C1;
+        }
+        if (S.PossibleZeroQ.ofQ(engine, temp)) {
+          return F.C1;
+        }
+        return F.C0;
+      }
+      return F.NIL;
+    }
+  }
+
+
+  /**
+   *
+   *
+   * <pre>
+   * UnitStep(expr)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * returns <code>0</code>, if <code>expr</code> is less than <code>0</code> and returns <code>1
+   * </code>, if <code>expr</code> is greater equal than <code>0</code>.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * &gt;&gt; UnitStep(-42)
+   * 0
+   * </pre>
+   */
+  private static class UnitStep extends AbstractEvaluator implements INumeric {
+
+    @Override
+    public double evalReal(double[] stack, int top, int size) {
+      for (int i = top - size + 1; i < top + 1; i++) {
+        if (stack[i] < 0.0) {
+          return 0.0;
+        }
+      }
+      return 1.0;
+    }
+
+    /**
+     * Unit step <code>1</code> for all x greater equal <code>0</code>. <code>0</code> in all other
+     * cases,
+     */
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int size = ast.size();
+      if (size > 1) {
+        for (int i = 1; i < size; i++) {
+          IExpr expr = ast.get(i);
+          IReal temp = expr.evalReal();
+          if (temp != null) {
+            if (temp.complexSign() < 0) {
+              return F.C0;
+            } else {
+              continue;
+            }
+          } else {
+            expr = engine.evaluate(expr);
+            if (expr.isNegativeInfinity()) {
+              return F.C0;
+            }
+            if (expr.isInfinity()) {
+              continue;
+            }
+            if (expr.isNegativeResult()) {
+              return F.C0;
+            }
+            if (expr.isNonNegativeResult()) {
+              continue;
+            }
+            if (expr.isInterval1()) {
+              IExpr l = expr.lower();
+              IExpr u = expr.upper();
+              if (l.isReal() && u.isReal()) {
+                IReal min = (IReal) l;
+                IReal max = (IReal) u;
+                if (min.complexSign() < 0) {
+                  if (max.complexSign() < 0) {
+                    return F.Interval(F.list(F.C0, F.C0));
+                  } else {
+                    if (size == 2) {
+                      return F.Interval(F.list(F.C0, F.C1));
+                    }
+                  }
+                } else {
+                  if (max.complexSign() < 0) {
+                    if (size == 2) {
+                      return F.Interval(F.list(F.C1, F.C0));
+                    }
+                  } else {
+                    if (size == 2) {
+                      return F.Interval(F.list(F.C1, F.C1));
+                    }
+                    continue;
+                  }
+                }
+              }
+            }
+          }
+          return F.NIL;
+        }
+      }
+      return F.C1;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+    }
   }
 
 

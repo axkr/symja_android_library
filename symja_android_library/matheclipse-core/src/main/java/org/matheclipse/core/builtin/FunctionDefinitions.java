@@ -88,7 +88,6 @@ public final class FunctionDefinitions {
       S.Plot3D.setEvaluator(new org.matheclipse.core.reflection.system.Plot3D());
       S.PolarPlot.setEvaluator(new org.matheclipse.core.reflection.system.PolarPlot());
       S.Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
-      S.Ramp.setEvaluator(new org.matheclipse.core.reflection.system.Ramp());
       S.Reduce.setEvaluator(new org.matheclipse.core.reflection.system.Reduce());
       S.Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
       S.Sum.setEvaluator(new org.matheclipse.core.reflection.system.Sum());
