@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Arithmetic;
+import org.matheclipse.core.builtin.PiecewiseFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
@@ -491,7 +491,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
         convertLogisticSigmoid(function, buf);
         return;
       }
-      IAST piecewiseExpand = Arithmetic.piecewiseExpand(function, S.Reals);
+      IAST piecewiseExpand = PiecewiseFunctions.piecewiseExpand(function, S.Reals);
       int[] dim = piecewiseExpand.isPiecewise();
       if (dim != null && convertPiecewise(dim, piecewiseExpand, buf)) {
         return;
@@ -530,7 +530,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
         buf.append("))))");
         return;
       }
-      IAST piecewiseExpand = Arithmetic.piecewiseExpand(function, S.Reals);
+      IAST piecewiseExpand = PiecewiseFunctions.piecewiseExpand(function, S.Reals);
       int[] dim = piecewiseExpand.isPiecewise();
       if (dim != null && convertPiecewise(dim, piecewiseExpand, buf)) {
         return;
