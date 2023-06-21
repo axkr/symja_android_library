@@ -8967,6 +8967,9 @@ public class S {
   public final static IBuiltInSymbol SatisfiableQ =
       S.initFinalSymbol("SatisfiableQ", ID.SatisfiableQ);
 
+  public final static IBuiltInSymbol SawtoothWave =
+      S.initFinalSymbol("SawtoothWave", ID.SawtoothWave);
+
   public final static IBuiltInSymbol Scale = S.initFinalSymbol("Scale", ID.Scale);
 
   public final static IBuiltInSymbol Scaled = S.initFinalSymbol("Scaled", ID.Scaled);

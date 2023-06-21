@@ -77,6 +77,7 @@ import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.builtin.NumericArrayFunctions;
 import org.matheclipse.core.builtin.OutputFunctions;
 import org.matheclipse.core.builtin.PatternMatching;
+import org.matheclipse.core.builtin.PiecewiseFunctions;
 import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.builtin.Programming;
@@ -1003,8 +1004,8 @@ public class F extends S {
       CompilerFunctions.initialize();
       JavaFunctions.initialize();
       SidesFunctions.initialize();
-
       ComputationalGeometryFunctions.initialize();
+      PiecewiseFunctions.initialize();
 
       COUNT_DOWN_LATCH.countDown();
 
