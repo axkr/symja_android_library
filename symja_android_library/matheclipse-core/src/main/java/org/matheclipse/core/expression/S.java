@@ -3520,6 +3520,8 @@ public class S {
 
   public final static IBuiltInSymbol FileFormat = S.initFinalSymbol("FileFormat", ID.FileFormat);
 
+  public final static IBuiltInSymbol FileHash = S.initFinalSymbol("FileHash", ID.FileHash);
+
   public final static IBuiltInSymbol FileNameJoin =
       S.initFinalSymbol("FileNameJoin", ID.FileNameJoin);
 
