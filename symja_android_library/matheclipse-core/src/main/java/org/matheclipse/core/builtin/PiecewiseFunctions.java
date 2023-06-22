@@ -842,8 +842,28 @@ public class PiecewiseFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr a = ast.arg1();
-      // IExpr b = ast.arg2();
+      IExpr arg1 = ast.arg1();
+      if (ast.isAST2()) {
+        if (arg1.isList2()) {
+          IExpr min = arg1.first();
+          IExpr max = arg1.second();
+          IExpr x = ast.arg2();
+          if (x.isList()) {
+            return x.mapThread(ast.setAtCopy(2, F.Slot1), 2);
+          }
+        }
+      } else {
+        IExpr x = arg1;
+        if (x.isList()) {
+          return x.mapThread(ast.setAtCopy(1, F.Slot1), 1);
+        }
+        if (x.isNumericFunction()) {
+          return engine.evaluate(F.Subtract(x, F.Floor(x)));
+        }
+        if (x.isPossibleZero(true)) {
+          return F.C0;
+        }
+      }
       return F.NIL;
     }
 
