@@ -21158,8 +21158,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
 
   public void testSawtoothWave() {
-    // check("SawtoothWave({0, 5},{0.4, 1.2, 3.6})", //
-    // "{SawtoothWave({0,5},0.4),SawtoothWave({0,5},1.2),SawtoothWave({0,5},3.6)}");
+    check("SawtoothWave({0, 5},{0.4, 1.2, 3.6})", //
+        "{2.0,1.0,3.0}");
     check("SawtoothWave(0.333)", //
         "0.333");
     check("SawtoothWave(17.333)", //

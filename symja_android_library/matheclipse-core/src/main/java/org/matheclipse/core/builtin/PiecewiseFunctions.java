@@ -851,13 +851,26 @@ public class PiecewiseFunctions {
           if (x.isList()) {
             return x.mapThread(ast.setAtCopy(2, F.Slot1), 2);
           }
+          if (min.isReal() & max.isReal()) {
+            IReal minNumber = (IReal) min;
+            IReal maxNumber = (IReal) max;
+            if (x.isNumericFunction() && x.isRealResult()) {
+              // min + (max - min) * (x - Floor(x))
+              return engine.evaluate(
+                  F.Plus(min, F.Times(maxNumber.subtract(minNumber), F.Subtract(x, F.Floor(x)))));
+            }
+            if (x.isPossibleZero(true)) {
+              return min;
+            }
+          }
+
         }
       } else {
         IExpr x = arg1;
         if (x.isList()) {
           return x.mapThread(ast.setAtCopy(1, F.Slot1), 1);
         }
-        if (x.isNumericFunction()) {
+        if (x.isNumericFunction() && x.isRealResult()) {
           return engine.evaluate(F.Subtract(x, F.Floor(x)));
         }
         if (x.isPossibleZero(true)) {
