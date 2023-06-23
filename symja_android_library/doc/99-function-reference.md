@@ -815,6 +815,7 @@
 * [SatisfiabilityCount](functions/SatisfiabilityCount.md)
 * [SatisfiabilityInstances](functions/SatisfiabilityInstances.md)
 * [SatisfiableQ](functions/SatisfiableQ.md)
+* [SawtoothWave](functions/SawtoothWave.md)
 * [ScalingTransform](functions/ScalingTransform.md)
 * [Scan](functions/Scan.md)
 * [SchurDecomposition](functions/SchurDecomposition.md)
