@@ -851,7 +851,7 @@ public class PiecewiseFunctions {
           if (x.isList()) {
             return x.mapThread(ast.setAtCopy(2, F.Slot1), 2);
           }
-          if (min.isReal() & max.isReal()) {
+          if (min.isReal() && max.isReal()) {
             IReal minNumber = (IReal) min;
             IReal maxNumber = (IReal) max;
             if (x.isNumericFunction() && x.isRealResult()) {

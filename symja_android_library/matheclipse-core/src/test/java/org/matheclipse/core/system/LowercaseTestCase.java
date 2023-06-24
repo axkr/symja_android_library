@@ -21158,6 +21158,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
 
   public void testSawtoothWave() {
+    check("SawtoothWave(-1.444444)", //
+        "0.555556");
+
     check("SawtoothWave({0, 5},{0.4, 1.2, 3.6})", //
         "{2.0,1.0,3.0}");
     check("SawtoothWave(0.333)", //
@@ -21170,6 +21173,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/41");
     check("N(SawtoothWave(-1/47), 50)", //
         "0.97872340425531914893617021276595744680851063829787");
+
     check("SawtoothWave({0.4, 1.2, 3.6})", //
         "{0.4,0.2,0.6}");
 
