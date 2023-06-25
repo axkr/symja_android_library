@@ -1752,7 +1752,8 @@ public class EvalEngine implements Serializable {
         if (Config.FUZZ_TESTING) {
           throw new NullPointerException();
         }
-        LOGGER.log(getLogLevel(), "Evaluation aborted: {}", result);
+        // `1`.
+        IOFunctions.printMessage(result.topHead(), "error", F.List(uoe.getMessage()), this);
         throw AbortException.ABORTED;
       } finally {
         stackPop();
