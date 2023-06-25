@@ -569,7 +569,7 @@ public final class OutputFunctions {
           return F.$str(((IASTDataset) arg1).datasetToJSForm(), IStringX.TEXT_HTML);
         }
         if (arg1 instanceof GraphExpr) {
-          return F.$str(GraphFunctions.graphToJSForm((GraphExpr) arg1),
+          return F.$str(((GraphExpr) arg1).graphToJSForm(),
               IStringX.APPLICATION_JAVASCRIPT);
         }
 

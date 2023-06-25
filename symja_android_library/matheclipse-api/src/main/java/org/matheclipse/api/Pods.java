@@ -31,7 +31,6 @@ import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.matheclipse.api.parser.FuzzyParser;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.builtin.StringFunctions;
 import org.matheclipse.core.convert.VariablesSet;
@@ -969,7 +968,7 @@ public class Pods {
                     StringFunctions.inputForm(inExpr), "Function", "Plotter", form, engine);
                 numpods++;
               } else if (outExpr instanceof GraphExpr) {
-                String javaScriptStr = GraphFunctions.graphToJSForm((GraphExpr) outExpr);
+                String javaScriptStr = ((GraphExpr) outExpr).graphToJSForm();
                 if (javaScriptStr != null) {
                   String html = VISJS_IFRAME;
                   html = StringUtils.replace(html, "`1`", javaScriptStr);
@@ -1292,7 +1291,7 @@ public class Pods {
           }
           outExpr = engine.evaluate(inExpr);
           if (outExpr instanceof GraphExpr) {
-            String javaScriptStr = GraphFunctions.graphToJSForm((GraphExpr) outExpr);
+            String javaScriptStr = ((GraphExpr) outExpr).graphToJSForm();
             if (javaScriptStr != null) {
               String html = VISJS_IFRAME;
               html = StringUtils.replace(html, "`1`", javaScriptStr);

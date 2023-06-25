@@ -47,91 +47,6 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     }
   }
 
-  /** The UNDEFINED value type token. */
-  public static final byte UNDEFINED = (byte) (0xFF);
-
-  /**
-   * See <a href=
-   * "https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
-   * - Section NUmeric Arrays</a>
-   */
-  public static final byte Integer8 = (byte) (0x00);
-
-  /**
-   * See <a href=
-   * "https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
-   * - Section NUmeric Arrays</a>
-   */
-  public static final byte Integer16 = (byte) (0x01);
-
-  /**
-   * See <a href=
-   * "https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
-   * - Section NUmeric Arrays</a>
-   */
-  public static final byte Integer32 = (byte) (0x02);
-  /**
-   * See <a href=
-   * "https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
-   * - Section NUmeric Arrays</a>
-   */
-  public static final byte Integer64 = (byte) (0x03);
-
-  /**
-   * See <a href=
-   * "https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
-   * - Section NUmeric Arrays</a>
-   */
-  public static final byte UnsignedInteger8 = (byte) (0x10);
-
-  /**
-   * See <a href=
-   * "https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
-   * - Section NUmeric Arrays</a>
-   */
-  public static final byte UnsignedInteger16 = (byte) (0x11);
-
-  /**
-   * See <a href=
-   * "https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
-   * - Section NUmeric Arrays</a>
-   */
-  public static final byte UnsignedInteger32 = (byte) (0x12);
-
-  /**
-   * See <a href=
-   * "https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
-   * - Section NUmeric Arrays</a>
-   */
-  public static final byte UnsignedInteger64 = (byte) (0x13);
-
-  /**
-   * See <a href=
-   * "https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
-   * - Section NUmeric Arrays</a>
-   */
-  public static final byte Real32 = (byte) (0x22);
-
-  /**
-   * See <a href=
-   * "https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
-   * - Section NUmeric Arrays</a>
-   */
-  public static final byte Real64 = (byte) (0x23);
-
-  /**
-   * See <a href=
-   * "https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
-   * - Section NUmeric Arrays</a>
-   */
-  public static final byte ComplexReal32 = (byte) (0x33);
-
-  /**
-   * See <a href=
-   * "https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXFFormatDescription
-   * - Section NUmeric Arrays</a>
-   */
-  public static final byte ComplexReal64 = (byte) (0x34);
 
   private static final Map<String, Byte> TYPE_MAP = new HashMap<String, Byte>();
 
@@ -562,7 +477,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     return null;
   }
 
-  private static NumericArrayExpr newList(final IAST list, byte type)
+  public static NumericArrayExpr newList(final IAST list, byte type)
       throws RangeException, TypeException {
     int[] dimension = null;
     final IntList dims = LinearAlgebra.dimensions(list);

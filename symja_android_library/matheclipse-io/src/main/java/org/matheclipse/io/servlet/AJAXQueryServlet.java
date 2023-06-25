@@ -18,7 +18,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
-import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
@@ -254,7 +253,7 @@ public class AJAXQueryServlet extends HttpServlet {
             IAST show = (IAST) outExpr;
             return JSONBuilder.createJSONShow(engine, show);
           } else if (outExpr instanceof GraphExpr) {
-            String javaScriptStr = GraphFunctions.graphToJSForm((GraphExpr) outExpr);
+            String javaScriptStr = ((GraphExpr) outExpr).graphToJSForm();
             if (javaScriptStr != null) {
               String html = VISJS_IFRAME;
               html = StringUtils.replace(html, "`1`", javaScriptStr);

@@ -652,6 +652,8 @@ public class IOFunctions {
       "nquan",
       "The Quantile specification `1` should be a number or a list of numbers between `2` and `3`.",
       "nvld", "The expression `1` is not a valid interval.", //
+      "notent",
+      "`1` is not a known entity, class or tag for GraphData. Use GraphData for a list of entities.", //
       "notunicode",
       "A character unicode, which should be a non-negative integer less than 1114112, is expected at position `2` in `1`.", //
       "noprime", "There are no primes in the specified interval.", //

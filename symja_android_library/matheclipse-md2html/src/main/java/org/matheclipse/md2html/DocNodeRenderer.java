@@ -17,7 +17,6 @@ import org.commonmark.node.Node;
 import org.commonmark.renderer.html.CoreHtmlNodeRenderer;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlWriter;
-import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
@@ -131,7 +130,7 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
             return true;
           }
         } else if (result instanceof GraphExpr) {
-          String javaScriptStr = GraphFunctions.graphToJSForm((GraphExpr) result);
+          String javaScriptStr = ((GraphExpr) result).graphToJSForm();
           if (javaScriptStr != null) {
             String htmlStr = JSBuilder.VISJS_IFRAME;
             htmlStr = StringUtils.replace(htmlStr, "`1`", javaScriptStr);

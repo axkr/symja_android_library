@@ -402,6 +402,13 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public IExpr evaluate(EvalEngine engine) {
+    Function<IExpr, IExpr> symbolReplaceFunction = engine.getSymbolReplaceFunction();
+    if (symbolReplaceFunction != null) {
+      IExpr replacement = symbolReplaceFunction.apply(this);
+      if (replacement.isPresent()) {
+        return replacement;
+      }
+    }
     if (hasAssignedSymbolValue()) {
       return assignedValue();
     }

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,6 +28,7 @@ import org.matheclipse.core.expression.data.ExprEdge;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.expression.data.IExprEdge;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IStringX;
@@ -37,10 +39,11 @@ import org.matheclipse.parser.trie.TrieMatch;
 /** Functions for graph theory algorithms. */
 public class GraphDataFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
-  private static final TrieBuilder<String, Supplier<Graph>, ArrayList<Supplier<Graph>>> TRIE_STRING2GRAPH_BUILDER =
+
+  private static final TrieBuilder<String, Supplier<Graph<IExpr, ?>>, ArrayList<Supplier<Graph<IExpr, ?>>>> TRIE_STRING2GRAPH_BUILDER =
       TrieBuilder.create();
-  private static Map<String, Supplier<Graph>> GRAPH_MAP =
-      TRIE_STRING2GRAPH_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
+  private static Map<String, Supplier<Graph<IExpr, ?>>> GRAPH_MAP =
+      TRIE_STRING2GRAPH_BUILDER.withMatch(TrieMatch.EXACT).build();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -84,20 +87,28 @@ public class GraphDataFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
-        if (ast.isAST1()) {
-          if (ast.arg1().isString()) {
-            String graphName = ((IStringX) ast.arg1()).toString();
-            Supplier<Graph> supplier = GRAPH_MAP.get(graphName);
-            if (supplier != null) {
-              Graph<IExpr, ExprEdge> g = supplier.get();
-              return GraphExpr.newInstance(g);
-            }
-            LOGGER.log(engine.getLogLevel(),
-                "GraphData: no value associated with the specified graph name: {}", graphName);
+        if (ast.isAST0()) {
+          Set<String> keySet = GRAPH_MAP.keySet();
+          IASTAppendable result = F.ListAlloc(keySet.size());
+          for (String name : keySet) {
+            result.append(F.List(name));
           }
+          return result;
+        } else if (ast.isAST1()) {
+          IExpr arg1 = ast.arg1();
+          if (arg1.isString()) {
+            String graphName = ((IStringX) arg1).toString();
+            Supplier<Graph<IExpr, ?>> supplier = GRAPH_MAP.get(graphName);
+            if (supplier != null) {
+              return GraphExpr.newInstance(supplier.get());
+            }
+          }
+          // `1` is not a known entity, class or tag for GraphData. Use GraphData for a list of
+          // entities.
+          return IOFunctions.printMessage(S.GraphData, "notent", F.List(arg1), engine);
         }
       } catch (RuntimeException rex) {
-        LOGGER.debug("GraphData.evaluate() failed", rex);
+        rex.printStackTrace();
       }
       return F.NIL;
     }
@@ -110,7 +121,7 @@ public class GraphDataFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_0_1;
     }
   }
 
@@ -485,12 +496,13 @@ public class GraphDataFunctions {
     targetGraph.addEdge(u, v);
   }
 
-  private static void addCycle(HashMap<IExpr, IExpr> vertexMap, Graph<IExpr, ExprEdge> targetGraph,
-      int array[]) {
-    for (int i = 0; i < array.length; i++) {
-      addEdge(vertexMap, targetGraph, array[i], array[(i + 1) % array.length]);
-    }
-  }
+  // private static void addCycle(HashMap<IExpr, IExpr> vertexMap, Graph<IExpr, ExprEdge>
+  // targetGraph,
+  // int array[]) {
+  // for (int i = 0; i < array.length; i++) {
+  // addEdge(vertexMap, targetGraph, array[i], array[(i + 1) % array.length]);
+  // }
+  // }
 
   private GraphDataFunctions() {}
 }
