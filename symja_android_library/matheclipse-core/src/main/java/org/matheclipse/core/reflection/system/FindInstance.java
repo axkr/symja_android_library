@@ -88,15 +88,22 @@ public class FindInstance extends Solve {
       } catch (RuntimeException rex) {
       }
 
+      ISymbol domain = S.Complexes;
       if (argSize >= 3) {
-        if (ast.arg3().equals(S.Booleans) || formula) {
-          return BooleanFunctions.solveInstances(ast.arg1(), vars, maxChoices);
-        } else if (ast.arg3().equals(S.Integers)) {
-          return Solve.solveIntegers(ast, vars, vars, maxChoices, engine);
+        if (!ast.arg3().isSymbol()) {
+          // Warning: `1` is not a valid domain specification.
+          IOFunctions.printMessage(ast.topHead(), "bdomv", F.List(ast.arg3()), engine);
+        } else {
+          if (ast.arg3() == S.Booleans || formula) {
+            return BooleanFunctions.solveInstances(ast.arg1(), vars, maxChoices);
+          } else if (ast.arg3() == S.Integers) {
+            return Solve.solveIntegers(ast, vars, vars, maxChoices, engine);
+          }
+          if (domain != S.Reals && domain != S.Complexes) {
+            // Warning: `1` is not a valid domain specification.
+            IOFunctions.printMessage(ast.topHead(), "bdomv", F.List(ast.arg3()), engine);
+          }
         }
-        LOGGER.log(engine.getLogLevel(), "{}: Booleans domain expected at position 3 instead of {}",
-            ast.topHead(), ast.arg3());
-        return F.NIL;
       }
       IASTMutable termsEqualZeroList = Validate.checkEquations(ast, 1);
       SolveData solveData = new Solve.SolveData(options);

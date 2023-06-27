@@ -14,9 +14,10 @@ public class FindInstanceTest extends ExprEvaluatorTestCase {
   }
 
   public void testFindInstanceBooleans() {
+    // message - FindInstance: Illegal arguments: "1" in LogicFormula.
     check("FindInstance(1,{a,b,c,d},Booleans)", //
         "FindInstance(1,{a,b,c,d},Booleans)");
-    check("FindInstance((a || b || c) && (! a || ! b || ! c) && True, {a, b, c}, 2)",
+    check("FindInstance((a || b || c) && (! a || ! b || ! c) && True, {a, b, c}, Booleans,2)",
         "{{a->False,b->True,c->True},{a->False,b->True,c->False}}");
     check("FindInstance(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)",
         "{{a->False,b->True,c->False,d->False}}");

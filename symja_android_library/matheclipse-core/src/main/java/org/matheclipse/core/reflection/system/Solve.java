@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.linear.FieldMatrix;
@@ -1740,26 +1739,23 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           ISymbol domain = S.Complexes;
           if (ast.isAST3()) {
             if (!ast.arg3().isSymbol()) {
-              LOGGER.log(engine.getLogLevel(),
-                  "{}: domain definition expected at position 3 instead of {}", ast.topHead(),
-                  ast.arg3());
-              return F.NIL;
-            }
-            domain = (ISymbol) ast.arg3();
-            if (domain.equals(S.Booleans)) {
-              return BooleanFunctions.solveInstances(ast.arg1(), userDefinedVariables,
-                  Integer.MAX_VALUE);
-            }
-            if (domain.equals(S.Integers)) {
-              return solveIntegers(ast, equationVariables, userDefinedVariables, Integer.MAX_VALUE,
-                  engine);
-            }
+              // Warning: `1` is not a valid domain specification.
+              IOFunctions.printMessage(ast.topHead(), "bdomv", F.List(ast.arg3()), engine);
+            } else {
+              domain = (ISymbol) ast.arg3();
+              if (domain == S.Booleans) {
+                return BooleanFunctions.solveInstances(ast.arg1(), userDefinedVariables,
+                    Integer.MAX_VALUE);
+              }
+              if (domain == S.Integers) {
+                return solveIntegers(ast, equationVariables, userDefinedVariables,
+                    Integer.MAX_VALUE, engine);
+              }
 
-            if (!domain.equals(S.Reals) && !domain.equals(S.Complexes)) {
-              Level level = engine.getLogLevel();
-              LOGGER.log(level, "{}: domain definition expected at position 3 instead of {}",
-                  ast.topHead(), domain);
-              return F.NIL;
+              if (domain != S.Reals && domain != S.Complexes) {
+                // Warning: `1` is not a valid domain specification.
+                IOFunctions.printMessage(ast.topHead(), "bdomv", F.List(ast.arg3()), engine);
+              }
             }
 
           }

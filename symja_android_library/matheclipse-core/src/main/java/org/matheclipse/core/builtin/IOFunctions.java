@@ -504,6 +504,7 @@ public class IOFunctions {
       "The second argument `1` of Element should be one of: Primes, Integers, Rationals, Algebraics, Reals, Complexes or Booleans.", //
       "bfun", "`1` is not a boolean-valued pure function.", //
       "boxfmt", "`1` is not a box formatting type.", //
+      "bdomv", "Warning: `1` is not a valid domain specification.", //
       "cfn", "Numerical error encountered, proceeding with uncompiled evaluation.", //
       "coef", "The first argument `1` of `2` should be a non-empty list of positive integers.", //
       "color", "`1` is not a valid color or gray-level specification.", //
