@@ -226,22 +226,25 @@ public class ExprParser extends Scanner {
     return ast;
   }
 
-  protected IExpr convertSymbolOnInput(final String nodeStr, final String context) {
+  protected IExpr convertSymbolOnInput(final String nodeStr, final String context,
+      boolean convertOnSymbol) {
     if (fRelaxedSyntax) {
       if (nodeStr.length() == 1) {
-        if (nodeStr.equals("I")) {
+        if (convertOnSymbol && nodeStr.equals("I")) {
           // special - convert on input
           return F.CI;
         }
         return F.symbol(nodeStr, context, null, fEngine);
       }
       String lowercaseStr = nodeStr.toLowerCase(Locale.ENGLISH);
-      if (lowercaseStr.equals("infinity")) {
-        // special - convert on input
-        return F.CInfinity;
-      } else if (lowercaseStr.equals("complexinfinity")) {
-        // special - convert on input
-        return F.CComplexInfinity;
+      if (convertOnSymbol) {
+        if (lowercaseStr.equals("infinity")) {
+          // special - convert on input
+          return F.CInfinity;
+        } else if (lowercaseStr.equals("complexinfinity")) {
+          // special - convert on input
+          return F.CComplexInfinity;
+        }
       }
       String temp = AST2Expr.PREDEFINED_ALIASES_MAP.get(lowercaseStr);
       if (temp != null) {
@@ -259,15 +262,31 @@ public class ExprParser extends Scanner {
         }
       }
 
-      if (lowercaseStr.equals("I")) {
-        // special - convert on input
-        return F.CI;
-      } else if (lowercaseStr.equals("Infinity")) {
-        // special - convert on input
-        return F.CInfinity;
+      if (convertOnSymbol) {
+        if (lowercaseStr.equals("I")) {
+          // special - convert on input
+          return F.CI;
+        } else if (lowercaseStr.equals("Infinity")) {
+          // special - convert on input
+          return F.CInfinity;
+        } else if (lowercaseStr.equals("ComplexInfinity")) {
+          // special - convert on input
+          return F.CComplexInfinity;
+        }
       }
       return F.symbol(lowercaseStr, context, null, fEngine);
     }
+  }
+
+  protected IExpr convertSymbolOnInput(final ISymbol symbol) {
+    if (symbol == S.I) {
+      return F.CI;
+    } else if (symbol == S.Infinity) {
+      return F.CInfinity;
+    } else if (symbol == S.ComplexInfinity) {
+      return F.CComplexInfinity;
+    }
+    return symbol;
   }
 
   private IExpr createInfixFunction(InfixExprOperator infixOperator, IExpr lhs, IExpr rhs) {
@@ -354,25 +373,15 @@ public class ExprParser extends Scanner {
     IExpr temp = null;
     switch (fToken) {
       case TT_IDENTIFIER:
-        temp = getSymbol();
+        temp = getSymbol(false);
         if (temp.isSymbol()) {
           ISymbol symbol = (ISymbol) temp;
-          // if (fToken == TT_COLON) {
-          // getNextToken();
-          // if (fToken == TT_IDENTIFIER) {
-          // temp = getSymbol();
-          // temp = parseArguments(temp);
-          // return F.Pattern(symbol, temp);
-          // } else {
-          // temp = getFactor(0);
-          // }
-          // temp = F.Pattern(symbol, temp);
-          // } else
           if (fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
             temp = getBlankPatterns(symbol);
+          } else {
+            temp = convertSymbolOnInput(symbol);
           }
         }
-        // }
         return parseArguments(temp);
 
       case TT_PRECEDENCE_OPEN:
@@ -547,7 +556,7 @@ public class ExprParser extends Scanner {
         } else {
           getNextToken();
           if (fToken == TT_IDENTIFIER) {
-            final IExpr check = getSymbol();
+            final IExpr check = getSymbol(true);
             temp = F.$b(check);
             // temp = fFactory.createPattern(null, check);
           } else {
@@ -565,7 +574,7 @@ public class ExprParser extends Scanner {
         } else {
           getNextToken();
           if (fToken == TT_IDENTIFIER) {
-            final IExpr check = getSymbol();
+            final IExpr check = getSymbol(true);
             temp = F.$ps(null, check);
             // temp = fFactory.createPattern2(null, check);
           } else {
@@ -583,7 +592,7 @@ public class ExprParser extends Scanner {
         } else {
           getNextToken();
           if (fToken == TT_IDENTIFIER) {
-            final IExpr check = getSymbol();
+            final IExpr check = getSymbol(true);
             temp = F.$ps(null, check, false, true);
             // temp = fFactory.createPattern3(null, check);
           } else {
@@ -601,7 +610,7 @@ public class ExprParser extends Scanner {
         } else {
           getNextToken();
           if (fToken == TT_IDENTIFIER) {
-            final IExpr check = getSymbol();
+            final IExpr check = getSymbol(true);
             temp = F.$b(check, true);
             // temp = fFactory.createPattern(null, check, true);
           } else {
@@ -645,7 +654,7 @@ public class ExprParser extends Scanner {
         } else {
           getNextToken();
           if (fToken == TT_IDENTIFIER) {
-            final IExpr check = getSymbol();
+            final IExpr check = getSymbol(true);
             temp = F.$p(symbol, check);
           } else {
             temp = F.$p(symbol, null);
@@ -660,7 +669,7 @@ public class ExprParser extends Scanner {
         } else {
           getNextToken();
           if (fToken == TT_IDENTIFIER) {
-            final IExpr check = getSymbol();
+            final IExpr check = getSymbol(true);
             temp = F.$ps(symbol, check);
           } else {
             temp = F.$ps(symbol, null);
@@ -675,7 +684,7 @@ public class ExprParser extends Scanner {
         } else {
           getNextToken();
           if (fToken == TT_IDENTIFIER) {
-            final IExpr check = getSymbol();
+            final IExpr check = getSymbol(true);
             temp = F.$ps(symbol, check, false, true);
           } else {
             temp = F.$ps(symbol, null, false, true);
@@ -690,7 +699,7 @@ public class ExprParser extends Scanner {
         } else {
           getNextToken();
           if (fToken == TT_IDENTIFIER) {
-            final IExpr check = getSymbol();
+            final IExpr check = getSymbol(true);
             temp = F.$p(symbol, check, true);
           } else {
             temp = F.$p(symbol, null, true);
@@ -1080,17 +1089,20 @@ public class ExprParser extends Scanner {
 
   /**
    * Read the current identifier from the expression factories table
+   * 
+   * @param convertOnInput TODO
    *
    * @return
    * @see
    */
-  private IExpr getSymbol() throws SyntaxError {
+  private IExpr getSymbol(boolean convertOnInput) throws SyntaxError {
     String[] identifierContext = getIdentifier();
     if (!fFactory.isValidIdentifier(identifierContext[0])) {
       throwSyntaxError("Invalid identifier: " + identifierContext[0] + " detected.");
     }
 
-    final IExpr symbol = convertSymbolOnInput(identifierContext[0], identifierContext[1]);
+    final IExpr symbol =
+        convertSymbolOnInput(identifierContext[0], identifierContext[1], convertOnInput);
     getNextToken();
     return symbol;
   }

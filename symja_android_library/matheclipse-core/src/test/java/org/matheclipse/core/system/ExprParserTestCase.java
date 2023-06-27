@@ -33,4 +33,14 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
     IExpr result = engine.evaluate(expr);
     assertEquals(result.toString(), "2.2250738585072014`*^-308");
   }
+
+  public void testParserConvertOnInput() {
+    // see issue #787
+    EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);
+    ExprParser p = new ExprParser(engine, true);
+    // the test expression is not useful, but parses the full form as in MMA:
+    IExpr expr = p.parse("I_m==a*c");
+    assertEquals("Equal(Pattern(I, Blank(m)), Times(a, c))", //
+        expr.fullFormString());
+  }
 }

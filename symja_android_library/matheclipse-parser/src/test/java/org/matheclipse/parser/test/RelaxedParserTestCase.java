@@ -96,4 +96,13 @@ class RelaxedParserTestCase {
     ASTNode obj = p.parse("x[ [ ] ]");
     assertEquals("Part(x)", obj.toString());
   }
+
+  @Test
+  void testParser12() {
+    Parser p = new Parser(true);
+    ASTNode obj = p.parse("I_m==a*c");
+    assertEquals(
+        "Equal(I_m, Times(a, c))",
+        obj.toString());
+  }
 }

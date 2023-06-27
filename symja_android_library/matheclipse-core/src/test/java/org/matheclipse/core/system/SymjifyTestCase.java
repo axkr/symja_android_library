@@ -9,6 +9,40 @@ public class SymjifyTestCase extends ExprEvaluatorTestCase {
     super(name);
   }
 
+  public void test787_1() {
+    // issue #787
+    IExpr minus = F.symjify("y").minus(F.ZZ(1));
+     assertEquals("-1+y", //
+     minus.toString());
+    IExpr power = F.symjify("z").power(minus);
+     assertEquals("z^(-1+y)", //
+         power.toString());
+     assertEquals("Times(x, Power(z, Plus(-1, y)))", //
+     F.symjify("x").multiply(power).fullFormString());
+
+     assertEquals("x/z^(1-y)", //
+        F.symjify("x").multiply(power).toString());
+     assertEquals("Times(x, Power(z, Plus(-1, y)))", //
+         F.symjify("x").multiply(power).fullFormString());
+  }
+
+  public void test787_2() {
+    // issue #787
+    IExpr minus = F.symjify("y").minus(F.ZZ(1));
+    assertEquals("-1+y", //
+        minus.toString());
+    IExpr power = F.symjify("z").power(minus);
+    assertEquals("z^(-1+y)", //
+        power.toString());
+    assertEquals("Times(x, Power(z, Plus(-1, y)))", //
+        F.symjify("x").multiply(power).fullFormString());
+
+    assertEquals("x*z^(1-y)", //
+        F.symjify("x").divide(power).toString());
+    assertEquals("Times(x, Power(z, Plus(1, Times(-1, y))))", //
+        F.symjify("x").divide(power).fullFormString());
+  }
+
   public void test001() {
     IExpr expr = F.symjify("(a+(b+c))");
     assertEquals(expr.fullFormString(), "Plus(a, b, c)");
