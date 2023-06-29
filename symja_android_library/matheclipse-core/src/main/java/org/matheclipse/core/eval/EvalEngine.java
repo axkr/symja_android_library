@@ -43,6 +43,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
+import org.matheclipse.core.expression.AbstractAST.NILPointer;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
@@ -1697,6 +1698,14 @@ public class EvalEngine implements Serializable {
    * @see #evaluateNIL(IExpr)
    */
   private final IExpr evalLoop(final IExpr expr) {
+    if (expr instanceof NILPointer || expr == null) {
+      if (Config.FUZZ_TESTING) {
+        throw new NullPointerException();
+      }
+      LOGGER.log(getLogLevel(),
+          "Evaluation aborted in EvalEngine#evalLoop() because of undefined expression!");
+      throw AbortException.ABORTED;
+    }
     if (expr instanceof IAST) {
       final IExpr head = expr.head();
       if (head instanceof IBuiltInSymbol) {
@@ -1705,14 +1714,8 @@ public class EvalEngine implements Serializable {
           return ((IFastFunctionEvaluator) evaluator).evaluate((IAST) expr, this);
         }
       }
-    } else if (expr == null || expr.isNIL()) {
-      if (Config.FUZZ_TESTING) {
-        throw new NullPointerException();
-      }
-      LOGGER.log(getLogLevel(),
-          "Evaluation aborted in EvalEngine#evalLoop() because of undefined expression!");
-      throw AbortException.ABORTED;
     }
+
     if ((fRecursionLimit > 0) && (fRecursionCounter > fRecursionLimit)) {
       LOGGER.debug(expr);
       RecursionLimitExceeded.throwIt(fRecursionLimit, expr);
