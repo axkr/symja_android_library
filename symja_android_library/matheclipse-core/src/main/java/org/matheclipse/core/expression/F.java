@@ -3968,12 +3968,12 @@ public class F extends S {
    *
    * @param a the expression which should be evaluated
    * @return the evaluated object or <code>F.NIL</code> if no evaluation was possible
-   * @see EvalEngine#evalQuietNull(IExpr)
+   * @see EvalEngine#evalQuietNIL(IExpr)
    * @deprecated use EvalEngine#evalQuietNull()
    */
   @Deprecated
   public static IExpr evalQuietNull(IExpr a) {
-    return EvalEngine.get().evalQuietNull(a);
+    return EvalEngine.get().evalQuietNIL(a);
   }
 
   /**

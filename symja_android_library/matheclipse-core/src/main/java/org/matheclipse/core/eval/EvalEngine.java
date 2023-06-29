@@ -2014,9 +2014,22 @@ public class EvalEngine implements Serializable {
    *
    * @param expr the expression which should be evaluated
    * @return the evaluated object or {@link F#NIL} if no evaluation was possible
+   * @deprecated use {@link #evalQuietNIL(IExpr)}
+   */
+  @Deprecated
+  public final IExpr evalQuietNull(final IExpr expr) {
+    return evalQuietNIL(expr);
+  }
+
+  /**
+   * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not possible return <code>
+   * F.NIL</code>. In &quot;quiet mode&quot; all warnings would be suppressed.
+   *
+   * @param expr the expression which should be evaluated
+   * @return the evaluated object or {@link F#NIL} if no evaluation was possible
    * @see EvalEngine#evalWithoutNumericReset(IExpr)
    */
-  public final IExpr evalQuietNull(final IExpr expr) {
+  public final IExpr evalQuietNIL(final IExpr expr) {
     boolean quiet = isQuietMode();
     try {
       setQuietMode(true);

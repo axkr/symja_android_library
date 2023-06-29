@@ -2514,7 +2514,7 @@ public final class Programming {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      IExpr evalQuiet = engine.evalQuietNull(arg1);
+      IExpr evalQuiet = engine.evalQuietNIL(arg1);
       return evalQuiet.orElse(arg1);
       // boolean oldQuietMode = engine.isQuietMode();
       // try {

@@ -435,7 +435,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
     if (from.isPositive()) {
       IExpr temp1 = engine.evalQuiet(F.Sum(expr, F.list(var, C0, from.minus(F.C1))));
       if (!temp1.isComplexInfinity() && temp1.isFreeAST(S.Sum)) {
-        IExpr temp2 = engine.evalQuietNull(F.Sum(expr, F.list(var, C0, to)));
+        IExpr temp2 = engine.evalQuietNIL(F.Sum(expr, F.list(var, C0, to)));
         if (temp2.isPresent() && !temp2.isComplexInfinity()) {
           return F.Subtract(temp2, temp1);
         }
