@@ -1,5 +1,9 @@
 package org.matheclipse.core.system;
 
+import java.io.PrintStream;
+import java.io.StringWriter;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.util.WriterOutputStream;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -73,5 +77,27 @@ public class SymjifyTestCase extends ExprEvaluatorTestCase {
     IExpr expr = F.symjify(new boolean[][] {{true, false}, {false, true}});
     assertEquals(expr.fullFormString(), "List(List(True, False), List(False, True))");
     assertEquals(expr.toString(), "{{True,False},{False,True}}");
+  }
+
+  public void testEvalQuiet() {
+    final StringWriter outWriter = new StringWriter();
+    WriterOutputStream wouts = new WriterOutputStream(outWriter);
+    final StringWriter errorWriter = new StringWriter();
+    WriterOutputStream werrors = new WriterOutputStream(errorWriter);
+    PrintStream outs = new PrintStream(wouts);
+    PrintStream errors = new PrintStream(werrors);
+    EvalEngine engine = new EvalEngine("", 256, 256, outs, errors, true);
+    EvalEngine.set(engine);
+    IExpr result =
+        F.eval(F.Quiet(F.Solve(F.List(F.Equal(F.symjify("x").multiply(F.symjify("y")), F.ZZ(1))),
+            F.List(F.symjify("x"), F.symjify("y")))));
+    try (PrintStream errorPrintStream = engine.getErrorPrintStream()) {
+      String message = errorWriter.toString();
+      // don't get message: "Solve: The system cannot be solved with the methods available to
+      // Solve."
+      assertEquals("", message);
+    }
+    assertEquals("Solve({x*y==1},{x,y})", //
+        result.toString());
   }
 }

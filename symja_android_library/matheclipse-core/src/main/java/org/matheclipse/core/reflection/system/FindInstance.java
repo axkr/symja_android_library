@@ -63,7 +63,7 @@ public class FindInstance extends Solve {
     try {
       boolean formula = false;
       int maxChoices = 1;
-      if (argSize > 0 && argSize < ast.size()) {
+      if (argSize > 0 && argSize < ast.argSize()) {
         ast = ast.copyUntil(argSize + 1);
       }
       if (argSize >= 4) {

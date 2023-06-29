@@ -32,6 +32,7 @@ import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFastFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
@@ -141,7 +142,8 @@ public final class Programming {
    * $Aborted
    * </pre>
    */
-  private static final class Abort extends AbstractCoreFunctionEvaluator {
+  private static final class Abort extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -157,7 +159,8 @@ public final class Programming {
     public void setUp(final ISymbol newSymbol) {}
   }
 
-  private static class AbsoluteTiming extends AbstractCoreFunctionEvaluator {
+  private static class AbsoluteTiming extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -204,7 +207,8 @@ public final class Programming {
    * 11
    * </pre>
    */
-  private static final class Break extends AbstractCoreFunctionEvaluator {
+  private static final class Break extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -264,7 +268,8 @@ public final class Programming {
     }
   }
 
-  private static final class Catch extends AbstractCoreFunctionEvaluator {
+  private static final class Catch extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -342,7 +347,8 @@ public final class Programming {
    * </code>
    * </pre>
    */
-  private static final class Check extends AbstractCoreFunctionEvaluator {
+  private static final class Check extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -392,7 +398,8 @@ public final class Programming {
    * </code>
    * </pre>
    */
-  private static final class CheckAbort extends AbstractCoreFunctionEvaluator {
+  private static final class CheckAbort extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -553,7 +560,8 @@ public final class Programming {
    *  | 7
    * </pre>
    */
-  private static final class Continue extends AbstractCoreFunctionEvaluator {
+  private static final class Continue extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -595,7 +603,8 @@ public final class Programming {
    * </code>
    * </pre>
    */
-  private static class Defer extends AbstractCoreFunctionEvaluator {
+  private static class Defer extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // if (!ToggleFeature.DEFER) {
@@ -1275,7 +1284,8 @@ public final class Programming {
    * </code>
    * </pre>
    */
-  private static final class Interrupt extends AbstractCoreFunctionEvaluator {
+  private static final class Interrupt extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1357,7 +1367,8 @@ public final class Programming {
     }
   }
 
-  private static class MaxMemoryUsed extends AbstractCoreFunctionEvaluator {
+  private static class MaxMemoryUsed extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1374,7 +1385,8 @@ public final class Programming {
     }
   }
 
-  private static class MemoryAvailable extends AbstractCoreFunctionEvaluator {
+  private static class MemoryAvailable extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1388,7 +1400,8 @@ public final class Programming {
     }
   }
 
-  private static class MemoryInUse extends AbstractCoreFunctionEvaluator {
+  private static class MemoryInUse extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2457,7 +2470,8 @@ public final class Programming {
     }
   }
 
-  private static final class Pause extends AbstractFunctionEvaluator {
+  private static final class Pause extends AbstractFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2494,23 +2508,26 @@ public final class Programming {
    *
    * </blockquote>
    */
-  private static class Quiet extends AbstractCoreFunctionEvaluator {
+  private static class Quiet extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-
-      boolean oldQuietMode = engine.isQuietMode();
-      try {
-        engine.setQuietMode(true);
-        return engine.evaluate(ast.arg1());
-      } finally {
-        engine.setQuietMode(oldQuietMode);
-      }
+      IExpr arg1 = ast.arg1();
+      IExpr evalQuiet = engine.evalQuietNull(arg1);
+      return evalQuiet.orElse(arg1);
+      // boolean oldQuietMode = engine.isQuietMode();
+      // try {
+      // engine.setQuietMode(true);
+      // return engine.evaluate(ast.arg1());
+      // } finally {
+      // engine.setQuietMode(oldQuietMode);
+      // }
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_1;
     }
 
     @Override
@@ -2541,7 +2558,8 @@ public final class Programming {
    * {1,{{3,1}}}
    * </pre>
    */
-  private static final class Reap extends AbstractCoreFunctionEvaluator {
+  private static final class Reap extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2612,7 +2630,8 @@ public final class Programming {
     }
   }
 
-  private static class RepeatedTiming extends AbstractCoreFunctionEvaluator {
+  private static class RepeatedTiming extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2689,7 +2708,8 @@ public final class Programming {
    * 2
    * </pre>
    */
-  private static final class Return extends AbstractCoreFunctionEvaluator {
+  private static final class Return extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2742,7 +2762,8 @@ public final class Programming {
    * {1,{{3,1}}}
    * </pre>
    */
-  private static final class Sow extends AbstractCoreFunctionEvaluator {
+  private static final class Sow extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2950,8 +2971,9 @@ public final class Programming {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if ((ast.size() & 0x0001) != 0x0000) {
-        LOGGER.log(engine.getLogLevel(), "Switch: number of arguments must be odd");
-        return F.NIL;
+        // `1` called with `2` arguments. `3`
+        return IOFunctions.printMessage(S.Switch, "argct", F.List(S.Switch, F.ZZ(ast.argSize()),
+            F.stringx("Switch must be called with an odd number of arguments.")), engine);
       }
       if (ast.size() > 3) {
         final IExpr arg1 = engine.evaluate(ast.arg1());
@@ -2977,7 +2999,8 @@ public final class Programming {
     }
   }
 
-  private static class TimeConstrained extends AbstractCoreFunctionEvaluator {
+  private static class TimeConstrained extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     static class EvalControlledCallable implements Callable<IExpr> {
       private final EvalEngine fEngine;
@@ -3091,7 +3114,8 @@ public final class Programming {
     }
   }
 
-  private static final class TimeRemaining extends AbstractCoreFunctionEvaluator {
+  private static final class TimeRemaining extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3114,7 +3138,7 @@ public final class Programming {
   }
 
   /** Calculate the time needed for evaluating an expression */
-  private static class Timing extends AbsoluteTiming {
+  private static class Timing extends AbsoluteTiming implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3137,7 +3161,8 @@ public final class Programming {
     }
   }
 
-  private static final class Throw extends AbstractCoreFunctionEvaluator {
+  private static final class Throw extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3196,7 +3221,8 @@ public final class Programming {
    * {{Cos(#1)&amp;[x],Cos(x)},D(x,x)*Cos(x),{D(x,x),1},1*Cos(x),Cos(x)}
    * </pre>
    */
-  private static class Trace extends AbstractCoreFunctionEvaluator {
+  private static class Trace extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
     /**
      * Trace the evaluation steps for a given expression. The resulting trace expression list is
      * wrapped by Hold (i.e. <code>Hold[{...}]</code>.
@@ -3228,7 +3254,8 @@ public final class Programming {
     }
   }
 
-  private static class TraceForm extends AbstractCoreFunctionEvaluator {
+  private static class TraceForm extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3305,7 +3332,8 @@ public final class Programming {
     }
   }
 
-  private static class Unevaluated extends AbstractCoreFunctionEvaluator {
+  private static class Unevaluated extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {

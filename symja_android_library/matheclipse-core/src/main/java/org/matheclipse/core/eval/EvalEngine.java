@@ -38,6 +38,7 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFastFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -1696,7 +1697,15 @@ public class EvalEngine implements Serializable {
    * @see #evaluateNIL(IExpr)
    */
   private final IExpr evalLoop(final IExpr expr) {
-    if (expr == null || expr.isNIL()) {
+    if (expr instanceof IAST) {
+      final IExpr head = expr.head();
+      if (head instanceof IBuiltInSymbol) {
+        final IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
+        if (evaluator instanceof IFastFunctionEvaluator) {
+          return ((IFastFunctionEvaluator) evaluator).evaluate((IAST) expr, this);
+        }
+      }
+    } else if (expr == null || expr.isNIL()) {
       if (Config.FUZZ_TESTING) {
         throw new NullPointerException();
       }
@@ -2001,7 +2010,7 @@ public class EvalEngine implements Serializable {
    * F.NIL</code>. In &quot;quiet mode&quot; all warnings would be suppressed.
    *
    * @param expr the expression which should be evaluated
-   * @return the evaluated object or <code>F.NUIL</code> if no evaluation was possible
+   * @return the evaluated object or {@link F#NIL} if no evaluation was possible
    * @see EvalEngine#evalWithoutNumericReset(IExpr)
    */
   public final IExpr evalQuietNull(final IExpr expr) {

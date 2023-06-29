@@ -43,4 +43,16 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
     assertEquals("Equal(Pattern(I, Blank(m)), Times(a, c))", //
         expr.fullFormString());
   }
+
+  public void testParserArctan() {
+    EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);
+    ExprParser p = new ExprParser(engine, true);
+    IExpr expr = p.parse("(arctan(x)+y)");
+    assertEquals("Plus(ArcTan(x), y)", //
+        expr.fullFormString());
+    IExpr result = engine.evaluate(expr);
+    assertEquals("y+ArcTan(x)", //
+        result.toString());
+  }
+
 }

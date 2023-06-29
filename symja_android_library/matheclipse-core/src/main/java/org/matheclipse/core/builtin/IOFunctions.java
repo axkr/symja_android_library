@@ -484,7 +484,7 @@ public class IOFunctions {
       "affind", "`1` should be a list of `2` or more affinely independent points.", //
       "argillegal", "Illegal arguments: \"`1`\" in `2`", //
       "argb", "`1` called with `2` arguments; between `3` and `4` arguments are expected.", //
-      "argct", "`1` called with `2` arguments.", //
+      "argct", "`1` called with `2` arguments. `3`", //
       "argctu", "`1` called with 1 argument.", //
       "argm", "`1` called with `2` arguments; `3` or more arguments are expected.", //
       "argr", "`1` called with 1 argument; `2` arguments are expected.", //
