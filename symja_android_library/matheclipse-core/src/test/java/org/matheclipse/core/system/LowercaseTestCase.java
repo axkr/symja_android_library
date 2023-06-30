@@ -19752,6 +19752,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testQuiet() {
+    // message: Quiet: Quiet called with 3 arguments; 1 argument is expected.
+    check("Quiet(a,b,c)", //
+        "Quiet(a,b,c)");
     check("Quiet(1/0)", //
         "ComplexInfinity");
     check("1/0", //

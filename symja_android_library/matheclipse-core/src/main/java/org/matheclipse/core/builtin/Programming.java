@@ -147,7 +147,10 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      throw AbortException.ABORTED;
+      if (ast.isAST0()) {
+        throw AbortException.ABORTED;
+      }
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
@@ -164,13 +167,13 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() == 2) {
+      if (ast.isAST1()) {
         final long begin = System.currentTimeMillis();
         final IExpr result = engine.evaluate(ast.arg1());
         double value = (System.currentTimeMillis() - begin) / 1000.0;
         return F.list(F.num(value), F.HoldForm(result));
       }
-      return F.NIL;
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
@@ -212,7 +215,10 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      throw BreakException.CONST;
+      if (ast.isAST0()) {
+        throw BreakException.CONST;
+      }
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
@@ -273,34 +279,38 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        return engine.evaluate(ast.arg1());
-      } catch (final ThrowException e) {
-        final int size = ast.size();
-        switch (size) {
-          case 2:
-            return e.getValue();
-          case 3: {
-            final IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
-            IExpr tag = engine.evaluate(e.getTag());
-            if (matcher.test(tag)) {
+      final int argSize = ast.argSize();
+      if (argSize >= 1 && argSize <= 3) {
+        try {
+          return engine.evaluate(ast.arg1());
+        } catch (final ThrowException e) {
+          final int size = ast.size();
+          switch (size) {
+            case 2:
               return e.getValue();
+            case 3: {
+              final IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
+              IExpr tag = engine.evaluate(e.getTag());
+              if (matcher.test(tag)) {
+                return e.getValue();
+              }
+              throw e;
             }
-            throw e;
-          }
-          case 4: {
-            final IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
-            IExpr tag = engine.evaluate(e.getTag());
-            if (matcher.test(tag)) {
-              IExpr head = engine.evaluate(ast.arg3());
-              return F.binaryAST2(head, e.getValue(), tag);
+            case 4: {
+              final IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
+              IExpr tag = engine.evaluate(e.getTag());
+              if (matcher.test(tag)) {
+                IExpr head = engine.evaluate(ast.arg3());
+                return F.binaryAST2(head, e.getValue(), tag);
+              }
+              throw e;
             }
-            throw e;
+            default:
+              return e.getValue();
           }
-          default:
-            return e.getValue();
         }
       }
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
@@ -352,18 +362,22 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // messageShortcut may be null
-      String messageShortcut = engine.getMessageShortcut();
-      try {
-        engine.setMessageShortcut(null);
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        if (engine.getMessageShortcut() != null) {
-          return ast.arg2();
+      final int argSize = ast.argSize();
+      if (argSize >= 2 && argSize <= 3) {
+        // messageShortcut may be null
+        String messageShortcut = engine.getMessageShortcut();
+        try {
+          engine.setMessageShortcut(null);
+          IExpr arg1 = engine.evaluate(ast.arg1());
+          if (engine.getMessageShortcut() != null) {
+            return ast.arg2();
+          }
+          return arg1;
+        } finally {
+          engine.setMessageShortcut(messageShortcut);
         }
-        return arg1;
-      } finally {
-        engine.setMessageShortcut(messageShortcut);
       }
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
@@ -403,11 +417,14 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        return engine.evaluate(ast.arg1());
-      } catch (AbortException aex) {
-        return ast.arg2();
+      if (ast.isAST2()) {
+        try {
+          return engine.evaluate(ast.arg1());
+        } catch (AbortException aex) {
+          return ast.arg2();
+        }
       }
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
@@ -565,15 +582,15 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // if (ast.isAST0() || ast.isAST1()) {
-      throw ContinueException.CONST;
-      // }
-      // return F.Hold(ast);
+      if (ast.isAST0()) {
+        throw ContinueException.CONST;
+      }
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_0_1;
+      return ARGS_0_0;
     }
 
     @Override
@@ -617,7 +634,10 @@ public final class Programming {
       // copy.addEvalFlags(IAST.DEFER_AST);
       // return copy;
       // }
-      return F.NIL;
+      if (ast.isAST1()) {
+        return F.NIL;
+      }
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
@@ -1289,7 +1309,10 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      throw new AbortException();
+      if (ast.isAST0()) {
+        throw new AbortException();
+      }
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
@@ -1376,12 +1399,12 @@ public final class Programming {
         long freeMemory = Runtime.getRuntime().totalMemory();
         return F.ZZ(freeMemory);
       }
-      return F.NIL;
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_0_1;
+      return ARGS_0_0;
     }
   }
 
@@ -1390,8 +1413,11 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      long freeMemory = Runtime.getRuntime().freeMemory();
-      return F.ZZ(freeMemory);
+      if (ast.isAST0()) {
+        long freeMemory = Runtime.getRuntime().freeMemory();
+        return F.ZZ(freeMemory);
+      }
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
@@ -1409,7 +1435,7 @@ public final class Programming {
         long freeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         return F.ZZ(freeMemory);
       }
-      return F.NIL;
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
@@ -2475,15 +2501,17 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int pause = ast.arg1().toIntDefault();
-      if (pause > 0) {
-        try {
-          TimeUnit.SECONDS.sleep(pause);
-        } catch (InterruptedException e) {
+      if (ast.isAST1()) {
+        int pause = ast.arg1().toIntDefault();
+        if (pause > 0) {
+          try {
+            TimeUnit.SECONDS.sleep(pause);
+          } catch (InterruptedException e) {
+          }
+          return S.Null;
         }
-        return S.Null;
       }
-      return F.NIL;
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
@@ -2513,16 +2541,12 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      IExpr evalQuiet = engine.evalQuietNIL(arg1);
-      return evalQuiet.orElse(arg1);
-      // boolean oldQuietMode = engine.isQuietMode();
-      // try {
-      // engine.setQuietMode(true);
-      // return engine.evaluate(ast.arg1());
-      // } finally {
-      // engine.setQuietMode(oldQuietMode);
-      // }
+      if (ast.isAST1()) {
+        IExpr arg1 = ast.arg1();
+        IExpr evalQuiet = engine.evalQuietNIL(arg1);
+        return evalQuiet.orElse(arg1);
+      }
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
@@ -2563,60 +2587,63 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      java.util.List<IExpr> oldList = engine.getReapList();
-      try {
-        java.util.List<IExpr> reapList = new ArrayList<IExpr>();
-        engine.setReapList(reapList);
-        if (ast.isAST1()) {
-          IExpr expr = engine.evaluate(ast.arg1());
-          if (reapList.isEmpty()) {
-            return F.list(expr, F.CEmptyList);
-          }
-          IASTAppendable result = F.ListAlloc(reapList.size() / 2);
-          for (int i = 1; i < reapList.size(); i += 2) {
-            result.append(reapList.get(i));
-          }
-          return F.list(expr, result);
-        } else if (ast.isAST2() || ast.isAST3()) {
-          IExpr expr = engine.evaluate(ast.arg1());
-          IExpr arg2 = ast.arg2();
-          IExpr head = null;
-          if (ast.isAST3()) {
-            head = engine.evaluate(ast.arg3());
-          }
-          IPatternMatcher[] matcher;
-          if (arg2.isList()) {
-            IAST matcherAST = (IAST) arg2;
-
-            matcher = new IPatternMatcher[matcherAST.size() - 1];
-            for (int i = 1; i < matcherAST.size(); i++) {
-              matcher[i - 1] = engine.evalPatternMatcher(matcherAST.get(i));
+      final int argSize = ast.argSize();
+      if (argSize >= 1 && argSize <= 3) {
+        java.util.List<IExpr> oldList = engine.getReapList();
+        try {
+          java.util.List<IExpr> reapList = new ArrayList<IExpr>();
+          engine.setReapList(reapList);
+          if (ast.isAST1()) {
+            IExpr expr = engine.evaluate(ast.arg1());
+            if (reapList.isEmpty()) {
+              return F.list(expr, F.CEmptyList);
             }
-          } else {
-            matcher = new IPatternMatcher[] {engine.evalPatternMatcher(arg2)};
-          }
-          if (reapList.isEmpty()) {
-            return F.list(expr, F.CEmptyList);
-          }
-          IASTAppendable result = F.ListAlloc(reapList.size() / 2);
-          for (int i = 1; i < reapList.size(); i += 2) {
-            for (int j = 0; j < matcher.length; j++) {
-              if (matcher[j].test(reapList.get(i - 1))) {
-                if (head == null) {
-                  result.append(reapList.get(i));
-                } else {
-                  result.append(F.binaryAST2(head, reapList.get(i - 1), reapList.get(i)));
+            IASTAppendable result = F.ListAlloc(reapList.size() / 2);
+            for (int i = 1; i < reapList.size(); i += 2) {
+              result.append(reapList.get(i));
+            }
+            return F.list(expr, result);
+          } else if (ast.isAST2() || ast.isAST3()) {
+            IExpr expr = engine.evaluate(ast.arg1());
+            IExpr arg2 = ast.arg2();
+            IExpr head = null;
+            if (ast.isAST3()) {
+              head = engine.evaluate(ast.arg3());
+            }
+            IPatternMatcher[] matcher;
+            if (arg2.isList()) {
+              IAST matcherAST = (IAST) arg2;
+
+              matcher = new IPatternMatcher[matcherAST.size() - 1];
+              for (int i = 1; i < matcherAST.size(); i++) {
+                matcher[i - 1] = engine.evalPatternMatcher(matcherAST.get(i));
+              }
+            } else {
+              matcher = new IPatternMatcher[] {engine.evalPatternMatcher(arg2)};
+            }
+            if (reapList.isEmpty()) {
+              return F.list(expr, F.CEmptyList);
+            }
+            IASTAppendable result = F.ListAlloc(reapList.size() / 2);
+            for (int i = 1; i < reapList.size(); i += 2) {
+              for (int j = 0; j < matcher.length; j++) {
+                if (matcher[j].test(reapList.get(i - 1))) {
+                  if (head == null) {
+                    result.append(reapList.get(i));
+                  } else {
+                    result.append(F.binaryAST2(head, reapList.get(i - 1), reapList.get(i)));
+                  }
+                  break;
                 }
-                break;
               }
             }
+            return F.list(expr, result);
           }
-          return F.list(expr, result);
+        } finally {
+          engine.setReapList(oldList);
         }
-      } finally {
-        engine.setReapList(oldList);
       }
-      return F.NIL;
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
@@ -2647,7 +2674,7 @@ public final class Programming {
         DescriptiveStatistics descriptiveStatistics = new DescriptiveStatistics(r);
         return F.list(F.num(descriptiveStatistics.getMean()), F.HoldForm(result));
       }
-      return F.NIL;
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
@@ -2729,7 +2756,10 @@ public final class Programming {
         }
         throw new ReturnException(arg1);
       }
-      throw new ReturnException();
+      if (ast.isAST0()) {
+        throw new ReturnException();
+      }
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
@@ -2784,7 +2814,7 @@ public final class Programming {
           }
         }
       }
-      return F.NIL;
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     private static void appendReapList(final IExpr expr, final IExpr tag,
@@ -3049,58 +3079,62 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // TODO engine.getTimeConstrainedMillis(); doesn't work here???
-      long s = engine.getSeconds();
-      if (s > 0 || Config.TIMECONSTRAINED_NO_THREAD) {
-        // no new thread should be spawned
-        if (ast.isAST3()) {
-          return ast.arg3();
+      final int argSize = ast.argSize();
+      if (argSize >= 2 && argSize <= 3) {
+        // TODO engine.getTimeConstrainedMillis(); doesn't work here???
+        long s = engine.getSeconds();
+        if (s > 0 || Config.TIMECONSTRAINED_NO_THREAD) {
+          // no new thread should be spawned
+          if (ast.isAST3()) {
+            return ast.arg3();
+          }
+          return engine.evaluate(ast.arg1());
         }
-        return engine.evaluate(ast.arg1());
-      }
 
-      IExpr arg2 = engine.evaluate(ast.arg2());
-      long seconds = 0L;
-      try {
-        if (arg2.isReal()) {
-          arg2 = ((IReal) arg2).ceilFraction();
-          seconds = ((IReal) arg2).toLong();
-        } else {
+        IExpr arg2 = engine.evaluate(ast.arg2());
+        long seconds = 0L;
+        try {
+          if (arg2.isReal()) {
+            arg2 = ((IReal) arg2).ceilFraction();
+            seconds = ((IReal) arg2).toLong();
+          } else {
+            // Positive machine-sized integer expected at position `2` in `1`.
+            return IOFunctions.printMessage(ast.topHead(), "intpm", F.list(F.C2, ast), engine);
+          }
+
+        } catch (ArithmeticException ae) {
           // Positive machine-sized integer expected at position `2` in `1`.
           return IOFunctions.printMessage(ast.topHead(), "intpm", F.list(F.C2, ast), engine);
         }
+        final ExecutorService executorService = Executors.newSingleThreadExecutor();
+        TimeLimiter timeLimiter = SimpleTimeLimiter.create(executorService); // Executors.newSingleThreadExecutor());
+        EvalControlledCallable work = new EvalControlledCallable(engine);
 
-      } catch (ArithmeticException ae) {
-        // Positive machine-sized integer expected at position `2` in `1`.
-        return IOFunctions.printMessage(ast.topHead(), "intpm", F.list(F.C2, ast), engine);
-      }
-      final ExecutorService executorService = Executors.newSingleThreadExecutor();
-      TimeLimiter timeLimiter = SimpleTimeLimiter.create(executorService); // Executors.newSingleThreadExecutor());
-      EvalControlledCallable work = new EvalControlledCallable(engine);
-
-      try {
-        seconds = seconds > 1 ? seconds - 1 : seconds;
-        work.setExpr(ast.arg1(), seconds);
-        return timeLimiter.callWithTimeout(work, seconds, TimeUnit.SECONDS);
-      } catch (org.matheclipse.core.eval.exception.TimeoutException
-          | java.util.concurrent.TimeoutException
-          | com.google.common.util.concurrent.UncheckedTimeoutException e) {
-        LOGGER.debug("TimeConstrained.evaluate() timed out: {}", ast.arg1(), e);
-        if (ast.isAST3()) {
-          return ast.arg3();
+        try {
+          seconds = seconds > 1 ? seconds - 1 : seconds;
+          work.setExpr(ast.arg1(), seconds);
+          return timeLimiter.callWithTimeout(work, seconds, TimeUnit.SECONDS);
+        } catch (org.matheclipse.core.eval.exception.TimeoutException
+            | java.util.concurrent.TimeoutException
+            | com.google.common.util.concurrent.UncheckedTimeoutException e) {
+          LOGGER.debug("TimeConstrained.evaluate() timed out: {}", ast.arg1(), e);
+          if (ast.isAST3()) {
+            return ast.arg3();
+          }
+          return S.$Aborted;
+        } catch (Exception e) {
+          // Appengine example: com.google.apphosting.api.DeadlineExceededException
+          LOGGER.debug("TimeConstrained.evaluate() failed: {}", ast.arg1(), e);
+          if (ast.isAST3()) {
+            return ast.arg3();
+          }
+          return S.Null;
+        } finally {
+          work.cancel();
+          MoreExecutors.shutdownAndAwaitTermination(executorService, 1, TimeUnit.SECONDS);
         }
-        return S.$Aborted;
-      } catch (Exception e) {
-        // Appengine example: com.google.apphosting.api.DeadlineExceededException
-        LOGGER.debug("TimeConstrained.evaluate() failed: {}", ast.arg1(), e);
-        if (ast.isAST3()) {
-          return ast.arg3();
-        }
-        return S.Null;
-      } finally {
-        work.cancel();
-        MoreExecutors.shutdownAndAwaitTermination(executorService, 1, TimeUnit.SECONDS);
       }
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
@@ -3119,11 +3153,14 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      double timeRemaining = engine.getRemainingSeconds();
-      if (timeRemaining < 0.0) {
-        return F.CInfinity;
+      if (ast.isAST0()) {
+        double timeRemaining = engine.getRemainingSeconds();
+        if (timeRemaining < 0.0) {
+          return F.CInfinity;
+        }
+        return F.num(timeRemaining);
       }
-      return F.num(timeRemaining);
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
@@ -3142,17 +3179,19 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-
-      ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-      if (bean.isCurrentThreadCpuTimeSupported()) {
-        final long begin = bean.getCurrentThreadCpuTime();
-        final IExpr result = engine.evaluate(ast.arg1());
-        final long end = bean.getCurrentThreadCpuTime();
-        double value = (end - begin) / 1000000000.0;
-        return F.list(F.num(value), F.HoldForm(result));
+      if (ast.isAST1()) {
+        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        if (bean.isCurrentThreadCpuTimeSupported()) {
+          final long begin = bean.getCurrentThreadCpuTime();
+          final IExpr result = engine.evaluate(ast.arg1());
+          final long end = bean.getCurrentThreadCpuTime();
+          double value = (end - begin) / 1000000000.0;
+          return F.list(F.num(value), F.HoldForm(result));
+        }
+        // fall back to AbsoluteTiming
+        return super.evaluate(ast, engine);
       }
-      // fall back to AbsoluteTiming
-      return super.evaluate(ast, engine);
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
@@ -3186,7 +3225,7 @@ public final class Programming {
         throw new ThrowException(arg1, ast.arg2());
       }
 
-      return F.NIL;
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
@@ -3229,18 +3268,21 @@ public final class Programming {
      */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        final IExpr temp = ast.arg1();
-        IPatternMatcher matcher = null;
-        if (ast.isAST2()) {
-          matcher = engine.evalPatternMatcher(ast.arg2());
-        }
+      final int argSize = ast.argSize();
+      if (argSize >= 1 && argSize <= 2) {
+        try {
+          final IExpr temp = ast.arg1();
+          IPatternMatcher matcher = null;
+          if (ast.isAST2()) {
+            matcher = engine.evalPatternMatcher(ast.arg2());
+          }
 
-        return engine.evalTrace(temp, matcher);
-      } catch (RuntimeException rex) {
-        LOGGER.debug("Trace.evaluate() failed", rex);
+          return engine.evalTrace(temp, matcher);
+        } catch (RuntimeException rex) {
+          LOGGER.debug("Trace.evaluate() failed", rex);
+        }
       }
-      return F.NIL;
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override
@@ -3260,17 +3302,21 @@ public final class Programming {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.TraceForm) {
-        try {
-          IASTMutable trace = ast.copy();
-          trace.set(0, S.Trace);
-          final IExpr temp = engine.evaluate(trace);
-          StringBuilder jsControl = new StringBuilder();
+        final int argSize = ast.argSize();
+        if (argSize >= 1 && argSize <= 2) {
+          try {
+            IASTMutable trace = ast.copy();
+            trace.set(0, S.Trace);
+            final IExpr temp = engine.evaluate(trace);
+            StringBuilder jsControl = new StringBuilder();
 
-          createTree(jsControl, temp);
-          return F.JSFormData(jsControl.toString(), "traceform");
-        } catch (RuntimeException rex) {
-          LOGGER.debug("TraceForm.evaluate() failed", rex);
+            createTree(jsControl, temp);
+            return F.JSFormData(jsControl.toString(), "traceform");
+          } catch (RuntimeException rex) {
+            LOGGER.debug("TraceForm.evaluate() failed", rex);
+          }
         }
+        return engine.checkBuiltinArgsSize(ast, this);
       }
       return F.NIL;
     }
@@ -3337,7 +3383,10 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return ast.arg1();
+      if (ast.isAST1()) {
+        return ast.arg1();
+      }
+      return engine.checkBuiltinArgsSize(ast, this);
     }
 
     @Override

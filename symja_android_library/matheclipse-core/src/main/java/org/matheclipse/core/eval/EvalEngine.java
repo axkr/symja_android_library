@@ -1120,6 +1120,29 @@ public class EvalEngine implements Serializable {
     return opres;
   }
 
+  /**
+   * Check the number of arguments and print a message to error stream if necessary.
+   * 
+   * @param ast
+   * @param functionEvaluator
+   * @return
+   */
+  public IAST checkBuiltinArgsSize(final IAST ast, final IFastFunctionEvaluator functionEvaluator) {
+    int[] expected;
+    final int argSize = ast.argSize();
+    if ((expected = functionEvaluator.expectedArgSize(ast)) != null) {
+      if (expected.length == 2) {
+        if (argSize < expected[0] || argSize > expected[1]) {
+          if (argSize < expected[0]) {
+            IOFunctions.printArgMessage(ast, expected, this);
+          } else if (argSize > expected[1]) {
+            IOFunctions.printArgMessage(ast, expected, this);
+          }
+        }
+      }
+    }
+    return F.NIL;
+  }
 
   /**
    * Test if the experimental message was printed at least once for a symbol.
