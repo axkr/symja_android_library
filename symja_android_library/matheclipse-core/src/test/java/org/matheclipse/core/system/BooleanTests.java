@@ -270,7 +270,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
     check("f(True,True)", //
         "True");
     check("f(x,y)", //
-        "f(x,y)");
+        "BooleanFunction(Index: 9 Number of variables: 2)[x,y]");
 
   }
 
@@ -418,7 +418,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "  True   True  False   True ", //
         " False   True   True  False ", //
         " False   True   True  False ", //
-         " False  False  False   True ");
+        " False  False  False   True ");
     check("BooleanTable({And(a, b), Or(a, b), Xor(a, b), Xnor(a, b)}, {a, b}) // TableForm", //
         expected);
 
@@ -615,6 +615,13 @@ public class BooleanTests extends ExprEvaluatorTestCase {
   public void testExists() {
     check("Exists(a, f(b)>c)", //
         "f(b)>c");
+  }
+
+  public void testBooleanFunctionSatisfiabilityInstances() {
+    check("f = BooleanFunction(11,2)", //
+        "BooleanFunction(Index: 9 Number of variables: 2)");
+    check("SatisfiabilityInstances(f(x, y), {x, y},All)", //
+        "{{True,True},{False,True},{False,False}}");
   }
 
   public void testForAll() {
@@ -938,6 +945,11 @@ public class BooleanTests extends ExprEvaluatorTestCase {
   }
 
   public void testSatisfiableQ() {
+    check("SatisfiableQ(BooleanFunction(110, 3))", //
+        "True");
+    check("SatisfiableQ(BooleanFunction(0,20))", //
+        "False");
+
     check("SatisfiableQ(a&&!(b||!c) )", //
         "True");
     check("SatisfiableQ((a || b) && (! a || ! b) )", //

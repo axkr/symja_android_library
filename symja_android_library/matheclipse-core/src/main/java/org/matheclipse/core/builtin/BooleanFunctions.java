@@ -10,11 +10,14 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.function.Function;
 import org.logicng.datastructures.Assignment;
+import org.logicng.datastructures.Substitution;
 import org.logicng.datastructures.Tristate;
 import org.logicng.formulas.CFalse;
 import org.logicng.formulas.CTrue;
 import org.logicng.formulas.Formula;
 import org.logicng.formulas.FormulaFactory;
+import org.logicng.formulas.FormulaFactoryConfig;
+import org.logicng.formulas.FormulaFactoryConfig.FormulaMergeStrategy;
 import org.logicng.formulas.FormulaTransformation;
 import org.logicng.formulas.Literal;
 import org.logicng.formulas.Variable;
@@ -183,22 +186,20 @@ public final class BooleanFunctions {
     Map<Variable, IExpr> variable2symbolMap = new HashMap<Variable, IExpr>();
 
     public LogicFormula() {
-      this(new FormulaFactory());
-    }
-
-    public LogicFormula(FormulaFactory factory) {
-      this.factory = factory;
+      FormulaFactoryConfig build =
+          FormulaFactoryConfig.builder().formulaMergeStrategy(FormulaMergeStrategy.IMPORT).build();
+      this.factory = new FormulaFactory(build);
     }
 
     public LogicFormula(List<Variable> variables) {
-      this(new FormulaFactory());
+      this();
       for (int i = 0; i < variables.size(); i++) {
         addVariableToMap(variables.get(i));
       }
     }
 
     public LogicFormula(Variable[] variables) {
-      this(new FormulaFactory());
+      this();
       for (int i = 0; i < variables.length; i++) {
         addVariableToMap(variables[i]);
       }
@@ -242,7 +243,7 @@ public final class BooleanFunctions {
      *
      * @param formula
      * @return
-     * @see #expr2BooleanFunction(IExpr, boolean)
+     * @see #expr2LogicNGFormula(IExpr, boolean)
      */
     public IExpr booleanFunction2Expr(final Formula formula) {
       if (formula instanceof org.logicng.formulas.And) {
@@ -312,7 +313,7 @@ public final class BooleanFunctions {
       Formula[] result1 = new Formula[ast.argSize()];
       Formula[] result2 = new Formula[ast.argSize()];
       for (int i = 1; i < ast.size(); i++) {
-        result1[i - 1] = factory.not(expr2BooleanFunction(ast.get(i), substituteExpressions));
+        result1[i - 1] = factory.not(expr2LogicNGFormula(ast.get(i), substituteExpressions));
         result2[i - 1] = factory.not(result1[i - 1]);
       }
       return factory.or(factory.and(result1), factory.and(result2));
@@ -329,10 +330,26 @@ public final class BooleanFunctions {
      * @throws ArgumentTypeException
      * @see {@link #booleanFunction2Expr(Formula)}
      */
-    public Formula expr2BooleanFunction(final IExpr logicExpr, boolean substituteExpressions)
+    public Formula expr2LogicNGFormula(final IExpr logicExpr, boolean substituteExpressions)
         throws ArgumentTypeException {
       if (logicExpr instanceof IAST) {
         final IAST ast = (IAST) logicExpr;
+        if (ast.head() instanceof BDDExpr) {
+          BDD bdd = ((BDDExpr) ast.head()).toData();
+          List<Variable> variableOrder = bdd.getVariableOrder();
+
+          Formula formula = bdd.toFormula();
+          if (ast.size() > 1) {
+            FormulaFactory factoryBDD = bdd.underlyingKernel().factory();
+            HashMap<Variable, Formula> map = new HashMap<Variable, Formula>();
+            for (int i = 1; i < ast.size(); i++) {
+              Variable value = factoryBDD.variable(ast.get(i).toString());
+              map.put(variableOrder.get(i - 1), value);
+            }
+            return formula.substitute(new Substitution(map));
+          }
+          return formula;
+        }
         int functionID = ast.headID();
         if (functionID > ID.UNKNOWN) {
           switch (functionID) {
@@ -350,7 +367,7 @@ public final class BooleanFunctions {
               if (ast.isSameHeadSizeGE(S.Nand, 3)) {
                 final Formula[] result = new Formula[ast.argSize()];
                 ast.forEach((x, i) -> {
-                  result[i - 1] = factory.not(expr2BooleanFunction(x, substituteExpressions));
+                  result[i - 1] = factory.not(expr2LogicNGFormula(x, substituteExpressions));
                 });
                 return factory.or(result);
               }
@@ -359,7 +376,7 @@ public final class BooleanFunctions {
               if (ast.isSameHeadSizeGE(S.Nor, 3)) {
                 Formula[] result = new Formula[ast.argSize()];
                 ast.forEach((x, i) -> {
-                  result[i - 1] = factory.not(expr2BooleanFunction(x, substituteExpressions));
+                  result[i - 1] = factory.not(expr2LogicNGFormula(x, substituteExpressions));
                 });
                 return factory.and(result);
               }
@@ -378,7 +395,7 @@ public final class BooleanFunctions {
                 if (dnf.isAnd()) {
                   return convertAnd(dnf, substituteExpressions);
                 }
-                return expr2BooleanFunction(dnf, substituteExpressions);
+                return expr2LogicNGFormula(dnf, substituteExpressions);
               }
               break;
             case ID.Xnor:
@@ -390,19 +407,19 @@ public final class BooleanFunctions {
                 if (dnf.isAnd()) {
                   return factory.not(convertAnd(dnf, substituteExpressions));
                 }
-                return factory.not(expr2BooleanFunction(dnf, substituteExpressions));
+                return factory.not(expr2LogicNGFormula(dnf, substituteExpressions));
               }
               break;
             case ID.Implies:
               if (ast.isAST(S.Implies, 3)) {
-                return factory.implication(expr2BooleanFunction(ast.arg1(), substituteExpressions),
-                    expr2BooleanFunction(ast.arg2(), substituteExpressions));
+                return factory.implication(expr2LogicNGFormula(ast.arg1(), substituteExpressions),
+                    expr2LogicNGFormula(ast.arg2(), substituteExpressions));
               }
               break;
             case ID.Not:
               if (ast.isNot()) {
                 IExpr expr = ast.arg1();
-                return factory.not(expr2BooleanFunction(expr, substituteExpressions));
+                return factory.not(expr2LogicNGFormula(expr, substituteExpressions));
               }
               break;
             case ID.Slot:
@@ -423,6 +440,9 @@ public final class BooleanFunctions {
           throw new ArgumentTypeException(message);
         }
         return addSymbolOrSlotToMap(symbol);
+      } else if (logicExpr instanceof BDDExpr) {
+        BDD bdd = ((BDDExpr) logicExpr).toData();
+        return bdd.toFormula();
       }
       if (substituteExpressions) {
         Variable v = symbol2variableMap.get(logicExpr);
@@ -479,13 +499,13 @@ public final class BooleanFunctions {
 
     private Formula convertOr(final IAST ast, boolean substituteExpressions) {
       final Formula[] result = new Formula[ast.argSize()];
-      ast.forEach((x, i) -> result[i - 1] = expr2BooleanFunction(x, substituteExpressions));
+      ast.forEach((x, i) -> result[i - 1] = expr2LogicNGFormula(x, substituteExpressions));
       return factory.or(result);
     }
 
     private Formula convertAnd(final IAST ast, boolean substituteExpressions) {
       final Formula[] result = new Formula[ast.argSize()];
-      ast.forEach((x, i) -> result[i - 1] = expr2BooleanFunction(x, substituteExpressions));
+      ast.forEach((x, i) -> result[i - 1] = expr2LogicNGFormula(x, substituteExpressions));
       return factory.and(result);
     }
 
@@ -1253,9 +1273,8 @@ public final class BooleanFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
-        FormulaFactory factory = new FormulaFactory();
-        LogicFormula lf = new LogicFormula(factory);
-        Formula formula = lf.expr2BooleanFunction(ast.arg1(), true);
+        LogicFormula lf = new LogicFormula();
+        Formula formula = lf.expr2LogicNGFormula(ast.arg1(), true);
         final AdvancedSimplifier simplifier = new AdvancedSimplifier();
         FormulaTransformation transformation = transformation(ast, engine);
         if (transformation == null) {
@@ -4129,10 +4148,9 @@ public final class BooleanFunctions {
      * @return
      */
     private static IInteger logicNGSatisfiabilityCount(IExpr booleanExpression, IAST variables) {
-      FormulaFactory factory = new FormulaFactory();
-      LogicFormula lf = new LogicFormula(factory);
-      final Formula formula = lf.expr2BooleanFunction(booleanExpression, false);
-      final SATSolver miniSat = MiniSat.miniSat(factory);
+      LogicFormula lf = new LogicFormula();
+      final Formula formula = lf.expr2LogicNGFormula(booleanExpression, false);
+      final SATSolver miniSat = MiniSat.miniSat(lf.getFactory());
       miniSat.add(formula);
       Variable[] vars = lf.ast2Variable(variables);
       List<Assignment> assignments = miniSat.enumerateAllModels(vars);
@@ -4307,10 +4325,9 @@ public final class BooleanFunctions {
      * @return
      */
     private static IExpr logicNGSatisfiableQ(IExpr arg1) {
-      FormulaFactory factory = new FormulaFactory();
-      LogicFormula lf = new LogicFormula(factory);
-      final Formula formula = lf.expr2BooleanFunction(arg1, false);
-      final SATSolver miniSat = MiniSat.miniSat(factory);
+      LogicFormula lf = new LogicFormula();
+      final Formula formula = lf.expr2LogicNGFormula(arg1, false);
+      final SATSolver miniSat = MiniSat.miniSat(lf.getFactory());
       miniSat.add(formula);
       final Tristate result = miniSat.sat();
       if (result == Tristate.TRUE) {
@@ -5088,8 +5105,10 @@ public final class BooleanFunctions {
       arg1 = arg1.first();
       isFunction = true;
     }
-    if (arg1 instanceof BDDExpr || arg1.head() instanceof BDDExpr) {
+    if (arg1 instanceof BDDExpr) {
       return booleanConvertBDDExpr((BDDExpr) arg1, isFunction, arg1, ast, engine);
+    } else if (arg1.head() instanceof BDDExpr) {
+      return booleanConvertBDDExpr((BDDExpr) arg1.head(), isFunction, arg1, ast, engine);
     } else {
       IExpr head = engine.evaluate(arg1.head());
       if (head instanceof BDDExpr) {
@@ -5101,7 +5120,7 @@ public final class BooleanFunctions {
       String method = arg2.toString();
       if (method.equals("BFF") || method.equals("BooleanFunction")) {
         LogicFormula lf = new LogicFormula();
-        Formula formula = lf.expr2BooleanFunction(arg1, false);
+        Formula formula = lf.expr2LogicNGFormula(arg1, false);
         BDDExpr bddExpr = BDDExpr.newInstance(formula.bdd(), false);
         return isFunction ? F.Function(bddExpr) : bddExpr;
       }
@@ -5109,7 +5128,7 @@ public final class BooleanFunctions {
     FormulaTransformation transformation = transformation(ast, engine);
     if (transformation != null) {
       LogicFormula lf = new LogicFormula();
-      Formula formula = lf.expr2BooleanFunction(arg1, false).transform(transformation);
+      Formula formula = lf.expr2LogicNGFormula(arg1, false).transform(transformation);
       // CNFSubsumption s = new CNFSubsumption();
       // formula=s.apply(formula, false);
       return lf.booleanFunction2Expr(formula);
@@ -5169,7 +5188,7 @@ public final class BooleanFunctions {
   public static List<Assignment> logicNGSatisfiabilityInstances(IExpr booleanExpression,
       Variable[] vars, LogicFormula lf, int maxChoices) {
 
-    final Formula formula = lf.expr2BooleanFunction(booleanExpression, false);
+    final Formula formula = lf.expr2LogicNGFormula(booleanExpression, false);
     // MiniSatConfig config = new MiniSatConfig.Builder().initialPhase(true).build();
     final SATSolver miniSat = MiniSat.miniSat(lf.getFactory()); // , config);
     miniSat.add(formula);

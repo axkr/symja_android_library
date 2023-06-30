@@ -44,7 +44,6 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.Pair;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.expression.data.BDDExpr;
 import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -1030,9 +1029,6 @@ public interface IExpr
   default IExpr evaluateHead(IAST ast, EvalEngine engine) {
     IExpr result = engine.evaluateNIL(this);
     if (result.isPresent()) {
-      if (result instanceof BDDExpr && ast.argSize() > 0) {
-        return ((BDDExpr) result).evaluate(ast, engine);
-      }
       // set the new evaluated header !
       return ast.apply(result);
     }
