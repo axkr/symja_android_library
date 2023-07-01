@@ -4669,9 +4669,20 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public final boolean isVariable() {
+  public final boolean isVariable(boolean polynomialQTest) {
     if (headID() >= 0) {
-      return isSlot() || isSubscript();
+      if (polynomialQTest) {
+        // see message General::ivar
+        if (isPower()) {
+          if (exponent().isInteger() && base().isPlusTimesPower()) {
+            return false;
+          }
+          return true;
+        }
+        return !isPlusTimesPower();
+      } else {
+        return isSlot() || isSubscript();
+      }
     }
     if (!head().isSymbol()) {
       return false;

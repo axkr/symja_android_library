@@ -3509,10 +3509,13 @@ public class Algebra {
         IExpr arg2 = engine.evaluate(ast.arg2());
 
         IAST variablesList = arg2.makeList();
-        IAST subst = substituteVariablesInPolynomial(arg1, variablesList, "§PolynomialQ");
-        IExpr result = F.booleSymbol(subst.arg1().isPolynomial((IAST) subst.arg2()));
-        engine.putCache(ast, result);
-        return result;
+        IAST subst = substituteVariablesInPolynomial(arg1, variablesList, "§PolynomialQ", true);
+        if (subst.isPresent()) {
+          IExpr result = F.booleSymbol(subst.arg1().isPolynomial((IAST) subst.arg2()));
+          engine.putCache(ast, result);
+          return result;
+        }
+        return F.NIL;
       }
       if (ast.isAST1()) {
         return S.True;
@@ -5877,26 +5880,36 @@ public class Algebra {
   }
 
   /**
-   * If AST structures are available in the variableList create dummy variables and replace these
-   * expressions in polyExpr.
+   * If {@link IAST} structures are available in the {@code variableList} create dummy variables and
+   * replace these expressions in polyExpr.
    *
    * @param polyExpr
    * @param variablesList a list of variables, which aren't necessarily symbols
    * @param dummyStr
-   * @return <code>F.List(polyExpr, substitutedVariableList)</code>
+   * @param polynomialQTest test if the method {@link IExpr#isVariable(boolean)} returns <code>true</code>;
+   *        if not return {@link F#NIL}
+   * @return <code>F.List(polyExpr, substitutedVariableList)</code> or {@link F#NIL}, if the
+   *         variables are invalid and <code>isVariableTest==true</code>
    */
   public static IAST substituteVariablesInPolynomial(IExpr polyExpr, IAST variablesList,
-      String dummyStr) {
+      String dummyStr, boolean polynomialQTest) {
     IASTAppendable substitutedVariableList = F.ListAlloc(variablesList.size());
     for (int i = 1; i < variablesList.size(); i++) {
       final IExpr variable = variablesList.get(i);
-      if (variable.isAST() && !variable.isPower()) {
-        ISymbol dummy = F.Dummy(dummyStr + i);
-        polyExpr = F.subst(polyExpr, F.Rule(variable, dummy));
-        substitutedVariableList.append(dummy);
+      if (!polynomialQTest || variable.isVariable(polynomialQTest)) {
+        if (variable.isAST() && !variable.isPower()) {
+          ISymbol dummy = F.Dummy(dummyStr + i);
+          polyExpr = F.subst(polyExpr, F.Rule(variable, dummy));
+          substitutedVariableList.append(dummy);
+        } else {
+          substitutedVariableList.append(variable);
+        }
       } else {
-        substitutedVariableList.append(variable);
+        // `1` is not a valid variable.
+        IOFunctions.printMessage(S.General, "ivar", F.List(variable));
+        return F.NIL;
       }
+
     }
     return F.list(polyExpr, substitutedVariableList);
   }

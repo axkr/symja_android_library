@@ -455,6 +455,11 @@ public class TeXConverterTestCase extends TestCase {
         "{D(x^2*y^4,x),D(x^2*y^4,y)}");
   }
 
+  public void testArctan() {
+    check("\\left(\\tan^{-1}(4\\div6)+\\frac{\\pi}{2}\\right)", //
+        "Pi*1/2+ArcTan(2/3)");
+  }
+
   public void check(String strEval, String strResult) {
     IExpr expr = texConverter.parse(strEval);
     assertEquals(expr.toString(), strResult);

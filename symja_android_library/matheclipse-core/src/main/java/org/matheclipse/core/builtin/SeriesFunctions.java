@@ -1272,6 +1272,10 @@ public class SeriesFunctions {
         IAST list = (IAST) ast.arg2();
         IExpr x = list.arg1();
         IExpr x0 = list.arg2();
+        if (!x.isVariable()) {
+          // `1` is not a valid variable.
+          return IOFunctions.printMessage(S.General, "ivar", F.List(x), engine);
+        }
         final int n = list.arg3().toIntDefault();
         if (n == Integer.MIN_VALUE) {
           return F.NIL;
@@ -1589,6 +1593,8 @@ public class SeriesFunctions {
       int denominator = 1;
       if (ast.size() == 6 || ast.size() == 7) {
         if (ast.arg1().isNumber()) {
+          // Attempt to evaluate a series at the number `1`. Returning Indeterminate.
+          IOFunctions.printMessage(S.SeriesData, "ssdn", F.List(), engine);
           return S.Indeterminate;
         }
         IExpr x = ast.arg1();
@@ -1951,7 +1957,9 @@ public class SeriesFunctions {
     int exp = exponent.toIntDefault();
     if (exp != Integer.MIN_VALUE) {
       ASTSeriesData series = seriesDataRecursive(base, x, x0, n, engine);
-      return series.powerSeries(exp);
+      if (series != null) {
+        return series.powerSeries(exp);
+      }
     }
     return null;
   }

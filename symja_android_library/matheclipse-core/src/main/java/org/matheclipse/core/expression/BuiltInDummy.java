@@ -791,7 +791,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public boolean isVariable() {
+  public boolean isVariable(boolean polynomialQTest) {
     return !isConstantAttribute();
   }
 

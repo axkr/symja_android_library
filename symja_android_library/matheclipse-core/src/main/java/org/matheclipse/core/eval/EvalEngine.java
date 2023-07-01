@@ -3325,13 +3325,13 @@ public class EvalEngine implements Serializable {
     fOutPrintStream = outPrintStream;
   }
 
+  public void setPackageMode(boolean packageMode) {
+    fPackageMode = packageMode;
+  }
+
   public void setPrintStreamsOf(EvalEngine engine) {
     this.fOutPrintStream = engine.fOutPrintStream;
     this.fErrorPrintStream = engine.fErrorPrintStream;
-  }
-
-  public void setPackageMode(boolean packageMode) {
-    fPackageMode = packageMode;
   }
 
   /**

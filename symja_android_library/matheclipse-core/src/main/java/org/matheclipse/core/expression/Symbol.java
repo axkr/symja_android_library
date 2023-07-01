@@ -756,7 +756,7 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final boolean isVariable() {
+  public final boolean isVariable(boolean polynomialQTest) {
     return ((fAttributes & (CONSTANT | NUMERICFUNCTION)) == NOATTRIBUTE)
         && this != S.ComplexInfinity && this != S.Indeterminate && this != S.DirectedInfinity
         && this != S.Infinity;

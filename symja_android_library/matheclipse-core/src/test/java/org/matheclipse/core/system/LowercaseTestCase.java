@@ -2910,6 +2910,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testCoefficient() {
+    check("Coefficient(x+y+z, x+y)", //
+        "1");
+
     // https://oeis.org/A236191
     check("Coefficient(Series((x + x^2 + 2*x^3 + x^4 - x^5)/(1 + 4*x^3 - x^6), {x, 0, 38}), x^10)", //
         "-55");
@@ -18102,6 +18105,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testPolynomialQ() {
+    check("PolynomialQ(x, 1234)", //
+        "PolynomialQ(x,1234)");
+
+    // message: General: x+y is not a valid variable.
+    check("PolynomialQ(x, x+y)", //
+        "PolynomialQ(x,x+y)");
+
     check("PolynomialQ(7*y^w, y )", //
         "False");
     check("PolynomialQ(7*y^(3*w), y )", //

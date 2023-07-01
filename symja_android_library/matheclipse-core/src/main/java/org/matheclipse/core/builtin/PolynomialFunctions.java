@@ -197,15 +197,19 @@ public class PolynomialFunctions {
         }
         ExpVectorSymbolic expArr = new ExpVectorSymbolic(exponents);
         IExpr expr = F.evalExpandAll(ast.arg1(), engine).normal(false);
-        IAST subst = Algebra.substituteVariablesInPolynomial(expr, listOfVariables, "§Coefficient");
-        expr = subst.arg1();
-        listOfVariables = (IASTAppendable) subst.arg2();
-        SymbolicPolynomialRing ring =
-            new SymbolicPolynomialRing(ExprRingFactory.CONST, listOfVariables);
-        SymbolicPolynomial poly = ring.create(expr, true, false, false);
-        IExpr temp = poly.coefficient(expArr);
-        engine.putCache(ast, temp);
-        return temp;
+        IAST subst =
+            Algebra.substituteVariablesInPolynomial(expr, listOfVariables, "§Coefficient", false);
+        if (subst.isPresent()) {
+          expr = subst.arg1();
+          listOfVariables = (IASTAppendable) subst.arg2();
+          SymbolicPolynomialRing ring =
+              new SymbolicPolynomialRing(ExprRingFactory.CONST, listOfVariables);
+          SymbolicPolynomial poly = ring.create(expr, true, false, false);
+          IExpr temp = poly.coefficient(expArr);
+          engine.putCache(ast, temp);
+          return temp;
+        }
+        return F.NIL;
       } catch (LimitException le) {
         throw le;
       } catch (RuntimeException ae) {
@@ -796,69 +800,72 @@ public class PolynomialFunctions {
       // }
       // }
       IExpr expr = F.evalExpandAll(ast.arg1(), engine).normal(false);
-      IAST subst = Algebra.substituteVariablesInPolynomial(expr, F.list(form), "§Exponent");
-      expr = subst.arg1();
-      form = subst.arg2().first();
-      // if (expr.isTimes()) {
-      // expr =F.Distribute.of(expr);
-      // }
-      if (expr.isZero()) {
-        collector.add(F.CNInfinity);
-      } else if (expr.isAST()) {
-        IAST arg1 = (IAST) expr;
-        // final IPatternMatcher matcher = new PatternMatcherEvalEngine(form, engine);
-        final IPatternMatcher matcher = engine.evalPatternMatcher(form);
-        if (arg1.isPower()) {
-          IExpr pEx = powerExponent(arg1, form, matcher, engine);
-          collector.add(pEx);
-        } else if (arg1.isPlus()) {
-          for (int i = 1; i < arg1.size(); i++) {
-            if (arg1.get(i).isAtom()) {
-              if (arg1.get(i).isSymbol()) {
-                if (matcher.test(arg1.get(i), engine)) {
-                  collector.add(F.C1);
+      IAST subst = Algebra.substituteVariablesInPolynomial(expr, F.list(form), "§Exponent", false);
+      if (subst.isPresent()) {
+        expr = subst.arg1();
+        form = subst.arg2().first();
+        // if (expr.isTimes()) {
+        // expr =F.Distribute.of(expr);
+        // }
+        if (expr.isZero()) {
+          collector.add(F.CNInfinity);
+        } else if (expr.isAST()) {
+          IAST arg1 = (IAST) expr;
+          // final IPatternMatcher matcher = new PatternMatcherEvalEngine(form, engine);
+          final IPatternMatcher matcher = engine.evalPatternMatcher(form);
+          if (arg1.isPower()) {
+            IExpr pEx = powerExponent(arg1, form, matcher, engine);
+            collector.add(pEx);
+          } else if (arg1.isPlus()) {
+            for (int i = 1; i < arg1.size(); i++) {
+              if (arg1.get(i).isAtom()) {
+                if (arg1.get(i).isSymbol()) {
+                  if (matcher.test(arg1.get(i), engine)) {
+                    collector.add(F.C1);
+                  } else {
+                    collector.add(F.C0);
+                  }
                 } else {
                   collector.add(F.C0);
                 }
+              } else if (arg1.get(i).isPower()) {
+                // IAST pow = (IAST) arg1.get(i);
+                IExpr pEx = powerExponent((IAST) arg1.get(i), form, matcher, engine);
+                collector.add(pEx);
+                // if (matcher.test(pow.base(), engine)) {
+                // collector.add(pow.exponent());
+                // } else {
+                // collector.add(F.C0);
+                // }
+              } else if (arg1.get(i).isTimes()) {
+                timesExponent((IAST) arg1.get(i), form, matcher, collector, engine);
               } else {
                 collector.add(F.C0);
               }
-            } else if (arg1.get(i).isPower()) {
-              // IAST pow = (IAST) arg1.get(i);
-              IExpr pEx = powerExponent((IAST) arg1.get(i), form, matcher, engine);
-              collector.add(pEx);
-              // if (matcher.test(pow.base(), engine)) {
-              // collector.add(pow.exponent());
-              // } else {
-              // collector.add(F.C0);
-              // }
-            } else if (arg1.get(i).isTimes()) {
-              timesExponent((IAST) arg1.get(i), form, matcher, collector, engine);
-            } else {
-              collector.add(F.C0);
             }
+          } else if (arg1.isTimes()) {
+            timesExponent(arg1, form, matcher, collector, engine);
           }
-        } else if (arg1.isTimes()) {
-          timesExponent(arg1, form, matcher, collector, engine);
-        }
 
-      } else if (expr.isSymbol()) {
-        final IPatternMatcher matcher = engine.evalPatternMatcher(form);
-        if (matcher.test(expr)) {
-          collector.add(F.C1);
+        } else if (expr.isSymbol()) {
+          final IPatternMatcher matcher = engine.evalPatternMatcher(form);
+          if (matcher.test(expr)) {
+            collector.add(F.C1);
+          } else {
+            collector.add(F.C0);
+          }
         } else {
           collector.add(F.C0);
         }
-      } else {
-        collector.add(F.C0);
-      }
 
-      if (collector.size() == 0) {
-        collector.add(F.C0);
+        if (collector.size() == 0) {
+          collector.add(F.C0);
+        }
+        IASTAppendable result = F.ast(sym, collector);
+        engine.putCache(ast, result);
+        return result;
       }
-      IASTAppendable result = F.ast(sym, collector);
-      engine.putCache(ast, result);
-      return result;
+      return F.NIL;
     }
 
     @Override

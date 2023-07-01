@@ -4104,13 +4104,30 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a symbol which doesn't has attribute <code>Constant</code>.
+   * <p>
+   * Test if this expression is a variable which doesn't has attribute {@link ISymbol#CONSTANT}.
+   * Calls {@link #isVariable(boolean)} as {@code isVariable(false)}.
+   *
+   */
+  default boolean isVariable() {
+    return isVariable(false);
+  }
+
+  /**
+   * <p>
+   * Test if this expression is a variable which doesn't has attribute {@link ISymbol#CONSTANT}.
+   * <p>
+   * If <code>polynomialQTest==true</code> this method tests, as if function {@link S#PolynomialQ}
+   * for the polynomials variable was called, where especially {@link IAST} function expressions
+   * other than sums, products, and integer powers can be used as polynomial variables.
+   * 
+   * @param polynomialQTest do a more relaxed variable test for {@link S#PolynomialQ}
    *
    * @return
    * @see #isConstantAttribute()
    * @see #isSymbol()
    */
-  default boolean isVariable() {
+  default boolean isVariable(boolean polynomialQTest) {
     return false;
   }
 

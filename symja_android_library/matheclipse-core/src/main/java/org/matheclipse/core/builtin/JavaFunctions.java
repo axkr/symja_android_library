@@ -134,7 +134,7 @@ public class JavaFunctions {
             Config.URL_CLASS_LOADER = ClassLoader.getSystemClassLoader();
           }
           arg2 = JavaClassExpr.newInstance(str, Config.URL_CLASS_LOADER);
-        } catch (ClassNotFoundException cnfex) {
+        } catch (StackOverflowError | ClassNotFoundException ex) {
           // `1`
           IOFunctions.printMessage(ast.topHead(), "error",
               F.List(F.stringx("ClassNotFoundException: \"" + arg2 + "\"")), engine);
@@ -212,7 +212,7 @@ public class JavaFunctions {
               Config.URL_CLASS_LOADER = ClassLoader.getSystemClassLoader();
             }
             arg1 = JavaClassExpr.newInstance(arg1.toString(), Config.URL_CLASS_LOADER);
-          } catch (ClassNotFoundException cnfex) {
+          } catch (StackOverflowError | ClassNotFoundException cnfex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), cnfex);
             return F.NIL;
           }
@@ -471,7 +471,7 @@ public class JavaFunctions {
               }
             }
             return jClazz;
-          } catch (ClassNotFoundException cnfex) {
+          } catch (StackOverflowError | ClassNotFoundException cnfex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), cnfex);
             return F.NIL;
           }

@@ -737,6 +737,7 @@ public class IOFunctions {
       "sing", "Matrix `1` is singular.", //
       "sing1", "The matrix `1` is singular; a factorization will not be saved.", //
       "span", "`1` is not a valid Span specification.", //
+      "ssdn", "Attempt to evaluate a series at the number `1`. Returning Indeterminate.", //
       "ssle", "Symbol, string or HoldPattern(symbol) expected at position `2` in `1`.", //
       "step", "The step size `1` is expected to be positive", //
       "stream", "`1` is not string, InputStream[], or OutputStream[]", //
@@ -1307,7 +1308,8 @@ public class IOFunctions {
       return list;
     }
     SuggestTree suggestTree = AST2Expr.getSuggestTree();
-    namePrefix = ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? namePrefix.toLowerCase(Locale.US) : namePrefix;
+    namePrefix =
+        ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? namePrefix.toLowerCase(Locale.US) : namePrefix;
     Node n = suggestTree.getAutocompleteSuggestions(namePrefix);
     if (n != null) {
       for (int i = 0; i < n.listLength(); i++) {

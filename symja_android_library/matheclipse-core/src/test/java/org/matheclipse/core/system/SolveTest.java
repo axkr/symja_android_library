@@ -1529,22 +1529,27 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve((x^2-1)/(x-1)==0,x)", //
         "{{x->-1}}");
 
-    check("Solve(x+5==a,x)", "{{x->-5+a}}");
-    check("Solve(x+5==10,x)", "{{x->5}}");
-    check("Solve(x^2==a,x)", "{{x->-Sqrt(a)},{x->Sqrt(a)}}");
+    check("Solve(x+5==a,x)", //
+        "{{x->-5+a}}");
+    check("Solve(x+5==10,x)", //
+        "{{x->5}}");
+    check("Solve(x^2==a,x)", //
+        "{{x->-Sqrt(a)},{x->Sqrt(a)}}");
     check("Solve(x^2+b*c*x+3==0, x)", //
         "{{x->1/2*(-b*c-Sqrt(-12+b^2*c^2))},{x->1/2*(-b*c+Sqrt(-12+b^2*c^2))}}");
-    check("Solve({x+2*y==10,3*x+y==20},{x,y})", "{{x->6,y->2}}");
-    check("Solve(x^2==0,{x,y,z})", "{{x->0}}");
+    check("Solve({x+2*y==10,3*x+y==20},{x,y})", //
+        "{{x->6,y->2}}");
+    check("Solve(x^2==0,{x,y,z})", //
+        "{{x->0}}");
     check("Solve(x^2==0,x)", "{{x->0}}");
     check("Solve(x^2==4,x)", "{{x->-2},{x->2}}");
     check("Solve({x^2==4,x+y==10},{x,y})", "{{x->-2,y->12},{x->2,y->8}}");
 
-    check("Solve({x^2==4,x+y^2==6},{x,y})",
+    check("Solve({x^2==4,x+y^2==6},{x,y})", //
         "{{x->-2,y->-2*Sqrt(2)},{x->-2,y->2*Sqrt(2)},{x->2,y->-2},{x->2,y->2}}");
-    check("Solve({x^2==4,x+y^2==6,x+y^2+z^2==24},{x,y,z})",
-        "{{x->-2,y->-2*Sqrt(2),z->-3*Sqrt(2)},{x->-2,y->-2*Sqrt(2),z->3*Sqrt(2)},{x->-2,y->\n"
-            + "2*Sqrt(2),z->-3*Sqrt(2)},{x->-2,y->2*Sqrt(2),z->3*Sqrt(2)},{x->2,y->-2,z->-3*Sqrt(\n"
+    check("Solve({x^2==4,x+y^2==6,x+y^2+z^2==24},{x,y,z})", //
+        "{{x->-2,y->-2*Sqrt(2),z->-3*Sqrt(2)},{x->-2,y->-2*Sqrt(2),z->3*Sqrt(2)},{x->-2,y->\n" //
+            + "2*Sqrt(2),z->-3*Sqrt(2)},{x->-2,y->2*Sqrt(2),z->3*Sqrt(2)},{x->2,y->-2,z->-3*Sqrt(\n" //
             + "2)},{x->2,y->-2,z->3*Sqrt(2)},{x->2,y->2,z->-3*Sqrt(2)},{x->2,y->2,z->3*Sqrt(2)}}");
   }
 

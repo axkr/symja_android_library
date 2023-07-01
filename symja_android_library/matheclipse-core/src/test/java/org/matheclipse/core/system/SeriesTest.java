@@ -531,6 +531,12 @@ public class SeriesTest extends ExprEvaluatorTestCase {
             + "0}},0)");
   }
 
+  public void testDivisionByZero() {
+    // message: General: -1 is not a valid variable.
+    check("Series(1/0,{-1,-2,3})", //
+        "Series(ComplexInfinity,{-1,-2,3})");
+  }
+
   public void testExpSeries() {
     check("SeriesCoefficient(Exp(x), {x, a, n})", //
         "Piecewise({{E^a/n!,n>=0}},0)");

@@ -23,9 +23,10 @@ import org.matheclipse.core.generic.ObjIntFunction;
  * Appendable (I)nterface for the (A)bstract (S)yntax (T)ree of a given function.
  *
  * <p>
- * An AST object to which <tt>IExpr</tt> sequences and values can be appended or removed. These
- * operations typically change the size of the {@code IAST}.
- *
+ * An AST object where {@link IExpr} element values can be appended or removed.These operations
+ * typically change the size of the {@link IAST}. If a {@link IAST} is needed, which only allows
+ * replacing elements in a fixed size {@link IAST} interface {@link IASTMutable}.
+ * 
  * <p>
  * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic
  * structure of the Symja source code. Each node of the tree denotes a construct occurring in the
