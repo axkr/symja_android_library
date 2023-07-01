@@ -8,7 +8,16 @@ updates:
     schedule:
       interval: daily
     open-pull-requests-limit: 10
-
+    groups: 
+       dev-dependencies: 
+          patterns:
+            - "*jackson*" # jsckson fasterxml
+            - "*hipparchus*"  # hipparchus.org
+            - "*undertow*"  # undertow.io
+            - "*fastutil*"  # unimi.it
+            - "*biojava*"  # biojava.org
+            - "*log4j*"  # log4j.org
+            - "*junit*"  # junit.org
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
