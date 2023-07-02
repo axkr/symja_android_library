@@ -1,6 +1,5 @@
 package org.matheclipse.core.expression;
 
-import java.math.RoundingMode;
 import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -663,8 +662,11 @@ public class Num implements INum {
   }
 
   @Override
-  public IExpr plus(final IExpr that) {
-    if (that instanceof Num) {
+  public INumber plus(final INumber that) {
+    if (that instanceof INum) {
+      if (that instanceof ApfloatNum) {
+        return apfloatNumValue().add(((ApfloatNum) that).apfloatNumValue());
+      }
       return valueOf(value + ((Num) that).value);
     }
     if (that instanceof IComplexNum) {
@@ -673,8 +675,19 @@ public class Num implements INum {
       }
       return ComplexNum.valueOf(value).add((ComplexNum) that);
     }
-    if (that instanceof ApfloatNum) {
-      return apfloatNumValue().add(((ApfloatNum) that).apfloatNumValue());
+    if (that instanceof IReal) {
+      return Num.valueOf(value + that.evalf());
+    }
+    if (that instanceof ComplexSym) {
+      return F.complexNum(new Complex(value).add(that.evalfc()));
+    }
+    throw new java.lang.ArithmeticException();
+  }
+
+  @Override
+  public IExpr plus(final IExpr that) {
+    if (that instanceof INumber) {
+      return plus((INumber) that);
     }
     return INum.super.plus(that);
   }
@@ -728,8 +741,8 @@ public class Num implements INum {
           .multiply((IRational) multiple);
     }
     double factor = multiple.doubleValue();
-    return F.num(DoubleMath.roundToBigInteger(value / factor, Config.ROUNDING_MODE).doubleValue()
-        * factor);
+    return F.num(
+        DoubleMath.roundToBigInteger(value / factor, Config.ROUNDING_MODE).doubleValue() * factor);
   }
 
   @Override
@@ -758,8 +771,11 @@ public class Num implements INum {
   }
 
   @Override
-  public IExpr times(final IExpr that) {
-    if (that instanceof Num) {
+  public INumber times(final INumber that) {
+    if (that instanceof INum) {
+      if (that instanceof ApfloatNum) {
+        return apfloatNumValue().multiply(((ApfloatNum) that).apfloatNumValue());
+      }
       return valueOf(value * ((Num) that).value);
     }
     if (that instanceof IComplexNum) {
@@ -768,10 +784,20 @@ public class Num implements INum {
       }
       return ComplexNum.valueOf(value).multiply((ComplexNum) that);
     }
-    if (that instanceof ApfloatNum) {
-      return apfloatNumValue().multiply(((ApfloatNum) that).apfloatNumValue());
+    if (that instanceof IReal) {
+      return Num.valueOf(value * that.evalf());
     }
+    if (that instanceof ComplexSym) {
+      return F.complexNum(new Complex(value).multiply(that.evalfc()));
+    }
+    throw new java.lang.ArithmeticException();
+  }
 
+  @Override
+  public IExpr times(final IExpr that) {
+    if (that instanceof INumber) {
+      return times((INumber) that);
+    }
     return INum.super.times(that);
   }
 

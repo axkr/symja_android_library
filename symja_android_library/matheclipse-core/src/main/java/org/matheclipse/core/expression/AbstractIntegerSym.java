@@ -23,9 +23,11 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
@@ -895,9 +897,12 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   }
 
   @Override
-  public IExpr plus(final IExpr that) {
+  public INumber plus(final INumber that) {
     if (isZero()) {
       return that;
+    }
+    if (that.isZero()) {
+      return this;
     }
     if (that instanceof IInteger) {
       return this.add((IInteger) that);
@@ -907,6 +912,26 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     }
     if (that instanceof ComplexSym) {
       return ((ComplexSym) that).add(ComplexSym.valueOf(this)).normalize();
+    }
+    if (that instanceof INum) {
+      if (that instanceof ApfloatNum) {
+        return apfloatNumValue().add(((ApfloatNum) that).apfloatNumValue());
+      }
+      return F.num(((Num) that).value + evalf());
+    }
+    if (that instanceof IComplexNum) {
+      if (that instanceof ApcomplexNum) {
+        return apcomplexNumValue().add(((ApcomplexNum) that).apcomplexNumValue());
+      }
+      return F.complexNum(evalfc().add(that.evalfc()));
+    }
+    throw new java.lang.ArithmeticException();
+  }
+
+  @Override
+  public IExpr plus(final IExpr that) {
+    if (that instanceof INumber) {
+      return this.plus((INumber) that);
     }
     return IInteger.super.plus(that);
   }
@@ -1080,12 +1105,15 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   }
 
   @Override
-  public IExpr times(final IExpr that) {
-    if (isZero()) {
+  public INumber times(final INumber that) {
+    if (isZero() || that.isZero()) {
       return F.C0;
     }
     if (isOne()) {
       return that;
+    }
+    if (that.isOne()) {
+      return this;
     }
     if (that instanceof IInteger) {
       return this.multiply((IInteger) that);
@@ -1095,6 +1123,26 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     }
     if (that instanceof ComplexSym) {
       return ((ComplexSym) that).multiply(ComplexSym.valueOf(this)).normalize();
+    }
+    if (that instanceof INum) {
+      if (that instanceof ApfloatNum) {
+        return apfloatNumValue().multiply(((ApfloatNum) that).apfloatNumValue());
+      }
+      return F.num(((Num) that).value * evalf());
+    }
+    if (that instanceof IComplexNum) {
+      if (that instanceof ApcomplexNum) {
+        return apcomplexNumValue().multiply(((ApcomplexNum) that).apcomplexNumValue());
+      }
+      return F.complexNum(evalfc().multiply(that.evalfc()));
+    }
+    throw new java.lang.ArithmeticException();
+  }
+
+  @Override
+  public IExpr times(final IExpr that) {
+    if (that instanceof INumber) {
+      return this.times((INumber) that);
     }
     return IInteger.super.times(that);
   }

@@ -2,7 +2,6 @@ package org.matheclipse.core.expression;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.RoundingMode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
@@ -420,18 +419,19 @@ public class ApcomplexNum implements IComplexNum {
     return valueOf(EvalEngine.getApfloat().negate(fApcomplex));
   }
 
+  @Override
+  public INumber plus(final INumber that) {
+    return ApcomplexNum.valueOf(EvalEngine.getApfloat().add(fApcomplex, that.apcomplexValue()));
+  }
+
   /**
    * @param that
    * @return
    */
   @Override
   public IExpr plus(final IExpr that) {
-    if (that instanceof IComplexNum) {
-      return valueOf(
-          EvalEngine.getApfloat().add(fApcomplex, ((IComplexNum) that).apcomplexValue()));
-    }
-    if (that instanceof INum) {
-      return valueOf(EvalEngine.getApfloat().add(fApcomplex, ((INum) that).apcomplexValue()));
+    if (that instanceof INumber) {
+      return plus((INumber) that);
     }
     return IComplexNum.super.plus(that);
   }
@@ -458,25 +458,20 @@ public class ApcomplexNum implements IComplexNum {
     return valueOf(EvalEngine.getApfloat().subtract(fApcomplex, ((ApcomplexNum) val).fApcomplex));
   }
 
+  @Override
+  public INumber times(final INumber that) {
+    return ApcomplexNum
+        .valueOf(EvalEngine.getApfloat().multiply(fApcomplex, that.apcomplexValue()));
+  }
+
   /**
    * @param that
    * @return
    */
   @Override
   public IExpr times(final IExpr that) {
-    if (that instanceof ApcomplexNum) {
-      return valueOf(
-          EvalEngine.getApfloat().multiply(fApcomplex, ((ApcomplexNum) that).fApcomplex));
-    }
-    if (that instanceof ApfloatNum) {
-      return multiply(ApcomplexNum.valueOf(((ApfloatNum) that).fApfloat, Apcomplex.ZERO));
-    }
-    if (that instanceof Num) {
-      return multiply(ApcomplexNum.valueOf(((Num) that).getRealPart()));
-    }
-    if (that instanceof ComplexNum) {
-      return valueOf(
-          EvalEngine.getApfloat().multiply(fApcomplex, ((ComplexNum) that).apcomplexValue()));
+    if (that instanceof INumber) {
+      return times((INumber) that);
     }
     return IComplexNum.super.times(that);
   }

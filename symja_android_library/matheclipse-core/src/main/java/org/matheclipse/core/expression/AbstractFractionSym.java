@@ -23,9 +23,11 @@ import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
@@ -706,12 +708,12 @@ public abstract class AbstractFractionSym implements IFraction {
     return ((IFraction) this).negate();
   }
 
-  /**
-   * @param that
-   * @return
-   */
+  /** {@inheritDoc} */
   @Override
-  public IExpr plus(IExpr that) {
+  public INumber plus(INumber that) {
+    if (that.isZero()) {
+      return this;
+    }
     if (that instanceof IFraction) {
       return this.add((IFraction) that).normalize();
     }
@@ -723,6 +725,27 @@ public abstract class AbstractFractionSym implements IFraction {
     }
     if (that instanceof ComplexSym) {
       return ((ComplexSym) that).add(ComplexSym.valueOf(this)).normalize();
+    }
+    if (that instanceof INum) {
+      if (that instanceof ApfloatNum) {
+        return apfloatNumValue().add(((ApfloatNum) that).apfloatNumValue());
+      }
+      return F.num(((Num) that).value + evalf());
+    }
+    if (that instanceof IComplexNum) {
+      if (that instanceof ApcomplexNum) {
+        return apcomplexNumValue().add(((ApcomplexNum) that).apcomplexNumValue());
+      }
+      return F.complexNum(evalfc().add(that.evalfc()));
+    }
+    throw new java.lang.ArithmeticException();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr plus(IExpr that) {
+    if (that instanceof INumber) {
+      return this.plus((INumber) that);
     }
     return IFraction.super.plus(that);
   }
@@ -854,7 +877,13 @@ public abstract class AbstractFractionSym implements IFraction {
 
   /** {@inheritDoc} */
   @Override
-  public IExpr times(IExpr that) {
+  public INumber times(INumber that) {
+    if (that.isZero()) {
+      return F.C0;
+    }
+    if (that.isOne()) {
+      return this;
+    }
     if (that instanceof IFraction) {
       return this.mul((IFraction) that).normalize();
     }
@@ -866,6 +895,27 @@ public abstract class AbstractFractionSym implements IFraction {
     }
     if (that instanceof ComplexSym) {
       return ((ComplexSym) that).multiply(ComplexSym.valueOf(this)).normalize();
+    }
+    if (that instanceof INum) {
+      if (that instanceof ApfloatNum) {
+        return apfloatNumValue().multiply(((ApfloatNum) that).apfloatNumValue());
+      }
+      return F.num(((Num) that).value * evalf());
+    }
+    if (that instanceof IComplexNum) {
+      if (that instanceof ApcomplexNum) {
+        return apcomplexNumValue().multiply(((ApcomplexNum) that).apcomplexNumValue());
+      }
+      return F.complexNum(evalfc().multiply(that.evalfc()));
+    }
+    throw new java.lang.ArithmeticException();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr times(IExpr that) {
+    if (that instanceof INumber) {
+      return this.times((INumber) that);
     }
     return IFraction.super.times(that);
   }

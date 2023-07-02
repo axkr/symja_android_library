@@ -10,7 +10,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.tensor.itp.BSplineFunctionString;
 import org.matheclipse.core.tensor.sca.Clips;
 
 // cubic basis functions over unit interval [0, 1]
@@ -74,7 +73,8 @@ class BSplineFunctionStringTest {
     IExpr r2 = bSplineFunction.apply(F.num(1.5));
     IExpr r3 = bSplineFunction.apply(F.num(2.5)); // does not evaluate correctly
     assertTrue(F.isFuzzyEquals(r1.evalf(), 1.0 / 3.0, Config.DOUBLE_TOLERANCE));
-    assertEquals(r2, F.num(1.5));
+    assertEquals(r2.toString(), //
+        "3/2");
     assertTrue(F.isFuzzyEquals(r3.evalf(), 8.0 / 3.0, Config.DOUBLE_TOLERANCE));
   }
 

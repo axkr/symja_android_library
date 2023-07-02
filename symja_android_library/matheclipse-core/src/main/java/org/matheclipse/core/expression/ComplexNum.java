@@ -1,7 +1,6 @@
 package org.matheclipse.core.expression;
 
 import static org.matheclipse.core.expression.F.num;
-import java.math.RoundingMode;
 import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -774,26 +773,40 @@ public class ComplexNum implements IComplexNum {
     return newInstance(fComplex.negate());
   }
 
+  @Override
+  public INumber plus(final INumber that) {
+    if (that instanceof IComplexNum) {
+      if (that instanceof ApcomplexNum) {
+        ApcomplexNum acn = (ApcomplexNum) that;
+        return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart()).add(acn);
+      }
+      return newInstance(fComplex.add(((ComplexNum) that).fComplex));
+    }
+    if (that instanceof INum) {
+      if (that instanceof ApfloatNum) {
+        ApfloatNum afn = (ApfloatNum) that;
+        return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart())
+            .add(ApcomplexNum.valueOf(afn.fApfloat, Apcomplex.ZERO));
+      }
+      return add(ComplexNum.valueOf(((Num) that).getRealPart()));
+    }
+    if (that instanceof IReal) {
+      return this.add(F.complexNum(that.evalf()));
+    }
+    if (that instanceof ComplexSym) {
+      return F.complexNum(fComplex.add(that.evalfc()));
+    }
+    throw new java.lang.ArithmeticException();
+  }
+
   /**
    * @param that
    * @return
    */
   @Override
   public IExpr plus(final IExpr that) {
-    if (that instanceof ComplexNum) {
-      return newInstance(fComplex.add(((ComplexNum) that).fComplex));
-    }
-    if (that instanceof ApcomplexNum) {
-      ApcomplexNum acn = (ApcomplexNum) that;
-      return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart()).add(acn);
-    }
-    if (that instanceof ApfloatNum) {
-      ApfloatNum afn = (ApfloatNum) that;
-      return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart())
-          .add(ApcomplexNum.valueOf(afn.fApfloat, Apcomplex.ZERO));
-    }
-    if (that instanceof Num) {
-      return add(ComplexNum.valueOf(((Num) that).getRealPart()));
+    if (that instanceof INumber) {
+      return plus((INumber) that);
     }
     return IComplexNum.super.plus(that);
   }
@@ -844,21 +857,35 @@ public class ComplexNum implements IComplexNum {
     return newInstance(fComplex.subtract(((ComplexNum) subtrahend).fComplex));
   }
 
+  @Override
+  public INumber times(final INumber that) {
+    if (that instanceof IComplexNum) {
+      if (that instanceof ApcomplexNum) {
+        return apcomplexNumValue().multiply((ApcomplexNum) that);
+      }
+      return newInstance(fComplex.multiply(((ComplexNum) that).fComplex));
+    }
+    if (that instanceof INum) {
+      if (that instanceof ApfloatNum) {
+        return F.complexNum(apcomplexValue().multiply(((ApfloatNum) that).apcomplexValue()));
+      }
+      return multiply(ComplexNum.valueOf(((Num) that).getRealPart()));
+    }
+    if (that instanceof IReal) {
+      return this.multiply(F.complexNum(that.evalf()));
+    }
+    if (that instanceof ComplexSym) {
+      return F.complexNum(fComplex.multiply(that.evalfc()));
+    }
+    throw new java.lang.ArithmeticException();
+  }
+
+
   /** {@inheritDoc} */
   @Override
   public IExpr times(final IExpr that) {
-    if (that instanceof ComplexNum) {
-      return newInstance(fComplex.multiply(((ComplexNum) that).fComplex));
-    }
-    if (that instanceof ApcomplexNum) {
-      return apcomplexNumValue().multiply(that);
-    }
-    if (that instanceof ApfloatNum) {
-      return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart()) //
-          .multiply(that);
-    }
-    if (that instanceof Num) {
-      return multiply(ComplexNum.valueOf(((Num) that).getRealPart()));
+    if (that instanceof INumber) {
+      return times((INumber) that);
     }
     return IComplexNum.super.times(that);
   }

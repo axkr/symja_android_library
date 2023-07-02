@@ -5374,10 +5374,12 @@ public final class NumberTheory {
 
 
   private static IExpr binomialNumeric(final INumber n, final INumber k) {
-    IExpr n1 = n.add(F.C1);
+    INumber nPlus1 = n.plus(F.C1);
+    INumber nMinuskPlus1 = nPlus1.subtract(k);
+    INumber kPlus1 = k.plus(F.C1);
     // (n,k) ==> Gamma(n+1)/(Gamma(k+1)*Gamma(n-k+1))
-    return F.Times(F.Gamma(n1), F.Power(F.Gamma(F.Plus(F.C1, k)), -1),
-        F.Power(F.Gamma(F.Plus(n1, F.Negate(k))), -1));
+    return F.Times(F.Gamma(nPlus1), F.Power(F.Gamma(kPlus1), -1),
+        F.Power(F.Gamma(nMinuskPlus1), -1));
   }
 
   /**

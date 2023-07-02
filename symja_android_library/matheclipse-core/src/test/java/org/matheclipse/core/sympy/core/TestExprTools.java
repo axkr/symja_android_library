@@ -240,7 +240,7 @@ public class TestExprTools extends ExprEvaluatorTestCase {
         true);
     // assert Factors(x**sqrt(2)**3).as_expr() == x**(2*sqrt(2))
     assertEquals(new Factors(F.Power(x, F.Power(F.Sqrt(F.C2), F.C3))).asExpr().toString(), //
-        "x^(Sqrt(2))^3");
+        "x^(2*Sqrt(2))");
     // assert Factors(x)**Factors(S(2)) == Factors(x**2)
     assertEquals(new Factors(x).pow(F.C2).toString(), //
         "{x=2}");

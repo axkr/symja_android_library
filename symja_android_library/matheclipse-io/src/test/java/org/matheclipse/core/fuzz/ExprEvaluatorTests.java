@@ -288,6 +288,7 @@ public class ExprEvaluatorTests {
         F.CInfinity, //
         F.CNInfinity, //
         F.Null, //
+        F.Power(F.C0, F.CN1), //
         F.Power(F.x, F.C2), //
         F.Indeterminate, //
         F.ComplexInfinity, //

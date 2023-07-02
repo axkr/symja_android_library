@@ -1,7 +1,6 @@
 package org.matheclipse.core.expression;
 
 import java.math.BigInteger;
-import java.math.RoundingMode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
@@ -90,8 +89,8 @@ public class ApfloatNum implements INum {
   public IExpr hypergeometric0F1(IExpr arg2) {
     if (arg2 instanceof IReal) {
       try {
-        return valueOf(EvalEngine.getApfloat().hypergeometric0F1(fApfloat,
-            ((IReal) arg2).apfloatValue()));
+        return valueOf(
+            EvalEngine.getApfloat().hypergeometric0F1(fApfloat, ((IReal) arg2).apfloatValue()));
       } catch (ArithmeticException | ApfloatRuntimeException e) {
         // try as computation with complex numbers
       }
@@ -122,12 +121,11 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr hypergeometric2F1(IExpr arg2, IExpr arg3, IExpr arg4) {
-    if (arg2 instanceof IReal && arg3 instanceof IReal
-        && arg4 instanceof IReal) {
+    if (arg2 instanceof IReal && arg3 instanceof IReal && arg4 instanceof IReal) {
       try {
-        return valueOf(EvalEngine.getApfloat().hypergeometric2F1(fApfloat,
-            ((IReal) arg2).apfloatValue(), ((IReal) arg3).apfloatValue(),
-            ((IReal) arg4).apfloatValue()));
+        return valueOf(
+            EvalEngine.getApfloat().hypergeometric2F1(fApfloat, ((IReal) arg2).apfloatValue(),
+                ((IReal) arg3).apfloatValue(), ((IReal) arg4).apfloatValue()));
       } catch (ArithmeticException | ApfloatRuntimeException e) {
         // try as computation with complex numbers
       }
@@ -278,20 +276,35 @@ public class ApfloatNum implements INum {
   }
 
   @Override
-  public IExpr plus(final IExpr that) {
-    if (that instanceof ApfloatNum) {
-      return add((ApfloatNum) that);
-    }
-    if (that instanceof Num) {
+  public INumber plus(final INumber that) {
+    if (that instanceof INum) {
+      if (that instanceof ApfloatNum) {
+        return add((ApfloatNum) that);
+      }
       return add(ApfloatNum.valueOf(((Num) that).getRealPart()));
     }
-    if (that instanceof ApcomplexNum) {
-      return ApcomplexNum.valueOf(fApfloat).add((ApcomplexNum) that);
-    }
-    if (that instanceof ComplexNum) {
+    if (that instanceof IComplexNum) {
+      if (that instanceof ApcomplexNum) {
+        return ApcomplexNum.valueOf(fApfloat).add((ApcomplexNum) that);
+      }
       ComplexNum cn = (ComplexNum) that;
       return ApcomplexNum.valueOf(fApfloat)
           .add(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart()));
+    }
+    if (that instanceof IReal) {
+      return ApfloatNum
+          .valueOf(EvalEngine.getApfloat().add(fApfloat, ((IReal) that).apfloatValue()));
+    }
+    if (that instanceof ComplexSym) {
+      return F.complexNum(fApfloat.add(that.apcomplexValue()));
+    }
+    throw new java.lang.ArithmeticException();
+  }
+
+  @Override
+  public IExpr plus(final IExpr that) {
+    if (that instanceof INumber) {
+      return plus((INumber) that);
     }
     return INum.super.plus(that);
   }
@@ -396,20 +409,35 @@ public class ApfloatNum implements INum {
   }
 
   @Override
-  public IExpr times(final IExpr that) {
-    if (that instanceof ApfloatNum) {
-      return multiply((ApfloatNum) that);
-    }
-    if (that instanceof Num) {
+  public INumber times(final INumber that) {
+    if (that instanceof INum) {
+      if (that instanceof ApfloatNum) {
+        return multiply((ApfloatNum) that);
+      }
       return multiply(ApfloatNum.valueOf(((Num) that).getRealPart()));
     }
-    if (that instanceof ApcomplexNum) {
-      return ApcomplexNum.valueOf(fApfloat).multiply((ApcomplexNum) that);
-    }
-    if (that instanceof ComplexNum) {
+    if (that instanceof IComplexNum) {
+      if (that instanceof ApcomplexNum) {
+        return ApcomplexNum.valueOf(fApfloat).multiply((ApcomplexNum) that);
+      }
       ComplexNum cn = (ComplexNum) that;
       return ApcomplexNum.valueOf(fApfloat)
           .multiply(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart()));
+    }
+    if (that instanceof IReal) {
+      return ApfloatNum
+          .valueOf(EvalEngine.getApfloat().multiply(fApfloat, ((IReal) that).apfloatValue()));
+    }
+    if (that instanceof ComplexSym) {
+      return F.complexNum(fApfloat.multiply(that.apcomplexValue()));
+    }
+    throw new java.lang.ArithmeticException();
+  }
+
+  @Override
+  public IExpr times(final IExpr that) {
+    if (that instanceof INumber) {
+      return times((INumber) that);
     }
     return INum.super.times(that);
   }

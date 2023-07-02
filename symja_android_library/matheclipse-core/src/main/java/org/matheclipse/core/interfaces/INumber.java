@@ -34,6 +34,38 @@ public interface INumber extends IExpr {
    */
   public Apcomplex apcomplexValue();
 
+  @Override
+  default Pair asCoeffAdd() {
+    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/numbers.py#L816
+    if (isInteger() || isFraction()) {
+      return F.pair(this, F.Plus());
+    }
+    return F.pair(F.C0, F.Plus(this));
+  }
+
+  @Override
+  default Pair asCoeffmul(ISymbol deps, boolean rational) {
+    // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/numbers.py#L828
+    if (!rational || isRational()) {
+      return F.pair(this, F.CEmptyList);
+    } else if (isNegative()) {
+      return F.pair(F.CN1, F.List(negate()));
+    }
+    return F.pair(F.C1, F.List(this));
+  }
+
+  @Override
+  default Pair asCoeffMul(boolean rational) {
+    // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/numbers.py#L828
+    if (rational && !isRational()) {
+      return F.pair(F.C1, this);
+    }
+    if (isZero()) {
+      return F.pair(F.C1, this);
+    }
+    return F.pair(this, F.C1);
+  }
+
   /**
    * Returns the smallest (closest to negative infinity) <code>IInteger</code> value that is not
    * less than <code>this</code> and is equal to a mathematical integer. This method raises
@@ -104,6 +136,11 @@ public interface INumber extends IExpr {
    */
   public boolean equalsInt(int i);
 
+  @Override
+  default Complex evalfc() throws ArgumentTypeException {
+    return new Complex(reDoubleValue(), imDoubleValue());
+  }
+
   default INumber evaluatePrecision(EvalEngine engine) {
     return this;
   }
@@ -125,13 +162,6 @@ public interface INumber extends IExpr {
    * @return
    */
   public INumber fractionalPart();
-
-  /**
-   * Return the integer (real and imaginary) part of this number
-   *
-   * @return
-   */
-  public INumber integerPart();
 
   /**
    * Returns the imaginary part of a complex number
@@ -156,27 +186,6 @@ public interface INumber extends IExpr {
     return reDoubleValue();
   }
 
-  @Override
-  default boolean isNumber() {
-    return true;
-  }
-
-  /**
-   * Test if this number equals <code>0</code> in symbolic or numeric mode. In numeric mode check if
-   * the number is close to <code>0</code> according to the given <code>tolerance</code>.
-   * 
-   * @param tolerance
-   * @return
-   */
-  default boolean isZero(double tolerance) {
-    return isZero();
-  }
-
-  @Override
-  default boolean isNumericFunction(boolean allowList) {
-    return true;
-  }
-
   /**
    * Returns the imaginary part of a complex number
    *
@@ -192,6 +201,34 @@ public interface INumber extends IExpr {
    */
   public double imDoubleValue();
 
+  /**
+   * Return the integer (real and imaginary) part of this number
+   *
+   * @return
+   */
+  public INumber integerPart();
+
+  @Override
+  default boolean isNumber() {
+    return true;
+  }
+
+  @Override
+  default boolean isNumericFunction(boolean allowList) {
+    return true;
+  }
+
+  /**
+   * Test if this number equals <code>0</code> in symbolic or numeric mode. In numeric mode check if
+   * the number is close to <code>0</code> according to the given <code>tolerance</code>.
+   * 
+   * @param tolerance
+   * @return
+   */
+  default boolean isZero(double tolerance) {
+    return isZero();
+  }
+
   @Override
   public default IExpr[] linear(IExpr variable) {
     return new IExpr[] {this, F.C0};
@@ -203,7 +240,40 @@ public interface INumber extends IExpr {
   }
 
   @Override
+  public INumber negate();
+
+  /**
+   * Multiplicative neutral element of this number
+   * 
+   * <p>
+   * For any number s, the scalar s.one() shall satisfy the equation
+   * 
+   * <pre>
+   * s.multiply(one()) equals s
+   * </pre>
+   * 
+   * <p>
+   * one() is provided for the implementation of generic functions and algorithms.
+   * 
+   * @return multiplicative neutral element of this scalar
+   */
+  @Override
+  default INumber one() {
+    return F.C1;
+  }
+
+  @Override
   public INumber opposite();
+
+  /**
+   * Returns an <code>INumber</code> whose value is <code>(this + that)</code>.
+   * 
+   * @param that
+   * @return
+   */
+  default INumber plus(INumber that) {
+    return (INumber) IExpr.super.plus(that);
+  }
 
   /**
    * Return the rational Factor of this number. For IComplex numbers check if real and imaginary
@@ -245,48 +315,34 @@ public interface INumber extends IExpr {
   public IExpr roundExpr();
 
   /**
+   * Returns an <code>INumber</code> whose value is <code>(this - that)</code>.
+   * 
+   * @param that
+   * @return
+   */
+  default INumber subtract(INumber that) {
+    if (that.isZero()) {
+      return this;
+    }
+    return plus(that.negate());
+  }
+
+  /**
+   * Returns an <code>INumber</code> whose value is <code>(this * that)</code>.
+   * 
+   * @param arg
+   * @return
+   */
+  default INumber times(INumber that) {
+    return (INumber) IExpr.super.times(that);
+  }
+
+  /**
    * Return the list <code>{r, theta}</code> of the polar coordinates of this number
    *
    * @return
    */
   public IAST toPolarCoordinates();
-
-  @Override
-  default Complex evalfc() throws ArgumentTypeException {
-    return new Complex(reDoubleValue(), imDoubleValue());
-  }
-
-  @Override
-  default Pair asCoeffAdd() {
-    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/numbers.py#L816
-    if (isInteger() || isFraction()) {
-      return F.pair(this, F.Plus());
-    }
-    return F.pair(F.C0, F.Plus(this));
-  }
-
-  @Override
-  default Pair asCoeffmul(ISymbol deps, boolean rational) {
-    // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/numbers.py#L828
-    if (!rational || isRational()) {
-      return F.pair(this, F.CEmptyList);
-    } else if (isNegative()) {
-      return F.pair(F.CN1, F.List(negate()));
-    }
-    return F.pair(F.C1, F.List(this));
-  }
-
-  @Override
-  default Pair asCoeffMul(boolean rational) {
-    // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/numbers.py#L828
-    if (rational && !isRational()) {
-      return F.pair(F.C1, this);
-    }
-    if (isZero()) {
-      return F.pair(F.C1, this);
-    }
-    return F.pair(this, F.C1);
-  }
 
   /**
    * Additive neutral element of this number.
@@ -306,29 +362,6 @@ public interface INumber extends IExpr {
   @Override
   default INumber zero() {
     return F.C0;
-  }
-
-  @Override
-  public INumber negate();
-
-  /**
-   * Multiplicative neutral element of this number
-   * 
-   * <p>
-   * For any number s, the scalar s.one() shall satisfy the equation
-   * 
-   * <pre>
-   * s.multiply(one()) equals s
-   * </pre>
-   * 
-   * <p>
-   * one() is provided for the implementation of generic functions and algorithms.
-   * 
-   * @return multiplicative neutral element of this scalar
-   */
-  @Override
-  default INumber one() {
-    return F.C1;
   }
 
 }
