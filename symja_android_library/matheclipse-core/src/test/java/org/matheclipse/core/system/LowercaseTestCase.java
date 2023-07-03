@@ -20485,6 +20485,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testReleaseHold() {
+    check("f(ReleaseHold(HoldForm()))", //
+        "f()");
+    check("f(ReleaseHold(HoldComplete(1 + 1, Evaluate(1 + 2), Sequence(3, 4))))", //
+        "f(2,3,3,4)");
+    check("ReleaseHold(f(HoldForm()))", //
+        "f()");
+    check("ReleaseHold(f(HoldComplete(1 + 1, Evaluate(1 + 2), Sequence(3, 4))))", //
+        "f(2,3,3,4)");
+    check("ReleaseHold(HoldComplete(1 + 1, Evaluate(1 + 2), Sequence(3, 4)))", //
+        "Identity(2,3,3,4)");
     check("x = 3;", //
         "");
     check("Hold(x)", //

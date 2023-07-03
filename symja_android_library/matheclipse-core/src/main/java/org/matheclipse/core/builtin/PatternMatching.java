@@ -27,6 +27,7 @@ import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.BuiltinUsage;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.Documentation;
@@ -929,22 +930,24 @@ public final class PatternMatching {
    * </code>
    * </pre>
    */
-  private static final class Identity extends AbstractCoreFunctionEvaluator {
+  private static final class Identity extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return ast.arg1();
+      if (ast.isAST1()) {
+        return ast.arg1();
+      }
+      IOFunctions.printMessage(S.General, "argx", F.List(S.Identity, F.ZZ(ast.argSize())), engine);
+      return F.NIL;
     }
+
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_INFINITY;
     }
 
-    @Override
-    public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
-    }
+
   }
 
 
@@ -1439,15 +1442,17 @@ public final class PatternMatching {
     }
 
     private static IExpr releaseHold(IExpr expr) {
-
       if (expr.isAST()) {
-        if (expr.isAST(S.Hold, 2) || expr.isAST(S.HoldForm, 2) || expr.isAST(S.HoldComplete, 2)
-            || expr.isAST(S.HoldPattern, 2)) {
-          return expr.first();
+        IAST holdAST = (IAST) expr;
+        if (holdAST.isFunctionID(ID.Hold, ID.HoldForm, ID.HoldComplete, ID.HoldPattern)) {
+          if (holdAST.isAST1()) {
+            return holdAST.arg1();
+          }
+          return holdAST.apply(S.Sequence);
         }
 
         IASTMutable result = F.NIL;
-        IAST list = (IAST) expr;
+        IAST list = holdAST;
         for (int i = 1; i < list.size(); i++) {
           IExpr arg = list.get(i);
           if (arg.isAST()) {
