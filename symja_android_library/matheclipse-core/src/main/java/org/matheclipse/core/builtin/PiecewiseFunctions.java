@@ -332,9 +332,7 @@ public class PiecewiseFunctions {
             if (temp.isZero()) {
               return F.C1;
             }
-            if (temp.isNumber()) {
-              return F.C0;
-            }
+            return F.C0;
           }
           if (arg1.isNonZeroComplexResult()) {
             return F.C0;

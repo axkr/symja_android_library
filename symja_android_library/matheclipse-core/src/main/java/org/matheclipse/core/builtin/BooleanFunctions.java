@@ -1701,13 +1701,14 @@ public final class BooleanFunctions {
      */
     protected static IExpr simplifyCompare(IBuiltInSymbol equalOrUnequalSymbol, IExpr a1,
         IExpr a2) {
-      IExpr lhs, rhs;
+      IExpr lhs;
+      INumber rhs;
       if (a2.isNumber()) {
         lhs = a1;
-        rhs = a2;
+        rhs = (INumber) a2;
       } else if (a1.isNumber()) {
         lhs = a2;
-        rhs = a1;
+        rhs = (INumber) a1;
       } else {
         return F.NIL;
       }
@@ -1715,13 +1716,11 @@ public final class BooleanFunctions {
         IAST lhsAST = (IAST) lhs;
         if (lhsAST.isTimes()) {
           if (lhsAST.arg1().isNumber()) {
-            INumber sn = (INumber) lhsAST.arg1();
-            rhs = F.eval(F.Divide(rhs, sn));
+            rhs = rhs.divide((INumber) lhsAST.arg1());
             return createComparatorResult(equalOrUnequalSymbol, lhsAST, rhs);
           }
         } else if (lhsAST.isPlus() && lhsAST.arg1().isNumber()) {
-          INumber sn = (INumber) lhsAST.arg1();
-          rhs = F.eval(F.Subtract(rhs, sn));
+          rhs = rhs.subtract((INumber) lhsAST.arg1());
           return createComparatorResult(equalOrUnequalSymbol, lhsAST, rhs);
         }
       }

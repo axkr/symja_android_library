@@ -437,7 +437,7 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
-  public IExpr inverse() {
+  public INumber inverse() {
     return valueOf(EvalEngine.getApfloat().inverseRoot(fApcomplex, 1));
   }
 

@@ -2,8 +2,6 @@ package org.matheclipse.core.expression;
 
 import static org.matheclipse.core.expression.F.num;
 import java.util.function.Function;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
@@ -36,30 +34,29 @@ import com.google.common.math.DoubleMath;
  * numeric complex floating-point number.
  */
 public class ComplexNum implements IComplexNum {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /** */
   private static final long serialVersionUID = -6033055105824482264L;
 
   /** The square root of -1. A number representing "0.0 + 1.0i" */
-  public static final ComplexNum I = valueOf(0.0, 1.0);
+  public static final ComplexNum I = new ComplexNum(Complex.I);
 
-  public static final ComplexNum INF = valueOf(Complex.INF);
+  public static final ComplexNum INF = new ComplexNum(Complex.INF);
 
   /** A complex number representing "NaN + NaNi" */
-  public static final ComplexNum NaN = valueOf(Complex.NaN);
+  public static final ComplexNum NaN = new ComplexNum(Complex.NaN);
 
   /** The square root of -1. A number representing "0.0 - 1.0i" */
-  public static final ComplexNum NI = valueOf(0.0, -1.0);
+  public static final ComplexNum NI = new ComplexNum(Complex.MINUS_I);
 
   /** A complex number representing "-1.0 + 0.0i" */
-  public static final ComplexNum MINUS_ONE = valueOf(-1.0, 0.0);
+  public static final ComplexNum MINUS_ONE = new ComplexNum(Complex.MINUS_ONE);
 
   /** A complex number representing "1.0 + 0.0i" */
-  public static final ComplexNum ONE = valueOf(1.0, 0.0);
+  public static final ComplexNum ONE = new ComplexNum(Complex.ONE);
 
   /** A complex number representing "0.0 + 0.0i" */
-  public static final ComplexNum ZERO = valueOf(0.0, 0.0);
+  public static final ComplexNum ZERO = new ComplexNum(Complex.ZERO);
 
   /**
    * Return the absolute value of this complex number. Returns {@code NaN} if either real or
@@ -121,30 +118,33 @@ public class ComplexNum implements IComplexNum {
    * Create complex number on unit circle with given argument <code>arg</code>.
    * 
    * @param arg angle
-   * @return Exp[I * angle], i.e. complex number on unit circle with given argument
+   * @return E^(I * angle), i.e. complex number on unit circle with given argument
    */
   public static ComplexNum unitOf(final double arg) {
     return newInstance(new Complex(Math.cos(arg), Math.sin(arg)));
   }
 
   public static ComplexNum valueOf(final double real) {
-    if (real == 0.0d || real == -0.0d) {
+    if (real == 0.0d) {
       return ZERO;
     }
     return newInstance(new Complex(real, 0.0));
   }
 
   public static ComplexNum valueOf(final double real, final double imaginary) {
-    if (real == 0.0d || real == -0.0d) {
-      if (imaginary == 0.0d || imaginary == -0.0d) {
-        // Complex.ZERO constructor
-        return newInstance(new Complex(0.0d, 0.0d));
-      }
-      return newInstance(new Complex(0.0d, imaginary));
+    if (real == 0.0d && imaginary == 0.0d) {
+      return ZERO;
     }
-    if (imaginary == 0.0d || imaginary == -0.0d) {
-      return newInstance(new Complex(real, 0.0d));
-    }
+    // if (real == 0.0d || real == -0.0d) {
+    // if (imaginary == 0.0d || imaginary == -0.0d) {
+    // // Complex.ZERO constructor
+    // return newInstance(new Complex(0.0d, 0.0d));
+    // }
+    // return newInstance(new Complex(0.0d, imaginary));
+    // }
+    // if (imaginary == 0.0d || imaginary == -0.0d) {
+    // return newInstance(new Complex(real, 0.0d));
+    // }
     return newInstance(new Complex(real, imaginary));
   }
 
@@ -639,7 +639,7 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
-  public IExpr inverse() {
+  public INumber inverse() {
     final double tmp = (fComplex.getReal() * fComplex.getReal())
         + (fComplex.getImaginary() * fComplex.getImaginary());
     return valueOf(fComplex.getReal() / tmp, -fComplex.getImaginary() / tmp);

@@ -1207,7 +1207,7 @@ public class SimplifyFunctions {
         return F.NIL;
       }
 
-      private IExpr tryExpand(IAST timesAST, IAST plusAST, IExpr arg1, int i,
+      private IExpr tryExpand(IAST timesAST, IAST plusAST, INumber arg1, int i,
           boolean isPowerReciprocal) {
         IExpr expandedAst = tryExpandTransformation(plusAST, F.Times(arg1, plusAST));
         if (expandedAst.isPresent()) {

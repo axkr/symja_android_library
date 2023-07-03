@@ -117,6 +117,16 @@ public interface INumber extends IExpr {
   @Override
   public INumber conjugate();
 
+  default INumber divide(INumber that) {
+    if (that.isZero()) {
+      throw new ArithmeticException("Division by zero");
+    }
+    if (this.isZero()) {
+      return F.C0;
+    }
+    return times(that.inverse());
+  }
+
   /**
    * Get the absolute value for a given number
    *
@@ -263,6 +273,9 @@ public interface INumber extends IExpr {
   }
 
   @Override
+  public INumber inverse();
+
+  @Override
   public INumber opposite();
 
   /**
@@ -271,9 +284,7 @@ public interface INumber extends IExpr {
    * @param that
    * @return
    */
-  default INumber plus(INumber that) {
-    return (INumber) IExpr.super.plus(that);
-  }
+  public INumber plus(INumber that);
 
   /**
    * Return the rational Factor of this number. For IComplex numbers check if real and imaginary
@@ -321,6 +332,9 @@ public interface INumber extends IExpr {
    * @return
    */
   default INumber subtract(INumber that) {
+    if (this.isZero()) {
+      return that.negate();
+    }
     if (that.isZero()) {
       return this;
     }
@@ -333,9 +347,7 @@ public interface INumber extends IExpr {
    * @param arg
    * @return
    */
-  default INumber times(INumber that) {
-    return (INumber) IExpr.super.times(that);
-  }
+  public INumber times(INumber that);
 
   /**
    * Return the list <code>{r, theta}</code> of the polar coordinates of this number

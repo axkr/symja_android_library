@@ -4788,6 +4788,10 @@ public class F extends S {
     return new AST1(Hold, a0);
   }
 
+  public static IAST HoldComplete(final IExpr a0) {
+    return new AST1(HoldComplete, a0);
+  }
+
   public static IAST HoldForm(final IExpr a0) {
     return new AST1(HoldForm, a0);
   }

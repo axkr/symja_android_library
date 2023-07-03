@@ -676,6 +676,9 @@ public class ComplexSym implements IComplex {
 
   @Override
   public INumber plus(final INumber that) {
+    if (that.isZero()) {
+      return this;
+    }
     if (that instanceof ComplexSym) {
       return this.add((ComplexSym) that);
     }
@@ -882,6 +885,9 @@ public class ComplexSym implements IComplex {
 
   @Override
   public INumber times(final INumber that) {
+    if (that.isZero()) {
+      return F.C0;
+    }
     if (that instanceof ComplexSym) {
       return multiply((ComplexSym) that);
     }
