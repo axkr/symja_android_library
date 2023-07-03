@@ -8,6 +8,7 @@ Mean(list)
 
 See:
 * [Wikipedia - Mean](https://en.wikipedia.org/wiki/Mean)
+* [Wikipedia - Quantile - Relationship to the mean](https://en.wikipedia.org/wiki/Quantile#Relationship_to_the_mean)
 
 `Mean` can be applied to the following distributions:
 
