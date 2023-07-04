@@ -1893,6 +1893,9 @@ public class StructureFunctions {
         } catch (RuntimeException rex) {
           LOGGER.error("Sort.evaluate() failed", rex);
         }
+      } else {
+        // Nonatomic expression expected at position `1` in `2`.
+        return IOFunctions.printMessage(S.Sort, "normal", F.List(F.C1, ast), engine);
       }
 
       return F.NIL;
@@ -1977,6 +1980,9 @@ public class StructureFunctions {
               }
               return arg1.get(sortedIndex);
             });
+          } else {
+            // Nonatomic expression expected at position `1` in `2`.
+            return IOFunctions.printMessage(S.SortBy, "normal", F.List(F.C1, ast), engine);
           }
         } catch (ValidateException ve) {
           return IOFunctions.printMessage(ast.topHead(), ve, engine);
