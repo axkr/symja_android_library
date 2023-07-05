@@ -3406,6 +3406,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testComplexExpand() {
+    check("ComplexExpand(3^(I*x))", //
+        "Cos(1/2*x*Log(9))+I*Sin(1/2*x*Log(9))");
+
     check("ComplexExpand(a^(I*b), {a,b})", //
         "Cos(Arg(a)*Im(b)-1/2*Log(Im(a)^2+Re(a)^2)*Re(b))/(E^(Arg(a)*Re(b))*(Im(a)^2+Re(a)^\n"
             + "2)^(Im(b)/2))+(-I*Sin(Arg(a)*Im(b)-1/2*Log(Im(a)^2+Re(a)^2)*Re(b)))/(E^(Arg(a)*Re(b))*(Im(a)^\n"
@@ -18920,6 +18923,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testPowerExpand() {
+    check("PowerExpand(Log(24/10)+Log(2))", //
+        "3*Log(2)+Log(3)-Log(5)");
+    check("PowerExpand(Log(24/10)+Log(2)+Log(x/y))", //
+        "3*Log(2)+Log(3)-Log(5)+Log(x)-Log(y)");
+    check("PowerExpand(Log(-13/350))", //
+        "I*Pi-Log(2)-2*Log(5)-Log(7)+Log(13)");
+    check("PowerExpand(Log(24/175))", //
+        "3*Log(2)+Log(3)-2*Log(5)-Log(7)");
+    check("PowerExpand(Log(12))", //
+        "2*Log(2)+Log(3)");
+    check("PowerExpand(Log(-12))", //
+        "I*Pi+2*Log(2)+Log(3)");
     check("PowerExpand(ProductLog(y*Exp(y)))", //
         "y");
     check("PowerExpand(Log(x/y))", //

@@ -17,6 +17,10 @@ a^c*b^c
 
 >> PowerExpand(Log(x/y))
 Log(x)-Log(y)
+
+>> PowerExpand(Log(-13/350))
+I*Pi-Log(2)-2*Log(5)-Log(7)+Log(13)
+        
 ```
 
 `PowerExpand` is not correct without certain assumptions:

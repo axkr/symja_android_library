@@ -77,6 +77,7 @@ public class BuiltinUsage {
     USAGE[ID.ContainsOnly] = "test if all the elements of a list appear into another list";
     USAGE[ID.Complement] = "find the complement with respect to a universal set";
     USAGE[ID.Complex] = "head for complex numbers";
+    USAGE[ID.ComplexExpand] = "expand a complex expression of real variables";
     USAGE[ID.Complexes] = "the domain of Complex numbers";
     USAGE[ID.CompoundExpression] = "execute expressions in sequence";
     USAGE[ID.Conjugate] = "complex conjugate value";
