@@ -1363,7 +1363,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // https: //
     // www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
     check("Solve(4^(2*x+1)*5^(x-2)-6^(1-x)==0,x)", //
-        "{{x->(Log(2)-Log(75))/(-5*Log(2)-Log(15))}}");
+        "{{x->-(-Log(2)+Log(3)+2*Log(5))/(-5*Log(2)-Log(3)-Log(5))}}");
   }
 
   public void testSolveHO3() {

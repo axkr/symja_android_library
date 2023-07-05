@@ -3970,6 +3970,9 @@ public class Algebra {
           arg1 = result;
         }
         if (head.equals(S.Log)) {
+          if (arg1.isRational()) {
+            return powerExpandLogRational((IRational) arg1);
+          }
           if (arg1.isPower()) {
             // Log[x_ ^ y_] :> y * Log(x)
             IAST logResult = Times(arg1.exponent(), powerExpand(Log(arg1.base()), assumptions));
@@ -4718,6 +4721,46 @@ public class Algebra {
 
   private static boolean isPolynomial(IExpr expr) {
     return expr.isPolynomial(F.CEmptyList);
+  }
+
+  /**
+   * Expand an expression <code>Log(numerator/denominator)</code>, where
+   * <code>numerator/denominator</code> is of type {@link IRational}.
+   * 
+   * @param rationalNumber
+   * @return {@link F#NIL} if an expansion of <code>Log(numerator/denominator)</code> isn't
+   *         possible.
+   */
+  private static IExpr powerExpandLogRational(IRational rationalNumber) {
+    IASTAppendable factors = rationalNumber.factorInteger();
+    IAST pair = (IAST) factors.first();
+    if (pair.second().isOne()) {
+      if (factors.argSize() == 1) {
+        // no expansion possible
+        return F.NIL;
+      }
+    }
+
+    int startPosition = 1;
+    IASTAppendable logIntExpanded = F.PlusAlloc(factors.size());
+    if (pair.first().isMinusOne() && pair.second().isOne()) {
+      // negative number
+      startPosition++;
+      logIntExpanded.append(F.Times(F.CI, S.Pi));
+    }
+
+    for (int i = startPosition; i < factors.size(); i++) {
+      pair = (IAST) factors.get(i);
+      IExpr exponent = pair.exponent();
+      IExpr base = pair.base();
+      if (exponent.isOne()) {
+        logIntExpanded.append(F.Log(base));
+      } else {
+        // for denominator part of a rational number the exponent will be negative
+        logIntExpanded.append(F.Times(exponent, F.Log(base)));
+      }
+    }
+    return logIntExpanded;
   }
 
   private static IAST cancelCommonFactors(IExpr part0, IExpr part1) {
@@ -5886,8 +5929,8 @@ public class Algebra {
    * @param polyExpr
    * @param variablesList a list of variables, which aren't necessarily symbols
    * @param dummyStr
-   * @param polynomialQTest test if the method {@link IExpr#isVariable(boolean)} returns <code>true</code>;
-   *        if not return {@link F#NIL}
+   * @param polynomialQTest test if the method {@link IExpr#isVariable(boolean)} returns
+   *        <code>true</code>; if not return {@link F#NIL}
    * @return <code>F.List(polyExpr, substitutedVariableList)</code> or {@link F#NIL}, if the
    *         variables are invalid and <code>isVariableTest==true</code>
    */
