@@ -13,6 +13,18 @@ public class FindInstanceTest extends ExprEvaluatorTestCase {
         "{{x->-16371,y->4173},{x->-16320,y->4160},{x->-16269,y->4147}}");
   }
 
+  public void testEmptySolution() {
+    check("FindInstance({2*x+7*y==1,x>y,y>0},{x,y},Integers)", //
+        "{}");
+  }
+
+  public void testMod() {
+    check(
+        "FindInstance(Mod(x^2+y^2,2) == 1 && Mod(x-2*y,3) == 2 && x>=0 && y>=0, {x, y}, Integers,5)", //
+        "{{x->4,y->1},{x->5,y->0},{x->8,y->3},{x->9,y->2},{x->10,y->1}}");
+  }
+
+
   public void testFindInstanceBooleans() {
     // message - FindInstance: Illegal arguments: "1" in LogicFormula.
     check("FindInstance(1,{a,b,c,d},Booleans)", //

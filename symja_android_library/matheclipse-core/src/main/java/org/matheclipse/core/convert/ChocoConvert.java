@@ -302,7 +302,7 @@ public class ChocoConvert {
     List<Solution> res = model.getSolver().findAllSolutions(new SolutionCounter(model,
         maximumNumberOfResults < 0 ? Short.MAX_VALUE : maximumNumberOfResults));
     if (res.size() == 0) {
-      return F.NIL;
+      return F.CEmptyList;
     }
     IASTAppendable result = F.ListAlloc(res.size());
     for (int i = 0; i < res.size(); i++) {
