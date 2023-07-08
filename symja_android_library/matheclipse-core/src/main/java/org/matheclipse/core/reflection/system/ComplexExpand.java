@@ -2,10 +2,8 @@ package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.CI;
-import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.Cosh;
-import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sin;
@@ -19,6 +17,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -26,6 +25,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorExpr;
 
 /**
@@ -136,77 +136,112 @@ public class ComplexExpand extends AbstractEvaluator {
     }
 
     @Override
-    public IExpr visit2(IExpr head, IExpr arg1) {
-      IExpr x = arg1;
-      IExpr result = arg1.accept(this);
+    public IExpr visit2(IExpr head, IExpr a1) {
+      IExpr arg1 = a1;
+      IExpr result = a1.accept(this);
       if (result.isPresent()) {
-        x = result;
+        result = fEngine.evaluate(result);
+        arg1 = result;
       }
-      IExpr reX = S.Re.of(fEngine, x);
-      IExpr imX = S.Im.of(fEngine, x);
-      IExpr z = F.Plus(reX, F.Times(F.CI, imX));
-      if (head.equals(S.Abs)) {
-        // Sqrt(reX^2 + imX^2)
-        return F.Sqrt(Plus(Power(reX, C2), Power(imX, C2)));
-      }
-      if (head.equals(S.Cos)) {
-        // Cosh(Im(x))*Cos(Re(x))+I*Sinh(Im(x))*Sin(Re(x))
-        return Plus(Times(Cos(reX), Cosh(imX)), Times(CI, Sin(reX), Sinh(imX)));
-      }
-      if (head.equals(S.Cot)) {
-        // -(Sin(2*Re(x))/(Cos(2*Re(x))-Cosh(2*Im(x))))+(I*Sinh(2*Im(x)))/(Cos(2*Re(x))-Cosh(2*Im(x)))
-        return Plus(
-            Times(CN1, Sin(Times(C2, reX)),
-                Power(Plus(Cos(Times(C2, reX)), Negate(Cosh(Times(C2, imX)))), CN1)),
-            Times(CI, Sinh(Times(C2, imX)),
-                Power(Plus(Cos(Times(C2, reX)), Negate(Cosh(Times(C2, imX)))), CN1)));
-      }
-      if (head.equals(S.Csc)) {
-        // (-2 Cosh(Im(x)) Sin(Re(x)))/(Cos(2 Re(x)) - Cosh(2 Im(x))) +
-        // ((2 I) Cos(Re(x)) Sinh(Im(x)))/(Cos(2 Re(x))-Cosh(2
-        // Im(x)))
-        return Plus(
-            Times(F.CN2, Cosh(imX), Sin(reX),
-                Power(Plus(Cos(Times(F.C2, reX)), Times(F.CN1, Cosh(Times(F.C2, imX)))), F.CN1)),
-            Times(F.C2, F.CI, Cos(reX), Sinh(imX),
-                Power(Plus(Cos(Times(F.C2, reX)), Times(F.CN1, Cosh(Times(F.C2, imX)))), F.CN1)));
-      }
-      if (head.equals(S.Sec)) {
-        // (2 Cos(Re(x)) Cosh(Im(x)))/(Cos(2 Re(x)) + Cosh(2 Im(x))) +
-        // ((2 I) Sin(Re(x)) Sinh(Im(x)))/(Cos(2 Re(x)) + Cosh(2
-        // Im(x)))
-        return Plus(
-            Times(C2, Cos(reX), Cosh(imX),
-                Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)),
-            Times(C2, CI, Sin(reX), Sinh(imX),
-                Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)));
-      }
-      if (head.equals(S.ProductLog)) {
-        // I*Im(ProductLog(x + I*y)) + Re(ProductLog(x + I*y))
-        IExpr productLog = F.ProductLog(F.Plus(reX, F.Times(F.CI, imX)));
-        return Plus(Times(F.CI, F.Im(productLog)), F.Re(productLog));
-      }
-      if (head.equals(S.Sin)) {
-        // Cosh(Im(x))*Sin(Re(x))+I*Sinh(Im(x))*Cos(Re(x))
-        return Plus(Times(Cosh(imX), Sin(reX)), Times(CI, Sinh(imX), Cos(reX)));
-      }
-      if (head.equals(S.ArcTan)) {
-        // https://functions.wolfram.com/ElementaryFunctions/ArcTan/19/
-        return Plus(Times(Times(F.CN1D2, F.Arg(F.Subtract(F.C1, F.Distribute(F.Times(F.CI, z)))))),
-            Times(Times(F.C1D2, F.Arg(F.Plus(F.C1, F.Distribute(F.Times(F.CI, z)))))), Times(F.CI, //
-                Plus(
-                    Times(Times(F.CN1D4,
-                        F.Log(F.Plus(F.Sqr(reX), F.Power(F.Subtract(F.C1, imX), F.C2))))),
-                    Times(Times(F.C1D4,
-                        F.Log(F.Plus(F.Sqr(reX), F.Power(F.Plus(F.C1, imX), F.C2))))))));
-      }
-      if (head.equals(S.Tan)) {
-        // Sin(2*Re(x))/(Cos(2*Re(x)) + Cosh(2*Im(x))) +
-        // (I*Sinh(2*Im(x)))/(Cos(2*Re(x)) + Cosh(2*Im(x)))
-        return Plus(
-            Times(Sin(Times(C2, reX)), Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)),
-            Times(CI, Sinh(Times(C2, imX)),
-                Power(Plus(Cos(Times(C2, reX)), Cosh(Times(C2, imX))), CN1)));
+      IExpr x = S.Re.of(fEngine, arg1);
+      IExpr y = S.Im.of(fEngine, arg1);
+      if (head.isSymbol()) {
+        int headID = ((ISymbol) head).ordinal();
+        switch (headID) {
+          case ID.Abs:
+            // Sqrt(x^2 + y^2)
+            return F.Sqrt(Plus(Power(x, C2), Power(y, C2)));
+          case ID.Cos:
+            // Cos(x)*Cosh(y)-I*Sin(x)*Sinh(y)
+            return Plus(Times(Cos(x), Cosh(y)), Times(F.CNI, Sin(x), Sinh(y)));
+          case ID.Cosh:
+            // Cos(y)*Cosh(x)+I*Sin(y)*Sinh(x)
+            F.Plus(F.Times(F.Cos(y), F.Cosh(x)), F.Times(F.CI, F.Sin(y), F.Sinh(x)));
+          case ID.Cot: {
+            // -Sin(2*x)/(Cos(2*x)-Cosh(2*y))+(I*Sinh(2*y))/(Cos(2*x)-Cosh(2*y))
+            IExpr v1 = F.Times(F.C2, x);
+            IExpr v2 = F.Times(F.C2, y);
+            IExpr v3 = F.Power(F.Subtract(F.Cos(v1), F.Cosh(v2)), F.CN1);
+            return F.Plus(F.Times(F.CN1, v3, F.Sin(v1)), F.Times(F.CI, v3, F.Sinh(v2)));
+          }
+          case ID.Coth: {
+            // (I*Sin(2*y))/(Cos(2*y)-Cosh(2*x))-Sinh(2*x)/(Cos(2*y)-Cosh(2*x))
+            IExpr v1 = F.Times(F.C2, x);
+            IExpr v2 = F.Times(F.C2, y);
+            IExpr v3 = F.Power(F.Subtract(F.Cos(v2), F.Cosh(v1)), F.CN1);
+            return F.Plus(F.Times(F.CI, v3, F.Sin(v2)), F.Times(F.CN1, v3, F.Sinh(v1)));
+          }
+          case ID.Csc: {
+            // ((-1)*2*Cosh(y)*Sin(x))/(Cos(2*x)-Cosh(2*y))+(I*2*Cos(x)*Sinh(y))/(Cos(2*x)-Cosh(2*y))
+            IExpr v1 =
+                F.Power(F.Subtract(F.Cos(F.Times(F.C2, x)), F.Cosh(F.Times(F.C2, y))), F.CN1);
+            return F.Plus(F.Times(F.CN2, v1, F.Cosh(y), F.Sin(x)),
+                F.Times(F.CC(0L, 1L, 2L, 1L), v1, F.Cos(x), F.Sinh(y)));
+          }
+          case ID.Csch: {
+            // (2*I*Cosh(x)*Sin(y))/(Cos(2*y)-Cosh(2*x))+(-2*Cos(y)*Sinh(x))/(Cos(2*y)-Cosh(2*x))
+            IExpr v1 =
+                F.Power(F.Subtract(F.Cos(F.Times(F.C2, y)), F.Cosh(F.Times(F.C2, x))), F.CN1);
+            return F.Plus(F.Times(F.CC(0L, 1L, 2L, 1L), v1, F.Cosh(x), F.Sin(y)),
+                F.Times(F.CN2, v1, F.Cos(y), F.Sinh(x)));
+          }
+          case ID.Log:
+            // I*Arg(x + I*y) + (1/2)*Log(x^2 + y^2)
+            final IAST logPart;
+            if (x.isPossibleZero(false) && y.isPositiveResult()) {
+              logPart = F.Log(y);
+            } else if (y.isPossibleZero(false) && x.isPositiveResult()) {
+              logPart = F.Log(x);
+            } else {
+              logPart = F.Times(F.C1D2, F.Log(F.Plus(F.Sqr(x), F.Sqr(y))));
+            }
+            return F.Plus(F.Times(F.CI, F.Arg(F.Plus(x, F.Times(F.CI, y)))), logPart);
+          case ID.Sec: {
+            // (2*Cos(x)*Cosh(y))/(Cos(2*x)+Cosh(2*y))+(I*2*Sin(x)*Sinh(y))/(Cos(2*x)+Cosh(2*y))
+            IExpr v1 = F.Power(F.Plus(F.Cos(F.Times(F.C2, x)), F.Cosh(F.Times(F.C2, y))), F.CN1);
+            return F.Plus(F.Times(F.C2, v1, F.Cos(x), F.Cosh(y)),
+                F.Times(F.CC(0L, 1L, 2L, 1L), v1, F.Sin(x), F.Sinh(y)));
+          }
+          case ID.Sech: {
+            // (2*Cos(y)*Cosh(x))/(Cos(2*y)+Cosh(2*x))+(-I*2*Sin(y)*Sinh(x))/(Cos(2*y)+Cosh(2*x))
+            IExpr v1 = F.Power(F.Plus(F.Cos(F.Times(F.C2, y)), F.Cosh(F.Times(F.C2, x))), F.CN1);
+            return F.Plus(F.Times(F.C2, v1, F.Cos(y), F.Cosh(x)),
+                F.Times(F.CC(0L, 1L, -2L, 1L), v1, F.Sin(y), F.Sinh(x)));
+          }
+          case ID.ProductLog:
+            // I*Im(ProductLog(x + I*y)) + Re(ProductLog(x + I*y))
+            IExpr productLog = F.ProductLog(F.Plus(x, F.Times(F.CI, y)));
+            return Plus(Times(F.CI, F.Im(productLog)), F.Re(productLog));
+          case ID.Sin:
+            // Cosh(y)*Sin(x)+I*Sinh(y)*Cos(x)
+            return Plus(Times(Cosh(y), Sin(x)), Times(CI, Sinh(y), Cos(x)));
+          case ID.Sinh:
+            // I*Cosh(x)*Sin(y)+Cos(y)*Sinh(x)
+            return F.Plus(F.Times(F.CI, F.Cosh(x), F.Sin(y)), F.Times(F.Cos(y), F.Sinh(x)));
+          case ID.ArcTan: {
+            // -Arg(1-I*x-y)/2+Arg(1+I*x-y)/2+I*(-Log(x^2+(1-y)^2)/4+Log(x^2+(1+y)^2)/4)
+            IExpr v1 = F.Negate(y);
+            IExpr v2 = F.Sqr(x);
+            return F.Plus(F.Times(F.CN1D2, F.Arg(F.Plus(F.C1, v1, F.Times(F.CNI, x)))),
+                F.Times(F.C1D2, F.Arg(F.Plus(F.C1, v1, F.Times(F.CI, x)))),
+                F.Times(F.CI, F.Plus(F.Times(F.CN1D4, F.Log(F.Plus(F.Sqr(F.Plus(F.C1, v1)), v2))),
+                    F.Times(F.C1D4, F.Log(F.Plus(v2, F.Sqr(F.Plus(F.C1, y))))))));
+          }
+          case ID.Tan: {
+            // Sin(2*x)/(Cos(2*x)+Cosh(2*y))+(I*Sinh(2*y))/(Cos(2*x)+Cosh(2*y))
+            IExpr v1 = F.Times(F.C2, x);
+            IExpr v2 = F.Times(F.C2, y);
+            IExpr v3 = F.Power(F.Plus(F.Cos(v1), F.Cosh(v2)), F.CN1);
+            return F.Plus(F.Times(v3, F.Sin(v1)), F.Times(F.CI, v3, F.Sinh(v2)));
+          }
+          case ID.Tanh:
+            // (I*Sin(2*y))/(Cos(2*y) + Cosh(2*x)) ) + Sinh(2*x) /(Cos(2*y) + Cosh(2*x)) )
+            IExpr v1 = F.Times(F.C2, x);
+            IExpr v2 = F.Times(F.C2, y);
+            IExpr v3 = F.Power(F.Plus(F.Cos(v2), F.Cosh(v1)), F.CN1);
+            return F.Plus(F.Times(F.CI, v3, F.Sin(v2)), F.Times(v3, F.Sinh(v1)));
+          default:
+        }
       }
       if (result.isPresent()) {
         return F.unaryAST1(head, result);
@@ -251,12 +286,17 @@ public class ComplexExpand extends AbstractEvaluator {
       }
       engine.setAssumptions(assumptions);
 
+      IExpr result = arg1;
       ComplexExpandVisitor tteVisitor = new ComplexExpandVisitor(engine);
-      IExpr result = arg1.accept(tteVisitor);
-      if (result.isPresent()) {
-        return engine.evaluate(result);
+      // while (true) {
+      temp = result.accept(tteVisitor);
+      if (temp.isPresent()) {
+        result = engine.evaluate(temp);
+        // } else {
+        // break;
       }
-      return arg1;
+      // }
+      return result;
     } finally {
       engine.setAssumptions(oldAssumptions);
     }
