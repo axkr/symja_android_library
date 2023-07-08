@@ -3131,6 +3131,20 @@ public class F extends S {
   }
 
   /**
+   * Perform common subexpression elimination on an expression.
+   * 
+   * @param expr
+   * @return
+   */
+  public static IExpr cse(IExpr expr) {
+    if (expr.isAST()) {
+      IASTMutable mutable = ((IAST) expr).copy();
+      return org.matheclipse.core.reflection.system.OptimizeExpression.cse(mutable);
+    }
+    return expr;
+  }
+
+  /**
    * Evaluates its arguments in turn, returning the last result.
    *
    * <p>

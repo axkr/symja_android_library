@@ -186,13 +186,13 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
   }
 
   /**
-   * Try to optimize/extract common sub-<code>IASTMutables</code> expressions to minimize the number
-   * of operations
+   * Perform common subexpression elimination on an expression.Try to optimize/extract common
+   * sub-<code>IASTMutables</code> expressions to minimize the number of operations
    *
    * @param ast the ast whose internal memory consumption should be minimized
    * @return the number of shared sub-expressions
    */
-  private static IExpr optimizeExpression(final IASTMutable ast) {
+  public static IExpr cse(final IASTMutable ast) {
     ShareFunction function = new ShareFunction();
     ShareReplaceAll sra = new ShareReplaceAll(function);
     IExpr sharedExpr = ast.accept(sra);
@@ -230,7 +230,7 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     if (ast.arg1() instanceof IASTMutable) {
-      return optimizeExpression((IASTMutable) ast.arg1());
+      return cse((IASTMutable) ast.arg1());
     }
     return F.NIL;
   }
