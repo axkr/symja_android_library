@@ -17,9 +17,11 @@ import org.chocosolver.solver.expression.discrete.logical.NaLoExpression;
 import org.chocosolver.solver.expression.discrete.relational.ReExpression;
 import org.chocosolver.solver.search.limits.SolutionCounter;
 import org.chocosolver.solver.search.strategy.Search;
+import org.chocosolver.solver.search.strategy.selectors.values.IntValueSelector;
+import org.chocosolver.solver.search.strategy.selectors.variables.InputOrder;
+import org.chocosolver.solver.search.strategy.strategy.IntStrategy;
 import org.chocosolver.solver.variables.IntVar;
 import org.chocosolver.solver.variables.RealVar;
-import org.chocosolver.solver.variables.impl.IntervalIntVarImpl;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -54,30 +56,31 @@ public class ChocoConvert {
       Map<ISymbol, IntVar> map) throws ArgumentTypeException {
 
     // Create a constraint network
-    Model net = new Model();
-    Solver solver = net.getSolver();
+    Model model = new Model();
     for (int i = 1; i < variables.size(); i++) {
-      if (variables.get(i) instanceof ISymbol) {
-
-        map.put((ISymbol) variables.get(i), new IntervalIntVarImpl(//
-            variables.get(i).toString(), //
+      IExpr expr = variables.get(i);
+      if (expr instanceof ISymbol) {
+        map.put((ISymbol) expr, model.intVar(//
+            expr.toString(), //
             CHOCO_MIN_VALUE, //
-            CHOCO_MAX_VALUE, //
-            net));
+            CHOCO_MAX_VALUE));
       }
     }
-    IntVar[] vars = new IntervalIntVarImpl[map.size()];
+
+    IntVar[] vars = new IntVar[map.size()];
     int k = 0;
     for (Entry<ISymbol, IntVar> entry : map.entrySet()) {
       vars[k++] = entry.getValue();
     }
-    solver.setSearch(Search.inputOrderLBSearch(vars));
-    IAST temp;
+    model.getSolver().setSearch(Search.inputOrderLBSearch(vars));
+    // wait for bug fix in choco-solver to switch strategy
+    // setClosestToZeroStrategy(model, vars);
+
     ReExpression[] array = new ReExpression[list.size() - 1];
     for (int i = 1; i < list.size(); i++) {
-      if (list.get(i) instanceof IAST) {
-        temp = (IAST) list.get(i);
-        ReExpression reLHS = relationalIntegerExpression(net, temp, map);
+      IExpr element = list.get(i);
+      if (element instanceof IAST) {
+        ReExpression reLHS = relationalIntegerExpression(model, (IAST) element, map);
         if (reLHS == null) {
           return null;
         }
@@ -86,7 +89,23 @@ public class ChocoConvert {
     }
     NaLoExpression nlExpr = new NaLoExpression(LoExpression.Operator.AND, array);
     nlExpr.post();
-    return net;
+    return model;
+  }
+
+  /**
+   * Let the {@link IntVar} variables default value selection start &quot;closest to zero&quot;.
+   * 
+   * @param model
+   * @param vars
+   */
+  private static void setClosestToZeroStrategy(Model model, IntVar[] vars) {
+    Solver solver = model.getSolver();
+    IntValueSelector sel = var -> {
+      int pos = var.nextValue(-1);
+      int neg = var.nextValue(-1);
+      return pos < -neg ? pos : neg;
+    };
+    solver.setSearch(new IntStrategy(vars, new InputOrder<>(model), sel));
   }
 
   private static ReExpression relationalIntegerExpression(Model net, IAST temp,
@@ -205,7 +224,7 @@ public class ChocoConvert {
     if (expr instanceof ISymbol) {
       IntVar temp = map.get(expr);
       if (temp == null) {
-        temp = net.intVar(CHOCO_MIN_VALUE, CHOCO_MAX_VALUE);
+        temp = net.intVar(expr.toString(), CHOCO_MIN_VALUE, CHOCO_MAX_VALUE);
         map.put((ISymbol) expr, temp);
       }
       return temp;
@@ -232,6 +251,9 @@ public class ChocoConvert {
         }
         return result;
       } else if (ast.isTimes()) {
+        if (ast.isAST2() && ast.arg1().isMinusOne()) {
+          return integerExpression(net, ast.arg2(), map).neg();
+        }
         ArExpression result = integerExpression(net, ast.arg1(), map);
         for (int i = 2; i < ast.size(); i++) {
           result = result.mul(integerExpression(net, ast.get(i), map));
