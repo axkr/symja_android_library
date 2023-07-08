@@ -20,6 +20,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -3131,17 +3132,52 @@ public class F extends S {
   }
 
   /**
-   * Perform common subexpression elimination on an expression.
+   * Perform &quot;common subexpression elimination&quot; (CSE) on an expression.
    * 
    * @param expr
-   * @return
+   * @return the pair of <code>{shared-expressions, recursive-replacement-rules}</code>
    */
-  public static IExpr cse(IExpr expr) {
+  public static IAST cse(IExpr expr) {
+    return cse(expr, () -> "v");
+  }
+
+  /**
+   * Perform &quot;common subexpression elimination&quot; (CSE) on an expression.
+   * 
+   * @param expr
+   * @param variablePrefix the prefix string, which should be used for the variable names
+   * @return the pair of <code>{shared-expressions, recursive-replacement-rules}</code>
+   */
+  public static IAST cse(IExpr expr, Supplier<String> variablePrefix) {
     if (expr.isAST()) {
       IASTMutable mutable = ((IAST) expr).copy();
-      return org.matheclipse.core.reflection.system.OptimizeExpression.cse(mutable);
+      return org.matheclipse.core.reflection.system.OptimizeExpression.cse(mutable, variablePrefix);
     }
-    return expr;
+    return F.List(expr, F.CEmptyList);
+  }
+
+  /**
+   * Perform &quot;common subexpression elimination&quot; (CSE) on an expression and create Java
+   * source code in the given {@link StringBuilder}.
+   * 
+   * @param expr
+   * @param buf
+   */
+  public static void cseAsJava(IExpr expr, StringBuilder buf) {
+    cseAsJava(expr, () -> "v", buf);
+  }
+
+  /**
+   * Perform &quot;common subexpression elimination&quot; (CSE) on an expression and create Java
+   * source code in the given {@link StringBuilder}.
+   * 
+   * @param expr
+   * @param variablePrefix the prefix string, which should be used for the variable names
+   * @param buf
+   */
+  public static void cseAsJava(IExpr expr, Supplier<String> variablePrefix, StringBuilder buf) {
+    IAST csePair = cse(expr, variablePrefix);
+    org.matheclipse.core.reflection.system.OptimizeExpression.csePairAsJava(csePair, buf);
   }
 
   /**
@@ -10556,4 +10592,5 @@ public class F extends S {
     list.addEvalFlags(IAST.SEQUENCE_FLATTENED);
     return NIL;
   }
+
 }

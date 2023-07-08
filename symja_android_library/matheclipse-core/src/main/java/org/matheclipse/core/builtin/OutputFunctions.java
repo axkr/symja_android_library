@@ -459,7 +459,8 @@ public final class OutputFunctions {
         }
         if (floatJava) {
           IExpr optimized = S.OptimizeExpression.of(engine, arg1);
-          if (optimized.isList2() && optimized.second().isListOfRules()) {
+          if (optimized.isList2() && optimized.second().isListOfRules()
+              && !optimized.second().isEmptyList()) {
             IExpr newExpr = optimized.first();
             IAST listOfRules = (IAST) optimized.second();
             VariablesSet varSet = new VariablesSet(arg1);
@@ -495,7 +496,8 @@ public final class OutputFunctions {
           return F.$str(toJavaDouble(arg1), IStringX.APPLICATION_JAVA);
         } else if (complexJava) {
           IExpr optimized = S.OptimizeExpression.of(engine, arg1);
-          if (optimized.isList2() && optimized.second().isListOfRules()) {
+          if (optimized.isList2() && optimized.second().isListOfRules()
+              && !optimized.second().isEmptyList()) {
             IExpr newExpr = optimized.first();
             IAST listOfRules = (IAST) optimized.second();
             VariablesSet varSet = new VariablesSet(arg1);

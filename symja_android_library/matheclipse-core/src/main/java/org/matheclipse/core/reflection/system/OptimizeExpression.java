@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -187,12 +188,23 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
 
   /**
    * Perform common subexpression elimination on an expression.Try to optimize/extract common
-   * sub-<code>IASTMutables</code> expressions to minimize the number of operations
+   * sub-{@link IASTMutable} expressions to minimize the number of operations
    *
    * @param ast the ast whose internal memory consumption should be minimized
-   * @return the number of shared sub-expressions
+   * @return the pair of <code>{shared-expressions, recursive-replacement-rules}</code>
    */
-  public static IExpr cse(final IASTMutable ast) {
+  public static IAST cse(final IASTMutable ast) {
+    return cse(ast, () -> "v");
+  }
+  /**
+   * Perform common subexpression elimination on an expression.Try to optimize/extract common
+   * sub-{@link IASTMutable} expressions to minimize the number of operations
+   *
+   * @param ast the ast whose internal memory consumption should be minimized
+   * @param variablePrefix the prefix string, which should be used for the variable names
+   * @return the pair of <code>{shared-expressions, recursive-replacement-rules}</code>
+   */
+  public static IAST cse(final IASTMutable ast, Supplier<String> variablePrefix) {
     ShareFunction function = new ShareFunction();
     ShareReplaceAll sra = new ShareReplaceAll(function);
     IExpr sharedExpr = ast.accept(sra);
@@ -212,7 +224,7 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
       for (ReferenceCounter referenceCounter : list) {
         IExpr reference = referenceCounter.reference;
         IExpr temp = reference.replaceAll(variableSubstitutions).orElse(reference);
-        ISymbol dummyVariable = F.Dummy("v" + varCounter);
+        ISymbol dummyVariable = F.Dummy(variablePrefix.get() + varCounter);
         replaceList.append(F.Rule(dummyVariable, temp));
         variableSubstitutions.append(F.Rule(reference, dummyVariable));
         varCounter++;
@@ -222,7 +234,7 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
         return F.list(sharedExpr, replaceList);
       }
     }
-    return F.list(ast);
+    return F.list(ast, F.CEmptyList);
   }
 
   public OptimizeExpression() {}
@@ -239,4 +251,38 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_1_1;
   }
+
+  public static void csePairAsJava(IAST csePair, StringBuilder buf) {
+    IExpr arg1 = csePair.arg1();
+    IExpr arg2 = csePair.arg2();
+    // replacement rules
+    cseAsJavaRecursive((IAST) arg2, buf);
+    buf.append("return ");
+    buf.append(arg1.internalJavaString(IExpr.JAVA_FORM_PROPERTIES, 1, x -> null));
+    buf.append(";\n");
+  }
+
+  private static void cseAsJavaRecursive(IAST cseList, StringBuilder buf) {
+    for (int i = 1; i < cseList.size(); i++) {
+      IExpr element = cseList.get(i);
+      if (element.isList()) {
+        cseAsJavaRecursive((IAST) element, buf);
+      } else {
+        if (element.isRuleAST()) {
+          buf.append("IExpr ");
+          IExpr variable = element.first();
+          buf.append(variable.toString());
+          buf.append(" = ");
+          IExpr expr = element.second();
+          buf.append(expr.internalJavaString(IExpr.JAVA_FORM_PROPERTIES, 1, x -> null));
+          buf.append(";\n");
+        } else {
+          buf.append("return ");
+          buf.append(element.internalJavaString(IExpr.JAVA_FORM_PROPERTIES, 1, x -> null));
+          buf.append(";\n");
+        }
+      }
+    }
+  }
+
 }

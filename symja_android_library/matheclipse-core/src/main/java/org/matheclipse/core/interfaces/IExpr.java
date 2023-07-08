@@ -173,7 +173,7 @@ public interface IExpr
      * code, if {@link Prefix#FULLY_QUALIFIED_CLASS_NAME} use the fully qualified class name, if
      * {@link Prefix#NONE} use no prefix.
      */
-    public final Prefix prefix;
+    public final SourceCodeProperties.Prefix prefix;
 
     /**
      * If <code>true</code>, for symbols like <code>x,y,z,...</code> don't use the <code>F....
@@ -190,6 +190,9 @@ public interface IExpr
       this.noSymbolPrefix = noSymbolPrefix;
     }
   }
+
+  public static SourceCodeProperties JAVA_FORM_PROPERTIES =
+      SourceCodeProperties.of(false, false, SourceCodeProperties.Prefix.CLASS_NAME, true);
 
   public static final int ASTID = 1024;
 
@@ -4939,14 +4942,14 @@ public interface IExpr
       INumber x = r;
 
       while ((exp >>= 1) > 0) {
-        x = (INumber) x.times(x);
+        x = x.times(x);
         if ((exp & 1) != 0) {
-          r = (INumber) r.times(x);
+          r = r.times(x);
         }
       }
 
       while (b2pow-- > 0) {
-        r = (INumber) r.times(r);
+        r = r.times(r);
       }
       if (n < 0) {
         return r.inverse();

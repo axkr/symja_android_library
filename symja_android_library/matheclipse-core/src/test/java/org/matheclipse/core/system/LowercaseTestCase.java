@@ -3406,6 +3406,27 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testComplexExpand() {
+    check("ComplexExpand(Csch(x+I*y))", //
+        "(I*2*Cosh(x)*Sin(y))/(Cos(2*y)-Cosh(2*x))+(-2*Cos(y)*Sinh(x))/(Cos(2*y)-Cosh(2*x))");
+    check("ComplexExpand(Tanh(x+I*y))", //
+        "(I*Sin(2*y))/(Cos(2*y)+Cosh(2*x))+Sinh(2*x)/(Cos(2*y)+Cosh(2*x))");
+
+    check("ComplexExpand(Log(1-Sqrt(2)))", //
+        "I*Pi+Log(-1+Sqrt(2))");
+    check("ComplexExpand(Log(1+I))", //
+        "I*1/4*Pi+Log(2)/2");
+    check("ComplexExpand(Re(2*z^3 - z + 1), z)", //
+        "1-Re(z)+2*Re(z^3)");
+    check("ComplexExpand(Abs(2^z*Log(2*z)), z)", //
+        "Sqrt(Im((I*Arg(I*2*Im(z)+2*Re(z))+Log(4*Im(z)^2+4*Re(z)^2)/2)*(4^(Re(z)/2)*Cos(1/\n"
+            + "2*Im(z)*Log(4))+I*4^(Re(z)/2)*Sin(1/2*Im(z)*Log(4))))^2+Re((I*Arg(I*2*Im(z)+2*Re(z))+Log(\n"
+            + "4*Im(z)^2+4*Re(z)^2)/2)*(4^(Re(z)/2)*Cos(1/2*Im(z)*Log(4))+I*4^(Re(z)/2)*Sin(1/2*Im(z)*Log(\n"
+            + "4))))^2)");
+    check("ComplexExpand(Cos(x + I*y) + Tanh(z), {z})", //
+        "Cos(x)*Cosh(y)+(I*Sin(2*Im(z)))/(Cos(2*Im(z))+Cosh(2*Re(z)))-I*Sin(x)*Sinh(y)+Sinh(\n"
+            + "2*Re(z))/(Cos(2*Im(z))+Cosh(2*Re(z)))");
+    check("ComplexExpand(Sin(x + I*y))", //
+        "Cosh(y)*Sin(x)+I*Cos(x)*Sinh(y)");
     check("ComplexExpand(3^(I*x))", //
         "Cos(1/2*x*Log(9))+I*Sin(1/2*x*Log(9))");
 
@@ -3432,7 +3453,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(x^2)^(y/2)*Cos(y*Arg(x))+I*(x^2)^(y/2)*Sin(y*Arg(x))");
 
     check("ComplexExpand(ArcTan(x+I*y))", //
-        "Arg(1+I*x-y)/2-Arg(1-I*x+y)/2+I*(-Log(x^2+(1-y)^2)/4+Log(x^2+(1+y)^2)/4)");
+        "-Arg(1-I*x-y)/2+Arg(1+I*x-y)/2+I*(-Log(x^2+(1-y)^2)/4+Log(x^2+(1+y)^2)/4)");
 
     check("ComplexExpand(ProductLog(x+I*y))", //
         "I*Im(ProductLog(x+I*y))+Re(ProductLog(x+I*y))");
@@ -3461,7 +3482,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/2+I*1/2*Sqrt(3)+(I*1/2-Sqrt(3)/2)*Sqrt(3)");
 
     check("ComplexExpand(Cos(x+I*y))", //
-        "Cos(x)*Cosh(y)+I*Sin(x)*Sinh(y)");
+        "Cos(x)*Cosh(y)-I*Sin(x)*Sinh(y)");
     check("ComplexExpand(Sin(x+I*y))", //
         "Cosh(y)*Sin(x)+I*Cos(x)*Sinh(y)");
     check("ComplexExpand(Cot(x+I*y))", //
@@ -3480,6 +3501,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-Sin(2*x)/(-1+Cos(2*x))");
     check("ComplexExpand(Csc(x))", //
         "(-2*Sin(x))/(-1+Cos(2*x))");
+    check("ComplexExpand(Csc(x+I*y))", //
+        "(-2*Cosh(y)*Sin(x))/(Cos(2*x)-Cosh(2*y))+(I*2*Cos(x)*Sinh(y))/(Cos(2*x)-Cosh(2*y))");
     check("ComplexExpand(Sec(x))", //
         "(2*Cos(x))/(1+Cos(2*x))");
     check("ComplexExpand(Tan(x))", //
@@ -16729,10 +16752,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testOptimizeExpression() {
+    check("OptimizeExpression(Sqrt(Sin(x)))", //
+        "{Sqrt(Sin(x)),{}}");
+    check("OptimizeExpression(Sqrt(Sin(x)+5)*Sqrt(Sin(x)+4))", //
+        "{Sqrt(4+v1)*Sqrt(5+v1),{v1->Sin(x)}}");
+    check("OptimizeExpression(Sqrt(Sin(x+1) + 5 + Cos(y))*Sqrt(Sin(x+1) + 4 + Cos(y)))", //
+        "{Sqrt(4+v1+v2)*Sqrt(5+v1+v2),{v1->Cos(y),v2->Sin(1+x)}}");
+    check("OptimizeExpression((x-y)*(z-y) + sqrt((x-y)*(z-y)))", //
+        "{Sqrt(v2)+v2,{v1->-y,v2->(v1+x)*(v1+z)}}");
+
+
     check("OptimizeExpression(#1+1+(#1+1)*(#1+1)&)", //
         "{v1*v1+v1&,{v1->1+#1,v2->#1}}");
     check("OptimizeExpression(f(x))", //
-        "{f(x)}");
+        "{f(x),{}}");
     check(
         "OptimizeExpression(-3*a - 2*a^3 + 4*Sqrt(1 + a^2)*(5 - 9*Log(2)) + \n"
             + " 4*a^2*Sqrt(1 + a^2)*(5 - 9*Log(2)) + \n"
