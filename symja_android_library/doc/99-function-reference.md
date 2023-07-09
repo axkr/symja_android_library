@@ -781,6 +781,7 @@
 * [Reduce](functions/Reduce.md)
 * [Refine](functions/Refine.md)
 * [RegularExpression](functions/RegularExpression.md)
+* [ReIm](functions/ReIm.md)
 * [ReleaseHold](functions/ReleaseHold.md)
 * [RemoveDiacritics](functions/RemoveDiacritics.md)
 * [RepeatedTiming](functions/RepeatedTiming.md)

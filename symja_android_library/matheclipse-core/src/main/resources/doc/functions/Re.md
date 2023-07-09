@@ -12,7 +12,7 @@ See
 ### Examples
 
 ```
->> Re(3+4I)
+>> Re(3+4*I)
 3
 
 >> Im(0.5 + 2.3*I)
@@ -20,8 +20,5 @@ See
 ```
 
 ### Related terms 
-[Complex](Complex.md), [Im](Im.md) 
-
-### Github
-
-* [Implementation of Re](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L4894) 
+[Complex](Complex.md), [Im](Im.md), [ReIm](ReIm.md) 
+ 
