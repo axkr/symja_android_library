@@ -200,6 +200,7 @@ public final class Arithmetic {
       S.PreIncrement.setEvaluator(new PreIncrement());
       S.Rational.setEvaluator(CONST_RATIONAL);
       S.Re.setEvaluator(new Re());
+      S.ReIm.setEvaluator(new ReIm());
       S.Sign.setEvaluator(new Sign());
       S.SignCmp.setEvaluator(new SignCmp());
       S.Subtract.setEvaluator(new Subtract());
@@ -2111,9 +2112,9 @@ public final class Arithmetic {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (arg1.isDirectedInfinity()) {
-        IAST directedInfininty = (IAST) arg1;
+      IExpr expr = ast.arg1();
+      if (expr.isDirectedInfinity()) {
+        IAST directedInfininty = (IAST) expr;
         if (directedInfininty.isComplexInfinity()) {
           return S.Indeterminate;
         }
@@ -2130,27 +2131,27 @@ public final class Arithmetic {
           }
         }
       }
-      if (arg1.isNumber() || arg1.isQuantity()) {
-        return arg1.im();
+      if (expr.isNumber() || expr.isQuantity()) {
+        return expr.im();
       }
-      if (arg1.isRealResult()) {
+      if (expr.isRealResult()) {
         return F.C0;
       }
-      if (arg1.isRealVector()) {
+      if (expr.isRealVector()) {
         // 0.0 - vector
-        return new ASTRealVector(new ArrayRealVector(arg1.size() - 1, 0.0), false);
+        return new ASTRealVector(new ArrayRealVector(expr.size() - 1, 0.0), false);
       }
-      if (arg1.isRealMatrix()) {
-        ASTRealMatrix matrix = (ASTRealMatrix) arg1;
+      if (expr.isRealMatrix()) {
+        ASTRealMatrix matrix = (ASTRealMatrix) expr;
         return new ASTRealMatrix(
             new Array2DRowRealMatrix(matrix.getRowDimension(), matrix.getColumnDimension()), false);
       }
-      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(expr);
       if (negExpr.isPresent()) {
         return Negate(Im(negExpr));
       }
-      if (arg1.isTimes()) {
-        IAST timesAST = (IAST) arg1;
+      if (expr.isTimes()) {
+        IAST timesAST = (IAST) expr;
         int position = timesAST.indexOf(x -> x.isRealResult());
         if (position > 0) {
           return F.Times(timesAST.get(position), F.Im(timesAST.splice(position)));
@@ -2164,14 +2165,19 @@ public final class Arithmetic {
           return F.Plus(F.Times(first.re(), F.Im(rest)), F.Times(first.im(), F.Re(rest)));
         }
       }
-      if (arg1.isPlus()) {
-        return arg1.mapThread((IAST) F.Im(F.Slot1), 1);
+      if (expr.isPlus()) {
+        IASTAppendable rest = F.PlusAlloc(expr.size());
+        IASTAppendable result = F.PlusAlloc(8);
+        if (filterImPlus((IAST) expr, result, rest, engine)) {
+          return F.Plus(F.Im(rest.oneIdentity0()), engine.evaluate(result));
+        }
+        return F.NIL;
       }
-      if (arg1.isPower()) {
-        IExpr base = arg1.base();
+      if (expr.isPower()) {
+        IExpr base = expr.base();
         if (base.isRealResult()) {
           // test for x^(a+I*b)
-          IExpr exponent = arg1.exponent();
+          IExpr exponent = expr.exponent();
           if (exponent.isNumber()) {
             // (x^2)^(a/2)*E^(-b*Arg[x])*Sin[a*Arg[x]+1/2*b*Log[x^2]]
             IExpr a = exponent.re();
@@ -2186,16 +2192,35 @@ public final class Arithmetic {
           }
         }
       }
-      if (arg1.isInterval()) {
-        if (arg1.size() == 2) {
-          IAST list = (IAST) arg1.first();
+      if (expr.isInterval()) {
+        if (expr.size() == 2) {
+          IAST list = (IAST) expr.first();
           if (list.first().isRealResult() && list.second().isRealResult()) {
             return F.C0;
           }
         }
-        return IntervalSym.mapSymbol(S.Im, (IAST) arg1);
+        return IntervalSym.mapSymbol(S.Im, (IAST) expr);
       }
       return F.NIL;
+    }
+
+    private static boolean filterImPlus(IAST plusAST, IASTAppendable result, IASTAppendable rest,
+        EvalEngine engine) {
+      boolean[] evaled = new boolean[] {false};
+      plusAST.forEach(x -> {
+        IExpr temp = engine.evaluateNIL(F.Im(x));
+        if (temp.isPresent()) {
+          evaled[0] = true;
+          if (temp.isAST(S.Im, 2)) {
+            rest.append(temp.first());
+          } else {
+            result.append(temp);
+          }
+        } else {
+          rest.append(x);
+        }
+      });
+      return evaled[0];
     }
 
     @Override
@@ -4893,7 +4918,12 @@ public final class Arithmetic {
         }
       }
       if (expr.isPlus()) {
-        return expr.mapThread((IAST) F.Re(F.Slot1), 1);
+        IASTAppendable rest = F.PlusAlloc(expr.size());
+        IASTAppendable result = F.PlusAlloc(8);
+        if (filterRePlus((IAST) expr, result, rest, engine)) {
+          return F.Plus(F.Re(rest.oneIdentity0()), engine.evaluate(result));
+        }
+        return F.NIL;
       }
       if (expr.isPower()) {
         IExpr base = expr.base();
@@ -4912,6 +4942,25 @@ public final class Arithmetic {
         return IntervalSym.mapSymbol(S.Re, (IAST) expr);
       }
       return F.NIL;
+    }
+
+    private static boolean filterRePlus(IAST plusAST, IASTAppendable result, IASTAppendable rest,
+        EvalEngine engine) {
+      boolean[] evaled = new boolean[] {false};
+      plusAST.forEach(x -> {
+        IExpr temp = engine.evaluateNIL(F.Re(x));
+        if (temp.isPresent()) {
+          evaled[0] = true;
+          if (temp.isAST(S.Re, 2)) {
+            rest.append(temp.first());
+          } else {
+            result.append(temp);
+          }
+        } else {
+          rest.append(x);
+        }
+      });
+      return evaled[0];
     }
 
     @Override
@@ -4952,7 +5001,31 @@ public final class Arithmetic {
     }
   }
 
+  private static final class ReIm extends AbstractEvaluator {
 
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isNumber()) {
+        if (arg1.isReal()) {
+          return F.List(arg1.re(), F.C0);
+        }
+        return F.List(arg1.re(), arg1.im());
+      }
+      return F.List(F.Re(arg1), F.Im(arg1));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
   /**
    *
    *

@@ -8601,6 +8601,8 @@ public class S {
   public final static IBuiltInSymbol RegularExpression =
       S.initFinalSymbol("RegularExpression", ID.RegularExpression);
 
+  public final static IBuiltInSymbol ReIm = S.initFinalSymbol("ReIm", ID.ReIm);
+
   /**
    * ReleaseHold(expr) - removes any `Hold`, `HoldForm`, `HoldPattern` or `HoldComplete` head from
    * `expr`.
