@@ -299,7 +299,7 @@ public class TestPods {
   public void testTeXParser() {
 
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
-    ObjectNode messageJSON = TestPods.createJUnitResult("\\sin 30 ^ { \\circ }", formatsHTML);
+    ObjectNode messageJSON = TestPods.createJUnitResult("\\sin( 30 ^ { \\circ } )", formatsHTML);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
 

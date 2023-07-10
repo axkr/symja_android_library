@@ -10,7 +10,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.BuiltInDummy;
@@ -36,7 +35,8 @@ import uk.ac.ed.ph.snuggletex.SnuggleEngine;
 import uk.ac.ed.ph.snuggletex.SnuggleInput;
 import uk.ac.ed.ph.snuggletex.SnuggleSession;
 
-public class TeXParser {
+/* package private */
+class TeXSegmentParser {
   private static final Logger LOGGER = LogManager.getLogger();
 
   /**
@@ -238,8 +238,7 @@ public class TeXParser {
    */
   private boolean subOrSup;
 
-  public TeXParser(EvalEngine engine) {
-    // fEngine = engine;
+  public TeXSegmentParser() {
   }
 
   private IExpr convert(NodeList list, int[] position, IExpr lhs, int precedence) {

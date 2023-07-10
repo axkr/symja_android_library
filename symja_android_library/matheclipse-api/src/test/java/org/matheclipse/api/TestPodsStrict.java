@@ -86,7 +86,7 @@ public class TestPodsStrict {
 
   @Test
   public void testTeXParser() {
-    ObjectNode messageJSON = TestPods.createJUnitResult("\\sin 30 ^ { \\circ }", formatsHTML);
+    ObjectNode messageJSON = TestPods.createJUnitResult("\\sin( 30 ^ { \\circ } )", formatsHTML);
 
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
     assertEquals(queryResult.isError(), false);

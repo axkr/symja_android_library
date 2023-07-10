@@ -2,7 +2,6 @@ package org.matheclipse.core.form.tex;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -41,15 +40,10 @@ public class TeXSliceParser extends TeXScanner {
 
   public static Map<String, String> FUNCTION_NAMES_MAP = new HashMap<String, String>();
 
-  protected EvalEngine fEngine;
-
-  // protected IParserFactory fFactory;
-
   Map<Integer, IExpr> fMapOfVariables = new HashMap<Integer, IExpr>();
 
-
-
   static {
+    TeXSegmentParser.initialize();
     for (int i = 0; i < FUNCTION_NAMES.length; i++) {
       FUNCTION_NAMES_MAP.put(FUNCTION_NAMES[i], FUNCTION_NAMES[i]);
     }
@@ -64,12 +58,10 @@ public class TeXSliceParser extends TeXScanner {
 
   public TeXSliceParser() {
     super(false, false);
-    // this.fFactory = ExprParserFactory.MMA_STYLE_FACTORY;
-    this.fEngine = EvalEngine.get();
   }
 
   private IExpr toExpr(String texStr) {
-    TeXParser texParser = new TeXParser(fEngine);
+    TeXSegmentParser texParser = new TeXSegmentParser();
     return texParser.toExpression(texStr);
   }
 
@@ -288,7 +280,7 @@ public class TeXSliceParser extends TeXScanner {
         String identifier = getIdentifier();
         String functionName = FUNCTION_NAMES_MAP.get(identifier);
         if (functionName != null) {
-          IExpr head = TeXParser.createFunction(functionName);
+          IExpr head = TeXSegmentParser.createFunction(functionName);
           getNextToken();
           int derivativeCounter = 0;
           while (fToken == TT_CHARACTER //
@@ -374,7 +366,7 @@ public class TeXSliceParser extends TeXScanner {
               if (fCommandString.equals("left")) {
                 IExpr temp = convertLeftRight(texStr, lastTeXIndex);
                 if (temp.isPresent()) {
-                  ISymbol head = TeXParser.createFunction(functionName);
+                  ISymbol head = TeXSegmentParser.createFunction(functionName);
                   temp = F.unaryAST1(head, temp);
                   int endOfSubExpr = fCurrentPosition - 1;
                   // ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
