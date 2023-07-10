@@ -10,8 +10,8 @@ public class FindInstanceTest extends ExprEvaluatorTestCase {
   public void testDiophantine() {
     // TODO return condition with extra variable C1
     check("FindInstance(13*x+51*y==0, {x,y}, Integers, 6)", //
-        "{{x->-16371,y->4173},{x->-16320,y->4160},{x->-16269,y->4147},{x->-16218,y->4134},{x->-\n"
-            + "16167,y->4121},{x->-16116,y->4108}}");
+        "{{x->-153,y->39},{x->-102,y->26},{x->-51,y->13},{x->0,y->0},{x->51,y->-13},{x->\n"
+            + "102,y->-26}}");
   }
 
   public void testEmptySolution() {
@@ -21,8 +21,8 @@ public class FindInstanceTest extends ExprEvaluatorTestCase {
 
   public void testMod() {
     check(
-        "FindInstance(Mod(x^2+y^2,2) == 1 && Mod(x-2*y,3) == 2 &&x>=0&&y>=0 , {x, y}, Integers,5)", //
-        "{{x->4,y->1},{x->5,y->0},{x->8,y->3},{x->9,y->2},{x->10,y->1}}");
+        "FindInstance(Mod(x^2+y^2,2) == 1 && Mod(x-2*y,3) == 2, {x, y}, Integers,5)", //
+        "{{x->0,y->-25},{x->0,y->-19},{x->0,y->-13},{x->0,y->-7},{x->0,y->-1}}");
   }
 
   public void testFindInstanceBooleans() {

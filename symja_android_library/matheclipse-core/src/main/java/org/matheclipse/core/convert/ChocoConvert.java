@@ -16,7 +16,6 @@ import org.chocosolver.solver.expression.discrete.logical.LoExpression;
 import org.chocosolver.solver.expression.discrete.logical.NaLoExpression;
 import org.chocosolver.solver.expression.discrete.relational.ReExpression;
 import org.chocosolver.solver.search.limits.SolutionCounter;
-import org.chocosolver.solver.search.strategy.Search;
 import org.chocosolver.solver.search.strategy.selectors.values.IntValueSelector;
 import org.chocosolver.solver.search.strategy.selectors.variables.InputOrder;
 import org.chocosolver.solver.search.strategy.strategy.IntStrategy;
@@ -64,6 +63,11 @@ public class ChocoConvert {
             expr.toString(), //
             CHOCO_MIN_VALUE, //
             CHOCO_MAX_VALUE));
+        // map.put((ISymbol) variables.get(i), new IntervalIntVarImpl(//
+        // variables.get(i).toString(), //
+        // CHOCO_MIN_VALUE, //
+        // CHOCO_MAX_VALUE, //
+        // model));
       }
     }
 
@@ -72,9 +76,9 @@ public class ChocoConvert {
     for (Entry<ISymbol, IntVar> entry : map.entrySet()) {
       vars[k++] = entry.getValue();
     }
-    model.getSolver().setSearch(Search.inputOrderLBSearch(vars));
+    // model.getSolver().setSearch(Search.inputOrderLBSearch(vars));
     // wait for bug fix in choco-solver to switch strategy
-    // setClosestToZeroStrategy(model, vars);
+    setClosestToZeroStrategy(model, vars);
 
     ReExpression[] array = new ReExpression[list.size() - 1];
     for (int i = 1; i < list.size(); i++) {
@@ -102,8 +106,21 @@ public class ChocoConvert {
     Solver solver = model.getSolver();
     IntValueSelector sel = var -> {
       int pos = var.nextValue(-1);
-      int neg = var.nextValue(-1);
-      return pos < -neg ? pos : neg;
+      int neg = var.previousValue(1);
+      if (pos < Integer.MAX_VALUE) { // at least one value >= 0
+        if (neg > Integer.MIN_VALUE) { // at least one value <= 0
+          return pos < -neg ? pos : neg; // return the closest to 0
+        } else {
+          return pos; // return the positive value
+        }
+      } else {
+        if (neg > Integer.MIN_VALUE) {
+          return neg; // return the negative value
+        } else {
+          // no value left -- should not happen
+          throw new UnsupportedOperationException();
+        }
+      }
     };
     solver.setSearch(new IntStrategy(vars, new InputOrder<>(model), sel));
   }

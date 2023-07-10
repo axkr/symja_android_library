@@ -1137,7 +1137,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
   public void testChocoSolver001() {
     check("Together(1/x+1/y-1/20 )", //
         "(20*x+20*y-x*y)/(20*x*y)");
-    check("Solve(20*x+20*y-x*y==0,{x,y},Integers)", //
+    check("Solve(20*x+20*y-x*y==0,{x,y},Integers )", //
         "{{x->-380,y->19},{x->-180,y->18},{x->-80,y->16},{x->-60,y->15},{x->-30,y->12},{x->-\n"
             + "20,y->10},{x->-5,y->4},{x->0,y->0},{x->4,y->-5},{x->10,y->-20},{x->12,y->-30},{x->\n"
             + "15,y->-60},{x->16,y->-80},{x->18,y->-180},{x->19,y->-380},{x->21,y->420},{x->22,y->\n"
