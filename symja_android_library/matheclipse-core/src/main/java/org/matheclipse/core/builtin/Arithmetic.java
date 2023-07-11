@@ -340,8 +340,15 @@ public final class Arithmetic {
           return result[0];
         }
       }
-      if (arg1.isPower() && arg1.exponent().isRealResult()) {
-        return F.Power(F.Abs(arg1.base()), arg1.exponent());
+      if (arg1.isPower()) {
+        IExpr base = arg1.base();
+        IExpr exponent = arg1.exponent();
+        if (exponent.isRealResult()) {
+          return F.Power(F.Abs(base), exponent);
+        }
+        if (base.isNumericFunction() && base.isPositive()) {
+          return F.Power(base, F.Re(exponent));
+        }
       }
       if (arg1.isNumericFunction(true)) {
         IExpr re = arg1.re();
