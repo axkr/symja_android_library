@@ -19,6 +19,8 @@ public class BuiltinUsage {
         "specifies the maximum allowable recursion depth after which a calculation is terminated";
     USAGE[ID.Abort] = "generate an abort";
     USAGE[ID.Abs] = "absolute value of a number";
+    USAGE[ID.AbsoluteTime] = "get absolute time in seconds";
+    USAGE[ID.AbsoluteTiming] = "get total wall-clock time to run a Mathics command";
     USAGE[ID.Accumulate] = "accumulates the values of $list$, returning a new list";
     USAGE[ID.Algebraics] = "domain of the Algebraic numbers";
     USAGE[ID.All] = "option value that specify using everything";
@@ -94,9 +96,11 @@ public class BuiltinUsage {
     USAGE[ID.Covariance] = "covariance matrix for a pair of datasets";
 
     USAGE[ID.D] = "partial derivative of a function";
+    USAGE[ID.Definition] = "give values of a symbol in a form that can be stored in a package";
     USAGE[ID.Delete] = "delete elements from a list at given positions";
     USAGE[ID.DeleteCases] = "delete all occurrences of a pattern";
     USAGE[ID.DeleteDuplicates] = "delete duplicate elements in a list";
+    USAGE[ID.Depth] = "get maximum number of indices to specify any part";
     USAGE[ID.Derivative] = "symbolic and numerical derivative functions";
     USAGE[ID.Diagonal] = "gives a list with the diagonal elements of a given matrix";
     USAGE[ID.DiagonalMatrix] = "give a diagonal matrix with the elements of a given list";
@@ -109,7 +113,6 @@ public class BuiltinUsage {
     USAGE[ID.Divisors] = "integer divisors";
     USAGE[ID.Do] = "evaluate an expression looping over a variable";
     USAGE[ID.Drop] = "remove a number of elements from a list";
-    USAGE[ID.Definition] = "give values of a symbol in a form that can be stored in a package";
     USAGE[ID.DSolve] = "differential equation analytical solver";
 
     USAGE[ID.EditDistance] = "edit distance";
@@ -152,6 +155,7 @@ public class BuiltinUsage {
         "list of the results of applying a binary operation interatively over elements of a list";
     USAGE[ID.For] = "a 'For' loop";
     USAGE[ID.FractionalPart] = "fractional part of a number";
+    USAGE[ID.FreeQ] = "test whether an expression is free of subexpressions matching a pattern";
     USAGE[ID.FromCharacterCode] = "convert from a list of character codes to a string";
     USAGE[ID.FromContinuedFraction] =
         "reconstructs a number from its continued fraction representation";
@@ -212,13 +216,13 @@ public class BuiltinUsage {
 
     USAGE[ID.Last] = "last element of a list or expression";
     USAGE[ID.LCM] = "least common multiple";
-    USAGE[ID.LeafCount] = "the total number of atomic subexpressions";
+    USAGE[ID.LeafCount] = "get the total number of atomic subexpressions";
     USAGE[ID.Length] = "number of elements in a list or expression";
     USAGE[ID.Less] = "less than";
     USAGE[ID.LessEqual] = "less than or equal to";
     USAGE[ID.LetterNumber] = "position of a letter in an alphabet";
     USAGE[ID.LetterQ] = "test whether all the characters are letters";
-    USAGE[ID.Level] = "get subexpressions at a level specification";
+    USAGE[ID.Level] = "get parts specified by a given number of indices";
     USAGE[ID.LevelQ] = "test whether is a valid level specification";
     USAGE[ID.Limit] = "directed and undirected limits";
     USAGE[ID.List] = "specify a list explicitly";
@@ -273,6 +277,7 @@ public class BuiltinUsage {
     USAGE[ID.Normalize] = "normalizes a vector";
     USAGE[ID.Not] = "logic negation";
     USAGE[ID.NotListQ] = "test if an expression is not a list";
+    USAGE[ID.Null] = "implicit result for expressions that do not yield a result";
     USAGE[ID.NumberLinePlot] = "plot along a number line";
     USAGE[ID.NumberQ] = "test whether an expression is a number";
     USAGE[ID.NumberString] = "characters in string representation of a number";
@@ -286,7 +291,10 @@ public class BuiltinUsage {
     // USAGE[ID.On] = "turn on a message for printing";
     USAGE[ID.OneIdentity] =
         "attribute specifying that a function behaves like the Identity in pattern matching";
+    USAGE[ID.Operate] = "apply a function to the head of an expression";
     USAGE[ID.Or] = "logic (inclusive) disjunction";
+    USAGE[ID.Order] = "order expressions";
+    USAGE[ID.OrderedQ] = "test whether elements are canonically sorted";
     USAGE[ID.Orderless] =
         "attribute for functions with results that does not depends on the order of their arguments";
     USAGE[ID.OutputForm] = "plain-text output format";
@@ -386,6 +394,8 @@ public class BuiltinUsage {
     USAGE[ID.Slot] = "`#` serves as a pure function's first parameter ";
     USAGE[ID.SokalSneathDissimilarity] = "Sokal-Sneath dissimilarity";
     USAGE[ID.Solve] = "find generic solutions for variables";
+    USAGE[ID.Sort] = "sort the elements of an expression";
+    USAGE[ID.SortBy] = "sort by the values of a function applied to elements";
     USAGE[ID.Sow] = "send an expression to the innermost Reap";
     USAGE[ID.Span] = "general specification for spans or blocks of elements";
     USAGE[ID.Split] = "split into runs of identical elements";
@@ -437,6 +447,7 @@ public class BuiltinUsage {
     USAGE[ID.Tanh] = "hyperbolic tangent function";
     USAGE[ID.TensorProduct] = "tensor product";
     USAGE[ID.TeXForm] = "formatted expression as TeX commands";
+    USAGE[ID.Through] = "distribute operators that appears inside the head of expressions";
     USAGE[ID.Throw] = "throw an expression to be caught by a surrounding 'Catch'";
     USAGE[ID.ToCharacterCode] = "convert a string to a list of character codes";
     USAGE[ID.ToExpression] = "build an expression from formatted text";

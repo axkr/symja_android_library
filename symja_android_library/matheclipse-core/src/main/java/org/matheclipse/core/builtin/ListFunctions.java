@@ -4469,7 +4469,7 @@ public final class ListFunctions {
       if (ast.argSize() > 1 && ast.arg2().isList()) {
         int[] levels = Validate.checkListOfInts(ast, ast.arg2(), true, false, engine);
         if (levels != null && levels.length > 0) {
-          int listLevel = list.depth() - 1;
+          int listLevel = list.depth(false) - 1;
           if (levels.length > listLevel) {
             // The padding specification `1` involves `2` levels, the list `3` has only `4`
             // level.
@@ -4698,7 +4698,7 @@ public final class ListFunctions {
       if (ast.argSize() > 1 && ast.arg2().isList()) {
         int[] levels = Validate.checkListOfInts(ast, ast.arg2(), true, false, engine);
         if (levels != null && levels.length > 0) {
-          int listLevel = list.depth() - 1;
+          int listLevel = list.depth(false) - 1;
           if (levels.length > listLevel) {
             // The padding specification `1` involves `2` levels, the list `3` has only `4`
             // level.

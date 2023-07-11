@@ -679,8 +679,10 @@ public interface IExpr
   /**
    * Calculates the depth of an expression. Atomic expressions (no sublists) have depth <code>1
    * </code> Example: the nested list <code>[x,[y]]</code> has depth <code>3</code>
+   * 
+   * @param heads if <code>true</code>, include the depth of heads
    */
-  default int depth() {
+  default int depth(boolean heads) {
     return 1;
   }
 

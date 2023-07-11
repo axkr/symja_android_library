@@ -17,6 +17,7 @@ import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
@@ -315,20 +316,24 @@ public class StructureFunctions {
    * 2
    * </pre>
    */
-  private static final class Depth extends AbstractCoreFunctionEvaluator {
+  private static final class Depth extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
       final IExpr arg1 = engine.evaluate(ast.arg1());
-      // if (!(arg1.isASTOrAssociation())) {
-      // return F.C1;
-      // }
-      return F.ZZ(arg1.depth());
+      boolean heads = option[0].isTrue();
+      return F.ZZ(arg1.depth(heads));
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.Heads, S.False);
     }
   }
 
