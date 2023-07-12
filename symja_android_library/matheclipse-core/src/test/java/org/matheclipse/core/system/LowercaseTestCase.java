@@ -3552,6 +3552,21 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   // + "2*Re(z))/(Cos(2*Im(z))+Cosh(2*Re(z)))");
   // check("ComplexExpand(Re(ArcCot(x+I*y))+Im(ArcSinh(x-I*y)))", //
   // "-Arg(1-I/(x+I*y))/2+Arg(1+I/(x+I*y))/2+Arg(x-I*y+Sqrt(1+x^2-I*2*x*y-y^2))");
+  //
+  // check("ComplexExpand(Re(Log(Sin(Exp(x + I*y)^2))))", //
+  // "Re(Log(Cosh(E^(2*x)*Sin(2*y))^2*Sin(E^(2*x)*Cos(2*y))^2+Cos(E^(2*x)*Cos(2*y))^2*Sinh(E^(\n"
+  // + "2*x)*Sin(2*y))^2))/2");
+  // check("ComplexExpand(Re(Tan(z)),z)", //
+  // "Sin(2*Re(z))/(Cos(2*Re(z))+Cosh(2*Im(z)))");
+  // check("ComplexExpand(Tan(x+I*y),z)", //
+  // "Sin(2*x)/(Cos(2*x)+Cosh(2*y))+(I*Sinh(2*y))/(Cos(2*x)+Cosh(2*y))");
+  // check("ComplexExpand(a + x^2, {x})", //
+  // "a-Im(x)^2+I*2*Im(x)*Re(x)+Re(x)^2");
+  // check("ComplexExpand(Sin(x)*Exp(y), {x,y})", //
+  // "E^Re(y)*Cos(Im(y))*Cosh(Im(x))*Sin(Re(x))+I*E^Re(y)*Cosh(Im(x))*Sin(Im(y))*Sin(Re(x))+" //
+  // + "I*E^Re(y)*Cos(Im(y))*Cos(Re(x))*Sinh(Im(x))-E^Re(y)*Cos(Re(x))*Sin(Im(y))*Sinh(Im(x))");
+  // check("ComplexExpand(Exp(I*z))", //
+  // "Cos(z)+I*Sin(z)");
   // }
 
   public void testComplexInfinity() {
@@ -8546,6 +8561,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testFactorTerms() {
+    check("FactorTerms(Cosh(E^(2*x)*Sin(2*y)))", //
+        "Cosh(E^(2*x)*Sin(2*y))");
+
     // check("Expand((3 + 2 x)^2*(x + 2 y)^2)",//
     // "9*x^2+12*x^3+4*x^4+36*x*y+48*x^2*y+16*x^3*y+36*y^2+48*x*y^2+16*x^2*y^2");
     // check("FactorTerms(9*x^2+12*x^3+4*x^4+36*x*y+48*x^2*y+16*x^3*y+36*y^2+48*x*y^2+16*x^2*y^2,
@@ -20707,6 +20725,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "True");
     // check("Refine((-1)^(x+y), Element(k/2, Integers))", //
     // "(-1)^y");
+
+    check("Refine(Re(Log(x)),x>0)", //
+        "Log(x)");
+    check("Refine(Im(Log(x)),x>0)", //
+        "0");
+    check("Refine(Re(Log(x)),x<0)", //
+        "Log(-x)");
+    check("Refine(Im(Log(x)),x<0)", //
+        "Pi");
 
     check("Refine(Sqrt(x^2),Assumptions -> Re(x)>0)", //
         "x");

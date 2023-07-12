@@ -4341,15 +4341,26 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (S.True.equals(AbstractAssumptions.assumeReal(this))) {
       return true;
     }
-    IExpr head = head();
+    final IExpr head = head();
     if (size() == 2 && head.isBuiltInSymbol()) {
-      if (isFunctionID(ID.Cos, ID.Cosh, ID.Cot, ID.Coth, ID.Csc, ID.Csch, ID.Sec, ID.Sech, ID.Sin,
-          ID.Sinh, ID.Tan, ID.Tanh, ID.Erf, ID.Erfc, ID.Erfi, ID.ExpIntegralEi, ID.Gamma,
-          ID.Identity)) {
-        return arg1().isRealResult();
-      }
-      if (isFunctionID(ID.Re, ID.Im, ID.Abs, ID.Arg, ID.RealSign)) {
-        return true;
+      final IExpr arg1 = arg1();
+      final int id = headID();
+      if (id > 0) {
+        if (isFunctionID(ID.Cos, ID.Cosh, ID.Cot, ID.Coth, ID.Csc, ID.Csch, ID.Sec, ID.Sech, ID.Sin,
+            ID.Sinh, ID.Tan, ID.Tanh, ID.Erf, ID.Erfc, ID.Erfi, ID.ExpIntegralEi, ID.Gamma,
+            ID.Identity)) {
+          return arg1.isRealResult();
+        }
+        if (isFunctionID(ID.Re, ID.Im, ID.Abs, ID.Arg, ID.RealSign)) {
+          return true;
+        }
+        if (isFunctionID(ID.Log, ID.LogGamma)) {
+          return arg1.isPositiveResult();
+        }
+        if (isFunctionID(ID.ProductLog)) {
+          // TODO improve for arg1 >= (-1/E)
+          return arg1.isPositiveResult();
+        }
       }
     }
     IReal e = evalReal();
@@ -4367,10 +4378,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return true;
     }
     if (isPower() && (!exponent().isZero() || !base().isZero())) {
-      if (!arg1().isRealResult()) {
+      final IExpr arg1 = arg1();
+      if (!arg1.isRealResult()) {
         return false;
       }
-      if (arg1().isNegativeResult()) {
+      if (arg1.isNegativeResult()) {
         return false;
       }
       if (!arg2().isRealResult()) {
