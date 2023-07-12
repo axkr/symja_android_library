@@ -2730,47 +2730,46 @@ public class Algebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr temp = StructureFunctions.threadListLogicEquationOperators(ast.arg1(), ast, 1);
+      IExpr arg1 = ast.arg1();
+      IExpr temp = StructureFunctions.threadListLogicEquationOperators(arg1, ast, 1);
       if (temp.isPresent()) {
         return temp;
       }
       VariablesSet eVar = null;
       IAST variableList = F.NIL;
       if (ast.isAST2()) {
-        if (ast.arg2().isSymbol()) {
-          ISymbol variable = (ISymbol) ast.arg2();
+        IExpr arg2 = ast.arg2();
+        if (arg2.isSymbol()) {
+          ISymbol variable = (ISymbol) arg2;
           variableList = F.list(variable);
-        } else if (ast.arg2().isList()) {
-          variableList = (IAST) ast.arg2();
+        } else if (arg2.isList()) {
+          variableList = (IAST) arg2;
         } else {
-          return F.NIL;
+          return arg1;
         }
       } else {
         if (ast.isAST1()) {
-          IExpr expr = F.evalExpandAll(ast.arg1(), engine);
+          IExpr expr = F.evalExpandAll(arg1, engine);
           if (expr.isPlus()) {
             temp = factorTermsPlus((IAST) expr, engine);
             if (temp.isPresent()) {
               return temp;
             }
           }
-          eVar = new VariablesSet(ast.arg1());
+          eVar = new VariablesSet(arg1);
           if (!eVar.isSize(1)) {
-            // FactorTerms only possible for univariate polynomials
-            if (eVar.isSize(0)) {
-              return ast.arg1();
-            }
-            return F.NIL;
+            // FactorTerms currently only possible for univariate polynomials
+            return arg1;
           }
           variableList = eVar.getVarList();
         }
       }
       if (variableList.isNIL() || variableList.size() != 2) {
         // FactorTerms only possible for univariate polynomials
-        return F.NIL;
+        return arg1;
       }
       List<IExpr> varList = variableList.copyTo();
-      IExpr expr = F.evalExpandAll(ast.arg1(), engine);
+      IExpr expr = F.evalExpandAll(arg1, engine);
       try {
         JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
         GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
@@ -2806,7 +2805,7 @@ public class Algebra {
         // }
 
       }
-      return ast.arg1();
+      return arg1;
     }
 
     @Override
@@ -2830,7 +2829,7 @@ public class Algebra {
       VariablesSet eVar = null;
       IAST variableList = F.NIL;
       if (ast.isAST2()) {
-        // TODO evaluate for givn variables
+        // TODO evaluate for given variables
         return F.NIL;
 
         // if (ast.arg2().isSymbol()) {
