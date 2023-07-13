@@ -963,6 +963,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testArg() {
+    check("FullSimplify(Arg(-I*41*Im(z)-41*Re(z)))", //
+        "Arg(-z)");
+    check("FullSimplify(Arg(I*2*Im(z)+2*Re(z)))", //
+        "Arg(z)");
+
+    check("Arg(42*z)", //
+        "Arg(z)");
+    check("Arg(-42*z)", //
+        "Arg(-z)");
     check("Arg(Interval({1, 3}))", //
         "Interval({0,0})");
 
@@ -1045,6 +1054,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-Pi/2");
     check("Arg(ComplexInfinity)", //
         "Interval({-Pi,Pi})");
+
+    check("Table(Arg(Exp(k*I*3*Pi/8)), {k, 8})", //
+        "{3/8*Pi,3/4*Pi,-7/8*Pi,-Pi/2,-Pi/8,Pi/4,5/8*Pi,Pi}");
   }
 
   public void testArgMax() {
@@ -3410,16 +3422,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   // public void testComplexExpand() {
+  // check("ComplexExpand(ArcCot(x+I*y))", //
+  // "-Arg(1-I/(x+I*y))/2+Arg(1+I/(x+I*y))/2-I*1/4*Log(x^2/(x^2+y^2)^2+(1+y/(x^2+y^2))^\n"
+  // + "2)+I*1/4*Log(x^2/(x^2+y^2)^2+(1-y/(x^2+y^2))^2)");
+  // check("ComplexExpand(Re(ArcCot(x+I*y)) )", //
+  // "-Arg(1-I/(x+I*y))/2+Arg(1+I/(x+I*y))/2");
+  // check("ComplexExpand(Im(ArcCot(x+I*y)) )", //
+  // "-Log(x^2/(x^2+y^2)^2+(1+y/(x^2+y^2))^2)/4+Log(x^2/(x^2+y^2)^2+(1-y/(x^2+y^2))^2)/\n"
+  // + "4");
+  //
   // check("ComplexExpand(Log(z), z)", //
   // "I*Arg(z)+Log(Im(z)^2+Re(z)^2)/2");
   // check("ComplexExpand(Log(2*z), z)", //
   // "I*Arg(z)+Log(2)+Log(Im(z)^2+Re(z)^2)/2");
   // check("ComplexExpand(Abs(2^z*Log(2*z)), z)", //
-  // "2^Re(z)*Sqrt(Arg(z)^2+Arg(z)*Im(Log(Im(z)^2+Re(z)^2))+Im(Log(Im(z)^2+Re(z)^2))^2/\n"
-  // + "4+Log(2)^2+Log(2)*Re(Log(Im(z)^2+Re(z)^2))+Re(Log(Im(z)^2+Re(z)^2))^2/4)");
+  // "2^Re(z)*Sqrt((Arg(z)+Im(Log(Im(z)^2+Re(z)^2))/2)^2+(Log(2)+Re(Log(Im(z)^2+Re(z)^\n"
+  // + "2))/2)^2)");
   //
-  // check("ComplexExpand(Re(ArcCot(x+I*y)) )", //
-  // "-Arg(1-I/(x+I*y))/2+Arg(1+I/(x+I*y))/2");
   // check("ComplexExpand(E*E)", //
   // "E^2");
   // check("ComplexExpand(E^(x + I*y))", //
@@ -3458,12 +3477,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   // check("ComplexExpand(Log(1+I))", //
   // "I*1/4*Pi+Log(2)/2");
   //
-  // // check("ComplexExpand(a^(I*b), {a,b})", //
-  // // "Cos(Arg(a)*Im(b)-1/2*Log(Im(a)^2+Re(a)^2)*Re(b))/(E^(Arg(a)*Re(b))*(Im(a)^2+Re(a)^\n"
-  // // +
-  // //
+  // check("ComplexExpand(a^(I*b), {a,b})", //
+  // "Cos(Arg(a)*Im(b)-1/2*Log(Im(a)^2+Re(a)^2)*Re(b))/(E^(Arg(a)*Re(b))*(Im(a)^2+Re(a)^\n"
+  // +
   // "2)^(Im(b)/2))+(-I*Sin(Arg(a)*Im(b)-1/2*Log(Im(a)^2+Re(a)^2)*Re(b)))/(E^(Arg(a)*Re(b))*(Im(a)^\n"
-  // // + "2+Re(a)^2)^(Im(b)/2))");
+  // + "2+Re(a)^2)^(Im(b)/2))");
   // check("ComplexExpand(a^(I*b) )", //
   // "Cos(1/2*b*Log(a^2))/E^(b*Arg(a))+(I*Sin(1/2*b*Log(a^2)))/E^(b*Arg(a))");
   //
@@ -3481,7 +3499,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   // "(x^2)^(y/2)*Cos(y*Arg(x))+I*(x^2)^(y/2)*Sin(y*Arg(x))");
   //
   // check("ComplexExpand(ArcTan(x+I*y))", //
-  // "-Arg(1-I*x-y)/2+Arg(1+I*x-y)/2-I*1/4*Log(1+x^2-2*y+y^2)+I*1/4*Log(1+x^2+2*y+y^2)");
+  // "-Arg(1-I*x-y)/2+Arg(1+I*x-y)/2-I*1/4*Log(x^2+(1-y)^2)+I*1/4*Log(x^2+(1+y)^2)");
   //
   // check("ComplexExpand(ProductLog(x+I*y))", //
   // "I*Im(ProductLog(x+I*y))+Re(ProductLog(x+I*y))");
@@ -3551,7 +3569,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   // "Cos(x)*Cosh(y)+(I*Sin(2*Im(z)))/(Cos(2*Im(z))+Cosh(2*Re(z)))-I*Sin(x)*Sinh(y)+Sinh(\n"
   // + "2*Re(z))/(Cos(2*Im(z))+Cosh(2*Re(z)))");
   // check("ComplexExpand(Re(ArcCot(x+I*y))+Im(ArcSinh(x-I*y)))", //
-  // "-Arg(1-I/(x+I*y))/2+Arg(1+I/(x+I*y))/2+Arg(x-I*y+Sqrt(1+x^2-I*2*x*y-y^2))");
+  // "-Arg(1-I/(x+I*y))/2+Arg(1+I/(x+I*y))/2+Arg(x+Sqrt(1+(x-I*y)^2)-I*y)");
   //
   // check("ComplexExpand(Re(Log(Sin(Exp(x + I*y)^2))))", //
   // "Re(Log(Cosh(E^(2*x)*Sin(2*y))^2*Sin(E^(2*x)*Cos(2*y))^2+Cos(E^(2*x)*Cos(2*y))^2*Sinh(E^(\n"
@@ -8561,6 +8579,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testFactorTerms() {
+    check("FactorTerms(-41*Im(z)-82*Re(z))", //
+        "-41*(Im(z)+2*Re(z))");
     check("FactorTerms(Cosh(E^(2*x)*Sin(2*y)))", //
         "Cosh(E^(2*x)*Sin(2*y))");
 
@@ -8590,6 +8610,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testFactorTermsList() {
+    check("FactorTermsList(6*a^2 + 9*x^2 + 12*b^2)", //
+        "{3,2*a^2+4*b^2+3*x^2}");
+    check("FactorTermsList(3 + 3*a + 6*a*x + 6*x + 12*a*x^2 + 12*x^2, x)", //
+        "{3,1+a+2*x+2*a*x+4*x^2+4*a*x^2}");
+
     // FactorTermsList: {g(x,y)} is not a polynomial.
     check("FactorTermsList({g(x,y)})", //
         "FactorTermsList({g(x,y)})");
