@@ -1121,6 +1121,16 @@ public class SimplifyFunctions {
             //
           }
         } else if (fFullSimplify) {
+          if (expr.isAST(S.Arg, 2)) {
+            try {
+              IExpr re = expr.first().re();
+              IExpr im = expr.first().im();
+              IExpr temp = argReXImY(re, im, fEngine);
+              sResult.checkLess(temp);
+            } catch (RuntimeException rex) {
+              //
+            }
+          }
           try {
             expr = F.eval(F.FunctionExpand(expr));
             sResult.checkLess(expr);
@@ -1422,6 +1432,7 @@ public class SimplifyFunctions {
     public boolean isFullSimplifyMode() {
       return true;
     }
+
   }
 
   /**
@@ -1445,6 +1456,47 @@ public class SimplifyFunctions {
       };
     }
     return complexityFunction;
+  }
+
+  /**
+   * Return <code>Arg(x+I*y)</code>. If possible, simplify <code>Arg(Re(z)+I*Im(z))</code> to
+   * <code>Arg(z)</code>, or simplify <code>Arg(factor * (Re(z)+I*Im(z)))</code> to
+   * <code>Arg( (+/- 1) * z)</code>.
+   * 
+   * @param realPart the real part
+   * @param imaginaryPart the imaginary part
+   * @return
+   */
+  public static IExpr argReXImY(IExpr realPart, IExpr imaginaryPart, EvalEngine engine) {
+    // TODO: add this rule to FullSimplify
+    IExpr factorTerms = engine.evaluate(F.FactorTerms(F.Plus(realPart, imaginaryPart)));
+    boolean negativeFactor = false;
+    if (factorTerms.isTimes2() && factorTerms.first().isReal()) {
+      // a factor could be determined
+      IExpr factor = factorTerms.first();
+      if (factor.isNegative()) {
+        negativeFactor = true;
+      }
+      realPart = engine.evaluate(F.Divide(realPart, factor));
+      imaginaryPart = engine.evaluate(F.Divide(imaginaryPart, factor));
+    }
+
+    final IExpr arg;
+    if (realPart.isAST(S.Re, 2) && realPart.first().isSymbol() //
+        && imaginaryPart.isAST(S.Im, 2) //
+        && realPart.first().equals(imaginaryPart.first())) {
+      ISymbol symbol = (ISymbol) realPart.first();
+      arg = F.Arg(negativeFactor ? F.Times(F.CN1, symbol) : symbol);
+    } else {
+      final IExpr z;
+      if (negativeFactor) {
+        z = F.Plus(F.Times(F.CN1, realPart), F.Times(F.CNI, imaginaryPart));
+      } else {
+        z = F.Plus(realPart, F.Times(F.CI, imaginaryPart));
+      }
+      arg = F.Arg(z);
+    }
+    return arg;
   }
 
   public static void initialize() {
