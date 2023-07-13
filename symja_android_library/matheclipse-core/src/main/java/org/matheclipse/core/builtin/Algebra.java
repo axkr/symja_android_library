@@ -2744,32 +2744,32 @@ public class Algebra {
           variableList = F.list(variable);
         } else if (arg2.isList()) {
           variableList = (IAST) arg2;
-        } else {
-          return arg1;
-        }
-      } else {
-        if (ast.isAST1()) {
-          IExpr expr = F.evalExpandAll(arg1, engine);
-          if (expr.isPlus()) {
-            temp = factorTermsPlus((IAST) expr, engine);
-            if (temp.isPresent()) {
-              return temp;
-            }
-          }
-          eVar = new VariablesSet(arg1);
-          if (!eVar.isSize(1)) {
-            // FactorTerms currently only possible for univariate polynomials
-            return arg1;
-          }
-          variableList = eVar.getVarList();
         }
       }
-      if (variableList.isNIL() || variableList.size() != 2) {
-        // FactorTerms only possible for univariate polynomials
-        return arg1;
+
+      IExpr expanded = F.evalExpandAll(arg1, engine);
+      if (expanded.isPlus()) {
+        temp = factorTermsPlus((IAST) expanded, engine);
+        if (temp.isPresent()) {
+          return temp;
+        }
       }
+      if (variableList.isNIL()) {
+        eVar = new VariablesSet(arg1);
+        // if (!eVar.isSize(1)) {
+        // // FactorTerms currently only possible for univariate polynomials
+        // return arg1;
+        // }
+        variableList = eVar.getVarList();
+      }
+
+
+      // if (variableList.isNIL() || variableList.size() != 2) {
+      // // FactorTerms only possible for univariate polynomials
+      // return arg1;
+      // }
       List<IExpr> varList = variableList.copyTo();
-      IExpr expr = F.evalExpandAll(arg1, engine);
+      IExpr expr = expanded; // F.evalExpandAll(arg1, engine);
       try {
         JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
         GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
@@ -2829,25 +2829,21 @@ public class Algebra {
       VariablesSet eVar = null;
       IAST variableList = F.NIL;
       if (ast.isAST2()) {
-        // TODO evaluate for given variables
-        return F.NIL;
-
-        // if (ast.arg2().isSymbol()) {
-        // ISymbol variable = (ISymbol) ast.arg2();
-        // variableList = F.list(variable);
-        // } else if (ast.arg2().isList()) {
-        // variableList = (IAST) ast.arg2();
-        // } else {
-        // return F.NIL;
-        // }
-      } else {
-        IExpr expr = F.evalExpandAll(arg1, engine);
-        if (expr.isPlus()) {
-          IRational gcd = factorTermsGCD((IAST) expr, engine);
-          if (gcd != null) {
-            return F.List(gcd, F.Expand(F.Times(gcd.inverse(), expr))).eval(engine);
-          }
+        if (ast.arg2().isSymbol()) {
+          ISymbol variable = (ISymbol) ast.arg2();
+          variableList = F.list(variable);
+        } else if (ast.arg2().isList()) {
+          variableList = (IAST) ast.arg2();
         }
+      }
+      IExpr expanded = F.evalExpandAll(arg1, engine);
+      if (expanded.isPlus()) {
+        IRational gcd = factorTermsGCD((IAST) expanded, engine);
+        if (gcd != null) {
+          return F.List(gcd, F.Expand(F.Times(gcd.inverse(), expanded))).eval(engine);
+        }
+      }
+      if (variableList.isNIL()) {
         eVar = new VariablesSet(arg1);
         if (!eVar.isSize(1)) {
           // FactorTerms only possible for univariate polynomials
@@ -2860,12 +2856,13 @@ public class Algebra {
         }
         variableList = eVar.getVarList();
       }
-      if (variableList.isNIL() || variableList.size() != 2) {
-        // FactorTerms only possible for univariate polynomials
-        return F.NIL;
-      }
+
+      // if (variableList.isNIL() || variableList.size() != 2) {
+      // // FactorTerms only possible for univariate polynomials
+      // return F.NIL;
+      // }
       List<IExpr> varList = variableList.copyTo();
-      IExpr expr = F.evalExpandAll(arg1, engine);
+      IExpr expr = expanded;
       try {
         JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
         GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
@@ -5263,9 +5260,14 @@ public class Algebra {
       if (gcd2 == null) {
         return null;
       }
-      final IExpr gcd12 = engine.evaluate(F.GCD(gcd1, gcd2));
+
+      final IExpr gcd12 = gcd1.gcd(gcd2); // engine.evaluate(F.GCD(gcd1, gcd2));
       if (gcd12.isRational() && !gcd12.isOne()) {
-        gcd1 = (IRational) gcd12;
+        if (gcd1.isNegative() && gcd2.isNegative()) {
+          gcd1 = ((IRational) gcd12).negate();
+        } else {
+          gcd1 = (IRational) gcd12;
+        }
       } else {
         return null;
       }
