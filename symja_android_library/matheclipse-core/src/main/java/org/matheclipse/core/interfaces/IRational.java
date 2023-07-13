@@ -75,6 +75,15 @@ public interface IRational extends IReal, IBigNumber {
   public IRational fractionalPart();
 
   /**
+   * Compute the gcd of two rationals. The gcd is the rational number, such that dividing this and
+   * other with the gcd will yield two co-prime integers.
+   *
+   * @param that the second rational argument.
+   * @return the gcd of this and other.
+   */
+  public IRational gcd(IRational that);
+
+  /**
    * Returns the denominator of this fraction.
    *
    * @return denominator

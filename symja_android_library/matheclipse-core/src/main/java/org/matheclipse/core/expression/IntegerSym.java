@@ -284,6 +284,12 @@ public class IntegerSym extends AbstractIntegerSym {
    */
   @Override
   public IInteger gcd(final IInteger that) {
+    if (that.isZero()) {
+      return this;
+    }
+    if (this.isZero()) {
+      return that;
+    }
     if (that instanceof IntegerSym) {
       try {
         return valueOf(ArithmeticUtils.gcd(fIntValue, ((IntegerSym) that).fIntValue));

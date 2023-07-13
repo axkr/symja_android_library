@@ -348,19 +348,19 @@ public class BigFractionSym extends AbstractFractionSym {
    * Compute the gcd of two rationals (this and other). The gcd is the rational number, such that
    * dividing this and other with the gcd will yield two co-prime integers.
    *
-   * @param other the second rational argument.
+   * @param that the second rational argument.
    * @return the gcd of this and other.
    */
   @Override
-  public IFraction gcd(IFraction other) {
-    if (other.isZero()) {
+  public IFraction gcd(IFraction that) {
+    if (that.isZero()) {
       return this;
     }
     BigInteger tdenom = this.toBigDenominator();
-    BigInteger odenom = other.toBigDenominator();
+    BigInteger odenom = that.toBigDenominator();
     BigInteger gcddenom = tdenom.gcd(odenom);
     BigInteger denom = tdenom.divide(gcddenom).multiply(odenom);
-    BigInteger num = toBigNumerator().gcd(other.toBigNumerator());
+    BigInteger num = toBigNumerator().gcd(that.toBigNumerator());
     return AbstractFractionSym.valueOf(num, denom);
   }
 

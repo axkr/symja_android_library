@@ -316,6 +316,12 @@ public class BigIntegerSym extends AbstractIntegerSym {
   /** Returns the greatest common divisor of this large integer and the one specified. */
   @Override
   public IInteger gcd(final IInteger that) {
+    if (that.isZero()) {
+      return this;
+    }
+    if (this.isZero()) {
+      return that;
+    }
     return valueOf(fBigIntValue.gcd(that.toBigNumerator()));
   }
 

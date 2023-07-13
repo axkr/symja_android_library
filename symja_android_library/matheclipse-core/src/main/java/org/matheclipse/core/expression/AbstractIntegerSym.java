@@ -649,6 +649,26 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
   /** {@inheritDoc} */
   @Override
+  public IRational gcd(IRational that) {
+    if (that.isZero()) {
+      return this;
+    }
+    if (this.isZero()) {
+      return that;
+    }
+    if (that.isInteger()) {
+      return gcd((IInteger) that);
+    }
+    BigInteger tdenom = this.toBigDenominator();
+    BigInteger odenom = that.toBigDenominator();
+    BigInteger gcddenom = tdenom.gcd(odenom);
+    BigInteger denom = tdenom.divide(gcddenom).multiply(odenom);
+    BigInteger num = toBigNumerator().gcd(that.toBigNumerator());
+    return AbstractFractionSym.valueOf(num, denom);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public IInteger integerPart() {
     return this;
   }
