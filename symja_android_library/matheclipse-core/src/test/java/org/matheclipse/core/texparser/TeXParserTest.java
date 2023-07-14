@@ -718,7 +718,35 @@ public class TeXParserTest extends TestCase {
   // }
 
   public void test400() {
-    check("\\log_2345+3", "3+Log(2,345)");
+    check("\\log_2345+3", //
+        "3+Log(2,345)");
+  }
+
+  public void test401() {
+    String tex = "4711";
+    TeXSliceParser teXSliceParser = new TeXSliceParser();
+    IExpr ast = teXSliceParser.parse(tex);
+    assertEquals(ast.toString(), "4711");
+  }
+
+  public void test402() {
+    // issue #794
+    String tex = "\\int_0^52xdx";
+    TeXSliceParser teXSliceParser = new TeXSliceParser();
+    IExpr ast = teXSliceParser.parse(tex);
+    assertEquals(ast.toString(), "Integrate(2*x,{x,0,5})");
+  }
+
+  public void test403() {
+    String tex = "\\log xy";
+    TeXSliceParser teXSliceParser = new TeXSliceParser();
+    IExpr ast = teXSliceParser.parse(tex);
+    assertEquals(ast.toString(), "Log10(x*y)");
+
+    tex = "\\sin xy";
+    teXSliceParser = new TeXSliceParser();
+    ast = teXSliceParser.parse(tex);
+    assertEquals(ast.toString(), "y*Sin(x)");
   }
 
   public void check(String strEval, String strResult) {

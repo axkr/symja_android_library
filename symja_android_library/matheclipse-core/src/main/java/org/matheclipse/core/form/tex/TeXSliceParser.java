@@ -508,29 +508,7 @@ public class TeXSliceParser extends TeXScanner {
           }
         }
         if (i < texStr.length() - 1) {
-          if (commandStr.equals("log") && texStr.charAt(i) == '_') {
-            StringBuilder number = new StringBuilder();
-            ch = texStr.charAt(++i);
-            int numberStart = i - 1;
-            while (Character.isDigit(ch)) {
-              number.append(ch);
-              if (i >= texStr.length() - 1) {
-                break;
-              }
-              ch = texStr.charAt(++i);
-            }
-            if (number.length() > 1) {
-              String numStr = number.toString();
-              buf.append(texStr.substring(commandStart, numberStart + 1));
-              buf.append(numStr.charAt(0));
-              buf.append("{");
-              buf.append(numStr.substring(1));
-              buf.append("}");
-            } else {
-              buf.append(texStr.substring(commandStart, i));
-            }
-            continue;
-          } else if (commandStr.equals("sin") || commandStr.equals("cos")) {
+          if (commandStr.equals("sin") || commandStr.equals("cos")) {
             // TODO make this for all numeric builtin commands?
             boolean isVariable = false;
             while (ch == ' ' || Character.isJavaIdentifierPart(ch)) {
@@ -561,53 +539,5 @@ public class TeXSliceParser extends TeXScanner {
     }
     return toExpr(buf.toString());
   }
-
-  // protected final List<Operator> getOperator() {
-  // char lastChar = fCurrentChar;
-  // final int startPosition = fCurrentPosition - 1;
-  // fOperatorString = new String(fInputString, startPosition, fCurrentPosition - startPosition);
-  // List<Operator> list = fFactory.getOperatorList(fOperatorString);
-  // List<Operator> lastList = null;
-  // int lastOperatorPosition = -1;
-  // if (list != null) {
-  // lastList = list;
-  // lastOperatorPosition = fCurrentPosition;
-  // }
-  // getChar();
-  // while (fFactory.isOperatorChar(fCurrentChar)) {
-  // if (fCurrentChar == '.' && isValidPosition() && Character.isDigit(charAtPosition())) {
-  // // special case "dot is start of floating number" -- 1/.2 => 0.5
-  // break;
-  // }
-  // lastChar = fCurrentChar;
-  // fOperatorString = new String(fInputString, startPosition, fCurrentPosition - startPosition);
-  // list = fFactory.getOperatorList(fOperatorString);
-  // if (list != null) {
-  // lastList = list;
-  // lastOperatorPosition = fCurrentPosition;
-  // }
-  // getChar();
-  // if (lastChar == ';' && fCurrentChar != ';') {
-  // break;
-  // }
-  // }
-  // if (lastOperatorPosition > 0) {
-  // fCurrentPosition = lastOperatorPosition;
-  // return lastList;
-  // }
-  // final int endPosition = fCurrentPosition--;
-  // fCurrentPosition = startPosition;
-  // throwSyntaxError("Operator token not found: "
-  // + new String(fInputString, startPosition, endPosition - 1 - startPosition));
-  // return null;
-  // }
-
-  // protected boolean isOperatorCharacters() {
-  // return fFactory.isOperatorChar(fCurrentChar);
-  // }
-
-  // protected boolean isOperatorCharacters(char ch) {
-  // return fFactory.isOperatorChar(ch);
-  // }
 
 }
