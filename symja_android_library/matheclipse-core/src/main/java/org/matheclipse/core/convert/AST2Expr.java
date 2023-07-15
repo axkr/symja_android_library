@@ -88,10 +88,11 @@ public class AST2Expr {
       "ScalingFunctions", "Second", "SequenceHold", "SetSystemOptions", "Small", "SystemOptions",
       "Slot", "SlotAbsent", "SlotSequence", "StaticsVisible", "StartOfLine", "StartOfString",
       "Strict", "String", "Symbol", "TableAlignments", "TableDepth", "TableDirections",
-      "TableHeadings", "TableSpacing", "TestID", "Ticks", "Tiny", "TicksStyle", "Today", "TooLarge",
-      "Top", "Trig", "True", "Unknown", "UseTypeChecking", "Variable", "Vectors", "VertexLabels",
-      "VertexShapeFunction", "VertexSize", "VertexStyle", "ViewPoint", "White", "Whitespace",
-      "WhitespaceCharacter", "Word", "WordCharacter", "WordSeparators", "Yellow", "ZeroTest"};
+      "TableHeadings", "TableSpacing", "TargetFunctions", "TestID", "Ticks", "Tiny", "TicksStyle",
+      "Today", "TooLarge", "Top", "Trig", "True", "Unknown", "UseTypeChecking", "Variable",
+      "Vectors", "VertexLabels", "VertexShapeFunction", "VertexSize", "VertexStyle", "ViewPoint",
+      "White", "Whitespace", "WhitespaceCharacter", "Word", "WordCharacter", "WordSeparators",
+      "Yellow", "ZeroTest"};
 
   public static final String[] FUNCTION_STRINGS = {"AASTriangle", "Abort", "Abs", "AbsArg",
       "AbsoluteCorrelation", "AbsoluteTime", "AbsoluteTiming", "Accumulate", "AddTo", "AddSides",

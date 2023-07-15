@@ -10186,6 +10186,9 @@ public class S {
    */
   public final static IBuiltInSymbol Tanh = S.initFinalSymbol("Tanh", ID.Tanh);
 
+  public final static IBuiltInSymbol TargetFunctions =
+      S.initFinalSymbol("TargetFunctions", ID.TargetFunctions);
+
   /**
    * TautologyQ(boolean-expr, list-of-variables) - test whether the `boolean-expr` is satisfiable by
    * all combinations of boolean `False` and `True` values for the `list-of-variables`.
