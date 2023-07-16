@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVFormat.Builder;
 import org.apache.commons.csv.CSVRecord;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.complex.Complex;
@@ -1101,7 +1102,11 @@ public class Convert {
     AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
     final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
 
-    CSVFormat csvFormat = CSVFormat.RFC4180.withDelimiter(',');
+    CSVFormat csvFormat = Builder.create()//
+        .setDelimiter(',') //
+        .setQuote('"') //
+        .build();
+    // CSVFormat.RFC4180.withDelimiter(',');
     Iterable<CSVRecord> records = csvFormat.parse(reader);
     IASTAppendable rowList = F.ListAlloc(256);
     for (CSVRecord record : records) {
