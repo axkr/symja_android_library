@@ -6,6 +6,12 @@ Kurtosis(list)
 
 > gives the Pearson measure of kurtosis for `list` (a measure of existing outliers). 
 
+```
+Kurtosis(dist)
+```
+
+> gives the Pearson measure of kurtosis for the distribution `dist`. 
+
 See
 * [Wikipedia - Kurtosis](https://en.wikipedia.org/wiki/Kurtosis)
 
