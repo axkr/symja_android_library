@@ -14,12 +14,16 @@
 
 package tech.tablesaw.columns.numbers;
 
-import org.hipparchus.stat.descriptive.StreamingStatistics;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.NumericColumn;
 import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
 
+/**
+ * An object that calculates in one pass a variety of common statistical values that describe a
+ * column
+ */
 public class Stats {
 
   private long n;
@@ -37,19 +41,21 @@ public class Stats {
   private double sumOfSquares;
   private final String name;
 
+  /** Constructs a Stats object with the given name */
   private Stats(String name) {
     this.name = name;
   }
 
+  /** Constructs a Stats object from the given column */
   public static Stats create(final NumericColumn<?> values) {
-    StreamingStatistics summaryStatistics = new StreamingStatistics();
+    SummaryStatistics summaryStatistics = new SummaryStatistics();
     for (int i = 0; i < values.size(); i++) {
       summaryStatistics.addValue(values.getDouble(i));
     }
     return getStats(values, summaryStatistics);
   }
 
-  private static Stats getStats(NumericColumn<?> values, StreamingStatistics summaryStatistics) {
+  private static Stats getStats(NumericColumn<?> values, SummaryStatistics summaryStatistics) {
     Stats stats = new Stats("Column: " + values.name());
     stats.min = summaryStatistics.getMin();
     stats.max = summaryStatistics.getMax();
@@ -62,67 +68,82 @@ public class Stats {
     stats.mean = summaryStatistics.getMean();
     stats.standardDeviation = summaryStatistics.getStandardDeviation();
     stats.sumOfLogs = summaryStatistics.getSumOfLogs();
-    stats.sumOfSquares = summaryStatistics.getSumOfSquares();
+    stats.sumOfSquares = summaryStatistics.getSumsq();
     stats.secondMoment = summaryStatistics.getSecondMoment();
     return stats;
   }
 
+  /** Returns the range of values in the data */
   public double range() {
     return (max - min);
   }
 
+  /** Returns the standard deviation of values in the data */
   public double standardDeviation() {
     return standardDeviation;
   }
 
+  /** Returns the number of values in the data */
   public long n() {
     return n;
   }
 
+  /** Returns the mean of values in the data */
   public double mean() {
     return mean;
   }
 
+  /** Returns the smallest value */
   public double min() {
     return min;
   }
 
+  /** Returns the largest value */
   public double max() {
     return max;
   }
 
+  /** Returns the sum of the values */
   public double sum() {
     return sum;
   }
 
+  /** Returns the sample variance of the values */
   public double variance() {
     return variance;
   }
 
+  /** Returns the sum of squares of the values */
   public double sumOfSquares() {
     return sumOfSquares;
   }
 
+  /** Returns the population variance of the values */
   public double populationVariance() {
     return populationVariance;
   }
 
+  /** Returns the sum of the logs of the values */
   public double sumOfLogs() {
     return sumOfLogs;
   }
 
+  /** Returns the geometric mean of the values */
   public double geometricMean() {
     return geometricMean;
   }
 
+  /** Returns the quadratic mean of the values */
   public double quadraticMean() {
     return quadraticMean;
   }
 
+  /** Returns the second moment of the values */
   public double secondMoment() {
     return secondMoment;
   }
 
+  /** Returns the most common calculated statistics in tabular form */
   public Table asTable() {
     Table t = Table.create(name);
     StringColumn measure = StringColumn.create("Measure");
@@ -157,6 +178,7 @@ public class Stats {
     return t;
   }
 
+  /** Returns all the calculated statistics in tabular form */
   public Table asTableComplete() {
     Table t = asTable();
 

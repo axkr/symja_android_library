@@ -1,6 +1,6 @@
 package tech.tablesaw.io;
 
-import static tech.tablesaw.api.ColumnType.SKIP;
+import static tech.tablesaw.api.ColumnType.*;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -17,8 +17,7 @@ import java.util.Optional;
 import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tech.tablesaw.api.ColumnType;
-import tech.tablesaw.api.Table;
+import tech.tablesaw.api.*;
 import tech.tablesaw.columns.AbstractColumnParser;
 import tech.tablesaw.columns.Column;
 
@@ -27,14 +26,6 @@ public abstract class FileReader {
   private static Logger logger = LoggerFactory.getLogger(FileReader.class);
   private static final int UNLIMITED_SAMPLE_SIZE = -1;
 
-  /**
-   * @deprecated Use {@link #getColumnTypes(Reader, ReadOptions, int, AbstractParser, String[])} }
-   */
-  @Deprecated
-  public ColumnType[] getColumnTypes(
-      Reader reader, ReadOptions options, int linesToSkip, AbstractParser<?> parser) {
-    return getColumnTypes(reader, options, linesToSkip, parser, null);
-  }
   /**
    * Returns an array containing the inferred columnTypes for the file being read, as calculated by
    * the ColumnType inference logic. These types may not be correct.
@@ -141,12 +132,12 @@ public abstract class FileReader {
     Map<String, Integer> nameCounter = new HashMap<>();
     for (int i = 0; i < headerNames.length; i++) {
       String name = headerNames[i];
-      Integer count = nameCounter.get(name);
+      Integer count = nameCounter.get(name.toLowerCase());
       if (count == null) {
-        nameCounter.put(name, 1);
+        nameCounter.put(name.toLowerCase(), 1);
       } else {
         count++;
-        nameCounter.put(name, count);
+        nameCounter.put(name.toLowerCase(), count);
         headerNames[i] = name + "-" + count;
       }
     }
@@ -190,7 +181,9 @@ public abstract class FileReader {
         if (Strings.isNullOrEmpty(columnName)) {
           columnName = "Column " + table.columnCount();
         }
-        Column<?> newColumn = types[x].create(columnName);
+        ColumnType type = types[x];
+        Column<?> newColumn;
+        newColumn = type.create(columnName);
         table.addColumns(newColumn);
       }
     }

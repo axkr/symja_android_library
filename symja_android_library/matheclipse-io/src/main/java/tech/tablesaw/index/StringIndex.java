@@ -17,16 +17,20 @@ package tech.tablesaw.index;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import tech.tablesaw.columns.strings.AbstractStringColumn;
+import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.selection.BitmapBackedSelection;
 import tech.tablesaw.selection.Selection;
 
-/** An index for four-byte integer and Date columns */
+/**
+ * TODO: Implement range query methods? See (e.g) ShortIndex for examples An index for String and
+ * Text columns
+ */
 public class StringIndex implements Index {
 
   private final Map<String, IntArrayList> index;
 
-  public StringIndex(AbstractStringColumn<?> column) {
+  /** Creates an index on the given AbstractStringColumn */
+  public StringIndex(StringColumn column) {
     int sizeEstimate = Integer.min(1_000_000, column.size() / 100);
     Map<String, IntArrayList> tempMap = new HashMap<>(sizeEstimate);
     for (int i = 0; i < column.size(); i++) {
@@ -50,7 +54,7 @@ public class StringIndex implements Index {
   }
 
   /**
-   * Returns a bitmap containing row numbers of all cells matching the given int
+   * Returns a bitmap {@link Selection} containing row numbers of all cells matching the given int
    *
    * @param value This is a 'key' from the index perspective, meaning it is a value from the
    *     standpoint of the column

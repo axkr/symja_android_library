@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -18,7 +20,8 @@
 			<name>GNU General Public License, Version 3</name>
 			<url>https://www.gnu.org/licenses/gpl-3.0.html</url>
 			<distribution>repo</distribution>
-			<comments>A free, copyleft license for software and other kinds of works</comments>
+			<comments>A free, copyleft license for software and other kinds of
+				works</comments>
 		</license>
 	</licenses>
 
@@ -85,7 +88,7 @@
 			<groupId>com.ibm.icu</groupId>
 			<artifactId>icu4j</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.biojava</groupId>
 			<artifactId>biojava-core</artifactId>
@@ -95,6 +98,14 @@
 			<artifactId>biojava-alignment</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.arrow</groupId>
+			<artifactId>arrow-vector</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.arrow</groupId>
+			<artifactId>arrow-memory-netty</artifactId>
+		</dependency>
 		<!-- logging dependencies -->
 
 		<dependency>
@@ -134,7 +145,8 @@
 								<goal>java</goal>
 							</goals>
 							<configuration>
-								<mainClass>org.matheclipse.io.servlet.ServletServer</mainClass>
+								<mainClass>
+									org.matheclipse.io.servlet.ServletServer</mainClass>
 							</configuration>
 						</execution>
 						<execution>
@@ -143,7 +155,8 @@
 								<goal>java</goal>
 							</goals>
 							<configuration>
-								<mainClass>org.matheclipse.io.servlet.MMAServletServer</mainClass>
+								<mainClass>
+									org.matheclipse.io.servlet.MMAServletServer</mainClass>
 							</configuration>
 						</execution>
 						<execution>
@@ -178,11 +191,13 @@
 						<useWildcardClassPath>true</useWildcardClassPath>
 						<programs>
 							<program>
-								<mainClass>org.matheclipse.io.servlet.ServletServer</mainClass>
+								<mainClass>
+									org.matheclipse.io.servlet.ServletServer</mainClass>
 								<id>server</id>
 							</program>
 							<program>
-								<mainClass>org.matheclipse.io.servlet.MMAServletServer</mainClass>
+								<mainClass>
+									org.matheclipse.io.servlet.MMAServletServer</mainClass>
 								<id>mmaserver</id>
 							</program>
 							<program>

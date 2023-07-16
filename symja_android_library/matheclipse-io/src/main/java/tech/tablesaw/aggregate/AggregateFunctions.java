@@ -3,10 +3,10 @@ package tech.tablesaw.aggregate;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import org.hipparchus.stat.StatUtils;
-import org.hipparchus.stat.descriptive.DescriptiveStatistics;
-import org.hipparchus.stat.descriptive.moment.Kurtosis;
-import org.hipparchus.stat.descriptive.moment.Skewness;
+import org.apache.commons.math3.stat.StatUtils;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.descriptive.moment.Kurtosis;
+import org.apache.commons.math3.stat.descriptive.moment.Skewness;
 import tech.tablesaw.api.BooleanColumn;
 import tech.tablesaw.api.DateColumn;
 import tech.tablesaw.api.DateTimeColumn;
@@ -15,10 +15,14 @@ import tech.tablesaw.api.NumericColumn;
 import tech.tablesaw.columns.Column;
 import tech.tablesaw.columns.numbers.DoubleColumnType;
 
+/** Static utility class for pre-defined instances of {@link AggregateFunction} */
 public class AggregateFunctions {
 
   private AggregateFunctions() {}
 
+  /**
+   * A function that takes a column argument and returns the earliest date-time value in that column
+   */
   public static final DateTimeAggregateFunction earliestDateTime =
       new DateTimeAggregateFunction("Earliest Date-Time") {
 
@@ -28,6 +32,7 @@ public class AggregateFunctions {
         }
       };
 
+  /** A function that takes a column argument and returns the earliest date in that column */
   public static final DateAggregateFunction earliestDate =
       new DateAggregateFunction("Earliest Date") {
 
@@ -37,6 +42,7 @@ public class AggregateFunctions {
         }
       };
 
+  /** A function that takes a column argument and returns the latest date in that column */
   public static final DateAggregateFunction latestDate =
       new DateAggregateFunction("Latest Date") {
 
@@ -46,6 +52,9 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a column argument and returns the latest date-time value in that column
+   */
   public static final DateTimeAggregateFunction latestDateTime =
       new DateTimeAggregateFunction("Latest Date-Time") {
 
@@ -55,6 +64,7 @@ public class AggregateFunctions {
         }
       };
 
+  /** A function that takes a column argument and returns the latest instant in that column */
   public static final InstantAggregateFunction maxInstant =
       new InstantAggregateFunction("Max Instant") {
         @Override
@@ -62,6 +72,8 @@ public class AggregateFunctions {
           return column.max();
         }
       };
+
+  /** A function that takes a column argument and returns the earliest Instant in that column */
   public static final InstantAggregateFunction minInstant =
       new InstantAggregateFunction("Min Instant") {
         @Override
@@ -70,8 +82,12 @@ public class AggregateFunctions {
         }
       };
 
-  public static final BooleanCountFunction countTrue =
-      new BooleanCountFunction("Number True") {
+  /**
+   * A function that takes a column argument and returns the number of {@code true} values in a
+   * column
+   */
+  public static final BooleanIntAggregateFunction countTrue =
+      new BooleanIntAggregateFunction("Number True") {
 
         @Override
         public Integer summarize(BooleanColumn column) {
@@ -79,6 +95,10 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a column argument and returns {@code true} if all values in that column
+   * are true
+   */
   public static final BooleanAggregateFunction allTrue =
       new BooleanAggregateFunction("All True") {
 
@@ -88,6 +108,10 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a column argument and returns {@code true} if at least one value in the
+   * column is true
+   */
   public static final BooleanAggregateFunction anyTrue =
       new BooleanAggregateFunction("Any True") {
 
@@ -97,6 +121,10 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a column argument and returns {@code true} if no values in the column are
+   * true
+   */
   public static final BooleanAggregateFunction noneTrue =
       new BooleanAggregateFunction("None True") {
 
@@ -106,31 +134,46 @@ public class AggregateFunctions {
         }
       };
 
-  public static final BooleanCountFunction countFalse =
-      new BooleanCountFunction("Number False") {
+  /**
+   * A function that takes a column argument and returns the count of {@code false} values in the
+   * column
+   */
+  public static final BooleanIntAggregateFunction countFalse =
+      new BooleanIntAggregateFunction("Number False") {
         @Override
         public Integer summarize(BooleanColumn column) {
           return (column).countFalse();
         }
       };
 
-  public static final BooleanNumericFunction proportionTrue =
-      new BooleanNumericFunction("Proportion True") {
+  /**
+   * A function that takes a column argument and returns the proportion of values in that column
+   * that are {@code true}
+   */
+  public static final BooleanDoubleAggregateFunction proportionTrue =
+      new BooleanDoubleAggregateFunction("Proportion True") {
         @Override
         public Double summarize(BooleanColumn column) {
           return (column).proportionTrue();
         }
       };
 
-  public static final BooleanNumericFunction proportionFalse =
-      new BooleanNumericFunction("Proportion False") {
+  /**
+   * A function that takes a column argument and returns the proportion of values in the column that
+   * are {@code false}
+   */
+  public static final BooleanDoubleAggregateFunction proportionFalse =
+      new BooleanDoubleAggregateFunction("Proportion False") {
         @Override
         public Double summarize(BooleanColumn column) {
           return (column).proportionFalse();
         }
       };
 
-  /** A function that returns the first item */
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the first item without
+   * sorting
+   */
   public static final NumericAggregateFunction first =
       new NumericAggregateFunction("First") {
 
@@ -140,7 +183,10 @@ public class AggregateFunctions {
         }
       };
 
-  /** A function that returns the last item */
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the last item without
+   * sorting
+   */
   public static final NumericAggregateFunction last =
       new NumericAggregateFunction("Last") {
 
@@ -152,7 +198,10 @@ public class AggregateFunctions {
         }
       };
 
-  /** A function that returns the difference between the last and first items */
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the difference between the
+   * last and first items
+   */
   public static final NumericAggregateFunction change =
       new NumericAggregateFunction("Change") {
 
@@ -164,7 +213,10 @@ public class AggregateFunctions {
         }
       };
 
-  /** A function that returns the difference between the last and first items */
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the percent difference
+   * between the last and first items
+   */
   public static final NumericAggregateFunction pctChange =
       new NumericAggregateFunction("Percent Change") {
 
@@ -176,9 +228,12 @@ public class AggregateFunctions {
         }
       };
 
-  /** A function that calculates the count of values in the column excluding missing values */
-  public static final CountFunction countNonMissing =
-      new CountFunction("Count") {
+  /**
+   * A function that takes a {@link Column} argument and returns the count of values in the column
+   * excluding missing values
+   */
+  public static final AnyIntAggregateFunction countNonMissing =
+      new AnyIntAggregateFunction("Count") {
 
         @Override
         public Integer summarize(Column<?> column) {
@@ -187,14 +242,17 @@ public class AggregateFunctions {
       };
 
   /**
-   * A function that calculates the count of values in the column excluding missing values. A
-   * synonym for countNonMissing
+   * A function that takes a {@link Column} argument and returns the count of values in the column
+   * excluding missing values. A synonym for countNonMissing
    */
-  public static final CountFunction count = countNonMissing;
+  public static final AnyIntAggregateFunction count = countNonMissing;
 
-  /** A function that calculates the count of values in the column excluding missing values */
-  public static final CountFunction countMissing =
-      new CountFunction("Missing Values") {
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the count of missing values
+   * in the column
+   */
+  public static final AnyIntAggregateFunction countMissing =
+      new AnyIntAggregateFunction("Missing Values") {
 
         @Override
         public Integer summarize(Column<?> column) {
@@ -202,9 +260,12 @@ public class AggregateFunctions {
         }
       };
 
-  /** A function that returns the number of non-missing unique values in the column param */
-  public static final CountFunction countUnique =
-      new CountFunction("Count Unique") {
+  /**
+   * AA function that takes a {@link Column} argument and returns the number of non-missing unique
+   * values in the column
+   */
+  public static final AnyIntAggregateFunction countUnique =
+      new AnyIntAggregateFunction("Count Unique") {
 
         @Override
         public Integer summarize(Column<?> doubles) {
@@ -212,7 +273,10 @@ public class AggregateFunctions {
         }
       };
 
-  /** A function that calculates the mean of the values in the column param */
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the mean of the values in
+   * the column
+   */
   public static final NumericAggregateFunction mean =
       new NumericAggregateFunction("Mean") {
 
@@ -223,8 +287,8 @@ public class AggregateFunctions {
       };
 
   /**
-   * A function that calculates the coefficient of variation (stdDev/mean) of the values in the
-   * column
+   * A function that takes a {@link NumericColumn} argument and returns the coefficient of variation
+   * (stdDev/mean) of the values in the column
    */
   public static final NumericAggregateFunction cv =
       new NumericAggregateFunction("CV") {
@@ -236,7 +300,10 @@ public class AggregateFunctions {
         }
       };
 
-  /** A function that calculates the sum of the values in the column param */
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the sum of the values in the
+   * column
+   */
   public static final NumericAggregateFunction sum =
       new NumericAggregateFunction("Sum") {
 
@@ -246,6 +313,10 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the median of the values in
+   * the column
+   */
   public static final NumericAggregateFunction median =
       new NumericAggregateFunction("Median") {
 
@@ -255,8 +326,12 @@ public class AggregateFunctions {
         }
       };
 
-  public static final CountFunction countWithMissing =
-      new CountFunction("Count (incl. missing)") {
+  /**
+   * A function that takes a {@link Column} argument and returns the number of values in the column,
+   * including missing values
+   */
+  public static final AnyIntAggregateFunction countWithMissing =
+      new AnyIntAggregateFunction("Count (incl. missing)") {
 
         @Override
         public Integer summarize(Column<?> column) {
@@ -264,6 +339,10 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the first quartile of the
+   * values in the column
+   */
   public static final NumericAggregateFunction quartile1 =
       new NumericAggregateFunction("First Quartile") {
 
@@ -273,6 +352,10 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the third quartile of the
+   * values in the column
+   */
   public static final NumericAggregateFunction quartile3 =
       new NumericAggregateFunction("Third Quartile") {
 
@@ -282,6 +365,10 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the 90th percentile of the
+   * values in the column
+   */
   public static final NumericAggregateFunction percentile90 =
       new NumericAggregateFunction("90th Percentile") {
 
@@ -291,6 +378,10 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the 95th percentile of the
+   * values in the column
+   */
   public static final NumericAggregateFunction percentile95 =
       new NumericAggregateFunction("95th Percentile") {
 
@@ -300,6 +391,10 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the 99th percentile of the
+   * values in the column
+   */
   public static final NumericAggregateFunction percentile99 =
       new NumericAggregateFunction("99th Percentile") {
 
@@ -309,6 +404,10 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the difference between the
+   * largest and smallest values in the column
+   */
   public static final NumericAggregateFunction range =
       new NumericAggregateFunction("Range") {
 
@@ -319,6 +418,10 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the smallest value in the
+   * column
+   */
   public static final NumericAggregateFunction min =
       new NumericAggregateFunction("Min") {
 
@@ -328,6 +431,10 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the largeset value in the
+   * column
+   */
   public static final NumericAggregateFunction max =
       new NumericAggregateFunction("Max") {
 
@@ -337,6 +444,10 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the product of all values in
+   * the column
+   */
   public static final NumericAggregateFunction product =
       new NumericAggregateFunction("Product") {
 
@@ -346,6 +457,10 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the geometric mean of all
+   * values in the column
+   */
   public static final NumericAggregateFunction geometricMean =
       new NumericAggregateFunction("Geometric Mean") {
 
@@ -355,6 +470,10 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the population variance of
+   * all values in the column
+   */
   public static final NumericAggregateFunction populationVariance =
       new NumericAggregateFunction("Population Variance") {
 
@@ -364,7 +483,10 @@ public class AggregateFunctions {
         }
       };
 
-  /** Returns the quadratic mean, aka, the root-mean-square */
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the quadratic mean, aka, the
+   * root-mean-square
+   */
   public static final NumericAggregateFunction quadraticMean =
       new NumericAggregateFunction("Quadratic Mean") {
 
@@ -374,6 +496,9 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the kurtosis of its values
+   */
   public static final NumericAggregateFunction kurtosis =
       new NumericAggregateFunction("Kurtosis") {
 
@@ -384,6 +509,9 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the skewness of its values
+   */
   public static final NumericAggregateFunction skewness =
       new NumericAggregateFunction("Skewness") {
 
@@ -394,6 +522,10 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the sumOfSquares of its
+   * values
+   */
   public static final NumericAggregateFunction sumOfSquares =
       new NumericAggregateFunction("Sum of Squares") {
 
@@ -408,6 +540,9 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the sumOfLogs of its values
+   */
   public static final NumericAggregateFunction sumOfLogs =
       new NumericAggregateFunction("Sum of Logs") {
 
@@ -417,6 +552,9 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the variance of its values
+   */
   public static final NumericAggregateFunction variance =
       new NumericAggregateFunction("Variance") {
 
@@ -427,6 +565,10 @@ public class AggregateFunctions {
         }
       };
 
+  /**
+   * A function that takes a {@link NumericColumn} argument and returns the standard deviation of
+   * its values
+   */
   public static final NumericAggregateFunction stdDev =
       new NumericAggregateFunction("Std. Deviation") {
 
@@ -436,9 +578,7 @@ public class AggregateFunctions {
         }
       };
 
-  /** @deprecated use {@link #stdDev} instead */
-  @Deprecated public static final NumericAggregateFunction standardDeviation = stdDev;
-
+  /** Returns the given percentile of the values in the argument */
   public static Double percentile(NumericColumn<?> data, Double percentile) {
     return StatUtils.percentile(removeMissing(data), percentile);
   }
@@ -448,11 +588,18 @@ public class AggregateFunctions {
     return numericColumn.asDoubleArray();
   }
 
-  // TODO(lwhite): These are two column reductions. We need a class for that
+  /**
+   * Returns the given mean difference of the values in the arguments <br>
+   * TODO(lwhite): These are two column reductions. We need a class for that
+   */
   public static Double meanDifference(NumericColumn<?> column1, NumericColumn<?> column2) {
     return StatUtils.meanDifference(column1.asDoubleArray(), column2.asDoubleArray());
   }
 
+  /**
+   * Returns the given sum difference of the values in the arguments <br>
+   * TODO(lwhite): These are two column reductions. We need a class for that
+   */
   public static Double sumDifference(NumericColumn<?> column1, NumericColumn<?> column2) {
     return StatUtils.sumDifference(column1.asDoubleArray(), column2.asDoubleArray());
   }

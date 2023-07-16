@@ -104,7 +104,7 @@ public class Export extends AbstractEvaluator {
                   writer.append("\"");
                 }
                 if (i < dims[1]) {
-                  writer.append(" ");
+                  writer.append(",");
                 }
               }
               writer.append("\n");

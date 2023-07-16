@@ -9,28 +9,36 @@ import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
-import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.io.Extension;
 import org.matheclipse.io.expression.ASTDataset;
 import tech.tablesaw.api.Table;
 
 /** Import semantic data into a DataSet */
-public class SemanticImport extends AbstractEvaluator {
+public class SemanticImport extends AbstractFunctionOptionEvaluator {
   private static final Logger LOGGER = LogManager.getLogger();
 
   public SemanticImport() {}
 
   @Override
-  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+  public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+      final EvalEngine engine) {
     if (Config.isFileSystemEnabled(engine)) {
       if (!(ast.arg1() instanceof IStringX)) {
         return F.NIL;
+      }
+
+      IExpr delimiters = option[0];
+      String delimiter = ",";
+      if (delimiters.isString()) {
+        delimiter = delimiters.toString();
       }
 
       IStringX arg1 = (IStringX) ast.arg1();
@@ -56,8 +64,8 @@ public class SemanticImport extends AbstractEvaluator {
         return ASTDataset.newTablesawTable(table);
       }
       LOGGER.log(engine.getLogLevel(), "file {} does not exist!", fileName);
-    } catch (IOException ioe) {
-      LOGGER.log(engine.getLogLevel(), "file {} not found!", fileName);
+      // } catch (IOException ioe) {
+      // LOGGER.log(engine.getLogLevel(), "file {} not found!", fileName);
     } catch (RuntimeException rex) {
       LOGGER.log(engine.getLogLevel(), "file {}", fileName, rex);
     }
@@ -99,5 +107,10 @@ public class SemanticImport extends AbstractEvaluator {
   @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_1_2;
+  }
+
+  @Override
+  public void setUp(final ISymbol newSymbol) {
+    setOptions(newSymbol, S.Delimiters, F.stringx(","));
   }
 }

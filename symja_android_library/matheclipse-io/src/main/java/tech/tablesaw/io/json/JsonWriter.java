@@ -14,16 +14,17 @@
 
 package tech.tablesaw.io.json;
 
+import java.io.IOException;
+import java.io.Writer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import java.io.IOException;
-import java.io.Writer;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.io.DataWriter;
 import tech.tablesaw.io.Destination;
+import tech.tablesaw.io.RuntimeIOException;
 import tech.tablesaw.io.WriterRegistry;
 
 public class JsonWriter implements DataWriter<JsonWriteOptions> {
@@ -41,7 +42,8 @@ public class JsonWriter implements DataWriter<JsonWriteOptions> {
     registry.registerOptions(JsonWriteOptions.class, INSTANCE);
   }
 
-  public void write(Table table, JsonWriteOptions options) throws IOException {
+  @Override
+  public void write(Table table, JsonWriteOptions options) {
     ArrayNode output = mapper.createArrayNode();
     if (options.asObjects()) {
       for (int r = 0; r < table.rowCount(); r++) {
@@ -67,15 +69,16 @@ public class JsonWriter implements DataWriter<JsonWriteOptions> {
         output.add(row);
       }
     }
-
-    String str = mapper.writeValueAsString(output);
     try (Writer writer = options.destination().createWriter()) {
+      String str = mapper.writeValueAsString(output);
       writer.write(str);
+    } catch (IOException e) {
+      throw new RuntimeIOException(e);
     }
   }
 
   @Override
-  public void write(Table table, Destination dest) throws IOException {
+  public void write(Table table, Destination dest) {
     write(table, JsonWriteOptions.builder(dest).build());
   }
 }

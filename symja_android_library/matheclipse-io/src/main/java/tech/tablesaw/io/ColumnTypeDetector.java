@@ -1,12 +1,6 @@
 package tech.tablesaw.io;
 
-import static tech.tablesaw.api.ColumnType.STRING;
-import static tech.tablesaw.api.ColumnType.TEXT;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.columns.AbstractColumnParser;
@@ -71,42 +65,50 @@ public class ColumnTypeDetector {
     int rowCount = 0; // make sure we don't go over maxRows
 
     int nextRow = 0;
+    String[] nextLine = new String[0];
     while (rows.hasNext()) {
-      String[] nextLine = rows.next();
-      // initialize the arrays to hold the strings. we don't know how many we need until we read the
-      // first row
-      if (rowCount == 0) {
-        for (int i = 0; i < nextLine.length; i++) {
-          columnData.add(new ArrayList<>());
+      try {
+        nextLine = rows.next();
+        // initialize the arrays to hold the strings. we don't know how many we need until we read
+        // the
+        // first row
+        if (rowCount == 0) {
+          for (int i = 0; i < nextLine.length; i++) {
+            columnData.add(new ArrayList<>());
+          }
         }
+        int columnNumber = 0;
+        if (rowCount == nextRow) {
+          for (String field : nextLine) {
+            columnData.get(columnNumber).add(field);
+            columnNumber++;
+          }
+          if (useSampling) {
+            nextRow = nextRow(nextRow);
+          } else {
+            nextRow = nextRowWithoutSampling(nextRow);
+          }
+        }
+        rowCount++;
+      } catch (IndexOutOfBoundsException e) {
+        throw new ColumnIndexOutOfBoundsException(e, nextRow, nextLine);
       }
-      int columnNumber = 0;
-      if (rowCount == nextRow) {
-        for (String field : nextLine) {
-          columnData.get(columnNumber).add(field);
-          columnNumber++;
-        }
-        if (useSampling) {
-          nextRow = nextRow(nextRow);
-        } else {
-          nextRow = nextRowWithoutSampling(nextRow);
-        }
-      }
-      rowCount++;
     }
 
     // now detect
     for (List<String> valuesList : columnData) {
       ColumnType detectedType = detectType(valuesList, options);
-      if (detectedType.equals(STRING)
-          && rowCount > STRING_COLUMN_ROW_COUNT_CUTOFF
-          && options.columnTypesToDetect().contains(TEXT)) {
-        HashSet<String> unique = new HashSet<>(valuesList);
-        double uniquePct = unique.size() / (valuesList.size() * 1.0);
-        if (uniquePct > STRING_COLUMN_CUTOFF) {
-          detectedType = TEXT;
-        }
-      }
+      /*
+            if (detectedType.equals(STRING) && rowCount > STRING_COLUMN_ROW_COUNT_CUTOFF
+              && options.columnTypesToDetect().contains(TEXT)
+            ) {
+              HashSet<String> unique = new HashSet<>(valuesList);
+              double uniquePct = unique.size() / (valuesList.size() * 1.0);
+              if (uniquePct > STRING_COLUMN_CUTOFF) {
+                detectedType = TEXT;
+              }
+            }
+      */
       columnTypes.add(detectedType);
     }
     return columnTypes.toArray(new ColumnType[0]);

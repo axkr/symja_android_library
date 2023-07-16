@@ -20,7 +20,6 @@ import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Collectors;
 import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.FloatColumn;
@@ -36,7 +35,11 @@ import tech.tablesaw.util.StringUtils;
  *
  * <p>This code was developed as part of Apache Commons Text.
  */
-public interface StringMapFunctions extends Column<String> {
+public interface StringMapFunctions {
+
+  int size();
+
+  String getString(int idx);
 
   default StringColumn upperCase() {
     StringColumn newColumn = StringColumn.create(this.name() + "[ucase]");
@@ -46,7 +49,7 @@ public interface StringMapFunctions extends Column<String> {
       if (value == null) {
         newColumn.append(StringColumnType.missingValueIndicator());
       } else {
-        newColumn.append(value.toUpperCase(Locale.US));
+        newColumn.append(value.toUpperCase());
       }
     }
     return newColumn;
@@ -58,7 +61,7 @@ public interface StringMapFunctions extends Column<String> {
 
     for (int r = 0; r < size(); r++) {
       String value = getString(r);
-      newColumn.append(value.toLowerCase(Locale.US));
+      newColumn.append(value.toLowerCase());
     }
     return newColumn;
   }
@@ -202,7 +205,8 @@ public interface StringMapFunctions extends Column<String> {
    */
   default IntColumn parseInt() {
     IntColumn newColumn = IntColumn.create(name() + "[parsed]");
-    for (String s : this) {
+    for (int i = 0; i < size(); i++) {
+      String s = getString(i);
       if (StringColumn.valueIsMissing(s)) {
         newColumn.appendMissing();
       } else {
@@ -220,7 +224,8 @@ public interface StringMapFunctions extends Column<String> {
    */
   default DoubleColumn parseDouble() {
     DoubleColumn newColumn = DoubleColumn.create(name() + "[parsed]");
-    for (String s : this) {
+    for (int i = 0; i < size(); i++) {
+      String s = getString(i);
       if (StringColumn.valueIsMissing(s)) {
         newColumn.appendMissing();
       } else {
@@ -238,7 +243,8 @@ public interface StringMapFunctions extends Column<String> {
    */
   default FloatColumn parseFloat() {
     FloatColumn newColumn = FloatColumn.create(name() + "[parsed]");
-    for (String s : this) {
+    for (int i = 0; i < size(); i++) {
+      String s = getString(i);
       if (StringColumn.valueIsMissing(s)) {
         newColumn.appendMissing();
       } else {
@@ -502,4 +508,6 @@ public interface StringMapFunctions extends Column<String> {
     }
     return newColumn;
   }
+
+  String name();
 }

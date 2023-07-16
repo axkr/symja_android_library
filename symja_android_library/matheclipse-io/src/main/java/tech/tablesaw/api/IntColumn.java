@@ -1,9 +1,13 @@
 package tech.tablesaw.api;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.*;
 import java.nio.ByteBuffer;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.stream.IntStream;
 import tech.tablesaw.columns.AbstractColumnParser;
 import tech.tablesaw.columns.Column;
@@ -13,6 +17,7 @@ import tech.tablesaw.columns.numbers.NumberColumnFormatter;
 import tech.tablesaw.selection.BitmapBackedSelection;
 import tech.tablesaw.selection.Selection;
 
+/** A column that contains int values */
 public class IntColumn extends NumberColumn<IntColumn, Integer>
     implements CategoricalColumn<Integer> {
 
@@ -54,11 +59,13 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
     return new IntColumn(name, list);
   }
 
+  /** {@inheritDoc} */
   @Override
   public IntColumn createCol(String name, int initialSize) {
     return create(name, initialSize);
   }
 
+  /** {@inheritDoc} */
   @Override
   public IntColumn createCol(String name) {
     return create(name);
@@ -79,11 +86,25 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
     return indexColumn;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int size() {
     return data.size();
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public int valueHash(int rowNumber) {
+    return getInt(rowNumber);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean equals(int rowNumber1, int rowNumber2) {
+    return getInt(rowNumber1) == getInt(rowNumber2);
+  }
+
+  /** {@inheritDoc} */
   @Override
   public void clear() {
     data.clear();
@@ -93,12 +114,18 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
     return IntColumnType.valueIsMissing(value);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Integer get(int index) {
     int result = getInt(index);
     return isMissingValue(result) ? null : result;
   }
 
+  public int[] asIntArray() {
+    return data.toIntArray();
+  }
+
+  /** {@inheritDoc} */
   @Override
   public IntColumn subset(final int[] rows) {
     final IntColumn c = this.emptyCopy();
@@ -108,6 +135,7 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
     return c;
   }
 
+  /** {@inheritDoc} */
   @Override
   public IntColumn unique() {
     final IntSet values = new IntOpenHashSet();
@@ -121,6 +149,7 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
     return column;
   }
 
+  /** {@inheritDoc} */
   @Override
   public IntColumn top(int n) {
     final IntArrayList top = new IntArrayList();
@@ -132,6 +161,7 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
     return new IntColumn(name() + "[Top " + n + "]", top);
   }
 
+  /** {@inheritDoc} */
   @Override
   public IntColumn bottom(final int n) {
     final IntArrayList bottom = new IntArrayList();
@@ -143,11 +173,12 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
     return new IntColumn(name() + "[Bottoms " + n + "]", bottom);
   }
 
+  /** {@inheritDoc} */
   @Override
   public IntColumn lag(int n) {
-    final int srcPos = n >= 0 ? 0 : 0 - n;
+    final int srcPos = n >= 0 ? 0 : -n;
     final int[] dest = new int[size()];
-    final int destPos = n <= 0 ? 0 : n;
+    final int destPos = Math.max(n, 0);
     final int length = n >= 0 ? size() - n : size() + n;
 
     for (int i = 0; i < size(); i++) {
@@ -160,6 +191,7 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
     return new IntColumn(name() + " lag(" + n + ")", new IntArrayList(dest));
   }
 
+  /** {@inheritDoc} */
   @Override
   public IntColumn removeMissing() {
     IntColumn result = copy();
@@ -179,6 +211,7 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public IntColumn append(Integer val) {
     if (val == null) {
@@ -189,11 +222,16 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public IntColumn copy() {
-    return new IntColumn(name(), data.clone());
+    IntColumn copy = new IntColumn(name(), data.clone());
+    copy.setPrintFormatter(getPrintFormatter());
+    copy.locale = locale;
+    return copy;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Iterator<Integer> iterator() {
     return data.iterator();
@@ -203,6 +241,7 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
     return data.iterator();
   }
 
+  /** {@inheritDoc} */
   @Override
   public Integer[] asObjectArray() {
     final Integer[] output = new Integer[size()];
@@ -216,11 +255,13 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
     return output;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int compare(Integer o1, Integer o2) {
     return Integer.compare(o1, o2);
   }
 
+  /** {@inheritDoc} */
   @Override
   public IntColumn set(int i, Integer val) {
     return val == null ? setMissing(i) : set(i, (int) val);
@@ -231,9 +272,16 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public IntColumn append(final Column<Integer> column) {
-    Preconditions.checkArgument(column.type() == this.type());
+    checkArgument(
+        column.type() == this.type(),
+        "Column '%s' has type %s, but column '%s' has type %s.",
+        name(),
+        type(),
+        column.name(),
+        column.type());
     final IntColumn numberColumn = (IntColumn) column;
     final int size = numberColumn.size();
     for (int i = 0; i < size; i++) {
@@ -242,28 +290,45 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public IntColumn append(Column<Integer> column, int row) {
-    Preconditions.checkArgument(column.type() == this.type());
+    Preconditions.checkArgument(
+        column.type() == this.type(),
+        "Column '%s' has type %s, but column '%s' has type %s.",
+        name(),
+        type(),
+        column.name(),
+        column.type());
     return append(((IntColumn) column).getInt(row));
   }
 
+  /** {@inheritDoc} */
   @Override
   public IntColumn set(int row, Column<Integer> column, int sourceRow) {
-    Preconditions.checkArgument(column.type() == this.type());
+    Preconditions.checkArgument(
+        column.type() == this.type(),
+        "Column '%s' has type %s, but column '%s' has type %s.",
+        name(),
+        type(),
+        column.name(),
+        column.type());
     return set(row, ((IntColumn) column).getInt(sourceRow));
   }
 
+  /** {@inheritDoc} */
   @Override
   public Column<Integer> set(int row, String stringValue, AbstractColumnParser<?> parser) {
     return set(row, parser.parseInt(stringValue));
   }
 
+  /** {@inheritDoc} */
   @Override
   public IntColumn appendMissing() {
     return append(IntColumnType.missingValueIndicator());
   }
 
+  /** {@inheritDoc} */
   @Override
   public byte[] asBytes(int rowNumber) {
     return ByteBuffer.allocate(IntColumnType.instance().byteSize())
@@ -271,12 +336,14 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
         .array();
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getString(final int row) {
     final int value = getInt(row);
     return String.valueOf(getPrintFormatter().format(value));
   }
 
+  /** {@inheritDoc} */
   @Override
   public int countUnique() {
     IntSet uniqueElements = new IntOpenHashSet();
@@ -309,6 +376,7 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
     return data.getInt(row);
   }
 
+  /** {@inheritDoc} */
   @Override
   public double getDouble(int row) {
     int value = data.getInt(row);
@@ -322,21 +390,25 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
     return IntColumnType.valueIsMissing(value);
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean isMissing(int rowNumber) {
     return isMissingValue(getInt(rowNumber));
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sortAscending() {
     data.sort(IntComparators.NATURAL_COMPARATOR);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sortDescending() {
     data.sort(IntComparators.OPPOSITE_COMPARATOR);
   }
 
+  /** {@inheritDoc} */
   @Override
   public IntColumn appendObj(Object obj) {
     if (obj == null) {
@@ -348,6 +420,7 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
     throw new IllegalArgumentException("Could not append " + obj.getClass());
   }
 
+  /** {@inheritDoc} */
   @Override
   public IntColumn appendCell(final String value) {
     try {
@@ -358,6 +431,7 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public IntColumn appendCell(final String value, AbstractColumnParser<?> parser) {
     try {
@@ -368,6 +442,7 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getUnformattedString(final int row) {
     final int value = getInt(row);
@@ -444,6 +519,13 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
     return results;
   }
 
+  public Selection isNotIn(final IntColumn ints) {
+    final Selection results = new BitmapBackedSelection();
+    results.addRange(0, size());
+    results.andNot(isIn(ints.data.toIntArray()));
+    return results;
+  }
+
   /**
    * Returns a new DoubleColumn containing a value for each value in this column, truncating if
    * necessary.
@@ -501,9 +583,16 @@ public class IntColumn extends NumberColumn<IntColumn, Integer>
     return result;
   }
 
+  /** {@inheritDoc} */
   @Override
   public IntColumn setMissing(int r) {
     set(r, IntColumnType.missingValueIndicator());
     return this;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Set<Integer> asSet() {
+    return new HashSet<>(unique().asList());
   }
 }

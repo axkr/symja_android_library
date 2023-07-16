@@ -521,6 +521,7 @@ public class IOFunctions {
       "Dot contraction of `1` and `2` is invalid because dimensions `3` and `4` are incompatible.",
       "dotsh", "Tensors `1` and `2` have incompatible shapes.", //
       "drop", "Cannot drop positions `1` through `2` in `3`.", //
+      "dsdelim", "The delimiter specification is not valid.", //
       "dstlms",
       "The requested number of elements `1` is greater than the number of distinct elements `2`. Only `2` elements will be returned.", //
       "dvar",
@@ -568,6 +569,7 @@ public class IOFunctions {
       "intpoint", "`1` is expected to contain a list of lists of integers.", //
       "intpp", "Positive integer argument expected in `1`.", //
       "intrange", "Integer expected in range `1` to `2`.", //
+      "intype", "Interpreter type specification `1` is invalid.", //
       "inv", "The argument `2`  in  `1`  is not a valid parameter.", //
       "inv02", "The argument `2`  in  `1`  is not valid. 0 or 2 arguments expected.", //
       "invak", "The argument is not a rule or a list of rules.", //
@@ -733,6 +735,7 @@ public class IOFunctions {
       "setp", "Part assignment to `1` could not be made", //
       "setraw", "Cannot assign to raw object `1`.", //
       "setps", "`1` in the part assignment is not a symbol.", //
+      "shapespec", "Shape specification `1` is invalid.", //
       "shlen", "The argument `1` should have at least `2` arguments.", //
       "sing", "Matrix `1` is singular.", //
       "sing1", "The matrix `1` is singular; a factorization will not be saved.", //

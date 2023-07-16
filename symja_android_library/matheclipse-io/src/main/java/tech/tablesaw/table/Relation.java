@@ -14,13 +14,14 @@
 
 package tech.tablesaw.table;
 
-import it.unimi.dsi.fastutil.ints.IntArrays;
-import it.unimi.dsi.fastutil.ints.IntComparators;
+import static tech.tablesaw.joining.JoinType.FULL_OUTER;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import it.unimi.dsi.fastutil.ints.IntArrays;
+import it.unimi.dsi.fastutil.ints.IntComparators;
 import tech.tablesaw.api.BooleanColumn;
 import tech.tablesaw.api.CategoricalColumn;
 import tech.tablesaw.api.ColumnType;
@@ -36,7 +37,6 @@ import tech.tablesaw.api.Row;
 import tech.tablesaw.api.ShortColumn;
 import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
-import tech.tablesaw.api.TextColumn;
 import tech.tablesaw.api.TimeColumn;
 import tech.tablesaw.columns.Column;
 import tech.tablesaw.conversion.TableConverter;
@@ -48,18 +48,39 @@ import tech.tablesaw.io.string.DataFramePrinter;
  */
 public abstract class Relation implements Iterable<Row> {
 
+  /**
+   * Adds the given columns to this Relation and returns the same relation.
+   *
+   * @return This Relation
+   */
   public abstract Relation addColumns(Column<?>... cols);
 
+  /**
+   * Sets the name of this Relation and returns the same relation.
+   *
+   * @return This Relation
+   */
   public abstract Relation setName(String name);
 
+  /**
+   * Returns true if this relation has zero rows and false otherwise. Rows of missing values are
+   * counted.
+   */
   public boolean isEmpty() {
     return rowCount() == 0;
   }
 
+  /** Returns a string that tells how many rows and columns this relation has */
   public String shape() {
-    return rowCount() + " rows X " + columnCount() + " cols";
+    return name() + ": " + rowCount() + " rows X " + columnCount() + " cols";
   }
 
+  /**
+   * Removes the columns at the given 0-based indices from this Relation and returns the same
+   * relation.
+   *
+   * @return This Relation
+   */
   public Relation removeColumns(int... columnIndexes) {
     IntArrays.quickSort(columnIndexes, IntComparators.OPPOSITE_COMPARATOR);
     for (int i : columnIndexes) {
@@ -68,9 +89,18 @@ public abstract class Relation implements Iterable<Row> {
     return this;
   }
 
-  /** Removes the given columns from the receiver */
+  /**
+   * Removes the given columns from this Relation and returns the same relation.
+   *
+   * @return This Relation
+   */
   public abstract Relation removeColumns(Column<?>... columns);
 
+  /**
+   * Removes the columns with the given namesfrom this Relation and returns the same relation.
+   *
+   * @return This Relation
+   */
   public Relation removeColumns(String... columnName) {
     Column<?>[] cols = new Column<?>[columnName.length];
     for (int i = 0; i < columnName.length; i++) {
@@ -80,10 +110,12 @@ public abstract class Relation implements Iterable<Row> {
     return this;
   }
 
+  /** Returns a list containing all the columns of the given type in this Relation */
   public List<Column<?>> columnsOfType(ColumnType type) {
     return columns().stream().filter(column -> column.type() == type).collect(Collectors.toList());
   }
 
+  /** Returns a new table containing the first n rows in this Relation */
   public abstract Table first(int nRows);
 
   /** Returns the index of the column with the given columnName */
@@ -164,16 +196,29 @@ public abstract class Relation implements Iterable<Row> {
   /** Clears all the dat in the relation, leaving the structure intact */
   public abstract void clear();
 
+  /** Returns a list containing the names of all the columns in this relation */
   public abstract List<String> columnNames();
 
   /**
    * Returns an array of the column types of all columns in the relation, including duplicates as
    * appropriate, and maintaining order
    */
-  public ColumnType[] columnTypes() {
+  public ColumnType[] typeArray() {
     ColumnType[] columnTypes = new ColumnType[columnCount()];
     for (int i = 0; i < columnCount(); i++) {
       columnTypes[i] = columns().get(i).type();
+    }
+    return columnTypes;
+  }
+
+  /**
+   * Returns a List of the column types of all columns in the relation, including duplicates as
+   * appropriate, and maintaining order
+   */
+  public List<ColumnType> types() {
+    List<ColumnType> columnTypes = new ArrayList<>(columnCount());
+    for (int i = 0; i < columnCount(); i++) {
+      columnTypes.add(columns().get(i).type());
     }
     return columnTypes;
   }
@@ -189,15 +234,23 @@ public abstract class Relation implements Iterable<Row> {
     return widths;
   }
 
+  /**
+   * Returns a String containing a 'pretty-printed' representation of this table containing at most
+   * 20 rows. The 20 rows are the first and last ten in this table.
+   */
   @Override
   public String toString() {
     return print();
   }
 
+  /** Returns a 'pretty-printed' string representation of this entire relation. */
   public String printAll() {
     return print(rowCount());
   }
 
+  /**
+   * Returns a 'pretty-printed' string representation of at most rowLimit rows from this relation.
+   */
   public String print(int rowLimit) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataFramePrinter printer = new DataFramePrinter(rowLimit, baos);
@@ -205,10 +258,18 @@ public abstract class Relation implements Iterable<Row> {
     return new String(baos.toByteArray());
   }
 
+  /**
+   * Returns a String containing a 'pretty-printed' representation of this table containing at most
+   * 20 rows. The 20 rows are the first and last ten in this table.
+   */
   public String print() {
     return print(20);
   }
 
+  /**
+   * Returns the structure of the this relation as a 3-column Table, consisting of Index (an
+   * IntColumn), Column Name (a StringColumn), and Column Type (a StringColumn)
+   */
   public Table structure() {
     Table t = Table.create("Structure of " + name());
 
@@ -226,6 +287,7 @@ public abstract class Relation implements Iterable<Row> {
     return t;
   }
 
+  /** Returns a table containing summary statistics for the columns in this Relation */
   public Table summary() {
     Table summaryTable = Table.create(this.name());
     if (this.columnCount() == 0) {
@@ -236,16 +298,29 @@ public abstract class Relation implements Iterable<Row> {
       Table columnSummary = this.column(i).summary();
       columnSummary.column(1).setName(this.column(i).name());
       summaryTable =
-          summaryTable.joinOn("Measure").fullOuter(columnSummary, columnSummary.column(0).name());
+          summaryTable
+              .joinOn("Measure")
+              .with(columnSummary)
+              .rightJoinColumns(columnSummary.column(0).name())
+              .type(FULL_OUTER)
+              .join();
     }
     summaryTable.column(0).setName("Summary");
     return summaryTable;
   }
 
+  /**
+   * Returns the DoubleColumn at the given 0-based index if present. A ClassCastException is the
+   * column is of a different type.
+   */
   public BooleanColumn booleanColumn(int columnIndex) {
     return (BooleanColumn) column(columnIndex);
   }
 
+  /**
+   * Returns a BooleanColumn with the given name if it is present in this Relation. If the column is
+   * of a different type, a ClassCastException is thrown
+   */
   public BooleanColumn booleanColumn(String columnName) {
     return (BooleanColumn) column(columnName);
   }
@@ -277,24 +352,38 @@ public abstract class Relation implements Iterable<Row> {
     return (NumericColumn<?>) column(columnIndex);
   }
 
+  /**
+   * Returns a NumericColumn with the given name if it is present in this Relation. If the column is
+   * not Numeric, a ClassCastException is thrown
+   */
   public NumericColumn<?> numberColumn(String columnName) {
     return numberColumn(columnIndex(columnName));
   }
 
+  /**
+   * Returns a DoubleColumn with the given name if it is present in this Relation. If the column is
+   * not of type DOUBLE, a ClassCastException is thrown
+   */
   public DoubleColumn doubleColumn(String columnName) {
     return doubleColumn(columnIndex(columnName));
   }
 
+  /**
+   * Returns the DoubleColumn at the given 0-based index if present. A ClassCastException is the
+   * column is of a different type.
+   */
   public DoubleColumn doubleColumn(int columnIndex) {
     return (DoubleColumn) column(columnIndex);
   }
 
+  /** Returns all the StringColumns in this Relation as an Array */
   public StringColumn[] stringColumns() {
     return columns().stream()
         .filter(e -> e.type() == ColumnType.STRING)
         .toArray(StringColumn[]::new);
   }
 
+  /** Returns all the NumericColumns in this Relation as an Array */
   public NumericColumn<?>[] numberColumns() {
     return columns().stream()
         .filter(e -> e instanceof NumericColumn<?>)
@@ -312,7 +401,6 @@ public abstract class Relation implements Iterable<Row> {
     for (int i : columnIndices) {
       cols.add(numberColumn(i));
     }
-
     return cols;
   }
 
@@ -322,44 +410,56 @@ public abstract class Relation implements Iterable<Row> {
     for (String name : columnNames) {
       cols.add(numberColumn(name));
     }
-
     return cols;
   }
 
+  /** Returns all BooleanColumns in this Relation as an Array */
   public BooleanColumn[] booleanColumns() {
     return columns().stream()
         .filter(e -> e.type() == ColumnType.BOOLEAN)
         .toArray(BooleanColumn[]::new);
   }
 
+  /** Returns all DateColumns in this Relation as an Array */
   public DateColumn[] dateColumns() {
     return columns().stream()
         .filter(e -> e.type() == ColumnType.LOCAL_DATE)
         .toArray(DateColumn[]::new);
   }
 
+  /** Returns all DateTimeColumns in this Relation as an Array */
   public DateTimeColumn[] dateTimeColumns() {
     return columns().stream()
         .filter(e -> e.type() == ColumnType.LOCAL_DATE_TIME)
         .toArray(DateTimeColumn[]::new);
   }
 
+  /** Returns all InstantColumns in this Relation as an Array */
   public InstantColumn[] instantColumns() {
     return columns().stream()
         .filter(e -> e.type() == ColumnType.INSTANT)
         .toArray(InstantColumn[]::new);
   }
 
+  /** Returns all TimeColumns in this Relation as an Array */
   public TimeColumn[] timeColumns() {
     return columns().stream()
         .filter(e -> e.type() == ColumnType.LOCAL_TIME)
         .toArray(TimeColumn[]::new);
   }
 
+  /**
+   * Returns a CategoricalColumn with the given name if it is present in this Relation. If the
+   * column is not Categorical, a ClassCastException is thrown
+   */
   public CategoricalColumn<?> categoricalColumn(String columnName) {
     return (CategoricalColumn<?>) column(columnName);
   }
 
+  /**
+   * Returns the CategoricalColumn at the given 0-based index if present. A ClassCastException is
+   * thrown otherwise
+   */
   public CategoricalColumn<?> categoricalColumn(int columnNumber) {
     return (CategoricalColumn<?>) column(columnNumber);
   }
@@ -374,7 +474,8 @@ public abstract class Relation implements Iterable<Row> {
   }
 
   /**
-   * Returns the column with the given name cast to a NumberColumn
+   * Returns the column with the given name cast to a NumberColumn. If the column is not Numeric, a
+   * ClassCastException is thrown
    *
    * <p>Shorthand for numberColumn()
    */
@@ -391,89 +492,165 @@ public abstract class Relation implements Iterable<Row> {
     return numberColumn(columnIndex);
   }
 
+  /**
+   * Returns an IntColumn with the given name if it is present in this Relation. If the column has a
+   * different type, a ClassCastException is thrown.
+   */
   public IntColumn intColumn(String columnName) {
     return intColumn(columnIndex(columnName));
   }
 
+  /**
+   * Returns the IntColumn at the given 0-based index if present. A ClassCastException is the column
+   * is of a different type.
+   */
   public IntColumn intColumn(int columnIndex) {
     return (IntColumn) column(columnIndex);
   }
 
+  /**
+   * Returns a ShortColumn with the given name if it is present in this Relation. If the column has
+   * a different type, a ClassCastException is thrown.
+   */
   public ShortColumn shortColumn(String columnName) {
     return shortColumn(columnIndex(columnName));
   }
 
+  /**
+   * Returns the ShortColumn at the given 0-based index if present. A ClassCastException is the
+   * column is of a different type.
+   */
   public ShortColumn shortColumn(int columnIndex) {
     return (ShortColumn) column(columnIndex);
   }
 
+  /**
+   * Returns a LongColumn with the given name if it is present in this Relation. If the column has a
+   * different type, a ClassCastException is thrown.
+   */
   public LongColumn longColumn(String columnName) {
     return longColumn(columnIndex(columnName));
   }
 
+  /**
+   * Returns the LongColumn at the given 0-based index if present. A ClassCastException is the
+   * column is of a different type.
+   */
   public LongColumn longColumn(int columnIndex) {
     return (LongColumn) column(columnIndex);
   }
 
+  /**
+   * Returns a FloatColumn with the given name if it is present in this Relation. If the column has
+   * a different type, a ClassCastException is thrown.
+   */
   public FloatColumn floatColumn(String columnName) {
     return floatColumn(columnIndex(columnName));
   }
 
+  /**
+   * Returns the FloatColumn at the given 0-based index if present. A ClassCastException is the
+   * column is of a different type.
+   */
   public FloatColumn floatColumn(int columnIndex) {
     return (FloatColumn) column(columnIndex);
   }
 
+  /**
+   * Returns the DateColumn at the given 0-based index if present. A ClassCastException is the
+   * column is of a different type.
+   */
   public DateColumn dateColumn(int columnIndex) {
     return (DateColumn) column(columnIndex);
   }
 
+  /**
+   * Returns a DateColumn with the given name if it is present in this Relation. If the column has a
+   * different type, a ClassCastException is thrown.
+   */
   public DateColumn dateColumn(String columnName) {
     return (DateColumn) column(columnName);
   }
 
+  /**
+   * Returns a TimeColumn with the given name if it is present in this Relation. If the column has a
+   * different type, a ClassCastException is thrown.
+   */
   public TimeColumn timeColumn(String columnName) {
     return (TimeColumn) column(columnName);
   }
 
+  /**
+   * Returns the TimeColumn at the given 0-based index if present. A ClassCastException is the
+   * column is of a different type.
+   */
   public TimeColumn timeColumn(int columnIndex) {
     return (TimeColumn) column(columnIndex);
   }
 
+  /**
+   * Returns a StringColumn with the given name if it is present in this Relation. If the column has
+   * a different type, a ClassCastException is thrown.
+   */
   public StringColumn stringColumn(String columnName) {
     return (StringColumn) column(columnName);
   }
 
+  /**
+   * Returns the StringColumn at the given 0-based index if present. A ClassCastException is the
+   * column is of a different type.
+   */
   public StringColumn stringColumn(int columnIndex) {
     return (StringColumn) column(columnIndex);
   }
 
-  public TextColumn textColumn(String columnName) {
-    return (TextColumn) column(columnName);
-  }
-
-  public TextColumn textColumn(int columnIndex) {
-    return (TextColumn) column(columnIndex);
-  }
-
+  /**
+   * Returns the DateTimeColumn at the given 0-based index if present. A ClassCastException is the
+   * column is of a different type.
+   */
   public DateTimeColumn dateTimeColumn(int columnIndex) {
     return (DateTimeColumn) column(columnIndex);
   }
 
+  /**
+   * Returns a DateTimeColumn with the given name if it is present in this Relation. If the column
+   * has a different type, a ClassCastException is thrown.
+   */
   public DateTimeColumn dateTimeColumn(String columnName) {
     return (DateTimeColumn) column(columnName);
   }
 
+  /**
+   * Returns the InstantColumn at the given 0-based index if present. A ClassCastException is the
+   * column is of a different type.
+   */
   public InstantColumn instantColumn(int columnIndex) {
     return (InstantColumn) column(columnIndex);
   }
 
+  /**
+   * Returns an InstantColumn with the given name if it is present in this Relation. If the column
+   * has a different type, a ClassCastException is thrown.
+   */
   public InstantColumn instantColumn(String columnName) {
     return (InstantColumn) column(columnName);
   }
 
+  /**
+   * Returns an {@link tech.tablesaw.conversion.TableConverter} that can convert this Relation to a
+   * two-dimensional matrix of primitive numeric values
+   */
   public TableConverter as() {
     return new TableConverter(this);
   }
+
+  /**
+   * Returns an {@link tech.tablesaw.conversion.smile.SmileConverter} that can convert this table to
+   * a format suitable for use with the Smile machine learning library.
+   */
+  // public SmileConverter smile() {
+  // return new SmileConverter(this);
+  // }
 
   /**
    * Returns a string representation of the value at the given row and column indexes
@@ -509,7 +686,14 @@ public abstract class Relation implements Iterable<Row> {
     return column.getString(r);
   }
 
+  /** Returns true if the given column is in this Relation */
   public boolean containsColumn(Column<?> column) {
     return columns().contains(column);
+  }
+
+  /** Returns true if a column with the given name is in this Relation */
+  public boolean containsColumn(String columnName) {
+    String lowerCase = columnName.toLowerCase();
+    return columnNames().stream().anyMatch(e -> e.toLowerCase().equals(lowerCase));
   }
 }

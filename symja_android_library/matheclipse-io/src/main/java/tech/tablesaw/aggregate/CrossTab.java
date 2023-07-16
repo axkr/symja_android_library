@@ -60,7 +60,7 @@ public final class CrossTab {
       a = temp.column(colIndex1).getString(row);
       b = temp.column(colIndex2).getString(row);
       Integer cellValue = gTable.get(a, b);
-      Integer value;
+      int value;
       if (cellValue != null) {
         value = cellValue + 1;
       } else {
@@ -110,10 +110,18 @@ public final class CrossTab {
     return t;
   }
 
+  /**
+   * Returns a Table containing counts of records in the given Table grouped by the given columnName
+   * See also {@link Table#countBy(String...)}
+   */
   public static Table counts(Table table, String columnName) {
     return table.countBy(table.categoricalColumn(columnName));
   }
 
+  /**
+   * Returns a Table containing the proportion of records in the given Table grouped by the given
+   * column TODO: Consider renaming to proportions
+   */
   public static Table percents(Table table, String column1) {
     Table countTable = counts(table, column1);
     Table percentTable = Table.create(countTable.name());

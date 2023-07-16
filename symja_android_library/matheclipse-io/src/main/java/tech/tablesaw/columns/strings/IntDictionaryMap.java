@@ -27,6 +27,7 @@ import tech.tablesaw.api.BooleanColumn;
 import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
+import tech.tablesaw.columns.booleans.BooleanColumnType;
 import tech.tablesaw.selection.BitmapBackedSelection;
 import tech.tablesaw.selection.Selection;
 
@@ -41,6 +42,8 @@ public class IntDictionaryMap implements DictionaryMap {
   private static final int MISSING_VALUE = Integer.MAX_VALUE;
 
   private static final int DEFAULT_RETURN_VALUE = Integer.MIN_VALUE;
+
+  private final boolean canPromoteToText = Boolean.TRUE;
 
   private final IntComparator reverseDictionarySortComparator =
       (i, i1) -> Comparator.<String>reverseOrder().compare(getValueForKey(i), getValueForKey(i1));
@@ -158,6 +161,12 @@ public class IntDictionaryMap implements DictionaryMap {
     int[] elements = values.toIntArray();
     IntArrays.parallelQuickSort(elements, dictionarySortComparator);
     this.values = new IntArrayList(elements);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int getKeyAtIndex(int rowNumber) {
+    return values.getInt(rowNumber);
   }
 
   @Override
@@ -354,12 +363,9 @@ public class IntDictionaryMap implements DictionaryMap {
       String category = getValueForKey(next);
       for (BooleanColumn column : results) {
         if (category.equals(column.name())) {
-          // TODO(lwhite): update the correct row more efficiently, by using set rather than add &
-          // only
-          // updating true
-          column.append(true);
+          column.append(BooleanColumnType.BYTE_TRUE);
         } else {
-          column.append(false);
+          column.append(BooleanColumnType.BYTE_FALSE);
         }
       }
     }
@@ -384,7 +390,7 @@ public class IntDictionaryMap implements DictionaryMap {
 
   @Override
   public Iterator<String> iterator() {
-    return new Iterator<String>() {
+    return new Iterator<>() {
 
       private final IntListIterator valuesIt = values.iterator();
 
@@ -417,12 +423,20 @@ public class IntDictionaryMap implements DictionaryMap {
 
   @Override
   public DictionaryMap promoteYourself() {
+    if (canPromoteToText) {
+      return new NullDictionaryMap(this);
+    }
     return this;
   }
 
   @Override
   public int nextKeyWithoutIncrementing() {
     return nextIndex.get();
+  }
+
+  @Override
+  public boolean canPromoteToText() {
+    return canPromoteToText;
   }
 
   public static class IntDictionaryBuilder {

@@ -14,6 +14,8 @@
 
 package tech.tablesaw.api;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrays;
@@ -46,15 +48,17 @@ import tech.tablesaw.columns.dates.DateMapFunctions;
 import tech.tablesaw.columns.dates.PackedLocalDate;
 import tech.tablesaw.selection.Selection;
 
-/** A column in a base table that contains float values */
+/** A column that contains int-encoded local date values */
 public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     implements DateFilters,
         DateFillers<DateColumn>,
         DateMapFunctions,
         CategoricalColumn<LocalDate> {
 
+  /** The data held in this column in its integer encoding form. See {@link PackedLocalDate} */
   protected IntArrayList data;
 
+  /** A comparator for the encoded dates. Note that the ints compared are the column indexes */
   private final IntComparator comparator =
       (r1, r2) -> {
         final int f1 = getIntInternal(r1);
@@ -62,16 +66,26 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
         return Integer.compare(f1, f2);
       };
 
+  /** The {@link tech.tablesaw.columns.ColumnFormatter} for formatting output from this column */
   private DateColumnFormatter printFormatter = new DateColumnFormatter();
 
+  /** Creates a new DateColumn with the given name. The column is completely empty. */
   public static DateColumn create(final String name) {
     return new DateColumn(name, new IntArrayList(DEFAULT_ARRAY_SIZE));
   }
 
+  /**
+   * Creates a new DateColumn with the given name and integer-encoded data. See {@link
+   * PackedLocalDate} for details of the encoding
+   */
   public static DateColumn createInternal(String name, int[] data) {
     return new DateColumn(name, new IntArrayList(data));
   }
 
+  /**
+   * Creates a new DateColumn with the given name. The column contains {@code initialSize} missing
+   * values.
+   */
   public static DateColumn create(final String name, final int initialSize) {
     DateColumn column = new DateColumn(name, new IntArrayList(initialSize));
     for (int i = 0; i < initialSize; i++) {
@@ -80,6 +94,7 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return column;
   }
 
+  /** Creates a new DateColumn with the given name and data */
   public static DateColumn create(String name, Collection<LocalDate> data) {
     DateColumn column = new DateColumn(name, new IntArrayList(data.size()));
     for (LocalDate date : data) {
@@ -88,6 +103,7 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return column;
   }
 
+  /** Creates a new DateColumn with the given name and data */
   public static DateColumn create(String name, LocalDate... data) {
     DateColumn column = new DateColumn(name, new IntArrayList(data.length));
     for (LocalDate date : data) {
@@ -96,22 +112,29 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return column;
   }
 
+  /** Creates a new DateColumn with the given name and data */
   public static DateColumn create(String name, Stream<LocalDate> stream) {
     DateColumn column = create(name);
     stream.forEach(column::append);
     return column;
   }
 
+  /**
+   * Creates a new DateColumn with the given name and integer-encoded data. See {@link
+   * PackedLocalDate} for the details of the encoding scheme
+   */
   private DateColumn(String name, IntArrayList data) {
     super(DateColumnType.instance(), name, DateColumnType.DEFAULT_PARSER);
     this.data = data;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int size() {
     return data.size();
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn subset(final int[] rows) {
     final DateColumn c = this.emptyCopy();
@@ -131,6 +154,7 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn set(int index, LocalDate value) {
     return value == null ? setMissing(index) : set(index, PackedLocalDate.pack(value));
@@ -162,16 +186,19 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     this.printFormatter = dateColumnFormatter;
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getString(int row) {
     return printFormatter.format(getPackedDate(row));
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getUnformattedString(int row) {
     return PackedLocalDate.toDateString(getPackedDate(row));
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn emptyCopy() {
     DateColumn empty = create(name());
@@ -179,6 +206,7 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return empty;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn emptyCopy(int rowSize) {
     DateColumn copy = create(name(), rowSize);
@@ -186,18 +214,22 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return copy;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn copy() {
     DateColumn copy = emptyCopy(data.size());
     copy.data = data.clone();
+    copy.printFormatter = printFormatter;
     return copy;
   }
 
+  /** {@inheritDoc} */
   @Override
   public void clear() {
     data.clear();
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn lead(int n) {
     DateColumn column = lag(-n);
@@ -205,11 +237,12 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return column;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn lag(int n) {
-    int srcPos = n >= 0 ? 0 : 0 - n;
+    int srcPos = n >= 0 ? 0 : -n;
     int[] dest = new int[size()];
-    int destPos = n <= 0 ? 0 : n;
+    int destPos = Math.max(n, 0);
     int length = n >= 0 ? size() - n : size() + n;
 
     for (int i = 0; i < size(); i++) {
@@ -224,16 +257,19 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return copy;
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sortAscending() {
     data.sort(IntComparators.NATURAL_COMPARATOR);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sortDescending() {
     data.sort(IntComparators.OPPOSITE_COMPARATOR);
   }
 
+  /** {@inheritDoc} */
   @Override
   public int countUnique() {
     IntSet ints = new IntOpenHashSet(size());
@@ -243,6 +279,7 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return ints.size();
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn unique() {
     IntSet ints = new IntOpenHashSet(data.size());
@@ -255,9 +292,16 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return copy;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn append(final Column<LocalDate> column) {
-    Preconditions.checkArgument(column.type() == this.type());
+    checkArgument(
+        column.type() == this.type(),
+        "Column '%s' has type %s, but column '%s' has type %s.",
+        name(),
+        type(),
+        column.name(),
+        column.type());
     DateColumn dateColumn = (DateColumn) column;
     final int size = dateColumn.size();
     for (int i = 0; i < size; i++) {
@@ -266,18 +310,33 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn append(Column<LocalDate> column, int row) {
-    Preconditions.checkArgument(column.type() == this.type());
+    checkArgument(
+        column.type() == this.type(),
+        "Column '%s' has type %s, but column '%s' has type %s.",
+        name(),
+        type(),
+        column.name(),
+        column.type());
     return appendInternal(((DateColumn) column).getIntInternal(row));
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn set(int row, Column<LocalDate> column, int sourceRow) {
-    Preconditions.checkArgument(column.type() == this.type());
+    checkArgument(
+        column.type() == this.type(),
+        "Column '%s' has type %s, but column '%s' has type %s.",
+        name(),
+        type(),
+        column.name(),
+        column.type());
     return set(row, ((DateColumn) column).getIntInternal(sourceRow));
   }
 
+  /** {@inheritDoc} */
   @Override
   public LocalDate max() {
     if (isEmpty()) {
@@ -301,6 +360,7 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return PackedLocalDate.asLocalDate(max);
   }
 
+  /** {@inheritDoc} */
   @Override
   public LocalDate min() {
     if (isEmpty()) {
@@ -338,32 +398,38 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn appendMissing() {
     appendInternal(DateColumnType.missingValueIndicator());
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public LocalDate get(int index) {
     return PackedLocalDate.asLocalDate(getPackedDate(index));
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean isEmpty() {
     return data.isEmpty();
   }
 
+  /** {@inheritDoc} */
   @Override
   public IntComparator rowComparator() {
     return comparator;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn append(LocalDate value) {
     return this.appendInternal(PackedLocalDate.pack(value));
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn appendObj(Object obj) {
     if (obj == null) {
@@ -379,16 +445,19 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
         "Cannot append " + obj.getClass().getName() + " to DateColumn");
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn appendCell(String string) {
     return appendInternal(PackedLocalDate.pack(parser().parse(string)));
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn appendCell(String string, AbstractColumnParser<?> parser) {
     return appendObj(parser.parse(string));
   }
 
+  /** {@inheritDoc} */
   @Override
   public int getIntInternal(int index) {
     return data.getInt(index);
@@ -477,11 +546,13 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return bottom;
   }
 
+  /** {@inheritDoc} */
   @Override
   public IntIterator intIterator() {
     return data.iterator();
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn removeMissing() {
     DateColumn noMissing = emptyCopy();
@@ -495,6 +566,7 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return noMissing;
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<LocalDate> asList() {
     List<LocalDate> dates = new ArrayList<>(size());
@@ -504,11 +576,13 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return dates;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn where(Selection selection) {
     return subset(selection.toArray());
   }
 
+  /** {@inheritDoc} */
   public Set<LocalDate> asSet() {
     Set<LocalDate> dates = new HashSet<>();
     DateColumn unique = unique();
@@ -518,12 +592,14 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return dates;
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean contains(LocalDate localDate) {
     int date = PackedLocalDate.pack(localDate);
     return data.contains(date);
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn setMissing(int i) {
     return set(i, DateColumnType.missingValueIndicator());
@@ -541,6 +617,7 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return DoubleColumn.create(name(), asDoubleArray());
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean isMissing(int rowNumber) {
     return valueIsMissing(getIntInternal(rowNumber));
@@ -550,9 +627,22 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return getIntInternal(i);
   }
 
+  /** {@inheritDoc} */
   @Override
   public int byteSize() {
     return type().byteSize();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int valueHash(int rowNumber) {
+    return getIntInternal(rowNumber);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean equals(int rowNumber1, int rowNumber2) {
+    return getIntInternal(rowNumber1) == getIntInternal(rowNumber2);
   }
 
   /**
@@ -602,6 +692,7 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn fillWith(Iterator<LocalDate> iterator) {
     int[] r = new int[1];
@@ -624,6 +715,7 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn fillWith(Iterable<LocalDate> iterable) {
     int[] r = new int[1];
@@ -643,6 +735,7 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateColumn fillWith(Supplier<LocalDate> supplier) {
     int[] r = new int[1];
@@ -650,6 +743,7 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public LocalDate[] asObjectArray() {
     final LocalDate[] output = new LocalDate[data.size()];
@@ -659,6 +753,7 @@ public class DateColumn extends AbstractColumn<DateColumn, LocalDate>
     return output;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int compare(LocalDate o1, LocalDate o2) {
     return o1.compareTo(o2);

@@ -2500,6 +2500,8 @@ public class S {
   public final static IBuiltInSymbol DeleteDuplicatesBy =
       S.initFinalSymbol("DeleteDuplicatesBy", ID.DeleteDuplicatesBy);
 
+  public final static IBuiltInSymbol Delimiters = S.initFinalSymbol("Delimiters", ID.Delimiters);
+
   /**
    * Denominator(expr) - gives the denominator in `expr`. Denominator collects expressions with
    * negative exponents.

@@ -313,23 +313,14 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public boolean equals(Object obj) {
-    if (Config.FUZZ_TESTING && obj instanceof ISymbol
-        && fSymbolName.equals(((ISymbol) obj).getSymbolName())
-        && fContext.equals(((ISymbol) obj).getContext()) && this != obj) {
-      throw new NullPointerException();
+    if (Config.FUZZ_TESTING) {
+      if (obj instanceof ISymbol && fSymbolName.equals(((ISymbol) obj).getSymbolName())
+          && fContext.equals(((ISymbol) obj).getContext()) && this != obj) {
+        throw new NullPointerException();
+      }
     }
     return this == obj;
   }
-
-  /** {@inheritDoc} */
-  // @Override
-  // public final Complex evalComplex() {
-  // INumber number = evalNumber();
-  // if (number != null) {
-  // return number.complexNumValue().complexValue();
-  // }
-  // throw new ArgumentTypeException("conversion into a complex numeric value is not possible!");
-  // }
 
   /** {@inheritDoc} */
   @Override

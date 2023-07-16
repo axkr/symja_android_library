@@ -369,6 +369,25 @@ public class FunctionsTestCase extends AbstractTestCase {
     }
   }
 
+  public void testSemanticImportStringToList() {
+    String s = System.getProperty("os.name");
+    if (s.contains("Windows")) {
+      check(
+          "SemanticImportString(\"1 2, 3 ; 4, 5 6\", \"String\", \"Columns\", Delimiters -> \",\") // InputForm", //
+          "{{\"1 2\",\" 3 ; 4\",\" 5 6\"}}");
+      check(
+          "SemanticImportString(\"1 2, 3 ; 4, 5 6\", \"String\", \"Columns\", Delimiters -> \";\") // InputForm", //
+          "{{\"1 2, 3 \",\" 4, 5 6\"}}");
+
+      check(
+          "SemanticImportString(\"1 2, 3 ; 4, 5 6\", \"String\", \"List\", Delimiters -> \",\") // InputForm", //
+          "{\"1 2\",\" 3 ; 4\",\" 5 6\"}");
+      check(
+          "SemanticImportString(\"1 2, 3 ; 4, 5 6\", \"String\", \"List\", Delimiters -> \";\") // InputForm", //
+          "{\"1 2, 3 \",\" 4, 5 6\"}");
+    }
+  }
+
   public void testSemanticImportStringWikipedia() {
     // https://en.wikipedia.org/wiki/Comma-separated_values
     String s = System.getProperty("os.name");

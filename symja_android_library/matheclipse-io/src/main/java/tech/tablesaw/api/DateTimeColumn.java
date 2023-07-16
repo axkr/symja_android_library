@@ -50,15 +50,17 @@ import tech.tablesaw.columns.datetimes.PackedLocalDateTime;
 import tech.tablesaw.columns.temporal.TemporalFillers;
 import tech.tablesaw.selection.Selection;
 
-/** A column in a table that contains long-integer encoded (packed) local date-time values */
+/** A column that contains long-integer encoded (packed) local date-time values */
 public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime>
     implements DateTimeMapFunctions,
         DateTimeFilters,
         TemporalFillers<LocalDateTime, DateTimeColumn>,
         CategoricalColumn<LocalDateTime> {
 
+  /** The dateTime values held in this column, in their {@link PackedLocalDateTime} format */
   protected LongArrayList data;
 
+  /** A comparator for this column. Note that the ints compared are the column indexes */
   private final IntComparator comparator =
       (r1, r2) -> {
         long f1 = getPackedDateTime(r1);
@@ -67,6 +69,18 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
       };
 
   private DateTimeColumnFormatter printFormatter = new DateTimeColumnFormatter();
+
+  /** {@inheritDoc} */
+  @Override
+  public int valueHash(int rowNumber) {
+    return Long.hashCode(getLongInternal(rowNumber));
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean equals(int rowNumber1, int rowNumber2) {
+    return getLongInternal(rowNumber1) == getLongInternal(rowNumber2);
+  }
 
   private DateTimeColumn(String name, LongArrayList data) {
     super(DateTimeColumnType.instance(), name, DateTimeColumnType.DEFAULT_PARSER);
@@ -109,6 +123,7 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return column;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn plus(long amountToAdd, ChronoUnit unit) {
     DateTimeColumn newColumn = emptyCopy();
@@ -138,11 +153,13 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return DateTimeColumnType.valueIsMissing(value);
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean isMissing(int rowNumber) {
     return valueIsMissing(getLongInternal(rowNumber));
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn subset(final int[] rows) {
     final DateTimeColumn c = this.emptyCopy();
@@ -152,6 +169,7 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return c;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn removeMissing() {
     DateTimeColumn noMissing = emptyCopy();
@@ -165,17 +183,20 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return noMissing;
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean contains(LocalDateTime dateTime) {
     long dt = PackedLocalDateTime.pack(dateTime);
     return data.contains(dt);
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn setMissing(int i) {
     return set(i, DateTimeColumnType.missingValueIndicator());
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn where(Selection selection) {
     return subset(selection.toArray());
@@ -197,11 +218,12 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     this.printFormatter = formatter;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn lag(int n) {
-    int srcPos = n >= 0 ? 0 : 0 - n;
+    int srcPos = n >= 0 ? 0 : -n;
     long[] dest = new long[size()];
-    int destPos = n <= 0 ? 0 : n;
+    int destPos = Math.max(n, 0);
     int length = n >= 0 ? size() - n : size() + n;
 
     for (int i = 0; i < size(); i++) {
@@ -216,16 +238,19 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return copy;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn appendCell(String stringValue) {
     return appendInternal(PackedLocalDateTime.pack(parser().parse(stringValue)));
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn appendCell(String stringValue, AbstractColumnParser<?> parser) {
     return appendObj(parser.parse(stringValue));
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn append(LocalDateTime dateTime) {
     if (dateTime != null) {
@@ -237,6 +262,7 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn appendObj(Object obj) {
     if (obj == null) {
@@ -253,27 +279,32 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
         "Cannot append " + obj.getClass().getName() + " to DateTimeColumn");
   }
 
+  /** {@inheritDoc} */
   @Override
   public int size() {
     return data.size();
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn appendInternal(long dateTime) {
     data.add(dateTime);
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getString(int row) {
     return printFormatter.format(getPackedDateTime(row));
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getUnformattedString(int row) {
     return PackedLocalDateTime.toString(getPackedDateTime(row));
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn emptyCopy() {
     DateTimeColumn empty = create(name());
@@ -281,6 +312,7 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return empty;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn emptyCopy(int rowSize) {
     DateTimeColumn column = create(name(), rowSize);
@@ -288,28 +320,34 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return column;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn copy() {
     DateTimeColumn column = emptyCopy(data.size());
     column.data = data.clone();
+    column.printFormatter = printFormatter;
     return column;
   }
 
+  /** {@inheritDoc} */
   @Override
   public void clear() {
     data.clear();
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sortAscending() {
     data.sort(LongComparators.NATURAL_COMPARATOR);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sortDescending() {
     data.sort(LongComparators.OPPOSITE_COMPARATOR);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Table summary() {
     Table table = Table.create("Column: " + name());
@@ -333,6 +371,7 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return table;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int countUnique() {
     LongSet ints = new LongOpenHashSet(data.size());
@@ -342,6 +381,7 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return ints.size();
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn unique() {
     LongSet ints = new LongOpenHashSet(data.size());
@@ -354,11 +394,13 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return column;
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean isEmpty() {
     return data.isEmpty();
   }
 
+  /** {@inheritDoc} */
   @Override
   public long getLongInternal(int index) {
     return data.getLong(index);
@@ -368,11 +410,13 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return getLongInternal(index);
   }
 
+  /** {@inheritDoc} */
   @Override
   public LocalDateTime get(int index) {
     return PackedLocalDateTime.asLocalDateTime(getPackedDateTime(index));
   }
 
+  /** {@inheritDoc} */
   @Override
   public IntComparator rowComparator() {
     return comparator;
@@ -481,9 +525,16 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return InstantColumn.create(name(), output);
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn append(Column<LocalDateTime> column) {
-    Preconditions.checkArgument(column.type() == this.type());
+    Preconditions.checkArgument(
+        column.type() == this.type(),
+        "Column '%s' has type %s, but column '%s' has type %s.",
+        name(),
+        type(),
+        column.name(),
+        column.type());
     DateTimeColumn dateTimeColumn = (DateTimeColumn) column;
     final int size = dateTimeColumn.size();
     for (int i = 0; i < size; i++) {
@@ -492,15 +543,29 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn append(Column<LocalDateTime> column, int row) {
-    Preconditions.checkArgument(column.type() == this.type());
+    Preconditions.checkArgument(
+        column.type() == this.type(),
+        "Column '%s' has type %s, but column '%s' has type %s.",
+        name(),
+        type(),
+        column.name(),
+        column.type());
     return appendInternal(((DateTimeColumn) column).getLongInternal(row));
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn set(int row, Column<LocalDateTime> column, int sourceRow) {
-    Preconditions.checkArgument(column.type() == this.type());
+    Preconditions.checkArgument(
+        column.type() == this.type(),
+        "Column '%s' has type %s, but column '%s' has type %s.",
+        name(),
+        type(),
+        column.name(),
+        column.type());
     return set(row, ((DateTimeColumn) column).getLongInternal(sourceRow));
   }
 
@@ -513,7 +578,7 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     }
     for (long aData : data) {
       if (DateTimeColumnType.missingValueIndicator() != aData) {
-        max = (max > aData) ? max : aData;
+        max = Math.max(max, aData);
       }
     }
 
@@ -523,12 +588,14 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return PackedLocalDateTime.asLocalDateTime(max);
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn appendMissing() {
     appendInternal(DateTimeColumnType.missingValueIndicator());
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public LocalDateTime min() {
     long min;
@@ -554,6 +621,7 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn set(int index, LocalDateTime value) {
     return value == null ? setMissing(index) : set(index, PackedLocalDateTime.pack(value));
@@ -606,6 +674,7 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return times;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int byteSize() {
     return type().byteSize();
@@ -671,6 +740,7 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn fillWith(Iterator<LocalDateTime> iterator) {
     int[] r = new int[1];
@@ -693,6 +763,7 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn fillWith(Iterable<LocalDateTime> iterable) {
     int[] r = new int[1];
@@ -712,6 +783,7 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DateTimeColumn fillWith(Supplier<LocalDateTime> supplier) {
     int[] r = new int[1];
@@ -719,6 +791,7 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public LocalDateTime[] asObjectArray() {
     final LocalDateTime[] output = new LocalDateTime[data.size()];
@@ -728,6 +801,7 @@ public class DateTimeColumn extends AbstractColumn<DateTimeColumn, LocalDateTime
     return output;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int compare(LocalDateTime o1, LocalDateTime o2) {
     return o1.compareTo(o2);

@@ -1,11 +1,15 @@
 package tech.tablesaw.api;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.*;
 import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.stream.LongStream;
 import tech.tablesaw.columns.AbstractColumnParser;
 import tech.tablesaw.columns.Column;
@@ -15,6 +19,7 @@ import tech.tablesaw.columns.numbers.NumberColumnFormatter;
 import tech.tablesaw.selection.BitmapBackedSelection;
 import tech.tablesaw.selection.Selection;
 
+/** A column that contains long values */
 public class LongColumn extends NumberColumn<LongColumn, Long> implements CategoricalColumn<Long> {
 
   protected final LongArrayList data;
@@ -23,6 +28,18 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     super(LongColumnType.instance(), name, LongColumnType.DEFAULT_PARSER);
     setPrintFormatter(NumberColumnFormatter.ints());
     this.data = data;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int valueHash(int rowNumber) {
+    return Long.hashCode(getLong(rowNumber));
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean equals(int rowNumber1, int rowNumber2) {
+    return getLong(rowNumber1) == getLong(rowNumber2);
   }
 
   public static LongColumn create(final String name) {
@@ -47,11 +64,13 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     return new LongColumn(name, list);
   }
 
+  /** {@inheritDoc} */
   @Override
   public LongColumn createCol(String name, int initialSize) {
     return create(name, initialSize);
   }
 
+  /** {@inheritDoc} */
   @Override
   public LongColumn createCol(String name) {
     return create(name);
@@ -72,6 +91,7 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     return indexColumn;
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getString(final int row) {
     final long value = getLong(row);
@@ -82,22 +102,26 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     return LongColumnType.valueIsMissing(value);
   }
 
+  /** {@inheritDoc} */
   @Override
   public int size() {
     return data.size();
   }
 
+  /** {@inheritDoc} */
   @Override
   public void clear() {
     data.clear();
   }
 
+  /** {@inheritDoc} */
   @Override
   public Long get(int index) {
     long result = getLong(index);
     return isMissingValue(result) ? null : result;
   }
 
+  /** {@inheritDoc} */
   @Override
   public LongColumn subset(final int[] rows) {
     final LongColumn c = this.emptyCopy();
@@ -125,6 +149,7 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     return results;
   }
 
+  /** {@inheritDoc} */
   @Override
   public LongColumn unique() {
     final LongSet values = new LongOpenHashSet();
@@ -138,6 +163,7 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     return column;
   }
 
+  /** {@inheritDoc} */
   @Override
   public LongColumn top(int n) {
     final LongArrayList top = new LongArrayList();
@@ -149,6 +175,7 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     return new LongColumn(name() + "[Top " + n + "]", top);
   }
 
+  /** {@inheritDoc} */
   @Override
   public LongColumn bottom(final int n) {
     final LongArrayList bottom = new LongArrayList();
@@ -160,11 +187,12 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     return new LongColumn(name() + "[Bottoms " + n + "]", bottom);
   }
 
+  /** {@inheritDoc} */
   @Override
   public LongColumn lag(int n) {
-    final int srcPos = n >= 0 ? 0 : 0 - n;
+    final int srcPos = n >= 0 ? 0 : -n;
     final long[] dest = new long[size()];
-    final int destPos = n <= 0 ? 0 : n;
+    final int destPos = Math.max(n, 0);
     final int length = n >= 0 ? size() - n : size() + n;
 
     for (int i = 0; i < size(); i++) {
@@ -177,6 +205,7 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     return new LongColumn(name() + " lag(" + n + ")", new LongArrayList(dest));
   }
 
+  /** {@inheritDoc} */
   @Override
   public LongColumn removeMissing() {
     LongColumn result = copy();
@@ -196,6 +225,7 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public LongColumn append(Long val) {
     if (val == null) {
@@ -206,9 +236,13 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public LongColumn copy() {
-    return new LongColumn(name(), data.clone());
+    LongColumn copy = new LongColumn(name(), data.clone());
+    copy.setPrintFormatter(getPrintFormatter());
+    copy.locale = locale;
+    return copy;
   }
 
   public long[] asLongArray() {
@@ -238,6 +272,7 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     return column;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Iterator<Long> iterator() {
     return data.iterator();
@@ -247,6 +282,7 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     return data.iterator();
   }
 
+  /** {@inheritDoc} */
   @Override
   public Long[] asObjectArray() {
     final Long[] output = new Long[size()];
@@ -260,11 +296,13 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     return output;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int compare(Long o1, Long o2) {
     return Long.compare(o1, o2);
   }
 
+  /** {@inheritDoc} */
   @Override
   public LongColumn set(int i, Long val) {
     return val == null ? setMissing(i) : set(i, (long) val);
@@ -275,14 +313,22 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Column<Long> set(int row, String stringValue, AbstractColumnParser<?> parser) {
     return set(row, parser.parseLong(stringValue));
   }
 
+  /** {@inheritDoc} */
   @Override
   public LongColumn append(final Column<Long> column) {
-    Preconditions.checkArgument(column.type() == this.type());
+    Preconditions.checkArgument(
+        column.type() == this.type(),
+        "Column '%s' has type %s, but column '%s' has type %s.",
+        name(),
+        type(),
+        column.name(),
+        column.type());
     final LongColumn numberColumn = (LongColumn) column;
     final int size = numberColumn.size();
     for (int i = 0; i < size; i++) {
@@ -291,23 +337,39 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public LongColumn append(Column<Long> column, int row) {
-    Preconditions.checkArgument(column.type() == this.type());
+    checkArgument(
+        column.type() == this.type(),
+        "Column '%s' has type %s, but column '%s' has type %s.",
+        name(),
+        type(),
+        column.name(),
+        column.type());
     return append(((LongColumn) column).getLong(row));
   }
 
+  /** {@inheritDoc} */
   @Override
   public LongColumn set(int row, Column<Long> column, int sourceRow) {
-    Preconditions.checkArgument(column.type() == this.type());
+    checkArgument(
+        column.type() == this.type(),
+        "Column '%s' has type %s, but column '%s' has type %s.",
+        name(),
+        type(),
+        column.name(),
+        column.type());
     return set(row, ((LongColumn) column).getLong(sourceRow));
   }
 
+  /** {@inheritDoc} */
   @Override
   public LongColumn appendMissing() {
     return append(LongColumnType.missingValueIndicator());
   }
 
+  /** {@inheritDoc} */
   @Override
   public byte[] asBytes(int rowNumber) {
     return ByteBuffer.allocate(LongColumnType.instance().byteSize())
@@ -315,6 +377,13 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
         .array();
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public Set<Long> asSet() {
+    return new HashSet<>(unique().asList());
+  }
+
+  /** {@inheritDoc} */
   @Override
   public int countUnique() {
     LongSet uniqueElements = new LongOpenHashSet();
@@ -349,6 +418,7 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     return data.getLong(row);
   }
 
+  /** {@inheritDoc} */
   @Override
   public double getDouble(int row) {
     long value = data.getLong(row);
@@ -362,26 +432,31 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     return LongColumnType.valueIsMissing(value);
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean isMissing(int rowNumber) {
     return isMissingValue(getLong(rowNumber));
   }
 
+  /** {@inheritDoc} */
   @Override
   public LongColumn setMissing(int i) {
     return set(i, LongColumnType.missingValueIndicator());
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sortAscending() {
     data.sort(LongComparators.NATURAL_COMPARATOR);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sortDescending() {
     data.sort(LongComparators.OPPOSITE_COMPARATOR);
   }
 
+  /** {@inheritDoc} */
   @Override
   public LongColumn appendObj(Object obj) {
     if (obj == null) {
@@ -393,6 +468,7 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     throw new IllegalArgumentException("Could not append " + obj.getClass());
   }
 
+  /** {@inheritDoc} */
   @Override
   public LongColumn appendCell(final String value) {
     try {
@@ -403,6 +479,7 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public LongColumn appendCell(final String value, AbstractColumnParser<?> parser) {
     try {
@@ -413,6 +490,7 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getUnformattedString(final int row) {
     final long value = getLong(row);
@@ -422,6 +500,7 @@ public class LongColumn extends NumberColumn<LongColumn, Long> implements Catego
     return String.valueOf(value);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Table countByCategory() {
     return null;

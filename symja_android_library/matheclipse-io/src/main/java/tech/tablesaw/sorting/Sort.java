@@ -18,9 +18,11 @@ import static java.util.stream.Collectors.toSet;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-
-import java.util.*;
-
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import tech.tablesaw.api.Table;
 
 /**
@@ -39,23 +41,38 @@ public class Sort implements Iterable<Map.Entry<String, Sort.Order>> {
 
   private final LinkedHashMap<String, Order> sortOrder = new LinkedHashMap<>();
 
+  /**
+   * Constructs a Sort specifying the order (ascending or descending) to apply to the column with
+   * the given name
+   */
   public Sort(String columnName, Order order) {
     next(columnName, order);
   }
 
+  /**
+   * Returns a Sort specifying the order (ascending or descending) to apply to the column with the
+   * given name
+   */
   public static Sort on(String columnName, Order order) {
     return new Sort(columnName, order);
   }
 
+  /**
+   * Returns a Sort that concatenates a new sort on the given order (ascending or descending) and
+   * columnName onto the sort specified here. This method is used to construct complex sorts such
+   * as: Sort.on("foo", Order.ASCEND).next("bar", Order.DESCEND);
+   */
   public Sort next(String columnName, Order order) {
     sortOrder.put(columnName, order);
     return this;
   }
 
+  /** Returns true if no order has been set */
   public boolean isEmpty() {
     return sortOrder.isEmpty();
   }
 
+  /** Returns the number of columns used in this sort */
   public int size() {
     return sortOrder.size();
   }
@@ -72,23 +89,23 @@ public class Sort implements Iterable<Map.Entry<String, Sort.Order>> {
     Preconditions.checkArgument(columnNames.length > 0, "At least one sort column must provided.");
 
     Sort key = null;
-    Set<String> names = table.columnNames().stream().map(s -> s.toUpperCase(Locale.US)).collect(toSet());
+    Set<String> names = table.columnNames().stream().map(String::toUpperCase).collect(toSet());
 
     for (String columnName : columnNames) {
       Sort.Order order = Sort.Order.ASCEND;
-      if (!names.contains(columnName.toUpperCase(Locale.US))) {
+      if (!names.contains(columnName.toUpperCase())) {
         // the column name has been annotated with a prefix.
         // get the prefix which could be - or +
         String prefix = columnName.substring(0, 1);
         Optional<Order> orderOptional = getOrder(prefix);
 
         // Invalid prefix, column name exists on table.
-        if (!orderOptional.isPresent() && names.contains(columnName.substring(1).toUpperCase(Locale.US))) {
+        if (!orderOptional.isPresent() && names.contains(columnName.substring(1).toUpperCase())) {
           throw new IllegalStateException("Column prefix: " + prefix + " is unknown.");
         }
 
         // Valid prefix, column name does not exist on table.
-        if (orderOptional.isPresent() && !names.contains(columnName.substring(1).toUpperCase(Locale.US))) {
+        if (orderOptional.isPresent() && !names.contains(columnName.substring(1).toUpperCase())) {
           throw new IllegalStateException(
               String.format(
                   "Column %s does not exist in table %s", columnName.substring(1), table.name()));

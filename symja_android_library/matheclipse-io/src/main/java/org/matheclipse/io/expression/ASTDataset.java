@@ -318,7 +318,7 @@ public class ASTDataset extends AbstractAST
       return select(1, columnIndex + 1);
     }
     String[] strList = new String[] {keyName};
-    Table table = fTable.select(strList);
+    Table table = fTable.selectColumns(strList);
     if (table.columnCount() == 0) {
       return defaultValue.get();
     }
@@ -563,10 +563,10 @@ public class ASTDataset extends AbstractAST
       for (int i = 0; i < strList.length; i++) {
         strList[i] = columnNames.get(i + columnStart);
       }
-      table = table.select(strList);
+      table = table.selectColumns(strList);
     } else if (column.equals(S.All)) {
     } else if (column.isString()) {
-      table = table.select(column.toString());
+      table = table.selectColumns(column.toString());
     } else if (column.isList()) {
       IAST list = (IAST) column;
       String[] strList = new String[list.argSize()];
@@ -581,11 +581,11 @@ public class ASTDataset extends AbstractAST
           strList[i] = columnNames.get(vector[i] - 1);
         }
       }
-      table = table.select(strList);
+      table = table.selectColumns(strList);
     } else {
       int colIndex = column.toIntDefault();
       if (colIndex > 0) {
-        table = fTable.select(table.columnNames().get(colIndex - 1));
+        table = fTable.selectColumns(table.columnNames().get(colIndex - 1));
       } else {
         return F.NIL;
       }
@@ -647,13 +647,13 @@ public class ASTDataset extends AbstractAST
       for (int i = 0; i < strList.length; i++) {
         strList[i] = list.get(i + 1).toString();
       }
-      return newTablesawTable(table.select(strList));
+      return newTablesawTable(table.selectColumns(strList));
     }
     List<String> columnNames = table.columnNames();
     for (int i = 0; i < vector.length; i++) {
       strList[i] = columnNames.get(vector[i] - 1);
     }
-    return newTablesawTable(table.select(strList));
+    return newTablesawTable(table.selectColumns(strList));
   }
 
   /**
@@ -666,7 +666,7 @@ public class ASTDataset extends AbstractAST
     String[] strList = new String[1];
     Table table = fTable;
     strList[0] = table.columnNames().get(column - 1);
-    return newTablesawTable(table.select(strList));
+    return newTablesawTable(table.selectColumns(strList));
   }
 
   @Override

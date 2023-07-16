@@ -1,11 +1,15 @@
 package tech.tablesaw.api;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.doubles.*;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.function.DoubleConsumer;
 import java.util.function.DoublePredicate;
 import java.util.function.DoubleSupplier;
@@ -20,6 +24,7 @@ import tech.tablesaw.columns.numbers.fillers.DoubleRangeIterable;
 import tech.tablesaw.selection.BitmapBackedSelection;
 import tech.tablesaw.selection.Selection;
 
+/** A column that contains double values */
 public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     implements NumberFillers<DoubleColumn> {
 
@@ -35,22 +40,26 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     return DoubleColumnType.valueIsMissing(value);
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getString(int row) {
     final double value = getDouble(row);
     return String.valueOf(getPrintFormatter().format(value));
   }
 
+  /** {@inheritDoc} */
   @Override
   public int size() {
     return data.size();
   }
 
+  /** {@inheritDoc} */
   @Override
   public void clear() {
     data.clear();
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn setMissing(int index) {
     set(index, DoubleColumnType.missingValueIndicator());
@@ -125,22 +134,26 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     return new DoubleColumn(name, list);
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn createCol(String name, int initialSize) {
     return create(name, initialSize);
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn createCol(String name) {
     return create(name);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Double get(int index) {
     double result = getDouble(index);
     return isMissingValue(result) ? null : result;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn where(Selection selection) {
     return (DoubleColumn) super.where(selection);
@@ -164,6 +177,7 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     return results;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn subset(int[] rows) {
     final DoubleColumn c = this.emptyCopy();
@@ -173,6 +187,7 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     return c;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn unique() {
     final DoubleSet doubles = new DoubleOpenHashSet();
@@ -184,6 +199,7 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     return column;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn top(int n) {
     DoubleArrayList top = new DoubleArrayList();
@@ -195,6 +211,7 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     return new DoubleColumn(name() + "[Top " + n + "]", top);
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn bottom(final int n) {
     DoubleArrayList bottom = new DoubleArrayList();
@@ -206,11 +223,12 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     return new DoubleColumn(name() + "[Bottoms " + n + "]", bottom);
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn lag(int n) {
-    final int srcPos = n >= 0 ? 0 : 0 - n;
+    final int srcPos = n >= 0 ? 0 : -n;
     final double[] dest = new double[size()];
-    final int destPos = n <= 0 ? 0 : n;
+    final int destPos = Math.max(n, 0);
     final int length = n >= 0 ? size() - n : size() + n;
 
     for (int i = 0; i < size(); i++) {
@@ -223,6 +241,7 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     return new DoubleColumn(name() + " lag(" + n + ")", new DoubleArrayList(dest));
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn removeMissing() {
     DoubleColumn result = copy();
@@ -254,6 +273,19 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     return this;
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public int valueHash(int rowNumber) {
+    return Double.hashCode(getDouble(rowNumber));
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean equals(int rowNumber1, int rowNumber2) {
+    return getDouble(rowNumber1) == getDouble(rowNumber2);
+  }
+
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn append(Double val) {
     if (val == null) {
@@ -273,16 +305,26 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn copy() {
-    return new DoubleColumn(name(), data.clone());
+    DoubleColumn copy = new DoubleColumn(name(), data.clone());
+    copy.setPrintFormatter(getPrintFormatter());
+    copy.locale = locale;
+    return copy;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Iterator<Double> iterator() {
     return data.iterator();
   }
 
+  public double[] asDoubleArray() {
+    return data.toDoubleArray();
+  }
+
+  /** {@inheritDoc} */
   @Override
   public Double[] asObjectArray() {
     final Double[] output = new Double[size()];
@@ -296,11 +338,13 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     return output;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int compare(Double o1, Double o2) {
     return Double.compare(o1, o2);
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn set(int i, Double val) {
     return val == null ? setMissing(i) : set(i, (double) val);
@@ -324,14 +368,22 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Column<Double> set(int row, String stringValue, AbstractColumnParser<?> parser) {
     return set(row, parser.parseDouble(stringValue));
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn append(final Column<Double> column) {
-    Preconditions.checkArgument(column.type() == this.type());
+    Preconditions.checkArgument(
+        column.type() == this.type(),
+        "Column '%s' has type %s, but column '%s' has type %s.",
+        name(),
+        type(),
+        column.name(),
+        column.type());
     final DoubleColumn numberColumn = (DoubleColumn) column;
     final int size = numberColumn.size();
     for (int i = 0; i < size; i++) {
@@ -340,13 +392,21 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn append(Column<Double> column, int row) {
-    Preconditions.checkArgument(column.type() == this.type());
+    checkArgument(
+        column.type() == this.type(),
+        "Column '%s' has type %s, but column '%s' has type %s.",
+        name(),
+        type(),
+        column.name(),
+        column.type());
     DoubleColumn doubleColumn = (DoubleColumn) column;
     return append(doubleColumn.getDouble(row));
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn set(int row, Column<Double> column, int sourceRow) {
     Preconditions.checkArgument(column.type() == this.type());
@@ -371,6 +431,7 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     return result;
   }
 
+  /** {@inheritDoc} */
   @Override
   public byte[] asBytes(int rowNumber) {
     return ByteBuffer.allocate(DoubleColumnType.instance().byteSize())
@@ -378,6 +439,13 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
         .array();
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public Set<Double> asSet() {
+    return new HashSet<>(unique().asList());
+  }
+
+  /** {@inheritDoc} */
   @Override
   public int countUnique() {
     DoubleSet uniqueElements = new DoubleOpenHashSet();
@@ -387,6 +455,7 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     return uniqueElements.size();
   }
 
+  /** {@inheritDoc} */
   @Override
   public double getDouble(int row) {
     return data.getDouble(row);
@@ -396,26 +465,31 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     return DoubleColumnType.valueIsMissing(value);
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean isMissing(int rowNumber) {
     return isMissingValue(getDouble(rowNumber));
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sortAscending() {
     data.sort(DoubleComparators.NATURAL_COMPARATOR);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sortDescending() {
     data.sort(DoubleComparators.OPPOSITE_COMPARATOR);
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn appendMissing() {
     return append(DoubleColumnType.missingValueIndicator());
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn appendObj(Object obj) {
     if (obj == null) {
@@ -430,6 +504,7 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     throw new IllegalArgumentException("Could not append " + obj.getClass());
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn appendCell(final String value) {
     try {
@@ -440,6 +515,7 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn appendCell(final String value, AbstractColumnParser<?> parser) {
     try {
@@ -450,6 +526,7 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getUnformattedString(final int row) {
     final double value = getDouble(row);
@@ -461,6 +538,7 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
 
   // fillWith methods
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn fillWith(final DoubleIterator iterator) {
     for (int r = 0; r < size(); r++) {
@@ -472,6 +550,7 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn fillWith(final DoubleRangeIterable iterable) {
     DoubleIterator iterator = iterable.iterator();
@@ -487,6 +566,7 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn fillWith(final DoubleSupplier supplier) {
     for (int r = 0; r < size(); r++) {
@@ -499,6 +579,7 @@ public class DoubleColumn extends NumberColumn<DoubleColumn, Double>
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public DoubleColumn fillWith(double d) {
     for (int r = 0; r < size(); r++) {

@@ -10,11 +10,19 @@ import tech.tablesaw.api.Table;
 import tech.tablesaw.selection.BitmapBackedSelection;
 import tech.tablesaw.selection.Selection;
 
-public interface DictionaryMap {
+/**
+ * Interface implemented by the objects that perform the dictionary encoding of the Strings in
+ * StringColumn, as well as the primitive values that represent the individual instances of the
+ * String in the column.
+ */
+public interface DictionaryMap extends StringReduceUtils, StringFilters {
 
   void sortDescending();
 
   void sortAscending();
+
+  /** Returns the int that represents the string at rowNumber */
+  int getKeyAtIndex(int rowNumber);
 
   String getValueForKey(int key);
 
@@ -85,10 +93,41 @@ public interface DictionaryMap {
     return selection;
   }
 
+  @Override
+  default String get(int index) {
+    return getValueForIndex(index);
+  }
+
+  @Override
+  default Selection isIn(String... strings) {
+    return selectIsIn(strings);
+  }
+
+  @Override
+  default Selection isIn(Collection<String> strings) {
+    return selectIsIn(strings);
+  }
+
+  @Override
+  default Selection isNotIn(String... strings) {
+    Selection results = new BitmapBackedSelection();
+    results.addRange(0, size());
+    results.andNot(isIn(strings));
+    return results;
+  }
+
+  @Override
+  default Selection isNotIn(Collection<String> strings) {
+    Selection results = new BitmapBackedSelection();
+    results.addRange(0, size());
+    results.andNot(isIn(strings));
+    return results;
+  }
+
   List<BooleanColumn> getDummies();
 
   /** Returns the contents of the cell at rowNumber as a byte[] */
-  public byte[] asBytes(int rowNumber);
+  byte[] asBytes(int rowNumber);
 
   /** Returns the count of missing values in this column */
   int countMissing();
@@ -102,4 +141,10 @@ public interface DictionaryMap {
   DictionaryMap promoteYourself();
 
   int nextKeyWithoutIncrementing();
+
+  boolean canPromoteToText();
+
+  default boolean isEmpty() {
+    return size() == 0;
+  }
 }

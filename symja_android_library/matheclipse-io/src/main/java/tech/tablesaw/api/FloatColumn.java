@@ -1,9 +1,12 @@
 package tech.tablesaw.api;
 
-import com.google.common.base.Preconditions;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import it.unimi.dsi.fastutil.floats.*;
 import java.nio.ByteBuffer;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.stream.Stream;
 import tech.tablesaw.columns.AbstractColumnParser;
 import tech.tablesaw.columns.Column;
@@ -12,6 +15,7 @@ import tech.tablesaw.columns.numbers.NumberColumnFormatter;
 import tech.tablesaw.selection.BitmapBackedSelection;
 import tech.tablesaw.selection.Selection;
 
+/** A column that contains float values */
 public class FloatColumn extends NumberColumn<FloatColumn, Float> {
 
   protected final FloatArrayList data;
@@ -22,10 +26,23 @@ public class FloatColumn extends NumberColumn<FloatColumn, Float> {
     this.data = data;
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getString(int row) {
     final float value = getFloat(row);
     return getPrintFormatter().format(value);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int valueHash(int rowNumber) {
+    return Float.hashCode(getFloat(rowNumber));
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean equals(int rowNumber1, int rowNumber2) {
+    return getFloat(rowNumber1) == getFloat(rowNumber2);
   }
 
   public static FloatColumn create(String name) {
@@ -58,16 +75,19 @@ public class FloatColumn extends NumberColumn<FloatColumn, Float> {
     return column;
   }
 
+  /** {@inheritDoc} */
   @Override
   public FloatColumn createCol(String name, int initialSize) {
     return create(name, initialSize);
   }
 
+  /** {@inheritDoc} */
   @Override
   public FloatColumn createCol(String name) {
     return create(name);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Float get(int index) {
     float result = getFloat(index);
@@ -78,6 +98,7 @@ public class FloatColumn extends NumberColumn<FloatColumn, Float> {
     return FloatColumnType.valueIsMissing(value);
   }
 
+  /** {@inheritDoc} */
   @Override
   public FloatColumn subset(int[] rows) {
     final FloatColumn c = this.emptyCopy();
@@ -105,16 +126,19 @@ public class FloatColumn extends NumberColumn<FloatColumn, Float> {
     return results;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int size() {
     return data.size();
   }
 
+  /** {@inheritDoc} */
   @Override
   public void clear() {
     data.clear();
   }
 
+  /** {@inheritDoc} */
   @Override
   public FloatColumn unique() {
     final FloatSet values = new FloatOpenHashSet();
@@ -128,6 +152,7 @@ public class FloatColumn extends NumberColumn<FloatColumn, Float> {
     return column;
   }
 
+  /** {@inheritDoc} */
   @Override
   public FloatColumn top(int n) {
     FloatArrayList top = new FloatArrayList();
@@ -139,6 +164,7 @@ public class FloatColumn extends NumberColumn<FloatColumn, Float> {
     return new FloatColumn(name() + "[Top " + n + "]", top);
   }
 
+  /** {@inheritDoc} */
   @Override
   public FloatColumn bottom(final int n) {
     FloatArrayList bottom = new FloatArrayList();
@@ -150,11 +176,12 @@ public class FloatColumn extends NumberColumn<FloatColumn, Float> {
     return new FloatColumn(name() + "[Bottoms " + n + "]", bottom);
   }
 
+  /** {@inheritDoc} */
   @Override
   public FloatColumn lag(int n) {
-    final int srcPos = n >= 0 ? 0 : 0 - n;
+    final int srcPos = n >= 0 ? 0 : -n;
     final float[] dest = new float[size()];
-    final int destPos = n <= 0 ? 0 : n;
+    final int destPos = Math.max(n, 0);
     final int length = n >= 0 ? size() - n : size() + n;
 
     for (int i = 0; i < size(); i++) {
@@ -167,6 +194,7 @@ public class FloatColumn extends NumberColumn<FloatColumn, Float> {
     return new FloatColumn(name() + " lag(" + n + ")", new FloatArrayList(dest));
   }
 
+  /** {@inheritDoc} */
   @Override
   public FloatColumn removeMissing() {
     FloatColumn result = copy();
@@ -186,6 +214,7 @@ public class FloatColumn extends NumberColumn<FloatColumn, Float> {
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public FloatColumn append(Float val) {
     if (val == null) {
@@ -196,16 +225,26 @@ public class FloatColumn extends NumberColumn<FloatColumn, Float> {
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public FloatColumn copy() {
-    return new FloatColumn(name(), data.clone());
+    FloatColumn copy = new FloatColumn(name(), data.clone());
+    copy.setPrintFormatter(getPrintFormatter());
+    copy.locale = locale;
+    return copy;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Iterator<Float> iterator() {
     return data.iterator();
   }
 
+  public float[] asFloatArray() {
+    return data.toFloatArray();
+  }
+
+  /** {@inheritDoc} */
   @Override
   public Float[] asObjectArray() {
     final Float[] output = new Float[size()];
@@ -219,11 +258,13 @@ public class FloatColumn extends NumberColumn<FloatColumn, Float> {
     return output;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int compare(Float o1, Float o2) {
     return Float.compare(o1, o2);
   }
 
+  /** {@inheritDoc} */
   @Override
   public FloatColumn set(int i, Float val) {
     return val == null ? setMissing(i) : set(i, (float) val);
@@ -234,14 +275,22 @@ public class FloatColumn extends NumberColumn<FloatColumn, Float> {
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Column<Float> set(int row, String stringValue, AbstractColumnParser<?> parser) {
     return set(row, parser.parseFloat(stringValue));
   }
 
+  /** {@inheritDoc} */
   @Override
   public FloatColumn append(final Column<Float> column) {
-    Preconditions.checkArgument(column.type() == this.type());
+    checkArgument(
+        column.type() == this.type(),
+        "Column '%s' has type %s, but column '%s' has type %s.",
+        name(),
+        type(),
+        column.name(),
+        column.type());
     final FloatColumn numberColumn = (FloatColumn) column;
     final int size = numberColumn.size();
     for (int i = 0; i < size; i++) {
@@ -250,18 +299,33 @@ public class FloatColumn extends NumberColumn<FloatColumn, Float> {
     return this;
   }
 
+  /** {@inheritDoc} */
   @Override
   public FloatColumn append(Column<Float> column, int row) {
-    Preconditions.checkArgument(column.type() == this.type());
+    checkArgument(
+        column.type() == this.type(),
+        "Column '%s' has type %s, but column '%s' has type %s.",
+        name(),
+        type(),
+        column.name(),
+        column.type());
     return append(((FloatColumn) column).getFloat(row));
   }
 
+  /** {@inheritDoc} */
   @Override
   public FloatColumn set(int row, Column<Float> column, int sourceRow) {
-    Preconditions.checkArgument(column.type() == this.type());
+    checkArgument(
+        column.type() == this.type(),
+        "Column '%s' has type %s, but column '%s' has type %s.",
+        name(),
+        type(),
+        column.name(),
+        column.type());
     return set(row, ((FloatColumn) column).getFloat(sourceRow));
   }
 
+  /** {@inheritDoc} */
   @Override
   public byte[] asBytes(int rowNumber) {
     return ByteBuffer.allocate(FloatColumnType.instance().byteSize())
@@ -269,6 +333,7 @@ public class FloatColumn extends NumberColumn<FloatColumn, Float> {
         .array();
   }
 
+  /** {@inheritDoc} */
   @Override
   public int countUnique() {
     FloatSet uniqueElements = new FloatOpenHashSet();
@@ -278,6 +343,7 @@ public class FloatColumn extends NumberColumn<FloatColumn, Float> {
     return uniqueElements.size();
   }
 
+  /** {@inheritDoc} */
   @Override
   public double getDouble(int row) {
     float value = data.getFloat(row);
@@ -301,31 +367,37 @@ public class FloatColumn extends NumberColumn<FloatColumn, Float> {
     return FloatColumnType.valueIsMissing(value);
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean isMissing(int rowNumber) {
     return isMissingValue(getFloat(rowNumber));
   }
 
+  /** {@inheritDoc} */
   @Override
   public FloatColumn setMissing(int i) {
     return set(i, FloatColumnType.missingValueIndicator());
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sortAscending() {
     data.sort(FloatComparators.NATURAL_COMPARATOR);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sortDescending() {
     data.sort(FloatComparators.OPPOSITE_COMPARATOR);
   }
 
+  /** {@inheritDoc} */
   @Override
   public FloatColumn appendMissing() {
     return append(FloatColumnType.missingValueIndicator());
   }
 
+  /** {@inheritDoc} */
   @Override
   public FloatColumn appendObj(Object obj) {
     if (obj == null) {
@@ -337,6 +409,7 @@ public class FloatColumn extends NumberColumn<FloatColumn, Float> {
     throw new IllegalArgumentException("Could not append " + obj.getClass());
   }
 
+  /** {@inheritDoc} */
   @Override
   public FloatColumn appendCell(final String value) {
     try {
@@ -347,6 +420,7 @@ public class FloatColumn extends NumberColumn<FloatColumn, Float> {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public FloatColumn appendCell(final String value, AbstractColumnParser<?> parser) {
     try {
@@ -357,6 +431,7 @@ public class FloatColumn extends NumberColumn<FloatColumn, Float> {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getUnformattedString(final int row) {
     final float value = getFloat(row);
@@ -474,5 +549,11 @@ public class FloatColumn extends NumberColumn<FloatColumn, Float> {
       }
     }
     return result;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Set<Float> asSet() {
+    return new HashSet<>(unique().asList());
   }
 }

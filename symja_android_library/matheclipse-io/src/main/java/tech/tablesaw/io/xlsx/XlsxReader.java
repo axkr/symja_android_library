@@ -17,8 +17,6 @@ package tech.tablesaw.io.xlsx;
 import static org.apache.poi.ss.usermodel.CellType.FORMULA;
 import static org.apache.poi.ss.usermodel.CellType.NUMERIC;
 import static org.apache.poi.ss.usermodel.CellType.STRING;
-
-import com.google.common.collect.Iterables;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -46,6 +44,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Row.MissingCellPolicy;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import com.google.common.collect.Iterables;
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.LongColumn;
@@ -53,6 +52,7 @@ import tech.tablesaw.api.Table;
 import tech.tablesaw.columns.Column;
 import tech.tablesaw.io.DataReader;
 import tech.tablesaw.io.ReaderRegistry;
+import tech.tablesaw.io.RuntimeIOException;
 import tech.tablesaw.io.Source;
 
 @Immutable
@@ -72,8 +72,13 @@ public class XlsxReader implements DataReader<XlsxReadOptions> {
   }
 
   @Override
-  public Table read(XlsxReadOptions options) throws IOException {
-    List<Table> tables = readMultiple(options, true);
+  public Table read(XlsxReadOptions options) {
+    List<Table> tables = null;
+    try {
+      tables = readMultiple(options, true);
+    } catch (IOException e) {
+      throw new RuntimeIOException(e);
+    }
     if (options.sheetIndex() != null) {
       int index = options.sheetIndex();
       if (index < 0 || index >= tables.size()) {
@@ -426,7 +431,7 @@ public class XlsxReader implements DataReader<XlsxReadOptions> {
   }
 
   @Override
-  public Table read(Source source) throws IOException {
+  public Table read(Source source) {
     return read(XlsxReadOptions.builder(source).build());
   }
 
