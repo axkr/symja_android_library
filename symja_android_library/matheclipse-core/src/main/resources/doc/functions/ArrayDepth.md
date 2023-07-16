@@ -21,4 +21,4 @@ ArrayDepth(a)
 
 ### Github
 
-* [Implementation of ArrayDepth](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L703) 
+* [Implementation of ArrayDepth](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L769) 

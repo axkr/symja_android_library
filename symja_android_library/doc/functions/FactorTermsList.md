@@ -13,3 +13,7 @@ FactorTermsList(poly)
 {3/68,68+16*x^2+17*x^3}
 ```
 
+
+### Github
+
+* [Implementation of FactorTermsList](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L2817) 

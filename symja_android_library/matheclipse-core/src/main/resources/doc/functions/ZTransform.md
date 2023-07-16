@@ -16,3 +16,7 @@ See:
 >> ZTransform(a*f(n)+ b*g(n), n, z)
 a*ZTransform(f(n),n,z)+b*ZTransform(g(n),n,z)
 ```
+
+### Github
+
+* [Implementation of ZTransform](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/ZTransform.java#L16) 

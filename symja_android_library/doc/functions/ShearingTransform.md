@@ -22,3 +22,7 @@ See
 * [Wikipedia - Transformation matrix](https://en.wikipedia.org/wiki/Transformation_matrix)
 
 ### Examples
+
+### Github
+
+* [Implementation of ShearingTransform](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/TensorFunctions.java#L1104) 

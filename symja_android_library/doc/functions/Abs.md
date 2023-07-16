@@ -32,3 +32,7 @@ Use `RealAbs` to calculate the derivative:
 x/RealAbs(x)
 ```
 
+
+### Github
+
+* [Implementation of Abs](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L240) 

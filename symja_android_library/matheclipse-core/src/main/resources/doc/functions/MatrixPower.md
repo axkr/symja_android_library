@@ -30,4 +30,4 @@ MatrixPower({{1, 0}, {0}}, 2)
 
 ### Github
 
-* [Implementation of MatrixPower](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L3322) 
+* [Implementation of MatrixPower](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L3760) 

@@ -19,3 +19,7 @@ The 3 × 3 matrix example from Wikipedia:
  {-5,12,-1},
  {4,-6,2}}
 ```
+
+### Github
+
+* [Implementation of Adjugate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L691) 

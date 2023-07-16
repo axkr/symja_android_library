@@ -15,3 +15,7 @@ a&&b&&c&&d
 >> BooleanMinterms({{True,True,True,True}}, {a, b, c,d}) 
 a&&b&&c&&d 
 ```
+
+### Github
+
+* [Implementation of BooleanMinterms](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BooleanFunctions.java#L1307) 

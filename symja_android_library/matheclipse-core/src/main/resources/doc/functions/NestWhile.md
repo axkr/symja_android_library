@@ -33,4 +33,4 @@ Divide by 2 until the result is no longer an integer:
 
 ### Github
 
-* [Implementation of NestWhile](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L1618) 
+* [Implementation of NestWhile](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L1652) 

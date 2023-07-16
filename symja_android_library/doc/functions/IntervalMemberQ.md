@@ -26,4 +26,4 @@ False
 
 ### Github
 
-* [Implementation of IntervalMemberQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntervalFunctions.java#L140) 
+* [Implementation of IntervalMemberQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntervalFunctions.java#L347) 

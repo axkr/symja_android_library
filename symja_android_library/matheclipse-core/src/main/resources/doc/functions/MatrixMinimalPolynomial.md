@@ -18,4 +18,4 @@ See:
 
 ### Github
 
-* [Implementation of MatrixMinimalPolynomial](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L3249) 
+* [Implementation of MatrixMinimalPolynomial](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L3687) 

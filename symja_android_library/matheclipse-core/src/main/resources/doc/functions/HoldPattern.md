@@ -52,3 +52,7 @@ The two examples that follow have the same effect, but the use of `HoldPattern` 
 ### Related terms 
 [Hold](Hold.md), [HoldComplete](HoldComplete.md), [HoldForm](HoldForm.md), [ReleaseHold](ReleaseHold.md), [Unevaluated](Unevaluated.md)
 
+
+### Github
+
+* [Implementation of HoldPattern](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L854) 

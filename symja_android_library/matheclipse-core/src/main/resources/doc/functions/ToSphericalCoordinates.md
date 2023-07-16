@@ -19,3 +19,7 @@ See
 {Sqrt(x^2+y^2+z^2),ArcTan(z,Sqrt(x^2+y^2)),ArcTan(x,y)}
 ```
  
+
+### Github
+
+* [Implementation of ToSphericalCoordinates](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L5242) 

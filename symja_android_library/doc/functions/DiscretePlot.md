@@ -36,3 +36,7 @@ In the console apps, this command shows an HTML page with a JavaScript list plot
 ### Related terms 
 [ListPlot](ListPlot.md), [ListLogPlot](ListLogPlot.md)
  
+
+### Github
+
+* [Implementation of DiscretePlot](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/DiscretePlot.java#L12) 

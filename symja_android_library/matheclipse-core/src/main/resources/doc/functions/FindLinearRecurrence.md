@@ -16,3 +16,7 @@ See
 >> FindLinearRecurrence({1, 2, 4, 7, 28, 128, 582, 2745, 13021, 61699, 292521, 1387138}) 
 {5,-2,6,-11}
 ```
+
+### Github
+
+* [Implementation of FindLinearRecurrence](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L2669) 

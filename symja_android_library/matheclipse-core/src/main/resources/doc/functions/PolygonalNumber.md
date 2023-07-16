@@ -31,4 +31,4 @@ See:
 
 ### Github
 
-* [Implementation of PolygonalNumber](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Combinatoric.java#L2251) 
+* [Implementation of PolygonalNumber](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Combinatoric.java#L2244) 

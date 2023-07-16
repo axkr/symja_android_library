@@ -17,3 +17,7 @@ See
 >> FromSphericalCoordinates( {r, t, p} )
 {r*Cos(p)*Sin(t),r*Sin(p)*Sin(t),r*Cos(t)}
 ```
+
+### Github
+
+* [Implementation of FromSphericalCoordinates](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L2511) 

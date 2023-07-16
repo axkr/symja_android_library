@@ -31,4 +31,4 @@ a
 
 ### Github
 
-* [Implementation of FromLetterNumber](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L625) 
+* [Implementation of FromLetterNumber](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L613) 

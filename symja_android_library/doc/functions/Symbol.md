@@ -25,4 +25,4 @@ You can use `Symbol` to create symbols from strings:
 
 ### Github
 
-* [Implementation of Symbol](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StructureFunctions.java#L1931) 
+* [Implementation of Symbol](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StructureFunctions.java#L2038) 

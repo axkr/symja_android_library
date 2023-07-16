@@ -19,3 +19,7 @@ Triangle({{0,0},{10,0},{5,5*Sqrt(3)}})
 
 ### Related terms 
 [AASTriangle](AASTriangle.md), [ASATriangle](ASATriangle.md), [SASTriangle](SASTriangle.md)
+
+### Github
+
+* [Implementation of SSSTriangle](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ComputationalGeometryFunctions.java#L144) 

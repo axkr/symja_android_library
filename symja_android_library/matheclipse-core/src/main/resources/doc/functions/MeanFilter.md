@@ -16,4 +16,4 @@ MeanFilter(list, r)
 
 ### Github
 
-* [Implementation of MeanFilter](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ImageFunctions.java#L77) 
+* [Implementation of MeanFilter](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/FilterFunctions.java#L84) 

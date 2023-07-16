@@ -25,3 +25,7 @@ CoordinateBoundingBox({{x1,y1,...},{x2,y2,...},{x3,y3,...},...}, pad)
 1/4*(Max(b,d,f)-Min(b,d,f)),Max(u,v,w)+1/4*(Max(u,v,w)-Min(u,v,w))}}
             
 ```
+
+### Github
+
+* [Implementation of CoordinateBoundingBox](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ComputationalGeometryFunctions.java#L633) 

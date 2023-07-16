@@ -27,3 +27,7 @@ Lists can be nested:
 >> {{a, b, {c, d}}}
 {{a, b, {c, d}}}
 ```
+
+### Github
+
+* [Implementation of List](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L3157) 

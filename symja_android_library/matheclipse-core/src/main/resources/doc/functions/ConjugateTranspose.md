@@ -13,4 +13,4 @@ See:
 
 ### Github
 
-* [Implementation of ConjugateTranspose](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L866) 
+* [Implementation of ConjugateTranspose](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L1198) 

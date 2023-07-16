@@ -36,3 +36,7 @@ So we add a third zero vector `v3 = {0.0, 0.0, 0.0}`.
 
 ### Related terms 
 [Eigensystem](Eigensystem.md), [Eigenvectors](Eigenvectors.md), [CharacteristicPolynomial](CharacteristicPolynomial.md)
+
+### Github
+
+* [Implementation of Eigenvalues](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L2002) 

@@ -23,4 +23,4 @@ See:
 
 ### Github
 
-* [Implementation of InterpolatingPolynomial](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/InterpolatingPolynomial.java#L54) 
+* [Implementation of InterpolatingPolynomial](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/InterpolatingPolynomial.java#L53) 

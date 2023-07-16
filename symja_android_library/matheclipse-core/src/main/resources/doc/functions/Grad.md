@@ -36,3 +36,7 @@ Example from Wikipedia where the Jacobian matrix doesn't need to be squared:
 >> Grad({x1,5*x3,4*x2^2-2*x3,x3*Sin[x1]},{x1,x2,x3}) 
 {{1,0,0},{0,0,5},{0,8*x2,-2},{x3*Cos(x1),0,Sin(x1)}}
 ```
+
+### Github
+
+* [Implementation of Grad](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/VectorAnalysisFunctions.java#L185) 

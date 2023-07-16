@@ -32,4 +32,4 @@ Create the original expression:
 
 ### Github
 
-* [Implementation of OptimizeExpression](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/OptimizeExpression.java#L50) 
+* [Implementation of OptimizeExpression](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/OptimizeExpression.java#L52) 

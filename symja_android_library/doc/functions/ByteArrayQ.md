@@ -15,3 +15,7 @@ True
 
 ### Related terms 
 [BinaryDeserialize](BinaryDeserialize.md), [BinarySerialize](BinarySerialize.md), [ByteArray](ByteArray.md), [Export](Export.md), [Import](Import.md)
+
+### Github
+
+* [Implementation of ByteArrayQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/expression/BuiltInSymbol.java#L47) 

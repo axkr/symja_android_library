@@ -19,4 +19,4 @@ f(a,g(b,c),{d,e},f)
 
 ### Github
 
-* [Implementation of FlattenAt](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StructureFunctions.java#L562) 
+* [Implementation of FlattenAt](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StructureFunctions.java#L569) 

@@ -48,3 +48,7 @@ But if you include the option `Heads->True`, the heads depth is included.
 Depth(f(a, b)[c], Heads->True)
 3
 ```
+
+### Github
+
+* [Implementation of Depth](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StructureFunctions.java#L319) 

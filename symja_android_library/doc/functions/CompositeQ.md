@@ -27,3 +27,7 @@ See
 {False,False,False,True,False,True,False,True,True,True,False,True,False,True,True,True,False,True,False,True}
 ```
 
+
+### Github
+
+* [Implementation of CompositeQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PredicateQ.java#L317) 

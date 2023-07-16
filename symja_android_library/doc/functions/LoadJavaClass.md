@@ -29,3 +29,7 @@ jsoup Java HTML Parser, with the best of HTML5 DOM methods and CSS selectors.
 
 ### Related terms 
 [InstanceOf](InstanceOf.md), [JavaClass](JavaClass.md), [JavaNew](JavaNew.md), [JavaObject](JavaObject.md), [JavaObjectQ](JavaObjectQ.md)
+
+### Github
+
+* [Implementation of LoadJavaClass](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/JavaFunctions.java#L441) 

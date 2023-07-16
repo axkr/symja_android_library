@@ -19,3 +19,7 @@ See:
 
 ### Related terms 
 [Eigensystem](Eigensystem.md), [Eigenvalues](Eigenvalues.md), [Eigenvectors](Eigenvectors.md)
+
+### Github
+
+* [Implementation of CharacteristicPolynomial](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L983) 

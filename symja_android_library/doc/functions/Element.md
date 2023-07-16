@@ -22,4 +22,4 @@ x/Abs(x)
 
 ### Github
 
-* [Implementation of Element](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/AssumptionFunctions.java#L125) 
+* [Implementation of Element](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/AssumptionFunctions.java#L122) 

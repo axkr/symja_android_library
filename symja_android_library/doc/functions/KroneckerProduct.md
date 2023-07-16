@@ -24,3 +24,7 @@ See
  {-4,-16,16,6,6,24,-24,-9,6,24,-24,-9},
  {-2,-4,10,2,3,6,-15,-3,3,6,-15,-3}}
 ```
+
+### Github
+
+* [Implementation of KroneckerProduct](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/TensorFunctions.java#L201) 
