@@ -53,11 +53,6 @@ public class ExportImportFunctionsJUnit extends AbstractTestCase {
         check("Import(\"c:\\\\temp\\\\out.wxf\", \"WXF\")", //
             "{{5.7,4.3},{-1.2,7.8},{a,f(x)}}");
         System.out.println(".");
-        check("Export(\"c:\\\\temp\\\\out.dat\", {{5.7, 4.3}, {-1.2, 7.8}, {a, f(x)}}, \"Table\")", //
-            "c:\\temp\\out.dat");
-        System.out.println(".");
-        check("Import(\"c:\\\\temp\\\\out.dat\", \"Table\")", //
-            "{{5.7,4.3},{-1.2,7.8},{a,f(x)}}");
         check("Export(\"c:\\\\temp\\\\data.txt\", Integrate(sin(x)^10,x), \"Data\")", //
             "c:\\temp\\data.txt");
         System.out.println(".");
@@ -68,6 +63,20 @@ public class ExportImportFunctionsJUnit extends AbstractTestCase {
             "\"63/256*x-63/256*Cos(x)*Sin(x)-21/128*Cos(x)*Sin(x)^3-21/160*Cos(x)*Sin(x)^5-9/80*Cos(x)*Sin(x)^\n" //
                 + "7-1/10*Cos(x)*Sin(x)^9\"");
         System.out.println(".");
+      }
+    }
+  }
+
+  public void testImportExportTable() {
+    if (Config.FILESYSTEM_ENABLED) {
+      String s = System.getProperty("os.name");
+      if (s.contains("Windows")) {
+        check("Export(\"c:\\\\temp\\\\out.dat\", {{5.7, 4.3}, {-1.2, 7.8}, {a, f(x)}}, \"Table\")", //
+            "c:\\temp\\out.dat");
+        System.out.println(".");
+        check("Import(\"c:\\\\temp\\\\out.dat\", \"Table\")", //
+            "{{5.7,4.3},{-1.2,7.8},{a,f(x)}}");
+
       }
     }
   }

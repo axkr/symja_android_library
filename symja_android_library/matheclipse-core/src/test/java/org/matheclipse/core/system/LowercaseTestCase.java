@@ -2638,11 +2638,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2+I*3");
   }
 
-  public void testCentralMoment() {
-    check("CentralMoment({1.1, 1.2, 1.4, 2.1, 2.4}, 4)", //
-        "0.100845");
-  }
-
   public void testCharacterRange() {
     check("CharacterRange(50, 50)", //
         "{2}");
@@ -3422,6 +3417,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   // public void testComplexExpand() {
+  //
   // check("ComplexExpand(ArcCot(x+I*y))", //
   // "-Arg(1-I/(x+I*y))/2+Arg(1+I/(x+I*y))/2-I*1/4*Log(x^2/(x^2+y^2)^2+(1+y/(x^2+y^2))^\n"
   // + "2)+I*1/4*Log(x^2/(x^2+y^2)^2+(1-y/(x^2+y^2))^2)");
@@ -3580,11 +3576,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   // "Sin(2*x)/(Cos(2*x)+Cosh(2*y))+(I*Sinh(2*y))/(Cos(2*x)+Cosh(2*y))");
   // check("ComplexExpand(a + x^2, {x})", //
   // "a-Im(x)^2+I*2*Im(x)*Re(x)+Re(x)^2");
+  //
   // check("ComplexExpand(Sin(x)*Exp(y), {x,y})", //
   // "E^Re(y)*Cos(Im(y))*Cosh(Im(x))*Sin(Re(x))+I*E^Re(y)*Cosh(Im(x))*Sin(Im(y))*Sin(Re(x))+" //
   // + "I*E^Re(y)*Cos(Im(y))*Cos(Re(x))*Sinh(Im(x))-E^Re(y)*Cos(Re(x))*Sin(Im(y))*Sinh(Im(x))");
-  // check("ComplexExpand(Exp(I*z))", //
-  // "Cos(z)+I*Sin(z)");
+  //
+  // check("ComplexExpand(Re(z) == (z + Conjugate(z))/2, z)", //
+  // "True");
+  // check("ComplexExpand(Exp(I*z) == Cos(z) + I*Sin(z))", //
+  // "True");
+  // check("ComplexExpand(Conjugate(x+I*y))", //
+  // "x-I*y");
+  // check("ComplexExpand(Conjugate(z),z)", //
+  // "-I*Im(z)+Re(z)");
   // }
 
   public void testComplexInfinity() {
@@ -12775,16 +12779,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{0,4,9,0,0},{0,0,18,32,0},{0,0,0,48,75},{0,0,0,0,100},{0,0,0,0,0}}");
   }
 
-  public void testKurtosis() {
-    // message Kurtosis: The argument {x} should have at least 2 arguments.
-    check("Kurtosis({x})", //
-        "Kurtosis({x})");
-    check("Kurtosis({0,0})", //
-        "Indeterminate");
-    check("Kurtosis({1.1, 1.2, 1.4, 2.1, 2.4})", //
-        "1.42098");
-  }
-
   public void testLambertW() {
     check("LambertW(x)", //
         "ProductLog(x)");
@@ -19628,37 +19622,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "True,True,True,True,True,True,True,True,True,True,True,True," //
             + "True,True,True,True,True,True,True,True,True,True,True,True," //
             + "True,True,True,True,True,True,True,False}");
-  }
-
-  public void testProbability() {
-    // check("RandomVariate(NormalDistribution(), 10)", //
-    // "{-0.21848,1.67503,0.78687,0.9887,2.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223}");
-    check(
-        "Probability(x^2 + 3*x < 11,Distributed(x,{-0.21848,1.67503,0.78687,0.9887,2.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223}))", //
-        "9/10");
-    check(
-        "Probability(#^2 + 3*# < 11 &, {-0.21848,1.67503,0.78687,0.9887,2.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223})", //
-        "9/10");
-    check(
-        "Probability(#^2 + 3*# < 11 &, {-0.21848,1.67503,0.78687,4.9887,7.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223})", //
-        "7/10");
-    check("PDF(PoissonDistribution(a))", //
-        "Piecewise({{a^#1/(E^a*#1!),#1>=0}},0)&");
-    //
-    check("1/(2!*E) + 1/(3!*E)+ 1/(4!*E)+ 1/(5!*E)+ 1/(6!*E) ", //
-        "517/720*1/E");
-    check("Probability(x<=3, Distributed(x, GeometricDistribution(1/5)))", //
-        "369/625");
-    check("Probability(x<=3, Distributed(x, PoissonDistribution(m)))", //
-        "E^(-m)+m/E^m+m^2/(2*E^m)+m^3/(6*E^m)");
-    check("Probability(3 == x, Distributed(x, PoissonDistribution(1)))", //
-        "1/(6*E)");
-    check("Probability(1.1 <= x <= 6.9, Distributed(x, PoissonDistribution(1)))", //
-        "517/720*1/E");
-    check("Probability(1.1 < x < 6.9, Distributed(x, PoissonDistribution(1)))", //
-        "517/720*1/E");
-    check("Probability(1 < x < 7, Distributed(x, PoissonDistribution(1)))", //
-        "517/720*1/E");
   }
 
   public void testProductLog() {

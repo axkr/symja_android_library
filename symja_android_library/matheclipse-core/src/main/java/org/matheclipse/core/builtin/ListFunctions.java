@@ -4594,6 +4594,7 @@ public final class ListFunctions {
           if (list.isPresent() && list.get(j).isASTOrAssociation()) {
             subList = (IAST) list.get(j++);
           } else {
+            // The padding specification `1` involves `2` levels; the list `3` has only `4` level.
             throw new ArgumentTypeException(IOFunctions.getMessage("padlevel",
                 F.List(F.List(levels), F.ZZ(levels.length), originalAST, F.ZZ(position - 1)),
                 EvalEngine.get()));
@@ -4805,6 +4806,7 @@ public final class ListFunctions {
           if (list.isPresent() && list.get(i + 1).isASTOrAssociation()) {
             subList = (IAST) list.get(i + 1);
           } else {
+            // The padding specification `1` involves `2` levels; the list `3` has only `4` level.
             throw new ArgumentTypeException(IOFunctions.getMessage("padlevel",
                 F.List(F.List(levels), F.ZZ(levels.length), originalAST, F.ZZ(position - 1)),
                 EvalEngine.get()));

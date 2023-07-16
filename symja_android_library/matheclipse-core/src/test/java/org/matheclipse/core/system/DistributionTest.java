@@ -152,6 +152,21 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "3/5");
   }
 
+  public void testCentralMoment() {
+    check("CentralMoment({1.1, 1.2, 1.4, 2.1, 2.4}, 4)", //
+        "0.100845");
+    check("CentralMoment(BernoulliDistribution(n),m)", //
+        "Piecewise({{1,m==0},{((1-n)^(-1+m)-1/(-n)^(1-m))*(1-n)*n,m>0}},0)");
+    check("CentralMoment(ChiSquareDistribution(n),m)", //
+        "2^m*HypergeometricU(-m,1-m-n/2,-n/2)");
+    check("CentralMoment(ExponentialDistribution(n),m)", //
+        "Subfactorial(m)/n^m");
+    check("CentralMoment(GammaDistribution(a,b),2)", //
+        "a*b^2");
+    check("CentralMoment(NormalDistribution(a,b),m)", //
+        "Piecewise({{b^m*(-1+m)!!,Mod(m,2)==0&&m>=0}},0)");
+  }
+
   public void testChiSquareDistribution() {
     check("StandardDeviation(ChiSquareDistribution(v))", //
         "Sqrt(2)*Sqrt(v)");
@@ -288,6 +303,36 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{Log(Log(4/3)),Log(Log(2)),Log(Log(4))}");
     check("Quantile(GumbelDistribution(a,b), {1/4, 1/2, 3/4})", //
         "{a+b*Log(Log(4/3)),a+b*Log(Log(2)),a+b*Log(Log(4))}");
+  }
+
+
+  public void testKurtosis() {
+    // message Kurtosis: The argument {x} should have at least 2 arguments.
+    check("Kurtosis({x})", //
+        "Kurtosis({x})");
+    check("Kurtosis({x,y})", //
+        "(2*((x+1/2*(-x-y))^4+(1/2*(-x-y)+y)^4))/((x+1/2*(-x-y))^2+(1/2*(-x-y)+y)^2)^2");
+
+    check("Kurtosis({0,0})", //
+        "Indeterminate");
+    check("Kurtosis({1.1, 1.2, 1.4, 2.1, 2.4})", //
+        "1.42098");
+    check("Kurtosis(BernoulliDistribution(a))", //
+        "3+(1-6*(1-a)*a)/((1-a)*a)");
+    check("Kurtosis(BinomialDistribution(10^3,0.5))", //
+        "2.998");
+    check("Kurtosis(ChiSquareDistribution(n))", //
+        "3+12/n");
+    check("Kurtosis(GammaDistribution(a,b))", //
+        "3+6/a");
+    check("Kurtosis(NormalDistribution())", //
+        "3");
+    check("Kurtosis(NormalDistribution(a,b))", //
+        "3");
+    check("Kurtosis(LogNormalDistribution(a,b))", //
+        "-3+3*E^(2*b^2)+2*E^(3*b^2)+E^(4*b^2)");
+    check("Kurtosis(GeometricDistribution(a))", //
+        "3+(6-6*a+a^2)/(1-a)");
   }
 
   public void testLogNormalDistribution() {
@@ -485,6 +530,37 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   public void testPoissonProcess() {
     check("PoissonProcess(m)[t]", //
         "PoissonDistribution(m*t)");
+  }
+
+  public void testProbability() {
+    // check("RandomVariate(NormalDistribution(), 10)", //
+    // "{-0.21848,1.67503,0.78687,0.9887,2.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223}");
+    check(
+        "Probability(x^2 + 3*x < 11,Distributed(x,{-0.21848,1.67503,0.78687,0.9887,2.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223}))", //
+        "9/10");
+    check(
+        "Probability(#^2 + 3*# < 11 &, {-0.21848,1.67503,0.78687,0.9887,2.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223})", //
+        "9/10");
+    check(
+        "Probability(#^2 + 3*# < 11 &, {-0.21848,1.67503,0.78687,4.9887,7.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223})", //
+        "7/10");
+    check("PDF(PoissonDistribution(a))", //
+        "Piecewise({{a^#1/(E^a*#1!),#1>=0}},0)&");
+    //
+    check("1/(2!*E) + 1/(3!*E)+ 1/(4!*E)+ 1/(5!*E)+ 1/(6!*E) ", //
+        "517/720*1/E");
+    check("Probability(x<=3, Distributed(x, GeometricDistribution(1/5)))", //
+        "369/625");
+    check("Probability(x<=3, Distributed(x, PoissonDistribution(m)))", //
+        "E^(-m)+m/E^m+m^2/(2*E^m)+m^3/(6*E^m)");
+    check("Probability(3 == x, Distributed(x, PoissonDistribution(1)))", //
+        "1/(6*E)");
+    check("Probability(1.1 <= x <= 6.9, Distributed(x, PoissonDistribution(1)))", //
+        "517/720*1/E");
+    check("Probability(1.1 < x < 6.9, Distributed(x, PoissonDistribution(1)))", //
+        "517/720*1/E");
+    check("Probability(1 < x < 7, Distributed(x, PoissonDistribution(1)))", //
+        "517/720*1/E");
   }
 
   public void testQuantile() {

@@ -2115,14 +2115,11 @@ public class Algebra {
               IExpr numerator = factorExpr(F.Factor(parts[0]), parts[0], eVar, false, engine);
               IExpr denominator = factorExpr(F.Factor(parts[1]), parts[1], eVar, false, engine);
               if (numerator.isPresent() && denominator.isPresent()) {
-                IExpr temp = F.Divide(numerator, denominator);
+                IExpr temp = engine.evaluate(F.Divide(numerator, denominator));
                 engine.putCache(ast, temp);
-                if (temp.isPresent()) {
-                  return temp;
-                }
-              } else {
-                engine.putCache(ast, F.NIL);
+                return temp;
               }
+              engine.putCache(ast, F.NIL);
             } catch (JASConversionException e) {
               LOGGER.debug("Factor.evaluate() failed", e);
             }

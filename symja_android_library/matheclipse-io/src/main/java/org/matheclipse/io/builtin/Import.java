@@ -93,6 +93,9 @@ public class Import extends AbstractEvaluator {
           try (InputStream inputStream = new ReaderInputStream(reader, Charset.defaultCharset())) {
             return ImageFormat.from(ImageIO.read(inputStream));
           }
+        case CSV:
+          reader = new FileReader(fileName);
+          return Convert.fromCSV(reader);
         case DOT:
         case GRAPHML:
           // graph Format
@@ -110,6 +113,8 @@ public class Import extends AbstractEvaluator {
         case TABLE:
           reader = new FileReader(fileName);
           return Convert.fromCSV(reader);
+        // Table table = Table.read().csv(file);
+        // return ASTDataset.newTablesawTable(table);
         case RAWJSON:
           if (dataFile != null) {
             return jsonImport(dataFile, true);
