@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.expression.BuiltInSymbol;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -118,7 +119,9 @@ public class SourceCodeFunctions {
       int line = ID.LINE_NUMBER_OF_JAVA_CLASS[ordinal];
       if (line > 0) {
         IEvaluator evaluator = ((IBuiltInSymbol) builtin).getEvaluator();
-        if (evaluator != null && evaluator != BuiltInSymbol.DUMMY_EVALUATOR) {
+        if (evaluator != null //
+            && evaluator != BuiltInSymbol.DUMMY_EVALUATOR //
+            && evaluator != ICoreFunctionEvaluator.ARGS_EVALUATOR) {
           Class<? extends IEvaluator> clazz = evaluator.getClass();
           return buildURL(clazz, line);
         }

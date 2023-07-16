@@ -84,7 +84,7 @@ public class FunctionIDGenerator {
       for (int i = 0; i < AST2Expr.DOLLAR_STRINGS.length; i++) {
         list.add(AST2Expr.DOLLAR_STRINGS[i]);
       }
-      Collections.sort(list);
+      Collections.sort(list, IStringX.US_COLLATOR);
 
       int counter = 0;
       System.out.println("/**\n"

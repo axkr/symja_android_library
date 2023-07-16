@@ -39,6 +39,9 @@ public class JShellExampleTestCase extends ExprEvaluatorTestCase {
             + "### Related terms \n" //
             + "[Complex](Complex.md), [Re](Re.md), [ReIm](ReIm.md)\n" //
             + "\n" //
+            + "### Github\n" //
+            + "\n" //
+            + "* [Implementation of Im](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L2118) \n" //
             + "[Github master](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L2118)\n" //
             + "\n" //
             + "");

@@ -30,6 +30,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -2001,8 +2002,8 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a continuous distribution AST (i.e. NormalDistribution(),
-   * ExponentialDistribution(),...)
+   * Test if this expression is a continuous distribution AST (i.e. evakuator is instanceof
+   * {@link IContinuousDistribution}
    *
    * @return
    */
@@ -2011,9 +2012,8 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the evaluator implements
-   * <code>ICoreFunctionEvaluator</code> (see package <code>org.matheclipse.core.builtin.function
-   * </code>).
+   * Test if this expression is a {@link IBuiltInSymbol} symbol and the evaluator implements
+   * {@link ICoreFunctionEvaluator}.
    *
    * @return
    */
