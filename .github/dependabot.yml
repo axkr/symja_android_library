@@ -16,6 +16,7 @@ updates:
             - "*undertow*"  # undertow.io
             - "*fastutil*"  # unimi.it
             - "*biojava*"  # biojava.org
+            - "*arrow*"  # arrow.apache.org
             - "*log4j*"  # log4j.org
             - "*junit*"  # junit.org
   - package-ecosystem: "github-actions"
