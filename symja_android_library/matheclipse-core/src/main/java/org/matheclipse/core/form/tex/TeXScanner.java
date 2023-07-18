@@ -430,15 +430,18 @@ public abstract class TeXScanner {
               fToken = TT_PERCENT;
               return;
             }
-            
+
           }
           // TeX command?
           getNextChar();
           StringBuilder command = new StringBuilder();
-          while (isValidPosition() && Character.isJavaIdentifierPart(fCurrentChar) //
-              && !(fCurrentChar == '_')) {
+          if (isValidPosition() && isTeXIdentifierStart(fCurrentChar)) {
             command.append(fCurrentChar);
             getNextChar();
+            while (isValidPosition() && isTeXIdentifierPart(fCurrentChar)) {
+              command.append(fCurrentChar);
+              getNextChar();
+            }
           }
 
           if (command.length() > 0) {
@@ -954,10 +957,10 @@ public abstract class TeXScanner {
       return false;
     }
     char ch = ident.charAt(0);
-    if ((Character.isJavaIdentifierStart(ch) && (ch != '_')) || (ch == '$')) {
+    if (isTeXIdentifierStart(ch)) {
       for (int i = 1; i < ident.length(); i++) {
         ch = ident.charAt(i);
-        if ((Character.isJavaIdentifierPart(ch) && (ch != '_')) || (ch == '$') || (ch == '`')) {
+        if (isTeXIdentifierPart(ch)) {
           continue;
         }
         return false;
@@ -1239,6 +1242,14 @@ public abstract class TeXScanner {
       // thrown by new String(...)
     }
     return "<end-of-line>";
+  }
+
+  public static boolean isTeXIdentifierStart(char ch) {
+    return ('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z');
+  }
+
+  public static boolean isTeXIdentifierPart(char ch) {
+    return ('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') || ('0' <= ch && ch <= '9');
   }
 
   /** Get the current token string for debugging purposes. */

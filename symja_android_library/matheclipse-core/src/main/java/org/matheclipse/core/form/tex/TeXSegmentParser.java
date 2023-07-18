@@ -40,8 +40,7 @@ class TeXSegmentParser {
   private static final Logger LOGGER = LogManager.getLogger();
 
   /**
-   * Because the {@link TeXSliceParser} uses the default slots, use this "dummy slot" inside this
-   * class.
+   * Because the {@link TeXParser} uses the default slots, use this "dummy slot" inside this class.
    */
   private static ISymbol DUMMY_SUB_SLOT = F.Dummy("$SLOT$");
 
@@ -142,12 +141,22 @@ class TeXSegmentParser {
       // \cup
       new BinaryOperator("\u222A", "Union", Precedence.UNION, (lhs, rhs) -> F.Union(lhs, rhs)),};
 
-  private static Map<String, IExpr> UNICODE_OPERATOR_MAP;
+  protected static Map<String, IExpr> UNICODE_OPERATOR_MAP;
 
-  private static Map<String, IExpr> FUNCTION_HEADER_MAP;
-  private static Map<String, BinaryOperator> BINARY_OPERATOR_MAP;
-  private static Map<String, PrefixOperator> PREFIX_OPERATOR_MAP;
-  private static Map<String, PostfixOperator> POSTFIX_OPERATOR_MAP;
+  /**
+   * Built-in functions names with 1 argument mapping to the corresponding Symja header built-in
+   * symbol {@link IBuiltInSymbol}.
+   */
+  protected static Map<String, IExpr> FUNCTION_HEADER_MAP_ARG1;
+  /**
+   * Built-in functions names mapping to the corresponding Symja header built-in symbol
+   * {@link IBuiltInSymbol}.
+   */
+  protected static Map<String, IExpr> FUNCTION_HEADER_MAP;
+
+  protected static Map<String, BinaryOperator> BINARY_OPERATOR_MAP;
+  protected static Map<String, PrefixOperator> PREFIX_OPERATOR_MAP;
+  protected static Map<String, PostfixOperator> POSTFIX_OPERATOR_MAP;
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -168,11 +177,48 @@ class TeXSegmentParser {
       UNICODE_OPERATOR_MAP.put("\u2149", F.CI); // double-struck italic letter j
       UNICODE_OPERATOR_MAP.put("\u2107", S.E); // euler's constant
 
+      FUNCTION_HEADER_MAP_ARG1 = Config.TRIE_STRING2EXPR_BUILDER.withMatch(TrieMatch.EXACT).build();
       FUNCTION_HEADER_MAP = Config.TRIE_STRING2EXPR_BUILDER.withMatch(TrieMatch.EXACT).build();
-      FUNCTION_HEADER_MAP.put("lg", S.Log2);
-      FUNCTION_HEADER_MAP.put("ln", S.Log);
-      FUNCTION_HEADER_MAP.put("log", S.Log10);
+
+      FUNCTION_HEADER_MAP_ARG1.put("arccos", S.ArcCos);
+      FUNCTION_HEADER_MAP_ARG1.put("arccot", S.ArcCot);
+      FUNCTION_HEADER_MAP_ARG1.put("arccsc", S.ArcCsc);
+      FUNCTION_HEADER_MAP_ARG1.put("arcsec", S.ArcSec);
+      FUNCTION_HEADER_MAP_ARG1.put("arcsin", S.ArcSin);
+      FUNCTION_HEADER_MAP_ARG1.put("arctan", S.ArcTan);
+
+      FUNCTION_HEADER_MAP_ARG1.put("arccosh", S.ArcCosh);
+      FUNCTION_HEADER_MAP_ARG1.put("arccoth", S.ArcCoth);
+      FUNCTION_HEADER_MAP_ARG1.put("arccsch", S.ArcCsch);
+      FUNCTION_HEADER_MAP_ARG1.put("arcsech", S.ArcSech);
+      FUNCTION_HEADER_MAP_ARG1.put("arcsinh", S.ArcSinh);
+      FUNCTION_HEADER_MAP_ARG1.put("arctanh", S.ArcTanh);
+
+      FUNCTION_HEADER_MAP_ARG1.put("cos", S.Cos);
+      FUNCTION_HEADER_MAP_ARG1.put("cot", S.Cot);
+      FUNCTION_HEADER_MAP_ARG1.put("csc", S.Csc);
+      FUNCTION_HEADER_MAP_ARG1.put("sec", S.Sec);
+      FUNCTION_HEADER_MAP_ARG1.put("sin", S.Sin);
+      FUNCTION_HEADER_MAP_ARG1.put("tan", S.Tan);
+
+      FUNCTION_HEADER_MAP_ARG1.put("cosh", S.Cosh);
+      FUNCTION_HEADER_MAP_ARG1.put("coth", S.Coth);
+      FUNCTION_HEADER_MAP_ARG1.put("csch", S.Csch);
+      FUNCTION_HEADER_MAP_ARG1.put("sech", S.Sech);
+      FUNCTION_HEADER_MAP_ARG1.put("sinh", S.Sinh);
+      FUNCTION_HEADER_MAP_ARG1.put("tanh", S.Tanh);
+
+      FUNCTION_HEADER_MAP_ARG1.put("arg", S.Arg);
+      FUNCTION_HEADER_MAP_ARG1.put("det", S.Det);
+      FUNCTION_HEADER_MAP_ARG1.put("exp", S.Exp);
+      FUNCTION_HEADER_MAP_ARG1.put("lg", S.Log2);
+      FUNCTION_HEADER_MAP_ARG1.put("ln", S.Log);
+      FUNCTION_HEADER_MAP_ARG1.put("log", S.Log10);
+      FUNCTION_HEADER_MAP.putAll(FUNCTION_HEADER_MAP_ARG1);
+
       FUNCTION_HEADER_MAP.put("lim", S.Limit);
+      FUNCTION_HEADER_MAP.put("min", S.Min);
+      FUNCTION_HEADER_MAP.put("max", S.Max);
 
       TrieBuilder<String, BinaryOperator, ArrayList<BinaryOperator>> binaryBuilder =
           TrieBuilder.create();
@@ -238,8 +284,7 @@ class TeXSegmentParser {
    */
   private boolean subOrSup;
 
-  public TeXSegmentParser() {
-  }
+  public TeXSegmentParser() {}
 
   private IExpr convert(NodeList list, int[] position, IExpr lhs, int precedence) {
     return convert(list, position, list.getLength(), lhs, precedence);

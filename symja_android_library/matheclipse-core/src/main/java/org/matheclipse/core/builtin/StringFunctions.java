@@ -34,7 +34,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.form.output.OutputFormFactory;
-import org.matheclipse.core.form.tex.TeXSliceParser;
+import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -2994,7 +2994,7 @@ public final class StringFunctions {
             }
             return temp;
           } else if (form.equals(S.TeXForm)) {
-            IExpr temp = TeXSliceParser.convert(arg1.toString());
+            IExpr temp = TeXParser.convert(arg1.toString());
             if (head.isPresent()) {
               return F.unaryAST1(head, temp);
             }

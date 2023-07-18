@@ -3,13 +3,13 @@ package org.matheclipse.core.texparser;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.form.tex.TeXSliceParser;
+import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IExpr;
 import junit.framework.TestCase;
 
 
 public class TeXParserTest extends TestCase {
-  TeXSliceParser texConverter;
+  TeXParser texConverter;
 
   public TeXParserTest(String name) {
     super(name);
@@ -595,20 +595,31 @@ public class TeXParserTest extends TestCase {
   }
 
   public void testLog01() {
-    check("\\ln xy", "Log(x*y)");
+    check("\\ln xy", //
+        "y*Log(x)");
     check("\\log_{a} x \\log_{a} x", //
         "Log(a,x)*Log(a,x)");
 
-    check("\\ln x", "Log(x)");
-    check("\\ln xy", "Log(x*y)");
-    check("\\log x", "Log10(x)");
-    check("\\log_2 x", "Log(2,x)");
-    check("\\log_{2} x", "Log(2,x)");
-    check("\\log_a x", "Log(a,x)");
-    check("\\log_{a} x", "Log(a,x)");
+    check("\\ln x", //
+        "Log(x)");
+    check("\\ln xy", //
+        "y*Log(x)");
+    check("\\log x", //
+        "Log10(x)");
 
-    check("\\log_{11} x", "Log(11,x)");
-    check("\\log_{a^2} x", "Log(a^2,x)");
+    check("\\log_2 x", //
+        "Log(2,x)");
+    check("\\log_{2} x", //
+        "Log(2,x)");
+    check("\\log_a x", //
+        "Log(a,x)");
+    check("\\log_{a} x", //
+        "Log(a,x)");
+
+    check("\\log_{11} x", //
+        "Log(11,x)");
+    check("\\log_{a^2} x", //
+        "Log(a^2,x)");
   }
 
   public void test14() {
@@ -724,7 +735,7 @@ public class TeXParserTest extends TestCase {
 
   public void test401() {
     String tex = "4711";
-    TeXSliceParser teXSliceParser = new TeXSliceParser();
+    TeXParser teXSliceParser = new TeXParser();
     IExpr ast = teXSliceParser.parse(tex);
     assertEquals(ast.toString(), "4711");
   }
@@ -732,19 +743,19 @@ public class TeXParserTest extends TestCase {
   public void test402() {
     // issue #794
     String tex = "\\int_0^52xdx";
-    TeXSliceParser teXSliceParser = new TeXSliceParser();
+    TeXParser teXSliceParser = new TeXParser();
     IExpr ast = teXSliceParser.parse(tex);
     assertEquals(ast.toString(), "Integrate(2*x,{x,0,5})");
   }
 
   public void test403() {
     String tex = "\\log xy";
-    TeXSliceParser teXSliceParser = new TeXSliceParser();
+    TeXParser teXSliceParser = new TeXParser();
     IExpr ast = teXSliceParser.parse(tex);
-    assertEquals(ast.toString(), "Log10(x*y)");
+    assertEquals(ast.toString(), "y*Log10(x)");
 
     tex = "\\sin xy";
-    teXSliceParser = new TeXSliceParser();
+    teXSliceParser = new TeXParser();
     ast = teXSliceParser.parse(tex);
     assertEquals(ast.toString(), "y*Sin(x)");
   }
@@ -777,7 +788,7 @@ public class TeXParserTest extends TestCase {
       // F.initSymbols();
       F.await();
       EvalEngine.get().setRelaxedSyntax(true);
-      texConverter = new TeXSliceParser();
+      texConverter = new TeXParser();
     } catch (Exception e) {
       e.printStackTrace();
     }

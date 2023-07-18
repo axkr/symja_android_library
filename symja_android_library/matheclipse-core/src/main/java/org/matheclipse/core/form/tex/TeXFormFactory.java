@@ -2202,22 +2202,30 @@ public class TeXFormFactory {
     initTeXConverter(S.CenterDot, new TeXFormOperator(this, Precedence.CENTERDOT, " \\cdot "));
     initTeXConverter(S.CircleDot, new TeXFormOperator(this, Precedence.CIRCLEDOT, " \\odot "));
 
-    initTeXConverter(S.ArcSin, new TeXFunction(this, "arcsin "));
     initTeXConverter(S.ArcCos, new TeXFunction(this, "arccos "));
-    initTeXConverter(S.ArcTan, new TeXFunction(this, "arctan "));
     initTeXConverter(S.ArcCot, new TeXFunction(this, "arccot "));
-    initTeXConverter(S.ArcSinh, new TeXFunction(this, "arcsinh "));
+    initTeXConverter(S.ArcCsc, new TeXFunction(this, "arccsc "));
+    initTeXConverter(S.ArcSec, new TeXFunction(this, "arcsec "));
+    initTeXConverter(S.ArcSin, new TeXFunction(this, "arcsin "));
+    initTeXConverter(S.ArcTan, new TeXFunction(this, "arctan "));
+
     initTeXConverter(S.ArcCosh, new TeXFunction(this, "arccosh "));
-    initTeXConverter(S.ArcTanh, new TeXFunction(this, "arctanh "));
     initTeXConverter(S.ArcCoth, new TeXFunction(this, "arccoth "));
+    initTeXConverter(S.ArcCsch, new TeXFunction(this, "arccsch "));
+    initTeXConverter(S.ArcSech, new TeXFunction(this, "arcsech "));
+    initTeXConverter(S.ArcSinh, new TeXFunction(this, "arcsinh "));
+    initTeXConverter(S.ArcTanh, new TeXFunction(this, "arctanh "));
+
     initTeXConverter(S.Cos, new TeXFunction(this, "cos "));
     initTeXConverter(S.Cosh, new TeXFunction(this, "cosh "));
     initTeXConverter(S.Cot, new TeXFunction(this, "cot "));
     initTeXConverter(S.Coth, new TeXFunction(this, "coth "));
     initTeXConverter(S.Csc, new TeXFunction(this, "csc "));
+    initTeXConverter(S.Csch, new TeXFunction(this, "csch "));
     initTeXConverter(S.Log, new TeXFunction(this, symbolOptions.getLogFunction()));
     initTeXConverter(S.LogisticSigmoid, new TeXFunction(this, "sigma "));
     initTeXConverter(S.Sec, new TeXFunction(this, "sec "));
+    initTeXConverter(S.Sech, new TeXFunction(this, "sech "));
     initTeXConverter(S.Sin, new TeXFunction(this, "sin "));
     initTeXConverter(S.Sinh, new TeXFunction(this, "sinh "));
     initTeXConverter(S.Tan, new TeXFunction(this, "tan "));

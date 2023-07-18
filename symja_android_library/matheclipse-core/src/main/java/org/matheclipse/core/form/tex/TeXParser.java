@@ -7,56 +7,36 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 
-public class TeXSliceParser extends TeXScanner {
+public class TeXParser extends TeXScanner {
 
-  public static String[] FUNCTION_NAMES = new String[] {"f", "g", "h", //
-      "C", "D", "F", "G", "H", "P"};
-
-  public static String[] FUNCTION_NAME_MAP = new String[] {//
-      "arccos", "ArcCos", //
-      "arcsin", "ArcSin", //
-      "arctan", "ArcTan", //
-      "arg", "Arg", //
-      "cos", "Cos", //
-      "cot", "Cot", //
-      "csc", "Csc", //
-      "sec", "Sec", //
-      "sin", "Sin", //
-      "tan", "Tan", //
-      "cosh", "Cosh", //
-      "coth", "Coth", //
-      "sinh", "Sinh", //
-      "tanh", "Tanh", //
-      "det", "Det", //
-      "exp", "Exp", //
-      "lg", "Log2", //
-      "ln", "Log", //
-      "log", "Log10", //
-      "max", "Max", //
-      "min", "Min", //
-  };
-
-  public static Map<String, String> FUNCTION_NAMES_MAP = new HashMap<String, String>();
+  // public static String[] FUNCTION_NAMES = new String[] {"f", "g", "h", //
+  // "C", "D", "F", "G", "H", "P"};
+  //
+  // public static String[] FUNCTION_NAME_MAP = new String[] {//
+  // "max", "Max", //
+  // "min", "Min", //
+  // };
+  //
+  // public static Map<String, String> FUNCTION_NAMES_MAP = new HashMap<String, String>();
 
   Map<Integer, IExpr> fMapOfVariables = new HashMap<Integer, IExpr>();
 
   static {
     TeXSegmentParser.initialize();
-    for (int i = 0; i < FUNCTION_NAMES.length; i++) {
-      FUNCTION_NAMES_MAP.put(FUNCTION_NAMES[i], FUNCTION_NAMES[i]);
-    }
-    int i = 0;
-    while (i < FUNCTION_NAME_MAP.length) {
-      FUNCTION_NAMES_MAP.put(FUNCTION_NAME_MAP[i], FUNCTION_NAME_MAP[i + 1]);
-      i = i + 2;
-    }
+    // for (int i = 0; i < FUNCTION_NAMES.length; i++) {
+    // FUNCTION_NAMES_MAP.put(FUNCTION_NAMES[i], FUNCTION_NAMES[i]);
+    // }
+    // int i = 0;
+    // while (i < FUNCTION_NAME_MAP.length) {
+    // FUNCTION_NAMES_MAP.put(FUNCTION_NAME_MAP[i], FUNCTION_NAME_MAP[i + 1]);
+    // i = i + 2;
+    // }
   }
 
   int fVariableCounter = 1;
 
-  public TeXSliceParser() {
+  public TeXParser() {
     super(false, false);
   }
 
@@ -95,7 +75,7 @@ public class TeXSliceParser extends TeXScanner {
 
         String exprStr = new String(fInputString, startOfSubExpr, endOfSubExpr - startOfSubExpr);
         // IExpr expr = toExpr(exprStr);
-        IExpr expr = TeXSliceParser.convert(exprStr);
+        IExpr expr = TeXParser.convert(exprStr);
         if (numberOfColumns == 1) {
           list.append(expr);
         } else {
@@ -158,7 +138,7 @@ public class TeXSliceParser extends TeXScanner {
           String exprStr = new String(fInputString, lastTeXIndex, endTeXIndex - lastTeXIndex);
           lastTeXIndex = texIndex + 1;
           // IExpr expr = toExpr(exprStr);
-          IExpr expr = TeXSliceParser.convert(exprStr);
+          IExpr expr = TeXParser.convert(exprStr);
           subList.append(expr);
           if (token == TT_DOUBLE_BACKSLASH) {
             if (columns < 0) {
@@ -201,7 +181,7 @@ public class TeXSliceParser extends TeXScanner {
   }
 
   public static IExpr convert(String texStr) {
-    return new TeXSliceParser().parse(texStr);
+    return new TeXParser().parse(texStr);
   }
 
   public IExpr parse(String texStr) {
@@ -278,9 +258,9 @@ public class TeXSliceParser extends TeXScanner {
       } else if (fToken == TT_IDENTIFIER) {
         endTeXIndex = fCurrentPosition - 1;
         String identifier = getIdentifier();
-        String functionName = FUNCTION_NAMES_MAP.get(identifier);
+        IExpr functionName = TeXSegmentParser.FUNCTION_HEADER_MAP.get(identifier);
         if (functionName != null) {
-          IExpr head = TeXSegmentParser.createFunction(functionName);
+          IExpr head = functionName;// TeXSegmentParser.createFunction(functionName);
           getNextToken();
           int derivativeCounter = 0;
           while (fToken == TT_CHARACTER //
@@ -358,7 +338,8 @@ public class TeXSliceParser extends TeXScanner {
             lastTeXIndex = fCurrentPosition + 1;
           }
         } else {
-          String functionName = FUNCTION_NAMES_MAP.get(fCommandString);
+          // String functionName = FUNCTION_NAMES_MAP.get(fCommandString);
+          IExpr functionName = TeXSegmentParser.FUNCTION_HEADER_MAP.get(fCommandString);
           if (functionName != null) {
             endTeXIndex = fCurrentPosition - fCommandString.length() - 1;
             getNextToken();
@@ -366,7 +347,7 @@ public class TeXSliceParser extends TeXScanner {
               if (fCommandString.equals("left")) {
                 IExpr temp = convertLeftRight(texStr, lastTeXIndex);
                 if (temp.isPresent()) {
-                  ISymbol head = TeXSegmentParser.createFunction(functionName);
+                  IExpr head = functionName;// TeXSegmentParser.createFunction(functionName);
                   temp = F.unaryAST1(head, temp);
                   int endOfSubExpr = fCurrentPosition - 1;
                   // ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
@@ -431,7 +412,7 @@ public class TeXSliceParser extends TeXScanner {
     if (endOfSubExpr > 0) {
       getNextToken();
       String exprStr = new String(fInputString, startOfSubExpr, endOfSubExpr - startOfSubExpr);
-      IExpr temp = TeXSliceParser.convert(exprStr);
+      IExpr temp = TeXParser.convert(exprStr);
       if (temp.isSequence()) {
         temp = ((IAST) temp).setAtCopy(0, S.List);
       }
@@ -453,7 +434,7 @@ public class TeXSliceParser extends TeXScanner {
     if (endOfSubExpr > 0) {
       getNextToken();
       String exprStr = new String(fInputString, startOfSubExpr, endOfSubExpr - startOfSubExpr);
-      return TeXSliceParser.convert(exprStr);
+      return TeXParser.convert(exprStr);
     }
     return F.NIL;
   }
@@ -508,10 +489,11 @@ public class TeXSliceParser extends TeXScanner {
           }
         }
         if (i < texStr.length() - 1) {
-          if (commandStr.equals("sin") || commandStr.equals("cos")) {
-            // TODO make this for all numeric builtin commands?
+          IExpr function = TeXSegmentParser.FUNCTION_HEADER_MAP_ARG1.get(commandStr);
+          if (function != null) {
+            // TODO make this for all one argument numeric builtin commands?
             boolean isVariable = false;
-            while (ch == ' ' || Character.isJavaIdentifierPart(ch)) {
+            while (ch == ' ' || TeXScanner.isTeXIdentifierPart(ch)) {
               if (ch != ' ') {
                 isVariable = true;
               }
@@ -526,9 +508,6 @@ public class TeXSliceParser extends TeXScanner {
               buf.append("}");
               continue;
             }
-          }
-          if (commandStr.equals("operatorname")) {
-            // getCommand()
           }
         }
         buf.append("\\" + command.toString());

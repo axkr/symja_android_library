@@ -45,7 +45,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.JSBuilder;
-import org.matheclipse.core.form.tex.TeXSliceParser;
+import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -1734,7 +1734,7 @@ public class Pods {
       } catch (SyntaxError serr) {
         // this includes syntax errors
         LOGGER.debug("Pods: FuzzyParser.parseFuzzyList() failed", serr);
-        TeXSliceParser texConverter = new TeXSliceParser();
+        TeXParser texConverter = new TeXParser();
         inExpr = texConverter.parse(inputStr);
       }
     }

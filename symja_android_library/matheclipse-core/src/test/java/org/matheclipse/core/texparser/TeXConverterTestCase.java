@@ -3,14 +3,14 @@ package org.matheclipse.core.texparser;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.form.tex.TeXSliceParser;
+import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IExpr;
 import junit.framework.TestCase;
 
 /** Tests LaTeX import (parsing) function */
 public class TeXConverterTestCase extends TestCase {
 
-  TeXSliceParser texConverter;
+  TeXParser texConverter;
 
   public TeXConverterTestCase(String name) {
     super(name);
@@ -59,6 +59,8 @@ public class TeXConverterTestCase extends TestCase {
   public void testTeX006() {
     check("\\sin 30 ^ { \\circ }", //
         "Degree*Sin(30)");
+    check("\\sin { 30 ^ \\circ }", //
+        "Sin(30*Degree)");
   }
 
   public void testTeX007() {
@@ -416,7 +418,7 @@ public class TeXConverterTestCase extends TestCase {
     ExprEvaluator evaluator = new ExprEvaluator();
     evaluator.eval("Pol[x_, y_] := FromPolarCoordinates[{x, y}]");
 
-    TeXSliceParser teXSliceParser = new TeXSliceParser();
+    TeXParser teXSliceParser = new TeXParser();
     IExpr input = teXSliceParser.parse("\\operatorname{Pol}(3,2)");
 
     IExpr result = evaluator.eval(F.N(input));
@@ -485,7 +487,7 @@ public class TeXConverterTestCase extends TestCase {
       // F.initSymbols();
       F.await();
       EvalEngine.get().setRelaxedSyntax(true);
-      texConverter = new TeXSliceParser();
+      texConverter = new TeXParser();
     } catch (Exception e) {
       e.printStackTrace();
     }
