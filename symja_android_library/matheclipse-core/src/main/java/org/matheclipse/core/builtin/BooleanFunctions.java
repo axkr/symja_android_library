@@ -2357,7 +2357,7 @@ public final class BooleanFunctions {
           IAST result = lhsAST.partitionTimes(x -> x.isNumericFunction(true), F.C0, F.C1, S.List);
           if (!result.arg1().isZero()) {
             if (result.arg1().hasComplexNumber() || result.arg2().hasComplexNumber()) {
-              return IOFunctions.printMessage(originalHead, "nord", F.list(result.arg1()),
+              return IOFunctions.printMessage(S.General, "nord", F.list(result.arg1()),
                   EvalEngine.get());
             }
             if (result.arg1().isNegative()) {
@@ -2371,7 +2371,7 @@ public final class BooleanFunctions {
           IAST result = lhsAST.partitionPlus(x -> x.isNumericFunction(true), F.C0, F.C0, S.List);
           if (!result.arg1().isZero()) {
             if (result.arg1().hasComplexNumber() || result.arg2().hasComplexNumber()) {
-              return IOFunctions.printMessage(originalHead, "nord", F.list(result.arg1()),
+              return IOFunctions.printMessage(S.General, "nord", F.list(result.arg1()),
                   EvalEngine.get());
             }
             rhs = rhs.subtract(result.arg1());

@@ -30,7 +30,6 @@ import static org.matheclipse.core.expression.F.Tanh;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.num;
 import static org.matheclipse.core.expression.S.Pi;
-import java.math.RoundingMode;
 import java.util.function.DoubleUnaryOperator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -2395,7 +2394,7 @@ public class ExpTrigsFunctions {
         // Log(a*z) == Log(a) + Log(z) /; a > 0
         for (int i = 1; i < timesAST.size(); i++) {
           IExpr a = timesAST.get(i);
-          if (engine.evalTrue(F.Greater(a, F.C0))) {
+          if (a.isRealResult() && engine.evalTrue(F.Greater(a, F.C0))) {
             IExpr temp = engine.evaluate(F.Log(a));
             if (temp.isFree(S.Log, true)) {
               return F.Plus(temp, F.Log(timesAST.removeAtCopy(i)));
