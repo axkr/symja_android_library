@@ -10,13 +10,16 @@ public class BuiltinUsage {
 
   public static synchronized void init() {
     IS_INITIALIZED.set(true);
+
     USAGE[ID.$IterationLimit] =
         "specifies the maximum number of times a reevaluation of an expression may happen";
 
     USAGE[ID.$MaxMachineNumber] = "largest normalized positive machine number";
     USAGE[ID.$MinMachineNumber] = "smallest normalized positive machine number";
+
     USAGE[ID.$RecursionLimit] =
         "specifies the maximum allowable recursion depth after which a calculation is terminated";
+
     USAGE[ID.Abort] = "generate an abort";
     USAGE[ID.Abs] = "absolute value of a number";
     USAGE[ID.AbsoluteTime] = "get absolute time in seconds";
@@ -30,6 +33,7 @@ public class BuiltinUsage {
     // USAGE[ID.AnglePath] = "form a path from a sequence of \"turtle-like\" turns and motions";
     USAGE[ID.AnyTrue] = "some of the elements are True";
     USAGE[ID.AngleVector] = "create a vector at a specified angle";
+    USAGE[ID.Apart] = "partial fraction decomposition";
     USAGE[ID.ArcCos] = "inverse cosine function";
     USAGE[ID.ArcCosh] = "inverse hyperbolic cosine function";
     USAGE[ID.ArcCot] = "inverse cotangent function";
@@ -63,6 +67,7 @@ public class BuiltinUsage {
     USAGE[ID.ByteArray] = "array of bytes";
 
     USAGE[ID.C] = "n-th intertermined constant in the solution of a differential equation";
+    USAGE[ID.Cancel] = "cancel common factors in rational expressions";
     USAGE[ID.Catch] = "handle an exception raised by a 'Throw'";
     USAGE[ID.Catenate] = "catenate elements from a list of lists";
     USAGE[ID.CentralMoment] = "central moments of distributions and data";
@@ -71,6 +76,9 @@ public class BuiltinUsage {
     USAGE[ID.CharacterRange] = "range of characters with successive character codes";
     USAGE[ID.Check] = "discard the result if the evaluation produced messages";
     USAGE[ID.ClearAttributes] = "clear the attributes of a symbol";
+    USAGE[ID.Coefficient] = "coefficient of a monomial in a polynomial expression";
+    USAGE[ID.CoefficientList] = "list of coefficients defining a polynomial";
+    USAGE[ID.Collect] = "collect terms with a variable at the same power";
     USAGE[ID.Conjugate] = "complex conjugation";
     USAGE[ID.Constant] = "attribute that indicates that a symbol is a (numerical) constant";
     USAGE[ID.ConstantArray] = "form a constant array";
@@ -100,6 +108,7 @@ public class BuiltinUsage {
     USAGE[ID.Delete] = "delete elements from a list at given positions";
     USAGE[ID.DeleteCases] = "delete all occurrences of a pattern";
     USAGE[ID.DeleteDuplicates] = "delete duplicate elements in a list";
+    USAGE[ID.Denominator] = "denominator of an expression";
     USAGE[ID.Depth] = "get maximum number of indices to specify any part";
     USAGE[ID.Derivative] = "symbolic and numerical derivative functions";
     USAGE[ID.Diagonal] = "gives a list with the diagonal elements of a given matrix";
@@ -129,13 +138,18 @@ public class BuiltinUsage {
         "forces evaluation of $expr$, even if it occurs inside a held argument or a 'Hold' form";
     USAGE[ID.EvenQ] = "test whether elements are even numbers";
     USAGE[ID.Exp] = "exponential function";
+    USAGE[ID.Expand] = "expand out products and powers";
+    USAGE[ID.ExpandAll] = "expand products and powers, including negative integer powers";
+    USAGE[ID.Exponent] = "maximum power in which a form appears in a polynomial";
     USAGE[ID.Export] = "export elements to a file";
     USAGE[ID.ExportString] = "export elements to a string";
     USAGE[ID.Extract] = "extract elements that appear at a list of positions";
 
+    USAGE[ID.Factor] = "factor sums into product and powers";
     USAGE[ID.Factorial] = "factorial";
     USAGE[ID.Factorial2] = "semi-factorial";
     USAGE[ID.FactorInteger] = "list of prime factors and exponents";
+    USAGE[ID.FactorTermsList] = "a polynomial as a list of factors";
     // USAGE[ID.Failure] = "a failure at the level of the interpreter";
     USAGE[ID.False] = "boolean constant for False";
     USAGE[ID.FileFormat] = "determine the file format of a file";
@@ -160,6 +174,7 @@ public class BuiltinUsage {
     USAGE[ID.FromContinuedFraction] =
         "reconstructs a number from its continued fraction representation";
     USAGE[ID.FullForm] = "get the underlying M-Expression representation";
+    USAGE[ID.FullSimplify] = "apply a full set of simplification transformations";
 
     USAGE[ID.Gamma] = "complete and incomplete gamma functions";
     USAGE[ID.Gather] = "gather sublists of identical elements";
@@ -250,6 +265,7 @@ public class BuiltinUsage {
     USAGE[ID.Message] = "display a message";
     USAGE[ID.MessageName] = "message identifyier";
     USAGE[ID.Min] = "The largest argument or the largest element of a list";
+    USAGE[ID.MinimalPolynomial] = "minimal polynomial for a general algebraic number";
     USAGE[ID.Missing] = "default value if a key is not found";
     USAGE[ID.Mod] = "the remainder in an integer division";
     USAGE[ID.ModularInverse] = "returns the modular inverse k^(-1) MOD n";
@@ -281,6 +297,7 @@ public class BuiltinUsage {
     USAGE[ID.NumberLinePlot] = "plot along a number line";
     USAGE[ID.NumberQ] = "test whether an expression is a number";
     USAGE[ID.NumberString] = "characters in string representation of a number";
+    USAGE[ID.Numerator] = "numerator of an expression";
     USAGE[ID.NumericFunction] = "attribute that indicates that a symbol is a numerical function";
     USAGE[ID.NonNegative] = "test whether an expression is a non-negative number";
     USAGE[ID.NonPositive] = "test whether an expression is a non-positive number";
@@ -313,11 +330,13 @@ public class BuiltinUsage {
     USAGE[ID.Pochhammer] = "Pochhammer's symbols";
     USAGE[ID.PolarPlot] = "draw a polar plot";
     USAGE[ID.PolyGamma] = "polygamma function";
+    USAGE[ID.PolynomialQ] = "test if the expression is a polynomial in a variable";
     USAGE[ID.PossibleZeroQ] =
         "returns 'True' if basic symbolic and numerical methods suggest that expr has value zero, and 'False' otherwise";
     USAGE[ID.Position] = "positions of matching elements";
     USAGE[ID.Positive] = "test whether an expression is a positive number";
     USAGE[ID.Postfix] = "postfix form";
+    USAGE[ID.PowerExpand] = "expand out powers";
     USAGE[ID.PowerMod] = "modular powers and roots";
     USAGE[ID.Prefix] = "prefix form";
     USAGE[ID.Prepend] = "add an element at the beginning";
@@ -388,6 +407,7 @@ public class BuiltinUsage {
     USAGE[ID.SetAttributes] = "set attributes for a symbol";
     USAGE[ID.ShearingTransform] = "symbolic representation of a shearing transformation";
     USAGE[ID.Sign] = "return -1, 0, or 1 depending on whether $x$ is negative, zero, or positive";
+    USAGE[ID.Simplify] = "apply transformations to simplify an expression";
     USAGE[ID.Sin] = "sine function";
     USAGE[ID.Sinh] = "hyperbolic sine function";
     USAGE[ID.Skewness] = "skewness coefficient";
@@ -452,6 +472,7 @@ public class BuiltinUsage {
     USAGE[ID.ToCharacterCode] = "convert a string to a list of character codes";
     USAGE[ID.ToExpression] = "build an expression from formatted text";
     USAGE[ID.ToLowerCase] = "turn all the letters into lower case";
+    USAGE[ID.Together] = "put over a common denominator";
     USAGE[ID.ToString] = "format an expression and produce a string";
     USAGE[ID.ToUpperCase] = "turn all the letters into upper case";
     USAGE[ID.Total] = "adds all values in $list$...";
@@ -476,6 +497,7 @@ public class BuiltinUsage {
 
     USAGE[ID.ValueQ] = "test whether a symbol can be considered to have a value";
     USAGE[ID.Values] = "list association values";
+    USAGE[ID.Variables] = "list of variables in a polynomial";
     USAGE[ID.Variance] = "variance of a dataset";
     USAGE[ID.VectorQ] = "test whether an object is a vector";
 
