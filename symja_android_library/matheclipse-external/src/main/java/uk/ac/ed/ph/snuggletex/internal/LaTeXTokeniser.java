@@ -255,6 +255,13 @@ public final class LaTeXTokeniser {
     }
 
     /**
+     * Gets the current last token recorded in this mode.
+     */
+    public FlowToken getLastToken() {
+      return !tokens.isEmpty() ? tokens.get(tokens.size() - 1) : null;
+    }
+
+    /**
      * Gets the end index of the {@link FrozenSlice} corresponding to the last {@link Token}
      * recorded, returning the start position if nothing has been recorded. This is useful for
      * getting at the "useful" content of a parse as it won't include the terminator.
@@ -548,11 +555,16 @@ public final class LaTeXTokeniser {
         return createError(CoreErrorCode.TTEM04, position, position + 1);
 
       default:
-        /* Mathematical symbol, operator, number etc... */
-        List<FlowToken> list = currentModeState.tokens;
-        if (list.size() > 0) {
-          CharSequence extract = list.get(list.size() - 1).getSlice().extract();
+        /*
+         * Mathematical symbol, operator, number etc... We need to check whether we're following up
+         * a sub/superscript and, if so, read only a single character.
+         */
+        FlowToken lastToken = currentModeState.getLastToken();
+        if (lastToken != null
+            && lastToken.hasInterpretationType(InterpretationType.MATH_OPERATOR)) {
+          CharSequence extract = lastToken.getSlice().extract();
           if ("_".equals(extract) || "^".equals(extract)) {
+            /* This is following sub/superscript so only read single character */
             return readNextMathNumberOrSymbol(true);
           }
         }
@@ -607,16 +619,20 @@ public final class LaTeXTokeniser {
     boolean foundDigitsBeforeDecimalPoint = false;
     boolean foundDigitsAfterDecimalPoint = false;
     boolean foundDecimalPoint = false;
-
+    if (singleDigitMode) {
+      c = workingDocument.charAt(index);
+      if (c >= '0' && c <= '9') {
+        FrozenSlice digitSlice = workingDocument.freezeSlice(position, position + 1);
+        return new SimpleToken(digitSlice, TokenType.MATH_NUMBER, LaTeXMode.MATH, null,
+            new MathNumberInterpretation(digitSlice.extract()));
+      }
+    }
     /* Read zero or more digits */
     while (true) {
       c = workingDocument.charAt(index);
       if (c >= '0' && c <= '9') {
         foundDigitsBeforeDecimalPoint = true;
         index++;
-        if (singleDigitMode) {
-          break;
-        }
       } else {
         break;
       }
@@ -631,21 +647,19 @@ public final class LaTeXTokeniser {
     if (!foundDigitsBeforeDecimalPoint && !foundDecimalPoint) {
       return null;
     }
-    if (!singleDigitMode) {
-      /* Read zero or more digits */
-      while (true) {
-        c = workingDocument.charAt(index);
-        if (c >= '0' && c <= '9') {
-          foundDigitsAfterDecimalPoint = true;
-          index++;
-        } else {
-          break;
-        }
+    /* Read zero or more digits */
+    while (true) {
+      c = workingDocument.charAt(index);
+      if (c >= '0' && c <= '9') {
+        foundDigitsAfterDecimalPoint = true;
+        index++;
+      } else {
+        break;
       }
-      /* Make sure we read in some number! */
-      if (!foundDigitsBeforeDecimalPoint && !foundDigitsAfterDecimalPoint) {
-        return null;
-      }
+    }
+    /* Make sure we read in some number! */
+    if (!foundDigitsBeforeDecimalPoint && !foundDigitsAfterDecimalPoint) {
+      return null;
     }
     FrozenSlice numberSlice = workingDocument.freezeSlice(position, index);
     return new SimpleToken(numberSlice, TokenType.MATH_NUMBER, LaTeXMode.MATH, null,

@@ -760,6 +760,14 @@ public class TeXParserTest extends TestCase {
     assertEquals(ast.toString(), "y*Sin(x)");
   }
 
+  public void test404() {
+    // issue #794
+    String tex = "x^.5";
+    TeXParser teXSliceParser = new TeXParser();
+    IExpr ast = teXSliceParser.parse(tex);
+    assertEquals(ast.toString(), "Sqrt(x)");
+  }
+
   public void check(String strEval, String strResult) {
     IExpr expr = texConverter.parse(strEval);
     assertEquals(expr.toString(), strResult);
