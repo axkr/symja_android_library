@@ -373,7 +373,9 @@ public class BuiltinUsage {
     USAGE[ID.Rationals] = "the domain of Rational numbers";
     USAGE[ID.Re] = "returns the real component of the complex number $z$";
     USAGE[ID.ReadProtected] = "attribute of symbols with hidden definitions";
+    USAGE[ID.RealAbs] = "real absolute value";
     USAGE[ID.Reals] = "the domain of the Real numbers";
+    USAGE[ID.RealSign] = "real sign";
     USAGE[ID.Reap] = "create lists of elements \"sown\" inside programs";
     USAGE[ID.RemoveDiacritics] = "remove diacritics from a string";
     USAGE[ID.Real] = "head for real numbers";
