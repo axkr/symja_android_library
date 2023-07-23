@@ -4567,6 +4567,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testCubeRoot() {
+    check("CubeRoot(-64)", //
+        "-4");
+
     check("(-8)^(-4/3)", //
         "(-1)^(2/3)/16");
     check("CubeRoot(((-8)^(-4)))", //
@@ -7393,6 +7396,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "Factor(a*Cosh(x) + I*b*Cosh(x) - I*a*Sinh(x) + b*Sinh(x))", //
     // " (-I*a+b)*(I*Cosh(x)+Sinh(x))");
     // }
+
+    // flaky test - depends on random generator:
+    // check("Factor(2*y^6 - x*y^3 - 3*x^2)", //
+    // "(x+y^3)*(-3*x+2*y^3)");
+
 
     // doc examples
     check("Factor({x + x^2, 2*x + 2*y + 2})", //
@@ -20398,6 +20406,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testRealSign() {
+    // TODO ? return -Abs(a)+Abs(b)
+    check("Integrate(RealSign(x),{x,a,b})", //
+        "-RealAbs(a)+RealAbs(b)");
+    check("Integrate(RealSign(x),x)", //
+        "RealAbs(x)");
+    check("D(RealSign(x),x)", //
+        "Piecewise({{0,x!=0}},Indeterminate)");
     check("RealSign(-Infinity)", //
         "-1");
     check("RealSign({3, -5, 2 + 5 I})", //
@@ -20409,10 +20424,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("RealSign({\n" //
         + "   {1, u},\n" + "   {v, -1}\n" + "  })", //
         "{{1,RealSign(u)},{RealSign(v),-1}}");
-    check("D(RealSign(x),x)", //
-        "Piecewise({{0,x!=0}},Indeterminate)");
-    check("Integrate(RealSign(x),x)", //
-        "RealAbs(x)");
     check("PiecewiseExpand(RealSign(x))", //
         "Piecewise({{-1,x<0},{1,x>0}},0)");
   }

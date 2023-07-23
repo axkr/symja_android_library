@@ -3354,6 +3354,10 @@ public class F extends S {
     return new AST2(Cube, center, length);
   }
 
+  public static IAST CubeRoot(final IExpr arg) {
+    return new AST1(CubeRoot, arg);
+  }
+
 
   /**
    * @param pMin lower corner
