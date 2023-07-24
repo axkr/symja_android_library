@@ -30,6 +30,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -253,9 +254,9 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
   public FunctionExpand() {}
 
   private static IExpr beforeRules(IAST ast) {
-    if ((ast.isCos() || ast.isSin()) && ast.first().isTimes2()) {
+    if (ast.isAST1() && ast.first().isTimes2()) {
       IAST times = (IAST) ast.first();
-      return cosSinTrivial(times, ast);
+      return trigTrivial(times, ast);
     }
     return callFunctionExpand(ast, EvalEngine.get());
   }
@@ -264,32 +265,334 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
    * See: <a href=
    * "https://en.wikipedia.org/wiki/Trigonometric_constants_expressed_in_real_radicals#The_trivial_values">Trigonometric_constants_expressed_in_real_radicals#The_trivial_values</a>
    *
-   * @param timesAST
+   * @param times2ArgsAST
    * @param ast
    */
-  public static IAST cosSinTrivial(IAST timesAST, IAST ast) {
-    if (timesAST.second().isPi() && timesAST.first().isFraction()) {
-      IFraction fraction = (IFraction) timesAST.first();
-      if (fraction.numerator().isOne()) {
-        IAST factors = fraction.denominator().factorInteger();
-        if (factors.size() == 2) {
-          IInteger base = (IInteger) factors.arg1().first();
-          if (base.equalsInt(2)) {
-            int exponent = factors.arg1().second().toIntDefault();
-            if (exponent > 3) {
-              if (ast.isCos()) {
-                return F.Times(F.C1D2, F.Sqrt(F.C2).nest(F.Function(F.Sqrt(F.Plus(F.C2, F.Slot1))), //
-                    exponent - 2));
-              } else if (ast.isSin()) {
-                return F.Times(F.C1D2,
-                    F.Sqrt(F.Subtract(F.C2,
-                        F.Sqrt(F.C2).nest(F.Function(F.Sqrt(F.Plus(F.C2, F.Slot1))), //
-                            exponent - 3))));
+  public static IAST trigTrivial(IAST times2ArgsAST, IAST ast) {
+    IExpr timesArg1 = times2ArgsAST.first();
+    if (timesArg1.isFraction()) {
+      if (timesArg1.equals(F.C1D2) && times2ArgsAST.second().isAST1()) {
+        IExpr head = ast.head();
+        if (head.isSymbol()) {
+          int headID = ((ISymbol) head).ordinal();
+
+          IExpr x = times2ArgsAST.second().first();
+          IExpr subHead = times2ArgsAST.second().head();
+          if (subHead.isSymbol()) {
+            int subHeadID = ((ISymbol) subHead).ordinal();
+            if (subHeadID > 0) {
+              switch (headID) {
+                case ID.Cos:
+                  return cosC1D2ArcFunction(x, subHeadID);
+                case ID.Cot:
+                  return cotC1D2ArcFunction(x, subHeadID);
+                case ID.Csc:
+                  return cscC1D2ArcFunction(x, subHeadID);
+                case ID.Sec:
+                  return secC1D2ArcFunction(x, subHeadID);
+                case ID.Sin:
+                  return sinC1D2ArcFunction(x, subHeadID);
+                case ID.Tan:
+                  return tanC1D2ArcFunction(x, subHeadID);
               }
             }
           }
         }
       }
+      if (times2ArgsAST.second().isPi()) {
+        IFraction fraction = (IFraction) timesArg1;
+        if (fraction.numerator().isOne()) {
+          IAST factors = fraction.denominator().factorInteger();
+          if (factors.size() == 2) {
+            IInteger base = (IInteger) factors.arg1().first();
+            if (base.equalsInt(2)) {
+              int exponent = factors.arg1().second().toIntDefault();
+              if (exponent > 3) {
+                if (ast.isCos()) {
+                  return F.Times(F.C1D2,
+                      F.Sqrt(F.C2).nest(F.Function(F.Sqrt(F.Plus(F.C2, F.Slot1))), //
+                          exponent - 2));
+                } else if (ast.isSin()) {
+                  return F.Times(F.C1D2,
+                      F.Sqrt(F.Subtract(F.C2,
+                          F.Sqrt(F.C2).nest(F.Function(F.Sqrt(F.Plus(F.C2, F.Slot1))), //
+                              exponent - 3))));
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Expand <code>Cos( (1/2) * Arc...(x) )</code>.
+   * 
+   * @param x
+   * @param subHeadID
+   * @return
+   */
+  private static IAST cosC1D2ArcFunction(IExpr x, int subHeadID) {
+    switch (subHeadID) {
+      case ID.ArcCos: {
+        // Sqrt(1+x)/Sqrt(2)
+        return F.Times(F.C1DSqrt2, F.Sqrt(F.Plus(F.C1, x)));
+      }
+      case ID.ArcCot: {
+        // Sqrt(1+(Sqrt(-x)*Sqrt(x))/Sqrt(-1-x^2))/Sqrt(2)
+        return F.Times(F.C1DSqrt2, F.Sqrt(F.Plus(F.C1, F.Times(F.Sqrt(F.Negate(x)), F.Sqrt(x),
+            F.Power(F.Subtract(F.CN1, F.Sqr(x)), F.CN1D2)))));
+      }
+      case ID.ArcCsc: {
+        // Sqrt(1+Sqrt((-1+x)*(1+x))/Sqrt(x^2))/Sqrt(2)
+        return F.Times(F.C1DSqrt2,
+            F.Sqrt(F.Plus(F.C1, F.Times(F.Sqrt(F.Times(F.Plus(F.CN1, x), F.Plus(F.C1, x))),
+                F.Power(F.Sqr(x), F.CN1D2)))));
+      }
+      case ID.ArcSec: {
+        // Sqrt(-1-x)/(Sqrt(2)*Sqrt(-x))
+        IExpr v1 = F.Negate(x);
+        return F.Times(F.C1DSqrt2, F.Sqrt(F.Plus(F.CN1, v1)), F.Power(v1, F.CN1D2));
+      }
+      case ID.ArcSin: {
+        // Sqrt(1+Sqrt(1-x)*Sqrt(1+x))/Sqrt(2)
+        return F.Times(F.C1DSqrt2,
+            F.Sqrt(F.Plus(F.C1, F.Times(F.Sqrt(F.Subtract(F.C1, x)), F.Sqrt(F.Plus(F.C1, x))))));
+      }
+      case ID.ArcTan: {
+        // Sqrt(1+1/Sqrt(1+x^2))/Sqrt(2)
+        return F.Times(F.C1DSqrt2, F.Sqrt(F.Plus(F.C1, F.Power(F.Plus(F.C1, F.Sqr(x)), F.CN1D2))));
+      }
+      default:
+    }
+    return F.NIL;
+  }
+
+  private static IAST cotC1D2ArcFunction(IExpr x, int subHeadID) {
+    switch (subHeadID) {
+      case ID.ArcCos: {
+        // Sqrt(1+x)/Sqrt(1-x)
+        return F.Times(F.Power(F.Subtract(F.C1, x), F.CN1D2), F.Sqrt(F.Plus(F.C1, x)));
+      }
+      case ID.ArcCot: {
+        // (Sqrt(x)*(Sqrt(-x)*Sqrt(x)+Sqrt(-1-x^2)))/Sqrt(-x)
+        IExpr v1 = F.Sqrt(x);
+        IExpr v2 = F.Negate(x);
+        return F.Times(v1, F.Power(v2, F.CN1D2),
+            F.Plus(F.Times(v1, F.Sqrt(v2)), F.Sqrt(F.Subtract(F.CN1, F.Sqr(x)))));
+      }
+      case ID.ArcCsc: {
+        // x*Sqrt(1+Sqrt((-1+x)*(1+x))/Sqrt(x^2))*Sqrt((x^2+Sqrt(x^2)*Sqrt(-1+x^2))/x^2)
+        IExpr v1 = F.Sqr(x);
+        return F.Times(
+            F.Sqrt(F.Times(F.Plus(F.Times(F.Sqrt(F.Plus(F.CN1, v1)), F.Sqrt(v1)), v1),
+                F.Power(x, F.CN2))),
+            x, F.Sqrt(F.Plus(F.C1, F.Times(F.Power(v1, F.CN1D2),
+                F.Sqrt(F.Times(F.Plus(F.CN1, x), F.Plus(F.C1, x)))))));
+      }
+      case ID.ArcSec: {
+        // (Sqrt(-1-x)*Sqrt(x))/(Sqrt(-1+x)*Sqrt(-x))
+        IExpr v1 = F.Negate(x);
+        return F.Times(F.Sqrt(F.Plus(F.CN1, v1)), F.Power(v1, F.CN1D2),
+            F.Power(F.Plus(F.CN1, x), F.CN1D2), F.Sqrt(x));
+      }
+      case ID.ArcSin: {
+        // (1+Sqrt(1-x)*Sqrt(1+x))/x
+        return F.Times(F.Power(x, F.CN1),
+            F.Plus(F.C1, F.Times(F.Sqrt(F.Subtract(F.C1, x)), F.Sqrt(F.Plus(F.C1, x)))));
+      }
+      case ID.ArcTan: {
+        // (1+Sqrt(1+x^2))/x
+        return F.Times(F.Power(x, F.CN1), F.Plus(F.C1, F.Sqrt(F.Plus(F.C1, F.Sqr(x)))));
+      }
+      default:
+    }
+    return F.NIL;
+  }
+
+  private static IAST cscC1D2ArcFunction(IExpr x, int subHeadID) {
+    switch (subHeadID) {
+      case ID.ArcCos: {
+        // Sqrt(2)/Sqrt(1-x)
+        return F.Times(F.CSqrt2, F.Power(F.Subtract(F.C1, x), F.CN1D2));
+      }
+      case ID.ArcCot: {
+        // (Sqrt(2)*Sqrt(x)*Sqrt(-1-x^2)*Sqrt(1+(Sqrt(-x)*Sqrt(x))/Sqrt(-1-x^2)))/Sqrt(-x)
+        IExpr v1 = F.Sqrt(x);
+        IExpr v2 = F.Negate(x);
+        IExpr v3 = F.Subtract(F.CN1, F.Sqr(x));
+        return F.Times(F.CSqrt2, v1, F.Power(v2, F.CN1D2),
+            F.Sqrt(F.Plus(F.C1, F.Times(v1, F.Sqrt(v2), F.Power(v3, F.CN1D2)))), F.Sqrt(v3));
+      }
+      case ID.ArcCsc: {
+        // Sqrt(2)*x*Sqrt((x^2+Sqrt(x^2)*Sqrt(-1+x^2))/x^2)
+        IExpr v1 = F.Sqr(x);
+        return F.Times(F.CSqrt2, F.Sqrt(
+            F.Times(F.Plus(F.Times(F.Sqrt(F.Plus(F.CN1, v1)), F.Sqrt(v1)), v1), F.Power(x, F.CN2))),
+            x);
+      }
+      case ID.ArcSec: {
+        // (Sqrt(2)*Sqrt(x))/Sqrt(-1+x)
+        return F.Times(F.CSqrt2, F.Power(F.Plus(F.CN1, x), F.CN1D2), F.Sqrt(x));
+      }
+      case ID.ArcSin: {
+        // (Sqrt(2)*Sqrt(1+Sqrt(1-x)*Sqrt(1+x)))/x
+        return F.Times(F.CSqrt2, F.Power(x, F.CN1),
+            F.Sqrt(F.Plus(F.C1, F.Times(F.Sqrt(F.Subtract(F.C1, x)), F.Sqrt(F.Plus(F.C1, x))))));
+      }
+      case ID.ArcTan: {
+        // (Sqrt(2)*Sqrt(1+x^2)*Sqrt(1+1/Sqrt(1+x^2)))/x
+        IExpr v1 = F.Plus(F.C1, F.Sqr(x));
+        return F.Times(F.CSqrt2, F.Sqrt(F.Plus(F.C1, F.Power(v1, F.CN1D2))), F.Sqrt(v1),
+            F.Power(x, F.CN1));
+      }
+      default:
+    }
+    return F.NIL;
+  }
+
+  private static IAST secC1D2ArcFunction(IExpr x, int subHeadID) {
+    switch (subHeadID) {
+      case ID.ArcCos: {
+        // Sqrt(2)/Sqrt(1+x)
+        return F.Times(F.CSqrt2, F.Power(F.Plus(F.C1, x), F.CN1D2));
+      }
+      case ID.ArcCot: {
+        // Sqrt(2)/Sqrt(1+(Sqrt(-x)*Sqrt(x))/Sqrt(-1-x^2))
+        return F.Times(F.CSqrt2, F.Power(F.Plus(F.C1,
+            F.Times(F.Sqrt(F.Negate(x)), F.Sqrt(x), F.Power(F.Subtract(F.CN1, F.Sqr(x)), F.CN1D2))),
+            F.CN1D2));
+      }
+      case ID.ArcCsc: {
+        // Sqrt(2)/Sqrt(1+Sqrt((-1+x)*(1+x))/Sqrt(x^2))
+        return F.Times(F.CSqrt2,
+            F.Power(F.Plus(F.C1, F.Times(F.Sqrt(F.Times(F.Plus(F.CN1, x), F.Plus(F.C1, x))),
+                F.Power(F.Sqr(x), F.CN1D2))), F.CN1D2));
+      }
+      case ID.ArcSec: {
+        // (Sqrt(2)*Sqrt(-x))/Sqrt(-1-x)
+        IExpr v1 = F.Negate(x);
+        return F.Times(F.CSqrt2, F.Power(F.Plus(F.CN1, v1), F.CN1D2), F.Sqrt(v1));
+      }
+      case ID.ArcSin: {
+        // Sqrt(2)/Sqrt(1+Sqrt(1-x)*Sqrt(1+x))
+        return F.Times(F.CSqrt2, F.Power(
+            F.Plus(F.C1, F.Times(F.Sqrt(F.Subtract(F.C1, x)), F.Sqrt(F.Plus(F.C1, x)))), F.CN1D2));
+      }
+      case ID.ArcTan: {
+        // Sqrt(2)/Sqrt(1+1/Sqrt(1+x^2))
+        return F.Times(F.CSqrt2,
+            F.Power(F.Plus(F.C1, F.Power(F.Plus(F.C1, F.Sqr(x)), F.CN1D2)), F.CN1D2));
+      }
+      default:
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Expand <code>Sin( (1/2) * Arc...(x) )</code>.
+   * 
+   * @param x
+   * @param subHeadID
+   * @return
+   */
+  private static IAST sinC1D2ArcFunction(IExpr x, int subHeadID) {
+    switch (subHeadID) {
+      case ID.ArcCos: {
+        // Sqrt(1-x)/Sqrt(2)
+        return F.Times(F.C1DSqrt2, F.Sqrt(F.Subtract(F.C1, x)));
+      }
+      case ID.ArcCot: {
+        // Sqrt(-x)/(Sqrt(2)*Sqrt(x)*Sqrt(-1-x^2)*Sqrt(1+(Sqrt(-x)*Sqrt(x))/Sqrt(-1-x^2)))
+        IExpr v1 = F.Sqrt(F.Negate(x));
+        IExpr v2 = F.Sqrt(x);
+        IExpr v3 = F.Subtract(F.CN1, F.Sqr(x));
+        return F.Times(F.C1DSqrt2, v1, F.Power(v2, F.CN1),
+            F.Power(F.Plus(F.C1, F.Times(v1, v2, F.Power(v3, F.CN1D2))), F.CN1D2),
+            F.Power(v3, F.CN1D2));
+      }
+      case ID.ArcCsc: {
+        // 1/(Sqrt(2)*x*Sqrt((x^2+Sqrt(x^2)*Sqrt(-1+x^2))/x^2))
+        IExpr v1 = F.Sqr(x);
+        return F.Times(F.C1DSqrt2, F.Power(
+            F.Times(F.Plus(F.Times(F.Sqrt(F.Plus(F.CN1, v1)), F.Sqrt(v1)), v1), F.Power(x, F.CN2)),
+            F.CN1D2), F.Power(x, F.CN1));
+      }
+      case ID.ArcSec: {
+        // Sqrt(-1+x)/(Sqrt(2)*Sqrt(x))
+        return F.Times(F.Power(F.Times(F.CSqrt2, F.Sqrt(x)), F.CN1), F.Sqrt(F.Plus(F.CN1, x)));
+      }
+      case ID.ArcSin: {
+        // x/(Sqrt(2)*Sqrt(1+Sqrt(1-x)*Sqrt(1+x)))
+        return F
+            .Times(x,
+                F.Power(
+                    F.Times(F.CSqrt2,
+                        F.Sqrt(F.Plus(F.C1,
+                            F.Times(F.Sqrt(F.Subtract(F.C1, x)), F.Sqrt(F.Plus(F.C1, x)))))),
+                    F.CN1));
+
+      }
+      case ID.ArcTan: {
+        // x/(Sqrt(2)*Sqrt(1+x^2)*Sqrt(1+1/Sqrt(1+x^2)))
+        IExpr v1 = F.Plus(F.C1, F.Sqr(x));
+        return F.Times(F.C1DSqrt2, F.Power(F.Plus(F.C1, F.Power(v1, F.CN1D2)), F.CN1D2),
+            F.Power(v1, F.CN1D2), x);
+      }
+      default:
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Expand <code>Tan( (1/2) * Arc...(x) )</code>.
+   * 
+   * @param x
+   * @param subHeadID
+   * @return
+   */
+  private static IAST tanC1D2ArcFunction(IExpr x, int subHeadID) {
+    switch (subHeadID) {
+      case ID.ArcCos: {
+        // Sqrt(1-x)/Sqrt(1+x)
+        return F.Times(F.Sqrt(F.Subtract(F.C1, x)), F.Power(F.Plus(F.C1, x), F.CN1D2));
+      }
+      case ID.ArcCot: {
+        // Sqrt(-x)/(Sqrt(x)*(Sqrt(-x)*Sqrt(x)+Sqrt(-1-x^2)))
+        IExpr v1 = F.Sqrt(F.Negate(x));
+        IExpr v2 = F.Sqrt(x);
+        return F.Times(v1, F.Power(v2, F.CN1),
+            F.Power(F.Plus(F.Times(v1, v2), F.Sqrt(F.Subtract(F.CN1, F.Sqr(x)))), F.CN1));
+      }
+      case ID.ArcCsc: {
+        // 1/(x*Sqrt(1+Sqrt((-1+x)*(1+x))/Sqrt(x^2))*Sqrt((x^2+Sqrt(x^2)*Sqrt(-1+x^2))/x^2))
+        IExpr v1 = F.Sqr(x);
+        return F.Times(
+            F.Power(F.Times(F.Plus(F.Times(F.Sqrt(F.Plus(F.CN1, v1)), F.Sqrt(v1)), v1),
+                F.Power(x, F.CN2)), F.CN1D2),
+            F.Power(x, F.CN1),
+            F.Power(F.Plus(F.C1,
+                F.Times(F.Power(v1, F.CN1D2), F.Sqrt(F.Times(F.Plus(F.CN1, x), F.Plus(F.C1, x))))),
+                F.CN1D2));
+      }
+      case ID.ArcSec: {
+        // (Sqrt(-1+x)*Sqrt(-x))/(Sqrt(-1-x)*Sqrt(x))
+        IExpr v1 = F.Negate(x);
+        return F.Times(F.Power(F.Plus(F.CN1, v1), F.CN1D2), F.Sqrt(v1), F.Sqrt(F.Plus(F.CN1, x)),
+            F.Power(x, F.CN1D2));
+      }
+      case ID.ArcSin: {
+        // x/(1+Sqrt(1-x)*Sqrt(1+x))
+        return F.Times(x, F.Power(
+            F.Plus(F.C1, F.Times(F.Sqrt(F.Subtract(F.C1, x)), F.Sqrt(F.Plus(F.C1, x)))), F.CN1));
+      }
+      case ID.ArcTan: {
+        // x/(1+Sqrt(1+x^2))
+        return F.Times(x, F.Power(F.Plus(F.C1, F.Sqrt(F.Plus(F.C1, F.Sqr(x)))), F.CN1));
+      }
+      default:
     }
     return F.NIL;
   }

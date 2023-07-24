@@ -239,6 +239,21 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "Gamma(1+a)/(Gamma(1+a-b)*Gamma(1+b))");
   }
 
+  public void testFunctionC1D2TimesArcFunction() {
+    check("FunctionExpand(Cos(ArcSin(x)/2))", //
+        "Sqrt(1+Sqrt(1-x)*Sqrt(1+x))/Sqrt(2)");
+    check("FunctionExpand(Cot(ArcCsc(x)/2))", //
+        "x*Sqrt(1+Sqrt((-1+x)*(1+x))/Sqrt(x^2))*Sqrt((x^2+Sqrt(-1+x^2)*Sqrt(x^2))/x^2)");
+    check("FunctionExpand(Csc(ArcTan(x)/2))", //
+        "(Sqrt(2)*Sqrt(1+x^2)*Sqrt(1+1/Sqrt(1+x^2)))/x");
+    check("FunctionExpand(Sec(ArcCot(x)/2))", //
+        "Sqrt(2)/Sqrt(1+(Sqrt(-x)*Sqrt(x))/Sqrt(-1-x^2))");
+    check("FunctionExpand(Sin(ArcCos(x)/2))", //
+        "Sqrt(1-x)/Sqrt(2)");
+    check("FunctionExpand(Tan(ArcSin(x)/2))", //
+        "x/(1+Sqrt(1-x)*Sqrt(1+x))");
+  }
+
   public void testFunctionExpandMultinomial() {
     check("FunctionExpand(Multinomial(a,b))", //
         "Gamma(1+a+b)/(Gamma(1+a)*Gamma(1+b))");
@@ -273,6 +288,11 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "E^(I*1/2*Pi*x+I*1/2*Pi*y)");
     check("FunctionExpand(I^(3*x))", //
         "E^(I*3/2*Pi*x)");
+  }
+
+  public void testFunctionExpandLog() {
+    check("FunctionExpand(Log((1 + I Sqrt(3))/2))", //
+        "I*1/3*Pi");
   }
 
   public void testFunctionExpandSqrtDenest() {
