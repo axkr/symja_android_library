@@ -9721,6 +9721,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testFullSimplify() {
+    check("FullSimplify(Sign(z)*Abs(z))", //
+        "z");
     check("FullSimplify( Sqrt(9-4*Sqrt(5)))", //
         "-2+Sqrt(5)");
 
@@ -21612,6 +21614,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testSign() {
+    check("Sign(Power(z, (-11)^(-1)))", //
+        "1/Sign(z)^(1/11)");
+    check("Sign(Power(z, (13)^(-1)))", //
+        "Sign(z)^(1/13)");
+
     check("Sign(I^(2*Pi))", //
         "I^(2*Pi)");
     check("Sign(a*b^(-3)*c^2)", //
@@ -21688,6 +21695,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   // }
 
   public void testSimplify() {
+    // check("Simplify(Abs(Sign(z)), z!=0)", //
+    // "1");
+    check("Simplify(Sign(x), x<0)", //
+        "-1");
+
     check("Simplify(r0/.{r0->r})", //
         "r");
     check("Simplify(Log(E^n))", //

@@ -119,10 +119,12 @@ public class HashedOrderlessMatcher {
 
   /**
    * Evaluate an <code>Orderless</code> AST with the defined <code>HashedPatternRules</code> as long
-   * as the header of the given expression equals the evaluated expression.
+   * as the header of the given expression equals the evaluated expression. If
+   * <code>orderlessAST</code> has flag {@link IAST#IS_HASH_EVALED} enable, {@link F#NIL} will be
+   * returned.
    *
    * @param orderlessAST
-   * @return
+   * @return {@link F#NIL} if the flag {@link IAST#IS_HASH_EVALED} is enabled
    * @see HashedPatternRules
    */
   public IAST evaluateRepeated(final IAST orderlessAST, EvalEngine engine) {
@@ -130,6 +132,19 @@ public class HashedOrderlessMatcher {
       return F.NIL;
     }
 
+    return evaluateRepeatedNoCache(orderlessAST, engine);
+  }
+
+  /**
+   * Evaluate an <code>Orderless</code> AST &quot;uncached&quot; with the defined
+   * <code>HashedPatternRules</code> as long as the header of the given expression equals the
+   * evaluated expression.
+   *
+   * @param orderlessAST
+   * @return
+   * @see HashedPatternRules
+   */
+  public IAST evaluateRepeatedNoCache(final IAST orderlessAST, EvalEngine engine) {
     if (exists2ASTArguments(orderlessAST)) {
       IAST temp = orderlessAST;
       boolean evaled = false;

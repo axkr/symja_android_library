@@ -31,11 +31,24 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcherPlus;
+import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcherTimes;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRules;
+import org.matheclipse.core.patternmatching.hash.HashedPatternRulesTimes;
 import org.matheclipse.core.visit.AbstractVisitorBoolean;
 import org.matheclipse.core.visit.VisitorExpr;
 
 public class SimplifyFunctions {
+  private static HashedOrderlessMatcherTimes TIMES_ORDERLESS_MATCHER;
+
+  private static HashedOrderlessMatcherTimes initTimesHashMatcher() {
+    HashedOrderlessMatcherTimes timesMatcher = new HashedOrderlessMatcherTimes();
+    // Abs(z)*Sign(z) == z
+    timesMatcher.defineHashRule(new HashedPatternRulesTimes( //
+        F.Abs(x_), //
+        F.Sign(x_), //
+        F.x));
+    return timesMatcher;
+  }
 
   public static class SimplifiedResult {
     IExpr result;
@@ -1130,6 +1143,18 @@ public class SimplifyFunctions {
             } catch (RuntimeException rex) {
               //
             }
+          } else if (expr.isTimes()) {
+            try {
+              HashedOrderlessMatcher hashRuleMap = TIMES_ORDERLESS_MATCHER;
+              if (hashRuleMap != null) {
+                IAST temp = TIMES_ORDERLESS_MATCHER.evaluateRepeatedNoCache((IAST) expr, fEngine);
+                if (temp.isPresent()) {
+                  sResult.checkLess(temp);
+                }
+              }
+            } catch (RuntimeException rex) {
+              //
+            }
           }
           try {
             expr = F.eval(F.FunctionExpand(expr));
@@ -1290,18 +1315,11 @@ public class SimplifyFunctions {
         if (assumptionExpr.isPresent() && assumptionExpr.isAST()) {
           IAssumptions assumptions =
               org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
-          // IAssumptions assumptions = oldAssumptions;
-          // if (oldAssumptions == null) {
-          // assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
-          // } else {
-          // assumptions = oldAssumptions.copy();
-          // assumptions = assumptions.addAssumption((IAST) assumptionExpr);
-          // }
           if (assumptions != null) {
             engine.setAssumptions(assumptions);
             arg1 = AssumptionFunctions.refineAssumptions(arg1, assumptions, engine);
             count = complexityFunction.apply(arg1);
-            if (count < minCounter) {
+            if (count <= minCounter) {
               minCounter = count;
               result = arg1;
             }
@@ -1433,6 +1451,13 @@ public class SimplifyFunctions {
       return true;
     }
 
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, //
+          F.list(F.Rule(S.Assumptions, S.$Assumptions), //
+              F.Rule(S.ComplexityFunction, S.Automatic)));
+      TIMES_ORDERLESS_MATCHER = initTimesHashMatcher();
+    }
   }
 
   /**

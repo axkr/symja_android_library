@@ -362,6 +362,9 @@ public final class Arithmetic {
       if (arg1.isInterval()) {
         return IntervalSym.abs((IAST) arg1);
       }
+      if (arg1.isAST(S.Sign, 2) && arg1.first().isNonZeroRealResult()) {
+        return F.C1;
+      }
       return F.NIL;
     }
 
