@@ -102,6 +102,7 @@ public class BuiltinUsage {
     USAGE[ID.Csch] = "hyperbolic cosecant function";
     USAGE[ID.Count] = "count the number of occurrences of a pattern";
     USAGE[ID.Covariance] = "covariance matrix for a pair of datasets";
+    USAGE[ID.CubeRoot] = "real-valued cube root";
 
     USAGE[ID.D] = "partial derivative of a function";
     USAGE[ID.Definition] = "give values of a symbol in a form that can be stored in a package";
@@ -119,6 +120,7 @@ public class BuiltinUsage {
     USAGE[ID.DirectedInfinity] = "infinite quantity with a defined direction in the complex plane";
     USAGE[ID.DiscretePlot] = "discrete plot of a one-parameter function";
     USAGE[ID.DisjointQ] = "test whether two lists do not have common elements";
+    USAGE[ID.Divide] = "divide";
     USAGE[ID.Divisors] = "integer divisors";
     USAGE[ID.Do] = "evaluate an expression looping over a variable";
     USAGE[ID.Drop] = "remove a number of elements from a list";
@@ -258,13 +260,14 @@ public class BuiltinUsage {
     USAGE[ID.MathMLForm] = "format expression as MathML commands";
     USAGE[ID.MatrixForm] = "format as a matrix";
     USAGE[ID.MatrixQ] = "gives 'True' if the given argument is a list of equal-length lists";
-    USAGE[ID.Max] = "The smallest argument or the largest element of a list";
+    USAGE[ID.Max] = "the smallest argument or the largest element of a list";
     USAGE[ID.Mean] = "returns the statistical mean of a list";
     USAGE[ID.Median] = "central value of a dataset";
     USAGE[ID.MemberQ] = "test whether an element is a member of a list";
     USAGE[ID.Message] = "display a message";
     USAGE[ID.MessageName] = "message identifyier";
-    USAGE[ID.Min] = "The largest argument or the largest element of a list";
+    USAGE[ID.Min] = "the largest argument or the largest element of a list";
+    USAGE[ID.Minus] = "arithmetic negate";
     USAGE[ID.MinimalPolynomial] = "minimal polynomial for a general algebraic number";
     USAGE[ID.Missing] = "default value if a key is not found";
     USAGE[ID.Mod] = "the remainder in an integer division";
@@ -327,6 +330,7 @@ public class BuiltinUsage {
     USAGE[ID.Pick] = "pick out elements according to a boolean mask";
     USAGE[ID.Piecewise] = "an arbitrary piecewise function";
     USAGE[ID.Plot] = "curves of one or more functions";
+    USAGE[ID.Plus] = "add";
     USAGE[ID.Pochhammer] = "Pochhammer's symbols";
     USAGE[ID.PolarPlot] = "draw a polar plot";
     USAGE[ID.PolyGamma] = "polygamma function";
@@ -336,6 +340,7 @@ public class BuiltinUsage {
     USAGE[ID.Position] = "positions of matching elements";
     USAGE[ID.Positive] = "test whether an expression is a positive number";
     USAGE[ID.Postfix] = "postfix form";
+    USAGE[ID.Power] = "exponentiate";
     USAGE[ID.PowerExpand] = "expand out powers";
     USAGE[ID.PowerMod] = "modular powers and roots";
     USAGE[ID.Prefix] = "prefix form";
@@ -422,6 +427,7 @@ public class BuiltinUsage {
     USAGE[ID.Span] = "general specification for spans or blocks of elements";
     USAGE[ID.Split] = "split into runs of identical elements";
     USAGE[ID.SplitBy] = "split based on values of a function applied to elements";
+    USAGE[ID.Sqrt] = "square root";
     USAGE[ID.StandardDeviation] = "standard deviation of a dataset";
     USAGE[ID.StandardForm] = "default output format";
     USAGE[ID.StieltjesGamma] = "Stieltjes' function";
@@ -449,6 +455,7 @@ public class BuiltinUsage {
     USAGE[ID.SubsetQ] = "test if a list is a subset of another list";
     USAGE[ID.Subsets] = "list all the subsets";
     USAGE[ID.Subsuperscript] = "format an expression with a subscript and a superscript";
+    USAGE[ID.Subtract] = "subtract";
     USAGE[ID.Sum] = "discrete sum";
     USAGE[ID.Superscript] = "format an expression with a superscript";
     USAGE[ID.Switch] = "switch based on a value, with patterns allowed";
@@ -471,6 +478,7 @@ public class BuiltinUsage {
     USAGE[ID.TeXForm] = "formatted expression as TeX commands";
     USAGE[ID.Through] = "distribute operators that appears inside the head of expressions";
     USAGE[ID.Throw] = "throw an expression to be caught by a surrounding 'Catch'";
+    USAGE[ID.Times] = "multiply";
     USAGE[ID.ToCharacterCode] = "convert a string to a list of character codes";
     USAGE[ID.ToExpression] = "build an expression from formatted text";
     USAGE[ID.ToLowerCase] = "turn all the letters into lower case";
