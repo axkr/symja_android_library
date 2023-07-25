@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.S.x;
 import java.util.function.DoubleFunction;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -798,13 +799,32 @@ public class PiecewiseFunctions {
   }
 
 
-  private static final class RealSign extends AbstractEvaluator {
+  private static final class RealSign extends AbstractCoreFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
+      IExpr result = F.NIL;
+      IExpr arg1 = engine.evaluateNIL(ast.arg1());
+      if (arg1.isPresent()) {
+        result = F.RealSign(arg1);
+        arg1 = result;
+      } else {
+        arg1 = ast.arg1();
+      }
+      if (arg1.isList()) {
+        return ((IAST) arg1).mapThread(F.RealSign(F.Slot1), 1);
+      }
       if (arg1.isReal()) {
-        return arg1.sign();
+        if (arg1.isPositiveResult()) {
+          return F.C1;
+        }
+        if (arg1.isNegativeResult()) {
+          return F.CN1;
+        }
+        return F.C0;
+      }
+      if (arg1.isAST(S.RealSign, 2)) {
+        return arg1;
       }
       if (arg1.isNumericFunction(true)) {
         IExpr temp = engine.evalN(arg1);
@@ -821,7 +841,7 @@ public class PiecewiseFunctions {
       if (arg1.isNegativeInfinity()) {
         return F.CN1;
       }
-      return F.NIL;
+      return result;
     }
 
     @Override

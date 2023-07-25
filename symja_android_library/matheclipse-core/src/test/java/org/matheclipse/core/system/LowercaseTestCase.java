@@ -20408,6 +20408,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testRealSign() {
+    check("RealSign(1.1)", //
+        "1");
+    check("RealSign(RealSign(x))", //
+        "RealSign(x)");
+
     // TODO ? return -Abs(a)+Abs(b)
     check("Integrate(RealSign(x),{x,a,b})", //
         "-RealAbs(a)+RealAbs(b)");
@@ -21614,6 +21619,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testSign() {
+    check("Sign(Sign(z))", //
+        "Sign(z)");
     check("Sign(Power(z, (-11)^(-1)))", //
         "1/Sign(z)^(1/11)");
     check("Sign(Power(z, (13)^(-1)))", //
@@ -21695,8 +21702,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   // }
 
   public void testSimplify() {
-    // check("Simplify(Abs(Sign(z)), z!=0)", //
-    // "1");
+    check("Simplify(Abs(Sign(z)),z!=-1&& z!=0&&z!=1)", //
+        "1");
     check("Simplify(Sign(x), x<0)", //
         "-1");
 

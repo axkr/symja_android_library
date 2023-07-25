@@ -348,7 +348,7 @@ public class ApfloatNum implements INum {
   @Override
   public boolean isSame(IExpr expression, double epsilon) {
     if (expression instanceof ApfloatNum) {
-      return fApfloat.equals(((ApfloatNum) expression).fApfloat);
+      return fApfloat.compareTo(((ApfloatNum) expression).fApfloat) == 0;
     }
     return false;
   }
@@ -482,31 +482,31 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public boolean isE() {
-    return fApfloat.equals(EvalEngine.getApfloat().exp(Apfloat.ONE));
+    return fApfloat.compareTo(EvalEngine.getApfloat().exp(Apfloat.ONE)) == 0;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isMinusOne() {
-    return fApfloat.equals(ApfloatNum.MINUS_ONE);
+    return fApfloat.compareTo(ApfloatNum.MINUS_ONE) == 0;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isOne() {
-    return fApfloat.equals(Apfloat.ONE);
+    return fApfloat.compareTo(Apfloat.ONE) == 0;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isPi() {
-    return fApfloat.equals(EvalEngine.getApfloat().pi());
+    return fApfloat.compareTo(EvalEngine.getApfloat().pi()) == 0;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isRationalValue(IRational value) {
-    return fApfloat.equals(value.apfloatNumValue().fApfloat);
+    return fApfloat.compareTo(value.apfloatNumValue().fApfloat) == 0;
   }
 
   /** {@inheritDoc} */

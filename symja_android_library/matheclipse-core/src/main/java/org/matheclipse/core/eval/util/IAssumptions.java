@@ -4,6 +4,7 @@ import java.util.Map;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IReal;
 
 public interface IAssumptions {
@@ -229,6 +230,16 @@ public interface IAssumptions {
    * @return
    */
   public boolean isReal(IExpr expr);
+
+  /**
+   * Gives <code>true</code>, if the expression is assumed to unequal the number, <code>false
+   * </code> in all other cases.
+   * 
+   * @param expr
+   * @param number
+   * @return
+   */
+  public boolean isUnequal(IExpr expr, INumber number);
 
   /**
    * Reduce the integer range according to the assumptions.

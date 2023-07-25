@@ -596,6 +596,23 @@ public abstract class AbstractAssumptions implements IAssumptions {
     return null;
   }
 
+  public static boolean assumeUnequal(final IExpr expr, final INumber number) {
+    if (expr.isNumber()) {
+      return !expr.equals(number);
+    }
+    // if (expr.isRealConstant()) {
+    // return F.isFuzzyEquals(((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal(),
+    // number.doubleValue(), Config.MACHINE_EPSILON);
+    // }
+    IAssumptions assumptions = EvalEngine.get().getAssumptions();
+    if (assumptions != null) {
+      if (assumptions.isUnequal(expr, number)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public static ISymbol assumeVectors(final IExpr expr) {
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -919,6 +936,11 @@ public abstract class AbstractAssumptions implements IAssumptions {
 
   @Override
   public boolean isReal(IExpr expr) {
+    return false;
+  }
+
+  @Override
+  public boolean isUnequal(IExpr expr, INumber number) {
     return false;
   }
 

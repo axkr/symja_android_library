@@ -880,10 +880,7 @@ public class Num implements INum {
 
   @Override
   public Num sign() {
-    if (isNaN() || isZero()) {
-      return this;
-    }
-    return valueOf(Math.abs(value));
+    return F.num((int) Math.signum(value));
   }
 
   @Override

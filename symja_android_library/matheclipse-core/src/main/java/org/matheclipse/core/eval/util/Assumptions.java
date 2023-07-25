@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval.util;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import org.matheclipse.core.builtin.IOFunctions;
@@ -11,10 +12,32 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IDistribution;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class Assumptions extends AbstractAssumptions {
+  private static class ComplexRelations {
+
+    private final ArrayList<INumber> unequalValues;
+
+    public ComplexRelations() {
+      this.unequalValues = new ArrayList<INumber>();
+    }
+
+    public final void addUnequals(INumber expr) {
+      for (int i = 0; i < unequalValues.size(); i++) {
+        if (unequalValues.get(i).equals(expr)) {
+          return;
+        }
+      }
+      unequalValues.add(expr);
+    }
+
+    public final ArrayList<INumber> getUnequals() {
+      return unequalValues;
+    }
+  }
 
   private static class RealRelations {
 
@@ -234,23 +257,51 @@ public class Assumptions extends AbstractAssumptions {
     if (equalsAST.arg2().isReal()) {
       IReal num = (IReal) equalsAST.arg2();
       IExpr key = equalsAST.arg1();
-      RealRelations gla = assumptions.valueMap.get(key);
+      RealRelations gla = assumptions.realRelationsMap.get(key);
       if (gla == null) {
         gla = new RealRelations();
       }
       gla.addEquals(num);
-      assumptions.valueMap.put(key, gla);
+      assumptions.realRelationsMap.put(key, gla);
       return true;
     }
     if (equalsAST.arg1().isReal()) {
       IReal num = (IReal) equalsAST.arg1();
       IExpr key = equalsAST.arg2();
-      RealRelations gla = assumptions.valueMap.get(key);
+      RealRelations gla = assumptions.realRelationsMap.get(key);
       if (gla == null) {
         gla = new RealRelations();
       }
       gla.addEquals(num);
-      assumptions.valueMap.put(key, gla);
+      assumptions.realRelationsMap.put(key, gla);
+      return true;
+    }
+    return false;
+  }
+
+  private static boolean addUnequal(IAST equalsAST, Assumptions assumptions) {
+    // arg1 != arg2
+    if (equalsAST.arg2().isNumber()) {
+      INumber num = (INumber) equalsAST.arg2();
+      IExpr key = equalsAST.arg1();
+
+      ComplexRelations gla = assumptions.complexRelationsMap.get(key);
+      if (gla == null) {
+        gla = new ComplexRelations();
+      }
+      gla.addUnequals(num);
+      assumptions.complexRelationsMap.put(key, gla);
+      return true;
+    }
+    if (equalsAST.arg1().isNumber()) {
+      INumber num = (INumber) equalsAST.arg1();
+      IExpr key = equalsAST.arg2();
+      ComplexRelations gla = assumptions.complexRelationsMap.get(key);
+      if (gla == null) {
+        gla = new ComplexRelations();
+      }
+      gla.addUnequals(num);
+      assumptions.complexRelationsMap.put(key, gla);
       return true;
     }
     return false;
@@ -267,13 +318,13 @@ public class Assumptions extends AbstractAssumptions {
           IReal num1 = (IReal) arg1;
           IReal num3 = (IReal) arg3;
           IExpr key = arg2;
-          RealRelations gla = assumptions.valueMap.get(key);
+          RealRelations gla = assumptions.realRelationsMap.get(key);
           if (gla == null) {
             gla = new RealRelations();
           }
           gla.addLess(num1);
           gla.addGreater(num3);
-          assumptions.valueMap.put(key, gla);
+          assumptions.realRelationsMap.put(key, gla);
           return true;
         }
       }
@@ -289,12 +340,12 @@ public class Assumptions extends AbstractAssumptions {
     }
     if (num != null) {
       IExpr key = greaterAST.arg1();
-      RealRelations gla = assumptions.valueMap.get(key);
+      RealRelations gla = assumptions.realRelationsMap.get(key);
       if (gla == null) {
         gla = new RealRelations();
       }
       gla.addGreater(num);
-      assumptions.valueMap.put(key, gla);
+      assumptions.realRelationsMap.put(key, gla);
       return true;
     }
 
@@ -306,12 +357,12 @@ public class Assumptions extends AbstractAssumptions {
     }
     if (num != null) {
       IExpr key = greaterAST.arg2();
-      RealRelations gla = assumptions.valueMap.get(key);
+      RealRelations gla = assumptions.realRelationsMap.get(key);
       if (gla == null) {
         gla = new RealRelations();
       }
       gla.addLess(num);
-      assumptions.valueMap.put(key, gla);
+      assumptions.realRelationsMap.put(key, gla);
       return true;
     }
     return false;
@@ -328,13 +379,13 @@ public class Assumptions extends AbstractAssumptions {
           IReal num1 = (IReal) arg1;
           IReal num3 = (IReal) arg3;
           IExpr key = arg2;
-          RealRelations gla = assumptions.valueMap.get(key);
+          RealRelations gla = assumptions.realRelationsMap.get(key);
           if (gla == null) {
             gla = new RealRelations();
           }
           gla.addLessEqual(num1);
           gla.addGreaterEqual(num3);
-          assumptions.valueMap.put(key, gla);
+          assumptions.realRelationsMap.put(key, gla);
           return true;
         }
       }
@@ -350,12 +401,12 @@ public class Assumptions extends AbstractAssumptions {
     }
     if (num != null) {
       IExpr key = greaterEqualAST.arg1();
-      RealRelations gla = assumptions.valueMap.get(key);
+      RealRelations gla = assumptions.realRelationsMap.get(key);
       if (gla == null) {
         gla = new RealRelations();
       }
       gla.addGreaterEqual(num);
-      assumptions.valueMap.put(key, gla);
+      assumptions.realRelationsMap.put(key, gla);
       return true;
     }
 
@@ -367,12 +418,12 @@ public class Assumptions extends AbstractAssumptions {
     }
     if (num != null) {
       IExpr key = greaterEqualAST.arg2();
-      RealRelations gla = assumptions.valueMap.get(key);
+      RealRelations gla = assumptions.realRelationsMap.get(key);
       if (gla == null) {
         gla = new RealRelations();
       }
       gla.addLessEqual(num);
-      assumptions.valueMap.put(key, gla);
+      assumptions.realRelationsMap.put(key, gla);
       return true;
     }
     return false;
@@ -389,13 +440,13 @@ public class Assumptions extends AbstractAssumptions {
           IReal num1 = (IReal) arg1;
           IReal num3 = (IReal) arg3;
           IExpr key = arg2;
-          RealRelations gla = assumptions.valueMap.get(key);
+          RealRelations gla = assumptions.realRelationsMap.get(key);
           if (gla == null) {
             gla = new RealRelations();
           }
           gla.addGreater(num1);
           gla.addLess(num3);
-          assumptions.valueMap.put(key, gla);
+          assumptions.realRelationsMap.put(key, gla);
           return true;
         }
       }
@@ -411,12 +462,12 @@ public class Assumptions extends AbstractAssumptions {
     }
     if (num != null) {
       IExpr key = lessAST.arg1();
-      RealRelations gla = assumptions.valueMap.get(key);
+      RealRelations gla = assumptions.realRelationsMap.get(key);
       if (gla == null) {
         gla = new RealRelations();
       }
       gla.addLess(num);
-      assumptions.valueMap.put(key, gla);
+      assumptions.realRelationsMap.put(key, gla);
       return true;
     }
     num = null;
@@ -427,12 +478,12 @@ public class Assumptions extends AbstractAssumptions {
     }
     if (num != null) {
       IExpr key = lessAST.arg2();
-      RealRelations gla = assumptions.valueMap.get(key);
+      RealRelations gla = assumptions.realRelationsMap.get(key);
       if (gla == null) {
         gla = new RealRelations();
       }
       gla.addGreater(num);
-      assumptions.valueMap.put(key, gla);
+      assumptions.realRelationsMap.put(key, gla);
       return true;
     }
     return false;
@@ -450,13 +501,13 @@ public class Assumptions extends AbstractAssumptions {
           IReal num1 = (IReal) arg1;
           IReal num3 = (IReal) arg3;
           IExpr key = arg2;
-          RealRelations gla = assumptions.valueMap.get(key);
+          RealRelations gla = assumptions.realRelationsMap.get(key);
           if (gla == null) {
             gla = new RealRelations();
           }
           gla.addGreaterEqual(num1);
           gla.addLessEqual(num3);
-          assumptions.valueMap.put(key, gla);
+          assumptions.realRelationsMap.put(key, gla);
           return true;
         }
       }
@@ -472,12 +523,12 @@ public class Assumptions extends AbstractAssumptions {
     }
     if (num != null) {
       IExpr key = lessEqualAST.arg1();
-      RealRelations gla = assumptions.valueMap.get(key);
+      RealRelations gla = assumptions.realRelationsMap.get(key);
       if (gla == null) {
         gla = new RealRelations();
       }
       gla.addLessEqual(num);
-      assumptions.valueMap.put(key, gla);
+      assumptions.realRelationsMap.put(key, gla);
       return true;
     }
     num = null;
@@ -488,12 +539,12 @@ public class Assumptions extends AbstractAssumptions {
     }
     if (num != null) {
       IExpr key = lessEqualAST.arg2();
-      RealRelations gla = assumptions.valueMap.get(key);
+      RealRelations gla = assumptions.realRelationsMap.get(key);
       if (gla == null) {
         gla = new RealRelations();
       }
       gla.addGreaterEqual(num);
-      assumptions.valueMap.put(key, gla);
+      assumptions.realRelationsMap.put(key, gla);
       return true;
     }
     return false;
@@ -531,6 +582,10 @@ public class Assumptions extends AbstractAssumptions {
           }
         } else if (temp.isAST(S.Equal, 3)) {
           if (!addEqual(temp, assumptions)) {
+            return null;
+          }
+        } else if (temp.isAST(S.Unequal, 3)) {
+          if (!addUnequal(temp, assumptions)) {
             return null;
           }
         } else if (temp.isAnd()) {
@@ -583,9 +638,10 @@ public class Assumptions extends AbstractAssumptions {
 
   private Map<IExpr, IAST> tensorsMap = new HashMap<IExpr, IAST>();
 
-  private HashMap<IExpr, RealRelations> valueMap = new HashMap<IExpr, RealRelations>();
+  private HashMap<IExpr, RealRelations> realRelationsMap = new HashMap<IExpr, RealRelations>();
 
-  // private IExpr $assumptions = F.NIL;
+  private HashMap<IExpr, ComplexRelations> complexRelationsMap =
+      new HashMap<IExpr, ComplexRelations>();
 
   private Assumptions() {}
 
@@ -617,6 +673,10 @@ public class Assumptions extends AbstractAssumptions {
         if (addEqual(ast, this)) {
           return this;
         }
+      } else if (ast.isAST(S.Unequal, 3)) {
+        if (addUnequal(ast, this)) {
+          return this;
+        }
       } else if (ast.isAnd() || ast.isSameHeadSizeGE(S.List, 2)) {
         return addList(ast, this);
       } else if (ast.isAST(S.Distributed, 3)) {
@@ -633,7 +693,8 @@ public class Assumptions extends AbstractAssumptions {
     Assumptions assumptions = new Assumptions();
     assumptions.distributionsMap = new HashMap<>(distributionsMap);
     assumptions.elementsMap = new HashMap<>(elementsMap);
-    assumptions.valueMap = new HashMap<>(valueMap);
+    assumptions.realRelationsMap = new HashMap<>(realRelationsMap);
+    assumptions.complexRelationsMap = new HashMap<>(complexRelationsMap);
     // if ($assumptions.isPresent()) {
     // assumptions.$assumptions = $assumptions.copy();
     // } else {
@@ -681,7 +742,7 @@ public class Assumptions extends AbstractAssumptions {
   @Override
   public boolean isEqual(IExpr expr, IReal number) {
     IReal num;
-    RealRelations gla = valueMap.get(expr);
+    RealRelations gla = realRelationsMap.get(expr);
     if (gla != null) {
       num = gla.getEquals();
       if (num != null) {
@@ -696,7 +757,7 @@ public class Assumptions extends AbstractAssumptions {
   @Override
   public boolean isGreaterEqual(IExpr expr, IReal number) {
     IReal num;
-    RealRelations gla = valueMap.get(expr);
+    RealRelations gla = realRelationsMap.get(expr);
     if (gla != null) {
       boolean result = false;
       num = gla.getGreater();
@@ -724,7 +785,7 @@ public class Assumptions extends AbstractAssumptions {
   @Override
   public boolean isGreaterThan(IExpr expr, IReal number) {
     IReal num;
-    RealRelations gla = valueMap.get(expr);
+    RealRelations gla = realRelationsMap.get(expr);
     if (gla != null) {
       boolean result = false;
       num = gla.getGreater();
@@ -758,7 +819,7 @@ public class Assumptions extends AbstractAssumptions {
   @Override
   public boolean isLessEqual(IExpr expr, IReal number) {
     IReal num;
-    RealRelations gla = valueMap.get(expr);
+    RealRelations gla = realRelationsMap.get(expr);
     if (gla != null) {
       boolean result = false;
       num = gla.getLess();
@@ -786,7 +847,7 @@ public class Assumptions extends AbstractAssumptions {
   @Override
   public boolean isLessThan(IExpr expr, IReal number) {
     IReal num;
-    RealRelations gla = valueMap.get(expr);
+    RealRelations gla = realRelationsMap.get(expr);
     if (gla != null) {
       boolean result = false;
       num = gla.getLess();
@@ -869,11 +930,23 @@ public class Assumptions extends AbstractAssumptions {
 
   @Override
   public boolean isReal(IExpr expr) {
-    RealRelations relation = valueMap.get(expr);
+    RealRelations relation = realRelationsMap.get(expr);
     if (relation != null && relation.isLessOrGreaterRelation()) {
       return true;
     }
     return isDomain(expr, S.Reals);
+  }
+
+  @Override
+  public boolean isUnequal(IExpr expr, INumber number) {
+    ComplexRelations gla = complexRelationsMap.get(expr);
+    if (gla != null) {
+      ArrayList<INumber> unequals = gla.getUnequals();
+      if (unequals.contains(number)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override
@@ -886,7 +959,7 @@ public class Assumptions extends AbstractAssumptions {
     if (temp != null) {
       return null;
     }
-    RealRelations rr = valueMap.get(x);
+    RealRelations rr = realRelationsMap.get(x);
     if (rr != null) {
       int[] newXRange = new int[] {xRange[0], xRange[1]};
       boolean evaled = false;

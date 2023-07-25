@@ -2988,6 +2988,10 @@ public interface IExpr
     return AbstractAssumptions.assumeNegative(this);
   }
 
+  default boolean isUnequalResult(INumber num) {
+    return AbstractAssumptions.assumeUnequal(this, num);
+  }
+
   /**
    * Test if this expression has a negative result (i.e. <code>Re(this)<0</code>) for it's real part
    * or is assumed to have a negative real part.
@@ -3075,6 +3079,9 @@ public interface IExpr
     if (isNumber()) {
       return true;
     }
+    if (isUnequalResult(F.C0)) {
+      return true;
+    }
     return false;
   }
 
@@ -3088,10 +3095,13 @@ public interface IExpr
     if (isZero()) {
       return false;
     }
-    if (isNegativeResult() || isPositiveResult()) {
+    if (isReal()) {
       return true;
     }
-    if (isReal()) {
+    if (isNumber()) {
+      return false;
+    }
+    if (isNegativeResult() || isPositiveResult()) {
       return true;
     }
     if (isNegativeInfinity() || isInfinity()) {
