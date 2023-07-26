@@ -6,6 +6,7 @@ import org.apfloat.FixedPrecisionApfloatHelper;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -18,7 +19,8 @@ import org.matheclipse.core.interfaces.IReal;
  * <p>
  * Intervals will be represented by objects with head {@link S#IntervalData} wrapped around a
  * sequence of quadruples of the form, e.g., <code>{a,Less,LessEqual,b}</code> representing the half
- * open interval <code>(a,b]</code>. The empty interval is represented by <code>Interval()</code>.
+ * open interval <code>(a,b]</code>. The empty interval is represented by
+ * <code>IntervalData()</code>.
  * 
  * <p>
  * See: <a href=
@@ -42,8 +44,181 @@ public class IntervalDataSym {
     }
   };
 
+  /**
+   * Returns the intersection of two intervals.
+   * 
+   * @param interval1 the first interval
+   * @param interval2 the second interval
+   * @param engine the evaluation engine
+   * @return the intersection of the two intervals
+   */
+  public static IAST intersectionIntervalData(final IAST interval1, final IAST interval2,
+      EvalEngine engine) {
+    IASTAppendable result = F.ast(S.IntervalData, 3);
+
+    for (int i = 1; i < interval1.size(); i++) {
+      IAST list1 = (IAST) interval1.get(i);
+      for (int j = 1; j < interval2.size(); j++) {
+        IExpr min1 = list1.arg1();
+        IBuiltInSymbol left1 = (IBuiltInSymbol) list1.arg2();
+        IBuiltInSymbol right1 = (IBuiltInSymbol) list1.arg3();
+        IExpr max1 = list1.arg4();
+
+
+        IAST list2 = (IAST) interval2.get(j);
+        IExpr min2 = list2.arg1();
+        IBuiltInSymbol left2 = (IBuiltInSymbol) list2.arg2();
+        IBuiltInSymbol right2 = (IBuiltInSymbol) list2.arg3();
+        IExpr max2 = list2.arg4();
+        if (S.Less.ofQ(engine, max1, min2) || S.Less.ofQ(engine, max2, min1)) {
+          continue;
+        }
+        if (S.Equal.ofQ(engine, max1, min2)) {
+          if (right1 == S.Less || left2 == S.Less) {
+            continue;
+          }
+        }
+        if (S.Equal.ofQ(engine, max2, min1)) {
+          if (right2 == S.Less || left1 == S.Less) {
+            continue;
+          }
+        }
+        if (S.LessEqual.ofQ(engine, min1, min2)) {
+          if (S.Equal.ofQ(engine, min1, min2)) {
+            if (left2 == S.Less) {
+              min1 = min2;
+              left1 = left2;
+            }
+          } else {
+            min1 = min2;
+            left1 = left2;
+          }
+        }
+        if (S.GreaterEqual.ofQ(engine, max1, max2)) {
+          if (S.Equal.ofQ(engine, max1, max2)) {
+            if (right2 == S.Less) {
+              max1 = max2;
+              right1 = right2;
+            }
+          } else {
+            max1 = max2;
+            right1 = right2;
+          }
+        }
+        result.append(F.List(min1, left1, right1, max1));
+      }
+    }
+    return result;
+  }
+
+  private static Apfloat[] interval(Apfloat x) {
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    return new Apfloat[] {h.nextDown(x), h.nextUp(x)};
+  }
+
+  public static IExpr intervalToOr(IAST andCopy, IAST interval, IExpr variable) {
+    IASTAppendable orAST = F.ast(S.Or, interval.argSize());
+    for (int i = 1; i < interval.size(); i++) {
+      IAST list = (IAST) interval.get(i);
+      if (list.isEmptyList() || list.argSize() != 4) {
+        return S.False;
+      }
+      IASTAppendable andArg = andCopy.copyAppendable();
+      if (list.arg1().isNegativeInfinity()) {
+        if (list.arg4().isInfinity()) {
+          //
+        } else if (list.arg3() == S.Less) {
+          andArg.append(F.Less(variable, list.arg4()));
+        } else if (list.arg3() == S.LessEqual) {
+          andArg.append(F.LessEqual(variable, list.arg4()));
+        }
+      } else if (list.arg4().isInfinity()) {
+        if (list.arg2() == S.Less) {
+          andArg.append(F.Greater(variable, list.arg1()));
+        } else if (list.arg2() == S.LessEqual) {
+          andArg.append(F.GreaterEqual(variable, list.arg1()));
+        }
+      } else {
+        if (list.arg1().equals(list.arg4())//
+            && list.arg2() == S.LessEqual//
+            && list.arg3() == S.LessEqual) {
+          andArg.append(F.binaryAST2(S.Equal, variable, list.arg1()));
+        } else {
+          andArg.append(F.binaryAST2(list.arg2(), list.arg1(), variable));
+          andArg.append(F.binaryAST2(list.arg3(), variable, list.arg4()));
+        }
+      }
+      orAST.append(andArg);
+    }
+    return orAST;
+  }
+
+  public static IExpr intervalToOr(IAST interval, IExpr variable) {
+    return intervalToOr(F.ast(S.And, 2), interval, variable);
+  }
+
   private static boolean isNormalized(final IAST interval) {
     return interval.isEvalFlagOn(IAST.BUILT_IN_EVALED);
+  }
+
+  private static IAST minMax(IExpr min1Min2, IExpr min1Max2, IExpr max1Min2, IExpr max1Max2,
+      IBuiltInSymbol[] symbols) {
+    int[] index = new int[] {0, 1};
+    IExpr min = min1Min2;
+    IExpr max = min1Max2;
+    if (min1Min2.greaterThan(min1Max2).isTrue()) {
+      index[0] = 1;
+      index[1] = 0;
+      min = min1Max2;
+      max = min1Min2;
+    }
+    if (max1Min2.greaterThan(max).isTrue()) {
+      index[1] = 2;
+      max = max1Min2;
+    } else if (max1Min2.lessThan(min).isTrue()) {
+      index[0] = 2;
+      min = max1Min2;
+    }
+    if (max1Max2.greaterThan(max).isTrue()) {
+      index[1] = 3;
+      max = max1Max2;
+    } else if (max1Max2.lessThan(min).isTrue()) {
+      index[0] = 3;
+      min = max1Max2;
+    }
+    IBuiltInSymbol left = S.LessEqual;
+    switch (index[0]) {
+      case 0:
+        left = precedence(symbols[0], symbols[1]);
+        break;
+      case 1:
+        left = precedence(symbols[0], symbols[3]);
+        break;
+      case 2:
+        left = precedence(symbols[1], symbols[2]);
+        break;
+      case 3:
+        left = precedence(symbols[1], symbols[3]);
+        break;
+      default:
+    }
+    IBuiltInSymbol right = S.LessEqual;
+    switch (index[1]) {
+      case 0:
+        right = precedence(symbols[0], symbols[1]);
+        break;
+      case 1:
+        right = precedence(symbols[0], symbols[3]);
+        break;
+      case 2:
+        right = precedence(symbols[1], symbols[2]);
+        break;
+      case 3:
+        right = precedence(symbols[1], symbols[3]);
+        break;
+      default:
+    }
+    return F.List(min, left, right, max);
   }
 
   /**
@@ -180,11 +355,6 @@ public class IntervalDataSym {
       }
     }
     return F.NIL;
-  }
-
-  private static Apfloat[] interval(Apfloat x) {
-    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-    return new Apfloat[] {h.nextDown(x), h.nextUp(x)};
   }
 
   /**
@@ -348,72 +518,37 @@ public class IntervalDataSym {
     return F.NIL;
   }
 
-  private static IAST minMax(IExpr min1Min2, IExpr min1Max2, IExpr max1Min2, IExpr max1Max2,
-      IBuiltInSymbol[] symbols) {
-    int[] index = new int[] {0, 1};
-    IExpr min = min1Min2;
-    IExpr max = min1Max2;
-    if (min1Min2.greaterThan(min1Max2).isTrue()) {
-      index[0] = 1;
-      index[1] = 0;
-      min = min1Max2;
-      max = min1Min2;
-    }
-    if (max1Min2.greaterThan(max).isTrue()) {
-      index[1] = 2;
-      max = max1Min2;
-    } else if (max1Min2.lessThan(min).isTrue()) {
-      index[0] = 2;
-      min = max1Min2;
-    }
-    if (max1Max2.greaterThan(max).isTrue()) {
-      index[1] = 3;
-      max = max1Max2;
-    } else if (max1Max2.lessThan(min).isTrue()) {
-      index[0] = 3;
-      min = max1Max2;
-    }
-    IBuiltInSymbol left = S.LessEqual;
-    switch (index[0]) {
-      case 0:
-        left = precedence(symbols[0], symbols[1]);
-        break;
-      case 1:
-        left = precedence(symbols[0], symbols[3]);
-        break;
-      case 2:
-        left = precedence(symbols[1], symbols[2]);
-        break;
-      case 3:
-        left = precedence(symbols[1], symbols[3]);
-        break;
-      default:
-    }
-    IBuiltInSymbol right = S.LessEqual;
-    switch (index[1]) {
-      case 0:
-        right = precedence(symbols[0], symbols[1]);
-        break;
-      case 1:
-        right = precedence(symbols[0], symbols[3]);
-        break;
-      case 2:
-        right = precedence(symbols[1], symbols[2]);
-        break;
-      case 3:
-        right = precedence(symbols[1], symbols[3]);
-        break;
-      default:
-    }
-    return F.List(min, left, right, max);
+  private static IBuiltInSymbol precedence(IBuiltInSymbol s1, IBuiltInSymbol s2) {
+    return (s1 == S.Less || s2 == S.Less) ? S.Less : S.LessEqual;
   }
 
   private static IBuiltInSymbol precedenceUnion(IBuiltInSymbol s1, IBuiltInSymbol s2) {
     return (s1 == S.LessEqual || s2 == S.LessEqual) ? S.LessEqual : S.Less;
   }
 
-  private static IBuiltInSymbol precedence(IBuiltInSymbol s1, IBuiltInSymbol s2) {
-    return (s1 == S.Less || s2 == S.Less) ? S.Less : S.LessEqual;
+  public static IAST relationToInterval(int headID, IExpr rhs) {
+    switch (headID) {
+      case ID.Greater:
+        return F.IntervalData(//
+            F.List(rhs, S.Less, S.Less, F.CInfinity));
+      case ID.GreaterEqual:
+        return F.IntervalData(//
+            F.List(rhs, S.LessEqual, S.Less, F.CInfinity));
+      case ID.Less:
+        return F.IntervalData(//
+            F.List(F.CNInfinity, S.Less, S.Less, rhs));
+      case ID.LessEqual:
+        return F.IntervalData(//
+            F.List(F.CNInfinity, S.Less, S.LessEqual, rhs));
+      case ID.Equal:
+        return F.IntervalData(//
+            F.List(rhs, S.LessEqual, S.LessEqual, rhs));
+      case ID.Unequal:
+        return F.IntervalData(//
+            F.List(F.CNInfinity, S.Less, S.Less, rhs), //
+            F.List(rhs, S.Less, S.Less, F.CInfinity));
+    }
+    throw new ArgumentTypeStopException("Not implemented");
   }
 
   public static IExpr times(final IAST ast1, final IAST ast2) {
@@ -478,6 +613,18 @@ public class IntervalDataSym {
       return result;
     }
     return F.NIL;
+  }
+
+  public static IAST union(final IAST interval1, final IAST interval2, EvalEngine engine) {
+    IASTAppendable result = F.ast(S.IntervalData, interval1.size() + interval2.size());
+    result.appendArgs(interval1);
+    result.appendArgs(interval2);
+
+    IAST normalized = normalize(result, engine);
+    if (normalized.isInvalid()) {
+      return F.NIL;
+    }
+    return normalized.orElse(result);
   }
 
 }

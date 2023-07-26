@@ -572,7 +572,7 @@ public class IntervalFunctions {
         if (normalizedArg.isNIL()) {
           normalizedArg = interval;
         }
-        result = intersectionIntervalData(result, normalizedArg, engine);
+        result = IntervalDataSym.intersectionIntervalData(result, normalizedArg, engine);
         if (result.size() == 1) {
           return result;
         }
@@ -612,67 +612,7 @@ public class IntervalFunctions {
     }
 
 
-    /**
-     * Returns the intersection of two intervals.
-     * 
-     * @param interval1 the first interval
-     * @param interval2 the second interval
-     * @param engine the evaluation engine
-     * @return the intersection of the two intervals
-     */
-    private static IAST intersectionIntervalData(final IAST interval1, final IAST interval2,
-        EvalEngine engine) {
-      IASTAppendable result = F.ast(S.IntervalData, 3);
 
-      for (int i = 1; i < interval1.size(); i++) {
-        IAST list1 = (IAST) interval1.get(i);
-        for (int j = 1; j < interval2.size(); j++) {
-          IExpr min1 = list1.arg1();
-          IBuiltInSymbol left1 = (IBuiltInSymbol) list1.arg2();
-          IBuiltInSymbol right1 = (IBuiltInSymbol) list1.arg3();
-          IExpr max1 = list1.arg4();
-
-
-          IAST list2 = (IAST) interval2.get(j);
-          IExpr min2 = list2.arg1();
-          IBuiltInSymbol left2 = (IBuiltInSymbol) list2.arg2();
-          IBuiltInSymbol right2 = (IBuiltInSymbol) list2.arg3();
-          IExpr max2 = list2.arg4();
-          if (S.Less.ofQ(engine, max1, min2) || S.Less.ofQ(engine, max2, min1)) {
-            continue;
-          }
-          if (S.Equal.ofQ(engine, max1, min2) || S.Equal.ofQ(engine, max2, min1)) {
-            if (right1 == S.Less || left2 == S.Less) {
-              continue;
-            }
-          }
-          if (S.LessEqual.ofQ(engine, min1, min2)) {
-            if (S.Equal.ofQ(engine, min1, min2)) {
-              if (left2 == S.Less) {
-                min1 = min2;
-                left1 = left2;
-              }
-            } else {
-              min1 = min2;
-              left1 = left2;
-            }
-          }
-          if (S.GreaterEqual.ofQ(engine, max1, max2)) {
-            if (S.Equal.ofQ(engine, max1, max2)) {
-              if (right2 == S.Less) {
-                max1 = max2;
-                right1 = right2;
-              }
-            } else {
-              max1 = max2;
-              right1 = right2;
-            }
-          }
-          result.append(F.List(min1, left1, right1, max1));
-        }
-      }
-      return result;
-    }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
