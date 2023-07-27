@@ -5,13 +5,7 @@
  */
 package uk.ac.ed.ph.snuggletex.internal.util;
 
-import uk.ac.ed.ph.snuggletex.SerializationSpecifier;
-import uk.ac.ed.ph.snuggletex.SnuggleRuntimeException;
-import uk.ac.ed.ph.snuggletex.definitions.Globals;
-import uk.ac.ed.ph.snuggletex.utilities.StylesheetManager;
-
 import java.io.StringWriter;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -21,11 +15,14 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import uk.ac.ed.ph.snuggletex.SerializationSpecifier;
+import uk.ac.ed.ph.snuggletex.SnuggleRuntimeException;
+import uk.ac.ed.ph.snuggletex.definitions.Globals;
+import uk.ac.ed.ph.snuggletex.utilities.StylesheetManager;
 
 /**
  * Some trivial little helpers for creating suitably-configured {@link TransformerFactory}
@@ -42,8 +39,8 @@ public final class XMLUtilities {
    * Explicit name of the SAXON 9.X TransformerFactoryImpl Class, as used by the up-conversion
    * extensions
    */
-  public static final String SAXON_TRANSFORMER_FACTORY_CLASS_NAME =
-      "net.sf.saxon.TransformerFactoryImpl";
+  // public static final String SAXON_TRANSFORMER_FACTORY_CLASS_NAME =
+  // "net.sf.saxon.TransformerFactoryImpl";
 
   /**
    * Creates an instance of the currently specified JAXP {@link TransformerFactory}, ensuring that
@@ -74,40 +71,6 @@ public final class XMLUtilities {
               + feature
               + " in order to be used with SnuggleTeX");
     }
-  }
-
-  public static boolean isSaxonAvailable() {
-    try {
-      Class.forName(SAXON_TRANSFORMER_FACTORY_CLASS_NAME);
-      return true;
-    } catch (Exception e) {
-      return false;
-    }
-  }
-
-  /**
-   * Explicitly creates a Saxon 9 {@link TransformerFactory}, as used by the up-conversion
-   * extensions.
-   */
-  public static TransformerFactory createSaxonTransformerFactory() {
-    TransformerFactory transformerFactory;
-    try {
-      /* We call up SAXON explicitly without going through the usual factory path */
-      transformerFactory =
-          (TransformerFactory) Class.forName(SAXON_TRANSFORMER_FACTORY_CLASS_NAME).newInstance();
-    } catch (Exception e) {
-      throw new SnuggleRuntimeException(
-          "Failed to explicitly instantiate Saxon "
-              + SAXON_TRANSFORMER_FACTORY_CLASS_NAME
-              + " class - check your ClassPath!",
-          e);
-    }
-    /* Make sure we have DOM-based features */
-    requireFeature(transformerFactory, DOMSource.FEATURE);
-    requireFeature(transformerFactory, DOMResult.FEATURE);
-
-    /* Must have been OK! */
-    return transformerFactory;
   }
 
   /**

@@ -5,10 +5,9 @@
  */
 package uk.ac.ed.ph.snuggletex.utilities;
 
+import javax.xml.transform.TransformerFactory;
 import uk.ac.ed.ph.snuggletex.SnuggleRuntimeException;
 import uk.ac.ed.ph.snuggletex.internal.util.XMLUtilities;
-
-import javax.xml.transform.TransformerFactory;
 
 /**
  * Default implementation of {@link TransformerFactoryChooser} that uses the usual JAXP factory
@@ -33,10 +32,12 @@ public final class DefaultTransformerFactoryChooser implements TransformerFactor
 
   // -----------------------------------------------------------
 
+  @Override
   public boolean isXSLT20SupportAvailable() {
-    return XMLUtilities.isSaxonAvailable();
+    return false;// XMLUtilities.isSaxonAvailable();
   }
 
+  @Override
   public TransformerFactory getSuitableXSLT10TransformerFactory() {
     try {
       return XMLUtilities.createJAXPTransformerFactory();
@@ -48,14 +49,14 @@ public final class DefaultTransformerFactoryChooser implements TransformerFactor
     }
   }
 
+  @Override
   public TransformerFactory getSuitableXSLT20TransformerFactory() {
-    try {
-      return XMLUtilities.createSaxonTransformerFactory();
-    } catch (SnuggleRuntimeException e) {
+    // try {
+    // return XMLUtilities.createSaxonTransformerFactory();
+    // } catch (SnuggleRuntimeException e) {
       throw new SnuggleRuntimeException(
           getClass().getSimpleName()
-              + " could not select, create and configure a suitable XSLT 2.0 processor",
-          e);
-    }
+              + " could not select, create and configure a suitable XSLT 2.0 processor");
+    // }
   }
 }
