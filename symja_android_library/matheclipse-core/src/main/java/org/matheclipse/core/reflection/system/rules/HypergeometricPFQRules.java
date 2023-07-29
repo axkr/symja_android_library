@@ -15,10 +15,19 @@ public interface HypergeometricPFQRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 2 };
+  final public static int[] SIZES = { 0, 5 };
 
   final public static IAST RULES = List(
     IInit(HypergeometricPFQ, SIZES),
+    // HypergeometricPFQ({},{},z_):=E^z
+    ISetDelayed(HypergeometricPFQ(List(),List(),z_),
+      Exp(z)),
+    // HypergeometricPFQ({a_},{},z_):=(1-z)^(-a)
+    ISetDelayed(HypergeometricPFQ(list(a_),List(),z_),
+      Power(Subtract(C1,z),Negate(a))),
+    // HypergeometricPFQ({},{b_},z_):=z^(1/2-b/2)*BesselI(-1+b,2*Sqrt(z))*Gamma(b)
+    ISetDelayed(HypergeometricPFQ(List(),list(b_),z_),
+      Times(Power(z,Plus(C1D2,Times(CN1D2,b))),BesselI(Plus(CN1,b),Times(C2,Sqrt(z))),Gamma(b))),
     // HypergeometricPFQ({a_,b_},{c_,b_},z_):=HypergeometricPFQ({a},{c},z)
     ISetDelayed(HypergeometricPFQ(list(a_,b_),list(c_,b_),z_),
       HypergeometricPFQ(list(a),list(c),z)),

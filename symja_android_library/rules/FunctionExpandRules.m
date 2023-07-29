@@ -73,6 +73,7 @@
    
  HypergeometricPFQ({1/2}, {1, 1}, z_) := BesselI(0, Sqrt(z))^2,
  HypergeometricPFQ({a_}, {b_}, z_) := Hypergeometric1F1(a,b,z),
+ HypergeometricPFQ({a_,b_}, {c_}, z_) := Hypergeometric2F1(a,b,c,z),
  Hypergeometric2F1(2, b_, c_, -1/2) := (3-b)/3
   /; (5/2 - 1/2*b)==Expand(c), 
  Hypergeometric2F1(a_, a_ + 1/2, c_, z_) := (2^(-1+2*a)*(1+Sqrt(1-z))^(1-2*a))/Sqrt(1-z)

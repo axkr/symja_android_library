@@ -4658,6 +4658,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testD() {
+    check("D(HypergeometricPFQ({}, {}, x), x)", //
+        "E^x");
+    check("D(HypergeometricPFQ({a}, {}, x), x)", //
+        "a/(1-x)^(1+a)");
+    check("D(HypergeometricPFQ({a,b}, {u,v,w}, x), x)", //
+        "(a*b*HypergeometricPFQ({1+a,1+b},{1+u,1+v,1+w},x))/(u*v*w)");
+    check("D(HypergeometricPFQ({a, b,c,d,e,f}, {u,v,w,y,z}, x), x)", //
+        "(a*b*c*d*e*f*HypergeometricPFQ({1+a,1+b,1+c,1+d,1+e,1+f},{1+u,1+v,1+w,1+y,1+z},x))/(u*v*w*y*z)");
+
     check("D(HarmonicNumber(Sin(Cos(x)), y), x)", //
         "y*Cos(Cos(x))*Sin(x)*(HarmonicNumber(Sin(Cos(x)),1+y)-Zeta(1+y))");
     check("D(Sin(f(x)),{x,3})", //

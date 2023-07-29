@@ -471,52 +471,20 @@ public class D extends AbstractFunctionEvaluator implements DRules {
       } else if (function.isTimes()) {
         return function.map(F.PlusAlloc(16), new BinaryBindIth1st(function, F.D(S.Null, x)));
       } else if (function.isPower()) {
-        // f ^ g
-        final IExpr f = function.base();
-        final IExpr g = function.exponent();
-        if (g.isFree(x)) {
-          // g*D(f,y)*f^(g-1)
-          return F.Times(g, F.D(f, x), F.Power(f, g.dec()));
-        }
-        if (f.isFree(x)) {
-          if (f.isE()) {
-            return F.Times(F.D(g, x), F.Exp(g));
-          }
-          // D(g,y)*Log(f)*f^g
-          return F.Times(F.D(g, x), F.Log(f), F.Power(f, g));
-        }
-
-        // D[f_^g_,y_]:= f^g*(((g*D[f,y])/f)+Log[f]*D[g,y])
-        final IASTAppendable resultList = F.TimesAlloc(2);
-        resultList.append(F.Power(f, g));
-        resultList
-            .append(F.Plus(F.Times(g, F.D(f, x), F.Power(f, F.CN1)), F.Times(F.Log(f), F.D(g, x))));
-        return resultList;
+        return power(function, x);
       } else if (function.isAST(S.Surd, 3)) {
         // Surd[f,g]
-        final IExpr f = function.base();
-
-        if (function.exponent().isInteger()) {
-          final IInteger g = (IInteger) function.exponent();
-          if (g.isMinusOne()) {
-            return F.Times(F.CN1, F.D(f, x), F.Power(f, F.CN2));
-          }
-          final IRational gInverse = g.inverse();
-          if (g.isNegative()) {
-            if (g.isEven()) {
-              return F.Times(gInverse, F.D(f, x), F.Power(F.Surd(f, g.negate()), g.dec()));
-            }
-            return F.Times(gInverse, F.D(f, x), F.Power(f, F.CN1),
-                F.Power(F.Surd(f, g.negate()), F.CN1));
-          }
-          return F.Times(gInverse, F.D(f, x), F.Power(F.Surd(f, g), g.dec().negate()));
-        }
+        return surd(function, x);
       } else if ((header == S.Log) && (function.isAST2())) {
         if (function.isFreeAt(1, x)) {
           // D[Log[i_FreeQ(x), x_], z_]:= (x*Log[a])^(-1)*D[x,z];
           return F.Times(F.Power(F.Times(function.arg2(), F.Log(function.arg1())), F.CN1),
               F.D(function.arg2(), x));
         }
+      } else if (function.isAST(S.HypergeometricPFQ, 4)//
+          && function.first().isList()//
+          && function.second().isList()) {
+        return hypergeometricPFQ(function, x);
         // } else if (header == F.LaplaceTransform && (listArg1.size()
         // == 4)) {
         // if (listArg1.arg3().equals(x) && listArg1.arg1().isFree(x,
@@ -562,6 +530,76 @@ public class D extends AbstractFunctionEvaluator implements DRules {
       } else if (function.isAST() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
         return getDerivativeArgN(x, function, header);
       }
+    }
+    return F.NIL;
+  }
+
+  private static IExpr power(final IAST function, IExpr x) {
+    // f ^ g
+    final IExpr f = function.base();
+    final IExpr g = function.exponent();
+    if (g.isFree(x)) {
+      // g*D(f,y)*f^(g-1)
+      return F.Times(g, F.D(f, x), F.Power(f, g.dec()));
+    }
+    if (f.isFree(x)) {
+      if (f.isE()) {
+        return F.Times(F.D(g, x), F.Exp(g));
+      }
+      // D(g,y)*Log(f)*f^g
+      return F.Times(F.D(g, x), F.Log(f), F.Power(f, g));
+    }
+
+    // D[f_^g_,y_]:= f^g*(((g*D[f,y])/f)+Log[f]*D[g,y])
+    final IASTAppendable resultList = F.TimesAlloc(2);
+    resultList.append(F.Power(f, g));
+    resultList
+        .append(F.Plus(F.Times(g, F.D(f, x), F.Power(f, F.CN1)), F.Times(F.Log(f), F.D(g, x))));
+    return resultList;
+  }
+
+  private static IExpr surd(final IAST function, IExpr x) {
+    final IExpr f = function.base();
+    if (function.exponent().isInteger()) {
+      final IInteger g = (IInteger) function.exponent();
+      if (g.isMinusOne()) {
+        return F.Times(F.CN1, F.D(f, x), F.Power(f, F.CN2));
+      }
+      final IRational gInverse = g.inverse();
+      if (g.isNegative()) {
+        if (g.isEven()) {
+          return F.Times(gInverse, F.D(f, x), F.Power(F.Surd(f, g.negate()), g.dec()));
+        }
+        return F.Times(gInverse, F.D(f, x), F.Power(f, F.CN1),
+            F.Power(F.Surd(f, g.negate()), F.CN1));
+      }
+      return F.Times(gInverse, F.D(f, x), F.Power(F.Surd(f, g), g.dec().negate()));
+    }
+    return F.NIL;
+  }
+
+  private static IExpr hypergeometricPFQ(final IAST function, IExpr x) {
+    IAST list1 = (IAST) function.first();
+    IAST list2 = (IAST) function.second();
+    if (list1.isFree(x)&&list2.isFree(x)) { 
+    IExpr arg3 = function.arg3();
+    if (list1.isEmpty() && list2.isEmpty()) {
+      return F.Times(F.Exp(arg3), F.D(arg3, x));
+    }
+    IExpr timesNumerator = list1.argSize() == 0 ? F.C1 : list1.apply(S.Times, 1);
+    IExpr timesDenominator = list2.argSize() == 0 ? F.C1 : list2.apply(S.Times, 1);
+    IASTAppendable newList1 = F.ListAlloc(list1.argSize());
+
+    for (int i = 1; i < list1.size(); i++) {
+      newList1.append(F.Plus(F.C1, list1.get(i)));
+    }
+    IASTAppendable newList2 = F.ListAlloc(list2.argSize());
+    for (int i = 1; i < list2.size(); i++) {
+      newList2.append(F.Plus(F.C1, list2.get(i)));
+    }
+    return F.Times(timesNumerator, F.Power(timesDenominator, F.CN1), //
+        F.HypergeometricPFQ(newList1, newList2, arg3), //
+        F.D(arg3, x));
     }
     return F.NIL;
   }

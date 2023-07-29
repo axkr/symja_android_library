@@ -47,7 +47,7 @@
     /; FreeQ({f},x),
   D(Zeta(f_,g_),x_?NotListQ):=(-f)*Zeta(1+f, g)*D(g,x)
     /; FreeQ({f},x),
-    
+
   D(Hypergeometric2F1(a_, b_, c_, f_), x_?NotListQ) := (a*b*Hypergeometric2F1(1 + a, 1 + b, 1 + c, f)*D(f,x))/c
     /; FreeQ({a,b,c},x),
   D(Hypergeometric2F1(a_, b_, c_, x_), {x_,n_}) := Hypergeometric2F1(a + n, b + n, c + n, x)*(Pochhammer(a, n)*Pochhammer(b, n))/Pochhammer(c, n)

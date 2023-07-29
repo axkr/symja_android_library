@@ -164,6 +164,9 @@ public interface FunctionExpandRules {
     // HypergeometricPFQ({a_},{b_},z_):=Hypergeometric1F1(a,b,z)
     SetDelayed(HypergeometricPFQ(list(a_),list(b_),z_),
       Hypergeometric1F1(a,b,z)),
+    // HypergeometricPFQ({a_,b_},{c_},z_):=Hypergeometric2F1(a,b,c,z)
+    SetDelayed(HypergeometricPFQ(list(a_,b_),list(c_),z_),
+      Hypergeometric2F1(a,b,c,z)),
     // Hypergeometric2F1(2,b_,c_,-1/2):=1/3*(3-b)/;5/2-b/2==Expand(c)
     SetDelayed(Hypergeometric2F1(C2,b_,c_,CN1D2),
       Condition(Times(C1D3,Subtract(C3,b)),Equal(Plus(QQ(5L,2L),Times(CN1D2,b)),Expand(c)))),
