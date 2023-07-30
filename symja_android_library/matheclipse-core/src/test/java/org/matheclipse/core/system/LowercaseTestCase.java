@@ -10931,6 +10931,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testHypergeometric2F1() {
+    check("D( Hypergeometric2F1(a,b,c,x), {x,-4})", //
+        "D(Hypergeometric2F1(a,b,c,x),{x,-4})");
+
     check("N(Hypergeometric2F1(1/2, 1/3, 2, 1), 50)", //
         "1.1595952669639283657699920515700208819451652634397");
     check("Hypergeometric2F1(1/2, 1/3, 2, 1.000000000000000000000000000000000)", //

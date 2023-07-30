@@ -352,19 +352,26 @@ public class D extends AbstractFunctionEvaluator implements DRules {
           if (ast.isEvalFlagOn(IAST.IS_DERIVATIVE_EVALED)) {
             return F.NIL;
           }
+          IExpr xListN = xList.arg2();
           if (xList.arg1().isList()) {
             x = F.list(xList.arg1());
           } else {
             x = xList.arg1();
             if (fx.isAST()) {
-              IAST derivativeN = createDerivativeN(fx.head(), (IAST) fx, x, xList.arg2());
+              if (xListN.isNegativeResult()
+                  || (!xListN.isInteger() && xListN.isNumericFunction())) {
+                // Multiple derivative specifier `1` does not have the form {variable, n} where n is
+                // a symbolic expression or a non-negative integer.
+                return IOFunctions.printMessage(S.D, "dvar", F.List(xList), engine);
+              }
+              IAST derivativeN = createDerivativeN(fx.head(), (IAST) fx, x, xListN);
               IExpr derivativeNEvaled = engine.evaluateNIL(derivativeN);
               if (derivativeNEvaled.isPresent()) {
                 return derivativeNEvaled;
               }
             }
           }
-          IExpr arg2 = xList.arg2();
+          IExpr arg2 = xListN;
           int n = arg2.toIntDefault();
           if (n >= 0) {
             IExpr temp = fx;
@@ -581,25 +588,25 @@ public class D extends AbstractFunctionEvaluator implements DRules {
   private static IExpr hypergeometricPFQ(final IAST function, IExpr x) {
     IAST list1 = (IAST) function.first();
     IAST list2 = (IAST) function.second();
-    if (list1.isFree(x)&&list2.isFree(x)) { 
-    IExpr arg3 = function.arg3();
-    if (list1.isEmpty() && list2.isEmpty()) {
-      return F.Times(F.Exp(arg3), F.D(arg3, x));
-    }
-    IExpr timesNumerator = list1.argSize() == 0 ? F.C1 : list1.apply(S.Times, 1);
-    IExpr timesDenominator = list2.argSize() == 0 ? F.C1 : list2.apply(S.Times, 1);
-    IASTAppendable newList1 = F.ListAlloc(list1.argSize());
+    if (list1.isFree(x) && list2.isFree(x)) {
+      IExpr arg3 = function.arg3();
+      if (list1.isEmpty() && list2.isEmpty()) {
+        return F.Times(F.Exp(arg3), F.D(arg3, x));
+      }
+      IExpr timesNumerator = list1.argSize() == 0 ? F.C1 : list1.apply(S.Times, 1);
+      IExpr timesDenominator = list2.argSize() == 0 ? F.C1 : list2.apply(S.Times, 1);
+      IASTAppendable newList1 = F.ListAlloc(list1.argSize());
 
-    for (int i = 1; i < list1.size(); i++) {
-      newList1.append(F.Plus(F.C1, list1.get(i)));
-    }
-    IASTAppendable newList2 = F.ListAlloc(list2.argSize());
-    for (int i = 1; i < list2.size(); i++) {
-      newList2.append(F.Plus(F.C1, list2.get(i)));
-    }
-    return F.Times(timesNumerator, F.Power(timesDenominator, F.CN1), //
-        F.HypergeometricPFQ(newList1, newList2, arg3), //
-        F.D(arg3, x));
+      for (int i = 1; i < list1.size(); i++) {
+        newList1.append(F.Plus(F.C1, list1.get(i)));
+      }
+      IASTAppendable newList2 = F.ListAlloc(list2.argSize());
+      for (int i = 1; i < list2.size(); i++) {
+        newList2.append(F.Plus(F.C1, list2.get(i)));
+      }
+      return F.Times(timesNumerator, F.Power(timesDenominator, F.CN1), //
+          F.HypergeometricPFQ(newList1, newList2, arg3), //
+          F.D(arg3, x));
     }
     return F.NIL;
   }
