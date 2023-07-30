@@ -4658,6 +4658,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testD() {
+    check("D(Hypergeometric0F1(a,x), x)", //
+        "Hypergeometric0F1(1+a,x)/a");
+    check("D(Hypergeometric1F1(a,b,x), x)", //
+        "(a*Hypergeometric1F1(1+a,1+b,x))/b");
+    check("D(Hypergeometric2F1(a,b,c,f(x)), x)", //
+        "(a*b*Hypergeometric2F1(1+a,1+b,1+c,f(x))*f'(x))/c");
+    check("D(Hypergeometric2F1Regularized(a,b,c,f(x)), x)", //
+        "a*b*Hypergeometric2F1Regularized(1+a,1+b,1+c,f(x))*f'(x)");
     check("D(HypergeometricPFQ({}, {}, x), x)", //
         "E^x");
     check("D(HypergeometricPFQ({a}, {}, x), x)", //
@@ -5304,6 +5312,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testDerivative() {
+    check("Derivative(0,0,0,n)[Hypergeometric2F1Regularized]", //
+        "Hypergeometric2F1Regularized(n+#1,n+#2,n+#3,#4)*Pochhammer(#1,n)*Pochhammer(#2,n)&");
+    check("Derivative(0,0,0,Sin(7))[Hypergeometric2F1Regularized]", //
+        "Derivative(0,0,0,Sin(7))[Hypergeometric2F1Regularized]");
+    check("Derivative(0,0,0,3)[Hypergeometric2F1Regularized]", //
+        "Hypergeometric2F1Regularized(3+#1,3+#2,3+#3,#4)*Pochhammer(#1,3)*Pochhammer(#2,3)&");
     check("Derivative(0,0,0)[Sequence()]", //
         "Derivative(0,0,0)[]");
     check("Derivative(1)[Abs]", //
@@ -11029,6 +11043,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.8677508558813088");
   }
 
+  public void testHypergeometric2F1Regularized() {
+    check("Hypergeometric2F1Regularized(a,b,b,x)", //
+        "1/((1-x)^a*Gamma(a))");
+    check("Hypergeometric2F1Regularized(a,b,c,0)", //
+        "1/Gamma(c)");
+  }
+
   public void testHypergeometricPFQ() {
     check("HypergeometricPFQ({1/2, b}, {3/2, b + 1}, z)", //
         "(b*(Sqrt(Pi)*Sqrt(1/z)*Erfi(Sqrt(z))+(-Gamma(b)+Gamma(b,-z))/(-z)^b))/(-1+2*b)");
@@ -16414,8 +16435,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testNumericalOrder() {
-    // TODO complex numbers are canonical ordered
+    check("NumericalOrder(Sqrt(2)+5, E+Pi)", //
+        "-1");
+    check("NumericalOrder(E+Pi,Sqrt(2)+5)", //
+        "1");
+    check("NumericalOrder(6,Pi)", //
+        "-1");
     check("NumericalOrder(Exp(I), Sin(1))", //
+        "1");
+    check("NumericalOrder(E^I,(-10)*I+Cos(1))", //
         "1");
     check("NumericalOrder(-Infinity, GoldenRatio)", //
         "1");
@@ -16447,6 +16475,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{6,5,1,3,2,4}");
     check("lst[[ord]]", //
         "{-Infinity,-Sqrt(2),1,E,Pi,Infinity}");
+  }
+
+  public void testNumericalSort() {
+    // TODO fix Inifinity sort
+    check(
+        "NumericalSort({ Infinity, Sqrt[2], -1, 0, -Infinity, Quantity(1, \"Meters\"),  Quantity(3, \"Feet\")})", //
+        "{-Infinity,-1,0,Sqrt(2),3[Feet],1[Meters],Infinity}");
+
+    check("NumericalSort({1, Pi, E, Infinity, -Sqrt[2], -Infinity})", //
+        "{-Infinity,-Sqrt(2),1,E,Pi,Infinity}");
+    // TODO unequals MMA sort
+    check("Sort({1, Pi, E, Infinity, -Sqrt[2], -Infinity})", //
+        "{1,-Infinity,Infinity,-Sqrt(2),E,Pi}");
+
   }
 
   public void testNumericQ() {
@@ -16803,6 +16845,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testOrder() {
+    // Order compares expressions structurally
+    check("Order(6, Pi)", //
+        "1");
+
     check("Order(3,4)", //
         "1");
     check("Order(4,3)", //

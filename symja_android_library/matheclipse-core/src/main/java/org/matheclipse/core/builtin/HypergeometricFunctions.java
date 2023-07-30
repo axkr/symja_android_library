@@ -33,6 +33,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.Hypergeometric0F1Rules;
 import org.matheclipse.core.reflection.system.rules.Hypergeometric1F1Rules;
+import org.matheclipse.core.reflection.system.rules.Hypergeometric2F1RegularizedRules;
 import org.matheclipse.core.reflection.system.rules.Hypergeometric2F1Rules;
 import org.matheclipse.core.reflection.system.rules.HypergeometricPFQRules;
 import org.matheclipse.core.reflection.system.rules.HypergeometricURules;
@@ -60,6 +61,7 @@ public class HypergeometricFunctions {
       S.Hypergeometric0F1.setEvaluator(new Hypergeometric0F1());
       S.Hypergeometric1F1.setEvaluator(new Hypergeometric1F1());
       S.Hypergeometric2F1.setEvaluator(new Hypergeometric2F1());
+      S.Hypergeometric2F1Regularized.setEvaluator(new Hypergeometric2F1Regularized());
       S.HypergeometricPFQ.setEvaluator(new HypergeometricPFQ());
       S.HypergeometricU.setEvaluator(new HypergeometricU());
       S.LogIntegral.setEvaluator(new LogIntegral());
@@ -1030,6 +1032,34 @@ public class HypergeometricFunctions {
       } catch (RuntimeException rex) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_4_4;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+  private static class Hypergeometric2F1Regularized extends AbstractFunctionEvaluator
+      implements Hypergeometric2F1RegularizedRules {
+    @Override
+    public IAST getRuleAST() {
+      return RULES;
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr a = ast.arg1();
+      IExpr b = ast.arg2();
+      IExpr c = ast.arg3();
+      IExpr z = ast.arg4();
       return F.NIL;
     }
 

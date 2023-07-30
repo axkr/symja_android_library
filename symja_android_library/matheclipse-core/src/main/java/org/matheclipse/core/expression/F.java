@@ -4883,6 +4883,11 @@ public class F extends S {
     return quaternary(Hypergeometric2F1, a0, a1, a2, a3);
   }
 
+  public static IAST Hypergeometric2F1Regularized(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
+    return quaternary(Hypergeometric2F1Regularized, a0, a1, a2, a3);
+  }
+
   public static IAST HypergeometricPFQ(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(HypergeometricPFQ, a0, a1, a2);
   }
@@ -7429,6 +7434,13 @@ public class F extends S {
     return new AST1(Numerator, expr);
   }
 
+  public static IAST NumericalOrder(final IExpr a0, final IExpr a1) {
+    return new AST2(NumericalOrder, a0, a1);
+  }
+
+  public static IAST NumericalSort(final IExpr a0) {
+    return new AST1(NumericalSort, a0);
+  }
   /**
    *
    *
@@ -8996,6 +9008,10 @@ public class F extends S {
       return newResult;
     }
     return result;
+  }
+
+  public static IAST Sort(final IExpr a0) {
+    return new AST1(Sort, a0);
   }
 
   public static IAST Sort(final IExpr a0, final IExpr a1) {

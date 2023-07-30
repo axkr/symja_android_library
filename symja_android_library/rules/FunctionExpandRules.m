@@ -80,7 +80,8 @@
   /; 2*a==c, 
  Hypergeometric2F1(a_, b_, b_ + n_Integer, z_) := (1-z)^(-a+n) * Sum((Pochhammer(n, k)*Pochhammer(b-a+n,k)*z^k) / (Pochhammer(b+n,k)*k!), {k, 0, -n})  
   /; n<0,
- 
+ Hypergeometric2F1Regularized(a_, b_, c_, z_) := Hypergeometric2F1(a,b,c,z)/Gamma(c),
+  
  InverseGudermannian(z_) := Log(Tan(Pi/4 + z/2)), 
  InverseHaversine(z_) := 2*ArcSin(Sqrt(z)),
  

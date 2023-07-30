@@ -15,7 +15,7 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 71 };
+  final public static int[] SIZES = { 0, 74 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -100,12 +100,21 @@ public interface DRules {
     // D(Zeta(f_,g_),x_?NotListQ):=-f*Zeta(1+f,g)*D(g,x)/;FreeQ({f},x)
     ISetDelayed(D(Zeta(f_,g_),PatternTest(x_,NotListQ)),
       Condition(Times(CN1,f,Zeta(Plus(C1,f),g),D(g,x)),FreeQ(list(f),x))),
+    // D(Hypergeometric0F1(a_,f_),x_?NotListQ):=(D(f,x)*Hypergeometric0F1(1+a,f))/a/;FreeQ(a,x)
+    ISetDelayed(D(Hypergeometric0F1(a_,f_),PatternTest(x_,NotListQ)),
+      Condition(Times(Power(a,CN1),D(f,x),Hypergeometric0F1(Plus(C1,a),f)),FreeQ(a,x))),
+    // D(Hypergeometric1F1(a_,b_,f_),x_?NotListQ):=(a*D(f,x)*Hypergeometric1F1(1+a,1+b,f))/b/;FreeQ({a,b},x)
+    ISetDelayed(D(Hypergeometric1F1(a_,b_,f_),PatternTest(x_,NotListQ)),
+      Condition(Times(a,Power(b,CN1),D(f,x),Hypergeometric1F1(Plus(C1,a),Plus(C1,b),f)),FreeQ(list(a,b),x))),
     // D(Hypergeometric2F1(a_,b_,c_,f_),x_?NotListQ):=(a*b*D(f,x)*Hypergeometric2F1(1+a,1+b,1+c,f))/c/;FreeQ({a,b,c},x)
     ISetDelayed(D(Hypergeometric2F1(a_,b_,c_,f_),PatternTest(x_,NotListQ)),
       Condition(Times(a,b,Power(c,CN1),D(f,x),Hypergeometric2F1(Plus(C1,a),Plus(C1,b),Plus(C1,c),f)),FreeQ(list(a,b,c),x))),
     // D(Hypergeometric2F1(a_,b_,c_,x_),{x_,n_}):=Hypergeometric2F1(a+n,b+n,c+n,x)*(Pochhammer(a,n)*Pochhammer(b,n))/Pochhammer(c,n)/;FreeQ({a,b,c,n},x)&&Negative(n)=!=True
     ISetDelayed(D(Hypergeometric2F1(a_,b_,c_,x_),list(x_,n_)),
       Condition(Times(Hypergeometric2F1(Plus(a,n),Plus(b,n),Plus(c,n),x),Pochhammer(a,n),Pochhammer(b,n),Power(Pochhammer(c,n),CN1)),And(FreeQ(List(a,b,c,n),x),UnsameQ(Negative(n),True)))),
+    // D(Hypergeometric2F1Regularized(a_,b_,c_,f_),x_?NotListQ):=a*b*Hypergeometric2F1Regularized(1+a,1+b,1+c,f)*D(f,x)/;FreeQ({a,b,c},x)
+    ISetDelayed(D(Hypergeometric2F1Regularized(a_,b_,c_,f_),PatternTest(x_,NotListQ)),
+      Condition(Times(a,b,Hypergeometric2F1Regularized(Plus(C1,a),Plus(C1,b),Plus(C1,c),f),D(f,x)),FreeQ(list(a,b,c),x))),
     // D(HypergeometricU(f_,g_,h_),x_?NotListQ):=-f*HypergeometricU(1+f,1+g,h)*D(h,x)/;FreeQ({f,g},x)
     ISetDelayed(D(HypergeometricU(f_,g_,h_),PatternTest(x_,NotListQ)),
       Condition(Times(CN1,f,HypergeometricU(Plus(C1,f),Plus(C1,g),h),D(h,x)),FreeQ(list(f,g),x))),

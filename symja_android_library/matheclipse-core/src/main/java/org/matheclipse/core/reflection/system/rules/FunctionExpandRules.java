@@ -176,6 +176,9 @@ public interface FunctionExpandRules {
     // Hypergeometric2F1(a_,b_,b_+n_Integer,z_):=Sum((z^k*Pochhammer(n,k)*Pochhammer(-a+b+n,k))/(Pochhammer(b+n,k)*k!),{k,0,-n})/(1-z)^(a-n)/;n<0
     SetDelayed(Hypergeometric2F1(a_,b_,Plus(b_,$p(n, Integer)),z_),
       Condition(Times(Power(Subtract(C1,z),Plus(Negate(a),n)),Sum(Times(Power(z,k),Power(Times(Pochhammer(Plus(b,n),k),Factorial(k)),CN1),Pochhammer(n,k),Pochhammer(Plus(Negate(a),b,n),k)),list(k,C0,Negate(n)))),Less(n,C0))),
+    // Hypergeometric2F1Regularized(a_,b_,c_,z_):=Hypergeometric2F1(a,b,c,z)/Gamma(c)
+    SetDelayed(Hypergeometric2F1Regularized(a_,b_,c_,z_),
+      Times(Power(Gamma(c),CN1),Hypergeometric2F1(a,b,c,z))),
     // InverseGudermannian(z_):=Log(Tan(Pi/4+z/2))
     SetDelayed(InverseGudermannian(z_),
       Log(Tan(Plus(CPiQuarter,Times(C1D2,z))))),

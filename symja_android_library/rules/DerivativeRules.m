@@ -105,6 +105,18 @@ Derivative(1,0)[HarmonicNumber] := #2*(Zeta(#2+1) - HarmonicNumber(#1,#2+1)) &,
 Derivative(0,1)[HankelH1] := ((HankelH1(-1+#, #2) - HankelH1(1 + #, #2))/2) &,
 Derivative(0,1)[HankelH2] := ((HankelH2(-1+#, #2) - HankelH2(1 + #, #2))/2) &,
 
+Derivative[0,1][Hypergeometric0F1] := (Hypergeometric0F1(1+#,#2)/#) &,
+Derivative[0,0,1][Hypergeometric1F1] := ((Hypergeometric1F1(1+#,1+#2,#3)*#)/#2) &,
+Derivative[0,0,0,1][Hypergeometric2F1] := ((Hypergeometric2F1(1+#,1+#2,1+#3,#4)*#*#2)/#3) &,
+Derivative[0,0,0,n_][Hypergeometric2F1] := ((Hypergeometric2F1(n+#,n+#2,n+#3,#4)*Pochhammer(#,n)*Pochhammer(#2,n))/Pochhammer(#3,n)) &
+  /; IntegerQ(n)||!NumericQ(n),
+Derivative[0,0,0,1][Hypergeometric2F1Regularized] := (Hypergeometric2F1Regularized(1+#,1+#2,1+#3,#4)*#*#2) &,
+Derivative[0,0,0,n_][Hypergeometric2F1Regularized] := (Hypergeometric2F1Regularized(n+#,n+#2,n+#3,#4)*Pochhammer(#,n)*Pochhammer(#2,n)) &
+  /; IntegerQ(n)||!NumericQ(n),
+Derivative[0,0,1][HypergeometricU] := (-HypergeometricU(1+#,1+#2,#3)*#) &,
+Derivative[0,0,n_][HypergeometricU] := ((-1)^n*HypergeometricU(n+#,n+#2,#3)*Pochhammer(#,n)) &
+  /; IntegerQ(n)||!NumericQ(n),
+
 Derivative(1,0)[Pochhammer] := (Pochhammer(#,#2)*(-PolyGamma(0, #) + PolyGamma(0, #+#2))) &,
 Derivative(0,1)[Pochhammer] := (Pochhammer(#,#2)*PolyGamma(0, #+#2)) &,
 Derivative(1,0)[Power] := #^(-1+#2)*#2 &,

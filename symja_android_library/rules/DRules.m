@@ -47,12 +47,17 @@
     /; FreeQ({f},x),
   D(Zeta(f_,g_),x_?NotListQ):=(-f)*Zeta(1+f, g)*D(g,x)
     /; FreeQ({f},x),
-
+ 
+ D(Hypergeometric0F1(a_, f_), x_?NotListQ) := (Hypergeometric0F1(1+a,f)*D(f,x))/a
+     /; FreeQ(a,x),
+ D(Hypergeometric1F1(a_, b_, f_), x_?NotListQ) := (a*Hypergeometric1F1(1+a,1+b,f)*D(f,x))/b
+    /; FreeQ({a,b},x),
   D(Hypergeometric2F1(a_, b_, c_, f_), x_?NotListQ) := (a*b*Hypergeometric2F1(1 + a, 1 + b, 1 + c, f)*D(f,x))/c
     /; FreeQ({a,b,c},x),
   D(Hypergeometric2F1(a_, b_, c_, x_), {x_,n_}) := Hypergeometric2F1(a + n, b + n, c + n, x)*(Pochhammer(a, n)*Pochhammer(b, n))/Pochhammer(c, n)
     /; FreeQ({a,b,c,n},x) && Negative(n)=!=True,
-  
+  D(Hypergeometric2F1Regularized(a_, b_, c_, f_), x_?NotListQ) := a*b*Hypergeometric2F1Regularized(1+a,1+b,1+c,f)*D(f,x)
+    /; FreeQ({a,b,c},x),
   D(HypergeometricU(f_, g_, h_),x_?NotListQ) :=-f*HypergeometricU(1+f,1+g,h)*D(h,x)
     /; FreeQ({f,g},x),
   D(WhittakerM(f_, g_, h_),x_?NotListQ) :=((1/2-f/h)*WhittakerM(f, g, h) + ((1/2+f+g)*WhittakerM(1 + f, g, h))/h)*D(h,x)

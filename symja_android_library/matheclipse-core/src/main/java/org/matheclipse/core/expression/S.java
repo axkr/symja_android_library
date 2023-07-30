@@ -4740,6 +4740,9 @@ public class S {
   public final static IBuiltInSymbol Hypergeometric2F1 =
       S.initFinalSymbol("Hypergeometric2F1", ID.Hypergeometric2F1);
 
+  public final static IBuiltInSymbol Hypergeometric2F1Regularized =
+      S.initFinalSymbol("Hypergeometric2F1Regularized", ID.Hypergeometric2F1Regularized);
+
   /**
    * HypergeometricDistribution(n, s, t) - returns a hypergeometric distribution.
    * 
@@ -7179,6 +7182,9 @@ public class S {
 
   public final static IBuiltInSymbol NumericalOrder =
       S.initFinalSymbol("NumericalOrder", ID.NumericalOrder);
+
+  public final static IBuiltInSymbol NumericalSort =
+      S.initFinalSymbol("NumericalSort", ID.NumericalSort);
 
   public final static IBuiltInSymbol NumericArray =
       S.initFinalSymbol("NumericArray", ID.NumericArray);

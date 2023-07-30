@@ -15,7 +15,7 @@ public interface DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 112 };
+  final public static int[] SIZES = { 0, 117 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -295,6 +295,30 @@ public interface DerivativeRules {
     // Derivative(0,1)[HankelH2]:=1/2*(HankelH2(-1+#1,#2)-HankelH2(1+#1,#2))&
     ISetDelayed($(Derivative(C0,C1),HankelH2),
       Function(Times(C1D2,Subtract(HankelH2(Plus(CN1,Slot1),Slot2),HankelH2(Plus(C1,Slot1),Slot2))))),
+    // Derivative(0,1)[Hypergeometric0F1]:=Hypergeometric0F1(1+#1,#2)/#1&
+    ISetDelayed($(Derivative(C0,C1),Hypergeometric0F1),
+      Function(Times(Hypergeometric0F1(Plus(C1,Slot1),Slot2),Power(Slot1,CN1)))),
+    // Derivative(0,0,1)[Hypergeometric1F1]:=(Hypergeometric1F1(1+#1,1+#2,#3)*#1)/#2&
+    ISetDelayed($(Derivative(C0,C0,C1),Hypergeometric1F1),
+      Function(Times(Hypergeometric1F1(Plus(C1,Slot1),Plus(C1,Slot2),Slot(C3)),Slot1,Power(Slot2,CN1)))),
+    // Derivative(0,0,0,1)[Hypergeometric2F1]:=(Hypergeometric2F1(1+#1,1+#2,1+#3,#4)*#1*#2)/#3&
+    ISetDelayed($(Derivative(C0,C0,C0,C1),Hypergeometric2F1),
+      Function(Times(Hypergeometric2F1(Plus(C1,Slot1),Plus(C1,Slot2),Plus(C1,Slot(C3)),Slot(C4)),Slot1,Slot2,Power(Slot(C3),CN1)))),
+    // Derivative(0,0,0,n_)[Hypergeometric2F1]:=((Hypergeometric2F1(n+#1,n+#2,n+#3,#4)*Pochhammer(#1,n)*Pochhammer(#2,n))/Pochhammer(#3,n)&)/;IntegerQ(n)||!NumericQ(n)
+    ISetDelayed($(Derivative(C0,C0,C0,n_),Hypergeometric2F1),
+      Condition(Function(Times(Hypergeometric2F1(Plus(n,Slot1),Plus(n,Slot2),Plus(n,Slot(C3)),Slot(C4)),Pochhammer(Slot1,n),Pochhammer(Slot2,n),Power(Pochhammer(Slot(C3),n),CN1))),Or(IntegerQ(n),Not(NumericQ(n))))),
+    // Derivative(0,0,0,1)[Hypergeometric2F1Regularized]:=Hypergeometric2F1Regularized(1+#1,1+#2,1+#3,#4)*#1*#2&
+    ISetDelayed($(Derivative(C0,C0,C0,C1),Hypergeometric2F1Regularized),
+      Function(Times(Hypergeometric2F1Regularized(Plus(C1,Slot1),Plus(C1,Slot2),Plus(C1,Slot(C3)),Slot(C4)),Slot1,Slot2))),
+    // Derivative(0,0,0,n_)[Hypergeometric2F1Regularized]:=(Hypergeometric2F1Regularized(n+#1,n+#2,n+#3,#4)*Pochhammer(#1,n)*Pochhammer(#2,n)&)/;IntegerQ(n)||!NumericQ(n)
+    ISetDelayed($(Derivative(C0,C0,C0,n_),Hypergeometric2F1Regularized),
+      Condition(Function(Times(Hypergeometric2F1Regularized(Plus(n,Slot1),Plus(n,Slot2),Plus(n,Slot(C3)),Slot(C4)),Pochhammer(Slot1,n),Pochhammer(Slot2,n))),Or(IntegerQ(n),Not(NumericQ(n))))),
+    // Derivative(0,0,1)[HypergeometricU]:=-HypergeometricU(1+#1,1+#2,#3)*#1&
+    ISetDelayed($(Derivative(C0,C0,C1),HypergeometricU),
+      Function(Times(CN1,HypergeometricU(Plus(C1,Slot1),Plus(C1,Slot2),Slot(C3)),Slot1))),
+    // Derivative(0,0,n_)[HypergeometricU]:=((-1)^n*HypergeometricU(n+#1,n+#2,#3)*Pochhammer(#1,n)&)/;IntegerQ(n)||!NumericQ(n)
+    ISetDelayed($(Derivative(C0,C0,n_),HypergeometricU),
+      Condition(Function(Times(Power(CN1,n),HypergeometricU(Plus(n,Slot1),Plus(n,Slot2),Slot(C3)),Pochhammer(Slot1,n))),Or(IntegerQ(n),Not(NumericQ(n))))),
     // Derivative(1,0)[Pochhammer]:=Pochhammer(#1,#2)*(-PolyGamma(0,#1)+PolyGamma(0,#1+#2))&
     ISetDelayed($(Derivative(C1,C0),Pochhammer),
       Function(Times(Pochhammer(Slot1,Slot2),Plus(Negate(PolyGamma(C0,Slot1)),PolyGamma(C0,Plus(Slot1,Slot2)))))),

@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -25,6 +26,7 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
+import org.matheclipse.core.generic.Predicates.IsBinaryFalse;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTDataset;
@@ -77,6 +79,7 @@ public class StructureFunctions {
       S.MapIndexed.setEvaluator(new MapIndexed());
       S.MapThread.setEvaluator(new MapThread());
       S.NumericalOrder.setEvaluator(new NumericalOrder());
+      S.NumericalSort.setEvaluator(new NumericalSort());
       S.Order.setEvaluator(new Order());
       S.OrderedQ.setEvaluator(new OrderedQ());
       S.Operate.setEvaluator(new Operate());
@@ -1401,6 +1404,20 @@ public class StructureFunctions {
 
   }
 
+  private static class NumericalSort extends Sort {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IsBinaryFalse isBinaryFalse = new Predicates.IsBinaryFalse(S.NumericalOrder);
+      return sortByComparator(isBinaryFalse, ast, engine);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
   /**
    *
    *
@@ -1869,9 +1886,20 @@ public class StructureFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg2 = F.NIL;
+      IsBinaryFalse isBinaryFalse = null;
+      if (ast.isAST2()) {
+        arg2 = ast.arg2();
+        isBinaryFalse = new Predicates.IsBinaryFalse(arg2);
+      }
+      return sortByComparator(isBinaryFalse, ast, engine);
+    }
+
+    protected static IExpr sortByComparator(Comparator<IExpr> comparator, final IAST ast,
+        EvalEngine engine) {
       if (ast.arg1().isASTOrAssociation()) {
         IAST arg1 = (IAST) ast.arg1();
-        if (ast.isAST1()) {
+        if (comparator == null) {
           if (arg1.isEvalFlagOn(IAST.IS_SORTED)) {
             return arg1;
           }
@@ -1880,7 +1908,7 @@ public class StructureFunctions {
           }
         } else {
           if (arg1.isAssociation()) {
-            return ((IAssociation) arg1).sort(new Predicates.IsBinaryFalse(ast.arg2()));
+            return ((IAssociation) arg1).sort(comparator);
           }
         }
         final IASTMutable shallowCopy = ((IAST) ast.arg1()).copy();
@@ -1888,11 +1916,11 @@ public class StructureFunctions {
           return shallowCopy;
         }
         try {
-          if (ast.isAST1()) {
+          if (comparator == null) {
             EvalAttributes.sort(shallowCopy);
           } else {
             // use the 2nd argument as a head for the comparator operation:
-            EvalAttributes.sort(shallowCopy, new Predicates.IsBinaryFalse(ast.arg2()));
+            EvalAttributes.sort(shallowCopy, comparator);
           }
           return shallowCopy;
         } catch (RuntimeException rex) {
@@ -1900,7 +1928,7 @@ public class StructureFunctions {
         }
       } else {
         // Nonatomic expression expected at position `1` in `2`.
-        return IOFunctions.printMessage(S.Sort, "normal", F.List(F.C1, ast), engine);
+        return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
       }
 
       return F.NIL;
