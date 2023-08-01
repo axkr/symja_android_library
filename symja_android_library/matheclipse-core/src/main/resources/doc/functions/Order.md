@@ -19,6 +19,5 @@ See
 -1
 ```
 
-### Github
-
-* [Implementation of Order](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StructureFunctions.java#L1356) 
+### Related terms 
+[NumericalOrder](NumericalOrder.md), [NumericalSort](NumericalSort.md), [Sort](Sort.md)
