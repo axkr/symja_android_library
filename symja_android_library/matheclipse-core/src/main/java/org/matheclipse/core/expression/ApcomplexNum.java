@@ -178,6 +178,18 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
+  public boolean isOne() {
+    return fApcomplex.real().compareTo(Apfloat.ONE) == 0 //
+        && fApcomplex.imag().signum() == 0;
+  }
+
+  @Override
+  public boolean isMinusOne() {
+    return fApcomplex.real().compareTo(ApfloatNum.MINUS_ONE) == 0 //
+        && fApcomplex.imag().signum() == 0;
+  }
+
+  @Override
   public boolean isZero() {
     return fApcomplex.real().signum() == 0 //
         && fApcomplex.imag().signum() == 0;

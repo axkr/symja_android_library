@@ -1403,60 +1403,38 @@ public final class Arithmetic {
   }
 
 
-  private static final class DirectedInfinity extends AbstractCoreFunctionEvaluator {
+  private static final class DirectedInfinity extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         boolean numericMode = engine.isNumericMode();
-        boolean evaled = false;
         try {
           engine.setNumericMode(false);
           IExpr arg1 = ast.arg1();
-          IExpr temp = engine.evaluateNIL(arg1);
-          if (temp.isPresent()) {
-            arg1 = temp;
-            evaled = true;
-          }
           if (arg1.isIndeterminate() || arg1.isZero()) {
             return F.CComplexInfinity;
           }
           if (arg1.isReal()) {
-            if (arg1.isOne() || arg1.isMinusOne()) {
-              if (evaled) {
-                return F.DirectedInfinity(arg1);
-              }
+            if (arg1.equals(F.C1) || arg1.equals(F.CN1)) {
               return F.NIL;
             }
             if (arg1.isNegative()) {
-              return F.DirectedInfinity(F.CN1);
+              return F.CNInfinity;
             } else {
-              return F.DirectedInfinity(F.C1);
+              return F.CInfinity;
             }
           }
-          if (arg1.isNumber()) {
-            IExpr arg1Abs = engine.evaluate(F.Divide(arg1, F.Abs(arg1)));
-            if (arg1.equals(arg1Abs)) {
-              if (evaled) {
-                return F.DirectedInfinity(arg1);
-              }
-              return F.NIL;
+          if (!arg1.isOne() && arg1.isNumericFunction(true)) {
+            IExpr abs = arg1.abs();
+            IExpr a1 = engine.evalN(abs);
+            if (!a1.isOne()) {
+              IExpr arg1Abs = engine.evaluate(F.Divide(arg1, abs));
+              return F.DirectedInfinity(arg1Abs);
             }
-            return F.DirectedInfinity(arg1Abs);
           }
-          if (arg1.isNumericFunction(true)) {
-            IExpr a1 = engine.evalN(arg1);
-            if (a1.isReal()) {
-              if (a1.isZero()) {
-                return F.CComplexInfinity;
-              }
-              if (a1.isNegative()) {
-                return F.DirectedInfinity(F.CN1);
-              } else {
-                return F.DirectedInfinity(F.C1);
-              }
-            }
-          } else if (arg1.isTimes() || arg1.isPower()) {
+
+          if (arg1.isTimes() || arg1.isPower()) {
             IExpr[] parts = Algebra.fractionalPartsTimesPower((IAST) arg1, true, false, false,
                 false, false, false);
             if (parts != null && !parts[1].isOne()
@@ -1468,11 +1446,7 @@ public final class Arithmetic {
               if (!tmp.equals(arg1)) {
                 return F.DirectedInfinity(tmp);
               }
-
             }
-          }
-          if (evaled) {
-            return F.DirectedInfinity(arg1);
           }
         } finally {
           engine.setNumericMode(numericMode);

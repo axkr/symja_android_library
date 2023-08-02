@@ -5686,6 +5686,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testDirectedInfinity() {
+    check("DirectedInfinity({0,0,0})", //
+        "{ComplexInfinity,ComplexInfinity,ComplexInfinity}");
+
     check("DirectedInfinity(a*b^(-3)*c^2)", //
         "DirectedInfinity((Sign(a)*Sign(c)^2)/Sign(b)^3)");
     check("DirectedInfinity(a*b*c^(-1)*z ^(-2))", //
@@ -11096,6 +11099,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testI() {
+    check("I*0.0//FullForm", //
+        "Complex(0.0`,0.0`)");
+    check("I*1.0//FullForm", //
+        "Complex(0.0`,1.0`)");
     check("(3+I)*(3-I)", //
         "10");
   }
@@ -16481,7 +16488,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testNumericalSort() {
-    // TODO fix Inifinity sort
+    check("NumericalSort({1,2,3,Infinity,-Infinity,E,Pi,GoldenRatio,Degree})", //
+        "{-Infinity,Pi/180,1,GoldenRatio,2,E,3,Pi,Infinity}");
+
+    // TODO fix Inifinity sort after quantities
     check(
         "NumericalSort({ Infinity, Sqrt[2], -1, 0, -Infinity, Quantity(1, \"Meters\"),  Quantity(3, \"Feet\")})", //
         "{-Infinity,-1,0,Sqrt(2),3[Feet],1[Meters],Infinity}");

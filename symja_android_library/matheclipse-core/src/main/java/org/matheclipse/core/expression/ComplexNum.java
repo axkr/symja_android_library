@@ -707,6 +707,18 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
+  public boolean isOne() {
+    return F.isFuzzyEquals(fComplex.getReal(), 1.0, Config.DOUBLE_TOLERANCE) && //
+        F.isZero(fComplex.getImaginary(), Config.DOUBLE_TOLERANCE);
+  }
+
+  @Override
+  public boolean isMinusOne() {
+    return F.isFuzzyEquals(fComplex.getReal(), -1.0, Config.DOUBLE_TOLERANCE) && //
+        F.isZero(fComplex.getImaginary(), Config.DOUBLE_TOLERANCE);
+  }
+
+  @Override
   public boolean isZero() {
     return F.isZero(fComplex.getReal(), Config.DOUBLE_TOLERANCE) && //
         F.isZero(fComplex.getImaginary(), Config.DOUBLE_TOLERANCE);

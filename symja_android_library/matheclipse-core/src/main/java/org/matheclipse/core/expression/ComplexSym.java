@@ -538,8 +538,18 @@ public class ComplexSym implements IComplex {
   }
 
   @Override
+  public boolean isOne() {
+    return fReal.isOne() && fImaginary.isZero();
+  }
+
+  @Override
+  public boolean isMinusOne() {
+    return fReal.isMinusOne() && fImaginary.isZero();
+  }
+
+  @Override
   public boolean isZero() {
-    return NumberUtil.isZero(fReal) && NumberUtil.isZero(fImaginary);
+    return fReal.isZero() && fImaginary.isZero();
   }
 
   @Override

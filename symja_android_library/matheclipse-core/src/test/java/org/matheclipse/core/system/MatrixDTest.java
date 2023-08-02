@@ -15,7 +15,7 @@ public class MatrixDTest extends ExprEvaluatorTestCase {
     check(
         "MatrixD(-2147483648,Slot(\"\"),{{0,0},2147483647},{x,-1/2,1/2,Graph({1->2,2->3,3->1})}, 7*19,DirectedInfinity({0,0,0}),(-2147483648)^2,2*{1,2,3})", //
         "MatrixD(-2147483648,Slot(),{{0,0},2147483647},{x,-1/2,1/2,Graph({1,2,3},{1->2,2->3,3->1})},\n"
-            + "133,DirectedInfinity({0,0,0}),4611686018427387904,{2,4,6})");
+            + "133,{ComplexInfinity,ComplexInfinity,ComplexInfinity},4611686018427387904,{2,4,6})");
     // bad input 2
     check(
         "MatrixD({1},SparseArray({{1,0},{0,1}})*Sqrt(5),2*(-3/2),OptionValue(OptionValue(x)),{{0,0},10007},OptionValue(-3/2),(3/2)[[1]],-I)", //

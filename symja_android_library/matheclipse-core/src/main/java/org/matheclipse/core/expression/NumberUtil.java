@@ -1,15 +1,14 @@
 package org.matheclipse.core.expression;
 
-import com.google.common.math.DoubleMath;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.RoundingMode;
 import org.apfloat.Apfloat;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.RoundingMode;
+import com.google.common.math.DoubleMath;
 
 /**
  *
@@ -115,6 +114,11 @@ public class NumberUtil {
     1067, 607, 1565, 905, 1755, 1231, 1299, 665, 373, 1985, 701, 1879, 1221, 849, 627, 1465, 789,
     543, 1187, 1591, 923, 1905, 979, 1241, 181};
 
+  /**
+   * 
+   * @deprecated use {@link IExpr#isZero()}
+   */
+  @Deprecated
   public static boolean isZero(final IExpr e) {
     if (e instanceof INumber) {
       return ((INumber) e).isZero();
