@@ -8,7 +8,7 @@
  InverseLaplaceTransform((s_+a_)^(n_), s_, t_) := t^(-1 - n)/(E^(a*t)*Gamma(-n)) 
     /; FreeQ({a,n}, s),
     
- InverseLaplaceTransform((a_?RealNumberQ+s_^2)^(-1), s_, t_) := 
+ InverseLaplaceTransform((a_?RealValuedNumberQ+s_^2)^(-1), s_, t_) := 
     If(a>0, Sin(Sqrt(a)*t)/Sqrt(a), (-1+E^(2*Sqrt(-a)*t))/(E^(Sqrt(-a)*t)*(2*Sqrt(-a)))),
  InverseLaplaceTransform(s_*(s_^2+a_?NumberQ)^(-1), s_, t_) := Cos(Sqrt(a)*t)
     /; a>0, 

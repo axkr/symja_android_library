@@ -2644,6 +2644,13 @@ public interface IExpr
     return false;
   }
 
+  /**
+   * Test if <code>this</code> is a list of points in the given dimension. The head of the points
+   * can be {@link S#List}, {@link S#Labeled} or {@link S#Style}
+   * 
+   * @param pointDimension
+   * @return
+   */
   default boolean isListOfPoints(int pointDimension) {
     return false;
   }

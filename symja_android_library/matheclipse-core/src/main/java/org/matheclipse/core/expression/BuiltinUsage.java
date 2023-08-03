@@ -386,7 +386,7 @@ public class BuiltinUsage {
     USAGE[ID.Real] = "head for real numbers";
     USAGE[ID.ReleaseHold] =
         "removes any 'Hold', 'HoldForm', 'HoldPattern' or 'HoldComplete' head from $expr$";
-    USAGE[ID.RealNumberQ] =
+    USAGE[ID.RealValuedNumberQ] =
         "returns 'True' if $expr$ is an explicit number with no imaginary component";
     USAGE[ID.RegularExpression] = "string to regular expression";
     USAGE[ID.ReplacePart] = "replace elements at given positions";

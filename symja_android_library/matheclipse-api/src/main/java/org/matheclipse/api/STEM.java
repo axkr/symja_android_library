@@ -545,7 +545,7 @@ public class STEM {
     STEM_MAP.put("ration", F.Rational);
     STEM_MAP.put("ration", F.Rationalize);
     STEM_MAP.put("real", F.Real);
-    STEM_MAP.put("realnumberq", F.RealNumberQ);
+    STEM_MAP.put("realvaluednumberq", F.RealValuedNumberQ);
     STEM_MAP.put("real", F.Reals);
     STEM_MAP.put("reap", F.Reap);
     STEM_MAP.put("refin", F.Refine);

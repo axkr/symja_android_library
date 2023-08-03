@@ -82,7 +82,7 @@ public class PredicateQ {
       S.PossibleZeroQ.setEvaluator(new PossibleZeroQ());
       S.PrimeQ.setEvaluator(new PrimeQ());
       S.QuantityQ.setEvaluator(new QuantityQ());
-      S.RealNumberQ.setEvaluator(new RealNumberQ());
+      S.RealValuedNumberQ.setEvaluator(new RealValuedNumberQ());
       S.SquareMatrixQ.setEvaluator(new SquareMatrixQ());
       S.StringQ.setPredicateQ(x -> x.isString());
       S.SymbolQ.setPredicateQ(x -> x.isSymbol());
@@ -1263,41 +1263,7 @@ public class PredicateQ {
     }
   }
 
-  /**
-   *
-   *
-   * <pre>
-   * RealNumberQ(expr)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * returns <code>True</code> if <code>expr</code> is an explicit number with no imaginary
-   * component.
-   *
-   * </blockquote>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; RealNumberQ[10]
-   *  = True
-   *
-   * &gt;&gt; RealNumberQ[4.0]
-   *  = True
-   *
-   * &gt;&gt; RealNumberQ[1+I]
-   *  = False
-   *
-   * &gt;&gt; RealNumberQ[0 * I]
-   *  = True
-   *
-   * &gt;&gt; RealNumberQ[0.0 * I]
-   *  = False
-   * </pre>
-   */
-  private static final class RealNumberQ extends AbstractCoreFunctionEvaluator
+  private static final class RealValuedNumberQ extends AbstractCoreFunctionEvaluator
       implements IPredicate {
 
     @Override

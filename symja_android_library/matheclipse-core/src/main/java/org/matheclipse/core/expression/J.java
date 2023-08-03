@@ -13271,14 +13271,15 @@ public class J extends S {
 
 
   /**
-   * RealNumberQ(expr) - returns `True` if `expr` is an explicit number with no imaginary component.
+   * RealValuedNumberQ(expr) - returns `True` if `expr` is an explicit number with no imaginary
+   * component.
    * 
    * @see <a href=
-   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RealNumberQ.md">RealNumberQ
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RealValuedNumberQ.md">RealValuedNumberQ
    *      documentation</a>
    */
-  public static IAST realNumberQ(final Object a1) {
-    return new AST1(RealNumberQ, Object2Expr.convert(a1));
+  public static IAST realValuedNumberQ(final Object a1) {
+    return new AST1(RealValuedNumberQ, Object2Expr.convert(a1));
   }
 
 

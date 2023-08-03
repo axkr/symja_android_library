@@ -40,15 +40,16 @@ public class RubiIssue74 extends AbstractRubiTestCase {
   }
 
   public void test0123() {
-    check("Rubi`InverseTrigQ[ArcCos[1 + x]]", "True");
+    check("Rubi`InverseTrigQ[ArcCos[1 + x]]", //
+        "True");
   }
 
   public void test0263() {
-    check("RealNumberQ[Sqrt[2]]", "False");
-    check("RealNumberQ[0]", "True");
+    check("RealValuedNumberQ[Sqrt[2]]", "False");
+    check("RealValuedNumberQ[0]", "True");
   }
 
   public void test0264() {
-    check("RealNumberQ[1]", "True");
+    check("RealValuedNumberQ[1]", "True");
   }
 }

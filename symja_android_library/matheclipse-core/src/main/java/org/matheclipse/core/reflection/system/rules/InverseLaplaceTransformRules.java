@@ -34,8 +34,8 @@ public interface InverseLaplaceTransformRules {
     // InverseLaplaceTransform((a_+s_)^n_,s_,t_):=1/(t^(1+n)*E^(a*t)*Gamma(-n))/;FreeQ({a,n},s)
     ISetDelayed(InverseLaplaceTransform(Power(Plus(a_,s_),n_),s_,t_),
       Condition(Times(Power(t,Subtract(CN1,n)),Power(Times(Exp(Times(a,t)),Gamma(Negate(n))),CN1)),FreeQ(list(a,n),s))),
-    // InverseLaplaceTransform(1/(a_?RealNumberQ+s_^2),s_,t_):=If(a>0,Sin(Sqrt(a)*t)/Sqrt(a),(-1+E^(2*Sqrt(-a)*t))/(E^(Sqrt(-a)*t)*2*Sqrt(-a)))
-    ISetDelayed(InverseLaplaceTransform(Power(Plus(PatternTest(a_,RealNumberQ),Sqr(s_)),CN1),s_,t_),
+    // InverseLaplaceTransform(1/(a_?RealValuedNumberQ+s_^2),s_,t_):=If(a>0,Sin(Sqrt(a)*t)/Sqrt(a),(-1+E^(2*Sqrt(-a)*t))/(E^(Sqrt(-a)*t)*2*Sqrt(-a)))
+    ISetDelayed(InverseLaplaceTransform(Power(Plus(PatternTest(a_,RealValuedNumberQ),Sqr(s_)),CN1),s_,t_),
       If(Greater(a,C0),Times(Power(a,CN1D2),Sin(Times(Sqrt(a),t))),Times(Power(Times(Exp(Times(Sqrt(Negate(a)),t)),C2,Sqrt(Negate(a))),CN1),Plus(CN1,Exp(Times(C2,Sqrt(Negate(a)),t)))))),
     // InverseLaplaceTransform(s_/(a_?NumberQ+s_^2),s_,t_):=Cos(Sqrt(a)*t)/;a>0
     ISetDelayed(InverseLaplaceTransform(Times(s_,Power(Plus(PatternTest(a_,NumberQ),Sqr(s_)),CN1)),s_,t_),

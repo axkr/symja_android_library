@@ -213,11 +213,11 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
           // $]
           F.Condition(F.Plus(F.Log(m), F.Log(n)), F.Positive(m))); // $$);
 
-      // Log(x^(y_?( RealNumberQ(#) && (x>-1) && (#<1) )& ))
+      // Log(x^(y_?( RealValuedNumberQ(#) && (x>-1) && (#<1) )& ))
       MATCHER.caseOf(
           F.Log(F.Power(x_,
               F.PatternTest(y_,
-                  (F.Function(F.And(F.RealNumberQ(F.Slot1), F.Greater(F.Slot1, F.CN1),
+                  (F.Function(F.And(F.RealValuedNumberQ(F.Slot1), F.Greater(F.Slot1, F.CN1),
                       F.Less(F.Slot1, F.C1))))))), //
           // [$ (y * Log(x))
           // $]

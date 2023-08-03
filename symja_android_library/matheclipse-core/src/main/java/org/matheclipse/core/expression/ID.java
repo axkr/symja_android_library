@@ -1222,7 +1222,7 @@ public class ID {
   public final static int Real = 1212;
   public final static int RealAbs = 1213;
   public final static int RealDigits = 1214;
-  public final static int RealNumberQ = 1215;
+  public final static int RealValuedNumberQ = 1215;
   public final static int Reals = 1216;
   public final static int RealSign = 1217;
   public final static int Reap = 1218;

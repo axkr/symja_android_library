@@ -5,7 +5,7 @@
  Limit(x_^(a_.*(x_^n_.) + b_.), x_Symbol->0):= With({r=ConditionalExpression( 0, Element(b,Reals)&&a>0&&n<0&&Cos(-n*Pi)>0&&Sin(-n*Pi)>0 )}, r /; r=!= Undefined),
  Limit(x_^(a_.*(x_^n_.) + b_.), x_Symbol->Infinity):= With({r=ConditionalExpression( Infinity, Element(b,Reals)&&a>0&&n>0 )}, r /; r=!= Undefined),
  Limit(x_^(a_.*(x_^n_.)), x_Symbol->Infinity):= With({r=ConditionalExpression( 1, Element(a,Reals)&&n<0 )}, r /; r=!= Undefined),
- Limit(x_^m_?RealNumberQ, x_Symbol->Infinity):= If(m<0, 0, Infinity),
+ Limit(x_^m_?RealValuedNumberQ, x_Symbol->Infinity):= If(m<0, 0, Infinity),
  Limit(m_?NumberQ^x_, x_Symbol->Infinity):= If(m>1, Infinity, If(m==1, 1, 0)) /; Positive(m),
  Limit(m_?NumberQ^(-x_), x_Symbol->Infinity):= 0 /; m>1,
  Limit(E^x_, x_Symbol->Infinity):= Infinity,

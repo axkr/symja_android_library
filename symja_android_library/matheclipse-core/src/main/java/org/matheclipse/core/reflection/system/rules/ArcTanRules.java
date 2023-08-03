@@ -97,8 +97,8 @@ public interface ArcTanRules {
     // ArcTan(ComplexInfinity)=Indeterminate
     ISet(ArcTan(CComplexInfinity),
       Indeterminate),
-    // ArcTan(x_?RealNumberQ,y_?RealNumberQ):=If(x==0,If(y==0,Indeterminate,If(y>0,Pi/2,(-1)*1/2*Pi)),If(x>0,ArcTan(y/x),If(y>=0,ArcTan(y/x)+Pi,-Pi+ArcTan(y/x))))
-    ISetDelayed(ArcTan(PatternTest(x_,RealNumberQ),PatternTest(y_,RealNumberQ)),
+    // ArcTan(x_?RealValuedNumberQ,y_?RealValuedNumberQ):=If(x==0,If(y==0,Indeterminate,If(y>0,Pi/2,(-1)*1/2*Pi)),If(x>0,ArcTan(y/x),If(y>=0,ArcTan(y/x)+Pi,-Pi+ArcTan(y/x))))
+    ISetDelayed(ArcTan(PatternTest(x_,RealValuedNumberQ),PatternTest(y_,RealValuedNumberQ)),
       If(Equal(x,C0),If(Equal(y,C0),Indeterminate,If(Greater(y,C0),CPiHalf,Times(CN1,C1D2,Pi))),If(Greater(x,C0),ArcTan(Times(Power(x,CN1),y)),If(GreaterEqual(y,C0),Plus(ArcTan(Times(Power(x,CN1),y)),Pi),Plus(CNPi,ArcTan(Times(Power(x,CN1),y))))))),
     // ArcTan(x_?NumberQ,y_?NumberQ):=(Pi*(-x+2*Sqrt(x^2)))/(4*y)/;x^2==y^2
     ISetDelayed(ArcTan(PatternTest(x_,NumberQ),PatternTest(y_,NumberQ)),

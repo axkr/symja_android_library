@@ -29,7 +29,7 @@ public class ListPlot extends AbstractEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     IExpr arg1 = ast.arg1().normal(false);
-    if (ast.arg1().isList()) {
+    if (arg1.isList()) {
       VisualSet visualSet = new VisualSet();
       if (listPlot(ast, visualSet)) {
         BufferedImage buffer = jFreeChartImage(visualSet);

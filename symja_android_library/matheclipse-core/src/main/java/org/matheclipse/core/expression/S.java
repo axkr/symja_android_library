@@ -8533,13 +8533,15 @@ public class S {
   public final static IBuiltInSymbol RealDigits = S.initFinalSymbol("RealDigits", ID.RealDigits);
 
   /**
-   * RealNumberQ(expr) - returns `True` if `expr` is an explicit number with no imaginary component.
+   * RealValuedNumberQ(expr) - returns `True` if `expr` is an explicit number with no imaginary
+   * component.
    * 
    * @see <a href=
-   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RealNumberQ.md">RealNumberQ
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RealValuedNumberQ.md">RealValuedNumberQ
    *      documentation</a>
    */
-  public final static IBuiltInSymbol RealNumberQ = S.initFinalSymbol("RealNumberQ", ID.RealNumberQ);
+  public final static IBuiltInSymbol RealValuedNumberQ =
+      S.initFinalSymbol("RealValuedNumberQ", ID.RealValuedNumberQ);
 
   /**
    * Reals - is the set of real numbers.

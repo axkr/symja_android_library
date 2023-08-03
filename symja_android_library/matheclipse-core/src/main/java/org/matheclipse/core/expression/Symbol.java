@@ -316,6 +316,7 @@ public class Symbol implements ISymbol, Serializable {
     if (Config.FUZZ_TESTING) {
       if (obj instanceof ISymbol && fSymbolName.equals(((ISymbol) obj).getSymbolName())
           && fContext.equals(((ISymbol) obj).getContext()) && this != obj) {
+        System.out.println(fContext + ":" + fSymbolName);
         throw new NullPointerException();
       }
     }

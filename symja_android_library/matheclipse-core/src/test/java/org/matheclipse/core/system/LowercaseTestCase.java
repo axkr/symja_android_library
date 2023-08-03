@@ -16536,6 +16536,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "");
     check("NumericQ(f(Pi))", //
         "True");
+
+    check("expr=BesselJ(2, Sin(Exp(Log(3)+4))+x)", //
+        "BesselJ(2,x+Sin(3*E^4))");
+    check("TableForm(Map({#, NumericQ(#)} &, Level(expr, {0, Infinity})))", //
+        "                       2   True \n" //
+            + "                       x  False \n" //
+            + "                       3   True \n" //
+            + "                       E   True \n" //
+            + "                       4   True \n" //
+            + "                     E^4   True \n" //
+            + "                   3*E^4   True \n" //
+            + "              Sin(3*E^4)   True \n" //
+            + "            x+Sin(3*E^4)  False \n" //
+            + " BesselJ(2,x+Sin(3*E^4))  False ");
   }
 
   public void testNumerator() {
@@ -20438,16 +20452,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{1,2,3,3,3,3,3,3},3}");
   }
 
-  public void testRealNumberQ() {
-    check("RealNumberQ(10)", //
+  public void testRealValuedNumberQ() {
+    check("RealValuedNumberQ(10)", //
         "True");
-    check("RealNumberQ(4.0)", //
+    check("RealValuedNumberQ(4.0)", //
         "True");
-    check("RealNumberQ(1+I)", //
+    check("RealValuedNumberQ(1+I)", //
         "False");
-    check("RealNumberQ(0*I)", //
+    check("RealValuedNumberQ(0*I)", //
         "True");
-    check("RealNumberQ(0.0*I)", //
+    check("RealValuedNumberQ(0.0*I)", //
+        "False");
+    check("RealValuedNumberQ(Infinity)", //
         "False");
   }
 
