@@ -435,21 +435,15 @@ public final class Validate {
    * Check the expression, if it's a Java {@code int} value in the range [ {@code startValue},
    * Integer.MAX_VALUE]
    *
-   * @param expr a signed number which will be converted to a Java <code>int</code> if possible,
-   *        otherwise throw a <code>ArgumentTypeException</code> exception.
+   * @param expr a real number or {@link F#CInfinity}, {@link F#CNInfinity} will be converted to a
+   *        Java <code>int</code> if possible, otherwise throw a <code>ArgumentTypeException</code>
+   *        exception.
    * @throws ArgumentTypeException
    */
   public static int checkIntLevelType(IExpr expr, int startValue) {
     if (expr.isInfinity()) {
       // maximum possible level in Symja
-      int result = Integer.MAX_VALUE;
-      if (startValue > result) {
-        // Level value greater equal `1` expected instead of `2`.
-        String str = IOFunctions.getMessage("intlevel", F.list(F.ZZ(startValue), F.CInfinity),
-            EvalEngine.get());
-        throw new ArgumentTypeException(str);
-      }
-      return result;
+      return Integer.MAX_VALUE;
     }
     if (expr.isReal()) {
       int result = expr.toIntDefault();
@@ -462,7 +456,7 @@ public final class Validate {
       return result;
     }
     if (expr.isNegativeInfinity()) {
-      // maximum possible level in Symja
+      // minimum possible level in Symja
       int result = Integer.MIN_VALUE;
       if (startValue > result) {
         // Level specification value greater equal `1` expected instead of `2`.

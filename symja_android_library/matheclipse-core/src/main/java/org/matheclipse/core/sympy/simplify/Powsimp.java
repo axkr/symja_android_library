@@ -2,7 +2,6 @@ package org.matheclipse.core.sympy.simplify;
 
 import java.util.function.Function;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class Powsimp {
@@ -98,7 +97,6 @@ public class Powsimp {
     // >>> powsimp(x*y*a) # but won't when doing so would violate assumptions
     // x*y*sqrt(x*sqrt(y))
     if (expr.isAST()) {
-      IAST ast = (IAST) expr;
       if (deep == false && !expr.isPlusTimesPower()) {
         return expr;
       }

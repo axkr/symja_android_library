@@ -249,18 +249,17 @@ public class PolynomialFunctions {
       IExpr expr = F.evalExpandAll(ast.arg1(), engine);
       VariablesSet eVar;
       IAST symbolList;
-      List<IExpr> varList;
+
       if (ast.isAST1()) {
         // extract all variables from the polynomial expression
         eVar = new VariablesSet(ast.arg1());
-        varList = eVar.getArrayList();
         symbolList = eVar.getVarList();
       } else {
         symbolList = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
         if (symbolList.isNIL()) {
           return F.NIL;
         }
-        varList = new ArrayList<IExpr>(symbolList.argSize());
+        List<IExpr> varList = new ArrayList<IExpr>(symbolList.argSize());
         symbolList.forEach(x -> varList.add(x));
       }
       TermOrder termOrder = TermOrderByName.Lexicographic;

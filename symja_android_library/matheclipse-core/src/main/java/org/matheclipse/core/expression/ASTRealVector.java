@@ -210,8 +210,9 @@ public class ASTRealVector extends AbstractAST implements Externalizable, Random
    * @see java.lang.Cloneable
    */
   @Override
-  public IAST clone() {
-    return Convert.vector2List(vector, false);
+  public ASTRealVector clone() {
+    return new ASTRealVector(vector.copy(), false);
+    // return Convert.vector2List(vector, false);
   }
 
   /** {@inheritDoc} */

@@ -222,9 +222,9 @@ public class ASTRealMatrix extends AbstractAST implements Externalizable, Random
    * @see java.lang.Cloneable
    */
   @Override
-  public IAST clone() {
-    return Convert.matrix2List(matrix, false);
-    // return new ASTRealMatrix(matrix.copy(), false);
+  public ASTRealMatrix clone() {
+    // return Convert.matrix2List(matrix, false);
+    return new ASTRealMatrix(matrix.copy(), false);
   }
 
   /** {@inheritDoc} */

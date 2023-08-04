@@ -25,7 +25,10 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
     }
   }
 
-  public static class PriorityComparator implements Comparator<IPatternMatcher> {
+  public static class PriorityComparator implements Comparator<IPatternMatcher>, Serializable {
+
+    private static final long serialVersionUID = -8228506547987873450L;
+
     @Override
     public int compare(IPatternMatcher o1, IPatternMatcher o2) {
       return o1.getLHSPriority() < o2.getLHSPriority() ? -1

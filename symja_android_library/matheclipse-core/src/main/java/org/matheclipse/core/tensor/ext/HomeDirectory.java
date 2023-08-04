@@ -97,8 +97,9 @@ public class HomeDirectory {
   private static File subfolder(String folder, String... strings) {
     try {
       File file = file(folder);
-      file.mkdir();
-      return concat(file, strings);
+      if (file.mkdir()) {
+        return concat(file, strings);
+      }
     } catch (SecurityException se) {
 
     }

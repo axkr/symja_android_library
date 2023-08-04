@@ -297,6 +297,13 @@ public class PatternMatchingTestCase extends TestCase {
         "r[a,rp[b],c]");
   }
 
+  public void testNamedPattern() {
+    // Pattern[expr,f[x_,y_]]:=g[HoldForm[expr]]
+    check("expr:f[x_,y_]:=g[HoldForm[expr]]", //
+        "");
+    check("f[1,2]", //
+        "g[f[1,2]]");
+  }
 
   public void testNestedCondition() {
     // delayed rule evaluates Condition
