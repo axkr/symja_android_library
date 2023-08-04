@@ -9,6 +9,7 @@ import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.util.MathArrays;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.StatisticsFunctions.IRandomVariate;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
@@ -301,7 +302,7 @@ public final class RandomFunctions {
           }
         }
       } catch (ValidateException ve) {
-        return IOFunctions.printMessage(ast.topHead(), ve, engine);
+        return Errors.printMessage(ast.topHead(), ve, engine);
       } catch (RuntimeException rex) {
         //
       }
@@ -481,11 +482,11 @@ public final class RandomFunctions {
         upperLimit = ((IInteger) arg1).toBigNumerator();
         if (upperLimit.compareTo(TWO) < 0) {
           // Positive integer expected.
-          return IOFunctions.printMessage(ast.topHead(), "intp", F.CEmptyList, engine);
+          return Errors.printMessage(ast.topHead(), "intp", F.CEmptyList, engine);
         }
         if (upperLimit.compareTo(TWO) < 0) {
           // There are no primes in the specified interval.
-          return IOFunctions.printMessage(ast.topHead(), "noprime", F.CEmptyList, engine);
+          return Errors.printMessage(ast.topHead(), "noprime", F.CEmptyList, engine);
         }
         parametersChecked = true;
       } else if (arg1.isList2() && arg1.first().isInteger() && arg1.second().isInteger()) {
@@ -493,25 +494,25 @@ public final class RandomFunctions {
         upperLimit = ((IInteger) arg1.second()).toBigNumerator();
         if (lowerLimit.compareTo(TWO) < 0) {
           // Positive integer expected.
-          return IOFunctions.printMessage(ast.topHead(), "intp", F.CEmptyList, engine);
+          return Errors.printMessage(ast.topHead(), "intp", F.CEmptyList, engine);
         }
         if (upperLimit.compareTo(TWO) < 0) {
           // Positive integer expected.
-          return IOFunctions.printMessage(ast.topHead(), "intp", F.CEmptyList, engine);
+          return Errors.printMessage(ast.topHead(), "intp", F.CEmptyList, engine);
         }
         if (upperLimit.compareTo(lowerLimit) < 0) {
           // There are no primes in the specified interval.
-          return IOFunctions.printMessage(ast.topHead(), "noprime", F.CEmptyList, engine);
+          return Errors.printMessage(ast.topHead(), "noprime", F.CEmptyList, engine);
         }
         if (!lowerLimit.isProbablePrime(32)
             && upperLimit.compareTo(lowerLimit.nextProbablePrime()) < 0) {
           // There are no primes in the specified interval.
-          return IOFunctions.printMessage(ast.topHead(), "noprime", F.CEmptyList, engine);
+          return Errors.printMessage(ast.topHead(), "noprime", F.CEmptyList, engine);
         }
         parametersChecked = true;
       } else {
         // Positive integer expected.
-        IOFunctions.printMessage(ast.topHead(), "intp", F.CEmptyList, engine);
+        Errors.printMessage(ast.topHead(), "intp", F.CEmptyList, engine);
         return F.NIL;
       }
       if (parametersChecked) {
@@ -527,11 +528,11 @@ public final class RandomFunctions {
           }
           return randomPrime(lowerLimit, upperLimit, engine);
         } catch (ValidateException ve) {
-          IOFunctions.printMessage(ast.topHead(), ve, engine);
+          Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.debug("RandomPrime.evaluate() failed", rex);
           // There are no primes in the specified interval.
-          return IOFunctions.printMessage(ast.topHead(), "noprime", F.CEmptyList, engine);
+          return Errors.printMessage(ast.topHead(), "noprime", F.CEmptyList, engine);
         }
       }
       return F.NIL;
@@ -803,7 +804,7 @@ public final class RandomFunctions {
       long seedValue = ast.arg1().toLongDefault();
       if (seedValue <= 0L) {
         // Non-negative machine-sized integer expected at position `2` in `1`.
-        return IOFunctions.printMessage(ast.topHead(), "intnm", F.List(F.C1, ast), engine);
+        return Errors.printMessage(ast.topHead(), "intnm", F.List(F.C1, ast), engine);
       }
       Random random = engine.getRandom();
       random.setSeed(seedValue);

@@ -2,7 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -29,7 +29,7 @@ public class MatrixD extends AbstractFunctionEvaluator implements MatrixDRules {
    */
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IOFunctions.printExperimental(S.MatrixD);
+    Errors.printExperimental(S.MatrixD);
     if (ast.size() < 3) {
       return F.NIL;
     }
@@ -45,7 +45,7 @@ public class MatrixD extends AbstractFunctionEvaluator implements MatrixDRules {
     IExpr x = ast.arg2();
     if (!(x.isVariable() || x.isList())) {
       // `1` is not a valid variable.
-      return IOFunctions.printMessage(ast.topHead(), "ivar", F.list(x), engine);
+      return Errors.printMessage(ast.topHead(), "ivar", F.list(x), engine);
     }
 
     if (fx.isList()) {
@@ -95,21 +95,21 @@ public class MatrixD extends AbstractFunctionEvaluator implements MatrixDRules {
         }
         if (!x.isVariable()) {
           // `1` is not a valid variable.
-          return IOFunctions.printMessage(ast.topHead(), "ivar", F.list(x), engine);
+          return Errors.printMessage(ast.topHead(), "ivar", F.list(x), engine);
         }
         if (arg2.isAST()) {
           return F.NIL;
         }
         // Multiple derivative specifier `1` does not have the form {variable, n} where n is a
         // symbolic expression or a non-negative integer.
-        return IOFunctions.printMessage(ast.topHead(), "dvar", F.list(xList), engine);
+        return Errors.printMessage(ast.topHead(), "dvar", F.list(xList), engine);
       }
       return F.NIL;
     }
 
     if (!x.isVariable()) {
       // `1` is not a valid variable.
-      return IOFunctions.printMessage(ast.topHead(), "ivar", F.list(x), engine);
+      return Errors.printMessage(ast.topHead(), "ivar", F.list(x), engine);
     }
 
     return binaryMatrixD(fx, x);

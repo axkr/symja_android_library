@@ -37,13 +37,13 @@ import org.jgrapht.graph.DefaultGraphType.Builder;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.JavaFunctions;
 import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.FlowControlException;
@@ -2059,7 +2059,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           }
           return functionEvaluator.evaluate(ast, engine);
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(topHead(), ve, engine);
+          return Errors.printMessage(topHead(), ve, engine);
         } catch (FlowControlException e) {
           throw e;
         } catch (SymjaMathException ve) {

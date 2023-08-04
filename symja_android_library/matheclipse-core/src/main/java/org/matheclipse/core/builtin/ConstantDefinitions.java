@@ -13,6 +13,7 @@ import org.apfloat.Apint;
 import org.apfloat.Aprational;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.EvalHistory;
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
@@ -261,7 +262,7 @@ public class ConstantDefinitions {
           historyLength = Short.MAX_VALUE;
         } else {
           // Positive machine-sized integer expected at position `2` in `1`.
-          return IOFunctions.printMessage(S.$HistoryLength, "intpm",
+          return Errors.printMessage(S.$HistoryLength, "intpm",
               F.list(F.C2, F.Set(S.$HistoryLength, rightHandSide)), engine);
         }
       } else if (iValue < Short.MAX_VALUE) {
@@ -336,7 +337,7 @@ public class ConstantDefinitions {
       int iterationLimit = rightHandSide.toIntDefault();
       if (iterationLimit < 20) {
         // Cannot set $IterationLimit to `1`; value must be Infinity or an integer at least 20.
-        return IOFunctions.printMessage(S.$IterationLimit, "limset", F.list(rightHandSide), engine);
+        return Errors.printMessage(S.$IterationLimit, "limset", F.list(rightHandSide), engine);
       }
       S.$IterationLimit.assignValue(F.ZZ(iterationLimit), setDelayed);
       engine.setIterationLimit(iterationLimit);
@@ -492,7 +493,7 @@ public class ConstantDefinitions {
       int recursionLimit = rightHandSide.toIntDefault();
       if (recursionLimit < 20) {
         // Cannot set $RecursionLimit to `1`; value must be Infinity or an integer at least 20.
-        return IOFunctions.printMessage(S.$RecursionLimit, "limset", F.list(rightHandSide), engine);
+        return Errors.printMessage(S.$RecursionLimit, "limset", F.list(rightHandSide), engine);
       }
       S.$RecursionLimit.assignValue(F.ZZ(recursionLimit), setDelayed);
       engine.setRecursionLimit(recursionLimit);

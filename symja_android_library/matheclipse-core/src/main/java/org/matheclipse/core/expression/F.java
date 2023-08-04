@@ -102,6 +102,7 @@ import org.matheclipse.core.builtin.WXFFunctions;
 import org.matheclipse.core.builtin.WindowFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.Object2Expr;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
@@ -1009,7 +1010,7 @@ public class F extends S {
       PiecewiseFunctions.initialize();
 
       COUNT_DOWN_LATCH.countDown();
-
+      Errors.initGeneralMessages();
     } catch (Throwable th) {
       LOGGER.error("F-class initialization failed", th);
       throw th;
@@ -3631,7 +3632,7 @@ public class F extends S {
   public static IExpr Divide(final IExpr numerator, final IExpr denominator) {
     if (denominator.isZero()) {
       // Indeterminate expression `1` encountered.
-      IOFunctions.printMessage(S.Power, "indet",
+      Errors.printMessage(S.Power, "indet",
           F.list(F.Times(numerator, F.Power(denominator, F.CN1))), EvalEngine.get());
       return S.Indeterminate;
     }
@@ -3664,7 +3665,7 @@ public class F extends S {
   public static IExpr Divide(final int numerator, final IExpr denominator) {
     if (denominator.isZero()) {
       // Indeterminate expression `1` encountered.
-      IOFunctions.printMessage(S.Power, "indet",
+      Errors.printMessage(S.Power, "indet",
           F.list(F.Times(F.ZZ(numerator), F.Power(denominator, F.CN1))), EvalEngine.get());
       return S.Indeterminate;
     }
@@ -3698,7 +3699,7 @@ public class F extends S {
   public static IExpr Divide(final IExpr numerator, final int denominator) {
     if (denominator == 0) {
       // Indeterminate expression `1` encountered.
-      IOFunctions.printMessage(S.Power, "indet", F.list(F.Times(numerator, F.Power(F.C0, F.CN1))),
+      Errors.printMessage(S.Power, "indet", F.list(F.Times(numerator, F.Power(F.C0, F.CN1))),
           EvalEngine.get());
       return S.Indeterminate;
     }
@@ -10309,7 +10310,7 @@ public class F extends S {
   public static IAST operatorForm2Prepend(final IAST ast1, int[] expected, EvalEngine engine) {
     if (ast1.head().isAST1() && ast1.argSize() > 0) {
       if (ast1.argSize() + 1 < expected[0] || ast1.argSize() + 1 > expected[1]) {
-        return IOFunctions.printArgMessage(ast1, expected, engine);
+        return Errors.printArgMessage(ast1, expected, engine);
       }
       IExpr headArg1 = ast1.head().first();
       switch (ast1.size()) {

@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -67,7 +68,7 @@ public class WXFFunctions {
           if (bArray == null) {
             // The argument at position `1` in `2` should be a vector of unsigned byte values or a
             // Base64 encoded string.
-            return IOFunctions.printMessage(ast.topHead(), "lend", F.List(F.C1, ast), engine);
+            return Errors.printMessage(ast.topHead(), "lend", F.List(F.C1, ast), engine);
           }
           return ByteArrayExpr.newInstance(bArray);
         } else if (arg1.isString()) {
@@ -78,7 +79,7 @@ public class WXFFunctions {
           if (!isBase64(str)) {
             // The argument at position `1` in `2` should be a vector of unsigned byte values or a
             // Base64 encoded string.
-            return IOFunctions.printMessage(ast.topHead(), "lend", F.List(F.C1, ast), engine);
+            return Errors.printMessage(ast.topHead(), "lend", F.List(F.C1, ast), engine);
           }
           try {
             byte[] bArray = Base64.getDecoder().decode(str);
@@ -89,7 +90,7 @@ public class WXFFunctions {
         }
         // The argument at position `1` in `2` should be a vector of unsigned byte values or a
         // Base64 encoded string.
-        return IOFunctions.printMessage(ast.topHead(), "lend", F.List(F.C1, ast), engine);
+        return Errors.printMessage(ast.topHead(), "lend", F.List(F.C1, ast), engine);
       }
       return F.NIL;
     }

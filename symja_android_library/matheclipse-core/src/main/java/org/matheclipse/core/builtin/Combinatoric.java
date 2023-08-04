@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.combinatoric.KSubsets;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
@@ -333,7 +334,7 @@ public final class Combinatoric {
               for (int i = 0; i < list.size(); i++) {
                 if (list.get(i).isNumber()) {
                   // `1` is expected to contain a list of lists of integers.
-                  return IOFunctions.printMessage(S.Cycles, "intpoint", F.list(cycles), engine);
+                  return Errors.printMessage(S.Cycles, "intpoint", F.list(cycles), engine);
                 }
               }
             }
@@ -352,14 +353,14 @@ public final class Combinatoric {
               if (!arg.isPositive()) {
                 if (!quiet) {
                   // `1` contains integers that are not positive.
-                  IOFunctions.printMessage(S.Cycles, "pospoint", F.list(cycles), engine);
+                  Errors.printMessage(S.Cycles, "pospoint", F.list(cycles), engine);
                 }
                 return F.NIL;
               }
               if (set.contains(arg)) {
                 if (!quiet) {
                   // `1` contains repeated integers.
-                  IOFunctions.printMessage(S.Cycles, "reppoint", F.list(cycles), engine);
+                  Errors.printMessage(S.Cycles, "reppoint", F.list(cycles), engine);
                 }
                 return F.NIL;
               }
@@ -368,7 +369,7 @@ public final class Combinatoric {
               if (arg.isNumber()) {
                 if (!quiet) {
                   // `1` is expected to contain a list of lists of integers.
-                  IOFunctions.printMessage(S.Cycles, "intpoint", F.list(cycles), engine);
+                  Errors.printMessage(S.Cycles, "intpoint", F.list(cycles), engine);
                 }
                 return F.NIL;
               }
@@ -407,7 +408,7 @@ public final class Combinatoric {
       }
       if (!quiet) {
         // `1` is expected to contain a list of lists of integers.
-        IOFunctions.printMessage(S.Cycles, "intpoint", F.list(cycles), engine);
+        Errors.printMessage(S.Cycles, "intpoint", F.list(cycles), engine);
       }
       return F.NIL;
     }
@@ -538,7 +539,7 @@ public final class Combinatoric {
       IExpr arg1 = ast.arg1();
       if (!arg1.isAST()) {
         // Nonatomic expression expected at position `1` in `2`.
-        return IOFunctions.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
+        return Errors.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
       }
 
       IAST ast1 = (IAST) arg1;
@@ -548,7 +549,7 @@ public final class Combinatoric {
         arg2 = ast.arg2();
         if (!arg2.isAST()) {
           // Nonatomic expression expected at position `1` in `2`.
-          return IOFunctions.printMessage(ast.topHead(), "normal", F.list(F.C2, ast), engine);
+          return Errors.printMessage(ast.topHead(), "normal", F.list(F.C2, ast), engine);
         }
         ast2 = (IAST) arg2;
       } else {
@@ -563,7 +564,7 @@ public final class Combinatoric {
       }
       if (ast1.size() != ast2.size() || !ast1.head().equals(ast2.head())) {
         // Expressions `1` and `2` cannot be related by a permutation.
-        return IOFunctions.printMessage(ast.topHead(), "norel", F.list(ast1, ast2), engine);
+        return Errors.printMessage(ast.topHead(), "norel", F.list(ast1, ast2), engine);
       }
       if (ast1.size() == 1) {
         return F.Cycles(F.CEmptyList);
@@ -571,7 +572,7 @@ public final class Combinatoric {
         Map<IExpr, MutableInt> histogramMap = MutableInt.createHistogram(ast1);
         if (!MutableInt.isEqualPermutable(ast2, histogramMap)) {
           // Expressions `1` and `2` cannot be related by a permutation.
-          return IOFunctions.printMessage(ast.topHead(), "norel", F.list(ast1, ast2), engine);
+          return Errors.printMessage(ast.topHead(), "norel", F.list(ast1, ast2), engine);
         }
       }
 
@@ -913,7 +914,7 @@ public final class Combinatoric {
             int iterationLimit = engine.getIterationLimit();
             while ((solution = solver.take()) != null) {
               if (iterationLimit > 0 && iterations > iterationLimit) {
-                IOFunctions.printMessage(ast.topHead(), "itlimpartial",
+                Errors.printMessage(ast.topHead(), "itlimpartial",
                     F.list(F.ZZ(iterationLimit)), engine);
                 return result;
               }
@@ -1512,7 +1513,7 @@ public final class Combinatoric {
             return resultListOfPartitions;
           } else {
             // "Positive machine-sized integer expected at position `2` in `1`.", //
-            return IOFunctions.printMessage(ast.topHead(), "intpm", F.list(ast, F.C3), engine);
+            return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C3), engine);
           }
         }
       }
@@ -1598,7 +1599,7 @@ public final class Combinatoric {
         }
       }
       // Nonatomic expression expected at position `1` in `2`.
-      return IOFunctions.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
+      return Errors.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
     }
 
     private static IExpr permute(IAST list1, IAST cyclesMainList, final IAST ast,
@@ -1615,7 +1616,7 @@ public final class Combinatoric {
           }
           if (fromPosition > list1.argSize()) {
             // Required length `1` is smaller than maximum `2` of support of `3`
-            return IOFunctions.printMessage(S.Permute, "lowlen",
+            return Errors.printMessage(S.Permute, "lowlen",
                 F.list(F.ZZ(list1.argSize()), list.get(i), ast), engine);
           }
 
@@ -1630,7 +1631,7 @@ public final class Combinatoric {
           }
           if (toPosition > list1.argSize()) {
             // Required length `1` is smaller than maximum `2` of support of `3`
-            return IOFunctions.printMessage(S.Permute, "lowlen",
+            return Errors.printMessage(S.Permute, "lowlen",
                 F.list(F.ZZ(list1.argSize()), F.ZZ(toPosition), ast), engine);
           }
           changed = true;
@@ -1835,7 +1836,7 @@ public final class Combinatoric {
               permutationsListLength = arg2;
             } else {
               // Required length `1` is smaller than maximum `2` of support of `3`
-              return IOFunctions.printMessage(ast.topHead(), "lowlen",
+              return Errors.printMessage(ast.topHead(), "lowlen",
                   F.list(ast.arg2(), F.ZZ(permutationsListLength), ast), engine);
             }
           }
@@ -3258,7 +3259,7 @@ public final class Combinatoric {
         if (position < 1 || position > permList.argSize()) {
           if (!quiet) {
             // Invalid permutation list `1`.
-            IOFunctions.printMessage(S.Cycles, "permlist", F.list(permList), engine);
+            Errors.printMessage(S.Cycles, "permlist", F.list(permList), engine);
           }
           return null;
         }
@@ -3266,7 +3267,7 @@ public final class Combinatoric {
           // contains repeated integers.
           if (!quiet) {
             // Invalid permutation list `1`.
-            IOFunctions.printMessage(S.Cycles, "permlist", F.list(permList), engine);
+            Errors.printMessage(S.Cycles, "permlist", F.list(permList), engine);
           }
           return null;
         }
@@ -3275,7 +3276,7 @@ public final class Combinatoric {
       } else {
         if (!quiet) {
           // `1` is not a valid permutation.
-          IOFunctions.printMessage(S.Cycles, "perm", F.list(permList), engine);
+          Errors.printMessage(S.Cycles, "perm", F.list(permList), engine);
         }
         return null;
       }

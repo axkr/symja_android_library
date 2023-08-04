@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -58,7 +59,7 @@ public class NumericArrayFunctions {
             return result;
           }
           // The argument `1` cannot be converted to a NumericArray of type `2` using method `3`
-          return IOFunctions.printMessage(ast.topHead(), "nconvss", F.list(arg1, arg2, S.Check),
+          return Errors.printMessage(ast.topHead(), "nconvss", F.list(arg1, arg2, S.Check),
               engine);
         }
       }

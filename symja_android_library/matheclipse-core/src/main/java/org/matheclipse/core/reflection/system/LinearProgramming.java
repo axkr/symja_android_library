@@ -15,7 +15,7 @@ import org.hipparchus.optim.linear.PivotSelectionRule;
 import org.hipparchus.optim.linear.Relationship;
 import org.hipparchus.optim.linear.SimplexSolver;
 import org.hipparchus.optim.nonlinear.scalar.GoalType;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -156,7 +156,7 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
       }
     } catch (MathIllegalArgumentException miae) {
       // `1`.
-      return IOFunctions.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())),
+      return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())),
           engine);
     } catch (MathRuntimeException mre) {
       LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);

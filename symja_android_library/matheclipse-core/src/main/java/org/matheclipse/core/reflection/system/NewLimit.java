@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -47,7 +47,7 @@ public class NewLimit extends AbstractEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IOFunctions.printExperimental(S.NewLimit);
+    Errors.printExperimental(S.NewLimit);
     if (ast.argSize() > 0) {
     }
 

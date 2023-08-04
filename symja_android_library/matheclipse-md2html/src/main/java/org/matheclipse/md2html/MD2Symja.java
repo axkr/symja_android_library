@@ -15,7 +15,7 @@ import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
 import org.matheclipse.image.ImageInit;
@@ -198,7 +198,7 @@ public class MD2Symja {
         return;
       }
 
-      html = IOFunctions.templateRender(HTML_TEMPLATE, new String[] {html});
+      html = Errors.templateRender(HTML_TEMPLATE, new String[] {html});
       // html = StringEscapeUtils.escapeHtml4(html);
       System.out.println(html);
       try {

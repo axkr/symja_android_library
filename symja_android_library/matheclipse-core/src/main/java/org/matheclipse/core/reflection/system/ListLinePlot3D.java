@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -19,7 +19,7 @@ public class ListLinePlot3D extends AbstractEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IOFunctions.printExperimental(S.ListLinePlot3D);
+    Errors.printExperimental(S.ListLinePlot3D);
     if (ast.argSize() > 0) {
 
       IAST plotStyle = F.NIL;
@@ -105,7 +105,7 @@ public class ListLinePlot3D extends AbstractEvaluator {
     }
 
     // `1` is not a valid dataset or a list of datasets.
-    return IOFunctions.printMessage(ast.topHead(), "ldata", F.list(ast.arg1()), engine);
+    return Errors.printMessage(ast.topHead(), "ldata", F.list(ast.arg1()), engine);
   }
 
   private IExpr heightLinePlot(IAST heights, IAST plotStyle, EvalEngine engine) {

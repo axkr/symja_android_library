@@ -15,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
@@ -637,7 +638,7 @@ public final class OutputFunctions {
           int value = arg1.toIntDefault();
           if (value < RomanArabicConverter.MIN_VALUE || value > RomanArabicConverter.MAX_VALUE) {
             // Integer expected in range `1` to `2`.
-            return IOFunctions.printMessage( //
+            return Errors.printMessage( //
                 ast.topHead(), //
                 "intrange", //
                 F.List(F.ZZ(RomanArabicConverter.MIN_VALUE), //
@@ -961,7 +962,7 @@ public final class OutputFunctions {
       for (int i = 1; i < list.size(); i++) {
         if (!checkVariable(list.get(i), i, result[0], result[1], engine)) {
           // `1` is not a valid variable.
-          IOFunctions.printMessage(ast.topHead(), "ivar", F.list(list.get(i)), engine);
+          Errors.printMessage(ast.topHead(), "ivar", F.list(list.get(i)), engine);
           return null;
         }
       }
@@ -970,7 +971,7 @@ public final class OutputFunctions {
       result[1] = F.unaryAST1(S.List, S.Real);
       if (!checkVariable(arg1, 1, result[0], result[1], engine)) {
         // `1` is not a valid variable.
-        IOFunctions.printMessage(ast.topHead(), "ivar", F.list(arg1), engine);
+        Errors.printMessage(ast.topHead(), "ivar", F.list(arg1), engine);
         return null;
       }
     }

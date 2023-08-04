@@ -16,6 +16,7 @@ import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -356,12 +357,12 @@ public class ManipulateFunction {
             colorMap = "watermelon";
           } else {
             // `2` is not a known entity, class, or tag for `1`.
-            IOFunctions.printMessage(S.ColorData, "notent", F.list(S.ColorData, colorFunction),
+            Errors.printMessage(S.ColorData, "notent", F.list(S.ColorData, colorFunction),
                 engine);
           }
         } else if (colorFunction.isPresent()) {
           // `2` is not a known entity, class, or tag for `1`.
-          IOFunctions.printMessage(S.ColorData, "notent", F.list(S.ColorData, colorFunction),
+          Errors.printMessage(S.ColorData, "notent", F.list(S.ColorData, colorFunction),
               engine);
         }
       } else {
@@ -386,7 +387,7 @@ public class ManipulateFunction {
           if (optionPlotRange.isNIL()) {
             // Value of option `1` is not All, Full, Automatic, a positive machine
             // number, or an appropriate list of range specifications.
-            IOFunctions.printMessage(plot.topHead(), "prng", F.list(F.Rule(S.PlotRange, plotRange)),
+            Errors.printMessage(plot.topHead(), "prng", F.list(F.Rule(S.PlotRange, plotRange)),
                 engine);
           }
         }
@@ -969,7 +970,7 @@ public class ManipulateFunction {
           if (plot.size() < 3 || !plot.arg2().isList3() || !plot.arg2().first().isSymbol()) {
             // Range specification `1` is not of the form {x, xmin, xmax}.
             IExpr arg2 = plot.size() >= 3 ? plot.arg2() : F.CEmptyString;
-            return IOFunctions.printMessage(plot.topHead(), "pllim", F.list(arg2), engine);
+            return Errors.printMessage(plot.topHead(), "pllim", F.list(arg2), engine);
           }
           if (plot.size() >= 3 && plot.arg2().isList()) {
             IAST plotRangeX = (IAST) plot.arg2();
@@ -1096,7 +1097,7 @@ public class ManipulateFunction {
         if (!plotRangeEvaled) {
           // Value of option `1` is not All, Full, Automatic, a positive machine
           // number, or an appropriate list of range specifications.
-          IOFunctions.printMessage(plot.topHead(), "prng", F.list(F.Rule(S.PlotRange, plotRangeY)),
+          Errors.printMessage(plot.topHead(), "prng", F.list(F.Rule(S.PlotRange, plotRangeY)),
               engine);
         }
       }
@@ -1884,7 +1885,7 @@ public class ManipulateFunction {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // "Function `1` not implemented.", //
-      return IOFunctions.printMessage(ast.topHead(), "zznotimpl", F.list(ast.topHead()), engine);
+      return Errors.printMessage(ast.topHead(), "zznotimpl", F.list(ast.topHead()), engine);
       // return redirectToManipulate(ast, engine);
     }
   }
@@ -1894,7 +1895,7 @@ public class ManipulateFunction {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // "Function `1` not implemented.", //
-      return IOFunctions.printMessage(ast.topHead(), "zznotimpl", F.list(ast.topHead()), engine);
+      return Errors.printMessage(ast.topHead(), "zznotimpl", F.list(ast.topHead()), engine);
       // return redirectToManipulate(ast, engine);
     }
   }
@@ -1996,7 +1997,7 @@ public class ManipulateFunction {
           if (plot.size() >= 3) {
             if (!plot.arg2().isList3() || !plot.arg2().first().isSymbol()) {
               // Range specification `1` is not of the form {x, xmin, xmax}.
-              return IOFunctions.printMessage(plot.topHead(), "pllim", F.list(plot.arg2()), engine);
+              return Errors.printMessage(plot.topHead(), "pllim", F.list(plot.arg2()), engine);
             }
             IAST plotRangeX = (IAST) plot.arg2();
             IAST plotRangeY = F.NIL;
@@ -2006,7 +2007,7 @@ public class ManipulateFunction {
               } else if (!arg1.isAST(S.ComplexPlot3D)) {
                 if (!plot.arg3().isList3() || !plot.arg3().first().isSymbol()) {
                   // Range specification `1` is not of the form {x, xmin, xmax}.
-                  return IOFunctions.printMessage(plot.topHead(), "pllim", F.list(plot.arg3()),
+                  return Errors.printMessage(plot.topHead(), "pllim", F.list(plot.arg3()),
                       engine);
                 }
               }
@@ -2027,7 +2028,7 @@ public class ManipulateFunction {
           }
         }
       } catch (ValidateException ve) {
-        return IOFunctions.printMessage(manipulateAST.topHead(), ve, engine);
+        return Errors.printMessage(manipulateAST.topHead(), ve, engine);
       } catch (RuntimeException rex) {
         LOGGER.log(engine.getLogLevel(), S.Manipulate, rex);
       }

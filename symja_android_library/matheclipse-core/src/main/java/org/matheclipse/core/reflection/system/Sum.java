@@ -18,9 +18,9 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -205,7 +205,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
               iterator = Iterator.create(F.list(argN), preevaledSum.argSize(), engine);
             } else {
               // Non-list iterator `1` at position `2` does not evaluate to a real numeric value.
-              return IOFunctions.printMessage(preevaledSum.topHead(), "nliter",
+              return Errors.printMessage(preevaledSum.topHead(), "nliter",
                   F.list(argN, F.ZZ(preevaledSum.size() - 1)), engine);
             }
           }
@@ -282,7 +282,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
           }
         }
       } catch (ValidateException ve) {
-        return IOFunctions.printMessage(preevaledSum.topHead(), ve, engine);
+        return Errors.printMessage(preevaledSum.topHead(), ve, engine);
       }
     }
     return F.NIL;

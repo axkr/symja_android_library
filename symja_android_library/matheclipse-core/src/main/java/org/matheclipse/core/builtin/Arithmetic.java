@@ -59,6 +59,7 @@ import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.GammaJS;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
@@ -487,13 +488,13 @@ public final class Arithmetic {
             return assignPart(leftHandSide, ast.arg2(), engine);
           }
           // `1` is not a variable with a value, so its value cannot be changed.
-          return IOFunctions.printMessage(ast.topHead(), "rvalue", F.list(sym), engine);
+          return Errors.printMessage(ast.topHead(), "rvalue", F.list(sym), engine);
         }
         if (leftHandSide.isSymbol()) {
           ISymbol sym = (ISymbol) leftHandSide;
           if (!sym.hasAssignedSymbolValue()) {
             // `1` is not a variable with a value, so its value cannot be changed.
-            return IOFunctions.printMessage(getFunctionSymbol(), "rvalue", F.list(sym), engine);
+            return Errors.printMessage(getFunctionSymbol(), "rvalue", F.list(sym), engine);
           }
           IExpr arg2 = engine.evaluate(ast.arg2());
           IExpr[] results = sym.reassignSymbolValue(getAST(arg2), getFunctionSymbol(), engine);
@@ -507,7 +508,7 @@ public final class Arithmetic {
         return F.NIL;
       }
       // `1` is not a variable with a value, so its value cannot be changed.
-      return IOFunctions.printMessage(getFunctionSymbol(), "rvalue", F.list(leftHandSide), engine);
+      return Errors.printMessage(getFunctionSymbol(), "rvalue", F.list(leftHandSide), engine);
     }
 
     @Override
@@ -599,7 +600,7 @@ public final class Arithmetic {
           return F.Arg(directedInfininty.arg1());
         } else if (arg1.isComplexInfinity()) {
           // Indeterminate expression `1` encountered.
-          IOFunctions.printMessage(ast.topHead(), "indet", F.list(ast), engine);
+          Errors.printMessage(ast.topHead(), "indet", F.list(ast), engine);
           return F.Interval(F.list(F.CNPi, S.Pi));
         }
 
@@ -711,7 +712,7 @@ public final class Arithmetic {
           delta = tolerance.evalf();
         } else {
           // Tolerance specification `1` must be a non-negative number.
-          return IOFunctions.printMessage(S.Chop, "tolnn", F.List(tolerance), engine);
+          return Errors.printMessage(S.Chop, "tolnn", F.List(tolerance), engine);
         }
       } else {
         delta = Config.DEFAULT_CHOP_DELTA;
@@ -824,7 +825,7 @@ public final class Arithmetic {
       try {
         if (ast.head().equals(S.Complex)) {
           if (!ast.isAST2()) {
-            return IOFunctions.printArgMessage(ast, ARGS_2_2, engine);
+            return Errors.printArgMessage(ast, ARGS_2_2, engine);
           }
           IExpr realExpr = ast.arg1();
           IExpr imaginaryExpr = ast.arg2();
@@ -1107,7 +1108,7 @@ public final class Arithmetic {
       IExpr base = ast.arg1();
       if (base.isNumericFunction(true)) {
         if (base.isComplex() || base.isComplexNumeric()) {
-          return IOFunctions.printMessage(ast.topHead(), "preal", F.list(base), engine);
+          return Errors.printMessage(ast.topHead(), "preal", F.list(base), engine);
         }
         if (base.isPositiveResult()) {
           return F.Power(base, F.C1D3);
@@ -1176,7 +1177,7 @@ public final class Arithmetic {
             return assignPart(arg1, F.CN1, engine);
           }
           // `1` is not a variable with a value, so its value cannot be changed.
-          return IOFunctions.printMessage(ast.topHead(), "rvalue", F.list(sym), engine);
+          return Errors.printMessage(ast.topHead(), "rvalue", F.list(sym), engine);
         }
         if (arg1.isSymbol()) {
           ISymbol sym = (ISymbol) arg1;
@@ -1188,11 +1189,11 @@ public final class Arithmetic {
             }
           } else {
             // `1` is not a variable with a value, so its value cannot be changed.
-            return IOFunctions.printMessage(ast.topHead(), "rvalue", F.list(sym), engine);
+            return Errors.printMessage(ast.topHead(), "rvalue", F.list(sym), engine);
           }
         } else {
           // `1` is not a variable with a value, so its value cannot be changed.
-          return IOFunctions.printMessage(ast.topHead(), "rvalue", F.list(arg1), engine);
+          return Errors.printMessage(ast.topHead(), "rvalue", F.list(arg1), engine);
         }
       } catch (ValidateException ve) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
@@ -1243,7 +1244,7 @@ public final class Arithmetic {
         }
         if (n < 0) {
           // Single or list of non-negative machine-sized integers expected at position `1` of `2`.
-          return IOFunctions.printMessage(ast.topHead(), "ilsmn", F.list(F.C2, ast), engine);
+          return Errors.printMessage(ast.topHead(), "ilsmn", F.list(F.C2, ast), engine);
         }
         c = n;
       }
@@ -1258,7 +1259,7 @@ public final class Arithmetic {
           return F.ListConvolve(F.list(F.ZZ(c), F.ZZ(-c)), arg1);
         } else if (arg1.isNumber()) {
           // List or SparseArray or structured array expected at position `1` in `2`.
-          return IOFunctions.printMessage(ast.topHead(), "listrp", F.list(F.C1, ast), engine);
+          return Errors.printMessage(ast.topHead(), "listrp", F.list(F.C1, ast), engine);
         }
       }
       return F.NIL;
@@ -1592,7 +1593,7 @@ public final class Arithmetic {
       if (Double.isNaN(gamma)) {
         if (d1 > 0.0) {
           // Overflow occurred in computation.
-          IOFunctions.printMessage(S.Gamma, "ovfl", F.CEmptyList, EvalEngine.get());
+          Errors.printMessage(S.Gamma, "ovfl", F.CEmptyList, EvalEngine.get());
           return F.Overflow();
         }
         return e1DblComArg(F.complexNum(d1));
@@ -2359,7 +2360,7 @@ public final class Arithmetic {
         base = ast.arg2();
         if (!base.minus(F.C1).isPositiveResult()) {
           // "Base `1` is not a real number greater than 1.",
-          return IOFunctions.printMessage(ast.topHead(), "rbase", F.List(base), engine);
+          return Errors.printMessage(ast.topHead(), "rbase", F.List(base), engine);
         }
       }
       if (n.equals(F.C0) || n.equals(F.CD0)) {
@@ -2368,7 +2369,7 @@ public final class Arithmetic {
       IExpr nN = engine.evalN(n);
       if (!nN.isRealResult()) {
         // "The value `1` is not a real number."
-        return IOFunctions.printMessage(ast.topHead(), "realx", F.List(nN), engine);
+        return Errors.printMessage(ast.topHead(), "realx", F.List(nN), engine);
       }
       IExpr baseN = engine.evalN(base);
       if (baseN.isRealResult()) {
@@ -2526,11 +2527,11 @@ public final class Arithmetic {
         nDigitPrecision = arg2.toIntDefault();
         if (nDigitPrecision <= 0) {
           // Requested precision `1` is smaller than `2`.
-          return IOFunctions.printMessage(S.N, "precsm", F.list(arg2, F.C1), engine);
+          return Errors.printMessage(S.N, "precsm", F.list(arg2, F.C1), engine);
         }
         if (nDigitPrecision > Config.MAX_PRECISION_APFLOAT) {
           // Requested precision `1` is greater than `2`.
-          return IOFunctions.printMessage(S.N, "precgt",
+          return Errors.printMessage(S.N, "precgt",
               F.list(arg2, F.ZZ(Config.MAX_PRECISION_APFLOAT)), engine);
         }
         return numericEvalAST2(arg1, nDigitPrecision, engine);
@@ -3620,10 +3621,10 @@ public final class Arithmetic {
         }
       } catch (BackingStorageException | LossOfPrecisionException lpe) {
         // Complete loss of accurate digits (apfloat).
-        return IOFunctions.printMessage(S.General, "zzapfloatcld", F.List(), EvalEngine.get());
+        return Errors.printMessage(S.General, "zzapfloatcld", F.List(), EvalEngine.get());
       } catch (OverflowException | InfiniteExpansionException | ArithmeticException aex) {
         // Overflow occurred in computation.
-        return IOFunctions.printMessage(S.General, "ovfl", F.List(), EvalEngine.get());
+        return Errors.printMessage(S.General, "ovfl", F.List(), EvalEngine.get());
       }
 
       if (engine.isSymbolicMode(S.Power.getAttributes())) {
@@ -3737,14 +3738,14 @@ public final class Arithmetic {
       if (base.isZero()) {
         if (exponent.isNegative()) {
           // Infinite expression `1` encountered.
-          IOFunctions.printMessage(S.Power, "infy", F.list(F.Power(F.C0, exponent)),
+          Errors.printMessage(S.Power, "infy", F.list(F.Power(F.C0, exponent)),
               EvalEngine.get());
           return F.CComplexInfinity;
         }
         if (exponent.isZero()) {
           // 0^0
           // Indeterminate expression `1` encountered.
-          IOFunctions.printMessage(S.Power, "indet", F.list(F.Power(F.C0, F.C0)), EvalEngine.get());
+          Errors.printMessage(S.Power, "indet", F.list(F.Power(F.C0, F.C0)), EvalEngine.get());
           return S.Indeterminate;
         }
       }
@@ -3780,14 +3781,14 @@ public final class Arithmetic {
     private static IExpr e2DblArg(final INum base, final INum exponent) {
       if (base.isZero()) {
         if (exponent.isNegative()) {
-          IOFunctions.printMessage(S.Power, "infy", F.list(F.Power(F.C0, exponent)),
+          Errors.printMessage(S.Power, "infy", F.list(F.Power(F.C0, exponent)),
               EvalEngine.get());
           // EvalEngine.get().printMessage("Infinite expression 0^(negative number)");
           return F.CComplexInfinity;
         }
         if (exponent.isZero()) {
           // 0^0
-          IOFunctions.printMessage(S.Power, "indet", F.list(F.Power(F.C0, F.C0)), EvalEngine.get());
+          Errors.printMessage(S.Power, "indet", F.list(F.Power(F.C0, F.C0)), EvalEngine.get());
           // EvalEngine.get().printMessage("Infinite expression 0^0");
           return S.Indeterminate;
         }
@@ -4421,7 +4422,7 @@ public final class Arithmetic {
       if (exponent.isZeroResult()) {
         // 0^0
         // engine.printMessage("Infinite expression 0^0");
-        IOFunctions.printMessage(S.Power, "indet", F.list(F.Power(F.C0, F.C0)), EvalEngine.get());
+        Errors.printMessage(S.Power, "indet", F.list(F.Power(F.C0, F.C0)), EvalEngine.get());
         return S.Indeterminate;
       }
       if (exponent.isPositiveResult()) {
@@ -4430,7 +4431,7 @@ public final class Arithmetic {
       }
       if (exponent.isNegativeResult()) {
         // 0^x /; x<0
-        IOFunctions.printMessage(S.Power, "infy", F.list(F.Power(F.C0, exponent)),
+        Errors.printMessage(S.Power, "infy", F.list(F.Power(F.C0, exponent)),
             EvalEngine.get());
         return F.CComplexInfinity;
       }
@@ -4439,13 +4440,13 @@ public final class Arithmetic {
       if (a.isReal()) {
         if (a.isNegative()) {
           // engine.printMessage("Infinite expression 0^(negative number)");
-          IOFunctions.printMessage(S.Power, "infy", F.list(F.Power(F.C0, exponent)),
+          Errors.printMessage(S.Power, "infy", F.list(F.Power(F.C0, exponent)),
               EvalEngine.get());
           return F.CComplexInfinity;
         }
         if (a.isZero()) {
           // engine.printMessage("Infinite expression 0^0.");
-          IOFunctions.printMessage(S.Power, "indet", F.list(F.Power(F.C0, F.C0)), EvalEngine.get());
+          Errors.printMessage(S.Power, "indet", F.list(F.Power(F.C0, F.C0)), EvalEngine.get());
           return S.Indeterminate;
         }
         return F.C0;
@@ -4454,13 +4455,13 @@ public final class Arithmetic {
         IExpr temp = engine.evalN(a);
         if (temp.isReal()) {
           if (temp.isNegative()) {
-            IOFunctions.printMessage(S.Power, "infy", F.list(F.Power(F.C0, temp)),
+            Errors.printMessage(S.Power, "infy", F.list(F.Power(F.C0, temp)),
                 EvalEngine.get());
             // engine.printMessage("Infinite expression 0^(negative number)");
             return F.CComplexInfinity;
           }
           if (temp.isZero()) {
-            IOFunctions.printMessage(S.Power, "indet", F.list(F.Power(F.C0, F.C0)),
+            Errors.printMessage(S.Power, "indet", F.list(F.Power(F.C0, F.C0)),
                 EvalEngine.get());
             // engine.printMessage("Infinite expression 0^0.");
             return S.Indeterminate;
@@ -4468,7 +4469,7 @@ public final class Arithmetic {
           return F.C0;
         }
         if (temp.isComplex() || temp.isComplexNumeric()) {
-          IOFunctions.printMessage(S.Power, "indet", F.list(F.Power(F.C0, temp)), EvalEngine.get());
+          Errors.printMessage(S.Power, "indet", F.list(F.Power(F.C0, temp)), EvalEngine.get());
           // engine.printMessage("Indeterminate expression 0 ^ (complex number) encountered.");
           return S.Indeterminate;
         }
@@ -4812,7 +4813,7 @@ public final class Arithmetic {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head().equals(S.Rational)) {
         if (!ast.isAST2()) {
-          return IOFunctions.printArgMessage(ast, ARGS_2_2, engine);
+          return Errors.printArgMessage(ast, ARGS_2_2, engine);
         }
         try {
           // try to convert into a fractional number
@@ -4835,11 +4836,11 @@ public final class Arithmetic {
             if (numerator.isZero()) {
               // 0^0
               // Indeterminate expression `1` encountered.
-              IOFunctions.printMessage(S.Divide, "indet", F.List(ast), engine);
+              Errors.printMessage(S.Divide, "indet", F.List(ast), engine);
               return S.Indeterminate;
             }
             // Infinite expression `1` encountered.
-            IOFunctions.printMessage(S.Divide, "infy", F.List(ast), engine);
+            Errors.printMessage(S.Divide, "infy", F.List(ast), engine);
             return F.CComplexInfinity;
           }
           if (numerator.isZero()) {
@@ -5348,7 +5349,7 @@ public final class Arithmetic {
     public IExpr e2ApfloatArg(final ApfloatNum af0, final ApfloatNum af1) {
       if (af1.isZero()) {
         // Indeterminate expression `1` encountered.
-        IOFunctions.printMessage(S.Surd, "indet", F.List(F.Surd(af0, af1)), EvalEngine.get());
+        Errors.printMessage(S.Surd, "indet", F.List(F.Surd(af0, af1)), EvalEngine.get());
         return S.Indeterminate;
       }
       if (af0.isNegative()) {
@@ -5364,7 +5365,7 @@ public final class Arithmetic {
       double result = doubleSurd(val, r);
       if (Double.isNaN(result)) {
         // Indeterminate expression `1` encountered.
-        IOFunctions.printMessage(S.Surd, "indet", F.List(F.Surd(d0, d1)), EvalEngine.get());
+        Errors.printMessage(S.Surd, "indet", F.List(F.Surd(d0, d1)), EvalEngine.get());
         return S.Indeterminate;
       }
       return F.num(result);
@@ -5376,21 +5377,21 @@ public final class Arithmetic {
         EvalEngine engine = EvalEngine.get();
         if (base.isNumber() && !base.isReal()) {
           // The parameter `1` should be real.
-          return IOFunctions.printMessage(S.Surd, "preal", F.List(base), engine);
+          return Errors.printMessage(S.Surd, "preal", F.List(base), engine);
         }
         if (root.isNumber() && !root.isInteger()) {
           // Integer expected at position `2` in `1`.
-          return IOFunctions.printMessage(S.Surd, "int", F.List(F.C2, ast), engine);
+          return Errors.printMessage(S.Surd, "int", F.List(F.C2, ast), engine);
         }
         if (root.isZero()) {
           // Indeterminate expression `1` encountered.
-          IOFunctions.printMessage(S.Surd, "indet", F.List(ast), engine);
+          Errors.printMessage(S.Surd, "indet", F.List(ast), engine);
           return S.Indeterminate;
         }
         if (base.isNegative()) {
           if (((IInteger) root).isEven()) {
             // Surd is not defined for even roots of negative values.
-            IOFunctions.printMessage(ast.topHead(), "nonegs", F.CEmptyList, engine);
+            Errors.printMessage(ast.topHead(), "nonegs", F.CEmptyList, engine);
             return S.Indeterminate;
           }
           return F.Times(F.CN1, Power(base.negate(), ((IInteger) root).inverse()));
@@ -5420,7 +5421,7 @@ public final class Arithmetic {
 
     private static double doubleSurd(double val, double r) {
       if (r == 0.0d) {
-        IOFunctions.printMessage(S.Surd, "indet", F.List(F.Surd(F.num(val), F.num(r))),
+        Errors.printMessage(S.Surd, "indet", F.List(F.Surd(F.num(val), F.num(r))),
             EvalEngine.get());
         return Double.NaN;
       }
@@ -5431,7 +5432,7 @@ public final class Arithmetic {
           int iRoot = (int) root;
           if ((iRoot & 0x0001) == 0x0000) {
             // Surd is not defined for even roots of negative values.
-            IOFunctions.printMessage(S.Surd, "nonegs", F.CEmptyList, EvalEngine.get());
+            Errors.printMessage(S.Surd, "nonegs", F.CEmptyList, EvalEngine.get());
             return Double.NaN;
           }
           return -Math.pow(Math.abs(val), 1.0d / r);
@@ -5445,12 +5446,12 @@ public final class Arithmetic {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr base = ast.arg1();
       if (base.isComplex() || base.isComplexNumeric()) {
-        return IOFunctions.printMessage(ast.topHead(), "preal", F.list(base), engine);
+        return Errors.printMessage(ast.topHead(), "preal", F.list(base), engine);
       }
       IExpr arg2 = engine.evaluateNonNumeric(ast.arg2());
       if (arg2.isZero()) {
         // Indeterminate expression `1` encountered.
-        IOFunctions.printMessage(ast.topHead(), "indet", F.list(ast), engine);
+        Errors.printMessage(ast.topHead(), "indet", F.list(ast), engine);
         return S.Indeterminate;
       }
       if (arg2.isNumber()) {
@@ -5473,7 +5474,7 @@ public final class Arithmetic {
           if (base.isNegativeResult()) {
             if (root.isEven()) {
               // Surd is not defined for even roots of negative values.
-              IOFunctions.printMessage(ast.topHead(), "nonegs", F.CEmptyList, engine);
+              Errors.printMessage(ast.topHead(), "nonegs", F.CEmptyList, engine);
               return S.Indeterminate;
             }
             if (root.isNegative()) {
@@ -5497,7 +5498,7 @@ public final class Arithmetic {
           }
         } else {
           // Integer expected at position `2` in `1`.
-          return IOFunctions.printMessage(ast.topHead(), "int", F.list(ast, F.C2),
+          return Errors.printMessage(ast.topHead(), "int", F.list(ast, F.C2),
               EvalEngine.get());
         }
       }
@@ -6121,7 +6122,7 @@ public final class Arithmetic {
         IASTMutable messageAST =
             swappedArgs ? F.Times(otherArg, zeroArg) : F.Times(zeroArg, otherArg);
         // Indeterminate expression `1` encountered.
-        IOFunctions.printMessage(S.Infinity, "indet", F.list(messageAST), EvalEngine.get());
+        Errors.printMessage(S.Infinity, "indet", F.list(messageAST), EvalEngine.get());
         return S.Indeterminate;
       }
       if (zeroArg.isExactNumber() //

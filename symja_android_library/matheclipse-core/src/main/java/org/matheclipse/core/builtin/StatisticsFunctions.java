@@ -24,6 +24,7 @@ import org.hipparchus.stat.projection.PCA;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
@@ -980,7 +981,7 @@ public class StatisticsFunctions {
           }
           if (dx < 0) {
             // The step size `1` is expected to be positive
-            return IOFunctions.printMessage(ast.topHead(), "step", F.list(list.arg3()), engine);
+            return Errors.printMessage(ast.topHead(), "step", F.list(list.arg3()), engine);
           }
           xMin = list.arg1().toIntDefault();
           if (xMin == Integer.MIN_VALUE) {
@@ -3416,7 +3417,7 @@ public class StatisticsFunctions {
     public IExpr realMatrixEval(RealMatrix matrix, EvalEngine engine) {
       if (matrix.getRowDimension() <= 1) {
         // The argument `1` should have at least `2` arguments.
-        return IOFunctions.printMessage(S.Covariance, "shlen",
+        return Errors.printMessage(S.Covariance, "shlen",
             F.List(new ASTRealMatrix(matrix, false), F.stringx("two")), EvalEngine.get());
       }
       org.hipparchus.stat.correlation.Covariance cov =
@@ -4261,7 +4262,7 @@ public class StatisticsFunctions {
           IAST list = (IAST) ast.arg1();
           if (list.argSize() < 2) {
             // The argument `1` should have at least `2` arguments.
-            return IOFunctions.printMessage(ast.topHead(), "shlen", F.List(list, F.C2), engine);
+            return Errors.printMessage(ast.topHead(), "shlen", F.List(list, F.C2), engine);
           }
           IExpr centralMoment = engine.evaluate(F.CentralMoment(list, F.C2));
           if (centralMoment.isPossibleZero(true)) {
@@ -4664,7 +4665,7 @@ public class StatisticsFunctions {
 
       if (arg1.isNumber()) {
         // Rectangular array expected at position `1` in `2`.
-        return IOFunctions.printMessage(ast.topHead(), "rectt", F.list(F.C1, ast), engine);
+        return Errors.printMessage(ast.topHead(), "rectt", F.list(F.C1, ast), engine);
       }
       return F.NIL;
     }
@@ -5153,7 +5154,7 @@ public class StatisticsFunctions {
       // 0 or 2 args are allowed
       if (ast.isAST1()) {
         // `1` called with 1 argument; `2` arguments are expected.
-        return IOFunctions.printMessage(ast.topHead(), "argr", F.List(S.NormalDistribution, F.C2),
+        return Errors.printMessage(ast.topHead(), "argr", F.List(S.NormalDistribution, F.C2),
             engine);
       }
       return F.NIL;
@@ -5206,7 +5207,7 @@ public class StatisticsFunctions {
         if (v <= 0.0) {
           if (v != Double.MIN_VALUE) {
             // Parameter `1` at position `2` in `3` is expected to be positive.
-            return IOFunctions.printMessage(S.NormalDistribution, "posprm",
+            return Errors.printMessage(S.NormalDistribution, "posprm",
                 F.list(dist.arg2(), F.C2, dist), EvalEngine.get());
           }
           return F.NIL;
@@ -6237,7 +6238,7 @@ public class StatisticsFunctions {
           try {
             if (dim1 == 0) {
               // Argument `1` should be a non-empty list.
-              return IOFunctions.printMessage(ast.topHead(), "empt", F.list(list), engine);
+              return Errors.printMessage(ast.topHead(), "empt", F.list(list), engine);
             }
             if (dim1 > 0 && ast.size() >= 3) {
 
@@ -6251,7 +6252,7 @@ public class StatisticsFunctions {
                 if (vector.exists(x -> x.isReal() && !((IReal) x).isRange(F.C0, F.C1))) {
                   // The Quantile specification `1` should be a number or a list of numbers between
                   // `2` and `3`.
-                  return IOFunctions.printMessage(ast.topHead(), "nquan", F.list(q, F.C0, F.C1),
+                  return Errors.printMessage(ast.topHead(), "nquan", F.list(q, F.C0, F.C1),
                       engine);
                 }
                 return vector.mapThread(ast, 2);
@@ -6261,7 +6262,7 @@ public class StatisticsFunctions {
                   if (!qi.isRange(F.C0, F.C1)) {
                     // The Quantile specification `1` should be a number or a list of numbers
                     // between `2` and `3`.
-                    return IOFunctions.printMessage(ast.topHead(), "nquan", F.list(qi, F.C0, F.C1),
+                    return Errors.printMessage(ast.topHead(), "nquan", F.list(qi, F.C0, F.C1),
                         engine);
                   }
                   // x = a + (length + b) * q
@@ -6451,7 +6452,7 @@ public class StatisticsFunctions {
         EvalEngine engine) {
       // The specification `1` is not a random distribution recognized by the system.
       if (head.getSymbolName().toLowerCase(Locale.US).endsWith("distribution")) {
-        return IOFunctions.printMessage(ast.topHead(), "udist", F.list(dist), engine);
+        return Errors.printMessage(ast.topHead(), "udist", F.list(dist), engine);
       }
       return F.NIL;
     }
@@ -7008,7 +7009,7 @@ public class StatisticsFunctions {
                   // numbers with length greater than the dimension of the array or two such arrays
                   // with
                   // of equal dimension.
-                  return IOFunctions.printMessage(ast.topHead(), "rctndm1", F.list(arg1, F.C1),
+                  return Errors.printMessage(ast.topHead(), "rctndm1", F.list(arg1, F.C1),
                       engine);
                 }
                 org.hipparchus.stat.inference.TTest tTest =
@@ -7029,7 +7030,7 @@ public class StatisticsFunctions {
             // The argument `1` at position `2` should be a rectangular array of real
             // numbers with length greater than the dimension of the array or two such arrays with
             // of equal dimension.
-            return IOFunctions.printMessage(ast.topHead(), "rctndm1", F.list(arg1, F.C1), engine);
+            return Errors.printMessage(ast.topHead(), "rctndm1", F.list(arg1, F.C1), engine);
           }
 
           org.hipparchus.stat.inference.TTest tTest = new org.hipparchus.stat.inference.TTest();

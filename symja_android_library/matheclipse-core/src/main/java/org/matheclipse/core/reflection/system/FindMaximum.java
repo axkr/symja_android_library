@@ -3,7 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.optim.nonlinear.scalar.GoalType;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -79,10 +79,10 @@ public class FindMaximum extends FindMinimum {
       return findExtremum(ast, engine, goalType);
     } catch (MathIllegalStateException miae) {
       // `1`.
-      return IOFunctions.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())),
+      return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())),
           engine);
     } catch (MathRuntimeException mre) {
-      IOFunctions.printMessage(ast.topHead(), "error", F.list(F.$str(mre.getMessage())), engine);
+      Errors.printMessage(ast.topHead(), "error", F.list(F.$str(mre.getMessage())), engine);
       return F.CEmptyList;
     }
   }

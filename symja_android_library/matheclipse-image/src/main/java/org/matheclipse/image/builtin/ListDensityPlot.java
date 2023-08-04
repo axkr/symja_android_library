@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import org.hipparchus.linear.RealMatrix;
 import org.jfree.chart.JFreeChart;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -39,14 +39,14 @@ public class ListDensityPlot extends ArrayPlot {
             degree = intOption;
           } else {
             // Index `1` should be a machine sized integer between `2` and `3`.",
-            return IOFunctions.printMessage(ast.topHead(), "invidx2",
+            return Errors.printMessage(ast.topHead(), "invidx2",
                 F.List(S.InterpolationOrder, F.C0, F.C6), engine);
           }
         }
         ast = ast.most();
         if (ast.argSize() < 1) {
           // `1` called with `2` arguments; `3` or more arguments are expected.
-          return IOFunctions.printMessage(ast.topHead(), "argm", F.List(ast, F.C0, F.C1), engine);
+          return Errors.printMessage(ast.topHead(), "argm", F.List(ast, F.C0, F.C1), engine);
         }
       }
 

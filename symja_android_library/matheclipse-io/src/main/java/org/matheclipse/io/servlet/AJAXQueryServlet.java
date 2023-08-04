@@ -19,7 +19,7 @@ import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.GraphicsFunctions;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.MathMLUtilities;
@@ -272,7 +272,7 @@ public class AJAXQueryServlet extends HttpServlet {
               String html = JSBuilder.IMAGE_IFRAME_TEMPLATE;
               String[] argsToRender = new String[3];
               argsToRender[0] = imageExpr.toBase64EncodedString();
-              html = IOFunctions.templateRender(html, argsToRender);
+              html = Errors.templateRender(html, argsToRender);
               html = StringEscapeUtils.escapeHtml4(html);
               return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
                   + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");

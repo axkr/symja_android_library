@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ContinueException;
@@ -360,7 +359,7 @@ public class ExprEvaluator {
     } catch (SymjaMathException sma) {
       // sma.printStackTrace();
       LOGGER.debug("ExprEvaluator.evalTopLevel() failed", sma);
-      IOFunctions.printMessage(expr.topHead(), sma, engineRef[0]);
+      Errors.printMessage(expr.topHead(), sma, engineRef[0]);
       return expr;
     } finally {
       // Quit may set a new engine
@@ -390,26 +389,26 @@ public class ExprEvaluator {
         ast = F.Break();
       }
       // No enclosing For, While or Do found for `1`.
-      IOFunctions.printMessage(S.Continue, "nofwd", F.list(ast), engine);
+      Errors.printMessage(S.Continue, "nofwd", F.list(ast), engine);
       temp = F.Hold(ast);
     } catch (ThrowException e) {
       LOGGER.debug("ExprEvaluator.evalTryCatch() failed", e);
       // Uncaught `1` returned to top level.
       IAST ast = F.Throw(e.getValue());
-      IOFunctions.printMessage(S.Throw, "nocatch", F.list(ast), engine);
+      Errors.printMessage(S.Throw, "nocatch", F.list(ast), engine);
       temp = F.Hold(ast);
     } catch (IterationLimitExceeded e) {
       LOGGER.debug("ExprEvaluator.evalTryCatch() failed", e);
       // Iteration limit of `1` exceeded.
       int iterationLimit = engine.getIterationLimit();
-      IOFunctions.printMessage(S.$IterationLimit, "itlim",
+      Errors.printMessage(S.$IterationLimit, "itlim",
           F.list(iterationLimit < 0 ? F.CInfinity : F.ZZ(iterationLimit), expr), engine);
       temp = F.Hold(expr);
     } catch (RecursionLimitExceeded e) {
       LOGGER.debug("ExprEvaluator.evalTryCatch() failed", e);
       // Recursion depth of `1` exceeded during evaluation of `2`.
       int recursionLimit = engine.getRecursionLimit();
-      IOFunctions.printMessage(S.$RecursionLimit, "reclim2",
+      Errors.printMessage(S.$RecursionLimit, "reclim2",
           F.list(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), expr), engine);
       temp = F.Hold(expr);
     }

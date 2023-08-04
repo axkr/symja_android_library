@@ -3,7 +3,7 @@ package org.matheclipse.core.eval.util;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -206,7 +206,7 @@ public class Assumptions extends AbstractAssumptions {
           return true;
         } else {
           // The list `1` of dimensions must have length `2`.
-          IOFunctions.printMessage(S.Arrays, "rankl", F.list(arrays.arg1(), F.C2),
+          Errors.printMessage(S.Arrays, "rankl", F.list(arrays.arg1(), F.C2),
               EvalEngine.get());
         }
       } else if (element.arg2().isAST(S.Matrices, 2, 4)) {
@@ -225,7 +225,7 @@ public class Assumptions extends AbstractAssumptions {
           return true;
         } else {
           // The list `1` of dimensions must have length `2`.
-          IOFunctions.printMessage(S.Matrices, "rankl", F.list(matrices.arg1(), F.C2),
+          Errors.printMessage(S.Matrices, "rankl", F.list(matrices.arg1(), F.C2),
               EvalEngine.get());
         }
       } else if (element.arg2().isAST(S.Vectors, 2, 3)) {
@@ -244,7 +244,7 @@ public class Assumptions extends AbstractAssumptions {
           return true;
         } else {
           // The list `1` of dimensions must have length `2`.
-          IOFunctions.printMessage(S.Vectors, "rankl", F.list(vectors.arg1(), F.C2),
+          Errors.printMessage(S.Vectors, "rankl", F.list(vectors.arg1(), F.C2),
               EvalEngine.get());
         }
       }

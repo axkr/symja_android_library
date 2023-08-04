@@ -42,6 +42,7 @@ import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
@@ -1253,7 +1254,7 @@ public class ExpTrigsFunctions {
       if (arg1.isReal()) {
         if (arg1.isNegative()) {
           // Argument `1` should be a real non-negative number.
-          return IOFunctions.printMessage(ast.topHead(), "noneg", F.list(arg1), engine);
+          return Errors.printMessage(ast.topHead(), "noneg", F.list(arg1), engine);
         }
         int i = arg1.toIntDefault();
         if (i > 0) {
@@ -2148,7 +2149,7 @@ public class ExpTrigsFunctions {
             // z)))));
           }
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -2218,7 +2219,7 @@ public class ExpTrigsFunctions {
             ));
           }
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }

@@ -18,7 +18,7 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.JDKRandomGenerator;
 import org.hipparchus.random.RandomVectorGenerator;
 import org.hipparchus.random.UncorrelatedRandomVectorGenerator;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -100,10 +100,10 @@ public class FindMinimum extends AbstractFunctionEvaluator {
       return findExtremum(ast, engine, goalType);
     } catch (MathIllegalStateException miae) {
       // `1`.
-      return IOFunctions.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())),
+      return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())),
           engine);
     } catch (MathRuntimeException mre) {
-      IOFunctions.printMessage(ast.topHead(), "error", F.list(F.$str(mre.getMessage())), engine);
+      Errors.printMessage(ast.topHead(), "error", F.list(F.$str(mre.getMessage())), engine);
       return F.CEmptyList;
     }
   }

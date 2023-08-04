@@ -3,7 +3,7 @@ package org.matheclipse.core.expression.data;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.stat.regression.SimpleRegression;
 import org.hipparchus.stat.regression.UpdatingMultipleLinearRegression;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.DataExpr;
@@ -103,7 +103,7 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
         if (value < min || value > max) {
           // Input value `1` lies outside the range of data in the interpolating function.
           // Extrapolation will be used.
-          IOFunctions.printMessage(ast.topHead(), "dmval", F.list(F.list(arg1)), engine);
+          Errors.printMessage(ast.topHead(), "dmval", F.list(F.list(arg1)), engine);
         }
       } catch (ArgumentTypeException atex) {
         // fall through for symbolic arguments

@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -42,7 +43,7 @@ public class FilterFunctions {
           IntList dims = LinearAlgebra.dimensions(list);
           if (dims.size() != 1) {
             // Function `1` not implemented
-            return IOFunctions.printMessage(ast.topHead(), "zznotimpl",
+            return Errors.printMessage(ast.topHead(), "zznotimpl",
                 F.List(F.stringx("\"with dimension other than 1\"")), engine);
           }
           final int radius = ast.arg2().toIntDefault();

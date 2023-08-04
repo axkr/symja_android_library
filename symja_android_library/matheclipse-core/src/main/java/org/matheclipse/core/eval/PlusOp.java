@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -210,7 +209,7 @@ public final class PlusOp {
           }
           if (arg.isDirectedInfinity()) {
             // Indeterminate expression `1` encountered.
-            IOFunctions.printMessage(S.Infinity, "indet", F.list(F.Plus(numberValue, arg)),
+            Errors.printMessage(S.Infinity, "indet", F.list(F.Plus(numberValue, arg)),
                 EvalEngine.get());
             return S.Indeterminate;
           }
@@ -238,7 +237,7 @@ public final class PlusOp {
         if (numberValue.isInfinity()) {
           if (arg.isNegativeInfinity()) {
             // Indeterminate expression `1` encountered.
-            IOFunctions.printMessage(S.Infinity, "indet", F.list(F.Plus(numberValue, arg)),
+            Errors.printMessage(S.Infinity, "indet", F.list(F.Plus(numberValue, arg)),
                 EvalEngine.get());
             return S.Indeterminate;
           }
@@ -303,7 +302,7 @@ public final class PlusOp {
                 if (arg.isInfinity()) {
                   if (numberValue.isNegativeInfinity()) {
                     // Indeterminate expression `1` encountered.
-                    IOFunctions.printMessage(S.Infinity, "indet", F.list(F.Plus(arg, numberValue)),
+                    Errors.printMessage(S.Infinity, "indet", F.list(F.Plus(arg, numberValue)),
                         EvalEngine.get());
                     return S.Indeterminate;
                   }
@@ -320,7 +319,7 @@ public final class PlusOp {
                 } else if (arg.isComplexInfinity()) {
                   if (numberValue.isDirectedInfinity()) {
                     // Indeterminate expression `1` encountered.
-                    IOFunctions.printMessage(S.Infinity, "indet", F.list(F.Plus(arg, numberValue)),
+                    Errors.printMessage(S.Infinity, "indet", F.list(F.Plus(arg, numberValue)),
                         EvalEngine.get());
                     return S.Indeterminate;
                   }

@@ -1,6 +1,6 @@
 package org.matheclipse.core.eval.util;
 
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
@@ -41,7 +41,7 @@ public class Sequence extends ListSizeSequence {
         if (element.argSize() < 1 || element.argSize() > 3) {
           // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
           // `1`.
-          IOFunctions.printMessage(ast.topHead(), "seqs", F.list(ast.arg2(), F.ZZ(i)), engine);
+          Errors.printMessage(ast.topHead(), "seqs", F.list(ast.arg2(), F.ZZ(i)), engine);
           return null;
         }
         sequ = new Sequence((IAST) element);
@@ -54,7 +54,7 @@ public class Sequence extends ListSizeSequence {
           if (num == Integer.MIN_VALUE) {
             // default value for overflow from toIntDefault()
             // Cannot <messageShortcut> positions `1` through `2` in `3`.
-            IOFunctions.printMessage(ast.topHead(), messageShortcut, F.list(F.C1, ast.arg2(), ast),
+            Errors.printMessage(ast.topHead(), messageShortcut, F.list(F.C1, ast.arg2(), ast),
                 engine);
             return null;
           }
@@ -77,7 +77,7 @@ public class Sequence extends ListSizeSequence {
       }
       // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
       // `1`.
-      IOFunctions.printMessage(ast.topHead(), "seqs", F.list(ast.arg2(), F.ZZ(i)), engine);
+      Errors.printMessage(ast.topHead(), "seqs", F.list(ast.arg2(), F.ZZ(i)), engine);
       return null;
     }
     return sequArray;

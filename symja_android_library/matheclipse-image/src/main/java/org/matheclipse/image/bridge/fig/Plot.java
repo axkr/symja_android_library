@@ -13,7 +13,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.xy.XYSeriesCollection;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -42,7 +42,7 @@ public class Plot extends ListPlot {
         if (rangeList.isList3()) {
           if (!rangeList.arg1().isSymbol()) {
             // `1` is not a valid variable.
-            return IOFunctions.printMessage(S.Plot, "ivar", F.list(rangeList.arg1()), engine);
+            return Errors.printMessage(S.Plot, "ivar", F.list(rangeList.arg1()), engine);
           }
           VisualSet visualSet = plot(arg1, rangeList, ast, engine);
           if (visualSet != null) {

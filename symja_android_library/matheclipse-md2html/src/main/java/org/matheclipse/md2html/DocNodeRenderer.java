@@ -18,7 +18,7 @@ import org.commonmark.renderer.html.CoreHtmlNodeRenderer;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlWriter;
 import org.matheclipse.core.builtin.GraphicsFunctions;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -150,7 +150,7 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
             String htmlStr = JSBuilder.IMAGE_IFRAME_TEMPLATE;
             String[] argsToRender = new String[3];
             argsToRender[0] = imageExpr.toBase64EncodedString();
-            htmlStr = IOFunctions.templateRender(htmlStr, argsToRender);
+            htmlStr = Errors.templateRender(htmlStr, argsToRender);
 
             htmlStr = StringEscapeUtils.escapeHtml4(htmlStr);
             html.raw("<iframe srcdoc=\"" + htmlStr

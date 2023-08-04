@@ -9,8 +9,8 @@ import javax.imageio.ImageIO;
 import org.apache.commons.lang3.StringUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.ManipulateFunction;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -57,7 +57,7 @@ public abstract class BasePlotExample {
           String html = JSBuilder.IMAGE_TEMPLATE;
           String[] argsToRender = new String[3];
           argsToRender[0] = outputStream.toString();
-          html = IOFunctions.templateRender(html, argsToRender);
+          html = Errors.templateRender(html, argsToRender);
           System.out.println(html);
           F.openHTMLOnDesktop(html);
         }

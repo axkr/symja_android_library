@@ -7,8 +7,8 @@ import static org.matheclipse.core.expression.F.Times;
 import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.ListFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -162,7 +162,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
         return temp;
       }
     } catch (final ValidateException ve) {
-      return IOFunctions.printMessage(S.Product, ve, engine);
+      return Errors.printMessage(S.Product, ve, engine);
     }
     if (arg1.isPower()) {
       IExpr exponent = arg1.exponent();
@@ -271,11 +271,11 @@ public class Product extends ListFunctions.Table implements ProductRules {
           return F.NIL;
         }
       } catch (final ValidateException ve) {
-        return IOFunctions.printMessage(S.Product, ve, engine);
+        return Errors.printMessage(S.Product, ve, engine);
       } catch (RecursionLimitExceeded rle) {
         // Recursion depth of `1` exceeded during evaluation of `2`.
         int recursionLimit = engine.getRecursionLimit();
-        IOFunctions.printMessage(S.Product, "reclim2",
+        Errors.printMessage(S.Product, "reclim2",
             F.list(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), preevaledProduct),
             engine);
         return F.NIL;

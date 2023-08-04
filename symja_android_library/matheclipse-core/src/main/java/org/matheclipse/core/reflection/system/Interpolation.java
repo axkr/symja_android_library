@@ -1,7 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -32,7 +32,7 @@ public class Interpolation extends AbstractEvaluator {
         if ("Hermite".equals(method)) {
           return hermiteInterpolate((IAST) ast.arg1(), dims, engine);
         }
-        return IOFunctions.printMessage(ast.topHead(), "optx", F.list(S.Method, ast), engine);
+        return Errors.printMessage(ast.topHead(), "optx", F.list(S.Method, ast), engine);
       }
       if (ast.isAST1()) {
         if (dims[1] >= 2) {

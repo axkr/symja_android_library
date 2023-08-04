@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.hipparchus.stat.descriptive.moment.Mean;
 import org.hipparchus.stat.descriptive.moment.StandardDeviation;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -229,14 +229,14 @@ public class Plot extends ListPlot {
       final IAST ast, GraphicsOptions graphicsOptions, EvalEngine engine) {
     if (!rangeList.arg1().isSymbol()) {
       // `1` is not a valid variable.
-      return IOFunctions.printMessage(ast.topHead(), "ivar", F.list(rangeList.arg1()), engine);
+      return Errors.printMessage(ast.topHead(), "ivar", F.list(rangeList.arg1()), engine);
     }
     final ISymbol x = (ISymbol) rangeList.arg1();
     final IExpr xMin = engine.evalN(rangeList.arg2());
     final IExpr xMax = engine.evalN(rangeList.arg3());
     if ((!(xMin instanceof INum)) || (!(xMax instanceof INum)) || xMin.equals(xMax)) {
       // Endpoints in `1` must be distinct machine-size real numbers.
-      return IOFunctions.printMessage(ast.topHead(), "plld", F.List(x, rangeList), engine);
+      return Errors.printMessage(ast.topHead(), "plld", F.List(x, rangeList), engine);
     }
     double xMinD = ((INum) xMin).getRealPart();
     double xMaxD = ((INum) xMax).getRealPart();

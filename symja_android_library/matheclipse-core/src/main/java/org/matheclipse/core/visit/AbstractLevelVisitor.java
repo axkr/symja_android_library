@@ -1,6 +1,6 @@
 package org.matheclipse.core.visit;
 
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -149,7 +149,7 @@ public abstract class AbstractLevelVisitor extends AbstractVisitor {
       return;
     }
     // Level specification `1` is not of the form n, {n}, or {m, n}.
-    String str = IOFunctions.getMessage("level", F.list(levelExpr), EvalEngine.get());
+    String str = Errors.getMessage("level", F.list(levelExpr), EvalEngine.get());
     throw new ArgumentTypeException(str);
     // throw new MathException("Invalid Level specification: " + levelExpr.toString());
   }

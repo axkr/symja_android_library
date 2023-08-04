@@ -12,6 +12,7 @@ import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -490,7 +491,7 @@ public class PolynomialFunctions {
       }
       if (ast.arg1().isNumber()) {
         // Non-negative machine-sized integer expected at position `2` in `1`.
-        IOFunctions.printMessage(ast.topHead(), "intnm", F.list(F.C1, ast), engine);
+        Errors.printMessage(ast.topHead(), "intnm", F.list(F.C1, ast), engine);
       }
       return F.NIL;
     }
@@ -971,7 +972,7 @@ public class PolynomialFunctions {
           ring.create(a);
         } catch (RuntimeException ex) {
           // Polynomial expected at position `1` in `2`.
-          return IOFunctions.printMessage(ast.topHead(), "polynomial", F.list(ast.get(1), F.C1),
+          return Errors.printMessage(ast.topHead(), "polynomial", F.list(ast.get(1), F.C1),
               engine);
         }
         try {
@@ -983,7 +984,7 @@ public class PolynomialFunctions {
           }
         } catch (RuntimeException ex) {
           // Polynomial expected at position `1` in `2`.
-          return IOFunctions.printMessage(ast.topHead(), "polynomial", F.list(ast.get(2), F.C2),
+          return Errors.printMessage(ast.topHead(), "polynomial", F.list(ast.get(2), F.C2),
               engine);
         }
       }

@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
@@ -251,7 +252,7 @@ public class TensorFunctions {
           }
         } catch (IllegalArgumentException iae) {
           // print message: Nonrectangular tensor encountered
-          return IOFunctions.printMessage(ast.topHead(), "rect", F.list(ast), engine);
+          return Errors.printMessage(ast.topHead(), "rect", F.list(ast), engine);
         }
       }
       return F.NIL;
@@ -275,7 +276,7 @@ public class TensorFunctions {
           return F.NIL;
         }
         // Positive machine-sized integer expected at position `2` in `1`.
-        return IOFunctions.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
+        return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
       }
 
       double value = n;
@@ -696,7 +697,7 @@ public class TensorFunctions {
               if (!dims.second().equals(iDims.first())) {
                 // Dot contraction of `1` and `2` is invalid because dimensions `3` and `4`
                 // are incompatible.
-                return IOFunctions.printMessage(tensorDimensions.topHead(), "dotdim",
+                return Errors.printMessage(tensorDimensions.topHead(), "dotdim",
                     F.List(lastArg, tempArg, dims.second(), iDims.first()), engine);
               }
               dims.set(2, iDims.second());
@@ -1070,7 +1071,7 @@ public class TensorFunctions {
           IExpr magnitude = engine.evaluate(F.Plus(F.Sqr(F.Abs(p1)), F.Sqr(F.Abs(p2))));
           if (magnitude.isZero()) {
             // Direction vector `1` has zero magnitude.
-            return IOFunctions.printMessage(S.ScalingTransform, "idir", F.List(p), engine);
+            return Errors.printMessage(S.ScalingTransform, "idir", F.List(p), engine);
           }
           return F.TransformationFunction(F.list(
               F.list(

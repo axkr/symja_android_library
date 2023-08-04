@@ -11,7 +11,7 @@ import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -301,7 +301,7 @@ public class ApcomplexNum implements IComplexNum {
   public IExpr divide(final IExpr that) {
     if (that.isZero()) {
       // Infinite expression `1` encountered.
-      IOFunctions.printMessage(S.Divide, "infy", F.list(F.Divide(this, that)), EvalEngine.get());
+      Errors.printMessage(S.Divide, "infy", F.list(F.Divide(this, that)), EvalEngine.get());
       return F.CComplexInfinity;
     }
     if (that instanceof IComplexNum) {
@@ -379,7 +379,7 @@ public class ApcomplexNum implements IComplexNum {
       return F.num(EvalEngine.getApfloat().arg(fApcomplex));
     } catch (ArithmeticException aex) {
       // Indeterminate expression `1` encountered.
-      IOFunctions.printMessage(S.Arg, "indet", F.list(F.Arg(this)), EvalEngine.get());
+      Errors.printMessage(S.Arg, "indet", F.list(F.Arg(this)), EvalEngine.get());
       return S.Indeterminate;
     }
   }
@@ -760,7 +760,7 @@ public class ApcomplexNum implements IComplexNum {
       return IComplexNum.super.atan2(value);
     } catch (ArithmeticException aex) {
       // Indeterminate expression `1` encountered.
-      IOFunctions.printMessage(S.ArcTan, "indet", F.list(F.ArcTan(value, this)), EvalEngine.get());
+      Errors.printMessage(S.ArcTan, "indet", F.list(F.ArcTan(value, this)), EvalEngine.get());
       return S.Indeterminate;
     }
   }

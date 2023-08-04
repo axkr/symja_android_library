@@ -43,6 +43,7 @@ import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultUndirectedGraph;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.matheclipse.core.convert.Object2Expr;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -1493,18 +1494,18 @@ public class GraphFunctions {
               vertexes = arg2.first().toIntDefault();
               if (vertexes <= 0) {
                 // The argument `2` in `1` is not a valid parameter.
-                return IOFunctions.printMessage(ast.topHead(), "inv", F.List(ast, arg2), engine);
+                return Errors.printMessage(ast.topHead(), "inv", F.List(ast, arg2), engine);
               }
               minCycleLength = vertexes;
               vertexes = arg2.second().toIntDefault();
               if (vertexes <= 0) {
                 // The argument `2` in `1` is not a valid parameter.
-                return IOFunctions.printMessage(ast.topHead(), "inv", F.List(ast, arg2), engine);
+                return Errors.printMessage(ast.topHead(), "inv", F.List(ast, arg2), engine);
               }
               maxCycleLength = vertexes;
             } else {
               // The argument `2` in `1` is not a valid parameter.
-              return IOFunctions.printMessage(ast.topHead(), "inv", F.List(ast, arg2), engine);
+              return Errors.printMessage(ast.topHead(), "inv", F.List(ast, arg2), engine);
             }
           }
         }
@@ -1516,7 +1517,7 @@ public class GraphFunctions {
             atMostCycles = arg3.toIntDefault();
             if (atMostCycles <= 0) {
               // The argument `2` in `1` is not a valid parameter.
-              return IOFunctions.printMessage(ast.topHead(), "inv", F.List(ast, arg3), engine);
+              return Errors.printMessage(ast.topHead(), "inv", F.List(ast, arg3), engine);
             }
           }
         }

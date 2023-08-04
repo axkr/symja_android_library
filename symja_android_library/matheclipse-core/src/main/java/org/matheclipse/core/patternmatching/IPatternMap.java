@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.hipparchus.util.Pair;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.PatternMatching;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.OptionsPattern;
@@ -1642,7 +1642,7 @@ public interface IPatternMap {
       if (pattern instanceof IPatternObject) {
         if (!condition.isFree(x -> x.equals(pattern), true)) {
           // Pattern `1` appears on the right-hand-side of condition `2`.
-          IOFunctions.printMessage(S.Condition, "condp", F.List(pattern, lhsPatternExpr));
+          Errors.printMessage(S.Condition, "condp", F.List(pattern, lhsPatternExpr));
         }
       }
       int[] dummyPriority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};

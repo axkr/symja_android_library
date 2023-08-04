@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.RuleCreationError;
@@ -92,7 +93,7 @@ public class AttributeFunctions {
         IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       if (leftHandSide.isAST(S.Attributes, 2)) {
         if (!leftHandSide.first().isSymbol()) {
-          IOFunctions.printMessage(builtinSymbol, "setps", F.list(leftHandSide.first()), engine);
+          Errors.printMessage(builtinSymbol, "setps", F.list(leftHandSide.first()), engine);
           return rightHandSide;
         }
         IExpr temp = engine.evaluate(F.SetAttributes(leftHandSide.first(), rightHandSide));
@@ -196,14 +197,14 @@ public class AttributeFunctions {
         }
       }
       if (sym.isProtected()) {
-        IOFunctions.printMessage(S.ClearAttributes, "write", F.list(sym), EvalEngine.get());
+        Errors.printMessage(S.ClearAttributes, "write", F.list(sym), EvalEngine.get());
         throw new FailedException();
       }
       if (attributes.isSymbol()) {
         ISymbol attribute = (ISymbol) attributes;
         if (!clearAttributes(sym, attribute)) {
           // `1` is not a known attribute.
-          return IOFunctions.printMessage(S.ClearAttributes, "attnf", F.List(attribute), engine);
+          return Errors.printMessage(S.ClearAttributes, "attnf", F.List(attribute), engine);
         }
         return S.Null;
       } else {
@@ -217,7 +218,7 @@ public class AttributeFunctions {
             ISymbol attribute = (ISymbol) lst.get(i);
             if (!clearAttributes(sym, attribute)) {
               // `1` is not a known attribute.
-              return IOFunctions.printMessage(S.ClearAttributes, "attnf", F.List(attribute),
+              return Errors.printMessage(S.ClearAttributes, "attnf", F.List(attribute),
                   engine);
             }
           }
@@ -338,7 +339,7 @@ public class AttributeFunctions {
         mutable.forEach(x -> appendUnprotected(result, x));
         return result;
       }
-      return IOFunctions.printMessage(ast.topHead(), "error",
+      return Errors.printMessage(ast.topHead(), "error",
           F.List("Unprotect not allowed. Set Config.UNPROTECT_ALLOWED on Java level if necessary"),
           engine);
     }
@@ -413,7 +414,7 @@ public class AttributeFunctions {
         final IExpr arg = listOfSymbols.get(i);
         if (arg.isSymbol()) {
           if (((ISymbol) arg).isProtected()) {
-            IOFunctions.printMessage(S.ClearAttributes, "write", F.list(arg), EvalEngine.get());
+            Errors.printMessage(S.ClearAttributes, "write", F.list(arg), EvalEngine.get());
             throw new FailedException();
           }
           if (addAttributes(arg, attributes, ast, engine).isNIL()) {
@@ -421,7 +422,7 @@ public class AttributeFunctions {
           }
         } else {
           // Argument `1` at position `2` is expected to be a symbol.
-          return IOFunctions.printMessage(S.SetAttributes, "sym", F.List(arg, F.ZZ(i)), engine);
+          return Errors.printMessage(S.SetAttributes, "sym", F.List(arg, F.ZZ(i)), engine);
         }
       }
       return S.Null;
@@ -451,7 +452,7 @@ public class AttributeFunctions {
         ISymbol attribute = (ISymbol) attributes;
         if (!addAttributes(sym, attribute)) {
           // `1` is not a known attribute.
-          return IOFunctions.printMessage(S.SetAttributes, "attnf", F.List(attribute), engine);
+          return Errors.printMessage(S.SetAttributes, "attnf", F.List(attribute), engine);
         }
       } else if (attributes.isList()) {
         final IAST lst = (IAST) attributes;
@@ -460,7 +461,7 @@ public class AttributeFunctions {
           final ISymbol attribute = (ISymbol) lst.get(i);
           if (!addAttributes(sym, attribute)) {
             // `1` is not a known attribute.
-            IOFunctions.printMessage(S.SetAttributes, "attnf", F.List(attribute), engine);
+            Errors.printMessage(S.SetAttributes, "attnf", F.List(attribute), engine);
           }
         }
       }
@@ -475,7 +476,7 @@ public class AttributeFunctions {
      */
     private static boolean addAttributes(final ISymbol sym, ISymbol attribute) {
       if (sym.isProtected()) {
-        IOFunctions.printMessage(S.SetAttributes, "write", F.list(sym), EvalEngine.get());
+        Errors.printMessage(S.SetAttributes, "write", F.list(sym), EvalEngine.get());
         throw new FailedException();
       }
       int functionID = attribute.ordinal();

@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.apfloat.Apfloat;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -1099,7 +1100,7 @@ public class IntegerFunctions {
       IExpr n = ast.arg2();
       if (n.isZero()) {
         // Indeterminate expression `1` encountered.
-        IOFunctions.printMessage(ast.topHead(), "indet", F.list(ast), engine);
+        Errors.printMessage(ast.topHead(), "indet", F.list(ast), engine);
         return S.Indeterminate;
       }
       if (ast.isAST3()) {
@@ -1212,11 +1213,11 @@ public class IntegerFunctions {
       try {
         if (arg1.isZero() && arg2.isNegativeResult()) {
           // `1` is not invertible modulo `2`.
-          return IOFunctions.printMessage(ast.topHead(), "ninv", F.list(arg1, arg3), engine);
+          return Errors.printMessage(ast.topHead(), "ninv", F.list(arg1, arg3), engine);
         }
         if (arg3.isZero()) {
           // The argument `1` should be nonzero.
-          return IOFunctions.printMessage(ast.topHead(), "divz", F.list(arg3, ast), engine);
+          return Errors.printMessage(ast.topHead(), "divz", F.list(arg3, ast), engine);
         }
         if (arg2.isMinusOne()) {
           return arg1.modInverse(arg3);
@@ -1336,7 +1337,7 @@ public class IntegerFunctions {
               return F.num(zDouble / nDouble).floorFraction();
             }
           } catch (ValidateException ve) {
-            return IOFunctions.printMessage(ast.topHead(), ve, engine);
+            return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
@@ -1472,7 +1473,7 @@ public class IntegerFunctions {
               return F.list(quotient, remainder);
             }
           } catch (ValidateException ve) {
-            return IOFunctions.printMessage(ast.topHead(), ve, engine);
+            return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
@@ -1577,7 +1578,7 @@ public class IntegerFunctions {
 
       if (arg1.isNumber()) {
         // The value `1` is not a real number.
-        return IOFunctions.printMessage(ast.topHead(), "realx", F.list(arg1), engine);
+        return Errors.printMessage(ast.topHead(), "realx", F.list(arg1), engine);
       }
       return F.NIL;
     }
@@ -1670,7 +1671,7 @@ public class IntegerFunctions {
               }
             } else {
               // Internal precision limit `1` reached while evaluating `2`.
-              return IOFunctions.printMessage(S.Round, "meprec", F.List(F.CEmptyString, k), engine);
+              return Errors.printMessage(S.Round, "meprec", F.List(F.CEmptyString, k), engine);
             }
           }
 
@@ -1725,7 +1726,7 @@ public class IntegerFunctions {
             return F.Times(n, k);
           }
           // Internal precision limit `1` reached while evaluating `2`.
-          return IOFunctions.printMessage(S.Round, "meprec", F.List(F.CEmptyString, k), engine);
+          return Errors.printMessage(S.Round, "meprec", F.List(F.CEmptyString, k), engine);
         }
         if (n.isComplexInfinity() || n.isIndeterminate()) {
           return S.Indeterminate;

@@ -29,6 +29,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -652,7 +653,7 @@ public class FileFunctions {
       } catch (IOException e) {
         LOGGER.debug("Get.getFile() failed", e);
         // Cannot open `1`.
-        return IOFunctions.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
+        return Errors.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
       } finally {
         engine.setPackageMode(packageMode);
         engine.set$Input(input);
@@ -673,7 +674,7 @@ public class FileFunctions {
       } catch (IOException e) {
         LOGGER.debug("FileFunctions.Get.getURL() failed", e);
         // Cannot open `1`.
-        return IOFunctions.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
+        return Errors.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
       } finally {
         engine.setPackageMode(packageMode);
         engine.set$Input(input);
@@ -686,7 +687,7 @@ public class FileFunctions {
       if (Config.isFileSystemEnabled(engine)) {
         try {
           if (!(ast.arg1() instanceof IStringX)) {
-            return IOFunctions.printMessage(ast.topHead(), "string", F.List(), engine);
+            return Errors.printMessage(ast.topHead(), "string", F.List(), engine);
           }
           String arg1Str = ((IStringX) ast.arg1()).toString();
           if (arg1Str.startsWith("https://") || arg1Str.startsWith("http://")) {
@@ -704,13 +705,13 @@ public class FileFunctions {
           }
           Validate.checkContextName(ast, 1);
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (MalformedURLException e) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
           return F.NIL;
         }
         // Cannot open `1`.
-        return IOFunctions.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
+        return Errors.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
       }
       return F.NIL;
     }
@@ -873,7 +874,7 @@ public class FileFunctions {
 
         final int argSize = ast.argSize();
         if (!(ast.last() instanceof IStringX)) {
-          return IOFunctions.printMessage(S.Put, "string", F.List(), engine);
+          return Errors.printMessage(S.Put, "string", F.List(), engine);
         }
         IStringX fileName = (IStringX) ast.last();
 
@@ -1155,7 +1156,7 @@ public class FileFunctions {
       if (Config.isFileSystemEnabled(engine)) {
 
         if (!(ast.arg1() instanceof IStringX)) {
-          return IOFunctions.printMessage(ast.topHead(), "string", F.List(), engine);
+          return Errors.printMessage(ast.topHead(), "string", F.List(), engine);
         }
         String arg1 = ((IStringX) ast.arg1()).toString();
         if (arg1.startsWith("https://") || arg1.startsWith("http://")) {
@@ -1222,7 +1223,7 @@ public class FileFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (!(ast.arg1() instanceof IStringX)) {
-        return IOFunctions.printMessage(ast.topHead(), "string", F.List(), engine);
+        return Errors.printMessage(ast.topHead(), "string", F.List(), engine);
       }
       String arg1Str = ((IStringX) ast.arg1()).toString();
       if (arg1Str.startsWith("https://") || arg1Str.startsWith("http://")) {
@@ -1234,11 +1235,11 @@ public class FileFunctions {
         } catch (IOException e) {
           LOGGER.debug("URLFetch.evaluate() failed", e);
           // Cannot open `1`.
-          return IOFunctions.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
+          return Errors.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
         }
       }
       // Cannot open `1`.
-      return IOFunctions.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
+      return Errors.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
     }
 
     @Override
@@ -1292,11 +1293,11 @@ public class FileFunctions {
 
         if (!(ast.arg1().isString())) {
           // String expected at position `1` in `2`.
-          return IOFunctions.printMessage(ast.topHead(), "string", F.list(F.C1, ast), engine);
+          return Errors.printMessage(ast.topHead(), "string", F.list(F.C1, ast), engine);
         }
         if (!(ast.arg2().isString())) {
           // String expected at position `1` in `2`.
-          return IOFunctions.printMessage(ast.topHead(), "string", F.list(F.C2, ast), engine);
+          return Errors.printMessage(ast.topHead(), "string", F.list(F.C2, ast), engine);
         }
         IStringX fileName = (IStringX) ast.arg1();
         IStringX str = (IStringX) ast.arg2();

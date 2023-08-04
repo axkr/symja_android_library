@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -17,7 +17,7 @@ public class ListPointPlot3D extends AbstractEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IOFunctions.printExperimental(S.ListPointPlot3D);
+    Errors.printExperimental(S.ListPointPlot3D);
     if (ast.argSize() > 0) {
       if (ast.argSize() > 1) {
         final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);

@@ -2,7 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -34,12 +34,12 @@ public class InverseZTransform extends AbstractFunctionEvaluator implements Inve
       IExpr z = ast.arg2();
       if (!(z.isVariable() || z.isList())) {
         // `1` is not a valid variable.
-        return IOFunctions.printMessage(ast.topHead(), "ivar", F.list(z), engine);
+        return Errors.printMessage(ast.topHead(), "ivar", F.list(z), engine);
       }
       IExpr n = ast.arg3();
       if (!(n.isVariable() || n.isList())) {
         // `1` is not a valid variable.
-        return IOFunctions.printMessage(ast.topHead(), "ivar", F.list(n), engine);
+        return Errors.printMessage(ast.topHead(), "ivar", F.list(n), engine);
       }
       if (!z.isList() && !n.isList()) {
         if (fx.isNumber()) {

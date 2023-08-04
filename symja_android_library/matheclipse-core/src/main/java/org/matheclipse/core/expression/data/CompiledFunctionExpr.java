@@ -2,7 +2,7 @@ package org.matheclipse.core.expression.data;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -84,7 +84,7 @@ public class CompiledFunctionExpr implements IDataExpr<Class<?>> {
   public IExpr evaluate(IAST ast, EvalEngine engine) {
     if (compiledJavaClass == null) {
       // Non deserialized expression `1`.
-      return IOFunctions.printMessage(S.CompiledFunction, "zzdsex", ast, engine);
+      return Errors.printMessage(S.CompiledFunction, "zzdsex", ast, engine);
     }
     AbstractFunctionEvaluator fun;
     try {

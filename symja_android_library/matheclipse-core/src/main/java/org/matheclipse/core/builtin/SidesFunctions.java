@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import java.util.function.Function;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -53,7 +54,7 @@ public class SidesFunctions {
         }
       }
       // `1` should be an equation or inequality.
-      return IOFunctions.printMessage(ast.topHead(), "eqin", F.list(arg1), engine);
+      return Errors.printMessage(ast.topHead(), "eqin", F.list(arg1), engine);
     }
 
     private IExpr addSides(IAST comparator, final IExpr arg2) {
@@ -101,7 +102,7 @@ public class SidesFunctions {
       }
 
       // `1` should be an equation or inequality.
-      return IOFunctions.printMessage(S.ApplySides, "eqin", F.list(arg2), engine);
+      return Errors.printMessage(S.ApplySides, "eqin", F.list(arg2), engine);
     }
 
     private static IAST applyComparatorSides(final IExpr arg1, IExpr arg2, EvalEngine engine) {
@@ -118,7 +119,7 @@ public class SidesFunctions {
         default:
       }
       // `1` should be an equation or inequality.
-      return IOFunctions.printMessage(S.ApplySides, "eqin", F.list(arg2), engine);
+      return Errors.printMessage(S.ApplySides, "eqin", F.list(arg2), engine);
     }
 
     @Override
@@ -181,7 +182,7 @@ public class SidesFunctions {
         } else if (arg1.isComparatorFunction()) {
           if (arg2.isZero()) {
             // Cannot divide sides of an equation or inequality by 0.
-            return IOFunctions.printMessage(ast.topHead(), "arg2", F.CEmptyList, engine);
+            return Errors.printMessage(ast.topHead(), "arg2", F.CEmptyList, engine);
           } else if (!arg2.isComparatorFunction()) {
             IAST comparator = (IAST) arg1;
             IExpr temp = divideSides(comparator, arg2);
@@ -192,7 +193,7 @@ public class SidesFunctions {
         }
       }
       // `1` should be an equation or inequality.
-      return IOFunctions.printMessage(ast.topHead(), "eqin", F.list(arg1), engine);
+      return Errors.printMessage(ast.topHead(), "eqin", F.list(arg1), engine);
     }
 
     private IExpr divideSides(IAST comparator, IExpr arg2) {
@@ -281,7 +282,7 @@ public class SidesFunctions {
         }
       }
       // `1` should be an equation or inequality.
-      return IOFunctions.printMessage(ast.topHead(), "eqin", F.list(arg1), engine);
+      return Errors.printMessage(ast.topHead(), "eqin", F.list(arg1), engine);
     }
 
     private IExpr multiplySides(IAST comparator, final IExpr arg2) {
@@ -397,7 +398,7 @@ public class SidesFunctions {
         }
       }
       // `1` should be an equation or inequality.
-      return IOFunctions.printMessage(ast.topHead(), "eqin", F.list(arg1), engine);
+      return Errors.printMessage(ast.topHead(), "eqin", F.list(arg1), engine);
     }
 
     private IExpr subtractSides(IAST comparator, final IExpr arg2) {

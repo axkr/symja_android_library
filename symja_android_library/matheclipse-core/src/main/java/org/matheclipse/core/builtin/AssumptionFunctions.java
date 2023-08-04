@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import java.util.Locale;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -219,7 +220,7 @@ public class AssumptionFunctions {
           // print warning:
           // The second argument `1` of Element should be one of: Primes, Integers, Rationals,
           // Algebraics, Reals, Complexes or Booleans.
-          return IOFunctions.printMessage(S.Element, "bset", F.List(domain), engine);
+          return Errors.printMessage(S.Element, "bset", F.List(domain), engine);
         }
       }
       return F.NIL;

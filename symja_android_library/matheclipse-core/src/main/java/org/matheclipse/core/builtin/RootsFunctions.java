@@ -14,6 +14,7 @@ import org.matheclipse.core.convert.Expr2Object;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
@@ -89,7 +90,7 @@ public class RootsFunctions {
         VariablesSet eVar = new VariablesSet(arg);
         if (!eVar.isSize(1)) {
           // `1` is not a univariate polynomial with rational number coefficients
-          return IOFunctions.printMessage(S.RootIntervals, "nupr", F.List(arg), engine);
+          return Errors.printMessage(S.RootIntervals, "nupr", F.List(arg), engine);
         }
         IExpr expr = F.evalExpandAll(arg);
         // ASTRange r = new ASTRange(eVar.getVarList(), 1);
@@ -135,7 +136,7 @@ public class RootsFunctions {
         return resultList;
       } catch (IllegalArgumentException | InvalidBoundaryException | JASConversionException e) {
         // Illegal arguments: \"`1`\" in `2`
-        return IOFunctions.printMessage(S.RootIntervals, "argillegal", F.List(arg), engine);
+        return Errors.printMessage(S.RootIntervals, "argillegal", F.List(arg), engine);
       }
     }
   }

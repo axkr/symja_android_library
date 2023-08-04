@@ -12,7 +12,6 @@ import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.builtin.RootsFunctions;
@@ -20,6 +19,7 @@ import org.matheclipse.core.convert.ChocoConvert;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.CreamConvert;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
@@ -528,7 +528,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           }
           IASTAppendable inverseFunction = InverseFunction.getUnaryInverseFunction(lhs, true);
           if (inverseFunction.isPresent()) {
-            IOFunctions.printIfunMessage(S.InverseFunction);
+            Errors.printIfunMessage(S.InverseFunction);
             // rewrite fNumer
             inverseFunction.append(rhs);
             return fEngine.evaluate(F.Subtract(lhs.arg1(), inverseFunction));
@@ -537,7 +537,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         } else if (lhs.isPower() && lhs.base().isSymbol() && lhs.exponent().isNumber()) {
           int position = fListOfVariables.indexOf(lhs.base());
           if (position > 0) {
-            IOFunctions.printIfunMessage(S.InverseFunction);
+            Errors.printIfunMessage(S.InverseFunction);
             IAST inverseFunction = F.Power(rhs, lhs.exponent().inverse());
             return fEngine.evaluate(F.Subtract(lhs.base(), inverseFunction));
           }
@@ -546,7 +546,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           IAST timesArg2 = (IAST) lhs.second();
           IASTAppendable inverseFunction = InverseFunction.getUnaryInverseFunction(timesArg2, true);
           if (inverseFunction.isPresent()) {
-            IOFunctions.printIfunMessage(S.InverseFunction);
+            Errors.printIfunMessage(S.InverseFunction);
             // rewrite fNumer
             inverseFunction.append(F.Divide(rhs, lhs.first()));
             return fEngine.evaluate(F.Subtract(timesArg2.arg1(), inverseFunction));
@@ -628,7 +628,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               int position = fListOfVariables.indexOf(function.arg2());
               if (position > 0 && function.arg1().isFree(fListOfVariables)
                   && temp.isFree(fListOfVariables)) {
-                IOFunctions.printIfunMessage(S.InverseFunction);
+                Errors.printIfunMessage(S.InverseFunction);
                 return fEngine.evaluate(F.InverseGammaRegularized(function.arg1(), temp.negate()));
               }
             }
@@ -1417,7 +1417,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       IExpr numericResult = engine.evalN(F.subs(expr, constantSymbol, numericValue));
       if (numericResult.isNumber()) {
         // Inverse functions are being used. Values may be lost for multivalued inverses.
-        IOFunctions.printMessage(S.Solve, "ifun", F.List());
+        Errors.printMessage(S.Solve, "ifun", F.List());
         return lastRuleUsedForVariableElimination.setAtCopy(2, numericResult);
       }
       return F.NIL;
@@ -1740,7 +1740,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           if (ast.isAST3()) {
             if (!ast.arg3().isSymbol()) {
               // Warning: `1` is not a valid domain specification.
-              IOFunctions.printMessage(ast.topHead(), "bdomv", F.List(ast.arg3()), engine);
+              Errors.printMessage(ast.topHead(), "bdomv", F.List(ast.arg3()), engine);
             } else {
               domain = (ISymbol) ast.arg3();
               if (domain == S.Booleans) {
@@ -1754,7 +1754,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
 
               if (domain != S.Reals && domain != S.Complexes) {
                 // Warning: `1` is not a valid domain specification.
-                IOFunctions.printMessage(ast.topHead(), "bdomv", F.List(ast.arg3()), engine);
+                Errors.printMessage(ast.topHead(), "bdomv", F.List(ast.arg3()), engine);
               }
             }
 
@@ -1773,7 +1773,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               IExpr result = solveNumeric(lists[2], numericFlag, engine);
               if (result.isNIL()) {
                 // The system cannot be solved with the methods available to Solve.
-                return IOFunctions.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()),
+                return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()),
                     engine);
               }
               return checkDomain(result, domain);
@@ -1783,7 +1783,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                 userDefinedVariables, engine);
             if (result.isNIL()) {
               // The system cannot be solved with the methods available to Solve.
-              return IOFunctions.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()),
+              return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()),
                   engine);
             }
             return checkDomain(result, domain);
@@ -1792,7 +1792,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           }
         }
       } catch (ValidateException ve) {
-        return IOFunctions.printMessage(S.Solve, ve, engine);
+        return Errors.printMessage(S.Solve, ve, engine);
       } catch (LimitException e) {
         LOGGER.log(engine.getLogLevel(), S.Solve, e);
       } catch (RuntimeException rex) {

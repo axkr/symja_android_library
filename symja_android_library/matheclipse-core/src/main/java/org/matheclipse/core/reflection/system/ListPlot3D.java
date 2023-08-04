@@ -1,7 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -19,7 +19,7 @@ public class ListPlot3D extends AbstractEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IOFunctions.printExperimental(S.ListPlot3D);
+    Errors.printExperimental(S.ListPlot3D);
     if (ast.argSize() > 0) {
       if (ast.argSize() > 1) {
         final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);

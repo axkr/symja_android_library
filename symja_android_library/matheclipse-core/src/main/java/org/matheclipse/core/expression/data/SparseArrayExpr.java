@@ -23,8 +23,8 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.DataExpr;
@@ -1016,7 +1016,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
               defaultValue[0] = rule1.arg2();
             } else if (!defaultValue[0].equals(rule1.arg2())) {
               // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
-              IOFunctions.printMessage(S.SparseArray, "posr",
+              Errors.printMessage(S.SparseArray, "posr",
                   F.list(arrayRulesList, rule1.arg1(), F.ZZ(depth)), engine);
               return null;
             }
@@ -1059,7 +1059,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
           } else {
             if (positions.length != depth) {
               // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
-              IOFunctions.printMessage(S.SparseArray, "posr",
+              Errors.printMessage(S.SparseArray, "posr",
                   F.list(arrayRulesList, rule.arg1(), F.ZZ(depth)), engine);
               return null;
             }
@@ -1090,7 +1090,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
                 defaultValue[0] = rule.arg2();
               } else if (!defaultValue[0].equals(rule.arg2())) {
                 // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
-                IOFunctions.printMessage(S.SparseArray, "posr",
+                Errors.printMessage(S.SparseArray, "posr",
                     F.list(arrayRulesList, rule.arg1(), F.ZZ(depth)), engine);
                 return null;
               }
@@ -1129,7 +1129,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         return true;
       } else if (!defaultValue[0].equals(ruleRHS)) {
         // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
-        IOFunctions.printMessage(S.SparseArray, "posr",
+        Errors.printMessage(S.SparseArray, "posr",
             F.list(arrayRulesList, ruleLHSPositionsList, F.ZZ(depth)), engine);
         return false;
       }
@@ -1142,7 +1142,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         }
       } else {
         // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
-        IOFunctions.printMessage(S.SparseArray, "posr",
+        Errors.printMessage(S.SparseArray, "posr",
             F.list(arrayRulesList, ruleLHSPositionsList, F.ZZ(depth)), engine);
         return false;
       }
@@ -1298,7 +1298,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     PatternMatcherAndEvaluator matcher = new PatternMatcherAndEvaluator(ruleLHS, ruleRHS);
     if (matcher.isRuleWithoutPatterns()) {
       // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
-      IOFunctions.printMessage(S.SparseArray, "posr", F.list(arrayRulesList, ruleLHS, F.ZZ(depth)),
+      Errors.printMessage(S.SparseArray, "posr", F.list(arrayRulesList, ruleLHS, F.ZZ(depth)),
           EvalEngine.get());
       return false;
     }
@@ -1690,7 +1690,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
           count++;
         } else if (partIndex[i - startPosition] > dims[i - startPosition]
             || partIndex[i - startPosition] <= 0) {
-          return IOFunctions.printMessage(S.Part, "partw", F.list(ast.get(i), ast),
+          return Errors.printMessage(S.Part, "partw", F.list(ast.get(i), ast),
               EvalEngine.get());
         }
       }
@@ -1735,7 +1735,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       }
       return new SparseArrayExpr(trie, newDimension, fDefaultValue.orElse(F.C0), false);
     }
-    return IOFunctions.printMessage(S.Part, "partd", F.list(ast), EvalEngine.get());
+    return Errors.printMessage(S.Part, "partd", F.list(ast), EvalEngine.get());
   }
 
   @Override

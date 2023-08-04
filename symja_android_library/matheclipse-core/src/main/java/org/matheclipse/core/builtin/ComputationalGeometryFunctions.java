@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Stack;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -58,15 +59,15 @@ public class ComputationalGeometryFunctions {
       IAST angleSum = F.Plus(a, b);
       if (a.isNegativeResult() || a.isZero()) {
         // The angle `1` should be a positive number less than `2`.
-        return IOFunctions.printMessage(S.AASTriangle, "npa", F.List(a, S.Pi), engine);
+        return Errors.printMessage(S.AASTriangle, "npa", F.List(a, S.Pi), engine);
       }
       if (b.isNegativeResult() || b.isZero()) {
         // The angle `1` should be a positive number less than `2`.
-        return IOFunctions.printMessage(S.AASTriangle, "npa", F.List(b, S.Pi), engine);
+        return Errors.printMessage(S.AASTriangle, "npa", F.List(b, S.Pi), engine);
       }
       if (angleSum.greaterEqualThan(S.Pi).isTrue()) {
         // The sum of angles `1` and `2` should be less than `3`.
-        return IOFunctions.printMessage(S.AASTriangle, "asm", F.List(a, b, S.Pi), engine);
+        return Errors.printMessage(S.AASTriangle, "asm", F.List(a, b, S.Pi), engine);
       }
       return F.Triangle(//
           F.List(F.CListC0C0, //
@@ -93,7 +94,7 @@ public class ComputationalGeometryFunctions {
       IExpr angleSum = engine.evaluate(F.Plus(a, c));
       if (angleSum.greaterEqualThan(S.Pi).isTrue()) {
         // The sum of angles `1` and `2` should be less than `3`.
-        return IOFunctions.printMessage(S.ASATriangle, "asm", F.List(a, c, S.Pi), engine);
+        return Errors.printMessage(S.ASATriangle, "asm", F.List(a, c, S.Pi), engine);
       }
       // Triangle({{0,0}, {b,0}, {b*Cos(a)*Csc(a+c)*Sin(c), b*Csc(a+c)*Sin(a)*Sin(c)}})
       return F.Triangle(F.list(//
@@ -119,7 +120,7 @@ public class ComputationalGeometryFunctions {
       IExpr c = ast.arg3();
       if (b.greaterEqualThan(S.Pi).isTrue()) {
         // The angle `1` should be a positive number less than `2`
-        return IOFunctions.printMessage(S.SASTriangle, "npa", F.List(b, S.Pi), engine);
+        return Errors.printMessage(S.SASTriangle, "npa", F.List(b, S.Pi), engine);
       }
       IAST plus = F.Plus(F.Sqr(a), F.Sqr(c), F.Times(F.CN2, a, c, F.Cos(b)));
       IAST sqrtNumerator = F.Power(plus, F.C1D2);
@@ -150,15 +151,15 @@ public class ComputationalGeometryFunctions {
       IExpr c = ast.arg3();
       if (a.isNegativeResult() || a.isZero()) {
         // The triangle side `1`should be a positive number.
-        return IOFunctions.printMessage(S.SSSTriangle, "nps", F.List(a), engine);
+        return Errors.printMessage(S.SSSTriangle, "nps", F.List(a), engine);
       }
       if (b.isNegativeResult() || b.isZero()) {
         // The triangle side `1`should be a positive number.
-        return IOFunctions.printMessage(S.SSSTriangle, "nps", F.List(b), engine);
+        return Errors.printMessage(S.SSSTriangle, "nps", F.List(b), engine);
       }
       if (c.isNegativeResult() || c.isZero()) {
         // The triangle side `1`should be a positive number.
-        return IOFunctions.printMessage(S.SSSTriangle, "nps", F.List(c), engine);
+        return Errors.printMessage(S.SSSTriangle, "nps", F.List(c), engine);
       }
       return F.Triangle(F.list(//
           F.CListC0C0, //
@@ -592,14 +593,14 @@ public class ComputationalGeometryFunctions {
           if (dimensions.size() == 2 && dimensions.getInt(1) == 2) {
             if (dimensions.getInt(0) <= 2) {
               // `1` should be a list of `2` or more affinely independent points.
-              return IOFunctions.printMessage(ast.topHead(), "affind", F.List(listOfPoints, F.C3),
+              return Errors.printMessage(ast.topHead(), "affind", F.List(listOfPoints, F.C3),
                   engine);
             }
             return grahamScann2D(listOfPoints, engine);
           } else if (dimensions.size() == 2 && dimensions.getInt(1) == 3) {
             if (dimensions.getInt(0) <= 3) {
               // `1` should be a list of `2` or more affinely independent points.
-              return IOFunctions.printMessage(ast.topHead(), "affind", F.List(listOfPoints, F.C4),
+              return Errors.printMessage(ast.topHead(), "affind", F.List(listOfPoints, F.C4),
                   engine);
             }
             return quickHull3D(listOfPoints);
@@ -782,7 +783,7 @@ public class ComputationalGeometryFunctions {
               continue;
             } else {
               // `1` should be a non-empty list of points.
-              return IOFunctions.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
+              return Errors.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
             }
           }
           return S.True;
@@ -801,7 +802,7 @@ public class ComputationalGeometryFunctions {
               result.append(temp);
             } else {
               // `1` should be a non-empty list of points.
-              return IOFunctions.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
+              return Errors.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
             }
           }
           if (result.argSize() == 1) {
@@ -931,7 +932,7 @@ public class ComputationalGeometryFunctions {
               result.append(temp);
             } else {
               // `1` should be a non-empty list of points.
-              return IOFunctions.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
+              return Errors.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
             }
           }
           if (result.argSize() == 1) {
@@ -954,7 +955,7 @@ public class ComputationalGeometryFunctions {
               result.append(temp);
             } else {
               // `1` should be a non-empty list of points.
-              return IOFunctions.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
+              return Errors.printMessage(ast.topHead(), "pts", F.list(listOfPoints), engine);
             }
           }
           if (result.argSize() == 1) {

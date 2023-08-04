@@ -6,8 +6,8 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.transform.DftNormalization;
 import org.hipparchus.transform.FastFourierTransformer;
 import org.hipparchus.transform.TransformType;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.Object2Expr;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -31,7 +31,7 @@ public class NFourierTransform extends AbstractFunctionEvaluator {
     if (variable.isPresent()) {
       if (!variable.isSymbol()) {
         // `1` is not a valid variable.
-        return IOFunctions.printMessage(ast.topHead(), "ivar", F.list(variable), engine);
+        return Errors.printMessage(ast.topHead(), "ivar", F.list(variable), engine);
       }
       // IExpr omega = ast.arg3();
       if (ast.size() > 4) {

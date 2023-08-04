@@ -14,6 +14,7 @@ import org.codehaus.janino.SimpleCompiler;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.OutputFunctions.VariableManager;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -292,7 +293,7 @@ public class CompilerFunctions {
         }
         return F.NIL;
       } catch (ValidateException ve) {
-        return IOFunctions.printMessage(ast.topHead(), ve, engine);
+        return Errors.printMessage(ast.topHead(), ve, engine);
       } catch (CompileException | ClassNotFoundException | RuntimeException e) {
         LOGGER.log(engine.getLogLevel(), "Compile", e);
       }
@@ -710,7 +711,7 @@ public class CompilerFunctions {
           result = engine.evaluate(result);
           if (result.isIndeterminate()) {
             // Numerical error encountered, proceeding with uncompiled evaluation.
-            IOFunctions.printMessage(S.CompiledFunction, "cfn", F.CEmptyList, engine);
+            Errors.printMessage(S.CompiledFunction, "cfn", F.CEmptyList, engine);
             IAST variables = compiledFunction.getVariables();
             IExpr expr = compiledFunction.getExpr();
             return expr.replaceAll(Functors.equalRules(variables, ast));
@@ -810,7 +811,7 @@ public class CompilerFunctions {
         CompiledFunctionArg arg = checkVariable(list.get(i), engine);
         if (arg == null) {
           // `1` is not a valid variable.
-          IOFunctions.printMessage(ast.topHead(), "ivar", F.list(list.get(i)), engine);
+          Errors.printMessage(ast.topHead(), "ivar", F.list(list.get(i)), engine);
           return null;
         }
         result[i - 1] = arg;
@@ -821,7 +822,7 @@ public class CompilerFunctions {
     CompiledFunctionArg arg = checkVariable(arg1, engine);
     if (arg == null) {
       // `1` is not a valid variable.
-      IOFunctions.printMessage(ast.topHead(), "ivar", F.list(arg1), engine);
+      Errors.printMessage(ast.topHead(), "ivar", F.list(arg1), engine);
       return null;
     }
     return new CompiledFunctionArg[] {arg};
@@ -893,7 +894,7 @@ public class CompilerFunctions {
       int i = j + 1;
       if (numericVariables.get(variable) != null) {
         // Duplicate parameter `1` found in `2`.
-        IOFunctions.printMessage(ast.topHead(), "fdup", F.list(variable, ast.arg1()), engine);
+        Errors.printMessage(ast.topHead(), "fdup", F.list(variable, ast.arg1()), engine);
         return null;
       }
       if (argType.equals(S.Real)) {

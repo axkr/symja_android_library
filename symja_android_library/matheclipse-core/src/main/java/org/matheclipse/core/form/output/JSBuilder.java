@@ -1,7 +1,7 @@
 package org.matheclipse.core.form.output;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 
 /** Build a page to show a JavaScript graphic. */
 public class JSBuilder {
@@ -331,8 +331,8 @@ public class JSBuilder {
       jsFiddleArgs[1] = manipulateStr;
       jsFiddleArgs[2] = String.join(",", libs);
 
-      jsxGraphArgs[2] = IOFunctions.templateRender(JSFIDDLE_STR, jsFiddleArgs);
+      jsxGraphArgs[2] = Errors.templateRender(JSFIDDLE_STR, jsFiddleArgs);
     }
-    return IOFunctions.templateRender(pageTemplate, jsxGraphArgs);
+    return Errors.templateRender(pageTemplate, jsxGraphArgs);
   }
 }

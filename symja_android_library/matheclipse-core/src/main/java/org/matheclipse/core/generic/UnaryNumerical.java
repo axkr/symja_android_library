@@ -8,7 +8,7 @@ import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.ComplexNum;
@@ -42,7 +42,7 @@ public class UnaryNumerical
     if (!variable.isVariable() || variable.isBuiltInSymbol()) {
       // Cannot assign to raw object `1`.
       throw new ArgumentTypeException(
-          IOFunctions.getMessage("setraw", F.list(variable), EvalEngine.get()));
+          Errors.getMessage("setraw", F.list(variable), EvalEngine.get()));
     }
     fVariable = variable;
     fFunction = function;

@@ -4,7 +4,6 @@ import java.io.StringWriter;
 import java.util.concurrent.Callable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
@@ -46,13 +45,13 @@ public class EvalControlledCallable implements Callable<IExpr> {
       } catch (final IterationLimitExceeded e) {
         // Iteration limit of `1` exceeded.
         int iterationLimit = fEngine.getIterationLimit();
-        IOFunctions.printMessage(S.$IterationLimit, "itlim",
+        Errors.printMessage(S.$IterationLimit, "itlim",
             F.list(iterationLimit < 0 ? F.CInfinity : F.ZZ(iterationLimit), fExpr), fEngine);
         temp = F.Hold(fExpr);
       } catch (final RecursionLimitExceeded e) {
         // Recursion depth of `1` exceeded during evaluation of `2`.
         int recursionLimit = fEngine.getRecursionLimit();
-        IOFunctions.printMessage(S.$RecursionLimit, "reclim2",
+        Errors.printMessage(S.$RecursionLimit, "reclim2",
             F.list(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), fExpr), fEngine);
         temp = F.Hold(fExpr);
       }

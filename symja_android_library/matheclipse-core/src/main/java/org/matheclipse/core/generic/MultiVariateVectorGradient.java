@@ -2,7 +2,7 @@ package org.matheclipse.core.generic;
 
 import java.util.function.Function;
 import org.hipparchus.analysis.MultivariateVectorFunction;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
@@ -41,13 +41,13 @@ public class MultiVariateVectorGradient implements MultivariateVectorFunction {
     } else {
       // Cannot assign to raw object `1`.
       throw new ArgumentTypeException(
-          IOFunctions.getMessage("setraw", F.list(gradientList), EvalEngine.get()));
+          Errors.getMessage("setraw", F.list(gradientList), EvalEngine.get()));
     }
     variablesList.exists(x -> {
       if (!x.isVariable() || x.isBuiltInSymbol()) {
         // Cannot assign to raw object `1`.
         throw new ArgumentTypeException(
-            IOFunctions.getMessage("setraw", F.list(x), EvalEngine.get()));
+            Errors.getMessage("setraw", F.list(x), EvalEngine.get()));
       }
       return false;
     });

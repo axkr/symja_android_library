@@ -29,8 +29,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileSystemView;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.DialogReturnException;
@@ -411,7 +411,7 @@ public class SwingFunctions {
             (!dynamic.isVariable() || dynamic.isBuiltInSymbol())) {
           // Cannot assign to raw object `1`.
           throw new ArgumentTypeException(
-              IOFunctions.getMessage("setraw", F.List(dynamic), EvalEngine.get()));
+              Errors.getMessage("setraw", F.List(dynamic), EvalEngine.get()));
         }
         this.inputField = inputField;
         this.dynamic = dynamic;

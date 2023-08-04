@@ -10,8 +10,8 @@ import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.util.Iterator;
@@ -1016,7 +1016,7 @@ public class TeXFormFactory {
             return true;
           }
         } catch (final ValidateException ve) {
-          IOFunctions.printMessage(S.Sum, ve, EvalEngine.get());
+          Errors.printMessage(S.Sum, ve, EvalEngine.get());
         }
         return false;
       } else if (f.get(i).isSymbol()) {

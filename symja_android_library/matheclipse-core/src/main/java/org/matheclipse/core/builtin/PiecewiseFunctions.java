@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import static org.matheclipse.core.expression.S.x;
 import java.util.function.DoubleFunction;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -38,17 +39,17 @@ public class PiecewiseFunctions {
         int d = dArg1.toIntDefault();
         if (d < 0) {
           // Non-negative machine-sized integer expected at position `2` in `1`.
-          return IOFunctions.printMessage(ast.topHead(), "intnm", F.list(ast, F.C1), engine);
+          return Errors.printMessage(ast.topHead(), "intnm", F.list(ast, F.C1), engine);
         }
         IInteger di = F.ZZ(d);
         int n = nArg2.toIntDefault();
         if (n < 0) {
           // Non-negative machine-sized integer expected at position `2` in `1`.
-          return IOFunctions.printMessage(ast.topHead(), "intnm", F.list(ast, F.C1), engine);
+          return Errors.printMessage(ast.topHead(), "intnm", F.list(ast, F.C1), engine);
         }
         if (n > d) {
           // Index `1` should be a machine sized integer between `2` and `3`.
-          return IOFunctions.printMessage(ast.topHead(), "invidx2", F.list(nArg2, F.C0, di),
+          return Errors.printMessage(ast.topHead(), "invidx2", F.list(nArg2, F.C0, di),
               engine);
         }
         if (engine.evalLess(F.C0, x, F.C1)) {
@@ -545,7 +546,7 @@ public class PiecewiseFunctions {
           return F.C0;
         }
         // The first argument `1` of `2` is not a list of pairs.
-        return IOFunctions.printMessage(ast.topHead(), "pairs", F.list(arg1, ast.topHead()),
+        return Errors.printMessage(ast.topHead(), "pairs", F.list(arg1, ast.topHead()),
             engine);
       }
       IAST matrix = (IAST) arg1;
@@ -937,7 +938,7 @@ public class PiecewiseFunctions {
         IExpr dx = ast.arg2();
         if (dx.isNegativeResult()) {
           // The threshold `1` should be positive.
-          return IOFunctions.printMessage(ast.topHead(), "post", F.List(dx), engine);
+          return Errors.printMessage(ast.topHead(), "post", F.List(dx), engine);
         }
         return unitize(x, dx, engine);
       }

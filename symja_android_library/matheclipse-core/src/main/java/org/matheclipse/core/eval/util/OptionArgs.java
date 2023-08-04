@@ -1,7 +1,7 @@
 package org.matheclipse.core.eval.util;
 
 import static org.matheclipse.core.expression.F.ReplaceAll;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -365,7 +365,7 @@ public class OptionArgs {
       int maxIterations = optionMaxIterations.toIntDefault();
       if (maxIterations <= 0) {
         // Value of option `1` should be a non-negative integer or Infinity.
-        IOFunctions.printMessage(fCurrentOptionsList.topHead(), "iopnf",
+        Errors.printMessage(fCurrentOptionsList.topHead(), "iopnf",
             F.list(F.Rule(S.MaxIterations, optionMaxIterations)), fEngine);
         return Integer.MIN_VALUE;
       }
@@ -399,7 +399,7 @@ public class OptionArgs {
     if (invalidPosition > greaterThanPositon) {
       // Options expected (instead of `1`) beyond position `2` in `3`. An option must be a
       // rule or a list of rules.
-      IOFunctions.printMessage(ast.topHead(), "nonopt",
+      Errors.printMessage(ast.topHead(), "nonopt",
           F.list(ast.get(invalidPosition), F.ZZ(greaterThanPositon), ast), EvalEngine.get());
       return true;
     }
@@ -444,7 +444,7 @@ public class OptionArgs {
   public IAST printNonopt(IAST ast, int optionPosition, EvalEngine engine) {
     // Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or
     // a list of rules.
-    return IOFunctions.printMessage(ast.topHead(), "nonopt",
+    return Errors.printMessage(ast.topHead(), "nonopt",
         F.list(ast.get(fInvalidPosition), F.ZZ(optionPosition), ast), engine);
   }
 

@@ -23,9 +23,9 @@ import org.hipparchus.util.FieldSinhCosh;
 import org.jgrapht.GraphType;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -5129,7 +5129,7 @@ public interface IExpr
         result = engine.evaluate(temp);
         if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
           // Exiting after `1` scanned `2` times.
-          IOFunctions.printMessage(S.ReplaceRepeated, "rrlim", F.List(this, F.ZZ(iterationLimit)),
+          Errors.printMessage(S.ReplaceRepeated, "rrlim", F.List(this, F.ZZ(iterationLimit)),
               engine);
           return result;
         }

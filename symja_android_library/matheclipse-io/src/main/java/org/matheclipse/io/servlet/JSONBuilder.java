@@ -3,7 +3,7 @@ package org.matheclipse.io.servlet;
 import java.io.StringWriter;
 import org.apache.commons.text.StringEscapeUtils;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.expression.S;
@@ -242,7 +242,7 @@ public class JSONBuilder {
    * @return
    */
   public static String[] createJSONIFrame(String html, String manipulateStr) {
-    html = IOFunctions.templateRender(html, new String[] {manipulateStr});
+    html = Errors.templateRender(html, new String[] {manipulateStr});
     html = StringEscapeUtils.escapeHtml4(html);
     return createJSONJavaScript("<iframe srcdoc=\"" + html
         + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");

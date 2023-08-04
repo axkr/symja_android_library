@@ -11,6 +11,7 @@ import org.hipparchus.fitting.WeightedObservedPoints;
 import org.hipparchus.stat.regression.SimpleRegression;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -250,7 +251,7 @@ public class CurveFitterFunctions {
               }
             }
           } catch (ValidateException ve) {
-            return IOFunctions.printMessage(ast.topHead(), ve, engine);
+            return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }

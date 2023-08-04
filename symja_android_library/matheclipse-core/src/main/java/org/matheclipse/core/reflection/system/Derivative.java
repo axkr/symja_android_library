@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -148,7 +148,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
             }
             // Multiple derivative specifier `1` does not have the form {variable, n} where n is a
             // symbolic expression or a non-negative integer.
-            return IOFunctions.printMessage(ast.topHead(), "dvar", F.list(F.list(F.Slot1, nTimes)),
+            return Errors.printMessage(ast.topHead(), "dvar", F.list(F.list(F.Slot1, nTimes)),
                 engine);
           }
         }
@@ -217,7 +217,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
         int iterationLimit = engine.getIterationLimit();
         if (iterationLimit > 0 && iterationLimit < ni) {
           // Iteration limit of `1` exceeded.
-          return IOFunctions.printMessage(S.Derivative, "itlim", F.list(F.ZZ(iterationLimit)),
+          return Errors.printMessage(S.Derivative, "itlim", F.list(F.ZZ(iterationLimit)),
               engine);
         }
       }
@@ -287,7 +287,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
           int iterationLimit = engine.getIterationLimit();
           if (iterationLimit > 0 && iterationLimit < ni) {
             // Iteration limit of `1` exceeded.
-            return IOFunctions.printMessage(S.Derivative, "itlim", F.list(F.ZZ(iterationLimit)),
+            return Errors.printMessage(S.Derivative, "itlim", F.list(F.ZZ(iterationLimit)),
                 engine);
           }
           list.append(F.list(symbol, n));

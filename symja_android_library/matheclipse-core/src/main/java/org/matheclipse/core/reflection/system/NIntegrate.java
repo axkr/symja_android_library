@@ -14,7 +14,7 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.Precision;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -106,7 +106,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 
     if (!list.arg1().isSymbol()) {
       // `1` is not a valid variable.
-      String str = IOFunctions.getMessage("ivar", F.list(list.arg1()), EvalEngine.get());
+      String str = Errors.getMessage("ivar", F.list(list.arg1()), EvalEngine.get());
       throw new ArgumentTypeException(str);
     }
     ISymbol xVar = (ISymbol) list.arg1();
@@ -204,7 +204,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
             return Num.valueOf(result);
           } catch (MathIllegalArgumentException | MathIllegalStateException miae) {
             // `1`.
-            return IOFunctions.printMessage(ast.topHead(), "error",
+            return Errors.printMessage(ast.topHead(), "error",
                 F.list(F.$str(miae.getMessage())), engine);
           } catch (MathRuntimeException mre) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);

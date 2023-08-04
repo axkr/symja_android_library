@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import java.util.function.Function;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -50,14 +51,14 @@ public class SequenceFunctions {
               overlapsOption = S.True;
             } else {
               // Value of option `1` must be True, False or All.
-              return IOFunctions.printMessage(ast.topHead(), "ovls",
+              return Errors.printMessage(ast.topHead(), "ovls",
                   F.List(F.Rule(S.Overlaps, option)), engine);
             }
           }
           ast = ast.most();
           if (ast.argSize() < 2) {
             // List or pattern matching a list expected at position `1` in `2`.
-            return IOFunctions.printMessage(ast.topHead(), "lstpat", F.List(F.C2, ast), engine);
+            return Errors.printMessage(ast.topHead(), "lstpat", F.List(F.C2, ast), engine);
           }
         }
         final IExpr arg1 = engine.evaluate(ast.arg1());
@@ -66,9 +67,9 @@ public class SequenceFunctions {
           return sequenceCases((IAST) arg1, arg2, overlapsOption, engine);
         }
         // List expected at position `1` in `2`.
-        return IOFunctions.printMessage(ast.topHead(), "list", F.List(F.C1, ast), engine);
+        return Errors.printMessage(ast.topHead(), "list", F.List(F.C1, ast), engine);
       } catch (final ValidateException ve) {
-        return IOFunctions.printMessage(ast.topHead(), ve, engine);
+        return Errors.printMessage(ast.topHead(), ve, engine);
       }
     }
 
@@ -221,7 +222,7 @@ public class SequenceFunctions {
               int maxN = arg3.toIntDefault();
               if (maxN < 0) {
                 // Non-negative integer or Infinity expected at position `1` in `2`.
-                return IOFunctions.printMessage(ast.topHead(), "innf", F.List(F.C3, ast), engine);
+                return Errors.printMessage(ast.topHead(), "innf", F.List(F.C3, ast), engine);
               }
               maxReplacements = maxN;
             }
@@ -232,9 +233,9 @@ public class SequenceFunctions {
           return sequenceReplace((IAST) arg1, list, maxReplacements, resultAST, engine);
         }
         // List expected at position `1` in `2`.
-        return IOFunctions.printMessage(ast.topHead(), "list", F.List(F.C1, ast), engine);
+        return Errors.printMessage(ast.topHead(), "list", F.List(F.C1, ast), engine);
       } catch (final ValidateException ve) {
-        return IOFunctions.printMessage(ast.topHead(), ve, engine);
+        return Errors.printMessage(ast.topHead(), ve, engine);
       }
     }
 
@@ -256,7 +257,7 @@ public class SequenceFunctions {
         } else {
           // (`1`) is neither a list of replacement rules nor a valid dispatch table and cannot be
           // used for replacing.
-          return IOFunctions.printMessage(S.SequenceSplit, "reps", F.List(listOfRules), engine);
+          return Errors.printMessage(S.SequenceSplit, "reps", F.List(listOfRules), engine);
         }
       }
       int i = 1;
@@ -332,7 +333,7 @@ public class SequenceFunctions {
               int maxParts = arg3.toIntDefault();
               if (maxParts <= 0) {
                 // Positive integer or Infinity expected at position `1` in `2`.
-                return IOFunctions.printMessage(ast.topHead(), "ipnf", F.List(F.C3, ast), engine);
+                return Errors.printMessage(ast.topHead(), "ipnf", F.List(F.C3, ast), engine);
               }
               maxSplits = maxParts - 1;
             }
@@ -343,9 +344,9 @@ public class SequenceFunctions {
           return sequenceSplitList((IAST) arg1, list, maxSplits, resultAST, engine);
         }
         // List expected at position `1` in `2`.
-        return IOFunctions.printMessage(ast.topHead(), "list", F.List(F.C1, ast), engine);
+        return Errors.printMessage(ast.topHead(), "list", F.List(F.C1, ast), engine);
       } catch (final ValidateException ve) {
-        return IOFunctions.printMessage(ast.topHead(), ve, engine);
+        return Errors.printMessage(ast.topHead(), ve, engine);
       }
     }
 

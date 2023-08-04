@@ -3,7 +3,7 @@ package org.matheclipse.core.expression;
 import java.util.Comparator;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
@@ -257,7 +257,7 @@ public class IntervalDataSym {
       IAST temp = normalizeArgument(intervalList.get(i), engine);
       if (temp.isInvalid()) {
         // The expression `1` is not a valid interval.
-        IOFunctions.printMessage(S.IntervalData, "nvld", F.list(intervalList.get(i)), engine);
+        Errors.printMessage(S.IntervalData, "nvld", F.list(intervalList.get(i)), engine);
         return temp;
       }
       if (temp.isPresent()) {
@@ -340,7 +340,7 @@ public class IntervalDataSym {
         }
 
         // The expression `1` is not a valid interval.
-        IOFunctions.printMessage(S.IntervalData, "nvld", F.list(intervalList.get(i)), engine);
+        Errors.printMessage(S.IntervalData, "nvld", F.list(intervalList.get(i)), engine);
         return F.INVALID;
       }
       result.set(j, list1);

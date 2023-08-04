@@ -15,7 +15,7 @@ import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -155,7 +155,7 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   private static ArgumentTypeException getDivisionTroughZeroException(IInteger num) {
-    String str = IOFunctions.getMessage("infy", F.list(F.Rational(num, F.C0)), EvalEngine.get());
+    String str = Errors.getMessage("infy", F.list(F.Rational(num, F.C0)), EvalEngine.get());
     return new ArgumentTypeException(str);
   }
 

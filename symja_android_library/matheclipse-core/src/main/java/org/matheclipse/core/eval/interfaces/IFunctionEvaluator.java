@@ -1,6 +1,6 @@
 package org.matheclipse.core.eval.interfaces;
 
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -365,7 +365,7 @@ public interface IFunctionEvaluator extends IEvaluator {
    */
   default IExpr print(IAST ast, int expected, EvalEngine engine) {
     // `1` called with `2` arguments; `3` arguments are expected.
-    return IOFunctions.printMessage(ast.topHead(), "argrx",
+    return Errors.printMessage(ast.topHead(), "argrx",
         F.List(ast, F.ZZ(ast.argSize()), F.ZZ(expected)), engine);
   }
 }

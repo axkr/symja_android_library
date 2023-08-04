@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.AbortException;
@@ -884,7 +885,7 @@ public final class Programming {
         IExpr f = ast.arg1();
         if (f.isAtom() && !f.isSymbol()) {
           // Nonatomic expression expected at position `1` in `2`.
-          return IOFunctions.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
+          return Errors.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
         }
         int maxIterations = Integer.MAX_VALUE;
         if (ast.isAST3()) {
@@ -899,7 +900,7 @@ public final class Programming {
         }
         if (maxIterations < 0) {
           // Non-negative machine-sized integer expected at position `2` in `1`.
-          return IOFunctions.printMessage(ast.topHead(), "intnm", F.list(ast, F.ZZ(3)),
+          return Errors.printMessage(ast.topHead(), "intnm", F.list(ast, F.ZZ(3)),
               EvalEngine.get());
         }
         if (maxIterations == 0) {
@@ -1014,7 +1015,7 @@ public final class Programming {
         IExpr f = ast.arg1();
         if (f.isNumber()) {
           // Nonatomic expression expected at position `1` in `2`.
-          return IOFunctions.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
+          return Errors.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
         }
         IExpr current = ast.arg2();
         int iterations = Integer.MAX_VALUE;
@@ -1029,7 +1030,7 @@ public final class Programming {
         }
         if (iterations < 0) {
           // Non-negative machine-sized integer expected at position `2` in `1`.
-          return IOFunctions.printMessage(ast.topHead(), "intnm", F.list(ast, F.ZZ(3)),
+          return Errors.printMessage(ast.topHead(), "intnm", F.list(ast, F.ZZ(3)),
               EvalEngine.get());
         }
         if (iterations == 0) {
@@ -1518,7 +1519,7 @@ public final class Programming {
         int n = arg3.toIntDefault();
         if (n < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return IOFunctions.printMessage(S.Nest, "intpm", F.list(ast, F.C3), engine);
+          return Errors.printMessage(S.Nest, "intpm", F.list(ast, F.C3), engine);
         }
         int iterationLimit = engine.getIterationLimit();
         if (iterationLimit >= 0 && iterationLimit <= n) {
@@ -1572,7 +1573,7 @@ public final class Programming {
       int n = ast.arg3().toIntDefault();
       if (n < 0) {
         // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-        return IOFunctions.printMessage(S.Nest, "intpm", F.list(ast, F.C3), engine);
+        return Errors.printMessage(S.Nest, "intpm", F.list(ast, F.C3), engine);
       }
       int iterationLimit = engine.getIterationLimit();
       if (iterationLimit >= 0 && iterationLimit <= n) {
@@ -1691,7 +1692,7 @@ public final class Programming {
       IExpr temp = expr;
       if (Config.MAX_AST_SIZE < extraTimes) {
         // Maximum AST limit `1` exceeded.
-        return IOFunctions.printMessage(S.NestWhile, "zzmaxast", F.List(extraTimes), engine);
+        return Errors.printMessage(S.NestWhile, "zzmaxast", F.List(extraTimes), engine);
       }
       IExpr[] args = new IExpr[extraTimes];
       args[0] = temp;
@@ -1772,7 +1773,7 @@ public final class Programming {
           if (tmpInt < 0) {
             // Argument `2` in `1` is not of the form i, {i,j}, {i,Infinity}, or All, where i and j
             // are non-negative machine-sized integer
-            return IOFunctions.printMessage(ast.topHead(), "nwargs", F.List(ast, F.C4), engine);
+            return Errors.printMessage(ast.topHead(), "nwargs", F.List(ast, F.C4), engine);
           }
           m = tmpInt;
         }
@@ -1785,7 +1786,7 @@ public final class Programming {
           int tmpInt = ast.arg5().toIntDefault();
           if (tmpInt < 0) {
             // Machine-sized integer expected at position `2` in `1`.
-            return IOFunctions.printMessage(ast.topHead(), "intm", F.List(ast, F.C5), engine);
+            return Errors.printMessage(ast.topHead(), "intm", F.List(ast, F.C5), engine);
           }
           max = tmpInt;
         }
@@ -1831,7 +1832,7 @@ public final class Programming {
       }
       if (Config.MAX_AST_SIZE < arrSize) {
         // Maximum AST limit `1` exceeded.
-        return IOFunctions.printMessage(S.NestWhileList, "zzmaxast", F.List(m), engine);
+        return Errors.printMessage(S.NestWhileList, "zzmaxast", F.List(m), engine);
       }
 
       args = new IExpr[arrSize];
@@ -1862,7 +1863,7 @@ public final class Programming {
         }
         if (Config.MAX_AST_SIZE < arrSize) {
           // Maximum AST limit `1` exceeded.
-          return IOFunctions.printMessage(S.NestWhileList, "zzmaxast", F.List(m), engine);
+          return Errors.printMessage(S.NestWhileList, "zzmaxast", F.List(m), engine);
         }
         if (m == (-1)) {
           argsTemp = new IExpr[arrSize];
@@ -2368,7 +2369,7 @@ public final class Programming {
               return arg1.head();
             }
             // Part specification `1` is longer than depth of object.
-            IOFunctions.printMessage(S.Part, "partd", F.list(evaledAST), engine);
+            Errors.printMessage(S.Part, "partd", F.list(evaledAST), engine);
             // return the evaluated result:
             return evaledAST;
           }
@@ -2382,7 +2383,7 @@ public final class Programming {
               return arg1.head();
             }
             // Part specification `1` is longer than depth of object.
-            return IOFunctions.printMessage(S.Part, "partd", F.list(ast), engine);
+            return Errors.printMessage(S.Part, "partd", F.list(ast), engine);
           }
         }
 
@@ -2450,10 +2451,10 @@ public final class Programming {
           // RulesData rd = symbol.getRulesData();
           if (temp == null) {
             // `1` is not a variable with a value, so its value cannot be changed.
-            return IOFunctions.printMessage(builtinSymbol, "rvalue", F.list(symbol), engine);
+            return Errors.printMessage(builtinSymbol, "rvalue", F.list(symbol), engine);
           } else {
             if (symbol.isProtected()) {
-              return IOFunctions.printMessage(builtinSymbol, "write", F.list(symbol),
+              return Errors.printMessage(builtinSymbol, "write", F.list(symbol),
                   EvalEngine.get());
             }
             try {
@@ -2478,7 +2479,7 @@ public final class Programming {
             }
           }
         } else {
-          IOFunctions.printMessage(builtinSymbol, "setps", F.list(part), engine);
+          Errors.printMessage(builtinSymbol, "setps", F.list(part), engine);
           return rightHandSide;
         }
       }
@@ -3002,7 +3003,7 @@ public final class Programming {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if ((ast.size() & 0x0001) != 0x0000) {
         // `1` called with `2` arguments. `3`
-        return IOFunctions.printMessage(S.Switch, "argct", F.List(S.Switch, F.ZZ(ast.argSize()),
+        return Errors.printMessage(S.Switch, "argct", F.List(S.Switch, F.ZZ(ast.argSize()),
             F.stringx("Switch must be called with an odd number of arguments.")), engine);
       }
       if (ast.size() > 3) {
@@ -3099,12 +3100,12 @@ public final class Programming {
             seconds = ((IReal) arg2).toLong();
           } else {
             // Positive machine-sized integer expected at position `2` in `1`.
-            return IOFunctions.printMessage(ast.topHead(), "intpm", F.list(F.C2, ast), engine);
+            return Errors.printMessage(ast.topHead(), "intpm", F.list(F.C2, ast), engine);
           }
 
         } catch (ArithmeticException ae) {
           // Positive machine-sized integer expected at position `2` in `1`.
-          return IOFunctions.printMessage(ast.topHead(), "intpm", F.list(F.C2, ast), engine);
+          return Errors.printMessage(ast.topHead(), "intpm", F.list(F.C2, ast), engine);
         }
         final ExecutorService executorService = Executors.newSingleThreadExecutor();
         TimeLimiter timeLimiter = SimpleTimeLimiter.create(executorService); // Executors.newSingleThreadExecutor());
@@ -3631,7 +3632,7 @@ public final class Programming {
         } else {
           // Local variable specification `1` contains `2`, which is an assignment to `3`; only
           // assignments to symbols are allowed.
-          IOFunctions.printMessage(S.With, "lvset",
+          Errors.printMessage(S.With, "lvset",
               F.list(variablesList, variablesList.get(i), setFun.arg1()), engine);
           return false;
         }
@@ -3646,13 +3647,13 @@ public final class Programming {
         } else {
           // Local variable specification `1` contains `2`, which is an assignment to `3`; only
           // assignments to symbols are allowed.
-          IOFunctions.printMessage(S.With, "lvset",
+          Errors.printMessage(S.With, "lvset",
               F.list(variablesList, variablesList.get(i), setFun.arg1()), engine);
           return false;
         }
       } else {
         // Variable `1` in local variable specification `2` requires assigning a value
-        IOFunctions.printMessage(S.With, "lvws", F.list(variablesList.get(i), variablesList),
+        Errors.printMessage(S.With, "lvws", F.list(variablesList.get(i), variablesList),
             engine);
         return false;
       }
@@ -3825,7 +3826,7 @@ public final class Programming {
     }
     if ((position < 0) || (position >= ast.size())) {
       // Part `1` of `2` does not exist.
-      return IOFunctions.printMessage(S.Part, "partw", F.list(F.ZZ(pos), ast), engine);
+      return Errors.printMessage(S.Part, "partw", F.list(F.ZZ(pos), ast), engine);
     }
     return ast.get(position);
   }
@@ -3846,7 +3847,7 @@ public final class Programming {
     }
     if ((position < 0) || (position >= ast.size())) {
       // Part `1` of `2` does not exist.
-      return IOFunctions.printMessage(S.Part, "partw", F.list(F.ZZ(pos), ast), engine);
+      return Errors.printMessage(S.Part, "partw", F.list(F.ZZ(pos), ast), engine);
     }
     return ast.getRule(position);
   }
@@ -3876,7 +3877,7 @@ public final class Programming {
       final int indx = ast.get(pos).toIntDefault();
       if (indx == Integer.MIN_VALUE) {
         // Part `1` of `2` does not exist.
-        return IOFunctions.printMessage(S.Part, "partw", F.list(ast.get(pos), arg1), engine);
+        return Errors.printMessage(S.Part, "partw", F.list(ast.get(pos), arg1), engine);
       }
       IExpr result = getIndex(arg1, indx, engine);
       if (result.isPresent()) {
@@ -3885,7 +3886,7 @@ public final class Programming {
             return part((IAST) result, ast, p1, engine);
           } else {
             // Part specification `1` is longer than depth of object.
-            return IOFunctions.printMessage(S.Part, "partd", F.list(result), engine);
+            return Errors.printMessage(S.Part, "partd", F.list(result), engine);
           }
         }
         return result;
@@ -3904,7 +3905,7 @@ public final class Programming {
             final int indx = listArg.toIntDefault();
             if (indx == Integer.MIN_VALUE) {
               // Part `1` of `2` does not exist.
-              return IOFunctions.printMessage(S.Part, "partw", F.list(listArg, arg1), engine);
+              return Errors.printMessage(S.Part, "partw", F.list(listArg, arg1), engine);
             }
             IExpr ires = getIndexRule(arg1, indx, engine);
             if (ires.isPresent()) {
@@ -3916,7 +3917,7 @@ public final class Programming {
                     try {
                       result.appendRule(temp);
                     } catch (IndexOutOfBoundsException ioobex) {
-                      return IOFunctions.printMessage(S.Part, "pkspec1", F.list(temp), engine);
+                      return Errors.printMessage(S.Part, "pkspec1", F.list(temp), engine);
                     }
                   } else {
                     // an error occurred
@@ -3925,13 +3926,13 @@ public final class Programming {
 
                 } else {
                   // Part specification `1` is longer than depth of object.
-                  return IOFunctions.printMessage(S.Part, "partd", F.list(ires), engine);
+                  return Errors.printMessage(S.Part, "partd", F.list(ires), engine);
                 }
               } else {
                 try {
                   result.appendRule(ires);
                 } catch (IndexOutOfBoundsException ioobex) {
-                  return IOFunctions.printMessage(S.Part, "pkspec1", F.list(ires), engine);
+                  return Errors.printMessage(S.Part, "pkspec1", F.list(ires), engine);
                 }
               }
             } else {
@@ -3943,7 +3944,7 @@ public final class Programming {
             result.appendRule(assoc.getRule(listArg));
           } else if (listArg.isNumber()) {
             // The expression `1` cannot be used as a part specification.
-            return IOFunctions.printMessage(S.Part, "pkspec1", F.list(list), engine);
+            return Errors.printMessage(S.Part, "pkspec1", F.list(list), engine);
           }
         }
         return result;
@@ -3962,7 +3963,7 @@ public final class Programming {
             return part((IAST) result, ast, p1, engine);
           } else {
             // Part specification `1` is longer than depth of object.
-            return IOFunctions.printMessage(S.Part, "partd", F.list(result), engine);
+            return Errors.printMessage(S.Part, "partd", F.list(result), engine);
           }
         }
         return result;
@@ -3978,7 +3979,7 @@ public final class Programming {
           final int indx = listArg.toIntDefault();
           if (indx == Integer.MIN_VALUE) {
             // Part `1` of `2` does not exist.
-            return IOFunctions.printMessage(S.Part, "partw", F.list(listArg, arg1), engine);
+            return Errors.printMessage(S.Part, "partw", F.list(listArg, arg1), engine);
           }
           IExpr ires = getIndex(arg1, indx, engine);
           if (ires.isPresent()) {
@@ -3993,7 +3994,7 @@ public final class Programming {
                 }
               } else {
                 // Part specification `1` is longer than depth of object.
-                return IOFunctions.printMessage(S.Part, "partd", F.list(ires), engine);
+                return Errors.printMessage(S.Part, "partd", F.list(ires), engine);
               }
             } else {
               result.append(ires);
@@ -4003,14 +4004,14 @@ public final class Programming {
           }
         } else if (listArg.isNumber() || listArg.isString()) {
           // The expression `1` cannot be used as a part specification.
-          return IOFunctions.printMessage(S.Part, "pkspec1", F.list(list), engine);
+          return Errors.printMessage(S.Part, "pkspec1", F.list(list), engine);
         }
       }
       return result;
     }
 
     // The expression `1` cannot be used as a part specification.
-    return IOFunctions.printMessage(S.Part, "pkspec1", F.list(arg2), engine);
+    return Errors.printMessage(S.Part, "pkspec1", F.list(arg2), engine);
   }
 
   public static IExpr sparsePart(final ISparseArray arg1, final IAST ast, int pos,
@@ -4033,7 +4034,7 @@ public final class Programming {
     }
 
     // The expression `1` cannot be used as a part specification.
-    return IOFunctions.printMessage(S.Part, "pkspec1", F.list(ast), engine);
+    return Errors.printMessage(S.Part, "pkspec1", F.list(ast), engine);
   }
 
   private static IExpr spanPart(final IAST ast, int pos, final IAST arg1, final IExpr arg2,
@@ -4054,7 +4055,7 @@ public final class Programming {
         if (arg1.get(i).isASTOrAssociation()) {
           if (i >= size) {
             // Cannot take positions `1` through `2` in `3`.
-            return IOFunctions.printMessage(S.Part, "take", F.list(F.ZZ(start), F.ZZ(last), arg1),
+            return Errors.printMessage(S.Part, "take", F.list(F.ZZ(start), F.ZZ(last), arg1),
                 engine);
           }
           IExpr temp = part((IAST) arg1.get(i), ast, p1, engine);
@@ -4064,7 +4065,7 @@ public final class Programming {
           }
         }
         // Part specification `1` is longer than depth of object.
-        return IOFunctions.printMessage(S.Part, "partd", F.list(arg1.get(i)), engine);
+        return Errors.printMessage(S.Part, "partd", F.list(arg1.get(i)), engine);
       }
       return result;
     } else if (step > 0 && (last != 1 || start <= last)) {
@@ -4081,7 +4082,7 @@ public final class Programming {
         if (arg1.get(i).isASTOrAssociation()) {
           if (i >= size) {
             // Cannot take positions `1` through `2` in `3`.
-            return IOFunctions.printMessage(S.Part, "take", F.list(F.ZZ(start), F.ZZ(last), arg1),
+            return Errors.printMessage(S.Part, "take", F.list(F.ZZ(start), F.ZZ(last), arg1),
                 engine);
           }
 
@@ -4104,12 +4105,12 @@ public final class Programming {
           }
         }
         // Part specification `1` is longer than depth of object.
-        return IOFunctions.printMessage(S.Part, "partd", F.list(arg1.get(i)), engine);
+        return Errors.printMessage(S.Part, "partd", F.list(arg1.get(i)), engine);
       }
       return result;
     }
     // The expression `1` cannot be used as a part specification.
-    return IOFunctions.printMessage(S.Part, "pkspec1", F.list(arg2), engine);
+    return Errors.printMessage(S.Part, "pkspec1", F.list(arg2), engine);
   }
 
   private static IExpr assignPart(final IExpr assignedExpr, final IAST part, int partPosition,
@@ -4120,7 +4121,7 @@ public final class Programming {
     }
     if (!assignedExpr.isASTOrAssociation()) {
       // Part specification `1` is longer than depth of object.
-      return IOFunctions.printMessage(S.Part, "partd", F.list(part), engine);
+      return Errors.printMessage(S.Part, "partd", F.list(part), engine);
     }
     IAST assignedAST = (IAST) assignedExpr;
     final IExpr arg2 = engine.evaluate(part.get(partPosition));
@@ -4147,7 +4148,7 @@ public final class Programming {
         }
       } else {
         // Part `1` of `2` does not exist.
-        return IOFunctions.printMessage(S.Part, "partw", F.list(F.ZZ(partPosition), arg2), engine);
+        return Errors.printMessage(S.Part, "partw", F.list(F.ZZ(partPosition), arg2), engine);
       }
       return result;
     } else if (arg2.isReal()) {
@@ -4157,7 +4158,7 @@ public final class Programming {
       }
       if ((indx < 0) || (indx >= assignedAST.size())) {
         // Part `1` of `2` does not exist.
-        return IOFunctions.printMessage(S.Part, "partw", F.list(F.ZZ(indx), assignedAST), engine);
+        return Errors.printMessage(S.Part, "partw", F.list(F.ZZ(indx), assignedAST), engine);
       }
       IASTAppendable result = F.NIL;
       IExpr temp = assignPart(assignedAST.get(indx), part, partPositionPlus1, value, engine);
@@ -4189,7 +4190,7 @@ public final class Programming {
               result.append(temp);
             } else {
               // Part `1` of `2` does not exist.
-              return IOFunctions.printMessage(S.Part, "partw",
+              return Errors.printMessage(S.Part, "partw",
                   F.list(F.ZZ(partPosition), assignedAST), engine);
             }
           } else {
@@ -4200,7 +4201,7 @@ public final class Programming {
       return result;
     }
     // Part `1` of `2` does not exist.
-    return IOFunctions.printMessage(S.Part, "partw", F.list(arg2, assignedAST), engine);
+    return Errors.printMessage(S.Part, "partw", F.list(arg2, assignedAST), engine);
   }
 
   private static IExpr assignPart(final IExpr assignedExpr, final IAST part, int partPosition,
@@ -4254,7 +4255,7 @@ public final class Programming {
         }
       } else {
         // Part `1` of `2` does not exist.
-        return IOFunctions.printMessage(S.Part, "partw", F.list(arg2, assignedAST), engine);
+        return Errors.printMessage(S.Part, "partw", F.list(arg2, assignedAST), engine);
       }
       return result;
     } else if (arg2.isReal()) {
@@ -4266,7 +4267,7 @@ public final class Programming {
           return assignPart(ires, part, partPositionPlus1, rhs, rhsPos++, engine);
         } else {
           // Part `1` of `2` does not exist.
-          return IOFunctions.printMessage(S.Part, "partw", F.list(F.ZZ(partPosition), assignedAST),
+          return Errors.printMessage(S.Part, "partw", F.list(F.ZZ(partPosition), assignedAST),
               engine);
         }
       }
@@ -4292,7 +4293,7 @@ public final class Programming {
               result.append(temp);
             } else {
               // Part `1` of `2` does not exist.
-              return IOFunctions.printMessage(S.Part, "partw",
+              return Errors.printMessage(S.Part, "partw",
                   F.list(F.ZZ(partPosition), assignedAST), engine);
             }
           } else {
@@ -4303,7 +4304,7 @@ public final class Programming {
       return result;
     }
     // Part `1` of `2` does not exist.
-    return IOFunctions.printMessage(S.Part, "partw", F.list(arg2, assignedAST), engine);
+    return Errors.printMessage(S.Part, "partw", F.list(arg2, assignedAST), engine);
   }
 
   /**

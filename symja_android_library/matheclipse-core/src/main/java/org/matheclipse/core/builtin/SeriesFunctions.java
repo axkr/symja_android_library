@@ -12,6 +12,7 @@ import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
@@ -898,12 +899,12 @@ public class SeriesFunctions {
       IExpr arg2 = ast.arg2();
       if (!arg2.isRuleAST()) {
         // Limit specification `1` is not of the form x->x0.
-        return IOFunctions.printMessage(S.Limit, "lim", F.List(arg2), engine);
+        return Errors.printMessage(S.Limit, "lim", F.List(arg2), engine);
       }
       IAST rule = (IAST) arg2;
       if (!(rule.arg1().isSymbol())) {
         // `1` is not a valid variable.
-        return IOFunctions.printMessage(S.Limit, "ivar", F.List(arg2), engine);
+        return Errors.printMessage(S.Limit, "ivar", F.List(arg2), engine);
       }
       if (arg1.isList()) {
         return arg1.mapThread(ast, 1);
@@ -923,7 +924,7 @@ public class SeriesFunctions {
             } else if (option.equals(S.Automatic) || option.equals(S.Reals)) {
               direction = Direction.TWO_SIDED;
             } else {
-              return IOFunctions.printMessage(S.Limit, "ldir", F.List(ast.arg3()), engine);
+              return Errors.printMessage(S.Limit, "ldir", F.List(ast.arg3()), engine);
             }
           } else {
             LOGGER.log(engine.getLogLevel(), "{}: direction option expected at position 2!",
@@ -1058,7 +1059,7 @@ public class SeriesFunctions {
 
             return taylorFunction(function, x, x0, m, n);
           } catch (ArithmeticException aex) {
-            IOFunctions.printRuntimeException(S.PadeApproximant, aex, engine);
+            Errors.printRuntimeException(S.PadeApproximant, aex, engine);
           } catch (JASConversionException jce) {
             // could not use JAS library here
           }
@@ -1274,7 +1275,7 @@ public class SeriesFunctions {
         IExpr x0 = list.arg2();
         if (!x.isVariable()) {
           // `1` is not a valid variable.
-          return IOFunctions.printMessage(S.General, "ivar", F.List(x), engine);
+          return Errors.printMessage(S.General, "ivar", F.List(x), engine);
         }
         final int n = list.arg3().toIntDefault();
         if (n == Integer.MIN_VALUE) {
@@ -1594,7 +1595,7 @@ public class SeriesFunctions {
       if (ast.size() == 6 || ast.size() == 7) {
         if (ast.arg1().isNumber()) {
           // Attempt to evaluate a series at the number `1`. Returning Indeterminate.
-          IOFunctions.printMessage(S.SeriesData, "ssdn", F.List(), engine);
+          Errors.printMessage(S.SeriesData, "ssdn", F.List(), engine);
           return S.Indeterminate;
         }
         IExpr x = ast.arg1();
@@ -1616,7 +1617,7 @@ public class SeriesFunctions {
           denominator = ast.get(6).toIntDefault();
           if (!ToggleFeature.SERIES_DENOMINATOR && denominator != 1) {
             // ToggleFeature `1` is disabled.
-            return IOFunctions.printMessage(ast.topHead(), "toggle",
+            return Errors.printMessage(ast.topHead(), "toggle",
                 F.list(F.stringx("SERIES_DENOMINATOR")), engine);
           }
         }

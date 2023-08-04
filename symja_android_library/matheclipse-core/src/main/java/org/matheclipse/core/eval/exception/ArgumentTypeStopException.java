@@ -1,6 +1,6 @@
 package org.matheclipse.core.eval.exception;
 
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -18,7 +18,7 @@ public class ArgumentTypeStopException extends LimitException {
   }
 
   public ArgumentTypeStopException(String messageShortcut, final IAST listOfArgs) {
-    String message = IOFunctions.getMessage(messageShortcut, listOfArgs);
+    String message = Errors.getMessage(messageShortcut, listOfArgs);
     fMessage = message;
   }
 
@@ -29,7 +29,7 @@ public class ArgumentTypeStopException extends LimitException {
 
   public static void throwNIL() {
     // unexpected NIL expression encountered.
-    String str = IOFunctions.getMessage("nil", F.CEmptyList, EvalEngine.get());
+    String str = Errors.getMessage("nil", F.CEmptyList, EvalEngine.get());
     throw new ArgumentTypeStopException(str);
   }
 

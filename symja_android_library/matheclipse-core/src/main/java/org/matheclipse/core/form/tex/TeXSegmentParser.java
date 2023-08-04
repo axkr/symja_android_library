@@ -9,7 +9,7 @@ import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.BuiltInDummy;
@@ -1236,7 +1236,7 @@ class TeXSegmentParser {
         e.printStackTrace();
       }
       // `1`.
-      IOFunctions.printMessage(S.ToExpression, "error", F.List(F.stringx(e.getMessage())));
+      Errors.printMessage(S.ToExpression, "error", F.List(F.stringx(e.getMessage())));
     }
     return S.$Aborted;
   }

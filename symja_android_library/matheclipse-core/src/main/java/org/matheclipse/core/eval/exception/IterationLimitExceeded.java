@@ -1,6 +1,6 @@
 package org.matheclipse.core.eval.exception;
 
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
@@ -23,7 +23,7 @@ public class IterationLimitExceeded extends LimitException {
   public String getMessage() {
     // Iteration limit of `1` exceeded.
     return fExpr.topHead().toString() + ": "
-        + IOFunctions.getMessage("itlim", F.list(F.ZZ(fLimit), fExpr), EvalEngine.get());
+        + Errors.getMessage("itlim", F.list(F.ZZ(fLimit), fExpr), EvalEngine.get());
   }
 
   public static void throwIt(long iterationCounter, final IExpr expr) {

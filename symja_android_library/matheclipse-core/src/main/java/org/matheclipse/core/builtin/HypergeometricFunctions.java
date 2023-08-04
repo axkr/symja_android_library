@@ -15,6 +15,7 @@ import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ResultException;
@@ -218,7 +219,7 @@ public class HypergeometricFunctions {
           LOGGER.debug("CosIntegral.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -310,7 +311,7 @@ public class HypergeometricFunctions {
           LOGGER.debug("CoshIntegral.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -370,7 +371,7 @@ public class HypergeometricFunctions {
           LOGGER.debug("ExpIntegralE.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -471,7 +472,7 @@ public class HypergeometricFunctions {
           LOGGER.debug("ExpIntegralEi.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -769,7 +770,7 @@ public class HypergeometricFunctions {
             return res;
           }
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -794,7 +795,7 @@ public class HypergeometricFunctions {
           }
 
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -861,7 +862,7 @@ public class HypergeometricFunctions {
               return res;
             }
           } catch (ValidateException ve) {
-            return IOFunctions.printMessage(ast.topHead(), ve, engine);
+            return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
@@ -915,7 +916,7 @@ public class HypergeometricFunctions {
                       F.Plus(F.Gamma(F.Plus(F.CN1, b)), F.Negate(F.Gamma(F.Plus(F.CN1, b), z))))));
         }
       } catch (ValidateException ve) {
-        return IOFunctions.printMessage(ast.topHead(), ve, engine);
+        return Errors.printMessage(ast.topHead(), ve, engine);
       } catch (RuntimeException rex) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
@@ -993,7 +994,7 @@ public class HypergeometricFunctions {
               return res;
             }
           } catch (ValidateException ve) {
-            return IOFunctions.printMessage(ast.topHead(), ve, engine);
+            return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
@@ -1028,7 +1029,7 @@ public class HypergeometricFunctions {
         LOGGER.debug("Hypergeometric2F1.evaluate() failed", te);
         return te.getValue();
       } catch (ValidateException ve) {
-        return IOFunctions.printMessage(ast.topHead(), ve, engine);
+        return Errors.printMessage(ast.topHead(), ve, engine);
       } catch (RuntimeException rex) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
@@ -1151,7 +1152,7 @@ public class HypergeometricFunctions {
           }
 
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -1230,7 +1231,7 @@ public class HypergeometricFunctions {
             return F.complexNum(HypergeometricJS.hypergeometricU(new Complex(aDouble),
                 new Complex(bDouble), new Complex(zDouble)));
           } catch (ValidateException ve) {
-            IOFunctions.printMessage(ast.topHead(), ve, engine);
+            Errors.printMessage(ast.topHead(), ve, engine);
           }
           Complex ac = a.evalfc();
           Complex bc = b.evalfc();
@@ -1241,7 +1242,7 @@ public class HypergeometricFunctions {
         LOGGER.debug("HypergeometricU.evaluate() failed", te);
         return te.getValue();
       } catch (ValidateException ve) {
-        return IOFunctions.printMessage(ast.topHead(), ve, engine);
+        return Errors.printMessage(ast.topHead(), ve, engine);
       } catch (RuntimeException rex) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
@@ -1346,7 +1347,7 @@ public class HypergeometricFunctions {
           LOGGER.debug("LogIntegral.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -1441,7 +1442,7 @@ public class HypergeometricFunctions {
           LOGGER.debug("SinIntegral.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
@@ -1516,7 +1517,7 @@ public class HypergeometricFunctions {
           LOGGER.debug("SinhIntegral.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
@@ -1574,7 +1575,7 @@ public class HypergeometricFunctions {
             return F.complexNum(HypergeometricJS.whittakerM(new Complex(kDouble),
                 new Complex(mDouble), new Complex(zDouble)));
           } catch (ValidateException ve) {
-            IOFunctions.printMessage(ast.topHead(), ve, engine);
+            Errors.printMessage(ast.topHead(), ve, engine);
           }
           Complex kc = k.evalfc();
           Complex mc = m.evalfc();
@@ -1585,7 +1586,7 @@ public class HypergeometricFunctions {
           LOGGER.debug("WhittakerM.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }

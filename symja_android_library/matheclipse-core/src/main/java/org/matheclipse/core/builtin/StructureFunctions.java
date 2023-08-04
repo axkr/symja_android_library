@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.EvalHistory;
@@ -190,7 +191,7 @@ public class StructureFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.argSize() < 2 || ast.argSize() > 4) {
-        return IOFunctions.printArgMessage(ast, ARGS_2_4, engine);
+        return Errors.printArgMessage(ast, ARGS_2_4, engine);
       }
       IASTAppendable evaledAST = ast.copyAppendable();
       evaledAST.setArgs(evaledAST.size(), (int i) -> engine.evaluate(evaledAST.get(i)));
@@ -206,7 +207,7 @@ public class StructureFunctions {
         }
       } else {
         if (ast.argSize() == 4) {
-          return IOFunctions.printArgMessage(ast, ARGS_2_3, engine);
+          return Errors.printArgMessage(ast, ARGS_2_3, engine);
         }
       }
 
@@ -249,7 +250,7 @@ public class StructureFunctions {
         }
       } catch (final ValidateException ve) {
         // see level specification
-        return IOFunctions.printMessage(S.Apply, ve, engine);
+        return Errors.printMessage(S.Apply, ve, engine);
       }
       return F.NIL;
     }
@@ -531,7 +532,7 @@ public class StructureFunctions {
         return F.NIL;
       }
       // Nonatomic expression expected at position `1` in `2`.
-      return IOFunctions.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
+      return Errors.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
     }
 
     @Override
@@ -648,7 +649,7 @@ public class StructureFunctions {
           IAST symbolSlots = arg1.makeList();
           if (symbolSlots.size() > astEvaled.size()) {
             // To many parameters in `1` to be filled from `2`.
-            return IOFunctions.printMessage(S.Function, "fpct", F.list(symbolSlots, function),
+            return Errors.printMessage(S.Function, "fpct", F.list(symbolSlots, function),
                 engine);
           }
           java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables =
@@ -673,7 +674,7 @@ public class StructureFunctions {
     private static boolean validateArgs(EvalEngine engine, final IAST function) {
       if (function.argSize() > 3 || function.argSize() <= 0) {
         // `1` called with `2` arguments; between `3` and `4` arguments are expected.
-        IOFunctions.printMessage(S.Function, "argb",
+        Errors.printMessage(S.Function, "argb",
             F.List(S.Function, F.ZZ(function.argSize()), F.C1, F.C3), engine);
         return false;
       }
@@ -684,13 +685,13 @@ public class StructureFunctions {
           for (int i = 1; i < listOfSymbols.size(); i++) {
             if (!listOfSymbols.get(i).isSymbol()) {
               // Parameter specification `1` in `2` should be a symbol or a list of symbols.
-              IOFunctions.printMessage(S.Function, "flpar", F.List(arg1, function), engine);
+              Errors.printMessage(S.Function, "flpar", F.List(arg1, function), engine);
               return false;
             }
           }
         } else if (!arg1.isSymbol()) {
           // Parameter specification `1` in `2` should be a symbol or a list of symbols.
-          IOFunctions.printMessage(S.Function, "flpar", F.List(arg1, function), engine);
+          Errors.printMessage(S.Function, "flpar", F.List(arg1, function), engine);
         }
       }
       return true;
@@ -995,7 +996,7 @@ public class StructureFunctions {
               return arg2;
             }
           } catch (final ValidateException ve) {
-            return IOFunctions.printMessage(ast.topHead(), ve, engine);
+            return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException ae) {
             LOGGER.debug("MapAt.evaluate() failed", ae);
           }
@@ -1165,7 +1166,7 @@ public class StructureFunctions {
       }
       if (arg2.isAssociation()) {
         // `1` currently not supported in `2`.
-        return IOFunctions.printMessage(ast.topHead(), "unsupported",
+        return Errors.printMessage(ast.topHead(), "unsupported",
             F.List(S.Association, S.MapIndexed), engine);
       }
       if (arg2.isAST()) {
@@ -1580,7 +1581,7 @@ public class StructureFunctions {
         IInteger depth = (IInteger) ast.arg3();
         if (depth.isNegative()) {
           // Non-negative integer expected.
-          return IOFunctions.printMessage(ast.topHead(), "intnn", F.CEmptyList, engine);
+          return Errors.printMessage(ast.topHead(), "intnn", F.CEmptyList, engine);
           // LOGGER.log(
           // engine.getLogLevel(), "Non-negative integer expected at position 3 in
           // Operate()");
@@ -1734,7 +1735,7 @@ public class StructureFunctions {
       if (ast.isAST1()) {
         int value = ast.arg1().toIntDefault();
         if (value < 0) {
-          return IOFunctions.printMessage(ast.topHead(), "intnn", F.CEmptyList, newEngine);
+          return Errors.printMessage(ast.topHead(), "intnn", F.CEmptyList, newEngine);
         }
         if (value > 0) {
           return F.ZZ(value);
@@ -1928,7 +1929,7 @@ public class StructureFunctions {
         }
       } else {
         // Nonatomic expression expected at position `1` in `2`.
-        return IOFunctions.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
+        return Errors.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
       }
 
       return F.NIL;
@@ -2015,10 +2016,10 @@ public class StructureFunctions {
             });
           } else {
             // Nonatomic expression expected at position `1` in `2`.
-            return IOFunctions.printMessage(S.SortBy, "normal", F.List(F.C1, ast), engine);
+            return Errors.printMessage(S.SortBy, "normal", F.List(F.C1, ast), engine);
           }
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -2213,7 +2214,7 @@ public class StructureFunctions {
           } else {
             if (listLength != ((IAST) list.get(i)).argSize()) {
               // Objects of unequal length in `1` cannot be combined.
-              IOFunctions.printMessage(S.Thread, "tdlen", F.list(list), EvalEngine.get());
+              Errors.printMessage(S.Thread, "tdlen", F.list(list), EvalEngine.get());
               listLength = -1;
               return F.NIL;
               // for loop

@@ -3,8 +3,8 @@ package org.matheclipse.core.sympy.series;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.BuiltInDummy;
@@ -38,7 +38,7 @@ public class Formal {
       int n = ast.toIntDefault();
       if (n < 0) {
         // Non-negative machine-sized integer expected at position `2` in `1`.
-        return IOFunctions.printMessage(COEFF, "intnm", F.List(F.C3, ast), engine);
+        return Errors.printMessage(COEFF, "intnm", F.List(F.C3, ast), engine);
       }
       if (p.isPolynomial(x) && n >= 0) {
         return Expr.coeff(p, x, n, false, true);

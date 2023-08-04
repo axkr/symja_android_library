@@ -2,7 +2,7 @@ package org.matheclipse.core.generic;
 
 import java.util.function.Function;
 import org.hipparchus.analysis.MultivariateFunction;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
@@ -33,7 +33,7 @@ public class MultiVariateNumerical implements MultivariateFunction {
       if (!x.isVariable() || x.isBuiltInSymbol()) {
         // Cannot assign to raw object `1`.
         throw new ArgumentTypeException(
-            IOFunctions.getMessage("setraw", F.list(x), EvalEngine.get()));
+            Errors.getMessage("setraw", F.list(x), EvalEngine.get()));
       }
       return false;
     });

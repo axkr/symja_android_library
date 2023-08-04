@@ -1,8 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
 import org.hipparchus.complex.Complex;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -23,7 +23,7 @@ public class InverseFourier extends AbstractFunctionEvaluator {
       if (expr.isVector() >= 0) {
         final int n = ((IAST) expr).argSize();
         if (n == 0 || 0 != (n & (n - 1))) {
-          return IOFunctions.printMessage(S.InverseFourier, "vpow2", F.list(expr), engine);
+          return Errors.printMessage(S.InverseFourier, "vpow2", F.list(expr), engine);
         }
         IExpr result = fourier((IAST) expr, -1);
         if (result.isPresent()) {
@@ -34,7 +34,7 @@ public class InverseFourier extends AbstractFunctionEvaluator {
       //
     }
     // Argument `1` is not a non-empty list or rectangular array of numeric quantities.
-    return IOFunctions.printMessage(S.InverseFourier, "fftl", F.list(expr), engine);
+    return Errors.printMessage(S.InverseFourier, "fftl", F.list(expr), engine);
   }
 
   /**

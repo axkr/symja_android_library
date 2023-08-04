@@ -33,6 +33,7 @@ import org.hipparchus.util.CombinatoricsUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -184,7 +185,7 @@ public final class NumberTheory {
         int n = arg1.toIntDefault();
         if (n < 0) {
           if (arg1.isNumber()) {
-            return IOFunctions.printMessage(S.BellB, "intnm", F.list(ast, F.C1), engine);
+            return Errors.printMessage(S.BellB, "intnm", F.list(ast, F.C1), engine);
           }
         }
         if (ast.isAST2()) {
@@ -711,7 +712,7 @@ public final class NumberTheory {
         // list only
         // containing positive integers.
         String message =
-            IOFunctions.getMessage("pilist", F.list(S.ChineseRemainder), EvalEngine.get());
+            Errors.getMessage("pilist", F.list(S.ChineseRemainder), EvalEngine.get());
         throw new ArgumentTypeException(message);
       }
       long modulus = primes[0];
@@ -720,7 +721,7 @@ public final class NumberTheory {
           // The arguments to `1` must be two lists of integers of identical length, with the second
           // list only containing positive integers.
           String message =
-              IOFunctions.getMessage("pilist", F.list(S.ChineseRemainder), EvalEngine.get());
+              Errors.getMessage("pilist", F.list(S.ChineseRemainder), EvalEngine.get());
           throw new ArgumentTypeException(message);
         }
         modulus = Math.multiplyExact(primes[i], modulus);
@@ -754,7 +755,7 @@ public final class NumberTheory {
         // list only
         // containing positive integers.
         String message =
-            IOFunctions.getMessage("pilist", F.list(S.ChineseRemainder), EvalEngine.get());
+            Errors.getMessage("pilist", F.list(S.ChineseRemainder), EvalEngine.get());
         throw new ArgumentTypeException(message);
       }
       BigInteger m = primes[0];
@@ -764,7 +765,7 @@ public final class NumberTheory {
           // list only
           // containing positive integers.
           String message =
-              IOFunctions.getMessage("pilist", F.list(S.ChineseRemainder), EvalEngine.get());
+              Errors.getMessage("pilist", F.list(S.ChineseRemainder), EvalEngine.get());
           throw new ArgumentTypeException(message);
         }
         m = primes[i].multiply(m);
@@ -1073,7 +1074,7 @@ public final class NumberTheory {
       IExpr arg1 = ast.arg1();
       if (arg1.isComplex() || arg1.isComplexNumeric()) {
         // The value `1` is not a real number.
-        return IOFunctions.printMessage(S.ContinuedFraction, "realx", F.list(arg1), engine);
+        return Errors.printMessage(S.ContinuedFraction, "realx", F.list(arg1), engine);
       }
 
       int maxIterations = Integer.MAX_VALUE;
@@ -1082,7 +1083,7 @@ public final class NumberTheory {
           maxIterations = ast.arg2().toIntDefault();
           if (maxIterations <= 0) {
             // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-            return IOFunctions.printMessage(S.ContinuedFraction, "intpm", F.list(ast, F.C2),
+            return Errors.printMessage(S.ContinuedFraction, "intpm", F.list(ast, F.C2),
                 engine);
           }
         } else {
@@ -2789,7 +2790,7 @@ public final class NumberTheory {
             if (period.isNonEmptyList()) {
               if (!((IAST) period).forAll(x -> x.isInteger())) {
                 // Unable to determine the appropriate root for the periodic continued fraction.
-                return IOFunctions.printMessage(S.FromContinuedFraction, "root", F.CEmptyList,
+                return Errors.printMessage(S.FromContinuedFraction, "root", F.CEmptyList,
                     engine);
               }
               boolean nonNegative = ((IAST) period).forAll(x -> x.isNonNegativeResult());
@@ -2813,7 +2814,7 @@ public final class NumberTheory {
                 }
               }
               // Unable to determine the appropriate root for the periodic continued fraction.
-              return IOFunctions.printMessage(S.FromContinuedFraction, "root", F.CEmptyList,
+              return Errors.printMessage(S.FromContinuedFraction, "root", F.CEmptyList,
                   engine);
             }
 
@@ -2888,7 +2889,7 @@ public final class NumberTheory {
         }
         return result;
       } catch (ValidateException ve) {
-        IOFunctions.printMessage(S.FromContinuedFraction, ve, engine);
+        Errors.printMessage(S.FromContinuedFraction, ve, engine);
         return F.NIL;
       }
     }
@@ -3048,7 +3049,7 @@ public final class NumberTheory {
           int n = arg3.toIntDefault(-1);
           if (n <= 0) {
             // Positive integer expected at position `2` in `1`.
-            return IOFunctions.printMessage(S.LinearRecurrence, "intp", F.List(ast, F.C3), engine);
+            return Errors.printMessage(S.LinearRecurrence, "intp", F.List(ast, F.C3), engine);
           }
           return linearRecurrence(list1, list2, n, ast, engine);
         }
@@ -3057,7 +3058,7 @@ public final class NumberTheory {
           if (n != Integer.MIN_VALUE) {
             if (n < 0) {
               // Positive integer expected at position `2` in `1`.
-              return IOFunctions.printMessage(S.LinearRecurrence, "intp", F.List(arg3, F.C1),
+              return Errors.printMessage(S.LinearRecurrence, "intp", F.List(arg3, F.C1),
                   engine);
             }
             IAST result = linearRecurrence(list1, list2, n, ast, engine);
@@ -3485,7 +3486,7 @@ public final class NumberTheory {
       if (arg1.isInteger() && arg2.isInteger()) {
         if (arg2.isZero()) {
           // Nonzero integer expected at position `1` in `2`.
-          return IOFunctions.printMessage(S.ModularInverse, "intnz", F.List(F.C2, ast), engine);
+          return Errors.printMessage(S.ModularInverse, "intnz", F.List(F.C2, ast), engine);
         }
         java.math.BigInteger k = ((IInteger) arg1).toBigNumerator();
         java.math.BigInteger n = ((IInteger) arg2).toBigNumerator();
@@ -3496,12 +3497,12 @@ public final class NumberTheory {
           return F.ZZ(k.modInverse(n));
         } catch (ArithmeticException aex) {
           // `1` is not invertible modulo `2`.
-          return IOFunctions.printMessage(S.ModularInverse, "ninv", F.List(arg1, arg2), engine);
+          return Errors.printMessage(S.ModularInverse, "ninv", F.List(arg1, arg2), engine);
         }
       }
       // TODO add gaussian integers
       // The `1` arguments to `2` must be ordinary integers.
-      return IOFunctions.printMessage(S.ModularInverse, "minv", F.List(F.C2, S.ModularInverse),
+      return Errors.printMessage(S.ModularInverse, "minv", F.List(F.C2, S.ModularInverse),
           engine);
     }
 
@@ -3813,19 +3814,19 @@ public final class NumberTheory {
         BigInteger primeBase = ((IInteger) ast.arg1()).toBigNumerator();
         if (primeBase.compareTo(BigInteger.ZERO) < 0) {
           // Non-negative integer expected.
-          return IOFunctions.printMessage(S.NextPrime, "intnn", F.CEmptyList, engine);
+          return Errors.printMessage(S.NextPrime, "intnn", F.CEmptyList, engine);
         }
         return F.ZZ(primeBase.nextProbablePrime());
       } else if (ast.isAST2() && ast.arg1().isInteger() && ast.arg2().isInteger()) {
         BigInteger primeBase = ((IInteger) ast.arg1()).toBigNumerator();
         if (primeBase.compareTo(BigInteger.ZERO) < 0) {
           // Non-negative integer expected.
-          return IOFunctions.printMessage(S.NextPrime, "intnn", F.CEmptyList, engine);
+          return Errors.printMessage(S.NextPrime, "intnn", F.CEmptyList, engine);
         }
         final int n = ast.arg2().toIntDefault();
         if (n < 0) {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return IOFunctions.printMessage(S.NextPrime, "intpm", F.list(ast, F.C2), engine);
+          return Errors.printMessage(S.NextPrime, "intpm", F.list(ast, F.C2), engine);
         }
 
         int iterationLimit = EvalEngine.get().getIterationLimit();
@@ -4253,11 +4254,11 @@ public final class NumberTheory {
         int nthPrime = ((IInteger) ast.arg1()).toIntDefault();
         if (nthPrime <= 0) {
           // Positive integer argument expected in `1`.
-          return IOFunctions.printMessage(ast.topHead(), "intpp", F.list(ast), engine);
+          return Errors.printMessage(ast.topHead(), "intpp", F.list(ast), engine);
         }
         if (nthPrime > 103000000) {
           // Maximum Prime limit `1` exceeded.
-          return IOFunctions.printMessage(ast.topHead(), "zzprime", F.list(ast.arg1()), engine);
+          return Errors.printMessage(ast.topHead(), "zzprime", F.list(ast.arg1()), engine);
         }
         try {
           return F.ZZ(Primality.prime(nthPrime));

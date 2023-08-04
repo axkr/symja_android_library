@@ -13,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -125,7 +126,7 @@ public class JavaFunctions {
         String str = arg2.toString().trim();
         if (str.length() == 0) {
           // `1`
-          IOFunctions.printMessage(ast.topHead(), "error",
+          Errors.printMessage(ast.topHead(), "error",
               F.List(F.stringx("ClassNotFoundException: \"" + str + "\"")), engine);
           return F.False;
         }
@@ -136,7 +137,7 @@ public class JavaFunctions {
           arg2 = JavaClassExpr.newInstance(str, Config.URL_CLASS_LOADER);
         } catch (StackOverflowError | ClassNotFoundException ex) {
           // `1`
-          IOFunctions.printMessage(ast.topHead(), "error",
+          Errors.printMessage(ast.topHead(), "error",
               F.List(F.stringx("ClassNotFoundException: \"" + arg2 + "\"")), engine);
           return F.False;
         }

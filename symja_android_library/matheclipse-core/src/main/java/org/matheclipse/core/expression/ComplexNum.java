@@ -1,6 +1,5 @@
 package org.matheclipse.core.expression;
 
-import static org.matheclipse.core.expression.F.num;
 import java.util.function.Function;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -8,8 +7,8 @@ import org.apfloat.ApfloatRuntimeException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.form.DoubleToMMA;
@@ -386,7 +385,7 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr complexArg() {
-    return num(fComplex.getArgument());
+    return Num.valueOf(fComplex.getArgument());
   }
 
   @Override
@@ -828,12 +827,12 @@ public class ComplexNum implements IComplexNum {
     if (Complex.equals(fComplex, Complex.ZERO, Config.DOUBLE_EPSILON)) {
       IReal sn = val.re();
       if (sn.isNegative()) {
-        IOFunctions.printMessage(S.Power, "infy", F.list(F.Power(F.C0, sn)), EvalEngine.get());
+        Errors.printMessage(S.Power, "infy", F.list(F.Power(F.C0, sn)), EvalEngine.get());
         // EvalEngine.get().printMessage("Infinite expression 0^(negative number)");
         return INF;
       }
       if (sn.isZero()) {
-        IOFunctions.printMessage(S.Power, "indet", F.list(F.Power(F.C0, F.C0)), EvalEngine.get());
+        Errors.printMessage(S.Power, "indet", F.list(F.Power(F.C0, F.C0)), EvalEngine.get());
         // EvalEngine.get().printMessage("Infinite expression 0^0.");
         return NaN;
       }

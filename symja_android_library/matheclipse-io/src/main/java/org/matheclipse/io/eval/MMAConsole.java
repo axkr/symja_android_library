@@ -12,7 +12,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalControlledCallable;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
@@ -210,7 +210,7 @@ public class MMAConsole {
     if (outputExpression.length() > 0) {
       stdout.print("Out[" + COUNTER + "]= ");
       stdout.flush();
-      stdout.println(IOFunctions.shorten(outputExpression, 1000));
+      stdout.println(Errors.shorten(outputExpression, 1000));
       stdout.flush();
     }
     return outputExpression;

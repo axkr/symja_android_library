@@ -10,9 +10,9 @@ import java.util.Map;
 import java.util.function.Function;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.AttributeFunctions;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.Object2Expr;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.RuleCreationError;
@@ -968,7 +968,7 @@ public class Symbol implements ISymbol, Serializable {
       }
     }
     // `1` is not a variable with a value, so its value cannot be changed.
-    IOFunctions.printMessage(functionSymbol, "rvalue", F.list(this), engine);
+    Errors.printMessage(functionSymbol, "rvalue", F.list(this), engine);
     // engine.printMessage(
     // functionSymbol.toString()
     // + ": "

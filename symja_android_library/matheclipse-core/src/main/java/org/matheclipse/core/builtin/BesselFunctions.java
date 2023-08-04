@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.builtin.functions.BesselJS;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -396,7 +397,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -564,7 +565,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -660,7 +661,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -757,7 +758,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -843,7 +844,7 @@ public class BesselFunctions {
             }
 
           } catch (ValidateException ve) {
-            return IOFunctions.printMessage(ast.topHead(), ve, engine);
+            return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
@@ -896,7 +897,7 @@ public class BesselFunctions {
             }
 
           } catch (ValidateException ve) {
-            return IOFunctions.printMessage(ast.topHead(), ve, engine);
+            return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
@@ -981,7 +982,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
@@ -1053,7 +1054,7 @@ public class BesselFunctions {
           // return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
           return functionExpand(ast, engine);
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
@@ -1104,7 +1105,7 @@ public class BesselFunctions {
           return functionExpand(ast, engine);
         } catch (ValidateException ve) {
           ve.printStackTrace();
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
@@ -1184,7 +1185,7 @@ public class BesselFunctions {
           }
 
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
@@ -1219,7 +1220,7 @@ public class BesselFunctions {
           return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
 
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;

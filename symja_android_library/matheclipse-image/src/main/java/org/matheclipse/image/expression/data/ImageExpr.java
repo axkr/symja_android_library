@@ -9,9 +9,9 @@ import java.lang.ref.SoftReference;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import javax.imageio.ImageIO;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.convert.RGBColor;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -170,7 +170,7 @@ final public class ImageExpr extends DataExpr<byte[]> {
       String html = JSBuilder.IMAGE_TEMPLATE;
       String[] argsToRender = new String[3];
       argsToRender[0] = outputStream.toString();
-      return IOFunctions.templateRender(html, argsToRender);
+      return Errors.templateRender(html, argsToRender);
     } catch (IOException ioex) {
       return "IOException";
     }

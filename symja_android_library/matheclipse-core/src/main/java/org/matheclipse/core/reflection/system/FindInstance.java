@@ -3,7 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.builtin.BooleanFunctions;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -92,7 +92,7 @@ public class FindInstance extends Solve {
       if (argSize >= 3) {
         if (!ast.arg3().isSymbol()) {
           // Warning: `1` is not a valid domain specification.
-          IOFunctions.printMessage(ast.topHead(), "bdomv", F.List(ast.arg3()), engine);
+          Errors.printMessage(ast.topHead(), "bdomv", F.List(ast.arg3()), engine);
         } else {
           if (ast.arg3() == S.Booleans || formula) {
             return BooleanFunctions.solveInstances(ast.arg1(), vars, maxChoices);
@@ -101,7 +101,7 @@ public class FindInstance extends Solve {
           }
           if (domain != S.Reals && domain != S.Complexes) {
             // Warning: `1` is not a valid domain specification.
-            IOFunctions.printMessage(ast.topHead(), "bdomv", F.List(ast.arg3()), engine);
+            Errors.printMessage(ast.topHead(), "bdomv", F.List(ast.arg3()), engine);
           }
         }
       }
@@ -109,7 +109,7 @@ public class FindInstance extends Solve {
       SolveData solveData = new Solve.SolveData(options);
       return solveData.solveEquations(termsEqualZeroList, F.List(), vars, maxChoices, engine);
     } catch (final ValidateException ve) {
-      return IOFunctions.printMessage(ast.topHead(), ve, engine);
+      return Errors.printMessage(ast.topHead(), ve, engine);
     } catch (RuntimeException rex) {
       LOGGER.debug("FindInstance.evaluate() failed", rex);
     }

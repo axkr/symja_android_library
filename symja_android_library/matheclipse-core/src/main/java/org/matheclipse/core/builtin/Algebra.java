@@ -38,6 +38,7 @@ import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
@@ -2821,7 +2822,7 @@ public class Algebra {
       IExpr arg1 = ast.arg1();
       if (!arg1.isFree(S.List)) {
         // `1` is not a polynomial.
-        return IOFunctions.printMessage(ast.topHead(), "poly", F.List(arg1), engine);
+        return Errors.printMessage(ast.topHead(), "poly", F.List(arg1), engine);
       }
       VariablesSet eVar = null;
       IAST variableList = F.NIL;
@@ -3010,17 +3011,17 @@ public class Algebra {
       IAST variables = VariablesSet.getAlgebraicVariables(ast.arg3());
       if (variables.size() != 2) {
         // `1` is not a valid variable.
-        return IOFunctions.printMessage(ast.topHead(), "ivar", F.list(ast.arg3()), engine);
+        return Errors.printMessage(ast.topHead(), "ivar", F.list(ast.arg3()), engine);
       }
       IExpr expr1 = F.evalExpandAll(ast.arg1(), engine);
       IExpr expr2 = F.evalExpandAll(ast.arg2(), engine);
       if (!expr1.isPolynomialStruct()) {
         // `1` is not a polynomial.
-        return IOFunctions.printMessage(ast.topHead(), "poly", F.list(expr1), engine);
+        return Errors.printMessage(ast.topHead(), "poly", F.list(expr1), engine);
       }
       if (!expr2.isPolynomialStruct()) {
         // `1` is not a polynomial.
-        return IOFunctions.printMessage(ast.topHead(), "poly", F.list(expr2), engine);
+        return Errors.printMessage(ast.topHead(), "poly", F.list(expr2), engine);
       }
 
       if (ast.size() == 5) {
@@ -3594,11 +3595,11 @@ public class Algebra {
           }
           if (!arg1.isPolynomialStruct()) {
             // `1` is not a polynomial.
-            return IOFunctions.printMessage(ast.topHead(), "poly", F.list(arg1), engine);
+            return Errors.printMessage(ast.topHead(), "poly", F.list(arg1), engine);
           }
           if (!arg2.isPolynomialStruct()) {
             // `1` is not a polynomial.
-            return IOFunctions.printMessage(ast.topHead(), "poly", F.list(arg2), engine);
+            return Errors.printMessage(ast.topHead(), "poly", F.list(arg2), engine);
           }
           if (ast.size() == 5) {
             final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
@@ -3723,11 +3724,11 @@ public class Algebra {
       IExpr arg2 = ast.arg2();
       if (!arg1.isPolynomialStruct()) {
         // `1` is not a polynomial.
-        return IOFunctions.printMessage(ast.topHead(), "poly", F.list(arg1), engine);
+        return Errors.printMessage(ast.topHead(), "poly", F.list(arg1), engine);
       }
       if (!arg2.isPolynomialStruct()) {
         // `1` is not a polynomial.
-        return IOFunctions.printMessage(ast.topHead(), "poly", F.list(arg2), engine);
+        return Errors.printMessage(ast.topHead(), "poly", F.list(arg2), engine);
       }
 
       try {
@@ -3859,11 +3860,11 @@ public class Algebra {
       }
       if (!arg1.isPolynomialStruct()) {
         // `1` is not a polynomial.
-        return IOFunctions.printMessage(ast.topHead(), "poly", F.list(arg1), engine);
+        return Errors.printMessage(ast.topHead(), "poly", F.list(arg1), engine);
       }
       if (!arg2.isPolynomialStruct()) {
         // `1` is not a polynomial.
-        return IOFunctions.printMessage(ast.topHead(), "poly", F.list(arg2), engine);
+        return Errors.printMessage(ast.topHead(), "poly", F.list(arg2), engine);
       }
       try {
         if (ast.size() == 5) {
@@ -4593,7 +4594,7 @@ public class Algebra {
       }
       if (!arg.isPolynomialStruct()) {
         // `1` is not a polynomial.
-        IOFunctions.printMessage(ast.topHead(), "poly", F.list(arg), engine);
+        Errors.printMessage(ast.topHead(), "poly", F.list(arg), engine);
         return false;
       }
     }
@@ -5947,7 +5948,7 @@ public class Algebra {
         }
       } else {
         // `1` is not a valid variable.
-        IOFunctions.printMessage(S.General, "ivar", F.List(variable));
+        Errors.printMessage(S.General, "ivar", F.List(variable));
         return F.NIL;
       }
 

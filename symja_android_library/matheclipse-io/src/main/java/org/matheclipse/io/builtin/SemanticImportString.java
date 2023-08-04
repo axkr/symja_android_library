@@ -2,7 +2,7 @@ package org.matheclipse.io.builtin;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -60,7 +60,7 @@ public class SemanticImportString extends AbstractFunctionOptionEvaluator {
 
       if (!typeStr.equals("String") && typeStr.length() > 0) {
         // Interpreter type specification `1` is invalid.
-        IOFunctions.printMessage(S.SemanticImport, "intype", F.List(typeStr), engine);
+        Errors.printMessage(S.SemanticImport, "intype", F.List(typeStr), engine);
         return S.$Failed;
       }
 
@@ -104,7 +104,7 @@ public class SemanticImportString extends AbstractFunctionOptionEvaluator {
         return ASTDataset.newTablesawTable(table);
       }
       // Shape specification `1` is invalid.
-      IOFunctions.printMessage(S.SemanticImport, "shapespec", F.List(formShape), engine);
+      Errors.printMessage(S.SemanticImport, "shapespec", F.List(formShape), engine);
       return S.$Failed;
     } catch (Exception rex) {
       LOGGER.log(engine.getLogLevel(), "SemanticImportString ", rex);
@@ -114,7 +114,7 @@ public class SemanticImportString extends AbstractFunctionOptionEvaluator {
 
   private IExpr dsdelimFailed(final String delimiter, final EvalEngine engine) {
     // The delimiter specification is not valid.
-    IOFunctions.printMessage(S.SemanticImport, "dsdelim", F.List(delimiter), engine);
+    Errors.printMessage(S.SemanticImport, "dsdelim", F.List(delimiter), engine);
     return S.$Failed;
   }
 

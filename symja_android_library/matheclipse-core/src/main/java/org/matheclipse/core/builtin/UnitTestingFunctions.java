@@ -13,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -69,7 +70,7 @@ public class UnitTestingFunctions {
         }
         if (!(ast.arg1() instanceof IStringX)) {
           // String expected at position `1` in `2`.
-          return IOFunctions.printMessage(ast.topHead(), "string", F.CEmptyList, engine);
+          return Errors.printMessage(ast.topHead(), "string", F.CEmptyList, engine);
         }
         String arg1 = ast.arg1().toString();
         if (arg1.startsWith("https://") || arg1.startsWith("http://")) {
@@ -80,7 +81,7 @@ public class UnitTestingFunctions {
           } catch (MalformedURLException mue) {
             LOGGER.debug("TestReport.evaluate() failed", mue);
             // Cannot open `1`.
-            return IOFunctions.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
+            return Errors.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
           }
         }
         File file = new File(arg1);
@@ -94,7 +95,7 @@ public class UnitTestingFunctions {
           }
         }
         // Cannot open `1`.
-        return IOFunctions.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
+        return Errors.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
       }
       return F.NIL;
     }
@@ -108,7 +109,7 @@ public class UnitTestingFunctions {
       } catch (IOException e) {
         LOGGER.debug("TestReport.getFile() failed", e);
         // Cannot open `1`.
-        return IOFunctions.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
+        return Errors.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
       } finally {
         // engine.setPackageMode(packageMode);
       }
@@ -123,7 +124,7 @@ public class UnitTestingFunctions {
       } catch (IOException e) {
         LOGGER.debug("TestReport.getURL() failed", e);
         // Cannot open `1`.
-        return IOFunctions.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
+        return Errors.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
       } finally {
         // engine.setPackageMode(packageMode);
       }

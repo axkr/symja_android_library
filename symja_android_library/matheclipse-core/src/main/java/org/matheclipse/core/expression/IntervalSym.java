@@ -5,7 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -181,7 +181,7 @@ public class IntervalSym {
         return F.NIL;
       }
       // The expression `1` is not a valid interval.
-      String str = IOFunctions.getMessage("nvld", F.list(arg), engine);
+      String str = Errors.getMessage("nvld", F.list(arg), engine);
       throw new ArgumentTypeException(str);
     }
     if (arg instanceof INum) {

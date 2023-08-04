@@ -2,7 +2,7 @@ package org.matheclipse.core.generic;
 
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.ComplexNum;
@@ -31,12 +31,12 @@ public class BinaryNumerical implements BinaryOperator<IExpr> {
     if (!v1.isVariable() || v1.isBuiltInSymbol()) {
       // Cannot assign to raw object `1`.
       throw new ArgumentTypeException(
-          IOFunctions.getMessage("setraw", F.list(v1), EvalEngine.get()));
+          Errors.getMessage("setraw", F.list(v1), EvalEngine.get()));
     }
     if (!v2.isVariable() || v2.isBuiltInSymbol()) {
       // Cannot assign to raw object `1`.
       throw new ArgumentTypeException(
-          IOFunctions.getMessage("setraw", F.list(v2), EvalEngine.get()));
+          Errors.getMessage("setraw", F.list(v2), EvalEngine.get()));
     }
     variable1 = v1;
     variable2 = v2;

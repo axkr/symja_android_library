@@ -23,7 +23,6 @@ import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.convert.VariablesSet;
@@ -1015,7 +1014,7 @@ public class EvalEngine implements Serializable {
           }
         } catch (ValidateException ve) {
           ve.printStackTrace();
-          return IOFunctions.printMessage(ast.topHead(), ve, this);
+          return Errors.printMessage(ast.topHead(), ve, this);
         } catch (FlowControlException e) {
           throw e;
         } catch (SymjaMathException ve) {
@@ -1094,7 +1093,7 @@ public class EvalEngine implements Serializable {
           return null;
         }
         if (argSize < expected[0]) {
-          IOFunctions.printArgMessage(ast, expected, this);
+          Errors.printArgMessage(ast, expected, this);
           return null;
         }
         if (argSize > expected[0]) {
@@ -1104,7 +1103,7 @@ public class EvalEngine implements Serializable {
           }
         }
         if (argSize > expected[1]) {
-          IOFunctions.printArgMessage(ast, expected, this);
+          Errors.printArgMessage(ast, expected, this);
           return null;
         }
 
@@ -1134,9 +1133,9 @@ public class EvalEngine implements Serializable {
       if (expected.length == 2) {
         if (argSize < expected[0] || argSize > expected[1]) {
           if (argSize < expected[0]) {
-            IOFunctions.printArgMessage(ast, expected, this);
+            Errors.printArgMessage(ast, expected, this);
           } else if (argSize > expected[1]) {
-            IOFunctions.printArgMessage(ast, expected, this);
+            Errors.printArgMessage(ast, expected, this);
           }
         }
       }
@@ -1480,7 +1479,7 @@ public class EvalEngine implements Serializable {
       fQuietMode = quietMode;
     }
     if (Double.isNaN(defaultValue)) {
-      throw new ArgumentTypeException("Expression \"" + IOFunctions.shorten(expr)
+      throw new ArgumentTypeException("Expression \"" + Errors.shorten(expr)
           + "\" cannot be converted to a machine-sized double numeric value!");
     }
     return defaultValue;
@@ -1767,7 +1766,7 @@ public class EvalEngine implements Serializable {
             }
             if (LOGGER.isDebugEnabled() && temp.equals(result)) {
               // Endless iteration detected in `1` in evaluation loop.
-              IOFunctions.printMessage(result.topHead(), "itendless", F.list(temp), this);
+              Errors.printMessage(result.topHead(), "itendless", F.list(temp), this);
               IterationLimitExceeded.throwIt(fIterationLimit, result);
             }
             if (fOnOffMode) {
@@ -1788,7 +1787,7 @@ public class EvalEngine implements Serializable {
           throw new NullPointerException();
         }
         // `1`.
-        IOFunctions.printMessage(result.topHead(), "error", F.List(uoe.getMessage()), this);
+        Errors.printMessage(result.topHead(), "error", F.List(uoe.getMessage()), this);
         throw AbortException.ABORTED;
       } finally {
         stackPop();
@@ -1847,7 +1846,7 @@ public class EvalEngine implements Serializable {
             if (LOGGER.isDebugEnabled()) {
               if (temp.equals(result)) {
                 // Endless iteration detected in `1` in evaluation loop.
-                IOFunctions.printMessage(result.topHead(), "itendless", F.list(temp), this);
+                Errors.printMessage(result.topHead(), "itendless", F.list(temp), this);
                 IterationLimitExceeded.throwIt(fIterationLimit, result);
               }
             }
@@ -3503,7 +3502,7 @@ public class EvalEngine implements Serializable {
       } else {
         if (refArgSize[0] != ((IAST) expr).argSize()) {
           // tdlen: Objects of unequal length in `1` cannot be combined.
-          IOFunctions.printMessage(commandHead, messageShortcut, F.list(ast), EvalEngine.get());
+          Errors.printMessage(commandHead, messageShortcut, F.list(ast), EvalEngine.get());
           // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
           return true;
         }
@@ -3520,7 +3519,7 @@ public class EvalEngine implements Serializable {
         } else {
           if (refArgSize[0] != dimensions[0]) {
             // Objects of unequal length in `1` cannot be combined.
-            IOFunctions.printMessage(S.Thread, "tdlen", F.list(ast), EvalEngine.get());
+            Errors.printMessage(S.Thread, "tdlen", F.list(ast), EvalEngine.get());
             // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
             return true;
           }
@@ -3535,21 +3534,21 @@ public class EvalEngine implements Serializable {
         }
         if (refArgSize[0] != association.argSize()) {
           // tdlen: Objects of unequal length in `1` cannot be combined.
-          IOFunctions.printMessage(commandHead, messageShortcut, F.list(ast), EvalEngine.get());
+          Errors.printMessage(commandHead, messageShortcut, F.list(ast), EvalEngine.get());
           // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
           return true;
         }
         if (refAssociation[0] != null) {
           if (refAssociation[0].size() != association.size()) {
             // The arguments `1` and `2` in `3` are incompatible.
-            IOFunctions.printMessage(S.Association, "incmp",
+            Errors.printMessage(S.Association, "incmp",
                 F.List(refAssociation[0], association, ast), this);
             return true;
           }
           for (int i = 1; i < association.size(); i++) {
             if (!refAssociation[0].isKey(association.getRule(i).first())) {
               // The arguments `1` and `2` in `3` are incompatible.
-              IOFunctions.printMessage(S.Association, "incmp",
+              Errors.printMessage(S.Association, "incmp",
                   F.List(refAssociation[0], association, ast), this);
               return true;
             }

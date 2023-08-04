@@ -8,8 +8,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.RootsFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -285,7 +285,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
           return BooleanFunctions.equals((IAST) t);
         }
         // `1` is not a well-formed equation.
-        IOFunctions.printMessage(ast.topHead(), "eqf", F.list(t), engine);
+        Errors.printMessage(ast.topHead(), "eqf", F.list(t), engine);
         return null;
       });
     }
@@ -296,7 +296,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       // return equalList;
     }
     // `1` is not a well-formed equation.
-    return IOFunctions.printMessage(ast.topHead(), "eqf", F.list(arg), engine);
+    return Errors.printMessage(ast.topHead(), "eqf", F.list(arg), engine);
   }
 
   /**
@@ -528,7 +528,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
           solveData.solveRecursive(newList, F.CEmptyList, false, F.List(variable), engine);
       if (result.isListOfLists()) {
         // Inverse functions are being used. Values may be lost for multivalued inverses.
-        IOFunctions.printMessage(S.Solve, "ifun", F.CEmptyList, engine);
+        Errors.printMessage(S.Solve, "ifun", F.CEmptyList, engine);
         return listOfRulesToValues(result, variable, multipleValues);
       }
     }
@@ -571,7 +571,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             solveData.solveRecursive(newList, F.CEmptyList, false, F.List(variable), engine);
         if (result.isListOfLists()) {
           // Inverse functions are being used. Values may be lost for multivalued inverses.
-          IOFunctions.printMessage(S.Solve, "ifun", F.CEmptyList, engine);
+          Errors.printMessage(S.Solve, "ifun", F.CEmptyList, engine);
           return listOfRulesToValues(result, variable, multipleValues);
         }
       }
@@ -636,7 +636,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    * @param engine
    */
   private static void printIfunMessage(EvalEngine engine) {
-    IOFunctions.printMessage(S.InverseFunction, "ifun", F.CEmptyList, engine);
+    Errors.printMessage(S.InverseFunction, "ifun", F.CEmptyList, engine);
   }
 
   public Eliminate() {}

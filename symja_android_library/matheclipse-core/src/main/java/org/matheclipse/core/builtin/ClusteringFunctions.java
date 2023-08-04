@@ -13,6 +13,7 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.stat.StatUtils;
 import org.hipparchus.util.MathArrays;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -520,7 +521,7 @@ public class ClusteringFunctions {
           }
         }
       } catch (MathRuntimeException mrex) {
-        return IOFunctions.printMessage(ast.topHead(), mrex, engine);
+        return Errors.printMessage(ast.topHead(), mrex, engine);
       }
       return F.NIL;
     }

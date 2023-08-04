@@ -18,6 +18,7 @@ import org.hipparchus.optim.nonlinear.scalar.GoalType;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Expr2LP;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.exception.JASConversionException;
@@ -650,7 +651,7 @@ public class MinMaxFunctions {
             atse.printStackTrace();
           }
           // Unable to find the domain with the available methods.
-          return IOFunctions.printMessage(S.FunctionDomain, "nmet", F.CEmptyList, engine);
+          return Errors.printMessage(S.FunctionDomain, "nmet", F.CEmptyList, engine);
         }
       }
       return F.NIL;
@@ -908,7 +909,7 @@ public class MinMaxFunctions {
           }
         }
       } catch (ValidateException ve) {
-        return IOFunctions.printMessage(ast.topHead(), ve, engine);
+        return Errors.printMessage(ast.topHead(), ve, engine);
       } catch (org.hipparchus.exception.MathRuntimeException e) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
       }
@@ -1004,7 +1005,7 @@ public class MinMaxFunctions {
           }
         }
       } catch (ValidateException ve) {
-        return IOFunctions.printMessage(ast.topHead(), ve, engine);
+        return Errors.printMessage(ast.topHead(), ve, engine);
       } catch (org.hipparchus.exception.MathRuntimeException e) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
       }
@@ -1165,7 +1166,7 @@ public class MinMaxFunctions {
           if (c.isPossibleZero(false)) {
             if (d.isPossibleZero(false)) {
               // The `1` is not attained at any point satisfying the constraints.
-              return IOFunctions.printMessage(S.Maximize, "natt", F.List("maximum"));
+              return Errors.printMessage(S.Maximize, "natt", F.List("maximum"));
             } else {
               // linear
               return F.list(F.Piecewise(F.list(F.list(e, F.Equal(d, F.C0))), F.CInfinity), F.list(
@@ -1320,7 +1321,7 @@ public class MinMaxFunctions {
           if (c.isPossibleZero(false)) {
             if (d.isPossibleZero(false)) {
               // The `1` is not attained at any point satisfying the constraints.
-              return IOFunctions.printMessage(S.Minimize, "natt", F.List("minimum"));
+              return Errors.printMessage(S.Minimize, "natt", F.List("minimum"));
             } else {
               // linear
               return F.list(F.Piecewise(F.list(F.list(e, F.Equal(d, F.C0))), F.CNInfinity), F.list(

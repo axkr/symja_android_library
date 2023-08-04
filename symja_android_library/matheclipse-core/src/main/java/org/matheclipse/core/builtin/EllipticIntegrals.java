@@ -7,6 +7,7 @@ import org.hipparchus.special.elliptic.carlson.CarlsonEllipticIntegral;
 import org.matheclipse.core.builtin.functions.EllipticFunctionsJS;
 import org.matheclipse.core.builtin.functions.EllipticIntegralsJS;
 import org.matheclipse.core.convert.Object2Expr;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -986,7 +987,7 @@ public class EllipticIntegrals {
                 return F.complexNum(
                     EllipticFunctionsJS.jacobiTheta(a, x.evalfc(), m.evalfc()));
               } catch (ValidateException ve) {
-                return IOFunctions.printMessage(ast.topHead(), ve, engine);
+                return Errors.printMessage(ast.topHead(), ve, engine);
               } catch (RuntimeException rex) {
                 LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
               }
@@ -2114,7 +2115,7 @@ public class EllipticIntegrals {
                 EllipticFunctionsJS.weierstrassInvariants(g2.evalfc(), g3.evalfc());
             return Object2Expr.convertComplex(false, invariants);
           } catch (ValidateException ve) {
-            return IOFunctions.printMessage(ast.topHead(), ve, engine);
+            return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }

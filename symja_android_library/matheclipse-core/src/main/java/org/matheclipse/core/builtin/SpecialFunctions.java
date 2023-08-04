@@ -38,6 +38,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.builtin.functions.ZetaJS;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
@@ -164,7 +165,7 @@ public class SpecialFunctions {
           LOGGER.debug("Beta.evaluate() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
           // LOGGER.debug("Beta.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
@@ -217,7 +218,7 @@ public class SpecialFunctions {
         LOGGER.debug("Beta.evaluate() failed", te);
         return te.getValue();
       } catch (ValidateException ve) {
-        return IOFunctions.printMessage(ast.topHead(), ve, engine);
+        return Errors.printMessage(ast.topHead(), ve, engine);
         // LOGGER.debug("Beta.evaluate() failed", ve);
       } catch (RuntimeException rex) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
@@ -663,10 +664,10 @@ public class SpecialFunctions {
         }
         return gammaRegularized2(a, z1, ast, engine);
       } catch (MathIllegalArgumentException miae) {
-        return IOFunctions.printMessage(S.GammaRegularized, "argillegal",
+        return Errors.printMessage(S.GammaRegularized, "argillegal",
             F.list(F.stringx(miae.getMessage()), ast), engine);
       } catch (RuntimeException rex) {
-        return IOFunctions.printMessage(S.GammaRegularized, "argillegal",
+        return Errors.printMessage(S.GammaRegularized, "argillegal",
             F.list(F.stringx(rex.getMessage()), ast), engine);
       }
     }
@@ -701,7 +702,7 @@ public class SpecialFunctions {
           LOGGER.debug("GammaRegularized.gammaRegularized2() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
@@ -747,7 +748,7 @@ public class SpecialFunctions {
           LOGGER.debug("GammaRegularized.gammaRegularzed3() failed", te);
           return te.getValue();
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
@@ -925,7 +926,7 @@ public class SpecialFunctions {
             }
           }
         } catch (ValidateException ve) {
-          return IOFunctions.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (ThrowException te) {
           LOGGER.debug("HurwitzZeta.evaluate() failed", te);
           return te.getValue();
@@ -1114,10 +1115,10 @@ public class SpecialFunctions {
           }
         }
       } catch (MathIllegalArgumentException miae) {
-        return IOFunctions.printMessage(S.InverseBetaRegularized, "argillegal",
+        return Errors.printMessage(S.InverseBetaRegularized, "argillegal",
             F.list(F.stringx(miae.getMessage()), ast), engine);
       } catch (RuntimeException rex) {
-        return IOFunctions.printMessage(S.InverseBetaRegularized, "argillegal",
+        return Errors.printMessage(S.InverseBetaRegularized, "argillegal",
             F.list(F.stringx(rex.getMessage()), ast), engine);
       }
       return F.NIL;
@@ -1617,7 +1618,7 @@ public class SpecialFunctions {
               }
             }
           } catch (ValidateException ve) {
-            return IOFunctions.printMessage(ast.topHead(), ve, engine);
+            return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (ThrowException te) {
             LOGGER.debug("PolyGamma.evaluate() failed", te);
             return te.getValue();
@@ -1835,7 +1836,7 @@ public class SpecialFunctions {
         ki = k.toIntDefault();
         if (ki == Integer.MIN_VALUE) {
           // Machine-sized integer expected at position `2` in `1`.
-          return IOFunctions.printMessage(S.ProductLog, "intm", F.list(F.ProductLog(k, z), F.C1),
+          return Errors.printMessage(S.ProductLog, "intm", F.list(F.ProductLog(k, z), F.C1),
               EvalEngine.get());
         }
         // ProductLog(0,z_) := ProductLog(z)
@@ -1895,7 +1896,7 @@ public class SpecialFunctions {
       IExpr n = ast.arg1();
       if ((n.isNumber() && !n.isInteger()) || n.isNegativeResult()) {
         // Non-negative machine-sized integer expected at position `2` in `1`.
-        return IOFunctions.printMessage(S.StieltjesGamma, "intnm", F.List(ast, F.C1), engine);
+        return Errors.printMessage(S.StieltjesGamma, "intnm", F.List(ast, F.C1), engine);
       }
       if (ast.isAST2()) {
         IExpr a = ast.arg2();

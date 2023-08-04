@@ -15,8 +15,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.builtin.NumberTheory;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
@@ -273,7 +273,7 @@ public class Integrate extends AbstractFunctionEvaluator {
       final IExpr x = ast.arg2();
       if (!x.isVariable()) {
         // `1` is not a valid variable.
-        return IOFunctions.printMessage(ast.topHead(), "ivar", F.list(x), engine);
+        return Errors.printMessage(ast.topHead(), "ivar", F.list(x), engine);
       }
       if (arg1.isNumber()) {
         // Integrate[x_?NumberQ,y_Symbol] -> x*y
@@ -710,7 +710,7 @@ public class Integrate extends AbstractFunctionEvaluator {
               if (temp.equals(ast)) {
                 if (LOGGER.isDebugEnabled()) {
                   engine.setQuietMode(false);
-                  IOFunctions.printMessage(S.Integrate, "rubiendless", F.list(temp), engine);
+                  Errors.printMessage(S.Integrate, "rubiendless", F.list(temp), engine);
                 }
                 return F.NIL;
               }

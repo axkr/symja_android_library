@@ -1,6 +1,6 @@
 package org.matheclipse.core.eval.util;
 
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
@@ -62,7 +62,7 @@ public class SetSpecification extends SetSpec {
             fMaxCount = i.toBigNumerator().intValue();
             fMinCount = i.toBigNumerator().intValue();
             if (fMaxCount < fMinCount) {
-              String str = IOFunctions.getMessage("level", F.list(expr), EvalEngine.get());
+              String str = Errors.getMessage("level", F.list(expr), EvalEngine.get());
               throw new ArgumentTypeException(str);
               // throw new MathException("Invalid Level specification: " + expr.toString());
             }
@@ -78,7 +78,7 @@ public class SetSpecification extends SetSpec {
               fMinCount = 0;
               fMaxCount = Integer.MAX_VALUE;
             } else if (i0.isNegative()) {
-              String str = IOFunctions.getMessage("level", F.list(expr), EvalEngine.get());
+              String str = Errors.getMessage("level", F.list(expr), EvalEngine.get());
               throw new ArgumentTypeException(str);
               // throw new MathException("Invalid Level specification: " + expr.toString());
             } else if (i1.isNegative()) {
@@ -92,7 +92,7 @@ public class SetSpecification extends SetSpec {
           } else if ((lst.arg1() instanceof IInteger) && (lst.arg2().isInfinity())) {
             final IInteger i0 = (IInteger) lst.arg1();
             if (i0.isNegative()) {
-              String str = IOFunctions.getMessage("level", F.list(expr), EvalEngine.get());
+              String str = Errors.getMessage("level", F.list(expr), EvalEngine.get());
               throw new ArgumentTypeException(str);
               // throw new MathException("Invalid Level specification: " + expr.toString());
             } else {
@@ -109,7 +109,7 @@ public class SetSpecification extends SetSpec {
       fMinCount = 1;
       return;
     }
-    String str = IOFunctions.getMessage("level", F.list(expr), EvalEngine.get());
+    String str = Errors.getMessage("level", F.list(expr), EvalEngine.get());
     throw new ArgumentTypeException(str);
     // throw new MathException("Invalid Level specification: " + expr.toString());
   }

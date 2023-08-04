@@ -6,6 +6,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -123,11 +124,11 @@ public class AssociationFunctions {
             return result;
           } else {
             // The argument is not a rule or a list of rules.
-            return IOFunctions.printMessage(S.AssociateTo, "invdt", F.List(), EvalEngine.get());
+            return Errors.printMessage(S.AssociateTo, "invdt", F.List(), EvalEngine.get());
           }
         }
         // The argument `1` is not a valid Association.
-        return IOFunctions.printMessage(S.AssociateTo, "invak", F.list(symbolValue),
+        return Errors.printMessage(S.AssociateTo, "invak", F.list(symbolValue),
             EvalEngine.get());
       }
     }
@@ -151,7 +152,7 @@ public class AssociationFunctions {
       }
 
       // `1` is not a variable with a value, so its value cannot be changed.
-      return IOFunctions.printMessage(ast.topHead(), "rvalue", F.list(leftHandSide), engine);
+      return Errors.printMessage(ast.topHead(), "rvalue", F.list(leftHandSide), engine);
     }
 
     private static IExpr assignPartTo(ISymbol symbol, IAST part, final IAST ast,
@@ -167,14 +168,14 @@ public class AssociationFunctions {
             return symbol.assignedValue();
           }
           // The argument `1` is not a valid Association.
-          return IOFunctions.printMessage(ast.topHead(), "invak", F.list(oldValue),
+          return Errors.printMessage(ast.topHead(), "invak", F.list(oldValue),
               EvalEngine.get());
         }
         // The argument is not a rule or a list of rules.
-        return IOFunctions.printMessage(ast.topHead(), "invdt", F.List(), EvalEngine.get());
+        return Errors.printMessage(ast.topHead(), "invdt", F.List(), EvalEngine.get());
       }
       // `1` is not a variable with a value, so its value cannot be changed.
-      return IOFunctions.printMessage(ast.topHead(), "rvalue", F.list(symbol), engine);
+      return Errors.printMessage(ast.topHead(), "rvalue", F.list(symbol), engine);
     }
 
     @Override
@@ -281,7 +282,7 @@ public class AssociationFunctions {
           }
           return assoc;
         } catch (ValidateException ve) {
-          IOFunctions.printMessage(S.Association, ve, engine);
+          Errors.printMessage(S.Association, ve, engine);
           // LOGGER.debug("Association.evaluate() failed", ve);
           // print no message
         }
@@ -304,11 +305,11 @@ public class AssociationFunctions {
         IExpr temp = symbol.assignedValue();
         if (temp == null) {
           // `1` is not a variable with a value, so its value cannot be changed.
-          return IOFunctions.printMessage(builtinSymbol, "rvalue", F.list(symbol), engine);
+          return Errors.printMessage(builtinSymbol, "rvalue", F.list(symbol), engine);
         } else {
           if (symbol.isProtected()) {
             // Symbol `1` is Protected.
-            return IOFunctions.printMessage(builtinSymbol, "wrsym", F.list(symbol),
+            return Errors.printMessage(builtinSymbol, "wrsym", F.list(symbol),
                 EvalEngine.get());
           }
           try {
@@ -322,11 +323,11 @@ public class AssociationFunctions {
               return rightHandSide;
             }
           } catch (ValidateException ve) {
-            return IOFunctions.printMessage(builtinSymbol, ve, engine);
+            return Errors.printMessage(builtinSymbol, ve, engine);
           }
         }
       }
-      IOFunctions.printMessage(builtinSymbol, "setps", F.list(leftHandSide.head()), engine);
+      Errors.printMessage(builtinSymbol, "setps", F.list(leftHandSide.head()), engine);
       return rightHandSide;
     }
   }
@@ -740,7 +741,7 @@ public class AssociationFunctions {
           return keySelect(list, x -> engine.evalTrue(predicateHead, x));
         }
         // The argument `1` is not a valid Association or a list of rules.
-        return IOFunctions.printMessage(ast.topHead(), "invrl", F.list(arg1), engine);
+        return Errors.printMessage(ast.topHead(), "invrl", F.list(arg1), engine);
       }
       return F.NIL;
     }
@@ -1003,7 +1004,7 @@ public class AssociationFunctions {
         }
       } else {
         // The argument `1` is not a valid Association or list of rules.
-        return IOFunctions.printMessage(ast.topHead(), "invrl", F.List(), engine);
+        return Errors.printMessage(ast.topHead(), "invrl", F.List(), engine);
       }
       return F.NIL;
     }
@@ -1090,10 +1091,10 @@ public class AssociationFunctions {
           return keyTake(arg1, arg2);
         } else {
           // The argument `1` is not a valid Association or a list of rules.
-          return IOFunctions.printMessage(ast.topHead(), "invrl", F.List(ast.arg1()), engine);
+          return Errors.printMessage(ast.topHead(), "invrl", F.List(ast.arg1()), engine);
         }
       } catch (final ValidateException ve) {
-        IOFunctions.printMessage(ast.topHead(), ve, engine);
+        Errors.printMessage(ast.topHead(), ve, engine);
       } catch (final RuntimeException rex) {
         LOGGER.debug("KeyTake.evaluate() failed", rex);
       }
