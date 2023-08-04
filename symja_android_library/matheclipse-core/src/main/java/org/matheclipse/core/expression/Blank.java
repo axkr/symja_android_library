@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import org.hipparchus.util.Pair;
+import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
@@ -257,7 +258,7 @@ public class Blank implements IPattern {
   @Override
   public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<ISymbol, ? extends CharSequence> variables) {
-    String prefix = AbstractAST.getPrefixF(properties);
+    String prefix = SourceCodeProperties.getPrefixF(properties);
     final StringBuilder buffer = new StringBuilder(prefix).append("$b(");
     if (fHeadTest != null) {
       buffer.append(fHeadTest.internalJavaString(properties, 0, variables));

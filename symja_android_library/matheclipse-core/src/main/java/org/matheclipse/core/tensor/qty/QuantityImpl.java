@@ -9,11 +9,11 @@ import java.util.Objects;
 import java.util.function.Function;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ParserConfig;
@@ -166,7 +166,7 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
     CharSequence value = value().internalJavaString(properties, depth, variables);
 
     StringBuilder javaForm = new StringBuilder();
-    boolean fullName = properties.prefix == Prefix.FULLY_QUALIFIED_CLASS_NAME;
+    boolean fullName = properties.prefix == SourceCodeProperties.Prefix.FULLY_QUALIFIED_CLASS_NAME;
     String pPrefix = fullName ? "org.matheclipse.core.tensor.qty." : "";
     javaForm.append(pPrefix).append("IQuantity.of(").append(value).append(",");
     if (IUnit.ONE.equals(unit())) {

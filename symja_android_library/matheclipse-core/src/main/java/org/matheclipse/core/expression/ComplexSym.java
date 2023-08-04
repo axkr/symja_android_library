@@ -19,6 +19,7 @@ import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
+import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -485,14 +486,14 @@ public class ComplexSym implements IComplex {
 
   @Override
   public CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    SourceCodeProperties p = AbstractAST.stringFormProperties(symbolsAsFactoryMethod);
+    SourceCodeProperties p = SourceCodeProperties.stringFormProperties(symbolsAsFactoryMethod);
     return internalJavaString(p, depth, x -> null);
   }
 
   @Override
   public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<ISymbol, ? extends CharSequence> variables) {
-    String prefix = AbstractAST.getPrefixF(properties);
+    String prefix = SourceCodeProperties.getPrefixF(properties);
     if (fReal.isZero()) {
       if (fImaginary.isOne()) {
         return new StringBuilder(prefix).append("CI");
@@ -517,7 +518,7 @@ public class ComplexSym implements IComplex {
 
   @Override
   public CharSequence internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    SourceCodeProperties p = AbstractAST.scalaFormProperties(symbolsAsFactoryMethod);
+    SourceCodeProperties p = SourceCodeProperties.scalaFormProperties(symbolsAsFactoryMethod);
     return internalJavaString(p, depth, x -> null);
   }
 

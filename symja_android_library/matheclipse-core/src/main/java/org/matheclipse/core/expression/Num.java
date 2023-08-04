@@ -12,6 +12,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -461,14 +462,14 @@ public class Num implements INum {
 
   @Override
   public CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    SourceCodeProperties p = AbstractAST.stringFormProperties(symbolsAsFactoryMethod);
+    SourceCodeProperties p = SourceCodeProperties.stringFormProperties(symbolsAsFactoryMethod);
     return internalJavaString(p, depth, x -> null);
   }
 
   @Override
   public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<ISymbol, ? extends CharSequence> variables) {
-    String prefix = AbstractAST.getPrefixF(properties);
+    String prefix = SourceCodeProperties.getPrefixF(properties);
     StringBuilder javaForm = new StringBuilder(prefix);
     if (isZero()) {
       return javaForm.append("CD0");
@@ -482,7 +483,7 @@ public class Num implements INum {
 
   @Override
   public CharSequence internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    SourceCodeProperties p = AbstractAST.scalaFormProperties(symbolsAsFactoryMethod);
+    SourceCodeProperties p = SourceCodeProperties.scalaFormProperties(symbolsAsFactoryMethod);
     return internalJavaString(p, depth, x -> null);
   }
 

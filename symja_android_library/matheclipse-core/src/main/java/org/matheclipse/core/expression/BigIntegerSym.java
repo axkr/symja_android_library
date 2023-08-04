@@ -11,6 +11,7 @@ import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
 import org.matheclipse.core.eval.exception.LimitException;
+import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -377,7 +378,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
   @Override
   public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<ISymbol, ? extends CharSequence> variables) {
-    String prefix = AbstractAST.getPrefixF(properties);
+    String prefix = SourceCodeProperties.getPrefixF(properties);
     if (NumberUtil.hasIntValue(fBigIntValue)) {
       int intValue = intValueExact(fBigIntValue);
       switch (intValue) {
@@ -436,7 +437,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
   @Override
   public CharSequence internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    SourceCodeProperties p = AbstractAST.scalaFormProperties(symbolsAsFactoryMethod);
+    SourceCodeProperties p = SourceCodeProperties.scalaFormProperties(symbolsAsFactoryMethod);
     return internalJavaString(p, depth, x -> null);
   }
 

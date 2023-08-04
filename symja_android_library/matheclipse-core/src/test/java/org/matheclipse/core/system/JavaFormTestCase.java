@@ -6,11 +6,10 @@ import static org.matheclipse.core.expression.F.Sinc;
 import static org.matheclipse.core.expression.F.Times;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.EvalUtilities;
+import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
-import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.core.tensor.qty.IUnit;
 import org.matheclipse.parser.client.ParserConfig;
@@ -36,9 +35,10 @@ public class JavaFormTestCase extends ExprEvaluatorTestCase {
   }
 
   private static final SourceCodeProperties SYMBOL_FACTORY_PROPERTIES =
-      SourceCodeProperties.of(true, false, Prefix.CLASS_NAME, false);
+      SourceCodeProperties.of(true, false, SourceCodeProperties.Prefix.CLASS_NAME, false);
   private static final SourceCodeProperties SYMBOL_FACTORY_PROPERTIES_FULL_NAMES =
-      SourceCodeProperties.of(true, false, Prefix.FULLY_QUALIFIED_CLASS_NAME, false);
+      SourceCodeProperties.of(true, false, SourceCodeProperties.Prefix.FULLY_QUALIFIED_CLASS_NAME,
+          false);
 
   public void testJavaForm002() {
     // don't distinguish between lower- and uppercase identifiers
@@ -73,9 +73,10 @@ public class JavaFormTestCase extends ExprEvaluatorTestCase {
   }
 
   private static final SourceCodeProperties NO_SYMBOL_FACTORY_PROPERTIES =
-      SourceCodeProperties.of(false, false, Prefix.CLASS_NAME, false);
+      SourceCodeProperties.of(false, false, SourceCodeProperties.Prefix.CLASS_NAME, false);
   private static final SourceCodeProperties NO_SYMBOL_FACTORY_PROPERTIES_FULL_NAMES =
-      SourceCodeProperties.of(false, false, Prefix.FULLY_QUALIFIED_CLASS_NAME, false);
+      SourceCodeProperties.of(false, false, SourceCodeProperties.Prefix.FULLY_QUALIFIED_CLASS_NAME,
+          false);
 
   public void testJavaFormQuantity_unitKG() {
     IExpr quantity = IQuantity.of(F.ZZ(43L), IUnit.ofPutIfAbsent("kg"));

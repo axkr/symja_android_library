@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.WL;
@@ -14,15 +15,14 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
-import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.ParserConfig;
 
 /** Generate java sources for Symja rule files. */
 public class RulePreprocessor {
-  private static SourceCodeProperties p = SourceCodeProperties.of(false, false, Prefix.NONE, false);
+  private static SourceCodeProperties p =
+      SourceCodeProperties.of(false, false, SourceCodeProperties.Prefix.NONE, false);
 
   /**
    * If <code>true</code> abort rule creation, if the left-hand-side contains a variable (instead of

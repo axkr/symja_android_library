@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.Function;
 import org.hipparchus.util.Pair;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
@@ -238,7 +239,7 @@ public class Pattern extends Blank {
   @Override
   public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<ISymbol, ? extends CharSequence> variables) {
-    String prefix = AbstractAST.getPrefixF(properties);
+    String prefix = SourceCodeProperties.getPrefixF(properties);
     final StringBuilder buffer = new StringBuilder(prefix);
     String symbolStr = fSymbol.toString();
     char ch = symbolStr.charAt(0);

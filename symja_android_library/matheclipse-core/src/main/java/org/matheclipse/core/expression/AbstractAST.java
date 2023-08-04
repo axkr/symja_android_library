@@ -53,6 +53,7 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
+import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.ObjIntFunction;
 import org.matheclipse.core.generic.ObjIntPredicate;
@@ -69,7 +70,6 @@ import org.matheclipse.core.interfaces.IDiscreteDistribution;
 import org.matheclipse.core.interfaces.IDistribution;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
@@ -2708,19 +2708,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return F.NIL;
   }
 
-  private static final SourceCodeProperties STRING_FORM_SYMBOL_FACTORY =
-      SourceCodeProperties.of(true, false, Prefix.NONE, false);
-  private static final SourceCodeProperties STRING_FORM_NO_SYMBOL_FACTORY =
-      SourceCodeProperties.of(false, false, Prefix.NONE, false);
-
-  static SourceCodeProperties stringFormProperties(boolean symbolsAsFactoryMethod) {
-    return symbolsAsFactoryMethod ? STRING_FORM_SYMBOL_FACTORY : STRING_FORM_NO_SYMBOL_FACTORY;
-  }
-
   /** {@inheritDoc} */
   @Override
   public final CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(stringFormProperties(symbolsAsFactoryMethod), depth, x -> null);
+    return internalJavaString(SourceCodeProperties.stringFormProperties(symbolsAsFactoryMethod), depth, x -> null);
   }
 
   /** {@inheritDoc} */
@@ -2735,7 +2726,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (temp.equals(S.Hold) && size() == 2) {
       return arg1().internalJavaString(properties, depth, variables);
     }
-    String prefix = getPrefixF(properties);
+    String prefix = SourceCodeProperties.getPrefixF(properties);
     if (isInfinity()) {
       return new StringBuilder(prefix).append("oo");
     }
@@ -2972,18 +2963,6 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return text.append(')');
   }
 
-  static String getPrefixF(SourceCodeProperties properties) {
-    switch (properties.prefix) {
-      case FULLY_QUALIFIED_CLASS_NAME:
-        return "org.matheclipse.core.expression.F.";
-      case CLASS_NAME:
-        return "F.";
-      case NONE:
-      default:
-        return "";
-    }
-  }
-
   private void internalOperatorForm(IExpr arg1, boolean isLowerPrecedence,
       SourceCodeProperties properties, int depth, StringBuilder text) {
     if (isLowerPrecedence) {
@@ -2995,19 +2974,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
   }
 
-  private static final SourceCodeProperties SCALA_FORM_SYMBOL_FACTORY =
-      SourceCodeProperties.of(true, true, Prefix.NONE, false);
-  private static final SourceCodeProperties SCALA_FORM_NO_SYMBOL_FACTORY =
-      SourceCodeProperties.of(false, true, Prefix.NONE, false);
-
-  static SourceCodeProperties scalaFormProperties(boolean symbolsAsFactoryMethod) {
-    return symbolsAsFactoryMethod ? SCALA_FORM_SYMBOL_FACTORY : SCALA_FORM_NO_SYMBOL_FACTORY;
-  }
-
   /** {@inheritDoc} */
   @Override
   public final CharSequence internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(scalaFormProperties(symbolsAsFactoryMethod), depth, x -> null);
+    return internalJavaString(SourceCodeProperties.scalaFormProperties(symbolsAsFactoryMethod), depth, x -> null);
   }
 
   /** {@inheritDoc} */

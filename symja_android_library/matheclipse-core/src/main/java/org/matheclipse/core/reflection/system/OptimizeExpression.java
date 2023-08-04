@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -258,7 +259,7 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
     // replacement rules
     cseAsJavaRecursive((IAST) arg2, buf);
     buf.append("return ");
-    buf.append(arg1.internalJavaString(IExpr.JAVA_FORM_PROPERTIES, 1, x -> null));
+    buf.append(arg1.internalJavaString(SourceCodeProperties.JAVA_FORM_PROPERTIES_NO_SYMBOL_PREFIX, 1, x -> null));
     buf.append(";\n");
   }
 
@@ -274,11 +275,13 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
           buf.append(variable.toString());
           buf.append(" = ");
           IExpr expr = element.second();
-          buf.append(expr.internalJavaString(IExpr.JAVA_FORM_PROPERTIES, 1, x -> null));
+          buf.append(expr.internalJavaString(
+              SourceCodeProperties.JAVA_FORM_PROPERTIES_NO_SYMBOL_PREFIX, 1, x -> null));
           buf.append(";\n");
         } else {
           buf.append("return ");
-          buf.append(element.internalJavaString(IExpr.JAVA_FORM_PROPERTIES, 1, x -> null));
+          buf.append(element.internalJavaString(
+              SourceCodeProperties.JAVA_FORM_PROPERTIES_NO_SYMBOL_PREFIX, 1, x -> null));
           buf.append(";\n");
         }
       }

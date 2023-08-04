@@ -20,14 +20,13 @@ import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.ASCIIPrettyPrinter3;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
-import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.io.IOInit;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.Scanner;
@@ -473,16 +472,14 @@ public class Console {
     return buf.toString();
   }
 
-  static final SourceCodeProperties JAVA_FORM_PROPERTIES =
-      SourceCodeProperties.of(false, false, Prefix.CLASS_NAME, false);
-
   private String printResult(IExpr result) {
     if (result.equals(S.Null)) {
       return "";
     }
     switch (fUsedForm) {
       case JAVAFORM:
-        return result.internalJavaString(JAVA_FORM_PROPERTIES, -1, x -> null).toString();
+        return result.internalJavaString(SourceCodeProperties.JAVA_FORM_PROPERTIES, -1, x -> null)
+            .toString();
       case TRADITIONALFORM:
         StringBuilder traditionalBuffer = new StringBuilder();
         fOutputTraditionalFactory.reset(false);

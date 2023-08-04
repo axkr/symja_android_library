@@ -5,6 +5,7 @@ import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.util.Pair;
+import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
@@ -122,7 +123,7 @@ public class PatternSequence extends AbstractPatternSequence {
   public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<ISymbol, ? extends CharSequence> variables) {
     if (properties.symbolsAsFactoryMethod) {
-      String prefix = AbstractAST.getPrefixF(properties);
+      String prefix = SourceCodeProperties.getPrefixF(properties);
       final StringBuilder buffer = new StringBuilder();
       buffer.append(prefix).append("$ps(");
       if (fSymbol == null) {

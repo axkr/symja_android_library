@@ -16,6 +16,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.RuleCreationError;
+import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.interfaces.IAST;
@@ -527,7 +528,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    SourceCodeProperties p = AbstractAST.stringFormProperties(symbolsAsFactoryMethod);
+    SourceCodeProperties p = SourceCodeProperties.stringFormProperties(symbolsAsFactoryMethod);
     return internalJavaString(p, depth, x -> null);
   }
 
@@ -539,7 +540,7 @@ public class Symbol implements ISymbol, Serializable {
     if (result != null) {
       return result;
     }
-    String prefix = AbstractAST.getPrefixF(properties);
+    String prefix = SourceCodeProperties.getPrefixF(properties);
     if (properties.symbolsAsFactoryMethod) {
       return new StringBuilder(prefix).append(internalJavaStringAsFactoryMethod());
     }
@@ -609,7 +610,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public CharSequence internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    SourceCodeProperties p = AbstractAST.scalaFormProperties(symbolsAsFactoryMethod);
+    SourceCodeProperties p = SourceCodeProperties.scalaFormProperties(symbolsAsFactoryMethod);
     return internalJavaString(p, depth, x -> null);
   }
 

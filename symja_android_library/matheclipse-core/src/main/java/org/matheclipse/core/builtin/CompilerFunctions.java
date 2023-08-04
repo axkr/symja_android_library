@@ -19,6 +19,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.expression.Blank;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -30,8 +31,6 @@ import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
-import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -665,12 +664,9 @@ public class CompilerFunctions {
       return 0;
     }
 
-    private static final SourceCodeProperties JAVA_FORM_PROPERTIES =
-        SourceCodeProperties.of(false, false, Prefix.CLASS_NAME, false);
-
     private boolean convertSymbolic(StringBuilder buf, IExpr expression) {
       try {
-        buf.append(expression.internalJavaString(JAVA_FORM_PROPERTIES, -1, x -> {
+        buf.append(expression.internalJavaString(SourceCodeProperties.JAVA_FORM_PROPERTIES, -1, x -> {
           if (localVariables.contains(x.toString())) {
             return "vars.get(\"" + x.toString() + "\")";
           }

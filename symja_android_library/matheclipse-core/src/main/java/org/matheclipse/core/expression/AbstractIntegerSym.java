@@ -21,6 +21,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
+import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -754,7 +755,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
   @Override
   public CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    SourceCodeProperties p = AbstractAST.stringFormProperties(symbolsAsFactoryMethod);
+    SourceCodeProperties p = SourceCodeProperties.stringFormProperties(symbolsAsFactoryMethod);
     return internalJavaString(p, depth, x -> null);
   }
 

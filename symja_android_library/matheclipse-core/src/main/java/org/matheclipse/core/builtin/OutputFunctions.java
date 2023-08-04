@@ -24,6 +24,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
+import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.expression.Blank;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -39,8 +40,6 @@ import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties;
-import org.matheclipse.core.interfaces.IExpr.SourceCodeProperties.Prefix;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -429,7 +428,8 @@ public final class OutputFunctions {
 
     public static CharSequence javaForm(IExpr arg1, boolean strictJava, boolean usePrefix) {
       SourceCodeProperties p = SourceCodeProperties.of(strictJava, false,
-          usePrefix ? Prefix.CLASS_NAME : Prefix.NONE, false);
+          usePrefix ? SourceCodeProperties.Prefix.CLASS_NAME : SourceCodeProperties.Prefix.NONE,
+          false);
       return arg1.internalJavaString(p, 0, x -> null);
     }
 

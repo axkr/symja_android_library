@@ -20,6 +20,7 @@ import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.Documentation;
@@ -499,7 +500,8 @@ public class MMAConsole {
       }
       switch (fUsedForm) {
         case JAVAFORM:
-          return result.internalJavaString(Console.JAVA_FORM_PROPERTIES, -1, x -> null).toString();
+          return result.internalJavaString(SourceCodeProperties.JAVA_FORM_PROPERTIES, -1, x -> null)
+              .toString();
         case TRADITIONALFORM:
           StringBuilder traditionalBuffer = new StringBuilder();
           fOutputTraditionalFactory.reset(false);

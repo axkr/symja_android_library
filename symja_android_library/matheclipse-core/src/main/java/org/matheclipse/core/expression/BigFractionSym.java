@@ -6,6 +6,7 @@ import java.util.function.Function;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
+import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -413,7 +414,7 @@ public class BigFractionSym extends AbstractFractionSym {
   @Override
   public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<ISymbol, ? extends CharSequence> variables) {
-    String prefix = AbstractAST.getPrefixF(properties);
+    String prefix = SourceCodeProperties.getPrefixF(properties);
     BigInteger numerator = fFraction.getNumerator();
     BigInteger denominator = fFraction.getDenominator();
     if (NumberUtil.hasIntValue(numerator) && NumberUtil.hasIntValue(denominator)) {
