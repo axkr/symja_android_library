@@ -226,7 +226,7 @@ public class OutputFormFactory {
   private String convertDoubleToFormattedString(double dValue) {
     if (fSignificantFigures > 0) {
       StringBuilder buf = new StringBuilder();
-      DoubleToMMA.doubleToMMA(buf, dValue, fExponentFigures, fSignificantFigures);
+      DoubleToMMA.doubleToMMA(buf, dValue, fExponentFigures, fSignificantFigures, fRelaxedSyntax);
       return buf.toString();
     }
     return Double.toString(dValue);

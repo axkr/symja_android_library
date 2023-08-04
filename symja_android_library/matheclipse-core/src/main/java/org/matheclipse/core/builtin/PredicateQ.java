@@ -83,6 +83,7 @@ public class PredicateQ {
       S.PrimeQ.setEvaluator(new PrimeQ());
       S.QuantityQ.setEvaluator(new QuantityQ());
       S.RealValuedNumberQ.setEvaluator(new RealValuedNumberQ());
+      S.RealValuedNumericQ.setEvaluator(new RealValuedNumericQ());
       S.SquareMatrixQ.setEvaluator(new SquareMatrixQ());
       S.StringQ.setPredicateQ(x -> x.isString());
       S.SymbolQ.setPredicateQ(x -> x.isSymbol());
@@ -1263,13 +1264,13 @@ public class PredicateQ {
     }
   }
 
-  private static final class RealValuedNumberQ extends AbstractCoreFunctionEvaluator
+  private static final class RealValuedNumberQ extends AbstractFunctionEvaluator
       implements IPredicate {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
-      IExpr arg1 = engine.evaluate(ast.arg1());
+      IExpr arg1 = ast.arg1();
       if (arg1.isNumber()) {
         if (arg1.isComplex() || arg1.isComplexNumeric()) {
           return S.False;
@@ -1288,6 +1289,28 @@ public class PredicateQ {
       // return S.True;
       // }
       // }
+      return S.False;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  private static final class RealValuedNumericQ extends AbstractFunctionEvaluator
+      implements IPredicate {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      IExpr arg1 = engine.evalN(ast.arg1());
+      if (arg1.isNumber()) {
+        if (arg1.isComplexNumeric() || arg1.isComplex()) {
+          return S.False;
+        }
+        return F.booleSymbol(arg1.isReal());
+      }
       return S.False;
     }
 

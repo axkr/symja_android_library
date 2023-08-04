@@ -117,10 +117,8 @@ public final class NumStr extends Num {
   @Override
   public IExpr plus(final IExpr that) {
     if (EvalEngine.isApfloat(fPrecision)) {
-      long precision = fPrecision;
       if (that instanceof ApfloatNum) {
         ApfloatNum arg2 = (ApfloatNum) that;
-        precision = arg2.precision() < precision ? arg2.precision() : precision;
         return apfloatNumValue().add(arg2.apfloatNumValue());
       }
       if (that instanceof Num) {
@@ -128,7 +126,6 @@ public final class NumStr extends Num {
       }
       if (that instanceof ApcomplexNum) {
         ApcomplexNum arg2 = (ApcomplexNum) that;
-        precision = arg2.precision() < precision ? arg2.precision() : precision;
         return ApcomplexNum.valueOf(apfloatValue()).add((ApcomplexNum) that);
       }
       if (that instanceof ComplexNum) {
@@ -141,10 +138,8 @@ public final class NumStr extends Num {
   @Override
   public IExpr times(final IExpr that) {
     if (EvalEngine.isApfloat(fPrecision)) {
-      long precision = fPrecision;
       if (that instanceof ApfloatNum) {
         ApfloatNum arg2 = (ApfloatNum) that;
-        precision = arg2.precision() < precision ? arg2.precision() : precision;
         return apfloatNumValue().multiply(arg2.apfloatNumValue());
       }
       if (that instanceof Num) {
@@ -152,7 +147,6 @@ public final class NumStr extends Num {
       }
       if (that instanceof ApcomplexNum) {
         ApcomplexNum arg2 = (ApcomplexNum) that;
-        precision = arg2.precision() < precision ? arg2.precision() : precision;
         return ApcomplexNum.valueOf(apfloatValue()).multiply((ApcomplexNum) that);
       }
       if (that instanceof ComplexNum) {

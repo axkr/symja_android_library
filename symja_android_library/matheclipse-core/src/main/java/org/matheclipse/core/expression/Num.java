@@ -277,12 +277,14 @@ public class Num implements INum {
 
   @Override
   public IExpr evaluate(EvalEngine engine) {
-    if (value == Double.POSITIVE_INFINITY) {
-      return F.CInfinity;
-    }
-    if (value == Double.NEGATIVE_INFINITY) {
-      return F.CNInfinity;
-    }
+    // if (value == Double.POSITIVE_INFINITY) {
+    // return F.Overflow();
+    // // return F.CInfinity;
+    // }
+    // if (value == Double.NEGATIVE_INFINITY) {
+    // return F.Underflow();
+    // // return F.CNInfinity;
+    // }
     if (Double.isNaN(value)) {
       return S.Indeterminate;
     }

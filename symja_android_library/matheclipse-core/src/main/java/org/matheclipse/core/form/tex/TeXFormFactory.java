@@ -1867,7 +1867,7 @@ public class TeXFormFactory {
     if (significantFigures > 0) {
       try {
         StringBuilder buf = new StringBuilder();
-        DoubleToMMA.doubleToMMA(buf, dValue, exponentFigures, significantFigures, true);
+        DoubleToMMA.doubleToMMA(buf, dValue, exponentFigures, significantFigures, true, true);
         return buf.toString();
       } catch (IOException ioex) {
         LOGGER.error("TeXFormFactory.convertDoubleToFormattedString() failed", ioex);

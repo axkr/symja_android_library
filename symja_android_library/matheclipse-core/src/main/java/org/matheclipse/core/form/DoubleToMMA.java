@@ -6,6 +6,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.matheclipse.parser.client.ParserConfig;
 
 /**
  * Convert a Java <code>double</code> value into a string similar to the Mathematica output format.
@@ -27,17 +28,20 @@ public class DoubleToMMA {
    * @param texScientificNotation TODO
    */
   public static void doubleToMMA(Appendable buf, double value, int exponent, int significantFigures,
-      boolean texScientificNotation) throws IOException {
+      boolean texScientificNotation, boolean relaxedSyntax) throws IOException {
     if (Double.isNaN(value)) {
       buf.append("Indeterminate");
       return;
     }
     if (Double.isInfinite(value)) {
       if (value < 0) {
-        buf.append("-Infinity");
+        // buf.append("-Infinity");
+        buf.append("Underflow");
       } else {
-        buf.append("Infinity");
+        // buf.append("Infinity");
+        buf.append("Overflow");
       }
+      buf.append(relaxedSyntax ? "()" : "[]");
       return;
     }
     String s = String.format(Locale.US, "%16.16E", value);
@@ -117,7 +121,27 @@ public class DoubleToMMA {
   public static void doubleToMMA(StringBuilder buf, double value, int exponent,
       int significantFigures) {
     try {
-      doubleToMMA(buf, value, exponent, significantFigures, false);
+      doubleToMMA(buf, value, exponent, significantFigures, false,
+          ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS);
+    } catch (IOException ioex) {
+      LOGGER.error("DoubleToMMA.doubleToMMA() failed", ioex);
+    }
+  }
+
+  /**
+   * Convert a Java <code>double</code> value into a string similar to the Mathematica output
+   * format.
+   *
+   * @param buf a string builder where the output should be appended
+   * @param value the double value which should be formatted
+   * @param exponent use scientific notation for all numbers with exponents outside the range <code>
+   *     -exponent</code> to <code>exponent</code>.
+   * @param significantFigures the number of significant figures which should be printed
+   */
+  public static void doubleToMMA(StringBuilder buf, double value, int exponent,
+      int significantFigures, boolean relaxedSyntax) {
+    try {
+      doubleToMMA(buf, value, exponent, significantFigures, false, relaxedSyntax);
     } catch (IOException ioex) {
       LOGGER.error("DoubleToMMA.doubleToMMA() failed", ioex);
     }

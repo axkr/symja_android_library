@@ -1711,7 +1711,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     if (fSignificantFigures > 0) {
       try {
         StringBuilder buf = new StringBuilder();
-        DoubleToMMA.doubleToMMA(buf, dValue, fExponentFigures, fSignificantFigures, false);
+        DoubleToMMA.doubleToMMA(buf, dValue, fExponentFigures, fSignificantFigures, false,
+            fRelaxedSyntax);
         return buf.toString();
       } catch (IOException ioex) {
         LOGGER.error("MathMLFormFactory.convertDoubleToFormattedString() failed", ioex);

@@ -194,6 +194,7 @@ public final class Arithmetic {
       S.LCM.setEvaluator(new LCM());
       S.MantissaExponent.setEvaluator(new MantissaExponent());
       S.N.setEvaluator(new N());
+      S.Overflow.setEvaluator(new Overflow());
       S.Pochhammer.setEvaluator(new Pochhammer());
       S.Precision.setEvaluator(new Precision());
       S.PreDecrement.setEvaluator(new PreDecrement());
@@ -206,6 +207,7 @@ public final class Arithmetic {
       S.Subtract.setEvaluator(new Subtract());
       S.SubtractFrom.setEvaluator(new SubtractFrom());
       S.TimesBy.setEvaluator(new TimesBy());
+      S.Underflow.setEvaluator(new Underflow());
     }
   }
 
@@ -2589,7 +2591,53 @@ public final class Arithmetic {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+  private static class Overflow extends AbstractCoreFunctionEvaluator {
 
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return numericEval(ast, engine);
+    }
+
+    @Override
+    public IExpr numericEval(final IAST ast, EvalEngine engine) {
+      if (engine.isDoubleMode()) {
+        return F.num(Double.POSITIVE_INFINITY);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_0;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
+  private static class Underflow extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return numericEval(ast, engine);
+    }
+
+    @Override
+    public IExpr numericEval(final IAST ast, EvalEngine engine) {
+      if (engine.isDoubleMode()) {
+        return F.num(Double.NEGATIVE_INFINITY);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_0;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
   /**
    *
    *

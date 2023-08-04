@@ -8334,6 +8334,10 @@ public class F extends S {
     return new AST1(RealValuedNumberQ, a);
   }
 
+  public static IAST RealValuedNumericQ(final IExpr a) {
+    return new AST1(RealValuedNumericQ, a);
+  }
+
   public static IAST RealSign(final IExpr a) {
     return new AST1(RealSign, a);
   }

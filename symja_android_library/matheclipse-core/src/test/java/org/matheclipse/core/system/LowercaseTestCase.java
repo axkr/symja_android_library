@@ -6860,10 +6860,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testExp() {
-    // TODO return Overflow()
-    check("Exp(10.*^20)", //
-        "Infinity");
-
     check("Exp(x*Log(n))", //
         "n^x");
     check("Exp(42+Log(a)+Log(b))", //
@@ -6874,9 +6870,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "22026.465794806703");
     check("Exp(x) //FullForm", //
         "Power(E, x)");
-    // TODO check("Exp(1.*^20)", "Overflow()");
-    check("Exp(1.*^20)", //
-        "Infinity");
+    check("Exp(10.*^20)", //
+        "Overflow()");
 
     check("Exp(a+b)", //
         "E^(a+b)");
@@ -9186,6 +9181,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testFlatten() {
+    // message Flatten: Level specification value greater equal 0 expected instead of -Infinity.
+    check("Flatten(f(g(u, v), f(x, y)), -Infinity, f)", //
+        "Flatten(f(g(u,v),f(x,y)),-Infinity,f)");
+
+
+
     check("Flatten(RandomReal(1, {3, 5, 7}), {{2, 3}, {1}})", //
         "Flatten(RandomReal(1,{3,5,7}),{{2,3},{1}})");
 
@@ -17051,6 +17052,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3.14159265358979323846264338327");
   }
 
+  public void testOverflow() {
+    check("Overflow() // N", //
+        "Overflow()");
+  }
+
+  public void testUnderflow() {
+    check("Underflow() // N", //
+        "Underflow()");
+  }
+
   public void testOwnValues() {
     check("a=42", //
         "42");
@@ -20453,6 +20464,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testRealValuedNumberQ() {
+    // TODO
+    // check("RealValuedNumberQ(Overflow())", //
+    // "True");
     check("RealValuedNumberQ(10)", //
         "True");
     check("RealValuedNumberQ(4.0)", //
@@ -20465,6 +20479,35 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
     check("RealValuedNumberQ(Infinity)", //
         "False");
+  }
+
+  public void testRealValuedNumericQ() {
+    check("RealValuedNumericQ(10)", //
+        "True");
+    check("RealValuedNumericQ(4.0)", //
+        "True");
+    check("RealValuedNumericQ(1+I)", //
+        "False");
+    check("RealValuedNumericQ(0*I)", //
+        "True");
+    check("RealValuedNumericQ(0.0*I)", //
+        "False");
+    check("RealValuedNumericQ(Infinity)", //
+        "False");
+
+    // TODO fix Underflow(),Overflow() implementation
+    check("TableForm(\n" //
+        + " Table({x, RealValuedNumberQ(x), " //
+        + "   RealValuedNumericQ(x)}, {x, {1, 3/2, 1.5, 1 + I, E, Sin(1), Underflow(), Overflow(), Infinity}}))", //
+        "           1   True   True \n" //
+            + "         3/2   True   True \n" //
+            + "         1.5   True   True \n" //
+            + "         1+I  False  False \n" //
+            + "           E  False   True \n" //
+            + "      Sin(1)  False   True \n" //
+            + " Underflow()  False   True \n" //
+            + "  Overflow()  False   True \n" //
+            + "    Infinity  False  False ");
   }
 
   public void testRealAbs() {

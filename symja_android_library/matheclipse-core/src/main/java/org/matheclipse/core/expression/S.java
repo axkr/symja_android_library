@@ -6832,8 +6832,9 @@ public class S {
   public final static IBuiltInSymbol NegativeDegreeLexicographic =
       S.initFinalSymbol("NegativeDegreeLexicographic", ID.NegativeDegreeLexicographic);
 
-  public final static IBuiltInSymbol NegativeDegreeReverseLexicographic = F
-      .initFinalSymbol("NegativeDegreeReverseLexicographic", ID.NegativeDegreeReverseLexicographic);
+  public final static IBuiltInSymbol NegativeDegreeReverseLexicographic = //
+      S.initFinalSymbol("NegativeDegreeReverseLexicographic",
+          ID.NegativeDegreeReverseLexicographic);
 
   public final static IBuiltInSymbol NegativeIntegers =
       S.initFinalSymbol("NegativeIntegers", ID.NegativeIntegers);
@@ -8542,6 +8543,9 @@ public class S {
    */
   public final static IBuiltInSymbol RealValuedNumberQ =
       S.initFinalSymbol("RealValuedNumberQ", ID.RealValuedNumberQ);
+
+  public final static IBuiltInSymbol RealValuedNumericQ =
+      S.initFinalSymbol("RealValuedNumericQ", ID.RealValuedNumericQ);
 
   /**
    * Reals - is the set of real numbers.
