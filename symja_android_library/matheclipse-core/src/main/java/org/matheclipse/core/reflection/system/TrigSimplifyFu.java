@@ -1723,10 +1723,10 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     if (a.isOne()) {
       IExpr temp = a;
       a = b;
-      b = a;
+      b = temp;
       temp = n1;
       n1 = n2;
-      n2 = n1;
+      n2 = temp;
     }
     if (n1.isMinusOne()) {
       gcd = gcd.negate();
