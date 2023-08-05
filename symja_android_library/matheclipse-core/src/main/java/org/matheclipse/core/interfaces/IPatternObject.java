@@ -1,7 +1,7 @@
 package org.matheclipse.core.interfaces;
 
 import java.util.List;
-import org.hipparchus.util.Pair;
+import org.matheclipse.core.generic.GenericPair;
 import org.matheclipse.core.patternmatching.IPatternMap;
 
 /** Interface for pattern objects (i.e. _, x_, x__) */
@@ -13,7 +13,7 @@ public interface IPatternObject extends IExpr {
    * @param patternIndexMap a map from the pattern symbol to the intern array index
    * @return
    */
-  public int[] addPattern(List<Pair<IExpr, IPatternObject>> patternIndexMap);
+  public int[] addPattern(List<GenericPair<IExpr, IPatternObject>> patternIndexMap);
 
   /**
    * Check if the two left-hand-side pattern expressions are equivalent. (i.e. <code>f[x_,y_]</code>

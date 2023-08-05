@@ -2,8 +2,8 @@ package org.matheclipse.core.expression;
 
 import java.util.List;
 import java.util.function.Function;
-import org.hipparchus.util.Pair;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
+import org.matheclipse.core.generic.GenericPair;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
@@ -221,7 +221,7 @@ public class PatternSequence extends AbstractPatternSequence {
   }
 
   @Override
-  public int[] addPattern(List<Pair<IExpr, IPatternObject>> patternIndexMap) {
+  public int[] addPattern(List<GenericPair<IExpr, IPatternObject>> patternIndexMap) {
     IPatternMap.addPattern(patternIndexMap, this);
     // the ast contains a pattern sequence (i.e. "x__")
     int[] result = new int[2];

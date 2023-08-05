@@ -6,8 +6,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayDeque;
 import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.combinatoric.MultisetPartitionsIterator;
 import org.matheclipse.core.combinatoric.NumberPartitionsIterator;
 import org.matheclipse.core.eval.EvalEngine;
@@ -31,7 +29,6 @@ import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class PatternMatcher extends IPatternMatcher implements Externalizable {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * There are two kinds of matching <code>Entry</code> pairs in the {@link StackMatcher}.
@@ -664,13 +661,6 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
   public boolean isThrowIfTrue() {
     return fThrowIfTrue;
-  }
-
-  protected void logConditionFalse(final IExpr lhsEvalAST, final IExpr lhsPatternAST,
-      IExpr rhsAST) {
-    // System.out.println("\nCONDITION false: " + lhsEvalAST.toString() +
-    // "\n >>> " + lhsPatternAST.toString() + " := "
-    // + rhsAST.toString());
   }
 
   protected boolean matchAST(IAST lhsPatternAST, final IExpr lhsEvalExpr, EvalEngine engine,
@@ -1741,9 +1731,6 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
             lhsResultAST.append(result);
             return lhsResultAST;
           } catch (final ConditionException e) {
-            if (LOGGER.isDebugEnabled()) {
-              logConditionFalse(lhsEvalAST, lhsPatternAST, rhsExpr);
-            }
             // fall through
           } catch (final ReturnException e) {
             lhsResultAST.append(e.getValue());
@@ -1807,9 +1794,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
           lhsResultAST.append(i + 1, result);
           return lhsResultAST;
         } catch (final ConditionException e) {
-          if (LOGGER.isDebugEnabled()) {
-            logConditionFalse(lhsEvalFlatAST, lhsPatternFlatAST, rhsExpr);
-          }
+          // fall through
         } catch (final ReturnException e) {
           lhsResultAST.append(i + 1, e.getValue());
           return lhsResultAST;

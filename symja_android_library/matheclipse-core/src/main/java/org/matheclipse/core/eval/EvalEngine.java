@@ -21,7 +21,7 @@ import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
-import org.matheclipse.core.builtin.PatternMatching;
+// import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.exception.AbortException;
@@ -480,34 +480,7 @@ public class EvalEngine implements Serializable {
    */
   public void addOptionsPattern(OptionsPattern op, IAST rule) {
     IdentityHashMap<ISymbol, IASTAppendable> optionsPattern = fOptionsStack.peek();
-    IASTAppendable list = optionsPattern.get(op.getOptionsPatternHead());
-    if (list == null) {
-      list = F.ListAlloc(10);
-      optionsPattern.put(op.getOptionsPatternHead(), list);
-    }
-    if (rule != null && rule.isRuleAST()) {
-      if (rule.first().isSymbol()) {
-        list.append(
-            F.binaryAST2(rule.topHead(), ((ISymbol) rule.first()).getSymbolName(), rule.second()));
-      } else {
-        list.append(rule);
-      }
-    }
-    IExpr defaultOptions = op.getDefaultOptions();
-    if (defaultOptions.isPresent()) {
-      IAST optionsList = null;
-      if (defaultOptions.isSymbol()) {
-        optionsList = PatternMatching.optionsList((ISymbol) defaultOptions, true);
-        PatternMatching.extractRules(optionsList, list);
-        // list.appendArgs(optionsList);
-      } else if (defaultOptions.isList()) {
-        PatternMatching.extractRules(defaultOptions, list);
-        // list.appendArgs((IAST) defaultOptions);
-      } else if (defaultOptions.isRuleAST()) {
-        PatternMatching.extractRules(defaultOptions, list);
-        // list.append(defaultOptions);
-      }
-    }
+    OptionsPattern.optionsPattern(op, rule, optionsPattern);
   }
 
   /**
@@ -3297,7 +3270,7 @@ public class EvalEngine implements Serializable {
     if (!optionsPattern.isEmpty()) {
       for (Map.Entry<ISymbol, IASTAppendable> element : optionsPattern.entrySet()) {
         ISymbol symbol = element.getKey();
-        IAST list = PatternMatching.optionsList(element.getKey(), true);
+        IAST list = OptionsPattern.optionsList(element.getKey(), true);
         if (list.size() > 1) {
           IASTAppendable tempList = optionsPattern.get(symbol);
           if (tempList == null) {

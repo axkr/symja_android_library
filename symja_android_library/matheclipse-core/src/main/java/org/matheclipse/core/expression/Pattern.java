@@ -2,9 +2,9 @@ package org.matheclipse.core.expression;
 
 import java.util.List;
 import java.util.function.Function;
-import org.hipparchus.util.Pair;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
+import org.matheclipse.core.generic.GenericPair;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
@@ -73,7 +73,7 @@ public class Pattern extends Blank {
   }
 
   @Override
-  public int[] addPattern(List<Pair<IExpr, IPatternObject>> patternIndexMap) {
+  public int[] addPattern(List<GenericPair<IExpr, IPatternObject>> patternIndexMap) {
     IPatternMap.addPattern(patternIndexMap, this);
     int[] result = new int[2];
     if (isPatternDefault() || isPatternOptional()) {

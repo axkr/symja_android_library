@@ -1,11 +1,9 @@
 package org.matheclipse.core.patternmatching;
 
-import static org.matheclipse.core.patternmatching.IPatternMap.addOptionsPattern;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.hipparchus.util.Pair;
 import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -14,6 +12,7 @@ import org.matheclipse.core.expression.OptionsPattern;
 import org.matheclipse.core.expression.Pattern;
 import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.generic.GenericPair;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -300,7 +299,7 @@ public interface IPatternMap {
     public boolean setOptionsPattern(EvalEngine engine, ISymbol lhsHead) {
       if (fPatternObject1.isOptionsPattern()) {
         OptionsPattern op = (OptionsPattern) fPatternObject1;
-        addOptionsPattern(op, fValue1, engine);
+        OptionsPattern.addOptionsPattern(op, fValue1, engine);
         return lhsHead == op.getOptionsPatternHead();
       }
       return false;
@@ -561,14 +560,14 @@ public interface IPatternMap {
       boolean result = false;
       if (fPatternObject1.isOptionsPattern()) {
         OptionsPattern op = (OptionsPattern) fPatternObject1;
-        addOptionsPattern(op, fValue1, engine);
+        OptionsPattern.addOptionsPattern(op, fValue1, engine);
         if (lhsHead == op.getOptionsPatternHead()) {
           result = true;
         }
       }
       if (fPatternObject2.isOptionsPattern()) {
         OptionsPattern op = (OptionsPattern) fPatternObject2;
-        addOptionsPattern(op, fValue2, engine);
+        OptionsPattern.addOptionsPattern(op, fValue2, engine);
         if (lhsHead == op.getOptionsPatternHead()) {
           result = true;
         }
@@ -897,21 +896,21 @@ public interface IPatternMap {
       boolean result = false;
       if (fPatternObject1.isOptionsPattern()) {
         OptionsPattern op = (OptionsPattern) fPatternObject1;
-        addOptionsPattern(op, fValue1, engine);
+        OptionsPattern.addOptionsPattern(op, fValue1, engine);
         if (lhsHead == op.getOptionsPatternHead()) {
           result = true;
         }
       }
       if (fPatternObject2.isOptionsPattern()) {
         OptionsPattern op = (OptionsPattern) fPatternObject2;
-        addOptionsPattern(op, fValue2, engine);
+        OptionsPattern.addOptionsPattern(op, fValue2, engine);
         if (lhsHead == op.getOptionsPatternHead()) {
           result = true;
         }
       }
       if (fPatternObject3.isOptionsPattern()) {
         OptionsPattern op = (OptionsPattern) fPatternObject3;
-        addOptionsPattern(op, fValue3, engine);
+        OptionsPattern.addOptionsPattern(op, fValue3, engine);
         if (lhsHead == op.getOptionsPatternHead()) {
           result = true;
         }
@@ -1360,7 +1359,7 @@ public interface IPatternMap {
         for (int i = 0; i < fPatternObjects.length; i++) {
           if (fPatternObjects[i].isOptionsPattern()) {
             OptionsPattern op = (OptionsPattern) fPatternObjects[i];
-            addOptionsPattern(op, fSymbolsOrPatternValues[i], engine);
+            OptionsPattern.addOptionsPattern(op, fSymbolsOrPatternValues[i], engine);
             if (lhsHead == op.getOptionsPatternHead()) {
               result = true;
             }
@@ -1510,7 +1509,7 @@ public interface IPatternMap {
    * @param patternIndexMap
    * @param pattern
    */
-  static void addPattern(List<Pair<IExpr, IPatternObject>> patternIndexMap,
+  static void addPattern(List<GenericPair<IExpr, IPatternObject>> patternIndexMap,
       IPatternObject pattern) {
     ISymbol sym = pattern.getSymbol();
     if (sym != null) {
@@ -1519,10 +1518,10 @@ public interface IPatternMap {
           return;
         }
       }
-      patternIndexMap.add(new Pair(sym, pattern));
+      patternIndexMap.add(new GenericPair(sym, pattern));
       return;
     }
-    patternIndexMap.add(new Pair(pattern, pattern));
+    patternIndexMap.add(new GenericPair(pattern, pattern));
   }
 
   /**
@@ -1539,8 +1538,8 @@ public interface IPatternMap {
     // int[] priority = new int[] { DEFAULT_RULE_PRIORITY };
 
     if (lhsPatternExpr instanceof IAST) {
-      List<Pair<IExpr, IPatternObject>> patternIndexMap =
-          new ArrayList<Pair<IExpr, IPatternObject>>();
+      List<GenericPair<IExpr, IPatternObject>> patternIndexMap =
+          new ArrayList<GenericPair<IExpr, IPatternObject>>();
       boolean[] ruleWithoutPattern = new boolean[] {true};
       if (p2 != null) {
         ruleWithoutPattern[0] = false;
@@ -1580,7 +1579,7 @@ public interface IPatternMap {
       patternMap.fSymbolsOrPatternValues = new IExpr[size];
       patternMap.fPatternObjects = new IPatternObject[size];
       int i = 0;
-      for (Pair<IExpr, IPatternObject> entry : patternIndexMap) {
+      for (GenericPair<IExpr, IPatternObject> entry : patternIndexMap) {
         patternMap.fSymbolsOrPattern[i] = entry.getFirst();
         patternMap.fPatternObjects[i] = entry.getSecond();
         i++;
@@ -1626,7 +1625,7 @@ public interface IPatternMap {
    * @param lhsPatternExpr the (left-hand-side) expression which could contain pattern objects.
    * @param treeLevel the level of the tree where the patterns are determined
    */
-  private static int determinePatternsRecursive(List<Pair<IExpr, IPatternObject>> patternIndexMap,
+  private static int determinePatternsRecursive(List<GenericPair<IExpr, IPatternObject>> patternIndexMap,
       final IAST lhsPatternExpr, int[] priority, boolean[] ruleWithoutPattern, int treeLevel) {
 
     int[] listEvalFlags = new int[] {IAST.NO_FLAG};
@@ -1659,7 +1658,7 @@ public interface IPatternMap {
   }
 
   private static void determinePatternsRecursive(final IExpr x,
-      List<Pair<IExpr, IPatternObject>> patternIndexMap, int[] priority,
+      List<GenericPair<IExpr, IPatternObject>> patternIndexMap, int[] priority,
       boolean[] ruleWithoutPattern, int[] listEvalFlags, int treeLevel) {
     if (x.isASTOrAssociation()) {
       final IAST lhsPatternAST = (IAST) x;
@@ -1932,17 +1931,4 @@ public interface IPatternMap {
   public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence);
 
   public boolean setOptionsPattern(final EvalEngine engine, ISymbol lhsHead);
-
-  /**
-   * @param op
-   * @param x may be <code>null</code>
-   * @param engine
-   */
-  public static void addOptionsPattern(OptionsPattern op, IExpr x, EvalEngine engine) {
-    if (x.size() > 1 && (x.isSequence() || x.isList())) {
-      ((IAST) x).forEach(arg -> addOptionsPattern(op, arg, engine));
-    } else {
-      engine.addOptionsPattern(op, (IAST) x);
-    }
-  }
 }

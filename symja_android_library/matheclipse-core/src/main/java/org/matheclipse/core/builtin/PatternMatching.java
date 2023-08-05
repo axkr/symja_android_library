@@ -1193,7 +1193,7 @@ public final class PatternMatching {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1() && ast.arg1().isSymbol()) {
         ISymbol arg1 = (ISymbol) ast.arg1();
-        return optionsList(arg1, false);
+        return org.matheclipse.core.expression.OptionsPattern.optionsList(arg1, false);
       }
       return F.NIL;
     }
@@ -2751,50 +2751,8 @@ public final class PatternMatching {
     return leftHandSide;
   }
 
-  public static void extractRules(IExpr x, IASTAppendable optionsPattern) {
-    if (x != null) {
-      if (x.isSequence() || x.isList()) {
-        ((IAST) x).forEach(arg -> extractRules(arg, optionsPattern));
-      } else if (x.isRuleAST()) {
-        if (x.first().isSymbol()) {
-          String name = ((ISymbol) x.first()).getSymbolName();
-          optionsPattern.append(F.binaryAST2(x.topHead(), name, x.second()));
-        } else {
-          optionsPattern.append(x);
-        }
-      }
-    }
-  }
-
   /**
-   * Returns a list of the default options of a symbol defined by
-   * <code>Option(f)={a-&gt;b,...}</code>.
-   *
-   * @param symbol
-   * @param optionValueRules convert to &quot;string&quot;" rules, suitable for <code>OptionValue
-   *     </code>
-   * @return
-   */
-  public static IAST optionsList(ISymbol symbol, boolean optionValueRules) {
-    RulesData rules = symbol.getRulesData();
-    if (rules != null) {
-      Map<IExpr, PatternMatcherEquals> map = rules.getEqualDownRules();
-      PatternMatcherEquals matcher = map.get(F.Options(symbol));
-      if (matcher != null) {
-        IExpr temp = matcher.getRHS();
-        if (optionValueRules) {
-          IASTAppendable result = F.ListAlloc(10);
-          extractRules(temp, result);
-          return result;
-        }
-        return temp.makeList();
-      }
-    }
-    return F.CEmptyList;
-  }
-
-  /**
-   * Determine the current <code>OptionValue(...)</code> currently associated with an expreesion.
+   * Determine the current <code>OptionValue(...)</code> currently associated with an expression.
    *
    * @param ast
    * @param quiet if <code>true</code> print no message if an option value cannot be found
@@ -2807,7 +2765,7 @@ public final class PatternMatching {
     IExpr rhsRuleValue = F.NIL;
     IAST optionsList = null;
     if (ast.size() > 2 && arg1.isSymbol()) {
-      optionsList = optionsList((ISymbol) arg1, true);
+      optionsList = org.matheclipse.core.expression.OptionsPattern.optionsList((ISymbol) arg1, true);
     }
     IExpr optionValue;
     if (ast.isAST3()) {
@@ -2817,8 +2775,8 @@ public final class PatternMatching {
         return arg3.mapThread(ast, 3);
       }
       optionsPattern = F.ListAlloc(10);
-      extractRules(arg2, optionsPattern);
-      extractRules(optionsList, optionsPattern);
+      org.matheclipse.core.expression.OptionsPattern.extractRules(arg2, optionsPattern);
+      org.matheclipse.core.expression.OptionsPattern.extractRules(optionsList, optionsPattern);
       optionValue = arg3;
       if (arg3.isSymbol()) {
         optionValue = F.$str(((ISymbol) arg3).getSymbolName());
@@ -2867,7 +2825,7 @@ public final class PatternMatching {
       if (optionsPattern == null) {
         optionsPattern = F.ListAlloc(10);
       }
-      extractRules(optionsList, optionsPattern);
+      org.matheclipse.core.expression.OptionsPattern.extractRules(optionsList, optionsPattern);
       if (optionsPattern != null) {
         rhsRuleValue = optionsRHSRuleValue(optionValue, optionsPattern);
         if (rhsRuleValue.isPresent()) {

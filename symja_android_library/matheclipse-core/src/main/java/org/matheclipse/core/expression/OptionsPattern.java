@@ -1,17 +1,114 @@
 package org.matheclipse.core.expression;
 
+import java.util.IdentityHashMap;
 import java.util.List;
-import org.hipparchus.util.Pair;
+import java.util.Map;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.generic.GenericPair;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap;
+import org.matheclipse.core.patternmatching.PatternMatcherEquals;
+import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.ParserConfig;
 
 public class OptionsPattern extends AbstractPatternSequence {
 
   private static final long serialVersionUID = 1086461999754718513L;
+
+  /**
+   * @param op
+   * @param x may be <code>null</code>
+   * @param engine
+   */
+  public static void addOptionsPattern(OptionsPattern op, IExpr x, EvalEngine engine) {
+    if (x.size() > 1 && (x.isSequence() || x.isList())) {
+      ((IAST) x).forEach(arg -> addOptionsPattern(op, arg, engine));
+    } else {
+      engine.addOptionsPattern(op, (IAST) x);
+    }
+  }
+
+  public static void extractRules(IExpr x, IASTAppendable optionsPattern) {
+    if (x != null) {
+      if (x.isSequence() || x.isList()) {
+        ((IAST) x).forEach(arg -> extractRules(arg, optionsPattern));
+      } else if (x.isRuleAST()) {
+        if (x.first().isSymbol()) {
+          String name = ((ISymbol) x.first()).getSymbolName();
+          optionsPattern.append(F.binaryAST2(x.topHead(), name, x.second()));
+        } else {
+          optionsPattern.append(x);
+        }
+      }
+    }
+  }
+
+  /**
+   * Returns a list of the default options of a symbol defined by
+   * <code>Option(f)={a-&gt;b,...}</code>.
+   *
+   * @param symbol
+   * @param optionValueRules convert to &quot;string&quot;" rules, suitable for <code>OptionValue
+   *     </code>
+   * @return
+   */
+  public static IAST optionsList(ISymbol symbol, boolean optionValueRules) {
+    RulesData rules = symbol.getRulesData();
+    if (rules != null) {
+      Map<IExpr, PatternMatcherEquals> map = rules.getEqualDownRules();
+      PatternMatcherEquals matcher = map.get(F.Options(symbol));
+      if (matcher != null) {
+        IExpr temp = matcher.getRHS();
+        if (optionValueRules) {
+          IASTAppendable result = F.ListAlloc(10);
+          extractRules(temp, result);
+          return result;
+        }
+        return temp.makeList();
+      }
+    }
+    return F.CEmptyList;
+  }
+
+  /**
+   * @param op
+   * @param rule may be <code>null</code>
+   */
+  public static void optionsPattern(OptionsPattern op, IAST rule,
+      IdentityHashMap<ISymbol, IASTAppendable> optionsPattern) {
+    IASTAppendable list = optionsPattern.get(op.getOptionsPatternHead());
+    if (list == null) {
+      list = F.ListAlloc(10);
+      optionsPattern.put(op.getOptionsPatternHead(), list);
+    }
+    if (rule != null && rule.isRuleAST()) {
+      if (rule.first().isSymbol()) {
+        list.append(
+            F.binaryAST2(rule.topHead(), ((ISymbol) rule.first()).getSymbolName(), rule.second()));
+      } else {
+        list.append(rule);
+      }
+    }
+    IExpr defaultOptions = op.getDefaultOptions();
+    if (defaultOptions.isPresent()) {
+      IAST optionsList = null;
+      if (defaultOptions.isSymbol()) {
+        optionsList = OptionsPattern.optionsList((ISymbol) defaultOptions, true);
+        extractRules(optionsList, list);
+        // list.appendArgs(optionsList);
+      } else if (defaultOptions.isList()) {
+        extractRules(defaultOptions, list);
+        // list.appendArgs((IAST) defaultOptions);
+      } else if (defaultOptions.isRuleAST()) {
+        extractRules(defaultOptions, list);
+        // list.append(defaultOptions);
+      }
+    }
+  }
 
   public static OptionsPattern valueOf(final ISymbol symbol) {
     return valueOf(symbol, F.NIL);
@@ -33,6 +130,16 @@ public class OptionsPattern extends AbstractPatternSequence {
 
   protected OptionsPattern() {
     super();
+  }
+
+  @Override
+  public int[] addPattern(List<GenericPair<IExpr, IPatternObject>> patternIndexMap) {
+    IPatternMap.addPattern(patternIndexMap, this);
+    // the ast contains a pattern sequence (i.e. "x__")
+    int[] result = new int[2];
+    result[0] = IAST.CONTAINS_PATTERN_SEQUENCE;
+    result[1] = 1;
+    return result;
   }
 
   /**
@@ -108,6 +215,11 @@ public class OptionsPattern extends AbstractPatternSequence {
     return fDefaultOptions;
   }
 
+  @Override
+  public IExpr getHeadTest() {
+    return null;
+  }
+
   public ISymbol getOptionsPatternHead() {
     return fOptionsPatternHead;
   }
@@ -115,6 +227,17 @@ public class OptionsPattern extends AbstractPatternSequence {
   @Override
   public int hashCode() {
     return (fSymbol == null) ? 213 : 37 + fSymbol.hashCode();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int hierarchy() {
+    return PATTERNID;
+  }
+
+  @Override
+  public boolean isConditionMatchedSequence(IAST sequence, IPatternMap patternMap) {
+    return patternMap.setValue(this, sequence);
   }
 
   @Override
@@ -184,31 +307,5 @@ public class OptionsPattern extends AbstractPatternSequence {
       buffer.append(":OptionsPattern[]");
     }
     return buffer.toString();
-  }
-
-  @Override
-  public IExpr getHeadTest() {
-    return null;
-  }
-
-  @Override
-  public boolean isConditionMatchedSequence(IAST sequence, IPatternMap patternMap) {
-    return patternMap.setValue(this, sequence);
-  }
-
-  @Override
-  public int[] addPattern(List<Pair<IExpr, IPatternObject>> patternIndexMap) {
-    IPatternMap.addPattern(patternIndexMap, this);
-    // the ast contains a pattern sequence (i.e. "x__")
-    int[] result = new int[2];
-    result[0] = IAST.CONTAINS_PATTERN_SEQUENCE;
-    result[1] = 1;
-    return result;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public int hierarchy() {
-    return PATTERNID;
   }
 }

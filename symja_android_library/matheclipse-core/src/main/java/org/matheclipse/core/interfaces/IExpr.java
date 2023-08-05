@@ -909,7 +909,6 @@ public interface IExpr
    * Evaluate the expression to a Java <code>double</code> value.
    * 
    * @param function maybe <code>null</code>; returns a substitution value for some expressions
-   * @return
    * @throws ArgumentTypeException
    */
   default double evalf(final Function<IExpr, IExpr> function) throws ArgumentTypeException {
@@ -1957,7 +1956,6 @@ public interface IExpr
   /**
    * Test if this expression is the function <code>Cos[&lt;arg&gt;]</code>
    *
-   * @return
    */
   default boolean isCos() {
     return false;

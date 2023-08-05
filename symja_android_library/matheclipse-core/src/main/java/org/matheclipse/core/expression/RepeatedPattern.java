@@ -1,9 +1,9 @@
 package org.matheclipse.core.expression;
 
 import java.util.List;
-import org.hipparchus.util.Pair;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.WolframFormFactory;
+import org.matheclipse.core.generic.GenericPair;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
@@ -168,7 +168,7 @@ public class RepeatedPattern extends AbstractPatternSequence {
   }
 
   @Override
-  public int[] addPattern(List<Pair<IExpr, IPatternObject>> patternIndexMap) {
+  public int[] addPattern(List<GenericPair<IExpr, IPatternObject>> patternIndexMap) {
     IPatternMap.addPattern(patternIndexMap, this);
     // the ast contains a pattern sequence (i.e. "x__")
     int[] result = new int[2];

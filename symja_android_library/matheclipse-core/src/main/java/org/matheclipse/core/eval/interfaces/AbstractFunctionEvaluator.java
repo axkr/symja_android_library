@@ -9,9 +9,9 @@ import java.util.Locale;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.OptionsPattern;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -815,7 +815,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
       }
     }
     if (optionNullStart >= 0) {
-      final IExpr temp = PatternMatching.optionsList(ast.topHead(), false);
+      final IExpr temp = OptionsPattern.optionsList(ast.topHead(), false);
       // final IExpr temp = engine.evaluate(F.Options(ast.topHead()));
       if (temp.isList() && temp.size() > 1) {
         IAST list = (IAST) temp;

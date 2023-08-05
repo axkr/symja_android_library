@@ -4,8 +4,6 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
@@ -18,7 +16,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class PatternMatcherAndEvaluator extends PatternMatcher implements Externalizable {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /** */
   private static final long serialVersionUID = 2241135467123931061L;
@@ -256,13 +253,11 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
    */
   private IExpr replacePatternMatch(final IExpr leftHandSide, IPatternMap patternMap,
       EvalEngine engine, boolean evaluate) {
-    if (RulesData.showSteps) {
-      if (fLhsPatternExpr.head().equals(S.Integrate)) {
-        IExpr rhs = fRightHandSide.orElse(S.Null);
-        LOGGER.info("COMPLEX: {} := {}", fLhsPatternExpr, rhs);
-        LOGGER.info(">>>>> {}", this);
-      }
-    }
+    // if (RulesData.showSteps) {
+    // if (fLhsPatternExpr.head().equals(S.Integrate)) {
+    // IExpr rhs = fRightHandSide.orElse(S.Null);
+    // }
+    // }
 
     if (fReturnResult.isPresent()) {
       if (isFlagOn(IPatternMatcher.SET_DELAYED)) {
@@ -294,9 +289,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
         return result;
       }
     } catch (final ConditionException e) {
-      if (LOGGER.isDebugEnabled()) {
-        logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
-      }
       return F.NIL;
     } catch (final ReturnException e) {
       IExpr result = e.getValue();
@@ -336,9 +328,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       }
       return result;
     } catch (final ConditionException e) {
-      if (LOGGER.isDebugEnabled()) {
-        logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
-      }
       return F.NIL;
     } catch (final ReturnException e) {
       result = e.getValue();
