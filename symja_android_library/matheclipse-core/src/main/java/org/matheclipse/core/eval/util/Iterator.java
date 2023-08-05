@@ -13,7 +13,6 @@ import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -389,11 +388,11 @@ public class Iterator {
 
     IExpr variableValue;
 
-    final Num lowerLimitNum;
+    final INum lowerLimitNum;
 
-    final Num upperLimitNum;
+    final INum upperLimitNum;
 
-    final Num stepNum;
+    final INum stepNum;
 
     public DoubleIterator(final ISymbol symbol, final double lowerLimit, final double upperLimit,
         final double step) {
@@ -415,17 +414,17 @@ public class Iterator {
     }
 
     @Override
-    public Num getLowerLimit() {
+    public INum getLowerLimit() {
       return lowerLimitNum;
     }
 
     @Override
-    public Num getStep() {
+    public INum getStep() {
       return stepNum;
     }
 
     @Override
-    public Num getUpperLimit() {
+    public INum getUpperLimit() {
       return upperLimitNum;
     }
 
@@ -472,7 +471,7 @@ public class Iterator {
      */
     @Override
     public IExpr next() {
-      final Num temp = F.num(count);
+      final INum temp = F.num(count);
       if (variable != null) {
         variable.assignValue(temp, false);
       }
@@ -1162,7 +1161,7 @@ public class Iterator {
           upperLimit = evalEngine.evalWithoutNumericReset(list.arg1());
           step = F.C1;
           variable = null;
-          if (upperLimit instanceof Num) {
+          if (upperLimit instanceof INum) {
             return new DoubleIterator(variable, 1.0, ((INum) upperLimit).doubleValue(), 1.0);
           }
           if (upperLimit.isInteger()) {
@@ -1217,7 +1216,7 @@ public class Iterator {
           if (upperLimit.isList()) {
             return new ExprListIterator(variable, (IAST) upperLimit, evalEngine);
           }
-          if (upperLimit instanceof Num) {
+          if (upperLimit instanceof INum) {
             return new DoubleIterator(variable, 1.0, ((INum) upperLimit).doubleValue(), 1.0);
           }
           if (upperLimit.isInteger()) {
@@ -1259,7 +1258,7 @@ public class Iterator {
             throw new ArgumentTypeException(
                 Errors.getMessage("itraw", F.list(list.arg1()), EvalEngine.get()));
           }
-          if (lowerLimit instanceof Num && upperLimit instanceof Num) {
+          if (lowerLimit instanceof INum && upperLimit instanceof INum) {
             return new DoubleIterator(variable, ((INum) lowerLimit).doubleValue(),
                 ((INum) upperLimit).doubleValue(), 1.0);
           }
@@ -1305,7 +1304,7 @@ public class Iterator {
             throw new ArgumentTypeException(
                 Errors.getMessage("itraw", F.list(list.arg1()), EvalEngine.get()));
           }
-          if (lowerLimit instanceof Num && upperLimit instanceof Num && step instanceof Num) {
+          if (lowerLimit instanceof INum && upperLimit instanceof INum && step instanceof INum) {
             return new DoubleIterator(variable, ((INum) lowerLimit).doubleValue(),
                 ((INum) upperLimit).doubleValue(), ((INum) step).doubleValue());
           }
@@ -1397,7 +1396,7 @@ public class Iterator {
           upperLimit = evalEngine.evalWithoutNumericReset(list.arg1());
           step = F.C1;
           variable = symbol;
-          if (upperLimit instanceof Num) {
+          if (upperLimit instanceof INum) {
             return new DoubleIterator(variable, 1.0, ((INum) upperLimit).doubleValue(), 1.0);
           }
           if (upperLimit.isInteger()) {
@@ -1439,7 +1438,7 @@ public class Iterator {
             }
             return new ExprListIterator(variable, (IAST) upperLimit, evalEngine);
           }
-          if (lowerLimit instanceof Num && upperLimit instanceof Num) {
+          if (lowerLimit instanceof INum && upperLimit instanceof INum) {
             return new DoubleIterator(variable, ((INum) lowerLimit).doubleValue(),
                 ((INum) upperLimit).doubleValue(), 1.0);
           }
@@ -1471,7 +1470,7 @@ public class Iterator {
           upperLimit = evalEngine.evalWithoutNumericReset(list.arg2());
           step = evalEngine.evalWithoutNumericReset(list.arg3());
           variable = symbol;
-          if (lowerLimit instanceof Num && upperLimit instanceof Num && step instanceof Num) {
+          if (lowerLimit instanceof INum && upperLimit instanceof INum && step instanceof INum) {
             return new DoubleIterator(variable, ((INum) lowerLimit).doubleValue(),
                 ((INum) upperLimit).doubleValue(), ((INum) step).doubleValue());
           }
