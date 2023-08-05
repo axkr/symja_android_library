@@ -3,8 +3,7 @@ package org.matheclipse.core.eval;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Comparators;
@@ -26,7 +25,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  * @see org.matheclipse.core.interfaces.ISymbol#ORDERLESS
  */
 public class EvalAttributes {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * Check the cached hashcode with the current one. Only necessary in DEBUG mode.
@@ -356,7 +354,7 @@ public class EvalAttributes {
           return sort3Args(ast, false);
         default:
           if (sort(ast, Comparators.CANONICAL_COMPARATOR)) {
-            if (LOGGER.isDebugEnabled()) {
+            if (Config.DEBUG) {
               checkCachedHashcode(ast);
             }
             return true;
@@ -388,7 +386,7 @@ public class EvalAttributes {
         default:
           if (sort(ast, Comparators.CANONICAL_COMPARATOR)) {
             ast.addEvalFlags(IAST.IS_SORTED);
-            if (LOGGER.isDebugEnabled()) {
+            if (Config.DEBUG) {
               checkCachedHashcode(ast);
             }
             return true;
@@ -494,7 +492,7 @@ public class EvalAttributes {
       if (setFlag) {
         ast.addEvalFlags(IAST.IS_SORTED);
       }
-      if (LOGGER.isDebugEnabled()) {
+      if (Config.DEBUG) {
         checkCachedHashcode(ast);
       }
       return true;
@@ -539,7 +537,7 @@ public class EvalAttributes {
       ast.addEvalFlags(IAST.IS_SORTED);
     }
     if (evaled) {
-      if (LOGGER.isDebugEnabled()) {
+      if (Config.DEBUG) {
         checkCachedHashcode(ast);
       }
     }

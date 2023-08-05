@@ -13,15 +13,13 @@ import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
 import java.io.Writer;
 import java.nio.channels.Channels;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.DataExpr;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class OutputStreamExpr extends DataExpr<OutputStream> implements Externalizable {
-  private static final Logger LOGGER = LogManager.getLogger();
-
   private final int uniqueID;
 
   private final String streamName;
@@ -96,7 +94,9 @@ public class OutputStreamExpr extends DataExpr<OutputStream> implements External
       try {
         fos.write('\n');
       } catch (IOException e) {
-        LOGGER.error("OutputStreamExpr.newInstance() failed", e);
+        // `1`.
+        Errors.printMessage(S.List, "error",
+            F.List("IOException in OutputStreamExpr.newInstance#newInstance()"));
       }
     }
     // OutputStreamWriter osw = new OutputStreamWriter(fos);

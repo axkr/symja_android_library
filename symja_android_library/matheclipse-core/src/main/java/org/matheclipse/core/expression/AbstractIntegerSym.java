@@ -9,8 +9,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeSet;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.hipparchus.exception.MathRuntimeException;
@@ -52,7 +50,6 @@ import it.unimi.dsi.fastutil.ints.IntList;
  * @see BigIntegerSym
  */
 public abstract class AbstractIntegerSym implements IInteger, Externalizable {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /** The BigInteger constant minus one. */
   public static final BigInteger BI_MINUS_ONE = BigInteger.valueOf(-1L);

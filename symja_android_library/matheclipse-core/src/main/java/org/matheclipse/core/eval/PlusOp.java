@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -29,7 +27,7 @@ import org.matheclipse.core.tensor.qty.IQuantity;
  * Algebraic Simplification</a>
  */
 public final class PlusOp {
-  private static final Logger LOGGER = LogManager.getLogger();
+  // private static final Logger LOGGER = LogManager.getLogger();
 
   /** Merge IExpr keys by adding their values into this map. */
   private Map<IExpr, IExpr> plusMap;
@@ -156,7 +154,8 @@ public final class PlusOp {
 
   private IExpr negativeInfinityPlus(final IExpr o1) {
     if (o1.isInfinity()) {
-      LOGGER.log(EvalEngine.get().getLogLevel(), "Indeterminate expression Infinity-Infinity");
+      // Indeterminate expression `1` encountered.
+      Errors.printMessage(S.Infinity, "indet", F.List(F.Plus(F.CInfinity, F.CNInfinity)));
       return S.Indeterminate;
     } else if (o1.isNegativeInfinity()) {
       return F.CNInfinity;
@@ -467,10 +466,10 @@ public final class PlusOp {
         evaled = true;
       }
     } catch (ValidateException | LimitException e) {
-      LOGGER.debug("PlusOp.plus() failed", e);
       throw e;
     } catch (SymjaMathException sme) {
-      LOGGER.debug("PlusOp.plus() failed", sme);
+      // `1`.
+      Errors.printMessage(S.Plus, sme, EvalEngine.get());
     }
     return F.NIL;
   }

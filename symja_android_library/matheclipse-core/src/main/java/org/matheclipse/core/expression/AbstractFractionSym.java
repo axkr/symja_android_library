@@ -5,8 +5,6 @@ import static org.matheclipse.core.expression.NumberUtil.hasLongValue;
 import java.math.BigInteger;
 import java.util.NoSuchElementException;
 import java.util.function.DoubleFunction;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
@@ -47,8 +45,6 @@ import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
  */
 public abstract class AbstractFractionSym implements IFraction {
   private static final long serialVersionUID = -8743141041586314213L;
-
-  private static final Logger LOGGER = LogManager.getLogger();
 
   public static BigInteger gcd(BigInteger i1, BigInteger i2) {
     if (i1.equals(BigInteger.ONE) || i2.equals(BigInteger.ONE)) {

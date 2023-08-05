@@ -1,8 +1,6 @@
 package org.matheclipse.core.expression;
 
 import java.util.Comparator;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.matheclipse.core.eval.Errors;
@@ -19,7 +17,6 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class IntervalSym {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   private static final Comparator<IExpr> INTERVAL_COMPARATOR = new Comparator<IExpr>() {
     @Override
@@ -139,9 +136,8 @@ public class IntervalSym {
         }
       }
       return F.NIL;
-      // return intervalList;
     } catch (RuntimeException rex) {
-      LOGGER.log(engine.getLogLevel(), "Interval", rex);
+      Errors.printMessage(S.Interval, rex, engine);
     }
     return F.NIL;
   }

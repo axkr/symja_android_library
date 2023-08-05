@@ -3,14 +3,13 @@ package org.matheclipse.core.convert;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.PatternMatching;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.expression.F;
@@ -43,7 +42,6 @@ import org.matheclipse.parser.trie.TrieMatch;
  * expression
  */
 public class AST2Expr {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   public static final String[] UPPERCASE_SYMBOL_STRINGS = {"C", "D", "E", "I", "N", "O"};
 
@@ -732,7 +730,7 @@ public class AST2Expr {
           break;
       }
     } catch (ValidateException ve) {
-      LOGGER.debug("AST2Expr.evaluateOnInput() failed", ve);
+      Errors.printMessage(S.General, ve, fEngine);
     }
     return F.NIL;
   }

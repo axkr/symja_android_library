@@ -1,7 +1,5 @@
 package org.matheclipse.core.expression;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
@@ -17,7 +15,6 @@ import org.matheclipse.core.visit.IVisitorLong;
  * @see F#GLOBAL_IDS
  */
 /* private package */ class ExprID implements IExpr {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   @Override
   public int hashCode() {

@@ -10,8 +10,6 @@ import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.S.Pi;
 import java.math.BigInteger;
 import java.util.function.Function;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
@@ -39,7 +37,6 @@ import org.matheclipse.parser.client.ParserConfig;
 
 /** A symbolic complex number implementation */
 public class ComplexSym implements IComplex {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /** */
   private static final long serialVersionUID = 1489050560741527824L;

@@ -154,6 +154,9 @@ import edu.jas.kern.PreemptStatus;
 /** Factory for creating Symja predefined function expression objects (interface {@link IAST}). */
 public class F extends S {
 
+  /**
+   * <b>Attention:</b> special initialization of LOGGER for Android app
+   */
   private static Logger LOGGER;
 
   /**

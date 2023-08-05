@@ -420,12 +420,12 @@ public class Errors {
    * @param engine
    * @return
    */
-  public static IExpr printMessage(ISymbol symbol, final MathRuntimeException mex,
+  public static IExpr printMessage(ISymbol symbol, final Throwable exception,
       EvalEngine engine) {
     if (Config.SHOW_STACKTRACE) {
-      mex.printStackTrace();
+      exception.printStackTrace();
     }
-    return printMessage(symbol, "error", F.List(mex.getMessage()), engine);
+    return printMessage(symbol, "error", F.List(exception.getMessage()), engine);
   }
 
   /**

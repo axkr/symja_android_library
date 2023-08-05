@@ -10,8 +10,6 @@ package org.matheclipse.core.polynomials.longexponent;
  */
 public class ExprTermOrderByName {
 
-  // private static final Logger logger = LogManager.getLogger(ExprTermOrderByName.class);
-
   /** ExprTermOrder named LEX. */
   public static final ExprTermOrder LEX = new ExprTermOrder(ExprTermOrder.LEX);
 

@@ -2,8 +2,6 @@ package org.matheclipse.core.expression;
 
 import java.util.List;
 import java.util.function.Function;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hipparchus.util.Pair;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IAST;
@@ -17,8 +15,6 @@ import org.matheclipse.parser.client.ParserConfig;
 
 /** A concrete pattern sequence implementation (i.e. x__) */
 public class PatternSequence extends AbstractPatternSequence {
-  private static final Logger LOGGER = LogManager.getLogger();
-
 
   /** */
   private static final long serialVersionUID = 2773651826316158627L;

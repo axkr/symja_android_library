@@ -8,14 +8,13 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Locale;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.Apfloat;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.expression.data.GraphExpr;
@@ -1045,8 +1044,6 @@ public class WL {
     static final byte InternalExprID = (byte) 0xD1;
   }
 
-  private static final Logger LOGGER = LogManager.getLogger();
-
   /**
    * Deserialize the byte array to an {@link IExpr} expression.
    *
@@ -1096,9 +1093,9 @@ public class WL {
         return deserializeInternal(byteArray);
       }
     } catch (IOException ex) {
-      LOGGER.error("WL.deserializeResource() failed", ex);
+      // `1`.
+      throw new ArgumentTypeException("error", F.List("IOException in WL#deserializeResource()"));
     }
-    return F.NIL;
   }
 
   /**
@@ -1147,7 +1144,8 @@ public class WL {
         wo.write(expr);
         return wo.toByteArray();
       } catch (IOException e) {
-        LOGGER.debug("WL.serialize() failed", e);
+        // `1`.
+        throw new ArgumentTypeException("error", F.List("IOException in WL#serialize()"));
       }
     }
     return null;
@@ -1169,7 +1167,8 @@ public class WL {
         wo.write(expr);
         return wo.toByteArray();
       } catch (IOException e) {
-        LOGGER.debug("WL.serializeInternal() failed", e);
+        // `1`.
+        throw new ArgumentTypeException("error", F.List("IOException in WL#serializeInternal()"));
       }
     }
     return null;

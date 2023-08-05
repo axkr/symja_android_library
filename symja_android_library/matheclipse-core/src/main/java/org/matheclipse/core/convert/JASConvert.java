@@ -6,8 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -50,7 +48,6 @@ import edu.jas.ufd.Quotient;
  * @param <C>
  */
 public class JASConvert<C extends RingElem<C>> {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /**   Conversion of BigRational to BigInteger. result = (num/gcd)*(lcm/denom). */
   static class RatToRatFactor implements UnaryFunctor<BigRational, BigRational> {
@@ -288,7 +285,6 @@ public class JASConvert<C extends RingElem<C>> {
     } catch (JASConversionException jce) {
       throw jce;
     } catch (RuntimeException rex) {
-      LOGGER.debug("JASConvert.expr2JAS() failed", rex);
       throw new JASConversionException();
     }
   }

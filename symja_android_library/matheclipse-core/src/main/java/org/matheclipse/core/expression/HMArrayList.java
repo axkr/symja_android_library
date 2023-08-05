@@ -19,7 +19,13 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.RandomAccess;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -27,8 +33,6 @@ import java.util.function.IntFunction;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
@@ -47,8 +51,6 @@ public abstract class HMArrayList extends AbstractAST
     implements IASTAppendable, Serializable, RandomAccess {
 
   private static final long serialVersionUID = 8683452581122892189L;
-
-  private static final Logger LOGGER = LogManager.getLogger();
 
   protected transient IExpr[] array;
 
@@ -750,7 +752,7 @@ public abstract class HMArrayList extends AbstractAST
 
   @Override
   public IExpr get(int location) {
-    if (LOGGER.isDebugEnabled()) {
+    if (Config.FUZZ_TESTING) {
       int index;
       if ((index = firstIndex + location) < lastIndex) {
         return array[index];

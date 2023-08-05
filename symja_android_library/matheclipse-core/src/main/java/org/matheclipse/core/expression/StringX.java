@@ -5,8 +5,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.function.Function;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
@@ -22,9 +20,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  * @see org.matheclipse.core.interfaces.IStringX
  */
 public class StringX implements IStringX {
-  private static final Logger LOGGER = LogManager.getLogger();
 
-  /** */
   private static final long serialVersionUID = -68464824682534930L;
 
   /**

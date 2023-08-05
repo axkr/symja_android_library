@@ -17,8 +17,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
@@ -90,7 +88,7 @@ import com.google.common.cache.CacheBuilder;
  */
 public class EvalEngine implements Serializable {
 
-  private static final Logger LOGGER = LogManager.getLogger();
+  // private static final Logger LOGGER = LogManager.getLogger();
 
   private static final IStringX EVALUATION_LOOP = StringX.valueOf("EvalLoop");
 
@@ -1018,8 +1016,7 @@ public class EvalEngine implements Serializable {
         } catch (FlowControlException e) {
           throw e;
         } catch (SymjaMathException ve) {
-          LOGGER.log(getLogLevel(), ast.topHead(), ve);
-          return F.NIL;
+          return Errors.printMessage(ast.topHead(), ve, this);
         }
         // cannot generally set the result as evaluated in built-in function. Especially problems in
         // `togetherMode`
@@ -1724,8 +1721,9 @@ public class EvalEngine implements Serializable {
       if (Config.FUZZ_TESTING) {
         throw new NullPointerException();
       }
-      LOGGER.log(getLogLevel(),
-          "Evaluation aborted in EvalEngine#evalLoop() because of undefined expression!");
+      // `1`.
+      Errors.printMessage(S.General, "error",
+          F.List("Evaluation aborted in EvalEngine#evalLoop() because of undefined expression!"));
       throw AbortException.ABORTED;
     }
     if (expr instanceof IAST) {
@@ -1739,7 +1737,6 @@ public class EvalEngine implements Serializable {
     }
 
     if ((fRecursionLimit > 0) && (fRecursionCounter > fRecursionLimit)) {
-      LOGGER.debug(expr);
       RecursionLimitExceeded.throwIt(fRecursionLimit, expr);
     }
     if (fStopRequested || Thread.currentThread().isInterrupted()) {
@@ -1764,7 +1761,7 @@ public class EvalEngine implements Serializable {
             if (fStopRequested || Thread.currentThread().isInterrupted()) {
               throw TimeoutException.TIMED_OUT;
             }
-            if (LOGGER.isDebugEnabled() && temp.equals(result)) {
+            if (Config.DEBUG && temp.equals(result)) {
               // Endless iteration detected in `1` in evaluation loop.
               Errors.printMessage(result.topHead(), "itendless", F.list(temp), this);
               IterationLimitExceeded.throwIt(fIterationLimit, result);
@@ -1843,7 +1840,7 @@ public class EvalEngine implements Serializable {
             if (fStopRequested || Thread.currentThread().isInterrupted()) {
               throw TimeoutException.TIMED_OUT;
             }
-            if (LOGGER.isDebugEnabled()) {
+            if (Config.DEBUG) {
               if (temp.equals(result)) {
                 // Endless iteration detected in `1` in evaluation loop.
                 Errors.printMessage(result.topHead(), "itendless", F.list(temp), this);
@@ -1865,7 +1862,8 @@ public class EvalEngine implements Serializable {
       if (Config.FUZZ_TESTING) {
         throw new NullPointerException();
       }
-      LOGGER.log(getLogLevel(), "Evaluation aborted: {}", result);
+      // `1`.
+      Errors.printMessage(S.General, uoe, this);
       throw AbortException.ABORTED;
     } finally {
       stackPop();
@@ -3541,8 +3539,8 @@ public class EvalEngine implements Serializable {
         if (refAssociation[0] != null) {
           if (refAssociation[0].size() != association.size()) {
             // The arguments `1` and `2` in `3` are incompatible.
-            Errors.printMessage(S.Association, "incmp",
-                F.List(refAssociation[0], association, ast), this);
+            Errors.printMessage(S.Association, "incmp", F.List(refAssociation[0], association, ast),
+                this);
             return true;
           }
           for (int i = 1; i < association.size(); i++) {

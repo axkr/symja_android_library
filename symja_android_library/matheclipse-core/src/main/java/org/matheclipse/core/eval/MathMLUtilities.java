@@ -2,10 +2,9 @@ package org.matheclipse.core.eval;
 
 import java.io.IOException;
 import java.io.Writer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.mathml.MathMLFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.parser.ExprParser;
@@ -18,7 +17,6 @@ import org.matheclipse.core.parser.ExprParser;
  * Unicode</a>
  */
 public class MathMLUtilities {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   protected EvalEngine fEvalEngine;
 
@@ -96,7 +94,7 @@ public class MathMLUtilities {
         // node = fEvalEngine.parseNode(inputExpression);
         // parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
       } catch (final RuntimeException rex) {
-        LOGGER.debug("MathMLUtilities.toMathML() failed", rex);
+        Errors.printMessage(S.MathMLForm, rex, fEvalEngine);
       }
     }
     return toMathML(parsedExpression, out);
@@ -149,7 +147,7 @@ public class MathMLUtilities {
       } catch (final IOException ioe) {
         //
       } catch (final RuntimeException rex) {
-        LOGGER.debug("MathMLUtilities.toMathML() failed", rex);
+        Errors.printMessage(S.MathMLForm, rex, fEvalEngine);
       }
       return false;
     }
@@ -173,7 +171,7 @@ public class MathMLUtilities {
       } catch (final IOException ioe) {
         //
       } catch (final RuntimeException rex) {
-        LOGGER.debug("MathMLUtilities.toJava() failed", rex);
+        Errors.printMessage(S.MathMLForm, rex, fEvalEngine);
       }
     }
   }

@@ -25,8 +25,6 @@ import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.Apfloat;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.linear.Array2DRowRealMatrix;
@@ -96,7 +94,6 @@ import com.google.common.cache.CacheBuilder;
 import it.unimi.dsi.fastutil.ints.IntList;
 
 public abstract class AbstractAST implements IASTMutable, Cloneable {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   protected static final class ASTIterator implements ListIterator<IExpr> {
 
@@ -2027,7 +2024,6 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public IExpr evaluate(EvalEngine engine) {
-    LOGGER.debug("Evaluate {}", this);
     final IExpr head = head();
     if (head instanceof IBuiltInSymbol) {
       final IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
@@ -2063,8 +2059,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         } catch (FlowControlException e) {
           throw e;
         } catch (SymjaMathException ve) {
-          LOGGER.log(engine.getLogLevel(), topHead(), ve);
-          return F.NIL;
+          return Errors.printMessage(topHead(), ve, engine);
         }
       }
     } else if (head.isAssociation() && argSize() == 1) {
@@ -2711,7 +2706,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public final CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(SourceCodeProperties.stringFormProperties(symbolsAsFactoryMethod), depth, x -> null);
+    return internalJavaString(SourceCodeProperties.stringFormProperties(symbolsAsFactoryMethod),
+        depth, x -> null);
   }
 
   /** {@inheritDoc} */
@@ -2977,7 +2973,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public final CharSequence internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-    return internalJavaString(SourceCodeProperties.scalaFormProperties(symbolsAsFactoryMethod), depth, x -> null);
+    return internalJavaString(SourceCodeProperties.scalaFormProperties(symbolsAsFactoryMethod),
+        depth, x -> null);
   }
 
   /** {@inheritDoc} */
@@ -5636,7 +5633,6 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         } catch (java.lang.IllegalArgumentException iae) {
           // java.util.TimSort.mergeHi(TimSort.java:899) - Comparison method violates its general
           // contract!
-          LOGGER.error(this, iae);
           throw iae;
         }
       } else {
@@ -5969,49 +5965,44 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   @Override
   public String toString() {
-    try {
-      StringBuilder sb = new StringBuilder();
-      if (OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax()).convert(sb, this)) {
-        return sb.toString();
-      }
-      sb = null;
+    StringBuilder sb = new StringBuilder();
+    if (OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax()).convert(sb, this)) {
+      return sb.toString();
+    }
+    sb = null;
 
-      final StringBuilder buf = new StringBuilder();
-      if (size() > 0 && isListOrAssociation()) {
-        if (isList()) {
-          buf.append('{');
-        } else {
-          buf.append("<|");
-        }
-        for (int i = 1; i < size(); i++) {
-          buf.append(getRule(i) == this ? "(this AST)" : String.valueOf(getRule(i)));
-          if (i < argSize()) {
-            buf.append(", ");
-          }
-        }
-        if (isList()) {
-          buf.append('}');
-        } else {
-          buf.append("|>");
-        }
-        return buf.toString();
-
-      } else if (isAST(S.Slot, 2) && (arg1().isReal())) {
-
-        final int slot = ((IReal) arg1()).toIntDefault();
-        if (slot <= 0) {
-          return toFullFormString();
-        }
-        if (slot == 1) {
-          return "#";
-        }
-        return "#" + slot;
+    final StringBuilder buf = new StringBuilder();
+    if (size() > 0 && isListOrAssociation()) {
+      if (isList()) {
+        buf.append('{');
       } else {
+        buf.append("<|");
+      }
+      for (int i = 1; i < size(); i++) {
+        buf.append(getRule(i) == this ? "(this AST)" : String.valueOf(getRule(i)));
+        if (i < argSize()) {
+          buf.append(", ");
+        }
+      }
+      if (isList()) {
+        buf.append('}');
+      } else {
+        buf.append("|>");
+      }
+      return buf.toString();
+
+    } else if (isAST(S.Slot, 2) && (arg1().isReal())) {
+
+      final int slot = ((IReal) arg1()).toIntDefault();
+      if (slot <= 0) {
         return toFullFormString();
       }
-    } catch (RuntimeException e) {
-      LOGGER.debug("AbstractAST.toString() failed for: {}", () -> fullFormString());
-      throw e;
+      if (slot == 1) {
+        return "#";
+      }
+      return "#" + slot;
+    } else {
+      return toFullFormString();
     }
   }
 

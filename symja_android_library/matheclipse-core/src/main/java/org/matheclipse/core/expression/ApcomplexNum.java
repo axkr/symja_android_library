@@ -2,8 +2,6 @@ package org.matheclipse.core.expression;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
@@ -33,7 +31,6 @@ import org.matheclipse.parser.client.ParserConfig;
  * numeric complex floating-point number.
  */
 public class ApcomplexNum implements IComplexNum {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   public static ApcomplexNum valueOf(final Apcomplex value) {
     return new ApcomplexNum(value);

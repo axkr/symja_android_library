@@ -10,13 +10,12 @@ import java.util.TreeSet;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.interfaces.IAST;
@@ -48,7 +47,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  * @see AST
  */
 public class ASTRealVector extends AbstractAST implements Externalizable, RandomAccess {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   public ASTRealVector() {
     // When Externalizable objects are deserialized, they first need to be constructed by invoking
@@ -558,7 +556,8 @@ public class ASTRealVector extends AbstractAST implements Externalizable, Random
       }
       buf.append('}');
     } catch (IOException e) {
-      LOGGER.debug("ASTRealVector.toString() failed", e);
+      // `1`.
+      Errors.printMessage(S.List, "error", F.List("IOException in ASTRealVector#toString()"));
     }
   }
 
