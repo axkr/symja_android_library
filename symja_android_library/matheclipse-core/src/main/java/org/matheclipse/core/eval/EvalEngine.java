@@ -21,7 +21,6 @@ import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
-// import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.exception.AbortException;

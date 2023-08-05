@@ -1,7 +1,6 @@
 package org.matheclipse.core.eval.exception;
 
 import org.matheclipse.core.eval.Errors;
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
@@ -24,10 +23,10 @@ public class RecursionLimitExceeded extends LimitException {
   public String getMessage() {
     if (fExpr == null) {
       // Recursion depth of `1` exceeded during evaluation of `2`.
-      return Errors.getMessage("reclim2", F.list(F.ZZ(fLimit), S.Null), EvalEngine.get());
+      return Errors.getMessage("reclim2", F.list(F.ZZ(fLimit), S.Null));
     }
     // Recursion depth of `1` exceeded during evaluation of `2`.
-    return Errors.getMessage("reclim2", F.list(F.ZZ(fLimit), fExpr), EvalEngine.get());
+    return Errors.getMessage("reclim2", F.list(F.ZZ(fLimit), fExpr));
   }
 
   public static void throwIt(final int limit, final IExpr expr) {

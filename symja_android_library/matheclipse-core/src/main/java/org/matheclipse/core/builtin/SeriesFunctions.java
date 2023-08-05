@@ -1855,37 +1855,34 @@ public class SeriesFunctions {
       }
     }
     if (timesAST.size() != 1) {
-      if (arg != null) {
-
-        for (int i = 2; i < timesAST.size(); i++) {
-          IExpr timesArg = timesAST.get(i);
-          if (timesArg.isPower()) {
-            int exp = timesArg.exponent().toIntDefault();
-            if (exp != Integer.MIN_VALUE) {
-              if (exp == -1) {
-                // arg1.divide(arg2.base())
-                arg = seriesDataRecursive(timesArg.base(), x, x0, ni, engine);
-                if (arg != null) {
-                  series = series.dividePS((ASTSeriesData) arg);
-                  continue;
-                }
-                return null;
+      for (int i = 2; i < timesAST.size(); i++) {
+        IExpr timesArg = timesAST.get(i);
+        if (timesArg.isPower()) {
+          int exp = timesArg.exponent().toIntDefault();
+          if (exp != Integer.MIN_VALUE) {
+            if (exp == -1) {
+              // arg1.divide(arg2.base())
+              arg = seriesDataRecursive(timesArg.base(), x, x0, ni, engine);
+              if (arg != null) {
+                series = series.dividePS((ASTSeriesData) arg);
+                continue;
               }
+              return null;
             }
           }
+        }
 
-          arg = seriesDataRecursive(timesArg, x, x0, ni, engine);
-          if (arg != null) {
-            series = series.timesPS((ASTSeriesData) arg);
-            continue;
-          }
-          return null;
+        arg = seriesDataRecursive(timesArg, x, x0, ni, engine);
+        if (arg != null) {
+          series = series.timesPS((ASTSeriesData) arg);
+          continue;
         }
-        if (shift != 0) {
-          series = series.shift(shift, coefficient, n + 1);
-        }
-        return series;
+        return null;
       }
+      if (shift != 0) {
+        series = series.shift(shift, coefficient, n + 1);
+      }
+      return series;
     }
     return null;
   }

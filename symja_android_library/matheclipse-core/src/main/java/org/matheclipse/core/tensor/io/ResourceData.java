@@ -1,6 +1,7 @@
 // code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor.io;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import org.matheclipse.core.interfaces.IAST;
@@ -48,7 +49,7 @@ public class ResourceData {
   public static Properties properties(String string) {
     try (InputStream inputStream = ResourceData.class.getResourceAsStream(string)) {
       return ImportHelper.properties(inputStream);
-    } catch (Exception exception) {
+    } catch (IOException exception) {
       // ---
     }
     return null;

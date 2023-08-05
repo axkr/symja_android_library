@@ -77,11 +77,7 @@ public class NumericArrayFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (ast.arg1().isNumericArray()) {
-        return S.True;
-      }
-      return S.False;
+      return F.booleSymbol(ast.arg1().isNumericArray());
     }
 
     @Override

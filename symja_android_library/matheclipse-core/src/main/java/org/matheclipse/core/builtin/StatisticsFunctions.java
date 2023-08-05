@@ -4403,7 +4403,7 @@ public class StatisticsFunctions {
     @Override
     public IExpr kurtosis(IAST dist, EvalEngine engine) {
       if (dist.isAST2()) {
-        IExpr a = dist.arg1();
+        // IExpr a = dist.arg1();
         IExpr b = dist.arg2();
         // -3+3*E^(2*b^2)+2*E^(3*b^2)+E^(4*b^2)
         IExpr v1 = F.Sqr(b);

@@ -1,7 +1,6 @@
 package org.matheclipse.core.eval.exception;
 
 import org.matheclipse.core.eval.Errors;
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -29,13 +28,13 @@ public class ArgumentTypeException extends ValidateException {
 
   public static void throwNIL() {
     // unexpected NIL expression encountered.
-    String str = Errors.getMessage("nil", F.CEmptyList, EvalEngine.get());
+    String str = Errors.getMessage("nil", F.CEmptyList);
     throw new ArgumentTypeException(str);
   }
 
   public static void throwArg(IExpr arg1, IExpr arg2) {
     // illegal arguments: \"`1`\" in `2`
-    String str = Errors.getMessage("argillegal", F.list(arg1, arg2), EvalEngine.get());
+    String str = Errors.getMessage("argillegal", F.list(arg1, arg2));
     throw new ArgumentTypeException(str);
   }
 

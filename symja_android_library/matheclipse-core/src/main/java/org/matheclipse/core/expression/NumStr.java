@@ -125,7 +125,6 @@ public final class NumStr extends Num {
         return apfloatNumValue().add(((INum) that).apfloatNumValue());
       }
       if (that instanceof ApcomplexNum) {
-        ApcomplexNum arg2 = (ApcomplexNum) that;
         return ApcomplexNum.valueOf(apfloatValue()).add((ApcomplexNum) that);
       }
       if (that instanceof ComplexNum) {
@@ -146,7 +145,6 @@ public final class NumStr extends Num {
         return apfloatNumValue().multiply(((INum) that).apfloatNumValue());
       }
       if (that instanceof ApcomplexNum) {
-        ApcomplexNum arg2 = (ApcomplexNum) that;
         return ApcomplexNum.valueOf(apfloatValue()).multiply((ApcomplexNum) that);
       }
       if (that instanceof ComplexNum) {

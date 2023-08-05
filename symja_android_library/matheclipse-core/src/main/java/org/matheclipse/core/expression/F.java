@@ -2115,8 +2115,9 @@ public class F extends S {
   /**
    * Create a new abstract syntax tree (AST).
    *
-   * @param head the header expression of the function. If the ast represents a function like <code>
-   *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+   * @param head the header expression of the function. In the case, that the {@code ast} represents
+   *        a function like {@code f[x,y], Sin[x],...}, the {@code head} must be an instance of type
+   *        {@link ISymbol}
    */
   public static final IASTAppendable ast(final IExpr head) {
     return AST.newInstance(head);
@@ -3635,8 +3636,8 @@ public class F extends S {
   public static IExpr Divide(final IExpr numerator, final IExpr denominator) {
     if (denominator.isZero()) {
       // Indeterminate expression `1` encountered.
-      Errors.printMessage(S.Power, "indet",
-          F.list(F.Times(numerator, F.Power(denominator, F.CN1))), EvalEngine.get());
+      Errors.printMessage(S.Power, "indet", F.list(F.Times(numerator, F.Power(denominator, F.CN1))),
+          EvalEngine.get());
       return S.Indeterminate;
     }
     if (denominator.isOne()) {
@@ -7445,6 +7446,7 @@ public class F extends S {
   public static IAST NumericalSort(final IExpr a0) {
     return new AST1(NumericalSort, a0);
   }
+
   /**
    *
    *

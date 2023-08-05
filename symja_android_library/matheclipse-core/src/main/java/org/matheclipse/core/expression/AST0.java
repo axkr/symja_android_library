@@ -185,7 +185,7 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
 
   @Override
   public IASTAppendable copyAppendable() {
-    return new AST(arg0);
+    return F.ast(arg0);
   }
 
   @Override

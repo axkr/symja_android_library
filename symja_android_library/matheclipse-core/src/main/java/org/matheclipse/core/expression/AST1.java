@@ -115,7 +115,7 @@ public class AST1 extends AST0 {
 
   @Override
   public IASTAppendable copyAppendable() {
-    return new AST(arg0, arg1);
+    return F.unary(arg0, arg1);
   }
 
   @Override
