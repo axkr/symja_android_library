@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
@@ -35,11 +33,6 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 public final class RulesData implements Serializable {
   private static final long serialVersionUID = -7747268035549814899L;
 
-  private static final Logger LOGGER = LogManager.getLogger();
-
-  static boolean showSteps = false;
-
-  /** */
   public static final int DEFAULT_VALUE_INDEX = Integer.MIN_VALUE;
 
   /**
@@ -47,7 +40,6 @@ public final class RulesData implements Serializable {
    * with a hash value in a step before the &quot;real structural pattern matching&quot;.
    *
    * @param lhs the left-hand-side of pattern matching definition
-   * @return
    */
   public static boolean isComplicatedPatternRule(final IExpr lhs) {
     if (lhs.isASTOrAssociation()) {
@@ -137,7 +129,6 @@ public final class RulesData implements Serializable {
    * memory usage by sharing common objects.
    *
    * @param visitor the visitor which manipulates the IAST objects
-   * @return
    */
   public void accept(AbstractVisitor visitor) {
     Iterator<Map.Entry<IExpr, PatternMatcherEquals>> iter;
@@ -414,21 +405,9 @@ public final class RulesData implements Serializable {
    * @return {@link F#NIL} if no matching/evaluation was possible
    */
   public IExpr evalDownRule(final IExpr expr, EvalEngine engine) {
-    if (Config.SHOW_PATTERN_EVAL_STEPS) {
-      showSteps = Config.SHOW_PATTERN_SYMBOL_STEPS.contains(expr.topHead());
-      if (showSteps) {
-        LOGGER.info("EVAL_EXPR: {}", expr);
-      }
-    }
     if (fEqualDownRules != null) {
-      // if (showSteps) {
-      // LOGGER.info(" EQUAL RULES");
-      // }
       PatternMatcherEquals res = fEqualDownRules.get(expr);
       if (res != null) {
-        if (showSteps) {
-          LOGGER.info("\n  >>>> {}", res.getRHS());
-        }
         return res.getRHS();
       }
     }
@@ -456,74 +435,22 @@ public final class RulesData implements Serializable {
           // }
           if (patternEvaluator.isPatternHashAllowed(patternHash)) {
             pmEvaluator = patternEvaluator.copy();
-            if (showSteps) {
-              if (isShowSteps(pmEvaluator)) {
-                IExpr rhs = pmEvaluator.getRHS().orElse(S.Null);
-                LOGGER.info(" COMPLEX: {} := {}", pmEvaluator.getLHS(), rhs);
-              }
-            }
-            // if (pmEvaluator.getLHSPriority() == 6656) {
-            // LOGGER.info("Debug from this line");
-            // }
-            if (LOGGER.isDebugEnabled()) {
-              if (isShowPriority(pmEvaluator)) {
-                LOGGER.debug("try: {} - ", pmEvaluator.getLHSPriority());
-              }
-              // if (pmEvaluator.getLHSPriority() == 432) {
-              // LOGGER.info(pmEvaluator);
-              // LOGGER.info(expr);
-              // LOGGER.info("Debug from this line");
-              // }
-            }
-            // LOGGER.info(pmEvaluator);
-            // LOGGER.info(">>"+expr);
 
             result = pmEvaluator.eval(expr, engine);
             if (result.isPresent()) {
-              // if (patternEvaluator.fLhsPatternExpr.isAST(S.Integrate)) {
-              // LOGGER.info(((IPatternMatcher) patternEvaluator));
-              // // if (((IPatternMatcher) patternEvaluator).getLHSPriority() ==
-              // 6686) {
-              // LOGGER.info(
-              // "Rule number: " + ((IPatternMatcher)
-              // patternEvaluator).getLHSPriority());
-              // // }
-              // LOGGER.info("Result: "+result);
-              // }
-              if (LOGGER.isDebugEnabled()) {
-                if (isShowPriority(pmEvaluator)) {
-                  LOGGER.debug("matched: {}: {}", pmEvaluator.getLHSPriority(), pmEvaluator);
-                }
-              }
-              if (showSteps) {
-                if (isShowSteps(pmEvaluator)) {
-                  IExpr rhs = pmEvaluator.getRHS();
-                  if (rhs.isNIL()) {
-                    rhs = S.Null;
-                  }
-                  LOGGER.info("\nCOMPLEX: {} := {}", pmEvaluator.getLHS(), rhs);
-                  LOGGER.info(" >>> {}  >>>>  {}", expr, result);
-                }
-              }
               return result;
             }
-            if (LOGGER.isDebugEnabled()) {
-              if (isShowPriority(pmEvaluator)) {
-                LOGGER.debug("not matched: {}", pmEvaluator.getLHSPriority());
-              }
-            }
+
           }
         }
       }
-      // } catch (CloneNotSupportedException cnse) {
-      // LOGGER.error("RulesData.evalDownRule() failed", cnse);
     } finally {
       engine.setEvalRHSMode(evalRHSMode);
     }
     return F.NIL;
   }
 
-  private boolean isShowSteps(IPatternMatcher pmEvaluator) {
+  private static boolean isShowSteps(IPatternMatcher pmEvaluator) {
     IExpr head = pmEvaluator.getLHS().head();
     if (head.isSymbol() && ((ISymbol) head).isContext(Context.RUBI)) {
       return true;
@@ -531,7 +458,7 @@ public final class RulesData implements Serializable {
     return head.equals(S.Integrate);
   }
 
-  private boolean isShowPriority(IPatternMatcher pmEvaluator) {
+  private static boolean isShowPriority(IPatternMatcher pmEvaluator) {
     IExpr head = pmEvaluator.getLHS().head();
     return head.equals(S.Integrate);
   }
@@ -545,7 +472,6 @@ public final class RulesData implements Serializable {
       }
     }
 
-    // try {
     IPatternMatcher pmEvaluator;
     if ((fSimplePatternUpRules != null) && (expression.isASTOrAssociation())) {
       IExpr result;
@@ -557,9 +483,6 @@ public final class RulesData implements Serializable {
         }
       }
     }
-    // } catch (CloneNotSupportedException cnse) {
-    // LOGGER.error("RulesData.evalUpRule() failed", cnse);
-    // }
     return F.NIL;
   }
 
@@ -662,7 +585,6 @@ public final class RulesData implements Serializable {
    * @param leftHandSide left hand side rule with patterns
    * @param rightHandSide right hand side term rewriting rule
    * @param priority the priority of the rule
-   * @return
    */
   public final IPatternMatcher integrate(final IExpr leftHandSide, final IExpr rightHandSide,
       final int priority) {
@@ -686,7 +608,6 @@ public final class RulesData implements Serializable {
    * Insert a new (or replace an old equivalent) pattern matching rule in the rules data structure.
    *
    * @param newPatternMatcher the new pattern matching rule
-   * @return
    */
   public final PatternMatcher insertMatcher(final PatternMatcher newPatternMatcher) {
     if (fPatternDownRules == null) {

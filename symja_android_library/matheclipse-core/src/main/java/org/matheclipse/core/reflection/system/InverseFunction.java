@@ -2,8 +2,6 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -37,7 +35,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </pre>
  */
 public class InverseFunction extends AbstractFunctionEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   public InverseFunction() {}
 
@@ -54,10 +51,6 @@ public class InverseFunction extends AbstractFunctionEvaluator {
         }
       }
     } else if (arg1.isBuiltInSymbol()) {
-      if (arg1.equals(S.Abs)) {
-        LOGGER.log(engine.getLogLevel(),
-            "InverseFunction: using of inverse functions may omit some values.");
-      }
       if (ast.isAST1()) {
         IExpr temp = getUnaryInverseFunction((ISymbol) arg1);
         if (temp != null) {
