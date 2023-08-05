@@ -2596,14 +2596,11 @@ public final class Arithmetic {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return numericEval(ast, engine);
+      return F.NIL;
     }
 
     @Override
     public IExpr numericEval(final IAST ast, EvalEngine engine) {
-      if (engine.isDoubleMode()) {
-        return F.num(Double.POSITIVE_INFINITY);
-      }
       return F.NIL;
     }
 
@@ -2625,8 +2622,8 @@ public final class Arithmetic {
 
     @Override
     public IExpr numericEval(final IAST ast, EvalEngine engine) {
-      if (engine.isDoubleMode()) {
-        return F.num(Double.NEGATIVE_INFINITY);
+      if (engine.isNumericMode()) {
+        return F.CD0;
       }
       return F.NIL;
     }
@@ -3738,8 +3735,7 @@ public final class Arithmetic {
       if (base.isZero()) {
         if (exponent.isNegative()) {
           // Infinite expression `1` encountered.
-          Errors.printMessage(S.Power, "infy", F.list(F.Power(F.C0, exponent)),
-              EvalEngine.get());
+          Errors.printMessage(S.Power, "infy", F.list(F.Power(F.C0, exponent)), EvalEngine.get());
           return F.CComplexInfinity;
         }
         if (exponent.isZero()) {
@@ -3781,8 +3777,7 @@ public final class Arithmetic {
     private static IExpr e2DblArg(final INum base, final INum exponent) {
       if (base.isZero()) {
         if (exponent.isNegative()) {
-          Errors.printMessage(S.Power, "infy", F.list(F.Power(F.C0, exponent)),
-              EvalEngine.get());
+          Errors.printMessage(S.Power, "infy", F.list(F.Power(F.C0, exponent)), EvalEngine.get());
           // EvalEngine.get().printMessage("Infinite expression 0^(negative number)");
           return F.CComplexInfinity;
         }
@@ -3796,13 +3791,14 @@ public final class Arithmetic {
       if (exponent.isMinusOne()) {
         return base.inverse();
       }
-      if (exponent.isNumIntValue()) {
-        return base.pow(exponent);
-      }
-      if (base.isNegative()) {
+      if (!exponent.isNumIntValue() && base.isNegative()) {
         return F.complexNum(base.doubleValue()).pow(F.complexNum(exponent.doubleValue()));
       }
-      return base.pow(exponent);
+      INum pow = base.pow(exponent);
+      if (pow.isInfinite()) {
+        return F.Overflow();
+      }
+      return pow;
     }
 
     private static IExpr e2DblComArg(final IComplexNum base, final IComplexNum exponent) {
@@ -4431,8 +4427,7 @@ public final class Arithmetic {
       }
       if (exponent.isNegativeResult()) {
         // 0^x /; x<0
-        Errors.printMessage(S.Power, "infy", F.list(F.Power(F.C0, exponent)),
-            EvalEngine.get());
+        Errors.printMessage(S.Power, "infy", F.list(F.Power(F.C0, exponent)), EvalEngine.get());
         return F.CComplexInfinity;
       }
 
@@ -4440,8 +4435,7 @@ public final class Arithmetic {
       if (a.isReal()) {
         if (a.isNegative()) {
           // engine.printMessage("Infinite expression 0^(negative number)");
-          Errors.printMessage(S.Power, "infy", F.list(F.Power(F.C0, exponent)),
-              EvalEngine.get());
+          Errors.printMessage(S.Power, "infy", F.list(F.Power(F.C0, exponent)), EvalEngine.get());
           return F.CComplexInfinity;
         }
         if (a.isZero()) {
@@ -4455,14 +4449,12 @@ public final class Arithmetic {
         IExpr temp = engine.evalN(a);
         if (temp.isReal()) {
           if (temp.isNegative()) {
-            Errors.printMessage(S.Power, "infy", F.list(F.Power(F.C0, temp)),
-                EvalEngine.get());
+            Errors.printMessage(S.Power, "infy", F.list(F.Power(F.C0, temp)), EvalEngine.get());
             // engine.printMessage("Infinite expression 0^(negative number)");
             return F.CComplexInfinity;
           }
           if (temp.isZero()) {
-            Errors.printMessage(S.Power, "indet", F.list(F.Power(F.C0, F.C0)),
-                EvalEngine.get());
+            Errors.printMessage(S.Power, "indet", F.list(F.Power(F.C0, F.C0)), EvalEngine.get());
             // engine.printMessage("Infinite expression 0^0.");
             return S.Indeterminate;
           }
@@ -5498,8 +5490,7 @@ public final class Arithmetic {
           }
         } else {
           // Integer expected at position `2` in `1`.
-          return Errors.printMessage(ast.topHead(), "int", F.list(ast, F.C2),
-              EvalEngine.get());
+          return Errors.printMessage(ast.topHead(), "int", F.list(ast, F.C2), EvalEngine.get());
         }
       }
 
@@ -5926,6 +5917,7 @@ public final class Arithmetic {
 
       // the case where both args are numbers is already handled in binaryOperator()
       if (arg1.isReal() || arg2.isReal()) {
+
         if (arg1.isZero()) {
           return evalZeroTimesX(arg1, arg2, false);
         } else if (arg2.isZero()) {
@@ -5935,10 +5927,56 @@ public final class Arithmetic {
         } else if (arg2.isOne()) {
           return arg1;
         }
+        if (arg1 instanceof INum) {
+          if (arg2.isAST(S.Overflow, 1)) {
+            return arg2;
+          }
+        } else if (arg2 instanceof INum) {
+          if (arg1.isAST(S.Overflow, 1)) {
+            return arg1;
+          }
+        }
       }
       if (arg1.isNumber() && arg2.isNumber()) {
         return F.NIL;
       }
+      if (arg1.isAST(S.Underflow, 1)) {
+        if (arg2.isNumericFunction()) {
+          if (EvalEngine.get().isNumericMode()) {
+            return F.CD0;
+          }
+          return arg1;
+        }
+        if (arg2.isAST(S.Overflow, 1)) {
+          return S.Indeterminate;
+        }
+      } else if (arg2.isAST(S.Underflow, 1)) {
+        if (arg1.isNumericFunction()) {
+          if (EvalEngine.get().isNumericMode()) {
+            return F.CD0;
+          }
+          return arg2;
+        }
+        if (arg1.isAST(S.Overflow, 1)) {
+          return S.Indeterminate;
+        }
+      }
+      if (arg1.isAST(S.Overflow, 1)) {
+        if (arg2.isNumericFunction()) {
+          return arg1;
+        }
+        if (arg2.isAST(S.Underflow, 1)) {
+          return S.Indeterminate;
+        }
+      } else if (arg2.isAST(S.Overflow, 1)) {
+        if (arg1.isNumericFunction()) {
+          return arg2;
+        }
+        if (arg1.isAST(S.Underflow, 1)) {
+          return S.Indeterminate;
+        }
+      }
+
       if (arg1.isSymbol() || arg2.isSymbol()) {
         if (arg1 == arg2) {
           return F.Power(arg1, C2);

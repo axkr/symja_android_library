@@ -35,13 +35,13 @@ public class DoubleToMMA {
     }
     if (Double.isInfinite(value)) {
       if (value < 0) {
-        // buf.append("-Infinity");
-        buf.append("Underflow");
+        buf.append("-Infinity");
+        // buf.append("Underflow");
       } else {
-        // buf.append("Infinity");
-        buf.append("Overflow");
+        buf.append("Infinity");
+        // buf.append("Overflow");
       }
-      buf.append(relaxedSyntax ? "()" : "[]");
+      // buf.append(relaxedSyntax ? "()" : "[]");
       return;
     }
     String s = String.format(Locale.US, "%16.16E", value);

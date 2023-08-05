@@ -6860,6 +6860,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testExp() {
+    check("Exp(10.*^20)", //
+        "Overflow()");
+
     check("Exp(x*Log(n))", //
         "n^x");
     check("Exp(42+Log(a)+Log(b))", //
@@ -6870,8 +6873,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "22026.465794806703");
     check("Exp(x) //FullForm", //
         "Power(E, x)");
-    check("Exp(10.*^20)", //
-        "Overflow()");
 
     check("Exp(a+b)", //
         "E^(a+b)");
@@ -17052,14 +17053,38 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3.14159265358979323846264338327");
   }
 
-  public void testOverflow() {
-    check("Overflow() // N", //
-        "Overflow()");
-  }
 
   public void testUnderflow() {
-    check("Underflow() // N", //
+    check("5*Underflow() // N", //
+        "0.0");
+    check("5*Underflow() ", //
         "Underflow()");
+    check("Underflow() // N", //
+        "0.0");
+
+    check("1-Underflow()", //
+        "1+Underflow()");
+    check("1-Underflow() // N", //
+        "1.0");
+
+    check("Sin(7)+x+Underflow() // N", //
+        "0.656987+x");
+    check("Sin(7)+x+Underflow()", //
+        "x+Sin(7)+Underflow()");
+  }
+
+  public void testOverflow() {
+    check("5*Overflow() // N", //
+        "Overflow()");
+    check("5*Overflow() ", //
+        "Overflow()");
+    check("Overflow() // N", //
+        "Overflow()");
+
+    check("Sin(7)+x+Overflow() // N", //
+        "x+Overflow()");
+    check("Sin(7)+x+Overflow()", //
+        "x+Overflow()");
   }
 
   public void testOwnValues() {
@@ -20505,8 +20530,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "         1+I  False  False \n" //
             + "           E  False   True \n" //
             + "      Sin(1)  False   True \n" //
-            + " Underflow()  False   True \n" //
-            + "  Overflow()  False   True \n" //
+            + " Underflow()   True   True \n" //
+            + "  Overflow()   True   True \n" //
             + "    Infinity  False  False ");
   }
 

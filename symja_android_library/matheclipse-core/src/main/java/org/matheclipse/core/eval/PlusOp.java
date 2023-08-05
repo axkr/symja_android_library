@@ -220,6 +220,11 @@ public final class PlusOp {
         }
       }
 
+      if (numberValue.isAST(S.Overflow, 1) && arg.isNumericFunction()) {
+        evaled = true;
+        return F.NIL;
+      }
+
       if (arg.isNumber()) {
         if (arg.isZero()) {
           evaled = true;
@@ -413,6 +418,43 @@ public final class PlusOp {
                 numberValue = ((ASTSeriesData) arg).plus(numberValue);
                 evaled = true;
                 return F.NIL;
+              }
+              break;
+            case ID.Overflow:
+              if (arg.isAST0()) {
+                if (numberValue.isNIL()) {
+                  numberValue = arg;
+                  return F.NIL;
+                } else if (numberValue.isAST(S.Underflow, 1)) {
+                  numberValue = arg;
+                  evaled = true;
+                  return F.NIL;
+                } else if (numberValue.isNumericFunction()) {
+                  numberValue = arg;
+                  evaled = true;
+                  return F.NIL;
+                }
+              }
+              break;
+            case ID.Underflow:
+              if (arg.isAST0()) {
+                if (numberValue.isNIL()) {
+                  if (EvalEngine.get().isNumericMode()) {
+                    // same as 0.0
+                    numberValue = F.CD0;
+                    evaled = true;
+                    return F.NIL;
+                  }
+                  numberValue = arg;
+                  return F.NIL;
+                } else if (numberValue.isAST(S.Overflow, 1)) {
+                  evaled = true;
+                  return F.NIL;
+                } else if (EvalEngine.get().isNumericMode()) {
+                  // same as 0.0
+                  evaled = true;
+                  return F.NIL;
+                }
               }
               break;
           }

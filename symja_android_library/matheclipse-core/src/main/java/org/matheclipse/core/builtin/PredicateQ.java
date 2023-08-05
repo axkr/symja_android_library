@@ -1277,18 +1277,9 @@ public class PredicateQ {
         }
         return F.booleSymbol(arg1.isReal());
       }
-
-      // CAUTION: the following can not be used because Rubi uses another definition
-      // IExpr temp = engine.evaluate(arg1);
-      // if (temp.isReal()) {
-      // return S.True;
-      // }
-      // if (temp.isNumericFunction()) {
-      // temp = engine.evalN(arg1);
-      // if (temp.isReal()) {
-      // return S.True;
-      // }
-      // }
+      if (arg1.isAST(S.Overflow, 1) || arg1.isAST(S.Underflow, 1)) {
+        return S.True;
+      }
       return S.False;
     }
 
@@ -1310,6 +1301,9 @@ public class PredicateQ {
           return S.False;
         }
         return F.booleSymbol(arg1.isReal());
+      }
+      if (arg1.isAST(S.Overflow, 1) || arg1.isAST(S.Underflow, 1)) {
+        return S.True;
       }
       return S.False;
     }
