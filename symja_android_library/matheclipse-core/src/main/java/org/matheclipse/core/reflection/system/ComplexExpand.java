@@ -387,12 +387,14 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
                 F.Times(F.CN1D4, F.Log(F.Plus(F.Sqr(F.Plus(F.C1, v1)), v2))),
                 F.Times(F.C1D4, F.Log(F.Plus(v2, F.Sqr(F.Plus(F.C1, x))))));
           }
-          case ID.Cos:
+          case ID.Cos: {
             // Cos(x)*Cosh(y)-I*Sin(x)*Sinh(y)
             return Plus(Times(Cos(x), Cosh(y)), Times(F.CNI, Sin(x), Sinh(y)));
-          case ID.Cosh:
+          }
+          case ID.Cosh: {
             // Cos(y)*Cosh(x)+I*Sin(y)*Sinh(x)
-            F.Plus(F.Times(F.Cos(y), F.Cosh(x)), F.Times(F.CI, F.Sin(y), F.Sinh(x)));
+            return F.Plus(F.Times(F.Cos(y), F.Cosh(x)), F.Times(F.CI, F.Sin(y), F.Sinh(x)));
+          }
           case ID.Cot: {
             // -Sin(2*x)/(Cos(2*x)-Cosh(2*y))+(I*Sinh(2*y))/(Cos(2*x)-Cosh(2*y))
             IExpr v1 = F.Times(F.C2, x);
