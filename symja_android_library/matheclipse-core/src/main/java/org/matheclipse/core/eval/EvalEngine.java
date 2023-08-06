@@ -474,15 +474,6 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * @param op
-   * @param rule may be <code>null</code>
-   */
-  public void addOptionsPattern(OptionsPattern op, IAST rule) {
-    IdentityHashMap<ISymbol, IASTAppendable> optionsPattern = fOptionsStack.peek();
-    OptionsPattern.optionsPattern(op, rule, optionsPattern);
-  }
-
-  /**
    * Add a single step to the currently defined trace stack and evaluate the <code>rewrittenExpr
    * </code> expression.
    *
@@ -2735,6 +2726,10 @@ public class EvalEngine implements Serializable {
 
   public void popOptionsStack() {
     fOptionsStack.pop();
+  }
+
+  public IdentityHashMap<ISymbol, IASTAppendable> peekOptionsStack() {
+    return fOptionsStack.peek();
   }
 
   public Iterator<IdentityHashMap<ISymbol, IASTAppendable>> optionsStackIterator() {

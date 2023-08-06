@@ -298,8 +298,8 @@ public interface IPatternMap {
     @Override
     public boolean setOptionsPattern(EvalEngine engine, ISymbol lhsHead) {
       if (fPatternObject1.isOptionsPattern()) {
-        OptionsPattern op = (OptionsPattern) fPatternObject1;
-        OptionsPattern.addOptionsPattern(op, fValue1, engine);
+        final OptionsPattern op = (OptionsPattern) fPatternObject1;
+        op.addOptionsPattern(fValue1, engine);
         return lhsHead == op.getOptionsPatternHead();
       }
       return false;
@@ -559,15 +559,15 @@ public interface IPatternMap {
     public boolean setOptionsPattern(EvalEngine engine, ISymbol lhsHead) {
       boolean result = false;
       if (fPatternObject1.isOptionsPattern()) {
-        OptionsPattern op = (OptionsPattern) fPatternObject1;
-        OptionsPattern.addOptionsPattern(op, fValue1, engine);
+        final OptionsPattern op = (OptionsPattern) fPatternObject1;
+        op.addOptionsPattern(fValue1, engine);
         if (lhsHead == op.getOptionsPatternHead()) {
           result = true;
         }
       }
       if (fPatternObject2.isOptionsPattern()) {
-        OptionsPattern op = (OptionsPattern) fPatternObject2;
-        OptionsPattern.addOptionsPattern(op, fValue2, engine);
+        final OptionsPattern op = (OptionsPattern) fPatternObject2;
+        op.addOptionsPattern(fValue2, engine);
         if (lhsHead == op.getOptionsPatternHead()) {
           result = true;
         }
@@ -895,22 +895,22 @@ public interface IPatternMap {
     public boolean setOptionsPattern(EvalEngine engine, ISymbol lhsHead) {
       boolean result = false;
       if (fPatternObject1.isOptionsPattern()) {
-        OptionsPattern op = (OptionsPattern) fPatternObject1;
-        OptionsPattern.addOptionsPattern(op, fValue1, engine);
+        final OptionsPattern op = (OptionsPattern) fPatternObject1;
+        op.addOptionsPattern(fValue1, engine);
         if (lhsHead == op.getOptionsPatternHead()) {
           result = true;
         }
       }
       if (fPatternObject2.isOptionsPattern()) {
-        OptionsPattern op = (OptionsPattern) fPatternObject2;
-        OptionsPattern.addOptionsPattern(op, fValue2, engine);
+        final OptionsPattern op = (OptionsPattern) fPatternObject2;
+        op.addOptionsPattern(fValue2, engine);
         if (lhsHead == op.getOptionsPatternHead()) {
           result = true;
         }
       }
       if (fPatternObject3.isOptionsPattern()) {
-        OptionsPattern op = (OptionsPattern) fPatternObject3;
-        OptionsPattern.addOptionsPattern(op, fValue3, engine);
+        final OptionsPattern op = (OptionsPattern) fPatternObject3;
+        op.addOptionsPattern(fValue3, engine);
         if (lhsHead == op.getOptionsPatternHead()) {
           result = true;
         }
@@ -1358,8 +1358,8 @@ public interface IPatternMap {
       if (fSymbolsOrPatternValues != null) {
         for (int i = 0; i < fPatternObjects.length; i++) {
           if (fPatternObjects[i].isOptionsPattern()) {
-            OptionsPattern op = (OptionsPattern) fPatternObjects[i];
-            OptionsPattern.addOptionsPattern(op, fSymbolsOrPatternValues[i], engine);
+            final OptionsPattern op = (OptionsPattern) fPatternObjects[i];
+            op.addOptionsPattern(fSymbolsOrPatternValues[i], engine);
             if (lhsHead == op.getOptionsPatternHead()) {
               result = true;
             }
