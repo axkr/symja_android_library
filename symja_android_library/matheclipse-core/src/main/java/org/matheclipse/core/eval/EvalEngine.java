@@ -130,6 +130,9 @@ public class EvalEngine implements Serializable {
   private transient final Cache<IAST, IExpr> globalASTCache =
       CacheBuilder.newBuilder().maximumSize(500).build();
 
+  private transient final Cache<IExpr, Object> globalObjectCache =
+      CacheBuilder.newBuilder().maximumSize(500).build();
+
   /** */
   private static final long serialVersionUID = 8402201556123198590L;
 
@@ -2620,10 +2623,19 @@ public class EvalEngine implements Serializable {
    * there is no cached value for key.
    * 
    * @param key
-   * @return
    */
   public IExpr getCache(IAST key) {
     return globalASTCache.getIfPresent(key);
+  }
+
+  /**
+   * Returns the object associated with key in the {@link EvalEngine#globalObjectCache}, or null if
+   * there is no cached value for key.
+   * 
+   * @param key
+   */
+  public Object getObjectCache(IExpr key) {
+    return globalObjectCache.getIfPresent(key);
   }
 
   public final Context getContext() {
@@ -2722,6 +2734,17 @@ public class EvalEngine implements Serializable {
    */
   public void putCache(IAST key, IExpr value) {
     globalASTCache.put(key, value);
+  }
+
+  /**
+   * Associates value with key in the {@link EvalEngine#globalObjectCache}. If the cache previously
+   * contained a value associated with key, the old value is replaced by value.
+   * 
+   * @param key
+   * @param value
+   */
+  public void putObjectCache(IExpr key, Object value) {
+    globalObjectCache.put(key, value);
   }
 
   public void popOptionsStack() {

@@ -1,12 +1,16 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
+import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.LaplaceTransformRules;
 
 /**
@@ -46,6 +50,19 @@ public class LaplaceTransform extends AbstractFunctionEvaluator implements Lapla
     IExpr t = ast.arg2();
     IExpr s = ast.arg3();
     if (!t.isList() && !s.isList() && !t.equals(s)) {
+      if (s.isNumericFunction() && t.isSymbol()) {
+        double sDouble = s.evalf();
+        final IAST cacheKey = F.List(S.LaplaceTransform, a1, t);
+        Object value = engine.getObjectCache(cacheKey);
+        final UnaryNumerical unaryNumerical;
+        if (value instanceof UnaryNumerical) {
+          unaryNumerical = (UnaryNumerical) value;
+        } else {
+          unaryNumerical = new UnaryNumerical(a1, (ISymbol) t, engine);
+          engine.putObjectCache(cacheKey, unaryNumerical);
+        }
+        return F.num(laplaceTransform(unaryNumerical, sDouble));
+      }
       if (a1.isFree(t)) { // && a1.isAtom()) {
         return F.Divide(a1, s);
       }
@@ -74,6 +91,30 @@ public class LaplaceTransform extends AbstractFunctionEvaluator implements Lapla
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * Laplace Transform.
+   * 
+   * @param function function to perform the Laplace transform to.
+   * @param s Frequency at which to evaluate the transform.
+   * @return {@code L{y(t} = Y(s)} evaluated at s.
+   */
+  private static double laplaceTransform(UnaryNumerical function, double s) {
+    final int DefaultIntegralN = 5000;
+    double du = 0.5 / DefaultIntegralN;
+    double y = -function.valueLimit(0.0) / 2.0;
+    double u = 0.0;
+    double limit = 1.0 - Config.SPECIAL_FUNCTIONS_TOLERANCE;
+    while (u < limit) {
+      u += du;
+      double powU = Math.pow(u, s - 1);
+      y += (powU + powU) * function.valueLimit(-Math.log(u));
+      u += du;
+      powU = Math.pow(u, s - 1);
+      y += powU * function.valueLimit(-Math.log(u));
+    }
+    return 2.0 * y * du / 3.0;
   }
 
   @Override

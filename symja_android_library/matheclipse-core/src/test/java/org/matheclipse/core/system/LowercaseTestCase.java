@@ -12744,7 +12744,24 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "");
   }
 
+  public void testInverseLaplaceTransformNumeric() {
+    // check("InverseLaplaceTransform(Erf(s)/Sqrt(s), s, 2.3)", //
+    // "");
+    check("InverseLaplaceTransform(s/(s + 2)^2, s, 2.3)", //
+        "-0.0362221");
+
+  }
   public void testLaplaceTransform() {
+
+    // numerical calculation only supported for unary functions
+    check("LaplaceTransform(1/(x + y + 1), {x, y}, {5.4, 4.5})", //
+        "LaplaceTransform(1/(1+x+y),{x,y},{5.4,4.5})");
+
+    check("LaplaceTransform(Erf(t)/Sqrt(t), t, 14.2)", //
+        "0.0185749");
+    check("LaplaceTransform(Erf(t), t, 14.2)", //
+        "0.00554208");
+
     check("LaplaceTransform(Tanh(t),t,s)", //
         "1/2*(-2/s-PolyGamma(0,s/4)+PolyGamma(0,1/4*(2+s)))");
     check("LaplaceTransform(E^2,t,-3+s)", //

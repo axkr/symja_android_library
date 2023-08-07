@@ -14,30 +14,65 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /** Unary numerical function for functions like Plot */
-public class UnaryNumerical
-    implements UnaryOperator<IExpr>, UnivariateDifferentiableFunction, DoubleFunction<IExpr>,
-    DoubleUnaryOperator {
-  final IExpr fFunction;
+public class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDifferentiableFunction,
+    DoubleFunction<IExpr>, DoubleUnaryOperator {
+  final IExpr fUnaryFunction;
   final ISymbol fVariable;
   final EvalEngine fEngine;
 
   UnaryNumerical fFirstDerivative = null;
 
-  public UnaryNumerical(final IExpr function, final ISymbol variable) {
-    this(function, variable, EvalEngine.get(), false);
+  /**
+   * <p>
+   * This class represents a unary function which computes both the value and the first derivative
+   * of a mathematical function. The derivative is computed with respect to the input
+   * {@code variable}
+   * </p>
+   * 
+   * @param unaryFunction the unary function
+   * @param variable the functions variable name
+   */
+  public UnaryNumerical(final IExpr unaryFunction, final ISymbol variable) {
+    this(unaryFunction, variable, EvalEngine.get(), false);
   }
 
-  public UnaryNumerical(final IExpr function, final ISymbol variable, final EvalEngine engine) {
-    this(function, variable, engine, false);
+  /**
+   * <p>
+   * This class represents a unary function which computes both the value and the first derivative
+   * of a mathematical function. The derivative is computed with respect to the input
+   * {@code variable}
+   * </p>
+   * 
+   * @param unaryFunction the unary function
+   * @param variable the functions variable name
+   * @param engine the evaluation engine
+   */
+  public UnaryNumerical(final IExpr unaryFunction, final ISymbol variable,
+      final EvalEngine engine) {
+    this(unaryFunction, variable, engine, false);
   }
 
-  public UnaryNumerical(final IExpr function, final ISymbol variable, final EvalEngine engine,
+  /**
+   * <p>
+   * This class represents a unary function which computes both the value and the first derivative
+   * of a mathematical function. The derivative is computed with respect to the input
+   * {@code variable}
+   * </p>
+   * 
+   * @param unaryFunction the unary function
+   * @param variable the functions variable name
+   * @param engine the evaluation engine
+   * @param firstDerivative if <code>true</code> evaluate the first derivative of
+   *        {@code unaryFunction} directly in the constructor.
+   */
+  public UnaryNumerical(final IExpr unaryFunction, final ISymbol variable, final EvalEngine engine,
       boolean firstDerivative) {
     if (!variable.isVariable() || variable.isBuiltInSymbol()) {
       // Cannot assign to raw object `1`.
@@ -45,29 +80,77 @@ public class UnaryNumerical
           Errors.getMessage("setraw", F.list(variable), EvalEngine.get()));
     }
     fVariable = variable;
-    fFunction = function;
+    fUnaryFunction = unaryFunction;
     fEngine = engine;
     if (firstDerivative) {
-      IExpr temp = engine.evaluate(F.D(fFunction, fVariable));
+      IExpr temp = engine.evaluate(F.D(fUnaryFunction, fVariable));
       fFirstDerivative = new UnaryNumerical(temp, fVariable, engine, false);
     }
   }
 
   @Override
   public IExpr apply(final IExpr value) {
-    return fEngine.evalN(F.subst(fFunction, F.Rule(fVariable, value)));
+    return fEngine.evalN(F.subst(fUnaryFunction, F.Rule(fVariable, value)));
   }
 
+  /**
+   * Evaluate the {@link S#Limit} of the {@code unaryFunction} for the {@code value} in the form
+   * {@code F.N( F.Limit(unaryFunction, F.Rule(variable, value)) )} and return the numerical result
+   * or {@link S#Indeterminate}
+   * 
+   * @param value
+   */
+  public IExpr applyLimit(IExpr value) {
+    try {
+      return fEngine.evalN(F.Limit(fUnaryFunction, F.Rule(fVariable, value)));
+    } catch (RuntimeException rex) {
+      return S.Indeterminate;
+    }
+  }
+
+  /**
+   * Evaluate the {@code unaryFunction} for the {@code value} by substituting the {@code variable}
+   * in the {@code unaryFunction} and return the numerical result or {@link S#Indeterminate}
+   * 
+   * @param value
+   */
   @Override
   public IExpr apply(double value) {
-    return fEngine.evalN(F.subst(fFunction, F.Rule(fVariable, F.num(value))));
+    try {
+      return fEngine.evalN(F.subst(fUnaryFunction, F.Rule(fVariable, F.num(value))));
+    } catch (RuntimeException rex) {
+      return S.Indeterminate;
+    }
   }
 
+  /**
+   * Evaluate the {@code unaryFunction} for the {@code value} by substituting the {@code variable}
+   * in the {@code unaryFunction} and return the double value or {@link Double#NaN}.
+   * 
+   * @param value the value of the limit for the given variable
+   * @return the calculated double value or {@link Double#NaN}.
+   */
   @Override
-  public double value(double d) {
+  public double value(double value) {
     try {
       // substitution is more thread safe than direct value assigning to global variable
-      return fFunction.evalf(x -> x.equals(fVariable) ? Num.valueOf(d) : F.NIL);
+      return fUnaryFunction.evalf(x -> x.equals(fVariable) ? Num.valueOf(value) : F.NIL);
+    } catch (RuntimeException rex) {
+      return Double.NaN;
+    }
+  }
+
+  /**
+   * Evaluate the {@link S#Limit} of the {@code unaryFunction} for the {@code value} in the form
+   * {@code engine.evalDouble( F.Limit(unaryFunction, F.Rule(variable, value)) )} and return the
+   * double value or {@link Double#NaN}.
+   * 
+   * @param value the value of the limit for the given variable
+   * @return the calculated double value or {@link Double#NaN}.
+   */
+  public double valueLimit(double value) {
+    try {
+      return fEngine.evalDouble(F.Limit(fUnaryFunction, F.Rule(fVariable, F.num(value))));
     } catch (RuntimeException rex) {
       return Double.NaN;
     }
@@ -90,7 +173,7 @@ public class UnaryNumerical
     if (fFirstDerivative != null) {
       return fFirstDerivative;
     }
-    final IAST ast = F.D(fFunction, fVariable);
+    final IAST ast = F.D(fUnaryFunction, fVariable);
     IExpr expr = fEngine.evaluate(ast);
     fFirstDerivative = new UnaryNumerical(expr, fVariable, fEngine, false);
     return fFirstDerivative;
@@ -128,6 +211,6 @@ public class UnaryNumerical
 
   @Override
   public double applyAsDouble(double value) {
-    return F.subst(fFunction, F.Rule(fVariable, F.num(value))).evalf();
+    return F.subst(fUnaryFunction, F.Rule(fVariable, F.num(value))).evalf();
   }
 }
