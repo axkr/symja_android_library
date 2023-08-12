@@ -36,8 +36,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitorLong;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.ExprColumn;
 import tech.tablesaw.api.Row;
@@ -371,7 +371,7 @@ public class ASTDataset extends AbstractAST
 
   @Override
   public IASTAppendable normal(boolean nilIfUnevaluated) {
-    Cache<IAST, IAST> cache = CacheBuilder.newBuilder().maximumSize(500).build();
+    Cache<IAST, IAST> cache = Caffeine.newBuilder().maximumSize(500).build();
     final List<String> names = fTable.columnNames();
     List<IStringX> namesStr = new ArrayList<IStringX>(names.size());
     for (int i = 0; i < names.size(); i++) {

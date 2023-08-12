@@ -45,15 +45,15 @@ import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public class AJAXDocServlet extends HttpServlet {
   private static final Cache<String, String> JSON_DOCS_CACHE =
-      CacheBuilder.newBuilder().maximumSize(100).build();
+      Caffeine.newBuilder().maximumSize(100).build();
 
   private static final long serialVersionUID = 4636252666864898484L;
 

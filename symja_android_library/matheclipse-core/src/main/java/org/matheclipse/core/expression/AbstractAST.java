@@ -88,9 +88,9 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.core.visit.VisitorReplaceAll;
 import org.matheclipse.parser.client.ParserConfig;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.base.Suppliers;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import it.unimi.dsi.fastutil.ints.IntList;
 
 public abstract class AbstractAST implements IASTMutable, Cloneable {
@@ -1235,7 +1235,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       Suppliers.memoize(AbstractAST::initCache);
 
   private static Cache<IAST, EnumMap<PROPERTY, Object>> initCache() {
-    return CacheBuilder.newBuilder().maximumSize(500).build();
+    return Caffeine.newBuilder().maximumSize(500).build();
   }
 
   private static Cache<IAST, EnumMap<PROPERTY, Object>> propertyCache() {

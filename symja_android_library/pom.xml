@@ -16,7 +16,7 @@
 			<url>https://www.gnu.org/licenses/gpl-3.0.html</url>
 			<distribution>repo</distribution>
 			<comments>A free, copyleft license for software and other kinds of
-				works</comments> 
+				works</comments>
 		</license>
 		<license>
 			<name>GNU Lesser General Public License, Version 3</name>
@@ -350,6 +350,11 @@
 				<groupId>com.github.freva</groupId>
 				<artifactId>ascii-table</artifactId>
 				<version>1.8.0</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.ben-manes.caffeine</groupId>
+				<artifactId>caffeine</artifactId>
+				<version>3.1.8</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.arrow</groupId>

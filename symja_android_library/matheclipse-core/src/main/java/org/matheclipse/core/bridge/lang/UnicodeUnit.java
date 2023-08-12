@@ -12,8 +12,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.tensor.io.ResourceData;
 import org.matheclipse.core.tensor.qty.IUnit;
 import org.matheclipse.core.tensor.qty.UnitSystem;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 /* package */ enum UnicodeUnit {
   INSTANCE;
@@ -23,14 +23,10 @@ import com.google.common.cache.CacheBuilder;
    * @return string expression of unit using unicode characters
    */
   public static String toString(IUnit unit) {
-    return INSTANCE.cache.getIfPresent(unit);
+    return UnicodeUnit.cache.getIfPresent(unit);
   }
 
-  public static Cache<IUnit, String> cache = CacheBuilder.newBuilder().maximumSize(512).build();
-  // private final Cache<IUnit, String> cache = Caffeine.newBuilder()
-  // .expireAfterWrite(1, TimeUnit.MINUTES)
-  // .maximumSize(512)
-  // .build();
+  public static Cache<IUnit, String> cache = Caffeine.newBuilder().maximumSize(512).build();
 
   private final Map<String, String> terminators = new HashMap<>();
   private final Map<String, String> exponents = new HashMap<>();
