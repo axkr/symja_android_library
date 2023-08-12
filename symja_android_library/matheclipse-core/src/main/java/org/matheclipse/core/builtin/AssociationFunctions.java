@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -29,7 +27,6 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class AssociationFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -1096,7 +1093,7 @@ public class AssociationFunctions {
       } catch (final ValidateException ve) {
         Errors.printMessage(ast.topHead(), ve, engine);
       } catch (final RuntimeException rex) {
-        LOGGER.debug("KeyTake.evaluate() failed", rex);
+        Errors.printMessage(ast.topHead(), rex, engine);
       }
       return F.NIL;
     }

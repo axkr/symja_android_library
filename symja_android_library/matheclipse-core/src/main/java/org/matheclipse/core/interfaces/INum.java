@@ -1,8 +1,11 @@
 package org.matheclipse.core.interfaces;
 
+import org.apfloat.Apfloat;
 import org.matheclipse.core.expression.F;
 
-/** A numeric (double) number. */
+/**
+ * Interface for a numeric double or {@link Apfloat} number.
+ */
 public interface INum extends IReal {
   public static final double Catalan = 0.91596559417721901505460351493238411077414937428167;
   /** <code> Math.PI / 180.0</code> */

@@ -1,6 +1,7 @@
 package org.matheclipse.core.combinatoric;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * Combinations of a multiset
@@ -53,6 +54,7 @@ public class MultisetCombinationIterator implements Iterator<int[]> {
   private final int[] multiset;
   private final int n;
   private final int k;
+  private boolean firstRun;
 
   /**
    * Combinations of a multiset
@@ -68,11 +70,13 @@ public class MultisetCombinationIterator implements Iterator<int[]> {
     if (k > n || k < 1) {
       throw new IllegalArgumentException("MultisetCombinationIterator: k " + k + " > " + n);
     }
-    this.result = null;
+    this.result = new int[k];
+    reset();
   }
 
   public void reset() {
-    this.result = null;
+    System.arraycopy(multiset, 0, result, 0, k);
+    this.firstRun = true;
   }
 
   /**
@@ -82,31 +86,30 @@ public class MultisetCombinationIterator implements Iterator<int[]> {
    */
   @Override
   public int[] next() {
-    if (result == null) {
-      result = new int[k];
-      System.arraycopy(multiset, 0, result, 0, k);
-    } else {
-      for (int i = k - 1; i >= 0; i--) {
-        if (result[i] < multiset[i + (n - k)]) {
-          // Find the successor
-          int j;
-          for (j = 0; multiset[j] <= result[i]; j++) {
-          }
-
-          // Replace this element with it
-          result[i] = multiset[j];
-          if (i < k - 1) {
-            // Make the elements after it the same as this part of the multiset
-            int l;
-            for (l = i + 1, j = j + 1; l < k; l++, j++) {
-              result[l] = multiset[j];
-            }
-          }
-          return result;
+    if (firstRun) {
+      firstRun = false;
+      return result;
+    }
+    for (int i = k - 1; i >= 0; i--) {
+      if (result[i] < multiset[i + (n - k)]) {
+        // Find the successor
+        int j;
+        for (j = 0; multiset[j] <= result[i]; j++) {
         }
+
+        // Replace this element with it
+        result[i] = multiset[j];
+        if (i < k - 1) {
+          // Make the elements after it the same as this part of the multiset
+          int l;
+          for (l = i + 1, j = j + 1; l < k; l++, j++) {
+            result[l] = multiset[j];
+          }
+        }
+        return result;
       }
     }
-    return result;
+    throw new NoSuchElementException();
   }
 
   /**
@@ -116,14 +119,13 @@ public class MultisetCombinationIterator implements Iterator<int[]> {
    */
   @Override
   public final boolean hasNext() {
-    if (result == null) {
-      return true;
-    }
-    for (int i = k - 1; i >= 0; i--) {
-      if (result[i] < multiset[i + (n - k)]) {
-        return true;
+    if (!firstRun) {
+      for (int i = k - 1; i >= 0; i--) {
+        if (result[i] < multiset[i + (n - k)]) {
+          return true;
+        }
       }
     }
-    return false;
+    return firstRun;
   }
 }

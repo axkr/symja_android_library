@@ -53,7 +53,7 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 
   /** Void constructor for Externalizable. */
   @SuppressWarnings("unused")
-  private PatternMatcherAndInvoker() {
+  public PatternMatcherAndInvoker() {
     super(null);
   }
 

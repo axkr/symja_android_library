@@ -4272,10 +4272,6 @@ public class StatisticsFunctions {
         }
 
         IAST dist = (IAST) ast.arg1();
-        IExpr xArg = F.NIL;
-        if (ast.isAST2()) {
-          xArg = ast.arg2();
-        }
         if (dist.head().isSymbol()) {
           ISymbol head = (ISymbol) dist.head();
           if (dist.head().isSymbol()) {

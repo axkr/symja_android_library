@@ -1212,11 +1212,11 @@ public class BesselFunctions {
       if (engine.isNumericMode() && n.isNumber() && z.isNumber()) {
         try {
           // side effect - throw ArgumentTypeException if no Complex value can be evaluated
-          Complex nc = n.evalfc();
-          Complex zc = z.evalfc();
-          if (ast.isAST3()) {
-            Complex a3 = ast.arg3().evalfc();
-          }
+          // Complex nc = n.evalfc();
+          // Complex zc = z.evalfc();
+          // if (ast.isAST3()) {
+          // Complex a3 = ast.arg3().evalfc();
+          // }
           return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
 
         } catch (ValidateException ve) {

@@ -749,7 +749,6 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
         arg2 = F.NIL;
       }
       // TODO implement for other TargetFunctions than Im,Re
-      IAST targetFunctions = option[0].makeList();
       setAssumptions(arg1, arg2, oldAssumptions, engine);
 
       IExpr result = arg1;

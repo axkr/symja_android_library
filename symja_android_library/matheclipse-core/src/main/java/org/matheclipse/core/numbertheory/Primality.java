@@ -1,5 +1,6 @@
 package org.matheclipse.core.numbertheory;
 
+import static org.matheclipse.core.expression.NumberUtil.intValueExact;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
@@ -29,8 +30,6 @@ import edu.jas.arith.PrimeInteger;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-
-import static org.matheclipse.core.expression.NumberUtil.intValueExact;
 
 /**
  * Provides primality probabilistic methods for small prime factors.
@@ -962,9 +961,6 @@ public class Primality implements IPrimality {
       final KSubsetsList<BigInteger, List<BigInteger>> iter =
           KSubsets.createKSubsets(primeFactorsList, k, 0);
       for (List<BigInteger> subset : iter) {
-        if (subset == null) {
-          break;
-        }
         // create the product of all integers in the k-subset
         BigInteger factor = BigInteger.ONE;
         for (int j = 0; j < subset.size(); j++) {

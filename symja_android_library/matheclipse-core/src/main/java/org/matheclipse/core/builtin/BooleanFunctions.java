@@ -1675,7 +1675,7 @@ public final class BooleanFunctions {
    * {True, True, True}
    * </pre>
    */
-  private static class Equal extends AbstractFunctionEvaluator implements IComparatorFunction {
+  static class Equal extends AbstractFunctionEvaluator implements IComparatorFunction {
 
     /**
      * Create the result for a <code>simplifyCompare()</code> step <code>
@@ -1736,7 +1736,7 @@ public final class BooleanFunctions {
       if (ast.size() > 2) {
         IExpr.COMPARE_TERNARY b = IExpr.COMPARE_TERNARY.UNDECIDABLE;
         if (ast.isAST2()) {
-          return equalNull(ast.arg1(), ast.arg2(), engine);
+          return equalNIL(ast.arg1(), ast.arg2(), engine);
         }
         boolean evaled = false;
         IASTAppendable result = ast.copyAppendable();
@@ -1770,6 +1770,37 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
+
+    /**
+     * Compare if the first and second argument are equal after expanding the arguments.
+     *
+     * @param a1 first argument
+     * @param a2 second argument
+     * @return {@link F#NIL} or the simplified expression, if equality couldn't be determined.
+     */
+    private static IExpr equalNIL(final IExpr a1, final IExpr a2, EvalEngine engine) {
+      if ((a1.isExactNumber() || a1.isString()) //
+          && (a2.isExactNumber() || a2.isString())) {
+        if (a1.isQuantity() && a2.isQuantity()) {
+          return BooleanFunctions.quantityEquals((IQuantity) a1, (IQuantity) a2);
+        }
+        return a1.equals(a2) ? S.True : S.False;
+      }
+      IExpr.COMPARE_TERNARY b;
+      IExpr arg1 = F.expandAll(a1, true, true);
+      IExpr arg2 = F.expandAll(a2, true, true);
+    
+      // b = CONST_EQUAL.compareTernary(arg1, arg2);
+      b = arg1.equalTernary(arg2, engine);
+      if (b == IExpr.COMPARE_TERNARY.FALSE) {
+        return S.False;
+      }
+      if (b == IExpr.COMPARE_TERNARY.TRUE) {
+        return S.True;
+      }
+    
+      return BooleanFunctions.Equal.simplifyCompare(S.Equal, a1, a2);
+    }
   }
 
   /**
@@ -4846,37 +4877,6 @@ public final class BooleanFunctions {
   }
 
   /**
-   * Compare if the first and second argument are equal after expanding the arguments.
-   *
-   * @param a1 first argument
-   * @param a2 second argument
-   * @return {@link F#NIL} or the simplified expression, if equality couldn't be determined.
-   */
-  private static IExpr equalNull(final IExpr a1, final IExpr a2, EvalEngine engine) {
-    if ((a1.isExactNumber() || a1.isString()) //
-        && (a2.isExactNumber() || a2.isString())) {
-      if (a1.isQuantity() && a2.isQuantity()) {
-        return quantityEquals((IQuantity) a1, (IQuantity) a2);
-      }
-      return a1.equals(a2) ? S.True : S.False;
-    }
-    IExpr.COMPARE_TERNARY b;
-    IExpr arg1 = F.expandAll(a1, true, true);
-    IExpr arg2 = F.expandAll(a2, true, true);
-
-    // b = CONST_EQUAL.compareTernary(arg1, arg2);
-    b = arg1.equalTernary(arg2, engine);
-    if (b == IExpr.COMPARE_TERNARY.FALSE) {
-      return S.False;
-    }
-    if (b == IExpr.COMPARE_TERNARY.TRUE) {
-      return S.True;
-    }
-
-    return Equal.simplifyCompare(S.Equal, a1, a2);
-  }
-
-  /**
    * If the <code>IQuantity#equals()</code> method could be executed because the same unit types
    * could be derived for comparison, return the result <code>S.True or S.False</code> otherwise
    * return {@link F#NIL}.
@@ -4997,7 +4997,7 @@ public final class BooleanFunctions {
   }
 
   public static IExpr equals(final IAST ast) {
-    return equalNull(ast.arg1(), ast.arg2(), EvalEngine.get()).orElse(ast);
+    return Equal.equalNIL(ast.arg1(), ast.arg2(), EvalEngine.get()).orElse(ast);
   }
 
   /**

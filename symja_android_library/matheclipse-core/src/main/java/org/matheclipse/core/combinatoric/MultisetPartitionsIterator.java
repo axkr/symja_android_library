@@ -4,10 +4,10 @@ import org.hipparchus.util.RosenNumberPartitionIterator;
 import org.matheclipse.core.patternmatching.FlatOrderlessStepVisitor;
 
 /**
- * Partition an ordered multi-set and visit all steps of the algorithm with a <code>IStepVisitor
- * </code>
+ * Partition an ordered multi-set and visit all steps of the algorithm with a
+ * {@link FlatOrderlessStepVisitor}
  *
- * @see IStepVisitor
+ * @see FlatOrderlessStepVisitor
  */
 public class MultisetPartitionsIterator {
 
@@ -19,8 +19,8 @@ public class MultisetPartitionsIterator {
   private final FlatOrderlessStepVisitor handler;
 
   /**
-   * Partition an ordered multi-set and visit all steps of the algorithm with an <code>IStepVisitor
-   * </code>.
+   * Partition an ordered multi-set and visit all steps of the algorithm with an
+   * {@link FlatOrderlessStepVisitor}
    *
    * @param visitor the visitor which controls the steps of the algorithm
    * @param k the number of partitioning the n elements into k parts
@@ -79,22 +79,5 @@ public class MultisetPartitionsIterator {
   @Override
   public String toString() {
     return handler.toString(result);
-    // StringBuilder buf = new StringBuilder();
-    // for (int i = 0; i < result.length; i++) {
-    // if (result[i] == null) {
-    // buf.append("[null]");
-    // } else {
-    // buf.append("[");
-    // for (int j = 0; j < result[i].length; j++) {
-    // buf.append(result[i][j]);
-    // if (j < result[i].length-1) {
-    // buf.append(",");
-    // }
-    // }
-    // buf.append("]");
-    // }
-    // }
-    // buf.append('\n');
-    // return buf.toString();
   }
 }

@@ -27,6 +27,7 @@
 package org.matheclipse.core.frobenius;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * @author Dmitry Bolotin
@@ -65,6 +66,9 @@ public interface OutputPortUnsafe<T> {
 
     @Override
     public T next() {
+      if (next == null) {
+        throw new NoSuchElementException();
+      }
       return next;
     }
 

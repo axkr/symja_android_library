@@ -3,6 +3,7 @@ package org.matheclipse.core.combinatoric;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class KSubsets {
 
@@ -33,7 +34,7 @@ public class KSubsets {
       @Override
       public int[] next() {
         if (bin-- == 0) {
-          return null;
+          throw new NoSuchElementException();
         }
         if (first) {
           first = false;
@@ -52,7 +53,7 @@ public class KSubsets {
 
       @Override
       public boolean hasNext() {
-        return true;
+        return bin > 0;
       }
     }
 
@@ -101,9 +102,6 @@ public class KSubsets {
       @Override
       public T next() {
         int j[] = fIterable.next();
-        if (j == null) {
-          return null;
-        }
 
         T temp = (T) new ArrayList<E>(fK);
         for (int i = 0; i < fK; i++) {

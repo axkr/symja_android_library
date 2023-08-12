@@ -3,6 +3,7 @@ package org.matheclipse.core.eval.util;
 import java.util.AbstractSet;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -82,7 +83,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Iterable<T> {
         if (offset < size) {
           return (T) array[offset++];
         }
-        return null;
+        throw new NoSuchElementException();
       }
     };
     return iter;

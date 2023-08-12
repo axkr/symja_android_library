@@ -468,13 +468,10 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
   @Override
   public String toHTML() {
     String javaScriptStr = graphToJSForm();
-    if (javaScriptStr != null) {
-      String html = Config.VISJS_PAGE;
-      html = StringUtils.replace(html, "`1`", javaScriptStr);
-      html = StringUtils.replace(html, "`2`", "var options = {};");
-      return html;
-    }
-    return null;
+    String html = Config.VISJS_PAGE;
+    html = StringUtils.replace(html, "`1`", javaScriptStr);
+    html = StringUtils.replace(html, "`2`", "var options = {};");
+    return html;
   }
 
   @Override
