@@ -143,9 +143,16 @@ public class Product extends ListFunctions.Table implements ProductRules {
       final IAST list = preevaledProduct.last().makeList();
       if (list.isAST1()) {
         // indefinite product case
+
         IExpr variable = list.arg1();
-        if (preevaledProduct.arg1().isFree(variable) && variable.isVariable()) {
-          return indefiniteProduct(preevaledProduct, variable);
+        if (variable.isVariable()) {
+          IExpr arg = preevaledProduct.arg1();
+          if (preevaledProduct.arg1().isFree(variable)) {
+            return indefiniteProduct(preevaledProduct, variable);
+          }
+          if (arg.isPower() && arg.equalsAt(1, variable)) {
+            return productPowerFormula(arg, variable, F.C1, variable.dec());
+          }
         }
       }
     }
@@ -287,6 +294,14 @@ public class Product extends ListFunctions.Table implements ProductRules {
         result.set(1, temp);
         return result;
       }
+    }
+    return F.NIL;
+  }
+
+  private IExpr productPowerFormula(IExpr powerAST, IExpr k, IExpr from, IExpr to) {
+    if (from.isOne()) {
+      // ((-1+variable)!)^exponent
+      return F.Power(F.Factorial(to), powerAST.exponent());
     }
     return F.NIL;
   }

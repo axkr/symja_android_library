@@ -1,19 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.BernoulliB;
-import static org.matheclipse.core.expression.F.Binomial;
 import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.ExpandAll;
-import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Subtract;
-import static org.matheclipse.core.expression.F.Sum;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.S.k;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
@@ -381,7 +373,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
         if (expr.isPower()) {
           temp = sumPower((IAST) expr, var, from, to);
         } else if (expr.equals(var)) {
-          temp = sumPowerFormula(from, to, F.C1);
+          temp = sumPowerFormula(var, F.C1, from, to);
         }
         if (temp.isPresent()) {
           return temp;
@@ -511,9 +503,10 @@ public class Sum extends ListFunctions.Table implements SumRules {
         return filterCollector;
       }
     } else if (arg1.isPower()) {
-      return sumPower((IAST) arg1, var, F.C1, var);
+      return sumPower((IAST) arg1, var, F.C0, var.dec());
     } else if (arg1.equals(var)) {
-      return sumPowerFormula(F.C1, var, F.C1);
+      // evaluate as Sum(var, {var, F.C0, var-1)
+      return sumPowerFormula(var, F.C1, F.C0, var.dec());
     }
     return F.NIL;
   }
@@ -527,60 +520,41 @@ public class Sum extends ListFunctions.Table implements SumRules {
    * @param var
    * @param from TODO
    * @param to
-   * @return
    */
   public static IExpr sumPower(final IAST powAST, final ISymbol var, IExpr from, final IExpr to) {
     if (powAST.equalsAt(1, var) && powAST.arg2().isInteger()) {
       IInteger p = (IInteger) powAST.arg2();
       if (p.isPositive()) {
-        return sumPowerFormula(from, to, p);
+        return sumPowerFormula(var, p, from, to);
       }
     }
     return F.NIL;
   }
 
   /**
-   * See
-   * <a href= "http://en.wikipedia.org/wiki/Summation#Some_summations_of_polynomial_expressions">
-   * Wikipedia - Summation#Some_summations_of_polynomial_expressions</a>.
-   *
-   * @param from TODO
-   * @param to
-   * @param p
-   * @return
+   * Sum of {@code k^p} and {@code k} in the range {@code [from,to]}. The formula assumes that
+   * {@code 0 <= from <= to}
+   * <p>
+   * See <a href= "https://en.wikipedia.org/wiki/Faulhaber%27s_formula"> Wikipedia - Faulhaber's
+   * formula</a>.
+   * 
+   * @param k the base of the power {@code k^p}
+   * @param p the exponent of the power {@code k^p}
+   * @param from the from value (included) of the range {@code [from,to]}
+   * @param to the to value (included) of the range {@code [from,to]}
    */
-  public static IExpr sumPowerFormula(IExpr from, final IExpr to, IInteger p) {
-    // TODO optimize if BernoulliB==0 for odd k != 1
-    // Sum[var ^ p, var] :=
-    // (var+1)^(p+1)/(p+1) +
-    // Sum[(var+1)^(p-k+1)*Binomial[p,k]*BernoulliB[k]*(p-k+1)^(-1),
-    // {k,1,p}]
-    IExpr term1 = F.NIL;
-    if (!from.isOne()) {
-      IExpr fromMinusOne = F.Plus(F.CN1, from);
-      if (p.isOne()) {
-        term1 = Times(C1D2, fromMinusOne, Plus(C1, fromMinusOne));
-      } else {
-        term1 = F.eval(ExpandAll(Plus(
-            Times(Power(Plus(fromMinusOne, C1), Plus(p, C1)), Power(Plus(p, C1), CN1)),
-            Sum(Times(Times(Times(Power(Plus(fromMinusOne, C1), Plus(Plus(p, Times(CN1, k)), C1)),
-                Binomial(p, k)), BernoulliB(k)), Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)),
-                F.list(k, C1, p)))));
-      }
+  public static IExpr sumPowerFormula(final ISymbol k, IInteger p, IExpr from, final IExpr to) {
+    // assuming 0 < from < to
+    IInteger pInc1 = p.inc();
+    IExpr term1 =
+        F.Times(F.Divide(1, pInc1), F.Subtract(F.BernoulliB(pInc1, to.inc()), F.BernoulliB(pInc1)));
+    if (from.isZero() || from.isOne()) {
+      return term1;
     }
-    IExpr term2;
-    if (p.isOne()) {
-      term2 = Times(C1D2, to, Plus(C1, to));
-    } else {
-      term2 =
-          F.eval(
-              ExpandAll(Plus(Times(Power(Plus(to, C1), Plus(p, C1)), Power(Plus(p, C1), CN1)),
-                  Sum(Times(
-                      Times(Times(Power(Plus(to, C1), Plus(Plus(p, Times(CN1, k)), C1)),
-                          Binomial(p, k)), BernoulliB(k)),
-                      Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)), List(k, C1, p)))));
-    }
-    return term1.isPresent() ? Subtract(term2, term1) : term2;
+
+    IExpr term2 =
+        F.Times(F.Divide(1, pInc1), F.Subtract(F.BernoulliB(pInc1, from), F.BernoulliB(pInc1)));
+    return F.Subtract(term1, term2);
   }
 
   /** Evaluate built-in rules and define Attributes for a function. */

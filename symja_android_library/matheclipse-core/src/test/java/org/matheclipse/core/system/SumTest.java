@@ -7,6 +7,17 @@ public class SumTest extends ExprEvaluatorTestCase {
   }
 
   public void testSum001() {
+
+    check("Sum(k^2,k)", //
+        "1/3*(k/2-3/2*k^2+k^3)");
+    check("Sum(k,k)", //
+        "1/2*(-k+k^2)");
+    check("Sum(k*(-1+k),k)", //
+        "1/2*(k-k^2)+1/3*(k/2-3/2*k^2+k^3)");
+    check("Sum(k*(-1+k)*(-2+k)*(-3+k),k)", //
+        "3*(k-k^2)+11/3*(k/2-3/2*k^2+k^3)+3/2*(-k^2+2*k^3-k^4)+1/5*(-k/6+5/3*k^3-5/2*k^4+k^\n"
+            + "5)");
+
     check("Sum((1-n)^k,{k,0,Infinity})", //
         "1/n");
     check("Sum(k^n, {k, 0, m})", //
@@ -268,7 +279,7 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(1,{k,j+i,n})", //
         "1-i-j+n");
     check("Sum(k,{k,1,n+1})", //
-        "1/2*(1+n)*(2+n)");
+        "1/2*(-2-n+(2+n)^2)");//
     check("Sum(i^(1/2), {i, 1, n} )", //
         "HarmonicNumber(n,-1/2)");
     check("Sum(1/i, {i, 1, n} )", //
@@ -287,7 +298,7 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(i*1/2*i,{i,1,n})", //
         "1/2*(n/6+n^2/2+n^3/3)");
     check("Sum(k * k,{k,1,n+1})", //
-        "1+13/6*n+3/2*n^2+n^3/3");
+        "1/3*(1/2*(2+n)-3/2*(2+n)^2+(2+n)^3)");
     check("Sum(k,{k,4,2})", //
         "0");
     check("Sum(k,{k,a,b})", //
@@ -295,7 +306,7 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(c, {k, 1, Infinity} )", //
         "Sum(c,{k,1,Infinity})");
     check("Sum(k,{k,1,n+1})", //
-        "1/2*(1+n)*(2+n)");
+        "1/2*(-2-n+(2+n)^2)");
     check("Sum(f(i,1),{i,{a,b}})", //
         "f(a,1)+f(b,1)");
     check("Sum(f(i, j), {i, {a, b}}, {j, 1, 2})", //
@@ -358,13 +369,13 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(sin(x), x)", //
         "Sum(Sin(x),x)");
     check("Sum(x, x)", //
-        "1/2*x*(1+x)");
+        "1/2*(-x+x^2)");
     check("Sum(x^2, x)", //
-        "x/6+x^2/2+x^3/3");
+        "1/3*(x/2-3/2*x^2+x^3)");
     check("Sum(x^3, x)", //
-        "x^2/4+x^3/2+x^4/4");
+        "1/4*(x^2-2*x^3+x^4)");
     check("Sum(x^4, x)", //
-        "-x/30+x^3/3+x^4/2+x^5/5");
+        "1/5*(-x/6+5/3*x^3-5/2*x^4+x^5)");
     check("Sum(c, {i, 1, n}, {j, 1, n})", //
         "c*n^2");
     check("Sum(c, {i, 1, j}, {j, 1, n})", //
@@ -378,12 +389,14 @@ public class SumTest extends ExprEvaluatorTestCase {
   }
 
   public void testSum010() {
+    check("Sum(k^3,{k,a,b})", //
+        "1/4*(-a^2+2*a^3-a^4)+1/4*((1+b)^2-2*(1+b)^3+(1+b)^4)");
+    check("Sum(k^3,{k,7,7})", //
+        "343");
     check("Sum(k^a,{k,j,n})", //
         "HurwitzZeta(-a,j)-HurwitzZeta(-a,1+n)");
     check("-1/4*a^4", //
         "-a^4/4");
-    check("Sum(k^3,{k,a,b})", //
-        "-a^2/4+a^3/2-a^4/4+b^2/4+b^3/2+b^4/4");
   }
 
   public void testSum011() {

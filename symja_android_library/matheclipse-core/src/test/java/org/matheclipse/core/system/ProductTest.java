@@ -35,6 +35,10 @@ public class ProductTest extends ExprEvaluatorTestCase {
   }
 
   public void testProduct002() {
+    check("Product(k^p, {k,1,k-1})", //
+        "((-1+k)!)^p");
+    check("Product(k^p, k)", //
+        "((-1+k)!)^p");
     check("Product(k^3, {k, 1, n})", //
         "(n!)^3");
   }

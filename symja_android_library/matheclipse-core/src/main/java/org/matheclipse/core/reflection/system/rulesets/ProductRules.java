@@ -17,9 +17,12 @@ matcher.caseOf(Product(x_Symbol,list(x_,C0,m_)),
     // Product(x_Symbol,{x_,0,m_,s_}):=0/;0<m
 matcher.caseOf(Product(x_Symbol,List(x_,C0,m_,s_)),
       Condition(C0,Less(C0,m)));
-    // Product(x_Symbol,{x_,m_,n_}):=Pochhammer(m,1-m+n)/;FreeQ({m,n},x)
+    // Product(x_Symbol,{x_,1,n_}):=n!
+matcher.caseOf(Product(x_Symbol,list(x_,C1,n_)),
+      Factorial(n));
+    // Product(x_Symbol,{x_,m_,n_}):=Pochhammer(m,1-m+n)
 matcher.caseOf(Product(x_Symbol,list(x_,m_,n_)),
-      Condition(Pochhammer(m,Plus(C1,Negate(m),n)),FreeQ(list(m,n),x)));
+      Pochhammer(m,Plus(C1,Negate(m),n)));
     // Product(x_Symbol,{y_,m_,n_}):=x^(1-m+n)/;FreeQ({y,m,n},x)
 matcher.caseOf(Product(x_Symbol,list(y_,m_,n_)),
       Condition(Power(x,Plus(C1,Negate(m),n)),FreeQ(list(y,m,n),x)));
