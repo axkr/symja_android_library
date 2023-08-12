@@ -145,8 +145,8 @@ import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.trie.TrieMatch;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import edu.jas.kern.ComputerThreads;
 import edu.jas.kern.JASConfig;
 import edu.jas.kern.PreemptStatus;
@@ -167,7 +167,7 @@ public class F extends S {
    * <a href="https://en.wikipedia.org/wiki/Memoization">Wikipedia - Memoization</a>
    */
   public static final Cache<IAST, IExpr> REMEMBER_INTEGER_CACHE =
-      Caffeine.newBuilder().maximumSize(500).build();
+      CacheBuilder.newBuilder().maximumSize(500).build();
 
   /** Set to <code>true</code> at the start of initSymbols() method */
   private static volatile boolean isSystemStarted = false;

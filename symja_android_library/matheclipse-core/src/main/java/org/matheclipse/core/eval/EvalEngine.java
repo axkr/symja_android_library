@@ -77,8 +77,8 @@ import org.matheclipse.core.visit.VisitorReplaceEvalf;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 /**
  * The main evaluation algorithms for the Symja computer algebra system. A single <code>EvalEngine
@@ -128,19 +128,18 @@ public class EvalEngine implements Serializable {
    * <a href="https://en.wikipedia.org/wiki/Memoization">Wikipedia - Memoization</a>
    */
   private transient final Cache<IAST, IExpr> globalASTCache =
-      Caffeine.newBuilder().maximumSize(500).build();
+      CacheBuilder.newBuilder().maximumSize(500).build();
 
   private transient final Cache<IExpr, Object> globalObjectCache =
-      Caffeine.newBuilder().maximumSize(500).build();
-  /**
-   * Cache for the Rubi integration rules evaluation
-   */
-  public transient Cache<IAST, IExpr> rubiASTCache = null;
+      CacheBuilder.newBuilder().maximumSize(500).build();
 
   /** */
   private static final long serialVersionUID = 8402201556123198590L;
 
-
+  /**
+   * Cache for the Rubi integration rules evaluation
+   */
+  public transient Cache<IAST, IExpr> rubiASTCache = null;
 
   public transient Map<Object, IExpr> rememberMap = null;
 

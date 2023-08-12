@@ -436,8 +436,7 @@ public final class PatternMatching {
         }
         ISymbol symbol = (ISymbol) leftHandSide.first();
         if (symbol.isProtected()) {
-          Errors.printMessage(S.Default, "write", F.list(symbol, leftHandSide),
-              EvalEngine.get());
+          Errors.printMessage(S.Default, "write", F.list(symbol, leftHandSide), EvalEngine.get());
           throw new FailedException();
         }
         if (leftHandSide.size() == 2 && leftHandSide.first().isSymbol()) {
@@ -2172,8 +2171,7 @@ public final class PatternMatching {
         }
         if (symbol.isProtected()) {
           // Tag `1` in `2` is Protected.
-          Errors.printMessage(S.TagSet, "write", F.list(symbol, leftHandSide),
-              EvalEngine.get());
+          Errors.printMessage(S.TagSet, "write", F.list(symbol, leftHandSide), EvalEngine.get());
           throw new FailedException();
         }
 
@@ -2621,7 +2619,7 @@ public final class PatternMatching {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.SEQUENCEHOLD);
     }
   }
 
@@ -2682,7 +2680,7 @@ public final class PatternMatching {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.SEQUENCEHOLD);
     }
   }
 
@@ -2765,7 +2763,8 @@ public final class PatternMatching {
     IExpr rhsRuleValue = F.NIL;
     IAST optionsList = null;
     if (ast.size() > 2 && arg1.isSymbol()) {
-      optionsList = org.matheclipse.core.expression.OptionsPattern.optionsList((ISymbol) arg1, true);
+      optionsList =
+          org.matheclipse.core.expression.OptionsPattern.optionsList((ISymbol) arg1, true);
     }
     IExpr optionValue;
     if (ast.isAST3()) {
@@ -2788,8 +2787,7 @@ public final class PatternMatching {
         }
         if (!quiet) {
           // Option name `2` not found in defaults for `1`
-          Errors.printMessage(ast.topHead(), "optnf", F.list(optionsPattern, optionValue),
-              engine);
+          Errors.printMessage(ast.topHead(), "optnf", F.list(optionsPattern, optionValue), engine);
         }
         return optionValue;
       }
@@ -2833,8 +2831,7 @@ public final class PatternMatching {
         }
         if (!quiet) {
           // Option name `2` not found in defaults for `1`
-          Errors.printMessage(ast.topHead(), "optnf", F.list(optionsPattern, optionValue),
-              engine);
+          Errors.printMessage(ast.topHead(), "optnf", F.list(optionsPattern, optionValue), engine);
         }
         return optionValue;
       }
@@ -2866,8 +2863,7 @@ public final class PatternMatching {
     if (optionsPattern != null) {
       if (!quiet) {
         // Option name `2` not found in defaults for `1`
-        Errors.printMessage(ast.topHead(), "optnf", F.list(optionsPattern, optionValue),
-            engine);
+        Errors.printMessage(ast.topHead(), "optnf", F.list(optionsPattern, optionValue), engine);
       }
       return optionValue;
     }

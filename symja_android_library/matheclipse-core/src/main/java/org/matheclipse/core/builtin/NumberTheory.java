@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
@@ -3929,10 +3931,14 @@ public final class NumberTheory {
             return F.C3;
           }
           try {
-            IExpr result = F.REMEMBER_INTEGER_CACHE.getIfPresent(ast);
-            if (result == null) {
-              result = sumPartitionsP(engine, (IInteger) arg1);
-              F.REMEMBER_INTEGER_CACHE.put(ast, result);
+            IExpr result = F.REMEMBER_INTEGER_CACHE.get(ast, new Callable<IExpr>() {
+              @Override
+              public IExpr call() {
+                return sumPartitionsP(engine, (IInteger) arg1);
+              }
+            });
+            if (result != null) {
+              return result;
             }
             return result;
           } catch (UncheckedExecutionException e) {
@@ -3940,7 +3946,7 @@ public final class NumberTheory {
             if (th instanceof LimitException) {
               throw (LimitException) th;
             }
-            // } catch (ExecutionException e) {
+          } catch (ExecutionException e) {
             // LOGGER.error("PartitionsP.evaluate() failed", e);
           }
           return F.NIL;
@@ -4028,19 +4034,22 @@ public final class NumberTheory {
           try {
             IInteger n = (IInteger) arg1;
             if (n.isLT(F.ZZ(201))) {
-              IExpr result = F.REMEMBER_INTEGER_CACHE.getIfPresent(ast);
-              if (result == null) {
-                result = partitionsQ(engine, n);
-                F.REMEMBER_INTEGER_CACHE.put(ast, result);
+              IExpr result = F.REMEMBER_INTEGER_CACHE.get(ast, new Callable<IExpr>() {
+                @Override
+                public IExpr call() {
+                  return partitionsQ(engine, (IInteger) arg1);
+                }
+              });
+              if (result != null) {
+                return result;
               }
-              return result;
             }
           } catch (UncheckedExecutionException e) {
             Throwable th = e.getCause();
             if (th instanceof LimitException) {
               throw (LimitException) th;
             }
-            // } catch (ExecutionException e) {
+          } catch (ExecutionException e) {
             // LOGGER.error("PartitionsQ.evaluate() failed", e);
           }
           return F.NIL;

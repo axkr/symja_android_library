@@ -108,11 +108,7 @@
 		<dependency>
 			<groupId>com.github.freva</groupId>
 			<artifactId>ascii-table</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.github.ben-manes.caffeine</groupId>
-			<artifactId>caffeine</artifactId>
-		</dependency>
+		</dependency> 
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>

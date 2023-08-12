@@ -2,14 +2,17 @@
 package org.matheclipse.core.tensor.itp;
 
 import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.tensor.ext.Integers;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
 
 /**
  * 
@@ -34,7 +37,7 @@ public abstract class BSplineFunction implements Function<IExpr, IExpr> {
   private static final int CACHE_SIZE = 16;
   // ---
   // private final Cache<Integer, DeBoor> cache = Cache.of(new Inner(), CACHE_SIZE);
-  public Cache<Integer, DeBoor> cache = Caffeine.newBuilder()//
+  public Cache<Integer, DeBoor> cache = CacheBuilder.newBuilder()//
       .maximumSize(CACHE_SIZE)//
       .build();
   protected final BinaryAverage binaryAverage;

@@ -28,9 +28,8 @@ import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.trie.TrieBuilder;
 import org.matheclipse.parser.trie.TrieMatch;
 import org.matheclipse.parser.trie.TrieSequencerIntArray;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 /** General configuration settings. */
 public class Config {
@@ -161,8 +160,7 @@ public class Config {
    */
   public static Cache<IExpr, Object> getExprCache() {
     if (EXPR_CACHE == null) {
-      EXPR_CACHE =
-          Caffeine.newBuilder().maximumSize(MAX_EXPR_CACHE_SIZE).weakKeys()
+      EXPR_CACHE = CacheBuilder.newBuilder().maximumSize(MAX_EXPR_CACHE_SIZE).weakKeys()
           .weakValues().build();
     }
     return EXPR_CACHE;

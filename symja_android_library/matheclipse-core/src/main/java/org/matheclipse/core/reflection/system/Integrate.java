@@ -37,7 +37,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.RulesData;
-import com.github.benmanes.caffeine.cache.Caffeine;
+import com.google.common.cache.CacheBuilder;
 
 /**
  *
@@ -696,7 +696,7 @@ public class Integrate extends AbstractFunctionEvaluator {
             }
           } else {
             newCache = true;
-            engine.rubiASTCache = Caffeine.newBuilder().maximumSize(500).build();
+            engine.rubiASTCache = CacheBuilder.newBuilder().maximumSize(50).build();
           }
           try {
             engine.setQuietMode(true);

@@ -412,6 +412,8 @@ public class BuiltinUsage {
     USAGE[ID.Series] = "power series and asymptotic expansions";
     USAGE[ID.SeriesData] = "power series of a variable about a point";
     USAGE[ID.SetAttributes] = "set attributes for a symbol";
+    USAGE[ID.Set] = "assign a value";
+    USAGE[ID.SetDelayed] = "assign a delayed value";
     USAGE[ID.ShearingTransform] = "symbolic representation of a shearing transformation";
     USAGE[ID.Sign] = "return -1, 0, or 1 depending on whether $x$ is negative, zero, or positive";
     USAGE[ID.Simplify] = "apply transformations to simplify an expression";
@@ -466,6 +468,10 @@ public class BuiltinUsage {
 
     USAGE[ID.Table] = "make a table of values of an expression";
     USAGE[ID.TableForm] = "format as a table";
+    USAGE[ID.TagSet] =
+        "assign a value to an expression, associating the corresponding assignment with the a symbol";
+    USAGE[ID.TagSetDelayed] =
+        "assign a delayed value to an expression, associating the corresponding assignment with the a symbol";
     USAGE[ID.Take] = "pick a range of elements";
     USAGE[ID.TakeLargest] = "sublist of n largest elements";
     USAGE[ID.TakeLargestBy] = "sublist of n largest elements according to a given criteria";
@@ -503,6 +509,9 @@ public class BuiltinUsage {
     USAGE[ID.UnitVector] = "unit vector along a coordinate direction";
     USAGE[ID.Unprotect] = "remove protection against redefinitions";
     USAGE[ID.UnsameQ] = "not literal symbolic identity";
+    USAGE[ID.UpSet] = "set value and associate the assignment with symbols that occur at level one";
+    USAGE[ID.UpSetDelayed] =
+        "set a delayed value and associate the assignment with symbols that occur at level one";
     USAGE[ID.UpTo] = "a certain number of elements, or as many as are available";
 
     USAGE[ID.ValueQ] = "test whether a symbol can be considered to have a value";
