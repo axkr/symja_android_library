@@ -10,6 +10,7 @@ import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.LaplaceTransformRules;
 
@@ -50,7 +51,7 @@ public class LaplaceTransform extends AbstractFunctionEvaluator implements Lapla
     IExpr t = ast.arg2();
     IExpr s = ast.arg3();
     if (!t.isList() && !s.isList() && !t.equals(s)) {
-      if (s.isNumericFunction() && t.isSymbol()) {
+      if (s instanceof INum && t.isSymbol()) {
         double sDouble = s.evalf();
         final IAST cacheKey = F.List(S.LaplaceTransform, a1, t);
         Object value = engine.getObjectCache(cacheKey);

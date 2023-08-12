@@ -11,6 +11,7 @@ import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.InverseLaplaceTransformRules;
 import com.google.common.math.DoubleMath;
@@ -141,7 +142,7 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator
     IExpr s = ast.arg2();
     IExpr t = ast.arg3();
     if (!s.isList() && !t.isList() && !s.equals(t)) {
-      if (t.isNumericFunction() && s.isSymbol()) {
+      if (t instanceof INum && s.isSymbol()) {
         double tDouble = t.evalf();
         return numericInverseLaplaceTransform(a1, s, tDouble, engine);
       }
