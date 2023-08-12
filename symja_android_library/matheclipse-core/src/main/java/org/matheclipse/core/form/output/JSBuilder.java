@@ -6,7 +6,7 @@ import org.matheclipse.core.eval.Errors;
 /** Build a page to show a JavaScript graphic. */
 public class JSBuilder {
   /** Maximum size in byte for jsFiddle */
-  private static final int MAX_JSFIDDLE_SOURCE_CODE = 100000;
+  private static final int MAX_JSFIDDLE_SOURCE_CODE = 200000;
 
   /**
    * HTML template for the <a href="https://github.com/paulmasson/mathcell">MathCell</a> and
@@ -205,13 +205,13 @@ public class JSBuilder {
 
   /** CSS libraries */
   private static final String[] CSS_CDN_JSXGRAPH =
-      {"https://cdn.jsdelivr.net/npm/jsxgraph@1.5.0/distrib/jsxgraph.css"};
+      {"https://cdn.jsdelivr.net/npm/jsxgraph@1.6.0/distrib/jsxgraph.css"};
 
   /** CDN JavaScript libraries */
   private static final String[] JS_CDN_JSXGRAPH =
       {"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.10/build/math.js",
-          "https://cdn.jsdelivr.net/npm/jsxgraph@1.5.0/distrib/jsxgraphcore.js",
-          "https://cdn.jsdelivr.net/npm/json2d_jsxgraph/drawGraphics2d.min.js"};
+          "https://cdn.jsdelivr.net/npm/jsxgraph@1.6.0/distrib/jsxgraphcore.js",
+          "https://cdn.jsdelivr.net/npm/json2d_jsxgraph@1.0.1/drawGraphics2d.js"};
 
   /** CSS libraries */
   private static final String[] CSS_CDN_MATHCELL = {};
