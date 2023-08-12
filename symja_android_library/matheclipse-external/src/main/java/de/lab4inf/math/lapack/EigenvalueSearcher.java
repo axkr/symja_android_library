@@ -21,15 +21,6 @@
 
 package de.lab4inf.math.lapack;
 
-import java.util.Arrays;
-
-import de.lab4inf.math.L4MLoader;
-import de.lab4inf.math.L4MObject;
-import de.lab4inf.math.RootFinder;
-import de.lab4inf.math.functions.Polynomial;
-import de.lab4inf.math.util.Accuracy;
-import de.lab4inf.math.util.Aitken;
-
 import static de.lab4inf.math.lapack.LinearAlgebra.maxnorm;
 import static de.lab4inf.math.lapack.LinearAlgebra.mult;
 import static de.lab4inf.math.lapack.LinearAlgebra.rndVector;
@@ -39,6 +30,13 @@ import static java.lang.Math.abs;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.String.format;
+import java.util.Arrays;
+import de.lab4inf.math.L4MLoader;
+import de.lab4inf.math.L4MObject;
+import de.lab4inf.math.RootFinder;
+import de.lab4inf.math.functions.Polynomial;
+import de.lab4inf.math.util.Accuracy;
+import de.lab4inf.math.util.Aitken;
 
 /**
  * Calculate the eigenvalues of a square matrix.
@@ -155,7 +153,7 @@ public final class EigenvalueSearcher extends L4MObject {
    */
   public static double[] eigenvalues(final @Symmetric double[][] a) {
     if (!LinearAlgebra.isSymmetric(a)) {
-      getLogger().warning("matrix is not symmetric!");
+      getLogger().warn("matrix is not symmetric!");
       // return new double[0];
     }
     final double cond = (new GenericSolver()).cond(a);

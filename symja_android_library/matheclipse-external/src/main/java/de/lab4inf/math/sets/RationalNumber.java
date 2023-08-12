@@ -20,12 +20,11 @@
  */
 package de.lab4inf.math.sets;
 
-import static de.lab4inf.math.Constants.L4MLOGGER;
 import static java.lang.Math.floor;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
-import de.lab4inf.math.L4MLogger;
+import de.lab4inf.math.L4MObject;
 import de.lab4inf.math.Operand;
 import de.lab4inf.math.Orderable;
 import de.lab4inf.math.Rational;
@@ -71,7 +70,6 @@ public class RationalNumber extends Number implements Rational {
   /** constant for -1. */
   private static final BigInteger MINUS_ONE_INTEGER = BigInteger.valueOf(-1L);
 
-  static L4MLogger logger = L4MLogger.getLogger(L4MLOGGER);
   private BigInteger numerator, divider;
   private double eps = EPS;
 
@@ -537,7 +535,7 @@ public class RationalNumber extends Number implements Rational {
   public RationalNumber multiply(final double x) {
     final long y = Math.round(Math.floor(x));
     if (Math.abs(x - y) > Accuracy.DEPS) {
-      logger.warning(String.format("scaling by none integer %f", x));
+      L4MObject.getLogger().warn(String.format("scaling by none integer %f", x));
     }
     return multiply(y);
   }

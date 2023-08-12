@@ -20,13 +20,12 @@
  */
 package de.lab4inf.math;
 
+import static java.lang.String.format;
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ServiceLoader;
-
-import static java.lang.String.format;
 
 /**
  * Common ServiceLoader utility for Lab4Math services using the java.util.ServiceLoader facility.

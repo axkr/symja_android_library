@@ -21,17 +21,17 @@
 
 package de.lab4inf.math;
 
-import java.lang.reflect.Array;
-import java.util.Locale;
-
 import static de.lab4inf.math.Constants.DEF_LOCALE;
-import static de.lab4inf.math.Constants.L4MLOGGER;
 import static de.lab4inf.math.Constants.VERSION_LABEL;
 import static de.lab4inf.math.Constants.VERSION_MAJOR;
 import static de.lab4inf.math.Constants.VERSION_MINOR;
 import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
 import static java.lang.String.format;
+import java.lang.reflect.Array;
+import java.util.Locale;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Common base for all Lab4Math classes.
@@ -45,17 +45,17 @@ public abstract class L4MObject {
   protected static final String NOT_IMPLEMENTED_YET = "not implemented yet...";
   protected static final boolean DEBUG = Constants.DEBUG;
   /** Common Lab4Math logger instance to use. */
-  protected static final L4MLogger LOGGER = L4MLogger.getLogger(L4MLOGGER);
+  protected static final Logger LOGGER = LogManager.getLogger();
 
   static {
     try {
       Locale.setDefault(DEF_LOCALE);
     } catch (Throwable error) {
-      LOGGER.warning("couldn't set Locale " + error);
+      LOGGER.warn("couldn't set Locale " + error);
     }
   }
 
-  protected final L4MLogger logger;
+  protected final Logger logger;
 
   /** Bean constructor for derived classes. */
   protected L4MObject() {
@@ -67,7 +67,7 @@ public abstract class L4MObject {
    *
    * @return Logger in use
    */
-  public static L4MLogger getLogger() {
+  public static Logger getLogger() {
     return LOGGER;
   }
 

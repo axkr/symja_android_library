@@ -21,22 +21,20 @@
 
 package de.lab4inf.math.roots;
 
-import java.util.Arrays;
-import java.util.Comparator;
-
-import de.lab4inf.math.Complex;
-import de.lab4inf.math.L4MObject;
-import de.lab4inf.math.Letters;
-import de.lab4inf.math.functions.Polynomial;
-import de.lab4inf.math.lapack.LinearAlgebra;
-import de.lab4inf.math.util.Accuracy;
-
 import static de.lab4inf.math.functions.Polynomial.divide;
 import static de.lab4inf.math.util.Accuracy.round;
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
 import static java.lang.Math.sqrt;
 import static java.lang.String.format;
+import java.util.Arrays;
+import java.util.Comparator;
+import de.lab4inf.math.Complex;
+import de.lab4inf.math.L4MObject;
+import de.lab4inf.math.Letters;
+import de.lab4inf.math.functions.Polynomial;
+import de.lab4inf.math.lapack.LinearAlgebra;
+import de.lab4inf.math.util.Accuracy;
 
 /**
  * Find all complex roots of a real polynomial of degree n using the Bairstow method.
@@ -262,7 +260,7 @@ public class BairstowRootFinder extends L4MObject {
           format(
               "poor convergence: %cu=%.1e %cv=%.1e",
               Letters.UPPER_DELTA, du, Letters.UPPER_DELTA, dv);
-      getLogger().warning(msg);
+      getLogger().warn(msg);
       // throw new IllegalStateException("no convergence");
     }
     return new double[] {v, u, 1};
