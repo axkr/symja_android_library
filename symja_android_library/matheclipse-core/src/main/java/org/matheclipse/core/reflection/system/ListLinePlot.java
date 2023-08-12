@@ -8,7 +8,6 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 
 /** Plot a list of Points as a single line */
 public class ListLinePlot extends ListPlot {
@@ -34,7 +33,4 @@ public class ListLinePlot extends ListPlot {
     return F.NIL;
   }
 
-
-  @Override
-  public void setUp(final ISymbol newSymbol) {}
 }

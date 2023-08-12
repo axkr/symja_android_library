@@ -9,7 +9,11 @@ import org.matheclipse.core.interfaces.IExpr;
 
 public class ListLogLinearPlot extends ListPlot {
   @Override
-  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
+      final EvalEngine engine) {
+    if (argSize > 0 && argSize < ast.size()) {
+      ast = ast.copyUntil(argSize + 1);
+    }
     GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
     graphicsOptions.setXFunction(x -> F.Log10(x));
     graphicsOptions.setXScale("Log10");

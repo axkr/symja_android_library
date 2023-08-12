@@ -629,8 +629,9 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.JSForm, S.Filling, S.Axes};
-    IExpr[] optionValues = new IExpr[] {S.False, S.None, S.True};
+    IBuiltInSymbol[] optionKeys =
+        new IBuiltInSymbol[] {S.JSForm, S.Filling, S.Axes, S.PlotRange, S.$Scaling};
+    IExpr[] optionValues = new IExpr[] {S.False, S.None, S.True, S.Automatic, S.Automatic};
     setOptions(newSymbol, optionKeys, optionValues);
   }
 }

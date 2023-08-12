@@ -11,7 +11,11 @@ import org.matheclipse.core.interfaces.IExpr;
 
 public class DiscretePlot extends ListPlot {
   @Override
-  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
+      final EvalEngine engine) {
+    if (argSize > 0 && argSize < ast.size()) {
+      ast = ast.copyUntil(argSize + 1);
+    }
     IExpr function = ast.arg1();
     if (ast.arg2().isAST(S.List, 3, 5)) {
       IAST iteratorList = (IAST) ast.arg2();
