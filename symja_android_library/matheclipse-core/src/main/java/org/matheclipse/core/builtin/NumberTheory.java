@@ -18,8 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
@@ -711,8 +709,7 @@ public final class NumberTheory {
         // The arguments to `1` must be two lists of integers of identical length, with the second
         // list only
         // containing positive integers.
-        String message =
-            Errors.getMessage("pilist", F.list(S.ChineseRemainder), EvalEngine.get());
+        String message = Errors.getMessage("pilist", F.list(S.ChineseRemainder), EvalEngine.get());
         throw new ArgumentTypeException(message);
       }
       long modulus = primes[0];
@@ -754,8 +751,7 @@ public final class NumberTheory {
         // The arguments to `1` must be two lists of integers of identical length, with the second
         // list only
         // containing positive integers.
-        String message =
-            Errors.getMessage("pilist", F.list(S.ChineseRemainder), EvalEngine.get());
+        String message = Errors.getMessage("pilist", F.list(S.ChineseRemainder), EvalEngine.get());
         throw new ArgumentTypeException(message);
       }
       BigInteger m = primes[0];
@@ -1083,8 +1079,7 @@ public final class NumberTheory {
           maxIterations = ast.arg2().toIntDefault();
           if (maxIterations <= 0) {
             // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-            return Errors.printMessage(S.ContinuedFraction, "intpm", F.list(ast, F.C2),
-                engine);
+            return Errors.printMessage(S.ContinuedFraction, "intpm", F.list(ast, F.C2), engine);
           }
         } else {
           return F.NIL;
@@ -2790,8 +2785,7 @@ public final class NumberTheory {
             if (period.isNonEmptyList()) {
               if (!((IAST) period).forAll(x -> x.isInteger())) {
                 // Unable to determine the appropriate root for the periodic continued fraction.
-                return Errors.printMessage(S.FromContinuedFraction, "root", F.CEmptyList,
-                    engine);
+                return Errors.printMessage(S.FromContinuedFraction, "root", F.CEmptyList, engine);
               }
               boolean nonNegative = ((IAST) period).forAll(x -> x.isNonNegativeResult());
 
@@ -2814,8 +2808,7 @@ public final class NumberTheory {
                 }
               }
               // Unable to determine the appropriate root for the periodic continued fraction.
-              return Errors.printMessage(S.FromContinuedFraction, "root", F.CEmptyList,
-                  engine);
+              return Errors.printMessage(S.FromContinuedFraction, "root", F.CEmptyList, engine);
             }
 
             return continuedFractionReduce(list, engine);
@@ -3058,8 +3051,7 @@ public final class NumberTheory {
           if (n != Integer.MIN_VALUE) {
             if (n < 0) {
               // Positive integer expected at position `2` in `1`.
-              return Errors.printMessage(S.LinearRecurrence, "intp", F.List(arg3, F.C1),
-                  engine);
+              return Errors.printMessage(S.LinearRecurrence, "intp", F.List(arg3, F.C1), engine);
             }
             IAST result = linearRecurrence(list1, list2, n, ast, engine);
             if (result.isPresent()) {
@@ -3502,8 +3494,7 @@ public final class NumberTheory {
       }
       // TODO add gaussian integers
       // The `1` arguments to `2` must be ordinary integers.
-      return Errors.printMessage(S.ModularInverse, "minv", F.List(F.C2, S.ModularInverse),
-          engine);
+      return Errors.printMessage(S.ModularInverse, "minv", F.List(F.C2, S.ModularInverse), engine);
     }
 
 
@@ -3938,21 +3929,18 @@ public final class NumberTheory {
             return F.C3;
           }
           try {
-            IExpr result = F.REMEMBER_INTEGER_CACHE.get(ast, new Callable<IExpr>() {
-              @Override
-              public IExpr call() {
-                return sumPartitionsP(engine, (IInteger) arg1);
-              }
-            });
-            if (result != null) {
-              return result;
+            IExpr result = F.REMEMBER_INTEGER_CACHE.getIfPresent(ast);
+            if (result == null) {
+              result = sumPartitionsP(engine, (IInteger) arg1);
+              F.REMEMBER_INTEGER_CACHE.put(ast, result);
             }
+            return result;
           } catch (UncheckedExecutionException e) {
             Throwable th = e.getCause();
             if (th instanceof LimitException) {
               throw (LimitException) th;
             }
-          } catch (ExecutionException e) {
+            // } catch (ExecutionException e) {
             // LOGGER.error("PartitionsP.evaluate() failed", e);
           }
           return F.NIL;
@@ -4040,22 +4028,19 @@ public final class NumberTheory {
           try {
             IInteger n = (IInteger) arg1;
             if (n.isLT(F.ZZ(201))) {
-              IExpr result = F.REMEMBER_INTEGER_CACHE.get(ast, new Callable<IExpr>() {
-                @Override
-                public IExpr call() {
-                  return partitionsQ(engine, (IInteger) arg1);
-                }
-              });
-              if (result != null) {
-                return result;
+              IExpr result = F.REMEMBER_INTEGER_CACHE.getIfPresent(ast);
+              if (result == null) {
+                result = partitionsQ(engine, n);
+                F.REMEMBER_INTEGER_CACHE.put(ast, result);
               }
+              return result;
             }
           } catch (UncheckedExecutionException e) {
             Throwable th = e.getCause();
             if (th instanceof LimitException) {
               throw (LimitException) th;
             }
-          } catch (ExecutionException e) {
+            // } catch (ExecutionException e) {
             // LOGGER.error("PartitionsQ.evaluate() failed", e);
           }
           return F.NIL;
