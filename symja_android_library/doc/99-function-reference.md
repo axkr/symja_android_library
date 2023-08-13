@@ -3,12 +3,13 @@
 Supported features icon:
 
 * &#x2705; - the symbol / function is supported. Note that this doesn't mean that every possible symbolic evaluation is supported
-* &#x2611; - the symbol / function is partially implemented and might not support most basic features of the element
+* &#x2611; - the symbol / function is partially implemented and might not support most basic features of the function
 * &#x274C; - the symbol / function is currently not supported
 * &#x26A0; - the symbol / function is deprecated and will not be further improved
 * &#x1F9EA; - the symbol / function is an experimental implementation. It may not fully behave as expected
 * &#x2615; - the symbol / function is supported on Java virtual machine
 * &#x229E; - the symbol / function is supported on Windows
+* &#x1F504; - the symbol / function is an alias for another function
 
 Functions in alphabetical order:
 
@@ -247,7 +248,7 @@ Functions in alphabetical order:
 * &#x2705; [DiagonalMatrixQ](functions/DiagonalMatrixQ.md)
 *[DialogInput](functions/DialogInput.md)
 * &#x2705; [DiceDissimilarity](functions/DiceDissimilarity.md)
-* [Diff](functions/Diff.md)
+* &#x1F504; [Diff](functions/Diff.md)
 * &#x2705; [DifferenceDelta](functions/DifferenceDelta.md)
 *[DigitCharacter](functions/DigitCharacter.md)
 * &#x2705; [DigitCount](functions/DigitCount.md)
@@ -263,7 +264,7 @@ Functions in alphabetical order:
 * &#x2705; [Dispatch](functions/Dispatch.md)
 * &#x2705; [Distribute](functions/Distribute.md)
 * &#x2705; [Div](functions/Div.md)
-* [Divergence](functions/Divergence.md)
+* &#x1F504; [Divergence](functions/Divergence.md)
 * &#x2705; [Divide](functions/Divide.md)
 * &#x2705; [DivideBy](functions/DivideBy.md)
 * &#x2705; [DivideSides](functions/DivideSides.md)
@@ -308,7 +309,7 @@ Functions in alphabetical order:
 * &#x2705; [EulerGamma](functions/EulerGamma.md)
 * &#x2705; [EulerianGraphQ](functions/EulerianGraphQ.md)
 * &#x2705; [EulerPhi](functions/EulerPhi.md)
-* [EvalF](functions/EvalF.md)
+* &#x1F504; [EvalF](functions/EvalF.md)
 * &#x2705; [Evaluate](functions/Evaluate.md)
 * &#x2705; [EvenQ](functions/EvenQ.md)
 *[ExactNumberQ](functions/ExactNumberQ.md)
@@ -464,7 +465,7 @@ Functions in alphabetical order:
 *[InputString](functions/InputString.md)
 * &#x2705; [Insert](functions/Insert.md)
 * &#x2615; [InstanceOf](functions/InstanceOf.md)
-* [Int](functions/Int.md)
+* &#x1F504; [Int](functions/Int.md)
 *[Integer](functions/Integer.md)
 * &#x2705; [IntegerDigits](functions/IntegerDigits.md)
 * &#x2705; [IntegerExponent](functions/IntegerExponent.md)
@@ -563,7 +564,7 @@ Functions in alphabetical order:
 * &#x2705; [ListPlot3D](functions/ListPlot3D.md)
 * &#x2705; [ListPointPlot3D](functions/ListPointPlot3D.md)
 *[ListQ](functions/ListQ.md)
-* [Ln](functions/Ln.md)
+* &#x1F504; [Ln](functions/Ln.md)
 * &#x2615; [LoadJavaClass](functions/LoadJavaClass.md)
 * &#x2705; [Log](functions/Log.md)
 * &#x2705; [Log10](functions/Log10.md)
