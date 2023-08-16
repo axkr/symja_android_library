@@ -22,6 +22,10 @@ BinCounts(list, {min, max, width-of-bin} )
 {5}
 ```
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of BinCounts](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L944) 

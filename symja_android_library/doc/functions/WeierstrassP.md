@@ -17,6 +17,10 @@ See
 1+3/2*Cot(Sqrt(3/2)*z)^2
 ```
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of WeierstrassP](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/EllipticIntegrals.java#L2138) 

@@ -26,6 +26,10 @@ The arguments are expected to be vectors of equal length, and the number of argu
 Cross({1, 2}, {3, 4, 5})
 ```
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of Cross](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L1291) 

@@ -37,6 +37,10 @@ Divide by 2 until the result is no longer an integer:
 ```
 
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of NestWhileList](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L1759) 

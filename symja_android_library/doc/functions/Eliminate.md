@@ -20,6 +20,10 @@ x==2+z
 ### Related terms
 [DSolve](DSolve.md), [GroebnerBasis](GroebnerBasis.md), [FindRoot](FindRoot.md), [NRoots](NRoots.md), [Roots](Roots.md),  [Solve](Solve.md)
 
+### Implementation status
+
+* &#x2611; - partially implemented
+
 ### Github
 
 * [Implementation of Eliminate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Eliminate.java#L69) 

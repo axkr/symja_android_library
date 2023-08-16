@@ -18,6 +18,10 @@ See:
 Sqrt((a-c)^2+(b-d)^2)+Sqrt((c-e)^2+(d-f)^2)
 ```
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of ArcLength](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ComputationalGeometryFunctions.java#L181) 

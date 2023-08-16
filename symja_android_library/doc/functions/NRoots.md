@@ -16,6 +16,10 @@ NRoots(polynomial==0)
 ### Related terms 
 [DSolve](DSolve.md), [Eliminate](Eliminate.md), [GroebnerBasis](GroebnerBasis.md), [FindRoot](FindRoot.md), [Reduce](Reduce.md), [Roots](Roots.md), [Solve](Solve.md)
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of NRoots](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/RootsFunctions.java#L171) 

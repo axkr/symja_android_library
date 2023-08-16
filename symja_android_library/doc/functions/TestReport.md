@@ -27,6 +27,10 @@ In the [MMA console](https://github.com/axkr/symja_android_library/wiki/MMA-cons
 ### Related terms 
 [TestResultObject](TestResultObject.md), [VerificationTest](VerificationTest.md)
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of TestReport](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/UnitTestingFunctions.java#L47) 

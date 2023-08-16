@@ -42,6 +42,10 @@ FixedPoint(f, x, -1)
 ### Related terms 
 [FixedPointList](FixedPointList.md), [Nest](Nest.md), [NestWhile](NestWhile.md)
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of FixedPoint](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L878) 

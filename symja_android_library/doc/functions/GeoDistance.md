@@ -27,6 +27,10 @@ Calculate the distance between Oslo and Berlin in kilometers:
 839.1600759072911[km]
 ```
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of GeoDistance](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GeodesyFunctions.java#L29) 

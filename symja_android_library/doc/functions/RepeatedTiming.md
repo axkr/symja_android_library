@@ -13,6 +13,10 @@ RepeatedTiming(x)
 {0.0003,{{3,1},{5,1},{17,1},{257,1},{65537,1}}}
 ```
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of RepeatedTiming](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L2660) 

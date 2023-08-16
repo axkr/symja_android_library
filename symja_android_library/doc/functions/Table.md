@@ -63,6 +63,10 @@ Table(expr, {i, {e1, e2, ..., ei}})
 {-0.2,0.8,1.8,2.8,3.8} 
 ```
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of Table](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L6992) 

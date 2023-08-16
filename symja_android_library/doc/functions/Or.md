@@ -22,6 +22,10 @@ If an expression does not evaluate to `True` or `False`, `Or` returns a result i
 a || b
 ```
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of Or](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BooleanFunctions.java#L3857) 

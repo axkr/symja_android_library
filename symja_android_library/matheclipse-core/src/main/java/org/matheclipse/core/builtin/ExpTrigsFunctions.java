@@ -1396,7 +1396,7 @@ public class ExpTrigsFunctions {
         IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
         if (t.isPresent() && t.im().isZero()) {
           // 1/2 * t
-          IExpr temp = engine.evaluate(F.Times(F.C1D2, t));
+          IExpr temp = F.timesDistribute(F.C1D2, t,engine);
           if (temp.isIntegerResult()) {
             return F.C1;
           }
@@ -1664,7 +1664,7 @@ public class ExpTrigsFunctions {
           }
 
           // 1/2 * t
-          IExpr temp1 = engine.evaluate(F.Times(F.C1D2, t));
+          IExpr temp1 = F.timesDistribute(F.C1D2, t, engine);
           // 1/2 * t - 1/4
           IExpr temp2 = engine.evaluate(F.Plus(temp1, F.CN1D4));
           if (temp2.isIntegerResult()) {
@@ -1678,8 +1678,8 @@ public class ExpTrigsFunctions {
           // t - 1/2
           temp2 = engine.evaluate(F.Plus(t, F.CN1D2));
           if (temp2.isIntegerResult()) {
-            // (-1) ^ (t-1/2)
-            return F.Power(F.CN1, temp2);
+            // I^(-1+2*t)
+            return F.Power(F.CI, F.Plus(F.CN1, F.Times(F.C2, t)));
           }
         }
       }
@@ -2702,7 +2702,7 @@ public class ExpTrigsFunctions {
         IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
         if (t.isPresent() && t.im().isZero()) {
           // 1/2 * t
-          IExpr temp1 = engine.evaluate(F.Times(F.C1D2, t));
+          IExpr temp1 = F.timesDistribute(F.C1D2, t, engine);
           if (temp1.isIntegerResult()) {
             return F.C1;
           }
@@ -2982,7 +2982,7 @@ public class ExpTrigsFunctions {
           }
 
           // 1/2 * t
-          IExpr temp1 = engine.evaluate(F.Times(F.C1D2, t));
+          IExpr temp1 = F.timesDistribute(F.C1D2, t, engine);
           // 1/2 * t - 1/4
           IExpr temp2 = engine.evaluate(F.Plus(temp1, F.CN1D4));
           if (temp2.isIntegerResult()) {
@@ -2996,8 +2996,8 @@ public class ExpTrigsFunctions {
           // t - 1/2
           temp2 = engine.evaluate(F.Plus(t, F.CN1D2));
           if (temp2.isIntegerResult()) {
-            // (-1) ^ (t-1/2)
-            return F.Power(F.CN1, temp2);
+            // I^(-1+2*t)
+            return F.Power(F.CI, F.Plus(F.CN1, F.Times(F.C2, t)));
           }
         }
       }

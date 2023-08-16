@@ -21,6 +21,10 @@ Cycles({{1,4,6,8,3,7}})
 ### Related terms 
 [FindPermutation](FindPermutation.md), [PermutationCycles](PermutationCycles.md), [PermutationCyclesQ](PermutationCyclesQ.md), [PermutationList](PermutationList.md), [PermutationListQ](PermutationListQ.md), [PermutationReplace](PermutationReplace.md), [Permutations](Permutations.md), [Permute](Permute.md)
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of Cycles](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Combinatoric.java#L292) 

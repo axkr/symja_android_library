@@ -45,6 +45,10 @@ The "McNugget partitions" [OEIS - Number of partitions of n into parts 6, 9 or 2
 ### Related terms 
 [FrobeniusNumber](FrobeniusNumber.md), [FrobeniusSolve](FrobeniusSolve.md) 
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of IntegerPartitions](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Combinatoric.java#L685) 

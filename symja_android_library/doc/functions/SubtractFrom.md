@@ -21,6 +21,10 @@ x -= dx
 ```
     
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of SubtractFrom](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L5517) 
+* [Implementation of SubtractFrom](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L5494) 

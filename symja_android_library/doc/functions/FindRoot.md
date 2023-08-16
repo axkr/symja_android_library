@@ -117,6 +117,10 @@ Using Newton's method for finding the root of a differentiable, multivariate, ve
 ### Related terms 
 [Factor](Factor.md), [Eliminate](Eliminate.md), [NRoots](NRoots.md), [Solve](Solve.md)
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of FindRoot](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/FindRoot.java#L203) 

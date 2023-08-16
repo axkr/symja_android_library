@@ -22,6 +22,10 @@ InterpolatingFunction({{0,17},{1,3},{2,5},{3,4},{4,3},{5,0},{6,23}})
 ### Related terms 
 [InterpolatingPolynomial](InterpolatingPolynomial.md), [NDSolve](NDSolve.md) 
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of InterpolatingFunction](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/InterpolatingFunction.java#L13) 

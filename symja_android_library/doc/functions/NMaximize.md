@@ -34,6 +34,10 @@ with the constraints:
 ### Related terms 
 [LinearProgramming](LinearProgramming.md), [NMinimize](NMinimize.md)
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of NMaximize](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/MinMaxFunctions.java#L888) 

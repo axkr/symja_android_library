@@ -30,7 +30,11 @@ x/Abs(x)
 
 >> Refine(2/3*Round(x), Element(x,Integers))
 2/3*x
-```  
+```
+
+### Implementation status
+
+* &#x2705; - full supported
 
 ### Github
 

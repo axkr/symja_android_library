@@ -36,6 +36,10 @@ Method 3 from [Wikipedia - Quartile](https://en.wikipedia.org/wiki/Quartile)
 
 [FiveNum](FiveNum.md), [Median](Median.md), [Quantile](Quantile.md) 
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of Quartiles](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L6346) 

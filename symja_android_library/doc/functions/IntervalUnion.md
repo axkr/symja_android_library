@@ -21,6 +21,10 @@ Interval({1,4},{4.1,7},{8,8.5},{9,10})
 ### Related terms 
 [Interval](Interval.md), [IntervalIntersection](IntervalIntersection.md), [IntervalMemberQ](IntervalMemberQ.md)
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of IntervalUnion](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntervalFunctions.java#L661) 

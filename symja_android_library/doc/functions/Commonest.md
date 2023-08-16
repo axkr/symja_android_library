@@ -32,6 +32,10 @@ Given the list of data `{1, 1, 2, 4, 4}` the mode is not unique – the dataset 
 ### Related terms 
 [Counts](Counts.md), [Tally](Tally.md)
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of Commonest](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L1487) 

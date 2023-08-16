@@ -1,7 +1,15 @@
 ## Reference of functions and built-in symbols
 
-* [$Assumptions](functions/$Assumptions.md)
-* [$HistoryLength](functions/$HistoryLength.md)
+Supported features icon:
+
+* &#9745; - the function is partially implemented and might not support most basic features of the element 
+* &#x2705; - the function is supported. Note that this doesn't mean that every symbolic evaluation is supported.
+* &#x1F9EA; - the function is an experimental implementation. It may not fully behave as expected.
+
+Functions in alphabetical order:
+
+* &#9745; [$Assumptions](functions/$Assumptions.md)
+* &#9745; [$HistoryLength](functions/$HistoryLength.md)
 * [$IterationLimit](functions/$IterationLimit.md)
 * [$Line](functions/$Line.md)
 * [$MaxMachineNumber](functions/$MaxMachineNumber.md)
@@ -10,9 +18,9 @@
 * [$RecursionLimit](functions/$RecursionLimit.md)
 * [$ScriptCommandLine](functions/$ScriptCommandLine.md)
 * [AASTriangle](functions/AASTriangle.md)
-* [Abort](functions/Abort.md)
-* [Abs](functions/Abs.md)
-* [AbsArg](functions/AbsArg.md)
+* &#x2705; [Abort](functions/Abort.md)
+* &#x2705; [Abs](functions/Abs.md)
+* &#x2705; [AbsArg](functions/AbsArg.md)
 * [AbsoluteTiming](functions/AbsoluteTiming.md)
 * [Accumulate](functions/Accumulate.md)
 * [AddSides](functions/AddSides.md)
@@ -575,7 +583,7 @@
 * [MatchingDissimilarity](functions/MatchingDissimilarity.md)
 * [MatchQ](functions/MatchQ.md)
 * [MathMLForm](functions/MathMLForm.md)
-* [MatrixD](functions/MatrixD.md)
+* &#x1F9EA; [MatrixD](functions/MatrixD.md)
 * [MatrixExp](functions/MatrixExp.md)
 * [MatrixForm](functions/MatrixForm.md)
 * [MatrixMinimalPolynomial](functions/MatrixMinimalPolynomial.md)
@@ -778,7 +786,7 @@
 * [Reals](functions/Reals.md)
 * [RealSign](functions/RealSign.md)
 * [Reap](functions/Reap.md)
-* [Reduce](functions/Reduce.md)
+* &#x1F9EA; [Reduce](functions/Reduce.md)
 * [Refine](functions/Refine.md)
 * [RegularExpression](functions/RegularExpression.md)
 * [ReIm](functions/ReIm.md)

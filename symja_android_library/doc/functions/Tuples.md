@@ -43,6 +43,10 @@ However, when specifying multiple expressions, `List` is always used:
 {{a,x},{a,y},{b,x},{b,y}}
 ```
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of Tuples](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Combinatoric.java#L2808) 

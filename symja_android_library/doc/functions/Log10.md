@@ -22,6 +22,10 @@ See
 3/Log(10)   
 ```
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of Log10](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2559) 
+* [Implementation of Log10](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2558) 

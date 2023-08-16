@@ -30,6 +30,10 @@ It's important to use the `==` operator to define the equations. If you have uni
 ### Related terms 
 [DSolve](DSolve.md), [Eliminate](Eliminate.md), [GroebnerBasis](GroebnerBasis.md), [FindInstance](FindInstance.md), [FindRoot](FindRoot.md), [NRoots](NRoots.md), [NSolve](NSolve.md), [Reduce](Reduce.md), [Roots](Roots.md) 
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of Solve](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Solve.java#L97) 

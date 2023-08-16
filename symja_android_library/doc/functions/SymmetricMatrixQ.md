@@ -17,6 +17,10 @@ See
 True 
 ```
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of SymmetricMatrixQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PredicateQ.java#L1398) 
+* [Implementation of SymmetricMatrixQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PredicateQ.java#L1364) 

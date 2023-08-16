@@ -173,6 +173,10 @@ Cannot take positions `3` through `1` in `{1, 2, 3, 4}`.
 {1,2,3,4}[[3;;1]]
 ```
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of Part](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L2346) 

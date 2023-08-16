@@ -20726,6 +20726,35 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("Refine((-1)^(x+y), Element(k/2, Integers))", //
     // "(-1)^y");
 
+    check("Refine(Csc(Pi*(1/2+m)), Element(m, Integers))", //
+        "I^(-1+2*(1/2+m))");
+    check("Refine(Csc(Pi*(-1/2+m)), Element(m, Integers))", //
+        "I^(-1+2*(-1/2+m))");
+    check("Refine(Csc(Pi*(1/4+m)), Element(m, Integers))", //
+        "Csc((1/4+m)*Pi)");
+    check("Refine(Csc(Pi*(-1/4+m)), Element(m, Integers))", //
+        "Csc((-1/4+m)*Pi)");
+    check("Refine(Csc(x+k*Pi), Element(k, Integers))", //
+        "(-1)^k*Csc(x)");
+
+    check("Refine(Sin(Pi*(1/2+m)), Element(m, Integers))", //
+        "I^(-1+2*(1/2+m))");
+    check("Refine(Sin(Pi*(-1/2+m)), Element(m, Integers))", //
+        "I^(-1+2*(-1/2+m))");
+    check("Refine(Sin(Pi*(1/4+m)), Element(m, Integers))", //
+        "Sin((1/4+m)*Pi)");
+    check("Refine(Sin(Pi*(-1/4+m)), Element(m, Integers))", //
+        "Sin((-1/4+m)*Pi)");
+    check("Refine(Sin(x+k*Pi), Element(k, Integers))", //
+        "(-1)^k*Sin(x)");
+
+    check("Refine(Sin(k*Pi), Element(k, Integers))", //
+        "0");
+    check("Sin(k*Pi)", //
+        "Sin(k*Pi)");
+    check("Refine(Cos(x+k*Pi), Element(k, Integers))", //
+        "(-1)^k*Cos(x)");
+
     check("Refine(Re(Log(x)),x>0)", //
         "Log(x)");
     check("Refine(Im(Log(x)),x>0)", //
@@ -20908,13 +20937,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("Refine(Log(-4), x<0)", //
         "I*Pi+Log(4)");
-
-    check("Refine(Sin(k*Pi), Element(k, Integers))", //
-        "0");
-    check("Sin(k*Pi)", //
-        "Sin(k*Pi)");
-    check("Refine(Cos(x+k*Pi), Element(k, Integers))", //
-        "(-1)^k*Cos(x)");
 
     check("Refine(Floor(2*a + 1), Element(a, Integers))", //
         "1+2*a");

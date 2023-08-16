@@ -22,6 +22,10 @@ See
 {1,{1+x^2+x^3+x^4+x^5,x+x^3+x^6+x^7}}
 ```
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of PolynomialExtendedGCD](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L3006) 

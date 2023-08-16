@@ -22,6 +22,10 @@ IntervalData({1,Less,Less,E})
 [IntervalData](IntervalData.md), [IntervalIntersection](IntervalIntersection.md), [IntervalMemberQ](IntervalMemberQ.md)
  
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of IntervalComplement](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntervalFunctions.java#L105) 

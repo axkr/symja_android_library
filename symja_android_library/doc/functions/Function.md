@@ -65,6 +65,10 @@ Parameters are renamed, when necessary, to avoid confusion:
 ### Related terms
 [Slot](Slot.md), [SlotSequence](SlotSequence.md) 
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of Function](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StructureFunctions.java#L613) 
+* [Implementation of Function](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StructureFunctions.java#L616) 

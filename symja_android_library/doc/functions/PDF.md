@@ -39,6 +39,10 @@ E^(-E^((k-n)/m)+(k-n)/m)/m
 [CDF](CDF.md), [InverseCDF](InverseCDF.md) 
 
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of PDF](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L5596) 

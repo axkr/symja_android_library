@@ -31,6 +31,10 @@ x^3/3
 [D](D.md),[DSolve](DSolve.md), [Int](Int.md), [Limit](Limit.md), [ND](ND.md), [NIntegrate](NIntegrate.md) 
  
 
+### Implementation status
+
+* &#x2611; - partially implemented
+
 ### Github
 
 * [Implementation of Integrate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Integrate.java#L82) 

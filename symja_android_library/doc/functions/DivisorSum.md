@@ -28,6 +28,10 @@ Calculate the [OEIS - sequence A002791](https://oeis.org/A002791):
 333,566,269,497,378,569}
 ```
 
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of DivisorSum](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L1491) 
