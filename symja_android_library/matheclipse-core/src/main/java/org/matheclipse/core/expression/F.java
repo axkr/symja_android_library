@@ -25,6 +25,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9731,6 +9732,14 @@ public class F extends S {
       return timesOrderless(IExpr::isTimes, x, y);
     }
     return new B2.Times(x, y);
+  }
+
+  public static IExpr timesDistribute(@Nonnull IExpr x, @Nonnull final IExpr y,
+      EvalEngine engine) {
+    if (x.isPlus() || y.isPlus()) {
+      return engine.evaluate(F.Distribute(new B2.Times(x, y)));
+    }
+    return timesOrderless(IExpr::isTimes, x, y);
   }
 
   /**
