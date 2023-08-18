@@ -3,6 +3,7 @@ package org.matheclipse.core.eval.interfaces;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
@@ -367,5 +368,11 @@ public interface IFunctionEvaluator extends IEvaluator {
     // `1` called with `2` arguments; `3` arguments are expected.
     return Errors.printMessage(ast.topHead(), "argrx",
         F.List(ast, F.ZZ(ast.argSize()), F.ZZ(expected)), engine);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  default int status() {
+    return ImplementationStatus.FULL_SUPPORT;
   }
 }

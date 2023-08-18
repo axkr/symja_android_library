@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.expression.BuiltInSymbol;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -130,6 +131,56 @@ public class SourceCodeFunctions {
     return null;
   }
 
+  /**
+   * Return the implementation status of this symbol or function as a string.
+   * <p>
+   * <ul>
+   * <li>&#x2705; - {@link ImplementationStatus#FULL_SUPPORT} the symbol / function is supported.
+   * Note that this doesn't mean that every symbolic evaluation is supported.
+   * <li>&#x2611; - {@link ImplementationStatus#PARTIAL_SUPPORT} the symbol / function is partially
+   * implemented and might not support most basic features of the element
+   * <li>&#x274C; - {@link ImplementationStatus#NO_SUPPORT} the symbol / function is currently not
+   * supported
+   * <li>&#x26A0; - {@link ImplementationStatus#DEPRECATED} the symbol / function is deprecated and
+   * will not be further improved
+   * <li>&#x1F9EA; - {@link ImplementationStatus#EXPERIMENTAL} the symbol / function is an
+   * experimental implementation. It may not fully behave as expected.
+   * </ul>
+   * 
+   */
+  public static String statusAsString(ISymbol builtin) {
+    int ordinal = builtin.ordinal();
+    if (ordinal > 0 && ordinal < ID.LINE_NUMBER_OF_JAVA_CLASS.length) {
+      int line = ID.LINE_NUMBER_OF_JAVA_CLASS[ordinal];
+      if (line > 0) {
+        IEvaluator evaluator = ((IBuiltInSymbol) builtin).getEvaluator();
+        if (evaluator != null //
+            && evaluator != BuiltInSymbol.DUMMY_EVALUATOR //
+            && evaluator != ICoreFunctionEvaluator.ARGS_EVALUATOR) {
+          int implementationStatus = evaluator.status();
+          return ImplementationStatus.STATUS_STRINGS[implementationStatus];
+        }
+      }
+    }
+    return null;
+  }
+
+  public static String statusAsEmoji(ISymbol builtin) {
+    int ordinal = builtin.ordinal();
+    if (ordinal > 0 && ordinal < ID.LINE_NUMBER_OF_JAVA_CLASS.length) {
+      int line = ID.LINE_NUMBER_OF_JAVA_CLASS[ordinal];
+      if (line > 0) {
+        IEvaluator evaluator = ((IBuiltInSymbol) builtin).getEvaluator();
+        if (evaluator != null //
+            && evaluator != BuiltInSymbol.DUMMY_EVALUATOR //
+            && evaluator != ICoreFunctionEvaluator.ARGS_EVALUATOR) {
+          int implementationStatus = evaluator.status();
+          return ImplementationStatus.STATUS_EMOJIS[implementationStatus];
+        }
+      }
+    }
+    return null;
+  }
   public static void initialize() {
     Initializer.init();
   }

@@ -1,6 +1,7 @@
 package org.matheclipse.core.interfaces;
 
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 
@@ -32,5 +33,25 @@ public interface IEvaluator {
   default void setOptions(final ISymbol symbol, IAST listOfRules) {
     symbol.putDownRule(IPatternMatcher.SET, true, F.Options(symbol), listOfRules,
         IPatternMap.DEFAULT_RULE_PRIORITY, true);
+  }
+
+  /**
+   * The implementation status of this symbol or function.
+   * <p>
+   * <ul>
+   * <li>&#x2705; - {@link ImplementationStatus#FULL_SUPPORT} the symbol / function is supported.
+   * Note that this doesn't mean that every symbolic evaluation is supported.
+   * <li>&#x2611; - {@link ImplementationStatus#PARTIAL_SUPPORT} the symbol / function is partially
+   * implemented and might not support most basic features of the element
+   * <li>&#x274C; - {@link ImplementationStatus#NO_SUPPORT} the symbol / function is currently not
+   * supported
+   * <li>&#x26A0; - {@link ImplementationStatus#DEPRECATED} the symbol / function is deprecated and
+   * will not be further improved
+   * <li>&#x1F9EA; - {@link ImplementationStatus#EXPERIMENTAL} the symbol / function is an
+   * experimental implementation. It may not fully behave as expected.
+   * </ul>
+   */
+  default int status() {
+    return ImplementationStatus.NO_SUPPORT;
   }
 }

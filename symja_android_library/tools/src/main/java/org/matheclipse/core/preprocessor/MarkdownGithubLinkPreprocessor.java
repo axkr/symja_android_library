@@ -56,12 +56,34 @@ public class MarkdownGithubLinkPreprocessor {
             String identifier = F.symbolNameNormalized(functionName);
             ISymbol symbol = Context.SYSTEM.get(identifier);
             if (symbol != null) {
+              String status = SourceCodeFunctions.statusAsString(symbol);
               String functionURL = SourceCodeFunctions.functionURL(symbol);
               if (functionURL != null) {
                 try {
                   System.out.println(sourceFile.toString());
                   List<String> result = Files.readLines(sourceFile, Charsets.UTF_8);
                   int index = -1;
+                  if (status != null) {
+                    for (int j = 0; j < result.size(); j++) {
+                      if (result.get(j).startsWith("### Implementation status")) {
+                        index = j;
+                        break;
+                      }
+                    }
+                    if (index >= 0) {
+                      // remove 4 lines of old github "Implementation status"
+                      result.remove(index + 2);
+                      result.remove(index + 1);
+                      result.remove(index);
+                      result.remove(index - 1);
+                    }
+                    result.add("");
+                    result.add("### Implementation status");
+                    result.add("");
+                    result.add(status);
+                  }
+
+                  index = -1;
                   for (int j = 0; j < result.size(); j++) {
                     if (result.get(j).startsWith("### Github")) {
                       index = j;
@@ -75,8 +97,8 @@ public class MarkdownGithubLinkPreprocessor {
                     result.remove(index);
                     result.remove(index - 1);
                   }
-                  // append 4 lines of new github link
                   result.add("");
+                  // append 4 lines of new github link
                   result.add("### Github");
                   result.add("");
                   result.add("* [Implementation of " + functionName + "](" + functionURL + ") ");
