@@ -166,9 +166,9 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
       }
       buf.append("F.");
       buf.append(head.toString());
-      buf.append(".ofN(");
+      buf.append(".ofN");
       convertArgs(buf, head, function);
-      buf.append(")");
+      // buf.append("");
       return;
     }
     if (function.isInfinity()) {
