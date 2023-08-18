@@ -261,12 +261,14 @@ public class BuiltinUsage {
     USAGE[ID.MatrixForm] = "format as a matrix";
     USAGE[ID.MatrixQ] = "gives 'True' if the given argument is a list of equal-length lists";
     USAGE[ID.Max] = "the smallest argument or the largest element of a list";
+    USAGE[ID.Maximize] = "compute the maximum of a function";
     USAGE[ID.Mean] = "returns the statistical mean of a list";
     USAGE[ID.Median] = "central value of a dataset";
     USAGE[ID.MemberQ] = "test whether an element is a member of a list";
     USAGE[ID.Message] = "display a message";
     USAGE[ID.MessageName] = "message identifyier";
     USAGE[ID.Min] = "the largest argument or the largest element of a list";
+    USAGE[ID.Minimize] = "compute the minimum of a function";
     USAGE[ID.Minus] = "arithmetic negate";
     USAGE[ID.MinimalPolynomial] = "minimal polynomial for a general algebraic number";
     USAGE[ID.Missing] = "default value if a key is not found";
