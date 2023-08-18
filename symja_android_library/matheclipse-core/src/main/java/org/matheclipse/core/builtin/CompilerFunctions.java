@@ -22,6 +22,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.expression.Blank;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.CompiledFunctionExpr;
 import org.matheclipse.core.form.output.DoubleFormFactory;
@@ -205,7 +206,7 @@ public class CompilerFunctions {
    * Contains the name, type and rank of an argument in a compiled function.
    *
    */
-  private static class CompiledFunctionArg {
+  public static class CompiledFunctionArg {
 
     private enum Rank {
       SCALAR, VECTOR, MATRIX
@@ -214,6 +215,12 @@ public class CompilerFunctions {
     IExpr argument;
     IExpr type;
     Rank rank;
+
+    public CompiledFunctionArg(IExpr argument, IExpr type) {
+      this.argument = argument;
+      this.type = type;
+      this.rank = Rank.SCALAR;
+    }
 
     public CompiledFunctionArg(IExpr argument, IExpr type, Rank rank) {
       this.argument = argument;
@@ -276,27 +283,19 @@ public class CompilerFunctions {
         if (args == null) {
           return F.NIL;
         }
-        IASTAppendable variables = F.ListAlloc(args.length);
-        IASTAppendable types = F.ListAlloc(args.length);
-        for (int i = 0; i < args.length; i++) {
-          variables.append(args[i].argument);
-          types.append(args[i].type);
+        CompiledFunctionExpr compiled = compile(ast, args, engine);
+        if (compiled != null) {
+          return compiled;
         }
-        String source = compilePrint(ast, args, engine);
-        if (source != null) {
-          SimpleCompiler comp = new SimpleCompiler();
-          comp.cook(source);
-          ClassLoader loader = comp.getClassLoader();
-          Class<?> clazz = loader.loadClass("org.matheclipse.core.compile.CompiledFunction");
-          return CompiledFunctionExpr.newInstance(variables, types, ast.arg2(), clazz);
-        }
-        return F.NIL;
       } catch (ValidateException ve) {
         return Errors.printMessage(ast.topHead(), ve, engine);
-      } catch (CompileException | ClassNotFoundException | RuntimeException e) {
-        LOGGER.log(engine.getLogLevel(), "Compile", e);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.JVM_SUPPORT;
     }
 
     @Override
@@ -666,12 +665,13 @@ public class CompilerFunctions {
 
     private boolean convertSymbolic(StringBuilder buf, IExpr expression) {
       try {
-        buf.append(expression.internalJavaString(SourceCodeProperties.JAVA_FORM_PROPERTIES, -1, x -> {
-          if (localVariables.contains(x.toString())) {
-            return "vars.get(\"" + x.toString() + "\")";
-          }
-          return numericVariables.apply(x);
-        }));
+        buf.append(
+            expression.internalJavaString(SourceCodeProperties.JAVA_FORM_PROPERTIES, -1, x -> {
+              if (localVariables.contains(x.toString())) {
+                return "vars.get(\"" + x.toString() + "\")";
+              }
+              return numericVariables.apply(x);
+            }));
         return true;
       } catch (RuntimeException rex) {
         //
@@ -716,6 +716,11 @@ public class CompilerFunctions {
         }
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.JVM_SUPPORT;
     }
 
     @Override
@@ -864,6 +869,29 @@ public class CompilerFunctions {
     }
 
     return new CompiledFunctionArg(sym, headTest, rank);
+  }
+
+  public static CompiledFunctionExpr compile(final IAST ast, CompiledFunctionArg[] args,
+      EvalEngine engine) {
+    try {
+      IASTAppendable variables = F.ListAlloc(args.length);
+      IASTAppendable types = F.ListAlloc(args.length);
+      for (int i = 0; i < args.length; i++) {
+        variables.append(args[i].argument);
+        types.append(args[i].type);
+      }
+      String source = compilePrint(ast, args, engine);
+      if (source != null) {
+        SimpleCompiler comp = new SimpleCompiler();
+        comp.cook(source);
+        ClassLoader loader = comp.getClassLoader();
+        Class<?> clazz = loader.loadClass("org.matheclipse.core.compile.CompiledFunction");
+        return CompiledFunctionExpr.newInstance(variables, types, ast.arg2(), clazz);
+      }
+    } catch (CompileException | ClassNotFoundException | RuntimeException e) {
+      LOGGER.log(engine.getLogLevel(), "Compile", e);
+    }
+    return null;
   }
 
   /**
