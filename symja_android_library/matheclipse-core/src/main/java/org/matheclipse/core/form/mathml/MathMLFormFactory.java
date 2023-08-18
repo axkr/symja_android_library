@@ -607,10 +607,25 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
               MathMLFormFactory.PLUS_CALL);
         } else {
           if (i < size) {
-            if (expr.isReal() && expr.isNegative()) {
-              fFactory.tag(buf, "mo", "-");
-              expr = ((IReal) expr).negate();
-            } else {
+            boolean plusTag = true;
+            if (expr.isNumber()) {
+              IExpr realPart = expr.re();
+              if (realPart.isZero()) {
+                IExpr imaginaryPart = expr.im();
+                if (imaginaryPart.isNegative()) {
+                  fFactory.tag(buf, "mo", "-");
+                  expr = expr.negate();
+                  plusTag = false;
+                }
+              } else {
+                if (realPart.isNegative()) {
+                  fFactory.tag(buf, "mo", "-");
+                  expr = expr.negate();
+                  plusTag = false;
+                }
+              }
+            }
+            if (plusTag) {
               fFactory.tag(buf, "mo", "+");
             }
           }
