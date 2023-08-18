@@ -126,14 +126,19 @@ public class ArchUnitTests {
 
 
   // @ArchTest
-  // method added with API level 31
+  // // method added with API level 31
   // public static final ArchRule noLongValueExactMethodOnAndroid = noClasses().should()
   // .callMethod(java.math.BigInteger.class, "longValueExact", new Class<?>[0]);
-
+  //
   // @ArchTest
-  // method added with API level 31
-  // public static final ArchRule noIntValueExactMethodOnAndroid = noClasses().should()
-  // .callMethod(java.math.BigInteger.class, "intValueExact", new Class<?>[0]);
+  // // method added with API level 31
+  // public static final ArchRule noIntValueExactMethodOnAndroid =
+  // noClasses().should().callMethod(java.math.BigInteger.class, "intValueExact", new Class<?>[0]);
+
+  @ArchTest
+  public static final ArchRule noSystemLoggerOnAndroid =
+      noClasses().should().callMethod(java.lang.System.class, "getLogger",
+          new Class<?>[] {java.lang.String.class});
 
   @ArchIgnore
   @ArchTest
