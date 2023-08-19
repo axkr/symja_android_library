@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.ISymbol;
 
 public class BuiltinUsage {
   private static final String[] USAGE = new String[ID.Zeta + 10];
@@ -534,6 +535,17 @@ public class BuiltinUsage {
     USAGE[ID.YuleDissimilarity] = "Yule dissimilarity";
   }
 
+  public static String summaryText(String symbolStr) {
+    if (!IS_INITIALIZED.get()) {
+      init();
+    }
+    ISymbol symbol = F.symbol(symbolStr);
+    if (symbol.isBuiltInSymbol()) {
+      String str = USAGE[symbol.ordinal()];
+      return str != null ? str : "";
+    }
+    return "";
+  }
 
   /**
    * Return a short summary of the built-in symbols functionality.
