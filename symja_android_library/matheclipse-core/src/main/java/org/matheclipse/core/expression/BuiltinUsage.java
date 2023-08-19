@@ -148,6 +148,7 @@ public class BuiltinUsage {
     USAGE[ID.Evaluate] =
         "forces evaluation of $expr$, even if it occurs inside a held argument or a 'Hold' form";
     USAGE[ID.EvenQ] = "test whether elements are even numbers";
+    USAGE[ID.ExactNumberQ] = "test if an expression is an exact real or complex number";
     USAGE[ID.Exp] = "exponential function";
     USAGE[ID.Expand] = "expand out products and powers";
     USAGE[ID.ExpandAll] = "expand products and powers, including negative integer powers";
@@ -211,6 +212,7 @@ public class BuiltinUsage {
 
     USAGE[ID.Increment] =
         "increases the value by one and assigns that returning the original value";
+    USAGE[ID.InexactNumberQ] = "test if an expression is an not exact real or complex number";
     USAGE[ID.IdentityMatrix] = "give the identity matrix with a given dimension";
     USAGE[ID.Import] = "import elements from a file";
     USAGE[ID.ImportString] = "import elements from a string";
@@ -226,6 +228,7 @@ public class BuiltinUsage {
     USAGE[ID.InputForm] = "plain-text input format";
     USAGE[ID.Insert] = "insert an element at a given position";
     USAGE[ID.Integer] = "head for integer numbers";
+    USAGE[ID.IntegerQ] = "test whether an expression is an integer";
     USAGE[ID.Integers] = "the domain of Integer numbers";
     USAGE[ID.Integrate] = "indefinite or definite integral of a function";
     USAGE[ID.Interrupt] = "interrupt evaluation and return '$Aborted'";
@@ -266,6 +269,7 @@ public class BuiltinUsage {
         "perform lookup of a value by key, returning a specified default if it is not found";
     USAGE[ID.LowerCaseQ] = "test wether all the characters are lower-case letters";
 
+    USAGE[ID.MachineNumberQ] = "test if expression is a machine precision real or complex number";
     USAGE[ID.MantissaExponent] = "decomposes numbers as mantissa and exponent";
     USAGE[ID.MatchingDissimilarity] = "simple matching dissimilarity";
     USAGE[ID.MathMLForm] = "format expression as MathML commands";
@@ -305,6 +309,8 @@ public class BuiltinUsage {
         "attribute that indicates that just the first  argument must be evaluated in numerical evaluations";
     USAGE[ID.NIntegrate] = "numerical integration";
     USAGE[ID.None] = "option value that disables the option";
+    USAGE[ID.NonNegative] = "test whether an expression is a non-negative number";
+    USAGE[ID.NonPositive] = "test whether an expression is a non-positive number";
     USAGE[ID.Nor] = "negation of logic (inclusive) disjunction";
     USAGE[ID.Normal] = "convert objects to normal expressions";
     USAGE[ID.Normalize] = "normalizes a vector";
@@ -314,10 +320,10 @@ public class BuiltinUsage {
     USAGE[ID.NumberLinePlot] = "plot along a number line";
     USAGE[ID.NumberQ] = "test whether an expression is a number";
     USAGE[ID.NumberString] = "characters in string representation of a number";
+    USAGE[ID.NumericQ] = "test whether an expression is a number";
     USAGE[ID.Numerator] = "numerator of an expression";
     USAGE[ID.NumericFunction] = "attribute that indicates that a symbol is a numerical function";
-    USAGE[ID.NonNegative] = "test whether an expression is a non-negative number";
-    USAGE[ID.NonPositive] = "test whether an expression is a non-positive number";
+
 
     USAGE[ID.O] = "symbolic representation of a higher-order series term";
     USAGE[ID.OddQ] = "test whether elements are odd numbers";
@@ -349,8 +355,7 @@ public class BuiltinUsage {
     USAGE[ID.PolarPlot] = "draw a polar plot";
     USAGE[ID.PolyGamma] = "polygamma function";
     USAGE[ID.PolynomialQ] = "test if the expression is a polynomial in a variable";
-    USAGE[ID.PossibleZeroQ] =
-        "returns 'True' if basic symbolic and numerical methods suggest that expr has value zero, and 'False' otherwise";
+    USAGE[ID.PossibleZeroQ] = "test whether an expression is estimated to be zero";
     USAGE[ID.Position] = "positions of matching elements";
     USAGE[ID.Positive] = "test whether an expression is a positive number";
     USAGE[ID.Postfix] = "postfix form";
