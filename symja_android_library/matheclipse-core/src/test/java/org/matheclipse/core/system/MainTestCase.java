@@ -2853,7 +2853,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("FixedPoint((1 + 1/#) &, 10, 3)", //
         "32/21");
     checkNumeric("FixedPoint((Cos(#))&,0.8)", //
-        "0.7390851332151603");
+        "0.7390851332151607");
   }
 
   public void testSystem391() {

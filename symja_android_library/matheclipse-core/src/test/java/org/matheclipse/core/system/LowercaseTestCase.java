@@ -8999,7 +8999,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FixedPoint(f, x, -1)", //
         "FixedPoint(f,x,-1)");
     checkNumeric("FixedPoint(Cos, 1.0, Infinity)", //
-        "0.7390851332151603");
+        "0.7390851332151607");
 
     checkNumeric("FixedPoint((# + 2/#)/2 &, 1.)", //
         "1.414213562373095");
