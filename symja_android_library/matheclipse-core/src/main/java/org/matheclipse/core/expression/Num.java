@@ -257,12 +257,7 @@ public class Num implements INum {
     }
     if (other instanceof Num) {
       final Num c = (Num) other;
-      if (Double.isNaN(c.value)) {
-        return Double.isNaN(value);
-      } else {
-        return Double.doubleToLongBits(value) //
-            == Double.doubleToLongBits(c.value);
-      }
+      return Double.compare(value, c.value) == 0;
     }
     return false;
   }
@@ -590,6 +585,15 @@ public class Num implements INum {
   @Override
   public boolean isRationalValue(IRational value) {
     return F.isZero(this.value - value.doubleValue());
+  }
+
+  @Override
+  public boolean isSame(IExpr expression) {
+    if (expression instanceof Num) {
+      final Num c = (Num) expression;
+      return F.isAlmostSame(value, c.value);
+    }
+    return false;
   }
 
   @Override

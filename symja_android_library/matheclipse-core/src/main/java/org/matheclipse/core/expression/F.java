@@ -5654,6 +5654,25 @@ public class F extends S {
   }
 
   /**
+   * Test if <code>a</code> and <code>b</code> are almost the same values by comparing the
+   * {@link Double#doubleToLongBits(double)} values.
+   * <p>
+   * See also the implementation of {@link Double#compare(double, double)}
+   * 
+   * @param a
+   * @param b
+   */
+  public static boolean isAlmostSame(double a, double b) {
+    if (a == b) {
+      return true;
+    } else {
+      long ai = Double.doubleToLongBits(a);
+      long bi = Double.doubleToLongBits(b);
+      return -1 <= ai - bi && ai - bi <= 1;
+    }
+  }
+
+  /**
    * Calculate the relative difference between x and y. In case |x+y|/2 is zero the absolute
    * difference is returned.
    *
@@ -9734,8 +9753,7 @@ public class F extends S {
     return new B2.Times(x, y);
   }
 
-  public static IExpr timesDistribute(@Nonnull IExpr x, @Nonnull final IExpr y,
-      EvalEngine engine) {
+  public static IExpr timesDistribute(@Nonnull IExpr x, @Nonnull final IExpr y, EvalEngine engine) {
     if (x.isPlus() || y.isPlus()) {
       return engine.evaluate(F.Distribute(new B2.Times(x, y)));
     }

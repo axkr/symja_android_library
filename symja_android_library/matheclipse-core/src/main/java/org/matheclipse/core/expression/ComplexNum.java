@@ -697,6 +697,16 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
+  public boolean isSame(IExpr expression) {
+    if (expression instanceof ComplexNum) {
+      final ComplexNum c = (ComplexNum) expression;
+      return F.isAlmostSame(fComplex.getReal(), c.reDoubleValue()) //
+          && F.isAlmostSame(fComplex.getImaginary(), c.imDoubleValue());
+    }
+    return false;
+  }
+
+  @Override
   public boolean isSame(IExpr expression, double epsilon) {
     if (expression instanceof ComplexNum) {
       return F.isZero(fComplex.getReal() - ((ComplexNum) expression).fComplex.getReal(), epsilon)
