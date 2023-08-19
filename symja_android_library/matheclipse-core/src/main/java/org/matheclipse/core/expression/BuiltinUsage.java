@@ -24,8 +24,9 @@ public class BuiltinUsage {
     USAGE[ID.Abort] = "generate an abort";
     USAGE[ID.Abs] = "absolute value of a number";
     USAGE[ID.AbsoluteTime] = "get absolute time in seconds";
-    USAGE[ID.AbsoluteTiming] = "get total wall-clock time to run a Mathics command";
+    USAGE[ID.AbsoluteTiming] = "get total wall-clock time to run a Symja command";
     USAGE[ID.Accumulate] = "accumulates the values of $list$, returning a new list";
+    USAGE[ID.AddTo] = "add a value and assignes that returning the new value";
     USAGE[ID.Algebraics] = "domain of the Algebraic numbers";
     USAGE[ID.All] = "option value that specify using everything";
     USAGE[ID.AllTrue] = "all the elements are True";
@@ -76,6 +77,8 @@ public class BuiltinUsage {
     USAGE[ID.Characters] = "list the characters in a string";
     USAGE[ID.CharacterRange] = "range of characters with successive character codes";
     USAGE[ID.Check] = "discard the result if the evaluation produced messages";
+    USAGE[ID.Clear] = "clear values associated with the LHS or symbol";
+    USAGE[ID.ClearAll] = "clear all values, definitions, messages and defaults for symbols";
     USAGE[ID.ClearAttributes] = "clear the attributes of a symbol";
     USAGE[ID.Coefficient] = "coefficient of a monomial in a polynomial expression";
     USAGE[ID.CoefficientList] = "list of coefficients defining a polynomial";
@@ -92,7 +95,7 @@ public class BuiltinUsage {
     USAGE[ID.Complexes] = "the domain of Complex numbers";
     USAGE[ID.CompoundExpression] = "execute expressions in sequence";
     USAGE[ID.Conjugate] = "complex conjugate value";
-    USAGE[ID.Context] = "give the name of the context of a symbol";
+    USAGE[ID.Context] = "the context of a symbol";
     USAGE[ID.Correlation] = "Pearson's correlation of a pair of datasets";
     USAGE[ID.CoprimeQ] = "test whether elements are coprime";
     USAGE[ID.Cos] = "cosine function";
@@ -106,6 +109,8 @@ public class BuiltinUsage {
     USAGE[ID.CubeRoot] = "real-valued cube root";
 
     USAGE[ID.D] = "partial derivative of a function";
+    USAGE[ID.Decrement] =
+        "decreases the value by one and assigns that returning the original value";
     USAGE[ID.Definition] = "give values of a symbol in a form that can be stored in a package";
     USAGE[ID.Delete] = "delete elements from a list at given positions";
     USAGE[ID.DeleteCases] = "delete all occurrences of a pattern";
@@ -122,8 +127,11 @@ public class BuiltinUsage {
     USAGE[ID.DiscretePlot] = "discrete plot of a one-parameter function";
     USAGE[ID.DisjointQ] = "test whether two lists do not have common elements";
     USAGE[ID.Divide] = "divide";
+    USAGE[ID.DivideBy] = "divide a value and assigns that returning the new value";
     USAGE[ID.Divisors] = "integer divisors";
     USAGE[ID.Do] = "evaluate an expression looping over a variable";
+    USAGE[ID.DownValues] =
+        "get transformation rules corresponding to all downvalues defined for a symbol";
     USAGE[ID.Drop] = "remove a number of elements from a list";
     USAGE[ID.DSolve] = "differential equation analytical solver";
 
@@ -201,6 +209,8 @@ public class BuiltinUsage {
     USAGE[ID.HoldRest] =
         "attribute specifying that all but the first argument should be left unevaluated";
 
+    USAGE[ID.Increment] =
+        "increases the value by one and assigns that returning the original value";
     USAGE[ID.IdentityMatrix] = "give the identity matrix with a given dimension";
     USAGE[ID.Import] = "import elements from a file";
     USAGE[ID.ImportString] = "import elements from a string";
@@ -267,7 +277,8 @@ public class BuiltinUsage {
     USAGE[ID.Median] = "central value of a dataset";
     USAGE[ID.MemberQ] = "test whether an element is a member of a list";
     USAGE[ID.Message] = "display a message";
-    USAGE[ID.MessageName] = "message identifyier";
+    USAGE[ID.Messages] = "get the messages associated with a particular symbol";
+    USAGE[ID.MessageName] = "message identifier";
     USAGE[ID.Min] = "the largest argument or the largest element of a list";
     USAGE[ID.Minimize] = "compute the minimum of a function";
     USAGE[ID.Minus] = "arithmetic negate";
@@ -346,7 +357,9 @@ public class BuiltinUsage {
     USAGE[ID.Power] = "exponentiate";
     USAGE[ID.PowerExpand] = "expand out powers";
     USAGE[ID.PowerMod] = "modular powers and roots";
+    USAGE[ID.PreDecrement] = "decrease the value by one and assigns that returning the new value";
     USAGE[ID.Prefix] = "prefix form";
+    USAGE[ID.PreIncrement] = "increase the value by one and assigns that returning the new value";
     USAGE[ID.Prepend] = "add an element at the beginning";
     USAGE[ID.PrependTo] = "add an element at the beginning of an stored list or expression";
     USAGE[ID.Prime] = "n-th prime number";
@@ -461,6 +474,7 @@ public class BuiltinUsage {
     USAGE[ID.Subsets] = "list all the subsets";
     USAGE[ID.Subsuperscript] = "format an expression with a subscript and a superscript";
     USAGE[ID.Subtract] = "subtract";
+    USAGE[ID.SubtractFrom] = "subtract a value and assins that returning the new value";
     USAGE[ID.Sum] = "discrete sum";
     USAGE[ID.Superscript] = "format an expression with a superscript";
     USAGE[ID.Switch] = "switch based on a value, with patterns allowed";
@@ -488,6 +502,7 @@ public class BuiltinUsage {
     USAGE[ID.Through] = "distribute operators that appears inside the head of expressions";
     USAGE[ID.Throw] = "throw an expression to be caught by a surrounding 'Catch'";
     USAGE[ID.Times] = "multiply";
+    USAGE[ID.TimesBy] = "multiply a value and assigns that returning the new value";
     USAGE[ID.ToCharacterCode] = "convert a string to a list of character codes";
     USAGE[ID.ToExpression] = "build an expression from formatted text";
     USAGE[ID.ToLowerCase] = "turn all the letters into lower case";
@@ -512,10 +527,12 @@ public class BuiltinUsage {
     USAGE[ID.UnitVector] = "unit vector along a coordinate direction";
     USAGE[ID.Unprotect] = "remove protection against redefinitions";
     USAGE[ID.UnsameQ] = "not literal symbolic identity";
+    USAGE[ID.Unset] = "unset a value of the LHS";
     USAGE[ID.UpSet] = "set value and associate the assignment with symbols that occur at level one";
     USAGE[ID.UpSetDelayed] =
         "set a delayed value and associate the assignment with symbols that occur at level one";
     USAGE[ID.UpTo] = "a certain number of elements, or as many as are available";
+    USAGE[ID.UpValues] = "get transformation rules corresponding to upvalues defined for a symbol";
 
     USAGE[ID.ValueQ] = "test whether a symbol can be considered to have a value";
     USAGE[ID.Values] = "list association values";
