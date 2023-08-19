@@ -8772,7 +8772,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FindRoot({2*x1+x2==E^(-x1), -x1+2*x2==E^(-x2)},{{x1, 0.0},{x2, 1.0}})", //
         "{x1->0.197594,x2->0.425514}");
     check(
-        "FindRoot({Exp(-Exp(-(x1+x2)))-x2*(1+x1^2), x1*Cos(x2)+x2*Sin(x1)-0.5},{{x1, 0.0},{x2, 0.0}})", //
+        "FindRoot({Exp(-Exp(-(x1+x2)))-x2*(1+x1^2), x1*Cos(x2)+x2*Sin(x1)-0.5},{{x1, 0.0},{x2,0.0}})", //
         "{x1->0.353247,x2->0.606082}");
 
     check("FindRoot({Exp(x - 2) == y, y^2 == x}, {{x, 1}, {y, 1}})", //
@@ -8785,7 +8785,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // univariate cases
     check("FindRoot(sin(x)==x^2, {x, -6.6, 3.99999999})", //
         "{x->-1.84448*10^-19}");
-    check("v1:=  E^x - 3*x ;v2:={x, 2};", //
+    check("v1:= E^x - 3*x ;v2:={x, 2};", //
         "");
     check("FindRoot(v1,v2)", //
         "{x->1.51213}");
@@ -8999,7 +8999,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FixedPoint(f, x, -1)", //
         "FixedPoint(f,x,-1)");
     checkNumeric("FixedPoint(Cos, 1.0, Infinity)", //
-        "0.7390851332151607");
+        "0.7390851332151603");
 
     checkNumeric("FixedPoint((# + 2/#)/2 &, 1.)", //
         "1.414213562373095");
@@ -9020,6 +9020,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testFixedPointList() {
+    check("FixedPointList(Function((# + 3/#)/2), 1.)", //
+        "{1.0,2.0,1.75,1.73214,1.73205,1.73205,1.73205}");
     // iteration limit
     check("FixedPointList(-1+I,{x,-2,3})", //
         "Hold(FixedPointList(-1+I,{x,-2,3}))");
@@ -12751,6 +12753,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-0.0362221");
 
   }
+
   public void testLaplaceTransform() {
 
     // numerical calculation only supported for unary functions
@@ -14493,6 +14496,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testMathMLForm() {
+    check("MathMLForm(Sqrt(3)-I)", //
+        "<?xml version=\"1.0\"?>\n" //
+            + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n" //
+            + "<math mode=\"display\">\n" //
+            + "<mrow><msqrt><mn>3</mn></msqrt><mo>-</mo><mrow><mi>&#x2148;</mi></mrow></mrow></math>");
     check("MathMLForm(a/2+Tan(x)/4-Tan(x)^2/3+12)", //
         "<?xml version=\"1.0\"?>\n"
             + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
@@ -16012,6 +16020,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testNestWhileList() {
+    check("NestWhileList(Function((#+3/#)/2), 1., Function(# =!= #2), 2)", //
+        "{1.0,2.0,1.75,1.73214,1.73205,1.73205,1.73205}");
     // from fuzz testing:
     check("NestWhileList(10007,{ByteArray()},True&,-0.8)", //
         "NestWhileList(10007,{ByteArray()},True&,-0.8)");

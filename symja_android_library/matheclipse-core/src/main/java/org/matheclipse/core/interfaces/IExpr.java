@@ -3769,13 +3769,13 @@ public interface IExpr
 
   /**
    * Test if this expression equals the given expression. If the compared expressions are of the
-   * same numeric type, they are equal to a given EPSILON
+   * same numeric type, they are equal to {@link Config#DOUBLE_TOLERANCE}.
    *
    * @param expression
    * @return
    */
   default boolean isSame(IExpr expression) {
-    return isSame(expression, Config.DOUBLE_EPSILON);
+    return isSame(expression, Config.DOUBLE_TOLERANCE);
   }
 
   /**
