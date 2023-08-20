@@ -77,6 +77,8 @@ public class BuiltinUsage {
     USAGE[ID.Condition] = "expression defined under condition";
     USAGE[ID.Characters] = "list the characters in a string";
     USAGE[ID.CharacterRange] = "range of characters with successive character codes";
+    USAGE[ID.ChebyshevT] = "Chebyshev's polynomials of the first kind";
+    USAGE[ID.ChebyshevU] = "Chebyshev's polynomials of the second kind";
     USAGE[ID.Check] = "discard the result if the evaluation produced messages";
     USAGE[ID.Clear] = "clear values associated with the LHS or symbol";
     USAGE[ID.ClearAll] = "clear all values, definitions, messages and defaults for symbols";
@@ -148,6 +150,8 @@ public class BuiltinUsage {
     USAGE[ID.EndOfLine] = "a string pattern matching EOL";
     USAGE[ID.Equal] = "numerical equality";
     USAGE[ID.Equivalent] = "logic equivalence";
+    USAGE[ID.Erf] = "error function";
+    USAGE[ID.Erfc] = "complementary error function";
     USAGE[ID.EulerGamma] = "Euler's constant γ≃0.5772";
     USAGE[ID.EulerPhi] = "Euler totient function";
     USAGE[ID.Evaluate] =
@@ -157,6 +161,8 @@ public class BuiltinUsage {
     USAGE[ID.Exp] = "exponential function";
     USAGE[ID.Expand] = "expand out products and powers";
     USAGE[ID.ExpandAll] = "expand products and powers, including negative integer powers";
+    USAGE[ID.ExpIntegralE] = "exponential integral function of order n";
+    USAGE[ID.ExpIntegralEi] = "exponential integral function";
     USAGE[ID.Exponent] = "maximum power in which a form appears in a polynomial";
     USAGE[ID.Export] = "export elements to a file";
     USAGE[ID.ExportString] = "export elements to a string";
@@ -187,6 +193,8 @@ public class BuiltinUsage {
     USAGE[ID.For] = "a 'For' loop";
     USAGE[ID.FractionalPart] = "fractional part of a number";
     USAGE[ID.FreeQ] = "test whether an expression is free of subexpressions matching a pattern";
+    USAGE[ID.FresnelC] = "Fresnel's integral C";
+    USAGE[ID.FresnelC] = "Fresnel's integral S";
     USAGE[ID.FromCharacterCode] = "convert from a list of character codes to a string";
     USAGE[ID.FromContinuedFraction] =
         "reconstructs a number from its continued fraction representation";
@@ -197,6 +205,7 @@ public class BuiltinUsage {
     USAGE[ID.Gather] = "gather sublists of identical elements";
     USAGE[ID.GatherBy] = "gather based on values of a function applied to elements";
     USAGE[ID.GCD] = "greatest common divisor";
+    USAGE[ID.GegenbauerC] = "Gegenbauer's polynomials";
     USAGE[ID.General] = "general-purpose messages";
     USAGE[ID.Glaisher] = "Glaisher's constant A≃1.282";
     USAGE[ID.Greater] = "greater than";
@@ -205,6 +214,7 @@ public class BuiltinUsage {
 
     USAGE[ID.HammingDistance] = "Hamming distance";
     USAGE[ID.Haversine] = "haversine function";
+    USAGE[ID.HermiteH] = "Hermite's polynomials";
     USAGE[ID.Hold] = "prevents $expr$ from being evaluated";
     USAGE[ID.HoldAll] = "attribute specifying that all the arguments should be left unevaluated";
     USAGE[ID.HoldAllComplete] =
@@ -242,9 +252,12 @@ public class BuiltinUsage {
     USAGE[ID.Interrupt] = "interrupt evaluation and return '$Aborted'";
     USAGE[ID.Intersection] = "enumerate common elements";
     USAGE[ID.IntersectingQ] = "test whether two lists have common elements";
+    USAGE[ID.InverseErf] = "inverse of the error function";
+    USAGE[ID.InverseErfc] = "inverse of the complementary error function";
     USAGE[ID.InverseGudermannian] = "Gudermannian function gd^-1(z)";
 
     USAGE[ID.JaccardDissimilarity] = "Jaccard dissimilarity";
+    // USAGE[ID.JacobiP] = "Jacobi's polynomials";
     USAGE[ID.JavaForm] = "translate expressions as Java source code";
     USAGE[ID.Join] = "join lists together at any level";
 
@@ -254,9 +267,13 @@ public class BuiltinUsage {
     USAGE[ID.KroneckerProduct] = "Kronecker product";
     USAGE[ID.Kurtosis] = "kurtosis coefficient";
 
+    USAGE[ID.LaguerreL] = "Laguerre's polynomials";
+    // USAGE[ID.LaguerreP] = "Legendre's polynomials of first kind";
     USAGE[ID.Last] = "last element of a list or expression";
     USAGE[ID.LCM] = "least common multiple";
     USAGE[ID.LeafCount] = "get the total number of atomic subexpressions";
+    USAGE[ID.LegendreP] = "Legendre's polynomials of first kind";
+    USAGE[ID.LegendreQ] = "Legendre's polynomials of second kind";
     USAGE[ID.Length] = "number of elements in a list or expression";
     USAGE[ID.Less] = "less than";
     USAGE[ID.LessEqual] = "less than or equal to";
@@ -385,6 +402,7 @@ public class BuiltinUsage {
     USAGE[ID.PrimeQ] = "test whether elements are prime numbers";
     USAGE[ID.Print] = "print strings and formatted text";
     USAGE[ID.Product] = "discrete product";
+    USAGE[ID.ProductLog] = "Lambert's W function";
     USAGE[ID.Projection] = "find the projection of one vector on another";
     USAGE[ID.Protect] = "protect a symbol against redefinitions";
     USAGE[ID.Protected] = "attribute of protected symbols";
@@ -459,6 +477,7 @@ public class BuiltinUsage {
     USAGE[ID.SortBy] = "sort by the values of a function applied to elements";
     USAGE[ID.Sow] = "send an expression to the innermost Reap";
     USAGE[ID.Span] = "general specification for spans or blocks of elements";
+    // USAGE[ID.SphericalHarmonicY] = "3D Spherical Harmonic";
     USAGE[ID.Split] = "split into runs of identical elements";
     USAGE[ID.SplitBy] = "split based on values of a function applied to elements";
     USAGE[ID.Sqrt] = "square root";
@@ -567,6 +586,7 @@ public class BuiltinUsage {
     USAGE[ID.Xor] = "logic (exclusive) disjunction";
 
     USAGE[ID.YuleDissimilarity] = "Yule dissimilarity";
+    USAGE[ID.Zeta] = "Riemann's ζ function";
   }
 
   public static String summaryText(String symbolStr) {
