@@ -25,9 +25,11 @@ public class IntervalSym {
         if (o1.second().equals(o2.second())) {
           return 0;
         }
-        return (S.Greater.ofQ(o1.second(), o2.second())) ? 1 : -1;
+        return (o1.second().greater(o2.second()).isTrue()) ? 1 : -1;
+        // return (S.Greater.ofQ(o1.second(), o2.second())) ? 1 : -1;
       }
-      return (S.Greater.ofQ(o1.first(), o2.first())) ? 1 : -1;
+      return (o1.first().greater(o2.first()).isTrue()) ? 1 : -1;
+      // return (S.Greater.ofQ(o1.first(), o2.first())) ? 1 : -1;
     }
   };
 

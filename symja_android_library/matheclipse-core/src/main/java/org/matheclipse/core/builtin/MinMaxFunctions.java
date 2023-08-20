@@ -238,7 +238,8 @@ public class MinMaxFunctions {
             IExpr l = interval.lower();
             IExpr u = interval.upper();
             if (x2.isMinusOne()) {
-              if (S.GreaterEqual.ofQ(engine, l, F.C1)) {
+              if (l.greaterEqual(F.C1).isTrue()) {
+                // if (S.GreaterEqual.ofQ(engine, l, F.C1)) {
                 // [>= 1, u]
                 return F.Interval(F.Power(u, x2), F.Power(l, x2));
               }
@@ -1094,7 +1095,8 @@ public class MinMaxFunctions {
             IExpr value = engine.evaluate(F.subs(second_derivative, x, candidate));
             if (value.isNegative()) {
               IExpr functionValue = engine.evaluate(F.subs(function, x, candidate));
-              if (S.Greater.ofQ(functionValue, maxValue)) {
+              if (functionValue.greater(maxValue).isTrue()) {
+                // if (S.Greater.ofQ(functionValue, maxValue)) {
                 maxValue = functionValue;
                 maxCandidate = candidate;
               }

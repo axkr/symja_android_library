@@ -619,11 +619,12 @@ public class EllipticIntegrals {
       if (m.isOne()) {
         // Abs(Re(z)) <= Pi/2
         IExpr temp = engine.evaluate(F.Abs(F.Re(z)));
-        if (S.LessEqual.ofQ(engine, temp, F.CPiHalf)) {
+        if (temp.lessEqual(F.CPiHalf).isTrue()) {
           // Log(Sec(z) + Tan(z))
           return F.Log(F.Plus(F.Sec(z), F.Tan(z)));
         }
-        if (S.Greater.ofQ(engine, temp, F.CPiHalf)) {
+        if (temp.greater(F.CPiHalf).isTrue()) {
+          // if (S.Greater.ofQ(engine, temp, F.CPiHalf)) {
           return F.CComplexInfinity;
         }
       }

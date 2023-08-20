@@ -823,7 +823,8 @@ public class SymbolicPolynomial
     for (Map.Entry<ExpVectorSymbolic, IExpr> m : val.entrySet()) {
       ExpVectorSymbolic e = m.getKey();
       IExpr d = e.weightDeg(w);
-      if (S.GreaterEqual.ofQ(d, maxw)) {
+      if (d.greaterEqual(maxw).isTrue()) {
+        // if (S.GreaterEqual.ofQ(d, maxw)) {
         wp.val.put(e, m.getValue());
       }
     }

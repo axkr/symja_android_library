@@ -338,7 +338,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
       if (from.isZero()) {
         return F.Times(Plus(to, C1), expr);
       }
-      if (!S.Greater.ofQ(engine, C1, from) && !S.Greater.ofQ(engine, from, to)) {
+      if (!F.C1.greater(from).isTrue() && !from.greater(to).isTrue()) {
+        // if (!S.Greater.ofQ(engine, C1, from) && !S.Greater.ofQ(engine, from, to)) {
         return F.Times(Plus(C1, F.Negate(from), to), expr);
       }
     } else {
@@ -468,7 +469,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
           }
           return F.NIL;
         }
-        if (S.Greater.ofQ(engine, from, C1)) {
+        if (from.greater(F.C1).isTrue()) {
+          // if (S.Greater.ofQ(engine, from, C1)) {
           return F.Subtract(subSum, F.Sum(expr, F.list(var, C1, from.minus(F.C1))));
         }
       }

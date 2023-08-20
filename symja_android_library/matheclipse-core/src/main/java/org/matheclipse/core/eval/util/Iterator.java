@@ -121,11 +121,13 @@ public class Iterator {
         }
         if (step.isReal()) {
           if (step.isNegative()) {
-            if (S.LessEqual.ofQ(evalEngine, maxCounterOrList, count)) {
+            if (maxCounterOrList.lessEqual(count).isTrue()) {
+              // if (S.LessEqual.ofQ(evalEngine, maxCounterOrList, count)) {
               return true;
             }
           } else {
-            if (S.LessEqual.ofQ(evalEngine, count, maxCounterOrList)) {
+            if (count.lessEqual(maxCounterOrList).isTrue()) {
+              // if (S.LessEqual.ofQ(evalEngine, count, maxCounterOrList)) {
               return true;
             }
           }

@@ -955,10 +955,12 @@ public class ExpTrigsFunctions {
       if (cdir != 0) {
         // cdir = arg.dir(x, cdir)
       }
-      if (cdir > 0 && x0.re().isZero() && S.Less.ofQ(engine, x0.im(), F.CN1)) {
+      if (cdir > 0 && x0.re().isZero() && x0.im().less(F.CN1).isTrue()) {//
+        // S.Less.ofQ(engine, x0.im(), F.CN1)) {
         return F.Subtract(F.ArcSinh(x0).negate(), F.Times(F.CI, S.Pi));
       }
-      if (cdir < 0 && x0.re().isZero() && S.Greater.ofQ(engine, x0.im(), F.C1)) {
+      if (cdir < 0 && x0.re().isZero() && x0.im().greater(F.C1).isTrue()) {
+        // S.Greater.ofQ(engine, x0.im(), F.C1)) {
         return F.Plus(F.ArcSinh(x0).negate(), F.Times(F.CI, S.Pi));
       }
       return F.ArcSinh(x0);
@@ -1396,7 +1398,7 @@ public class ExpTrigsFunctions {
         IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
         if (t.isPresent() && t.im().isZero()) {
           // 1/2 * t
-          IExpr temp = F.timesDistribute(F.C1D2, t,engine);
+          IExpr temp = F.timesDistribute(F.C1D2, t, engine);
           if (temp.isIntegerResult()) {
             return F.C1;
           }
@@ -3537,7 +3539,7 @@ public class ExpTrigsFunctions {
       // z - k*Pi
       IAST result = F.Subtract(z, F.Times(k, S.Pi));
       // (-(Pi/2) + k*Pi < Re(z) < Pi/2 + k*Pi
-      if (S.Less.ofQ(min, zRe) && S.Greater.ofQ(max, zRe)) {
+      if (S.Less.ofQ(min, zRe) && max.greater(zRe).isTrue()) { // S.Greater.ofQ(max, zRe)) {
         // z - k*Pi
         return result;
       }
@@ -3595,7 +3597,7 @@ public class ExpTrigsFunctions {
       // (-1)^k * (z - Pi*k)
       IAST result = F.Times(F.Power(F.CN1, k), F.Subtract(z, F.Times(k, S.Pi)));
       // (-(Pi/2) + k*Pi < Re(z) < Pi/2 + k*Pi
-      if (S.Less.ofQ(min, zRe) && S.Greater.ofQ(max, zRe)) {
+      if (S.Less.ofQ(min, zRe) && max.greater(zRe).isTrue()) {// S.Greater.ofQ(max, zRe)) {
         // (-1)^k * (z - Pi*k)
         return result;
       }
@@ -3636,7 +3638,7 @@ public class ExpTrigsFunctions {
           F.Times(F.Power(F.CN1, k), F.Plus(z, F.Times(F.CN1, k, S.Pi), F.CNPiHalf)), F.CPiHalf);
 
       // (k*Pi < Re(z) < (k + 1)*Pi
-      if (S.Less.ofQ(min, zRe) && S.Greater.ofQ(max, zRe)) {
+      if (S.Less.ofQ(min, zRe) && max.greater(zRe).isTrue()) { // S.Greater.ofQ(max, zRe)) {
         return result;
       }
 

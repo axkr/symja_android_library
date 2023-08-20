@@ -31,6 +31,7 @@ import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -671,6 +672,12 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
   @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_1_2;
+  }
+
+
+  @Override
+  public int status() {
+    return ImplementationStatus.PARTIAL_SUPPORT;
   }
 
   @Override

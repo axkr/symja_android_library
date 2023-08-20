@@ -368,8 +368,8 @@ public class IntervalFunctions {
                   IAST list2 = (IAST) interval2.get(j);
                   IExpr min2 = list2.arg1();
                   IExpr max2 = list2.arg2();
-                  if (S.LessEqual.ofQ(engine, min1, min2) && //
-                      S.GreaterEqual.ofQ(engine, max1, max2)) {
+                  if (min1.lessEqual(min2).isTrue() && //
+                      max1.greaterEqual(max2).isTrue()) {
                     copyInterval2.remove(j);
                     if (copyInterval2.size() <= 1) {
                       return S.True;
@@ -393,8 +393,10 @@ public class IntervalFunctions {
             IAST list1 = (IAST) interval1.get(i);
             IExpr min1 = list1.arg1();
             IExpr max1 = list1.arg2();
-            if (S.LessEqual.ofQ(engine, min1, arg2) && //
-                S.GreaterEqual.ofQ(engine, max1, arg2)) {
+            if (min1.lessEqual(arg2).isTrue() && //
+                max1.greaterEqual(arg2).isTrue()) {
+              // if (S.LessEqual.ofQ(engine, min1, arg2) && //
+              // S.GreaterEqual.ofQ(engine, max1, arg2)) {
               return S.True;
             }
           }
@@ -599,10 +601,12 @@ public class IntervalFunctions {
             continue;
           }
 
-          if (S.LessEqual.ofQ(engine, min1, min2)) {
+          if (min1.lessEqual(min2).isTrue()) {
+            // if (S.LessEqual.ofQ(engine, min1, min2)) {
             min1 = min2;
           }
-          if (S.GreaterEqual.ofQ(engine, max1, max2)) {
+          if (max1.greaterEqual(max2).isTrue()) {
+            // if (S.GreaterEqual.ofQ(engine, max1, max2)) {
             max1 = max2;
           }
           result.append(F.list(min1, max1));
@@ -610,7 +614,6 @@ public class IntervalFunctions {
       }
       return result;
     }
-
 
 
 

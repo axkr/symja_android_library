@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -63,5 +64,10 @@ public class InverseZTransform extends AbstractFunctionEvaluator implements Inve
   @Override
   public int[] expectedArgSize(IAST ast) {
     return ARGS_3_3;
+  }
+
+  @Override
+  public int status() {
+    return ImplementationStatus.EXPERIMENTAL;
   }
 }

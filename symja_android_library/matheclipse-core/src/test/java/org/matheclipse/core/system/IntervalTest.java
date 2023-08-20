@@ -526,12 +526,14 @@ public class IntervalTest extends ExprEvaluatorTestCase {
         "True");
     check("IntervalMemberQ(Interval({3,7}), Interval({4, 6}))", //
         "True");
+  }
 
+  public void testIntervalMemberQFloatingPoint() {
     // only floating-point values in intervals define a (small) extended interval
-    check("IntervalMemberQ(Interval(1.0), Interval(1))", //
-        "True");
     check("IntervalMemberQ(Interval(1), Interval(1.0))", //
         "False");
+    check("IntervalMemberQ(Interval(1.0), Interval(1))", //
+        "True");
   }
 
   public void testIntervalIntersection() {

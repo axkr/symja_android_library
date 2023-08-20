@@ -6968,10 +6968,10 @@ public final class Arithmetic {
       }
       return x;
     }
-    if (x.isInfinity() && S.Greater.ofQ(x, max)) {
+    if (x.isInfinity() && x.greater(min).isTrue()) { // S.Greater.ofQ(x, max)) {
       return vMax;
     }
-    if (x.isNegativeInfinity() && S.Less.ofQ(x, min)) {
+    if (x.isNegativeInfinity() && x.less(min).isTrue()) { // S.Less.ofQ(x, min)) {
       return vMin;
     }
     return F.NIL;

@@ -20,6 +20,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.JavaClassExpr;
 import org.matheclipse.core.expression.data.JavaObjectExpr;
@@ -78,6 +79,11 @@ public class JavaFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_INFINITY;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.JVM_SUPPORT;
     }
   }
 
@@ -151,6 +157,11 @@ public class JavaFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.JVM_SUPPORT;
     }
   }
 
@@ -245,6 +256,11 @@ public class JavaFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_INFINITY;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.JVM_SUPPORT;
     }
   }
 
@@ -342,6 +358,11 @@ public class JavaFunctions {
       }
       return F.NIL;
     }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.JVM_SUPPORT;
+    }
   }
 
   /**
@@ -389,6 +410,11 @@ public class JavaFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.JVM_SUPPORT;
     }
   }
 
@@ -488,6 +514,11 @@ public class JavaFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.JVM_SUPPORT;
+    }
   }
 
   /**
@@ -546,6 +577,11 @@ public class JavaFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.JVM_SUPPORT;
     }
   }
 

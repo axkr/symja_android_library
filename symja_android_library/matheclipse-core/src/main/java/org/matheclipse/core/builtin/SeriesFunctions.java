@@ -648,8 +648,9 @@ public class SeriesFunctions {
         if (base.isFree(data.variable()) && !base.isZero()) {
           boolean isInfinityLimit = data.limitValue().isInfinity();
           if (isInfinityLimit || data.limitValue().isNegativeInfinity()) {
-            if (base.isNumericFunction(true)) {
-              if (S.Greater.ofQ(F.Log(base), F.C0)) {
+            if (F.Log(base).isNumericFunction(true)) {
+              if (F.Log(base).greater(F.C0).isTrue()) {
+                // if (S.Greater.ofQ(F.Log(base), F.C0)) {
                 return isInfinityLimit ? F.CInfinity : F.C0;
               }
             } else if (base.isNumericFunction(s -> s.isSymbol() ? "" : null)) {

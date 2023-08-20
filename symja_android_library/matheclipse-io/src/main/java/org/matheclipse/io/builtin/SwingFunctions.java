@@ -39,6 +39,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -85,6 +86,11 @@ public class SwingFunctions {
     public void setUp(ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALL);
     }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.NO_SUPPORT;
+    }
   }
 
   private static class CancelButton extends AbstractCoreFunctionEvaluator {
@@ -97,6 +103,11 @@ public class SwingFunctions {
     @Override
     public void setUp(ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALL);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.NO_SUPPORT;
     }
   }
 
@@ -111,6 +122,11 @@ public class SwingFunctions {
     public void setUp(ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALL);
     }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.NO_SUPPORT;
+    }
   }
 
   private static class Dynamic extends AbstractCoreFunctionEvaluator {
@@ -124,6 +140,11 @@ public class SwingFunctions {
     public void setUp(ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALL);
     }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.NO_SUPPORT;
+    }
   }
 
   private static final class InputString extends AbstractFunctionEvaluator {
@@ -135,6 +156,11 @@ public class SwingFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return IFunctionEvaluator.ARGS_0_1;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.JVM_SUPPORT;
     }
   }
 
@@ -183,6 +209,11 @@ public class SwingFunctions {
     public int[] expectedArgSize(IAST ast) {
       return IFunctionEvaluator.ARGS_1_2;
     }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.JVM_SUPPORT;
+    }
   }
 
   private static final class Input extends AbstractFunctionEvaluator {
@@ -202,6 +233,11 @@ public class SwingFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return IFunctionEvaluator.ARGS_0_1;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.JVM_SUPPORT;
     }
   }
 
@@ -477,6 +513,11 @@ public class SwingFunctions {
     public int[] expectedArgSize(IAST ast) {
       return IFunctionEvaluator.ARGS_1_2;
     }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.JVM_SUPPORT;
+    }
   }
 
   private static final class DialogReturn extends AbstractCoreFunctionEvaluator {
@@ -506,6 +547,11 @@ public class SwingFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return IFunctionEvaluator.ARGS_0_1;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.JVM_SUPPORT;
     }
 
     @Override

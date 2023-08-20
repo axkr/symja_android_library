@@ -15,6 +15,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
@@ -776,6 +777,12 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
     Collections.sort(analyzerList);
 
     return eliminateOneVariable(analyzerList, variable, multipleValues, engine);
+  }
+
+
+  @Override
+  public int status() {
+    return ImplementationStatus.PARTIAL_SUPPORT;
   }
 
   @Override

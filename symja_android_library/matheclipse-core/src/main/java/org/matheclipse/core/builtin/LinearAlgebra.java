@@ -73,6 +73,7 @@ import org.matheclipse.core.eval.util.IndexTableGenerator;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.LinearSolveFunctionExpr;
 import org.matheclipse.core.generic.Comparators;
@@ -4810,6 +4811,12 @@ public final class LinearAlgebra {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
   }
 
 

@@ -38,9 +38,12 @@ public class IntervalDataSym {
         if (list1.arg4().equals(list2.arg4())) {
           return 0;
         }
-        return (S.Greater.ofQ(list1.arg4(), list2.arg4())) ? 1 : -1;
+
+        return (list1.arg4().greater(list2.arg4()).isTrue()) ? 1 : -1;
+        // return (S.Greater.ofQ(list1.arg4(), list2.arg4())) ? 1 : -1;
       }
-      return (S.Greater.ofQ(list1.arg1(), list2.arg1())) ? 1 : -1;
+      return (list1.arg1().greater(list2.arg1()).isTrue()) ? 1 : -1;
+      // return (S.Greater.ofQ(list1.arg1(), list2.arg1())) ? 1 : -1;
     }
   };
 
@@ -83,7 +86,7 @@ public class IntervalDataSym {
             continue;
           }
         }
-        if (S.LessEqual.ofQ(engine, min1, min2)) {
+        if (min1.lessEqual(min2).isTrue()) {
           if (S.Equal.ofQ(engine, min1, min2)) {
             if (left2 == S.Less) {
               min1 = min2;
@@ -94,7 +97,7 @@ public class IntervalDataSym {
             left1 = left2;
           }
         }
-        if (S.GreaterEqual.ofQ(engine, max1, max2)) {
+        if (max1.greaterEqual(max2).isTrue()) {
           if (S.Equal.ofQ(engine, max1, max2)) {
             if (right2 == S.Less) {
               max1 = max2;

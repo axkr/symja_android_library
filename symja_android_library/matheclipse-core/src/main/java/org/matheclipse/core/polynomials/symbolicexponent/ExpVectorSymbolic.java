@@ -690,7 +690,8 @@ public final class ExpVectorSymbolic {
     ExpVectorSymbolic result = valueOf(u.length);
     IExpr[] w = result.val;
     for (int i = 0; i < u.length; i++) {
-      if (S.GreaterEqual.ofQ(u[i], v[i])) {
+      if (u[i].greaterEqual(v[i]).isTrue()) {
+        // if (S.GreaterEqual.ofQ(u[i], v[i])) {
         w[i] = u[i];
       } else {
         w[i] = v[i];
@@ -711,7 +712,8 @@ public final class ExpVectorSymbolic {
     ExpVectorSymbolic result = valueOf(u.length);
     IExpr[] w = result.val;
     for (int i = 0; i < u.length; i++) {
-      if (S.LessEqual.ofQ(u[i], v[i])) {
+      if (u[i].lessEqual(v[i]).isTrue()) {
+        // if (S.LessEqual.ofQ(u[i], v[i])) {
         w[i] = u[i];
       } else {
         w[i] = v[i];
