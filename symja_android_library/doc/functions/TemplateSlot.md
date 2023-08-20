@@ -16,6 +16,11 @@ TemplateSlot(string)
 ### Related terms 
 [StringTemplate](StringTemplate.md), [TemplateApply](TemplateApply.md), [TemplateIf](TemplateIf.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

@@ -12,6 +12,11 @@ BarChart(list-of-values, options)
 >> BarChart({1, -2, 3}, BarOrigin->Bottom)
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

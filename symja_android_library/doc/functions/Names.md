@@ -22,6 +22,11 @@ Names(pattern)
 {"And","Composition","Dot","GCD","Intersection","Join","Max","Min","Or","Plus","Power","StringExpression","StringJoin","TensorProduct","Times","Union","Xor"}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

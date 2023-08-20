@@ -19,6 +19,11 @@ x^2.0
 ### Related terms 
 [FindFit](FindFit.md), [FittedModel](FittedModel.md), [LinearModelFit](LinearModelFit.md) 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

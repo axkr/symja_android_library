@@ -21,6 +21,11 @@ Times(x, Plus(1, x))
 ### Related terms 
 [LeafCount](LeafCount.md) 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

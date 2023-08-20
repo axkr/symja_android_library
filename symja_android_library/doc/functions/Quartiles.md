@@ -36,6 +36,11 @@ Method 3 from [Wikipedia - Quartile](https://en.wikipedia.org/wiki/Quartile)
 
 [FiveNum](FiveNum.md), [Median](Median.md), [Quantile](Quantile.md) 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

@@ -13,6 +13,11 @@ MaxFilter(list, r)
 {2,3,3,3,2}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

@@ -29,6 +29,11 @@ NextPrime(n, k)
 NextPrime(5, 10.5)
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

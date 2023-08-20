@@ -57,6 +57,11 @@ Math.pow(Math.E,3)-Math.cos(Math.pow(Math.PI,2)/x)
 ```
 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

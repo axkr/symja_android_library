@@ -27,6 +27,11 @@ a^2+Sin(x+x*y)^2+2*a*Sin(x+x*y)
 (1+x+y+x*y)[x]
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

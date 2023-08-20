@@ -19,6 +19,11 @@ MapIndexed(f, expr, levelspec)
 {f({f({{a,b},{c,d}},{1,1})},{1}),f({f({{u,v},{s,t}},{2,1})},{2})}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

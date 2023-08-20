@@ -70,6 +70,11 @@ All other coefficients under `coeff[[6]]` are zero which agrees with the result 
 
 [CoefficientList](CoefficientList.md), [Exponent](Exponent.md)    
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

@@ -19,6 +19,11 @@ See:
 {-2*y+y^3,-2*y+x*y,x^2-2*y^2}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

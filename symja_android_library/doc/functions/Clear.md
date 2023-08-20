@@ -22,6 +22,11 @@ Clear(symbol1, symbol2,...)
 a
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

@@ -30,6 +30,11 @@ The inner product of two boolean matrices:
 ```
  
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

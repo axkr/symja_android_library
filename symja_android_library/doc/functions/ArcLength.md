@@ -18,6 +18,11 @@ See:
 Sqrt((a-c)^2+(b-d)^2)+Sqrt((c-e)^2+(d-f)^2)
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

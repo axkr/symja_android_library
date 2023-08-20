@@ -25,6 +25,11 @@ A hierachical `GroupBy`
 {a->{b->c->{func(d),func(f)},func(c)},b->{func(c),func(d)}}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

@@ -17,6 +17,11 @@ BinarySerialize(expr)
 ### Related terms 
 [BinaryDeserialize](BinaryDeserialize.md), [ByteArray](ByteArray.md), [ByteArrayQ](ByteArrayQ.md), [Export](Export.md), [Import](Import.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

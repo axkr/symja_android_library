@@ -16,6 +16,11 @@ Counts({elem1, elem2, elem3, ...})
 ### Related terms 
 [Commonest](Commonest.md), [Tally](Tally.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

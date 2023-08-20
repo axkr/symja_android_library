@@ -12,6 +12,11 @@ ClearAll(symbol1, symbol2,...)
 >> ClearAll(x)
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

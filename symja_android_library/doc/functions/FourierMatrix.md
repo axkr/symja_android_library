@@ -16,6 +16,11 @@ FourierMatrix(n)
  {1/2,-I*1/2,-1/2,I*1/2}}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

@@ -35,6 +35,11 @@ Argument `{{1, 0}, {0}}` at position `1` is not a non-empty rectangular matrix.
 RowReduce({{1, 0}, {0}})  
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

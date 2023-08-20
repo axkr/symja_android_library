@@ -20,6 +20,11 @@ See
 1/4*(12+2*a+2*b+2*c+2*d) 
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

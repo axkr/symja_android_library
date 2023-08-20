@@ -13,6 +13,11 @@ RogersTanimotoDissimilarity(u, v)
 8/11
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

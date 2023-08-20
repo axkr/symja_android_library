@@ -31,6 +31,11 @@ See
 ```
  
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported
@@ -38,3 +43,5 @@ See
 ### Github
 
 * [Implementation of Sin](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2871) 
+
+* [Rule definitions of Sin](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/SinRules.m) 

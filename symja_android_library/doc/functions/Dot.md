@@ -50,6 +50,11 @@ Wrong dimensions print an error message:
 ### Related terms 
 [Flat](Flat.md), [MatrixPower](MatrixPower.md), [Orderless](Orderless.md), [Times](Times.md) 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

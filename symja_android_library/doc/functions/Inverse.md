@@ -31,6 +31,11 @@ Inverse({{1, 0}, {0, 0}})
  {0,1/2,1/(1/(2*Sqrt(3))+Sqrt(3)/2)}} 
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

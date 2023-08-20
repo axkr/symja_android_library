@@ -42,6 +42,11 @@ Indeterminate expression `0` Infinity encountered.
 Indeterminate
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

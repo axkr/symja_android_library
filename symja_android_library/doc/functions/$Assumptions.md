@@ -10,6 +10,12 @@ $Assumptions
 ### Related terms 
 [Assuming](Assuming.md) 
 
+
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

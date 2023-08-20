@@ -27,6 +27,11 @@ In the [MMA console](https://github.com/axkr/symja_android_library/wiki/MMA-cons
 ### Related terms 
 [TestResultObject](TestResultObject.md), [VerificationTest](VerificationTest.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

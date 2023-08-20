@@ -37,6 +37,11 @@ So we add a third zero vector `v3 = {0.0, 0.0, 0.0}`.
 ### Related terms 
 [Eigensystem](Eigensystem.md), [Eigenvectors](Eigenvectors.md), [CharacteristicPolynomial](CharacteristicPolynomial.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

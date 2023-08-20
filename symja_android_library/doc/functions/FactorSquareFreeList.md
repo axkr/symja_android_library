@@ -6,6 +6,11 @@ FactorSquareFreeList(polynomial)
 
 > get the square free factors of the polynomial expression `polynomial`.
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

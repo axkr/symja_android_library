@@ -21,6 +21,11 @@ See:
 ### Related terms
 [Factor](Factor.md), [FindRoot](FindRoot.md), [NRoots](NRoots.md),[Solve](Solve.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

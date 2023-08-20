@@ -15,6 +15,11 @@ See
 0
 ``` 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported
@@ -22,3 +27,5 @@ See
 ### Github
 
 * [Implementation of Tanh](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L3418) 
+
+* [Rule definitions of Tanh](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/TanhRules.m) 

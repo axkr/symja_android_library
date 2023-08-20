@@ -17,6 +17,11 @@ See:
 a*ZTransform(f(n),n,z)+b*ZTransform(g(n),n,z)
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x1F9EA; - experimental
@@ -24,3 +29,5 @@ a*ZTransform(f(n),n,z)+b*ZTransform(g(n),n,z)
 ### Github
 
 * [Implementation of ZTransform](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/ZTransform.java#L16) 
+
+* [Rule definitions of ZTransform](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/ZTransformRules.m) 

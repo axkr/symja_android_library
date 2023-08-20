@@ -20,6 +20,11 @@ Pick(nested-list, nested-selection, pattern)
 ### Related terms 
 [Cases](Cases.md), [Select](Select.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

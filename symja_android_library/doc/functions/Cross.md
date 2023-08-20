@@ -26,6 +26,11 @@ The arguments are expected to be vectors of equal length, and the number of argu
 Cross({1, 2}, {3, 4, 5})
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

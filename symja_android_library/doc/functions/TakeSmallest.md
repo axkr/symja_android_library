@@ -13,6 +13,11 @@ TakeSmallest({e_1, e_2, ..., e_i}, n)
 {2,3,5}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

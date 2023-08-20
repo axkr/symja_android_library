@@ -17,6 +17,11 @@ ToUnicode(string)
 ### Related terms 
 [FromCharacterCode](FromCharacterCode.md), [ToCharacterCode](ToCharacterCode.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

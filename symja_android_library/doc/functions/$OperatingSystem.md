@@ -7,6 +7,12 @@ $OperatingSystem
 > gives the type of operating system ("Windows", "MacOSX", or "Unix") running Symja.
   
 
+
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

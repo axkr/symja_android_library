@@ -53,6 +53,11 @@ The two examples that follow have the same effect, but the use of `HoldPattern` 
 [Hold](Hold.md), [HoldComplete](HoldComplete.md), [HoldForm](HoldForm.md), [ReleaseHold](ReleaseHold.md), [Unevaluated](Unevaluated.md)
 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

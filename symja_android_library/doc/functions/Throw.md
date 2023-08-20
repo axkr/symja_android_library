@@ -27,6 +27,11 @@ A `Throw` without an enclosing `Catch` prints the message: `Uncaught Throw(1) re
 Hold(Throw(1))
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

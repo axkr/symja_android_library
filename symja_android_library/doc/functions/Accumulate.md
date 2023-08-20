@@ -13,6 +13,11 @@ Accumulate(list)
 {1,3,6}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

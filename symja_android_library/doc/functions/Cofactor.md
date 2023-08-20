@@ -14,6 +14,11 @@ Cofactor(matrix,  {i,j})
 -30
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

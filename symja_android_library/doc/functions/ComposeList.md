@@ -14,6 +14,11 @@ ComposeList(list-of-symbols, variable)
 
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

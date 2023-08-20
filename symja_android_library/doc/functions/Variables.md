@@ -22,6 +22,11 @@ Variables(expr)
 ### Related terms 
 [BooleanVariables](BooleanVariables.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

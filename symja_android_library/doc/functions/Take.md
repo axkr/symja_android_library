@@ -80,6 +80,11 @@ Cannot take positions `1` through `0` in `{1, 2, 3, 4, 5}`.
 Take({1, 2, 3, 4, 5}, {1, 0, -1})
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

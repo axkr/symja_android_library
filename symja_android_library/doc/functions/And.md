@@ -20,6 +20,11 @@ If an expression does not evaluate to `True` or `False`, `And` returns a result 
 a && b && c
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

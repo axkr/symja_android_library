@@ -14,6 +14,11 @@ MeanFilter(list, r)
 {2,3/2,6/5,12/5,6/5,-9/5,-9/4,-3} 
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

@@ -50,6 +50,11 @@ Cases(list, pattern, Heads->True)
 ### Related terms 
 [Pick](Pick.md), [Select](Select.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

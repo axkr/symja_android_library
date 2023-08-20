@@ -24,6 +24,11 @@ False
 ### Related terms 
 [Interval](Interval.md), [IntervalIntersection](IntervalIntersection.md), [IntervalUnion](IntervalUnion.md) 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

@@ -14,6 +14,11 @@ LengthWhile({e1, e2, ...}, head)
 3
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

@@ -28,6 +28,11 @@ test
 ### Related terms 
 [Pause](Pause.md), [Timing](Timing.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

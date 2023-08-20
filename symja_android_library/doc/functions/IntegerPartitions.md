@@ -45,6 +45,11 @@ The "McNugget partitions" [OEIS - Number of partitions of n into parts 6, 9 or 2
 ### Related terms 
 [FrobeniusNumber](FrobeniusNumber.md), [FrobeniusSolve](FrobeniusSolve.md) 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

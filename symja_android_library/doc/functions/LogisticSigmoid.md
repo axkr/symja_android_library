@@ -25,6 +25,11 @@ See
 LogisticSigmoid(I*Pi)
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

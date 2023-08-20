@@ -16,6 +16,11 @@ Stack(expr)
 ### Related terms
 [Stack](Stack.md), [Trace](Trace.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

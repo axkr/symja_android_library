@@ -19,6 +19,11 @@ In the console apps, this command shows an HTML page with a JavaScript list plot
 ### Related terms 
 [JSForm](JSForm.md), [ListPointPlot3D](ListPointPlot3D.md), [Manipulate](Manipulate.md), [ParametricPlot](ParametricPlot.md), [Plot](Plot.md), [Plot3D](Plot3D.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

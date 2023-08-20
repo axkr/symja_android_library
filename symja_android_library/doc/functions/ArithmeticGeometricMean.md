@@ -20,6 +20,11 @@ See:
 ### Related terms 
 [GeometricMean](GeometricMean.md), [HarmonicMean](HarmonicMean.md), [Mean](Mean.md), [Median](Median.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

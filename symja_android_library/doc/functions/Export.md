@@ -35,6 +35,11 @@ c:\\temp\\dotgraph.dot
 ### Related terms 
 [BinaryDeserialize](BinaryDeserialize.md), [BinarySerialize](BinarySerialize.md), [ByteArray](ByteArray.md), [ByteArrayQ](ByteArrayQ.md), [Import](Import.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2611; - partially implemented

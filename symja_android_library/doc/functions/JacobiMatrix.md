@@ -14,6 +14,11 @@ JacobiMatrix(matrix, var)
 {{f'(u),0,0},{0,f'(v),0},{0,0,f'(w)},{0,0,0}}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

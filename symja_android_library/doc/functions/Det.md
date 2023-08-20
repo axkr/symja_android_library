@@ -25,6 +25,11 @@ Symbolic determinant:
 -c*e*g+b*f*g+c*d*h-a*f*h-b*d*i+a*e*i 
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

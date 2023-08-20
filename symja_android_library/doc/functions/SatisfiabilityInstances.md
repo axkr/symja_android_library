@@ -24,6 +24,11 @@ See
 {{False,True},{True,False}}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

@@ -26,6 +26,11 @@ With `JSForm` you can display the generated JavaScript form of the `ParametricPl
 [JSForm](JSForm.md), [Manipulate](Manipulate.md), [Plot](Plot.md), [PolarPlot](PolarPlot.md), 
  [Plot3D](Plot3D.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

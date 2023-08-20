@@ -28,6 +28,11 @@ Argument {{1, 0}, {0}} at position 1 is not a non-empty rectangular matrix.
 MatrixPower({{1, 0}, {0}}, 2)
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

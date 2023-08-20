@@ -52,6 +52,11 @@ RandomChoice(weights -> items, {n1, n2,...})
 {c,a,a,b,c,c,b,b,a,c,b,b,c,b,b,c,b,b,b,b}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

@@ -75,6 +75,11 @@ Use the option `Heads -> True` to include heads:
 {f,g,h,g(h),x,f(g(h))[x]} 
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

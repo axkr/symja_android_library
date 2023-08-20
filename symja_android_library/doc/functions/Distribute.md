@@ -16,6 +16,11 @@ See:
 a*x+a*y+a*z+b*x+b*y+B*z
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

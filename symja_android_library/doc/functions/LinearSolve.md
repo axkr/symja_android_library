@@ -48,6 +48,11 @@ LinearSolve({1, {2}}, {1, 2})
 LinearSolve({{1, 2}, {3, 4}}, {1, {2}})
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

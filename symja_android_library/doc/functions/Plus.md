@@ -72,6 +72,11 @@ Complex
 ### Related terms 
 [Flat](Flat.md), [Listable](Listable.md), [OneIdentity](OneIdentity.md), [Orderless](Orderless.md) 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

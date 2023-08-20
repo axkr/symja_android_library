@@ -43,6 +43,11 @@ This is a derivative based method and the functions must be symbolically differe
 [FindMinimum](FindMinimum.md), [FindRoot](FindRoot.md), [NRoots](NRoots.md), [Solve](Solve.md)
  
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

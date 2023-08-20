@@ -117,6 +117,11 @@ Using Newton's method for finding the root of a differentiable, multivariate, ve
 ### Related terms 
 [Factor](Factor.md), [Eliminate](Eliminate.md), [NRoots](NRoots.md), [Solve](Solve.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

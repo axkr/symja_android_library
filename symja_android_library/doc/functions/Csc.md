@@ -23,6 +23,11 @@ Csc(1)
 ```
   
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported
@@ -30,3 +35,5 @@ Csc(1)
 ### Github
 
 * [Implementation of Csc](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L1565) 
+
+* [Rule definitions of Csc](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/CscRules.m) 

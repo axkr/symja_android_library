@@ -17,6 +17,11 @@ a-3
 ### Related terms 
 [ToCharacterCode](ToCharacterCode.md), [ToUnicode](ToUnicode.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

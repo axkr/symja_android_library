@@ -58,6 +58,11 @@ The random variates of a binomial distribution can be generated with function `R
 ### Related terms 
 [CDF](CDF.md), [Mean](Mean.md), [Median](Median.md), [PDF](PDF.md), [Quantile](Quantile.md), [StandardDeviation](StandardDeviation.md), [Variance](Variance.md) 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

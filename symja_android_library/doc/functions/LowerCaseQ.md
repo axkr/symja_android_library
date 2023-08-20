@@ -7,6 +7,11 @@ LowerCaseQ(str)
 > is `True` if the given `str` is a string which only contains lower case characters.
  
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

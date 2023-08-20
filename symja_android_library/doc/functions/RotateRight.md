@@ -25,6 +25,11 @@ RotateRight(list, n)
 x(b,c,a)
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

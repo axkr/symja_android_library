@@ -20,6 +20,11 @@ EulerGamma
 -PolyGamma(0,a)
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported
@@ -27,3 +32,5 @@ EulerGamma
 ### Github
 
 * [Implementation of StieltjesGamma](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SpecialFunctions.java#L1890) 
+
+* [Rule definitions of StieltjesGamma](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/StieltjesGammaRules.m) 

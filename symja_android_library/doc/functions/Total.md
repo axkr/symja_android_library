@@ -35,6 +35,11 @@ Total(list, {n})
 {6,15,24}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

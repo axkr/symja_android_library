@@ -22,6 +22,11 @@ IntervalData({1,Less,Less,E})
 [IntervalData](IntervalData.md), [IntervalIntersection](IntervalIntersection.md), [IntervalMemberQ](IntervalMemberQ.md)
  
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

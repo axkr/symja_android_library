@@ -16,6 +16,11 @@ BooleanVariables(logical-expr)
 ### Related terms 
 [Variables](Variables.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

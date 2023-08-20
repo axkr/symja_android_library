@@ -21,6 +21,11 @@ See:
 ### Related terms 
 [Fit](Fit.md), [FindFit](FindFit.md),[FittedModel](FittedModel.md) 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

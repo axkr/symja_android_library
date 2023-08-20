@@ -47,6 +47,11 @@ With `JSForm` you can display the generated JavaScript form of the `Manipulate` 
 ### Related terms 
 [Manipulate](Manipulate.md) 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

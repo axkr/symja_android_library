@@ -37,6 +37,11 @@ Range(a, b)
 {-x,-4/5*x,-3/5*x,-2/5*x,-x/5,0,x/5,2/5*x,3/5*x,4/5*x,x}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

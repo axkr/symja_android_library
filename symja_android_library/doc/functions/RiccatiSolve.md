@@ -17,9 +17,14 @@ See:
  {-7.64298, 4.70718}}
 ```
 
+
+
+
+
+
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x2611; - partially implemented
 
 ### Github
 

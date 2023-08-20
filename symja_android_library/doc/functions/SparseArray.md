@@ -34,6 +34,11 @@ SparseArray(Number of elements: 4 Dimensions: {3,3} Default value: 0)
 ### Related terms  
 [MatrixForm](MatrixForm.md), [Normal](Normal.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

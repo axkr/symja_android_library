@@ -34,6 +34,11 @@ with the constraints:
 ### Related terms 
 [LinearProgramming](LinearProgramming.md), [NMinimize](NMinimize.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

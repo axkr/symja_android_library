@@ -17,6 +17,11 @@ See
 ```
   
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported
@@ -24,3 +29,5 @@ See
 ### Github
 
 * [Implementation of StruveH](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SpecialFunctions.java#L1924) 
+
+* [Rule definitions of StruveH](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/StruveHRules.m) 

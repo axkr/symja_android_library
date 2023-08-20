@@ -39,6 +39,11 @@ Round to nearest multiple of 5
 ### Related terms 
 [IntegerPart](IntegerPart.md), [Ceiling](Ceiling.md), [Floor](Floor.md), [FractionalPart](FractionalPart.md) 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

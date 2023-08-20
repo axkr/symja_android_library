@@ -24,6 +24,11 @@ Tally(list, binary-predicate)
 ### Related terms 
 [Commonest](Commonest.md), [Counts](Counts.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

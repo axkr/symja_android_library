@@ -23,6 +23,11 @@ Dispatch({a->1,b->2,c->3})
 ### Related terms 
 [ReplaceAll](ReplaceAll.md), [ReplaceRepeated](ReplaceRepeated.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

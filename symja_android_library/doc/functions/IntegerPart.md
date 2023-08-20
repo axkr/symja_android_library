@@ -22,6 +22,11 @@ See
 ### Related terms 
 [Ceiling](Ceiling.md), [Floor](Floor.md), [FractionalPart](FractionalPart.md), [Round](Round.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

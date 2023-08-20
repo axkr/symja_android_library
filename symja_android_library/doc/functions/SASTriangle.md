@@ -21,6 +21,11 @@ Triangle({{0,0},{1,0},{1/2,Sqrt(3)/2}})
 ### Related terms 
 [AASTriangle](AASTriangle.md), [ASATriangle](ASATriangle.md), [SSSTriangle](SSSTriangle.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

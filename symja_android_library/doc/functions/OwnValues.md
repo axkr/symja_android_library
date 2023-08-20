@@ -15,6 +15,11 @@ OwnValues(symbol)
 {HoldPattern(a):>42}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

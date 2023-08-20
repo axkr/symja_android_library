@@ -28,6 +28,11 @@ Cos(Degree(x))
 0.017453292519943295   
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

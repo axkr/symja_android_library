@@ -42,6 +42,11 @@ FixedPoint(f, x, -1)
 ### Related terms 
 [FixedPointList](FixedPointList.md), [Nest](Nest.md), [NestWhile](NestWhile.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

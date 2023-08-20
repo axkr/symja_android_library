@@ -20,6 +20,11 @@ Triangle({{0,0},{10,0},{5,5*Sqrt(3)}})
 ### Related terms 
 [AASTriangle](AASTriangle.md), [ASATriangle](ASATriangle.md), [SASTriangle](SASTriangle.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

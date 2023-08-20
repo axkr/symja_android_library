@@ -26,6 +26,11 @@ Print a message if no maximum can be found
 ### Related terms 
 [Minimize](Minimize.md) 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

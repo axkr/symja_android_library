@@ -21,6 +21,11 @@ DiagonalMatrix(list)
 DiagonalMatrix(a + b)
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

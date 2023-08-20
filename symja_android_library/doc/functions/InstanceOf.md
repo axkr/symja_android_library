@@ -24,6 +24,11 @@ True
 ### Related terms 
 [JavaClass](JavaClass.md), [JavaNew](JavaNew.md), [JavaObject](JavaObject.md), [JavaObjectQ](JavaObjectQ.md), [LoadJavaClass](LoadJavaClass.md), [SameObjectQ](SameObjectQ.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2615; - supported on Java virtual machine 

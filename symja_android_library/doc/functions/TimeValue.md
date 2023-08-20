@@ -27,6 +27,11 @@ See
 ### Related terms 
 [Annuity](Annuity.md), [AnnuityDue](AnnuityDue.md), [EffectiveInterest](EffectiveInterest.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

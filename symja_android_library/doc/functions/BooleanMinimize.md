@@ -16,6 +16,11 @@ y
 a&&!b||!a&&c||b&&!c
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

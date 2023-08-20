@@ -21,6 +21,11 @@ Interval({1.5,2},{3,3.5},{5,6})
 ### Related terms 
 [Interval](Interval.md), [IntervalMemberQ](IntervalMemberQ.md), [IntervalUnion](IntervalUnion.md) 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

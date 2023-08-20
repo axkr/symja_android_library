@@ -22,6 +22,11 @@ See
 3/Log(10)   
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

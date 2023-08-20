@@ -16,6 +16,11 @@ FindInstance(equations, vars)
 ### Related terms 
 [Solve](Solve.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

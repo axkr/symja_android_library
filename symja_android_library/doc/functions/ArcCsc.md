@@ -20,6 +20,11 @@ Pi/2
 ```
   
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported
@@ -27,3 +32,5 @@ Pi/2
 ### Github
 
 * [Implementation of ArcCsc](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L579) 
+
+* [Rule definitions of ArcCsc](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/ArcCscRules.m) 

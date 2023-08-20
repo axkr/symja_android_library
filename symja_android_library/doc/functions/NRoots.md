@@ -16,6 +16,11 @@ NRoots(polynomial==0)
 ### Related terms 
 [DSolve](DSolve.md), [Eliminate](Eliminate.md), [GroebnerBasis](GroebnerBasis.md), [FindRoot](FindRoot.md), [Reduce](Reduce.md), [Roots](Roots.md), [Solve](Solve.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

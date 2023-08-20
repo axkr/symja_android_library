@@ -16,6 +16,11 @@ See
 I*0.204488
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported
@@ -23,3 +28,5 @@ I*0.204488
 ### Github
 
 * [Implementation of SphericalBesselJ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BesselFunctions.java#L953) 
+
+* [Rule definitions of SphericalBesselJ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/SphericalBesselJRules.m) 

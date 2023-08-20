@@ -17,6 +17,11 @@ See
 1+3/2*Cot(Sqrt(3/2)*z)^2
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

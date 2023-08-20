@@ -23,6 +23,11 @@ See:
 -1.8369701987210297E-16  
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported
@@ -30,3 +35,5 @@ See:
 ### Github
 
 * [Implementation of Cos](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L1290) 
+
+* [Rule definitions of Cos](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/CosRules.m) 

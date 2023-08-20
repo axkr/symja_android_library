@@ -18,6 +18,11 @@ Count(list, pattern, ls)
 5
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

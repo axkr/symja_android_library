@@ -41,6 +41,11 @@ Cannot drop positions `-5` through `-2` in `{1, 2, 3, 4, 5, 6}`.
 Drop({1, 2, 3, 4, 5, 6}, {-5, -2, -2})
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

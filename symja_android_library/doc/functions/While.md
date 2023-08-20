@@ -31,6 +31,11 @@ Compute the GCD of two numbers
 ### Related terms 
 [Break](Break.md), [Continue](Continue.md), [Do](Do.md), [For](For.md) 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

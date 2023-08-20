@@ -17,6 +17,11 @@ DownValues(symbol)
 {HoldPattern(f(1)):>3,HoldPattern(f(x_)):>x^3}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

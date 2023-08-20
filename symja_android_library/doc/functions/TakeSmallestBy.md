@@ -13,6 +13,11 @@ TakeSmallestBy({e_1, e_2, ..., e_i}, function, n)
 {7,29,2}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

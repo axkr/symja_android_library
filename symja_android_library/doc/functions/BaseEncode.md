@@ -27,6 +27,11 @@ Man is distinguished, not only by his reason, but by this singular passion from 
 ### Related terms 
 [BaseDecode](BaseDecode.md), [ByteArrayToString](ByteArrayToString.md), [StringToByteArray](StringToByteArray.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

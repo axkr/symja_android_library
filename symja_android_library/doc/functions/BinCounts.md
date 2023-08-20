@@ -22,6 +22,11 @@ BinCounts(list, {min, max, width-of-bin} )
 {5}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

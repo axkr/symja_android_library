@@ -21,6 +21,11 @@ Stack(_)
 ### Related terms
 [StackBegin](StackBegin.md), [Trace](Trace.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

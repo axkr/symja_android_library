@@ -28,6 +28,11 @@ Solve the diophantine equation `2*x + 3*y + 4*z == 29`:
 ### Related terms 
 [FrobeniusNumber](FrobeniusNumber.md), [IntegerPartitions](IntegerPartitions.md) 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

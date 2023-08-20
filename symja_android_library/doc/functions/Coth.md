@@ -17,6 +17,11 @@ ComplexInfinity
   
     
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported
@@ -24,3 +29,5 @@ ComplexInfinity
 ### Github
 
 * [Implementation of Coth](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L1457) 
+
+* [Rule definitions of Coth](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/CothRules.m) 

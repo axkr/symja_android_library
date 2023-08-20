@@ -13,6 +13,11 @@ DesignMatrix(m, f, x)
 {{1,f(2)},{1,f(3)},{1,f(5)},{1,f(7)}}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

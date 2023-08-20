@@ -41,6 +41,11 @@ E^m
 ### Related terms 
 [FiveNum](FiveNum.md), [Quantile](Quantile.md), [Quartiles](Quartiles.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

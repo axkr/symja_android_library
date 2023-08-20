@@ -27,6 +27,11 @@ True
 ### Related terms 
 [InstanceOf](InstanceOf.md), [JavaClass](JavaClass.md), [JavaNew](JavaNew.md), [JavaObject](JavaObject.md), [JavaObjectQ](JavaObjectQ.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2615; - supported on Java virtual machine 

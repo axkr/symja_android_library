@@ -41,6 +41,11 @@ For square roots of non-negative integer arguments `ContinuedFraction` determine
 ### Related terms 
 [FromContinuedFraction](FromContinuedFraction.md), [QuadraticIrrationalQ](QuadraticIrrationalQ.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

@@ -38,6 +38,11 @@ Compute the greatest common divisor and check the result:
 ```
 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

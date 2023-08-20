@@ -13,6 +13,11 @@ Histogram(list-of-values)
 ```
  
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

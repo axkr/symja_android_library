@@ -31,6 +31,11 @@ Unlike `Equal`, `SameQ` only yields `True` if `x` and `y` have the same type:
 ### Related terms
 [Equal](Equal.md), [Unequal](Unequal.md), [UnsameQ](UnsameQ.md) 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

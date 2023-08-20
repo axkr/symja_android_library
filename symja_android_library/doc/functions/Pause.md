@@ -18,6 +18,11 @@ Pause 5 seconds.
 ### Related terms 
 [TimeConstrained](TimeConstrained.md), [Timing](Timing.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

@@ -16,6 +16,11 @@ See
 "{\cos(x)}^{2}-{\sin(x)}^{2}"
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

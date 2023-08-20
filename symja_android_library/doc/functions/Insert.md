@@ -17,6 +17,11 @@ Insert(list, elem, n)
 ```
  
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

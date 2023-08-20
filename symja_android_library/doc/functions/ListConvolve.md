@@ -13,6 +13,11 @@ ListConvolve(kernel-list, tensor-list)
 {b*x+a*y,c*x+b*y,d*x+c*y,e*x+d*y,f*x+e*y}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

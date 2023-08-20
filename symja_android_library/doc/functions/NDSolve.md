@@ -27,6 +27,11 @@ Plot the interpolating function and the sine function.
 ### Related terms
 [DSolve](DSolve.md), [InterpolatingFunction](InterpolatingFunction.md), [NRoots](NRoots.md), [Solve](Solve.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

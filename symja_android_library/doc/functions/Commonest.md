@@ -32,6 +32,11 @@ Given the list of data `{1, 1, 2, 4, 4}` the mode is not unique – the dataset 
 ### Related terms 
 [Counts](Counts.md), [Tally](Tally.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

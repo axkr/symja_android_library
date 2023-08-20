@@ -65,6 +65,11 @@ With this "complexity function" the `Abs` expression gets a "heavier weight".
 ### Related terms 
 [FullSimplify](FullSimplify.md) 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

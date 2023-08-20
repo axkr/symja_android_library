@@ -32,6 +32,11 @@ See
 ### Related terms 
 [FiveNum](FiveNum.md), [Quantile](Quantile.md), [Quartiles](Quartiles.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported
@@ -39,3 +44,5 @@ See
 ### Github
 
 * [Implementation of InterquartileRange](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L4043) 
+
+* [Rule definitions of InterquartileRange](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/InterquartileRangeRules.m) 

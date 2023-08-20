@@ -18,6 +18,11 @@ FirstCase({arg1, arg2, ...}, pattern-matcher, default)
 
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

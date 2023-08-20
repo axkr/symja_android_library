@@ -17,6 +17,11 @@ See
 0.415392
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported
@@ -24,3 +29,5 @@ See
 ### Github
 
 * [Implementation of BesselY](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BesselFunctions.java#L713) 
+
+* [Rule definitions of BesselY](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/BesselYRules.m) 

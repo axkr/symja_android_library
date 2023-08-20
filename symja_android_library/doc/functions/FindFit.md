@@ -44,6 +44,11 @@ You can omit `1.0` in the parameter list because it's the default value:
 ### Related terms 
 [Fit](Fit.md), [FittedModel](FittedModel.md), [LinearModelFit](LinearModelFit.md) 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

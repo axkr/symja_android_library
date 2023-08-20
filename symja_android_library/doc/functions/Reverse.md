@@ -16,6 +16,11 @@ Reverse(list)
 x(c,b,a)
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

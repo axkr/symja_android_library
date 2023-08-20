@@ -24,6 +24,11 @@ NSolve(equations, vars, domain)
 ### Related terms 
 [Solve](Solve.md), [Reduce](Reduce.md), [Roots](Roots.md) 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

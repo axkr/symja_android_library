@@ -18,6 +18,11 @@ in summer ice cream is delicious
 ### Related terms 
 [StringTemplate](StringTemplate.md), [TemplateApply](TemplateApply.md), [TemplateSlot](TemplateSlot.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

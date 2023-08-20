@@ -36,6 +36,11 @@ The `IgnoreCase` option makes `EditDistance` ignore the case of letters:
 ```
  
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

@@ -28,6 +28,11 @@ GatherBy(list, {f, g,...})
 {{{{1,2},{2,1}}},{{{3,5}}},{{{5,1}},{{2,2,2}}}} 
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

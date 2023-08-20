@@ -37,6 +37,11 @@ Example from Wikipedia where the Jacobian matrix doesn't need to be squared:
 {{1,0,0},{0,0,5},{0,8*x2,-2},{x3*Cos(x1),0,Sin(x1)}}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

@@ -25,6 +25,11 @@ True
 ### Related terms 
 [Simplify](Simplify.md) 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

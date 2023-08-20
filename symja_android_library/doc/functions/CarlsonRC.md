@@ -10,6 +10,11 @@ See:
 * [Wikipedia - Carlson symmetric form](https://en.wikipedia.org/wiki/Carlson_symmetric_form)  
  
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

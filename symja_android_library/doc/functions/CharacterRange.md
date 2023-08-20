@@ -17,6 +17,11 @@ The printable ASCII characters:
 
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

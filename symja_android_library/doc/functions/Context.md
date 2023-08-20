@@ -4,7 +4,7 @@
 Context(symbol)
 ```
 
-> return the context of the given symbol.
+> yields the name of the context where `symbol` is defined in.
 
 
 ```
@@ -25,6 +25,11 @@ Global`
 >> Context(Sin)
 System`
 ```
+
+
+
+
+
 
 ### Implementation status
 

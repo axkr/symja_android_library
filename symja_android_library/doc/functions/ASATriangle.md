@@ -21,6 +21,11 @@ Triangle({{0,0},{b,0},{0,Sqrt(3)*b}})
 ### Related terms 
 [AASTriangle](AASTriangle.md), [SASTriangle](SASTriangle.md), [SSSTriangle](SSSTriangle.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

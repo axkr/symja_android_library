@@ -23,6 +23,11 @@ Replace(expr, {lhs1 -> rhs1, lhs2 -> rhs2, ... } )
 ### Related terms 
 [ReplaceAll](ReplaceAll.md), [ReplaceList](ReplaceList.md), [ReplacePart](ReplacePart.md), [ReplaceRepeated](ReplaceRepeated.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

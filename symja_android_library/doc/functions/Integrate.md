@@ -31,6 +31,11 @@ x^3/3
 [D](D.md),[DSolve](DSolve.md), [Int](Int.md), [Limit](Limit.md), [ND](ND.md), [NIntegrate](NIntegrate.md) 
  
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2611; - partially implemented

@@ -63,6 +63,11 @@ Table(expr, {i, {e1, e2, ..., ei}})
 {-0.2,0.8,1.8,2.8,3.8} 
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

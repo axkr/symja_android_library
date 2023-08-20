@@ -96,6 +96,11 @@ I*3.14159265358979323846264338327
 ### Related terms 
 [Flat](Flat.md), [Listable](Listable.md), [MatrixPower](MatrixPower.md), [OneIdentity](OneIdentity.md), [Orderless](Orderless.md), [Power](Power.md) 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

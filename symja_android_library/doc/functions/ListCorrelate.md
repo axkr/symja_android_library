@@ -13,6 +13,11 @@ ListCorrelate(kernel-list, tensor-list)
 {{a*u+b*v+d*w+e*x,b*u+c*v+e*w+f*x,c*u+p*v+f*w+q*x},{d*u+e*v+g*w+h*x,e*u+f*v+h*w+i*x,f*u+q*v+i*w+r*x}}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

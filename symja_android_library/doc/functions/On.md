@@ -76,6 +76,11 @@ Cos(x)-Sin(x)
 ### Related terms 
 [Off](Off.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

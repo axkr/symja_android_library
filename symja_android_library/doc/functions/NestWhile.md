@@ -31,6 +31,11 @@ Divide by 2 until the result is no longer an integer:
 
 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

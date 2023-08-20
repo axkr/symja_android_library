@@ -34,6 +34,11 @@ with the constraints:
 ### Related terms
 [NMaximize](NMaximize.md), [NMinimize](NMinimize.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

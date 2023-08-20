@@ -21,6 +21,11 @@ x+x^3/6+3/40*x^5+5/112*x^7+O(x)^8
 ### Related terms
 [ComposeSeries](ComposeSeries.md) ,[Series](Series.md), [SeriesCoefficient](SeriesCoefficient.md), [SeriesData](SeriesData.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

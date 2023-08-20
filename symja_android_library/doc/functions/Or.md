@@ -22,6 +22,11 @@ If an expression does not evaluate to `True` or `False`, `Or` returns a result i
 a || b
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

@@ -29,6 +29,11 @@ GCD(10, y)
 ### Related terms 
 [LCM](LCM.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

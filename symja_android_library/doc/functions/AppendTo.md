@@ -42,6 +42,11 @@ a is not a variable with a value, so its value cannot be changed.
 AppendTo(a, b)  
 ``` 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

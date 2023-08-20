@@ -31,6 +31,11 @@ Non integer or negative exponents returns only one rule:
 
 [Coefficient](Coefficient.md), [CoefficientList](CoefficientList.md), [Exponent](Exponent.md), [MonomialList](MonomialList.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

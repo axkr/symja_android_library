@@ -16,6 +16,11 @@ See
 17-60*x+12*x^2-10*x^3-6*x^4+x^6
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

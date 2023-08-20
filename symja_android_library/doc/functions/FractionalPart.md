@@ -19,6 +19,11 @@ See
 ### Related terms 
 [IntegerPart](IntegerPart.md), [Ceiling](Ceiling.md), [Floor](Floor.md), [Round](Round.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

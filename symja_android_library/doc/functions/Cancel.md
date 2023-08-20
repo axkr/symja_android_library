@@ -23,6 +23,11 @@ Cancel(expr)
 (2*f(x))/x
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

@@ -30,6 +30,11 @@ Cos(1/2*x*Log(9))+I*Sin(1/2*x*Log(9))
 ```
  
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2611; - partially implemented

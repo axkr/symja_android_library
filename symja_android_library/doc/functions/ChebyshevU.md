@@ -17,6 +17,11 @@ See:
 1-40*x^2+240*x^4-448*x^6+256*x^8  
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

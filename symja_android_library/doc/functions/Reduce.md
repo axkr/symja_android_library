@@ -16,6 +16,11 @@ x==1
 ### Related terms 
 [Solve](Solve.md), [NSolve](NSolve.md), [Roots](Roots.md), [NRoots](NRoots.md)  
 
+
+
+
+
+
 ### Implementation status
 
 * &#x1F9EA; - experimental

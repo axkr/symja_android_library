@@ -32,6 +32,11 @@ Piecewise({{(a*k^2)/((1-a)^2*(-2+a)),a>2}},Indeterminate)
 
 
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

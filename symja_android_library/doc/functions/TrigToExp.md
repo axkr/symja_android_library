@@ -16,6 +16,11 @@ See
 1/2*E^(I*x)+1/2*E^(-I*x)
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

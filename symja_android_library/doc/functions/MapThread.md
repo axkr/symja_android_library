@@ -56,6 +56,11 @@ Object a at position `{2, 1}` in `MapThread(f, {a, b}, 1)` has only `0` of requi
 MapThread(f, {a, b}, 1)    
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

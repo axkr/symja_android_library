@@ -19,6 +19,11 @@ Cycles({{1,3,2},{4,5}})
 ### Related terms 
 [Cycles](Cycles.md), [FindPermutations](FindPermutations.md), [PermutationCyclesQ](PermutationCyclesQ.md), [PermutationList](PermutationList.md), [PermutationListQ](PermutationListQ.md), [PermutationReplace](PermutationReplace.md), [Permutations](Permutations.md), [Permute](Permute.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

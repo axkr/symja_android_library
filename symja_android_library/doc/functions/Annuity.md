@@ -29,6 +29,11 @@ See:
 ### Related terms 
 [AnnuityDue](AnnuityDue.md), [EffectiveInterest](EffectiveInterest.md), [TimeValue](TimeValue.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

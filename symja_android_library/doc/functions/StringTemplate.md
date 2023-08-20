@@ -20,6 +20,11 @@ The quick brown fox jumps over the lazy dog.
 ### Related terms 
 [TemplateApply](TemplateApply.md),[TemplateIf](TemplateIf.md), [TemplateSlot](TemplateSlot.md)
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

@@ -13,6 +13,11 @@ Roots(polynomial-equation, var)
 x==2/3||x==1/2-I*1/2*Sqrt(3)||x==1/2+I*1/2*Sqrt(3)
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

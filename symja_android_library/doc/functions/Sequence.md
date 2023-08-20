@@ -46,6 +46,11 @@ If `Sequence` appears at a deeper level, it is left unevaluated:
 Hold({a,Sequence(b,c),d})
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

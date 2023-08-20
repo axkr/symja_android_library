@@ -17,6 +17,11 @@ BooleanTable(logical-expr, variables)
 {True,False,False,True,False,True,True,False}
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

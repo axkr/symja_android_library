@@ -13,6 +13,11 @@ Fold[f, x, {a, b}]
 test(test(test(test(t1,a),b),c),d)
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

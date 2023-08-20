@@ -18,6 +18,11 @@ FirstPosition(expression, pattern-matcher, default)
 
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported

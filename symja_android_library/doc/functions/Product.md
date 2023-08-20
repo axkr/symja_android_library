@@ -53,6 +53,11 @@ Evaluate the `n`th primorial:
 7420738134810
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported
@@ -60,3 +65,5 @@ Evaluate the `n`th primorial:
 ### Github
 
 * [Implementation of Product](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Product.java#L105) 
+
+* [Rule definitions of Product](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rule_sets/ProductRules.m) 

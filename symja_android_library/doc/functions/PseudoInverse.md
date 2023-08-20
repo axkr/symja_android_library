@@ -32,6 +32,11 @@ Argument {1, {2}} at position 1 is not a non-empty rectangular matrix.
 PseudoInverse({1, {2}})
 ```
 
+
+
+
+
+
 ### Implementation status
 
 * &#x2705; - full supported
