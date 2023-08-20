@@ -70,6 +70,7 @@ public class BuiltinUsage {
 
     USAGE[ID.C] = "n-th intertermined constant in the solution of a differential equation";
     USAGE[ID.Cancel] = "cancel common factors in rational expressions";
+    USAGE[ID.Catalan] = "Catalan's constant C≃0.916";
     USAGE[ID.Catch] = "handle an exception raised by a 'Throw'";
     USAGE[ID.Catenate] = "catenate elements from a list of lists";
     USAGE[ID.CentralMoment] = "central moments of distributions and data";
@@ -92,6 +93,7 @@ public class BuiltinUsage {
     USAGE[ID.Complement] = "find the complement with respect to a universal set";
     USAGE[ID.Complex] = "head for complex numbers";
     USAGE[ID.ComplexExpand] = "expand a complex expression of real variables";
+    USAGE[ID.ComplexInfinity] = "infinite complex quantity of undetermined direction";
     USAGE[ID.Complexes] = "the domain of Complex numbers";
     USAGE[ID.CompoundExpression] = "execute expressions in sequence";
     USAGE[ID.Conjugate] = "complex conjugate value";
@@ -112,6 +114,7 @@ public class BuiltinUsage {
     USAGE[ID.Decrement] =
         "decreases the value by one and assigns that returning the original value";
     USAGE[ID.Definition] = "give values of a symbol in a form that can be stored in a package";
+    USAGE[ID.Degree] = "1 Degree are Pi/180 radians";
     USAGE[ID.Delete] = "delete elements from a list at given positions";
     USAGE[ID.DeleteCases] = "delete all occurrences of a pattern";
     USAGE[ID.DeleteDuplicates] = "delete duplicate elements in a list";
@@ -135,6 +138,7 @@ public class BuiltinUsage {
     USAGE[ID.Drop] = "remove a number of elements from a list";
     USAGE[ID.DSolve] = "differential equation analytical solver";
 
+    USAGE[ID.E] = "exponential constant E≃2.7182";
     USAGE[ID.EditDistance] = "edit distance";
     USAGE[ID.Element] = "check whether the element belongs to the domain";
     USAGE[ID.EllipticE] = "elliptic integral of the second kind E(ϕ|m)";
@@ -144,6 +148,7 @@ public class BuiltinUsage {
     USAGE[ID.EndOfLine] = "a string pattern matching EOL";
     USAGE[ID.Equal] = "numerical equality";
     USAGE[ID.Equivalent] = "logic equivalence";
+    USAGE[ID.EulerGamma] = "Euler's constant γ≃0.5772";
     USAGE[ID.EulerPhi] = "Euler totient function";
     USAGE[ID.Evaluate] =
         "forces evaluation of $expr$, even if it occurs inside a held argument or a 'Hold' form";
@@ -193,6 +198,7 @@ public class BuiltinUsage {
     USAGE[ID.GatherBy] = "gather based on values of a function applied to elements";
     USAGE[ID.GCD] = "greatest common divisor";
     USAGE[ID.General] = "general-purpose messages";
+    USAGE[ID.Glaisher] = "Glaisher's constant A≃1.282";
     USAGE[ID.Greater] = "greater than";
     USAGE[ID.GreaterEqual] = "greater than or equal to";
     USAGE[ID.Gudermannian] = "Gudermannian function gd(z)";
@@ -212,6 +218,7 @@ public class BuiltinUsage {
 
     USAGE[ID.Increment] =
         "increases the value by one and assigns that returning the original value";
+    USAGE[ID.Indeterminate] = "indeterminate value";
     USAGE[ID.InexactNumberQ] = "test if an expression is an not exact real or complex number";
     USAGE[ID.IdentityMatrix] = "give the identity matrix with a given dimension";
     USAGE[ID.Import] = "import elements from a file";
@@ -222,6 +229,7 @@ public class BuiltinUsage {
     USAGE[ID.Im] = "returns the imaginary component of the complex number $z$";
     USAGE[ID.Implies] = "logic implication";
     USAGE[ID.Inequality] = "chain of inequalities";
+    USAGE[ID.Infinity] = "infinite real quantity";
     USAGE[ID.Infix] = "infix form";
     USAGE[ID.Information] = "get information about all assignments for a symbol";
     USAGE[ID.Input] = "the name of the current input stream";
@@ -242,6 +250,7 @@ public class BuiltinUsage {
 
     USAGE[ID.Key] = "indicate a key within a part specification";
     USAGE[ID.Keys] = "list association keys";
+    USAGE[ID.Khinchin] = "Khinchin's constant K≃2.6854";
     USAGE[ID.KroneckerProduct] = "Kronecker product";
     USAGE[ID.Kurtosis] = "kurtosis coefficient";
 
@@ -338,6 +347,7 @@ public class BuiltinUsage {
     USAGE[ID.Orderless] =
         "attribute for functions with results that does not depends on the order of their arguments";
     USAGE[ID.OutputForm] = "plain-text output format";
+    USAGE[ID.Overflow] = "overflow in numeric evaluation";
 
     USAGE[ID.PadLeft] = "pad out by the left a ragged array to make a matrix";
     USAGE[ID.PadRight] = "pad out by the right a ragged array to make a matrix";
@@ -347,6 +357,7 @@ public class BuiltinUsage {
     USAGE[ID.PartitionsP] = "number of unrestricted partitions";
     USAGE[ID.PauliMatrix] = "Pauli spin matrix";
     USAGE[ID.Permutations] = "form permutations of a list";
+    USAGE[ID.Pi] = "Pi, \u03c0≃3.1416";
     USAGE[ID.Pick] = "pick out elements according to a boolean mask";
     USAGE[ID.Piecewise] = "an arbitrary piecewise function";
     USAGE[ID.Plot] = "curves of one or more functions";
@@ -525,6 +536,7 @@ public class BuiltinUsage {
 
     USAGE[ID.UpperCaseQ] = "test wether all the characters are upper-case letters";
     USAGE[ID.Undefined] = "undefined value";
+    USAGE[ID.Underflow] = "underflow in numeric evaluation";
     USAGE[ID.Unequal] = "numerical inequality";
     USAGE[ID.Unevaluated] =
         "temporarily leaves $expr$ in an unevaluated form when it appears as a function argument";
