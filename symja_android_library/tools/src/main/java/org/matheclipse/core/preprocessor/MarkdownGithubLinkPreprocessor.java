@@ -47,7 +47,6 @@ public class MarkdownGithubLinkPreprocessor {
       // Get the list of the files contained in the source location
       final String[] files = sourceLocation.list();
       if (files != null) {
-        StringBuilder buffer;
         for (int i = 0; i < files.length; i++) {
           if (files[i].endsWith(".md")) { // only markdown files
             File sourceFile = new File(sourceLocation, files[i]);
@@ -58,25 +57,28 @@ public class MarkdownGithubLinkPreprocessor {
             if (symbol != null) {
               String status = SourceCodeFunctions.statusAsString(symbol);
               String functionURL = SourceCodeFunctions.functionURL(symbol);
+
               if (functionURL != null) {
+                String rulesURL = SourceCodeFunctions.rules(symbol);
                 try {
                   System.out.println(sourceFile.toString());
                   List<String> result = Files.readLines(sourceFile, Charsets.UTF_8);
                   int index = -1;
+
+                  for (int j = 0; j < result.size(); j++) {
+                    if (result.get(j).startsWith("### Implementation status")) {
+                      index = j;
+                      break;
+                    }
+                  }
+                  if (index >= 0) {
+                    // remove the rest of *.md document
+                    int end = index - 1;
+                    while (end < result.size()) {
+                      result.remove(result.size() - 1);
+                    }
+                  }
                   if (status != null) {
-                    for (int j = 0; j < result.size(); j++) {
-                      if (result.get(j).startsWith("### Implementation status")) {
-                        index = j;
-                        break;
-                      }
-                    }
-                    if (index >= 0) {
-                      // remove 4 lines of old github "Implementation status"
-                      result.remove(index + 2);
-                      result.remove(index + 1);
-                      result.remove(index);
-                      result.remove(index - 1);
-                    }
                     result.add("");
                     result.add("### Implementation status");
                     result.add("");
@@ -91,17 +93,21 @@ public class MarkdownGithubLinkPreprocessor {
                     }
                   }
                   if (index >= 0) {
-                    // remove 4 lines of old github link
-                    result.remove(index + 2);
-                    result.remove(index + 1);
-                    result.remove(index);
-                    result.remove(index - 1);
+                    // remove the rest of *.md document
+                    int end = index;
+                    while (end < result.size()) {
+                      result.remove(result.size() - 1);
+                    }
                   }
                   result.add("");
-                  // append 4 lines of new github link
+                  // lines of new github links
                   result.add("### Github");
                   result.add("");
                   result.add("* [Implementation of " + functionName + "](" + functionURL + ") ");
+                  if (rulesURL != null) {
+                    result.add("");
+                    result.add("* [Rule definitions of " + functionName + "](" + rulesURL + ") ");
+                  }
 
                   // write target file
                   File targetFile = new File(targetLocation, functionName + ".md");

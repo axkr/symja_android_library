@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import java.io.File;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
@@ -22,6 +23,12 @@ public class SourceCodeFunctions {
   static final String IO_POM_PATH =
       "axkr/symja_android_library/blob/master/symja_android_library/matheclipse-io/";
   static final String SRC_PATH = "src/main/java/";
+
+  static final String RULES_PATH =
+      "axkr/symja_android_library/blob/master/symja_android_library/rules/";
+
+  static final String RULE_SETS_PATH =
+      "axkr/symja_android_library/blob/master/symja_android_library/rule_sets/";
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -125,6 +132,48 @@ public class SourceCodeFunctions {
             && evaluator != ICoreFunctionEvaluator.ARGS_EVALUATOR) {
           Class<? extends IEvaluator> clazz = evaluator.getClass();
           return buildURL(clazz, line);
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the GitHub URL of the <code>built-in-symbol</code> rules definition in the
+   * <a href="https://github.com/axkr/symja_android_library">Symja GitHub repository</a>.
+   * 
+   * @param builtin the built-in function identifier
+   * @return <code>null</code> is no entry was found
+   */
+  public static String rules(ISymbol builtin) {
+    int ordinal = builtin.ordinal();
+    if (ordinal > 0 && ordinal < ID.LINE_NUMBER_OF_JAVA_CLASS.length) {
+      int line = ID.LINE_NUMBER_OF_JAVA_CLASS[ordinal];
+      if (line > 0) {
+        String symbolName = builtin.toString();
+        String userHome = System.getProperty("user.home");
+        File ruleFile = new File(userHome
+            + "/git/symja_android_library/symja_android_library/rules/"
+            + symbolName + "Rules.m");
+        if (ruleFile.exists()) {
+          StringBuilder buf = new StringBuilder(512);
+          buf.append(GITHUB);
+          buf.append(RULES_PATH);
+          buf.append(symbolName);
+          buf.append("Rules.m");
+          return buf.toString();
+        }else {
+          File ruleSetsFile = new File(userHome
+              + "/git/symja_android_library/symja_android_library/rule_sets/"
+              + symbolName + "Rules.m");
+          if (ruleSetsFile.exists()) {
+            StringBuilder buf = new StringBuilder(512);
+            buf.append(GITHUB);
+            buf.append(RULE_SETS_PATH);
+            buf.append(symbolName);
+            buf.append("Rules.m");
+            return buf.toString();
+          }
         }
       }
     }
