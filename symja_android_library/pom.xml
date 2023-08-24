@@ -218,7 +218,7 @@
 			<dependency>
 				<groupId>org.apfloat</groupId>
 				<artifactId>apfloat</artifactId>
-				<version>1.11.0</version>
+				<version>1.11.1-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.codehaus.janino</groupId>
