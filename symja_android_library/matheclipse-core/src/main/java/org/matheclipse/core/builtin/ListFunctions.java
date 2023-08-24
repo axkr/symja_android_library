@@ -1542,8 +1542,7 @@ public final class ListFunctions {
               // print warning (not an error)
               // The requested number of elements `1` is greater than the number of distinct
               // elements `2` only `2` elements will be returned.
-              Errors.printMessage(ast.topHead(), "dstlms", F.List(F.ZZ(n), F.ZZ(counter)),
-                  engine);
+              Errors.printMessage(ast.topHead(), "dstlms", F.List(F.ZZ(n), F.ZZ(counter)), engine);
             }
             return result;
           }
@@ -1601,17 +1600,28 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isASTOrAssociation() && ast.arg2().isASTOrAssociation()) {
-
+        IExpr head1 = ast.arg1().head();
+        if (!ast.arg2().head().equals(head1)) {
+          // Heads `1` and `2` at positions `3` and `4` are expected to be the same.
+          return Errors.printMessage(S.Complement, "heads2",
+              F.List(ast.arg2().head(), head1, F.C2, F.C1), engine);
+        }
+        if (ast.exists(x -> !x.isASTOrAssociation(), 3)) {
+          return F.NIL;
+        }
         final IAST arg1 = (IAST) ast.arg1();
         final IAST arg2 = (IAST) ast.arg2();
-        IAST result = complement(arg1, arg2);
+        IAST result = complement(head1, arg1, arg2);
         if (result.isPresent()) {
           for (int i = 3; i < ast.size(); i++) {
-            IExpr arg = ast.get(i);
-            if (arg.isASTOrAssociation()) {
-              result = complement(result, (IAST) arg);
-            } else {
-              return F.NIL;
+            IExpr expr = ast.get(i);
+            if (!expr.head().equals(head1)) {
+              // Heads `1` and `2` at positions `3` and `4` are expected to be the same.
+              return Errors.printMessage(S.Complement, "heads2",
+                  F.List(expr.head(), head1, F.ZZ(i), F.C1), engine);
+            }
+            if (expr.isASTOrAssociation()) {
+              result = complement(head1, result, (IAST) expr);
             }
           }
           return result;
@@ -1625,7 +1635,7 @@ public final class ListFunctions {
       return ARGS_2_INFINITY;
     }
 
-    public static IAST complement(final IAST arg1, final IAST arg2) {
+    public static IAST complement(IExpr head, final IAST arg1, final IAST arg2) {
       Set<IExpr> set2 = arg2.asSet();
       if (set2 != null) {
         Set<IExpr> set3 = new HashSet<IExpr>();
@@ -1634,7 +1644,8 @@ public final class ListFunctions {
             set3.add(x);
           }
         });
-        IASTMutable result = F.ListAlloc(set3);
+        IASTAppendable result = F.ast(head, set3.size());
+        result.appendAll(set3);
         EvalAttributes.sort(result);
         return result;
       }
@@ -3603,14 +3614,18 @@ public final class ListFunctions {
 
         if (ast.arg1().isASTOrAssociation()) {
           IAST result = ((IAST) ast.arg1());
-          for (int i = 2; i < ast.size(); i++) {
-            if (!ast.get(i).isASTOrAssociation()) {
-              return F.NIL;
-            }
+          if (ast.exists(x -> !x.isASTOrAssociation(), 2)) {
+            return F.NIL;
           }
+          IExpr head1 = result.head();
           for (int i = 2; i < ast.size(); i++) {
             IAST expr = (IAST) ast.get(i);
-            result = intersection(result, expr);
+            if (!expr.head().equals(head1)) {
+              // Heads `1` and `2` at positions `3` and `4` are expected to be the same.
+              return Errors.printMessage(S.Intersection, "heads2",
+                  F.List(expr.head(), head1, F.ZZ(i), F.C1), engine);
+            }
+            result = intersection(head1, result, expr);
           }
           if (result.size() > 2) {
             EvalAttributes.sort((IASTMutable) result, Comparators.CANONICAL_COMPARATOR);
@@ -3628,9 +3643,12 @@ public final class ListFunctions {
      * @param ast2 second AST set
      * @return the intersection set of the sets ast1 and ast2
      */
-    public static IAST intersection(IAST ast1, IAST ast2) {
+    public static IAST intersection(IExpr head, IAST ast1, IAST ast2) {
       if (ast1.isEmpty() || ast2.isEmpty()) {
-        return F.CEmptyList;
+        if (head == S.List) {
+          return F.CEmptyList;
+        }
+        return F.headAST0(head);
       }
 
       Set<IExpr> set1 = new HashSet<IExpr>(ast1.size() + ast2.size() / 10);
@@ -3649,7 +3667,9 @@ public final class ListFunctions {
           resultSet.add(expr);
         }
       }
-      return F.ListAlloc(resultSet);
+      IASTAppendable result = F.ast(head, resultSet.size());
+      result.appendAll(resultSet);
+      return result;
     }
 
     @Override
@@ -7026,8 +7046,7 @@ public final class ListFunctions {
                 iterList.add(Iterator.create(F.list(evaledArg), i, engine));
               } else {
                 // Non-list iterator `1` at position `2` does not evaluate to a real numeric value.
-                return Errors.printMessage(ast.topHead(), "nliter", F.list(arg, F.ZZ(i)),
-                    engine);
+                return Errors.printMessage(ast.topHead(), "nliter", F.list(arg, F.ZZ(i)), engine);
               }
             }
           }
@@ -7399,8 +7418,8 @@ public final class ListFunctions {
         end--;
         if (start < end || end <= 0 || start >= list.size()) {
           // Cannot take positions `1` through `2` in `3`.
-          String str = Errors.getMessage("take", F.list(F.ZZ(start), F.ZZ(end), list),
-              EvalEngine.get());
+          String str =
+              Errors.getMessage("take", F.list(F.ZZ(start), F.ZZ(end), list), EvalEngine.get());
           throw new ArgumentTypeException(str);
         }
         // negative step used here
@@ -7425,8 +7444,8 @@ public final class ListFunctions {
         }
         if (end > list.size()) {
           // Cannot take positions `1` through `2` in `3`.
-          String str = Errors.getMessage("take", F.list(F.ZZ(start), F.ZZ(end - 1), list),
-              EvalEngine.get());
+          String str =
+              Errors.getMessage("take", F.list(F.ZZ(start), F.ZZ(end - 1), list), EvalEngine.get());
           throw new ArgumentTypeException(str);
         }
         for (int i = start; i < end; i += step) {
@@ -7464,8 +7483,8 @@ public final class ListFunctions {
         end--;
         if (start < end || end <= 0 || start >= assoc2.size()) {
           // Cannot take positions `1` through `2` in `3`.
-          String str = Errors.getMessage("take", F.list(F.ZZ(start), F.ZZ(end), assoc2),
-              EvalEngine.get());
+          String str =
+              Errors.getMessage("take", F.list(F.ZZ(start), F.ZZ(end), assoc2), EvalEngine.get());
           throw new ArgumentTypeException(str);
         }
         // negative step used here
@@ -7509,8 +7528,7 @@ public final class ListFunctions {
                   F.Rule(rule.first(), take((IAST) arg, newLevel, sequenceSpecifications)));
             } else {
               // List expected at position `1` in `2`.
-              String str =
-                  Errors.getMessage("list", F.list(F.ZZ(i), assoc2), EvalEngine.get());
+              String str = Errors.getMessage("list", F.list(F.ZZ(i), assoc2), EvalEngine.get());
               throw new ArgumentTypeException(str);
             }
           } else {
@@ -7952,9 +7970,15 @@ public final class ListFunctions {
             return F.NIL;
           }
           IAST result = ((IAST) ast.arg1());
+          IExpr head1 = result.head();
           for (int i = 2; i < ast.size(); i++) {
             IAST expr = (IAST) ast.get(i);
-            result = union(result, expr);
+            if (!expr.head().equals(head1)) {
+              // Heads `1` and `2` at positions `3` and `4` are expected to be the same.
+              return Errors.printMessage(S.Union, "heads2",
+                  F.List(expr.head(), head1, F.ZZ(i), F.ZZ(1)), engine);
+            }
+            result = union(head1, result, expr);
           }
           if (result.size() > 2) {
             EvalAttributes.sort((IASTMutable) result, Comparators.CANONICAL_COMPARATOR);
@@ -7967,12 +7991,13 @@ public final class ListFunctions {
 
     /**
      * Create the (ordered) union from both ASTs.
-     *
+     * 
      * @param ast1 first AST set
      * @param ast2 second AST set
+     *
      * @return the union of the sets ast1 and ast2
      */
-    public static IASTMutable union(IAST ast1, IAST ast2) {
+    public static IASTMutable union(IExpr newHead, IAST ast1, IAST ast2) {
       Set<IExpr> resultSet = new TreeSet<IExpr>();
       int size = ast1.size();
       for (int i = 1; i < size; i++) {
@@ -7982,7 +8007,9 @@ public final class ListFunctions {
       for (int i = 1; i < size; i++) {
         resultSet.add(ast2.get(i));
       }
-      return F.ListAlloc(resultSet);
+      IASTAppendable result = F.ast(newHead, resultSet.size());
+      result.appendAll(resultSet);
+      return result;
     }
 
     @Override
@@ -8087,8 +8114,7 @@ public final class ListFunctions {
           element = listOrAssociation.get(j);
           if (element.isComplexNumeric() || element.isComplex()) {
             // Input `1` is not a vector of reals or integers.
-            return Errors.printMessage(ast.topHead(), "rvec", F.list(listOrAssociation),
-                engine);
+            return Errors.printMessage(ast.topHead(), "rvec", F.list(listOrAssociation), engine);
           }
         }
         return F.NIL;

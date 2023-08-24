@@ -110,6 +110,7 @@ public class Errors {
       "fpct", "To many parameters in `1` to be filled from `2`.", //
       "fnsym", "First argument in `1` is not a symbol or a string naming a symbol.", //
       "heads", "Heads `1` and `2` are expected to be the same.", //
+      "heads2", "Heads `1` and `2` at positions `3` and `4` are expected to be the same.", //
       "herm", "The matrix `1` is not hermitian or real and symmetric.", //
       "idim", "`1` and `2` must have the same length.", //
       "idir", "Direction vector `1` has zero magnitude.", //
