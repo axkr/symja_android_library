@@ -68,7 +68,10 @@ public class FractionSym extends AbstractFractionSym {
    */
   @Override
   public IFraction abs() {
-    return valueOf(Math.abs((long) fNumerator), fDenominator);
+    if (isNegative()) {
+      return valueOf(Math.abs((long) fNumerator), fDenominator);
+    }
+    return this;
   }
 
   /**
@@ -529,7 +532,7 @@ public class FractionSym extends AbstractFractionSym {
         return this;
       if (oint == -1)
         return this.negate();
-      long newnum = (long) fNumerator * (long)oint;
+      long newnum = (long) fNumerator * (long) oint;
       return valueOf(newnum, fDenominator);
     }
 

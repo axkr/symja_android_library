@@ -1,7 +1,7 @@
 package org.matheclipse.core.interfaces;
 
 /** */
-public interface IComplexNum extends INumber {
+public interface IComplexNum extends INumber, IInexactNumber {
   public IComplexNum add(IComplexNum val);
 
   @Override

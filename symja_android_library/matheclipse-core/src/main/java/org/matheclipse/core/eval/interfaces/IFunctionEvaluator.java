@@ -8,6 +8,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInexactNumber;
 
 /** Common interface for built-in Symja functions. */
 public interface IFunctionEvaluator extends IEvaluator {
@@ -332,6 +333,30 @@ public interface IFunctionEvaluator extends IEvaluator {
    * @see IAST#arg3()
    */
   public IExpr numericEval(IAST ast, final EvalEngine engine);
+
+  /**
+   * <b>Numeric evaluation</b> of a function with only {@link IInexactNumber} arguments. The method
+   * <code>ast.get(0)</code> (or alternatively <code>ast.head()</code>) contains the <i>head</i>
+   * (i.e. the function symbol) of this abstract syntax tree (AST).
+   *
+   * <p>
+   * From <code>ast.get(1)</code> to <code>ast.get(n)</code> the <code>ast</code> contains the first
+   * to n-th argument of the function (alternatively you get the first to fifth argument with the
+   * methods <code>arg1()</code>, <code>arg2()</code>,... <code>arg5()</code>).
+   *
+   * <p>
+   * <b>Example:</b> the expression <code>Binomial(n,m)</code> is represented as AST with <code>
+   * ast.head() &lt;=&gt; F.Binomial</code>, <code>ast.arg1() &lt;=&gt; n</code> and
+   * <code>ast.arg2() &lt;=&gt; m</code>
+   *
+   * @param ast the abstract syntax tree (AST) which contains only arguments of type
+   *        {@link IInexactNumber}
+   * @param engine the users current evaluation engine
+   * @return the evaluated object or <code>F#NIL</code>, if evaluation isn't possible
+   */
+  default IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    return F.NIL;
+  }
 
   /**
    * At index 0 return the &quot;from&quot;, at index 1 return the &quot;to&quot; number of

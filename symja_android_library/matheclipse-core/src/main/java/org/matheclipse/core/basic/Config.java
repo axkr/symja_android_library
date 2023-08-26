@@ -620,9 +620,9 @@ public class Config {
   public static final TrieBuilder<String, IPatternSequence, ArrayList<IPatternSequence>> TRIE_STRING2PATTERNSEQUENCE_BUILDER =
       TrieBuilder.create();
 
-  public static final int DEFAULT_RECURSION_LIMIT = 512;
+  public static int DEFAULT_RECURSION_LIMIT = 512;
 
-  public static final int DEFAULT_ITERATION_LIMIT = 1000;
+  public static int DEFAULT_ITERATION_LIMIT = 1000;
 
   /** Global switch to make all symbols unprotected if set to {@link ISymbol#NOATTRIBUTE} */
   public static int BUILTIN_PROTECTED = ISymbol.PROTECTED;

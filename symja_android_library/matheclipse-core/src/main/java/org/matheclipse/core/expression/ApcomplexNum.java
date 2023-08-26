@@ -15,6 +15,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
@@ -433,6 +434,11 @@ public class ApcomplexNum implements IComplexNum {
     return ApcomplexNum.valueOf(EvalEngine.getApfloat().add(fApcomplex, that.apcomplexValue()));
   }
 
+  @Override
+  public IInexactNumber plus(final IInexactNumber that) {
+    return ApcomplexNum.valueOf(EvalEngine.getApfloat().add(fApcomplex, that.apcomplexValue()));
+  }
+
   /**
    * @param that
    * @return
@@ -469,6 +475,12 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public INumber times(final INumber that) {
+    return ApcomplexNum
+        .valueOf(EvalEngine.getApfloat().multiply(fApcomplex, that.apcomplexValue()));
+  }
+
+  @Override
+  public IInexactNumber times(final IInexactNumber that) {
     return ApcomplexNum
         .valueOf(EvalEngine.getApfloat().multiply(fApcomplex, that.apcomplexValue()));
   }
@@ -701,36 +713,36 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr abs() {
-    return valueOf(EvalEngine.getApfloat().abs(fApcomplex));
+    return ApfloatNum.valueOf(EvalEngine.getApfloat().abs(fApcomplex));
   }
 
   @Override
-  public IExpr acos() {
+  public ApcomplexNum acos() {
     return valueOf(EvalEngine.getApfloat().acos(fApcomplex));
   }
 
   @Override
-  public IExpr acosh() {
+  public ApcomplexNum acosh() {
     return valueOf(EvalEngine.getApfloat().acosh(fApcomplex));
   }
 
   @Override
-  public IExpr add(double value) {
+  public ApcomplexNum add(double value) {
     return valueOf(EvalEngine.getApfloat().divide(fApcomplex, new Apfloat(value)));
   }
 
   @Override
-  public IExpr asin() {
+  public ApcomplexNum asin() {
     return valueOf(EvalEngine.getApfloat().asin(fApcomplex));
   }
 
   @Override
-  public IExpr asinh() {
+  public ApcomplexNum asinh() {
     return valueOf(EvalEngine.getApfloat().asinh(fApcomplex));
   }
 
   @Override
-  public IExpr atan() {
+  public ApcomplexNum atan() {
     return valueOf(EvalEngine.getApfloat().atan(fApcomplex));
   }
 
@@ -763,17 +775,17 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
-  public IExpr atanh() {
+  public ApcomplexNum atanh() {
     return valueOf(EvalEngine.getApfloat().atanh(fApcomplex));
   }
 
   @Override
-  public IExpr cbrt() {
+  public ApcomplexNum cbrt() {
     return valueOf(EvalEngine.getApfloat().cbrt(fApcomplex));
   }
 
   @Override
-  public IExpr ceil() {
+  public ApcomplexNum ceil() {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     return valueOf(h.ceil(fApcomplex.real()), //
         h.ceil(fApcomplex.imag()));
@@ -788,23 +800,23 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
-  public IExpr cos() {
+  public ApcomplexNum cos() {
     return valueOf(EvalEngine.getApfloat().cos(fApcomplex));
   }
 
   @Override
-  public IExpr cosh() {
+  public ApcomplexNum cosh() {
     return valueOf(EvalEngine.getApfloat().cosh(fApcomplex));
   }
 
   @Override
-  public IExpr divide(double value) {
+  public ApcomplexNum divide(double value) {
     return valueOf(EvalEngine.getApfloat().divide(fApcomplex, new Apfloat(value)));
   }
 
   /** {@inheritDoc} */
   @Override
-  public IExpr expm1() {
+  public ApcomplexNum expm1() {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     return valueOf(h.subtract(h.exp(fApcomplex), Apfloat.ONE));
   }
@@ -822,32 +834,32 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
-  public IExpr exp() {
+  public ApcomplexNum exp() {
     return valueOf(EvalEngine.getApfloat().exp(fApcomplex));
   }
 
   @Override
-  public IExpr log() {
+  public ApcomplexNum log() {
     return valueOf(EvalEngine.getApfloat().log(fApcomplex));
   }
 
   @Override
-  public IExpr log10() {
+  public ApcomplexNum log10() {
     return valueOf(EvalEngine.getApfloat().log(fApcomplex, new Apfloat(10)));
   }
 
   @Override
-  public IExpr log1p() {
+  public ApcomplexNum log1p() {
     return valueOf(EvalEngine.getApfloat().log(fApcomplex.add(Apfloat.ONE)));
   }
 
   @Override
-  public IExpr multiply(double value) {
+  public ApcomplexNum multiply(double value) {
     return valueOf(EvalEngine.getApfloat().multiply(fApcomplex, new Apfloat(value)));
   }
 
   @Override
-  public IExpr multiply(int value) {
+  public ApcomplexNum multiply(int value) {
     return valueOf(EvalEngine.getApfloat().multiply(fApcomplex, new Apfloat(value)));
   }
 
@@ -867,7 +879,7 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
-  public IExpr reciprocal() {
+  public ApcomplexNum reciprocal() {
     return valueOf(EvalEngine.getApfloat().inverseRoot(fApcomplex, 1));
   }
 
@@ -906,12 +918,12 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
-  public IExpr sin() {
+  public ApcomplexNum sin() {
     return valueOf(EvalEngine.getApfloat().sin(fApcomplex));
   }
 
   @Override
-  public IExpr sinh() {
+  public ApcomplexNum sinh() {
     return valueOf(EvalEngine.getApfloat().sinh(fApcomplex));
   }
 
@@ -933,12 +945,12 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
-  public IExpr tan() {
+  public ApcomplexNum tan() {
     return valueOf(EvalEngine.getApfloat().tan(fApcomplex));
   }
 
   @Override
-  public IExpr tanh() {
+  public ApcomplexNum tanh() {
     return valueOf(EvalEngine.getApfloat().tanh(fApcomplex));
   }
 

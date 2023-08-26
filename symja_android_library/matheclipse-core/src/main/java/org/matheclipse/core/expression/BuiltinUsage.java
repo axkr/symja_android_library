@@ -231,12 +231,12 @@ public class BuiltinUsage {
     USAGE[ID.Indeterminate] = "indeterminate value";
     USAGE[ID.InexactNumberQ] = "test if an expression is an not exact real or complex number";
     USAGE[ID.IdentityMatrix] = "give the identity matrix with a given dimension";
+    USAGE[ID.Im] = "returns the imaginary component of the complex number $z$";
     USAGE[ID.Import] = "import elements from a file";
     USAGE[ID.ImportString] = "import elements from a string";
     USAGE[ID.InverseHaversine] = "inverse haversine function";
     USAGE[ID.I] = "represents the imaginary number 'Sqrt(-1)'";
     USAGE[ID.If] = "test if a condition is true, false, or of unknown truth value";
-    USAGE[ID.Im] = "returns the imaginary component of the complex number $z$";
     USAGE[ID.Implies] = "logic implication";
     USAGE[ID.Inequality] = "chain of inequalities";
     USAGE[ID.Infinity] = "infinite real quantity";

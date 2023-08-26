@@ -2472,7 +2472,7 @@ public interface IExpr
    * @return
    */
   default boolean isInexactNumber() {
-    return this instanceof INum || this instanceof IComplexNum;
+    return this instanceof IInexactNumber;
   }
 
   /**
@@ -4565,32 +4565,7 @@ public interface IExpr
     return opposite();
   }
 
-  /**
-   * Nest <code>this</code> expression with <code>head</code> applied <code>n</code> times to <code>
-   * this</code>.
-   *
-   * <pre>
-   * this.nest(h, 4)
-   * </pre>
-   *
-   * gives
-   *
-   * <pre>
-   * h(h(h(h(this))))
-   * </pre>
-   *
-   * @param head the head which should be applied to this n times
-   * @param n a value > 0, otherwise <code>this</code> will be returned as default value
-   * @return
-   */
-  default IExpr nest(final IExpr head, final int n) {
-    IExpr temp = this;
-    final Function<IExpr, IExpr> function = x -> F.unaryAST1(head, x);
-    for (int i = 0; i < n; i++) {
-      temp = function.apply(temp);
-    }
-    return temp;
-  }
+
 
   @Override
   default IExpr newInstance(double arg) {

@@ -69,7 +69,10 @@ public class BigFractionSym extends AbstractFractionSym {
 
   @Override
   public IFraction abs() {
-    return valueOf(fFraction.abs());
+    if (isNegative()) {
+      return valueOf(fFraction.abs());
+    }
+    return this;
   }
 
   /**

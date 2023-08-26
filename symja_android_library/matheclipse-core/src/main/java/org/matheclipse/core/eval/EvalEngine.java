@@ -16,6 +16,7 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import javax.annotation.Nonnull;
 import org.apache.logging.log4j.Level;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
@@ -900,11 +901,19 @@ public class EvalEngine implements Serializable {
     }
 
     if ((ISymbol.NUMERICFUNCTION & attributes) == ISymbol.NUMERICFUNCTION) {
-      if (ast.arg1().isIndeterminate()) {
+      if (arg1.isIndeterminate()) {
         return S.Indeterminate;
       }
-      if (ast.arg1().isUndefined()) {
+      if (arg1.isUndefined()) {
         return S.Undefined;
+      }
+      if (fNumericMode //
+          && arg1.isInexactNumber() //
+          && ast.head().isBuiltInSymbol()) {
+        IExpr temp = numericFunction(symbol, ast);
+        if (temp.isPresent()) {
+          return temp;
+        }
       }
     }
 
@@ -915,12 +924,35 @@ public class EvalEngine implements Serializable {
     return F.NIL;
   }
 
+  private IExpr numericFunction(final ISymbol symbol, final IAST ast) {
+    IExpr result;
+    final IEvaluator evaluator = ((IBuiltInSymbol) symbol).getEvaluator();
+    if (evaluator instanceof IFunctionEvaluator) {
+      // evaluate a built-in function.
+      final IFunctionEvaluator functionEvaluator = (IFunctionEvaluator) evaluator;
+      try {
+        result = functionEvaluator.numericFunction(ast, this);
+        if (result.isPresent()) {
+          return result;
+        }
+      } catch (ValidateException ve) {
+        ve.printStackTrace();
+        return Errors.printMessage(ast.topHead(), ve, this);
+      } catch (FlowControlException e) {
+        throw e;
+      } catch (SymjaMathException ve) {
+        return Errors.printMessage(ast.topHead(), ve, this);
+      }
+    }
+    return F.NIL;
+  }
+
   /**
    * @param symbol
    * @param ast
    * @return <code>F.NIL</code> if no evaluation happened
    */
-  private IExpr evalASTBuiltinFunction(final ISymbol symbol, IAST ast) {
+  private IExpr evalASTBuiltinFunction(final ISymbol symbol, final IAST ast) {
     final int attributes = symbol.getAttributes();
     if (fEvalLHSMode) {
       if ((ISymbol.HOLDALL & attributes) == ISymbol.HOLDALL) {
@@ -954,24 +986,25 @@ public class EvalEngine implements Serializable {
         // evaluate a built-in function.
         final IFunctionEvaluator functionEvaluator = (IFunctionEvaluator) evaluator;
 
-        OptionsResult opres = checkBuiltinArguments(ast, functionEvaluator);
-        if (opres == null) {
+        OptionsResult options = checkBuiltinArguments(ast, functionEvaluator);
+        if (options == null) {
           ast.functionEvaled();
           return F.NIL;
         }
-        ast = opres.result;
+        IAST newAST = options.result;
         try {
           if (evaluator instanceof AbstractFunctionOptionEvaluator) {
             AbstractFunctionOptionEvaluator optionsEvaluator =
                 (AbstractFunctionOptionEvaluator) evaluator;
-            IExpr result = optionsEvaluator.evaluate(ast, opres.argSize, opres.options, this);
+            IExpr result =
+                optionsEvaluator.evaluate(newAST, options.argSize, options.options, this, ast);
             if (result.isPresent()) {
               return result;
             }
           } else {
 
-            IExpr result = fNumericMode ? functionEvaluator.numericEval(ast, this)
-                : functionEvaluator.evaluate(ast, this);
+            IExpr result = fNumericMode ? functionEvaluator.numericEval(newAST, this)
+                : functionEvaluator.evaluate(newAST, this);
             if (result.isPresent()) {
               return result;
             }
@@ -1079,6 +1112,7 @@ public class EvalEngine implements Serializable {
         return opres;
       }
     }
+
     return opres;
   }
 
@@ -1117,13 +1151,13 @@ public class EvalEngine implements Serializable {
   }
 
   private OptionsResult getOptions(IFunctionEvaluator optionEvaluator, OptionsResult opres,
-      IAST ast, int[] expected) {
+      IAST ast, @Nonnull int[] expected) {
     IBuiltInSymbol[] optionSymbols = optionEvaluator.getOptionSymbols();
     if (optionSymbols != null) {
       opres.options = new IExpr[optionSymbols.length];
       int argSize = AbstractFunctionEvaluator.determineOptions(opres.options, ast, ast.argSize(),
           expected, optionSymbols, this);
-      if (argSize <= expected[1] && argSize >= expected[0]) {
+      if (expected != null && argSize <= expected[1] && argSize >= expected[0]) {
         opres.argSize = argSize;
         return opres;
       }
@@ -1203,6 +1237,15 @@ public class EvalEngine implements Serializable {
           }
           if (mutableAST.exists(x -> x.isUndefined())) {
             return S.Undefined;
+          }
+        }
+
+        if (fNumericMode //
+            && mutableAST.head().isBuiltInSymbol()//
+            && mutableAST.forAll(x -> x.isInexactNumber())) {
+          IExpr temp = numericFunction(symbol, mutableAST);
+          if (temp.isPresent()) {
+            return temp;
           }
         }
       }

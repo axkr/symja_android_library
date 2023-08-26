@@ -6,7 +6,7 @@ import org.matheclipse.core.expression.F;
 /**
  * Interface for a numeric double or {@link Apfloat} number.
  */
-public interface INum extends IReal {
+public interface INum extends IReal, IInexactNumber {
   public static final double Catalan = 0.91596559417721901505460351493238411077414937428167;
   /** <code> Math.PI / 180.0</code> */
   public static final double Degree = 0.01745329251994329576923690768488612713442871888541;

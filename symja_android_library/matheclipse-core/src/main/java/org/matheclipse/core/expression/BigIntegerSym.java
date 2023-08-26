@@ -110,7 +110,10 @@ public class BigIntegerSym extends AbstractIntegerSym {
   /** {@inheritDoc} */
   @Override
   public IInteger abs() {
-    return valueOf(fBigIntValue.abs());
+    if (isNegative()) {
+      return valueOf(fBigIntValue.abs());
+    }
+    return this;
   }
 
   /**

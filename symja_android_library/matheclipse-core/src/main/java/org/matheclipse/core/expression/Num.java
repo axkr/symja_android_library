@@ -14,6 +14,7 @@ import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.form.DoubleToMMA;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
@@ -34,6 +35,19 @@ import com.google.common.math.DoubleMath;
 public class Num implements INum {
   /** */
   private static final long serialVersionUID = 188084692735007429L;
+
+  public static String fullFormString(double d) {
+    String result = Double.toString(d);
+    if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
+      int indx = result.indexOf("E");
+      if (indx > 0) {
+        result = result.replace("E", "`*^");
+      } else {
+        result = result + "`";
+      }
+    }
+    return result;
+  }
 
   /**
    * Returns a {@code Num} instance representing the specified {@code double} value. If a new {@code
@@ -84,6 +98,15 @@ public class Num implements INum {
 
   /** {@inheritDoc} */
   @Override
+  public Num abs() {
+    if (isNegative()) {
+      return valueOf(Math.abs(value));
+    }
+    return this;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public IExpr accept(IVisitor visitor) {
     return visitor.visit(this);
   }
@@ -107,11 +130,12 @@ public class Num implements INum {
   }
 
   @Override
-  public IReal add(final IReal val) {
-    if (val instanceof INum) {
-      return multiply((INum) val);
+  public IInexactNumber acos() {
+    // https://github.com/Hipparchus-Math/hipparchus/issues/128
+    if (value > 1.0 || value < -1.0) {
+      return F.complexNum(Complex.valueOf(value).acos());
     }
-    return val.add(this);
+    return valueOf(Math.acos(value));
   }
 
   @Override
@@ -124,21 +148,11 @@ public class Num implements INum {
   }
 
   @Override
-  public INum subtract(final INum val) {
-    if (val instanceof ApfloatNum) {
-      Apfloat arg2 = ((ApfloatNum) val).apfloatValue();
-      return F.num(EvalEngine.getApfloat().subtract(apfloatValue(), arg2));
+  public IReal add(final IReal val) {
+    if (val instanceof INum) {
+      return multiply((INum) val);
     }
-    return valueOf(value - val.getRealPart());
-  }
-
-  @Override
-  public INum divide(final INum val) {
-    if (val instanceof ApfloatNum) {
-      Apfloat arg2 = ((ApfloatNum) val).apfloatValue();
-      return F.num(EvalEngine.getApfloat().divide(apfloatValue(), arg2));
-    }
-    return valueOf(value / val.getRealPart());
+    return val.add(this);
   }
 
   @Override
@@ -159,6 +173,22 @@ public class Num implements INum {
   @Override
   public Apfloat apfloatValue() {
     return new Apfloat(value);
+  }
+
+  @Override
+  public IInexactNumber asin() {
+    // https://github.com/Hipparchus-Math/hipparchus/issues/128
+    if (value > 1.0) {
+      return F.complexNum(Complex.valueOf(value, -0.0).asin());
+    } else if (value < -1.0) {
+      return F.complexNum(Complex.valueOf(value, 0.0).asin());
+    }
+    return valueOf(Math.asin(value));
+  }
+
+  @Override
+  public IInexactNumber atan() {
+    return valueOf(Math.atan(value));
   }
 
   /** {@inheritDoc} */
@@ -212,8 +242,44 @@ public class Num implements INum {
   }
 
   @Override
+  public int complexSign() {
+    return (int) Math.signum(value);
+  }
+
+  @Override
   public IExpr copy() {
     return this;
+  }
+
+  @Override
+  public Num cos() {
+    return valueOf(Math.cos(value));
+  }
+
+  @Override
+  public Num cosh() {
+    return valueOf(Math.cosh(value));
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr dec() {
+    return valueOf(value - 1.0);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public long determinePrecision() {
+    return ParserConfig.MACHINE_PRECISION;
+  }
+
+  @Override
+  public INum divide(final INum val) {
+    if (val instanceof ApfloatNum) {
+      Apfloat arg2 = ((ApfloatNum) val).apfloatValue();
+      return F.num(EvalEngine.getApfloat().divide(apfloatValue(), arg2));
+    }
+    return valueOf(value / val.getRealPart());
   }
 
   @Override
@@ -232,24 +298,6 @@ public class Num implements INum {
     return value;
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public IExpr dec() {
-    return valueOf(value - 1.0);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IExpr inc() {
-    return valueOf(value + 1.0);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Num abs() {
-    return valueOf(Math.abs(value));
-  }
-
   @Override
   public boolean equals(final Object other) {
     if (this == other) {
@@ -265,6 +313,16 @@ public class Num implements INum {
   @Override
   public boolean equalsInt(final int i) {
     return F.isNumIntValue(value, i);
+  }
+
+  @Override
+  public INumber evalNumber() {
+    return this;
+  }
+
+  @Override
+  public IReal evalReal() {
+    return this;
   }
 
   @Override
@@ -292,44 +350,8 @@ public class Num implements INum {
   }
 
   @Override
-  public IReal evalReal() {
-    return this;
-  }
-
-  @Override
-  public INumber evalNumber() {
-    return this;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IReal fractionalPart() {
-    return F.num(getRealPart() % 1);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public String fullFormString() {
-    return fullFormString(value);
-  }
-
-  public static String fullFormString(double d) {
-    String result = Double.toString(d);
-    if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
-      int indx = result.indexOf("E");
-      if (indx > 0) {
-        result = result.replace("E", "`*^");
-      } else {
-        result = result + "`";
-      }
-    }
-    return result;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IInteger integerPart() {
-    return isNegative() ? ceilFraction() : floorFraction();
+  public Num exp() {
+    return valueOf(Math.exp(value));
   }
 
   /** {@inheritDoc} */
@@ -345,24 +367,19 @@ public class Num implements INum {
 
   /** {@inheritDoc} */
   @Override
-  public IReal im() {
-    return F.CD0;
-  }
-
-  @Override
-  public double imDoubleValue() {
-    return 0.0;
+  public IReal fractionalPart() {
+    return F.num(getRealPart() % 1);
   }
 
   /** {@inheritDoc} */
   @Override
-  public IReal re() {
-    return this;
+  public String fullFormString() {
+    return fullFormString(value);
   }
 
   @Override
-  public double reDoubleValue() {
-    return doubleValue();
+  public Num getPi() {
+    return F.num(Math.PI);
   }
 
   @Override
@@ -451,6 +468,29 @@ public class Num implements INum {
     return INum.super.hypergeometric2F1(arg2, arg3, arg4);
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public IReal im() {
+    return F.CD0;
+  }
+
+  @Override
+  public double imDoubleValue() {
+    return 0.0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr inc() {
+    return valueOf(value + 1.0);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IInteger integerPart() {
+    return isNegative() ? ceilFraction() : floorFraction();
+  }
+
   @Override
   public CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
     SourceCodeProperties p = SourceCodeProperties.stringFormProperties(symbolsAsFactoryMethod);
@@ -484,17 +524,11 @@ public class Num implements INum {
   }
 
   @Override
-  public IReal inverse() {
+  public Num inverse() {
     if (isOne()) {
       return this;
     }
     return valueOf(1 / value);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public long determinePrecision() {
-    return ParserConfig.MACHINE_PRECISION;
   }
 
   /** {@inheritDoc} */
@@ -518,6 +552,16 @@ public class Num implements INum {
     return value < that.doubleValue();
   }
 
+  @Override
+  public boolean isMathematicalIntegerNegative() {
+    return DoubleMath.isMathematicalInteger(value) && value < 0.0;
+  }
+
+  @Override
+  public boolean isMathematicalIntegerNonNegative() {
+    return DoubleMath.isMathematicalInteger(value) && value >= 0.0;
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean isMinusOne() {
@@ -527,16 +571,6 @@ public class Num implements INum {
   @Override
   public boolean isNaN() {
     return Double.isNaN(value);
-  }
-
-  @Override
-  public boolean isMathematicalIntegerNegative() {
-    return DoubleMath.isMathematicalInteger(value) && value < 0.0;
-  }
-
-  @Override
-  public boolean isMathematicalIntegerNonNegative() {
-    return DoubleMath.isMathematicalInteger(value) && value >= 0.0;
   }
 
   /** {@inheritDoc} */
@@ -620,6 +654,14 @@ public class Num implements INum {
     return 2;
   }
 
+  @Override
+  public IInexactNumber log() {
+    if (isNegative()) {
+      return ComplexNum.valueOf(new Complex(value).log());
+    }
+    return valueOf(Math.log(value));
+  }
+
   public long longValue() {
     return (long) value;
   }
@@ -629,20 +671,20 @@ public class Num implements INum {
   }
 
   @Override
-  public IReal multiply(final IReal val) {
-    if (val instanceof INum) {
-      return multiply((INum) val);
-    }
-    return val.multiply(this);
-  }
-
-  @Override
   public INum multiply(final INum val) {
     if (val instanceof ApfloatNum) {
       return F
           .num(EvalEngine.getApfloat().multiply(apfloatValue(), ((ApfloatNum) val).apfloatValue()));
     }
     return valueOf(value * val.getRealPart());
+  }
+
+  @Override
+  public IReal multiply(final IReal val) {
+    if (val instanceof INum) {
+      return multiply((INum) val);
+    }
+    return val.multiply(this);
   }
 
   @Override
@@ -656,6 +698,11 @@ public class Num implements INum {
   }
 
   @Override
+  public INum one() {
+    return F.CD1;
+  }
+
+  @Override
   public IReal opposite() {
     return valueOf(-value);
   }
@@ -665,7 +712,29 @@ public class Num implements INum {
   }
 
   @Override
+  public IExpr plus(final IExpr that) {
+    if (that instanceof INumber) {
+      return plus((INumber) that);
+    }
+    return INum.super.plus(that);
+  }
+
+  @Override
   public INumber plus(final INumber that) {
+    if (that instanceof IInexactNumber) {
+      return plus((IInexactNumber) that);
+    }
+    if (that instanceof IReal) {
+      return Num.valueOf(value + that.evalf());
+    }
+    if (that instanceof ComplexSym) {
+      return F.complexNum(new Complex(value).add(that.evalfc()));
+    }
+    throw new java.lang.ArithmeticException();
+  }
+
+  @Override
+  public IInexactNumber plus(final IInexactNumber that) {
     if (that instanceof INum) {
       if (that instanceof ApfloatNum) {
         return apfloatNumValue().add(((ApfloatNum) that).apfloatNumValue());
@@ -678,21 +747,12 @@ public class Num implements INum {
       }
       return ComplexNum.valueOf(value).add((ComplexNum) that);
     }
-    if (that instanceof IReal) {
-      return Num.valueOf(value + that.evalf());
-    }
-    if (that instanceof ComplexSym) {
-      return F.complexNum(new Complex(value).add(that.evalfc()));
-    }
     throw new java.lang.ArithmeticException();
   }
 
   @Override
-  public IExpr plus(final IExpr that) {
-    if (that instanceof INumber) {
-      return plus((INumber) that);
-    }
-    return INum.super.plus(that);
+  public Num pow(int n) {
+    return valueOf(Math.pow(value, n));
   }
 
   @Override
@@ -731,9 +791,20 @@ public class Num implements INum {
     return 15L;
   }
 
+  /** {@inheritDoc} */
   @Override
-  public IInteger roundExpr() {
-    return F.ZZ(DoubleMath.roundToBigInteger(value, Config.ROUNDING_MODE));
+  public IReal re() {
+    return this;
+  }
+
+  @Override
+  public double reDoubleValue() {
+    return doubleValue();
+  }
+
+  @Override
+  public Num rootN(int n) {
+    return valueOf(Math.pow(value, 1.0 / n));
   }
 
   @Override
@@ -749,8 +820,23 @@ public class Num implements INum {
   }
 
   @Override
-  public int complexSign() {
-    return (int) Math.signum(value);
+  public IInteger roundExpr() {
+    return F.ZZ(DoubleMath.roundToBigInteger(value, Config.ROUNDING_MODE));
+  }
+
+  @Override
+  public Num sign() {
+    return F.num((int) Math.signum(value));
+  }
+
+  @Override
+  public Num sin() {
+    return valueOf(Math.sin(value));
+  }
+
+  @Override
+  public Num sinh() {
+    return valueOf(Math.sinh(value));
   }
 
   @Override
@@ -760,6 +846,15 @@ public class Num implements INum {
       return F.complexNum(c.sqrt());
     }
     return valueOf(Math.sqrt(value));
+  }
+
+  @Override
+  public INum subtract(final INum val) {
+    if (val instanceof ApfloatNum) {
+      Apfloat arg2 = ((ApfloatNum) val).apfloatValue();
+      return F.num(EvalEngine.getApfloat().subtract(apfloatValue(), arg2));
+    }
+    return valueOf(value - val.getRealPart());
   }
 
   @Override
@@ -774,7 +869,39 @@ public class Num implements INum {
   }
 
   @Override
+  public Num tan() {
+    return valueOf(Math.tan(value));
+  }
+
+  @Override
+  public Num tanh() {
+    return valueOf(Math.tanh(value));
+  }
+
+  @Override
+  public IExpr times(final IExpr that) {
+    if (that instanceof INumber) {
+      return times((INumber) that);
+    }
+    return INum.super.times(that);
+  }
+
+  @Override
   public INumber times(final INumber that) {
+    if (that instanceof IInexactNumber) {
+      return times((IInexactNumber) that);
+    }
+    if (that instanceof IReal) {
+      return Num.valueOf(value * that.evalf());
+    }
+    if (that instanceof ComplexSym) {
+      return F.complexNum(new Complex(value).multiply(that.evalfc()));
+    }
+    throw new java.lang.ArithmeticException();
+  }
+
+  @Override
+  public IInexactNumber times(final IInexactNumber that) {
     if (that instanceof INum) {
       if (that instanceof ApfloatNum) {
         return apfloatNumValue().multiply(((ApfloatNum) that).apfloatNumValue());
@@ -787,21 +914,13 @@ public class Num implements INum {
       }
       return ComplexNum.valueOf(value).multiply((ComplexNum) that);
     }
-    if (that instanceof IReal) {
-      return Num.valueOf(value * that.evalf());
-    }
-    if (that instanceof ComplexSym) {
-      return F.complexNum(new Complex(value).multiply(that.evalfc()));
-    }
     throw new java.lang.ArithmeticException();
   }
 
   @Override
-  public IExpr times(final IExpr that) {
-    if (that instanceof INumber) {
-      return times((INumber) that);
-    }
-    return INum.super.times(that);
+  public Num toDegrees() {
+    // radians * (180 / Pi)
+    return valueOf(value * 180.0 / Math.PI);
   }
 
   /** {@inheritDoc} */
@@ -821,6 +940,12 @@ public class Num implements INum {
 
   /** {@inheritDoc} */
   @Override
+  public long toLong() throws ArithmeticException {
+    return NumberUtil.toLong(value);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public long toLongDefault(long defaultValue) {
     try {
       return NumberUtil.toLong(value);
@@ -829,10 +954,10 @@ public class Num implements INum {
     }
   }
 
-  /** {@inheritDoc} */
   @Override
-  public long toLong() throws ArithmeticException {
-    return NumberUtil.toLong(value);
+  public Num toRadians() {
+    // degrees * (Pi / 180)
+    return valueOf(value * Math.PI / 180.0);
   }
 
   /** {@inheritDoc} */
@@ -852,84 +977,13 @@ public class Num implements INum {
   }
 
   @Override
-  public Num cos() {
-    return valueOf(Math.cos(value));
-  }
-
-  @Override
-  public Num cosh() {
-    return valueOf(Math.cosh(value));
-  }
-
-  @Override
-  public Num exp() {
-    return valueOf(Math.exp(value));
-  }
-
-  @Override
-  public Num log() {
-    return valueOf(Math.log(value));
-  }
-
-  @Override
-  public Num pow(int n) {
-    return valueOf(Math.pow(value, n));
-  }
-
-  @Override
-  public Num rootN(int n) {
-    return valueOf(Math.pow(value, 1.0 / n));
-  }
-
-  @Override
-  public Num sign() {
-    return F.num((int) Math.signum(value));
-  }
-
-  @Override
-  public Num sin() {
-    return valueOf(Math.sin(value));
-  }
-
-  @Override
-  public Num sinh() {
-    return valueOf(Math.sinh(value));
-  }
-
-  @Override
-  public Num tan() {
-    return valueOf(Math.tan(value));
-  }
-
-  @Override
-  public Num tanh() {
-    return valueOf(Math.tanh(value));
-  }
-
-  @Override
-  public Num getPi() {
-    return F.num(Math.PI);
-  }
-
-  @Override
-  public Num toDegrees() {
-    // radians * (180 / Pi)
-    return valueOf(value * 180.0 / Math.PI);
-  }
-
-  @Override
-  public Num toRadians() {
-    // degrees * (Pi / 180)
-    return valueOf(value * Math.PI / 180.0);
-  }
-
-  @Override
   public INum zero() {
     return F.CD0;
   }
 
   @Override
-  public INum one() {
-    return F.CD1;
+  public Num reciprocal() {
+    return inverse();
   }
+
 }

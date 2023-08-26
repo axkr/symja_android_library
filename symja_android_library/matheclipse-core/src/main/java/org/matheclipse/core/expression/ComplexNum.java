@@ -17,6 +17,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
@@ -99,6 +100,89 @@ public class ComplexNum implements IComplexNum {
     return new ComplexNum(value);
   }
 
+  /**
+   * Return the quotient and remainder as an array <code>[quotient, remainder]</code> of the
+   * division of <code>Complex</code> numbers <code>c1, c2</code>.
+   *
+   * <p>
+   * See
+   *
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Gaussian_integer">Wikipedia - Gaussian integer</a>
+   * <li><a href=
+   * "http://fermatslasttheorem.blogspot.com/2005/06/division-algorithm-for-gaussian.html">Division
+   * Algorithm for Gaussian Integers </a>
+   * </ul>
+   *
+   * @param c1
+   * @param c2
+   * @return the quotient and remainder as an array <code>[quotient, remainder]</code>
+   */
+  public static Complex[] quotientRemainder(Complex c1, Complex c2) {
+    // use hipparchus Complex implementation - see:
+    // https://github.com/Hipparchus-Math/hipparchus/issues/67
+    Complex remainder = c1.remainder(c2);
+    Complex quotient = c1.subtract(remainder).divide(c2).rint();
+    return new Complex[] {quotient, remainder};
+
+    // double numeratorReal = c1.getReal() * c2.getReal() + //
+    // c1.getImaginary() * c2.getImaginary();
+    // double numeratorImaginary = c1.getReal() * (-c2.getImaginary()) + //
+    // c2.getReal() * c1.getImaginary();
+    // double denominator = c2.getReal() * c2.getReal() + //
+    // c2.getImaginary() * c2.getImaginary();
+    // if (denominator == 0.0) {
+    // throw new IllegalArgumentException("Denominator cannot be zero.");
+    // }
+    //
+    // double divisionReal = Math.rint(numeratorReal / denominator);
+    // double divisionImaginary = Math.rint(numeratorImaginary / denominator);
+    //
+    // double remainderReal = c1.getReal() - //
+    // (c2.getReal() * divisionReal) + //
+    // (c2.getImaginary() * divisionImaginary);
+    // double remainderImaginary = c1.getImaginary() - //
+    // (c2.getReal() * divisionImaginary) - //
+    // (c2.getImaginary() * divisionReal);
+    // return new Complex[] { new Complex(divisionReal, divisionImaginary),
+    // new Complex(remainderReal, remainderImaginary) };
+  }
+
+  /**
+   * Return the quotient and remainder as an array <code>[quotient, remainder]</code> of the
+   * division of <code>Complex</code> numbers <code>c1, c2</code>.
+   *
+   * <p>
+   * See
+   *
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Gaussian_integer">Wikipedia - Gaussian integer</a>
+   * <li><a href=
+   * "http://fermatslasttheorem.blogspot.com/2005/06/division-algorithm-for-gaussian.html">Division
+   * Algorithm for Gaussian Integers </a>
+   * </ul>
+   *
+   * @param cn1
+   * @param cn2
+   * @return the quotient and remainder as an array <code>[quotient, remainder]</code>
+   */
+  public static ComplexNum[] quotientRemainder(ComplexNum cn1, ComplexNum cn2) {
+    Complex c1 = cn1.fComplex;
+    Complex c2 = cn2.fComplex;
+    Complex[] arr = quotientRemainder(c1, c2);
+    return new ComplexNum[] {valueOf(arr[0]), valueOf(arr[1])};
+  }
+
+  /**
+   * Create complex number on unit circle with given argument <code>arg</code>.
+   * 
+   * @param arg angle
+   * @return E^(I * angle), i.e. complex number on unit circle with given argument
+   */
+  public static ComplexNum unitOf(final double arg) {
+    return newInstance(new Complex(Math.cos(arg), Math.sin(arg)));
+  }
+
   public static ComplexNum valueOf(final Complex c) {
     double real = c.getReal();
     double imaginary = c.getImaginary();
@@ -112,16 +196,6 @@ public class ComplexNum implements IComplexNum {
       return newInstance(new Complex(real, 0.0d));
     }
     return newInstance(c);
-  }
-
-  /**
-   * Create complex number on unit circle with given argument <code>arg</code>.
-   * 
-   * @param arg angle
-   * @return E^(I * angle), i.e. complex number on unit circle with given argument
-   */
-  public static ComplexNum unitOf(final double arg) {
-    return newInstance(new Complex(Math.cos(arg), Math.sin(arg)));
   }
 
   public static ComplexNum valueOf(final double real) {
@@ -158,12 +232,17 @@ public class ComplexNum implements IComplexNum {
 
   Complex fComplex;
 
+  private ComplexNum(Complex complex) {
+    fComplex = complex;
+  }
+
   private ComplexNum(final double r, final double i) {
     fComplex = new Complex(r, i);
   }
 
-  private ComplexNum(Complex complex) {
-    fComplex = complex;
+  @Override
+  public Num abs() {
+    return Num.valueOf(dabs());
   }
 
   /** {@inheritDoc} */
@@ -188,6 +267,11 @@ public class ComplexNum implements IComplexNum {
   @Override
   public long accept(IVisitorLong visitor) {
     return visitor.visit(this);
+  }
+
+  @Override
+  public IInexactNumber acos() {
+    return valueOf(fComplex.acos());
   }
 
   /**
@@ -224,6 +308,16 @@ public class ComplexNum implements IComplexNum {
   @Override
   public Apcomplex apcomplexValue() {
     return new Apcomplex(new Apfloat(fComplex.getReal()), new Apfloat(fComplex.getImaginary()));
+  }
+
+  @Override
+  public IInexactNumber asin() {
+    return valueOf(fComplex.asin());
+  }
+
+  @Override
+  public IInexactNumber atan() {
+    return valueOf(fComplex.atan());
   }
 
   @Override
@@ -308,6 +402,11 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr complexArg() {
+    return Num.valueOf(fComplex.getArgument());
+  }
+
+  @Override
   public ComplexNum complexNumValue() {
     return this;
   }
@@ -347,22 +446,26 @@ public class ComplexNum implements IComplexNum {
     return IComplexNum.super.copySign(that);
   }
 
-  /** {@inheritDoc} */
   @Override
-  public IExpr dec() {
-    return add(MINUS_ONE);
+  public ComplexNum cos() {
+    return valueOf(fComplex.cos());
   }
 
-  /** {@inheritDoc} */
   @Override
-  public IExpr inc() {
-    return add(ONE);
+  public ComplexNum cosh() {
+    return valueOf(fComplex.cosh());
   }
 
   /** {@inheritDoc} */
   @Override
   public double dabs() {
     return dabs(fComplex);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr dec() {
+    return add(MINUS_ONE);
   }
 
   /** {@inheritDoc} */
@@ -377,16 +480,6 @@ public class ComplexNum implements IComplexNum {
       return apcomplexNumValue().divide(that);
     }
     return newInstance(fComplex.divide(((ComplexNum) that).fComplex));
-  }
-
-  @Override
-  public Num abs() {
-    return Num.valueOf(dabs());
-  }
-
-  @Override
-  public IExpr complexArg() {
-    return Num.valueOf(fComplex.getArgument());
   }
 
   @Override
@@ -407,6 +500,17 @@ public class ComplexNum implements IComplexNum {
 
   /** {@inheritDoc} */
   @Override
+  public Complex evalfc() {
+    return fComplex;
+  }
+
+  @Override
+  public INumber evalNumber() {
+    return this;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public IExpr evaluate(EvalEngine engine) {
     if (fComplex.isInfinite()) {
       return F.CComplexInfinity;
@@ -420,15 +524,20 @@ public class ComplexNum implements IComplexNum {
     return F.NIL;
   }
 
-  /** {@inheritDoc} */
   @Override
-  public Complex evalfc() {
-    return fComplex;
+  public ComplexNum exp() {
+    return valueOf(fComplex.exp());
   }
 
   @Override
-  public INumber evalNumber() {
-    return this;
+  public INumber floorFraction() throws ArithmeticException {
+    try {
+      return F.complex(NumberUtil.toLong(Math.floor(fComplex.getReal())),
+          NumberUtil.toLong(Math.floor(fComplex.getImaginary())));
+    } catch (ArithmeticException ae) {
+      ArgumentTypeException.throwArg(this, F.Floor(this));
+    }
+    return null;
   }
 
   /** {@inheritDoc} */
@@ -479,51 +588,8 @@ public class ComplexNum implements IComplexNum {
     return buf.toString();
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public IComplex integerPart() {
-    // isNegative() ? ceilFraction() : floorFraction();
-    double re = fComplex.getReal();
-    double im = fComplex.getImaginary();
-    IInteger reInt;
-    IInteger imInt;
-    if (re < 0.0) {
-      reInt = F.ZZ(NumberUtil.toLong(Math.ceil(re)));
-    } else {
-      reInt = F.ZZ(NumberUtil.toLong(Math.floor(re)));
-    }
-    if (im < 0.0) {
-      imInt = F.ZZ(NumberUtil.toLong(Math.ceil(im)));
-    } else {
-      imInt = F.ZZ(NumberUtil.toLong(Math.floor(im)));
-    }
-    return F.complex(reInt, imInt);
-  }
-
-  @Override
-  public INumber floorFraction() throws ArithmeticException {
-    try {
-      return F.complex(NumberUtil.toLong(Math.floor(fComplex.getReal())),
-          NumberUtil.toLong(Math.floor(fComplex.getImaginary())));
-    } catch (ArithmeticException ae) {
-      ArgumentTypeException.throwArg(this, F.Floor(this));
-    }
-    return null;
-  }
-
   public Complex getCMComplex() {
     return new Complex(fComplex.getReal(), fComplex.getImaginary());
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IReal im() {
-    return F.num(getImaginaryPart());
-  }
-
-  @Override
-  public double imDoubleValue() {
-    return fComplex.getImaginary();
   }
 
   /** @return */
@@ -536,26 +602,9 @@ public class ComplexNum implements IComplexNum {
     return temp;
   }
 
-  /** {@inheritDoc} */
   @Override
-  public IReal re() {
-    return F.num(getRealPart());
-  }
-
-  @Override
-  public IExpr sqrt() {
-    return valueOf(fComplex.sqrt());
-  }
-
-  @Override
-  public double reDoubleValue() {
-    return fComplex.getReal();
-  }
-
-  @Override
-  public INumber roundExpr() throws ArithmeticException {
-    return F.complex(F.ZZ(DoubleMath.roundToBigInteger(fComplex.getReal(), Config.ROUNDING_MODE)), //
-        F.ZZ(DoubleMath.roundToBigInteger(fComplex.getImaginary(), Config.ROUNDING_MODE)));
+  public IExpr getPi() {
+    return F.num(Math.PI);
   }
 
   @Override
@@ -618,6 +667,44 @@ public class ComplexNum implements IComplexNum {
     return IComplexNum.super.hypergeometric2F1(arg2, arg3, arg4);
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public IReal im() {
+    return F.num(getImaginaryPart());
+  }
+
+  @Override
+  public double imDoubleValue() {
+    return fComplex.getImaginary();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr inc() {
+    return add(ONE);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IComplex integerPart() {
+    // isNegative() ? ceilFraction() : floorFraction();
+    double re = fComplex.getReal();
+    double im = fComplex.getImaginary();
+    IInteger reInt;
+    IInteger imInt;
+    if (re < 0.0) {
+      reInt = F.ZZ(NumberUtil.toLong(Math.ceil(re)));
+    } else {
+      reInt = F.ZZ(NumberUtil.toLong(Math.floor(re)));
+    }
+    if (im < 0.0) {
+      imInt = F.ZZ(NumberUtil.toLong(Math.ceil(im)));
+    } else {
+      imInt = F.ZZ(NumberUtil.toLong(Math.floor(im)));
+    }
+    return F.complex(reInt, imInt);
+  }
+
   @Override
   public CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
     SourceCodeProperties p = SourceCodeProperties.stringFormProperties(symbolsAsFactoryMethod);
@@ -668,6 +755,12 @@ public class ComplexNum implements IComplexNum {
     return fComplex.isMathematicalInteger() && fComplex.getReal() >= 0.0;
   }
 
+  @Override
+  public boolean isMinusOne() {
+    return F.isFuzzyEquals(fComplex.getReal(), -1.0, Config.DOUBLE_TOLERANCE) && //
+        F.isZero(fComplex.getImaginary(), Config.DOUBLE_TOLERANCE);
+  }
+
   /** @return */
   @Override
   public boolean isNaN() {
@@ -686,14 +779,9 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
-  public int toIntDefault(int defaultValue) {
-    if (F.isZero(fComplex.getImaginary())) {
-      final double re = fComplex.getReal();
-      if (DoubleMath.isMathematicalInteger(re)) {
-        return (int) re;
-      }
-    }
-    return defaultValue;
+  public boolean isOne() {
+    return F.isFuzzyEquals(fComplex.getReal(), 1.0, Config.DOUBLE_TOLERANCE) && //
+        F.isZero(fComplex.getImaginary(), Config.DOUBLE_TOLERANCE);
   }
 
   @Override
@@ -717,18 +805,6 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
-  public boolean isOne() {
-    return F.isFuzzyEquals(fComplex.getReal(), 1.0, Config.DOUBLE_TOLERANCE) && //
-        F.isZero(fComplex.getImaginary(), Config.DOUBLE_TOLERANCE);
-  }
-
-  @Override
-  public boolean isMinusOne() {
-    return F.isFuzzyEquals(fComplex.getReal(), -1.0, Config.DOUBLE_TOLERANCE) && //
-        F.isZero(fComplex.getImaginary(), Config.DOUBLE_TOLERANCE);
-  }
-
-  @Override
   public boolean isZero() {
     return F.isZero(fComplex.getReal(), Config.DOUBLE_TOLERANCE) && //
         F.isZero(fComplex.getImaginary(), Config.DOUBLE_TOLERANCE);
@@ -743,6 +819,11 @@ public class ComplexNum implements IComplexNum {
   @Override
   public long leafCountSimplify() {
     return 5;
+  }
+
+  @Override
+  public ComplexNum log() {
+    return valueOf(fComplex.log());
   }
 
   /**
@@ -789,14 +870,46 @@ public class ComplexNum implements IComplexNum {
     return newInstance(fComplex.negate());
   }
 
+  @Override
+  public IComplexNum one() {
+    return ONE;
+  }
+
   /** @return */
   @Override
   public INumber opposite() {
     return newInstance(fComplex.negate());
   }
 
+
+  /**
+   * @param that
+   * @return
+   */
+  @Override
+  public IExpr plus(final IExpr that) {
+    if (that instanceof INumber) {
+      return plus((INumber) that);
+    }
+    return IComplexNum.super.plus(that);
+  }
+
   @Override
   public INumber plus(final INumber that) {
+    if (that instanceof IInexactNumber) {
+      return plus((IInexactNumber) that);
+    }
+    if (that instanceof IReal) {
+      return this.add(F.complexNum(that.evalf()));
+    }
+    if (that instanceof ComplexSym) {
+      return F.complexNum(fComplex.add(that.evalfc()));
+    }
+    throw new java.lang.ArithmeticException();
+  }
+
+  @Override
+  public IInexactNumber plus(final IInexactNumber that) {
     if (that instanceof IComplexNum) {
       if (that instanceof ApcomplexNum) {
         ApcomplexNum acn = (ApcomplexNum) that;
@@ -812,25 +925,7 @@ public class ComplexNum implements IComplexNum {
       }
       return add(ComplexNum.valueOf(((Num) that).getRealPart()));
     }
-    if (that instanceof IReal) {
-      return this.add(F.complexNum(that.evalf()));
-    }
-    if (that instanceof ComplexSym) {
-      return F.complexNum(fComplex.add(that.evalfc()));
-    }
     throw new java.lang.ArithmeticException();
-  }
-
-  /**
-   * @param that
-   * @return
-   */
-  @Override
-  public IExpr plus(final IExpr that) {
-    if (that instanceof INumber) {
-      return plus((INumber) that);
-    }
-    return IComplexNum.super.plus(that);
   }
 
   @Override
@@ -853,8 +948,63 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr pow(int n) {
+    return valueOf(fComplex.pow(n));
+  }
+
+  @Override
   public long precision() throws ApfloatRuntimeException {
     return 15;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IReal re() {
+    return F.num(getRealPart());
+  }
+
+  @Override
+  public ComplexNum reciprocal() {
+    return valueOf(fComplex.reciprocal());
+  }
+
+  @Override
+  public double reDoubleValue() {
+    return fComplex.getReal();
+  }
+
+  @Override
+  public IExpr rootN(int n) {
+    return valueOf(fComplex.rootN(n));
+  }
+
+  @Override
+  public INumber roundExpr() throws ArithmeticException {
+    return F.complex(F.ZZ(DoubleMath.roundToBigInteger(fComplex.getReal(), Config.ROUNDING_MODE)), //
+        F.ZZ(DoubleMath.roundToBigInteger(fComplex.getImaginary(), Config.ROUNDING_MODE)));
+  }
+
+  @Override
+  public IExpr sign() {
+    if (isNaN() || isZero()) {
+      return this;
+    }
+    return valueOf(fComplex.sign());
+  }
+
+  @Override
+  public ComplexNum sin() {
+    return valueOf(fComplex.sin());
+  }
+
+  @Override
+  public ComplexNum sinh() {
+    return valueOf(fComplex.sinh());
+  }
+
+  @Override
+  public IExpr sqrt() {
+    return valueOf(fComplex.sqrt());
   }
 
   /**
@@ -880,7 +1030,40 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
+  public ComplexNum tan() {
+    return valueOf(fComplex.tan());
+  }
+
+  @Override
+  public ComplexNum tanh() {
+    return valueOf(fComplex.tanh());
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr times(final IExpr that) {
+    if (that instanceof INumber) {
+      return times((INumber) that);
+    }
+    return IComplexNum.super.times(that);
+  }
+
+  @Override
   public INumber times(final INumber that) {
+    if (that instanceof IInexactNumber) {
+      return times((IInexactNumber) that);
+    }
+    if (that instanceof IReal) {
+      return this.multiply(F.complexNum(that.evalf()));
+    }
+    if (that instanceof ComplexSym) {
+      return F.complexNum(fComplex.multiply(that.evalfc()));
+    }
+    throw new java.lang.ArithmeticException();
+  }
+
+  @Override
+  public IInexactNumber times(final IInexactNumber that) {
     if (that instanceof IComplexNum) {
       if (that instanceof ApcomplexNum) {
         return apcomplexNumValue().multiply((ApcomplexNum) that);
@@ -893,28 +1076,35 @@ public class ComplexNum implements IComplexNum {
       }
       return multiply(ComplexNum.valueOf(((Num) that).getRealPart()));
     }
-    if (that instanceof IReal) {
-      return this.multiply(F.complexNum(that.evalf()));
-    }
-    if (that instanceof ComplexSym) {
-      return F.complexNum(fComplex.multiply(that.evalfc()));
-    }
     throw new java.lang.ArithmeticException();
   }
 
-
-  /** {@inheritDoc} */
   @Override
-  public IExpr times(final IExpr that) {
-    if (that instanceof INumber) {
-      return times((INumber) that);
+  public IExpr toDegrees() {
+    // radians * (180 / Pi)
+    return valueOf(fComplex.toDegrees());
+  }
+
+  @Override
+  public int toIntDefault(int defaultValue) {
+    if (F.isZero(fComplex.getImaginary())) {
+      final double re = fComplex.getReal();
+      if (DoubleMath.isMathematicalInteger(re)) {
+        return (int) re;
+      }
     }
-    return IComplexNum.super.times(that);
+    return defaultValue;
   }
 
   @Override
   public IAST toPolarCoordinates() {
     return F.list(abs(), complexArg());
+  }
+
+  @Override
+  public IExpr toRadians() {
+    // degrees * (Pi / 180)
+    return valueOf(fComplex.toRadians());
   }
 
   @Override
@@ -945,166 +1135,13 @@ public class ComplexNum implements IComplexNum {
     return buf.toString();
   }
 
-  /**
-   * Return the quotient and remainder as an array <code>[quotient, remainder]</code> of the
-   * division of <code>Complex</code> numbers <code>c1, c2</code>.
-   *
-   * <p>
-   * See
-   *
-   * <ul>
-   * <li><a href="https://en.wikipedia.org/wiki/Gaussian_integer">Wikipedia - Gaussian integer</a>
-   * <li><a href=
-   * "http://fermatslasttheorem.blogspot.com/2005/06/division-algorithm-for-gaussian.html">Division
-   * Algorithm for Gaussian Integers </a>
-   * </ul>
-   *
-   * @param cn1
-   * @param cn2
-   * @return the quotient and remainder as an array <code>[quotient, remainder]</code>
-   */
-  public static ComplexNum[] quotientRemainder(ComplexNum cn1, ComplexNum cn2) {
-    Complex c1 = cn1.fComplex;
-    Complex c2 = cn2.fComplex;
-    Complex[] arr = quotientRemainder(c1, c2);
-    return new ComplexNum[] {valueOf(arr[0]), valueOf(arr[1])};
-  }
-
-  /**
-   * Return the quotient and remainder as an array <code>[quotient, remainder]</code> of the
-   * division of <code>Complex</code> numbers <code>c1, c2</code>.
-   *
-   * <p>
-   * See
-   *
-   * <ul>
-   * <li><a href="https://en.wikipedia.org/wiki/Gaussian_integer">Wikipedia - Gaussian integer</a>
-   * <li><a href=
-   * "http://fermatslasttheorem.blogspot.com/2005/06/division-algorithm-for-gaussian.html">Division
-   * Algorithm for Gaussian Integers </a>
-   * </ul>
-   *
-   * @param c1
-   * @param c2
-   * @return the quotient and remainder as an array <code>[quotient, remainder]</code>
-   */
-  public static Complex[] quotientRemainder(Complex c1, Complex c2) {
-    // use hipparchus Complex implementation - see:
-    // https://github.com/Hipparchus-Math/hipparchus/issues/67
-    Complex remainder = c1.remainder(c2);
-    Complex quotient = c1.subtract(remainder).divide(c2).rint();
-    return new Complex[] {quotient, remainder};
-
-    // double numeratorReal = c1.getReal() * c2.getReal() + //
-    // c1.getImaginary() * c2.getImaginary();
-    // double numeratorImaginary = c1.getReal() * (-c2.getImaginary()) + //
-    // c2.getReal() * c1.getImaginary();
-    // double denominator = c2.getReal() * c2.getReal() + //
-    // c2.getImaginary() * c2.getImaginary();
-    // if (denominator == 0.0) {
-    // throw new IllegalArgumentException("Denominator cannot be zero.");
-    // }
-    //
-    // double divisionReal = Math.rint(numeratorReal / denominator);
-    // double divisionImaginary = Math.rint(numeratorImaginary / denominator);
-    //
-    // double remainderReal = c1.getReal() - //
-    // (c2.getReal() * divisionReal) + //
-    // (c2.getImaginary() * divisionImaginary);
-    // double remainderImaginary = c1.getImaginary() - //
-    // (c2.getReal() * divisionImaginary) - //
-    // (c2.getImaginary() * divisionReal);
-    // return new Complex[] { new Complex(divisionReal, divisionImaginary),
-    // new Complex(remainderReal, remainderImaginary) };
-  }
-
   @Override
-  public IExpr cos() {
-    return valueOf(fComplex.cos());
-  }
-
-  @Override
-  public IExpr cosh() {
-    return valueOf(fComplex.cosh());
-  }
-
-  @Override
-  public IExpr exp() {
-    return valueOf(fComplex.exp());
-  }
-
-  @Override
-  public IExpr log() {
-    return valueOf(fComplex.log());
-  }
-
-  @Override
-  public IExpr pow(int n) {
-    return valueOf(fComplex.pow(n));
-  }
-
-  @Override
-  public IExpr rootN(int n) {
-    return valueOf(fComplex.rootN(n));
-  }
-
-  @Override
-  public IExpr sign() {
-    if (isNaN() || isZero()) {
-      return this;
-    }
-    return valueOf(fComplex.sign());
-  }
-
-  @Override
-  public IExpr sin() {
-    return valueOf(fComplex.sin());
-  }
-
-  @Override
-  public IExpr sinh() {
-    return valueOf(fComplex.sinh());
-  }
-
-  @Override
-  public IExpr tan() {
-    return valueOf(fComplex.tan());
-  }
-
-  @Override
-  public IExpr tanh() {
-    return valueOf(fComplex.tanh());
-  }
-
-  @Override
-  public IExpr ulp() {
+  public ComplexNum ulp() {
     return valueOf(fComplex.ulp());
-  }
-
-  @Override
-  public IExpr getPi() {
-    return F.num(Math.PI);
-  }
-
-  @Override
-  public IExpr toDegrees() {
-    // radians * (180 / Pi)
-    return valueOf(fComplex.toDegrees());
-  }
-
-  @Override
-  public IExpr toRadians() {
-    // degrees * (Pi / 180)
-    return valueOf(fComplex.toRadians());
   }
 
   @Override
   public IComplexNum zero() {
     return ZERO;
-  }
-
-  @Override
-  public IComplexNum one() {
-    return ONE;
   }
 }
