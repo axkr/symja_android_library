@@ -44,16 +44,19 @@ public class MMAAJAXQueryServlet extends AJAXQueryServlet {
     // Config.MAX_INPUT_LEAVES = 1000L;
     // Config.MAX_MATRIX_DIMENSION_SIZE = 100;
     // Config.MAX_POLYNOMIAL_DEGREE = 100;
+    Config.DEFAULT_ITERATION_LIMIT = 10_000;
+    Config.DEFAULT_RECURSION_LIMIT = 1_024;
 
     EvalEngine engine = new EvalEngine(isRelaxedSyntax());
     EvalEngine.set(engine);
     // engine.setPackageMode(true);
+
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
     Config.FILESYSTEM_ENABLED = true;
     F.initSymbols();
     IOInit.init();
-    engine.setRecursionLimit(256);
-    engine.setIterationLimit(500);
+    engine.setRecursionLimit(Config.DEFAULT_RECURSION_LIMIT);
+    engine.setIterationLimit(Config.DEFAULT_ITERATION_LIMIT);
 
     S.Plot.setEvaluator(org.matheclipse.core.reflection.system.Plot.CONST);
     S.Plot3D.setEvaluator(org.matheclipse.core.reflection.system.Plot3D.CONST);

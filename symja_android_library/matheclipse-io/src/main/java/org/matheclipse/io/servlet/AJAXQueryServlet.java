@@ -162,7 +162,8 @@ public class AJAXQueryServlet extends HttpServlet {
 
       EvalEngine engine = ENGINES.get(session.getId());
       if (engine == null) {
-        engine = new EvalEngine(session.getId(), 256, 256, outs, errors, isRelaxedSyntax());
+        engine = new EvalEngine(session.getId(), Config.DEFAULT_RECURSION_LIMIT,
+            Config.DEFAULT_ITERATION_LIMIT, outs, errors, isRelaxedSyntax());
         engine.setOutListDisabled(false, (short) 100);
         engine.setPackageMode(false);
         ENGINES.put(session.getId(), engine);
@@ -605,6 +606,8 @@ public class AJAXQueryServlet extends HttpServlet {
     // Config.MAX_INPUT_LEAVES = 1000L;
     // Config.MAX_MATRIX_DIMENSION_SIZE = 100;
     // Config.MAX_POLYNOMIAL_DEGREE = 100;
+    Config.DEFAULT_ITERATION_LIMIT = 10_000;
+    Config.DEFAULT_RECURSION_LIMIT = 1_024;
 
     EvalEngine engine = new EvalEngine(isRelaxedSyntax());
     EvalEngine.set(engine);
