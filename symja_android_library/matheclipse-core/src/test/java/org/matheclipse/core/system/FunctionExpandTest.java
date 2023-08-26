@@ -38,12 +38,11 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
     check("FunctionExpand(ArcSin(1/x))", //
         "ArcCsc(x)");
     check("FunctionExpand(SphericalHarmonicY(3,1,t,p)) ", //
-        "(-3*Sqrt(7/2)*E^(I*p)*Sqrt(1-Cos(t))*Sqrt(1+Cos(t))*Hypergeometric2F1(-2,5,2,Sin(t/\n"
-            + "2)^2)*Sin(t))/(Sqrt(6*Pi)*Sqrt(1-Cos(t)^2))");
+        "(2*Sqrt(7/3)*E^(I*p)*(3/16*Sqrt(Pi)*Cos(t)-15/16*Sqrt(Pi)*Cos(t)^3)*Sec(t)*Sqrt(Sin(t)^\n"
+            + "2))/Pi");
     check("FunctionExpand(SphericalHarmonicY(l,m,t,p))", //
-        "(E^(I*m*p)*Sqrt(1+2*l)*(1+Cos(t))^(m/2)*Sqrt(Gamma(1+l-m))*Hypergeometric2F1(-l,\n"
-            + "1+l,1-m,Sin(t/2)^2)*Sin(t)^m)/(2*Sqrt(Pi)*(1-Cos(t))^(m/2)*(1-Cos(t)^2)^(m/2)*Gamma(\n"
-            + "1-m)*Sqrt(Gamma(1+l+m)))");
+        "(E^(I*m*p)*Sqrt(1+2*l)*Sqrt(Gamma(1+l-m))*Hypergeometric2F1(-l,1+l,1-m,Sin(t/2)^\n"
+            + "2)*Sin(t)^m)/(2*Sqrt(Pi)*(1-Cos(t))^m*Gamma(1-m)*Sqrt(Gamma(1+l+m)))");
     check("FunctionExpand({Degree, GoldenRatio})", //
         "{Pi/180,1/2*(1+Sqrt(5))}");
     check("FunctionExpand(ExpIntegralE(n,z))", //
@@ -231,7 +230,7 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
 
   public void testFunctionExpandHarmonicNumber() {
     check("FunctionExpand(HarmonicNumber(1/3-1))", //
-        "-Pi/(2*Sqrt(3))+Log(2)-Log(3)/2-Log(6)");
+        "-Pi/(2*Sqrt(3))-Log(6)-Log(Sqrt(3)/2)");
   }
 
   public void testFunctionExpandBinomial() {

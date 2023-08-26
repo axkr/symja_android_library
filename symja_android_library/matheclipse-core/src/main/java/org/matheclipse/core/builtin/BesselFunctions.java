@@ -849,6 +849,7 @@ public class BesselFunctions {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
         } else if (engine.isArbitraryMode()) {
+          // BesselJ(n,z)+I*BesselY(n,z)
           return F.Plus(F.BesselJ(n, z), F.Times(F.CI, F.BesselY(n, z)));
         }
       }

@@ -5394,6 +5394,9 @@ public final class NumberTheory {
       // http://fungrim.org/entry/a98234/
       return F.C0;
     }
+    if (n > Config.MAX_AST_SIZE) {
+      throw new ASTElementLimitExceeded(n);
+    }
     IFraction[] bernoulli = new IFraction[n + 1];
     bernoulli[0] = FractionSym.ONE;
     bernoulli[1] = AbstractFractionSym.valueOf(-1L, 2L);

@@ -735,7 +735,7 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
-      final EvalEngine engine) {
+      final EvalEngine engine, IAST originalAST) {
     IExpr temp = StructureFunctions.threadListLogicEquationOperators(ast.arg1(), ast, 1);
     if (temp.isPresent()) {
       return temp;

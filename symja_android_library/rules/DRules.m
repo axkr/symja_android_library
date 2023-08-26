@@ -64,6 +64,10 @@
     /; FreeQ({f,g},x),
   D(WhittakerW(f_, g_, h_),x_?NotListQ) :=((1/2-f/h)*WhittakerW(f, g, h) - WhittakerW(1+f,g,h)/h)*D(h,x) 
     /; FreeQ({f,g},x),   
+  D(E^(y_)*(x_)^m_,{x_,n_}) := E^x*x^(m-n)*Binomial(m,n)*n!*Hypergeometric1F1(-n,1+m-n,-x)
+    /; FreeQ({m,n},x) && Negative(n)=!=True && y==x,
+  D(E^(y_)*(x_)^m_,{x_,n_}) := (x^(m-n)*Binomial(m,n)*n!*Hypergeometric1F1(-n,1+m-n,x))/E^x
+    /; FreeQ({m,n},x) && Negative(n)=!=True && (-y)==x,
     
   D(InverseFunction(f_)[x_],x_) := 1/Derivative(1)[f][InverseFunction(f)[x]] 
     /; FreeQ(f,x),

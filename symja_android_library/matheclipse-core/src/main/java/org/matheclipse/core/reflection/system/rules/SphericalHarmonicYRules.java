@@ -15,13 +15,13 @@ public interface SphericalHarmonicYRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 2 };
+  final public static int[] SIZES = { 1, 1 };
 
   final public static IAST RULES = List(
     IInit(SphericalHarmonicY, SIZES),
-    // SphericalHarmonicY(0,0,t_,p_):=1/(2*Sqrt(Pi))
-    ISetDelayed(SphericalHarmonicY(C0,C0,t_,p_),
-      Power(Times(C2,CSqrtPi),CN1)),
+    // SphericalHarmonicY(0,0,t_,p_)=1/(2*Sqrt(Pi))
+    ISet(SphericalHarmonicY(C0,C0,t_,p_),
+      Times(C1D2,Power(Pi,CN1D2))),
     // SphericalHarmonicY(1,1,t_,p_):=-1/2*E^(I*p)*Sqrt(3/(2*Pi))*Sin(t)
     ISetDelayed(SphericalHarmonicY(C1,C1,t_,p_),
       Times(CN1D2,Exp(Times(CI,p)),Sqrt(Times(C3,Power(C2Pi,CN1))),Sin(t))),

@@ -146,9 +146,9 @@ public interface FunctionExpandRules {
     // HankelH2(n_,z_):=BesselJ(n,z)-I*BesselY(n,z)
     SetDelayed(HankelH2(n_,z_),
       Plus(BesselJ(n,z),Times(CNI,BesselY(n,z)))),
-    // HarmonicNumber(n_):=EulerGamma+FunctionExpand(PolyGamma(0,1+n))
+    // HarmonicNumber(n_):=EulerGamma+PolyGamma(0,1+n)
     SetDelayed(HarmonicNumber(n_),
-      Plus(EulerGamma,FunctionExpand(PolyGamma(C0,Plus(C1,n))))),
+      Plus(EulerGamma,PolyGamma(C0,Plus(C1,n)))),
     // HarmonicNumber(z_,n_):=-HurwitzZeta(n,1+z)+Zeta(n)
     SetDelayed(HarmonicNumber(z_,n_),
       Plus(Negate(HurwitzZeta(n,Plus(C1,z))),Zeta(n))),
@@ -167,6 +167,9 @@ public interface FunctionExpandRules {
     // HypergeometricPFQ({a_,b_},{c_},z_):=Hypergeometric2F1(a,b,c,z)
     SetDelayed(HypergeometricPFQ(list(a_,b_),list(c_),z_),
       Hypergeometric2F1(a,b,c,z)),
+    // Hypergeometric1F1(a_,1,z_):=LaguerreL(-a,z)
+    SetDelayed(Hypergeometric1F1(a_,C1,z_),
+      LaguerreL(Negate(a),z)),
     // Hypergeometric2F1(2,b_,c_,-1/2):=1/3*(3-b)/;5/2-b/2==Expand(c)
     SetDelayed(Hypergeometric2F1(C2,b_,c_,CN1D2),
       Condition(Times(C1D3,Subtract(C3,b)),Equal(Plus(QQ(5L,2L),Times(CN1D2,b)),Expand(c)))),
@@ -185,6 +188,9 @@ public interface FunctionExpandRules {
     // InverseHaversine(z_):=2*ArcSin(Sqrt(z))
     SetDelayed(InverseHaversine(z_),
       Times(C2,ArcSin(Sqrt(z)))),
+    // JacobiP(n_,a_,b_,1):=Gamma(1+a+n)/(Gamma(1+a)*Gamma(1+n))
+    SetDelayed(JacobiP(n_,a_,b_,C1),
+      Times(Power(Times(Gamma(Plus(C1,a)),Gamma(Plus(C1,n))),CN1),Gamma(Plus(C1,a,n)))),
     // JacobiCD(f_,g_):=JacobiCN(f,g)/JacobiDN(f,g)
     SetDelayed(JacobiCD(f_,g_),
       Times(JacobiCN(f,g),Power(JacobiDN(f,g),CN1))),
@@ -257,12 +263,15 @@ public interface FunctionExpandRules {
     // SphericalBesselY(a_,b_):=(Sqrt(Pi/2)*BesselY(1/2*(1+2*a),b))/Sqrt(b)
     SetDelayed(SphericalBesselY(a_,b_),
       Times(Power(b,CN1D2),Sqrt(CPiHalf),BesselY(Times(C1D2,Plus(C1,Times(C2,a))),b))),
-    // SphericalHarmonicY(a_,1,t_,p_):=(-a*(1+a)*Sqrt(1+2*a)*E^(I*p)*Sqrt(1-Cos(t))*Sqrt(1+Cos(t))*Sqrt(Gamma(a))*Hypergeometric2F1(1-a,2+a,2,Sin(t/2)^2)*Sin(t))/(4*Sqrt(Pi)*Sqrt(1-Cos(t)^2)*Sqrt(Gamma(2+a)))
-    SetDelayed(SphericalHarmonicY(a_,C1,t_,p_),
-      Times(CN1,a,Plus(C1,a),Sqrt(Plus(C1,Times(C2,a))),Exp(Times(CI,p)),Sqrt(Subtract(C1,Cos(t))),Sqrt(Plus(C1,Cos(t))),Sqrt(Gamma(a)),Power(Times(C4,CSqrtPi,Sqrt(Subtract(C1,Sqr(Cos(t)))),Sqrt(Gamma(Plus(C2,a)))),CN1),Hypergeometric2F1(Subtract(C1,a),Plus(C2,a),C2,Sqr(Sin(Times(C1D2,t)))),Sin(t))),
-    // SphericalHarmonicY(a_,b_,t_,p_):=(Sqrt(1+2*a)*E^(I*b*p)*(1+Cos(t))^(b/2)*Sqrt(Gamma(1+a-b))*Hypergeometric2F1(-a,1+a,1-b,Sin(t/2)^2)*Sin(t)^b)/((1-Cos(t))^(b/2)*(1-Cos(t)^2)^(b/2)*2*Sqrt(Pi)*Gamma(1-b)*Sqrt(Gamma(1+a+b)))
-    SetDelayed(SphericalHarmonicY(a_,b_,t_,p_),
-      Times(Sqrt(Plus(C1,Times(C2,a))),Exp(Times(CI,b,p)),Power(Plus(C1,Cos(t)),Times(C1D2,b)),Sqrt(Gamma(Plus(C1,a,Negate(b)))),Power(Times(Power(Subtract(C1,Cos(t)),Times(C1D2,b)),Power(Subtract(C1,Sqr(Cos(t))),Times(C1D2,b)),C2,CSqrtPi,Gamma(Subtract(C1,b)),Sqrt(Gamma(Plus(C1,a,b)))),CN1),Hypergeometric2F1(Negate(a),Plus(C1,a),Subtract(C1,b),Sqr(Sin(Times(C1D2,t)))),Power(Sin(t),b))),
+    // SphericalHarmonicY(l_,0,t_,p_):=(Sqrt(1+2*l)*LegendreP(l,Cos(t)))/(2*Sqrt(Pi))
+    SetDelayed(SphericalHarmonicY(l_,C0,t_,p_),
+      Times(Sqrt(Plus(C1,Times(C2,l))),Power(Times(C2,CSqrtPi),CN1),LegendreP(l,Cos(t)))),
+    // SphericalHarmonicY(l_,1,t_,p_):=(-E^(I*p)*l*(1+l)*Sqrt(1+2*l)*Sqrt(Gamma(l))*Hypergeometric2F1(1-l,2+l,2,Sin(t/2)^2)*Sin(t))/(4*Sqrt(Pi)*Sqrt(Gamma(2+l)))
+    SetDelayed(SphericalHarmonicY(l_,C1,t_,p_),
+      Times(CN1,Exp(Times(CI,p)),l,Plus(C1,l),Sqrt(Plus(C1,Times(C2,l))),Sqrt(Gamma(l)),Power(Times(C4,CSqrtPi,Sqrt(Gamma(Plus(C2,l)))),CN1),Hypergeometric2F1(Subtract(C1,l),Plus(C2,l),C2,Sqr(Sin(Times(C1D2,t)))),Sin(t))),
+    // SphericalHarmonicY(l_,m_,t_,p_):=(E^(I*m*p)*Sqrt(1+2*l)*Sqrt(Gamma(1+l-m))*Hypergeometric2F1(-l,1+l,1-m,Sin(t/2)^2)*Sin(t)^m)/((1-Cos(t))^m*2*Sqrt(Pi)*Gamma(1-m)*Sqrt(Gamma(1+l+m)))
+    SetDelayed(SphericalHarmonicY(l_,m_,t_,p_),
+      Times(Exp(Times(CI,m,p)),Sqrt(Plus(C1,Times(C2,l))),Sqrt(Gamma(Plus(C1,l,Negate(m)))),Power(Times(Power(Subtract(C1,Cos(t)),m),C2,CSqrtPi,Gamma(Subtract(C1,m)),Sqrt(Gamma(Plus(C1,l,m)))),CN1),Hypergeometric2F1(Negate(l),Plus(C1,l),Subtract(C1,m),Sqr(Sin(Times(C1D2,t)))),Power(Sin(t),m))),
     // Subfactorial(n_):=Gamma(1+n,-1)/E
     SetDelayed(Subfactorial(n_),
       Times(Exp(CN1),Gamma(Plus(C1,n),CN1))),

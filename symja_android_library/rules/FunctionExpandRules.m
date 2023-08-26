@@ -65,7 +65,7 @@
  HankelH1(n_, z_) := BesselJ(n,z) + I*BesselY(n,z),
  HankelH2(n_, z_) := BesselJ(n,z) - I*BesselY(n,z),
   
- HarmonicNumber(n_) := EulerGamma + FunctionExpand(PolyGamma(0, 1 + n)),
+ HarmonicNumber(n_) := EulerGamma + PolyGamma(0, 1 + n),
  HarmonicNumber(z_, n_) := -HurwitzZeta(n, 1 + z) + Zeta(n),
  Haversine(z_) := (1/2)*(1-Cos(z)),
  HurwitzZeta(n_Integer, a_) := ((-1)^n/(n - 1)!)*PolyGamma(n - 1, a)
@@ -74,8 +74,11 @@
  HypergeometricPFQ({1/2}, {1, 1}, z_) := BesselI(0, Sqrt(z))^2,
  HypergeometricPFQ({a_}, {b_}, z_) := Hypergeometric1F1(a,b,z),
  HypergeometricPFQ({a_,b_}, {c_}, z_) := Hypergeometric2F1(a,b,c,z),
+ 
+ Hypergeometric1F1(a_,1,z_) := LaguerreL(-a,z),
+ 
  Hypergeometric2F1(2, b_, c_, -1/2) := (3-b)/3
-  /; (5/2 - 1/2*b)==Expand(c), 
+  /; (5/2 - 1/2*b)==Expand(c),
  Hypergeometric2F1(a_, a_ + 1/2, c_, z_) := (2^(-1+2*a)*(1+Sqrt(1-z))^(1-2*a))/Sqrt(1-z)
   /; 2*a==c, 
  Hypergeometric2F1(a_, b_, b_ + n_Integer, z_) := (1-z)^(-a+n) * Sum((Pochhammer(n, k)*Pochhammer(b-a+n,k)*z^k) / (Pochhammer(b+n,k)*k!), {k, 0, -n})  
@@ -85,6 +88,9 @@
  InverseGudermannian(z_) := Log(Tan(Pi/4 + z/2)), 
  InverseHaversine(z_) := 2*ArcSin(Sqrt(z)),
  
+ 
+ JacobiP(n_, a_, b_, 1):= Gamma(1+a+n)/(Gamma(1+a)*Gamma(1+n)),
+   
  JacobiCD(f_, g_) := JacobiCN(f,g) / JacobiDN(f,g),
  JacobiDC(f_, g_) := JacobiDN(f,g) / JacobiCN(f,g),
  JacobiNC(f_, g_) := 1 / JacobiCN(f,g), 
@@ -115,7 +121,6 @@
   /; x > 1/E,
  E^ProductLog(x_) := x/ProductLog(x),
   
-  
  Sin(n_Integer*ArcSin(z_)) := z*ChebyshevU(n - 1, Sqrt(1 - z^2))
   /; n > 0,
  Sin(n_Integer*ArcTan(z_)) := Sum((-1)^k*Binomial(n, 2*k + 1)*z^(2*k + 1), {k, 0, Floor((n-1)/2)}) / (1 + z^2)^(n/2) 
@@ -129,8 +134,9 @@
  SphericalBesselJ(a_,b_) := (Sqrt(Pi/2)*BesselJ((1/2)*(1 + 2*a), b))/Sqrt(b),
  SphericalBesselY(a_,b_) := (Sqrt(Pi/2)*BesselY((1/2)*(1 + 2*a), b))/Sqrt(b),
  
- SphericalHarmonicY(a_,1,t_,p_) := -((a*(1 + a)*Sqrt(1 + 2*a)*E^(I*p)*Sqrt(1 - Cos(t))*Sqrt(1 + Cos(t))*Sqrt(Gamma(a))*Hypergeometric2F1(1 - a, 2 + a, 2, Sin(t/2)^2)*Sin(t))/(4*Sqrt(Pi)*Sqrt(1 - Cos(t)^2)*Sqrt(Gamma(2 + a)))),
- SphericalHarmonicY(a_,b_,t_,p_) := (Sqrt(1 + 2*a)*E^(I*b*p)*(1 + Cos(t))^(b/2)*Sqrt(Gamma(1 + a - b))*Hypergeometric2F1(-a, 1 + a, 1 - b, Sin(t/2)^2)*Sin(t)^b)/((1 - Cos(t))^(b/2)*(1 - Cos(t)^2)^(b/2)*(2*Sqrt(Pi)*Gamma(1 - b)*Sqrt(Gamma(1 + a + b)))),
+ SphericalHarmonicY(l_, 0, t_,p_) := (Sqrt(1+2*l)*LegendreP(l,Cos(t)))/(2*Sqrt(Pi)),
+ SphericalHarmonicY(l_,1,t_,p_) := (-E^(I*p)*l*(1+l)*Sqrt(1+2*l)*Sqrt(Gamma(l))*Hypergeometric2F1(1-l,2+l,2,Sin(t/2)^2)*Sin(t))/(4*Sqrt(Pi)*Sqrt(Gamma(2+l))),
+ SphericalHarmonicY(l_,m_,t_,p_) := (E^(I*m*p)*Sqrt(1+2*l)*Sqrt(Gamma(1+l-m))*Hypergeometric2F1(-l,1+l,1-m,Sin(t/2)^2)*Sin(t)^m)/((1-Cos(t))^m*2*Sqrt(Pi)*Gamma(1-m)*Sqrt(Gamma(1+l+m))),
  
  Subfactorial(n_) :=  Gamma(1+n, -1) / E,
   

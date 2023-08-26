@@ -5425,6 +5425,8 @@ public class S {
 
   public final static IBuiltInSymbol JacobiND = S.initFinalSymbol("JacobiND", ID.JacobiND);
 
+  public final static IBuiltInSymbol JacobiP = S.initFinalSymbol("JacobiP", ID.JacobiP);
+
   /**
    * JacobiSC(x, m) - returns the Jacobian elliptic function `sc(x, m)`.
    * 

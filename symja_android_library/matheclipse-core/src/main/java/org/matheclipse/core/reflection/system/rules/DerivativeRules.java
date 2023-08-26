@@ -15,7 +15,7 @@ public interface DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 117 };
+  final public static int[] SIZES = { 0, 119 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -364,6 +364,12 @@ public interface DerivativeRules {
     // Derivative(0,0,1)[GegenbauerC]:=2*GegenbauerC(-1+#1,1+#2,#3)*#2&
     ISetDelayed($(Derivative(C0,C0,C1),GegenbauerC),
       Function(Times(C2,GegenbauerC(Plus(CN1,Slot1),Plus(C1,Slot2),Slot(C3)),Slot2))),
+    // Derivative(0,1)[HermiteH]:=2*HermiteH(-1+#1,#2)*#1&
+    ISetDelayed($(Derivative(C0,C1),HermiteH),
+      Function(Times(C2,HermiteH(Plus(CN1,Slot1),Slot2),Slot1))),
+    // Derivative(0,0,0,1)[JacobiP]:=1/2*JacobiP(-1+#1,1+#2,1+#3,#4)*(1+#1+#2+#3)&
+    ISetDelayed($(Derivative(C0,C0,C0,C1),JacobiP),
+      Function(Times(C1D2,JacobiP(Plus(CN1,Slot1),Plus(C1,Slot2),Plus(C1,Slot(C3)),Slot(C4)),Plus(C1,Slot1,Slot2,Slot(C3))))),
     // Derivative(0,1)[LaguerreL]:=-LaguerreL(-1+#1,1,#2)&
     ISetDelayed($(Derivative(C0,C1),LaguerreL),
       Function(Negate(LaguerreL(Plus(CN1,Slot1),C1,Slot2)))),

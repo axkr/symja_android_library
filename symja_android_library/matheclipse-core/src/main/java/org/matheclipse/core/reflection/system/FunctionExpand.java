@@ -21,6 +21,7 @@ import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
 import static org.matheclipse.core.expression.S.z;
 import java.util.function.Supplier;
+import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.builtin.WindowFunctions;
 import org.matheclipse.core.eval.EvalEngine;
@@ -309,15 +310,16 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
             if (base.equalsInt(2)) {
               int exponent = factors.arg1().second().toIntDefault();
               if (exponent > 3) {
+                EvalEngine engine = EvalEngine.get();
                 if (ast.isCos()) {
                   return F.Times(F.C1D2,
-                      F.Sqrt(F.C2).nest(F.Function(F.Sqrt(F.Plus(F.C2, F.Slot1))), //
-                          exponent - 2));
+                      Programming.nest(F.Sqrt(F.C2), F.Function(F.Sqrt(F.Plus(F.C2, F.Slot1))), //
+                          exponent - 2, engine));
                 } else if (ast.isSin()) {
                   return F.Times(F.C1D2,
                       F.Sqrt(F.Subtract(F.C2,
-                          F.Sqrt(F.C2).nest(F.Function(F.Sqrt(F.Plus(F.C2, F.Slot1))), //
-                              exponent - 3))));
+                          Programming.nest(F.Sqrt(F.C2), F.Function(F.Sqrt(F.Plus(F.C2, F.Slot1))), //
+                              exponent - 3, engine))));
                 }
               }
             }

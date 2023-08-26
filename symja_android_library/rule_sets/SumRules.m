@@ -57,7 +57,7 @@ Sum(1/(i_^2 + i_*x_), {i_Symbol,1,Infinity}) := (EulerGamma + PolyGamma(0, 1 + x
 Sum(1/Binomial(2*i_,i_), {i_Symbol,1,Infinity}) :=  (2*Pi*Sqrt(3)+9)/27,
 Sum(1/i_*1/Binomial(2*i_,i_), {i_Symbol,1,Infinity}) :=  (Pi*Sqrt(3))/9,
 Sum(1/i_^2*1/Binomial(2*i_,i_), {i_Symbol,1,Infinity}) :=  Zeta(2)/3, 
-Sum((-1)^(i_-1)/i_, {i_Symbol,1,Infinity}) := Log(2),
+Sum((-1)^(i_-1)/i_, {i_Symbol,1,Infinity}) := Log(2), 
 
 Sum(z_^i_ * i_^(-n_), {i_Symbol,1,Infinity}) := PolyLog(n,z)
   /; FreeQ({z,n},i),

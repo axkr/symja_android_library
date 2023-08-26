@@ -29,8 +29,10 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.Hypergeometric0F1Rules;
 import org.matheclipse.core.reflection.system.rules.Hypergeometric1F1Rules;
@@ -644,6 +646,37 @@ public class HypergeometricFunctions {
         // GegenbauerC(n, l, z)
         IExpr l = ast.arg2();
         IExpr z = ast.arg3();
+        if (l.isNumber() && n.isNumber()) {
+          if (z.isZero()) {
+            // https://functions.wolfram.com/Polynomials/GegenbauerC3/03/01/01/0001/
+            // (2^n*Sqrt(Pi)*Gamma(n/2+l))/(Gamma(1/2*(1-n))*Gamma(n+1)*Gamma(l))
+            return F.Times(F.Power(F.C2, n), F.CSqrtPi,
+                F.Power(F.Times(F.Gamma(F.Times(F.C1D2, F.Subtract(F.C1, n))),
+                    F.Gamma(F.Plus(n, F.C1)), F.Gamma(l)), F.CN1),
+                F.Gamma(F.Plus(F.Times(F.C1D2, n), l)));
+          }
+          if (z.isOne()) {
+            // https://functions.wolfram.com/Polynomials/GegenbauerC3/03/01/01/0002/
+            // Gamma(2*l+n)/(Gamma(2*l)*Gamma(1+n))
+            IExpr v1 = F.Times(F.C2, l);
+            return F.Times(F.Power(F.Gamma(F.Plus(F.C1, n)), F.CN1), F.Power(F.Gamma(v1), F.CN1),
+                F.Gamma(F.Plus(n, v1)));
+          }
+          if (z.isMinusOne()) {
+            if (((INumber) l).re().isLT(F.C1D2)) {
+              // https://functions.wolfram.com/Polynomials/GegenbauerC3/03/01/01/0003/
+              // (Cos[Pi*(l+n)]*Gamma[2*l+n]*Sec[Pi*l])/(Gamma[2*l]*Gamma[1+n])
+              IExpr v1 = F.Times(F.C2, l);
+              return F.Times(F.Cos(F.Times(F.Plus(l, n), F.Pi)),
+                  F.Power(F.Gamma(F.Plus(F.C1, n)), F.CN1), F.Power(F.Gamma(v1), F.CN1),
+                  F.Gamma(F.Plus(n, v1)), F.Sec(F.Times(l, F.Pi)));
+            } else if (((INumber) l).re().isGT(F.C1D2)) {
+              // https://functions.wolfram.com/Polynomials/GegenbauerC3/03/01/01/0004/
+              return F.CComplexInfinity;
+            }
+          }
+        }
+
         if (l.isNumEqualRational(F.C1D2)) {
           return F.LegendreP(n, z);
         }
@@ -734,6 +767,31 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        IInexactNumber n = (IInexactNumber) ast.arg1();
+        IInexactNumber z = (IInexactNumber) ast.arg2();
+        // (2*Cos(n*ArcCos(z)))/n
+        IInexactNumber cos = n.times(z.acos()).cos();
+        return cos.plus(cos).times(n.reciprocal());
+      }
+      if (ast.argSize() == 3) {
+        IInexactNumber n = (IInexactNumber) ast.arg1();
+        IInexactNumber l = (IInexactNumber) ast.arg2();
+        IInexactNumber z = (IInexactNumber) ast.arg3();
+        // https://functions.wolfram.com/HypergeometricFunctions/GegenbauerC3General/26/04/01/0001/
+        // Pochhammer(2*l,n)/Pochhammer(l+1/2,n)*JacobiP(n,-1/2+l,-1/2+l,z)
+        INumber v1 = l.plus(F.CN1D2);
+        IAST gegenbauerC = F.Times(F.JacobiP(n, v1, v1, z),
+            F.Power(F.Pochhammer(F.Plus(F.C1D2, l), n), F.CN1), F.Pochhammer(F.Times(F.C2, l), n));
+        return engine.evaluate(gegenbauerC);
+      }
+
+      return F.NIL;
+    }
+
+    // (2*Cos(n*ArcCos(x)))/n
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
@@ -841,10 +899,6 @@ public class HypergeometricFunctions {
         return F.C1;
       }
 
-      if (b.isOne()) {
-        // LaguerreL(-a, z)
-        return F.LaguerreL(a.negate(), z);
-      }
       if (a.isInteger() && b.isInteger() && a.isNegative() && b.isNegative()
           && ((IInteger) b).isGT((IInteger) a)) {
         return F.CComplexInfinity;

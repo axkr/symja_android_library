@@ -134,6 +134,10 @@ Derivative(1,0)[GegenbauerC] := -((2*ChebyshevT(#, #2))/#^2) - (2*ArcCos(#2)*Che
 Derivative(0,1)[GegenbauerC] := 2*ChebyshevU(-1 + #, #2) &,
 Derivative(0,0,1)[GegenbauerC] := 2*GegenbauerC(-1 + #, 1 + #2, #3)*#2 &,
 
+Derivative(0,1)[HermiteH] := 2*HermiteH(-1+#,#2)*# &,
+
+Derivative(0,0,0,1)[JacobiP] :=  1/2*JacobiP(-1+#,1+#2,1+#3,#4)*(1+#+#2+#3) &,
+
 Derivative(0,1)[LaguerreL] := -LaguerreL(-1 + #, 1, #2) &, 
 Derivative(0,0,1)[LaguerreL] := -LaguerreL(-1 + #, 1 + #2, #3) &,
 Derivative(0,1)[LegendreP] := (((-1 - #)*x*LegendreP(#, #2) + (1+#)*LegendreP(1+#, #2))/(-1 + #2^2)) &,

@@ -15,7 +15,7 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 74 };
+  final public static int[] SIZES = { 0, 76 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -124,6 +124,12 @@ public interface DRules {
     // D(WhittakerW(f_,g_,h_),x_?NotListQ):=((1/2-f/h)*WhittakerW(f,g,h)-WhittakerW(1+f,g,h)/h)*D(h,x)/;FreeQ({f,g},x)
     ISetDelayed(D(WhittakerW(f_,g_,h_),PatternTest(x_,NotListQ)),
       Condition(Times(Plus(Times(Plus(C1D2,Times(CN1,f,Power(h,CN1))),WhittakerW(f,g,h)),Times(CN1,Power(h,CN1),WhittakerW(Plus(C1,f),g,h))),D(h,x)),FreeQ(list(f,g),x))),
+    // D(E^y_*x_^m_,{x_,n_}):=E^x*x^(m-n)*Binomial(m,n)*n!*Hypergeometric1F1(-n,1+m-n,-x)/;FreeQ({m,n},x)&&Negative(n)=!=True&&y==x
+    ISetDelayed(D(Times(Exp(y_),Power(x_,m_)),list(x_,n_)),
+      Condition(Times(Exp(x),Power(x,Subtract(m,n)),Binomial(m,n),Factorial(n),Hypergeometric1F1(Negate(n),Plus(C1,m,Negate(n)),Negate(x))),And(FreeQ(list(m,n),x),UnsameQ(Negative(n),True),Equal(y,x)))),
+    // D(E^y_*x_^m_,{x_,n_}):=(x^(m-n)*Binomial(m,n)*n!*Hypergeometric1F1(-n,1+m-n,x))/E^x/;FreeQ({m,n},x)&&Negative(n)=!=True&&-y==x
+    ISetDelayed(D(Times(Exp(y_),Power(x_,m_)),list(x_,n_)),
+      Condition(Times(Power(Exp(x),CN1),Power(x,Subtract(m,n)),Binomial(m,n),Factorial(n),Hypergeometric1F1(Negate(n),Plus(C1,m,Negate(n)),x)),And(FreeQ(list(m,n),x),UnsameQ(Negative(n),True),Equal(Negate(y),x)))),
     // D(InverseFunction(f_)[x_],x_):=1/f'(InverseFunction(f)[x])/;FreeQ(f,x)
     ISetDelayed(D($(InverseFunction(f_),x_),x_),
       Condition(Power($($(Derivative(C1),f),$(InverseFunction(f),x)),CN1),FreeQ(f,x))),
