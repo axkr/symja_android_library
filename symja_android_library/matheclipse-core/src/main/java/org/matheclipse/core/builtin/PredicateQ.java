@@ -334,6 +334,11 @@ public class PredicateQ {
     }
 
     @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
@@ -430,6 +435,11 @@ public class PredicateQ {
         return true;
       }
       return false;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
   }
 
