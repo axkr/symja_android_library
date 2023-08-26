@@ -5179,6 +5179,10 @@ public final class Arithmetic {
       }
 
       if (arg1.isNumber()) {
+        if (arg1.isZero()) {
+          // avoid division by zero for complex numbers
+          return F.C0;
+        }
         if (arg1.isComplexNumeric()) {
           IComplexNum c = (IComplexNum) arg1;
           return c.divide(F.num(c.dabs()));
