@@ -42,6 +42,15 @@ Level specification `a + b` is not of the form `n`, `{n}`, or `{m, n}`.
 Map(f, expr, a + b, Heads -> True)
 ```
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of Map](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StructureFunctions.java#L895) 
+* [Implementation of Map](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StructureFunctions.java#L899) 

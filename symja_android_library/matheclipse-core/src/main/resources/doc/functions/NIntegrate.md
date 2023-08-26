@@ -46,6 +46,15 @@ Other options include `MaxIterations` and `MaxPoints`
 
 		
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of NIntegrate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/NIntegrate.java#L79) 

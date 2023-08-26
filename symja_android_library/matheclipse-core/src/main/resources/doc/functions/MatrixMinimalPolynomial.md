@@ -16,6 +16,15 @@ See:
 -1+x+4*x^2+x^3
 ```
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of MatrixMinimalPolynomial](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L3687) 
+* [Implementation of MatrixMinimalPolynomial](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L3689) 

@@ -29,6 +29,15 @@ NextPrime(n, k)
 NextPrime(5, 10.5)
 ```
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of NextPrime](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L3808) 
+* [Implementation of NextPrime](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L3802) 

@@ -123,6 +123,17 @@ f''(2*x)
 ### Related terms 
 [Diff](Diff.md), [DSolve](DSolve.md), [Integrate](Integrate.md), [Limit](Limit.md), [ND](ND.md), [NIntegrate](NIntegrate.md) 
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of D](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/D.java#L177) 
+
+* [Rule definitions of D](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/DRules.m) 

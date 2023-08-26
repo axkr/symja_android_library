@@ -12,6 +12,17 @@ See:
 * [Fungrim - Confluent hypergeometric functions](http://fungrim.org/topic/Confluent_hypergeometric_functions/)
 
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of Hypergeometric0F1](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/HypergeometricFunctions.java#L746) 
+* [Implementation of Hypergeometric0F1](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/HypergeometricFunctions.java#L749) 
+
+* [Rule definitions of Hypergeometric0F1](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/Hypergeometric0F1Rules.m) 

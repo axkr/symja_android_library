@@ -61,6 +61,6 @@ Pi/2
 
 ### Github
 
-* [Implementation of ArcTan](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L974) 
+* [Implementation of ArcTan](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L977) 
 
 * [Rule definitions of ArcTan](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/ArcTanRules.m) 

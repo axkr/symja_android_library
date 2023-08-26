@@ -28,6 +28,15 @@ Cylinder({{x1, y1, z1}, {x2, y2, z2}, ... }, r)
  -Graphics3D-
 ```
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of Cylinder](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphicsFunctions.java#L405) 

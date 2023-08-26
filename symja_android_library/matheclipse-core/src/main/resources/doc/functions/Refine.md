@@ -30,8 +30,17 @@ x/Abs(x)
 
 >> Refine(2/3*Round(x), Element(x,Integers))
 2/3*x
-```  
+```
+
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
 
 ### Github
 
-* [Implementation of Refine](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/AssumptionFunctions.java#L305) 
+* [Implementation of Refine](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/AssumptionFunctions.java#L306) 

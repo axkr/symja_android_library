@@ -18,6 +18,17 @@ See
   
  
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of Sech](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2762) 
+* [Implementation of Sech](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2764) 
+
+* [Rule definitions of Sech](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/SechRules.m) 

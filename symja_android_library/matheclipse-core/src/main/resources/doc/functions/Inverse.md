@@ -31,6 +31,15 @@ Inverse({{1, 0}, {0, 0}})
  {0,1/2,1/(1/(2*Sqrt(3))+Sqrt(3)/2)}} 
 ```
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of Inverse](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L2908) 
+* [Implementation of Inverse](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L2910) 

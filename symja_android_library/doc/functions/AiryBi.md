@@ -22,4 +22,4 @@ See
 
 ### Github
 
-* [Implementation of AiryBi](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BesselFunctions.java#L161) 
+* [Implementation of AiryBi](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BesselFunctions.java#L162) 

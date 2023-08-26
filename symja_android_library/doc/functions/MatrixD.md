@@ -32,6 +32,6 @@ Det(A.X.B)*Inverse(Transpose(X))
 
 ### Github
 
-* [Implementation of MatrixD](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/MatrixD.java#L16) 
+* [Implementation of MatrixD](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/MatrixD.java#L17) 
 
 * [Rule definitions of MatrixD](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/MatrixDRules.m) 

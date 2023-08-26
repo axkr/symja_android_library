@@ -96,6 +96,15 @@ I*3.14159265358979323846264338327
 ### Related terms 
 [Flat](Flat.md), [Listable](Listable.md), [MatrixPower](MatrixPower.md), [OneIdentity](OneIdentity.md), [Orderless](Orderless.md), [Power](Power.md) 
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of Times](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L5688) 
+* [Implementation of Times](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L5705) 

@@ -27,6 +27,15 @@ True
 ### Related terms
 [Equal](Equal.md), [SameQ](SameQ.md) , [Unequal](Unequal.md)
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of UnsameQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BooleanFunctions.java#L4685) 
+* [Implementation of UnsameQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BooleanFunctions.java#L4717) 

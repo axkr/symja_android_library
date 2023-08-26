@@ -17,6 +17,17 @@ See
 1
 ```
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of Sinc](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L3042) 
+* [Implementation of Sinc](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L3044) 
+
+* [Rule definitions of Sinc](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/SincRules.m) 

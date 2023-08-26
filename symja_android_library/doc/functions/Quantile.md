@@ -69,6 +69,6 @@ ConditionalExpression(m-Sqrt(2)*s*InverseErfc(2*q),0<=q<=1)
 
 ### Github
 
-* [Implementation of Quantile](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L6197) 
+* [Implementation of Quantile](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L6194) 
 
 * [Rule definitions of Quantile](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/QuantileRules.m) 

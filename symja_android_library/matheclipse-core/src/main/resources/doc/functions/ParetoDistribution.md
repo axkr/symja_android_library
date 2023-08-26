@@ -32,6 +32,15 @@ Piecewise({{(a*k^2)/((1-a)^2*(-2+a)),a>2}},Indeterminate)
 
 
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of ParetoDistribution](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L5639) 
+* [Implementation of ParetoDistribution](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L5636) 

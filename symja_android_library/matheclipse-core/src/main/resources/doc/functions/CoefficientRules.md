@@ -31,6 +31,15 @@ Non integer or negative exponents returns only one rule:
 
 [Coefficient](Coefficient.md), [CoefficientList](CoefficientList.md), [Exponent](Exponent.md), [MonomialList](MonomialList.md)
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of CoefficientRules](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L317) 

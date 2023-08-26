@@ -27,4 +27,4 @@ x==1
 
 ### Github
 
-* [Implementation of Reduce](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Reduce.java#L19) 
+* [Implementation of Reduce](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Reduce.java#L20) 

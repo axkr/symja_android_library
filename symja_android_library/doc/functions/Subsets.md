@@ -58,4 +58,4 @@ The [A018900 Sum of two distinct powers of 2](https://oeis.org/A018900) integer 
 
 ### Github
 
-* [Implementation of Subsets](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Combinatoric.java#L2637) 
+* [Implementation of Subsets](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Combinatoric.java#L2638) 

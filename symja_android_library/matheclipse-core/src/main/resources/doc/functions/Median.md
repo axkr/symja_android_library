@@ -41,6 +41,15 @@ E^m
 ### Related terms 
 [FiveNum](FiveNum.md), [Quantile](Quantile.md), [Quartiles](Quartiles.md)
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of Median](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L4754) 
+* [Implementation of Median](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L4751) 

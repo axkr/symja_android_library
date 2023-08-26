@@ -33,6 +33,15 @@ Arrows can also be drawn in 3D by giving points in three dimensions:
  -Graphics3D-
 ```
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of Arrow](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphicsFunctions.java#L43) 

@@ -33,6 +33,15 @@ Interval({-Pi/2,-Pi/4},{0,Pi/2})
 ### Related terms 
 [IntervalIntersection](IntervalIntersection.md), [IntervalMemberQ](IntervalMemberQ.md), [IntervalUnion](IntervalUnion.md) 
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of Interval](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntervalFunctions.java#L87) 

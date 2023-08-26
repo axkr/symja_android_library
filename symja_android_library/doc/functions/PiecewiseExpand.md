@@ -42,4 +42,4 @@ Piecewise({{-x,x<0},x})
 
 ### Github
 
-* [Implementation of PiecewiseExpand](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PiecewiseFunctions.java#L639) 
+* [Implementation of PiecewiseExpand](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PiecewiseFunctions.java#L640) 

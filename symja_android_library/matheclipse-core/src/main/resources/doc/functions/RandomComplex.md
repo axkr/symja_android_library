@@ -40,6 +40,15 @@ RandomComplex(range, {n1, n2, ...})
 {{{1.61894+I*1.62895,1.42982+I*1.64042,1.88055+I*1.24075},{1.27681+I*1.09553,1.29139+I*1.79987,1.47368+I*1.59429}},{{1.42116+I*1.54729,1.51395+I*1.05403,1.47495+I*1.7832},{1.79694+I*1.1428,1.93639+I*1.50855,1.51072+I*1.02286}}}
 ```
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of RandomComplex](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/RandomFunctions.java#L244) 
+* [Implementation of RandomComplex](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/RandomFunctions.java#L245) 

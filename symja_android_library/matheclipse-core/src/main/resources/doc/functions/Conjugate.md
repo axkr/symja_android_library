@@ -30,6 +30,17 @@ See
 1.5+I*(-2.5)
 ```
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of Conjugate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L973) 
+* [Implementation of Conjugate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L979) 
+
+* [Rule definitions of Conjugate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/ConjugateRules.m) 

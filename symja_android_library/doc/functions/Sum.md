@@ -97,6 +97,6 @@ Sum(Cos(i*Pi),{i,1,Infinity})
 
 ### Github
 
-* [Implementation of Sum](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Sum.java#L147) 
+* [Implementation of Sum](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Sum.java#L139) 
 
 * [Rule definitions of Sum](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rule_sets/SumRules.m) 

@@ -68,4 +68,4 @@ Times(a, Power(b, -1))
 
 ### Github
 
-* [Implementation of Divide](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L1341) 
+* [Implementation of Divide](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L1344) 

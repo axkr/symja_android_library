@@ -16,6 +16,15 @@ See:
 {0,Log(2),Log(3),Log(2),Log(5),0,Log(7),Log(2),Log(3)}
 ```
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of MangoldtLambda](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L3333) 
+* [Implementation of MangoldtLambda](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L3328) 

@@ -25,4 +25,4 @@ JacobiMatrix(matrix, var)
 
 ### Github
 
-* [Implementation of JacobiMatrix](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L2973) 
+* [Implementation of JacobiMatrix](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L2975) 

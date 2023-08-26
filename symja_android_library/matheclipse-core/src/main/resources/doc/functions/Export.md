@@ -35,6 +35,15 @@ c:\\temp\\dotgraph.dot
 ### Related terms 
 [BinaryDeserialize](BinaryDeserialize.md), [BinarySerialize](BinarySerialize.md), [ByteArray](ByteArray.md), [ByteArrayQ](ByteArrayQ.md), [Import](Import.md)
 
+
+
+
+
+
+### Implementation status
+
+* &#x2611; - partially implemented
+
 ### Github
 
-* [Implementation of Export](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Export.java#L41) 
+* [Implementation of Export](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Export.java#L42) 

@@ -19,6 +19,15 @@ See
 {{1,0,0},{0,Cos(t),-Sin(t)},{0,Sin(t),Cos(t)}}
 ```
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of RotationMatrix](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/VectorAnalysisFunctions.java#L226) 

@@ -21,6 +21,15 @@ f /: expr := value
 ### Related terms 
 [Set](Set.md), [SetDelayed](SetDelayed.md), [TagSet](TagSet.md) 
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of TagSetDelayed](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L2298) 
+* [Implementation of TagSetDelayed](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L2297) 

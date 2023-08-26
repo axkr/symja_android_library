@@ -18,6 +18,15 @@ f(f(f(x)))
 ### Related terms 
 [FixedPoint](FixedPoint.md), [FixedPointList](FixedPointList.md), [NestWhile](NestWhile.md)
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of Nest](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L1512) 
+* [Implementation of Nest](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L1513) 

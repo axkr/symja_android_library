@@ -48,6 +48,15 @@ The symbol `f` must appear as the ultimate head of `lhs` or as the head of a lea
 ### Related terms 
 [Set](Set.md), [SetDelayed](SetDelayed.md), [TagSetDelayed](TagSetDelayed.md) 
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of TagSet](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L2157) 

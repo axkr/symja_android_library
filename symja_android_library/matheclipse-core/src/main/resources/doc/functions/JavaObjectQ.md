@@ -21,6 +21,15 @@ True
 ### Related terms 
 [InstanceOf](InstanceOf.md), [JavaClass](JavaClass.md), [JavaNew](JavaNew.md), [JavaObject](JavaObject.md), [JavaShow](JavaShow.md), [LoadJavaClass](LoadJavaClass.md), [SameObjectQ](SameObjectQ.md)
 
+
+
+
+
+
+### Implementation status
+
+* &#x2615; - supported on Java virtual machine 
+
 ### Github
 
-* [Implementation of JavaObjectQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/JavaFunctions.java#L381) 
+* [Implementation of JavaObjectQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/JavaFunctions.java#L403) 

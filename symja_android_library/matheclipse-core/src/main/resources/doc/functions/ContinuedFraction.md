@@ -41,6 +41,15 @@ For square roots of non-negative integer arguments `ContinuedFraction` determine
 ### Related terms 
 [FromContinuedFraction](FromContinuedFraction.md), [QuadraticIrrationalQ](QuadraticIrrationalQ.md)
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of ContinuedFraction](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L972) 
+* [Implementation of ContinuedFraction](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L971) 

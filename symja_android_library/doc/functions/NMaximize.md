@@ -45,4 +45,4 @@ with the constraints:
 
 ### Github
 
-* [Implementation of NMaximize](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/MinMaxFunctions.java#L888) 
+* [Implementation of NMaximize](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/MinMaxFunctions.java#L890) 

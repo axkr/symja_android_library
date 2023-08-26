@@ -19,4 +19,4 @@ GraphDifference(graph1, graph2)
 
 ### Github
 
-* [Implementation of GraphDifference](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphFunctions.java#L245) 
+* [Implementation of GraphDifference](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphFunctions.java#L246) 

@@ -21,6 +21,15 @@ Interval({1.5,2},{3,3.5},{5,6})
 ### Related terms 
 [Interval](Interval.md), [IntervalMemberQ](IntervalMemberQ.md), [IntervalUnion](IntervalUnion.md) 
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of IntervalIntersection](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntervalFunctions.java#L512) 
+* [Implementation of IntervalIntersection](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntervalFunctions.java#L514) 

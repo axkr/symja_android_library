@@ -16,6 +16,15 @@ Counts({elem1, elem2, elem3, ...})
 ### Related terms 
 [Commonest](Commonest.md), [Tally](Tally.md)
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of Counts](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/AssociationFunctions.java#L536) 
+* [Implementation of Counts](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/AssociationFunctions.java#L534) 

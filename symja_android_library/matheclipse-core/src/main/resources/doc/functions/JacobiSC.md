@@ -18,6 +18,17 @@ See
 -0.422766
 ```
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of JacobiSC](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/EllipticIntegrals.java#L1755) 
+* [Implementation of JacobiSC](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/EllipticIntegrals.java#L1757) 
+
+* [Rule definitions of JacobiSC](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/JacobiSCRules.m) 

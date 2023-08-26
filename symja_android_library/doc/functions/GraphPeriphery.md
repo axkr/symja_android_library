@@ -22,4 +22,4 @@ GraphPeriphery(graph)
 
 ### Github
 
-* [Implementation of GraphPeriphery](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphFunctions.java#L621) 
+* [Implementation of GraphPeriphery](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphFunctions.java#L622) 

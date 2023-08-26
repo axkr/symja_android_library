@@ -72,6 +72,15 @@ Options can only be assigned to symbols:
 ### Related terms 
 [OptionValue](OptionValue.md), [FilterRules](FilterRules.md)
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of Options](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L1189) 

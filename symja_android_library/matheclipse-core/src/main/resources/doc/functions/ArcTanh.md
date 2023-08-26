@@ -25,6 +25,17 @@ Infinity
 ArcTanh(2+I)
 ```
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of ArcTanh](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L1163) 
+* [Implementation of ArcTanh](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L1165) 
+
+* [Rule definitions of ArcTanh](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/ArcTanhRules.m) 

@@ -4,7 +4,7 @@
 Context(symbol)
 ```
 
-> return the context of the given symbol.
+> yields the name of the context where `symbol` is defined in.
 
 
 ```
@@ -26,6 +26,15 @@ Global`
 System`
 ```
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of Context](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L332) 
+* [Implementation of Context](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L333) 

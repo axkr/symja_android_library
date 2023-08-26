@@ -26,4 +26,4 @@ CorrelationDistance(u, v)
 
 ### Github
 
-* [Implementation of CorrelationDistance](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ClusteringFunctions.java#L240) 
+* [Implementation of CorrelationDistance](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ClusteringFunctions.java#L241) 

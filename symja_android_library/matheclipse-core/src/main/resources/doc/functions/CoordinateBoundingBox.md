@@ -26,6 +26,15 @@ CoordinateBoundingBox({{x1,y1,...},{x2,y2,...},{x3,y3,...},...}, pad)
             
 ```
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of CoordinateBoundingBox](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ComputationalGeometryFunctions.java#L633) 
+* [Implementation of CoordinateBoundingBox](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ComputationalGeometryFunctions.java#L634) 

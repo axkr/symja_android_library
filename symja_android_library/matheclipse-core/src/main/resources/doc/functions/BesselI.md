@@ -18,6 +18,17 @@ See
 6.79271
 ```
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of BesselI](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BesselFunctions.java#L515) 
+* [Implementation of BesselI](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BesselFunctions.java#L516) 
+
+* [Rule definitions of BesselI](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/BesselIRules.m) 

@@ -32,6 +32,15 @@ See
 ### Related terms 
 [Compile](Compile.md), [CompilePrint](CompilePrint.md), [OptimizeExpression](OptimizeExpression.md)
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
 * [Implementation of Share](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Share.java#L18) 

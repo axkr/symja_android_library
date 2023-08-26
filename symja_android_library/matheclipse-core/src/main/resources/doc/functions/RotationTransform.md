@@ -35,6 +35,15 @@ TransformationFunction(
 ### Related terms
 [TransformationFunction](TransformationFunction.md), [TranslationTransform](TranslationTransform.md)
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of RotationTransform](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/TensorFunctions.java#L1031) 
+* [Implementation of RotationTransform](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/TensorFunctions.java#L1032) 

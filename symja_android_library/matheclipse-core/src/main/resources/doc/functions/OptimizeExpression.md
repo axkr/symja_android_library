@@ -30,6 +30,15 @@ Create the original expression:
 ### Related terms 
 [Compile](Compile.md), [CompilePrint](CompilePrint.md), [Share](Share.md)
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of OptimizeExpression](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/OptimizeExpression.java#L52) 
+* [Implementation of OptimizeExpression](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/OptimizeExpression.java#L53) 

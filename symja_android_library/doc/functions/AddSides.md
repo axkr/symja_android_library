@@ -28,4 +28,4 @@ a+x==b+x
 
 ### Github
 
-* [Implementation of AddSides](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SidesFunctions.java#L25) 
+* [Implementation of AddSides](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SidesFunctions.java#L26) 

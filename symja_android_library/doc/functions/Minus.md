@@ -42,4 +42,4 @@ Minus(expr)
 
 ### Github
 
-* [Implementation of Minus](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L2441) 
+* [Implementation of Minus](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L2444) 

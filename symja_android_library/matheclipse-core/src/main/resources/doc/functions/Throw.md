@@ -27,6 +27,15 @@ A `Throw` without an enclosing `Catch` prints the message: `Uncaught Throw(1) re
 Hold(Throw(1))
 ```
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of Throw](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L3203) 
+* [Implementation of Throw](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L3204) 

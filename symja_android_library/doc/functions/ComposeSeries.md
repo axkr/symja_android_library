@@ -38,4 +38,4 @@ x^2+3*x^3+O(x)^4
 
 ### Github
 
-* [Implementation of ComposeSeries](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SeriesFunctions.java#L1184) 
+* [Implementation of ComposeSeries](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SeriesFunctions.java#L1186) 

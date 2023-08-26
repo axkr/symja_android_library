@@ -44,6 +44,15 @@ You can omit `1.0` in the parameter list because it's the default value:
 ### Related terms 
 [Fit](Fit.md), [FittedModel](FittedModel.md), [LinearModelFit](LinearModelFit.md) 
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of FindFit](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/CurveFitterFunctions.java#L100) 
+* [Implementation of FindFit](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/CurveFitterFunctions.java#L101) 

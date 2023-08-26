@@ -37,4 +37,4 @@ Alphabet(language-string)
 
 ### Github
 
-* [Implementation of Alphabet](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L743) 
+* [Implementation of Alphabet](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L744) 

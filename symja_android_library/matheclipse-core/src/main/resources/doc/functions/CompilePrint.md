@@ -22,6 +22,15 @@ Compile the expression into a `CompiledFunction` and assign it to `f`:
 ### Related terms 
 [Compile](Compile.md), [CompiledFunction](CompiledFunction.md), [OptimizeExpression](OptimizeExpression.md)
 
+
+
+
+
+
+### Implementation status
+
+* &#x2705; - full supported
+
 ### Github
 
-* [Implementation of CompilePrint](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/CompilerFunctions.java#L730) 
+* [Implementation of CompilePrint](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/CompilerFunctions.java#L732) 
