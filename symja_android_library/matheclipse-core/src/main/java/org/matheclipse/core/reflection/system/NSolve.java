@@ -15,7 +15,7 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
 
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
-      final EvalEngine engine) {
+      final EvalEngine engine, IAST originalAST) {
     // final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);

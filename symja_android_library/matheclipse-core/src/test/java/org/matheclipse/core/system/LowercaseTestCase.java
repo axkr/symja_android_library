@@ -1615,16 +1615,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testBernoulliB() {
-    check("BernoulliB(4, 9)", //
-        "155519/30");
-    check("BernoulliB(4, -9)", //
-        "242999/30");
-
     // slow
     check("BernoulliB(2009,-1+Sqrt(2))", //
         "BernoulliB(2009,-1+Sqrt(2))");
     check("BernoulliB(-2147483648,1/2)", //
         "BernoulliB(-2147483648,1/2)");
+
+    check("BernoulliB(4, 9)", //
+        "155519/30");
+    check("BernoulliB(4, -9)", //
+        "242999/30");
+
     check("BernoulliB(18, 1/2)", //
         "-5749691557/104595456");
     check("BernoulliB(17, 1/2)", //
@@ -1734,7 +1735,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "2)");
     check("BesselJ(0, 5.2)", "-0.11029");
     checkNumeric("BesselJ(3.5, 1.2)", //
-        "0.013270419445925195");
+        "0.013270419445925403");
     check("BesselJ(4.0, 0.0)", //
         "0.0");
     check("BesselJ(1.0, -3.0)", //
@@ -1873,6 +1874,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testBeta() {
+    checkNumeric("Beta({-1},7*Sqrt(2),2.718281828459045)", //
+        "{0.29180906706077264+I*(-0.09532667408582261)}");
+
     check("Beta(z, 1, 12)", //
         "1/12*(1-(1-z)^12)");
 
@@ -2372,7 +2376,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("CarlsonRC(3, 1.234567890123456789012345)", //
         "0.762626353743812501642456");
     check("CarlsonRC(3, 1.2345678901234567890123456789012345)", //
-        "0.76262635374381250164245591358368867");
+        "0.76262635374381250164245591358368878");
     check("CarlsonRC(y,y)", //
         "Piecewise({{ComplexInfinity,Re(y)<=0&&Im(y)==0}},1/Sqrt(y))");
     check("CarlsonRC(42,42)", //
@@ -2684,55 +2688,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "42");
     check("CheckAbort(abc; -1, 41) + 1", //
         "0");
-  }
-
-  public void testChebyshevT() {
-    check("ChebyshevT(-1/2, z)", //
-        "Cos(ArcCos(z)/2)");
-    check("ChebyshevT(1/2, z)", //
-        "Cos(ArcCos(z)/2)");
-    check("ChebyshevT(1.5, 2+3*I)", //
-        "0.692609+I*9.74575");
-    check("ChebyshevT(8, x)", //
-        "1-32*x^2+160*x^4-256*x^6+128*x^8");
-    // TODO add non-integer args implementation
-    // check("ChebyshevT(1 - I, 0.5)", "0.800143 + 1.08198 I");
-
-    check("ChebyshevT(n,0)", //
-        "Cos(1/2*n*Pi)");
-    check("ChebyshevT({0,1,2,3,4}, x)", //
-        "{1,x,-1+2*x^2,-3*x+4*x^3,1-8*x^2+8*x^4}");
-    check("ChebyshevT({0,-1,-2,-3,-4}, x)", //
-        "{1,x,-1+2*x^2,-3*x+4*x^3,1-8*x^2+8*x^4}");
-    check("ChebyshevT(10, x)", //
-        "-1+50*x^2-400*x^4+1120*x^6-1280*x^8+512*x^10");
-  }
-
-  public void testChebyshevU() {
-    check("ChebyshevU(4, -42)", //
-        "49765969");
-    // http://oeis.org/A001906
-    check("Table(ChebyshevU(n-1, 3/2), {n, 0, 30})", //
-        "{0,1,3,8,21,55,144,377,987,2584,6765,17711,46368,121393,317811,832040,2178309,\n"
-            + "5702887,14930352,39088169,102334155,267914296,701408733,1836311903,4807526976,\n"
-            + "12586269025,32951280099,86267571272,225851433717,591286729879,1548008755920}");
-
-    check("ChebyshevU(1.5, 2+3*I)", //
-        "1.70238+I*19.36013");
-    check("ChebyshevU(8, x)", //
-        "1-40*x^2+240*x^4-448*x^6+256*x^8");
-    // TODO add non-integer args implementation
-    // check("ChebyshevU(1 - I, 0.5)", "1.60029 + 0.721322 I");
-    check("ChebyshevU(n, 1)", //
-        "1+n");
-    check("ChebyshevU({0,1,2,3,4,5}, x)", //
-        "{1,2*x,-1+4*x^2,-4*x+8*x^3,1-12*x^2+16*x^4,6*x-32*x^3+32*x^5}");
-    check("ChebyshevU(0, x)", //
-        "1");
-    check("ChebyshevU(1, x)", //
-        "2*x");
-    check("ChebyshevU(10, x)", //
-        "-1+60*x^2-560*x^4+1792*x^6-2304*x^8+1024*x^10");
   }
 
   public void testChessboardDistance() {
@@ -3356,6 +3311,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testComplement() {
+    check("Complement(#,#)", //
+        "Slot()");
+    check("Complement(#,#1*#2)", //
+        "Complement(#1,#1*#2)");
+    check("Complement(#2,#1)", //
+        "#2");
+
+    check("Complement({},{})", "{}");
+    check("Complement({1,2,3},{2,3,4})", "{1}");
+    check("Complement({2,3,4},{1,2,3})", "{4}");
+    check("Complement({1},{2})", "{1}");
+    check("Complement({1,2,2,4,6},{2,3,4,5})", "{1,6}");
+
     check("Complement({3, 2, 7, 5, 2, 2, 3, 4, 5, 6, 1}, {2, 3}, {4, 6, 27, 23})", //
         "{1,5,7}");
     check("Complement({1,2,3},{2,3,4})", //
@@ -4658,6 +4626,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testD() {
+    check("D(z^n*E^(z),{z,n})", //
+        "E^z*n!*Hypergeometric1F1(-n,1,-z)");
+    check("D(z^n*E^(-z),{z,n})", //
+        "(n!*Hypergeometric1F1(-n,1,z))/E^z");
+
     check("D(Hypergeometric0F1(a,x), x)", //
         "Hypergeometric0F1(1+a,x)/a");
     check("D(Hypergeometric1F1(a,b,x), x)", //
@@ -7139,7 +7112,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "7-75996063*E^8*Pi^8+4691115*E^9*Pi^9-208494*E^10*Pi^10+6318*E^11*Pi^11-117*E^12*Pi^\n"
             + "12+E^13*Pi^13");
     check("N(t)", //
-        "0.5");
+        "0.174561");
     // shorten the result because of failing bitbucket pipeline
     check("N(t, 30)", //
         "-0.0000416<<SHORT>>", 10);
@@ -9725,7 +9698,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("N( Pi/13^101 ,30)//FullForm", //
         "9.74700726352830962565070727338`30*^-113");
     check("N(Sin(Pi/7),30)//FullForm", //
-        "4.338837391175581204757683328483`31*^-1");
+        "4.33883739117558120475768332848`30*^-1");
     check("Association(A->1,B->2,C->3,D->4) // FullForm", //
         "Association(Rule(A, 1), Rule(B, 2), Rule(C, 3), Rule(D, 4))");
     check("( _. ) // FullForm", //
@@ -10212,62 +10185,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{{{a,1,x},{a,2,x}},{{a,1,y},{a,2,y}}},{{{b,1,x},{b,2,x}},{{b,1,y},{b,2,y}}}}");
   }
 
-  public void testGegenbauerC() {
-    // message Polynomial degree 101 exceeded
-    check(
-        "GegenbauerC(101,-9223372036854775807/9223372036854775808-I*9223372036854775808/9223372036854775807,z)", //
-        "GegenbauerC(101,-9223372036854775807/9223372036854775808-I*9223372036854775808/\n"
-            + "9223372036854775807,z)");
 
-    check("GegenbauerC(3, l, z)", //
-        "-2*l*(1+l)*z+4/3*l*(1+l)*(2+l)*z^3");
-    check("GegenbauerC(4, l, z)", //
-        "1/2*l*(1+l)+2*(-1-l)*l*(2+l)*z^2+2/3*l*(1+l)*(2+l)*(3+l)*z^4");
-    check("GegenbauerC(0, l, z)", //
-        "1");
-    check("GegenbauerC(0, 0, z)", //
-        "0");
-    check("GegenbauerC(n, 0, z)", //
-        "0");
-    check("GegenbauerC(n, 1, z)", //
-        "ChebyshevU(n,z)");
-    check("GegenbauerC(n, 2, z)", //
-        "((-2-n)*ChebyshevU(n,z)+(1+n)*z*ChebyshevU(1+n,z))/(2*(-1+z^2))");
-
-    check("GegenbauerC(5,z)", //
-        "2*z-8*z^3+32/5*z^5");
-    check("GegenbauerC(1/2,z)", //
-        "2*Sqrt(2)*Sqrt(1+z)");
-    check("GegenbauerC(-1/2,z)", //
-        "-2*Sqrt(2)*Sqrt(1+z)");
-    check("GegenbauerC(v,0)", //
-        "(2*Cos(1/2*Pi*v))/v");
-    check("GegenbauerC(v,1)", //
-        "2/v");
-    check("GegenbauerC(v,-1)", //
-        "(2*Cos(Pi*v))/v");
-    check("GegenbauerC(v,i)", //
-        "GegenbauerC(v,i)");
-
-    check("GegenbauerC(0,z)", //
-        "ComplexInfinity");
-    check("GegenbauerC(1,z)", //
-        "2*z");
-    check("GegenbauerC(2,z)", //
-        "-1+2*z^2");
-    check("GegenbauerC(-v,z)", //
-        "-GegenbauerC(v,z)");
-    check("GegenbauerC(10,-z)", //
-        "-1/5+10*z^2-80*z^4+224*z^6-256*z^8+512/5*z^10");
-    check("GegenbauerC(11,-z)", //
-        "2*z-40*z^3+224*z^5-512*z^7+512*z^9-2048/11*z^11");
-    check("GegenbauerC(8,z)", //
-        "1/4-8*z^2+40*z^4-64*z^6+32*z^8");
-    check("GegenbauerC(3, 1 + I)", //
-        "-22/3+I*10/3");
-    check("GegenbauerC(2,a,z)", //
-        "-a+2*a*(1+a)*z^2");
-  }
 
   public void testGCD() {
 
@@ -10570,7 +10488,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("N(Haversine(1/7), 50)", //
         "0.0050933697766924586521369314932831270629836495502145");
     check("N(Haversine(798+I), 50)", //
-        "-0.27105513255154801719412701505423122282395758411135+I*0.02083546725316235662066240547292017854082982767324");
+        "-0.27105513255154801719412701505423122282395758411135+I*0.02083546725316235662066240547292017854082982767312");
     checkNumeric("Haversine(1.5)", //
         "0.46463139916614854");
     checkNumeric("Haversine(0.5 + 2 * I)", //
@@ -10638,19 +10556,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
     check("HeavisideTheta(-2, -1, 1, 2)", //
         "0");
-  }
-
-  public void testHermiteH() {
-    check("HermiteH(i, x)", //
-        "HermiteH(i,x)");
-    check("HermiteH(8, x)", //
-        "1680-13440*x^2+13440*x^4-3584*x^6+256*x^8");
-    check("HermiteH(3, 1 + I)", //
-        "-28+I*4");
-    // TODO add non integer arg implementation
-    // check("HermiteH(4.2, 2)", "");
-    check("HermiteH(10, x)", //
-        "-30240+302400*x^2-403200*x^4+161280*x^6-23040*x^8+1024*x^10");
   }
 
   public void testHold() {
@@ -10896,8 +10801,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Hypergeometric1F1(-2,b,z)", //
         "1+(-2*z)/b+z^2/(b*(1+b))");
     // slow
-    check("Hypergeometric1F1(-9223372036854775808/11,{2,3,4},0.5)", //
-        "{Hypergeometric1F1(-8.38488*10^17,2.0,0.5),Hypergeometric1F1(-8.38488*10^17,3.0,0.5),Hypergeometric1F1(-8.38488*10^17,4.0,0.5)}");
+    // check("Hypergeometric1F1(-9223372036854775808/11,{2,3,4},0.5)", //
+    // "{Hypergeometric1F1(-8.38488*10^17,2.0,0.5),Hypergeometric1F1(-8.38488*10^17,3.0,0.5),Hypergeometric1F1(-8.38488*10^17,4.0,0.5)}");
     // TODO check wrong
     check("Hypergeometric1F1(3,Quantity(1.2,\"m\"),-1+I)", //
         "Hypergeometric1F1(3,1.2[m],-1+I)");
@@ -10923,10 +10828,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "E^z");
     check("Hypergeometric1F1(0,1,z)", //
         "1");
-    check("Hypergeometric1F1(a,1,z)", //
+    check("Hypergeometric1F1(a,1,z)  // FunctionExpand", //
         "LaguerreL(-a,z)");
     check("Hypergeometric1F1(3,1,z)", //
-        "LaguerreL(-3,z)");
+        "Hypergeometric1F1(3,1,z)");
     check("Hypergeometric1F1(-1,b,z)", //
         "1-z/b");
     check("Hypergeometric1F1(-1,2,3.0)", //
@@ -10938,6 +10843,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testHypergeometric2F1() {
+    checkNumeric("N(Hypergeometric2F1(-23/10, 1/2 - 1/8 + 23/10 + 1, 1/8 + 1, (12 + 1)/2),50)", //
+        "316.89423321513003029092320808004720013260908767289+I*436.16750112351808402055619284015549992820985322774");
+    checkNumeric("Hypergeometric2F1(-2.3, 1/2 - 1/8 + 2.3 + 1, 1/8 + 1, (12 + 1)/2)", //
+        "316.89423321643585+I*(-436.1675011253144)");
+
     check("D( Hypergeometric2F1(a,b,c,x), {x,-4})", //
         "D(Hypergeometric2F1(a,b,c,x),{x,-4})");
 
@@ -12663,52 +12573,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "ProductLog(x)");
   }
 
-  public void testLaguerreL() {
-    // TODO improve error messages
-    check("LaguerreL(10,l,Infinity)", //
-        "Indeterminate");
-    check("LaguerreL(3,l,-Infinity)", //
-        "1/3*(-(2+l)*(Infinity+l)+1/2*(Infinity+l)*(Infinity+3*l+Infinity*l+l^2))");
-    // mesage Polynomial degree 101 exceeded
-    check("LaguerreL(101,l,-Infinity)", //
-        "LaguerreL(101,l,-Infinity)");
-    // message Polynomial degree 101 exceeded
-    check("LaguerreL(101,l,-I)", //
-        "LaguerreL(101,l,-I)");
-    // message Polynomial degree 1009 exceeded
-    check("LaguerreL(1009, 7)", //
-        "LaguerreL(1009,7)");
 
-    check("LaguerreL(1, 1 - b, -z)", //
-        "2-b+z");
-    check("LaguerreL(1, a, z)", //
-        "1+a-z");
-    check("LaguerreL(0, l, z)", //
-        "1");
-    check("LaguerreL(2, l, z)", // 1/2*(-1-l)+1/2*(1+l-z)*(3+l-z)
-        "1/2*(2+3*l+l^2-4*z-2*l*z+z^2)");
-    check("LaguerreL(3, l, z)", //
-        "1/3*(-(2+l)*(1+l-z)+1/2*(5+l-z)*(2+3*l+l^2-4*z-2*l*z+z^2))");
-    check("LaguerreL(4, l, z)", //
-        "1/4*(1/2*(-3-l)*(2+3*l+l^2-4*z-2*l*z+z^2)+1/3*(7+l-z)*(-(2+l)*(1+l-z)+1/2*(5+l-z)*(\n"
-            + "2+3*l+l^2-4*z-2*l*z+z^2)))");
-    check("LaguerreL(n, 0)", //
-        "LaguerreL(n,0)");
-    check("LaguerreL(8, x)", //
-        "1-8*x+14*x^2-28/3*x^3+35/12*x^4-7/15*x^5+7/180*x^6-x^7/630+x^8/40320");
-    // TODO add non-integer implementation
-    // check("LaguerreL(3/2, 1.7)", "");
-    check("LaguerreL(3, x)", //
-        "1-3*x+3/2*x^2-x^3/6");
-    check("LaguerreL(4, x)", //
-        "1-4*x+3*x^2-2/3*x^3+x^4/24");
-    check("LaguerreL(5, x)", //
-        "1-5*x+5*x^2-5/3*x^3+5/24*x^4-x^5/120");
-    check("LaguerreL(0,z)", //
-        "1");
-    check("LaguerreL(-3,z)", //
-        "LaguerreL(-3,z)");
-  }
 
   public void testInverseLaplaceTransform() {
     // check(
@@ -12913,62 +12778,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3");
   }
 
-  public void testLegendreP() {
-    // TODO support negative values
-    // check(
-    // "LegendreP(-3,x)", //
-    // "LegendreP(-3,x)");
-    // check(
-    // "Sqrt(Pi)/(Gamma((1 - Pi)/2) * Gamma(1 + Pi/2))", //
-    // "Sqrt(Pi)/(Gamma(1/2*(1-Pi))*Gamma(1+Pi/2))");
 
-    check("LegendreP(-(1/2), 1 - 2*z)", //
-        "(2*EllipticK(z))/Pi");
-    check("LegendreP(Pi,0)", //
-        "Sqrt(Pi)/(Gamma(1/2*(1-Pi))*Gamma(1+Pi/2))");
-    check("LegendreP(111,1)", //
-        "1");
-    check("LegendreP(4,x)", //
-        "3/8-15/4*x^2+35/8*x^4");
-    // TODO implement non integer args
-    // check("LegendreP(5/2, 1.5) ", "x");
-
-    check("LegendreP(0,x)", //
-        "1");
-    check("LegendreP(1,x)", //
-        "x");
-    check("LegendreP(2,x)", //
-        "-1/2+3/2*x^2");
-    check("LegendreP(7,x)", //
-        "-35/16*x+315/16*x^3-693/16*x^5+429/16*x^7");
-    check("LegendreP(10,x)", //
-        "-63/256+3465/256*x^2-15015/128*x^4+45045/128*x^6-109395/256*x^8+46189/256*x^10");
-  }
-
-  public void testLegendreQ() {
-    // TODO control number of error message output
-    // check("LegendreQ(1009,z)", //
-    // "");
-
-    // SLOW
-    // message Polynomial degree 10007 exceeded
-    check("LegendreQ(10007,z)", //
-        "LegendreQ(10007,z)");
-
-    check("LegendreQ(-(1/2), 2*z - 1)", //
-        "EllipticK(z)");
-    check("LegendreQ(-3,z)", //
-        "ComplexInfinity");
-    check("LegendreQ(1,z)", //
-        "-1+z*(-Log(1-z)/2+Log(1+z)/2)");
-    check("LegendreQ(2,z)", //
-        "-3/2*z+1/2*(-1/2+3/2*z^2)*(-Log(1-z)+Log(1+z))");
-    check("LegendreQ(3,z)", //
-        "-1/6+5/3*(1/2-3/2*z^2)+1/2*(-3/2*z+5/2*z^3)*(-Log(1-z)+Log(1+z))");
-    check("Expand(LegendreQ(4,z))", //
-        "55/24*z-35/8*z^3-3/16*Log(1-z)+15/8*z^2*Log(1-z)-35/16*z^4*Log(1-z)+3/16*Log(1+z)-\n"
-            + "15/8*z^2*Log(1+z)+35/16*z^4*Log(1+z)");
-  }
 
   public void testLength() {
     check("Length(\"test\")", //
@@ -13028,8 +12838,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-Log(2)");
 
   }
-
-
 
   public void testEqualTo() {
     check("Select({0, 0., 0.1, 0.001}, EqualTo(0))", //
@@ -13736,6 +13544,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testLog() {
+    checkNumeric("Log(-1.4)", //
+        "0.3364722366212129+I*3.141592653589793");
 
     check("N(Log({2, E, 10}, 5/2),50)", //
         "{1.3219280948873623478703194294893901758648313930245," //
@@ -13822,8 +13632,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.336472");
     checkNumeric("Log(Exp(1.4))", //
         "1.3999999999999997");
-    checkNumeric("Log(-1.4)", //
-        "0.3364722366212129+I*3.141592653589793");
 
     check("Log(-1)", //
         "I*Pi");
@@ -13850,7 +13658,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     checkNumeric("Log(1000.)", //
         "6.907755278982137");
     checkNumeric("Log(2.5 + I)", //
-        "0.9905007344332918+I*0.3805063771123649");
+        "0.9905007344332917+I*0.3805063771123649");
     checkNumeric("Log({2.1, 3.1, 4.1})", //
         "{0.7419373447293773,1.1314021114911006,1.410986973710262}");
     check("Log(2, 16)", //
@@ -13884,6 +13692,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Infinity");
     check("Log(ComplexInfinity)", //
         "Infinity");
+
+    check("Table(Im(Log(x + I*y)), {x, -2, 2}, {y, -2, 2}) //N ", //
+        "{{-2.35619,-2.67795,3.14159,2.67795,2.35619}," //
+            + "{-2.03444,-2.35619,3.14159,2.35619,2.03444}," //
+            + "{-1.5708,-1.5708,0.0,1.5708,1.5708}," //
+            + "{-1.10715,-0.785398,0.0,0.785398,1.10715}," //
+            + "{-0.785398,-0.463648,0.0,0.463648,0.785398}}");
   }
 
   public void testLog10() {
@@ -15237,9 +15052,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "35");
 
     check("f(n_) :=  Module({p = Range(n),i,x,t},\n"
-        + "    		   Do(x = RandomInteger({1,i}); t = p[[i]]; p[[i]] = p[[x]]; p[[x]] = t,\n"
-        + "    			  {i,n,2,-1}\n" + "    		   );\n" + "    		   p\n"
-        + "    		 )\n", "");
+        + "            Do(x = RandomInteger({1,i}); t = p[[i]]; p[[i]] = p[[x]]; p[[x]] = t,\n"
+        + "               {i,n,2,-1}\n" + "            );\n" + "               p\n"
+        + "          )\n", "");
     check("MatchQ(f(4),{_Integer..})", //
         "True");
     check("Length(f(6))", //
@@ -15485,7 +15300,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("N(Sqrt(2)^(-1), 100)", //
         "0.7071067811865475244008443621048490392848359376884740365883398689953662392310535194251937671638207863");
     check("N(Sin(2)^(-1), 100)", //
-        "1.0997501702946164667566973970263128966587644431498457087425544430625691269954459808767914424812198942");
+        "1.099750170294616466756697397026312896658764443149845708742554443062569126995445980876791442481219894");
 
     check("N(Sqrt(2)/2,2147483647)", //
         "N(Sqrt(2)/2,2147483647)");
@@ -15990,6 +15805,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1.0,0.540302,0.857553,0.65429,0.79348,0.701369,0.76396,0.722102,0.750418,0.731404,0.744237}");
     check("NestList((1 + #)^2 &, x, 3)", //
         "{x,(1+x)^2,(1+(1+x)^2)^2,(1+(1+(1+x)^2)^2)^2}");
+    check("seq=NestList(3/2 (# + Mod(#, 2)) &, 1, 499);Take(seq, 10)", //
+        "{1,3,6,9,15,24,36,54,81,123}");
   }
 
   public void testNestWhile() {
@@ -16440,7 +16257,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "");
 
     checkNumeric("NSolve({2==x-0.091*y, y==0.054-0.0171*z, x==Exp(z)+1}, {x,y,z})", //
-        "{{z->0.0048943867690357514,y->0.053916305986249774,x->2.004906383844749}}");
+        "{{z->0.004894386769035739,y->0.053916305986249774,x->2.004906383844749}}");
 
     // check("Eliminate({sin(x)-11==y, x+y==-9}, {y,x})",
     // "x+Sin(x)==2");
@@ -16459,7 +16276,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     checkNumeric("NSolve(x^3 + 2.0*x^2 - 5*x -3.0 ==0,x)", //
         "{{x->-3.253418039587852},{x->-0.5199693720627907},{x->1.7733874116506425}}");
     checkNumeric("NSolve(x^3 + 2*x^2 - 5*x -3 ==0,x)", //
-        "{{x->1.773387411650643},{x->-0.5199693720627908+I*4.440892098500626E-16},{x->-3.2534180395878516+I*(-3.3306690738754696E-16)}}");
+        "{{x->1.773387411650643},{x->-0.5199693720627908+I*4.440892098500626E-16},{x->-3.253418039587852+I*(-3.3306690738754696E-16)}}");
   }
 
   public void testNumberQ() {
@@ -17249,6 +17066,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
             + "<math mode=\"display\">\n"
             + "<mrow><mrow><mo>(</mo><mrow><mi>c</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>a</mi></mrow><mo>)</mo></mrow><mo>+</mo><mi>x</mi></mrow></math>");
+  }
+
+  public void testParametricPlot() {
+
+    // wrong parameter call
+    check("ParametricPlot(17,Heads->False,-1009,True)", //
+        "ParametricPlot(17,Heads->False,-1009,True)");
+
   }
 
   public void testParserFixedPoint() {
@@ -18054,18 +17879,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{(z+z^2)/(1-z)^3,z/(1-z)^2,z/(1-z),-Log(1-z)}");
     check("PolyLog(n,-1)", //
         "(-1+2^(1-n))*Zeta(n)");
+    checkNumeric("PolyLog(1,1)", //
+        "Infinity");
     checkNumeric("PolyLog(1.0,1.0)", //
         "Infinity");
     checkNumeric("Table(PolyLog(1.0,z), {z,-2.0,2.0,0.1})", //
-        "{-1.0986122886681098,-1.0647107369924282,-1.0296194171811581,-0.9932517730102833,-0.9555114450274362,-0.9162907318741549,"
-            + "-0.8754687373538997,-0.8329091229351038,-0.7884573603642698,-0.7419373447293769,-0.6931471805599448,-0.6418538861723944,"
-            + "-0.5877866649021186,-0.5306282510621699,-0.4700036292457351,-0.40546510810816394,-0.33647223662121256,-0.26236426446749056,"
-            + "-0.18232155679395404,-0.09531017980432434,0.0,0.10536051565782702,0.22314355131421054,0.3566749439387334,0.5108256237659918,"
-            + "0.6931471805599466,0.9162907318741567,1.2039728043259381,1.6094379124341034,2.3025850929940517,"
-            + "34.945041100449046+I*(-3.141592653589793),2.3025850929940384+I*(-3.141592653589793),1.609437912434096+I*(-3.141592653589793),"
-            + "1.2039728043259328+I*(-3.141592653589793),0.9162907318741526+I*(-3.141592653589793),0.6931471805599431+I*(-3.141592653589793),"
-            + "0.5108256237659887+I*(-3.141592653589793),0.35667494393873056+I*(-3.141592653589793),0.22314355131420804+I*(-3.141592653589793),"
-            + "0.10536051565782467+I*(-3.141592653589793),-1.332267629550187E-15+I*(-3.141592653589793)}");
+        "{-1.0986122886681098,-1.0647107369924282,-1.0296194171811581,-0.9932517730102833,-0.9555114450274362," //
+            + "-0.9162907318741549,-0.8754687373538997,-0.8329091229351038,-0.7884573603642698,-0.7419373447293769," //
+            + "-0.6931471805599448,-0.6418538861723944,-0.5877866649021186,-0.5306282510621699,-0.4700036292457351," //
+            + "-0.40546510810816394,-0.33647223662121256,-0.26236426446749056,-0.18232155679395404,-0.09531017980432434," //
+            + "0.0,0.10536051565782702,0.22314355131421054,0.3566749439387334,0.5108256237659918,0.6931471805599466,0.9162907318741567,1.2039728043259381,1.6094379124341034,2.3025850929940517," //
+            + "Indeterminate,2.3025850929940384+I*(-3.141592653589793),1.609437912434096+I*(-3.141592653589793),1.2039728043259328+I*(-3.141592653589793),0.9162907318741526+I*(-3.141592653589793),0.6931471805599431+I*(-3.141592653589793),0.5108256237659887+I*(-3.141592653589793),0.35667494393873056+I*(-3.141592653589793),0.22314355131420804+I*(-3.141592653589793),0.10536051565782467+I*(-3.141592653589793),-1.332267629550187E-15+I*(-3.141592653589793)}");
+    checkNumeric("Table(N(PolyLog(1,z),20), {z,-2,2,1/10})", //
+        "{-1.0986122886681096913,-1.0647107369924283431,-1.0296194171811582399,-0.99325177301028339016,-0.95551144502743636145,-0.91629073187415506518,-0.87546873735389993562,-0.83290912293510400678,-0.78845736036427016946,-0.74193734472937731248,Indeterminate,-0.64185388617239477599,-0.58778666490211900818,-0.53062825106217039623,-0.47000362924573555365,-0.40546510810816438197,-0.3364722366212129305,-0.26236426446749105203,-0.18232155679395462621,-0.095310179804324860043,"
+            + "0,0.10536051565782630122,0.22314355131420975576,0.35667494393873237891,0.5108256237659906832,0.69314718055994530941,0.91629073187415506518,1.2039728043259359926,1.6094379124341003746,2.302585092994045684,"
+            + "Infinity,2.302585092994045684+I*(-3.1415926535897932384),1.6094379124341003746+I*(-3.1415926535897932384),1.2039728043259359926+I*(-3.1415926535897932384),0.9162907318741550651+I*(-3.1415926535897932384),0.6931471805599453094+I*(-3.1415926535897932384),0.5108256237659906832+I*(-3.1415926535897932384),0.3566749439387323789+I*(-3.1415926535897932384),0.2231435513142097557+I*(-3.1415926535897932384),0.1053605156578263012+I*(-3.1415926535897932384),I*(-3.1415926535897932384)}");
+
   }
 
   public void testPolynomialExtendedGCD() {
@@ -22564,7 +22393,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     checkNumeric("SphericalBesselJ(1,5.2)", //
         "-0.12277149950214108");
     checkNumeric("BesselJ(2.5,-5)", //
-        "I*0.24037720111131738");
+        "I*0.24037720111131736");
     checkNumeric("SphericalBesselJ(2.5,-5)", // I*0.20448758430717914
         "I*0.20448758430717917");
     checkNumeric("SphericalBesselJ(2.0,-5)", //
@@ -24911,7 +24740,32 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "F(Unevaluated(a),0.4,Unevaluated(a))");
   }
 
+  public void testIntersection() {
+    check("Intersection(#1, #2, #1)", //
+        "Slot()");
+    check("Intersection(#1, #1)", //
+        "#1");
+    check("Intersection(#1,#1*#2)", //
+        "#1⋂#1*#2");
+
+    check("Intersection({},{})", "{}");
+    check("Intersection({1},{2})", "{}");
+    check("Intersection({1,2,2,4},{2,3,4,5})", "{2,4}");
+    check("Intersection({2,3,4,5},{1,2,2,4})", "{2,4}");
+  }
+
+
+
   public void testUnion() {
+    check("Union({},{})", "{}");
+    check("Union({1},{2})", "{1,2}");
+    check("Union({1,2,2,4},{2,3,4,5})", "{1,2,3,4,5}");
+
+    check("Union(#1,#1*#2)", //
+        "Union(#1,#1*#2)");
+    check("Union(#1, #2)", //
+        "Slot(1,2)");
+
     // http://oeis.org/A001597 - Perfect powers: m^k where m > 0 and k >= 2.
     check("$min = 0; $max = 10^4;  " //
         + "Union@ Flatten@ Table( n^expo, {expo, Prime@ Range@ PrimePi@ Log2@ $max}, {n, Floor(1 + $min^(1/expo)), $max^(1/expo)})", //

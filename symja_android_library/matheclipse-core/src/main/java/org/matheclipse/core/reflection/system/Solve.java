@@ -1897,7 +1897,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
 
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
-      final EvalEngine engine) {
+      final EvalEngine engine, IAST originalAST) {
     boolean isNumericArgument = ast.arg1().isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG);
     if (argSize > 0 && argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);

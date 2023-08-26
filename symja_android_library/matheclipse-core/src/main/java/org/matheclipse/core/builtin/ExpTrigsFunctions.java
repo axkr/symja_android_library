@@ -65,6 +65,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
@@ -273,6 +274,11 @@ public class ExpTrigsFunctions {
     @Override
     public IAST getRuleAST() {
       return RULES;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      return ast.argSize() == 1 ? ast.arg1().acos() : F.NIL;
     }
 
     @Override
@@ -847,6 +853,11 @@ public class ExpTrigsFunctions {
     @Override
     public IAST getRuleAST() {
       return RULES;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      return ast.argSize() == 1 ? ast.arg1().asin() : F.NIL;
     }
 
     @Override
@@ -1434,6 +1445,11 @@ public class ExpTrigsFunctions {
     }
 
     @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      return ast.argSize() == 1 ? ast.arg1().cos() : F.NIL;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -1702,6 +1718,18 @@ public class ExpTrigsFunctions {
     }
 
     @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        IExpr z = ast.arg1();
+        if (z.isZero()) {
+          return F.CComplexInfinity;
+        }
+        return z.sin().reciprocal();
+      }
+      return F.NIL;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -1811,6 +1839,14 @@ public class ExpTrigsFunctions {
     @Override
     public IAST getRuleAST() {
       return RULES;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        return ((IInexactNumber) ast.arg1()).cosh();
+      }
+      return F.NIL;
     }
 
     @Override
@@ -2357,6 +2393,21 @@ public class ExpTrigsFunctions {
     }
 
     @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        IInexactNumber num = (IInexactNumber) ast.arg1();
+        if (num.isZero()) {
+          return F.Indeterminate;
+        }
+        if (num.isNegative()) {
+          return engine.evaluate(F.Plus(num.negate().log(), F.Times(CI, S.Pi)));
+        }
+        return num.log();
+      }
+      return F.NIL;
+    }
+
+    @Override
     public void setUp(ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -2741,6 +2792,18 @@ public class ExpTrigsFunctions {
     }
 
     @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        IExpr z = ast.arg1();
+        if (z.equals(F.CPiHalf)) {
+          return F.CComplexInfinity;
+        }
+        return z.cos().reciprocal();
+      }
+      return F.NIL;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -3018,6 +3081,14 @@ public class ExpTrigsFunctions {
     }
 
     @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        return ((IInexactNumber) ast.arg1()).sin();
+      }
+      return F.NIL;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -3254,6 +3325,14 @@ public class ExpTrigsFunctions {
     }
 
     @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        return ((IInexactNumber) ast.arg1()).sinh();
+      }
+      return F.NIL;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -3395,6 +3474,14 @@ public class ExpTrigsFunctions {
     }
 
     @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        return ((IInexactNumber) ast.arg1()).tan();
+      }
+      return F.NIL;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -3502,6 +3589,14 @@ public class ExpTrigsFunctions {
     @Override
     public IAST getRuleAST() {
       return RULES;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        return ((IInexactNumber) ast.arg1()).tanh();
+      }
+      return F.NIL;
     }
 
     @Override

@@ -1915,7 +1915,7 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
-        final EvalEngine engine) {
+        final EvalEngine engine, IAST originalAST) {
 
       boolean heads = option[0].isTrue();
 
@@ -2938,7 +2938,7 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
-        final EvalEngine engine) {
+        final EvalEngine engine, IAST originalAST) {
 
       boolean heads = option[0].isTrue();
 
@@ -3104,7 +3104,7 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
-        final EvalEngine engine) {
+        final EvalEngine engine, IAST originalAST) {
 
       boolean heads = option[0].isTrue();
       if (argSize < 2) {
@@ -4167,7 +4167,7 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
-        final EvalEngine engine) {
+        final EvalEngine engine, IAST originalAST) {
 
       boolean heads = option[0].isTrue();
 

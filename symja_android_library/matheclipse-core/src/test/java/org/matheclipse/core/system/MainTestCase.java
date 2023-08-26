@@ -2510,42 +2510,6 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Tan(-3*Pi)", "0");
   }
 
-  public void testSystem327() {
-    check("Union({},{})", "{}");
-  }
-
-  public void testSystem328() {
-    check("Union({1},{2})", "{1,2}");
-  }
-
-  public void testSystem329() {
-    check("Union({1,2,2,4},{2,3,4,5})", "{1,2,3,4,5}");
-  }
-
-  public void testSystem330() {
-    check("Intersection({},{})", "{}");
-  }
-
-  public void testSystem331() {
-    check("Intersection({1},{2})", "{}");
-  }
-
-  public void testSystem332() {
-    check("Intersection({1,2,2,4},{2,3,4,5})", "{2,4}");
-    check("Intersection({2,3,4,5},{1,2,2,4})", "{2,4}");
-  }
-
-  public void testSystem333() {
-    check("Complement({},{})", "{}");
-  }
-
-  public void testSystem334() {
-    check("Complement({1,2,3},{2,3,4})", "{1}");
-    check("Complement({2,3,4},{1,2,3})", "{4}");
-    check("Complement({1},{2})", "{1}");
-    check("Complement({1,2,2,4,6},{2,3,4,5})", "{1,6}");
-  }
-
   public void testSystem335() {
     check("CartesianProduct({},{})", //
         "{}");

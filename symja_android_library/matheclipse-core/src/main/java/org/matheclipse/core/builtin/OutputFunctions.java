@@ -664,7 +664,7 @@ public final class OutputFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
-        final EvalEngine engine) {
+        final EvalEngine engine, IAST originalAST) {
       if (argSize >= 1) {
         // IExpr tableHeadings = option[0];
         IExpr arg1 = ast.arg1().normal(false);

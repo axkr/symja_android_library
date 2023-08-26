@@ -670,7 +670,7 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
-        final EvalEngine engine) {
+        final EvalEngine engine, IAST originalAST) {
 
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
@@ -1023,7 +1023,7 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
-        final EvalEngine engine) {
+        final EvalEngine engine, IAST originalAST) {
 
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();

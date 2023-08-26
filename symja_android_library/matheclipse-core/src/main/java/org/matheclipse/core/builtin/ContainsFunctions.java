@@ -55,7 +55,7 @@ public class ContainsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
-        final EvalEngine engine) {
+        final EvalEngine engine, IAST originalAST) {
       if (argSize >= 2 && validateArgs(ast.arg1(), ast.arg2(), engine)) {
         IExpr sameTest = option[0].equals(S.Automatic) ? S.SameQ : option[0];
         IAST list1 = (IAST) ast.arg1();

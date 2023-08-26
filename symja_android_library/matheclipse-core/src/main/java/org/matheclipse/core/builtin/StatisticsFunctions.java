@@ -5380,7 +5380,7 @@ public class StatisticsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
-        final EvalEngine engine) {
+        final EvalEngine engine, IAST originalAST) {
       int[] dimension = ast.arg1().isMatrix();
       RealMatrix matrix = ast.arg1().toRealMatrix();
       if (dimension != null) {

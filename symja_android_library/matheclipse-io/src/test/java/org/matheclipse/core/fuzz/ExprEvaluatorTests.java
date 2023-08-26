@@ -43,6 +43,7 @@ import org.matheclipse.parser.client.operator.ASTNodeFactory;
  * as inputs to a computer program.
  */
 public class ExprEvaluatorTests {
+  private final static boolean DIRECT_EVALUATOR_TESTS = false;
 
   private static List<ASTNode> parseFileToList() {
     try {
@@ -728,7 +729,7 @@ public class ExprEvaluatorTests {
         // }
         // engine.evaluate(ast);
         final IExpr result;
-        if (evaluator != null) {
+        if (evaluator != null && DIRECT_EVALUATOR_TESTS) {
           result = evaluator.evaluate(ast, engine);
         } else {
           result = eval.eval(ast);

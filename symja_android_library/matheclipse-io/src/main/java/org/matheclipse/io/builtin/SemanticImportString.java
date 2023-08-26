@@ -25,7 +25,7 @@ public class SemanticImportString extends AbstractFunctionOptionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
-      final EvalEngine engine) {
+      final EvalEngine engine, IAST originalAST) {
     if (!(ast.arg1() instanceof IStringX)) {
       return F.NIL;
     }

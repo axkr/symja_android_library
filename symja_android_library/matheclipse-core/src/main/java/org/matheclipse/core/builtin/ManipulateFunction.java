@@ -458,7 +458,8 @@ public class ManipulateFunction {
         if (plotRangeY.isNIL()) {
           return F.NIL;
         }
-        plot3D(listOfFunctions, plotRangeX, plotRangeY, graphicControl, colorMap, toJS);
+        plot3D(listOfFunctions, plotRangeX, plotRangeY, graphicControl, optionPlotRange, colorMap,
+            toJS);
       } else if (manipulateAST.arg1().isAST(S.ComplexPlot3D)) {
         if (plotRangeY.isPresent()) {
           return F.NIL;
@@ -545,8 +546,19 @@ public class ManipulateFunction {
       graphicControl.append("];\n");
     }
 
+    /**
+     * 
+     * @param listOfFunctions
+     * @param plotRangeX
+     * @param plotRangeY
+     * @param graphicControl
+     * @param optionPlotRange example <code>{Full,{-2,2}}</code> for z-axis range
+     * @param colorMap
+     * @param toJS
+     */
     public static void plot3D(IAST listOfFunctions, IAST plotRangeX, IAST plotRangeY,
-        StringBuilder graphicControl, String colorMap, JavaScriptFormFactory toJS) {
+        StringBuilder graphicControl, IAST optionPlotRange, String colorMap,
+        JavaScriptFormFactory toJS) {
       for (int i = 1; i < listOfFunctions.size(); i++) {
         graphicControl.append("var p" + i + " = ");
         graphicControl.append("parametric( z" + i + ", ");
@@ -557,7 +569,18 @@ public class ManipulateFunction {
         graphicControl.append(colorMap);
         graphicControl.append("' } );\n");
       }
-      graphicControl.append("\n  var config = { type: 'threejs' };\n");
+
+      graphicControl.append("\n  var config = { type: 'threejs' ");
+      if (optionPlotRange.isPresent() && optionPlotRange.second().isAST(S.List, 3)) {
+        IAST list = (IAST) optionPlotRange.second();
+        // var config = { type: 'svg', yMin: -5, yMax: 5 };
+        graphicControl.append(", zMin: ");
+        toJS.convert(graphicControl, list.arg1());
+        graphicControl.append(", zMax: ");
+        toJS.convert(graphicControl, list.arg2());
+      }
+      graphicControl.append("};\n");
+
       graphicControl.append("  var data = [");
       for (int i = 1; i < listOfFunctions.size(); i++) {
         graphicControl.append("p" + i);

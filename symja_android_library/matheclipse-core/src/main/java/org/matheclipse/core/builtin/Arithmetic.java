@@ -105,6 +105,7 @@ import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
@@ -374,6 +375,11 @@ public final class Arithmetic {
     @Override
     public IAST getRuleAST() {
       return RULES;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      return ast.argSize() == 1 ? ast.arg1().abs() : F.NIL;
     }
 
     @Override
@@ -666,6 +672,11 @@ public final class Arithmetic {
         return F.C0;
       }
       return result;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      return ast.argSize() == 1 ? ast.arg1().complexArg() : F.NIL;
     }
 
     @Override
@@ -1086,6 +1097,11 @@ public final class Arithmetic {
         return IntervalSym.mapSymbol(S.Conjugate, (IAST) arg1);
       }
       return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      return ast.argSize() == 1 ? ast.arg1().conjugate() : F.NIL;
     }
 
     @Override
@@ -2022,11 +2038,43 @@ public final class Arithmetic {
           // IASTAppendable result = F.PlusAlloc(n);
           // return result.appendArgs(n + 1, i -> Power(F.ZZ(i), arg2Negate));
         }
-        if (engine.isNumericMode() && arg1.isNumber() && arg2.isNumber()) {
-          return F.Plus(F.Negate(F.HurwitzZeta(arg2, F.Plus(F.C1, arg1))), F.Zeta(arg2));
-        }
         return F.NIL;
       }
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        IInexactNumber n = (IInexactNumber) ast.arg1();
+        if (n.isMathematicalIntegerNegative()) {
+          return F.CComplexInfinity;
+        }
+        if (engine.isArbitraryMode()) {
+          if (n instanceof ApfloatNum) {
+            return e1ApfloatArg(((ApfloatNum) n).apfloatValue());
+          }
+          if (n instanceof ApcomplexNum) {
+            return e1ApcomplexArg(((ApcomplexNum) n).apcomplexValue());
+          }
+        }
+        IAST harmonicNumber = harmoniNumberPolyGamma(n);
+        return engine.evaluate(harmonicNumber);
+      } else if (ast.argSize() == 2) {
+        IInexactNumber n = (IInexactNumber) ast.arg1();
+        IInexactNumber r = (IInexactNumber) ast.arg2();
+        IAST harmonicNumber;
+        if (r.isOne()) {
+          harmonicNumber = harmoniNumberPolyGamma(n);
+        } else {
+          harmonicNumber = F.Plus(F.Negate(F.HurwitzZeta(r, F.Plus(F.C1, n))), F.Zeta(r));
+        }
+        return engine.evaluate(harmonicNumber);
+      }
+      return F.NIL;
+    }
+
+    private IAST harmoniNumberPolyGamma(IInexactNumber n) {
+      return F.Plus(S.EulerGamma, F.PolyGamma(F.C0, F.Plus(F.C1, n)));
     }
 
     @Override
@@ -2208,6 +2256,12 @@ public final class Arithmetic {
         }
       });
       return evaled[0];
+    }
+
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      return ast.argSize() == 1 ? ast.arg1().im() : F.NIL;
     }
 
     @Override
@@ -2973,6 +3027,18 @@ public final class Arithmetic {
         return F.eval(F.Plus(infinite, o));
       }
       return newExpr;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() > 0) {
+        IInexactNumber num = (IInexactNumber) ast.arg1();
+        for (int i = 2; i < ast.size(); i++) {
+          num = num.plus((IInexactNumber) ast.get(i));
+        }
+        return num;
+      }
+      return F.C0;
     }
 
     @Override
@@ -4995,6 +5061,11 @@ public final class Arithmetic {
     }
 
     @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      return ast.argSize() == 1 ? ast.arg1().re() : F.NIL;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -6370,6 +6441,18 @@ public final class Arithmetic {
         return temp;
       }
       return evaluate(ast, engine);
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() > 0) {
+        IInexactNumber num = (IInexactNumber) ast.arg1();
+        for (int i = 2; i < ast.size(); i++) {
+          num = num.times((IInexactNumber) ast.get(i));
+        }
+        return num;
+      }
+      return F.C1;
     }
 
     @Override

@@ -61,6 +61,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IRational;
@@ -499,6 +500,24 @@ public class SpecialFunctions {
         return F.Subtract(F.Erf(ast.arg2()), F.Erf(ast.arg1()));
       }
       return super.evaluate(ast, engine);
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        IInexactNumber z = (IInexactNumber) ast.arg1();
+        if (engine.isDoubleMode()) {
+          try {
+            if (z.isComplexNumeric()) {
+              return F.complexNum(GammaJS.erf(z.evalfc()));
+            }
+            return Num.valueOf(de.lab4inf.math.functions.Erf.erf(z.evalf()));
+          } catch (final MathIllegalStateException e) {
+            return Errors.printRuntimeException(S.Erf, e, engine);
+          }
+        }
+      }
+      return F.NIL;
     }
 
     @Override
@@ -1664,67 +1683,86 @@ public class SpecialFunctions {
      */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      IExpr arg2 = ast.arg2();
+      IExpr n = ast.arg1();
+      IExpr x = ast.arg2();
+      IExpr temp = polyLogSymbolic(n, x);
+      if (temp.isPresent()) {
+        return temp;
+      }
+      return F.NIL;
+    }
 
-      if (arg2.isZero()) {
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        IInexactNumber n = (IInexactNumber) ast.arg1();
+        IInexactNumber z = (IInexactNumber) ast.arg2();
+
+        IExpr temp = polyLogSymbolic(n, z);
+        if (temp.isPresent()) {
+          return temp;
+        }
+
+        if (engine.isDoubleMode()) {
+          try {
+            double nDouble = Double.NaN;
+            double xDouble = Double.NaN;
+            try {
+              nDouble = n.evalf();
+              xDouble = z.evalf();
+            } catch (ValidateException ve) {
+            }
+
+            if (Double.isNaN(nDouble) || Double.isNaN(xDouble)) {
+              Complex nComplex = n.evalfc();
+              Complex xComplex = z.evalfc();
+              return F.complexNum(ZetaJS.polyLog(nComplex, xComplex));
+            } else {
+              return F.complexNum(ZetaJS.polyLog(nDouble, xDouble));
+            }
+
+          } catch (RuntimeException rex) {
+            Errors.printMessage(S.PolyLog, rex, engine);
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    private IExpr polyLogSymbolic(IExpr n, IExpr x) {
+      if (x.isZero()) {
         return F.C0;
       }
-      if (arg2.isOne()) {
-        if (arg1.isOne()) {
+      if (x.isOne()) {
+        if (n.isOne()) {
           return F.CInfinity;
         }
-        IExpr temp = arg1.re();
+        IExpr temp = n.re();
         if (temp.isReal()) {
           IReal num = (IReal) temp;
           if (num.isOne()) {
             return S.Indeterminate;
           } else if (num.isGT(F.C1)) {
-            return F.Zeta(arg1);
+            return F.Zeta(n);
           } else {
             return F.CComplexInfinity;
           }
         }
-      } else if (arg2.isMinusOne()) {
+      } else if (x.isMinusOne()) {
         // (2^(1-arg1)-1)*Zeta(arg1)
-        return Times(Plus(CN1, Power(C2, Plus(C1, Negate(arg1)))), Zeta(arg1));
+        return Times(Plus(CN1, Power(C2, Plus(C1, Negate(n)))), Zeta(n));
       }
 
-      if (arg1.isReal()) {
-        if (arg1.isZero()) {
+      if (n.isReal()) {
+        if (n.isZero()) {
           // arg2/(1 - arg2)
-          return Times(arg2, Power(Plus(C1, Negate(arg2)), -1));
-        } else if (arg1.isOne()) {
+          return Times(x, Power(Plus(C1, Negate(x)), -1));
+        } else if (n.isOne()) {
           // -Log(1 - arg2))
-          return Negate(Log(Plus(C1, Negate(arg2))));
-        } else if (arg1.isMinusOne()) {
+          return Negate(Log(Plus(C1, Negate(x))));
+        } else if (n.isMinusOne()) {
           // arg2/(arg2 - 1)^2
-          return Times(arg2, Power(Plus(C1, Negate(arg2)), -2));
-        }
-      }
-      if (engine.isDoubleMode()) {
-        try {
-          double nDouble = Double.NaN;
-          double xDouble = Double.NaN;
-          try {
-            nDouble = arg1.evalf();
-            xDouble = arg2.evalf();
-          } catch (ValidateException ve) {
-          }
-
-          if (Double.isNaN(nDouble) || Double.isNaN(xDouble)) {
-            Complex nComplex = arg1.evalfc();
-            Complex xComplex = arg2.evalfc();
-            return F.complexNum(ZetaJS.polyLog(nComplex, xComplex));
-          } else {
-            return F.complexNum(ZetaJS.polyLog(nDouble, xDouble));
-          }
-
-        } catch (ThrowException te) {
-          LOGGER.debug("PolyLog.evaluate() failed", te);
-          return te.getValue();
-        } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return Times(x, Power(Plus(C1, Negate(x)), -2));
         }
       }
       return F.NIL;

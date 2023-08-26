@@ -22,7 +22,7 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
       argSize = AbstractFunctionEvaluator.determineOptions(option, ast, ast.argSize(),
           expectedArgSize(ast), optionSymbols, engine);
     }
-    return evaluate(ast, argSize, option, engine);
+    return evaluate(ast, argSize, option, engine, ast);
   }
 
   protected void setOptions(final ISymbol symbol, IBuiltInSymbol lhsOptionSymbol, IExpr rhsValue) {
@@ -38,10 +38,11 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
     super.setOptions(symbol, list);
   }
 
+  @Override
   public IBuiltInSymbol[] getOptionSymbols() {
     return optionSymbols;
   }
 
   public abstract IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
-      final EvalEngine engine);
+      final EvalEngine engine, IAST originalAST);
 }
