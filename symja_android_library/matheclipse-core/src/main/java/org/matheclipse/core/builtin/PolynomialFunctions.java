@@ -29,7 +29,9 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -44,6 +46,7 @@ import org.matheclipse.core.polynomials.longexponent.ExprTermOrder;
 import org.matheclipse.core.polynomials.symbolicexponent.ExpVectorSymbolic;
 import org.matheclipse.core.polynomials.symbolicexponent.SymbolicPolynomial;
 import org.matheclipse.core.polynomials.symbolicexponent.SymbolicPolynomialRing;
+import org.matheclipse.core.reflection.system.rules.JacobiPRules;
 import org.matheclipse.core.reflection.system.rules.LegendrePRules;
 import org.matheclipse.core.reflection.system.rules.LegendreQRules;
 import org.matheclipse.core.reflection.system.rules.SphericalHarmonicYRules;
@@ -89,6 +92,7 @@ public class PolynomialFunctions {
       S.Exponent.setEvaluator(new Exponent());
       S.GroebnerBasis.setEvaluator(new GroebnerBasis());
       S.HermiteH.setEvaluator(new HermiteH());
+      S.JacobiP.setEvaluator(new JacobiP());
       S.LaguerreL.setEvaluator(new LaguerreL());
       S.LegendreP.setEvaluator(new LegendreP());
       S.LegendreQ.setEvaluator(new LegendreQ());
@@ -972,8 +976,7 @@ public class PolynomialFunctions {
           ring.create(a);
         } catch (RuntimeException ex) {
           // Polynomial expected at position `1` in `2`.
-          return Errors.printMessage(ast.topHead(), "polynomial", F.list(ast.get(1), F.C1),
-              engine);
+          return Errors.printMessage(ast.topHead(), "polynomial", F.list(ast.get(1), F.C1), engine);
         }
         try {
           // check if b is a polynomial otherwise check ArithmeticException, ClassCastException
@@ -984,8 +987,7 @@ public class PolynomialFunctions {
           }
         } catch (RuntimeException ex) {
           // Polynomial expected at position `1` in `2`.
-          return Errors.printMessage(ast.topHead(), "polynomial", F.list(ast.get(2), F.C2),
-              engine);
+          return Errors.printMessage(ast.topHead(), "polynomial", F.list(ast.get(2), F.C2), engine);
         }
       }
       return F.NIL;
@@ -1140,13 +1142,100 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // int degree = ast.arg1().toIntDefault();
-      // if (degree >= 0) {
-      // if (degree > Config.MAX_POLYNOMIAL_DEGREE) {
-      // PolynomialDegreeLimitExceeded.throwIt(degree);
-      // }
-      // return PolynomialsUtils.createLegendrePolynomial(degree, ast.arg2());
-      // }
+      IExpr l = ast.arg1();
+      IExpr m = ast.arg2();
+      IExpr t = ast.arg3();
+      IExpr p = ast.arg4();
+
+      IExpr temp = integerArgsSphericalHarmonicY(l, m, t, p, engine);
+      if (temp.isPresent()) {
+        return temp;
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 4) {
+        IInexactNumber l = (IInexactNumber) ast.arg1();
+        IInexactNumber m = (IInexactNumber) ast.arg2();
+        IInexactNumber t = (IInexactNumber) ast.arg3();
+        IInexactNumber p = (IInexactNumber) ast.arg4();
+        IExpr temp = integerArgsSphericalHarmonicY(l, m, t, p, engine);
+        if (temp.isPresent()) {
+          return temp;
+        }
+        if (m.isZero()) {
+          // (Sqrt(1+2*l)*LegendreP(l,Cos(t)))/(2*Sqrt(Pi))
+          return F.Times(F.Sqrt(F.Plus(F.C1, F.Times(F.C2, l))),
+              F.Power(F.Times(F.C2, F.CSqrtPi), F.CN1), F.LegendreP(l, F.Cos(t)));
+        }
+        if (m.isOne()) {
+          // (-E^(I*p)*l*(1+l)*Sqrt(1+2*l)*Sqrt(Gamma(l))*Hypergeometric2F1(1-l,2+l,2,Sin(t/2)^2)*Sin(t))/(4*Sqrt(Pi)*Sqrt(Gamma(2+l)))
+          INumber v1 = F.C2.plus(l);
+          INumber v2 = F.C1.subtract(l);
+          IAST hypergeometric2f1 =
+              F.Hypergeometric2F1(v2, v1, F.C2, F.Sqr(F.Sin(F.Times(F.C1D2, t))));
+          IAST sphericalHarmonicY = F.Times(F.C1D4, F.Exp(F.Times(F.CI, p)), F.CN1.subtract(l), l,
+              F.Sqrt(F.Plus(F.C1, F.Times(F.C2, l))), F.Power(F.Pi, F.CN1D2), F.Sqrt(F.Gamma(l)),
+              F.Power(F.Gamma(v1), F.CN1D2), hypergeometric2f1, F.Sin(t));
+          return engine.evaluate(sphericalHarmonicY);
+        }
+
+        // (E^(I*m*p)*Sqrt(1+2*l)*Sqrt(Gamma(1+l-m))*Hypergeometric2F1(-l,1+l,1-m,Sin(t/2)^2)*Sin(t)^m)/((1-Cos(t))^m*2*Sqrt(Pi)*Gamma(1-m)*Sqrt(Gamma(1+l+m)))
+        INumber v1 = F.C1.subtract(m);
+        INumber v2 = m.negate();
+        IAST hypergeometric2f1 =
+            F.Hypergeometric2F1(l.negate(), F.C1.plus(l), v1, F.Sqr(F.Sin(F.Times(F.C1D2, t))));
+        IAST sphericalHarmonicY =
+            F.Times(F.C1D2, F.Exp(F.Times(F.CI, m, p)), F.Sqrt(F.Plus(F.C1, F.Times(F.C2, l))),
+                F.Power(F.Pi, F.CN1D2), F.Power(F.Subtract(F.C1, F.Cos(t)), v2),
+                F.Power(F.Gamma(F.Plus(F.C1, l, m)), F.CN1D2), F.Power(F.Gamma(v1), F.CN1),
+                F.Sqrt(F.Gamma(F.Plus(l, v1))), hypergeometric2f1, F.Power(F.Sin(t), m));
+        return engine.evaluate(sphericalHarmonicY);
+
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Check if <code>l</code> and <code>m</code> are mathematical integers and call {@link S#Sum}
+     * formula for evaluation.
+     * 
+     * @param l
+     * @param m
+     * @param t
+     * @param p
+     * @return
+     */
+    private IExpr integerArgsSphericalHarmonicY(IExpr l, IExpr m, IExpr t, IExpr p,
+        EvalEngine engine) {
+      if (l.isMathematicalIntegerNonNegative() && m.isMathematicalIntegerNonNegative()) {
+        int n = l.toIntDefault();
+        if (n >= 0) {
+          n /= 2;
+          if (m.lessEqual(l).isTrue()) {
+            // ((-1)^m/2^(1-l)*E^(I*p*m)*Sqrt(((2*l+1)*(l-m)!)/(l+m)!)*(Sin(t)^2)^(m/2)*Sum(((-
+            // 1)^k*Gamma(-k+l+1/2))/(Cos(t)^(2*k-l)*2^(2*k)*k!*Gamma(-2*k+l-m+1)),{k,0,Floor(l/
+            // 2)}))/(Pi*Cos(t)^m)
+            IExpr plusSubexpr = l.plus(m.negate()).plus(F.C1);
+            IExpr sum = F.sum(
+                k -> F.Times(F.Power(F.Cos(t), F.Plus(F.Times(F.CN2, k), l)), F.Power(F.CN1, k),
+                    F.Gamma(F.Plus(k.negate(), l, F.C1D2)),
+                    F.Power(F.Times(F.Power(F.C2, F.Times(F.C2, k)), F.Factorial(k),
+                        F.Gamma(F.Plus(F.Times(F.CN2, k), plusSubexpr))), F.CN1)), //
+                0, n);
+            IAST spericalHarmonicY = F.Times(F.Power(F.CN1, m), F.Power(F.C2, F.Plus(F.CN1, l)),
+                F.Exp(F.Times(F.CI, p, m)), F.Power(F.Times(F.Pi, F.Power(F.Cos(t), m)), F.CN1),
+                F.Sqrt(F.Times(F.Plus(F.Times(F.C2, l), F.C1), F.Factorial(F.Subtract(l, m)),
+                    F.Power(F.Factorial(F.Plus(l, m)), F.CN1))),
+                F.Power(F.Sqr(F.Sin(t)), F.Times(F.C1D2, m)), //
+                sum);
+            return engine.evaluate(spericalHarmonicY);
+          }
+        }
+      }
       return F.NIL;
     }
 
@@ -1166,6 +1255,7 @@ public class PolynomialFunctions {
       super.setUp(newSymbol);
     }
   }
+
   /**
    *
    *
@@ -1201,10 +1291,6 @@ public class PolynomialFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
-      if (engine.isNumericMode() && n.isNumber() && z.isNumber()) {
-        // (n, z) => Cos(n*ArcCos(z))
-        return F.Cos.of(engine, F.Times(n, F.ArcCos(z)));
-      }
 
       int degree = n.toIntDefault();
       if (degree != Integer.MIN_VALUE) {
@@ -1224,6 +1310,18 @@ public class PolynomialFunctions {
       if (z.isZero()) {
         // Cos(Pi*n*(1/2))
         return F.Cos(F.Times(F.C1D2, S.Pi, n));
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        IInexactNumber n = (IInexactNumber) ast.arg1();
+        IInexactNumber z = (IInexactNumber) ast.arg2();
+        // (n, z) => Cos(n*ArcCos(z))
+        return F.Cos.of(engine, F.Times(n, F.ArcCos(z)));
       }
 
       return F.NIL;
@@ -1276,11 +1374,6 @@ public class PolynomialFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
-      if (engine.isNumericMode() && n.isNumber() && z.isNumber()) {
-        // Sin((n + 1)*ArcCos(z))/Sqrt(1 - z^2)
-        return F.Times.of(engine, F.Power(F.Plus(F.C1, F.Negate(F.Sqr(z))), F.CN1D2),
-            F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(z))));
-      }
 
       int degree = n.toIntDefault();
       if (degree != Integer.MIN_VALUE) {
@@ -1325,6 +1418,19 @@ public class PolynomialFunctions {
       }
       if (z.isOne()) {
         return F.Plus(F.C1, n);
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        IInexactNumber n = (IInexactNumber) ast.arg1();
+        IInexactNumber z = (IInexactNumber) ast.arg2();
+        // Sin((n + 1)*ArcCos(z))/Sqrt(1 - z^2)
+        return F.Times.of(engine, F.Power(F.Plus(F.C1, F.Negate(F.Sqr(z))), F.CN1D2),
+            F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(z))));
       }
 
       return F.NIL;
@@ -1589,15 +1695,45 @@ public class PolynomialFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
-      IExpr x = ast.arg2();
-      if (x.isZero()) {
-        // (2^n * Sqrt(Pi))/Gamma((1 - n)/2)
-        return F.Times(F.Power(F.C2, n), F.CSqrtPi,
-            F.Power(F.Gamma(F.Times(F.C1D2, F.Subtract(F.C1, n))), F.CN1));
+      IExpr z = ast.arg2();
+      if (z.isZero()) {
+        return hermiteHZero(n);
       }
       int degree = n.toIntDefault();
       if (degree >= 0) {
-        return PolynomialsUtils.createHermitePolynomial(degree, x);
+        return PolynomialsUtils.createHermitePolynomial(degree, z);
+      }
+
+      return F.NIL;
+    }
+
+    private static IExpr hermiteHZero(IExpr n) {
+      // https://functions.wolfram.com/Polynomials/HermiteH/03/01/01/0001/
+      // (2^n * Sqrt(Pi))/Gamma((1 - n)/2)
+      return F.Times(F.Power(F.C2, n), F.CSqrtPi,
+          F.Power(F.Gamma(F.Times(F.C1D2, F.Subtract(F.C1, n))), F.CN1));
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        IInexactNumber n = (IInexactNumber) ast.arg1();
+        IInexactNumber z = (IInexactNumber) ast.arg2();
+        if (z.isZero()) {
+          IExpr hermiteH = hermiteHZero(n);
+          return engine.evaluate(hermiteH);
+        }
+        // https://functions.wolfram.com/Polynomials/HermiteH/26/01/02/0001/
+        // 2^n*Sqrt(Pi)*((-2*z*Hypergeometric1F1(1/2*(1-n),3/2,z^2))/Gamma((-1)*1/2*n)+Hypergeometric1F1((-1)*1/2*n,1/2,z^2)/Gamma(1/2*(1-n)))
+        IExpr v1 = F.Times(F.C1D2, F.Subtract(F.C1, n));
+        IExpr v2 = F.Times(F.CN1, F.C1D2, n);
+        IExpr v3 = F.Sqr(z);
+        IAST hermiteH = F.Times(F.Power(F.C2, n), F.CSqrtPi,
+            F.Plus(
+                F.Times(F.CN2, z, F.Power(F.Gamma(v2), F.CN1),
+                    F.Hypergeometric1F1(v1, F.QQ(3L, 2L), v3)),
+                F.Times(F.Power(F.Gamma(v1), F.CN1), F.Hypergeometric1F1(v2, F.C1D2, v3))));
+        return engine.evaluate(hermiteH);
       }
 
       return F.NIL;
@@ -1606,6 +1742,93 @@ public class PolynomialFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.NUMERICFUNCTION | ISymbol.LISTABLE);
+      super.setUp(newSymbol);
+    }
+  }
+
+  private static final class JacobiP extends AbstractFunctionEvaluator implements JacobiPRules {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      IExpr n = ast.arg1();
+      IExpr a = ast.arg2();
+      IExpr b = ast.arg3();
+      IExpr z = ast.arg4();
+      IExpr negZ = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
+      if (negZ.isPresent()) {
+        // (-1)^n*JacobiP(n,b,a,z)
+        return F.Times(F.Power(F.CN1, n), F.JacobiP(n, b, a, negZ));
+      }
+      if (n.isMathematicalIntegerNonNegative()) {
+        return jacobiPSum((INumber) n, a, b, z, engine);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 4) {
+        IInexactNumber n = (IInexactNumber) ast.arg1();
+        IInexactNumber a = (IInexactNumber) ast.arg2();
+        IInexactNumber b = (IInexactNumber) ast.arg3();
+        IInexactNumber z = (IInexactNumber) ast.arg4();
+        if (n.isMathematicalIntegerNonNegative()) {
+          return jacobiPSum(n, a, b, z, engine);
+        }
+        INumber aNegate = a.negate();
+        if (!aNegate.isMathematicalIntegerNonNegative()) {
+          // https://functions.wolfram.com/Polynomials/JacobiP/26/01/02/0001/
+          // Gamma(a+n+1)/(Gamma(n+1)*Gamma(a+1))*Hypergeometric2F1(-n,a+b+n+1,a+1,1/2*(1-z))
+          IExpr v1 = F.Plus(a, F.C1);
+          IAST jacobiP = F.Times(F.Power(F.Gamma(F.Plus(F.C1, n)), F.CN1),
+              F.Power(F.Gamma(v1), F.CN1), F.Gamma(F.Plus(n, v1)), F.Hypergeometric2F1(F.Negate(n),
+                  F.Plus(b, n, v1), v1, F.Times(F.C1D2, F.Subtract(F.C1, z))));
+          return engine.evaluate(jacobiP);
+        }
+
+      }
+
+      return F.NIL;
+    }
+
+    private IExpr jacobiPSum(INumber n, IExpr a, IExpr b, IExpr z, final EvalEngine engine) {
+      // https://functions.wolfram.com/Polynomials/JacobiP/03/01/04/0008/
+      // Sum((Binomial(a+n,k)*Binomial(b+n,-k+n)*(z+1)^k)/(-1+z)^(k-n),{k,0,n})/2^n
+      int ni = n.toIntDefault();
+      if (ni >= 0) {
+        // https://functions.wolfram.com/Polynomials/JacobiP/03/01/04/0008/
+        // Sum((Binomial(a+n,k)*Binomial(b+n,-k+n)*(z+1)^k)/(-1+z)^(k-n),{k,0,n})/2^n
+        IExpr sum = F.sum(
+            k -> F.Times(F.Binomial(F.Plus(a, n), k),
+                F.Binomial(F.Plus(b, n), F.Plus(k.negate(), n)), F.Power(F.Plus(z, F.C1), k),
+                F.Power(F.Plus(F.CN1, z), F.Plus(k.negate(), n))), //
+            0, ni);
+        IAST jacobiP = F.Times(F.Power(F.Power(F.C2, n), F.CN1), sum);
+        return engine.evaluate(jacobiP);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_4_4;
+    }
+
+    @Override
+    public IAST getRuleAST() {
+      return RULES;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.NUMERICFUNCTION | ISymbol.LISTABLE);
+      super.setUp(newSymbol);
     }
   }
 
@@ -1642,13 +1865,13 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int degree = ast.arg1().toIntDefault();
-      if (degree != Integer.MIN_VALUE) {
+      IExpr n = ast.arg1();
+      int degree = n.toIntDefault();
+      if (degree >= 0) {
         if (degree > Config.MAX_POLYNOMIAL_DEGREE) {
           PolynomialDegreeLimitExceeded.throwIt(degree);
         }
-        if (ast.size() == 4) {
-          IExpr n = ast.arg1();
+        if (ast.isAST3()) {
           IExpr l = ast.arg2();
           IExpr z = ast.arg3();
           return laguerreLRecursive(n, degree, l, z, engine);
@@ -1720,13 +1943,54 @@ public class PolynomialFunctions {
     }
 
     @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() >= 2 && ast.argSize() <= 3) {
+        final IInexactNumber n = (IInexactNumber) ast.arg1();
+        final IInexactNumber l;
+        final IInexactNumber z;
+        if (ast.isAST2()) {
+          l = F.CD0;
+          z = (IInexactNumber) ast.arg2();
+        } else {
+          l = (IInexactNumber) ast.arg2();
+          z = (IInexactNumber) ast.arg3();
+        }
+        if (l.isZero()) {
+          // https://en.wikipedia.org/wiki/Laguerre_polynomials
+          // evaluating E^z/n! * D(z^n/E^z,{z,n})
+          // gives (E^z*Piecewise({{(n!*Hypergeometric1F1(-n,1,z))/E^z,n>=1}},z^n/E^z))/n!
+          IExpr expZ = z.exp();
+          return F
+              .Times(
+                  expZ, F.Power(F.Factorial(n), F.CN1), F
+                      .Piecewise(
+                          F.list(F.list(
+                              F.Times(F.Power(expZ, F.CN1), F.Factorial(n),
+                                  F.Hypergeometric1F1(n.negate(), F.C1, z)),
+                              F.GreaterEqual(n, F.C1))),
+                          F.Times(F.Power(expZ, F.CN1), F.Power(z, n))));
+
+        }
+        // https://en.wikipedia.org/wiki/Laguerre_polynomials#Physicist_Scaling_Convention
+        // (Gamma(l+n+1)*Hypergeometric1F1(-n,l+1,z))/(Gamma(l+1)*n!)
+        INumber nNumber = n;
+        IExpr v1 = ((INumber) l).plus(F.C1);
+        return F.Times(F.Power(F.Factorial(n), F.CN1), F.Power(F.Gamma(v1), F.CN1),
+            F.Gamma(F.Plus(n, v1)), F.Hypergeometric1F1(nNumber.negate(), v1, z));
+
+      }
+
+      return F.NIL;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
     }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -1786,7 +2050,7 @@ public class PolynomialFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(ISymbol.NUMERICFUNCTION | ISymbol.LISTABLE);
       super.setUp(newSymbol);
     }
   }
@@ -1845,7 +2109,7 @@ public class PolynomialFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
+      newSymbol.setAttributes(ISymbol.NUMERICFUNCTION | ISymbol.LISTABLE);
       super.setUp(newSymbol);
     }
   }
