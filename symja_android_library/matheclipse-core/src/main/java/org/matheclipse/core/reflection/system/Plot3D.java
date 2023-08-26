@@ -37,12 +37,12 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
 
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
-      final EvalEngine engine) {
+      final EvalEngine engine, IAST originalAST) {
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
     if (options[0].isTrue()) {
-      IExpr temp = S.Manipulate.of(engine, ast);
+      IExpr temp = S.Manipulate.of(engine, originalAST);
       if (temp.headID() == ID.JSFormData) {
         return temp;
       }
@@ -160,6 +160,6 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     newSymbol.setAttributes(ISymbol.HOLDALL);
     setOptions(newSymbol,
         new IBuiltInSymbol[] {S.JSForm, S.PlotRange, S.ColorFunction, S.DataRange},
-        new IExpr[] {S.False, S.Automatic, S.Automatic, S.Automatic});
+        new IExpr[] {S.True, S.Automatic, S.Automatic, S.Automatic});
   }
 }

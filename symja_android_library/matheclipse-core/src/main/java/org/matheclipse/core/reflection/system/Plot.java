@@ -168,7 +168,7 @@ public class Plot extends ListPlot {
 
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
-      final EvalEngine engine) {
+      final EvalEngine engine, IAST originalAST) {
     if (options[0].isTrue()) { // JSForm option
       IExpr temp = S.Manipulate.of(engine, ast);
       if (temp.headID() == ID.JSFormData) {

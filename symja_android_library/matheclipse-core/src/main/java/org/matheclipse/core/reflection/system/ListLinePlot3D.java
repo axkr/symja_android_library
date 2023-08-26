@@ -207,5 +207,10 @@ public class ListLinePlot3D extends AbstractEvaluator {
   }
 
   @Override
+  public int[] expectedArgSize(IAST ast) {
+    return ARGS_1_INFINITY;
+  }
+
+  @Override
   public void setUp(final ISymbol newSymbol) {}
 }

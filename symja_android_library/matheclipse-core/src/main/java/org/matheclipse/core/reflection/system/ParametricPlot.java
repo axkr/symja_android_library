@@ -20,7 +20,7 @@ public class ParametricPlot extends AbstractFunctionOptionEvaluator {
 
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
-      final EvalEngine engine) {
+      final EvalEngine engine, IAST originalAST) {
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
@@ -33,6 +33,12 @@ public class ParametricPlot extends AbstractFunctionOptionEvaluator {
     }
 
     return F.NIL;
+  }
+
+
+  @Override
+  public int[] expectedArgSize(IAST ast) {
+    return ARGS_2_INFINITY;
   }
 
   @Override
