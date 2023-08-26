@@ -1525,7 +1525,7 @@ public final class Programming {
         if (iterationLimit >= 0 && iterationLimit <= n) {
           IterationLimitExceeded.throwIt(n, ast);
         }
-        return ast.arg2().nest(ast.arg1(), n);
+        return nest(ast.arg2(), ast.arg1(), n, engine);
       }
       return F.NIL;
     }
@@ -1590,7 +1590,7 @@ public final class Programming {
       IExpr temp = expr;
       resultList.append(temp);
       for (int i = 0; i < n; i++) {
-        temp = fn.apply(temp);
+        temp = engine.evaluate(fn.apply(temp));
         resultList.append(temp);
       }
       return resultList;
@@ -2454,8 +2454,7 @@ public final class Programming {
             return Errors.printMessage(builtinSymbol, "rvalue", F.list(symbol), engine);
           } else {
             if (symbol.isProtected()) {
-              return Errors.printMessage(builtinSymbol, "write", F.list(symbol),
-                  EvalEngine.get());
+              return Errors.printMessage(builtinSymbol, "write", F.list(symbol), EvalEngine.get());
             }
             try {
               if (rightHandSide.isList()) {
@@ -3653,8 +3652,7 @@ public final class Programming {
         }
       } else {
         // Variable `1` in local variable specification `2` requires assigning a value
-        Errors.printMessage(S.With, "lvws", F.list(variablesList.get(i), variablesList),
-            engine);
+        Errors.printMessage(S.With, "lvws", F.list(variablesList.get(i), variablesList), engine);
         return false;
       }
     }
@@ -3785,6 +3783,33 @@ public final class Programming {
       return result.orElse(moduleBlock);
     }
     return F.NIL;
+  }
+
+  /**
+   * Nest <code>this</code> expression with <code>head</code> applied <code>n</code> times to <code>
+   * this</code>.
+   *
+   * <pre>
+   * this.nest(h, 4)
+   * </pre>
+   *
+   * gives
+   *
+   * <pre>
+   * h(h(h(h(this))))
+   * </pre>
+   *
+   * @param head the head which should be applied to this n times
+   * @param n a value > 0, otherwise <code>this</code> will be returned as default value
+   * @return
+   */
+  public static IExpr nest(final IExpr expr, final IExpr head, final int n, EvalEngine engine) {
+    IExpr temp = expr;
+    final Function<IExpr, IExpr> function = x -> F.unaryAST1(head, x);
+    for (int i = 0; i < n; i++) {
+      temp = engine.evaluate(function.apply(temp));
+    }
+    return temp;
   }
 
   /**
@@ -4190,8 +4215,8 @@ public final class Programming {
               result.append(temp);
             } else {
               // Part `1` of `2` does not exist.
-              return Errors.printMessage(S.Part, "partw",
-                  F.list(F.ZZ(partPosition), assignedAST), engine);
+              return Errors.printMessage(S.Part, "partw", F.list(F.ZZ(partPosition), assignedAST),
+                  engine);
             }
           } else {
             result.append(ires);
@@ -4293,8 +4318,8 @@ public final class Programming {
               result.append(temp);
             } else {
               // Part `1` of `2` does not exist.
-              return Errors.printMessage(S.Part, "partw",
-                  F.list(F.ZZ(partPosition), assignedAST), engine);
+              return Errors.printMessage(S.Part, "partw", F.list(F.ZZ(partPosition), assignedAST),
+                  engine);
             }
           } else {
             result.append(ires);
