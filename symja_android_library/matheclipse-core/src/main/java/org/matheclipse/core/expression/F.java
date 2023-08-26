@@ -4832,6 +4832,10 @@ public class F extends S {
         .eval(engine);
   }
 
+  public static IAST HermiteH(final IExpr a0, final IExpr a1) {
+    return new AST2(HermiteH, a0, a1);
+  }
+
   public static IAST HermitianMatrixQ(final IExpr a0) {
     return new AST1(HermitianMatrixQ, a0);
   }
@@ -5347,24 +5351,7 @@ public class F extends S {
         ASTElementLimitExceeded.throwIt(numberOfLeaves);
       }
       result.append(temp);
-    }
-    return result;
-  }
 
-  public static IRational sumRational(final IntFunction<IRational> function, final int from,
-      final int to, final int step) {
-    IRational result = C0;
-    for (int i = from; i <= to; i += step) {
-      result = result.add(function.apply(i));
-    }
-    return result;
-  }
-
-  public static IRational productRational(final IntFunction<IRational> function, final int from,
-      final int to, final int step) {
-    IRational result = C1;
-    for (int i = from; i <= to; i += step) {
-      result = result.multiply(function.apply(i));
     }
     return result;
   }
@@ -5384,7 +5371,6 @@ public class F extends S {
     IASTAppendable result = ast(head, to - from + 1);
     for (int i = from; i <= to; i += step) {
       result.append(EvalEngine.get().evaluate(function.apply(i)));
-      // result.append(function.apply(i));
     }
     return result;
   }
@@ -5394,6 +5380,24 @@ public class F extends S {
     IASTAppendable result = ast(head, list.size());
     for (int i = 1; i < list.size(); i++) {
       result.append(function.apply(list.get(i)));
+    }
+    return result;
+  }
+
+  public static IRational productRational(final IntFunction<IRational> function, final int from,
+      final int to, final int step) {
+    IRational result = C1;
+    for (int i = from; i <= to; i += step) {
+      result = result.multiply(function.apply(i));
+    }
+    return result;
+  }
+
+  public static IRational sumRational(final IntFunction<IRational> function, final int from,
+      final int to, final int step) {
+    IRational result = C0;
+    for (int i = from; i <= to; i += step) {
+      result = result.add(function.apply(i));
     }
     return result;
   }
@@ -5801,6 +5805,10 @@ public class F extends S {
 
   public static IAST JacobiND(final IExpr a0, final IExpr a1) {
     return new AST2(JacobiND, a0, a1);
+  }
+
+  public static IAST JacobiP(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+    return function(JacobiP, a0, a1, a2, a3);
   }
 
   public static IAST JacobiDN(final IExpr a0, final IExpr a1) {
@@ -8103,8 +8111,8 @@ public class F extends S {
    * @param to
    * @return
    */
-  public static IAST product(final Function<IExpr, IExpr> function, final int from, final int to) {
-    return intIterator(Times, function, from, to, 1);
+  public static IExpr product(final Function<IExpr, IExpr> function, final int from, final int to) {
+    return intProduct(function, from, to, 1);
   }
 
   public static IAST ProductLog(final IExpr a0) {
@@ -9494,8 +9502,44 @@ public class F extends S {
    * @param iMax
    * @return
    */
-  public static IAST sum(final Function<IExpr, IExpr> function, final int iMin, final int iMax) {
-    return intIterator(Plus, function, iMin, iMax, 1);
+  public static IExpr sum(final Function<IExpr, IExpr> function, final int iMin, final int iMax) {
+    return intSum(function, iMin, iMax, 1);
+  }
+
+
+  /**
+   * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code> and
+   * evaluate the {@link S#Product}
+   * 
+   * @param function the function which should be applied on each iterator value
+   * @param from from this position (included)
+   * @param to to this position (included)
+   * @param step
+   * @return
+   */
+  public static IExpr intProduct(final Function<IExpr, IExpr> function, final int from,
+      final int to, final int step) {
+    IASTAppendable result = ast(S.Times, 15);
+    long numberOfLeaves = 0;
+    INumber number = F.C1;
+    // insert number as placeholder
+    result.append(number);
+    EvalEngine engine = EvalEngine.get();
+    for (int i = from; i <= to; i += step) {
+      IExpr temp = engine.evaluate(function.apply(ZZ(i)));
+      if (temp.isNumber()) {
+        number = number.times((INumber) temp);
+      } else {
+        numberOfLeaves += temp.leafCount() + 1;
+        if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
+          ASTElementLimitExceeded.throwIt(numberOfLeaves);
+        }
+        result.append(temp);
+      }
+    }
+    // replace placeholder with evaluated number
+    result.set(1, number);
+    return result.oneIdentity0();
   }
 
   /**
@@ -9506,8 +9550,63 @@ public class F extends S {
    * @param iMax to this position (included)
    * @return
    */
-  public static IAST intSum(final IntFunction<IExpr> function, final int iMin, final int iMax) {
-    return intIterator(Plus, function, iMin, iMax, 1);
+  public static IExpr intSum(final IntFunction<IExpr> function, final int iMin, final int iMax) {
+    IASTAppendable result = ast(S.Plus, 15);
+    int numberOfLeaves = 0;
+    EvalEngine engine = EvalEngine.get();
+    INumber number = F.C0;
+    // insert number as placeholder
+    result.append(number);
+    for (int i = iMin; i <= iMax; i += 1) {
+      IExpr temp = engine.evaluate(function.apply(i));
+      if (temp.isNumber()) {
+        number = number.plus((INumber) temp);
+      } else {
+        numberOfLeaves += temp.leafCount() + 1;
+        if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
+          ASTElementLimitExceeded.throwIt(numberOfLeaves);
+        }
+        result.append(temp);
+      }
+    }
+    // replace placeholder with evaluated number
+    result.set(1, number);
+    return result.oneIdentity0();
+  }
+
+  /**
+   * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code> and
+   * evaluate the {@link S#Sum}
+   *
+   * @param function the function which should be applied on each iterator value
+   * @param from from this position (included)
+   * @param to to this position (included)
+   * @param step
+   * @return
+   */
+  public static IExpr intSum(final Function<IExpr, IExpr> function, final int from, final int to,
+      final int step) {
+    IASTAppendable result = ast(S.Plus, 15);
+    long numberOfLeaves = 0;
+    INumber number = F.C0;
+    // insert number as placeholder
+    result.append(number);
+    EvalEngine engine = EvalEngine.get();
+    for (int i = from; i <= to; i += step) {
+      IExpr temp = engine.evaluate(function.apply(ZZ(i)));
+      if (temp.isNumber()) {
+        number = number.plus((INumber) temp);
+      } else {
+        numberOfLeaves += temp.leafCount() + 1;
+        if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
+          ASTElementLimitExceeded.throwIt(numberOfLeaves);
+        }
+        result.append(temp);
+      }
+    }
+    // replace placeholder with evaluated number
+    result.set(1, number);
+    return result.oneIdentity0();
   }
 
   /**
@@ -9519,9 +9618,9 @@ public class F extends S {
    * @param iStep
    * @return
    */
-  public static IAST sum(final Function<IExpr, IExpr> function, final int iMin, final int iMax,
+  public static IExpr sum(final Function<IExpr, IExpr> function, final int iMin, final int iMax,
       final int iStep) {
-    return intIterator(Plus, function, iMin, iMax, iStep);
+    return intSum(function, iMin, iMax, iStep);
   }
 
   public static IAST Superscript(final IExpr x, final IExpr y) {
