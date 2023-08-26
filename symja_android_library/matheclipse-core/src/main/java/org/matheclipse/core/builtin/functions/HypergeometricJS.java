@@ -392,9 +392,11 @@ public class HypergeometricJS extends JS {
       return Complex.ONE;
     }
 
-    if (F.isFuzzyEquals(x.negate(), Complex.ONE, tolerance) && x.add(1.0).norm() < tolerance) {
-      return hypergeometric2F1(a, b, c, Complex.MINUS_ONE);
-    }
+    // creates stackoverflow
+    // if (F.isFuzzyEquals(x.negate(), Complex.ONE, tolerance) //
+    // && x.add(1.0).norm() < tolerance) {
+    // return hypergeometric2F1(a, b, c, Complex.MINUS_ONE);
+    // }
 
     EvalEngine engine = EvalEngine.get();
     final int recursionLimit = engine.getRecursionLimit();
