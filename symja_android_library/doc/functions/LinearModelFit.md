@@ -1,11 +1,15 @@
 ## LinearModelFit
 
 ```
-LinearModelFit(list-of-data-points, expr, symbol)
+LinearModelFit({{x1,y1},{x2,y2},...}, expr, symbol)
 ```
+
+> Create a linear regression model from a matrix of observed value pairs `{x_i, y_i}`.
  
-> In statistics, linear regression is a linear approach to modeling the relationship between a scalar response (or dependent variable) and one or more explanatory variables (or independent variables).
- 
+```
+LinearModelFit({y1,y2,y3...}, expr, symbol)
+```
+> Create  a linear regression model from a vector of observed value pairs `{{1.0, y1},{2.0, y2},{3.0, y3}...}`.
    
 See:  
 * [Wikipedia - Linear regression](https://en.wikipedia.org/wiki/Linear_regression) 

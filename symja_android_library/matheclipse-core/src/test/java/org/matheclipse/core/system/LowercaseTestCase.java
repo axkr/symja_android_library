@@ -13397,6 +13397,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testLinearModelFit() {
+
+    check("LinearModelFit({-0.8, -0.2, 0.8, 2.2}, x, x)", //
+        "-2.0+x");
+    // print message: LinearModelFit: The first argument is not a vector or matrix.
+    check("LinearModelFit({{0, 1, 2}, {1, 0}, {3, 2}, {5, 4}},x,x)", //
+        "LinearModelFit({{0,1,2},{1,0},{3,2},{5,4}},x,x)");
+    // print message: LinearModelFit: Design matrix different from variable currently not supported
+    // in LinearModelFit.
+    check("LinearModelFit(0^ {{1,0}, {0,1}},{{1,2,3,a}},RegularExpression(1))", //
+        "LinearModelFit({{0,Indeterminate},{Indeterminate,0}},{{1,2,3,a}},RegularExpression(\n"
+            + "1))");
+
     check("LinearModelFit({ { 1, 3 }, { 2, 5 }, { 3, 7 }, { 4, 14 }, { 5, 11 } },x,x)", //
         "0.5+2.5*x");
     check("LinearModelFit({{0, 1}, {1, 0}, {3, 2}, {5, 4}},x,x)", //
@@ -21997,6 +22009,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testSin() {
+
     // check("Sin(4/15*Pi)", //
     // "Cos(7/30*Pi)");
     check("trigs={Sin,Cos,Tan,Cot}", //

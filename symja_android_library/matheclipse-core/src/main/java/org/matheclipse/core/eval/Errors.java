@@ -220,6 +220,7 @@ public class Errors {
       "nord", "Invalid comparison with `1` attempted.", //
       "normal", "Nonatomic expression expected at position `1` in `2`.", //
       "nostr", "`1` is not a string.", //
+      "notdata", "The first argument is not a vector or matrix.", //
       "notent", "`2` is not a known entity, class, or tag for `1`.", //
       "npa", "The angle `1` should be a positive number less than `2`.", //
       "nps", "The triangle side `1`should be a positive number.", //

@@ -325,29 +325,57 @@ public class CurveFitterFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList()) {
-        int[] dim = ast.arg1().isMatrix();
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      IExpr arg3 = ast.arg3();
+      if (!arg2.equals(arg3) || !arg3.isVariable()) {
+        // `1` currently not supported in `2`.
+        return Errors.printMessage(S.LinearModelFit, "unsupported",
+            F.List("Design matrix different from variable", "LinearModelFit"), engine);
+      }
+      if (arg1.isList()) {
+        int[] dim = arg1.isMatrix();
         if (dim != null && dim[1] == 2) {
-          double[][] data = ast.arg1().toDoubleMatrix();
-          // double[][] data = { { 1, 3 }, { 2, 5 }, { 3, 7 }, { 4, 14 }, { 5, 11 } };
-          SimpleRegression model = new SimpleRegression();
-          model.addData(data);
-          return F.Plus(F.num(model.getIntercept()), F.Times(F.num(model.getSlope()), ast.arg3()));
-          // return new ASTRealVector(values, false);
-
-          // OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
-          // double[] y = new double[] { 11.0, 12.0, 13.0, 14.0, 15.0, 16.0 };
-          // double[][] x = new double[6][];
-          // x[0] = new double[] { 0, 0, 0, 0, 0 };
-          // x[1] = new double[] { 2.0, 0, 0, 0, 0 };
-          // x[2] = new double[] { 0, 3.0, 0, 0, 0 };
-          // x[3] = new double[] { 0, 0, 4.0, 0, 0 };
-          // x[4] = new double[] { 0, 0, 0, 5.0, 0 };
-          // x[5] = new double[] { 0, 0, 0, 0, 6.0 };
-          // regression.newSampleData(y, x);
+          double[][] matrix = arg1.toDoubleMatrix();
+          if (matrix != null) {
+            return createSimpleRegression(matrix, arg3);
+          }
+        } else {
+          int vectorLength = arg1.isVector();
+          if (vectorLength > 1) {
+            IExpr vector = arg1.normal(false);
+            double[] doubleVector = vector.toDoubleVector();
+            if (doubleVector != null) {
+              double[][] matrix = new double[vectorLength][2];
+              for (int i = 0; i < doubleVector.length; i++) {
+                matrix[i][0] = i + 1;
+                matrix[i][1] = doubleVector[i];
+              }
+              return createSimpleRegression(matrix, arg3);
+            }
+          }
         }
       }
-      return F.NIL;
+      // The first argument is not a vector or matrix.
+      return Errors.printMessage(S.LinearModelFit, "notdata", F.CEmptyList, engine);
+    }
+
+    private static IExpr createSimpleRegression(double[][] matrix, final IExpr variable) {
+      SimpleRegression model = new SimpleRegression();
+      model.addData(matrix);
+      return F.Plus(F.num(model.getIntercept()), F.Times(F.num(model.getSlope()), variable));
+
+
+      // OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
+      // double[] y = new double[] { 11.0, 12.0, 13.0, 14.0, 15.0, 16.0 };
+      // double[][] x = new double[6][];
+      // x[0] = new double[] { 0, 0, 0, 0, 0 };
+      // x[1] = new double[] { 2.0, 0, 0, 0, 0 };
+      // x[2] = new double[] { 0, 3.0, 0, 0, 0 };
+      // x[3] = new double[] { 0, 0, 4.0, 0, 0 };
+      // x[4] = new double[] { 0, 0, 0, 5.0, 0 };
+      // x[5] = new double[] { 0, 0, 0, 0, 6.0 };
+      // regression.newSampleData(y, x);
     }
 
     @Override
