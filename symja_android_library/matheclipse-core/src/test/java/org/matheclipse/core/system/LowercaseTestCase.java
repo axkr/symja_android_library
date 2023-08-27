@@ -10410,6 +10410,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   public void testHarmonicNumber() {
 
+    check("HarmonicNumber(-9223372036854775808/11,0.5)", //
+        "-1.46035-HurwitzZeta(0.5,-8.38488*10^17)");
     check("N(HarmonicNumber(1/17, 5), 50)", //
         "0.25327615206118707521034626118754228313433140885935");
 

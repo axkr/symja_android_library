@@ -153,6 +153,10 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
 
   public static final int IS_NUMERIC_MASK = 0x03C00000;
 
+  public static final int NUMERIC_DOUBLE_EVALED = 0x04000000;
+
+  public static final int NUMERIC_ARBITRARY_EVALED = 0x08000000;
+
   default IExpr acceptChecked(IVisitor visitor) {
     try {
       return accept(visitor);

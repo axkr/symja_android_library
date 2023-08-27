@@ -203,6 +203,9 @@ public class ZetaJS extends JS {
 
     if (a.getReal() < 0.0) {
       int m = -(int) Math.floor(a.getReal());
+      if (m == Integer.MIN_VALUE || m == Integer.MAX_VALUE) {
+        throw new ArgumentTypeException("Summation exceeeded");
+      }
       return hurwitzZeta(x, a.add(m))
           .add(summation(i -> a.add(i).pow(x.negate()), 0, m - 1, iterationLimit));
     }

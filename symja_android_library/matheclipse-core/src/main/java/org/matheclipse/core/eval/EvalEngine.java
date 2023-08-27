@@ -1923,43 +1923,40 @@ public class EvalEngine implements Serializable {
   }
 
   public final IAST evalArgsOrderlessN(IAST ast1) {
-    IASTMutable copy = F.NIL;
-    // EvalEngine engine = EvalEngine.get();
-    // long precision = engine.getNumericPrecision();
-    // for (int i = 1; i < ast1.size(); i++) {
-    // IExpr temp = ast1.get(i);
-    // if (temp instanceof ApfloatNum) {
-    // if (((ApfloatNum) temp).precision() > precision) {
-    // precision = ((ApfloatNum) temp).precision();
-    // }
-    // } else if (temp instanceof ApcomplexNum) {
-    // if (((ApcomplexNum) temp).precision() > precision) {
-    // precision = ((ApcomplexNum) temp).precision();
-    // }
-    // } else if (temp.isAST(F.Interval)) {
-    // long p = IntervalSym.precision((IAST) temp);
-    // if (p > precision) {
-    // precision = p;
-    // }
-    // }
-    // }
-    // engine.setNumericPrecision(precision);
-    for (int i = 1; i < ast1.size(); i++) {
-      IExpr temp = ast1.get(i);
-      if (!temp.isInexactNumber() && temp.isNumericFunction(true)) {
-        temp = evalLoop(F.N(temp));
-        if (temp.isPresent()) {
-          if (copy.isNIL()) {
-            copy = ast1.copy();
+    int numericFlag =
+        isArbitraryMode() ? IAST.NUMERIC_ARBITRARY_EVALED : IAST.NUMERIC_DOUBLE_EVALED;
+    if (ast1.isEvalFlagOn(numericFlag)) {
+      return F.NIL;
+    }
+
+    boolean oldNumericMode = fNumericMode;
+    try {
+      fNumericMode = true;
+      IASTMutable copy = F.NIL;
+      for (int i = 1; i < ast1.size(); i++) {
+        IExpr temp = ast1.get(i);
+        if (!temp.isInexactNumber() && temp.isNumericFunction(true)) {
+          temp = evaluateNIL(temp);
+          if (temp.isPresent()) {
+            if (copy.isNIL()) {
+              copy = ast1.copy();
+            }
+            copy.set(i, temp);
           }
-          copy.set(i, evalN(temp));
         }
       }
+      if (copy.isPresent()) {
+        EvalAttributes.sort(copy);
+        copy.addEvalFlags(
+            isArbitraryMode() ? IAST.NUMERIC_ARBITRARY_EVALED : IAST.NUMERIC_DOUBLE_EVALED);
+      } else {
+        ast1.addEvalFlags(
+            isArbitraryMode() ? IAST.NUMERIC_ARBITRARY_EVALED : IAST.NUMERIC_DOUBLE_EVALED);
+      }
+      return copy;
+    } finally {
+      fNumericMode = oldNumericMode;
     }
-    if (copy.isPresent()) {
-      EvalAttributes.sort(copy);
-    }
-    return copy;
   }
 
   /**
