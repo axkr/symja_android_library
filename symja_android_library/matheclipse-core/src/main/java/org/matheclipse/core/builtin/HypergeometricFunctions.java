@@ -713,6 +713,7 @@ public class HypergeometricFunctions {
       int nInt = n.toIntDefault();
       if (nInt > Integer.MIN_VALUE) {
         if (nInt == 0) {
+          Errors.printMessage(S.GegenbauerC, "infy", F.List(F.Divide(F.C1, F.C0)), engine);
           return F.CComplexInfinity;
         }
         if (nInt == 1) {
@@ -771,6 +772,10 @@ public class HypergeometricFunctions {
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
+        if (n.isZero()) {
+          Errors.printMessage(S.GegenbauerC, "infy", F.List(F.Divide(F.C1, F.C0)), engine);
+          return F.CComplexInfinity;
+        }
         IInexactNumber z = (IInexactNumber) ast.arg2();
         // (2*Cos(n*ArcCos(z)))/n
         IInexactNumber cos = n.times(z.acos()).cos();
@@ -778,6 +783,9 @@ public class HypergeometricFunctions {
       }
       if (ast.argSize() == 3) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
+        if (n.isZero()) {
+          return F.C1;
+        }
         IInexactNumber l = (IInexactNumber) ast.arg2();
         IInexactNumber z = (IInexactNumber) ast.arg3();
         // https://functions.wolfram.com/HypergeometricFunctions/GegenbauerC3General/26/04/01/0001/
