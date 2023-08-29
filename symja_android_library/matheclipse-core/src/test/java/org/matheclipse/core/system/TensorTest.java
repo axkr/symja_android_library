@@ -214,6 +214,9 @@ public class TensorTest extends ExprEvaluatorTestCase {
 
 
   public void testRotationTransform() {
+    check("TransformationFunction(#2)[Sequence()]", //
+        "TransformationFunction(#2)[]"); //
+
     check("RotationTransform(Pi).TranslationTransform({1, -1})", //
         "TransformationFunction(\n" //
             + "{{-1,0,-1},\n" //

@@ -1139,18 +1139,26 @@ public class TensorFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().isAST(S.TransformationFunction, 2)) {
-        IAST operator = (IAST) ast.head();
-        IExpr m = operator.arg1();
-        int dim = ast.arg1().isVector();
-        if (dim > 0) {
-          IAST v = (IAST) ast.arg1().normal(false);
-          // Take(m . Join(v, {1}), Length(v))
-          return F.Take(F.Dot(m, F.Join(v, F.list(F.C1))), F.ZZ(dim));
-        }
+      if (!ast.head().isAST(S.TransformationFunction, 2)) {
+        return F.NIL;
+      }
+
+      IAST operator = (IAST) ast.head();
+      IExpr m = operator.arg1();
+      if (!ast.isAST1()) {
+        // `1` called with `2` arguments; 1 argument is expected.
+        return Errors.printMessage(S.TransformationFunction, "argx",
+            F.List(ast, F.ZZ(ast.argSize())), engine);
+      }
+      int dim = ast.arg1().isVector();
+      if (dim > 0) {
+        IAST v = (IAST) ast.arg1().normal(false);
+        // Take(m . Join(v, {1}), Length(v))
+        return F.Take(F.Dot(m, F.Join(v, F.list(F.C1))), F.ZZ(dim));
       }
       return F.NIL;
     }
+
 
   }
 

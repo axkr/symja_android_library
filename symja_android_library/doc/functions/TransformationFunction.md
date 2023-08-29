@@ -5,12 +5,6 @@ TransformationFunction(m)
 ```
 
 > represents a transformation.
-
-```
-TransformationFunction(phi, {0, 1}, {1, 0})
-```
-
-> gives a vertical shear by the angle `phi`.
  
 
 See
