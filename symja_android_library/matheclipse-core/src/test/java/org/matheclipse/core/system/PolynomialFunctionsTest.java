@@ -55,6 +55,8 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   public void testGegenbauerC() {
+    check("GegenbauerC({0,0,2/(1+Sqrt(5)),0},-0.8+I*1.2)", //
+        "{ComplexInfinity,ComplexInfinity,1.17445+I*2.30854,ComplexInfinity}");
     check("GegenbauerC(2, 0.5)", //
         "-0.5");
     checkNumeric("GegenbauerC(5,1/8,7) //N", //

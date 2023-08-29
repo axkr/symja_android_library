@@ -737,6 +737,11 @@ public class ComplexNum implements IComplexNum {
     return equals(I);
   }
 
+  @Override
+  public boolean isInexactNumber() {
+    return fComplex.isFinite();
+  }
+
   /** @return */
   @Override
   public boolean isInfinite() {

@@ -543,6 +543,11 @@ public class Num implements INum {
   }
 
   @Override
+  public boolean isInexactNumber() {
+    return Double.isFinite(value);
+  }
+ 
+  @Override
   public boolean isInfinite() {
     return Double.isInfinite(value);
   }

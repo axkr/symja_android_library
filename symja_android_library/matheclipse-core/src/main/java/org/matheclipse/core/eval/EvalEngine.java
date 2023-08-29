@@ -901,12 +901,6 @@ public class EvalEngine implements Serializable {
     }
 
     if ((ISymbol.NUMERICFUNCTION & attributes) == ISymbol.NUMERICFUNCTION) {
-      if (arg1.isIndeterminate()) {
-        return S.Indeterminate;
-      }
-      if (arg1.isUndefined()) {
-        return S.Undefined;
-      }
       if (fNumericMode //
           && arg1.isInexactNumber() //
           && ast.head().isBuiltInSymbol()) {
@@ -914,6 +908,12 @@ public class EvalEngine implements Serializable {
         if (temp.isPresent()) {
           return temp;
         }
+      }
+      if (arg1.isIndeterminate()) {
+        return S.Indeterminate;
+      }
+      if (arg1.isUndefined()) {
+        return S.Undefined;
       }
     }
 
@@ -924,6 +924,13 @@ public class EvalEngine implements Serializable {
     return F.NIL;
   }
 
+  /**
+   * All arguments in <code>ast</code> must be finite inexact numbers.
+   * 
+   * @param symbol
+   * @param ast
+   * @return
+   */
   private IExpr numericFunction(final ISymbol symbol, final IAST ast) {
     IExpr result;
     final IEvaluator evaluator = ((IBuiltInSymbol) symbol).getEvaluator();
@@ -1231,21 +1238,20 @@ public class EvalEngine implements Serializable {
       }
 
       if ((ISymbol.NUMERICFUNCTION & attributes) == ISymbol.NUMERICFUNCTION) {
-        if (!((ISymbol.HOLDALL & attributes) == ISymbol.HOLDALL)) {
-          if (mutableAST.exists(x -> x.isIndeterminate())) {
-            return S.Indeterminate;
-          }
-          if (mutableAST.exists(x -> x.isUndefined())) {
-            return S.Undefined;
-          }
-        }
-
         if (fNumericMode //
             && mutableAST.head().isBuiltInSymbol()//
             && mutableAST.forAll(x -> x.isInexactNumber())) {
           IExpr temp = numericFunction(symbol, mutableAST);
           if (temp.isPresent()) {
             return temp;
+          }
+        }
+        if (!((ISymbol.HOLDALL & attributes) == ISymbol.HOLDALL)) {
+          if (mutableAST.exists(x -> x.isIndeterminate())) {
+            return S.Indeterminate;
+          }
+          if (mutableAST.exists(x -> x.isUndefined())) {
+            return S.Undefined;
           }
         }
       }
