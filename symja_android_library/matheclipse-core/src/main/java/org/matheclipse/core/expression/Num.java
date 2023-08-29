@@ -546,7 +546,7 @@ public class Num implements INum {
   public boolean isInexactNumber() {
     return Double.isFinite(value);
   }
- 
+
   @Override
   public boolean isInfinite() {
     return Double.isInfinite(value);
