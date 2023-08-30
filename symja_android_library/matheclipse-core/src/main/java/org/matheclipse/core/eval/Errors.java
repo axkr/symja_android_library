@@ -190,6 +190,7 @@ public class Errors {
       "memlimit",
       "This computation has exceeded the memeory limit settings of this evaluation engines instance.", //
       "meprec", "Internal precision limit `1` reached while evaluating `2`.", //
+      "mindet", "Input matrix contains an indeterminate entry.", //
       "minv", "The `1` arguments to `2` must be ordinary integers.", // or gaussian
       "mseqs",
       "Sequence specification or a list of sequence specifications expected at position `1` in `2`.", //
@@ -422,8 +423,7 @@ public class Errors {
    * @param engine
    * @return
    */
-  public static IExpr printMessage(ISymbol symbol, final Throwable exception,
-      EvalEngine engine) {
+  public static IExpr printMessage(ISymbol symbol, final Throwable exception, EvalEngine engine) {
     if (Config.SHOW_STACKTRACE) {
       exception.printStackTrace();
     }

@@ -4745,8 +4745,8 @@ public class Algebra {
 
     for (int i = startPosition; i < factors.size(); i++) {
       pair = (IAST) factors.get(i);
-      IExpr exponent = pair.exponent();
-      IExpr base = pair.base();
+      IExpr base = pair.arg1();
+      IExpr exponent = pair.arg2();
       if (exponent.isOne()) {
         logIntExpanded.append(F.Log(base));
       } else {

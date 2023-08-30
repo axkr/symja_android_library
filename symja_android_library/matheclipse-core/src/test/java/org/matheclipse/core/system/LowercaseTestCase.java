@@ -19129,6 +19129,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testPrincipleComponents() {
+    // message SparseArray: Input matrix contains an indeterminate entry.
+    check(
+        "PrincipalComponents(SparseArray({{0,0},{0,0}},0) ^ (I*1/3*Pi))", //
+        "PrincipalComponents(SparseArray(Number of elements: 4 Dimensions: {2,2} Default value: 0))");
     check("PrincipalComponents({{0.25,0.33,0.45,0.01}},Method->\"Correlation\")", //
         "{{0.0,0.0,0.0,0.0}}");
     check("PrincipalComponents({{0.25,0.33,0.01}} )", //

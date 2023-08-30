@@ -5382,30 +5382,36 @@ public class StatisticsFunctions {
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
       int[] dimension = ast.arg1().isMatrix();
-      RealMatrix matrix = ast.arg1().toRealMatrix();
-      if (dimension != null) {
-        if (dimension[0] == 1) {
-          if (dimension[1] == 0) {
-            return F.CEmptyList;
-          } else {
-            return F.List(F.constantArray(F.CD0, dimension[1]));
-          }
-        }
-        if (dimension[0] > 1 && dimension[1] > 0) {
-          PCA pca = null;
-          String method = option[0].toString();
-          if (method.equals("Covariance")) {
-            pca = new PCA(dimension[1]);
-          } else if (method.equals("Correlation")) {
-            pca = new PCA(dimension[1], true, true);
-          } else {
-            pca = new PCA(dimension[1]);
-          }
-          double[][] data = pca.fitAndTransform(matrix.getData());
-          return Convert.matrix2List(new Array2DRowRealMatrix(data));
-        }
+      if (dimension == null) {
+        return F.NIL;
       }
-      return F.NIL;
+      if (dimension[0] == 1) {
+        if (dimension[1] == 0) {
+          return F.CEmptyList;
+        }
+        return F.List(F.constantArray(F.CD0, dimension[1]));
+      }
+
+      if (dimension[0] < 1 || dimension[1] <= 0) {
+        return F.NIL;
+      }
+
+      RealMatrix matrix = ast.arg1().toRealMatrix();
+      if (matrix == null) {
+        return F.NIL;
+      }
+
+      PCA pca = null;
+      String method = option[0].toString();
+      if (method.equals("Covariance")) {
+        pca = new PCA(dimension[1]);
+      } else if (method.equals("Correlation")) {
+        pca = new PCA(dimension[1], true, true);
+      } else {
+        pca = new PCA(dimension[1]);
+      }
+      double[][] data = pca.fitAndTransform(matrix.getData());
+      return Convert.matrix2List(new Array2DRowRealMatrix(data));
     }
 
     @Override
@@ -6248,8 +6254,7 @@ public class StatisticsFunctions {
                 if (vector.exists(x -> x.isReal() && !((IReal) x).isRange(F.C0, F.C1))) {
                   // The Quantile specification `1` should be a number or a list of numbers between
                   // `2` and `3`.
-                  return Errors.printMessage(ast.topHead(), "nquan", F.list(q, F.C0, F.C1),
-                      engine);
+                  return Errors.printMessage(ast.topHead(), "nquan", F.list(q, F.C0, F.C1), engine);
                 }
                 return vector.mapThread(ast, 2);
               } else {
@@ -7005,8 +7010,7 @@ public class StatisticsFunctions {
                   // numbers with length greater than the dimension of the array or two such arrays
                   // with
                   // of equal dimension.
-                  return Errors.printMessage(ast.topHead(), "rctndm1", F.list(arg1, F.C1),
-                      engine);
+                  return Errors.printMessage(ast.topHead(), "rctndm1", F.list(arg1, F.C1), engine);
                 }
                 org.hipparchus.stat.inference.TTest tTest =
                     new org.hipparchus.stat.inference.TTest();

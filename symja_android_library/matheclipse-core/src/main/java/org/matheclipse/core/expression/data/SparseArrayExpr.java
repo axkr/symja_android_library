@@ -2041,6 +2041,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   @Override
   public RealMatrix toRealMatrix() {
     if (fDimension.length == 2 && fDimension[0] > 0 && fDimension[1] > 0) {
+      IExpr value = null;
       try {
         OpenMapRealMatrix result = new OpenMapRealMatrix(fDimension[0], fDimension[1]);
         if (!fDefaultValue.isZero()) {
@@ -2053,12 +2054,16 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         }
         for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
           int[] key = entry.getKey();
-          IExpr value = entry.getValue();
+          value = entry.getValue();
           result.setEntry(key[0] - 1, key[1] - 1, value.evalf());
         }
         return result;
       } catch (ArgumentTypeException rex) {
-
+        if (value != null && value.isIndeterminate()) {
+          // Input matrix contains an indeterminate entry.
+          Errors.printMessage(S.SparseArray, "mindet", F.List());
+          return null;
+        }
       }
     }
     return null;
