@@ -33,6 +33,84 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
 
   }
 
+  public void testComplexFormatSymbolic() {
+    ExprEvaluator evaluator = new ExprEvaluator();
+    IExpr input = evaluator.eval("4+(4*I)");
+    assertEquals(input.toString(), "4+I*4");
+
+    OutputFormFactory outputFormFactory = OutputFormFactory.get(true, true, true, -1, -1);
+    String str = outputFormFactory.toString(input);
+    assertEquals(str, "4+4*I");
+
+    input = evaluator.eval("-3/4-I*(2/3)");
+    assertEquals(input.toString(), "-3/4-I*2/3");
+
+    str = outputFormFactory.toString(input);
+    assertEquals(str, "-3/4-2/3*I");
+
+    input = evaluator.eval("a-3/4+I*(2/3)");
+    assertEquals(input.toString(), "-3/4+I*2/3+a");
+
+    str = outputFormFactory.toString(input);
+    assertEquals(str, "a-3/4+2/3*I");
+
+    input = evaluator.eval("a*(3/4-I*(2/3))");
+    assertEquals(input.toString(), "(3/4-I*2/3)*a");
+
+    str = outputFormFactory.toString(input);
+    assertEquals(str, "(3/4-2/3*I)*a");
+  }
+
+  public void testDoubleComplexFormat() {
+    ExprEvaluator evaluator = new ExprEvaluator();
+    IExpr input = evaluator.eval("4.0+(4.0*I)");
+    assertEquals(input.toString(), "(4.0+I*4.0)");
+
+    OutputFormFactory outputFormFactory = OutputFormFactory.get(true, true, true, -1, -1);
+    String str = outputFormFactory.toString(input);
+    assertEquals(str, "4.0+4.0*I");
+
+    input = evaluator.eval("-4.25*I");
+    assertEquals(input.toString(), "(-I*4.25)");
+
+    str = outputFormFactory.toString(input);
+    assertEquals(str, "-4.25*I");
+
+    input = evaluator.eval("-0.1-4.25*I");
+    assertEquals(input.toString(), "(-0.1-I*4.25)");
+
+    str = outputFormFactory.toString(input);
+    assertEquals(str, "-0.1-4.25*I");
+  }
+
+  public void testApcomplexFormat() {
+    ExprEvaluator evaluator = new ExprEvaluator();
+    IExpr input = evaluator.eval("N(4+(4*I),20)");
+    assertEquals(input.toString(), "4+I*4");
+
+    OutputFormFactory outputFormFactory = OutputFormFactory.get(true, true, true, -1, -1);
+    String str = outputFormFactory.toString(input);
+    assertEquals(str, "4+4*I");
+
+    input = evaluator.eval("N(3/7*I,20)");
+    assertEquals(input.toString(), "I*0.42857142857142857142");
+
+    str = outputFormFactory.toString(input);
+    assertEquals(str, "0.42857142857142857142*I");
+
+    input = evaluator.eval("N(-3/7*I,20)");
+    assertEquals(input.toString(), "I*(-0.42857142857142857142)");
+
+    str = outputFormFactory.toString(input);
+    assertEquals(str, "-0.42857142857142857142*I");
+
+    input = evaluator.eval("N(a+(-2/3-3/7*I),20)");
+    assertEquals(input.toString(), "-0.66666666666666666666+I*(-0.42857142857142857142)+a");
+
+    str = outputFormFactory.toString(input);
+    assertEquals(str, "a-0.66666666666666666666-0.42857142857142857142*I");
+  }
+
   public void testInfix() {
     check("Infix(f(x,y,z))", //
         "x ~ y ~ z");

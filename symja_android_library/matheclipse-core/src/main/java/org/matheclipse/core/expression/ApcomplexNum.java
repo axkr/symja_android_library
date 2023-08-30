@@ -11,6 +11,7 @@ import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -504,6 +505,15 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public String toString() {
+    try {
+      StringBuilder sb = new StringBuilder();
+      OutputFormFactory.get().convertApcomplex(sb, fApcomplex, Integer.MIN_VALUE,
+          OutputFormFactory.NO_PLUS_CALL);
+      return sb.toString();
+    } catch (Exception e1) {
+      // fall back to simple output format
+    }
+
     String str = fApcomplex.toString();
     if (ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       return str.replace("e", "E");

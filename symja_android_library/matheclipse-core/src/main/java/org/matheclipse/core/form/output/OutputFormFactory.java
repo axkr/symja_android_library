@@ -66,24 +66,79 @@ public class OutputFormFactory {
    */
   public static final boolean PLUS_CALL = true;
 
+  /**
+   * If <code>true</code> use &quot;(&quot; and &quot;)&quot; as parenthesis for function arguments;
+   * otherwise use &quot;[&quot; and &quot;]&quot;
+   */
   private final boolean fRelaxedSyntax;
+
+  /**
+   * Write the arguments of a {@link S#Plus} expression in reversed order.
+   */
   private final boolean fPlusReversed;
+
+  /**
+   * Write complex numbers as <code>re + im*I</code> instead of <code>re + I*im</code>
+   */
+  private final boolean fComplexReImI;
+
   private boolean fIgnoreNewLine = false;
+
   /** If <code>true</code> print leading and trailing quotes in Symja strings */
   protected boolean fInputForm = false;
 
   private boolean fEmpty = true;
+
   private boolean fUseSignificantFiguresInApfloat = false;
+
   private int fColumnCounter = 0;
+
+  /**
+   * Use scientific notation for all numbers with exponents outside the range
+   * <code>-exponentFigures</code> to <code>exponentFigures</code>
+   */
   private int fExponentFigures;
+
+  /**
+   * The number of significant figures which should be printed for <code>double</code> floating
+   * point numbers
+   */
   private int fSignificantFigures;
 
-  protected OutputFormFactory(final boolean relaxedSyntax, final boolean reversed,
+  /**
+   * 
+   * @param relaxedSyntax if <code>true</code> use &quot;(&quot; and &quot;)&quot; as parenthesis
+   *        for function arguments; otherwise use &quot;[&quot; and &quot;]&quot;
+   * @param plusReversed write the arguments of a {@link S#Plus} expression in reversed order
+   * @param exponentFigures use scientific notation for all numbers with exponents outside the range
+   *        <code>-exponentFigures</code> to <code>exponentFigures</code>
+   * @param significantFigures the number of significant figures which should be printed for
+   *        <code>double</code> floating point numbers
+   */
+  protected OutputFormFactory(final boolean relaxedSyntax, final boolean plusReversed,
       int exponentFigures, int significantFigures) {
-    fRelaxedSyntax = relaxedSyntax;
-    fPlusReversed = reversed;
-    fExponentFigures = exponentFigures;
-    fSignificantFigures = significantFigures;
+    this(relaxedSyntax, plusReversed, false, exponentFigures, significantFigures);
+  }
+
+  /**
+   * 
+   * @param relaxedSyntax if <code>true</code> use &quot;(&quot; and &quot;)&quot; as parenthesis
+   *        for function arguments; otherwise use &quot;[&quot; and &quot;]&quot;
+   * @param plusReversed write the arguments of a {@link S#Plus} expression in reversed order.
+   * @param complexReImI write complex numbers as <code>re + im*I</code> instead of
+   *        <code>re + I*im</code>
+   * @param exponentFigures use scientific notation for all numbers with exponents outside the range
+   *        <code>-exponentFigures</code> to <code>exponentFigures</code>.
+   * @param significantFigures the number of significant figures which should be printed for
+   *        <code>double</code> floating point numbers
+   */
+  protected OutputFormFactory(final boolean relaxedSyntax, final boolean plusReversed,
+      final boolean complexReImI, int exponentFigures, int significantFigures) {
+    this.fRelaxedSyntax = relaxedSyntax;
+    this.fPlusReversed = plusReversed;
+    this.fExponentFigures = exponentFigures;
+    this.fSignificantFigures = significantFigures;
+    this.fComplexReImI = complexReImI;
   }
 
   /**
@@ -108,9 +163,7 @@ public class OutputFormFactory {
    * @return
    */
   public static OutputFormFactory get(final boolean relaxedSyntax) {
-    // int significantFigures = EvalEngine.get().getSignificantFigures();
-    // return get(relaxedSyntax, false, significantFigures - 1, significantFigures + 1);
-    return get(relaxedSyntax, false);
+    return get(relaxedSyntax, false, false, -1, -1);
   }
 
   /**
@@ -126,14 +179,14 @@ public class OutputFormFactory {
    * @return
    */
   public static OutputFormFactory get(final boolean relaxedSyntax, final boolean plusReversed) {
-    return get(relaxedSyntax, plusReversed, -1, -1);
+    return get(relaxedSyntax, plusReversed, false, -1, -1);
   }
 
   /**
    * Get an <code>OutputFormFactory</code> for converting an internal expression to a user readable
    * string.
    *
-   * @param relaxedSyntax if <code>true</code> use paranthesis instead of square brackets and ignore
+   * @param relaxedSyntax if <code>true</code> use parenthesis instead of square brackets and ignore
    *        case for functions, i.e. sin() instead of Sin[]. If <code>true</code> use single square
    *        brackets instead of double square brackets for extracting parts of an expression, i.e.
    *        {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
@@ -145,7 +198,32 @@ public class OutputFormFactory {
    */
   public static OutputFormFactory get(final boolean relaxedSyntax, final boolean plusReversed,
       int exponentFigures, int significantFigures) {
-    return new OutputFormFactory(relaxedSyntax, plusReversed, exponentFigures, significantFigures);
+    return new OutputFormFactory(relaxedSyntax, plusReversed, false, exponentFigures,
+        significantFigures);
+  }
+
+  /**
+   * Get an <code>OutputFormFactory</code> for converting an internal expression to a user readable
+   * string.
+   *
+   * @param relaxedSyntax if <code>true</code> use parenthesis instead of square brackets and ignore
+   *        case for functions, i.e. sin() instead of Sin[]. If <code>true</code> use single square
+   *        brackets instead of double square brackets for extracting parts of an expression, i.e.
+   *        {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
+   * @param plusReversed if <code>true</code> the arguments of the <code>Plus()</code> function will
+   *        be printed in reversed order
+   * @param complexReImI write complex numbers as <code>re + im*I</code> instead of
+   *        <code>re + I*im</code>
+   * @param exponentFigures use scientific notation for all numbers with exponents outside the range
+   *        <code>-exponentFigures</code> to <code>exponentFigures</code>.
+   * @param significantFigures the number of significant figures which should be printed for
+   *        <code>double</code> floating point numbers
+   * @return
+   */
+  public static OutputFormFactory get(final boolean relaxedSyntax, final boolean plusReversed,
+      final boolean complexReImI, int exponentFigures, int significantFigures) {
+    return new OutputFormFactory(relaxedSyntax, plusReversed, complexReImI, exponentFigures,
+        significantFigures);
   }
 
   /**
@@ -245,6 +323,10 @@ public class OutputFormFactory {
 
   public void convertDoubleComplex(final Appendable buf, final IComplexNum dc, final int precedence,
       boolean caller) throws IOException {
+    if (fComplexReImI) {
+      convertDoubleComplexReImI(buf, dc, precedence, caller);
+      return;
+    }
     if (dc instanceof ApcomplexNum) {
       convertApcomplex(buf, ((ApcomplexNum) dc).apcomplexValue(), precedence, caller);
       return;
@@ -293,8 +375,66 @@ public class OutputFormFactory {
     }
   }
 
+  public void convertDoubleComplexReImI(final Appendable buf, final IComplexNum dc,
+      final int precedence, boolean caller) throws IOException {
+    if (dc instanceof ApcomplexNum) {
+      convertApcomplex(buf, ((ApcomplexNum) dc).apcomplexValue(), precedence, caller);
+      return;
+    }
+    if (Precedence.PLUS < precedence) {
+      if (caller == PLUS_CALL) {
+        append(buf, fInputForm ? " + " : "+");
+        caller = false;
+      }
+      append(buf, "(");
+    }
+
+    double realPart = dc.getRealPart();
+    double imaginaryPart = dc.getImaginaryPart();
+    boolean realZero = F.isZero(realPart);
+    boolean imaginaryZero = F.isZero(imaginaryPart);
+    if (realZero && imaginaryZero) {
+      convertDoubleString(buf, convertDoubleToFormattedString(0.0), Precedence.PLUS, false);
+    } else {
+      if (!realZero) {
+        String str =
+            fInputForm ? Num.fullFormString(realPart) : convertDoubleToFormattedString(realPart);
+        append(buf, str);
+        if (!imaginaryZero) {
+          final boolean isNegative = imaginaryPart < 0;
+          if (!isNegative) {
+            append(buf, "+");
+          }
+          str = fInputForm ? Num.fullFormString(imaginaryPart)
+              : convertDoubleToFormattedString(imaginaryPart);
+          convertDoubleString(buf, str, Precedence.PLUS, isNegative);
+          append(buf, "*I");
+        }
+      } else {
+        final boolean isNegative = imaginaryPart < 0;
+        if (!isNegative && caller == PLUS_CALL) {
+          append(buf, "+");
+          caller = false;
+        }
+
+        String str = fInputForm ? Num.fullFormString(imaginaryPart)
+            : convertDoubleToFormattedString(imaginaryPart);
+        convertDoubleString(buf, str, precedence, isNegative);
+        append(buf, "*I");
+      }
+    }
+
+    if (Precedence.PLUS < precedence) {
+      append(buf, ")");
+    }
+  }
+
   public void convertApcomplex(final Appendable buf, final Apcomplex dc, final int precedence,
       boolean caller) throws IOException {
+    if (fComplexReImI) {
+      convertApcomplexReImI(buf, dc, precedence, caller);
+      return;
+    }
     if (Precedence.PLUS < precedence) {
       if (caller == PLUS_CALL) {
         append(buf, fInputForm ? " + " : "+");
@@ -330,6 +470,53 @@ public class OutputFormFactory {
         String str = fInputForm ? ApfloatNum.fullFormString(imaginaryPart)
             : convertApfloatToFormattedString(imaginaryPart);
         convertDoubleString(buf, str, Precedence.TIMES, isNegative);
+      }
+    }
+    if (Precedence.PLUS < precedence) {
+      append(buf, ")");
+    }
+  }
+
+  public void convertApcomplexReImI(final Appendable buf, final Apcomplex dc, final int precedence,
+      boolean caller) throws IOException {
+    if (Precedence.PLUS < precedence) {
+      if (caller == PLUS_CALL) {
+        append(buf, fInputForm ? " + " : "+");
+        caller = false;
+      }
+      append(buf, "(");
+    }
+    Apfloat realPart = dc.real();
+    Apfloat imaginaryPart = dc.imag();
+    boolean realZero = realPart.equals(Apcomplex.ZERO);
+    boolean imaginaryZero = imaginaryPart.equals(Apcomplex.ZERO);
+    if (realZero && imaginaryZero) {
+      convertDoubleString(buf, "0.0", Precedence.PLUS, false);
+    } else {
+      if (!realZero) {
+        String str = fInputForm ? ApfloatNum.fullFormString(realPart)
+            : convertApfloatToFormattedString(realPart);
+        append(buf, str);
+        if (!imaginaryZero) {
+          final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
+          if (!isNegative) {
+            append(buf, fInputForm ? " + " : "+");
+          }
+          str = fInputForm ? ApfloatNum.fullFormString(imaginaryPart)
+              : convertApfloatToFormattedString(imaginaryPart);
+          convertDoubleString(buf, str, Precedence.PLUS, isNegative);
+          append(buf, "*I");
+        }
+      } else {
+        final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
+        if (!isNegative && caller == PLUS_CALL) {
+          append(buf, fInputForm ? " + " : "+");
+          caller = false;
+        }
+        String str = fInputForm ? ApfloatNum.fullFormString(imaginaryPart)
+            : convertApfloatToFormattedString(imaginaryPart);
+        convertDoubleString(buf, str, precedence, isNegative);
+        append(buf, "*I");
       }
     }
     if (Precedence.PLUS < precedence) {
@@ -468,6 +655,10 @@ public class OutputFormFactory {
 
   public void convertComplex(final Appendable buf, final IComplex c, final int precedence,
       boolean caller) throws IOException {
+    if (fComplexReImI) {
+      convertComplexReImI(buf, c, precedence, caller);
+      return;
+    }
     boolean isReZero = c.getRealPart().isZero();
     final boolean isImOne = c.getImaginaryPart().isOne();
     final boolean isImMinusOne = c.getImaginaryPart().isMinusOne();
@@ -530,6 +721,87 @@ public class OutputFormFactory {
           }
           convertFraction(imagBuf, im, Precedence.TIMES, NO_PLUS_CALL);
         }
+
+      } finally {
+        fColumnCounter = oldColumnCounter;
+      }
+      String str = imagBuf.toString();
+      if ((str.length() + getColumnCounter() > Config.MAX_OUTPUT_LINE)) {
+        newLine(buf);
+      }
+      append(buf, str);
+      if (isReZero && (Precedence.TIMES < precedence)) {
+        append(buf, ")");
+      }
+    }
+
+    if (!isReZero && (Precedence.PLUS < precedence)) {
+      append(buf, ")");
+    }
+  }
+
+  public void convertComplexReImI(final Appendable buf, final IComplex c, final int precedence,
+      boolean caller) throws IOException {
+    boolean isReZero = c.getRealPart().isZero();
+    final boolean isImOne = c.getImaginaryPart().isOne();
+    final boolean isImMinusOne = c.getImaginaryPart().isMinusOne();
+    if (!isReZero && (Precedence.PLUS < precedence)) {
+      if (caller == PLUS_CALL) {
+        append(buf, fInputForm ? " + " : "+");
+        caller = false;
+      }
+      append(buf, "(");
+    }
+    if (!isReZero) {
+      convertFraction(buf, c.getRealPart(), Precedence.PLUS, caller);
+    }
+    if (isImOne) {
+      if (isReZero) {
+        if (caller == PLUS_CALL) {
+          append(buf, fInputForm ? " + " : "+");
+          caller = false;
+        }
+        append(buf, "I");
+        return;
+      } else {
+        append(buf, fInputForm ? " + I" : "+I");
+      }
+    } else if (isImMinusOne) {
+      append(buf, fInputForm ? " - I" : "-I");
+    } else {
+      final IRational im = c.getImaginaryPart();
+      int oldColumnCounter = fColumnCounter;
+      StringBuilder imagBuf = new StringBuilder();
+      try {
+        if (im.isNegative()) {
+          if (isReZero && (Precedence.TIMES < precedence)) {
+            if (caller == PLUS_CALL) {
+              append(buf, fInputForm ? " + " : "+");
+            }
+            append(buf, "(");
+          }
+          append(buf, fInputForm ? " - " : "-");
+          oldColumnCounter = fColumnCounter;
+          fColumnCounter = 0;
+          convertFraction(imagBuf, im.negate(), Precedence.TIMES, NO_PLUS_CALL);
+        } else {
+          if (isReZero) {
+            if (caller == PLUS_CALL) {
+              append(buf, fInputForm ? " + " : "+");
+            }
+            if (Precedence.TIMES < precedence) {
+              append(buf, "(");
+            }
+            oldColumnCounter = fColumnCounter;
+            fColumnCounter = 0;
+          } else {
+            append(buf, fInputForm ? " + " : "+");
+            oldColumnCounter = fColumnCounter;
+            fColumnCounter = 0;
+          }
+          convertFraction(imagBuf, im, Precedence.TIMES, NO_PLUS_CALL);
+        }
+        append(imagBuf, "*I");
 
       } finally {
         fColumnCounter = oldColumnCounter;
