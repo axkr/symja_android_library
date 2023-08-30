@@ -191,6 +191,12 @@ public class FinancialFunctions {
         return F.NIL;
       }
       if (!a.isAST() && !b.isAST() && !c.isAST()) {
+        int cInt = c.toIntDefault();
+        if (cInt >= 0) {
+          if (a.isNumber() && b.isNumber()) {
+            return (b.plus(F.C1)).pow(cInt).times(a);
+          }
+        }
         return //
         // [$ a*(1 + b)^c $]
         F.Times(a, F.Power(F.Plus(F.C1, b), c)); // $$;

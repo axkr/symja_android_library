@@ -23981,6 +23981,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testTimeValue() {
+    check(" TimeValue(-0.8+I*1.2,-5,1009)", //
+        "ComplexInfinity");
+    check("N(TimeValue((-8/10)+I*(12/10),-5,1009),20)", //
+        "2.4078045838557934240*10^607+I*(-3.611706875783690136*10^607)");
     check("TimeValue(Annuity(100, 12), .01, 0)", //
         "1125.508");
     check("TimeValue(Annuity(100, 12), EffectiveInterest(.01, 0.25), 12)", //

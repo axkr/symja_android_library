@@ -2805,58 +2805,58 @@ public final class Arithmetic {
       return c0.add(F.complex(i1, F.C0));
     }
 
-    private IExpr evalNumericMode(final IAST ast) {
-      INum number = F.CD0;
-      int start = -1;
-      for (int i = 1; i < ast.size(); i++) {
-        final IExpr arg = ast.get(i);
-        if (arg instanceof INum) {
-          if (arg instanceof ApfloatNum) {
-            number = number.add((INum) arg);
-          } else {
-            if (number instanceof ApfloatNum) {
-              number = number.add(((INum) arg).apfloatNumValue());
-            } else {
-              number = number.add((INum) arg);
-            }
-          }
-        } else if (arg instanceof IComplexNum) {
-          start = i;
-          break;
-        } else {
-          return F.NIL;
-        }
-      }
-      if (start < 0) {
-        return number;
-      }
-      IComplexNum complexNumber;
-      if (number instanceof Num) {
-        complexNumber = F.complexNum(number.doubleValue());
-      } else {
-        complexNumber = F.complexNum(number.apfloatValue());
-      }
-      for (int i = start; i < ast.size(); i++) {
-        final IExpr arg = ast.get(i);
-        if (arg instanceof INum) {
-          number = (INum) arg;
-          if (number instanceof Num) {
-            complexNumber = complexNumber.add(F.complexNum(((Num) number).doubleValue()));
-          } else {
-            complexNumber = complexNumber.add(F.complexNum(number.apfloatValue()));
-          }
-        } else if (arg instanceof IComplexNum) {
-          if (complexNumber instanceof ApcomplexNum) {
-            complexNumber = complexNumber.add(((IComplexNum) arg).apcomplexNumValue());
-          } else {
-            complexNumber = complexNumber.add((IComplexNum) arg);
-          }
-        } else {
-          return F.NIL;
-        }
-      }
-      return complexNumber;
-    }
+    // private IExpr evalNumericMode(final IAST ast) {
+    // INum number = F.CD0;
+    // int start = -1;
+    // for (int i = 1; i < ast.size(); i++) {
+    // final IExpr arg = ast.get(i);
+    // if (arg instanceof INum) {
+    // if (arg instanceof ApfloatNum) {
+    // number = number.add((INum) arg);
+    // } else {
+    // if (number instanceof ApfloatNum) {
+    // number = number.add(((INum) arg).apfloatNumValue());
+    // } else {
+    // number = number.add((INum) arg);
+    // }
+    // }
+    // } else if (arg instanceof IComplexNum) {
+    // start = i;
+    // break;
+    // } else {
+    // return F.NIL;
+    // }
+    // }
+    // if (start < 0) {
+    // return number;
+    // }
+    // IComplexNum complexNumber;
+    // if (number instanceof Num) {
+    // complexNumber = F.complexNum(number.doubleValue());
+    // } else {
+    // complexNumber = F.complexNum(number.apfloatValue());
+    // }
+    // for (int i = start; i < ast.size(); i++) {
+    // final IExpr arg = ast.get(i);
+    // if (arg instanceof INum) {
+    // number = (INum) arg;
+    // if (number instanceof Num) {
+    // complexNumber = complexNumber.add(F.complexNum(((Num) number).doubleValue()));
+    // } else {
+    // complexNumber = complexNumber.add(F.complexNum(number.apfloatValue()));
+    // }
+    // } else if (arg instanceof IComplexNum) {
+    // if (complexNumber instanceof ApcomplexNum) {
+    // complexNumber = complexNumber.add(((IComplexNum) arg).apcomplexNumValue());
+    // } else {
+    // complexNumber = complexNumber.add((IComplexNum) arg);
+    // }
+    // } else {
+    // return F.NIL;
+    // }
+    // }
+    // return complexNumber;
+    // }
 
     @Override
     public double evalReal(final double[] stack, final int top, final int size) {
@@ -2937,10 +2937,10 @@ public final class Arithmetic {
     /** {@inheritDoc} */
     @Override
     public IExpr numericEval(final IAST ast, EvalEngine engine) {
-      IExpr temp = evalNumericMode(ast);
-      if (temp.isPresent()) {
-        return temp;
-      }
+      // IExpr temp = evalNumericMode(ast);
+      // if (temp.isPresent()) {
+      // return temp;
+      // }
       return evaluate(ast, engine);
     }
 
@@ -6250,58 +6250,58 @@ public final class Arithmetic {
       return c0.multiply(F.complex(i1, F.C0));
     }
 
-    private IExpr evalNumericMode(final IAST ast) {
-      INum number = F.CD1;
-      int start = -1;
-      for (int i = 1; i < ast.size(); i++) {
-        final IExpr arg = ast.get(i);
-        if (arg instanceof INum) {
-          if (arg instanceof ApfloatNum) {
-            number = number.multiply((INum) arg);
-          } else {
-            if (number instanceof ApfloatNum) {
-              number = number.multiply(((INum) arg).apfloatNumValue());
-            } else {
-              number = number.multiply((INum) arg);
-            }
-          }
-        } else if (arg instanceof IComplexNum) {
-          start = i;
-          break;
-        } else {
-          return F.NIL;
-        }
-      }
-      if (start < 0) {
-        return number;
-      }
-      IComplexNum complexNumber;
-      if (number instanceof Num) {
-        complexNumber = F.complexNum(((Num) number).doubleValue());
-      } else {
-        complexNumber = F.complexNum(number.apfloatValue());
-      }
-      for (int i = start; i < ast.size(); i++) {
-        final IExpr arg = ast.get(i);
-        if (arg instanceof INum) {
-          number = (INum) arg;
-          if (number instanceof Num) {
-            complexNumber = complexNumber.multiply(F.complexNum(((Num) number).doubleValue()));
-          } else {
-            complexNumber = complexNumber.multiply(F.complexNum(number.apfloatValue()));
-          }
-        } else if (arg instanceof IComplexNum) {
-          if (complexNumber instanceof ApcomplexNum) {
-            complexNumber = complexNumber.multiply(((IComplexNum) arg).apcomplexNumValue());
-          } else {
-            complexNumber = complexNumber.multiply((IComplexNum) arg);
-          }
-        } else {
-          return F.NIL;
-        }
-      }
-      return complexNumber;
-    }
+    // private IExpr evalNumericMode(final IAST ast) {
+    // INum number = F.CD1;
+    // int start = -1;
+    // for (int i = 1; i < ast.size(); i++) {
+    // final IExpr arg = ast.get(i);
+    // if (arg instanceof INum) {
+    // if (arg instanceof ApfloatNum) {
+    // number = number.multiply((INum) arg);
+    // } else {
+    // if (number instanceof ApfloatNum) {
+    // number = number.multiply(((INum) arg).apfloatNumValue());
+    // } else {
+    // number = number.multiply((INum) arg);
+    // }
+    // }
+    // } else if (arg instanceof IComplexNum) {
+    // start = i;
+    // break;
+    // } else {
+    // return F.NIL;
+    // }
+    // }
+    // if (start < 0) {
+    // return number;
+    // }
+    // IComplexNum complexNumber;
+    // if (number instanceof Num) {
+    // complexNumber = F.complexNum(((Num) number).doubleValue());
+    // } else {
+    // complexNumber = F.complexNum(number.apfloatValue());
+    // }
+    // for (int i = start; i < ast.size(); i++) {
+    // final IExpr arg = ast.get(i);
+    // if (arg instanceof INum) {
+    // number = (INum) arg;
+    // if (number instanceof Num) {
+    // complexNumber = complexNumber.multiply(F.complexNum(((Num) number).doubleValue()));
+    // } else {
+    // complexNumber = complexNumber.multiply(F.complexNum(number.apfloatValue()));
+    // }
+    // } else if (arg instanceof IComplexNum) {
+    // if (complexNumber instanceof ApcomplexNum) {
+    // complexNumber = complexNumber.multiply(((IComplexNum) arg).apcomplexNumValue());
+    // } else {
+    // complexNumber = complexNumber.multiply((IComplexNum) arg);
+    // }
+    // } else {
+    // return F.NIL;
+    // }
+    // }
+    // return complexNumber;
+    // }
 
     @Override
     public double evalReal(final double[] stack, final int top, final int size) {
@@ -6440,10 +6440,10 @@ public final class Arithmetic {
     /** {@inheritDoc} */
     @Override
     public IExpr numericEval(final IAST ast, EvalEngine engine) {
-      IExpr temp = evalNumericMode(ast);
-      if (temp.isPresent()) {
-        return temp;
-      }
+      // IExpr temp = evalNumericMode(ast);
+      // if (temp.isPresent()) {
+      // return temp;
+      // }
       return evaluate(ast, engine);
     }
 
