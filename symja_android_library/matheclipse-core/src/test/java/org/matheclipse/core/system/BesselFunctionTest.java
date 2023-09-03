@@ -58,6 +58,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
   public void testWeberE() {
     check("WeberE(1.5, 3.5)", //
-        "0.212207*HypergeometricPFQ({1.0},{0.25,1.75},-3.0625)+0.891268*HypergeometricPFQ({1.0},{0.75,2.25},-3.0625)");
+        "0.212207*HypergeometricPFQ({1},{0.25,1.75},-3.0625)+0.891268*HypergeometricPFQ({\n"
+            + "1},{0.75,2.25},-3.0625)");
   }
 }

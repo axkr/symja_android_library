@@ -799,9 +799,9 @@ public class QuarticSolver {
   }
 
   /**
-   * Sort the arguments, which are assumed to be of type <code>List()</code>
+   * Sort the arguments of a list.
    *
-   * @param resultList
+   * @param resultList assumed to be of type <code>List()</code>
    * @return
    */
   public static IASTMutable sortASTArguments(IASTMutable resultList) {

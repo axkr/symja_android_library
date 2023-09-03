@@ -2121,7 +2121,7 @@ public class UtilityFunctionCtors {
     for (int i = 1; i < astTimes.size(); i++) {
       IExpr temp = astTimes.get(i);
       if (temp.isAST(Dist) && temp.size() == 4) {
-        IAST dist = engine.evalArgs((IAST) temp, ISymbol.NOATTRIBUTE).orElse((IAST) temp);
+        IAST dist = engine.evalArgs((IAST) temp, ISymbol.NOATTRIBUTE, false).orElse((IAST) temp);
         temp = astTimes.splice(i).oneIdentity1();
         temp = engine.evaluate(temp);
         if (!temp.isMinusOne()) {
@@ -2161,7 +2161,7 @@ public class UtilityFunctionCtors {
       IExpr arg1 = astPlus.get(i);
       if (arg1.isAST(Dist) && arg1.size() == 4) {
         // dist1 = Dist[u_,v_,x_]
-        IAST dist1 = engine.evalArgs((IAST) arg1, ISymbol.NOATTRIBUTE).orElse((IAST) arg1); // (IAST)
+        IAST dist1 = engine.evalArgs((IAST) arg1, ISymbol.NOATTRIBUTE, false).orElse((IAST) arg1); // (IAST)
                                                                                             // arg1;
         IExpr v = dist1.arg2();
         IExpr x = dist1.arg3();
@@ -2170,7 +2170,7 @@ public class UtilityFunctionCtors {
           if (arg2.isAST(Dist) && arg2.size() == 4 && arg2.getAt(2).equals(v)
               && arg2.getAt(3).equals(x)) {
             // dist2=Dist[w_,v_,x_]
-            IAST dist2 = engine.evalArgs((IAST) arg2, ISymbol.NOATTRIBUTE).orElse((IAST) arg2); // (IAST)
+            IAST dist2 = engine.evalArgs((IAST) arg2, ISymbol.NOATTRIBUTE, false).orElse((IAST) arg2); // (IAST)
             // arg2;
             IASTAppendable result = astPlus.removeAtClone(j);
             result.remove(i);
@@ -2184,7 +2184,7 @@ public class UtilityFunctionCtors {
           }
           if (arg2.isTimes2() && arg2.first().isMinusOne() && arg2.second().isAST(Dist)) {
             // -1 * Dist[w_,v_,x_]
-            IAST dist2 = engine.evalArgs((IAST) arg2.second(), ISymbol.NOATTRIBUTE)
+            IAST dist2 = engine.evalArgs((IAST) arg2.second(), ISymbol.NOATTRIBUTE, false)
                 .orElse((IAST) arg2.second()); // (IAST) arg2.second();
             if (dist2.size() == 4 && dist2.getAt(2).equals(v) && dist2.getAt(3).equals(x)) {
               IASTAppendable result = astPlus.removeAtClone(j);
@@ -2202,7 +2202,7 @@ public class UtilityFunctionCtors {
       } else if (arg1.isTimes2() && arg1.first().isMinusOne() && arg1.second().isAST(Dist)) {
         // -1 * Dist[w_,v_,x_]
         IAST dist1 =
-            engine.evalArgs((IAST) arg1.second(), ISymbol.NOATTRIBUTE).orElse((IAST) arg1.second()); // (IAST)
+            engine.evalArgs((IAST) arg1.second(), ISymbol.NOATTRIBUTE, false).orElse((IAST) arg1.second()); // (IAST)
         // arg1.second();
         IExpr v = dist1.arg2();
         IExpr x = dist1.arg3();
@@ -2211,7 +2211,7 @@ public class UtilityFunctionCtors {
           if (arg2.isAST(Dist) && arg2.size() == 4 && arg2.getAt(2).equals(v)
               && arg2.getAt(3).equals(x)) {
             // dist2 = Dist[u_,v_,x_]
-            IAST dist2 = engine.evalArgs((IAST) arg2, ISymbol.NOATTRIBUTE).orElse((IAST) arg2); // (IAST)
+            IAST dist2 = engine.evalArgs((IAST) arg2, ISymbol.NOATTRIBUTE, false).orElse((IAST) arg2); // (IAST)
             // arg2;
             IASTAppendable result = astPlus.removeAtClone(j);
             result.remove(i);

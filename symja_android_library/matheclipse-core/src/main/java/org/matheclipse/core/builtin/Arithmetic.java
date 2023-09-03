@@ -2569,6 +2569,9 @@ public final class Arithmetic {
     @Override
     public IExpr numericEval(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (arg1.isList()) {
+        return ((IAST) arg1).mapThread(ast, 1);
+      }
       if (ast.isAST1()) {
         return numericEvalAST1(arg1, engine);
       }
@@ -2588,7 +2591,7 @@ public final class Arithmetic {
           return Errors.printMessage(S.N, "precgt",
               F.list(arg2, F.ZZ(Config.MAX_PRECISION_APFLOAT)), engine);
         }
-        return numericEvalAST2(arg1, nDigitPrecision, engine);
+        return numericEvalAST2(arg1, arg2, nDigitPrecision, engine);
       } finally {
         engine.setNumericMode(oldNumericMode);
         engine.setNumericPrecision(oldDigitPrecision);
@@ -2605,13 +2608,24 @@ public final class Arithmetic {
         // avoid infinite recursions in symbolic mode
         if (expr.isNumericFunction(true)) {
           engine.setNumericMode(true, numericPrecision, oldSignificantFigures);
-          return engine.evalWithoutNumericReset(expr);
+          IExpr temp = engine.evalWithoutNumericReset(expr);
+          if (temp.isList()) {
+            return ((IAST) temp).mapThread(F.N(F.Slot1), 1);
+          }
+          return temp;
         }
         expr = engine.evaluate(expr);
         if (expr.isInexactNumber()) {
           return expr;
         }
+        if (expr.isList()) {
+          return ((IAST) expr).mapThread(F.N(F.Slot1), 1);
+        }
         engine.setNumericMode(true, numericPrecision, oldSignificantFigures);
+        if (expr.isAST()) {
+          ISymbol topSymbol = expr.topHead();
+          expr = engine.evalArgs((IAST) expr, topSymbol.getAttributes(), true).orElse(expr);
+        }
         return engine.evalWithoutNumericReset(expr);
       } finally {
         engine.setNumericMode(oldNumericMode);
@@ -2619,11 +2633,15 @@ public final class Arithmetic {
       }
     }
 
-    private static IExpr numericEvalAST2(IExpr expr, long nDigitPrecision, EvalEngine engine) {
+    private static IExpr numericEvalAST2(IExpr expr, IExpr arg2, long nDigitPrecision,
+        EvalEngine engine) {
       // first try symbolic evaluation
       expr = engine.evaluate(expr);
       if (expr.isInexactNumber()) {
         return expr;
+      }
+      if (expr.isList()) {
+        return ((IAST) expr).mapThread(F.N(F.Slot1, arg2), 1);
       }
       final int maxSize =
           (Config.MAX_OUTPUT_SIZE > Short.MAX_VALUE) ? Short.MAX_VALUE : Config.MAX_OUTPUT_SIZE;

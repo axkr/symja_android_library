@@ -639,7 +639,7 @@ public class StructureFunctions {
           final IExpr arg3 = function.arg3();
           attributes = AttributeFunctions.getSymbolsAsAttributes(arg3.makeList(), engine);
         }
-        IAST astEvaled = engine.evalArgs(ast, attributes).orElse(ast);
+        IAST astEvaled = engine.evalArgs(ast, attributes, false).orElse(ast);
 
         IExpr arg1 = function.arg1();
         if (function.isAST1()) {

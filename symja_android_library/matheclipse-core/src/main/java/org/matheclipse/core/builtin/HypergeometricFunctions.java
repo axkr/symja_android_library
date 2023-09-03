@@ -1181,44 +1181,43 @@ public class HypergeometricFunctions {
         b = bVector;
       }
 
-      // if (engine.isArbitraryMode() && a.isVector() > 0 && b.isVector() > 0) {
-      // try {
-      // HypergeometricHelper.hypergeometricPFQ();
-      // } catch (ValidateException ve) {
-      // return IOFunctions.printMessage(ast.topHead(), ve, engine);
-      // } catch (RuntimeException rex) {
-      // LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-      // }
-      // }
+      // numeric mode isn't set here
 
-      if (engine.isDoubleMode() && a.isVector() > 0 && b.isVector() > 0) {
-        try {
-          double A[] = a.toDoubleVector();
-          double B[] = b.toDoubleVector();
-          double cDouble = Double.NaN;
-          try {
-            cDouble = c.evalf();
-          } catch (ValidateException ve) {
-          }
-          if (A == null || B == null || Double.isNaN(cDouble)) {
-            Complex AC[] = a.toComplexVector();
-            Complex BC[] = b.toComplexVector();
-            if (AC != null && BC != null) {
-              return F.complexNum(
-                  HypergeometricJS.hypergeometricPFQ(AC, BC, c.evalfc(), Config.DOUBLE_TOLERANCE));
-            }
-          } else {
-            INum result = F.num(HypergeometricJS.hypergeometricPFQ(A, B, cDouble));
-
-            return result;
-          }
-
-        } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
-        } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-        }
+      if (c.isInexactNumber() || a.isInexactVector() > 0 || b.isInexactVector() > 0) {
+        return numericHypergeometricPFQ(a, b, c, ast, engine);
       }
+
+      return F.NIL;
+    }
+
+    private IExpr numericHypergeometricPFQ(IExpr a, IExpr b, IExpr c, IAST ast, EvalEngine engine) {
+      try {
+        double A[] = a.toDoubleVector();
+        double B[] = b.toDoubleVector();
+        double cDouble = Double.NaN;
+        try {
+          cDouble = c.evalf();
+        } catch (ValidateException ve) {
+        }
+        if (A == null || B == null || Double.isNaN(cDouble)) {
+          Complex AC[] = a.toComplexVector();
+          Complex BC[] = b.toComplexVector();
+          if (AC != null && BC != null) {
+            return F.complexNum(
+                HypergeometricJS.hypergeometricPFQ(AC, BC, c.evalfc(), Config.DOUBLE_TOLERANCE));
+          }
+        } else {
+          INum result = F.num(HypergeometricJS.hypergeometricPFQ(A, B, cDouble));
+
+          return result;
+        }
+
+      } catch (ValidateException ve) {
+        return Errors.printMessage(ast.topHead(), ve, engine);
+      } catch (RuntimeException rex) {
+        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+      }
+
       return F.NIL;
     }
 

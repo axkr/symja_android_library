@@ -2034,14 +2034,14 @@ public final class LinearAlgebra {
                     Times(C4, matrix.getEntry(0, 1), matrix.getEntry(1, 0)),
                     Times(CN2, matrix.getEntry(0, 0), matrix.getEntry(1, 1)),
                     Sqr(matrix.getEntry(1, 1))));
-                IExpr eigenValues = List(
+                IAST eigenValues = List(
                     Times(C1D2,
                         Plus(Negate(sqrtExpr), matrix.getEntry(0, 0), matrix.getEntry(1, 1))),
                     Times(C1D2, Plus(sqrtExpr, matrix.getEntry(0, 0), matrix.getEntry(1, 1))));
-                return sortValuesIfNumeric((IAST) eigenValues, arg2);
+                return sortValuesIfNumeric(eigenValues, arg2);
               }
             } else {
-              boolean hasNumericArgument = arg1.isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG);
+              boolean hasNumericArgument = arg1.isNumericArgument(true);// (IAST.CONTAINS_NUMERIC_ARG);
               if (!hasNumericArgument) {
                 ISymbol x = F.Dummy("x");
                 IExpr m = engine.evaluate(F.CharacteristicPolynomial(arg1, x));
@@ -2065,7 +2065,8 @@ public final class LinearAlgebra {
       // switch to numeric calculation
       IExpr eigenValues = numericEval(ast, engine);
       if (eigenValues.isList()) {
-        return sortValuesIfNumeric((IAST) eigenValues, arg2);
+        IAST sortFunction = sortValuesIfNumeric((IASTMutable) eigenValues, arg2);
+        return engine.evaluate(sortFunction);
       }
       return F.NIL;
     }
@@ -2079,8 +2080,10 @@ public final class LinearAlgebra {
      *        elements are sorted in order of decreasing absolute value.
      * @return
      */
-    private IExpr sortValuesIfNumeric(IAST eigenValuesList, final IExpr arg2) {
+    private IAST sortValuesIfNumeric(IAST eigenValuesList, final IExpr arg2) {
       if (eigenValuesList.forAll(v -> v.isNumericFunction())) {
+        eigenValuesList = eigenValuesList.copy();
+        ((IASTMutable) eigenValuesList).sortInplace();
         if (arg2 != null && arg2.isPresent()) {
           int n = arg2.toIntDefault();
           if (n < 0) {

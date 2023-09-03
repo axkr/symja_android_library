@@ -6,6 +6,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Arrays;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import org.hipparchus.Field;
 import org.hipparchus.FieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -1456,6 +1457,20 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     return false;
   }
 
+  @Override
+  public boolean exists(Predicate<? super IExpr> predicate) {
+    if (predicate.test(fDefaultValue)) {
+      return true;
+    }
+    for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+      IExpr value = entry.getValue();
+      if (predicate.test(value)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /** {@inheritDoc} */
   @Override
   public IExpr evaluate(EvalEngine engine) {
@@ -1466,11 +1481,11 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       IExpr temp = engine.evaluateNIL(fDefaultValue);
       if (temp.isPresent()) {
         evaled = true;
-        if (temp.isNumericArgument()) {
+        if (temp.isNumericArgument(true)) {
           containsNumericArg = true;
         }
         newDefaultValue = temp;
-      } else if (fDefaultValue.isNumericArgument()) {
+      } else if (fDefaultValue.isNumericArgument(true)) {
         containsNumericArg = true;
       }
       final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
@@ -1479,12 +1494,12 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         temp = engine.evaluateNIL(value);
         if (temp.isPresent()) {
           evaled = true;
-          if (temp.isNumericArgument()) {
+          if (temp.isNumericArgument(true)) {
             containsNumericArg = true;
           }
           trie.put(entry.getKey(), temp);
         } else {
-          if (value.isNumericArgument()) {
+          if (value.isNumericArgument(true)) {
             containsNumericArg = true;
           }
           trie.put(entry.getKey(), value);
@@ -1551,6 +1566,21 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   public String fullFormString() {
     IASTAppendable result = fullForm();
     return result.fullFormString();
+  }
+
+  @Override
+  public boolean forAll(Predicate<? super IExpr> predicate) {
+    if (!predicate.test(fDefaultValue)) {
+      return false;
+    }
+    for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+      IExpr value = entry.getValue();
+      if (!predicate.test(value)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   public IASTAppendable fullForm() {
@@ -1687,8 +1717,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
           count++;
         } else if (partIndex[i - startPosition] > dims[i - startPosition]
             || partIndex[i - startPosition] <= 0) {
-          return Errors.printMessage(S.Part, "partw", F.list(ast.get(i), ast),
-              EvalEngine.get());
+          return Errors.printMessage(S.Part, "partw", F.list(ast.get(i), ast), EvalEngine.get());
         }
       }
       for (int i = partSize; i < dims.length; i++) {
@@ -1817,6 +1846,33 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   @Override
   public int isVector() {
     return (fDimension.length == 1) ? fDimension[0] : -1;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int isInexactVector() {
+    int result = isVector();
+    if (result >= 0) {
+      if (isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG)) {
+        return result;
+      }
+      if (exists(x -> x.isInexactNumber())) {
+        return result;
+      }
+    }
+    return -1;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isNumericArgument(boolean allowList) {
+    if (allowList) {
+      if (isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG)) {
+        return true;
+      }
+      return exists(x -> x.isNumericArgument(true));
+    }
+    return false;
   }
 
   @Override
@@ -1973,6 +2029,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   @Override
   public double[][] toDoubleMatrix() {
     if (fDimension.length == 2 && fDimension[0] > 0 && fDimension[1] > 0) {
+      IExpr value = null;
       try {
         double[][] result = new double[fDimension[0]][fDimension[1]];
         if (!fDefaultValue.isZero()) {
@@ -1985,12 +2042,16 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         }
         for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
           int[] key = entry.getKey();
-          IExpr value = entry.getValue();
+          value = entry.getValue();
           result[key[0] - 1][key[1] - 1] = value.evalf();
         }
         return result;
       } catch (ArgumentTypeException rex) {
-
+        if (value != null && value.isIndeterminate()) {
+          // Input matrix contains an indeterminate entry.
+          Errors.printMessage(S.SparseArray, "mindet", F.List());
+          return null;
+        }
       }
     }
     return null;
@@ -2000,6 +2061,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   @Override
   public double[] toDoubleVector() {
     if (fDimension.length == 1 && fDimension[0] > 0) {
+      IExpr value = null;
       try {
         double[] result = new double[fDimension[0]];
         if (!fDefaultValue.isZero()) {
@@ -2010,12 +2072,16 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         }
         for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
           int[] key = entry.getKey();
-          IExpr value = entry.getValue();
+          value = entry.getValue();
           result[key[0] - 1] = value.evalf();
         }
         return result;
       } catch (ArgumentTypeException rex) {
-
+        if (value != null && value.isIndeterminate()) {
+          // Input matrix contains an indeterminate entry.
+          Errors.printMessage(S.SparseArray, "mindet", F.List());
+          return null;
+        }
       }
     }
     return null;
@@ -2073,6 +2139,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   @Override
   public RealVector toRealVector() {
     if (fDimension.length == 1 && fDimension[0] > 0) {
+      IExpr value = null;
       try {
         OpenMapRealVector result = new OpenMapRealVector(fDimension[0]);
         if (!fDefaultValue.isZero()) {
@@ -2083,12 +2150,16 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         }
         for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
           int[] key = entry.getKey();
-          IExpr value = entry.getValue();
+          value = entry.getValue();
           result.setEntry(key[0] - 1, value.evalf());
         }
         return result;
       } catch (ArgumentTypeException rex) {
-
+        if (value != null && value.isIndeterminate()) {
+          // Input matrix contains an indeterminate entry.
+          Errors.printMessage(S.SparseArray, "mindet", F.List());
+          return null;
+        }
       }
     }
     return null;

@@ -138,6 +138,10 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   public void testHermiteH() {
+    checkNumeric("HermiteH({-1,2.987,0,1},-1009)", //
+        "{HermiteH(-1,-1009),Indeterminate,1,-2018}");
+    checkNumeric("HermiteH( 1 ,-1009)", //
+        "-2018");
     checkNumeric("HermiteH(3.1, 5)", //
         "1177.0141932545182");
     checkNumeric("HermiteH(.71, .87)", //

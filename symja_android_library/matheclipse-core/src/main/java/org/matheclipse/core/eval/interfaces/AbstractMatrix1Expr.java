@@ -46,7 +46,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
     try {
       int[] dim = checkMatrixDimensions(ast.arg1());
       if (dim != null) {
-        if (ast.arg1().isNumericArgument()) {
+        if (ast.arg1().isNumericArgument(true)) {
           RealMatrix m = ast.arg1().toRealMatrix();
           if (m != null) {
             return realMatrixEval(m, engine);

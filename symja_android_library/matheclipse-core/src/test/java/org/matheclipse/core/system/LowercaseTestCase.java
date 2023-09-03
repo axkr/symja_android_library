@@ -2244,6 +2244,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testBrayCurtisDistance() {
+    check("-1*{10.5, 10} ", //
+        "{-10.5,-10}");
+    check("{-1, -1} - 1 * {10.5, 10} ", //
+        "{-11.5,-11}");
+    check("{-1, -1} + {10.5, 10} ", //
+        "{9.5,9}");
+
+
     check("BrayCurtisDistance({-1, -1}, {10.5, 10})", //
         "1.21622");
     check("BrayCurtisDistance({x,-2,3},{x,5,-3})", //
@@ -3852,7 +3860,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ContinuedFraction(9/22)", //
         "{0,2,2,4}");
     check("ContinuedFraction(9.0/22)", //
-        "{0.0,2.0,2.0,3.0,1.0}");
+        "{0,2,2,3,1}");
     check("ContinuedFraction(-19/10)", //
         "{-1,-1,-9}");
     check("ContinuedFraction(7283752929681393 / 4096)", //
@@ -4420,8 +4428,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   public void testCovariance() {
 
-    check("Covariance({{0.25,0.33,0.45} })", //
-        "Covariance(\n"//
+    check("Covariance({{0.25,0.33,0.45}})", //
+        "Covariance(\n" //
             + "{{0.25,0.33,0.45}})");
     check("Covariance({{0.25,0.13,0.45,0.02},{0.25,0.36,0.45,0.02}})", //
         "{{0.0,0.0,0.0,0.0},\n" //
@@ -10247,7 +10255,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testGeometricMean() {
-    check("GeometricMean(13.261197054679151) // N", //
+    checkNumeric("GeometricMean(13.261197054679151) // N", //
         "GeometricMean(13.261197054679151)");
     checkNumeric("GeometricMean({1, 2.0, 3, 4})", //
         "2.213363839400643");
@@ -10973,20 +10981,24 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testHypergeometricPFQ() {
+    // message HypergeometricPFQ: general hypergeometric argument currently restricted.
+    check("HypergeometricPFQ({1, 1, 1}, {3/2, 3/2, 3/2}, 10.0)", //
+        "HypergeometricPFQ({1,1,1},{3/2,3/2,3/2},10.0)");
+    check("HypergeometricPFQ({1, 1}, {3, 3, 3}, 2.)", //
+        "HypergeometricPFQ({1,1},{3,3,3},2.0)");
+
+    check("HypergeometricPFQ({I, I, I}, {2, 2 , 2}, -1.0*I)", //
+        "0.870032+I*(-0.00484538)");
+    check("HypergeometricPFQ({1, 2, 3, 4}, {5, 6, 7}, {0.1, 0.3, 0.5})", //
+        "{1.01164,1.03627,1.06296}");
+
     check("HypergeometricPFQ({1/2, b}, {3/2, b + 1}, z)", //
         "(b*(Sqrt(Pi)*Sqrt(1/z)*Erfi(Sqrt(z))+(-Gamma(b)+Gamma(b,-z))/(-z)^b))/(-1+2*b)");
     check("HypergeometricPFQ({a,b}, {c,d}, 0)", //
         "1");
     check("HypergeometricPFQ({a, b}, {c, b}, z)", //
         "HypergeometricPFQ({a},{c},z)");
-    check("HypergeometricPFQ({1, 1, 1}, {3/2, 3/2, 3/2}, 10.0)", //
-        "HypergeometricPFQ({1.0,1.0,1.0},{1.5,1.5,1.5},10.0)");
-    check("HypergeometricPFQ({1, 1}, {3, 3, 3}, 2.)", //
-        "HypergeometricPFQ({1.0,1.0},{3.0,3.0,3.0},2.0)");
-    check("HypergeometricPFQ({I, I, I}, {2, 2 , 2}, -1.0*I)", //
-        "0.870032+I*(-0.00484538)");
-    check("HypergeometricPFQ({1, 2, 3, 4}, {5, 6, 7}, {0.1, 0.3, 0.5})", //
-        "{1.01164,1.03627,1.06296}");
+
   }
 
   public void testHypergeometricU() {
@@ -11025,7 +11037,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   public void testIdentity() {
     check("Composition(Through, {Identity, Sqrt}) /@ {0, 1.0, 2.0, 3.0, 4.0}", //
-        "{{0.0,0.0},{1.0,1.0},{2.0,1.41421},{3.0,1.73205},{4.0,2.0}}");
+        "{{0,0},{1.0,1.0},{2.0,1.41421},{3.0,1.73205},{4.0,2.0}}");
     check("Identity'", //
         "1&");
     check("D(Identity(Sin(x)),x)", //
@@ -13940,7 +13952,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("MantissaExponent(N(Pi, 20))", //
         "{0.31415926535897932384,1}");
     check("MantissaExponent(3.4*10^30)", //
-        "{0.34,31.0}");
+        "{0.34,31}");
   }
 
   public void testMap() {
@@ -14621,7 +14633,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   public void testMeijerG() {
     check("MeijerG({{}, {0.33}}, {{Pi}, {E}}, {-0.5,0.5})", //
-        "{(0.0864683+I*0.0412186)*Hypergeometric1F1Regularized(3.81159,1.42331,-0.5),-0.0957901*Hypergeometric1F1Regularized(3.81159,1.42331,0.5)}");
+        "{(0.0864683+I*0.0412186)*Hypergeometric1F1Regularized(3.81159,1-E+Pi,-0.5),-0.0957901*Hypergeometric1F1Regularized(3.81159,\n"
+            + "1-E+Pi,0.5)}");
 
     check("MeijerG({{}, {a2}}, {{b1}, {b2}}, z)", //
         "(z^b1*Hypergeometric1F1Regularized(1-a2+b1,1+b1-b2,z))/Gamma(a2-b1)");
@@ -15930,9 +15943,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testNHoldAll() {
-    check("N(f(2, 3))", "f(2.0,3.0)");
+    check("N(f(2, 3))", //
+        "f(2.0,3.0)");
     check("SetAttributes(f, NHoldAll)", "");
-    check("N(f(2, 3))", "f(2,3)");
+    check("N(f(2, 3))", //
+        "f(2,3)");
   }
 
   public void testNIntegrate() {
@@ -19130,8 +19145,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   public void testPrincipleComponents() {
     // message SparseArray: Input matrix contains an indeterminate entry.
-    check(
-        "PrincipalComponents(SparseArray({{0,0},{0,0}},0) ^ (I*1/3*Pi))", //
+    check("PrincipalComponents(SparseArray({{0,0},{0,0}},0) ^ (I*1/3*Pi))", //
         "PrincipalComponents(SparseArray(Number of elements: 4 Dimensions: {2,2} Default value: 0))");
     check("PrincipalComponents({{0.25,0.33,0.45,0.01}},Method->\"Correlation\")", //
         "{{0.0,0.0,0.0,0.0}}");
@@ -19218,7 +19232,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Variance(pc)", //
         "{4100.023,196.3743,75.84303,12.0943}");
     check("Mean(pc) // Chop", //
-        "{0.0,0.0,0.0,0.0}");
+        "{0,0,0,0}");
     check("Correlation(pc)", //
         "{{1.0,0.0,0.0,0.0},\n" //
             + " {0.0,1.0,0.0,0.0},\n" //
@@ -20421,7 +20435,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("RealAbs(-Infinity)", //
         "Infinity");
     check("RealAbs({1.2, 1.5, 0})", //
-        "{1.2,1.5,0.0}");
+        "{1.2,1.5,0}");
     check("RealAbs(Interval({-1, 2}))", //
         "Interval({0,2})");
     check("D(RealAbs(x),x)", //
@@ -22986,6 +23000,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testSurd() {
+    checkNumeric("N(Surd({-3, -2, -1, 0, 1, 2, 3}, 7))", //
+        "{-1.169930812758687,-1.1040895136738123,-1.0,0.0,1.0,1.1040895136738123,1.169930812758687}");
+    checkNumeric("N(Surd( -2,  5),25)", //
+        "-1.148698354997035006798626");
+
     check("Surd(EulerGamma,3)", //
         "EulerGamma^(1/3)");
     check("Surd(EulerGamma,-7)", //
@@ -23099,10 +23118,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Surd(I,2)");
     check("Surd({-3, -2, -1, 0, 1, 2, 3}, 7)", //
         "{-3^(1/7),-2^(1/7),-1,0,1,2^(1/7),3^(1/7)}");
-    checkNumeric("N(Surd({-3, -2, -1, 0, 1, 2, 3}, 7))", //
-        "{-1.169930812758687,-1.1040895136738123,-1.0,0.0,1.0,1.1040895136738123,1.169930812758687}");
-    checkNumeric("N(Surd( -2,  5),25)", //
-        "-1.148698354997035006798626");
   }
 
   public void testSurvivalFunction() {
@@ -23413,6 +23428,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testTakeLargestBy() {
+    check(
+        "TakeLargestBy({-1.5+I*0.8660254037844386,-1.5+I*(-0.8660254037844386),-1.0},Abs,3)", //
+        "{-1.5+I*0.8660254037844386,-1.5+I*(-0.8660254037844386),-1.0}");
     check("TakeLargestBy({254/315+(14954373125000+I*7875000*Sqrt(9477810222))^(1/3)/31500+\n" //
         + "      1215035/63*2^(1/3)/(29908746250000+I*15750000*Sqrt(9477810222))^(1/3),254/315+\n" //
         + "      1215035/63*(-1+I*Sqrt(3))/(2^(2/3)*(29908746250000+I*15750000*Sqrt(9477810222))^(\n" //
@@ -25198,11 +25216,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testWeierstrassPPrime() {
-    check("WeierstrassPPrime(z, {0, 0}) ", //
-        "-2/z^3");
-    check("WeierstrassPPrime(z, {3, 1}) ", //
-        "-3*Sqrt(3/2)*Cot(Sqrt(3/2)*z)*Csc(Sqrt(3/2)*z)^2");
-
     check("WeierstrassPPrime(2.0, {1,2} )", //
         "8.39655+I*1.28374*10^-14");
     check("WeierstrassPPrime(5., {1, 2}) ", //
@@ -25214,6 +25227,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("Table(WeierstrassPPrime(x,{1.0,3.0} ), {x,-2.0, 2.0, 1/4})", //
         "{-19.23245+I*(-2.02665*10^-14),-5.13514+I*(-3.76819*10^-15),-1.68643+I*(-1.16607*10^-15),-0.0838866+I*(-5.45142*10^-16),1.44536+I*(-3.30329*10^-16),4.48151+I*2.98579*10^-16,15.89616+I*1.58114*10^-15,127.9683+I*1.1967*10^-15,ComplexInfinity,-127.9683+I*(-1.1967*10^-15),-15.89616+I*(-1.58114*10^-15),-4.48151+I*(-2.98579*10^-16),-1.44536+I*3.30329*10^-16,0.0838866+I*5.45142*10^-16,1.68643+I*1.16607*10^-15,5.13514+I*3.76819*10^-15,19.23245+I*2.02665*10^-14}"); //
+    check("WeierstrassPPrime(z, {0, 0}) ", //
+        "-2/z^3");
+    check("WeierstrassPPrime(z, {3, 1}) ", //
+        "-3*Sqrt(3/2)*Cot(Sqrt(3/2)*z)*Csc(Sqrt(3/2)*z)^2");
   }
 
   public void testWhich() {

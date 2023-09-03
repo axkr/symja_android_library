@@ -141,7 +141,9 @@ public class ClusteringFunctions {
 
     @Override
     public IExpr distance(IExpr a, IExpr b, EvalEngine engine) {
-      return F.Divide(F.Total(F.Abs(F.Subtract(a, b))), F.Total(F.Abs(F.Plus(a, b))));
+      IExpr divide = F.Divide(F.Total(F.Abs(F.Subtract(a, b))), F.Total(F.Abs(F.Plus(a, b))));
+      divide = engine.evaluate(divide);
+      return divide;
     }
   }
 

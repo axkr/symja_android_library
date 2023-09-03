@@ -68,25 +68,26 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testCholeskyDecomposition() {
+    check("matG=CholeskyDecomposition({{11.0,3.0},{3.0, 5.0}})", //
+        "{{3.31662,0.904534},\n" + //
+            " {0,2.04495}}");
+    check("Transpose(matG).matG", //
+        "{{11.0,3.0},\n" + //
+            " {3.0,5.0}}");
+    check("CholeskyDecomposition({{0.5, 0.3, 0.4}, {0.3, 1.1, -0.2}, {0.4, -0.2, 0.7}})", //
+        "{{0.707107,0.424264,0.565685},\n" //
+            + " {0,0.959166,-0.458732},\n" //
+            + " {0,0,0.411783}}");
+    check("CholeskyDecomposition({{2, I}, {-I, 3}})", //
+        "{{Sqrt(2),I/Sqrt(2)},\n" //
+            + " {0,Sqrt(5/2)}}");
+
     // message: CholeskyDecomposition: The matrix {{2,1}, {3,a}} is not hermitian or real and
     // symmetric.
     check("CholeskyDecomposition({{2,1},{3,a}})", //
         "CholeskyDecomposition({{2,1},{3,a}})");
     check("CholeskyDecomposition({{2,1},{1,3}})", //
         "{{Sqrt(2),1/Sqrt(2)},\n" //
-            + " {0,Sqrt(5/2)}}");
-    check("matG=CholeskyDecomposition({{11.0,3.0},{3.0, 5.0}})", //
-        "{{3.31662,0.904534},\n" + //
-            " {0.0,2.04495}}");
-    check("Transpose(matG).matG", //
-        "{{11.0,3.0},\n" + //
-            " {3.0,5.0}}");
-    check("CholeskyDecomposition({{0.5, 0.3, 0.4}, {0.3, 1.1, -0.2}, {0.4, -0.2, 0.7}})", //
-        "{{0.707107,0.424264,0.565685},\n" //
-            + " {0.0,0.959166,-0.458732},\n" //
-            + " {0.0,0.0,0.411783}}");
-    check("CholeskyDecomposition({{2, I}, {-I, 3}})", //
-        "{{Sqrt(2),I/Sqrt(2)},\n" //
             + " {0,Sqrt(5/2)}}");
   }
 
@@ -496,12 +497,19 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testEigenvalues() {
+    check("Eigenvalues(SparseArray({{1.0, 2, 3}, {4, 5, 6}, {7, 8, 9}}))", //
+        "{16.11684,-1.11684,-9.2965*10^-16}");
+
+    check("Eigenvalues({{-3.0,-1.5,-3.0},{0,-1,0},{1,0,0}})", //
+        "{-1.5+I*(-0.866025),-1.5+I*0.866025,-1.0}");
+    check("Eigenvalues({{1.0, 2, 3}, {4, 5, 6}, {7, 8, 9}})", //
+        "{16.11684,-1.11684,-9.2965*10^-16}");
+
     // example from https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors
     check("Eigenvalues({{2,0,0,0},{1,2,0,0},{0,1,3,0},{0,0,1,3}})", //
         "{3,3,2,2}");
 
-    check("Eigenvalues({{-3.0,-1.5,-3.0},{0,-1,0},{1,0,0}})", //
-        "{-1.5+I*0.866025,-1.5+I*(-0.866025),-1.0}");
+
     check("Eigenvalues({{1,1,1},{2,2,2},{3,3,3}})", //
         "{6,0,0}");
     check("Eigenvalues({{-2,-2,4}, {-1,-3,7}, {2,4,6}})", //
@@ -550,13 +558,10 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     // Eigenvalues
     check("Eigenvalues({{-8, 12, 4}, {12, -20, 0}, {4, 0, -2}}) // N // Chop", //
         "{-27.59215,-4.6517,2.24386}");
-    check("Eigenvalues(SparseArray({{1.0, 2, 3}, {4, 5, 6}, {7, 8, 9}}))", //
-        "{16.11684,-1.11684,-9.2965*10^-16}");
 
     check("Eigenvalues(A)", //
         "Eigenvalues(A)");
-    check("Eigenvalues({{1.0, 2, 3}, {4, 5, 6}, {7, 8, 9}})", //
-        "{16.11684,-1.11684,-9.2965*10^-16}");
+   
     check("Eigenvalues({{a}})", //
         "{a}");
     check("Eigenvalues({{a, b}, {0, a}})", //
@@ -907,7 +912,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             + "10+s+4*s^2+s^3)},\n"//
             + " {s/(-10+s+4*s^2+s^3),(-2-s)/(10-s-4*s^2-s^3),(8+5*s+s^2)/(-10+s+4*s^2+s^3)}}");
     check("N(Inverse({{1,2.0},{3,4}}),50)", //
-        "{{-2,1},\n" + " {1.5,-0.5}}");
+        "{{-2.0,1.0},{1.5,-0.5}}");
 
     check("Inverse({{1,2},{3,4}})", "{{-2,1},\n" + " {3/2,-1/2}}");
     check("Inverse({{1,2.0},{3,4}})", "{{-2.0,1.0},\n" + " {1.5,-0.5}}");
@@ -1595,13 +1600,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "-3/Sqrt(35)");
     // TODO MMA gives 2x3 and 2x2 matrices
     check("QRDecomposition({{1, 2}, {3, 4}, {5, 6}}) // N", //
-        "{\n" //
-            + "{{-0.169031,-0.507093,-0.845154},\n"//
-            + " {0.897085,0.276026,-0.345033},\n"//
-            + " {0.408248,-0.816497,0.408248}},\n"//
-            + "{{-5.91608,-7.43736},\n"//
-            + " {0.0,0.828079},\n"//
-            + " {0.0,0.0}}}");//
+        "{{{-0.169031,-0.507093,-0.845154},{0.897085,0.276026,-0.345033},{0.408248,-0.816497,0.408248}},{{-5.91608,-7.43736},{0.0,0.828079},{0.0,0.0}}}");//
 
     check("QRDecomposition({{12, -51, 4}, {6, 167, -68}, {-4, 24, -41}})", //
         "{\n" + "{{-6/7,-3/7,2/7},\n" //
@@ -1834,7 +1833,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             + " {0.00010145,1.18284,4.04539},\n" //
             + " {0.0,-8.89583*10^-24,0.6}}}");
     check("m - q.t.ConjugateTranspose(q) // Chop", //
-        "{{0.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,0.0}}");
+        "{{0,0,0},{0,0,0},{0,0,0}}");
 
     check(
         "m = {{1.81066, 0.31066, 1.5}, {-0.53033, 2.03033, 0.43934}, {-0.96967, -0.53033, 2.56066}};", //
@@ -1848,7 +1847,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             + " {1.71543,1.9817,-0.476196},\n" //
             + " {0.0,-3.59747*10^-17,2.22049}}}");
     check("m - q.t.ConjugateTranspose(q) // Chop", //
-        "{{0.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,0.0}}");
+        "{{0,0,0},{0,0,0},{0,0,0}}");
   }
 
   public void testSingularValueDecomposition() {

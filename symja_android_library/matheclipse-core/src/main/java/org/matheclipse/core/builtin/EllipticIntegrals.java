@@ -978,15 +978,13 @@ public class EllipticIntegrals {
           if (engine.isDoubleMode() && x.isNumber() && m.isNumber()) {
             if (x.isReal() && m.isReal()) {
               try {
-                return F
-                    .complexNum(EllipticFunctionsJS.jacobiTheta(a, x.evalf(), m.evalf()));
+                return F.complexNum(EllipticFunctionsJS.jacobiTheta(a, x.evalf(), m.evalf()));
               } catch (RuntimeException rex) {
                 LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
               }
             } else if (x.isInexactNumber() && m.isInexactNumber()) {
               try {
-                return F.complexNum(
-                    EllipticFunctionsJS.jacobiTheta(a, x.evalfc(), m.evalfc()));
+                return F.complexNum(EllipticFunctionsJS.jacobiTheta(a, x.evalfc(), m.evalfc()));
               } catch (ValidateException ve) {
                 return Errors.printMessage(ast.topHead(), ve, engine);
               } catch (RuntimeException rex) {
@@ -1105,8 +1103,7 @@ public class EllipticIntegrals {
           // } catch (ValidateException ve) {
           // }
           // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-          return F
-              .complexNum(EllipticFunctionsJS.inverseJacobiCD(z.evalfc(), m.evalfc()));
+          return F.complexNum(EllipticFunctionsJS.inverseJacobiCD(z.evalfc(), m.evalfc()));
           // } else {
           // return F.num(EllipticFunctionsJS.inverseJacobiCD(zDouble, mDouble));
           // }
@@ -1165,8 +1162,7 @@ public class EllipticIntegrals {
           // } catch (ValidateException ve) {
           // }
           // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-          return F
-              .complexNum(EllipticFunctionsJS.inverseJacobiCN(z.evalfc(), m.evalfc()));
+          return F.complexNum(EllipticFunctionsJS.inverseJacobiCN(z.evalfc(), m.evalfc()));
           // } else {
           // return F.num(EllipticFunctionsJS.inverseJacobiCN(zDouble, mDouble));
           // }
@@ -1216,8 +1212,7 @@ public class EllipticIntegrals {
           // } catch (ValidateException ve) {
           // }
           // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-          return F
-              .complexNum(EllipticFunctionsJS.inverseJacobiDN(z.evalfc(), m.evalfc()));
+          return F.complexNum(EllipticFunctionsJS.inverseJacobiDN(z.evalfc(), m.evalfc()));
           // } else {
           // return F.num(EllipticFunctionsJS.inverseJacobiDN(zDouble, mDouble));
           // }
@@ -1281,8 +1276,7 @@ public class EllipticIntegrals {
           // } catch (ValidateException ve) {
           // }
           // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-          return F
-              .complexNum(EllipticFunctionsJS.inverseJacobiSC(z.evalfc(), m.evalfc()));
+          return F.complexNum(EllipticFunctionsJS.inverseJacobiSC(z.evalfc(), m.evalfc()));
           // } else {
           // return F.num(EllipticFunctionsJS.inverseJacobiSC(zDouble, mDouble));
           // }
@@ -1336,8 +1330,7 @@ public class EllipticIntegrals {
           // } catch (ValidateException ve) {
           // }
           // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-          return F
-              .complexNum(EllipticFunctionsJS.inverseJacobiSD(z.evalfc(), m.evalfc()));
+          return F.complexNum(EllipticFunctionsJS.inverseJacobiSD(z.evalfc(), m.evalfc()));
           // } else {
           // return F.num(EllipticFunctionsJS.inverseJacobiSD(zDouble, mDouble));
           // }
@@ -1397,8 +1390,7 @@ public class EllipticIntegrals {
           // } catch (ValidateException ve) {
           // }
           // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-          return F
-              .complexNum(EllipticFunctionsJS.inverseJacobiSN(z.evalfc(), m.evalfc()));
+          return F.complexNum(EllipticFunctionsJS.inverseJacobiSN(z.evalfc(), m.evalfc()));
           // } else {
           // return F.num(EllipticFunctionsJS.inverseJacobiSN(zDouble, mDouble));
           // }
@@ -1466,11 +1458,9 @@ public class EllipticIntegrals {
       if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
         try {
           if (z.isReal() && m.isReal()) {
-            return F
-                .complexNum(EllipticFunctionsJS.jacobiAmplitude(z.evalf(), m.evalf()));
+            return F.complexNum(EllipticFunctionsJS.jacobiAmplitude(z.evalf(), m.evalf()));
           }
-          return F
-              .complexNum(EllipticFunctionsJS.jacobiAmplitude(z.evalfc(), m.evalfc()));
+          return F.complexNum(EllipticFunctionsJS.jacobiAmplitude(z.evalfc(), m.evalfc()));
         } catch (RuntimeException rex) {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
@@ -2075,14 +2065,16 @@ public class EllipticIntegrals {
         IAST list = (IAST) ast.arg1();
         IExpr g2 = list.arg1();
         IExpr g3 = list.arg2();
-        // numric mode isn't set here
-        if (g2.isInexactNumber() && g3.isInexactNumber()) {
-          try {
-            org.hipparchus.complex.Complex[] invariants =
-                EllipticFunctionsJS.weierstrassHalfPeriods(g2.evalfc(), g3.evalfc());
-            return Object2Expr.convertComplex(false, invariants);
-          } catch (RuntimeException rex) {
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        // numeric mode isn't set here
+        if (g2.isInexactNumber() || g3.isInexactNumber()) {
+          if (g2.isNumber() && g3.isNumber()) {
+            try {
+              org.hipparchus.complex.Complex[] invariants =
+                  EllipticFunctionsJS.weierstrassHalfPeriods(g2.evalfc(), g3.evalfc());
+              return Object2Expr.convertComplex(false, invariants);
+            } catch (RuntimeException rex) {
+              LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+            }
           }
         }
       }
@@ -2109,16 +2101,18 @@ public class EllipticIntegrals {
         IAST list = (IAST) ast.arg1();
         IExpr g2 = list.arg1();
         IExpr g3 = list.arg2();
-        // numric mode isn't set here
-        if (g2.isInexactNumber() && g3.isInexactNumber()) {
-          try {
-            org.hipparchus.complex.Complex[] invariants =
-                EllipticFunctionsJS.weierstrassInvariants(g2.evalfc(), g3.evalfc());
-            return Object2Expr.convertComplex(false, invariants);
-          } catch (ValidateException ve) {
-            return Errors.printMessage(ast.topHead(), ve, engine);
-          } catch (RuntimeException rex) {
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        // numeric mode isn't set here
+        if (g2.isInexactNumber() || g3.isInexactNumber()) {
+          if (g2.isNumber() && g3.isNumber()) {
+            try {
+              org.hipparchus.complex.Complex[] invariants =
+                  EllipticFunctionsJS.weierstrassInvariants(g2.evalfc(), g3.evalfc());
+              return Object2Expr.convertComplex(false, invariants);
+            } catch (ValidateException ve) {
+              return Errors.printMessage(ast.topHead(), ve, engine);
+            } catch (RuntimeException rex) {
+              LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+            }
           }
         }
       }
@@ -2156,11 +2150,11 @@ public class EllipticIntegrals {
           // 1 + (3/2) Cot(Sqrt(3/2)*u)^2
           return F.Plus(F.C1, F.Times(F.C3D2, F.Sqr(F.Cot(F.Times(F.Sqrt(F.C3D2), u)))));
         }
-        // numric mode isn't set here
-        if (u.isInexactNumber() && g2.isInexactNumber() && g3.isInexactNumber()) {
+        // numeric mode isn't set here
+        if (u.isInexactNumber() && g2.isNumber() && g3.isNumber()) {
           try {
-            return F.complexNum(EllipticFunctionsJS.weierstrassP(u.evalfc(), g2.evalfc(),
-                g3.evalfc()));
+            return F
+                .complexNum(EllipticFunctionsJS.weierstrassP(u.evalfc(), g2.evalfc(), g3.evalfc()));
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
@@ -2201,11 +2195,11 @@ public class EllipticIntegrals {
           return F.Times(F.CN3, F.Sqrt(F.C3D2), F.Cot(F.Times(F.Sqrt(F.C3D2), u)),
               F.Sqr(F.Csc(F.Times(F.Sqrt(F.C3D2), u))));
         }
-        // numric mode isn't set here
-        if (u.isInexactNumber() && g2.isInexactNumber() && g3.isInexactNumber()) {
+        // numeric mode isn't set here
+        if (u.isInexactNumber() && g2.isNumber() && g3.isNumber()) {
           try {
-            return F.complexNum(EllipticFunctionsJS.weierstrassPPrime(u.evalfc(),
-                g2.evalfc(), g3.evalfc()));
+            return F.complexNum(
+                EllipticFunctionsJS.weierstrassPPrime(u.evalfc(), g2.evalfc(), g3.evalfc()));
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }

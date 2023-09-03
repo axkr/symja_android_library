@@ -848,6 +848,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return -1;
     }
 
+    @Override
+    public final int isInexactVector() {
+      return -1;
+    }
+
     /** {@inheritDoc} */
     @Override
     public final boolean isZERO() {
@@ -3947,14 +3952,17 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public boolean isNumericArgument() {
+  public boolean isNumericArgument(boolean allowList) {
     if (isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG)) {
-      return forAll(x -> x.isNumericFunction(true)
-          || (x.isList() && ((IAST) x).forAll(y -> y.isNumericFunction(true))));
+      return forAll(x -> x.isNumericFunction(allowList)
+          || (x.isList() && ((IAST) x).forAll(y -> y.isNumericFunction(allowList))));
+    }
+    if (allowList && isList()) {
+      return exists(x -> x.isNumericArgument(allowList));
     }
     // TODO optimize this expression:
-    return isAST(S.Interval) && forAll(x -> x.isNumericArgument()
-        || (x.isList() && ((IAST) x).forAll(y -> y.isNumericArgument())));
+    return isAST(S.Interval) && forAll(x -> x.isNumericArgument(allowList)
+        || (x.isList() && ((IAST) x).forAll(y -> y.isNumericArgument(allowList))));
   }
 
   /** {@inheritDoc} */
@@ -4697,6 +4705,18 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       }
       addEvalFlags(IAST.IS_VECTOR);
       return length;
+    }
+    return -1;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int isInexactVector() {
+    int result = isVector();
+    if (result >= 0) {
+      if (exists(x -> x.isInexactNumber())) {
+        return result;
+      }
     }
     return -1;
   }

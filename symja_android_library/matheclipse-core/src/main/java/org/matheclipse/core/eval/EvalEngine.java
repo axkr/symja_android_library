@@ -696,12 +696,22 @@ public class EvalEngine implements Serializable {
    */
   public void evalArg(final IASTMutable[] result0, final IAST ast, final IExpr arg, final int i,
       final boolean isNumericFunction) {
-
-    final IExpr evaledArg = evalLoop(arg);
+    final IExpr evaledArg;
+    if (isNumericFunction) {
+      evaledArg = evalLoop(arg);
+    } else {
+      boolean isNumericMode = fNumericMode;
+      try {
+        fNumericMode = false;
+        evaledArg = evalLoop(arg);
+      } finally {
+        fNumericMode = isNumericMode;
+      }
+    }
     if (evaledArg.isPresent()) {
       if (result0[0].isNIL()) {
         result0[0] = ast.copy();
-        if (isNumericFunction && evaledArg.isNumericArgument()) {
+        if (isNumericFunction && evaledArg.isNumericArgument(true)) {
           result0[0].addEvalFlags(
               (ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR) | IAST.CONTAINS_NUMERIC_ARG);
         } else {
@@ -710,10 +720,11 @@ public class EvalEngine implements Serializable {
       }
       result0[0].set(i, evaledArg);
     } else {
-      if (arg.isNumericArgument()) {
+      if (isNumericFunction && arg.isNumericArgument(false)) {
         ast.addEvalFlags(ast.getEvalFlags() | IAST.CONTAINS_NUMERIC_ARG);
       }
     }
+
   }
 
   /**
@@ -722,17 +733,22 @@ public class EvalEngine implements Serializable {
    *
    * @param ast
    * @param attributes
+   * @param numericFunction2 TODO
    * @return <code>F.NIL</code> is no evaluation was possible
    */
-  public IASTMutable evalArgs(final IAST ast, final int attributes) {
+  public IASTMutable evalArgs(final IAST ast, final int attributes, boolean numericFunction) {
     final int astSize = ast.size();
 
     if (astSize > 1) {
       boolean numericMode = fNumericMode;
       boolean localNumericMode = fNumericMode;
-      final boolean isNumericFunction =
-          (ISymbol.NUMERICFUNCTION & attributes) == ISymbol.NUMERICFUNCTION;
-      boolean isNumericArgument = ast.isNumericArgument();
+      final boolean isNumericFunction;
+      if ((ISymbol.NUMERICFUNCTION & attributes) == ISymbol.NUMERICFUNCTION) {
+        isNumericFunction = true;
+      } else {
+        isNumericFunction = numericFunction;
+      }
+      final boolean isNumericArgument = ast.isNumericArgument(true);
       if (!fNumericMode) {
         if (isNumericFunction && isNumericArgument) {
           localNumericMode = true;
@@ -812,11 +828,12 @@ public class EvalEngine implements Serializable {
           }
         }
       }
-      if (!isNumericArgument && ast.isNumericArgument()) {
+      if (isNumericFunction //
+          && !isNumericArgument //
+          && rlist[0].isNIL() //
+          && ast.isNumericArgument(true)) {
         // one of the arguments is a numeric value
-        if (rlist[0].isNIL()) {
-          return evalArgs(ast, attributes);
-        }
+        return evalArgs(ast, attributes, isNumericFunction);
       }
       return rlist[0];
     }
@@ -851,11 +868,11 @@ public class EvalEngine implements Serializable {
     // pattern-matching".
     // Functions like Times and PLus implement OneIdentity as extra transformation!
 
-    if ((result = evalArgs(ast, attributes)).isPresent()) {
+    final IExpr arg1 = ast.arg1();
+    if ((result = evalArgs(ast, attributes, false)).isPresent()) {
       return result;
     }
 
-    final IExpr arg1 = ast.arg1();
     if (ISymbol.hasFlatAttribute(attributes)) {
       if (arg1.head().equals(symbol)) {
         // associative
@@ -1205,7 +1222,7 @@ public class EvalEngine implements Serializable {
         }
       }
 
-      IASTMutable resultList = evalArgs(mutableAST, attributes);
+      IASTMutable resultList = evalArgs(mutableAST, attributes, false);
       if (resultList.isPresent()) {
         return resultList;
       }
@@ -1233,7 +1250,7 @@ public class EvalEngine implements Serializable {
           if (resultList.isAssociation()) {
             return resultList;
           }
-          return evalArgs(resultList, ISymbol.NOATTRIBUTE).orElse(resultList);
+          return evalArgs(resultList, ISymbol.NOATTRIBUTE, false).orElse(resultList);
         }
       }
 

@@ -412,6 +412,12 @@ public class ASTRealVector extends AbstractAST implements Externalizable, Random
 
   /** {@inheritDoc} */
   @Override
+  public final int isInexactVector() {
+    return vector.getDimension();
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public boolean isNumericAST() {
     return true;
   }

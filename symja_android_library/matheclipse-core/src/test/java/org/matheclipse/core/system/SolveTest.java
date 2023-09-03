@@ -533,7 +533,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
     // github #117
     check("Solve({x+y^2==9.1, y==2*x+2}, {x,y})", //
-        "{{x->-2.71893,y->-3.43787},{x->0.468934,y->2.93787}}");
+        "{{y->-3.43787,x->-2.71893},{y->2.93787,x->0.468934}}");
 
     check("Solve(-28 - 4*Sqrt(-1 + x) + 4*x==0,x)", //
         "{{x->10}}");
@@ -620,7 +620,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->0.6666666666666665*y*z}}");
     // Issue #160
     checkNumeric("Solve((2.10937501*y)/(0.6923076944378698*z)==(0.6923076944378698*z)/x,x)", //
-        "{{x->(0.2272189352323269*z^2.0)/y}}");
+        "{{x->(0.22721893523232692*z^2.0)/y}}");
     // Issue #159
     check("Solve(x==2*Sqrt(y)*Sqrt(z),y)", //
         "{{y->x^2/(4*z)}}");
@@ -738,7 +738,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     checkNumeric("z=22.13904248493947", // 7
         "22.13904248493947");
     checkNumeric("Solve(x/y==z/x,x)", //
-        "{{x->-81.08825721072822},{x->81.08825721072822}}");
+        "{{x->-81.08825721072805},{x->81.08825721072805}}");
   }
 
   public void testNSolve() {
@@ -892,19 +892,19 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("NSolve((-3+E^(2*x))==0,x)", //
         "{{x->0.549306}}");
     check("NSolve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
-        "{{x->ConditionalExpression((I*6.28319)*C(1.0),C(1)∈Integers)},{x->ConditionalExpression(I*3.14159+(I*6.28319)*C(1.0),C(\n"
-            + "1)∈Integers)},{x->ConditionalExpression(0.549306+(I*6.28319)*C(1.0),C(1)∈Integers)},{x->ConditionalExpression(0.549306+I*3.14159+(I*6.28319)*C(1.0),C(\n"
-            + "1)∈Integers)}}");
+        "{{x->ConditionalExpression((I*6.28319)*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*3.14159+(I*6.28319)*C(\n"
+            + "1),C(1)∈Integers)},{x->ConditionalExpression(0.549306+(I*6.28319)*C(1),C(1)∈Integers)},{x->ConditionalExpression(0.549306+I*3.14159+(I*6.28319)*C(\n"
+            + "1),C(1)∈Integers)}}");
 
     check("NSolve(1+E^x==0,x)", //
         "{{x->I*3.14159}}");
     check("Solve(1+E^x==0,x)", //
         "{{x->ConditionalExpression(I*Pi+I*2*Pi*C(1),C(1)∈Integers)}}");
     check("NSolve(a+E^(b*x)==0,x)", //
-        "{{x->ConditionalExpression(((I*6.28319)*C(1.0)+Log(-a))/b,C(1)∈Integers)}}");
+        "{{x->ConditionalExpression(((I*6.28319)*C(1)+Log(-a))/b,C(1)∈Integers)}}");
 
     check("NSolve(E^x==b,x)", //
-        "{{x->ConditionalExpression((I*6.28319)*C(1.0)+Log(b),C(1)∈Integers)}}");
+        "{{x->ConditionalExpression((I*6.28319)*C(1)+Log(b),C(1)∈Integers)}}");
     check("NSolve(a^x==42,x)", //
         "{{x->3.73767/Log(a)}}");
     //
@@ -1323,7 +1323,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
   public void testSolveIssue413() {
     // eval quiet without message
     check("Solve({8.0*E - 9 == x0/x1, x0==x1^4.0},{x0, x1}) ", //
-        "{{x0->29.77443,x1->2.33594},{x0->-14.88721+I*(-25.78541),x1->-1.16797+I*(-2.02298)},{x0->-14.88721+I*25.78541,x1->-1.16797+I*2.02298}}");
+        "{{x1->-1.16797+I*2.02298,x0->-14.88721+I*25.78541},{x1->-1.16797+I*(-2.02298),x0->-14.88721+I*(-25.78541)},{x1->0.0,x0->0.0},{x1->2.33594,x0->29.77443}}");
     // eval quiet without message
     check("Solve({x0^2.0*Sin(x1)==5.0,x1^3.0*Cos(x0)==5.0},{x0,x1}) ", //
         "Solve({x0^2.0*Sin(x1)==5.0,x1^3.0*Cos(x0)==5.0},{x0,x1})");

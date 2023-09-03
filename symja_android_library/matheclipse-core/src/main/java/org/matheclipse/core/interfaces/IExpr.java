@@ -3124,6 +3124,17 @@ public interface IExpr
    * @return
    */
   default boolean isNumericArgument() {
+    return isNumericArgument(true);
+  }
+
+  /**
+   * Test if this expression is a numeric number (i.e. an instance of type <code>INum</code> or type
+   * <code>IComplexNum</code>), an <code>ASTRealVector</code> or an <code>ASTRealMatrix</code>.
+   * 
+   * @param allowLists additional to numeric functions and numeric numbers allow lists to have
+   *        inexact values
+   */
+  default boolean isNumericArgument(boolean allowList) {
     return this instanceof INum || this instanceof IComplexNum || this instanceof ASTRealVector
         || this instanceof ASTRealMatrix;
   }
@@ -4094,6 +4105,11 @@ public interface IExpr
    *         AST.
    */
   default int isVector() {
+    // default: no vector
+    return -1;
+  }
+
+  default int isInexactVector() {
     // default: no vector
     return -1;
   }

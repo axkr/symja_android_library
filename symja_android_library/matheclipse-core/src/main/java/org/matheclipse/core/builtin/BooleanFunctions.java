@@ -4092,7 +4092,7 @@ public final class BooleanFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.size() > 2) {
-        IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE).orElse(ast);
+        IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE, false).orElse(ast);
         if (temp.isAST2()) {
           return temp.arg1().isSame(temp.arg2()) ? S.True : S.False;
         }
@@ -4720,7 +4720,7 @@ public final class BooleanFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.size() > 2) {
-        IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE).orElse(ast);
+        IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE, false).orElse(ast);
         if (temp.isAST2()) {
           return temp.arg1().isSame(temp.arg2()) ? S.False : S.True;
         }
