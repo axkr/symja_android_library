@@ -82,6 +82,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.ISparseArray;
@@ -818,8 +819,8 @@ public final class LinearAlgebra {
       }
       if (rank != 2) {
         // Function `1` not implemented
-        return Errors.printMessage(S.ArrayFlatten, "zznotimpl",
-            F.List(F.stringx("(rank != 2)")), engine);
+        return Errors.printMessage(S.ArrayFlatten, "zznotimpl", F.List(F.stringx("(rank != 2)")),
+            engine);
       }
       boolean sparseArray = false;
       if (!arg1.isFree(x -> x.isSparseArray(), false)) {
@@ -916,8 +917,7 @@ public final class LinearAlgebra {
             if (dimensions.size() < rank) {
               // The array depth of the expression at position `1` of `2` must be at least equal
               // to the specified rank `3`.
-              Errors.printMessage(S.ArrayFlatten, "depth", F.List(F.C1, list, F.ZZ(rank)),
-                  engine);
+              Errors.printMessage(S.ArrayFlatten, "depth", F.List(F.C1, list, F.ZZ(rank)), engine);
               return false;
             }
             if (rowDimensions[i - 1] != 0 && rowDimensions[i - 1] != dimensions.getInt(0)) {
@@ -2010,7 +2010,16 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg2 = ast.argSize() > 1 ? ast.arg2() : F.NIL;
+      IExpr numberOfEigenvalues = ast.argSize() > 1 ? ast.arg2() : F.NIL;
+      if (numberOfEigenvalues.isPresent()) {
+        int n = numberOfEigenvalues.toIntDefault();
+        if (n == Integer.MIN_VALUE) {
+          // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
+          // `1`.
+          return Errors.printMessage(S.Eigenvalues, "seqs", F.List(ast, F.C2), engine);
+        }
+
+      }
       if (ast.isAST1() && !engine.isNumericMode()) {
         FieldMatrix<IExpr> matrix;
         try {
@@ -2038,7 +2047,10 @@ public final class LinearAlgebra {
                     Times(C1D2,
                         Plus(Negate(sqrtExpr), matrix.getEntry(0, 0), matrix.getEntry(1, 1))),
                     Times(C1D2, Plus(sqrtExpr, matrix.getEntry(0, 0), matrix.getEntry(1, 1))));
-                return sortValuesIfNumeric(eigenValues, arg2);
+                IAST sortFunction = sortValuesIfNumeric(eigenValues, numberOfEigenvalues);
+                if (sortFunction.isPresent()) {
+                  return engine.evaluate(sortFunction);
+                }
               }
             } else {
               boolean hasNumericArgument = arg1.isNumericArgument(true);// (IAST.CONTAINS_NUMERIC_ARG);
@@ -2050,7 +2062,11 @@ public final class LinearAlgebra {
                       RootsFunctions.roots(m, false, F.List(x), false, true, engine);
                   if (eigenValues.isList()) {
                     if (eigenValues.forAll(v -> v.isNumericFunction())) {
-                      return sortValuesIfNumeric((IAST) eigenValues, arg2);
+                      IAST sortFunction =
+                          sortValuesIfNumeric((IASTMutable) eigenValues, numberOfEigenvalues);
+                      if (sortFunction.isPresent()) {
+                        return engine.evaluate(sortFunction);
+                      }
                     }
                   }
                 }
@@ -2065,8 +2081,10 @@ public final class LinearAlgebra {
       // switch to numeric calculation
       IExpr eigenValues = numericEval(ast, engine);
       if (eigenValues.isList()) {
-        IAST sortFunction = sortValuesIfNumeric((IASTMutable) eigenValues, arg2);
-        return engine.evaluate(sortFunction);
+        IAST sortFunction = sortValuesIfNumeric((IASTMutable) eigenValues, numberOfEigenvalues);
+        if (sortFunction.isPresent()) {
+          return engine.evaluate(sortFunction);
+        }
       }
       return F.NIL;
     }
@@ -2076,16 +2094,18 @@ public final class LinearAlgebra {
      * decreasing absolute value.
      * 
      * @param eigenValuesList
-     * @param arg2 the specification of how the values are sorte; if {@link F#NIL} the numeric
-     *        elements are sorted in order of decreasing absolute value.
+     * @param numberOfEigenvalues if this is a positive {@link IInteger} value return the number of
+     *        eigenvalues in decreasing order; if this is a negative {@link IInteger} value return
+     *        the number of eigenvalues in increasing order. If {@link F#NIL} return all possible
+     *        eigenvalues in decreasing order.
      * @return
      */
-    private IAST sortValuesIfNumeric(IAST eigenValuesList, final IExpr arg2) {
+    private IAST sortValuesIfNumeric(IAST eigenValuesList, final IExpr numberOfEigenvalues) {
       if (eigenValuesList.forAll(v -> v.isNumericFunction())) {
         eigenValuesList = eigenValuesList.copy();
         ((IASTMutable) eigenValuesList).sortInplace();
-        if (arg2 != null && arg2.isPresent()) {
-          int n = arg2.toIntDefault();
+        if (numberOfEigenvalues != null && numberOfEigenvalues.isPresent()) {
+          int n = numberOfEigenvalues.toIntDefault();
           if (n < 0) {
             if (n == Integer.MIN_VALUE) {
               return F.NIL;
@@ -2121,6 +2141,7 @@ public final class LinearAlgebra {
       });
     }
   }
+
 
   /**
    * Eigenvectors(matrix)
@@ -2386,6 +2407,7 @@ public final class LinearAlgebra {
     }
   }
 
+
   private static class FourierMatrix extends AbstractFunctionEvaluator {
 
     /**
@@ -2418,6 +2440,7 @@ public final class LinearAlgebra {
       return ARGS_1_1;
     }
   }
+
 
   /**
    *
@@ -2513,6 +2536,7 @@ public final class LinearAlgebra {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+
   public static class FromSphericalCoordinates extends AbstractEvaluator {
 
     @Override
@@ -2560,6 +2584,7 @@ public final class LinearAlgebra {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+
   private static class HessenbergDecomposition extends AbstractFunctionEvaluator {
 
     @Override
@@ -2603,6 +2628,8 @@ public final class LinearAlgebra {
       return ARGS_1_1;
     }
   }
+
+
   /**
    *
    *
@@ -2649,6 +2676,7 @@ public final class LinearAlgebra {
       return ARGS_1_1;
     }
   }
+
 
   /**
    *
@@ -2697,6 +2725,7 @@ public final class LinearAlgebra {
       return ARGS_1_2;
     }
   }
+
 
   /**
    *
@@ -2867,6 +2896,7 @@ public final class LinearAlgebra {
     }
   }
 
+
   /**
    *
    *
@@ -2954,6 +2984,7 @@ public final class LinearAlgebra {
     }
   }
 
+
   /**
    *
    *
@@ -3015,6 +3046,7 @@ public final class LinearAlgebra {
     }
   }
 
+
   /**
    *
    *
@@ -3061,8 +3093,8 @@ public final class LinearAlgebra {
             }
           } catch (MathIllegalArgumentException miae) {
             // `1`.
-            return Errors.printMessage(ast.topHead(), "error",
-                F.list(F.$str(miae.getMessage())), engine);
+            return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())),
+                engine);
           } catch (final MathRuntimeException mre) {
             // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 !=
             // 3
@@ -3089,6 +3121,7 @@ public final class LinearAlgebra {
       return ARGS_2_2;
     }
   }
+
 
   /**
    *
@@ -3446,6 +3479,7 @@ public final class LinearAlgebra {
     }
   }
 
+
   private static class LinearSolveFunction extends AbstractFunctionEvaluator {
 
     @Override
@@ -3458,6 +3492,7 @@ public final class LinearAlgebra {
       return F.NIL;
     }
   }
+
 
   private static class LowerTriangularize extends AbstractFunctionEvaluator {
 
@@ -3486,6 +3521,7 @@ public final class LinearAlgebra {
       return ARGS_1_2;
     }
   }
+
 
   /**
    *
@@ -3578,6 +3614,7 @@ public final class LinearAlgebra {
     }
   }
 
+
   private static class MatrixExp extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3594,8 +3631,8 @@ public final class LinearAlgebra {
             RealMatrix result = MatrixUtils.matrixExponential(matrix);
             return new ASTRealMatrix(result, false);
           } catch (MathIllegalArgumentException miae) {
-            return Errors.printMessage(ast.topHead(), "error",
-                F.list(F.stringx(miae.getMessage())), engine);
+            return Errors.printMessage(ast.topHead(), "error", F.list(F.stringx(miae.getMessage())),
+                engine);
           }
         }
       }
@@ -3608,6 +3645,7 @@ public final class LinearAlgebra {
       return ARGS_1_1;
     }
   }
+
 
   private static class MatrixFunction extends AbstractEvaluator {
 
@@ -3658,6 +3696,7 @@ public final class LinearAlgebra {
       return ARGS_1_1;
     }
   }
+
 
   /**
    *
@@ -3727,6 +3766,7 @@ public final class LinearAlgebra {
       return ARGS_2_2;
     }
   }
+
 
   /**
    *
@@ -3836,6 +3876,7 @@ public final class LinearAlgebra {
       return ARGS_2_2;
     }
   }
+
 
   /**
    *
@@ -3954,6 +3995,7 @@ public final class LinearAlgebra {
   // }
   // }
 
+
   public static class Minors extends AbstractFunctionEvaluator {
 
     @Override
@@ -4012,6 +4054,8 @@ public final class LinearAlgebra {
       return ARGS_1_2;
     }
   }
+
+
   /**
    * 0]
    *
@@ -4188,6 +4232,7 @@ public final class LinearAlgebra {
     }
   }
 
+
   /**
    *
    *
@@ -4256,6 +4301,7 @@ public final class LinearAlgebra {
       return ARGS_1_2;
     }
   }
+
 
   /**
    *
@@ -4350,6 +4396,7 @@ public final class LinearAlgebra {
     }
   }
 
+
   private static class Orthogonalize extends AbstractEvaluator {
 
     static IBuiltInSymbol oneStep = F.localBiFunction("oneStep", (vec, vecmat) -> {
@@ -4429,6 +4476,7 @@ public final class LinearAlgebra {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+
   private static class PauliMatrix extends AbstractFunctionEvaluator {
 
     @Override
@@ -4467,6 +4515,7 @@ public final class LinearAlgebra {
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
+
 
   /**
    *
@@ -4577,6 +4626,7 @@ public final class LinearAlgebra {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+
   /**
    *
    *
@@ -4650,6 +4700,7 @@ public final class LinearAlgebra {
       return solver.getInverse();
     }
   }
+
 
   /**
    *
@@ -4944,6 +4995,7 @@ public final class LinearAlgebra {
     }
   }
 
+
   private static class SchurDecomposition extends AbstractFunctionEvaluator {
 
     @Override
@@ -4987,6 +5039,7 @@ public final class LinearAlgebra {
       return ARGS_1_1;
     }
   }
+
 
   /**
    *
@@ -5127,6 +5180,7 @@ public final class LinearAlgebra {
     }
   }
 
+
   private static class ToeplitzMatrix extends AbstractFunctionEvaluator {
 
     @Override
@@ -5166,6 +5220,7 @@ public final class LinearAlgebra {
       return ARGS_1_2;
     }
   }
+
 
   /**
    *
@@ -5250,6 +5305,7 @@ public final class LinearAlgebra {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+
   public static class ToSphericalCoordinates extends AbstractEvaluator {
 
     @Override
@@ -5299,6 +5355,7 @@ public final class LinearAlgebra {
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
+
 
   /**
    *
@@ -5411,6 +5468,7 @@ public final class LinearAlgebra {
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
+
 
   /**
    *
@@ -5591,6 +5649,7 @@ public final class LinearAlgebra {
     // }
   }
 
+
   /**
    *
    *
@@ -5686,6 +5745,7 @@ public final class LinearAlgebra {
     }
   }
 
+
   private static class UpperTriangularize extends AbstractFunctionEvaluator {
 
     @Override
@@ -5712,6 +5772,7 @@ public final class LinearAlgebra {
       return ARGS_1_2;
     }
   }
+
 
   /**
    *
@@ -5782,6 +5843,7 @@ public final class LinearAlgebra {
     }
   }
 
+
   /**
    *
    *
@@ -5835,6 +5897,7 @@ public final class LinearAlgebra {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
+
   }
 
   /**

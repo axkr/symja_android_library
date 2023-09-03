@@ -497,6 +497,10 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testEigenvalues() {
+    // print message: Eigenvalues: Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s}
+    // expected at position 2 in Eigenvalues({{1,0},{0,1}},{1,1,1,1}).
+    check("Eigenvalues( {{1,0},{0,1}},{1,1,1,1})", //
+        "Eigenvalues({{1,0},{0,1}},{1,1,1,1})");
     check("Eigenvalues(SparseArray({{1.0, 2, 3}, {4, 5, 6}, {7, 8, 9}}))", //
         "{16.11684,-1.11684,-9.2965*10^-16}");
 
@@ -561,7 +565,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
     check("Eigenvalues(A)", //
         "Eigenvalues(A)");
-   
+
     check("Eigenvalues({{a}})", //
         "{a}");
     check("Eigenvalues({{a, b}, {0, a}})", //
