@@ -2,6 +2,7 @@ package org.matheclipse.core.eval.interfaces;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.expression.ApfloatNum;
@@ -178,6 +179,10 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
             }
           }
           if (result.isPresent()) {
+            if (result.isIndeterminate()) {
+              // Indeterminate expression `1` encountered
+              Errors.printMessage(ast.topHead(), "indet", F.List(ast), engine);
+            }
             return result;
           }
           return e2ObjArg(ast, o0, o1);
@@ -195,6 +200,10 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
             }
           }
           if (result.isPresent()) {
+            if (result.isIndeterminate()) {
+              // Indeterminate expression `1` encountered
+              Errors.printMessage(ast.topHead(), "indet", F.List(ast), engine);
+            }
             return result;
           }
           return e2ObjArg(null, o0, o1);
@@ -210,6 +219,10 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
             result = e2DblComArg((IComplexNum) o0, (IComplexNum) o1);
           }
           if (result.isPresent()) {
+            if (result.isIndeterminate()) {
+              // Indeterminate expression `1` encountered
+              Errors.printMessage(ast.topHead(), "indet", F.List(ast), engine);
+            }
             return result;
           }
           return e2ObjArg(null, o0, o1);
@@ -221,6 +234,10 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
             result = e2DblComArg(F.complexNum((IFraction) o0), (IComplexNum) o1);
           }
           if (result.isPresent()) {
+            if (result.isIndeterminate()) {
+              // Indeterminate expression `1` encountered
+              Errors.printMessage(ast.topHead(), "indet", F.List(ast), engine);
+            }
             return result;
           }
           return e2ObjArg(ast, o0, o1);

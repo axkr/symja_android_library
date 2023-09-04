@@ -547,6 +547,12 @@ public class Num implements INum {
     return Double.isFinite(value);
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public final boolean isIndeterminate() {
+    return Double.isNaN(value);
+  }
+
   @Override
   public boolean isInfinite() {
     return Double.isInfinite(value);
