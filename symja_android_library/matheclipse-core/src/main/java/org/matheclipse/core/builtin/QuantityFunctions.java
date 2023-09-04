@@ -14,6 +14,7 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -272,29 +273,32 @@ public class QuantityFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
-        if (ast.size() == 2) {
+        if (ast.isAST1()) {
           IExpr arg1 = engine.evaluate(ast.arg1());
-          if (arg1.isString()) {
-            IUnit unit = IUnit.of(arg1.toString());
-            if (unit == null) {
-              return F.NIL;
-            }
-            return IQuantity.of(F.C1, unit);
+          if (!arg1.isString()) {
+            return Errors.printMessage(S.Quantity, "unkunit", F.List(arg1));
           }
+          IUnit unit = IUnit.of(arg1.toString());
+          if (unit == null) {
+            return Errors.printMessage(S.Quantity, "unkunit", F.List(arg1));
+          }
+          return IQuantity.of(F.C1, unit);
         }
-        if (ast.size() == 3) {
+        if (ast.isAST2()) {
           IExpr arg1 = engine.evaluate(ast.arg1());
           if (arg1.isList()) {
             return arg1.mapThread(F.Quantity(F.Slot1, ast.arg2()), 1);
           }
           IExpr arg2 = engine.evaluate(ast.arg2());
-          if (arg2.isString()) {
-            IUnit unit = IUnit.of(arg2.toString());
-            if (unit == null) {
-              return F.NIL;
-            }
-            return IQuantity.of(arg1, unit);
+          if (!arg2.isString()) {
+            return Errors.printMessage(S.Quantity, "unkunit", F.List(arg2));
           }
+          IUnit unit = IUnit.of(arg2.toString());
+          if (unit == null) {
+            return Errors.printMessage(S.Quantity, "unkunit", F.List(arg2));
+          }
+          return IQuantity.of(arg1, unit);
+
         }
       } catch (RuntimeException e) {
         LOGGER.log(engine.getLogLevel(), "Quantity", e);

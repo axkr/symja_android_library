@@ -331,6 +331,7 @@ public class Errors {
       "toggle", "ToggleFeature `1` is disabled.", //
       "tolnn", "Tolerance specification `1` must be a non-negative number.", "udist",
       "The specification `1` is not a random distribution recognized by the system.", //
+      "unkunit", "Unable to interpret unit specification `1`.", //
       "unsupported", "`1` currently not supported in `2`.", //
       "usraw", "Cannot unset object `1`.", //
       "vloc",

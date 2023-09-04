@@ -270,6 +270,7 @@ public class BuiltinUsage {
     USAGE[ID.Key] = "indicate a key within a part specification";
     USAGE[ID.Keys] = "list association keys";
     USAGE[ID.Khinchin] = "Khinchin's constant K≃2.6854";
+    // USAGE[ID.KnownUnitQ] = "tests whether its argument is a canonical unit.";
     USAGE[ID.KroneckerProduct] = "Kronecker product";
     USAGE[ID.Kurtosis] = "kurtosis coefficient";
 
@@ -416,6 +417,11 @@ public class BuiltinUsage {
 
     USAGE[ID.Quantile] =
         "cut points dividing the range of a probability distribution into continuous intervals";
+    USAGE[ID.Quantity] = "represents a quantity with units";
+    USAGE[ID.QuantityMagnitude] = "get magnitude associated with a quantity";
+    USAGE[ID.QuantityQ] = "tests whether the argument is a quantity";
+    USAGE[ID.QuantityUnit] = "the unit associated to a quantity";
+
     USAGE[ID.Quartiles] = "list of quartiles";
     USAGE[ID.Quiet] = "evaluate without showing messages";
     USAGE[ID.Quit] = "terminates the Symja session...";
@@ -567,6 +573,7 @@ public class BuiltinUsage {
     USAGE[ID.Unevaluated] =
         "temporarily leaves $expr$ in an unevaluated form when it appears as a function argument";
     USAGE[ID.Union] = "enumerate all distinct elements in a list";
+    USAGE[ID.UnitConvert] = "convert between units";
     USAGE[ID.UnitVector] = "unit vector along a coordinate direction";
     USAGE[ID.Unprotect] = "remove protection against redefinitions";
     USAGE[ID.UnsameQ] = "not literal symbolic identity";
