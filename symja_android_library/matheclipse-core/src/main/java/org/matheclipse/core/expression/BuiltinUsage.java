@@ -18,6 +18,8 @@ public class BuiltinUsage {
     USAGE[ID.$MaxMachineNumber] = "largest normalized positive machine number";
     USAGE[ID.$MinMachineNumber] = "smallest normalized positive machine number";
 
+    USAGE[ID.$Packages] = "list the packages loaded in the current session";
+
     USAGE[ID.$RecursionLimit] =
         "specifies the maximum allowable recursion depth after which a calculation is terminated";
 
@@ -49,6 +51,7 @@ public class BuiltinUsage {
     USAGE[ID.ArcTan] = "inverse tangent function";
     USAGE[ID.ArcTanh] = "inverse hyperbolic tangent function";
     USAGE[ID.Arg] = "phase of a complex number";
+    USAGE[ID.ArrayDepth] = "the rank of a tensor";
     USAGE[ID.Attributes] = "find the attributes of a symbol";
     USAGE[ID.Append] = "add an element at the end of an expression";
     USAGE[ID.AppendTo] = "add an element at the end of an stored list or expression";
@@ -128,6 +131,7 @@ public class BuiltinUsage {
     USAGE[ID.DiceDissimilarity] = "Dice dissimilarity";
     USAGE[ID.DigitCharacter] = "digit 0-9";
     USAGE[ID.DigitQ] = "test whether all the characters are digits";
+    USAGE[ID.Dimensions] = "the dimensions of a tensor";
     USAGE[ID.DirectedInfinity] = "infinite quantity with a defined direction in the complex plane";
     USAGE[ID.DiscretePlot] = "discrete plot of a one-parameter function";
     USAGE[ID.DisjointQ] = "test whether two lists do not have common elements";
@@ -135,6 +139,7 @@ public class BuiltinUsage {
     USAGE[ID.DivideBy] = "divide a value and assigns that returning the new value";
     USAGE[ID.Divisors] = "integer divisors";
     USAGE[ID.Do] = "evaluate an expression looping over a variable";
+    USAGE[ID.Dot] = "dot product";
     USAGE[ID.DownValues] =
         "get transformation rules corresponding to all downvalues defined for a symbol";
     USAGE[ID.Drop] = "remove a number of elements from a list";
@@ -242,6 +247,7 @@ public class BuiltinUsage {
     USAGE[ID.Infinity] = "infinite real quantity";
     USAGE[ID.Infix] = "infix form";
     USAGE[ID.Information] = "get information about all assignments for a symbol";
+    USAGE[ID.Inner] = "generalized inner product";
     USAGE[ID.Input] = "the name of the current input stream";
     USAGE[ID.InputForm] = "plain-text input format";
     USAGE[ID.Insert] = "insert an element at a given position";
@@ -364,6 +370,7 @@ public class BuiltinUsage {
     USAGE[ID.Orderless] =
         "attribute for functions with results that does not depends on the order of their arguments";
     USAGE[ID.OutputForm] = "plain-text output format";
+    USAGE[ID.Outer] = "generalized outer product";
     USAGE[ID.Overflow] = "overflow in numeric evaluation";
 
     USAGE[ID.PadLeft] = "pad out by the left a ragged array to make a matrix";
