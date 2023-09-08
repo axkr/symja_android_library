@@ -570,7 +570,6 @@ public class ApcomplexNum implements IComplexNum {
       return compareTo(((INumber) expr).apcomplexValue());
     }
     return -1;
-    // return IComplexNum.super.compareTo(expr);
   }
 
   @Override

@@ -141,6 +141,7 @@ import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.reflection.system.rules.AutomaticRules;
 import org.matheclipse.core.tensor.QuantityParser;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.parser.client.ParserConfig;
@@ -148,6 +149,7 @@ import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.trie.TrieMatch;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.math.DoubleMath;
 import edu.jas.kern.ComputerThreads;
 import edu.jas.kern.JASConfig;
 import edu.jas.kern.PreemptStatus;
@@ -1012,6 +1014,8 @@ public class F extends S {
       SidesFunctions.initialize();
       ComputationalGeometryFunctions.initialize();
       PiecewiseFunctions.initialize();
+
+      AutomaticRules.initialize();
 
       COUNT_DOWN_LATCH.countDown();
       Errors.initGeneralMessages();
@@ -10010,6 +10014,41 @@ public class F extends S {
    */
   public static IAST ToExpression(final IExpr a0) {
     return new AST1(ToExpression, a0);
+  }
+
+  /**
+   * Converts this number to an <code>int</code> value; this method returns
+   * <code>Integer.MIN_VALUE</code>, if the value of this integer isn't in the range
+   * {@link java.lang.Integer.MIN_VALUE}+1 to {@link java.lang.Integer.MAX_VALUE}-1 or the
+   * expression is not convertible to the <code>int</code> range.
+   *
+   * @return the numeric value represented by this expression after conversion to type <code>int
+   *     </code> or <code>Integer.MIN_VALUE</code> if this expression cannot be converted.
+   */
+  public static int toIntDefault(double value) {
+    return toIntDefault(value, java.lang.Integer.MIN_VALUE);
+  }
+
+  /**
+   * Converts this number to an <code>int</code> value; this method returns
+   * <code>defaultValue</code>, if the value of this integer isn't in the range
+   * {@link java.lang.Integer.MIN_VALUE}+1 to {@link java.lang.Integer.MAX_VALUE}-1 or the
+   * expression is not convertible to the <code>int</code> range.
+   *
+   * @param value
+   * @param defaultValue the default value, if this integer is not in the <code>int</code> range
+   * @return the numeric value represented by this integer after conversion to type <code>int</code>
+   */
+  public static int toIntDefault(double value, int defaultValue) {
+    if (DoubleMath.isMathematicalInteger(value)) {
+      int v = (int) value;
+      if (v == java.lang.Integer.MIN_VALUE //
+          || v == java.lang.Integer.MAX_VALUE) {
+        return defaultValue;
+      }
+      return v;
+    }
+    return defaultValue;
   }
 
   public static IAST ToIntervalData(final IExpr expr) {

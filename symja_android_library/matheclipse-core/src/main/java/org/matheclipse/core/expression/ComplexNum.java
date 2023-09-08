@@ -1099,10 +1099,7 @@ public class ComplexNum implements IComplexNum {
   @Override
   public int toIntDefault(int defaultValue) {
     if (F.isZero(fComplex.getImaginary())) {
-      final double re = fComplex.getReal();
-      if (DoubleMath.isMathematicalInteger(re)) {
-        return (int) re;
-      }
+      return F.toIntDefault(fComplex.getReal(), defaultValue);
     }
     return defaultValue;
   }

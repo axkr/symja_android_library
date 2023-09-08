@@ -943,10 +943,7 @@ public class Num implements INum {
   /** {@inheritDoc} */
   @Override
   public int toIntDefault(int defaultValue) {
-    if (DoubleMath.isMathematicalInteger(value)) {
-      return (int) value;
-    }
-    return defaultValue;
+    return F.toIntDefault(value, defaultValue);
   }
 
   /** {@inheritDoc} */

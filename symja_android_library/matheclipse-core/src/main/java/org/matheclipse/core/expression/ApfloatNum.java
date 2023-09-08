@@ -632,17 +632,23 @@ public class ApfloatNum implements INum {
    */
   @Override
   public int compareTo(final IExpr expr) {
+
     if (expr instanceof ApfloatNum) {
       return fApfloat.compareTo(((ApfloatNum) expr).fApfloat);
     }
     if (expr.isNumber()) {
       if (expr.isReal()) {
-        return fApfloat.compareTo(((IReal) expr).apfloatValue());
+        try {
+          return fApfloat.compareTo(((IReal) expr).apfloatValue());
+        } catch (NumberFormatException nfe) {
+          return -1;
+        }
       }
       int c = this.compareTo(((INumber) expr).re());
       if (c != 0) {
         return c;
       }
+
     }
     return -1;
   }
