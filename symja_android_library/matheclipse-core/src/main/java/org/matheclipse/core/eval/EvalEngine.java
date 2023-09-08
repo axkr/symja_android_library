@@ -470,7 +470,8 @@ public class EvalEngine implements Serializable {
       fAnswer = S.Null;
     }
     ISymbol ans = F.symbol("$ans", Context.GLOBAL_CONTEXT_NAME, null, this);
-    ans.putDownRule(IPatternMatcher.SET, true, ans, fAnswer, false);
+    ans.assignValue(fAnswer, false);
+    // ans.putDownRule(IPatternMatcher.SET, true, ans, fAnswer, false);
     if (fOutListDisabled) {
       return;
     }

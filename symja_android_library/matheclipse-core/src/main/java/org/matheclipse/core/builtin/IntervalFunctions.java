@@ -12,7 +12,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.reflection.system.rules.ToIntervalDataRules;
 
 public class IntervalFunctions {
 
@@ -273,13 +272,8 @@ public class IntervalFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
-  private static final class ToIntervalData extends AbstractFunctionEvaluator
-      implements ToIntervalDataRules {
+  private static final class ToIntervalData extends AbstractFunctionEvaluator {
 
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {

@@ -221,6 +221,11 @@ public class HypergeometricJS extends JS {
     if (cabs(x) > useAsymptotic) {
       Complex bSuba = sub(b, a);
       if (a.isZero() || (bSuba.isMathematicalInteger() && sub(b, a).getReal() <= 0.0)) {
+
+        int i = F.toIntDefault(bSuba.getReal());
+        if (i == Integer.MIN_VALUE) {
+          throw new ArgumentTypeException("hypergeometric argument out of range");
+        }
         return complexAverage(l -> hypergeometric1F1(l, b, x), a);
       }
 

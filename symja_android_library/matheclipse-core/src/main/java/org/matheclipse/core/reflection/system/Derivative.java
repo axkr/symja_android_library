@@ -11,7 +11,6 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.reflection.system.rules.DerivativeRules;
 
 /**
  *
@@ -84,11 +83,7 @@ import org.matheclipse.core.reflection.system.rules.DerivativeRules;
  * Derivative(2,0,1,0)[h(g)]
  * </pre>
  */
-public class Derivative extends AbstractFunctionEvaluator implements DerivativeRules {
-  @Override
-  public IAST getRuleAST() {
-    return RULES;
-  }
+public class Derivative extends AbstractFunctionEvaluator {
 
   public Derivative() {}
 

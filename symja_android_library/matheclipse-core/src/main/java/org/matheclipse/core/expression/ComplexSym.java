@@ -930,6 +930,15 @@ public class ComplexSym implements IComplex {
     return IComplex.super.times(that);
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public int toIntDefault(int defaultValue) {
+    if (fImaginary.isZero()) {
+      return fReal.toIntDefault(defaultValue);
+    }
+    return defaultValue;
+  }
+
   @Override
   public IAST toPolarCoordinates() {
     return F.list(abs(), complexArg());

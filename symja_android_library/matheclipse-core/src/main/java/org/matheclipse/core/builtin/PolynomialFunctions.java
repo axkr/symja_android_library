@@ -46,10 +46,6 @@ import org.matheclipse.core.polynomials.longexponent.ExprTermOrder;
 import org.matheclipse.core.polynomials.symbolicexponent.ExpVectorSymbolic;
 import org.matheclipse.core.polynomials.symbolicexponent.SymbolicPolynomial;
 import org.matheclipse.core.polynomials.symbolicexponent.SymbolicPolynomialRing;
-import org.matheclipse.core.reflection.system.rules.JacobiPRules;
-import org.matheclipse.core.reflection.system.rules.LegendrePRules;
-import org.matheclipse.core.reflection.system.rules.LegendreQRules;
-import org.matheclipse.core.reflection.system.rules.SphericalHarmonicYRules;
 import com.google.common.math.LongMath;
 import edu.jas.application.GBAlgorithmBuilder;
 import edu.jas.arith.BigRational;
@@ -1137,8 +1133,7 @@ public class PolynomialFunctions {
 
 
 
-  private static final class SphericalHarmonicY extends AbstractFunctionEvaluator
-      implements SphericalHarmonicYRules {
+  private static final class SphericalHarmonicY extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1242,11 +1237,6 @@ public class PolynomialFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_4_4;
-    }
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
     }
 
     @Override
@@ -1751,7 +1741,7 @@ public class PolynomialFunctions {
     }
   }
 
-  private static final class JacobiP extends AbstractFunctionEvaluator implements JacobiPRules {
+  private static final class JacobiP extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1818,11 +1808,6 @@ public class PolynomialFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_4_4;
-    }
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
     }
 
     @Override
@@ -2024,7 +2009,7 @@ public class PolynomialFunctions {
    * 3/8-15/4*x^2+35/8*x^4
    * </pre>
    */
-  private static final class LegendreP extends AbstractFunctionEvaluator implements LegendrePRules {
+  private static final class LegendreP extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2041,11 +2026,6 @@ public class PolynomialFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
-    }
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
     }
 
     @Override
@@ -2084,7 +2064,7 @@ public class PolynomialFunctions {
    * 55/24*z-35/8*z^3-3/16*Log(1-z)+15/8*z^2*Log(1-z)-35/16*z^4*Log(1-z)+3/16*Log(1+z)-15/8*z^2*Log(1+z)+35/16*z^4*Log(1+z)
    * </pre>
    */
-  static final class LegendreQ extends AbstractFunctionEvaluator implements LegendreQRules {
+  static final class LegendreQ extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2100,11 +2080,6 @@ public class PolynomialFunctions {
         }
       }
       return ARGS_2_3;
-    }
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
     }
 
     @Override

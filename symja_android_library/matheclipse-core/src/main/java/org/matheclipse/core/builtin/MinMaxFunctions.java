@@ -172,15 +172,14 @@ public class MinMaxFunctions {
     }
   }
 
-  private static final class FunctionRange extends AbstractFunctionEvaluator
-      implements FunctionRangeRules {
+  private static final class FunctionRange extends AbstractFunctionEvaluator {
     private static Supplier<Matcher> LAZY_MATCHER;
 
     private static class Initializer {
 
       private static Matcher init() {
         Matcher MATCHER = new Matcher();
-        IAST list = RULES;
+        IAST list = FunctionRangeRules.RULES;
 
         for (int i = 1; i < list.size(); i++) {
           IExpr arg = list.get(i);

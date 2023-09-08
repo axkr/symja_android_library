@@ -121,10 +121,6 @@ import org.matheclipse.core.patternmatching.hash.HashedPatternRulesLog;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRulesTimes;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRulesTimesPower;
 import org.matheclipse.core.polynomials.QuarticSolver;
-import org.matheclipse.core.reflection.system.rules.AbsRules;
-import org.matheclipse.core.reflection.system.rules.ConjugateRules;
-import org.matheclipse.core.reflection.system.rules.GammaRules;
-import org.matheclipse.core.reflection.system.rules.PowerRules;
 import org.matheclipse.core.sympy.core.Expr;
 import org.matheclipse.core.sympy.series.Order;
 import org.matheclipse.core.tensor.qty.IQuantity;
@@ -241,8 +237,7 @@ public final class Arithmetic {
    * 3
    * </pre>
    */
-  private static final class Abs extends AbstractTrigArg1
-      implements INumeric, AbsRules, DoubleUnaryOperator {
+  private static final class Abs extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
 
     private static final class AbsNumericFunction implements DoubleFunction<IExpr> {
       final ISymbol symbol;
@@ -370,11 +365,6 @@ public final class Arithmetic {
         return F.C1;
       }
       return F.NIL;
-    }
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
     }
 
     @Override
@@ -987,8 +977,7 @@ public final class Arithmetic {
    * 1.5+I*(-2.5)
    * </pre>
    */
-  private static final class Conjugate extends AbstractTrigArg1
-      implements INumeric, ConjugateRules {
+  private static final class Conjugate extends AbstractTrigArg1 implements INumeric {
 
     /**
      * Conjugate numbers and special objects like <code>Infinity</code> and <code>Indeterminate
@@ -1102,11 +1091,6 @@ public final class Arithmetic {
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       return ast.argSize() == 1 ? ast.arg1().conjugate() : F.NIL;
-    }
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
     }
 
     @Override
@@ -1559,7 +1543,7 @@ public final class Arithmetic {
    * 1.1018024908797128
    * </pre>
    */
-  private static final class Gamma extends AbstractArg12 implements GammaRules {
+  private static final class Gamma extends AbstractArg12 {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
@@ -1771,11 +1755,6 @@ public final class Arithmetic {
         }
       }
       return NIL;
-    }
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
     }
 
     @Override
@@ -3423,8 +3402,7 @@ public final class Arithmetic {
    * a^b
    * </pre>
    */
-  public static class Power extends AbstractFunctionEvaluator
-      implements INumeric, IFunctionExpand, PowerRules {
+  public static class Power extends AbstractFunctionEvaluator implements INumeric, IFunctionExpand {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
@@ -4668,11 +4646,6 @@ public final class Arithmetic {
         throw new UnsupportedOperationException();
       }
       return Math.pow(stack[top - 1], stack[top]);
-    }
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
     }
 
     @Override

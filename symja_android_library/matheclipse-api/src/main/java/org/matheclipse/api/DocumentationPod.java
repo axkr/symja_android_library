@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Suppliers;
 
-public class DocumentationPod implements IPod, PodDefaultsRules {
+public class DocumentationPod implements IPod {
 
   static com.google.common.base.Supplier<Map<IExpr, IAST>> LAZY_DEFAULTS_SUPPLIER =
       new com.google.common.base.Supplier<Map<IExpr, IAST>>() {
@@ -30,8 +30,8 @@ public class DocumentationPod implements IPod, PodDefaultsRules {
         @Override
         public Map<IExpr, IAST> get() {
           HashMap<IExpr, IAST> defaultParameters = new HashMap<IExpr, IAST>();
-          for (int i = 1; i < RULES.size(); i++) {
-            IExpr arg = RULES.get(i);
+          for (int i = 1; i < PodDefaultsRules.RULES.size(); i++) {
+            IExpr arg = PodDefaultsRules.RULES.get(i);
             if (arg.isAST(S.SetDelayed, 3)) {
               defaultParameters.put(arg.first(), (IAST) arg.second());
             } else if (arg.isAST(S.Set, 3)) {

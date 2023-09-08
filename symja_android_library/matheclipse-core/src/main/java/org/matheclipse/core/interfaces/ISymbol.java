@@ -11,6 +11,7 @@ import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
@@ -728,8 +729,11 @@ public interface ISymbol extends IExpr {
    * @return <code>null</code> if no pattern matcher was generated
    * @see PatternMap#DEFAULT_RULE_PRIORITY
    */
-  public IPatternMatcher putDownRule(final int setSymbol, boolean equalRule, IExpr leftHandSide,
-      IExpr rightHandSide, boolean packageMode);
+  default IPatternMatcher putDownRule(final int setSymbol, boolean equalRule, IAST leftHandSide,
+      IExpr rightHandSide, boolean packageMode) {
+    return putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide,
+        IPatternMap.DEFAULT_RULE_PRIORITY, packageMode);
+  }
 
   /**
    * Associate a new rule with the given priority to this symbol.<br>
@@ -745,8 +749,43 @@ public interface ISymbol extends IExpr {
    * @return <code>null</code> if no pattern matcher was generated
    * @see PatternMap#DEFAULT_RULE_PRIORITY
    */
-  public IPatternMatcher putDownRule(final int setSymbol, boolean equalRule, IExpr leftHandSide,
+  public IPatternMatcher putDownRule(final int setSymbol, boolean equalRule, IAST leftHandSide,
       IExpr rightHandSide, int priority, boolean packageMode);
+
+  /**
+   * Associate a new &quot;down value&quot; rule with default priority to this symbol.
+   *
+   * @param setSymbol which of the symbols <code>Set, SetDelayed, UpSet, UpSetDelayed</code> was
+   *        used for defining this rule
+   * @param equalRule <code>true</code> if the leftHandSide could be matched with equality
+   * @param leftHandSide
+   * @param rightHandSide
+   * @param packageMode <code>true</code> if we are on &quot;package mode&quot;
+   * @return <code>null</code> if no pattern matcher was generated
+   * @see PatternMap#DEFAULT_RULE_PRIORITY
+   */
+  default IPatternMatcher putDownRule(final int setSymbol, boolean equalRule,
+      IPatternObject leftHandSide, IExpr rightHandSide, boolean packageMode) {
+    return putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide,
+        IPatternMap.DEFAULT_RULE_PRIORITY, packageMode);
+  }
+
+  /**
+   * Associate a new rule with the given priority to this symbol.<br>
+   * Rules with lower numbers have higher priorities.
+   *
+   * @param setSymbol which of the symbols <code>Set, SetDelayed, UpSet, UpSetDelayed</code> was
+   *        used for defining this rule
+   * @param equalRule <code>true</code> if the leftHandSide could be matched with equality
+   * @param leftHandSide
+   * @param rightHandSide
+   * @param priority the priority of the rule
+   * @param packageMode <code>true</code> if we are on &quot;package mode&quot;
+   * @return <code>null</code> if no pattern matcher was generated
+   * @see PatternMap#DEFAULT_RULE_PRIORITY
+   */
+  public IPatternMatcher putDownRule(final int setSymbol, boolean equalRule,
+      IPatternObject leftHandSide, IExpr rightHandSide, int priority, boolean packageMode);
 
   /**
    * Associate a new rule, which invokes a method, to this symbol.

@@ -33,8 +33,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
-import org.matheclipse.core.reflection.system.rules.LimitRules;
-import org.matheclipse.core.reflection.system.rules.SeriesCoefficientRules;
 import com.google.common.collect.Lists;
 import edu.jas.arith.BigRational;
 import edu.jas.poly.GenPolynomial;
@@ -92,7 +90,8 @@ public class SeriesFunctions {
    * 7
    * </pre>
    */
-  private static final class Limit extends AbstractFunctionEvaluator implements LimitRules {
+  private static final class Limit extends AbstractFunctionEvaluator {
+
     /** Direction of limit computation */
     private static enum Direction {
       /** Compute the limit approaching from larger real values. */
@@ -962,11 +961,6 @@ public class SeriesFunctions {
     }
 
     @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
-
-    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.NHOLDALL);
       super.setUp(newSymbol);
@@ -1316,13 +1310,8 @@ public class SeriesFunctions {
    * Piecewise({{Sin(f+g+1/2*n*Pi)/n!,n&gt;=0}},0)
    * </pre>
    */
-  private static final class SeriesCoefficient extends AbstractFunctionEvaluator
-      implements SeriesCoefficientRules {
+  private static final class SeriesCoefficient extends AbstractFunctionEvaluator {
 
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {

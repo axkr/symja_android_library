@@ -11,17 +11,11 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.reflection.system.rules.InverseZTransformRules;
 
-public class InverseZTransform extends AbstractFunctionEvaluator implements InverseZTransformRules {
+public class InverseZTransform extends AbstractFunctionEvaluator {
   private static final Logger LOGGER = LogManager.getLogger();
 
   public InverseZTransform() {}
-
-  @Override
-  public IAST getRuleAST() {
-    return RULES;
-  }
 
 
   @Override

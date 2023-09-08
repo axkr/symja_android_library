@@ -12,17 +12,11 @@ import org.matheclipse.core.generic.BinaryBindIth1st;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.reflection.system.rules.MatrixDRules;
 
-public class MatrixD extends AbstractFunctionEvaluator implements MatrixDRules {
+public class MatrixD extends AbstractFunctionEvaluator {
   private static final Logger LOGGER = LogManager.getLogger();
 
   public MatrixD() {}
-
-  @Override
-  public IAST getRuleAST() {
-    return RULES;
-  }
 
   /**
    * For the referenced formula numbers (XX) see:

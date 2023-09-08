@@ -57,9 +57,6 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.reflection.system.rules.InterquartileRangeRules;
-import org.matheclipse.core.reflection.system.rules.QuantileRules;
-import org.matheclipse.core.reflection.system.rules.StandardDeviationRules;
 
 public class StatisticsFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -4043,13 +4040,7 @@ public class StatisticsFunctions {
 
   }
 
-  private static final class InterquartileRange extends AbstractFunctionEvaluator
-      implements InterquartileRangeRules {
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
+  private static final class InterquartileRange extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -6199,12 +6190,7 @@ public class StatisticsFunctions {
    * 1
    * </pre>
    */
-  private static final class Quantile extends AbstractFunctionEvaluator implements QuantileRules {
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
+  private static final class Quantile extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -6703,13 +6689,8 @@ public class StatisticsFunctions {
    * Sqrt((-1+E)*E)
    * </pre>
    */
-  private static final class StandardDeviation extends AbstractFunctionEvaluator
-      implements StandardDeviationRules {
+  private static final class StandardDeviation extends AbstractFunctionEvaluator {
 
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {

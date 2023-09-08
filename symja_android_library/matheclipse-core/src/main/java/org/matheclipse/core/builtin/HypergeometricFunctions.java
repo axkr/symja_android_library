@@ -34,14 +34,6 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.reflection.system.rules.Hypergeometric0F1Rules;
-import org.matheclipse.core.reflection.system.rules.Hypergeometric1F1Rules;
-import org.matheclipse.core.reflection.system.rules.Hypergeometric2F1RegularizedRules;
-import org.matheclipse.core.reflection.system.rules.Hypergeometric2F1Rules;
-import org.matheclipse.core.reflection.system.rules.HypergeometricPFQRules;
-import org.matheclipse.core.reflection.system.rules.HypergeometricURules;
-import org.matheclipse.core.reflection.system.rules.WhittakerMRules;
-import org.matheclipse.core.reflection.system.rules.WhittakerWRules;
 
 public class HypergeometricFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -812,12 +804,7 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class Hypergeometric0F1 extends AbstractFunctionEvaluator
-      implements Hypergeometric0F1Rules {
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
+  private static class Hypergeometric0F1 extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -881,13 +868,7 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class Hypergeometric1F1 extends AbstractFunctionEvaluator
-      implements Hypergeometric1F1Rules {
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
+  private static class Hypergeometric1F1 extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -998,12 +979,7 @@ public class HypergeometricFunctions {
 
   }
 
-  private static class Hypergeometric2F1 extends AbstractFunctionEvaluator
-      implements Hypergeometric2F1Rules {
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
+  private static class Hypergeometric2F1 extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -1110,12 +1086,7 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class Hypergeometric2F1Regularized extends AbstractFunctionEvaluator
-      implements Hypergeometric2F1RegularizedRules {
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
+  private static class Hypergeometric2F1Regularized extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -1138,13 +1109,7 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class HypergeometricPFQ extends AbstractFunctionEvaluator
-      implements HypergeometricPFQRules {
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
+  private static class HypergeometricPFQ extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -1233,13 +1198,7 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class HypergeometricU extends AbstractFunctionEvaluator
-      implements HypergeometricURules {
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
+  private static class HypergeometricU extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -1611,12 +1570,8 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class WhittakerM extends AbstractFunctionEvaluator implements WhittakerMRules {
+  private static class WhittakerM extends AbstractFunctionEvaluator {
 
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -1667,12 +1622,7 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class WhittakerW extends AbstractFunctionEvaluator implements WhittakerWRules {
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
+  private static class WhittakerW extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {

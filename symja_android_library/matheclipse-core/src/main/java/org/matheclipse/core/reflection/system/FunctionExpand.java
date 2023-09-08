@@ -66,7 +66,7 @@ import com.google.common.base.Suppliers;
  * 362880/(b*(1+b)*(2+b)*(3+b)*(4+b)*(5+b)*(6+b)*(7+b)*(8+b)*(9+b))
  * </pre>
  */
-public class FunctionExpand extends AbstractEvaluator implements FunctionExpandRules {
+public class FunctionExpand extends AbstractEvaluator {
 
   private static Supplier<Matcher> LAZY_MATCHER;
 
@@ -239,7 +239,7 @@ public class FunctionExpand extends AbstractEvaluator implements FunctionExpandR
       MATCHER.caseOf(S.TukeyWindow.of(x_), WindowFunctions.tukeyWindow(x));
 
       // IAST list = (IAST) WL.deserializeResource("/rules/FunctionExpandRules.bin", true);
-      IAST list = RULES;
+      IAST list = FunctionExpandRules.RULES;
 
       for (int i = 1; i < list.size(); i++) {
         IExpr arg = list.get(i);

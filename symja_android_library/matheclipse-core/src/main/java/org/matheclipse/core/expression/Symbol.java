@@ -25,6 +25,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -829,15 +830,7 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final IPatternMatcher putDownRule(int setSymbol, boolean equalRule, IExpr leftHandSide,
-      IExpr rightHandSide, boolean packageMode) {
-    return putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide,
-        IPatternMap.DEFAULT_RULE_PRIORITY, packageMode);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public final IPatternMatcher putDownRule(int setSymbol, boolean equalRule, IExpr leftHandSide,
+  public final IPatternMatcher putDownRule(int setSymbol, boolean equalRule, IAST leftHandSide,
       IExpr rightHandSide, int priority, boolean packageMode) {
     if (!packageMode) {
       if (isLocked(packageMode)) {
@@ -845,9 +838,21 @@ public class Symbol implements ISymbol, Serializable {
       }
       EvalEngine.get().addModifiedVariable(this);
     }
-    if (leftHandSide.isSymbol()) {
-      assignValue(rightHandSide, false);
-      return null;
+    if (fRulesData == null) {
+      fRulesData = new RulesData();
+    }
+    return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final IPatternMatcher putDownRule(int setSymbol, boolean equalRule,
+      IPatternObject leftHandSide, IExpr rightHandSide, int priority, boolean packageMode) {
+    if (!packageMode) {
+      if (isLocked(packageMode)) {
+        throw new RuleCreationError(leftHandSide);
+      }
+      EvalEngine.get().addModifiedVariable(this);
     }
     if (fRulesData == null) {
       fRulesData = new RulesData();

@@ -17,7 +17,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.reflection.system.rules.DRules;
 
 /**
  *
@@ -174,15 +173,10 @@ import org.matheclipse.core.reflection.system.rules.DRules;
  * {2*#1}
  * </pre>
  */
-public class D extends AbstractFunctionEvaluator implements DRules {
+public class D extends AbstractFunctionEvaluator {
   private static final Logger LOGGER = LogManager.getLogger();
 
   public D() {}
-
-  @Override
-  public IAST getRuleAST() {
-    return RULES;
-  }
 
   /**
    * Search for one of the <code>Derivative[a1][head]</code> rules.

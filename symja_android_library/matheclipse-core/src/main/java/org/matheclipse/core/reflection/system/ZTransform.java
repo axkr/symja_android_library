@@ -12,18 +12,11 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.reflection.system.rules.ZTransformRules;
 
-public class ZTransform extends AbstractFunctionEvaluator implements ZTransformRules {
+public class ZTransform extends AbstractFunctionEvaluator {
   private static final Logger LOGGER = LogManager.getLogger();
 
   public ZTransform() {}
-
-  @Override
-  public IAST getRuleAST() {
-    return RULES;
-  }
-
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {

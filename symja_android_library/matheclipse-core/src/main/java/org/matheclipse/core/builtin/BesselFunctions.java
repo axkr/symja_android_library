@@ -27,12 +27,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.FunctionExpand;
-import org.matheclipse.core.reflection.system.rules.BesselIRules;
-import org.matheclipse.core.reflection.system.rules.BesselJRules;
-import org.matheclipse.core.reflection.system.rules.BesselKRules;
-import org.matheclipse.core.reflection.system.rules.BesselYRules;
-import org.matheclipse.core.reflection.system.rules.SphericalBesselJRules;
-import org.matheclipse.core.reflection.system.rules.SphericalBesselYRules;
 
 public class BesselFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -284,12 +278,7 @@ public class BesselFunctions {
    * </code>
    * </pre>
    */
-  private static final class BesselJ extends AbstractFunctionEvaluator implements BesselJRules {
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
+  private static final class BesselJ extends AbstractFunctionEvaluator {
 
     /**
      * Precondition <code> n - 1/2 </code> is an integer number.
@@ -513,12 +502,8 @@ public class BesselFunctions {
    * </code>
    * </pre>
    */
-  private static final class BesselI extends AbstractFunctionEvaluator implements BesselIRules {
+  private static final class BesselI extends AbstractFunctionEvaluator {
 
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -615,12 +600,8 @@ public class BesselFunctions {
    * </code>
    * </pre>
    */
-  private static final class BesselK extends AbstractFunctionEvaluator implements BesselKRules {
+  private static final class BesselK extends AbstractFunctionEvaluator {
 
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -711,12 +692,8 @@ public class BesselFunctions {
    * </code>
    * </pre>
    */
-  private static final class BesselY extends AbstractFunctionEvaluator implements BesselYRules {
+  private static final class BesselY extends AbstractFunctionEvaluator {
 
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -952,13 +929,7 @@ public class BesselFunctions {
    * </code>
    * </pre>
    */
-  private static final class SphericalBesselJ extends AbstractFunctionEvaluator
-      implements SphericalBesselJRules {
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
+  private static final class SphericalBesselJ extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1152,13 +1123,7 @@ public class BesselFunctions {
    *
    * <h3>Examples</h3>
    */
-  private static final class SphericalBesselY extends AbstractFunctionEvaluator
-      implements SphericalBesselYRules {
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
+  private static final class SphericalBesselY extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {

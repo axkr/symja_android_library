@@ -1,5 +1,10 @@
 package org.matheclipse.core.system;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import org.matheclipse.core.expression.F;
+import com.google.common.math.DoubleMath;
+
 public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
   public PolynomialFunctionsTest(String name) {
     super(name);
@@ -187,7 +192,14 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   public void testLaguerreL() {
+    assertTrue(DoubleMath.isMathematicalInteger(-8.3848836698679782E17));
+    BigInteger bigInteger = BigDecimal.valueOf(8.3848836698679782E17).toBigInteger();
+    int intDefault = F.num(8.3848836698679782E17).toIntDefault();
+    System.out.println(intDefault);
+    System.out.println(bigInteger);
 
+    check("LaguerreL(-9223372036854775808/11,0.5,1317624576693539401)", //
+        "Indeterminate");
     checkNumeric("Table(LaguerreL(10, x), {x, 1, 5})", //
         "{168919/403200,-4381/14175,-31361/44800,931/675,254927/145152}");
     check("LaguerreL(0,0)", //

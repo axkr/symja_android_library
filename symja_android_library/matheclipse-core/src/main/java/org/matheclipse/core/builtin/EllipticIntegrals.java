@@ -17,8 +17,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.reflection.system.rules.JacobiSCRules;
-import org.matheclipse.core.reflection.system.rules.KleinInvariantJRules;
 
 public class EllipticIntegrals {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -1237,11 +1235,7 @@ public class EllipticIntegrals {
     }
   }
 
-  private static class InverseJacobiSC extends AbstractFunctionEvaluator implements JacobiSCRules {
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
+  private static class InverseJacobiSC extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -1744,11 +1738,7 @@ public class EllipticIntegrals {
    * </code>
    * </pre>
    */
-  private static class JacobiSC extends AbstractFunctionEvaluator implements JacobiSCRules {
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
+  private static class JacobiSC extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -1993,12 +1983,7 @@ public class EllipticIntegrals {
     }
   }
 
-  private static class KleinInvariantJ extends AbstractFunctionEvaluator
-      implements KleinInvariantJRules {
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
+  private static class KleinInvariantJ extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {

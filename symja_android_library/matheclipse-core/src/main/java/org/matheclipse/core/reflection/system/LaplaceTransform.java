@@ -13,7 +13,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.reflection.system.rules.LaplaceTransformRules;
 
 /**
  *
@@ -43,7 +42,7 @@ import org.matheclipse.core.reflection.system.rules.LaplaceTransformRules;
  * (-2*E^2)/(3-s)^3
  * </pre>
  */
-public class LaplaceTransform extends AbstractFunctionEvaluator implements LaplaceTransformRules {
+public class LaplaceTransform extends AbstractFunctionEvaluator {
   public LaplaceTransform() {}
 
   @Override
@@ -122,11 +121,6 @@ public class LaplaceTransform extends AbstractFunctionEvaluator implements Lapla
   @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_3_3;
-  }
-
-  @Override
-  public IAST getRuleAST() {
-    return RULES;
   }
 
   @Override

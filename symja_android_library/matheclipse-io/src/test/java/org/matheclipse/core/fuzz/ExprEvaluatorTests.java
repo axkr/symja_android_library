@@ -729,6 +729,7 @@ public class ExprEvaluatorTests {
         // }
         // engine.evaluate(ast);
         final IExpr result;
+        engine.init();
         if (evaluator != null && DIRECT_EVALUATOR_TESTS) {
           result = evaluator.evaluate(ast, engine);
         } else {

@@ -27,6 +27,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -850,14 +851,6 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     return ofQ(EvalEngine.get(), args);
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule,
-      final IExpr leftHandSide, final IExpr rightHandSide, boolean packageMode) {
-    return putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide,
-        IPatternMap.DEFAULT_RULE_PRIORITY, packageMode);
-  }
-
   // public Object readResolve() throws ObjectStreamException {
   // ISymbol sym = fContext.get(fSymbolName);
   // if (sym != null) {
@@ -873,7 +866,24 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule,
-      final IExpr leftHandSide, final IExpr rightHandSide, final int priority,
+      final IAST leftHandSide, final IExpr rightHandSide, final int priority,
+      boolean packageMode) {
+    if (!packageMode) {
+      if (isLocked(packageMode)) {
+        throw new RuleCreationError(leftHandSide);
+      }
+      EvalEngine.get().addModifiedVariable(this);
+    }
+    if (fRulesData == null) {
+      fRulesData = new RulesData();
+    }
+    return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule,
+      final IPatternObject leftHandSide, final IExpr rightHandSide, final int priority,
       boolean packageMode) {
     if (!packageMode) {
       if (isLocked(packageMode)) {

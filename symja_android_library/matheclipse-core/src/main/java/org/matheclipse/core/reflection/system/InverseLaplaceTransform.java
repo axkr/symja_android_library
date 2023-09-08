@@ -14,7 +14,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.reflection.system.rules.InverseLaplaceTransformRules;
 import com.google.common.math.DoubleMath;
 
 /**
@@ -45,8 +44,7 @@ import com.google.common.math.DoubleMath;
  * 3*E^t+2*Cos(2*t)
  * </pre>
  */
-public class InverseLaplaceTransform extends AbstractFunctionEvaluator
-    implements InverseLaplaceTransformRules {
+public class InverseLaplaceTransform extends AbstractFunctionEvaluator {
 
   /**
    * The {@code InverseLaplaceTransformStehfest} implements the numerical calculation of the inverse
@@ -200,11 +198,6 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator
   @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_3_3;
-  }
-
-  @Override
-  public IAST getRuleAST() {
-    return RULES;
   }
 
   @Override

@@ -73,33 +73,6 @@ import org.matheclipse.core.interfaces.IPair;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.reflection.system.rules.ArcCosRules;
-import org.matheclipse.core.reflection.system.rules.ArcCoshRules;
-import org.matheclipse.core.reflection.system.rules.ArcCotRules;
-import org.matheclipse.core.reflection.system.rules.ArcCothRules;
-import org.matheclipse.core.reflection.system.rules.ArcCscRules;
-import org.matheclipse.core.reflection.system.rules.ArcCschRules;
-import org.matheclipse.core.reflection.system.rules.ArcSecRules;
-import org.matheclipse.core.reflection.system.rules.ArcSechRules;
-import org.matheclipse.core.reflection.system.rules.ArcSinRules;
-import org.matheclipse.core.reflection.system.rules.ArcSinhRules;
-import org.matheclipse.core.reflection.system.rules.ArcTanRules;
-import org.matheclipse.core.reflection.system.rules.ArcTanhRules;
-import org.matheclipse.core.reflection.system.rules.CosRules;
-import org.matheclipse.core.reflection.system.rules.CoshRules;
-import org.matheclipse.core.reflection.system.rules.CotRules;
-import org.matheclipse.core.reflection.system.rules.CothRules;
-import org.matheclipse.core.reflection.system.rules.CscRules;
-import org.matheclipse.core.reflection.system.rules.CschRules;
-import org.matheclipse.core.reflection.system.rules.GudermannianRules;
-import org.matheclipse.core.reflection.system.rules.LogRules;
-import org.matheclipse.core.reflection.system.rules.SecRules;
-import org.matheclipse.core.reflection.system.rules.SechRules;
-import org.matheclipse.core.reflection.system.rules.SinRules;
-import org.matheclipse.core.reflection.system.rules.SincRules;
-import org.matheclipse.core.reflection.system.rules.SinhRules;
-import org.matheclipse.core.reflection.system.rules.TanRules;
-import org.matheclipse.core.reflection.system.rules.TanhRules;
 import org.matheclipse.core.sympy.exception.PoleError;
 import org.matheclipse.core.sympy.exception.ValueError;
 import com.google.common.math.DoubleMath;
@@ -211,7 +184,7 @@ public class ExpTrigsFunctions {
    * Inverse_trigonometric functions</a>
    */
   private static final class ArcCos extends AbstractTrigArg1
-      implements INumeric, IRewrite, ArcCosRules, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator {
 
     @Override
     public double applyAsDouble(double operand) {
@@ -272,11 +245,6 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
-
-    @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       return ast.argSize() == 1 ? ast.arg1().acos() : F.NIL;
     }
@@ -304,7 +272,7 @@ public class ExpTrigsFunctions {
    * functions</a>
    */
   private static final class ArcCosh extends AbstractTrigArg1
-      implements INumeric, IRewrite, ArcCoshRules, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator {
 
     @Override
     public double applyAsDouble(double operand) {
@@ -355,11 +323,6 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
-
-    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -381,7 +344,7 @@ public class ExpTrigsFunctions {
    * Inverse_trigonometric functions</a>
    */
   private static final class ArcCot extends AbstractTrigArg1
-      implements IRewrite, ArcCotRules, DoubleUnaryOperator {
+      implements IRewrite, DoubleUnaryOperator {
 
     @Override
     public double applyAsDouble(double operand) {
@@ -454,11 +417,6 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
-
-    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -481,7 +439,7 @@ public class ExpTrigsFunctions {
    * functions</a>
    */
   private static final class ArcCoth extends AbstractTrigArg1
-      implements IRewrite, ArcCothRules, DoubleUnaryOperator {
+      implements IRewrite, DoubleUnaryOperator {
 
     @Override
     public double applyAsDouble(double operand) {
@@ -557,11 +515,6 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
-
-    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -583,7 +536,7 @@ public class ExpTrigsFunctions {
    * See <a href="https://en.wikipedia.org/wiki/Inverse_trigonometric_functions">Inverse
    * trigonometric functions</a>
    */
-  private static final class ArcCsc extends AbstractTrigArg1 implements IRewrite, ArcCscRules {
+  private static final class ArcCsc extends AbstractTrigArg1 implements IRewrite {
     @Override
     public IExpr e1ComplexArg(final Complex arg1) {
       if (arg1.equals(Complex.ZERO)) {
@@ -598,11 +551,6 @@ public class ExpTrigsFunctions {
         return F.CComplexInfinity;
       }
       return F.num(Math.asin(1 / arg1));
-    }
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
     }
 
     @Override
@@ -644,12 +592,7 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">Inverse hyperbolic
    * functions</a>
    */
-  private static final class ArcCsch extends AbstractTrigArg1 implements IRewrite, ArcCschRules {
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
+  private static final class ArcCsch extends AbstractTrigArg1 implements IRewrite {
 
     @Override
     public IExpr e1DblArg(final double d) {
@@ -695,12 +638,7 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">Inverse hyperbolic
    * functions</a>
    */
-  private static final class ArcSech extends AbstractTrigArg1 implements IRewrite, ArcSechRules {
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
+  private static final class ArcSech extends AbstractTrigArg1 implements IRewrite {
 
     @Override
     public IExpr e1DblArg(final double d) {
@@ -731,7 +669,7 @@ public class ExpTrigsFunctions {
     }
   }
 
-  private static final class ArcSec extends AbstractTrigArg1 implements IRewrite, ArcSecRules {
+  private static final class ArcSec extends AbstractTrigArg1 implements IRewrite {
     @Override
     public IExpr e1ComplexArg(final Complex arg1) {
       if (arg1.equals(Complex.ZERO)) {
@@ -746,11 +684,6 @@ public class ExpTrigsFunctions {
         return F.CComplexInfinity;
       }
       return F.num(Math.acos(1 / arg1));
-    }
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
     }
 
     @Override
@@ -781,7 +714,7 @@ public class ExpTrigsFunctions {
    * Inverse_trigonometric functions</a>
    */
   private static final class ArcSin extends AbstractTrigArg1
-      implements INumeric, IRewrite, ArcSinRules, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator {
 
     @Override
     public double applyAsDouble(double operand) {
@@ -851,11 +784,6 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
-
-    @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       return ast.argSize() == 1 ? ast.arg1().asin() : F.NIL;
     }
@@ -882,7 +810,7 @@ public class ExpTrigsFunctions {
    * functions</a>
    */
   private static final class ArcSinh extends AbstractTrigArg1
-      implements INumeric, IRewrite, ArcSinhRules, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator {
 
     @Override
     public double applyAsDouble(double operand) {
@@ -934,11 +862,6 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
-
-    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -986,12 +909,7 @@ public class ExpTrigsFunctions {
    * Inverse_trigonometric functions</a>
    */
   private static final class ArcTan extends AbstractArg12
-      implements INumeric, IRewrite, ArcTanRules {
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
+      implements INumeric, IRewrite {
 
     @Override
     public IExpr e1ObjArg(final IExpr arg1) {
@@ -1174,7 +1092,7 @@ public class ExpTrigsFunctions {
    * functions</a>
    */
   private static final class ArcTanh extends AbstractTrigArg1
-      implements INumeric, IRewrite, ArcTanhRules, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator {
 
     @Override
     public double applyAsDouble(double operand) {
@@ -1240,10 +1158,6 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
@@ -1302,7 +1216,7 @@ public class ExpTrigsFunctions {
    * trigonometric constants</a>
    */
   private static final class Cos extends AbstractTrigArg1
-      implements INumeric, IRewrite, CosRules, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator {
 
     @Override
     public double applyAsDouble(double operand) {
@@ -1440,11 +1354,6 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
-
-    @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       return ast.argSize() == 1 ? ast.arg1().cos() : F.NIL;
     }
@@ -1474,7 +1383,7 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
    */
   private static final class Coth extends AbstractTrigArg1
-      implements INumeric, IRewrite, CothRules, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator {
 
     @Override
     public double applyAsDouble(double operand) {
@@ -1555,11 +1464,6 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
-
-    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -1582,7 +1486,7 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
    */
   private static final class Csc extends AbstractTrigArg1
-      implements INumeric, IRewrite, CscRules, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator {
 
     @Override
     public double applyAsDouble(double operand) {
@@ -1712,10 +1616,6 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
@@ -1751,7 +1651,7 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
    */
   private static final class Cosh extends AbstractTrigArg1
-      implements INumeric, IRewrite, CoshRules, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator {
 
     @Override
     public double applyAsDouble(double operand) {
@@ -1837,11 +1737,6 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
-
-    @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         return ((IInexactNumber) ast.arg1()).cosh();
@@ -1870,7 +1765,7 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
    */
   private static final class Cot extends AbstractTrigArg1
-      implements INumeric, IRewrite, CotRules, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator {
 
     @Override
     public double applyAsDouble(double operand) {
@@ -2001,11 +1896,6 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
-
-    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -2027,7 +1917,7 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic functions</a>
    */
   private static final class Csch extends AbstractTrigArg1
-      implements INumeric, IRewrite, CschRules, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator {
 
     @Override
     public double applyAsDouble(double operand) {
@@ -2112,11 +2002,6 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
-
-    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -2151,13 +2036,7 @@ public class ExpTrigsFunctions {
     }
   }
 
-  private static final class Gudermannian extends AbstractFunctionEvaluator
-      implements GudermannianRules {
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
+  private static final class Gudermannian extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -2321,12 +2200,7 @@ public class ExpTrigsFunctions {
   }
 
   /** See <a href="http://en.wikipedia.org/wiki/Logarithm">Wikipedia - Logarithm</a> */
-  private static final class Log extends AbstractArg12 implements INumeric, IRewrite, LogRules {
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
+  private static final class Log extends AbstractArg12 implements INumeric, IRewrite {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
@@ -2660,7 +2534,7 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
    */
   private static final class Sec extends AbstractTrigArg1
-      implements INumeric, IRewrite, SecRules, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator {
 
     @Override
     public double applyAsDouble(double operand) {
@@ -2787,11 +2661,6 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
-
-    @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IExpr z = ast.arg1();
@@ -2825,7 +2694,7 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic functions</a>
    */
   private static final class Sech extends AbstractTrigArg1
-      implements INumeric, IRewrite, SechRules, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator {
 
     @Override
     public double applyAsDouble(double operand) {
@@ -2910,11 +2779,6 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
-
-    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -2935,7 +2799,7 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
    */
   private static final class Sin extends AbstractTrigArg1
-      implements INumeric, IRewrite, SinRules, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator {
 
     @Override
     public double applyAsDouble(double operand) {
@@ -3076,11 +2940,6 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
-
-    @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         return ((IInexactNumber) ast.arg1()).sin();
@@ -3113,7 +2972,7 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Sinc_function">Sinc function</a>
    */
   private static class Sinc extends AbstractTrigArg1
-      implements INumeric, SincRules, DoubleUnaryOperator {
+      implements INumeric, DoubleUnaryOperator {
 
     @Override
     public double applyAsDouble(double operand) {
@@ -3185,11 +3044,6 @@ public class ExpTrigsFunctions {
     }
 
     @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
-
-    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -3218,7 +3072,7 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
    */
   private static final class Sinh extends AbstractTrigArg1
-      implements INumeric, IRewrite, SinhRules, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator {
 
     @Override
     public double applyAsDouble(double operand) {
@@ -3320,11 +3174,6 @@ public class ExpTrigsFunctions {
     // }
 
     @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
-
-    @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         return ((IInexactNumber) ast.arg1()).sinh();
@@ -3353,7 +3202,7 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
    */
   private static final class Tan extends AbstractTrigArg1
-      implements INumeric, IRewrite, TanRules, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator {
 
     @Override
     public double applyAsDouble(double operand) {
@@ -3468,10 +3317,6 @@ public class ExpTrigsFunctions {
       return F.NIL;
     }
 
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
@@ -3506,7 +3351,7 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
    */
   private static final class Tanh extends AbstractTrigArg1
-      implements INumeric, IRewrite, TanhRules, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator {
 
     @Override
     public double applyAsDouble(double operand) {
@@ -3584,11 +3429,6 @@ public class ExpTrigsFunctions {
         return IntervalSym.tanh((IAST) arg1);
       }
       return F.NIL;
-    }
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
     }
 
     @Override

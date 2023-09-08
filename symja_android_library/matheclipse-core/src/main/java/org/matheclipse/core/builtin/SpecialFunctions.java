@@ -67,14 +67,6 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.reflection.system.rules.HurwitzLerchPhiRules;
-import org.matheclipse.core.reflection.system.rules.LerchPhiRules;
-import org.matheclipse.core.reflection.system.rules.PolyGammaRules;
-import org.matheclipse.core.reflection.system.rules.PolyLogRules;
-import org.matheclipse.core.reflection.system.rules.ProductLogRules;
-import org.matheclipse.core.reflection.system.rules.StieltjesGammaRules;
-import org.matheclipse.core.reflection.system.rules.StruveHRules;
-import org.matheclipse.core.reflection.system.rules.StruveLRules;
 import org.matheclipse.parser.client.ParserConfig;
 
 public class SpecialFunctions {
@@ -815,8 +807,7 @@ public class SpecialFunctions {
       super.setUp(newSymbol);
     }
   }
-  private static class HurwitzLerchPhi extends AbstractFunctionEvaluator
-      implements HurwitzLerchPhiRules {
+  private static class HurwitzLerchPhi extends AbstractFunctionEvaluator {
 
 
     @Override
@@ -837,11 +828,6 @@ public class SpecialFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
-    }
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
     }
 
     @Override
@@ -1193,7 +1179,7 @@ public class SpecialFunctions {
     }
   }
 
-  private static class LerchPhi extends AbstractFunctionEvaluator implements LerchPhiRules {
+  private static class LerchPhi extends AbstractFunctionEvaluator {
 
 
     @Override
@@ -1226,11 +1212,6 @@ public class SpecialFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
-    }
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
     }
 
     @Override
@@ -1312,7 +1293,7 @@ public class SpecialFunctions {
     }
   }
 
-  private static class MeijerG extends AbstractFunctionEvaluator implements StieltjesGammaRules {
+  private static class MeijerG extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1503,8 +1484,7 @@ public class SpecialFunctions {
     }
   }
 
-  private static class PolyGamma extends AbstractFunctionEvaluator
-      implements PolyGammaRules, IFunctionExpand {
+  private static class PolyGamma extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     public IExpr e1ApfloatArg(Apfloat arg1) {
       FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
@@ -1663,18 +1643,13 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
-
-    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
 
-  private static class PolyLog extends AbstractFunctionEvaluator implements PolyLogRules {
+  private static class PolyLog extends AbstractFunctionEvaluator {
 
     /**
      * See <a href=
@@ -1774,11 +1749,6 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
-
-    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -1789,11 +1759,7 @@ public class SpecialFunctions {
    * Lambert W function See: <a href="http://en.wikipedia.org/wiki/Lambert_W_function">Wikipedia -
    * Lambert W function</a>
    */
-  private static final class ProductLog extends AbstractArg12 implements ProductLogRules {
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
+  private static final class ProductLog extends AbstractArg12 {
 
     @Override
     public IExpr e1DblArg(final INum d) {
@@ -1926,8 +1892,7 @@ public class SpecialFunctions {
     }
   }
 
-  private static class StieltjesGamma extends AbstractFunctionEvaluator
-      implements StieltjesGammaRules {
+  private static class StieltjesGamma extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1949,18 +1914,13 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
-
-    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
 
-  private static final class StruveH extends AbstractFunctionEvaluator implements StruveHRules {
+  private static final class StruveH extends AbstractFunctionEvaluator {
 
     // public IExpr e2DblArg(final INum d0, final INum d1) {
     // double v = d0.reDoubleValue();
@@ -2026,18 +1986,13 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IAST getRuleAST() {
-      return RULES;
-    }
-
-    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
 
-  private static final class StruveL extends AbstractFunctionEvaluator implements StruveLRules {
+  private static final class StruveL extends AbstractFunctionEvaluator {
 
     // public IExpr e2DblArg(final INum d0, final INum d1) {
     // double v = d0.reDoubleValue();
@@ -2100,11 +2055,6 @@ public class SpecialFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
-    }
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
     }
 
     @Override

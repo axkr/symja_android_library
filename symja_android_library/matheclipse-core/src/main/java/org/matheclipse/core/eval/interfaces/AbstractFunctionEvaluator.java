@@ -682,24 +682,9 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
   @Override
   public abstract IExpr evaluate(final IAST ast, final EvalEngine engine);
 
-  /**
-   * Get the predefined rules for this function symbol.
-   *
-   * @return <code>null</code> if no rules are defined
-   */
-  public IAST getRuleAST() {
-    return null;
-  }
-
   /** {@inheritDoc} */
   @Override
   public void setUp(final ISymbol newSymbol) {
-
-    if (getRuleAST() != null) {
-      // don't call EvalEngine#addRules() here!
-      // the rules should add themselves
-      // EvalEngine.get().addRules(ruleList);
-    }
 
     // F.SYMBOL_OBSERVER.createPredefinedSymbol(newSymbol.toString());
     if (Config.SERIALIZE_SYMBOLS && newSymbol.containsRules()) {

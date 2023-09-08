@@ -6,7 +6,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.reflection.system.rules.RGBColorRules;
 
 public class EntityFunctions {
 
@@ -17,16 +16,11 @@ public class EntityFunctions {
     }
   }
 
-  private static class RGBColor extends AbstractFunctionEvaluator implements RGBColorRules {
+  private static class RGBColor extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
-    }
-
-    @Override
-    public IAST getRuleAST() {
-      return RULES;
     }
 
     @Override

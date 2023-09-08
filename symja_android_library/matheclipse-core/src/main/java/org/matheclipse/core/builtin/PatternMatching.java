@@ -1210,7 +1210,7 @@ public final class PatternMatching {
           } catch (final ReturnException e) {
             rightHandSide = e.getValue();
           }
-          symbol.putDownRule(IPatternMatcher.SET, true, leftHandSide, rightHandSide,
+          symbol.putDownRule(IPatternMatcher.SET, true, (IAST) leftHandSide, rightHandSide,
               engine.isPackageMode());
           if (builtinSymbol.equals(S.Set)) {
             return rightHandSide;
@@ -2056,7 +2056,8 @@ public final class PatternMatching {
         Errors.printMessage(S.Set, "wrsym", F.list(lhsSymbol), EvalEngine.get());
         return rightHandSide;
       }
-      lhsSymbol.putDownRule(IPatternMatcher.SET, false, leftHandSide, rightHandSide, packageMode);
+      lhsSymbol.putDownRule(IPatternMatcher.SET, false, (IAST) leftHandSide, rightHandSide,
+          packageMode);
       return rightHandSide;
     }
     if (leftHandSide.isSymbol()) {
@@ -2092,7 +2093,8 @@ public final class PatternMatching {
     // final Object[] result = new Object[] { null, rightHandSide };
     if (leftHandSide.isAST()) {
       final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
-      lhsSymbol.putDownRule(IPatternMatcher.SET, false, leftHandSide, rightHandSide, packageMode);
+      lhsSymbol.putDownRule(IPatternMatcher.SET, false, (IAST) leftHandSide, rightHandSide,
+          packageMode);
       return rightHandSide;
     }
     if (leftHandSide.isSymbol()) {
@@ -2121,8 +2123,14 @@ public final class PatternMatching {
         Errors.printMessage(S.SetDelayed, "wrsym", F.list(lhsSymbol), EvalEngine.get());
         throw new FailedException();
       }
-      lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false, leftHandSide, rightHandSide,
-          packageMode);
+      if (leftHandSide instanceof IPatternObject) {
+        lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false,
+            (IPatternObject) leftHandSide,
+            rightHandSide, packageMode);
+      } else {
+        lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false, (IAST) leftHandSide,
+            rightHandSide, packageMode);
+      }
       return;
     }
     if (leftHandSide.isSymbol()) {
@@ -2143,7 +2151,7 @@ public final class PatternMatching {
     if (leftHandSide.isAST()) {
       final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
 
-      lhsSymbol.putDownRule(IPatternMatcher.SET_DELAYED, false, leftHandSide, rightHandSide,
+      lhsSymbol.putDownRule(IPatternMatcher.SET_DELAYED, false, (IAST) leftHandSide, rightHandSide,
           priority, packageMode);
       return;
     }
