@@ -235,20 +235,13 @@ public class ComplexSym implements IComplex {
    */
   @Override
   public int compareTo(final IExpr expr) {
-    if (expr instanceof ComplexSym) {
-      final int cp = fReal.compareTo(((ComplexSym) expr).fReal);
-      if (cp != 0) {
-        return cp;
-      }
-      return fImaginary.compareTo(((ComplexSym) expr).fImaginary);
-    }
     if (expr.isNumber()) {
       int c = fReal.compareTo(((INumber) expr).re());
       if (c != 0) {
         return c;
       }
       if (expr.isReal()) {
-        return 1;
+        return !fImaginary.isPositive() ? -1 : 1;
       }
       return fImaginary.compareTo(((INumber) expr).im());
     }

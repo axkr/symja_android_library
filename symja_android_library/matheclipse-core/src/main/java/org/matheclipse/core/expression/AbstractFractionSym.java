@@ -429,11 +429,13 @@ public abstract class AbstractFractionSym implements IFraction {
 
   @Override
   public int compareTo(IExpr expr) {
-    if (expr.isNumber()) {
-      int c = this.compareTo(((INumber) expr).re());
+    if (expr.isNumber() && !expr.isReal()) {
+      int c = this.compareTo(expr.re());
       if (c != 0) {
         return c;
       }
+      IExpr im = expr.im();
+      return !im.isPositive() ? 1 : -1;
     }
     return -1;
   }

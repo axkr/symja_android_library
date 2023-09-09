@@ -192,6 +192,14 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   public void testLaguerreL() {
+    // test for java.util.TimSort: IllegalArgumentException - Comparison method violates its general
+    // contract!
+    check("LaguerreL(42,-1+I)", //
+        "1702541892882333422180162984132589351201806337983/\n" //
+            + "31902815449870879276437818578186752000000000+\n" //
+            + "I*59637827489058046482179573168446612471309160814317/\n" //
+            + "669959124447288464805194190141921792000000000");
+
     assertTrue(DoubleMath.isMathematicalInteger(-8.3848836698679782E17));
     BigInteger bigInteger = BigDecimal.valueOf(8.3848836698679782E17).toBigInteger();
     int intDefault = F.num(8.3848836698679782E17).toIntDefault();

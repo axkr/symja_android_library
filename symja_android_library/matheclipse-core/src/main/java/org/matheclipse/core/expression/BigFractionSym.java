@@ -182,8 +182,17 @@ public class BigFractionSym extends AbstractFractionSym {
     if (expr.isReal()) {
       return Double.compare(fFraction.doubleValue(), ((IReal) expr).doubleValue());
     }
-    return -1;
-    // return super.compareTo(expr);
+    // if (expr.isNumber()) {
+    // int c = this.compareTo(((INumber) expr).re());
+    // if (c != 0) {
+    // return c;
+    // }
+    // if (expr.isReal()) {
+    // return 1;
+    // }
+    // return F.C0.compareTo(((INumber) expr).im());
+    // }
+    return super.compareTo(expr);
   }
 
   @Override

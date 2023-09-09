@@ -203,7 +203,7 @@ public class FractionSym extends AbstractFractionSym {
     } else if (expr.isReal()) {
       return Double.compare(doubleValue(), ((IReal) expr).doubleValue());
     }
-    return -1;
+    return super.compareTo(expr);
   }
 
   @Override
