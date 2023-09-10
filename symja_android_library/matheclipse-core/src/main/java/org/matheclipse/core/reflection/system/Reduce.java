@@ -7,13 +7,10 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ImplementationStatus;
-import org.matheclipse.core.expression.IntervalDataSym;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -29,139 +26,121 @@ public class Reduce extends AbstractEvaluator {
      *
      * <p>
      * <code>minType</code> and <code>maxType</code> define if it is an open interval (value == 1
-     * (LessThan) ) or a closed interval (value == 2 (LessEqualThan)
+     * (LessThan) ) or a closed interval (value == 2 (LessEqualThan) or value == 3 (EQUAL))
      */
     static class VariableInterval {
 
       final IExpr variable;
 
-      IAST intervalData;
+      IExpr xMin;
+      IExpr xMax;
+      int minType; // 1 -> LT 2 -> LE 3 -> EQ
+      int maxType; // 1 -> LT 2 -> LE 3 -> EQ
 
-      // IExpr xMin;
-      // IExpr xMax;
-      // int minType; // 1 -> LT 2 -> LE
-      // int maxType; // 1 -> LT 2 -> LE
-
-      /**
-       * Empty interval.
-       * 
-       * @param variable
-       */
       public VariableInterval(IExpr variable) {
         this.variable = variable;
-        this.intervalData = F.IntervalData();
-      }
-
-      public VariableInterval(IExpr min, IBuiltInSymbol minType, IExpr variable,
-          IBuiltInSymbol maxType, IExpr max) {
-        this.variable = variable;
-        this.intervalData = F.IntervalData(F.List(min, minType, maxType, F.CInfinity));
+        this.xMin = F.CNInfinity;
+        this.xMax = F.CInfinity;
+        this.minType = 1;
+        this.maxType = 1;
       }
 
       public void set(VariableInterval cd) {
-        this.intervalData = cd.intervalData.copy();
-        // this.xMin = cd.xMin;
-        // this.xMax = cd.xMax;
-        // this.minType = cd.minType;
-        // this.maxType = cd.maxType;
+        this.xMin = cd.xMin;
+        this.xMax = cd.xMax;
+        this.minType = cd.minType;
+        this.maxType = cd.maxType;
       }
 
       public boolean reduceOr(final VariableInterval cd) {
-        IAST intersection = IntervalDataSym.union(intervalData, cd.intervalData, EvalEngine.get());
-        if (intersection.isPresent()) {
-          this.intervalData = intersection;
-          return true;
+        if (S.Equal.ofQ(this.xMax, cd.xMin)) {
+          // | this.xMin ?? this.xMax == cd.xMin ?? cd.xMax |
+          if (this.maxType >= 2 || cd.minType >= 2) {
+            this.xMax = cd.xMax;
+            this.maxType = cd.maxType;
+            return true;
+          }
+        } else if (S.Equal.ofQ(cd.xMax, this.xMin)) {
+          // | cd.xMin ?? cd.xMax == this.xMin ?? this.xMax |
+          if (this.maxType >= 2 || cd.minType >= 2) {
+            this.xMin = cd.xMin;
+            this.minType = cd.minType;
+            return true;
+          }
+        } else if (S.GreaterEqual.ofQ(cd.xMin, this.xMin)) {
+          // | this.xMin <= cd.xMin ... |
+          if (S.LessEqual.ofQ(cd.xMax, this.xMax)) {
+            // this interval includes cd interval
+            // | this.xMin <= cd.xMin <--> cd.Max <= this.xMax |
+            return true;
+          }
+        } else if (S.GreaterEqual.ofQ(this.xMin, cd.xMin)) {
+          // | cd.xMin <= this.xMin ... |
+          if (S.LessEqual.ofQ(this.xMax, cd.xMax)) {
+            // cd interval includes this interval
+            // | cd.xMin <= this.xMin <--> this.xMax <= cd.xMax |
+            this.xMin = cd.xMin;
+            this.xMax = cd.xMax;
+            this.minType = cd.minType;
+            this.maxType = cd.maxType;
+            return true;
+          }
         }
-        // if (S.Equal.ofQ(this.xMax, cd.xMin)) {
-        // // | this.xMin ?? this.xMax == cd.xMin ?? cd.xMax |
-        // if (this.maxType >= 2 || cd.minType >= 2) {
-        // this.xMax = cd.xMax;
-        // this.maxType = cd.maxType;
-        // return true;
-        // }
-        // } else if (S.Equal.ofQ(cd.xMax, this.xMin)) {
-        // // | cd.xMin ?? cd.xMax == this.xMin ?? this.xMax |
-        // if (this.maxType >= 2 || cd.minType >= 2) {
-        // this.xMin = cd.xMin;
-        // this.minType = cd.minType;
-        // return true;
-        // }
-        // } else if (S.GreaterEqual.ofQ(cd.xMin, this.xMin)) {
-        // // | this.xMin <= cd.xMin ... |
-        // if (S.LessEqual.ofQ(cd.xMax, this.xMax)) {
-        // // this interval includes cd interval
-        // // | this.xMin <= cd.xMin <--> cd.Max <= this.xMax |
-        // return true;
-        // }
-        // } else if (S.GreaterEqual.ofQ(this.xMin, cd.xMin)) {
-        // // | cd.xMin <= this.xMin ... |
-        // if (S.LessEqual.ofQ(this.xMax, cd.xMax)) {
-        // // cd interval includes this interval
-        // // | cd.xMin <= this.xMin <--> this.xMax <= cd.xMax |
-        // this.xMin = cd.xMin;
-        // this.xMax = cd.xMax;
-        // this.minType = cd.minType;
-        // this.maxType = cd.maxType;
-        // return true;
-        // }
-        // }
-        //
-        // if (S.Greater.ofQ(this.xMax, cd.xMin)) {
-        // if (S.Less.ofQ(this.xMax, cd.xMax)) {
-        // // | cd.xMin <= this.xMax <--> this.xMax <= cd.xMax |
-        // this.xMax = cd.xMax;
-        // this.maxType = cd.maxType;
-        // return true;
-        // }
-        // } else if (S.Greater.ofQ(this.xMin, cd.xMin)) {
-        // if (S.Less.ofQ(this.xMin, cd.xMax)) {
-        // // | cd.xMin <= this.xMin <--> this.xMin <= cd.xMax |
-        // this.xMin = cd.xMin;
-        // this.minType = cd.minType;
-        // return true;
-        // }
-        // }
+
+        if (S.Greater.ofQ(this.xMax, cd.xMin)) {
+          if (S.Less.ofQ(this.xMax, cd.xMax)) {
+            // | cd.xMin <= this.xMax <--> this.xMax <= cd.xMax |
+            this.xMax = cd.xMax;
+            this.maxType = cd.maxType;
+            return true;
+          }
+        } else if (S.Greater.ofQ(this.xMin, cd.xMin)) {
+          if (S.Less.ofQ(this.xMin, cd.xMax)) {
+            // | cd.xMin <= this.xMin <--> this.xMin <= cd.xMax |
+            this.xMin = cd.xMin;
+            this.minType = cd.minType;
+            return true;
+          }
+        }
         return false;
       }
 
       boolean isInitial() {
-        return intervalData.argSize() == 4//
-            && intervalData.arg1().isNegativeInfinity()//
-            && intervalData.arg4().isInfinity();
-        // xMin == F.CNInfinity && xMax == F.CInfinity;
+        return xMin == F.CNInfinity && xMax == F.CInfinity;
       }
 
       private IExpr toExpr() {
-        return IntervalDataSym.intervalToOr(intervalData, variable);
-        // if (!xMin.equals(F.CNInfinity)) {
-        // if (xMax.equals(xMin)) {
-        // if (minType >= 2 && maxType >= 2) {
-        // return F.Equal(variable, xMin);
-        // }
-        // return F.False;
-        // }
-        // IAST gt = (minType >= 2) //
-        // ? F.GreaterEqual(variable, xMin)
-        // : F.Greater(variable, xMin);
-        // if (!xMax.equals(F.CInfinity)) {
-        // IAST lt = (maxType >= 2) //
-        // ? F.LessEqual(variable, xMax)
-        // : F.Less(variable, xMax);
-        // return F.And(gt, lt);
-        // }
-        // return gt;
-        // } else if (!xMax.equals(F.CInfinity)) {
-        // IAST lt = (maxType >= 2) //
-        // ? F.LessEqual(variable, xMax)
-        // : F.Less(variable, xMax);
-        // return lt;
-        // }
-        // return F.NIL;
+        if (!xMin.equals(F.CNInfinity)) {
+          if (xMax.equals(xMin)) {
+            if (minType >= 2 && maxType >= 2) {
+              return F.Equal(variable, xMin);
+            }
+            return F.False;
+          }
+          IAST gt = (minType >= 2) //
+              ? F.GreaterEqual(variable, xMin)
+              : F.Greater(variable, xMin);
+          if (!xMax.equals(F.CInfinity)) {
+            IAST lt = (maxType >= 2) //
+                ? F.LessEqual(variable, xMax)
+                : F.Less(variable, xMax);
+            return F.And(gt, lt);
+          }
+          return gt;
+        } else if (!xMax.equals(F.CInfinity)) {
+          IAST lt = (maxType >= 2) //
+              ? F.LessEqual(variable, xMax)
+              : F.Less(variable, xMax);
+          return lt;
+        }
+        return F.NIL;
       }
 
       @Override
       public String toString() {
-        return variable + "|" + intervalData.toString() + "|";
+        String minStr = minType == 1 ? " < " : minType == 2 ? " <= " : " == ";
+        String maxStr = maxType == 1 ? " < " : maxType == 2 ? " <= " : " == ";
+        return "|" + xMin.toString() + minStr + variable + maxStr + xMax.toString() + "|";
       }
 
       public IExpr reduceAnd(int headID, IExpr rhs) throws ArgumentTypeException {
@@ -174,120 +153,102 @@ public class Reduce extends AbstractEvaluator {
         } catch (ArgumentTypeException ate) {
           // fall through
         }
-
-        IAST newIntervalData = IntervalDataSym.relationToInterval(headID, rhs);
-        IAST intersection = IntervalDataSym.intersectionIntervalData(intervalData, newIntervalData,
-            EvalEngine.get());
-        if (intersection.isPresent()) {
-          if (intersection.isAST0()) {
-            return S.False;
-          }
-          this.intervalData = intersection;
-          return S.Continue;
+        switch (headID) {
+          case ID.Equal:
+            if (S.GreaterEqual.ofQ(rhs, xMin) && S.LessEqual.ofQ(rhs, xMax)) {
+              if (maxType == 1 && S.Equal.ofQ(rhs, xMax)) {
+                return S.False;
+              }
+              if (minType == 1 && S.Equal.ofQ(rhs, xMin)) {
+                return S.False;
+              }
+              xMax = rhs;
+              xMin = rhs;
+              minType = 3;
+              maxType = 3;
+              return S.Continue;
+            } else {
+              IExpr gt = S.Greater.of(rhs, xMax);
+              if (gt.isTrue()) {
+                return S.False;
+              }
+              IExpr lt = S.Less.of(rhs, xMin);
+              if (lt.isTrue()) {
+                return S.False;
+              }
+              if (gt.isFalse() && lt.isFalse()) {
+                xMax = rhs;
+                xMin = rhs;
+                minType = 3;
+                maxType = 3;
+                return S.Continue;
+              }
+            }
+            break;
+          case ID.Less:
+            if (S.Less.ofQ(rhs, xMax)) {
+              if (minType == 1 && S.LessEqual.ofQ(rhs, xMin)) {
+                return S.False;
+              } else if (S.Less.ofQ(rhs, xMin)) {
+                return S.False;
+              }
+              xMax = rhs;
+              maxType = 1;
+            } else {
+              if (S.LessEqual.ofQ(rhs, xMin)) {
+                return S.False;
+              }
+            }
+            return S.Continue;
+          case ID.LessEqual:
+            if (S.LessEqual.ofQ(rhs, xMax)) {
+              if (minType == 1 && S.LessEqual.ofQ(rhs, xMin)) {
+                return S.False;
+              } else if (S.Less.ofQ(rhs, xMin)) {
+                return S.False;
+              }
+              xMax = rhs;
+              maxType = 2;
+            } else {
+              if (S.Less.ofQ(rhs, xMin)) {
+                return S.False;
+              }
+            }
+            return S.Continue;
+          case ID.Greater:
+            if (S.Greater.ofQ(rhs, xMin)) {
+              if (maxType == 1 && S.GreaterEqual.ofQ(rhs, xMax)) {
+                return S.False;
+              } else if (S.Greater.ofQ(rhs, xMax)) {
+                return S.False;
+              }
+              xMin = rhs;
+              minType = 1;
+            } else {
+              if (S.GreaterEqual.ofQ(rhs, xMax)) {
+                return S.False;
+              }
+            }
+            return S.Continue;
+          case ID.GreaterEqual:
+            if (S.GreaterEqual.ofQ(rhs, xMin)) {
+              if (maxType == 1 && S.GreaterEqual.ofQ(rhs, xMax)) {
+                return S.False;
+              } else if (S.Greater.ofQ(rhs, xMax)) {
+                return S.False;
+              }
+              xMin = rhs;
+              minType = 2;
+            } else {
+              if (S.Greater.ofQ(rhs, xMax)) {
+                return S.False;
+              }
+            }
+            return S.Continue;
+          default:
+            return F.NIL;
         }
         return F.NIL;
-
-        // final IExpr xMin = intervalData.arg1();
-        // final IBuiltInSymbol minType = (IBuiltInSymbol) intervalData.arg2();
-        // final IBuiltInSymbol maxType = (IBuiltInSymbol) intervalData.arg3();
-        // final IExpr xMax = intervalData.arg4();
-        //
-        // switch (headID) {
-        // case ID.Equal:
-        // if (S.GreaterEqual.ofQ(rhs, xMin) && S.LessEqual.ofQ(rhs, xMax)) {
-        // if (maxType == S.Less && S.Equal.ofQ(rhs, xMax)) {
-        // return S.False;
-        // }
-        // if (minType == S.Less && S.Equal.ofQ(rhs, xMin)) {
-        // return S.False;
-        // }
-        // xMax = rhs;
-        // xMin = rhs;
-        // minType = S.LessEqual;
-        // maxType = S.LessEqual;
-        // return S.Continue;
-        // } else {
-        // IExpr gt = S.Greater.of(rhs, xMax);
-        // if (gt.isTrue()) {
-        // return S.False;
-        // }
-        // IExpr lt = S.Less.of(rhs, xMin);
-        // if (lt.isTrue()) {
-        // return S.False;
-        // }
-        // if (gt.isFalse() && lt.isFalse()) {
-        // xMax = rhs;
-        // xMin = rhs;
-        // minType = S.LessEqual;
-        // maxType = S.LessEqual;
-        // return S.Continue;
-        // }
-        // }
-        // break;
-        // case ID.Less:
-        // if (S.Less.ofQ(rhs, xMax)) {
-        // if (minType == S.Less && S.LessEqual.ofQ(rhs, xMin)) {
-        // return S.False;
-        // } else if (S.Less.ofQ(rhs, xMin)) {
-        // return S.False;
-        // }
-        // xMax = rhs;
-        // maxType = S.Less;
-        // } else {
-        // if (S.LessEqual.ofQ(rhs, xMin)) {
-        // return S.False;
-        // }
-        // }
-        // return S.Continue;
-        // case ID.LessEqual:
-        // if (S.LessEqual.ofQ(rhs, xMax)) {
-        // if (minType == S.Less && S.LessEqual.ofQ(rhs, xMin)) {
-        // return S.False;
-        // } else if (S.Less.ofQ(rhs, xMin)) {
-        // return S.False;
-        // }
-        // xMax = rhs;
-        // maxType = S.LessEqual;
-        // } else {
-        // if (S.Less.ofQ(rhs, xMin)) {
-        // return S.False;
-        // }
-        // }
-        // return S.Continue;
-        // case ID.Greater:
-        // if (S.Greater.ofQ(rhs, xMin)) {
-        // if (maxType == S.Less && S.GreaterEqual.ofQ(rhs, xMax)) {
-        // return S.False;
-        // } else if (S.Greater.ofQ(rhs, xMax)) {
-        // return S.False;
-        // }
-        // xMin = rhs;
-        // minType = S.Less;
-        // } else {
-        // if (S.GreaterEqual.ofQ(rhs, xMax)) {
-        // return S.False;
-        // }
-        // }
-        // return S.Continue;
-        // case ID.GreaterEqual:
-        // if (S.GreaterEqual.ofQ(rhs, xMin)) {
-        // if (maxType == S.Less && S.GreaterEqual.ofQ(rhs, xMax)) {
-        // return S.False;
-        // } else if (S.Greater.ofQ(rhs, xMax)) {
-        // return S.False;
-        // }
-        // xMin = rhs;
-        // minType = 2;
-        // } else {
-        // if (S.Greater.ofQ(rhs, xMax)) {
-        // return S.False;
-        // }
-        // }
-        // return S.Continue;
-        // default:
-        // return F.NIL;
-        // }
-        // return F.NIL;
       }
     }
 
@@ -301,8 +262,7 @@ public class Reduce extends AbstractEvaluator {
 
     private IExpr reduceAndOr(IExpr expr) throws ArgumentTypeException {
       if (expr.isAST(S.And)) {
-        VariableInterval cd =
-            new VariableInterval(F.CNInfinity, S.Less, variable, S.Less, F.CInfinity);
+        VariableInterval cd = new VariableInterval(variable);
         IExpr temp = reduceAnd((IAST) expr, cd);
         if (temp.isPresent()) {
           if (temp == S.Continue) {
@@ -326,19 +286,18 @@ public class Reduce extends AbstractEvaluator {
       return F.NIL;
     }
 
-    private IExpr reduceOr(IAST orAST, VariableInterval cd) throws ArgumentTypeException {
+    private IExpr reduceOr(IAST expr, VariableInterval cd) throws ArgumentTypeException {
+      IAST orAST = expr;
       if (orAST.isAST0()) {
         throw new ArgumentTypeException("Or: size == 0");
       }
       if (orAST.isAST1()) {
         return orAST.arg1();
       }
-      IASTAppendable orResult = F.ast(S.Or, orAST.argSize());
       for (int i = 1; i < orAST.size(); i++) {
         IExpr arg = orAST.get(i);
         if (arg.isAST(S.And)) {
-          VariableInterval andCD =
-              new VariableInterval(F.CNInfinity, S.Less, variable, S.Less, F.CInfinity);
+          VariableInterval andCD = new VariableInterval(variable);
           IExpr temp = reduceAnd((IAST) arg, andCD);
           if (temp.isPresent()) {
             if (temp == S.Continue) {
@@ -356,20 +315,15 @@ public class Reduce extends AbstractEvaluator {
           return F.NIL;
         } else {
           // TODO check Simplify result
-          IExpr temp = arg;
-          if (!arg.isAST2() || !arg.first().equals(variable)) {
-            temp = S.Simplify.of(arg);
-          }
+          IExpr temp = S.Simplify.of(arg);
           if (temp.isAST2() && temp.first().equals(variable)) {
-            VariableInterval comparatorCD =
-                new VariableInterval(F.CNInfinity, S.Less, variable, S.Less, F.CInfinity);
+            VariableInterval comparatorCD = new VariableInterval(variable);
             temp = comparatorCD.reduceAnd(temp.headID(), temp.second());
             if (temp != S.Continue) {
               if (temp.isTrue()) {
                 continue;
               }
               if (temp.isFalse()) {
-                // TODO ignore "Or" term
                 return S.False;
               }
               return temp;
@@ -605,13 +559,6 @@ public class Reduce extends AbstractEvaluator {
   @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_1_3;
-  }
-
-  /** {@inheritDoc} */
-
-  @Override
-  public int status() {
-    return ImplementationStatus.EXPERIMENTAL;
   }
 
   @Override
