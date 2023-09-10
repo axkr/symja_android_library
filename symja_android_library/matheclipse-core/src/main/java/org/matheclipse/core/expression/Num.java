@@ -231,6 +231,8 @@ public class Num implements INum {
       if (c != 0) {
         return c;
       }
+      IExpr im = expr.im();
+      return im.isPositive() ? -1 : im.isNegative() ? 1 : IExpr.compareHierarchy(this, expr);
     }
     return IExpr.compareHierarchy(this, expr);
   }
