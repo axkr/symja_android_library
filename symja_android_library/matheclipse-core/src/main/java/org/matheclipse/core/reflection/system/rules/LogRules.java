@@ -44,10 +44,10 @@ public class LogRules {
     // Log(0)=-Infinity
     ISet(Log(C0),
       Noo),
-    // Log(I)=1/2*I*Pi
+    // Log(I)=I*1/2*Pi
     ISet(Log(CI),
       Times(CC(0L,1L,1L,2L),Pi)),
-    // Log(-I)=1/2*I*-Pi
+    // Log(-I)=I*1/2*-Pi
     ISet(Log(CNI),
       Times(CC(0L,1L,-1L,2L),Pi)),
     // Log(GoldenRatio)=ArcCsch(2)

@@ -38,8 +38,6 @@ public class AutomaticRules {
     rules = CscRules.RULES;
     rules = DerivativeRules.RULES;
     rules = DRules.RULES;
-    rules = FunctionExpandRules.RULES;
-    rules = FunctionRangeRules.RULES;
     rules = GammaRules.RULES;
     rules = GudermannianRules.RULES;
     rules = HurwitzLerchPhiRules.RULES;
@@ -62,7 +60,6 @@ public class AutomaticRules {
     rules = LimitRules.RULES;
     rules = LogRules.RULES;
     rules = MatrixDRules.RULES;
-    rules = PodDefaultsRules.RULES;
     rules = PolyGammaRules.RULES;
     rules = PolyLogRules.RULES;
     rules = PowerRules.RULES;

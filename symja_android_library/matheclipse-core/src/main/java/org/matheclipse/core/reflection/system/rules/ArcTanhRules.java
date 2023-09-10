@@ -23,13 +23,13 @@ public class ArcTanhRules {
     // ArcTanh(0)=0
     ISet(ArcTanh(C0),
       C0),
-    // ArcTanh(I/Sqrt(3))=Pi*I/6
+    // ArcTanh(I/Sqrt(3))=Pi*I*1/6
     ISet(ArcTanh(Times(CI,C1DSqrt3)),
       Times(CC(0L,1L,1L,6L),Pi)),
-    // ArcTanh(I)=Pi*I/4
+    // ArcTanh(I)=Pi*I*1/4
     ISet(ArcTanh(CI),
       Times(CC(0L,1L,1L,4L),Pi)),
-    // ArcTanh(I*Sqrt(3))=Pi*I/3
+    // ArcTanh(I*Sqrt(3))=Pi*I*1/3
     ISet(ArcTanh(Times(CI,CSqrt3)),
       Times(CC(0L,1L,1L,3L),Pi)),
     // ArcTanh(1)=Infinity

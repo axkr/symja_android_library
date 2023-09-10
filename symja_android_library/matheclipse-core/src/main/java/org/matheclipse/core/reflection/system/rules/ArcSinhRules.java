@@ -23,16 +23,16 @@ public class ArcSinhRules {
     // ArcSinh(0)=0
     ISet(ArcSinh(C0),
       C0),
-    // ArcSinh(I*1/2)=Pi*I/6
+    // ArcSinh(I*1/2)=Pi*I*1/6
     ISet(ArcSinh(CC(0L,1L,1L,2L)),
       Times(CC(0L,1L,1L,6L),Pi)),
-    // ArcSinh(I/Sqrt(2))=Pi*I/4
+    // ArcSinh(I/Sqrt(2))=Pi*I*1/4
     ISet(ArcSinh(Times(CI,C1DSqrt2)),
       Times(CC(0L,1L,1L,4L),Pi)),
-    // ArcSinh(I*1/2*Sqrt(3))=Pi*I/3
+    // ArcSinh(I*1/2*Sqrt(3))=Pi*I*1/3
     ISet(ArcSinh(Times(CC(0L,1L,1L,2L),CSqrt3)),
       Times(CC(0L,1L,1L,3L),Pi)),
-    // ArcSinh(I)=Pi*I/2
+    // ArcSinh(I)=Pi*I*1/2
     ISet(ArcSinh(CI),
       Times(CC(0L,1L,1L,2L),Pi)),
     // ArcSinh(Infinity)=Infinity

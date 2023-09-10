@@ -74,9 +74,9 @@ public class SeriesCoefficientRules {
     // SeriesCoefficient(ArcTan(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{1/(I^(1-n)*n),Mod(n,2)==1&&n>=0}},0)/;FreeQ(n,x)
     ISetDelayed(SeriesCoefficient(ArcTan(x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
       Condition(Piecewise(list(list(Times(Power(CI,Plus(CN1,n)),Power(n,CN1)),And(Equal(Mod(n,C2),C1),GreaterEqual(n,C0)))),C0),FreeQ(n,x))),
-    // SeriesCoefficient(ArcCosh(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{1/2*I*Pi,n==0},{((-1)*I*Pochhammer(1/2,1/2*(-1+n)))/(n*(1/2*(-1+n))!),n>=1&&Mod(n,2)==1}},0)/;FreeQ(n,x)
+    // SeriesCoefficient(ArcCosh(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{I*1/2*Pi,n==0},{((-1)*I*Pochhammer(1/2,1/2*(-1+n)))/(n*(1/2*(-1+n))!),n>=1&&Mod(n,2)==1}},0)/;FreeQ(n,x)
     ISetDelayed(SeriesCoefficient(ArcCosh(x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(list(list(Times(C1D2,CI,Pi),Equal(n,C0)),list(Times(CN1,CI,Power(Times(n,Factorial(Times(C1D2,Plus(CN1,n)))),CN1),Pochhammer(C1D2,Times(C1D2,Plus(CN1,n)))),And(GreaterEqual(n,C1),Equal(Mod(n,C2),C1)))),C0),FreeQ(n,x))),
+      Condition(Piecewise(list(list(Times(CI,C1D2,Pi),Equal(n,C0)),list(Times(CN1,CI,Power(Times(n,Factorial(Times(C1D2,Plus(CN1,n)))),CN1),Pochhammer(C1D2,Times(C1D2,Plus(CN1,n)))),And(GreaterEqual(n,C1),Equal(Mod(n,C2),C1)))),C0),FreeQ(n,x))),
     // SeriesCoefficient(ArcSinh(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{Pochhammer(1/2,1/2*(-1+n))/(I^(1-n)*n*(1/2*(-1+n))!),Mod(n,2)==1&&n>=0}},0)/;FreeQ(n,x)
     ISetDelayed(SeriesCoefficient(ArcSinh(x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
       Condition(Piecewise(list(list(Times(Power(CI,Plus(CN1,n)),Power(Times(n,Factorial(Times(C1D2,Plus(CN1,n)))),CN1),Pochhammer(C1D2,Times(C1D2,Plus(CN1,n)))),And(Equal(Mod(n,C2),C1),GreaterEqual(n,C0)))),C0),FreeQ(n,x))),

@@ -498,7 +498,9 @@ public class RulePreprocessor {
                 String symbolName = className.substring(0, className.length() - 5);
 
                 if (!createMatcher) {
-                  automaticRules.println("    rules = " + className + ".RULES;");
+                  if (!isSpecialRuleList(className)) {
+                    automaticRules.println("    rules = " + className + ".RULES;");
+                  }
                 }
 
                 File targetFile = new File(targetLocation, className + ".java");
@@ -511,9 +513,7 @@ public class RulePreprocessor {
                   }
                 }
                 System.out.println(className);
-                if (className.equals("FunctionExpandRules")
-                    || className.equals("FunctionRangeRules")
-                    || className.equals("PodDefaultsRules")) {
+                if (isSpecialRuleList(className)) {
                   out = createHeader(className, targetFile, createMatcher);
                   convertList(expr, "", buffer, out, symbolName, engine);
                   out.println(FOOTER1);
@@ -544,6 +544,12 @@ public class RulePreprocessor {
     } else {
       System.out.println("source location doesn't exists: " + sourceLocation.toString());
     }
+  }
+
+  private static boolean isSpecialRuleList(String className) {
+    return className.equals("FunctionExpandRules")
+        || className.equals("FunctionRangeRules")
+        || className.equals("PodDefaultsRules");
   }
 
   private static PrintWriter createAutoHeader(String className, File targetFile, boolean useSets)
