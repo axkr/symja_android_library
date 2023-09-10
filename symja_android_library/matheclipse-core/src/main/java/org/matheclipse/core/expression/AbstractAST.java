@@ -1723,10 +1723,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           return compareToASTDecreasingArg1(this, rhsExpr, F.C1);
       }
     }
-
-    final int x = hierarchy();
-    final int y = rhsExpr.hierarchy();
-    return (x < y) ? -1 : ((x == y) ? 0 : 1);
+    return IExpr.compareHierarchy(this, rhsExpr);
   }
 
   /** {@inheritDoc} */

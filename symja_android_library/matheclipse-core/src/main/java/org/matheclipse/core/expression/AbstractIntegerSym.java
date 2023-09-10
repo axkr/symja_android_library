@@ -382,7 +382,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
       IExpr im = expr.im();
       return !im.isPositive() ? 1 : -1;
     }
-    return -1;
+    return IExpr.compareHierarchy(this, expr);
   }
 
   @Override

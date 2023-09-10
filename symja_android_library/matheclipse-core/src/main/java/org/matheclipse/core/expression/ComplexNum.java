@@ -397,7 +397,7 @@ public class ComplexNum implements IComplexNum {
       return compareTo(
           new Complex(((INumber) expr).reDoubleValue(), ((INumber) expr).imDoubleValue()));
     }
-    return -1;
+    return IExpr.compareHierarchy(this, expr);
     // return IComplexNum.super.compareTo(expr);
   }
 

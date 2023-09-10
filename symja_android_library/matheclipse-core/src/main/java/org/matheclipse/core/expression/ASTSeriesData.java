@@ -189,9 +189,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
       return super.compareTo(rhsExpr);
     }
-    int x = hierarchy();
-    int y = rhsExpr.hierarchy();
-    return (x < y) ? -1 : ((x == y) ? 0 : 1);
+    return IExpr.compareHierarchy(this, rhsExpr);
   }
 
   /**

@@ -492,9 +492,17 @@ public interface IExpr
       return -1 * expr.compareTo(this);
       // }
     }
-    final int x = hierarchy();
-    final int y = expr.hierarchy();
-    return (x < y) ? -1 : ((x == y) ? 0 : 1);
+    return compareHierarchy(this, expr);
+  }
+
+  /**
+   * Compares {@code a} expressions {@link #hierarchy()} number with the {@link #hierarchy()} number
+   * of {@code b}. Returns -1,0,1 as {@code a} expressions {@link #hierarchy()} number is canonical
+   * less than, equal to, or greater than the {@link #hierarchy()} number of {@code b}.
+   * 
+   */
+  static int compareHierarchy(IExpr a, IExpr b) {
+    return Integer.compare(a.hierarchy(), b.hierarchy());
   }
 
   /**

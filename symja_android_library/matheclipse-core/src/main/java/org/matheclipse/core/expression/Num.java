@@ -232,7 +232,7 @@ public class Num implements INum {
         return c;
       }
     }
-    return -1; // INum.super.compareTo(expr);
+    return IExpr.compareHierarchy(this, expr);
   }
 
   @Override

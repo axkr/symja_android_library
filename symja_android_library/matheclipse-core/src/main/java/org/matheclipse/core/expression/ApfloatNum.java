@@ -641,7 +641,7 @@ public class ApfloatNum implements INum {
         try {
           return fApfloat.compareTo(((IReal) expr).apfloatValue());
         } catch (NumberFormatException nfe) {
-          return -1;
+          return IExpr.compareHierarchy(this, expr);
         }
       }
       int c = this.compareTo(((INumber) expr).re());
@@ -650,7 +650,7 @@ public class ApfloatNum implements INum {
       }
 
     }
-    return -1;
+    return IExpr.compareHierarchy(this, expr);
   }
 
   @Override

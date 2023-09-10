@@ -567,9 +567,13 @@ public class ApcomplexNum implements IComplexNum {
       if (expr instanceof ApcomplexNum) {
         return compareTo(((ApcomplexNum) expr).fApcomplex);
       }
-      return compareTo(((INumber) expr).apcomplexValue());
+      try {
+        return compareTo(((INumber) expr).apcomplexValue());
+      } catch (NumberFormatException nfe) {
+        //
+      }
     }
-    return -1;
+    return IExpr.compareHierarchy(this, expr);
   }
 
   @Override

@@ -224,7 +224,7 @@ public class Symbol implements ISymbol, Serializable {
       }
       return -expr.compareTo(this);
     }
-    return Integer.compare(hierarchy(), expr.hierarchy());
+    return IExpr.compareHierarchy(this, expr);
   }
 
   /** {@inheritDoc} */
