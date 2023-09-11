@@ -40,6 +40,9 @@ public class Config {
   /** Enable JSFiddle in JavaScript IFRAME output */
   public static boolean DISPLAY_JSFIDDLE_BUTTON = true;
 
+  /** Indicate that the class java.awt.Desktop is available */
+  public static boolean JAVA_AWT_DESKTOP_AVAILABLE = true;
+
   /** Symja ASCII Art String */
   public static final String SYMJA = //
       "     _______.____    ____ .___  ___.        __       ___      \n"

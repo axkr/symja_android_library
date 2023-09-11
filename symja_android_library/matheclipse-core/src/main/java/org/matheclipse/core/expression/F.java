@@ -10746,8 +10746,10 @@ public class F extends S {
     try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp));) {
       bw.write(html);
     }
-    if (Desktop.isDesktopSupported()) {
-      Desktop.getDesktop().open(temp);
+    if (Config.JAVA_AWT_DESKTOP_AVAILABLE) {
+      if (Desktop.isDesktopSupported()) {
+        Desktop.getDesktop().open(temp);
+      }
     }
     return temp.toString();
   }
