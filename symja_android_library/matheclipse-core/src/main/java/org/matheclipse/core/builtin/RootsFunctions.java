@@ -6,9 +6,6 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.analysis.solvers.LaguerreSolver;
-import org.hipparchus.linear.Array2DRowRealMatrix;
-import org.hipparchus.linear.EigenDecomposition;
-import org.hipparchus.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Expr2Object;
 import org.matheclipse.core.convert.JASConvert;
@@ -524,31 +521,20 @@ public class RootsFunctions {
   /**
    * Given a set of polynomial coefficients, compute the roots of the polynomial. Depending on the
    * polynomial being considered the roots may contain complex numbers. When complex numbers are
-   * present they will come in pairs of complex conjugates.
+   * present, they will come in pairs of complex conjugate's. Implements the Laguerre's Method for
+   * root finding of real coefficient polynomials
    *
    * @param coefficients coefficients of the polynomial.
    * @return the roots of the polynomial
    */
   protected static IAST findRoots(double... coefficients) {
-    int N = coefficients.length - 1;
-
-    // Construct the companion matrix
-    RealMatrix c = new Array2DRowRealMatrix(N, N);
-
-    double a = coefficients[N];
-    for (int i = 0; i < N; i++) {
-      c.setEntry(i, N - 1, -coefficients[i] / a);
-    }
-    for (int i = 1; i < N; i++) {
-      c.setEntry(i, i - 1, 1);
-    }
-
-    EigenDecomposition ed = new EigenDecomposition(c);
-
-    double[] realValues = ed.getRealEigenvalues();
-    double[] imagValues = ed.getImagEigenvalues();
-    return F.mapRange(0, N, i -> F.chopExpr(F.complexNum(realValues[i], imagValues[i]),
-        Config.DEFAULT_ROOTS_CHOP_DELTA));
+    LaguerreSolver laguerreSolver = new LaguerreSolver();
+    org.hipparchus.complex.Complex[] solveAllComplex =
+        laguerreSolver.solveAllComplex(coefficients, 0.0);
+    return F.mapRange(0, solveAllComplex.length,
+        i -> F.chopExpr(
+            F.complexNum(solveAllComplex[i].getReal(), solveAllComplex[i].getImaginary()),
+            Config.DEFAULT_ROOTS_CHOP_DELTA));
   }
 
   /**
