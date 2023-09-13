@@ -525,26 +525,33 @@ public class RootsFunctions {
    * root finding of real coefficient polynomials
    *
    * @param coefficients coefficients of the polynomial.
-   * @return the roots of the polynomial
+   * @return the roots of the polynomial or {@link F#NIL} if an exception occurs
    */
   protected static IAST findRoots(double... coefficients) {
-    LaguerreSolver laguerreSolver = new LaguerreSolver();
-    org.hipparchus.complex.Complex[] solveAllComplex =
-        laguerreSolver.solveAllComplex(coefficients, 0.0);
-    return F.mapRange(0, solveAllComplex.length,
-        i -> F.chopExpr(
-            F.complexNum(solveAllComplex[i].getReal(), solveAllComplex[i].getImaginary()),
-            Config.DEFAULT_ROOTS_CHOP_DELTA));
+    try {
+      LaguerreSolver laguerreSolver = new LaguerreSolver();
+      org.hipparchus.complex.Complex[] solveAllComplex =
+          laguerreSolver.solveAllComplex(coefficients, 0.0);
+      return F.mapRange(0, solveAllComplex.length,
+          i -> F.chopExpr(
+              F.complexNum(solveAllComplex[i].getReal(), solveAllComplex[i].getImaginary()),
+              Config.DEFAULT_ROOTS_CHOP_DELTA));
+    } catch (RuntimeException rex) {
+      // solveAllComplex may throw MathIllegalArgumentException, NullArgumentException,
+      // MathIllegalStateException
+      Errors.printMessage(S.Roots, rex, EvalEngine.get());
+    }
+    return F.NIL;
   }
 
   /**
    * Compute a set of polynomial coefficients and the roots for the polynomial coefficients.
    * Depending on the polynomial being considered the roots may contain complex numbers. When
-   * complex numbers are present they will come in pairs of complex conjugates.
+   * complex numbers are present they will come in pairs of complex conjugate's.
    * 
    * @param polynomialExpr
    * @param variables
-   * @return
+   * @return the roots of the polynomial or {@link F#NIL} if an exception occurs
    */
   public static IAST findRoots(IExpr polynomialExpr, final IAST variables) {
     double[] coefficients = coefficients(polynomialExpr, (ISymbol) variables.arg1());
