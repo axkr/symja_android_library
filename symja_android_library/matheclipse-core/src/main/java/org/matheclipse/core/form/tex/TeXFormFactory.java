@@ -2061,6 +2061,7 @@ public class TeXFormFactory {
     initTeXConverter(S.Erf, new UnaryFunction("\\text{erf}(", ")"));
     initTeXConverter(S.Erfc, new UnaryFunction("\\text{erfc}(", ")"));
     initTeXConverter(S.Erfi, new UnaryFunction("\\text{erfi}(", ")"));
+    initTeXConverter(S.EulerE, new UnaryBinaryFunction("E_", "(", ")", true));
 
     initTeXConverter(S.FactorialPower, new BinaryTernaryFunction("", "^{(", ",", ")}", false));
     initTeXConverter(S.Floor, new UnaryFunction(" \\left \\lfloor ", " \\right \\rfloor "));

@@ -726,6 +726,10 @@ public class Pods {
                 if (evaledNumExpr.isInexactNumber()) {
                   inExpr = F.Rationalize(evaledNumExpr);
                   podOut = engine.evaluate(inExpr);
+                  if (podOut.equals(F.C0)) {
+                    inExpr = F.Rationalize(evaledNumExpr, F.C0);
+                    podOut = engine.evaluate(inExpr);
+                  }
                   addSymjaPod(podsArray, inExpr, podOut, "Rational form", "Numeric", formats,
                       engine);
                   numpods++;

@@ -2954,6 +2954,67 @@ public class TestPods {
     // + "}"); //
   }
 
+
+  // @Test
+  // public void testRationalized001() {
+  // EvalEngine.resetModuleCounter4JUnit();
+  // ObjectNode messageJSON = TestPods.createJUnitResult("1.6*10^-27", formatsTEX);
+  // final String jsonStr = toPrettyStringNormalizingNewline(messageJSON);
+  //
+  // JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+  // assertEquals(queryResult.isError(), false);
+  //
+  // assertEquals(jsonStr, //
+  // "{\n" //
+  // + " \"queryresult\" : {\n" //
+  // + " \"success\" : \"true\",\n" //
+  // + " \"numpods\" : 4,\n" //
+  // + " \"version\" : \"0.1\",\n" //
+  // + " \"pods\" : [ {\n" //
+  // + " \"title\" : \"Input\",\n" //
+  // + " \"scanner\" : \"Identity\",\n" //
+  // + " \"error\" : \"false\",\n" //
+  // + " \"numsubpods\" : 1,\n" //
+  // + " \"subpods\" : [ {\n" //
+  // + " \"plaintext\" : \"1.6/10^27\",\n" //
+  // + " \"sinput\" : \"1.6`/10^27\",\n" //
+  // + " \"latex\" : \"\\\\frac{1.6}{{10}^{27}}\"\n" //
+  // + " } ]\n" //
+  // + " }, {\n" //
+  // + " \"title\" : \"Decimal form\",\n" //
+  // + " \"scanner\" : \"Numeric\",\n" //
+  // + " \"error\" : \"false\",\n" //
+  // + " \"numsubpods\" : 1,\n" //
+  // + " \"subpods\" : [ {\n" //
+  // + " \"plaintext\" : \"1.6*10^-27\",\n" //
+  // + " \"sinput\" : \"N(1.6`/10^27)\",\n" //
+  // + " \"latex\" : \"0.0\"\n" //
+  // + " } ]\n" //
+  // + " }, {\n" //
+  // + " \"title\" : \"Rational form\",\n" //
+  // + " \"scanner\" : \"Numeric\",\n" //
+  // + " \"error\" : \"false\",\n" //
+  // + " \"numsubpods\" : 1,\n" //
+  // + " \"subpods\" : [ {\n" //
+  // + " \"plaintext\" : \"0\",\n" //
+  // + " \"sinput\" : \"Rationalize(1.6000000000000001`*^-27)\",\n" //
+  // + " \"latex\" : \"0\"\n" //
+  // + " } ]\n" //
+  // + " }, {\n" //
+  // + " \"title\" : \"Continued fraction\",\n" //
+  // + " \"scanner\" : \"Numeric\",\n" //
+  // + " \"error\" : \"false\",\n" //
+  // + " \"numsubpods\" : 1,\n" //
+  // + " \"subpods\" : [ {\n" //
+  // + " \"plaintext\" : \"{0}\",\n" //
+  // + " \"sinput\" : \"ContinuedFraction(1.6000000000000001`*^-27)\",\n" //
+  // + " \"latex\" : \"\\\\{0\\\\}\"\n" //
+  // + " } ]\n" //
+  // + " } ]\n" //
+  // + " }\n" //
+  // + "}"); //
+  // }
+
   @Test
   public void testRound001() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));

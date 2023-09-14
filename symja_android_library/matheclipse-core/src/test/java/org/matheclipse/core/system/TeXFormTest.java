@@ -118,6 +118,13 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
         "\\Pi (a;b|c)");
   }
 
+  public void testEulerE() {
+    check("TeXForm(EulerE(n))", //
+        "E_n");
+    check("TeXForm(EulerE(n,x))", //
+        "E_n(x)");
+  }
+
   public void testEllipticTheta() {
     check("TeXForm(EllipticTheta(a,b))", //
         "\\vartheta _a(b)");
