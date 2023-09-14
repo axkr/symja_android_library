@@ -327,7 +327,7 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final IExpr evalDownRule(EvalEngine engine, IExpr expression) {
+  public final synchronized IExpr evalDownRule(EvalEngine engine, IExpr expression) {
     if (fRulesData == null) {
       return F.NIL;
     }

@@ -2784,7 +2784,7 @@ public class EvalEngine implements Serializable {
     return fEvalHistory;
   }
 
-  public OptionsStack pushOptionsStack() {
+  public synchronized OptionsStack pushOptionsStack() {
     fOptionsStack.push();
     return fOptionsStack;
   }
@@ -2811,11 +2811,11 @@ public class EvalEngine implements Serializable {
     globalObjectCache.put(key, value);
   }
 
-  public void popOptionsStack() {
+  public synchronized void popOptionsStack() {
     fOptionsStack.pop();
   }
 
-  public IdentityHashMap<ISymbol, IASTAppendable> peekOptionsStack() {
+  public synchronized IdentityHashMap<ISymbol, IASTAppendable> peekOptionsStack() {
     return fOptionsStack.peek();
   }
 
@@ -2990,16 +2990,16 @@ public class EvalEngine implements Serializable {
     rememberMap = new IdentityHashMap<Object, IExpr>();
   }
 
-  public Deque<IExpr> stackBegin() {
+  public synchronized Deque<IExpr> stackBegin() {
     fStack = new ArrayDeque<IExpr>(256);
     return fStack;
   }
 
-  public void stackPush(IExpr expr) {
+  public synchronized void stackPush(IExpr expr) {
     fStack.push(expr);
   }
 
-  public IExpr stackPop() {
+  public synchronized IExpr stackPop() {
     if (fStack.isEmpty()) {
       return F.NIL;
     }

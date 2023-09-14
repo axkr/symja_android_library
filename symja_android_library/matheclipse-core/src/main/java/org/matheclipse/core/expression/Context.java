@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.JavaFunctions;
@@ -144,7 +145,7 @@ public class Context implements Serializable {
     return symbolTable.put(key, value);
   }
 
-  public ISymbol computeIfAbsent(String key, Function<String, ISymbol> mappingFunction) {
+  public synchronized ISymbol computeIfAbsent(String key, Function<String, ISymbol> mappingFunction) {
     return symbolTable.computeIfAbsent(key, mappingFunction);
   }
 
@@ -152,7 +153,7 @@ public class Context implements Serializable {
       throws IOException, ClassNotFoundException {
     contextName = stream.readUTF();
     int size = stream.readInt();
-    symbolTable = new HashMap<>(size + size / 10);
+    symbolTable = new ConcurrentHashMap<>(size + size / 10);
     EvalEngine.get().getContextPath().setGlobalContext(this);
     String[] table = new String[size];
     for (int i = 0; i < size; i++) {
