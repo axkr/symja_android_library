@@ -4150,8 +4150,12 @@ public class F extends S {
     return new AST2(EuclideanDistance, a0, a1);
   }
 
-  public static IAST EulerE(final IExpr a0) {
-    return new AST1(EulerE, a0);
+  public static IAST EulerE(final IExpr n) {
+    return new AST1(EulerE, n);
+  }
+
+  public static IAST EulerE(final IExpr n, final IExpr x) {
+    return new AST2(EulerE, n, x);
   }
 
   public static IAST EulerPhi(final IExpr a0) {
@@ -7932,6 +7936,10 @@ public class F extends S {
     return new AST2(PolyLog, a0, a1);
   }
 
+  public static IAST PolyLog(final IExpr n, final IExpr p, final IExpr z) {
+    return new AST3(PolyLog, n, p, z);
+  }
+
   public static IAST PolynomialGCD(final IExpr poly1, final IExpr poly2) {
     return new AST2(PolynomialGCD, poly1, poly2);
   }
@@ -9590,6 +9598,22 @@ public class F extends S {
    */
   public static IExpr intSum(final Function<IExpr, IExpr> function, final int from, final int to,
       final int step) {
+    return intSum(function, from, to, step, false);
+  }
+
+  /**
+   * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code> and
+   * evaluate the {@link S#Sum}
+   *
+   * @param function the function which should be applied on each iterator value
+   * @param from from this position (included)
+   * @param to to this position (included)
+   * @param step
+   * @param expand expand {@link S#Plus}, {@link S#Times}, {@link S#Power} subexpressions
+   * @return
+   */
+  public static IExpr intSum(final Function<IExpr, IExpr> function, final int from, final int to,
+      final int step, boolean expand) {
     IASTAppendable result = ast(S.Plus, 15);
     long numberOfLeaves = 0;
     INumber number = F.C0;
@@ -9605,7 +9629,11 @@ public class F extends S {
         if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
           ASTElementLimitExceeded.throwIt(numberOfLeaves);
         }
-        result.append(temp);
+        if (expand && temp.isPlusTimesPower()) {
+          result.append(F.evalExpand(temp));
+        } else {
+          result.append(temp);
+        }
       }
     }
     // replace placeholder with evaluated number
@@ -9625,6 +9653,21 @@ public class F extends S {
   public static IExpr sum(final Function<IExpr, IExpr> function, final int iMin, final int iMax,
       final int iStep) {
     return intSum(function, iMin, iMax, iStep);
+  }
+
+  /**
+   * Evaluate the sum from <code>iMin</code> to <code>iMax</code> and step <code>iStep</code>.
+   *
+   * @param function
+   * @param iMin from this position (included)
+   * @param iMax to this position (included)
+   * @param iStep
+   * @param expand expand {@link S#Plus}, {@link S#Times}, {@link S#Power} subexpressions
+   * @return
+   */
+  public static IExpr sum(final Function<IExpr, IExpr> function, final int iMin, final int iMax,
+      final int iStep, boolean expand) {
+    return intSum(function, iMin, iMax, iStep, expand);
   }
 
   public static IAST Superscript(final IExpr x, final IExpr y) {

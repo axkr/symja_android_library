@@ -13,7 +13,7 @@ public class DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 119 };
+  final public static int[] SIZES = { 0, 120 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -335,6 +335,9 @@ public class DerivativeRules {
     // Derivative(0,1)[PolyLog]:=PolyLog(-1+#2,#1)/#1&
     ISetDelayed($(Derivative(C0,C1),PolyLog),
       Function(Times(PolyLog(Plus(CN1,Slot2),Slot1),Power(Slot1,CN1)))),
+    // Derivative(0,0,1)[PolyLog]:=PolyLog(-1+#1,#2,#3)/#3&
+    ISetDelayed($(Derivative(C0,C0,C1),PolyLog),
+      Function(Times(PolyLog(Plus(CN1,Slot1),Slot2,Slot(C3)),Power(Slot(C3),CN1)))),
     // Derivative(0,1)[ProductLog]:=ProductLog(#1,#2)/#2*(1+ProductLog(#1,#2))&
     ISetDelayed($(Derivative(C0,C1),ProductLog),
       Function(Times(ProductLog(Slot1,Slot2),Power(Slot2,CN1),Plus(C1,ProductLog(Slot1,Slot2))))),
