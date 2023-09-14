@@ -20,8 +20,6 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApcomplexHelper;
@@ -58,6 +56,7 @@ import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.FractionSym;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -88,7 +87,6 @@ import edu.jas.ufd.FactorAbstract;
 import edu.jas.ufd.FactorFactory;
 
 public final class NumberTheory {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   private static final int[] FIBONACCI_45 = {0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377,
       610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 28657, 46368, 75025, 121393, 196418, 317811,
@@ -221,7 +219,7 @@ public final class NumberTheory {
           }
         }
       } catch (RuntimeException rex) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        Errors.printMessage(S.BellB, rex, engine);
       }
       return F.NIL;
     }
@@ -229,6 +227,11 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -275,7 +278,7 @@ public final class NumberTheory {
           }
 
         } catch (RuntimeException rex) {
-          LOGGER.debug("BernoulliB.evaluate() failed", rex);
+          Errors.printMessage(S.BernoulliB, rex, engine);
         }
         return F.NIL;
       }
@@ -308,7 +311,7 @@ public final class NumberTheory {
             }
           }
         } catch (RuntimeException rex) {
-          LOGGER.debug("BernoulliB.evaluate() failed", rex);
+          Errors.printMessage(S.BernoulliB, rex, engine);
         }
       }
       return F.NIL;
@@ -317,6 +320,12 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -492,6 +501,12 @@ public final class NumberTheory {
       return F.NIL;
     }
 
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -542,6 +557,12 @@ public final class NumberTheory {
         }
       }
       return F.NIL;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -603,8 +624,7 @@ public final class NumberTheory {
       } catch (LimitException le) {
         throw le;
       } catch (RuntimeException rex) {
-        LOGGER.log(EvalEngine.get().getLogLevel(), ast.topHead(), rex);
-        return F.NIL;
+        return Errors.printMessage(S.CatalanNumber, rex, engine);
       }
       return evaluateArg1(arg1, engine);
     }
@@ -613,6 +633,12 @@ public final class NumberTheory {
       // (2^(2*n)*Gamma(1/2+n))/(Sqrt(Pi)*Gamma(2+n))
       return F.Times(F.Power(F.C2, F.Times(F.C2, n)), F.Gamma(F.Plus(n, F.C1D2)),
           F.Power(F.Times(F.Sqrt(S.Pi), F.Gamma(F.Plus(n, F.C2))), F.CN1));
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
     }
 
     @Override
@@ -812,7 +838,7 @@ public final class NumberTheory {
             return chineseRemainderBigInteger(ast, engine);
           }
         } catch (ArithmeticException ae) {
-          LOGGER.debug("ChineseRemainder.evaluate() failed", ae);
+          Errors.printMessage(S.ChineseRemainder, ae, engine);
         }
       }
       return F.NIL;
@@ -834,9 +860,15 @@ public final class NumberTheory {
       try {
         return F.ZZ(chineseRemainders(nBig, aBig));
       } catch (ArithmeticException ae) {
-        LOGGER.debug("ChineseRemainder.chineseRemainderBigInteger() failed", ae);
+        Errors.printMessage(S.ChineseRemainder, ae, engine);
       }
       return F.NIL;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -913,6 +945,12 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
     }
 
     @Override
@@ -1204,6 +1242,12 @@ public final class NumberTheory {
       return ARGS_1_2;
     }
 
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
+    }
+
     @Override
     public void setUp(ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
@@ -1272,6 +1316,12 @@ public final class NumberTheory {
         return S.True;
       }
       return S.False;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
     }
 
     @Override
@@ -1345,6 +1395,12 @@ public final class NumberTheory {
       return result;
     }
 
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
     @Override
     public void setUp(ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.LISTABLE);
@@ -1402,6 +1458,12 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
     }
 
     @Override
@@ -1480,6 +1542,12 @@ public final class NumberTheory {
       return F.NIL;
     }
 
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
+    }
+
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
@@ -1521,6 +1589,12 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1616,6 +1690,12 @@ public final class NumberTheory {
       return F.NIL;
     }
 
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
@@ -1650,10 +1730,36 @@ public final class NumberTheory {
    * -61
    * </pre>
    */
-  private static class EulerE extends AbstractTrigArg1 {
+  private static class EulerE extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (ast.isAST2()) {
+        IExpr z = ast.arg2();
+        if (z.isNumEqualRational(F.C1D2)) {
+          // EulerE(n)/2^(n)
+          return F.Times(F.EulerE(arg1), F.Power(F.C2, F.Negate(arg1)));
+        }
+        if (arg1.isMathematicalIntegerNonNegative()) {
+          try {
+            int nMax = arg1.toIntDefault();
+            IExpr n = arg1;
+            ArrayList<IInteger> eulerE = eulerEList(nMax);
+            // https://functions.wolfram.com/Polynomials/EulerE2/27/01/0001/
+            // Sum((Binomial(n,k)*EulerE(k))/(2^k*(-1/2+z)^(k-n)),{k,0,n})
+            return F.sum(k -> //
+            F.Times(F.Power(F.Power(F.C2, k), F.CN1),
+                F.Power(F.Plus(F.CN1D2, z), F.Plus(F.Negate(k), n)), F.Binomial(n, k),
+                getEulerEEvenOdd(eulerE, k.toIntDefault())), //
+                0, nMax, 1, //
+                true);
+          } catch (IllegalArgumentException iae) {
+            return Errors.printMessage(S.EulerE, iae, engine);
+          }
+        }
+        return F.NIL;
+      }
       if (arg1.isInteger()) {
         int n = ((IInteger) arg1).toIntDefault(-1);
         if (n >= 0) {
@@ -1663,13 +1769,9 @@ public final class NumberTheory {
           n /= 2;
 
           // The list of all Euler numbers as a vector, n=0,2,4,....
-          ArrayList<IInteger> a = new ArrayList<IInteger>();
-          a.add(F.C1);
-          a.add(F.C1);
-          a.add(F.C5);
-          a.add(AbstractIntegerSym.valueOf(61));
+          ArrayList<IInteger> a = eulerEList(n);
 
-          IInteger eulerE = eulerE(a, n);
+          IInteger eulerE = eulerEGet(a, n);
           if (n > 0) {
             n -= 1;
             n %= 2;
@@ -1684,12 +1786,46 @@ public final class NumberTheory {
     }
 
     /**
+     * Get the Euler number.
+     * 
+     * @param eulerEList the list of all Euler numbers as a vector for the even integer indices
+     *        <code>n=0,2,4,....</code>
+     * @param n
+     * @return the Euler number <code>E(n)</code>
+     */
+    private static IInteger getEulerEEvenOdd(ArrayList<IInteger> eulerEList, int n) {
+      if ((n & 0x00000001) == 0x00000001) {
+        return F.C0;
+      }
+      n /= 2;
+      IInteger eulerE = eulerEList.get(n);
+      if (n > 0) {
+        n -= 1;
+        n %= 2;
+        if (n == 0) {
+          eulerE = eulerE.negate();
+        }
+      }
+      return eulerE;
+    }
+
+    private static ArrayList<IInteger> eulerEList(int n) {
+      ArrayList<IInteger> a = new ArrayList<IInteger>();
+      a.add(F.C1);
+      a.add(F.C1);
+      a.add(F.C5);
+      a.add(AbstractIntegerSym.valueOf(61));
+      set(a, n);
+      return a;
+    }
+
+    /**
      * Compute a coefficient in the internal table.
      *
      * @param a list of integers
      * @param n the zero-based index of the coefficient. n=0 for the E_0 term.
      */
-    protected void set(List<IInteger> a, final int n) {
+    protected static void set(List<IInteger> a, final int n) {
       while (n >= a.size()) {
         IInteger val = F.C0;
         boolean sigPos = true;
@@ -1697,30 +1833,37 @@ public final class NumberTheory {
         for (int i = thisn - 1; i > 0; i--) {
           IInteger f = a.get(i);
           f = f.multiply(AbstractIntegerSym.valueOf(BigIntegerMath.binomial(2 * thisn, 2 * i)));
-          if (sigPos)
-            val = val.add(f);
-          else
-            val = val.subtract(f);
+          val = sigPos ? val.add(f) : val.subtract(f);
           sigPos = !sigPos;
         }
-        if (thisn % 2 == 0)
+        if (thisn % 2 == 0) {
           val = val.subtract(F.C1);
-        else
+        } else {
           val = val.add(F.C1);
+        }
         a.add(val);
       }
     }
 
     /**
-     * The Euler number at the index provided.
+     * The positive Euler number at the index provided.
      *
      * @param a list of integers
      * @param n the index, non-negative.
-     * @return the E_0=E_1=1 , E_2=5, E_3=61 etc
+     * @return the E_0=1, E_1=1 , E_2=5, E_3=61 etc
      */
-    public IInteger eulerE(List<IInteger> a, int n) {
-      set(a, n);
-      return (a.get(n));
+    public static IInteger eulerEGet(List<IInteger> a, int n) {
+      return a.get(n);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1786,6 +1929,12 @@ public final class NumberTheory {
         }
       }
       return F.NIL;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1882,7 +2031,7 @@ public final class NumberTheory {
             F.mapRange(0, bezoutCoefficients.length, i -> F.ZZ(bezoutCoefficients[i]));
         return F.list(F.ZZ(gcd), subList);
       } catch (ArithmeticException ae) {
-        LOGGER.debug("ExtendedGCD.evaluate() failed", ae);
+        Errors.printMessage(S.ExtendedGCD, ae, engine);
       }
       return F.NIL;
     }
@@ -1995,6 +2144,12 @@ public final class NumberTheory {
       return results;
     }
 
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
@@ -2102,6 +2257,12 @@ public final class NumberTheory {
         }
       }
       return F.NIL;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
     }
 
     @Override
@@ -2324,6 +2485,12 @@ public final class NumberTheory {
       return ARGS_2_3;
     }
 
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
     @Override
     public void setUp(ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -2438,6 +2605,12 @@ public final class NumberTheory {
       return ARGS_1_1;
     }
 
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
+    }
+
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -2527,6 +2700,12 @@ public final class NumberTheory {
         }
       }
       return F.NIL;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
     }
 
     @Override
@@ -2658,6 +2837,12 @@ public final class NumberTheory {
       return ARGS_1_2;
     }
 
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
+    }
+
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -2683,6 +2868,11 @@ public final class NumberTheory {
       return ARGS_1_2;
     }
 
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
@@ -2737,6 +2927,12 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -2817,7 +3013,7 @@ public final class NumberTheory {
           } catch (ArithmeticException aex) {
             // java.lang.ArithmeticException: Inverse root of zero
             // at org.apfloat.ApfloatMath.inverseRoot(ApfloatMath.java:280)
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), aex);
+            Errors.printMessage(S.FromContinuedFraction, aex, engine);
           }
         }
       }
@@ -2892,6 +3088,12 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
     }
 
     @Override
@@ -2974,6 +3176,12 @@ public final class NumberTheory {
       return ARGS_1_1;
     }
 
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -3022,6 +3230,12 @@ public final class NumberTheory {
         // integer to large?
       }
       return F.NIL;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -3145,6 +3359,12 @@ public final class NumberTheory {
       return F.NIL;
     }
 
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
+    }
+
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
@@ -3183,6 +3403,12 @@ public final class NumberTheory {
         }
       }
       return F.NIL;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -3292,6 +3518,12 @@ public final class NumberTheory {
       return ARGS_1_2;
     }
 
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -3350,6 +3582,12 @@ public final class NumberTheory {
       return F.NIL;
     }
 
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
@@ -3402,6 +3640,12 @@ public final class NumberTheory {
         }
       }
       return F.NIL;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 
@@ -3465,6 +3709,12 @@ public final class NumberTheory {
       return F.NIL;
     }
 
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
@@ -3503,6 +3753,12 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
     }
 
     @Override
@@ -3560,6 +3816,12 @@ public final class NumberTheory {
         }
       }
       return F.NIL;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -3688,6 +3950,12 @@ public final class NumberTheory {
       return ARGS_0_INFINITY;
     }
 
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
+    }
+
     @Override
     public void setUp(ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -3749,6 +4017,12 @@ public final class NumberTheory {
         }
       }
       return F.NIL;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -3839,6 +4113,12 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
     }
   }
 
@@ -3979,6 +4259,12 @@ public final class NumberTheory {
         }
       }
       return F.NIL;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
     }
 
     @Override
@@ -4144,6 +4430,12 @@ public final class NumberTheory {
           .evaluate(Times(F.DivisorSigma(C1, k2), F.PartitionsQ(Plus(Times(F.CN2, k2), n))));
     }
 
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
+    }
+
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
@@ -4171,6 +4463,12 @@ public final class NumberTheory {
         }
       }
       return F.NIL;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 
@@ -4215,6 +4513,11 @@ public final class NumberTheory {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
   }
 
   /**
@@ -4256,8 +4559,8 @@ public final class NumberTheory {
         }
         try {
           return F.ZZ(Primality.prime(nthPrime));
-        } catch (RuntimeException ae) {
-          LOGGER.debug("Prime.evaluate() failed", ae);
+        } catch (RuntimeException rex) {
+          Errors.printMessage(S.Prime, rex, engine);
         }
       }
       return F.NIL;
@@ -4266,6 +4569,11 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -4325,6 +4633,12 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -4405,6 +4719,12 @@ public final class NumberTheory {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
   }
 
   /**
@@ -4455,6 +4775,12 @@ public final class NumberTheory {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
   }
 
   private static class PrimitiveRoot extends AbstractFunctionEvaluator {
@@ -4474,7 +4800,7 @@ public final class NumberTheory {
         } catch (LimitException le) {
           throw le;
         } catch (RuntimeException rex) {
-          LOGGER.debug("PrimitiveRoot.evaluate() failed", rex);
+          Errors.printMessage(S.PrimitiveRoot, rex, engine);
         }
       }
       return F.NIL;
@@ -4483,6 +4809,12 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
     }
 
     @Override
@@ -4533,10 +4865,16 @@ public final class NumberTheory {
         } catch (LimitException le) {
           throw le;
         } catch (RuntimeException rex) {
-          LOGGER.debug("PrimitiveRootList.evaluateArg1() failed", rex);
+          Errors.printMessage(S.PrimitiveRootList, rex, engine);
         }
       }
       return F.NIL;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
     }
 
     @Override
@@ -4556,6 +4894,12 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
     }
 
     @Override
@@ -4653,7 +4997,7 @@ public final class NumberTheory {
         return rationalize(arg1, epsilon, useConvergenceMethod).orElse(arg1);
       } catch (Exception ex) {
         // ex.printStackTrace();
-        LOGGER.debug("Rationalize.evaluate() failed", ex);
+        Errors.printMessage(S.Rationalize, ex, engine);
       }
 
       return F.NIL;
@@ -4662,6 +5006,12 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
     }
 
     @Override
@@ -4746,8 +5096,9 @@ public final class NumberTheory {
         }
       }
       if (!eVar.isSize(1)) {
-        LOGGER.log(engine.getLogLevel(),
-            "{}: only implemented for univariate polynomials at position 1", ast.topHead());
+        // `1` currently not supported in `2`.
+        Errors.printMessage(S.SquareFreeQ, "unsupported", F.List(F.CEmptyList, S.SquareFreeQ),
+            engine);
         return F.NIL;
       }
       try {
@@ -4758,9 +5109,9 @@ public final class NumberTheory {
           return F.booleSymbol(isSquarefreeWithOption(ast, expr, varList, engine));
         }
         return F.booleSymbol(isSquarefree(expr, varList));
-      } catch (RuntimeException e) {
+      } catch (RuntimeException rex) {
         // JAS may throw RuntimeExceptions
-        LOGGER.debug("SquareFreeQ.evaluate() failed", e);
+        Errors.printMessage(S.SquareFreeQ, rex, engine);
       }
       return F.NIL;
     }
@@ -4941,6 +5292,12 @@ public final class NumberTheory {
       return ARGS_2_2;
     }
 
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
@@ -5017,7 +5374,7 @@ public final class NumberTheory {
           }
         }
       } catch (MathRuntimeException mre) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
+        Errors.printMessage(S.StirlingS2, mre, engine);
       }
       return F.NIL;
     }
@@ -5025,6 +5382,12 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -5112,7 +5475,7 @@ public final class NumberTheory {
           long n = ((IInteger) arg1).toLong();
           return subFactorial(n);
         } catch (ArithmeticException ae) {
-          LOGGER.log(engine.getLogLevel(), "Subfactorial: argument n is to big.");
+          Errors.printMessage(S.Subfactorial, ae, engine);
         }
         return F.NIL;
       }
@@ -5133,6 +5496,11 @@ public final class NumberTheory {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
