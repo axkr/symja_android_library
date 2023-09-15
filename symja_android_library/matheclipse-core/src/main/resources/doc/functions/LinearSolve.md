@@ -4,7 +4,7 @@
 LinearSolve(matrix, right)
 ```
 
-> solves the linear equation system 'matrix . x = right' and returns one corresponding solution `x`.
+> solves the linear equation system `matrix . x = right` and returns one corresponding solution `x`.
 
 See
 * [Wikipedia - System of linear equations - Solving a linear system](https://en.wikipedia.org/wiki/System_of_linear_equations#Solving_a_linear_system)
