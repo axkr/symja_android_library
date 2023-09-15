@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.function.Function;
 import org.hipparchus.fraction.BigFraction;
-import org.hipparchus.util.FastMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
@@ -250,16 +249,7 @@ public class BigFractionSym extends AbstractFractionSym {
 
   @Override
   public double doubleValue() {
-    // Thanks to org.hipparchus.fraction.BigFraction#doubleValue
-    BigInteger numerator = fFraction.getNumerator();
-    BigInteger denominator = fFraction.getDenominator();
-    double result = numerator.doubleValue() / denominator.doubleValue();
-    if (Double.isInfinite(result) || Double.isNaN(result)) {
-      int shift = FastMath.max(numerator.bitLength(),denominator.bitLength()) - FastMath.getExponent(Double.MAX_VALUE);
-      result = numerator.shiftRight(shift).doubleValue() / denominator.shiftRight(shift).doubleValue();
-    }
-
-    return result;
+    return fFraction.doubleValue();
   }
 
   @Override
