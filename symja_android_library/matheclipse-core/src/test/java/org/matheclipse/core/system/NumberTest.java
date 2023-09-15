@@ -105,6 +105,7 @@ public class NumberTest extends TestCase {
     IExpr result = exprEvaluator.eval(input);
     assertTrue(result instanceof BigFractionSym);
     assertEquals(result.evalf(), 36.027247984128934, 1E-8);
+    assertEquals(((BigFractionSym) result).complexNumValue().getRealPart(), 36.027247984128934, 1E-8);
   }
 
 }

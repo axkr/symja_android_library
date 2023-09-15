@@ -199,9 +199,10 @@ public class BigFractionSym extends AbstractFractionSym {
   @Override
   public ComplexNum complexNumValue() {
     // double precision complex number
-    double nr = toBigNumerator().doubleValue();
-    double dr = toBigDenominator().doubleValue();
-    return ComplexNum.valueOf(nr / dr);
+    // double nr = toBigNumerator().doubleValue();
+    // double dr = toBigDenominator().doubleValue();
+    double real = this.doubleValue();
+    return ComplexNum.valueOf(real);
   }
 
   /** {@inheritDoc} */
