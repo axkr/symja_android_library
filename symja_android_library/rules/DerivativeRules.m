@@ -123,6 +123,7 @@ Derivative(1,0)[Power] := #^(-1+#2)*#2 &,
 Derivative(0,1)[Power] := Log(#)*#^#2  &,
 Derivative(1,1)[Power] := #^(-1+#2)+Log(#)*#^(-1+#2)*#2 &,
 Derivative(0,1)[PolyLog] := PolyLog(-1+#2,#)*(#^(-1)) &,
+Derivative(0,0,1)[PolyLog] := PolyLog(-1+#,#2,#3) / #3 &,
 Derivative(0,1)[ProductLog] := ProductLog(#, #2)/#2 * (1+ProductLog(#, #2)) &,
 
 Derivative(0,1)[BernoulliB] := BernoulliB(-1+#, #2)*# &,

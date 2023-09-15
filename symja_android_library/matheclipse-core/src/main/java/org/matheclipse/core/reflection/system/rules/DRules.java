@@ -13,7 +13,7 @@ public class DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 76 };
+  final public static int[] SIZES = { 0, 77 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -233,6 +233,9 @@ public class DRules {
     // D(PolyLog(f_,g_),x_?NotListQ):=(D(g,x)*PolyLog(-1+f,g))/g+D(f,x)*Derivative(1,0)[PolyLog][f,g]
     ISetDelayed(D(PolyLog(f_,g_),PatternTest(x_,NotListQ)),
       Plus(Times(Power(g,CN1),D(g,x),PolyLog(Plus(CN1,f),g)),Times(D(f,x),$($(Derivative(C1,C0),PolyLog),f,g)))),
+    // D(PolyLog(f_,g_,h_),x_?NotListQ):=(D(h,x)*PolyLog(-1+f,g,h))/h+D(g,x)*Derivative(0,1,0)[PolyLog][f,g,h]+D(f,x)*Derivative(1,0,0)[PolyLog][f,g,h]
+    ISetDelayed(D(PolyLog(f_,g_,h_),PatternTest(x_,NotListQ)),
+      Plus(Times(Power(h,CN1),D(h,x),PolyLog(Plus(CN1,f),g,h)),Times(D(g,x),$($(Derivative(C0,C1,C0),PolyLog),f,g,h)),Times(D(f,x),$($(Derivative(C1,C0,C0),PolyLog),f,g,h)))),
     // D(ProductLog(f_),x_?NotListQ):=(D(f,x)*ProductLog(f))/(f*(1+ProductLog(f)))
     ISetDelayed(D(ProductLog(f_),PatternTest(x_,NotListQ)),
       Times(D(f,x),ProductLog(f),Power(Times(f,Plus(C1,ProductLog(f))),CN1))),

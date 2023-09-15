@@ -4664,6 +4664,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "D(Sin(#1),{#1,-1+n})");
     check("D(f(x), {x, n})", //
         "D(f(x),{x,n})");
+
+    check("D(PolyLog(n,z),z)", //
+        "PolyLog(-1+n,z)/z");
+    check("D(PolyLog(n,p,z),z)", //
+        "PolyLog(-1+n,p,z)/z");
+
     check("D(Polygamma(x),{x,n})", //
         "PolyGamma(n,x)");
 
@@ -6741,6 +6747,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testEulerE() {
+    check("EulerE(n,1/2)", //
+        "EulerE(n)/2^n");
+    check("Table(EulerE(n,z), {n, 0, 15})", //
+        "{1,-1/2+z,-z+z^2,1/4-3/2*z^2+z^3,z-2*z^3+z^4,-1/2+5/2*z^2-5/2*z^4+z^5,-3*z+5*z^3-\n" //
+            + "3*z^5+z^6,17/8-21/2*z^2+35/4*z^4-7/2*z^6+z^7,17*z-28*z^3+14*z^5-4*z^7+z^8,-31/2+\n" //
+            + "153/2*z^2-63*z^4+21*z^6-9/2*z^8+z^9,-155*z+255*z^3-126*z^5+30*z^7-5*z^9+z^10,691/\n" //
+            + "4-1705/2*z^2+2805/4*z^4-231*z^6+165/4*z^8-11/2*z^10+z^11,2073*z-3410*z^3+1683*z^\n" //
+            + "5-396*z^7+55*z^9-6*z^11+z^12,-5461/2+26949/2*z^2-22165/2*z^4+7293/2*z^6-1287/2*z^\n" //
+            + "8+143/2*z^10-13/2*z^12+z^13,-38227*z+62881*z^3-31031*z^5+7293*z^7-1001*z^9+91*z^\n" //
+            + "11-7*z^13+z^14,929569/16-573405/2*z^2+943215/4*z^4-155155/2*z^6+109395/8*z^8-\n" //
+            + "3003/2*z^10+455/4*z^12-15/2*z^14+z^15}");
+    check("EulerE(10,z)", //
+        "-155*z+255*z^3-126*z^5+30*z^7-5*z^9+z^10");
     check("Table(EulerE(k), {k, 0, 15})", //
         "{1,0,-1,0,5,0,-61,0,1385,0,-50521,0,2702765,0,-199360981,0}");
   }
@@ -17855,6 +17874,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testPolyLog() {
+
+    check("PolyLog(n,1,z)", //
+        "PolyLog(1+n,z)");
+    check("PolyLog(0, 1, z)", //
+        "-Log(1-z)");
+
     check("PolyLog(-4,z)", //
         "(z+11*z^2+11*z^3+z^4)/(1-z)^5");
     check("PolyLog(-2147483648,2.718281828459045)", //

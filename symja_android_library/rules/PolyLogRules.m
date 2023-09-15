@@ -12,5 +12,7 @@ PolyLog(3,1/2)=(1/24)*(-2*Pi^2*Log(2)+4*Log(2)^3+21*Zeta(3)),
 PolyLog(i_Integer, z_) := Module({n=(-i)}, Sum(Sum((-1)^(k + 1)*Binomial(n+1, k-1)*(m-k+1)^n, {k, 1, m}) * z^m, {m, 1, n}) / (1-z)^(n+1) /; i<0 ),
 
 PolyLog(Undefined, y_):=Undefined,
-PolyLog(x_, Undefined):=Undefined
+PolyLog(x_, Undefined):=Undefined,
+
+PolyLog(-1,2,1/2)=Log(2)
 }

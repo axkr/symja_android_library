@@ -23,8 +23,6 @@ import static org.matheclipse.core.expression.F.Zeta;
 import static org.matheclipse.core.expression.S.Pi;
 import java.math.BigDecimal;
 import java.util.function.DoubleUnaryOperator;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -54,6 +52,7 @@ import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -70,7 +69,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ParserConfig;
 
 public class SpecialFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -155,13 +153,13 @@ public class SpecialFunctions {
             // }
           }
         } catch (ThrowException te) {
-          LOGGER.debug("Beta.evaluate() failed", te);
+          Errors.printMessage(S.Beta, te, engine);
           return te.getValue();
         } catch (ValidateException ve) {
           return Errors.printMessage(ast.topHead(), ve, engine);
           // LOGGER.debug("Beta.evaluate() failed", ve);
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          Errors.printMessage(S.Beta, rex, engine);
         }
         return F.NIL;
       }
@@ -208,13 +206,13 @@ public class SpecialFunctions {
           return F.C0;
         }
       } catch (ThrowException te) {
-        LOGGER.debug("Beta.evaluate() failed", te);
+        Errors.printMessage(S.Beta, te, engine);
         return te.getValue();
       } catch (ValidateException ve) {
         return Errors.printMessage(ast.topHead(), ve, engine);
         // LOGGER.debug("Beta.evaluate() failed", ve);
       } catch (RuntimeException rex) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        Errors.printMessage(S.Beta, rex, engine);
       }
       return F.NIL;
     }
@@ -222,6 +220,11 @@ public class SpecialFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -313,7 +316,7 @@ public class SpecialFunctions {
           return F.Times(F.Power(z, a), sum);
         }
       } catch (RuntimeException rex) {
-        LOGGER.debug("BetaRegularized.betaRegularized3() failed", rex);
+        Errors.printMessage(S.BetaRegularized, rex, engine);
       }
       return F.NIL;
     }
@@ -353,9 +356,14 @@ public class SpecialFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        LOGGER.debug("BetaRegularized.betaRegularized4() failed", rex);
+        Errors.printMessage(S.BetaRegularized, rex, engine);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -519,6 +527,11 @@ public class SpecialFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -590,6 +603,11 @@ public class SpecialFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -629,9 +647,9 @@ public class SpecialFunctions {
           Complex zc = z.evalfc();
           return F.complexNum(GammaJS.erfi(zc));
         } catch (ValidateException ve) {
-          LOGGER.debug("Erfi.evaluate() failed", ve);
+          Errors.printMessage(S.Erfi, ve, engine);
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          Errors.printMessage(S.Erfi, rex, engine);
           return F.NIL;
         }
       }
@@ -653,6 +671,11 @@ public class SpecialFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -710,12 +733,12 @@ public class SpecialFunctions {
             return F.num(GammaJS.gammaRegularized(aDouble, z1Double));
           }
         } catch (ThrowException te) {
-          LOGGER.debug("GammaRegularized.gammaRegularized2() failed", te);
+          Errors.printMessage(S.GammaRegularized, te, engine);
           return te.getValue();
         } catch (ValidateException ve) {
           return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          Errors.printMessage(S.GammaRegularized, rex, engine);
           return F.NIL;
         }
       }
@@ -756,12 +779,12 @@ public class SpecialFunctions {
             return F.num(GammaJS.gammaRegularized(aDouble, z1Double, z2Double));
           }
         } catch (ThrowException te) {
-          LOGGER.debug("GammaRegularized.gammaRegularzed3() failed", te);
+          Errors.printMessage(S.GammaRegularized, te, engine);
           return te.getValue();
         } catch (ValidateException ve) {
           return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          Errors.printMessage(S.GammaRegularized, rex, engine);
           return F.NIL;
         }
       }
@@ -780,6 +803,11 @@ public class SpecialFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -802,11 +830,17 @@ public class SpecialFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
+
   private static class HurwitzLerchPhi extends AbstractFunctionEvaluator {
 
 
@@ -828,6 +862,11 @@ public class SpecialFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
     }
 
     @Override
@@ -933,10 +972,10 @@ public class SpecialFunctions {
         } catch (ValidateException ve) {
           return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (ThrowException te) {
-          LOGGER.debug("HurwitzZeta.evaluate() failed", te);
+          Errors.printMessage(S.HurwitzZeta, te, engine);
           return te.getValue();
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          Errors.printMessage(S.HurwitzZeta, rex, engine);
         }
       }
       if (engine.isArbitraryMode()) {
@@ -953,6 +992,11 @@ public class SpecialFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1012,6 +1056,11 @@ public class SpecialFunctions {
         }
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1078,6 +1127,11 @@ public class SpecialFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -1135,6 +1189,11 @@ public class SpecialFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -1170,6 +1229,11 @@ public class SpecialFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1212,6 +1276,11 @@ public class SpecialFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1287,6 +1356,11 @@ public class SpecialFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -1328,8 +1402,9 @@ public class SpecialFunctions {
                         switch (q) {
                           case 0:
                             // 0,0,0,0
-                            LOGGER.log(engine.getLogLevel(), "MeijerG: {} not available.", ast);
-                            return F.NIL;
+                            // `1` currently not supported in `2`.
+                            return Errors.printMessage(S.MeijerG, "unsupported",
+                                F.List(F.CEmptyList, S.MeijerG), engine);
                         }
                         break;
                       case 1:
@@ -1478,6 +1553,11 @@ public class SpecialFunctions {
     // }
 
     @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -1619,10 +1699,10 @@ public class SpecialFunctions {
           } catch (ValidateException ve) {
             return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (ThrowException te) {
-            LOGGER.debug("PolyGamma.evaluate() failed", te);
+            Errors.printMessage(S.PolyGamma, te, engine);
             return te.getValue();
           } catch (RuntimeException rex) {
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+            Errors.printMessage(S.PolyGamma, rex, engine);
           }
         }
         if (arg1.isZero() && engine.isArbitraryMode()) {
@@ -1643,6 +1723,11 @@ public class SpecialFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -1660,6 +1745,14 @@ public class SpecialFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr x = ast.arg2();
+      if (ast.isAST3()) {
+        IExpr z = ast.arg3();
+        IExpr temp = polyLogSymbolic(n, x, z);
+        if (temp.isPresent()) {
+          return temp;
+        }
+        return F.NIL;
+      }
       IExpr temp = polyLogSymbolic(n, x);
       if (temp.isPresent()) {
         return temp;
@@ -1704,11 +1797,11 @@ public class SpecialFunctions {
       return F.NIL;
     }
 
-    private IExpr polyLogSymbolic(IExpr n, IExpr x) {
-      if (x.isZero()) {
+    private IExpr polyLogSymbolic(IExpr n, IExpr p) {
+      if (p.isZero()) {
         return F.C0;
       }
-      if (x.isOne()) {
+      if (p.isOne()) {
         if (n.isOne()) {
           return F.CInfinity;
         }
@@ -1723,7 +1816,7 @@ public class SpecialFunctions {
             return F.CComplexInfinity;
           }
         }
-      } else if (x.isMinusOne()) {
+      } else if (p.isMinusOne()) {
         // (2^(1-arg1)-1)*Zeta(arg1)
         return Times(Plus(CN1, Power(C2, Plus(C1, Negate(n)))), Zeta(n));
       }
@@ -1731,13 +1824,31 @@ public class SpecialFunctions {
       if (n.isReal()) {
         if (n.isZero()) {
           // arg2/(1 - arg2)
-          return Times(x, Power(Plus(C1, Negate(x)), -1));
+          return Times(p, Power(Plus(C1, Negate(p)), -1));
         } else if (n.isOne()) {
           // -Log(1 - arg2))
-          return Negate(Log(Plus(C1, Negate(x))));
+          return Negate(Log(Plus(C1, Negate(p))));
         } else if (n.isMinusOne()) {
           // arg2/(arg2 - 1)^2
-          return Times(x, Power(Plus(C1, Negate(x)), -2));
+          return Times(p, Power(Plus(C1, Negate(p)), -2));
+        }
+      }
+      return F.NIL;
+    }
+
+    private IExpr polyLogSymbolic(IExpr n, IExpr p, IExpr z) {
+      if (z.isZero()) {
+        return F.C0;
+      }
+      if (p.isOne()) {
+        return F.PolyLog(n.inc(), z);
+      }
+
+      if (n.isReal()) {
+        if (n.isZero()) {
+          // (-Log[1-z])^p/Gamma[p+1]
+          return F.Times(F.Power(F.Gamma(F.Plus(p, F.C1)), F.CN1),
+              F.Power(F.Negate(F.Log(F.Subtract(F.C1, z))), p));
         }
       }
       return F.NIL;
@@ -1745,7 +1856,12 @@ public class SpecialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_3;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1811,6 +1927,11 @@ public class SpecialFunctions {
       }
       FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
       return F.complexNum(h.w(arg1, 0));
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1914,6 +2035,11 @@ public class SpecialFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -1975,7 +2101,7 @@ public class SpecialFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        LOGGER.debug("StruveH.evaluate() failed", rex);
+        Errors.printMessage(S.StruveH, rex, engine);
       }
       return F.NIL;
     }
@@ -1983,6 +2109,11 @@ public class SpecialFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -2047,7 +2178,7 @@ public class SpecialFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        LOGGER.debug("StruveL.evaluate() failed", rex);
+        Errors.printMessage(S.StruveL, rex, engine);
       }
       return F.NIL;
     }
@@ -2055,6 +2186,11 @@ public class SpecialFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -2191,6 +2327,11 @@ public class SpecialFunctions {
         return Times(Plus(CN1, Sqr(s)), Zeta(s));
       }
       return NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override

@@ -133,7 +133,9 @@
   D(CarlsonRF(f_, g_, h_),x_?NotListQ):= (-(1/6))*CarlsonRD(g,h,f)*D(f,x) - (1/6)*CarlsonRD(f,h,g)*D(g,x) - (1/6)*CarlsonRD(f,g,h)*D(h,x),
   D(CarlsonRG(f_, g_, h_),x_?NotListQ):= (1/12)*(3*CarlsonRF(f,g,h) - CarlsonRD(g,h,f)*f)*D(f,x) + (1/12)*(3*CarlsonRF(f,g,h) - CarlsonRD(f,h,g)*g)*D(g,x) + (1/12)*(3*CarlsonRF(f,g,h) - CarlsonRD(f,g,h)*h)*D(h,x), 
    
-  D(PolyLog(f_, g_),x_?NotListQ):= (PolyLog(-1 + f, g)*D(g,x))/g + D(f,x)*Derivative(1, 0)[PolyLog][f, g],
+  D(PolyLog(f_, g_),x_?NotListQ) := (PolyLog(-1 + f, g)*D(g,x))/g + D(f,x)*Derivative(1, 0)[PolyLog][f, g],
+  D(PolyLog(f_, g_, h_),x_?NotListQ) := (PolyLog(-1+f,g,h)*D(h,x))/h + D(g,x)*Derivative(0,1,0)[PolyLog][f,g,h] + D(f,x)*Derivative(1,0,0)[PolyLog][f,g,h],
+  
   D(ProductLog(f_),x_?NotListQ) := (ProductLog[f]*D(f, x))/(f*(1 + ProductLog[f])),
   D(ProductLog(f_, g_),x_?NotListQ):= ProductLog(f,g)*D(g,x)/(g*(1+ProductLog(f,g)))+D(f,x)*Derivative(1,0)[ProductLog][f,g],
   

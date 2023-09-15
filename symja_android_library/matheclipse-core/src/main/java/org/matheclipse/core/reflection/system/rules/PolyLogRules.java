@@ -13,7 +13,7 @@ public class PolyLogRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 9, 1 };
+  final public static int[] SIZES = { 10, 1 };
 
   final public static IAST RULES = List(
     IInit(PolyLog, SIZES),
@@ -52,6 +52,9 @@ public class PolyLogRules {
       Undefined),
     // PolyLog(x_,Undefined):=Undefined
     ISetDelayed(PolyLog(x_,Undefined),
-      Undefined)
+      Undefined),
+    // PolyLog(-1,2,1/2)=Log(2)
+    ISet(PolyLog(CN1,C2,C1D2),
+      Log(C2))
   );
 }
