@@ -3,10 +3,8 @@ package org.matheclipse.core.system;
 import junit.framework.TestCase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matheclipse.core.expression.AbstractFractionSym;
-import org.matheclipse.core.expression.ApfloatNum;
-import org.matheclipse.core.expression.ComplexNum;
-import org.matheclipse.core.expression.F;
+import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.expression.*;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -98,6 +96,15 @@ public class NumberTest extends TestCase {
       .divide(ApfloatNum.valueOf("0.01", precision));
     IInteger round = num.roundExpr();
     assertEquals(round.toString(), "330");
+  }
+
+  public void testFractionSymToDouble() {
+    // (102/100)^181
+    String input = "(102/100)^181";
+    ExprEvaluator exprEvaluator = new ExprEvaluator();
+    IExpr result = exprEvaluator.eval(input);
+    assertTrue(result instanceof BigFractionSym);
+    assertEquals(result.evalf(), 36.027247984128934, 1E-8);
   }
 
 }
