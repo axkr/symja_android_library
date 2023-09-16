@@ -2597,7 +2597,7 @@ public final class Arithmetic {
         if (expr.isInexactNumber()) {
           return expr;
         }
-        if (expr.isList()) {
+        if (expr.isListOrAssociation() || expr.isRuleAST()) {
           return ((IAST) expr).mapThread(F.N(F.Slot1), 1);
         }
         engine.setNumericMode(true, numericPrecision, oldSignificantFigures);
@@ -2619,7 +2619,7 @@ public final class Arithmetic {
       if (expr.isInexactNumber()) {
         return expr;
       }
-      if (expr.isList()) {
+      if (expr.isListOrAssociation() || expr.isRuleAST()) {
         return ((IAST) expr).mapThread(F.N(F.Slot1, arg2), 1);
       }
       final int maxSize =
