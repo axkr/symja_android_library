@@ -13,7 +13,7 @@ public class HypergeometricPFQRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 5 };
+  final public static int[] SIZES = { 0, 6 };
 
   final public static IAST RULES = List(
     IInit(HypergeometricPFQ, SIZES),
@@ -31,6 +31,9 @@ public class HypergeometricPFQRules {
       HypergeometricPFQ(list(a),list(c),z)),
     // HypergeometricPFQ({1/2,b_},{3/2,c_},z_):=b/(-1+2*b)*(Sqrt(Pi/z)*Erfi(Sqrt(z))-(Gamma(b)-Gamma(b,-z))/(-z)^b)/;PossibleZeroQ(1+b-c)
     ISetDelayed(HypergeometricPFQ(list(C1D2,b_),list(QQ(3L,2L),c_),z_),
-      Condition(Times(b,Power(Plus(CN1,Times(C2,b)),CN1),Plus(Times(Sqrt(Times(Pi,Power(z,CN1))),Erfi(Sqrt(z))),Times(CN1,Power(Power(Negate(z),b),CN1),Subtract(Gamma(b),Gamma(b,Negate(z)))))),PossibleZeroQ(Plus(C1,b,Negate(c)))))
+      Condition(Times(b,Power(Plus(CN1,Times(C2,b)),CN1),Plus(Times(Sqrt(Times(Pi,Power(z,CN1))),Erfi(Sqrt(z))),Times(CN1,Power(Power(Negate(z),b),CN1),Subtract(Gamma(b),Gamma(b,Negate(z)))))),PossibleZeroQ(Plus(C1,b,Negate(c))))),
+    // HypergeometricPFQ({1,1,1},{2,2},z_):=PolyLog(2,z)/z
+    ISetDelayed(HypergeometricPFQ(list(C1,C1,C1),list(C2,C2),z_),
+      Times(Power(z,CN1),PolyLog(C2,z)))
   );
 }

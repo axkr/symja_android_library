@@ -294,6 +294,12 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "I*1/3*Pi");
   }
 
+  public void testFunctionExpandPolyLog() {
+    check("FunctionExpand( PolyLog(2, E^( 4/5*Pi*I )) )", //
+        "Pi^2/150+1/25*(E^(I*4/5*Pi)*PolyGamma(1,1/5)+PolyGamma(1,2/5)/E^(I*2/5*Pi)+E^(\n" //
+            + "I*2/5*Pi)*PolyGamma(1,3/5)+PolyGamma(1,4/5)/E^(I*4/5*Pi))");
+  }
+
   public void testFunctionExpandSqrtDenest() {
     check("FunctionExpand( Sqrt(5+4*Sqrt(9)) )", //
         "Sqrt(17)");
