@@ -2836,6 +2836,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testClebschGordan() {
+    // https://en.wikipedia.org/wiki/Table_of_Clebsch%E2%80%93Gordan_coefficients
+    check("ClebschGordan({3/2, -3/2}, {3/2, 3/2}, {1, 0})", //
+        "3/2*1/Sqrt(5)");
+
+
     // print message "is not physical
     check("ClebschGordan({2, 1}, {2, 4}, {4, 2})", //
         "0");
@@ -23777,6 +23782,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testThreeJSymbol() {
+    check("ThreeJSymbol({3/2, -3/2}, {3/2, 3/2}, {1, 0})", //
+        "Sqrt(3/5)/2");
+
     check("ThreeJSymbol({5, 0}, {4, 0}, {1, 0})", //
         "-Sqrt(5/11)/3");
     check("ThreeJSymbol({6, 0}, {4, 0}, {2, 0})", //
