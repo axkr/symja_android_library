@@ -257,6 +257,7 @@ public class Errors {
       "perm", "`1` is not a valid permutation.", //
       "perm2", "Entry `1` in `2` is out of bounds for a permutation of length `3`.", //
       "permlist", "Invalid permutation list `1`.", //
+      "phy", "`1` is not physical.", //
       "pilist",
       "The arguments to `1` must be two lists of integers of identical length, with the second list only containing positive integers.", //
       "plen", "`1` and `2` should have the same length.", //

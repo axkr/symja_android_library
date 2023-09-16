@@ -2835,6 +2835,32 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{Orderless}");
   }
 
+  public void testClebschGordan() {
+    // print message "is not physical
+    check("ClebschGordan({2, 1}, {2, 4}, {4, 2})", //
+        "0");
+
+    check("ClebschGordan({5, 0}, {4, 0}, {1, 0})", //
+        "Sqrt(5/33)");
+    check("ClebschGordan({1/2, -1/2}, {1/2, -1/2}, {1, -1})", //
+        "1");
+    check("ClebschGordan({1/2, -1/2}, {1, 0}, {1/2, -1/2})", //
+        "-1/Sqrt(3)");
+
+    check("With({j1 = 3, j2 = 2},\n" //
+        + "  Table(Sum(\n" //
+        + "    If(Abs(m1 + m2) > j || Abs(m1 + m2) > ji, 0, \n" //
+        + "     ClebschGordan({j1, m1}, {j2, m2}, {j, \n" //
+        + "        m1 + m2}) ClebschGordan({j1, m1}, {j2, m2}, {ji, \n" //
+        + "        m1 + m2})), {m1, -j1, j1}, {m2, -j2, j2}), {j, Abs(j1 - j2), \n" //
+        + "    j1 + j2}, {ji, Abs(j1 - j2), j1 + j2})) // MatrixForm", //
+        "{{3,0,0,0,0},\n" //
+            + " {0,5,0,0,0},\n" //
+            + " {0,0,7,0,0},\n" //
+            + " {0,0,0,9,0},\n" //
+            + " {0,0,0,0,11}}");
+  }
+
   public void testClip() {
     check("Clip(7.5,{-7.0,7.0})", //
         "7.0");
@@ -23748,6 +23774,27 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{a+d+g,b+e+g,c+f+g}");
     check("Thread(f({a, b, c}, h, {x, y, z}))", //
         "{f(a,h,x),f(b,h,y),f(c,h,z)}");
+  }
+
+  public void testThreeJSymbol() {
+    check("ThreeJSymbol({5, 0}, {4, 0}, {1, 0})", //
+        "-Sqrt(5/11)/3");
+    check("ThreeJSymbol({6, 0}, {4, 0}, {2, 0})", //
+        "Sqrt(5/143)");
+    check("ThreeJSymbol({2, 1}, {2, 2}, {4, -3})", //
+        "-1/(3*Sqrt(2))");
+    check("ThreeJSymbol({1/2, -1/2}, {1/2, -1/2}, {1, 1})", //
+        "-1/Sqrt(3)");
+
+
+    check("{j1, j2} = {3, 2};\n" //
+        + "Table(Sum(\n" //
+        + "  If(Abs(m1 + m2) > j || Abs(m1 + m2) > ji, 0, \n" //
+        + "   Sqrt((2 j + 1) (2 ji + 1))*ThreeJSymbol({j1, m1}, {j2, \n" //
+        + "      m2}, {j, -(m1 + m2)})*ThreeJSymbol({j1, m1}, {j2, \n" //
+        + "      m2}, {ji, -(m1 + m2)})), {m1, -j1, j1}, {m2, -j2, j2}), {j, \n" //
+        + "  Abs(j1 - j2), j1 + j2}, {ji, Abs(j1 - j2), j1 + j2})", //
+        "{{3,0,0,0,0},{0,5,0,0,0},{0,0,7,0,0},{0,0,0,9,0},{0,0,0,0,11}}");
   }
 
   public void testThrough() {
