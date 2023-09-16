@@ -339,6 +339,7 @@ public class Characters {
       CharacterNamesMap.put(NamedCharactersMap.get("ImaginaryJ"), "I");
       CharacterNamesMap.put(NamedCharactersMap.get("Pi"), "Pi");
       CharacterNamesMap.put(NamedCharactersMap.get("Degree"), "Degree");
+      CharacterNamesMap.put(NamedCharactersMap.get("ExponentialE"), "E");
     }
   }
 

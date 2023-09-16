@@ -6868,6 +6868,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testExp() {
+    check("\\[ExponentialE]", //
+        "E");
     check("Exp(10.*^20)", //
         "Overflow()");
 
