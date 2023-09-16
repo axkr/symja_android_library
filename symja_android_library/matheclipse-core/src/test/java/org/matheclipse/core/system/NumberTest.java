@@ -108,4 +108,20 @@ public class NumberTest extends TestCase {
     assertEquals(((BigFractionSym) result).complexNumValue().getRealPart(), 36.027247984128934, 1E-8);
   }
 
+  public void testFractionSymToDouble2() {
+    String input = "N[140^(769/500)]";
+    ExprEvaluator exprEvaluator = new ExprEvaluator();
+    IExpr result = exprEvaluator.eval(input);
+    assertEquals(result.toString(), "1998.688");
+    assertEquals(result.evalf(), 1998.6876036465665, 1E-8);
+  }
+
+  public void testFractionSymToDouble3() {
+    String input = "N[140^(1538/1000)]";
+    ExprEvaluator exprEvaluator = new ExprEvaluator();
+    IExpr result = exprEvaluator.eval(input);
+    assertEquals(result.toString(), "1998.688");
+    assertEquals(result.evalf(), 1998.6876036465665, 1E-8);
+  }
+
 }
