@@ -18,8 +18,6 @@ import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hipparchus.stat.StatUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
@@ -76,7 +74,6 @@ import org.matheclipse.core.visit.VisitorRemoveLevelSpecification;
 import org.matheclipse.core.visit.VisitorReplaceAll;
 
 public final class ListFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://stackoverflow.com/a/4859279/24819">Get the indices of an array after
@@ -195,6 +192,7 @@ public final class ListFunctions {
       S.Delete.setEvaluator(new Delete());
       S.DeleteDuplicates.setEvaluator(new DeleteDuplicates());
       S.DeleteDuplicatesBy.setEvaluator(new DeleteDuplicatesBy());
+      S.DeleteMissing.setEvaluator(new DeleteMissing());
       S.DeleteCases.setEvaluator(new DeleteCases());
       S.Dispatch.setEvaluator(new Dispatch());
       S.DuplicateFreeQ.setEvaluator(new DuplicateFreeQ());
@@ -1321,9 +1319,9 @@ public final class ListFunctions {
         }
       } catch (final ValidateException ve) {
         // see level specification and int number validation
-        return Errors.printMessage(ast.topHead(), ve, engine);
+        return Errors.printMessage(S.Cases, ve, engine);
       } catch (final RuntimeException rex) {
-        LOGGER.debug("Cases.evaluate() failed", rex);
+        return Errors.printMessage(S.Cases, rex, engine);
       }
       return F.NIL;
     }
@@ -2032,7 +2030,7 @@ public final class ListFunctions {
           } catch (final ValidateException ve) {
             return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (final RuntimeException rex) {
-            LOGGER.log(engine.getLogLevel(), "Cannot delete position {} in {}", arg2, arg1, rex);
+            return Errors.printMessage(S.Delete, rex, engine);
           }
         } else if (arg2.isList()) {
           final IAST indxList = (IAST) arg2;
@@ -2073,9 +2071,7 @@ public final class ListFunctions {
         }
         return deletePartRecursive(list, indx, 0);
       } catch (final RuntimeException rex) {
-        LOGGER.log(engine.getLogLevel(), "Cannot delete position {} in {}", listOfIntPositions,
-            list, rex);
-        return F.NIL;
+        return Errors.printMessage(S.Delete, rex, engine);
       }
     }
 
@@ -2324,6 +2320,29 @@ public final class ListFunctions {
     }
   }
 
+  private static final class DeleteMissing extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        if (ast.arg1().isList()) {
+          IAST list = (IAST) ast.arg1();
+          return list.select(x -> !x.isAST(S.Missing));
+        } else if (ast.arg1().isAssociation()) {
+          IAssociation assoc = (IAssociation) ast.arg1();
+          return assoc.select(x -> !x.isAST(S.Missing));
+        }
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
   private static class Dispatch extends AbstractCoreFunctionEvaluator {
 
     @Override
@@ -2468,9 +2487,9 @@ public final class ListFunctions {
           return Errors.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
         }
       } catch (ValidateException ve) {
-        return Errors.printMessage(ast.topHead(), ve, engine);
+        Errors.printMessage(ast.topHead(), ve, engine);
       } catch (IndexOutOfBoundsException e) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
+        Errors.printMessage(S.Drop, e, engine);
       }
       return F.NIL;
     }
@@ -2980,9 +2999,9 @@ public final class ListFunctions {
         // we get the result with this exception
         return frex.getValue();
       } catch (final ValidateException ve) {
-        return Errors.printMessage(ast.topHead(), ve, engine);
+        Errors.printMessage(ast.topHead(), ve, engine);
       } catch (final RuntimeException rex) {
-        LOGGER.debug("FirstCase.evaluate() failed", rex);
+        Errors.printMessage(S.FirstCase, rex, engine);
       }
       return F.NIL;
     }
@@ -3241,7 +3260,7 @@ public final class ListFunctions {
           return evaluateNestList4(ast, engine);
         }
       } catch (RuntimeException rex) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        Errors.printMessage(S.FoldList, rex, engine);
       }
       return F.NIL;
     }
@@ -5138,9 +5157,12 @@ public final class ListFunctions {
       if (ast.size() >= 5) {
         maxResults = engine.evaluate(ast.arg4()).toIntDefault();
         if (maxResults < 0) {
-          LOGGER.log(engine.getLogLevel(),
-              "Position: non-negative integer for maximum number of objects expected.");
-          return F.NIL;
+          if (ast.arg4().isInfinity()) {
+            maxResults = Integer.MAX_VALUE;
+          } else {
+            // Non-negative integer or Infinity expected at position `1` in `2`.
+            return Errors.printMessage(S.Position, "innf", F.List(F.C4, ast), engine);
+          }
         }
       }
       final IExpr arg1 = ast.arg1();
@@ -5468,10 +5490,9 @@ public final class ListFunctions {
         if (size != Integer.MIN_VALUE) {
           return range(size + 1);
         }
-        LOGGER.log(engine.getLogLevel(),
-            "Range: argument {} is greater than Javas Integer.MAX_VALUE or no integer number.",
-            ast.arg1());
-        return F.NIL;
+        // `1`.
+        return Errors.printMessage(S.Range, "error",
+            F.List("argument " + ast.arg1() + " is greater than Javas Integer.MAX_VALUE-3"));
       }
       if (ast.isAST3()) {
         if (ast.arg3().isZero()) {
@@ -5496,9 +5517,9 @@ public final class ListFunctions {
      */
     public static IAST range(int maximumExclusive) {
       if (maximumExclusive > Integer.MAX_VALUE - 3) {
-        LOGGER.log(EvalEngine.get().getLogLevel(),
-            "Range: argument {} is greater than Javas Integer.MAX_VALUE-3", maximumExclusive);
-        return F.NIL;
+        // `1`.
+        return Errors.printMessage(S.Range, "error",
+            F.List("argument " + maximumExclusive + " is greater than Javas Integer.MAX_VALUE-3"));
       }
       return range(1, maximumExclusive);
     }
@@ -5950,7 +5971,7 @@ public final class ListFunctions {
           IASTAppendable result = F.ListAlloc();
           return replaceExpr(ast, arg1, rules, result, maxNumberOfResults, engine);
         } catch (ArithmeticException ae) {
-          LOGGER.log(engine.getLogLevel(), "ReplaceList", ae);
+          return Errors.printMessage(S.ReplaceList, ae, engine);
         }
       }
       return F.NIL;
@@ -6631,7 +6652,7 @@ public final class ListFunctions {
             }
           }
         } catch (IllegalArgumentException iae) {
-          LOGGER.log(engine.getLogLevel(), "{}: {}", ast.topHead(), iae.getMessage());
+          return Errors.printMessage(S.Select, iae, engine);
         }
       }
       return F.NIL;
@@ -7056,7 +7077,7 @@ public final class ListFunctions {
           return generator.table();
         }
       } catch (final ArrayIndexOutOfBoundsException e) {
-        LOGGER.debug("Table.evaluateTable() failed", e);
+        return Errors.printMessage(S.Table, e, EvalEngine.get());
       } catch (final NoEvalException | ClassCastException | ArithmeticException e) {
         // ClassCastException: the iterators are generated only from IASTs
         // ArithmeticException example: division / by zero if step==-1
@@ -7079,7 +7100,7 @@ public final class ListFunctions {
           return generator.tableThrow();
         }
       } catch (final ArrayIndexOutOfBoundsException e) {
-        LOGGER.debug("Table.evaluateTableThrow() failed", e);
+        return Errors.printMessage(S.Table, e, EvalEngine.get());
       } catch (final NoEvalException | ClassCastException | ArithmeticException e) {
         // ClassCastException: the iterators are generated only from IASTs
         // ArithmeticException example: division / by zero if step==-1
@@ -7109,7 +7130,7 @@ public final class ListFunctions {
             new TableFunction(EvalEngine.get(), expr), defaultValue);
         return generator.table();
       } catch (final ArrayIndexOutOfBoundsException e) {
-        LOGGER.debug("Table.evaluateLast() failed", e);
+        return Errors.printMessage(S.Table, e, EvalEngine.get());
       } catch (final NoEvalException | ClassCastException | ArithmeticException e) {
         // ClassCastException: the iterators are generated only from IASTs
         // ArithmeticException example: division / by zero if step==-1
@@ -7383,9 +7404,9 @@ public final class ListFunctions {
           return Errors.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
         }
       } catch (final ValidateException ve) {
-        return Errors.printMessage(ast.topHead(), ve, engine);
+        Errors.printMessage(ast.topHead(), ve, engine);
       } catch (final RuntimeException rex) {
-        LOGGER.debug("Take.evaluate() failed", rex);
+        Errors.printMessage(S.Take, rex, EvalEngine.get());
       }
       return F.NIL;
     }
@@ -7579,7 +7600,7 @@ public final class ListFunctions {
             }
           }
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return Errors.printMessage(S.TakeLargest, rex, EvalEngine.get());
         }
       }
       return F.NIL;
@@ -7638,7 +7659,7 @@ public final class ListFunctions {
             }
           }
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return Errors.printMessage(S.TakeLargestBy, rex, EvalEngine.get());
         }
       }
       return F.NIL;
@@ -7687,7 +7708,7 @@ public final class ListFunctions {
             }
           }
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return Errors.printMessage(S.TakeSmallest, rex, EvalEngine.get());
         }
       }
       return F.NIL;
@@ -7745,7 +7766,7 @@ public final class ListFunctions {
             }
           }
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return Errors.printMessage(S.TakeSmallestBy, rex, EvalEngine.get());
         }
       }
       return F.NIL;
@@ -7903,7 +7924,7 @@ public final class ListFunctions {
             }
             return engine.evaluate(temp);
           } catch (RuntimeException rex) {
-            LOGGER.debug("Total.evaluate() failed", rex);
+            Errors.printMessage(S.Total, rex, EvalEngine.get());
             return F.NIL;
           }
         }

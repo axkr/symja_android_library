@@ -10,7 +10,6 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -417,14 +416,14 @@ public class Errors {
   }
 
   /**
-   * Print the hipparchus {@link MathRuntimeException#getMessage()} into the default error log.
+   * Print the exception into the default error log.
    * 
    * @param symbol
    * @param mex
    * @param engine
    * @return
    */
-  public static IExpr printMessage(ISymbol symbol, final Throwable exception, EvalEngine engine) {
+  public static IAST printMessage(ISymbol symbol, final Throwable exception, EvalEngine engine) {
     if (Config.SHOW_STACKTRACE) {
       exception.printStackTrace();
     }

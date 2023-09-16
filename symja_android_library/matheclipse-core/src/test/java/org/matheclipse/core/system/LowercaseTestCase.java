@@ -5146,6 +5146,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{a,y},{c,z}}");
   }
 
+  public void testDeleteMissing() {
+    check("DeleteMissing({a, b, Missing(), c, d, Missing()})", //
+        "{a,b,c,d}");
+    check("DeleteMissing(<| a -> x, b -> y, c -> Missing() |>)", //
+        "<|a->x,b->y|>");
+  }
+
+
   public void testDateObject() {
     // Current date
     // check("DateObject()", //
