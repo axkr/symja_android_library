@@ -1720,6 +1720,9 @@ public class S {
   public final static IBuiltInSymbol ClearAttributes =
       S.initFinalSymbol("ClearAttributes", ID.ClearAttributes);
 
+  public final static IBuiltInSymbol ClebschGordan =
+      S.initFinalSymbol("ClebschGordan", ID.ClebschGordan);
+
   /**
    * Clip(expr) - returns `expr` in the range `-1` to `1`. Returns `-1` if `expr` is less than `-1`.
    * Returns `1` if `expr` is greater than `1`.
@@ -2499,6 +2502,9 @@ public class S {
    */
   public final static IBuiltInSymbol DeleteDuplicatesBy =
       S.initFinalSymbol("DeleteDuplicatesBy", ID.DeleteDuplicatesBy);
+
+  public final static IBuiltInSymbol DeleteMissing =
+      S.initFinalSymbol("DeleteMissing", ID.DeleteMissing);
 
   public final static IBuiltInSymbol Delimiters = S.initFinalSymbol("Delimiters", ID.Delimiters);
 
@@ -9291,6 +9297,8 @@ public class S {
    */
   public final static IBuiltInSymbol SinIntegral = S.initFinalSymbol("SinIntegral", ID.SinIntegral);
 
+  public final static IBuiltInSymbol SixJSymbol = S.initFinalSymbol("SixJSymbol", ID.SixJSymbol);
+
   /**
    * Skewness(list) - gives Pearson's moment coefficient of skewness for `list` (a measure for
    * estimating the symmetry of a distribution).
@@ -10342,6 +10350,9 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Thread = S.initFinalSymbol("Thread", ID.Thread);
+
+  public final static IBuiltInSymbol ThreeJSymbol =
+      S.initFinalSymbol("ThreeJSymbol", ID.ThreeJSymbol);
 
   /**
    * Through(p(f)[x]) - gives `p(f(x))`.

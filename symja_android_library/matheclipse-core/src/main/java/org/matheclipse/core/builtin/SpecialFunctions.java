@@ -57,6 +57,7 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -1734,7 +1735,44 @@ public class SpecialFunctions {
     }
   }
 
-  private static class PolyLog extends AbstractFunctionEvaluator {
+  private static class PolyLog extends AbstractFunctionEvaluator implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/PolyLog2/03/01/0002/
+        IExpr n = ast.arg1();
+        IExpr z = ast.arg2();
+        if (n.isNumEqualInteger(F.C2) && z.isPower() && z.base().isE() && z.exponent().isTimes2()) {
+          // PolyLog(2, E^( exponent_ ))
+          IAST timesAST = (IAST) z.exponent();
+          if (timesAST.arg1().isComplex() && timesAST.arg2().isPi()) {
+            IComplex c1 = (IComplex) timesAST.arg1();
+            if (c1.getRealPart().isZero()) {
+              IRational imag = c1.getImaginaryPart();
+              IInteger p = imag.numerator();
+              if (p.isEven() && p.isPositive()) {
+                p = p.div(2);
+                IInteger q = imag.denominator();
+                int pInt = p.toIntDefault();
+                int qInt = q.toIntDefault();
+                if (pInt > 0 && qInt > 0 && pInt <= qInt) {
+                  // Pi^2/(6*q^2)+Sum(E^((2*Pi*I*k*p)/q)*PolyGamma(1,k/q),{k,1,-1+q})/q^2
+                  IFraction qR1 = F.QQ(1, qInt);
+                  IFraction qR2 = F.QQ(F.C1, q.multiply(q));
+                  return F.Plus(F.Times(F.QQ(1L, 6L), F.Sqr(F.Pi), F.Power(q, F.CN2)), F.Times(qR2, //
+                      F.sum(
+                          k -> F.Times(F.Exp(F.Times(c1, F.Pi, k)),
+                              F.PolyGamma(F.C1, F.Times(k, qR1))), //
+                          1, --qInt, 1)));
+                }
+              }
+            }
+          }
+        }
+      }
+      return F.NIL;
+    }
 
     /**
      * See <a href=
@@ -1797,11 +1835,11 @@ public class SpecialFunctions {
       return F.NIL;
     }
 
-    private IExpr polyLogSymbolic(IExpr n, IExpr p) {
-      if (p.isZero()) {
+    private IExpr polyLogSymbolic(IExpr n, IExpr z) {
+      if (z.isZero()) {
         return F.C0;
       }
-      if (p.isOne()) {
+      if (z.isOne()) {
         if (n.isOne()) {
           return F.CInfinity;
         }
@@ -1816,7 +1854,7 @@ public class SpecialFunctions {
             return F.CComplexInfinity;
           }
         }
-      } else if (p.isMinusOne()) {
+      } else if (z.isMinusOne()) {
         // (2^(1-arg1)-1)*Zeta(arg1)
         return Times(Plus(CN1, Power(C2, Plus(C1, Negate(n)))), Zeta(n));
       }
@@ -1824,13 +1862,13 @@ public class SpecialFunctions {
       if (n.isReal()) {
         if (n.isZero()) {
           // arg2/(1 - arg2)
-          return Times(p, Power(Plus(C1, Negate(p)), -1));
+          return Times(z, Power(Plus(C1, Negate(z)), -1));
         } else if (n.isOne()) {
           // -Log(1 - arg2))
-          return Negate(Log(Plus(C1, Negate(p))));
+          return Negate(Log(Plus(C1, Negate(z))));
         } else if (n.isMinusOne()) {
           // arg2/(arg2 - 1)^2
-          return Times(p, Power(Plus(C1, Negate(p)), -2));
+          return Times(z, Power(Plus(C1, Negate(z)), -2));
         }
       }
       return F.NIL;

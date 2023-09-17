@@ -1,5 +1,8 @@
 package org.matheclipse.core.system;
 
+import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.interfaces.IExpr;
+
 public class DistributionTest extends ExprEvaluatorTestCase {
   public DistributionTest(String name) {
     super(name);
@@ -623,5 +626,32 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{b*Log(4/3)^(1/a),b*Log(2)^(1/a),b*Log(4)^(1/a)}");
     check("Quantile(WeibullDistribution(a,b,m), {1/4, 1/2, 3/4})", //
         "{m+b*Log(4/3)^(1/a),m+b*Log(2)^(1/a),m+b*Log(4)^(1/a)}");
+  }
+
+  public void testChiSquareTest() {
+    // Issue #824
+    ExprEvaluator exprEvaluator = new ExprEvaluator();
+    exprEvaluator.eval("ChiSquareTest[observed_, any_] :=\n" //
+        + "    Block[{chi2, p, df, expected, sumRow, sumCol, sumAll},\n" //
+        + "       \n" //
+        + "       \n" //
+        + "      sumRow = Total[observed, {2}];\n" //
+        + "       \n" //
+        + "      sumCol = Total[observed];\n" //
+        + "       \n" //
+        + "      sumAll = Total[observed, 2];\n" //
+        + "       \n" //
+        + "      expected = Partition[Apply[Times, CartesianProduct[sumRow, sumCol], {1}] / sumAll, Length[sumCol]];\n" //
+        + "       \n" //
+        + "      df = (Dimensions[observed][[1]] - 1) * (Dimensions[observed][[2]] - 1);\n" //
+        + "      chi2 = Total[Flatten[(observed - expected) ^ 2 / expected]] // N;\n" //
+        + "      p = 1 - CDF[ChiSquareDistribution[df], chi2] // N;\n" //
+        + "      {\"chi2\" -> chi2, \"p\" -> p, \"df\" -> df, \"expected\" -> expected}\n" //
+        + "    ];\n");
+    exprEvaluator.eval("M1 = {{8, 10, 6, 9, 9}, {4, 6, 9,6, 5}}");
+    IExpr result = exprEvaluator.eval("N[ChiSquareTest[M1, M2]]");
+    assertEquals(result.toString(), //
+        "{chi2->2.75265306122449,p->0.6000329492570032,df->4.0," //
+            + "expected->{{7.0,9.333333333333334,8.75,8.75,8.166666666666666},{5.0,6.666666666666667,6.25,6.25,5.833333333333333}}}");
   }
 }

@@ -86,6 +86,7 @@ public class BuiltinUsage {
     USAGE[ID.Clear] = "clear values associated with the LHS or symbol";
     USAGE[ID.ClearAll] = "clear all values, definitions, messages and defaults for symbols";
     USAGE[ID.ClearAttributes] = "clear the attributes of a symbol";
+    USAGE[ID.ClebschGordan] = "Clebsch-Gordan coefficient";
     USAGE[ID.Coefficient] = "coefficient of a monomial in a polynomial expression";
     USAGE[ID.CoefficientList] = "list of coefficients defining a polynomial";
     USAGE[ID.Collect] = "collect terms with a variable at the same power";
@@ -547,6 +548,7 @@ public class BuiltinUsage {
     USAGE[ID.Tanh] = "hyperbolic tangent function";
     USAGE[ID.TensorProduct] = "tensor product";
     USAGE[ID.TeXForm] = "formatted expression as TeX commands";
+    USAGE[ID.ThreeJSymbol] = "values of the Wigner 3-j symbol";
     USAGE[ID.Through] = "distribute operators that appears inside the head of expressions";
     USAGE[ID.Throw] = "throw an expression to be caught by a surrounding 'Catch'";
     USAGE[ID.Times] = "multiply";

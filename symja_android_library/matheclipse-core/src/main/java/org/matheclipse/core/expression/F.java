@@ -84,6 +84,7 @@ import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.builtin.QuantityFunctions;
+import org.matheclipse.core.builtin.QuantumPhysicsFunctions;
 import org.matheclipse.core.builtin.RandomFunctions;
 import org.matheclipse.core.builtin.RootsFunctions;
 import org.matheclipse.core.builtin.SequenceFunctions;
@@ -1014,6 +1015,7 @@ public class F extends S {
       SidesFunctions.initialize();
       ComputationalGeometryFunctions.initialize();
       PiecewiseFunctions.initialize();
+      QuantumPhysicsFunctions.initialize();
 
       AutomaticRules.initialize();
 
@@ -2827,6 +2829,10 @@ public class F extends S {
 
   public static IAST ClearAttributes(final IExpr a0, final IExpr a1) {
     return new AST2(ClearAttributes, a0, a1);
+  }
+
+  public static final IAST ClebschGordan(final IExpr arg1, final IExpr arg2, final IExpr arg3) {
+    return new AST3(S.ClebschGordan, arg1, arg2, arg3);
   }
 
   public static IAST Clip(final IExpr a0) {
@@ -7010,6 +7016,10 @@ public class F extends S {
     return new AST2(Max, a0, a1);
   }
 
+  public static IAST Max(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(Max, a0, a1, a2);
+  }
+
   public static IAST Max(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
     return quaternary(Max, a0, a1, a2, a3);
   }
@@ -7068,6 +7078,10 @@ public class F extends S {
 
   public static IAST Min(final IExpr a0, final IExpr a1) {
     return new AST2(Min, a0, a1);
+  }
+
+  public static IAST Min(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(Min, a0, a1, a2);
   }
 
   public static IAST Min(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
@@ -9804,6 +9818,10 @@ public class F extends S {
    */
   public static IAST Thread(final IExpr a0) {
     return new AST1(Thread, a0);
+  }
+
+  public static final IAST ThreeJSymbol(final IExpr arg1, final IExpr arg2, final IExpr arg3) {
+    return new AST3(S.ThreeJSymbol, arg1, arg2, arg3);
   }
 
   /**

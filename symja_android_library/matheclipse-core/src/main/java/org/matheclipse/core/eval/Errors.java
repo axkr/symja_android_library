@@ -10,7 +10,6 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -258,6 +257,7 @@ public class Errors {
       "perm", "`1` is not a valid permutation.", //
       "perm2", "Entry `1` in `2` is out of bounds for a permutation of length `3`.", //
       "permlist", "Invalid permutation list `1`.", //
+      "phy", "`1` is not physical.", //
       "pilist",
       "The arguments to `1` must be two lists of integers of identical length, with the second list only containing positive integers.", //
       "plen", "`1` and `2` should have the same length.", //
@@ -417,14 +417,14 @@ public class Errors {
   }
 
   /**
-   * Print the hipparchus {@link MathRuntimeException#getMessage()} into the default error log.
+   * Print the exception into the default error log.
    * 
    * @param symbol
    * @param mex
    * @param engine
    * @return
    */
-  public static IExpr printMessage(ISymbol symbol, final Throwable exception, EvalEngine engine) {
+  public static IAST printMessage(ISymbol symbol, final Throwable exception, EvalEngine engine) {
     if (Config.SHOW_STACKTRACE) {
       exception.printStackTrace();
     }
