@@ -2548,7 +2548,7 @@ public final class Arithmetic {
     @Override
     public IExpr numericEval(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (arg1.isList()) {
+      if (arg1.isListOrAssociation() || arg1.isRuleAST()) {
         return ((IAST) arg1).mapThread(ast, 1);
       }
       if (ast.isAST1()) {
@@ -2584,11 +2584,10 @@ public final class Arithmetic {
       final int oldSignificantFigures = engine.getSignificantFigures();
       try {
         long numericPrecision = oldDigitPrecision; // Config.MACHINE_PRECISION;
-        // avoid infinite recursions in symbolic mode
         if (expr.isNumericFunction(true)) {
           engine.setNumericMode(true, numericPrecision, oldSignificantFigures);
           IExpr temp = engine.evalWithoutNumericReset(expr);
-          if (temp.isList()) {
+          if (temp.isListOrAssociation() || temp.isRuleAST()) {
             return ((IAST) temp).mapThread(F.N(F.Slot1), 1);
           }
           return temp;
