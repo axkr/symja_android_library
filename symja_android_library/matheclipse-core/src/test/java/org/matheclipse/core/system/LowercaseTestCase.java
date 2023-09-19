@@ -22324,6 +22324,24 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "5.36892+I*4.27784,6.29879+I*5.11278,7.40401+I*6.13828}");
   }
 
+  public void testSixJSymbol() {
+    // check("SixJSymbol({1, 2, 1}, {4,5,Pi})", //
+    // "0");
+    // check("SixJSymbol({1, 2, 1}, {4,5,12})", //
+    // "0");
+    //
+    // // TODO implement for half-integers
+    // // check("SixJSymbol({1/2, 1/2, 1}, {5/2,7/2,3})", //
+    // // "SixJSymbol({1/2,1/2,1},{5/2,7/2,3})");
+    //
+    // check("SixJSymbol({1, 2, 1}, {2,3,2})", //
+    // "1/(5*Sqrt(21))");
+    // check("SixJSymbol({1, 2, 3}, {2, 1, 2})", //
+    // "1/(5*Sqrt(21))");
+    // check("SixJSymbol({1, 2, 3}, {1,2,2})", //
+    // "1/15");
+  }
+
   public void testSkewness() {
     check("Skewness(WeibullDistribution(n,m))", //
         "(2*Gamma(1+1/n)^3-3*Gamma(1+1/n)*Gamma(1+2/n)+Gamma(1+3/n))/(-Gamma(1+1/n)^2+Gamma(\n" + //
@@ -23782,6 +23800,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testThreeJSymbol() {
+    check("ThreeJSymbol({2, 0}, {6, 0}, {4, 0})", //
+        "Sqrt(5/143)");
+
     check("ThreeJSymbol({3/2, -3/2}, {3/2, 3/2}, {1, 0})", //
         "Sqrt(3/5)/2");
 
@@ -23849,12 +23870,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testTimeConstrained() {
-    // if (!Config.JAS_NO_THREADS) {
+    if (!Config.TIMECONSTRAINED_NO_THREAD) {
     check("TimeConstrained(Do(i^2, {i, 10000000}), 1)", //
         "$Aborted");
     check("TimeConstrained(Pause(1); t=TimeRemaining(); Print(t);t>1&&Head(t)==Real, 10)", //
         "True");
-    // }
+  }
   }
 
   public void testTimeObject() {
