@@ -483,6 +483,7 @@ public class BuiltinUsage {
     USAGE[ID.Simplify] = "apply transformations to simplify an expression";
     USAGE[ID.Sin] = "sine function";
     USAGE[ID.Sinh] = "hyperbolic sine function";
+    USAGE[ID.SixJSymbol] = "values of the Wigner 6-j symbol";
     USAGE[ID.Skewness] = "skewness coefficient";
     USAGE[ID.Slot] = "`#` serves as a pure function's first parameter ";
     USAGE[ID.SokalSneathDissimilarity] = "Sokal-Sneath dissimilarity";

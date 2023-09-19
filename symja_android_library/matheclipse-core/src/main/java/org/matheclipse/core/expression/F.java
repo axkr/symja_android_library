@@ -9515,6 +9515,21 @@ public class F extends S {
         iterationSpecification3);
   }
 
+  public static IAST Sum(final IExpr expr, final IExpr iterationSpecification1,
+      final IExpr iterationSpecification2, final IExpr iterationSpecification3,
+      final IExpr iterationSpecification4) {
+    return quinary(Sum, expr, iterationSpecification1, iterationSpecification2,
+        iterationSpecification3, iterationSpecification4);
+  }
+
+  public static IAST Sum(final IExpr expr, final IExpr iterationSpecification1,
+      final IExpr iterationSpecification2, final IExpr iterationSpecification3,
+      final IExpr iterationSpecification4, final IExpr iterationSpecification5) {
+    IExpr[] args = new IExpr[] {expr, iterationSpecification1, iterationSpecification2,
+        iterationSpecification3, iterationSpecification4, iterationSpecification5};
+    return F.ast(args, Sum);
+  }
+
   public static IRational sumRational(final IntFunction<IRational> function, final int iMin,
       final int iMax) {
     return sumRational(function, iMin, iMax, 1);
