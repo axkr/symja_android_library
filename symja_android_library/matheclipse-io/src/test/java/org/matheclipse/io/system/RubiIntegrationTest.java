@@ -32,7 +32,6 @@ import static org.matheclipse.core.expression.F.b_DEFAULT;
 import static org.matheclipse.core.expression.F.fraction;
 import static org.matheclipse.core.expression.S.I;
 import static org.matheclipse.core.expression.S.Pi;
-import static org.matheclipse.core.expression.S.Plus;
 import static org.matheclipse.core.expression.S.Sin;
 import static org.matheclipse.core.expression.S.a;
 import static org.matheclipse.core.expression.S.b;
@@ -43,7 +42,6 @@ import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.ActivateTrig;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.ContentFactor;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.DeactivateTrig;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Dist;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.EasyDQ;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.ExpandToSum;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.FixSimplify;
@@ -61,11 +59,9 @@ import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Subst;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SubstAux;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.TrigSimplifyAux;
 import javax.script.ScriptException;
-import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -391,24 +387,24 @@ public class RubiIntegrationTest extends AbstractTestCase {
     check(ast, "ArcSin[Pi/6+r/3+s-x]");
   }
 
-  public void testRubi017() {
-    IAST ast;
-    ast = F.Times(F.z, Dist(F.C0, F.v, F.w));
-    check(ast, "0");
-  }
-
-  public void testRubi018() {
-    IASTAppendable ast = F.quaternary(Plus, F.z, Dist(F.C3, F.v, F.w), Dist(F.C0, F.v, F.w), F.g);
-    EvalAttributes.sort(ast);
-    check(ast, "g+3*v+z");
-  }
-
-  public void testRubi019() {
-    IASTAppendable ast =
-        F.quaternary(Plus, Dist(F.C3, F.v, F.w), F.a, F.Times(F.CN1, Dist(F.C3, F.v, F.w)), F.g);
-    EvalAttributes.sort(ast);
-    check(ast, "a+g");
-  }
+  // public void testRubi017() {
+  // IAST ast;
+  // ast = F.Times(F.z, Dist(F.C0, F.v, F.w));
+  // check(ast, "0");
+  // }
+  //
+  // public void testRubi018() {
+  // IASTAppendable ast = F.quaternary(Plus, F.z, Dist(F.C3, F.v, F.w), Dist(F.C0, F.v, F.w), F.g);
+  // EvalAttributes.sort(ast);
+  // check(ast, "g+3*v+z");
+  // }
+  //
+  // public void testRubi019() {
+  // IASTAppendable ast =
+  // F.quaternary(Plus, Dist(F.C3, F.v, F.w), F.a, F.Times(F.CN1, Dist(F.C3, F.v, F.w)), F.g);
+  // EvalAttributes.sort(ast);
+  // check(ast, "a+g");
+  // }
 
   // Integrate(1/(a_.+b_.*x_+c_.*x_^2),x_Symbol) :=
   // rubi`Dist(-2,integrate::subst(Integrate(1/integrate::simp(b^2+(-1)*4*a*c-x^

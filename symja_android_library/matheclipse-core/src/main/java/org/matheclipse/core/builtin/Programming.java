@@ -3048,7 +3048,7 @@ public final class Programming {
       }
 
       @Override
-      public IExpr call() throws Exception {
+      public IExpr call() {
         EvalEngine.set(fEngine);
         try {
           long timeConstrainedMillis = System.currentTimeMillis() + fSeconds * 1000L;
@@ -3081,12 +3081,14 @@ public final class Programming {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final int argSize = ast.argSize();
       if (argSize >= 2 && argSize <= 3) {
-        // TODO engine.getTimeConstrainedMillis(); doesn't work here???
         long s = engine.getSeconds();
         if (s > 0 || Config.TIMECONSTRAINED_NO_THREAD) {
           // no new thread should be spawned
           if (ast.isAST3()) {
-            return ast.arg3();
+            // `1`.
+            // Errors.printMessage(S.TimeConstrained, "error",
+            // F.List("Single thread mode: default expression " + ast.arg3() + " will be ignored"),
+            // engine);
           }
           return engine.evaluate(ast.arg1());
         }
