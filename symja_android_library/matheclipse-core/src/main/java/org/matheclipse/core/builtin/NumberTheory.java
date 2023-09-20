@@ -4455,8 +4455,12 @@ public final class NumberTheory {
           if (n <= NumberTheory.PN_8.length) {
             return F.ZZ(NumberTheory.PN_8[n - 1]);
           }
+          int p = NumberTheory.MPE_51[n - 1];
+          if (p > Config.MAX_BIT_LENGTH) {
+            BigIntegerLimitExceeded.throwIt(p);
+          }
           // 2^p
-          BigInteger b2p = BigInteger.ONE.shiftLeft(NumberTheory.MPE_51[n - 1]);
+          BigInteger b2p = BigInteger.ONE.shiftLeft(p);
           // 2^(p-1)
           BigInteger b2pm1 = b2p.shiftRight(1);
           return F.ZZ(b2p.subtract(BigInteger.ONE).multiply(b2pm1));
