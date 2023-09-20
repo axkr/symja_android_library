@@ -4474,6 +4474,11 @@ public final class NumberTheory {
     public int status() {
       return ImplementationStatus.PARTIAL_SUPPORT;
     }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
   }
 
   private static class PerfectNumberQ extends AbstractFunctionEvaluator {

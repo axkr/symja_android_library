@@ -17257,6 +17257,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testPerfectNumber() {
+    // test Listable attribute
+    check("PerfectNumber(Range(3))", //
+        "{6,28,496}");
     check("Table(PerfectNumber(i), {i,5})", //
         "{6,28,496,8128,33550336}");
     check("PerfectNumber(1)", //
@@ -23871,11 +23874,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   public void testTimeConstrained() {
     if (!Config.TIMECONSTRAINED_NO_THREAD) {
-    check("TimeConstrained(Do(i^2, {i, 10000000}), 1)", //
-        "$Aborted");
-    check("TimeConstrained(Pause(1); t=TimeRemaining(); Print(t);t>1&&Head(t)==Real, 10)", //
-        "True");
-  }
+      check("TimeConstrained(Do(i^2, {i, 10000000}), 1)", //
+          "$Aborted");
+      check("TimeConstrained(Pause(1); t=TimeRemaining(); Print(t);t>1&&Head(t)==Real, 10)", //
+          "True");
+    }
   }
 
   public void testTimeObject() {
