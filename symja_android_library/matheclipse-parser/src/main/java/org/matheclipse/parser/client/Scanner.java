@@ -606,7 +606,11 @@ public abstract class Scanner {
       getNextChar();
       fToken = TT_EOF;
 
-      if ((fCurrentChar != '\t') && (fCurrentChar != '\r') && (fCurrentChar != ' ')) {
+      if ((fCurrentChar != '\t') //
+          && (fCurrentChar != '\r') //
+          && (fCurrentChar != ' ')//
+          && (fCurrentChar != '\uF360') // \[InvisibleSpace]
+      ) {
         if (fCurrentChar == '\n') {
           fRowCounter++;
           fCurrentColumnStartPosition = fCurrentPosition;
@@ -733,6 +737,7 @@ public abstract class Scanner {
             }
             break;
           case ',':
+          case '\uF765': // \[InvisibleComma]
             fToken = TT_COMMA;
             break;
           case '_':
