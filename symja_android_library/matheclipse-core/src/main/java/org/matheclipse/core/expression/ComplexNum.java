@@ -338,15 +338,15 @@ public class ComplexNum implements IComplexNum {
     return Double.compare(temp, 1.0);
   }
 
-  public int compareTo(final Complex that) {
-    if (fComplex.getReal() < that.getReal()) {
+  public static int compare(final Complex c1, final Complex c2) {
+    if (c1.getReal() < c2.getReal()) {
       return -1;
     }
-    if (fComplex.getReal() > that.getReal()) {
+    if (c1.getReal() > c2.getReal()) {
       return 1;
     }
-    long l1 = Double.doubleToLongBits(fComplex.getReal());
-    long l2 = Double.doubleToLongBits(that.getReal());
+    long l1 = Double.doubleToLongBits(c1.getReal());
+    long l2 = Double.doubleToLongBits(c2.getReal());
     if (l1 < l2) {
       return -1;
     }
@@ -354,22 +354,22 @@ public class ComplexNum implements IComplexNum {
       return 1;
     }
 
-    if (F.isZero(that.getImaginary())) {
-      if (!F.isZero(imDoubleValue())) {
+    if (F.isZero(c2.getImaginary())) {
+      if (!F.isZero(c1.getImaginary())) {
         return 1;
       }
-    } else if (F.isZero(imDoubleValue())) {
+    } else if (F.isZero(c1.getImaginary())) {
       return -1;
     }
 
-    if (fComplex.getImaginary() < that.getImaginary()) {
+    if (c1.getImaginary() < c2.getImaginary()) {
       return -1;
     }
-    if (fComplex.getImaginary() > that.getImaginary()) {
+    if (c1.getImaginary() > c2.getImaginary()) {
       return 1;
     }
-    l1 = Double.doubleToLongBits(fComplex.getImaginary());
-    l2 = Double.doubleToLongBits(that.getImaginary());
+    l1 = Double.doubleToLongBits(c1.getImaginary());
+    l2 = Double.doubleToLongBits(c2.getImaginary());
     if (l1 < l2) {
       return -1;
     }
@@ -377,6 +377,10 @@ public class ComplexNum implements IComplexNum {
       return 1;
     }
     return 0;
+  }
+
+  public int compareTo(final Complex that) {
+    return compare(fComplex, that);
   }
 
   /**
