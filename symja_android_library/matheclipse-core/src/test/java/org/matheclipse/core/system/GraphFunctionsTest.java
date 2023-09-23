@@ -62,9 +62,23 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   public void testCompleteGraph() {
+    check("CompleteGraph({7,3}) // AdjacencyMatrix // Normal", //
+        "{{0,0,0,0,0,0,0,1,1,1},\n" //
+            + " {0,0,0,0,0,0,0,1,1,1},\n" //
+            + " {0,0,0,0,0,0,0,1,1,1},\n" //
+            + " {0,0,0,0,0,0,0,1,1,1},\n" //
+            + " {0,0,0,0,0,0,0,1,1,1},\n" //
+            + " {0,0,0,0,0,0,0,1,1,1},\n" //
+            + " {0,0,0,0,0,0,0,1,1,1},\n" //
+            + " {1,1,1,1,1,1,1,0,0,0},\n" //
+            + " {1,1,1,1,1,1,1,0,0,0},\n" //
+            + " {1,1,1,1,1,1,1,0,0,0}}");
+
     check("CompleteGraph(4) // AdjacencyMatrix // Normal", //
         "{{0,1,1,1},\n" //
-            + " {1,0,1,1},\n" + " {1,1,0,1},\n" + " {1,1,1,0}}");
+            + " {1,0,1,1},\n" //
+            + " {1,1,0,1},\n" //
+            + " {1,1,1,0}}");
   }
 
   public void testConnectedGraphQ() {

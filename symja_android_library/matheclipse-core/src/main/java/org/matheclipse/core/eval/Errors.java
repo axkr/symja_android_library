@@ -126,8 +126,7 @@ public class Errors {
       "infy", "Infinite expression `1` encountered.", //
       "innf", "Non-negative integer or Infinity expected at position `1` in `2`.", //
       "ins", "Cannot insert at position `1` in `2`.", //
-      "insuff", "Cannot take `1` elements from a list of length `2` ", "int",
-      "Integer expected at position `2` in `1`.", //
+      "insuff", "Cannot take `1` elements from a list of length `2`.", //
       "int", "Integer expected at position `2` in `1`.", //
       "intjava", "Java int value greater equal `1` expected instead of `2`.", //
       "intlevel", "Level specification value greater equal `1` expected instead of `2`.", //
@@ -345,6 +344,7 @@ public class Errors {
       "zzdivzero", "Division by zero `1`.", //
       "zzmaxast", "Maximum AST limit `1` exceeded.", //
       "zznotimpl", "Function `1` not implemented.", //
+      "zzonlyimpl", "Function `1` only implemented for `2` list arguments.", //
       "zzprime", "Maximum Prime limit `1` exceeded.", //
       "zzregex", "Regex expression `1` error message: `2`.", //
       "zzapfloatcld", "Complete loss of accurate digits (apfloat).", //

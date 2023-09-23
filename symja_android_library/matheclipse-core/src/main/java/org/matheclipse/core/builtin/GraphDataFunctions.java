@@ -6,9 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jgrapht.Graph;
+import org.jgrapht.generate.CompleteBipartiteGraphGenerator;
 import org.jgrapht.generate.CompleteGraphGenerator;
 import org.jgrapht.generate.GeneralizedPetersenGraphGenerator;
 import org.jgrapht.generate.GnmRandomGraphGenerator;
@@ -39,7 +38,6 @@ import org.matheclipse.parser.trie.TrieMatch;
 
 /** Functions for graph theory algorithms. */
 public class GraphDataFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   private static final TrieBuilder<String, Supplier<Graph<IExpr, ?>>, ArrayList<Supplier<Graph<IExpr, ?>>>> TRIE_STRING2GRAPH_BUILDER =
       TrieBuilder.create();
@@ -131,7 +129,38 @@ public class GraphDataFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
-      int order = ast.arg1().toIntDefault();
+      IExpr arg1 = ast.arg1();
+      if (arg1.isList()) {
+        IAST list = (IAST) arg1;
+        if (arg1.isList2()) {
+          int partitionA = list.arg1().toIntDefault();
+          int partitionB = list.arg2().toIntDefault();
+          try {
+            if (partitionA <= 0 || partitionB <= 0) {
+              // Positive machine-sized integer expected at position `2` in `1`
+              return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
+            }
+            CompleteBipartiteGraphGenerator<IExpr, ExprEdge> gen =
+                new CompleteBipartiteGraphGenerator<IExpr, ExprEdge>(partitionA, partitionB);
+            Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
+                .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
+                .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
+                .buildGraph();
+            gen.generateGraph(target);
+            return GraphExpr.newInstance(target);
+          } catch (RuntimeException rex) {
+            Errors.printMessage(S.CompleteGraph, rex, engine);
+          }
+          return F.NIL;
+        }
+        if (!arg1.isList1()) {
+          // Function `1` only implemented for `2` list arguments.
+          return Errors.printMessage(S.CompleteGraph, "zzonlyimpl", F.List(S.CompleteGraph, F.C2),
+              engine);
+        }
+        arg1 = list.arg1();
+      }
+      int order = arg1.toIntDefault();
       if (order <= 0) {
         // Positive machine-sized integer expected at position `2` in `1`
         return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
@@ -150,8 +179,9 @@ public class GraphDataFunctions {
         gen.generateGraph(target);
         return GraphExpr.newInstance(target);
       } catch (RuntimeException rex) {
-        LOGGER.debug("CompleteGraph.evaluate() failed", rex);
+        Errors.printMessage(S.CompleteGraph, rex, engine);
       }
+
       return F.NIL;
     }
 
@@ -186,7 +216,7 @@ public class GraphDataFunctions {
         gen.generateGraph(target);
         return GraphExpr.newInstance(target);
       } catch (RuntimeException rex) {
-        LOGGER.debug("CycleGraph.evaluate() failed", rex);
+        Errors.printMessage(S.CycleGraph, rex, engine);
       }
       return F.NIL;
     }
@@ -221,7 +251,7 @@ public class GraphDataFunctions {
         gen.generateGraph(target);
         return GraphExpr.newInstance(target);
       } catch (RuntimeException rex) {
-        LOGGER.debug("HypercubeGraph.evaluate() failed", rex);
+        Errors.printMessage(S.HypercubeGraph, rex, engine);
       }
       return F.NIL;
     }
@@ -306,7 +336,7 @@ public class GraphDataFunctions {
           gpgg.generateGraph(target);
           return GraphExpr.newInstance(target);
         } catch (RuntimeException rex) {
-          LOGGER.debug("PetersenGraph.evaluate() failed", rex);
+          Errors.printMessage(S.PetersenGraph, rex, engine);
         }
       }
       return F.NIL;
@@ -359,7 +389,7 @@ public class GraphDataFunctions {
           return Errors.printMessage(ast.topHead(), "args", F.List(ast), engine);
         } catch (RuntimeException rex) {
           // rex.printStackTrace();
-          LOGGER.debug("RandomGraph.evaluate() failed", rex);
+          Errors.printMessage(S.RandomGraph, rex, engine);
         }
       }
       return F.NIL;
@@ -409,7 +439,7 @@ public class GraphDataFunctions {
         gen.generateGraph(target);
         return GraphExpr.newInstance(target);
       } catch (RuntimeException rex) {
-        LOGGER.debug("StarGraph.evaluate() failed", rex);
+        Errors.printMessage(S.StarGraph, rex, engine);
       }
       return F.NIL;
     }
@@ -445,7 +475,7 @@ public class GraphDataFunctions {
         gen.generateGraph(target);
         return GraphExpr.newInstance(target);
       } catch (RuntimeException rex) {
-        LOGGER.debug("WheelGraph.evaluate() failed", rex);
+        Errors.printMessage(S.WheelGraph, rex, engine);
       }
       return F.NIL;
     }
