@@ -20666,6 +20666,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("Refine((-1)^(x+y), Element(k/2, Integers))", //
     // "(-1)^y");
 
+    check("Refine(Sqrt(x^2 y^2), x>0&&y<-10)", //
+        "-x*y");
     check("Refine(Csc(Pi*(1/2+m)), Element(m, Integers))", //
         "I^(-1+2*(1/2+m))");
     check("Refine(Csc(Pi*(-1/2+m)), Element(m, Integers))", //
@@ -22332,11 +22334,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "0");
     // check("SixJSymbol({1, 2, 1}, {4,5,12})", //
     // "0");
-    //
+
     // // TODO implement for half-integers
     // // check("SixJSymbol({1/2, 1/2, 1}, {5/2,7/2,3})", //
     // // "SixJSymbol({1/2,1/2,1},{5/2,7/2,3})");
     //
+    // check("SixJSymbol({1, 1, 2}, {5,7,6})", //
+    // "1/Sqrt(65)");
     // check("SixJSymbol({1, 2, 1}, {2,3,2})", //
     // "1/(5*Sqrt(21))");
     // check("SixJSymbol({1, 2, 3}, {2, 1, 2})", //
@@ -22461,7 +22465,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Sort(<|a -> 4, b -> 1, c -> 3, d :> 2, e -> 2|>, Greater)", //
         "<|a->4,c->3,d:>2,e->2,b->1|>");
     check("Sort({2.1,1.1-I,2.1-I,I*E^(I*x)})", //
-        "{1.1+I*(-1.0),2.1,2.1+I*(-1.0),I*E^(I*x)}");
+        "{1.1+I*(-1.0),2.1+I*(-1.0),2.1,I*E^(I*x)}");
     check("Sort({2,1-I,2-I,I*E^(I*x)})", //
         "{1-I,2-I,2,I*E^(I*x)}");
     check("Sort(StringJoin /@ Tuples({\"a\",\"A\",\"b\",\"B\"},2))", //

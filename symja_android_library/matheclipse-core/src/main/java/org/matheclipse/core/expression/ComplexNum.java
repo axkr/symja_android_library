@@ -339,44 +339,11 @@ public class ComplexNum implements IComplexNum {
   }
 
   public static int compare(final Complex c1, final Complex c2) {
-    if (c1.getReal() < c2.getReal()) {
-      return -1;
+    int c = Double.compare(c1.getReal(), c2.getReal());
+    if (c != 0) {
+      return c;
     }
-    if (c1.getReal() > c2.getReal()) {
-      return 1;
-    }
-    long l1 = Double.doubleToLongBits(c1.getReal());
-    long l2 = Double.doubleToLongBits(c2.getReal());
-    if (l1 < l2) {
-      return -1;
-    }
-    if (l1 > l2) {
-      return 1;
-    }
-
-    if (F.isZero(c2.getImaginary())) {
-      if (!F.isZero(c1.getImaginary())) {
-        return 1;
-      }
-    } else if (F.isZero(c1.getImaginary())) {
-      return -1;
-    }
-
-    if (c1.getImaginary() < c2.getImaginary()) {
-      return -1;
-    }
-    if (c1.getImaginary() > c2.getImaginary()) {
-      return 1;
-    }
-    l1 = Double.doubleToLongBits(c1.getImaginary());
-    l2 = Double.doubleToLongBits(c2.getImaginary());
-    if (l1 < l2) {
-      return -1;
-    }
-    if (l1 > l2) {
-      return 1;
-    }
-    return 0;
+    return Double.compare(c1.getImaginary(), c2.getImaginary());
   }
 
   public int compareTo(final Complex that) {

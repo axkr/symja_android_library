@@ -28,8 +28,6 @@ import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
@@ -74,7 +72,6 @@ import org.matheclipse.core.eval.util.IndexFunctionDiagonal;
 import org.matheclipse.core.eval.util.IndexTableGenerator;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
-import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -2146,19 +2143,6 @@ public final class LinearAlgebra {
       return F.NIL;
     }
 
-    static final class AbsReverseComparator implements Comparator<Complex> {
-
-      @Override
-      public final int compare(final Complex o1, final Complex o2) {
-        double n1 = o2.norm();
-        double n2 = o1.norm();
-        if (F.isFuzzyEquals(n1, n2, Config.DEFAULT_CHOP_DELTA)) {
-          return ComplexNum.compare(o1, o2);
-        }
-        return n1 < n2 ? -1 : 1;
-      }
-    }
-
     @Override
     public IAST realMatrixEval(RealMatrix matrix, EvalEngine engine) {
       // TODO https://github.com/Hipparchus-Math/hipparchus/issues/174
@@ -2166,9 +2150,8 @@ public final class LinearAlgebra {
           ComplexEigenDecomposition.DEFAULT_EIGENVECTORS_EQUALITY, //
           ComplexEigenDecomposition.DEFAULT_EPSILON, //
           ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK, //
-          (c1, c2) -> Double.compare(c2.norm(), c1.norm()));
+          Comparators.COMPLEX_NORM_REVERSE_COMPARATOR);
       Complex[] eigenvalues = ced.getEigenvalues();
-      Arrays.sort(eigenvalues, 0, eigenvalues.length, new AbsReverseComparator());
       return F.mapRange(0, eigenvalues.length, (int i) -> {
         if (F.isZero(eigenvalues[i].getImaginary())) {
           return F.num(eigenvalues[i].getReal());
