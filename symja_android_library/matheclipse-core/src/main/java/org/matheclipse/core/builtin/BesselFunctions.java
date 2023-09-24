@@ -11,10 +11,7 @@ import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
-import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -29,7 +26,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.FunctionExpand;
 
 public class BesselFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -74,21 +70,15 @@ public class BesselFunctions {
               return F.num(airyAi.getReal());
             }
             return F.complexNum(airyAi);
-          } catch (NegativeArraySizeException nae) {
-            LOGGER.log(engine.getLogLevel(), "AiryAi: {} caused NegativeArraySizeException", ast,
-                nae);
-            return F.NIL;
           } catch (RuntimeException rex) {
-            //
+            return Errors.printMessage(S.AiryAi, rex, engine);
           }
         }
 
         try {
           return F.complexNum(BesselJS.airyAi(z.evalfc()));
-        } catch (NegativeArraySizeException nae) {
-          LOGGER.log(engine.getLogLevel(), "AiryAi: {} caused NegativeArraySizeException", ast);
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return Errors.printMessage(S.AiryAi, rex, engine);
         }
       }
       return F.NIL;
@@ -121,23 +111,16 @@ public class BesselFunctions {
               return F.num(airyAiPrime.getReal());
             }
             return F.complexNum(airyAiPrime);
-          } catch (NegativeArraySizeException nae) {
-            LOGGER.log(engine.getLogLevel(), "AiryAiPrime: {} caused NegativeArraySizeException",
-                ast);
-            return F.NIL;
           } catch (RuntimeException rex) {
+            return Errors.printMessage(S.AiryAiPrime, rex, engine);
           }
         }
 
         try {
           return F.complexNum(BesselJS.airyAiPrime(z.evalfc()));
-        } catch (NegativeArraySizeException nae) {
-          LOGGER.log(engine.getLogLevel(), "AiryAiPrime: {} caused NegativeArraySizeException",
-              ast);
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return Errors.printMessage(S.AiryAiPrime, rex, engine);
         }
-        return F.NIL;
       }
       return F.NIL;
     }
@@ -170,19 +153,15 @@ public class BesselFunctions {
               return F.num(airyBi.getReal());
             }
             return F.complexNum(airyBi);
-          } catch (NegativeArraySizeException nae) {
-            LOGGER.log(engine.getLogLevel(), "AiryBi: {} caused NegativeArraySizeException", ast);
-            return F.NIL;
           } catch (RuntimeException rex) {
+            return Errors.printMessage(S.AiryBi, rex, engine);
           }
         }
 
         try {
           return F.complexNum(BesselJS.airyBi(z.evalfc()));
-        } catch (NegativeArraySizeException nae) {
-          LOGGER.log(engine.getLogLevel(), "AiryBi: {} caused NegativeArraySizeException", ast);
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return Errors.printMessage(S.AiryBi, rex, engine);
         }
       }
       return F.NIL;
@@ -215,23 +194,15 @@ public class BesselFunctions {
               return F.num(airyBiPrime.getReal());
             }
             return F.complexNum(airyBiPrime);
-          } catch (NegativeArraySizeException nae) {
-            LOGGER.log(engine.getLogLevel(), "AiryBiPrime: {} caused NegativeArraySizeException",
-                ast, nae);
-            return F.NIL;
           } catch (RuntimeException rex) {
+            return Errors.printMessage(S.AiryBiPrime, rex, engine);
           }
         }
 
         try {
           return F.complexNum(BesselJS.airyBiPrime(z.evalfc()));
-        } catch (NegativeArraySizeException nae) {
-          LOGGER.log(engine.getLogLevel(), "AiryBiPrime: {} caused NegativeArraySizeException", ast,
-              nae);
-          return F.NIL;
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-          return F.NIL;
+          return Errors.printMessage(S.AiryBiPrime, rex, engine);
         }
       }
       return F.NIL;
@@ -384,11 +355,8 @@ public class BesselFunctions {
           } else {
             return F.num(BesselJS.besselJDouble(nDouble, zDouble));
           }
-
-        } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return Errors.printMessage(S.BesselJ, rex, engine);
         }
       }
       return F.NIL;
@@ -450,10 +418,10 @@ public class BesselFunctions {
             if (n.isReal()) {
               return F.num(BesselJS.besselJZero(n.evalf(), k));
             }
-          } catch (MathRuntimeException e) {
-            // org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a
-            // root
-            LOGGER.debug("BesselJZero.evaluate() failed", e);
+          } catch (RuntimeException rex) {
+            // org.hipparchus.exception.MathIllegalArgumentException:
+            // interval does not bracket a root
+            return Errors.printMessage(S.BesselJZero, rex, engine);
           }
         }
       }
@@ -549,10 +517,8 @@ public class BesselFunctions {
             return F.num(BesselJS.besselIDouble(nDouble, zDouble));
           }
 
-        } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return Errors.printMessage(S.BesselI, rex, engine);
         }
       }
       return F.NIL;
@@ -641,10 +607,8 @@ public class BesselFunctions {
             return F.num(BesselJS.besselKDouble(nDouble, zDouble));
           }
 
-        } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return Errors.printMessage(S.BesselK, rex, engine);
         }
       }
       return F.NIL;
@@ -734,10 +698,8 @@ public class BesselFunctions {
             return F.num(BesselJS.besselYDouble(nDouble, zDouble));
           }
 
-        } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return Errors.printMessage(S.BesselY, rex, engine);
         }
       }
       return F.NIL;
@@ -769,9 +731,9 @@ public class BesselFunctions {
           if (n.isReal()) {
             return F.num(BesselJS.besselYZero(n.evalf(), k));
           }
-        } catch (MathRuntimeException e) {
+        } catch (RuntimeException rex) {
           // org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a root
-          LOGGER.debug("BesselYZero.evaluate() failed", e);
+          return Errors.printMessage(S.BesselYZero, rex, engine);
         }
       }
 
@@ -820,10 +782,8 @@ public class BesselFunctions {
               return F.complexNum(hankelH1);
             }
 
-          } catch (ValidateException ve) {
-            return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+            return Errors.printMessage(S.HankelH1, rex, engine);
           }
         } else if (engine.isArbitraryMode()) {
           // BesselJ(n,z)+I*BesselY(n,z)
@@ -874,10 +834,8 @@ public class BesselFunctions {
               return F.complexNum(hankelH2);
             }
 
-          } catch (ValidateException ve) {
-            return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+            return Errors.printMessage(S.HankelH2, rex, engine);
           }
         } else if (engine.isArbitraryMode()) {
           return F.Plus(F.BesselJ(n, z), F.Times(F.CNI, F.BesselY(n, z)));
@@ -935,6 +893,9 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
+      if (z.isZero()) {
+        return F.CComplexInfinity;
+      }
       if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
         try {
           double nDouble = Double.NaN;
@@ -953,11 +914,8 @@ public class BesselFunctions {
             return F.complexNum(BesselJS.sphericalBesselJ(nDouble, zDouble));
           }
 
-        } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-          return F.NIL;
+          return Errors.printMessage(S.SphericalBesselJ, rex, engine);
         }
       }
       // if (n.isReal() && z.isReal()) {
@@ -1005,6 +963,18 @@ public class BesselFunctions {
       if (ast.isAST2()) {
         IExpr a = ast.arg1();
         IExpr b = ast.arg2();
+        if (a.isZero()) {
+          // ((-1)*I*E^(I*b))/b
+          return F.Times(F.CN1, F.CI, F.Power(b, F.CN1), F.Exp(F.Times(F.CI, b)));
+        }
+        if (a.isOne()) {
+          // ((-I-b)*E^(I*b))/b^2
+          return F.Times(F.Power(b, F.CN2), F.Subtract(F.CNI, b), F.Exp(F.Times(F.CI, b)));
+        }
+        if (a.isMinusOne()) {
+          // E^(I*b)/b
+          return F.Times(F.Power(b, F.CN1), F.Exp(F.Times(F.CI, b)));
+        }
         // SphericalHankelH1(a_,b_):=(Sqrt(Pi/2)*BesselJ(1/2*(1+2*a),b))/Sqrt(b)+(I*Sqrt(Pi/2)*BesselY(1/2*(1+2*a),b))/Sqrt(b)
         return F.Plus(
             F.Times(F.Power(b, F.CN1D2), F.Sqrt(F.CPiHalf),
@@ -1019,17 +989,17 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
+      if (z.isZero()) {
+        return F.CComplexInfinity;
+      }
       if (engine.isNumericMode() && n.isNumber() && z.isNumber()) {
         try {
           // Complex nc = n.evalComplex();
           // Complex zc = z.evalComplex();
           // return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
           return functionExpand(ast, engine);
-        } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-          return F.NIL;
+          return Errors.printMessage(S.SphericalHankelH1, rex, engine);
         }
       }
       return F.NIL;
@@ -1053,8 +1023,20 @@ public class BesselFunctions {
       if (ast.isAST2()) {
         IExpr a = ast.arg1();
         IExpr b = ast.arg2();
+        if (a.isZero()) {
+          // I/(E^(I*b)*b)
+          return F.Times(F.CI, F.Power(F.Times(F.Exp(F.Times(F.CI, b)), b), F.CN1));
+        }
+        if (a.isOne()) {
+          // (I-b)/(E^(I*b)*b^2)
+          return F.Times(F.Subtract(F.CI, b),
+              F.Power(F.Times(F.Exp(F.Times(F.CI, b)), F.Sqr(b)), F.CN1));
+        }
+        if (a.isMinusOne()) {
+          // 1/(E^(I*b)*b)
+          return F.Power(F.Times(F.Exp(F.Times(F.CI, b)), b), F.CN1);
+        }
         // SphericalHankelH2(a_,b_):=(Sqrt(Pi/2)*BesselJ(1/2*(1+2*a),b))/Sqrt(b)+(-I*Sqrt(Pi/2)*BesselY(1/2*(1+2*a),b))/Sqrt(b)
-
         return F.Plus(
             F.Times(Power(b, CN1D2), F.Sqrt(CPiHalf),
                 F.BesselJ(F.Times(F.C1D2, F.Plus(F.C1, F.Times(F.C2, a))), b)),
@@ -1069,18 +1051,14 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
+      if (z.isZero()) {
+        return F.CComplexInfinity;
+      }
       if (engine.isNumericMode() && n.isNumber() && z.isNumber()) {
         try {
-          // Complex nc = n.evalComplex();
-          // Complex zc = z.evalComplex();
-          // return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
           return functionExpand(ast, engine);
-        } catch (ValidateException ve) {
-          ve.printStackTrace();
-          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-          return F.NIL;
+          return Errors.printMessage(S.SphericalHankelH2, rex, engine);
         }
       }
       return F.NIL;
@@ -1149,11 +1127,8 @@ public class BesselFunctions {
           } else {
             return F.complexNum(BesselJS.sphericalBesselY(nDouble, zDouble));
           }
-
-        } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return Errors.printMessage(S.SphericalBesselY, rex, engine);
         }
       }
       return F.NIL;
@@ -1175,21 +1150,33 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
-      if (engine.isNumericMode() && n.isNumber() && z.isNumber()) {
-        try {
-          // side effect - throw ArgumentTypeException if no Complex value can be evaluated
-          // Complex nc = n.evalfc();
-          // Complex zc = z.evalfc();
-          // if (ast.isAST3()) {
-          // Complex a3 = ast.arg3().evalfc();
-          // }
-          return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
+      if (ast.isAST2()) {
+        if (n.isZero()) {
+          return F.Negate(F.StruveH(n, z));
+        }
+        if (engine.isNumericMode()) {
+          if (n.isNumber() && z.isNumber()) {
+            try {
+              return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
 
-        } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
-        } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+            } catch (RuntimeException rex) {
+              return Errors.printMessage(S.WeberE, rex, engine);
+            }
+          }
           return F.NIL;
+        }
+      }
+      if (ast.isAST3()) {
+        IExpr m = z;
+        z = ast.arg3();
+        if (engine.isNumericMode()) {
+          if (n.isNumber() && m.isNumber() && z.isNumber()) {
+            try {
+              return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
+            } catch (RuntimeException rex) {
+              return Errors.printMessage(S.WeberE, rex, engine);
+            }
+          }
         }
       }
       return F.NIL;

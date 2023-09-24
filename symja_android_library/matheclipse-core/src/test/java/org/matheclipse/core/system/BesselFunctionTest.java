@@ -33,6 +33,9 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
 
   public void testSphericalHankelH1() {
+    check("SphericalHankelH1(a,b)", //
+        "SphericalHankelH1(a,b)");
+    
     check("SphericalHankelH1(3, 1.5)", //
         "0.0283246+I*(-3.78927)");
     check("SphericalHankelH1(2, -5.0)", //
