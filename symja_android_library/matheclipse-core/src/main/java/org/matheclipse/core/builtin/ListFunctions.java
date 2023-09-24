@@ -7632,6 +7632,7 @@ public final class ListFunctions {
             int n = ast.arg3().toIntDefault();
             if (n > 0) {
               if (n > cleanedList.argSize()) {
+                // Cannot take `1` elements from a list of length `2`.
                 return Errors.printMessage(ast.topHead(), "insuff",
                     F.List(n, cleanedList.argSize()), engine);
               }

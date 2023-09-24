@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.gavaghan.geodesy.Ellipsoid;
 import org.gavaghan.geodesy.GeodeticCalculator;
 import org.gavaghan.geodesy.GeodeticMeasurement;
@@ -66,7 +64,6 @@ import com.google.common.collect.Sets.SetView;
 
 /** Functions for graph theory algorithms. */
 public class GraphFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -156,7 +153,7 @@ public class GraphFunctions {
         return GraphExpr.newInstance(resultGraph);
 
       } catch (RuntimeException rex) {
-        LOGGER.debug("GraphCenter.evaluate() failed", rex);
+        Errors.printMessage(S.GraphIntersection, rex, engine);
       }
       return F.NIL;
     }
@@ -231,7 +228,7 @@ public class GraphFunctions {
 
 
       } catch (RuntimeException rex) {
-        LOGGER.debug("GraphCenter.evaluate() failed", rex);
+        Errors.printMessage(S.GraphComplement, rex, engine);
       }
       return F.NIL;
     }
@@ -271,7 +268,7 @@ public class GraphFunctions {
         }
 
       } catch (RuntimeException rex) {
-        LOGGER.debug("GraphCenter.evaluate() failed", rex);
+        Errors.printMessage(S.GraphDifference, rex, engine);
       }
       return F.NIL;
     }
@@ -328,7 +325,7 @@ public class GraphFunctions {
         }
 
       } catch (RuntimeException rex) {
-        LOGGER.debug("GraphCenter.evaluate() failed", rex);
+        Errors.printMessage(S.IndexGraph, rex, engine);
       }
       return F.NIL;
     }
@@ -476,7 +473,7 @@ public class GraphFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        LOGGER.debug("GraphCTor.evaluate() failed", rex);
+        Errors.printMessage(S.Graph, rex, engine);
       }
       return F.NIL;
     }
@@ -534,7 +531,7 @@ public class GraphFunctions {
         IASTMutable list = F.ListAlloc(centerSet);
         return list;
       } catch (RuntimeException rex) {
-        LOGGER.debug("GraphCenter.evaluate() failed", rex);
+        Errors.printMessage(S.GraphCenter, rex, engine);
       }
       return F.NIL;
     }
@@ -591,7 +588,7 @@ public class GraphFunctions {
         }
         return diameter;
       } catch (RuntimeException rex) {
-        LOGGER.debug("GraphDiameter.evaluate() failed", rex);
+        Errors.printMessage(S.GraphDiameter, rex, engine);
       }
       return F.NIL;
     }
@@ -645,7 +642,7 @@ public class GraphFunctions {
         Set<IExpr> centerSet = graphMeasurer.getGraphPeriphery();
         return F.ListAlloc(centerSet);
       } catch (RuntimeException rex) {
-        LOGGER.debug("GraphPeriphery.evaluate() failed", rex);
+        Errors.printMessage(S.GraphPeriphery, rex, engine);
       }
       return F.NIL;
     }
@@ -694,6 +691,11 @@ public class GraphFunctions {
   private static class GraphQ extends AbstractEvaluator {
 
     @Override
+    public IExpr defaultReturn() {
+      return F.False;
+    }
+
+    @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST1()) {
@@ -703,7 +705,7 @@ public class GraphFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        LOGGER.debug("GraphQ.evaluate() failed", rex);
+        Errors.printMessage(S.GraphQ, rex, engine);
       }
       return S.False;
     }
@@ -757,7 +759,7 @@ public class GraphFunctions {
         }
         return radius;
       } catch (RuntimeException rex) {
-        LOGGER.debug("GraphRadius.evaluate() failed", rex);
+        Errors.printMessage(S.GraphRadius, rex, engine);
       }
       return F.NIL;
     }
@@ -910,7 +912,7 @@ public class GraphFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        LOGGER.error("FindShortestTour..evaluate() failed", rex);
+        Errors.printMessage(S.FindShortestTour, rex, engine);
       }
       return F.NIL;
     }
@@ -983,7 +985,7 @@ public class GraphFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        LOGGER.debug("FindSpanningTree.evaluate() failed", rex);
+        Errors.printMessage(S.FindSpanningTree, rex, engine);
       }
       return F.NIL;
     }
@@ -1031,24 +1033,17 @@ public class GraphFunctions {
   private static class AdjacencyMatrix extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.isAST1()) {
-          GraphExpr<?> gex = createGraph(ast.arg1());
-          if (gex == null) {
-            return F.NIL;
-          }
-
-          if (gex.isWeightedGraph()) {
-            return GraphExpr.weightedGraphToAdjacencyMatrix((Graph<IExpr, ExprWeightedEdge>) gex.toData());
-          } else {
-            return GraphExpr.graphToAdjacencyMatrix((Graph<IExpr, ExprEdge>) gex.toData());
-          }
-        }
-      } catch (RuntimeException rex) {
-        LOGGER.debug("AdjacencyMatrix.evaluate() failed", rex);
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+      GraphExpr<?> gex = createGraph(ast.arg1());
+      if (gex == null) {
+        return F.NIL;
       }
-      return F.NIL;
+
+      if (gex.isWeightedGraph()) {
+        return GraphExpr
+            .weightedGraphToAdjacencyMatrix((Graph<IExpr, ExprWeightedEdge>) gex.toData());
+      }
+      return GraphExpr.graphToAdjacencyMatrix(gex.toData());
     }
 
     @Override
@@ -1091,19 +1086,17 @@ public class GraphFunctions {
   private static class EdgeList extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.isAST1()) {
-          GraphExpr<?> gex = createGraph(ast.arg1());
-          if (gex == null) {
-            return F.NIL;
-          }
-          Graph<IExpr, ?> g = gex.toData();
-          return GraphExpr.edgesToIExpr(g)[0];
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+
+      if (ast.isAST1()) {
+        GraphExpr<?> gex = createGraph(ast.arg1());
+        if (gex == null) {
+          return F.NIL;
         }
-      } catch (RuntimeException rex) {
-        LOGGER.debug("EdgeList.evaluate() failed", rex);
+        Graph<IExpr, ?> g = gex.toData();
+        return GraphExpr.edgesToIExpr(g)[0];
       }
+
       return F.NIL;
     }
 
@@ -1148,22 +1141,23 @@ public class GraphFunctions {
    * </pre>
    */
   private static class EdgeQ extends AbstractEvaluator {
+    @Override
+    public IExpr defaultReturn() {
+      return F.False;
+    }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
 
-        if (ast.isAST2() && ast.arg2().isEdge()) {
-          IAST edge = (IAST) ast.arg2();
-          GraphExpr<?> gex = getGraphExpr(ast.arg1());
-          if (gex != null) {
-            Graph<IExpr, ?> g = gex.toData();
-            return F.booleSymbol(g.containsEdge(edge.first(), edge.second()));
-          }
+      if (ast.isAST2() && ast.arg2().isEdge()) {
+        IAST edge = (IAST) ast.arg2();
+        GraphExpr<?> gex = getGraphExpr(ast.arg1());
+        if (gex != null) {
+          Graph<IExpr, ?> g = gex.toData();
+          return F.booleSymbol(g.containsEdge(edge.first(), edge.second()));
         }
-      } catch (RuntimeException rex) {
-        LOGGER.debug("EdgeQ.evaluate() failed", rex);
       }
+
       return S.False;
     }
 
@@ -1177,20 +1171,13 @@ public class GraphFunctions {
   private static class EdgeRules extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.isAST1()) {
-          GraphExpr<?> gex = createGraph(ast.arg1());
-          if (gex == null) {
-            return F.NIL;
-          }
-          Graph<IExpr, ?> g = gex.toData();
-          return GraphExpr.edgesToRules(g)[0];
-        }
-      } catch (RuntimeException rex) {
-        LOGGER.debug("EdgeList.evaluate() failed", rex);
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+      GraphExpr<?> gex = createGraph(ast.arg1());
+      if (gex == null) {
+        return F.NIL;
       }
-      return F.NIL;
+      Graph<IExpr, ?> g = gex.toData();
+      return GraphExpr.edgesToRules(g)[0];
     }
 
     @Override
@@ -1219,32 +1206,27 @@ public class GraphFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        GraphExpr<?> gex = createGraph(ast.arg1());
-        if (gex == null) {
-          return F.NIL;
-        }
-        Graph<IExpr, ?> g = gex.toData();
-        Map<IExpr, Double> scores;
-        if (gex.isWeightedGraph()) {
-          scores = getWeightedScores((Graph<IExpr, ExprWeightedEdge>) g);
-        } else {
-          scores = getScores((Graph<IExpr, ExprEdge>) g);
-        }
-
-        Set<IExpr> vertexSet = g.vertexSet();
-        return F.mapSet(vertexSet, expr -> {
-          Double value = scores.get(expr);
-          if (value == null) {
-            return null;
-          }
-          return F.num(value);
-        });
-      } catch (RuntimeException rex) {
-        LOGGER.debug("ClosenessCentrality.evaluate() failed", rex);
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+      GraphExpr<?> gex = createGraph(ast.arg1());
+      if (gex == null) {
+        return F.NIL;
       }
-      return F.NIL;
+      Graph<IExpr, ?> g = gex.toData();
+      Map<IExpr, Double> scores;
+      if (gex.isWeightedGraph()) {
+        scores = getWeightedScores((Graph<IExpr, ExprWeightedEdge>) g);
+      } else {
+        scores = getScores((Graph<IExpr, ExprEdge>) g);
+      }
+
+      Set<IExpr> vertexSet = g.vertexSet();
+      return F.mapSet(vertexSet, expr -> {
+        Double value = scores.get(expr);
+        if (value == null) {
+          return null;
+        }
+        return F.num(value);
+      });
     }
 
     @Override
@@ -1254,23 +1236,19 @@ public class GraphFunctions {
   }
 
   private static class ConnectedGraphQ extends AbstractEvaluator {
+    @Override
+    public IExpr defaultReturn() {
+      return F.False;
+    }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.isAST1()) {
-          GraphExpr<?> gex = getGraphExpr(ast.arg1());
-          if (gex == null) {
-            return F.NIL;
-          }
-          Graph<IExpr, ? extends IExprEdge> graph =
-              (Graph<IExpr, ? extends IExprEdge>) gex.toData();
-          return GraphTests.isConnected(graph) ? S.True : S.False;
-        }
-      } catch (RuntimeException rex) {
-        LOGGER.debug("PathGraphQ.evaluate() failed", rex);
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+      GraphExpr<?> gex = getGraphExpr(ast.arg1());
+      if (gex == null) {
+        return F.NIL;
       }
-      return S.False;
+      Graph<IExpr, ? extends IExprEdge> graph = (Graph<IExpr, ? extends IExprEdge>) gex.toData();
+      return GraphTests.isConnected(graph) ? S.True : S.False;
     }
 
     @Override
@@ -1294,7 +1272,7 @@ public class GraphFunctions {
   private static class EigenvectorCentrality extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
       // try {
       // GraphExpr<?> gex = createGraph(ast.arg1());
       // if (gex == null) {
@@ -1341,34 +1319,30 @@ public class GraphFunctions {
   private static class EulerianGraphQ extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.isAST1()) {
-          GraphExpr<?> gex = getGraphExpr(ast.arg1());
-          if (gex == null) {
-            return S.False;
-          }
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
 
-          // if (gex.isWeightedGraph()) {
-          // Graph<IExpr, ExprWeightedEdge> g = (Graph<IExpr, ExprWeightedEdge>)
-          // gex.toData();
-          // GraphPath<IExpr, ExprWeightedEdge> path = weightedEulerianCycle(g);
-          // if (path != null) {
-          // // Graph is Eulerian
-          // return S.True;
-          // }
-          // } else {
-          // Graph<IExpr, ExprEdge> g = (Graph<IExpr, ExprEdge>) gex.toData();
-          GraphPath<IExpr, ?> path = eulerianCycle(gex);
-          if (path != null) {
-            // Graph is Eulerian
-            return S.True;
-          }
-          // }
-        }
-      } catch (RuntimeException rex) {
-        LOGGER.debug("EulerianGraphQ.evaluate() failed", rex);
+      GraphExpr<?> gex = getGraphExpr(ast.arg1());
+      if (gex == null) {
+        return S.False;
       }
+
+      // if (gex.isWeightedGraph()) {
+      // Graph<IExpr, ExprWeightedEdge> g = (Graph<IExpr, ExprWeightedEdge>)
+      // gex.toData();
+      // GraphPath<IExpr, ExprWeightedEdge> path = weightedEulerianCycle(g);
+      // if (path != null) {
+      // // Graph is Eulerian
+      // return S.True;
+      // }
+      // } else {
+      // Graph<IExpr, ExprEdge> g = (Graph<IExpr, ExprEdge>) gex.toData();
+      GraphPath<IExpr, ?> path = eulerianCycle(gex);
+      if (path != null) {
+        // Graph is Eulerian
+        return S.True;
+      }
+      // }
+
       return S.False;
     }
 
@@ -1415,24 +1389,27 @@ public class GraphFunctions {
   private static class HamiltonianGraphQ extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.isAST1()) {
-          GraphExpr<?> gex = getGraphExpr(ast.arg1());
-          if (gex == null) {
-            return F.NIL;
-          }
+    public IExpr defaultReturn() {
+      return F.False;
+    }
 
-          // Graph<IExpr, ?> g = gex.toData();
-          GraphPath<IExpr, ?> path = hamiltonianCycle(gex);
-          if (path != null) {
-            // Graph is Hamiltonian
-            return S.True;
-          }
+    @Override
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+
+      if (ast.isAST1()) {
+        GraphExpr<?> gex = getGraphExpr(ast.arg1());
+        if (gex == null) {
+          return F.NIL;
         }
-      } catch (RuntimeException rex) {
-        LOGGER.debug("HamiltonianGraphQ.evaluate() failed", rex);
+
+        // Graph<IExpr, ?> g = gex.toData();
+        GraphPath<IExpr, ?> path = hamiltonianCycle(gex);
+        if (path != null) {
+          // Graph is Hamiltonian
+          return S.True;
+        }
       }
+
       return S.False;
     }
 
@@ -1444,26 +1421,26 @@ public class GraphFunctions {
 
 
   private static class IsomorphicGraphQ extends AbstractEvaluator {
+    @Override
+    public IExpr defaultReturn() {
+      return F.False;
+    }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        GraphExpr<?> gex1 = getGraphExpr(ast.arg1());
-        if (gex1 == null) {
-          return F.NIL;
-        }
-        GraphExpr<?> gex2 = getGraphExpr(ast.arg2());
-        if (gex2 == null) {
-          return F.NIL;
-        }
-        AHUUnrootedTreeIsomorphismInspector<IExpr, ExprEdge> isomorphism =
-            new AHUUnrootedTreeIsomorphismInspector<>((Graph<IExpr, ExprEdge>) gex1.toData(),
-                (Graph<IExpr, ExprEdge>) gex2.toData());
-        return F.booleSymbol(isomorphism.isomorphismExists());
-      } catch (RuntimeException rex) {
-        LOGGER.debug("IsomorphicGraphQ.evaluate() failed", rex);
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+
+      GraphExpr<?> gex1 = getGraphExpr(ast.arg1());
+      if (gex1 == null) {
+        return F.NIL;
       }
-      return S.False;
+      GraphExpr<?> gex2 = getGraphExpr(ast.arg2());
+      if (gex2 == null) {
+        return F.NIL;
+      }
+      AHUUnrootedTreeIsomorphismInspector<IExpr, ExprEdge> isomorphism =
+          new AHUUnrootedTreeIsomorphismInspector<>((Graph<IExpr, ExprEdge>) gex1.toData(),
+              (Graph<IExpr, ExprEdge>) gex2.toData());
+      return F.booleSymbol(isomorphism.isomorphismExists());
     }
 
     @Override
@@ -1476,61 +1453,58 @@ public class GraphFunctions {
   private static class FindCycle extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        int minCycleLength = 0;
-        int maxCycleLength = Integer.MAX_VALUE;
-        int atMostCycles = 1;
-        if (ast.argSize() >= 2) {
-          IExpr arg2 = ast.arg2();
-          if (arg2.isInfinity()) {
-            // fall through
-          } else {
-            int vertexes = arg2.toIntDefault();
-            if (vertexes > 0) {
-              minCycleLength = vertexes;
-              maxCycleLength = vertexes;
-            } else if (arg2.isList2()) {
-              vertexes = arg2.first().toIntDefault();
-              if (vertexes <= 0) {
-                // The argument `2` in `1` is not a valid parameter.
-                return Errors.printMessage(ast.topHead(), "inv", F.List(ast, arg2), engine);
-              }
-              minCycleLength = vertexes;
-              vertexes = arg2.second().toIntDefault();
-              if (vertexes <= 0) {
-                // The argument `2` in `1` is not a valid parameter.
-                return Errors.printMessage(ast.topHead(), "inv", F.List(ast, arg2), engine);
-              }
-              maxCycleLength = vertexes;
-            } else {
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+
+      int minCycleLength = 0;
+      int maxCycleLength = Integer.MAX_VALUE;
+      int atMostCycles = 1;
+      if (ast.argSize() >= 2) {
+        IExpr arg2 = ast.arg2();
+        if (arg2.isInfinity()) {
+          // fall through
+        } else {
+          int vertexes = arg2.toIntDefault();
+          if (vertexes > 0) {
+            minCycleLength = vertexes;
+            maxCycleLength = vertexes;
+          } else if (arg2.isList2()) {
+            vertexes = arg2.first().toIntDefault();
+            if (vertexes <= 0) {
               // The argument `2` in `1` is not a valid parameter.
               return Errors.printMessage(ast.topHead(), "inv", F.List(ast, arg2), engine);
             }
-          }
-        }
-        if (ast.isAST3()) {
-          IExpr arg3 = ast.arg3();
-          if (arg3.equals(S.All)) {
-            atMostCycles = Integer.MAX_VALUE;
-          } else {
-            atMostCycles = arg3.toIntDefault();
-            if (atMostCycles <= 0) {
+            minCycleLength = vertexes;
+            vertexes = arg2.second().toIntDefault();
+            if (vertexes <= 0) {
               // The argument `2` in `1` is not a valid parameter.
-              return Errors.printMessage(ast.topHead(), "inv", F.List(ast, arg3), engine);
+              return Errors.printMessage(ast.topHead(), "inv", F.List(ast, arg2), engine);
             }
+            maxCycleLength = vertexes;
+          } else {
+            // The argument `2` in `1` is not a valid parameter.
+            return Errors.printMessage(ast.topHead(), "inv", F.List(ast, arg2), engine);
           }
         }
-        GraphExpr<?> gex = createGraph(ast.arg1());
-        if (gex == null) {
-          return F.NIL;
-        }
-
-        return findCycles(gex, minCycleLength, maxCycleLength, atMostCycles);
-      } catch (RuntimeException rex) {
-        LOGGER.debug("FindCycle.evaluate() failed", rex);
       }
-      return F.NIL;
+      if (ast.isAST3()) {
+        IExpr arg3 = ast.arg3();
+        if (arg3.equals(S.All)) {
+          atMostCycles = Integer.MAX_VALUE;
+        } else {
+          atMostCycles = arg3.toIntDefault();
+          if (atMostCycles <= 0) {
+            // The argument `2` in `1` is not a valid parameter.
+            return Errors.printMessage(ast.topHead(), "inv", F.List(ast, arg3), engine);
+          }
+        }
+      }
+      GraphExpr<?> gex = createGraph(ast.arg1());
+      if (gex == null) {
+        return F.NIL;
+      }
+
+      return findCycles(gex, minCycleLength, maxCycleLength, atMostCycles);
+
     }
 
     @Override
@@ -1579,27 +1553,20 @@ public class GraphFunctions {
   private static class FindEulerianCycle extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.isAST1()) {
-          GraphExpr<?> gex = createGraph(ast.arg1());
-          if (gex == null) {
-            return F.NIL;
-          }
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
 
-          GraphPath<IExpr, ?> path = eulerianCycle(gex);
-          if (path == null) {
-            // Graph is not Eulerian
-            return F.CEmptyList;
-          }
-          final List<IExpr> iList = path.getVertexList();
-          return F.mapRange(0, iList.size() - 1,
-              i -> F.DirectedEdge(iList.get(i), iList.get(i + 1)));
-        }
-      } catch (RuntimeException rex) {
-        LOGGER.debug("FindEulerianCycle.evaluate() failed", rex);
+      GraphExpr<?> gex = createGraph(ast.arg1());
+      if (gex == null) {
+        return F.NIL;
       }
-      return F.NIL;
+
+      GraphPath<IExpr, ?> path = eulerianCycle(gex);
+      if (path == null) {
+        // Graph is not Eulerian
+        return F.CEmptyList;
+      }
+      final List<IExpr> iList = path.getVertexList();
+      return F.mapRange(0, iList.size() - 1, i -> F.DirectedEdge(iList.get(i), iList.get(i + 1)));
     }
 
     @Override
@@ -1644,26 +1611,18 @@ public class GraphFunctions {
   private static class FindHamiltonianCycle extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.isAST1()) {
-          GraphExpr<?> gex = createGraph(ast.arg1());
-          if (gex == null) {
-            return F.NIL;
-          }
-          GraphPath<IExpr, ?> path = hamiltonianCycle(gex);
-          if (path == null) {
-            // Graph is not Hamiltonian
-            return F.CEmptyList;
-          }
-          List<IExpr> iList = path.getVertexList();
-          return F.mapRange(0, iList.size() - 1,
-              i -> F.DirectedEdge(iList.get(i), iList.get(i + 1)));
-        }
-      } catch (RuntimeException rex) {
-        LOGGER.debug("FindHamiltonianCycle.evaluate() failed", rex);
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+      GraphExpr<?> gex = createGraph(ast.arg1());
+      if (gex == null) {
+        return F.NIL;
       }
-      return F.NIL;
+      GraphPath<IExpr, ?> path = hamiltonianCycle(gex);
+      if (path == null) {
+        // Graph is not Hamiltonian
+        return F.CEmptyList;
+      }
+      List<IExpr> iList = path.getVertexList();
+      return F.mapRange(0, iList.size() - 1, i -> F.DirectedEdge(iList.get(i), iList.get(i + 1)));
     }
 
     @Override
@@ -1676,28 +1635,24 @@ public class GraphFunctions {
   private static class FindGraphIsomorphism extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        GraphExpr<?> gex1 = getGraphExpr(ast.arg1());
-        if (gex1 == null) {
-          return F.NIL;
-        }
-        GraphExpr<?> gex2 = createGraph(ast.arg2());
-        if (gex2 == null) {
-          return F.NIL;
-        }
-        AHUUnrootedTreeIsomorphismInspector<IExpr, ExprEdge> isomorphism =
-            new AHUUnrootedTreeIsomorphismInspector<>((Graph<IExpr, ExprEdge>) gex1.toData(),
-                (Graph<IExpr, ExprEdge>) gex2.toData());
-        IsomorphicGraphMapping<IExpr, ExprEdge> mapping = isomorphism.getMapping();
-        if (mapping == null) {
-          return F.CEmptyList;
-        }
-        return F.list(F.assoc(F.mapMap(mapping.getForwardMapping(), (k, v) -> F.Rule(k, v))));
-      } catch (RuntimeException rex) {
-        LOGGER.debug("FindGraphIsomorphism.evaluate() failed", rex);
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+
+      GraphExpr<?> gex1 = getGraphExpr(ast.arg1());
+      if (gex1 == null) {
+        return F.NIL;
       }
-      return F.NIL;
+      GraphExpr<?> gex2 = createGraph(ast.arg2());
+      if (gex2 == null) {
+        return F.NIL;
+      }
+      AHUUnrootedTreeIsomorphismInspector<IExpr, ExprEdge> isomorphism =
+          new AHUUnrootedTreeIsomorphismInspector<>((Graph<IExpr, ExprEdge>) gex1.toData(),
+              (Graph<IExpr, ExprEdge>) gex2.toData());
+      IsomorphicGraphMapping<IExpr, ExprEdge> mapping = isomorphism.getMapping();
+      if (mapping == null) {
+        return F.CEmptyList;
+      }
+      return F.list(F.assoc(F.mapMap(mapping.getForwardMapping(), (k, v) -> F.Rule(k, v))));
     }
 
     @Override
@@ -1710,7 +1665,7 @@ public class GraphFunctions {
   private static class FindIndependentVertexSet extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
       // try {
       // GraphExpr<?> gex = createGraph(ast.arg1());
       // if (gex == null) {
@@ -1801,9 +1756,10 @@ public class GraphFunctions {
           return result;
         }
       } catch (IllegalArgumentException iae) {
-        LOGGER.log(engine.getLogLevel(), "Graph must be undirected");
+        // Graph must be undirected
+        Errors.printMessage(S.FindVertexCover, iae, engine);
       } catch (RuntimeException rex) {
-        LOGGER.debug("FindVertexCover.evaluate() failed", rex);
+        Errors.printMessage(S.FindVertexCover, rex, engine);
       }
       return F.NIL;
     }
@@ -1843,24 +1799,19 @@ public class GraphFunctions {
   private static class FindShortestPath extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        GraphExpr<?> gex = createGraph(ast.arg1());
-        if (gex == null) {
-          return F.NIL;
-        }
-
-        Graph<IExpr, ?> g = gex.toData();
-
-        DijkstraShortestPath<IExpr, ?> dijkstraAlg = new DijkstraShortestPath<>(g);
-        SingleSourcePaths<IExpr, ?> iPaths = dijkstraAlg.getPaths(ast.arg2());
-        GraphPath<IExpr, ?> path = iPaths.getPath(ast.arg3());
-
-        return Object2Expr.convertList(path.getVertexList(), true, false);
-      } catch (RuntimeException rex) {
-        LOGGER.debug("FindShortestPath.evaluate() failed", rex);
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+      GraphExpr<?> gex = createGraph(ast.arg1());
+      if (gex == null) {
+        return F.NIL;
       }
-      return F.NIL;
+
+      Graph<IExpr, ?> g = gex.toData();
+
+      DijkstraShortestPath<IExpr, ?> dijkstraAlg = new DijkstraShortestPath<>(g);
+      SingleSourcePaths<IExpr, ?> iPaths = dijkstraAlg.getPaths(ast.arg2());
+      GraphPath<IExpr, ?> path = iPaths.getPath(ast.arg3());
+
+      return Object2Expr.convertList(path.getVertexList(), true, false);
     }
 
     @Override
@@ -1873,7 +1824,7 @@ public class GraphFunctions {
   private static class LineGraph extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
       // TODO
       // try {
       // GraphExpr<ExprEdge> gex1 = createGraph(ast.arg1());
@@ -1901,45 +1852,44 @@ public class GraphFunctions {
   private static class PathGraphQ extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.isAST1()) {
-          GraphExpr<?> gex = getGraphExpr(ast.arg1());
-          if (gex == null) {
-            return F.NIL;
-          }
+    public IExpr defaultReturn() {
+      return F.False;
+    }
 
-          Graph<IExpr, ? extends IExprEdge> graph =
-              (Graph<IExpr, ? extends IExprEdge>) gex.toData();
-          GraphType t = graph.getType();
-          if (t == null) {
-            return F.NIL;
-          }
-          if (t.isDirected()) {
-            for (IExpr v : graph.vertexSet()) {
-              if (graph.inDegreeOf(v) != 0 && graph.inDegreeOf(v) != 1) {
-                return S.False;
-              }
-              if (graph.outDegreeOf(v) != 0 && graph.outDegreeOf(v) != 1) {
-                return S.False;
-              }
-              if (graph.inDegreeOf(v) == 0 && graph.outDegreeOf(v) == 0) {
-                return S.False;
-              }
-            }
-          } else {
-            for (IExpr v : graph.vertexSet()) {
-              if (graph.degreeOf(v) != 1 && graph.degreeOf(v) != 2) {
-                return S.False;
-              }
-            }
-          }
-          return GraphTests.isConnected(graph) ? S.True : S.False;
-        }
-      } catch (RuntimeException rex) {
-        LOGGER.debug("PathGraphQ.evaluate() failed", rex);
+    @Override
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+
+      GraphExpr<?> gex = getGraphExpr(ast.arg1());
+      if (gex == null) {
+        return F.NIL;
       }
-      return S.False;
+
+      Graph<IExpr, ? extends IExprEdge> graph = (Graph<IExpr, ? extends IExprEdge>) gex.toData();
+      GraphType t = graph.getType();
+      if (t == null) {
+        return F.NIL;
+      }
+      if (t.isDirected()) {
+        for (IExpr v : graph.vertexSet()) {
+          if (graph.inDegreeOf(v) != 0 && graph.inDegreeOf(v) != 1) {
+            return S.False;
+          }
+          if (graph.outDegreeOf(v) != 0 && graph.outDegreeOf(v) != 1) {
+            return S.False;
+          }
+          if (graph.inDegreeOf(v) == 0 && graph.outDegreeOf(v) == 0) {
+            return S.False;
+          }
+        }
+      } else {
+        for (IExpr v : graph.vertexSet()) {
+          if (graph.degreeOf(v) != 1 && graph.degreeOf(v) != 2) {
+            return S.False;
+          }
+        }
+      }
+      return GraphTests.isConnected(graph) ? S.True : S.False;
+
     }
 
     @Override
@@ -1951,30 +1901,28 @@ public class GraphFunctions {
   private static class PlanarGraphQ extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.isAST1()) {
-          GraphExpr<?> gex = getGraphExpr(ast.arg1());
-          if (gex == null) {
-            return S.False;
-          }
+    public IExpr defaultReturn() {
+      return F.False;
+    }
 
-          if (gex.isWeightedGraph()) {
-            Graph<IExpr, ExprWeightedEdge> g = (Graph<IExpr, ExprWeightedEdge>) gex.toData();
-            PlanarityTestingAlgorithm<IExpr, ExprWeightedEdge> inspector =
-                new BoyerMyrvoldPlanarityInspector<IExpr, ExprWeightedEdge>(g);
-            return F.booleSymbol(inspector.isPlanar());
-          } else {
-            Graph<IExpr, ExprEdge> g = (Graph<IExpr, ExprEdge>) gex.toData();
-            PlanarityTestingAlgorithm<IExpr, ExprEdge> inspector =
-                new BoyerMyrvoldPlanarityInspector<IExpr, ExprEdge>(g);
-            return F.booleSymbol(inspector.isPlanar());
-          }
-        }
-      } catch (RuntimeException rex) {
-        LOGGER.debug("PlanarGraphQ.evaluate() failed", rex);
+    @Override
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+
+      GraphExpr<?> gex = getGraphExpr(ast.arg1());
+      if (gex == null) {
+        return S.False;
       }
-      return S.False;
+
+      if (gex.isWeightedGraph()) {
+        Graph<IExpr, ExprWeightedEdge> g = (Graph<IExpr, ExprWeightedEdge>) gex.toData();
+        PlanarityTestingAlgorithm<IExpr, ExprWeightedEdge> inspector =
+            new BoyerMyrvoldPlanarityInspector<IExpr, ExprWeightedEdge>(g);
+        return F.booleSymbol(inspector.isPlanar());
+      }
+      Graph<IExpr, ExprEdge> g = (Graph<IExpr, ExprEdge>) gex.toData();
+      PlanarityTestingAlgorithm<IExpr, ExprEdge> inspector =
+          new BoyerMyrvoldPlanarityInspector<IExpr, ExprEdge>(g);
+      return F.booleSymbol(inspector.isPlanar());
     }
 
     @Override
@@ -2012,31 +1960,28 @@ public class GraphFunctions {
   private static class VertexEccentricity extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        GraphExpr<?> gex = createGraph(ast.arg1());
-        if (gex == null) {
-          return F.NIL;
-        }
-        Graph<IExpr, ?> g = gex.toData();
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      GraphExpr<?> gex = createGraph(arg1);
+      if (gex == null) {
+        return F.NIL;
+      }
+      Graph<IExpr, ?> g = gex.toData();
+      GraphMeasurer<IExpr, ?> graphMeasurer = new GraphMeasurer<>(g);
+      Map<IExpr, Double> centerSet = graphMeasurer.getVertexEccentricityMap();
 
-        GraphMeasurer<IExpr, ?> graphMeasurer = new GraphMeasurer<>(g);
-        Map<IExpr, Double> centerSet = graphMeasurer.getVertexEccentricityMap();
-        Double dValue = centerSet.get(ast.arg2());
-        if (dValue != null) {
-          INum vertexEccentricity = F.num(dValue);
-          if (gex.isWeightedGraph()) {
-            return vertexEccentricity;
-          }
-          int intVertexEccentricity = vertexEccentricity.toIntDefault();
-          if (intVertexEccentricity != Integer.MIN_VALUE) {
-            return F.ZZ(intVertexEccentricity);
-          }
+      Double dValue = centerSet.get(arg2);
+      if (dValue != null) {
+        INum vertexEccentricity = F.num(dValue);
+        if (gex.isWeightedGraph()) {
           return vertexEccentricity;
         }
-
-      } catch (RuntimeException rex) {
-        LOGGER.debug("VertexEccentricity.evaluate() failed", rex);
+        int intVertexEccentricity = vertexEccentricity.toIntDefault();
+        if (intVertexEccentricity != Integer.MIN_VALUE) {
+          return F.ZZ(intVertexEccentricity);
+        }
+        return vertexEccentricity;
       }
       return F.NIL;
     }
@@ -2081,20 +2026,13 @@ public class GraphFunctions {
   private static class VertexList extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.isAST1()) {
-          GraphExpr<?> gex = createGraph(ast.arg1());
-          if (gex == null) {
-            return F.NIL;
-          }
-          Graph<IExpr, ?> g = gex.toData();
-          return GraphExpr.vertexToIExpr(g);
-        }
-      } catch (RuntimeException rex) {
-        LOGGER.debug("VertexList.evaluate() failed", rex);
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+      GraphExpr<?> gex = createGraph(ast.arg1());
+      if (gex == null) {
+        return F.NIL;
       }
-      return F.NIL;
+      Graph<IExpr, ?> g = gex.toData();
+      return GraphExpr.vertexToIExpr(g);
     }
 
     @Override
@@ -2140,17 +2078,16 @@ public class GraphFunctions {
   private static class VertexQ extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.isAST2()) {
-          GraphExpr<?> gex = getGraphExpr(ast.arg1());
-          if (gex != null) {
-            Graph<IExpr, ?> g = gex.toData();
-            return F.booleSymbol(g.containsVertex(ast.arg2()));
-          }
-        }
-      } catch (RuntimeException rex) {
-        LOGGER.debug("VertexQ.evaluate() failed", rex);
+    public IExpr defaultReturn() {
+      return F.False;
+    }
+
+    @Override
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+      GraphExpr<?> gex = getGraphExpr(ast.arg1());
+      if (gex != null) {
+        Graph<IExpr, ?> g = gex.toData();
+        return F.booleSymbol(g.containsVertex(ast.arg2()));
       }
       return S.False;
     }
@@ -2164,21 +2101,15 @@ public class GraphFunctions {
   private static class WeaklyConnectedGraphQ extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.isAST1()) {
-          GraphExpr<?> gex = createGraph(ast.arg1());
-          if (gex == null) {
-            return F.NIL;
-          }
-          Graph<IExpr, ? extends IExprEdge> graph =
-              (Graph<IExpr, ? extends IExprEdge>) gex.toData();
-          return GraphTests.isWeaklyConnected(graph) ? S.True : S.False;
-        }
-      } catch (RuntimeException rex) {
-        LOGGER.debug("PathGraphQ.evaluate() failed", rex);
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+
+      GraphExpr<?> gex = createGraph(ast.arg1());
+      if (gex == null) {
+        return F.NIL;
       }
-      return S.False;
+      Graph<IExpr, ? extends IExprEdge> graph = (Graph<IExpr, ? extends IExprEdge>) gex.toData();
+      return GraphTests.isWeaklyConnected(graph) ? S.True : S.False;
+
     }
 
     @Override
@@ -2190,24 +2121,16 @@ public class GraphFunctions {
   private static class WeightedAdjacencyMatrix extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.isAST1()) {
-          GraphExpr<?> gex = createGraph(ast.arg1());
-          if (gex == null) {
-            return F.NIL;
-          }
-          if (gex.isWeightedGraph()) {
-            return GraphExpr.weightedGraphToWeightedAdjacencyMatrix(
-                (Graph<IExpr, ExprWeightedEdge>) gex.toData());
-          } else {
-            return GraphExpr.graphToAdjacencyMatrix((Graph<IExpr, ExprEdge>) gex.toData());
-          }
-        }
-      } catch (RuntimeException rex) {
-        LOGGER.debug("WeightedAdjacencyMatrix.evaluate() failed", rex);
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+      GraphExpr<?> gex = createGraph(ast.arg1());
+      if (gex == null) {
+        return F.NIL;
       }
-      return F.NIL;
+      if (gex.isWeightedGraph()) {
+        return GraphExpr
+            .weightedGraphToWeightedAdjacencyMatrix((Graph<IExpr, ExprWeightedEdge>) gex.toData());
+      }
+      return GraphExpr.graphToAdjacencyMatrix(gex.toData());
     }
 
     @Override
@@ -2220,16 +2143,15 @@ public class GraphFunctions {
   private static class WeightedGraphQ extends AbstractEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.isAST1()) {
-          GraphExpr<?> gex = getGraphExpr(ast.arg1());
-          if (gex != null && gex.isWeightedGraph()) {
-            return S.True;
-          }
-        }
-      } catch (RuntimeException rex) {
-        LOGGER.debug("WeightedGraphQ.evaluate() failed", rex);
+    public IExpr defaultReturn() {
+      return F.False;
+    }
+
+    @Override
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+      GraphExpr<?> gex = getGraphExpr(ast.arg1());
+      if (gex != null && gex.isWeightedGraph()) {
+        return S.True;
       }
       return S.False;
     }
