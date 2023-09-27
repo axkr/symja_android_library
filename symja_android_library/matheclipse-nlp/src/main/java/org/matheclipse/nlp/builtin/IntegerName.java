@@ -1,4 +1,4 @@
-package org.matheclipse.io.builtin;
+package org.matheclipse.nlp.builtin;
 
 import java.util.Locale;
 import org.matheclipse.core.eval.EvalEngine;

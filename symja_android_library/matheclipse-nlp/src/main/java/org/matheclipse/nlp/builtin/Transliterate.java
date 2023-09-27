@@ -1,4 +1,4 @@
-package org.matheclipse.io.builtin;
+package org.matheclipse.nlp.builtin;
 
 import java.util.HashMap;
 import java.util.Map;

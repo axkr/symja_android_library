@@ -9,6 +9,7 @@ import org.matheclipse.io.builtin.DatasetFunctions;
 import org.matheclipse.io.builtin.DynamicSwingFunctions;
 import org.matheclipse.io.builtin.FileIOFunctions;
 import org.matheclipse.io.builtin.SwingFunctions;
+import org.matheclipse.nlp.NLPInit;
 
 public class IOInit {
   public static void init() {
@@ -20,13 +21,11 @@ public class IOInit {
 
     // initialize from module matheclipse-image:
     ImageInit.init();
+    NLPInit.init();
 
     S.Import.setEvaluator(new org.matheclipse.io.builtin.Import());
-    S.IntegerName.setEvaluator(new org.matheclipse.io.builtin.IntegerName());
-    S.RemoveDiacritics.setEvaluator(new org.matheclipse.io.builtin.RemoveDiacritics());
     S.SemanticImport.setEvaluator(new org.matheclipse.io.builtin.SemanticImport());
     S.SemanticImportString.setEvaluator(new org.matheclipse.io.builtin.SemanticImportString());
-    S.Transliterate.setEvaluator(new org.matheclipse.io.builtin.Transliterate());
     FileIOFunctions.initialize();
     DynamicSwingFunctions.initialize();
     SwingFunctions.initialize();

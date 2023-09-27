@@ -127,9 +127,9 @@ public class SymjaServer {
     Config.SERVER_REQUEST_TIMEOUT_SECONDS = 10;
     EvalEngine.get().setPackageMode(true);
     F.initSymbols();
-    S.IntegerName.setEvaluator(new org.matheclipse.io.builtin.IntegerName());
-    S.RemoveDiacritics.setEvaluator(new org.matheclipse.io.builtin.RemoveDiacritics());
-    S.Transliterate.setEvaluator(new org.matheclipse.io.builtin.Transliterate());
+    S.IntegerName.setEvaluator(new org.matheclipse.nlp.builtin.IntegerName());
+    S.RemoveDiacritics.setEvaluator(new org.matheclipse.nlp.builtin.RemoveDiacritics());
+    S.Transliterate.setEvaluator(new org.matheclipse.nlp.builtin.Transliterate());
     FuzzyParserFactory.initialize();
   }
 
