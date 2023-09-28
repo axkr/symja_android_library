@@ -338,16 +338,17 @@ public class ComplexNum implements IComplexNum {
     return Double.compare(temp, 1.0);
   }
 
-  public static int compare(final Complex c1, final Complex c2) {
-    int c = Double.compare(c1.getReal(), c2.getReal());
-    if (c != 0) {
-      return c;
-    }
-    return Double.compare(c1.getImaginary(), c2.getImaginary());
-  }
+  // public static int compare(final Complex c1, final Complex c2) {
+  // int c = Double.compare(c1.getReal(), c2.getReal());
+  // if (c != 0) {
+  // return c;
+  // }
+  // return Double.compare(c1.getImaginary(), c2.getImaginary());
+  // }
 
   public int compareTo(final Complex that) {
-    return compare(fComplex, that);
+    return fComplex.compareTo(that);
+    // return compare(fComplex, that);
   }
 
   /**

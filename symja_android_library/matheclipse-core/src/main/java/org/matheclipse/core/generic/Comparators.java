@@ -48,7 +48,7 @@ public final class Comparators {
       double n1 = o2.norm();
       double n2 = o1.norm();
       if (F.isFuzzyEquals(n1, n2, Config.DEFAULT_CHOP_DELTA)) {
-        return ComplexNum.compare(o1, o2);
+        return o1.compareTo(o2);
       }
       return n1 < n2 ? -1 : 1;
     }
