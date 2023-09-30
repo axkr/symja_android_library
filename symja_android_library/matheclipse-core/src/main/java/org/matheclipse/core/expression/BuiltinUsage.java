@@ -2,7 +2,6 @@ package org.matheclipse.core.expression;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
-import org.matheclipse.core.interfaces.ISymbol;
 
 public class BuiltinUsage {
   private static final String[] USAGE = new String[ID.Zeta + 10];
@@ -607,12 +606,9 @@ public class BuiltinUsage {
   }
 
   public static String summaryText(String symbolStr) {
-    if (!IS_INITIALIZED.get()) {
-      init();
-    }
-    ISymbol symbol = F.symbol(symbolStr);
-    if (symbol.isBuiltInSymbol()) {
-      String str = USAGE[symbol.ordinal()];
+    Integer ordinalId = ID.STRING_TO_ID_MAP.get(symbolStr);
+    if (ordinalId != null) {
+      String str = USAGE[ordinalId];
       return str != null ? str : "";
     }
     return "";
