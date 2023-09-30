@@ -10686,6 +10686,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testHoldPattern() {
+
     check("a + b /. HoldPattern(_ + _) -> 0", //
         "0");
 
@@ -14263,10 +14264,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testMatchQ() {
+
     check("MatchQ(<|a -> 1|>, <|key_ -> val_|>)", //
         "True");
     check("MatchQ(22/7, _Rational)", //
         "True");
+    check("MatchQ(42, _Complex)", //
+        "False");
     check("MatchQ(42, _Rational)", //
         "False");
     check("MatchQ(1.1+2.3*I, _Complex)", //
@@ -16056,6 +16060,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testNMaximize() {
+    checkNumeric("NMaximize(-x^4 - 3* x^2 + x, x)", //
+        "{0.08258881886826407,{x->0.16373996720676331}}");
+
     check("NMaximize({-2*x+y-5, x+2*y<=6 && 3*x + 2*y <= 12 }, {x, y})", //
         "{-2.0,{x->0.0,y->3.0}}");
     check("NMaximize({-x - y, 3*x + 2*y >= 7 && x + 2*y >= 6}, {x, y})", //
@@ -16063,11 +16070,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testNMinimize() {
+    check("NMinimize(x^2 + y^2 + 2, {x,y})", //
+        "{2.0,{x->0.0,y->0.0}}");
+    check("NMinimize({Sinc(x)+Sinc(y)}, {x, y})", //
+        "{-0.434467,{x->4.49341,y->4.49341}}");
+
+    checkNumeric("NMinimize({Sinc(x)+Sinc(y)}, {x, y})", //
+        "{-0.4344672564224433,{x->4.493409457896563,y->4.493409457738778}}");
+
+    checkNumeric("NMinimize(x^4 - 3*x^2 - x, x)", //
+        "{-3.513905038934788,{x->1.3008395656679863}}");
+
     // TODO non-linear not supported
     // check("NMinimize({x^2 - (y - 1)^2, x^2 + y^2 <= 4}, {x, y})", "");
-
-    // check("NMinimize(x^4-x^2,x)", //
-    // " ");
     check("NMinimize({-2*y+x-5, x+2*y<=6 && 3*x + 2*y <= 12 }, {x, y})", //
         "{-11.0,{x->0.0,y->3.0}}");
     check("NMinimize({-2*y+x-5, x+2*y<=6 && 3*x + 2*y <= 12 }, {x, y})", //

@@ -2,10 +2,14 @@ package org.matheclipse.core.builtin;
 
 import static org.matheclipse.core.expression.S.Power;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hipparchus.analysis.MultivariateFunction;
+import org.hipparchus.optim.InitialGuess;
+import org.hipparchus.optim.MaxEval;
 import org.hipparchus.optim.OptimizationData;
 import org.hipparchus.optim.PointValuePair;
 import org.hipparchus.optim.linear.LinearConstraint;
@@ -15,6 +19,9 @@ import org.hipparchus.optim.linear.NonNegativeConstraint;
 import org.hipparchus.optim.linear.PivotSelectionRule;
 import org.hipparchus.optim.linear.SimplexSolver;
 import org.hipparchus.optim.nonlinear.scalar.GoalType;
+import org.hipparchus.optim.nonlinear.scalar.MultivariateOptimizer;
+import org.hipparchus.optim.nonlinear.scalar.ObjectiveFunction;
+import org.hipparchus.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Expr2LP;
 import org.matheclipse.core.convert.VariablesSet;
@@ -25,10 +32,12 @@ import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.ExprAnalyzer;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.generic.MultiVariateNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -889,37 +898,11 @@ public class MinMaxFunctions {
   private static final class NMaximize extends NMinimize {
 
     @Override
-    public IExpr numericEval(final IAST ast, EvalEngine engine) {
-      try {
-        if (ast.arg1().isList() && ast.arg2().isList()) {
-          IAST list1 = (IAST) ast.arg1();
-          IAST list2 = (IAST) ast.arg2();
-          VariablesSet vars = new VariablesSet(list2);
-          if (list1.isAST2()) {
-            IExpr function = list1.arg1();
-            IExpr listOfconstraints = list1.arg2();
-            if (listOfconstraints.isAnd()) {
-              // lc1 && lc2 && lc3...
-              LinearObjectiveFunction objectiveFunction = getObjectiveFunction(vars, function);
-              List<LinearConstraint> constraints = getConstraints(vars, (IAST) listOfconstraints);
-              return simplexSolver(vars, objectiveFunction, objectiveFunction,
-                  new LinearConstraintSet(constraints), GoalType.MAXIMIZE,
-                  new NonNegativeConstraint(true), PivotSelectionRule.BLAND);
-            }
-          }
-        }
-      } catch (ValidateException ve) {
-        return Errors.printMessage(ast.topHead(), ve, engine);
-      } catch (org.hipparchus.exception.MathRuntimeException e) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
-      }
-      return F.NIL;
+    protected GoalType getGoalType() {
+      // override the MINIMIZE goal type from super class NMinimize
+      return GoalType.MAXIMIZE;
     }
 
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
   }
 
 
@@ -987,27 +970,39 @@ public class MinMaxFunctions {
     @Override
     public IExpr numericEval(final IAST ast, EvalEngine engine) {
       try {
-        if (ast.arg1().isList() && ast.arg2().isList()) {
-          IAST list1 = (IAST) ast.arg1();
-          IAST list2 = (IAST) ast.arg2();
-          VariablesSet vars = new VariablesSet(list2);
-          if (list1.isAST2()) {
-            IExpr function = list1.arg1();
-            IExpr listOfconstraints = list1.arg2();
-            if (listOfconstraints.isAnd()) {
-              // lc1 && lc2 && lc3...
-              LinearObjectiveFunction objectiveFunction = getObjectiveFunction(vars, function);
-              List<LinearConstraint> constraints = getConstraints(vars, (IAST) listOfconstraints);
-              return simplexSolver(vars, objectiveFunction, objectiveFunction,
-                  new LinearConstraintSet(constraints), GoalType.MINIMIZE,
-                  new NonNegativeConstraint(true), PivotSelectionRule.BLAND);
+        IAST list1 = ast.arg1().makeList();
+        IAST listOfVariables = ast.arg2().makeList();
+        VariablesSet vars = new VariablesSet(listOfVariables);
+        if (list1.argSize() > 0 && vars.size() > 0) {
+          IExpr function = list1.first();
+          ExprAnalyzer exprAnalyzer = new ExprAnalyzer(function, listOfVariables, engine);
+          int typeOfExpression = exprAnalyzer.simplifyAndAnalyze();
+          if (typeOfExpression == ExprAnalyzer.LINEAR) {
+            if (list1.isAST2()) {
+              return optimizeSimplexSolver(list1, vars, function);
             }
           }
+          final MultivariateFunction func = new MultiVariateNumerical(function, listOfVariables);
+          int dimension = vars.size();
+          final double[] minPoint = new double[dimension];
+          for (int i = 0; i < dimension; i++) {
+            minPoint[i] = 0;
+          }
+          double[] init = new double[dimension];
+          // Initial is minimum.
+          for (int i = 0; i < dimension; i++) {
+            init[i] = minPoint[i];
+          }
+          return optimizePowell(func, //
+              vars,
+              // minPoint,
+              init, getGoalType(), 1e-9, 1e-9, 1e-9);
         }
+
       } catch (ValidateException ve) {
         return Errors.printMessage(ast.topHead(), ve, engine);
       } catch (org.hipparchus.exception.MathRuntimeException e) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
+        return Errors.printMessage(ast.topHead(), e, engine);
       }
       return F.NIL;
     }
@@ -1015,6 +1010,10 @@ public class MinMaxFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+
+    protected GoalType getGoalType() {
+      return GoalType.MINIMIZE;
     }
 
     protected static LinearObjectiveFunction getObjectiveFunction(VariablesSet vars,
@@ -1034,7 +1033,56 @@ public class MinMaxFunctions {
       return constraints;
     }
 
-    protected static IExpr simplexSolver(VariablesSet vars, LinearObjectiveFunction f,
+    /**
+     * @param func Function to optimize.
+     * @param optimum Expected optimum.
+     * @param init Starting point.
+     * @param goal Minimization or maximization.
+     * @param fTol Tolerance (relative error on the objective function) for "Powell" algorithm.
+     * @param fLineTol Tolerance (relative error on the objective function) for the internal line
+     *        search algorithm.
+     * @param pointTol Tolerance for checking that the optimum is correct.
+     */
+    private static IExpr optimizePowell( //
+        MultivariateFunction func, //
+        VariablesSet vars, //
+        // double[] optimum, //
+        double[] init, //
+        GoalType goal, //
+        double fTol, //
+        double fLineTol, //
+        double pointTol) { //
+      final MultivariateOptimizer optim =
+          // new BOBYQAOptimizer(100);
+          new PowellOptimizer(fTol, Math.ulp(1d), fLineTol, Math.ulp(1d));
+
+      final PointValuePair solution = optim.optimize(new MaxEval(1000), new ObjectiveFunction(func),
+          goal, new InitialGuess(init));
+      final double[] point = solution.getPoint();
+      // System.out.println("sol=" + Arrays.toString(solution.getPoint()));
+
+      double[] values = solution.getPointRef();
+      List<IExpr> varList = vars.getArrayList();
+      IASTAppendable list =
+          F.mapRange(0, varList.size(), i -> F.Rule(varList.get(i), F.num(values[i])));
+      IAST result = F.list(F.num(func.value(values)), list);
+      return result;
+    }
+
+    private IAST optimizeSimplexSolver(IAST list1, VariablesSet vars, IExpr function) {
+      IExpr listOfconstraints = list1.arg2();
+      if (listOfconstraints.isAnd()) {
+        // lc1 && lc2 && lc3...
+        LinearObjectiveFunction objectiveFunction = getObjectiveFunction(vars, function);
+        List<LinearConstraint> constraints = getConstraints(vars, (IAST) listOfconstraints);
+        return simplexSolver(vars, objectiveFunction, objectiveFunction,
+            new LinearConstraintSet(constraints), getGoalType(), new NonNegativeConstraint(true),
+            PivotSelectionRule.BLAND);
+      }
+      return F.NIL;
+    }
+
+    protected static IAST simplexSolver(VariablesSet vars, LinearObjectiveFunction f,
         OptimizationData... optData) throws org.hipparchus.exception.MathRuntimeException {
       SimplexSolver solver = new SimplexSolver();
       PointValuePair solution = solver.optimize(optData);
@@ -1042,8 +1090,7 @@ public class MinMaxFunctions {
       List<IExpr> varList = vars.getArrayList();
       IASTAppendable list =
           F.mapRange(0, values.length, i -> F.Rule(varList.get(i), F.num(values[i])));
-      IAST result = F.list(F.num(f.value(values)), list);
-      return result;
+      return F.list(F.num(f.value(values)), list);
     }
   }
 
@@ -1377,6 +1424,48 @@ public class MinMaxFunctions {
 
     return F.NIL;
   }
+
+  private static double[] point(int n, double value) {
+    double[] ds = new double[n];
+    Arrays.fill(ds, value);
+    return ds;
+  }
+
+  private static double[][] boundaries(int dim, double lower, double upper) {
+    double[][] boundaries = new double[2][dim];
+    for (int i = 0; i < dim; i++)
+      boundaries[0][i] = lower;
+    for (int i = 0; i < dim; i++)
+      boundaries[1][i] = upper;
+    return boundaries;
+  }
+
+  // static final int DIM = 2;
+  // static final int LAMBDA = 4 + (int) (3. * Math.log(DIM));
+  //
+  // public static void main(String[] args) {
+  //
+  // final MultivariateFunction func = new MultiVariateNumerical(F.Plus(F.Sinc(F.x), F.Sinc(F.y)),
+  // //
+  // F.List(F.x, F.y));
+  //
+  // int dim = 2;
+  // final double[] minPoint = new double[dim];
+  // for (int i = 0; i < dim; i++) {
+  // minPoint[i] = 0;
+  // }
+  //
+  // double[] init = new double[dim];
+  //
+  // // Initial is minimum.
+  // for (int i = 0; i < dim; i++) {
+  // init[i] = minPoint[i];
+  // }
+  // optimizePowell(func, //
+  // null,
+  // // minPoint,
+  // init, GoalType.MINIMIZE, 1e-9, 1e-9, 1e-9);
+  // }
 
   public static void initialize() {
     Initializer.init();
