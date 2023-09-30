@@ -40,6 +40,7 @@ import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -111,6 +112,7 @@ public class StatisticsFunctions {
       S.Median.setEvaluator(new Median());
       S.NakagamiDistribution.setEvaluator(new NakagamiDistribution());
       S.NormalDistribution.setEvaluator(new NormalDistribution());
+      S.PearsonCorrelationTest.setEvaluator(new PearsonCorrelationTest());
       S.ParetoDistribution.setEvaluator(new ParetoDistribution());
       S.PoissonDistribution.setEvaluator(new PoissonDistribution());
       S.PoissonProcess.setEvaluator(new PoissonProcess());
@@ -5998,6 +6000,110 @@ public class StatisticsFunctions {
 
 
   }
+
+  private static final class PearsonCorrelationTest extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      int dimension1 = arg1.isVector();
+      int dimension2 = arg2.isVector();
+      String property = "TestData";
+      if (ast.isAST3()) {
+        if (!ast.arg3().isString()) {
+          return F.NIL;
+        }
+        property = ast.arg3().toString();
+        if (!property.equals("TestData") //
+            && !property.equals("TestStatistic") //
+            && !property.equals("PValue") //
+            && !property.equals("PValueTable")) {
+          return F.NIL;
+        }
+      }
+      if (dimension1 > 1 && dimension2 > 1) {
+        if (dimension1 != dimension2) {
+          // The argument `1` at position `2` should be a vector of real numbers with length equal
+          // to the vector given at position `3`.
+          return Errors.printMessage(S.PearsonCorrelationTest, "vctnln3", F.List(arg1, F.C1, F.C2),
+              engine);
+        }
+        double[] vector1 = arg1.toDoubleVector();
+        if (vector1 == null) {
+          // The argument `1` at position `2` should be a vector of real numbers with length equal
+          // to the vector given at position `3`.
+          return Errors.printMessage(S.PearsonCorrelationTest, "vctnln3", F.List(arg1, F.C1, F.C2),
+              engine);
+        }
+        double[] vector2 = arg2.toDoubleVector();
+        if (vector2 == null) {
+          // The argument `1` at position `2` should be a vector of real numbers with length equal
+          // to the vector given at position `3`.
+          return Errors.printMessage(S.PearsonCorrelationTest, "vctnln3", F.List(arg2, F.C2, F.C1),
+              engine);
+        }
+        RealMatrix m = new Array2DRowRealMatrix(dimension1, dimension2);
+        m.setColumn(0, vector1);
+        m.setColumn(1, vector2);
+        org.hipparchus.stat.correlation.PearsonsCorrelation test =
+            new org.hipparchus.stat.correlation.PearsonsCorrelation(m);
+        if (property.equals("TestData")) {
+          return testData(vector1, vector2, test);
+        }
+        if (property.equals("TestStatistic")) {
+          double value = test.correlation(vector1, vector2);
+          return F.num(value);
+        }
+        if (property.equals("PValue")) {
+          RealMatrix correlationPValues = test.getCorrelationPValues();
+          if (correlationPValues != null) {
+            double pValue = correlationPValues.getEntry(1, 0);
+            return F.num(pValue);
+          }
+          return F.NIL;
+        }
+        // if (property.equals("PValueTable")) {
+        // RealMatrix correlationPValues = test.getCorrelationPValues();
+        // if (correlationPValues != null) {
+        // return new ASTRealMatrix(correlationPValues, false);
+        // // return Convert.matrix2List(correlationPValues);
+        // }
+        // return F.NIL;
+        // }
+        return testData(vector1, vector2, test);
+      }
+      // The argument `1` at position `2` should be a vector of real numbers with length greater
+      // than `3`
+      return Errors.printMessage(S.PearsonCorrelationTest, "vctnln", F.List(arg1, F.C1, F.C1),
+          engine);
+    }
+
+    private static IExpr testData(double[] vector1, double[] vector2,
+        org.hipparchus.stat.correlation.PearsonsCorrelation test) {
+      RealMatrix correlationPValues = test.getCorrelationPValues();
+      if (correlationPValues != null) {
+        double value = test.correlation(vector1, vector2);
+        double pValue = correlationPValues.getEntry(1, 0);
+        return F.List(value, pValue);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
   /**
    *
    *

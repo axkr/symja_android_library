@@ -523,6 +523,29 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "0.03471806963068414");
   }
 
+  public void testPearsonCorrelationTest() {
+    // example from https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
+    check("PearsonCorrelationTest({1, 2, 3, 5, 8}, {0.11, 0.12, 0.13, 0.15, 0.18}, \"TestData\")", //
+        "{1.0,0.0}");
+
+    check("{v1,v2}={{-0.4419826574006463, 1.3555554108658099, 1.0682434836787194, \n" //
+        + "   -0.38987245177468655, -0.10731306756447762, 0.3196868564615598, \n" //
+        + "   -0.3529758086947655, 0.18291780864085908, 0.8684236548039314, \n" //
+        + "   0.5762176807966645}, {-0.7305764643508801, 1.557234211193269, \n" //
+        + "   -0.17012396015011189, 0.29431425806601874, 0.08261208227839614, \n" //
+        + "   0.7274500346408124, 0.054140609659740824, -0.3063622721420619, \n" //
+        + "   0.68649654204442, -0.3934999984696224}};", //
+        "");
+    check("PearsonCorrelationTest(v1, v2, \"PValue\")", //
+        "0.104957");
+    check("PearsonCorrelationTest(v1, v2, \"TestData\")", //
+        "{0.542801,0.104957}");
+    check("PearsonCorrelationTest(v1, v2, \"TestStatistic\")", //
+        "0.542801");
+    checkNumeric("PearsonCorrelationTest(v1, v2)", //
+        "{0.5428012916808163,0.10495674920981242}");
+  }
+
   public void testPoissonDistribution() {
     check("Mean(PoissonDistribution(m))", //
         "m");

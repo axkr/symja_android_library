@@ -7600,6 +7600,9 @@ public class S {
    */
   public final static IBuiltInSymbol PDF = S.initFinalSymbol("PDF", ID.PDF);
 
+  public final static IBuiltInSymbol PearsonCorrelationTest =
+      S.initFinalSymbol("PearsonCorrelationTest", ID.PearsonCorrelationTest);
+
   public final static IBuiltInSymbol PearsonChiSquareTest =
       S.initFinalSymbol("PearsonChiSquareTest", ID.PearsonChiSquareTest);
 
