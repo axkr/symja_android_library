@@ -2126,7 +2126,6 @@ public class ID {
   public final static Map<String, Integer> STRING_TO_ID_MAP = new TreeMap<String, Integer>();
 
   static {
-
     for (int i = 0; i < FUNCTION_NAMES.length; i++) {
       STRING_TO_ID_MAP.put(FUNCTION_NAMES[i], i);
     }

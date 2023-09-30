@@ -1,16 +1,11 @@
 package org.matheclipse.core.expression;
 
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 
 public class BuiltinUsage {
   private static final String[] USAGE = new String[ID.Zeta + 10];
 
-  private static AtomicBoolean IS_INITIALIZED = new AtomicBoolean();
-
-  public static synchronized void init() {
-    IS_INITIALIZED.set(true);
-
+  static {
     USAGE[ID.$IterationLimit] =
         "specifies the maximum number of times a reevaluation of an expression may happen";
 
@@ -619,9 +614,9 @@ public class BuiltinUsage {
    * 
    */
   public static String summaryText(IBuiltInSymbol symbol) {
-    if (!IS_INITIALIZED.get()) {
-      init();
-    }
+    // if (!IS_INITIALIZED.get()) {
+    // init();
+    // }
     String str = USAGE[symbol.ordinal()];
     return str != null ? str : "";
   }

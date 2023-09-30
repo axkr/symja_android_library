@@ -34,7 +34,6 @@ public class FunctionIDGenerator {
       + "  public final static Map<String, Integer> STRING_TO_ID_MAP = new TreeMap<String, Integer>();\n" //
       + "\n" //
       + "  static {\n" //
-      + "\n" //
       + "    for (int i = 0; i < FUNCTION_NAMES.length; i++) {\n" //
       + "      STRING_TO_ID_MAP.put(FUNCTION_NAMES[i], i);\n" //
       + "    }\n" //
