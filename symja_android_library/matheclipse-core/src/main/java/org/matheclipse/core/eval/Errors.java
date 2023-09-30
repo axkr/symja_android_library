@@ -204,6 +204,8 @@ public class Errors {
       "ninv", "`1` is not invertible modulo `2`.", //
       "nmet", "Unable to find the domain with the available methods.", //
       "nmtx", "The first two levels of `1` cannot be transposed.", //
+      "nnumeq",
+      "`1` is expected to be a polynomial equation in the variable `2` with numeric coefficients.", //
       "nocatch", "Uncaught `1` returned to top level.", //
       "nofirst", "`1` has zero length and no first element.", //
       "nofwd", "No enclosing For, While or Do found for `1`.", //
@@ -315,13 +317,14 @@ public class Errors {
       "ssdn", "Attempt to evaluate a series at the number `1`. Returning Indeterminate.", //
       "ssle", "Symbol, string or HoldPattern(symbol) expected at position `2` in `1`.", //
       "step", "The step size `1` is expected to be positive", //
-      "stream", "`1` is not string, InputStream[], or OutputStream[]", //
+      "stream", "`1` is not string, InputStream[], or OutputStream[].", //
       "string", "String expected at position `1` in `2`.", //
       "strse", "String or list of strings expected at position `1` in `2`.", //
       "sym", "Argument `1` at position `2` is expected to be a symbol.", //
       "tag", "Rule for `1` can only be attached to `2`.", //
       "tagnf", "Tag `1` not found in `2`.", //
       "take", "Cannot take positions `1` through `2` in `3`.", //
+      "takeeigen", "Cannot take eigenvalues `1` through `2` out of the total of `3` eigenvalues.", //
       "targ", "Argument `1` at position `2` is not List or SparseArray.", //
       "tbnval",
       "Values `1` produced by the function `2` cannot be used for numerical sorting because they are not all real.", //
@@ -333,6 +336,10 @@ public class Errors {
       "unkunit", "Unable to interpret unit specification `1`.", //
       "unsupported", "`1` currently not supported in `2`.", //
       "usraw", "Cannot unset object `1`.", //
+      "vctnln",
+      "The argument `1` at position `2` should be a vector of real numbers with length greater than `3`.", //
+      "vctnln3",
+      "The argument `1` at position `2` should be a vector of real numbers with length equal to the vector given at position `3`.", //
       "vloc",
       "The variable `1` cannot be localized so that it can be assigned to numerical values.", //
       "vpow2", "Argument `1` is restricted to vectors with a length of power of 2.", //

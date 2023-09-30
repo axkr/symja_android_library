@@ -3566,7 +3566,6 @@ public class MainTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testSystem1000() {
-
     check("NRoots(x^2 + 5*x + 10==0)", //
         "{-2.5+I*(-1.93649),-2.5+I*1.93649}");
     check("NRoots(x^3+2*x^2+2*x+2==0)", //

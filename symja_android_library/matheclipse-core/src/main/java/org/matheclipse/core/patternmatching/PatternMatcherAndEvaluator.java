@@ -25,7 +25,9 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
   protected transient IExpr fReturnResult = F.NIL;
 
   /** Public constructor for serialization. */
-  public PatternMatcherAndEvaluator() {}
+  public PatternMatcherAndEvaluator() {
+    fRightHandSide = F.NIL;
+  }
 
   /**
    * Define a pattern-matching rule.
@@ -95,6 +97,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     v.fReturnResult = fReturnResult;
     return v;
   }
+
   /**
    * Check if the two expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to
    * <code>f[a_,b_]</code> )

@@ -540,11 +540,9 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   public int compareTo(final Apcomplex that) {
-    if (fApcomplex.real().compareTo(that.real()) < 0) {
-      return -1;
-    }
-    if (fApcomplex.real().compareTo(that.real()) > 0) {
-      return 1;
+    int c = fApcomplex.real().compareTo(that.real());
+    if (c != 0) {
+      return c;
     }
     if (that.imag().signum() == 0) {
       if (fApcomplex.imag().signum() != 0) {

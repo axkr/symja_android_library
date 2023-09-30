@@ -284,6 +284,15 @@ public class PatternMatchingTestCase extends TestCase {
         "h[g[x_]]:=x^2");
   }
 
+  public void testPatternPlus() {
+    check("r[s,s] /. r[t_.+x_, x_] -> {t,x}", //
+        "{0,s}");
+    check("r[a+s,s] /. r[t_+x_, x_] -> {t,x}", //
+        "{a,s}");
+    check("r[a+b+s,s] /. r[t_+x_, x_] -> {t,x}", //
+        "{a+b,s}");
+  }
+
   public void testPatternFlatOneIdentity() {
     check("SetAttributes[r, Flat]", //
         "");

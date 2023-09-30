@@ -2025,7 +2025,7 @@ public final class LinearAlgebra {
         try {
 
           IExpr arg1 = ast.arg1();
-          int[] dim = arg1.isMatrix();
+          int[] dim = arg1.isMatrix(false);
           if (dim != null) {
             if (dim[0] == 1 && dim[1] == 1) {
               // Eigenvalues({{a}})
@@ -2112,7 +2112,18 @@ public final class LinearAlgebra {
             if (n == Integer.MIN_VALUE) {
               return F.NIL;
             }
-            return F.Reverse(F.TakeSmallestBy(eigenValuesList, S.Abs, F.ZZ(-n)));
+            n = -n;
+            if (eigenValuesList.argSize() <= n) {
+              // Cannot take eigenvalues `1` through `2` out of the total of `3` eigenvalues.
+              return Errors.printMessage(S.Eigenvalues, "takeeigen",
+                  F.List(F.C1, F.ZZ(n), F.ZZ(eigenValuesList.argSize())));
+            }
+            return F.Reverse(F.TakeSmallestBy(eigenValuesList, S.Abs, F.ZZ(n)));
+          }
+          if (eigenValuesList.argSize() <= n) {
+            // Cannot take eigenvalues `1` through `2` out of the total of `3` eigenvalues.
+            return Errors.printMessage(S.Eigenvalues, "takeeigen",
+                F.List(F.C1, F.ZZ(n), F.ZZ(eigenValuesList.argSize())));
           }
           return F.TakeLargestBy(eigenValuesList, S.Abs, F.ZZ(n));
         }
@@ -2130,6 +2141,11 @@ public final class LinearAlgebra {
               return F.NIL;
             }
             return eigenValuesList.copyFrom(eigenValuesList.size() + n, eigenValuesList.size());
+          }
+          if (eigenValuesList.argSize() <= n) {
+            // Cannot take eigenvalues `1` through `2` out of the total of `3` eigenvalues.
+            return Errors.printMessage(S.Eigenvalues, "takeeigen",
+                F.List(F.C1, F.ZZ(n), F.ZZ(eigenValuesList.argSize())));
           }
           return eigenValuesList.copyFrom(1, n + 1);
         }

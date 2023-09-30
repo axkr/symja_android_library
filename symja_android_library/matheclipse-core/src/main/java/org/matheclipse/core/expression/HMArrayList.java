@@ -428,7 +428,8 @@ public abstract class HMArrayList extends AbstractAST
 
   /**
    * Get the first argument (i.e. the second element of the underlying list structure) of the <code>
-   * AST</code> function (i.e. get(1) ). <br>
+   * AST</code> function (i.e. get(1) ).
+   * <p>
    * <b>Example:</b> for the AST representing the expression <code>Sin(x)</code>, <code>arg1()
    * </code> returns <code>x</code>.
    *

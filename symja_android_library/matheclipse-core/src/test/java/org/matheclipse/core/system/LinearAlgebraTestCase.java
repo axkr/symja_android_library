@@ -497,6 +497,11 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testEigenvalues() {
+    // print message: Eigenvalues: Cannot take eigenvalues 1 through 2 out of the total of 1
+    // eigenvalues.
+    check("Eigenvalues({{-1}},2)", //
+        "Eigenvalues(\n"//
+            + "{{-1}},2)");
     check(
         "Eigenvalues({{0,1,1,0,1,0,0,0},{1,0,0,1,0,1,0,0},{1,0,0,1,0,0,1,0},{0,1,1,0,0,0,0,1},{1,0,0,0,0,1,1,0},{0,1,0,0,1,0,0,1},{0,0,1,0,1,0,0,1},{0,0,0,1,0,1,1,0}})", //
         "{-3.0,3.0,-1.0,-1.0,-1.0,1.0,1.0,1.0}");

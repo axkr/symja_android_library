@@ -361,7 +361,9 @@ public interface IPatternMap {
           if ((ISymbol) input == fSymbol1) {
             return fValue1 != null ? fValue1 : nilOrEmptySequence;
           }
-        } else if (input.isAST(S.OptionValue, 2, 4)) {
+          return F.NIL;
+        }
+        if (input.isAST(S.OptionValue, 2, 4)) {
           return PatternMatching.optionValueReplace((IAST) input, true, engine);
         }
         return F.NIL;
@@ -1336,22 +1338,6 @@ public interface IPatternMap {
           fSymbolsOrPatternValues.length);
     }
 
-    // public boolean isPatternTest(IExpr expr, IExpr patternTest, EvalEngine engine) {
-    // final IExpr temp = substitutePatternOrSymbols(expr).orElse(expr);
-    // final IASTMutable test = (IASTMutable) F.unaryAST1(patternTest, null);
-    // if (temp.isSequence()) {
-    // return ((IAST) temp).forAll((x, i) -> {
-    // test.set(1, x);
-    // return engine.evalTrue(test);
-    // }, 1);
-    // }
-    // test.set(1, temp);
-    // if (!engine.evalTrue(test)) {
-    // return false;
-    // }
-    // return true;
-    // }
-
     @Override
     public boolean setOptionsPattern(EvalEngine engine, ISymbol lhsHead) {
       boolean result = false;
@@ -1454,14 +1440,11 @@ public interface IPatternMap {
                     : nilOrEmptySequence;
               }
             }
-          } else if (input.isAST(S.OptionValue, 2, 4)) {
+            return F.NIL;
+          }
+          if (input.isAST(S.OptionValue, 2, 4)) {
             final int length = fSymbolsOrPattern.length;
-            // for (int i = length - 1; i >= 0; i--) {
-            // reverse iterating on fSymbolsOrPattern
-            // if (fSymbolsOrPattern[i].isOptionsPattern()) {
             return PatternMatching.optionValueReplace((IAST) input, true, engine);
-            // }
-            // }
           }
           return F.NIL;
         }).orElse(rhsExpr);
@@ -1625,8 +1608,9 @@ public interface IPatternMap {
    * @param lhsPatternExpr the (left-hand-side) expression which could contain pattern objects.
    * @param treeLevel the level of the tree where the patterns are determined
    */
-  private static int determinePatternsRecursive(List<GenericPair<IExpr, IPatternObject>> patternIndexMap,
-      final IAST lhsPatternExpr, int[] priority, boolean[] ruleWithoutPattern, int treeLevel) {
+  private static int determinePatternsRecursive(
+      List<GenericPair<IExpr, IPatternObject>> patternIndexMap, final IAST lhsPatternExpr,
+      int[] priority, boolean[] ruleWithoutPattern, int treeLevel) {
 
     int[] listEvalFlags = new int[] {IAST.NO_FLAG};
     if (lhsPatternExpr.isAlternatives() || lhsPatternExpr.isExcept()) {
@@ -1872,26 +1856,11 @@ public interface IPatternMap {
 
     IASTMutable result = F.NIL;
     for (int i = 1; i < lhsPatternExpr.size(); i++) {
-      // IExpr temp = lhsPatternExpr.get(i).accept(visitor);
       result = result.setIfPresent(lhsPatternExpr, i, lhsPatternExpr.get(i).accept(visitor));
-      // if (temp.isPresent()) {
-      // if (result.isNIL()) {
-      // result = lhsPatternExpr.setAtCopy(i, temp);
-      // // result.setEvalFlags(lhsPatternExpr.getEvalFlags());
-      // } else {
-      // result.set(i, temp);
-      // }
-      // }
     }
 
     if (result.isPresent()) {
-      return result.map(x -> {
-        if (x.isAST()) {
-          return engine.evalHoldPattern((IAST) x);
-        }
-        return F.NIL;
-      });
-      // return EvalAttributes.simpleEval(result);
+      return result.map(x -> x.isAST() ? engine.evalHoldPattern((IAST) x) : F.NIL);
     }
     return F.NIL;
   }

@@ -1193,7 +1193,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     @Override
-    public IASTMutable removePositionsAtCopy(int[] removedPositions, int untilIndex) {
+    public IASTAppendable removePositionsAtCopy(int[] removedPositions, int untilIndex) {
       ArgumentTypeException.throwNIL();
       return null;
     }
@@ -5488,10 +5488,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public IASTMutable removePositionsAtCopy(int[] removedPositions, int untilIndex) {
-    if (untilIndex == 1) {
-      return removeAtCopy(removedPositions[0]);
-    }
+  public IASTAppendable removePositionsAtCopy(int[] removedPositions, int untilIndex) {
+    // if (untilIndex == 1) {
+    // return removeAtCopy(removedPositions[0]);
+    // }
     IASTAppendable ast = copyAppendable();
     for (int j = untilIndex - 1; j >= 0; j--) {
       ast.remove(removedPositions[j]);

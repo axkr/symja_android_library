@@ -1594,7 +1594,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
    * @param untilIndex up to this position (exclusive) the elements will be removed from the copy
    * @return an IAST with removed element at the given position.
    */
-  public IASTMutable removePositionsAtCopy(int[] removedPositions, int untilIndex);
+  public IASTAppendable removePositionsAtCopy(int[] removedPositions, int untilIndex);
 
   public IAST removePositionsAtCopy(Predicate<IExpr> predicate);
 

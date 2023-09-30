@@ -181,29 +181,13 @@ public class RootsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (arg1.isEqual()) {
-        IAST equalAST = (IAST) arg1;
-        if (equalAST.arg2().isZero()) {
-          arg1 = equalAST.arg1();
-        } else {
-          arg1 = engine.evaluate(F.Subtract(equalAST.arg1(), equalAST.arg2()));
-        }
-      } else {
-        if (!arg1.isPolynomialStruct()) {
-          LOGGER.log(engine.getLogLevel(),
-              "{}: Equal() expression expected at position 1 instead of {}", ast.topHead(),
-              ast.arg1());
-          return F.NIL;
-        }
-      }
+
       IAST variables;
       if (ast.size() == 2) {
         VariablesSet eVar = new VariablesSet(ast.arg1());
         if (!eVar.isSize(1)) {
-          // factor only possible for univariate polynomials
-          LOGGER.log(engine.getLogLevel(),
-              "NRoots: factorization only possible for univariate polynomials");
-          return F.NIL;
+          // `1` is not a valid variable.
+          return Errors.printMessage(ast.topHead(), "ivar", F.List(ast.arg1()), engine);
         }
         variables = eVar.getVarList();
       } else {
@@ -215,6 +199,22 @@ public class RootsFunctions {
       if (variables.size() <= 1) {
         return F.NIL;
       }
+
+      if (arg1.isEqual()) {
+        IAST equalAST = (IAST) arg1;
+        if (equalAST.arg2().isZero()) {
+          arg1 = equalAST.arg1();
+        } else {
+          arg1 = engine.evaluate(F.Subtract(equalAST.arg1(), equalAST.arg2()));
+        }
+      } else {
+        if (!arg1.isPolynomialStruct()) {
+          // `1` is expected to be a polynomial equation in the variable `2` with numeric
+          // coefficients.
+          return Errors.printMessage(ast.topHead(), "nnumeq", F.List(arg1, variables), engine);
+        }
+      }
+
       IExpr temp = roots(arg1, variables, engine);
       if (!temp.isList()) {
         return F.NIL;

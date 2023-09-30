@@ -635,7 +635,7 @@ public class FileFunctions {
 
         return evaluatePackage(node, engine);
       } catch (final Exception e) {
-        LOGGER.error("FileFunctions.Get.loadPackage", e);
+        Errors.printMessage(S.Get, e, engine);
       }
       return S.Null;
     }
@@ -651,9 +651,9 @@ public class FileFunctions {
         String str = com.google.common.io.Files.asCharSource(file, Charset.defaultCharset()).read();
         return Get.loadPackage(engine, str);
       } catch (IOException e) {
-        LOGGER.debug("Get.getFile() failed", e);
+        // LOGGER.debug("Get.getFile() failed", e);
         // Cannot open `1`.
-        return Errors.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
+        return Errors.printMessage(S.Get, "noopen", F.list(ast.arg1()), engine);
       } finally {
         engine.setPackageMode(packageMode);
         engine.set$Input(input);
@@ -672,9 +672,9 @@ public class FileFunctions {
         String str = Resources.toString(url, StandardCharsets.UTF_8);
         return loadPackage(engine, str);
       } catch (IOException e) {
-        LOGGER.debug("FileFunctions.Get.getURL() failed", e);
+        // LOGGER.debug("FileFunctions.Get.getURL() failed", e);
         // Cannot open `1`.
-        return Errors.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
+        return Errors.printMessage(S.Get, "noopen", F.list(ast.arg1()), engine);
       } finally {
         engine.setPackageMode(packageMode);
         engine.set$Input(input);
@@ -687,7 +687,8 @@ public class FileFunctions {
       if (Config.isFileSystemEnabled(engine)) {
         try {
           if (!(ast.arg1() instanceof IStringX)) {
-            return Errors.printMessage(ast.topHead(), "string", F.List(), engine);
+            // String expected at position `1` in `2`.
+            return Errors.printMessage(S.Get, "string", F.List(), engine);
           }
           String arg1Str = ((IStringX) ast.arg1()).toString();
           if (arg1Str.startsWith("https://") || arg1Str.startsWith("http://")) {
@@ -705,13 +706,12 @@ public class FileFunctions {
           }
           Validate.checkContextName(ast, 1);
         } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(S.Get, ve, engine);
         } catch (MalformedURLException e) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
-          return F.NIL;
+          return Errors.printMessage(S.Get, e, engine);
         }
         // Cannot open `1`.
-        return Errors.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
+        return Errors.printMessage(S.Get, "noopen", F.list(ast.arg1()), engine);
       }
       return F.NIL;
     }

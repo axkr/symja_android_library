@@ -2,8 +2,6 @@ package org.matheclipse.core.builtin;
 
 import java.math.BigInteger;
 import java.util.Random;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.util.MathArrays;
@@ -28,7 +26,6 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public final class RandomFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   protected static int boundedNextInt(Random rng, int origin, int bound) {
     if (origin >= bound) {
@@ -527,10 +524,7 @@ public final class RandomFunctions {
             return Tensors.build(() -> randomPrime(lowLimit, highLimit, engine), dimension);
           }
           return randomPrime(lowerLimit, upperLimit, engine);
-        } catch (ValidateException ve) {
-          Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
-          LOGGER.debug("RandomPrime.evaluate() failed", rex);
           // There are no primes in the specified interval.
           return Errors.printMessage(ast.topHead(), "noprime", F.CEmptyList, engine);
         }

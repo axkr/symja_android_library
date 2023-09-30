@@ -37,6 +37,7 @@ import org.matheclipse.core.eval.interfaces.IFastFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
@@ -387,6 +388,11 @@ public final class Programming {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {}
   }
 
@@ -431,6 +437,11 @@ public final class Programming {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -644,6 +655,11 @@ public final class Programming {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1404,6 +1420,11 @@ public final class Programming {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_0;
     }
@@ -1425,6 +1446,11 @@ public final class Programming {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_0;
     }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
   }
 
   private static class MemoryInUse extends AbstractCoreFunctionEvaluator
@@ -1442,6 +1468,11 @@ public final class Programming {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_1;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 
@@ -1992,6 +2023,11 @@ public final class Programming {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {}
   }
 
@@ -2145,6 +2181,11 @@ public final class Programming {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_INFINITY;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
