@@ -9669,6 +9669,8 @@ public class S {
   public final static IBuiltInSymbol StringExpression =
       S.initFinalSymbol("StringExpression", ID.StringExpression);
 
+  public final static IBuiltInSymbol StringForm = S.initFinalSymbol("StringForm", ID.StringForm);
+
   public final static IBuiltInSymbol StringFormat =
       S.initFinalSymbol("StringFormat", ID.StringFormat);
 

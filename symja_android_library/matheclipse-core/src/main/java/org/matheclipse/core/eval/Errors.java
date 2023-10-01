@@ -309,6 +309,7 @@ public class Errors {
       "setp", "Part assignment to `1` could not be made", //
       "setraw", "Cannot assign to raw object `1`.", //
       "setps", "`1` in the part assignment is not a symbol.", //
+      "sfr", "Item `1` requested in `2` out of range. `3` itms available.", //
       "shapespec", "Shape specification `1` is invalid.", //
       "shlen", "The argument `1` should have at least `2` arguments.", //
       "sing", "Matrix `1` is singular.", //

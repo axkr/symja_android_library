@@ -173,6 +173,20 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "\"abc\"");
   }
 
+  public void testStringForm() { 
+    // TODO fix case of mixing notations:
+    // check("StringForm(\"`1` bla `2` blub `` bla `2`\", a, b, c)", //
+    // "a bla b blub c bla b");
+    check("StringForm(\"Symbol `` is defined in the Rubi`.` context.\", \"FractionOrNegativeQ\")", //
+        "Symbol FractionOrNegativeQ is defined in the Rubi' context.");
+    check("StringForm(\"Solution is x=`2`, y=`1`.\", Cos(Pi/11), Sin(Pi/22))", //
+        "Solution is x=Sin(Pi/22), y=Cos(Pi/11).");
+    check("StringForm(\"Solution is x=``, y=``, z=``.\", a, b, c)", //
+        "Solution is x=a, y=b, z=c.");
+    check("StringForm(\"``  ``  ``  ``  ``\", e1, e2, e3, e4, e5)", //
+        "e1  e2  e3  e4  e5");
+  }
+
   public void testStringFormat() {
     check("StringFormat(\"abcd 1234\")", //
         "Text");

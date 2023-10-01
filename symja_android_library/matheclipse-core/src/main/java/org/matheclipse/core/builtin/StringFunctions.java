@@ -197,6 +197,7 @@ public final class StringFunctions {
       S.StringDrop.setEvaluator(new StringDrop());
       S.StringExpression.setEvaluator(new StringExpression());
       S.StringFreeQ.setEvaluator(new StringFreeQ());
+      S.StringForm.setEvaluator(new StringForm());
       S.StringFormat.setEvaluator(new StringFormat());
       S.StringInsert.setEvaluator(new StringInsert());
       S.StringJoin.setEvaluator(new StringJoin());
@@ -226,7 +227,7 @@ public final class StringFunctions {
       S.UpperCaseQ.setEvaluator(new UpperCaseQ());
 
       // if (!Config.FUZZY_PARSER) {
-        S.ToExpression.setEvaluator(new ToExpression());
+      S.ToExpression.setEvaluator(new ToExpression());
       // }
     }
   }
@@ -556,8 +557,8 @@ public final class StringFunctions {
             // A character unicode, which should be a non-negative integer less than 1114112, is
             // expected at
             // position `2` in `1`.
-            return Errors.printMessage(S.FromCharacterCode, "notunicode",
-                F.list(charList, F.ZZ(i)), engine);
+            return Errors.printMessage(S.FromCharacterCode, "notunicode", F.list(charList, F.ZZ(i)),
+                engine);
           }
           ch = (char) unicode;
 
@@ -687,7 +688,8 @@ public final class StringFunctions {
         }
 
         if (ignoreCase) {
-          return F.ZZ(hammingDistance.apply(str1.toLowerCase(Locale.US), str2.toLowerCase(Locale.US)));
+          return F
+              .ZZ(hammingDistance.apply(str1.toLowerCase(Locale.US), str2.toLowerCase(Locale.US)));
         }
         return F.ZZ(hammingDistance.apply(str1, str2));
       }
@@ -1392,6 +1394,56 @@ public final class StringFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.FLAT);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
+    }
+  }
+
+  private static class StringForm extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isString()) {
+        String[] args = new String[ast.argSize() - 1];
+        for (int i = 2; i < ast.size(); i++) {
+          args[i - 2] = ast.get(i).toString();
+        }
+        String templateString = arg1.toString();
+        int indexOf = templateString.indexOf("``");
+        if (indexOf >= 0) {
+          StringBuilder buf = new StringBuilder(templateString.length() + 10);
+          int lastIndex = 0;
+          int counter = 1;
+          while (indexOf >= 0) {
+            buf.append(templateString.substring(lastIndex, indexOf + 1));
+            if (counter - 1 >= args.length) {
+              // Item `1` requested in `2` out of range. `3` itms available.
+              return Errors.printMessage(S.StringForm, "sfr",
+                  F.List(F.ZZ(counter), arg1, F.ZZ(args.length)), engine);
+            }
+            buf.append(counter++);
+            buf.append("`");
+            lastIndex = indexOf + 2;
+            indexOf = templateString.indexOf("``", indexOf + 2);
+          }
+          if (lastIndex > 0 && lastIndex < templateString.length()) {
+            buf.append(templateString.substring(lastIndex));
+          }
+          templateString = buf.toString();
+        }
+        String newTemplateString = templateString.replace("`.`", "'");
+        while (!newTemplateString.equals(templateString)) {
+          templateString = newTemplateString;
+          newTemplateString = templateString.replace("`.`", "'");
+        }
+        String str = Errors.templateRender(templateString, args);
+        return F.stringx(str);
+      }
+      return F.NIL;
     }
 
     @Override
@@ -2732,7 +2784,7 @@ public final class StringFunctions {
      * @param args
      * @return
      */
-    private static IExpr templateApplyTemplateSlot(IExpr templateExpr, IExpr args) {
+    protected static IExpr templateApplyTemplateSlot(IExpr templateExpr, IExpr args) {
       final Map<IExpr, IExpr> context = new HashMap<>();
       if (args.isListOrAssociation()) {
         if (args.isAssociation()) {

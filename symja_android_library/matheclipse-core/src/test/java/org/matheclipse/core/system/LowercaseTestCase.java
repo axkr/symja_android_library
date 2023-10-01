@@ -16070,6 +16070,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testNMinimize() {
+    check("NMinimize({-Sinc(x)-Sinc(y)}, {x, y})", //
+        "{-2.0,{x->0.0,y->0.0}}");
+    
     check("NMinimize(x^2 + y^2 + 2, {x,y})", //
         "{2.0,{x->0.0,y->0.0}}");
     check("NMinimize({Sinc(x)+Sinc(y)}, {x, y})", //
