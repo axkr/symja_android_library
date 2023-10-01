@@ -1034,63 +1034,64 @@ public class MinMaxFunctions {
     }
 
     /**
-     * @param func Function to optimize.
-     * @param optimum Expected optimum.
+     * @param func function to optimize.
+     * @param variables
      * @param init Starting point.
-     * @param goal Minimization or maximization.
-     * @param fTol Tolerance (relative error on the objective function) for "Powell" algorithm.
-     * @param fLineTol Tolerance (relative error on the objective function) for the internal line
-     *        search algorithm.
-     * @param pointTol Tolerance for checking that the optimum is correct.
+     * @param goal minimization or maximization.
+     * @param tolerance tolerance (relative error on the objective function) for "Powell" algorithm.
+     * @param lineTolerance tolerance (relative error on the objective function) for the internal
+     *        line search algorithm.
+     * @param pointTolerance Tolerance for checking that the optimum is correct.
      */
     private static IExpr optimizePowell( //
         MultivariateFunction func, //
-        VariablesSet vars, //
-        // double[] optimum, //
+        VariablesSet variables, //
         double[] init, //
         GoalType goal, //
-        double fTol, //
-        double fLineTol, //
-        double pointTol) { //
+        double tolerance, //
+        double lineTolerance, //
+        double pointTolerance) { //
       final MultivariateOptimizer optim =
-          // new BOBYQAOptimizer(100);
-          new PowellOptimizer(fTol, Math.ulp(1d), fLineTol, Math.ulp(1d));
+          new PowellOptimizer(tolerance, Math.ulp(1d), lineTolerance, Math.ulp(1d));
 
-      final PointValuePair solution = optim.optimize(new MaxEval(1000), new ObjectiveFunction(func),
-          goal, new InitialGuess(init));
+      final PointValuePair solution = optim.optimize(//
+          new MaxEval(1000), //
+          new ObjectiveFunction(func), //
+          goal, //
+          new InitialGuess(init) //
+      );
       final double[] point = solution.getPoint();
       // System.out.println("sol=" + Arrays.toString(solution.getPoint()));
 
       double[] values = solution.getPointRef();
-      List<IExpr> varList = vars.getArrayList();
+      List<IExpr> varList = variables.getArrayList();
       IASTAppendable list =
           F.mapRange(0, varList.size(), i -> F.Rule(varList.get(i), F.num(values[i])));
       IAST result = F.list(F.num(func.value(values)), list);
       return result;
     }
 
-    private IAST optimizeSimplexSolver(IAST list1, VariablesSet vars, IExpr function) {
-      IExpr listOfconstraints = list1.arg2();
-      if (listOfconstraints.isAnd()) {
-        // lc1 && lc2 && lc3...
-        LinearObjectiveFunction objectiveFunction = getObjectiveFunction(vars, function);
-        List<LinearConstraint> constraints = getConstraints(vars, (IAST) listOfconstraints);
-        return simplexSolver(vars, objectiveFunction, objectiveFunction,
-            new LinearConstraintSet(constraints), getGoalType(), new NonNegativeConstraint(true),
-            PivotSelectionRule.BLAND);
-      }
-      return F.NIL;
+    private IAST optimizeSimplexSolver(IAST list1, VariablesSet variables, IExpr function) {
+      IExpr listOfconstraints = list1.arg2().makeAST(S.And);
+
+      // lc1 && lc2 && lc3...
+      LinearObjectiveFunction objectiveFunction = getObjectiveFunction(variables, function);
+      List<LinearConstraint> constraints = getConstraints(variables, (IAST) listOfconstraints);
+      return simplexSolver(variables, objectiveFunction, objectiveFunction,
+          new LinearConstraintSet(constraints), getGoalType(), new NonNegativeConstraint(true),
+          PivotSelectionRule.BLAND);
     }
 
-    protected static IAST simplexSolver(VariablesSet vars, LinearObjectiveFunction f,
-        OptimizationData... optData) throws org.hipparchus.exception.MathRuntimeException {
+    protected static IAST simplexSolver(VariablesSet variables,
+        LinearObjectiveFunction objectiveFunction, OptimizationData... optimizationData)
+        throws org.hipparchus.exception.MathRuntimeException {
       SimplexSolver solver = new SimplexSolver();
-      PointValuePair solution = solver.optimize(optData);
+      PointValuePair solution = solver.optimize(optimizationData);
       double[] values = solution.getPointRef();
-      List<IExpr> varList = vars.getArrayList();
+      List<IExpr> varList = variables.getArrayList();
       IASTAppendable list =
           F.mapRange(0, values.length, i -> F.Rule(varList.get(i), F.num(values[i])));
-      return F.list(F.num(f.value(values)), list);
+      return F.list(F.num(objectiveFunction.value(values)), list);
     }
   }
 

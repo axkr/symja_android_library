@@ -57,6 +57,7 @@ public class BuiltinUsage {
     USAGE[ID.BaseForm] = "print with all numbers given in a base";
     USAGE[ID.BaseDecode] = "decode a base64 string";
     USAGE[ID.BaseEncode] = "encode an element as a base64 string";
+    USAGE[ID.BernoulliB] = "Bernoulli number and polynomial";
     USAGE[ID.Beta] = "Euler's Beta function";
     USAGE[ID.Boole] = "translate 'True' to 1, and 'False' to 0";
     USAGE[ID.Booleans] = "domain of boolean values";
@@ -134,13 +135,14 @@ public class BuiltinUsage {
     USAGE[ID.DivideBy] = "divide a value and assigns that returning the new value";
     USAGE[ID.Divisors] = "integer divisors";
     USAGE[ID.Do] = "evaluate an expression looping over a variable";
-    USAGE[ID.Dot] = "dot product";
+    USAGE[ID.Dot] = "dot product of vectors and matrices";
     USAGE[ID.DownValues] =
         "get transformation rules corresponding to all downvalues defined for a symbol";
     USAGE[ID.Drop] = "remove a number of elements from a list";
     USAGE[ID.DSolve] = "differential equation analytical solver";
 
     USAGE[ID.E] = "exponential constant E≃2.7182";
+    USAGE[ID.Echo] = "files and pipes that echoes the input";
     USAGE[ID.EditDistance] = "edit distance";
     USAGE[ID.Element] = "check whether the element belongs to the domain";
     USAGE[ID.EllipticE] = "elliptic integral of the second kind E(ϕ|m)";
@@ -498,7 +500,7 @@ public class BuiltinUsage {
     USAGE[ID.StringContainsQ] = "test whether a pattern matches with a substring";
     USAGE[ID.StringDrop] = "drop a part of a string";
     USAGE[ID.StringExpression] = "an arbitrary string expression";
-    // USAGE[ID.StringForm] = "make an string from a template and a list of parameters";
+    USAGE[ID.StringForm] = "make a string from a template and a list of parameters";
     USAGE[ID.StringFreeQ] = "test whether a string is free of substrings matching a pattern";
     USAGE[ID.StringInsert] = "insert a string in a given position";
     USAGE[ID.StringJoin] = "join strings together";
@@ -555,6 +557,7 @@ public class BuiltinUsage {
     USAGE[ID.ToString] = "format an expression and produce a string";
     USAGE[ID.ToUpperCase] = "turn all the letters into upper case";
     USAGE[ID.Total] = "adds all values in $list$...";
+    USAGE[ID.Trace] = "trace the succesive evaluations";
     USAGE[ID.TransformationFunction] = "general symbolic representation of transformation";
     USAGE[ID.TranslationTransform] = "symbolic representation of translation";
     USAGE[ID.Transliterate] = "transliterate an UTF string in different alphabets to ASCII";

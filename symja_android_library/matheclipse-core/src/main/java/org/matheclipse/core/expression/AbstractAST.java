@@ -4975,6 +4975,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return isList() ? this : F.List(this);
   }
 
+  @Override
+  public IAST makeAST(IExpr head) {
+    return isAST(head) ? this : F.unaryAST1(head, this);
+  }
+
   /** {@inheritDoc} */
   @Override
   public IAST map(final Function<IExpr, ? extends IExpr> function) {

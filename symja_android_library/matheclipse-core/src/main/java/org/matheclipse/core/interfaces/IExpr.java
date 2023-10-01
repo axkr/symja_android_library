@@ -4401,6 +4401,18 @@ public interface IExpr
   }
 
   /**
+   * Return <code>this</code> if <code>isAST(head)==true</code>, otherwise create a new list <code>
+   * {this}</code> from this (i.e. return <code>F.unaryAST1(head, this)</code>).
+   *
+   * @return <code>this</code> if <code>isAST(head)==true</code>, otherwise return
+   *         <code>F.unaryAST1(head, this)
+   *     </code>.
+   */
+  default IAST makeAST(IExpr head) {
+    return F.unaryAST1(head, this);
+  }
+
+  /**
    * <p>
    * If <code>this</code> is an {@link IAST}:
    * <p>
