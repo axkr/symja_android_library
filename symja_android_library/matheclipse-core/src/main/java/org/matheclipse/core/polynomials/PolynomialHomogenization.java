@@ -3,6 +3,7 @@ package org.matheclipse.core.polynomials;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Function;
 import org.matheclipse.core.convert.VariablesSet;
@@ -27,16 +28,40 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class PolynomialHomogenization {
 
   private class CosSinTransform implements Function<IExpr, IExpr> {
-    private static final int SIN_ODD = 0;
-    private static final int SIN_EVEN = 1;
-    private static final int COS_ODD = 2;
-    private static final int COS_EVEN = 3;
-    int[] stats;
-    boolean rewriteToSin;
+    private static final int DECISION = 0;
+    private static final int SIN_ODD = 1;
+    private static final int SIN_EVEN = 2;
+    private static final int COS_ODD = 3;
+    private static final int COS_EVEN = 4;
+
+    Map<IExpr, int[]> statsMap;
 
     public CosSinTransform() {
-      this.stats = new int[4];
-      this.rewriteToSin = true;
+      statsMap = toMap(originalVariables.getVariablesSet());
+    }
+
+    private Map<IExpr, int[]> toMap(Set<IExpr> set) {
+      Map<IExpr, int[]> map = new HashMap<IExpr, int[]>();
+      set.forEach(t -> {
+        int[] statsArray = new int[5];
+        map.put(t, statsArray);
+      });
+      return map;
+    }
+
+    /**
+     * If decision is <code>1</code> rewrite to <code>Sin</code> expressio. If decision is
+     * <code>-1</code> rewrite to <code>Cos</code> expression.
+     */
+    private void decideTransform() {
+      statsMap.forEach((x, a) -> {
+        a[DECISION] = 1;
+        if (a[SIN_ODD] == 0) {
+          if (a[COS_ODD] != 0) {
+            a[DECISION] = -1;
+          }
+        }
+      });
     }
 
     private void determineStatsRecursive(IExpr expr) {
@@ -45,27 +70,12 @@ public class PolynomialHomogenization {
           int exponent = expr.exponent().toIntDefault();
           if (exponent != Integer.MIN_VALUE) {
             IExpr base = expr.base();
-            if (exponent > 0) {
-              if ((exponent & 0x0001) == 0x0000) {
-                // even exponent
-                if (base.isCos() && originalVariables.contains(base.first())) {
-                  stats[COS_EVEN]++;
-                } else if (base.isSin() && originalVariables.contains(base.first())) {
-                  stats[SIN_EVEN]++;
-                }
-              } else {
-                if (base.isCos() && originalVariables.contains(base.first())) {
-                  stats[COS_ODD]++;
-                } else if (base.isSin() && originalVariables.contains(base.first())) {
-                  stats[SIN_ODD]++;
-                }
-              }
+            if (base.isAST1()) {
+              addStatistics((IAST) base, exponent);
             }
           }
-        } else if (expr.isCos() && originalVariables.contains(expr.first())) {
-          stats[COS_ODD]++;
-        } else if (expr.isSin() && originalVariables.contains(expr.first())) {
-          stats[SIN_ODD]++;
+        } else if (expr.isCos() || expr.isSin()) {
+          addStatistics((IAST) expr, 1);
         } else {
           IAST ast = (IAST) expr;
           for (int i = 1; i < ast.size(); i++) {
@@ -75,32 +85,63 @@ public class PolynomialHomogenization {
       }
     }
 
-    private IExpr rewriteSqrCosFunctions(IExpr x) {
-      if (x.isPower() && x.exponent().isInteger()) {
-        if (rewriteToSin && x.base().isCos()) {
-          int exponent = x.exponent().toIntDefault();
-          if (exponent > 0 //
-              && (exponent & 0x0001) == 0x0000) {
-            IAST cosAST = (IAST) x.base();
-            IExpr cosArg = cosAST.arg1();
-            if (exponent > 2) {
-              return F.Power(F.Plus(F.C1, F.Negate(F.Power(F.Sin(cosArg), F.C2))),
-                  F.ZZ(exponent / 2));
-            }
-            return F.Plus(F.C1, F.Negate(F.Power(F.Sin(cosArg), F.C2)));
+    /**
+     * Add statistics entry for <code>base ^ exponent</code>
+     * 
+     * @param base
+     * @param exponent
+     */
+    private void addStatistics(IAST base, int exponent) {
+      int[] stats = statsMap.get(base.arg1());
+      if (stats != null) {
+        if ((exponent % 2) == 0) {
+          // even exponent number
+          if (base.isCos()) {
+            stats[COS_EVEN]++;
+          } else if (base.isSin()) {
+            stats[SIN_EVEN]++;
+          }
+        } else {
+          // odd exponent number
+          if (base.isCos()) {
+            stats[COS_ODD]++;
+          } else if (base.isSin()) {
+            stats[SIN_ODD]++;
           }
         }
-        if (!rewriteToSin && x.base().isSin()) {
-          int exponent = x.exponent().toIntDefault();
-          if (exponent > 0 //
-              && (exponent & 0x0001) == 0x0000) {
-            IAST sinAST = (IAST) x.base();
-            IExpr sinArg = sinAST.arg1();
-            if (exponent > 2) {
-              return F.Power(F.Plus(F.C1, F.Negate(F.Power(F.Cos(sinArg), F.C2))),
-                  F.ZZ(exponent / 2));
+      }
+    }
+
+    private IExpr rewriteEvenCosSinFunctions(IExpr x) {
+      if (x.isPower() && x.exponent().isInteger() && x.base().isAST1()) {
+        int[] array = statsMap.get(x.base().first());
+        if (array != null) {
+          boolean rewriteToSin = array[DECISION] > 0;
+          if (rewriteToSin && x.base().isCos()) {
+            // rewrite to Sin expression
+            int exponent = x.exponent().toIntDefault();
+            if (exponent != Integer.MIN_VALUE && (exponent % 2) == 0) {
+              IAST cosAST = (IAST) x.base();
+              IExpr cosArg = cosAST.arg1();
+              if (exponent > 2) {
+                return F.Power(F.Plus(F.C1, F.Negate(F.Power(F.Sin(cosArg), F.C2))),
+                    F.ZZ(exponent / 2));
+              }
+              return F.Plus(F.C1, F.Negate(F.Power(F.Sin(cosArg), F.C2)));
             }
-            return F.Plus(F.C1, F.Negate(F.Power(F.Cos(sinArg), F.C2)));
+          }
+          if (!rewriteToSin && x.base().isSin()) {
+            // rewrite to Cos expression
+            int exponent = x.exponent().toIntDefault();
+            if (exponent != Integer.MIN_VALUE && (exponent % 2) == 0) {
+              IAST sinAST = (IAST) x.base();
+              IExpr sinArg = sinAST.arg1();
+              if (exponent > 2) {
+                return F.Power(F.Plus(F.C1, F.Negate(F.Power(F.Cos(sinArg), F.C2))),
+                    F.ZZ(exponent / 2));
+              }
+              return F.Plus(F.C1, F.Negate(F.Power(F.Cos(sinArg), F.C2)));
+            }
           }
         }
       }
@@ -113,12 +154,8 @@ public class PolynomialHomogenization {
         IExpr trigExpand = F.TrigExpand.of(x);
         if (!trigExpand.equals(x)) {
           determineStatsRecursive(trigExpand);
-          if (stats[SIN_ODD] == 0) {
-            if (stats[COS_ODD] != 0) {
-              this.rewriteToSin = false;
-            }
-          }
-          IExpr subst = F.subst(trigExpand, f -> rewriteSqrCosFunctions(f));
+          decideTransform();
+          IExpr subst = F.subst(trigExpand, f -> rewriteEvenCosSinFunctions(f));
           return subst;
         }
       }
@@ -162,6 +199,7 @@ public class PolynomialHomogenization {
   public PolynomialHomogenization(VariablesSet variablesSet, EvalEngine engine) {
     this.engine = engine;
     this.originalVariables = variablesSet;
+
   }
 
   /**
