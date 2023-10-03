@@ -1413,28 +1413,28 @@ public final class StringFunctions {
           args[i - 2] = ast.get(i).toString();
         }
         String templateString = arg1.toString();
-        int indexOf = templateString.indexOf("``");
-        if (indexOf >= 0) {
-          StringBuilder buf = new StringBuilder(templateString.length() + 10);
-          int lastIndex = 0;
-          int counter = 1;
-          while (indexOf >= 0) {
-            buf.append(templateString.substring(lastIndex, indexOf + 1));
-            if (counter - 1 >= args.length) {
-              // Item `1` requested in `2` out of range. `3` itms available.
-              return Errors.printMessage(S.StringForm, "sfr",
-                  F.List(F.ZZ(counter), arg1, F.ZZ(args.length)), engine);
-            }
-            buf.append(counter++);
-            buf.append("`");
-            lastIndex = indexOf + 2;
-            indexOf = templateString.indexOf("``", indexOf + 2);
-          }
-          if (lastIndex > 0 && lastIndex < templateString.length()) {
-            buf.append(templateString.substring(lastIndex));
-          }
-          templateString = buf.toString();
-        }
+        // int indexOf = templateString.indexOf("``");
+        // if (indexOf >= 0) {
+        // StringBuilder buf = new StringBuilder(templateString.length() + 10);
+        // int lastIndex = 0;
+        // int counter = 1;
+        // while (indexOf >= 0) {
+        // buf.append(templateString.substring(lastIndex, indexOf + 1));
+        // if (counter - 1 >= args.length) {
+        // // Item `1` requested in `2` out of range. `3` itms available.
+        // return Errors.printMessage(S.StringForm, "sfr",
+        // F.List(F.ZZ(counter), arg1, F.ZZ(args.length)), engine);
+        // }
+        // buf.append(counter++);
+        // buf.append("`");
+        // lastIndex = indexOf + 2;
+        // indexOf = templateString.indexOf("``", indexOf + 2);
+        // }
+        // if (lastIndex > 0 && lastIndex < templateString.length()) {
+        // buf.append(templateString.substring(lastIndex));
+        // }
+        // templateString = buf.toString();
+        // }
         String newTemplateString = templateString.replace("`.`", "'");
         while (!newTemplateString.equals(templateString)) {
           templateString = newTemplateString;

@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
+import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
@@ -301,14 +302,15 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
   }
 
   /**
-   * Evaluate the expression. if th expression is an IAST factor and then expand the expression.
+   * Evaluate the expression. if the expression is an IAST factor and then expand the expression.
    * 
    * @param expr
    * @return
    */
   private static IExpr tr0(IExpr expr) {
     if (expr.isAST()) {
-      return F.eval(F.Expand(F.Factor(expr)));
+      IExpr factor = Algebra.factor(expr, EvalEngine.get());
+      return F.eval(F.Expand(factor));
     }
     return F.eval(expr);
   }

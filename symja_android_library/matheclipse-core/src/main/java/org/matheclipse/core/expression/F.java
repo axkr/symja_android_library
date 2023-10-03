@@ -9034,6 +9034,10 @@ public class F extends S {
     return new AST2(Solve, a0, a1);
   }
 
+  public static IAST Solve(final IExpr a0, final IExpr a1, IAST options) {
+    return new AST3(Solve, a0, a1, options);
+  }
+
   /**
    * Solve an equation for a single variable.
    *

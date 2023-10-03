@@ -1399,25 +1399,21 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   public void testSolveHO6() {
-    // check("TrigToExp(Cos(x) + Cos(3*x) + Cos(5*x) )", //
-    // "1/(2*E^(I*5*x))+1/(2*E^(I*3*x))+1/(2*E^(I*x))+E^(I*x)/2+E^(I*3*x)/2+E^(I*5*x)/2");
-    //
-    // check("Factor(1/(2*E^(I*5*x))+1/(2*E^(I*3*x))+1/(2*E^(I*x))+E^(I*x)/2+E^(I*3*x)/2+E^(I*5*x)/2)",
-    // //
-    // "");
     // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
-    check("Solve(Cos(x) + Cos(3*x) + Cos(5*x) == 0,x)", //
+    check("Solve(Cos(x) + Cos(3*x) + Cos(5*x) == 0,x,GenerateConditions->True)", //
         "{{x->ConditionalExpression(-5/6*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-\n"
             + "2/3*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-Pi/2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-Pi/\n"
             + "3+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-Pi/6+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"
             + "6+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/3+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"
             + "2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(2/3*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(\n"
             + "5/6*Pi+2*Pi*C(1),C(1)∈Integers)}}");
+    check("Solve(Cos(x) + Cos(3*x) + Cos(5*x) == 0,x)", //
+        "{{x->Pi/6},{x->Pi/3},{x->Pi/2},{x->2/3*Pi},{x->5/6*Pi}}");
   }
 
   public void testSolveHO7() {
-    //
-    https: // www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+    // https: //
+    // www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
     check("Solve(Cos(x) + Tan(3*x) + Cos(5*x) ==0,x)", //
         "Solve(Cos(x)+Cos(5*x)+Tan(3*x)==0,x)");
   }
@@ -1610,6 +1606,12 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->0},{x->-Log(9)/Log(6)}}");
     check("Solve( 10*(-6)^x + 1 == 0, x)", //
         "{{x->(I*Pi-Log(10))/(I*Pi+Log(6))}}");
+  }
+
+  public void testCosSinHomogenization() {
+    check("Solve(Cos(2*x)+3*Sin(x)-2==0, x, GenerateConditions->True) ", //
+        "{{x->ConditionalExpression(Pi/6+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"
+            + "2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(5/6*Pi+2*Pi*C(1),C(1)∈Integers)}}");
   }
 
   public void testSolveAnd() {

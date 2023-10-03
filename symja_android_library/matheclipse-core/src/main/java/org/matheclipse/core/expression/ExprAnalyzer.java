@@ -395,13 +395,13 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
     this.fEquationType = LINEAR;
   }
 
-
-
   /**
-   * Check for an applicable inverse function at the given <code>position</code> in the <code>
-   * Plus(..., ,...)</code> expression.
+   * Rewrite an expression <code>numericPart*functionToInvert(x)==rhs</code> to
+   * <code>x==inverseFunction(rhs / numericPart)</code>, if a possible inverse function is
+   * available.
    *
-   * @param lhs
+   * @param lhs the expression <code>functionToInvert(x)</code> or
+   *        <code>numericPart*functionToInvert(x)</code>
    * @param rhs
    * @return
    */
@@ -410,23 +410,7 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
       return fEngine.evaluate(F.Expand(
           F.Times(F.Subtract(lhs.arg1(), F.Times(F.CN1, rhs)), F.Subtract(lhs.arg1(), rhs))));
     } else if (lhs.isAST1()) {
-      IExpr arg1 = lhs.arg1();
-      if (fGenerateConditions) {
-        if (lhs.isFunctionID(ID.Cos, ID.Cosh, ID.Cot, ID.Coth, ID.Csc, ID.Csch, ID.Sec, ID.Sech,
-            ID.Sin, ID.Sinh, ID.Tan, ID.Tanh)) {
-          // return dummy placeholder function
-          return fEngine
-              .evaluate(F.Subtract(arg1, $InverseFunction((IBuiltInSymbol) lhs.head(), rhs)));
-        }
-      }
-      IASTAppendable inverseFunction = InverseFunction.getUnaryInverseFunction(lhs, true);
-      if (inverseFunction.isPresent()) {
-        Errors.printIfunMessage(S.InverseFunction);
-        // rewrite fNumer
-        inverseFunction.append(rhs);
-        return fEngine.evaluate(F.Subtract(lhs.arg1(), inverseFunction));
-      }
-
+      return rewriteInverseFunction(F.C1, lhs, rhs);
     } else if (lhs.isPower() && lhs.base().isSymbol() && lhs.exponent().isNumber()) {
       int position = fListOfVariables.indexOf(lhs.base());
       if (position > 0) {
@@ -437,13 +421,40 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
     } else if (lhs.isTimes() && lhs.size() == 3 && lhs.first().isNumericFunction(true)
         && lhs.second().isAST1()) {
       IAST timesArg2 = (IAST) lhs.second();
-      IASTAppendable inverseFunction = InverseFunction.getUnaryInverseFunction(timesArg2, true);
-      if (inverseFunction.isPresent()) {
-        Errors.printIfunMessage(S.InverseFunction);
-        // rewrite fNumer
-        inverseFunction.append(F.Divide(rhs, lhs.first()));
-        return fEngine.evaluate(F.Subtract(timesArg2.arg1(), inverseFunction));
+      IExpr numericPart = lhs.first();
+      return rewriteInverseFunction(numericPart, timesArg2, rhs);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Rewrite an expression <code>numericPart*functionToInvert(x)==rhs</code> to
+   * <code>x==inverseFunction(rhs / numericPart)</code>, if a possible inverse function is
+   * available.
+   * 
+   * @param numericPart
+   * @param functionToInvert the function which should be inverted
+   * @param rhs
+   * @return
+   */
+  private IExpr rewriteInverseFunction(IExpr numericPart, IAST functionToInvert, IExpr rhs) {
+    IExpr arg1 = functionToInvert.arg1();
+    if (fGenerateConditions) {
+      if (functionToInvert.isFunctionID(ID.Cos, ID.Cosh, ID.Cot, ID.Coth, ID.Csc, ID.Csch, ID.Sec,
+          ID.Sech, ID.Sin, ID.Sinh, ID.Tan, ID.Tanh)) {
+        // return dummy placeholder function
+        return fEngine
+            .evaluate(F.Subtract(arg1, $InverseFunction((IBuiltInSymbol) functionToInvert.head(),
+                F.Divide(rhs, numericPart))));
       }
+    }
+    IASTAppendable inverseFunction =
+        InverseFunction.getUnaryInverseFunction(functionToInvert, true);
+    if (inverseFunction.isPresent()) {
+      Errors.printIfunMessage(S.InverseFunction);
+      // rewrite fNumer
+      inverseFunction.append(F.Divide(rhs, numericPart));
+      return fEngine.evaluate(F.Subtract(arg1, inverseFunction));
     }
     return F.NIL;
   }

@@ -75,6 +75,7 @@ import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
+import org.matheclipse.core.reflection.system.Solve.SolveData;
 import org.matheclipse.core.visit.VisitorExpr;
 import com.google.common.math.LongMath;
 import edu.jas.arith.BigInteger;
@@ -2101,42 +2102,55 @@ public class Algebra {
         if (result.isPresent()) {
           return result;
         }
-        return ast.arg1();
+        return arg1;
       }
-      VariablesSet eVar = new VariablesSet(ast.arg1());
+      VariablesSet eVar = new VariablesSet(arg1);
       List<IExpr> varList = eVar.getVarList().copyTo();
-
-      IExpr expr = ast.arg1();
-      if (ast.isAST1() && !ast.arg1().isTimes() && !ast.arg1().isPower()) {
-        expr = S.Together.of(engine, expr);
-        if (expr.isAST()) {
-          IExpr[] parts = Algebra.getNumeratorDenominator((IAST) expr, engine, true);
-          if (!parts[1].isOne()) {
-            try {
-              IExpr numerator = factorExpr(F.Factor(parts[0]), parts[0], eVar, false, engine);
-              IExpr denominator = factorExpr(F.Factor(parts[1]), parts[1], eVar, false, engine);
-              if (numerator.isPresent() && denominator.isPresent()) {
-                IExpr temp = engine.evaluate(F.Divide(numerator, denominator));
-                engine.putCache(ast, temp);
-                return temp;
-              }
-              engine.putCache(ast, F.NIL);
-            } catch (JASConversionException e) {
-              LOGGER.debug("Factor.evaluate() failed", e);
-            }
-            return ast.arg1();
-          }
-        }
+      if (ast.isAST1()) {
+        return factor(ast, arg1, eVar, false, true, engine);
+        // if (!arg1.isTimes() && !arg1.isPower()) {
+        // expr = S.Together.of(engine, expr);
+        // if (expr.isAST()) {
+        // IExpr[] parts = Algebra.getNumeratorDenominator((IAST) expr, engine, true);
+        // if (!parts[1].isOne()) {
+        // try {
+        // IExpr numerator =
+        // factorExpr(F.Factor(parts[0]), parts[0], eVar, false, true, engine);
+        // IExpr denominator =
+        // factorExpr(F.Factor(parts[1]), parts[1], eVar, false, true, engine);
+        // if (numerator.isPresent() && denominator.isPresent()) {
+        // IExpr temp = engine.evaluate(F.Divide(numerator, denominator));
+        // engine.putCache(ast, temp);
+        // return temp;
+        // }
+        // engine.putCache(ast, F.NIL);
+        // } catch (JASConversionException e) {
+        // LOGGER.debug("Factor.evaluate() failed", e);
+        // }
+        // return arg1;
+        // }
+        // }
+        // }
+        // try {
+        // IExpr temp = factorExpr(F.Factor(arg1), expr, eVar, false, true, engine);
+        // engine.putCache(ast, temp);
+        // if (temp.isPresent()) {
+        // return temp;
+        // }
+        // } catch (JASConversionException e) {
+        // LOGGER.debug("Factor.evaluate() failed", e);
+        // }
+        // return arg1;
       }
 
       try {
         if (ast.isAST2()) {
-          IExpr temp = factorWithOption(ast, expr, varList, false, engine);
+          IExpr temp = factorWithOption(ast, arg1, varList, false, engine);
           if (temp.isPresent()) {
             return temp;
           }
         }
-        IExpr temp = factorExpr(ast, expr, eVar, false, engine);
+        IExpr temp = factorExpr(ast, arg1, eVar, false, true, engine);
         engine.putCache(ast, temp);
         if (temp.isPresent()) {
           return temp;
@@ -2144,7 +2158,7 @@ public class Algebra {
       } catch (JASConversionException e) {
         LOGGER.debug("Factor.evaluate() failed", e);
       }
-      return ast.arg1();
+      return arg1;
     }
 
     @Override
@@ -2152,8 +2166,46 @@ public class Algebra {
       return ARGS_1_2;
     }
 
+    public static IExpr factor(IAST ast, IExpr arg1, VariablesSet eVar, boolean squareFree,
+        boolean withHomogenization, EvalEngine engine) {
+      IExpr expr = arg1;
+      if (!arg1.isTimes() && !arg1.isPower()) {
+        expr = S.Together.of(engine, arg1);
+        if (expr.isAST()) {
+          IExpr[] parts = Algebra.getNumeratorDenominator((IAST) expr, engine, true);
+          if (!parts[1].isOne()) {
+            try {
+              IExpr numerator = factorExpr(F.Factor(parts[0]), parts[0], eVar, squareFree,
+                  withHomogenization, engine);
+              IExpr denominator = factorExpr(F.Factor(parts[1]), parts[1], eVar, squareFree,
+                  withHomogenization, engine);
+              if (numerator.isPresent() && denominator.isPresent()) {
+                IExpr temp = engine.evaluate(F.Divide(numerator, denominator));
+                engine.putCache(ast, temp);
+                return temp;
+              }
+              engine.putCache(ast, F.NIL);
+            } catch (JASConversionException e) {
+              //
+            }
+            return arg1;
+          }
+        }
+      }
+      try {
+        IExpr temp = factorExpr(ast, expr, eVar, squareFree, withHomogenization, engine);
+        engine.putCache(ast, temp);
+        if (temp.isPresent()) {
+          return temp;
+        }
+      } catch (JASConversionException e) {
+        LOGGER.debug("Factor.evaluate() failed", e);
+      }
+      return arg1;
+    }
+
     protected static IExpr factorExpr(final IAST ast, IExpr expr, VariablesSet eVar,
-        boolean factorSquareFree, EvalEngine engine) {
+        boolean squareFree, boolean withHomogenization, EvalEngine engine) {
       if (expr.isAST()) {
         IExpr temp;
         // if (expr.isPower()&&expr.base().isPlus()) {
@@ -2161,7 +2213,8 @@ public class Algebra {
         // temp = F.Power(temp, expr.exponent());
         // } else
         if (expr.isPower()) {
-          IExpr p = factorExpr((IAST) expr, expr.base(), eVar, factorSquareFree, engine);
+          IExpr p =
+              factorExpr((IAST) expr, expr.base(), eVar, squareFree, withHomogenization, engine);
           if (p.isPresent() && !p.equals(expr.base())) {
             return F.Power(p, expr.exponent());
           }
@@ -2169,10 +2222,10 @@ public class Algebra {
         } else if (expr.isTimes()) {
           temp = ((IAST) expr).map(x -> {
             if (x.isPlus()) {
-              return factorExpr(ast, x, eVar, factorSquareFree, engine);
+              return factorExpr(ast, x, eVar, squareFree, withHomogenization, engine);
             }
             if (x.isPower() && x.base().isPlus()) {
-              IExpr p = factorExpr(ast, x.base(), eVar, factorSquareFree, engine);
+              IExpr p = factorExpr(ast, x.base(), eVar, squareFree, withHomogenization, engine);
               if (p.isPresent() && !p.equals(x.base())) {
                 return F.Power(p, x.exponent());
               }
@@ -2181,14 +2234,14 @@ public class Algebra {
           }, 1);
           return temp;
         } else {
-          return factor((IAST) expr, eVar, factorSquareFree, engine);
+          return factor((IAST) expr, eVar, squareFree, withHomogenization, engine);
         }
       }
       return expr;
     }
 
-    private static IExpr factor(IAST expr, VariablesSet eVar, boolean factorSquareFree,
-        EvalEngine engine) throws JASConversionException {
+    private static IExpr factor(IAST expr, VariablesSet eVar, boolean squareFree,
+        boolean withHomogenization, EvalEngine engine) throws JASConversionException {
       if (expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT) {
         return expr;
       }
@@ -2205,10 +2258,10 @@ public class Algebra {
         }
         objects = jas.factorTerms(polyRat);
       } catch (JASConversionException e) {
-        if (factorSquareFree) {
-          return F.NIL;
+        if (!squareFree && withHomogenization) {
+          return factorWithPolynomialHomogenization(expr, eVar, engine);
         }
-        return factorWithPolynomialHomogenization(expr, eVar, engine);
+        return F.NIL;
       }
 
       if (objects != null) {
@@ -2226,7 +2279,7 @@ public class Algebra {
 
           FactorAbstract<edu.jas.arith.BigInteger> factorAbstract =
               FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
-          if (factorSquareFree) {
+          if (squareFree) {
             map = factorAbstract.squarefreeFactors(poly); // factors(poly);
           } else {
             map = factorAbstract.factors(poly);
@@ -2270,7 +2323,7 @@ public class Algebra {
       return F.NIL;
     }
 
-    public static IExpr evaluateSolve(IExpr expr, EvalEngine engine) {
+    public static IExpr evaluateSolve(IExpr expr, SolveData solveData, EvalEngine engine) {
       VariablesSet eVar = new VariablesSet(expr);
       if (eVar.size() == 1 && !expr.isTimes() && !expr.isPower()) {
         IExpr variable = eVar.getArrayList().get(0);
@@ -2278,7 +2331,8 @@ public class Algebra {
         if (expr.isAST()) {
           IExpr[] parts = Algebra.getNumeratorDenominator((IAST) expr, engine, true);
           try {
-            IExpr numerator = factorExprSolve(F.Factor(parts[0]), parts[0], variable, engine);
+            IExpr numerator =
+                factorExprSolve(F.Factor(parts[0]), parts[0], variable, solveData, engine);
             if (numerator.isList() && !parts[1].isOne()) {
               // IExpr denominator = factorExprSolve(F.Factor(parts[1]), parts[1], variable,
               // engine);
@@ -2300,13 +2354,13 @@ public class Algebra {
     }
 
     protected static IExpr factorExprSolve(final IAST ast, IExpr expr, IExpr variable,
-        EvalEngine engine) {
+        SolveData solveData, EvalEngine engine) {
       if (expr.isAST()) {
         if (expr.isTimes()) {
           IASTAppendable result = F.ListAlloc();
           ((IAST) expr).forEach(x -> {
             if (x.isPlus()) {
-              IExpr subList = factorExprSolve(ast, x, variable, engine);
+              IExpr subList = factorExprSolve(ast, x, variable, solveData, engine);
               if (subList.isList()) {
                 result.appendArgs((IAST) subList);
               }
@@ -2317,22 +2371,23 @@ public class Algebra {
           }
           return F.NIL;
         } else {
-          return factorWithPolynomialHomogenizationSolve((IAST) expr, variable, engine);
+          return factorWithPolynomialHomogenizationSolve((IAST) expr, variable, solveData, engine);
         }
       }
       return expr;
     }
 
     private static IExpr factorWithPolynomialHomogenizationSolve(IAST expr, IExpr variable,
-        EvalEngine engine) {
+        SolveData solveData, EvalEngine engine) {
       if (expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT) {
         return expr;
       }
       boolean gaussianIntegers = !expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
       IASTAppendable originalVarList = F.ListAlloc(2);
       originalVarList.append(variable);
-      PolynomialHomogenization substitutions =
-          new PolynomialHomogenization(originalVarList, engine);
+      VariablesSet variablesSet = new VariablesSet();
+      variablesSet.add(variable);
+      PolynomialHomogenization substitutions = new PolynomialHomogenization(variablesSet, engine);
       IExpr subsPolynomial = substitutions.replaceForward(expr);
       Set<ISymbol> varSet = substitutions.substitutedVariablesSet();
       List<IExpr> arrayList = new ArrayList<IExpr>(1);
@@ -2350,12 +2405,14 @@ public class Algebra {
         }
         return F.NIL;
       }
-      return solveEquationRecursive(factorization, originalVarList, substitutions, varSet, engine);
+      return solveEquationRecursive(factorization, originalVarList, substitutions, varSet,
+          solveData, engine);
 
     }
 
     private static IAST solveEquationRecursive(IExpr factorization, IASTAppendable originalVarList,
-        PolynomialHomogenization substitutions, Set<ISymbol> varSet, EvalEngine engine) {
+        PolynomialHomogenization substitutions, Set<ISymbol> varSet, SolveData solveData,
+        EvalEngine engine) {
       IASTAppendable resultList = F.NIL;
       if (factorization.isTimes() && factorization.size() > 1 && varSet.size() == 1) {
         // System.out.println(factorization);
@@ -2369,8 +2426,10 @@ public class Algebra {
             for (int j = 1; j < subList.size(); j++) {
               IAST solveFunction = F.Solve(
                   F.Equal(F.Subtract(substitutions.replaceBackward(varList.arg1()), subList.get(j)),
-                      F.C0),
-                  originalVarList.arg1());
+                      F.C0), //
+                  originalVarList.arg1(), //
+                  F.Rule(S.GenerateConditions,
+                      solveData.isGenerateConditions() ? S.True : S.False));
               IExpr result = engine.evaluate(solveFunction);
               if (result.isListOfLists()) {
                 IAST listOfRulesToValuesList =
@@ -2483,9 +2542,7 @@ public class Algebra {
     private static IExpr factorWithPolynomialHomogenization(IAST expr, VariablesSet eVar,
         EvalEngine engine) {
       boolean gaussianIntegers = !expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
-      IASTAppendable originalVarList = eVar.getVarList();
-      PolynomialHomogenization substitutions =
-          new PolynomialHomogenization(eVar.getVarList(), engine);
+      PolynomialHomogenization substitutions = new PolynomialHomogenization(eVar, engine);
       IExpr subsPolynomial = substitutions.replaceForward(expr);
       // System.out.println(subsPolynomial.toString());
       // System.out.println(substitutions.substitutedVariables());
@@ -2584,7 +2641,7 @@ public class Algebra {
             return temp;
           }
         } else if (expr.isAST()) {
-          IExpr temp = factorExpr((IAST) expr, (IAST) expr, eVar, true, engine);
+          IExpr temp = factorExpr((IAST) expr, (IAST) expr, eVar, true, true, engine);
           engine.putCache(ast, temp);
           if (temp.isPresent()) {
             return temp;
@@ -4640,7 +4697,7 @@ public class Algebra {
       }
 
       IAST vars = eVar.getVarList();
-      PolynomialHomogenization substitutions = new PolynomialHomogenization(vars, EvalEngine.get());
+      PolynomialHomogenization substitutions = new PolynomialHomogenization(eVar, EvalEngine.get());
       IExpr[] subst = substitutions.replaceForward(numerator, denominator);
       IExpr numeratorPolynomial = subst[0];
       IExpr denominatorPolynomial = subst[1];
@@ -5111,6 +5168,11 @@ public class Algebra {
       LOGGER.debug("Algebra.factorComplex() failed", rex);
     }
     return expr;
+  }
+
+  public static IExpr factor(IExpr arg1, EvalEngine engine) {
+    VariablesSet eVar = new VariablesSet(arg1);
+    return Factor.factor(F.Factor(arg1), arg1, eVar, false, false, engine);
   }
 
   /**

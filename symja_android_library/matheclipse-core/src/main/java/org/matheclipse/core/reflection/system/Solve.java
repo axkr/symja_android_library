@@ -140,7 +140,10 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     }
   }
 
-  protected static class SolveData {
+  /**
+   * Wraps the options set to {@link S#Solve}
+   */
+  public static class SolveData {
     final IExpr[] options;
 
     public SolveData() {
@@ -160,7 +163,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       return options[0];
     }
 
-    protected boolean isGenerateConditions() {
+    public boolean isGenerateConditions() {
       return options[0].isTrue();
     }
 
@@ -876,7 +879,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               if (variables.argSize() == 1) {
                 IExpr variable = variables.arg1();
                 if (!termEQZero.isFree(variable)) {
-                  IExpr temp = Algebra.Factor.evaluateSolve(termEQZero, engine);
+                  IExpr temp =
+                      Algebra.Factor.evaluateSolve(termEQZero, this, engine);
                   if (temp.isList()) {
                     IAST listOfValues = (IAST) temp;
                     IASTAppendable listOfLists = F.ListAlloc(listOfValues.argSize());

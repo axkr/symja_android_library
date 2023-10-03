@@ -9,6 +9,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IReal;
 
 public interface IAssumptions {
+
   public static void assign(IExpr arg1, final IAST assumptionExpr,
       IAssumptions oldAssumptions, final EvalEngine engine) {
     IAssumptions assumptions;

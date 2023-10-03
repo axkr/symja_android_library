@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Function;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -23,6 +25,107 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Homogenization</a>
  */
 public class PolynomialHomogenization {
+
+  private class CosSinTransform implements Function<IExpr, IExpr> {
+    private static final int SIN_ODD = 0;
+    private static final int SIN_EVEN = 1;
+    private static final int COS_ODD = 2;
+    private static final int COS_EVEN = 3;
+    int[] stats;
+    boolean rewriteToSin;
+
+    public CosSinTransform() {
+      this.stats = new int[4];
+      this.rewriteToSin = true;
+    }
+
+    private void determineStatsRecursive(IExpr expr) {
+      if (expr.isAST()) {
+        if (expr.isPower()) {
+          int exponent = expr.exponent().toIntDefault();
+          if (exponent != Integer.MIN_VALUE) {
+            IExpr base = expr.base();
+            if (exponent > 0) {
+              if ((exponent & 0x0001) == 0x0000) {
+                // even exponent
+                if (base.isCos() && originalVariables.contains(base.first())) {
+                  stats[COS_EVEN]++;
+                } else if (base.isSin() && originalVariables.contains(base.first())) {
+                  stats[SIN_EVEN]++;
+                }
+              } else {
+                if (base.isCos() && originalVariables.contains(base.first())) {
+                  stats[COS_ODD]++;
+                } else if (base.isSin() && originalVariables.contains(base.first())) {
+                  stats[SIN_ODD]++;
+                }
+              }
+            }
+          }
+        } else if (expr.isCos() && originalVariables.contains(expr.first())) {
+          stats[COS_ODD]++;
+        } else if (expr.isSin() && originalVariables.contains(expr.first())) {
+          stats[SIN_ODD]++;
+        } else {
+          IAST ast = (IAST) expr;
+          for (int i = 1; i < ast.size(); i++) {
+            determineStatsRecursive(ast.get(i));
+          }
+        }
+      }
+    }
+
+    private IExpr rewriteSqrCosFunctions(IExpr x) {
+      if (x.isPower() && x.exponent().isInteger()) {
+        if (rewriteToSin && x.base().isCos()) {
+          int exponent = x.exponent().toIntDefault();
+          if (exponent > 0 //
+              && (exponent & 0x0001) == 0x0000) {
+            IAST cosAST = (IAST) x.base();
+            IExpr cosArg = cosAST.arg1();
+            if (exponent > 2) {
+              return F.Power(F.Plus(F.C1, F.Negate(F.Power(F.Sin(cosArg), F.C2))),
+                  F.ZZ(exponent / 2));
+            }
+            return F.Plus(F.C1, F.Negate(F.Power(F.Sin(cosArg), F.C2)));
+          }
+        }
+        if (!rewriteToSin && x.base().isSin()) {
+          int exponent = x.exponent().toIntDefault();
+          if (exponent > 0 //
+              && (exponent & 0x0001) == 0x0000) {
+            IAST sinAST = (IAST) x.base();
+            IExpr sinArg = sinAST.arg1();
+            if (exponent > 2) {
+              return F.Power(F.Plus(F.C1, F.Negate(F.Power(F.Cos(sinArg), F.C2))),
+                  F.ZZ(exponent / 2));
+            }
+            return F.Plus(F.C1, F.Negate(F.Power(F.Cos(sinArg), F.C2)));
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr apply(IExpr x) {
+      if (x.isTrigFunction()) {
+        IExpr trigExpand = F.TrigExpand.of(x);
+        if (!trigExpand.equals(x)) {
+          determineStatsRecursive(trigExpand);
+          if (stats[SIN_ODD] == 0) {
+            if (stats[COS_ODD] != 0) {
+              this.rewriteToSin = false;
+            }
+          }
+          IExpr subst = F.subst(trigExpand, f -> rewriteSqrCosFunctions(f));
+          return subst;
+        }
+      }
+      return F.NIL;
+    }
+
+  }
 
   /**
    * Variables (ISymbols) which are substituted from the original polynomial (backward
@@ -45,7 +148,8 @@ public class PolynomialHomogenization {
    */
   private java.util.HashMap<IExpr, ISymbol> substitutedExpr = new HashMap<IExpr, ISymbol>();
 
-  private EvalEngine engine;
+  final private EvalEngine engine;
+  final private VariablesSet originalVariables;
 
   /**
    * Forward and backward substitutions of expressions for polynomials. See <a href=
@@ -55,8 +159,9 @@ public class PolynomialHomogenization {
    * @param listOfVariables names for the variables.
    * @param engine the evaluation engine
    */
-  public PolynomialHomogenization(IAST listOfVariables, EvalEngine engine) {
+  public PolynomialHomogenization(VariablesSet variablesSet, EvalEngine engine) {
     this.engine = engine;
+    this.originalVariables = variablesSet;
   }
 
   /**
@@ -109,7 +214,18 @@ public class PolynomialHomogenization {
    * @return the polynomial expression
    */
   public IExpr replaceForward(final IExpr expression) {
-    IExpr expr = F.subst(expression, PolynomialHomogenization::unifyIntegerPowers);
+    IExpr expr;
+    if (expression.isFree(x -> x.isTrigFunction(), false)) {
+      expr = F.subst(expression, PolynomialHomogenization::unifyIntegerPowers);
+    } else {
+      if (expression.isFree(x -> x.isCos() || x.isSin(), false)) {
+        // expr = F.eval(F.TrigToExp(expression));
+        expr = expression;
+      } else {
+        expr = F.subst(expression, new CosSinTransform());
+        expr = F.evalExpandAll(expr, engine);
+      }
+    }
     determineLCM(expr);
     if (variablesLCMAST != null) {
       for (Map.Entry<ISymbol, IASTAppendable> entry : variablesLCMAST.entrySet()) {

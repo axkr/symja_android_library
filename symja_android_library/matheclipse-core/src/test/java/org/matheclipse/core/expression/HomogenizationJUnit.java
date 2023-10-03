@@ -32,7 +32,7 @@ public class HomogenizationJUnit extends ExprEvaluatorTestCase {
       if (arg1.isAST()) {
         VariablesSet eVar = new VariablesSet(arg1);
         PolynomialHomogenization substitutions =
-            new PolynomialHomogenization(eVar.getVarList(), engine);
+            new PolynomialHomogenization(eVar, engine);
         IExpr temp = substitutions.replaceForward(arg1);
         IASTAppendable list = substitutions.listOfBackwardSubstitutions();
 
