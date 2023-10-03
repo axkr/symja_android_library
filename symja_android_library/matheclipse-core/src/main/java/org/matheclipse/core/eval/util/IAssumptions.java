@@ -1,6 +1,7 @@
 package org.matheclipse.core.eval.util;
 
 import java.util.Map;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -8,6 +9,17 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IReal;
 
 public interface IAssumptions {
+  public static void assign(IExpr arg1, final IAST assumptionExpr,
+      IAssumptions oldAssumptions, final EvalEngine engine) {
+    IAssumptions assumptions;
+    if (oldAssumptions == null) {
+      assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
+    } else {
+      assumptions = oldAssumptions.copy();
+      assumptions = assumptions.addAssumption(assumptionExpr);
+    }
+    engine.setAssumptions(assumptions);
+  }
 
   /**
    * Add more assumptions from the given <code>expr</code>. If <code>expr</code> is not a valid
