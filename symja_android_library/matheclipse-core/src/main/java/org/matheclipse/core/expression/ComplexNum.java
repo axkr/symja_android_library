@@ -347,8 +347,16 @@ public class ComplexNum implements IComplexNum {
   // }
 
   public int compareTo(final Complex that) {
-    return fComplex.compareTo(that);
-    // return compare(fComplex, that);
+    // https://github.com/mtommila/apfloat/issues/27
+    int result = Double.compare(fComplex.getReal(), that.getReal());
+    if (result == 0) {
+      result = Double.compare(Math.abs(fComplex.getImaginary()), Math.abs(that.getImaginary()));
+    }
+    if (result == 0) {
+      result =
+          Double.compare(Math.signum(fComplex.getImaginary()), Math.signum(that.getImaginary()));
+    }
+    return result;
   }
 
   /**

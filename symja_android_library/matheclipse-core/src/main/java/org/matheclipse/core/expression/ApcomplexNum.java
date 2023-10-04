@@ -540,18 +540,15 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   public int compareTo(final Apcomplex that) {
-    int c = fApcomplex.real().compareTo(that.real());
-    if (c != 0) {
-      return c;
+    // https://github.com/mtommila/apfloat/issues/27
+    int result = fApcomplex.real().compareTo(that.real());
+    if (result == 0) {
+      result = ApfloatMath.abs(fApcomplex.imag()).compareTo(ApfloatMath.abs(that.imag()));
     }
-    if (that.imag().signum() == 0) {
-      if (fApcomplex.imag().signum() != 0) {
-        return 1;
-      }
-    } else if (fApcomplex.imag().signum() == 0) {
-      return -1;
+    if (result == 0) {
+      result = Integer.compare(fApcomplex.imag().signum(), that.imag().signum());
     }
-    return fApcomplex.imag().compareTo(that.imag());
+    return result;
   }
 
   /**

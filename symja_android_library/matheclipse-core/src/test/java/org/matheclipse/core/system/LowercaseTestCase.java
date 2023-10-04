@@ -22483,7 +22483,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Sort(<|a -> 4, b -> 1, c -> 3, d :> 2, e -> 2|>, Greater)", //
         "<|a->4,c->3,d:>2,e->2,b->1|>");
     check("Sort({2.1,1.1-I,2.1-I,I*E^(I*x)})", //
-        "{1.1+I*(-1.0),2.1+I*(-1.0),2.1,I*E^(I*x)}");
+        "{1.1+I*(-1.0),2.1,2.1+I*(-1.0),I*E^(I*x)}");
     check("Sort({2,1-I,2-I,I*E^(I*x)})", //
         "{1-I,2-I,2,I*E^(I*x)}");
     check("Sort(StringJoin /@ Tuples({\"a\",\"A\",\"b\",\"B\"},2))", //
