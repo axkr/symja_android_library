@@ -421,8 +421,7 @@ public class ASTNodeFactory implements INodeParserFactory {
         String unicodeChar =
             org.matheclipse.parser.client.Characters.NamedCharactersMap.get(HEADER_STRINGS[i]);
         if (unicodeChar != null) {
-          addOperator(fOperatorMap, fOperatorTokenStartSet, unicodeChar, HEADER_STRINGS[i],
-              OPERATORS[i]);
+          addUnicodeOperator(fOperatorMap, fOperatorTokenStartSet, unicodeChar, OPERATORS[i]);
           buf.append(unicodeChar);
         }
       }
@@ -442,16 +441,29 @@ public class ASTNodeFactory implements INodeParserFactory {
   }
 
   public static void addOperator(final Map<String, Operator> operatorMap,
-      final Map<String, ArrayList<Operator>> operatorTokenStartSet, final String operatorStr,
-      final String headStr, final Operator oper) {
-    operatorMap.put(headStr, oper);
-    ArrayList<Operator> list = operatorTokenStartSet.get(operatorStr);
+      final Map<String, ArrayList<Operator>> operatorTokenStartSet, final String operatorToken,
+      final String headStr, final Operator operator) {
+    operatorMap.put(headStr, operator);
+    ArrayList<Operator> list = operatorTokenStartSet.get(operatorToken);
     if (list == null) {
       list = new ArrayList<Operator>(2);
-      list.add(oper);
-      operatorTokenStartSet.put(operatorStr, list);
+      list.add(operator);
+      operatorTokenStartSet.put(operatorToken, list);
     } else {
-      list.add(oper);
+      list.add(operator);
+    }
+  }
+
+  private static void addUnicodeOperator(final Map<String, Operator> operatorMap,
+      final Map<String, ArrayList<Operator>> operatorTokenStartSet,
+      final String unicodeOperatorToken, final Operator operator) {
+    ArrayList<Operator> list = operatorTokenStartSet.get(unicodeOperatorToken);
+    if (list == null) {
+      list = new ArrayList<Operator>(2);
+      list.add(operator);
+      operatorTokenStartSet.put(unicodeOperatorToken, list);
+    } else {
+      list.add(operator);
     }
   }
 

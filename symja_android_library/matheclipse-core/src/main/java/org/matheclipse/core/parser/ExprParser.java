@@ -70,9 +70,6 @@ public class ExprParser extends Scanner {
     try {
       ExprParser fParser = new ExprParser(engine);
       final IExpr parsedExpression = fParser.parse(str);
-      // final Parser fParser = new Parser();
-      // final ASTNode parsedAST = fParser.parse(str);
-      // final IExpr parsedExpression = AST2Expr.CONST.convert(parsedAST);
       if (parsedExpression != null) {
         return true;
       }
@@ -92,8 +89,6 @@ public class ExprParser extends Scanner {
    */
   private final boolean fRelaxedSyntax;
 
-  // private List<IExpr> fNodeList = null;
-
   private final EvalEngine fEngine;
 
   protected IParserFactory fFactory;
@@ -112,12 +107,6 @@ public class ExprParser extends Scanner {
     this(engine, ExprParserFactory.MMA_STYLE_FACTORY, relaxedSyntax);
   }
 
-  // public ExprParser(final EvalEngine engine, final boolean relaxedSyntax,
-  // boolean packageMode) {
-  // this(engine, ExprParserFactory.MMA_STYLE_FACTORY, relaxedSyntax,
-  // packageMode);
-  // }
-
   /**
    * @param engine
    * @param factory
@@ -134,16 +123,13 @@ public class ExprParser extends Scanner {
     this.fRelaxedSyntax = relaxedSyntax;
     this.fFactory = factory;
     this.fEngine = engine;
-    // if (packageMode) {
-    // fNodeList = new ArrayList<IExpr>(256);
-    // }
   }
 
   private IExpr convert(IASTMutable ast) {
     int headID = ast.headID();
-    if (headID >= ID.Blank) {
+    if (headID >= ID.Blank && headID <= ID.Sqrt) {
+      // ID.Blank is lowest and ID.Sqrt is highest integer ID in followinh switch statement
       IExpr expr = F.NIL;
-      // ID.Blank is lowest integer >ID in switch statement
       switch (headID) {
         case ID.Get:
           if (ast.isAST1() && ast.arg1().isString()) {
@@ -295,13 +281,6 @@ public class ExprParser extends Scanner {
       return convert(temp);
     }
     return temp;
-    // if (infixOperator.getOperatorString().equals("//")) {
-    // // lhs // rhs ==> rhs[lhs]
-    // IAST function = F.ast(rhs);
-    // function.add(lhs);
-    // return function;
-    // }
-    // return F.$(F.$s(infixOperator.getFunctionName()), lhs, rhs);
   }
 
   /**
@@ -552,16 +531,13 @@ public class ExprParser extends Scanner {
         if (isWhitespace()) {
           getNextToken();
           temp = F.$b();
-          // temp = fFactory.createPattern(null, null);
         } else {
           getNextToken();
           if (fToken == TT_IDENTIFIER) {
             final IExpr check = getSymbol(true);
             temp = F.$b(check);
-            // temp = fFactory.createPattern(null, check);
           } else {
             temp = F.$b();
-            // temp = fFactory.createPattern(null, null);
           }
         }
         break;
@@ -570,16 +546,13 @@ public class ExprParser extends Scanner {
         if (isWhitespace()) {
           getNextToken();
           temp = F.$ps(null, null);
-          // temp = fFactory.createPattern2(null, null);
         } else {
           getNextToken();
           if (fToken == TT_IDENTIFIER) {
             final IExpr check = getSymbol(true);
             temp = F.$ps(null, check);
-            // temp = fFactory.createPattern2(null, check);
           } else {
             temp = F.$ps(null, null);
-            // temp = fFactory.createPattern2(null, null);
           }
         }
         break;
@@ -588,16 +561,13 @@ public class ExprParser extends Scanner {
         if (isWhitespace()) {
           getNextToken();
           temp = F.$ps(null, null, false, true);
-          // temp = fFactory.createPattern3(null, null);
         } else {
           getNextToken();
           if (fToken == TT_IDENTIFIER) {
             final IExpr check = getSymbol(true);
             temp = F.$ps(null, check, false, true);
-            // temp = fFactory.createPattern3(null, check);
           } else {
             temp = F.$ps(null, null, false, true);
-            // temp = fFactory.createPattern3(null, null);
           }
         }
         break;
@@ -606,16 +576,13 @@ public class ExprParser extends Scanner {
         if (isWhitespace()) {
           getNextToken();
           temp = F.$b(null, true);
-          // temp = fFactory.createPattern(null, null, true);
         } else {
           getNextToken();
           if (fToken == TT_IDENTIFIER) {
             final IExpr check = getSymbol(true);
             temp = F.$b(check, true);
-            // temp = fFactory.createPattern(null, check, true);
           } else {
             temp = F.$b(null, true);
-            // temp = fFactory.createPattern(null, null, true);
           }
         }
         break;
@@ -1203,12 +1170,7 @@ public class ExprParser extends Scanner {
       if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
           || fToken == TT_PRECEDENCE_CLOSE || fToken == TT_COMMA) {
         return createInfixFunction(infixOperator, lhs, S.Null);
-        // return infixOperator.createFunction(fFactory, rhs,
-        // fFactory.createSymbol("Null"));
       }
-      // if (fPackageMode && fRecursionDepth < 1) {
-      // return createInfixFunction(infixOperator, rhs, F.Null);
-      // }
     }
     return null;
   }
@@ -1513,13 +1475,6 @@ public class ExprParser extends Scanner {
               || (fOperatorString.equals(":") && rhs.isSymbol())
               || ((infixOperator.getPrecedence() == min_precedence)
                   && (infixOperator.getGrouping() == InfixExprOperator.RIGHT_ASSOCIATIVE))) {
-            // if (infixOperator.isOperator(";")) {
-            // rhs = F.Null;
-            // if (fPackageMode && fRecursionDepth < 1) {
-            // return createInfixFunction(infixOperator, lhs,
-            // rhs);
-            // }
-            // }
             rhs = parseExpression(rhs, infixOperator.getPrecedence());
             continue;
           }
@@ -1529,9 +1484,6 @@ public class ExprParser extends Scanner {
           if (postfixOperator != null) {
             if (postfixOperator.getPrecedence() >= min_precedence) {
               getNextToken();
-              // rhs =
-              // F.$(F.$s(postfixOperator.getFunctionName()),
-              // rhs);
               rhs = convert(postfixOperator.createFunction(fFactory, rhs));
               continue;
             }
@@ -1588,23 +1540,17 @@ public class ExprParser extends Scanner {
       }
       if (fToken == TT_EOF) {
         return;
-        // return fNodeList;
       }
       temp = parseExpression();
       fEngine.evaluate(temp);
-      // fNodeList.add(temp);
-      // throwSyntaxError("End-of-file not reached.");
     }
 
-    // return fNodeList;
   }
 
   private IExpr parsePrimary(final int min_precedence) {
     if (fToken == TT_OPERATOR) {
       if (fOperatorString.equals(".")) {
         fCurrentChar = '.';
-        // fToken = TT_DIGIT;
-        // return getPart();
         return getNumber(false);
       }
       final PrefixExprOperator prefixOperator = determinePrefixOperator();

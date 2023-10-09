@@ -243,6 +243,14 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
    */
   public IExpr arg1();
 
+  /**
+   * Get the argument of the {@link IAST} function (i.e. {@link #get(int)} ) and if the expression
+   * is the function {@link F#Unevaluated(IExpr)} return the first argument of the
+   * {@link F#Unevaluated(IExpr)} function.
+   * 
+   * @param position
+   * @return
+   */
   default IExpr getUnevaluated(int position) {
     return get(position);
   }

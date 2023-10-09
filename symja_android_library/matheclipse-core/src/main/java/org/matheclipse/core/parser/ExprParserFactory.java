@@ -454,32 +454,13 @@ public class ExprParserFactory implements IParserFactory {
       fOperatorTokenStartSet =
           ParserConfig.TRIE_STRING2OPERATORLIST_BUILDER.withMatch(TrieMatch.EXACT).build();
 
-      // if (fuzzyParser) {
-      // for (int i = 0; i < HEADER_STRINGS.length; i++) {
-      // if (OPERATOR_STRINGS[i] == "=") {
-      // addOperator(fOperatorMap, fOperatorTokenStartSet, OPERATOR_STRINGS[i], "Equal",
-      // EQUAL_OPERATOR);
-      // } else {
-      // addOperator(fOperatorMap, fOperatorTokenStartSet, OPERATOR_STRINGS[i], HEADER_STRINGS[i],
-      // OPERATORS[i]);
-      // }
-      // String unicodeChar = org.matheclipse.parser.client.Characters.NamedCharactersMap
-      // .get(HEADER_STRINGS[i]);
-      // if (unicodeChar != null) {
-      // addOperator(fOperatorMap, fOperatorTokenStartSet, unicodeChar, HEADER_STRINGS[i],
-      // OPERATORS[i]);
-      // buf.append(unicodeChar);
-      // }
-      // }
-      // } else {
       for (int i = 0; i < HEADER_STRINGS.length; i++) {
         addOperator(fOperatorMap, fOperatorTokenStartSet, OPERATOR_STRINGS[i], HEADER_STRINGS[i],
             OPERATORS[i]);
         String unicodeChar =
             org.matheclipse.parser.client.Characters.NamedCharactersMap.get(HEADER_STRINGS[i]);
         if (unicodeChar != null) {
-          addOperator(fOperatorMap, fOperatorTokenStartSet, unicodeChar, HEADER_STRINGS[i],
-              OPERATORS[i]);
+          addUnicodeOperator(fOperatorMap, fOperatorTokenStartSet, unicodeChar, OPERATORS[i]);
           buf.append(unicodeChar);
         }
       }
@@ -493,17 +474,30 @@ public class ExprParserFactory implements IParserFactory {
   }
 
   public static void addOperator(final Map<String, Operator> operatorMap,
-      final Map<String, ArrayList<Operator>> operatorTokenStartSet, final String operatorStr,
-      final String headStr, final Operator oper) {
+      final Map<String, ArrayList<Operator>> operatorTokenStartSet, final String operatorToken,
+      final String headStr, final Operator operator) {
     ArrayList<Operator> list;
-    operatorMap.put(headStr, oper);
-    list = operatorTokenStartSet.get(operatorStr);
+    operatorMap.put(headStr, operator);
+    list = operatorTokenStartSet.get(operatorToken);
     if (list == null) {
       list = new ArrayList<Operator>(2);
-      list.add(oper);
-      operatorTokenStartSet.put(operatorStr, list);
+      list.add(operator);
+      operatorTokenStartSet.put(operatorToken, list);
     } else {
-      list.add(oper);
+      list.add(operator);
+    }
+  }
+
+  private static void addUnicodeOperator(final Map<String, Operator> operatorMap,
+      final Map<String, ArrayList<Operator>> operatorTokenStartSet,
+      final String operatorUnicodeToken, final Operator operator) {
+    ArrayList<Operator> list = operatorTokenStartSet.get(operatorUnicodeToken);
+    if (list == null) {
+      list = new ArrayList<Operator>(2);
+      list.add(operator);
+      operatorTokenStartSet.put(operatorUnicodeToken, list);
+    } else {
+      list.add(operator);
     }
   }
 
