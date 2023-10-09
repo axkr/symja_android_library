@@ -204,7 +204,66 @@ public class SeriesFunctions {
         if (isLimit && isIndeterminate) {
           return F.NIL;
         }
+        if (isIndeterminate && limitValue.isZero() && ast.isTimes()) {
+          return squeezeTheorem(ast).orElse(result);
+        }
         return result;
+      }
+
+      /**
+       * Try the squeeze theorem: <a href="https://en.wikipedia.org/wiki/Squeeze_theorem">Wikipedia
+       * - Squeeze theorem</a>. It is assumed that {@link #limitValue} equals <code>0</code>.
+       * <p>
+       * Example:
+       * 
+       * <pre>
+       * Limit(x * Sin(1 / x), x -> 0)
+       * </pre>
+       * 
+       * @param ast
+       * @param defaultResult
+       * @return <code>F.Times(F.C0)</code> or {@link F#NIL} if squeeze theorem was not applicable.
+       */
+      private IAST squeezeTheorem(final IAST ast) {
+        IASTAppendable[] cosSinFilter = ast.filter(x -> determineCosSinCases(x));
+        if (cosSinFilter != null //
+            && cosSinFilter[0].argSize() > 0 //
+            && cosSinFilter[1].argSize() > 0 //
+            && !cosSinFilter[0].isOne() //
+            && !cosSinFilter[1].isOne()) {
+          IExpr temp = evalLimitQuiet(F.Abs(cosSinFilter[1]), this);
+          if (temp.isZero()) {
+            temp = evalLimitQuiet(F.Abs(cosSinFilter[0]), this);
+            if (temp.isIndeterminate()) {
+              return F.Times(F.C0);
+            }
+          }
+        }
+        return F.NIL;
+      }
+
+      /**
+       * Examples:
+       * 
+       * <pre>
+       * Limit(x * Sin(1 / x), x -> 0)
+       * </pre>
+       * 
+       * <pre>
+       * Limit(x ^ 2 * Sin(1 / x) ^ 3, x -> 0)
+       * </pre>
+       * 
+       * @param x
+       * @return
+       */
+      private boolean determineCosSinCases(IExpr x) {
+        if (x.isPower()) {
+          int exponent = x.exponent().toIntDefault();
+          if (exponent > 0) {
+            return determineCosSinCases(x.base());
+          }
+        }
+        return (x.isSin() || x.isCos()) && !x.isFree(variable);
       }
     }
 
@@ -228,7 +287,7 @@ public class SeriesFunctions {
      * @param expr
      * @param data the limits data definition
      * @param engine
-     * @return
+     * @return {@link S#NIL} if no limit could be found
      */
     private static IExpr evalLimit(final IExpr expr, LimitData data, EvalEngine engine) {
       IExpr expression = expr;
@@ -287,8 +346,11 @@ public class SeriesFunctions {
           return expr.replaceAll(data.rule()).orElse(expr);
         }
         final IAST arg1 = (IAST) expression;
-        if (arg1.isSin() || arg1.isCos()) {
-          return F.unaryAST1(arg1.head(), data.limit(arg1.arg1()));
+        if (arg1.isAbs() || arg1.isSin() || arg1.isCos()) {
+          IExpr temp = data.limit(arg1.arg1());
+          if (temp.isPresent()) {
+            return engine.evalQuiet(F.unaryAST1(arg1.head(), temp));
+          }
         } else if (arg1.isPlus()) {
           return plusLimit(arg1, data, engine);
         } else if (arg1.isTimes()) {

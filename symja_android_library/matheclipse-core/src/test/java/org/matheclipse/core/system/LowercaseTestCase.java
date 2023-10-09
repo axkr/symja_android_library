@@ -6703,6 +6703,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
 
   public void testErf() {
+    // assertEquals(org.hipparchus.special.Erf.erf(new Complex(1.0, 1.5)).toString(), //
+    // "");
     check("Erf(-Infinity, Infinity)", //
         "2");
 
@@ -13136,6 +13138,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   // }
 
   public void testLimit() {
+    check("Limit(x^2*Sin(1/x)^3,x->0)", //
+        "0");
+    check("Limit(x*Sin(1/x)^3,x->0)", //
+        "0");
+    check("Limit(Sin(1/x)^3,x->0)", //
+        "Indeterminate");
+    check("Limit(Abs(Sin(1/x)),x->0)", //
+        "Indeterminate");
+    check("Limit(x*Sin(1/x),x->0)", //
+        "0");
+
+    check("Limit(x^2*Sin(1/x),x->0)", //
+        "0");
+
     // github #230
     check("Limit((Sqrt(((t+4)*(t-2)^4))/((3*t)-6)^2),t->2) ", //
         "Sqrt(2/3)/3");
@@ -16072,7 +16088,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testNMinimize() {
     check("NMinimize({-Sinc(x)-Sinc(y)}, {x, y})", //
         "{-2.0,{x->0.0,y->0.0}}");
-    
+
     check("NMinimize(x^2 + y^2 + 2, {x,y})", //
         "{2.0,{x->0.0,y->0.0}}");
     check("NMinimize({Sinc(x)+Sinc(y)}, {x, y})", //
