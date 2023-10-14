@@ -16,7 +16,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
 
   public void testAdjugate() {
-    // https: // en.wikipedia.org/wiki/Adjugate_matrix
+    // https://en.wikipedia.org/wiki/Adjugate_matrix
     check("Adjugate({{-3,2,-5},\n" //
         + " {-1,0,-2}," //
         + " {3,-4,1}})", //
@@ -497,8 +497,15 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testEigenvalues() {
+    check("Eigenvalues({{7}},-1)", //
+        "{7.0}");
+    check("Eigenvalues({{-1}},1)", //
+        "{-1.0}");
     // print message: Eigenvalues: Cannot take eigenvalues 1 through 2 out of the total of 1
     // eigenvalues.
+    check("Eigenvalues({{7}},-19)", //
+        "Eigenvalues(\n" + //
+            "{{7}},-19)");
     check("Eigenvalues({{-1}},2)", //
         "Eigenvalues(\n"//
             + "{{-1}},2)");
