@@ -1483,6 +1483,12 @@ public class EvalEngine implements Serializable {
     if (expr.isReal()) {
       return ((IReal) expr).doubleValue();
     }
+    if (expr.isInfinity()) {
+      return Double.POSITIVE_INFINITY;
+    }
+    if (expr.isNegativeInfinity()) {
+      return Double.NEGATIVE_INFINITY;
+    }
     boolean quietMode = fQuietMode;
     try {
       fQuietMode = true;
@@ -1492,6 +1498,12 @@ public class EvalEngine implements Serializable {
       IExpr result = evalN(expr);
       if (result.isReal()) {
         return ((IReal) result).doubleValue();
+      }
+      if (result.isInfinity()) {
+        return Double.POSITIVE_INFINITY;
+      }
+      if (result.isNegativeInfinity()) {
+        return Double.NEGATIVE_INFINITY;
       }
       if (result.isComplexNumeric()) {
         IComplexNum cc = (IComplexNum) result;

@@ -190,29 +190,28 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       IAST list = (IAST) ast.arg2();
       IExpr function = ast.arg1();
       if (list.isAST3() && list.arg1().isSymbol()) {
-        IReal min = list.arg2().evalReal();
-        IReal max = list.arg3().evalReal();
-        if (min != null && max != null) {
-          if (function.isEqual()) {
-            IAST equalAST = (IAST) function;
-            function = F.Plus(equalAST.arg1(), F.Negate(equalAST.arg2()));
-          }
-          try {
-            double result = integrate(method, list, min.doubleValue(), max.doubleValue(), function,
-                maxPoints, maxIterations);
-            result = Precision.round(result, precisionGoal);
-            return Num.valueOf(result);
-          } catch (MathIllegalArgumentException | MathIllegalStateException miae) {
-            // `1`.
-            return Errors.printMessage(ast.topHead(), "error",
-                F.list(F.$str(miae.getMessage())), engine);
-          } catch (MathRuntimeException mre) {
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
-          } catch (Exception e) {
-            LOGGER.log(engine.getLogLevel(), "NIntegrate: (method={}) ", method, e);
-          }
+        double min = list.arg2().evalf();
+        double max = list.arg3().evalf();
+        // if (min != null && max != null) {
+        if (function.isEqual()) {
+          IAST equalAST = (IAST) function;
+          function = F.Plus(equalAST.arg1(), F.Negate(equalAST.arg2()));
+        }
+        try {
+          double result = integrate(method, list, min, max, function, maxPoints, maxIterations);
+          result = Precision.round(result, precisionGoal);
+          return Num.valueOf(result);
+        } catch (MathIllegalArgumentException | MathIllegalStateException miae) {
+          // `1`.
+          return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())),
+              engine);
+        } catch (MathRuntimeException mre) {
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
+        } catch (Exception e) {
+          LOGGER.log(engine.getLogLevel(), "NIntegrate: (method={}) ", method, e);
         }
       }
+      // }S
     }
     return F.NIL;
   }
