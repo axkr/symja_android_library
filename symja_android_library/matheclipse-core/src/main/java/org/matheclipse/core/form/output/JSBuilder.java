@@ -1,5 +1,6 @@
 package org.matheclipse.core.form.output;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 
 /** Build a page to show a JavaScript graphic. */
@@ -168,7 +169,54 @@ public class JSBuilder {
           // 2 - JavaScript string
           + "`2`\n" + "</script>\n"
           // 3 - JSFiddle string
-          + "`3`\n" + "</div>\n" + "</body>\n" + "</html>"; //
+          + "`3`\n" //
+          + "</div>\n"//
+          + "</body>\n" //
+          + "</html>"; //
+
+  public static final String MERMAID_IFRAME_TEMPLATE = //
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" //
+          + "<!DOCTYPE html PUBLIC\n"
+          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n" //
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" //
+          + "\n"
+          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%;margin: 0; padding: 0\">\n"
+          + "<head>\n" //
+          + "<meta charset=\"utf-8\">\n"//
+          + "<title>Mermaid Diagram</title>\n" //
+          + "</head>\n" //
+          + "\n"//
+          + "<body>\n" //
+          // 1 - libraries
+          + "`1`\n" //
+          // + "<div id=\"mermaid\" class=\"mermaid\" style=\"max-width:400px; aspect-ratio:
+          // 1/1;\"></div>\n"//
+          + "\n" //
+          // 2 - JavaScript string
+          + "`2`\n" //
+          // 3 - JSFiddle string
+          // + "`3`\n" //
+          + "</body>"; //
+
+
+  public static final String MERMAID_TEMPLATE = //
+      "<html>\n" //
+          + "<head>\n"//
+          + "<meta charset=\"utf-8\">\n"//
+          + "<title>Mermaid Diagram</title>\n"//
+          // 1 - libraries
+          + "`1`\n" //
+          + "</head>\n"//
+          + "<body>\n"//
+          // + "<div id=\"mermaid\" class=\"mermaid\" style=\"max-width:400px; aspect-ratio:
+          // 1/1;\"></div>\n"//
+          // 2 - JavaScript string
+          + "`2`\n" //
+          // 3 - JSFiddle string
+          // + "`3`\n" //
+          // + "</div>\n" //
+          + "</body>\n" //
+          + "</html>"; //
 
   public static final String PLOTLY_IFRAME_TEMPLATE = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
@@ -198,6 +246,10 @@ public class JSBuilder {
 
   /** CSS libraries */
   private static final String[] CSS_CDN_GRAPHICS3D = {};
+
+  private static final String[] JS_CDN_MERMAID = { //
+      "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs"};
+  // "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs"};
 
   private static final String[] JS_CDN_GRAPHICS3D = { //
       "https://cdn.jsdelivr.net/npm/@mathicsorg/mathics-threejs-backend"};
@@ -271,6 +323,10 @@ public class JSBuilder {
 
   private JSBuilder() {}
 
+  public static String buildMermaid(String pageTemplate, String manipulateStr) {
+    return buildModule(pageTemplate, manipulateStr, "", new String[0], JS_CDN_MERMAID);
+  }
+
   public static String buildGraphics2D(String pageTemplate, String manipulateStr) {
     return build(pageTemplate, manipulateStr,
         "<div id='graphics2d' style=\"width:600px; height:400px;\"></div>", CSS_CDN_JSXGRAPH,
@@ -302,6 +358,40 @@ public class JSBuilder {
         JS_CDN_PLOTLY);
   }
 
+  private static String buildModule(String pageTemplate, String manipulateStr, String htmlStr,
+      String[] css, String[] libs) {
+    String[] jsxGraphArgs = new String[3];
+    StringBuilder libraries = new StringBuilder();
+
+    // print CDN CSS files
+    for (int i = 0; i < css.length; i++) {
+      libraries.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"");
+      libraries.append(css[i]);
+      libraries.append("\"/>\n");
+    }
+
+    // print CDN JavaScript libraries
+    for (int i = 0; i < libs.length; i++) {
+      libraries.append("<script type=\"module\">\n"//
+          + "      import mermaid from \"");
+      libraries.append(libs[i]);
+      libraries.append("\"\n" //
+          + "</script>\n");
+    }
+
+    jsxGraphArgs[0] = libraries.toString();
+    jsxGraphArgs[1] = manipulateStr;
+    jsxGraphArgs[2] = "";
+    if (Config.DISPLAY_JSFIDDLE_BUTTON && manipulateStr.length() < MAX_JSFIDDLE_SOURCE_CODE) {
+      String[] jsFiddleArgs = new String[3];
+      jsFiddleArgs[0] = htmlStr;
+      jsFiddleArgs[1] = manipulateStr;
+      jsFiddleArgs[2] = String.join(",", libs);
+
+      jsxGraphArgs[2] = Errors.templateRender(JSFIDDLE_STR, jsFiddleArgs);
+    }
+    return Errors.templateRender(pageTemplate, jsxGraphArgs);
+  }
   private static String build(String pageTemplate, String manipulateStr, String htmlStr,
       String[] css, String[] libs) {
     String[] jsxGraphArgs = new String[3];

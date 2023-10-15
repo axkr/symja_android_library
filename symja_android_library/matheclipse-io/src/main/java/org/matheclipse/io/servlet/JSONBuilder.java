@@ -276,6 +276,13 @@ public class JSONBuilder {
         + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
   }
 
+  public static String[] createMermaidIFrame(String html, String manipulateStr) {
+    html = JSBuilder.buildMermaid(html, manipulateStr);
+    html = StringEscapeUtils.escapeHtml4(html);
+    return createJSONJavaScript("<iframe srcdoc=\"" + html
+        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
+  }
+
   public static String[] createPlotlyIFrame(String html, String manipulateStr) {
     html = JSBuilder.buildPlotly(html, manipulateStr);
     html = StringEscapeUtils.escapeHtml4(html);

@@ -315,6 +315,13 @@ public class AJAXQueryServlet extends HttpServlet {
               } catch (Exception ex) {
                 LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
+            } else if (jsLibraryType.equals("mermaid")) {
+              try {
+                return JSONBuilder.createMermaidIFrame(JSBuilder.MERMAID_IFRAME_TEMPLATE,
+                    jsFormData.arg1().toString());
+              } catch (Exception ex) {
+                LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
+              }
             } else if (jsLibraryType.equals("plotly")) {
               try {
                 return JSONBuilder.createPlotlyIFrame(JSBuilder.PLOTLY_IFRAME_TEMPLATE,

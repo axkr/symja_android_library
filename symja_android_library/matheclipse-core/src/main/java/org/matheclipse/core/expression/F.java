@@ -10766,6 +10766,14 @@ public class F extends S {
       } catch (Exception ex) {
         LOGGER.debug("F.printJSFormData() failed", ex);
       }
+    } else if (jsFormData.arg2().toString().equals("mermaid")) {
+      try {
+        String manipulateStr = jsFormData.arg1().toString();
+        String html = JSBuilder.buildMermaid(JSBuilder.MERMAID_TEMPLATE, manipulateStr);
+        return openHTMLOnDesktop(html);
+      } catch (Exception ex) {
+        LOGGER.debug("F.printJSFormData() failed", ex);
+      }
     } else if (jsFormData.arg2().toString().equals("plotly")) {
       try {
         String manipulateStr = jsFormData.arg1().toString();

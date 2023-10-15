@@ -85,6 +85,9 @@ public abstract class BasePlotExample {
           String jsStr = ((IAST) result).arg1().toString();
           js = Config.TRACEFORM_PAGE;
           js = StringUtils.replace(js, "`1`", jsStr);
+        } else if (result.second().toString().equals("mermaid")) {
+          String manipulateStr = ((IAST) result).arg1().toString();
+          js = JSBuilder.buildMermaid(JSBuilder.MERMAID_TEMPLATE, manipulateStr);
         } else if (result.second().toString().equals("plotly")) {
           String manipulateStr = ((IAST) result).arg1().toString();
           js = JSBuilder.buildPlotly(JSBuilder.PLOTLY_TEMPLATE, manipulateStr);

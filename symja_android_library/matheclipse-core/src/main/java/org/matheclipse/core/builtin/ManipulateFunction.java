@@ -357,13 +357,11 @@ public class ManipulateFunction {
             colorMap = "watermelon";
           } else {
             // `2` is not a known entity, class, or tag for `1`.
-            Errors.printMessage(S.ColorData, "notent", F.list(S.ColorData, colorFunction),
-                engine);
+            Errors.printMessage(S.ColorData, "notent", F.list(S.ColorData, colorFunction), engine);
           }
         } else if (colorFunction.isPresent()) {
           // `2` is not a known entity, class, or tag for `1`.
-          Errors.printMessage(S.ColorData, "notent", F.list(S.ColorData, colorFunction),
-              engine);
+          Errors.printMessage(S.ColorData, "notent", F.list(S.ColorData, colorFunction), engine);
         }
       } else {
         options = new OptionArgs(plot.topHead(), plot, 3, engine);
@@ -1689,6 +1687,76 @@ public class ManipulateFunction {
     }
   }
 
+  private static final class Mermaid {
+
+    private static IExpr plot(IAST plot, final IAST manipulateAST, EvalEngine engine) {
+      if (plot.size() < 2) {
+        return F.NIL;
+      }
+      IExpr arg1 = plot.arg1();
+      if (!arg1.isList()) {
+        arg1 = engine.evaluate(arg1);
+      }
+      // if (plot.isAST(S.DensityHistogram)) {
+      // return densityHistogram(arg1);
+      // } else if (plot.isAST(S.Histogram)) {
+      // return histogram(arg1);
+      // } else if (plot.isAST(S.BarChart)) {
+      // return barChart(arg1, plot, engine);
+      // } else if (plot.isAST(S.BoxWhiskerChart)) {
+      // return boxWhiskerChart(arg1);
+      // } else
+      if (plot.isAST(S.PieChart)) {
+        return pieChart(arg1);
+        // } else if (plot.isAST(S.MatrixPlot)) {
+        // return matrixPlot(arg1);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr pieChart(IExpr arg) {
+      double[] vector = arg.toDoubleVector();
+      if (vector != null && vector.length > 0) {
+        String[] strs = new String[vector.length];
+        for (int i = 0; i < vector.length; i++) {
+          strs[i] = Integer.toString(i + 1);
+        }
+        StringBuilder buf = new StringBuilder();
+        buf.append("<pre class=\"mermaid\">\n");
+        buf.append( //
+            "pie showData\n" //
+                + "\ttitle Mermaid PieChart\n");
+
+        for (int i = 0; i < vector.length; i++) {
+          buf.append("\t\"");
+          buf.append(strs[i]);
+          buf.append("\" : ");
+          buf.append(vector[i]);
+          buf.append("\n");
+        }
+        buf.append("</pre>\n");
+        return F.JSFormData(buf.toString(), "mermaid");
+      }
+      return F.NIL;
+    }
+
+    private static LayoutBuilder buildLayout(String chartType) {
+      if (AUTOSIZE) {
+        return Layout.builder(chartType).autosize(true).width(WIDTH).height(HEIGHT);
+      }
+      return Layout.builder(chartType).autosize(false);
+    }
+
+    private static LayoutBuilder buildLayout(String chartType, String xTitle, String yTitle) {
+      if (AUTOSIZE) {
+        return Layout.builder(chartType, xTitle, yTitle).autosize(true).width(WIDTH).height(HEIGHT);
+      }
+      return Layout.builder(chartType, xTitle, yTitle).autosize(false);
+    }
+
+
+  }
+
   /**
    * Chart methods which use <a href="https://github.com/plotly/plotly.js">plotly.js Javascript</a>
    */
@@ -2008,6 +2076,9 @@ public class ManipulateFunction {
         // F.list(F.ComplexPlot3D, F.stringx("Symja")), engine);
         // }
 
+        // if (arg1.isAST(S.PieChart)) {
+        // return Mermaid.plot((IAST) arg1, manipulateAST, engine);
+        // }
         if (arg1.isAST(S.BarChart) || arg1.isAST(S.BoxWhiskerChart)
             || arg1.isAST(S.DensityHistogram) || arg1.isAST(S.Histogram) || arg1.isAST(S.MatrixPlot)
             || arg1.isAST(S.PieChart)) {
@@ -2030,8 +2101,7 @@ public class ManipulateFunction {
               } else if (!arg1.isAST(S.ComplexPlot3D)) {
                 if (!plot.arg3().isList3() || !plot.arg3().first().isSymbol()) {
                   // Range specification `1` is not of the form {x, xmin, xmax}.
-                  return Errors.printMessage(plot.topHead(), "pllim", F.list(plot.arg3()),
-                      engine);
+                  return Errors.printMessage(plot.topHead(), "pllim", F.list(plot.arg3()), engine);
                 }
               }
             }
