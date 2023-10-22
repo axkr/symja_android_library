@@ -155,7 +155,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
   @Override
   public int compareAbsValueToOne() {
     BigInteger temp = fBigIntValue;
-    if (fBigIntValue.compareTo(BigInteger.ZERO) < 0) {
+    if (fBigIntValue.signum() < 0) {
       temp = temp.negate();
     }
     return temp.compareTo(BigInteger.ONE);
@@ -459,7 +459,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
     if (isOne() || isMinusOne()) {
       return this;
     }
-    if (NumberUtil.isNegative(fBigIntValue)) {
+    if (isNegative()) {
       return AbstractFractionSym.valueOf(BigInteger.valueOf(-1), fBigIntValue.negate());
     }
     return AbstractFractionSym.valueOf(BigInteger.ONE, fBigIntValue);
@@ -510,7 +510,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
   /** {@inheritDoc} */
   @Override
   public boolean isNegative() {
-    return fBigIntValue.compareTo(BigInteger.ZERO) < 0;
+    return fBigIntValue.signum() < 0;
   }
 
   @Override
@@ -526,7 +526,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
   /** {@inheritDoc} */
   @Override
   public boolean isPositive() {
-    return fBigIntValue.compareTo(BigInteger.ZERO) > 0;
+    return fBigIntValue.signum() > 0;
   }
 
   /** {@inheritDoc} */

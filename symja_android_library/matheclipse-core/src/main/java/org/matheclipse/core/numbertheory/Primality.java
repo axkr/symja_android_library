@@ -502,7 +502,7 @@ public class Primality implements IPrimality {
     BigInteger[] divRem;
     BigInteger result = base;
     int count;
-    if (base.compareTo(BigInteger.ZERO) < 0) {
+    if (base.signum() < 0) {
       // base < 0
       IExpr exp = map.get(-1);
       if (exp == null) {
@@ -634,7 +634,7 @@ public class Primality implements IPrimality {
         break;
       }
       divRem = result.divideAndRemainder(BIprimes[i]);
-      if (divRem[1].equals(BigInteger.ZERO)) {
+      if (divRem[1].signum() == 0) {
         int count = map.get(primes[i]);
         do {
           count++;
@@ -643,7 +643,7 @@ public class Primality implements IPrimality {
             break;
           }
           divRem = result.divideAndRemainder(BIprimes[i]);
-        } while (divRem[1].equals(BigInteger.ZERO));
+        } while (divRem[1].signum() == 0);
         map.put(primes[i], count);
       }
     }
@@ -857,7 +857,7 @@ public class Primality implements IPrimality {
       }
       count = 0;
       divRem = temp.divideAndRemainder(BIprimes[i]);
-      while (divRem[1].equals(BigInteger.ZERO)) {
+      while (divRem[1].signum() == 0) {
         count++;
         if (count == root) {
           count = 0;
@@ -1002,7 +1002,7 @@ public class Primality implements IPrimality {
     if (value.equals(BigInteger.ZERO)) {
       return BigInteger.ZERO;
     }
-    if (value.compareTo(BigInteger.ZERO) < 0) {
+    if (value.signum() < 0) {
       value = value.negate();
     }
     if (value.equals(BigInteger.ONE)) {
@@ -1038,7 +1038,7 @@ public class Primality implements IPrimality {
     if (value.equals(BigInteger.ZERO)) {
       return BigInteger.ZERO;
     }
-    if (value.compareTo(BigInteger.ZERO) < 0) {
+    if (value.signum() < 0) {
       value = value.negate();
     }
     if (value.equals(BigInteger.ONE)) {
@@ -1060,10 +1060,9 @@ public class Primality implements IPrimality {
   }
 
   public static int moebiusMu(BigInteger value) {
-    if (value.compareTo(BigInteger.ZERO) < 0) {
+    if (value.signum() < 0) {
       value = value.negate();
-    }
-    if (value.equals(BigInteger.ZERO)) {
+    } else if (value.signum() == 0) {
       return 0;
     }
     if (value.equals(BigInteger.ONE)) {
@@ -1099,7 +1098,7 @@ public class Primality implements IPrimality {
    * @return <code>null</code> if GCD(k,N) != 1 or is negative
    */
   public static BigInteger multiplicativeOrder(BigInteger k, BigInteger n) {
-    if (n.compareTo(BigInteger.ZERO) < 0) {
+    if (n.signum() < 0) {
       return null;
     }
     if (!k.gcd(n).equals(BigInteger.ONE)) {
@@ -1147,10 +1146,9 @@ public class Primality implements IPrimality {
    * @return code>true</code> if <code>val</code> is a power of a prime number
    */
   public static boolean isPrimePower(BigInteger value) {
-    if (value.compareTo(BigInteger.ZERO) < 0) {
+    if (value.signum() < 0) {
       value = value.negate();
-    }
-    if (value.equals(BigInteger.ZERO)) {
+    } else if (value.signum() == 0) {
       return false;
     }
     try {
@@ -1179,7 +1177,7 @@ public class Primality implements IPrimality {
    *     Object[BigInteger, Integer] = { prime power, base }</code>
    */
   public static Object[] primePower(BigInteger value) {
-    if (value.compareTo(BigInteger.ZERO) < 0) {
+    if (value.signum() < 0) {
       value = value.negate();
     }
     try {
@@ -1204,7 +1202,7 @@ public class Primality implements IPrimality {
    * @return
    */
   public static boolean isSquareFree(BigInteger val) {
-    if (val.compareTo(BigInteger.ZERO) < 0) {
+    if (val.signum() < 0) {
       val = val.negate();
     }
     SquareFreeTreedMap map = new SquareFreeTreedMap();

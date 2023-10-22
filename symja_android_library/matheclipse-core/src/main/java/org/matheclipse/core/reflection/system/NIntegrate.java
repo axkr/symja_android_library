@@ -1,8 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.hipparchus.analysis.UnivariateFunction;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.UnaryOperator;
 import org.hipparchus.analysis.integration.RombergIntegrator;
 import org.hipparchus.analysis.integration.SimpsonIntegrator;
 import org.hipparchus.analysis.integration.TrapezoidIntegrator;
@@ -14,6 +13,7 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.Precision;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -28,6 +28,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import de.labathome.AdaptiveQuadrature;
 
 /**
  *
@@ -77,7 +78,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </pre>
  */
 public class NIntegrate extends AbstractFunctionEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   public static final int DEFAULT_MAX_POINTS = 100;
   public static final int DEFAULT_MAX_ITERATIONS = 10000;
@@ -100,8 +100,8 @@ public class NIntegrate extends AbstractFunctionEvaluator {
    * @return
    * @throws MathIllegalStateException
    */
-  public static double integrate(String method, IAST list, double min, double max, IExpr function,
-      int maxPoints, int maxIterations) throws MathIllegalStateException {
+  public static double integrate(String method, IAST list, final double min, final double max,
+      IExpr function, int maxPoints, int maxIterations) throws MathIllegalStateException {
     GaussIntegratorFactory factory = new GaussIntegratorFactory();
 
     if (!list.arg1().isSymbol()) {
@@ -112,7 +112,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
     ISymbol xVar = (ISymbol) list.arg1();
     final EvalEngine engine = EvalEngine.get();
     IExpr tempFunction = F.eval(function);
-    UnivariateFunction f = new UnaryNumerical(tempFunction, xVar, engine);
+    UnaryNumerical f = new UnaryNumerical(tempFunction, xVar, engine);
 
     UnivariateIntegrator integrator;
     if ("Simpson".equalsIgnoreCase(method)) {
@@ -121,6 +121,8 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       integrator = new RombergIntegrator();
     } else if ("Trapezoid".equalsIgnoreCase(method)) {
       integrator = new TrapezoidIntegrator();
+    } else if ("GaussKronrod".equalsIgnoreCase(method)) {
+      return gausKronrodRule(maxIterations, f, min, max);
     } else {
       if (maxPoints > 1000) {
         // github 150 - avoid StackOverflow from recursion
@@ -128,11 +130,50 @@ public class NIntegrate extends AbstractFunctionEvaluator {
         throw new MathIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_LARGE, maxPoints,
             1000);
       }
+      if (min == Double.NEGATIVE_INFINITY || max == Double.POSITIVE_INFINITY) {
+        return gausKronrodRule(maxIterations, f, min, max);
+      }
       // default: LegendreGauss
       GaussIntegrator integ = factory.legendre(maxPoints, min, max);
       return integ.integrate(f);
     }
     return integrator.integrate(maxIterations, f, min, max);
+  }
+
+  private static double gausKronrodRule(int maxIterations, UnaryNumerical function, double min,
+      double max) {
+
+    class UnaryFunction implements UnaryOperator<double[]> {
+
+      private AtomicBoolean gracefulStop;
+      private int iterationCounter;
+
+      public UnaryFunction() {
+        this.gracefulStop = new AtomicBoolean(false);
+        this.iterationCounter = 0;
+      }
+
+      @Override
+      public double[] apply(double[] x) {
+        final int n = x.length;
+        iterationCounter += n;
+
+        if (iterationCounter > maxIterations) {
+          while (!gracefulStop.compareAndSet(false, true)) {
+            // wait for gracefulStop to turn false again
+          }
+          throw new MathIllegalStateException(LocalizedCoreFormats.MAX_COUNT_EXCEEDED,
+              maxIterations);
+        }
+        return UnaryNumerical.vectorValue(function, x);
+      }
+
+    };
+
+    UnaryFunction unaryFunction = new UnaryFunction();
+    double[] result = AdaptiveQuadrature.integrate(unaryFunction, min, max,
+        Config.SPECIAL_FUNCTIONS_TOLERANCE, Config.SPECIAL_FUNCTIONS_TOLERANCE, 0);
+    return result[0];
   }
 
   public NIntegrate() {
@@ -156,16 +197,16 @@ public class NIntegrate extends AbstractFunctionEvaluator {
     if (ast.size() >= 4) {
       final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
       IExpr option = options.getOption(S.Method);
-      if (option.isSymbol()) {
+      if (option.isSymbol() || option.isString()) {
         method = option.toString();
       }
       option = options.getOption(S.MaxPoints);
       if (option.isReal()) {
         maxPoints = ((IReal) option).toIntDefault(-1);
         if (maxPoints <= 0) {
-          LOGGER.log(engine.getLogLevel(),
-              "NIntegrate: Error in option MaxPoints. Using default value: {}", maxPoints);
-          maxPoints = DEFAULT_MAX_POINTS;
+          // Inappropriate parameter: `1`.
+          return Errors.printMessage(ast.topHead(), "par", F.List(S.MaxPoints), engine);
+          // maxPoints = DEFAULT_MAX_POINTS;
         }
       }
       maxIterations = options.getOptionMaxIterations(S.MaxIterations);
@@ -179,9 +220,9 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       if (option.isReal()) {
         precisionGoal = ((IReal) option).toIntDefault(-1);
         if (precisionGoal <= 0) {
-          LOGGER.log(engine.getLogLevel(),
-              "NIntegrate: Error in option PrecisionGoal. Using default value: {}", precisionGoal);
-          precisionGoal = 16;
+          // Inappropriate parameter: `1`.
+          return Errors.printMessage(ast.topHead(), "par", F.List(S.PrecisionGoal), engine);
+          // precisionGoal = 16;
         }
       }
     }
@@ -202,13 +243,12 @@ public class NIntegrate extends AbstractFunctionEvaluator {
           result = Precision.round(result, precisionGoal);
           return Num.valueOf(result);
         } catch (MathIllegalArgumentException | MathIllegalStateException miae) {
-          // `1`.
-          return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())),
-              engine);
+          // especially max iterations exceeded
+          return Errors.printMessage(ast.topHead(), miae, engine);
         } catch (MathRuntimeException mre) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
-        } catch (Exception e) {
-          LOGGER.log(engine.getLogLevel(), "NIntegrate: (method={}) ", method, e);
+          return Errors.printMessage(ast.topHead(), mre, engine);
+        } catch (RuntimeException e) {
+          return Errors.printMessage(ast.topHead(), e, engine);
         }
       }
       // }S

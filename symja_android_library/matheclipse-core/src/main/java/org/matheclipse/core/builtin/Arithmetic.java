@@ -5175,7 +5175,11 @@ public final class Arithmetic {
         }
         if (arg1.isComplexNumeric()) {
           IComplexNum c = (IComplexNum) arg1;
-          return c.divide(F.num(c.dabs()));
+          double dabs = c.dabs();
+          if (F.isEqual(dabs, 0.0)) {
+            return F.C0;
+          }
+          return c.divide(F.num(dabs));
         }
         return numberSign((INumber) arg1);
       }

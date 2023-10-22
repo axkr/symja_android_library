@@ -158,7 +158,7 @@ public class RationalNumber extends Number implements Rational {
     if (divider == null || BigInteger.ZERO.equals(divider)) {
       throw new IllegalArgumentException("divider is zero");
     }
-    if (divider.compareTo(BigInteger.ZERO) < 1) {
+    if (divider.signum() < 1) {
       // if (divider.doubleValue()<0) {
       this.numerator = numerator.multiply(MINUS_ONE_INTEGER);
       this.divider = divider.multiply(MINUS_ONE_INTEGER);
@@ -313,7 +313,7 @@ public class RationalNumber extends Number implements Rational {
       this.numerator = this.numerator.divide(gcd);
       this.divider = this.divider.divide(gcd);
     }
-    if (this.divider.compareTo(BigInteger.ZERO) < 1) {
+    if (this.divider.signum() < 1) {
       // if (this.divider.doubleValue()<0) {
       throw new IllegalStateException("divder " + divider);
     }
@@ -325,7 +325,7 @@ public class RationalNumber extends Number implements Rational {
    * @return negative flag
    */
   public boolean isNegative() {
-    return numerator.compareTo(BigInteger.ZERO) < 0;
+    return numerator.signum() < 0;
   }
 
   /**
@@ -444,7 +444,7 @@ public class RationalNumber extends Number implements Rational {
     final BigInteger p = n.divide(d, MathContext.DECIMAL128).toBigInteger();
     q = x.multiply(p);
     q = this.minus(q);
-    if (p.compareTo(BigInteger.ZERO) < 0) {
+    if (p.signum() < 0) {
       q = q.plus(x);
     }
     return q;

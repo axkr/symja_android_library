@@ -251,6 +251,7 @@ public class Errors {
       "padlevel",
       "The padding specification `1` involves `2` levels; the list `3` has only `4` level.", //
       "pairs", "The first argument `1` of `2` is not a list of pairs.", //
+      "par", "Inappropriate parameter: `1`.", //
       "partd", "Part specification `1` is longer than depth of object.", //
       "partw", "Part `1` of `2` does not exist.", //
       "patop", "Pattern `1` contains inappropriate optional object.", //
@@ -332,8 +333,8 @@ public class Errors {
       "tdlen", "Objects of unequal length in `1` cannot be combined.", //
       "tllen", "Lists of unequal length in `1` cannot be added.", //
       "toggle", "ToggleFeature `1` is disabled.", //
-      "tolnn", "Tolerance specification `1` must be a non-negative number.", "udist",
-      "The specification `1` is not a random distribution recognized by the system.", //
+      "tolnn", "Tolerance specification `1` must be a non-negative number.", //
+      "udist", "The specification `1` is not a random distribution recognized by the system.", //
       "unkunit", "Unable to interpret unit specification `1`.", //
       "unsupported", "`1` currently not supported in `2`.", //
       "usraw", "Cannot unset object `1`.", //
@@ -527,7 +528,7 @@ public class Errors {
         Map<String, Object> context = new HashMap<String, Object>();
         if (listOfParameters != null) {
           for (int i = 1; i < listOfParameters.size(); i++) {
-            context.put(Integer.toString(i), shorten(listOfParameters.get(i)));
+            context.put(Integer.toString(i), shorten(listOfParameters.get(i), 256));
           }
         }
 

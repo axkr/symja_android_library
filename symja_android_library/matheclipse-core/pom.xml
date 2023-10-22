@@ -108,7 +108,11 @@
 		<dependency>
 			<groupId>com.github.freva</groupId>
 			<artifactId>ascii-table</artifactId>
-		</dependency> 
+		</dependency>
+		<dependency>
+			<groupId>de.labathome</groupId>
+			<artifactId>AdaptiveQuadrature</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>

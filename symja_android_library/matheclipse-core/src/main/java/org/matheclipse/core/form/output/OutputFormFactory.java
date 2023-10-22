@@ -594,7 +594,7 @@ public class OutputFormFactory {
   public void convertFraction(final Appendable buf, BigInteger numerator, BigInteger denominator,
       final int precedence, boolean caller) throws IOException {
     boolean isInteger = denominator.compareTo(BigInteger.ONE) == 0;
-    final boolean isNegative = numerator.compareTo(BigInteger.ZERO) < 0;
+    final boolean isNegative = numerator.signum() < 0;
     final int prec = isNegative ? Precedence.PLUS : Precedence.TIMES;
     if (!isNegative) {
       if (caller == PLUS_CALL) {

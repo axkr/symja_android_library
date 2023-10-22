@@ -450,24 +450,55 @@ public class Num implements INum {
 
   @Override
   public IExpr hypergeometric2F1(IExpr arg2, IExpr arg3, IExpr arg4) {
-    try {
-      return F.num(HypergeometricJS.hypergeometric2F1(value, //
-          arg2.evalf(), //
-          arg3.evalf(), //
-          arg4.evalf()));
-    } catch (RuntimeException e) {
-      // try as computation with complex numbers
+    if (arg2 instanceof IReal && arg3 instanceof IReal && arg4 instanceof IReal) {
+      try {
+        Apfloat hypergeometric2f1 =
+            EvalEngine.getApfloatDouble().hypergeometric2F1(apfloatValue(),
+                ((IReal) arg2).apfloatValue(),
+                ((IReal) arg3).apfloatValue(), ((IReal) arg4).apfloatValue());
+        return F.num(hypergeometric2f1.doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException ex) {
+        if (ex.getMessage().equals("Division by zero")) {
+          return F.ComplexInfinity;
+        }
+        // try as computation with complex numbers
+      }
     }
-
-    try {
-      return F.complexNum(HypergeometricJS.hypergeometric2F1(new Complex(value), //
-          arg2.evalfc(), //
-          arg3.evalfc(), //
-          arg4.evalfc()));
-    } catch (RuntimeException e) {
-      // try as computation with complex numbers
+    if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
+      try {
+        Apcomplex hypergeometric2f1 = EvalEngine.getApfloatDouble().hypergeometric2F1(
+            apcomplexValue(),
+            ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue(),
+            ((INumber) arg4).apcomplexValue());
+        return F.complexNum(hypergeometric2f1.real().doubleValue(),
+            hypergeometric2f1.imag().doubleValue());
+      } catch (ArithmeticException aex) {
+        if (aex.getMessage().equals("Division by zero")) {
+          return F.ComplexInfinity;
+        } else {
+          // aex.printStackTrace();
+        }
+      }
     }
     return INum.super.hypergeometric2F1(arg2, arg3, arg4);
+    // try {
+    // return F.num(HypergeometricJS.hypergeometric2F1(value, //
+    // arg2.evalf(), //
+    // arg3.evalf(), //
+    // arg4.evalf()));
+    // } catch (RuntimeException e) {
+    // // try as computation with complex numbers
+    // }
+    //
+    // try {
+    // return F.complexNum(HypergeometricJS.hypergeometric2F1(new Complex(value), //
+    // arg2.evalfc(), //
+    // arg3.evalfc(), //
+    // arg4.evalfc()));
+    // } catch (RuntimeException e) {
+    // // try as computation with complex numbers
+    // }
+    // return INum.super.hypergeometric2F1(arg2, arg3, arg4);
   }
 
   /** {@inheritDoc} */

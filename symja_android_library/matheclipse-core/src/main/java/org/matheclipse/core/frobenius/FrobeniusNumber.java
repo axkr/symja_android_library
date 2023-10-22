@@ -108,7 +108,7 @@ public class FrobeniusNumber {
       BigInteger d = gcd(array[0], array[i]);
       for (BigInteger r = ZERO; r.compareTo(d) < 0; r = r.add(ONE)) {
         BigInteger n = MINUS_ONE;
-        if (r.compareTo(ZERO) == 0)
+        if (r.signum() == 0)
           n = ZERO;
         else {
           BigInteger q = r;

@@ -314,11 +314,11 @@ public class Hypergeometric2F1Rules {
     // Hypergeometric2F1(a_,b_,c_,1):=(Gamma(c)*Gamma(-a-b+c))/(Gamma(-a+c)*Gamma(-b+c))/;Re(-a-b+c)>0
     ISetDelayed(Hypergeometric2F1(a_,b_,c_,C1),
       Condition(Times(Gamma(c),Power(Times(Gamma(Plus(Negate(a),c)),Gamma(Plus(Negate(b),c))),CN1),Gamma(Plus(Negate(a),Negate(b),c))),Greater(Re(Plus(Negate(a),Negate(b),c)),C0))),
-    // Hypergeometric2F1(a_,b_,c_,z_):=(-1/(-1+b)+b/(-1+b)+z/(-1+b)+z*a/(-1+b)-b/(-1+b)*z)/(1-z)^(1+a)/;NumberQ(b)&&NumberQ(c)&&!(IntegerQ(c)&&c<0)&&PossibleZeroQ(-1+b-c)
+    // Hypergeometric2F1(a_,b_,c_,z_):=(-1/(-1+b)+b/(-1+b)+z/(-1+b)+z*a/(-1+b)-b/(-1+b)*z)/(1-z)^(1+a)/;NumberQ(b)&&NumberQ(c)&&!(IntegerQ(c)&&c<0)&&PossibleZeroQ(-1+b-c)&&!PossibleZeroQ(-1+z)
     ISetDelayed(Hypergeometric2F1(a_,b_,c_,z_),
-      Condition(Times(Power(Subtract(C1,z),Subtract(CN1,a)),Plus(Negate(Power(Plus(CN1,b),CN1)),Times(Power(Plus(CN1,b),CN1),b),Times(Power(Plus(CN1,b),CN1),z),Times(z,a,Power(Plus(CN1,b),CN1)),Times(CN1,Power(Plus(CN1,b),CN1),b,z))),And(And(NumberQ(b),NumberQ(c)),Not(And(IntegerQ(c),Less(c,C0))),PossibleZeroQ(Plus(CN1,b,Negate(c)))))),
-    // Hypergeometric2F1(b_,a_,c_,z_):=(-1/(-1+b)+b/(-1+b)+z/(-1+b)+z*a/(-1+b)-b/(-1+b)*z)/(1-z)^(1+a)/;NumberQ(b)&&NumberQ(c)&&!(IntegerQ(c)&&c<0)&&PossibleZeroQ(-1+b-c)
+      Condition(Times(Power(Subtract(C1,z),Subtract(CN1,a)),Plus(Negate(Power(Plus(CN1,b),CN1)),Times(Power(Plus(CN1,b),CN1),b),Times(Power(Plus(CN1,b),CN1),z),Times(z,a,Power(Plus(CN1,b),CN1)),Times(CN1,Power(Plus(CN1,b),CN1),b,z))),And(And(And(NumberQ(b),NumberQ(c)),Not(And(IntegerQ(c),Less(c,C0))),PossibleZeroQ(Plus(CN1,b,Negate(c)))),Not(PossibleZeroQ(Plus(CN1,z)))))),
+    // Hypergeometric2F1(b_,a_,c_,z_):=(-1/(-1+b)+b/(-1+b)+z/(-1+b)+z*a/(-1+b)-b/(-1+b)*z)/(1-z)^(1+a)/;NumberQ(b)&&NumberQ(c)&&!(IntegerQ(c)&&c<0)&&PossibleZeroQ(-1+b-c)&&!PossibleZeroQ(-1+z)
     ISetDelayed(Hypergeometric2F1(b_,a_,c_,z_),
-      Condition(Times(Power(Subtract(C1,z),Subtract(CN1,a)),Plus(Negate(Power(Plus(CN1,b),CN1)),Times(Power(Plus(CN1,b),CN1),b),Times(Power(Plus(CN1,b),CN1),z),Times(z,a,Power(Plus(CN1,b),CN1)),Times(CN1,Power(Plus(CN1,b),CN1),b,z))),And(And(NumberQ(b),NumberQ(c)),Not(And(IntegerQ(c),Less(c,C0))),PossibleZeroQ(Plus(CN1,b,Negate(c))))))
+      Condition(Times(Power(Subtract(C1,z),Subtract(CN1,a)),Plus(Negate(Power(Plus(CN1,b),CN1)),Times(Power(Plus(CN1,b),CN1),b),Times(Power(Plus(CN1,b),CN1),z),Times(z,a,Power(Plus(CN1,b),CN1)),Times(CN1,Power(Plus(CN1,b),CN1),b,z))),And(And(And(NumberQ(b),NumberQ(c)),Not(And(IntegerQ(c),Less(c,C0))),PossibleZeroQ(Plus(CN1,b,Negate(c)))),Not(PossibleZeroQ(Plus(CN1,z))))))
   );
 }

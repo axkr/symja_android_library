@@ -16,6 +16,8 @@ NSolve(equations, vars, domain)
 
 ### Examples
 
+It's important to use the `==` operator to define the equations. If you have unintentionally assigned a value to the variables `x, y` with the `=` operator you have to call `Clear(x,y)` to clear the definitions for these variables.
+
 ```
 >> NSolve({Sin(x)-11==y, x+y==-9}, {y,x})
 {x->1.1060601577062719,y->-10.106060157706272}

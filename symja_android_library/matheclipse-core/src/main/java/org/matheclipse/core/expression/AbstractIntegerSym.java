@@ -1102,7 +1102,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     if (mod.equals(BigInteger.ZERO)) {
       return valueOf(quotient);
     }
-    if (quotient.compareTo(BigInteger.ZERO) < 0) {
+    if (quotient.signum() < 0) {
       return valueOf(quotient.subtract(BigInteger.ONE));
     }
     return valueOf(quotient);

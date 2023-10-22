@@ -282,6 +282,8 @@ public class EvalEngine implements Serializable {
 
   protected transient FixedPrecisionApfloatHelper fApfloatHelper;
 
+  protected transient FixedPrecisionApfloatHelper fApfloatHelperDouble;
+
   /** The number of significant figures in the output expression */
   protected int fSignificantFigures;
 
@@ -578,6 +580,7 @@ public class EvalEngine implements Serializable {
     engine.fNumericMode = fNumericMode;
     // engine.fNumericPrecision = fNumericPrecision;
     engine.fApfloatHelper = new FixedPrecisionApfloatHelper(getNumericPrecision());
+    engine.fApfloatHelperDouble = new FixedPrecisionApfloatHelper(ParserConfig.MACHINE_PRECISION);
     engine.fSignificantFigures = fSignificantFigures;
     engine.fEvalHistory = fEvalHistory;
     engine.fOptionsStack = fOptionsStack;
@@ -2974,6 +2977,7 @@ public class EvalEngine implements Serializable {
     S.$Assumptions.clearValue();
     // fNumericPrecision = 15;
     fApfloatHelper = null;
+    fApfloatHelperDouble = null;
     fSignificantFigures = 6;
     fRecursionCounter = 0;
     fNumericMode = false;
@@ -3201,6 +3205,7 @@ public class EvalEngine implements Serializable {
     stackBegin();
     // fNumericPrecision = 15;
     fApfloatHelper = null;
+    fApfloatHelperDouble = null;
     fSignificantFigures = 6;
     fNumericMode = false;
     fEvalLHSMode = false;
@@ -3687,13 +3692,26 @@ public class EvalEngine implements Serializable {
   /**
    * Get the {@link FixedPrecisionApfloatHelper} for fixed precision calculations.
    *
-   * @return <code>null</code> if the apfloat helper isn't set in {@link #setNumericPrecision(long)}
-   *         or {@link #setNumericMode(boolean, long, int)}
    */
   public static FixedPrecisionApfloatHelper getApfloat() {
     FixedPrecisionApfloatHelper h = get().fApfloatHelper;
     if (h == null) {
       h = new FixedPrecisionApfloatHelper(Config.MAX_PRECISION_APFLOAT - 1);
+    }
+    return h;
+  }
+
+
+  /**
+   * Get the {@link FixedPrecisionApfloatHelper} for calculations with
+   * {@link ParserConfig#MACHINE_PRECISION}.
+   * 
+   * @return
+   */
+  public static FixedPrecisionApfloatHelper getApfloatDouble() {
+    FixedPrecisionApfloatHelper h = get().fApfloatHelperDouble;
+    if (h == null) {
+      h = new FixedPrecisionApfloatHelper(ParserConfig.MACHINE_PRECISION);
     }
     return h;
   }

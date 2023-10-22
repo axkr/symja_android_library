@@ -107,6 +107,6 @@ Hypergeometric2F1(3/2, 2, 5/2, a_. * z_^n_.) := -((3*(Sqrt(a)*z^(n/2) - ArcTanh(
  
 Hypergeometric2F1(m_Integer, n_Integer, 2, 1) := CatalanNumber(-n) /; n<0 && m == (n+1),
 Hypergeometric2F1(a_, b_, c_, 1) := (Gamma(c)*Gamma(c-a-b))/(Gamma(c-a)*Gamma(c-b)) /; Re(c-a-b)>0,
-Hypergeometric2F1(a_, b_, c_, z_) := ((1-z)^(-1-a)*(z*a/(b - 1)-z*b/(b - 1)+z/(b - 1)+b/(b - 1)-1/(b - 1))) /; NumberQ(b)&&NumberQ(c)&&!(IntegerQ(c)&&c<0)&&PossibleZeroQ(b-1-c),
-Hypergeometric2F1(b_, a_, c_, z_) := ((1-z)^(-1-a)*(z*a/(b - 1)-z*b/(b - 1)+z/(b - 1)+b/(b - 1)-1/(b - 1))) /; NumberQ(b)&&NumberQ(c)&&!(IntegerQ(c)&&c<0)&&PossibleZeroQ(b-1-c) 
+Hypergeometric2F1(a_, b_, c_, z_) := ((1-z)^(-1-a)*(z*a/(b - 1)-z*b/(b - 1)+z/(b - 1)+b/(b - 1)-1/(b - 1))) /; NumberQ(b)&&NumberQ(c)&&!(IntegerQ(c)&&c<0)&&PossibleZeroQ(b-1-c)&&!PossibleZeroQ(z-1),
+Hypergeometric2F1(b_, a_, c_, z_) := ((1-z)^(-1-a)*(z*a/(b - 1)-z*b/(b - 1)+z/(b - 1)+b/(b - 1)-1/(b - 1))) /; NumberQ(b)&&NumberQ(c)&&!(IntegerQ(c)&&c<0)&&PossibleZeroQ(b-1-c)&&!PossibleZeroQ(z-1)
 }

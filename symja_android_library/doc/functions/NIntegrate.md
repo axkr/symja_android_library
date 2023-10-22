@@ -11,6 +11,7 @@ See:
 * [Wikipedia - Romberg's method](https://en.wikipedia.org/wiki/Romberg%27s_method)
 * [Wikipedia - Riemann sum](https://en.wikipedia.org/wiki/Riemann_sum)
 * [Wikipedia - Truncation error (numerical integration)](https://en.wikipedia.org/wiki/Truncation_error_(numerical_integration))
+* [Wikipedia - Gauss-Kronrod quadrature formula)](https://en.wikipedia.org/wiki/Gauss%E2%80%93Kronrod_quadrature_formula)
 
 ### Examples
 ```   
@@ -32,6 +33,12 @@ LegendreGauss is the default method for numerical integration
 
 >> NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Romberg)
 -0.0208333333333333
+
+>> NIntegrate(Exp(-x^2),{x,-Infinity,Infinity}, Method->GaussKronrod) 
+1.772453850905516
+
+>> NIntegrate(Cos(200*x),{x,0,1}, Method->GaussKronrod) 
+-0.004366486486070
 ```
 
 Other options include `MaxIterations` and `MaxPoints`

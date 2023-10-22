@@ -1146,7 +1146,7 @@ public final class NumberTheory {
         IRational rat = (IRational) arg1;
         BigInteger numerator = rat.toBigNumerator();
         BigInteger denominator = rat.toBigDenominator();
-        boolean isNegative = numerator.compareTo(BigInteger.ZERO) < 0;
+        boolean isNegative = rat.isNegative();
         if (isNegative) {
           numerator = numerator.negate();
         }
@@ -2093,10 +2093,8 @@ public final class NumberTheory {
       lastxValue = BigInteger.ONE;
       yValue = BigInteger.ONE;
       lastyValue = BigInteger.ZERO;
-      if ((!((numberOne.compareTo(BigInteger.ZERO) == 0)
-          || (numberTwo.compareTo(BigInteger.ZERO) == 0)))
-          && (((numberOne.compareTo(BigInteger.ZERO) == 1)
-              && (numberTwo.compareTo(BigInteger.ZERO) == 1)))) {
+      if ((!((numberOne.signum() == 0) || (numberTwo.signum() == 0)))//
+          && (((numberOne.signum() > 0) && (numberTwo.signum() > 0)))) {
         if (numberOne.compareTo(numberTwo) == 1) {
           exchange = false;
           dividend = numberOne;
@@ -2108,7 +2106,7 @@ public final class NumberTheory {
         }
 
         BigInteger[] divisionResult = null;
-        while (remainder.compareTo(BigInteger.ZERO) != 0) {
+        while (remainder.signum() != 0) {
           divisionResult = dividend.divideAndRemainder(divisor);
           quotient = divisionResult[0];
           remainder = divisionResult[1];
@@ -4079,14 +4077,14 @@ public final class NumberTheory {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1() && ast.arg1().isInteger()) {
         BigInteger primeBase = ((IInteger) ast.arg1()).toBigNumerator();
-        if (primeBase.compareTo(BigInteger.ZERO) < 0) {
+        if (primeBase.signum() < 0) {
           // Non-negative integer expected.
           return Errors.printMessage(S.NextPrime, "intnn", F.CEmptyList, engine);
         }
         return F.ZZ(primeBase.nextProbablePrime());
       } else if (ast.isAST2() && ast.arg1().isInteger() && ast.arg2().isInteger()) {
         BigInteger primeBase = ((IInteger) ast.arg1()).toBigNumerator();
-        if (primeBase.compareTo(BigInteger.ZERO) < 0) {
+        if (primeBase.signum() < 0) {
           // Non-negative integer expected.
           return Errors.printMessage(S.NextPrime, "intnn", F.CEmptyList, engine);
         }
@@ -4220,7 +4218,6 @@ public final class NumberTheory {
             if (result != null) {
               return result;
             }
-            return result;
           } catch (UncheckedExecutionException e) {
             Throwable th = e.getCause();
             if (th instanceof LimitException) {

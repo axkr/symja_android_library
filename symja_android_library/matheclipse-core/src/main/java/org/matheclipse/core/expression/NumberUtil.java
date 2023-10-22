@@ -3,7 +3,9 @@ package org.matheclipse.core.expression;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.hipparchus.complex.Complex;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
@@ -114,6 +116,14 @@ public class NumberUtil {
     1067, 607, 1565, 905, 1755, 1231, 1299, 665, 373, 1985, 701, 1879, 1221, 849, 627, 1465, 789,
     543, 1187, 1591, 923, 1905, 979, 1241, 181};
 
+  public static Apcomplex apcomplexValue(Complex c) {
+    return new Apcomplex(new Apfloat(c.getReal()), new Apfloat(c.getImaginary()));
+  }
+
+  public static Apcomplex apfloatValue(double d) {
+    return new Apfloat(d);
+  }
+
   /**
    * 
    * @deprecated use {@link IExpr#isZero()}
@@ -134,12 +144,14 @@ public class NumberUtil {
     return new BigFraction(fraction.getDenominator(), fraction.getNumerator());
   }
 
+  @Deprecated
   public static boolean isNegative(BigInteger a) {
-    return (a.compareTo(BigInteger.ZERO) < 0);
+    return (a.signum() < 0);
   }
 
+  @Deprecated
   public static boolean isPositive(BigInteger a) {
-    return (a.compareTo(BigInteger.ZERO) > 0);
+    return (a.signum() > 0);
   }
 
   public static boolean isZero(BigInteger a) {
@@ -197,12 +209,14 @@ public class NumberUtil {
     return DoubleMath.roundToLong(d, RoundingMode.UNNECESSARY);
   }
 
+  @Deprecated
   public static boolean isNegative(BigFraction a) {
-    return a.compareTo(BigFraction.ZERO) < 0;
+    return a.signum() < 0;
   }
 
+  @Deprecated
   public static boolean isPositive(BigFraction a) {
-    return a.compareTo(BigFraction.ZERO) > 0;
+    return a.signum() > 0;
   }
 
   /**

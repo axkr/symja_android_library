@@ -1025,7 +1025,7 @@ public class HypergeometricFunctions {
       }
 
       try {
-        if (engine.isArbitraryMode()) {
+        if (engine.isArbitraryMode() || engine.isDoubleMode()) {
           try {
             IExpr res = a.hypergeometric2F1(b, c, z);
             if (res.isNumber()) {
@@ -1037,32 +1037,32 @@ public class HypergeometricFunctions {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
         }
-        if (engine.isDoubleMode()) {
-
-          double aDouble = Double.NaN;
-          double bDouble = Double.NaN;
-          double cDouble = Double.NaN;
-          double zDouble = Double.NaN;
-          try {
-            aDouble = a.evalf();
-            bDouble = b.evalf();
-            cDouble = c.evalf();
-            zDouble = z.evalf();
-          } catch (ValidateException ve) {
-          }
-          if (Double.isNaN(aDouble) || Double.isNaN(bDouble) || Double.isNaN(cDouble)
-              || Double.isNaN(zDouble) || (zDouble > 1.0) || (zDouble == -1.0)) {
-            Complex ac = a.evalfc();
-            Complex bc = b.evalfc();
-            Complex cc = c.evalfc();
-            Complex zc = z.evalfc();
-
-            return F.complexNum(HypergeometricJS.hypergeometric2F1(ac, bc, cc, zc));
-
-          } else {
-            return F.num(HypergeometricJS.hypergeometric2F1(aDouble, bDouble, cDouble, zDouble));
-          }
-        }
+        // if (engine.isDoubleMode()) {
+        //
+        // double aDouble = Double.NaN;
+        // double bDouble = Double.NaN;
+        // double cDouble = Double.NaN;
+        // double zDouble = Double.NaN;
+        // try {
+        // aDouble = a.evalf();
+        // bDouble = b.evalf();
+        // cDouble = c.evalf();
+        // zDouble = z.evalf();
+        // } catch (ValidateException ve) {
+        // }
+        // if (Double.isNaN(aDouble) || Double.isNaN(bDouble) || Double.isNaN(cDouble)
+        // || Double.isNaN(zDouble) || (zDouble > 1.0) || (zDouble == -1.0)) {
+        // Complex ac = a.evalfc();
+        // Complex bc = b.evalfc();
+        // Complex cc = c.evalfc();
+        // Complex zc = z.evalfc();
+        //
+        // return F.complexNum(HypergeometricJS.hypergeometric2F1(ac, bc, cc, zc));
+        //
+        // } else {
+        // return F.num(HypergeometricJS.hypergeometric2F1(aDouble, bDouble, cDouble, zDouble));
+        // }
+        // }
       } catch (ResultException te) {
         LOGGER.debug("Hypergeometric2F1.evaluate() failed", te);
         return te.getValue();
@@ -1094,6 +1094,33 @@ public class HypergeometricFunctions {
       IExpr b = ast.arg2();
       IExpr c = ast.arg3();
       IExpr z = ast.arg4();
+      if (a.isZero() || b.isZero() || z.isZero()) {
+        if (!c.isPossibleZero(true)) {
+          // 1/Gamma(c)
+          return F.Power(F.Gamma(c), F.CN1);
+        }
+      }
+      if (a.compareTo(b) > 0) {
+        // permutation symmetry
+        return F.Hypergeometric2F1Regularized(b, a, c, z);
+      }
+
+
+      if (a.equals(b) && c.isZero()) {
+        // Hypergeometric2F1Regularized(a_, a_, 0, z_) := a^2*z*Hypergeometric2F1(1 + a, 1 + a, 2,
+        // z)
+        return F.Times(F.Sqr(a), z, F.Hypergeometric2F1(F.Plus(F.C1, a), F.Plus(F.C1, a), F.C2, z));
+      }
+      if (engine.isNumericMode()) {
+        // // TODO regularize Hypergeometric2F1 for negative integer values of the third parameter
+        if (a.isNumber() //
+            && b.isNumber() //
+            && (c.isNumber()
+                && (!((INumber) c).fractionalPart().isZero() || c.isNonNegativeResult()))//
+            && z.isNumber()) {
+          return F.Divide(F.Hypergeometric2F1(a, b, c, z), F.Gamma(c));
+        }
+      }
       return F.NIL;
     }
 

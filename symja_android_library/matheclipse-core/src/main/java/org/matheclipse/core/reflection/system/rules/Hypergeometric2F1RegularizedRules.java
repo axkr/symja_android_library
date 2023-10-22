@@ -12,8 +12,17 @@ public class Hypergeometric2F1RegularizedRules {
     // Hypergeometric2F1Regularized(a_,b_,c_,0):=1/Gamma(c)
     ISetDelayed(Hypergeometric2F1Regularized(a_,b_,c_,C0),
       Power(Gamma(c),CN1)),
-    // Hypergeometric2F1Regularized(a_,b_,b_,x_):=1/((1-x)^a*Gamma(a))
-    ISetDelayed(Hypergeometric2F1Regularized(a_,b_,b_,x_),
-      Power(Times(Power(Subtract(C1,x),a),Gamma(a)),CN1))
+    // Hypergeometric2F1Regularized(a_,b_,a_,z):=1/((1-z)^b*Gamma(a))
+    ISetDelayed(Hypergeometric2F1Regularized(a_,b_,a_,z),
+      Power(Times(Power(Subtract(C1,z),b),Gamma(a)),CN1)),
+    // Hypergeometric2F1Regularized(a_,b_,b_,z_):=1/((1-z)^a*Gamma(a))
+    ISetDelayed(Hypergeometric2F1Regularized(a_,b_,b_,z_),
+      Power(Times(Power(Subtract(C1,z),a),Gamma(a)),CN1)),
+    // Hypergeometric2F1Regularized(a_,a_,0,z_):=a^2*z*Hypergeometric2F1(1+a,1+a,2,z)
+    ISetDelayed(Hypergeometric2F1Regularized(a_,a_,C0,z_),
+      Times(Sqr(a),z,Hypergeometric2F1(Plus(C1,a),Plus(C1,a),C2,z))),
+    // Hypergeometric2F1Regularized(a_,b_,c_,z_):=Module({n=b-c},Sum((z^k*Pochhammer(-a+b-n,k)*Pochhammer(-n,k))/(Gamma(b-n+k)*k!),{k,0,n})/(1-z)^(a+n)/;n>=0&&n∈Integers)
+    ISetDelayed(Hypergeometric2F1Regularized(a_,b_,c_,z_),
+      Module(list(Set(n,Subtract(b,c))),Condition(Times(Power(Subtract(C1,z),Subtract(Negate(a),n)),Sum(Times(Power(z,k),Power(Times(Gamma(Plus(b,Negate(n),k)),Factorial(k)),CN1),Pochhammer(Plus(Negate(a),b,Negate(n)),k),Pochhammer(Negate(n),k)),list(k,C0,n))),And(GreaterEqual(n,C0),Element(n,Integers)))))
   );
 }

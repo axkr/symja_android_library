@@ -636,15 +636,24 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr hypergeometric2F1(IExpr arg2, IExpr arg3, IExpr arg4) {
-    try {
-      return F.complexNum(HypergeometricJS.hypergeometric2F1(fComplex, //
-          arg2.evalfc(), //
-          arg3.evalfc(), //
-          arg4.evalfc()));
-    } catch (RuntimeException e) {
-      // try as computation with complex numbers
+    if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
+      Apcomplex hypergeometric2f1 = EvalEngine.getApfloatDouble().hypergeometric2F1(
+          apcomplexValue(),
+          ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue(),
+          ((INumber) arg4).apcomplexValue());
+      return F.complexNum(hypergeometric2f1.real().doubleValue(),
+          hypergeometric2f1.imag().doubleValue());
     }
     return IComplexNum.super.hypergeometric2F1(arg2, arg3, arg4);
+    // try {
+    // return F.complexNum(HypergeometricJS.hypergeometric2F1(fComplex, //
+    // arg2.evalfc(), //
+    // arg3.evalfc(), //
+    // arg4.evalfc()));
+    // } catch (RuntimeException e) {
+    // // try as computation with complex numbers
+    // }
+    // return IComplexNum.super.hypergeometric2F1(arg2, arg3, arg4);
   }
 
   /** {@inheritDoc} */
@@ -797,8 +806,7 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public boolean isZero() {
-    return F.isZero(fComplex.getReal(), Config.DOUBLE_TOLERANCE) && //
-        F.isZero(fComplex.getImaginary(), Config.DOUBLE_TOLERANCE);
+    return isZero(Config.DOUBLE_TOLERANCE);
   }
 
   @Override

@@ -265,7 +265,7 @@ public abstract class DoubleFormFactory {
   public void convertFraction(final StringBuilder buf, final BigInteger numerator,
       BigInteger denominator, final int precedence, boolean caller) {
     boolean isInteger = denominator.compareTo(BigInteger.ONE) == 0;
-    final boolean isNegative = numerator.compareTo(BigInteger.ZERO) < 0;
+    final boolean isNegative = numerator.signum() < 0;
     final int prec = isNegative ? Precedence.PLUS : Precedence.TIMES;
     if (!isNegative) {
       if (caller == PLUS_CALL) {

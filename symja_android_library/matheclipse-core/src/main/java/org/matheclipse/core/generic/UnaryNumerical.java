@@ -213,4 +213,13 @@ public class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDifferent
   public double applyAsDouble(double value) {
     return F.subst(fUnaryFunction, F.Rule(fVariable, F.num(value))).evalf();
   }
+
+  public static double[] vectorValue(UnivariateFunction function, double[] t) {
+    int n = t.length;
+    double[] f = new double[n];
+    for (int i = 0; i < n; ++i) {
+      f[i] = function.value(t[i]);
+    }
+    return f;
+  }
 }

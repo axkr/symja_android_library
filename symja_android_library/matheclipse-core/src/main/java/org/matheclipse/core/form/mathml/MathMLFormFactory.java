@@ -1740,7 +1740,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       final int precedence, boolean caller) {
     boolean isInteger = denominator.compareTo(BigInteger.ONE) == 0;
     BigInteger numerator = n;
-    final boolean isNegative = numerator.compareTo(BigInteger.ZERO) < 0;
+    final boolean isNegative = numerator.signum() < 0;
     if (isNegative) {
       numerator = numerator.negate();
     }

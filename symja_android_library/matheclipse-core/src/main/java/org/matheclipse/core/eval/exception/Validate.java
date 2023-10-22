@@ -105,7 +105,7 @@ public final class Validate {
             } else if (expr instanceof INum) {
               longValue = BigInteger.valueOf(((INum) expr).toLong());
             }
-            if ((longValue == null) || (nonNegative && longValue.compareTo(BigInteger.ZERO) <= 0)) {
+            if ((longValue == null) || (nonNegative && longValue.signum() <= 0)) {
               // The first argument `1` of `2` should be a non-empty list of positive integers.
               Errors.printMessage(ast.topHead(), "coef", F.list(arg, ast.topHead()), engine);
               return null;

@@ -10,6 +10,7 @@ import org.matheclipse.core.builtin.StatisticsFunctions.IRandomVariate;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -67,7 +68,8 @@ public final class RandomFunctions {
   protected static double boundedNextDouble(Random rng, double bound) {
     // Specialize boundedNextDouble for origin == 0, bound > 0
     if (!(bound > 0.0 && bound < Double.POSITIVE_INFINITY)) {
-      throw new IllegalArgumentException("bound must be finite and positive");
+      // The specification `1` is not a random distribution recognized by the system..
+      throw new ArgumentTypeException("udist", F.List(F.num(bound)));
     }
     double r = rng.nextDouble();
     r = r * bound;
@@ -387,7 +389,7 @@ public final class RandomFunctions {
         final Random tlr = engine.getRandom();
         BigInteger upperLimit = ((IInteger) ast.arg1()).toBigNumerator();
         final boolean negative;
-        if (upperLimit.compareTo(BigInteger.ZERO) < 0) {
+        if (upperLimit.signum() < 0) {
           upperLimit = upperLimit.negate();
           negative = true;
         } else {

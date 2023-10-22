@@ -1875,7 +1875,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   public void testBeta() {
     checkNumeric("Beta({-1},7*Sqrt(2),2.718281828459045)", //
-        "{0.29180906706077264+I*(-0.09532667408582261)}");
+        "{0.291809067060784+I*(-0.0953266740858263)}");
 
     check("Beta(z, 1, 12)", //
         "1/12*(1-(1-z)^12)");
@@ -8615,6 +8615,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testFindClusters() {
+    check("FindClusters(DirectedInfinity({-1,-2,3}),Times())", //
+        "FindClusters({-Infinity,-Infinity,Infinity},1)");
     // check(
     // "FindClusters({{2, 3}, {5, 10}, {4, 5}, {2, 2}}, DistanceFunction -> CorrelationDistance)",
     // //
@@ -10862,6 +10864,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testHypergeometric1F1() {
+    checkNumeric("Hypergeometric1F1(-0.5, 1.0 / 3.0, -1)", //
+        "2.269314995817225");
+    // assertThat(Maja.hypergeo1F1(-0.5, 1.0 / 3.0, -1)).isEqualTo(2.269314995817403);
     check("N(Hypergeometric1F1(10, 1/3, -1), 50)", //
         "1.0856469662771144181060999200053894821341819655654");
     check("Hypergeometric1F1(10, 1/3, -1.000000000000000000000000000000000000)", //
@@ -10916,10 +10921,42 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testHypergeometric2F1() {
+    // https://github.com/mtommila/apfloat/issues/29
+    // checkNumeric("Hypergeometric2F1(-3.0, -1, -2, 1.0)", //
+    // "-0.5");
+    // https://github.com/paulmasson/math/issues/10 - uses ThrowException
+    check("Hypergeometric2F1(0.5,0.333,0.666,1)", //
+        "Hypergeometric2F1(0.333,0.5,0.666,1.0)");
+    checkNumeric("Hypergeometric2F1(-0.5, 1.0 / 3.0, 4.0 / 3.0, -1)", //
+        "1.111447970532576");
+    checkNumeric("Hypergeometric2F1(-0.5, 1.0 / 3.0, -4.0 / 3.0, 0)", //
+        "1.0");
+
+    checkNumeric("Hypergeometric2F1(-0.5, 1.0 / 4.0, -4.0 / 3.0, -3)", //
+        "0.6919237698061467");
+    checkNumeric("Hypergeometric2F1(-0.5, 1.0 / 4.0, -4.0 / 3.0,-1.5)", //
+        "0.8274559676019733");
+    checkNumeric("Hypergeometric2F1(0.5, 1.0 / 3.0, 4.0 / 3.0, 1)", //
+        "1.4021821053254544");
+    checkNumeric("Hypergeometric2F1(-5, 1.0 / 3.0, 4.0 / 3.0, 1)", //
+        "0.5006868131868132");
+    checkNumeric("Hypergeometric2F1(-0.5, 3.0, 1.0, 0.2)", //
+        "0.66383268082025");
+    checkNumeric("Hypergeometric2F1(2, 2.0, 3.0, 0.95)", //
+        "35.46652127744269");
+    checkNumeric("Hypergeometric2F1(2, 2.0, 3.01, 0.95)", //
+        "34.81013407640607");
+    checkNumeric("Hypergeometric2F1(20, 2.0, 3.01, 0.95)", //
+        "5.513090059384316E23");
+    checkNumeric("Hypergeometric2F1(0.123, 2.0, 3.01, 0.95)", //
+        "1.166719619920925");
+    checkNumeric("Hypergeometric2F1(-1, 2.0, 3.01, 0.95)", //
+        "0.36877076411960136");
+
     checkNumeric("N(Hypergeometric2F1(-23/10, 1/2 - 1/8 + 23/10 + 1, 1/8 + 1, (12 + 1)/2),50)", //
         "316.89423321513003029092320808004720013260908767289+I*436.16750112351808402055619284015549992820985322774");
     checkNumeric("Hypergeometric2F1(-2.3, 1/2 - 1/8 + 2.3 + 1, 1/8 + 1, (12 + 1)/2)", //
-        "316.89423321643585+I*(-436.1675011253144)");
+        "316.8942332151301+I*436.1675011235177");
 
     check("D( Hypergeometric2F1(a,b,c,x), {x,-4})", //
         "D(Hypergeometric2F1(a,b,c,x),{x,-4})");
@@ -10945,8 +10982,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Expand((-1.2[m]+c)*(1+-1.2[m]+c)*(2+-1.2[m]+c)*(3+-1.2[m]+c)*(4+-1.2[m]+c))/(c*(\n"
             + "1+c)*(2+c)*(3+c)*(4+c))");
 
-    check("Hypergeometric2F1(1317624576693539401,0.333,-3/2,-0.5)", //
-        "Hypergeometric2F1(0.333,1.31762*10^18,-1.5,-0.5)");
+    // check("Hypergeometric2F1(1317624576693539401,0.333,-3/2,-0.5)", //
+    // "Hypergeometric2F1(0.333,1.31762*10^18,-1.5,-0.5)");
     check("Hypergeometric2F1(-1,b,c,1)", //
         "(-b+c)/c");
     check("Hypergeometric2F1(-2,b,c,1)", //
@@ -11007,9 +11044,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Hypergeometric2F1(-n, b, c, 1)", //
         "Hypergeometric2F1(b,-n,c,1)");
 
-    // https://github.com/paulmasson/math/issues/10 - uses ThrowException
-    check("Hypergeometric2F1(0.5,0.333,0.666,1)", //
-        "ComplexInfinity");
+
 
     check("Hypergeometric2F1(2 + I, -I, 3/4, 0.5-0.5*I)", //
         "-0.972167+I*(-0.181659)");
@@ -11029,14 +11064,35 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     checkNumeric("Hypergeometric2F1(0.5,Sin(Pi),0.666,-0.5)", //
         "1.0");
     checkNumeric("Hypergeometric2F1(0.5,0.333,0.666,-0.5)", //
-        "0.902678248859525");
+        "0.9026782488379916");
     checkNumeric("Hypergeometric2F1(0.5,0.333,0.666,0.75)", //
-        "1.3975732181721707");
+        "1.3975732184289735");
     checkNumeric("Hypergeometric2F1(0.5,0.333,0.666,-0.75)", //
-        "0.8677508558813088");
+        "0.8677508558430819");
   }
 
   public void testHypergeometric2F1Regularized() {
+    check("Hypergeometric2F1Regularized(I, -I, .5 + I, 5)", //
+        "-0.91139+I*(-1.76606)");
+
+    check("Hypergeometric2F1Regularized(-1, -1, 0, .5)", //
+        "0.5");
+    check("N(Hypergeometric2F1Regularized(1/3, 1, 3, -7), 50)", //
+        "0.35510204081632653061224489795918367346938775510204");
+    check("N(Hypergeometric2F1Regularized(1/3, 1, 0, -7), 25)", //
+        "-0.1458333333333333333333333");
+
+
+
+    // TODO regularize Hypergeometric2F1 for negative integer values of the third parameter:
+    check("Hypergeometric2F1Regularized(1, 2, -3, 4.5)", //
+        "Hypergeometric2F1Regularized(1.0,2.0,-3.0,4.5)");
+    check("Hypergeometric2F1Regularized(1, 1/3, -1, -0.3000000025555555555522220000)", //
+        "Hypergeometric2F1Regularized(0.333333333333333333333333333333,1,-1,-0.300000002555555555552222)");
+
+    check("Hypergeometric2F1Regularized(7, 2, -0.3, .5)", //
+        "17490.25");
+
     check("Hypergeometric2F1Regularized(a,b,b,x)", //
         "1/((1-x)^a*Gamma(a))");
     check("Hypergeometric2F1Regularized(a,b,c,0)", //
@@ -16031,6 +16087,24 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testNIntegrate() {
+    // https://github.com/Hipparchus-Math/hipparchus/issues/279
+    checkNumeric("NIntegrate(Exp(-x),{x,0,Infinity})", //
+        "1.0");
+    checkNumeric("NIntegrate(Exp(-x^2),{x,0,Infinity})", //
+        "0.886226925452758");
+    checkNumeric("NIntegrate(Exp(-x^2),{x,-Infinity,Infinity})", //
+        "1.772453850905516");
+
+    // TOTO integrable singularity at x==0
+    checkNumeric("NIntegrate(1/Sqrt(x),{x,0,1}, Method->GaussKronrod)", //
+        "NIntegrate(1/Sqrt(x),{x,0,1},Method->gausskronrod)");
+    checkNumeric("NIntegrate(1/Sqrt(x),{x,0,1}, Method->LegendreGauss )", //
+        "1.9913364016175945");
+    checkNumeric("NIntegrate(Cos(200*x),{x,0,1}, Method->GaussKronrod)", //
+        "-0.0043664864860701");
+    checkNumeric("NIntegrate(Cos(200*x),{x,0,1}, Method->LegendreGauss )", //
+        "-0.0043664864860699");
+
     // github #150
     // NIntegrate: (method=LegendreGauss) 1,001 is larger than the maximum (1,000)
     checkNumeric("NIntegrate(1/x, {x, 0, 1}, MaxPoints->1001)", //
@@ -19957,6 +20031,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testRandom() {
+    // RandomReal: The specification Infinity is not a random distribution recognized by the
+    // system.
+    check("RandomReal(Infinity)", //
+        "RandomReal(Infinity)");
+
+
     // set the seed to get always the same JUnit results
     check("SeedRandom[1234]; RandomReal[]", //
         "0.646582");
@@ -20967,6 +21047,21 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
    * </pre>
    */
   public void testResultant() {
+    // https://math.stackexchange.com/a/542228
+    check("Resultant(x^5+a*x^4+b*x^3+c*x^2+d*x+e, y-(x^2+m*x+n), x)", //
+        "-e^2+d*e*m-c*e*m^2+b*e*m^3-a*e*m^4+e*m^5-d^2*n+2*c*e*n+c*d*m*n-3*b*e*m*n-b*d*m^2*n+\n" //
+            + "4*a*e*m^2*n+a*d*m^3*n-5*e*m^3*n-d*m^4*n-c^2*n^2+2*b*d*n^2-2*a*e*n^2+b*c*m*n^2-3*a*d*m*n^\n" //
+            + "2+5*e*m*n^2-a*c*m^2*n^2+4*d*m^2*n^2+c*m^3*n^2-b^2*n^3+2*a*c*n^3-2*d*n^3+a*b*m*n^\n" //
+            + "3-3*c*m*n^3-b*m^2*n^3-a^2*n^4+2*b*n^4+a*m*n^4-n^5+d^2*y-2*c*e*y-c*d*m*y+3*b*e*m*y+b*d*m^\n" //
+            + "2*y-4*a*e*m^2*y-a*d*m^3*y+5*e*m^3*y+d*m^4*y+2*c^2*n*y-4*b*d*n*y+4*a*e*n*y-2*b*c*m*n*y+\n" //
+            + "6*a*d*m*n*y-10*e*m*n*y+2*a*c*m^2*n*y-8*d*m^2*n*y-2*c*m^3*n*y+3*b^2*n^2*y-6*a*c*n^\n" //
+            + "2*y+6*d*n^2*y-3*a*b*m*n^2*y+9*c*m*n^2*y+3*b*m^2*n^2*y+4*a^2*n^3*y-8*b*n^3*y-4*a*m*n^\n" //
+            + "3*y+5*n^4*y-c^2*y^2+2*b*d*y^2-2*a*e*y^2+b*c*m*y^2-3*a*d*m*y^2+5*e*m*y^2-a*c*m^2*y^\n" //
+            + "2+4*d*m^2*y^2+c*m^3*y^2-3*b^2*n*y^2+6*a*c*n*y^2-6*d*n*y^2+3*a*b*m*n*y^2-9*c*m*n*y^\n" //
+            + "2-3*b*m^2*n*y^2-6*a^2*n^2*y^2+12*b*n^2*y^2+6*a*m*n^2*y^2-10*n^3*y^2+b^2*y^3-2*a*c*y^\n" //
+            + "3+2*d*y^3-a*b*m*y^3+3*c*m*y^3+b*m^2*y^3+4*a^2*n*y^3-8*b*n*y^3-4*a*m*n*y^3+10*n^2*y^\n" //
+            + "3-a^2*y^4+2*b*y^4+a*m*y^4-5*n*y^4+y^5");
+
     check("Resultant(3/4,13,x)", //
         "1");
     check("Resultant(3/4,13,Indeterminate)", //

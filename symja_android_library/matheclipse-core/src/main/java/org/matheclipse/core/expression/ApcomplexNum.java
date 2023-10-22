@@ -358,18 +358,23 @@ public class ApcomplexNum implements IComplexNum {
     // }
 
     if (Math.abs(reDoubleValue()) < Math.abs(imDoubleValue())) {
-      if (imDoubleValue() == 0.0) {
+      if (fApcomplex.imag().signum() == 0) {
+        // if (imDoubleValue() == 0.0) {
         return Math.abs(reDoubleValue());
       }
-      final double q = reDoubleValue() / imDoubleValue();
+      Apfloat d = EvalEngine.getApfloat().divide(fApcomplex.real(), fApcomplex.imag());
+      final double q = d.doubleValue();
       return (Math.abs(imDoubleValue()) * Math.sqrt(1 + q * q));
     } else {
-      if (reDoubleValue() == 0.0) {
+      if (fApcomplex.real().signum() == 0) {
+        // if (reDoubleValue() == 0.0) {
         return Math.abs(imDoubleValue());
       }
-      final double q = imDoubleValue() / reDoubleValue();
+      Apfloat d = EvalEngine.getApfloat().divide(fApcomplex.imag(), fApcomplex.real());
+      final double q = d.doubleValue();
       return (Math.abs(reDoubleValue()) * Math.sqrt(1 + q * q));
     }
+
   }
 
   @Override

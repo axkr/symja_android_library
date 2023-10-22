@@ -519,7 +519,10 @@ public class ClusteringFunctions {
                   new KMeansPlusPlusClusterer<DoublePoint>(k, 100, measure);
               transformer = new MultiKMeansPlusPlusClusterer<DoublePoint>(kMeansTransformer, 10);
             }
-            return clustersToList(transformer.cluster(points), list1.isListOfLists());
+            List<? extends Cluster<DoublePoint>> cluster = transformer.cluster(points);
+            if (cluster != null && cluster.size() > 0) {
+              return clustersToList(cluster, list1.isListOfLists());
+            }
           }
         }
       } catch (MathRuntimeException mrex) {
