@@ -3,6 +3,56 @@
 Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v2.0.0...HEAD)
+- Java 11 required
+- Maven modules matheclipse-parser, matheclipse-logging, matheclipse-core are LGPL licensed
+- Maven modules matheclipse-gpl and dependents are GPL licensed
+- function documentation: [symja_android_library/doc/function](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions)
+- Renamed ISignedNumber (Symja 2.x) interface to IReal (Symja 3.x) interface
+- Rename methods `evalComplex->evalfc` and `evalDouble->evalf`
+- improved NIntegrate with `GaussKronrod` method (Maven dependency `de.labathome` `AdaptiveQuadrature`
+- `Hypergeometric2F1` uses apfloat algorithm for `double` and `Complex` values
+- `EvalEngine#evalDouble()` returns `POSITIVE_INFINITY, NEGATIVE_INFINITY` for `Infinity, -Infinity`
+- use eclipse-temurin:21_35-jre in JIB Docker script 
+- improve `PolynomialHomogenization` with a Cos/Sin transform to find more solutions
+- improved `Arg, ApplySides, Association, Assumptions, Bessel..., Binomial, BooleanFunction, Cancel, Carlson..., Catalan, CatalanNumber, CholeskyDecomposition, Chop, Complement, ComplexExpand, Count, CorrelationDistance, CosineDistance, D, Derivative, Drop, EigenValues, Eigenvectors, EllipticF, EllipticPi, FactorTerms, FindLinearRecurrence, Function, FunctionExpand, FullSimplify, GCD, Glaisher,Grad, HankelH1, HankelH2, HarmonicNumber, HermiteMatrix, HurwitzZeta, Hypergeometric..., Identity, IdentityMatrix, Import, ImportString, IntegerDigits, Intersection, Interval..., Khinchin, Limit, LinearRecurrence, ListConvolve, ListCorrelate, LogisticSigmoid, MantissaExponent, MapIndexed, MathMLForm, Max, Min, Minors, NMinimize, NestList, NestWhile, NestWhileList, NMaximize, NSolve, OrderedQ, Orthogonalize, PiecewiseExpand, PolyGamma, PowerExpand, PossibleZeroQ, Product, Projection, Quantity, RandomVariate, Range, ReleaseHold, Round, SatisfiabilityInstances, Simplify, Sign, Solve, SphericalHankelH1, SphericalHankelH2, StieltjesGamma, StringSplit, Subfactorial, Sum, Surd, TagSet, TagSetDelayed, Take, TakeLargestBy, TakeSmallestBy, TeXForm, TimeConstrained, Together, Unitize, Union, Zeta` function
+- new functions: `Adjugate, DeleteMissing, Eigensystem, FromSphericalCoordinates, HermiteH, JacobiP, NumericalOrder, NumericalSort, PrincipalComponents, RealValuedNumericQ, ReIm, SawtoothWave, StringForm, ToSphericalCoordinates` with status `PARTIAL` support
+- new functions: `ClebschGordan, ThreeJSymbol` with status `EXPERIMENTAL` support
+- use hipparchus `PowellOptimizer` for non-linear functions in `NMinimize,NMaximize`
+- new function `PearsonCorrelationTest` for two vectors 
+- icu4j library moved from Maven module `matheclipse-io` to new module `matheclipse-nlp` 
+- implemented `CompleteBipartiteGraphGenerator` in function `CompleteGraph` 
+- improved `N` function for `Rule, RuleDelayed` and `Association` arguments (#824)
+- define parser input `\[ExponentialE]` as `E`
+- improved `TeXForm` for `EulerE`
+- decoupled rules creation from symbol creation in `RulePreprocessor` implementation
+- improved `LinearModelFit` for vector inputs 
+- improved performance for `Nest, NestWhileList`
+- built-in functions can have an `ImplementationStatus` 
+- fix bug in `Refine` for `Sin, Csc`
+- improved `LaplaceTransform` and `InverseLaplaceTransform` with numerical calculations 
+- define new `TeXParser` class based on SnuggleTeX implementation
+- use choco solver for solving `Integers` domain equations in `Solve`
+- added `GenerateConditions->True` option to Solve (especially for trigonometric functions)
+- new class MD2Symja - render Markdown to HTML
+- implemented PrecedenceForm, Infix, Prefix, Postfix  
+- new opened/closed ends interval data object `IntervalData({min-value, Less/LessEqual, Less/LessEqual, max-value})`
+- implemented `NormalMatrixQ, FourierDCTMAtrix, FourierDSTMatrix`
+- implemented `AASTriangle, ASATriangle, SASTriangle,SSSTriangle`
+- new `ArcLength, Area, Perimeter, Volume` functions
+- use [github.com/jsxgraph/json2D_JSXGrap](https://github.com/jsxgraph/json2D_JSXGraph) for 2D `Graphics, DiscretePlot, ListLinePlot, ListPlot, LogPlot, LogLogPlot, LogLinearPlot, ListLogPlot, ListLogLinearPlot, ListLogLogPlot` objects
+- new `TrigSimplifyFu` function (#498)
+- new `TransformationFunction, RotationTransform, ScalingTranform, ShearingTransform, TranslationTransform` (#583)
+- new `SequenceCases, SequenceReplace, SequenceSplit`
+- SymjaBot - Discord bot
+- new `KroneckerProduct, Hyperfactorial, LowerTriangularMatrixQ, UnitaryMatrixQ, UpperTriangularMatrixQ`
+- new `CoordinateBounds, ArrayFlatten, HessenbergDecomposition, SchurDecomposition`
+- implemented multivariate Newton’s method in the `FindRoot` function (#566)
+- new `ModularInverse, CompositeQ, ConvexHullMesh, CoordinateBoundingBox, QuantityUnit, PadeApproximant, FactorTermsList`
+- new `BooleanFunction` (#527) 
+- jbang enablement (#515)
+- new `FactorialPower, LerchPhi, HurwitzLerchPhi, Hypergeometric1F1, HypergeometricPFQ`
+- implemented Kryo serializer and deserializer (#514)
+- new `InverseJacobi...` functions (#501)
 
 ## [v2.0.0](https://github.com/axkr/symja_android_library/releases/tag/v2.0.0) - 2022-03-12
 
