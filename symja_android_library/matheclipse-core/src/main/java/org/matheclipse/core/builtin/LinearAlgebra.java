@@ -742,6 +742,11 @@ public final class LinearAlgebra {
       return adjugateMatrix(matrix);
     }
 
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
   }
 
   /**
@@ -1971,6 +1976,11 @@ public final class LinearAlgebra {
       return F.List(eigenvalues, eigenvectors);
     }
 
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
   }
 
   /**
@@ -2180,6 +2190,12 @@ public final class LinearAlgebra {
         return F.complexNum(eigenvalues[i].getReal(), eigenvalues[i].getImaginary());
       });
     }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
   }
 
 
@@ -2445,6 +2461,12 @@ public final class LinearAlgebra {
       return F.mapRange(0, matrix.getColumnDimension(),
           j -> S.Normalize.of(engine, Convert.complexVector2List(ced.getEigenvector(j))));
     }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
   }
 
 
@@ -2568,6 +2590,11 @@ public final class LinearAlgebra {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -2615,6 +2642,11 @@ public final class LinearAlgebra {
           F.Times(r, F.Cos(theta)));
     }
 
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+    
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
@@ -5337,6 +5369,11 @@ public final class LinearAlgebra {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -5385,6 +5422,11 @@ public final class LinearAlgebra {
         return list.mapThreadEvaled(engine, F.ListAlloc(list.size()), ast, 1);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override

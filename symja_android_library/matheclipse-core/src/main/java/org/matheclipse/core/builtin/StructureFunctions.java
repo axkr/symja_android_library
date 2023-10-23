@@ -25,6 +25,7 @@ import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.Predicates.IsBinaryFalse;
@@ -1403,6 +1404,11 @@ public class StructureFunctions {
       return 0;
     }
 
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
   }
 
   private static class NumericalSort extends Sort {
@@ -1417,6 +1423,12 @@ public class StructureFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
   }
 
   /**

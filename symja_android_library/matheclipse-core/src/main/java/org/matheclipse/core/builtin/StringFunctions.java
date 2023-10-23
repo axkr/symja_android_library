@@ -29,6 +29,7 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.AbstractPatternSequence;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.RepeatedPattern;
 import org.matheclipse.core.expression.S;
@@ -1444,6 +1445,11 @@ public final class StringFunctions {
         return F.stringx(str);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
