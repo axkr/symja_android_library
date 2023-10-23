@@ -56,7 +56,7 @@ Noteworthy changes are documented in this file.
 
 ## [v2.0.0](https://github.com/axkr/symja_android_library/releases/tag/v2.0.0) - 2022-03-12
 
-- Java 11 required
+- Java 11 required  
 - first Maven Central release (contributed by [@HannesWell](https://github.com/HannesWell))
 - Maven modules matheclipse-parser, matheclipse-logging, matheclipse-core are LGPL licensed
 - Maven modules matheclipse-gpl and dependents are GPL licensed
