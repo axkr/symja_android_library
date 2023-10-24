@@ -10481,11 +10481,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testHarmonicNumber() {
-
+    check("D(HarmonicNumber(x),{x,4})", //
+        "24/x^5+PolyGamma(4,x)");
     check("HarmonicNumber(-9223372036854775808/11,0.5)", //
         "-1.46035-HurwitzZeta(0.5,-8.38488*10^17)");
     check("N(HarmonicNumber(1/17, 5), 50)", //
         "0.25327615206118707521034626118754228313433140885935");
+    check("HarmonicNumber(0.33000000000000000000) ", //
+        "0.44152364693736352809");
 
     check("n /. FindRoot(HarmonicNumber(n) == 1.5, {n, 5})", //
         "2.0");
@@ -10552,7 +10555,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1+2^(-r)+3^(-r)+4^(-r)");
     check("HarmonicNumber(1,r)", //
         "1");
-    check("HarmonicNumber(0,r)", //
+    check("HarmonicNumber(0, r)", //
         "0");
     check("HarmonicNumber(Infinity,2)", //
         "Pi^2/6");

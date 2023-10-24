@@ -118,8 +118,10 @@
       /; (IntegerQ(n) && n >= 0)||FreeQ(n,_?NumberQ), 
   D(Log(x_), {x_, n_Integer}) := ((-1)^(n - 1)*(n - 1)!)/x^n
     /; (IntegerQ(n) && n >= 0)||FreeQ(n,_?NumberQ), 
-    
-  D(PolyGamma(0, x_), {x_, n_}) := PolyGamma(n, x)
+
+  D(HarmonicNumber(x_), {x_, n_Integer}) := (-1)^n*x^(-1 - n)*n! + EulerGamma*KroneckerDelta(n) + PolyGamma(n, x)  
+    /; (IntegerQ(n) && n >= 1)||FreeQ(n,_?NumberQ),
+  D(PolyGamma(0, x_), {x_, n_Integer}) := PolyGamma(n, x)
     /; (IntegerQ(n) && n >= 0)||FreeQ(n,_?NumberQ), 
      
   D(ArcTan(f_, g_),x_?NotListQ):= With({d=((-g*D(f,x)+f*D(g,x))/(f^2 + g^2))},If(PossibleZeroQ(d),0,d)),

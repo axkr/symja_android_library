@@ -118,6 +118,8 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 
     FUNCTIONS_STR_MATHCELL.put(S.HankelH1, "hankel1");
     FUNCTIONS_STR_MATHCELL.put(S.HankelH2, "hankel2");
+    // TODO https://github.com/paulmasson/math/issues/36
+    FUNCTIONS_STR_MATHCELL.put(S.HarmonicNumber, "harmonic");
     FUNCTIONS_STR_MATHCELL.put(S.Haversine, "haversine");
     FUNCTIONS_STR_MATHCELL.put(S.HermiteH, "hermite");
     FUNCTIONS_STR_MATHCELL.put(S.HurwitzZeta, "hurwitzZeta");

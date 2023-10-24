@@ -13,7 +13,7 @@ public class DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 77 };
+  final public static int[] SIZES = { 0, 78 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -206,8 +206,11 @@ public class DRules {
     // D(Log(x_),{x_,n_Integer}):=(-1+n)!/((-1)^(1-n)*x^n)/;(IntegerQ(n)&&n>=0)||FreeQ(n,_?NumberQ)
     ISetDelayed(D(Log(x_),list(x_,$p(n, Integer))),
       Condition(Times(Power(CN1,Plus(CN1,n)),Power(Power(x,n),CN1),Factorial(Plus(CN1,n))),Or(And(IntegerQ(n),GreaterEqual(n,C0)),FreeQ(n,PatternTest($b(),NumberQ))))),
-    // D(PolyGamma(0,x_),{x_,n_}):=PolyGamma(n,x)/;(IntegerQ(n)&&n>=0)||FreeQ(n,_?NumberQ)
-    ISetDelayed(D(PolyGamma(C0,x_),list(x_,n_)),
+    // D(HarmonicNumber(x_),{x_,n_Integer}):=((-1)^n*n!)/x^(1+n)+EulerGamma*KroneckerDelta(n)+PolyGamma(n,x)/;(IntegerQ(n)&&n>=1)||FreeQ(n,_?NumberQ)
+    ISetDelayed(D(HarmonicNumber(x_),list(x_,$p(n, Integer))),
+      Condition(Plus(Times(Power(CN1,n),Power(x,Subtract(CN1,n)),Factorial(n)),Times(EulerGamma,KroneckerDelta(n)),PolyGamma(n,x)),Or(And(IntegerQ(n),GreaterEqual(n,C1)),FreeQ(n,PatternTest($b(),NumberQ))))),
+    // D(PolyGamma(0,x_),{x_,n_Integer}):=PolyGamma(n,x)/;(IntegerQ(n)&&n>=0)||FreeQ(n,_?NumberQ)
+    ISetDelayed(D(PolyGamma(C0,x_),list(x_,$p(n, Integer))),
       Condition(PolyGamma(n,x),Or(And(IntegerQ(n),GreaterEqual(n,C0)),FreeQ(n,PatternTest($b(),NumberQ))))),
     // D(ArcTan(f_,g_),x_?NotListQ):=With({d=(-g*D(f,x)+f*D(g,x))/(f^2+g^2)},If(PossibleZeroQ(d),0,d))
     ISetDelayed(D(ArcTan(f_,g_),PatternTest(x_,NotListQ)),
