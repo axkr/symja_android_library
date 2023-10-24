@@ -53,6 +53,7 @@ import org.matheclipse.core.builtin.Combinatoric;
 import org.matheclipse.core.builtin.CompilerFunctions;
 import org.matheclipse.core.builtin.ComputationalGeometryFunctions;
 import org.matheclipse.core.builtin.ConstantDefinitions;
+import org.matheclipse.core.builtin.ConstantPhysicsDefinitions;
 import org.matheclipse.core.builtin.ContainsFunctions;
 import org.matheclipse.core.builtin.CurveFitterFunctions;
 import org.matheclipse.core.builtin.EllipticIntegrals;
@@ -1016,6 +1017,7 @@ public class F extends S {
       ComputationalGeometryFunctions.initialize();
       PiecewiseFunctions.initialize();
       QuantumPhysicsFunctions.initialize();
+      ConstantPhysicsDefinitions.initialize();
 
       AutomaticRules.initialize();
 

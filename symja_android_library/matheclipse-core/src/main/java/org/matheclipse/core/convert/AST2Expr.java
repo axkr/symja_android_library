@@ -45,6 +45,9 @@ public class AST2Expr {
 
   public static final String[] UPPERCASE_SYMBOL_STRINGS = {"C", "D", "E", "I", "N", "O"};
 
+  public static final String[] PHYSICAL_CONSTANTS_STRINGS =
+      {"AvogadroConstant", "BohrRadius", "UniverseAge"};
+
   public static final String[] DOLLAR_STRINGS = {"$Aborted", "$Assumptions", "$BaseDirectory",
       "$Cancel", "$CharacterEncoding", "$Context", "$CreationDate", "$ContextPath",
       "$DisplayFunction", "$Failed", "$HistoryLength", "$HomeDirectory", "$IdentityMatrix", // for
@@ -369,6 +372,11 @@ public class AST2Expr {
               SUGGEST_TREE.put(str.toLowerCase(Locale.US), 1);
             }
           }
+          for (String str : PHYSICAL_CONSTANTS_STRINGS) {
+            if (str.length() > 1) {
+              SUGGEST_TREE.put(str.toLowerCase(Locale.US), 1);
+            }
+          }
         }
       }
       return SUGGEST_TREE;
@@ -390,6 +398,9 @@ public class AST2Expr {
         PREDEFINED_SYMBOLS_MAP.put(str.toLowerCase(Locale.ENGLISH), str);
       }
       for (String str : SYMBOL_STRINGS) {
+        PREDEFINED_SYMBOLS_MAP.put(str.toLowerCase(Locale.ENGLISH), str);
+      }
+      for (String str : PHYSICAL_CONSTANTS_STRINGS) {
         PREDEFINED_SYMBOLS_MAP.put(str.toLowerCase(Locale.ENGLISH), str);
       }
       for (String str : FUNCTION_STRINGS) {

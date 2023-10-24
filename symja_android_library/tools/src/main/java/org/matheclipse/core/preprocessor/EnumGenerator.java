@@ -3,7 +3,6 @@ package org.matheclipse.core.preprocessor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Locale;
-
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.interfaces.IStringX;
 
@@ -37,6 +36,9 @@ public class EnumGenerator {
     }
     for (int i = 0; i < AST2Expr.SYMBOL_STRINGS.length; i++) {
       list.add(AST2Expr.SYMBOL_STRINGS[i]);
+    }
+    for (int i = 0; i < AST2Expr.PHYSICAL_CONSTANTS_STRINGS.length; i++) {
+      list.add(AST2Expr.PHYSICAL_CONSTANTS_STRINGS[i]);
     }
     for (int i = 0; i < AST2Expr.FUNCTION_STRINGS.length; i++) {
       list.add(AST2Expr.FUNCTION_STRINGS[i]);

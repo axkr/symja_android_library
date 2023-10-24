@@ -48,6 +48,9 @@ public class FunctionIDGenerator {
     for (int i = 0; i < AST2Expr.SYMBOL_STRINGS.length; i++) {
       list.add(AST2Expr.SYMBOL_STRINGS[i]);
     }
+    for (int i = 0; i < AST2Expr.PHYSICAL_CONSTANTS_STRINGS.length; i++) {
+      list.add(AST2Expr.PHYSICAL_CONSTANTS_STRINGS[i]);
+    }
     for (int i = 0; i < AST2Expr.FUNCTION_STRINGS.length; i++) {
       list.add(AST2Expr.FUNCTION_STRINGS[i]);
     }
@@ -89,6 +92,9 @@ public class FunctionIDGenerator {
       for (int i = 0; i < AST2Expr.SYMBOL_STRINGS.length; i++) {
         list.add(AST2Expr.SYMBOL_STRINGS[i]);
       }
+      for (int i = 0; i < AST2Expr.PHYSICAL_CONSTANTS_STRINGS.length; i++) {
+        list.add(AST2Expr.PHYSICAL_CONSTANTS_STRINGS[i]);
+      }
       for (int i = 0; i < AST2Expr.FUNCTION_STRINGS.length; i++) {
         list.add(AST2Expr.FUNCTION_STRINGS[i]);
       }
@@ -114,8 +120,10 @@ public class FunctionIDGenerator {
           IBuiltInSymbol builtin = (IBuiltInSymbol) sym;
           System.out.print("\"" + builtin.toString() + "\"");
         } else {
+          System.out.print("\"" + sym.toString() + "\"");
+
           // creates error by Java parser:
-          System.out.print("0");
+          // System.out.print("0");
         }
         if (i < list.size() - 1) {
           System.out.print(",");

@@ -23,6 +23,9 @@ public class BuiltinGenerator {
     for (int i = 0; i < AST2Expr.SYMBOL_STRINGS.length; i++) {
       list.add(AST2Expr.SYMBOL_STRINGS[i]);
     }
+    for (int i = 0; i < AST2Expr.PHYSICAL_CONSTANTS_STRINGS.length; i++) {
+      list.add(AST2Expr.PHYSICAL_CONSTANTS_STRINGS[i]);
+    }
     for (int i = 0; i < AST2Expr.FUNCTION_STRINGS.length; i++) {
       list.add(AST2Expr.FUNCTION_STRINGS[i]);
     }

@@ -219,6 +219,14 @@ public class S {
 
   public final static IBuiltInSymbol $Version = S.initFinalSymbol("$Version", ID.$Version);
 
+  /**
+   * AASTriangle(alpha, beta, a) - returns a triangle from 2 angles `alpha`, `beta` and side `a`
+   * (which is not between the angles).
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AASTriangle.md">AASTriangle
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol AASTriangle = S.initFinalSymbol("AASTriangle", ID.AASTriangle);
 
   /**
@@ -307,6 +315,13 @@ public class S {
   public final static IBuiltInSymbol AdjacencyMatrix =
       S.initFinalSymbol("AdjacencyMatrix", ID.AdjacencyMatrix);
 
+  /**
+   * Adjugate(matrix) - calculate the adjugate matrix `Inverse(matrix)*Det(matrix)`
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Adjugate.md">Adjugate
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Adjugate = S.initFinalSymbol("Adjugate", ID.Adjugate);
 
   /**
@@ -767,6 +782,14 @@ public class S {
 
   public final static IBuiltInSymbol Arrowheads = S.initFinalSymbol("Arrowheads", ID.Arrowheads);
 
+  /**
+   * ASATriangle(alpha, c, beta) - returns a triangle from 2 angles `alpha`, `beta` and side `c`
+   * (which is between the angles).
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ASATriangle.md">ASATriangle
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ASATriangle = S.initFinalSymbol("ASATriangle", ID.ASATriangle);
 
   public final static IBuiltInSymbol AspectRatio = S.initFinalSymbol("AspectRatio", ID.AspectRatio);
@@ -855,6 +878,9 @@ public class S {
   public final static IBuiltInSymbol Attributes = S.initFinalSymbol("Attributes", ID.Attributes);
 
   public final static IBuiltInSymbol Automatic = S.initFinalSymbol("Automatic", ID.Automatic);
+
+  public final static IBuiltInSymbol AvogadroConstant =
+      S.initFinalSymbol("AvogadroConstant", ID.AvogadroConstant);
 
   public final static IBuiltInSymbol Axes = S.initFinalSymbol("Axes", ID.Axes);
 
@@ -1190,6 +1216,8 @@ public class S {
   public final static IBuiltInSymbol Block = S.initFinalSymbol("Block", ID.Block);
 
   public final static IBuiltInSymbol Blue = S.initFinalSymbol("Blue", ID.Blue);
+
+  public final static IBuiltInSymbol BohrRadius = S.initFinalSymbol("BohrRadius", ID.BohrRadius);
 
   /**
    * Boole(expr) - returns `1` if `expr` evaluates to `True`; returns `0` if `expr` evaluates to
@@ -1550,7 +1578,7 @@ public class S {
   public final static IBuiltInSymbol CenterDot = S.initFinalSymbol("CenterDot", ID.CenterDot);
 
   /**
-   * CentralMoment(list, r) - gives the the `r`th central moment (i.e. the `r`th moment about the
+   * CentralMoment(list, r) - gives the the `r`-th central moment (i.e. the `r`th moment about the
    * mean) of `list`.
    * 
    * @see <a href=
@@ -1720,6 +1748,14 @@ public class S {
   public final static IBuiltInSymbol ClearAttributes =
       S.initFinalSymbol("ClearAttributes", ID.ClearAttributes);
 
+  /**
+   * ClebschGordan({j1,m1},{j2,m2},{j3,m3}) - get the Clebsch–Gordan coefficients. Clebsch–Gordan
+   * coefficients are numbers that arise in angular momentum coupling in quantum mechanic.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ClebschGordan.md">ClebschGordan
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ClebschGordan =
       S.initFinalSymbol("ClebschGordan", ID.ClebschGordan);
 
@@ -1788,6 +1824,13 @@ public class S {
   public final static IBuiltInSymbol CoefficientRules =
       S.initFinalSymbol("CoefficientRules", ID.CoefficientRules);
 
+  /**
+   * Cofactor(matrix, {i,j}) - calculate the cofactor of the matrix
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Cofactor.md">Cofactor
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Cofactor = S.initFinalSymbol("Cofactor", ID.Cofactor);
 
   /**
@@ -1904,8 +1947,8 @@ public class S {
   public final static IBuiltInSymbol Complexes = S.initFinalSymbol("Complexes", ID.Complexes);
 
   /**
-   * ComplexExpand(expr) - get the expanded `expr`. All variable symbols in `expr` are assumed to be
-   * non complex numbers.
+   * ComplexExpand(expr) - expands `expr`. All variable symbols in `expr` are assumed to be non
+   * complex numbers.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ComplexExpand.md">ComplexExpand
@@ -2075,7 +2118,7 @@ public class S {
       S.initFinalSymbol("ContainsOnly", ID.ContainsOnly);
 
   /**
-   * Context(symbol) - return the context of the given symbol.
+   * Context(symbol) - yields the name of the context where `symbol` is defined in.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Context.md">Context
@@ -2330,7 +2373,7 @@ public class S {
   public final static IBuiltInSymbol Cuboid = S.initFinalSymbol("Cuboid", ID.Cuboid);
 
   /**
-   * Curl({f1, f2}, {x1, x2}) - returns the curl `D(f2, v1) - D(f1, v2)`
+   * Curl({f1, f2}, {x1, x2}) - returns the curl `D(f2, x1) - D(f1, x2)`
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Curl.md">Curl
@@ -2531,7 +2574,7 @@ public class S {
   public final static IBuiltInSymbol DensityPlot = S.initFinalSymbol("DensityPlot", ID.DensityPlot);
 
   /**
-   * Depth(expr) - gives the depth of `expr`.
+   * Depth(expr) - gets the depth of `expr`.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Depth.md">Depth
@@ -3027,6 +3070,16 @@ public class S {
       S.initFinalSymbol("EffectiveInterest", ID.EffectiveInterest);
 
   /**
+   * Eigensystem(matrix) - return the numerical eigensystem of the `matrix` as a list `{eigenvalues,
+   * eigenvectors}`
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Eigensystem.md">Eigensystem
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Eigensystem = S.initFinalSymbol("Eigensystem", ID.Eigensystem);
+
+  /**
    * Eigenvalues(matrix) - get the numerical eigenvalues of the `matrix`.
    * 
    * @see <a href=
@@ -3037,8 +3090,6 @@ public class S {
 
   public final static IBuiltInSymbol EigenvectorCentrality =
       S.initFinalSymbol("EigenvectorCentrality", ID.EigenvectorCentrality);
-
-  public final static IBuiltInSymbol Eigensystem = S.initFinalSymbol("Eigensystem", ID.Eigensystem);
 
   /**
    * Eigenvectors(matrix) - get the numerical eigenvectors of the `matrix`.
@@ -3051,7 +3102,7 @@ public class S {
       S.initFinalSymbol("Eigenvectors", ID.Eigenvectors);
 
   /**
-   * Element(symbol, dom) - assume (or test) that the `symbol` is in the domain `dom`.
+   * Element(symbol, domain) - assume (or test) that the `symbol` is in the domain `domain`.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Element.md">Element
@@ -3908,6 +3959,32 @@ public class S {
    */
   public final static IBuiltInSymbol Fourier = S.initFinalSymbol("Fourier", ID.Fourier);
 
+  public final static IBuiltInSymbol FourierDCT = S.initFinalSymbol("FourierDCT", ID.FourierDCT);
+
+  /**
+   * FourierDCTMatrix(n) - gives a discrete cosine transform matrix with the dimension `(n,n)` and
+   * method `DCT-2`
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FourierDCTMatrix.md">FourierDCTMatrix
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FourierDCTMatrix =
+      S.initFinalSymbol("FourierDCTMatrix", ID.FourierDCTMatrix);
+
+  public final static IBuiltInSymbol FourierDST = S.initFinalSymbol("FourierDST", ID.FourierDST);
+
+  /**
+   * FourierDSTMatrix(n) - gives a discrete sine transform matrix with the dimension `(n,n)` and
+   * method `DST-2`
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FourierDSTMatrix.md">FourierDSTMatrix
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FourierDSTMatrix =
+      S.initFinalSymbol("FourierDSTMatrix", ID.FourierDSTMatrix);
+
   /**
    * FourierMatrix(n) - gives a fourier matrix with the dimension `n`.
    * 
@@ -3917,16 +3994,6 @@ public class S {
    */
   public final static IBuiltInSymbol FourierMatrix =
       S.initFinalSymbol("FourierMatrix", ID.FourierMatrix);
-
-  public final static IBuiltInSymbol FourierDCT = S.initFinalSymbol("FourierDCT", ID.FourierDCT);
-
-  public final static IBuiltInSymbol FourierDCTMatrix =
-      S.initFinalSymbol("FourierDCTMatrix", ID.FourierDCTMatrix);
-
-  public final static IBuiltInSymbol FourierDST = S.initFinalSymbol("FourierDST", ID.FourierDST);
-
-  public final static IBuiltInSymbol FourierDSTMatrix =
-      S.initFinalSymbol("FourierDSTMatrix", ID.FourierDSTMatrix);
 
   /**
    * FractionalPart(number) - get the fractional part of a `number`.
@@ -4040,6 +4107,14 @@ public class S {
   public final static IBuiltInSymbol FromPolarCoordinates =
       S.initFinalSymbol("FromPolarCoordinates", ID.FromPolarCoordinates);
 
+  /**
+   * FromSphericalCoordinates({r, t, p}) - returns the cartesian coordinates for the spherical
+   * coordinates `{r, t, p}`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FromSphericalCoordinates.md">FromSphericalCoordinates
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol FromSphericalCoordinates =
       S.initFinalSymbol("FromSphericalCoordinates", ID.FromSphericalCoordinates);
 
@@ -5160,7 +5235,7 @@ public class S {
       S.initFinalSymbol("Intersection", ID.Intersection);
 
   /**
-   * Interval({a, b}) - represents the interval from `a` to `b`.
+   * Interval({a, b}) - represents the closed interval from `a` to `b`.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Interval.md">Interval
@@ -5168,9 +5243,27 @@ public class S {
    */
   public final static IBuiltInSymbol Interval = S.initFinalSymbol("Interval", ID.Interval);
 
+  /**
+   * IntervalComplement(interval_1, interval_2) - compute the complement of the intervals
+   * `interval_1 \ interval_2`. The intervals must be of structure `IntervalData` (closed/opened
+   * ends of interval) and not of structure `Interval` (only closed ends)
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IntervalComplement.md">IntervalComplement
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol IntervalComplement =
       S.initFinalSymbol("IntervalComplement", ID.IntervalComplement);
 
+  /**
+   * IntervalData({a, left-end, right-end, b}) - represents the open/closed ends interval from `a`
+   * to `b`. `left-end` and `right-end` must have the value `Less` for representing an open ended
+   * interval or `LessEqual` for representing a closed ended interval.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IntervalData.md">IntervalData
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol IntervalData =
       S.initFinalSymbol("IntervalData", ID.IntervalData);
 
@@ -5431,6 +5524,13 @@ public class S {
 
   public final static IBuiltInSymbol JacobiND = S.initFinalSymbol("JacobiND", ID.JacobiND);
 
+  /**
+   * JacobiP(n, a, b, z) - returns the Jacobi polynomial.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JacobiP.md">JacobiP
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol JacobiP = S.initFinalSymbol("JacobiP", ID.JacobiP);
 
   /**
@@ -5913,9 +6013,8 @@ public class S {
   public final static IBuiltInSymbol Line = S.initFinalSymbol("Line", ID.Line);
 
   /**
-   * LinearModelFit(list-of-data-points, expr, symbol) - In statistics, linear regression is a
-   * linear approach to modeling the relationship between a scalar response (or dependent variable)
-   * and one or more explanatory variables (or independent variables).
+   * LinearModelFit({{x1,y1},{x2,y2},...}, expr, symbol) - Create a linear regression model from a
+   * matrix of observed value pairs `{x_i, y_i}`.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LinearModelFit.md">LinearModelFit
@@ -5950,7 +6049,7 @@ public class S {
       S.initFinalSymbol("LinearRecurrence", ID.LinearRecurrence);
 
   /**
-   * LinearSolve(matrix, right) - solves the linear equation system 'matrix . x = right' and returns
+   * LinearSolve(matrix, right) - solves the linear equation system `matrix . x = right` and returns
    * one corresponding solution `x`.
    * 
    * @see <a href=
@@ -6645,6 +6744,13 @@ public class S {
 
   public final static IBuiltInSymbol Minor = S.initFinalSymbol("Minor", ID.Minor);
 
+  /**
+   * Minors(matrix) - returns the minors of the matrix.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Minors.md">Minors
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Minors = S.initFinalSymbol("Minors", ID.Minors);
 
   /**
@@ -6840,9 +6946,8 @@ public class S {
   public final static IBuiltInSymbol NegativeDegreeLexicographic =
       S.initFinalSymbol("NegativeDegreeLexicographic", ID.NegativeDegreeLexicographic);
 
-  public final static IBuiltInSymbol NegativeDegreeReverseLexicographic = //
-      S.initFinalSymbol("NegativeDegreeReverseLexicographic",
-          ID.NegativeDegreeReverseLexicographic);
+  public final static IBuiltInSymbol NegativeDegreeReverseLexicographic = S
+      .initFinalSymbol("NegativeDegreeReverseLexicographic", ID.NegativeDegreeReverseLexicographic);
 
   public final static IBuiltInSymbol NegativeIntegers =
       S.initFinalSymbol("NegativeIntegers", ID.NegativeIntegers);
@@ -7189,9 +7294,25 @@ public class S {
    */
   public final static IBuiltInSymbol Numerator = S.initFinalSymbol("Numerator", ID.Numerator);
 
+  /**
+   * NumericalOrder(a, b) - is `0` if `a` equals `b`. Is `-1` or `1` according to numerical order of
+   * `a` and `b`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NumericalOrder.md">NumericalOrder
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol NumericalOrder =
       S.initFinalSymbol("NumericalOrder", ID.NumericalOrder);
 
+  /**
+   * NumericalSort(list) - `NumericalSort(list)` is evaluated by calling `Sort(list,
+   * NumericalOrder)`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NumericalSort.md">NumericalSort
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol NumericalSort =
       S.initFinalSymbol("NumericalSort", ID.NumericalSort);
 
@@ -7600,11 +7721,20 @@ public class S {
    */
   public final static IBuiltInSymbol PDF = S.initFinalSymbol("PDF", ID.PDF);
 
-  public final static IBuiltInSymbol PearsonCorrelationTest =
-      S.initFinalSymbol("PearsonCorrelationTest", ID.PearsonCorrelationTest);
-
   public final static IBuiltInSymbol PearsonChiSquareTest =
       S.initFinalSymbol("PearsonChiSquareTest", ID.PearsonChiSquareTest);
+
+  /**
+   * PearsonCorrelationTest(real-vector1, real-vector2) - `"value"` can be `"TestStatistic"`,
+   * `"TestData"` or `"PValue"`. In statistics, the Pearson correlation coefficient (PCC) is a
+   * correlation coefficient that measures linear correlation between two sets of data.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PearsonCorrelationTest.md">PearsonCorrelationTest
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PearsonCorrelationTest =
+      S.initFinalSymbol("PearsonCorrelationTest", ID.PearsonCorrelationTest);
 
   /**
    * PerfectNumber(n) - returns the `n`th perfect number. In number theory, a perfect number is a
@@ -7820,6 +7950,14 @@ public class S {
    */
   public final static IBuiltInSymbol Plus = S.initFinalSymbol("Plus", ID.Plus);
 
+  /**
+   * PlusMinus(a, b, ...) - has no built-in evaluating function, but represents the structure of the
+   * `±` operator.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PlusMinus.md">PlusMinus
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol PlusMinus = S.initFinalSymbol("PlusMinus", ID.PlusMinus);
 
   /**
@@ -8545,20 +8683,6 @@ public class S {
   public final static IBuiltInSymbol RealDigits = S.initFinalSymbol("RealDigits", ID.RealDigits);
 
   /**
-   * RealValuedNumberQ(expr) - returns `True` if `expr` is an explicit number with no imaginary
-   * component.
-   * 
-   * @see <a href=
-   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RealValuedNumberQ.md">RealValuedNumberQ
-   *      documentation</a>
-   */
-  public final static IBuiltInSymbol RealValuedNumberQ =
-      S.initFinalSymbol("RealValuedNumberQ", ID.RealValuedNumberQ);
-
-  public final static IBuiltInSymbol RealValuedNumericQ =
-      S.initFinalSymbol("RealValuedNumericQ", ID.RealValuedNumericQ);
-
-  /**
    * Reals - is the set of real numbers.
    * 
    * @see <a href=
@@ -8576,6 +8700,20 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol RealSign = S.initFinalSymbol("RealSign", ID.RealSign);
+
+  /**
+   * RealValuedNumberQ(expr) - returns `True` if `expr` is an explicit real number with no imaginary
+   * component.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RealValuedNumberQ.md">RealValuedNumberQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RealValuedNumberQ =
+      S.initFinalSymbol("RealValuedNumberQ", ID.RealValuedNumberQ);
+
+  public final static IBuiltInSymbol RealValuedNumericQ =
+      S.initFinalSymbol("RealValuedNumericQ", ID.RealValuedNumericQ);
 
   /**
    * Reap(expr) - gives the result of evaluating `expr`, together with all values sown during this
@@ -8626,6 +8764,13 @@ public class S {
   public final static IBuiltInSymbol RegularExpression =
       S.initFinalSymbol("RegularExpression", ID.RegularExpression);
 
+  /**
+   * ReIm(z) - returns a list of the real and imaginary component of the complex number `z`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ReIm.md">ReIm
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ReIm = S.initFinalSymbol("ReIm", ID.ReIm);
 
   /**
@@ -8957,6 +9102,14 @@ public class S {
 
   public final static IBuiltInSymbol SameTest = S.initFinalSymbol("SameTest", ID.SameTest);
 
+  /**
+   * SASTriangle(a, gamma, b) - returns a triangle from 2 sides `a`, `b` and angle `gamma` (which is
+   * between the sides).
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SASTriangle.md">SASTriangle
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol SASTriangle = S.initFinalSymbol("SASTriangle", ID.SASTriangle);
 
   /**
@@ -8994,6 +9147,13 @@ public class S {
   public final static IBuiltInSymbol SatisfiableQ =
       S.initFinalSymbol("SatisfiableQ", ID.SatisfiableQ);
 
+  /**
+   * SawtoothWave(expr) - returns the sawtooth wave value of `expr`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SawtoothWave.md">SawtoothWave
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol SawtoothWave =
       S.initFinalSymbol("SawtoothWave", ID.SawtoothWave);
 
@@ -9507,6 +9667,13 @@ public class S {
   public final static IBuiltInSymbol SquareMatrixQ =
       S.initFinalSymbol("SquareMatrixQ", ID.SquareMatrixQ);
 
+  /**
+   * SSSTriangle(a, b, c) - returns a triangle from 3 sides `a`, `b` and `c`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SSSTriangle.md">SSSTriangle
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol SSSTriangle = S.initFinalSymbol("SSSTriangle", ID.SSSTriangle);
 
   /**
@@ -10356,6 +10523,13 @@ public class S {
    */
   public final static IBuiltInSymbol Thread = S.initFinalSymbol("Thread", ID.Thread);
 
+  /**
+   * ThreeJSymbol({j1,m1},{j2,m2},{j3,m3}) - get the 3-j symbol coefficients.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ThreeJSymbol.md">ThreeJSymbol
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ThreeJSymbol =
       S.initFinalSymbol("ThreeJSymbol", ID.ThreeJSymbol);
 
@@ -10511,6 +10685,14 @@ public class S {
 
   public final static IBuiltInSymbol ToRadicals = S.initFinalSymbol("ToRadicals", ID.ToRadicals);
 
+  /**
+   * ToSphericalCoordinates({x, y, z}) - returns the spherical coordinates for the cartesian
+   * coordinates `{x, y, z}`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ToSphericalCoordinates.md">ToSphericalCoordinates
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ToSphericalCoordinates =
       S.initFinalSymbol("ToSphericalCoordinates", ID.ToSphericalCoordinates);
 
@@ -10843,6 +11025,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol UnitVector = S.initFinalSymbol("UnitVector", ID.UnitVector);
+
+  public final static IBuiltInSymbol UniverseAge = S.initFinalSymbol("UniverseAge", ID.UniverseAge);
 
   public final static IBuiltInSymbol Unknown = S.initFinalSymbol("Unknown", ID.Unknown);
 
@@ -11248,6 +11432,7 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol ZTransform = S.initFinalSymbol("ZTransform", ID.ZTransform);
+
 
   /** Used to represent a formal parameter <code>a</code> that will never be assigned a value. */
   public static final ISymbol a = initFinalHiddenSymbol("a");
