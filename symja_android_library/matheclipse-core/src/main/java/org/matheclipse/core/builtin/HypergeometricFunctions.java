@@ -1106,16 +1106,16 @@ public class HypergeometricFunctions {
       }
 
 
-      if (a.equals(b) && c.isZero()) {
+      if (c.isZero() && a.equals(b)) {
         // Hypergeometric2F1Regularized(a_, a_, 0, z_) := a^2*z*Hypergeometric2F1(1 + a, 1 + a, 2,
         // z)
         return F.Times(F.Sqr(a), z, F.Hypergeometric2F1(F.Plus(F.C1, a), F.Plus(F.C1, a), F.C2, z));
       }
       if (engine.isNumericMode()) {
-        // // TODO regularize Hypergeometric2F1 for negative integer values of the third parameter
+        // TODO regularize Hypergeometric2F1 for negative integer values of the third parameter
         if (a.isNumber() //
             && b.isNumber() //
-            && (c.isNumber()
+            && (c.isNumber() //
                 && (!((INumber) c).fractionalPart().isZero() || c.isNonNegativeResult()))//
             && z.isNumber()) {
           return F.Divide(F.Hypergeometric2F1(a, b, c, z), F.Gamma(c));

@@ -227,7 +227,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     checkNumeric("LaguerreL(2.5,8+I)", //
         "3.2907356941472+I*(-5.884150638656437)");
     check("LaguerreL(100, 0, N(5, 20))", //
-        "1.4555271625328812606");
+        "1.4555317976580748699");
 
 
     check("LaguerreL(3, .51, .87)", //

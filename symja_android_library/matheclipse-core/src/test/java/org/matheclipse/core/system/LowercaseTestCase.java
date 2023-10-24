@@ -10925,8 +10925,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   public void testHypergeometric2F1() {
     // https://github.com/mtommila/apfloat/issues/29
-    // checkNumeric("Hypergeometric2F1(-3.0, -1, -2, 1.0)", //
-    // "-0.5");
+    checkNumeric("Hypergeometric2F1(-3.0, -1, -2, 1.0)", //
+        "-0.5");
     // https://github.com/paulmasson/math/issues/10 - uses ThrowException
     check("Hypergeometric2F1(0.5,0.333,0.666,1)", //
         "Hypergeometric2F1(0.333,0.5,0.666,1.0)");
