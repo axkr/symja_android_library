@@ -329,6 +329,20 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "-2+Sqrt(5)");
   }
 
+  public void testStruveH() {
+    check("FunctionExpand(StruveH(a,I*b))", //
+        "((I*b)^(1+a)*StruveL(a,b))/b^(1+a)");
+    check("FunctionExpand(StruveH(a,3/2*I))", //
+        "((I*3/2)^(1+a)*StruveL(a,3/2))/(3/2)^(1+a)");
+  }
+
+  public void testStruveL() {
+    check("FunctionExpand(StruveL(a,I*b))", //
+        "((I*b)^(1+a)*StruveH(a,b))/b^(1+a)");
+    check("FunctionExpand(StruveL(a,1/3*I))", //
+        "I^(1+a)*StruveH(a,1/3)");
+  }
+
   /** The JUnit setup method */
   @Override
   protected void setUp() {

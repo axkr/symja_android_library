@@ -537,7 +537,7 @@ public class HypergeometricFunctions {
       if (negExpr.isPresent()) {
         return F.Negate(F.FresnelC(negExpr));
       }
-      IExpr restExpr = AbstractFunctionEvaluator.extractFactorFromExpression(arg1, F.CI);
+      IExpr restExpr = AbstractFunctionEvaluator.extractImaginaryUnit(arg1);
       if (restExpr.isPresent()) {
         return F.Times(F.CI, F.FresnelC(restExpr));
       }
@@ -608,7 +608,7 @@ public class HypergeometricFunctions {
       if (negExpr.isPresent()) {
         return F.Negate(F.FresnelS(negExpr));
       }
-      IExpr restExpr = AbstractFunctionEvaluator.extractFactorFromExpression(arg1, F.CI);
+      IExpr restExpr = AbstractFunctionEvaluator.extractImaginaryUnit(arg1);
       if (restExpr.isPresent()) {
         return F.Times(F.CNI, F.FresnelS(restExpr));
       }

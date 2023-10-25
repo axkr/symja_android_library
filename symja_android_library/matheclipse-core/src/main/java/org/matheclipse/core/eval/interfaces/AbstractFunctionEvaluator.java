@@ -32,31 +32,32 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
   private static final Logger LOGGER = LogManager.getLogger();
 
   /**
-   * Check if the expression has a complex number factor I.
+   * Check if the expression has a complex number factor I (imaginary unit).
    *
    * @param expression
-   * @param factor
-   * @return the negated negative expression or <code>null</code> if a negative expression couldn't
-   *         be extracted.
+   * @return the expression without the imaginary unit factor or {@link F#NIL} if a imaginary unit
+   *         expression couldn't be extracted.
    */
-  public static IExpr extractFactorFromExpression(final IExpr expression, INumber factor) {
-    return extractFactorFromExpression(expression, factor, true);
+  public static IExpr extractImaginaryUnit(final IExpr expression) {
+    return extractImaginaryUnit(expression, true);
   }
 
   /**
-   * Check if the expression has a complex number factor I.
+   * Check if the expression has a complex number factor I (imaginary unit).
    *
    * @param expression
-   * @param factor
-   * @param checkTimes check <code>Times(...)</code> expressions
-   * @return the negated negative expression or <code>F.NIL</code> if a negative expression couldn't
-   *         be extracted.
+   * @param checkTimes extract factor I (imaginary unit) from <code>Times(...)</code> expressions
+   * @return the expression without the imaginary unit factor or {@link F#NIL} if a imaginary unit
+   *         expression couldn't be extracted.
    */
-  public static IExpr extractFactorFromExpression(final IExpr expression, INumber factor,
-      boolean checkTimes) {
+  public static IExpr extractImaginaryUnit(final IExpr expression, boolean checkTimes) {
     if (expression.isNumber()) {
-      if (((INumber) expression).equals(factor)) {
+      if (((INumber) expression).isImaginaryUnit()) {
         return F.C1;
+      }
+      if ((expression.isComplex() || expression.isComplexNumeric())//
+          && expression.re().isZero()) {
+        return expression.im();
       }
     } else {
       if (expression.isAST()) {
@@ -65,7 +66,11 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
           IExpr arg1 = timesAST.arg1();
           if (arg1.isNumber()) {
             if (((INumber) arg1).isImaginaryUnit()) {
-              return timesAST.rest().oneIdentity(factor);
+              return timesAST.rest().oneIdentity1();
+            }
+            if ((arg1.isComplex() || arg1.isComplexNumeric())//
+                && arg1.re().isZero()) {
+              return timesAST.setAtCopy(1, arg1.im());
             }
           }
         }

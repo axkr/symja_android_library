@@ -2084,8 +2084,22 @@ public class SpecialFunctions {
     }
   }
 
-  private static final class StruveH extends AbstractFunctionEvaluator {
+  private static final class StruveH extends AbstractFunctionEvaluator implements IFunctionExpand {
 
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        IExpr n = ast.arg1();
+        IExpr z = ast.arg2();
+        IExpr restExpr = AbstractFunctionEvaluator.extractImaginaryUnit(z);
+        if (restExpr.isPresent()) {
+          // ((I*z)^(1+n)*StruveL(n,z))/z^(1+n)
+          return F.Times(F.Power(F.Times(F.CI, restExpr), F.Plus(F.C1, n)),
+              F.Power(restExpr, F.Subtract(F.CN1, n)), F.StruveL(n, restExpr));
+        }
+      }
+      return F.NIL;
+    }
     // public IExpr e2DblArg(final INum d0, final INum d1) {
     // double v = d0.reDoubleValue();
     // double z = d1.reDoubleValue();
@@ -2161,7 +2175,22 @@ public class SpecialFunctions {
     }
   }
 
-  private static final class StruveL extends AbstractFunctionEvaluator {
+  private static final class StruveL extends AbstractFunctionEvaluator implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        IExpr n = ast.arg1();
+        IExpr z = ast.arg2();
+        IExpr restExpr = AbstractFunctionEvaluator.extractImaginaryUnit(z);
+        if (restExpr.isPresent()) {
+          // ((I*z)^(1+n)*StruveH(n,z))/z^(1+n)
+          return F.Times(F.Power(F.Times(F.CI, restExpr), F.Plus(F.C1, n)),
+              F.Power(restExpr, F.Subtract(F.CN1, n)), F.StruveH(n, restExpr));
+        }
+      }
+      return F.NIL;
+    }
 
     // public IExpr e2DblArg(final INum d0, final INum d1) {
     // double v = d0.reDoubleValue();
