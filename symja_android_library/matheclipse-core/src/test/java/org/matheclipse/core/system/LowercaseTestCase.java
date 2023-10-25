@@ -9538,14 +9538,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testFresnelC() {
+    check("N(FresnelC(2),50)", //
+        "0.48825340607534075450022350335726103768836715450924");
+
     check("FresnelC(1.8)", //
         "0.333633");
     check("FresnelC(2.0)", //
         "0.488253");
-    check("FresnelC(2.5+I)", //
-        "116.6481+I*(-105.2287)");
-    check("FresnelC({1.5, 2.5, 3.5})", //
-        "{0.445261,0.457413,0.532572}");
+    checkNumeric("FresnelC(2.5+I)", //
+        "116.64806138055201+I*(-105.22873567055953)");
+    checkNumeric("FresnelC({1.5, 2.5, 3.5})", //
+        "{0.4452611760398216,0.45741300964177706,0.5325724350280008}");
 
     check("FresnelC(0)", //
         "0");
@@ -9563,21 +9566,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FresnelC(I*z)", //
         "I*FresnelC(z)");
     checkNumeric("FresnelC(1.8)", //
-        "0.33363292722155624");
+        "0.3336329272215573");
 
     check("D(FresnelC(x),x)", //
         "Cos(1/2*Pi*x^2)");
   }
 
   public void testFresnelS() {
+    check("N(FresnelS(2),50)", //
+        "0.34341567836369824219530081595806845688654181220252");
     check("FresnelS(1.8)", //
         "0.450939");
     check("FresnelS(2.0)", //
         "0.343416");
-    check("FresnelS(2.5+I)", //
-        "105.7287+I*116.148");
-    check("FresnelS({1.5, 2.5, 3.5})", //
-        "{0.697505,0.619182,0.415248}");
+    checkNumeric("FresnelS(2.5+I)", //
+        "105.72873498286867+I*116.14801684869208");
+    checkNumeric("FresnelS({1.5, 2.5, 3.5})", //
+        "{0.697504960082093,0.619181755819593,0.41524801197243755}");
 
     check("FresnelS(0)", //
         "0");
@@ -9595,7 +9600,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FresnelS(I*z)", //
         "-I*FresnelS(z)");
     checkNumeric("FresnelS(1.8)", //
-        "0.4509387692675837");
+        "0.45093876926758314");
     check("D(Fresnels(x),x)", //
         "Sin(1/2*Pi*x^2)");
   }

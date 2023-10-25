@@ -84,6 +84,14 @@ public class ApfloatNum implements INum {
     return DOUBLEID;
   }
 
+  public IExpr fresnelC() {
+    return ApcomplexNum.valueOf(ApcomplexNum.fresnelC(fApfloat, EvalEngine.getApfloat()));
+  }
+
+  public IExpr fresnelS() {
+    return ApcomplexNum.valueOf(ApcomplexNum.fresnelS(fApfloat, EvalEngine.getApfloat()));
+  }
+
   @Override
   public IExpr hypergeometric0F1(IExpr arg2) {
     if (arg2 instanceof IReal) {

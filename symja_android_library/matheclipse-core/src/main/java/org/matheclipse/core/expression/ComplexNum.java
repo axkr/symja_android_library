@@ -612,6 +612,18 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr fresnelC() {
+    Apcomplex fresnelC = ApcomplexNum.fresnelC(apcomplexValue(), EvalEngine.getApfloatDouble());
+    return F.complexNum(fresnelC.real().doubleValue(), fresnelC.imag().doubleValue());
+  }
+
+  @Override
+  public IExpr fresnelS() {
+    Apcomplex fresnelS = ApcomplexNum.fresnelS(apcomplexValue(), EvalEngine.getApfloatDouble());
+    return F.complexNum(fresnelS.real().doubleValue(), fresnelS.imag().doubleValue());
+  }
+
+  @Override
   public IExpr hypergeometric0F1(IExpr arg2) {
     try {
       return F
@@ -638,8 +650,7 @@ public class ComplexNum implements IComplexNum {
   public IExpr hypergeometric2F1(IExpr arg2, IExpr arg3, IExpr arg4) {
     if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
       Apcomplex hypergeometric2f1 = EvalEngine.getApfloatDouble().hypergeometric2F1(
-          apcomplexValue(),
-          ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue(),
+          apcomplexValue(), ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue(),
           ((INumber) arg4).apcomplexValue());
       return F.complexNum(hypergeometric2f1.real().doubleValue(),
           hypergeometric2f1.imag().doubleValue());

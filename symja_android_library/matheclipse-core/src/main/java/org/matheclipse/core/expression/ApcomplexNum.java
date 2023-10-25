@@ -6,6 +6,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
+import org.apfloat.Apint;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
@@ -212,6 +213,53 @@ public class ApcomplexNum implements IComplexNum {
           EvalEngine.getApfloat().hypergeometric0F1(fApcomplex, ((INumber) arg2).apcomplexValue()));
     }
     return IComplexNum.super.hypergeometric0F1(arg2);
+  }
+
+  public IExpr fresnelC() {
+    return valueOf(fresnelC(fApcomplex, EvalEngine.getApfloat()));
+  }
+
+  public static Apcomplex fresnelC(Apcomplex z, FixedPrecisionApfloatHelper apfloat) {
+    // Complex m1 = HypergeometricJS.hypergeometric1F1(new Complex(0.5), new Complex(1.5),
+    // new Complex(0, Math.PI / 2).multiply(x.multiply(x)));
+    // Complex m2 = HypergeometricJS.hypergeometric1F1(new Complex(0.5), new Complex(1.5),
+    // new Complex(0, -Math.PI / 2).multiply(x.multiply(x)));
+    //
+    // return mul(0.5, x, m1.add(m2));
+    Apcomplex sqr = apfloat.multiply(z, z);
+    Apfloat piHalf = apfloat.divide(apfloat.pi(), new Apint(2L));
+    Apcomplex oneHalf = new Apfloat(0.5);
+    Apcomplex threeHalf = new Apfloat(1.5);
+    Apcomplex m1 = apfloat.hypergeometric1F1(oneHalf, threeHalf,
+        new Apcomplex(Apfloat.ZERO, piHalf).multiply(sqr));
+    Apcomplex m2 = apfloat.hypergeometric1F1(oneHalf, threeHalf,
+        new Apcomplex(Apfloat.ZERO, piHalf.negate()).multiply(sqr));
+
+    return apfloat.multiply(oneHalf, z).multiply(apfloat.add(m1, m2));
+  }
+
+  public IExpr fresnelS() {
+    return valueOf(fresnelS(fApcomplex, EvalEngine.getApfloat()));
+  }
+
+  public static Apcomplex fresnelS(Apcomplex z, FixedPrecisionApfloatHelper apfloat) {
+    // Complex m1 = HypergeometricJS.hypergeometric1F1(new Complex(0.5), new Complex(1.5),
+    // new Complex(0, Math.PI / 2).multiply(x.multiply(x)));
+    // Complex m2 = HypergeometricJS.hypergeometric1F1(new Complex(0.5), new Complex(1.5),
+    // new Complex(0, -Math.PI / 2).multiply(x.multiply(x)));
+    //
+    // return mul(new Complex(0, -0.5), x, sub(m1, m2));
+    Apcomplex sqr = apfloat.multiply(z, z);
+    Apfloat piHalf = apfloat.divide(apfloat.pi(), new Apint(2L));
+    Apcomplex oneHalf = new Apfloat(0.5);
+    Apcomplex threeHalf = new Apfloat(1.5);
+    Apcomplex m1 = apfloat.hypergeometric1F1(oneHalf, threeHalf,
+        new Apcomplex(Apfloat.ZERO, piHalf).multiply(sqr));
+    Apcomplex m2 = apfloat.hypergeometric1F1(oneHalf, threeHalf,
+        new Apcomplex(Apfloat.ZERO, piHalf.negate()).multiply(sqr));
+
+    return apfloat.multiply(new Apcomplex(Apfloat.ZERO, new Apfloat(-0.5)), z)
+        .multiply(apfloat.subtract(m1, m2));
   }
 
   @Override

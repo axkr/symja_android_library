@@ -8,7 +8,6 @@ import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
-import java.util.function.DoubleUnaryOperator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
@@ -22,8 +21,6 @@ import org.matheclipse.core.eval.exception.ResultException;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
-import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -486,36 +483,40 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class FresnelC extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
+  private static class FresnelC extends AbstractFunctionEvaluator {
+
+    // @Override
+    // public double applyAsDouble(double operand) {
+    // return de.lab4inf.math.functions.FresnelC.fresnelC(operand);
+    // }
+
+    // @Override
+    // public IExpr e1ComplexArg(final Complex c) {
+    // return F.complexNum(GammaJS.fresnelC(c));
+    // }
+    //
+    // @Override
+    // public IExpr e1DblArg(final double arg1) {
+    // return F.num(de.lab4inf.math.functions.FresnelC.fresnelC(arg1));
+    // }
+    //
+    // @Override
+    // public double evalReal(final double[] stack, final int top, final int size) {
+    // if (size != 1) {
+    // throw new UnsupportedOperationException();
+    // }
+    // return de.lab4inf.math.functions.FresnelC.fresnelC(stack[top]);
+    // }
 
     @Override
-    public double applyAsDouble(double operand) {
-      return de.lab4inf.math.functions.FresnelC.fresnelC(operand);
-    }
-
-    @Override
-    public IExpr e1ComplexArg(final Complex c) {
-      return F.complexNum(GammaJS.fresnelC(c));
-    }
-
-    @Override
-    public IExpr e1DblArg(final double arg1) {
-      return F.num(de.lab4inf.math.functions.FresnelC.fresnelC(arg1));
-    }
-
-    @Override
-    public double evalReal(final double[] stack, final int top, final int size) {
-      if (size != 1) {
-        throw new UnsupportedOperationException();
-      }
-      return de.lab4inf.math.functions.FresnelC.fresnelC(stack[top]);
-    }
-
-    @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
       if (arg1.isNumber()) {
         if (arg1.isZero()) {
           return F.C0;
+        }
+        if (engine.isNumericMode()) {
+          return arg1.fresnelC();
         }
       }
       if (arg1.isInfinity()) {
@@ -557,36 +558,40 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class FresnelS extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
+  private static class FresnelS extends AbstractFunctionEvaluator {
+
+    // @Override
+    // public double applyAsDouble(double operand) {
+    // return de.lab4inf.math.functions.FresnelS.fresnelS(operand);
+    // }
+
+    // @Override
+    // public IExpr e1ComplexArg(final Complex c) {
+    // return F.complexNum(GammaJS.fresnelS(c));
+    // }
+    //
+    // @Override
+    // public IExpr e1DblArg(final double arg1) {
+    // return F.num(de.lab4inf.math.functions.FresnelS.fresnelS(arg1));
+    // }
+
+    // @Override
+    // public double evalReal(final double[] stack, final int top, final int size) {
+    // if (size != 1) {
+    // throw new UnsupportedOperationException();
+    // }
+    // return de.lab4inf.math.functions.FresnelS.fresnelS(stack[top]);
+    // }
 
     @Override
-    public double applyAsDouble(double operand) {
-      return de.lab4inf.math.functions.FresnelS.fresnelS(operand);
-    }
-
-    @Override
-    public IExpr e1ComplexArg(final Complex c) {
-      return F.complexNum(GammaJS.fresnelS(c));
-    }
-
-    @Override
-    public IExpr e1DblArg(final double arg1) {
-      return F.num(de.lab4inf.math.functions.FresnelS.fresnelS(arg1));
-    }
-
-    @Override
-    public double evalReal(final double[] stack, final int top, final int size) {
-      if (size != 1) {
-        throw new UnsupportedOperationException();
-      }
-      return de.lab4inf.math.functions.FresnelS.fresnelS(stack[top]);
-    }
-
-    @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
       if (arg1.isNumber()) {
         if (arg1.isZero()) {
           return F.C0;
+        }
+        if (engine.isNumericMode()) {
+          return arg1.fresnelS();
         }
       }
       if (arg1.isInfinity()) {

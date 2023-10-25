@@ -3,6 +3,8 @@ package org.matheclipse.core.builtin.functions;
 import static de.lab4inf.math.util.Accuracy.hasConverged;
 import static java.lang.Math.log;
 import static org.matheclipse.core.builtin.functions.HypergeometricJS.hypergeometric1F1;
+import org.apfloat.Apcomplex;
+import org.apfloat.Apfloat;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
@@ -13,6 +15,7 @@ import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.generic.UnaryNumerical;
@@ -223,23 +226,15 @@ public class GammaJS extends JS {
   }
 
   public static Complex fresnelS(Complex x) {
-
-    Complex m1 = HypergeometricJS.hypergeometric1F1(new Complex(0.5), new Complex(1.5),
-        new Complex(0, Math.PI / 2).multiply(x.multiply(x)));
-    Complex m2 = HypergeometricJS.hypergeometric1F1(new Complex(0.5), new Complex(1.5),
-        new Complex(0, -Math.PI / 2).multiply(x.multiply(x)));
-
-    return mul(new Complex(0, -0.5), x, sub(m1, m2));
+    Apcomplex apcomplex = new Apcomplex(new Apfloat(x.getReal()), new Apfloat(x.getImaginary()));
+    Apcomplex fresnelC = ApcomplexNum.fresnelS(apcomplex, EvalEngine.getApfloatDouble());
+    return new Complex(fresnelC.real().doubleValue(), fresnelC.imag().doubleValue());
   }
 
   public static Complex fresnelC(Complex x) {
-
-    Complex m1 = HypergeometricJS.hypergeometric1F1(new Complex(0.5), new Complex(1.5),
-        new Complex(0, Math.PI / 2).multiply(x.multiply(x)));
-    Complex m2 = HypergeometricJS.hypergeometric1F1(new Complex(0.5), new Complex(1.5),
-        new Complex(0, -Math.PI / 2).multiply(x.multiply(x)));
-
-    return mul(0.5, x, m1.add(m2));
+    Apcomplex apcomplex = new Apcomplex(new Apfloat(x.getReal()), new Apfloat(x.getImaginary()));
+    Apcomplex fresnelC = ApcomplexNum.fresnelC(apcomplex, EvalEngine.getApfloatDouble());
+    return new Complex(fresnelC.real().doubleValue(), fresnelC.imag().doubleValue());
   }
 
   public static Complex gamma(Complex x) {

@@ -413,6 +413,18 @@ public class Num implements INum {
   }
 
   @Override
+  public IExpr fresnelC() {
+    Apcomplex fresnelC = ApcomplexNum.fresnelC(apfloatValue(), EvalEngine.getApfloatDouble());
+    return F.complexNum(fresnelC.real().doubleValue(), fresnelC.imag().doubleValue());
+  }
+
+  @Override
+  public IExpr fresnelS() {
+    Apcomplex fresnelS = ApcomplexNum.fresnelS(apfloatValue(), EvalEngine.getApfloatDouble());
+    return F.complexNum(fresnelS.real().doubleValue(), fresnelS.imag().doubleValue());
+  }
+
+  @Override
   public IExpr hypergeometric0F1(IExpr arg2) {
     try {
       return F.num(HypergeometricJS.hypergeometric0F1(value, arg2.evalf()));

@@ -4807,6 +4807,13 @@ public interface IExpr
     return S.Power.of(this, F.ZZ(n));
   }
 
+  default IExpr fresnelC() {
+    return F.FresnelC(this);
+  }
+
+  default IExpr fresnelS() {
+    return F.FresnelS(this);
+  }
 
   default IExpr hypergeometric0F1(IExpr that) {
     return F.Hypergeometric0F1(this, that);
