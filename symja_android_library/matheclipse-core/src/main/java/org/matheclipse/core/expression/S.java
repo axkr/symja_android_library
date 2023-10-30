@@ -4107,6 +4107,10 @@ public class S {
   public final static IBuiltInSymbol FromPolarCoordinates =
       S.initFinalSymbol("FromPolarCoordinates", ID.FromPolarCoordinates);
 
+  public final static IBuiltInSymbol FromRomanNumeral =
+      S.initFinalSymbol("FromRomanNumeral", ID.FromRomanNumeral);
+
+
   /**
    * FromSphericalCoordinates({r, t, p}) - returns the cartesian coordinates for the spherical
    * coordinates `{r, t, p}`.

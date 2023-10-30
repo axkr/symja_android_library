@@ -5,7 +5,7 @@ import java.util.Locale;
 
 /**
  * @see <a href="https://www.baeldung.com/java-convert-roman-arabic">Baeldung: Converting Between
- *     Roman and Arabic Numerals in Java</a>
+ *      Roman and Arabic Numerals in Java</a>
  */
 public class RomanArabicConverter {
   public static final int MIN_VALUE = 0;
@@ -13,6 +13,9 @@ public class RomanArabicConverter {
 
   public static int romanToArabic(String input) {
     String romanNumeral = input.toUpperCase(Locale.US);
+    if (romanNumeral.length() == 1 && romanNumeral.charAt(0) == 'N') {
+      return 0;
+    }
     int result = 0;
 
     List<RomanNumeral> romanNumerals = RomanNumeral.getReverseSortedValues();

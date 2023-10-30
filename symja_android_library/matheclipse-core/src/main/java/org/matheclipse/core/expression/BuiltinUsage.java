@@ -200,6 +200,7 @@ public class BuiltinUsage {
     USAGE[ID.FromCharacterCode] = "convert from a list of character codes to a string";
     USAGE[ID.FromContinuedFraction] =
         "reconstructs a number from its continued fraction representation";
+    USAGE[ID.FromRomanNumeral] = "convert roman numeral strings to integers";
     USAGE[ID.FullForm] = "get the underlying M-Expression representation";
     USAGE[ID.FullSimplify] = "apply a full set of simplification transformations";
 
@@ -455,6 +456,7 @@ public class BuiltinUsage {
     USAGE[ID.Reverse] = "reverse a list at any level";
     USAGE[ID.Riffle] = "intersperse additional elements";
     USAGE[ID.RogersTanimotoDissimilarity] = "Rogers-Tanimoto dissimilarity";
+    USAGE[ID.RomanNumeral] = "convert integers to roman numeral strings";
     USAGE[ID.Root] = "the i-th root of a polynomial";
     USAGE[ID.RotateLeft] = "cyclically rotate lists to the left, at any depth";
     USAGE[ID.RotateRight] = "cyclically rotate lists to the right, at any depth";

@@ -9799,6 +9799,24 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2042");
   }
 
+  public void testFromRomanNumeral() {
+    check("FromRomanNumeral(\"MDCLXVI\")", //
+        "1666");
+    // TODO add message for invalid roman number
+    check("FromRomanNumeral(\"MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\")", //
+        "36000");
+    // zero as special case represented by 'N'
+    check("FromRomanNumeral(\"N\")", //
+        "0");
+    check("FromRomanNumeral(\"MCMXXXVII\")", //
+        "1937");
+    check("FromRomanNumeral(\"MMMDCCXLVIII\")", //
+        "3748");
+    check(
+        "FromRomanNumeral({\"ci\", \"cii\", \"ciii\", \"civ\", \"cv\", \"cvi\", \"cvii\", \"cviii\"})", //
+        "{101,102,103,104,105,106,107,108}");
+  }
+
   public void testFullForm() {
     check("N( 1/2+8 ,12)//FullForm", //
         "8.5`");

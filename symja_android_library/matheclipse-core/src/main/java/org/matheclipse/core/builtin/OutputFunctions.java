@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.util.AbstractMap.SimpleImmutableEntry;
@@ -10,8 +11,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
@@ -50,7 +49,6 @@ import com.github.freva.asciitable.AsciiTable;
 // import com.ibm.icu.text.RuleBasedNumberFormat;
 
 public final class OutputFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -61,6 +59,7 @@ public final class OutputFunctions {
     private static void init() {
       S.BaseForm.setEvaluator(new BaseForm());
       S.CForm.setEvaluator(new CForm());
+      S.FromRomanNumeral.setEvaluator(new FromRomanNumeral());
       S.FullForm.setEvaluator(new FullForm());
       S.HoldForm.setEvaluator(new HoldForm());
       S.HornerForm.setEvaluator(new HornerForm());
@@ -241,6 +240,32 @@ public final class OutputFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {}
+  }
+
+  private static class FromRomanNumeral extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isList()) {
+        return arg1.mapThread(ast, 1);
+      }
+      if (arg1.isString()) {
+        try {
+          String romanNumber = arg1.toString();
+          int result = RomanArabicConverter.romanToArabic(romanNumber);
+          return F.ZZ(result);
+        } catch (RuntimeException rex) {
+          return Errors.printMessage(S.FromRomanNumeral, rex, engine);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
   }
 
   /**
@@ -535,9 +560,8 @@ public final class OutputFunctions {
         }
         String resultStr = javaForm(arg1, strictJava, usePrefix).toString();
         return F.$str(resultStr, IStringX.APPLICATION_JAVA);
-      } catch (Exception rex) {
-        LOGGER.log(engine.getLogLevel(), "JavaForm", rex);
-        return F.NIL;
+      } catch (RuntimeException rex) {
+        return Errors.printMessage(S.JavaForm, rex, engine);
       }
     }
 
@@ -558,7 +582,7 @@ public final class OutputFunctions {
         }
         IExpr arg1 = ast.arg1();
         if (arg1.isFunctionID(ID.Plot, ID.ParametricPlot, ID.ParametricPlot)) {
-          IASTAppendable temp = ((IAST)arg1).copyAppendable();
+          IASTAppendable temp = ((IAST) arg1).copyAppendable();
           temp.append(F.Rule(S.JSForm, S.True));
           arg1 = temp;
         }
@@ -572,14 +596,14 @@ public final class OutputFunctions {
           return F.$str(((IASTDataset) arg1).datasetToJSForm(), IStringX.TEXT_HTML);
         }
         if (arg1 instanceof GraphExpr) {
-          return F.$str(((GraphExpr) arg1).graphToJSForm(),
-              IStringX.APPLICATION_JAVASCRIPT);
+          return F.$str(((GraphExpr) arg1).graphToJSForm(), IStringX.APPLICATION_JAVASCRIPT);
         }
 
         return F.$str(toJavaScript(arg1, javascriptFlavor), IStringX.APPLICATION_JAVASCRIPT);
-      } catch (Exception rex) {
-        LOGGER.log(engine.getLogLevel(), "JSForm", rex);
-        return F.NIL;
+      } catch (IOException ioex) {
+        return Errors.printMessage(S.JSForm, ioex, engine);
+      } catch (RuntimeException rex) {
+        return Errors.printMessage(S.JSForm, rex, engine);
       }
     }
 
@@ -648,7 +672,7 @@ public final class OutputFunctions {
           String result = RomanArabicConverter.arabicToRoman(value);
           return F.stringx(result);
         } catch (RuntimeException rex) {
-          LOGGER.debug("RomanNumeral.evaluate() failed", rex);
+          return Errors.printMessage(S.RomanNumeral, rex, engine);
         }
       }
       return F.NIL;
@@ -887,9 +911,8 @@ public final class OutputFunctions {
           return F.JSFormData(jsControl.toString(), "treeform");
         }
 
-      } catch (Exception rex) {
-        LOGGER.log(engine.getLogLevel(), "TreeForm", rex);
-        return F.NIL;
+      } catch (RuntimeException rex) {
+        return Errors.printMessage(S.TreeForm, rex, engine);
       }
     }
 
