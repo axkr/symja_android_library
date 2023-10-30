@@ -29,11 +29,5 @@ package de.lab4inf.math;
  * @since 07.02.2011
  */
 public interface IFunction extends Function {
-  /**
-   * Evaluate the function at the interval v giving the output interval y=f(v).
-   *
-   * @param v interval based input value (can be a multidimensional parameter list)
-   * @return output interval based value y=f(v)
-   */
-  Interval f(Interval... v);
+
 }
