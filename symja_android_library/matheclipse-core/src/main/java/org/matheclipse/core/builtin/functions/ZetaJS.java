@@ -1,5 +1,9 @@
 package org.matheclipse.core.builtin.functions;
 
+import org.apfloat.Apcomplex;
+import org.apfloat.Apfloat;
+import org.apfloat.FixedPrecisionApcomplexHelper;
+import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.NumberTheory;
@@ -83,14 +87,19 @@ public class ZetaJS extends JS {
   }
 
   public static double zeta(double x) {
-    return de.lab4inf.math.functions.Zeta.zeta(x);
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
+
+    Apfloat apfloat = new Apfloat(x);
+    Apfloat zeta = h.zeta(apfloat);
+    return zeta.doubleValue();
   }
 
   public static Complex zeta(Complex x) {
-    de.lab4inf.math.Complex c =
-        new de.lab4inf.math.sets.ComplexNumber(x.getReal(), x.getImaginary());
-    c = de.lab4inf.math.functions.Zeta.zeta(c);
-    return new Complex(c.real(), c.imag());
+    FixedPrecisionApcomplexHelper h = EvalEngine.getApfloatDouble();
+
+    Apcomplex apcomplex = new Apcomplex(new Apfloat(x.getReal()), new Apfloat(x.getImaginary()));
+    Apcomplex zeta = h.zeta(apcomplex);
+    return new Complex(zeta.real().doubleValue(), zeta.imag().doubleValue());
   }
 
   public static Complex dirichletEta(double x) {
@@ -193,139 +202,153 @@ public class ZetaJS extends JS {
    * @return
    */
   public static Complex hurwitzZeta(final Complex x, final Complex a) {
-    // TODO INVALID at the moment
-    if (x.getReal() == 1.0 && x.getImaginary() == 0.0) {
-      throw new ArgumentTypeException("Hurwitz zeta pole");
-    }
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
 
-    // direct summation more accurate than dlmf.nist.gov/25.11.4 for positive a
-    int iterationLimit = EvalEngine.get().getIterationLimit();
+    Apcomplex xApfloat = new Apcomplex(new Apfloat(x.getReal()), new Apfloat(x.getImaginary()));
+    Apcomplex aApfloat = new Apcomplex(new Apfloat(a.getReal()), new Apfloat(a.getImaginary()));
+    Apcomplex zeta = h.zeta(xApfloat, aApfloat);
+    return new Complex(zeta.real().doubleValue(), zeta.imag().doubleValue());
 
-    if (a.getReal() < 0.0) {
-      int m = -(int) Math.floor(a.getReal());
-      if (m == Integer.MIN_VALUE || m == Integer.MAX_VALUE) {
-        throw new ArgumentTypeException("Summation exceeeded");
-      }
-      return hurwitzZeta(x, a.add(m))
-          .add(summation(i -> a.add(i).pow(x.negate()), 0, m - 1, iterationLimit));
-    }
-
-    // Johansson arxiv.org/abs/1309.2877
-
-    int n = 15; // recommendation of Vepstas, Efficient Algorithm, p.12
-
-    // Euler-Maclaurin has differences of large values in left-hand plane
-    boolean useArbitrary = x.getReal() < 0;
-    // if ( useArbitrary ) {
-    //
+    // // TODO INVALID at the moment
+    // if (x.getReal() == 1.0 && x.getImaginary() == 0.0) {
+    // throw new ArgumentTypeException("Hurwitz zeta pole");
     // }
-
-    double switchForms = -5.0;
-
-    if (x.getReal() < switchForms) {
-      throw new ArgumentTypeException("Currently unsuppported complex Hurwitz zeta");
-    }
-
-    Complex S = summation(i -> a.add(i).pow(x.negate()), 0, n - 1, iterationLimit);
-
-    Complex I = a.add(n).pow(Complex.ONE.subtract(x)).divide(x.subtract(1.0));
-
-    Complex p = x.multiply(0.5).multiply(a.add(n).reciprocal());
-    Complex t = p.multiply(bernoulliInt(2));
-    int i = 1;
-
-    // converges rather quickly
-    while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE
-        || Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
-      if (i++ > iterationLimit && iterationLimit > 0) {
-        IterationLimitExceeded.throwIt(i, org.matheclipse.core.expression.S.HurwitzZeta);
-      }
-      if (i > MAX_VALUE_HALF) {
-        throw new ArgumentTypeException("Hurwitz zeta: i > MAX_VALUE_HALF");
-      }
-      int iPlusi = i + i;
-      p = p.multiply(x.add(iPlusi - 2.0).multiply(x.add(iPlusi - 3.0))
-          .multiply(a.add(n).pow(2.0).multiply(iPlusi * (iPlusi - 1)).reciprocal()));
-      t = t.add(p.multiply(bernoulliInt(iPlusi)));
-    }
-
-    Complex T = t.add(0.5).divide(a.add(n).pow(x));
-
-    return S.add(I).add(T);
+    //
+    // // direct summation more accurate than dlmf.nist.gov/25.11.4 for positive a
+    // int iterationLimit = EvalEngine.get().getIterationLimit();
+    //
+    // if (a.getReal() < 0.0) {
+    // int m = -(int) Math.floor(a.getReal());
+    // if (m == Integer.MIN_VALUE || m == Integer.MAX_VALUE) {
+    // throw new ArgumentTypeException("Summation exceeeded");
+    // }
+    // return hurwitzZeta(x, a.add(m))
+    // .add(summation(i -> a.add(i).pow(x.negate()), 0, m - 1, iterationLimit));
+    // }
+    //
+    // // Johansson arxiv.org/abs/1309.2877
+    //
+    // int n = 15; // recommendation of Vepstas, Efficient Algorithm, p.12
+    //
+    // // Euler-Maclaurin has differences of large values in left-hand plane
+    // boolean useArbitrary = x.getReal() < 0;
+    // // if ( useArbitrary ) {
+    // //
+    // // }
+    //
+    // double switchForms = -5.0;
+    //
+    // if (x.getReal() < switchForms) {
+    // throw new ArgumentTypeException("Currently unsuppported complex Hurwitz zeta");
+    // }
+    //
+    // Complex S = summation(i -> a.add(i).pow(x.negate()), 0, n - 1, iterationLimit);
+    //
+    // Complex I = a.add(n).pow(Complex.ONE.subtract(x)).divide(x.subtract(1.0));
+    //
+    // Complex p = x.multiply(0.5).multiply(a.add(n).reciprocal());
+    // Complex t = p.multiply(bernoulliInt(2));
+    // int i = 1;
+    //
+    // // converges rather quickly
+    // while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE
+    // || Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+    // if (i++ > iterationLimit && iterationLimit > 0) {
+    // IterationLimitExceeded.throwIt(i, org.matheclipse.core.expression.S.HurwitzZeta);
+    // }
+    // if (i > MAX_VALUE_HALF) {
+    // throw new ArgumentTypeException("Hurwitz zeta: i > MAX_VALUE_HALF");
+    // }
+    // int iPlusi = i + i;
+    // p = p.multiply(x.add(iPlusi - 2.0).multiply(x.add(iPlusi - 3.0))
+    // .multiply(a.add(n).pow(2.0).multiply(iPlusi * (iPlusi - 1)).reciprocal()));
+    // t = t.add(p.multiply(bernoulliInt(iPlusi)));
+    // }
+    //
+    // Complex T = t.add(0.5).divide(a.add(n).pow(x));
+    //
+    // return S.add(I).add(T);
   }
 
   public static double hurwitzZeta(final double x, final double a) {
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
 
-    // Johansson arxiv.org/abs/1309.2877
+    Apfloat xApfloat = new Apfloat(x);
+    Apfloat aApfloat = new Apfloat(a);
+    Apfloat zeta = h.zeta(xApfloat, aApfloat);
+    return zeta.doubleValue();
 
-    if (x == 1.0) {
-      throw new ArgumentTypeException("Hurwitz zeta pole");
-    }
-
-    if (a < 0.0) {
-      throw new ArgumentTypeException("Hurwitz zeta a < 0.0 ");
-      // return hurwitzZeta( x, complex(a) );
-    }
-    // direct summation more accurate than dlmf.nist.gov/25.11.4
-
-    int iterationLimit = EvalEngine.get().getIterationLimit();
-
-    // Euler-Maclaurin has differences of large values in left-hand plane
-    // swith to difference summation: dlmf.nist.gov/25.11.9
-
-    double switchForms = -5.0;
-
-    if (x < switchForms) {
-
-      final double xValue = 1 - x;
-      double t = Math.cos(Math.PI * xValue / 2.0 - 2.0 * Math.PI * a);
-      double s = t;
-      int i = 1;
-
-      while (Math.abs(t) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
-        if (i++ > iterationLimit && iterationLimit > 0) {
-          IterationLimitExceeded.throwIt(i, S.HurwitzZeta);
-        }
-        t = Math.cos(Math.PI * xValue / 2.0 - 2.0 * i * Math.PI * a) / Math.pow(i, xValue);
-        s += t;
-      }
-
-      return 2.0 * GammaJS.gamma(xValue) / Math.pow(2.0 * Math.PI, xValue) * s;
-    }
-
-    // Johansson arxiv.org/abs/1309.2877
-    final int n = 15; // recommendation of Vepstas, Efficient Algorithm, p.12
-
-    double S = sumDouble(i -> 1.0 / Math.pow(a + i, x), 0, n - 1, iterationLimit);
-
-    double I = Math.pow(a + n, 1.0 - x) / (x - 1.0);
-
-    double p = x / 2.0 / (a + n);
-    double t = bernoulliInt(2) * p;
-    int i = 1;
-    // converges rather quickly
-    while (Math.abs(p) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
-      if (i++ > iterationLimit && iterationLimit > 0) {
-        IterationLimitExceeded.throwIt(i, org.matheclipse.core.expression.S.HurwitzZeta);
-      }
-      if (Double.isNaN(t)) {
-        throw new ArgumentTypeException("Hurwitz zeta: t == NaN");
-      }
-      if (Double.isInfinite(p)) {
-        throw new ArgumentTypeException("Hurwitz zeta: p == Infinity");
-      }
-      if (i > MAX_VALUE_HALF) {
-        throw new ArgumentTypeException("Hurwitz zeta: i > MAX_VALUE_HALF");
-      }
-      int iPlusi = i + i;
-      p *= (x + iPlusi - 2.0) * (x + iPlusi - 3.0)
-          / (iPlusi * (iPlusi - 1.0) * Math.pow(a + n, 2.0));
-      t += bernoulliInt(iPlusi) * p;
-    }
-
-    double T = (0.5 + t) / Math.pow(a + n, x);
-
-    return S + I + T;
+    //
+    // // Johansson arxiv.org/abs/1309.2877
+    //
+    // if (x == 1.0) {
+    // throw new ArgumentTypeException("Hurwitz zeta pole");
+    // }
+    //
+    // if (a < 0.0) {
+    // throw new ArgumentTypeException("Hurwitz zeta a < 0.0 ");
+    // // return hurwitzZeta( x, complex(a) );
+    // }
+    // // direct summation more accurate than dlmf.nist.gov/25.11.4
+    //
+    // int iterationLimit = EvalEngine.get().getIterationLimit();
+    //
+    // // Euler-Maclaurin has differences of large values in left-hand plane
+    // // swith to difference summation: dlmf.nist.gov/25.11.9
+    //
+    // double switchForms = -5.0;
+    //
+    // if (x < switchForms) {
+    //
+    // final double xValue = 1 - x;
+    // double t = Math.cos(Math.PI * xValue / 2.0 - 2.0 * Math.PI * a);
+    // double s = t;
+    // int i = 1;
+    //
+    // while (Math.abs(t) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+    // if (i++ > iterationLimit && iterationLimit > 0) {
+    // IterationLimitExceeded.throwIt(i, S.HurwitzZeta);
+    // }
+    // t = Math.cos(Math.PI * xValue / 2.0 - 2.0 * i * Math.PI * a) / Math.pow(i, xValue);
+    // s += t;
+    // }
+    //
+    // return 2.0 * GammaJS.gamma(xValue) / Math.pow(2.0 * Math.PI, xValue) * s;
+    // }
+    //
+    // // Johansson arxiv.org/abs/1309.2877
+    // final int n = 15; // recommendation of Vepstas, Efficient Algorithm, p.12
+    //
+    // double S = sumDouble(i -> 1.0 / Math.pow(a + i, x), 0, n - 1, iterationLimit);
+    //
+    // double I = Math.pow(a + n, 1.0 - x) / (x - 1.0);
+    //
+    // double p = x / 2.0 / (a + n);
+    // double t = bernoulliInt(2) * p;
+    // int i = 1;
+    // // converges rather quickly
+    // while (Math.abs(p) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+    // if (i++ > iterationLimit && iterationLimit > 0) {
+    // IterationLimitExceeded.throwIt(i, org.matheclipse.core.expression.S.HurwitzZeta);
+    // }
+    // if (Double.isNaN(t)) {
+    // throw new ArgumentTypeException("Hurwitz zeta: t == NaN");
+    // }
+    // if (Double.isInfinite(p)) {
+    // throw new ArgumentTypeException("Hurwitz zeta: p == Infinity");
+    // }
+    // if (i > MAX_VALUE_HALF) {
+    // throw new ArgumentTypeException("Hurwitz zeta: i > MAX_VALUE_HALF");
+    // }
+    // int iPlusi = i + i;
+    // p *= (x + iPlusi - 2.0) * (x + iPlusi - 3.0)
+    // / (iPlusi * (iPlusi - 1.0) * Math.pow(a + n, 2.0));
+    // t += bernoulliInt(iPlusi) * p;
+    // }
+    //
+    // double T = (0.5 + t) / Math.pow(a + n, x);
+    //
+    // return S + I + T;
   }
 
   public static Complex polyLog(final Complex n, final Complex x) {
@@ -374,8 +397,13 @@ public class ZetaJS extends JS {
       Complex L = x.negate().log().divide(new Complex(0, 2.0 * Math.PI));
 
       Complex z1 = I.pow(v).multiply(hurwitzZeta(v, L.add(0.5)));
+      if (z1.isInfinite() || z1.isNaN()) {
+        throw new ArgumentTypeException("Infinite or NaN number in z1 calculation.");
+      }
       Complex z2 = I.pow(v.negate()).multiply(hurwitzZeta(v, new Complex(0.5).subtract(L)));
-
+      if (z2.isInfinite() || z2.isNaN()) {
+        throw new ArgumentTypeException("Infinite or NaN number in z2 calculation.");
+      }
       return GammaJS.gamma(v).multiply(new Complex(2.0 * Math.PI).pow(v.negate()))
           .multiply(z1.add(z2));
     }

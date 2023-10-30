@@ -4,7 +4,11 @@ import java.util.function.Function;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
+import org.apfloat.Apint;
+import org.apfloat.Aprational;
+import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
+import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
@@ -318,6 +322,38 @@ public class Num implements INum {
   }
 
   @Override
+  public IExpr erf() {
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
+    try {
+      Apint two = new Apint(2);
+      // 1/2
+      Aprational oneHalf = new Aprational(Apint.ONE, new Apint(2));
+      // 3/2
+      Aprational threeHalf = new Aprational(new Apint(3), new Apint(2));
+      Apfloat x = apfloatValue();
+      Apfloat erf = h.hypergeometric1F1(oneHalf, threeHalf, h.multiply(x, x).negate()).multiply(two)
+          .multiply(x).divide(h.sqrt(h.pi()));
+      return F.num(erf.doubleValue());
+    } catch (Exception ce) {
+      //
+    }
+    return F.NIL;
+  }
+
+  @Override
+  public IExpr erfc() {
+    try {
+      return Num.valueOf(de.lab4inf.math.functions.Erf.erfc(value));
+      // if (arg1 >= 0. && arg1 <= 2.0) {
+      // return Num.valueOf(org.hipparchus.special.Erf.erfc(arg1));
+      // }
+    } catch (final MathIllegalStateException e) {
+    }
+
+    return F.NIL;
+  }
+
+  @Override
   public INumber evalNumber() {
     return this;
   }
@@ -464,10 +500,9 @@ public class Num implements INum {
   public IExpr hypergeometric2F1(IExpr arg2, IExpr arg3, IExpr arg4) {
     if (arg2 instanceof IReal && arg3 instanceof IReal && arg4 instanceof IReal) {
       try {
-        Apfloat hypergeometric2f1 =
-            EvalEngine.getApfloatDouble().hypergeometric2F1(apfloatValue(),
-                ((IReal) arg2).apfloatValue(),
-                ((IReal) arg3).apfloatValue(), ((IReal) arg4).apfloatValue());
+        Apfloat hypergeometric2f1 = EvalEngine.getApfloatDouble().hypergeometric2F1(apfloatValue(),
+            ((IReal) arg2).apfloatValue(), ((IReal) arg3).apfloatValue(),
+            ((IReal) arg4).apfloatValue());
         return F.num(hypergeometric2f1.doubleValue());
       } catch (ArithmeticException | ApfloatRuntimeException ex) {
         if (ex.getMessage().equals("Division by zero")) {
@@ -479,8 +514,7 @@ public class Num implements INum {
     if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
       try {
         Apcomplex hypergeometric2f1 = EvalEngine.getApfloatDouble().hypergeometric2F1(
-            apcomplexValue(),
-            ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue(),
+            apcomplexValue(), ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue(),
             ((INumber) arg4).apcomplexValue());
         return F.complexNum(hypergeometric2f1.real().doubleValue(),
             hypergeometric2f1.imag().doubleValue());

@@ -50,8 +50,9 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
     return fData.toString();
   }
 
-  public IExpr ceiling() {
-    return ofUnit(S.Ceiling.of(value));
+  @Override
+  public IExpr ceil() {
+    return ofUnit(value.ceil());
   }
 
   @Override
@@ -69,10 +70,7 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
 
   @Override
   public IExpr conjugate() {
-    if (value.isRealResult()) {
-      return this;
-    }
-    return new QuantityImpl(F.Conjugate(value), fData);
+    return ofUnit(value.conjugate());
   }
 
   /** {@inheritDoc} */
@@ -108,7 +106,7 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
     if (engine.isDoubleMode() && !value.isInexactNumber()) {
       try {
         double qDouble = value.evalf();
-        return new QuantityImpl(F.num(qDouble), fData); // setAtCopy(1, F.num(qDouble));
+        return ofUnit(F.num(qDouble));
       } catch (RuntimeException rex) {
       }
     }
@@ -122,7 +120,7 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
 
   @Override
   public IExpr floor() {
-    return ofUnit(S.Floor.of(value));
+    return ofUnit(value.floor());
   }
 
   /** {@inheritDoc} */
@@ -153,10 +151,7 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
 
   @Override
   public IExpr im() {
-    if (value.isRealResult()) {
-      return new QuantityImpl(F.C0, fData);
-    }
-    return new QuantityImpl(F.Im(value), fData);
+    return ofUnit(value.im());
   }
 
   @Override
@@ -407,10 +402,7 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
 
   @Override
   public IExpr re() {
-    if (value.isRealResult()) {
-      return this;
-    }
-    return new QuantityImpl(F.Re(value), fData);
+    return ofUnit(value.re());
   }
 
   @Override
@@ -425,8 +417,9 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
     return new QuantityImpl(value.reciprocal(), fData.negate());
   }
 
+  @Override
   public IExpr roundExpr() {
-    return ofUnit(S.Round.of(value));
+    return ofUnit(value.roundExpr());
   }
 
   @Override

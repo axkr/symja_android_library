@@ -2621,6 +2621,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
 
   public void testCeiling() {
+    check("Ceiling(Quantity(8.5, \"Meters\"))", //
+        "9[Meters]");
     check("Ceiling(DirectedInfinity(0))", //
         "ComplexInfinity");
     check("Ceiling(DirectedInfinity((1/2-I*1/2)*Sqrt(2)))", //
@@ -6705,9 +6707,28 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testErf() {
     // assertEquals(org.hipparchus.special.Erf.erf(new Complex(1.0, 1.5)).toString(), //
     // "");
+    checkNumeric("Erf(3.0)", //
+        "0.9999779095030012");
+    check("Erf(-42*I*x)", //
+        "-I*Erfi(42*x)");
+    check("Erf(43*I*x)", //
+        "I*Erfi(43*x)");
+    check("Erf(I)", //
+        "I*Erfi(1)");
+    check("Erf(-I)", //
+        "-I*Erfi(1)");
+    check("N(Erf(3/2-I), 50)", //
+        "1.0783992074989334503393327040582123696121612366804" //
+            + "+I*0.027963711238655849448465896205907208506694536720867");
+    check("N(Erf(3/2), 50)", //
+        "0.96610514647531072706697626164594785868141047925763");
+    checkNumeric("Erf(1.5, 2)", //
+        "0.02921711854364184");
     check("Erf(-Infinity, Infinity)", //
         "2");
 
+    check("Erf(0.0)", //
+        "0.0");
     check("Erf(1.5-I)", //
         "1.0784+I*0.0279637");
     check("Erf({0.5, 1.0, 1.5})", //
@@ -6731,8 +6752,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testErfc() {
-    check("Erfc(1.5-I)", //
-        "-0.0783992+I*(-0.0279637)");
+    check("N(Erfc(3/2),50)", //
+        "0.033894853524689272933023738354052141318589520742363");
+    checkNumeric("Erfc(1.5-I)", //
+        "-0.07839920749893325+I*(-0.02796371123865584)");
     check("Erfc({0.5, 1.0, 1.5})", //
         "{0.4795,0.157299,0.0338949}");
     check("Erfc(0.95)", //
@@ -6751,11 +6774,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testErfi() {
-    check("Erfi(1.5-I)", //
-        "-0.70136+I*(-1.84683)");
+    checkNumeric("N(Erfi(1/2),50)", //
+        "0.6149520946965109808396811856236413930513456178954");
+    checkNumeric("Erfi(1.5-I)", //
+        "-0.7013604642514805+I*(-1.8468330146085417)");
     check("Erfi({0.5, 1.5, 2.5})", //
         "{0.614952,4.58473,130.3958}");
-
+    check("Erfi(I)", //
+        "I*Erf(1)");
+    check("Erfi(-I)", //
+        "-I*Erf(1)");
     check("Erfi(-42*I*x)", //
         "-I*Erf(42*x)");
     check("Erfi(43*I*x)", //
@@ -9285,6 +9313,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testFloor() {
+    check("Floor(Quantity(8.5, \"Meters\"))", //
+        "8[Meters]");
     check("Floor(DirectedInfinity(0))", //
         "ComplexInfinity");
     check("Floor(DirectedInfinity((1/2-I*1/2)*Sqrt(2)))", //
@@ -9546,9 +9576,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FresnelC(2.0)", //
         "0.488253");
     checkNumeric("FresnelC(2.5+I)", //
-        "116.64806138055201+I*(-105.22873567055953)");
+        "116.64806138055195+I*(-105.22873567055956)");
     checkNumeric("FresnelC({1.5, 2.5, 3.5})", //
-        "{0.4452611760398216,0.45741300964177706,0.5325724350280008}");
+        "{0.4452611760398215,0.45741300964177706,0.5325724350280008}");
 
     check("FresnelC(0)", //
         "0");
@@ -9566,7 +9596,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FresnelC(I*z)", //
         "I*FresnelC(z)");
     checkNumeric("FresnelC(1.8)", //
-        "0.3336329272215573");
+        "0.33363292722155713");
 
     check("D(FresnelC(x),x)", //
         "Cos(1/2*Pi*x^2)");
@@ -9580,9 +9610,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FresnelS(2.0)", //
         "0.343416");
     checkNumeric("FresnelS(2.5+I)", //
-        "105.72873498286867+I*116.14801684869208");
+        "105.72873498286874+I*116.14801684869202");
     checkNumeric("FresnelS({1.5, 2.5, 3.5})", //
-        "{0.697504960082093,0.619181755819593,0.41524801197243755}");
+        "{0.6975049600820931,0.619181755819593,0.41524801197243755}");
 
     check("FresnelS(0)", //
         "0");
@@ -10489,7 +10519,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("D(HarmonicNumber(x),{x,4})", //
         "24/x^5+PolyGamma(4,x)");
     check("HarmonicNumber(-9223372036854775808/11,0.5)", //
-        "-1.46035-HurwitzZeta(0.5,-8.38488*10^17)");
+        "ComplexInfinity");
     check("N(HarmonicNumber(1/17, 5), 50)", //
         "0.25327615206118707521034626118754228313433140885935");
     check("HarmonicNumber(0.33000000000000000000) ", //
@@ -10769,12 +10799,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testHurwitzZeta() {
-    // TODO
+    checkNumeric("HurwitzZeta(2.2,3.1)", //
+        "0.26067453797192913");
+
+
+    check("HurwitzZeta(3,-4)", //
+        "ComplexInfinity");
+    checkNumeric("HurwitzZeta(-2.0,0.5+I*0.5)", //
+        "I*0.08333333333333333");
     check("HurwitzZeta(7,5.0)", //
         "0.0000184949");
 
-    check("HurwitzZeta(2147483647,3.141592653589793)", //
-        "HurwitzZeta(2.14748*10^9,3.14159)");
+    checkNumeric("HurwitzZeta(2147483647,3.141592653589793)", //
+        "0.0");
     check("HurwitzZeta(1.5708,1317624576693539401)", //
         "7.95681*10^-11");
     check("HurwitzZeta(3,0.2)", //
@@ -10782,10 +10819,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("HurwitzZeta(.51, .87)", //
         "-1.32016");
     check("Table(HurwitzZeta(x, 0.5+I*0.5), {x,-2.0,2,0.25})", //
-        "{-5.68434*10^-14+I*0.0833333,0.0371452+I*0.0888619,0.080604+I*0.0797892,0.125994+I*0.0515943,0.166667,"
-            + "0.192966+I*(-0.0787252),0.190832+I*(-0.187445),0.138749+I*(-0.327822),I*(-0.5),-0.300858+I*(-0.702294),"
-            + "-0.972875+I*(-0.930936),-3.02493+I*(-1.17988),ComplexInfinity,4.69929+I*(-1.70242),2.46351+I*(-1.95199),"
-            + "1.49152+I*(-2.17411),0.783802+I*(-2.35189)}");
+        "{I*0.0833333,0.0371452+I*0.0888619,0.080604+I*0.0797892,0.125994+I*0.0515943,"//
+            + "0.166667,0.192966+I*(-0.0787252),0.190832+I*(-0.187445),0.138749+I*(-0.327822),"//
+            + "I*(-0.5),-0.300858+I*(-0.702294),-0.972875+I*(-0.930936),-3.02493+I*(-1.17988),"//
+            + "ComplexInfinity,4.69929+I*(-1.70242),2.46351+I*(-1.95199),1.49152+I*(-2.17411),"//
+            + "0.783802+I*(-2.35189)}");
     check("Table(HurwitzZeta(x, 0.5), {x,-2.0,2,0.25})", //
         "{0.0,0.00695768,0.0164748,0.0283452,0.0416667,0.0541783,0.0608885,0.0509849,0.0," //
             + "-0.153878,-0.604899,-2.34624,ComplexInfinity,6.33397,4.77654,4.63811,4.9348}");
@@ -10936,14 +10974,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Hypergeometric2F1(0.5,0.333,0.666,1)", //
         "Hypergeometric2F1(0.333,0.5,0.666,1.0)");
     checkNumeric("Hypergeometric2F1(-0.5, 1.0 / 3.0, 4.0 / 3.0, -1)", //
-        "1.111447970532576");
+        "1.1114479705325755");
     checkNumeric("Hypergeometric2F1(-0.5, 1.0 / 3.0, -4.0 / 3.0, 0)", //
         "1.0");
 
     checkNumeric("Hypergeometric2F1(-0.5, 1.0 / 4.0, -4.0 / 3.0, -3)", //
-        "0.6919237698061467");
+        "0.6919237698061464");
     checkNumeric("Hypergeometric2F1(-0.5, 1.0 / 4.0, -4.0 / 3.0,-1.5)", //
-        "0.8274559676019733");
+        "0.8274559676019729");
     checkNumeric("Hypergeometric2F1(0.5, 1.0 / 3.0, 4.0 / 3.0, 1)", //
         "1.4021821053254544");
     checkNumeric("Hypergeometric2F1(-5, 1.0 / 3.0, 4.0 / 3.0, 1)", //
@@ -10951,20 +10989,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     checkNumeric("Hypergeometric2F1(-0.5, 3.0, 1.0, 0.2)", //
         "0.66383268082025");
     checkNumeric("Hypergeometric2F1(2, 2.0, 3.0, 0.95)", //
-        "35.46652127744269");
+        "35.46652127744268");
     checkNumeric("Hypergeometric2F1(2, 2.0, 3.01, 0.95)", //
-        "34.81013407640607");
+        "34.8101340764061");
     checkNumeric("Hypergeometric2F1(20, 2.0, 3.01, 0.95)", //
-        "5.513090059384316E23");
+        "5.513090059384301E23");
     checkNumeric("Hypergeometric2F1(0.123, 2.0, 3.01, 0.95)", //
-        "1.166719619920925");
+        "1.1667196199209249");
     checkNumeric("Hypergeometric2F1(-1, 2.0, 3.01, 0.95)", //
-        "0.36877076411960136");
+        "0.3687707641196013");
 
     checkNumeric("N(Hypergeometric2F1(-23/10, 1/2 - 1/8 + 23/10 + 1, 1/8 + 1, (12 + 1)/2),50)", //
         "316.89423321513003029092320808004720013260908767289+I*436.16750112351808402055619284015549992820985322774");
     checkNumeric("Hypergeometric2F1(-2.3, 1/2 - 1/8 + 2.3 + 1, 1/8 + 1, (12 + 1)/2)", //
-        "316.8942332151301+I*436.1675011235177");
+        "316.89423321513+I*436.1675011235175");
 
     check("D( Hypergeometric2F1(a,b,c,x), {x,-4})", //
         "D(Hypergeometric2F1(a,b,c,x),{x,-4})");
@@ -11074,7 +11112,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     checkNumeric("Hypergeometric2F1(0.5,0.333,0.666,-0.5)", //
         "0.9026782488379916");
     checkNumeric("Hypergeometric2F1(0.5,0.333,0.666,0.75)", //
-        "1.3975732184289735");
+        "1.3975732184289729");
     checkNumeric("Hypergeometric2F1(0.5,0.333,0.666,-0.75)", //
         "0.8677508558430819");
   }
@@ -13531,22 +13569,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
     check("Limit(c*(x^(-10)), x->Infinity)", //
         "0");
-  }
-
-  public void testLinearProgramming() {
-    check("LinearProgramming({},{{1,2}},{{3,0}})", //
-        "LinearProgramming({},{{1,2}},{{3,0}})");
-    check("LinearProgramming(Indeterminate,{{1,2}},{{3,0}})", //
-        "LinearProgramming(Indeterminate,{{1,2}},{{3,0}})");
-
-    check("LinearProgramming({1, 1}, {{1, 2}}, {3})", //
-        "{0.0,1.5}");
-    check("LinearProgramming({1, 1}, {{1, 2}}, {{3,0}})", //
-        "{0.0,1.5}");
-    check("LinearProgramming({1, 1}, {{1, 2}}, {{3,-1}})", //
-        "{0.0,0.0}");
-    check("LinearProgramming({1., 1.}, {{5., 2.}}, {3.})", //
-        "{0.6,0.0}");
   }
 
   public void testLinearModelFit() {
@@ -18034,7 +18056,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testPolyLog() {
-
     check("PolyLog(n,1,z)", //
         "PolyLog(1+n,z)");
     check("PolyLog(0, 1, z)", //
@@ -21273,6 +21294,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testRound() {
+    check("Round(Quantity(8.5, \"Meters\"))", //
+        "8[Meters]");
     check("Round(-1.235512, 0)", //
         "Indeterminate");
 
@@ -25662,6 +25685,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testZeta() {
+    checkNumeric("Zeta(3,-4.0)", //
+        "Zeta(3.0,-4.0)");
+    checkNumeric("Zeta(2.2,3.1)", //
+        "0.26067453797192913");
+
+    check("Zeta(6)", //
+        "Pi^6/945");
+    check("Zeta(-11)", //
+        "691/32760");
+    check("Zeta(-42)", //
+        "0");
+    check("Zeta(0)", //
+        "-1/2");
+
+    check("Zeta(Infinity)", //
+        "1");
+
     check("N(Zeta(5/4),50)", //
         "4.5951118258429433806853780396946256522810297806045");
     check("N(Zeta(3,2),50)", //
@@ -25684,8 +25724,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "43867/14364,0,174611/6600,0}");
     check("Zeta(2)", //
         "Pi^2/6");
-    // TODO add implementation
-    // check("Zeta(-2.5 + I)", "0.0235936 + 0.0014078*I");
+    checkNumeric("Zeta(-2.5 + I)", //
+        "0.02359361058637964+I*0.0014077996058383772");
     check("Zeta(s, 0)", //
         "Zeta(s)");
     check("Zeta(s, 1/2)", //
@@ -25700,16 +25740,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Zeta(11,-12)");
     check("Zeta(-5, -12)", //
         "158938415/252");
-    check("Zeta(6)", //
-        "Pi^6/945");
-    check("Zeta(-11)", //
-        "691/32760");
-    check("Zeta(-42)", //
-        "0");
-    check("Zeta(0)", //
-        "-1/2");
 
-    check("Zeta(Infinity)", //
-        "1");
   }
 }

@@ -817,6 +817,14 @@ public interface IExpr
     return convertToExpr(temp);
   }
 
+  default IExpr erf() {
+    return F.Erf(this);
+  }
+
+  default IExpr erfc() {
+    return F.Erfc(this);
+  }
+
   /**
    * Evaluate the expression in symbolic mode with the {@link EvalEngine} associated with the
    * current thread.
@@ -5118,6 +5126,10 @@ public interface IExpr
   @Override
   default IExpr rootN(int n) {
     return S.Power.of(this, F.QQ(1, n));
+  }
+
+  default IExpr roundExpr() {
+    return S.Round.of(this);
   }
 
   @Override

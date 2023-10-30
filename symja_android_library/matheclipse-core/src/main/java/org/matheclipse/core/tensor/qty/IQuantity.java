@@ -111,6 +111,8 @@ public interface IQuantity extends IExpr, Comparable<IExpr> {
    */
   public IExpr plus(final IExpr scalar, boolean nilIfUnevaluated);
 
+  public IExpr roundExpr();
+
   /**
    * Multiply this quantity with a scalar.
    *

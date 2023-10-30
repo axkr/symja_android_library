@@ -3711,7 +3711,7 @@ public class EvalEngine implements Serializable {
   public static FixedPrecisionApfloatHelper getApfloatDouble() {
     FixedPrecisionApfloatHelper h = get().fApfloatHelperDouble;
     if (h == null) {
-      h = new FixedPrecisionApfloatHelper(ParserConfig.MACHINE_PRECISION);
+      h = new FixedPrecisionApfloatHelper(ParserConfig.MACHINE_PRECISION + 1);
     }
     return h;
   }

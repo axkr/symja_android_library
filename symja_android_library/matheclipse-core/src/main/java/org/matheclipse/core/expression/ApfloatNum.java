@@ -7,6 +7,7 @@ import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.Apint;
+import org.apfloat.Aprational;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -84,10 +85,12 @@ public class ApfloatNum implements INum {
     return DOUBLEID;
   }
 
+  @Override
   public IExpr fresnelC() {
     return ApcomplexNum.valueOf(ApcomplexNum.fresnelC(fApfloat, EvalEngine.getApfloat()));
   }
 
+  @Override
   public IExpr fresnelS() {
     return ApcomplexNum.valueOf(ApcomplexNum.fresnelS(fApfloat, EvalEngine.getApfloat()));
   }
@@ -202,6 +205,41 @@ public class ApfloatNum implements INum {
     // ApfloatNum.DOUBLE_PRECISION) {
     // return Num.valueOf(fApfloat.doubleValue());
     // }
+    return F.NIL;
+  }
+
+  @Override
+  public IExpr erf() {
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    try {
+      Apfloat erf = erf(fApfloat, h);
+      return F.num(erf);
+    } catch (Exception ce) {
+      //
+    }
+    return F.NIL;
+  }
+
+  private static Apfloat erf(Apfloat x, FixedPrecisionApfloatHelper h) {
+    Apint two = new Apint(2);
+    // 1/2
+    Aprational oneHalf = new Aprational(Apint.ONE, new Apint(2));
+    // 3/2
+    Aprational threeHalf = new Aprational(new Apint(3), new Apint(2));
+    Apfloat erf = h.hypergeometric1F1(oneHalf, threeHalf, h.multiply(x, x).negate()).multiply(two)
+        .multiply(x).divide(h.sqrt(h.pi()));
+    return erf;
+  }
+
+  @Override
+  public IExpr erfc() {
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    try {
+      Apfloat c = erf(fApfloat, h);
+      return F.num(h.subtract(Apcomplex.ONE, c));
+    } catch (Exception ce) {
+      //
+    }
     return F.NIL;
   }
 
@@ -519,13 +557,13 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public boolean isMathematicalIntegerNonNegative() {
-    return (fApfloat.isInteger() && fApfloat.compareTo(Apint.ZERO) >= 0);
+    return (fApfloat.isInteger() && fApfloat.signum() >= 0);
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isMathematicalIntegerNegative() {
-    return (fApfloat.isInteger() && fApfloat.compareTo(Apint.ZERO) < 0);
+    return (fApfloat.isInteger() && fApfloat.signum() < 0);
   }
 
   /** {@inheritDoc} */

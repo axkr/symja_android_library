@@ -2966,11 +2966,6 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "(4+6*x+8*x^2+3*x^3)/(4*x+4*x^3+x^5)");
   }
 
-  public void testSystem399() {
-    checkNumeric("Erf(3.0)", //
-        "0.9999779095030015");
-  }
-
   public void testSystem400() {
     EvalEngine engine = EvalEngine.get();
     IExpr exprNumerator = engine.parse("8+12*x+20*x^2+12*x^3+8*x^4+3*x^5");

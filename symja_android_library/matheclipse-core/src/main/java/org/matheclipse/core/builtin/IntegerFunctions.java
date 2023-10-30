@@ -331,6 +331,9 @@ public class IntegerFunctions {
       if (arg1.isInterval()) {
         return IntervalSym.mapSymbol(S.Ceiling, (IAST) arg1);
       }
+      if (arg1.isQuantity()) {
+        return arg1.ceil();
+      }
       return F.NIL;
     }
 
@@ -699,6 +702,9 @@ public class IntegerFunctions {
       }
       if (arg1.isInterval()) {
         return IntervalSym.mapSymbol(S.Floor, (IAST) arg1);
+      }
+      if (arg1.isQuantity()) {
+        return arg1.floor();
       }
       return F.NIL;
     }
@@ -1642,7 +1648,6 @@ public class IntegerFunctions {
           expr = temp;
           res = ast.setAtCopy(1, temp);
         }
-
         if (expr.isList()) {
           return expr.mapThread(ast.setAtCopy(1, F.Slot1), 1);
         }
@@ -1692,7 +1697,9 @@ public class IntegerFunctions {
               || expr.isComplexInfinity()) {
             return expr;
           }
-
+          if (expr.isQuantity()) {
+            return expr.roundExpr();
+          }
           // if (expr.isPlus()) {
           // not used in WMA
           // IASTAppendable[] result = ((IAST) expr).filter(x -> x.isIntegerResult());

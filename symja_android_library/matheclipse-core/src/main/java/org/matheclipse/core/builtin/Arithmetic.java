@@ -1645,8 +1645,6 @@ public final class Arithmetic {
       // return F.num(c.getReal());
       // }
       return F.num(c);
-      // return F.num(de.lab4inf.math.functions.IncompleteGamma.incGammaP(d0.doubleValue(),
-      // d1.doubleValue()));
     }
 
     @Override
