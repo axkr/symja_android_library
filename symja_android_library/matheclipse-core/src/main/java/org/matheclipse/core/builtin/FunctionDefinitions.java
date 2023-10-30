@@ -52,6 +52,8 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.InverseZTransform());
       S.LaplaceTransform
           .setEvaluator(new org.matheclipse.core.reflection.system.LaplaceTransform());
+      S.LinearOptimization
+          .setEvaluator(new org.matheclipse.core.reflection.system.LinearOptimization());
       S.LinearProgramming
           .setEvaluator(new org.matheclipse.core.reflection.system.LinearProgramming());
       S.ListLinePlot.setEvaluator(new org.matheclipse.core.reflection.system.ListLinePlot());

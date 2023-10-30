@@ -80,6 +80,7 @@ public class Errors {
       "compat", "`1` and `2` are incompatible units", //
       "condp", "Pattern `1` appears on the right-hand-side of condition `2`.", "cxt",
       "`1` is not a valid context name.", //
+      "ctnc", "The constraint `1` is not convex.", //
       "depth",
       "The array depth of the expression at position `1` of `2` must be at least equal to the specified rank `3`.", //
       "divz", "The argument `1` should be nonzero.", //
@@ -89,6 +90,7 @@ public class Errors {
       "dotdim",
       "Dot contraction of `1` and `2` is invalid because dimensions `3` and `4` are incompatible.",
       "dotsh", "Tensors `1` and `2` have incompatible shapes.", //
+      "dpvar", "The variable `1` has been specified more than once.", //
       "drop", "Cannot drop positions `1` through `2` in `3`.", //
       "dsdelim", "The delimiter specification is not valid.", //
       "dstlms",
@@ -168,6 +170,8 @@ public class Errors {
       "lim", "Limit specification `1` is not of the form x->x0.", //
       "limset",
       "Cannot set $RecursionLimit to `1`; value must be Infinity or an integer at least 20.", //
+      "linobj",
+      "The objective function `1` is not a numeric valued linear function of the variables `2`.", //
       "list", "List expected at position `1` in `2`.", //
       "listofbigints", "List of Java BigInteger numbers expected in `1`.", //
       "listofints", "List of Java int numbers expected in `1`.", //
@@ -237,6 +241,7 @@ public class Errors {
       "noval", "Symbol `1` in part assignment does not have an immediate value.", //
       "npa", "The angle `1` should be a positive number less than `2`.", //
       "nsmet", "The system cannot be solved with the methods available to `1`.", //
+      "nsolc", "There are no points which satisfy the constraints.", //
       "nupr", "`1` is not a univariate polynomial with rational number coefficients.", //
       "nvm", "The first Norm argument should be a scalar, vector or matrix.", //
       "nwargs",

@@ -6023,6 +6023,9 @@ public class S {
   public final static IBuiltInSymbol LinearModelFit =
       S.initFinalSymbol("LinearModelFit", ID.LinearModelFit);
 
+  public final static IBuiltInSymbol LinearOptimization =
+      S.initFinalSymbol("LinearOptimization", ID.LinearOptimization);
+
   /**
    * LinearProgramming(coefficientsOfLinearObjectiveFunction, constraintList,
    * constraintRelationList) - the `LinearProgramming` function provides an implementation of
