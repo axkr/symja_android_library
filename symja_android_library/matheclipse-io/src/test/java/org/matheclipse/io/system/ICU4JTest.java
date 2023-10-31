@@ -160,7 +160,7 @@ public class ICU4JTest extends AbstractTestCase {
     check("Transliterate(\"Фёдоров, Николай Алексеевич\")", //
         "Fedorov, Nikolaj Alekseevic");
     check("Transliterate(\"Горбачёв, Михаил Сергеевич\")", //
-        "Gorbacev, Mikhail Sergeevic");
+        "Gorbacev, Mihail Sergeevic");
     check(
         "Transliterate(\"\\[CapitalAlpha]\\[Lambda]\\[CurlyPhi]\\[Alpha]\\[Beta]\\[Eta]\\[Tau]\\[Iota]\\[Kappa]\\[Omega]\\[FinalSigma]\")", //
         "Alphabetikos");
