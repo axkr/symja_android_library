@@ -1,7 +1,6 @@
 package org.matheclipse.core.builtin;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -10,7 +9,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class FinancialFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -138,21 +136,20 @@ public class FinancialFunctions {
                         F.Power(F.Power(F.Power(F.Plus(F.C1, b), q), F.Times(F.Power(q, F.CN1), t)),
                             F.CN1),
                         p))); // $$;
-          } else {
-            return //
-            // [$ (p*((1 + b)^q)^(-(t/q) + c/q)*(-1 + ((1 + b)^q)^(t/q)))/(-1 + (1 +
-            // b)^q) $]
-            F.Times(F.Power(F.Plus(F.CN1, F.Power(F.Plus(F.C1, b), q)), F.CN1),
-                F.Power(F.Power(F.Plus(F.C1, b), q),
-                    F.Plus(F.Times(F.CN1, F.Power(q, F.CN1), t), F.Times(c, F.Power(q, F.CN1)))),
-                F.Plus(F.CN1, F.Power(F.Power(F.Plus(F.C1, b), q), F.Times(F.Power(q, F.CN1), t))),
-                p); // $$;
           }
 
+          return //
+          // [$ (p*((1 + b)^q)^(-(t/q) + c/q)*(-1 + ((1 + b)^q)^(t/q)))/(-1 + (1 +
+          // b)^q) $]
+          F.Times(F.Power(F.Plus(F.CN1, F.Power(F.Plus(F.C1, b), q)), F.CN1),
+              F.Power(F.Power(F.Plus(F.C1, b), q),
+                  F.Plus(F.Times(F.CN1, F.Power(q, F.CN1), t), F.Times(c, F.Power(q, F.CN1)))),
+              F.Plus(F.CN1, F.Power(F.Power(F.Plus(F.C1, b), q), F.Times(F.Power(q, F.CN1), t))),
+              p); // $$;
+
         } catch (RuntimeException rex) {
-          LOGGER.debug("TimeValue.evaluate() failed", rex);
+          return Errors.printMessage(S.TimeValue, rex, engine);
         }
-        return F.NIL;
       }
       if (a.isAST(S.AnnuityDue, 3, 4)) {
         // https://en.wikipedia.org/wiki/Annuity
@@ -186,9 +183,8 @@ public class FinancialFunctions {
           }
 
         } catch (RuntimeException rex) {
-          LOGGER.debug("TimeValue.evaluate() failed", rex);
+          return Errors.printMessage(S.TimeValue, rex, engine);
         }
-        return F.NIL;
       }
       if (!a.isAST() && !b.isAST() && !c.isAST()) {
         int cInt = c.toIntDefault();

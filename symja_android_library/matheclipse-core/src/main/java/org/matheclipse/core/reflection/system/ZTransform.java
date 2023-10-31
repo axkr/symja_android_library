@@ -1,7 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -14,7 +12,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class ZTransform extends AbstractFunctionEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   public ZTransform() {}
 
@@ -84,8 +81,7 @@ public class ZTransform extends AbstractFunctionEvaluator {
       }
     } catch (final ValidateException ve) {
       // int number validation
-      LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
-      return F.NIL;
+      return Errors.printMessage(S.ZTransform, ve, engine);
     }
     return F.NIL;
   }

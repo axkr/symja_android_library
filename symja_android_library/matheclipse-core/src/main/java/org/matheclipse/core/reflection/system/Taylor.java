@@ -1,7 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -12,7 +10,6 @@ import org.matheclipse.core.interfaces.IExpr;
 
 /** Power series expansion with Taylor formula */
 public class Taylor extends AbstractFunctionEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   public Taylor() {}
 

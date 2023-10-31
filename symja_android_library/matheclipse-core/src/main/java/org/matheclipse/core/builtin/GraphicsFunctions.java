@@ -3,10 +3,9 @@ package org.matheclipse.core.builtin;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.RGBColor;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
@@ -1390,8 +1389,6 @@ public class GraphicsFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
-  private static final Logger LOGGER = LogManager.getLogger();
-
   public static boolean exportGraphics2D(ObjectNode objectNode, ArrayNode arrayNode, IAST data2D,
       GraphicsOptions graphicsOptions) {
     if (data2D.isList()) {
@@ -1730,8 +1727,8 @@ public class GraphicsFunctions {
           graphics2DBuffer.append("\n);");
         }
         return true;
-      } catch (Exception ex) {
-        LOGGER.debug("GraphicsFunctions.renderGraphics2D() failed", ex);
+      } catch (RuntimeException rex) {
+        Errors.printMessage(S.Graphics, rex, EvalEngine.get());
       }
     }
     return false;
@@ -1848,8 +1845,8 @@ public class GraphicsFunctions {
           graphics3DBuffer.append("\n);");
         }
         return true;
-      } catch (Exception ex) {
-        LOGGER.debug("GraphicsFunctions.renderGraphics3D() failed", ex);
+      } catch (RuntimeException rex) {
+        Errors.printMessage(S.Graphics3D, rex, EvalEngine.get());
       }
     }
     return false;

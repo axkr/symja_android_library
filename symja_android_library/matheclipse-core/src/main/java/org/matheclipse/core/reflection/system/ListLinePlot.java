@@ -1,7 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -11,7 +9,6 @@ import org.matheclipse.core.interfaces.IExpr;
 
 /** Plot a list of Points as a single line */
 public class ListLinePlot extends ListPlot {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /** Constructor for the singleton */
   // public final static ListLinePlot CONST = new ListLinePlot();

@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
@@ -30,7 +28,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class LinearOptimization extends LinearProgramming {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   public LinearOptimization() {
     super();
@@ -147,7 +144,7 @@ public class LinearOptimization extends LinearProgramming {
       // `1`.
       return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())), engine);
     } catch (MathRuntimeException mre) {
-      LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
+      return Errors.printMessage(S.LinearOptimization, mre, engine);
     }
     return F.NIL;
   }

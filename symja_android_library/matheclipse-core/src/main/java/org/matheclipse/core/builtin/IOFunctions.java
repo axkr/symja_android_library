@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -32,8 +30,6 @@ import org.matheclipse.parser.trie.SuggestTree;
 import org.matheclipse.parser.trie.SuggestTree.Node;
 
 public class IOFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
-
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation

@@ -2,13 +2,12 @@ package org.matheclipse.core.builtin;
 
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -37,7 +36,6 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.VisitorBooleanLevelSpecification;
 
 public class PredicateQ {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /** Constructor for the unary predicate */
   // public final static AtomQ ATOMQ = new AtomQ();
@@ -1869,7 +1867,7 @@ public class PredicateQ {
 
       return isZeroTogether(function, engine);
     } catch (ValidateException ve) {
-      LOGGER.debug("PredicateQ.isPossibleZeroQ() failed", ve);
+      Errors.printMessage(S.PossibleZeroQ, ve, engine);
     }
     return false;
   }

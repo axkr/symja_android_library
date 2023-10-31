@@ -369,7 +369,6 @@ public final class ExpVectorSymbolic {
     boolean pit;
     int r = length();
     if (r != vars.argSize()) {
-      // logger.warn("length mismatch " + r + " <> " + vars.length);
       return toString();
     }
     if (r == 0) {

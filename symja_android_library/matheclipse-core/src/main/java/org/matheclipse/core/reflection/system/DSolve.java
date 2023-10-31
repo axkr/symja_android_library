@@ -1,8 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.ToggleFeature;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -57,7 +56,6 @@ import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
  * <a href="NRoots.md">NRoots</a>,<a href="Solve.md">Solve</a>
  */
 public class DSolve extends AbstractFunctionEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   public DSolve() {}
 
@@ -195,8 +193,8 @@ public class DSolve extends AbstractFunctionEvaluator {
             }
             return linearODE(p, q, xVar, C_1, engine);
           }
-        } catch (RuntimeException rex) {
-          LOGGER.debug("DSolve.solveSingleODE() failed", rex);
+        } catch (RuntimeException rex) { 
+          return Errors.printMessage(S.DSolve, rex, engine); 
         }
       }
     }
@@ -214,7 +212,7 @@ public class DSolve extends AbstractFunctionEvaluator {
         }
       }
     } catch (RuntimeException rex) {
-      LOGGER.debug("DSolve.derivativeOrder() failed", rex);
+      Errors.printMessage(S.DSolve, rex, EvalEngine.get());
     }
     return order;
   }

@@ -1,17 +1,17 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathRuntimeException;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -63,7 +63,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <a href="NIntegrate.md">NIntegrate</a>
  */
 public class ND extends AbstractFunctionEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   public ND() {}
 
@@ -83,7 +82,7 @@ public class ND extends AbstractFunctionEvaluator {
         return partialDerivative(arg1, (ISymbol) arg2, 1, arg3, engine);
       }
     } catch (MathRuntimeException e) {
-      LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
+      return Errors.printMessage(S.ND, e, engine);
     }
     return F.NIL;
   }

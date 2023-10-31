@@ -3,8 +3,6 @@ package org.matheclipse.core.reflection.system;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.analysis.solvers.BaseAbstractUnivariateSolver;
@@ -201,7 +199,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </p>
  */
 public class FindRoot extends AbstractFunctionEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   private static class UnivariateSolverSupplier implements Supplier<IExpr> {
     final IExpr originalFunction;

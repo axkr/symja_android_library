@@ -521,7 +521,7 @@ public class Plot extends ListPlot {
   // return Show(graphics);
   // }
   // } catch (RuntimeException rex) {
-  // LOGGER.debug("Plot.evaluate() failed", rex);
+  // return Errors.printMessage(S.Plot, rex, engine);
   // }
   // }
   // return F.NIL;

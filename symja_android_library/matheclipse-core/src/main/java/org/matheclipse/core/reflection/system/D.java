@@ -1,7 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -174,7 +172,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </pre>
  */
 public class D extends AbstractFunctionEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   public D() {}
 
@@ -417,8 +414,7 @@ public class D extends AbstractFunctionEvaluator {
       return binaryD(fx, x, ast, engine);
     } catch (final ValidateException ve) {
       // int number validation
-      LOGGER.log(engine.getLogLevel(), ve.getMessage(ast.topHead()), ve);
-      return F.NIL;
+      return Errors.printMessage(S.D, ve, engine);
     }
   }
 

@@ -529,42 +529,6 @@ public abstract class HMArrayList extends AbstractAST
   }
 
   /**
-   * Returns a shallow copy of this <tt>AST</tt> instance. (The elements themselves are not copied.)
-   *
-   * @return a clone of this <tt>AST</tt> instance.
-   */
-  // @Override
-  // public IAST clone() {
-  // HMArrayList ast;
-  // try {
-  // ast = (HMArrayList) super.clone();
-  // ast.array = array.clone();
-  // ast.hashValue = 0;
-  // ast.firstIndex = firstIndex;
-  // ast.lastIndex = lastIndex;
-  // return ast;
-  // } catch (CloneNotSupportedException e) {
-  // LOGGER.error("HMArrayList.clone() failed", e);
-  // }
-  // return null;
-  // }
-
-  /**
-   * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity
-   * as this {@code HMArrayList}.
-   *
-   * @return a shallow copy of this {@code ArrayList}
-   * @see java.lang.Cloneable
-   */
-  // @Override
-  // public IASTAppendable clone() {
-  // HMArrayList newList = (HMArrayList) super.clone();
-  // newList.array = array.clone();
-  // newList.hashValue = 0;
-  // return newList;
-  // }
-
-  /**
    * Ensures that after this operation the {@code ArrayList} can hold the specified number of
    * elements without further growing.
    *

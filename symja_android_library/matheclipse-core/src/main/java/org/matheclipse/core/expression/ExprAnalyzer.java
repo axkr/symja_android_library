@@ -260,7 +260,6 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
       }
       if (fEquationType == LINEAR && variable == null) {
         // should never happen??
-        // LOGGER.error("sym == null???");
       }
     } else {
       getTimesArgumentEquationType(eqExpr);

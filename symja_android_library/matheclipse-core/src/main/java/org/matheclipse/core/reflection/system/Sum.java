@@ -8,8 +8,6 @@ import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
@@ -137,7 +135,6 @@ import com.google.common.base.Suppliers;
  * </pre>
  */
 public class Sum extends ListFunctions.Table implements SumRules {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   private static Supplier<Matcher> MATCHER1;
 
@@ -401,8 +398,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
           return temp;
         }
       } catch (RecursionLimitExceeded rle) {
-        LOGGER.log(engine.getLogLevel(), "Recursionlimit exceeded");
-        return F.NIL;
+        return Errors.printMessage(S.Sum, rle, engine);
       }
       // try {
       // iterator.setUp();
@@ -420,7 +416,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
       // engine.printMessage("Sum: Recursionlimit exceeded");
       // return F.NIL;
       // } catch (RuntimeException rex) {
-      // LOGGER.debug("Sum.definiteSum() failed", rex);
+      //
       // }finally {
       // iterator.tearDown();
       // }

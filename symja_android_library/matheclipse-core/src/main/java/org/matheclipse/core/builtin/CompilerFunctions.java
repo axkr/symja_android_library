@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.SimpleCompiler;
 import org.matheclipse.core.basic.Config;
@@ -36,7 +34,6 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class CompilerFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /** Template for CompilePrint */
   public static final String JAVA_SOURCE_CODE = //
@@ -701,7 +698,7 @@ public class CompilerFunctions {
         try {
           result = compiledFunction.evaluate(ast, engine);
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), "CompiledFunction", rex);
+          return Errors.printMessage(S.CompiledFunction, rex, engine);
         }
         if (result.isPresent()) {
           result = engine.evaluate(result);
@@ -889,7 +886,7 @@ public class CompilerFunctions {
         return CompiledFunctionExpr.newInstance(variables, types, ast.arg2(), clazz);
       }
     } catch (CompileException | ClassNotFoundException | RuntimeException e) {
-      LOGGER.log(engine.getLogLevel(), "Compile", e);
+      Errors.printMessage(S.Compile, e, engine);
     }
     return null;
   }

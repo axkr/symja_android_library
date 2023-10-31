@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -22,9 +20,6 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
     implements SortedMultiset<T> {
 
   private static final long serialVersionUID = -6604624351619809213L;
-
-  @SuppressWarnings("unused")
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * Constructor for an empty multiset, sorted smallest elements first. This sort order is

@@ -1,7 +1,5 @@
 package org.matheclipse.core.builtin;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -13,7 +11,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import it.unimi.dsi.fastutil.ints.IntList;
 
 public class FilterFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -52,7 +49,7 @@ public class FilterFunctions {
           }
         }
       } catch (RuntimeException rex) {
-        LOGGER.debug("MinFilter.evaluate() failed", rex);
+        return Errors.printMessage(S.MinFilter, rex, engine);
       }
       return F.NIL;
     }

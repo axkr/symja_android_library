@@ -27,7 +27,6 @@ import org.matheclipse.core.tensor.qty.IQuantity;
  * Algebraic Simplification</a>
  */
 public final class PlusOp {
-  // private static final Logger LOGGER = LogManager.getLogger();
 
   /** Merge IExpr keys by adding their values into this map. */
   private Map<IExpr, IExpr> plusMap;

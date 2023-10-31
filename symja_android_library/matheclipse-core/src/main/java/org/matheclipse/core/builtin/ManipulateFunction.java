@@ -2123,7 +2123,7 @@ public class ManipulateFunction {
       } catch (ValidateException ve) {
         return Errors.printMessage(manipulateAST.topHead(), ve, engine);
       } catch (RuntimeException rex) {
-        LOGGER.log(engine.getLogLevel(), S.Manipulate, rex);
+        return Errors.printMessage(manipulateAST.topHead(), rex, engine);
       }
       return F.NIL;
     }

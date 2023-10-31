@@ -1,8 +1,6 @@
 package org.matheclipse.core.builtin;
 
 import java.util.Arrays;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -16,7 +14,6 @@ import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class SparseArrayFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -88,7 +85,7 @@ public class SparseArrayFunctions {
           defaultValue = sparseArray.getDefaultValue();
 //        } else if (ast.isAST2()) {
 //          if (!d.equals(defaultValue)) {
-//            LOGGER.log(engine.getLogLevel(),
+// LOGGER.log(engine.getLogLevel(),
 //                "{}: Sparse array default value: {} unequals default value {}", ast.topHead(), d,
 //                defaultValue);
 //            return F.NIL;

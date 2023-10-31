@@ -157,7 +157,6 @@ public class SpecialFunctions {
           return te.getValue();
         } catch (ValidateException ve) {
           return Errors.printMessage(ast.topHead(), ve, engine);
-          // LOGGER.debug("Beta.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           Errors.printMessage(S.Beta, rex, engine);
         }
@@ -210,7 +209,6 @@ public class SpecialFunctions {
         return te.getValue();
       } catch (ValidateException ve) {
         return Errors.printMessage(ast.topHead(), ve, engine);
-        // LOGGER.debug("Beta.evaluate() failed", ve);
       } catch (RuntimeException rex) {
         Errors.printMessage(S.Beta, rex, engine);
       }
@@ -1889,9 +1887,6 @@ public class SpecialFunctions {
       Apcomplex c = new Apcomplex(
           new Apfloat(new BigDecimal(arg1.getRealPart()), ParserConfig.MACHINE_PRECISION),
           new Apfloat(new BigDecimal(arg1.getImaginaryPart()), ParserConfig.MACHINE_PRECISION));
-      // if (Config.FUZZ_TESTING) {
-      // LOGGER.error(c);
-      // }
       c = ApcomplexMath.w(c);
       return F.complexNum(c.real().doubleValue(), c.imag().doubleValue());
     }

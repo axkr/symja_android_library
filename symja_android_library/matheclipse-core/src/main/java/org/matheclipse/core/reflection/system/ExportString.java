@@ -1,12 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.nio.Attribute;
@@ -17,11 +16,13 @@ import org.jgrapht.nio.csv.CSVExporter;
 import org.jgrapht.nio.dot.DOTExporter;
 import org.jgrapht.nio.graphml.GraphMLExporter;
 import org.matheclipse.core.convert.ExpressionJSONConvert;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTDataset;
@@ -31,7 +32,6 @@ import org.matheclipse.core.io.Extension;
 
 /** Export some data into a string representation */
 public class ExportString extends AbstractEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   public ExportString() {}
 
@@ -105,9 +105,10 @@ public class ExportString extends AbstractEvaluator {
 
       // } catch (IOException ioe) {
       // return engine.printMessage("ExportString: " + arg1.toString() + " not found!");
-    } catch (Exception ex) {
-      LOGGER.log(engine.getLogLevel(), "format: {}", arg1, ex);
-      return F.NIL;
+    } catch (IOException ioex) {
+      return Errors.printMessage(S.ExportString, ioex, EvalEngine.get());
+    } catch (RuntimeException rex) {
+      return Errors.printMessage(S.ExportString, rex, EvalEngine.get());
     }
     return F.NIL;
   }

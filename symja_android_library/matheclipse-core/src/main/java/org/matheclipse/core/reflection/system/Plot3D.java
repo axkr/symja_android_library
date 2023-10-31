@@ -3,9 +3,8 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.Show;
 import static org.matheclipse.core.expression.F.SurfaceGraphics;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.convert.Object2Expr;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -26,7 +25,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  * @see org.matheclipse.core.eval.util.OptionArgs
  */
 public class Plot3D extends AbstractFunctionOptionEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /** Constructor for the singleton */
   public static final Plot3D CONST = new Plot3D();
@@ -102,7 +100,7 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
           return Show(graphics);
         }
       } catch (RuntimeException rex) {
-        LOGGER.debug("Plot3D.evaluate() failed", rex);
+        return Errors.printMessage(S.Plot3D, rex, engine);
       }
     }
     return F.NIL;

@@ -5,8 +5,6 @@ import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Times;
 import java.util.function.Supplier;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -103,7 +101,6 @@ import com.google.common.base.Suppliers;
  * </pre>
  */
 public class Product extends ListFunctions.Table implements ProductRules {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   private static Supplier<Matcher> MATCHER1;
 

@@ -1345,8 +1345,6 @@ public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
     if (coFac.isFinite()) {
       return new GenPolynomialIterator(this);
     }
-    // logger.warn("ring of coefficients " + coFac + " is infinite, constructing iterator only over
-    // monomials");
     return new GenPolynomialMonomialIterator(this);
     // throw new IllegalArgumentException("only for finite iterable
     // coefficients implemented");

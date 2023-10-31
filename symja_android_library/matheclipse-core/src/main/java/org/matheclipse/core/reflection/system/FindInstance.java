@@ -1,7 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -43,7 +41,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <a href="Solve.md">Solve</a>
  */
 public class FindInstance extends Solve {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   public FindInstance() {
     // empty constructor
@@ -111,9 +108,8 @@ public class FindInstance extends Solve {
     } catch (final ValidateException ve) {
       return Errors.printMessage(ast.topHead(), ve, engine);
     } catch (RuntimeException rex) {
-      LOGGER.debug("FindInstance.evaluate() failed", rex);
+      return Errors.printMessage(S.FindInstance, rex, engine);
     }
-    return F.NIL;
   }
 
   @Override

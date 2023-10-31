@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.RootsFunctions;
@@ -68,7 +66,6 @@ import com.google.common.base.Suppliers;
  * </pre>
  */
 public class Eliminate extends AbstractFunctionEvaluator implements EliminateRules {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /** Match <code>f(x) == y</code> expressions to determine the inverse function. */
   private static Supplier<Matcher> INVERSE_MATCHER;
@@ -733,10 +730,9 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
         }
       }
       return resultAsAndEquations(result);
-    } catch (Exception ex) {
-      LOGGER.error("QuantityParser.of() failed", ex);
+    } catch (RuntimeException rex) {
+      return Errors.printMessage(S.Eliminate, rex, EvalEngine.get());
     }
-    return F.NIL;
   }
 
   @Override
