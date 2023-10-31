@@ -9475,6 +9475,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testFractionalPart() {
+    check("FractionalPart(Quantity(-1.1, \"Meters\"))", //
+        "-0.1[Meters]");
     check("FractionalPart(235/47 + 53/10*I)", //
         "I*3/10");
     check("FractionalPart(235/47 + 5.3*I)", //
@@ -11632,6 +11634,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testIntegerPart() {
+    check("IntegerPart(Quantity(-1.1, \"Meters\"))", //
+        "-1[Meters]");
     check("IntegerPart(Pi^20)", //
         "8769956796");
     check("IntegerPart(2^128-1)", //

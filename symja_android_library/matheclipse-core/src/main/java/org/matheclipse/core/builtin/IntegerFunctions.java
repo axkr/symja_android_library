@@ -34,6 +34,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.tensor.qty.IQuantity;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
@@ -763,6 +764,11 @@ public class IntegerFunctions {
       if (arg1.isIntegerResult()) {
         return F.C0;
       }
+      if (arg1.isQuantity()) {
+        IQuantity quantity = (IQuantity) arg1;
+        IExpr fractionalPart = S.FractionalPart.of(quantity.value());
+        return quantity.ofUnit(fractionalPart);
+      }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
         return F.Negate(F.FractionalPart(negExpr));
@@ -1032,6 +1038,11 @@ public class IntegerFunctions {
         }
         if (arg1.isInterval()) {
           return IntervalSym.mapSymbol(S.IntegerPart, (IAST) arg1);
+        }
+        if (arg1.isQuantity()) {
+          IQuantity quantity = (IQuantity) arg1;
+          IExpr fractionalPart = S.IntegerPart.of(quantity.value());
+          return quantity.ofUnit(fractionalPart);
         }
 
         final IReal realNumber = arg1.evalReal();
