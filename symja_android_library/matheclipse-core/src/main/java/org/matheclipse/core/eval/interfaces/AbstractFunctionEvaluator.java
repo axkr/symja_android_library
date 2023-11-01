@@ -32,6 +32,127 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
   private static final Logger LOGGER = LogManager.getLogger();
 
   /**
+   * Determine the options only from the last arguments of <code>ast</code>. Possibly additional
+   * options are <code>null</code> if no matching option is found in the arguments of the <code>ast
+   * </code>.
+   *
+   * @param options
+   * @param ast
+   * @param argSize
+   * @param expectedArgSize
+   * @param optionSymbol
+   * @return
+   */
+  private static int determineArgumentOptions(IExpr[] options, IAST ast, int argSize,
+      int[] expectedArgSize, IBuiltInSymbol[] optionSymbol) {
+    int minNumberOfArgs = 1;
+    if (expectedArgSize != null) {
+      // the ast function must at least contain the minimum number of arguments
+      minNumberOfArgs = expectedArgSize[0];
+      if (minNumberOfArgs < 1) {
+        minNumberOfArgs = 1;
+      }
+    }
+
+    int counter = 0;
+    boolean evaled = true;
+    while (argSize > minNumberOfArgs && evaled && counter < optionSymbol.length) {
+      IExpr arg = ast.get(argSize);
+
+      // check that arg has the correct options format:
+      if (arg.isRule()) {
+        evaled = false;
+        for (int i = 0; i < optionSymbol.length; i++) {
+          if (optionSymbol[i].equals(arg.first())) {
+            options[i] = arg.second();
+            argSize--;
+            counter++;
+            evaled = true;
+            break;
+          }
+        }
+      } else if (arg.isListOfRules(true) && !arg.isEmptyList()) {
+        IAST listOfRules = (IAST) arg;
+        for (int j = 1; j < listOfRules.size(); j++) {
+          IAST rule = (IAST) listOfRules.get(j);
+          evaled = false;
+          for (int i = 0; i < optionSymbol.length; i++) {
+            if (optionSymbol[i].equals(rule.first())) {
+              options[i] = rule.second();
+              argSize--;
+              counter++;
+              evaled = true;
+              break;
+            }
+          }
+        }
+      } else {
+        evaled = false;
+        break;
+      }
+    }
+    return argSize;
+  }
+
+  /**
+   * Replace the options which are <code>null</code> only from the default options of the head
+   * symbol.
+   *
+   * @param options
+   * @param ast
+   * @param optionSymbol
+   * @param engine
+   */
+  private static void determineDefaultOptions(IExpr[] options, IAST ast,
+      IBuiltInSymbol[] optionSymbol, EvalEngine engine) {
+    int optionNullStart = -1;
+    for (int i = 0; i < options.length; i++) {
+      if (options[i] == null) {
+        optionNullStart = i;
+        break;
+      }
+    }
+    if (optionNullStart >= 0) {
+      final IExpr temp = OptionsPattern.optionsList(ast.topHead(), false);
+      // final IExpr temp = engine.evaluate(F.Options(ast.topHead()));
+      if (temp.isList() && temp.size() > 1) {
+        IAST list = (IAST) temp;
+        for (int i = optionNullStart; i < options.length; i++) {
+          if (options[i] == null) {
+            options[i] = S.None;
+            for (int j = 1; j < list.size(); j++) {
+              IAST rule = (IAST) list.get(j);
+              if (optionSymbol[i].equals(rule.first())) {
+                options[i] = rule.second();
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Determine the options from the last arguments of <code>ast</code> or from the default options.
+   *
+   * @param options the result array of options and their (possibly default) values.
+   * @param ast
+   * @param argSize
+   * @param expectedArgSize
+   * @param optionSymbol
+   * @param engine
+   * @return
+   */
+  public static int determineOptions(IExpr[] options, IAST ast, int argSize, int[] expectedArgSize,
+      IBuiltInSymbol[] optionSymbol, EvalEngine engine) {
+    argSize = determineArgumentOptions(options, ast, argSize, expectedArgSize, optionSymbol);
+
+    determineDefaultOptions(options, ast, optionSymbol, engine);
+    return argSize;
+  }
+
+  /**
    * Check if the expression has a complex number factor I (imaginary unit).
    *
    * @param expression
@@ -72,6 +193,33 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
                 && arg1.re().isZero()) {
               return timesAST.setAtCopy(1, arg1.im());
             }
+          }
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  public static IExpr getComplexExpr(final IExpr expr, IExpr factor) {
+    if (expr.isComplex() && (expr.re().isZero() || expr.re().isNegative())) {
+      return F.Times(factor, expr);
+    } else {
+      if (expr.isTimes() && expr.first().isComplex()) {
+        IComplex arg1 = (IComplex) expr.first();
+        if (arg1.re().isZero() || arg1.re().isNegative()) {
+          return F.Times(factor, expr);
+        }
+      } else if (expr.isPlus()) {
+        IExpr arg1 = expr.first();
+        if (arg1.isComplex() && (arg1.re().isZero() || arg1.re().isNegative())) {
+          // distribute the factor over the Plus() args
+          return F.Distribute(F.Times(factor, expr));
+        }
+        if (arg1.isTimes() && arg1.first().isComplex()) {
+          arg1 = arg1.first();
+          if (arg1.re().isZero() || arg1.re().isNegative()) {
+            // distribute the factor over the Plus() args
+            return F.Distribute(F.Times(factor, expr));
           }
         }
       }
@@ -127,56 +275,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
           return timesAST.setAtCopy(index, F.CInfinity);
         }
       } else if (checkTimesPlus && expression.isPlus()) {
-        final IAST plusAST = ((IAST) expression);
-        IExpr arg1 = plusAST.arg1();
-        if (arg1.isNumber()) {
-          if (((INumber) arg1).complexSign() < 0) {
-            result = plusAST.copy();
-            result.set(1, arg1.negate());
-            for (int i = 2; i < plusAST.size(); i++) {
-              result.set(i, plusAST.get(i).negate());
-            }
-            return result;
-          }
-        } else if (arg1.isTimes()) {
-          IExpr arg1Negated = getNormalizedNegativeExpression(arg1, checkTimesPlus);
-          if (arg1Negated.isPresent()) {
-            // int positiveElementsCounter = 0;
-            result = plusAST.copy();
-            result.set(1, arg1Negated);
-            for (int i = 2; i < plusAST.size(); i++) {
-              IExpr temp = plusAST.get(i);
-              // if (!temp.isTimes() && !temp.isPower()) {
-              // return F.NIL;
-              // }
-
-              // arg1Negated = getNormalizedNegativeExpression(temp, checkTimesPlus);
-              // if (arg1Negated.isPresent()) {
-              // result.set(i, arg1Negated);
-              // } else {
-
-              // positiveElementsCounter++;
-              // if (positiveElementsCounter * 2 > plusAST.argSize()) {
-              // number of positive elements is greater
-              // than number of negative elements
-              // return F.NIL;
-              // }
-              result.set(i, temp.negate());
-
-              // }
-            }
-            return result;
-          } else if (arg1.isNegativeInfinity()) {
-            result = plusAST.copy();
-            result.set(1, F.CInfinity);
-            for (int i = 2; i < plusAST.size(); i++) {
-              result.set(i, plusAST.get(i).negate());
-            }
-            return result;
-          }
-        }
-        // } else if (expression.isNegativeInfinity()) {
-        // return F.CInfinity;
+        return getNormalizedNegativePlus((IAST) expression, checkTimesPlus);
       } else if (expression.isDirectedInfinity() && expression.isAST1()) {
         IExpr arg1 = expression.first();
         if (arg1.isMinusOne()) {
@@ -194,82 +293,109 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
     return F.NIL;
   }
 
-  /**
-   * Return <code>true</code> if the number of negative terms of the <code>ast</code> expression
-   * <code>countWeight</code> is greater than the half of the number of the arguments of <code>ast
-   * </code>. I.e. <code>int halfSize = ast.size() / 2; return countWeight > halfSize;</code>
-   *
-   * @param ast
-   * @param checkTimesPlus check <code>Times(...)</code> and <code>Plus(...)</code> expressions
-   * @return
-   */
-  public static boolean isNegativeWeighted(final IAST ast, boolean checkTimesPlus) {
-    return isNegativeWeighted(ast, checkTimesPlus, ast.size() / 2);
+  private static IExpr getNormalizedNegativePlus(final IAST plusAST, boolean checkTimesPlus) {
+    IASTMutable result;
+    IExpr arg1 = plusAST.arg1();
+    if (arg1.isNumber()) {
+      if (((INumber) arg1).complexSign() < 0) {
+        result = plusAST.copy();
+        result.set(1, arg1.negate());
+        for (int i = 2; i < plusAST.size(); i++) {
+          result.set(i, plusAST.get(i).negate());
+        }
+        return result;
+      }
+    } else if (arg1.isTimes()) {
+      IExpr arg1Negated = getNormalizedNegativeExpression(arg1, checkTimesPlus);
+      if (arg1Negated.isPresent()) {
+        // int positiveElementsCounter = 0;
+        result = plusAST.copy();
+        result.set(1, arg1Negated);
+        for (int i = 2; i < plusAST.size(); i++) {
+          IExpr temp = plusAST.get(i);
+          // if (!temp.isTimes() && !temp.isPower()) {
+          // return F.NIL;
+          // }
+
+          // arg1Negated = getNormalizedNegativeExpression(temp, checkTimesPlus);
+          // if (arg1Negated.isPresent()) {
+          // result.set(i, arg1Negated);
+          // } else {
+
+          // positiveElementsCounter++;
+          // if (positiveElementsCounter * 2 > plusAST.argSize()) {
+          // number of positive elements is greater
+          // than number of negative elements
+          // return F.NIL;
+          // }
+          result.set(i, temp.negate());
+
+          // }
+        }
+        return result;
+      } else if (arg1.isNegativeInfinity()) {
+        result = plusAST.copy();
+        result.set(1, F.CInfinity);
+        for (int i = 2; i < plusAST.size(); i++) {
+          result.set(i, plusAST.get(i).negate());
+        }
+        return result;
+      }
+    }
+    return F.NIL;
   }
 
   /**
-   * Return the number of negative terms of the <code>ast</code> expression.
-   *
-   * @param ast
-   * @param checkTimesPlus check <code>Times(...)</code> and <code>Plus(...)</code> expressions
-   * @param maxNegativeExpr maximum number of negative valued terms which have to be found before
-   *        returning <code>true</code>
-   * @return
+   * Create a {@link S#Times} form from <code>expr</code> and replace all occurrences of
+   * &quot;negative&quot; {@link S#Plus} expressions. Collect the &quot;minus one&quot; factors if
+   * necessary and insert the result at index <code>1</code>.
+   * 
+   * @param expr
+   * @return the original expr in {@link S#Times} form, if no &quot;negative&quot; {@link S#Plus}
+   *         expression could b found or a new {@link S#Times} form, which contains normalized
+   *         {@link S#Plus} expressions
    */
-  public static boolean isNegativeWeighted(final IAST ast, boolean checkTimesPlus,
-      int maxNegativeExpr) {
-    int count = maxNegativeExpr - 1;
-    for (int i = 1; i < ast.size(); i++) {
-      if (isNegativeValued(ast.get(i), checkTimesPlus)) {
-        if (--count < 0) {
-          return true;
+  public static IAST getNegativePlusInTimes(IExpr expr) {
+    final IAST timesAST = expr.isTimes() ? (IAST) expr : F.Times(expr);
+    IASTAppendable timesAppendable = F.NIL;
+    if (EvalEngine.get().isNoSimplifyMode()) {
+      return timesAST;
+    }
+    INumber neg = F.C1;
+    for (int i = 1; i < timesAST.size(); i++) {
+      IExpr arg = timesAST.get(i);
+      if (arg.isPlus()) {
+        IExpr negativeExpr = getNormalizedNegativePlus((IAST) arg, true);
+        if (negativeExpr.isPresent()) {
+          if (timesAppendable.isNIL()) {
+            timesAppendable = timesAST.copyAppendable();
+          }
+          timesAppendable.set(i, negativeExpr);
+          neg = neg.negate();
+        }
+      } else if (arg.isPower() && arg.base().isPlus() && arg.exponent().isInteger()) {
+        long exponent = arg.exponent().toLongDefault();
+        if (exponent != Long.MIN_VALUE) {
+          IExpr negativeExpr = getNormalizedNegativePlus((IAST) arg.base(), true);
+          if (negativeExpr.isPresent()) {
+            if (timesAppendable.isNIL()) {
+              timesAppendable = timesAST.copyAppendable();
+            }
+            timesAppendable.set(i, F.Power(negativeExpr, arg.exponent()));
+            neg = neg.times(F.CN1.powerRational(exponent));
+          }
         }
       }
     }
-    return false;
-  }
+    if (neg.isMinusOne()) {
+      if (timesAppendable.arg1().isNumber()) {
+        timesAppendable.set(1, timesAppendable.arg1().negate());
+      } else {
+        timesAppendable.append(1, neg);
+      }
+    }
 
-  /**
-   * Return <code>true</code> if the <code>expression</code> is considered having a <i>negative
-   * value</i>
-   *
-   * @param expression
-   * @param checkTimesPlus check <code>Times(...)</code> and <code>Plus(...)</code> expressions
-   * @return
-   */
-  private static boolean isNegativeValued(final IExpr expression, boolean checkTimesPlus) {
-    if (expression.isNumber()) {
-      return ((INumber) expression).complexSign() < 0;
-    } else if (expression.isAST()) {
-      if (checkTimesPlus && expression.isTimes()) {
-        IExpr arg1 = expression.first();
-        // see github #110: checking for arg1.isNegative() will trigger infinite recursion!
-        if (arg1.isNumber()) {
-          if (((INumber) arg1).complexSign() < 0) {
-            return true;
-          }
-        } else if (arg1.isNegativeInfinity()) {
-          return true;
-        }
-      } else if (checkTimesPlus && expression.isPlus()) {
-        IAST plusAST = ((IAST) expression);
-        IExpr arg1 = plusAST.arg1();
-        if (arg1.isNumber()) {
-          if (((INumber) arg1).complexSign() < 0) {
-            return true;
-          }
-        } else if (arg1.isNegativeInfinity()
-            || (arg1.isTimes() && isNegativeValued(arg1, checkTimesPlus))) {
-          return true;
-        }
-      } else if (expression.isDirectedInfinity() && expression.isAST1()) {
-        IExpr arg1 = expression.first();
-        if (arg1.isMinusOne() || arg1.isNegativeImaginaryUnit()) {
-          return true;
-        }
-      }
-    }
-    return false;
+    return timesAppendable.orElse(timesAST);
   }
 
   /**
@@ -309,139 +435,6 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
             return result;
           }
         }
-      }
-    }
-    return F.NIL;
-  }
-
-  /**
-   * Split plusAST into two parts, a "rest" and a multiple of Pi/2. This assumes plusAST to be an
-   * Plus() expression. The multiple of Pi/2 returned in the second position is always a IRational
-   * number.
-   *
-   * @param plusAST
-   * @param engine
-   * @return <code>F.NIL</code> if no multiple is found.
-   */
-  public static IAST peelOff(final IAST plusAST, final EvalEngine engine) {
-    IRational k = null;
-    for (int i = 1; i < plusAST.size(); i++) {
-      IExpr temp = plusAST.get(i);
-      if (temp.equals(S.Pi)) {
-        k = F.C1;
-        break;
-      }
-      if (temp.isTimes2()) {
-        if (temp.first().isRational() && temp.second().equals(S.Pi)) {
-          k = (IRational) temp.first();
-          break;
-        }
-      }
-    }
-    if (k != null) {
-      IASTMutable result = F.binaryAST2(S.List, plusAST, F.C0);
-      IExpr m1 = F.Times(k.mod(F.C1D2), S.Pi);
-      IExpr m2 = S.Subtract.of(engine, F.Times(k, S.Pi), m1);
-      result.set(1, S.Subtract.of(plusAST, m2));
-      result.set(2, m2);
-      return result;
-    }
-    return F.NIL;
-  }
-
-  /**
-   * This method assumes plusAST to be a Plus() expression. The multiple of Pi returned is a
-   * IRational number or assumed to be an expression with Integer result.
-   *
-   * @param plusAST
-   * @param engine
-   * @return <code>F.NIL</code> if no multiple is found.
-   */
-  public static IExpr peelOffPlusRational(final IAST plusAST, final EvalEngine engine) {
-    IExpr k = null;
-    for (int i = 1; i < plusAST.size(); i++) {
-      IExpr temp = plusAST.get(i);
-      if (temp.equals(S.Pi)) {
-        k = F.C1;
-        return k;
-      }
-      if (temp.isTimes()) {
-        IExpr peeled = peelOfTimes((IAST) temp, S.Pi);
-        if (peeled.isPresent()) {
-          if (peeled.isRational() || peeled.isIntegerResult()) {
-            // k = temp.first();
-            return peeled;
-          }
-        }
-      }
-    }
-    return null;
-  }
-
-  /**
-   * This assumes plusAST to be an Plus() expression. The multiple of Pi returned is a IRational
-   * number or assumed to be an expression with Integer result.
-   *
-   * @param plusAST
-   * @param engine
-   * @return <code>F.NIL</code> if no multiple is found, otherwise return <code>
-   *     List(rational-number, argument)</code>
-   */
-  public static IAST peelOffPlusI(final IAST plusAST, final EvalEngine engine) {
-    for (int i = 1; i < plusAST.size(); i++) {
-      final IExpr arg = plusAST.get(i);
-      if (arg.isTimes()) {
-        IExpr peeled = peelOfTimes((IAST) arg, S.Pi);
-        if (peeled.isPresent()) {
-          IExpr x = S.Times.of(F.CNI, peeled);
-          if (x.isRational() || x.isIntegerResult()) {
-            return F.list(x, arg);
-          }
-        }
-      }
-    }
-    return F.NIL;
-  }
-
-  /**
-   * Try to split a periodic part from the Times() expression: <code>result == timesAST / period
-   * </code>
-   *
-   * @param astTimes
-   * @param period
-   * @return <code>F.NIL</code> if no periodicity was found
-   */
-  public static IExpr peelOfTimes(final IAST astTimes, final IExpr period) {
-    for (int i = 1; i < astTimes.size(); i++) {
-      if (astTimes.get(i).equals(period)) {
-        return astTimes.splice(i).oneIdentity1();
-      }
-    }
-    return F.NIL;
-  }
-
-  /**
-   * Try to split a periodic part from the Times() expression: <code>result == timesAST / period
-   * </code>
-   *
-   * @param astTimes
-   * @param period1
-   * @param period2
-   * @return <code>F.NIL</code> if no periodicity was found
-   */
-  public static IExpr peelOfTimes(final IAST astTimes, final IExpr period1, final IExpr period2) {
-    IASTAppendable result = F.NIL;
-    for (int i = 1; i < astTimes.size(); i++) {
-      if (astTimes.get(i).equals(period1)) {
-        result = astTimes.copyAppendable();
-        result.remove(i);
-        for (int j = 1; j < result.size(); j++) {
-          if (result.get(j).equals(period2)) {
-            result.remove(j);
-            return result;
-          }
-        }
-        return F.NIL;
       }
     }
     return F.NIL;
@@ -572,33 +565,6 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
     return F.NIL;
   }
 
-  public static IExpr getComplexExpr(final IExpr expr, IExpr factor) {
-    if (expr.isComplex() && (expr.re().isZero() || expr.re().isNegative())) {
-      return F.Times(factor, expr);
-    } else {
-      if (expr.isTimes() && expr.first().isComplex()) {
-        IComplex arg1 = (IComplex) expr.first();
-        if (arg1.re().isZero() || arg1.re().isNegative()) {
-          return F.Times(factor, expr);
-        }
-      } else if (expr.isPlus()) {
-        IExpr arg1 = expr.first();
-        if (arg1.isComplex() && (arg1.re().isZero() || arg1.re().isNegative())) {
-          // distribute the factor over the Plus() args
-          return F.Distribute(F.Times(factor, expr));
-        }
-        if (arg1.isTimes() && arg1.first().isComplex()) {
-          arg1 = arg1.first();
-          if (arg1.re().isZero() || arg1.re().isNegative()) {
-            // distribute the factor over the Plus() args
-            return F.Distribute(F.Times(factor, expr));
-          }
-        }
-      }
-    }
-    return F.NIL;
-  }
-
   public static IExpr imaginaryPart(final IExpr expr, boolean unequalsZero) {
     IExpr imPart = S.Im.of(expr);
     if (unequalsZero) {
@@ -608,19 +574,6 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
     }
     if (imPart.isNumber() || imPart.isFree(S.Im)) {
       return imPart;
-    }
-    return F.NIL;
-  }
-
-  public static IExpr realPart(final IExpr expr, boolean unequalsZero) {
-    IExpr rePart = S.Re.of(expr);
-    if (unequalsZero) {
-      if (rePart.isZero()) {
-        return F.NIL;
-      }
-    }
-    if (rePart.isNumber() || rePart.isFree(S.Re)) {
-      return rePart;
     }
     return F.NIL;
   }
@@ -656,6 +609,217 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
     }
   }
 
+  /**
+   * Return <code>true</code> if the <code>expression</code> is considered having a <i>negative
+   * value</i>
+   *
+   * @param expression
+   * @param checkTimesPlus check <code>Times(...)</code> and <code>Plus(...)</code> expressions
+   * @return
+   */
+  private static boolean isNegativeValued(final IExpr expression, boolean checkTimesPlus) {
+    if (expression.isNumber()) {
+      return ((INumber) expression).complexSign() < 0;
+    } else if (expression.isAST()) {
+      if (checkTimesPlus && expression.isTimes()) {
+        IExpr arg1 = expression.first();
+        // see github #110: checking for arg1.isNegative() will trigger infinite recursion!
+        if (arg1.isNumber()) {
+          if (((INumber) arg1).complexSign() < 0) {
+            return true;
+          }
+        } else if (arg1.isNegativeInfinity()) {
+          return true;
+        }
+      } else if (checkTimesPlus && expression.isPlus()) {
+        IAST plusAST = ((IAST) expression);
+        IExpr arg1 = plusAST.arg1();
+        if (arg1.isNumber()) {
+          if (((INumber) arg1).complexSign() < 0) {
+            return true;
+          }
+        } else if (arg1.isNegativeInfinity()
+            || (arg1.isTimes() && isNegativeValued(arg1, checkTimesPlus))) {
+          return true;
+        }
+      } else if (expression.isDirectedInfinity() && expression.isAST1()) {
+        IExpr arg1 = expression.first();
+        if (arg1.isMinusOne() || arg1.isNegativeImaginaryUnit()) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Return <code>true</code> if the number of negative terms of the <code>ast</code> expression
+   * <code>countWeight</code> is greater than the half of the number of the arguments of <code>ast
+   * </code>. I.e. <code>int halfSize = ast.size() / 2; return countWeight > halfSize;</code>
+   *
+   * @param ast
+   * @param checkTimesPlus check <code>Times(...)</code> and <code>Plus(...)</code> expressions
+   * @return
+   */
+  public static boolean isNegativeWeighted(final IAST ast, boolean checkTimesPlus) {
+    return isNegativeWeighted(ast, checkTimesPlus, ast.size() / 2);
+  }
+
+  /**
+   * Return the number of negative terms of the <code>ast</code> expression.
+   *
+   * @param ast
+   * @param checkTimesPlus check <code>Times(...)</code> and <code>Plus(...)</code> expressions
+   * @param maxNegativeExpr maximum number of negative valued terms which have to be found before
+   *        returning <code>true</code>
+   * @return
+   */
+  public static boolean isNegativeWeighted(final IAST ast, boolean checkTimesPlus,
+      int maxNegativeExpr) {
+    int count = maxNegativeExpr - 1;
+    for (int i = 1; i < ast.size(); i++) {
+      if (isNegativeValued(ast.get(i), checkTimesPlus)) {
+        if (--count < 0) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Split plusAST into two parts, a "rest" and a multiple of Pi/2. This assumes plusAST to be an
+   * Plus() expression. The multiple of Pi/2 returned in the second position is always a IRational
+   * number.
+   *
+   * @param plusAST
+   * @param engine
+   * @return <code>F.NIL</code> if no multiple is found.
+   */
+  public static IAST peelOff(final IAST plusAST, final EvalEngine engine) {
+    IRational k = null;
+    for (int i = 1; i < plusAST.size(); i++) {
+      IExpr temp = plusAST.get(i);
+      if (temp.equals(S.Pi)) {
+        k = F.C1;
+        break;
+      }
+      if (temp.isTimes2()) {
+        if (temp.first().isRational() && temp.second().equals(S.Pi)) {
+          k = (IRational) temp.first();
+          break;
+        }
+      }
+    }
+    if (k != null) {
+      IASTMutable result = F.binaryAST2(S.List, plusAST, F.C0);
+      IExpr m1 = F.Times(k.mod(F.C1D2), S.Pi);
+      IExpr m2 = S.Subtract.of(engine, F.Times(k, S.Pi), m1);
+      result.set(1, S.Subtract.of(plusAST, m2));
+      result.set(2, m2);
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * This assumes plusAST to be an Plus() expression. The multiple of Pi returned is a IRational
+   * number or assumed to be an expression with Integer result.
+   *
+   * @param plusAST
+   * @param engine
+   * @return <code>F.NIL</code> if no multiple is found, otherwise return <code>
+   *     List(rational-number, argument)</code>
+   */
+  public static IAST peelOffPlusI(final IAST plusAST, final EvalEngine engine) {
+    for (int i = 1; i < plusAST.size(); i++) {
+      final IExpr arg = plusAST.get(i);
+      if (arg.isTimes()) {
+        IExpr peeled = peelOfTimes((IAST) arg, S.Pi);
+        if (peeled.isPresent()) {
+          IExpr x = S.Times.of(F.CNI, peeled);
+          if (x.isRational() || x.isIntegerResult()) {
+            return F.list(x, arg);
+          }
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * This method assumes plusAST to be a Plus() expression. The multiple of Pi returned is a
+   * IRational number or assumed to be an expression with Integer result.
+   *
+   * @param plusAST
+   * @param engine
+   * @return <code>F.NIL</code> if no multiple is found.
+   */
+  public static IExpr peelOffPlusRational(final IAST plusAST, final EvalEngine engine) {
+    IExpr k = null;
+    for (int i = 1; i < plusAST.size(); i++) {
+      IExpr temp = plusAST.get(i);
+      if (temp.equals(S.Pi)) {
+        k = F.C1;
+        return k;
+      }
+      if (temp.isTimes()) {
+        IExpr peeled = peelOfTimes((IAST) temp, S.Pi);
+        if (peeled.isPresent()) {
+          if (peeled.isRational() || peeled.isIntegerResult()) {
+            // k = temp.first();
+            return peeled;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Try to split a periodic part from the Times() expression: <code>result == timesAST / period
+   * </code>
+   *
+   * @param astTimes
+   * @param period
+   * @return <code>F.NIL</code> if no periodicity was found
+   */
+  public static IExpr peelOfTimes(final IAST astTimes, final IExpr period) {
+    for (int i = 1; i < astTimes.size(); i++) {
+      if (astTimes.get(i).equals(period)) {
+        return astTimes.splice(i).oneIdentity1();
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Try to split a periodic part from the Times() expression: <code>result == timesAST / period
+   * </code>
+   *
+   * @param astTimes
+   * @param period1
+   * @param period2
+   * @return <code>F.NIL</code> if no periodicity was found
+   */
+  public static IExpr peelOfTimes(final IAST astTimes, final IExpr period1, final IExpr period2) {
+    IASTAppendable result = F.NIL;
+    for (int i = 1; i < astTimes.size(); i++) {
+      if (astTimes.get(i).equals(period1)) {
+        result = astTimes.copyAppendable();
+        result.remove(i);
+        for (int j = 1; j < result.size(); j++) {
+          if (result.get(j).equals(period2)) {
+            result.remove(j);
+            return result;
+          }
+        }
+        return F.NIL;
+      }
+    }
+    return F.NIL;
+  }
+
   private static IExpr pureImaginaryPart(final IExpr expr) {
     if (expr.isComplex() && ((IComplex) expr).re().isZero()) {
       IComplex compl = (IComplex) expr;
@@ -667,6 +831,19 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
       if (arg1.isComplex() && ((IComplex) arg1).re().isZero()) {
         return times.setAtCopy(1, ((IComplex) arg1).im());
       }
+    }
+    return F.NIL;
+  }
+
+  public static IExpr realPart(final IExpr expr, boolean unequalsZero) {
+    IExpr rePart = S.Re.of(expr);
+    if (unequalsZero) {
+      if (rePart.isZero()) {
+        return F.NIL;
+      }
+    }
+    if (rePart.isNumber() || rePart.isFree(S.Re)) {
+      return rePart;
     }
     return F.NIL;
   }
@@ -700,127 +877,6 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
         newSymbol.writeRules(oos);
       } catch (IOException e) {
         LOGGER.error("AbstractFunctionEvaluator.setUp() failed", e);
-      }
-    }
-  }
-
-  /**
-   * Determine the options from the last arguments of <code>ast</code> or from the default options.
-   *
-   * @param options the result array of options and their (possibly default) values.
-   * @param ast
-   * @param argSize
-   * @param expectedArgSize
-   * @param optionSymbol
-   * @param engine
-   * @return
-   */
-  public static int determineOptions(IExpr[] options, IAST ast, int argSize, int[] expectedArgSize,
-      IBuiltInSymbol[] optionSymbol, EvalEngine engine) {
-    argSize = determineArgumentOptions(options, ast, argSize, expectedArgSize, optionSymbol);
-
-    determineDefaultOptions(options, ast, optionSymbol, engine);
-    return argSize;
-  }
-
-  /**
-   * Determine the options only from the last arguments of <code>ast</code>. Possibly additional
-   * options are <code>null</code> if no matching option is found in the arguments of the <code>ast
-   * </code>.
-   *
-   * @param options
-   * @param ast
-   * @param argSize
-   * @param expectedArgSize
-   * @param optionSymbol
-   * @return
-   */
-  private static int determineArgumentOptions(IExpr[] options, IAST ast, int argSize,
-      int[] expectedArgSize, IBuiltInSymbol[] optionSymbol) {
-    int minNumberOfArgs = 1;
-    if (expectedArgSize != null) {
-      // the ast function must at least contain the minimum number of arguments
-      minNumberOfArgs = expectedArgSize[0];
-      if (minNumberOfArgs < 1) {
-        minNumberOfArgs = 1;
-      }
-    }
-
-    int counter = 0;
-    boolean evaled = true;
-    while (argSize > minNumberOfArgs && evaled && counter < optionSymbol.length) {
-      IExpr arg = ast.get(argSize);
-
-      // check that arg has the correct options format:
-      if (arg.isRule()) {
-        evaled = false;
-        for (int i = 0; i < optionSymbol.length; i++) {
-          if (optionSymbol[i].equals(arg.first())) {
-            options[i] = arg.second();
-            argSize--;
-            counter++;
-            evaled = true;
-            break;
-          }
-        }
-      } else if (arg.isListOfRules(true) && !arg.isEmptyList()) {
-        IAST listOfRules = (IAST) arg;
-        for (int j = 1; j < listOfRules.size(); j++) {
-          IAST rule = (IAST) listOfRules.get(j);
-          evaled = false;
-          for (int i = 0; i < optionSymbol.length; i++) {
-            if (optionSymbol[i].equals(rule.first())) {
-              options[i] = rule.second();
-              argSize--;
-              counter++;
-              evaled = true;
-              break;
-            }
-          }
-        }
-      } else {
-        evaled = false;
-        break;
-      }
-    }
-    return argSize;
-  }
-
-  /**
-   * Replace the options which are <code>null</code> only from the default options of the head
-   * symbol.
-   *
-   * @param options
-   * @param ast
-   * @param optionSymbol
-   * @param engine
-   */
-  private static void determineDefaultOptions(IExpr[] options, IAST ast,
-      IBuiltInSymbol[] optionSymbol, EvalEngine engine) {
-    int optionNullStart = -1;
-    for (int i = 0; i < options.length; i++) {
-      if (options[i] == null) {
-        optionNullStart = i;
-        break;
-      }
-    }
-    if (optionNullStart >= 0) {
-      final IExpr temp = OptionsPattern.optionsList(ast.topHead(), false);
-      // final IExpr temp = engine.evaluate(F.Options(ast.topHead()));
-      if (temp.isList() && temp.size() > 1) {
-        IAST list = (IAST) temp;
-        for (int i = optionNullStart; i < options.length; i++) {
-          if (options[i] == null) {
-            options[i] = S.None;
-            for (int j = 1; j < list.size(); j++) {
-              IAST rule = (IAST) list.get(j);
-              if (optionSymbol[i].equals(rule.first())) {
-                options[i] = rule.second();
-                break;
-              }
-            }
-          }
-        }
       }
     }
   }

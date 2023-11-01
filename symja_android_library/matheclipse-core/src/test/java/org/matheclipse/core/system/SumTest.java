@@ -242,7 +242,7 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(a^i,{i,0,1})", //
         "1+a");
     check("Sum(a^i,{i,0,Infinity})", //
-        "-1/(-1+a)");
+        "1/(1-a)");
     check("Sum(a^i,{i,1,Infinity})", //
         "-a/(-1+a)");
     check("Sum(a^i,{i,3,Infinity})", //

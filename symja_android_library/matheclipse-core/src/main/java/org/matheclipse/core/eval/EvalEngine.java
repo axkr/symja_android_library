@@ -227,10 +227,15 @@ public class EvalEngine implements Serializable {
   transient boolean fNumericMode;
 
   /**
-   * if <code>true</code> the engine evaluates in &quot;F.Together(expr)&quot; in IExpr#times()
-   * method.
+   * if <code>true</code> the engine evaluates &quot;F.Together(expr)&quot; in IExpr#times() method.
    */
   transient boolean fTogetherMode;
+
+  /**
+   * If <code>true</code> the engine does no simplification of &quot;negative {@link S#Plus}
+   * expressions&quot; inside {@link S#Times} expressions in common subexpression determining.
+   */
+  transient boolean fNoSimplifyMode;
 
   transient boolean fEvalLHSMode;
 
@@ -601,6 +606,7 @@ public class EvalEngine implements Serializable {
     engine.fSessionID = fSessionID;
     engine.fStopRequested = false;
     engine.fTogetherMode = fTogetherMode;
+    engine.fNoSimplifyMode = fNoSimplifyMode;
     engine.fTraceMode = fTraceMode;
     engine.fTraceStack = fTraceStack;
     engine.f$Input = f$Input;
@@ -2982,6 +2988,7 @@ public class EvalEngine implements Serializable {
     fRecursionCounter = 0;
     fNumericMode = false;
     fTogetherMode = false;
+    fNoSimplifyMode = false;
     fEvalLHSMode = false;
     fEvalRHSMode = false;
     fDisabledTrigRules = false;
@@ -3147,6 +3154,15 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * If <code>true</code> the engine does no simplification of &quot;negative {@link S#Plus}
+   * expressions&quot; inside {@link S#Times} expressions in common subexpression determining.
+   * 
+   */
+  public final boolean isNoSimplifyMode() {
+    return fNoSimplifyMode;
+  }
+
+  /**
    * If the trace mode is set the system writes an evaluation trace list or if additionally the
    * <i>stop after evaluation mode</i> is set returns the first evaluated result.
    *
@@ -3213,6 +3229,7 @@ public class EvalEngine implements Serializable {
     fDisabledTrigRules = false;
     fRecursionCounter = 0;
     fTogetherMode = false;
+    fNoSimplifyMode = false;
     fTraceMode = false;
     fTraceStack = null;
     fStopRequested = false;
@@ -3495,12 +3512,22 @@ public class EvalEngine implements Serializable {
    * {@link S#Together} command during the evaluation of the multiplication if the parameter is set
    * to <code>true</code>.
    *
-   * @param fTogetherMode if <code>true</code> the evaluation will be wrapped by a
-   *        {@link S#Together} function in basic multiplication
+   * @param togetherMode if <code>true</code> the evaluation will be wrapped by a {@link S#Together}
+   *        function in basic multiplication
    * @see #isTogetherMode()
    */
-  public void setTogetherMode(boolean fTogetherMode) {
-    this.fTogetherMode = fTogetherMode;
+  public void setTogetherMode(boolean togetherMode) {
+    this.fTogetherMode = togetherMode;
+  }
+
+  /**
+   * If set to <code>true</code> the engine does no simplification of &quot;negative {@link S#Plus}
+   * expressions&quot; inside {@link S#Times} expressions in common subexpression determining.
+   * 
+   * @param noSimplifyMode
+   */
+  public void setNoSimplifyMode(boolean noSimplifyMode) {
+    this.fNoSimplifyMode = noSimplifyMode;
   }
 
   /** @param b */

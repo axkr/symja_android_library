@@ -4795,8 +4795,10 @@ public class Algebra {
       }
     }
     if (p0.isTimes() || p1.isTimes()) {
-      final IAST p0Times = p0.isTimes() ? (IAST) p0 : F.Times(p0);
-      final IAST p1Times = p1.isTimes() ? (IAST) p1 : F.Times(p1);
+      IAST p0Times = AbstractFunctionEvaluator.getNegativePlusInTimes(p0);
+      IAST p1Times = AbstractFunctionEvaluator.getNegativePlusInTimes(p1);
+      // IAST p0Times = p0.isTimes() ? (IAST) p0 : F.Times(p0);
+      // IAST p1Times = p1.isTimes() ? (IAST) p1 : F.Times(p0);
       IASTAppendable t0 = p0Times.copyAppendable();
       IASTAppendable t1 = p1Times.copyAppendable();
       int i = 1;
@@ -4840,8 +4842,7 @@ public class Algebra {
               t1Base = t1Arg.base();
               t1Exponent = t1Arg.exponent();
             }
-
-            if (t0Base.equals(t1Base) && t0Exponent.isReal() && t1Exponent.isReal()) {
+            if (t0Exponent.isReal() && t1Exponent.isReal() && t0Base.equals(t1Base)) {
               IReal exp0 = (IReal) t0Exponent;
               IReal exp1 = (IReal) t1Exponent;
               final IReal subtracted;
@@ -4862,6 +4863,7 @@ public class Algebra {
                 subtracted = exp1.subtractFrom(exp0);
                 t0.remove(i);
                 t1.set(j, F.Power(t1Base, subtracted));
+                j++;
                 if (Config.TRACE_BASIC_ARITHMETIC) {
                   if (EvalEngine.get().isTraceMode()) {
                     if (commonFactors.isNIL()) {
@@ -4900,6 +4902,7 @@ public class Algebra {
       }
     }
     return F.NIL;
+
   }
 
   /**
@@ -5315,17 +5318,23 @@ public class Algebra {
    */
   public static IExpr[] getNumeratorDenominator(IAST ast, EvalEngine engine, boolean together) {
     if (together) {
-      IExpr[] result = new IExpr[3];
-      result[2] = together(ast, engine);
-      // split expr into numerator and denominator
-      result[1] = engine.evaluate(F.Denominator(result[2]));
-      if (!result[1].isOne()) {
-        // search roots for the numerator expression
-        result[0] = engine.evaluate(F.Numerator(result[2]));
-      } else {
-        result[0] = ast; // result[2];
+      boolean noSimplifyMode = engine.isNoSimplifyMode();
+      try {
+        engine.setNoSimplifyMode(true);
+        IExpr[] result = new IExpr[3];
+        result[2] = together(ast, engine);
+        // split expr into numerator and denominator
+        result[1] = engine.evaluate(F.Denominator(result[2]));
+        if (!result[1].isOne()) {
+          // search roots for the numerator expression
+          result[0] = engine.evaluate(F.Numerator(result[2]));
+        } else {
+          result[0] = ast; // result[2];
+        }
+        return result;
+      } finally {
+        engine.setNoSimplifyMode(noSimplifyMode);
       }
-      return result;
     }
 
     IExpr[] result = new IExpr[2];

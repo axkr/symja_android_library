@@ -22017,6 +22017,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   // }
 
   public void testSimplify() {
+    check("Simplify((1/x-1/3)/(x-3))", //
+        "-1/(3*x)");
+
     check("Simplify(Abs(Sign(z)),z!=-1&& z!=0&&z!=1)", //
         "1");
     check("Simplify(Sign(x), x<0)", //
@@ -24336,6 +24339,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testTogether() {
+    check("Together((1/x-1/3)^3/(x-3)^2)", //
+        "(3-x)/(27*x^3)");
+    check("Together((1/x-1/3)/(x-3))", //
+        "-1/(3*x)");
     check("Together(1/2+(1/3+I*1/2)*Sqrt(3))", //
         "1/6*(3+(2+I*3)*Sqrt(3))");
     check("Together(1/2+I*1/2*Sqrt(3))", //
@@ -24370,7 +24377,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Together((x+2*Sqrt(x)+1)/(1+Sqrt(x)))", //
         "1+Sqrt(x)");
     check("Together(-a/(-(b-a*c)))", //
-        "-a/(-b+a*c)");
+        "a/(b-a*c)");
     check("Together(Simplify(Together(-a/(-(b-a*c)))))", //
         "a/(b-a*c)");
     check("Together(1/2+I/3 + 3*a^(-1))", //

@@ -216,7 +216,6 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   public void testSolve001() {
-
     check("Solve((5*x^4-2)/(x+1)/(x^2-1)==0,x)", //
         "{{x->-(2/5)^(1/4)},{x->-I*(2/5)^(1/4)},{x->I*(2/5)^(1/4)},{x->(2/5)^(1/4)}}");
   }

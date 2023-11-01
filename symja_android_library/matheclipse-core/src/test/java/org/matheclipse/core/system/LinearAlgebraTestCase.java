@@ -17,7 +17,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   public void testAdjugate() {
     check("Adjugate({{E^5, 1, 3 - 2*I}, {1 + I, Pi/2, 5}, {0, 1, -4}})", //
-        "{{2*(-5/2-Pi),7-I*2,(-3/2+I)*(-30/13-I*20/13+Pi)},\n" //
+        "{{2*(-5/2-Pi),7-I*2,(3/2-I)*(30/13+I*20/13-Pi)},\n" //
             + " {4+I*4,-4*E^5,5*(1+I*1/5-E^5)},\n" //
             + " {1+I,-E^5,1/2*(-2-I*2+E^5*Pi)}}");
     // https://en.wikipedia.org/wiki/Adjugate_matrix
@@ -931,10 +931,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   public void testInverse() {
     check("Inverse(s*{{1,0,0},{0,1,0},{0,0,1}}-{{-1,1,1},{-4,-4,1},{1,1,1}})", //
-        "{{(-5+3*s+s^2)/(-10+s+4*s^2+s^3),s/(-10+s+4*s^2+s^3),(5+s)/(-10+s+4*s^2+s^3)},\n"//
-            + " {((1+s)*(-5+4*s))/((-1-s)*(-10+s+4*s^2+s^3)),(-2+s^2)/(-10+s+4*s^2+s^3),(-3+s)/(-\n"//
-            + "10+s+4*s^2+s^3)},\n"//
-            + " {s/(-10+s+4*s^2+s^3),(-2-s)/(10-s-4*s^2-s^3),(8+5*s+s^2)/(-10+s+4*s^2+s^3)}}");
+        "{{(5-3*s-s^2)/(10-s-4*s^2-s^3),s/(-10+s+4*s^2+s^3),(5+s)/(-10+s+4*s^2+s^3)},\n" //
+            + " {(5-4*s)/(-10+s+4*s^2+s^3),(2-s^2)/(10-s-4*s^2-s^3),(3-s)/(10-s-4*s^2-s^3)},\n" //
+            + " {-s/(10-s-4*s^2-s^3),-(2+s)/(10-s-4*s^2-s^3),(-8-5*s-s^2)/(10-s-4*s^2-s^3)}}");
     check("N(Inverse({{1,2.0},{3,4}}),50)", //
         "{{-2.0,1.0},{1.5,-0.5}}");
 
@@ -1034,7 +1033,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("LinearSolve({{a, b,c,d,e}, {f,g,h,i,j}}, {x, y})", //
         "{(g*x-b*y)/(-b*f+a*g),(-f*x+a*y)/(-b*f+a*g),0,0,0}");
     check("LinearSolve({{a,b,c,d,e}, {f,g,h,i,j}, {k,l,m,n,o}}, {x,y,z})", //
-        "{(-h*l*x+g*m*x+c*l*y-b*m*y-c*g*z+b*h*z)/(-c*g*k+b*h*k+c*f*l-a*h*l-b*f*m+a*g*m),(h*k*x-f*m*x-c*k*y+a*m*y+c*f*z-a*h*z)/(-c*g*k+b*h*k+c*f*l-a*h*l-b*f*m+a*g*m),(-g*k*x+f*l*x+b*k*y-a*l*y-b*f*z+a*g*z)/(-c*g*k+b*h*k+c*f*l-a*h*l-b*f*m+a*g*m),\n"
+        "{(h*l*x-g*m*x-c*l*y+b*m*y+c*g*z-b*h*z)/(c*g*k-b*h*k-c*f*l+a*h*l+b*f*m-a*g*m),(-h*k*x+f*m*x+c*k*y-a*m*y-c*f*z+a*h*z)/(c*g*k-b*h*k-c*f*l+a*h*l+b*f*m-a*g*m),(g*k*x-f*l*x-b*k*y+a*l*y+b*f*z-a*g*z)/(c*g*k-b*h*k-c*f*l+a*h*l+b*f*m-a*g*m),\n" //
             + "0,0}");
     // underdetermined system:
     check("LinearSolve({{1, 2, 3}, {4, 5, 6}}, {6, 15})", //
