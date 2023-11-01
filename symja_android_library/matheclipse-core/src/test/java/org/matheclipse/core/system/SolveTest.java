@@ -1645,146 +1645,158 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   public void testSolveTrigs() {
     // \Leftrightarrow \sin x(2 \cos x-\sin x)=0 \Leftrightarrow\left[\begin{array} { l }
-    //{ \operatorname { s i n } x = 0 } \\
-    //{ \operatorname { t a n } x = 2 }
-    //\end{array} \Leftrightarrow \left[\begin{array}{c}
-    //x=k \pi \\
-    //x=\arctan 2+k \pi
-    //\end{array}\right.\right.
-//    check("Solve[ sin(x)^(2)+sin(2*x)+2cos(x)^2==2, x] // ExpToTrig",
-//      "");
+    // { \operatorname { s i n } x = 0 } \\
+    // { \operatorname { t a n } x = 2 }
+    // \end{array} \Leftrightarrow \left[\begin{array}{c}
+    // x=k \pi \\
+    // x=\arctan 2+k \pi
+    // \end{array}\right.\right.
+    // check("Solve[ sin(x)^(2)+sin(2*x)+2cos(x)^2==2, x] // ExpToTrig",
+    // "");
 
     // \begin{aligned}
-    //\Leftrightarrow 1-2 \sin ^2 x+3 \sin x-2=0 \Leftrightarrow 2 \sin ^2 x-3 \sin x+1=0 \\
-    //\Leftrightarrow\left[\begin{array} { l }
-    //{ \operatorname { s i n } x = 1 } \\
-    //{ \operatorname { s i n } x = \frac { 1 } { 2 } }
-    //\end{array} \Leftrightarrow \left[\begin{array}{l}
-    //x=\frac{\pi}{2}+k 2 \pi \\
-    //x=\frac{\pi}{6}+k 2 \pi, k \in \mathbb{Z} \\
-    //x=\frac{5 \pi}{6}+k 2 \pi
-    //\end{array}\right.\right.
-    //\end{aligned}
+    // \Leftrightarrow 1-2 \sin ^2 x+3 \sin x-2=0 \Leftrightarrow 2 \sin ^2 x-3 \sin x+1=0 \\
+    // \Leftrightarrow\left[\begin{array} { l }
+    // { \operatorname { s i n } x = 1 } \\
+    // { \operatorname { s i n } x = \frac { 1 } { 2 } }
+    // \end{array} \Leftrightarrow \left[\begin{array}{l}
+    // x=\frac{\pi}{2}+k 2 \pi \\
+    // x=\frac{\pi}{6}+k 2 \pi, k \in \mathbb{Z} \\
+    // x=\frac{5 \pi}{6}+k 2 \pi
+    // \end{array}\right.\right.
+    // \end{aligned}
     check("Solve[ cos(2*x)+3 sin(x)-2==0, x, GenerateConditions -> True]",
-      "{{x->ConditionalExpression(Pi/6+2*Pi*C(1),C(1)∈Integers)}," +
-        "{x->ConditionalExpression(Pi/\n2+2*Pi*C(1),C(1)∈Integers)}," +
-        "{x->ConditionalExpression(5/6*Pi+2*Pi*C(1),C(1)∈Integers)}}");
+        "{{x->ConditionalExpression(Pi/6+2*Pi*C(1),C(1)∈Integers)},"
+            + "{x->ConditionalExpression(Pi/\n2+2*Pi*C(1),C(1)∈Integers)},"
+            + "{x->ConditionalExpression(5/6*Pi+2*Pi*C(1),C(1)∈Integers)}}");
 
-
-    //\begin{aligned}
-    //& \sqrt{3} \sin x+\cos x=\sqrt{2} \Leftrightarrow \frac{\sqrt{3}}{2} \sin x+\frac{1}{2} \cos x=\frac{\sqrt{2}}{2} \\
-    //& \Leftrightarrow \sin x \cos \frac{\pi}{6}+\cos x \sin \frac{\pi}{6}=\frac{\sqrt{2}}{2} \Leftrightarrow \sin \left(x+\frac{\pi}{6}\right)=\sin \frac{\pi}{4} \\
-    //& \Leftrightarrow\left[\begin{array} { c }
-    //{ x + \frac { \pi } { 6 } = \frac { \pi } { 4 } + k 2 \pi } \\
-    //{ x + \frac { \pi } { 6 } = \frac { 3 \pi } { 4 } + k 2 \pi }
-    //\end{array} \Leftrightarrow \left[\begin{array}{l}
-    //x=\frac{\pi}{12}+k 2 \pi \\
-    //x=\frac{7 \pi}{12}+k 2 \pi
-    //\end{array}, k \in \mathbb{Z}\right.\right.
-    //\end{aligned}
-//    check("Solve[ sqrt(3) * sin(x) + cos(x) == sqrt(2), x, GenerateConditions -> True]",
-//      "");
 
     // \begin{aligned}
-    //& \Leftrightarrow 2 \tan ^2 x+3 \tan x-5=0 \\
-    //& \Leftrightarrow\left[\begin{array} { c }
-    //{ \operatorname { t a n } x = 1 } \\
-    //{ \operatorname { t a n } x = - \frac { 5 } { 2 } }
-    //\end{array} \Leftrightarrow \left[\begin{array}{c}
-    //x=\frac{\pi}{4}+k \pi \\
-    //x=\arctan \left(-\frac{5}{2}\right)+k \pi
-    //\end{array}, k \in \mathbb{Z}\right.\right.
-    //\end{aligned}
-    check("Solve[ 2sin(x)^(2)+3*sin(x) * cos(x)-5cos(x)^(2) == 0, x, GenerateConditions -> True] " +
-        "// ExpToTrig // FullSimplify",
-      "{{x->ConditionalExpression(Pi*(-3/4+2*C(1)),C(1)∈Integers)}," +
-        "{x->ConditionalExpression(-ArcTan(\n5/2)+2*Pi*C(1),C(1)∈Integers)}}");
+    // & \sqrt{3} \sin x+\cos x=\sqrt{2} \Leftrightarrow \frac{\sqrt{3}}{2} \sin x+\frac{1}{2} \cos
+    // x=\frac{\sqrt{2}}{2} \\
+    // & \Leftrightarrow \sin x \cos \frac{\pi}{6}+\cos x \sin \frac{\pi}{6}=\frac{\sqrt{2}}{2}
+    // \Leftrightarrow \sin \left(x+\frac{\pi}{6}\right)=\sin \frac{\pi}{4} \\
+    // & \Leftrightarrow\left[\begin{array} { c }
+    // { x + \frac { \pi } { 6 } = \frac { \pi } { 4 } + k 2 \pi } \\
+    // { x + \frac { \pi } { 6 } = \frac { 3 \pi } { 4 } + k 2 \pi }
+    // \end{array} \Leftrightarrow \left[\begin{array}{l}
+    // x=\frac{\pi}{12}+k 2 \pi \\
+    // x=\frac{7 \pi}{12}+k 2 \pi
+    // \end{array}, k \in \mathbb{Z}\right.\right.
+    // \end{aligned}
+    // check("Solve[ sqrt(3) * sin(x) + cos(x) == sqrt(2), x, GenerateConditions -> True]",
+    // "");
 
     // \begin{aligned}
-    //&\Leftrightarrow\left(3 \sin 3 x-4 \sin ^3 3 x\right)-\sqrt{3} \cos 9 x=1\\
-    //&\Leftrightarrow \sin 9 x-\sqrt{3} \cos 9 x=1 \Leftrightarrow \sin \left(9 x-\frac{\pi}{3}\right)=\sin \frac{\pi}{6} \Leftrightarrow\left[\begin{array}{l}
-    //x=\frac{\pi}{18}+k \frac{2 \pi}{9} \\
-    //x=\frac{7 \pi}{54}+k \frac{2 \pi}{9}
-    //\end{array}\right.
-    //\end{aligned}
-//    check("Solve[ 3*sin(3*x)-sqrt(3) * cos(9*x) == 1+4sin(3x)^(3), x, GenerateConditions -> True]",
-//      "");
+    // & \Leftrightarrow 2 \tan ^2 x+3 \tan x-5=0 \\
+    // & \Leftrightarrow\left[\begin{array} { c }
+    // { \operatorname { t a n } x = 1 } \\
+    // { \operatorname { t a n } x = - \frac { 5 } { 2 } }
+    // \end{array} \Leftrightarrow \left[\begin{array}{c}
+    // x=\frac{\pi}{4}+k \pi \\
+    // x=\arctan \left(-\frac{5}{2}\right)+k \pi
+    // \end{array}, k \in \mathbb{Z}\right.\right.
+    // \end{aligned}
+    check(
+        "Solve[ 2sin(x)^(2)+3*sin(x) * cos(x)-5cos(x)^(2) == 0, x, GenerateConditions -> True] "
+            + "// ExpToTrig // FullSimplify",
+        "{{x->ConditionalExpression(Pi*(-3/4+2*C(1)),C(1)∈Integers)},"
+            + "{x->ConditionalExpression(-ArcTan(\n5/2)+2*Pi*C(1),C(1)∈Integers)}}");
 
     // \begin{aligned}
-    //\text { (1) } & \Leftrightarrow \frac{\sin x}{\cos x}-\sin 2 x-\cos 2 x+4 \cos x-\frac{2}{\cos x}=0 \\
-    //& \Leftrightarrow \sin x-2 \sin x \cos ^2 x-\cos 2 x \cos x+2\left(2 \cos ^2 x-1\right)=0 \\
-    //\Leftrightarrow & \sin x\left(1-2 \cos ^2 x\right)-\cos 2 x \cos x+2 \cos 2 x=0 \\
-    //\Leftrightarrow & -\sin x \cos 2 x-\cos 2 x \cos x+2 \cos 2 x=0 \\
-    //\Leftrightarrow & \cos 2 x(\sin x+\cos x-2)=0 \Leftrightarrow\left[\begin{array}{c}
-    //\cos 2 x=0 \\
-    //\sin x+\cos x=2(v n)
-    //\end{array} \Leftrightarrow x=\frac{\pi}{4}+k \frac{\pi}{2}\right.
-    //\end{aligned}
-//    check("Solve[ tan(x)-sin(2*x)-cos(2*x)+2*(2*cos(x)-(1)/(cos(x))) == 0, x, GenerateConditions -> True] //ExpToTrig//FullSimplify",
-//      "{{x->ConditionalExpression(Pi*(-3/4+2*C(1)),C(1)∈Integers)}," +
-//        "{x->ConditionalExpression(Pi*(-\n" + "1/4+2*C(1)),C(1)∈Integers)}," +
-//        "{x->ConditionalExpression(Pi*(1/4+2*C(1)),C(1)∈Integers)}," +
-//        "{x->ConditionalExpression(Pi*(\n" + "3/4+2*C(1)),C(1)∈Integers)}," +
-//        "{x->ConditionalExpression(2*Pi*C(1)-I*Log(1+I-Sqrt(\n" + "I*4)/2),C(1)∈Integers)}," +
-//        "{x->ConditionalExpression(2*Pi*C(1)-I*Log(1+I+Sqrt(I*4)/\n" + "2),C(1)∈Integers)}}");
+    // &\Leftrightarrow\left(3 \sin 3 x-4 \sin ^3 3 x\right)-\sqrt{3} \cos 9 x=1\\
+    // &\Leftrightarrow \sin 9 x-\sqrt{3} \cos 9 x=1 \Leftrightarrow \sin \left(9
+    // x-\frac{\pi}{3}\right)=\sin \frac{\pi}{6} \Leftrightarrow\left[\begin{array}{l}
+    // x=\frac{\pi}{18}+k \frac{2 \pi}{9} \\
+    // x=\frac{7 \pi}{54}+k \frac{2 \pi}{9}
+    // \end{array}\right.
+    // \end{aligned}
+    // check("Solve[ 3*sin(3*x)-sqrt(3) * cos(9*x) == 1+4sin(3x)^(3), x, GenerateConditions ->
+    // True]",
+    // "");
 
     // \begin{aligned}
-    //& \Leftrightarrow 6 \sin x \cos x-6 \cos x+2 \sin ^2 x-9 \sin x+7=0 \\
-    //& \Leftrightarrow 6 \cos x(\sin x-1)+(\sin x-1)(2 \sin x-7)=0 \\
-    //& \Leftrightarrow(\sin x-1)(6 \cos x+2 \sin x-7)=0 \\
-    //& \Leftrightarrow\left[\begin{array}{c}
-    //\sin x=1 \\
-    //6 \cos x+2 \sin x=7
-    //\end{array} \Leftrightarrow x=\frac{\pi}{2}+k 2 \pi\right.
-    //\end{aligned}
+    // \text { (1) } & \Leftrightarrow \frac{\sin x}{\cos x}-\sin 2 x-\cos 2 x+4 \cos
+    // x-\frac{2}{\cos x}=0 \\
+    // & \Leftrightarrow \sin x-2 \sin x \cos ^2 x-\cos 2 x \cos x+2\left(2 \cos ^2 x-1\right)=0 \\
+    // \Leftrightarrow & \sin x\left(1-2 \cos ^2 x\right)-\cos 2 x \cos x+2 \cos 2 x=0 \\
+    // \Leftrightarrow & -\sin x \cos 2 x-\cos 2 x \cos x+2 \cos 2 x=0 \\
+    // \Leftrightarrow & \cos 2 x(\sin x+\cos x-2)=0 \Leftrightarrow\left[\begin{array}{c}
+    // \cos 2 x=0 \\
+    // \sin x+\cos x=2(v n)
+    // \end{array} \Leftrightarrow x=\frac{\pi}{4}+k \frac{\pi}{2}\right.
+    // \end{aligned}
+    // check("Solve[ tan(x)-sin(2*x)-cos(2*x)+2*(2*cos(x)-(1)/(cos(x))) == 0, x, GenerateConditions
+    // -> True] //ExpToTrig//FullSimplify",
+    // "{{x->ConditionalExpression(Pi*(-3/4+2*C(1)),C(1)∈Integers)}," +
+    // "{x->ConditionalExpression(Pi*(-\n" + "1/4+2*C(1)),C(1)∈Integers)}," +
+    // "{x->ConditionalExpression(Pi*(1/4+2*C(1)),C(1)∈Integers)}," +
+    // "{x->ConditionalExpression(Pi*(\n" + "3/4+2*C(1)),C(1)∈Integers)}," +
+    // "{x->ConditionalExpression(2*Pi*C(1)-I*Log(1+I-Sqrt(\n" + "I*4)/2),C(1)∈Integers)}," +
+    // "{x->ConditionalExpression(2*Pi*C(1)-I*Log(1+I+Sqrt(I*4)/\n" + "2),C(1)∈Integers)}}");
+
+    // \begin{aligned}
+    // & \Leftrightarrow 6 \sin x \cos x-6 \cos x+2 \sin ^2 x-9 \sin x+7=0 \\
+    // & \Leftrightarrow 6 \cos x(\sin x-1)+(\sin x-1)(2 \sin x-7)=0 \\
+    // & \Leftrightarrow(\sin x-1)(6 \cos x+2 \sin x-7)=0 \\
+    // & \Leftrightarrow\left[\begin{array}{c}
+    // \sin x=1 \\
+    // 6 \cos x+2 \sin x=7
+    // \end{array} \Leftrightarrow x=\frac{\pi}{2}+k 2 \pi\right.
+    // \end{aligned}
     checkSolveLatex("9 \\sin x+6 \\cos x-3 \\sin 2 x+\\cos 2 x=8",
-      "Cos(2*x)+6*Cos(x)+9*Sin(x)-3*Sin(2*x)==8",
-      "{{x->ConditionalExpression(-ArcTan(3)+2*Pi*C(1),C(1)∈Integers)}}");
+        "Cos(2*x)+6*Cos(x)+9*Sin(x)-3*Sin(2*x)==8",
+        "{{x->ConditionalExpression(-ArcTan(3)+2*Pi*C(1),C(1)∈Integers)}}");
 
     checkSolveLatex("\\sin 2 x-\\cos 2 x=3 \\sin x+\\cos x-2",
-      "-Cos(2*x)+Sin(2*x)==-2+Cos(x)+3*Sin(x)",
-      "{{x->ConditionalExpression(Pi*(-1/4+2*C(1)),C(1)∈Integers)}}");
+        "-Cos(2*x)+Sin(2*x)==-2+Cos(x)+3*Sin(x)",
+        "{{x->ConditionalExpression(Pi*(-1/4+2*C(1)),C(1)∈Integers)}}");
 
     // TODO: wrong parsed input
     // checkSolveLatex("1+\\cot 2 x=\\frac{1-\\cos 2 x}{\\sin ^2 2 x}",
-    //   "1+Cot(2*x)==(1-Cos(2*x))/(Sin(2*x)^2)",
-    //   "");
+    // "1+Cot(2*x)==(1-Cos(2*x))/(Sin(2*x)^2)",
+    // "");
 
     // \begin{aligned}
-    //& \left(^*\right) \Leftrightarrow 1+\cot 2 x=\frac{1-\cos 2 x}{1-\cos ^2 2 x} \Leftrightarrow 1+\cot 2 x=\frac{1}{1+\cos 2 x} \Leftrightarrow 1+\frac{\cos 2 x}{\sin 2 x}=\frac{1}{1+\cos 2 x} \\
-    //& \Leftrightarrow \sin 2 x(1+\cos 2 x)+\cos 2 x(1+\cos 2 x)=\sin 2 x \\
-    //& \Leftrightarrow \sin 2 x \cos 2 x+\cos 2 x(1+\cos 2 x)=0 \Leftrightarrow \cos 2 x(\sin 2 x+\cos 2 x+1)=0 \\
-    //& \Leftrightarrow\left[\begin{array}{c}
-    //\cos 2 x=0 \\
-    //\sin 2 x+\cos 2 x=-1
-    //\end{array}\right. \\
-    //& +\cos 2 x=0 \Leftrightarrow x=\frac{\pi}{4}+k \frac{\pi}{2} \\
-    //& +\sin 2 x+\cos 2 x=-1 \Leftrightarrow \sin \left(2 x+\frac{\pi}{4}\right)=\sin \left(-\frac{\pi}{4}\right) \Leftrightarrow\left[\begin{array}{l}
-    //x=-\frac{\pi}{4}+k \pi \\
-    //x=\frac{\pi}{2}+k \pi
-    //\end{array}\right.
-    //\end{aligned}
+    // & \left(^*\right) \Leftrightarrow 1+\cot 2 x=\frac{1-\cos 2 x}{1-\cos ^2 2 x} \Leftrightarrow
+    // 1+\cot 2 x=\frac{1}{1+\cos 2 x} \Leftrightarrow 1+\frac{\cos 2 x}{\sin 2 x}=\frac{1}{1+\cos 2
+    // x} \\
+    // & \Leftrightarrow \sin 2 x(1+\cos 2 x)+\cos 2 x(1+\cos 2 x)=\sin 2 x \\
+    // & \Leftrightarrow \sin 2 x \cos 2 x+\cos 2 x(1+\cos 2 x)=0 \Leftrightarrow \cos 2 x(\sin 2
+    // x+\cos 2 x+1)=0 \\
+    // & \Leftrightarrow\left[\begin{array}{c}
+    // \cos 2 x=0 \\
+    // \sin 2 x+\cos 2 x=-1
+    // \end{array}\right. \\
+    // & +\cos 2 x=0 \Leftrightarrow x=\frac{\pi}{4}+k \frac{\pi}{2} \\
+    // & +\sin 2 x+\cos 2 x=-1 \Leftrightarrow \sin \left(2 x+\frac{\pi}{4}\right)=\sin
+    // \left(-\frac{\pi}{4}\right) \Leftrightarrow\left[\begin{array}{l}
+    // x=-\frac{\pi}{4}+k \pi \\
+    // x=\frac{\pi}{2}+k \pi
+    // \end{array}\right.
+    // \end{aligned}
     // TODO: missing roots in unit circle x=\frac{\pi}{4}+k \frac{\pi}{2}
     // check("Solve[ 1+Cot(2*x)==(1-Cos(2*x))/(Sin(2*x)^2), x, GenerateConditions -> True]",
-    //   "{{x->ConditionalExpression(2*Pi*C(1),C(1)∈Integers)}}");
+    // "{{x->ConditionalExpression(2*Pi*C(1),C(1)∈Integers)}}");
 
     // TODO: wrong parsed input
     // checkSolveLatex("1+\\sin ^3 2 x+\\cos ^3 2 x=\\frac{1}{2} \\sin 4 x",
-    //   "1+Cos(2*x)^3+Sin(2*x)^3==1/2*x*Sin(4)",
-    //   "");
+    // "1+Cos(2*x)^3+Sin(2*x)^3==1/2*x*Sin(4)",
+    // "");
 
     // \begin{aligned}
-    //\Leftrightarrow 2- & \sin 4 x+2(\sin 2 x+\cos 2 x)(1-\sin 2 x \cos 2 x)=0 \\
-    //& \Leftrightarrow(2-\sin 4 x)+(\sin 2 x+\cos 2 x)(2-\sin 4 x)=0 \\
-    //& \Leftrightarrow(2-\sin 4 x)(\sin 2 x+\cos 2 x+1)=0 \Leftrightarrow \sin 2 x+\cos 2 x=-1 \\
-    //\Leftrightarrow & \sin \left(2 x+\frac{\pi}{4}\right)=-\frac{\sqrt{2}}{2} \Leftrightarrow\left[\begin{array}{l}
-    //x=-\frac{\pi}{4}+k \pi \\
-    //x=\frac{\pi}{2}+k \pi
-    //\end{array}\right.
-    //\end{aligned}
+    // \Leftrightarrow 2- & \sin 4 x+2(\sin 2 x+\cos 2 x)(1-\sin 2 x \cos 2 x)=0 \\
+    // & \Leftrightarrow(2-\sin 4 x)+(\sin 2 x+\cos 2 x)(2-\sin 4 x)=0 \\
+    // & \Leftrightarrow(2-\sin 4 x)(\sin 2 x+\cos 2 x+1)=0 \Leftrightarrow \sin 2 x+\cos 2 x=-1 \\
+    // \Leftrightarrow & \sin \left(2 x+\frac{\pi}{4}\right)=-\frac{\sqrt{2}}{2}
+    // \Leftrightarrow\left[\begin{array}{l}
+    // x=-\frac{\pi}{4}+k \pi \\
+    // x=\frac{\pi}{2}+k \pi
+    // \end{array}\right.
+    // \end{aligned}
     // TODO: Unable to solve
     // check("Solve[ 1+Cos(2*x)^3+Sin(2*x)^3==1/2*x*Sin(4), x, GenerateConditions -> True]",
-    //   "");
+    // "");
 
   }
 
@@ -1792,10 +1804,17 @@ public class SolveTest extends ExprEvaluatorTestCase {
     TeXParser teXParser = new TeXParser();
     IExpr equation = teXParser.parse(texInput);
     assertEquals(equation.toString(), expectedInfix);
-    String input  = "Solve[" + equation + ",x,GenerateConditions->True]//ExpToTrig//FullSimplify";
+    String input = "Solve[" + equation + ",x,GenerateConditions->True]//ExpToTrig//FullSimplify";
     check(input, expectedResult);
   }
 
+
+  public void testSqrtSqrtSqrt() {
+    // don't print `ifun` message:
+    // Inverse functions are being used. Values may be lost for multivalued inverses.
+    check("Solve(Sqrt(1+Sqrt(1+Sqrt(x)))==2,x)", //
+        "{{x->64}}");
+  }
 
   /** The JUnit setup method */
   @Override

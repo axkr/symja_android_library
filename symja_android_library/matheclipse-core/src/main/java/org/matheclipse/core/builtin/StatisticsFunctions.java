@@ -3087,7 +3087,7 @@ public class StatisticsFunctions {
         }
 
         IASTMutable result = list.apply(S.Plus);
-        result.map(result, x -> F.Divide(F.C1, x));
+        result.map(result, x -> x.inverse());
         return F.Times(F.ZZ(list.argSize()), F.Power(result, F.CN1));
       }
       return F.NIL;
@@ -6212,7 +6212,7 @@ public class StatisticsFunctions {
     public IExpr skewness(IAST dist) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
-        return F.Divide(F.C1, F.Sqrt(n));
+        return n.sqrt().inverse();
       }
       return F.NIL;
     }

@@ -98,10 +98,10 @@ public class TrigExpand extends AbstractEvaluator {
         return F.Divide(expandSinPlus(plusAST, 1), expandCosPlus(plusAST, 1));
       } else if (ast.isAST(S.Csc, 2)) {
         // 1 / Sin(x)
-        return F.Divide(F.C1, expandSinPlus(plusAST, 1));
+        return expandSinPlus(plusAST, 1).inverse();
       } else if (ast.isAST(S.Sec, 2)) {
         // 1 / Cos(x)
-        return F.Divide(F.C1, expandCosPlus(plusAST, 1));
+        return expandCosPlus(plusAST, 1).inverse();
       } else if (ast.isAST(S.Sech, 2)) {
         return expandSechPlus(plusAST, 1);
       } else if (ast.isSinh()) {
@@ -141,10 +141,10 @@ public class TrigExpand extends AbstractEvaluator {
               return F.Divide(expandSinTimes(n, theta), expandCosTimes(n, theta));
             } else if (ast.isAST(S.Csc, 2)) {
               // 1 / Sin(x)
-              return F.Divide(F.C1, expandSinTimes(n, theta));
+              return expandSinTimes(n, theta).inverse();
             } else if (ast.isAST(S.Sec, 2)) {
               // 1 / Cos(x)
-              return F.Divide(F.C1, expandCosTimes(n, theta));
+              return  expandCosTimes(n, theta).inverse();
             } else if (ast.isSinh()) {
               int nInt = n.toInt();
               // return expandSinhPlus(F.constantArray(F.Plus, theta, nInt), 1);

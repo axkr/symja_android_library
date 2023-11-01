@@ -748,7 +748,7 @@ public class RootsFunctions {
 
     boolean isNegative = false;
     IExpr rhsNumerator = EvalEngine.get().evaluate(b.negate());
-    IExpr rhsDenominator = a; // EvalEngine.get().evaluate(F.Divide(F.C1, a));
+    IExpr rhsDenominator = a;
     if ((varDegree & 0x0001) == 0x0001) {
       // odd
       IExpr zNumerator;

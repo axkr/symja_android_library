@@ -474,8 +474,11 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
           IExpr exponent = ast.exponent();
           if (exponent.isFree(predicate, true)) {
             // f(x) ^ a
-            printIfunMessage(engine);
-            IExpr value = engine.evaluate(F.Power(exprWithoutVariable, F.Divide(F.C1, exponent)));
+            IExpr reversedPower = exponent.inverse();
+            if (!reversedPower.isMathematicalIntegerNonNegative()) {
+              printIfunMessage(engine);
+            }
+            IExpr value = engine.evaluate(F.Power(exprWithoutVariable, reversedPower));
             return extractVariableRecursive(base, value, predicate, variable, multipleValues,
                 engine);
           } else if (base.isFree(predicate, true)) {
