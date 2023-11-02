@@ -346,6 +346,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   public void testSolve() {
+    check("Solve(3*(x+a)*(x-b)==0,x)", //
+        "{{x->-a},{x->b}}");
+
     // github #261 - JUnit test for Apfloat switching to complex Power calculation
     check("Solve(0.00004244131815783 == x^5 , x)", //
         "{{x->-0.10802279680851234+I*0.07848315587546605},{x->-0.10802279680851212+I*(-0.07848315587546605)},"//

@@ -415,7 +415,7 @@ public class SimplifyFunctions {
           if (fFullSimplify) {
             if (together.isTimes()) {
               IExpr[] parts =
-                  Algebra.getNumeratorDenominator((IAST) together, EvalEngine.get(), true);
+                  Algebra.numeratorDenominator((IAST) together, true, EvalEngine.get());
               IExpr numerator = parts[0];
               IExpr denominator = parts[1];
               // common factors in numerator, denominator may be canceled here, so check if we have

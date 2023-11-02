@@ -448,7 +448,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
           IAST timesWithoutVariable = timesFilter[0];
           IAST timesWithVariable = timesFilter[1];
           if (timesWithoutVariable.isAST0()) {
-            IExpr[] numerDenom = Algebra.getNumeratorDenominator(ast, EvalEngine.get(), true);
+            IExpr[] numerDenom = Algebra.numeratorDenominator(ast, true, EvalEngine.get());
             if (!numerDenom[1].isOne()) {
               IExpr[] numerLinear = numerDenom[0].linear(variable);
               if (numerLinear != null) {

@@ -280,7 +280,6 @@ public class AssociationFunctions {
           return assoc;
         } catch (ValidateException ve) {
           Errors.printMessage(S.Association, ve, engine);
-          // print no message
         }
         return evaled ? assocList : F.NIL;
       }

@@ -2139,7 +2139,7 @@ public class Algebra {
       if (!arg1.isTimes() && !arg1.isPower()) {
         expr = S.Together.of(engine, arg1);
         if (expr.isAST()) {
-          IExpr[] parts = Algebra.getNumeratorDenominator((IAST) expr, engine, true);
+          IExpr[] parts = Algebra.numeratorDenominator((IAST) expr, true, engine);
           if (!parts[1].isOne()) {
             try {
               IExpr numerator = factorExpr(F.Factor(parts[0]), parts[0], eVar, squareFree,
@@ -2296,7 +2296,7 @@ public class Algebra {
         IExpr variable = eVar.getArrayList().get(0);
         expr = S.Together.of(engine, expr);
         if (expr.isAST()) {
-          IExpr[] parts = Algebra.getNumeratorDenominator((IAST) expr, engine, true);
+          IExpr[] parts = Algebra.numeratorDenominator((IAST) expr, true, engine);
           try {
             IExpr numerator =
                 factorExprSolve(F.Factor(parts[0]), parts[0], variable, solveData, engine);
@@ -5309,41 +5309,80 @@ public class Algebra {
   }
 
   /**
-   * Split the expression into numerator and denominator parts, by calling the <code>Numerator[]
-   * </code> and <code>Denominator[]</code> functions
+   * Split the {@link IAST} expression into numerator and denominator parts, by calling the
+   * <code>Numerator(ast)</code> and <code>Denominator(ast)</code> functions and return the result
+   * at index <code>0</code> (numerator) and index <code>1</code> (denominator).
    *
    * @param ast
-   * @param together TODO
-   * @return an array with the numerator, denominator and the evaluated <code>Together[expr]</code>.
+   * @param together if <code>true</code> the evaluated <code>Together(ast)</code> result, will be
+   *        appended at index <code>2</code> in the result array
+   * @return an array with the numerator, denominator and the evaluated <code>Together(ast)</code>
+   *         if requested.
    */
-  public static IExpr[] getNumeratorDenominator(IAST ast, EvalEngine engine, boolean together) {
+  public static IExpr[] numeratorDenominator(IAST ast, boolean together, EvalEngine engine) {
+    // if (together) {
+    // boolean noSimplifyMode = engine.isNoSimplifyMode();
+    // try {
+    // engine.setNoSimplifyMode(true);
+    // IExpr[] result = new IExpr[3];
+    // result[2] = together(ast, engine);
+    // // split expr into numerator and denominator
+    // result[1] = engine.evaluate(F.Denominator(result[2]));
+    // if (!result[1].isOne()) {
+    // // search roots for the numerator expression
+    // result[0] = engine.evaluate(F.Numerator(result[2]));
+    // } else {
+    // result[0] = ast; // result[2];
+    // }
+    // return result;
+    // } finally {
+    // engine.setNoSimplifyMode(noSimplifyMode);
+    // }
+    // }
+    //
+    // IExpr[] result = new IExpr[2];
+    // // split expr into numerator and denominator
+    // result[1] = engine.evaluate(F.Denominator(ast));
+    // if (!result[1].isOne()) {
+    // result[0] = engine.evaluate(F.Numerator(ast));
+    // } else {
+    // result[0] = ast;
+    // }
+    // return result;
+
     if (together) {
       boolean noSimplifyMode = engine.isNoSimplifyMode();
       try {
         engine.setNoSimplifyMode(true);
         IExpr[] result = new IExpr[3];
         result[2] = together(ast, engine);
-        // split expr into numerator and denominator
-        result[1] = engine.evaluate(F.Denominator(result[2]));
-        if (!result[1].isOne()) {
-          // search roots for the numerator expression
-          result[0] = engine.evaluate(F.Numerator(result[2]));
-        } else {
-          result[0] = ast; // result[2];
-        }
-        return result;
+        return splitNumeratorDenominator(ast, result[2], result, engine);
       } finally {
         engine.setNoSimplifyMode(noSimplifyMode);
       }
     }
 
     IExpr[] result = new IExpr[2];
-    // split expr into numerator and denominator
-    result[1] = engine.evaluate(F.Denominator(ast));
+    return splitNumeratorDenominator(ast, ast, result, engine);
+  }
+
+  /**
+   * Split <code>rewrittenAST</code> into numerator and denominator.
+   * 
+   * @param originalAST the original {@link IAST} expression
+   * @param rewrittenAST the rewritten AST (for example by {@link S#Together}
+   * @param result the allocated result array
+   * @param engine the evaluation engine
+   * 
+   * @return the <code>result</code> array of expressions <code>[numerator, denominator]</code>.
+   */
+  private static IExpr[] splitNumeratorDenominator(final IAST originalAST, final IExpr rewrittenAST,
+      IExpr[] result, EvalEngine engine) {
+    result[1] = engine.evaluate(F.Denominator(rewrittenAST));
     if (!result[1].isOne()) {
-      result[0] = engine.evaluate(F.Numerator(ast));
+      result[0] = engine.evaluate(F.Numerator(rewrittenAST));
     } else {
-      result[0] = ast;
+      result[0] = originalAST;
     }
     return result;
   }

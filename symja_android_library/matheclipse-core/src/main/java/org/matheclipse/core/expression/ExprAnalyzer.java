@@ -734,7 +734,7 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
   }
 
   public void splitNumeratorDenominator(IAST ast) {
-    IExpr[] result = Algebra.getNumeratorDenominator(ast, fEngine, true);
+    IExpr[] result = Algebra.numeratorDenominator(ast, true, fEngine);
     this.fNumerator = result[0];
     this.fDenominator = result[1];
     this.fExpr = result[2];
