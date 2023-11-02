@@ -5247,6 +5247,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,1,3,4,5,6}");
   }
 
+  public void testDedekindNumber() {
+    check("Table(DedekindNumber(i), {i,0,11})",
+        "{2,3,6,20,168,7581,7828354,2414682040998,56130437228687557907788,\n" //
+            + "286386577668298411128469151667598498812366,DedekindNumber(10),DedekindNumber(11)}");
+  }
+
   public void testDenominator() {
     check("Denominator(ConditionalExpression(a/13,Element(C1,Integers)))", //
         "1");

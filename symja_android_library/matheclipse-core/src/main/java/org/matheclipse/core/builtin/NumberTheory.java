@@ -1330,6 +1330,33 @@ public final class NumberTheory {
     }
   }
 
+  private static class DedekindNumber extends AbstractTrigArg1 {
+
+    @Override
+    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+      if (arg1.isInteger() && arg1.isNonNegativeResult()) {
+        int n = ((IInteger) arg1).toIntDefault();
+        if (n >= 0) {
+          if (n >= NumberTheory.DEDEKIND_7.length) {
+            int restIndex = n - 7;
+            if (restIndex >= NumberTheory.DEDEKIND_REST.length) {
+              return F.NIL;
+            }
+            return NumberTheory.DEDEKIND_REST[restIndex];
+          }
+          return F.ZZ(NumberTheory.DEDEKIND_7[n]);
+        }
+      }
+      return F.NIL;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
   /**
    *
    *
@@ -5531,6 +5558,7 @@ public final class NumberTheory {
       S.Convergents.setEvaluator(new Convergents());
       S.ContinuedFraction.setEvaluator(new ContinuedFraction());
       S.CoprimeQ.setEvaluator(new CoprimeQ());
+      S.DedekindNumber.setEvaluator(new DedekindNumber());
       S.DiracDelta.setEvaluator(new DiracDelta());
       S.Divisible.setEvaluator(new Divisible());
       S.Divisors.setEvaluator(new Divisors());
@@ -5990,6 +6018,25 @@ public final class NumberTheory {
       132049, 216091, 756839, 859433, 1257787, 1398269, 2976221, 3021377, 6972593, 13466917,
       20996011, 24036583, 25964951, 30402457, 32582657, 37156667, 42643801, 43112609, 57885161,
       74207281, 77232917, 82589933};
+
+  /**
+   * The first 7 Dedekind numbers.
+   *
+   * <p>
+   * See <a href="https://en.wikipedia.org/wiki/Dedekind_number">Dedekind number</a>
+   */
+  private static final int[] DEDEKIND_7 = {2, 3, 6, 20, 168, 7581, 7828354};
+
+  /**
+   * The 7th, 8th and 9th Dedekind number.
+   *
+   * <p>
+   * See <a href="https://en.wikipedia.org/wiki/Dedekind_number">Dedekind number</a>
+   */
+  private static final IInteger[] DEDEKIND_REST = {//
+      F.ZZ("2414682040998", 10), //
+      F.ZZ("56130437228687557907788", 10), //
+      F.ZZ("286386577668298411128469151667598498812366", 10)};
 
   private NumberTheory() {}
 

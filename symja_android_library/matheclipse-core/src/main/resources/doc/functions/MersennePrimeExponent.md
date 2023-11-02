@@ -4,8 +4,7 @@
 MersennePrimeExponent(n)
 ```
 
-> returns the  `n`th mersenne prime exponent. `2^n - 1` must be a prime number. 
-Currently `0 <= n <= 47` can be computed, otherwise the function returns unevaluated.
+> returns the `n`th mersenne prime exponent. `2^n - 1` must be a prime number. Currently `0 < n <= 47` can be computed, otherwise the function returns unevaluated.
 
 See
 * [Wikipedia - Mersenne prime](https://en.wikipedia.org/wiki/Mersenne_prime)

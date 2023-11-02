@@ -139,7 +139,7 @@ public class AST2Expr {
       "CountDistinct", "Counts", "Covariance", "CreateFile", "CreateDirectory", "Cross", "Csc",
       "Csch", "Cube", "CubeRoot", "Cuboid", "Curl", "Cyclotomic", "CycleGraph", "Cycles",
       "Cylinder", "Dataset", "DateObject", "Dashing", "DateString", "DateValue", "Decrement",
-      "Default", "DefaultButton", "Defer", "Definition", "Delete", "DeleteCases",
+      "DedekindNumber", "Default", "DefaultButton", "Defer", "Definition", "Delete", "DeleteCases",
       "DeleteDuplicates", "DeleteDuplicatesBy", "DeleteMissing", "Denominator", "DensityHistogram",
       "DensityPlot", "Depth", "Derivative", "DesignMatrix", "Det", "Diagonal", "DiagonalMatrix",
       "DiagonalMatrixQ", "DialogInput", "DialogNotebook", "DialogReturn", "DiceDissimilarity",

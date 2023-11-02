@@ -2458,6 +2458,9 @@ public class S {
    */
   public final static IBuiltInSymbol Decrement = S.initFinalSymbol("Decrement", ID.Decrement);
 
+  public final static IBuiltInSymbol DedekindNumber =
+      S.initFinalSymbol("DedekindNumber", ID.DedekindNumber);
+
   /**
    * Default(symbol) - `Default` returns the default value associated with the `symbol` for a
    * pattern default `_.` expression.
