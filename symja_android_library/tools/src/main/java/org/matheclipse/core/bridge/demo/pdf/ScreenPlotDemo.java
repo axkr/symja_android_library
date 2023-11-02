@@ -16,7 +16,7 @@ import org.matheclipse.image.bridge.fig.VisualSet;
 
 
 /** inspired from strang's book */
-public class ScreePlotDemo {
+public class ScreenPlotDemo {
 
   public static void main(String[] args) throws IOException {
     IOFunctions.initialize();
@@ -29,7 +29,7 @@ public class ScreePlotDemo {
         values.map(x -> S.Log.of(engine, 10, x)));
     JFreeChart jFreeChart = ListPlot.listPlot(visualSet, true);
     jFreeChart.setBackgroundPaint(Color.WHITE);
-    ChartUtils.saveChartAsPNG(HomeDirectory.Pictures(ScreePlotDemo.class.getSimpleName() + "2.png"),
+    ChartUtils.saveChartAsPNG(HomeDirectory.Pictures(ScreenPlotDemo.class.getSimpleName() + "2.png"),
         jFreeChart, 640, 480);
   }
 }
