@@ -5320,36 +5320,6 @@ public class Algebra {
    *         if requested.
    */
   public static IExpr[] numeratorDenominator(IAST ast, boolean together, EvalEngine engine) {
-    // if (together) {
-    // boolean noSimplifyMode = engine.isNoSimplifyMode();
-    // try {
-    // engine.setNoSimplifyMode(true);
-    // IExpr[] result = new IExpr[3];
-    // result[2] = together(ast, engine);
-    // // split expr into numerator and denominator
-    // result[1] = engine.evaluate(F.Denominator(result[2]));
-    // if (!result[1].isOne()) {
-    // // search roots for the numerator expression
-    // result[0] = engine.evaluate(F.Numerator(result[2]));
-    // } else {
-    // result[0] = ast; // result[2];
-    // }
-    // return result;
-    // } finally {
-    // engine.setNoSimplifyMode(noSimplifyMode);
-    // }
-    // }
-    //
-    // IExpr[] result = new IExpr[2];
-    // // split expr into numerator and denominator
-    // result[1] = engine.evaluate(F.Denominator(ast));
-    // if (!result[1].isOne()) {
-    // result[0] = engine.evaluate(F.Numerator(ast));
-    // } else {
-    // result[0] = ast;
-    // }
-    // return result;
-
     if (together) {
       boolean noSimplifyMode = engine.isNoSimplifyMode();
       try {
