@@ -79,6 +79,7 @@
 			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
+	<!--
 	<repositories>
 		<repository>
 			<id>orekit</id>
@@ -102,6 +103,7 @@
 			</snapshots>
 		</repository>
 	</repositories>
+	-->
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>11</java.version>
@@ -289,7 +291,7 @@
 			<dependency>
 				<groupId>org.choco-solver</groupId>
 				<artifactId>choco-solver</artifactId>
-				<version>4.11.0-SNAPSHOT</version>
+				<version>4.10.14</version>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
