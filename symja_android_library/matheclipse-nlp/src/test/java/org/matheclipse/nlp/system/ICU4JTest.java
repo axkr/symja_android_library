@@ -1,4 +1,4 @@
-package org.matheclipse.io.system;
+package org.matheclipse.nlp.system;
 
 /**
  * <a href="https://unicode-org.github.io/icu/userguide/icu4j/">ICU4J</a> related tests.
