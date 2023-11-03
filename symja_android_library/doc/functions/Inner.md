@@ -41,4 +41,4 @@ The inner product of two boolean matrices:
 
 ### Github
 
-* [Implementation of Inner](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L2733) 
+* [Implementation of Inner](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L2837) 

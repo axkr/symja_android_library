@@ -26,4 +26,4 @@ this is a test
 
 ### Github
 
-* [Implementation of ToLowerCase](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L3065) 
+* [Implementation of ToLowerCase](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L3123) 

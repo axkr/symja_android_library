@@ -26,6 +26,7 @@ See
 -155*z+255*z^3-126*z^5+30*z^7-5*z^9+z^10
 ```
  
+
 ### Github
 
-* [Implementation of EulerE](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L1653) 
+* [Implementation of EulerE](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L1759) 

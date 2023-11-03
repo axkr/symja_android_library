@@ -21,6 +21,7 @@ See
 ```
 
 Argument `{{1, 0}, {0}}` at position `1` is not a non-empty rectangular matrix.
+
 ```
 >> MatrixRank({{1, 0}, {0}})
 MatrixRank({{1, 0}, {0}})
@@ -37,4 +38,4 @@ MatrixRank({{1, 0}, {0}})
 
 ### Github
 
-* [Implementation of MatrixRank](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L3879) 
+* [Implementation of MatrixRank](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L3995) 

@@ -56,4 +56,4 @@ Normalize an association:
 
 ### Github
 
-* [Implementation of Normal](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SeriesFunctions.java#L997) 
+* [Implementation of Normal](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SeriesFunctions.java#L1053) 

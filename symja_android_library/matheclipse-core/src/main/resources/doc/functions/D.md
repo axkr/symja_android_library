@@ -134,6 +134,6 @@ f''(2*x)
 
 ### Github
 
-* [Implementation of D](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/D.java#L177) 
+* [Implementation of D](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/D.java#L174) 
 
 * [Rule definitions of D](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/DRules.m) 

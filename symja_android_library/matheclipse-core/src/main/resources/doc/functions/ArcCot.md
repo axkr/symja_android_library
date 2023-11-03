@@ -30,6 +30,6 @@ Pi/4
 
 ### Github
 
-* [Implementation of ArcCot](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L377) 
+* [Implementation of ArcCot](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L343) 
 
 * [Rule definitions of ArcCot](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/ArcCotRules.m) 

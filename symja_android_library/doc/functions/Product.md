@@ -64,6 +64,6 @@ Evaluate the `n`th primorial:
 
 ### Github
 
-* [Implementation of Product](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Product.java#L105) 
+* [Implementation of Product](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Product.java#L103) 
 
 * [Rule definitions of Product](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rule_sets/ProductRules.m) 

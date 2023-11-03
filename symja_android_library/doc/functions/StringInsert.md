@@ -45,4 +45,4 @@ StringInsert({str1, strr2,...}, new-string, position)
 
 ### Github
 
-* [Implementation of StringInsert](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L1566) 
+* [Implementation of StringInsert](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L1624) 

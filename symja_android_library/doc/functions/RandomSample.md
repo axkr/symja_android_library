@@ -33,4 +33,4 @@ f(3,4,1)
 
 ### Github
 
-* [Implementation of RandomSample](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/RandomFunctions.java#L763) 
+* [Implementation of RandomSample](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/RandomFunctions.java#L759) 

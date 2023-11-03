@@ -34,6 +34,6 @@ Infinity
 
 ### Github
 
-* [Implementation of ArcSech](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L692) 
+* [Implementation of ArcSech](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L638) 
 
 * [Rule definitions of ArcSech](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/ArcSechRules.m) 

@@ -38,4 +38,4 @@ The `IgnoreCase` option makes `EditDistance` ignore the case of letters:
 
 ### Github
 
-* [Implementation of HammingDistance](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L669) 
+* [Implementation of HammingDistance](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L671) 

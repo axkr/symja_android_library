@@ -30,4 +30,4 @@ See
 
 ### Github
 
-* [Implementation of PermutationList](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Combinatoric.java#L1809) 
+* [Implementation of PermutationList](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Combinatoric.java#L1806) 

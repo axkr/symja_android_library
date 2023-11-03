@@ -46,4 +46,4 @@ OEIS integer sequence [A098949](https://oeis.org/A098949):
 
 ### Github
 
-* [Implementation of DigitCount](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntegerFunctions.java#L344) 
+* [Implementation of DigitCount](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntegerFunctions.java#L348) 

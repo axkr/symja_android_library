@@ -24,10 +24,10 @@ See
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x2611; - partially implemented
 
 ### Github
 
-* [Implementation of LegendreQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L1823) 
+* [Implementation of LegendreQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L2113) 
 
 * [Rule definitions of LegendreQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/LegendreQRules.m) 

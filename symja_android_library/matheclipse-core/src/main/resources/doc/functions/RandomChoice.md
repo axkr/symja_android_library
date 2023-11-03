@@ -63,4 +63,4 @@ RandomChoice(weights -> items, {n1, n2,...})
 
 ### Github
 
-* [Implementation of RandomChoice](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/RandomFunctions.java#L123) 
+* [Implementation of RandomChoice](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/RandomFunctions.java#L122) 

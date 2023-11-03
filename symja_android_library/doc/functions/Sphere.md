@@ -39,4 +39,4 @@ Sphere({{x1, y1, z1}, {x2, y2, z2}, ... }, r)
 
 ### Github
 
-* [Implementation of Sphere](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphicsFunctions.java#L1120) 
+* [Implementation of Sphere](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphicsFunctions.java#L1119) 

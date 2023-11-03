@@ -36,6 +36,6 @@ Pi
 
 ### Github
 
-* [Implementation of ArcCos](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L212) 
+* [Implementation of ArcCos](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L183) 
 
 * [Rule definitions of ArcCos](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/ArcCosRules.m) 

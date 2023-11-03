@@ -43,4 +43,4 @@ The random variates of a binomial distribution can be generated with function `R
 
 ### Github
 
-* [Implementation of RandomVariate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L6373) 
+* [Implementation of RandomVariate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L6477) 
