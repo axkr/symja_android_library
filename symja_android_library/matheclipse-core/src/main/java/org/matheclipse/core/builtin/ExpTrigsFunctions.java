@@ -905,8 +905,7 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" >
    * Inverse_trigonometric functions</a>
    */
-  private static final class ArcTan extends AbstractArg12
-      implements INumeric, IRewrite {
+  private static final class ArcTan extends AbstractArg12 implements INumeric, IRewrite {
 
     @Override
     public IExpr e1ObjArg(final IExpr arg1) {
@@ -2037,30 +2036,28 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      IExpr z = ast.arg1();
-      if (engine.isNumericMode()) {
+      return F.NIL;
+    }
+
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+
+      if (ast.argSize() == 1) {
         try {
+          IInexactNumber z = (IInexactNumber) ast.arg1();
           if (z.isNumber()) {
             // see https://github.com/paulmasson/math/issues/24
 
             // Re(z)>0 || (Re(z)==0&&Im(z)>=0)
-            if (((INumber) z).complexSign() >= 0) {
+            if (z.complexSign() >= 0) {
               // (1/2)*(Pi - 4*ArcCot(E^z))
-              return F.Times.of(engine, F.C1D2,
-                  F.Subtract(S.Pi, F.Times(F.C4, F.ArcCot(F.Power(S.E, z)))));
+              return engine.evaluate(
+                  F.Times(F.C1D2, F.Subtract(S.Pi, F.Times(F.C4, F.ArcCot(F.Power(S.E, z))))));
             }
 
-            // 2*ArcTan( Tan( z/2 )
-            return F.Times.of(engine, F.C2, F.ArcTan( //
-                F.Tanh(F.Times(F.C1D2, z)) //
-            ));
-
-            // // (1/2)*(-Pi + 4*ArcTan(E^z))
-            // return F.Times.of(
-            // engine,
-            // F.C1D2,
-            // F.Plus(F.Times(F.CN1, S.Pi), F.Times(F.C4, F.ArcTan(F.Power(S.E,
-            // z)))));
+            // 2*ArcTan( Tanh( z/2 )
+            return z.times(F.C1D2).tanh().atan().times(F.C2);
           }
         } catch (ValidateException ve) {
           return Errors.printMessage(ast.topHead(), ve, engine);
@@ -2088,22 +2085,20 @@ public class ExpTrigsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr z = ast.arg1();
-      if (engine.isNumericMode()) {
-        if (z.isNumber()) {
+      if (z.isNumericFunction()) {
+        IExpr cos = S.Cos.ofNIL(engine, z);
+        if (cos.isPresent()) {
           // 1/2 * (1-Cos(x))
-          return F.Times.of(engine, F.C1D2, F.Subtract(F.C1, F.Cos(z)));
-          // return F.Power(F.Sin(F.C1D2.times(ast.arg1())), F.C2);
-        }
-      } else {
-        if (z.isNumericFunction()) {
-          IExpr cos = S.Cos.ofNIL(engine, z);
-          if (cos.isPresent()) {
-            // 1/2 * (1-Cos(x))
-            return F.Times.of(engine, F.C1D2, F.Subtract(F.C1, cos));
-          }
+          return F.C1D2.times(F.C1.subtract(cos));
         }
       }
       return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      // 1/2 * (1-Cos(x))
+      return ast.argSize() == 1 ? F.C1.subtract(ast.arg1().cos()).multiply(F.C1D2) : F.NIL;
     }
 
     @Override
@@ -2121,17 +2116,20 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      IExpr z = ast.arg1();
-      if (engine.isNumericMode()) {
-        try {
-          if (z.isNumber()) {
-            // see https://github.com/paulmasson/math/issues/24
+      return F.NIL;
+    }
 
-            // 2*ArcTanh( Tan( z/2 )
-            return F.Times.of(engine, F.C2, F.ArcTanh( //
-                F.Tan(F.Times(F.C1D2, z)) //
-            ));
-          }
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+
+      if (ast.argSize() == 1) {
+        try {
+          IInexactNumber z = (IInexactNumber) ast.arg1();
+          // see https://github.com/paulmasson/math/issues/24
+
+          // 2*ArcTanh( Tan( z/2 )
+          return z.times(F.C1D2).tan().atanh().times(F.C2);
+
         } catch (ValidateException ve) {
           return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
@@ -2157,16 +2155,11 @@ public class ExpTrigsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr z = ast.arg1();
-      if (engine.isNumericMode()) {
-        if (z.isNumber()) {
-          return F.Times.of(engine, F.C2, F.ArcSin(F.Sqrt(z)));
-        }
-      } else {
-        if (z.isNumericFunction()) {
-          IExpr arcSin = S.ArcSin.ofNIL(engine, F.Sqrt(z));
-          if (arcSin.isPresent()) {
-            return F.Times.of(engine, F.C2, arcSin);
-          }
+      if (z.isNumericFunction()) {
+        IExpr arcSin = S.ArcSin.ofNIL(engine, F.Sqrt(z));
+        if (arcSin.isPresent()) {
+          // 2*ArcSin(Sqrt(z))
+          return F.C2.times(arcSin);
         }
       }
       return F.NIL;
@@ -2175,6 +2168,12 @@ public class ExpTrigsFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      // 2*ArcSin(Sqrt(z))
+      return ast.argSize() == 1 ? ast.arg1().sqrt().asin().multiply(2) : F.NIL;
     }
 
     @Override
@@ -2968,8 +2967,7 @@ public class ExpTrigsFunctions {
    * <p>
    * See <a href="http://en.wikipedia.org/wiki/Sinc_function">Sinc function</a>
    */
-  private static class Sinc extends AbstractTrigArg1
-      implements INumeric, DoubleUnaryOperator {
+  private static class Sinc extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
 
     @Override
     public double applyAsDouble(double operand) {
