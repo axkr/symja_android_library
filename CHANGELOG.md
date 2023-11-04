@@ -7,8 +7,11 @@ Noteworthy changes are documented in this file.
 - Maven modules matheclipse-parser, matheclipse-logging, matheclipse-core are LGPL licensed
 - Maven modules matheclipse-gpl and dependents are GPL licensed
 - function documentation: [symja_android_library/doc/function](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions)
+
+
+- new function `DedekindNumber` for first 0..9 Dedekind numbers
 - Renamed ISignedNumber (Symja 2.x) interface to IReal (Symja 3.x) interface
-- Rename methods `evalComplex->evalfc` and `evalDouble->evalf`
+- Renamed methods `evalComplex->evalfc` and `evalDouble->evalf`
 - improved NIntegrate with `GaussKronrod` method (Maven dependency `de.labathome` `AdaptiveQuadrature`
 - `Hypergeometric2F1` uses apfloat algorithm for `double` and `Complex` values
 - `EvalEngine#evalDouble()` returns `POSITIVE_INFINITY, NEGATIVE_INFINITY` for `Infinity, -Infinity`

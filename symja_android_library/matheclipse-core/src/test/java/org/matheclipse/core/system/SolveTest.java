@@ -1818,6 +1818,12 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->64}}");
   }
 
+  public void testPowTwoX() {
+    // TODO noat all solutions are provided
+    check("Solve(2^x-3*x-1==0,x)", //
+        "{{x->0}}");
+  }
+
   /** The JUnit setup method */
   @Override
   protected void setUp() {
