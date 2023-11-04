@@ -9,8 +9,6 @@ import java.util.Deque;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -48,7 +46,6 @@ import org.matheclipse.core.patternmatching.PatternMatcherEquals;
 import org.matheclipse.core.patternmatching.RulesData;
 
 public final class PatternMatching {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -513,8 +510,8 @@ public final class PatternMatching {
             definitionString = symbol.definitionToString();
           }
           return F.stringx(definitionString);
-        } catch (IOException e) {
-          LOGGER.error("Definition.evaluate()", e);
+        } catch (IOException ioe) {
+          return Errors.printMessage(S.Definition, ioe, engine);
         }
       }
       return S.Null;
@@ -972,9 +969,8 @@ public final class PatternMatching {
               return arg1;
             }
             if (!arg1.isSymbol()) {
-              LOGGER.log(engine.getLogLevel(), "{}: symbol expected at position 1 instead of {}",
-                  ast.topHead(), arg1);
-              return F.NIL;
+              // "sym", "Argument `1` at position `2` is expected to be a symbol.", //
+              return Errors.printMessage(S.Information, "sym", F.List(arg1, F.C1), engine);
             }
             symbol = (ISymbol) arg1;
           } else {
@@ -1006,12 +1002,12 @@ public final class PatternMatching {
 
               stream.println(symbol.definitionToString());
             } catch (IOException ioe) {
-              LOGGER.debug("Information.evaluate() failed", ioe);
+              return Errors.printMessage(S.Information, ioe, engine);
             }
           }
           return S.Null;
         } catch (RuntimeException rex) {
-          LOGGER.debug("Information.evaluate() failed", rex);
+          return Errors.printMessage(S.Information, rex, engine);
         }
       }
       return F.NIL;
@@ -1033,9 +1029,8 @@ public final class PatternMatching {
       // Here we only validate the arguments
       // The assignment of the message is handled in the Set() function
       if (!ast.arg1().isSymbol()) {
-        LOGGER.log(engine.getLogLevel(), "{}: symbol expected at position 1 instead of {}",
-            ast.topHead(), ast.arg1());
-        return F.NIL;
+        // "sym", "Argument `1` at position `2` is expected to be a symbol.", //
+        return Errors.printMessage(S.MessageName, "sym", F.List(ast.arg1(), F.C1), engine);
       }
       if (ast.arg2().isString()) {
         return F.NIL;
@@ -2125,8 +2120,7 @@ public final class PatternMatching {
       }
       if (leftHandSide instanceof IPatternObject) {
         lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false,
-            (IPatternObject) leftHandSide,
-            rightHandSide, packageMode);
+            (IPatternObject) leftHandSide, rightHandSide, packageMode);
       } else {
         lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false, (IAST) leftHandSide,
             rightHandSide, packageMode);
@@ -2525,7 +2519,7 @@ public final class PatternMatching {
       if (leftHandSide.isAST()) {
         final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
         if (!lhsSymbol.removeRule(IPatternMatcher.SET, false, leftHandSide, packageMode)) {
-          printAssignmentNotFound(leftHandSide);
+          printAssignmentNotFound(lhsSymbol, leftHandSide);
         }
         return;
       }
@@ -2533,7 +2527,7 @@ public final class PatternMatching {
         final ISymbol lhsSymbol = (ISymbol) leftHandSide;
 
         if (!lhsSymbol.removeRule(IPatternMatcher.SET, true, leftHandSide, packageMode)) {
-          printAssignmentNotFound(leftHandSide);
+          printAssignmentNotFound(lhsSymbol, leftHandSide);
         }
         return;
       }
@@ -2541,8 +2535,9 @@ public final class PatternMatching {
       throw new RuleCreationError(leftHandSide);
     }
 
-    private static void printAssignmentNotFound(final IExpr leftHandSide) {
-      LOGGER.log(EvalEngine.get().getLogLevel(), "Assignment not found for: {}", leftHandSide);
+    private static void printAssignmentNotFound(final ISymbol lhsSymbol, final IExpr leftHandSide) {
+      // Assignment on `2` for `1` not found.
+      Errors.printMessage(S.Unset, "norep", F.List(leftHandSide, lhsSymbol));
     }
 
     @Override

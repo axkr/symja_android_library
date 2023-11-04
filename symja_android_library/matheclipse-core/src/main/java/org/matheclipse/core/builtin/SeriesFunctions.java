@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import javax.annotation.Nullable;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.JASConvert;
@@ -46,7 +44,6 @@ import edu.jas.ufd.QuotientRing;
 import edu.jas.ufd.QuotientTaylorFunction;
 
 public class SeriesFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -686,13 +683,10 @@ public class SeriesFunctions {
           IExpr coeff = poly.leadingBaseCoefficient();
           long oddDegree = poly.degree() % 2;
           if (oddDegree == 1) {
-            // odd degree
             return evalLimitQuiet(F.Times(coeff, limit), data);
           }
-          // even degree
           return evalLimitQuiet(F.Times(coeff, F.CInfinity), data);
-        } catch (RuntimeException e) {
-          LOGGER.debug("Limit.plusLimit() failed", e);
+        } catch (RuntimeException rex) {
         }
       }
       return data.mapLimit(arg1);
@@ -903,8 +897,7 @@ public class SeriesFunctions {
             ExprPolynomial numeratorPoly = ring.create(numerator);
             return limitsInfinityOfRationalFunctions(numeratorPoly, denominatorPoly, symbol, limit,
                 data);
-          } catch (RuntimeException e) {
-            LOGGER.debug("Limit.timesLimit() failed", e);
+          } catch (RuntimeException rex) {
           }
         }
 
@@ -986,12 +979,14 @@ public class SeriesFunctions {
             } else if (option.equals(S.Automatic) || option.equals(S.Reals)) {
               direction = Direction.TWO_SIDED;
             } else {
+              // Value of `1` should be a number, Reals, Complexes, FromAbove, FromBelow, TwoSided
+              // or a list of these.
               return Errors.printMessage(S.Limit, "ldir", F.List(ast.arg3()), engine);
             }
           } else {
-            LOGGER.log(engine.getLogLevel(), "{}: direction option expected at position 2!",
-                ast.topHead());
-            return F.NIL;
+            // Value of `1` should be a number, Reals, Complexes, FromAbove, FromBelow, TwoSided or
+            // a list of these.
+            return Errors.printMessage(S.Limit, "ldir", F.List(S.Null), engine);
           }
           if (direction == Direction.TWO_SIDED) {
             IExpr temp = S.Limit.evalDownRule(engine, F.Limit(arg1, arg2));
@@ -1002,14 +997,6 @@ public class SeriesFunctions {
         }
         ISymbol symbol = (ISymbol) rule.arg1();
         IExpr limit = rule.arg2();
-        // if (rule.isFreeAt(2, symbol)) {
-        // limit = rule.arg2();
-        // } else {
-        // LOGGER.log(engine.getLogLevel(),
-        // "{}: limit value is not free of variable symbol at position 2!", ast.topHead());
-        // return F.NIL;
-        // }
-
         LimitData data = new LimitData(symbol, limit, rule, direction);
         return evalLimit(arg1, data, engine);
       } finally {
@@ -1610,8 +1597,8 @@ public class SeriesFunctions {
         }
         return coefficientPlus.oneIdentity0();
         // }
-      } catch (RuntimeException re) {
-        LOGGER.debug("SeriesCoefficient.polynomialSeriesCoefficient() failed", re);
+      } catch (RuntimeException rex) {
+        Errors.printMessage(S.SeriesCoefficient, rex, engine);
       }
       return F.NIL;
     }

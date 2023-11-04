@@ -58,7 +58,7 @@ import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
 
 public final class Programming {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER2 = LogManager.getLogger();
 
   private static final AbstractFunctionEvaluator NestWhileListEvaluator = new NestWhileList();
 
@@ -2011,8 +2011,9 @@ public final class Programming {
       }
 
       if (ast.isAST1()) {
-        LOGGER.log(engine.getLogLevel(), "Off: {} - disabling messages currently not supported",
-            ast);
+        // `1` currently not supported in `2`.
+        Errors.printMessage(S.Off, "unsupported", F.List(F.stringx("disabling messages"), S.Off),
+            engine);
       }
       return F.NIL;
     }
@@ -2514,8 +2515,7 @@ public final class Programming {
                 return rightHandSide;
               }
             } catch (SymjaMathException sme) {
-              LOGGER.log(engine.getLogLevel(), builtinSymbol, sme);
-              return F.NIL;
+              return Errors.printMessage(S.Off, sme, engine);
             }
           }
         } else {
@@ -3100,7 +3100,7 @@ public final class Programming {
         } catch (final RecursionLimitExceeded | ASTElementLimitExceeded re) {
           throw re;
         } catch (Exception | OutOfMemoryError | StackOverflowError e) {
-          LOGGER.log(fEngine.getLogLevel(), "TimeConstrained", e);
+          Errors.printMessage(S.TimeConstrained, e, EvalEngine.get());
         } finally {
           fEngine.setTimeConstrainedMillis(-1);
           EvalEngine.remove();
@@ -3160,14 +3160,14 @@ public final class Programming {
         } catch (org.matheclipse.core.eval.exception.TimeoutException
             | java.util.concurrent.TimeoutException
             | com.google.common.util.concurrent.UncheckedTimeoutException e) {
-          LOGGER.debug("TimeConstrained.evaluate() timed out: {}", ast.arg1(), e);
+          Errors.printMessage(S.TimeConstrained, e, EvalEngine.get());
           if (ast.isAST3()) {
             return ast.arg3();
           }
           return S.$Aborted;
         } catch (Exception e) {
           // Appengine example: com.google.apphosting.api.DeadlineExceededException
-          LOGGER.debug("TimeConstrained.evaluate() failed: {}", ast.arg1(), e);
+          Errors.printMessage(S.TimeConstrained, e, EvalEngine.get());
           if (ast.isAST3()) {
             return ast.arg3();
           }
@@ -3322,7 +3322,7 @@ public final class Programming {
 
           return engine.evalTrace(temp, matcher);
         } catch (RuntimeException rex) {
-          LOGGER.debug("Trace.evaluate() failed", rex);
+          Errors.printMessage(S.Trace, rex, EvalEngine.get());
         }
       }
       return engine.checkBuiltinArgsSize(ast, this);
@@ -3356,7 +3356,7 @@ public final class Programming {
             createTree(jsControl, temp);
             return F.JSFormData(jsControl.toString(), "traceform");
           } catch (RuntimeException rex) {
-            LOGGER.debug("TraceForm.evaluate() failed", rex);
+            Errors.printMessage(S.TraceForm, rex, EvalEngine.get());
           }
         }
         return engine.checkBuiltinArgsSize(ast, this);
@@ -3499,8 +3499,9 @@ public final class Programming {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (((ast.argSize()) & 0x0001) == 0x0001) {
-        LOGGER.log(engine.getLogLevel(), "Which: number of arguments must be even");
-        return F.NIL;
+        // `1`.
+        return Errors.printMessage(S.Which, "error", F.List("Number of arguments must be even"),
+            engine);
       }
       for (int i = 1; i < ast.size(); i += 2) {
         IExpr temp = engine.evaluate(ast.get(i));
@@ -3664,35 +3665,33 @@ public final class Programming {
     for (int i = 1; i < variablesList.size(); i++) {
       if (variablesList.get(i).isAST(S.Set, 3)) {
         final IAST setFun = (IAST) variablesList.get(i);
-        if (setFun.arg1().isSymbol()) {
-          oldSymbol = (ISymbol) setFun.arg1();
-          IExpr rightHandSide = setFun.arg2();
-          IExpr temp = engine.evaluate(rightHandSide);
-          VariablesSet set = new VariablesSet(temp);
-          set.putAllSymbols(variablesMap);
-          variablesMap.put(oldSymbol, temp);
-        } else {
+        if (!setFun.arg1().isSymbol()) {
           // Local variable specification `1` contains `2`, which is an assignment to `3`; only
           // assignments to symbols are allowed.
           Errors.printMessage(S.With, "lvset",
               F.list(variablesList, variablesList.get(i), setFun.arg1()), engine);
           return false;
         }
+        oldSymbol = (ISymbol) setFun.arg1();
+        IExpr rightHandSide = setFun.arg2();
+        IExpr temp = engine.evaluate(rightHandSide);
+        VariablesSet set = new VariablesSet(temp);
+        set.putAllSymbols(variablesMap);
+        variablesMap.put(oldSymbol, temp);
       } else if (variablesList.get(i).isAST(S.SetDelayed, 3)) {
         final IAST setFun = (IAST) variablesList.get(i);
-        if (setFun.arg1().isSymbol()) {
-          oldSymbol = (ISymbol) setFun.arg1();
-          IExpr rightHandSide = setFun.arg2();
-          VariablesSet set = new VariablesSet(rightHandSide);
-          set.putAllSymbols(variablesMap);
-          variablesMap.put(oldSymbol, rightHandSide);
-        } else {
+        if (!setFun.arg1().isSymbol()) {
           // Local variable specification `1` contains `2`, which is an assignment to `3`; only
           // assignments to symbols are allowed.
           Errors.printMessage(S.With, "lvset",
               F.list(variablesList, variablesList.get(i), setFun.arg1()), engine);
           return false;
         }
+        oldSymbol = (ISymbol) setFun.arg1();
+        IExpr rightHandSide = setFun.arg2();
+        VariablesSet set = new VariablesSet(rightHandSide);
+        set.putAllSymbols(variablesMap);
+        variablesMap.put(oldSymbol, rightHandSide);
       } else {
         // Variable `1` in local variable specification `2` requires assigning a value
         Errors.printMessage(S.With, "lvws", F.list(variablesList.get(i), variablesList), engine);
@@ -3723,19 +3722,23 @@ public final class Programming {
       } else {
         if (variablesList.get(i).isAST(S.Set, 3)) {
           final IAST setFun = (IAST) variablesList.get(i);
-          if (setFun.arg1().isSymbol()) {
-            oldSymbol = (ISymbol) setFun.arg1();
-            newSymbol = F.Dummy(oldSymbol.toString() + varAppend);
-            variablesMap.put(oldSymbol, newSymbol);
-            newSymbol.assignValue(engine.evaluate(setFun.arg2()));
-          } else {
-            LOGGER.log(engine.getLogLevel(), "Module: expression requires symbol variable: {}",
-                setFun);
+          if (!setFun.arg1().isSymbol()) {
+            // Local variable specification `1` contains `2`, which is an assignment to `3`; only
+            // assignments to symbols are allowed.
+            Errors.printMessage(S.Module, "lvset",
+                F.List(variablesList, variablesList.get(i), setFun.arg1()),
+                engine);
             return false;
           }
+          oldSymbol = (ISymbol) setFun.arg1();
+          newSymbol = F.Dummy(oldSymbol.toString() + varAppend);
+          variablesMap.put(oldSymbol, newSymbol);
+          newSymbol.assignValue(engine.evaluate(setFun.arg2()));
         } else {
-          LOGGER.log(engine.getLogLevel(), "Module: expression requires symbol variable: {}",
-              variablesList.get(i));
+          // Local variable specification `1` contains `2` which is not a symbol or an assignment to
+          // a symbol.
+          Errors.printMessage(S.Module, "lvsym", F.List(variablesList, variablesList.get(i)),
+              engine);
           return false;
         }
       }

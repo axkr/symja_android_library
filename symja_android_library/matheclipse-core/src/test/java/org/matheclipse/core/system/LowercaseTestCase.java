@@ -14355,6 +14355,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testMapThread() {
+    check("MapThread(f, {{{a, b}, {c, d}}}, 3)", //
+        "MapThread(f,{{{a,b},{c,d}}},3)");
+
     check("MapThread(f)[ {{a, b, c}, {x, y, z}}]", //
         "{f(a,x),f(b,y),f(c,z)}");
     check("MapThread(f, {}, 1)", //

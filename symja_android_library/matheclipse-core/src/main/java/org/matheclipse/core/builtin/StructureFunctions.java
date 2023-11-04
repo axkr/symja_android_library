@@ -7,8 +7,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -50,7 +48,6 @@ import org.matheclipse.core.visit.VisitorLevelSpecification;
 import it.unimi.dsi.fastutil.ints.IntList;
 
 public class StructureFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   private static final Set<ISymbol> LOGIC_EQUATION_HEADS =
       Collections.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>(29));
@@ -650,8 +647,7 @@ public class StructureFunctions {
           IAST symbolSlots = arg1.makeList();
           if (symbolSlots.size() > astEvaled.size()) {
             // To many parameters in `1` to be filled from `2`.
-            return Errors.printMessage(S.Function, "fpct", F.list(symbolSlots, function),
-                engine);
+            return Errors.printMessage(S.Function, "fpct", F.list(symbolSlots, function), engine);
           }
           java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables =
               new IdentityHashMap<ISymbol, IExpr>();
@@ -998,8 +994,8 @@ public class StructureFunctions {
             }
           } catch (final ValidateException ve) {
             return Errors.printMessage(ast.topHead(), ve, engine);
-          } catch (RuntimeException ae) {
-            LOGGER.debug("MapAt.evaluate() failed", ae);
+          } catch (RuntimeException rex) {
+            return Errors.printMessage(S.MapAt, rex, engine);
           }
         }
       }
@@ -1314,15 +1310,14 @@ public class StructureFunctions {
           if (level == 0) {
             return tensor.apply(ast.arg1());
           }
-          // if (level == 1) {
-          // return EvalAttributes.threadList(tensor, S.List, ast.arg1(), dims.get(level));
-          // }
           return new MapThreadLevel(ast.arg1(), level).mapThreadRecursive(0, tensor, null);
         }
         if (tensor.isEmptyList()) {
           return tensor;
         }
-        LOGGER.log(engine.getLogLevel(), "MapThread: argument 2 dimensions less than level.");
+        // Object `1` at position {2,`2`} in `3` has only `4` of required `5` dimensions.
+        return Errors.printMessage(S.MapThread, "mptd",
+            F.List(tensor, F.C1, ast, F.ZZ(dims.size() - 1), F.ZZ(level)), engine);
       }
       return F.NIL;
     }
@@ -1937,14 +1932,12 @@ public class StructureFunctions {
           }
           return shallowCopy;
         } catch (RuntimeException rex) {
-          LOGGER.error("Sort.evaluate() failed", rex);
+          return Errors.printMessage(S.Sort, rex, engine);
         }
       } else {
         // Nonatomic expression expected at position `1` in `2`.
         return Errors.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
       }
-
-      return F.NIL;
     }
 
     @Override
@@ -2031,9 +2024,9 @@ public class StructureFunctions {
             return Errors.printMessage(S.SortBy, "normal", F.List(F.C1, ast), engine);
           }
         } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
+          return Errors.printMessage(S.SortBy, ve, engine);
         } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          return Errors.printMessage(S.SortBy, rex, engine);
         }
       }
       return F.NIL;

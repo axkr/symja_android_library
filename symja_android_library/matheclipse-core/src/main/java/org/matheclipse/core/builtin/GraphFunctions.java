@@ -1290,7 +1290,6 @@ public class GraphFunctions {
       // }
       // return list;
       // } catch (RuntimeException rex) {
-      // LOGGER.debug("EigenvectorCentrality.evaluate() failed", rex);
       // }
       return F.NIL;
     }
@@ -1690,7 +1689,6 @@ public class GraphFunctions {
       // }
       // return resultList;
       // } catch (RuntimeException rex) {
-      // LOGGER.debug("FindIndependentVertexSet.evaluate() failed", rex);
       // }
       return F.NIL;
     }
@@ -1838,7 +1836,6 @@ public class GraphFunctions {
       // lgc.convertToLineGraph(target);
       // // return GraphExpr.newInstance(target);
       // } catch (RuntimeException rex) {
-      // LOGGER.debug("LineGraph.evaluate() failed", rex);
       // }
       return F.NIL;
     }

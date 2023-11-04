@@ -194,6 +194,7 @@ public class Errors {
       "meprec", "Internal precision limit `1` reached while evaluating `2`.", //
       "mindet", "Input matrix contains an indeterminate entry.", //
       "minv", "The `1` arguments to `2` must be ordinary integers.", // or gaussian
+      "mptd", "Object `1` at position {2,`2`} in `3` has only `4` of required `5` dimensions.", //
       "mseqs",
       "Sequence specification or a list of sequence specifications expected at position `1` in `2`.", //
       "nalph", "The alphabet `1` is not known or not available.", //
@@ -219,10 +220,13 @@ public class Errors {
       "nomost", "Cannot take Most of expression `1` with length zero.", //
       "nonn1",
       "The arguments are expected to be vectors of equal length, and the number of arguments is expected to be 1 less than their length.", //
-      "noopen", "Cannot open `1`.", //
       "nonopt",
       "Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or a list of rules.", //
+      "noopen", "Cannot open `1`.", //
+      "noprime", "There are no primes in the specified interval.", //
       "nord", "Invalid comparison with `1` attempted.", //
+      "norel", "Expressions `1` and `2` cannot be related by a permutation.", //
+      "norep", "Assignment on `2` for `1` not found.", //
       "normal", "Nonatomic expression expected at position `1` in `2`.", //
       "nostr", "`1` is not a string.", //
       "notdata", "The first argument is not a vector or matrix.", //
@@ -236,8 +240,7 @@ public class Errors {
       "`1` is not a known entity, class or tag for GraphData. Use GraphData for a list of entities.", //
       "notunicode",
       "A character unicode, which should be a non-negative integer less than 1114112, is expected at position `2` in `1`.", //
-      "noprime", "There are no primes in the specified interval.", //
-      "norel", "Expressions `1` and `2` cannot be related by a permutation.", //
+
       "noval", "Symbol `1` in part assignment does not have an immediate value.", //
       "npa", "The angle `1` should be a positive number less than `2`.", //
       "nsmet", "The system cannot be solved with the methods available to `1`.", //
