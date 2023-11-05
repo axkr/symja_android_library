@@ -1819,9 +1819,18 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   public void testPowTwoX() {
-    // TODO noat all solutions are provided
+    // TODO not all solutions are provided
     check("Solve(2^x-3*x-1==0,x)", //
         "{{x->0}}");
+  }
+
+  public void testIsolateX1() {
+    check("Solve({x5==1,x4==x3,x3==p2*x2+p4*x4,x2==p3*x3+p5*x5,x1==p1*x2},{x1,x2,x3,x4,x5})", //
+        "{{x1->(p1*p5-p1*p4*p5)/(1-p2*p3-p4),x2->(p5-p4*p5)/(1-p2*p3-p4),x3->(p2*p5)/(1-p2*p3-p4),x4->(p2*p5)/(\n"
+            + "1-p2*p3-p4),x5->1}}");
+    check("Solve({x4==x3,x3==p2*x2+p4*x4,x2==p3*x3+p5,x1==p1*x2},{x1,x2,x3,x4})", //
+        "{{x1->(p1*p5-p1*p4*p5)/(1-p2*p3-p4),x2->(p5-p4*p5)/(1-p2*p3-p4),x3->(p2*p5)/(1-p2*p3-p4),x4->(p2*p5)/(\n"
+            + "1-p2*p3-p4)}}");
   }
 
   /** The JUnit setup method */

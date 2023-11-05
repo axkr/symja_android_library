@@ -387,9 +387,6 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
   public void reset() {
     int size = fListOfVariables.size();
     this.fMatrixRow = F.constantArray(F.C0, size - 1);
-    // for (int i = 1; i < size; i++) {
-    // fMatrixRow.append(F.C0);
-    // }
     this.fPlusAST = F.PlusAlloc(8);
     this.fEquationType = LINEAR;
   }
@@ -651,7 +648,7 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
         a = determineFactor(restOfPlus, variable);
       }
       if (a.isPresent()) {
-        // variable + ((b)*Log(x) + a * ProductLog(-(Log(x)/(x^(b/a)*a))) )/(a*Log(x))
+        // variable + ((b)*Log(base) + a * ProductLog(-(Log(base)/(base^(b/a)*a))) )/(a*Log(base))
         IAST inverseFunction = F.Plus(variable,
             F.Times(
                 F.Plus(F.Times(b, F.Log(base)),
@@ -738,5 +735,14 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
     this.fNumerator = result[0];
     this.fDenominator = result[1];
     this.fExpr = result[2];
+  }
+
+  @Override
+  public String toString() {
+    if (fDenominator.isOne()) {
+      return fExpr.toString();
+    }
+    return fExpr.toString() //
+        + " [ " + fNumerator.toString() + " / " + fDenominator.toString() + " ]";
   }
 }

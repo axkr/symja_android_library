@@ -182,9 +182,9 @@ public class Solve extends AbstractFunctionOptionEvaluator {
      * @param engine
      * @return throws NoSolution
      */
-    protected IASTAppendable analyzeSublist(ArrayList<ExprAnalyzer> analyzerList, IAST variables,
-        IASTAppendable resultList, int maximumNumberOfResults, IASTAppendable matrix,
-        IASTAppendable vector, EvalEngine engine) throws NoSolution {
+    protected IASTAppendable analyzeSublistRecursive(ArrayList<ExprAnalyzer> analyzerList,
+        IAST variables, IASTAppendable resultList, int maximumNumberOfResults,
+        IASTAppendable matrix, IASTAppendable vector, EvalEngine engine) throws NoSolution {
       ExprAnalyzer exprAnalyzer;
       Collections.sort(analyzerList);
       int currEquation = 0;
@@ -216,25 +216,39 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                 }
                 evaled = true;
               } else {
-                // collect linear and univariate polynomial
-                // equations:
-                IAST kListOfSolveRules = listOfRules.getAST(k);
-                ArrayList<ExprAnalyzer> subAnalyzerList = substituteRulesInSubAnalyzerList(
-                    kListOfSolveRules, analyzerList, currEquation, variables, engine);
-                try {
-                  IAST subResultList = analyzeSublist(subAnalyzerList, variables, F.ListAlloc(),
-                      maximumNumberOfResults, matrix, vector, engine);
-                  if (subResultList.isPresent()) {
-                    evaled = true;
-                    IASTAppendable tempResult = addSubResultsToResultsList(resultList,
-                        subResultList, kListOfSolveRules, maximumNumberOfResults);
-                    if (tempResult.isPresent()) {
-                      return tempResult;
+                // collect linear and univariate polynomial equations:
+                IAST substitutionRule = listOfRules.getAST(k);
+                IExpr substitutionVariable = substitutionRule.arg1();
+                IAST subVariables = variables.remove(x -> x.equals(substitutionVariable));
+                if (subVariables.isPresent()) {
+                  ArrayList<ExprAnalyzer> subAnalyzerList = substituteRulesInAnalyzerList(
+                      analyzerList, currEquation, substitutionRule, subVariables, engine);
+                  try {
+                    IASTAppendable subMatrix = F.ListAlloc();
+                    IASTAppendable subVector = F.ListAlloc();
+                    IAST subResultList = analyzeSublistRecursive(subAnalyzerList, subVariables,
+                        F.ListAlloc(), maximumNumberOfResults, subMatrix, subVector, engine);
+                    if (subResultList.isPresent()) {
+                      evaled = true;
+                      IASTAppendable tempResult = addSubResultsToResultsList(resultList,
+                          subResultList, substitutionRule, maximumNumberOfResults);
+                      if (tempResult.isPresent()) {
+                        return tempResult;
+                      }
+                      if (subVector.size() > 1) {
+                        IASTAppendable linearSolution = solveRowReducedMatrix(subMatrix, subVector,
+                            subVariables, F.NIL, substitutionRule, resultList, engine);
+                        if (linearSolution.isPresent()) {
+                          matrix.clear();
+                          vector.clear();
+                          return linearSolution;
+                        }
+                      }
                     }
-                  }
-                } catch (NoSolution e) {
-                  if (e.getType() == NoSolution.WRONG_SOLUTION) {
-                    evaled = true;
+                  } catch (NoSolution e) {
+                    if (e.getType() == NoSolution.WRONG_SOLUTION) {
+                      evaled = true;
+                    }
                   }
                 }
               }
@@ -423,29 +437,31 @@ public class Solve extends AbstractFunctionOptionEvaluator {
      * For all analyzers in <code>analyzerList</code> from position to the last element substitute
      * the variables by the rules in <code>kListOfSolveRules</code> and create a new (sub-)analyzer
      * list.
-     *
-     * @param kListOfSolveRules
+     * 
      * @param analyzerList
-     * @param position
-     * @param variables
+     * @param analyzerListStartPosition
+     * @param substitutionRule
+     * @param variablesList
      * @param engine
+     *
      * @return
      */
-    private ArrayList<ExprAnalyzer> substituteRulesInSubAnalyzerList(IAST kListOfSolveRules,
-        ArrayList<ExprAnalyzer> analyzerList, int position, IAST variables, EvalEngine engine) {
+    private ArrayList<ExprAnalyzer> substituteRulesInAnalyzerList(
+        ArrayList<ExprAnalyzer> analyzerList, int analyzerListStartPosition, IAST substitutionRule,
+        IAST variablesList, EvalEngine engine) {
       ExprAnalyzer exprAnalyzer;
       ArrayList<ExprAnalyzer> subAnalyzerList = new ArrayList<ExprAnalyzer>();
-      for (int i = position; i < analyzerList.size(); i++) {
+      for (int i = analyzerListStartPosition; i < analyzerList.size(); i++) {
         IExpr expr = analyzerList.get(i).getExpr();
-        IExpr temp = expr.replaceAll(kListOfSolveRules);
+        IExpr temp = expr.replaceAll(substitutionRule);
         if (temp.isPresent()) {
           expr = engine.evaluate(temp);
-          exprAnalyzer = new ExprAnalyzer(expr, variables, isGenerateConditions(), engine);
+          exprAnalyzer = new ExprAnalyzer(expr, variablesList, isGenerateConditions(), engine);
           exprAnalyzer.simplifyAndAnalyze();
         } else {
-          // reuse old analyzer; expression hasn't
-          // changed
-          exprAnalyzer = analyzerList.get(i);
+          // reusing old analyzer not possible; we've removed 1 variable in variablesList
+          exprAnalyzer = new ExprAnalyzer(expr, variablesList, isGenerateConditions(), engine);
+          exprAnalyzer.simplifyAndAnalyze();
         }
         subAnalyzerList.add(exprAnalyzer);
       }
@@ -492,60 +508,6 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       }
       return F.NIL;
     }
-
-    // /**
-    // * Check if all rules in the list return a real result. Try to get a real solution from
-    // * <code>ConditionalExpression</code>s.
-    // *
-    // * @param listOfRules a list of rules <code>Rule(variable, value)</code>
-    // * @return
-    // */
-    // private static boolean isReal(IASTAppendable listOfRules) {
-    // if (listOfRules.isListOfRules(false)) {
-    // for (int i = 1; i < listOfRules.size(); i++) {
-    // IAST rule = listOfRules.getAST(i);
-    // IExpr rhs = rule.second();
-    // if (!rhs.isRealResult()) {
-    // try {
-    // IExpr res = rhs.replaceAll(x -> rewriteConditionalExpressionIfReal(x));
-    // if (res.isPresent()) {
-    // listOfRules.set(i, rule.setAtCopy(2, res));
-    // continue;
-    // }
-    // return false;
-    // } catch (NoEvalException noeex) {
-    // return false;
-    // }
-    // }
-    // }
-    // return true;
-    // }
-    // return false;
-    // }
-
-    // /**
-    // * If <code>expr</code> is a <code>ConditionalExpression</code> try to rewrite
-    // <code>expr</code>
-    // * as a real expression.
-    // *
-    // * @param expr
-    // * @return {@link F#NIL} if no <code>ConditionalExpression</code> was matched
-    // * @throws NoEvalException if <code>ConditionalExpression</code> can not be rewritten as a
-    // real
-    // * result.
-    // */
-    // private static IExpr rewriteConditionalExpressionIfReal(IExpr expr) throws NoEvalException {
-    // if (expr.isConditionalExpression()) {
-    // IExpr function = expr.first();
-    // IExpr condition = expr.last();
-    // IExpr result = EvalEngine.get().evaluate(F.Refine(F.Re(function), condition));
-    // if (result.isRealResult()) {
-    // return result;
-    // }
-    // throw NoEvalException.CONST;
-    // }
-    // return F.NIL;
-    // }
 
     /**
      * Solve the list of equations recursively. Return a list of rules <code>
@@ -795,17 +757,11 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       IASTAppendable vector = F.ListAlloc();
       try {
         IASTAppendable resultList = F.ListAlloc();
-        resultList = analyzeSublist(analyzerList, variables, resultList, maximumNumberOfResults,
-            matrix, vector, engine);
+        resultList = analyzeSublistRecursive(analyzerList, variables, resultList,
+            maximumNumberOfResults, matrix, vector, engine);
         if (vector.size() > 1) {
-          // solve a linear equation <code>matrix.x == vector</code>
-          FieldMatrix<IExpr> augmentedMatrix = Convert.list2Matrix(matrix, vector);
-          if (augmentedMatrix != null) {
-            IAST subSolutionList =
-                LinearAlgebra.rowReduced2RulesList(augmentedMatrix, variables, resultList, engine);
-            return solveInequations((IASTMutable) subSolutionList, inequationsList, engine);
-          }
-          return F.NIL;
+          return solveRowReducedMatrix(matrix, vector, variables, inequationsList, F.NIL,
+              resultList, engine);
         }
         return solveInequations(resultList, inequationsList, engine);
         // return sortASTArguments(resultList);
@@ -817,10 +773,38 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       }
     }
 
-    protected static IASTMutable solveInequations(IASTMutable subSolutionList, IAST inequationsList,
-        EvalEngine engine) {
+    /**
+     * Solve a linear equation <code>matrix.x == vector</code>.
+     * 
+     * @param matrix
+     * @param vector
+     * @param variables
+     * @param inequationsList a list of inequations; maybe {@link F#NIL}
+     * @param additionalRule an additional rule which will be appended to the result; maybe
+     *        {@link F#NIL}
+     * @param resultList
+     * @param engine
+     * @return {@link F#NIL} if no solution was found
+     */
+    private static IASTAppendable solveRowReducedMatrix(IASTAppendable matrix,
+        IASTAppendable vector, IAST variables, IAST inequationsList, IAST additionalRule,
+        IASTAppendable resultList, EvalEngine engine) {
+      FieldMatrix<IExpr> augmentedMatrix = Convert.list2Matrix(matrix, vector);
+      if (augmentedMatrix != null) {
+        IASTAppendable subSolutionList = LinearAlgebra.rowReduced2RulesList(augmentedMatrix,
+            variables, additionalRule, resultList, engine);
+        if (inequationsList.isPresent()) {
+          return solveInequations(subSolutionList, inequationsList, engine);
+        }
+        return subSolutionList;
+      }
+      return F.NIL;
+    }
+
+    protected static IASTAppendable solveInequations(IASTMutable subSolutionList,
+        IAST inequationsList, EvalEngine engine) {
       if (inequationsList.isEmpty()) {
-        return QuarticSolver.sortASTArguments(subSolutionList);
+        return (IASTAppendable) QuarticSolver.sortASTArguments(subSolutionList);
       }
 
       if (subSolutionList.isListOfLists()) {
@@ -879,8 +863,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               if (variables.argSize() == 1) {
                 IExpr variable = variables.arg1();
                 if (!termEQZero.isFree(variable)) {
-                  IExpr temp =
-                      Algebra.Factor.evaluateSolve(termEQZero, this, engine);
+                  IExpr temp = Algebra.Factor.evaluateSolve(termEQZero, this, engine);
                   if (temp.isList()) {
                     IAST listOfValues = (IAST) temp;
                     IASTAppendable listOfLists = F.ListAlloc(listOfValues.argSize());
@@ -1083,8 +1066,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               IExpr result = solveNumeric(lists[2], numericFlag, engine);
               if (result.isNIL()) {
                 // The system cannot be solved with the methods available to Solve.
-                return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()),
-                    engine);
+                return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);
               }
               return checkDomain(result, domain);
             }
@@ -1093,8 +1075,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                 userDefinedVariables, engine);
             if (result.isNIL()) {
               // The system cannot be solved with the methods available to Solve.
-              return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()),
-                  engine);
+              return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);
             }
             return checkDomain(result, domain);
           } finally {
@@ -1206,8 +1187,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   }
 
   @Override
-  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
-      final EvalEngine engine, IAST originalAST) {
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
+      IAST originalAST) {
     boolean isNumericArgument = !ast.arg1().isFree(x -> x.isInexactNumber(), false);
     if (argSize > 0 && argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);

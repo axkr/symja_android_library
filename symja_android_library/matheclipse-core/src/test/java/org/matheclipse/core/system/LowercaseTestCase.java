@@ -12220,6 +12220,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testInverseFunction() {
+    check("InverseFunction(2^# &)", //
+        "Log(#1)/Log(2)&");
+
     check("InverseFunction(Tanh)", //
         "ArcTanh");
     check("InverseFunction(Tanh(2*#)&)", //

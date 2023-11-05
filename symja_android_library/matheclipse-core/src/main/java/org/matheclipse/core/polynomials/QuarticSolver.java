@@ -802,7 +802,7 @@ public class QuarticSolver {
    * Sort the arguments of a list.
    *
    * @param resultList assumed to be of type <code>List()</code>
-   * @return
+   * @return sorted <code>resultList</code>
    */
   public static IASTMutable sortASTArguments(IASTMutable resultList) {
     if (resultList.isList()) {
@@ -818,9 +818,6 @@ public class QuarticSolver {
         } else {
           result.append(resultList.get(i));
         }
-        // } else {
-        // result.append(temp);
-        // }
       }
       EvalAttributes.sort(result);
       return result;

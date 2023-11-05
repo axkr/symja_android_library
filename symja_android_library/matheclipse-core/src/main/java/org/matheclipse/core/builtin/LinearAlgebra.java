@@ -2646,7 +2646,7 @@ public final class LinearAlgebra {
     public int status() {
       return ImplementationStatus.PARTIAL_SUPPORT;
     }
-    
+
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
@@ -6506,17 +6506,20 @@ public final class LinearAlgebra {
   }
 
   /**
-   * Row reduce the given <code>(augmented-)matrix</code> and append the result as rules for the
+   * Row reduce the given (augmented-)<code>matrix</code> and append the result as rules for the
    * given <code>variableList</code>.
    *
    * @param matrix a (augmented-)matrix
    * @param listOfVariables list of variable symbols
+   * @param additionalRule an additional rule which will be appended to the result; maybe
+   *        {@link F#NIL}
    * @param resultList a list to which the rules should be appended
    * @param engine the evaluation engine
    * @return resultList with the appended results as list of rules
+   * @see org.matheclipse.core.reflection.system.Solve
    */
-  public static IAST rowReduced2RulesList(FieldMatrix<IExpr> matrix, IAST listOfVariables,
-      IASTAppendable resultList, EvalEngine engine) {
+  public static IASTAppendable rowReduced2RulesList(FieldMatrix<IExpr> matrix, IAST listOfVariables,
+      IAST additionalRule, IASTAppendable resultList, EvalEngine engine) {
     int rows = matrix.getRowDimension();
     int cols = matrix.getColumnDimension();
     IAST smallList = null;
@@ -6528,7 +6531,7 @@ public final class LinearAlgebra {
     if (smallList != null) {
       if (smallList.isNIL()) {
         // no solution
-        return F.CEmptyList;
+        return F.ListAlloc();
       }
       final IAST sList = smallList;
       resultList.append(F.mapRange(1, smallList.size(),
@@ -6545,26 +6548,31 @@ public final class LinearAlgebra {
     if (lastVarCoefficient.isZero()) {
       if (!rowReduced.getEntry(rows - 1, cols - 1).isZero()) {
         // no solution
-        return F.CEmptyList;
+        return F.ListAlloc();
       }
     }
     IAST rule;
     IASTAppendable list = F.ListAlloc(rows);
+    if (additionalRule.isPresent()) {
+      list.append(additionalRule);
+    }
     for (int j = 1; j < rows + 1; j++) {
       if (j < size + 1) {
         IExpr diagonal = rowReduced.getEntry(j - 1, j - 1);
-        if (!diagonal.isZero()) {
-          IASTAppendable plus = F.PlusAlloc(cols);
-          plus.append(rowReduced.getEntry(j - 1, cols - 1));
-          for (int i = j; i < cols - 1; i++) {
-            if (!rowReduced.getEntry(j - 1, i).isZero()) {
-              plus.append(
-                  F.Times(rowReduced.getEntry(j - 1, i).negate(), listOfVariables.get(i + 1)));
-            }
-          }
-          rule = F.Rule(listOfVariables.get(j), S.Together.of(engine, plus.oneIdentity0()));
-          list.append(rule);
+        if (diagonal.isPossibleZero(true)) {
+          continue;
         }
+        IASTAppendable plus = F.PlusAlloc(cols);
+        plus.append(rowReduced.getEntry(j - 1, cols - 1));
+        for (int i = j; i < cols - 1; i++) {
+          IExpr rowEntry = rowReduced.getEntry(j - 1, i);
+          if (rowEntry.isPossibleZero(true)) {
+            continue;
+          }
+          plus.append(F.Times(rowEntry.negate(), listOfVariables.get(i + 1)));
+        }
+        rule = F.Rule(listOfVariables.get(j), S.Together.of(engine, plus.oneIdentity0()));
+        list.append(rule);
       }
     }
     resultList.append(list);
