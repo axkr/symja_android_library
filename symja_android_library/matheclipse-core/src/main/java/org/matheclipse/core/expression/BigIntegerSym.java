@@ -802,6 +802,11 @@ public class BigIntegerSym extends AbstractIntegerSym {
   }
 
   @Override
+  public IExpr sqr() {
+    return this.multiply(this);
+  }
+
+  @Override
   public IInteger subtract(final IInteger that) {
     return valueOf(fBigIntValue.subtract(that.toBigNumerator()));
   }

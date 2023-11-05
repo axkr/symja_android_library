@@ -4244,7 +4244,7 @@ public final class LinearAlgebra {
             // equal 1 for p-norms, or \"Frobenius\" for matrix norms.
             return Errors.printMessage(S.Norm, "ptype", F.List(p), engine);
           }
-          return F.Sqrt(vector.map(S.Plus, x -> F.Sqr(F.Abs(x))));
+          return F.Sqrt(vector.map(S.Plus, x -> x.abs().sqr()));
         }
         return F.NIL;
       }

@@ -739,6 +739,11 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr sqr() {
+    return this.multiply(this);
+  }
+
+  @Override
   public INumber ceilFraction() throws ArithmeticException {
     return F.complex(F.ZZ(ApfloatMath.ceil(fApcomplex.real()).toBigInteger()),
         F.ZZ(ApfloatMath.ceil(fApcomplex.imag()).toBigInteger()));

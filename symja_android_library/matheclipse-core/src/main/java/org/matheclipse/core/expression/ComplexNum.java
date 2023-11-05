@@ -1048,6 +1048,11 @@ public class ComplexNum implements IComplexNum {
     return valueOf(fComplex.sqrt());
   }
 
+  @Override
+  public IExpr sqr() {
+    return this.multiply(this);
+  }
+
   /**
    * Returns a {@code ComplexNum} whose value is {@code (this - subtrahend)}. Uses the definitional
    * formula

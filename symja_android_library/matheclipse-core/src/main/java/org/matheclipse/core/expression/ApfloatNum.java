@@ -540,6 +540,11 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public IExpr sqr() {
+    return this.multiply(this);
+  }
+
+  @Override
   public double getRealPart() {
     double temp = fApfloat.doubleValue();
     if (temp == (-0.0)) {

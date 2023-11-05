@@ -877,6 +877,11 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
+  public IExpr sqr() {
+    return this.multiply(this);
+  }
+
+  @Override
   public IInteger subtract(final IInteger that) {
     return add(that.negate());
   }

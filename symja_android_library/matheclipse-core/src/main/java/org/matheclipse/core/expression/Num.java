@@ -102,7 +102,7 @@ public class Num implements INum {
 
   /** {@inheritDoc} */
   @Override
-  public Num abs() {
+  public INum abs() {
     if (isNegative()) {
       return valueOf(Math.abs(value));
     }
@@ -258,12 +258,12 @@ public class Num implements INum {
   }
 
   @Override
-  public Num cos() {
+  public INum cos() {
     return valueOf(Math.cos(value));
   }
 
   @Override
-  public Num cosh() {
+  public INum cosh() {
     return valueOf(Math.cosh(value));
   }
 
@@ -388,7 +388,7 @@ public class Num implements INum {
   }
 
   @Override
-  public Num exp() {
+  public INum exp() {
     return valueOf(Math.exp(value));
   }
 
@@ -920,13 +920,18 @@ public class Num implements INum {
   }
 
   @Override
-  public Num sin() {
+  public INum sin() {
     return valueOf(Math.sin(value));
   }
 
   @Override
-  public Num sinh() {
+  public INum sinh() {
     return valueOf(Math.sinh(value));
+  }
+
+  @Override
+  public IExpr sqr() {
+    return valueOf(value * value);
   }
 
   @Override
@@ -959,12 +964,12 @@ public class Num implements INum {
   }
 
   @Override
-  public Num tan() {
+  public INum tan() {
     return valueOf(Math.tan(value));
   }
 
   @Override
-  public Num tanh() {
+  public INum tanh() {
     return valueOf(Math.tanh(value));
   }
 

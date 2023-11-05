@@ -4858,7 +4858,7 @@ public interface IExpr
         // or: rat1 * Sqrt( rat2 ) + rat3 * Sqrt( rat4 );
         IExpr p1 = first();
         IExpr p2 = second();
-        IRational denominator = (IRational) F.Subtract.of(F.Sqr(p1), F.Sqr(p2));
+        IRational denominator = (IRational) F.Subtract.of(p1.sqr(), p2.sqr());
         denominator = denominator.inverse();
         p1 = denominator.multiply(p1);
         p2 = denominator.multiply(p2);
@@ -5211,28 +5211,52 @@ public interface IExpr
   default IExpr sqrt() {
     if (isPower()) {
       return F.Power(base(), F.Times(F.C1D2, exponent()));
-    } else {
-      if (isTimes()) {
-        // see github issue #2: Get only real results
-        IAST times = (IAST) this;
-        int size = times.size();
-        IASTAppendable timesSqrt = F.TimesAlloc(size);
-        IASTAppendable timesRest = F.TimesAlloc(size);
-        for (int i = 1; i < size; i++) {
-          final IExpr arg = times.get(i);
-          if (arg.isPower()) {
-            timesRest.append( //
-                F.Power(arg.base(), //
-                    F.Times(F.C1D2, arg.exponent())) //
-            );
-          } else {
-            timesSqrt.append(arg);
-          }
+    }
+    if (isTimes()) {
+      // see github issue #2: Get only real results
+      IAST times = (IAST) this;
+      int size = times.size();
+      IASTAppendable timesSqrt = F.TimesAlloc(size);
+      IASTAppendable timesRest = F.TimesAlloc(size);
+      for (int i = 1; i < size; i++) {
+        final IExpr arg = times.get(i);
+        if (arg.isPower()) {
+          timesRest.append( //
+              F.Power(arg.base(), //
+                  F.Times(F.C1D2, arg.exponent())) //
+          );
+        } else {
+          timesSqrt.append(arg);
         }
-        return F.Times(timesRest, F.Sqrt(timesSqrt));
       }
+      return F.Times(timesRest, F.Sqrt(timesSqrt));
     }
     return F.Sqrt(this);
+  }
+
+  default IExpr sqr() {
+    if (isPower()) {
+      return F.Power(base(), F.Times(F.C2, exponent()));
+    }
+    if (isTimes()) {
+      IAST times = (IAST) this;
+      int size = times.size();
+      IASTAppendable timesSqr = F.TimesAlloc(size);
+      IASTAppendable timesRest = F.TimesAlloc(size);
+      for (int i = 1; i < size; i++) {
+        final IExpr arg = times.get(i);
+        if (arg.isPower()) {
+          timesRest.append( //
+              F.Power(arg.base(), //
+                  F.Times(F.C2, arg.exponent())) //
+          );
+        } else {
+          timesSqr.append(arg);
+        }
+      }
+      return F.Times(timesRest, F.Sqr(timesSqr));
+    }
+    return F.Sqr(this);
   }
 
   /**

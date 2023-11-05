@@ -162,6 +162,15 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * Same as {@link EvalEngine#isArbitraryMode()}, but as static method.
+   * 
+   * @return
+   */
+  public static boolean isApfloatMode() {
+    return INSTANCE.get().isArbitraryMode();
+  }
+
+  /**
    * Check if the <code>ApfloatNum</code> number type should be used instead of the <code>Num</code>
    * type and the <code>ApcomplexNum</code> number type should be used instead of the <code>
    * ComplexNum</code> type for numeric evaluations.
@@ -3042,15 +3051,6 @@ public class EvalEngine implements Serializable {
    */
   public final boolean isArbitraryMode() {
     return getNumericPrecision() > ParserConfig.MACHINE_PRECISION;
-  }
-
-  /**
-   * @return
-   * @deprecated use {@link #isArbitraryMode()}
-   */
-  @Deprecated
-  public final boolean isApfloatMode() {
-    return isArbitraryMode();
   }
 
   /**

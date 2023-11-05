@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.parser.client.ParserConfig;
@@ -48,6 +49,22 @@ public final class NumStr extends Num {
   }
 
   @Override
+  public INum abs() {
+    if (EvalEngine.isApfloatMode()) {
+      return apfloatNumValue().abs();
+    }
+    return super.abs();
+  }
+
+  @Override
+  public IInexactNumber acos() {
+    if (EvalEngine.isApfloatMode()) {
+      return apfloatNumValue().acos();
+    }
+    return super.acos();
+  }
+
+  @Override
   public ApfloatNum apfloatNumValue() {
     long precision = EvalEngine.getApfloat().precision();
     precision = (fPrecision > precision) ? fPrecision : precision;
@@ -67,10 +84,58 @@ public final class NumStr extends Num {
     return new Apfloat(fFloatStr + "E" + fExponent, precision);
   }
 
+  @Override
+  public IInexactNumber asin() {
+    if (EvalEngine.isApfloatMode()) {
+      return apfloatNumValue().asin();
+    }
+    return super.asin();
+  }
+
+  @Override
+  public IInexactNumber atan() {
+    if (EvalEngine.isApfloatMode()) {
+      return apfloatNumValue().atan();
+    }
+    return super.atan();
+  }
+
+  @Override
+  public INum cos() {
+    if (EvalEngine.isApfloatMode()) {
+      return apfloatNumValue().cos();
+    }
+    return super.cos();
+  }
+
+  @Override
+  public INum cosh() {
+    if (EvalEngine.isApfloatMode()) {
+      return apfloatNumValue().cosh();
+    }
+    return super.cosh();
+  }
+
   /** {@inheritDoc} */
   @Override
   public long determinePrecision() {
     return precision();
+  }
+
+  @Override
+  public IExpr erf() {
+    if (EvalEngine.isApfloatMode()) {
+      return apfloatNumValue().erf();
+    }
+    return super.erf();
+  }
+
+  @Override
+  public IExpr erfc() {
+    if (EvalEngine.isApfloatMode()) {
+      return apfloatNumValue().erfc();
+    }
+    return super.erfc();
   }
 
   @Override
@@ -107,6 +172,50 @@ public final class NumStr extends Num {
   }
 
   @Override
+  public INum exp() {
+    if (EvalEngine.isApfloatMode()) {
+      return apfloatNumValue().exp();
+    }
+    return super.exp();
+  }
+
+  @Override
+  public IExpr fresnelC() {
+    if (EvalEngine.isApfloatMode()) {
+      return apcomplexNumValue().fresnelC();
+    }
+    return super.fresnelC();
+  }
+
+  @Override
+  public IExpr fresnelS() {
+    if (EvalEngine.isApfloatMode()) {
+      return apcomplexNumValue().fresnelS();
+    }
+    return super.fresnelS();
+  }
+
+  @Override
+  public int getExponent() {
+    return fExponent;
+  }
+
+  public String getFloatStr() {
+    return fFloatStr;
+  }
+
+  @Override
+  public IInexactNumber log() {
+    if (EvalEngine.isApfloatMode()) {
+      if (isNegative()) {
+        return apcomplexNumValue().log();
+      }
+      return apfloatNumValue().log();
+    }
+    return super.log();
+  }
+
+  @Override
   public Num negate() {
     if (fFloatStr.length() > 0 && fFloatStr.charAt(0) == '-') {
       return new NumStr(fFloatStr.substring(1), fExponent);
@@ -116,7 +225,7 @@ public final class NumStr extends Num {
 
   @Override
   public IExpr plus(final IExpr that) {
-    if (EvalEngine.isApfloat(fPrecision)) {
+    if (EvalEngine.isApfloatMode()) {
       if (that instanceof ApfloatNum) {
         ApfloatNum arg2 = (ApfloatNum) that;
         return apfloatNumValue().add(arg2.apfloatNumValue());
@@ -135,8 +244,64 @@ public final class NumStr extends Num {
   }
 
   @Override
+  public long precision() {
+    return fPrecision;
+  }
+
+  @Override
+  public INum sin() {
+    if (EvalEngine.isApfloatMode()) {
+      return apfloatNumValue().sin();
+    }
+    return super.sin();
+  }
+
+  @Override
+  public INum sinh() {
+    if (EvalEngine.isApfloatMode()) {
+      return apfloatNumValue().sinh();
+    }
+    return super.sinh();
+  }
+
+  @Override
+  public IExpr sqr() {
+    if (EvalEngine.isApfloatMode()) {
+      return apfloatNumValue().sqr();
+    }
+    return super.sqr();
+  }
+
+  @Override
+  public IExpr sqrt() {
+    if (EvalEngine.isApfloatMode()) {
+      if (value < 0.0) {
+        return apcomplexNumValue().sqrt();
+      }
+      return apfloatNumValue().sqrt();
+    }
+    return super.sqrt();
+  }
+
+  @Override
+  public INum tan() {
+    if (EvalEngine.isApfloatMode()) {
+      return apfloatNumValue().tan();
+    }
+    return super.tan();
+  }
+
+  @Override
+  public INum tanh() {
+    if (EvalEngine.isApfloatMode()) {
+      return apfloatNumValue().tanh();
+    }
+    return super.tanh();
+  }
+
+  @Override
   public IExpr times(final IExpr that) {
-    if (EvalEngine.isApfloat(fPrecision)) {
+    if (EvalEngine.isApfloatMode()) {
       if (that instanceof ApfloatNum) {
         ApfloatNum arg2 = (ApfloatNum) that;
         return apfloatNumValue().multiply(arg2.apfloatNumValue());
@@ -153,19 +318,5 @@ public final class NumStr extends Num {
       }
     }
     return super.times(that);
-  }
-
-  @Override
-  public int getExponent() {
-    return fExponent;
-  }
-
-  public String getFloatStr() {
-    return fFloatStr;
-  }
-
-  @Override
-  public long precision() {
-    return fPrecision;
   }
 }
