@@ -28,6 +28,7 @@ import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
@@ -324,6 +325,12 @@ public class Integrate extends AbstractFunctionEvaluator {
           return result;
         }
 
+        if (fx.isTimes2()) {
+          IExpr temp = xPowNTimesFmx(x, fx.arg1(), fx.arg2(), engine);
+          if (temp.isPresent()) {
+            return temp;
+          }
+        }
         result = integrateByRubiRules(fx, x, ast, engine);
         if (result.isPresent()) {
           IExpr temp = result.replaceAll(f -> {
@@ -383,6 +390,140 @@ public class Integrate extends AbstractFunctionEvaluator {
       engine.setAssumptions(oldAssumptions);
       engine.setNumericMode(numericMode);
     }
+  }
+
+  /**
+   * Analyze codes of the form <code>x^n * f(m*x)</code>.
+   * 
+   * @param x
+   * @param times1
+   * @param times2
+   * @return
+   */
+  private static IExpr xPowNTimesFmx(final IExpr x, IExpr times1, IExpr times2, EvalEngine engine) {
+    IExpr n = F.NIL;
+    if (times1.equals(x)) {
+      n = F.C1;
+    } else if (times2.equals(x)) {
+      n = F.C1;
+      IExpr temp = times2;
+      times2 = times1;
+      times1 = temp;
+    }
+    if (n.isNIL()) {
+      if (times1.isPower() && times1.base().equals(x)
+          && (times1.exponent().isInteger() || times1.exponent().isVariable())) {
+        if (!times1.exponent().equals(x)) {
+          n = times1.exponent();
+        }
+      } else if (times2.isPower() && times2.base().equals(x)
+          && (times2.exponent().isInteger() || times2.exponent().isVariable())) {
+        if (!times2.exponent().equals(x)) {
+          n = times2.exponent();
+          IExpr temp = times2;
+          times2 = times1;
+          times1 = temp;
+        }
+      }
+    }
+    if (n.isPresent() && times2.isAST1()) {
+      IExpr m = F.NIL;
+      IExpr t2Arg1 = times2.first();
+      if (t2Arg1.equals(x)) {
+        m = F.C1;
+      } else if (t2Arg1.isTimes2() && t2Arg1.second().equals(x)) {
+        if (t2Arg1.first().isFree(x)) {
+          m = t2Arg1.first();
+        }
+      }
+      if (m.isPresent()) {
+        int headID = times2.headID();
+        if (headID > ID.UNKNOWN) {
+          IExpr temp = xPowNTimesF1(x, n, headID, m);
+          if (temp.isPresent()) {
+            return engine.evaluate(temp);
+          }
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Try to integrate functions of the form <code>x^n * f(m*x)</code>.
+   * 
+   * @param x
+   * @param n
+   * @param f
+   * @param m
+   * 
+   * @return
+   */
+  private static IExpr xPowNTimesF1(final IExpr x, IExpr n, int f, IExpr m) {
+    switch (f) {
+      case ID.ArcCos:
+        // (x^(1+n)*((2+n)*ArcCos(m*x)+m*x*Hypergeometric2F1(1/2,1+n/2,2+n/2,m^2*x^2)))/((1+n)*(
+        // 2+n))
+        return F.Times(F.Power(F.Times(F.Plus(F.C1, n), F.Plus(F.C2, n)), F.CN1),
+            F.Power(x, F.Plus(F.C1, n)),
+            F.Plus(F.Times(F.Plus(F.C2, n), F.ArcCos(F.Times(m, x))),
+                F.Times(m, x, F.Hypergeometric2F1(F.C1D2, F.Plus(F.C1, F.Times(F.C1D2, n)),
+                    F.Plus(F.C2, F.Times(F.C1D2, n)), F.Times(F.Sqr(m), F.Sqr(x))))));
+      case ID.ArcCosh:
+        // (x^(1+n)*(ArcCosh(m*x)+(-m*x*Sqrt(1-m^2*x^2)*Hypergeometric2F1(1/2,1+n/2,2+n/2,m^2*x^2))/((2+n)*Sqrt(-1+m*x)*Sqrt(1+m*x))))/(1+n)
+        return F.Times(F.Power(F.Plus(F.C1, n), F.CN1), F.Power(x, F.Plus(F.C1, n)),
+            F.Plus(F.ArcCosh(F.Times(m, x)),
+                F.Times(F.CN1, m, x, F.Sqrt(F.Plus(F.C1, F.Times(F.CN1, F.Sqr(m), F.Sqr(x)))),
+                    F.Power(F.Times(F.Plus(F.C2, n), F.Sqrt(F.Plus(F.CN1, F.Times(m, x))),
+                        F.Sqrt(F.Plus(F.C1, F.Times(m, x)))), F.CN1),
+                    F.Hypergeometric2F1(F.C1D2, F.Plus(F.C1, F.Times(F.C1D2, n)),
+                        F.Plus(F.C2, F.Times(F.C1D2, n)), F.Times(F.Sqr(m), F.Sqr(x))))));
+
+      case ID.ArcCot:
+        // (x^(1+n)*((2+n)*ArcCot(m*x)+m*x*Hypergeometric2F1(1,1+n/2,2+n/2,-m^2*x^2)))/((1+n)*(2+n))
+        return F.Times(F.Power(F.Times(F.Plus(F.C1, n), F.Plus(F.C2, n)), F.CN1),
+            F.Power(x, F.Plus(F.C1, n)),
+            F.Plus(F.Times(F.Plus(F.C2, n), F.ArcCot(F.Times(m, x))),
+                F.Times(m, x, F.Hypergeometric2F1(F.C1, F.Plus(F.C1, F.Times(F.C1D2, n)),
+                    F.Plus(F.C2, F.Times(F.C1D2, n)), F.Times(F.CN1, F.Sqr(m), F.Sqr(x))))));
+      case ID.ArcCoth:
+        // (x^(1+n)*((2+n)*ArcCoth(m*x)-m*x*Hypergeometric2F1(1,1+n/2,2+n/2,m^2*x^2)))/((1+n)*(2+n))
+        return F.Times(F.Power(F.Times(F.Plus(F.C1, n), F.Plus(F.C2, n)), F.CN1),
+            F.Power(x, F.Plus(F.C1, n)),
+            F.Plus(F.Times(F.Plus(F.C2, n), F.ArcCoth(F.Times(m, x))),
+                F.Times(F.CN1, m, x, F.Hypergeometric2F1(F.C1, F.Plus(F.C1, F.Times(F.C1D2, n)),
+                    F.Plus(F.C2, F.Times(F.C1D2, n)), F.Times(F.Sqr(m), F.Sqr(x))))));
+      case ID.ArcSin:
+        // (x^(1+n)*((2+n)*ArcSin[m*x]-m*x*Hypergeometric2F1[1/2,1+n/2,2+n/2,m^2*x^2]))/((1+n)*(2+n))
+        return F.Times(F.Power(F.Times(F.Plus(F.C1, n), F.Plus(F.C2, n)), F.CN1),
+            F.Power(x, F.Plus(F.C1, n)),
+            F.Plus(F.Times(F.Plus(F.C2, n), F.ArcSin(F.Times(m, x))),
+                F.Times(F.CN1, m, x, F.Hypergeometric2F1(F.C1D2, F.Plus(F.C1, F.Times(F.C1D2, n)),
+                    F.Plus(F.C2, F.Times(F.C1D2, n)), F.Times(F.Sqr(m), F.Sqr(x))))));
+      case ID.ArcSinh:
+        // (x^(1+n)*((2+n)*ArcSinh(m*x)-m*x*Hypergeometric2F1(1/2,1+n/2,2+n/2,-m^2*x^2)))/((1+n)*(2+n))
+        return F.Times(F.Power(F.Times(F.Plus(F.C1, n), F.Plus(F.C2, n)), F.CN1),
+            F.Power(x, F.Plus(F.C1, n)),
+            F.Plus(F.Times(F.Plus(F.C2, n), F.ArcSinh(F.Times(m, x))),
+                F.Times(F.CN1, m, x, F.Hypergeometric2F1(F.C1D2, F.Plus(F.C1, F.Times(F.C1D2, n)),
+                    F.Plus(F.C2, F.Times(F.C1D2, n)), F.Times(F.CN1, F.Sqr(m), F.Sqr(x))))));
+      case ID.ArcTan:
+        // x^(1+n)/((1+n)*(2+n))*((2+n)*ArcTan(m*x)-m*x*Hypergeometric2F1(1,1+n/2,2+n/2,-m^2*x^2))
+        return F.Times(F.Power(F.Times(F.Plus(F.C1, n), F.Plus(F.C2, n)), F.CN1),
+            F.Power(x, F.Plus(F.C1, n)),
+            F.Plus(F.Times(F.Plus(F.C2, n), F.ArcTan(F.Times(m, x))),
+                F.Times(F.CN1, m, x, F.Hypergeometric2F1(F.C1, F.Plus(F.C1, F.Times(F.C1D2, n)),
+                    F.Plus(F.C2, F.Times(F.C1D2, n)), F.Times(F.CN1, F.Sqr(m), F.Sqr(x))))));
+      case ID.ArcTanh:
+        // (x^(1+n)*((2+n)*ArcTanh(m*x)-m*x*Hypergeometric2F1(1,1+n/2,2+n/2,m^2*x^2)))/((1+n)*(2+n))
+        return F.Times(F.Power(F.Times(F.Plus(F.C1, n), F.Plus(F.C2, n)), F.CN1),
+            F.Power(x, F.Plus(F.C1, n)),
+            F.Plus(F.Times(F.Plus(F.C2, n), F.ArcTanh(F.Times(m, x))),
+                F.Times(F.CN1, m, x, F.Hypergeometric2F1(F.C1, F.Plus(F.C1, F.Times(F.C1D2, n)),
+                    F.Plus(F.C2, F.Times(F.C1D2, n)), F.Times(F.Sqr(m), F.Sqr(x))))));
+
+    }
+    return F.NIL;
   }
 
   private static IExpr integratePiecewise(int[] dim, final IAST piecewiseFunction,

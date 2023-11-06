@@ -11788,8 +11788,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   public void testIntegrateIssue330() {
     check("Integrate(x*ArcSin(x) ,x)", //
-        "1/2*x^2*ArcSin(x)+1/4*(1-x^2)*(x/Sqrt(1-x^2)-ArcTan(x/Sqrt(1-x^2))+(-x^2*ArcTan(x/Sqrt(\n"
-            + "1-x^2)))/(1-x^2))");
+        "1/6*x^2*(3*ArcSin(x)+3/2*(x*(Sqrt(1-x^2)*Sqrt(x^2)-ArcSin(Sqrt(x^2))))/(x^2)^(3/\n" //
+            + "2))");
     check("Limit(x/Sqrt(1-x^2),x->1)", //
         "Indeterminate");
     check("Integrate(x*(1/2*Pi-ArcSin(x)),x)", //
@@ -11797,9 +11797,29 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "1-x^2)))/(1-x^2))");
   }
 
+  public void testIntegrateIssue851() {
+    check("Integrate(ArcSin(x),x)", //
+        "Sqrt(1-x^2)+x*ArcSin(x)");
+    check("Integrate(x^(-3)*ArcSin(x),x)", //
+        "(-x*Sqrt(1-x^2)-ArcSin(x))/(2*x^2)");
+
+    check("Integrate(x*ArcSin(x),{x,0,1})", //
+        "Pi/8");
+    check("Integrate(x*ArcSin(x),x)", //
+        "1/6*x^2*(3*ArcSin(x)+3/2*(x*(Sqrt(1-x^2)*Sqrt(x^2)-ArcSin(Sqrt(x^2))))/(x^2)^(3/\n" //
+            + "2))");
+    check("Integrate(x^n*ArcSin(m*x),x)", //
+        "(x^(1+n)*((2+n)*ArcSin(m*x)-m*x*Hypergeometric2F1(1/2,1+n/2,2+n/2,m^2*x^2)))/((1+n)*(\n"//
+            + "2+n))");
+
+    check("Integrate(x^n*ArcTanh(m*x),x)", //
+        "(x^(1+n)*((2+n)*ArcTanh(m*x)-m*x*Hypergeometric2F1(1,1+n/2,2+n/2,m^2*x^2)))/((1+n)*(\n" //
+            + "2+n))");
+    check("Integrate(x*ArcTanh(3*x),{x,0,1})", //
+        "1/6*(1/9*(9-3*ArcTanh(3))+3*ArcTanh(3))");
+  }
+
   public void testIntegrate() {
-    // check("Integrate( x * ArcSin(x), x)", //
-    // "");
     check("Integrate(Cos(x^3), x)", //
         "(-x*Gamma(1/3,-I*x^3))/(6*(-I*x^3)^(1/3))+(-x*Gamma(1/3,I*x^3))/(6*(I*x^3)^(1/3))");
     check("Integrate(Round(1.235512+1.23787m, 0.01),m)", //

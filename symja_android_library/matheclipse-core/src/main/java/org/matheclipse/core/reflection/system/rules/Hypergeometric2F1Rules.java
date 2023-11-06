@@ -13,7 +13,7 @@ public class Hypergeometric2F1Rules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 3, 94 };
+  final public static int[] SIZES = { 3, 93 };
 
   final public static IAST RULES = List(
     IInit(Hypergeometric2F1, SIZES),
@@ -221,6 +221,9 @@ public class Hypergeometric2F1Rules {
     // Hypergeometric2F1(1/2,2,11/2,z_):=(21*(Sqrt(z)*(105+z*(-265+(191-15*z)*z))+15*(-1+z)^3*(7+z)*ArcTanh(Sqrt(z))))/(256*z^(9/2))
     ISetDelayed(Hypergeometric2F1(C1D2,C2,QQ(11L,2L),z_),
       Times(ZZ(21L),Power(Times(ZZ(256L),Power(z,QQ(9L,2L))),CN1),Plus(Times(Sqrt(z),Plus(ZZ(105L),Times(z,Plus(ZZ(-265L),Times(Plus(ZZ(191L),Times(ZZ(-15L),z)),z))))),Times(ZZ(15L),Power(Plus(CN1,z),C3),Plus(C7,z),ArcTanh(Sqrt(z)))))),
+    // Hypergeometric2F1(1/2,3/2,5/2,z_):=((-1)*3*(Sqrt(1-z)*Sqrt(z)-ArcSin(Sqrt(z))))/(2*z^(3/2))
+    ISetDelayed(Hypergeometric2F1(C1D2,QQ(3L,2L),QQ(5L,2L),z_),
+      Times(CN1,C3,Power(Times(C2,Power(z,QQ(3L,2L))),CN1),Subtract(Times(Sqrt(Subtract(C1,z)),Sqrt(z)),ArcSin(Sqrt(z))))),
     // Hypergeometric2F1(1,3/2,-5/2,z_):=(-5+7*z*(4+5*z(-2+z*(4+z))))/(5*(-1+z)^5)
     ISetDelayed(Hypergeometric2F1(C1,QQ(3L,2L),QQ(-5L,2L),z_),
       Times(Power(Times(C5,Power(Plus(CN1,z),C5)),CN1),Plus(CN5,Times(C7,z,Plus(C4,Times(C5,$(z,Plus(CN2,Times(z,Plus(C4,z)))))))))),
@@ -236,15 +239,12 @@ public class Hypergeometric2F1Rules {
     // Hypergeometric2F1(1,3/2,1,z_):=1/(1-z)^(3/2)
     ISetDelayed(Hypergeometric2F1(C1,QQ(3L,2L),C1,z_),
       Power(Subtract(C1,z),QQ(-3L,2L))),
-    // Hypergeometric2F1(1,3/2,3/2,z_):=(2*(1-Sqrt(1-z)))/(z*Sqrt(1-z))
-    ISetDelayed(Hypergeometric2F1(C1,QQ(3L,2L),QQ(3L,2L),z_),
-      Times(C2,Power(Times(z,Sqrt(Subtract(C1,z))),CN1),Subtract(C1,Sqrt(Subtract(C1,z))))),
     // Hypergeometric2F1(1,3/2,2,z_):=1/(1-z)^(3/2)
     ISetDelayed(Hypergeometric2F1(C1,QQ(3L,2L),C2,z_),
       Power(Subtract(C1,z),QQ(-3L,2L))),
-    // Hypergeometric2F1(1,3/2,5/2,z_):=-3/z+(3*ArcTanh(Sqrt(z)))/z^(3/2)
+    // Hypergeometric2F1(1,3/2,5/2,z_):=(3*(-z+Sqrt(z)*ArcTanh(Sqrt(z))))/z^2
     ISetDelayed(Hypergeometric2F1(C1,QQ(3L,2L),QQ(5L,2L),z_),
-      Plus(Times(CN1,C3,Power(z,CN1)),Times(C3,Power(z,QQ(-3L,2L)),ArcTanh(Sqrt(z))))),
+      Times(C3,Power(z,CN2),Plus(Negate(z),Times(Sqrt(z),ArcTanh(Sqrt(z)))))),
     // Hypergeometric2F1(1,7/2,-11/2,z_):=(55+13*z*(-45+11*z*(20+z*(-60+z*(126+z*(-210+z*(420+z*(180+(-15+z)*z))))))))/(55*(-1+z)^10)
     ISetDelayed(Hypergeometric2F1(C1,QQ(7L,2L),QQ(-11L,2L),z_),
       Times(Power(Times(ZZ(55L),Power(Plus(CN1,z),C10)),CN1),Plus(ZZ(55L),Times(ZZ(13L),z,Plus(ZZ(-45L),Times(ZZ(11L),z,Plus(ZZ(20L),Times(z,Plus(ZZ(-60L),Times(z,Plus(ZZ(126L),Times(z,Plus(ZZ(-210L),Times(z,Plus(ZZ(420L),Times(z,Plus(ZZ(180L),Times(Plus(ZZ(-15L),z),z)))))))))))))))))),
@@ -281,9 +281,6 @@ public class Hypergeometric2F1Rules {
     // Hypergeometric2F1(1,7/2,3,z_):=(4*(2-(1-z)^(3/2)*(2+3*z)))/(15*(1-z)^(3/2)*z^2)
     ISetDelayed(Hypergeometric2F1(C1,QQ(7L,2L),C3,z_),
       Times(C4,Plus(C2,Times(CN1,Power(Subtract(C1,z),QQ(3L,2L)),Plus(C2,Times(C3,z)))),Power(Times(ZZ(15L),Power(Subtract(C1,z),QQ(3L,2L)),Sqr(z)),CN1))),
-    // Hypergeometric2F1(1,7/2,7/2,z_):=1/(1-z)
-    ISetDelayed(Hypergeometric2F1(C1,QQ(7L,2L),QQ(7L,2L),z_),
-      Power(Subtract(C1,z),CN1)),
     // Hypergeometric2F1(1,7/2,4,z_):=(2*(8-Sqrt(1-z)*(8+4*z+3*z^2)))/(5*Sqrt(1-z)*z^3)
     ISetDelayed(Hypergeometric2F1(C1,QQ(7L,2L),C4,z_),
       Times(C2,Plus(C8,Times(CN1,Sqrt(Subtract(C1,z)),Plus(C8,Times(C4,z),Times(C3,Sqr(z))))),Power(Times(C5,Sqrt(Subtract(C1,z)),Power(z,C3)),CN1))),
