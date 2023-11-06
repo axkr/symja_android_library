@@ -10544,6 +10544,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testHarmonicMean() {
+    checkNumeric("HarmonicMean({-3.1415,2.987,-1,1})", //
+        "242.94266666666653");
+    checkNumeric("HarmonicMean({-3.1415,2.987,I,1})", //
+        "1.9997333373775112+I*1.9673414730736105");
+    check("HarmonicMean({-3.1415,2.987,-1,0,1})", //
+        "0");
+    check("HarmonicMean({{-3.1415,2.987,-1,0,1}})", //
+        "{-3.1415,2.987,-1,0,1}");
     check("HarmonicMean({1, 2, 3, 4,5, 6, 7})", //
         "980/363");
     check("HarmonicMean({a,b,c,d})", //
@@ -11790,6 +11798,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testIntegrate() {
+    // check("Integrate( x * ArcSin(x), x)", //
+    // "");
     check("Integrate(Cos(x^3), x)", //
         "(-x*Gamma(1/3,-I*x^3))/(6*(-I*x^3)^(1/3))+(-x*Gamma(1/3,I*x^3))/(6*(I*x^3)^(1/3))");
     check("Integrate(Round(1.235512+1.23787m, 0.01),m)", //

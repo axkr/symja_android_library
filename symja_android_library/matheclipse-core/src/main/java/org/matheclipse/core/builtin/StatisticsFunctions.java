@@ -55,6 +55,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -3086,9 +3087,34 @@ public class StatisticsFunctions {
           return list.mapMatrixColumns(dim, x -> F.HarmonicMean(x));
         }
 
-        IASTMutable result = list.apply(S.Plus);
-        result.map(result, x -> x.inverse());
-        return F.Times(F.ZZ(list.argSize()), F.Power(result, F.CN1));
+        IASTAppendable result = F.PlusAlloc(8);
+        INumber number = F.C0;
+        final int size = list.size();
+        final int argSize = size - 1;
+        for (int i = 1; i < size; i++) {
+          IExpr x = list.get(i);
+          if (x.isZero()) {
+            return F.C0;
+          }
+          x = x.inverse();
+          if (x.isNumber()) {
+            number = number.plus((INumber) x);
+          } else {
+            result.append(x);
+          }
+        }
+        if (result.argSize() == 0) {
+          if (number.isZero()) {
+            return F.C0;
+          }
+          return F.Times(F.ZZ(argSize), F.Power(number, F.CN1));
+        }
+        result.append(number);
+        IExpr temp = engine.evaluate(result);
+        if (temp.isZero()) {
+          return F.C0;
+        }
+        return F.Times(F.ZZ(argSize), F.Power(result, F.CN1));
       }
       return F.NIL;
     }
