@@ -393,14 +393,14 @@ ILeQ[u_,n_] := IntegerQ[u] && u<=n
 
 GtQ::usage = "If u>v, GtQ[u,v] returns True; else it returns False.";
 GtQ[u_,v_] := 
-  If[RealNumberQ[u],
-    If[RealNumberQ[v],
+  If[RealValuedNumberQ[u],
+    If[RealValuedNumberQ[v],
       u>v,
     With[{vn=N[Together[v]]},
     Head[vn]===Real && u>vn]],
   With[{un=N[Together[u]]},
   If[Head[un]===Real,
-    If[RealNumberQ[v],
+    If[RealValuedNumberQ[v],
       un>v,
     With[{vn=N[Together[v]]},
     Head[vn]===Real && un>vn]],
@@ -412,14 +412,14 @@ GtQ[u_,v_,w_] := GtQ[u,v] && GtQ[v,w]
 
 LtQ::usage = "If u<v, LtQ[u,v] returns True; else it returns False.";
 LtQ[u_,v_] := 
-  If[RealNumberQ[u],
-    If[RealNumberQ[v],
+  If[RealValuedNumberQ[u],
+    If[RealValuedNumberQ[v],
       u<v,
     With[{vn=N[Together[v]]},
     Head[vn]===Real && u<vn]],
   With[{un=N[Together[u]]},
   If[Head[un]===Real,
-    If[RealNumberQ[v],
+    If[RealValuedNumberQ[v],
       un<v,
     With[{vn=N[Together[v]]},
     Head[vn]===Real && un<vn]],
@@ -431,14 +431,14 @@ LtQ[u_,v_,w_] := LtQ[u,v] && LtQ[v,w]
 
 GeQ::usage = "If u>=v, GeQ[u,v] returns True; else it returns False.";
 GeQ[u_,v_] := 
-  If[RealNumberQ[u],
-    If[RealNumberQ[v],
+  If[RealValuedNumberQ[u],
+    If[RealValuedNumberQ[v],
       u>=v,
     With[{vn=N[Together[v]]},
     Head[vn]===Real && u>=vn]],
   With[{un=N[Together[u]]},
   If[Head[un]===Real,
-    If[RealNumberQ[v],
+    If[RealValuedNumberQ[v],
       un>=v,
     With[{vn=N[Together[v]]},
     Head[vn]===Real && un>=vn]],
@@ -450,14 +450,14 @@ GeQ[u_,v_,w_] := GeQ[u,v] && GeQ[v,w]
 
 LeQ::usage = "If u<=v, LeQ[u,v] returns True; else it returns False.";
 LeQ[u_,v_] := 
-  If[RealNumberQ[u],
-    If[RealNumberQ[v],
+  If[RealValuedNumberQ[u],
+    If[RealValuedNumberQ[v],
       u<=v,
     With[{vn=N[Together[v]]},
     Head[vn]===Real && u<=vn]],
   With[{un=N[Together[u]]},
   If[Head[un]===Real,
-    If[RealNumberQ[v],
+    If[RealValuedNumberQ[v],
       un<=v,
     With[{vn=N[Together[v]]},
     Head[vn]===Real && un<=vn]],
@@ -467,8 +467,8 @@ LeQ[u_,v_] :=
 LeQ[u_,v_,w_] := LeQ[u,v] && LeQ[v,w]  
 
 (*
-RealNumberQ::usage = "If u is an explicit non-complex number, RealNumberQ[u] returns True; else it returns False.";
-RealNumberQ[u_] := NumberQ[u] && Head[u]=!=Complex
+RealValuedNumberQ::usage = "If u is an explicit non-complex number, RealValuedNumberQ[u] returns True; else it returns False.";
+RealValuedNumberQ[u_] := NumberQ[u] && Head[u]=!=Complex
 *)
 
 (* ::Section::Closed:: *)
