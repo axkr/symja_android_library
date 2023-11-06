@@ -42,6 +42,7 @@ public class S {
     return BUILT_IN_SYMBOLS[id];
   }
 
+
   public final static IBuiltInSymbol $Aborted = S.initFinalSymbol("$Aborted", ID.$Aborted);
 
   /**
@@ -2458,6 +2459,14 @@ public class S {
    */
   public final static IBuiltInSymbol Decrement = S.initFinalSymbol("Decrement", ID.Decrement);
 
+  /**
+   * DedekindNumber(n) - returns the `n`th Dedekind number. Currently `0 <= n <= 9` can be computed,
+   * otherwise the function returns unevaluated.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DedekindNumber.md">DedekindNumber
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol DedekindNumber =
       S.initFinalSymbol("DedekindNumber", ID.DedekindNumber);
 
@@ -4110,9 +4119,16 @@ public class S {
   public final static IBuiltInSymbol FromPolarCoordinates =
       S.initFinalSymbol("FromPolarCoordinates", ID.FromPolarCoordinates);
 
+  /**
+   * FromRomanNumeral(roman-number-string) - converts the given `roman-number-string` to an integer
+   * number.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FromRomanNumeral.md">FromRomanNumeral
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol FromRomanNumeral =
       S.initFinalSymbol("FromRomanNumeral", ID.FromRomanNumeral);
-
 
   /**
    * FromSphericalCoordinates({r, t, p}) - returns the cartesian coordinates for the spherical
@@ -6664,7 +6680,7 @@ public class S {
 
   /**
    * MersennePrimeExponent(n) - returns the `n`th mersenne prime exponent. `2^n - 1` must be a prime
-   * number.
+   * number. Currently `0 < n <= 47` can be computed, otherwise the function returns unevaluated.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MersennePrimeExponent.md">MersennePrimeExponent
@@ -8504,6 +8520,14 @@ public class S {
    */
   public final static IBuiltInSymbol Ramp = S.initFinalSymbol("Ramp", ID.Ramp);
 
+  /**
+   * RamseyNumber(r, s) - returns the Ramsey number `R(r,s)`. Currently not all values are known for
+   * `1 <= r <= 4`. The function returns unevaluated if the value is unknown.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RamseyNumber.md">RamseyNumber
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol RamseyNumber =
       S.initFinalSymbol("RamseyNumber", ID.RamseyNumber);
 
@@ -9473,6 +9497,13 @@ public class S {
    */
   public final static IBuiltInSymbol SinIntegral = S.initFinalSymbol("SinIntegral", ID.SinIntegral);
 
+  /**
+   * SixJSymbol({j1,j2,j3},{j4,j5,j6}) - get the 6-j symbol coefficients.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SixJSymbol.md">SixJSymbol
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol SixJSymbol = S.initFinalSymbol("SixJSymbol", ID.SixJSymbol);
 
   /**

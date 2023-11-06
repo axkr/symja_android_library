@@ -39,6 +39,7 @@ public class J extends S {
     }
   }
 
+
   /**
    * AASTriangle(alpha, beta, a) - returns a triangle from 2 angles `alpha`, `beta` and side `a`
    * (which is not between the angles).
@@ -146,6 +147,30 @@ public class J extends S {
    */
   public static IAST adjacencyMatrix(final Object a1) {
     return new AST1(AdjacencyMatrix, Object2Expr.convert(a1));
+  }
+
+
+  /**
+   * Adjugate(matrix) - calculate the adjugate matrix `Inverse(matrix)*Det(matrix)`
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Adjugate.md">Adjugate
+   *      documentation</a>
+   */
+  public static IAST adjugate(final Object a1) {
+    return new AST1(Adjugate, Object2Expr.convert(a1));
+  }
+
+
+  /**
+   * Adjugate(matrix) - calculate the adjugate matrix `Inverse(matrix)*Det(matrix)`
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Adjugate.md">Adjugate
+   *      documentation</a>
+   */
+  public static IAST adjugate(final Object a1, final Object a2) {
+    return new AST2(Adjugate, Object2Expr.convert(a1), Object2Expr.convert(a2));
   }
 
 
@@ -1959,7 +1984,7 @@ public class J extends S {
 
 
   /**
-   * CentralMoment(list, r) - gives the the `r`th central moment (i.e. the `r`th moment about the
+   * CentralMoment(list, r) - gives the the `r`-th central moment (i.e. the `r`th moment about the
    * mean) of `list`.
    * 
    * @see <a href=
@@ -2177,6 +2202,20 @@ public class J extends S {
 
 
   /**
+   * ClebschGordan({j1,m1},{j2,m2},{j3,m3}) - get the Clebsch–Gordan coefficients. Clebsch–Gordan
+   * coefficients are numbers that arise in angular momentum coupling in quantum mechanic.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ClebschGordan.md">ClebschGordan
+   *      documentation</a>
+   */
+  public static IAST clebschGordan(final Object a1, final Object a2, final Object a3) {
+    return new AST3(ClebschGordan, Object2Expr.convert(a1), Object2Expr.convert(a2),
+        Object2Expr.convert(a3));
+  }
+
+
+  /**
    * Clip(expr) - returns `expr` in the range `-1` to `1`. Returns `-1` if `expr` is less than `-1`.
    * Returns `1` if `expr` is greater than `1`.
    * 
@@ -2331,6 +2370,13 @@ public class J extends S {
   }
 
 
+  /**
+   * Cofactor(matrix, {i,j}) - calculate the cofactor of the matrix
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Cofactor.md">Cofactor
+   *      documentation</a>
+   */
   public static IAST cofactor(final Object a1, final Object a2) {
     return new AST2(Cofactor, Object2Expr.convert(a1), Object2Expr.convert(a2));
   }
@@ -2522,8 +2568,8 @@ public class J extends S {
 
 
   /**
-   * ComplexExpand(expr) - get the expanded `expr`. All variable symbols in `expr` are assumed to be
-   * non complex numbers.
+   * ComplexExpand(expr) - expands `expr`. All variable symbols in `expr` are assumed to be non
+   * complex numbers.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ComplexExpand.md">ComplexExpand
@@ -2535,8 +2581,8 @@ public class J extends S {
 
 
   /**
-   * ComplexExpand(expr) - get the expanded `expr`. All variable symbols in `expr` are assumed to be
-   * non complex numbers.
+   * ComplexExpand(expr) - expands `expr`. All variable symbols in `expr` are assumed to be non
+   * complex numbers.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ComplexExpand.md">ComplexExpand
@@ -2544,6 +2590,18 @@ public class J extends S {
    */
   public static IAST complexExpand(final Object a1, final Object a2) {
     return new AST2(ComplexExpand, Object2Expr.convert(a1), Object2Expr.convert(a2));
+  }
+
+
+  /**
+   * CompositeQ(n) - returns `True` if `n` is a composite integer number.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CompositeQ.md">CompositeQ
+   *      documentation</a>
+   */
+  public static IAST compositeQ(final Object a1) {
+    return new AST1(CompositeQ, Object2Expr.convert(a1));
   }
 
 
@@ -2711,7 +2769,7 @@ public class J extends S {
 
 
   /**
-   * Context(symbol) - return the context of the given symbol.
+   * Context(symbol) - yields the name of the context where `symbol` is defined in.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Context.md">Context
@@ -2719,18 +2777,6 @@ public class J extends S {
    */
   public static IAST context(final Object a1) {
     return new AST1(Context, Object2Expr.convert(a1));
-  }
-
-
-  /**
-   * Continue() - continues with the next iteration in a `For`, `While`, or `Do` loop.
-   * 
-   * @see <a href=
-   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Continue.md">Continue
-   *      documentation</a>
-   */
-  public static IAST $continue(final Object a1) {
-    return new AST1(Continue, Object2Expr.convert(a1));
   }
 
 
@@ -3328,6 +3374,19 @@ public class J extends S {
 
 
   /**
+   * DedekindNumber(n) - returns the `n`th Dedekind number. Currently `0 <= n <= 9` can be computed,
+   * otherwise the function returns unevaluated.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DedekindNumber.md">DedekindNumber
+   *      documentation</a>
+   */
+  public static IAST dedekindNumber(final Object a1) {
+    return new AST1(DedekindNumber, Object2Expr.convert(a1));
+  }
+
+
+  /**
    * Default(symbol) - `Default` returns the default value associated with the `symbol` for a
    * pattern default `_.` expression.
    * 
@@ -3464,6 +3523,11 @@ public class J extends S {
   }
 
 
+  public static IAST deleteMissing(final Object a1) {
+    return new AST1(DeleteMissing, Object2Expr.convert(a1));
+  }
+
+
   /**
    * Denominator(expr) - gives the denominator in `expr`. Denominator collects expressions with
    * negative exponents.
@@ -3491,7 +3555,7 @@ public class J extends S {
 
 
   /**
-   * Depth(expr) - gives the depth of `expr`.
+   * Depth(expr) - gets the depth of `expr`.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Depth.md">Depth
@@ -3703,18 +3767,6 @@ public class J extends S {
    */
   public static IAST digitQ(final Object a1) {
     return new AST1(DigitQ, Object2Expr.convert(a1));
-  }
-
-
-  /**
-   * DigitQ(str) - returns `True` if `str` is a string which contains only digits.
-   * 
-   * @see <a href=
-   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DigitQ.md">DigitQ
-   *      documentation</a>
-   */
-  public static IAST digitQ(final Object a1, final Object a2) {
-    return new AST2(DigitQ, Object2Expr.convert(a1), Object2Expr.convert(a2));
   }
 
 
@@ -4244,6 +4296,32 @@ public class J extends S {
 
 
   /**
+   * Eigensystem(matrix) - return the numerical eigensystem of the `matrix` as a list `{eigenvalues,
+   * eigenvectors}`
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Eigensystem.md">Eigensystem
+   *      documentation</a>
+   */
+  public static IAST eigensystem(final Object a1) {
+    return new AST1(Eigensystem, Object2Expr.convert(a1));
+  }
+
+
+  /**
+   * Eigensystem(matrix) - return the numerical eigensystem of the `matrix` as a list `{eigenvalues,
+   * eigenvectors}`
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Eigensystem.md">Eigensystem
+   *      documentation</a>
+   */
+  public static IAST eigensystem(final Object a1, final Object a2) {
+    return new AST2(Eigensystem, Object2Expr.convert(a1), Object2Expr.convert(a2));
+  }
+
+
+  /**
    * Eigenvalues(matrix) - get the numerical eigenvalues of the `matrix`.
    * 
    * @see <a href=
@@ -4541,6 +4619,18 @@ public class J extends S {
    */
   public static IAST eulerE(final Object a1) {
     return new AST1(EulerE, Object2Expr.convert(a1));
+  }
+
+
+  /**
+   * EulerE(n) - gives the euler number `En`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EulerE.md">EulerE
+   *      documentation</a>
+   */
+  public static IAST eulerE(final Object a1, final Object a2) {
+    return new AST2(EulerE, Object2Expr.convert(a1), Object2Expr.convert(a2));
   }
 
 
@@ -6062,6 +6152,32 @@ public class J extends S {
 
 
   /**
+   * FromRomanNumeral(roman-number-string) - converts the given `roman-number-string` to an integer
+   * number.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FromRomanNumeral.md">FromRomanNumeral
+   *      documentation</a>
+   */
+  public static IAST fromRomanNumeral(final Object a1) {
+    return new AST1(FromRomanNumeral, Object2Expr.convert(a1));
+  }
+
+
+  /**
+   * FromSphericalCoordinates({r, t, p}) - returns the cartesian coordinates for the spherical
+   * coordinates `{r, t, p}`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FromSphericalCoordinates.md">FromSphericalCoordinates
+   *      documentation</a>
+   */
+  public static IAST fromSphericalCoordinates(final Object a1) {
+    return new AST1(FromSphericalCoordinates, Object2Expr.convert(a1));
+  }
+
+
+  /**
    * FullForm(expression) - shows the internal representation of the given `expression`.
    * 
    * @see <a href=
@@ -6096,6 +6212,11 @@ public class J extends S {
    */
   public static IAST fullSimplify(final Object a1, final Object a2) {
     return new AST2(FullSimplify, Object2Expr.convert(a1), Object2Expr.convert(a2));
+  }
+
+
+  public static IAST functionDomain(final Object a1, final Object a2) {
+    return new AST2(FunctionDomain, Object2Expr.convert(a1), Object2Expr.convert(a2));
   }
 
 
@@ -6177,6 +6298,31 @@ public class J extends S {
    */
   public static IAST gamma(final Object a1, final Object a2, final Object a3) {
     return new AST3(Gamma, Object2Expr.convert(a1), Object2Expr.convert(a2),
+        Object2Expr.convert(a3));
+  }
+
+
+  /**
+   * GammaDistribution(a,b) - returns a gamma distribution.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GammaDistribution.md">GammaDistribution
+   *      documentation</a>
+   */
+  public static IAST gammaDistribution(final Object a1, final Object a2) {
+    return new AST2(GammaDistribution, Object2Expr.convert(a1), Object2Expr.convert(a2));
+  }
+
+
+  /**
+   * GammaDistribution(a,b) - returns a gamma distribution.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GammaDistribution.md">GammaDistribution
+   *      documentation</a>
+   */
+  public static IAST gammaDistribution(final Object a1, final Object a2, final Object a3) {
+    return new AST3(GammaDistribution, Object2Expr.convert(a1), Object2Expr.convert(a2),
         Object2Expr.convert(a3));
   }
 
@@ -7094,6 +7240,31 @@ public class J extends S {
    */
   public static IAST identity(final Object a1) {
     return new AST1(Identity, Object2Expr.convert(a1));
+  }
+
+
+  /**
+   * Identity(x) - is the identity function, which returns `x` unchanged.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Identity.md">Identity
+   *      documentation</a>
+   */
+  public static IAST identity(final Object a1, final Object a2) {
+    return new AST2(Identity, Object2Expr.convert(a1), Object2Expr.convert(a2));
+  }
+
+
+  /**
+   * Identity(x) - is the identity function, which returns `x` unchanged.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Identity.md">Identity
+   *      documentation</a>
+   */
+  public static IAST identity(final Object a1, final Object a2, final Object a3) {
+    return new AST3(Identity, Object2Expr.convert(a1), Object2Expr.convert(a2),
+        Object2Expr.convert(a3));
   }
 
 
@@ -8798,9 +8969,8 @@ public class J extends S {
 
 
   /**
-   * LinearModelFit(list-of-data-points, expr, symbol) - In statistics, linear regression is a
-   * linear approach to modeling the relationship between a scalar response (or dependent variable)
-   * and one or more explanatory variables (or independent variables).
+   * LinearModelFit({{x1,y1},{x2,y2},...}, expr, symbol) - Create a linear regression model from a
+   * matrix of observed value pairs `{x_i, y_i}`.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LinearModelFit.md">LinearModelFit
@@ -8808,6 +8978,12 @@ public class J extends S {
    */
   public static IAST linearModelFit(final Object a1, final Object a2, final Object a3) {
     return new AST3(LinearModelFit, Object2Expr.convert(a1), Object2Expr.convert(a2),
+        Object2Expr.convert(a3));
+  }
+
+
+  public static IAST linearOptimization(final Object a1, final Object a2, final Object a3) {
+    return new AST3(LinearOptimization, Object2Expr.convert(a1), Object2Expr.convert(a2),
         Object2Expr.convert(a3));
   }
 
@@ -8844,7 +9020,7 @@ public class J extends S {
 
 
   /**
-   * LinearSolve(matrix, right) - solves the linear equation system 'matrix . x = right' and returns
+   * LinearSolve(matrix, right) - solves the linear equation system `matrix . x = right` and returns
    * one corresponding solution `x`.
    * 
    * @see <a href=
@@ -8857,7 +9033,7 @@ public class J extends S {
 
 
   /**
-   * LinearSolve(matrix, right) - solves the linear equation system 'matrix . x = right' and returns
+   * LinearSolve(matrix, right) - solves the linear equation system `matrix . x = right` and returns
    * one corresponding solution `x`.
    * 
    * @see <a href=
@@ -8870,7 +9046,7 @@ public class J extends S {
 
 
   /**
-   * LinearSolve(matrix, right) - solves the linear equation system 'matrix . x = right' and returns
+   * LinearSolve(matrix, right) - solves the linear equation system `matrix . x = right` and returns
    * one corresponding solution `x`.
    * 
    * @see <a href=
@@ -8971,6 +9147,46 @@ public class J extends S {
    */
   public static IAST listLinePlot(final Object a1, final Object a2, final Object a3) {
     return new AST3(ListLinePlot, Object2Expr.convert(a1), Object2Expr.convert(a2),
+        Object2Expr.convert(a3));
+  }
+
+
+  /**
+   * ListLinePlot3D( { list-of-lines } ) - generate a JavaScript list plot 3D control for the
+   * `list-of-lines`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ListLinePlot3D.md">ListLinePlot3D
+   *      documentation</a>
+   */
+  public static IAST listLinePlot3D(final Object a1) {
+    return new AST1(ListLinePlot3D, Object2Expr.convert(a1));
+  }
+
+
+  /**
+   * ListLinePlot3D( { list-of-lines } ) - generate a JavaScript list plot 3D control for the
+   * `list-of-lines`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ListLinePlot3D.md">ListLinePlot3D
+   *      documentation</a>
+   */
+  public static IAST listLinePlot3D(final Object a1, final Object a2) {
+    return new AST2(ListLinePlot3D, Object2Expr.convert(a1), Object2Expr.convert(a2));
+  }
+
+
+  /**
+   * ListLinePlot3D( { list-of-lines } ) - generate a JavaScript list plot 3D control for the
+   * `list-of-lines`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ListLinePlot3D.md">ListLinePlot3D
+   *      documentation</a>
+   */
+  public static IAST listLinePlot3D(final Object a1, final Object a2, final Object a3) {
+    return new AST3(ListLinePlot3D, Object2Expr.convert(a1), Object2Expr.convert(a2),
         Object2Expr.convert(a3));
   }
 
@@ -9847,11 +10063,6 @@ public class J extends S {
   }
 
 
-  public static IAST maxMemoryUsed(final Object a1) {
-    return new AST1(MaxMemoryUsed, Object2Expr.convert(a1));
-  }
-
-
   /**
    * Mean(list) - returns the statistical mean of `list`.
    * 
@@ -9952,7 +10163,7 @@ public class J extends S {
 
   /**
    * MersennePrimeExponent(n) - returns the `n`th mersenne prime exponent. `2^n - 1` must be a prime
-   * number.
+   * number. Currently `0 < n <= 47` can be computed, otherwise the function returns unevaluated.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MersennePrimeExponent.md">MersennePrimeExponent
@@ -10888,6 +11099,19 @@ public class J extends S {
   }
 
 
+  /**
+   * NumericalSort(list) - `NumericalSort(list)` is evaluated by calling `Sort(list,
+   * NumericalOrder)`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NumericalSort.md">NumericalSort
+   *      documentation</a>
+   */
+  public static IAST numericalSort(final Object a1) {
+    return new AST1(NumericalSort, Object2Expr.convert(a1));
+  }
+
+
   public static IAST numericArray(final Object a1, final Object a2) {
     return new AST2(NumericArray, Object2Expr.convert(a1), Object2Expr.convert(a2));
   }
@@ -11465,6 +11689,33 @@ public class J extends S {
 
 
   /**
+   * ParametricPlot({function1, function2}, {t, tMin, tMax}) - generate a JavaScript control for the
+   * parametric expressions `function1`, `function2` in the `t` range `{t, tMin, tMax}`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ParametricPlot.md">ParametricPlot
+   *      documentation</a>
+   */
+  public static IAST parametricPlot(final Object a1, final Object a2) {
+    return new AST2(ParametricPlot, Object2Expr.convert(a1), Object2Expr.convert(a2));
+  }
+
+
+  /**
+   * ParametricPlot({function1, function2}, {t, tMin, tMax}) - generate a JavaScript control for the
+   * parametric expressions `function1`, `function2` in the `t` range `{t, tMin, tMax}`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ParametricPlot.md">ParametricPlot
+   *      documentation</a>
+   */
+  public static IAST parametricPlot(final Object a1, final Object a2, final Object a3) {
+    return new AST3(ParametricPlot, Object2Expr.convert(a1), Object2Expr.convert(a2),
+        Object2Expr.convert(a3));
+  }
+
+
+  /**
    * ParetoDistribution(k,a) - returns a Pareto distribution.
    * 
    * @see <a href=
@@ -11653,6 +11904,35 @@ public class J extends S {
    */
   public static IAST pdf(final Object a1, final Object a2) {
     return new AST2(PDF, Object2Expr.convert(a1), Object2Expr.convert(a2));
+  }
+
+
+  /**
+   * PearsonCorrelationTest(real-vector1, real-vector2) - `"value"` can be `"TestStatistic"`,
+   * `"TestData"` or `"PValue"`. In statistics, the Pearson correlation coefficient (PCC) is a
+   * correlation coefficient that measures linear correlation between two sets of data.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PearsonCorrelationTest.md">PearsonCorrelationTest
+   *      documentation</a>
+   */
+  public static IAST pearsonCorrelationTest(final Object a1, final Object a2) {
+    return new AST2(PearsonCorrelationTest, Object2Expr.convert(a1), Object2Expr.convert(a2));
+  }
+
+
+  /**
+   * PearsonCorrelationTest(real-vector1, real-vector2) - `"value"` can be `"TestStatistic"`,
+   * `"TestData"` or `"PValue"`. In statistics, the Pearson correlation coefficient (PCC) is a
+   * correlation coefficient that measures linear correlation between two sets of data.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PearsonCorrelationTest.md">PearsonCorrelationTest
+   *      documentation</a>
+   */
+  public static IAST pearsonCorrelationTest(final Object a1, final Object a2, final Object a3) {
+    return new AST3(PearsonCorrelationTest, Object2Expr.convert(a1), Object2Expr.convert(a2),
+        Object2Expr.convert(a3));
   }
 
 
@@ -11978,6 +12258,33 @@ public class J extends S {
 
 
   /**
+   * Plot3D(function, {x, xMin, xMax}, {y,yMin,yMax}) - generate a JavaScript control for the
+   * expression `function` in the `x` range `{x, xMin, xMax}` and `{yMin, yMax}` in the `y` range.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plot3D.md">Plot3D
+   *      documentation</a>
+   */
+  public static IAST plot3D(final Object a1, final Object a2) {
+    return new AST2(Plot3D, Object2Expr.convert(a1), Object2Expr.convert(a2));
+  }
+
+
+  /**
+   * Plot3D(function, {x, xMin, xMax}, {y,yMin,yMax}) - generate a JavaScript control for the
+   * expression `function` in the `x` range `{x, xMin, xMax}` and `{yMin, yMax}` in the `y` range.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plot3D.md">Plot3D
+   *      documentation</a>
+   */
+  public static IAST plot3D(final Object a1, final Object a2, final Object a3) {
+    return new AST3(Plot3D, Object2Expr.convert(a1), Object2Expr.convert(a2),
+        Object2Expr.convert(a3));
+  }
+
+
+  /**
    * Pochhammer(a, n) - returns the pochhammer symbol for a rational number `a` and an integer
    * number `n`.
    * 
@@ -12036,6 +12343,19 @@ public class J extends S {
    */
   public static IAST poissonDistribution(final Object a1) {
     return new AST1(PoissonDistribution, Object2Expr.convert(a1));
+  }
+
+
+  /**
+   * PolarPlot(function, {t, tMin, tMax}) - generate a JavaScript control for the polar plot
+   * expressions `function` in the `t` range `{t, tMin, tMax}`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PolarPlot.md">PolarPlot
+   *      documentation</a>
+   */
+  public static IAST polarPlot(final Object a1, final Object a2) {
+    return new AST2(PolarPlot, Object2Expr.convert(a1), Object2Expr.convert(a2));
   }
 
 
@@ -12135,6 +12455,19 @@ public class J extends S {
    */
   public static IAST polyLog(final Object a1, final Object a2) {
     return new AST2(PolyLog, Object2Expr.convert(a1), Object2Expr.convert(a2));
+  }
+
+
+  /**
+   * PolyLog(s, z) - returns the polylogarithm function.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PolyLog.md">PolyLog
+   *      documentation</a>
+   */
+  public static IAST polyLog(final Object a1, final Object a2, final Object a3) {
+    return new AST3(PolyLog, Object2Expr.convert(a1), Object2Expr.convert(a2),
+        Object2Expr.convert(a3));
   }
 
 
@@ -12518,6 +12851,19 @@ public class J extends S {
 
 
   /**
+   * Probability(pure-function, data-set) - returns the probability of the `pure-function` for the
+   * given `data-set`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Probability.md">Probability
+   *      documentation</a>
+   */
+  public static IAST probability(final Object a1, final Object a2) {
+    return new AST2(Probability, Object2Expr.convert(a1), Object2Expr.convert(a2));
+  }
+
+
+  /**
    * Product(expr, {i, imin, imax}) - evaluates the discrete product of `expr` with `i` ranging from
    * `imin` to `imax`.
    * 
@@ -12795,19 +13141,6 @@ public class J extends S {
   }
 
 
-  /**
-   * Quiet(expr) - evaluates `expr` in "quiet" mode (i.e. no warning messages are shown during
-   * evaluation).
-   * 
-   * @see <a href=
-   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Quiet.md">Quiet
-   *      documentation</a>
-   */
-  public static IAST quiet(final Object a1, final Object a2) {
-    return new AST2(Quiet, Object2Expr.convert(a1), Object2Expr.convert(a2));
-  }
-
-
   public static IAST quit(final Object a1) {
     return new AST1(Quit, Object2Expr.convert(a1));
   }
@@ -12873,6 +13206,19 @@ public class J extends S {
    */
   public static IAST ramp(final Object a1) {
     return new AST1(Ramp, Object2Expr.convert(a1));
+  }
+
+
+  /**
+   * RamseyNumber(r, s) - returns the Ramsey number `R(r,s)`. Currently not all values are known for
+   * `1 <= r <= 4`. The function returns unevaluated if the value is unknown.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RamseyNumber.md">RamseyNumber
+   *      documentation</a>
+   */
+  public static IAST ramseyNumber(final Object a1, final Object a2) {
+    return new AST2(RamseyNumber, Object2Expr.convert(a1), Object2Expr.convert(a2));
   }
 
 
@@ -13271,7 +13617,20 @@ public class J extends S {
 
 
   /**
-   * RealValuedNumberQ(expr) - returns `True` if `expr` is an explicit number with no imaginary
+   * RealSign(x) - gives `-1`, `0` or `1` depending on whether `x` is negative, zero or positive.
+   * For complex number arguments the function will be left unevaluated.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RealSign.md">RealSign
+   *      documentation</a>
+   */
+  public static IAST realSign(final Object a1) {
+    return new AST1(RealSign, Object2Expr.convert(a1));
+  }
+
+
+  /**
+   * RealValuedNumberQ(expr) - returns `True` if `expr` is an explicit real number with no imaginary
    * component.
    * 
    * @see <a href=
@@ -13283,16 +13642,8 @@ public class J extends S {
   }
 
 
-  /**
-   * RealSign(x) - gives `-1`, `0` or `1` depending on whether `x` is negative, zero or positive.
-   * For complex number arguments the function will be left unevaluated.
-   * 
-   * @see <a href=
-   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RealSign.md">RealSign
-   *      documentation</a>
-   */
-  public static IAST realSign(final Object a1) {
-    return new AST1(RealSign, Object2Expr.convert(a1));
+  public static IAST realValuedNumericQ(final Object a1) {
+    return new AST1(RealValuedNumericQ, Object2Expr.convert(a1));
   }
 
 
@@ -13426,6 +13777,18 @@ public class J extends S {
   public static IAST refine(final Object a1, final Object a2, final Object a3) {
     return new AST3(Refine, Object2Expr.convert(a1), Object2Expr.convert(a2),
         Object2Expr.convert(a3));
+  }
+
+
+  /**
+   * ReIm(z) - returns a list of the real and imaginary component of the complex number `z`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ReIm.md">ReIm
+   *      documentation</a>
+   */
+  public static IAST reIm(final Object a1) {
+    return new AST1(ReIm, Object2Expr.convert(a1));
   }
 
 
@@ -14123,6 +14486,30 @@ public class J extends S {
   }
 
 
+  /**
+   * SawtoothWave(expr) - returns the sawtooth wave value of `expr`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SawtoothWave.md">SawtoothWave
+   *      documentation</a>
+   */
+  public static IAST sawtoothWave(final Object a1) {
+    return new AST1(SawtoothWave, Object2Expr.convert(a1));
+  }
+
+
+  /**
+   * SawtoothWave(expr) - returns the sawtooth wave value of `expr`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SawtoothWave.md">SawtoothWave
+   *      documentation</a>
+   */
+  public static IAST sawtoothWave(final Object a1, final Object a2) {
+    return new AST2(SawtoothWave, Object2Expr.convert(a1), Object2Expr.convert(a2));
+  }
+
+
   public static IAST scaled(final Object a1) {
     return new AST1(Scaled, Object2Expr.convert(a1));
   }
@@ -14365,6 +14752,20 @@ public class J extends S {
    */
   public static IAST semanticImportString(final Object a1, final Object a2) {
     return new AST2(SemanticImportString, Object2Expr.convert(a1), Object2Expr.convert(a2));
+  }
+
+
+  /**
+   * SemanticImportString("string-content") - import the data from a content string in CSV format
+   * and do a semantic interpretation of the columns.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SemanticImportString.md">SemanticImportString
+   *      documentation</a>
+   */
+  public static IAST semanticImportString(final Object a1, final Object a2, final Object a3) {
+    return new AST3(SemanticImportString, Object2Expr.convert(a1), Object2Expr.convert(a2),
+        Object2Expr.convert(a3));
   }
 
 
@@ -14617,6 +15018,18 @@ public class J extends S {
    */
   public static IAST sinIntegral(final Object a1) {
     return new AST1(SinIntegral, Object2Expr.convert(a1));
+  }
+
+
+  /**
+   * SixJSymbol({j1,j2,j3},{j4,j5,j6}) - get the 6-j symbol coefficients.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SixJSymbol.md">SixJSymbol
+   *      documentation</a>
+   */
+  public static IAST sixJSymbol(final Object a1, final Object a2) {
+    return new AST2(SixJSymbol, Object2Expr.convert(a1), Object2Expr.convert(a2));
   }
 
 
@@ -15254,6 +15667,22 @@ public class J extends S {
    */
   public static IAST stringExpression(final Object a1, final Object a2, final Object a3) {
     return new AST3(StringExpression, Object2Expr.convert(a1), Object2Expr.convert(a2),
+        Object2Expr.convert(a3));
+  }
+
+
+  public static IAST stringForm(final Object a1) {
+    return new AST1(StringForm, Object2Expr.convert(a1));
+  }
+
+
+  public static IAST stringForm(final Object a1, final Object a2) {
+    return new AST2(StringForm, Object2Expr.convert(a1), Object2Expr.convert(a2));
+  }
+
+
+  public static IAST stringForm(final Object a1, final Object a2, final Object a3) {
+    return new AST3(StringForm, Object2Expr.convert(a1), Object2Expr.convert(a2),
         Object2Expr.convert(a3));
   }
 
@@ -16448,6 +16877,19 @@ public class J extends S {
 
 
   /**
+   * ThreeJSymbol({j1,m1},{j2,m2},{j3,m3}) - get the 3-j symbol coefficients.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ThreeJSymbol.md">ThreeJSymbol
+   *      documentation</a>
+   */
+  public static IAST threeJSymbol(final Object a1, final Object a2, final Object a3) {
+    return new AST3(ThreeJSymbol, Object2Expr.convert(a1), Object2Expr.convert(a2),
+        Object2Expr.convert(a3));
+  }
+
+
+  /**
    * Through(p(f)[x]) - gives `p(f(x))`.
    * 
    * @see <a href=
@@ -16691,6 +17133,19 @@ public class J extends S {
    */
   public static IAST toPolarCoordinates(final Object a1) {
     return new AST1(ToPolarCoordinates, Object2Expr.convert(a1));
+  }
+
+
+  /**
+   * ToSphericalCoordinates({x, y, z}) - returns the spherical coordinates for the cartesian
+   * coordinates `{x, y, z}`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ToSphericalCoordinates.md">ToSphericalCoordinates
+   *      documentation</a>
+   */
+  public static IAST toSphericalCoordinates(final Object a1) {
+    return new AST1(ToSphericalCoordinates, Object2Expr.convert(a1));
   }
 
 
