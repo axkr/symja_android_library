@@ -4940,6 +4940,67 @@ public final class NumberTheory {
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
+
+  private static class RamseyNumber extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int r = ast.arg1().toIntDefault();
+      int s = ast.arg2().toIntDefault();
+      if (r <= 0 || s <= 0) {
+        return F.NIL;
+      }
+      if (r > s) {
+        // symmetry across the diagonal: R(r, s) = R(s, r)
+        return F.binary(S.RamseyNumber, ast.arg2(), ast.arg1());
+      }
+      // https://en.wikipedia.org/wiki/Ramsey%27s_theorem#Known_values)
+      switch (r) {
+        case 1:
+          return F.C1;
+        case 2:
+          return F.ZZ(s);
+        case 3:
+          switch (s) {
+            case 3:
+              return F.C6;
+            case 4:
+              return F.C9;
+            case 5:
+              return F.ZZ(14);
+            case 6:
+              return F.ZZ(18);
+            case 7:
+              return F.ZZ(23);
+            case 8:
+              return F.ZZ(28);
+            case 9:
+              return F.ZZ(36);
+          }
+          break;
+        case 4:
+          switch (s) {
+            case 4:
+              return F.ZZ(18);
+            case 5:
+              return F.ZZ(25);
+          }
+          break;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
   /**
    *
    *
@@ -5599,6 +5660,7 @@ public final class NumberTheory {
       S.PrimitiveRoot.setEvaluator(new PrimitiveRoot());
       S.PrimitiveRootList.setEvaluator(new PrimitiveRootList());
       S.QuadraticIrrationalQ.setEvaluator(new QuadraticIrrationalQ());
+      S.RamseyNumber.setEvaluator(new RamseyNumber());
       S.Rationalize.setEvaluator(new Rationalize());
       S.RootReduce.setEvaluator(new RootReduce());
       S.SquareFreeQ.setEvaluator(new SquareFreeQ());

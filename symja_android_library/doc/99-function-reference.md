@@ -776,6 +776,7 @@ Functions in alphabetical order:
 * &#x2705; [Quotient](functions/Quotient.md)
 * &#x2705; [QuotientRemainder](functions/QuotientRemainder.md)
 * &#x2705; [Ramp](functions/Ramp.md)
+* [RamseyNumber](functions/RamseyNumber.md)
 * &#x2705; [RandomChoice](functions/RandomChoice.md)
 * &#x2705; [RandomComplex](functions/RandomComplex.md)
 * &#x2705; [RandomGraph](functions/RandomGraph.md)

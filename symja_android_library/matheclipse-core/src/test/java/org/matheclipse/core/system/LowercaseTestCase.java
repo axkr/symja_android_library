@@ -5253,6 +5253,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "286386577668298411128469151667598498812366,DedekindNumber(10),DedekindNumber(11)}");
   }
 
+  public void testRamseyNumber() {
+    check("Table(RamseyNumber(1,j), {j,1,20})", //
+        "{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}");
+    check("Table(RamseyNumber(2,j), {j,1,20})", //
+        "{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20}");
+    check("Table(RamseyNumber(i,j), {i,1,4},{j,i,10})", //
+        "{{1,1,1,1,1,1,1,1,1,1},{2,3,4,5,6,7,8,9,10},{6,9,14,18,23,28,36,RamseyNumber(3,\n" //
+            + "10)},{18,25,RamseyNumber(4,6),RamseyNumber(4,7),RamseyNumber(4,8),RamseyNumber(4,\n" //
+            + "9),RamseyNumber(4,10)}}");
+  }
+
   public void testDenominator() {
     check("Denominator(ConditionalExpression(a/13,Element(C1,Integers)))", //
         "1");
