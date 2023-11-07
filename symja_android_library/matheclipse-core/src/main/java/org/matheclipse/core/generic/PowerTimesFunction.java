@@ -29,58 +29,68 @@ public class PowerTimesFunction {
    * Analyze if <code>factor1 * factor2</code> is of the form <code>x^n_ * f_(m_*x)</code>. If
    * <code>true</code> call {@link #function}.
    * 
-   * @param factor1
-   * @param factor2
+   * @param fx
    * @param x
    * 
    * @return {@link F#NIL} if the expression is not of the form.
    */
-  public IExpr xPowNTimesFmx(IExpr factor1, IExpr factor2, final IExpr x, EvalEngine engine) {
-    IExpr n = F.NIL;
-    if (factor1.equals(x)) {
-      n = F.C1;
-    } else if (factor2.equals(x)) {
-      n = F.C1;
-      IExpr temp = factor2;
-      factor2 = factor1;
-      factor1 = temp;
-    }
-    if (n.isNIL()) {
-      if (factor1.isPower() && factor1.base().equals(x)
-          && (factor1.exponent().isInteger() || factor1.exponent().isVariable())) {
-        if (!factor1.exponent().equals(x)) {
-          n = factor1.exponent();
-        }
-      } else if (factor2.isPower() && factor2.base().equals(x)
-          && (factor2.exponent().isInteger() || factor2.exponent().isVariable())) {
-        if (!factor2.exponent().equals(x)) {
-          n = factor2.exponent();
-          IExpr temp = factor2;
-          factor2 = factor1;
-          factor1 = temp;
-        }
+  public IExpr xPowNTimesFmx(IAST fx, final IExpr x, EvalEngine engine) {
+    if (fx.isTimes2()) {
+      IExpr factor1 = fx.arg1();
+      IExpr factor2 = fx.arg2();
+      IExpr n = F.NIL;
+      if (factor1.equals(x)) {
+        n = F.C1;
+      } else if (factor2.equals(x)) {
+        n = F.C1;
+        IExpr temp = factor2;
+        factor2 = factor1;
+        factor1 = temp;
       }
-    }
-    if (n.isPresent() && factor2.isAST1()) {
-      IExpr m = F.NIL;
-      IExpr t2Arg1 = factor2.first();
-      if (t2Arg1.equals(x)) {
-        m = F.C1;
-      } else if (t2Arg1.isTimes()) {
-        IAST timesAST = (IAST) t2Arg1;
-        IASTAppendable[] filter = timesAST.filter(arg -> arg.equals(x));
-        if (filter[0].argSize() == 1) {
-          IExpr rest = engine.evaluate(filter[1]);
-          if (rest.isFree(x)) {
-            m = rest;
+      if (n.isNIL()) {
+        if (factor1.isPower() && factor1.base().equals(x)
+            && (factor1.exponent().isInteger() || factor1.exponent().isVariable())) {
+          if (!factor1.exponent().equals(x)) {
+            n = factor1.exponent();
+          }
+        } else if (factor2.isPower() && factor2.base().equals(x)
+            && (factor2.exponent().isInteger() || factor2.exponent().isVariable())) {
+          if (!factor2.exponent().equals(x)) {
+            n = factor2.exponent();
+            IExpr temp = factor2;
+            factor2 = factor1;
+            factor1 = temp;
           }
         }
       }
-      if (m.isPresent()) {
-        IExpr temp = function.apply((IAST) factor2, x, n, m);
-        if (temp.isPresent()) {
-          return engine.evaluate(temp);
+      if (n.isPresent() && factor2.argSize() >= 1) {
+        return determineM(x, n, (IAST) factor2, engine);
+      }
+    } else if (!fx.isPlusTimesPower() && fx.argSize() >= 1) {
+      return determineM(x, F.C0, fx, engine);
+    }
+    return F.NIL;
+  }
+
+  private IExpr determineM(final IExpr x, IExpr n, IAST builtInFunction, EvalEngine engine) {
+    IExpr m = F.NIL;
+    IExpr t2Arg1 = builtInFunction.first();
+    if (t2Arg1.equals(x)) {
+      m = F.C1;
+    } else if (t2Arg1.isTimes()) {
+      IAST timesAST = (IAST) t2Arg1;
+      IASTAppendable[] filter = timesAST.filter(arg -> arg.equals(x));
+      if (filter[0].argSize() == 1) {
+        IExpr rest = engine.evaluate(filter[1]);
+        if (rest.isFree(x)) {
+          m = rest;
         }
+      }
+    }
+    if (m.isPresent()) {
+      IExpr temp = function.apply(builtInFunction, x, n, m);
+      if (temp.isPresent()) {
+        return engine.evaluate(temp);
       }
     }
     return F.NIL;

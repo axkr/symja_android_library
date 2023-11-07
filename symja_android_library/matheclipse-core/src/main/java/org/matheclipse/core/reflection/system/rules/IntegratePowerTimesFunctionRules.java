@@ -32,6 +32,45 @@ public class IntegratePowerTimesFunctionRules {
       Times(Power(Times(Plus(C1,n),Plus(C2,n)),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C2,n),ArcTan(Times(m,x))),Times(CN1,m,x,Hypergeometric2F1(C1,Plus(C1,Times(C1D2,n)),Plus(C2,Times(C1D2,n)),Times(CN1,Sqr(m),Sqr(x))))))),
     // {ArcTanh,x_,n_,m_}:=(x^(1+n)*((2+n)*ArcTanh(m*x)-m*x*Hypergeometric2F1(1,1+n/2,2+n/2,m^2*x^2)))/((1+n)*(2+n))
     SetDelayed(List(ArcTanh,x_,n_,m_),
-      Times(Power(Times(Plus(C1,n),Plus(C2,n)),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C2,n),ArcTanh(Times(m,x))),Times(CN1,m,x,Hypergeometric2F1(C1,Plus(C1,Times(C1D2,n)),Plus(C2,Times(C1D2,n)),Times(Sqr(m),Sqr(x)))))))
+      Times(Power(Times(Plus(C1,n),Plus(C2,n)),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C2,n),ArcTanh(Times(m,x))),Times(CN1,m,x,Hypergeometric2F1(C1,Plus(C1,Times(C1D2,n)),Plus(C2,Times(C1D2,n)),Times(Sqr(m),Sqr(x))))))),
+    // {CubeRoot,x_,n_,m_}:=(x^(1+n)*Surd(m*x,3))/(4/3+n)
+    SetDelayed(List(CubeRoot,x_,n_,m_),
+      Times(Power(Plus(QQ(4L,3L),n),CN1),Power(x,Plus(C1,n)),Surd(Times(m,x),C3))),
+    // {Surd,x_,n_,m_,p_Integer}:=(x^(n+1)*Surd(m*x,p))/((p+1)/p+n)/;p>0
+    SetDelayed(List(Surd,x_,n_,m_,$p(p, Integer)),
+      Condition(Times(Power(Plus(Times(Plus(p,C1),Power(p,CN1)),n),CN1),Power(x,Plus(n,C1)),Surd(Times(m,x),p)),Greater(p,C0))),
+    // {EllipticE,x_,n_,m_}:=(Pi*x^(1+n)*HypergeometricPFQ({-1/2,1/2,1+n},{1,2+n},m*x))/(2+2*n)
+    SetDelayed(List(EllipticE,x_,n_,m_),
+      Times(Power(Plus(C2,Times(C2,n)),CN1),Pi,Power(x,Plus(C1,n)),HypergeometricPFQ(list(CN1D2,C1D2,Plus(C1,n)),list(C1,Plus(C2,n)),Times(m,x)))),
+    // {EllipticE,x_,m_}:=(2*((1+m*x)*EllipticE(m*x)+(-1+m*x)*EllipticK(m*x)))/(3*m)
+    SetDelayed(list(EllipticE,x_,m_),
+      Times(C2,Power(Times(C3,m),CN1),Plus(Times(Plus(C1,Times(m,x)),EllipticE(Times(m,x))),Times(Plus(CN1,Times(m,x)),EllipticK(Times(m,x)))))),
+    // {EllipticK,x_,n_,m_}:=(Pi*x^(1+n)*HypergeometricPFQ({1/2,1/2,1+n},{1,2+n},m*x))/(2+2*n)
+    SetDelayed(List(EllipticK,x_,n_,m_),
+      Times(Power(Plus(C2,Times(C2,n)),CN1),Pi,Power(x,Plus(C1,n)),HypergeometricPFQ(list(C1D2,C1D2,Plus(C1,n)),list(C1,Plus(C2,n)),Times(m,x)))),
+    // {EllipticK,x_,m_}:=(2*(EllipticE(m*x)+(-1+m*x)*EllipticK(m*x)))/m
+    SetDelayed(list(EllipticK,x_,m_),
+      Times(C2,Power(m,CN1),Plus(EllipticE(Times(m,x)),Times(Plus(CN1,Times(m,x)),EllipticK(Times(m,x)))))),
+    // {Haversine,x_,m_}:=x/2-Sin(m*x)/(2*m)
+    SetDelayed(list(Haversine,x_,m_),
+      Plus(Times(C1D2,x),Times(CN1,Power(Times(C2,m),CN1),Sin(Times(m,x))))),
+    // {Haversine,x_,n_,m_}:=1/4*x^n*((2*x)/(1+n)+(x*Gamma(1+n,-I*m*x))/(-I*m*x)^(1+n)+(x*Gamma(1+n,I*m*x))/(I*m*x)^(1+n))
+    SetDelayed(List(Haversine,x_,n_,m_),
+      Times(C1D4,Power(x,n),Plus(Times(C2,Power(Plus(C1,n),CN1),x),Times(x,Power(Power(Times(CNI,m,x),Plus(C1,n)),CN1),Gamma(Plus(C1,n),Times(CNI,m,x))),Times(x,Power(Power(Times(CI,m,x),Plus(C1,n)),CN1),Gamma(Plus(C1,n),Times(CI,m,x)))))),
+    // {InverseHaversine,x_,m_}:=(Sqrt(-m*x*(-1+m*x))+(-1+2*m*x)*ArcSin(Sqrt(m*x)))/m
+    SetDelayed(list(InverseHaversine,x_,m_),
+      Times(Power(m,CN1),Plus(Sqrt(Times(CN1,m,x,Plus(CN1,Times(m,x)))),Times(Plus(CN1,Times(C2,m,x)),ArcSin(Sqrt(Times(m,x))))))),
+    // {InverseHaversine,x_,n_,m_}:=(2*x^(1+n)*((3+2*n)*ArcSin(Sqrt(m*x))-Sqrt(m*x)*Hypergeometric2F1(1/2,3/2+n,5/2+n,m*x)))/((1+n)*(3+2*n))
+    SetDelayed(List(InverseHaversine,x_,n_,m_),
+      Times(C2,Power(Times(Plus(C1,n),Plus(C3,Times(C2,n))),CN1),Power(x,Plus(C1,n)),Plus(Times(Plus(C3,Times(C2,n)),ArcSin(Sqrt(Times(m,x)))),Times(CN1,Sqrt(Times(m,x)),Hypergeometric2F1(C1D2,Plus(QQ(3L,2L),n),Plus(QQ(5L,2L),n),Times(m,x)))))),
+    // {InverseErf,x_,m_}:=-1/(E^InverseErf(m*x)^2*m*Sqrt(Pi))
+    SetDelayed(list(InverseErf,x_,m_),
+      Negate(Power(Times(Exp(Sqr(InverseErf(Times(m,x)))),m,CSqrtPi),CN1))),
+    // {InverseErfc,x_,m_}:=1/(E^InverseErfc(m*x)^2*m*Sqrt(Pi))
+    SetDelayed(list(InverseErfc,x_,m_),
+      Power(Times(Exp(Sqr(InverseErfc(Times(m,x)))),m,CSqrtPi),CN1)),
+    // {LogisticSigmoid,x_,m_}:=-Log(1-LogisticSigmoid(m*x))/m
+    SetDelayed(list(LogisticSigmoid,x_,m_),
+      Times(CN1,Power(m,CN1),Log(Subtract(C1,LogisticSigmoid(Times(m,x))))))
   );
 }

@@ -357,8 +357,8 @@ public class Integrate extends AbstractFunctionEvaluator {
           return result;
         }
 
-        if (fx.isTimes2()) {
-          IExpr temp = POWER_TIMES_FUNCTION.xPowNTimesFmx(fx.arg1(), fx.arg2(), x, engine);
+        if (fx.argSize() > 0 || fx.head().isBuiltInSymbol()) {
+          IExpr temp = POWER_TIMES_FUNCTION.xPowNTimesFmx(fx, x, engine);
           if (temp.isPresent()) {
             return temp;
           }
@@ -425,20 +425,31 @@ public class Integrate extends AbstractFunctionEvaluator {
   }
 
   /**
-   * Try to integrate functions of the form <code>x^n * unaryFunction(m*x)</code>.
+   * Try to integrate functions of the form <code>x^n * naryFunction(m*x)</code>.
    * 
-   * @param unaryFunction
+   * @param naryFunction
    * @param x
    * @param n
    * @param m
    * 
    * @return {@link F#NIL} if no rule was found
    */
-  private static IExpr integrateXPowNTimesFMTimesX(IAST unaryFunction, final IExpr x, IExpr n,
+  private static IExpr integrateXPowNTimesFMTimesX(IAST naryFunction, final IExpr x, IExpr n,
       IExpr m) {
-    int headID = unaryFunction.headID();
+    int headID = naryFunction.headID();
     if (headID > ID.UNKNOWN) {
-      return POWER_TIMES_FUNCION_MATCHER.apply(F.List(unaryFunction.head(), x, n, m));
+      final IAST list;
+      if (n.isZero()) {
+        list = F.List(naryFunction.head(), x, m);
+      } else {
+        list = F.List(naryFunction.head(), x, n, m);
+      }
+      if (naryFunction.argSize() > 1) {
+        IASTAppendable appendableList = list.copyAppendable();
+        appendableList.appendArgs(naryFunction.rest());
+        return POWER_TIMES_FUNCION_MATCHER.apply(appendableList);
+      }
+      return POWER_TIMES_FUNCION_MATCHER.apply(list);
     }
     return F.NIL;
   }

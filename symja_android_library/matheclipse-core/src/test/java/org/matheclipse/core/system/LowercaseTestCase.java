@@ -11798,6 +11798,47 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testIntegrateIssue851() {
+    check("Integrate(PolyGamma(m*x),x)", //
+        "LogGamma(m*x)/m");
+
+    check("Integrate(LogisticSigmoid(m*x),x)", //
+        "-Log(1-LogisticSigmoid(m*x))/m");
+    check("Integrate(Haversine(m*x),x)", //
+        "x/2-Sin(m*x)/(2*m)");
+    check("Integrate(x^n*Haversine(m*x),x)", //
+        "1/4*x^n*((2*x)/(1+n)+(x*Gamma(1+n,-I*m*x))/(-I*m*x)^(1+n)+(x*Gamma(1+n,I*m*x))/(I*m*x)^(\n"//
+            + "1+n))");
+    check("Integrate(InverseHaversine(m*x),x)", //
+        "(Sqrt(m*x*(1-m*x))+(-1+2*m*x)*ArcSin(Sqrt(m*x)))/m");
+    check("Integrate(x^n*InverseHaversine(m*x),x)", //
+        "(2*x^(1+n)*((3+2*n)*ArcSin(Sqrt(m*x))-Sqrt(m*x)*Hypergeometric2F1(1/2,3/2+n,5/2+n,m*x)))/((\n"//
+            + "1+n)*(3+2*n))");
+
+    check("Integrate(InverseErf(m*x),x)", //
+        "-1/(E^InverseErf(m*x)^2*m*Sqrt(Pi))");
+    check("Integrate(InverseErfc(m*x),x)", //
+        "1/(E^InverseErfc(m*x)^2*m*Sqrt(Pi))");
+
+    check("Integrate(EllipticE(m*x),x)", //
+        "2/3*((1+m*x)*EllipticE(m*x)+(-1+m*x)*EllipticK(m*x))/m");
+    check("Integrate(EllipticK(m*x),x)", //
+        "(2*(EllipticE(m*x)+(-1+m*x)*EllipticK(m*x)))/m");
+    check("Integrate(x*EllipticE(m*x),x)", //
+        "1/4*Pi*x^2*HypergeometricPFQ({-1/2,1/2,2},{1,3},m*x)");
+    check("Integrate(x*EllipticK(m*x),x)", //
+        "1/4*Pi*x^2*HypergeometricPFQ({1/2,1/2,2},{1,3},m*x)");
+    check("Integrate(x^n*EllipticE(m*x),x)", //
+        "(Pi*x^(1+n)*HypergeometricPFQ({-1/2,1/2,1+n},{1,2+n},m*x))/(2+2*n)");
+    check("Integrate(x^n*EllipticK(m*x),x)", //
+        "(Pi*x^(1+n)*HypergeometricPFQ({1/2,1/2,1+n},{1,2+n},m*x))/(2+2*n)");
+
+    check("Integrate(x^n*CubeRoot(m*x),x)", //
+        "(x^(1+n)*Surd(m*x,3))/(4/3+n)");
+    check("Integrate(Surd(m*x,7),x)", //
+        "7/8*x*Surd(m*x,7)");
+    check("Integrate(x^n*Surd(m*x,7),x)", //
+        "(x^(1+n)*Surd(m*x,7))/(8/7+n)");
+
     check("Integrate(x^n*ArcCot(11*Sin(s)*x),x)", //
         "(x^(1+n)*((2+n)*ArcCot(11*x*Sin(s))+11*x*Hypergeometric2F1(1,1+n/2,2+n/2,-121*x^\n"
             + "2*Sin(s)^2)*Sin(s)))/((1+n)*(2+n))");
