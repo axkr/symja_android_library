@@ -547,7 +547,8 @@ public class RulePreprocessor {
   }
 
   private static boolean isSpecialRuleList(String className) {
-    return className.equals("FunctionExpandRules")
+    return className.equals("IntegratePowerTimesFunctionRules")
+        || className.equals("FunctionExpandRules")
         || className.equals("FunctionRangeRules")
         || className.equals("PodDefaultsRules");
   }
