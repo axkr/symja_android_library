@@ -11798,6 +11798,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testIntegrateIssue851() {
+    check("Integrate(x^n*ArcCot(11*Sin(s)*x),x)", //
+        "(x^(1+n)*((2+n)*ArcCot(11*x*Sin(s))+11*x*Hypergeometric2F1(1,1+n/2,2+n/2,-121*x^\n"
+            + "2*Sin(s)^2)*Sin(s)))/((1+n)*(2+n))");
+
     check("Integrate(ArcSin(x),x)", //
         "Sqrt(1-x^2)+x*ArcSin(x)");
     check("Integrate(x^(-3)*ArcSin(x),x)", //
