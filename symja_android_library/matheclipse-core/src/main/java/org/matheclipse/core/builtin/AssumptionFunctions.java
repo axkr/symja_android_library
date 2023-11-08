@@ -167,41 +167,41 @@ public class AssumptionFunctions {
     }
 
     /**
-     * Return S.True or S.False if expr is assumed to be in the <code>domain</code> or not to be in
-     * the <code>domain</code>.
+     * Return {@link S#True} or {@link S#False} if <code>expr</code> is assumed to be in the
+     * <code>domain</code> or not to be in the <code>domain</code>.
      *
-     * @param arg1
+     * @param expr
      * @param domain
      * @return S.True or S.False if expr is assumed to be in the <code>domain</code> or not to be in
      *         the <code>domain</code>. In all other cases return {@link F#NIL}.
      */
-    private IExpr assumeDomain(final IExpr arg1, final ISymbol domain, EvalEngine engine) {
+    private IExpr assumeDomain(final IExpr expr, final ISymbol domain, EvalEngine engine) {
       if (domain.isBuiltInSymbol()) {
         ISymbol truthValue;
         final int symbolID = ((IBuiltInSymbol) domain).ordinal();
         switch (symbolID) {
           case ID.Algebraics:
-            truthValue = AbstractAssumptions.assumeAlgebraic(arg1);
+            truthValue = AbstractAssumptions.assumeAlgebraic(expr);
             return (truthValue != null) ? truthValue : F.NIL;
           case ID.Arrays:
-            truthValue = AbstractAssumptions.assumeArray(arg1);
+            truthValue = AbstractAssumptions.assumeArray(expr);
             return (truthValue != null) ? truthValue : F.NIL;
           case ID.Booleans:
-            truthValue = AbstractAssumptions.assumeBoolean(arg1);
+            truthValue = AbstractAssumptions.assumeBoolean(expr);
             return (truthValue != null) ? truthValue : F.NIL;
           case ID.Complexes:
-            truthValue = AbstractAssumptions.assumeComplex(arg1);
+            truthValue = AbstractAssumptions.assumeComplex(expr);
             return (truthValue != null) ? truthValue : F.NIL;
           case ID.Integers:
-            truthValue = AbstractAssumptions.assumeInteger(arg1);
+            truthValue = AbstractAssumptions.assumeInteger(expr);
             return (truthValue != null) ? truthValue : F.NIL;
           case ID.Primes:
-            return AbstractAssumptions.assumePrime(arg1);
+            return AbstractAssumptions.assumePrime(expr);
           case ID.Rationals:
-            truthValue = AbstractAssumptions.assumeRational(arg1);
+            truthValue = AbstractAssumptions.assumeRational(expr);
             return (truthValue != null) ? truthValue : F.NIL;
           case ID.Reals:
-            truthValue = AbstractAssumptions.assumeReal(arg1);
+            truthValue = AbstractAssumptions.assumeReal(expr);
             return (truthValue != null) ? truthValue : F.NIL;
           default:
             break;

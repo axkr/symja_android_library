@@ -2,11 +2,13 @@ package org.matheclipse.core.eval.util;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.apfloat.Apfloat;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.IRealConstant;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -248,6 +250,15 @@ public abstract class AbstractAssumptions implements IAssumptions {
     }
     if (expr.isInteger()) {
       return S.True;
+    }
+    if (Config.ACCEPT_NUMERIC_INTEGER_IN_INTEGERS_DOMAIN) {
+      if (expr instanceof ApfloatNum) {
+        Apfloat x = ((ApfloatNum) expr).apfloatValue();
+        if (x.isInteger()) {
+          return S.True;
+        }
+        return S.False;
+      }
     }
     if (expr.isNumericFunction()) {
       try {

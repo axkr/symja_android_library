@@ -288,6 +288,8 @@ public class Config {
    */
   public static double SPECIAL_FUNCTIONS_TOLERANCE = 1.0e-10;
 
+  public static boolean ACCEPT_NUMERIC_INTEGER_IN_INTEGERS_DOMAIN = false;
+
   /** Define the recursion limit for <code>Integrate#integrateByParts()</code> method. */
   public static int INTEGRATE_BY_PARTS_RECURSION_LIMIT = 10;
 
@@ -630,7 +632,10 @@ public class Config {
   /** Global switch to make all symbols unprotected if set to {@link ISymbol#NOATTRIBUTE} */
   public static int BUILTIN_PROTECTED = ISymbol.PROTECTED;
 
-  /** Allow to control rounding mode used in Symja, dependent libraries may not allow to change rounding mode*/
+  /**
+   * Allow to control rounding mode used in Symja, dependent libraries may not allow to change
+   * rounding mode
+   */
   public static RoundingMode ROUNDING_MODE = RoundingMode.HALF_EVEN;
 
   /** Global dynamic classloader */
