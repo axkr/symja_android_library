@@ -11798,6 +11798,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testIntegrateIssue851() {
+    check("Integrate(x^n*Haversine(m*x^p),x)", //
+        "(x^(1+n)*(2*p*(m^2*x^(2*p))^((1+n)/p)+(1+n)*(I*m*x^p)^((1+n)/p)*Gamma((1+n)/p,-I*m*x^p)+(\n" //
+            + "1+n)*(-I*m*x^p)^((1+n)/p)*Gamma((1+n)/p,I*m*x^p)))/(4*(1+n)*p*(m^2*x^(2*p))^((1+n)/p))");
+    check("Integrate(x^n*ArcSin(m*x^p),x)", //
+        "(x^(1+n)*((1+n+p)*ArcSin(m*x^p)-m*p*x^p*Hypergeometric2F1(1/2,(1+n+p)/(2*p),(1+n+\n" //
+            + "3*p)/(2*p),m^2*x^(2*p))))/((1+n)*(1+n+p))");
+    check("Integrate(x^n*ArcSinh(m*x^p),x)", //
+        "(x^(1+n)*((1+n+p)*ArcSinh(m*x^p)-m*p*x^p*Hypergeometric2F1(1/2,(1+n+p)/(2*p),(1+n+\n"//
+            + "3*p)/(2*p),-m^2*x^(2*p))))/((1+n)*(1+n+p))");
+
     check("Integrate(PolyGamma(m*x),x)", //
         "LogGamma(m*x)/m");
 

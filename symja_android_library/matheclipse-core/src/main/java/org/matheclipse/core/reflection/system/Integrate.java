@@ -431,21 +431,27 @@ public class Integrate extends AbstractFunctionEvaluator {
    * @param x
    * @param n
    * @param m
+   * @param p
    * 
    * @return {@link F#NIL} if no rule was found
    */
   private static IExpr integrateXPowNTimesFMTimesX(IAST naryFunction, final IExpr x, IExpr n,
-      IExpr m) {
+      IExpr m, IExpr p) {
     int headID = naryFunction.headID();
     if (headID > ID.UNKNOWN) {
       final IAST list;
-      if (n.isZero()) {
-        list = F.List(naryFunction.head(), x, m);
+      if (p.isOne()) {
+        if (n.isZero()) {
+          list = F.f1(naryFunction.head(), x, m);
+        } else {
+          list = F.f2(naryFunction.head(), x, n, m);
+        }
       } else {
-        list = F.List(naryFunction.head(), x, n, m);
+        list = F.f3(naryFunction.head(), x, n, m, p);
       }
       if (naryFunction.argSize() > 1) {
         IASTAppendable appendableList = list.copyAppendable();
+        appendableList.set(0, S.f4);
         appendableList.appendArgs(naryFunction.rest());
         return POWER_TIMES_FUNCION_MATCHER.apply(appendableList);
       }

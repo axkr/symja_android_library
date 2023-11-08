@@ -2,31 +2,31 @@ package org.matheclipse.core.generic;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.S;
-import org.matheclipse.core.interfaces.Function4;
+import org.matheclipse.core.interfaces.Function5;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * Analyze if a {@link S#Times} expression <code>factor1 * factor2</code> is of the form
- * <code>x^n_ * f_(m_*x)</code>. If <code>true</code> call the defined <code>function</code>.
+ * Analyze if an expression is of the form <code>x^n_. * f_(m_.*x^p_.)</code>. If <code>true</code>
+ * call the defined <code>function</code>.
  */
 public class PowerTimesFunction {
-  Function4<IAST, IExpr, IExpr, IExpr, IExpr> function;
+  Function5<IAST, IExpr, IExpr, IExpr, IExpr, IExpr> function;
 
   /**
-   * Define the function which should be called, if the form <code>x^n_ * f_(m_*x)</code> was found.
+   * Define the function which should be called, if the form <code>x^n_. * f_(m_.*x^p_.)</code> was
+   * found.
    * 
-   * @param function <code>function(f,x,n,m)</code>
+   * @param function <code>function(f,x,n,m,p)</code>
    * @see #xPowNTimesFmx(IExpr, IExpr, IExpr, EvalEngine)
    */
-  public PowerTimesFunction(Function4<IAST, IExpr, IExpr, IExpr, IExpr> function) {
+  public PowerTimesFunction(Function5<IAST, IExpr, IExpr, IExpr, IExpr, IExpr> function) {
     this.function = function;
   }
 
   /**
-   * Analyze if <code>factor1 * factor2</code> is of the form <code>x^n_ * f_(m_*x)</code>. If
+   * Analyze if an expression is of the form <code>x^n_. * f_(m_.*x^p_.)</code>. If
    * <code>true</code> call {@link #function}.
    * 
    * @param fx
@@ -74,21 +74,32 @@ public class PowerTimesFunction {
 
   private IExpr determineM(final IExpr x, IExpr n, IAST builtInFunction, EvalEngine engine) {
     IExpr m = F.NIL;
+    IExpr p = F.C1;
     IExpr t2Arg1 = builtInFunction.first();
     if (t2Arg1.equals(x)) {
       m = F.C1;
     } else if (t2Arg1.isTimes()) {
       IAST timesAST = (IAST) t2Arg1;
-      IASTAppendable[] filter = timesAST.filter(arg -> arg.equals(x));
+      IASTAppendable[] filter = timesAST.filter(arg -> arg.equals(x) //
+          || (arg.isPower() && arg.base().equals(x)));
       if (filter[0].argSize() == 1) {
         IExpr rest = engine.evaluate(filter[1]);
         if (rest.isFree(x)) {
+          IExpr xExpression = filter[0].arg1();
+          if (xExpression.isPower()) {
+            if ((xExpression.exponent().isInteger() || xExpression.exponent().isVariable())
+                && !xExpression.exponent().equals(x)) {
+              p = xExpression.exponent();
+            } else {
+              return F.NIL;
+            }
+          }
           m = rest;
         }
       }
     }
     if (m.isPresent()) {
-      IExpr temp = function.apply(builtInFunction, x, n, m);
+      IExpr temp = function.apply(builtInFunction, x, n, m, p);
       if (temp.isPresent()) {
         return engine.evaluate(temp);
       }

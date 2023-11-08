@@ -4301,6 +4301,22 @@ public class F extends S {
     return new AST2(Extract, a0, a1);
   }
 
+  public static IAST f1(final IExpr... a) {
+    return ast(a, f1);
+  }
+
+  public static IAST f2(final IExpr... a) {
+    return ast(a, f2);
+  }
+
+  public static IAST f3(final IExpr... a) {
+    return ast(a, f3);
+  }
+
+  public static IAST f4(final IExpr... a) {
+    return ast(a, f4);
+  }
+
   public static IAST Factor(final IExpr poly) {
     return new AST1(Factor, poly);
   }

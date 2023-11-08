@@ -11531,6 +11531,11 @@ public class S {
   /** Used to represent a formal parameter <code>z</code> that will never be assigned a value. */
   public static final ISymbol z = initFinalHiddenSymbol("z");
 
+  public static final ISymbol f1 = initFinalHiddenSymbol("f1");
+  public static final ISymbol f2 = initFinalHiddenSymbol("f2");
+  public static final ISymbol f3 = initFinalHiddenSymbol("f3");
+  public static final ISymbol f4 = initFinalHiddenSymbol("f4");
+
   public static final ISymbol ASymbol = initFinalHiddenSymbol("A");
   public static final ISymbol BSymbol = initFinalHiddenSymbol("B");
   public static final ISymbol CSymbol = initFinalHiddenSymbol("C"); // don't use constant
