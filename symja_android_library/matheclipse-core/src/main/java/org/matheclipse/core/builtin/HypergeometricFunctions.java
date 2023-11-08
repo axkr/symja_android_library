@@ -22,6 +22,7 @@ import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -128,6 +129,11 @@ public class HypergeometricFunctions {
       // }
       // }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
     }
 
     @Override
@@ -1224,6 +1230,11 @@ public class HypergeometricFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
@@ -1299,6 +1310,11 @@ public class HypergeometricFunctions {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
     }
 
     @Override
@@ -1643,6 +1659,11 @@ public class HypergeometricFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
     }
@@ -1692,6 +1713,11 @@ public class HypergeometricFunctions {
       // }
       // }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
     }
 
     @Override
