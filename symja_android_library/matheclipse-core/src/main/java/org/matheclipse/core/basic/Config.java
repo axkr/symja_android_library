@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
+import org.apfloat.Apfloat;
 import org.apfloat.ApfloatContext;
 import org.hipparchus.util.Precision;
 import org.matheclipse.core.eval.EvalEngine;
@@ -288,6 +289,9 @@ public class Config {
    */
   public static double SPECIAL_FUNCTIONS_TOLERANCE = 1.0e-10;
 
+  /**
+   * Return {@link True} for {@link Apfloat} integers in <code>Element(apfloat, Integers)</code>
+   */
   public static boolean ACCEPT_NUMERIC_INTEGER_IN_INTEGERS_DOMAIN = false;
 
   /** Define the recursion limit for <code>Integrate#integrateByParts()</code> method. */

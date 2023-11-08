@@ -1825,6 +1825,10 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   public void testIsolateX1() {
+    check(
+        "Solve({x5==1,x0==7,x4==x3,x3==p2*x2+p4*x4,x2==p3*x3+p5*x5*x0,x1==p1*x2},{x0,x1,x2,x3,x4,x5})", //
+        "{{x0->7,x1->(7*p1*p5-7*p1*p4*p5)/(1-p2*p3-p4),x2->(7*p5-7*p4*p5)/(1-p2*p3-p4),x3->(\n" //
+            + "7*p2*p5)/(1-p2*p3-p4),x4->(7*p2*p5)/(1-p2*p3-p4),x5->1}}");
     check("Solve({x5==1,x4==x3,x3==p2*x2+p4*x4,x2==p3*x3+p5*x5,x1==p1*x2},{x1,x2,x3,x4,x5})", //
         "{{x1->(p1*p5-p1*p4*p5)/(1-p2*p3-p4),x2->(p5-p4*p5)/(1-p2*p3-p4),x3->(p2*p5)/(1-p2*p3-p4),x4->(p2*p5)/(\n"
             + "1-p2*p3-p4),x5->1}}");

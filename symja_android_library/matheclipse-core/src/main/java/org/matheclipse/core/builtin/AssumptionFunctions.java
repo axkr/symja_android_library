@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -120,15 +121,15 @@ public class AssumptionFunctions {
    * 0
    * </pre>
    */
-  private static class Element extends AbstractCoreFunctionEvaluator {
+  private static class Element extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr arg2 = engine.evaluate(ast.arg2());
+      final IExpr arg2 = ast.arg2();
 
       if (arg2.isSymbol()) {
         final ISymbol domain = (ISymbol) arg2;
-        final IExpr arg1 = engine.evaluate(ast.arg1());
+        final IExpr arg1 = ast.arg1();
         if (arg1.isAST()) {
           IAST arg1AST = (IAST) arg1;
           if (arg1.isList() || arg1.isAST(S.Alternatives)) {

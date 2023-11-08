@@ -117,7 +117,7 @@ public class BuiltinUsage {
     USAGE[ID.D] = "partial derivative of a function";
     USAGE[ID.Decrement] =
         "decreases the value by one and assigns that returning the original value";
-    USAGE[ID.DedekindNumber] = "Dedeking number [0..9]";
+    USAGE[ID.DedekindNumber] = "known Dedekind numbers [0..9]";
     USAGE[ID.Definition] = "give values of a symbol in a form that can be stored in a package";
     USAGE[ID.Degree] = "1 Degree are Pi/180 radians";
     USAGE[ID.Delete] = "delete elements from a list at given positions";
@@ -330,7 +330,7 @@ public class BuiltinUsage {
     USAGE[ID.Mean] = "returns the statistical mean of a list";
     USAGE[ID.Median] = "central value of a dataset";
     USAGE[ID.MemberQ] = "test whether an element is a member of a list";
-    USAGE[ID.MersennePrimeExponent] = "Mersenne prime exponent [1..47]";
+    USAGE[ID.MersennePrimeExponent] = "known Mersenne prime exponents [1..47]";
     USAGE[ID.MersennePrimeExponentQ] = "True if 2^n - 1 is a prime number";
     USAGE[ID.Message] = "display a message";
     USAGE[ID.Messages] = "get the messages associated with a particular symbol";
@@ -450,6 +450,7 @@ public class BuiltinUsage {
     USAGE[ID.QuotientRemainder] = "integer quotient and remainder";
     USAGE[ID.QRDecomposition] = "QR decomposition of a matrix";
 
+    USAGE[ID.RamseyNumber] = "known Ramsey numbers";
     USAGE[ID.RandomInteger] = "pick an integer number at random from a range";
     USAGE[ID.RandomChoice] = "choice items at random from a list";
     USAGE[ID.RandomComplex] = "pick a complex number at random from a rectangular region";

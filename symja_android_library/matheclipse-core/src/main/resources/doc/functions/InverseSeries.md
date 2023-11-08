@@ -32,4 +32,4 @@ x+x^3/6+3/40*x^5+5/112*x^7+O(x)^8
 
 ### Github
 
-* [Implementation of InverseSeries](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SeriesFunctions.java#L1285) 
+* [Implementation of InverseSeries](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SeriesFunctions.java#L1272) 
