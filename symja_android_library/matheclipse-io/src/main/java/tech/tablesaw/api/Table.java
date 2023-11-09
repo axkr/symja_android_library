@@ -19,19 +19,28 @@ import static tech.tablesaw.aggregate.AggregateFunctions.count;
 import static tech.tablesaw.aggregate.AggregateFunctions.countMissing;
 import static tech.tablesaw.api.QuerySupport.not;
 import static tech.tablesaw.selection.Selection.selectNRowsAtRandom;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.*;
-import com.google.common.primitives.Ints;
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ScanResult;
-import it.unimi.dsi.fastutil.ints.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.roaringbitmap.RoaringBitmap;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Streams;
+import com.google.common.primitives.Ints;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ScanResult;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntArrays;
+import it.unimi.dsi.fastutil.ints.IntComparator;
 import tech.tablesaw.aggregate.AggregateFunction;
 import tech.tablesaw.aggregate.CrossTab;
 import tech.tablesaw.aggregate.PivotTable;
@@ -49,7 +58,10 @@ import tech.tablesaw.selection.Selection;
 import tech.tablesaw.sorting.Sort;
 import tech.tablesaw.sorting.SortUtils;
 import tech.tablesaw.sorting.comparators.IntComparatorChain;
-import tech.tablesaw.table.*;
+import tech.tablesaw.table.Relation;
+import tech.tablesaw.table.StandardTableSliceGroup;
+import tech.tablesaw.table.TableSlice;
+import tech.tablesaw.table.TableSliceGroup;
 
 /**
  * A table of data, consisting of some number of columns, each of which has the same number of rows.
@@ -113,7 +125,7 @@ public class Table extends Relation implements Iterable<Row> {
   /** TODO: Add documentation */
   private static void autoRegisterReadersAndWriters() {
     try (ScanResult scanResult =
-        new ClassGraph().enableAllInfo().whitelistPackages("tech.tablesaw.io").scan()) {
+        new ClassGraph().enableAllInfo().acceptPackages("tech.tablesaw.io").scan()) {
       List<String> classes = new ArrayList<>();
       classes.addAll(scanResult.getClassesImplementing(DataWriter.class.getName()).getNames());
       classes.addAll(scanResult.getClassesImplementing(DataReader.class.getName()).getNames());
@@ -442,6 +454,7 @@ public class Table extends Relation implements Iterable<Row> {
    *
    * @throws IllegalArgumentException if the column is not present in this table
    */
+  @Override
   public int columnIndex(Column<?> column) {
     int columnIndex = -1;
     for (int i = 0; i < columnList.size(); i++) {
@@ -464,6 +477,7 @@ public class Table extends Relation implements Iterable<Row> {
   }
 
   /** Returns a List of the names of all the columns in this table */
+  @Override
   public List<String> columnNames() {
     return columnList.stream().map(Column::name).collect(toList());
   }
@@ -646,6 +660,7 @@ public class Table extends Relation implements Iterable<Row> {
   }
 
   /** Returns a new table containing the first {@code nrows} of data in this table */
+  @Override
   public Table first(int nRows) {
     int newRowCount = Math.min(nRows, rowCount());
     return inRange(0, newRowCount);
