@@ -13,6 +13,16 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.parser.ExprParser;
 
+/**
+ * <p>
+ * Create a pattern-matching rule which invokes the method name in the given instance, if
+ * leftHandSide is matching.
+ * 
+ * <p>
+ * Deprecated: don't use Java reflection for method calling.
+ * 
+ */
+@Deprecated
 public class PatternMatcherAndInvoker extends PatternMatcher {
   private static final long serialVersionUID = -2448717771259975643L;
 
@@ -58,13 +68,18 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
   }
 
   /**
+   * <p>
    * Create a pattern-matching rule which invokes the method name in the given instance, if
    * leftHandSide is matching.
+   * 
+   * <p>
+   * Deprecated: don't use Java reflection for method calling.
    *
    * @param leftHandSide could contain pattern expressions for "pattern-matching"
    * @param instance instance of an IFunctionEvaluator interface
    * @param methodName method to call
    */
+  @Deprecated
   public PatternMatcherAndInvoker(final IExpr leftHandSide, IFunctionEvaluator instance,
       final String methodName) {
     super(leftHandSide);
@@ -73,13 +88,18 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
   }
 
   /**
+   * <p>
    * Create a pattern-matching rule which invokes the method name in the given instance, if
    * leftHandSide is matching.
-   *
+   * 
+   * <p>
+   * Deprecated: don't use Java reflection for method calling.
+   * 
    * @param leftHandSide
    * @param instance
    * @param methodName
    */
+  @Deprecated
   public PatternMatcherAndInvoker(final String leftHandSide, IFunctionEvaluator instance,
       final String methodName) {
     this.fInstance = instance;

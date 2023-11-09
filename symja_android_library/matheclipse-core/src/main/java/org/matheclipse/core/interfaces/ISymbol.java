@@ -788,11 +788,16 @@ public interface ISymbol extends IExpr {
       IPatternObject leftHandSide, IExpr rightHandSide, int priority, boolean packageMode);
 
   /**
+   * <p>
    * Associate a new rule, which invokes a method, to this symbol.
+   * 
+   * <p>
+   * Deprecated: don't use dynamically called methods.
    *
    * @param pmEvaluator
    * @return
    */
+  @Deprecated
   public void putDownRule(final PatternMatcherAndInvoker pmEvaluator);
 
   public void putMessage(final int setSymbol, String messageName, IStringX message);

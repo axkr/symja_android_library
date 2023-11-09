@@ -849,12 +849,17 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
   }
 
   /**
+   * <p>
    * Create a rule which invokes the method name in this class instance.
+   * 
+   * <p>
+   * Deprecated: don't use Java reflection for method calling.
    *
    * @param symbol
    * @param patternString
    * @param methodName
    */
+  @Deprecated
   public void createRuleFromMethod(ISymbol symbol, String patternString, String methodName) {
     PatternMatcherAndInvoker pm = new PatternMatcherAndInvoker(patternString, this, methodName);
     symbol.putDownRule(pm);
