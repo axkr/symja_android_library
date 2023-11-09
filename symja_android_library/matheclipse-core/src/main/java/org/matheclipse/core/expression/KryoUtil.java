@@ -31,6 +31,7 @@ import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.expression.data.TestReportObjectExpr;
 import org.matheclipse.core.expression.data.TestResultObjectExpr;
 import org.matheclipse.core.expression.data.TimeObjectExpr;
+import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -206,7 +207,7 @@ public class KryoUtil {
     }
   }
 
-  private static class IASTSerializer extends Serializer<IAST> {
+  public static class IASTSerializer extends Serializer<IAST> {
 
     @Override
     public void write(Kryo kryo, Output stream, IAST ast) {
@@ -295,13 +296,6 @@ public class KryoUtil {
     // "kryo.register(B3." + asList.get(i).getSimpleName() + ".class);");
     // }
 
-
-    // List<Class<?>> asList = Arrays.asList(UtilityFunctionCtors.class.getDeclaredClasses());
-    // for (int i = 0; i < asList.size(); i++) {
-    // System.out.println("kryo.register(Class.forName(\"" + asList.get(i).toString().substring(6)
-    // + "\"), new IASTSerializer());");
-    // }
-
     F.initSymbols();
     Kryo kryo = initKryo();
     // IBuiltInSymbol object = S.Im;
@@ -346,36 +340,6 @@ public class KryoUtil {
     kryo.register(org.matheclipse.core.patternmatching.RulesData.class);
     kryo.register(org.matheclipse.core.patternmatching.PatternMatcherEquals.class);
     kryo.register(org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator.class);
-    kryo.register(Class.forName("org.matheclipse.core.integrate.rubi.UtilityFunctionCtors$EqQ"),
-        new IASTSerializer());
-    kryo.register(Class.forName("org.matheclipse.core.integrate.rubi.UtilityFunctionCtors$FalseQ"),
-        new IASTSerializer());
-    kryo.register(
-        Class.forName("org.matheclipse.core.integrate.rubi.UtilityFunctionCtors$FracPart"),
-        new IASTSerializer());
-    kryo.register(Class.forName("org.matheclipse.core.integrate.rubi.UtilityFunctionCtors$GeQ"),
-        new IASTSerializer());
-    kryo.register(Class.forName("org.matheclipse.core.integrate.rubi.UtilityFunctionCtors$GtQ"),
-        new IASTSerializer());
-    kryo.register(Class.forName("org.matheclipse.core.integrate.rubi.UtilityFunctionCtors$IGtQ"),
-        new IASTSerializer());
-    kryo.register(Class.forName("org.matheclipse.core.integrate.rubi.UtilityFunctionCtors$ILtQ"),
-        new IASTSerializer());
-    kryo.register(Class.forName("org.matheclipse.core.integrate.rubi.UtilityFunctionCtors$IntPart"),
-        new IASTSerializer());
-    kryo.register(Class.forName("org.matheclipse.core.integrate.rubi.UtilityFunctionCtors$LeQ"),
-        new IASTSerializer());
-    kryo.register(Class.forName("org.matheclipse.core.integrate.rubi.UtilityFunctionCtors$LtQ"),
-        new IASTSerializer());
-    kryo.register(Class.forName("org.matheclipse.core.integrate.rubi.UtilityFunctionCtors$NeQ"),
-        new IASTSerializer());
-    kryo.register(Class.forName("org.matheclipse.core.integrate.rubi.UtilityFunctionCtors$PolyQ"),
-        new IASTSerializer());
-    kryo.register(Class.forName("org.matheclipse.core.integrate.rubi.UtilityFunctionCtors$Simp"),
-        new IASTSerializer());
-    kryo.register(
-        Class.forName("org.matheclipse.core.integrate.rubi.UtilityFunctionCtors$Unintegrable"),
-        new IASTSerializer());
 
     // numbers
     kryo.register(ApcomplexNum.class);
@@ -496,6 +460,8 @@ public class KryoUtil {
     kryo.register(BuiltInSymbol.class, new BuiltInSymbolSerializer());
     kryo.register(BuiltInRubi.class, new BuiltInRubiSerializer());
     kryo.register(BuiltInDummy.class, new BuiltInDummySerializer());
+
+    UtilityFunctionCtors.registerKryo(kryo);
     return kryo;
   }
 

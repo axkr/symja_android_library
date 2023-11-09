@@ -278,9 +278,9 @@ public class SerializableTest extends TestCase {
       ois.close();
       long end = System.currentTimeMillis();
       long temp = start1 - start0;
-      System.out.println(Long.valueOf(temp).toString());
+      System.out.println("Starting (write) in milliseconds: " + Long.valueOf(temp).toString());
       temp = end - start1;
-      System.out.println(Long.valueOf(temp).toString());
+      System.out.println("Reading in milliseconds: " + Long.valueOf(temp).toString());
       assertEquals(original.toString(), copy.toString());
 
     } catch (ClassNotFoundException cnfe) {

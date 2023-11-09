@@ -11,12 +11,14 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.B1;
 import org.matheclipse.core.expression.B2;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.KryoUtil;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import com.esotericsoftware.kryo.Kryo;
 
 /**
  * UtilityFunction constructors from the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi -
@@ -391,7 +393,7 @@ public class UtilityFunctionCtors {
     return F.binaryAST2(F.$rubi("EasyDQ"), a0, a1);
   }
 
-  private static final class EqQ extends B2 {
+  public static final class EqQ extends B2 {
     public EqQ() {
       super();
     }
@@ -2162,7 +2164,7 @@ public class UtilityFunctionCtors {
       if (arg1.isAST(Dist) && arg1.size() == 4) {
         // dist1 = Dist[u_,v_,x_]
         IAST dist1 = engine.evalArgs((IAST) arg1, ISymbol.NOATTRIBUTE, false).orElse((IAST) arg1); // (IAST)
-                                                                                            // arg1;
+        // arg1;
         IExpr v = dist1.arg2();
         IExpr x = dist1.arg3();
         for (int j = i + 1; j < astPlus.size(); j++) {
@@ -2170,7 +2172,8 @@ public class UtilityFunctionCtors {
           if (arg2.isAST(Dist) && arg2.size() == 4 && arg2.getAt(2).equals(v)
               && arg2.getAt(3).equals(x)) {
             // dist2=Dist[w_,v_,x_]
-            IAST dist2 = engine.evalArgs((IAST) arg2, ISymbol.NOATTRIBUTE, false).orElse((IAST) arg2); // (IAST)
+            IAST dist2 =
+                engine.evalArgs((IAST) arg2, ISymbol.NOATTRIBUTE, false).orElse((IAST) arg2); // (IAST)
             // arg2;
             IASTAppendable result = astPlus.removeAtClone(j);
             result.remove(i);
@@ -2201,8 +2204,8 @@ public class UtilityFunctionCtors {
         }
       } else if (arg1.isTimes2() && arg1.first().isMinusOne() && arg1.second().isAST(Dist)) {
         // -1 * Dist[w_,v_,x_]
-        IAST dist1 =
-            engine.evalArgs((IAST) arg1.second(), ISymbol.NOATTRIBUTE, false).orElse((IAST) arg1.second()); // (IAST)
+        IAST dist1 = engine.evalArgs((IAST) arg1.second(), ISymbol.NOATTRIBUTE, false)
+            .orElse((IAST) arg1.second()); // (IAST)
         // arg1.second();
         IExpr v = dist1.arg2();
         IExpr x = dist1.arg3();
@@ -2211,7 +2214,8 @@ public class UtilityFunctionCtors {
           if (arg2.isAST(Dist) && arg2.size() == 4 && arg2.getAt(2).equals(v)
               && arg2.getAt(3).equals(x)) {
             // dist2 = Dist[u_,v_,x_]
-            IAST dist2 = engine.evalArgs((IAST) arg2, ISymbol.NOATTRIBUTE, false).orElse((IAST) arg2); // (IAST)
+            IAST dist2 =
+                engine.evalArgs((IAST) arg2, ISymbol.NOATTRIBUTE, false).orElse((IAST) arg2); // (IAST)
             // arg2;
             IASTAppendable result = astPlus.removeAtClone(j);
             result.remove(i);
@@ -2620,5 +2624,28 @@ public class UtilityFunctionCtors {
     ast = org.matheclipse.core.integrate.rubi.UtilityFunctions38.RULES;
     ast = org.matheclipse.core.integrate.rubi.UtilityFunctions39.RULES;
     // org.matheclipse.core.integrate.rubi.UtilityFunctions.init();
+  }
+
+  /**
+   * Register classes for Kryo serializer.
+   * 
+   * @param kryo
+   * @throws ClassNotFoundException
+   */
+  public static void registerKryo(Kryo kryo) throws ClassNotFoundException {
+    kryo.register(EqQ.class, new KryoUtil.IASTSerializer());
+    kryo.register(FalseQ.class, new KryoUtil.IASTSerializer());
+    kryo.register(FracPart.class, new KryoUtil.IASTSerializer());
+    kryo.register(GeQ.class, new KryoUtil.IASTSerializer());
+    kryo.register(GtQ.class, new KryoUtil.IASTSerializer());
+    kryo.register(IGtQ.class, new KryoUtil.IASTSerializer());
+    kryo.register(ILtQ.class, new KryoUtil.IASTSerializer());
+    kryo.register(IntPart.class, new KryoUtil.IASTSerializer());
+    kryo.register(LeQ.class, new KryoUtil.IASTSerializer());
+    kryo.register(LtQ.class, new KryoUtil.IASTSerializer());
+    kryo.register(NeQ.class, new KryoUtil.IASTSerializer());
+    kryo.register(PolyQ.class, new KryoUtil.IASTSerializer());
+    kryo.register(Simp.class, new KryoUtil.IASTSerializer());
+    kryo.register(Unintegrable.class, new KryoUtil.IASTSerializer());
   }
 }
