@@ -1566,6 +1566,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "BellB(n)");
     check("BellB(5,x)", //
         "x+15*x^2+25*x^3+10*x^4+x^5");
+    check("BellB(5,x+y^2)", //
+        "x+y^2+15*(x+y^2)^2+25*(x+y^2)^3+10*(x+y^2)^4+(x+y^2)^5");
     check("Table(BellB(k), {k, 0, 14})", //
         "{1,1,2,5,15,52,203,877,4140,21147,115975,678570,4213597,27644437,190899322}");
     check("BellB(10)", //
@@ -1593,6 +1595,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("BellY(2,1,{1/2,0})", //
         "0");
+    check("BellY(5, 2, {})", //
+        "0");
     check("BellY(5, 2, {1})", //
         "0");
     check("BellY(5, 2, {1,2})", //
@@ -1616,10 +1620,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   public void testBernoulliB() {
     // slow
+
     check("BernoulliB(2009,-1+Sqrt(2))", //
-        "BernoulliB(2009,-1+Sqrt(2))");
+        "Hold(BernoulliB(2009,-1+Sqrt(2)))");
+    // message: Non-negative machine-sized integer expected at position 1 in
+    // BernoulliB(-2147483648,1/2).
     check("BernoulliB(-2147483648,1/2)", //
         "BernoulliB(-2147483648,1/2)");
+
+    // message: Non-negative machine-sized integer expected at position 1 in
+    // BernoulliB(-3).
+    check("BernoulliB(-3)", //
+        "BernoulliB(-3)");
+    check("BernoulliB(3,-2)", //
+        "-15");
 
     check("BernoulliB(4, 9)", //
         "155519/30");

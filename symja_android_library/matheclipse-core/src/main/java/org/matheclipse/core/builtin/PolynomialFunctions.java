@@ -1516,9 +1516,14 @@ public class PolynomialFunctions {
       if (arg1.isInteger() && ast.arg2().isInteger()) {
         int n = arg1.toIntDefault();
         int k = ast.arg2().toIntDefault();
-        if (n < 0 || k < 0 || !ast.arg3().isList() || ast.arg3().isMatrix() != null) {
+        if (n < 0 || k < 0) {
           return F.NIL;
         }
+        IExpr list = ast.arg3().normal(false);
+        if (!list.isList()) {
+          return F.NIL;
+        }
+
         if (n == 0 && k == 0) {
           return F.C1;
         }
@@ -1533,7 +1538,7 @@ public class PolynomialFunctions {
         }
         int max = n - k + 2;
         if (max >= 0) {
-          return bellY(n, k, (IAST) ast.arg3(), ast, engine);
+          return bellY(n, k, (IAST) list, ast, engine);
         }
       }
 
@@ -2259,13 +2264,24 @@ public class PolynomialFunctions {
     }
   }
 
-  public static IExpr bellY(int n, int k, IAST symbols, IAST ast, EvalEngine engine) {
+  /**
+   * Calculate the partial Bell polynomial recursively.
+   * 
+   * @param n
+   * @param k
+   * @param symbols
+   * @param listOfVariables
+   * @param engine
+   * @return
+   * 
+   */
+  public static IExpr bellY(int n, int k, IAST symbols, IAST listOfVariables, EvalEngine engine) {
     final int recursionLimit = engine.getRecursionLimit();
     try {
       if (recursionLimit > 0) {
         int counter = engine.incRecursionCounter();
         if (counter > recursionLimit) {
-          RecursionLimitExceeded.throwIt(counter, ast);
+          RecursionLimitExceeded.throwIt(counter, listOfVariables);
         }
       }
       if (n == 0 && k == 0) {
@@ -2280,11 +2296,11 @@ public class PolynomialFunctions {
 
       int iterationLimit = engine.getIterationLimit();
       if (iterationLimit >= 0 && iterationLimit <= max) {
-        IterationLimitExceeded.throwIt(max, ast);
+        IterationLimitExceeded.throwIt(max, listOfVariables);
       }
       for (int m = 1; m < max; m++) {
         if ((m < symbols.size()) && !symbols.get(m).isZero()) {
-          IExpr bellY = bellY(n - m, k - 1, symbols, ast, engine);
+          IExpr bellY = bellY(n - m, k - 1, symbols, listOfVariables, engine);
           if (bellY.isPlus()) {
             bellY = bellY.mapThread(F.Times(a, F.Slot1, symbols.get(m)), 2);
           } else {

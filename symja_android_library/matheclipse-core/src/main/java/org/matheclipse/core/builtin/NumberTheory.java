@@ -133,20 +133,13 @@ public final class NumberTheory {
      * @param index an int number >= 0
      * @return
      */
-    private static IInteger bellNumber(int index) {
+    private static IExpr bellNumber(int index) {
       if (index < BELLB_25.length) {
         return AbstractIntegerSym.valueOf(BELLB_25[index]);
       }
 
       // Sum[StirlingS2[n, k], {k, 0, n}]
-      IInteger sum = F.C1;
-      for (int ki = 0; ki < index; ki++) {
-        sum = sum.add(stirlingS2(index, F.ZZ(ki), ki));
-        if (sum.bitLength() > Config.MAX_BIT_LENGTH / 100) {
-          BigIntegerLimitExceeded.throwIt(Config.MAX_BIT_LENGTH / 100);
-        }
-      }
-      return sum;
+      return F.sum(k -> stirlingS2(index, k, k.toIntDefault()), 0, index, 1);
     }
 
     /**
@@ -169,20 +162,21 @@ public final class NumberTheory {
         return z;
       }
 
-      IASTAppendable sum = F.PlusAlloc(n + 1);
-      for (int k = 0; k <= n; k++) {
-        sum.append(F.Times(F.StirlingS2(F.ZZ(n), F.ZZ(k)), F.Power(z, k)));
-      }
-      return sum;
+      return F.sum(k -> F.Times(F.StirlingS2(F.ZZ(n), k), F.Power(z, k)), 0, n + 1, 1);
     }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         IExpr arg1 = ast.arg1();
+        if (arg1.isNegative()) {
+          // Non-negative machine-sized integer expected at position `2` in `1`
+          return Errors.printMessage(S.BellB, "intnm", F.list(ast, F.C1), engine);
+        }
         int n = arg1.toIntDefault();
         if (n < 0) {
           if (arg1.isNumber()) {
+            // Non-negative machine-sized integer expected at position `2` in `1`
             return Errors.printMessage(S.BellB, "intnm", F.list(ast, F.C1), engine);
           }
         }
@@ -265,53 +259,48 @@ public final class NumberTheory {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.arg1().isNegative()) {
+        // Non-negative machine-sized integer expected at position `2` in `1`.
+        return Errors.printMessage(S.BernoulliB, "intnm", F.List(ast, F.C1), engine);
+      }
       if (ast.isAST1()) {
-        try {
-          int bn = ast.arg1().toIntDefault();
-          if (bn >= 0) {
-            return bernoulliNumber(bn);
-          }
-          IExpr temp = engine.evaluate(F.Subtract(ast.arg1(), F.C3));
-          if (temp.isIntegerResult() && temp.isPositiveResult() && temp.isEvenResult()) {
-            // http://fungrim.org/entry/a98234/
-            return F.C0;
-          }
-
-        } catch (RuntimeException rex) {
-          Errors.printMessage(S.BernoulliB, rex, engine);
+        int bn = ast.arg1().toIntDefault();
+        if (bn >= 0) {
+          return bernoulliNumber(bn);
+        }
+        IExpr temp = engine.evaluate(F.Subtract(ast.arg1(), F.C3));
+        if (temp.isIntegerResult() && temp.isPositiveResult() && temp.isEvenResult()) {
+          // http://fungrim.org/entry/a98234/
+          return F.C0;
         }
         return F.NIL;
       }
       if (ast.isAST2()) {
-        try {
-          IExpr n = ast.arg1();
-          IExpr x = ast.arg2();
-          int xInt = x.toIntDefault();
-          if (xInt != Integer.MIN_VALUE) {
-            if (xInt == 0) {
-              // http://fungrim.org/entry/a1d2d7/
-              return F.BernoulliB(ast.arg1());
-            }
-            if (xInt == 1 && n.isIntegerResult()) {
-              // http://fungrim.org/entry/829185/
-              return F.Times(F.Power(F.CN1, n), F.BernoulliB(n));
-            }
+        IExpr n = ast.arg1();
+        IExpr x = ast.arg2();
+        int xInt = x.toIntDefault();
+        if (xInt != Integer.MIN_VALUE) {
+          if (xInt == 0) {
+            // http://fungrim.org/entry/a1d2d7/
+            return F.BernoulliB(ast.arg1());
           }
-          if (n.isInteger() && n.isNonNegativeResult()) {
-            if (x.isNumEqualRational(F.C1D2)) {
-              // http://fungrim.org/entry/03ee0b/
-              return F.Times(F.Subtract(F.Power(F.C2, F.Subtract(F.C1, n)), F.C1), F.BernoulliB(n));
-            }
-            int bn = n.toIntDefault();
-            if (bn >= 0) {
-              // http://fungrim.org/entry/555e10/
-              return F.sum(
-                  k -> F.Times(F.Binomial(n, k), F.BernoulliB(F.Subtract(n, k)), F.Power(x, k)), 0,
-                  bn);
-            }
+          if (xInt == 1 && n.isIntegerResult()) {
+            // http://fungrim.org/entry/829185/
+            return F.Times(F.Power(F.CN1, n), F.BernoulliB(n));
           }
-        } catch (RuntimeException rex) {
-          Errors.printMessage(S.BernoulliB, rex, engine);
+        }
+        if (n.isInteger() && n.isNonNegativeResult()) {
+          if (x.isNumEqualRational(F.C1D2)) {
+            // http://fungrim.org/entry/03ee0b/
+            return F.Times(F.Subtract(F.Power(F.C2, F.Subtract(F.C1, n)), F.C1), F.BernoulliB(n));
+          }
+          int bn = n.toIntDefault();
+          if (bn >= 0) {
+            // http://fungrim.org/entry/555e10/
+            return F.sum(
+                k -> F.Times(F.Binomial(n, k), F.BernoulliB(F.Subtract(n, k)), F.Power(x, k)), 0,
+                bn);
+          }
         }
       }
       return F.NIL;
@@ -1709,10 +1698,6 @@ public final class NumberTheory {
         // general formula
         IASTAppendable sum = F.PlusAlloc(size);
         return sum.appendArgs(size, i -> F.Power(list.get(i), arg1));
-        // for (int i = 1; i < size; i++) {
-        // sum.append(F.Power(list.get(i), arg1));
-        // }
-        // return sum;
       }
       return F.NIL;
     }
@@ -5089,9 +5074,9 @@ public final class NumberTheory {
         }
         // try to convert into a fractional number
         return rationalize(arg1, epsilon, useConvergenceMethod).orElse(arg1);
-      } catch (Exception ex) {
+      } catch (RuntimeException rex) {
         // ex.printStackTrace();
-        Errors.printMessage(S.Rationalize, ex, engine);
+        Errors.printMessage(S.Rationalize, rex, engine);
       }
 
       return F.NIL;

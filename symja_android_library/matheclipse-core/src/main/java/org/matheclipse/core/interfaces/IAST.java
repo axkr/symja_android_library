@@ -1511,10 +1511,11 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
   }
 
   /**
-   * Get the argument at index 1, if the <code>size() == 2</code> or the complete ast if the <code>
-   * size() > 2</code> (useful for ASTs with attribute <code>OneIdentity</code> for example for
-   * <code>Plus[]</code> you can call <code>getOneIdentity(F.C0)</code> or for <code>Times[]</code>)
-   * you can call <code>getOneIdentity(F.C1)</code>.
+   * Return the argument at index 1, if the <code>argSize() == 1</code>. Or return the complete ast
+   * if the <code>argSize() > 1</code> If the <code>argSize() == 0</code> return
+   * <code>defaultValue</code> (useful for ASTs with attribute <code>OneIdentity</code> for example
+   * for <code>Plus[]</code> you can call <code>getOneIdentity(F.C0)</code> or for
+   * <code>Times[]</code>) you can call <code>getOneIdentity(F.C1)</code>.
    *
    * @param defaultValue default value, if <code>size() < 2</code>.
    * @return
@@ -1522,8 +1523,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
   public IExpr oneIdentity(IExpr defaultValue);
 
   /**
-   * Get the argument at index 1, if the <code>size() == 2</code> or the complete ast if the <code>
-   * size() > 2</code> If the <code>size() == 1</code> return <code>0</code>.
+   * Return the argument at index 1, if the <code>argSize() == 1</code>. Or return the complete ast
+   * if the <code>argSize() > 1</code> If the <code>argSize() == 0</code> return <code>0</code>.
    *
    * @return
    */
@@ -1532,8 +1533,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
   }
 
   /**
-   * Get the argument at index 1, if the <code>size() == 2</code> or the complete ast if the <code>
-   * size() > 2</code> If the <code>size() == 1</code> return <code>1</code>.
+   * Return the argument at index 1, if the <code>argSize() == 1</code>. Or return the complete ast
+   * if the <code>argSize() > 1</code> If the <code>argSize() == 0</code> return <code>1</code>.
    *
    * @return
    */

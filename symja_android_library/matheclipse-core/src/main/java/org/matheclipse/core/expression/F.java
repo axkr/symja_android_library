@@ -109,6 +109,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
+import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.BiIntFunction;
@@ -8155,7 +8156,8 @@ public class F extends S {
    * @param to
    * @return
    */
-  public static IExpr product(final Function<IExpr, IExpr> function, final int from, final int to) {
+  public static IExpr product(final Function<IInteger, IExpr> function, final int from,
+      final int to) {
     return intProduct(function, from, to, 1);
   }
 
@@ -9565,7 +9567,8 @@ public class F extends S {
    * @param iMax
    * @return
    */
-  public static IExpr sum(final Function<IExpr, IExpr> function, final int iMin, final int iMax) {
+  public static IExpr sum(final Function<IInteger, IExpr> function, final int iMin,
+      final int iMax) {
     return intSum(function, iMin, iMax, 1);
   }
 
@@ -9580,8 +9583,11 @@ public class F extends S {
    * @param step
    * @return
    */
-  public static IExpr intProduct(final Function<IExpr, IExpr> function, final int from,
+  public static IExpr intProduct(final Function<IInteger, IExpr> function, final int from,
       final int to, final int step) {
+    if (from > to && step > 0) {
+      return F.C1;
+    }
     IASTAppendable result = ast(S.Times, 15);
     long numberOfLeaves = 0;
     INumber number = F.C1;
@@ -9592,6 +9598,10 @@ public class F extends S {
       IExpr temp = engine.evaluate(function.apply(ZZ(i)));
       if (temp.isNumber()) {
         number = number.times((INumber) temp);
+        if (number instanceof IInteger //
+            && ((IInteger) number).bitLength() > Config.MAX_BIT_LENGTH / 100) {
+          BigIntegerLimitExceeded.throwIt(Config.MAX_BIT_LENGTH / 100);
+        }
       } else {
         numberOfLeaves += temp.leafCount() + 1;
         if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
@@ -9614,6 +9624,9 @@ public class F extends S {
    * @return
    */
   public static IExpr intSum(final IntFunction<IExpr> function, final int iMin, final int iMax) {
+    if (iMin > iMax) {
+      return F.C0;
+    }
     IASTAppendable result = ast(S.Plus, 15);
     int numberOfLeaves = 0;
     EvalEngine engine = EvalEngine.get();
@@ -9624,6 +9637,10 @@ public class F extends S {
       IExpr temp = engine.evaluate(function.apply(i));
       if (temp.isNumber()) {
         number = number.plus((INumber) temp);
+        if (number instanceof IInteger //
+            && ((IInteger) number).bitLength() > Config.MAX_BIT_LENGTH / 100) {
+          BigIntegerLimitExceeded.throwIt(Config.MAX_BIT_LENGTH / 100);
+        }
       } else {
         numberOfLeaves += temp.leafCount() + 1;
         if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
@@ -9647,7 +9664,7 @@ public class F extends S {
    * @param step
    * @return
    */
-  public static IExpr intSum(final Function<IExpr, IExpr> function, final int from, final int to,
+  public static IExpr intSum(final Function<IInteger, IExpr> function, final int from, final int to,
       final int step) {
     return intSum(function, from, to, step, false);
   }
@@ -9663,8 +9680,11 @@ public class F extends S {
    * @param expand expand {@link S#Plus}, {@link S#Times}, {@link S#Power} subexpressions
    * @return
    */
-  public static IExpr intSum(final Function<IExpr, IExpr> function, final int from, final int to,
+  public static IExpr intSum(final Function<IInteger, IExpr> function, final int from, final int to,
       final int step, boolean expand) {
+    if (from > to && step > 0) {
+      return F.C0;
+    }
     IASTAppendable result = ast(S.Plus, 15);
     long numberOfLeaves = 0;
     INumber number = F.C0;
@@ -9675,6 +9695,10 @@ public class F extends S {
       IExpr temp = engine.evaluate(function.apply(ZZ(i)));
       if (temp.isNumber()) {
         number = number.plus((INumber) temp);
+        if (number instanceof IInteger //
+            && ((IInteger) number).bitLength() > Config.MAX_BIT_LENGTH / 100) {
+          BigIntegerLimitExceeded.throwIt(Config.MAX_BIT_LENGTH / 100);
+        }
       } else {
         numberOfLeaves += temp.leafCount() + 1;
         if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
@@ -9701,7 +9725,7 @@ public class F extends S {
    * @param iStep
    * @return
    */
-  public static IExpr sum(final Function<IExpr, IExpr> function, final int iMin, final int iMax,
+  public static IExpr sum(final Function<IInteger, IExpr> function, final int iMin, final int iMax,
       final int iStep) {
     return intSum(function, iMin, iMax, iStep);
   }
@@ -9716,7 +9740,7 @@ public class F extends S {
    * @param expand expand {@link S#Plus}, {@link S#Times}, {@link S#Power} subexpressions
    * @return
    */
-  public static IExpr sum(final Function<IExpr, IExpr> function, final int iMin, final int iMax,
+  public static IExpr sum(final Function<IInteger, IExpr> function, final int iMin, final int iMax,
       final int iStep, boolean expand) {
     return intSum(function, iMin, iMax, iStep, expand);
   }
