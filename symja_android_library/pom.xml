@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.matheclipse</groupId>
 	<artifactId>matheclipse</artifactId>
-	<version>3.0.0</version>
+	<version>3.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>Symja Java Symbolic Math library.</description>
@@ -61,7 +61,7 @@
 		<developerConnection>
 			scm:git:git@github.com:axkr/symja_android_library.git</developerConnection>
 		<url>https://github.com/axkr/symja_android_library.git</url>
-		<tag>v3.0.0</tag>
+		<tag>HEAD</tag>
 	</scm>
 	<issueManagement>
 		<system>GitHub</system>
