@@ -34,7 +34,7 @@ Plot the interpolating function and the sine function.
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x2611; - partially implemented
 
 ### Github
 

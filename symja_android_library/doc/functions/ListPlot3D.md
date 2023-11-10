@@ -15,7 +15,7 @@ ListPlot3D( { list-of-polygons } )
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x1F9EA; - experimental
 
 ### Github
 

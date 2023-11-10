@@ -50,7 +50,7 @@ This is a derivative based method and the functions must be symbolically differe
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x2611; - partially implemented
 
 ### Github
 

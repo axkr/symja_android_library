@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
 import org.matheclipse.core.interfaces.IAST;
@@ -123,6 +124,11 @@ public class Interpolation extends AbstractEvaluator {
     double min = engine.evaluate(minMaxList.apply(S.Min, 1)).evalf();
     double max = engine.evaluate(minMaxList.apply(S.Max, 1)).evalf();
     return InterpolatingFunctionExpr.newInstance(interpolator, min, max);
+  }
+
+  @Override
+  public int status() {
+    return ImplementationStatus.PARTIAL_SUPPORT;
   }
 
   @Override

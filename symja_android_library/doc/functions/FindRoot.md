@@ -124,7 +124,7 @@ Using Newton's method for finding the root of a differentiable, multivariate, ve
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x2611; - partially implemented
 
 ### Github
 

@@ -72,7 +72,6 @@ public final class FunctionDefinitions {
 
       S.MatrixD.setEvaluator(new org.matheclipse.core.reflection.system.MatrixD());
 
-      S.NewLimit.setEvaluator(new org.matheclipse.core.reflection.system.NewLimit());
       S.ND.setEvaluator(new org.matheclipse.core.reflection.system.ND());
       S.NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
       S.NFourierTransform

@@ -33,7 +33,7 @@ public class Beep extends AbstractEvaluator {
 
   @Override
   public int status() {
-    return ImplementationStatus.WINDOWS_SUPPORT;
+    return ImplementationStatus.PARTIAL_SUPPORT;
   }
 
   @Override

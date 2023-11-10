@@ -24,7 +24,7 @@ ListLogPlot( { list-of-points } )
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x1F9EA; - experimental
 
 ### Github
 

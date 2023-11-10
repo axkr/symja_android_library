@@ -26,7 +26,7 @@ In the console apps, this command shows an HTML page with a JavaScript list plot
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x1F9EA; - experimental
 
 ### Github
 

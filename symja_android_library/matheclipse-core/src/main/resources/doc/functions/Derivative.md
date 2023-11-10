@@ -56,7 +56,7 @@ Derivative(2,0,1,0)[h(g)]
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x2611; - partially implemented
 
 ### Github
 

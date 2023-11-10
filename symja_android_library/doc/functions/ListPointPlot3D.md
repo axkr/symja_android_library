@@ -33,7 +33,7 @@ With `JSForm` you can display the generated JavaScript form of the `Manipulate` 
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x1F9EA; - experimental
 
 ### Github
 

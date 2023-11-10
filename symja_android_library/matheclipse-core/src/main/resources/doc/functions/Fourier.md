@@ -37,7 +37,7 @@ Fourier({1,2,0,0,7})
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x2611; - partially implemented
 
 ### Github
 

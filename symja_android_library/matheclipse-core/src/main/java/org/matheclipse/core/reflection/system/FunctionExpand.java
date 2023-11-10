@@ -672,14 +672,13 @@ public class FunctionExpand extends AbstractEvaluator {
   }
 
   @Override
-  public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_1_2;
-  }
-
-
-  @Override
   public int status() {
     return ImplementationStatus.PARTIAL_SUPPORT;
+  }
+
+  @Override
+  public int[] expectedArgSize(IAST ast) {
+    return IFunctionEvaluator.ARGS_1_2;
   }
 
   @Override

@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
@@ -24,5 +25,8 @@ public class LogPlot extends Plot {
     graphicsOptions.setJoined(true);
   }
 
-
+  @Override
+  public int status() {
+    return ImplementationStatus.EXPERIMENTAL;
+  }
 }

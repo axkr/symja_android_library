@@ -20,7 +20,7 @@ Cos(x)*Sin(y)+Cos(y)*Sin(x)
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x2611; - partially implemented
 
 ### Github
 

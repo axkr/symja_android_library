@@ -35,7 +35,7 @@ Solve the diophantine equation `2*x + 3*y + 4*z == 29`:
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x2611; - partially implemented
 
 ### Github
 

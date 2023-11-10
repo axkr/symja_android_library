@@ -2,7 +2,7 @@
 
 Noteworthy changes are documented in this file.
 
-## [Unreleased](https://github.com/axkr/symja_android_library/compare/v2.0.0...HEAD)
+## [v3.0.0](https://github.com/axkr/symja_android_library/compare/v3.0.0) - 2023-11-11
 - Java 11 required
 - Maven modules matheclipse-parser, matheclipse-logging, matheclipse-core are LGPL licensed
 - Maven modules matheclipse-gpl and dependents are GPL licensed
@@ -17,6 +17,7 @@ Noteworthy changes are documented in this file.
 - `EvalEngine#evalDouble()` returns `POSITIVE_INFINITY, NEGATIVE_INFINITY` for `Infinity, -Infinity`
 - use eclipse-temurin:21_35-jre in JIB Docker script 
 - improve `PolynomialHomogenization` with a Cos/Sin transform to find more solutions
+- implement SawtoothWave (#783)
 - improved `Arg, ApplySides, Association, Assumptions, Bessel..., Binomial, BooleanFunction, Cancel, Carlson..., Catalan, CatalanNumber, CholeskyDecomposition, Chop, Complement, ComplexExpand, Count, CorrelationDistance, CosineDistance, D, Derivative, Drop, EigenValues, Eigenvectors, EllipticF, EllipticPi, FactorTerms, FindLinearRecurrence, Function, FunctionExpand, FullSimplify, GCD, Glaisher,Grad, HankelH1, HankelH2, HarmonicNumber, HermiteMatrix, HurwitzZeta, Hypergeometric..., Identity, IdentityMatrix, Import, ImportString, IntegerDigits, Intersection, Interval..., Khinchin, Limit, LinearRecurrence, ListConvolve, ListCorrelate, LogisticSigmoid, MantissaExponent, MapIndexed, MathMLForm, Max, Min, Minors, NMinimize, NestList, NestWhile, NestWhileList, NMaximize, NSolve, OrderedQ, Orthogonalize, PiecewiseExpand, PolyGamma, PowerExpand, PossibleZeroQ, Product, Projection, Quantity, RandomVariate, Range, ReleaseHold, Round, SatisfiabilityInstances, Simplify, Sign, Solve, SphericalHankelH1, SphericalHankelH2, StieltjesGamma, StringSplit, Subfactorial, Sum, Surd, TagSet, TagSetDelayed, Take, TakeLargestBy, TakeSmallestBy, TeXForm, TimeConstrained, Together, Unitize, Union, Zeta` function
 - new functions: `Adjugate, DeleteMissing, Eigensystem, FromSphericalCoordinates, HermiteH, JacobiP, NumericalOrder, NumericalSort, PrincipalComponents, RealValuedNumericQ, ReIm, SawtoothWave, StringForm, ToSphericalCoordinates` with status `PARTIAL` support
 - new functions: `ClebschGordan, ThreeJSymbol` with status `EXPERIMENTAL` support

@@ -34,6 +34,7 @@ import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.ExprAnalyzer;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
@@ -1195,6 +1196,11 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     }
     SolveData sd = new SolveData(options);
     return sd.of(ast, isNumericArgument, engine);
+  }
+
+  @Override
+  public int status() {
+    return ImplementationStatus.PARTIAL_SUPPORT;
   }
 
   @Override

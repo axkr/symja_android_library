@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -97,6 +98,12 @@ public class Share extends AbstractFunctionEvaluator {
     }
     return F.C0;
   }
+
+  @Override
+  public int status() {
+    return ImplementationStatus.EXPERIMENTAL;
+  }
+
 
   @Override
   public int[] expectedArgSize(IAST ast) {
