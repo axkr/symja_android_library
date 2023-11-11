@@ -24430,6 +24430,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testTimeValue() {
+    check("TimeValue(I*1/2,-I,0)", //
+        "I*1/2");
     check(" TimeValue(-0.8+I*1.2,-5,1009)", //
         "ComplexInfinity");
     check("N(TimeValue((-8/10)+I*(12/10),-5,1009),20)", //

@@ -15,7 +15,9 @@ import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -760,6 +762,14 @@ public class ComplexSym implements IComplex {
    * @return
    */
   private IComplex powPositive(final long n) {
+    if (n == 0) {
+      if (isZero()) {
+        // Indeterminate expression 0^0 encountered.
+        String message = Errors.getMessage("indet", F.list(F.Power(F.C0, F.C0)), EvalEngine.get());
+        throw new ArgumentTypeException(message);
+      }
+      return ONE;
+    }
     if (fReal.isZero()) {
       long modN = n % 4;
       if (fImaginary.isOne()) {
