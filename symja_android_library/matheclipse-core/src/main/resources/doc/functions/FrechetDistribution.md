@@ -14,7 +14,7 @@ See:
 The variance of the Frechet distribution is
 
 ```
->> FrechetDistribution(n, m)) 
+>> Variance(FrechetDistribution(n, m)) 
 Piecewise({{m^2*(Gamma(1-2/n)-Gamma(1-1/n)^2),n>2}},Infinity)
 ```
 
