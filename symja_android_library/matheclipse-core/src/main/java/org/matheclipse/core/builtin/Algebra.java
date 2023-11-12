@@ -4365,9 +4365,6 @@ public class Algebra {
         return F.C0;
       }
       if (!exprDenominator.isOne()) {
-        if (exprDenominator.isMinusOne()) {
-          return exprNumerator.negate();
-        }
         try {
           IExpr[] result = cancelGCD(exprNumerator, exprDenominator);
           if (result != null) {
@@ -4379,6 +4376,9 @@ public class Algebra {
           }
         } catch (JASConversionException jce) {
           LOGGER.debug("Together.togetherPlus()", jce);
+        }
+        if (exprDenominator.isNumber()) {
+          return exprDenominator.inverse().times(exprNumerator);
         }
         return F.Times(exprNumerator, F.Power(denom, -1));
       }

@@ -17,7 +17,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   public void testAdjugate() {
     check("Adjugate({{E^5, 1, 3 - 2*I}, {1 + I, Pi/2, 5}, {0, 1, -4}})", //
-        "{{2*(-5/2-Pi),7-I*2,(3/2-I)*(30/13+I*20/13-Pi)},\n" //
+        "{{-2*(5/2+Pi),7-I*2,(3/2-I)*(30/13+I*20/13-Pi)},\n" //
             + " {4+I*4,-4*E^5,5*(1+I*1/5-E^5)},\n" //
             + " {1+I,-E^5,1/2*(-2-I*2+E^5*Pi)}}");
     // https://en.wikipedia.org/wiki/Adjugate_matrix
