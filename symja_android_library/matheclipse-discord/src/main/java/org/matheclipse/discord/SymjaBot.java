@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import javax.imageio.ImageIO;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
+import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalControlledCallable;
 import org.matheclipse.core.eval.EvalEngine;
@@ -82,6 +83,7 @@ public class SymjaBot {
       EvalEngine.get().setPackageMode(true);
       F.initSymbols();
       initFunctions();
+      System.out.println("Symja Version: " + ConstantDefinitions.VERSION + " initialized");
       String theDiscordToken = args[0];
       GatewayDiscordClient client =
           DiscordClientBuilder.create(theDiscordToken).build().login().block();

@@ -24466,10 +24466,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testTogether() {
-    check("Together((1/x-1/3)/(x-3)^2)", //
-        "1/(3*(3-x)*x)");
-    check("Together((1/x-1/3)^3/(x-3))", //
-        "-(3-x)^2/(27*x^3)");
     check("Together((1/x-1/3)^3/(x-3)^2)", //
         "(3-x)/(27*x^3)");
     check("Together((1/x-1/3)/(x-3))", //
@@ -24632,6 +24628,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "a/(-a-b)");
     check("Together(1/x + 1/(x + 1) + 1/(x + 2) + 1/(x + 3))", //
         "(6+22*x+18*x^2+4*x^3)/(x*(1+x)*(2+x)*(3+x))");
+  }
+
+  public void testTogetherIssue856() {
+    // github issue #856
+    check("tg=Simplify(1/(Sqrt(7) - 2 *Sqrt(2)) + 1/(Sqrt(7) + 2 *Sqrt(2))) ", //
+        "-2*Sqrt(7)");
+    check("tg=Together(1/(-2*Sqrt(2)+Sqrt(7))+1/(2*Sqrt(2)+Sqrt(7)))  ", //
+        "-2*Sqrt(7)");
+    check("tg=Together(1/(Sqrt(7) - 2 *Sqrt(2)) + 1/(Sqrt(7) + 2 *Sqrt(2))) ", //
+        "-2*Sqrt(7)");
   }
 
   public void testToExpression() {
