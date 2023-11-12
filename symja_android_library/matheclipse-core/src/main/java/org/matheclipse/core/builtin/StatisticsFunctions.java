@@ -6074,6 +6074,7 @@ public class StatisticsFunctions {
           return Errors.printMessage(S.PearsonCorrelationTest, "vctnln3", F.List(arg2, F.C2, F.C1),
               engine);
         }
+        try {
         RealMatrix m = new Array2DRowRealMatrix(dimension1, dimension2);
         m.setColumn(0, vector1);
         m.setColumn(1, vector2);
@@ -6103,6 +6104,9 @@ public class StatisticsFunctions {
         // return F.NIL;
         // }
         return testData(vector1, vector2, test);
+      } catch (MathRuntimeException miae) {
+        return Errors.printMessage(S.PearsonCorrelationTest, miae, engine);
+      }
       }
       // The argument `1` at position `2` should be a vector of real numbers with length greater
       // than `3`

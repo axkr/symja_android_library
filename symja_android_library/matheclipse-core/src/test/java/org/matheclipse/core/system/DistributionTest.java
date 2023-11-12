@@ -524,6 +524,8 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   public void testPearsonCorrelationTest() {
+    check("PearsonCorrelationTest({0,0},{0,0}, \"PValue\")", //
+        "PearsonCorrelationTest({0,0},{0,0},PValue)");
     // example from https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
     check("PearsonCorrelationTest({1, 2, 3, 5, 8}, {0.11, 0.12, 0.13, 0.15, 0.18}, \"TestData\")", //
         "{1.0,0.0}");
