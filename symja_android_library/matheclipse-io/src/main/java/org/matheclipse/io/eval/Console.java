@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
+import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalControlledCallable;
 import org.matheclipse.core.eval.EvalEngine;
@@ -102,6 +103,7 @@ public class Console {
     Config.FILESYSTEM_ENABLED = true;
 
     IOInit.init();
+
     Console console;
     try {
       console = new Console();
@@ -117,6 +119,7 @@ public class Console {
     } catch (ReturnException re) {
       return;
     }
+    System.out.println("Symja version " + ConstantDefinitions.VERSION + " initialized");
 
     while (true) {
       try {

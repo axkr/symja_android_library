@@ -18,6 +18,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
+import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -629,5 +630,6 @@ public class AJAXQueryServlet extends HttpServlet {
     // F.Show.setEvaluator(org.matheclipse.core.builtin.graphics.Show.CONST);
     // Config.JAS_NO_THREADS = true;
     // AJAXQueryServlet.log.info(servlet + " initialized");
+    System.out.println("Symja version " + ConstantDefinitions.VERSION + " initialized");
   }
 }
