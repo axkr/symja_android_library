@@ -6,8 +6,6 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -61,7 +59,6 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class StatisticsFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   // avoid result -Infinity when reference is close to 1.0
   private static final double NEXTDOWNONE = Math.nextDown(1.0);
@@ -257,8 +254,8 @@ public class StatisticsFunctions {
               }
             }
           }
-        } catch (Exception ex) {
-          LOGGER.debug("InverseCDF.evaluate() failed", ex);
+        } catch (RuntimeException rex) {
+          return Errors.printMessage(S.InverseCDF, rex, engine);
         }
       }
 
@@ -492,8 +489,8 @@ public class StatisticsFunctions {
               }
             }
           }
-        } catch (Exception ex) {
-          LOGGER.debug("CDF.evaluate() failed", ex);
+        } catch (RuntimeException rex) {
+          return Errors.printMessage(S.CDF, rex, engine);
         }
       }
 
@@ -958,8 +955,8 @@ public class StatisticsFunctions {
             return binCounts(ast, vector, F.C1, engine);
           }
         }
-      } catch (ArithmeticException rex) {
-        LOGGER.debug("BinCounts.evaluate() failed", rex);
+      } catch (ArithmeticException aex) {
+        return Errors.printMessage(S.BinCounts, aex, engine);
       }
       return F.NIL;
     }
@@ -1402,8 +1399,8 @@ public class StatisticsFunctions {
             }
           }
         }
-      } catch (Exception ex) {
-        LOGGER.debug("PDF.evaluate() failed", ex);
+      } catch (RuntimeException rex) {
+        return Errors.printMessage(S.CentralMoment, rex, engine);
       }
       return F.NIL;
     }
@@ -1671,7 +1668,7 @@ public class StatisticsFunctions {
               F.Times(F.StandardDeviation(arg1), F.StandardDeviation(arg2)));
         }
       } catch (MathRuntimeException mrex) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), mrex);
+        return Errors.printMessage(S.Correlation, mrex, engine);
       }
       return F.NIL;
     }
@@ -3374,11 +3371,11 @@ public class StatisticsFunctions {
           final IAST arg2 = (IAST) ast.arg2();
           return evaluateArg2(arg1, arg2, engine);
         }
-      } catch (final MathRuntimeException mre) {
+      } catch (final MathRuntimeException mrex) {
         // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
-        LOGGER.log(engine.getLogLevel(), S.Covariance, mre);
-      } catch (final IndexOutOfBoundsException e) {
-        LOGGER.debug("Covariance.evaluate() failed", e);
+        return Errors.printMessage(S.Covariance, mrex, engine);
+      } catch (final IndexOutOfBoundsException iobe) {
+        return Errors.printMessage(S.Covariance, iobe, engine);
       }
       return F.NIL;
     }
@@ -3891,8 +3888,8 @@ public class StatisticsFunctions {
             }
           }
         }
-      } catch (Exception ex) {
-        LOGGER.debug("Expectation.evaluate() failed", ex);
+      } catch (RuntimeException rex) {
+        return Errors.printMessage(S.Expectation, rex, engine);
       }
 
       return F.NIL;
@@ -4246,8 +4243,8 @@ public class StatisticsFunctions {
             }
           }
         }
-      } catch (MathRuntimeException mre) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
+      } catch (MathRuntimeException mrex) {
+        return Errors.printMessage(S.KolmogorovSmirnovTest, mrex, engine);
       }
       return F.NIL;
     }
@@ -4627,8 +4624,8 @@ public class StatisticsFunctions {
         if (arg1.isDistribution()) {
           return getDistribution(arg1).mean((IAST) arg1);
         }
-      } catch (Exception ex) {
-        LOGGER.debug("Mean.evaluateArg1() failed", ex);
+      } catch (RuntimeException rex) {
+        return Errors.printMessage(S.Mean, rex, engine);
       }
       return F.NIL;
     }
@@ -5538,8 +5535,8 @@ public class StatisticsFunctions {
               // }
             }
           }
-        } catch (Exception ex) {
-          LOGGER.debug("Probability.evaluate() failed", ex);
+        } catch (RuntimeException rex) {
+          return Errors.printMessage(S.Probability, rex, engine);
         }
       }
       return F.NIL;
@@ -5652,8 +5649,8 @@ public class StatisticsFunctions {
               }
             }
           }
-        } catch (Exception ex) {
-          LOGGER.debug("PDF.evaluate() failed", ex);
+        } catch (RuntimeException rex) {
+          return Errors.printMessage(S.PDF, rex, engine);
         }
       }
       return F.NIL;
@@ -6075,38 +6072,38 @@ public class StatisticsFunctions {
               engine);
         }
         try {
-        RealMatrix m = new Array2DRowRealMatrix(dimension1, dimension2);
-        m.setColumn(0, vector1);
-        m.setColumn(1, vector2);
-        org.hipparchus.stat.correlation.PearsonsCorrelation test =
-            new org.hipparchus.stat.correlation.PearsonsCorrelation(m);
-        if (property.equals("TestData")) {
-          return testData(vector1, vector2, test);
-        }
-        if (property.equals("TestStatistic")) {
-          double value = test.correlation(vector1, vector2);
-          return F.num(value);
-        }
-        if (property.equals("PValue")) {
-          RealMatrix correlationPValues = test.getCorrelationPValues();
-          if (correlationPValues != null) {
-            double pValue = correlationPValues.getEntry(1, 0);
-            return F.num(pValue);
+          RealMatrix m = new Array2DRowRealMatrix(dimension1, dimension2);
+          m.setColumn(0, vector1);
+          m.setColumn(1, vector2);
+          org.hipparchus.stat.correlation.PearsonsCorrelation test =
+              new org.hipparchus.stat.correlation.PearsonsCorrelation(m);
+          if (property.equals("TestData")) {
+            return testData(vector1, vector2, test);
           }
-          return F.NIL;
+          if (property.equals("TestStatistic")) {
+            double value = test.correlation(vector1, vector2);
+            return F.num(value);
+          }
+          if (property.equals("PValue")) {
+            RealMatrix correlationPValues = test.getCorrelationPValues();
+            if (correlationPValues != null) {
+              double pValue = correlationPValues.getEntry(1, 0);
+              return F.num(pValue);
+            }
+            return F.NIL;
+          }
+          // if (property.equals("PValueTable")) {
+          // RealMatrix correlationPValues = test.getCorrelationPValues();
+          // if (correlationPValues != null) {
+          // return new ASTRealMatrix(correlationPValues, false);
+          // // return Convert.matrix2List(correlationPValues);
+          // }
+          // return F.NIL;
+          // }
+          return testData(vector1, vector2, test);
+        } catch (MathRuntimeException miae) {
+          return Errors.printMessage(S.PearsonCorrelationTest, miae, engine);
         }
-        // if (property.equals("PValueTable")) {
-        // RealMatrix correlationPValues = test.getCorrelationPValues();
-        // if (correlationPValues != null) {
-        // return new ASTRealMatrix(correlationPValues, false);
-        // // return Convert.matrix2List(correlationPValues);
-        // }
-        // return F.NIL;
-        // }
-        return testData(vector1, vector2, test);
-      } catch (MathRuntimeException miae) {
-        return Errors.printMessage(S.PearsonCorrelationTest, miae, engine);
-      }
       }
       // The argument `1` at position `2` should be a vector of real numbers with length greater
       // than `3`
@@ -6433,7 +6430,7 @@ public class StatisticsFunctions {
               }
             }
           } catch (ArithmeticException ae) {
-            LOGGER.debug("Quantile.evaluate() failed", ae);
+            return Errors.printMessage(S.Quantile, ae, engine);
           }
         }
       } else if (arg1.isDistribution() && ast.size() >= 3) {
@@ -6558,8 +6555,8 @@ public class StatisticsFunctions {
             } else {
               return printMessageUdist(head, ast, dist, engine);
             }
-          } catch (RuntimeException ex) {
-            LOGGER.log(engine.getLogLevel(), "RandomVariate", ex);
+          } catch (RuntimeException rex) {
+            return Errors.printMessage(S.RandomVariate, rex, engine);
           }
         }
       }
@@ -7501,8 +7498,8 @@ public class StatisticsFunctions {
               }
             }
           }
-        } catch (Exception ex) {
-          LOGGER.debug("Variance.evaluate() failed", ex);
+        } catch (RuntimeException rex) {
+          return Errors.printMessage(S.Variance, rex, engine);
         }
       }
       return F.NIL;
