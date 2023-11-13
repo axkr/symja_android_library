@@ -9984,6 +9984,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "E^x");
   }
 
+  public void testFullSimplifyIssue856() {
+    // github issue #856
+    check("FullSimplify( (2 *Sqrt(6) - Sqrt(3)) * (Sqrt(2) + 4))", //
+        "7*Sqrt(6)");
+    check("FullSimplify( (2 *Sqrt(6) - Sqrt(3)) * (-Sqrt(2) - 4) )", //
+        "-7*Sqrt(6)");
+    check("FullSimplify( (2 *Sqrt(6) - Sqrt(3)) / (Sqrt(2) - 4) )", //
+        "-Sqrt(3/2)");
+  }
   public void testFunction() {
     EvalEngine.resetModuleCounter4JUnit();
     // check("(p + #) & /. p -> q", //
