@@ -5133,9 +5133,9 @@ public final class ListFunctions {
     private static IAST position(final IExpr expr, final IExpr pattern, final LevelSpec level,
         int maxResults, EvalEngine engine) {
       final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
-      final PositionConverter positionConverter = new PositionConverter();
 
       if (expr.isASTOrAssociation()) {
+        final PositionConverter positionConverter = new PositionConverter();
         final IAST ast = (IAST) expr;
         final IAST cloneList = F.CEmptyList;
         final IASTAppendable resultList = F.ListAlloc(F.allocMax32(ast));
@@ -5153,7 +5153,7 @@ public final class ListFunctions {
           return F.List(F.CEmptyList);
         }
       }
-      return F.List();
+      return F.CEmptyList;
     }
 
     @Override
