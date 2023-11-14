@@ -18607,6 +18607,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testPosition() {
+    check("Position(2,2)", //
+        "{{}}");
+    check("Position(2,3)", //
+        "{}");
     check("Position(_Integer)[{1.5, 2, 2.5}]", //
         "{{2}}");
 

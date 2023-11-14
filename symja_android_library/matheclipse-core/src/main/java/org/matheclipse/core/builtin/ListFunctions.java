@@ -5122,7 +5122,7 @@ public final class ListFunctions {
     }
 
     /**
-     * @param ast
+     * @param expr
      * @param pattern
      * @param level
      * @param maxResults the maximum number of results which should be returned in the resulting
@@ -5130,21 +5130,30 @@ public final class ListFunctions {
      * @param engine
      * @return a <code>F.list()</code> of result positions
      */
-    private static IAST position(final IAST ast, final IExpr pattern, final LevelSpec level,
+    private static IAST position(final IExpr expr, final IExpr pattern, final LevelSpec level,
         int maxResults, EvalEngine engine) {
       final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
       final PositionConverter positionConverter = new PositionConverter();
 
-      final IAST cloneList = F.CEmptyList;
-      final IASTAppendable resultList = F.ListAlloc(F.allocMax32(ast));
-      int headOffset = 1;
-      if (level.isIncludeHeads()) {
-        headOffset = 0;
+      if (expr.isASTOrAssociation()) {
+        final IAST ast = (IAST) expr;
+        final IAST cloneList = F.CEmptyList;
+        final IASTAppendable resultList = F.ListAlloc(F.allocMax32(ast));
+        int headOffset = 1;
+        if (level.isIncludeHeads()) {
+          headOffset = 0;
+        }
+        RecursionData recursionData = new RecursionData(resultList, maxResults, level, matcher,
+            positionConverter, headOffset);
+        recursionData.positionRecursive(ast, cloneList);
+        return resultList;
       }
-      RecursionData recursionData =
-          new RecursionData(resultList, maxResults, level, matcher, positionConverter, headOffset);
-      recursionData.positionRecursive(ast, cloneList);
-      return resultList;
+      if (matcher.test(expr)) {
+        if (level.isInRange()) {
+          return F.List(F.CEmptyList);
+        }
+      }
+      return F.List();
     }
 
     @Override
@@ -5166,34 +5175,32 @@ public final class ListFunctions {
         }
       }
       final IExpr arg1 = ast.arg1();
-      if (arg1.isASTOrAssociation()) {
-        final IExpr arg2 = engine.evalPattern(ast.arg2());
-        if (ast.isAST2()) {
-          final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE);
-          return position((IAST) arg1, arg2, level, Integer.MAX_VALUE, engine);
-        }
-        if (ast.size() >= 4) {
-          IExpr option = S.True;
-          final OptionArgs options = OptionArgs.createOptionArgs(ast, engine);
-          if (options != null) {
-            option = options.getOption(S.Heads);
-            if (option.isPresent()) {
-              if (option.isTrue()) {
-                final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, true);
-                return position((IAST) arg1, arg2, level, Integer.MAX_VALUE, engine);
-              }
-              if (option.isFalse()) {
-                final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, false);
-                return position((IAST) arg1, arg2, level, maxResults, engine);
-              }
-              return F.NIL;
+      final IExpr arg2 = engine.evalPattern(ast.arg2());
+      if (ast.isAST2()) {
+        final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE);
+        return position(arg1, arg2, level, Integer.MAX_VALUE, engine);
+      }
+      if (ast.size() >= 4) {
+        IExpr option = S.True;
+        final OptionArgs options = OptionArgs.createOptionArgs(ast, engine);
+        if (options != null) {
+          option = options.getOption(S.Heads);
+          if (option.isPresent()) {
+            if (option.isTrue()) {
+              final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, true);
+              return position(arg1, arg2, level, Integer.MAX_VALUE, engine);
             }
+            if (option.isFalse()) {
+              final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, false);
+              return position(arg1, arg2, level, maxResults, engine);
+            }
+            return F.NIL;
           }
-
-          final IExpr arg3 = engine.evaluate(ast.arg3());
-          final LevelSpec level = new LevelSpecification(arg3, true);
-          return position((IAST) arg1, arg2, level, maxResults, engine);
         }
+
+        final IExpr arg3 = engine.evaluate(ast.arg3());
+        final LevelSpec level = new LevelSpecification(arg3, true);
+        return position(arg1, arg2, level, maxResults, engine);
       }
       return F.NIL;
     }
