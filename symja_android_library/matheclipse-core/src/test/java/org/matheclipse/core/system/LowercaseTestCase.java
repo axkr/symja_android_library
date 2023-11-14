@@ -4414,6 +4414,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testCount() {
+    check("Count(2,2)", //
+        "0");
     check("SeedRandom(12345);Count(RandomReal(1, {100}), u_ /; u > 0.5)", //
         "46");
     check("Count(Sin(x) + Cos(x) + Sin(x)^2, Sin, -1 )", //
@@ -9993,6 +9995,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FullSimplify( (2 *Sqrt(6) - Sqrt(3)) / (Sqrt(2) - 4) )", //
         "-Sqrt(3/2)");
   }
+
   public void testFunction() {
     EvalEngine.resetModuleCounter4JUnit();
     // check("(p + #) & /. p -> q", //
@@ -10980,6 +10983,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3.1655890675997247");
   }
 
+  public void testHypergeometric0F1Regularized() {
+    checkNumeric("Hypergeometric0F1Regularized(0., E)", //
+        "8.522277545659575");
+    check("Hypergeometric0F1Regularized(b, 0)", //
+        "1/Gamma(b)");
+    check("N(Hypergeometric0F1Regularized(0, -48), 50)", //
+        "(I*6.9282032302755091741097853660234894677712210152415)*BesselI(-1,I*13.856406460551018348219570732046978935542442030483)");
+  }
+
   public void testHypergeometric1F1() {
     checkNumeric("Hypergeometric1F1(-0.5, 1.0 / 3.0, -1)", //
         "2.269314995817225");
@@ -11035,6 +11047,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "6.36185");
     checkNumeric("Hypergeometric1F1(1,{2,3,4},5.0)", //
         "{29.48263182051029,11.393052728194332,6.2358316369166005}");
+  }
+
+  public void testHypergeometric1F1Regularized() {
+    checkNumeric("Hypergeometric1F1Regularized(7, 23, 0.5)", //
+        "1.03705810750471E-21");
+    check("Hypergeometric1F1Regularized(a, b, 0)", //
+        "1/Gamma(b)");
+    check("Hypergeometric1F1Regularized(a, a, z)", //
+        "E^z/Gamma(a)");
   }
 
   public void testHypergeometric2F1() {
@@ -14954,9 +14975,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testMeijerG() {
-    check("MeijerG({{}, {0.33}}, {{Pi}, {E}}, {-0.5,0.5})", //
-        "{(0.0864683+I*0.0412186)*Hypergeometric1F1Regularized(3.81159,1-E+Pi,-0.5),-0.0957901*Hypergeometric1F1Regularized(3.81159,\n"
-            + "1-E+Pi,0.5)}");
+    checkNumeric("MeijerG({{}, {0.33}}, {{Pi}, {E}}, {-0.5,0.5})", //
+        "{0.01650236063775818+I*0.007866512702272278,-0.34952526547681884}");
 
     check("MeijerG({{}, {a2}}, {{b1}, {b2}}, z)", //
         "(z^b1*Hypergeometric1F1Regularized(1-a2+b1,1+b1-b2,z))/Gamma(a2-b1)");
@@ -18607,10 +18627,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   public void testPosition() {
+    // github issue #859
     check("Position(2,2)", //
+        "{{}}");
+    check("Position(2,_?NumberQ)", //
+        "{{}}");
+    check("Position(2,_?IntegerQ)", //
         "{{}}");
     check("Position(2,3)", //
         "{}");
+
+
+
     check("Position(_Integer)[{1.5, 2, 2.5}]", //
         "{{2}}");
 
@@ -18686,6 +18714,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("Position({f(a), g(b), f(c)}, f(x_))", //
         "{{1},{3}}");
+    check("Position(Range(-1, 1, 0.05), 0.1)", //
+        "{}");
+    check("Position(Range(-1, 1, 0.05), n_ /; n == 0.1)", //
+        "{{23}}");
   }
 
   public void testPositive() {

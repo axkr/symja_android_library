@@ -4821,6 +4821,9 @@ public class S {
   public final static IBuiltInSymbol Hypergeometric0F1 =
       S.initFinalSymbol("Hypergeometric0F1", ID.Hypergeometric0F1);
 
+  public final static IBuiltInSymbol Hypergeometric0F1Regularized =
+      S.initFinalSymbol("Hypergeometric0F1Regularized", ID.Hypergeometric0F1Regularized);
+
   /**
    * Hypergeometric1F1(a, b, z) - return the `Hypergeometric1F1` function
    * 

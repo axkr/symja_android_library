@@ -3,7 +3,9 @@ Hypergeometric2F1(0, b_, c_, z_) = 1,
 Hypergeometric2F1(a_, 0, c_, z_) = 1,
 Hypergeometric2F1(a_, b_, c_, 0) = 1,
 
-Hypergeometric2F1(-1/2,3/2,-11/2,z_) :=  (33 - 2*z*(105 + 8*z*(-35 + 2*z*(25 + 4*z*(-5 + 2*z)))))/(33*(1 - z)^(13/2)), 
+Hypergeometric2F1(-1/2,1/2,1, z_):= (2*EllipticE(z))/Pi,
+
+Hypergeometric2F1(-1/2,3/2,-11/2,z_) := (33 - 2*z*(105 + 8*z*(-35 + 2*z*(25 + 4*z*(-5 + 2*z)))))/(33*(1 - z)^(13/2)), 
 Hypergeometric2F1(-1/2,3/2,-9/2,z_) := (21 + 16*(-1 + z)*z*(7 + 8*(-1 + z)*z))/(21*(1 - z)^(11/2)), 
 Hypergeometric2F1(-1/2,3/2,-7/2,z_) := (7 - 2*z*(15 + 8*z*(-3 + 2*z)))/ (7*(1 - z)^(9/2)), 
 Hypergeometric2F1(-1/2,3/2,-5/2,z_) := (5 + 16*(-1 + z)*z)/(5*(1 - z)^(7/2)), 

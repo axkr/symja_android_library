@@ -159,12 +159,18 @@ public class FunctionExpandRules {
     // HypergeometricPFQ({1/2},{1,1},z_):=BesselI(0,Sqrt(z))^2
     SetDelayed(HypergeometricPFQ(list(C1D2),list(C1,C1),z_),
       Sqr(BesselI(C0,Sqrt(z)))),
+    // HypergeometricPFQ({},{a_},z_):=z^(1/2-a/2)*BesselI(-1+a,2*Sqrt(z))*Gamma(a)
+    SetDelayed(HypergeometricPFQ(List(),list(a_),z_),
+      Times(Power(z,Plus(C1D2,Times(CN1D2,a))),BesselI(Plus(CN1,a),Times(C2,Sqrt(z))),Gamma(a))),
     // HypergeometricPFQ({a_},{b_},z_):=Hypergeometric1F1(a,b,z)
     SetDelayed(HypergeometricPFQ(list(a_),list(b_),z_),
       Hypergeometric1F1(a,b,z)),
     // HypergeometricPFQ({a_,b_},{c_},z_):=Hypergeometric2F1(a,b,c,z)
     SetDelayed(HypergeometricPFQ(list(a_,b_),list(c_),z_),
       Hypergeometric2F1(a,b,c,z)),
+    // Hypergeometric0F1(a_,z_):=z^(1/2-a/2)*BesselI(-1+a,2*Sqrt(z))*Gamma(a)
+    SetDelayed(Hypergeometric0F1(a_,z_),
+      Times(Power(z,Plus(C1D2,Times(CN1D2,a))),BesselI(Plus(CN1,a),Times(C2,Sqrt(z))),Gamma(a))),
     // Hypergeometric1F1(a_,1,z_):=LaguerreL(-a,z)
     SetDelayed(Hypergeometric1F1(a_,C1,z_),
       LaguerreL(Negate(a),z)),

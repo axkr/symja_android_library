@@ -72,9 +72,12 @@
   /; n>1,
    
  HypergeometricPFQ({1/2}, {1, 1}, z_) := BesselI(0, Sqrt(z))^2,
+ 
+ HypergeometricPFQ({}, {a_}, z_) := z^(1/2-a/2)*BesselI(-1+a,2*Sqrt(z))*Gamma(a),
  HypergeometricPFQ({a_}, {b_}, z_) := Hypergeometric1F1(a,b,z),
  HypergeometricPFQ({a_,b_}, {c_}, z_) := Hypergeometric2F1(a,b,c,z),
  
+ Hypergeometric0F1(a_,z_) := z^(1/2-a/2)*BesselI(-1+a,2*Sqrt(z))*Gamma(a),
  Hypergeometric1F1(a_,1,z_) := LaguerreL(-a,z),
  
  Hypergeometric2F1(2, b_, c_, -1/2) := (3-b)/3

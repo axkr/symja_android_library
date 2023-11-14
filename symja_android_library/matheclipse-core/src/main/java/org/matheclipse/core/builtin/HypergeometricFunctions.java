@@ -52,7 +52,9 @@ public class HypergeometricFunctions {
       S.FresnelS.setEvaluator(new FresnelS());
       S.GegenbauerC.setEvaluator(new GegenbauerC());
       S.Hypergeometric0F1.setEvaluator(new Hypergeometric0F1());
+      S.Hypergeometric0F1Regularized.setEvaluator(new Hypergeometric0F1Regularized());
       S.Hypergeometric1F1.setEvaluator(new Hypergeometric1F1());
+      S.Hypergeometric1F1Regularized.setEvaluator(new Hypergeometric1F1Regularized());
       S.Hypergeometric2F1.setEvaluator(new Hypergeometric2F1());
       S.Hypergeometric2F1Regularized.setEvaluator(new Hypergeometric2F1Regularized());
       S.HypergeometricPFQ.setEvaluator(new HypergeometricPFQ());
@@ -879,6 +881,43 @@ public class HypergeometricFunctions {
     }
   }
 
+  private static class Hypergeometric0F1Regularized extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr b = ast.arg1();
+      IExpr z = ast.arg2();
+      if (z.isZero()) {
+        // 1/Gamma(b)
+        return F.Power(F.Gamma(b), F.CN1);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        IInexactNumber a = (IInexactNumber) ast.arg1();
+        IInexactNumber z = (IInexactNumber) ast.arg2();
+        // z^(1/2*(1-a))*BesselI(-1+a,2*Sqrt(z))
+        return F.Times(F.Power(z, F.Times(F.C1D2, F.Subtract(F.C1, a))),
+            F.BesselI(F.Plus(F.CN1, a), F.Times(F.C2, F.Sqrt(z))));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
   private static class Hypergeometric1F1 extends AbstractFunctionEvaluator {
 
     @Override
@@ -988,6 +1027,52 @@ public class HypergeometricFunctions {
       super.setUp(newSymbol);
     }
 
+  }
+
+  private static class Hypergeometric1F1Regularized extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr a = ast.arg1();
+      IExpr b = ast.arg2();
+      IExpr z = ast.arg3();
+      if (z.isZero()) {
+        // 1/Gamma(b)
+        return F.Power(F.Gamma(b), F.CN1);
+      }
+      if (a.equals(b)) {
+        // E^z/Gamma(a)
+        return F.Times(F.Exp(z), F.Power(F.Gamma(a), F.CN1));
+      }
+      if (engine.isNumericMode()) {
+        // Hypergeometric1F1(a,b,z)/Gamma(b)
+        return F.Times(F.Power(F.Gamma(b), F.CN1), F.Hypergeometric1F1(a, b, z));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 3) {
+        IInexactNumber a = (IInexactNumber) ast.arg1();
+        IInexactNumber b = (IInexactNumber) ast.arg2();
+        IInexactNumber z = (IInexactNumber) ast.arg3();
+        // Hypergeometric1F1(a,b,z)/Gamma(b)
+        return F.Times(F.Power(F.Gamma(b), F.CN1), F.Hypergeometric1F1(a, b, z));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
   }
 
   private static class Hypergeometric2F1 extends AbstractFunctionEvaluator {
@@ -1115,7 +1200,6 @@ public class HypergeometricFunctions {
         // permutation symmetry
         return F.Hypergeometric2F1Regularized(b, a, c, z);
       }
-
 
       if (c.isZero() && a.equals(b)) {
         // Hypergeometric2F1Regularized(a_, a_, 0, z_) := a^2*z*Hypergeometric2F1(1 + a, 1 + a, 2,

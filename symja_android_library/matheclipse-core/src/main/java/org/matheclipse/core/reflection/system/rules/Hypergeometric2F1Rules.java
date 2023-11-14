@@ -13,7 +13,7 @@ public class Hypergeometric2F1Rules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 3, 93 };
+  final public static int[] SIZES = { 3, 94 };
 
   final public static IAST RULES = List(
     IInit(Hypergeometric2F1, SIZES),
@@ -26,6 +26,9 @@ public class Hypergeometric2F1Rules {
     // Hypergeometric2F1(a_,b_,c_,0)=1
     ISet(Hypergeometric2F1(a_,b_,c_,C0),
       C1),
+    // Hypergeometric2F1(-1/2,1/2,1,z_):=(2*EllipticE(z))/Pi
+    ISetDelayed(Hypergeometric2F1(CN1D2,C1D2,C1,z_),
+      Times(C2,Power(Pi,CN1),EllipticE(z))),
     // Hypergeometric2F1(-1/2,3/2,-11/2,z_):=(33-2*z*(105+8*z*(-35+2*z*(25+4*z*(-5+2*z)))))/(33*(1-z)^(13/2))
     ISetDelayed(Hypergeometric2F1(CN1D2,QQ(3L,2L),QQ(-11L,2L),z_),
       Times(Power(Times(ZZ(33L),Power(Subtract(C1,z),QQ(13L,2L))),CN1),Plus(ZZ(33L),Times(CN2,z,Plus(ZZ(105L),Times(C8,z,Plus(ZZ(-35L),Times(C2,z,Plus(ZZ(25L),Times(C4,z,Plus(CN5,Times(C2,z)))))))))))),
