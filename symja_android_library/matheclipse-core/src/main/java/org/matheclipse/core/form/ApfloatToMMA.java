@@ -137,7 +137,7 @@ public class ApfloatToMMA {
       if (useSignificantFiguresInApfloat) {
         int indx = str.indexOf('.');
         if (indx > 0 && indx + (int) significantFigures <= str.length()) {
-          str = str.substring(0, indx + 1 + (int) significantFigures);
+          str = str.substring(0, Math.min(str.length(), indx + 1 + (int) significantFigures));
         }
       }
       buf.append(str);

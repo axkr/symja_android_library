@@ -3,6 +3,7 @@ package org.matheclipse.core.system;
 import junit.framework.TestCase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.*;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -124,4 +125,12 @@ public class NumberTest extends TestCase {
     assertEquals(result.evalf(), 1998.6876036465665, 1E-8);
   }
 
+  public void testApfloatNumToString() {
+    ApfloatNum apfloatNum = ApfloatNum.valueOf(new Apfloat("-1.44224957030740838"));
+    OutputFormFactory outputFormFactory = OutputFormFactory.get(true, true, false, 3, 18);
+    outputFormFactory.reset(true);
+    StringBuilder buf = new StringBuilder();
+    assertTrue(outputFormFactory.convert(buf, apfloatNum));
+    assertEquals(buf.toString(), "-1.44224957030740838");
+  }
 }
