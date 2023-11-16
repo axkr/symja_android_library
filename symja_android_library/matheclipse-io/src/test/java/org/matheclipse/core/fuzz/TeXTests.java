@@ -5,6 +5,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -24,7 +29,10 @@ import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.Precedence;
 import junit.framework.TestCase;
 
-public class TeXTests extends TestCase {
+import static org.junit.Assert.fail;
+
+@RunWith(JUnit4.class)
+public class TeXTests {
 
   private static List<ASTNode> parseFileToList() {
     try {
@@ -54,6 +62,7 @@ public class TeXTests extends TestCase {
     return null;
   }
 
+  @Test
   public void testSmartFuzz() {
     boolean quietMode = true;
     EvalEngine engine = EvalEngine.get();
@@ -184,11 +193,10 @@ public class TeXTests extends TestCase {
     // return result;
   }
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     // Config.FUZZ_TESTING = true;
     Config.UNPROTECT_ALLOWED = false;
-    super.setUp();
     // wait for initializing of Integrate() rules:
     F.await();
   }

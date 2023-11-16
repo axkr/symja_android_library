@@ -1,16 +1,19 @@
 package org.matheclipse.io.others;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.matheclipse.core.eval.EvalHistory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.parser.client.ParserConfig;
 import junit.framework.TestCase;
 
-public class LastCalculationsHistoryJUnit extends TestCase {
+import static org.junit.Assert.assertEquals;
 
-  public LastCalculationsHistoryJUnit(String name) {
-    super(name);
-  }
+@RunWith(JUnit4.class)
+public class LastCalculationsHistoryJUnit {
 
+  @Test
   public void testSystem001() {
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
     EvalHistory history = new EvalHistory((short) 3);
@@ -38,6 +41,7 @@ public class LastCalculationsHistoryJUnit extends TestCase {
     assertEquals(history.getIn(-4).toString(), "NIL");
   }
 
+  @Test
   public void testSystem002() {
     EvalHistory history = new EvalHistory((short) 10);
 

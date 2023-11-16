@@ -1,10 +1,14 @@
 package org.matheclipse.core.system;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
-import junit.framework.TestCase;
 
-public class OpenFixedSizeMapTest extends TestCase {
+import static org.junit.Assert.*;
+
+@RunWith(JUnit4.class)
+public class OpenFixedSizeMapTest {
 
   @Test
   public void testPut() {
@@ -65,6 +69,7 @@ public class OpenFixedSizeMapTest extends TestCase {
     assertTrue(myHashMap.size() == 3);
   }
 
+  @Test
   public void testPutWhenMapIsFull() {
     try {
       OpenFixedSizeMap<Integer, Integer> myHashMap = new OpenFixedSizeMap<Integer, Integer>(2);

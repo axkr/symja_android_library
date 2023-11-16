@@ -1,5 +1,6 @@
 package org.matheclipse.io.system;
 
+import static org.junit.Assert.assertEquals;
 import static org.matheclipse.core.expression.F.$s;
 import static org.matheclipse.core.expression.F.AtomQ;
 import static org.matheclipse.core.expression.F.C0;
@@ -59,6 +60,8 @@ import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Subst;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SubstAux;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.TrigSimplifyAux;
 import javax.script.ScriptException;
+
+import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -69,15 +72,13 @@ import org.matheclipse.core.interfaces.IExpr;
  * integrator</a>.
  */
 public class RubiIntegrationTest extends AbstractTestCase {
-  public RubiIntegrationTest(String name) {
-    super(name);
-  }
 
   @Override
   public void check(String evalString, String expectedResult) {
     check(fScriptEngine, evalString, expectedResult, -1);
   }
 
+  @Test
   public void testRubiRule001() {
     // check("Int[(F_)^((a_.) + (b_.)*((c_.) + (d_.)*(x_))^(n_))*((e_.) + (f_.)*(x_))^(m_.),
     // x_Symbol] :=
@@ -95,6 +96,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
     }
   }
 
+  @Test
   public void testRubiRule002() {
     // check("Int[(F_)^((a_.) + (b_.)*((c_.) + (d_.)*(x_))^(n_))*((e_.) + (f_.)*(x_))^(m_.),
     // x_Symbol] :=
@@ -113,6 +115,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
     }
   }
 
+  @Test
   public void testRubiRule003() {
     try {
       fScriptEngine.put("RETURN_OBJECT", Boolean.TRUE);
@@ -131,6 +134,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
     }
   }
 
+  @Test
   public void testRubiRule004() {
     try {
       fScriptEngine.put("RETURN_OBJECT", Boolean.TRUE);
@@ -149,6 +153,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
     }
   }
 
+  @Test
   public void testRubiRule005() {
     try {
       fScriptEngine.put("RETURN_OBJECT", Boolean.TRUE);
@@ -161,6 +166,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
     }
   }
 
+  @Test
   public void testRubiRule006() {
     try {
       fScriptEngine.put("RETURN_OBJECT", Boolean.TRUE);
@@ -174,6 +180,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
   // Int[(u_.)*((a_) + (b_.)*(x_) + (c_.)*(x_)^2)^(p_.), x_Symbol]
   // := Int[u*Cancel[(b/2 + c*x)^(2*p)/c^p], x]
   // /; FreeQ[{a, b, c}, x] && EqQ[b^2 - 4*a*c, 0] && IntegerQ[p]
+  @Test
   public void testRuleNo027a() {
     try {
       fScriptEngine.put("RETURN_OBJECT", Boolean.TRUE);
@@ -186,6 +193,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
     }
   }
 
+  @Test
   public void testRuleNo027b() {
     try {
       fScriptEngine.put("RETURN_OBJECT", Boolean.TRUE);
@@ -196,6 +204,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
     }
   }
 
+  @Test
   public void testRubi001() {
     IAST ast;
     ast = LinearQ(Times(2, x), x);
@@ -206,12 +215,14 @@ public class RubiIntegrationTest extends AbstractTestCase {
     check(ast, "False");
   }
 
+  @Test
   public void testRubi002() {
     IAST ast;
     ast = ExpandToSum(Times(x, Plus(a, b)), x);
     check(ast, "(a+b)*x");
   }
 
+  @Test
   public void testRubi003() {
     IAST ast;
 
@@ -245,6 +256,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
     check(ast, "True");
   }
 
+  @Test
   public void testRubi004() {
     IAST ast;
 
@@ -274,6 +286,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
     check(ast, "1/(-Cos[v]+I*Sin[v])");
   }
 
+  @Test
   public void testRubi005() {
     IAST ast;
     // SimpFixFactor[(a_.*Complex[0,c_] + b_.*Complex[0,d_])^p_.,x_]
@@ -284,6 +297,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
     check(ast, "-I/(a+b*f)");
   }
 
+  @Test
   public void testRubi006() {
     IAST ast;
     ast = ExpandToSum(x, x);
@@ -293,6 +307,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
     check(ast, "-2*x-x^2");
   }
 
+  @Test
   public void testRubi007() {
     IAST ast;
 
@@ -321,18 +336,21 @@ public class RubiIntegrationTest extends AbstractTestCase {
     check(ast, "False");
   }
 
+  // @Test
   // public void testRubi008() {
   // IAST ast;
   // ast = RealNumericQ(C1);
   // check(ast, "True");
   // }
 
+  @Test
   public void testRubi009() {
     IAST ast;
     ast = FixSimplify(fraction(5L, 3L));
     check(ast, "5/3");
   }
 
+  @Test
   public void testRubi011() {
     IAST ast;
     // DeactivateTrig(Sin(a+b*x)^3,x)
@@ -340,6 +358,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
     check(ast, "§sin[a+b*x]^3");
   }
 
+  @Test
   public void testRubi012() {
     IAST ast;
     // 2*(a+b*x),x
@@ -349,6 +368,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
     check(ast, "2*a+2*b*x");
   }
 
+  // @Test
   // public void testRubi013() {
   // IAST ast;
   // //
@@ -361,6 +381,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
   // check(ast, "False");
   // }
 
+  @Test
   public void testRubi014() {
     IAST ast;
     //
@@ -369,12 +390,14 @@ public class RubiIntegrationTest extends AbstractTestCase {
     check(ast, "True");
   }
 
+  @Test
   public void testRubi015() {
     IAST ast;
     ast = ContentFactor(Plus(a, b));
     check(ast, "a+b");
   }
 
+  @Test
   public void testRubi016() {
     IAST ast;
     // NormalizeTrig[func_,m_.*(n_.*Pi+r_.)+s_.,b_,x_]
@@ -387,18 +410,21 @@ public class RubiIntegrationTest extends AbstractTestCase {
     check(ast, "ArcSin[Pi/6+r/3+s-x]");
   }
 
+  // @Test
   // public void testRubi017() {
   // IAST ast;
   // ast = F.Times(F.z, Dist(F.C0, F.v, F.w));
   // check(ast, "0");
   // }
   //
+  // @Test
   // public void testRubi018() {
   // IASTAppendable ast = F.quaternary(Plus, F.z, Dist(F.C3, F.v, F.w), Dist(F.C0, F.v, F.w), F.g);
   // EvalAttributes.sort(ast);
   // check(ast, "g+3*v+z");
   // }
   //
+  // @Test
   // public void testRubi019() {
   // IASTAppendable ast =
   // F.quaternary(Plus, Dist(F.C3, F.v, F.w), F.a, F.Times(F.CN1, Dist(F.C3, F.v, F.w)), F.g);
@@ -410,6 +436,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
   // rubi`Dist(-2,integrate::subst(Integrate(1/integrate::simp(b^2+(-1)*4*a*c-x^
   // 2,x),x),x,b+2*c*x),x)/;FreeQ({a,b,c},x)&&integrate::neq(b^2+(-1)*4*a*c,0)
   // >>> Integrate(1/(3+2*x+x^2),x) >>>> 0
+  @Test
   public void testRubi020() {
     IAST ast;
     // IExpr e=F.eval(" -(ArcTan[(1+x)/Sqrt[2]]/(2* Sqrt[2]))");
@@ -470,6 +497,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
   }
 
   /** Github issue #116 */
+  @Test
   public void testRubi021() {
     IAST ast;
     // Rubi`subst(-ArcTan(x/Sqrt(3))/Sqrt(3),x,1+2*x)
@@ -479,6 +507,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
   }
 
   /** Github issue #116 */
+  @Test
   public void testRubi022() {
     IAST ast;
     ast = SubstAux(F.Times(F.CN1, F.C1DSqrt3, F.ArcTan(F.Times(F.C1DSqrt3, F.x))), F.x,
@@ -486,12 +515,14 @@ public class RubiIntegrationTest extends AbstractTestCase {
     check(ast, "-ArcTan[(1+2*x)/Sqrt[3]]/Sqrt[3]");
   }
 
+  @Test
   public void testRubi023() {
     IAST ast;
     ast = MakeAssocList(F.Power(F.x, F.CN1), F.x);
     check(ast, "{}");
   }
 
+  @Test
   public void testArcSin() {
 
     check("Integrate(ArcSin(x),x)", "Sqrt(1-x^2)+x*ArcSin(x)");
@@ -504,6 +535,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
         "-Sqrt(1-(1+x)^2)+(1+x)*ArcCos(1+x)");
   }
 
+  @Test
   public void testSystemIntegrate() {
     // check("Integrate(x*Sin(x),x)", "-x*Cos(x)+Sin(x)");
     check("Integrate(Sin(x*y),y)", //
@@ -535,6 +567,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
     // "-1/2*CosIntegral(1)+1/2*CosIntegral(0)+Integrate(x^(-1),{x,0,1})");
   }
 
+  @Test
   public void testTrig001() {
     check("Integrate(x*Sin(a+x),x)", //
         "-x*Cos(a+x)+Sin(a+x)");
@@ -593,6 +626,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
         "(2*Cos(a+b*x))/b^3+(-x^2*Cos(a+b*x))/b+(2*x*Sin(a+b*x))/b^2");
   }
 
+  @Test
   public void testTrig002() {
 
     check("Integrate(x^2*Sin(a + b*x)^2,x)", //
@@ -638,6 +672,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
         "2*Sqrt(Pi/2)*FresnelS(Sqrt(2/Pi)*Sqrt(x))");
   }
 
+  @Test
   public void testRationalFunction001() {
     check("PolynomialQ(x^2*(a+b*x^3)^16,x)", //
         "True");
@@ -650,6 +685,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
         "(a+b*x^k)^17/(17*b*k)");
   }
 
+  @Test
   public void testRationalFunction002() {
     // IAST ast;
     //
@@ -675,11 +711,13 @@ public class RubiIntegrationTest extends AbstractTestCase {
 
   }
 
+  @Test
   public void testAnonymousFunction003() {
     check("Integrate(f(x+1),x)", //
         "Integrate(f(1+x),x)");
   }
 
+  @Test
   public void testRationalFunction003() {
     check("Integrate((b+2*c*x)*(a+b*x+c*x^2)^m, x)", //
         "(a+b*x+c*x^2)^(1+m)/(1+m)");
@@ -689,6 +727,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
         "(a+b*x+c*x^2)^13/13");
   }
 
+  @Test
   public void testTrigFunction001() {
     // check("Integrate(1/(1+sec(a+b*x)), x)", "");
 
@@ -714,6 +753,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
     check("Integrate(1/sin(a-b*x), x)", "ArcTanh(Cos(a-b*x))/b");
   }
 
+  @Test
   public void testSqrtLn() {
     check("integrate(Sqrt(x)*Log(x), x)", //
         "-4/9*x^(3/2)+2/3*x^(3/2)*Log(x)");
@@ -721,11 +761,13 @@ public class RubiIntegrationTest extends AbstractTestCase {
         "Sqrt(x)*Log(x)");
   }
 
+  @Test
   public void testTimesFx() {
     check("integrate(g(x)*f(x), x)", "Integrate(f(x)*g(x),x)");
     // check("integrate(sqrt(x)*f(x), x)", "");
   }
 
+  @Test
   public void testFraction001() {
     check("ExpandAll(-(2-x)^(-1)*x^(-2))", //
         "-1/(2*x^2-x^3)");
@@ -737,6 +779,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
         "-1/((2-x)*x^2)");
   }
 
+  @Test
   public void testIssue64() {
     // check("Integrate(e^(x^2+2x+3)(2x+2),x)", "");
     check("Integrate((x^2+1)/(x^3+3*x),x)", //
@@ -747,12 +790,14 @@ public class RubiIntegrationTest extends AbstractTestCase {
         "(1+x^2)/(3*x+x^3)");
   }
 
+  @Test
   public void testIssue82() {
     check("Integrate(Sin(a^4)*a,a)", //
         "1/2*Sqrt(Pi/2)*FresnelS(a^2*Sqrt(2/Pi))");
     check("Integrate(Sin(a^4)*a,{a,0,2.0})", "0.373567");
   }
 
+  @Test
   public void testIssue83() {
     // IAST ast = Simp(F.SinIntegral(a),a);
     // check(ast, "SinIntegral[a]");
@@ -776,6 +821,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
         "0.646879");
   }
 
+  @Test
   public void testIssue84() {
     // check("Simplify(D(1/2*(-1/2*Log(x^2-x*2^(1/2)+1)*2^(-1/2)+1/2*Log(x^2+x*2^(1/2)+1)*2^(-1/2))+1/2*(ArcTan(\n"
     // + "2*x*2^(-1/2)+1)*2^(-1/2)-ArcTan(-2*x*2^(-1/2)+1)*2^(-1/2)),x))",
@@ -785,6 +831,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
             + "2)/(4*Sqrt(2))-Log(1-Sqrt(2)*x+x^2)/(4*Sqrt(2))");
   }
 
+  @Test
   public void testIssue110() {
 
     check("D(-Log(-1+x),x)", //
@@ -806,6 +853,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
         "-1/(-1+x)");
   }
 
+  @Test
   public void testGithub21() {
     // check("Integrate(4/(1-3*(x)) + 1/2*Sqrt((x)) - 5,x)", //
     // "-5*x+x^(3/2)/3-4/3*Log(1-3*x)");
@@ -836,6 +884,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
         "Log(3)+Log(1/3-x)");
   }
 
+  @Test
   public void testGithub22() {
     check("Int(Sin(x)^3*Cos(x),x)", //
         "Sin(x)^4/4");
@@ -854,6 +903,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
 
   // {(a+b*x)^m/(c+d*x), x, 1, ((a+b*x)^(1+m)*Hypergeometric2F1(1, 1+m, 2+m, -((d*(a+b*x))/(b*c -
   // a*d))))/((b*c-a*d)*(1+m))}
+  @Test
   public void test00480() {
     check("Integrate((a+b*x)^m/(c+d*x), x)", //
         "((a+b*x)^(1+m)*Hypergeometric2F1(1,1+m,2+m,(-d*(a+b*x))/(b*c-a*d)))/((b*c-a*d)*(\n"
@@ -863,16 +913,19 @@ public class RubiIntegrationTest extends AbstractTestCase {
   // {(a+b*x)^m/(c+d*x)^2, x, 1, (b*(a+b*x)^(1+m)*Hypergeometric2F1(2, 1+m, 2+m, -((d*(a+b*x))/(b*c
   // -
   // a*d))))/((b*c-a*d)^2*(1+m))}
+  @Test
   public void test00481() {
     check("Integrate((a+b*x)^m/(c+d*x)^2, x)", //
         "(b*(a+b*x)^(1+m)*Hypergeometric2F1(2,1+m,2+m,(-d*(a+b*x))/(b*c-a*d)))/((b*c-a*d)^\n"
             + "2*(1+m))");
   }
 
+  @Test
   public void test00482() {
     check("Integrate(x*(x+1),x)", //
         "x^2/2+x^3/3");
   }
+  // @Test
   // public void test00999() {
   // check("Integrate(x, x)", //
   // "x^2/2");
@@ -886,6 +939,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
   // {Sqrt(d+e*x)/((f+g*x)^(3/2)*Sqrt(a*d*e+(c*d^2+a*e^2)*x+c*d*e*x^2)), x, 1, (2*Sqrt(a*d*e+(c*d^2
   // +
   // a*e^2)*x+c*d*e*x^2))/((c*d*f-a*e*g)*Sqrt(d+e*x)*Sqrt(f+g*x))}
+  @Test
   public void test01400() {
     // TODO sometimes works sometimes don't - seems to be a JAS random seed problem???
     // check("Integrate(Sqrt(d+e*x)/((f+g*x)^(3/2)*Sqrt(a*d*e+(c*d^2+a*e^2)*x+c*d*e*x^2)), x)", //
@@ -893,6 +947,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
   }
 
 
+  @Test
   public void testDoLoop() {
     check("h=x;Integrate(Do(h=x*h,{5}); h,x)", //
         "x^7/7");

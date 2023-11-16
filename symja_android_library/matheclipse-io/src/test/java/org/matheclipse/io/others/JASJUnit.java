@@ -11,13 +11,11 @@ import edu.jas.ufd.FactorComplex;
 import edu.jas.ufd.GCDFactory;
 import edu.jas.ufd.GreatestCommonDivisor;
 import junit.framework.TestCase;
+import org.junit.Test;
 
-public class JASJUnit extends TestCase {
+public class JASJUnit {
 
-  public JASJUnit(String name) {
-    super(name);
-  }
-
+  @Test
   public void testSimplexFactor001() {
     final int variableSize = 1;
     String[] vars = new String[] {"x"};
@@ -36,6 +34,7 @@ public class JASJUnit extends TestCase {
     }
   }
 
+  @Test
   public void testComplexFactor() {
     final int variableSize = 2;
 
@@ -57,6 +56,7 @@ public class JASJUnit extends TestCase {
     }
   }
 
+  @Test
   public void testGCD() {
 
     ComplexRing<BigRational> cfac = new ComplexRing<BigRational>(BigRational.ZERO);

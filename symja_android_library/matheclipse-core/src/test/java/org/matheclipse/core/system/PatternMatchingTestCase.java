@@ -3,6 +3,11 @@ package org.matheclipse.core.system;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import javax.script.ScriptEngine;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -17,17 +22,16 @@ import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 import junit.framework.TestCase;
 
-public class PatternMatchingTestCase extends TestCase {
+import static org.junit.Assert.assertEquals;
+
+@RunWith(JUnit4.class)
+public class PatternMatchingTestCase {
 
   private Parser fParser;
 
   protected EvalUtilities util;
 
   protected static boolean DEBUG = true;
-
-  public PatternMatchingTestCase(String name) {
-    super(name);
-  }
 
   public void check(ScriptEngine scriptEngine, String evalString, String expectedResult) {
     try {
@@ -172,6 +176,7 @@ public class PatternMatchingTestCase extends TestCase {
   }
 
   /** Test system functions */
+  @Test
   public void testSimplePatternMatching() {
     // the space between "x_" and "." operator is needed:
     checkPattern("test[F_[a_.*x_^m_.]]", "test[g[h*y^2]]", "[g, h, y, 2]");
@@ -183,14 +188,17 @@ public class PatternMatchingTestCase extends TestCase {
     checkPattern("g[x_,42, y_]", "g[a,42,b]", "[a, b]");
   }
 
+  // @Test
   // public void testSlotPatternMatching() {
   // checkPattern("b_.* #+c_.*#^2", "#-1*#^2", "");
   // checkPattern("b_.* #+c_.*#^2", "#+#^2", "[1, 1]");
   // checkPattern("a_. + b_.* #+c_.*#^2", "-1+#+#^2", "[-1, 1, 1]");
   // }
 
+  @Test
   public void testPattern() {}
 
+  @Test
   public void testPatternSequence() {
     check("integersQ[__Integer] = True", //
         "True");
@@ -202,6 +210,7 @@ public class PatternMatchingTestCase extends TestCase {
         "False");
   }
 
+  @Test
   public void testPatternOrder() {
     // see https://mathematica.stackexchange.com/questions/8619
     check("PatternOrder[x_, 1]", //
@@ -216,6 +225,7 @@ public class PatternMatchingTestCase extends TestCase {
         "1");
   }
 
+  @Test
   public void testPatternTest() {
     check("MatchQ[{1,8,Pi},{__?Positive}]", //
         "True");
@@ -273,6 +283,7 @@ public class PatternMatchingTestCase extends TestCase {
   }
 
 
+  @Test
   public void testPatternDefinition() {
     check("f[x_]:=g[x]", //
         "");
@@ -284,6 +295,7 @@ public class PatternMatchingTestCase extends TestCase {
         "h[g[x_]]:=x^2");
   }
 
+  @Test
   public void testPatternPlus() {
     check("r[s,s] /. r[t_.+x_, x_] -> {t,x}", //
         "{0,s}");
@@ -293,6 +305,7 @@ public class PatternMatchingTestCase extends TestCase {
         "{a+b,s}");
   }
 
+  @Test
   public void testPatternFlatOneIdentity() {
     check("SetAttributes[r, Flat]", //
         "");
@@ -306,6 +319,7 @@ public class PatternMatchingTestCase extends TestCase {
         "r[a,rp[b],c]");
   }
 
+  @Test
   public void testNamedPattern() {
     // Pattern[expr,f[x_,y_]]:=g[HoldForm[expr]]
     check("expr:f[x_,y_]:=g[HoldForm[expr]]", //
@@ -314,6 +328,7 @@ public class PatternMatchingTestCase extends TestCase {
         "g[f[1,2]]");
   }
 
+  @Test
   public void testNestedCondition() {
     // delayed rule evaluates Condition
     check("f[x]/.(f[u_]:>u^2/; u>3/; u>2)", //
@@ -332,6 +347,7 @@ public class PatternMatchingTestCase extends TestCase {
         "4^2/;4>3/;4>2");
   }
 
+  // @Test
   // public void testTagSetDelayed1() {
   // check(
   // "Unprotect[ProductLog];
@@ -341,6 +357,7 @@ public class PatternMatchingTestCase extends TestCase {
   // "wrightomega[I*Pi+Log[z]]");
   // }
   //
+  // @Test
   // public void testTagSetDelayed2() {
   // check(
   // "Unprotect[ProductLog];
@@ -351,7 +368,7 @@ public class PatternMatchingTestCase extends TestCase {
   // }
 
   /** The JUnit setup method */
-  @Override
+  @Before
   public void setUp() {
     try {
       // setup the evaluation engine (and bind to current thread)

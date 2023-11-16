@@ -1,5 +1,6 @@
 package org.matheclipse.io.others;
 
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.io.system.AbstractTestCase;
@@ -7,10 +8,8 @@ import org.matheclipse.io.system.AbstractTestCase;
 /** Tests for string functions */
 public class ExportImportFunctionsJUnit extends AbstractTestCase {
 
-  public ExportImportFunctionsJUnit(String name) {
-    super(name);
-  }
 
+  @Test
   public void testImportExport() {
     if (Config.FILESYSTEM_ENABLED) {
       String s = System.getProperty("os.name");
@@ -67,6 +66,7 @@ public class ExportImportFunctionsJUnit extends AbstractTestCase {
     }
   }
 
+  @Test
   public void testImportExportTable() {
     if (Config.FILESYSTEM_ENABLED) {
       String s = System.getProperty("os.name");
@@ -81,6 +81,7 @@ public class ExportImportFunctionsJUnit extends AbstractTestCase {
     }
   }
 
+  @Test
   public void testExportStringList() {
     if (Config.FILESYSTEM_ENABLED) {
       String s = System.getProperty("os.name");
@@ -91,6 +92,7 @@ public class ExportImportFunctionsJUnit extends AbstractTestCase {
     }
   }
 
+  @Test
   public void testExportStringTrue() {
     if (Config.FILESYSTEM_ENABLED) {
       String s = System.getProperty("os.name");
@@ -101,6 +103,7 @@ public class ExportImportFunctionsJUnit extends AbstractTestCase {
     }
   }
 
+  @Test
   public void testExportStringComplex() {
     if (Config.FILESYSTEM_ENABLED) {
       String s = System.getProperty("os.name");
@@ -111,6 +114,7 @@ public class ExportImportFunctionsJUnit extends AbstractTestCase {
     }
   }
 
+  @Test
   public void testExportStringAssociation() {
     if (Config.FILESYSTEM_ENABLED) {
       String s = System.getProperty("os.name");
@@ -124,6 +128,7 @@ public class ExportImportFunctionsJUnit extends AbstractTestCase {
     }
   }
 
+  @Test
   public void testExportStringLine() {
     if (Config.FILESYSTEM_ENABLED) {
       String s = System.getProperty("os.name");
@@ -142,7 +147,7 @@ public class ExportImportFunctionsJUnit extends AbstractTestCase {
 
   /** The JUnit setup method */
   @Override
-  protected void setUp() {
+  public void setUp() {
     super.setUp();
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.MAX_AST_SIZE = 1000000;
@@ -151,7 +156,7 @@ public class ExportImportFunctionsJUnit extends AbstractTestCase {
   }
 
   @Override
-  protected void tearDown() throws Exception {
+  public void tearDown() throws Exception {
     super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
   }

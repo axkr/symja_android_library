@@ -9,6 +9,11 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
@@ -19,8 +24,11 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.io.IOInit;
 import junit.framework.TestCase;
 
+import static org.junit.Assert.assertEquals;
+
 /** Tests system.reflection classes */
-public abstract class AbstractTestCase extends TestCase {
+@RunWith(JUnit4.class)
+public abstract class AbstractTestCase {
   protected ScriptEngine fScriptEngine;
   protected ScriptEngine fNumericScriptEngine;
   protected static ScriptEngineManager fScriptManager = new ScriptEngineManager();
@@ -39,8 +47,7 @@ public abstract class AbstractTestCase extends TestCase {
     }
   }
 
-  public AbstractTestCase(String name) {
-    super(name);
+  public AbstractTestCase() {
     Locale.setDefault(Locale.US);
     Config.SERVER_MODE = false;
   }
@@ -159,8 +166,8 @@ public abstract class AbstractTestCase extends TestCase {
   }
 
   /** The JUnit setup method */
-  @Override
-  protected void setUp() {
+  @Before
+  public void setUp() {
     try {
       synchronized (fScriptManager) {
         ToggleFeature.COMPILE = true;
@@ -192,5 +199,10 @@ public abstract class AbstractTestCase extends TestCase {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  @After
+  public void tearDown() throws Exception {
+
   }
 }

@@ -14,6 +14,7 @@ import java.util.IntSummaryStatistics;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -138,11 +139,11 @@ public class Java8TestCase extends ExprEvaluatorTestCase {
         .mapToInt(IExpr::toIntDefault) //
         .summaryStatistics();
 
-    assertEquals(14.5, ageStatistics.getAverage());
-    assertEquals(10, ageStatistics.getCount());
-    assertEquals(19, ageStatistics.getMax());
-    assertEquals(10, ageStatistics.getMin());
-    assertEquals(145, ageStatistics.getSum());
+    assertEquals(14.5, ageStatistics.getAverage(), Config.MACHINE_EPSILON);
+    assertEquals(10, ageStatistics.getCount(), Config.MACHINE_EPSILON);
+    assertEquals(19, ageStatistics.getMax(), Config.MACHINE_EPSILON);
+    assertEquals(10, ageStatistics.getMin(), Config.MACHINE_EPSILON);
+    assertEquals(145, ageStatistics.getSum(), Config.MACHINE_EPSILON);
   }
 
   @Test

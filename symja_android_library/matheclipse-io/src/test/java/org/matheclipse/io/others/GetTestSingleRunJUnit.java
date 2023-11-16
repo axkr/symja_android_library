@@ -1,6 +1,11 @@
 package org.matheclipse.io.others;
 
 import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.matheclipse.core.builtin.FileFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
@@ -12,7 +17,10 @@ import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.ast.ASTNode;
 import junit.framework.TestCase;
 
-public class GetTestSingleRunJUnit extends TestCase {
+import static org.junit.Assert.assertEquals;
+
+@RunWith(JUnit4.class)
+public class GetTestSingleRunJUnit {
 
   private static final String VECTOR_ANALYSIS = "(* ::Package:: *)\n" + "\n"
       + "(* :Title: Three-Dimensional Vector Analysis *)\n" + "\n" + "(* :Summary:\n"
@@ -173,14 +181,14 @@ public class GetTestSingleRunJUnit extends TestCase {
       + "Attributes[JacobianMatrix] = {ReadProtected, Protected};\n" + "\n" + "\n"
       + "EndPackage[]\n" + "";
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+  @Before
+  public void setUp() throws Exception {
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
     // wait for initializing of Integrate() rules:
     F.await();
   }
 
+  @Test
   public void testGet() {
     EvalEngine engine = new EvalEngine(false);
     ExprEvaluator fEvaluator = new ExprEvaluator(engine, false, (short) 100);
