@@ -1,14 +1,12 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 
 public class AssociationTest extends ExprEvaluatorTestCase {
 
-  public AssociationTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testAssociation001() {
     check("Head(<|a -> x, b -> y, c -> z|>)", //
         "Association");
@@ -32,6 +30,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "1");
   }
 
+  @Test
   public void testAssociateTo() {
     check("aa=42", //
         "42");
@@ -81,6 +80,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "{<|a->1,b->2|>,<|c->17,d->4|>}");
   }
 
+  @Test
   public void testAssociation() {
     check(" <|{}|>", //
         "<||>");
@@ -221,6 +221,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "f(10,12)");
   }
 
+  @Test
   public void testAssociationMap() {
     check("AssociationMap(Reverse,<|U->1,V->2|>)", //
         "<|1->U,2->V|>");
@@ -238,6 +239,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "Association(2,2)");
   }
 
+  @Test
   public void testAssociationQ() {
     check("AssociationQ(<|a, b|>)", //
         "False");
@@ -249,6 +251,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testAssociationThread() {
     check("AssociationThread({1, 2, 1} :> {\"eins\", \"two\", \"one\"})", //
         "<|1:>one,2:>two|>");
@@ -263,6 +266,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "<|U:>1,V:>2|>");
   }
 
+  @Test
   public void testKey() {
     check("<|1 -> a, 3 -> b|>[[Key(3)]]", //
         "b");
@@ -277,6 +281,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "d");
   }
 
+  @Test
   public void testKeys01() {
     check("a = <|k1 -> 1, k2 -> 2, {k1, k2} -> 3, Key(k2) -> 4|>", //
         "<|k1->1,k2->2,{k1,k2}->3,Key(k2)->4|>");
@@ -294,6 +299,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "4");
   }
 
+  @Test
   public void testKeys02() {
     check("Keys(<|a -> x, a -> y, <|a -> z, <|b -> t|>, <||>, {}|>|>)", //
         "{a,b}");
@@ -348,6 +354,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "{{a,b},{a,b}}");
   }
 
+  @Test
   public void testKeySelect() {
 
     check("r = {beta -> 4, alpha -> 2, x -> 4, z -> 2, w -> 0.8};", //
@@ -362,11 +369,13 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "<|1->2,3->4|>");
   }
 
+  @Test
   public void testKeySort() {
     check("KeySort(<|c -> 1, b -> 2, a -> 4|>)", //
         "<|a->4,b->2,c->1|>");
   }
 
+  @Test
   public void testGroupBy() {
 
     check("GroupBy({7},{})", //
@@ -413,6 +422,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "<|False-><|a->2|>,True-><|b->3,c->5|>|>");
   }
 
+  @Test
   public void testKeyExistsQ() {
     check("KeyExistsQ(<|1->U,2->V|>, 1)", //
         "True");
@@ -432,6 +442,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testKeyTake() {
     check("r = {beta -> 4, alpha -> 2, x -> 4, z -> 2, w -> 0.8};", //
         "");
@@ -454,6 +465,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "<|a->1,b->2|>");
   }
 
+  @Test
   public void testLookup() {
     check("rmatRowNames=<|\"A\"->1,\"B\"->2,\"C\"->3,\"D\"->4|>", //
         "<|A->1,B->2,C->3,D->4|>");
@@ -488,6 +500,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "1");
   }
 
+  @Test
   public void testNormal() {
     check("assoc = AssociationThread({\"U\",\"V\"},{1,2}) ", //
         "<|U->1,V->2|>");
@@ -495,6 +508,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "{U->1,V->2}");
   }
 
+  @Test
   public void testPart() {
     check("<|a->1, b->2, c->3|>[[2]] = 0.5", //
         "0.5");
@@ -513,6 +527,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "{a,b,c}[[1,All]]");
   }
 
+  @Test
   public void testPartAll() {
     check(
         "assoc=<|Rule(\"RowNames\", List(\"a\", \"b\", \"c\", \"d\" )),Rule(\"ColumnNames\", List(\"a\", \"b\", \"c\", \"d\", \"e\"))|>", //
@@ -528,6 +543,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "<|RowNames->{a,b,c,d}|>");
   }
 
+  @Test
   public void testPartAllList() {
     check(
         "l ={Rule(\"RowNames\", List(\"a\", \"b\", \"c\", \"d\" )),Rule(\"ColumnNames\", List(\"a\", \"b\", \"c\", \"d\", \"e\"))}", //
@@ -548,6 +564,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
     // "{String()->{String(),String(),String(),String()},String()->{String(),String(),String(),String()}}");
   }
 
+  @Test
   public void testPartAllAssociation() {
     check(
         "people = <|\r\n" + "236234 -> <|\"name\" -> \"bob\", \"age\" -> 20, \"sex\" -> \"M\"|>, \n"
@@ -564,6 +581,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "<|age->18,sex->F|>");
   }
 
+  @Test
   public void testPrependTo() {
     check("x = <|1 :> a, 2 :> b|>;PrependTo(x, 4 -> d)", //
         "<|4->d,1:>a,2:>b|>");
@@ -579,16 +597,19 @@ public class AssociationTest extends ExprEvaluatorTestCase {
       + "Print(AbsoluteTiming(Keys(assoc)[[10000]]) );\n"
       + "Print(AbsoluteTiming(GetKey(assoc, 10000)) )";
 
+  @Test
   public void testTiming() {
     check(timing1, //
         "");
   }
 
+  @Test
   public void testSet() {
     check("yy=<||>;For(i=2023,i<=2025,i++,yy(i)=i-1);yy", //
         "<|2023->2022,2024->2023,2025->2024|>");
   }
 
+  @Test
   public void testLookUp() {
     check(
         "a=Association();b=Association(); For(i = 2021, i <= 2035, i++, a(i) = i; b(i) = a(i) + 10);b", //
@@ -610,6 +631,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
             + "2035->2045|>");
   }
 
+  @Test
   public void testForLoop001() {
     check("b=Association();b(2020)=12/2;For(i = 2021, i <= 2035, i++, b(i) = N(i/2) );b", //
         "<|2020->6,2021->1010.5,2022->1011.0,2023->1011.5,2024->1012.0,2025->1012.5,2026->1013.0,\n"
@@ -625,6 +647,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
             + "2033->2033/2,2034->1017,2035->2035/2|>");
   }
 
+  @Test
   public void testForLoop002() {
     check("assoc=Association();For(i = 1, i <= 10, i++, assoc(i) = i);assoc", //
         "<|1->1,2->2,3->3,4->4,5->5,6->6,7->7,8->8,9->9,10->10|>");
@@ -632,12 +655,14 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "{1,2,3,4,5,6,7,8,9,10}");
   }
 
+  @Test
   public void testTimes() {
     // issue 728
     check("Association[2025->10, 2026->11] * Association[2025->10, 2026->20]", //
         "<|2025->100,2026->220|>");
   }
 
+  @Test
   public void testPlus() {
     // issue 728
 
@@ -658,12 +683,14 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "<|2025->20,2026->31|>");
   }
 
+  @Test
   public void testSubtract() {
     // issue 728
     check("<|2025->10, 2026->11|> - <|2025->10, 2026->20|>", //
         "<|2025->0,2026->-9|>");
   }
 
+  @Test
   public void testDivide() {
     // issue 728
     check("<|2025->10, 2026->11|> / <|2025->10, 2026->20|>", //
@@ -672,7 +699,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
 
   /** The JUnit setup method */
   @Override
-  protected void setUp() {
+  public void setUp() {
     super.setUp();
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.MAX_AST_SIZE = Integer.MAX_VALUE;
@@ -680,7 +707,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
   }
 
   @Override
-  protected void tearDown() throws Exception {
+  public void tearDown() throws Exception {
     super.tearDown();
     Config.MAX_AST_SIZE = 1000000;
     Config.SHORTEN_STRING_LENGTH = 80;

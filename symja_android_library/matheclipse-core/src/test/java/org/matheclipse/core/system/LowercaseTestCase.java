@@ -6,6 +6,7 @@ import org.apfloat.Apfloat;
 import org.apfloat.ApfloatContext;
 import org.apfloat.ApfloatMath;
 import org.apfloat.OverflowException;
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ApcomplexNum;
@@ -20,13 +21,12 @@ import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.ast.ASTNode;
 
+import static org.junit.Assert.*;
+
 /** Tests built-in functions */
 public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
-  public LowercaseTestCase(String name) {
-    super(name);
-  }
-
+  @Test
   public void test001() {
     // syntax error in relaxed mode
     // check("Sin[x]", "");
@@ -60,6 +60,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "f(g(x),{x,-1.5,1.5},{y,-1.5,1.5})");
   }
 
+  @Test
   public void testTildeOperator() {
     check("a~b~c", //
         "b(a,c)");
@@ -67,11 +68,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "d(b(a,c),e)");
   }
 
+  @Test
   public void testAbort() {
     check("Print(\"a\"); Abort(); Print(\"b\")", //
         "$Aborted");
   }
 
+  @Test
   public void testAbs() {
     check("Abs((0.5)^z)", //
         "0.5^Re(z)");
@@ -145,6 +148,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "E");
   }
 
+  @Test
   public void testAbsArg() {
     check("AbsArg(z)", //
         "{Abs(z),Arg(z)}");
@@ -166,6 +170,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{1,1,0},{0,Pi/2,0}}");
   }
 
+  @Test
   public void testAbsoluteTiming() {
     // check("AbsoluteTiming(x = 1; Pause(x); x + 3)[[1]]>1", //
     // "True");
@@ -173,6 +178,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "True");
   }
 
+  @Test
   public void testAbsoluteCorrelation() {
     check("AbsoluteCorrelation({5, 3/4, 1}, {2, 1/2, 1})", //
         "91/24");
@@ -184,6 +190,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "10+I*55/3");
   }
 
+  @Test
   public void testAccumulate() {
     check("Accumulate({{a, b}, {c, d}, {e, f}})", //
         "{{a,b},{a+c,b+d},{a+c+e,b+d+f}}");
@@ -199,6 +206,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "f(a,a+b,a+b+c,a+b+c+d)");
   }
 
+  @Test
   public void testAddTo() {
     // print: AddTo: d is not a variable with a value, so its value cannot be changed.
     check("d += 7", //
@@ -224,6 +232,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,2,3+y,4,5,6,7,8,9}");
   }
 
+  @Test
   public void testAiryAi() {
     checkNumeric("AiryAi(0.0)", //
         "0.3550280538878173");
@@ -243,6 +252,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{3.420837642476398+I*(-2.3906525197729778),1.3358308195078992+I*(-1.4955254358273535),0.5563045393712205+I*(-0.7898014381884247),0.29003094106262817+I*(-0.33030787622402324),0.22740742820165644,0.29003094106262817+I*0.33030787622402324,0.5563045393712205+I*0.7898014381884247,1.3358308195078992+I*1.4955254358273535,3.420837642476398+I*2.3906525197729778},{3.0974417214009486+I*0.2760069240067268,1.6305043526218614+I*(-0.28887974732022426),0.8849522834389962+I*(-0.289325773863921),0.5556884983908243+I*(-0.15402139368458412),0.46425657774883017,0.5556884983908243+I*0.15402139368458412,0.8849522834389962+I*0.289325773863921,1.6305043526218614+I*0.28887974732022426,3.0974417214009486+I*(-0.2760069240067268)},{1.695064089797195+I*1.4241845593464972,1.2102764053596884+I*0.4733886603615599,0.8221174265552088+I*0.11996634266441787,0.6038101468249651+I*0.017017293062533655,0.5355608832923607,0.6038101468249651+I*(-0.017017293062533655),0.8221174265552088+I*(-0.11996634266441787),1.2102764053596884+I*(-0.4733886603615599),1.695064089797195+I*(-1.4241845593464972)},{0.49718792123517636+I*1.3932056575075724,0.6389761019208275+I*0.6893216583745313,0.5790199658388284+I*0.30849245538668596,0.5046538983356635+I*0.11433718873991877,0.47572809161054197,0.5046538983356635+I*(-0.11433718873991877),0.5790199658388284+I*(-0.30849245538668596),0.6389761019208275+I*(-0.6893216583745313),0.49718792123517636+I*(-1.3932056575075724)},{-0.10961462643274916+I*0.9115836001138657,0.22372785110975596+I*0.5781126623006668,0.33149330543214034+I*0.3174498589684514,0.3536492233751043+I*0.13680205422852423,0.3550280538878173,0.3536492233751043+I*(-0.13680205422852423),0.33149330543214034+I*(-0.3174498589684514),0.22372785110975596+I*(-0.5781126623006668),-0.10961462643274916+I*(-0.9115836001138657)},{-0.2662615297128148+I*0.45548648549286874,0.01609950852844483+I*0.37265933735946644,0.15711844650001877+I*0.24103981384014264,0.21618634477812565+I*0.11483063987765402,0.23169360648083592,0.21618634477812565+I*(-0.11483063987765402),0.15711844650001877+I*(-0.24103981384014264),0.01609950852844483+I*(-0.37265933735946644),-0.2662615297128148+I*(-0.45548648549286874)},{-0.21938625498158043+I*0.17538591140806628,-0.049801022417832984+I*0.19961798336628478,0.06045830837178796+I*0.1518895658771749,0.11791053318999047+I*0.07897644336958276,0.1352924163128748,0.11791053318999047+I*(-0.07897644336958276),0.06045830837178796+I*(-0.1518895658771749),-0.049801022417832984+I*(-0.19961798336628478),-0.21938625498158043+I*(-0.17538591140806628)},{-0.13091794569479007+I*0.04635854758683057,-0.05043059157431828+I*0.09163920284743034,0.01704892005471593+I*0.08326920467823386,0.05821728389745073+I*0.047087796003794216,0.0717494970081451,0.05821728389745073+I*(-0.047087796003794216),0.01704892005471593+I*(-0.08326920467823386),-0.05043059157431828+I*(-0.09163920284743034),-0.13091794569479007+I*(-0.04635854758683057)},{-0.06395922827400705+I*0.0021206787026740634,-0.03319654670076513+I*0.03642688062763144,0.0016977668572343027+I*0.04071801705307477,0.026285105310871013+I*0.025043695308787604,0.03492413042325535,0.026285105310871013+I*(-0.025043695308787604),0.0016977668572343027+I*(-0.04071801705307477),-0.03319654670076513+I*(-0.03642688062763144),-0.06395922827400705+I*(-0.0021206787026740634)}}");
   }
 
+  @Test
   public void testAiryAiPrime() {
     checkNumeric("AiryAiPrime(0.5)", //
         "-0.2249105326646844");
@@ -259,6 +269,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{1.648787152444633+I*6.415538518806197,1.687859682235541+I*2.4806208072053697,1.1349598127622207+I*0.8858793656452404,0.7458883289073455+I*0.2743194885824899,0.6182590207421303,0.7458883289073455+I*(-0.2743194885824899),1.1349598127622207+I*(-0.8858793656452404),1.687859682235541+I*(-2.4806208072053697),1.648787152444633+I*(-6.415538518806197)},{-2.303055044072217+I*3.877417310722093,-0.334537889376718+I*2.0956826704151714,0.20512029484999197+I*0.9922668479364416,0.3034332670854678+I*0.3834721333012403,0.3091869672023865,0.3034332670854678+I*(-0.3834721333012403),0.20512029484999197+I*(-0.9922668479364416),-0.334537889376718+I*(-2.0956826704151714),-2.303055044072217+I*(-3.877417310722093)},{-2.867653785707298+I*0.8724917728616729,-1.146123178959718+I*0.9327396090334604,-0.3790604792266683+I*0.6045001308622406,-0.08408287429425332+I*0.27805743475352496,-0.010160567116666111,-0.08408287429425332+I*(-0.27805743475352496),-0.3790604792266683+I*(-0.6045001308622406),-1.146123178959718+I*(-0.9327396090334604),-2.867653785707298+I*(-0.8724917728616729)},{-1.8114574633148255+I*(-0.7327061850624274),-1.0381897157459232+I*0.014985742225773925,-0.532965196454488+I*0.16777317009366327,-0.2788911652372876+I*0.1122556639765703,-0.20408167033954688,-0.2788911652372876+I*(-0.1122556639765703),-0.532965196454488+I*(-0.16777317009366327),-1.0381897157459232+I*(-0.014985742225773925),-1.8114574633148255+I*0.7327061850624274},{-0.6778858159259133+I*(-1.0346546678885729),-0.6110271969857687+I*(-0.3786304810892873),-0.4324926598418068+I*(-0.09804785622926473),-0.3031407801652054+I*(-0.011153850054972518),-0.2588194037928068,-0.3031407801652054+I*0.011153850054972518,-0.4324926598418068+I*0.09804785622926473,-0.6110271969857687+I*0.3786304810892873,-0.6778858159259133+I*1.0346546678885729},{-0.03674926477840527+I*(-0.7457372872156334),-0.24510992005042082+I*(-0.40188530591709715),-0.26510577281460446+I*(-0.18295697728822682),-0.2387168090817684+I*(-0.06615704122111002),-0.2249105326646844,-0.2387168090817684+I*0.06615704122111002,-0.26510577281460446+I*0.18295697728822682,-0.24510992005042082+I*0.40188530591709715,-0.03674926477840527+I*0.7457372872156334},{0.17044497817899362+I*(-0.38762243941335545),-0.04512302735079774+I*(-0.28125723429627497),-0.13062795349948333+I*(-0.16306759644931962),-0.15515939167449608+I*(-0.07138312043219168),-0.15914744129677244,-0.15515939167449608+I*0.07138312043219168,-0.13062795349948333+I*0.16306759644931962,-0.04512302735079774+I*0.28125723429627497,0.17044497817899362+I*0.38762243941335545},{0.16414909554522364+I*(-0.1523320701889281),0.026994283874611804+I*(-0.1559595446069788),-0.05167696117033158+I*(-0.11014338866454601),-0.0875445637804929+I*(-0.05441486420106549),-0.09738201284231857,-0.0875445637804929+I*0.05441486420106549,-0.05167696117033158+I*0.11014338866454601,0.026994283874611804+I*0.1559595446069788,0.16414909554522364+I*0.1523320701889281},{0.1022312595638903+I*(-0.041225840034380457),0.03589425195023085+I*(-0.07249651606385005),-0.015110279283178173+I*(-0.06245895471352565),-0.04401537826256898+I*(-0.034169181102591296),-0.053090384433948014,-0.04401537826256898+I*0.034169181102591296,-0.015110279283178173+I*0.06245895471352565,0.03589425195023085+I*0.07249651606385005,0.1022312595638903+I*0.041225840034380457}}");
   }
 
+  @Test
   public void testAiryBi() {
     checkNumeric("AiryBi(1.8)", //
         "2.595869356743584");
@@ -278,6 +289,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{-2.3957473642268634+I*(-3.398597652740045),-1.5215235174059933+I*(-1.2926640316336462),-0.8669433867253258+I*(-0.4800981036403837),-0.518181241305443+I*(-0.16077529192857595),-0.4123025879564319,-0.518181241305443+I*0.16077529192857595,-0.8669433867253258+I*0.4800981036403837,-1.5215235174059933+I*1.2926640316336462,-2.3957473642268634+I*3.398597652740045},{0.2931467237728959+I*(-3.06944613047553),-0.27520960288493435+I*(-1.5640132276145249),-0.29941247892333983+I*(-0.74933164362572),-0.22584876813045174+I*(-0.30101085615427686),-0.19178486115696902,-0.22584876813045174+I*0.30101085615427686,-0.29941247892333983+I*0.74933164362572,-0.27520960288493435+I*1.5640132276145249,0.2931467237728959+I*3.06944613047553},{1.4706640499219705+I*(-1.6801528363005322),0.5460441211747169+I*(-1.149991696532225),0.21429040153478623+I*(-0.6739169237226936),0.120423945157322+I*(-0.3063984219533725),0.1039973894969565,0.120423945157322+I*0.3063984219533725,0.21429040153478623+I*0.6739169237226936,0.5460441211747169+I*1.149991696532225,1.4706640499219705+I*1.6801528363005322},{1.4644238527610243+I*(-0.5221254139943083),0.8253017961186594+I*(-0.6270187094805093),0.5215176250724772+I*(-0.4782484662834402),0.4070079716084566+I*(-0.2501387359622407),0.38035265975104987,0.4070079716084566+I*0.2501387359622407,0.5215176250724772+I*0.4782484662834402,0.8253017961186594+I*0.6270187094805093,1.4644238527610243+I*0.5221254139943083},{0.9853719221587388+I*0.012420555309817116,0.7646118577873011+I*(-0.31317467306176994),0.6488582083303966+I*(-0.34495863476803496),0.6172080740295184+I*(-0.21132635103715738),0.6149266274460007,0.6172080740295184+I*0.21132635103715738,0.6488582083303966+I*0.34495863476803496,0.7646118577873011+I*0.31317467306176994,0.9853719221587388+I*(-0.012420555309817116)},{0.48131792917666805+I*0.06009303522567482,0.5746740551710117+I*(-0.27862590346400473),0.6881452731135111+I*(-0.370815390737156),0.8041665904962334+I*(-0.24928528888316745),0.8542770431031516,0.8041665904962334+I*0.24928528888316745,0.6881452731135111+I*0.370815390737156,0.5746740551710117+I*0.27862590346400473,0.48131792917666805+I*(-0.06009303522567482)},{0.0488220324533163+I*(-0.13327405799169714),0.33937890746256466+I*(-0.49783178172455156),0.7166580733826586+I*(-0.6198892904008331),1.064248409306182+I*(-0.4231059165833535),1.2074235949528562,1.064248409306182+I*0.4231059165833535,0.7166580733826586+I*0.6198892904008331,0.33937890746256466+I*0.49783178172455156,0.0488220324533163+I*0.13327405799169714},{-0.45105814237831454+I*(-0.38809414209726334),-0.013791230339503548+I*(-0.9778818927220002),0.7635143010354067+I*(-1.2190757998194328),1.5468176062001304+I*(-0.8489619949873818),1.8789415037478225,1.5468176062001304+I*0.8489619949873818,0.7635143010354067+I*1.2190757998194328,-0.013791230339503548+I*0.9778818927220002,-0.45105814237831454+I*0.38809414209726334},{-1.3357392070655532+I*(-0.5495070069717577),-0.7729973894527842+I*(-1.8324051934414367),0.7782303837571196+I*(-2.5050963000638347),2.5273987946988865+I*(-1.821618419642691),3.298094999978163,2.5273987946988865+I*1.821618419642691,0.7782303837571196+I*2.5050963000638347,-0.7729973894527842+I*1.8324051934414367,-1.3357392070655532+I*0.5495070069717577}}");
   }
 
+  @Test
   public void testAiryBiPrime() {
     checkNumeric("AiryBiPrime(1.8)", //
         "2.9855400508465624");
@@ -320,7 +332,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "-2.301563806811789+I*2.232328401155906,-2.485391698246359+I*0.06505542312849735}}");
   }
 
-  public void testAlternatives() {
+  @Test
+ public void testAlternatives() {
     // http://mathematica.stackexchange.com/a/44084
     check("f(a_Integer|b_Real) := {1,a,2,b,3}", //
         "");
@@ -342,6 +355,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "b+d+2*t");
   }
 
+  @Test
   public void testApart() {
     // check("Factor(x^2 - y^2 )", "(x-y)*(x+y)");
     // check("Solve(x^2 - y^2==0, y)", "{{y->-x},{y->x}}");
@@ -404,6 +418,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "195/(2+x)-308/(3+x)^5-185/(3+x)^4-195/(3+x)^3-195/(3+x)^2-195/(3+x)");
   }
 
+  @Test
   public void testAppend() {
     check("Append({1, 2, 3}, 4) ", //
         "{1,2,3,4}");
@@ -415,6 +430,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Append(a,b)");
   }
 
+  @Test
   public void testAppendTo() {
     check("w = f({1}, {2}, {3});w[[2]]={2,a}", //
         "{2,a}");
@@ -452,6 +468,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,2,4,9,16}");
   }
 
+  @Test
   public void testAppelF1() {
 
     check("AppellF1(a, b1, b2, c, 0, 0) ", //
@@ -470,6 +487,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(1-z2)^a*Hypergeometric2F1(a,b1,b1+b2,(z1-z2)/(1-z2))");
   }
 
+  @Test
   public void testApply() {
     check("(Count(#, Last(#))&) @@ {{1, 2},{3, 4}}", //
         "1");
@@ -561,6 +579,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Apply(f,{a,b,c},x+y)");
   }
 
+  @Test
   public void testArcCos() {
 
     // see https://github.com/mtommila/apfloat/issues/18
@@ -606,6 +625,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-1/Sqrt(1-x^2)");
   }
 
+  @Test
   public void testArcCosh() {
     check("ArcCosh(0)", //
         "I*1/2*Pi");
@@ -623,6 +643,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Infinity");
   }
 
+  @Test
   public void testArcCot() {
     check("ArcCot(Cot(-1/2))", //
         "-1/2");
@@ -656,6 +677,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-1/(1+x^2)");
   }
 
+  @Test
   public void testArcCoth() {
     check("ArcCoth(1/Sqrt(5))", //
         "ArcCoth(1/Sqrt(5))");
@@ -672,6 +694,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/(1-x^2)");
   }
 
+  @Test
   public void testArcCsc() {
     check("ArcCsc(3.5)", //
         "0.289752");
@@ -689,6 +712,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-1/(Sqrt(1-1/x^2)*x^2)");
   }
 
+  @Test
   public void testArcCsch() {
     check("arccsch(0)", //
         "ComplexInfinity");
@@ -703,7 +727,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-1/(Sqrt(1+x^2)*Abs(x))");
   }
 
-  public void testArcSec() {
+  @Test
+ public void testArcSec() {
     check("ArcSec(3.5)", //
         "1.28104");
     check("ArcSec(1.0+3.5*I)", //
@@ -720,6 +745,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/(Sqrt(1-1/x^2)*x^2)");
   }
 
+  @Test
   public void testArcSech() {
     check("ArcSech(0)", //
         "Infinity");
@@ -737,7 +763,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-1/(x*Sqrt(1-x^2))");
   }
 
-  public void testArcSin() {
+  @Test
+    public void testArcSin() {
     check("ArcSin({x,-3,-1/2})", //
         "{ArcSin(x),-ArcSin(3),-Pi/6}");
     check("ArcSin(Sin(-1/2))", //
@@ -777,6 +804,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/Sqrt(1-x^2)");
   }
 
+  @Test
   public void testArcSinh() {
     check("ArcSinh(0)", //
         "0");
@@ -789,6 +817,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/Sqrt(1+x^2)");
   }
 
+  @Test
   public void testArcTan() {
     // github #110 avoid infinite recursion
     // check("ArcTan(Re(Sin(3+I*2)),Im(Sin(3+I*2)))", //
@@ -934,7 +963,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/(1+x^2)");
   }
 
-  public void testArcTanh() {
+  @Test
+    public void testArcTanh() {
 
     check("ArcTanh(0)", //
         "0");
@@ -962,6 +992,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/(1-x^2)");
   }
 
+  @Test
   public void testArg() {
     check("FullSimplify(Arg(-I*41*Im(z)-41*Re(z)))", //
         "Arg(-z)");
@@ -1059,6 +1090,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{3/8*Pi,3/4*Pi,-7/8*Pi,-Pi/2,-Pi/8,Pi/4,5/8*Pi,Pi}");
   }
 
+  @Test
   public void testArgMax() {
     check("ArgMax(x*10-x^2 , x)", //
         "5");
@@ -1068,7 +1100,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-3/4");
   }
 
-  public void testArgMin() {
+  @Test
+    public void testArgMin() {
     check("ArgMin(x*10+x^2 , x)", //
         "-5");
     check("Minimize(2*x^2 - 3*x + 5, x)", //
@@ -1077,6 +1110,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3/4");
   }
 
+  @Test
   public void testArray() {
     check("Array(f, 10, {0,1})", //
         "{f(0),f(1/9),f(2/9),f(1/3),f(4/9),f(5/9),f(2/3),f(7/9),f(8/9),f(1)}");
@@ -1131,6 +1165,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("Array[f, 10, {0, 1}]", "");
   }
 
+  @Test
   public void testArrayPad() {
     // display error messages: Maximum AST dimension 4294967296 exceeded
     check("ArrayPad({{1,0},{0,1}}, 2147483647)", //
@@ -1156,7 +1191,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{x,x,1,2,3,x,x}");
   }
 
-  public void testArrayDepth() {
+  @Test
+    public void testArrayDepth() {
     check("ArrayDepth(Array(a, {4, 5, 2}))", //
         "3");
 
@@ -1176,6 +1212,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3");
   }
 
+  @Test
   public void testArrayFlatten() {
     check(
         "s1 = SparseArray({i_, i_} -> i, {2, 2});\ns2 = SparseArray({i_, j_} /; Abs(i-j) == 1 -> i - j, {3, 3});", //
@@ -1247,6 +1284,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testArrayQ() {
     check("ArrayQ(SparseArray({1, 2}))", //
         "True");
@@ -1278,6 +1316,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testArrayReshape() {
     check("ArrayReshape(SparseArray({1 -> 1, 4 -> 5}, 10), {2, 6}, x)", //
         "{{1,0,0,5,0,0},{0,0,0,0,x,x}}");
@@ -1301,7 +1340,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{{{a,b},{c,d},{e,f}},{{x,x},{x,x},{x,x}},{{x,x},{x,x},{x,x}}},{{{x,x},{x,x},{x,x}},{{x,x},{x,x},{x,x}},{{x,x},{x,x},{x,x}}}}");
   }
 
-  public void testAssuming001() {
+  @Test
+    public void testAssuming001() {
     check("Assuming(a < 0 && b > 0, Refine(HeavisideTheta(b, b, a)))", //
         "0");
 
@@ -1318,6 +1358,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x");
   }
 
+  @Test
   public void testAssuming002() {
     check("$Assumptions = Element(m, Matrices({4, 4}, Reals, Symmetric({1, 2})))", //
         "m∈Matrices({4,4},Reals,Symmetric({1,2}))");
@@ -1332,6 +1373,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x");
   }
 
+  @Test
   public void testAssuming003() {
     check("$Assumptions = Element(a | b | c, Vectors(3));", //
         "");
@@ -1339,6 +1381,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,{3},{}}");
   }
 
+  @Test
   public void testAtomQ() {
     check("AtomQ(<|\"a\"->1|> // Unevaluated)", //
         "False");
@@ -1358,6 +1401,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testArithmeticGeometricMean() {
     check("ArithmeticGeometricMean(1/2,42.0)", //
         "11.34094");
@@ -1383,6 +1427,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1.83463+I*(-0.191462)");
   }
 
+  @Test
   public void testAttributes() {
     check("Attributes(fun) = {ReadProtected, Protected}", //
         "{ReadProtected,Protected}");
@@ -1390,6 +1435,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{Flat,Listable,NumericFunction,OneIdentity,Orderless,Protected}");
   }
 
+  @Test
   public void testBeginPackage() {
     check("BeginPackage(\"test`\")", //
         "");
@@ -1428,7 +1474,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{Needs(\"needit1`\"),Needs(\"needit2`\")}");
   }
 
-  public void testBeginPackageNested() {
+  @Test
+    public void testBeginPackageNested() {
     check("BeginPackage(\"test`\")", //
         "");
     check("Context( )", //
@@ -1472,6 +1519,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "144");
   }
 
+  @Test
   public void testBaseDecode() {
     check(
         "ba1 = BaseEncode(StringToByteArray(\"Man is distinguished, not only by his reason, but by this singular passion from other animals, "
@@ -1488,12 +1536,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "generation of knowledge, exceeds the short vehemence of any carnal pleasure.");
   }
 
+  @Test
   public void testBaseEncode() {
     check(
         "BaseEncode(ByteArray({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20})) ", //
         "AQIDBAUGBwgJCgsMDQ4PEBESExQ=");
   }
 
+  @Test
   public void testBaseForm() {
     check("36^^zZz", //
         "46655");
@@ -1510,6 +1560,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Syntax error in line: 1 - Number format error: 6z12xy\n" + "16^^6z12xy\n" + "         ^");
   }
 
+  @Test
   public void testBegin() {
     // Begin: is not a valid context name.
     check("Begin(\"\")", //
@@ -1542,6 +1593,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "testit(12)");
   }
 
+  @Test
   public void testBellB() {
     check("BellB(1009,-9223372036854775807/9223372036854775808)", //
         "BellB(1009,-9223372036854775807/9223372036854775808)");
@@ -1580,6 +1632,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("BellB({1,2,3,4,5,6})", "{1,2,5,15,52,203}");
   }
 
+  @Test
   public void testBellY() {
     // check("x + Sum(x^m/(m!*(m - 1)!) * BellY(Table({(m + k - 2)!, -(k - 1)! * c(k)}, {k, 2, m})),
     // {m, 2, 4}) ",
@@ -1618,6 +1671,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "35*x(3)*x(4)+21*x(2)*x(5)+7*x(1)*x(6)");
   }
 
+  @Test
   public void testBernoulliB() {
     // slow
 
@@ -1663,6 +1717,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,-1/2+x,1/6-x+x^2,x/2-3/2*x^2+x^3,-1/30+x^2-2*x^3+x^4,-x/6+5/3*x^3-5/2*x^4+x^5}");
   }
 
+  @Test
   public void testBesselI() {
     check("BesselI(3/2, z)", //
         "Sqrt(2/Pi)*Sqrt(z)*(Cosh(z)/z-Sinh(z)/z^2)");
@@ -1698,6 +1753,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1.2660658777519989,0.5651591039923343,0.13574766976702993}");
   }
 
+  @Test
   public void testBesselJ() {
     check("BesselJ(3/2, x)", //
         "Sqrt(2/Pi)*Sqrt(x)*(-Cos(x)/x+Sin(x)/x^2)");
@@ -1770,7 +1826,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{0.242268,0.440051,0.557937}");
   }
 
-  public void testBesselJZero() {
+  @Test
+public void testBesselJZero() {
     checkNumeric("BesselJZero(1.5, 1.0)", //
         "4.493409429988828");
 
@@ -1793,6 +1850,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "3.8317057025328065,4.165425980713131,4.493409429988828,4.816574141184002,5.135622011324211}");
   }
 
+  @Test
   public void testBesselK() {
     check("BesselK(3/2, x)", //
         "Sqrt(Pi/2)*(1/(E^x*x^2)+1/(E^x*x))*Sqrt(x)");
@@ -1829,6 +1887,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{0.6019072301974402,1.6248388986351414,7.101262824737833}");
   }
 
+  @Test
   public void testBesselY() {
     check("BesselY(3.5,-5)", //
         "I*(-0.0275521)");
@@ -1869,6 +1928,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{0.08825696421570312,0.5103756726498645,0.3768500100129075}");
   }
 
+  @Test
   public void testBesselYZero() {
     // https://github.com/paulmasson/math/issues/11
     checkNumeric("BesselYZero(0.0,1)", //
@@ -1887,6 +1947,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testBeta() {
     checkNumeric("Beta({-1},7*Sqrt(2),2.718281828459045)", //
         "{0.291809067060784+I*(-0.0953266740858263)}");
@@ -1933,6 +1994,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testBetaRegularized() {
     // see github #203
     check("BetaRegularized(1.0000001,1,1)", //
@@ -1980,6 +2042,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testBlankSequence() {
 
     check("Clear(f);f(___,y__?(#>2&)):={y}", //
@@ -2031,6 +2094,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // {a,b,c,d,e}{}{}
   }
 
+  @Test
   public void testBlock() {
     // Rubi rules use Block variable names in "sub-rules":
     check("Integrate(E^(E^x + x), x)", //
@@ -2068,6 +2132,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "h(5)");
   }
 
+  @Test
   public void testBinaryDistance() {
     check("BinaryDistance(SparseArray({1, 2, 3, 4, 5}), SparseArray({1, 2, 3, 4, 5}))", //
         "1");
@@ -2079,6 +2144,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testBinCounts() {
 
     check("BinCounts({{1,0}, {0,1}},-Infinity)", //
@@ -2131,6 +2197,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{2,4}");
   }
 
+  @Test
   public void testBinomial() {
     check("N(Binomial(7/3, 1/5), 20)", //
         "1.3331254244650286522");
@@ -2242,6 +2309,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Binomial(k,6)");
   }
 
+  @Test
   public void testBitLength() {
     check("BitLength(1023)", //
         "10");
@@ -2257,6 +2325,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "123");
   }
 
+  @Test
   public void testBrayCurtisDistance() {
     check("-1*{10.5, 10} ", //
         "{-10.5,-10}");
@@ -2274,6 +2343,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "11/9");
   }
 
+  @Test
   public void testBreak() {
     check("n = 0", //
         "0");
@@ -2283,6 +2353,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "11");
   }
 
+  @Test
   public void testByteArray() {
     // message ByteArray: The argument at position 1 in ByteArray(asy) should be a vector of
     // unsigned byte values or a Base64 encoded string.
@@ -2298,6 +2369,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testCancel() {
 
     check("Simplify(((1 + Sqrt(5))/2)^7 + (-(1 + Sqrt(5))/2)^(-7))", //
@@ -2384,6 +2456,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(3+2*x)/((1+x)*(2+x))");
   }
 
+  @Test
   public void testCarlsonRC() {
     // TODO apfloat complex numbers
     // check(
@@ -2409,6 +2482,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.918779+I*(-0.414653)");
   }
 
+  @Test
   public void testCarlsonRD() {
     check("CarlsonRD(2., 3.,5.0)", //
         "0.133211");
@@ -2416,6 +2490,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.168723+I*0.0201344");
   }
 
+  @Test
   public void testCarlsonRF() {
     check("CarlsonRF(x,x,x)", //
         "1/Sqrt(x)");
@@ -2425,6 +2500,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.791737+I*(-0.0471835)");
   }
 
+  @Test
   public void testCarlsonRG() {
     check("CarlsonRG(x,x,y)", //
         "1/2*(Sqrt(y)+x*CarlsonRF(x,x,y))");
@@ -2434,6 +2510,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1.18073+I*0.0126244");
   }
 
+  @Test
   public void testCarlsonRJ() {
     check("CarlsonRJ(2., 3., 5., 7.2)", //
         "0.104459");
@@ -2441,6 +2518,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.533311+I*(-0.52701)");
   }
 
+  @Test
   public void testCarmichaelLambda() {
     check("CarmichaelLambda(-n)", //
         "CarmichaelLambda(n)");
@@ -2466,6 +2544,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,4,20,100,500,5000,50000,500000,5000000,50000000,500000000}");
   }
 
+  @Test
   public void testCases() {
     // check(
     // " t : {__Integer} :> t^2", //
@@ -2546,6 +2625,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,2,3}");
   }
 
+  @Test
   public void testCatch() {
     check("Catch(f(Catch(Throw(a, u), u)), v)", //
         "f(a)");
@@ -2586,6 +2666,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // " u),$lst((2)),$lst((3))})","");
   }
 
+  @Test
   public void testCatalan() {
     checkNumeric("N(Catalan)", //
         "0.915965594177219");
@@ -2593,6 +2674,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.91596559417721901505460351493238411077414937428167");
   }
 
+  @Test
   public void testCatalanNumber() {
     check("N(CatalanNumber(I),20)", //
         "0.39764993382373624266+I*(-0.0208843416208425557)");
@@ -2622,6 +2704,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.730729+I*0.569846");
   }
 
+  @Test
   public void testCatenate() {
     check("Catenate({{1, 2, 3}, {4, 5}})", //
         "{1,2,3,4,5}");
@@ -2634,7 +2717,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
 
-  public void testCeiling() {
+  @Test
+      public void testCeiling() {
     check("Ceiling(Quantity(8.5, \"Meters\"))", //
         "9[Meters]");
     check("Ceiling(DirectedInfinity(0))", //
@@ -2666,7 +2750,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2+I*3");
   }
 
-  public void testCharacterRange() {
+  @Test
+      public void testCharacterRange() {
     check("CharacterRange(50, 50)", //
         "{2}");
     check("CharacterRange(\" \", \"~\")", //
@@ -2679,11 +2764,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{0,1,2,3,4,5,6,7,8,9}");
   }
 
+  @Test
   public void testCharacters() {
     check("Partition(Characters(\"this is a string\"), 3, 1) // InputForm", //
         "{{\"t\",\"h\",\"i\"},{\"h\",\"i\",\"s\"},{\"i\",\"s\",\" \"},{\"s\",\" \",\"i\"},{\" \",\"i\",\"s\"},{\"i\",\"s\",\" \"},{\"s\",\" \",\"a\"},{\" \",\"a\",\" \"},{\"a\",\" \",\"s\"},{\" \",\"s\",\"t\"},{\"s\",\"t\",\"r\"},{\"t\",\"r\",\"i\"},{\"r\",\"i\",\"n\"},{\"i\",\"n\",\"g\"}}");
   }
 
+  @Test
   public void testCharacteristicPolynomial() {
     check("CharacteristicPolynomial({{a, b}, {c, d}}, x)", //
         "-b*c+a*d-a*x-d*x+x^2");
@@ -2695,6 +2782,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "13-I*6-6*z+z^2");
   }
 
+  @Test
   public void testCheck() {
     check("Check(0^(-42), failure)", //
         "failure");
@@ -2707,6 +2795,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "failure");
   }
 
+  @Test
   public void testCheckAbort() {
     check("CheckAbort(Abort(); -1, 41) + 1", //
         "42");
@@ -2714,6 +2803,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testChessboardDistance() {
     check("ChessboardDistance({-1, -1.5}, {1, 1})", //
         "2.5");
@@ -2721,6 +2811,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2");
   }
 
+  @Test
   public void testChineseRemainder() {
 
     check("mydata = {931074546, 117172357, 482333642, 199386034, 394354985};", //
@@ -2757,6 +2848,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "ChineseRemainder({1,2},{6,10})");
   }
 
+  @Test
   public void testChop() {
     check("-4.898587196589413*^-16*I ", //
         "I*(-0.0000000000000004898587196589413)");
@@ -2799,7 +2891,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2.0");
   }
 
-  public void testClear() {
+  @Test
+public void testClear() {
     check("x=100;y=42", //
         "42");
     check("x", //
@@ -2814,6 +2907,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "y");
   }
 
+  @Test
   public void testClearAll() {
     check("x=100;y=42", //
         "42");
@@ -2829,6 +2923,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "y");
   }
 
+  @Test
   public void testClearAttributes() {
     // print error message "SetAttributes: test is not a known attribute."
     check("SetAttributes(f, {Orderless, Test})", //
@@ -2851,6 +2946,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{Orderless}");
   }
 
+  @Test
   public void testClebschGordan() {
     // https://en.wikipedia.org/wiki/Table_of_Clebsch%E2%80%93Gordan_coefficients
     check("ClebschGordan({3/2, -3/2}, {3/2, 3/2}, {1, 0})", //
@@ -2882,6 +2978,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + " {0,0,0,0,11}}");
   }
 
+  @Test
   public void testClip() {
     check("Clip(7.5,{-7.0,7.0})", //
         "7.0");
@@ -2930,6 +3027,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testCoefficient() {
     check("Coefficient(x+y+z, x+y)", //
         "1");
@@ -3152,6 +3250,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "8");
   }
 
+  @Test
   public void testCoefficientList() {
     // check("1.0 * 10.0* x^9", //
     // "10.0*x^9");
@@ -3233,6 +3332,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{4*c,12*b,0,42*a}");
   }
 
+  @Test
   public void testCoefficientRules() {
     check("CoefficientRules(x^3+3*x^2*y+3*x*y^2+y^3, {x,y})", //
         "{{3,0}->1,{2,1}->3,{1,2}->3,{0,3}->1}");
@@ -3289,6 +3389,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "2,5,3}->7,{1,5,4}->-7,{5,4,2}->-10}");
   }
 
+  @Test
   public void testCollect() {
     check("Collect((1 + a + x)^4, x)", //
         "1+4*a+6*a^2+4*a^3+a^4+(4+12*a+12*a^2+4*a^3)*x+(6+12*a+6*a^2)*x^2+(4+4*a)*x^3+x^4");
@@ -3345,6 +3446,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "12*z^2+y*(12+24*z+12*z^2)+4*z^3)+z^4");
   }
 
+  @Test
   public void testCommonest() {
     // https://en.wikipedia.org/wiki/Mode_(statistics)
     check("Commonest({1, 3, 6, 6, 6, 6, 7, 7, 12, 12, 17})", //
@@ -3365,6 +3467,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{b,a,2,c,1}");
   }
 
+  @Test
   public void testComplement() {
     check("Complement(#,#)", //
         "Slot()");
@@ -3387,7 +3490,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{4}");
   }
 
-  public void testComplex() {
+  @Test
+      public void testComplex() {
     // github #267
     check("1/(I*2*Pi*5000*25*10^-6)+10", //
         "10+(-I*4)/Pi");
@@ -3439,6 +3543,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "45/28");
   }
 
+  @Test
   public void testComplexInfinity() {
     check("1 / ComplexInfinity", //
         "0");
@@ -3450,6 +3555,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "DirectedInfinity()");
   }
 
+  @Test
   public void testComposeList() {
     check("ComposeList({f,g,h}, x)", //
         "{x,f(x),g(f(x)),h(g(f(x)))}");
@@ -3461,6 +3567,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{x,a(x),b(a(x)),c(b(a(x))),d(c(b(a(x))))}");
   }
 
+  @Test
   public void testComposition() {
     check("Composition(u, v, w)[x, y]", //
         "u(v(w(x,y)))");
@@ -3470,6 +3577,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "f(g(h(x,y,z)))");
   }
 
+  @Test
   public void testCompositeQ() {
     check("CompositeQ({0,-1,-2,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14})", //
         "{False,False,False,True,False,True,False,True,True,True,False,True,False,True}");
@@ -3484,7 +3592,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
-  public void testCompoundExpression() {
+  @Test
+      public void testCompoundExpression() {
     check("1; 2; 3;", //
         "");
     check("1; 2; 3", //
@@ -3499,6 +3608,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2");
   }
 
+  @Test
   public void testCondition() {
     check("Cases({z(1, 1), z(-1, 1), z(-2, 2)}, z(x_ /; x < 0, y_))", //
         "{z(-1,1),z(-2,2)}");
@@ -3560,6 +3670,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "g(5)");
   }
 
+  @Test
   public void testConditionNested() {
     // nested(x_,y_)/; x>0 /; x<y:= x/y
     // nested(x_,y_)/; x<0 := 0
@@ -3586,6 +3697,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3/4");
   }
 
+  @Test
   public void testConditionalExpression() {
     check("Refine(Sin(2*Pi*C(1)),Element(C(1),Integers))", //
         "0");
@@ -3616,6 +3728,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Undefined");
   }
 
+  @Test
   public void testConjugate() {
     check("Conjugate(Cosh(Im(x)))", //
         "Cosh(Im(x))");
@@ -3678,6 +3791,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Erf(Conjugate(x))");
   }
 
+  @Test
   public void testConstant() {
     check("Attributes(E)", //
         "{Constant,Protected}");
@@ -3685,6 +3799,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Solve(E+x==0,E)");
   }
 
+  @Test
   public void testConstantArray() {
     // message Maximum AST dimension 2147483647 exceeded
     check("ConstantArray(2,2147483647)", //
@@ -3701,6 +3816,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{c,c,c,c},{c,c,c,c},{c,c,c,c}}");
   }
 
+  @Test
   public void testContainsAny() {
     check("ContainsAny({b, a, b}, {a, b, c})", //
         "True");
@@ -3720,7 +3836,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
-  public void testContainsAll() {
+  @Test
+    public void testContainsAll() {
     check("ContainsAll({b,a,b,c}, {a, b})", //
         "True");
     check("ContainsAll({b,a,b,c}, {a, b, d})", //
@@ -3748,6 +3865,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testContainsOnly() {
     check("ContainsOnly(<|a -> x, b -> y|>, {x, y, z})", //
         "True");
@@ -3771,6 +3889,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testContainsExactly() {
     check("ContainsExactly({a, b, c},{ })", //
         "False");
@@ -3802,6 +3921,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testContainsNone() {
     check("ContainsNone({d,f,e}, {a, b, c})", //
         "True");
@@ -3821,7 +3941,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
-  public void testContext() {
+  @Test
+ public void testContext() {
 
     check("Context(a)", //
         "Global`");
@@ -3835,16 +3956,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "a`b`x");
   }
 
+  @Test
   public void test$Context() {
     check("$Context", //
         "Global`");
   }
 
+  @Test
   public void test$ContextPath() {
     check("$ContextPath", //
         "{System`,Global`}");
   }
 
+  @Test
   public void test$MachineEpsilon() {
     // use the non-formatted output engine
     check("$MachineEpsilon", //
@@ -3867,6 +3991,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{2.220446049250313E-16,0.0}");
   }
 
+  @Test
   public void test$MachinePrecision() {
     check("$MachinePrecision", //
         "16");
@@ -3878,11 +4003,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     assertEquals(evalStr.substring(0, evalStr.length()), resultStr);
   }
 
+  @Test
   public void test$MaxMachineNumber() {
     check("$MaxMachineNumber// FullForm", //
         "1.7976931348623157`*^308");
   }
 
+  @Test
   public void test$MinMachineNumber() {
     check("2.2250738585072014`*^-308 // FullForm", //
         "2.2250738585072014`*^-308");
@@ -3890,16 +4017,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2.2250738585072014`*^-308");
   }
 
+  @Test
   public void test$Version() {
     check("$Version", //
         Config.getVersion());
   }
 
+  @Test
   public void testContinue() {
     check("For(i=1, i<=8, i=i+1, If(Mod(i,2) == 0, Continue()); Print(i))", //
         "");
   }
 
+  @Test
   public void testContinuedFraction() {
     // print message: ContinuedFraction: Positive integer (less than 2147483647) expected at
     // position 2 in
@@ -4028,6 +4158,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{3,1,1,1}");
   }
 
+  @Test
   public void testConvergents() {
     // TODO
     // check(
@@ -4048,6 +4179,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{a,(1+a*b)/b,(a+c+a*b*c)/(1+b*c),(1+a*b+a*d+c*d+a*b*c*d)/(b+d+b*c*d)}");
   }
 
+  @Test
   public void testConvexHullMesh() {
     check(
         "ConvexHullMesh({{0.0, 0.0, 0.0}, {1.0, 0.5, 0.0}, {2.0, 0.0, 0.0}, "
@@ -4058,7 +4190,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{0.0,0.0},{1.0,0.0},{4.5,1.1},{2.0,3.0}}");
   }
 
-  public void testCoprimeQ() {
+  @Test
+    public void testCoprimeQ() {
     check("CoprimeQ(7,3)", //
         "True");
     check("CoprimeQ(7)", //
@@ -4073,6 +4206,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testCos() {
 
     // {-(1/2), (1/4)*(1 - Sqrt(5)), -Sin(Pi/30), Sin(Pi/30), (1/4)*(-1 + Sqrt(5)),
@@ -4180,6 +4314,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Cos(Sqrt(x^2))");
   }
 
+  @Test
   public void testCosh() {
     check("Cosh(10*Pi*I)", //
         "1");
@@ -4210,12 +4345,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Indeterminate");
   }
 
+  @Test
   public void testCreateDirectory() {
     // Config.FILESYSTEM_ENABLED = true;
     // check("CreateDirectory()", //
     // "C:\\Users\\dev\\AppData\\Local\\Temp\\1539799359607-0");
   }
 
+  @Test
   public void testCanberraDistance() {
     check("CanberraDistance({0,0},{0,0})", //
         "0");
@@ -4229,6 +4366,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2");
   }
 
+  @Test
   public void testCorrelation() {
     check("Correlation({1.5, 3, 5, 10}, {2, 1.25, 15, 8})", //
         "0.475976");
@@ -4271,6 +4409,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "0.000430087");
   }
 
+  @Test
   public void testCorrelationDistance() {
     check("CorrelationDistance({2,2},{5,10})", //
         "0");
@@ -4302,6 +4441,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "1.0697");
   }
 
+  @Test
   public void testCosineDistance() {
     check("CosineDistance({7.0, 9}, {71, 89})", //
         "0.0000759646");
@@ -4314,6 +4454,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "2)*(Abs(x)^2+Abs(y)^2+Abs(z)^2))");
   }
 
+  @Test
   public void testCosIntegral() {
     checkNumeric("CosIntegral(2.8)", //
         "0.18648838964317638");
@@ -4334,6 +4475,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "-0.265563+I*(-0.170956)}");
   }
 
+  @Test
   public void testCoshIntegral() {
     // TODO https://github.com/paulmasson/math/issues/15
     check("CoshIntegral(-4.0)", //
@@ -4349,6 +4491,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "2.45267,2.9529,3.52443,4.18616,4.96039,5.87389,6.95919,8.2561,9.81355}");
   }
 
+  @Test
   public void testCot() {
     // check("Cot(4/15*Pi)", //
     // "Tan((7*Pi)/30)");
@@ -4406,6 +4549,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Cot(42*a*Pi+z)");
   }
 
+  @Test
   public void testCoth() {
     check("Coth(0)", //
         "ComplexInfinity");
@@ -4413,6 +4557,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "ComplexInfinity");
   }
 
+  @Test
   public void testCount() {
     check("Count(2,2)", //
         "0");
@@ -4458,11 +4603,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2");
   }
 
+  @Test
   public void testCounts() {
     check("Counts({a, a, b, c, a, a, b, c, c, a, a})", //
         "<|a->6,b->2,c->3|>");
   }
 
+  @Test
   public void testCountDistinct() {
     check("CountDistinct({3, 7, 10, 7, 5, 3, 7, 10})", //
         "4");
@@ -4475,7 +4622,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2");
   }
 
-  public void testCovariance() {
+  @Test
+public void testCovariance() {
 
     check("Covariance({{0.25,0.33,0.45}})", //
         "Covariance(\n" //
@@ -4507,6 +4655,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "11.260416666666666");
   }
 
+  @Test
   public void testCsc() {
 
     // check("Csc(8/15*Pi)", //
@@ -4569,6 +4718,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/Sqrt(1-1/x^2)");
   }
 
+  @Test
   public void testCsch() {
     // gitbub #173
     check("Csch(Log(5/3))", //
@@ -4591,6 +4741,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-Coth(x)*Csch(x)");
   }
 
+  @Test
   public void testCubeRoot() {
     check("CubeRoot(-64)", //
         "-4");
@@ -4626,7 +4777,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-1.25992");
   }
 
-  public void testCurl() {
+  @Test
+      public void testCurl() {
     check("Curl({y, -x}, {x, y})", //
         "-2");
 
@@ -4639,6 +4791,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "1,0,0)[h][x,y,z],-Derivative(0,1,0)[f][x,y,z]+Derivative(1,0,0)[g][x,y,z]}");
   }
 
+  @Test
   public void testCyclotomic() {
     // check(
     // "Cyclotomic(10009,-9223372036854775808/9223372036854775807)", //
@@ -4682,6 +4835,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testD() {
     check("D(z^n*E^(z),{z,n})", //
         "E^z*n!*Hypergeometric1F1(-n,1,-z)");
@@ -5003,7 +5157,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(5*Cos(x^5))/x^6+(-10*Sin(x^5))/x^11");
   }
 
-  public void testDefault() {
+  @Test
+public void testDefault() {
     check("Default(test) := 1", //
         "1");
     check("Default(test) = 1", //
@@ -5025,12 +5180,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
   }
 
-  public void testDefer() {
+  @Test
+ public void testDefer() {
     // check("Defer(3*2)", "3*2");
     check("Defer(6/8)==6/8", //
         "6/8==3/4");
   }
 
+  @Test
   public void testDefinition() {
     check("a := 42", //
         "");
@@ -5060,7 +5217,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Attributes(f)={Listable}\n" + "f(x_):={x}");
   }
 
-  public void testDegree() {
+  @Test
+      public void testDegree() {
     check("\\[Pi]", //
         "Pi");
     check("\\[Degree]", //
@@ -5090,6 +5248,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "180");
   }
 
+  @Test
   public void testDelete() {
     // TODO
     // check("Delete({{1,2},{3,4}},{{1,2},{2,1},{2,1}})", //
@@ -5126,6 +5285,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,3,4}");
   }
 
+  @Test
   public void testDeleteCases() {
     check("DeleteCases(Sqrt(Range(10)),_Integer,{1},Infinity)", //
         "{Sqrt(2),Sqrt(3),Sqrt(5),Sqrt(6),Sqrt(7),2*Sqrt(2),Sqrt(10)}");
@@ -5169,7 +5329,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
-  public void testDeleteDuplicates() {
+  @Test
+    public void testDeleteDuplicates() {
     check("DeleteDuplicates({1, 7, 8, 4, 3, 4, 1, 9, 9, 2, 1})", //
         "{1,7,8,4,3,9,2}");
     check("DeleteDuplicates({3,2,1,2,3,4}, Less)", //
@@ -5186,6 +5347,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{0,0,0,1,0},{1,0,1,0,1},{1,1,1,0,1}}");
   }
 
+  @Test
   public void testDeleteDuplicatesBy() {
     check("DeleteDuplicatesBy(<|a -> 1, b -> -1, c -> 2, d -> -2|>, Abs)", //
         "<|a->1,c->2|>");
@@ -5195,6 +5357,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{a,y},{c,z}}");
   }
 
+  @Test
   public void testDeleteMissing() {
     check("DeleteMissing({a, b, Missing(), c, d, Missing()})", //
         "{a,b,c,d}");
@@ -5203,6 +5366,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
   public void testDateObject() {
     // Current date
     // check("DateObject()", //
@@ -5215,6 +5379,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2018-08-08T13:15");
   }
 
+  @Test
   public void testDateString() {
     check("DateString(3155673600)", //
         "Sat 01 Jan 2000 00:00:00");
@@ -5223,7 +5388,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "Thu 26 Aug 2021 22:15:13");
   }
 
-  public void testDateValue() {
+  @Test
+    public void testDateValue() {
     check("DateValue(DateObject({2016,8,1}), {\"Year\",\"Month\",\"Day\"})", //
         "{2016,8,1}");
     check("DateValue(DateObject({2016,8,1}), {\"Year\",\"MonthName\",\"DayName\"})", //
@@ -5247,6 +5413,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "{2020,4,18}");
   }
 
+  @Test
   public void testDecrement() {
     check("a = 5", //
         "5");
@@ -5263,12 +5430,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,1,3,4,5,6}");
   }
 
+  @Test
   public void testDedekindNumber() {
     check("Table(DedekindNumber(i), {i,0,11})",
         "{2,3,6,20,168,7581,7828354,2414682040998,56130437228687557907788,\n" //
             + "286386577668298411128469151667598498812366,DedekindNumber(10),DedekindNumber(11)}");
   }
 
+  @Test
   public void testRamseyNumber() {
     check("Table(RamseyNumber(1,j), {j,1,20})", //
         "{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}");
@@ -5280,6 +5449,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "9),RamseyNumber(4,10)}}");
   }
 
+  @Test
   public void testDenominator() {
     check("Denominator(ConditionalExpression(a/13,Element(C1,Integers)))", //
         "1");
@@ -5344,7 +5514,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
   }
 
-  public void testDepth() {
+  @Test
+      public void testDepth() {
     check("Depth(f(a, b)[c])", //
         "2");
     check("Depth(f(a, b)[c], Heads->True)", //
@@ -5367,11 +5538,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2");
   }
 
+  @Test
   public void testCapitalDifferentialD() {
     check("\"start \\[CapitalDifferentialD] 123 end\"", //
         "startⅅ 123 end");
   }
 
+  @Test
   public void testDerivative() {
     check("Derivative(0,0,0,n)[Hypergeometric2F1Regularized]", //
         "Hypergeometric2F1Regularized(n+#1,n+#2,n+#3,#4)*Pochhammer(#1,n)*Pochhammer(#2,n)&");
@@ -5568,6 +5741,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
   public void testDiceDissimilarity() {
     check("DiceDissimilarity({1, 0, 1, 1, 0}, {1, 1, 0, 1, 1})", //
         "3/7");
@@ -5579,7 +5753,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
   }
 
-  public void testDifferenceDelta() {
+  @Test
+    public void testDifferenceDelta() {
     check("DifferenceDelta(Cosh(a*i+b),{i,2,h})", //
         "Cosh(b+a*i)-2*Cosh(b+a*(h+i))+Cosh(b+a*(2*h+i))");
     check("DifferenceDelta(Sin(a*i+b),{i,5})", //
@@ -5597,7 +5772,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-b(a)+b(1+a)");
   }
 
-  public void testDifferences() {
+  @Test
+    public void testDifferences() {
     // TODO: two args function
     // check(
     // "Differences({a, b, c, d},3)", //
@@ -5631,6 +5807,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "45,-120,210,-252,210,-120,45,-10,1,0},{55,-165,330,-462,462,-330,165,-55,11,-1}}");
   }
 
+  @Test
   public void testDigitCount() {
 
     // message Maximum AST dimension 2147483647 exceeded
@@ -5692,6 +5869,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,2,2,4,2,4,4,8,2,4,4}");
   }
 
+  @Test
   public void testDigitQ() {
     check("DigitQ(\"1234\")", //
         "True");
@@ -5700,6 +5878,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
   public void testDiscreteDelta() {
     check("DiscreteDelta(0, 0, 0.0)", //
         "1");
@@ -5719,6 +5898,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testDiracDelta() {
     check("DiracDelta(1+I)", //
         "DiracDelta(1+I)");
@@ -5746,6 +5926,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testDirectedInfinity() {
     check("DirectedInfinity({0,0,0})", //
         "{ComplexInfinity,ComplexInfinity,ComplexInfinity}");
@@ -5852,6 +6033,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Indeterminate");
   }
 
+  @Test
   public void testDirichletEta() {
     check("DirichletEta(1)", //
         "Log(2)");
@@ -5861,7 +6043,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{0.0,-0.125,0.0,0.25,0.5,0.693147,0.822467,0.901543,0.947033}");
   }
 
-  public void testDiscriminant() {
+  @Test
+    public void testDiscriminant() {
     // github #122
     check("Discriminant((2*x^5)-(19*x^4)+(58*x^3)-(67*x^2)+(56*x)-48,x)", //
         "0");
@@ -5890,6 +6073,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "2-128*a^2*c^2*e^2-192*a^2*b*d*e^2+256*a^3*e^3");
   }
 
+  @Test
   public void testDisjointQ() {
     check("DisjointQ(f(d,f,e), f(a, b, c))", //
         "True");
@@ -5915,6 +6099,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testDispatch() {
     check("emptyRul=Dispatch({ })", //
         "Dispatch({})");
@@ -5952,6 +6137,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{b,b,d,d,e}");
   }
 
+  @Test
   public void testDistribute() {
     // check(
     // "Distribute(x^10 - 1)", //
@@ -5996,6 +6182,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "a^2+b^2");
   }
 
+  @Test
   public void testDivide() {
     check("Divide(a,b) // FullForm", //
         "Times(a, Power(b, -1))");
@@ -6027,7 +6214,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Times(a, Power(b, -1))");
   }
 
-  public void testDivideBy() {
+  @Test
+      public void testDivideBy() {
     check("a = 10", //
         "10");
     check("a /= 2", //
@@ -6043,6 +6231,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,2,3/y,4,5,6,7,8,9}");
   }
 
+  @Test
   public void testDivisible() {
     check("Divisible(2*Pi, Pi/2)", //
         "True");
@@ -6060,6 +6249,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testDivisors() {
     check("Length(Divisors(Factorial(18)))", //
         "14688");
@@ -6104,6 +6294,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{1,5,11,55,121,605},{1,13,67,871},{1,2,4,8,103,206,412,824}}");
   }
 
+  @Test
   public void testDivisorSigma() {
     check("DivisorSigma(17,20)", //
         "13107300000780119453382");
@@ -6123,6 +6314,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "51332");
   }
 
+  @Test
   public void testDivisorSum() {
     // https://oeis.org/A002791
     check("a(n_) := DivisorSum(n, #^2 &, # < 5 &) + 4 * DivisorSum(n, # &, # > 4 &); Array(a,70)", //
@@ -6151,6 +6343,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testDo() {
     check("Do(marray(i,10-i+1)=1, {i,1,10});marray(1,10)", //
         "1");
@@ -6183,6 +6376,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/(1+1/(1+1/(1+1/(1+1/(1+x)))))");
   }
 
+  @Test
   public void testDownValues() {
     check("f(1)=3", //
         "3");
@@ -6192,6 +6386,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{HoldPattern(f(1)):>3,HoldPattern(f(x_)):>x^3}");
   }
 
+  @Test
   public void testDrop() {
     // message Drop: Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position
     // 2 in x.
@@ -6245,6 +6440,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Drop({{11,12,13},{21,22,23},a,{31,32,33}},1,2)");
   }
 
+  // @Test
   // public void testDSolve() {
   // check("DSolve({(2*y(x)-x^2)+(2*x-y(x)^2)*y'(x)==0},y(x), x)",
   // "{{y(x)->1/(x^2-C(1))}}");
@@ -6255,6 +6451,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   // "{{y(x)->E^x}}");
   // }
 
+  @Test
   public void testDSolve() {
     check("DSolve(y'(x)==2*x*y(x)^2,Null,x)", //
         "DSolve(y'(x)==2*x*y(x)^2,Null,x)");
@@ -6314,6 +6511,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{y(x)->1/(1/2+3*x)}}");
   }
 
+  @Test
   public void testDuplicateFreeQ() {
     check("DuplicateFreeQ({1, 7, 8, 4, 3, 9, 2})", //
         "True");
@@ -6327,6 +6525,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testEasterSunday() {
     check("EasterSunday(2000)", //
         "{2000,4,23}");
@@ -6334,6 +6533,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{2030,4,21}");
   }
 
+  @Test
   public void testEcho() {
     check("{Echo(f(x,y)), Print(g(a,b))}", //
         // >> f(x,y)
@@ -6354,7 +6554,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "4");
   }
 
-  public void testEchoFunction() {
+  @Test
+    public void testEchoFunction() {
     check("{EchoFunction()[f(x,y)], Print(g(a,b))}", //
         // >> f(x,y)
         // >> g(a,b)
@@ -6371,6 +6572,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "expr");
   }
 
+  @Test
   public void testEffectiveInterest() {
     // TODO
     // check("EffectiveInterest({{0, .05}, {3, .065}, {5, .07}, {6, .085}}, 1/12)", //
@@ -6401,6 +6603,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{nr->(-1+(1+eff)^(1/f))*f}}");
   }
 
+  @Test
   public void testElement() {
     check("Element(N(1,50), Integers)", //
         "1∈Integers");
@@ -6444,6 +6647,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testElementData() {
     // TODO
     // check("Length(ElementData(All))", "118");
@@ -6519,6 +6723,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testEliminate() {
     check("Eliminate({x^2 + y^2 + z^2 == 1, x - y + z == 2, x^3 - y^2 == z + 1}, {y, z})",
         "-4*x+2*x^2-4*z+2*x*z+2*z^2==-3&&4*x-x^2+x^3+3*z-2*x*z-z^2==5");
@@ -6550,6 +6755,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "b^((2*Log(y))/Log(a))-z==0");
   }
 
+  @Test
   public void testEllipticE() {
     // https://github.com/Hipparchus-Math/hipparchus/issues/148
     check("EllipticE(3 + 2.5*I, 2.3 - 1.5*I)", //
@@ -6589,6 +6795,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             "0.901309+I*0.911354,1.12766+I*0.789102,1.29305+I*0.657158,1.37918+I*0.53464,1.34791+I*0.585355,1.47153+I*0.714415}");
   }
 
+  @Test
   public void testEllipticF() {
     check("EllipticF(0.3,0.8)", //
         "0.303652");
@@ -6628,6 +6835,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             "1.03395+I*1.34928,1.26198+I*1.69875,2.53768+I*1.51416,2.77616+I*1.25663}");
   }
 
+  @Test
   public void testEllipticK() {
     check("EllipticK(0.5)", //
         "1.85407");
@@ -6639,6 +6847,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1.26549+I*0.162237,1.30064+I*0.18478,1.33866+I*0.213052,1.37925+I*0.249038,1.42127+I*0.29538,1.46203+I*0.355241,1.49611+I*0.431362,1.51493+I*0.523542,1.50924+I*0.625146}");
   }
 
+  @Test
   public void testEllipticPi() {
     check("EllipticPi(0.4, 0.6)", //
         "2.59092");
@@ -6681,6 +6890,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "{1.0227,1.07184,1.12843,1.19454,1.27313,1.36859,1.48785,1.64253,1.85407,2.16762,2.70129,3.93061,ComplexInfinity,-0.592756+I*(-4.05578),-0.45672+I*(-2.7207),-0.371748+I*(-2.14612),-0.313545+I*(-1.8138)}");
   }
 
+  @Test
   public void testEllipticTheta() {
     check("EllipticTheta(3,0.4,E^(Pi*I*1/3))", //
         "EllipticTheta(3,0.4,0.5+I*0.866025)");
@@ -6727,7 +6937,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "EllipticTheta(3,0.4+I*1.0,0.5+I*1.0)");
   }
 
-  public void testEntropy() {
+  @Test
+      public void testEntropy() {
     // Shannon entropy
     check("Entropy({a, b, b})", //
         "2/3*Log(3/2)+Log(3)/3");
@@ -6740,7 +6951,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
 
 
-  public void testErf() {
+  @Test
+    public void testErf() {
     // assertEquals(org.hipparchus.special.Erf.erf(new Complex(1.0, 1.5)).toString(), //
     // "");
     checkNumeric("Erf(3.0)", //
@@ -6787,6 +6999,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.8208908072732779");
   }
 
+  @Test
   public void testErfc() {
     check("N(Erfc(3/2),50)", //
         "0.033894853524689272933023738354052141318589520742363");
@@ -6809,6 +7022,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
   }
 
+  @Test
   public void testErfi() {
     checkNumeric("N(Erfi(1/2),50)", //
         "0.6149520946965109808396811856236413930513456178954");
@@ -6840,6 +7054,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-Erfi(x)");
   }
 
+  @Test
   public void testEuclideanDistance() {
     check("EuclideanDistance({-1, -1}, {1.0, 1})", //
         "2.82843");
@@ -6851,6 +7066,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Sqrt(Abs(a-c)^2+Abs(b-d)^2)");
   }
 
+  @Test
   public void testEulerE() {
     check("EulerE(n,1/2)", //
         "EulerE(n)/2^n");
@@ -6869,6 +7085,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,0,-1,0,5,0,-61,0,1385,0,-50521,0,2702765,0,-199360981,0}");
   }
 
+  @Test
   public void testEulerGamma() {
     check("N(EulerGamma,100)", //
         "0.5772156649015328606065120900824024310421593359399235988057672348848677267776646709369470632917467495");
@@ -6876,7 +7093,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.577216");
   }
 
-  public void testEulerPhi() {
+  @Test
+    public void testEulerPhi() {
     check("Refine(EulerPhi(p^n),Element(p, Primes)&&Element(n, Integers))", //
         "-1/p^(1-n)+p^n");
 
@@ -6892,6 +7110,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,4,40,400,4000,40000,400000,4000000,40000000,400000000,4000000000}");
   }
 
+  @Test
   public void testEvaluate() {
     check("Evaluate(1+1)", //
         "2");
@@ -6914,6 +7133,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{},{Flat,Listable,NumericFunction,OneIdentity,Orderless,Protected}}");
   }
 
+  @Test
   public void testExactNumberQ() {
     check("ExactNumberQ(10)", //
         "True");
@@ -6927,6 +7147,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testExcept001() {
     check("Cases({x, a, b, x, c}, Except(x))", //
         "{a,b,c}");
@@ -6945,6 +7166,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{EulerGamma,r,I,Pi,1/2}");
   }
 
+  @Test
   public void testExcept002() {
     // https://github.com/mathics/Mathics/issues/1405
     check("f(Except(_(___), x_?NumericQ)) := g(x)", //
@@ -6964,6 +7186,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "a");
   }
 
+  @Test
   public void testExp() {
     check("\\[ExponentialE]", //
         "E");
@@ -7005,6 +7228,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "E^Conjugate(z)");
   }
 
+  @Test
   public void testExpand() {
     check("Expand((a(1)+a(2))*(x(1)+x(2))^2, x(_))", //
         "(a(1)+a(2))*x(1)^2+2*(a(1)+a(2))*x(1)*x(2)+(a(1)+a(2))*x(2)^2");
@@ -7224,6 +7448,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(4*a*c)/(f+g)^2+(4*b*c)/(f+g)^2+(4*a*d)/(f+g)^2+(4*b*d)/(f+g)^2");
   }
 
+  @Test
   public void testExpandAll() {
     // IExpr[] temp=
     // Apart.getFractionalPartsTimes(F.Times(F.Plus(F.c,F.b),F.Power(F.a,F.CN1),F.b),
@@ -7291,6 +7516,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(1+x+y+x*y)[x]");
   }
 
+  @Test
   public void testExponent() {
     check("Exponent(1 + x^(-2) + a*x^(-42), x, List)", //
         "{-42,-2,0}");
@@ -7379,6 +7605,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-1");
   }
 
+  @Test
   public void testExpToTrig() {
     check("TrigToExp(Sin(x))", //
         "(I*1/2)/E^(I*x)-I*1/2*E^(I*x)");
@@ -7418,6 +7645,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Cosh(c*x)+Sinh(c*x)");
   }
 
+  @Test
   public void testExtendedGCD() {
     check("ExtendedGCD(2,3)", //
         "{1,{-1,1}}");
@@ -7445,6 +7673,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2");
   }
 
+  @Test
   public void testExpIntegralE() {
     check("ExpIntegralE(0,z)", //
         "1/(E^z*z)");
@@ -7461,6 +7690,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "0.308405,0.275299,0.247811,0.224748,0.205209,0.188505,0.174105,0.161593,0.150644,0.140999,0.132449}");
   }
 
+  @Test
   public void testExpIntegralEi() {
     check("ExpIntegralEi(I*1.0)", //
         "0.337404+I*2.51688");
@@ -7487,6 +7717,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "4.24987");
   }
 
+  @Test
   public void testExtract() {
     // Extract: Position specification {{rr},{3}} in Extract(a+b+c,{{rr},{3}}) is not applicable.
     check("Extract(a+b+c,{{rr},{3}})", //
@@ -7519,6 +7750,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{a,b},d}");
   }
 
+  @Test
   public void testFactor() {
     // for (int i = 0; i < 2_000_000; i++) {
     // check(
@@ -7968,6 +8200,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3*a^4-3*a^2*x^2-2*a^2*x*y+2*x^3*y");
   }
 
+  @Test
   public void testFactorialPower() {
     check("FactorialPower(-5, 3, 0.5)", //
         "-165.0");
@@ -8059,6 +8292,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-3.5+I*69.0");
   }
 
+  @Test
   public void testFactorial() {
     check("(5/2)!", //
         "15/8*Sqrt(Pi)");
@@ -8110,6 +8344,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Not(Factorial(a))");
   }
 
+  @Test
   public void testFactorial2() {
 
     check("N(Factorial2(3/13), 10)", //
@@ -8145,6 +8380,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
   public void testFactorInteger() {
     check("FactorInteger(-9223372036854775808/9223372036854775807)", //
         "{{-1,1},{2,63},{7,-2},{73,-1},{127,-1},{337,-1},{92737,-1},{649657,-1}}");
@@ -8510,6 +8746,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{1234577,1},{1234603,1}}");
   }
 
+  @Test
   public void testFactorSquareFree() {
     check("a == d b + d c // FactorSquareFree", //
         "a==(b+c)*d");
@@ -8527,7 +8764,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(3+x)^3*(2+3*x+x^2)^2");
   }
 
-  public void testFactorSquareFreeList() {
+  @Test
+      public void testFactorSquareFreeList() {
     // bug endless loop ?
     check("FactorSquareFreeList(x^2147483647)", //
         "{{x,2147483647}}");
@@ -8544,6 +8782,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{-1,1},{-1+x,2},{-4+3*x,1}}");
   }
 
+  @Test
   public void testFactorTerms() {
     check("FactorTerms(-41*Im(z)-82*Re(z))", //
         "-41*(Im(z)+2*Re(z))");
@@ -8575,7 +8814,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3*(1+2*x+x^2)");
   }
 
-  public void testFactorTermsList() {
+  @Test
+      public void testFactorTermsList() {
     check("FactorTermsList(6*a^2 + 9*x^2 + 12*b^2)", //
         "{3,2*a^2+4*b^2+3*x^2}");
     check("FactorTermsList(3 + 3*a + 6*a*x + 6*x + 12*a*x^2 + 12*x^2, x)", //
@@ -8603,7 +8843,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
-  public void testFibonacci() {
+  @Test
+      public void testFibonacci() {
     // check("Fibonacci(10007,Quantity(1.2,\"m\"))", //
     // "Fibonacci(10007,1.2[m])");
     // Fibonacci(11,{13,2,3,a})
@@ -8662,6 +8903,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "533187938298969649928516003704476137795166849228875");
   }
 
+  @Test
   public void testFileFormat() {
     check("FileFormat(\"example/picture.jpg\")", //
         "JPEG");
@@ -8669,6 +8911,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "None");
   }
 
+  @Test
   public void testFilterRules() {
     check("FilterRules({a -> 1, b -> 2, c -> 3}, {b, a})", //
         "{a->1,b->2}");
@@ -8678,6 +8921,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{b->3}");
   }
 
+  @Test
   public void testFindClusters() {
     check("FindClusters(DirectedInfinity({-1,-2,3}),Times())", //
         "FindClusters({-Infinity,-Infinity,Infinity},1)");
@@ -8772,6 +9016,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "{{1.0,2.0,3.0,1.0},{12.0,13.0},{25.0},{10.0}}");
   }
 
+  @Test
   public void testFindFit() {
     // https://stackoverflow.com/a/51696587/24819
     check(
@@ -8808,6 +9053,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "0},{b,0},{c,0}},x)");
   }
 
+  @Test
   public void testFindLinearRecurrence() {
 
     check("FindLinearRecurrence({{1,0},Sqrt(2)/2})", //
@@ -8827,6 +9073,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testFindMaximum() {
     check("FindMaximum(x*Cos(x), {x,2.0} )", //
         "{0.561096,{x->0.860334}}");
@@ -8842,6 +9089,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1.0,{x->-1.5708,y->-0.785398}}");
   }
 
+  @Test
   public void testFindMinimum() {
 
     check("FindMinimum(Abs(x + 1) + Abs(x + 1.01) + Abs(y + 1),{x, y})", //
@@ -8871,11 +9119,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
   // https://github.com/Hipparchus-Math/hipparchus/issues/40
+  // @Test
   // public void testBisection() {
   // BisectionSolver solver = new BisectionSolver();
   // System.out.println(solver.solve(100, x->Math.cos(x)+2, 0.0, 5.0));
   // }
 
+  @Test
   public void testFindRoot() {
     // multivariate cases
     check("FindRoot({2*x1+x2==E^(-x1), -x1+2*x2==E^(-x2)},{{x1, 0.0},{x2, 1.0}})", //
@@ -8995,6 +9245,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
   public void testFirst() {
     check("First(<||>)", //
         "First(<||>)");
@@ -9018,6 +9269,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "a");
   }
 
+  @Test
   public void testFirstCase() {
     check("FirstCase({a, 5, \\[Pi]}, _Symbol, Heads -> True)", //
         "List");
@@ -9040,6 +9292,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "b->Automatic");
   }
 
+  @Test
   public void testFirstPosition() {
     check("FirstPosition(x^2 + y^2, Power, Heads->False)", //
         "Missing(NotFound)");
@@ -9065,6 +9318,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{23}");
   }
 
+  @Test
   public void testFit() {
     check("Fit({2,3,5,7,11,13},3,x)", //
         "3.0-1.95238*x+1.10714*x^2-0.0833333*x^3");
@@ -9083,6 +9337,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x^2");
   }
 
+  @Test
   public void testFiveNum() {
     // example from https://en.wikipedia.org/wiki/Five-number_summary
     check("FiveNum({0, 0, 1, 2, 63, 61, 27, 13})", //
@@ -9093,6 +9348,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{12,18,49/2,44,65}");
   }
 
+  @Test
   public void testFixedPoint() {
     // check("FixedPoint(Null, Null)", //
     // "Recursion limit 256 exceeded at: Null");
@@ -9128,6 +9384,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{7,0}");
   }
 
+  @Test
   public void testFixedPointList() {
     check("FixedPointList(Function((# + 3/#)/2), 1.)", //
         "{1.0,2.0,1.75,1.73214,1.73205,1.73205,1.73205}");
@@ -9166,6 +9423,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.739085");
   }
 
+  @Test
   public void testFlat() {
     System.out.println("");
     // see test https://github.com/mathics/Mathics/issues/747
@@ -9215,6 +9473,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Hold(v(a,b,c))");
   }
 
+  @Test
   public void testOnlyFlat() {
     // see test https://github.com/mathics/Mathics/issues/1485
     check("SetAttributes(fl, Flat)", //
@@ -9229,6 +9488,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "fl(a,b,c)");
   }
 
+  @Test
   public void testFlatOrderlessOneIdentity() {
     check("pm(y_,x_+y_+z_):={x,y,z}", //
         "");
@@ -9292,6 +9552,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "{{Flat,OneIdentity,Orderless},p,{eqv(q,r)}}}");
   }
 
+  @Test
   public void testFlatten() {
     // message Flatten: Level specification value greater equal 0 expected instead of -Infinity.
     check("Flatten(f(g(u, v), f(x, y)), -Infinity, f)", //
@@ -9333,7 +9594,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("m = {{{1, 2}, {3}}, {{4}, {5, 6}}}", "");
   }
 
-  public void testFlattenAt() {
+  @Test
+ public void testFlattenAt() {
     check("FlattenAt(2)[{a, {b, c}, {d, e}, {f}}]", //
         "{a,b,c,{d,e},{f}}");
     check("FlattenAt({a, {b, c}, {d, e}, {f}}, 2)", //
@@ -9348,6 +9610,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{f(a,{b},{c},{d}),f({a},b,{c},{d}),f({a},{b},c,{d}),f({a},{b},{c},d)}");
   }
 
+  @Test
   public void testFloor() {
     check("Floor(Quantity(8.5, \"Meters\"))", //
         "8[Meters]");
@@ -9390,6 +9653,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1+I*2");
   }
 
+  @Test
   public void testFold() {
     // message: Fold: Fold called with 5 arguments; 1 or 3 arguments are expected.
     check("Fold(f)[{a, b, c, d},x,y,z]", //
@@ -9420,6 +9684,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{0,-1,-1}");
   }
 
+  @Test
   public void testFoldList() {
     check("FoldList(f, e1, h(e2, e3, e4))", //
         "h(e1,f(e1,e2),f(f(e1,e2),e3),f(f(f(e1,e2),e3),e4))");
@@ -9462,6 +9727,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{a,f(a,b),f(f(a,b),c),f(f(f(a,b),c),d)}");
   }
 
+  @Test
   public void testFor() {
     check("For(n = 1, n < 1000, n++, If(PrimeQ(n) && (n > 7), Return())); n ", //
         "11");
@@ -9491,6 +9757,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "");
   }
 
+  @Test
   public void testFourier() {
     check("Fourier({1, 1, 2, 2, 1, 1, 0, 0})", //
         "{2.82843,-0.5+I*1.20711,0.0,0.5+I*(-0.207107),0.0,0.5+I*0.207107,0.0,-0.5+I*(-1.20711)}");
@@ -9510,6 +9777,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Fourier({1,2,0,0,7})");
   }
 
+  @Test
   public void testFractionalPart() {
     check("FractionalPart(Quantity(-1.1, \"Meters\"))", //
         "-0.1[Meters]");
@@ -9589,6 +9857,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{-0.3999999999999999,-0.5,0.0}");
   }
 
+  @Test
   public void testFreeQ() {
     // see notes for MemberQ
     check("FreeQ(a*x*Log(x), x*Log(x))", //
@@ -9605,6 +9874,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testFresnelC() {
     check("N(FresnelC(2),50)", //
         "0.48825340607534075450022350335726103768836715450924");
@@ -9640,6 +9910,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Cos(1/2*Pi*x^2)");
   }
 
+  @Test
   public void testFresnelS() {
     check("N(FresnelS(2),50)", //
         "0.34341567836369824219530081595806845688654181220252");
@@ -9673,7 +9944,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Sin(1/2*Pi*x^2)");
   }
 
-  public void testFrobeniusNumber() {
+  @Test
+ public void testFrobeniusNumber() {
     // message FrobeniusNumber: The first argument {0,0,0,0} of FrobeniusNumber should be a
     // non-empty list of positive integers.
     check("FrobeniusNumber({0,0,0,0})", //
@@ -9693,6 +9965,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{-1,1,5,11,19,29,41,55,71,89,109,131,155,181,209}");
   }
 
+  @Test
   public void testFrobeniusSolve() {
     // iter limit
     check("FrobeniusSolve({1,5,10,25},1317624576693539401)", //
@@ -9730,6 +10003,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{0,1,4,1},{0,6,0,1}}");
   }
 
+  @Test
   public void testFromCharacterCode() {
     check("FromCharacterCode({97,45,51})", //
         "a-3");
@@ -9744,6 +10018,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{65,66,67,68,32,97,98,99,100}");
   }
 
+  @Test
   public void testFromContinuedFraction() {
     // check(
     // "Sqrt(63)/3", //
@@ -9803,6 +10078,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{2,3,4,5}");
   }
 
+  @Test
   public void testFromDigits() {
 
     // https://oeis.org/A023391
@@ -9837,6 +10113,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2042");
   }
 
+  @Test
   public void testFromRomanNumeral() {
     check("FromRomanNumeral(\"MDCLXVI\")", //
         "1666");
@@ -9855,7 +10132,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{101,102,103,104,105,106,107,108}");
   }
 
-  public void testFullForm() {
+  @Test
+public void testFullForm() {
     check("N( 1/2+8 ,12)//FullForm", //
         "8.5`");
     check("N( Pi/13^101 ,30)//FullForm", //
@@ -9886,6 +10164,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FullForm(a:=b)", "Null");
   }
 
+  @Test
   public void testFullSimplify() {
     check("FullSimplify(Sign(z)*Abs(z))", //
         "z");
@@ -9986,6 +10265,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "E^x");
   }
 
+  @Test
   public void testFullSimplifyIssue856() {
     // github issue #856
     check("FullSimplify( (2 *Sqrt(6) - Sqrt(3)) * (Sqrt(2) + 4))", //
@@ -9996,6 +10276,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-Sqrt(3/2)");
   }
 
+  @Test
   public void testFunction() {
     EvalEngine.resetModuleCounter4JUnit();
     // check("(p + #) & /. p -> q", //
@@ -10097,6 +10378,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testFunctionDomain() {
     check("FunctionDomain(ArcCoth(2+3*x)*ArcSec(7+2/3*x), x)", //
         "x<=-12||(-9<=x&&x<-1)||x>-1/3");
@@ -10149,6 +10431,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "FunctionDomain(Log(-1+Tan(x)),x)");
   }
 
+  @Test
   public void testFunctionRange() {
     // TODO
     // check("FunctionRange(Sqrt(x^2 - 1)/x, x, y)", //
@@ -10178,6 +10461,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-1<=y<=1");
   }
 
+  @Test
   public void testFunctionURL() {
     assertEquals(ID.LINE_NUMBER_OF_JAVA_CLASS.length, ID.ZTransform + 1);
     checkRegex("FunctionURL(NIntegrate)", //
@@ -10186,6 +10470,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     );
   }
 
+  @Test
   public void testGamma() {
     check("Gamma(Underflow())", //
         "Overflow()");
@@ -10285,6 +10570,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1.1018024908797128");
   }
 
+  @Test
   public void testGammaRegularized() {
     check("GammaRegularized(1, 1.5)", //
         "0.22313");
@@ -10314,6 +10600,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "E^(-x)");
   }
 
+  @Test
   public void testGather() {
     check("Gather({1, 7, 3, 7, 2, 3, 9})", //
         "{{1},{7,7},{3,3},{2},{9}}");
@@ -10328,6 +10615,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{0,1/3,2/3},{1,4/3,5/3},{2,7/3,8/3},{3}}");
   }
 
+  @Test
   public void testGlaisher() {
     check("Glaisher // N", //
         "1.28243");
@@ -10335,6 +10623,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1.282427129100622636875342568869791727767688927325");
   }
 
+  @Test
   public void testGatherBy() {
     check("GatherBy({{1, 2}, {2, 1}, {3, 5}, {5, 1}, {2, 2, 2}}, {})", //
         "{{{1,2}},{{2,1}},{{3,5}},{{5,1}},{{2,2,2}}}");
@@ -10360,6 +10649,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
 
 
+  @Test
   public void testGCD() {
 
     check("GCD(5+3*I, 2-8*I)", //
@@ -10419,6 +10709,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{2,1,4,1,2}");
   }
 
+  @Test
   public void testGeometricMean() {
     checkNumeric("GeometricMean(13.261197054679151) // N", //
         "GeometricMean(13.261197054679151)");
@@ -10439,6 +10730,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "4.56079359657056");
   }
 
+  @Test
   public void testGeoDistance() {
     // distance between Oslo and Berlin
     check("GeoDistance({59.914, 10.752}, {52.523, 13.412})", //
@@ -10452,6 +10744,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "7031.637[mi]");
   }
 
+  @Test
   public void testGet() {
     if (Config.FILESYSTEM_ENABLED) {
       // message: Get: Cannot open noopen-file-test.m.
@@ -10472,6 +10765,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testGoldenAngle() {
     // check("IntegerPart[GoldenAngle^100]", //
     // "");
@@ -10485,6 +10779,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(3-Sqrt(5))*Pi");
   }
 
+  @Test
   public void testGoldenRatio() {
     check("N(GoldenRatio)", //
         "1.61803");
@@ -10492,6 +10787,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "ArcCsch(2)");
   }
 
+  @Test
   public void testGrad() {
     // create Jacobian matrix
 
@@ -10530,6 +10826,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
   public void testGroebnerBasis() {
     check("GroebnerBasis({x*y-2*y, 2*y^2-x^2}, {y, x})", //
         "{-2*x^2+x^3,-2*y+x*y,-x^2+2*y^2}");
@@ -10555,6 +10852,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1}");
   }
 
+  @Test
   public void testGudermannian() {
     check("N(Gudermannian(4/3), 50)", //
         "1.0553273957593967167251201219876788679534384811898");
@@ -10572,6 +10870,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1.58427");
   }
 
+  @Test
   public void testHarmonicMean() {
     checkNumeric("HarmonicMean({-3.1415,2.987,-1,1})", //
         "242.94266666666653");
@@ -10589,6 +10888,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{80/33,160/49}");
   }
 
+  @Test
   public void testHarmonicNumber() {
     check("D(HarmonicNumber(x),{x,4})", //
         "24/x^5+PolyGamma(4,x)");
@@ -10670,6 +10970,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Pi^2/6");
   }
 
+  @Test
   public void testHaversine() {
     check("N(Haversine(1/7), 50)", //
         "0.0050933697766924586521369314932831270629836495502145");
@@ -10691,6 +10992,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{0,1/2*(1-1/Sqrt(2)),1/4,1/2}");
   }
 
+  @Test
   public void testHead() {
     check("Head(f(a, b))", //
         "f");
@@ -10719,6 +11021,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Symbol");
   }
 
+  @Test
   public void testHeavisideTheta() {
     check("Derivative(1)[HeavisideTheta]", //
         "DiracDelta(#1)&");
@@ -10744,6 +11047,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testHold() {
     check("Hold(1<2<3!=a<2==3) // FullForm", //
         "Hold(Inequality(1, Less, 2, Less, 3, Unequal, a, Less, 2, Equal, 3))");
@@ -10767,6 +11071,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Hold(6/8)==3/4");
   }
 
+  @Test
   public void testHoldComplete() {
 
     check("HoldComplete(Evaluate(a+a),2+2,Sequence(a,b))", //
@@ -10786,6 +11091,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
   }
 
+  @Test
   public void testHoldAllComplete() {
     check("ClearAll(fump); " //
         + "SetAttributes(fump, HoldAllComplete);" //
@@ -10794,6 +11100,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "270");
   }
 
+  @Test
   public void testHoldForm() {
     check("HoldForm(3*2)", //
         "3*2");
@@ -10801,6 +11108,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "6/8==3/4");
   }
 
+  @Test
   public void testHoldPattern() {
 
     check("a + b /. HoldPattern(_ + _) -> 0", //
@@ -10842,11 +11150,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{a->b}");
   }
 
+  @Test
   public void testHorner() {
     check("Horner(1/Sqrt(5))", //
         "1/Sqrt(5)");
   }
 
+  @Test
   public void testHornerForm() {
     check("HornerForm(1/Sqrt(5))", //
         "1/Sqrt(5)");
@@ -10861,6 +11171,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "a+x*(b+c*x)");
   }
 
+  @Test
   public void testHurwitzLerchPhi() {
     check("HurwitzLerchPhi(-1,-1,1)", //
         "1/4");
@@ -10872,6 +11183,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{Log(2),1,Infinity,-I*1/2*Pi}");
   }
 
+  @Test
   public void testHurwitzZeta() {
     checkNumeric("HurwitzZeta(2.2,3.1)", //
         "0.26067453797192913");
@@ -10944,6 +11256,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/2-a");
   }
 
+  @Test
   public void testHyperfactorial() {
     check("Hyperfactorial(-1/2)", //
         "Glaisher^(3/2)/(2^(1/24)*E^(1/8))");
@@ -10955,6 +11268,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3319766398771200000");
   }
 
+  @Test
   public void testHypergeometric0F1() {
     check("N(Hypergeometric0F1(1, -2), 50)", //
         "-0.19654809527046820004079337208793223132588978731089");
@@ -10983,6 +11297,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3.1655890675997247");
   }
 
+  @Test
   public void testHypergeometric0F1Regularized() {
     checkNumeric("Hypergeometric0F1Regularized(0., E)", //
         "8.522277545659575");
@@ -10992,6 +11307,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(I*6.9282032302755091741097853660234894677712210152415)*BesselI(-1,I*13.856406460551018348219570732046978935542442030483)");
   }
 
+  @Test
   public void testHypergeometric1F1() {
     checkNumeric("Hypergeometric1F1(-0.5, 1.0 / 3.0, -1)", //
         "2.269314995817225");
@@ -11049,6 +11365,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{29.48263182051029,11.393052728194332,6.2358316369166005}");
   }
 
+  @Test
   public void testHypergeometric1F1Regularized() {
     checkNumeric("Hypergeometric1F1Regularized(7, 23, 0.5)", //
         "1.03705810750471E-21");
@@ -11058,6 +11375,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "E^z/Gamma(a)");
   }
 
+  @Test
   public void testHypergeometric2F1() {
     // https://github.com/mtommila/apfloat/issues/29
     checkNumeric("Hypergeometric2F1(-3.0, -1, -2, 1.0)", //
@@ -11209,6 +11527,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.8677508558430819");
   }
 
+  @Test
   public void testHypergeometric2F1Regularized() {
     check("Hypergeometric2F1Regularized(I, -I, .5 + I, 5)", //
         "-0.91139+I*(-1.76606)");
@@ -11237,6 +11556,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/Gamma(c)");
   }
 
+  @Test
   public void testHypergeometricPFQ() {
     // message HypergeometricPFQ: general hypergeometric argument currently restricted.
     check("HypergeometricPFQ({1, 1, 1}, {3/2, 3/2, 3/2}, 10.0)", //
@@ -11258,7 +11578,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
-  public void testHypergeometricU() {
+  @Test
+      public void testHypergeometricU() {
     // TODO throws hypergeometric function pole
     // check("HypergeometricU(3, 2, 1.0)", //
     // "0.105479");
@@ -11283,6 +11604,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "0.0436079,0.0314298,0.0236577,0.0183874,0.0146502}");
   }
 
+  @Test
   public void testI() {
     check("I*0.0//FullForm", //
         "Complex(0.0`,0.0`)");
@@ -11292,6 +11614,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "10");
   }
 
+  @Test
   public void testIdentity() {
     check("Composition(Through, {Identity, Sqrt}) /@ {0, 1.0, 2.0, 3.0, 4.0}", //
         "{{0,0},{1.0,1.0},{2.0,1.41421},{3.0,1.73205},{4.0,2.0}}");
@@ -11305,6 +11628,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testIf() {
     check("If(FreeQ(a+b*x,x),1,a+b*x)", //
         "a+b*x");
@@ -11328,6 +11652,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Null");
   }
 
+  @Test
   public void testIn001() {
     check("a=1.0", //
         "1.0");
@@ -11345,6 +11670,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "In(3):=In(2)\n" + "In(4):=In(2)\n" + "In(5):=Definition(Out)");
   }
 
+  @Test
   public void testIn002() {
     check("a=1.0", //
         "1.0");
@@ -11364,6 +11690,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "In(6):=-Sqrt(3)+a");
   }
 
+  @Test
   public void testIm() {
     check("Im(I*Arg(z) + Log(2) + (1/2)*Log(Im(z)^2 + Re(z)^2))", //
         "Arg(z)+Im(Log(Im(z)^2+Re(z)^2))/2");
@@ -11408,6 +11735,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Indeterminate");
   }
 
+  @Test
   public void testImportString() {
     check(
         "ImportString( \"[\\\"Association\\\",[\\\"Rule\\\",\\\"'x'\\\",\\\"1\\\"],[\\\"Rule\\\",\\\"'y'\\\",\\\"2\\\"],[\\\"Rule\\\",\\\"'z'\\\",\\\"3\\\"]]\", \"ExpressionJSON\") // InputForm", //
@@ -11448,6 +11776,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3*a");
   }
 
+  @Test
   public void testIncrement() {
     check("a = 2", //
         "2");
@@ -11466,6 +11795,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,3,3,4,5,6}");
   }
 
+  @Test
   public void testIndeterminate() {
     check("Tan(Indeterminate)", //
         "Indeterminate");
@@ -11492,6 +11822,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "ComplexInfinity");
   }
 
+  @Test
   public void testInexactNumberQ() {
     check("InexactNumberQ(a)", //
         "False");
@@ -11503,6 +11834,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testInfinity() {
     // 1/2*(2+3*l+l^2-4*(-Infinity)-2*l*(-Infinity)+(-Infinity)^2)
     check("-2*l*(-Infinity)", //
@@ -11528,12 +11860,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Indeterminate");
   }
 
+  @Test
   public void testInformation() {
     // print documentation in console
     check("Information(Sin)", //
         "");
   }
 
+  @Test
   public void testInner() {
     check("Inner({{1,0},{0,1},Indeterminate},{{1,0},{0,1},SparseArray({0,0})},{-1/2,{1,2,3,a},3})", //
         "Inner({{1,0},{0,1},Indeterminate},{{1,0},{0,1},SparseArray(Number of elements: 0 Dimensions: {2} Default value: 0)},{-\n"
@@ -11573,6 +11907,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{{g(f(a,1),f(b,2))}},{{g(f(x,1),f(y,2))}}}");
   }
 
+  @Test
   public void testInputForm() {
     check("InputForm(Sin(0))", //
         "0");
@@ -11580,6 +11915,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "\"a string\"");
   }
 
+  @Test
   public void testInsert() {
     // print: The argument x is not a rule or a list of rules.
     check("Insert(<||>, x, 1)", //
@@ -11602,6 +11938,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{a,b,c,d,2,e}");
   }
 
+  @Test
   public void testInteger() {
     check("123456789012345678901234567890", //
         "123456789012345678901234567890");
@@ -11611,6 +11948,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{False,True,True}");
   }
 
+  @Test
   public void testIntegerDigits() {
     check("IntegerDigits({123,456,789}, 2, 10)", //
         "{{0,0,0,1,1,1,1,0,1,1},{0,1,1,1,0,0,1,0,0,0},{1,1,0,0,0,1,0,1,0,1}}");
@@ -11659,6 +11997,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{0,0,0},{0,0,1},{0,1,0},{0,1,1},{1,0,0},{1,0,1},{1,1,0},{1,1,1}}");
   }
 
+  @Test
   public void testIntegerExponent() {
     check("IntegerExponent(1230000)", //
         "4");
@@ -11684,6 +12023,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "IntegerExponent(10,b)");
   }
 
+  @Test
   public void testIntegerLength() {
     check("IntegerLength(8,1)", //
         "IntegerLength(8,1)");
@@ -11705,6 +12045,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testIntegerPart() {
     check("IntegerPart(Quantity(-1.1, \"Meters\"))", //
         "-1[Meters]");
@@ -11739,6 +12080,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
   public void testIntegerPartitions() {
     // message Maximum AST dimension 2147483647 exceededs
     check("IntegerPartitions(2147483647)", //
@@ -11792,6 +12134,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{}");
   }
 
+  @Test
   public void testIntegrateDefinite() {
     check("Integrate(1/(x^3+1), {x,0,1})", //
         "Pi/(3*Sqrt(3))+Log(2)/3");
@@ -11812,6 +12155,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "51/52+27/52*(-1)^(1/3)");
   }
 
+  @Test
   public void testIntegrateSurd() {
     check("Integrate(Surd(x,-1), x)", //
         "Log(x)");
@@ -11833,6 +12177,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(x^(1+a)*Surd(x,3)^p)/(1+a+p/3)");
   }
 
+  @Test
   public void testIntegrateIssue330() {
     check("Integrate(x*ArcSin(x) ,x)", //
         "1/6*x^2*(3*ArcSin(x)+3/2*(x*(Sqrt(1-x^2)*Sqrt(x^2)-ArcSin(Sqrt(x^2))))/(x^2)^(3/\n" //
@@ -11844,7 +12189,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "1-x^2)))/(1-x^2))");
   }
 
-  public void testIntegrateIssue851() {
+  @Test
+    public void testIntegrateIssue851() {
     check("Integrate(x^n*Haversine(m*x^p),x)", //
         "(x^(1+n)*(2*p*(m^2*x^(2*p))^((1+n)/p)+(1+n)*(I*m*x^p)^((1+n)/p)*Gamma((1+n)/p,-I*m*x^p)+(\n" //
             + "1+n)*(-I*m*x^p)^((1+n)/p)*Gamma((1+n)/p,I*m*x^p)))/(4*(1+n)*p*(m^2*x^(2*p))^((1+n)/p))");
@@ -11921,6 +12267,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/6*(1/9*(9-3*ArcTanh(3))+3*ArcTanh(3))");
   }
 
+  @Test
   public void testIntegrate() {
     check("Integrate(Cos(x^3), x)", //
         "(-x*Gamma(1/3,-I*x^3))/(6*(-I*x^3)^(1/3))+(-x*Gamma(1/3,I*x^3))/(6*(I*x^3)^(1/3))");
@@ -12064,6 +12411,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Integrate(f(x,x),x)");
   }
 
+  @Test
   public void testInterpolation() {
     // print message: InterpolatingFunction: Input value {10} lies outside the range of data in the
     // interpolating
@@ -12088,6 +12436,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{3.6875,4.0,3.75}");
   }
 
+  @Test
   public void testInterpolatingFunction() {
     check("ipf=Interpolation({{0, 0}, {0.1, .3}, {0.5, .6}, {1, -.2}, {2, 3}}); ipf(0.75) ", //
         "0.26864");
@@ -12104,6 +12453,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{3.6875,4.0,3.75}");
   }
 
+  @Test
   public void testInterpolatingPolynomial() {
     check("InterpolatingPolynomial( {{0.1,0.3}, {0.5,0.6},  {1,-0.2},  {2.0,3.0}},x)", //
         "0.3+(0.75+(-2.61111+3.05848*(-1+x))*(-0.5+x))*(-0.1+x)");
@@ -12137,7 +12487,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,2,3,5,8,5}");
   }
 
-  public void testInterquartileRange() {
+  @Test
+      public void testInterquartileRange() {
     // https://en.wikipedia.org/wiki/Interquartile_range
     check("InterquartileRange({7,7,31,31,47,75,87,115,116,119,119,155,177})", //
         "88");
@@ -12173,6 +12524,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-y*Log(4/3)^(1/x)+y*Log(4)^(1/x)");
   }
 
+  @Test
   public void testIntersectingQ() {
     check("IntersectingQ({1.0,2.0}, {1,2,3}, SameTest->Equal)", //
         "True");
@@ -12203,12 +12555,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testInterrupt() {
     check("Print(test1); Interrupt(); Print(test2)", //
         "$Aborted");
   }
 
 
+  @Test
   public void testInverseBetaRegularized() {
     check("InverseBetaRegularized(10, 12.0, 0.5)", //
         "InverseBetaRegularized(10.0,12.0,0.5)");
@@ -12228,6 +12582,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "InverseBetaRegularized(z,a,b)");
   }
 
+  @Test
   public void testInverseCDF() {
     // https://github.com/axkr/symja_android_library/issues/147
     check("InverseCDF(StudentTDistribution(24), 0.95)", //
@@ -12309,6 +12664,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "2,1/2)),1/2<#1<1},{-Infinity,#1<=0}},Infinity),0<=#1<=1)&");
   }
 
+  @Test
   public void testInverseErf() {
     check("InverseErf /@ {-1, 0, 1}", //
         "{-Infinity,0,Infinity}");
@@ -12330,6 +12686,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{InverseErf(-2.0),InverseErf(-3.0),InverseErf(3.0)}");
   }
 
+  @Test
   public void testInverseErfc() {
     check("InverseErfc /@ {0, 1, 2}", //
         "{Infinity,0,-Infinity}");
@@ -12349,6 +12706,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{InverseErfc(-0.5),InverseErfc(-0.3333333333333333),InverseErfc(-0.25),InverseErfc(-0.2)}");
   }
 
+  @Test
   public void testInverseFourier() {
     check("InverseFourier({1 + 2*I, 3 + 4*I})", //
         "{2.82843+I*4.24264,-1.41421+I*(-1.41421)}");
@@ -12362,6 +12720,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "InverseFourier({1,2,0,0,7})");
   }
 
+  @Test
   public void testInverseFunction() {
     check("InverseFunction(2^# &)", //
         "Log(#1)/Log(2)&");
@@ -12422,6 +12781,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{2*a,2*c,2*d}");
   }
 
+  @Test
   public void testInverseGammaRegularized() {
     check("InverseGammaRegularized(a, Infinity, z)", //
         "InverseGammaRegularized(a,-z)");
@@ -12431,6 +12791,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testInverseGudermannian() {
     check("N(InverseGudermannian(4/3), 50)", //
         "2.126176090782269391936236271172156185450325122338");
@@ -12449,6 +12810,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{3.34068,-0.649839+I*3.14159,-0.878248,1.1663}");
   }
 
+  @Test
   public void testInverseHaversine() {
 
     check("N(InverseHaversine(1/7), 50)", //
@@ -12487,6 +12849,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3.141592653589793+I*(-1.5220793674636532)");
   }
 
+  @Test
   public void testJaccardDissimilarity() {
     check("JaccardDissimilarity({1, 0, 1, 1, 0}, {1, 1, 0, 1, 1})", //
         "3/5");
@@ -12498,6 +12861,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
   }
 
+  @Test
   public void testJacobiSymbol() {
     check("JacobiSymbol(10^10+1, Prime(1000))", //
         "1");
@@ -12525,6 +12889,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{JacobiSymbol(-3,1),JacobiSymbol(-3,3),JacobiSymbol(-3,5),JacobiSymbol(-3,7)}");
   }
 
+  @Test
   public void testJavaForm() {
     EvalEngine.resetModuleCounter4JUnit();
     check("JavaForm(Sqrt(x), Complex)", //
@@ -12577,6 +12942,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1.0/(x+y)");
   }
 
+  @Test
   public void testJSForm() {
     EvalEngine.resetModuleCounter4JUnit();
     // check("JSForm(Ramp(x))", //
@@ -12726,6 +13092,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1.0/(x+y)");
   }
 
+  @Test
   public void testJoin() {
     check("Join(<|a->0,b:>1|>,SparseArray({0,0}))", //
         "Join(<|a->0,b:>1|>,SparseArray(Number of elements: 0 Dimensions: {2} Default value: 0))");
@@ -12781,6 +13148,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{a,b},{x,y},{1,2},{3,4}}");
   }
 
+  @Test
   public void testKhinchin() {
     check("Khinchin // N", //
         "2.68545");
@@ -12788,6 +13156,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2.6854520010653064453097148354817956938203822939944");
   }
 
+  @Test
   public void testKleinInvariantJ() {
     //
     check("KleinInvariantJ(-1.5707963267948966)", //
@@ -12814,6 +13183,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "0.387321+I*(-0.100372),-0.051849,0.387321+I*0.100372,1.0}");
   }
 
+  @Test
   public void testValues() {
     check("Values(<|a :> 1 + 1, b -> Nothing|>, Hold)", //
         "{Hold(1+1),Hold(Nothing)}");
@@ -12853,6 +13223,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{1,2},{3,{}}}");
   }
 
+  @Test
   public void testKolmogorovSmirnovTest() {
     check("data1 = {\n"
         + "            0.53236606, -1.36750258, -1.47239199, -0.12517888, -1.24040594, 1.90357309,\n"
@@ -12887,7 +13258,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{0.46,0.000438682}");
   }
 
-  public void testKroneckerDelta() {
+  @Test
+    public void testKroneckerDelta() {
     check("KroneckerDelta(2 - I, 2. - I)", //
         "1");
     check("KroneckerDelta(n,0)", //
@@ -12921,6 +13293,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{0,4,9,0,0},{0,0,18,32,0},{0,0,0,48,75},{0,0,0,0,100},{0,0,0,0,0}}");
   }
 
+  @Test
   public void testLambertW() {
     check("LambertW(x)", //
         "ProductLog(x)");
@@ -12928,6 +13301,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
 
 
+  @Test
   public void testInverseLaplaceTransform() {
     // check(
     // "InverseLaplaceTransform(1/(s^3+4*s^2+s),s,t)", //
@@ -12957,6 +13331,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3*E^t+2*Cos(2*t)");
   }
 
+  @Test
   public void testInverseWeierstrassP() {
     // check("InverseWeierstrassP(2.0,{1,2})", //
     // "-0.715096");
@@ -12964,7 +13339,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "");
   }
 
-  public void testInverseLaplaceTransformNumeric() {
+  @Test
+public void testInverseLaplaceTransformNumeric() {
     // check("InverseLaplaceTransform(Erf(s)/Sqrt(s), s, 2.3)", //
     // "");
     check("InverseLaplaceTransform(s/(s + 2)^2, s, 2.3)", //
@@ -12972,6 +13348,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testLaplaceTransform() {
 
     // numerical calculation only supported for unary functions
@@ -13042,6 +13419,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/(1+(1-s)^2)");
   }
 
+  @Test
   public void testLast() {
     check("Last(SparseArray({1,2,3,4})) // Normal ", //
         "4");
@@ -13065,6 +13443,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Last(a)");
   }
 
+  @Test
   public void testLCM() {
     // System.out.println(Integer.MIN_VALUE); =>-2147483648
     check("LCM(-2147483648)", //
@@ -13114,6 +13493,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("LCM(1/3, 2/5, 3/7)", "");
   }
 
+  @Test
   public void testLeafCount() {
     check("LeafCount(1 + x + y^a)", //
         "6");
@@ -13133,7 +13513,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
 
 
-  public void testLength() {
+  @Test
+      public void testLength() {
     check("Length(\"test\")", //
         "0");
     check("Length(<||>)", //
@@ -13167,6 +13548,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{2,3,1}");
   }
 
+  @Test
   public void testLengthWhile() {
     check("LengthWhile({1, 1, 2, 3, 5, 8, 13, 21}, # < 10 &)", //
         "6");
@@ -13182,6 +13564,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "4");
   }
 
+  @Test
   public void testLerchPhi() {
     check("LerchPhi(0,1,a)", //
         "1/Sqrt(a^2)");
@@ -13192,16 +13575,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testEqualTo() {
     check("Select({0, 0., 0.1, 0.001}, EqualTo(0))", //
         "{0,0.0}");
   }
 
+  @Test
   public void testUnequalTo() {
     check("Select({0, 0., 0.1, 0.001}, UnequalTo(0))", //
         "{0.1,0.001}");
   }
 
+  @Test
   public void testGreaterThan() {
     check("GreaterThan(42)[2]", //
         "False");
@@ -13209,6 +13595,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x>y");
   }
 
+  @Test
   public void testGreaterEqualThan() {
     check("GreaterEqualThan(42)[2]", //
         "False");
@@ -13221,6 +13608,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{10,15}");
   }
 
+  @Test
   public void testLessThan() {
     check("LessThan(42)[2]", //
         "True");
@@ -13228,6 +13616,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x<y");
   }
 
+  @Test
   public void testLessEqualThan() {
     check("LessEqualThan(42)[2]", //
         "True");
@@ -13235,11 +13624,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x<=y");
   }
 
+  @Test
   public void testLetterCounts() {
     check("LetterCounts(\"The quick brown fox jumps over the lazy dog\") // InputForm", //
         "<|\"T\"->1,\" \"->8,\"a\"->1,\"b\"->1,\"c\"->1,\"d\"->1,\"e\"->3,\"f\"->1,\"g\"->1,\"h\"->2,\"i\"->1,\"j\"->1,\"k\"->1,\"l\"->1,\"m\"->1,\"n\"->1,\"o\"->4,\"p\"->1,\"q\"->1,\"r\"->2,\"s\"->1,\"t\"->1,\"u\"->2,\"v\"->1,\"w\"->1,\"x\"->1,\"y\"->1,\"z\"->1|>");
   }
 
+  @Test
   public void testLetterQ() {
     check("LetterQ(\"a\")", //
         "True");
@@ -13249,6 +13640,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testLevel() {
     check("Level(x, -1)", //
         "{}");
@@ -13398,6 +13790,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "{F(G(a,K(d)),H(b,L(e)),J(c,M(P(f,g))))}}");
   }
 
+  @Test
   public void testLevelQ() {
     check("LevelQ(2)", //
         "True");
@@ -13409,10 +13802,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  // @Test
   // public void testJacobianMatrix() {
   // check("JacobianMatrix({Rr, Ttheta, Zz}, Cylindrical)", "");
   // }
 
+  @Test
   public void testLimit() {
     check("Limit(x^2*Sin(1/x)^3,x->0)", //
         "0");
@@ -13745,6 +14140,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testLinearModelFit() {
 
     check("LinearModelFit({-0.8, -0.2, 0.8, 2.2}, x, x)", //
@@ -13764,6 +14160,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.186441+0.694915*x");
   }
 
+  @Test
   public void testLinearRecurrence() {
     check("LinearRecurrence({0, 1, 1}, {1, 1, 1}, 0)", //
         "LinearRecurrence({0,1,1},{1,1,1},0)");
@@ -13836,6 +14233,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "19999999999998,109999999999998,199999999999998,1099999999999998,1999999999999998}");
   }
 
+  @Test
   public void testLiouvilleLambda() {
     check("LiouvilleLambda(3^5)", //
         "-1");
@@ -13847,6 +14245,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,-1,-1,1,-1,1,-1}");
   }
 
+  @Test
   public void testList() {
     check("{a,b,c}(x) // FullForm", //
         "List(a, b, c)[x]");
@@ -13855,6 +14254,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,2}+{4,5,6}");
   }
 
+  @Test
   public void testListable() {
     check("SetAttributes(f, Listable)", //
         "");
@@ -13866,6 +14266,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{6,7},{9,10}}");
   }
 
+  @Test
   public void testListConvolve() {
     check("ListConvolve({x, y}, {a, b, c, d, e, f})", //
         "{b*x+a*y,c*x+b*y,d*x+c*y,e*x+d*y,f*x+e*y}");
@@ -13877,6 +14278,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{e*u+d*v+b*w+a*x,f*u+e*v+c*w+b*x,q*u+f*v+p*w+c*x},{h*u+g*v+e*w+d*x,i*u+h*v+f*w+e*x,r*u+i*v+q*w+f*x}}");
   }
 
+  @Test
   public void testListCorrelate() {
     check("ListCorrelate({x, y}, {a, b, c, d, e, f})", //
         "{a*x+b*y,b*x+c*y,c*x+d*y,d*x+e*y,e*x+f*y}");
@@ -13897,6 +14299,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{20.82897,16.07103,13.44037,11.65061,10.3224,9.28594,8.44948,7.75767,7.17457,6.67562,6.24334,5.86489}");
   }
 
+  @Test
   public void testListQ() {
     check("ListQ({1, 2, 3})", //
         "True");
@@ -13906,7 +14309,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
-  public void testLog() {
+  @Test
+public void testLog() {
     checkNumeric("Log(-1.4)", //
         "0.3364722366212129+I*3.141592653589793");
 
@@ -14064,6 +14468,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "{-0.785398,-0.463648,0.0,0.463648,0.785398}}");
   }
 
+  @Test
   public void testLog10() {
     check("Log10(1000)", //
         "3");
@@ -14076,6 +14481,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Log(x)/Log(10)");
   }
 
+  @Test
   public void testLog2() {
     check("Log(2, 0)", //
         "-Infinity");
@@ -14092,6 +14498,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Log(x)/Log(2)");
   }
 
+  @Test
   public void testLogGamma() {
     check("Table(LogGamma(x), {x,0.0, 8.0, 0.25})", //
         "{Infinity,1.28802,0.572365,0.203281,0.0,-0.0982718,-0.120782,-0.0844011,0.0,0.124872,0.284683,0.475215,0.693147,0.935802," //
@@ -14123,6 +14530,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Infinity");
   }
 
+  @Test
   public void testLogIntegral() {
     check("LogIntegral(-4.0)", //
         "-0.158346+I*4.30335");
@@ -14153,6 +14561,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "7.26593,7.52587,7.78083,8.03122,8.27742,8.51972,8.7584,8.99371,9.22587,9.45508,9.6815,9.9053}"); //
   }
 
+  @Test
   public void testLogisticSigmoid() {
     check("LogisticSigmoid(I*Pi)", //
         "LogisticSigmoid(I*Pi)");
@@ -14177,6 +14586,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{0.45016600268752216,0.52497918747894,0.574442516811659}");
   }
 
+  @Test
   public void testLucasL() {
     check("LucasL(11,{x,0,0,<|a->0,b:>1|>})", //
         "{11*x+55*x^3+77*x^5+44*x^7+11*x^9+x^11,0,0,<|a->0,b:>LucasL(11,1)|>}");
@@ -14223,6 +14633,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "201490284097309096322681531675707666695323797578127");
   }
 
+  @Test
   public void testMachineNumberQ() {
     check("MachineNumberQ(3.14159265358979324)", //
         "False");
@@ -14236,6 +14647,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testMangoldtLambda() {
     check("MangoldtLambda(3^5)", //
         "Log(3)");
@@ -14246,6 +14658,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{Log(1299709),0}");
   }
 
+  @Test
   public void testManhattanDistance() {
     check("ManhattanDistance({-1, -1}, {1.0, 1})", //
         "4.0");
@@ -14253,6 +14666,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "4");
   }
 
+  @Test
   public void testMantissaExponent() {
     // message - MantissaExponent: The value (3.0+I*2.0) is not a real number.
     check("MantissaExponent(3+2*I, 2)", //
@@ -14292,6 +14706,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{0.34,31}");
   }
 
+  @Test
   public void testMap() {
     // Map: Options expected (instead of y_) beyond position Map(1/Sqrt(5),{},I,y_) in `3`. An
     // option must be a rule or a list of rules.
@@ -14375,6 +14790,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{a,{x({b,c}),d,{e,x({f,g})}}}");
   }
 
+  @Test
   public void testMapAt() {
     check("MapAt(f, {{a, b, c}, {d, e}}, {All, 2})", //
         "{{a,f(b),c},{d,f(e)}}");
@@ -14415,6 +14831,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{a,f(b),c,d}");
   }
 
+  @Test
   public void testMapIndexed() {
     // Associations are not supported
     check("MapIndexed(f, <|\"a\" -> 1, a -> 2, 1 -> 1|>)", //
@@ -14500,6 +14917,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{a,b},{c,d,e}}");
   }
 
+  @Test
   public void testMapThread() {
     check("MapThread(f, {{{a, b}, {c, d}}}, 3)", //
         "MapThread(f,{{{a,b},{c,d}}},3)");
@@ -14529,6 +14947,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{f(a,1),f(b,2),f(c,3)}");
   }
 
+  @Test
   public void testMatchingDissimilarity() {
     check("MatchingDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})", //
         "4/7");
@@ -14542,6 +14961,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
   }
 
+  @Test
   public void testMatchQ() {
 
     check("MatchQ(<|a -> 1|>, <|key_ -> val_|>)", //
@@ -14679,6 +15099,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testMathMLForm() {
     check("MathMLForm(Sqrt(3)-I)", //
         "<?xml version=\"1.0\"?>\n" //
@@ -14711,7 +15132,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + "<mfrac><mrow><mo>&#x2202;</mo><mrow><mrow><mi>sin</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mo>&#0183;</mo><mrow><mi>cos</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow></mrow></mrow><mrow><mo>&#x2202;</mo><mi>x</mi></mrow></mfrac></math>");
   }
 
-  public void testMax() {
+  @Test
+public void testMax() {
 
     check("Max(Sequence())", //
         "-Infinity");
@@ -14754,6 +15176,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Max(Abs(x),Abs(y))");
   }
 
+  @Test
   public void testMaxFilter() {
     check("MaxFilter({a,b,c}, 1)", //
         "{Max(a,b),Max(a,b,c),Max(b,c)}");
@@ -14766,7 +15189,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{Max(a,b),Max(a,b,c),Max(b,c)}");
   }
 
-  public void testMaximize() {
+  @Test
+      public void testMaximize() {
     // print message - Maximize: The maximum is not attained at any point satisfying the
     // constraints.
     check("Maximize(1/x, x)", //
@@ -14783,6 +15207,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{49/8,{x->-3/4}}");
   }
 
+  @Test
   public void testMean() {
     check("Mean(Array(Subscript(a, ##) &, {2, 2}))", //
         "{1/2*(Subscript(a,1,1)+Subscript(a,2,1)),1/2*(Subscript(a,1,2)+Subscript(a,2,2))}");
@@ -14843,6 +15268,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "m*Gamma(1+1/n)");
   }
 
+  @Test
   public void testMeanFilter() {
     check("MeanFilter({-3, 3, 6, 0, 0, 3, -3, -9}, 2)", //
         "{2,3/2,6/5,12/5,6/5,-9/5,-9/4,-3}");
@@ -14854,6 +15280,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1/2*(a+b),1/3*(a+b+c),1/2*(b+c)}");
   }
 
+  @Test
   public void testMeanDeviation() {
     // Config.MAX_AST_SIZE=Integer.MAX_VALUE;
     // check(
@@ -14873,6 +15300,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2/9*(-4+E+Pi)");
   }
 
+  @Test
   public void testMedian() {
     check("Median(WeightedData({8, 3, 5,4}, " + //
         "{0.15, 0.09, 0.12,0.10}))", //
@@ -14961,6 +15389,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "m+b*Log(2)^(1/a)");
   }
 
+  @Test
   public void testMedianFilter() {
     // Wikipedia example with "shrinking the window near the boundaries"
     check("MedianFilter({2,3,80,6}, 1)", //
@@ -14974,6 +15403,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1/2*(a+b),b,1/2*(b+c)}");
   }
 
+  @Test
   public void testMeijerG() {
     checkNumeric("MeijerG({{}, {0.33}}, {{Pi}, {E}}, {-0.5,0.5})", //
         "{0.01650236063775818+I*0.007866512702272278,-0.34952526547681884}");
@@ -14999,6 +15429,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "MeijerG({{},{}},{{},{}},z)");
   }
 
+  @Test
   public void testMemberQ() {
     check("MemberQ({Sin, Cos, Tan, Cot, Sec, Csc}, If(AtomQ(Cos),Cos,Head(Cos)))", //
         "True");
@@ -15037,6 +15468,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testMersennePrimeExponent() {
     check("Table(MersennePrimeExponent(i), {i,20})",
         "{2,3,5,7,13,17,19,31,61,89,107,127,521,607,1279,2203,2281,3217,4253,4423}");
@@ -15056,12 +15488,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "43112609");
   }
 
+  @Test
   public void testMersennePrimeExponentQ() {
     check("Select(Range(10000), MersennePrimeExponentQ)",
         "{2,3,5,7,13,17,19,31,61,89,107,127,521,607,1279,2203,2281,3217,4253,4423,9689,\n"
             + "9941}");
   }
 
+  @Test
   public void testMessage() {
     check("Message(f::argx, 1, 2)", //
         "f: 1 called with 2 arguments; 1 argument is expected.");
@@ -15082,6 +15516,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Rule: Rule called with 1 argument; 2 arguments are expected.");
   }
 
+  @Test
   public void testMessages() {
     check("Messages(\"fa\")", //
         "Messages(fa)");
@@ -15091,6 +15526,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{HoldPattern(a::hello):>Hello world,HoldPattern(a::james):>Hello `1`, Mr 00`2`!}");
   }
 
+  @Test
   public void testMessageName() {
     // print "ValueQ - test whether a symbol can be considered to have a value"
     check("?ValueQ", //
@@ -15117,6 +15553,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "");
   }
 
+  @Test
   public void testMin() {
     check("Min(Sequence())", //
         "Infinity");
@@ -15166,6 +15603,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Min(Abs(x),Abs(y))");
   }
 
+  @Test
   public void testMinMax() {
     check("MinMax({1, 2, 3, 4})", //
         "{1,4}");
@@ -15194,6 +15632,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,5}");
   }
 
+  @Test
   public void testMinFilter() {
     check("MinFilter({1, 2, 3, 2, 1}, 1)", //
         "{1,1,2,1,1}");
@@ -15203,6 +15642,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{Min(a,b),Min(a,b,c),Min(b,c)}");
   }
 
+  @Test
   public void testMinimize() {
     // check("Minimize(Sin(x),x)", //
     // "");
@@ -15223,6 +15663,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{31/8,{x->3/4}}");
   }
 
+  @Test
   public void testMinus() {
     check("Minus(a)", //
         "-a");
@@ -15234,11 +15675,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{-1,-2,-3,-4,-5,-6,-7,-8,-9,-10}");
   }
 
+  @Test
   public void testMissingQ() {
     check("MissingQ(Missing(\"Test message\"))", //
         "True");
   }
 
+  @Test
   public void testMod() {
     check("Mod(Infinity, 1+I)", //
         "Indeterminate");
@@ -15308,7 +15751,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
 
-  public void testModularInverse() {
+  @Test
+      public void testModularInverse() {
     // message ModularInverse: 3 is not invertible modulo 9.
     check("ModularInverse(3, 9)", //
         "ModularInverse(3,9)");
@@ -15333,6 +15777,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testModule() {
     EvalEngine.resetModuleCounter4JUnit();
     // check("num=Sin(3*I);Module({v=N(num)},If(PossibleZeroQ(Re(v)),Im(v)>0,Re(v)>0))",
@@ -15430,6 +15875,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "6");
   }
 
+  @Test
   public void testMoebiusMu() {
     check("MoebiusMu(-30)", //
         "-1");
@@ -15468,6 +15914,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testMonomialList() {
     check("MonomialList(7*y^w, {y,z})", //
         "{7*y^w}");
@@ -15516,6 +15963,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "3,-7*x*y^5*z^4,-10*x^5*y^4*z^2}");
   }
 
+  @Test
   public void testMost() {
     // TODO
     check("Most(SparseArray({{1,2},{3,4}}))", //
@@ -15535,6 +15983,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Most(a)");
   }
 
+  @Test
   public void testMultinomial() {
     check("Multinomial(1,2,3,ByteArray({1}))", //
         "60*Binomial(6+ByteArray[1 Bytes],ByteArray[1 Bytes])");
@@ -15592,6 +16041,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/2*(1+k)*(2+k)");
   }
 
+  @Test
   public void testMultiplicativeOrder() {
     // https://oeis.org/A023394
     check("Select(Prime(Range(500)), IntegerQ(Log(2, MultiplicativeOrder(2, # )))&) ", //
@@ -15611,6 +16061,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{3,5,12,18,19,20,26,28,29,30,33,34}");
   }
 
+  @Test
   public void testNApfloat() {
     ApfloatContext ac = ApfloatContext.getContext();
     // messages
@@ -15626,6 +16077,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // System.out.println("ApfloatContext MaxMemoryBlockSize: " + ac.getMaxMemoryBlockSize());
   }
 
+  @Test
   public void testApfloatStorage() {
     try {
       Apfloat apfloat = new Apfloat("9".repeat(1_000_000) + "." + "9".repeat(1_000_000));
@@ -15639,6 +16091,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testDeterminePrecision() {
     ApfloatNum zero = ApfloatNum.valueOf(new Apfloat(new BigDecimal(BigInteger.ZERO), 30));
     ApfloatNum num = ApfloatNum.valueOf("1.7", 30);
@@ -15647,6 +16100,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     assertEquals(times.determinePrecision(), 30);
   }
 
+  @Test
   public void testN() {
     check("N({Labeled(4/3,\"test\")})", //
         "{Labeled(1.33333,test)}");
@@ -15712,7 +16166,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("N(1/7, 20)", "1.4285714285714285714e-1");
   }
 
-  public void testNameQ() {
+  @Test
+      public void testNameQ() {
     check("NameQ(\"foo\")", //
         "False");
     check("NameQ(\"plot\")", //
@@ -15723,6 +16178,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testNames() {
     check("foo`f = 42", //
         "42");
@@ -15749,7 +16205,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{IntegerPart}");
   }
 
-  public void testNand() {
+  @Test
+      public void testNand() {
     check("Nand( )", //
         "False");
     check("Nand(a)", //
@@ -15772,6 +16229,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testND() {
     check("ND(Exp(x), x, 1)", //
         "2.71828");
@@ -15783,6 +16241,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1.2094*10^9");
   }
 
+  @Test
   public void testNDSolve() {
 
     // check("model = NDSolve({x'(t) == -y(t) - x(t)^2, y'(t) == 2*x(t) - y(t)^3, x(0) == y(0) ==
@@ -16094,6 +16553,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "");
   }
 
+  @Test
   public void testNegative() {
     check("Negative(Infinity)", //
         "False");
@@ -16119,6 +16579,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{True,False}");
   }
 
+  @Test
   public void testNearest() {
     check("Nearest({1, 2, 4, 8, 16, 32}, 20)", //
         "{16}");
@@ -16126,6 +16587,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{16,24}");
   }
 
+  @Test
   public void testNearestTo() {
     check("NearestTo(20)[{1, 2, 4, 8, 16, 32}]", //
         "{16}");
@@ -16134,11 +16596,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Nearest({1,2,4,8,16,32},20,3)");
   }
 
+  @Test
   public void testNeeds() {
     check("Needs({-1/2,{{1}},3})", //
         "Needs({-1/2,{{1}},3})");
   }
 
+  @Test
   public void testNest() {
     // iteration limit exceeded
     check("Nest(-I,Null,2147483647)", //
@@ -16159,6 +16623,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1.33352");
   }
 
+  @Test
   public void testNestList() {
     check("NestList(4*#*(1 - #) &, 1/3, 5)", //
         "{1/3,8/9,32/81,6272/6561,7250432/43046721,1038154236987392/1853020188851841}");
@@ -16178,6 +16643,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,3,6,9,15,24,36,54,81,123}");
   }
 
+  @Test
   public void testNestWhile() {
     check("NestWhile(#^2 &, 2, # < 256 &)", //
         "256");
@@ -16205,7 +16671,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Log(Log(Log(Log(100))))");
   }
 
-  public void testNestWhileList() {
+  @Test
+    public void testNestWhileList() {
     check("NestWhileList(Function((#+3/#)/2), 1., Function(# =!= #2), 2)", //
         "{1.0,2.0,1.75,1.73214,1.73205,1.73205,1.73205}");
     // from fuzz testing:
@@ -16261,6 +16728,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{100,Log(100),Log(Log(100)),Log(Log(Log(100))),Log(Log(Log(Log(100))))}");
   }
 
+  @Test
   public void testNextPrime() {
     // print: iteration limit
     check("NextPrime(13,2147483647)", //
@@ -16284,6 +16752,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("NextPrime(5.5, 100)", "563");
   }
 
+  @Test
   public void testNHoldAll() {
     check("N(f(2, 3))", //
         "f(2.0,3.0)");
@@ -16292,6 +16761,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "f(2,3)");
   }
 
+  @Test
   public void testNIntegrate() {
     // https://github.com/Hipparchus-Math/hipparchus/issues/279
     checkNumeric("NIntegrate(Exp(-x),{x,0,Infinity})", //
@@ -16355,6 +16825,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2.1108620052");
   }
 
+  @Test
   public void testNMaximize() {
     checkNumeric("NMaximize(-x^4 - 3* x^2 + x, x)", //
         "{0.08258881886826407,{x->0.16373996720676331}}");
@@ -16365,6 +16836,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{-3.25,{x->0.5,y->2.75}}");
   }
 
+  @Test
   public void testNMinimize() {
     check("NMinimize({-Sinc(x)-Sinc(y)}, {x, y})", //
         "{-2.0,{x->0.0,y->0.0}}");
@@ -16394,6 +16866,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{3.25,{x->0.5,y->2.75}}");
   }
 
+  @Test
   public void testNonCommutativeMultiply() {
     check("{0 ** a, 1 ** a}", //
         "{0**a,1**a}");
@@ -16405,7 +16878,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "NonCommutativeMultiply(a)");
   }
 
-  public void testNoneTrue() {
+  @Test
+      public void testNoneTrue() {
     check("NoneTrue({1, 3, 5}, EvenQ)", //
         "True");
     check("NoneTrue({1, 4, 5}, EvenQ)", //
@@ -16425,6 +16899,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testNonNegative() {
     check("NonNegative(-Infinity)", //
         "False");
@@ -16447,6 +16922,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{NonNegative(x),NonNegative(Sin(y))}");
   }
 
+  @Test
   public void testNonPositive() {
     check("NonPositive(-9/4)", //
         "True");
@@ -16460,6 +16936,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{False,False,False,True,True,False,False}");
   }
 
+  @Test
   public void testNor() {
     check("Nor( )", //
         "True");
@@ -16479,6 +16956,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "p||q||r");
   }
 
+  @Test
   public void testNorm() {
 
     // message Power: BigInteger bit length 76493 exceeded
@@ -16559,6 +17037,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Norm({})");
   }
 
+  @Test
   public void testNormal() {
     check("Normal( ConditionalExpression( 1, Element(a,Reals)&&b>0&&n>0 ) + z^3 )", //
         "1+z^3");
@@ -16569,6 +17048,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1+z^3");
   }
 
+  @Test
   public void testNormalize() {
     check(
         "Normalize({0.9999999999999999, -0.12609662354252538+I*0.3870962681438435, 0.3692814336284687+I*0.0968290630091466})", //
@@ -16605,6 +17085,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{}");
   }
 
+  @Test
   public void testNot() {
     check("!True", //
         "False");
@@ -16632,7 +17113,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Exists(x,!f(x))");
   }
 
-  public void testNotElement() {
+  @Test
+ public void testNotElement() {
     check("NotElement(Pi, Integers)", //
         "True");
     check("NotElement(a, Reals)", //
@@ -16642,6 +17124,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{False,Sqrt(2)∉Algebraics,False,Sqrt(2)∉Rationals,True,True}");
   }
 
+  @Test
   public void testNothing() {
     check("Nothing(a,b,c)", //
         "Nothing");
@@ -16655,6 +17138,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{b,d,e,f,g}");
   }
 
+  @Test
   public void testNSolve() {
     // check("125*2^(3-2*z)", //
     // "");
@@ -16682,6 +17166,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{x->1.773387411650643},{x->-0.5199693720627908+I*4.440892098500626E-16},{x->-3.253418039587852+I*(-3.3306690738754696E-16)}}");
   }
 
+  @Test
   public void testNumberQ() {
     check("NumberQ(3,4)", //
         "NumberQ(3,4)");
@@ -16693,6 +17178,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testNumericalOrder() {
     check("NumericalOrder(Sqrt(2)+5, E+Pi)", //
         "-1");
@@ -16736,6 +17222,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{-Infinity,-Sqrt(2),1,E,Pi,Infinity}");
   }
 
+  @Test
   public void testNumericalSort() {
     check("NumericalSort({1,2,3,Infinity,-Infinity,E,Pi,GoldenRatio,Degree})", //
         "{-Infinity,Pi/180,1,GoldenRatio,2,E,3,Pi,Infinity}");
@@ -16753,6 +17240,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testNumericQ() {
     // NumericQ calls expr.isNumericFunction( false )
     check("NumericQ({1,2,3})", //
@@ -16801,7 +17289,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + " BesselJ(2,x+Sin(3*E^4))  False ");
   }
 
-  public void testNumerator() {
+  @Test
+      public void testNumerator() {
     check("Numerator(ConditionalExpression(a/13,Element(C1,Integers)))", //
         "ConditionalExpression(a/13,c1∈Integers)");
 
@@ -16859,6 +17348,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "a+b");
   }
 
+  @Test
   public void testOddQ() {
     check("OddQ(1/(b-a*c)[[2]])", //
         "False");
@@ -16884,6 +17374,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testEvenQ() {
     check("EvenQ(2+4*I, GaussianIntegers->True)", //
         "True");
@@ -16903,6 +17394,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testOneIdentity() {
     check("SetAttributes(f, OneIdentity)", //
         "");
@@ -16917,6 +17409,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "f(a)");
   }
 
+  @Test
   public void testOneIdentityOrderless() {
 
     // github issue 89
@@ -16947,6 +17440,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{q,f(p,r)}");
   }
 
+  @Test
   public void testOperate() {
     check("Operate(a, (a*c)[f(x)])", //
         "a(a*c)[f(x)]");
@@ -16999,6 +17493,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "p(f)[x,y]");
   }
 
+  @Test
   public void testDP() {
     check("DP(k_,w_):=Sum(w^d/d, {d, Divisors(k)})", //
         "");
@@ -17006,6 +17501,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "w+w^2/2+w^3/3+w^6/6");
   }
 
+  @Test
   public void testOptimizeExpression() {
     check("OptimizeExpression(Sqrt(Sin(x)))", //
         "{Sqrt(Sin(x)),{}}");
@@ -17043,6 +17539,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Cos(Sin(x))+Sin(x)");
   }
 
+  @Test
   public void testReplaceRepeated() {
     check("ReplaceRepeated(x, x -> x + 1, MaxIterations -> 4)", //
         "4+x");
@@ -17089,6 +17586,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{42,x}");
   }
 
+  @Test
   public void testOr() {
     check("Or(z, z)", //
         "z||z");
@@ -17120,6 +17618,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testOrder() {
     // Order compares expressions structurally
     check("Order(6, Pi)", //
@@ -17135,6 +17634,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-1");
   }
 
+  @Test
   public void testOrdering() {
     check("Ordering({1,3,4,2,5,9,6})", //
         "{1,4,2,3,5,7,6}");
@@ -17166,6 +17666,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{3,5,1,6,7,2,4}");
   }
 
+  @Test
   public void testOrderedQ() {
     check("OrderedQ({{1,2,3}, {1,4}})", //
         "False");
@@ -17224,6 +17725,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testOrderless() {
     check("SetAttributes(to, Orderless)", //
         "");
@@ -17283,6 +17785,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{x,2,3.0},{x,2,3.0},{x,2,3.0}}");
   }
 
+  @Test
   public void testOut() {
     check("Expand((x + y)^2)", //
         "x^2+2*x*y+y^2");
@@ -17301,6 +17804,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
   public void testUnderflow() {
     check("5*Underflow() // N", //
         "0.0");
@@ -17320,6 +17824,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x+Sin(7)+Underflow()");
   }
 
+  @Test
   public void testOverflow() {
     check("5*Overflow() // N", //
         "Overflow()");
@@ -17334,6 +17839,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x+Overflow()");
   }
 
+  @Test
   public void testOwnValues() {
     check("a=42", //
         "42");
@@ -17347,6 +17853,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Hold(21)");
   }
 
+  @Test
   public void testPadLeft() {
     // TODO
     // check("PadLeft({1, 2, 3}, 10, {a, b, c}, 2)", //
@@ -17408,6 +17915,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{42,42,42,42,42,42,42,a,b,c}");
   }
 
+  @Test
   public void testPadRight() {
     check("PadRight(Slot(<|s1-><|a->0,b:>1|>,s2:><|a->0,b:>1|>|>),{1},{1,2,3,a}+1)", //
         "Slot(Association(s1->Association(a->0,b:>1),s2:>Association(a->0,b:>1)))");
@@ -17459,7 +17967,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "PadRight({{0}},{{1,0},{0,1}})");
   }
 
-  public void testParenthesis() {
+  @Test
+          public void testParenthesis() {
     check("x+Parenthesis(a+b+c)", //
         "x+(a+b+c)");
     check("TeXForm(x+Parenthesis(a+b+c))", //
@@ -17471,6 +17980,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "<mrow><mrow><mo>(</mo><mrow><mi>c</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>a</mi></mrow><mo>)</mo></mrow><mo>+</mo><mi>x</mi></mrow></math>");
   }
 
+  @Test
   public void testParametricPlot() {
 
     // wrong parameter call
@@ -17479,6 +17989,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testParserFixedPoint() {
     try {
       Parser p = new Parser(true);
@@ -17491,6 +18002,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testPartition() {
     check("Partition({-1/2,-2,3},3,2147483647)", //
         "{{-1/2,-2,3}}");
@@ -17510,6 +18022,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{a,b},{c,d}}");
   }
 
+  @Test
   public void testPartitionsP() {
     // iteration limit
     check("PartitionsP(10001)", //
@@ -17540,6 +18053,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("PartitionsP(1000)", "24061467864032622473692149727991");
   }
 
+  @Test
   public void testPartitionsQ() {
     check("PartitionsQ(0)", //
         "1");
@@ -17570,6 +18084,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "PartitionsQ(201)");
   }
 
+  @Test
   public void testPerfectNumber() {
     // test Listable attribute
     check("PerfectNumber(Range(3))", //
@@ -17599,6 +18114,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "PerfectNumber(48)");
   }
 
+  @Test
   public void testPerfectNumberQ() {
     check("PerfectNumberQ(6)", //
         "True");
@@ -17610,7 +18126,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{6,28,496}");
   }
 
-  public void testPatternAndRules() {
+  @Test
+      public void testPatternAndRules() {
     check("a + 2 + b + c + x * y /. n_Integer + s__Symbol + r_ -> {n, s, r}", //
         "{2,a,b+c+x*y}");
 
@@ -17642,7 +18159,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // OptionValue(a), OptionValue(b)}", "");
   }
 
-  public void testPattern() {
+  @Test
+    public void testPattern() {
     // TODO parse this as Optional(Pattern(a,b),Pattern(c,d))
     check("a:b:c:d", //
         "Optional(a:b,(c:d))");
@@ -17681,6 +18199,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{a,Automatic,c->Automatic}");
   }
 
+  @Test
   public void testPatternSequence() {
     check("integersQ(__Integer) = True", //
         "True");
@@ -17692,7 +18211,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
-  public void testPatternOrder() {
+  @Test
+public void testPatternOrder() {
     // see https://mathematica.stackexchange.com/questions/8619
     check("PatternOrder(x_, 1)", //
         "-1");
@@ -17712,6 +18232,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "-1");
   }
 
+  @Test
   public void testPatternTest() {
     // warning message: Pattern p_ appears on the right-hand-side of condition p_/;EvenQ(p_).
     check("{1, 2, 3, 4, 5} /. (p_ /; EvenQ(p_)) :> 0", //
@@ -17774,6 +18295,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{a,b}}");
   }
 
+  @Test
   public void testPermutations() {
     // TODO
     // check("Permutations({1, 2, 1} )", //
@@ -17815,6 +18337,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{a,a,b},{a,b,a},{a,b,b},{b,a,a},{b,a,b},{b,b,a}}");
   }
 
+  @Test
   public void testPi() {
     check("N(E, 10)", //
         "2.718281828");
@@ -17842,6 +18365,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3.1415926535897932384");
   }
 
+  @Test
   public void testPick() {
     // check(
     // "Pick(<|s1-><|a->0,b:>1|>,s2:><|a->0,b:>1|>|>,(1+Sqrt(5))/2,5)", //
@@ -17892,6 +18416,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "f(1,3,5,6)");
   }
 
+  @Test
   public void testPiecewise() {
     // message Piecewise: The first argument x of Piecewise is not a list of pairs.
     check("Piecewise(x)", //
@@ -17929,6 +18454,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Piecewise({{e1,d1},{e2,d2},{e4,d4},{e5,d5}},e0)");
   }
 
+  @Test
   public void testPiecewiseExpand() {
     check("PiecewiseExpand(KroneckerDelta(x, y,z,u,v))", //
         "Piecewise({{1,u-v==0&&v-x==0&&x-y==0&&y-z==0}},0)");
@@ -17979,6 +18505,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Piecewise({{x,x>=0}},0)");
   }
 
+  @Test
   public void testPlus() {
     check("(1*Plus+0)[10,20]", //
         "30");
@@ -18092,6 +18619,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testPlusMinus() {
     check("\\[PlusMinus] x", //
         "±x");
@@ -18099,6 +18627,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x±y");
   }
 
+  @Test
   public void testPochhammer() {
     check("Pochhammer(2.4, 8.5)", //
         "2.31022*10^6");
@@ -18176,6 +18705,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-1/336");
   }
 
+  @Test
   public void testPolyGamma() {
     check("N(PolyGamma(22/10), 50)", //
         "0.54429343674114503778612537088338122850774505912665");
@@ -18231,7 +18761,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "PolyGamma(n,x)");
   }
 
-  public void testPolyLog() {
+  @Test
+      public void testPolyLog() {
     check("PolyLog(n,1,z)", //
         "PolyLog(1+n,z)");
     check("PolyLog(0, 1, z)", //
@@ -18308,6 +18839,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testPolynomialExtendedGCD() {
     check("PolynomialExtendedGCD(e*x^2+d,-2*d*e^2*Sqrt(-e/d)*x+2*d*e^2,z)", //
         "{1,{0,1/(2*d*e^2-2*d*e^2*Sqrt(-e/d)*x)}}");
@@ -18351,6 +18883,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,{1/(c+b*r+a*r^2),(-b-a*r-a*x)/(c+b*r+a*r^2)}}");
   }
 
+  @Test
   public void testPolynomialGCD() {
     // TODO https://github.com/kredel/java-algebra-system/issues/15
     // check("PolynomialGCD(-1/2,x^2-5*x+(-1)*6)", //
@@ -18409,6 +18942,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3");
   }
 
+  @Test
   public void testPolynomialLCM() {
     // TODO https://github.com/kredel/java-algebra-system/issues/15
     // check("PolynomialLCM(x^2+7*x+6,-1/2)", //
@@ -18453,6 +18987,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "14+6*x^15+4*x^16+2*x^17+x^18");
   }
 
+  @Test
   public void testPolynomialQ() {
     check("PolynomialQ(x, 1234)", //
         "PolynomialQ(x,1234)");
@@ -18543,6 +19078,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testPolynomialQuotient() {
     check("PolynomialQuotient(x^2+4*x+1,-10,x,Modulus->2)", //
         "PolynomialQuotient(1+4*x+x^2,-10,x,Modulus->2)");
@@ -18573,6 +19109,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1+2*x");
   }
 
+  @Test
   public void testPolynomialQuotientRemainder() {
     check("PolynomialQuotientRemainder(1+b*x+x^2,-2147483648,x)", //
         "{-1/2147483648-1/2147483648*b*x-x^2/2147483648,0}");
@@ -18611,6 +19148,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1+2*x,0}");
   }
 
+  @Test
   public void testPolynomialRemainder() {
 
     check("PolynomialRemainder(Indeterminate,Indeterminate,Indeterminate)", //
@@ -18626,6 +19164,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("PolynomialRemainder(x^2 + 4*x + 1, 2*x + 1, x, Modulus -> 5)", "3");
   }
 
+  @Test
   public void testPosition() {
     // github issue #859
     check("Position(2,2)", //
@@ -18720,6 +19259,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{23}}");
   }
 
+  @Test
   public void testPositive() {
     check("Positive(Infinity)", //
         "True");
@@ -18743,6 +19283,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{False,True}");
   }
 
+  @Test
   public void testPossibleZeroQ() {
     check("PossibleZeroQ(Sqrt(x^2)-x,Assumptions -> Re(x)>0)", //
         "True");
@@ -18811,6 +19352,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testPower() {
     // TODO improve output - if base is Sqrt avoid parnethesis
     check("x^Sqrt(y)^a", //
@@ -19284,6 +19826,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Sqrt(1/a)");
   }
 
+  @Test
   public void testPowerExpand() {
 
     check("PowerExpand(Log(4*(Im(z)^2+ Re(z)^2)))", //
@@ -19374,6 +19917,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "2*Pi)))");
   }
 
+  @Test
   public void testPowerMod() {
     // 2 is a primitive root for 13
     check("PowerMod(2, Range(12), 13)", //
@@ -19413,7 +19957,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "PowerMod(5,2,0)");
   }
 
-  public void testPreDecrement() {
+  @Test
+    public void testPreDecrement() {
     check("--5", //
         "--5");
     check("a = 2", //
@@ -19431,7 +19976,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,1,3,4,5,6}");
   }
 
-  public void testPreIncrement() {
+  @Test
+      public void testPreIncrement() {
     check("a = 2", //
         "2");
     check("++a", //
@@ -19447,6 +19993,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,3,3,4,5,6}");
   }
 
+  @Test
   public void testPrepend() {
     check("Prepend(<|a->0,b:>1|>,<|a->0,b:>1|>)", //
         "<|a->0,b:>1|>");
@@ -19476,6 +20023,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{a,c,d}");
   }
 
+  @Test
   public void testPrependTo() {
     check("s = {1, 2, 4, 9}", //
         "{1,2,4,9}");
@@ -19506,6 +20054,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{16,1,2,4,9}");
   }
 
+  @Test
   public void testPrimePi() {
     // iteration limit exceeded
     check("PrimePi(2147483647)", //
@@ -19541,6 +20090,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "997");
   }
 
+  @Test
   public void testPrincipleComponents() {
     // message SparseArray: Input matrix contains an indeterminate entry.
     check("PrincipalComponents(SparseArray({{0,0},{0,0}},0) ^ (I*1/3*Pi))", //
@@ -19668,6 +20218,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testPrime() {
     check("Prime(10^6)", //
         "15485863");
@@ -19686,6 +20237,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "991");
   }
 
+  @Test
   public void testPrimeOmega() {
     check("PrimeOmega(-n)", //
         "PrimeOmega(n)");
@@ -19707,7 +20259,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{0,1,1,2,1,2,3}");
   }
 
-  public void testPrimePowerQ() {
+  @Test
+      public void testPrimePowerQ() {
     check("PrimePowerQ(0)", //
         "False");
     check("PrimePowerQ(1)", //
@@ -19731,7 +20284,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
-  public void testPrimeQ() {
+  @Test
+      public void testPrimeQ() {
     check("PrimeQ({1,2,4})", //
         "{False,True,False}");
     check("PrimeQ(<|a->1,b->2,c->4|>)", //
@@ -19781,6 +20335,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{False,True,True,False,True,False,True,False,False,False,True,False,True,False,False,False,True,False,True,False}");
   }
 
+  @Test
   public void testPrimitiveRoot() {
     check("PrimitiveRoot(12)", //
         "PrimitiveRoot(12)");
@@ -19788,6 +20343,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "");
   }
 
+  @Test
   public void testPrimitiveRootList() {
     check("PrimitiveRootList(-2147483648)", //
         "{}");
@@ -19812,6 +20368,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "97,101,106,109,110,112,114,116,118}");
   }
 
+  @Test
   public void testPrint() {
     // in console simply print the styled text
     check("Print(Style(\"AbBbCc\", Red))", //
@@ -19820,7 +20377,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "toobig");
   }
 
-  public void testPrintableASCIIQ() {
+  @Test
+          public void testPrintableASCIIQ() {
     check("PrintableASCIIQ(FromCharacterCode /@ Range(0, 127))", //
         "{False,False,False,False,False,False,False,False,False,False,False,False," //
             + "False,False,False,False,False,False,False,False,False,False,False,False," //
@@ -19863,6 +20421,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "True,True,True,True,True,True,True,False}");
   }
 
+  @Test
   public void testProductLog() {
     // check("ProductLog({0.5,-0.5,-3.0," + //
     // Double.toString(Math.PI * (-0.5)) + //
@@ -19961,6 +20520,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-1");
   }
 
+  @Test
   public void testProjection() {
     check("Projection({},{},Dot)", //
         "{}");
@@ -19980,6 +20540,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2/3*(-1/2+3/2*x^2)");
   }
 
+  @Test
   public void testProtect() {
     check("Protect(test1, test2, test3)", //
         "{test1,test2,test3}");
@@ -20004,6 +20565,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "42");
   }
 
+  @Test
   public void testPutGet() {
     if (Config.FILESYSTEM_ENABLED) {
       check("Put(x + y, \"c:/temp/example_file1.m\"); Get(\"c:/temp/example_file1.m\")", //
@@ -20017,6 +20579,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testRootReduce() {
     // TODO eliminate gcd
     check("RootReduce((-35-7*Sqrt(35))^-1)", //
@@ -20038,6 +20601,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/1190*(-35-Sqrt(35))");
   }
 
+  @Test
   public void testQuadraticIrrationalQ() {
     check("QuadraticIrrationalQ(5*Sqrt(11))", //
         "True");
@@ -20053,6 +20617,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testQuantile() {
     check("Quantile({},1/2)", //
         "Quantile({},1/2)");
@@ -20097,6 +20662,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "17/10");
   }
 
+  @Test
   public void testQuartiles() {
     // method 1 from Wikipedia
     check("Quartiles({6, 7, 15, 36, 39, 40, 41, 42, 43, 47, 49}, {{0, 0}, {1, 0}}) // N", //
@@ -20113,6 +20679,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{2,7/2,5}");
   }
 
+  @Test
   public void testQuiet() {
     // message: Quiet: Quiet called with 3 arguments; 1 argument is expected.
     check("Quiet(a,b,c)", //
@@ -20123,6 +20690,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "ComplexInfinity");
   }
 
+  @Test
   public void testQuotient() {
     check("Table(Quotient(x + y*I, y + x*I), {x, -3.9,3.9,0.5}, {y,  -3.9,3.9,0.5})", //
         "{{1,1,1,1,1-I,1-I,-I,-I,-I,-I,-1-I,-1-I,-1-I,-1,-1,-1},{1,1,1,1,1-I,1-I,-I,-I,-I,-I,-\n"
@@ -20168,6 +20736,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-5");
   }
 
+  @Test
   public void testExpectation() {
     // TODO improve integration for piecewise functions
     // check("Expectation((x + 3)/(x + 5), Distributed(x, ExponentialDistribution(2)))", //
@@ -20199,6 +20768,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testQuotientRemainder() {
     check("QuotientRemainder(-5.1*Pi,Pi)", //
         "{-6,2.82743}");
@@ -20242,6 +20812,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{-5,-1}");
   }
 
+  @Test
   public void testRamp() {
     check("Ramp(-1)", //
         "0");
@@ -20251,6 +20822,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-E+Pi");
   }
 
+  @Test
   public void testRandom() {
     // RandomReal: The specification Infinity is not a random distribution recognized by the
     // system.
@@ -20338,6 +20910,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testRandomChoice() {
     // check(
     // "RandomChoice({1, 10, 5} -> {a, b, c}, {3,3})", //
@@ -20358,6 +20931,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("RandomChoice({1,2,3,4,5,6,7})", "3");
   }
 
+  @Test
   public void testRandomComplex() {
     // check(
     // "RandomComplex(2+2I )", //
@@ -20378,6 +20952,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "0.61304+I*(-0.482746)");
   }
 
+  @Test
   public void testRandomPermutation() {
     // check(
     // "RandomPermutation(10)", //
@@ -20388,6 +20963,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // + "2,6,8,9,5,7,10,3}})}");
   }
 
+  @Test
   public void testRandomReal() {
     check("NonNegative(RandomReal(-Sqrt(2)/2)*(-1.0))", //
         "True");
@@ -20395,6 +20971,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testRandomVariate() {
     // check("RandomVariate(HypergeometricDistribution(44,18,57), 10^2)", //
     // "{16,16,14,11,14,13,14,14,13,15,13,11,14,15,15,13,15,13,14,15,15,13,16,13,14,12,\r\n" +
@@ -20467,6 +21044,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("RandomVariate(DiscreteUniformDistribution({1, 5}) )", "3");
   }
 
+  @Test
   public void testRandomSample() {
     // check("RandomSample(f(1,2,3,4,5),3)", //
     // "f(3,4,1)");
@@ -20474,6 +21052,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "f(3,4,5,1,2)");
   }
 
+  @Test
   public void testRange() {
     byte[] b0Array = new byte[] {0};
     ByteArrayExpr b0a = ByteArrayExpr.newInstance(b0Array);
@@ -20542,6 +21121,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{10,9,8,7,6,5,4,3,2,1}");
   }
 
+  @Test
   public void testRankedMax() {
     // message: RankedMax: Input {1,I,E} is not a vector of reals or integers.
     check("RankedMax({1, I, E}, 2)", //
@@ -20566,6 +21146,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-Infinity");
   }
 
+  @Test
   public void testRankedMin() {
     check(
         "RankedMin({Quantity(1, \"Kilograms\"), Quantity(2, \"kg\"), Quantity(3, \"Kilograms\")}, 2)", //
@@ -20594,6 +21175,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2.5");
   }
 
+  @Test
   public void testRational() {
     check("1.29600*10^-17", //
         "1.296*10^-17");
@@ -20615,6 +21197,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "f(7/22,64/201,x/y)");
   }
 
+  @Test
   public void testRationalize() {
     // check("Rationalize(0.1234567*^2)", //
     // "1234567/100000");
@@ -20683,6 +21266,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "333/106");
   }
 
+  @Test
   public void testRe() {
     //
     check("Re(I*Arg(z) + Log(2) + (1/2)*Log(Im(z)^2 + Re(z)^2))", //
@@ -20724,6 +21308,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Indeterminate");
   }
 
+  @Test
   public void testReIm() {
     check("ReIm(Exp(2*I*Pi/3))", //
         "{-1/2,Sqrt(3)/2}");
@@ -20754,11 +21339,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + " {0,0}}");
   }
 
+  @Test
   public void testReal() {
     check("Head(1.5)", //
         "Real");
   }
 
+  @Test
   public void testRealDigits() {
     check("RealDigits(423.012345678*^-11)", //
         "{{4,2,3,0,1,2,3,4,5,6,7,8},-8}");
@@ -20780,6 +21367,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{1,2,3,3,3,3,3,3},3}");
   }
 
+  @Test
   public void testRealValuedNumberQ() {
     // TODO
     // check("RealValuedNumberQ(Overflow())", //
@@ -20798,6 +21386,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testRealValuedNumericQ() {
     check("RealValuedNumericQ(10)", //
         "True");
@@ -20827,7 +21416,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "    Infinity  False  False ");
   }
 
-  public void testRealAbs() {
+  @Test
+      public void testRealAbs() {
 
     check("xval = Solve(RealAbs(x) == 2, x)", //
         "{{x->-2},{x->2}}");
@@ -20851,7 +21441,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Piecewise({{-x,x<0}},x)");
   }
 
-  public void testRealSign() {
+  @Test
+    public void testRealSign() {
     check("RealSign(1.1)", //
         "1");
     check("RealSign(RealSign(x))", //
@@ -20879,6 +21470,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Piecewise({{-1,x<0},{1,x>0}},0)");
   }
 
+  @Test
   public void testReap() {
 
     // Sow with no sourrounding Reap
@@ -20920,6 +21512,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{395,{{1,4,9,16,25,36,49,64,81,100}}}");
   }
 
+  @Test
   public void testReleaseHold() {
     check("f(ReleaseHold(HoldForm()))", //
         "f()");
@@ -20950,6 +21543,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "f(1+g(5))");
   }
 
+  @Test
   public void testRepeated() {
 
     check("f(x: {{_, _} ..}) := Norm(N(x))", //
@@ -20983,6 +21577,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testRepeatedNull() {
     check("{{}, {a}, {a, a}, {a, a, a}} /. {RepeatedNull(a, {0, 2})} -> x", //
         "{x,x,x,{a,a,a}}");
@@ -20992,6 +21587,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "RepeatedNull(a)");
   }
 
+  @Test
   public void testRefine() {
     // TODO
     // check("Refine((E)^(Pi*I*2*(1/4+x)), Element(x, Integers))", //
@@ -21234,6 +21830,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x==0");
   }
 
+  @Test
   public void testRest() {
     check("Rest(<|1 :> a, 2 -> b, 3 :> c|>)", //
         "<|2->b,3:>c|>");
@@ -21267,6 +21864,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
    * }
    * </pre>
    */
+  @Test
   public void testResultant() {
     // https://math.stackexchange.com/a/542228
     check("Resultant(x^5+a*x^4+b*x^3+c*x^2+d*x+e, y-(x^2+m*x+n), x)", //
@@ -21322,6 +21920,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // x]", "");
   }
 
+  @Test
   public void testReturn() {
     check("retother:=(Return();hello);retother", //
         "");
@@ -21361,6 +21960,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "a");
   }
 
+  @Test
   public void testReverse() {
     check("Reverse(<|U->1,V->2|>)", //
         "<|V->2,U->1|>");
@@ -21371,6 +21971,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("Reverse({{1, 2}, {3, 4}}, 1)", "");
   }
 
+  @Test
   public void testRGBColor() {
     check("Yellow", //
         "RGBColor(1.0,1.0,0.0)");
@@ -21378,6 +21979,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "RGBColor(0.5,0.0,0.5)");
   }
 
+  @Test
   public void testRightComposition() {
     check("Hold[f @ g@@h] // FullForm", //
         "Hold(Apply(f(g), h))");
@@ -21390,6 +21992,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "h(g(f(x)))");
   }
 
+  @Test
   public void testRiffle() {
     check("Riffle({1, 2, 3, 4, 5, 6, 7, 8, 9}, x)", //
         "{1,x,2,x,3,x,4,x,5,x,6,x,7,x,8,x,9}");
@@ -21401,6 +22004,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{a,x,b,y,c,z,d,w}");
   }
 
+  @Test
   public void testRogersTanimotoDissimilarity() {
     check("RogersTanimotoDissimilarity({1, 0, 1, 1, 0}, {1, 1, 0, 1, 1})", //
         "3/4");
@@ -21412,7 +22016,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
   }
 
-  public void testRomanNumeral() {
+  @Test
+    public void testRomanNumeral() {
     // zero as special case represented by 'N'
     check("RomanNumeral(0)", //
         "N");
@@ -21422,6 +22027,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{I,II,III,IV,V,X,L,LX,C,CCL,D,M,MD,MMDC}");
   }
 
+  @Test
   public void testRoot() {
     check("Root(EvenQ(#1)&,1009)", //
         "Root(EvenQ(#1)&,1009)");
@@ -21431,6 +22037,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-1/3");
   }
 
+  @Test
   public void testRoots() {
     check("(-EulerGamma)^(1/3)", //
         "(-EulerGamma)^(1/3)");
@@ -21453,6 +22060,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x==1||x==1/2*(-1-Sqrt(17))||x==1/2*(-1+Sqrt(17))");
   }
 
+  @Test
   public void testRotateLeft() {
     check("RotateLeft({})", //
         "{}");
@@ -21469,6 +22077,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{3,4,5,1,2}");
   }
 
+  @Test
   public void testRotateRight() {
     check("RotateRight({})", //
         "{}");
@@ -21485,6 +22094,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{4,5,1,2,3}");
   }
 
+  @Test
   public void testRound() {
     check("Round(Quantity(8.5, \"Meters\"))", //
         "8[Meters]");
@@ -21614,6 +22224,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testRussellRaoDissimilarity() {
     check("RussellRaoDissimilarity({1, 0, 1, 1, 0}, {1, 1, 0, 1, 1})", //
         "3/5");
@@ -21625,6 +22236,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
   }
 
+  @Test
   public void testRule() {
     check("a+b+c /. c->d", //
         "a+b+d");
@@ -21635,6 +22247,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "a");
   }
 
+  @Test
   public void testSameQUnsameQ() {
     // mathics #146
     // check("a=N[2/9,3]; b=0.22222`5; {a,b,a==b, a===b}", //
@@ -21666,6 +22279,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
   public void testSawtoothWave() {
     check("SawtoothWave(-1.444444)", //
         "0.555556");
@@ -21688,6 +22302,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testScan() {
     // TODO e1 ~ e2 ~ e3 => e2[e1, e3]
     // check("(Print@#; #0 ~Scan~ #)& @ {{1, {2, 3}}, {4, 5}}", //
@@ -21732,6 +22347,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{-1,3,-1/2,3,-1/2,1,2,x,1/3,1,-1,x,-1/6,1,x,x,2}");
   }
 
+  @Test
   public void testSec() {
     // check("Sec(8/15*Pi)", //
     // "-Csc(Pi/30)");
@@ -21792,6 +22408,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Sec(x)");
   }
 
+  @Test
   public void testSech() {
     // gitbub #173
     check("Sech(Log(5/3))", //
@@ -21818,6 +22435,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-Sech(x)*Tanh(x)");
   }
 
+  @Test
   public void testSelect() {
     check("Select({1,2,4,7,6,2},#1>2&,0)", //
         "{}");
@@ -21854,7 +22472,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,16,31,46,61,76,91}");
   }
 
-  public void testSelectFirst() {
+  @Test
+public void testSelectFirst() {
     check("SelectFirst(<|1 -> \"a\", 2 -> \"b\", 3 -> c, 4 -> d|>,Head(#)==Symbol &)", //
         "c");
     check("SelectFirst({-3, 0, 1, 3, a}, #>0 &)", //
@@ -21879,6 +22498,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "NoStrings");
   }
 
+  @Test
   public void testSequence() {
     check("Sequence(a,b,c)", //
         "Identity(a,b,c)");
@@ -21933,6 +22553,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Hold({a,Sequence(b,c),d})");
   }
 
+  @Test
   public void testSet() {
     check("aVar=10", //
         "10");
@@ -21998,6 +22619,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{1,t,u},{4,y,z},{7,8,9}}");
   }
 
+  @Test
   public void testSetAttributes() {
     check("SetAttributes({f, g}, {Flat, Orderless})", //
         "");
@@ -22009,7 +22631,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{Flat}");
   }
 
-  public void testSetDelayed() {
+  @Test
+    public void testSetDelayed() {
     check("f(x_, nm : Association((_String -> _Integer) ..)) := {x,nm}", //
         "");
     check("f(a,<|\"c\"->3, \"d\"->4|>)", //
@@ -22035,6 +22658,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "f(-3)");
   }
 
+  @Test
   public void testSetDelayedOneIdentity() {
     check("SetAttributes(SUNIndex, {OneIdentity})", //
         "");
@@ -22048,7 +22672,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "");
   }
 
-  public void testShare() {
+  @Test
+      public void testShare() {
     check(
         "people = <|\n" + "236234 -> <|\"name\" -> \"bob\", \"age\" -> 18, \"sex\" -> \"M\"|>, \n"
             + "253456 -> <|\"name\" -> \"sue\", \"age\" -> 25, \"sex\" -> \"F\"|>, \n"
@@ -22074,11 +22699,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testShort() {
     check("Short(Expand((1 + x + y)^12))", //
         "1+12*x+66*x^2+220*x^3+495*<<SHORT>>10+12*y^\n" + "11+12*x*y^11+y^12");
   }
 
+  @Test
   public void testSignature() {
     check("Signature({1,2,3,4})", //
         "1");
@@ -22103,6 +22730,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{{0,0,0},{0,0,1},{0,-1,0}},{{0,0,-1},{0,0,0},{1,0,0}},{{0,1,0},{-1,0,0},{0,0,0}}}");
   }
 
+  @Test
   public void testSign() {
     check("Sign(Sign(z))", //
         "Sign(z)");
@@ -22179,6 +22807,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/Sign(z)");
   }
 
+  // @Test
   // public void testSimplify0() {
   // check("Factor(1/((1+x)*(1/(2*x*(1+x))-ArcTan(Sqrt(x))/(2*x^(3/2)))))", //
   // "2/((1+x)*(1/(x*(1+x))-ArcTan(Sqrt(x))/x^(3/2)))");
@@ -22186,6 +22815,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   // "(-2*x^(3/2))/(-Sqrt(x) + (1 + x)*ArcTan(Sqrt(x)))");
   // }
 
+  @Test
   public void testSimplify() {
     check("Simplify((1/x-1/3)/(x-3))", //
         "-1/(3*x)");
@@ -22385,6 +23015,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testSimplifyBoolean() {
     check("Simplify((x+1)&&(x+1))", //
         "1+x");
@@ -22452,6 +23083,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "a&&b");
   }
 
+  @Test
   public void testSin() {
 
     // check("Sin(4/15*Pi)", //
@@ -22551,6 +23183,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Sin(42*a*Pi+z)");
   }
 
+  @Test
   public void testSinc() {
     check("Sinc(-x)", //
         "Sinc(x)");
@@ -22602,6 +23235,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Indeterminate");
   }
 
+  @Test
   public void testSinh() {
     check("Sinh(Pi*I+x)", //
         "-Sinh(x)");
@@ -22624,6 +23258,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Indeterminate");
   }
 
+  @Test
   public void testSinIntegral() {
     check("SinIntegral(-3/4*I*x)", //
         "-I*SinhIntegral(3/4*x)");
@@ -22653,6 +23288,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "1.81528+I*(-0.231827)}");
   }
 
+  @Test
   public void testSinhIntegral() {
     check("SinhIntegral(93/13*I*x)", //
         "I*SinIntegral(93/13*x)");
@@ -22684,6 +23320,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "5.36892+I*4.27784,6.29879+I*5.11278,7.40401+I*6.13828}");
   }
 
+  @Test
   public void testSixJSymbol() {
     // check("SixJSymbol({1, 2, 1}, {4,5,Pi})", //
     // "0");
@@ -22704,6 +23341,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "1/15");
   }
 
+  @Test
   public void testSkewness() {
     check("Skewness(WeibullDistribution(n,m))", //
         "(2*Gamma(1+1/n)^3-3*Gamma(1+1/n)*Gamma(1+2/n)+Gamma(1+3/n))/(-Gamma(1+1/n)^2+Gamma(\n" + //
@@ -22748,6 +23386,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.407041");
   }
 
+  @Test
   public void testSlot() {
     // check("x^2+x", "x+x^2");
     check("f(#1, X) &[ ]", //
@@ -22773,7 +23412,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "#42");
   }
 
-  public void testSlotSequence() {
+  @Test
+ public void testSlotSequence() {
     check("f(##1, X, ##2, Y, ##3, Z, ##4, W, ##5) &[a, b, c, d]", //
         "f(a,b,c,d,X,b,c,d,Y,c,d,Z,d,W)");
     check("(## &)[a, b, c]", //
@@ -22800,6 +23440,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{b,c}");
   }
 
+  @Test
   public void testSokalSneathDissimilarity() {
     check("SokalSneathDissimilarity({1, 0, 1, 1, 0}, {1, 1, 0, 1, 1})", //
         "3/4");
@@ -22812,6 +23453,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
   public void testSort() {
     check("Sort({f(1,2,3), f(1,4)})", //
         "{f(1,4),f(1,2,3)}");
@@ -22845,6 +23487,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1.0,3+I,4,a}");
   }
 
+  @Test
   public void testSortBy() {
     check("SortBy({{5, 1}, {10, -1}}, Last)", //
         "{{10,-1},{5,1}}");
@@ -22852,6 +23495,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{10,-9},{5,1}}");
   }
 
+  @Test
   public void testSow() {
     check("Reap(Do(If(GCD(num, den) == 1, Sow(num)), {den, 1, 20}, {num, 1, den-1}) )[[2, 1]] ", //
         "{1,1,2,1,3,1,2,3,4,1,5,1,2,3,4,5,6,1,3,5,7,1,2,4,5,7,8,1,3,7,9,1,2,3,4,5,6,7,8,9,\n" + //
@@ -22866,6 +23510,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{395,{{1,4,9,16,25,36,49,64,81,100}}}");
   }
 
+  @Test
   public void testSphericalBesselJ() {
     check("SphericalBesselJ(2.5,-5)", //
         "I*0.204488");
@@ -22883,6 +23528,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.14163924534491812+I*0.005070099110737425");
   }
 
+  @Test
   public void testSphericalBesselY() {
     // TODO improve this value
     check("SphericalBesselY(2.5,-5)", //
@@ -22901,6 +23547,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-0.16499545760108916");
   }
 
+  @Test
   public void testSphericalHarmonicY() {
     check("SphericalHarmonicY(0,0,t,p)", //
         "1/(2*Sqrt(Pi))");
@@ -22914,6 +23561,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testSplit() {
     check("Split({x, x, x, y, x, y, y, z})", //
         "{{x,x,x},{y},{x},{y,y},{z}}");
@@ -22929,6 +23577,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{}");
   }
 
+  @Test
   public void testSplitBy() {
     check("SplitBy(Range(1, 3, 1/3), Round)", //
         "{{1,4/3},{5/3,2,7/3},{8/3,3}}");
@@ -22940,6 +23589,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{{1,1,1},{1,1,2},{1,2,1},{1,2,2}},{{2,1,1},{2,1,2},{2,2,1},{2,2,2}}}");
   }
 
+  @Test
   public void testSqrt() {
     check("Sqrt(-Sqrt(3))", //
         "I*3^(1/4)");
@@ -22972,6 +23622,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "1.41421356237309504880168872420969807856967187537694");
   }
 
+  @Test
   public void testSquareFreeQ() {
     check("SquareFreeQ(9)", //
         "False");
@@ -23000,6 +23651,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testSquaredEuclideanDistance() {
     check("SquaredEuclideanDistance({-7, 5.0}, {1, 1})", //
         "80.0");
@@ -23011,6 +23663,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "8");
   }
 
+  @Test
   public void testSpan() {
     check("OddQ^(n) && n > 0;;", //
         "(OddQ^n&&n>0);;All");
@@ -23041,6 +23694,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{b,c,d,e,f,g,h}");
   }
 
+  @Test
   public void testStandardize() {
     check("Standardize(N(Range(5)), Mean, 1 &)", //
         "{-2.0,-1.0,0.0,1.0,2.0}");
@@ -23062,6 +23716,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + " {(Sqrt(2)*(1/2*(-a-c)+c))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(2)*(1/2*(-b-d)+d))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))}}");
   }
 
+  @Test
   public void testStack() {
     // print: {f,g,CompoundExpression,Print}
     check("f(g(1, Print(Stack()); 2))", //
@@ -23071,6 +23726,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "f(g(1,2))");
   }
 
+  @Test
   public void testStackBegin() {
     // print: {Plus,Times,g,CompoundExpression,Print}
     check("1 + x + f(StackBegin(2 + x*g(Print(Stack( )); 2)))", //
@@ -23079,6 +23735,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1+x+f(2+x*g(2))");
   }
 
+  @Test
   public void testStandardDeviation() {
     check("StandardDeviation({1, 2, 3})", //
         "1");
@@ -23094,6 +23751,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Sqrt((-1+E)*E)");
   }
 
+  @Test
   public void testStieltjesGamma() {
     check("StieltjesGamma(8,Indeterminate)", //
         "Indeterminate");
@@ -23103,6 +23761,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-PolyGamma(0,a)");
   }
 
+  @Test
   public void testStirlingS1() {
     // message Maximum AST dimension 20834 exceeded
     check("StirlingS1(10007,11)", //
@@ -23129,6 +23788,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "0,1}}");
   }
 
+  @Test
   public void testStirlingS2() {
     check("StirlingS2(1317624576693539401,4)", //
         "StirlingS2(1317624576693539401,4)");
@@ -23161,6 +23821,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         35);
   }
 
+  @Test
   public void testStruveH() {
     // message "BigInteger bit length 60600 exceeded"
     check(
@@ -23203,7 +23864,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "-0.101825,0.0364942,0.158762,0.154544,0.0314077,-0.0960984}"); //
   }
 
-  public void testStruveL() {
+  @Test
+      public void testStruveL() {
     check("StruveL(0, 5.0)", //
         "27.10592");
     check("StruveL(0, 2.5)", //
@@ -23236,7 +23898,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "3.7423,4.64869,5.77582,7.18085,8.9357,11.13105,13.88131,17.33089,21.66224,27.10592}");
   }
 
-  public void testSubdivide() {
+  @Test
+      public void testSubdivide() {
     // print: $IterationLimit: Iteration limit of 500 exceeded.
     // TODO
     // check(
@@ -23300,6 +23963,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{2.71828182845904523536,2.82410953474173223613,2.92993724102441923691,3.03576494730710623768,3.14159265358979323846}");
   }
 
+  @Test
   public void testSubfactorial() {
     check("Subfactorial(0)", //
         "1");
@@ -23345,6 +24009,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("Subfactorial(10000)", "Subfactorial(10000)");
   }
 
+  @Test
   public void testSubsetQ() {
     check("SubsetQ(f(b,a,b,c), f(c, c, c))", //
         "True");
@@ -23383,6 +24048,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testSubsets() {
     // check(
     // "Subsets({a,b,c})", //
@@ -23416,6 +24082,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{a,b},{a,c},{a,d},{b,c},{b,d},{c,d}}");
   }
 
+  @Test
   public void testSubtract() {
     check("a - x + z", //
         "a-x+z");
@@ -23429,6 +24096,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "a-b+c");
   }
 
+  @Test
   public void testSubtractFrom() {
     check("a = 10", //
         "10");
@@ -23445,6 +24113,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,2,3-y,4,5,6,7,8,9}");
   }
 
+  @Test
   public void testSurd() {
     checkNumeric("N(Surd({-3, -2, -1, 0, 1, 2, 3}, 7))", //
         "{-1.169930812758687,-1.1040895136738123,-1.0,0.0,1.0,1.1040895136738123,1.169930812758687}");
@@ -23566,6 +24235,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{-3^(1/7),-2^(1/7),-1,0,1,2^(1/7),3^(1/7)}");
   }
 
+  @Test
   public void testSurvivalFunction() {
     check("SurvivalFunction(GeometricDistribution(1/3), x)", //
         "1-Piecewise({{1-(2/3)^(1+Floor(x)),x>=0}},0)");
@@ -23579,7 +24249,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Erfc(-x/Sqrt(2))/2");
   }
 
-  public void testSwitch() {
+  @Test
+      public void testSwitch() {
     check("Switch(2, 1, x, 2, y, 3, z)", //
         "y");
     check("Switch(5, 1, x, 2, y)", //
@@ -23592,6 +24263,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,0,-1}");
   }
 
+  @Test
   public void testSymbol() {
     check("Head(x)", //
         "Symbol");
@@ -23603,6 +24275,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "10");
   }
 
+  @Test
   public void testSymbolName() {
     check("Context(x)", //
         "Global`");
@@ -23613,6 +24286,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testSymbolQ() {
     check("SymbolQ(a)", //
         "True");
@@ -23622,6 +24296,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testSyntaxQ() {
     check("SyntaxQ(\"Integrate(f(x),{x,0,10})\")", //
         "True");
@@ -23629,6 +24304,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testTable() {
     EvalEngine.resetModuleCounter4JUnit();
 
@@ -23739,6 +24415,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{0,1,4,9,16,25,36,49,64,81,100}");
   }
 
+  @Test
   public void testTableForm() {
     // check(
     // "TableForm({{a, b}, {c, d}, {e, f}}, TableHeadings -> {None, {\"c1\", \"c2\"}})", //
@@ -23800,6 +24477,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testTake() {
     check("Take(SparseArray(Range(1000)), {100, 105})", //
         "{100,101,102,103,104,105}");
@@ -23862,6 +24540,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{}");
   }
 
+  @Test
   public void testTakeLargest() {
     check("TakeLargest(Prime(Range(10)), 3)", //
         "{29,23,19}");
@@ -23873,6 +24552,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{5,4,3}");
   }
 
+  @Test
   public void testTakeLargestBy() {
     check("TakeLargestBy({-1.5+I*0.8660254037844386,-1.5+I*(-0.8660254037844386),-1.0},Abs,3)", //
         "{-1.5+I*0.8660254037844386,-1.5+I*(-0.8660254037844386),-1.0}");
@@ -23906,6 +24586,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "<|b->xxx,c->xx|>");
   }
 
+  @Test
   public void testTakeSmallest() {
     // print message
     check("TakeSmallest({1, 3, 5, None, Indeterminate, Missing(),a,b}, 2)", //
@@ -23920,6 +24601,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,2,3}");
   }
 
+  @Test
   public void testTakeSmallestBy() {
     check("TakeSmallestBy({254/315+(14954373125000+I*7875000*Sqrt(9477810222))^(1/3)/31500+\n" //
         + "      1215035/63*2^(1/3)/(29908746250000+I*15750000*Sqrt(9477810222))^(1/3),254/315+\n" //
@@ -23942,6 +24624,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "<|a->,c->xx|>");
   }
 
+  @Test
   public void testTakeWhile() {
     check("TakeWhile({2, 4, 6, 1, 2, 3}, EvenQ)", //
         "{2,4,6}");
@@ -23958,6 +24641,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testTally() {
     check("Tally({{a, b}, {w, x, y, z}, E, {w, x, y, z}, E}, Head(#1) === Head(#2) &)", //
         "{{{a,b},3},{E,2}}");
@@ -23990,6 +24674,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testTagSet() {
     check("x /: g(h(x)) = 3", //
         "3");
@@ -24005,6 +24690,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "TagSet test");
   }
 
+  @Test
   public void testTagSetDelayed() {
     check("g /: f(a,g,z_)/;True := {z}", //
         "");
@@ -24017,6 +24703,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{fg(2),f(h(2))}");
   }
 
+  @Test
   public void testTagSetDelayed02() {
     check("TagSetDelayed(g,0,\"TagSetDelayed test\")", //
         "");
@@ -24028,7 +24715,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "TagSetDelayed test");
   }
 
-  public void testTan() {
+  @Test
+public void testTan() {
 
     // check("Tan(8/15*Pi)", //
     // "-Cot(Pi/30)");
@@ -24094,11 +24782,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Tan(Pi/3+z)");
   }
 
+  @Test
   public void testTanh() {
     check("Tanh(0)", //
         "0");
   }
 
+  @Test
   public void testTautologyQ() {
     // https://en.wikipedia.org/wiki/Tautology_(logic)
     check("TautologyQ(a || !a)", //
@@ -24114,6 +24804,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testTaylor() {
     check("Taylor(f(x),{x,a,2})", //
         "f(a)+(-a+x)*f'(a)+1/2*(-a+x)^2*f''(a)");
@@ -24125,11 +24816,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
   }
 
+  @Test
   public void testTextString() {
     check("TextString(10) // InputForm", //
         "\"10\"");
   }
 
+  @Test
   public void testThread() {
     check("Thread(Tuples({0, 1}, 2) -> {a, b, c, d})", //
         "{{0,0}->a,{0,1}->b,{1,0}->c,{1,1}->d}");
@@ -24161,6 +24854,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{f(a,h,x),f(b,h,y),f(c,h,z)}");
   }
 
+  @Test
   public void testThreeJSymbol() {
     check("ThreeJSymbol({2, 0}, {6, 0}, {4, 0})", //
         "Sqrt(5/143)");
@@ -24188,7 +24882,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{3,0,0,0,0},{0,5,0,0,0},{0,0,7,0,0},{0,0,0,9,0},{0,0,0,0,11}}");
   }
 
-  public void testThrough() {
+  @Test
+public void testThrough() {
 
 
     check("s1 = {\"t\", \"o\", \"d\", \"a\", \"y\"}", //
@@ -24231,7 +24926,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "f(x,y)+g(x,y)+h(x,y)");
   }
 
-  public void testTimeConstrained() {
+  @Test
+public void testTimeConstrained() {
     if (!Config.TIMECONSTRAINED_NO_THREAD) {
       check("TimeConstrained(Do(i^2, {i, 10000000}), 1)", //
           "$Aborted");
@@ -24240,6 +24936,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testTimeObject() {
     // Current time
     // check("TimeObject()", //
@@ -24253,6 +24950,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "03:02:01");
   }
 
+  @Test
   public void testTimes() {
     check("0.0*Sin(#)", //
         "0");
@@ -24458,7 +25156,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Pi^2*Csc(a*Pi)^2*Gamma(a)");
   }
 
-  public void testTimesBy() {
+  @Test
+    public void testTimesBy() {
     check("a = 10", //
         "10");
     check("a *= 2", //
@@ -24474,7 +25173,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,2,3*y,4,5,6,7,8,9}");
   }
 
-  public void testTimeValue() {
+  @Test
+    public void testTimeValue() {
     check("TimeValue(I*1/2,-I,0)", //
         "I*1/2");
     check(" TimeValue(-0.8+I*1.2,-5,1009)", //
@@ -24510,6 +25210,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "6381.066");
   }
 
+  @Test
   public void testTogether() {
     check("Together((1/x-1/3)^3/(x-3)^2)", //
         "(3-x)/(27*x^3)");
@@ -24675,6 +25376,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(6+22*x+18*x^2+4*x^3)/(x*(1+x)*(2+x)*(3+x))");
   }
 
+  @Test
   public void testTogetherIssue856() {
     // github issue #856
     check("tg=Simplify(1/(Sqrt(7) - 2 *Sqrt(2)) + 1/(Sqrt(7) + 2 *Sqrt(2))) ", //
@@ -24685,6 +25387,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-2*Sqrt(7)");
   }
 
+  @Test
   public void testToExpression() {
     check("ToExpression(\"\\\\begin{matrix}\n" //
         + "1 & 2 \\\\\\\\\n" //
@@ -24698,6 +25401,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3-4/5*x");
   }
 
+  @Test
   public void testToRadicals() {
     check("ToRadicals(Root((#^2 - 3*# - 1)&, 2))", //
         "3/2+Sqrt(13)/2");
@@ -24718,6 +25422,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "1/2-I*1/2*Sqrt(3))*(11+Sqrt(-256+(11-27*a)^2)-27*a)^(1/3))/(3*2^(1/3))");
   }
 
+  @Test
   public void testToString() {
     check("ToString(Sqrt(1-1/x^2))", //
         "Sqrt(1 - 1/x^2)");
@@ -24879,6 +25584,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Times(Rational(1,2), d)");
   }
 
+  @Test
   public void testTotal() {
     check("Total({x^2, 3*x^3, 1})", //
         "1+x^2+3*x^3");
@@ -24919,6 +25625,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "45");
   }
 
+  @Test
   public void testTreeForm() {
     check("TreeForm(a+b)", //
         "JSFormData(var nodes = new vis.DataSet([\n" + //
@@ -24933,7 +25640,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             ",treeform)");
   }
 
-  public void testTrace() {
+  @Test
+      public void testTrace() {
     check("Trace(u = 2; Do(u = u*u, {3}); u, Times)", //
         "{{{{u*u,2*2}},{{u*u,4*4}},{{u*u,16*16}}}}");
     check("x=5;Trace(Mod((3 + x)^2, x - 1))", //
@@ -24943,6 +25651,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "16,256},256},Null},{u,256},256}");
   }
 
+  @Test
   public void testTrigExpand() {
     check("TrigExpand( Csch(2*x) )", //
         "1/2*Csch(x)*Sech(x)");
@@ -25022,6 +25731,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "5*Cos(x)^4*Sin(x)-10*Cos(x)^2*Sin(x)^3+Sin(x)^5");
   }
 
+  @Test
   public void testTrigReduce() {
     // check("TrigReduce(Tan(x)^2)", //
     // "(1-Cos(2*x))/(1+Cos(2*x))");
@@ -25065,6 +25775,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "(2*Cos(-y+x)-2*Cos(y+x))*(Cos(-y+x)+Cos(y+x))^(-1)");
   }
 
+  @Test
   public void testTrigToExp() {
     check("TrigToExp(Cos(Sin(x)))", //
         "1/(2*E^(I*((I*1/2)/E^(I*x)-I*1/2*E^(I*x))))+E^(I*((I*1/2)/E^(I*x)-I*1/2*E^(I*x)))/\n" //
@@ -25150,6 +25861,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "a+b");
   }
 
+  @Test
   public void testTrueQ() {
     check("TrueQ(True)", //
         "True");
@@ -25159,6 +25871,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testTuples() {
     check("Tuples(x^2, -10)", //
         "Tuples(x^2,-10)");
@@ -25185,6 +25898,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Tuples({f(a, b), g(x, y)})", "{{a,x},{a,y},{b,x},{b,y}}");
   }
 
+  @Test
   public void testUnequal() {
     check("\"11\"!=11", //
         "True");
@@ -25227,6 +25941,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testUnevaluated() {
     check("SetAttributes(symbolLength, HoldAll); " //
         + "symbolLength(s_Symbol) := StringLength(SymbolName(Unevaluated(s)))", //
@@ -25269,6 +25984,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "F(Unevaluated(a),0.4,Unevaluated(a))");
   }
 
+  @Test
   public void testIntersection() {
     check("Intersection(#1, #2, #1)", //
         "Slot()");
@@ -25285,7 +26001,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
 
 
-  public void testUnion() {
+  @Test
+          public void testUnion() {
     check("Union({},{})", "{}");
     check("Union({1},{2})", "{1,2}");
     check("Union({1,2,2,4},{2,3,4,5})", "{1,2,3,4,5}");
@@ -25317,6 +26034,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{a,b,c,x,y,z}");
   }
 
+  @Test
   public void testUnique() {
     EvalEngine.resetModuleCounter4JUnit();
     check("Unique()", //
@@ -25327,6 +26045,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x3");
   }
 
+  @Test
   public void testUnitConvert() {
     check("UnitConvert(Quantity(\"StandardAccelerationOfGravity\"),\"m/s^2\")", //
         "196133/20000[m*s^-2]");
@@ -25364,6 +26083,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "15.1864[km]");
   }
 
+  @Test
   public void testUnitize() {
     // Unitize uses PossibleZeroQ
     // checkNumeric(
@@ -25419,6 +26139,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Unitize(x,dx)");
   }
 
+  @Test
   public void testUnitStep() {
     check("UnitStep(-Infinity)", //
         "0");
@@ -25453,6 +26174,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
   }
 
+  @Test
   public void testUnset() {
     check("Indeterminate=.", //
         "$Failed");
@@ -25466,7 +26188,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "$f(3)");
   }
 
-  public void testUpperCaseQ() {
+  @Test
+public void testUpperCaseQ() {
     // print message: UpperCaseQ: String expected at position 1 in UpperCaseQ(abc).
     check("UpperCaseQ(abc)", //
         "UpperCaseQ(abc)");
@@ -25477,6 +26200,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testUpValues() {
     check("u /: v(x_u) := {x}", //
         "");
@@ -25484,6 +26208,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{HoldPattern(v(x_u)):>{x}}");
   }
 
+  @Test
   public void testUpSet() {
     check("Part(f(x_), s1 : (_String | {_String ..}), s2 : (_String | {_String ..})) ^:= {x,s1,s2}", //
         "");
@@ -25498,6 +26223,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "100");
   }
 
+  @Test
   public void testUpSetDelayed() {
     check("$f($h(0)) ^= h0;$f($h(x_)) ^:= 2*$f($h(x - 1));$f($h(10))", //
         "1024*h0");
@@ -25510,6 +26236,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "c");
   }
 
+  @Test
   public void testValueQ() {
     check("ValueQ(x)", //
         "False");
@@ -25519,6 +26246,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testVariables() {
     check("Variables({x+y,x,z})", //
         "{x,y,z}");
@@ -25552,6 +26280,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{a^x}");
   }
 
+  @Test
   public void testVariance() {
     check("Variance(BinomialDistribution(n, m))", //
         "(1-m)*m*n");
@@ -25622,6 +26351,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("Variance(BinomialDistribution(n, p))", "n*p*(1-p)");
   }
 
+  @Test
   public void testVerbatim() {
     check("_ /. Verbatim(_)->t", //
         "t");
@@ -25629,6 +26359,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x");
   }
 
+  @Test
   public void testVertexList() {
     check("VertexList(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}))", //
         "{1,2,3,4}");
@@ -25639,6 +26370,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,2,3}");
   }
 
+  @Test
   public void testVertexEccentricity() {
     check("VertexEccentricity({1 -> 2, 2 -> 3, 3 -> 1, 3 -> 4, 4 -> 5, 5 -> 3}, 1)", //
         "4");
@@ -25652,6 +26384,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2");
   }
 
+  @Test
   public void testVertexQ() {
     check("VertexQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}),3)", //
         "True");
@@ -25659,6 +26392,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testWeierstrassHalfPeriods() {
     // TODO improve see discussion: https://github.com/paulmasson/math/issues/7
     check("WeierstrassHalfPeriods({1.0, 2.0 } )", //
@@ -25677,13 +26411,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1.30139+I*(-0.299127),-0.299127+I*1.30139}");
   }
 
-  public void testWeierstrassInvariants() {
+  @Test
+public void testWeierstrassInvariants() {
     check("WeierstrassInvariants({1.0, 2.0*I} )", //
         "{8.12422,4.44305}");
     check("Table(WeierstrassInvariants({1.0,x*I} ), {x,-2.0, 2.0, 1/4})", //
         "{{8.12422,4.44305},{8.15011,4.41322},{8.27476,4.26937},{8.87636,3.56885},{11.81705,-1.97659*10^-15},{27.07395,-22.08742},{129.9875,-284.3553},{2078.061,-18230.79},WeierstrassInvariants({1.0,0.0}),{2078.061,-18230.79},{129.9875,-284.3553},{27.07395,-22.08742},{11.81705,-1.97659*10^-15},{8.87636,3.56885},{8.27476,4.26937},{8.15011,4.41322},{8.12422,4.44305}}");
   }
 
+  @Test
   public void testWeierstrassP() {
     check("WeierstrassP(z, {0, 0}) ", //
         "1/z^2");
@@ -25703,6 +26439,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{4.55263+I*2.88658*10^-15,1.98649+I*8.88178*10^-16,1.20805+I*2.22045*10^-16,1.00064,1.16036+I*(-3.33067*10^-16),1.84015+I*(-5.55112*10^-16),4.01922+I*4.44089*10^-16,16.00354+I*2.22045*10^-16,ComplexInfinity,16.00354+I*2.22045*10^-16,4.01922+I*4.44089*10^-16,1.84015+I*(-5.55112*10^-16),1.16036+I*(-3.33067*10^-16),1.00064,1.20805+I*2.22045*10^-16,1.98649+I*8.88178*10^-16,4.55263+I*2.88658*10^-15}");
   }
 
+  @Test
   public void testWeierstrassPPrime() {
     check("WeierstrassPPrime(2.0, {1,2} )", //
         "8.39655+I*1.28374*10^-14");
@@ -25721,6 +26458,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-3*Sqrt(3/2)*Cot(Sqrt(3/2)*z)*Csc(Sqrt(3/2)*z)^2");
   }
 
+  @Test
   public void testWhich() {
     check("n=5;Which(n == 3, x, n == 5, y)", //
         "y");
@@ -25747,6 +26485,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
   }
 
+  @Test
   public void testWhile() {
     check("$n = 1; While($n \\[LessEqual] 4, $n++); $n", //
         "5");
@@ -25766,7 +26505,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "11");
   }
 
-  public void testWhittakerM() {
+  @Test
+public void testWhittakerM() {
     check("D(WhittakerM(a,b,x), x)", //
         "(1/2-a/x)*WhittakerM(a,b,x)+((1/2+a+b)*WhittakerM(1+a,b,x))/x");
     check("WhittakerM(k, -1/2, 0)", //
@@ -25790,6 +26530,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{-21.74625,-12.85647,-7.14488,-3.64892,-1.64872,-0.613825,-0.160503,-0.0177054,0.0,0.013789,0.0973501,0.28995,0.606531,1.04543,1.59424,2.23412,2.94304}");
   }
 
+  @Test
   public void testWhittakerW() {
     check("D(WhittakerW(a,b,x), x)", //
         "(1/2-a/x)*WhittakerW(a,b,x)-WhittakerW(1+a,b,x)/x");
@@ -25807,6 +26548,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // + "0.28995,0.606531,1.04543,1.59424,2.23412,2.94304}");
   }
 
+  @Test
   public void testWith() {
     EvalEngine.resetModuleCounter4JUnit();
 
@@ -25884,6 +26626,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-Sin(#1)&");
   }
 
+  @Test
   public void testYuleDissimilarity() {
     check("YuleDissimilarity({1, 0, 1, 1, 0}, {1, 1, 0, 1, 1})", //
         "2");
@@ -25895,6 +26638,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2");
   }
 
+  @Test
   public void testZeta() {
     checkNumeric("Zeta(3,-4.0)", //
         "Zeta(3.0,-4.0)");

@@ -1,20 +1,21 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 
+import static org.junit.Assert.assertEquals;
+
 public class OutputFormTest extends ExprEvaluatorTestCase {
-  public OutputFormTest(String name) {
-    super(name);
-  }
 
   @Override
   public void check(String evalString, String expectedResult) {
     check(evaluator, evalString, expectedResult, -1);
   }
 
+  @Test
   public void testPlusReversed() {
     // github issue 694
     ExprEvaluator evaluator = new ExprEvaluator();
@@ -33,6 +34,7 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testComplexFormatSymbolic() {
     ExprEvaluator evaluator = new ExprEvaluator();
     IExpr input = evaluator.eval("4+(4*I)");
@@ -61,6 +63,7 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
     assertEquals(str, "(3/4-2/3*I)*a");
   }
 
+  @Test
   public void testDoubleComplexFormat() {
     ExprEvaluator evaluator = new ExprEvaluator();
     IExpr input = evaluator.eval("4.0+(4.0*I)");
@@ -83,6 +86,7 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
     assertEquals(str, "-0.1-4.25*I");
   }
 
+  @Test
   public void testApcomplexFormat() {
     ExprEvaluator evaluator = new ExprEvaluator();
     IExpr input = evaluator.eval("N(4+(4*I),20)");
@@ -111,6 +115,7 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
     assertEquals(str, "a-0.66666666666666666666-0.42857142857142857142*I");
   }
 
+  @Test
   public void testInfix() {
     check("Infix(f(x,y,z))", //
         "x ~ y ~ z");
@@ -118,6 +123,7 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
         "x $~$ y $~$ z");
   }
 
+  @Test
   public void testPrecedenceForm() {
     // Times precedence == 400
     check("Times(b, PrecedenceForm(3*A ,400))", //
@@ -153,6 +159,7 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
         "y*(a |> b)");
   }
 
+  @Test
   public void testPreFix() {
     check("PreFix(f(x))", //
         "f @ x");
@@ -161,6 +168,7 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
   public void testPostFix() {
     check("PostFix(f(x))", //
         "x // f");
@@ -169,7 +177,7 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
   }
 
   @Override
-  protected void setUp() {
+  public void setUp() {
     super.setUp();
     if (Config.EXPENSIVE_JUNIT_TESTS) {
       Config.MAX_AST_SIZE = Integer.MAX_VALUE;

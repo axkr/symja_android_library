@@ -1,14 +1,12 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 
 public class MatrixDTest extends ExprEvaluatorTestCase {
 
-  public MatrixDTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testMatrixD001() {
 
     // bad input 1
@@ -40,6 +38,7 @@ public class MatrixDTest extends ExprEvaluatorTestCase {
         "(-Inverse(X)).$SingleEntryMatrix.Inverse(X)");
   }
 
+  @Test
   public void testMatrixDet001() {
     check(
         "$Assumptions={Element(X, Matrices({n,n},Complexes)),Element(A, Matrices({n,n},Complexes)),Element(B, Matrices({4,4},Complexes))}", //
@@ -61,6 +60,7 @@ public class MatrixDTest extends ExprEvaluatorTestCase {
         "Inverse(Transpose(X))");
   }
 
+  // @Test
   // public void testMatrixD002() {
   // check(
   // "$Assumptions={Element(X, Matrices({n,n},Complexes)),Element(A,
@@ -79,7 +79,7 @@ public class MatrixDTest extends ExprEvaluatorTestCase {
 
   /** The JUnit setup method */
   @Override
-  protected void setUp() {
+  public void setUp() {
     super.setUp();
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.MAX_AST_SIZE = 1000000;
@@ -87,7 +87,7 @@ public class MatrixDTest extends ExprEvaluatorTestCase {
   }
 
   @Override
-  protected void tearDown() throws Exception {
+  public void tearDown() throws Exception {
     super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
   }

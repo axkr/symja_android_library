@@ -1,15 +1,16 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.parser.ExprParser;
 
+import static org.junit.Assert.assertEquals;
+
 /** */
 public class ExprParserTestCase extends ExprEvaluatorTestCase {
-  public ExprParserTestCase(String name) {
-    super(name);
-  }
 
+  @Test
   public void testIntegerMIN_VALUE() {
     // Integer.MIN_VALUE
     EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);
@@ -18,6 +19,7 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
     assertEquals(expr.toMMA(), "-2147483648");
   }
 
+  @Test
   public void testLongMIN_VALUE() {
     // Long.MIN_VALUE
     EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);
@@ -26,6 +28,7 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
     assertEquals(expr.toMMA(), "-9223372036854775808");
   }
 
+  @Test
   public void testParserDoubleMaxValue() {
     EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);
     ExprParser parser = new ExprParser(engine, true);
@@ -34,6 +37,7 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
     assertEquals(result.toString(), "2.2250738585072014`*^-308");
   }
 
+  @Test
   public void testParserConvertOnInput() {
     // see issue #787
     EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);
@@ -44,6 +48,7 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
         expr.fullFormString());
   }
 
+  @Test
   public void testParserArctan() {
     EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);
     ExprParser p = new ExprParser(engine, true);

@@ -1,5 +1,6 @@
 package org.matheclipse.core.sympy.core;
 
+import static org.junit.Assert.assertEquals;
 import static org.matheclipse.core.sympy.core.Expr.argsCnc;
 import java.util.Map;
 import org.junit.Test;
@@ -10,10 +11,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
 public class TestExpr extends ExprEvaluatorTestCase {
-
-  public TestExpr(String name) {
-    super(name);
-  }
 
   @Test
   public void test_as_coeff_add() {

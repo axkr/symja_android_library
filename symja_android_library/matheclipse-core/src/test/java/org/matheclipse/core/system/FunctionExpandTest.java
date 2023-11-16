@@ -1,15 +1,13 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 
 /** Tests forSolve and Roots functions */
 public class FunctionExpandTest extends ExprEvaluatorTestCase {
 
-  public FunctionExpandTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testFunctionExpand() {
     check("FunctionExpand(Factorial2(n))", //
         "2^(n/2+1/4*(1-Cos(n*Pi)))*Pi^(1/4*(-1+Cos(n*Pi)))*Gamma(1+n/2)");
@@ -217,6 +215,7 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "(Beta(z,a,b)*Gamma(a+b))/(Gamma(a)*Gamma(b))");
   }
 
+  @Test
   public void testFunctionExpandFactorialPower() {
     check("FunctionExpand(FactorialPower(b,3))", //
         "(-2+b)*(-1+b)*b");
@@ -228,16 +227,19 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "(a^b*Gamma(1-a))/((-a)^b*Gamma(1-a-b))");
   }
 
+  @Test
   public void testFunctionExpandHarmonicNumber() {
     check("FunctionExpand(HarmonicNumber(1/3-1))", //
         "-Pi/(2*Sqrt(3))-Log(6)-Log(Sqrt(3)/2)");
   }
 
+  @Test
   public void testFunctionExpandBinomial() {
     check("FunctionExpand(Binomial(a,b))", //
         "Gamma(1+a)/(Gamma(1+a-b)*Gamma(1+b))");
   }
 
+  @Test
   public void testFunctionC1D2TimesArcFunction() {
     check("FunctionExpand(Cos(ArcSin(x)/2))", //
         "Sqrt(1+Sqrt(1-x)*Sqrt(1+x))/Sqrt(2)");
@@ -253,6 +255,7 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "x/(1+Sqrt(1-x)*Sqrt(1+x))");
   }
 
+  @Test
   public void testFunctionExpandMultinomial() {
     check("FunctionExpand(Multinomial(a,b))", //
         "Gamma(1+a+b)/(Gamma(1+a)*Gamma(1+b))");
@@ -260,6 +263,7 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "Gamma(1+a+b+c+d+e)/(Gamma(1+a)*Gamma(1+b)*Gamma(1+c)*Gamma(1+d)*Gamma(1+e))");
   }
 
+  @Test
   public void testFunctionExpandPolyGamma() {
     check("FunctionExpand(PolyGamma(-z))", //
         "1/z+Pi*Cot(Pi*z)+PolyGamma(0,z)");
@@ -272,16 +276,19 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
             + "5)))/2)+1/2*(-1-Sqrt(5))*Log(Sqrt(1/2*(5+Sqrt(5)))/2)");
   }
 
+  @Test
   public void testFunctionExpandSphericalHankelH1() {
     check("FunctionExpand(SphericalHankelH1(a,b))", //
         "(Sqrt(Pi/2)*BesselJ(1/2*(1+2*a),b))/Sqrt(b)+(I*Sqrt(Pi/2)*BesselY(1/2*(1+2*a),b))/Sqrt(b)");
   }
 
+  @Test
   public void testFunctionExpandSphericalHankelH2() {
     check("FunctionExpand(SphericalHankelH2(a,b))", //
         "(Sqrt(Pi/2)*BesselJ(1/2*(1+2*a),b))/Sqrt(b)+(-I*Sqrt(Pi/2)*BesselY(1/2*(1+2*a),b))/Sqrt(b)");
   }
 
+  @Test
   public void testFunctionExpandPower() {
     check("FunctionExpand(I^(x+y))", //
         "E^(I*1/2*Pi*x+I*1/2*Pi*y)");
@@ -289,17 +296,20 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "E^(I*3/2*Pi*x)");
   }
 
+  @Test
   public void testFunctionExpandLog() {
     check("FunctionExpand(Log((1 + I Sqrt(3))/2))", //
         "I*1/3*Pi");
   }
 
+  @Test
   public void testFunctionExpandPolyLog() {
     check("FunctionExpand( PolyLog(2, E^( 4/5*Pi*I )) )", //
         "Pi^2/150+1/25*(E^(I*4/5*Pi)*PolyGamma(1,1/5)+PolyGamma(1,2/5)/E^(I*2/5*Pi)+E^(\n" //
             + "I*2/5*Pi)*PolyGamma(1,3/5)+PolyGamma(1,4/5)/E^(I*4/5*Pi))");
   }
 
+  @Test
   public void testFunctionExpandSqrtDenest() {
     check("FunctionExpand( Sqrt(5+4*Sqrt(9)) )", //
         "Sqrt(17)");
@@ -329,6 +339,7 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "-2+Sqrt(5)");
   }
 
+  @Test
   public void testStruveH() {
     check("FunctionExpand(StruveH(a,I*b))", //
         "((I*b)^(1+a)*StruveL(a,b))/b^(1+a)");
@@ -336,6 +347,7 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "((I*3/2)^(1+a)*StruveL(a,3/2))/(3/2)^(1+a)");
   }
 
+  @Test
   public void testStruveL() {
     check("FunctionExpand(StruveL(a,I*b))", //
         "((I*b)^(1+a)*StruveH(a,b))/b^(1+a)");
@@ -345,7 +357,7 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
 
   /** The JUnit setup method */
   @Override
-  protected void setUp() {
+  public void setUp() {
     super.setUp();
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.MAX_AST_SIZE = 1000000;
@@ -353,7 +365,7 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
   }
 
   @Override
-  protected void tearDown() throws Exception {
+  public void tearDown() throws Exception {
     super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
   }

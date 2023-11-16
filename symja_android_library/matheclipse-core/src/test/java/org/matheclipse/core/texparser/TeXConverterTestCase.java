@@ -1,5 +1,9 @@
 package org.matheclipse.core.texparser;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
@@ -7,15 +11,15 @@ import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IExpr;
 import junit.framework.TestCase;
 
+import static org.junit.Assert.assertEquals;
+
 /** Tests LaTeX import (parsing) function */
-public class TeXConverterTestCase extends TestCase {
+@RunWith(JUnit4.class)
+public class TeXConverterTestCase  {
 
   TeXParser texConverter;
 
-  public TeXConverterTestCase(String name) {
-    super(name);
-  }
-
+  @Test
   public void testTeX001() {
     check("x^2 + (a+b)x + ab", //
         "a*b+(a+b)*x+x^2");
@@ -29,16 +33,19 @@ public class TeXConverterTestCase extends TestCase {
         "x/Sqrt(5)");
   }
 
+  @Test
   public void testTeX002() {
     check("1+y*z", //
         "1+y*z");
   }
 
+  @Test
   public void testTeX003() {
     check("(1+y)*z", //
         "(1+y)*z");
   }
 
+  @Test
   public void testTeX004() {
     check("a = bq + r", //
         "a==b*q+r");
@@ -51,11 +58,13 @@ public class TeXConverterTestCase extends TestCase {
         "x==(1+y)/(1+2*z^2)");
   }
 
+  @Test
   public void testTeX005() {
     check("f(x,1+y)", //
         "f(x,1+y)");
   }
 
+  @Test
   public void testTeX006() {
     check("\\sin 30 ^ { \\circ }", //
         "Degree*Sin(30)");
@@ -63,6 +72,7 @@ public class TeXConverterTestCase extends TestCase {
         "Sin(30*Degree)");
   }
 
+  @Test
   public void testTeX007() {
     check("\\sin  \\frac { \\pi } { 2 }", //
         "Sin(Pi*1/2)");
@@ -74,21 +84,25 @@ public class TeXConverterTestCase extends TestCase {
         "Sin(Pi*1/2)");
   }
 
+  @Test
   public void testTeX008() {
     check("1 + 2 - 3 \\times 4 \\div 5", //
         "(-4/5)*3+1+2");
   }
 
+  @Test
   public void testTeX009() {
     check("x ^ { 2 } + 1 = 2", //
         "1+x^2==2");
   }
 
+  @Test
   public void testTeX010() {
     check("\\left ( 1+2 \\right )^{2}", //
         "(1+2)^2");
   }
 
+  @Test
   public void testTeX011() {
     check("\\int_{a}^{b} \\frac{dt}{t}", //
         "Integrate(1/t,{t,a,b})");
@@ -108,16 +122,19 @@ public class TeXConverterTestCase extends TestCase {
         "2/3*Integrate(Sqrt(4-3/5*x),x)+Sin(x)");
   }
 
+  @Test
   public void testTeX012() {
     check("\\sin x", //
         "Sin(x)");
   }
 
+  @Test
   public void testTeX013() {
     check("\\exp x", //
         "Exp(x)");
   }
 
+  @Test
   public void testTeX014() {
     check("\\sum_{n=1}^{\\infty} 2^{-n} = 1", //
         "Sum(2^(-n),{n,1,Infinity})==1");
@@ -127,41 +144,49 @@ public class TeXConverterTestCase extends TestCase {
         "Sum(i,{i,1,n})");
   }
 
+  @Test
   public void testTeX015() {
     check("\\prod_{i=a}^{b} f(i)", //
         "Product(f(i),{i,a,b})");
   }
 
+  @Test
   public void testTeX016() {
     check("\\frac{x}{\\sqrt{0.75}}", //
         "x/Sqrt(0.75)");
   }
 
+  @Test
   public void testTeX017() {
     check("a\\leq b \\le c", //
         "a<=b<=c");
   }
 
+  @Test
   public void testTeX018() {
     check("a\\geq b \\ge c", //
         "a>=b>=c");
   }
 
+  @Test
   public void testTeX019() {
     check("a < b < c", //
         "a<b<c");
   }
 
+  @Test
   public void testTeX020() {
     check("a > b > c", //
         "a>b>c");
   }
 
+  @Test
   public void testTeX021() {
     check("((a \\lor \\lnot b) \\land (c\\wedge a))", //
         "(a||!b)&&c&&a");
   }
 
+  @Test
   public void testTeX022() {
     // Rightarrow
     check("((a \\lor \\neg b) \\land (c\\Rightarrow a))", //
@@ -172,11 +197,13 @@ public class TeXConverterTestCase extends TestCase {
         "(a||!b)&&(c->a)");
   }
 
+  @Test
   public void testTeX023() {
     check("a \\to b", //
         "a->b");
   }
 
+  @Test
   public void testTeX024() {
     check("a \\Leftrightarrow b", //
         "a⇔b");
@@ -184,11 +211,13 @@ public class TeXConverterTestCase extends TestCase {
         "a⇔b");
   }
 
+  @Test
   public void testTeX025() {
     check("a!", //
         "a!");
   }
 
+  @Test
   public void testTeX026() {
     check("\\cosh ^{-1}(a)", //
         "ArcCosh(a)");
@@ -196,16 +225,19 @@ public class TeXConverterTestCase extends TestCase {
         "Tan(a)");
   }
 
+  @Test
   public void testTeX027() {
     check("f'(x)", //
         "f'(x)");
   }
 
+  @Test
   public void testTeX028() {
     check("\\arccos(x)", //
         "ArcCos(x)");
   }
 
+  @Test
   public void testTeX029() {
     check("\\log_2345+3 ", //
         "3+Log(2,345)");
@@ -213,6 +245,7 @@ public class TeXConverterTestCase extends TestCase {
         "Log(x)");
   }
 
+  @Test
   public void testTeX030() {
     check("a\\in \\mathbb{B}", //
         "a∈Booleans");
@@ -228,6 +261,7 @@ public class TeXConverterTestCase extends TestCase {
         "a∈Reals");
   }
 
+  @Test
   public void testTeX031() {
     check("\\frac{d}{dx} x^{2}", //
         "D(x^2,x)");
@@ -235,11 +269,13 @@ public class TeXConverterTestCase extends TestCase {
         "2*x");
   }
 
+  @Test
   public void testTeX032() {
     check("L' = {L}{\\sqrt{1-\\frac{v^2}{c^2}}}", //
         "Derivative(1)[L]==Sqrt(1-v^2/c^2)*L");
   }
 
+  @Test
   public void testTeX033() {
     check("-\\nabla \\times e", //
         "-E*∇");
@@ -247,6 +283,7 @@ public class TeXConverterTestCase extends TestCase {
         "-4*j*Pi+B*∇");
   }
 
+  @Test
   public void testTeX034() {
     check("\\lim_{x\\to 0}{\\frac{E^x-1}{2x}}", //
         "Limit((-1+E^x)/(2*x),x->0)");
@@ -260,27 +297,32 @@ public class TeXConverterTestCase extends TestCase {
         "1/2");
   }
 
+  @Test
   public void testTeXIssueSinTimesCos() {
     check("\\sin a \\cos b", //
         "Cos(b)*Sin(a)");
   }
 
+  @Test
   public void testTeXIssue712a() {
     check("\\large 6666", //
         "6666");
   }
 
+  @Test
   public void testTeXIssue712b() {
     check("\\log_{22}5", //
         "Log(22,5)");
   }
 
+  @Test
   public void testTeXIssue712c() {
     check(
         "\\operatorname { lim } _ { n \\rightarrow 0 } \\frac { ( - 3 ) ^ { n } + 2.5 ^ { n } } { 1 - 5 ^ { n } }", //
         "Limit(((-3)^n+2.5^n)/(1-5^n),n->0)");
   }
 
+  @Test
   public void testTeXIssue712d() {
     check("|x|", //
         "Abs(x)");
@@ -288,6 +330,7 @@ public class TeXConverterTestCase extends TestCase {
         "3+Pi^Abs(x*y)");
   }
 
+  @Test
   public void testTeXIssue712e() {
     checkFullForm("\\lim_{x \\to 3^{+}} a", //
         "Limit(a, Rule(x, 3), Rule(Direction, 1))");
@@ -297,6 +340,7 @@ public class TeXConverterTestCase extends TestCase {
         "Limit(a, Rule(x, 3))");
   }
 
+  // @Test
   // public void testTeXIssue712f() {
   // check(
   // " \\operatorname { det } \\left| \\begin{array} { l l } { 4 } & { 5 } \\\\ { 7 } & { 2 }
@@ -304,6 +348,7 @@ public class TeXConverterTestCase extends TestCase {
   // "Limit(a,x->3,Direction->1)");
   // }
 
+  @Test
   public void testTeXTimesSinCos() {
     checkFullForm("\\cos{x} ( \\sin{x} + \\cos{x})", //
         "Cos(x(Sin(Plus(x, Cos(x)))))");
@@ -316,12 +361,14 @@ public class TeXConverterTestCase extends TestCase {
         "Sin(Cos(θ))");
   }
 
+  @Test
   public void testTeXIssue712h() {
     checkFullForm(
         "g \\left(\\right. x \\left.\\right) = \\ln \\left(\\right. \\left|\\right. x + 1 \\right|\\right. \\left.\\right)", //
         "Equal(g(x), Log(Abs(Plus(1, x))))");
   }
 
+  @Test
   public void testTeXIssue712i() {
     checkFullForm("\\sin x", //
         "Sin(x)");
@@ -330,16 +377,19 @@ public class TeXConverterTestCase extends TestCase {
   }
 
 
+  @Test
   public void testTeXIssue712j() {
     checkFullForm("\\operatorname { tan } ( 2 x - \\frac { \\pi } { 4 } )", //
         "Tan(Plus(Times(-1, Pi, Rational(1,4)), Times(2, x)))");
   }
 
+  @Test
   public void testTeXIssue712k() {
     checkFullForm("2 \\operatorname { cos } ^ { 2 } x - \\operatorname { cos } x - 1 = 0", //
         "Equal(Plus(-1, Plus(Times(-1, Cos(x)), Times(2, Power(Cos(x), 2)))), 0)");
   }
 
+  @Test
   public void testTeXIssue712l() {
     checkFullForm("\\operatorname{GCD}(3,5)", //
         "GCD(3, 5)");
@@ -350,18 +400,21 @@ public class TeXConverterTestCase extends TestCase {
         "LessEqual(Plus(Power(Log(2, a), 3), Power(Log(2, b), 3), Power(Log(2, c), 3)), 1)");
   }
 
+  @Test
   public void testTeXIssue712m() {
     checkFullForm(//
         "64 ^ { \\frac { 1 } { 2 } } \\cdot 64 ^ { \\frac { 1 } { 3 } } \\cdot \\sqrt [ 6 ] { 6 }", //
         "Times(Power(6, Rational(1, 6)), Power(64, Rational(1,3)), Power(64, Rational(1,2)))");
   }
 
+  @Test
   public void testTeXIssue712n() {
     checkFullForm(//
         "\\log x", //
         "Log10(x)");
   }
 
+  @Test
   public void testTeXElementOf() {
     checkFullForm(//
         "\\beta \\in \\reals", //
@@ -371,6 +424,7 @@ public class TeXConverterTestCase extends TestCase {
         "Element(β, Reals)");
   }
 
+  @Test
   public void testTeXArray() {
     checkFullForm(//
         "\\left\\{ \\begin{array} { l } { y - x = 1814 } \\\\ { y = 9 x + 182 } \\end{array}\\right.", //
@@ -384,36 +438,42 @@ public class TeXConverterTestCase extends TestCase {
         "List(List(2, 3), List(3, 4))");
   }
 
+  @Test
   public void testTeXAngle() {
     checkFullForm(//
         "3\\angle2", //
         "FromPolarCoordinates(List(3, 2))");
   }
 
+  @Test
   public void testTeXBinomial001() {
     checkEval(//
         "_{2}^{\\\\:}C_{4}^{\\\\:}", //
         "0");
   }
 
+  @Test
   public void testTeXBinomial002() {
     checkFullForm(//
         "_{6}^{\\\\:}C_{2}^{\\\\:}", //
         "Binomial(6, 2)");
   }
 
+  @Test
   public void testTeXPermuatations() {
     checkFullForm(//
         "_{3}^{\\\\:}P_{2}^{\\\\:}", //
         "Pochhammer(2, Plus(-2, 1, 3))");
   }
 
+  @Test
   public void testTeXPercent() {
     checkFullForm(//
         "20\\% ", //
         "Times(Rational(1,100), 20)");
   }
 
+  @Test
   public void testRec01() {
     ExprEvaluator evaluator = new ExprEvaluator();
     evaluator.eval("Pol[x_, y_] := FromPolarCoordinates[{x, y}]");
@@ -425,17 +485,20 @@ public class TeXConverterTestCase extends TestCase {
     assertEquals(result.toString(), "{-1.2484405096414273,2.727892280477045}");
   }
 
+  @Test
   public void testDet() {
     check(
         "\\operatorname { det } \\left| \\begin{array} { l l } { 4 } & { 5 } \\\\ { 7 } & { 2 } \\end{array} \\right|", //
         "Det({{4,5},{7,2}})");
   }
 
+  @Test
   public void testUnequal() {
     check("h \\neq 0", //
         "h!=0");
   }
 
+  @Test
   public void testPlusMinus() {
     check("\\frac{ \\pm \\sqrt{5^{2} - 4 \\cdot 1 \\cdot 2}}{2\\left(1\\right)}", //
         "(±Sqrt((-1)*2*4+5^2))/(2*1)");
@@ -444,6 +507,7 @@ public class TeXConverterTestCase extends TestCase {
         "(-5±Sqrt((-1)*2*4+5^2))/(2*1)");
   }
 
+  @Test
   public void testDegreeO() {
     check("\\sin \\left( - 330\\right)^{o}", //
         "Sin(-330)^o");
@@ -451,12 +515,14 @@ public class TeXConverterTestCase extends TestCase {
         "Sin(-330)^o");
   }
 
+  @Test
   public void testPartial() {
     check(
         "\\{ \\frac { \\partial ( x ^ { 2 } y ^ { 4 } ) } { \\partial x } , \\frac { \\partial ( x ^ { 2 } y ^ { 4 } ) } { \\partial y } \\}", //
         "{D(x^2*y^4,x),D(x^2*y^4,y)}");
   }
 
+  @Test
   public void testArctan() {
     check("\\left(\\tan^{-1}(4\\div6)+\\frac{\\pi}{2}\\right)", //
         "Pi*1/2+ArcTan(2/3)");
@@ -481,8 +547,8 @@ public class TeXConverterTestCase extends TestCase {
   }
 
   /** The JUnit setup method */
-  @Override
-  protected void setUp() {
+  @Before
+  public void setUp() {
     try {
       // F.initSymbols();
       F.await();

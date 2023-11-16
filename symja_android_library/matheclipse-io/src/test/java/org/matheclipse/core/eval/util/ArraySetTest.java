@@ -1,15 +1,15 @@
 package org.matheclipse.core.eval.util;
 
+import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.ISymbol;
 import junit.framework.TestCase;
 
-public class ArraySetTest extends TestCase {
+import static org.junit.Assert.*;
 
-  public ArraySetTest(String name) {
-    super(name);
-  }
+public class ArraySetTest  {
 
+  @Test
   public void test001() {
     ArraySet<ISymbol> set = new ArraySet<ISymbol>();
 

@@ -1,12 +1,11 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
+
 /** Tests forSolve and Roots functions */
 public class ZTransformTest extends ExprEvaluatorTestCase {
 
-  public ZTransformTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testInverseZTransform001() {
     check("InverseZTransform(f(z)+ g(z)+h(z),z,n)", //
         "InverseZTransform(f(z),n,z)+InverseZTransform(g(z),n,z)+InverseZTransform(h(z),n,z)");
@@ -17,6 +16,7 @@ public class ZTransformTest extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
   public void testZTransform001() {
     check("ZTransform(n^2*f(n),n,z)", //
         "z*Derivative(0,0,1)[ZTransform][f(n),n,z]+z^2*Derivative(0,0,2)[ZTransform][f(n),n,z]");
@@ -57,6 +57,7 @@ public class ZTransformTest extends ExprEvaluatorTestCase {
         "-I*1/2*z*(Log((E^(I*f)-1/z)/E^(I*f))-Log(1-E^(I*f)/z))");
   }
 
+  @Test
   public void testZTransform002() {
     check("ZTransform((-1)^n*n^2,n,z)", //
         "z^2*((2*z)/(1+z)^3-2/(1+z)^2)+z*(-z/(1+z)^2+1/(1+z))");

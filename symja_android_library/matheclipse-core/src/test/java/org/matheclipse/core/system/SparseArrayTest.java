@@ -1,16 +1,14 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 
 /** Tests for SparseArray functions */
 public class SparseArrayTest extends ExprEvaluatorTestCase {
 
-  public SparseArrayTest(String name) {
-    super(name);
-  }
-
-  public void testArrayRules() {
+   @Test
+   public void testArrayRules() {
     check("a = {{{0,0},{1,1}},{{0,1},{0,1}}}", //
         "{{{0,0},{1,1}},{{0,1},{0,1}}}");
     check("ArrayRules(a)", //
@@ -30,7 +28,8 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
         "True");
   }
 
-  public void testAssociateTo() {
+   @Test
+   public void testAssociateTo() {
     check("data=<||>;\n" + "Do(\n" + //
         "   c = RandomInteger({1, 10});\n" + //
         "   PossibleColumns = RandomSample(Range(i + 1, 100), Min(100 - i - 1, 30));\n" + //
@@ -46,7 +45,8 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
         "");
   }
 
-  // public void testCoefficientArrays() {
+  //  @Test
+  //  public void testCoefficientArrays() {
   // // TODO
   // check(
   // "CoefficientArrays(2*x + 3*y^2 + 4*z + 5, {x, y, z}) // Normal", //
@@ -74,7 +74,8 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
   // "{{{a,-1},{-1,0}},{{1,0},{0,0}}}");
   // }
 
-  public void testDiagonalMatrix() {
+   @Test
+   public void testDiagonalMatrix() {
     check("DiagonalMatrix(SparseArray(Range(3))) // MatrixForm", //
         "{{1,0,0},\n" //
             + " {0,2,0},\n" //
@@ -95,7 +96,8 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
             + " {0,0,3}}");
   }
 
-  public void testDot() {
+   @Test
+   public void testDot() {
     check("s=SparseArray({{a, b}, {c, d}}).SparseArray({{u, v}, {w, x}}) ", //
         "SparseArray(Number of elements: 4 Dimensions: {2,2} Default value: 0)");
     check("s // Normal", //
@@ -125,7 +127,8 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
         "{{3},\n" + " {7},\n" + " {11}}");
   }
 
-  public void testFlatten() {
+   @Test
+   public void testFlatten() {
     check(
         "u=SparseArray(Automatic, {2, 2, 3}, 0, {1, {{0, 4, 7}, {{1, 3}, {2, 1}, {2, 2}, {2, 3}, {1, 2}, {2, 2}, {2, 3}}}, {3, 1, 1, 5, 1, 1, 2}})", //
         "SparseArray(Number of elements: 7 Dimensions: {2,2,3} Default value: 0)");
@@ -141,7 +144,8 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
         "{0,0,3,1,1,5,0,1,0,0,1,2}");
   }
 
-  public void testFullForm() {
+   @Test
+   public void testFullForm() {
     check("t=SparseArray({{1}->1,{2}->2,{4}->3,{1}->4,{3}->2},Automatic,0)", //
         "SparseArray(Number of elements: 4 Dimensions: {4} Default value: 0)");
     check("FullForm(t)", //
@@ -164,7 +168,8 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
         "SparseArray(Automatic, List(2, 2, 3), 0, List(1, List(List(0, 4, 7), List(List(1, 3), List(2, 1), List(2, 2), List(2, 3), List(1, 2), List(2, 2), List(2, 3))), List(3, 1, 1, 5, 1, 1, 2)))");
   }
 
-  public void testIdentityMatrix() {
+   @Test
+   public void testIdentityMatrix() {
     check("IdentityMatrix(4,SparseArray)", //
         "SparseArray(Number of elements: 4 Dimensions: {4,4} Default value: 0)");
     check("IdentityMatrix(3,SparseArray) // MatrixForm", //
@@ -173,14 +178,16 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
             + " {0,0,1}}");
   }
 
-  public void testNormal() {
+   @Test
+   public void testNormal() {
     check("s=SparseArray({11 -> a, 17 -> b})", //
         "SparseArray(Number of elements: 2 Dimensions: {17} Default value: 0)");
     check("Normal(s)", //
         "{0,0,0,0,0,0,0,0,0,0,a,0,0,0,0,0,b}");
   }
 
-  public void testNormMatrix() {
+   @Test
+   public void testNormMatrix() {
     check("s = SparseArray({{1, 1} -> 1, {2, 2} -> 2, {3, 3} -> 3, {1, 3} -> 4}, Automatic, 0)", //
         "SparseArray(Number of elements: 4 Dimensions: {3,3} Default value: 0)");
     check("s = SparseArray({{1, 1} -> 1, {2, 2} -> 2, {3, 3} -> 3, {1, 3} -> 4})", //
@@ -198,7 +205,8 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
             + " {0,2,0},\n" + " {0,0,3}}");
   }
 
-  public void testNormVector() {
+   @Test
+   public void testNormVector() {
     check("v = {1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1}", //
         "{1,0,1,0,0,1,0,0,0,1,0,0,0,0,1}");
     check("s = SparseArray(v)", //
@@ -207,7 +215,8 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
         "Sqrt(5)");
   }
 
-  public void testPart() {
+   @Test
+   public void testPart() {
     check("s=SparseArray({{1,1}->1,{2,2}->2,{4,3}->3,{1,4}->4,{3,5}->2},Automatic,0)", //
         "SparseArray(Number of elements: 5 Dimensions: {4,5} Default value: 0)");
     check("t=s[[1 ;; 3, 1 ;; 3]]", //
@@ -223,12 +232,14 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
         "{1,0,0,4,0}");
   }
 
-  public void testPlus() {
+   @Test
+   public void testPlus() {
     check("SparseArray({11,1,19,2})+SparseArray({5,7,1,23}) // MatrixForm", //
         "{16,8,20,25}");
   }
 
-  public void testTimes() {
+   @Test
+   public void testTimes() {
     check("s=SparseArray({{1,1}->1,{2,2}->2,{4,3}->3,{1,4}->4,{3,5}->2},Automatic,0)", //
         "SparseArray(Number of elements: 5 Dimensions: {4,5} Default value: 0)");
     check("r=2*s", //
@@ -240,7 +251,8 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
             " {0,0,6,0,0}}");
   }
 
-  public void testTotal() {
+   @Test
+   public void testTotal() {
     check("s=SparseArray({{1,1}->1,{2,2}->2,{4,3}->3,{1,4}->4,{3,5}->2},Automatic,0)", //
         "SparseArray(Number of elements: 5 Dimensions: {4,5} Default value: 0)");
     check("s // MatrixForm", //
@@ -266,14 +278,16 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
         "{-1,0,0,0,0,0,0,0,0,-1}");
   }
 
-  public void testVector01() {
+   @Test
+   public void testVector01() {
     check("s=SparseArray(Automatic, {4}, 0, {1, {{0, 2}, {{1}, {3}}}, {1, 1}})", //
         "SparseArray(Number of elements: 2 Dimensions: {4} Default value: 0)");
     check("s // Normal", //
         "{1,0,1,0}");
   }
 
-  public void testSparseArray001() {
+   @Test
+   public void testSparseArray001() {
     check(
         "s=SparseArray[Automatic, {5}, 0, {1, {{0, 5}, {{1}, {2}, {3}, {4}, {5}}},  {1, 2, 3, 4, 5}}]", //
         "SparseArray(Number of elements: 5 Dimensions: {5} Default value: 0)");
@@ -375,7 +389,8 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
             + " {0,2,0},\n" + " {0,0,3}}");
   }
 
-  public void testSparseArray002() {
+   @Test
+   public void testSparseArray002() {
     check(
         "s=SparseArray(Automatic, {5}, 0, {1, {{0, 5}, {{1}, {2}, {3}, {4}, {5}}},  {1, 2, 3, 4, 5}})", //
         "SparseArray(Number of elements: 5 Dimensions: {5} Default value: 0)");
@@ -485,7 +500,8 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
             + " {0,2,0},\n" + " {0,0,3}}");
   }
 
-  public void testSparseArrayPattern() {
+   @Test
+   public void testSparseArrayPattern() {
     check("SparseArray({{i_, j_} /; (i > j+1)-> (i+j ) }, {4, 4}) // MatrixForm", //
         "{{0,0,0,0},\n" //
             + " {0,0,0,0},\n" + " {4,0,0,0},\n" + " {5,6,0,0}}");
@@ -506,7 +522,8 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
         "{4.32993,3.29103,2.25761,1.21517}");
   }
 
-  public void testSparseArrayOfSparseArray01() {
+   @Test
+   public void testSparseArrayOfSparseArray01() {
     check("s=SparseArray({SparseArray({11,1,19,2}),SparseArray({11,1,19,2})})", //
         "SparseArray(Number of elements: 8 Dimensions: {2,4} Default value: 0)");
     check("s // Normal", //
@@ -516,7 +533,7 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
 
   /** The JUnit setup method */
   @Override
-  protected void setUp() {
+  public void setUp() {
     super.setUp();
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.MAX_AST_SIZE = 1000000;
@@ -524,7 +541,7 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
   }
 
   @Override
-  protected void tearDown() throws Exception {
+  public void tearDown() throws Exception {
     super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
   }

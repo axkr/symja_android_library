@@ -3,6 +3,7 @@ package org.matheclipse.io.test.eval;
 import java.util.ArrayList;
 import java.util.HashSet;
 import org.junit.Assert;
+import org.junit.Test;
 import org.matheclipse.core.eval.CoreCallbackFunction;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.eval.BooleanVariable;
@@ -12,12 +13,10 @@ import org.matheclipse.parser.client.eval.IDoubleValue;
 import org.matheclipse.parser.client.math.MathException;
 import junit.framework.TestCase;
 
-/** Tests evaluation in <code>double</code> expression mode */
-public class EvalDoubleCallbackTestCase extends TestCase {
+import static org.junit.Assert.assertEquals;
 
-  public EvalDoubleCallbackTestCase(String name) {
-    super(name);
-  }
+/** Tests evaluation in <code>double</code> expression mode */
+public class EvalDoubleCallbackTestCase {
 
   public void check(String in, String compareWith) {
     try {
@@ -30,6 +29,7 @@ public class EvalDoubleCallbackTestCase extends TestCase {
     }
   }
 
+  @Test
   public void testEval001() {
     check("42", "42.0");
     if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
@@ -71,6 +71,7 @@ public class EvalDoubleCallbackTestCase extends TestCase {
     // check("Random[]", "-1.0");
   }
 
+  @Test
   public void testEval002() {
     check("If[3/4<0.51, 1.1, -1.2]", "-1.2");
     check("If[True, 1.1, -1.2]", "1.1");
@@ -79,6 +80,7 @@ public class EvalDoubleCallbackTestCase extends TestCase {
     check("If[!(3/4>0.51 || 3/8>0.1), 1.1, -1.2]", "-1.2");
   }
 
+  @Test
   public void testEval003() {
     try {
       DoubleEvaluator engine = new DoubleEvaluator();
@@ -90,6 +92,7 @@ public class EvalDoubleCallbackTestCase extends TestCase {
     }
   }
 
+  @Test
   public void testEval004() {
     try {
       IDoubleValue vd = new DoubleVariable(3.0);
@@ -106,6 +109,7 @@ public class EvalDoubleCallbackTestCase extends TestCase {
     }
   }
 
+  @Test
   public void testEval005() {
     try {
       IDoubleValue vd = new DoubleVariable(3.0);
@@ -122,6 +126,7 @@ public class EvalDoubleCallbackTestCase extends TestCase {
     }
   }
 
+  @Test
   public void testEval006() {
     try {
       DoubleEvaluator engine = new DoubleEvaluator();
@@ -131,16 +136,17 @@ public class EvalDoubleCallbackTestCase extends TestCase {
       BooleanVariable vb2 = new BooleanVariable(true);
       engine.defineVariable("$2", vb2);
       double d = engine.evaluate("If[$1 && $2, 1, 0]");
-      Assert.assertEquals(d, 1d, DoubleEvaluator.EPSILON);
+      assertEquals(d, 1d, DoubleEvaluator.EPSILON);
       vb.setValue(false);
       d = engine.evaluate();
-      Assert.assertEquals(d, 0d, DoubleEvaluator.EPSILON);
+      assertEquals(d, 0d, DoubleEvaluator.EPSILON);
     } catch (Exception e) {
       e.printStackTrace();
-      Assert.assertEquals("", e.getMessage());
+      assertEquals("", e.getMessage());
     }
   }
 
+  @Test
   public void testEval007() {
     try {
       DoubleEvaluator engine = new DoubleEvaluator();
@@ -151,18 +157,19 @@ public class EvalDoubleCallbackTestCase extends TestCase {
       IDoubleValue vd2 = new DoubleVariable(-4.0);
       engine.defineVariable("$2", vd2);
       double d = engine.evaluate("$i = $1+$2; If[$i>0, 1, -1]");
-      Assert.assertEquals(d, -1d, DoubleEvaluator.EPSILON);
+      assertEquals(d, -1d, DoubleEvaluator.EPSILON);
       vd2.setValue(4.0);
       d = engine.evaluate();
-      Assert.assertEquals(d, 1d, DoubleEvaluator.EPSILON);
+      assertEquals(d, 1d, DoubleEvaluator.EPSILON);
     } catch (Exception e) {
       e.printStackTrace();
-      Assert.assertEquals("", e.getMessage());
+      assertEquals("", e.getMessage());
     }
   }
 
   //
 
+  @Test
   public void testEval008() {
     try {
       HashSet<String> result = new HashSet<String>();
@@ -171,13 +178,14 @@ public class EvalDoubleCallbackTestCase extends TestCase {
       for (String string : result) {
         list.add(string);
       }
-      Assert.assertEquals(list.toString(), "[a, b, $c]");
+      assertEquals(list.toString(), "[a, b, $c]");
     } catch (Exception e) {
       e.printStackTrace();
-      Assert.assertEquals("", e.getMessage());
+      assertEquals("", e.getMessage());
     }
   }
 
+  @Test
   public void testEval009() {
     try {
       DoubleEvaluator engine = new DoubleEvaluator();
@@ -185,16 +193,17 @@ public class EvalDoubleCallbackTestCase extends TestCase {
       BooleanVariable vb = new BooleanVariable(true);
       engine.defineVariable("$1", vb);
       double d = engine.evaluate("If[$1, 1, 0]");
-      Assert.assertEquals(d, 1d, DoubleEvaluator.EPSILON);
+      assertEquals(d, 1d, DoubleEvaluator.EPSILON);
       vb.setValue(false);
       d = engine.evaluate();
-      Assert.assertEquals(d, 0d, DoubleEvaluator.EPSILON);
+      assertEquals(d, 0d, DoubleEvaluator.EPSILON);
     } catch (Exception e) {
       e.printStackTrace();
-      Assert.assertEquals("", e.getMessage());
+      assertEquals("", e.getMessage());
     }
   }
 
+  @Test
   public void testMissingFunction009() {
     try {
       DoubleEvaluator engine = new DoubleEvaluator();
@@ -206,6 +215,7 @@ public class EvalDoubleCallbackTestCase extends TestCase {
     }
   }
 
+  @Test
   public void testInterpolatingFunction() {
     try {
       DoubleEvaluator engine = new DoubleEvaluator();

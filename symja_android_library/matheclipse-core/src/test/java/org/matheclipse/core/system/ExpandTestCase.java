@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.C2;
@@ -16,6 +17,8 @@ import static org.matheclipse.core.expression.S.c;
 import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
 import static org.matheclipse.core.expression.S.z;
+
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.eval.EvalEngine;
@@ -24,28 +27,29 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class ExpandTestCase extends ExprEvaluatorTestCase {
-  public ExpandTestCase(String name) {
-    super(name);
-  }
 
+  @Test
   public void testExpand001() {
     IAST ast = Times(x, x);
     IExpr temp = Algebra.expandAll(ast, null, false, false, false, EvalEngine.get());
     assertEquals(temp.toString(), "x^2");
   }
 
+  @Test
   public void testExpand002() {
     IAST ast = Times(C1D2, x, x);
     IExpr temp = Algebra.expand(ast, null, false, false, true);
     assertEquals(temp.toString(), "NIL");
   }
 
+  @Test
   public void testExpand003() {
     IAST ast = Power(Plus(x, y), C3);
     IExpr temp = Algebra.expandAll(ast, null, false, false, false, EvalEngine.get());
     assertEquals(temp.toString(), "x^3+y^3+3*x^2*y+3*x*y^2");
   }
 
+  @Test
   public void testExpand004() {
     IAST ast = Plus(Sow(Power(a, 2)), C1);
     IExpr temp = Algebra.expandAll(ast, null, false, false, false, EvalEngine.get());
@@ -55,6 +59,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
     assertEquals(temp.toString(), "1+Sow(a^2)");
   }
 
+  @Test
   public void testExpand005() {
     // x / y
     IAST ast = Times(x, Power(y, -1));
@@ -66,6 +71,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
     // assertNull(temp);
   }
 
+  @Test
   public void testExpand006() {
     // (3*x^2+2)^2
     IAST ast = Power(Plus(C2, Times(C3, Power(x, 2))), C2);
@@ -76,6 +82,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
     assertEquals(temp.toString(), "4+12*x^2+9*x^4");
   }
 
+  @Test
   public void testExpand007() {
     // Sec(x)^2*Sin(x)^2
     IAST ast = Times(Power(Sec(x), C2), Power(Sin(x), 2));
@@ -87,6 +94,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
     assertEquals(temp.toString(), "Tan[x]^2");
   }
 
+  @Test
   public void testExpandPerformance001() {
     // ExpandAll((a+b+2*c+x+y+3*z)^6)
     IAST ast = Power(Plus(a, b, F.Times(C2, c), x, y, F.Times(F.C3, z)), F.ZZ(6));
@@ -98,6 +106,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
     assertEquals(temp.get(462).toString(), "729*z^6");
   }
 
+  @Test
   public void testExpandPerformance002() {
     // Expand((a+b+2*c+x+y+3*z)^12)
     IAST ast = Power(Plus(a, b, F.Times(C2, c), x, y, F.Times(F.C3, z)), F.ZZ(12));
@@ -110,6 +119,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
     assertEquals(temp.get(462).toString(), "5544*a^5*b^6*y");
   }
 
+  @Test
   public void testExpandPerformance003() {
     if (Config.EXPENSIVE_JUNIT_TESTS) {
       // best time 8.8 s
@@ -124,6 +134,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testExpandPerformance004() {
     // https://stackoverflow.com/q/70373472/24819
     if (Config.EXPENSIVE_JUNIT_TESTS) {
@@ -140,6 +151,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testExpandPerformance005() {
     if (Config.EXPENSIVE_JUNIT_TESTS) {
       // best time 20.7 s
@@ -243,6 +255,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testExpandPerformance006() {
     String str = "k1 = (3*u3^2 - (u1 - u2)^2)^2 ;";
     check(str, //
@@ -252,13 +265,14 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
             + "9*u3^4");
   }
 
+  @Test
   public void testRationalFunction001() {
     check("PolynomialQ(x^2*(a+b*x^3)^16,x)", //
         "True");
   }
 
   @Override
-  protected void setUp() {
+  public void setUp() {
     super.setUp();
     if (Config.EXPENSIVE_JUNIT_TESTS) {
       Config.MAX_AST_SIZE = Integer.MAX_VALUE;

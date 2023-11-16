@@ -1,6 +1,8 @@
 package org.matheclipse.core.system;
 
 import java.util.function.Function;
+
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -10,16 +12,16 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.TrigSimplifyFu;
 
-public class SimplifyTest extends ExprEvaluatorTestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-  public SimplifyTest(String name) {
-    super(name);
-  }
+public class SimplifyTest extends ExprEvaluatorTestCase {
 
   /**
    * See: <a href=
    * "https://github.com/sympy/sympy/blob/master/sympy/simplify/tests/test_fu.py">sympy/simplify/tests/test_fu.py</a>
    */
+  @Test
   public void testTrigSimplifyFu() {
 
     // CTR1 example
@@ -119,6 +121,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
         "(9*Sqrt(3)*Cos(x)+6*Sqrt(3)*Cos(x)^3+35*Sin(x)-14*Sin(x)^3)/(4+Cos(2*x))");
   }
 
+  @Test
   public void testTrigSimplifyFu002() {
 
     // assert fu(sin(50)**2 + cos(50)**2 + sin(pi/6)) == Rational(3, 2)
@@ -194,6 +197,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
         "(9*Sqrt(3)*Cos(x)+6*Sqrt(3)*Cos(x)^3+35*Sin(x)-14*Sin(x)^3)/(4+Cos(2*x))");
   }
 
+  @Test
   public void testTrigSimplifyTRmorrie() {
     IExpr trMorrie = TrigSimplifyFu.trMorrie(F.Times(F.Cos(F.x), F.Cos(F.Times(F.C2, F.x))));
     assertEquals(trMorrie.toString(), //
@@ -267,6 +271,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testTrigSimplifyTR1() {
     // 2*csc(x) + sec(x)
     IExpr tr1 = TrigSimplifyFu.tr1(F.Plus(F.Times(F.C2, F.Csc(F.x)), F.Sec(F.x)));
@@ -274,6 +279,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
         "2/Sin(x)+1/Cos(x)");
   }
 
+  @Test
   public void testTrigSimplifyTR2() {
     IExpr tr2 = TrigSimplifyFu.tr2(F.Divide(F.C1, F.Tan(F.x)));
     assertEquals(tr2.toString(), //
@@ -291,6 +297,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testTrigSimplifyTR2i() {
     IExpr tr2i = TrigSimplifyFu
         .tr2i(F.Divide(F.Power(F.Sin(F.x), F.C2), F.Power(F.Plus(F.Cos(F.x), F.C1), F.C2)), true);
@@ -487,6 +494,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
         "Tan(5/2)^i");
   }
 
+  @Test
   public void testTrigSimplifyTR3() {
     IExpr tr3 = TrigSimplifyFu.tr3(F.Cos(F.Plus(F.Times(F.C1D2, S.Pi), F.x)));
     tr3 = F.eval(tr3);
@@ -499,6 +507,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
         "-Cos(x)");
   }
 
+  @Test
   public void testTrigSimplifyTR5() {
     IExpr tr5 = TrigSimplifyFu.tr5(F.Power(F.Sin(F.x), F.C2));
     // tr5 = F.eval(tr5);
@@ -517,6 +526,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testTrigSimplifyTR6() {
     // assert TR6(cos(x)**2) == -sin(x)**2 + 1
     IExpr tr6 = TrigSimplifyFu.tr6(F.Power(F.Cos(F.x), F.C2));
@@ -538,6 +548,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testTrigSimplifyTR56() {
     // h = lambda x: 1 - x
     Function<IExpr, IExpr> h = x -> F.C1.subtract(x);
@@ -584,6 +595,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
         "Sin(x)^(1+I*2)");
   }
 
+  @Test
   public void testTrigSimplifyTR7() {
     // Cos(x^2)
     IExpr tr7 = TrigSimplifyFu.tr7(F.Power(F.Cos(F.x), F.C2));
@@ -597,6 +609,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
         "3/2+Cos(2*x)/2");
   }
 
+  @Test
   public void testTrigSimplifyTR8() {
     IExpr tr8 = TrigSimplifyFu.tr8(F.Times(F.Cos(F.C2), F.Cos(F.C3)), true);
     assertEquals(tr8.toString(), //
@@ -643,6 +656,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testTrigSimplifyTR9() {
     ISymbol a = F.Dummy("a");
     a.assignValue(F.C1D2);
@@ -733,6 +747,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
         "2*Cos(1/2*(y+x*y))*Sin(1/2*(-y+x*y))");
   }
 
+  @Test
   public void testTrigSimplifyTR10() {
     IExpr tr10 = TrigSimplifyFu.tr10(F.Cos(F.Plus(F.a, F.b)));
     assertEquals(tr10.toString(), //
@@ -747,6 +762,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
         "Sin(a)*Cos(b)*Cos(c)+Sin(a)*-Sin(b)*Sin(c)+Cos(a)*Cos(c)*Sin(b)+Cos(a)*Cos(b)*Sin(c)");
   }
 
+  @Test
   public void testTrigSimplifyTR10i() {
     // cos(1)*cos(3) + sin(1)*sin(3)
     IExpr tr10i = TrigSimplifyFu
@@ -922,6 +938,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     // assert not (ex - t.expand(trig=True) or t.is_Add)
   }
 
+  @Test
   public void testTrigSimplifyTR11() {
     // TR11(sin(x/3)/(cos(x/6)))
     IExpr tr11 =
@@ -942,6 +959,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
         "4*Cos(x)*Sin(x)*(1-2*Sin(x)^2)");
   }
 
+  @Test
   public void testTrigSimplifyTR12() {
     // tan(x + y)
     IExpr tr12 = TrigSimplifyFu.tr12(F.Tan(F.Plus(F.x, F.y)));
@@ -962,6 +980,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testTrigSimplifyTR13() {
     // tan(2)*tan(3)
     IExpr tr13 = TrigSimplifyFu.tr13(F.Times(F.Tan(F.C2), F.Tan(F.C3)));
@@ -993,6 +1012,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
         "Tan(1)*(1-Cot(5)*Tan(2)-Cot(5)*Tan(3))");
   }
 
+  @Test
   public void testTrigSimplifyTR14() {
     // eq = (cos(x) - 1)*(cos(x) + 1)
     IExpr eq = F.Times(F.Plus(F.CN1, F.Cos(F.x)), F.Plus(F.C1, F.Cos(F.x)));
@@ -1040,6 +1060,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testTrigSplit() {
     // https://github.com/sympy/sympy/blob/c79d74dafb21d631f54ba82d5ddecc56dc9efaa3/sympy/simplify/tests/test_fu.py#L316
     // assert trig_split(cos(x), cos(y)) == (1, 1, 1, x, y, True)
@@ -1150,7 +1171,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
 
   /** The JUnit setup method */
   @Override
-  protected void setUp() {
+  public void setUp() {
     super.setUp();
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.MAX_AST_SIZE = 1000000;
@@ -1158,7 +1179,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
   }
 
   @Override
-  protected void tearDown() throws Exception {
+  public void tearDown() throws Exception {
     super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
   }

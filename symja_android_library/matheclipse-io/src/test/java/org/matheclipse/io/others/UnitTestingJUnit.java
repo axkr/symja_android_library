@@ -1,5 +1,6 @@
 package org.matheclipse.io.others;
 
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.io.system.AbstractTestCase;
 
@@ -8,10 +9,8 @@ import org.matheclipse.io.system.AbstractTestCase;
  * integrator</a>.
  */
 public class UnitTestingJUnit extends AbstractTestCase {
-  public UnitTestingJUnit(String name) {
-    super(name);
-  }
 
+  @Test
   public void testVerificationTest() {
     check("VerificationTest(3! < 3^3)", //
         "TestResultObject(Outcome->Success,TestID->None)");
@@ -25,6 +24,7 @@ public class UnitTestingJUnit extends AbstractTestCase {
         "TestResultObject(Outcome->Success,TestID->None)");
   }
 
+  @Test
   public void testTestReport() {
     check(
         "TestReport({VerificationTest(Sin(E) > Cos(E)), VerificationTest(MatrixQ({{1, 2, 3}, {4, 5, 6, 7}})), VerificationTest(1/0, ComplexInfinity)})", //
@@ -35,7 +35,7 @@ public class UnitTestingJUnit extends AbstractTestCase {
 
   /** The JUnit setup method */
   @Override
-  protected void setUp() {
+  public void setUp() {
     super.setUp();
     Config.FILESYSTEM_ENABLED = true;
   }

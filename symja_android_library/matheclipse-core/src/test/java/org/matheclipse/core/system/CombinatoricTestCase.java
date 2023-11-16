@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.hipparchus.util.RosenNumberPartitionIterator;
+import org.junit.Test;
 import org.matheclipse.core.combinatoric.MultisetPartitionsIterator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -8,13 +9,13 @@ import org.matheclipse.core.patternmatching.FlatOrderlessStepVisitor;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 
+import static org.junit.Assert.assertEquals;
+
 /** Tests for combinatorial functions */
 public class CombinatoricTestCase extends ExprEvaluatorTestCase {
-  public CombinatoricTestCase(String name) {
-    super(name);
-  }
 
   /** Test combinatorial functions */
+  @Test
   public void testCombinatoric() {
 
     // check("KOrderlessPartitions(f(g),1)", //
@@ -60,6 +61,7 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
         "{{a,b},{d,e},{g,h}}");
   }
 
+  @Test
   public void testCycles() {
 
     check("Cycles({{4, 10, 2, 5}, {9}, {7, 1, 18}})", //
@@ -81,6 +83,7 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
         "Cycles({{1,10000,100},{10,1000}})");
   }
 
+  @Test
   public void testFindPermutation() {
     check("FindPermutation(CharacterRange(\"a\",\"d\"), {\"a\",\"d\",\"c\",\"b\"})", //
         "Cycles({{2,4}})");
@@ -98,6 +101,7 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
         "Cycles({{2,3},{4,6,5}})");
   }
 
+  @Test
   public void testPermute() {
     check("Permute(CharacterRange(\"v\", \"z\"), Cycles({{1, 5, 3}}))", //
         "{x,w,z,y,v}");
@@ -120,6 +124,7 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testPolygonalNumber() {
     check("Table(PolygonalNumber(r, 3), {r, 1, 5})", //
         "{0,3,6,9,12}");
@@ -134,6 +139,7 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testPermutationCycles() {
     check("PermutationCycles({4,2,7,6,5,8,1,3})", //
         "Cycles({{1,4,6,8,3,7}})");
@@ -149,6 +155,7 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
         "f({{1,2,5},{3},{4,6,8,9},{7},{10}})");
   }
 
+  @Test
   public void testPermutationCyclesQ() {
     check("PermutationCyclesQ(Cycles({{1, 6, 2}, {4, 11, 12, 3}}))", //
         "True");
@@ -160,6 +167,7 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testPermutationList() {
     check("PermutationList(Cycles({{3, 2}, { 6, 7},{11,17}}))", //
         "{1,3,2,4,5,7,6,8,9,10,17,12,13,14,15,16,11}");
@@ -175,6 +183,7 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
         "{5,9,2,4,1,6,7,8,3}");
   }
 
+  @Test
   public void testPermutationListQ() {
     check("PermutationListQ({5, 7, 6, 1, 3, 4, 2, 8})", //
         "True");
@@ -190,6 +199,7 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testPermutationReplace() {
     check("PermutationReplace({1, b, 3, 4, 5}, Cycles({{1, 5,8}, {2, 7}}))", //
         "{5,b,3,4,8}");
@@ -203,11 +213,13 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
         "6");
   }
 
+  @Test
   public void testPermutatins() {
     check("Permutations({1,2,1})", //
         "{{1,2,1},{1,1,2},{2,1,1}}");
   }
 
+  @Test
   public void testRosenIterator() {
     IAST lhsPatternAST = F.Plus(F.x_, F.y_, F.z_);
     IAST lhsEvalAST = F.Plus(F.a, F.b, F.c, F.d);

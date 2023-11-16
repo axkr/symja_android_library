@@ -1,9 +1,11 @@
 package org.matheclipse.core.system;
 
-import junit.framework.TestCase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apfloat;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.*;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -16,9 +18,13 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-public class NumberTest extends TestCase {
+import static org.junit.Assert.*;
+
+@RunWith(JUnit4.class)
+public class NumberTest {
   private static final Logger LOGGER = LogManager.getLogger();
 
+  @Test
   public void testComplexNum() {
     // test for Android bug:
     // https://github.com/tranleduy2000/symja_android_library/commit/2f03d0b6c8095c2c71b1f56c8e5fc5f0b30f927d
@@ -34,6 +40,7 @@ public class NumberTest extends TestCase {
     assertEquals(cn.toString(), "(2.0)");
   }
 
+  @Test
   public void testPower() {
     IFraction f = AbstractFractionSym.valueOf(2, 3);
 
@@ -50,6 +57,7 @@ public class NumberTest extends TestCase {
    * See: <a href="https://docs.oracle.com/javase/tutorial/java/data/numberformat.html">numberformat
    * article</a>
    */
+  @Test
   public void testNumberFormat() {
     StringBuilder buf = new StringBuilder();
     try {
@@ -67,6 +75,7 @@ public class NumberTest extends TestCase {
     assertEquals(buf.toString(), "12345.12");
   }
 
+  @Test
   public void testDoubleFormat() {
     double a = 1.3;
     double b = 1.0;
@@ -83,6 +92,7 @@ public class NumberTest extends TestCase {
     // System.out.println(decimalFormat.format(result));
   }
 
+  @Test
   public void testApfloatRounding() {
     int precision = 30;
     ApfloatNum num = (ApfloatNum) ApfloatNum.valueOf("3.306158858189456", precision)
@@ -91,6 +101,7 @@ public class NumberTest extends TestCase {
     assertEquals(round.toString(), "331");
   }
 
+  @Test
   public void testApfloatRounding2() {
     int precision = 30;
     ApfloatNum num = (ApfloatNum) ApfloatNum.valueOf("3.304158858189456", precision)
@@ -99,6 +110,7 @@ public class NumberTest extends TestCase {
     assertEquals(round.toString(), "330");
   }
 
+  @Test
   public void testFractionSymToDouble() {
     // (102/100)^181
     String input = "(102/100)^181";
@@ -109,6 +121,7 @@ public class NumberTest extends TestCase {
     assertEquals(((BigFractionSym) result).complexNumValue().getRealPart(), 36.027247984128934, 1E-8);
   }
 
+  @Test
   public void testFractionSymToDouble2() {
     String input = "N[140^(769/500)]";
     ExprEvaluator exprEvaluator = new ExprEvaluator();
@@ -117,6 +130,7 @@ public class NumberTest extends TestCase {
     assertEquals(result.evalf(), 1998.6876036465665, 1E-8);
   }
 
+  @Test
   public void testFractionSymToDouble3() {
     String input = "N[140^(1538/1000)]";
     ExprEvaluator exprEvaluator = new ExprEvaluator();
@@ -125,6 +139,7 @@ public class NumberTest extends TestCase {
     assertEquals(result.evalf(), 1998.6876036465665, 1E-8);
   }
 
+  @Test
   public void testApfloatNumToString() {
     ApfloatNum apfloatNum = ApfloatNum.valueOf(new Apfloat("-1.44224957030740838"));
     OutputFormFactory outputFormFactory = OutputFormFactory.get(true, true, false, 3, 18);

@@ -1,18 +1,20 @@
 package org.matheclipse.io.others;
 
+import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.io.system.AbstractTestCase;
 
+import static org.junit.Assert.assertEquals;
+
 public class SimplifyCountJUnit extends AbstractTestCase {
-  public SimplifyCountJUnit(String name) {
-    super(name);
-  }
+
 
   @Override
   public void check(String evalString, String expectedResult) {
     check(fScriptEngine, evalString, expectedResult, -1);
   }
 
+  @Test
   public void test001() {
 
     long c = F.CN1.leafCountSimplify();

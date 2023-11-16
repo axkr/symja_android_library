@@ -1,35 +1,37 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 
 /** Tests for graphics functions */
 public class GraphicsTest extends ExprEvaluatorTestCase {
 
-  public GraphicsTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testBernsteinBasis() {
     check("BernsteinBasis(3,2,0.3)", //
         "0.189");
   }
 
+  @Test
   public void testCircle() {
     check("Circle( )", //
         "Circle({0,0})");
   }
 
+  @Test
   public void testDisk() {
     check("Disk( )", //
         "Disk({0,0})");
   }
 
+  @Test
   public void testRectangle() {
     check("Rectangle( )", //
         "Rectangle({0,0})");
   }
 
+  @Test
   public void testVolume() {
     check("Volume(Cylinder({{0, 0, 0}, {1, 1, 1}}, 1/2))", //
         "1/4*Sqrt(3)*Pi");
@@ -43,6 +45,7 @@ public class GraphicsTest extends ExprEvaluatorTestCase {
         "8*Pi");
   }
 
+  @Test
   public void testRGBColor() {
     check("Black", //
         "RGBColor(0.0,0.0,0.0)");
@@ -50,6 +53,7 @@ public class GraphicsTest extends ExprEvaluatorTestCase {
         "RGBColor(0.0,0.0,1.0)");
   }
 
+  @Test
   public void testGraphicsJSON() {
     // check("GraphicsJSON(Graphics(Polygon({{1, -1}, {0, Sqrt(7)}, {-1, -1}})))", //
     // "{\"elements\":[{\"type\":\"polygon\",\"color\":[0.0,0.0,0.0],\"opacity\":1.0,\"coords\":[[[1.0,-1.0]],[[0.0,2.6457513110645907]],[[-1.0,-1.0]]]}],\"extent\":{\"xmin\":-1.0,\"xmax\":1.0,\"ymin\":-1.0,\"ymax\":2.6457513110645907},\"axes\":{\"hasaxes\":false}}");
@@ -78,21 +82,25 @@ public class GraphicsTest extends ExprEvaluatorTestCase {
     // "{\"elements\":[{\"type\":\"arrow\",\"color\":[0.0,0.0,0.0],\"opacity\":1.0,\"coords\":[[[1.0,0.0]],[[2.0,3.0]],[[3.0,7.0]],[[4.0,2.0]]]}],\"extent\":{\"xmin\":1.0,\"xmax\":4.0,\"ymin\":0.0,\"ymax\":7.0},\"axes\":{\"hasaxes\":false}}");
   }
 
+  @Test
   public void testGraphicsJSONColor() {
     // check("GraphicsJSON(Graphics(Red))", //
     // "{\"elements\":[{\"option\":\"color\",\"value\":[1.0,0.0,0.0]}]}");
   }
 
+  @Test
   public void testGraphicsJSONPointSize() {
     // check("GraphicsJSON(Graphics(PointSize(1/2)))", //
     // "{\"elements\":[{\"option\":\"pointSize\",\"value\":0.5}]}");
   }
 
+  @Test
   public void testGraphicsJSONOpacity() {
     // check("GraphicsJSON(Graphics(Opacity(7/8)))", //
     // "{\"elements\":[{\"option\":\"opacity\",\"value\":0.875}]}");
   }
 
+  @Test
   public void testGraphicsJSONWithOptions() {
     // check(
     // "GraphicsJSON(Graphics({Green, Rectangle()}, PlotRangePadding -> {{0.5, 0.4}, {0.3, 0.3}},
@@ -107,16 +115,19 @@ public class GraphicsTest extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testGraphicsJSONText() {
     // check("GraphicsJSON(Graphics({Circle(), Text(x^2 + y^2 < 1, {0, 0})}))", //
     // "{\"elements\":[{\"type\":\"circle\",\"color\":[0.0,0.0,0.0],\"opacity\":1.0,\"radius1\":1.0,\"radius2\":1.0,\"coords\":[[[0.0,0.0]]]},{\"type\":\"text\",\"coords\":[[[0.0,0.0]]],\"texts\":[\"x^2+y^2<1\"]}],\"extent\":{\"xmin\":-1.0,\"xmax\":1.0,\"ymin\":-1.0,\"ymax\":1.0},\"axes\":{\"hasaxes\":false}}");
   }
 
+  @Test
   public void testGraphics3DJSON() {
     check("Graphics3DJSON(Graphics3D(Arrow({{1, 1, -1}, {2, 3, 0}, {3, 7, -1}, {4, 2, 0}})))", //
         "{\"elements\":[{\"type\":\"arrow\",\"color\":[1.0,0.5,0.0],\"opacity\":1.0,\"coords\":[[[1.0,1.0,-1.0]],[[2.0,3.0,0.0]],[[3.0,7.0,-1.0]],[[4.0,2.0,0.0]]]}],\"lighting\":[{\"type\":\"ambient\",\"color\":[0.4,0.2,0.2]},{\"type\":\"directional\",\"color\":[0.0,0.18,0.5],\"coords\":[[2.0,0.0,2.0]]},{\"type\":\"directional\",\"color\":[0.18,0.5,0.18],\"coords\":[[2.0,2.0,3.0]]},{\"type\":\"directional\",\"color\":[0.5,0.18,0.0],\"coords\":[[0.0,2.0,2.0]]},{\"type\":\"directional\",\"color\":[0.0,0.0,0.18],\"coords\":[[0.0,0.0,2.0]]}],\"viewpoint\":[1.3,-2.4,2.0]}");
   }
 
+  @Test
   public void testGraphics3DJSONText() {
     check("Graphics3DJSON(Graphics3D({Sphere(), Text(x^2 + y^2 + z^2 < 1, {0, 0,0})}))", //
         "{\"elements\":[{\"type\":\"sphere\",\"color\":[1.0,0.5,0.0],\"opacity\":1.0,\"radius\":1.0,\"coords\":[[[0.0,0.0,0.0]]]},{\"type\":\"text\",\"color\":[1.0,0.5,0.0],\"opacity\":1.0,\"coords\":[[[0.0,0.0,0.0]]],\"texts\":[\"x^2+y^2+z^2<1\"]}],\"lighting\":[{\"type\":\"ambient\",\"color\":[0.4,0.2,0.2]},{\"type\":\"directional\",\"color\":[0.0,0.18,0.5],\"coords\":[[2.0,0.0,2.0]]},{\"type\":\"directional\",\"color\":[0.18,0.5,0.18],\"coords\":[[2.0,2.0,3.0]]},{\"type\":\"directional\",\"color\":[0.5,0.18,0.0],\"coords\":[[0.0,2.0,2.0]]},{\"type\":\"directional\",\"color\":[0.0,0.0,0.18],\"coords\":[[0.0,0.0,2.0]]}],\"viewpoint\":[1.3,-2.4,2.0]}");
@@ -124,7 +135,7 @@ public class GraphicsTest extends ExprEvaluatorTestCase {
 
   /** The JUnit setup method */
   @Override
-  protected void setUp() {
+  public void setUp() {
     super.setUp();
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.MAX_AST_SIZE = 1000000;
@@ -132,7 +143,7 @@ public class GraphicsTest extends ExprEvaluatorTestCase {
   }
 
   @Override
-  protected void tearDown() throws Exception {
+  public void tearDown() throws Exception {
     super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
   }

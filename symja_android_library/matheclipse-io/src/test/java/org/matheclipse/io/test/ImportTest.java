@@ -4,6 +4,10 @@ package org.matheclipse.io.test;
 import java.io.File;
 import java.util.Arrays;
 import javax.imageio.ImageIO;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -14,13 +18,18 @@ import org.matheclipse.io.builtin.Import;
 import org.matheclipse.io.tensor.io.ImageFormat;
 import junit.framework.TestCase;
 
-public class ImportTest extends TestCase {
+import static org.junit.Assert.assertEquals;
+
+@RunWith(JUnit4.class)
+public class ImportTest {
+  // @Test
   // public void testCsv() throws Exception {
   // File file = new File(ImportTest.class.getResource("/io/libreoffice_calc.csv").getFile());
   // IAST table = Import.of(file);
   // assertEquals(Dimensions.of(table), Arrays.asList(4, 2));
   // }
 
+  @Test
   public void testPng() throws Exception {
     File file = new File(ImportTest.class.getResource("/io/rgba15x33.png").getFile());
     // IAST tensor = Import.of(file);
@@ -29,6 +38,7 @@ public class ImportTest extends TestCase {
     assertEquals(LinearAlgebra.dimensions(tensor), Arrays.asList(33, 15, 4));
   }
 
+  @Test
   public void testJpg() throws Exception {
     File file = new File(ImportTest.class.getResource("/io/rgb15x33.jpg").getFile());
     // IAST tensor = Import.of(file);
@@ -40,6 +50,7 @@ public class ImportTest extends TestCase {
     assertEquals(F.List(F.ZZ(180), F.ZZ(46), F.ZZ(47), F.ZZ(255)), part);
   }
 
+  @Test
   public void testRawJSON() throws Exception {
     File file = new File(ImportTest.class.getResource("/io/java_wikipedia.json").getFile());
 
@@ -54,6 +65,7 @@ public class ImportTest extends TestCase {
             + "0,title->Android Runtime|>,<|ns->0,title->Android SDK|>}|>|>|>|>");
   }
 
+  // @Test
   // public void testObject() throws ClassNotFoundException, DataFormatException, IOException {
   // // Export.object(UserHome.file("string.object"), "tensorlib.importtest");
   // File file = new File(ImportTest.class.getResource("/io/string.object").getFile());
@@ -61,6 +73,7 @@ public class ImportTest extends TestCase {
   // assertEquals(string, "tensorlib.importtest");
   // }
 
+  // @Test
   // public void testUnknownFail() {
   // File file = new File(ImportTest.class.getResource("/io/extension.unknown").getFile());
   // try {

@@ -1,5 +1,7 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.matheclipse.core.expression.F.C10;
 import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.S.a;
@@ -10,6 +12,9 @@ import static org.matheclipse.core.expression.S.e;
 import java.util.Comparator;
 import java.util.IntSummaryStatistics;
 import java.util.stream.Collectors;
+
+import org.junit.Test;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -19,10 +24,8 @@ import org.matheclipse.core.interfaces.IExpr;
  *  
  */
 public class Java8TestCase extends ExprEvaluatorTestCase {
-  public Java8TestCase(String name) {
-    super(name);
-  }
 
+  @Test
   public void testForeach() {
     IAST ast = List(C10, a, b, c, d, e);
     IASTAppendable result = F.ListAlloc(ast.argSize());
@@ -30,6 +33,7 @@ public class Java8TestCase extends ExprEvaluatorTestCase {
     assertEquals("{10,a,b,c,d,e}", result.toString());
   }
 
+  @Test
   public void testStream001() {
     IAST ast = List(C10, a, b, c, d, e);
     IASTAppendable result = F.ListAlloc(ast.argSize() + 7);
@@ -39,11 +43,13 @@ public class Java8TestCase extends ExprEvaluatorTestCase {
     assertEquals("{10,a,b,c,d,e,List,10,a,b,c,d,e}", result.toString());
   }
 
+  @Test
   public void testNumber001() {
     IExpr result = F.Factorial.of(30);
     assertEquals("265252859812191058636308480000000", result.toString());
   }
 
+  @Test
   public void testBoolean001() {
     IExpr result = F.Boole.of(false);
     assertEquals("0", result.toString());
@@ -51,6 +57,7 @@ public class Java8TestCase extends ExprEvaluatorTestCase {
     assertEquals("1", result.toString());
   }
 
+  @Test
   public void testTransform() {
     IAST ast = List(C10, F.CND1, F.C1D3, F.CI, a, F.Pi, F.C2Pi, F.CSqrt2);
     IASTAppendable result = ast.stream() //
@@ -65,6 +72,7 @@ public class Java8TestCase extends ExprEvaluatorTestCase {
         result.toString());
   }
 
+  @Test
   public void testFiltering() {
     IAST ast = (IAST) F.List.of(10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
 
@@ -81,6 +89,7 @@ public class Java8TestCase extends ExprEvaluatorTestCase {
     assertEquals("{12,13}", resultList.toString());
   }
 
+  @Test
   public void testSearching() {
     IAST ast = (IAST) F.List.of(10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
 
@@ -95,6 +104,7 @@ public class Java8TestCase extends ExprEvaluatorTestCase {
     assertEquals(true, anyMatch);
   }
 
+  @Test
   public void testReordering() {
     IAST ast = (IAST) F.List.of(10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
 
@@ -105,6 +115,7 @@ public class Java8TestCase extends ExprEvaluatorTestCase {
     assertEquals("{19,18,17,16,15,14,13,12,11,10}", reversedList.toString());
   }
 
+  @Test
   public void testStatistics() {
     IAST ast = (IAST) F.List.of(10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
 
@@ -128,13 +139,14 @@ public class Java8TestCase extends ExprEvaluatorTestCase {
         .mapToInt(IExpr::toIntDefault) //
         .summaryStatistics();
 
-    assertEquals(14.5, ageStatistics.getAverage());
-    assertEquals(10, ageStatistics.getCount());
-    assertEquals(19, ageStatistics.getMax());
-    assertEquals(10, ageStatistics.getMin());
-    assertEquals(145, ageStatistics.getSum());
+    assertEquals(14.5, ageStatistics.getAverage(), Config.MACHINE_EPSILON);
+    assertEquals(10, ageStatistics.getCount(), Config.MACHINE_EPSILON);
+    assertEquals(19, ageStatistics.getMax(), Config.MACHINE_EPSILON);
+    assertEquals(10, ageStatistics.getMin(), Config.MACHINE_EPSILON);
+    assertEquals(145, ageStatistics.getSum(), Config.MACHINE_EPSILON);
   }
 
+  @Test
   public void testGrouping() {
     IAST ast = (IAST) F.List.of(10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
 

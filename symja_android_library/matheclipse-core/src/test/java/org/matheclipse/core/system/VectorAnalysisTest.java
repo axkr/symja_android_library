@@ -1,15 +1,13 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 
 /** Tests for vector analysis functions */
 public class VectorAnalysisTest extends ExprEvaluatorTestCase {
 
-  public VectorAnalysisTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testCurl2D() {
     check("v(x_, y_) := {Cos(x)*Sin(y), Cos(y)*Sin(x)}", //
         "");
@@ -17,6 +15,7 @@ public class VectorAnalysisTest extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testCurl3D() {
     check("Curl({y, -x, 2*z}, {x, y, z})", //
         "{0,0,-2}");
@@ -27,7 +26,7 @@ public class VectorAnalysisTest extends ExprEvaluatorTestCase {
 
   /** The JUnit setup method */
   @Override
-  protected void setUp() {
+  public void setUp() {
     super.setUp();
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.MAX_AST_SIZE = 1000000;
@@ -35,7 +34,7 @@ public class VectorAnalysisTest extends ExprEvaluatorTestCase {
   }
 
   @Override
-  protected void tearDown() throws Exception {
+  public void tearDown() throws Exception {
     super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
   }

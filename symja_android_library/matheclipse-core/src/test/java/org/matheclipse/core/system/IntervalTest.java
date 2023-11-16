@@ -1,12 +1,10 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
+
 public class IntervalTest extends ExprEvaluatorTestCase {
 
-  public IntervalTest(String name) {
-    super(name);
-  }
-
-
+  @Test
   public void testIntersection() {
     check("Intersection(Quantity(1.2,\"m\"))", //
         "Intersection(1.2[m])");
@@ -20,6 +18,7 @@ public class IntervalTest extends ExprEvaluatorTestCase {
         "{}");
   }
 
+  @Test
   public void testInterval() {
     check("Sqrt(Interval({1.0,2.0}))", //
         "Interval({1.0,1.41421})");
@@ -513,6 +512,7 @@ public class IntervalTest extends ExprEvaluatorTestCase {
         "Interval({-1,2})");
   }
 
+  @Test
   public void testIntervalMemberQ() {
     check("IntervalMemberQ(Interval({4,6}), 2*E)", //
         "True");
@@ -528,6 +528,7 @@ public class IntervalTest extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testIntervalMemberQFloatingPoint() {
     // only floating-point values in intervals define a (small) extended interval
     check("IntervalMemberQ(Interval(1), Interval(1.0))", //
@@ -536,6 +537,7 @@ public class IntervalTest extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testIntervalIntersection() {
     check("IntervalIntersection(Interval({-2, 3}), Interval({1, 4}))", //
         "Interval({1,3})");
@@ -548,6 +550,7 @@ public class IntervalTest extends ExprEvaluatorTestCase {
         "Interval({1.5,2},{3,3.5},{5,6})");
   }
 
+  @Test
   public void testIntervalUnion() {
     check("IntervalUnion(Interval({-2, 3}), Interval({1, 4}))", //
         "Interval({-2,4})");

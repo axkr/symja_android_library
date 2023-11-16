@@ -1,13 +1,14 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 
-public class DistributionTest extends ExprEvaluatorTestCase {
-  public DistributionTest(String name) {
-    super(name);
-  }
+import static org.junit.Assert.assertEquals;
 
+public class DistributionTest extends ExprEvaluatorTestCase {
+
+  @Test
   public void testBernoulliDistribution() {
     check("Mean(BernoulliDistribution(x))", //
         "x");
@@ -15,16 +16,19 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{Piecewise({{1,x>3/4}},0),Piecewise({{1,x>1/2}},0),Piecewise({{1,x>1/4}},0)}");
   }
 
+  @Test
   public void testBernoulliProcess() {
     check("BernoulliProcess(p)[t]", //
         "BernoulliDistribution(p)");
   }
 
+  @Test
   public void testBinomialProcess() {
     check("BinomialProcess(p)[t]", //
         "BinomialDistribution(t,p)");
   }
 
+  @Test
   public void testBrownianBridgeProcess() {
     check("BrownianBridgeProcess( )", //
         "BrownianBridgeProcess(1,{0,0},{1,0})");
@@ -45,6 +49,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
   public void testCDF() {
 
     check("CDF(BetaDistribution(2,3), 0.1)", //
@@ -155,6 +160,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "3/5");
   }
 
+  @Test
   public void testCentralMoment() {
     check("CentralMoment({1.1, 1.2, 1.4, 2.1, 2.4}, 4)", //
         "0.100845");
@@ -170,6 +176,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "Piecewise({{b^m*(-1+m)!!,Mod(m,2)==0&&m>=0}},0)");
   }
 
+  @Test
   public void testChiSquareDistribution() {
     check("StandardDeviation(ChiSquareDistribution(v))", //
         "Sqrt(2)*Sqrt(v)");
@@ -191,6 +198,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     // "");
   }
 
+  @Test
   public void testErlangDistribution() {
     check("Mean(ErlangDistribution(n, m))", //
         "n/m");
@@ -199,6 +207,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
             + "0,3/4)/m}");
   }
 
+  @Test
   public void testExponentialDistribution() {
     check("Mean(ExponentialDistribution(x))", //
         "1/x");
@@ -206,6 +215,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{Log(4/3)/x,Log(2)/x,Log(4)/x}");
   }
 
+  @Test
   public void testFRatioDistribution() {
     check("Mean(FRatioDistribution(n, m))", //
         "Piecewise({{m/(-2+m),m>2}},Indeterminate)");
@@ -224,6 +234,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     // "");
   }
 
+  @Test
   public void testFrechetDistribution() {
     check("Mean(FrechetDistribution(n, m))", //
         "Piecewise({{m*Gamma(1-1/n),1<n}},Infinity)");
@@ -231,6 +242,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{m/Log(4)^(1/n),m/Log(2)^(1/n),m/Log(4/3)^(1/n)}");
   }
 
+  @Test
   public void testGammaDistribution() {
     check("CentralMoment(GammaDistribution(a, b),n)", //
         "b^n*Hypergeometric1F1(-n,1-a-n,-a)*Pochhammer(a,n)");
@@ -260,6 +272,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
             + "0,3/4)^(1/g)}");
   }
 
+  @Test
   public void testNormalDistribution() {
     // message: NormalDistribution: Parameter 0 at position 2 in NormalDistribution(m,0) is expected
     // to be positive.
@@ -297,6 +310,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{2-3*Sqrt(2)*InverseErfc(1/2),2,2-3*Sqrt(2)*InverseErfc(3/2)}");
   }
 
+  @Test
   public void testGumbelDistribution() {
     check("Mean(GumbelDistribution())", //
         "-EulerGamma");
@@ -309,6 +323,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
   public void testKurtosis() {
     // message Kurtosis: The argument {x} should have at least 2 arguments.
     check("Kurtosis({x})", //
@@ -338,6 +353,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "3+(6-6*a+a^2)/(1-a)");
   }
 
+  @Test
   public void testLogNormalDistribution() {
     check("Mean(LogNormalDistribution(m,d))", //
         "E^(d^2/2+m)");
@@ -345,6 +361,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{E^(m-Sqrt(2)*d*InverseErfc(1/2)),E^m,E^(m-Sqrt(2)*d*InverseErfc(3/2))}");
   }
 
+  @Test
   public void testNakagamiDistribution() {
     check("Mean(NakagamiDistribution(m,w))", //
         "(Sqrt(w)*Pochhammer(m,1/2))/Sqrt(m)");
@@ -355,6 +372,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
             + "0,1/2))/m),Sqrt((w*InverseGammaRegularized(m,0,3/4))/m)}");
   }
 
+  @Test
   public void testParetoDistribution() {
     check("CDF(ParetoDistribution(k,a))", //
         "Piecewise({{1-(k/#1)^a,#1>=k}},0)&");
@@ -408,6 +426,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
             + "2,a>2*g}},Indeterminate)");
   }
 
+  @Test
   public void testPDF() {
     check("PDF(BinomialDistribution(50.0, 0.5), 27.0)", //
         "0.0959617");
@@ -523,6 +542,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "0.03471806963068414");
   }
 
+  @Test
   public void testPearsonCorrelationTest() {
     check("PearsonCorrelationTest({0,0},{0,0}, \"PValue\")", //
         "PearsonCorrelationTest({0,0},{0,0},PValue)");
@@ -548,6 +568,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{0.5428012916808163,0.10495674920981242}");
   }
 
+  @Test
   public void testPoissonDistribution() {
     check("Mean(PoissonDistribution(m))", //
         "m");
@@ -555,11 +576,13 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "m");
   }
 
+  @Test
   public void testPoissonProcess() {
     check("PoissonProcess(m)[t]", //
         "PoissonDistribution(m*t)");
   }
 
+  @Test
   public void testProbability() {
     // check("RandomVariate(NormalDistribution(), 10)", //
     // "{-0.21848,1.67503,0.78687,0.9887,2.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223}");
@@ -591,6 +614,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "517/720*1/E");
   }
 
+  @Test
   public void testQuantile() {
     // message Quantile: The Quantile specification {1/4,2} should be a number or a list of numbers
     // between 0 and 1.
@@ -601,6 +625,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{2,6}");
   }
 
+  @Test
   public void testQuantileSparseArray() {
     check("sp = SparseArray({{i_, i_} :> i, {i_, j_} /; j == i + 1 :> i - 1}, {100, 10})", //
         "SparseArray(Number of elements: 18 Dimensions: {100,10} Default value: 0)");
@@ -608,6 +633,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{0,0,1,2,3,4,5,6,7,8}");
   }
 
+  @Test
   public void testStudentTDistribution() {
     check("Mean(StudentTDistribution(v))", //
         "Piecewise({{0,v>1}},Indeterminate)");
@@ -621,6 +647,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
             + "1+1/InverseBetaRegularized(1/2,v/2,1/2))}");
   }
 
+  @Test
   public void testTTest() {
     check(
         "data1={0.536463693808193,-1.511974629293994,-0.22845265689863847,0.4114790735362004,-1.372540834688803,0.18841748289331972,0.7678270833344806,0.7820712767427386,0.027735965955395632,0.38766508070235384};", //
@@ -641,6 +668,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "0.268096");
   }
 
+  @Test
   public void testWeibullDistribution() {
     check("Mean(WeibullDistribution(a,b))", //
         "b*Gamma(1+1/a)");
@@ -653,6 +681,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{m+b*Log(4/3)^(1/a),m+b*Log(2)^(1/a),m+b*Log(4)^(1/a)}");
   }
 
+  @Test
   public void testChiSquareTest() {
     // Issue #824
     ExprEvaluator exprEvaluator = new ExprEvaluator();

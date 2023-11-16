@@ -1,5 +1,7 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.a_;
 import static org.matheclipse.core.expression.F.ast;
@@ -7,6 +9,8 @@ import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.S.a;
 import static org.matheclipse.core.expression.S.f;
 import static org.matheclipse.core.expression.S.x;
+
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -15,15 +19,13 @@ import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 
 public class PatternsTest extends ExprEvaluatorTestCase {
-  public PatternsTest(String name) {
-    super(name);
-  }
 
   @Override
   public void check(String evalString, String expectedResult) {
     check(evaluator, evalString, expectedResult, -1);
   }
 
+  @Test
   public void testPriority001() {
 
     IASTAppendable ast1 = ast(f);
@@ -36,6 +38,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
     assertEquals(cpr, 1);
   }
 
+  @Test
   public void testPriority002() {
 
     IASTAppendable ast1 = ast(f);
@@ -48,6 +51,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
     assertEquals(cpr, -1);
   }
 
+  @Test
   public void testComplicatedPatternRule() {
     IExpr expr = F.Integrate(F.unaryAST1(F.unaryAST1(F.Derivative(F.n_), F.f_), F.x_), F.x_Symbol);
     assertEquals("Integrate(Derivative(n_)[f_][x_],x_Symbol)", expr.toString());
@@ -55,6 +59,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
     assertTrue(isComplicated);
   }
 
+  @Test
   public void testEvalateddPatternRule() {
     check("f(a_+b_,a_,b_) := {a,b}", //
         "");
@@ -69,6 +74,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
         "g(3,2,5)");
   }
 
+  @Test
   public void testDocOptions() {
     // TODO doc/Options
     check("Options(f) = {n -> 2}", //
@@ -83,6 +89,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
         "x^3");
   }
 
+  @Test
   public void testOptions() {
     // TODO define options for Plot and other built-ins
     // check("Options(Plot)", //
@@ -101,6 +108,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
         "{Extension->None,GaussianIntegers->False,Modulus->0}");
   }
 
+  @Test
   public void testOptional() {
     check("ReplaceList({a,b,c},{a_:5,b__}->{{a},{b}})", //
         "{{{a},{b,c}},{{5},{a,b,c}}}");
@@ -194,6 +202,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testDocOptionValue() {
     // TODO doc/OptionValue
     check("f(a->3) /. f(OptionsPattern({})) -> {OptionValue(a)}", //
@@ -206,6 +215,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
         "{5}");
   }
 
+  @Test
   public void testOptionValue() {
     // TODO
     check("OptionValue({foo`a -> 1}, bar`a)", //
@@ -302,6 +312,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
         "y^4");
   }
 
+  @Test
   public void testOptionsPattern() {
     check("Options(f)={a->a0, b->b0};", //
         "");
@@ -322,6 +333,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
   public void testReplace() {
     check("Replace(<| key -> <|a -> 1, b -> 2|>|>, <|k_ -> v_, y___|> -> {k, v,  y}, {1})", //
         "<|Key->{a,1,b->2}|>");
@@ -412,6 +424,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
     // "{0.20251412388709988,0.7585256738344558,0.0882472501351631}");
   }
 
+  @Test
   public void testReplaceAll() {
     // example from https://en.wikipedia.org/wiki/Wolfram_Language
     // check(
@@ -641,6 +654,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
         "{{a,b},x,{c,d+e}}");
   }
 
+  @Test
   public void testReplaceList() {
     check("ReplaceList(a+b+c+d+e+f,(x_+y_+z_) :> {{x},{y},{z}}, 3)", //
         "{{{a},{b},{c+d+e+f}},"//
@@ -834,6 +848,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
   public void testReplacePartPattern() {
 
     check("ReplacePart(f(x, y), _ -> g, Heads -> True)", //
@@ -950,6 +965,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testReplacePartIntegerPositions() {
     check("ReplacePart({{a, b}, {c, d}}, {{2, 1} -> t, {1, 1} -> t})", //
         "{{t,b},{t,d}}");
@@ -1045,6 +1061,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testReplaceTransformations() {
     check("f(f(f(1))) //. f(f(x_)) :> g(g(x))", //
         "g(g(f(1)))");
@@ -1083,6 +1100,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
     // check("", "");
   }
 
+  @Test
   public void testExpandedExpressionPattern() {
     if (Config.EXPENSIVE_JUNIT_TESTS) {
       check("f(c_*x_+y_,x_):= {c,x,y}", //
@@ -1095,6 +1113,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testPowerPattern() {
     check("foo(1/x_) := {x}", //
         "");
@@ -1103,7 +1122,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
   }
 
   @Override
-  protected void setUp() {
+  public void setUp() {
     super.setUp();
     if (Config.EXPENSIVE_JUNIT_TESTS) {
       Config.MAX_AST_SIZE = Integer.MAX_VALUE;

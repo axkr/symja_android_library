@@ -1,16 +1,14 @@
 package org.matheclipse.nlp.system;
 
+import org.junit.Test;
+
 /**
  * <a href="https://unicode-org.github.io/icu/userguide/icu4j/">ICU4J</a> related tests.
  *
  */
 public class ICU4JTest extends AbstractTestCase {
 
-  public ICU4JTest(String name) {
-    super(name);
-  }
-
-
+  @Test
   public void testIntegerName() {
     check("IntegerName(0,\"Tongan\")", //
         "noll");
@@ -143,6 +141,7 @@ public class ICU4JTest extends AbstractTestCase {
         "minus forty-two");
   }
 
+  @Test
   public void testRemoveDiacritics() {
     check("RemoveDiacritics(\"\\[CapitalEpsilon]\\[Upsilon]\\[Rho]\\[Omega]\\[Pi]\\[Eta]\")", //
         "Ευρωπη");
@@ -150,6 +149,7 @@ public class ICU4JTest extends AbstractTestCase {
         "eeaaa");
   }
 
+  @Test
   public void testTransliterate() {
     check("Transliterate(\"tadaima\", \"Hiragana\")", //
         "ただいま");

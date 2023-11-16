@@ -1,9 +1,15 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
 import static org.matheclipse.core.expression.F.Abs;
 import static org.matheclipse.core.expression.F.Floor;
 import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
+
+import org.junit.After;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.matheclipse.core.eval.EvalUtilities;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
@@ -15,11 +21,12 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ParserConfig;
 import junit.framework.TestCase;
 
-public class AssumptionTestCase extends TestCase {
-  @Override
-  protected void tearDown() throws Exception {
+@RunWith(JUnit4.class)
+public class AssumptionTestCase {
+
+  @After
+  public void tearDown() throws Exception {
     // System.out.println(EvalEngine.STATISTICS.toString());
-    super.tearDown();
   }
 
   /** Assumption which implements <code>x > 0</code> or <code>y is integer number</code> */
@@ -74,10 +81,7 @@ public class AssumptionTestCase extends TestCase {
     // public void set$Assumptions(IExpr expr) {}
   }
 
-  public AssumptionTestCase(String name) {
-    super(name);
-  }
-
+  @Test
   public void testGreaterZeroOrInteger001() {
     // don't distinguish between lower- and uppercase identifiers
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
@@ -101,6 +105,7 @@ public class AssumptionTestCase extends TestCase {
     assertEquals(result.toString(), "y");
   }
 
+  @Test
   public void testSqrt001() {
     // don't distinguish between lower- and uppercase identifiers
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
@@ -117,6 +122,7 @@ public class AssumptionTestCase extends TestCase {
     assertEquals(result.toString(), "t");
   }
 
+  @Test
   public void testFloor001() {
     // don't distinguish between lower- and uppercase identifiers
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
@@ -132,6 +138,7 @@ public class AssumptionTestCase extends TestCase {
     assertEquals(result.toString(), "t");
   }
 
+  @Test
   public void testTensorDimensions001() {
     // don't distinguish between lower- and uppercase identifiers
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;

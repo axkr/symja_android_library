@@ -1,21 +1,23 @@
 package org.matheclipse.core.system;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
-import junit.framework.TestCase;
 
-public class BasicPatternPropertiesTestCase extends TestCase {
+import static org.junit.Assert.assertEquals;
+
+@RunWith(JUnit4.class)
+public class BasicPatternPropertiesTestCase {
   private Parser fParser;
 
   protected static boolean DEBUG = true;
-
-  public BasicPatternPropertiesTestCase(String name) {
-    super(name);
-  }
 
   public void checkPriority(String patternString, String priority) {
     try {
@@ -49,6 +51,7 @@ public class BasicPatternPropertiesTestCase extends TestCase {
     }
   }
 
+  @Test
   public void testSimplePriority() {
     // the space between "x_" and "." operator is needed:
     checkPriority("x_ . y_", "2147483586");
@@ -67,6 +70,7 @@ public class BasicPatternPropertiesTestCase extends TestCase {
     // checkPriority("g[x_,42, y_]", "1073741713");
   }
 
+  @Test
   public void testCompareTo() {
     comparePriority("f[a]", "f[x_]", -1);
     comparePriority("f[a,b,c,d]", "f[x_]", -1);
@@ -75,8 +79,8 @@ public class BasicPatternPropertiesTestCase extends TestCase {
   }
 
   /** The JUnit setup method */
-  @Override
-  protected void setUp() {
+  @Before
+  public void setUp() {
     try {
       // setup the evaluation engine (and bind to current thread)
       EvalEngine engine = new EvalEngine(); // EvalEngine.get();

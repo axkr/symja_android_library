@@ -7,6 +7,11 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
@@ -25,36 +30,43 @@ import org.matheclipse.core.reflection.system.Share;
 import org.matheclipse.core.visit.AbstractVisitor;
 import junit.framework.TestCase;
 
-public class SerializableTest extends TestCase {
+import static org.junit.Assert.assertEquals;
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+@RunWith(JUnit4.class)
+public class SerializableTest {
+
+  @Before
+  public void setUp() throws Exception {
     // wait for initializing of Integrate() rules:
     F.await();
   }
 
+  @Test
   public void testAssociation() {
     IAssociation assoc = F.assoc(F.List(F.Rule(F.a, F.b)));
     equalsCopy(assoc);
   }
 
+  @Test
   public void testByteArray() {
     ByteArrayExpr ba = ByteArrayExpr.newInstance(new byte[] {0, 1, 2, 3});
     equalsCopy(ba);
   }
 
+  @Test
   public void testSparseArray() {
     ISparseArray sparse =
         F.sparseArray(F.List(F.Rule(F.List(1, 2, 3), F.b), F.Rule(F.List(1, 4, 5), F.a)));
     equalsCopy(sparse);
   }
 
+  @Test
   public void testDateObject() {
     DateObjectExpr ldt = DateObjectExpr.newInstance(LocalDateTime.now());
     equalsCopy(ldt);
   }
 
+  @Test
   public void testTimeObject() {
     LocalTime now = LocalTime.now();
     TimeObjectExpr ldt =
@@ -62,11 +74,13 @@ public class SerializableTest extends TestCase {
     equalsCopy(ldt);
   }
 
+  @Test
   public void testNum() {
     equalsCopy(F.num(0.5));
     equalsCopy(F.num(Integer.MAX_VALUE));
   }
 
+  @Test
   public void testComplexNum() {
     equalsCopy(F.complexNum(0.5));
     equalsCopy(F.complexNum(Integer.MAX_VALUE));
@@ -74,6 +88,7 @@ public class SerializableTest extends TestCase {
     equalsCopy(F.complexNum(Integer.MAX_VALUE, Integer.MAX_VALUE));
   }
 
+  @Test
   public void testInteger() {
     equalsCopy(F.ZZ(Integer.MAX_VALUE));
     equalsCopy(F.ZZ(Integer.MIN_VALUE));
@@ -81,6 +96,7 @@ public class SerializableTest extends TestCase {
     equalsCopy(F.ZZ((Integer.MIN_VALUE) * 2L));
   }
 
+  @Test
   public void testFraction() {
     equalsCopy(F.fraction(1L, Integer.MAX_VALUE));
     equalsCopy(F.fraction(1L, Integer.MIN_VALUE));
@@ -92,6 +108,7 @@ public class SerializableTest extends TestCase {
     equalsCopy(F.fraction(Integer.MIN_VALUE * 2L, 11L));
   }
 
+  @Test
   public void testComplex() {
     equalsCopy(F.complex(F.fraction(1L, Integer.MAX_VALUE)));
     equalsCopy(F.complex(F.fraction(1L, Integer.MIN_VALUE)));
@@ -116,15 +133,18 @@ public class SerializableTest extends TestCase {
         F.fraction(Integer.MIN_VALUE * 2L, 11L)));
   }
 
+  @Test
   public void testSymbol() {
     // equalsCopy(F.Pi);
     equalsCopy(F.symbol("testme"));
   }
 
+  @Test
   public void testStringX() {
     equalsCopy(F.$str("test"));
   }
 
+  @Test
   public void testFunction() {
     equalsCopy(F.ast(F.symbol("fun1")));
 
@@ -136,17 +156,20 @@ public class SerializableTest extends TestCase {
     equalsCopy(F.ast(new IExpr[] {F.x, F.y}, F.symbol("fun2")));
   }
 
+  @Test
   public void testBlank() {
     equalsCopy(F.$b(null));
     equalsCopy(F.$b(F.IntegerQ));
   }
 
+  @Test
   public void testPattern() {
     equalsCopy(F.$p(F.symbol("test"), true));
     equalsCopy(F.$p(F.symbol("test"), false));
     equalsCopy(F.$p(F.x));
   }
 
+  @Test
   public void testPatternSequence() {
     equalsCopy(F.$ps(F.symbol("test")));
     equalsCopy(F.$ps(F.x, F.IntegerQ));
@@ -154,6 +177,7 @@ public class SerializableTest extends TestCase {
     equalsCopy(F.$ps(F.x, F.IntegerQ, true, false));
   }
 
+  @Test
   public void testIntegrateDefinition() {
     // do a dummy evaluation to load integration rules
     F.Integrate.of(F.x, F.x);
@@ -163,6 +187,7 @@ public class SerializableTest extends TestCase {
     equalsStringCopy(rulesData);
   }
 
+  @Test
   public void testSinDefinition() {
     // try to share common sub-IASTs first:
     RulesData rulesData = F.Sin.getRulesData();
@@ -171,6 +196,7 @@ public class SerializableTest extends TestCase {
     equalsCopy(rulesData);
   }
 
+  @Test
   public void testASTRealMatrix() {
     equalsCopy(new ASTRealMatrix(new double[][] {{1.0, 2.0, 3.0}, {3.3, 4.4, 5.5}}, false));
 
@@ -181,10 +207,12 @@ public class SerializableTest extends TestCase {
     equalsCopy(result);
   }
 
+  @Test
   public void testASTRealVector() {
     equalsCopy(new ASTRealVector(new double[] {1.0, 1.2, 3.4}, false));
   }
 
+  @Test
   public void testPowerSeries() {
     equalsCopy(new ASTSeriesData(F.x, F.a, F.List(F.C0, F.C1, F.C3), 0, 10, 1));
 
@@ -194,10 +222,12 @@ public class SerializableTest extends TestCase {
     equalsCopy(result);
   }
 
+  @Test
   public void testNIL() {
     equalsCopy(F.NIL);
   }
 
+  @Test
   public void testEvalEngine() {
     if (System.getProperty("os.name").contains("Windows")) {
       try {

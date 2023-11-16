@@ -1,13 +1,11 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
 import org.matheclipse.core.basic.ToggleFeature;
 
 public class SeriesTest extends ExprEvaluatorTestCase {
 
-  public SeriesTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testComposeSeries() {
     check("ComposeSeries(Series(Exp(x), {x, 0, 10}), Series(Sin(x), {x, 0, 10}))", //
         "1+x+x^2/2-x^4/8-x^5/15-x^6/240+x^7/90+31/5760*x^8+x^9/5670-2951/3628800*x^10+O(x)^\n"
@@ -62,6 +60,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "x^2+3*x^3+O(x)^4");
   }
 
+  @Test
   public void testInverseSeries() {
     // check("InverseSeries(Series(Exp(x), {x, 0, 6}))", //
     // "x+x^3/6+3/40*x^5+5/112*x^7+35/1152*x^9+O(x)^10");
@@ -94,6 +93,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "x+x^2/2+x^3/6+x^4/24+x^5/120+x^6/720+x^7/5040+x^8/40320+x^9/362880+O(x)^10");
   }
 
+  @Test
   public void testNormal() {
     check("Normal(Series(Product((1+x^(k*(k+1)/2)), {k, 3}), {x, 0,6}))", //
         "1+x+x^3+x^4+x^6");
@@ -107,6 +107,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testSeriesTaylor() {
     // issue #545
     check("Series(((x^3 + 72*x^2 + 600*x + 720)/(12*x^2 + 240*x+720)),{x,0,6})", //
@@ -115,6 +116,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "1+x+x^2+O(x)^3");
   }
 
+  @Test
   public void testSeries() {
     // TODO check max power
     check("Series(Sin(x)^2,{x,0,5})//FullForm", //
@@ -290,6 +292,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     check("Series(y,{x,a,5})", "y");
   }
 
+  @Test
   public void testSeriesRational() {
     check("Series((x + x^2 + 2x^3 + x^4 - x^5)/(1 + 4x^3 - x^6), {x, 0, 7})", //
         "x+x^2+2*x^3-3*x^4-5*x^5-8*x^6+13*x^7+O(x)^8");
@@ -306,6 +309,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "x+x^2+2*x^3-3*x^4-5*x^5+O(x)^6");
   }
 
+  @Test
   public void testSeriesData() {
     check("Series(Exp(x), {x,0,2}) // FullForm", //
         "SeriesData(x, 0, List(1, 1, Rational(1,2)), 0, 3, 1)");
@@ -410,6 +414,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "x+2*x^2+3*x^3+4*x^4+5*x^5+6*x^6+7*x^7+8*x^8+9*x^9+10*x^10+O(x)^11");
   }
 
+  @Test
   public void testDSeriesData() {
     check("D(SeriesData(x, 0, Table(i^2, {i, 10}), 0, 10, 1), x)", //
         "4+18*x+48*x^2+100*x^3+180*x^4+294*x^5+448*x^6+648*x^7+900*x^8+O(x)^9");
@@ -417,6 +422,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "1/a-(-a+x)/a^2+(-a+x)^2/a^3-(-a+x)^3/a^4+(-a+x)^4/a^5+O(-a+x)^5");
   }
 
+  @Test
   public void testIntegrateSeriesData() {
     check("Integrate(SeriesData(x, 0, Table(i^2, {i, 10}), 0, 10, 1), x)", //
         "x+2*x^2+3*x^3+4*x^4+5*x^5+6*x^6+7*x^7+8*x^8+9*x^9+10*x^10+O(x)^11");
@@ -425,6 +431,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
             + "6/(30*a^5)+O(-a+x)^7");
   }
 
+  @Test
   public void testSeriesCoefficient() {
     // check("SeriesCoefficient(x^x,{x,2,4})", //
     // " ");
@@ -531,12 +538,14 @@ public class SeriesTest extends ExprEvaluatorTestCase {
             + "0}},0)");
   }
 
+  @Test
   public void testDivisionByZero() {
     // message: General: -1 is not a valid variable.
     check("Series(1/0,{-1,-2,3})", //
         "Series(ComplexInfinity,{-1,-2,3})");
   }
 
+  @Test
   public void testExpSeries() {
     check("SeriesCoefficient(Exp(x), {x, a, n})", //
         "Piecewise({{E^a/n!,n>=0}},0)");
@@ -547,6 +556,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     // " ");
   }
 
+  @Test
   public void testLogSeries() {
     check("SeriesCoefficient(Log(x), {x, a, n})", //
         "Piecewise({{(-1)^(1+n)/(a^n*n),n>=1},{Log(a),n==0}},0)");
@@ -560,11 +570,13 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "Log(x)+O(x)^4");
   }
 
+  @Test
   public void testSinSeries() {
     check("Series(Sin(x)/x^2, {x, 0, 3})", //
         "1/x-x/6+x^3/120+O(x)^4");
   }
 
+  @Test
   public void testPadeApproximant() {
     // message PadeApproximant: lbcf not invertible {{-1,-2,3}}
     check("PadeApproximant({{-1,-2,3}},{0,0,{0,0}})", //
@@ -586,12 +598,14 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "PadeApproximant(Sin(x),{x,0,{3,1}})");
   }
 
+  @Test
   public void testPolyGammaSeries() {
     check("Series(PolyGamma[x], {x, 1, 4})", //
         "-EulerGamma+1/6*Pi^2*(-1+x)+1/2*PolyGamma(2,1)*(1-x)^2+1/90*Pi^4*(-1+x)^3+1/24*PolyGamma(\n"
             + "4,1)*(1-x)^4+O(-1+x)^5");
   }
 
+  @Test
   public void testPowerSeries() {
     check("Series((a + x)^n, {x, 0, 2})", //
         "a^n+(n*x)/a^(1-n)+((-1+n)*n*x^2)/(2*a^(2-n))+O(x)^3");

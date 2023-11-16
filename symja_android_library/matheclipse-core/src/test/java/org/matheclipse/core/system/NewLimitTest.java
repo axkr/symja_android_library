@@ -1,12 +1,11 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
+
 /** Tests for NewLimit function */
 public class NewLimitTest extends ExprEvaluatorTestCase {
 
-  public NewLimitTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testNewLimitExp() {
     // stub
     check("NewLimit(E^x, x->Infinity)", //

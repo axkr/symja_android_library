@@ -1,19 +1,19 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.ISymbol;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Test {@link F#cseAsJava(org.matheclipse.core.interfaces.IExpr, StringBuilder)} common
  * subexpression elimination to Java converter
  */
 public class CommonSubexpressionEliminationTestCase extends ExprEvaluatorTestCase {
-  public CommonSubexpressionEliminationTestCase(String name) {
-    super(name);
-  }
 
-
+  @Test
   public void testCSE001() {
     ISymbol x = F.Dummy("x");
     ISymbol y = F.Dummy("y");
@@ -34,6 +34,7 @@ public class CommonSubexpressionEliminationTestCase extends ExprEvaluatorTestCas
         buf.toString());
   }
 
+  @Test
   public void testCSE002() {
     ISymbol x = F.Dummy("x");
     ISymbol y = F.Dummy("y");
@@ -54,6 +55,7 @@ public class CommonSubexpressionEliminationTestCase extends ExprEvaluatorTestCas
         buf.toString());
   }
 
+  @Test
   public void testCSE003() {
     ISymbol x = F.Dummy("x");
     ISymbol y = F.Dummy("y");

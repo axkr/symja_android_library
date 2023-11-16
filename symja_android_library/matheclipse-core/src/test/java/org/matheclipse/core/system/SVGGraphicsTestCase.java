@@ -1,14 +1,13 @@
 package org.matheclipse.core.system;
 
-import org.junit.jupiter.api.Disabled;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /** View with: http://www.rapidtables.com/web/tools/svg-viewer-editor.htm */
 public class SVGGraphicsTestCase extends ExprEvaluatorTestCase {
-  public SVGGraphicsTestCase(String name) {
-    super(name);
-  }
 
-  @Disabled
+  @Ignore
+  @Test
   public void testPoint001() {
     //
     // checkSVGGraphics(
@@ -22,7 +21,8 @@ public class SVGGraphicsTestCase extends ExprEvaluatorTestCase {
     // + "</svg>");
   }
 
-  @Disabled
+  @Ignore
+  @Test
   public void testPoint002() {
 
     // checkSVGGraphics(
@@ -66,7 +66,8 @@ public class SVGGraphicsTestCase extends ExprEvaluatorTestCase {
     // + "</svg>");
   }
 
-  @Disabled
+  @Ignore
+  @Test
   public void testLine001() {
     //
     // checkSVGGraphics(
@@ -79,7 +80,8 @@ public class SVGGraphicsTestCase extends ExprEvaluatorTestCase {
     // + "</svg>");
   }
 
-  @Disabled
+  @Ignore
+  @Test
   public void testLine002() {
 
     // checkSVGGraphics(
@@ -93,7 +95,8 @@ public class SVGGraphicsTestCase extends ExprEvaluatorTestCase {
   }
 
 
-  @Disabled
+  @Ignore
+  @Test
   public void testRectangle001() {
 
     // checkSVGGraphics(
@@ -107,7 +110,8 @@ public class SVGGraphicsTestCase extends ExprEvaluatorTestCase {
     // + "</svg>");
   }
 
-  @Disabled
+  @Ignore
+  @Test
   public void testRectangle002() {
 
     // checkSVGGraphics(
@@ -130,7 +134,8 @@ public class SVGGraphicsTestCase extends ExprEvaluatorTestCase {
     // "</svg>");
   }
 
-  @Disabled
+  @Ignore
+  @Test
   public void testRectangle003() {
 
     // checkSVGGraphics(
@@ -153,7 +158,8 @@ public class SVGGraphicsTestCase extends ExprEvaluatorTestCase {
     // "</svg>");
   }
 
-  @Disabled
+  @Ignore
+  @Test
   public void testRectangle004() {
 
     // checkSVGGraphics(

@@ -1,14 +1,13 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
+
 /**
  * Tests for Sequence... functions
  */
 public class SequenceTestCase extends ExprEvaluatorTestCase {
 
-  public SequenceTestCase(String name) {
-    super(name);
-  }
-
+  @Test
   public void testSequenceCases() {
     check("SequenceCases({0,0,0,101},y__->True)", //
         "{True}");
@@ -38,6 +37,7 @@ public class SequenceTestCase extends ExprEvaluatorTestCase {
         "{{a,b,c,d},{a,b,c},{a,b},{a},{b,c,d},{b,c},{b},{c,d},{c},{d}}");
   }
 
+  @Test
   public void testSequenceCasesWithReplacement() {
     // TODO
     // check("SequenceCases({a, b, b, a, b, b, b}, {p : Repeated(b)} :> Length({p}))", //
@@ -50,6 +50,7 @@ public class SequenceTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testSequenceSplit() {
     check("SequenceSplit({1,1,1,1},y__)", //
         "{}");
@@ -78,6 +79,7 @@ public class SequenceTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testSequenceSplitWithInsertion() {
     check("SequenceSplit({x, x, a, b, y, a, c, z}, {a, e_} :> {e})", //
         "{{x,x},{b},{y},{c},{z}}");
@@ -92,6 +94,7 @@ public class SequenceTestCase extends ExprEvaluatorTestCase {
         "{On friday ,they, left, and on sunday ,they, came back.}");
   }
 
+  @Test
   public void testSequenceReplace() {
     // operator form
     check("SequenceReplace({a, e_} :> e)[{a, b, x, x, a, c}]", //

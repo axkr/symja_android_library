@@ -5,11 +5,9 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.sympy.series.Sequences;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
-public class TestSequences extends ExprEvaluatorTestCase {
+import static org.junit.Assert.assertEquals;
 
-  public TestSequences(String name) {
-    super(name);
-  }
+public class TestSequences extends ExprEvaluatorTestCase {
 
   @Test
   public void test_find_linear_recurrence001() {
