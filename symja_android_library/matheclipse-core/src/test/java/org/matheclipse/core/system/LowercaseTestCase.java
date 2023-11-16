@@ -1,5 +1,7 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.apfloat.Apfloat;
@@ -20,8 +22,6 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.ast.ASTNode;
-
-import static org.junit.Assert.*;
 
 /** Tests built-in functions */
 public class LowercaseTestCase extends ExprEvaluatorTestCase {
@@ -333,7 +333,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
- public void testAlternatives() {
+  public void testAlternatives() {
     // http://mathematica.stackexchange.com/a/44084
     check("f(a_Integer|b_Real) := {1,a,2,b,3}", //
         "");
@@ -728,7 +728,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
- public void testArcSec() {
+  public void testArcSec() {
     check("ArcSec(3.5)", //
         "1.28104");
     check("ArcSec(1.0+3.5*I)", //
@@ -764,7 +764,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-    public void testArcSin() {
+  public void testArcSin() {
     check("ArcSin({x,-3,-1/2})", //
         "{ArcSin(x),-ArcSin(3),-Pi/6}");
     check("ArcSin(Sin(-1/2))", //
@@ -964,7 +964,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-    public void testArcTanh() {
+  public void testArcTanh() {
 
     check("ArcTanh(0)", //
         "0");
@@ -1101,7 +1101,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-    public void testArgMin() {
+  public void testArgMin() {
     check("ArgMin(x*10+x^2 , x)", //
         "-5");
     check("Minimize(2*x^2 - 3*x + 5, x)", //
@@ -1192,7 +1192,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-    public void testArrayDepth() {
+  public void testArrayDepth() {
     check("ArrayDepth(Array(a, {4, 5, 2}))", //
         "3");
 
@@ -1341,7 +1341,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-    public void testAssuming001() {
+  public void testAssuming001() {
     check("Assuming(a < 0 && b > 0, Refine(HeavisideTheta(b, b, a)))", //
         "0");
 
@@ -1475,7 +1475,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-    public void testBeginPackageNested() {
+  public void testBeginPackageNested() {
     check("BeginPackage(\"test`\")", //
         "");
     check("Context( )", //
@@ -1827,7 +1827,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-public void testBesselJZero() {
+  public void testBesselJZero() {
     checkNumeric("BesselJZero(1.5, 1.0)", //
         "4.493409429988828");
 
@@ -2718,7 +2718,7 @@ public void testBesselJZero() {
 
 
   @Test
-      public void testCeiling() {
+  public void testCeiling() {
     check("Ceiling(Quantity(8.5, \"Meters\"))", //
         "9[Meters]");
     check("Ceiling(DirectedInfinity(0))", //
@@ -2751,7 +2751,7 @@ public void testBesselJZero() {
   }
 
   @Test
-      public void testCharacterRange() {
+  public void testCharacterRange() {
     check("CharacterRange(50, 50)", //
         "{2}");
     check("CharacterRange(\" \", \"~\")", //
@@ -2892,7 +2892,7 @@ public void testBesselJZero() {
   }
 
   @Test
-public void testClear() {
+  public void testClear() {
     check("x=100;y=42", //
         "42");
     check("x", //
@@ -3491,7 +3491,7 @@ public void testClear() {
   }
 
   @Test
-      public void testComplex() {
+  public void testComplex() {
     // github #267
     check("1/(I*2*Pi*5000*25*10^-6)+10", //
         "10+(-I*4)/Pi");
@@ -3593,7 +3593,7 @@ public void testClear() {
   }
 
   @Test
-      public void testCompoundExpression() {
+  public void testCompoundExpression() {
     check("1; 2; 3;", //
         "");
     check("1; 2; 3", //
@@ -3837,7 +3837,7 @@ public void testClear() {
   }
 
   @Test
-    public void testContainsAll() {
+  public void testContainsAll() {
     check("ContainsAll({b,a,b,c}, {a, b})", //
         "True");
     check("ContainsAll({b,a,b,c}, {a, b, d})", //
@@ -3942,7 +3942,7 @@ public void testClear() {
   }
 
   @Test
- public void testContext() {
+  public void testContext() {
 
     check("Context(a)", //
         "Global`");
@@ -4191,7 +4191,7 @@ public void testClear() {
   }
 
   @Test
-    public void testCoprimeQ() {
+  public void testCoprimeQ() {
     check("CoprimeQ(7,3)", //
         "True");
     check("CoprimeQ(7)", //
@@ -4623,7 +4623,7 @@ public void testClear() {
   }
 
   @Test
-public void testCovariance() {
+  public void testCovariance() {
 
     check("Covariance({{0.25,0.33,0.45}})", //
         "Covariance(\n" //
@@ -4778,7 +4778,7 @@ public void testCovariance() {
   }
 
   @Test
-      public void testCurl() {
+  public void testCurl() {
     check("Curl({y, -x}, {x, y})", //
         "-2");
 
@@ -5158,7 +5158,7 @@ public void testCovariance() {
   }
 
   @Test
-public void testDefault() {
+  public void testDefault() {
     check("Default(test) := 1", //
         "1");
     check("Default(test) = 1", //
@@ -5181,7 +5181,7 @@ public void testDefault() {
   }
 
   @Test
- public void testDefer() {
+  public void testDefer() {
     // check("Defer(3*2)", "3*2");
     check("Defer(6/8)==6/8", //
         "6/8==3/4");
@@ -5218,7 +5218,7 @@ public void testDefault() {
   }
 
   @Test
-      public void testDegree() {
+  public void testDegree() {
     check("\\[Pi]", //
         "Pi");
     check("\\[Degree]", //
@@ -5330,7 +5330,7 @@ public void testDefault() {
   }
 
   @Test
-    public void testDeleteDuplicates() {
+  public void testDeleteDuplicates() {
     check("DeleteDuplicates({1, 7, 8, 4, 3, 4, 1, 9, 9, 2, 1})", //
         "{1,7,8,4,3,9,2}");
     check("DeleteDuplicates({3,2,1,2,3,4}, Less)", //
@@ -5389,7 +5389,7 @@ public void testDefault() {
   }
 
   @Test
-    public void testDateValue() {
+  public void testDateValue() {
     check("DateValue(DateObject({2016,8,1}), {\"Year\",\"Month\",\"Day\"})", //
         "{2016,8,1}");
     check("DateValue(DateObject({2016,8,1}), {\"Year\",\"MonthName\",\"DayName\"})", //
@@ -5515,7 +5515,7 @@ public void testDefault() {
   }
 
   @Test
-      public void testDepth() {
+  public void testDepth() {
     check("Depth(f(a, b)[c])", //
         "2");
     check("Depth(f(a, b)[c], Heads->True)", //
@@ -5754,7 +5754,7 @@ public void testDefault() {
   }
 
   @Test
-    public void testDifferenceDelta() {
+  public void testDifferenceDelta() {
     check("DifferenceDelta(Cosh(a*i+b),{i,2,h})", //
         "Cosh(b+a*i)-2*Cosh(b+a*(h+i))+Cosh(b+a*(2*h+i))");
     check("DifferenceDelta(Sin(a*i+b),{i,5})", //
@@ -5773,7 +5773,7 @@ public void testDefault() {
   }
 
   @Test
-    public void testDifferences() {
+  public void testDifferences() {
     // TODO: two args function
     // check(
     // "Differences({a, b, c, d},3)", //
@@ -6044,7 +6044,7 @@ public void testDefault() {
   }
 
   @Test
-    public void testDiscriminant() {
+  public void testDiscriminant() {
     // github #122
     check("Discriminant((2*x^5)-(19*x^4)+(58*x^3)-(67*x^2)+(56*x)-48,x)", //
         "0");
@@ -6215,7 +6215,7 @@ public void testDefault() {
   }
 
   @Test
-      public void testDivideBy() {
+  public void testDivideBy() {
     check("a = 10", //
         "10");
     check("a /= 2", //
@@ -6555,7 +6555,7 @@ public void testDefault() {
   }
 
   @Test
-    public void testEchoFunction() {
+  public void testEchoFunction() {
     check("{EchoFunction()[f(x,y)], Print(g(a,b))}", //
         // >> f(x,y)
         // >> g(a,b)
@@ -6938,7 +6938,7 @@ public void testDefault() {
   }
 
   @Test
-      public void testEntropy() {
+  public void testEntropy() {
     // Shannon entropy
     check("Entropy({a, b, b})", //
         "2/3*Log(3/2)+Log(3)/3");
@@ -6952,7 +6952,7 @@ public void testDefault() {
 
 
   @Test
-    public void testErf() {
+  public void testErf() {
     // assertEquals(org.hipparchus.special.Erf.erf(new Complex(1.0, 1.5)).toString(), //
     // "");
     checkNumeric("Erf(3.0)", //
@@ -7094,7 +7094,7 @@ public void testDefault() {
   }
 
   @Test
-    public void testEulerPhi() {
+  public void testEulerPhi() {
     check("Refine(EulerPhi(p^n),Element(p, Primes)&&Element(n, Integers))", //
         "-1/p^(1-n)+p^n");
 
@@ -8765,7 +8765,7 @@ public void testDefault() {
   }
 
   @Test
-      public void testFactorSquareFreeList() {
+  public void testFactorSquareFreeList() {
     // bug endless loop ?
     check("FactorSquareFreeList(x^2147483647)", //
         "{{x,2147483647}}");
@@ -8815,7 +8815,7 @@ public void testDefault() {
   }
 
   @Test
-      public void testFactorTermsList() {
+  public void testFactorTermsList() {
     check("FactorTermsList(6*a^2 + 9*x^2 + 12*b^2)", //
         "{3,2*a^2+4*b^2+3*x^2}");
     check("FactorTermsList(3 + 3*a + 6*a*x + 6*x + 12*a*x^2 + 12*x^2, x)", //
@@ -8844,7 +8844,7 @@ public void testDefault() {
   }
 
   @Test
-      public void testFibonacci() {
+  public void testFibonacci() {
     // check("Fibonacci(10007,Quantity(1.2,\"m\"))", //
     // "Fibonacci(10007,1.2[m])");
     // Fibonacci(11,{13,2,3,a})
@@ -9595,7 +9595,7 @@ public void testDefault() {
   }
 
   @Test
- public void testFlattenAt() {
+  public void testFlattenAt() {
     check("FlattenAt(2)[{a, {b, c}, {d, e}, {f}}]", //
         "{a,b,c,{d,e},{f}}");
     check("FlattenAt({a, {b, c}, {d, e}, {f}}, 2)", //
@@ -9945,7 +9945,7 @@ public void testDefault() {
   }
 
   @Test
- public void testFrobeniusNumber() {
+  public void testFrobeniusNumber() {
     // message FrobeniusNumber: The first argument {0,0,0,0} of FrobeniusNumber should be a
     // non-empty list of positive integers.
     check("FrobeniusNumber({0,0,0,0})", //
@@ -10133,7 +10133,7 @@ public void testDefault() {
   }
 
   @Test
-public void testFullForm() {
+  public void testFullForm() {
     check("N( 1/2+8 ,12)//FullForm", //
         "8.5`");
     check("N( Pi/13^101 ,30)//FullForm", //
@@ -11579,7 +11579,7 @@ public void testFullForm() {
   }
 
   @Test
-      public void testHypergeometricU() {
+  public void testHypergeometricU() {
     // TODO throws hypergeometric function pole
     // check("HypergeometricU(3, 2, 1.0)", //
     // "0.105479");
@@ -12190,7 +12190,7 @@ public void testFullForm() {
   }
 
   @Test
-    public void testIntegrateIssue851() {
+  public void testIntegrateIssue851() {
     check("Integrate(x^n*Haversine(m*x^p),x)", //
         "(x^(1+n)*(2*p*(m^2*x^(2*p))^((1+n)/p)+(1+n)*(I*m*x^p)^((1+n)/p)*Gamma((1+n)/p,-I*m*x^p)+(\n" //
             + "1+n)*(-I*m*x^p)^((1+n)/p)*Gamma((1+n)/p,I*m*x^p)))/(4*(1+n)*p*(m^2*x^(2*p))^((1+n)/p))");
@@ -12488,7 +12488,7 @@ public void testFullForm() {
   }
 
   @Test
-      public void testInterquartileRange() {
+  public void testInterquartileRange() {
     // https://en.wikipedia.org/wiki/Interquartile_range
     check("InterquartileRange({7,7,31,31,47,75,87,115,116,119,119,155,177})", //
         "88");
@@ -13259,7 +13259,7 @@ public void testFullForm() {
   }
 
   @Test
-    public void testKroneckerDelta() {
+  public void testKroneckerDelta() {
     check("KroneckerDelta(2 - I, 2. - I)", //
         "1");
     check("KroneckerDelta(n,0)", //
@@ -13340,7 +13340,7 @@ public void testFullForm() {
   }
 
   @Test
-public void testInverseLaplaceTransformNumeric() {
+  public void testInverseLaplaceTransformNumeric() {
     // check("InverseLaplaceTransform(Erf(s)/Sqrt(s), s, 2.3)", //
     // "");
     check("InverseLaplaceTransform(s/(s + 2)^2, s, 2.3)", //
@@ -13514,7 +13514,7 @@ public void testInverseLaplaceTransformNumeric() {
 
 
   @Test
-      public void testLength() {
+  public void testLength() {
     check("Length(\"test\")", //
         "0");
     check("Length(<||>)", //
@@ -14310,7 +14310,7 @@ public void testInverseLaplaceTransformNumeric() {
   }
 
   @Test
-public void testLog() {
+  public void testLog() {
     checkNumeric("Log(-1.4)", //
         "0.3364722366212129+I*3.141592653589793");
 
@@ -15133,7 +15133,7 @@ public void testLog() {
   }
 
   @Test
-public void testMax() {
+  public void testMax() {
 
     check("Max(Sequence())", //
         "-Infinity");
@@ -15190,7 +15190,7 @@ public void testMax() {
   }
 
   @Test
-      public void testMaximize() {
+  public void testMaximize() {
     // print message - Maximize: The maximum is not attained at any point satisfying the
     // constraints.
     check("Maximize(1/x, x)", //
@@ -15752,7 +15752,7 @@ public void testMax() {
 
 
   @Test
-      public void testModularInverse() {
+  public void testModularInverse() {
     // message ModularInverse: 3 is not invertible modulo 9.
     check("ModularInverse(3, 9)", //
         "ModularInverse(3,9)");
@@ -16167,7 +16167,7 @@ public void testMax() {
   }
 
   @Test
-      public void testNameQ() {
+  public void testNameQ() {
     check("NameQ(\"foo\")", //
         "False");
     check("NameQ(\"plot\")", //
@@ -16206,7 +16206,7 @@ public void testMax() {
   }
 
   @Test
-      public void testNand() {
+  public void testNand() {
     check("Nand( )", //
         "False");
     check("Nand(a)", //
@@ -16672,7 +16672,7 @@ public void testMax() {
   }
 
   @Test
-    public void testNestWhileList() {
+  public void testNestWhileList() {
     check("NestWhileList(Function((#+3/#)/2), 1., Function(# =!= #2), 2)", //
         "{1.0,2.0,1.75,1.73214,1.73205,1.73205,1.73205}");
     // from fuzz testing:
@@ -16879,7 +16879,7 @@ public void testMax() {
   }
 
   @Test
-      public void testNoneTrue() {
+  public void testNoneTrue() {
     check("NoneTrue({1, 3, 5}, EvenQ)", //
         "True");
     check("NoneTrue({1, 4, 5}, EvenQ)", //
@@ -17114,7 +17114,7 @@ public void testMax() {
   }
 
   @Test
- public void testNotElement() {
+  public void testNotElement() {
     check("NotElement(Pi, Integers)", //
         "True");
     check("NotElement(a, Reals)", //
@@ -17290,7 +17290,7 @@ public void testMax() {
   }
 
   @Test
-      public void testNumerator() {
+  public void testNumerator() {
     check("Numerator(ConditionalExpression(a/13,Element(C1,Integers)))", //
         "ConditionalExpression(a/13,c1∈Integers)");
 
@@ -17968,7 +17968,7 @@ public void testMax() {
   }
 
   @Test
-          public void testParenthesis() {
+  public void testParenthesis() {
     check("x+Parenthesis(a+b+c)", //
         "x+(a+b+c)");
     check("TeXForm(x+Parenthesis(a+b+c))", //
@@ -18127,7 +18127,7 @@ public void testMax() {
   }
 
   @Test
-      public void testPatternAndRules() {
+  public void testPatternAndRules() {
     check("a + 2 + b + c + x * y /. n_Integer + s__Symbol + r_ -> {n, s, r}", //
         "{2,a,b+c+x*y}");
 
@@ -18160,7 +18160,7 @@ public void testMax() {
   }
 
   @Test
-    public void testPattern() {
+  public void testPattern() {
     // TODO parse this as Optional(Pattern(a,b),Pattern(c,d))
     check("a:b:c:d", //
         "Optional(a:b,(c:d))");
@@ -18212,7 +18212,7 @@ public void testMax() {
   }
 
   @Test
-public void testPatternOrder() {
+  public void testPatternOrder() {
     // see https://mathematica.stackexchange.com/questions/8619
     check("PatternOrder(x_, 1)", //
         "-1");
@@ -18762,7 +18762,7 @@ public void testPatternOrder() {
   }
 
   @Test
-      public void testPolyLog() {
+  public void testPolyLog() {
     check("PolyLog(n,1,z)", //
         "PolyLog(1+n,z)");
     check("PolyLog(0, 1, z)", //
@@ -19958,7 +19958,7 @@ public void testPatternOrder() {
   }
 
   @Test
-    public void testPreDecrement() {
+  public void testPreDecrement() {
     check("--5", //
         "--5");
     check("a = 2", //
@@ -19977,7 +19977,7 @@ public void testPatternOrder() {
   }
 
   @Test
-      public void testPreIncrement() {
+  public void testPreIncrement() {
     check("a = 2", //
         "2");
     check("++a", //
@@ -20260,7 +20260,7 @@ public void testPatternOrder() {
   }
 
   @Test
-      public void testPrimePowerQ() {
+  public void testPrimePowerQ() {
     check("PrimePowerQ(0)", //
         "False");
     check("PrimePowerQ(1)", //
@@ -20285,7 +20285,7 @@ public void testPatternOrder() {
   }
 
   @Test
-      public void testPrimeQ() {
+  public void testPrimeQ() {
     check("PrimeQ({1,2,4})", //
         "{False,True,False}");
     check("PrimeQ(<|a->1,b->2,c->4|>)", //
@@ -20378,7 +20378,7 @@ public void testPatternOrder() {
   }
 
   @Test
-          public void testPrintableASCIIQ() {
+  public void testPrintableASCIIQ() {
     check("PrintableASCIIQ(FromCharacterCode /@ Range(0, 127))", //
         "{False,False,False,False,False,False,False,False,False,False,False,False," //
             + "False,False,False,False,False,False,False,False,False,False,False,False," //
@@ -21417,7 +21417,7 @@ public void testPatternOrder() {
   }
 
   @Test
-      public void testRealAbs() {
+  public void testRealAbs() {
 
     check("xval = Solve(RealAbs(x) == 2, x)", //
         "{{x->-2},{x->2}}");
@@ -21442,7 +21442,7 @@ public void testPatternOrder() {
   }
 
   @Test
-    public void testRealSign() {
+  public void testRealSign() {
     check("RealSign(1.1)", //
         "1");
     check("RealSign(RealSign(x))", //
@@ -22017,7 +22017,7 @@ public void testPatternOrder() {
   }
 
   @Test
-    public void testRomanNumeral() {
+  public void testRomanNumeral() {
     // zero as special case represented by 'N'
     check("RomanNumeral(0)", //
         "N");
@@ -22473,7 +22473,7 @@ public void testPatternOrder() {
   }
 
   @Test
-public void testSelectFirst() {
+  public void testSelectFirst() {
     check("SelectFirst(<|1 -> \"a\", 2 -> \"b\", 3 -> c, 4 -> d|>,Head(#)==Symbol &)", //
         "c");
     check("SelectFirst({-3, 0, 1, 3, a}, #>0 &)", //
@@ -22632,7 +22632,7 @@ public void testSelectFirst() {
   }
 
   @Test
-    public void testSetDelayed() {
+  public void testSetDelayed() {
     check("f(x_, nm : Association((_String -> _Integer) ..)) := {x,nm}", //
         "");
     check("f(a,<|\"c\"->3, \"d\"->4|>)", //
@@ -22673,7 +22673,7 @@ public void testSelectFirst() {
   }
 
   @Test
-      public void testShare() {
+  public void testShare() {
     check(
         "people = <|\n" + "236234 -> <|\"name\" -> \"bob\", \"age\" -> 18, \"sex\" -> \"M\"|>, \n"
             + "253456 -> <|\"name\" -> \"sue\", \"age\" -> 25, \"sex\" -> \"F\"|>, \n"
@@ -23413,7 +23413,7 @@ public void testSelectFirst() {
   }
 
   @Test
- public void testSlotSequence() {
+  public void testSlotSequence() {
     check("f(##1, X, ##2, Y, ##3, Z, ##4, W, ##5) &[a, b, c, d]", //
         "f(a,b,c,d,X,b,c,d,Y,c,d,Z,d,W)");
     check("(## &)[a, b, c]", //
@@ -23865,7 +23865,7 @@ public void testSelectFirst() {
   }
 
   @Test
-      public void testStruveL() {
+  public void testStruveL() {
     check("StruveL(0, 5.0)", //
         "27.10592");
     check("StruveL(0, 2.5)", //
@@ -23899,7 +23899,7 @@ public void testSelectFirst() {
   }
 
   @Test
-      public void testSubdivide() {
+  public void testSubdivide() {
     // print: $IterationLimit: Iteration limit of 500 exceeded.
     // TODO
     // check(
@@ -24250,7 +24250,7 @@ public void testSelectFirst() {
   }
 
   @Test
-      public void testSwitch() {
+  public void testSwitch() {
     check("Switch(2, 1, x, 2, y, 3, z)", //
         "y");
     check("Switch(5, 1, x, 2, y)", //
@@ -24716,7 +24716,7 @@ public void testSelectFirst() {
   }
 
   @Test
-public void testTan() {
+  public void testTan() {
 
     // check("Tan(8/15*Pi)", //
     // "-Cot(Pi/30)");
@@ -24883,7 +24883,7 @@ public void testTan() {
   }
 
   @Test
-public void testThrough() {
+  public void testThrough() {
 
 
     check("s1 = {\"t\", \"o\", \"d\", \"a\", \"y\"}", //
@@ -24927,7 +24927,7 @@ public void testThrough() {
   }
 
   @Test
-public void testTimeConstrained() {
+  public void testTimeConstrained() {
     if (!Config.TIMECONSTRAINED_NO_THREAD) {
       check("TimeConstrained(Do(i^2, {i, 10000000}), 1)", //
           "$Aborted");
@@ -25157,7 +25157,7 @@ public void testTimeConstrained() {
   }
 
   @Test
-    public void testTimesBy() {
+  public void testTimesBy() {
     check("a = 10", //
         "10");
     check("a *= 2", //
@@ -25174,7 +25174,7 @@ public void testTimeConstrained() {
   }
 
   @Test
-    public void testTimeValue() {
+  public void testTimeValue() {
     check("TimeValue(I*1/2,-I,0)", //
         "I*1/2");
     check(" TimeValue(-0.8+I*1.2,-5,1009)", //
@@ -25641,7 +25641,7 @@ public void testTimeConstrained() {
   }
 
   @Test
-      public void testTrace() {
+  public void testTrace() {
     check("Trace(u = 2; Do(u = u*u, {3}); u, Times)", //
         "{{{{u*u,2*2}},{{u*u,4*4}},{{u*u,16*16}}}}");
     check("x=5;Trace(Mod((3 + x)^2, x - 1))", //
@@ -26002,7 +26002,7 @@ public void testTimeConstrained() {
 
 
   @Test
-          public void testUnion() {
+  public void testUnion() {
     check("Union({},{})", "{}");
     check("Union({1},{2})", "{1,2}");
     check("Union({1,2,2,4},{2,3,4,5})", "{1,2,3,4,5}");
@@ -26189,7 +26189,7 @@ public void testTimeConstrained() {
   }
 
   @Test
-public void testUpperCaseQ() {
+  public void testUpperCaseQ() {
     // print message: UpperCaseQ: String expected at position 1 in UpperCaseQ(abc).
     check("UpperCaseQ(abc)", //
         "UpperCaseQ(abc)");
@@ -26412,7 +26412,7 @@ public void testUpperCaseQ() {
   }
 
   @Test
-public void testWeierstrassInvariants() {
+  public void testWeierstrassInvariants() {
     check("WeierstrassInvariants({1.0, 2.0*I} )", //
         "{8.12422,4.44305}");
     check("Table(WeierstrassInvariants({1.0,x*I} ), {x,-2.0, 2.0, 1/4})", //
@@ -26506,7 +26506,7 @@ public void testWeierstrassInvariants() {
   }
 
   @Test
-public void testWhittakerM() {
+  public void testWhittakerM() {
     check("D(WhittakerM(a,b,x), x)", //
         "(1/2-a/x)*WhittakerM(a,b,x)+((1/2+a+b)*WhittakerM(1+a,b,x))/x");
     check("WhittakerM(k, -1/2, 0)", //

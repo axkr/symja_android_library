@@ -2,6 +2,18 @@
 
 Noteworthy changes are documented in this file.
 
+## [unreleased](https://github.com/axkr/symja_android_library/compare/...) - YYYY-MM-DD
+- Java 11 required
+- Maven modules matheclipse-parser, matheclipse-logging, matheclipse-core are LGPL licensed
+- Maven modules matheclipse-gpl and dependents are GPL licensed
+- function documentation: [symja_android_library/doc/function](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions)
+
+- migrate JUnit 3 to JUnit 4 (#861)
+- improved `Position` (#859)
+- improved `FullSimplify, Simplify, Together` (#856)
+- improved `LeviCivitaTensor, Hypergeometric0F1Regularized, Hypergeometric1F1Regularized, Hypergeometric2F1Regularized`
+- Fix bug in `ComplexSym#powPositive)` for n==0
+
 ## [v3.0.0](https://github.com/axkr/symja_android_library/compare/v3.0.0) - 2023-11-11
 - Java 11 required
 - Maven modules matheclipse-parser, matheclipse-logging, matheclipse-core are LGPL licensed

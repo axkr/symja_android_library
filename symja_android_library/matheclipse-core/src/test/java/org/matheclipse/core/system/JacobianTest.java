@@ -1,12 +1,16 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
+import org.hipparchus.util.Pair;
 import org.junit.Test;
+import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.generic.MultivariateJacobianGradient;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.parser.ExprParser;
-
-import static org.junit.Assert.assertEquals;
 
 public class JacobianTest extends ExprEvaluatorTestCase {
 
@@ -23,16 +27,19 @@ public class JacobianTest extends ExprEvaluatorTestCase {
         jacobian.getJacobianMatrix().toString());
 
     IAST vector1 = (IAST) parser.parse("{1.0,1.0,1.0}");
-    // compare with hipparchus string output
-    assertEquals(//
-        "[{1; 5; 2; 0.8414709848}, " //
-            + "Array2DRowRealMatrix{" //
-            + "{1.0,0.0,0.0}," //
-            + "{0.0,0.0,5.0}," //
-            + "{0.0,8.0,-2.0}," //
-            + "{0.5403023059,0.0,0.8414709848}}]", //
-        jacobian.value(vector1.toRealVector()).toString());
-  }
 
+    Pair<RealVector, RealMatrix> pair = jacobian.value(vector1.toRealVector());
+    IASTAppendable vector = Convert.vector2List(pair.getFirst());
+    IASTAppendable matrix = Convert.matrix2List(pair.getSecond());
+    assertEquals(//
+        "{1.0,5.0,2.0,0.8414709848078965}", //
+        vector.toString());
+    assertEquals(//
+        "{{1.0,0.0,0.0},\n" //
+            + " {0.0,0.0,5.0},\n" //
+            + " {0.0,8.0,-2.0},\n" //
+            + " {0.5403023058681398,0.0,0.8414709848078965}}", //
+        matrix.toString());
+  }
 
 }
