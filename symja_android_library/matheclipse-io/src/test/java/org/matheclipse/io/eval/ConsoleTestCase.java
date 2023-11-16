@@ -5,18 +5,18 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /** Test <code>org.matheclipse.core.eval.Console</code> app. */
-public class ConsoleTestCase extends TestCase {
+public class ConsoleTestCase  {
   Console console;
 
-  public ConsoleTestCase(String name) {
-    super(name);
-  }
-
   /** The JUnit setup method */
-  @Override
-  protected void setUp() {
+  @Before
+  public void setUp() {
     try {
       console = new Console();
     } catch (Exception e) {
@@ -40,27 +40,32 @@ public class ConsoleTestCase extends TestCase {
     stderr.close();
   }
 
+  @Test
   public void test001() {
     String[] args = new String[] {"-c", "D(sin(x)^3,x)"};
     check(args, "3*Cos(x)*Sin(x)^2");
   }
 
+  @Test
   public void test002() {
     String[] args = new String[] {"-f", "Factorial", "-a", "20"};
     check(args, "2432902008176640000");
   }
 
+  @Test
   public void test003() {
     String[] args = new String[] {"-c", "f(x_,y_):={x,y}; f(a,b)"};
     check(args, "{a,b}");
   }
 
+  // @Test
   // public void testDoc() {
   // assertEquals(
   // "Sin, Sinc, SingularValueDecomposition, SingularValueList, Sinh, SinIntegral, SinhIntegral\n",
   // console.interpreter("?Sin*"));
   // }
   //
+  // @Test
   // public void testMissingDoc() {
   // assertEquals(
   // "Sin, Sinc, SingularValueDecomposition, SingularValueList, Sinh, SinIntegral, SinhIntegral\n",

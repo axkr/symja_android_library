@@ -5,20 +5,28 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.io.expression.ASTDataset;
 import junit.framework.TestCase;
 import tech.tablesaw.api.Table;
 
-public class SerializableDataSetTest extends TestCase {
+import static org.junit.Assert.assertEquals;
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+@RunWith(JUnit4.class)
+public class SerializableDataSetTest {
+
+  @Before
+  public void setUp() throws Exception {
     // wait for initializing of Integrate() rules:
     F.await();
   }
 
+  @Test
   public void testDataset() {
     Table table = Table.read().csv("Products,Sales,Market_Share\n" + //
         "a,5500,3\n" + //

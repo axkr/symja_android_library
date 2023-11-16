@@ -1,13 +1,11 @@
 package org.matheclipse.io.test;
 
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 
 public class FunctionsTestCase extends AbstractTestCase {
 
-  public FunctionsTestCase(String name) {
-    super(name);
-  }
-
+  @Test
   public void testSemanticImport() {
     String s = System.getProperty("os.name");
 
@@ -115,6 +113,7 @@ public class FunctionsTestCase extends AbstractTestCase {
     }
   }
 
+  @Test
   public void testSemanticImportString() {
     String s = System.getProperty("os.name");
     if (s.contains("Windows")) {
@@ -369,6 +368,7 @@ public class FunctionsTestCase extends AbstractTestCase {
     }
   }
 
+  @Test
   public void testSemanticImportStringToList() {
     String s = System.getProperty("os.name");
     if (s.contains("Windows")) {
@@ -388,6 +388,7 @@ public class FunctionsTestCase extends AbstractTestCase {
     }
   }
 
+  @Test
   public void testSemanticImportStringWikipedia() {
     // https://en.wikipedia.org/wiki/Comma-separated_values
     String s = System.getProperty("os.name");
@@ -410,6 +411,7 @@ public class FunctionsTestCase extends AbstractTestCase {
     }
   }
 
+  @Test
   public void testDataset() {
     String s = System.getProperty("os.name");
 
