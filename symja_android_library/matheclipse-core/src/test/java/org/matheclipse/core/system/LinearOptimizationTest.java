@@ -1,12 +1,11 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
+
 /** Tests built-in functions */
 public class LinearOptimizationTest extends ExprEvaluatorTestCase {
 
-  public LinearOptimizationTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testLinearOptimization() {
     check("LinearOptimization(x + y, {x + 2*y >= 3,  x >= 0, y >= 0}, {x, y})", //
         "{x->0.0,y->1.5}");
@@ -15,6 +14,7 @@ public class LinearOptimizationTest extends ExprEvaluatorTestCase {
         "{x->Indeterminate,y->Indeterminate}");
   }
 
+  @Test
   public void testLinearProgramming() {
     check("LinearProgramming({1, 1}, {{1, 2}}, {3})", //
         "{0.0,1.5}");

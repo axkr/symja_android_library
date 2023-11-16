@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import org.junit.Test;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -13,10 +14,6 @@ import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
 public class HomogenizationJUnit extends ExprEvaluatorTestCase {
-
-  public HomogenizationJUnit() {
-    super("HomogenizationTest");
-  }
 
   public static final IBuiltInSymbol Homogenization =
       S.initFinalSymbol("Homogenization", ID.Zeta + 9);
@@ -50,12 +47,14 @@ public class HomogenizationJUnit extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
   public void testHomogenization001() {
     EvalEngine.resetModuleCounter4JUnit();
     check("Homogenization(9*6^(2*x) - 10*6^x + 1)", //
         "{1-10*jas$1+9*jas$1^2,{jas$1->6^x}}");
   }
 
+  @Test
   public void testHomogenization002() {
     EvalEngine.resetModuleCounter4JUnit();
     check("Homogenization( (E^x)^3 - 4*E^x + 3/(E^x))", //

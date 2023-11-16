@@ -1,15 +1,13 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 
 public class StreamTest extends ExprEvaluatorTestCase {
 
-  public StreamTest(String name) {
-    super(name);
-  }
-
-  public void testBinaryWrite001() {
+   @Test
+   public void testBinaryWrite001() {
     call("f = File(\"test.bin\")");
     check("BinaryWrite(f, {8, 97, 255, 255, 255});", //
         "");
@@ -28,7 +26,8 @@ public class StreamTest extends ExprEvaluatorTestCase {
         "EndOfFile");
   }
 
-  public void testRead001() {
+   @Test
+   public void testRead001() {
     call("str = StringToStream(\"4711 dummy 0815\")");
     check("Read(str, Number)", //
         "4711");
@@ -40,7 +39,8 @@ public class StreamTest extends ExprEvaluatorTestCase {
         "String");
   }
 
-  public void testRead002() {
+   @Test
+   public void testRead002() {
     call("str = StringToStream(\"4711 dummy 0815\")");
     check("Read(str, Number)", //
         "4711");
@@ -52,7 +52,8 @@ public class StreamTest extends ExprEvaluatorTestCase {
         "String");
   }
 
-  public void testRead003() {
+   @Test
+   public void testRead003() {
     check("str = \"foo::usage = \\\"foo is ...\\\";\n" + "bar::usage = \\\"bar is ...\\\";\"", //
         "foo::usage = \"foo is ...\";\n" + "bar::usage = \"bar is ...\";");
     check("strm = StringToStream(str);", //
@@ -65,7 +66,8 @@ public class StreamTest extends ExprEvaluatorTestCase {
         "String");
   }
 
-  public void testRead004() {
+   @Test
+   public void testRead004() {
     // newline after ::usage
     check("str = \"foo::usage = \n \\\"foo is ...\\\";\n" + "bar::usage = \\\"bar is ...\\\";\"", //
         "foo::usage = \n" + " \"foo is ...\";\n" + "bar::usage = \"bar is ...\";");
@@ -79,7 +81,8 @@ public class StreamTest extends ExprEvaluatorTestCase {
         "String");
   }
 
-  public void testFile001() {
+   @Test
+   public void testFile001() {
     call("f = File(\"test.txt\")");
     check("Write(f, a + b)", //
         "");
@@ -87,7 +90,8 @@ public class StreamTest extends ExprEvaluatorTestCase {
         "{a,+,b}");
   }
 
-  public void testStringToStream() {
+   @Test
+   public void testStringToStream() {
     call("str = StringToStream(\"234,32412,4234\")");
     check("Read(str, Number)", //
         "234");
@@ -97,7 +101,8 @@ public class StreamTest extends ExprEvaluatorTestCase {
         "String");
   }
 
-  public void testOpenAppend001() {
+   @Test
+   public void testOpenAppend001() {
     call("f = FileNameJoin({$TemporaryDirectory, \"test_open.txt\"});Print(f)");
     check("str = OpenWrite(f);", //
         "");
@@ -118,7 +123,8 @@ public class StreamTest extends ExprEvaluatorTestCase {
         "");
   }
 
-  public void testOpenAppend002() {
+   @Test
+   public void testOpenAppend002() {
     // create temporary file and open output stream
     check("str = OpenWrite();Print(str);", //
         "");
@@ -130,7 +136,7 @@ public class StreamTest extends ExprEvaluatorTestCase {
 
   /** The JUnit setup method */
   @Override
-  protected void setUp() {
+  public void setUp() {
     super.setUp();
     Config.FILESYSTEM_ENABLED = true;
     Config.MAX_AST_SIZE = 10000;
@@ -138,7 +144,7 @@ public class StreamTest extends ExprEvaluatorTestCase {
   }
 
   @Override
-  protected void tearDown() throws Exception {
+  public void tearDown() throws Exception {
     super.tearDown();
   }
 }

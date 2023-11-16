@@ -1,10 +1,10 @@
 package org.matheclipse.core.system;
 
-public class ComplexExpandTest extends ExprEvaluatorTestCase {
-  public ComplexExpandTest(String name) {
-    super(name);
-  }
+import org.junit.Test;
 
+public class ComplexExpandTest extends ExprEvaluatorTestCase {
+
+  @Test
   public void testComplexExpand() {
 
     check("ComplexExpand(ArcCot(x+I*y))", //
@@ -172,6 +172,7 @@ public class ComplexExpandTest extends ExprEvaluatorTestCase {
         "-I*Im(z)+Re(z)");
   }
 
+  @Test
   public void testArcCot() {
     check("ComplexExpand(ArcCot(x+I*y))", //
         "-Arg(1-I/(x+I*y))/2+Arg(1+I/(x+I*y))/2-I*1/4*Log(x^2/(x^2+y^2)^2+(1+y/(x^2+y^2))^\n"

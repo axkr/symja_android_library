@@ -1,10 +1,10 @@
 package org.matheclipse.core.system;
 
-public class BesselFunctionTest extends ExprEvaluatorTestCase {
-  public BesselFunctionTest(String name) {
-    super(name);
-  }
+import org.junit.Test;
 
+public class BesselFunctionTest extends ExprEvaluatorTestCase {
+
+  @Test
   public void testHankelH1() {
     check("HankelH1(1317624576693539401,I*1/2)", //
         "HankelH1(1317624576693539401,I*1/2)");
@@ -20,6 +20,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
         "-0.8840126453738697+I*(-0.37582703842509113)");
   }
 
+  @Test
   public void testHankelH2() {
     checkNumeric("HankelH2(3,1.2)", //
         "0.03287433692500416+I*3.589899629613203");
@@ -32,6 +33,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
   public void testSphericalHankelH1() {
     check("SphericalHankelH1(a,b)", //
         "SphericalHankelH1(a,b)");
@@ -47,6 +49,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
         "0.192197+I*0.15964");
   }
 
+  @Test
   public void testSphericalHankelH2() {
     check("SphericalHankelH2(3, 1.5)", //
         "0.0283246+I*3.78927");
@@ -59,6 +62,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
         "-0.084523+I*(-0.120937)");
   }
 
+  @Test
   public void testWeberE() {
     check("WeberE(1.5, 3.5)", //
         "0.212207*HypergeometricPFQ({1},{0.25,1.75},-3.0625)+0.891268*HypergeometricPFQ({\n"

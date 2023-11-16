@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
@@ -7,10 +8,7 @@ import org.matheclipse.core.eval.EvalEngine;
 /** Tests for compiler functions */
 public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
 
-  public CompilerFunctionsTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testCompileSinReal001() {
     if (ToggleFeature.COMPILE) {
 
@@ -23,6 +21,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testCompileSinReal002() {
     if (ToggleFeature.COMPILE) {
 
@@ -33,6 +32,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testCompileSinReal003() {
     if (ToggleFeature.COMPILE) {
 
@@ -59,6 +59,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
   // }
   // }
 
+  @Test
   public void testCompileSinComplex() {
     if (ToggleFeature.COMPILE) {
       check("cf = Compile({{x, _Real}}, xr=Sin(x) + x^2 - 1/(1 + x);xr+1);", //
@@ -75,6 +76,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testCompileModuleComplex() {
     if (ToggleFeature.COMPILE) {
       check(
@@ -103,6 +105,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testCompileModuleOverflow() {
     if (ToggleFeature.COMPILE) {
       // check(
@@ -116,6 +119,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testCompileSqrtException() {
     if (ToggleFeature.COMPILE) {
 
@@ -134,6 +138,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testCompile001() {
     if (ToggleFeature.COMPILE) {
 
@@ -179,6 +184,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testCompilePrintModule001() {
     if (ToggleFeature.COMPILE) {
       check(
@@ -231,6 +237,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testCompile0021() {
     if (ToggleFeature.COMPILE) {
 
@@ -244,6 +251,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testCompilePrint002() {
     if (ToggleFeature.COMPILE) {
       check("f=CompilePrint({x}, E^3-Cos(Pi^2/x))", //
@@ -292,6 +300,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testCompilePrint003() {
     if (ToggleFeature.COMPILE) {
 
@@ -323,6 +332,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testCompilePrint004() {
     if (ToggleFeature.COMPILE) {
 
@@ -354,6 +364,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testCompilePrint005() {
     if (ToggleFeature.COMPILE) {
 
@@ -386,6 +397,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testCompilePrint006() {
     if (ToggleFeature.COMPILE) {
 
@@ -416,6 +428,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testCompilePrint007() {
     if (ToggleFeature.COMPILE) {
 
@@ -425,6 +438,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testCompilePrint008() {
     if (ToggleFeature.COMPILE) {
 
@@ -457,6 +471,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testCompilePrint009() {
     if (ToggleFeature.COMPILE) {
 
@@ -490,6 +505,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testCompileDP1() {
     if (ToggleFeature.COMPILE) {
       // argument p is a matrix
@@ -508,7 +524,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
 
   /** The JUnit setup method */
   @Override
-  protected void setUp() {
+  public void setUp() {
     super.setUp();
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.MAX_AST_SIZE = 1000000;
@@ -516,7 +532,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   @Override
-  protected void tearDown() throws Exception {
+  public void tearDown() throws Exception {
     super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
   }

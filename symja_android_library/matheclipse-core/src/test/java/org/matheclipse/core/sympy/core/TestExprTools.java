@@ -8,11 +8,10 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.sympy.core.ExprTools.Factors;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
-public class TestExprTools extends ExprEvaluatorTestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
-  public TestExprTools(String name) {
-    super(name);
-  }
+public class TestExprTools extends ExprEvaluatorTestCase {
 
   @Test
   public void test_Factors001() {

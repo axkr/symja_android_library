@@ -1,21 +1,23 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 
+import static org.junit.Assert.assertEquals;
+
 /** Test JShell examples */
 public class JShellExampleTestCase extends ExprEvaluatorTestCase {
-  public JShellExampleTestCase(String name) {
-    super(name);
-  }
 
+  @Test
   public void test001() {
     IExpr x = S.FactorInteger.ofObject(Integer.valueOf(42));
     assertEquals(x.toString(), //
         "{{2,1},{3,1},{7,1}}");
   }
 
+  @Test
   public void test002() {
     String str = F.usage("Im");
     assertEquals(str.substring(0, str.length() - 450), //

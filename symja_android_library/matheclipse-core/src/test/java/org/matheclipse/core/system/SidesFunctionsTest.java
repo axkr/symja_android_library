@@ -1,11 +1,10 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
+
 public class SidesFunctionsTest extends ExprEvaluatorTestCase {
 
-  public SidesFunctionsTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testAddSides001() {
     check("AddSides(x - 5 == 5, 5)", //
         "x==10");
@@ -17,6 +16,7 @@ public class SidesFunctionsTest extends ExprEvaluatorTestCase {
         "ConditionalExpression(a/c-b/d==0,c!=0)");
   }
 
+  @Test
   public void testApplySides001() {
     check("ApplySides(Log10, ConditionalExpression(a/c == b/d, c != 0)) ", //
         "ConditionalExpression(Log(a/c)/Log(10)==Log(b/d)/Log(10),c!=0)");
@@ -34,6 +34,7 @@ public class SidesFunctionsTest extends ExprEvaluatorTestCase {
         "x==E^7");
   }
 
+  @Test
   public void testDivideSides001() {
     check("DivideSides(a==b,x)", //
         "a/x==b/x");
@@ -63,6 +64,7 @@ public class SidesFunctionsTest extends ExprEvaluatorTestCase {
         "ConditionalExpression(Piecewise({{(a*d)/(b*c)==1},b/d!=0},a/c==b/d),c!=0)");
   }
 
+  @Test
   public void testMultiplySides001() {
     // TODO
     // check(
@@ -90,6 +92,7 @@ public class SidesFunctionsTest extends ExprEvaluatorTestCase {
         "ConditionalExpression(Piecewise({{(a*w)/c==(b*w)/d},w!=0},a/c==b/d),c!=0)");
   }
 
+  @Test
   public void testSubtractSides001() {
     check("SubtractSides(x - 5 == 5)", //
         "x==10");

@@ -1,12 +1,11 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
+
 /** Tests for FindInstance function */
 public class FindInstanceTest extends ExprEvaluatorTestCase {
 
-  public FindInstanceTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testDiophantine() {
     // TODO return condition with extra variable C1
     check("FindInstance(13*x+51*y==0, {x,y}, Integers, 6)", //
@@ -14,17 +13,20 @@ public class FindInstanceTest extends ExprEvaluatorTestCase {
             + "102,y->-26}}");
   }
 
+  @Test
   public void testEmptySolution() {
     check("FindInstance({2*x+7*y==1,x>y,y>0},{x,y},Integers)", //
         "{}");
   }
 
+  @Test
   public void testMod() {
     check(
         "FindInstance(Mod(x^2+y^2,2) == 1 && Mod(x-2*y,3) == 2, {x, y}, Integers,5)", //
         "{{x->0,y->-25},{x->0,y->-19},{x->0,y->-13},{x->0,y->-7},{x->0,y->-1}}");
   }
 
+  @Test
   public void testFindInstanceBooleans() {
     // message - FindInstance: Illegal arguments: "1" in LogicFormula.
     check("FindInstance(1,{a,b,c,d},Booleans)", //
@@ -35,6 +37,7 @@ public class FindInstanceTest extends ExprEvaluatorTestCase {
         "{{a->False,b->True,c->False,d->False}}");
   }
 
+  @Test
   public void testFindInstance() {
     check("FindInstance(-1+4*Sin(x)==0,x)", //
         "{{x->ArcSin(1/4)}}");

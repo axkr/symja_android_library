@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -7,22 +8,21 @@ import org.matheclipse.core.interfaces.ISymbol;
 /** Tests for SparseArray functions */
 public class ConstantPhysicsTest extends ExprEvaluatorTestCase {
 
-  public ConstantPhysicsTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testAvogadroConstant() {
     // Moles^(-1)
     check("AvogadroConstant", //
         "602214076000000000000000[mol^-1]");
   }
 
+  @Test
   public void testBohrRadius() {
     // Nanometers
     check("BohrRadius", //
         "0.0529177[nm]");
   }
 
+  @Test
   public void testUniverseAge() {
     // Years
     check("UniverseAge", //
@@ -32,7 +32,7 @@ public class ConstantPhysicsTest extends ExprEvaluatorTestCase {
 
   /** The JUnit setup method */
   @Override
-  protected void setUp() {
+  public void setUp() {
     Config.BUILTIN_PROTECTED = ISymbol.PROTECTED;
     super.setUp();
     Config.SHORTEN_STRING_LENGTH = 1024;
@@ -48,7 +48,7 @@ public class ConstantPhysicsTest extends ExprEvaluatorTestCase {
   }
 
   @Override
-  protected void tearDown() throws Exception {
+  public void tearDown() throws Exception {
     super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
   }

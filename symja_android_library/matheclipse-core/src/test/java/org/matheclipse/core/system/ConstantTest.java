@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -7,15 +8,13 @@ import org.matheclipse.core.interfaces.ISymbol;
 /** Tests for SparseArray functions */
 public class ConstantTest extends ExprEvaluatorTestCase {
 
-  public ConstantTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testCharcterEncoding() {
     check("$CharacterEncoding", //
         "UTF-8");
   }
 
+  @Test
   public void testIn() {
     check("x=1", //
         "1");
@@ -31,6 +30,7 @@ public class ConstantTest extends ExprEvaluatorTestCase {
         + "In(2):=x=x+1\n" + "In(3):=Do(In(2),{3})\n" + "In(4):=x\n" + "In(5):=In(-1)");
   }
 
+  @Test
   public void testLine() {
     check("$Line", //
         "1");
@@ -38,6 +38,7 @@ public class ConstantTest extends ExprEvaluatorTestCase {
         "2");
   }
 
+  @Test
   public void testIterationLimit() {
     check("f(x_) := f(x + 1)", //
         "");
@@ -45,6 +46,7 @@ public class ConstantTest extends ExprEvaluatorTestCase {
         "Hold(f(x))");
   }
 
+  @Test
   public void testOut() {
     check("42", //
         "42");
@@ -76,6 +78,7 @@ public class ConstantTest extends ExprEvaluatorTestCase {
             + "Out(9)=Hold(Out(4))\n" + "Out(10)=Out(0)\n" + "Out(11)=Null\n" + "Out(12)=Null");
   }
 
+  @Test
   public void testRecursionLimit() {
     // messges $RecursionLimit: Recursion depth of ... exceeded during evaluation of ...
     check("a = a + a", //
@@ -91,7 +94,7 @@ public class ConstantTest extends ExprEvaluatorTestCase {
 
   /** The JUnit setup method */
   @Override
-  protected void setUp() {
+  public void setUp() {
     Config.BUILTIN_PROTECTED = ISymbol.PROTECTED;
     super.setUp();
     Config.SHORTEN_STRING_LENGTH = 1024;
@@ -107,7 +110,7 @@ public class ConstantTest extends ExprEvaluatorTestCase {
   }
 
   @Override
-  protected void tearDown() throws Exception {
+  public void tearDown() throws Exception {
     super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
   }

@@ -1,16 +1,17 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 public class IntervalDataTest extends ExprEvaluatorTestCase {
 
-  public IntervalDataTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testEqual() {
     assertEquals(//
         EvalEngine.get().evaluate(//
@@ -22,6 +23,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testToIntervalData() {
     check("ToIntervalData(Reals)", //
         "IntervalData({-Infinity,Less,Less,Infinity})");
@@ -32,6 +34,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
         "IntervalData({17,Less,Less,Infinity})||IntervalData({-Infinity,Less,Less,42})");
   }
 
+  @Test
   public void testIntervalComplement1() {
     IExpr iExprResult = F.eval(
         F.IntervalComplement(F.IntervalData(F.List(F.ZZ(1), F.LessEqual, F.LessEqual, F.ZZ(3))),
@@ -41,6 +44,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
+  @Test
   public void testIntervalComplement2() {
     IExpr interval1 =
         F.eval(F.IntervalUnion(F.IntervalData(F.List(F.ZZ(1), F.LessEqual, F.LessEqual, F.ZZ(1))),
@@ -57,6 +61,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
+  @Test
   public void testIntervalComplement3() {
     IExpr interval1 =
         F.eval(F.IntervalUnion(F.IntervalData(F.List(F.ZZ(0), F.LessEqual, F.LessEqual, F.ZZ(2))),
@@ -73,6 +78,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
+  @Test
   public void testIntervalComplement4() {
     IExpr iExprResult = F.eval(
         F.IntervalComplement(F.IntervalData(F.List(F.ZZ(0), F.LessEqual, F.LessEqual, F.ZZ(5))),
@@ -84,6 +90,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
+  @Test
   public void testIntervalComplement5() {
     IExpr iExprResult = F.eval(
         F.IntervalComplement(F.IntervalData(F.List(F.CNInfinity, F.Less, F.Less, F.CInfinity)),
@@ -93,6 +100,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
+  @Test
   public void testIntervalComplement6() {
     IExpr iExprResult = F.eval(
         F.IntervalComplement(F.IntervalData(F.List(F.ZZ(1), F.LessEqual, F.LessEqual, F.ZZ(3))),
@@ -102,6 +110,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
+  @Test
   public void testIntervalComplement7() {
     IExpr iExprResult =
         F.eval(F.IntervalComplement(F.IntervalData(F.List(F.ZZ(1), F.Less, F.LessEqual, F.ZZ(3))),
@@ -111,6 +120,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
+  @Test
   public void testIntervalComplement8() {
     IExpr iExprResult =
         F.eval(F.IntervalComplement(F.IntervalData(F.List(F.ZZ(1), F.Less, F.LessEqual, F.ZZ(3))),
@@ -119,6 +129,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
+  @Test
   public void testIntervalComplement9() {
     IExpr iExprResult = F.eval(
         F.IntervalComplement(F.IntervalData(F.List(F.ZZ(0), F.LessEqual, F.LessEqual, F.ZZ(2))),
@@ -130,6 +141,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
+  @Test
   public void testIntervalComplement10() {
     IExpr iExprResult = F.eval(
         F.IntervalComplement(F.IntervalData(F.List(F.CNInfinity, F.Less, F.Less, F.CInfinity)),
@@ -140,6 +152,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
+  @Test
   public void testIntervalComplement11() {
     IExpr iExprResult = F.eval(
         F.IntervalComplement(F.IntervalData(F.List(F.CNInfinity, F.Less, F.Less, F.CInfinity)),
@@ -150,6 +163,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
+  @Test
   public void testIntervalComplement12() {
     IExpr iExprResult = F.eval(
         F.IntervalComplement(F.IntervalData(F.List(F.CNInfinity, F.Less, F.Less, F.CInfinity)),
@@ -160,6 +174,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
+  @Test
   public void testIntervalComplement13() {
     IExpr iExprResult = F.eval(
         F.IntervalComplement(F.IntervalData(F.List(F.CNInfinity, F.Less, F.Less, F.CInfinity)),
@@ -170,6 +185,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
+  @Test
   public void testIntervalComplement14() {
     IExpr interval2 =
         F.eval(F.IntervalUnion(F.IntervalData(F.List(F.ZZ(0), F.LessEqual, F.LessEqual, F.ZZ(1))),
@@ -185,6 +201,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
   public void testIntervalDataComplement() {
     check("IntervalComplement(IntervalData({-Infinity, LessEqual, LessEqual, Infinity})," //
         + "IntervalData({-Infinity, Less, Less, Infinity}))", //
@@ -232,11 +249,13 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
 
 
 
+  @Test
   public void testIntervalDataNonsense() {
     check("IntervalData(True,2+I,7*Sqrt(2))", //
         "IntervalData(True,2+I,7*Sqrt(2))");
   }
 
+  @Test
   public void testIntervalData() {
     check("Infinity > Infinity", //
         "False");
@@ -271,6 +290,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
         "IntervalData({-1/2,LessEqual,LessEqual,1/2},{2,Less,LessEqual,7/2})");
   }
 
+  @Test
   public void testIntervalMemberQ() {
     check("IntervalMemberQ(IntervalData({2,Less,Less, 5}), Pi)", //
         "True");
@@ -280,6 +300,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testPlus() {
     check(
         "IntervalData({-1/2, LessEqual, LessEqual, 1/2})+IntervalData( {2, LessEqual, LessEqual, 3 + 1/2})", //
@@ -293,6 +314,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
         "IntervalData({3/2,Less,Less,4})");
   }
 
+  @Test
   public void testTimes() {
     check("IntervalData({1,Less,Less, 6}) * IntervalData({0, Less,Less,2})", //
         "IntervalData({0,Less,Less,12})");
@@ -309,6 +331,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
   public void testIssue684_1() {
     EvalEngine engine = EvalEngine.get();
     IExpr iExprResult = engine
@@ -319,6 +342,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertTrue(engine.evaluate(F.Equal(iExprResult, iExprExpected)).isTrue());
   }
 
+  @Test
   public void testIssue684_2() {
     EvalEngine engine = EvalEngine.get();
     IExpr union = engine.evaluate(
@@ -335,6 +359,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
         .isTrue());
   }
 
+  @Test
   public void testIssue684_3() {
     EvalEngine engine = EvalEngine.get();
     IExpr union = engine.evaluate(
@@ -345,6 +370,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertTrue(iExprResult.isEmpty());
   }
 
+  @Test
   public void testIssue684_4() {
     EvalEngine engine = EvalEngine.get();
     IExpr iExprResult = engine
@@ -353,6 +379,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertTrue(iExprResult.isEmpty());
   }
 
+  @Test
   public void testIssue684_5() {
     EvalEngine engine = EvalEngine.get();
     IExpr union = engine.evaluate(
@@ -377,6 +404,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
   // assertTrue(EvalEngine.get().evaluate(F.Equal(iExprResult, iExprExpected)).isTrue());
   // }
 
+  @Test
   public void testIssue684_7() {
     EvalEngine engine = EvalEngine.get();
     IExpr iExprResult = engine.evaluate(
@@ -388,6 +416,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertTrue(EvalEngine.get().evaluate(F.Equal(iExprResult, iExprExpected)).isTrue());
   }
 
+  @Test
   public void testIssue684_8() {
     EvalEngine engine = EvalEngine.get();
     IExpr iExprResult = engine.evaluate(
@@ -398,6 +427,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertTrue(EvalEngine.get().evaluate(F.Equal(iExprResult, iExprExpected)).isTrue());
   }
 
+  @Test
   public void testIntervalDataIntersection() {
     check("IntervalIntersection(IntervalData({1, LessEqual, LessEqual, 2})," //
         + "IntervalData({0,LessEqual,LessEqual,1},{2,LessEqual,LessEqual,3}))", //
@@ -423,6 +453,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testIntervalUnionIssue684() {
     IExpr iExprResult =
         F.eval(F.IntervalUnion(F.IntervalData(F.List(F.ZZ(3), F.Less, F.Less, F.ZZ(4))),
@@ -440,6 +471,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     assertEquals(iExprResult.toString(), iExprExpected.toString());
   }
 
+  @Test
   public void testIntervalDataUnion() {
     check("IntervalUnion(IntervalData({1, Less, Less, 1})," //
         + "IntervalData({2, LessEqual, LessEqual, 3}))", //

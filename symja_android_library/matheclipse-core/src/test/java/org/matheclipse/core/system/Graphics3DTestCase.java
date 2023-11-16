@@ -1,14 +1,14 @@
 package org.matheclipse.core.system;
 
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.jupiter.api.Disabled;
 
 /** View with: http://www.rapidtables.com/web/tools/svg-viewer-editor.htm */
 public class Graphics3DTestCase extends ExprEvaluatorTestCase {
-  public Graphics3DTestCase(String name) {
-    super(name);
-  }
 
-  @Disabled
+  @Ignore
+  @Test
   public void testPoint001() {
     // checkSVGGraphics(
     // "Show(Graphics3D(Point({3,2,0})))",
@@ -113,7 +113,8 @@ public class Graphics3DTestCase extends ExprEvaluatorTestCase {
     // 0.0, &quot;ymin&quot;: 0.0}}\" />");
   }
 
-  @Disabled
+  @Ignore
+  @Test
   public void testPolygon001() {
     //
     // checkSVGGraphics(

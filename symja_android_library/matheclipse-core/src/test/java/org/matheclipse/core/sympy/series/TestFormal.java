@@ -5,11 +5,9 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
-public class TestFormal extends ExprEvaluatorTestCase {
+import static org.junit.Assert.assertEquals;
 
-  public TestFormal(String name) {
-    super(name);
-  }
+public class TestFormal extends ExprEvaluatorTestCase {
 
   @Test
   public void test_fps() {

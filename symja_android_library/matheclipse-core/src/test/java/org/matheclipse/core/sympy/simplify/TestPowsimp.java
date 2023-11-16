@@ -6,11 +6,9 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
-public class TestPowsimp extends ExprEvaluatorTestCase {
+import static org.junit.Assert.assertEquals;
 
-  public TestPowsimp(String name) {
-    super(name);
-  }
+public class TestPowsimp extends ExprEvaluatorTestCase {
 
   @Test
   public void test_powsimp() {

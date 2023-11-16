@@ -1,11 +1,10 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
+
 public class ProductTest extends ExprEvaluatorTestCase {
 
-  public ProductTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testProduct001() {
     // Config.MAX_BIT_LENGTH = Integer.MAX_VALUE;
     // check("AbsoluteTiming(Product(i,{i,1,10^6});)", //
@@ -34,6 +33,7 @@ public class ProductTest extends ExprEvaluatorTestCase {
         "f(a)*f(1+a)");
   }
 
+  @Test
   public void testProduct002() {
     check("Product(k^p, {k,1,k-1})", //
         "((-1+k)!)^p");
@@ -43,6 +43,7 @@ public class ProductTest extends ExprEvaluatorTestCase {
         "(n!)^3");
   }
 
+  @Test
   public void testProduct003() {
     check("Product(0, {k, a, Infinity})", //
         "0");
@@ -55,6 +56,7 @@ public class ProductTest extends ExprEvaluatorTestCase {
         "2^(1-a+n)");
   }
 
+  @Test
   public void testProduct004() {
     // {k,1,n} assumes 1<=k<=n
     check("Product(k^3, {k, 1, n})", //
@@ -81,6 +83,7 @@ public class ProductTest extends ExprEvaluatorTestCase {
         "1440");
   }
 
+  @Test
   public void testProduct005() {
 
     check("Product(k, {k, 1, 10})", //
@@ -104,6 +107,7 @@ public class ProductTest extends ExprEvaluatorTestCase {
         "7420738134810");
   }
 
+  @Test
   public void testProduct006() {
     check("Product(i^2 - i + 10 ,{i,1,10})", //
         "1426481971200000");
@@ -147,6 +151,7 @@ public class ProductTest extends ExprEvaluatorTestCase {
         "4^(1+n0)");
   }
 
+  @Test
   public void testProduct007() {
     check("Product(c, {i, 1, n}, {j, 1, n})", //
         "(c^n)^n");
@@ -159,6 +164,7 @@ public class ProductTest extends ExprEvaluatorTestCase {
     // check("Product(2^(j + i0), {i0, 1, p}, {j, 1, i0})", "");
   }
 
+  @Test
   public void testProduct008() {
     check("Product(x,{x,10})", //
         "3628800");
@@ -181,11 +187,13 @@ public class ProductTest extends ExprEvaluatorTestCase {
         "1");
   }
 
+  @Test
   public void testProduct009() {
     check("Product(x,{x,0,-1,2})", //
         "1");
   }
 
+  @Test
   public void testProduct010() {
     check("Product(x,{a,10,z})", //
         "x^(-9+z)");
@@ -193,11 +201,13 @@ public class ProductTest extends ExprEvaluatorTestCase {
         "x^(1-b+c)");
   }
 
+  @Test
   public void testProduct011() {
     check("Product(i^(x),{i,1,n})", //
         "(n!)^x");
   }
 
+  @Test
   public void testProduct012() {
     // https://docs.sympy.org/latest/modules/simplify/fu.html#sympy.simplify.fu.TRmorrie
     check("Product(Cos(x*2^i), {i, 0, 3})", //

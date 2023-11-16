@@ -1,15 +1,13 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 
 /** Tests for graphics functions */
 public class GraphFunctionsTest extends ExprEvaluatorTestCase {
 
-  public GraphFunctionsTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testAdjacencyMatrix() {
     // order 1, 2, 3, 4
     check("AdjacencyMatrix(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2})) // Normal", //
@@ -34,12 +32,14 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
             + " {0,0,1},\n" + " {1,0,0}}");
   }
 
+  @Test
   public void testClosenessCentrality() {
 
     check("ClosenessCentrality[Graph[{1, 2, 3, 4, 5},{1<->2,1<->3,2<->3,3<->4,3<->5}]]", //
         "{0.666667,0.666667,1.0,0.571429,0.571429}");
   }
 
+  @Test
   public void testBetweennessCentrality() {
     check(
         "BetweennessCentrality( Graph({agent1, agent2, agent3, agent4, agent5}, \n"
@@ -61,6 +61,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "{12.0,2.0,0.0,8.0,3.0,4.0}");
   }
 
+  @Test
   public void testCompleteGraph() {
     check("CompleteGraph({7,3}) // AdjacencyMatrix // Normal", //
         "{{0,0,0,0,0,0,0,1,1,1},\n" //
@@ -81,6 +82,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
             + " {1,1,1,0}}");
   }
 
+  @Test
   public void testConnectedGraphQ() {
     check("ConnectedGraphQ(Graph({1,2,3,4},{1->2, 2->3, 3->4, 2->4}))", //
         "True");
@@ -90,12 +92,14 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testCycleGraph() {
     check("CycleGraph(4) // AdjacencyMatrix // Normal", //
         "{{0,1,0,1},\n" //
             + " {1,0,1,0},\n" + " {0,1,0,1},\n" + " {1,0,1,0}}");
   }
 
+  @Test
   public void testEdgeList() {
     check("EdgeList(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}))", //
         "{1->2,2->3,1->3,4->2}");
@@ -106,6 +110,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "{1->2,2->3,3->1}");
   }
 
+  @Test
   public void testEdgeRules() {
     check("EdgeRules(Graph({1 <-> 2, 2 <-> 3, 1 <-> 3, 4 <-> 2}))", //
         "{1->2,2->3,1->3,4->2}");
@@ -116,6 +121,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "{1->2,2->3,3->1}");
   }
 
+  @Test
   public void testEigenvectorCentrality() {
     // TODO {0.16238, 0.136013, 0.276307, 0.23144, 0.193859}
     // check("EigenvectorCentrality(Graph({a -> b, b -> c, c -> d, d -> e, e -> c, e -> a}))", //
@@ -123,6 +129,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testEdgeQ() {
     check("EdgeQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}),2 -> 3)", //
         "True");
@@ -130,6 +137,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testEulerianGraphQ() {
     check("EulerianGraphQ({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 })", //
         "False");
@@ -139,6 +147,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testCycle() {
     check(
         "FindCycle({2 -> 1, 1 -> 4, 3 -> 2, 2 -> 5, 6 -> 3, 5 -> 4, 4 -> 7, 6 -> 5, 8 -> 5, 6 -> 9, 7 -> 8, 7 -> 10, 9 -> 8, 11 -> 8, 12 -> 9, 10 -> 11, 12 -> 11}, {6,6}, All)", //
@@ -158,6 +167,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "{{2<->4,1<->4,1<->2}}");
   }
 
+  @Test
   public void testFindEulerianCycle() {
     check("FindEulerianCycle(Graph({1 -> 2, 2 -> 3, 3 -> 4, 4 -> 1}))", //
         "{4->1,1->2,2->3,3->4}");
@@ -167,6 +177,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "{}");
   }
 
+  @Test
   public void testFindGraphIsomorphism() {
     check(
         "FindGraphIsomorphism(Graph({1,2,3,4},{1<->2,1<->4,2<->3,3<->4}), Graph({1,2,3,4},{1<->3,1<->4,2<->3,2<->4}))", //
@@ -180,6 +191,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "{<|a->2,b->3,c->1,d->4|>}");
   }
 
+  @Test
   public void testFindHamiltonianCycle() {
     check("FindHamiltonianCycle( {1 -> 2, 2 -> 3, 3 -> 4, 4 -> 1} )", //
         "{1->2,2->3,3->4,4->1}");
@@ -189,6 +201,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "{}");
   }
 
+  @Test
   public void testFindIndependentVertexSet() {
     // TODO
     check(
@@ -196,6 +209,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "FindIndependentVertexSet(Graph({1,2,3,4,5,6,7},{1<->2,1<->3,2<->4,4<->5,5<->3,4<->6,5<->6,4<->7,5<->7}))");
   }
 
+  @Test
   public void testFindVertexCover() {
     // example from wikipedia: https://en.wikipedia.org/wiki/Vertex_cover
     check("FindVertexCover({1<->2,1<->3,2<->3,3<->4,3<->5,3<->6})", //
@@ -218,6 +232,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "FindVertexCover({2->1,1->3,3->6,6->1,4->6,1->5,5->4})");
   }
 
+  @Test
   public void testFindShortestPath() {
     check(
         "FindShortestPath(Graph({1 -> 2, 2 -> 4, 1 -> 3,  3 -> 2, 3 -> 4},{EdgeWeight->{3.0,1.0,1.0,1.0,3.0}}),1,4)", //
@@ -227,6 +242,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "{1,2,3,4}");
   }
 
+  @Test
   public void testFindShortestTour() {
     check("FindShortestTour({{1,2},{2,3},{3,1}})", //
         "{Sqrt(2)+2*Sqrt(5),{1,3,2,1}}");
@@ -240,6 +256,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "{14+5*Sqrt(2),{1,6,9,13,16,17,18,19,14,10,7,11,15,12,8,5,4,3,2,1}}");
   }
 
+  @Test
   public void testFindSpanningTree() {
     // example from Wikipedia https://en.wikipedia.org/wiki/Minimum_spanning_tree
 
@@ -258,6 +275,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "Graph({1,2,3,4,6,5,7,8},{1->2,1->3,1->4,2->6,5->3,5->7,5->8})");
   }
 
+  @Test
   public void testHamiltonianGraphQ() {
     check("HamiltonianGraphQ(Graph({1,2,3},{1<->2,2<->3,3<->1}))", //
         "True");
@@ -270,6 +288,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testHypercubeGraph() {
     check("HypercubeGraph(4) // AdjacencyMatrix // Normal", //
         "{{0,1,1,0,1,0,0,0,1,0,0,0,0,0,0,0},\n" //
@@ -283,11 +302,13 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
             + " {0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,0}}");
   }
 
+  @Test
   public void testIndexGraph() {
     check("IndexGraph({1 -> 3, 2 -> 1, 3 -> 6, 4 -> 6, 1 -> 5, 5 -> 4,  6 -> 1}, 10)", //
         "Graph({10,11,12,13,14,15},{10->11,12->10,11->13,14->13,10->15,15->14,13->10})");
   }
 
+  @Test
   public void testIsomorphicGraphQ() {
     check(
         "IsomorphicGraphQ(Graph({1,2,3,4},{1<->2,1<->4,2<->3,3<->4}), Graph({1,2,3,4},{1<->3,1<->4,2<->3,2<->4}))", //
@@ -301,6 +322,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testGraphFullForm() {
     check(
         "Graph({1, 2, 3}, {UndirectedEdge(1, 2), UndirectedEdge(2, 3), UndirectedEdge(3, 1)}, {EdgeWeight -> {5, 4, 3}})", //
@@ -312,6 +334,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}})");
   }
 
+  @Test
   public void testGraph() {
 
     check("Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1})", //
@@ -331,6 +354,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "Graph({1,2,3,4,5,6,7,8},{1<->2,1<->3,1<->4,3<->4,2<->6,3<->6,5<->3,5<->4,5<->6,5<->7,5<->8,6<->7,7<->8,4<->8})");
   }
 
+  @Test
   public void testGraphData() {
     check("GraphData()", //
         "{{PappusGraph}}");
@@ -341,6 +365,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
             + "14})");
   }
 
+  @Test
   public void testGraphCenter() {
     check(
         "GraphCenter(Graph({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)}, "
@@ -362,6 +387,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "{1,3}");
   }
 
+  @Test
   public void testGraphDiameter() {
     check(
         "GraphDiameter(Graph({DirectedEdge(1, 2), DirectedEdge(2, 3), DirectedEdge(3, 1),  DirectedEdge(3, 4), DirectedEdge(4, 5), DirectedEdge(5, 3)}))", //
@@ -377,12 +403,14 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "2");
   }
 
+  @Test
   public void testGraphComplement() {
     check("GraphComplement({1 -> 2, 1 -> 6, 2 -> 3, 3 -> 4, 4 -> 5, 5 -> 6})", //
         "Graph({1,2,6,3,4,5},{1->3,1->4,1->5,2->1,2->6,2->4,2->5,6->1,6->2,6->3,6->4,6->5,3->1,3->2,3->6,3->5,4->1,4->2,4->6,4->3,\n"
             + "5->1,5->2,5->3,5->4})");
   }
 
+  @Test
   public void testGraphDifference() {
     check(
         "GraphDifference({1 -> 2, 2 -> 3, 3 -> 1, 4 -> 3, 2 -> 4}, {1 -> 2, 3 -> 2, 4 -> 3, 4 -> 1, 5->2})", //
@@ -401,6 +429,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
   public void testGraphDisjointUnion() {
     check(
         "GraphDisjointUnion(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}), Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 ->  2, 4 -> 1, 6->2}))", //
@@ -408,6 +437,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testGraphIntersection() {
     check(
         "GraphIntersection({1 -> 2, 2 -> 3, 3 -> 1, 4 -> 3, 2 -> 4}, {1 -> 2, 2 -> 3, 4 -> 3, 4 -> 1})", //
@@ -426,6 +456,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testGraphRadius() {
     check(
         "GraphRadius(Graph({DirectedEdge(1, 2), DirectedEdge(2, 3), DirectedEdge(3, 1),  DirectedEdge(3, 4), DirectedEdge(4, 5), DirectedEdge(5, 3)}))", //
@@ -441,6 +472,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "1");
   }
 
+  @Test
   public void testGraphUnion() {
     check(
         "GraphUnion(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}), Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 ->  2, 4 -> 1, 6->2}))", //
@@ -448,6 +480,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testGraphPeriphery() {
     check(
         "GraphPeriphery(Graph({DirectedEdge(1, 2), DirectedEdge(2, 3), DirectedEdge(3, 1),  DirectedEdge(3, 4), DirectedEdge(4, 5), DirectedEdge(5, 3)}))", //
@@ -467,6 +500,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "{1,2,4,5}");
   }
 
+  @Test
   public void testGraphQ() {
     check("GraphQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}) )", //
         "True");
@@ -476,6 +510,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testPathGraphQ() {
     // TODO multi-graph should return false
     // check("PathGraphQ(Graph({1,2,3},{1->2, 2->3, 2->3}))", //
@@ -488,16 +523,19 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testPathGraph() {
     check("PathGraph(Range(10))", //
         "Graph({1,2,3,4,5,6,7,8,9,10},{1<->2,2<->3,3<->4,4<->5,5<->6,6<->7,7<->8,8<->9,9<->10})");
   }
 
+  @Test
   public void testPetersenGraph() {
     check("PetersenGraph()", //
         "Graph({1,2,3,4,5,6,7,8,9,10},{1<->3,1<->2,2<->6,3<->5,3<->4,4<->8,5<->7,5<->6,6<->10,7<->9,7<->8,8<->2,9<->1,9<->10,10<->4})");
   }
 
+  @Test
   public void testPlanarGraphQ() {
     check("PlanarGraphQ(CycleGraph(4))", //
         "True");
@@ -517,6 +555,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testLineGraph() {
     // todo
     // check(
@@ -561,6 +600,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testRandomGraph() {
     // random result:
     // check("RandomGraph({5,10})", //
@@ -591,6 +631,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
     // + " {1,0,0,0,1,0,0}}}");
   }
 
+  @Test
   public void testStarGraph() {
     check("StarGraph(4) // AdjacencyMatrix // Normal", //
         "{{0,1,1,1},\n" //
@@ -603,6 +644,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
             + " {1,0,0,0},\n" + " {1,0,0,0},\n" + " {1,0,0,0}}");
   }
 
+  @Test
   public void testWeightedAdjacencyMatrix() {
 
     check(
@@ -627,6 +669,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
             + " {0,0,2.282},\n" + " {5.086,0,0}}");
   }
 
+  @Test
   public void testWeightedGraphQ() {
     check("WeightedGraphQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}) )", //
         "False");
@@ -636,6 +679,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testWheelGraph() {
     check("WheelGraph(4) // AdjacencyMatrix // Normal", //
         "{{0,1,1,1},\n" //
@@ -644,7 +688,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
 
   /** The JUnit setup method */
   @Override
-  protected void setUp() {
+  public void setUp() {
     super.setUp();
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.MAX_AST_SIZE = 1000000;
@@ -652,7 +696,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   @Override
-  protected void tearDown() throws Exception {
+  public void tearDown() throws Exception {
     super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
   }

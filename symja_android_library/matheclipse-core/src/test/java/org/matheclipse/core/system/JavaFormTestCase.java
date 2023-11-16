@@ -1,9 +1,12 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
 import static org.matheclipse.core.expression.F.CI;
 import static org.matheclipse.core.expression.F.CInfinity;
 import static org.matheclipse.core.expression.F.Sinc;
 import static org.matheclipse.core.expression.F.Times;
+
+import org.junit.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.EvalUtilities;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
@@ -16,10 +19,8 @@ import org.matheclipse.parser.client.ParserConfig;
 
 /** */
 public class JavaFormTestCase extends ExprEvaluatorTestCase {
-  public JavaFormTestCase(String name) {
-    super(name);
-  }
 
+  @Test
   public void testJavaForm001() {
     // don't distinguish between lower- and uppercase identifiers
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
@@ -40,6 +41,7 @@ public class JavaFormTestCase extends ExprEvaluatorTestCase {
       SourceCodeProperties.of(true, false, SourceCodeProperties.Prefix.FULLY_QUALIFIED_CLASS_NAME,
           false);
 
+  @Test
   public void testJavaForm002() {
     // don't distinguish between lower- and uppercase identifiers
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
@@ -56,6 +58,7 @@ public class JavaFormTestCase extends ExprEvaluatorTestCase {
         result.internalJavaString(SYMBOL_FACTORY_PROPERTIES, -1, x -> null).toString());
   }
 
+  @Test
   public void testJavaForm002_fullyQualifiedName() {
     // don't distinguish between lower- and uppercase identifiers
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
@@ -78,12 +81,14 @@ public class JavaFormTestCase extends ExprEvaluatorTestCase {
       SourceCodeProperties.of(false, false, SourceCodeProperties.Prefix.FULLY_QUALIFIED_CLASS_NAME,
           false);
 
+  @Test
   public void testJavaFormQuantity_unitKG() {
     IExpr quantity = IQuantity.of(F.ZZ(43L), IUnit.ofPutIfAbsent("kg"));
     assertEquals("IQuantity.of(F.ZZ(43L),IUnit.ofPutIfAbsent(\"kg\"))",
         quantity.internalJavaString(NO_SYMBOL_FACTORY_PROPERTIES, -1, null).toString());
   }
 
+  @Test
   public void testJavaFormQuantity_unitKGAndFullyQualifiedName() {
     IExpr quantity =
         org.matheclipse.core.tensor.qty.IQuantity.of(org.matheclipse.core.expression.F.ZZ(43L),
@@ -93,12 +98,14 @@ public class JavaFormTestCase extends ExprEvaluatorTestCase {
         quantity.internalJavaString(NO_SYMBOL_FACTORY_PROPERTIES_FULL_NAMES, -1, null).toString());
   }
 
+  @Test
   public void testJavaFormQuantity_unitOne() {
     IExpr quantity = IQuantity.of(F.ZZ(43L), IUnit.ONE);
     assertEquals("IQuantity.of(F.ZZ(43L),IUnit.ONE)",
         quantity.internalJavaString(NO_SYMBOL_FACTORY_PROPERTIES, -1, null).toString());
   }
 
+  @Test
   public void testJavaFormQuantity_unitOneAndFullyQualifiedName() {
     IExpr quantity = org.matheclipse.core.tensor.qty.IQuantity
         .of(org.matheclipse.core.expression.F.ZZ(43L), org.matheclipse.core.tensor.qty.IUnit.ONE);
@@ -107,6 +114,7 @@ public class JavaFormTestCase extends ExprEvaluatorTestCase {
         quantity.internalJavaString(NO_SYMBOL_FACTORY_PROPERTIES_FULL_NAMES, -1, null).toString());
   }
 
+  @Test
   public void testJavaFormBigFraction_tooLargeForLong() {
     IExpr quantity =
         F.QQ(F.ZZ("43000000000000000000000000000000000000000000000000000000", 10), F.ZZ(3));

@@ -1,11 +1,10 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
+
 public class SumTest extends ExprEvaluatorTestCase {
 
-  public SumTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testSum001() {
 
     check("Sum(k^2,k)", //
@@ -45,6 +44,7 @@ public class SumTest extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testSum002() {
     check("Sum((-1)^i*x^(2*i+1)/(2*i+1)!, {i,0,Infinity})", //
         "Sin(x)");
@@ -64,6 +64,7 @@ public class SumTest extends ExprEvaluatorTestCase {
         "E^x");
   }
 
+  @Test
   public void testSum003() {
     check("Sum(1/Binomial(2*i,i), {i,1,Infinity})", //
         "1/27*(9+2*Sqrt(3)*Pi)");
@@ -78,6 +79,7 @@ public class SumTest extends ExprEvaluatorTestCase {
         "0^a+HarmonicNumber(n,-a)");
   }
 
+  @Test
   public void testSum004() {
     check("Sum(10007,2147483647)", //
         "Hold(Sum(10007,2147483647))");
@@ -121,6 +123,7 @@ public class SumTest extends ExprEvaluatorTestCase {
         "f(a)+f(1+a)");
   }
 
+  @Test
   public void testSum005() {
     check("Sum(Boole(x>0), {x,{1,2,3,-2,4,5}})", //
         "5");
@@ -162,6 +165,7 @@ public class SumTest extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testSum006() {
     check("Table(f(k,j), {k,0,-1+3},{j,0,-1+k})", "{{},{f(1,0)},{f(2,0),f(2,1)}}");
     check("Sum(f(k,j),{k,0,-1+2}, {j,0,-1+k})", //
@@ -210,6 +214,7 @@ public class SumTest extends ExprEvaluatorTestCase {
             + "4*(1+y+y^2+y^3+y^4)");
   }
 
+  @Test
   public void testSum007() {
     check("Sum(2^(-i), {i, 1, Infinity})", //
         "1");
@@ -288,6 +293,7 @@ public class SumTest extends ExprEvaluatorTestCase {
         "HarmonicNumber(n,3)");
   }
 
+  @Test
   public void testSum008() {
     check("Sum(Ceiling(Log(i)),{i,1,n})", //
         "(-E^Floor(Log(n))+n)*Ceiling(Log(n))+(1+E^(1+Floor(Log(n)))*Floor(Log(n))-E^Floor(Log(n))*(\n"
@@ -313,6 +319,7 @@ public class SumTest extends ExprEvaluatorTestCase {
         "f(a,1)+f(a,2)+f(b,1)+f(b,2)");
   }
 
+  @Test
   public void testSum009() {
     check("Sum(4*i^2, {i, 0, n})", //
         "4*(n/6+n^2/2+n^3/3)");
@@ -388,6 +395,7 @@ public class SumTest extends ExprEvaluatorTestCase {
         "1/4*n*(1+n)+1/2*(n/6+n^2/2+n^3/3)");
   }
 
+  @Test
   public void testSum010() {
     check("Sum(k^3,{k,a,b})", //
         "1/4*(-a^2+2*a^3-a^4)+1/4*((1+b)^2-2*(1+b)^3+(1+b)^4)");
@@ -399,6 +407,7 @@ public class SumTest extends ExprEvaluatorTestCase {
         "-a^4/4");
   }
 
+  @Test
   public void testSum011() {
     check("Sum(x,{x,10})", //
         "55");

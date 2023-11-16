@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
 import static org.matheclipse.core.expression.F.ArcCos;
 import static org.matheclipse.core.expression.F.ArcSin;
 import static org.matheclipse.core.expression.F.ArcTan;
@@ -16,6 +17,8 @@ import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.eval;
 import static org.matheclipse.core.expression.S.x;
+
+import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -28,10 +31,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * integrator</a>.
  */
 public class CompareToTestCase extends ExprEvaluatorTestCase {
-  public CompareToTestCase(String name) {
-    super(name);
-  }
 
+  @Test
   public void testCT001() {
     IExpr ast1, ast2;
     // x*ArcSin(x)
@@ -45,6 +46,7 @@ public class CompareToTestCase extends ExprEvaluatorTestCase {
     assertEquals(1, res);
   }
 
+  @Test
   public void testCT002() {
     IExpr ast1, ast2;
     // x*ArcCos(x)
@@ -58,6 +60,7 @@ public class CompareToTestCase extends ExprEvaluatorTestCase {
     assertEquals(1, res);
   }
 
+  @Test
   public void testCT003() {
     IExpr ast1, ast2;
     // 2*ArcTan(x*(-2*x-x^2)^(-1/2))
@@ -71,6 +74,7 @@ public class CompareToTestCase extends ExprEvaluatorTestCase {
     assertEquals(1, res);
   }
 
+  // @Test
   // public void testCT004() {
   // IExpr ast1, ast2;
   //
@@ -86,6 +90,7 @@ public class CompareToTestCase extends ExprEvaluatorTestCase {
   // assertEquals(1, res);
   // }
 
+  @Test
   public void testOut001() {
     IExpr x1, x2;
     // -Infinity
@@ -102,6 +107,7 @@ public class CompareToTestCase extends ExprEvaluatorTestCase {
         "-Infinity+a+b");
   }
 
+  @Test
   public void testOut002() {
     IExpr ast1, ast2;
     // -Infinity
@@ -118,6 +124,7 @@ public class CompareToTestCase extends ExprEvaluatorTestCase {
         "-Infinity+a+b");
   }
 
+  @Test
   public void testCT004() {
     IASTAppendable ast1, ast2;
     ast1 = F.ast(F.f);
@@ -130,6 +137,7 @@ public class CompareToTestCase extends ExprEvaluatorTestCase {
     assertEquals(-1, res);
   }
 
+  @Test
   public void testIssue122a() {
     ISymbol b = F.$s("b");
     ISymbol c = F.$s("c");
@@ -154,6 +162,7 @@ public class CompareToTestCase extends ExprEvaluatorTestCase {
         "-Infinity+a+b");
   }
 
+  @Test
   public void testIssue122b() {
     // x5_c <||> x3*x4_c => -1
     ISymbol b = F.$s("b");
@@ -178,6 +187,7 @@ public class CompareToTestCase extends ExprEvaluatorTestCase {
         "-Infinity+a+b");
   }
 
+  @Test
   public void testIssue122c() {
     ISymbol b = F.$s("b");
     ISymbol c = F.$s("c");

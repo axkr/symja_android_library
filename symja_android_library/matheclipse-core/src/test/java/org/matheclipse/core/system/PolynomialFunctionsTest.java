@@ -2,14 +2,16 @@ package org.matheclipse.core.system;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+
+import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import com.google.common.math.DoubleMath;
 
-public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
-  public PolynomialFunctionsTest(String name) {
-    super(name);
-  }
+import static org.junit.Assert.assertTrue;
 
+public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
+
+  @Test
   public void testChebyshevT() {
     check("ChebyshevT(-1/2, z)", //
         "Cos(ArcCos(z)/2)");
@@ -32,6 +34,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
         "-1+50*x^2-400*x^4+1120*x^6-1280*x^8+512*x^10");
   }
 
+  @Test
   public void testChebyshevU() {
     check("ChebyshevU(4, -42)", //
         "49765969");
@@ -59,6 +62,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
         "-1+60*x^2-560*x^4+1792*x^6-2304*x^8+1024*x^10");
   }
 
+  @Test
   public void testGegenbauerC() {
     checkNumeric("GegenbauerC(2/7, 5 - I, 2) //N", //
         "2.5811662779831+I*(-0.15456328352770263)");
@@ -143,6 +147,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
         "-a+2*a*(1+a)*z^2");
   }
 
+  @Test
   public void testHermiteH() {
     checkNumeric("HermiteH({-1,2.987,0,1},-1009)", //
         "{HermiteH(-1,-1009),Indeterminate,1,-2018}");
@@ -171,6 +176,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
         "-30240+302400*x^2-403200*x^4+161280*x^6-23040*x^8+1024*x^10");
   }
 
+  @Test
   public void testJacobiP() {
 
     // JacobiP[] == (-1)^n JacobiP[n, b, a, z]
@@ -192,6 +198,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testLaguerreL() {
     // test for java.util.TimSort: IllegalArgumentException - Comparison method violates its general
     // contract!
@@ -279,6 +286,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
         "LaguerreL(-3,z)");
   }
 
+  @Test
   public void testLegendreP() {
     // TODO support negative values
     // check(
@@ -311,6 +319,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
         "-63/256+3465/256*x^2-15015/128*x^4+45045/128*x^6-109395/256*x^8+46189/256*x^10");
   }
 
+  @Test
   public void testLegendreQ() {
     // TODO control number of error message output
     // check("LegendreQ(1009,z)", //
@@ -336,6 +345,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
             + "15/8*z^2*Log(1+z)+35/16*z^4*Log(1+z)");
   }
 
+  @Test
   public void testSphericalHarmonicY() {
     check("SphericalHarmonicY(3,1,t,p)", //
         "(2*Sqrt(7/3)*E^(I*p)*(3/16*Sqrt(Pi)*Cos(t)-15/16*Sqrt(Pi)*Cos(t)^3)*Sec(t)*Sqrt(Sin(t)^\n"

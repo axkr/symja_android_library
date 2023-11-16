@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
@@ -9,10 +10,7 @@ import org.matheclipse.parser.client.ParserConfig;
 
 public class JavaLinkTestCase extends ExprEvaluatorTestCase {
 
-  public JavaLinkTestCase(String name) {
-    super(name);
-  }
-
+  @Test
   public void testJavaNew001() {
 
     check("loc= JavaNew[\"java.util.Locale\",\"US\"];" //
@@ -23,6 +21,7 @@ public class JavaLinkTestCase extends ExprEvaluatorTestCase {
         ".81");
   }
 
+  @Test
   public void testInstanceOf001() {
     check("InstanceOf[-0.8, \"\"]", //
         "False");
@@ -42,6 +41,7 @@ public class JavaLinkTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testLoadJavaClass001() {
 
     check("clazz= LoadJavaClass[\"java.lang.Math\"]", //
@@ -51,6 +51,7 @@ public class JavaLinkTestCase extends ExprEvaluatorTestCase {
   }
 
   // will only work if JSoup is on classpath
+  // @Test
   // public void testLoadJavaClass002() {
   // check("clazz= LoadJavaClass[\"org.jsoup.Jsoup\"]", //
   // "JavaClass[org.jsoup.Jsoup]");
@@ -62,6 +63,7 @@ public class JavaLinkTestCase extends ExprEvaluatorTestCase {
   // "Null");
   // }
 
+  @Test
   public void testJavaObjectQ001() {
 
     check("loc = JavaNew[\"java.util.Locale\",\"US\"]", //
@@ -70,6 +72,7 @@ public class JavaLinkTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testSameObject001() {
 
     check("loc1= JavaNew[\"java.util.Locale\",\"US\"]", //
@@ -82,6 +85,7 @@ public class JavaLinkTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testJavaShow001() {
     // check(
     // "frame= JavaNew[ \"javax.swing.JFrame\", \"Simple JFrame Demo\"];", //
@@ -93,7 +97,7 @@ public class JavaLinkTestCase extends ExprEvaluatorTestCase {
 
   /** The JUnit setup method */
   @Override
-  protected void setUp() {
+  public void setUp() {
     super.setUp();
     try {
       ToggleFeature.COMPILE = true;
@@ -123,7 +127,7 @@ public class JavaLinkTestCase extends ExprEvaluatorTestCase {
   }
 
   @Override
-  protected void tearDown() throws Exception {
+  public void tearDown() throws Exception {
     super.tearDown();
   }
 }

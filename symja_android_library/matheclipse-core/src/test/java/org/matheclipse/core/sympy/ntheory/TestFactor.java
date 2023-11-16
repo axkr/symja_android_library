@@ -5,11 +5,9 @@ import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
-public class TestFactor extends ExprEvaluatorTestCase {
+import static org.junit.Assert.assertEquals;
 
-  public TestFactor(String name) {
-    super(name);
-  }
+public class TestFactor extends ExprEvaluatorTestCase {
 
   @Test
   public void testTrailingBitcount() {

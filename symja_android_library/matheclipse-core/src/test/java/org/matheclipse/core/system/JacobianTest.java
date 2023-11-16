@@ -1,16 +1,16 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.generic.MultivariateJacobianGradient;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.parser.ExprParser;
 
+import static org.junit.Assert.assertEquals;
+
 public class JacobianTest extends ExprEvaluatorTestCase {
-  public JacobianTest(String name) {
-    super(name);
-  }
 
-
+  @Test
   public void testJacobianMatrix() {
     EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);
     ExprParser parser = new ExprParser(engine, true);

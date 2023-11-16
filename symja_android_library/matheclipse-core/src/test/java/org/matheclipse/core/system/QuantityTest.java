@@ -1,15 +1,16 @@
 package org.matheclipse.core.system;
 
-public class QuantityTest extends ExprEvaluatorTestCase {
-  public QuantityTest(String name) {
-    super(name);
-  }
+import org.junit.Test;
 
+public class QuantityTest extends ExprEvaluatorTestCase {
+
+  @Test
   public void testQuantityList() {
     check("Quantity(Sqrt(Range(3)), \"Meters\")", //
         "{1[Meters],Sqrt(2)[Meters],Sqrt(3)[Meters]}");
   }
 
+  @Test
   public void testQuantity() {
     check("Quantity(\"StandardAccelerationOfGravity\")", //
         "1[StandardAccelerationOfGravity]");
@@ -125,6 +126,7 @@ public class QuantityTest extends ExprEvaluatorTestCase {
         "3[Meters]");
   }
 
+  @Test
   public void testQuantityQ() {
     check("QuantityQ(Quantity(2, x))", //
         "False");
@@ -134,6 +136,7 @@ public class QuantityTest extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testQuantityMagnitude() {
     check("QuantityMagnitude(Quantity(2000000000000/8896443230521, \"lbf\"), \"N\")", //
         "1");
@@ -149,6 +152,7 @@ public class QuantityTest extends ExprEvaluatorTestCase {
         "3400.0");
   }
 
+  @Test
   public void testQuantityUnit() {
     check("QuantityUnit(Quantity(3.4, \"Meters\"))", //
         "Meters");

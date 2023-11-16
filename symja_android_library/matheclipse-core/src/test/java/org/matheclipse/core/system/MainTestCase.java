@@ -1,6 +1,8 @@
 package org.matheclipse.core.system;
 
 import java.io.StringWriter;
+
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.eval.EvalEngine;
@@ -10,11 +12,12 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.ParserConfig;
 
+import static org.junit.Assert.assertEquals;
+
 /** Tests system.reflection classes */
 public class MainTestCase extends ExprEvaluatorTestCase {
 
-  public MainTestCase(String name) {
-    super(name);
+  public MainTestCase() {
     Config.SERVER_MODE = true;
   }
 
@@ -48,6 +51,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
   }
 
   /** Test system functions */
+  @Test
   public void testSystem000() {
     // assertEquals(PrimeList.getMersennePrime(4).toString(), "15");
     // assertEquals(PrimeList.getMersennePrime(128).toString(), "15");
@@ -159,6 +163,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "Aש썐😂");
   }
 
+  @Test
   public void testOut() {
     check("1+1", //
         "2");
@@ -166,6 +171,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "2");
   }
 
+  @Test
   public void testBeep() {
     // String s = System.getProperty("os.name");
     // if (s.contains("Windows")) {
@@ -175,6 +181,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     // }
   }
 
+  @Test
   public void testQuit() {
     check("1^(-1)", //
         "1");
@@ -202,7 +209,8 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "5*(2+test)");
   }
 
-  public void testPower() {
+  @Test
+      public void testPower() {
     check("(2/3)^(-2)", //
         "9/4");
 
@@ -270,6 +278,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
             + "I*15549832333971936/3552713678800500929355621337890625");
   }
 
+  @Test
   public void testSystem000a() {
     check("Rationalize(0.33333)", //
         "1/3");
@@ -285,7 +294,8 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "42");
   }
 
-  public void testSystem000b() {
+  @Test
+public void testSystem000b() {
     check("-0.1*(-10. + 1.*i)", //
         "-0.1*(-10.0+i)");
     check("Factor(1.0-0.1*i)", //
@@ -338,6 +348,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "(-I*1/16)/E^(I*4*x)+(I*1/8)/E^(I*2*x)");
   }
 
+  @Test
   public void testSystem000c() {
     String s = System.getProperty("os.name");
     if (s.contains("Windows")) {
@@ -476,6 +487,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testSystem001() {
     check("Sin(0.5)", "0.479426");
     check("Cot(0.5)", "1.83049");
@@ -487,6 +499,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("N(Sec(I))", "0.648054");
   }
 
+  @Test
   public void testSystem002() {
     check("Sin(x-218*Pi)", "Sin(x)");
 
@@ -569,6 +582,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Tan(x-3*Pi)", "Tan(x)");
   }
 
+  @Test
   public void testSystem003() {
     // TODO use ExprParser#getReal() if apfloat problems are fixed
     // check("1.6969545188681513E4", "1.6969545188681513e4");
@@ -594,6 +608,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testSystem004() {
     check("1.0-(1.0-1*(2))", "2.0");
     check("1-(1-1*(2))", "2");
@@ -621,10 +636,12 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testSystem005() {
     check("1/3+1/4", "7/12");
   }
 
+  @Test
   public void testSystem006() {
     // test comments
     check("(* atest *)", //
@@ -635,7 +652,8 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "3");
   }
 
-  public void testSystem007() {
+  @Test
+      public void testSystem007() {
     check("2/3*3/4", //
         "1/2");
     check("-12528^(1/2)", //
@@ -667,65 +685,78 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "4/9*(-5)^(2/3)");
   }
 
+  @Test
   public void testSystem008() {
     check("I^(-1)", //
         "-I");
   }
 
+  @Test
   public void testSystem009() {
     check("1/2-I", //
         "1/2-I");
   }
 
+  @Test
   public void testSystem010() {
     check("1/2+I*(-1/3)", //
         "1/2-I*1/3");
   }
 
+  @Test
   public void testSystem011() {
     check("0.5-I", //
         "0.5+I*(-1.0)");
   }
 
+  @Test
   public void testSystem012() {
     check("$a=2;$a+=b", //
         "2+b");
   }
 
-  public void testSystem013() {
+  @Test
+public void testSystem013() {
     check("$a=2;$a-=b", //
         "2-b");
   }
 
+  @Test
   public void testSystem014() {
     check("$a=2;$a*=b", //
         "2*b");
   }
 
+  @Test
   public void testSystem015() {
     check("$a=2;$a/=b", //
         "2/b");
   }
 
+  @Test
   public void testSystem016() {
     check("Depth(13)", //
         "1");
   }
 
+  @Test
   public void testSystem017() {
     check("Depth({})", //
         "2");
   }
 
+  @Test
   public void testSystem018() {
     check("Depth(f(x))", "2");
   }
 
+  @Test
   public void testSystem019() {
     check("Depth(f(x,g(y)))", //
         "3");
   }
 
+  @Test
   public void testSystem020() {
     check("LeafCount(s(x, y))", //
         "3");
@@ -734,66 +765,81 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("LeafCount(x*(x-1))", "5");
   }
 
+  @Test
   public void testSystem021() {
     check("LeafCount(s(a)[x, y])", "4");
   }
 
+  @Test
   public void testSystem022() {
     check("LeafCount(a)", "1");
   }
 
+  @Test
   public void testSystem023() {
     check("LeafCount({})", "1");
   }
 
+  @Test
   public void testSystem024() {
     check("Map(f,a)", "a");
     check("f/@a", "a");
   }
 
+  @Test
   public void testSystem025() {
     check("Map(f, s(g(u,v), y),{-3,-2})", "f(s(f(g(u,v)),y))");
   }
 
+  @Test
   public void testSystem026() {
     check("Map(f, s(g(u,v), y),{-2,-1})", "s(f(g(f(u),f(v))),f(y))");
   }
 
+  @Test
   public void testSystem027() {
     check("Map(f, s(g(u,v), y),{-2})", "s(f(g(u,v)),y)");
   }
 
+  @Test
   public void testSystem028() {
     check("Map(f, s(x, y))", "s(f(x),f(y))");
     check("f/@s(x, y)", "s(f(x),f(y))");
   }
 
+  @Test
   public void testSystem029() {
     check("Map((#+2)&, s(x, y))", "s(2+x,2+y)");
     check("(#+2)&/@s(x, y)", "s(2+x,2+y)");
   }
 
+  @Test
   public void testSystem030() {
     check("Map(f, s(g(u,v), y))", "s(f(g(u,v)),f(y))");
     check("f/@ s(g(u,v), y)", "s(f(g(u,v)),f(y))");
   }
 
+  @Test
   public void testSystem031() {
     check("Map(f, s(g(u,v), y),{2})", "s(g(f(u),f(v)),y)");
   }
 
+  @Test
   public void testSystem032() {
     check("Map((#+2)&, s(g(u,v), y),{2})", "s(g(2+u,2+v),y)");
   }
 
+  @Test
   public void testSystem033() {
     check("Map(f, s(g(u(x(1)),v), y),{2,-1})", "s(g(f(u(f(x(f(1))))),f(v)),y)");
   }
 
+  @Test
   public void testSystem034() {
     check("Map(f, s(g(u,v), y),{2,-1})", "s(g(f(u),f(v)),y)");
   }
 
+  @Test
   public void testSystem035() {
     check("MapAll(f, s(x, y))", "f(s(f(x),f(y)))");
     check("f//@s(x, y)", "f(s(f(x),f(y)))");
@@ -801,6 +847,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("f//@a", "f(a)");
   }
 
+  @Test
   public void testSystem036() {
     check("Thread(f({x,y,z},{u,v,w}))", "{f(x,u),f(y,v),f(z,w)}");
     check("Thread({x,y,z}=={u,v,w})", "{x==u,y==v,z==w}");
@@ -809,11 +856,13 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     // check("MapThread(f, {{{x,y,z},{u,v,w}}}, 2)", "");
   }
 
+  @Test
   public void testSystem037() {
     check("Trace(a)", "{}");
   }
 
-  public void testSystem038() {
+  @Test
+ public void testSystem038() {
     // bitbucket issue#15
     check("Together(-(2*x-6)^(-1)-2*(-x+2)*(2*x-6)^(-2))", //
         "-1/(-18+12*x-2*x^2)");
@@ -854,6 +903,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
             + "1*Cos(x),{Cot(x)^1,Cot(x)},Cos(x)*Cot(x)},Cos(x)*Cot(x)-Log(Sin(x))*Sin(x)},(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)}");
   }
 
+  @Test
   public void testSystem039() {
     check("a+a", //
         "2*a");
@@ -861,6 +911,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     // test numericMode:
   }
 
+  @Test
   public void testSystem040() {
     checkNumeric("(-15.0)^.5", //
         "2.3715183290419594E-16+I*3.872983346207417");
@@ -877,19 +928,23 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     // test automatic numericMode (triggered by double value "0.5"):
   }
 
+  @Test
   public void testSystem041() {
     checkNumeric("Sin(0.5)", "0.479425538604203");
   }
 
+  @Test
   public void testSystem042() {
     check("Sin(Pi)", "0");
   }
 
+  @Test
   public void testSystem043() {
     check("Sin(ArcSin(a))", "a");
   }
 
-  public void testSystem044() {
+  @Test
+ public void testSystem044() {
 
     check("$test(F_(a_)):={a,b,F,m,x};$test(g(h))", "{h,b,g,m,x}");
     check("clear($test);$test(F_(a_.*x_^m_.)):={a,b,F,m,x};$test(g(h*y^2))", "{h,b,g,2,y}");
@@ -904,51 +959,63 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("a(b(x_),_)", "a(b(x_),_)");
   }
 
+  @Test
   public void testSystem045() {
     check("MemberQ({g(x), f(a)}, f(x_))", "True");
   }
 
+  @Test
   public void testSystem046() {
     check("MemberQ({g(x, c), f(a, b)}, f(x_, b))", "True");
   }
 
+  @Test
   public void testSystem047() {
     check("MemberQ({g(x), f(a, b)}, f(x_))", "False");
   }
 
+  @Test
   public void testSystem048() {
     check("MemberQ({g(x, c), f(a, b, c)}, f(x_, b))", "False");
   }
 
+  @Test
   public void testSystem049() {
     check("FreeQ({g(x), f(a)}, f(x_))", "False");
     check("FreeQ({g(x), f(a)}, h(x_))", "True");
   }
 
+  @Test
   public void testSystem050() {
     check("FreeQ({g(x,3), f(a)}, 3)", "False");
   }
 
+  @Test
   public void testSystem051() {
     check("FreeQ(3, 2)", "True");
   }
 
+  @Test
   public void testSystem052() {
     check("FreeQ({g(x,3), f(a)}, 2)", "True");
   }
 
+  @Test
   public void testSystem053() {
     check("FreeQ({g(x), f(a)}, f(_Integer))", "True");
   }
 
+  @Test
   public void testSystem054() {
     check("NumberQ(1/3)", "True");
   }
 
+  @Test
   public void testSystem055() {
     check("NumberQ(2.5)", "True");
   }
 
+  @Test
   public void testSystem056() {
     check("PrimeQ(997)", "True");
     check("NextPrime(41)", "43");
@@ -960,7 +1027,8 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("CoprimeQ(6,35,49)", "False");
   }
 
-  public void testSystem057() {
+  @Test
+public void testSystem057() {
     check("$var=10", "10");
     check("$var", "10");
     check("$var+$var", "20");
@@ -968,6 +1036,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("$function(2)", "42");
   }
 
+  @Test
   public void testSystem058() {
     check("$g(x__):={x};$h(x_Integer,y__):={x,y}", "");
     check("$g(test)", "{test}");
@@ -978,6 +1047,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
   }
 
   // two rules are associated with condf
+  @Test
   public void testSystem059() {
     check("$condf(x_,y_):={x,y}/;NumberQ(x);$condf(x_,z_):={z,x}/;NumberQ(z)", "");
     check("$condf(c,7)", "{7,c}");
@@ -987,6 +1057,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "{{b,a},{b,42},{7,c}}");
   }
 
+  @Test
   public void testSystem060() {
     check("$pf(y_):={y}", "");
     check("$pf(test)", "{test}");
@@ -996,7 +1067,8 @@ public class MainTestCase extends ExprEvaluatorTestCase {
   }
 
   // test attribute ISymbol.FLAT
-  public void testSystem061() {
+  @Test
+    public void testSystem061() {
     check("SetAttributes($f, Flat)", "");
     check("$f(a,b,$f(x,y,$f(u,v)),z)", "$f(a,b,x,y,u,v,z)");
     check("$f(x_,y_):={x,y}", "");
@@ -1004,7 +1076,8 @@ public class MainTestCase extends ExprEvaluatorTestCase {
   }
 
   // test attribute ISymbol.ORDERLESS
-  public void testSystem062() {
+  @Test
+    public void testSystem062() {
     check("$i(a_+(b_.*x_^n_)^p_) := {a,b,n,p,x}", "");
     check("SetAttributes($o, Orderless)", "");
     check("$o(z,d,a,b,g)", "$o(a,b,d,g,z)");
@@ -1016,12 +1089,14 @@ public class MainTestCase extends ExprEvaluatorTestCase {
   }
 
   // test attribute ISymbol.ONEIDENTITY
+  @Test
   public void testSystem063() {
     check("SetAttributes($oi, OneIdentity)", "");
     check("$oi($oi(test))", "$oi($oi(test))");
   }
 
-  public void testSystem064() {
+  @Test
+    public void testSystem064() {
     check("SetAttributes($ooi, {Orderless, OneIdentity})", "");
     check("$ooi(z,d,a,b,g)", "$ooi(a,b,d,g,z)");
     check("$ooi(9,12,3,33)", "$ooi(3,9,12,33)");
@@ -1030,7 +1105,8 @@ public class MainTestCase extends ExprEvaluatorTestCase {
   }
 
   // test attribute ISymbol.ORDERLESS && ISymbol.FLAT
-  public void testSystem065() {
+  @Test
+    public void testSystem065() {
     check("SetAttributes($of, {Orderless,Flat})", "");
     check("$of(z,d,a,b,g)", "$of(a,b,d,g,z)");
     check("$of(9,12,3,33)", "$of(3,9,12,33)");
@@ -1042,6 +1118,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
 
   // test attribute ISymbol.ORDERLESS && ISymbol.FLAT &&
   // ISymbol.ONEIDENTITY
+  @Test
   public void testSystem066() {
     check("SetAttributes($ofoi, {Orderless,Flat,OneIdentity})", "");
     check("$ofoi(z,d,a,$ofoi(b),g)", "$ofoi(a,b,d,g,z)");
@@ -1051,6 +1128,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("$ofoi(a,10,b,c)", "{10,{a,{b,c}}}");
   }
 
+  @Test
   public void testSystem067() {
     check("$int(Sin(x_)/Sqrt(x_),x_Symbol):={x}", "");
     check("$int(Sin(a)/Sqrt(a),a)", "{a}");
@@ -1058,53 +1136,64 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("$int(x^(-1/2)*Sin(x),x)", "{x}");
   }
 
+  @Test
   public void testSystem068() {
     // test attribute ISymbol.LISTABLE
     check("Sin({a,b,c})", "{Sin(a),Sin(b),Sin(c)}");
     check("NumberQ({a,b,c})", "False");
   }
 
-  public void testSystem069() {
+  @Test
+    public void testSystem069() {
     check("SetAttributes($l, Listable)", "");
     check("$l({a,b,c},d)", "{$l(a,d),$l(b,d),$l(c,d)}");
   }
 
+  @Test
   public void testSystem070() {
     check("Degree", "Pi/180");
     check("GoldenRatio+GoldenRatio", "2*GoldenRatio");
   }
 
-  public void testSystem071() {
+  @Test
+    public void testSystem071() {
     checkNumeric("N(EulerGamma)", "0.5772156649015329");
     check("D(Sinh(x),x)", "Cosh(x)");
   }
 
-  public void testSystem072() {
+  @Test
+    public void testSystem072() {
     check("$isatom(_?AtomQ) := True;$isatom(10)", "True");
   }
 
-  public void testSystem073() {
+  @Test
+    public void testSystem073() {
     check("D(Log(Sin(x)),x)", "Cot(x)");
   }
 
+  @Test
   public void testSystem074() {
     check("D(f(a)^2+g(x)^3,x)", "3*g(x)^2*g'(x)");
   }
 
+  @Test
   public void testSystem075() {
     check("D(f(x)^2+g(x)^3,x)", "2*f(x)*f'(x)+3*g(x)^2*g'(x)");
   }
 
+  @Test
   public void testSystem076() {
     check("D(2*x^2 + 1,x) ", //
         "4*x");
   }
 
+  @Test
   public void testSystem077() {
     check("D(Sin(x)*Cos(x),x)", //
         "Cos(x)^2-Sin(x)^2");
   }
 
+  @Test
   public void testSystem078() {
     check("D(Sin(x)^Cos(x),x)", //
         "(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)");
@@ -1129,7 +1218,8 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "{{{0,0},{0,-Sin(y)}},{{-Sin(x),0},{0,-Cos(y)}}}");
   }
 
-  public void testSystem102() {
+  @Test
+      public void testSystem102() {
     check(
         "LinearSolve({ { 1/10, 6/5, 1/9 },{ 1, 59/45, 1/10 },{6/5, 1/10, 1/9 } },{ 1/10, 6/5, 1/9 })",
         "{99109/101673,10898/11297,-9034/869}");
@@ -1138,11 +1228,13 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "{1/10,6/5,1/9}");
   }
 
+  @Test
   public void testSystem108() {
     check("10!", //
         "3628800");
   }
 
+  @Test
   public void testSystem109() {
     check("10!!", //
         "3840");
@@ -1158,6 +1250,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "-135135");
   }
 
+  @Test
   public void testSystem110() {
     check("(n!)*x(3)", //
         "n!*x(3)");
@@ -1182,6 +1275,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "1");
   }
 
+  @Test
   public void testSystem111() {
     // no simplification
     // check("ArcCos(I)", "Pi/2+I*Log(-1+Sqrt(2))");
@@ -1193,6 +1287,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "-1");
   }
 
+  @Test
   public void testSystem112() {
     check("Table(x!,{x,10})", "{1,2,6,24,120,720,5040,40320,362880,3628800}");
     check("Table(x,{x,10.0})", "{1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0}");
@@ -1200,22 +1295,28 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "{1.0,2.0,6.0,24.0,120.0,720.0,5040.0,40320.0,362880.0,3.6288*10^6}");
   }
 
+  @Test
   public void testSystem113() {}
 
+  @Test
   public void testSystem114() {}
 
+  @Test
   public void testSystem115() {
     check("\"test1 \"<>\"test2 \"<>\"test3 \"", "test1 test2 test3 ");
   }
 
+  @Test
   public void testSystem116() {
     check("b**(a**c)", "b**a**c");
   }
 
+  @Test
   public void testSystem117() {
     check("b**13**14**d", "b**13**14**d");
   }
 
+  @Test
   public void testSystem118() {
     check("a==a==a", "True");
     check("3*x==6", "x==2");
@@ -1224,6 +1325,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("-3+x==6", "x==9");
   }
 
+  @Test
   public void testSystem119() {
     check("a!=b!=a", "a!=b!=a");
     check("3*x!=6", "x!=2");
@@ -1232,34 +1334,42 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("-3+x!=6", "x!=9");
   }
 
+  @Test
   public void testSystem120() {
     check("a===a===a", "True");
   }
 
+  @Test
   public void testSystem121() {
     check("a=!=b=!=c=!=d", "True");
   }
 
+  @Test
   public void testSystem122() {
     check("a=!=b=!=c=!=a", "False");
   }
 
-  public void testSystem123() {
+  @Test
+ public void testSystem123() {
     check("I!=2/3!=42", "True");
   }
 
+  @Test
   public void testSystem124() {
     check("42!=2/3!=42", "False");
   }
 
+  @Test
   public void testSystem125() {
     check("SameQ(42)", "True");
   }
 
-  public void testSystem126() {
+  @Test
+ public void testSystem126() {
     check("42.01===42.0", "False");
   }
 
+  @Test
   public void testSystem127() {
     check("23/29>Infinity", "False");
 
@@ -1295,18 +1405,22 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Sin(Pi/100)>Sin(Pi/101)", "True");
   }
 
+  @Test
   public void testSystem128() {
     check("5>4>a>3", "4>a>3");
   }
 
+  @Test
   public void testSystem129() {
     check("5>4>a>3>2>c", "4>a>3>2>c");
   }
 
+  @Test
   public void testSystem130() {
     check("5>4>a>3>2>1>z>w", "4>a>3>1>z>w");
   }
 
+  @Test
   public void testSystem131() {
     check("5>=5", "True");
     check("3*x>=6", "x>=2");
@@ -1315,18 +1429,22 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("-3+x>=6", "x>=9");
   }
 
+  @Test
   public void testSystem132() {
     check("5>=4>=a>=3", "4>=a>=3");
   }
 
+  @Test
   public void testSystem133() {
     check("5>=4>=a>=3>=2>=c", "4>=a>=3>=2>=c");
   }
 
+  @Test
   public void testSystem134() {
     check("5>=4>=a>=3>=2>=1>=z>=w", "4>=a>=3>=1>=z>=w");
   }
 
+  @Test
   public void testSystem135() {
     check("3<4<a<5<6", "4<a<5");
     check("-1<1/2<1", "True");
@@ -1336,6 +1454,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("-3+x<6", "x<9");
   }
 
+  @Test
   public void testSystem136() {
     check("0<1<=1", "True");
     check("4<=4<=a<=5<=6", "4<=a<=5");
@@ -1352,7 +1471,8 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("-3+x<=6", "x<=9");
   }
 
-  public void testSystem137() {
+  @Test
+    public void testSystem137() {
     check("Fibonacci(10)", //
         "55");
     check("StirlingS2(6,3)", //
@@ -1367,14 +1487,17 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "750");
   }
 
+  @Test
   public void testSystem138() {
     check("Append(z(a,b,c),d)", "z(a,b,c,d)");
   }
 
+  @Test
   public void testSystem139() {
     check("Prepend(z(a,b,c),d)", "z(d,a,b,c)");
   }
 
+  @Test
   public void testSystem140() {
     check("First(z(1,2,3))", "1");
     check("Last(z(1,2,3))", "3");
@@ -1382,79 +1505,98 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Most(z(1,2,3))", "z(1,2)");
   }
 
+  @Test
   public void testSystem141() {
     check("10==10", "True");
   }
 
+  @Test
   public void testSystem142() {
     check("10==1/2", "False");
   }
 
+  @Test
   public void testSystem143() {
     check("I==1/3", "False");
   }
 
+  @Test
   public void testSystem144() {
     check("I!=1/3", "True");
   }
 
+  @Test
   public void testSystem145() {
     check("qr==10", "qr==10");
   }
 
+  @Test
   public void testSystem146() {
     check("I", "I");
   }
 
+  @Test
   public void testSystem147() {
     check("I*I", "-1");
   }
 
+  @Test
   public void testSystem148() {
     check("1+I", "1+I");
   }
 
+  @Test
   public void testSystem149() {
     check("1/3+(1/4)*I", "1/3+I*1/4");
   }
 
+  @Test
   public void testSystem150() {
     check("3*a+4*a", "7*a");
   }
 
+  @Test
   public void testSystem151() {
     check("4*a+a", "5*a");
   }
 
+  @Test
   public void testSystem152() {
     check("(2*a*b)^(1/3)", //
         "2^(1/3)*(a*b)^(1/3)");
   }
 
+  @Test
   public void testSystem153() {
     check("a^1/3*b*a^3", "1/3*a^4*b");
   }
 
+  @Test
   public void testSystem154() {
     check("a^(1/3)*b*a^3", "a^(10/3)*b");
   }
 
+  @Test
   public void testSystem155() {
     check("a^2*b*a^3", "a^5*b");
   }
 
+  @Test
   public void testSystem156() {
     check("Sqrt(-42)", "I*Sqrt(42)");
   }
 
+  @Test
   public void testSystem157() {
     check("Sqrt(x)", "Sqrt(x)");
   }
 
+  @Test
   public void testSystem158() {
     check("a*(-1/3)+b*(-1/3)", "-a/3-b/3");
   }
 
+  @Test
   public void testSystem159() {
     check("Binomial(10,3)", "120");
     check("Binomial(2,4)", "0");
@@ -1462,23 +1604,28 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Binomial(100!,100!)", "1");
   }
 
+  @Test
   public void testSystem160() {
     check("CatalanNumber(-4)", "0");
   }
 
+  @Test
   public void testSystem161() {
     check("CatalanNumber(0)", "1");
   }
 
+  @Test
   public void testSystem162() {
     check("CatalanNumber(1)", "1");
   }
 
+  @Test
   public void testSystem163() {
     check("CatalanNumber(4)", "14");
     check("CatalanNumber(10)", "16796");
   }
 
+  @Test
   public void testSystem164() {
     check("HarmonicNumber(0)", "0");
     check("HarmonicNumber(1)", "1");
@@ -1487,6 +1634,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("HarmonicNumber(20)", "55835135/15519504");
   }
 
+  @Test
   public void testSystem165() {
     // check("Expand(1 / ((x-1)(1+x)) )", "(x^2-1)^(-1)");
     check("Expand(1/((x-1)*(1+x)))", "1/(-1+x^2)");
@@ -1497,11 +1645,13 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Expand((x+3)/((x+4)*(x+2)))", "3/((2+x)*(4+x))+x/((2+x)*(4+x))");
   }
 
+  @Test
   public void testSystem166() {
     check("Expand((a+b)^2)", "a^2+2*a*b+b^2");
     check("Expand((a+b+c+d)^2)", "a^2+2*a*b+b^2+2*a*c+2*b*c+c^2+2*a*d+2*b*d+2*c*d+d^2");
   }
 
+  @Test
   public void testSystem167() {
     check("Expand(c^2+16*b^2)", "16*b^2+c^2");
     check("Expand((a+b+c)^2)", "a^2+2*a*b+b^2+2*a*c+2*b*c+c^2");
@@ -1521,17 +1671,20 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Expand(x*(x+1))", "x+x^2");
   }
 
-  public void testSystem168() {
+  @Test
+    public void testSystem168() {
     check("Exponent(2,x)", "0");
     check("Coefficient(2,x,1)", "0");
     check("Exponent(Cos(a+b*x)^2+Cos(a+b*x)^ex,Cos(a+b*x))", "Max(2,ex)");
     check("Exponent(Cos(a+b*x)^2+Cos(a+b*x)^(-1/2),Cos(a+b*x))", "2");
   }
 
+  @Test
   public void testSystem170() {
     check("Cross({1, 2, 3}, {a, b, c})", "{-3*b+2*c,3*a-c,-2*a+b}");
   }
 
+  @Test
   public void testSystem171() {
     check("N(Integrate(Sin(x),x))", "-Cos(x)");
     check("N(Sin(x))", "Sin(x)");
@@ -1540,6 +1693,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Integrate((a+b*x)^(1/3),x)", "3/4*(a+b*x)^(4/3)/b");
   }
 
+  @Test
   public void testSystem171a() {
     check("Integrate(1/(x^5+x-7),x)", //
         "Integrate(1/(-7+x+x^5),x)");
@@ -1606,6 +1760,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "7/(1+x)+8*Log(1+x)");
   }
 
+  @Test
   public void testSystem171b() {
     // check("D(2*E^x-Gamma(3,-x),x)", //
     // "2*E^x-E^x*x^2");
@@ -1686,11 +1841,13 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "-0.0208333333333333");
   }
 
+  // @Test
   // public void testSystem171c() {
   // check("Integrate(ArcCoth(x^16)^2,x)", //
   // "1");
   // }
 
+  @Test
   public void testSystem172() {
     check("Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))", //
         "Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))");
@@ -1713,90 +1870,110 @@ public class MainTestCase extends ExprEvaluatorTestCase {
             + "16*(a+b))");
   }
 
+  @Test
   public void testSystem173() {
     check("N(1.0)", "1.0");
   }
 
+  @Test
   public void testSystem174() {
     check("N(42)", "42.0");
   }
 
+  @Test
   public void testSystem175() {
     check("N(I)", "I*1.0");
   }
 
+  @Test
   public void testSystem176() {
     check("True && a", "a");
     check("b && False && a", "False");
     check("a && !a", "False");
   }
 
+  @Test
   public void testSystem177() {
     check("False || a", "a");
     check("b || True || a", "True");
     check("a || !a", "True");
   }
 
-  public void testSystem178() {
+  @Test
+    public void testSystem178() {
     check("!False", "True");
   }
 
+  @Test
   public void testSystem179() {
     check("!True", "False");
   }
 
+  @Test
   public void testSystem180() {
     check("Pi==E", "False");
   }
 
-  public void testSystem181() {
+  @Test
+public void testSystem181() {
     check("Pi!=E", "True");
   }
 
-  public void testSystem182() {
+  @Test
+public void testSystem182() {
     check("I==I", "True");
   }
 
+  @Test
   public void testSystem183() {
     check("(#^3)&", "#1^3&");
   }
 
+  @Test
   public void testSystem184() {
     check("(#^3)&()", "#1^3");
   }
 
-  public void testSystem185() {
+  @Test
+ public void testSystem185() {
     check("Function(x,(x^3))[]", //
         "Function(x,x^3)[]");
   }
 
+  @Test
   public void testSystem186() {
     check("Function(x,(x^3))[x,y]", "x^3");
     check("Hold(f(#1, y)& [x])", "Hold(f(#1,y)&[x])");
   }
 
+  @Test
   public void testSystem187() {
     check("(#^3)&(x)", "x^3");
   }
 
+  @Test
   public void testSystem188() {
     check("$i = 10; $i=$i-1", "9");
   }
 
+  @Test
   public void testSystem189() {
     check("$i = 10; If($i>0, 1, -1)", "1");
   }
 
+  @Test
   public void testSystem190() {
     check("$i = 10; $result = 1; While($i >= 0, $result = $result + $i; $i=$i-1); $result", "56");
   }
 
+  @Test
   public void testSystem191() {
     check(
         "$i = 10; $result = 1; While($i >= 0, $result = $result + $i; If($result>20, Break()); $i=$i-1); $result",
         "28");
   }
 
+  @Test
   public void testSystem192() {
     check("Block({ShowSteps=False,StepCounter=Null}, test)", "test");
     check("$blck=Block({$i=0}, $i=$i+1; Return($i))", "1");
@@ -1804,7 +1981,8 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("$y=$x^3;Module({$x=42},$x+$y)", "42+$x^3");
   }
 
-  public void testSystem194() {
+  @Test
+    public void testSystem194() {
     check("(n!)^x", //
         "(n!)^x");
     check("(n++)^(n!)", //
@@ -1813,72 +1991,86 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "(n++)^(n!)^a");
   }
 
+  @Test
   public void testSystem195() {
     check("ComposeList({x, y, z}, a)", //
         "{a,x(a),y(x(a)),z(y(x(a)))}");
   }
 
+  @Test
   public void testSystem196() {
     check("Fold(fl, 0, {1, 2, 3})", //
         "fl(fl(fl(0,1),2),3)");
   }
 
-  public void testSystem197() {
+  @Test
+public void testSystem197() {
     check("FoldList(fl, 0, {1, 2, 3})", //
         "{0,fl(0,1),fl(fl(0,1),2),fl(fl(fl(0,1),2),3)}");
   }
 
+  @Test
   public void testSystem198() {
     check("Nest(n0,10,0)", //
         "10");
   }
 
+  @Test
   public void testSystem199() {
     check("Nest(n0,10,4)", //
         "n0(n0(n0(n0(10))))");
   }
 
+  @Test
   public void testSystem200() {
     check("NestList(n0,10,0)", //
         "{10}");
   }
 
+  @Test
   public void testSystem201() {
     check("NestList(n0,10,4)", //
         "{10,n0(10),n0(n0(10)),n0(n0(n0(10))),n0(n0(n0(n0(10))))}");
   }
 
+  @Test
   public void testSystem202() {
     check("Outer(List, {a, b, c, d}, {{{1, 2}}})", //
         "{{{{{a,1},{a,2}}}},{{{{b,1},{b,2}}}},{{{{c,1},{c,2}}}},{{{{d,1},{d,2}}}}}");
   }
 
+  @Test
   public void testSystem203() {
     check("Outer(List, {1, 2, 3}, {4, 5})", //
         "{{{1,4},{1,5}},{{2,4},{2,5}},{{3,4},{3,5}}}");
   }
 
+  @Test
   public void testSystem204() {
     check("Outer(Times, {a, b, c}, {{{1, 2}, {3, 4}}})", //
         "{{{{a,2*a},{3*a,4*a}}},{{{b,2*b},{3*b,4*b}}},{{{c,2*c},{3*c,4*c}}}}");
   }
 
+  @Test
   public void testSystem205() {
     check("Array(hd,3)", //
         "{hd(1),hd(2),hd(3)}");
   }
 
+  @Test
   public void testSystem206() {
     check("Array(hd,4,2,g)", //
         "g(hd(2),hd(3),hd(4),hd(5))");
   }
 
+  @Test
   public void testSystem207() {
     check("Array(hd,{3,4})", //
         "{{hd(1,1),hd(1,2),hd(1,3),hd(1,4)},{hd(2,1),hd(2,2),hd(2,3),hd(2,4)},{hd(3,1),hd(\n"
             + "3,2),hd(3,3),hd(3,4)}}");
   }
 
+  @Test
   public void testSystem208() {
     check("Table(i0,{i0,3})", //
         "{1,2,3}");
@@ -1890,47 +2082,56 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "{}");
   }
 
-  public void testSystem209() {
+  @Test
+    public void testSystem209() {
     check("Table(i0*j,{i0,3},{j,2})", //
         "{{1,2},{2,4},{3,6}}");
   }
 
+  @Test
   public void testSystem210() {
     check("Table(i0*j,{i0,3,10,2},{j,2})", //
         "{{3,6},{5,10},{7,14},{9,18}}");
   }
 
+  @Test
   public void testSystem211() {
     check("Range(5)", //
         "{1,2,3,4,5}");
   }
 
+  @Test
   public void testSystem211a() {
     check("$g(x_Integer):=x+1; Range/@ $g /@Range(3)", //
         "{{1,2},{1,2,3},{1,2,3,4}}");
   }
 
+  @Test
   public void testSystem212() {
     check("Range(3,10,2)", //
         "{3,5,7,9}");
   }
 
+  @Test
   public void testSystem213() {
     check("Range(3,10,1/2)", //
         "{3,7/2,4,9/2,5,11/2,6,13/2,7,15/2,8,17/2,9,19/2,10}");
   }
 
+  @Test
   public void testSystem214() {
     check("Range(1,2,0.25)", //
         "{1.0,1.25,1.5,1.75,2.0}");
   }
 
+  @Test
   public void testSystem215() {
     check("Extract({u+v+w^5, 42, w^10, 12, u+w^3, w^2}, {3, 2})", //
         "10");
   }
 
-  public void testSystem216() {
+  @Test
+      public void testSystem216() {
     check(
         "Extract({ArcCsc,ArcSec,ArcCot,ArcTan}, Position({ArcSin,ArcCos,ArcTan,ArcCot},ArcCos))[[1]]", //
         "ArcSec");
@@ -1953,130 +2154,160 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "f(a)[x]");
   }
 
+  @Test
   public void testSystem217() {
     check("Position({42}, 42)", //
         "{{1}}");
   }
 
-  public void testSystem218() {
+  @Test
+ public void testSystem218() {
     check("Position({u+v+w^5, 42, w^10}, w^_)", //
         "{{1,3},{3}}");
   }
 
-  public void testSystem219() {
+  @Test
+    public void testSystem219() {
     check("Position({u+v+w^5, 42, w^10}, w^_, {1})", //
         "{{3}}");
   }
 
+  @Test
   public void testSystem220() {
     check("Position({u+v+w^5, 42, w^10, 12, u+w^3, w^2}, w^_, {1,2})", //
         "{{1,3},{3},{5,2},{6}}");
   }
 
+  @Test
   public void testSystem221() {
     check("Take({1,2,3,4,5,6,7,8,9,10},3)", //
         "{1,2,3}");
   }
 
+  @Test
   public void testSystem222() {
     check("Take({1,2,3,4,5,6,7,8,9,10},-3)", //
         "{8,9,10}");
   }
 
+  @Test
   public void testSystem223() {
     check("Take({1,2,3,4,5,6,7,8,9,10},{2,7,3})", //
         "{2,5}");
   }
 
+  @Test
   public void testSystem224() {
     check("Take({1,2,3,4,5,6,7,8,9,10},{2})", "{2}");
   }
 
+  @Test
   public void testSystem225() {
     check("Take({1,2,3,4,5,6,7,8,9,10},{2,2})", "{2}");
   }
 
+  @Test
   public void testSystem226() {
     check("Take({1,2,3,4,5,6,7,8,9,10},{2,7})", "{2,3,4,5,6,7}");
   }
 
+  @Test
   public void testSystem227() {
     check("Take({{1,2,3,4},{5,6,7,8,9,10}},-1,3)", "{{5,6,7}}");
   }
 
+  @Test
   public void testSystem228() {
     check("Take({{1,2,3,4},{{5,6,7},{8,9,10}}},-1,1,2)", "{{{5,6}}}");
   }
 
+  @Test
   public void testSystem229() {
     check("Take({{1,2,3,4},{w(5,6,7),{8,9,10}}},-1,1,2)", "{{w(5,6)}}");
   }
 
+  @Test
   public void testSystem230() {
     check("Drop({1,2,3,4,5,6,7,8,9,10},3)", "{4,5,6,7,8,9,10}");
   }
 
-  public void testSystem231() {
+  @Test
+public void testSystem231() {
     check("Drop({1,2,3,4,5,6,7,8,9,10},-3)", "{1,2,3,4,5,6,7}");
   }
 
+  @Test
   public void testSystem232() {
     check("Drop({1,2,3,4,5,6,7,8,9,10},{2,7,3})", "{1,3,4,6,7,8,9,10}");
   }
 
+  @Test
   public void testSystem233() {
     check("Drop({1,2,3,4,5,6,7,8,9,10},{2})", "{1,3,4,5,6,7,8,9,10}");
   }
 
+  @Test
   public void testSystem234() {
     check("Drop({1,2,3,4,5,6,7,8,9,10},{2,2})", "{1,3,4,5,6,7,8,9,10}");
   }
 
+  @Test
   public void testSystem235() {
     check("Drop({1,2,3,4,5,6,7,8,9,10},{2,7})", "{1,8,9,10}");
   }
 
+  @Test
   public void testSystem236() {
     check("Sign(0.0)", "0");
   }
 
+  @Test
   public void testSystem237() {
     check("Sign(-(6/12))", "-1");
   }
 
+  @Test
   public void testSystem238() {
     check("Sign(42)", "1");
   }
 
-  public void testSystem239() {
+  @Test
+ public void testSystem239() {
     check("SignCmp(0.0)", "0.0");
   }
 
+  @Test
   public void testSystem240() {
     check("SignCmp(-(6/12))", "-1");
   }
 
+  @Test
   public void testSystem241() {
     check("SignCmp(42)", "1");
   }
 
+  @Test
   public void testSystem242() {
     check("SignCmp(I)", "1");
   }
 
+  @Test
   public void testSystem243() {
     check("SignCmp(-I)", "-1");
   }
 
+  @Test
   public void testSystem244() {
     check("SignCmp(3-I)", "1");
   }
 
+  @Test
   public void testSystem245() {
     check("SignCmp(-3+I)", "-1");
   }
 
-  public void testSystem246() {
+  @Test
+    public void testSystem246() {
     check("Ceiling(42+x+y)", "42+Ceiling(x+y)");
     check("Ceiling(42)", "42");
     check("Ceiling(Pi)", "4");
@@ -2086,7 +2317,8 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Floor(42+x+y)", "42+Floor(x+y)");
   }
 
-  public void testSystem247() {
+  @Test
+      public void testSystem247() {
     check("Round(1.1)", //
         "1");
     check("Round(1.5)", //
@@ -2135,78 +2367,97 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "Round(42+x+y)");
   }
 
+  @Test
   public void testSystem248() {
     check("IntegerPart(42)", "42");
   }
 
+  @Test
   public void testSystem249() {
     check("Ceiling(3/4)", "1");
   }
 
+  @Test
   public void testSystem250() {
     check("Floor(3/4)", "0");
   }
 
-  public void testSystem251() {
+  @Test
+    public void testSystem251() {
     check("IntegerPart(3/4)", "0");
   }
 
-  public void testSystem252() {
+  @Test
+ public void testSystem252() {
     check("Ceiling(-3/4)", "0");
   }
 
+  @Test
   public void testSystem253() {
     check("Floor(-3/4)", "-1");
   }
 
-  public void testSystem254() {
+  @Test
+ public void testSystem254() {
     check("IntegerPart(-3/4)", "0");
   }
 
+  @Test
   public void testSystem255() {
     check("Ceiling(42.0)", "42");
   }
 
+  @Test
   public void testSystem256() {
     check("Floor(42.0)", "42");
   }
 
+  @Test
   public void testSystem257() {
     check("IntegerPart(42.0)", "42");
   }
 
+  @Test
   public void testSystem258() {
     check("Ceiling(0.75)", "1");
   }
 
+  @Test
   public void testSystem259() {
     check("Floor(0.75)", "0");
   }
 
+  @Test
   public void testSystem260() {
     check("IntegerPart(0.75)", "0");
   }
 
-  public void testSystem261() {
+  @Test
+public void testSystem261() {
     check("Ceiling(-0.75)", "0");
   }
 
+  @Test
   public void testSystem262() {
     check("Floor(-0.75)", "-1");
   }
 
+  @Test
   public void testSystem263() {
     check("IntegerPart(-0.75)", "0");
   }
 
+  @Test
   public void testSystem264() {
     check("IntegerPart(Pi)", "3");
   }
 
+  @Test
   public void testSystem265() {
     check("IntegerPart(-42*x)", "-IntegerPart(42*x)");
   }
 
+  @Test
   public void testSystem266() {
     check("GCD(6,35)", "1");
     check("GCD(6,27)", "3");
@@ -2227,161 +2478,199 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("ExtendedGCD(12,60,256,282)", "{2,{1470,0,-70,1}}");
   }
 
-  public void testSystem267() {
+  @Test
+ public void testSystem267() {
     check("Negative(0.0)", "False");
   }
 
+  @Test
   public void testSystem268() {
     check("Negative(-(6/12))", "True");
   }
 
+  @Test
   public void testSystem269() {
     check("Negative(42)", "False");
   }
 
+  @Test
   public void testSystem270() {
     check("Positive(1/3)", "True");
   }
 
+  @Test
   public void testSystem271() {
     check("Positive(42)", "True");
   }
 
+  @Test
   public void testSystem272() {
     check("Negative(I)", "False");
   }
 
+  @Test
   public void testSystem273() {
     check("Negative(-I)", "False");
     check("Negative(0)", "False");
   }
 
+  @Test
   public void testSystem274() {
     check("NonNegative(3-I)", "False");
     check("NonNegative(0)", "True");
   }
 
+  @Test
   public void testSystem275() {
     check("Positive(-3+I)", "False");
   }
 
+  @Test
   public void testSystem276() {
     check("{10,9,8,7}[[4]]", "7");
   }
 
+  @Test
   public void testSystem278() {
     check("{10,9,8,7}[[1]]", "10");
   }
 
+  @Test
   public void testSystem279() {
     check("{10,9,8,7}[[0]]", "List");
   }
 
+  @Test
   public void testSystem280() {
     check("2<9/4", "True");
   }
 
+  @Test
   public void testSystem281() {
     check("5/4<9/4", "True");
   }
 
+  @Test
   public void testSystem282() {
     check("Order(x,y)", "1");
   }
 
+  @Test
   public void testSystem283() {
     check("Order(y,x)", "-1");
   }
 
+  @Test
   public void testSystem284() {
     check("OrderedQ({x,y,z})", "True");
     check("OrderedQ({abc,abc})", "True");
   }
 
+  @Test
   public void testSystem285() {
     check("OrderedQ({2,5/2,3,10/3,a,-b})", "True");
   }
 
+  @Test
   public void testSystem286() {
     check("OrderedQ({-2*a,a^2,b^3,c})", "True");
   }
 
+  @Test
   public void testSystem287() {
     check("OrderedQ({x,a,z})", "False");
   }
 
+  @Test
   public void testSystem288() {
     check("Sort({a^2,b^3,c,-2*a})", "{-2*a,a^2,b^3,c}");
     check("Sort({3,4,2,5,6,42,21,33,15}, Less)", "{2,3,4,5,6,15,21,33,42}");
     check("Sort(gogo(3,4,2,5,6,42,21,33,15), Greater)", "gogo(42,33,21,15,6,5,4,3,2)");
   }
 
+  @Test
   public void testSystem289() {
     check("Head(hello)", "Symbol");
     check("Head(fun(a)[b][c])", "fun(a)[b]");
     check("FixedPoint(Head, fun(a)[b][c])", "Symbol");
   }
 
+  @Test
   public void testSystem290() {
     check("Head(\"hello world\")", "String");
   }
 
+  @Test
   public void testSystem291() {
     check("Head(2/3)", "Rational");
   }
 
+  @Test
   public void testSystem292() {
     check("Head(17+2)", "Integer");
   }
 
+  @Test
   public void testSystem293() {
     check("Head(I+1)", "Complex");
   }
 
+  @Test
   public void testSystem294() {
     check("Head(I*0.5)", "Complex");
   }
 
-  public void testSystem295() {
+  @Test
+public void testSystem295() {
     check("Head(3.12)", "Real");
   }
 
+  @Test
   public void testSystem296() {
     check("Head(q+p)", "Plus");
   }
 
-  public void testSystem297() {
+  @Test
+public void testSystem297() {
     check("Head(g(x)[y])", "g(x)");
   }
 
+  @Test
   public void testSystem298() {
     check("Length(g(x,y,z))", "3");
   }
 
+  @Test
   public void testSystem299() {
     check("Length(g(x,y,z)[u,v])", "2");
   }
 
-  public void testSystem300() {
+  @Test
+    public void testSystem300() {
     check("RotateLeft(r(1,2,3,4))", "r(2,3,4,1)");
   }
 
+  @Test
   public void testSystem301() {
     check("RotateRight(r(1,2,3,4))", "r(4,1,2,3)");
   }
 
+  @Test
   public void testSystem302() {
     check("RotateLeft(r(1,2,3,4),2)", "r(3,4,1,2)");
   }
 
+  @Test
   public void testSystem303() {
     check("RotateRight(r(1,2,3,4),3)", "r(2,3,4,1)");
   }
 
-  public void testSystem304() {
+  @Test
+public void testSystem304() {
     check("Reverse(r(1,2,3,4))", "r(4,3,2,1)");
   }
 
+  @Test
   public void testSystem305() {
     // ReplaceAll
     check("u(v(w,x,y) /. x->y)", "u(v(w,y,y))");
@@ -2392,6 +2681,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("u2(v(w,x,y)) /. { {x->y}, {w->y, v->k}}", "{u2(v(w,y,y)),u2(k(y,x,y))}");
   }
 
+  @Test
   public void testSystem306() {
     // ReplaceRepeated
     check("{a+b,x,c+d+e} //. x_+y_->{x,y}", "{{a,b},x,{c,{d,e}}}");
@@ -2399,43 +2689,52 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "{{{a,b},x,{c,{d,e}}},{rr(a,b),x,rr(c,rr(d,e))}}");
   }
 
+  @Test
   public void testSystem307() {
     check("Apply(u, v(w,x,y))", "u(w,x,y)");
     check("u@@v(w,x,y)", "u(w,x,y)");
   }
 
+  @Test
   public void testSystem308() {
     check("Apply(u, v(w,x,y(z)),{1})", "v(w,x,u(z))");
   }
 
+  @Test
   public void testSystem309() {
     check("Apply(g, {{{u(w)}}}, -2)", "{g(g(g(w)))}");
   }
 
-  public void testSystem310() {
+  @Test
+ public void testSystem310() {
     check("Apply(g, {{{u(w)}}}, {2,-2})", "{{g(g(w))}}");
   }
 
+  @Test
   public void testSystem311() {
     check("Apply(g, {{{u(w)}}}, {-4, -2})", "{g(g(g(w)))}");
   }
 
+  @Test
   public void testSystem312() {
     check("Level(w(w(g(a), a), h(a), u(b), w),2)", "{g(a),a,w(g(a),a),a,h(a),b,u(b),w}");
     check("Level(w(w(g(a), a), h(a), u(b), w),{2})", "{g(a),a,a,b}");
     check("Level(w(w(g(a), a), h(a), u(b), w),{-1})", "{a,a,a,b,w}");
   }
 
+  @Test
   public void testSystem313() {
     check("Total({{2,4*x^5, y*x}},{2})", "{2+4*x^5+x*y}");
     check("Total(w({1,2,3},{4,5,6},{7,8,9}))", "{12,15,18}");
     check("Total(w({1,2,3},{4,5,6},{7,8,9}),2)", "45");
   }
 
+  @Test
   public void testSystem315() {
     check("Arg(-3)", "Pi");
   }
 
+  @Test
   public void testSystem316() {
 
     checkNumeric("Arg(1.0+I)", "0.7853981633974483");
@@ -2463,6 +2762,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Arg(-3+5*I)", "Pi-ArcTan(5/3)");
   }
 
+  @Test
   public void testSystem317() {
     check("Arg(-3*I)", "-Pi/2");
     check("Arg(3*I)", "Pi/2");
@@ -2471,45 +2771,57 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Arg(5*I)", "Pi/2");
   }
 
+  @Test
   public void testSystem318() {
     check("Arg(42)", "0");
   }
 
+  @Test
   public void testSystem319() {
     check("Arg(-2.1)", "Pi");
-    // } public void testSystem300() { check("Arg(-2.1*I)", "");
-    // } public void testSystem300() { check("Arg(2.1 I)",
+    // } @Test
+  // public void testSystem300() { check("Arg(-2.1*I)", "");
+    // } @Test
+// public void testSystem300() { check("Arg(2.1 I)",
     // "1.5707963267948966");
   }
 
+  @Test
   public void testSystem320() {
     check("Arg(42.2)", "0");
   }
 
-  public void testSystem321() {
+  @Test
+    public void testSystem321() {
     check("ArcCos(Infinity)", "I*Infinity");
   }
 
+  @Test
   public void testSystem322() {
     check("ArcSin(-3*f)", "-ArcSin(3*f)");
   }
 
+  @Test
   public void testSystem323() {
     check("ArcTan(-3*f)", "-ArcTan(3*f)");
   }
 
+  @Test
   public void testSystem324() {
     check("Sin(-3*Pi)", "0");
   }
 
+  @Test
   public void testSystem325() {
     check("Cos(-3*Pi)", "-1");
   }
 
+  @Test
   public void testSystem326() {
     check("Tan(-3*Pi)", "0");
   }
 
+  @Test
   public void testSystem335() {
     check("CartesianProduct({},{})", //
         "{}");
@@ -2530,48 +2842,59 @@ public class MainTestCase extends ExprEvaluatorTestCase {
             + "4,3},{4,4},{4,5},{6,2},{6,3},{6,4},{6,5}}");
   }
 
+  @Test
   public void testSystem336() {
     check("Join({},{})", "{}");
   }
 
+  @Test
   public void testSystem337() {
     check("Join({1},{2})", "{1,2}");
     // not evaluated:
   }
 
+  @Test
   public void testSystem338() {
     check("Join({1},{2},3)", "Join({1},{2},3)");
   }
 
+  @Test
   public void testSystem339() {
     check("Join({1,2,2,4},{2,3,4,5})", "{1,2,2,4,2,3,4,5}");
   }
 
+  @Test
   public void testSystem340() {
     check("Select({1, I, f, g(2), 3/4}, NumberQ)", "{1,I,3/4}");
   }
 
+  @Test
   public void testSystem341() {
     check("Select(a*c+b*c+a*d+b*d, FreeQ(#,a)&)", "b*c+b*d");
   }
 
+  @Test
   public void testSystem342() {
     check("Select(a*c+b*c+a*d+b*d, FreeQ(#,a)&, 1)", "b*c");
   }
 
+  @Test
   public void testSystem343() {
     check("Cases({a(b), a(b,c), a(b(c), d), a(b(c), d(e)), a(b(c), d, e)}, a(b(_),_))",
         "{a(b(c),d),a(b(c),d(e))}");
   }
 
+  @Test
   public void testSystem344() {
     check("Cases({a, b, 3/4, I, 4, 1/2}, a_Rational)", "{3/4,1/2}");
   }
 
+  @Test
   public void testSystem345() {
     check("Exp(x)", "E^x");
   }
 
+  @Test
   public void testSystem346() {
     checkNumeric("Exp(1.0)", //
         "2.718281828459045");
@@ -2579,6 +2902,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "a+b");
   }
 
+  @Test
   public void testSystem347() {
     check("Log(1.0)", "0.0");
     check("Log(1)", "0");
@@ -2591,105 +2915,129 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Log(Exp(a+b))", "Log(E^(a+b))");
   }
 
+  @Test
   public void testSystem348() {
     check("PolynomialQ(2, x)", "True");
     check("PolynomialQ(13*x^4*y^7+a^7*x, {x,y})", "True");
   }
 
+  @Test
   public void testSystem349() {
     check("PolynomialQ(x + f(x), x)", "False");
     check("PolynomialQ(x + Sin(x^2), x)", "False");
   }
 
+  @Test
   public void testSystem350() {
     check("PolynomialQ((2 + a)^2*(a - b - c^2)^2, a)", "True");
     check("PolynomialQ((2 + a)^2*(a - b - c^2)^2, {a,b,c})", "True");
   }
 
+  @Test
   public void testSystem352() {
     check("Variables((2 + a)^2 * (a - b - c^2)^2)", "{a,b,c}");
   }
 
+  @Test
   public void testSystem353() {
     check("DigitQ(\"0123456789\")", "True");
   }
 
+  @Test
   public void testSystem354() {
     check("LetterQ(\"abcJHFHG\")", "True");
   }
 
+  @Test
   public void testSystem355() {
     check("LowerCaseQ(\"abc\")", "True");
   }
 
+  @Test
   public void testSystem356() {
     check("UpperCaseQ(\"JHFHG\")", "True");
   }
 
+  @Test
   public void testSystem357() {
     check("ToCharacterCode(\"123abcABC\")", "{49,50,51,97,98,99,65,66,67}");
   }
 
+  @Test
   public void testSystem358() {
     check("FromCharacterCode(55)", "7");
   }
 
+  @Test
   public void testSystem359() {
     check("FromCharacterCode({49,50,51,97,98,99,65,66,67})", //
         "123abcABC");
   }
 
-  public void testSystem360() {
+  @Test
+    public void testSystem360() {
     check("ToUnicode(\"123abcABC\") // InputForm", //
         "\"\\u0031\\u0032\\u0033\\u0061\\u0062\\u0063\\u0041\\u0042\\u0043\"");
   }
 
+  @Test
   public void testSystem361() {
     check("SyntaxQ(\"a+b)*3\")", "False");
   }
 
+  @Test
   public void testSystem362() {
     check("SyntaxLength(\"a+b)*3\")", "3");
     check("SyntaxLength(\"(a+b)*3\")", "7");
   }
 
+  @Test
   public void testSystem363() {
     check("$decr=10;$decr--", "10");
   }
 
+  @Test
   public void testSystem364() {
     check("$decr=10;$decr--;$decr", "9");
   }
 
-  public void testSystem365() {
+  @Test
+    public void testSystem365() {
     check("$predecr=10;--$predecr", "9");
   }
 
+  @Test
   public void testSystem366() {
     check("$predecr=10;--$predecr;$predecr", "9");
   }
 
+  @Test
   public void testSystem367() {
     check("$incr=10;$incr++", "10");
   }
 
+  @Test
   public void testSystem368() {
     check("$incr=10;$incr++;$incr", "11");
   }
 
+  @Test
   public void testSystem369() {
     check("$preincr=10;++$preincr", "11");
   }
 
+  @Test
   public void testSystem370() {
     check("$preincr=10;++$preincr;$preincr", "11");
   }
 
+  @Test
   public void testSystem371() {
     check("Mean({a,b,2,3})", "1/4*(5+a+b)");
     check("Mean({1., 0.3, 4.7})", "2.0");
   }
 
+  @Test
   public void testSystem372() {
     check("Median({1,5,2,8,7})", "5");
     check("Median({1,5,2,10,8,7})", "6");
@@ -2697,32 +3045,39 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Median({f,g,h,x,y,z})", "1/2*(h+x)");
   }
 
+  @Test
   public void testSystem373() {
     check("Max(7,3,8)", "8");
   }
 
+  @Test
   public void testSystem374() {
     check("Max({7,3,8,11,22,15,4,3},{{47,15}})", "47");
     check("Max(x,x,x)", "x");
   }
 
+  @Test
   public void testSystem375() {
     check("Max({7,3,8,11,22,15,4,3},{{ft(at),15}})", "Max(22,ft(at))");
   }
 
+  @Test
   public void testSystem376() {
     check("Min(7,3,8)", "3");
     check("Min(y,y,y)", "y");
   }
 
-  public void testSystem377() {
+  @Test
+public void testSystem377() {
     check("Min({7,3,8,11,22,-15,4,3},{{47,15}})", "-15");
   }
 
+  @Test
   public void testSystem378() {
     check("Min({7,3,8,11,-22,15,4,3},{{ft(at),15}})", "Min(-22,ft(at))");
   }
 
+  @Test
   public void testSystem383() {
     check("Conjugate(I)", "-I");
     check("Conjugate(I+c)", "-I+Conjugate(c)");
@@ -2731,18 +3086,22 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Conjugate(a*I*c)", "-I*Conjugate(a*c)");
   }
 
+  @Test
   public void testSystem384() {
     check("Conjugate(2.0-I)", "2.0+I*1.0");
   }
 
+  @Test
   public void testSystem385() {
     check("Conjugate(1/3)", "1/3");
   }
 
+  // @Test
   // public void testSystem386() {
   // check("JCall(\"JCall\", \"test1\", Sin(x))", "\"Sin(x)\"");
   // }
 
+  @Test
   public void testSystem387() {
     check("FullForm(3/4+ #2+b+c*3)", //
         "Plus(Rational(3,4), b, Times(3, c), Slot(2))");
@@ -2754,6 +3113,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "ff(Times(Pattern(x, Blank()), Pattern(y, Blank())))");
   }
 
+  @Test
   public void testSystem387a() {
     check("JavaForm(Pi*x_NumberQ)", //
         "Times(Pi,$p(x,NumberQ))");
@@ -2797,11 +3157,13 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "Plus(Times(Plus(Times(C2,B),Times(CN1,A,p)),Power(Plus(Negate(Sqr(p)),Times(C4,q)),CN1D2),ArcTan(Times(Power(Plus(Negate(Sqr(p)),Times(C4,q)),CN1D2),Plus(p,Times(C2,x))))),Times(C1D2,A,Log(Plus(q,Times(p,x),Sqr(x)))))");
   }
 
+  @Test
   public void testSystem388() {
     check("ff(Times(Pattern(x, Blank()), Pattern(y, Blank())))", //
         "ff(x_*y_)");
   }
 
+  @Test
   public void testSystem389() {
     check("$f389(a_):={a}; Clear($f389); $f389($test)", //
         "$f389($test)");
@@ -2811,6 +3173,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "g($test)");
   }
 
+  @Test
   public void testSystem390() {
     check("Apply((1 + 1/#) &, 10)", //
         "11/10");
@@ -2820,11 +3183,13 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "0.7390851332151607");
   }
 
+  @Test
   public void testSystem391() {
     check("StringJoin(\"Hello\", \" World\")", //
         "Hello World");
   }
 
+  @Test
   public void testSystem392() {
     check("StringDrop(\"Hello\", 2)", //
         "llo");
@@ -2832,6 +3197,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "Hel");
   }
 
+  @Test
   public void testSystem393() {
     check("EulerPhi(EulerPhi(25))", //
         "8");
@@ -2839,6 +3205,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "4");
   }
 
+  @Test
   public void testSystem393a() {
     // http://exploringnumbertheory.wordpress.com/2013/09/09/finding-primitive-roots/
     check("PrimitiveRootList(127)", //
@@ -2854,6 +3221,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "{3,5,6,7,10,11,12,14}");
   }
 
+  @Test
   public void testSystem394() {
     check("PrimitiveRootList(8)", //
         "{}");
@@ -2865,6 +3233,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "{2,3,8,12,13,17,22,23}");
   }
 
+  @Test
   public void testSystem395() {
     check("MoebiusMu(990)", //
         "0");
@@ -2890,6 +3259,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testSystem396() {
     check("JacobiSymbol(1,111)", //
         "1");
@@ -2899,7 +3269,8 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "1");
   }
 
-  public void testSystem397() {
+  @Test
+    public void testSystem397() {
     check("Re(42+I)", //
         "42");
     check("Im(1/3+I)", //
@@ -2918,6 +3289,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "-Im(x)");
   }
 
+  @Test
   public void testSystem398() {
     check("Numerator(3/4)", //
         "3");
@@ -2966,6 +3338,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "(4+6*x+8*x^2+3*x^3)/(4*x+4*x^3+x^5)");
   }
 
+  @Test
   public void testSystem400() {
     EvalEngine engine = EvalEngine.get();
     IExpr exprNumerator = engine.parse("8+12*x+20*x^2+12*x^3+8*x^4+3*x^5");
@@ -2975,6 +3348,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     assertEquals(result[1].toString(), "4+6*x+8*x^2+3*x^3");
   }
 
+  @Test
   public void testSystem401() {
     check("Expand((b^2*c^2-12)^(1/2))", //
         "Sqrt(-12+b^2*c^2)");
@@ -2993,6 +3367,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "3+x*(4+x*(5+(33+x^2)*x^4))");
   }
 
+  @Test
   public void testSystem402() {
     check("Expand((x-1)^10)",
         "1-10*x+45*x^2-120*x^3+210*x^4-252*x^5+210*x^6-120*x^7+45*x^8-10*x^9+x^10");
@@ -3006,15 +3381,18 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "a-b/6");
   }
 
+  @Test
   public void testSystem403() {
     check("ToString(a^2+2*a*b+b^2)", //
         "a^2 + 2*a*b + b^2");
   }
 
+  @Test
   public void testSystem404() {
     check("Cos(0)", "1");
   }
 
+  @Test
   public void testSystem405() {
     // check("Series(Exp(x),{x,0,4})", "");
     check("Taylor(Cos(x),{x,0,4})", //
@@ -3023,6 +3401,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "1+x+x^2/2+x^3/6+x^4/24+x^5/120+x^6/720+x^7/5040+x^8/40320+x^9/362880+x^10/\n" + "3628800");
   }
 
+  @Test
   public void testSystem406() {
     check("JacobiMatrix({f(u),f(v),f(w),f(x)}, {u,v,w})", //
         "{{f'(u),0,0},{0,f'(v),0},{0,0,f'(w)},{0,0,0}}");
@@ -3030,6 +3409,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "Derivative(1,0,0)[f][u,v,w]+Derivative(1,0,0)[f][v,w,u]+Derivative(1,0,0)[f][w,u,v]");
   }
 
+  @Test
   public void testSystem407() {
     check("ContinuedFraction(45/16)", //
         "{2,1,4,3}");
@@ -3053,6 +3433,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "225/157");
   }
 
+  @Test
   public void testSystem408() {
     check("Infinity-Infinity", "Indeterminate");
     check("0*Infinity", "Indeterminate");
@@ -3067,6 +3448,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("ComplexInfinity", "ComplexInfinity");
   }
 
+  @Test
   public void testSystem409() { //
     check("Abs(-0.5)", //
         "0.5");
@@ -3116,6 +3498,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "16");
   }
 
+  @Test
   public void testSystem410() {
     check(
         "        $l2 = {}; \n" + "          For($j = 1, $j <= 10, $j++,\n"
@@ -3123,6 +3506,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "{1,2,3,4,5,6,7,8,9,10}");
   }
 
+  @Test
   public void testSystem411() {
     check("Dimensions({{{},{}}})", "{1,2,0}");
     check("Dimensions({{{},{{},{a}}}})", "{1,2}");
@@ -3133,7 +3517,8 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Dimensions({{{1},{0}},{{0},{1}},{{0},{0}}})", "{3,2,1}");
   }
 
-  public void testSystem412() {
+  @Test
+ public void testSystem412() {
     check("DiagonalMatrix({1,2,3,4})",
         "{{1,0,0,0},\n" + " {0,2,0,0},\n" + " {0,0,3,0},\n" + " {0,0,0,4}}");
     check("DiagonalMatrix({1,2,3,4},2)",
@@ -3142,21 +3527,25 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "{{0,0,0,0},\n" + " {0,0,0,0},\n" + " {3,0,0,0},\n" + " {0,4,0,0}}");
   }
 
+  @Test
   public void testSystem413() {
     check("Inner(r,{1,2,3,4},{5,6,7,8},t)", "t(r(1,5),r(2,6),r(3,7),r(4,8))");
   }
 
+  @Test
   public void testSystem414() {
     check("Through(f(g, h)[x,y])", "f(g(x,y),h(x,y))");
     check("Through(f(g, h)[x,y], f)", "f(g(x,y),h(x,y))");
     check("Through(f(g, h)[x,y], g)", "f(g,h)[x,y]");
   }
 
+  @Test
   public void testSystem415() {
     check("Multinomial(1,4,4,2)", "34650");
     check("Multinomial(11,3,5)", "4232592");
   }
 
+  @Test
   public void testSystem416() {
     // check("ValueQ($valueQVar)", "False");
     // check("$valueQVar=10;ValueQ($valueQVar)", "True");
@@ -3167,12 +3556,14 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("ValueQ(g(h,i,j))", "False");
   }
 
+  @Test
   public void testSystem417() {
     check("NumericQ(Pi)", "True");
     check("NumericQ(Sin(Cos(1/2*Pi^3)))", "True");
     check("NumericQ(Sin(Cos(1/2*x^3)))", "False");
   }
 
+  @Test
   public void testSystem418() {
 
     check("Limit(Sin(x)/x, x->0)", "1");
@@ -3251,6 +3642,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Limit((1-a*(x^(-1)))^x, x->Infinity)", "E^(-a)");
   }
 
+  @Test
   public void testSystem419() {
     check("TrigToExp(a+b+Sin(c+d))", "a+b+(I*1/2)/E^(I*(c+d))-I*1/2*E^(I*(c+d))");
     check("TrigToExp(Cos(x)+f(a))", "1/(2*E^(I*x))+E^(I*x)/2+f(a)");
@@ -3260,6 +3652,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("TrigToExp(ArcTan(x))", "I*1/2*Log(1-I*x)-I*1/2*Log(1+I*x)");
   }
 
+  @Test
   public void testSystem420() {
     check("TrigReduce(Cos(x)*Cos(y)*Sin(x))", //
         "Sin(2*x-y)/4+Sin(2*x+y)/4");
@@ -3275,6 +3668,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "3/4*Cos(x)+Cos(3*x)/4");
   }
 
+  @Test
   public void testSystem421() {
     check("MatchQ(powered(h,h), powered(x_ ^ (a_.), x_))", //
         "True");
@@ -3306,21 +3700,25 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("PossibleZeroQ(Pi-Pi)", "True");
   }
 
+  @Test
   public void testSystem422() {
     check("Default(Power,2)", "1");
     check("Default(Plus)", "0");
     check("Default(Times)", "1");
   }
 
+  // @Test
   // public void testSystem404() {
   // check("Plot3D(Sin(x)*Cos(y),{x,-10,10},{y,-10,10},{PlotRange->Automatic})",
   // "");
   // };
   //
+  // @Test
   // public void testSystem405() {
   // check("Plot(Sin(x),{x,0,10})", "");
   // };
 
+  @Test
   public void testSystem803() {
     // see
     // http://google-opensource.blogspot.com/2009/06/introducing-apache-commons-math.html
@@ -3333,6 +3731,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     // "{4.0,0.0,1.0}");
   }
 
+  @Test
   public void testSystem804() {
     // check("Simplify(x*(x^2.00))", "x^3.0");
     // check("Simplify(5.0+4.0(x-0.0)+3.0(x-0.0)(x-1.0)+1.0(x-0.0)(x-1.0)(x-2.0))",
@@ -3348,12 +3747,14 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     // check("Simplify((1+(1/x))/(1+(2/x)))","");
   }
 
+  @Test
   public void testSystem806() {
     check("PowerExpand((a^b)^(1/2))", "a^(b/2)");
     check("PowerExpand((a*b)^(1/2))", "Sqrt(a)*Sqrt(b)");
     check("PowerExpand(Log((a^b)^c))", "b*c*Log(a)");
   }
 
+  @Test
   public void testSystem807() {
     check("Refine(Abs(n), n>=0)", "n");
     check("Refine(Abs(n+1), n>=0)", "1+n");
@@ -3362,24 +3763,28 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Refine(Abs(n*Abs(m)), n<0)", "-n*Abs(m)");
   }
 
+  @Test
   public void testSystem991() {
     check("PolynomialQuotient(x^2+2*x+1,x+2,x)", "x");
     check("PolynomialQuotient(x^2+x+1,2*x+1,x)", "1/4+x/2");
     check("PolynomialQuotient(x^2-1,x-1,x)", "1+x");
   }
 
+  @Test
   public void testSystem992() {
     check("PolynomialRemainder(x^2+2*x+1,x+2,x)", "1");
     check("PolynomialRemainder(x^2+x+1,2*x+1,x)", "3/4");
     check("PolynomialRemainder(x^2-1,x-1,x)", "0");
   }
 
+  @Test
   public void testSystem993() {
     check("PolynomialQuotientRemainder(x^2+2*x+1,x+2,x)", "{x,1}");
     check("PolynomialQuotientRemainder(x^2+x+1,2*x+1,x)", "{1/4+x/2,3/4}");
     check("PolynomialQuotientRemainder(x^2-1,x-1,x)", "{1+x,0}");
   }
 
+  @Test
   public void testSystem994() {
     check("PolynomialGCD(3+3*x^3,3+3*x^3)", //
         "3+3*x^3");
@@ -3413,6 +3818,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "(7+x)*(11+x)*(17+x)*(1+x)^2");
   }
 
+  @Test
   public void testSystem996() {
     check("FactorTerms(3+3*x^3)", //
         "3*(1+x^3)");
@@ -3420,6 +3826,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "3/68*(68+16*x^2+17*x^3)");
   }
 
+  @Test
   public void testSystem997() {
     check("GroebnerBasis({a+b+c+d, a*b+a*d+b*c+c*d, a*b*c+a*b*d+a*c*d+b*c*d,1-a*b*c*d}, {d,c,b,a})", //
         "{1-a^4-a^2*b^2+a^6*b^2,-a-b+a^3*b^2+a^2*b^3,-a+a^5-c+a^4*c,-2*a^2+a*b+a^4*b^2-a*c+b*c,a^\n"
@@ -3436,6 +3843,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     // "{a+b+c+d,a^2+2*a*c+c^2,a^3-a*b^2+a^2*c-b^2*c,1+a^4-a^3*b-a^2*b^2+a^3*c-a^2*b*c,a-a^5+c-a^4*c,a+b-a^3*b^2-a^2*b^3,2*a^2-a*b-a^4*b^2+a*c-b*c}");
   }
 
+  @Test
   public void testSystem998() {
     check("RootIntervals(0^Sequence())", //
         "RootIntervals(0)");
@@ -3460,6 +3868,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
             + "1048577/1048576+I*1/524288}}");
   }
 
+  @Test
   public void testSystem999() {
     // check("Roots(x^6 - 4*x^3 + 8==0, x)",
     // "x==-1-I||x==-1+I||x==1/2-I*1/2-Sqrt(I*6)/2||x==1/2-I*1/2+Sqrt(I*6)/2||x==1/2+I*1/\n"
@@ -3560,6 +3969,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "(-I+x^2)*(I+x^2)");
   }
 
+  @Test
   public void testSystem1000() {
     check("NRoots(x^2 + 5*x + 10==0)", //
         "{-2.5+I*(-1.93649),-2.5+I*1.93649}");
@@ -3595,6 +4005,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testSystem1100() {
     check("Coefficient(10*(x^2)+2*(y^2)+2*x,x,2)", "10");
 
@@ -3607,6 +4018,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Coefficient(a*(x^3) + 0.5*(x^2) + 0.25*x + d, x, 2)", "0.5");
   }
 
+  @Test
   public void testSystem1101() {
     check("MatrixRank({{ 0.0, 13.0, 25.0, 43.0, 81.0, 0.0, 39.0, 60.0, 70.0, 21.0, 44.0, 0.0 },\n"
         + "{ 44.0, 0.0, 13.0, 67.0, 35.0, 0.0, 84.0, 35.0, 23.0, 88.0, 11.0, 0.0 },\n"
@@ -3637,6 +4049,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         + "{ 5.0, 2.0, 3.0, 10.0, 11.0, 9.0 },\n" + "{ 4.0, 3.0, 9.0, 12.0, 8.0, 9.0 }})", "3");
   }
 
+  @Test
   public void testSystem1102() {
     // see Issue#25
     check(
@@ -3708,6 +4121,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("RowReduce({{0,0,0},{0,0,0}})", "{{0,0,0},\n" + " {0,0,0}}");
   }
 
+  @Test
   public void testSystem1103() {
     // see Issue#77
     check("NullSpace({{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}})", "{}");
@@ -3722,15 +4136,18 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("NullSpace({{0,0}," + "{0,0}," + "{0,0}," + "{0,0}})", "{{1,0},\n" + " {0,1}}");
   }
 
+  @Test
   public void testSystem1105() {
     check("$p(Sin(x_)^m_IntegerQ):=f(x)^(-m)/;m<0;$p(Sin(x)^2)", "$p(Sin(x)^2)");
   }
 
+  @Test
   public void testSystem1106() {
     check("InterpolatingPolynomial({{1,7},{3,11},{5,27}},x)", "7+(2+3/2*(-3+x))*(-1+x)");
   }
 
-  public void testSystem1107() {
+  @Test
+    public void testSystem1107() {
     check("f(4) /. f(x_) /; x > 0 -> x ^ 2", "16");
 
     check("a + b + c /. a + b -> t", "c+t");
@@ -3745,6 +4162,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("f(a, b, c, d) /. f(start__, end__) -> {{start}, {end}}", "{{a},{b,c,d}}");
   }
 
+  // @Test
   // public void testSystem1108() {
   // check("LaplaceTransform(t^3*E^(-3*t), t, s)", "6*(3+s)^(-4)");
   // check("LaplaceTransform(2*t^5+ t^2/2, t, s)", "240*s^(-6)+s^(-3)");
@@ -3760,12 +4178,14 @@ public class MainTestCase extends ExprEvaluatorTestCase {
   // check("LaplaceTransform(t*Sin(2*t)*Exp(-3*t), t, s)", "");
   // }
 
+  @Test
   public void testIssue80() {
     // issue #80: LinearProgramming with expressions
     check("NMinimize({-2*x+y-5, 2*y+x<=6&&2*y+3*x<=12&&y>=0},{x,y})", "{-13.0,{x->4.0,y->0.0}}");
     check("NMaximize({-2*x+y-5, 2*y+x<=6&&2*y+3*x<=12&&y>=0},{x,y})", "{-2.0,{x->0.0,y->3.0}}");
   }
 
+  @Test
   public void testIssue95() {
     // check("Solve((-5+x)^(3/4)==5*x,x)", "{{x->5+5*5^(1/3)}}");
     // check("Solve(Sqrt(x-5)+Sqrt(x+5)==5,x)", "{{x->29/4}}");
@@ -3773,6 +4193,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Solve((-5+x)^(1/2)==5,x)", "{{x->30}}");
   }
 
+  @Test
   public void testIssue96() {
     // check("LinearSolve({{2,8},{-5,-20}},{6,-15})", "{3,0}");
     check("Solve({2*x+7*y==6,-5*x-20*y==-15},{x,y})", "{{x->3,y->0}}");
@@ -3783,6 +4204,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Solve({3*x==2,4*x==2},{x})", "{}");
   }
 
+  @Test
   public void testIssue99() {
     check("Limit(x^(-37/4),x->0, Direction->Automatic)", //
         "Indeterminate");
@@ -3808,6 +4230,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "Solve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)");
   }
 
+  @Test
   public void testHMCLinearSolve() {
     // https://www.math.hmc.edu/calculus/tutorials/linearsystems
     check("LinearSolve({{1,0,0},{0,1,0},{0,0,1}},{2,3,-4})", "{2,3,-4}");
@@ -3820,11 +4243,13 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("LinearSolve({{1,2,3},{2,-1,1},{3,0,-1}},{9,8,3})", "{2,-1,3}");
   }
 
+  @Test
   public void testHMCSolve() {
     // https://www.math.hmc.edu/calculus/tutorials/linearsystems
     check("Solve({x+2*y+3*z==9,2*x-y+z==8,3*x-z==3},{x,y,z})", "{{x->2,y->-1,z->3}}");
   }
 
+  @Test
   public void testIssue102() {
     check("Collect((a+b)/c,b)", //
         "a/c+b/c");
@@ -3847,6 +4272,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testGithub18() {
     // github issue #18
     boolean old = ParserConfig.EXPLICIT_TIMES_OPERATOR;
@@ -3935,6 +4361,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
   public void testNCalcGithub42() {
     // https://github.com/tranleduy2000/ncalc/issues/42
     check("D((x+2)/(x-3),x)", //
@@ -3945,6 +4372,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "-5/(3-x)^2");
   }
 
+  // @Test
   // public void testOutputformats() {
   // check("{6.7^-4, 6.7^6, 6.7^8}", //
   // "{0.0005,90458.38217,4.06067678*10^6}");

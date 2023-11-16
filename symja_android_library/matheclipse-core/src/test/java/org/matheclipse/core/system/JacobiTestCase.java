@@ -1,10 +1,10 @@
 package org.matheclipse.core.system;
 
-public class JacobiTestCase extends ExprEvaluatorTestCase {
-  public JacobiTestCase(String name) {
-    super(name);
-  }
+import org.junit.Test;
 
+public class JacobiTestCase extends ExprEvaluatorTestCase {
+
+  @Test
   public void testJacobiAmplitude() {
     check("JacobiAmplitude(-z, m)", //
         "-JacobiAmplitude(z,m)");
@@ -31,6 +31,7 @@ public class JacobiTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testInverseJacobiCD() {
 
     check("InverseJacobiCD(0.3,0.5)", //
@@ -70,6 +71,7 @@ public class JacobiTestCase extends ExprEvaluatorTestCase {
             + "1.55023+I*(-2.02896),1.55501+I*(-2.02896),1.55954+I*(-2.02896)}"); //
   }
 
+  @Test
   public void testJacobiCD() {
     check("JacobiCD(3.14,0.3)", //
         "-0.970918");
@@ -96,6 +98,7 @@ public class JacobiTestCase extends ExprEvaluatorTestCase {
             + "-0.539887,-0.719348,-0.854814,-0.945268}"); //
   }
 
+  @Test
   public void testUInverseJacobiCN() {
     // https://github.com/Hipparchus-Math/hipparchus/issues/189
     // final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(new Complex(0.3));
@@ -122,6 +125,7 @@ public class JacobiTestCase extends ExprEvaluatorTestCase {
     // " "); //
   }
 
+  @Test
   public void testJacobiCN() {
     check("JacobiCN(2.5,0.3)", //
         "-0.626032");
@@ -151,6 +155,7 @@ public class JacobiTestCase extends ExprEvaluatorTestCase {
             + "0.705115,0.530857,0.339016,0.138241,-0.0656354,-0.268079,-0.463929,-0.645663,-0.802493,-0.92107}"); //
   }
 
+  @Test
   public void testInverseJacobiDN() {
     // https://github.com/Hipparchus-Math/hipparchus/issues/189
     // FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(new Complex(0.7));
@@ -175,6 +180,7 @@ public class JacobiTestCase extends ExprEvaluatorTestCase {
     // " ");
   }
 
+  @Test
   public void testJacobiDN() {
     check("JacobiDN(4.0,2/3)", //
         "0.998883");
@@ -202,6 +208,7 @@ public class JacobiTestCase extends ExprEvaluatorTestCase {
             + "0.872126,0.839629,0.820388,0.817375,0.831037,0.859308,0.897567,0.938793,0.974401}");
   }
 
+  @Test
   public void testJacobiSC() {
     check("JacobiSC(Pi/3,0.333333)", //
         "1.54453");
@@ -225,6 +232,7 @@ public class JacobiTestCase extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testJacobiSD() {
     check("JacobiSD(2.5,0.5)", //
         "1.14653");
@@ -253,6 +261,7 @@ public class JacobiTestCase extends ExprEvaluatorTestCase {
             + "1.22079,1.15927,1.03091,0.850769,0.635563,0.399627}");
   }
 
+  @Test
   public void testJacobiSN() {
     check("JacobiSN(2.5,0.5)", //
         "0.890615");
@@ -280,6 +289,7 @@ public class JacobiTestCase extends ExprEvaluatorTestCase {
             + "0.307575,0.526945,0.709093,0.847461,0.940781,0.990399,0.997844,0.963397,0.885872,0.763622,0.596662,0.389397}");
   }
 
+  @Test
   public void testJacobiZeta() {
     // check("JacobiZeta(2,0.5)", //
     // "-0.117772");

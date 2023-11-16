@@ -1,10 +1,10 @@
 package org.matheclipse.core.system;
 
-public class GeometricTestCase extends ExprEvaluatorTestCase {
-  public GeometricTestCase(String name) {
-    super(name);
-  }
+import org.junit.Test;
 
+public class GeometricTestCase extends ExprEvaluatorTestCase {
+
+  @Test
   public void testAASTriangle() {
     check("AASTriangle(Pi/2, Pi/3, b)", //
         "Triangle({{0,0},{b/2,0},{0,1/2*Sqrt(3)*b}})");
@@ -12,6 +12,7 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "Triangle({{0,0},{2,0},{3/2,Sqrt(3)/2}})");
   }
 
+  @Test
   public void testASATriangle() {
     // message ASATriangle: The sum of angles Pi/2 and Pi/2 should be less than Pi.
     check("ASATriangle(Pi/2, a, Pi/2)", //
@@ -24,6 +25,7 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "Triangle({{0,0},{1,0},{3/4,Sqrt(3)/4}})");
   }
 
+  @Test
   public void testArcLength() {
     check("ArcLength(Line({{a,b},{c,d},{e,f}}))", //
         "Sqrt((a-c)^2+(b-d)^2)+Sqrt((c-e)^2+(d-f)^2)");
@@ -35,6 +37,7 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testArea() {
     check("Area(Triangle({{0, 0}, {1, 0}, {1, 1}}))", //
         "1/2");
@@ -48,6 +51,7 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "Abs((-a+c)*(-b+d))");
   }
 
+  @Test
   public void testPerimeter() {
     check("Perimeter(Disk({a,b}))", //
         "2*Pi");
@@ -61,6 +65,7 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "2*(Abs(-a+c)+Abs(-b+d))");
   }
 
+  @Test
   public void testSASTriangle() {
     check("SASTriangle(1, Pi/3, 1)", //
         "Triangle({{0,0},{1,0},{1/2,Sqrt(3)/2}})");
@@ -68,6 +73,7 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "Triangle({{0,0},{Sqrt(5),0},{4/Sqrt(5),2/Sqrt(5)}})");
   }
 
+  @Test
   public void testSSSTriangle() {
     check("SSSTriangle(10,10,10)", //
         "Triangle({{0,0},{10,0},{5,5*Sqrt(3)}})");

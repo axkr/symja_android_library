@@ -1,5 +1,7 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.D;
 import static org.matheclipse.core.expression.F.Sin;
@@ -9,6 +11,10 @@ import java.io.PrintStream;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import org.hipparchus.complex.Complex;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.util.WriterOutputStream;
@@ -26,15 +32,16 @@ import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 import junit.framework.TestCase;
 
-public class ExprEvaluatorTest extends TestCase {
+@RunWith(JUnit4.class)
+public class ExprEvaluatorTest  {
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+  @Before
+  public void setUp() throws Exception {
     // wait for initializing of Integrate() rules:
     F.await();
   }
 
+  @Test
   public void testStringEval001() {
     EvalEngine engine = new EvalEngine(true);
     ExprEvaluator eval = new ExprEvaluator(engine, true, (short) 20);
@@ -47,6 +54,7 @@ public class ExprEvaluatorTest extends TestCase {
     assertEquals(-0.5063656411097588, result, 0E-10);
   }
 
+  @Test
   public void testStringEval002() {
     try {
       // don't distinguish between lower and upper case identifiers
@@ -123,6 +131,7 @@ public class ExprEvaluatorTest extends TestCase {
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/FactorInteger.md">FactorInteger</a>
    * function.
    */
+  @Test
   public void testFactorInteger() {
     try {
       ExprEvaluator util = new ExprEvaluator(false, (short) 100);
@@ -146,6 +155,7 @@ public class ExprEvaluatorTest extends TestCase {
     }
   }
 
+  @Test
   public void testStringEval003() {
     try {
       ExprEvaluator util = new ExprEvaluator();
@@ -186,6 +196,7 @@ public class ExprEvaluatorTest extends TestCase {
     }
   }
 
+  @Test
   public void testStringEval004() {
     try {
       ExprEvaluator util = new ExprEvaluator();
@@ -213,6 +224,7 @@ public class ExprEvaluatorTest extends TestCase {
    * See: https://github.com/axkr/symja_android_library/issues/48 why the toString() method output
    * of numeric values is different from OutputFormFactory#convert() method.
    */
+  @Test
   public void testStringEval005() {
     try {
       ExprEvaluator util = new ExprEvaluator();
@@ -251,6 +263,7 @@ public class ExprEvaluatorTest extends TestCase {
     }
   }
 
+  @Test
   public void testDefineVariable() {
     // github #118
     ExprEvaluator exprEvaluator = new ExprEvaluator();
@@ -263,6 +276,7 @@ public class ExprEvaluatorTest extends TestCase {
     assertEquals(exprEvaluator.eval("x").toString(), "x");
   }
 
+  @Test
   public void testX2() {
     ExprEvaluator evaluator = new ExprEvaluator();
     evaluator.defineVariable("X", evaluator.parse("2"));
@@ -270,6 +284,7 @@ public class ExprEvaluatorTest extends TestCase {
     assertEquals(evaluate.toString(), "4");
   }
 
+  @Test
   public void testSmallValue() {
     // github #208
     ExprEvaluator exprEvaluator = new ExprEvaluator();
@@ -283,6 +298,7 @@ public class ExprEvaluatorTest extends TestCase {
         "6.241509125501484852088071665173*10^18");
   }
 
+  @Test
   public void testSmallValueEvalEnginge() {
     // github #208
     ExprEvaluator exprEvaluator = new ExprEvaluator();
@@ -298,6 +314,7 @@ public class ExprEvaluatorTest extends TestCase {
         "6.241509125501484852088071665173164020252959820255548406024372975427711002340001391293975286331422182*10^18");
   }
 
+  @Test
   public void testStringVariables001() {
     try {
       ExprEvaluator util = new ExprEvaluator(false, (short) 100);
@@ -322,6 +339,7 @@ public class ExprEvaluatorTest extends TestCase {
     }
   }
 
+  @Test
   public void testEvalF() {
     EvalEngine engine = new EvalEngine(true);
     ExprEvaluator eval = new ExprEvaluator(engine, true, (short) 20);
@@ -332,6 +350,7 @@ public class ExprEvaluatorTest extends TestCase {
     assertEquals("4.442882938158366", Double.toString(d));
   }
 
+  @Test
   public void testEvalComplex() {
     EvalEngine engine = new EvalEngine(true);
     ExprEvaluator eval = new ExprEvaluator(engine, true, (short) 20);
@@ -342,6 +361,7 @@ public class ExprEvaluatorTest extends TestCase {
     assertEquals("(0.2890254822222363, -0.09199966835037525)", c.toString());
   }
 
+  @Test
   public void testSetErrorPrintStream() {
     ExprEvaluator exprEvaluator = new ExprEvaluator();
     EvalEngine evalEngine = exprEvaluator.getEvalEngine();

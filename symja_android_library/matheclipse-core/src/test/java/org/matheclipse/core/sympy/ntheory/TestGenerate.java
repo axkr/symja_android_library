@@ -4,11 +4,9 @@ import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
-public class TestGenerate extends ExprEvaluatorTestCase {
+import static org.junit.Assert.assertEquals;
 
-  public TestGenerate(String name) {
-    super(name);
-  }
+public class TestGenerate extends ExprEvaluatorTestCase {
 
   @Test
   public void testPrimeRange() {

@@ -7,10 +7,6 @@ import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
 public class TestJSCode extends ExprEvaluatorTestCase {
 
-  public TestJSCode(String name) {
-    super(name);
-  }
-
   @Test
   public void test_printmethod() {
     // assert jscode(Abs(x)) == "Math.abs(x)"

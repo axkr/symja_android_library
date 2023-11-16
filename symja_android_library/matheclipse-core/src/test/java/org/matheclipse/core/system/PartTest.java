@@ -1,12 +1,11 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
+
 /** Tests forSolve and Roots functions */
 public class PartTest extends ExprEvaluatorTestCase {
 
-  public PartTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testPartErrors() {
 
     //
@@ -22,6 +21,7 @@ public class PartTest extends ExprEvaluatorTestCase {
         "{1,2,3,4}[[3;;1]]");
   }
 
+  @Test
   public void testPartRead() {
     check("A = {a, b, c, d}; A[[3]]", //
         "c");
@@ -78,6 +78,7 @@ public class PartTest extends ExprEvaluatorTestCase {
         "Hold(Plus(Part(A, 1), Part(B, 2), Part(C, 3)))");
   }
 
+  @Test
   public void testPartWrite() {
     check("B={a,b,c}; {B[[2]],B[[3]],B[[1]]}=B;B", //
         "{c,a,b}");
@@ -110,12 +111,14 @@ public class PartTest extends ExprEvaluatorTestCase {
         "{0,3,4}");
   }
 
+  @Test
   public void testPartSparse() {
     check("SparseArray[{{0, a}, {b, 0}}]//Normal", //
         "{{0,a},\n" //
             + " {b,0}}");
   }
 
+  @Test
   public void testPart() {
     check("(3/2)[[0]]", //
         "Rational");

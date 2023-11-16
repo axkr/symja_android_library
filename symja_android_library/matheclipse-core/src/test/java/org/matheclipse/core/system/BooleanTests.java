@@ -1,10 +1,10 @@
 package org.matheclipse.core.system;
 
-public class BooleanTests extends ExprEvaluatorTestCase {
-  public BooleanTests(String name) {
-    super(name);
-  }
+import org.junit.Test;
 
+public class BooleanTests extends ExprEvaluatorTestCase {
+
+  @Test
   public void testAllTrue() {
     check("AllTrue({}, EvenQ)", //
         "True");
@@ -20,6 +20,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testAnd() {
     // let x&&x unevaluated because of pattern matching
     check("x&&x", //
@@ -48,6 +49,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testAnyTrue() {
     check("AnyTrue({}, EvenQ)", //
         "False");
@@ -65,6 +67,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testBoole() {
     check("Boole(2 == 2)", //
         "1");
@@ -81,6 +84,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "{Boole(a),0,Boole(b),1,Boole(f())}");
   }
 
+  @Test
   public void testBooleanConvert() {
     check("BooleanConvert((a && !b || !a && b) && " //
         + "(c && b && !a && !d && !e || c && !b && a && !d && !e || c && !b && !a && d && !e || c && !b && !a && !d && e || !c && b && a && !d && !e || !c && b && !a && d && !e || !c && b && !a && !d && e || !c && !b && a && d && !e || !c && !b && a && !d && e || !c && !b && !a && d && e) && "
@@ -171,6 +175,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "(x&&y&&z)||(!x&&!y&&!z)");
   }
 
+  @Test
   public void testBooleanFunction001() {
 
     // test with wrong var name lenght()==0
@@ -237,6 +242,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "(x&&!y&&!z)||(!x&&y)||(!x&&z)");
   }
 
+  @Test
   public void testBooleanFunction002() {
 
     check("f = BooleanFunction(30, 3)", //
@@ -274,6 +280,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testBooleanMinimize() {
     check("BooleanMinimize((x+1)&&(x+1))", //
         "1+x");
@@ -343,6 +350,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "(a||b)&&(c||d)");
   }
 
+  @Test
   public void testBooleanMaxterms() {
     check("BooleanMaxterms({{1,1,1,1}}, {a, b, c,d})", //
         "a||b||c||d");
@@ -357,6 +365,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "!a||b||c");
   }
 
+  @Test
   public void testBooleanMinterms() {
     check("BooleanMinterms({{1,1,1,1}}, {a, b, c,d})", //
         "a&&b&&c&&d");
@@ -377,6 +386,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "!a&&b&&c");
   }
 
+  @Test
   public void testBooleanQ() {
     check("BooleanQ(True)", //
         "True");
@@ -388,6 +398,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testBooleanTable() {
     check("BooleanTable(BooleanFunction(30, 3))", //
         "{False,False,False,True,True,True,True,False}");
@@ -424,6 +435,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
   public void testBooleanVariables() {
     check("BooleanVariables(#1 && #199 &)", //
         "199");
@@ -441,6 +453,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "{}");
   }
 
+  @Test
   public void testEqual() {
     // TODO
     // check(
@@ -580,6 +593,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testEquivalent() {
     check("Equivalent(True, True, False)", //
         "False");
@@ -612,11 +626,13 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testExists() {
     check("Exists(a, f(b)>c)", //
         "f(b)>c");
   }
 
+  @Test
   public void testBooleanFunctionSatisfiabilityInstances() {
     check("f = BooleanFunction(11,2)", //
         "BooleanFunction(Index: 9 Number of variables: 2)");
@@ -624,11 +640,13 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "{{True,True},{False,True},{False,False}}");
   }
 
+  @Test
   public void testForAll() {
     check("ForAll(a, f(b)>c)", //
         "f(b)>c");
   }
 
+  @Test
   public void testGreater() {
     // github #200
     check("-I*Sqrt(11)>0", //
@@ -668,6 +686,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "x>=x");
   }
 
+  @Test
   public void testGreaterEqual() {
     check("x>=x", //
         "x>=x");
@@ -693,6 +712,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "x>x");
   }
 
+  @Test
   public void testImplies() {
     check("Implies(!a,!a)", //
         "True");
@@ -714,6 +734,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testInequality() {
     // check("Inequality(-1,Less,0,Lest,1)", //
     // "Inequality(0,Lest,1)");
@@ -781,6 +802,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "Inequality(-1,lest,0,Less,1)");
   }
 
+  @Test
   public void testLess() {
     check("Infinity<Infinity", //
         "False");
@@ -811,6 +833,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "x>1/2*(5-Sqrt(5))");
   }
 
+  @Test
   public void testLessEqual() {
     check("x<=x", //
         "x<=x");
@@ -839,6 +862,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "x>=1/2*(5-Sqrt(5))");
   }
 
+  @Test
   public void testLogicalExpand() {
     // TODO
     // check("LogicalExpand(r && s && q || r || s)", //
@@ -872,6 +896,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
             "(r&&!p&&!q&&!s&&!t)||(q&&!p&&!r&&!s&&!t)||(p&&!q&&!r&&!s&&!t)");
   }
 
+  @Test
   public void testSatisfiabilityCount() {
     check("SatisfiabilityCount(Equivalent(a, b), {a, b})", //
         "2");
@@ -897,6 +922,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "0");
   }
 
+  @Test
   public void testSatisfiabilityInstances() {
     check("SatisfiabilityInstances(BooleanFunction(30, 3), 3)", //
         "{{True,False,False},{False,True,False},{False,False,True}}");
@@ -944,6 +970,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "{}");
   }
 
+  @Test
   public void testSatisfiableQ() {
     check("SatisfiableQ(BooleanFunction(110, 3))", //
         "True");
@@ -1205,6 +1232,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
   public void testXnor() {
     // check("Xnor(False, True)", //
     // "False");
@@ -1219,6 +1247,7 @@ public class BooleanTests extends ExprEvaluatorTestCase {
         "Xnor(a,b,c)");
   }
 
+  @Test
   public void testXor() {
     check("Xor(False, True)", //
         "True");

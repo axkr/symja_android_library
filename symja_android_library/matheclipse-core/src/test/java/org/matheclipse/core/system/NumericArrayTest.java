@@ -1,15 +1,13 @@
 package org.matheclipse.core.system;
 
+import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 
 /** Tests for NumericArray functions */
 public class NumericArrayTest extends ExprEvaluatorTestCase {
 
-  public NumericArrayTest(String name) {
-    super(name);
-  }
-
+  @Test
   public void testArrayDepth() {
     check("ArrayDepth({{1, 2}, SparseArray({3, 4}), NumericArray({5, 6}, \"Integer32\")})", //
         "2");
@@ -17,6 +15,7 @@ public class NumericArrayTest extends ExprEvaluatorTestCase {
         "2");
   }
 
+  @Test
   public void testNumericArrayQ() {
     check(
         "NumericArrayQ(NumericArray(SparseArray({{1, 1} -> 1, {2, 2} -> 2, {3, 3} -> 3, {4, 4} -> 4}), \"Integer32\") )", //
@@ -26,17 +25,20 @@ public class NumericArrayTest extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
   public void testNumericArrayType() {
     check(
         "NumericArrayType(NumericArray(SparseArray({{1, 1} -> 1, {2, 2} -> 2, {3, 3} -> 3, {4, 4} -> 4}), \"Integer32\") )", //
         "Integer32");
   }
 
+  @Test
   public void testUnsignedInteger8() {
     check("NumericArray({{0, 2}, {3, 2^8-1}}, \"UnsignedInteger8\")// Normal", //
         "{{0,2},{3,255}}");
   }
 
+  @Test
   public void testByteArrayInteger8() {
     check("NumericArray(ByteArray({1, 2, 3, 4}), \"UnsignedInteger8\") // Normal", //
         "{1,2,3,4}");
@@ -46,26 +48,31 @@ public class NumericArrayTest extends ExprEvaluatorTestCase {
         "NumericArray(Type: Integer16 Dimensions: {4})");
   }
 
+  @Test
   public void testUnsignedInteger16() {
     check("NumericArray({{0, 2}, {3, 2^16-1}}, \"UnsignedInteger16\")// Normal", //
         "{{0,2},{3,65535}}");
   }
 
+  @Test
   public void testUnsignedInteger32() {
     check("NumericArray({{0, 2}, {3, 2^32-1}}, \"UnsignedInteger32\")// Normal", //
         "{{0,2},{3,4294967295}}");
   }
 
+  @Test
   public void testUnsignedInteger64() {
     check("NumericArray({{0, 2}, {3, 2^64-1}}, \"UnsignedInteger64\")// Normal", //
         "{{0,2},{3,18446744073709551615}}");
   }
 
+  @Test
   public void testInteger16() {
     check("NumericArray( { } , \"Integer16\") ", //
         "{}");
   }
 
+  @Test
   public void testInteger32() {
     check(
         "NumericArray(SparseArray({{1, 1} -> 1, {2, 2} -> 2, {3, 3} -> 3, {4, 4} -> 4}), \"Integer32\") // Normal", //
@@ -75,12 +82,14 @@ public class NumericArrayTest extends ExprEvaluatorTestCase {
         "{{7,2,0,1,10},{3,6,4,5,10},{7,9,2,9,3},{1,2,5,9,8},{4,6,8,3,0}}");
   }
 
+  @Test
   public void testInteger64() {
     check(
         "NumericArray({{7,2,0,1,10},{3,6,4,5,10},{7,9,2,9,3},{1,2^40-1,5,9,8},{4,6,8,3,0}}, \"Integer64\") // Normal", //
         "{{7,2,0,1,10},{3,6,4,5,10},{7,9,2,9,3},{1,1099511627775,5,9,8},{4,6,8,3,0}}");
   }
 
+  @Test
   public void testReal32() {
     check(
         "NumericArray(" + "{{0.71816,0.985858,0.462604,0.873427,0.837309},"
@@ -110,6 +119,7 @@ public class NumericArrayTest extends ExprEvaluatorTestCase {
         "1");
   }
 
+  @Test
   public void testReal64() {
     check(
         "NumericArray(" + "{{0.71816,0.985858,0.462604,0.873427,0.837309},"
@@ -126,6 +136,7 @@ public class NumericArrayTest extends ExprEvaluatorTestCase {
         "NumericArray(Type: Real64 Dimensions: {2})");
   }
 
+  @Test
   public void testComplexReal32() {
     check("NumericArray({3/7 + 0.6666*I}, \"ComplexReal32\") // Normal", //
         "{0.428571+I*0.6666}");
@@ -133,6 +144,7 @@ public class NumericArrayTest extends ExprEvaluatorTestCase {
         "NumericArray(Type: ComplexReal32 Dimensions: {1})");
   }
 
+  @Test
   public void testComplexReal64() {
     check("NumericArray({3/7 + 0.6666*I}, \"ComplexReal64\") // Normal", //
         "{0.428571+I*0.6666}");
@@ -142,7 +154,7 @@ public class NumericArrayTest extends ExprEvaluatorTestCase {
 
   /** The JUnit setup method */
   @Override
-  protected void setUp() {
+  public void setUp() {
     super.setUp();
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.MAX_AST_SIZE = 1000000;
@@ -150,7 +162,7 @@ public class NumericArrayTest extends ExprEvaluatorTestCase {
   }
 
   @Override
-  protected void tearDown() throws Exception {
+  public void tearDown() throws Exception {
     super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
   }

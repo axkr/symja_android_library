@@ -2,18 +2,19 @@ package org.matheclipse.core.system;
 
 import java.io.PrintStream;
 import java.io.StringWriter;
+
+import org.junit.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.WriterOutputStream;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
+import static org.junit.Assert.assertEquals;
+
 /** Test F.symjify() */
 public class SymjifyTestCase extends ExprEvaluatorTestCase {
-  public SymjifyTestCase(String name) {
-    super(name);
-  }
-
-  public void test787_1() {
+   @Test
+   public void test787_1() {
     // issue #787
     IExpr minus = F.symjify("y").minus(F.ZZ(1));
      assertEquals("-1+y", //
@@ -30,7 +31,8 @@ public class SymjifyTestCase extends ExprEvaluatorTestCase {
          F.symjify("x").multiply(power).fullFormString());
   }
 
-  public void test787_2() {
+   @Test
+   public void test787_2() {
     // issue #787
     IExpr minus = F.symjify("y").minus(F.ZZ(1));
     assertEquals("-1+y", //
@@ -47,25 +49,29 @@ public class SymjifyTestCase extends ExprEvaluatorTestCase {
         F.symjify("x").divide(power).fullFormString());
   }
 
-  public void test001() {
+   @Test
+   public void test001() {
     IExpr expr = F.symjify("(a+(b+c))");
     assertEquals(expr.fullFormString(), "Plus(a, b, c)");
     assertEquals(expr.toString(), "a+b+c");
   }
 
-  public void test002() {
+   @Test
+   public void test002() {
     IExpr expr = F.symjify(new int[] {1, 2, 3});
     assertEquals(expr.fullFormString(), "List(1, 2, 3)");
     assertEquals(expr.toString(), "{1,2,3}");
   }
 
-  public void test003() {
+   @Test
+   public void test003() {
     IExpr expr = F.symjify(new double[] {1.0, 2.1, 3.5});
     assertEquals(expr.fullFormString(), "List(1.0`, 2.1`, 3.5`)");
     assertEquals(expr.toString(), "{1.0,2.1,3.5}");
   }
 
-  public void test004() {
+   @Test
+   public void test004() {
     IExpr expr = F.symjify(new double[][] {{1.0, 2.1, 3.5}, {1.1, 2.2, 3.6}});
     assertEquals(expr.fullFormString(), //
         "List(List(1.0`, 2.1`, 3.5`), List(1.1`, 2.2`, 3.6`))");
@@ -73,13 +79,15 @@ public class SymjifyTestCase extends ExprEvaluatorTestCase {
         "\n{{1.0,2.1,3.5},\n" + " {1.1,2.2,3.6}}");
   }
 
-  public void test005() {
+   @Test
+   public void test005() {
     IExpr expr = F.symjify(new boolean[][] {{true, false}, {false, true}});
     assertEquals(expr.fullFormString(), "List(List(True, False), List(False, True))");
     assertEquals(expr.toString(), "{{True,False},{False,True}}");
   }
 
-  public void testEvalQuiet() {
+   @Test
+   public void testEvalQuiet() {
     final StringWriter outWriter = new StringWriter();
     WriterOutputStream wouts = new WriterOutputStream(outWriter);
     final StringWriter errorWriter = new StringWriter();
