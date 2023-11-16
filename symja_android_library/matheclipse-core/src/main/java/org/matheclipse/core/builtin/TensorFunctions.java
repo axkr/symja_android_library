@@ -308,6 +308,9 @@ public class TensorFunctions {
       // TODO improve performance by directly transforming to sparse array
       IExpr leviCivitaNormalForm =
           S.Array.of(engine, F.Function(F.Signature(F.list(F.SlotSequence(1)))), nCopies);
+      if (ast.isAST2() && ast.second().equals(S.List)) {
+        return leviCivitaNormalForm;
+      }
       if (leviCivitaNormalForm.isList()) {
         return SparseArrayExpr.newDenseList((IAST) leviCivitaNormalForm, F.C0);
       }
@@ -321,7 +324,7 @@ public class TensorFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
 

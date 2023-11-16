@@ -300,6 +300,7 @@ public class BuiltinUsage {
     USAGE[ID.LetterQ] = "test whether all the characters are letters";
     USAGE[ID.Level] = "get parts specified by a given number of indices";
     USAGE[ID.LevelQ] = "test whether is a valid level specification";
+    USAGE[ID.LeviCivitaTensor] = "give the Levi-Civita tensor with a given dimension";
     USAGE[ID.Limit] = "directed and undirected limits";
     USAGE[ID.LinearModelFit] = "fit a linear model to a dataset";
     USAGE[ID.LinearSolve] = "solves linear systems in matrix form";
