@@ -4,7 +4,7 @@ import java.text.Collator;
 import java.util.Locale;
 
 /** (I)nterface for a (String) e(X)pression */
-public interface IStringX extends IExpr {
+public interface IStringX extends IExpr, IAtomicEvaluate {
   public static final short TEXT_PLAIN = 1;
   public static final short TEXT_HTML = 2;
   public static final short TEXT_MATHML = 3;

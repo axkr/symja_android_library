@@ -1,6 +1,5 @@
 package org.matheclipse.core.expression;
 
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
@@ -90,11 +89,6 @@ public abstract class DataExpr<T> implements IDataExpr<T> {
     final int x = hierarchy();
     final int y = expr.hierarchy();
     return (x < y) ? -1 : ((x == y) ? 0 : 1);
-  }
-
-  @Override
-  public IExpr evaluate(EvalEngine engine) {
-    return F.NIL;
   }
 
   /** {@inheritDoc} */

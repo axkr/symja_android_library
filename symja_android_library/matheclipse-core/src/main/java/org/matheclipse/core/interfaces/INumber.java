@@ -10,7 +10,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Pair;
 
 /** Implemented by all number interfaces */
-public interface INumber extends IExpr {
+public interface INumber extends IExpr, IAtomicEvaluate {
 
   /**
    * Get the absolute value for a given number
@@ -323,6 +323,7 @@ public interface INumber extends IExpr {
    *
    * @return the closest integer to the argument.
    */
+  @Override
   public IExpr roundExpr();
 
   /**

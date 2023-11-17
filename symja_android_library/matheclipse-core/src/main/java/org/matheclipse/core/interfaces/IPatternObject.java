@@ -5,7 +5,7 @@ import org.matheclipse.core.generic.GenericPair;
 import org.matheclipse.core.patternmatching.IPatternMap;
 
 /** Interface for pattern objects (i.e. _, x_, x__) */
-public interface IPatternObject extends IExpr {
+public interface IPatternObject extends IExpr, IAtomicEvaluate {
 
   /**
    * Add this pattern to the given <code>patternIndexMap</code>.

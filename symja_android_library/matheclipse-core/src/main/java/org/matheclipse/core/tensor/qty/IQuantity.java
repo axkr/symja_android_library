@@ -2,6 +2,7 @@
 package org.matheclipse.core.tensor.qty;
 
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAtomicEvaluate;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IReal;
@@ -35,7 +36,7 @@ import com.univocity.parsers.csv.CsvFormat;
  * whereas <code>a.add(b)</code> throws an Exception.
  */
 @SuppressWarnings("ComparableType")
-public interface IQuantity extends IExpr, Comparable<IExpr> {
+public interface IQuantity extends IExpr, IAtomicEvaluate, Comparable<IExpr> {
   static final char UNIT_OPENING_BRACKET = '[';
   static final char UNIT_CLOSING_BRACKET = ']';
 
@@ -111,6 +112,7 @@ public interface IQuantity extends IExpr, Comparable<IExpr> {
    */
   public IExpr plus(final IExpr scalar, boolean nilIfUnevaluated);
 
+  @Override
   public IExpr roundExpr();
 
   /**

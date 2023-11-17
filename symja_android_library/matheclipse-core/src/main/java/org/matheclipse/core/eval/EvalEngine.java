@@ -55,6 +55,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
+import org.matheclipse.core.interfaces.IAtomicEvaluate;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IEvalStepListener;
@@ -752,7 +753,8 @@ public class EvalEngine implements Serializable {
    *
    * @param ast
    * @param attributes
-   * @param numericFunction2 TODO
+   * @param numericFunction if <code>true</code> evaluate the arguments of an {@link S#N} function
+   *        expression
    * @return <code>F.NIL</code> is no evaluation was possible
    */
   public IASTMutable evalArgs(final IAST ast, final int attributes, boolean numericFunction) {
@@ -1780,16 +1782,9 @@ public class EvalEngine implements Serializable {
    * @see #evaluateNIL(IExpr)
    */
   private final IExpr evalLoop(final IExpr expr) {
-    if (expr instanceof NILPointer || expr == null) {
-      if (Config.FUZZ_TESTING) {
-        throw new NullPointerException();
-      }
-      // `1`.
-      Errors.printMessage(S.General, "error",
-          F.List("Evaluation aborted in EvalEngine#evalLoop() because of undefined expression!"));
-      throw AbortException.ABORTED;
-    }
-    if (expr instanceof IAST) {
+    if (expr instanceof IAtomicEvaluate) {
+      return expr.evaluate(this);
+    } else if (expr instanceof IAST) {
       final IExpr head = expr.head();
       if (head instanceof IBuiltInSymbol) {
         final IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
@@ -1797,6 +1792,14 @@ public class EvalEngine implements Serializable {
           return ((IFastFunctionEvaluator) evaluator).evaluate((IAST) expr, this);
         }
       }
+    } else if (expr instanceof NILPointer || expr == null) {
+      if (Config.FUZZ_TESTING) {
+        throw new NullPointerException();
+      }
+      // `1`.
+      Errors.printMessage(S.General, "error",
+          F.List("Evaluation aborted in EvalEngine#evalLoop() because of undefined expression!"));
+      throw AbortException.ABORTED;
     }
 
     if ((fRecursionLimit > 0) && (fRecursionCounter > fRecursionLimit)) {
