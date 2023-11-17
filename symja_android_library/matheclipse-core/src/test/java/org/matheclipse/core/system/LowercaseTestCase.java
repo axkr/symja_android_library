@@ -6837,6 +6837,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testEllipticK() {
+    check("N(EllipticK(8/10), 50)", //
+        "2.2572053268208536550832560045233873972354192817399");
+    check("EllipticK(0.999999999999999990000000000000000)", //
+        "20.9582676515692789828830607366566");
+    check("EllipticK(0.99999999999999999)", //
+        "ComplexInfinity");
+    checkNumeric("EllipticK(2.5+I)", //
+        "1.1551450606569333+I*0.9528453714670536");
+
     check("EllipticK(0.5)", //
         "1.85407");
     check("EllipticK(-1.0+I)", //
@@ -11158,6 +11167,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHornerForm() {
+    check("HornerForm(x^(1/3) + x + x^(3/2))", //
+        "x^(1/3)+(1+Sqrt(x))*x");
     check("HornerForm(1/Sqrt(5))", //
         "1/Sqrt(5)");
     check("HornerForm(#2)", //

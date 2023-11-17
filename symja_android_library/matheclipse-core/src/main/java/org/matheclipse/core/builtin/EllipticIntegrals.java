@@ -15,6 +15,8 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInexactNumber;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -739,31 +741,36 @@ public class EllipticIntegrals {
         // (8 Pi^(3/2))/Gamma(-(1/4))^2
         return F.Times(F.C8, F.Power(S.Pi, F.QQ(3L, 2L)), F.Power(F.Gamma(F.CN1D4), -2));
       }
-
-      if (engine.isDoubleMode() && m.isNumber()) {
-        try {
-          double mDouble = Double.NaN;
-          try {
-            mDouble = m.evalf();
-          } catch (ValidateException ve) {
-          }
-          if (Double.isNaN(mDouble)) {
-            Complex mComplex = m.evalfc();
-            return F.complexNum(EllipticIntegralsJS.ellipticK(mComplex));
-          } else {
-            return F.complexNum(EllipticIntegralsJS.ellipticK(mDouble));
-          }
-        } catch (ValidateException ve) {
-          LOGGER.debug("EllipticK.evaluate() failed", ve);
-        } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-          return F.NIL;
-        }
-      }
       if (m.isNumber()) {
         // EllipticK(m_) := Pi/(2*ArithmeticGeometricMean(1,Sqrt(1-m)))
+        INumber m1 = ((INumber) m).negate().plus(F.C1);
         return F.Times(F.C1D2, S.Pi,
-            F.Power(F.ArithmeticGeometricMean(F.C1, F.Sqrt(F.Plus(F.C1, F.Negate(m)))), -1));
+            F.Power(F.ArithmeticGeometricMean(F.C1, F.Sqrt(m1)), -1));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.isAST1()) {
+        IInexactNumber m = (IInexactNumber) ast.arg1();
+        if (m.isZero()) {
+          return F.CPiHalf;
+        }
+        if (m.isOne()) {
+          return F.CComplexInfinity;
+        }
+        if (m.isMinusOne()) {
+          // Gamma(1/4)^2/(4*Sqrt(2*Pi))
+          return F.Times(F.C1D4, F.C1DSqrt2, F.Power(S.Pi, F.CN1D2), F.Sqr(F.Gamma(F.C1D4)));
+        }
+        if (m.isNumEqualRational(F.C1D2)) {
+          // (8 Pi^(3/2))/Gamma(-(1/4))^2
+          return F.Times(F.C8, F.Power(S.Pi, F.QQ(3L, 2L)), F.Power(F.Gamma(F.CN1D4), -2));
+        }
+        // EllipticK(m_) := Pi/(2*ArithmeticGeometricMean(1,Sqrt(1-m)))
+        INumber m1 = m.negate().plus(F.C1);
+        return F.Times(F.C1D2, S.Pi, F.Power(F.ArithmeticGeometricMean(F.C1, F.Sqrt(m1)), -1));
       }
       return F.NIL;
     }
