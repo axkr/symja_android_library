@@ -77,7 +77,7 @@
 			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
-	<!--
+	 
 	<repositories>
 		<repository>
 			<id>orekit</id>
@@ -101,7 +101,7 @@
 			</snapshots>
 		</repository>
 	</repositories>
-	-->
+	 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>11</java.version>
@@ -239,27 +239,27 @@
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-clustering</artifactId>
-				<version>3.0</version>
+				<version>3.1-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-fft</artifactId>
-				<version>3.0</version>
+				<version>3.1-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-fitting</artifactId>
-				<version>3.0</version>
+				<version>3.1-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-ode</artifactId>
-				<version>3.0</version>
+				<version>3.1-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-optim</artifactId>
-				<version>3.0</version>
+				<version>3.1-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.antlr</groupId>
@@ -269,7 +269,7 @@
 			<dependency>
 				<groupId>org.jgrapht</groupId>
 				<artifactId>jgrapht-io</artifactId>
-				<version>1.5.2</version>
+				<version>1.5.3-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jsoup</groupId>
@@ -289,7 +289,7 @@
 			<dependency>
 				<groupId>org.choco-solver</groupId>
 				<artifactId>choco-solver</artifactId>
-				<version>4.10.14</version>
+				<version>4.10.15-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
