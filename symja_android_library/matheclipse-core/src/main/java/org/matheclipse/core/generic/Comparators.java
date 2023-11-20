@@ -1,5 +1,6 @@
 package org.matheclipse.core.generic;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.function.BiPredicate;
 import org.hipparchus.complex.Complex;
@@ -41,7 +42,10 @@ public final class Comparators {
    * {@link ComplexNum#compare(Complex, Complex)} as the return value. Use
    * {@link Config#DEFAULT_CHOP_DELTA} to compare for approcimate equality.
    */
-  private static final class ComplexNormReverseComparator implements Comparator<Complex> {
+  private static final class ComplexNormReverseComparator
+      implements Comparator<Complex>, Serializable {
+
+    private static final long serialVersionUID = -343157250415373294L;
 
     @Override
     public final int compare(final Complex o1, final Complex o2) {
@@ -59,7 +63,9 @@ public final class Comparators {
    * a positive integer if this expression is canonical less than, equal to, or greater than the
    * specified expression.
    */
-  static final class ExprComparator implements Comparator<IExpr> {
+  static final class ExprComparator implements Comparator<IExpr>, Serializable {
+
+    private static final long serialVersionUID = -3985330284976712163L;
 
     @Override
     public final int compare(final IExpr o1, final IExpr o2) {
@@ -67,7 +73,9 @@ public final class Comparators {
     }
   }
 
-  static final class ExprLexicalComparator implements Comparator<IExpr> {
+  static final class ExprLexicalComparator implements Comparator<IExpr>, Serializable {
+
+    private static final long serialVersionUID = 6853759697109830142L;
 
     /**
      * Compares the elements of two {@link IAST}s (on the first level only) until the minimum size
@@ -132,7 +140,9 @@ public final class Comparators {
    * a positive integer if this expression is canonical greater than, equal to, or less than the
    * specified expression.
    */
-  static final class ExprReverseComparator implements Comparator<IExpr> {
+  static final class ExprReverseComparator implements Comparator<IExpr>, Serializable {
+
+    private static final long serialVersionUID = -353117773175002640L;
 
     /**
      * Compares an expression with another expression for order. Returns a negative integer, zero,

@@ -66,7 +66,11 @@ public class Predicates {
    * {@link S#False} or <code>-1</code> and return <code>1</code>, or {@link S#True} or
    * <code>1</code> and return <code>-1</code>.
    */
-  public static class IsBinaryFalse implements BiPredicate<IExpr, IExpr>, Comparator<IExpr> {
+  public static class IsBinaryFalse
+      implements BiPredicate<IExpr, IExpr>, Comparator<IExpr>, Serializable {
+
+    private static final long serialVersionUID = -651160649796790184L;
+
     protected final EvalEngine engine;
 
     protected final IExpr head;
@@ -116,7 +120,11 @@ public class Predicates {
    * <code>-1</code> and return <code>-1</code>.
    * 
    */
-  public static class IsBinaryTrue implements BiPredicate<IExpr, IExpr>, Comparator<IExpr> {
+  public static class IsBinaryTrue
+      implements BiPredicate<IExpr, IExpr>, Comparator<IExpr>, Serializable {
+
+    private static final long serialVersionUID = -3680368770544249965L;
+
     protected final EvalEngine engine;
 
     protected final IExpr head;
