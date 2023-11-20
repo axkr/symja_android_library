@@ -16849,6 +16849,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNMinimize() {
+    check("NMinimize({-5-2*x+y,x+2*y<=6&&3*x+2*y<=12},{x,y})", //
+        "{-13.0,{x->4.0,y->0.0}}");
+
     check("NMinimize({-Sinc(x)-Sinc(y)}, {x, y})", //
         "{-2.0,{x->0.0,y->0.0}}");
 

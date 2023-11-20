@@ -6,7 +6,7 @@ import org.hipparchus.optim.linear.LinearObjectiveFunction;
 import org.hipparchus.optim.linear.Relationship;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
@@ -35,37 +35,35 @@ public class Expr2LP {
   }
 
   public LinearConstraint expr2Constraint() {
-    double[] coefficients = new double[fVariables.size()];
-    if (fExpr.isAST()) {
-      IAST ast = (IAST) fExpr;
-      if (ast.isEqual()) {
-        IExpr expr = F.eval(F.Subtract(ast.arg1(), ast.arg2()));
-        IReal num = expr2ObjectiveFunction(expr, coefficients);
-        if (num == null) {
-          return new LinearConstraint(coefficients, Relationship.EQ, 0);
+    if (fExpr.isAST() && fExpr.argSize() == 2) {
+      int headID = fExpr.headID();
+      if (headID > ID.UNKNOWN) {
+        switch (headID) {
+          case ID.Equal:
+            return createLinearConstraint(Relationship.EQ);
+          case ID.GreaterEqual:
+            return createLinearConstraint(Relationship.GEQ);
+          case ID.LessEqual:
+            return createLinearConstraint(Relationship.LEQ);
+          default:
+            break;
         }
-        return new LinearConstraint(coefficients, Relationship.EQ, -1 * num.doubleValue());
-      }
-      if (ast.isAST(S.GreaterEqual, 3)) {
-        IExpr expr = F.eval(F.Subtract(ast.arg1(), ast.arg2()));
-        IReal num = expr2ObjectiveFunction(expr, coefficients);
-        if (num == null) {
-          return new LinearConstraint(coefficients, Relationship.GEQ, 0);
-        }
-        return new LinearConstraint(coefficients, Relationship.GEQ, -1 * num.doubleValue());
-      }
-      if (ast.isAST(S.LessEqual, 3)) {
-        IExpr expr = F.eval(F.Subtract(ast.arg1(), ast.arg2()));
-        IReal num = expr2ObjectiveFunction(expr, coefficients);
-        if (num == null) {
-          return new LinearConstraint(coefficients, Relationship.LEQ, 0);
-        }
-        return new LinearConstraint(coefficients, Relationship.LEQ, -1 * num.doubleValue());
       }
     }
     throw new ArgumentTypeException(
         "conversion from expression to linear programming expression failed for "
             + fExpr.toString());
+  }
+
+  private LinearConstraint createLinearConstraint(Relationship relation) {
+    IAST ast = (IAST) fExpr;
+    double[] coefficients = new double[fVariables.size()];
+    IExpr expr = F.eval(F.Subtract(ast.arg1(), ast.arg2()));
+    IReal num = expr2ObjectiveFunction(expr, coefficients);
+    if (num == null) {
+      return new LinearConstraint(coefficients, relation, 0.0);
+    }
+    return new LinearConstraint(coefficients, relation, -1 * num.doubleValue());
   }
 
   public LinearObjectiveFunction expr2ObjectiveFunction() {
