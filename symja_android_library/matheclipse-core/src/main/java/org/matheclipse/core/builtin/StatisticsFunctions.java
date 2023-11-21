@@ -6413,6 +6413,12 @@ public class StatisticsFunctions {
                       if (xFloor < 1) {
                         xFloor = 1;
                       }
+                      if (xFloor > s.argSize()) {
+                        xFloor = s.argSize();
+                      }
+                      if (xCeiling < 1) {
+                        xCeiling = 1;
+                      }
                       if (xCeiling > s.argSize()) {
                         xCeiling = s.argSize();
                       }
@@ -6425,7 +6431,6 @@ public class StatisticsFunctions {
                           F.Times(F.Subtract(s.get(xCeiling), s.get(xFloor)), factor));
                     }
                   }
-                  // return of(s, length, q);
                 }
               }
             }

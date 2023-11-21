@@ -20677,7 +20677,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testQuartiles() {
+  public void testQuartiles() {  
+    check("Quartiles({{-1,-2,3}},{{0,0},{0,0}}+1)", //
+        "{{-1,-1,-1},{-2,-2,-2},{3,3,3}}");
+
     // method 1 from Wikipedia
     check("Quartiles({6, 7, 15, 36, 39, 40, 41, 42, 43, 47, 49}, {{0, 0}, {1, 0}}) // N", //
         "{15.0,40.0,43.0}");
@@ -20691,6 +20694,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{Log(4/3)/x,Log(2)/x,Log(4)/x}");
     check("Quartiles({1, 3, 4, 2, 5, 6})", //
         "{2,7/2,5}");
+    check("Quartiles(N({Sin(1), 2, 3, 4},30))", //
+        "{1.42073549240394825332625116081,2.5,3.5}");
   }
 
   @Test
