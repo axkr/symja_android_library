@@ -1754,20 +1754,23 @@ public final class NumberTheory {
           return F.Times(F.EulerE(arg1), F.Power(F.C2, F.Negate(arg1)));
         }
         if (arg1.isMathematicalIntegerNonNegative()) {
-          try {
-            int nMax = arg1.toIntDefault();
-            IExpr n = arg1;
-            ArrayList<IInteger> eulerE = eulerEList(nMax);
-            // https://functions.wolfram.com/Polynomials/EulerE2/27/01/0001/
-            // Sum((Binomial(n,k)*EulerE(k))/(2^k*(-1/2+z)^(k-n)),{k,0,n})
-            return F.sum(k -> //
-            F.Times(F.Power(F.Power(F.C2, k), F.CN1),
-                F.Power(F.Plus(F.CN1D2, z), F.Plus(F.Negate(k), n)), F.Binomial(n, k),
-                getEulerEEvenOdd(eulerE, k.toIntDefault())), //
-                0, nMax, 1, //
-                true);
-          } catch (IllegalArgumentException iae) {
-            return Errors.printMessage(S.EulerE, iae, engine);
+          int nMax = arg1.toIntDefault();
+          if (nMax != Integer.MIN_VALUE) {
+            try {
+              IExpr n = arg1;
+              ArrayList<IInteger> eulerE = eulerEList(nMax);
+              // https://functions.wolfram.com/Polynomials/EulerE2/27/01/0001/
+              // Sum((Binomial(n,k)*EulerE(k))/(2^k*(-1/2+z)^(k-n)),{k,0,n})
+              return F.sum(k -> //
+              F.Times(F.Power(F.Power(F.C2, k), F.CN1),
+                  F.Power(F.Plus(F.CN1D2, z), F.Plus(F.Negate(k), n)), F.Binomial(n, k),
+                  getEulerEEvenOdd(eulerE, k.toIntDefault())), //
+                  0, nMax, 1, //
+                  true);
+
+            } catch (IllegalArgumentException iae) {
+              return Errors.printMessage(S.EulerE, iae, engine);
+            }
           }
         }
         return F.NIL;

@@ -18100,6 +18100,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPerfectNumber() {
+    check("PerfectNumber(2^101)", //
+        "PerfectNumber(2535301200456458802993406410752)");
     // test Listable attribute
     check("PerfectNumber(Range(3))", //
         "{6,28,496}");
