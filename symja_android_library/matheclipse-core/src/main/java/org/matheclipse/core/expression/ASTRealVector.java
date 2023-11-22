@@ -21,6 +21,7 @@ import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAtomicEvaluate;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -46,7 +47,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  * @see AST
  */
-public class ASTRealVector extends AbstractAST implements Externalizable, RandomAccess {
+public class ASTRealVector extends AbstractAST
+    implements Externalizable, RandomAccess, IAtomicEvaluate {
 
   public ASTRealVector() {
     // When Externalizable objects are deserialized, they first need to be constructed by invoking
@@ -260,6 +262,13 @@ public class ASTRealVector extends AbstractAST implements Externalizable, Random
     // if ((getEvalFlags() & IAST.DEFER_AST) == IAST.DEFER_AST) {
     // return F.NIL;
     // }
+    if (engine.isNumericMode() && engine.isArbitraryMode()) {
+      IASTAppendable result = F.ListAlloc(vector.getDimension());
+      for (int i = 0; i < vector.getDimension(); i++) {
+        result.append(ApfloatNum.valueOf(vector.getEntry(i)));
+      }
+      return result;
+    }
     return F.NIL;
   }
 
