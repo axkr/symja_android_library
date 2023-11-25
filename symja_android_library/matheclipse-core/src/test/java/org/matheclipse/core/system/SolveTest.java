@@ -1929,6 +1929,18 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "1,x7->0,x8->t22*x10,x9->x10}}");
   }
 
+  @Test
+  public void testSystemCannotBeSolved() {
+    // Solve: The system cannot be solved with the methods available to Solve.
+    check(
+        "Solve({v1*Sin(b1)==u1*Sin(a1), v2*Sin(b2)==u2*Sin(a2), m1*v1*Cos(b1)+m2*v2*Cos(b2)==m1*u1*Cos(a1)+m2*u2*Cos(a2), v2*Cos(b2) - v1*Cos(b1) == e*(u1*Cos(a1) - u2*Cos(a2))}" //
+            + ", {v1,v2,b1,b2})", //
+        "Solve({v1*Sin(b1)==u1*Sin(a1),v2*Sin(b2)==u2*Sin(a2),m1*v1*Cos(b1)+m2*v2*Cos(b2)==m1*u1*Cos(a1)+m2*u2*Cos(a2),-v1*Cos(b1)+v2*Cos(b2)==e*(u1*Cos(a1)-u2*Cos(a2))},"
+            + "{v1,v2,b1,b2})");
+  }
+
+
+
   /** The JUnit setup method */
   @Override
   public void setUp() {

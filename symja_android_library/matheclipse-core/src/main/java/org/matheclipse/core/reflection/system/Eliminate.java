@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.RootsFunctions;
@@ -356,6 +357,9 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
     if (exprWithVariable.equals(variable)) {
       return exprWithoutVariable;
     }
+    if (exprWithoutVariable.isComplexInfinity() || exprWithoutVariable.isIndeterminate()) {
+      return F.NIL;
+    }
     if (exprWithVariable.isAST()) {
       IAST ast = (IAST) exprWithVariable;
       if (ast.isAST1()) {
@@ -521,6 +525,10 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    */
   private static IExpr tryTrigToExp(IAST plusAST, IExpr variable, boolean multipleValues,
       EvalEngine engine) {
+    // System.out.println(plusAST.leafCount());
+    if (plusAST.leafCount() > Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT) {
+      return F.NIL;
+    }
     IExpr termsEqualZero = engine.evaluateNIL(F.TrigToExp(plusAST));
     if (termsEqualZero.isPresent()) {
       IASTMutable newList = F.unaryAST1(S.List, termsEqualZero);
