@@ -1204,6 +1204,7 @@ public final class LinearAlgebra {
    */
   private static final class ConjugateTranspose extends Transpose {
 
+    /** {@inheritDoc} */
     @Override
     protected IExpr transform(final IExpr expr) {
       return expr.conjugate();
@@ -5656,18 +5657,14 @@ public final class LinearAlgebra {
         final int[] dim = ast.arg1().isMatrix();
         if (dim != null) {
           // TODO improve for sparse arrays
-          // final IAST originalMatrix = (IAST) ast.arg1().normal(false);
           final FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
           if (matrix != null) {
             final FieldMatrix<IExpr> transposed = matrix.transpose();
             IExpr transposedMatrix = Convert.matrix2Expr(transposed).mapExpr(x -> transform(x));
             // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set
-            // directly.
-            // isMatrix()
-            // must be used!
+            // directly. isMatrix() must be used!
             transposedMatrix.isMatrix(true);
             return transposedMatrix;
-            // return transpose(originalMatrix, dim[0], dim[1]);
           }
           if (dim[1] == 0) {
             return F.CEmptyList;
@@ -5704,38 +5701,18 @@ public final class LinearAlgebra {
       return ARGS_1_2;
     }
 
+    /**
+     * Transform the current entry in the matrix. The default implementation simply returns the
+     * input expression. For {@link ConjugateTranspose#transform(IExpr)} it returns the
+     * {@link S#Conjugate} value.
+     * 
+     * @param expr
+     */
     protected IExpr transform(final IExpr expr) {
       return expr;
     }
 
-    /**
-     * Transpose the given matrix.
-     *
-     * @param matrix the matrix which should be transposed
-     * @param rows number of rows of the matrix
-     * @param cols number of columns of the matrix
-     * @return
-     */
-    // private IAST transpose(final IAST matrix, int rows, int cols) {
-    // final IASTMutable transposedMatrix = F.astMutable(S.List, cols);
-    // transposedMatrix.setArgs(cols + 1, i -> F.astMutable(S.List, rows));
-    // IAST originalRow;
-    // IASTMutable transposedResultRow;
-    // for (int i = 1; i <= rows; i++) {
-    // originalRow = (IAST) matrix.get(i);
-    // for (int j = 1; j <= cols; j++) {
-    // transposedResultRow = (IASTMutable) transposedMatrix.get(j);
-    // transposedResultRow.set(i, transform(originalRow.get(j)));
-    // }
-    // }
-    // // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
-    // // isMatrix() must be
-    // // used!
-    // transposedMatrix.isMatrix(true);
-    // return transposedMatrix;
-    // }
   }
-
 
   /**
    *

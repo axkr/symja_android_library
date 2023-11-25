@@ -602,6 +602,7 @@ public class AttributeFunctions {
               attributes |= ISymbol.SEQUENCEHOLD;
               break;
             default:
+              break;
           }
         }
       }

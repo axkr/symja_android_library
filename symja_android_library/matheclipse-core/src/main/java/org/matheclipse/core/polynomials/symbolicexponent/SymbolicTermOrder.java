@@ -83,7 +83,10 @@ public final class SymbolicTermOrder implements Serializable {
   private final EVComparator sugar;
 
   /** Comparator for ExpVectors. */
-  public abstract static class EVComparator implements Comparator<ExpVectorSymbolic> {
+  public abstract static class EVComparator implements Comparator<ExpVectorSymbolic>, Serializable {
+
+    private static final long serialVersionUID = 5313857235195179046L;
+
     @Override
     public abstract int compare(ExpVectorSymbolic e1, ExpVectorSymbolic e2);
   }

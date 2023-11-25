@@ -916,6 +916,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
         normalRecursiveComplex((double[]) fData, list, dims, 0, index);
         break;
       default:
+        break;
     }
 
     return list;

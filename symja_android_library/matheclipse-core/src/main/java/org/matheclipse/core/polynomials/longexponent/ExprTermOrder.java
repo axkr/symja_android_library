@@ -80,7 +80,10 @@ public final class ExprTermOrder implements Serializable {
   private final EVComparator sugar;
 
   /** Comparator for ExpVectors. */
-  public abstract static class EVComparator implements Comparator<ExpVectorLong> {
+  public abstract static class EVComparator implements Comparator<ExpVectorLong>, Serializable {
+
+    private static final long serialVersionUID = 4207263586701191910L;
+
     @Override
     public abstract int compare(ExpVectorLong e1, ExpVectorLong e2);
   }

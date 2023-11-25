@@ -1,5 +1,6 @@
 package org.matheclipse.core.polynomials.symbolicexponent;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -14,7 +15,9 @@ import org.matheclipse.core.interfaces.IExpr;
  * <code>ExpVectorSymbolic</code> implements exponent vectors for polynomials using arrays of <code>
  * IExpr</code> as storage unit.
  */
-public final class ExpVectorSymbolic {
+public final class ExpVectorSymbolic implements Serializable {
+
+  private static final long serialVersionUID = 6659691155386552382L;
 
   /** The data structure is an array of longs. */
   /* package */ final IExpr[] val;

@@ -1,5 +1,6 @@
 package org.matheclipse.core.polynomials.longexponent;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -12,7 +13,9 @@ import org.matheclipse.core.interfaces.IExpr;
  * ExpVectorLong implements exponent vectors for polynomials using arrays of long as storage unit.
  * This class is used by ExpVectorLong internally, there is no need to use this class directly.
  */
-public final class ExpVectorLong {
+public final class ExpVectorLong implements Serializable {
+
+  private static final long serialVersionUID = 1818257019905307051L;
 
   /** The data structure is an array of longs. */
   /* package */ final long[] val;

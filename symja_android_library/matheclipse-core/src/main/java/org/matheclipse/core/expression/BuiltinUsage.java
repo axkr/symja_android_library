@@ -99,6 +99,7 @@ public class BuiltinUsage {
     USAGE[ID.CompoundExpression] = "execute expressions in sequence";
     USAGE[ID.CompositeQ] = "test whether a number is composite";
     USAGE[ID.Conjugate] = "complex conjugate value";
+    USAGE[ID.ConjugateTranspose] = "conjugate transposed matrix";
     USAGE[ID.Context] = "the context of a symbol";
     USAGE[ID.Correlation] = "Pearson's correlation of a pair of datasets";
     USAGE[ID.CoprimeQ] = "test whether elements are coprime";

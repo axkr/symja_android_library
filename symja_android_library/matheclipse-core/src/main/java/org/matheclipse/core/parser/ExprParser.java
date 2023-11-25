@@ -206,6 +206,7 @@ public class ExprParser extends Scanner {
           expr = Arithmetic.CONST_RATIONAL.evaluate(ast, fEngine);
           break;
         default:
+          break;
       }
       return expr.orElse(ast);
     }
@@ -512,6 +513,7 @@ public class ExprParser extends Scanner {
         break;
 
       default:
+        break;
     }
 
     throwSyntaxError("Error in factor at character: '" + fCurrentChar + "' (Token:" + fToken
@@ -593,6 +595,7 @@ public class ExprParser extends Scanner {
         temp = F.Optional(F.$b(), defaultValue);
         break;
       default:
+        break;
     }
 
     if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
@@ -680,6 +683,7 @@ public class ExprParser extends Scanner {
         temp = F.Optional(F.$p(symbol), defaultValue);
         break;
       default:
+        break;
     }
     if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
       getNextToken();

@@ -1019,6 +1019,7 @@ public class SimplifyFunctions {
                       negate = true;
                       break;
                     default:
+                      break;
                   }
                 }
               }

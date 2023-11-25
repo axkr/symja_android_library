@@ -1,24 +1,23 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IExpr;
 
-import static org.junit.Assert.assertEquals;
-
 /** Tests forSolve and Roots functions */
 public class SolveTest extends ExprEvaluatorTestCase {
 
-   @Test
-   public void testSinX() {
+  @Test
+  public void testSinX() {
     check("Solve(Sin(x)==b,x)", //
         "{{x->ArcSin(b)}}");
   }
 
-   @Test
-   public void testEliminate() {
+  @Test
+  public void testEliminate() {
     check("Eliminate({(a*x + b)/(c*x + d)==y},x)", //
         "True");
     // check(
@@ -28,30 +27,30 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "True");
   }
 
-   @Test
-   public void testRootsX6001() {
+  @Test
+  public void testRootsX6001() {
     check("Roots(x^6-1==0, x)", //
         "x==-1||x==1||x==(-1)^(1/3)||x==-(-1)^(1/3)||x==(-1)^(2/3)||x==-(-1)^(2/3)");
   }
 
-   @Test
-   public void testRootsX16001() {
+  @Test
+  public void testRootsX16001() {
     check("Roots(x^16-1==0,x)", //
         "x==-1||x==-I||x==1||x==(-1)^(1/8)||x==-(-1)^(1/8)||x==(-1)^(1/4)||x==-(-1)^(1/4)||x==(-\n"
             + "1)^(3/8)||x==-(-1)^(3/8)||x==I||x==(-1)^(5/8)||x==-(-1)^(5/8)||x==(-1)^(3/4)||x==-(-\n"
             + "1)^(3/4)||x==(-1)^(7/8)||x==-(-1)^(7/8)");
   }
 
-   @Test
-   public void testSolveX16001() {
+  @Test
+  public void testSolveX16001() {
     check("Solve(x^16-1==0,x)", //
         "{{x->-1},{x->-I},{x->I},{x->1},{x->-(-1)^(1/8)},{x->(-1)^(1/8)},{x->-(-1)^(1/4)},{x->(-\n"
             + "1)^(1/4)},{x->-(-1)^(3/8)},{x->(-1)^(3/8)},{x->-(-1)^(5/8)},{x->(-1)^(5/8)},{x->-(-\n"
             + "1)^(3/4)},{x->(-1)^(3/4)},{x->-(-1)^(7/8)},{x->(-1)^(7/8)}}");
   }
 
-   @Test
-   public void testSolveX16002() {
+  @Test
+  public void testSolveX16002() {
     check("Solve(x^16+1==0,x)", //
         "{{x->-(-1)^(1/16)},{x->(-1)^(1/16)},{x->-(-1)^(3/16)},{x->(-1)^(3/16)},{x->-(-1)^(\n"
             + "5/16)},{x->(-1)^(5/16)},{x->-(-1)^(7/16)},{x->(-1)^(7/16)},{x->-(-1)^(9/16)},{x->(-\n"
@@ -59,15 +58,15 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "16)},{x->-(-1)^(15/16)},{x->(-1)^(15/16)}}");
   }
 
-   @Test
-   public void testSolveAX3B001() {
+  @Test
+  public void testSolveAX3B001() {
     check("Solve(a*x^3+b==0,x)",
         "{{x->-b^(1/3)/a^(1/3)},{x->((-1)^(1/3)*b^(1/3))/a^(1/3)},{x->(-(-1)^(2/3)*b^(1/3))/a^(\n"
             + "1/3)}}");
   }
 
-   @Test
-   public void testSolveX4B001() {
+  @Test
+  public void testSolveX4B001() {
     // check("Trace(Solve(x^6-b==0,x))",
     // "???");
     check("Solve(x^4+b==0,x)", //
@@ -75,28 +74,28 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "1)^(3/4)*b^(1/4)}}");
   }
 
-   @Test
-   public void testSolveX4B002() {
+  @Test
+  public void testSolveX4B002() {
     check("Solve(x^4-b==0,x)", //
         "{{x->-b^(1/4)},{x->-I*b^(1/4)},{x->I*b^(1/4)},{x->b^(1/4)}}");
   }
 
-   @Test
-   public void testSolveAX5B001() {
+  @Test
+  public void testSolveAX5B001() {
     check("Solve(a*x^5+b==0,x)",
         "{{x->-b^(1/5)/a^(1/5)},{x->((-1)^(1/5)*b^(1/5))/a^(1/5)},{x->(-(-1)^(2/5)*b^(1/5))/a^(\n"
             + "1/5)},{x->((-1)^(3/5)*b^(1/5))/a^(1/5)},{x->(-(-1)^(4/5)*b^(1/5))/a^(1/5)}}");
   }
 
-   @Test
-   public void testSolveAX5B002() {
+  @Test
+  public void testSolveAX5B002() {
     check("Solve(a*x^5-b==0,x)",
         "{{x->b^(1/5)/a^(1/5)},{x->(-(-1)^(1/5)*b^(1/5))/a^(1/5)},{x->((-1)^(2/5)*b^(1/5))/a^(\n"
             + "1/5)},{x->(-(-1)^(3/5)*b^(1/5))/a^(1/5)},{x->((-1)^(4/5)*b^(1/5))/a^(1/5)}}");
   }
 
-   @Test
-   public void testSolve7X519002() {
+  @Test
+  public void testSolve7X519002() {
     check("Solve(7*x^5-19==0,x) ",
         "{{x->(19/7)^(1/5)},{x->(-1)^(2/5)*(19/7)^(1/5)},{x->-(-1)^(3/5)*(19/7)^(1/5)},{x->(-\n"
             + "1)^(4/5)*(19/7)^(1/5)},{x->-(-19)^(1/5)/7^(1/5)}}");
@@ -104,44 +103,44 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->1.22104},{x->0.377323+I*1.16128},{x->0.377323+I*(-1.16128)},{x->-0.987845+I*0.717711},{x->-0.987845+I*(-0.717711)}}");
   }
 
-   @Test
-   public void testSolveX6B001() {
+  @Test
+  public void testSolveX6B001() {
     check("Solve(x^6+b==0,x)", //
         "{{x->-I*b^(1/6)},{x->I*b^(1/6)},{x->(-1)^(1/6)*b^(1/6)},{x->-(-1)^(1/6)*b^(1/6)},{x->(-\n"
             + "1)^(5/6)*b^(1/6)},{x->-(-1)^(5/6)*b^(1/6)}}");
   }
 
-   @Test
-   public void testSolveX6B002() {
+  @Test
+  public void testSolveX6B002() {
     check("Solve(x^6-b==0,x)",
         "{{x->-b^(1/6)},{x->b^(1/6)},{x->(-1)^(1/3)*b^(1/6)},{x->-(-1)^(1/3)*b^(1/6)},{x->(-\n"
             + "1)^(2/3)*b^(1/6)},{x->-(-1)^(2/3)*b^(1/6)}}");
   }
 
-   @Test
-   public void testSolveX8B001() {
+  @Test
+  public void testSolveX8B001() {
     check("Solve(x^8+b==0,x)", //
         "{{x->(-1)^(1/8)*b^(1/8)},{x->-(-1)^(1/8)*b^(1/8)},{x->(-1)^(3/8)*b^(1/8)},{x->-(-\n"
             + "1)^(3/8)*b^(1/8)},{x->(-1)^(5/8)*b^(1/8)},{x->-(-1)^(5/8)*b^(1/8)},{x->(-1)^(7/8)*b^(\n"
             + "1/8)},{x->-(-1)^(7/8)*b^(1/8)}}");
   }
 
-   @Test
-   public void testSolveX8B002() {
+  @Test
+  public void testSolveX8B002() {
     check("Solve(x^8-b==0,x)", //
         "{{x->-b^(1/8)},{x->-I*b^(1/8)},{x->I*b^(1/8)},{x->b^(1/8)},{x->(-1)^(1/4)*b^(1/8)},{x->-(-\n"
             + "1)^(1/4)*b^(1/8)},{x->(-1)^(3/4)*b^(1/8)},{x->-(-1)^(3/4)*b^(1/8)}}");
   }
 
-   @Test
-   public void testSolveX10001() {
+  @Test
+  public void testSolveX10001() {
     check("Solve(x^10-1==0,x)", //
         "{{x->-1},{x->1},{x->-(-1)^(1/5)},{x->(-1)^(1/5)},{x->-(-1)^(2/5)},{x->(-1)^(2/5)},{x->-(-\n"
             + "1)^(3/5)},{x->(-1)^(3/5)},{x->-(-1)^(4/5)},{x->(-1)^(4/5)}}");
   }
 
-   @Test
-   public void testSolveX10002() {
+  @Test
+  public void testSolveX10002() {
     check("Solve(x^10-15==0,x)", //
         "{{x->-15^(1/10)},{x->15^(1/10)},{x->(-1)^(1/5)*15^(1/10)},{x->-(-1)^(1/5)*15^(1/\n"
             + "10)},{x->(-1)^(2/5)*15^(1/10)},{x->-(-1)^(2/5)*15^(1/10)},{x->(-1)^(3/5)*15^(1/\n"
@@ -149,8 +148,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "10)}}");
   }
 
-   @Test
-   public void testSolveX10B001() {
+  @Test
+  public void testSolveX10B001() {
     check("Solve(x^10+b==0,x)",
         "{{x->-I*b^(1/10)},{x->I*b^(1/10)},{x->(-1)^(1/10)*b^(1/10)},{x->-(-1)^(1/10)*b^(\n"
             + "1/10)},{x->(-1)^(3/10)*b^(1/10)},{x->-(-1)^(3/10)*b^(1/10)},{x->(-1)^(7/10)*b^(1/\n"
@@ -158,16 +157,16 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "10)}}");
   }
 
-   @Test
-   public void testSolveX10B002() {
+  @Test
+  public void testSolveX10B002() {
     check("Solve(x^10-b==0,x)", //
         "{{x->-b^(1/10)},{x->b^(1/10)},{x->(-1)^(1/5)*b^(1/10)},{x->-(-1)^(1/5)*b^(1/10)},{x->(-\n"
             + "1)^(2/5)*b^(1/10)},{x->-(-1)^(2/5)*b^(1/10)},{x->(-1)^(3/5)*b^(1/10)},{x->-(-1)^(\n"
             + "3/5)*b^(1/10)},{x->(-1)^(4/5)*b^(1/10)},{x->-(-1)^(4/5)*b^(1/10)}}");
   }
 
-   @Test
-   public void testSolveAX10B001() {
+  @Test
+  public void testSolveAX10B001() {
     check("Solve(a*x^10+b==0,x)",
         "{{x->(-I*b^(1/10))/a^(1/10)},{x->(I*b^(1/10))/a^(1/10)},{x->((-1)^(1/10)*b^(1/10))/a^(\n"
             + "1/10)},{x->(-(-1)^(1/10)*b^(1/10))/a^(1/10)},{x->((-1)^(3/10)*b^(1/10))/a^(1/10)},{x->(-(-\n"
@@ -176,8 +175,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "1/10))/a^(1/10)}}");
   }
 
-   @Test
-   public void testSolveAX8B001() {
+  @Test
+  public void testSolveAX8B001() {
     check("Solve(a*x^8+b==0,x)", //
         "{{x->((-1)^(1/8)*b^(1/8))/a^(1/8)},{x->(-(-1)^(1/8)*b^(1/8))/a^(1/8)},{x->((-1)^(\n"
             + "3/8)*b^(1/8))/a^(1/8)},{x->(-(-1)^(3/8)*b^(1/8))/a^(1/8)},{x->((-1)^(5/8)*b^(1/8))/a^(\n"
@@ -185,8 +184,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "1)^(7/8)*b^(1/8))/a^(1/8)}}");
   }
 
-   @Test
-   public void testSolveAX11B001() {
+  @Test
+  public void testSolveAX11B001() {
     check("Solve(a*x^11-b==0,x)",
         "{{x->b^(1/11)/a^(1/11)},{x->(-(-1)^(1/11)*b^(1/11))/a^(1/11)},{x->((-1)^(2/11)*b^(\n"
             + "1/11))/a^(1/11)},{x->(-(-1)^(3/11)*b^(1/11))/a^(1/11)},{x->((-1)^(4/11)*b^(1/11))/a^(\n"
@@ -195,8 +194,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "11)*b^(1/11))/a^(1/11)},{x->((-1)^(10/11)*b^(1/11))/a^(1/11)}}");
   }
 
-   @Test
-   public void testSolveX24B001() {
+  @Test
+  public void testSolveX24B001() {
     check("Solve(x^24==1,x)", //
         "{{x->-1},{x->-I},{x->I},{x->1},{x->-(-1)^(1/12)},{x->(-1)^(1/12)},{x->-(-1)^(1/6)},{x->(-\n"
             + "1)^(1/6)},{x->-(-1)^(1/4)},{x->(-1)^(1/4)},{x->-(-1)^(1/3)},{x->(-1)^(1/3)},{x->-(-\n"
@@ -205,71 +204,71 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "1)^(11/12)},{x->(-1)^(11/12)}}");
   }
 
-   @Test
-   public void testSolveX4_15001() {
+  @Test
+  public void testSolveX4_15001() {
     // github #204
     check("Solve(x^4 - 15 == 0, x)", //
         "{{x->-15^(1/4)},{x->-I*15^(1/4)},{x->I*15^(1/4)},{x->15^(1/4)}}");
   }
 
-   @Test
-   public void testSolveX4_15002() {
+  @Test
+  public void testSolveX4_15002() {
     check("Solve(x^4 + 15 == 0, x) ", //
         "{{x->-(-15)^(1/4)},{x->-I*(-15)^(1/4)},{x->I*(-15)^(1/4)},{x->(-15)^(1/4)}}");
   }
 
-   @Test
-   public void testSolveX3_15001() {
+  @Test
+  public void testSolveX3_15001() {
     check("Solve(x^3 + 15 == 0, x)", //
         "{{x->(-15)^(1/3)},{x->-15^(1/3)},{x->-(-1)^(2/3)*15^(1/3)}}");
   }
 
-   @Test
-   public void testSolveX3_15002() {
+  @Test
+  public void testSolveX3_15002() {
     check("Solve(x^3 - 15 == 0, x)", //
         "{{x->-(-15)^(1/3)},{x->15^(1/3)},{x->(-1)^(2/3)*15^(1/3)}}");
   }
 
-   @Test
-   public void testSolveX7_15001() {
+  @Test
+  public void testSolveX7_15001() {
     check("Solve(x^7 + 15 == 0, x)", //
         "{{x->(-15)^(1/7)},{x->-15^(1/7)},{x->-(-1)^(2/7)*15^(1/7)},{x->(-1)^(3/7)*15^(1/\n"
             + "7)},{x->-(-1)^(4/7)*15^(1/7)},{x->(-1)^(5/7)*15^(1/7)},{x->-(-1)^(6/7)*15^(1/7)}}");
   }
 
-   @Test
-   public void testSolveX7_15002() {
+  @Test
+  public void testSolveX7_15002() {
     check("Solve(x^7 - 15 == 0, x)", //
         "{{x->-(-15)^(1/7)},{x->15^(1/7)},{x->(-1)^(2/7)*15^(1/7)},{x->-(-1)^(3/7)*15^(1/\n"
             + "7)},{x->(-1)^(4/7)*15^(1/7)},{x->-(-1)^(5/7)*15^(1/7)},{x->(-1)^(6/7)*15^(1/7)}}");
   }
 
-   @Test
-   public void testSolve001() {
+  @Test
+  public void testSolve001() {
     check("Solve((5*x^4-2)/(x+1)/(x^2-1)==0,x)", //
         "{{x->-(2/5)^(1/4)},{x->-I*(2/5)^(1/4)},{x->I*(2/5)^(1/4)},{x->(2/5)^(1/4)}}");
   }
 
-   @Test
-   public void testSolve002() {
+  @Test
+  public void testSolve002() {
     check("Solve((x^2 + 2)*(x^2 - 2) == 0, x, Reals)", //
         "{{x->-Sqrt(2)},{x->Sqrt(2)}}");
   }
 
-   @Test
-   public void testSolve003() {
+  @Test
+  public void testSolve003() {
     check("Solve( 2/x==3/4 ,x)", //
         "{{x->8/3}}");
   }
 
-   @Test
-   public void testSolveX3_89001() {
+  @Test
+  public void testSolveX3_89001() {
     check("Solve(x^3-89==0, x)", //
         "{{x->-(-89)^(1/3)},{x->89^(1/3)},{x->(-1)^(2/3)*89^(1/3)}}");
   }
 
-   @Test
-   public void testSolve7X4_2ab001() {
+  @Test
+  public void testSolve7X4_2ab001() {
     check("Solve(7*x^4+2*a*b==0, x)", //
         "{{x->((-2)^(1/4)*a^(1/4)*b^(1/4))/7^(1/4)},{x->(-(-2)^(1/4)*a^(1/4)*b^(1/4))/7^(\n"
             + "1/4)},{x->(-I*(-2)^(1/4)*a^(1/4)*b^(1/4))/7^(1/4)},{x->(I*(-2)^(1/4)*a^(1/4)*b^(\n"
@@ -279,8 +278,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "{x->(-0.516973+I*0.516973)*a^0.25*b^0.25}}");
   }
 
-   @Test
-   public void testSolve7X4_2ab002() {
+  @Test
+  public void testSolve7X4_2ab002() {
     check("Solve(7*x^4-2*a*b==0, x)", //
         "{{x->(2/7)^(1/4)*a^(1/4)*b^(1/4)},{x->-(2/7)^(1/4)*a^(1/4)*b^(1/4)},{x->-I*(2/7)^(\n"
             + "1/4)*a^(1/4)*b^(1/4)},{x->I*(2/7)^(1/4)*a^(1/4)*b^(1/4)}}");
@@ -288,8 +287,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->0.73111*a^0.25*b^0.25},{x->-0.73111*a^0.25*b^0.25},{x->(I*(-0.73111))*a^0.25*b^0.25},{x->(I*0.73111)*a^0.25*b^0.25}}");
   }
 
-   @Test
-   public void testSolve7X4_2ab003() {
+  @Test
+  public void testSolve7X4_2ab003() {
     check("Solve(-7*x^4-2*a*b==0, x)", //
         "{{x->(-2/7)^(1/4)*a^(1/4)*b^(1/4)},{x->-(-2/7)^(1/4)*a^(1/4)*b^(1/4)},{x->(-1)^(\n"
             + "3/4)*(2/7)^(1/4)*a^(1/4)*b^(1/4)},{x->-(-1)^(3/4)*(2/7)^(1/4)*a^(1/4)*b^(1/4)}}");
@@ -297,8 +296,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->(0.516973+I*0.516973)*a^0.25*b^0.25},{x->(-0.516973+I*(-0.516973))*a^0.25*b^0.25},{x->(-0.516973+I*0.516973)*a^0.25*b^0.25},{x->(0.516973+I*(-0.516973))*a^0.25*b^0.25}}");
   }
 
-   @Test
-   public void testSolve7cX4_2ab004() {
+  @Test
+  public void testSolve7cX4_2ab004() {
     // TODO
     // check(
     // "Solve(-7*c*x^4-2*a*b==0, x)", //
@@ -313,22 +312,22 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // "{{x->(0.516973+I*0.516973)*a^0.25*b^0.25},{x->(-0.516973+I*(-0.516973))*a^0.25*b^0.25},{x->(-0.516973+I*0.516973)*a^0.25*b^0.25},{x->(0.516973+I*(-0.516973))*a^0.25*b^0.25}}");
   }
 
-   @Test
-   public void testSolveGalleryExample() {
+  @Test
+  public void testSolveGalleryExample() {
     check("Solve({x^2-11==y, x+y==-9}, {x,y})", //
         "{{x->-2,y->-7},{x->1,y->-10}}");
   }
 
-   @Test
-   public void testInverseFunctionProductLog() {
+  @Test
+  public void testInverseFunctionProductLog() {
     check("InverseFunction(#*a^#*d &)", //
         "ProductLog((#1*Log(a))/d)/Log(a)&");
     check("InverseFunction(#^2+2^# &)", //
         "InverseFunction(2^#1+#1^2&)");
   }
 
-   @Test
-   public void testSolveSlot() {
+  @Test
+  public void testSolveSlot() {
     check("Solve(f(x)^2+1==0,f(x))", //
         "{{f(x)->-I},{f(x)->I}}");
     check("Solve(#^2+1==0,#)", //
@@ -343,14 +342,14 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{#1->0}}");
   }
 
-   @Test
-   public void testSolveProductLog() {
+  @Test
+  public void testSolveProductLog() {
     check("Solve(x^2==2^x,x)", //
         "{{x->2},{x->(-2*ProductLog(Log(2)/2))/Log(2)}}");
   }
 
-   @Test
-   public void testSolveIssue329() {
+  @Test
+  public void testSolveIssue329() {
     check("Solve(a1+a2+5*x+4*Sqrt(a+b*x+25/16*x^2)+z1+z2==0, x)", //
         "{{x->(-16*a+a1^2+2*a1*a2+a2^2+2*a1*z1+2*a2*z1+z1^2+2*a1*z2+2*a2*z2+2*z1*z2+z2^2)/(\n"
             + "16*b-10*(a1+a2+z1+z2))}}");
@@ -380,16 +379,16 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->1/2*(2-2*Sqrt(2))},{x->1/2*(2+2*Sqrt(2))}}");
   }
 
-   @Test
-   public void testSolveInequality() {
+  @Test
+  public void testSolveInequality() {
     // TODO github #210
     // check(
     // "Solve({x==y,y>2},x)", //
     // "{{x->ConditionalExpression(y,y>2)}} ");
   }
 
-   @Test
-   public void testSolve() {
+  @Test
+  public void testSolve() {
     check("Solve(3*(x+a)*(x-b)==0,x)", //
         "{{x->-a},{x->b}}");
 
@@ -789,8 +788,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->-81.08825721072805},{x->81.08825721072805}}");
   }
 
-   @Test
-   public void testNSolve() {
+  @Test
+  public void testNSolve() {
     // github #261 - JUnit test for Apfloat switching to complex Power calculation
     check("NSolve(0.00004244131815783 == x^5 , x)", //
         "{{x->-0.10802279680851234+I*0.07848315587546605},{x->-0.10802279680851212+I*(-0.07848315587546605)},{x->0.04126103682102799+I*(-0.1269884137508598)},"
@@ -1183,8 +1182,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // "{{x->-81.08825721072822},{x->81.08825721072822}}");
   }
 
-   @Test
-   public void testChocoSolver001() {
+  @Test
+  public void testChocoSolver001() {
     check("Together(1/x+1/y-1/20 )", //
         "(20*x+20*y-x*y)/(20*x*y)");
     check("Solve(20*x+20*y-x*y==0,{x,y},Integers )", //
@@ -1237,8 +1236,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "2,y2->0}}");
   }
 
-   @Test
-   public void testChocoSolver002() {
+  @Test
+  public void testChocoSolver002() {
     check("Solve({ Max(3*x+4*y)==z, z > 0, x+2*y<=14,3*x-y>=0,x-y<= 2}, {x,y,z}, Integers)", //
         "{{x->1,y->0,z->3},{x->1,y->1,z->7},{x->1,y->2,z->11},{x->1,y->3,z->15},{x->2,y->\n"
             + "0,z->6},{x->2,y->1,z->10},{x->2,y->2,z->14},{x->2,y->3,z->18},{x->2,y->4,z->22},{x->\n"
@@ -1248,8 +1247,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "34}}");
   }
 
-   @Test
-   public void testSolveIntegers() {
+  @Test
+  public void testSolveIntegers() {
     check("Solve({x > 0, y > 0, x^2 + 2*y^3 == 3681}, {x, y}, Integers)", //
         "{{x->15,y->12},{x->41,y->10},{x->57,y->6}}");
     if (Config.EXPENSIVE_JUNIT_TESTS) {
@@ -1281,8 +1280,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->-7,y->6},{x->-4,y->4},{x->-1,y->2}}");
   }
 
-  //  @Test
-  //  public void testSolveReals() {
+  // @Test
+  // public void testSolveReals() {
   // check(
   // "Solve(x^3 == 1, x, Reals)", //
   // "{{x->1.0}}");
@@ -1297,8 +1296,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
   // "{{x->0.745995,y->0.366124,z->0.318073}}");
   // }
 
-   @Test
-   public void testSolveIssue130() {
+  @Test
+  public void testSolveIssue130() {
     check("Sqrt(1-x)+Sqrt(3+x)", //
         "Sqrt(1-x)+Sqrt(3+x)");
     check("Sqrt(-1)*(-1)^(1/10)", //
@@ -1374,8 +1373,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{y->Sqrt(1-x)+Sqrt(3+x)}}");
   }
 
-   @Test
-   public void testSolveIssue413() {
+  @Test
+  public void testSolveIssue413() {
     // eval quiet without message
     check("Solve({8.0*E - 9 == x0/x1, x0==x1^4.0},{x0, x1}) ", //
         "{{x1->-1.16797+I*2.02298,x0->-14.88721+I*25.78541},{x1->-1.16797+I*(-2.02298),x0->-14.88721+I*(-25.78541)},{x1->0.0,x0->0.0},{x1->2.33594,x0->29.77443}}");
@@ -1389,8 +1388,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   }
 
-   @Test
-   public void testSolveCircleHyperbolic() {
+  @Test
+  public void testSolveCircleHyperbolic() {
     // check("Eliminate(-x-y+x*y==27,x)", //
     // "True");
     check("Solve({-x+x^2-y+y^2==814,-x-y+x*y==27},{x,y})", //
@@ -1398,16 +1397,16 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "14-Sqrt(197)}}");
   }
 
-   @Test
-   public void testSolveConditionalExpression() {
+  @Test
+  public void testSolveConditionalExpression() {
     check("Solve(E^x-2==0,x,Reals)", //
         "{{x->Log(2)}}");
     check("Solve(E^x-2==0,x)", //
         "{{x->ConditionalExpression(I*2*Pi*C(1)+Log(2),C(1)∈Integers)}}");
   }
 
-   @Test
-   public void testSolveHO1() {
+  @Test
+  public void testSolveHO1() {
     // https: //
     // www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
     // TODO improve result by avoiding GCD 1/2
@@ -1417,16 +1416,16 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "I*2*Pi*C(1)+Log(3)/2,C(1)∈Integers)}}");
   }
 
-   @Test
-   public void testSolveHO2() {
+  @Test
+  public void testSolveHO2() {
     // https: //
     // www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
     check("Solve(4^(2*x+1)*5^(x-2)-6^(1-x)==0,x)", //
         "{{x->-(-Log(2)+Log(3)+2*Log(5))/(-5*Log(2)-Log(3)-Log(5))}}");
   }
 
-   @Test
-   public void testSolveHO3() {
+  @Test
+  public void testSolveHO3() {
     // TODO return unevaluated expr
     // https: //
     // www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
@@ -1435,8 +1434,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // "Solve(4^(1+2*x)/5^(2-x)-6^(1-x)==-42,x)");
   }
 
-   @Test
-   public void testSolveHO4() {
+  @Test
+  public void testSolveHO4() {
     // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
 
     // TODO check result
@@ -1445,8 +1444,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->Pi/2},{x->ConditionalExpression(Pi/8+2*Pi*C(1),C(1)∈Integers)}}");
   }
 
-   @Test
-   public void testSolveHO5() {
+  @Test
+  public void testSolveHO5() {
     // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
 
     // TODO check result
@@ -1460,8 +1459,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "5/6*Pi+2*Pi*C(1),C(1)∈Integers)}}");
   }
 
-   @Test
-   public void testSolveHO6() {
+  @Test
+  public void testSolveHO6() {
     // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
     check("Solve(Cos(x) + Cos(3*x) + Cos(5*x) == 0,x,GenerateConditions->True)", //
         "{{x->ConditionalExpression(-5/6*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-\n"
@@ -1474,24 +1473,24 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->Pi/6},{x->Pi/3},{x->Pi/2},{x->2/3*Pi},{x->5/6*Pi}}");
   }
 
-   @Test
-   public void testSolveHO7() {
+  @Test
+  public void testSolveHO7() {
     // https: //
     // www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
     check("Solve(Cos(x) + Tan(3*x) + Cos(5*x) ==0,x)", //
         "Solve(Cos(x)+Cos(5*x)+Tan(3*x)==0,x)");
   }
 
-   @Test
-   public void testSolveIssue535() {
+  @Test
+  public void testSolveIssue535() {
     check("Solve({{-1+x+2*y}==0,{3+x+4*y}==0},{x,y})", //
         "{{x->5,y->-2}}");
     check("Solve({{1,2},{1,4}}.{{x},{y}}=={{1},{-3}},{x,y})", //
         "{{x->5,y->-2}}");
   }
 
-   @Test
-   public void testSolveIssue538() {
+  @Test
+  public void testSolveIssue538() {
     // TODO issue 538
     check("Solve(-3+x^(1/3)+x^2==0,x)", //
         "{{x->-1.56443+I*(-0.310515)},{x->-1.56443+I*0.310515},{x->1.37413}}");
@@ -1500,26 +1499,26 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   }
 
-   @Test
-   public void testSolveIssue539() {
+  @Test
+  public void testSolveIssue539() {
     check("Solve(Conjugate(x)==5-I*20,x)", //
         "{{x->5+I*20}}");
   }
 
-   @Test
-   public void testSystemSqrtSqrt() {
+  @Test
+  public void testSystemSqrtSqrt() {
     check("Solve(Sqrt(x+2)-Sqrt(x+3)==1,x)", //
         "{}");
   }
 
-   @Test
-   public void testIssue685() {
+  @Test
+  public void testIssue685() {
     check("Solve({a*b + c == 2020, a + b*c == 2021},{a,b,c},Integers)", //
         "{{a->673,b->2,c->674},{a->2021,b->0,c->2020}}");
   }
 
-   @Test
-   public void testSystem805() {
+  @Test
+  public void testSystem805() {
     check("Solve({x^2==4,x+20==10},x)", "{}");
     check("Solve(4*x^(-2)-1==0,x)", //
         "{{x->-2},{x->2}}");
@@ -1619,8 +1618,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "2)},{x->2,y->-2,z->3*Sqrt(2)},{x->2,y->2,z->-3*Sqrt(2)},{x->2,y->2,z->3*Sqrt(2)}}");
   }
 
-   @Test
-   public void testSolveLinearEquations() {
+  @Test
+  public void testSolveLinearEquations() {
     // https://github.com/asc-community/AngouriMath/issues/608
     check("Solve({2 * x1 * (-66) - 6 * x2 + 24 * x3 - 12 * x4 + 270 == 0,\n"//
         + "-6 * x1 - 2 * x2 * 74 - 8 * x3 + 4 * x4 - 440 == 0,\n"//
@@ -1630,8 +1629,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x1->2,x2->-3,x3->-1,x4->0}}");
   }
 
-   @Test
-   public void testSolveIssue731() {
+  @Test
+  public void testSolveIssue731() {
     // issue #731
     // check("Eliminate(1-2*x+Sqrt(-15*x+4*x^2)==0,x)", //
     // "");
@@ -1639,28 +1638,28 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{}");
   }
 
-   @Test
-   public void testSolveNumericMode() {
+  @Test
+  public void testSolveNumericMode() {
     check("Solve( 1.4==9-16.4*E^((-20.0*10^-6)/(18000*x)) , x)", //
         "{{x->1.44463*10^-9}}");
   }
 
-   @Test
-   public void testSolveIssue746() {
+  @Test
+  public void testSolveIssue746() {
     check("Solve({a==b+c, b==3, c==d*e, d==3, e==5}, a)", //
         "Solve({a==b+c,b==3,c==d*e,d==3,e==5},a)");
     check("Solve({a==b+c, b==3, c==d*e, d==3, e==5}, {a,b,c,d,e})", //
         "{{a->18,b->3,c->15,d->3,e->5}}");
   }
 
-   @Test
-   public void testFactorQuadratic001() {
+  @Test
+  public void testFactorQuadratic001() {
     check("Factor(4x^2+20x+16)", //
         "4*(1+x)*(4+x)");
   }
 
-   @Test
-   public void testSolveGenerateConditions() {
+  @Test
+  public void testSolveGenerateConditions() {
     check("Solve(Coth(2*a+3*x)==b, x, GenerateConditions->True)", //
         "{{x->ConditionalExpression(-2/3*a+ArcCoth(b)/3+I*1/3*Pi*C(1),C(1)∈Integers)}}");
 
@@ -1677,37 +1676,37 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
 
-   @Test
-   public void testHomogenization() {
+  @Test
+  public void testHomogenization() {
     check("Solve(9*6^(2*x) - 10*6^x + 1 == 0, x)", //
         "{{x->0},{x->-Log(9)/Log(6)}}");
     check("Solve( 10*(-6)^x + 1 == 0, x)", //
         "{{x->(I*Pi-Log(10))/(I*Pi+Log(6))}}");
   }
 
-   @Test
-   public void testCosSinHomogenization() {
+  @Test
+  public void testCosSinHomogenization() {
     check("Solve(Cos(2*x)+3*Sin(x)-2==0, x, GenerateConditions->True) ", //
         "{{x->ConditionalExpression(Pi/6+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"
             + "2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(5/6*Pi+2*Pi*C(1),C(1)∈Integers)}}");
   }
 
-   @Test
-   public void testSolveAnd() {
+  @Test
+  public void testSolveAnd() {
     check("Solve(x+1==0 && x<1, x)", //
         "{{x->-1}}");
     check("Solve(x+1==0 && x>1, x)", //
         "{}");
   }
 
-   @Test
-   public void testIssue822() {
+  @Test
+  public void testIssue822() {
     check("Solve(60000*(1+(x/100))^15==82000, x)", //
         "{{x->-199.8731+I*(-21.22868)},{x->-199.8731+I*21.22868},{x->-182.6041+I*60.01542},{x->-182.6041+I*(-60.01542)},{x->-151.0522+I*(-88.42495)},{x->-151.0522+I*88.42495},{x->-110.6728+I*(-101.545)},{x->-110.6728+I*101.545},{x->-68.44803+I*97.10699},{x->-68.44803+I*(-97.10699)},{x->-31.67887+I*(-75.87831)},{x->-31.67887+I*75.87831},{x->-6.72305+I*41.52957},{x->-6.72305+I*(-41.52957)},{x->2.10433}}");
   }
 
-  //  @Test
-  //  public void testSolveFindRoot() {
+  // @Test
+  // public void testSolveFindRoot() {
   // // multivariate FindRoot cases
   // check("Solve({2*x1+x2==E^(-x1), -x1+2*x2==E^(-x2)},{x1,x2})", //
   // "{x1->0.197594,x2->0.425514}");
@@ -1722,8 +1721,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
   // "{x->0.785398,y->-0.785398,z->1.2337}");
   // }
 
-   @Test
-   public void testSolveTrigs() {
+  @Test
+  public void testSolveTrigs() {
     // \Leftrightarrow \sin x(2 \cos x-\sin x)=0 \Leftrightarrow\left[\begin{array} { l }
     // { \operatorname { s i n } x = 0 } \\
     // { \operatorname { t a n } x = 2 }
@@ -1889,23 +1888,23 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
 
-   @Test
-   public void testSqrtSqrtSqrt() {
+  @Test
+  public void testSqrtSqrtSqrt() {
     // don't print `ifun` message:
     // Inverse functions are being used. Values may be lost for multivalued inverses.
     check("Solve(Sqrt(1+Sqrt(1+Sqrt(x)))==2,x)", //
         "{{x->64}}");
   }
 
-   @Test
-   public void testPowTwoX() {
+  @Test
+  public void testPowTwoX() {
     // TODO not all solutions are provided
     check("Solve(2^x-3*x-1==0,x)", //
         "{{x->0}}");
   }
 
-   @Test
-   public void testIsolateX1() {
+  @Test
+  public void testIsolateX1() {
     check(
         "Solve({x5==1,x0==7,x4==x3,x3==p2*x2+p4*x4,x2==p3*x3+p5*x5*x0,x1==p1*x2},{x0,x1,x2,x3,x4,x5})", //
         "{{x0->7,x1->(7*p1*p5-7*p1*p4*p5)/(1-p2*p3-p4),x2->(7*p5-7*p4*p5)/(1-p2*p3-p4),x3->(\n" //
@@ -1916,6 +1915,18 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve({x4==x3,x3==p2*x2+p4*x4,x2==p3*x3+p5,x1==p1*x2},{x1,x2,x3,x4})", //
         "{{x1->(p1*p5-p1*p4*p5)/(1-p2*p3-p4),x2->(p5-p4*p5)/(1-p2*p3-p4),x3->(p2*p5)/(1-p2*p3-p4),x4->(p2*p5)/(\n"
             + "1-p2*p3-p4)}}");
+  }
+
+  @Test
+  public void testWrongVariables() {
+    check(
+        "Solve({a1==a4,a2==a3,a3==a5,a4==a3*t62/(t62+t63)+a8*t63/(t62+t63),a5==0,a6==1,a7==0,a8==a9*t22,a9==a10},{a1,a2,a3,a4,a5,a6,a7,a8,a9,a10})", //
+        "{{a1->(a10*t22*t63)/(t62+t63),a2->0,a3->0,a4->(a10*t22*t63)/(t62+t63),a5->0,a6->\n"
+            + "1,a7->0,a8->a10*t22,a9->a10}}");
+    check(
+        "Solve({x1==x4,x2==x3,x3==x5,x4==x3*t62/(t62+t63)+x8*t63/(t62+t63),x5==0,x6==1,x7==0,x8==x9*t22,x9==x10},{x1,x2,x3,x4,x5,x6,x7,x8,x9,x10})", //
+        "{{x1->(t22*t63*x10)/(t62+t63),x2->0,x3->0,x4->(t22*t63*x10)/(t62+t63),x5->0,x6->\n" //
+            + "1,x7->0,x8->t22*x10,x9->x10}}");
   }
 
   /** The JUnit setup method */

@@ -1,7 +1,6 @@
 // code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor.opt.nd;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,7 +16,7 @@ import org.matheclipse.core.tensor.sca.Clips;
  * n-dimensional axis aligned bounding box
  * 
  */
-public class CoordinateBoundingBox implements Serializable {
+public class CoordinateBoundingBox {
 
   /**
    * @param stream of clip instances

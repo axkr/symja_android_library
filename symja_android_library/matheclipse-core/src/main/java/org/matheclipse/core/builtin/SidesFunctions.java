@@ -162,6 +162,7 @@ public class SidesFunctions {
                 arg2 = a1.last();
                 break;
               default:
+                break;
             }
           }
         } else {
@@ -372,6 +373,7 @@ public class SidesFunctions {
                 arg2 = a1.last();
                 break;
               default:
+                break;
             }
           }
         } else {

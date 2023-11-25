@@ -51,6 +51,7 @@ public abstract class VisitorExpr extends AbstractVisitor {
         temp = visit3(ast.head(), ast.arg1(), ast.arg2());
         break;
       default:
+        break;
     }
     return temp.orElseGet(() -> visitAST(ast));
   }

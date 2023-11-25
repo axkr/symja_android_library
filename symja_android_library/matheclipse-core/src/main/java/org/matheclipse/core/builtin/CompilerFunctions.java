@@ -117,6 +117,7 @@ public class CompilerFunctions {
               block--;
               break;
             default:
+              break;
           }
         }
         if (block == -1) {

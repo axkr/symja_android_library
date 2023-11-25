@@ -346,19 +346,19 @@ public final class ListFunctions {
   /** Table structure generator (i.e. lists, vectors, matrices, tensors) */
   public static class TableGenerator {
 
-    final List<? extends IIterator<IExpr>> fIterList;
+    private final List<? extends IIterator<IExpr>> fIterList;
 
-    final IExpr fDefaultValue;
+    private final IExpr fDefaultValue;
 
-    final IAST fPrototypeList;
+    private final IAST fPrototypeList;
 
-    final IVariablesFunction fFunction;
+    private final IVariablesFunction fFunction;
 
-    int fIndex;
+    private int fIndex;
 
-    private IExpr[] fCurrentIndex;
+    private final IExpr[] fCurrentIndex;
 
-    private ISymbol[] fCurrentVariable;
+    private final ISymbol[] fCurrentVariable;
 
     public TableGenerator(final List<? extends IIterator<IExpr>> iterList, final IAST prototypeList,
         final IVariablesFunction function) {

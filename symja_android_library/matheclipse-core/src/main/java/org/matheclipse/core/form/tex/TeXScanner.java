@@ -692,6 +692,7 @@ public abstract class TeXScanner {
             getChar();
             break;
           default:
+            break;
         }
       }
     }
