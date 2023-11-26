@@ -414,26 +414,21 @@ public class OpenIntToSet<T> implements Serializable {
     return previous;
   }
 
+
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (!(obj instanceof OpenIntToSet<?>)) {
       return false;
+    }
     OpenIntToSet<T> other = (OpenIntToSet<T>) obj;
-    if (!Arrays.equals(keys, other.keys))
-      return false;
-    if (mask != other.mask)
-      return false;
-    if (size != other.size)
-      return false;
-    if (!Arrays.equals(states, other.states))
-      return false;
-    if (!Arrays.equals(values, other.values))
-      return false;
-    return true;
+    return Arrays.equals(keys, other.keys) && size == other.size
+        && Arrays.deepEquals(values, other.values);
   }
 
   /**
@@ -515,10 +510,8 @@ public class OpenIntToSet<T> implements Serializable {
     final int prime = 31;
     int result = 1;
     result = prime * result + Arrays.hashCode(keys);
-    result = prime * result + mask;
+    result = prime * result + Arrays.deepHashCode(values);
     result = prime * result + size;
-    result = prime * result + Arrays.hashCode(states);
-    result = prime * result + Arrays.hashCode(values);
     return result;
   }
 

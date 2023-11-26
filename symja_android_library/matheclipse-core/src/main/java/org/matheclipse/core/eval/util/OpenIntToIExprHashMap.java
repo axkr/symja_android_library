@@ -17,6 +17,7 @@ package org.matheclipse.core.eval.util;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
 import org.matheclipse.core.interfaces.IExpr;
@@ -34,6 +35,109 @@ import org.matheclipse.core.interfaces.IExpr;
  * been modified during iteration.
  */
 public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
+
+  /** Iterator class for the map. */
+  public class Iterator {
+
+    /** Reference modification count. */
+    private final int referenceCount;
+
+    /** Index of current element. */
+    private int current;
+
+    /** Index of next element. */
+    private int next;
+
+    /** Simple constructor. */
+    private Iterator() {
+
+      // preserve the modification count of the map to detect concurrent
+      // modifications later
+      referenceCount = count;
+
+      // initialize current index
+      next = -1;
+      try {
+        advance();
+      } catch (NoSuchElementException nsee) {
+        // ignored
+      }
+    }
+
+    /**
+     * Advance iterator one step further.
+     *
+     * @exception ConcurrentModificationException if the map is modified during iteration
+     * @exception NoSuchElementException if there is no element left in the map
+     */
+    public void advance() throws ConcurrentModificationException, NoSuchElementException {
+      if (referenceCount != count) {
+        throw new ConcurrentModificationException();
+      }
+
+      // advance on step
+      current = next;
+
+      // prepare next step
+      final int length = states.length;
+      try {
+        while (++next < length && states[next] != FULL) {
+          // nothing to do
+        }
+        if (next >= length) {
+          next = -2;
+          if (current < 0) {
+            throw new NoSuchElementException();
+          }
+        }
+      } catch (ArrayIndexOutOfBoundsException e) {
+        next = -2;
+      }
+    }
+
+    /**
+     * Check if there is a next element in the map.
+     *
+     * @return true if there is a next element
+     */
+    public boolean hasNext() {
+      return next >= 0;
+    }
+
+    /**
+     * Get the key of current entry.
+     *
+     * @return key of current entry
+     * @exception ConcurrentModificationException if the map is modified during iteration
+     * @exception NoSuchElementException if there is no element left in the map
+     */
+    public int key() throws ConcurrentModificationException, NoSuchElementException {
+      if (referenceCount != count) {
+        throw new ConcurrentModificationException();
+      }
+      if (current < 0) {
+        throw new NoSuchElementException();
+      }
+      return keys[current];
+    }
+
+    /**
+     * Get the value of current entry.
+     *
+     * @return value of current entry
+     * @exception ConcurrentModificationException if the map is modified during iteration
+     * @exception NoSuchElementException if there is no element left in the map
+     */
+    public T value() throws ConcurrentModificationException, NoSuchElementException {
+      if (referenceCount != count) {
+        throw new ConcurrentModificationException();
+      }
+      if (current < 0) {
+        throw new NoSuchElementException();
+      }
+      return (T) values[current];
+    }
+  }
 
   /** Status indicator for free table entries. */
   protected static final byte FREE = 0;
@@ -69,58 +173,14 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
   /** Number of bits to perturb the index when probing for collision resolution. */
   private static final int PERTURB_SHIFT = 5;
 
-  /** Keys table. */
-  private int[] keys;
-
-  /** Values table. */
-  private Object[] values;
-
-  /** States table. */
-  private byte[] states;
-
-  /** Current size of the map. */
-  private int size;
-
-  /** Bit mask for hash values. */
-  private int mask;
-
-  /** Modifications count. */
-  private transient int count;
-
-  /** Build an empty map with default size and using zero for missing entries. */
-  public OpenIntToIExprHashMap() {
-    this(DEFAULT_EXPECTED_SIZE);
-  }
-
   /**
-   * Build an empty map with specified size.
+   * Change the index sign
    *
-   * @param expectedSize expected number of elements in the map
+   * @param index initial index
+   * @return changed index
    */
-  public OpenIntToIExprHashMap(final int expectedSize) {
-    final int capacity = computeCapacity(expectedSize);
-    keys = new int[capacity];
-    values = new Object[capacity];
-    states = new byte[capacity];
-    mask = capacity - 1;
-  }
-
-  /**
-   * Copy constructor.
-   *
-   * @param source map to copy
-   */
-  public OpenIntToIExprHashMap(final OpenIntToIExprHashMap<T> source) {
-    final int length = source.keys.length;
-    keys = new int[length];
-    System.arraycopy(source.keys, 0, keys, 0, length);
-    values = new Object[length];
-    System.arraycopy(source.values, 0, values, 0, length);
-    states = new byte[length];
-    System.arraycopy(source.states, 0, states, 0, length);
-    size = source.size;
-    mask = source.mask;
-    count = source.count;
+  private static int changeIndexSign(final int index) {
+    return -index - 1;
   }
 
   /**
@@ -139,110 +199,6 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
       return capacity;
     }
     return nextPowerOfTwo(capacity);
-  }
-
-  /**
-   * Find the smallest power of two greater than the input value
-   *
-   * @param i input value
-   * @return smallest power of two greater than the input value
-   */
-  private static int nextPowerOfTwo(final int i) {
-    return Integer.highestOneBit(i) << 1;
-  }
-
-  /**
-   * Get the stored value associated with the given key
-   *
-   * @param key key associated with the data
-   * @return data associated with the key
-   */
-  public T get(final int key) {
-
-    final int hash = hashOf(key);
-    int index = hash & mask;
-    if (containsKey(key, index)) {
-      return (T) values[index];
-    }
-
-    if (states[index] == FREE) {
-      return null;
-    }
-
-    int j = index;
-    for (int perturb = perturb(hash); states[index] != FREE; perturb >>= PERTURB_SHIFT) {
-      j = probe(perturb, j);
-      index = j & mask;
-      if (containsKey(key, index)) {
-        return (T) values[index];
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Check if a value is associated with a key.
-   *
-   * @param key key to check
-   * @return true if a value is associated with key
-   */
-  public boolean containsKey(final int key) {
-
-    final int hash = hashOf(key);
-    int index = hash & mask;
-    if (containsKey(key, index)) {
-      return true;
-    }
-
-    if (states[index] == FREE) {
-      return false;
-    }
-
-    int j = index;
-    for (int perturb = perturb(hash); states[index] != FREE; perturb >>= PERTURB_SHIFT) {
-      j = probe(perturb, j);
-      index = j & mask;
-      if (containsKey(key, index)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  /**
-   * Get an iterator over map elements.
-   *
-   * <p>
-   * The specialized iterators returned are fail-fast: they throw a <code>
-   * ConcurrentModificationException</code> when they detect the map has been modified during
-   * iteration.
-   *
-   * @return iterator over the map elements
-   */
-  public Iterator iterator() {
-    return new Iterator();
-  }
-
-  /**
-   * Perturb the hash for starting probing.
-   *
-   * @param hash initial hash
-   * @return perturbed hash
-   */
-  private static int perturb(final int hash) {
-    return hash & 0x7fffffff;
-  }
-
-  /**
-   * Find the index at which a key should be inserted
-   *
-   * @param key key to lookup
-   * @return index at which key should be inserted
-   */
-  private int findInsertionIndex(final int key) {
-    return findInsertionIndex(keys, states, key, mask);
   }
 
   /**
@@ -302,6 +258,37 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
   }
 
   /**
+   * Compute the hash value of a key
+   *
+   * @param key key to hash
+   * @return hash value of the key
+   */
+  private static int hashOf(final int key) {
+    final int h = key ^ ((key >>> 20) ^ (key >>> 12));
+    return h ^ (h >>> 7) ^ (h >>> 4);
+  }
+
+  /**
+   * Find the smallest power of two greater than the input value
+   *
+   * @param i input value
+   * @return smallest power of two greater than the input value
+   */
+  private static int nextPowerOfTwo(final int i) {
+    return Integer.highestOneBit(i) << 1;
+  }
+
+  /**
+   * Perturb the hash for starting probing.
+   *
+   * @param hash initial hash
+   * @return perturbed hash
+   */
+  private static int perturb(final int hash) {
+    return hash & 0x7fffffff;
+  }
+
+  /**
    * Compute next probe for collision resolution
    *
    * @param perturb perturbed hash
@@ -312,41 +299,78 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
     return (j << 2) + j + perturb + 1;
   }
 
-  /**
-   * Change the index sign
-   *
-   * @param index initial index
-   * @return changed index
-   */
-  private static int changeIndexSign(final int index) {
-    return -index - 1;
+  /** Keys table. */
+  private int[] keys;
+
+  /** Values table. */
+  private Object[] values;
+
+  /** States table. */
+  private byte[] states;
+
+  /** Current size of the map. */
+  private int size;
+
+  /** Bit mask for hash values. */
+  private int mask;
+
+  /** Modifications count. */
+  private transient int count;
+
+  private transient int hashValue;
+
+  /** Build an empty map with default size and using zero for missing entries. */
+  public OpenIntToIExprHashMap() {
+    this(DEFAULT_EXPECTED_SIZE);
   }
 
   /**
-   * Get the number of elements stored in the map.
+   * Build an empty map with specified size.
    *
-   * @return number of elements stored in the map
+   * @param expectedSize expected number of elements in the map
    */
-  public int size() {
-    return size;
+  public OpenIntToIExprHashMap(final int expectedSize) {
+    final int capacity = computeCapacity(expectedSize);
+    keys = new int[capacity];
+    values = new Object[capacity];
+    states = new byte[capacity];
+    mask = capacity - 1;
   }
 
   /**
-   * Remove the value associated with a key.
+   * Copy constructor.
    *
-   * @param key key to which the value is associated
-   * @return removed value
+   * @param source map to copy
    */
-  public T remove(final int key) {
+  public OpenIntToIExprHashMap(final OpenIntToIExprHashMap<T> source) {
+    final int length = source.keys.length;
+    keys = new int[length];
+    System.arraycopy(source.keys, 0, keys, 0, length);
+    values = new Object[length];
+    System.arraycopy(source.values, 0, values, 0, length);
+    states = new byte[length];
+    System.arraycopy(source.states, 0, states, 0, length);
+    size = source.size;
+    mask = source.mask;
+    count = source.count;
+  }
+
+  /**
+   * Check if a value is associated with a key.
+   *
+   * @param key key to check
+   * @return true if a value is associated with key
+   */
+  public boolean containsKey(final int key) {
 
     final int hash = hashOf(key);
     int index = hash & mask;
     if (containsKey(key, index)) {
-      return doRemove(index);
+      return true;
     }
 
     if (states[index] == FREE) {
-      return null;
+      return false;
     }
 
     int j = index;
@@ -354,11 +378,11 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
       j = probe(perturb, j);
       index = j & mask;
       if (containsKey(key, index)) {
-        return doRemove(index);
+        return true;
       }
     }
 
-    return null;
+    return false;
   }
 
   /**
@@ -388,33 +412,63 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
     return previous;
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (hashCode() != obj.hashCode()) {
+      return false;
+    }
+    if (!(obj instanceof OpenIntToIExprHashMap<?>)) {
+      return false;
+    }
+    OpenIntToIExprHashMap<T> other = (OpenIntToIExprHashMap<T>) obj;
+    return Arrays.equals(keys, other.keys) && size == other.size
+        && Arrays.deepEquals(values, other.values);
+  }
+
   /**
-   * Put a value associated with a key in the map.
+   * Find the index at which a key should be inserted
    *
-   * @param key key to which value is associated
-   * @param value value to put in the map
-   * @return previous value associated with the key
+   * @param key key to lookup
+   * @return index at which key should be inserted
    */
-  public T put(final int key, final T value) {
-    int index = findInsertionIndex(key);
-    T previous = null;
-    boolean newMapping = true;
-    if (index < 0) {
-      index = changeIndexSign(index);
-      previous = (T) values[index];
-      newMapping = false;
+  private int findInsertionIndex(final int key) {
+    return findInsertionIndex(keys, states, key, mask);
+  }
+
+  /**
+   * Get the stored value associated with the given key
+   *
+   * @param key key associated with the data
+   * @return data associated with the key
+   */
+  public T get(final int key) {
+
+    final int hash = hashOf(key);
+    int index = hash & mask;
+    if (containsKey(key, index)) {
+      return (T) values[index];
     }
-    keys[index] = key;
-    states[index] = FULL;
-    values[index] = value;
-    if (newMapping) {
-      ++size;
-      if (shouldGrowTable()) {
-        growTable();
+
+    if (states[index] == FREE) {
+      return null;
+    }
+
+    int j = index;
+    for (int perturb = perturb(hash); states[index] != FREE; perturb >>= PERTURB_SHIFT) {
+      j = probe(perturb, j);
+      index = j & mask;
+      if (containsKey(key, index)) {
+        return (T) values[index];
       }
-      ++count;
     }
-    return previous;
+
+    return null;
   }
 
   /** Grow the tables. */
@@ -446,127 +500,61 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
     states = newStates;
   }
 
-  /**
-   * Check if tables should grow due to increased size.
-   *
-   * @return true if tables should grow
-   */
-  private boolean shouldGrowTable() {
-    return size > (mask + 1) * LOAD_FACTOR;
+  @Override
+  public int hashCode() {
+    if (hashValue == 0) {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + Arrays.hashCode(keys);
+      result = prime * result + Arrays.deepHashCode(values);
+      result = prime * result + size;
+      hashValue = result;
+    }
+    return hashValue;
   }
 
   /**
-   * Compute the hash value of a key
+   * Get an iterator over map elements.
    *
-   * @param key key to hash
-   * @return hash value of the key
+   * <p>
+   * The specialized iterators returned are fail-fast: they throw a <code>
+   * ConcurrentModificationException</code> when they detect the map has been modified during
+   * iteration.
+   *
+   * @return iterator over the map elements
    */
-  private static int hashOf(final int key) {
-    final int h = key ^ ((key >>> 20) ^ (key >>> 12));
-    return h ^ (h >>> 7) ^ (h >>> 4);
+  public Iterator iterator() {
+    return new Iterator();
   }
 
-  /** Iterator class for the map. */
-  public class Iterator {
-
-    /** Reference modification count. */
-    private final int referenceCount;
-
-    /** Index of current element. */
-    private int current;
-
-    /** Index of next element. */
-    private int next;
-
-    /** Simple constructor. */
-    private Iterator() {
-
-      // preserve the modification count of the map to detect concurrent
-      // modifications later
-      referenceCount = count;
-
-      // initialize current index
-      next = -1;
-      try {
-        advance();
-      } catch (NoSuchElementException nsee) {
-        // ignored
-      }
+  /**
+   * Put a value associated with a key in the map.
+   *
+   * @param key key to which value is associated
+   * @param value value to put in the map
+   * @return previous value associated with the key
+   */
+  public T put(final int key, final T value) {
+    hashValue = 0;
+    int index = findInsertionIndex(key);
+    T previous = null;
+    boolean newMapping = true;
+    if (index < 0) {
+      index = changeIndexSign(index);
+      previous = (T) values[index];
+      newMapping = false;
     }
-
-    /**
-     * Check if there is a next element in the map.
-     *
-     * @return true if there is a next element
-     */
-    public boolean hasNext() {
-      return next >= 0;
+    keys[index] = key;
+    states[index] = FULL;
+    values[index] = value;
+    if (newMapping) {
+      ++size;
+      if (shouldGrowTable()) {
+        growTable();
+      }
+      ++count;
     }
-
-    /**
-     * Get the key of current entry.
-     *
-     * @return key of current entry
-     * @exception ConcurrentModificationException if the map is modified during iteration
-     * @exception NoSuchElementException if there is no element left in the map
-     */
-    public int key() throws ConcurrentModificationException, NoSuchElementException {
-      if (referenceCount != count) {
-        throw new ConcurrentModificationException();
-      }
-      if (current < 0) {
-        throw new NoSuchElementException();
-      }
-      return keys[current];
-    }
-
-    /**
-     * Get the value of current entry.
-     *
-     * @return value of current entry
-     * @exception ConcurrentModificationException if the map is modified during iteration
-     * @exception NoSuchElementException if there is no element left in the map
-     */
-    public T value() throws ConcurrentModificationException, NoSuchElementException {
-      if (referenceCount != count) {
-        throw new ConcurrentModificationException();
-      }
-      if (current < 0) {
-        throw new NoSuchElementException();
-      }
-      return (T) values[current];
-    }
-
-    /**
-     * Advance iterator one step further.
-     *
-     * @exception ConcurrentModificationException if the map is modified during iteration
-     * @exception NoSuchElementException if there is no element left in the map
-     */
-    public void advance() throws ConcurrentModificationException, NoSuchElementException {
-      if (referenceCount != count) {
-        throw new ConcurrentModificationException();
-      }
-
-      // advance on step
-      current = next;
-
-      // prepare next step
-      final int length = states.length;
-      try {
-        while (++next < length && states[next] != FULL) {
-          // nothing to do
-        }
-        if (next >= length) {
-          next = -2;
-          if (current < 0) {
-            throw new NoSuchElementException();
-          }
-        }
-      } catch (ArrayIndexOutOfBoundsException e) {
-        next = -2;
-      }
-    }
+    return previous;
   }
 
   /**
@@ -581,6 +569,54 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
       throws IOException, ClassNotFoundException {
     stream.defaultReadObject();
     count = 0;
+  }
+
+  /**
+   * Remove the value associated with a key.
+   *
+   * @param key key to which the value is associated
+   * @return removed value
+   */
+  public T remove(final int key) {
+    hashValue = 0;
+    final int hash = hashOf(key);
+    int index = hash & mask;
+    if (containsKey(key, index)) {
+      return doRemove(index);
+    }
+
+    if (states[index] == FREE) {
+      return null;
+    }
+
+    int j = index;
+    for (int perturb = perturb(hash); states[index] != FREE; perturb >>= PERTURB_SHIFT) {
+      j = probe(perturb, j);
+      index = j & mask;
+      if (containsKey(key, index)) {
+        return doRemove(index);
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Check if tables should grow due to increased size.
+   *
+   * @return true if tables should grow
+   */
+  private boolean shouldGrowTable() {
+    return size > (mask + 1) * LOAD_FACTOR;
+  }
+
+  /**
+   * Get the number of elements stored in the map.
+   *
+   * @return number of elements stored in the map
+   */
+  public int size() {
+    return size;
   }
 
   /**

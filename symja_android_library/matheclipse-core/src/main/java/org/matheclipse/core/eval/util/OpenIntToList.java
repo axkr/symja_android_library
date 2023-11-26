@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -24,6 +25,32 @@ import java.util.NoSuchElementException;
  * Copied and modified from <code>org.apache.commons.math4.util-OpenIntToFieldHashMap</code>
  */
 public class OpenIntToList<T> implements Serializable {
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + Arrays.hashCode(keys);
+    result = prime * result + Arrays.deepHashCode(values);
+    result = prime * result + size;
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (!(obj instanceof OpenIntToList<?>)) {
+      return false;
+    }
+    OpenIntToList<T> other = (OpenIntToList<T>) obj;
+    return Arrays.equals(keys, other.keys) && size == other.size
+        && Arrays.deepEquals(values, other.values);
+  }
 
   /** Status indicator for free table entries. */
   protected static final byte FREE = 0;
