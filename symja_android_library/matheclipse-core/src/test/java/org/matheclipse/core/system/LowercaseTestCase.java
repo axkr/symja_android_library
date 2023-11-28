@@ -357,6 +357,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testApart() {
+    // see github #856
+    check("Apart((4+3*Sqrt(2)+Sqrt(3)+Sqrt(6))/(2+Sqrt(2)+Sqrt(3)),x)", //
+        "1+Sqrt(2)");
     // check("Factor(x^2 - y^2 )", "(x-y)*(x+y)");
     // check("Solve(x^2 - y^2==0, y)", "{{y->-x},{y->x}}");
 
@@ -10175,6 +10178,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFullSimplify() {
+    // https://github.com/axkr/symja_android_library/issues/856
+    check("FullSimplify((4+3*Sqrt(2)+Sqrt(3)+Sqrt(6))/(2+Sqrt(2)+Sqrt(3)))", //
+        "1+Sqrt(2)");
     check("FullSimplify(Sign(z)*Abs(z))", //
         "z");
     check("FullSimplify( Sqrt(9-4*Sqrt(5)))", //
@@ -20679,7 +20685,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testQuartiles() {  
+  public void testQuartiles() {
     check("Quartiles({{-1,-2,3}},{{0,0},{0,0}}+1)", //
         "{{-1,-1,-1},{-2,-2,-2},{3,3,3}}");
 

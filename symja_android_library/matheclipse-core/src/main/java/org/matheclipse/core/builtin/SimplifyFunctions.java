@@ -5,6 +5,7 @@ import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.S.Log;
 import static org.matheclipse.core.expression.S.x;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
@@ -266,15 +267,18 @@ public class SimplifyFunctions {
       /** If <code>true</code> we are in full simplify mode (i.e. function FullSimplify) */
       final boolean fFullSimplify;
 
+      final boolean fNoApart;
+
       /** The current evlaution engine */
       final EvalEngine fEngine;
 
       public SimplifyVisitor(Function<IExpr, Long> complexityFunction, boolean fullSimplify,
-          EvalEngine engine) {
+          EvalEngine engine, boolean noApart) {
         super();
         fEngine = engine;
         fComplexityFunction = complexityFunction;
         fFullSimplify = fullSimplify;
+        fNoApart = noApart;
       }
 
       private IExpr eval(IExpr a) {
@@ -319,10 +323,10 @@ public class SimplifyFunctions {
             simplifiedResult.checkLessEqual(temp);
           }
 
-          IExpr[] commonFactors =
+          Optional<IExpr[]> commonFactors =
               Algebra.InternalFindCommonFactorPlus.findCommonFactors((IAST) expr, true);
-          if (commonFactors != null) {
-            temp = eval(F.Times(commonFactors[0], commonFactors[1]));
+          if (commonFactors.isPresent()) {
+            temp = eval(F.Times(commonFactors.get()[0], commonFactors.get()[1]));
             simplifiedResult.checkLessEqual(temp);
           }
 
@@ -465,7 +469,8 @@ public class SimplifyFunctions {
         }
 
         try {
-          if (simplifiedResult.minCounter < Config.MAX_SIMPLIFY_APART_LEAFCOUNT) {
+          if (!fNoApart //
+              && simplifiedResult.minCounter < Config.MAX_SIMPLIFY_APART_LEAFCOUNT) {
             temp = eval(F.Apart(expr));
             simplifiedResult.checkLess(temp);
           }
@@ -651,31 +656,62 @@ public class SimplifyFunctions {
 
         IExpr temp = reduceNumberFactor(timesAST);
         if (temp.isPresent()) {
-
           sResult.result = temp;
           sResult.minCounter = fComplexityFunction.apply(temp);
         }
 
+        temp = reduceConjugateFactors(timesAST, sResult);
+        if (temp.isPresent()) {
+          return temp;
+        }
+
+        temp = tryTransformations(sResult.result.orElse(timesAST));
+        if (temp.isPresent()) {
+          sResult.result = temp;
+        }
+        temp = sResult.result.orElse(timesAST);
+        sResult.minCounter = fComplexityFunction.apply(temp);
+        functionExpand(temp, sResult); // minCounter[0], result);
+        return F.NIL;
+      }
+
+      /**
+       * Try reducing for {@link S#Plus} expressions in the denominators of the {@link S#Times}
+       * function by creating a conjugate expression and use the rule
+       * <code>(a+b)*(a-b) == a^2 - b^2</code>
+       * 
+       * @param timesAST
+       * @param sResult
+       */
+      private IExpr reduceConjugateFactors(IASTMutable timesAST, SimplifiedResult sResult) {
+        IExpr temp;
         IASTAppendable newTimes = F.NIL;
         int i = 1;
-        // for (int i = 1; i < ast.size(); i++) {
         int lastIndex = -1;
         INumber numberFactors = F.C1;
+        IExpr exprFactors = F.C1;
         while (i < timesAST.size()) {
           IExpr timesArg = timesAST.get(i);
-          if (timesArg.isPowerReciprocal() && timesArg.base().isPlus2()) {
+          if (timesArg.isPowerReciprocal() && timesArg.base().isPlus()
+              && timesArg.base().argSize() >= 2) {
             // try multiplying the conjugate
-            // example 1/(5+Sqrt(17)) => 1/(5-Sqrt(17))
-            IAST plus1 = (IAST) timesArg.base();
-            IAST plus2 = plus1.setAtCopy(2, plus1.arg2().negate());
+            // example plusDenominator(5+Sqrt(17)) => plusConjugate(5-Sqrt(17))
+            IAST plusDenominator = (IAST) timesArg.base();
+            IAST plusConjugate = plusDenominator.setAtCopy(plusDenominator.argSize(), plusDenominator.last().negate());
             // example (5+Sqrt(17)) * (5-Sqrt(17))
-            IExpr expand1 = eval(F.Expand(F.Times(plus1, plus2)));
-            if (expand1.isNumber() && !expand1.isZero()) {
-              numberFactors = numberFactors.times(((INumber) expand1).inverse());
-              if (newTimes.isPresent()) {
-                newTimes.set(i, plus2);
+            IExpr newDenominator = eval(F.Expand(F.Times(plusDenominator, plusConjugate)));
+            if (!newDenominator.isZero() && newDenominator.leafCount() < plusDenominator.leafCount()) {
+              IExpr inversedDenominator = newDenominator.inverse();
+              if (inversedDenominator.isNumber()) {
+                numberFactors = numberFactors.times((INumber) inversedDenominator);
               } else {
-                newTimes = timesAST.setAtClone(i, plus2);
+                exprFactors = exprFactors.times(inversedDenominator);
+              }
+              // replace the reciprocal Power in the timesAST[i] with the plusConjugate
+              if (newTimes.isPresent()) {
+                newTimes.set(i, plusConjugate);
+              } else {
+                newTimes = timesAST.setAtClone(i, plusConjugate);
               }
               i++;
               continue; // while
@@ -691,8 +727,8 @@ public class SimplifyFunctions {
               if (fFullSimplify) {
                 IAST test = F.Times(timesArg.base(), rhs.base());
                 long minCounter = fComplexityFunction.apply(test);
-                temp = simplifyStep(test, fComplexityFunction, minCounter, F.NIL, fEngine,
-                    fFullSimplify);
+                temp = simplifyStep(test, F.NIL, fComplexityFunction, minCounter, fFullSimplify,
+                    false, fEngine);
                 if (temp.isPresent()) {
                   IAST powerSimplified = F.Power(temp, rhs.exponent());
                   if (newTimes.isPresent()) {
@@ -752,12 +788,16 @@ public class SimplifyFunctions {
         if (newTimes.isPresent()) {
           sResult.result = timesAST;
           try {
-            temp = eval(newTimes);
-            IExpr temp2 = numberFactors.times(temp);
-            if (sResult.checkLessEqual(temp2)) {
-              if (temp2.isAtom()) {
-                return temp2;
+            if (exprFactors.isOne()) {
+              temp = eval(newTimes);
+              IExpr temp2 = numberFactors.times(temp);
+              if (sResult.checkLessEqual(temp2)) {
+                if (temp2.isAtom()) {
+                  return temp2;
+                }
               }
+            } else {
+              temp = F.Times(numberFactors, exprFactors, newTimes);
             }
             temp = eval(F.Expand(temp));
             temp = numberFactors.times(temp);
@@ -779,14 +819,6 @@ public class SimplifyFunctions {
             Errors.printMessage(fFullSimplify ? S.FullSimplify : S.Simplify, rex, EvalEngine.get());
           }
         }
-
-        temp = tryTransformations(sResult.result.orElse(timesAST));
-        if (temp.isPresent()) {
-          sResult.result = temp;
-        }
-        temp = sResult.result.orElse(timesAST);
-        sResult.minCounter = fComplexityFunction.apply(temp);
-        functionExpand(temp, sResult); // minCounter[0], result);
         return F.NIL;
       }
 
@@ -1300,9 +1332,9 @@ public class SimplifyFunctions {
       }
 
       // note: this should also cache FullSimplify calls
-      IExpr result = engine.getCache(ast);
-      if (result != null) {
-        return result;
+      IExpr defaultResult = engine.getCache(ast);
+      if (defaultResult != null) {
+        return defaultResult;
       }
 
       IExpr complexityFunctionHead = F.NIL;
@@ -1318,7 +1350,7 @@ public class SimplifyFunctions {
         Function<IExpr, Long> complexityFunction =
             createComplexityFunction(complexityFunctionHead, engine);
         long minCounter = complexityFunction.apply(arg1);
-        result = arg1;
+        defaultResult = arg1;
         long count = 0L;
         if (assumptionExpr.isPresent() && assumptionExpr.isAST()) {
           IAssumptions assumptions =
@@ -1329,7 +1361,7 @@ public class SimplifyFunctions {
             count = complexityFunction.apply(arg1);
             if (count <= minCounter) {
               minCounter = count;
-              result = arg1;
+              defaultResult = arg1;
             }
           }
         }
@@ -1346,8 +1378,8 @@ public class SimplifyFunctions {
           arg1 = temp;
         }
 
-        temp = simplifyStep(arg1, complexityFunction, minCounter, result, engine,
-            isFullSimplifyMode());
+        temp = simplifyStep(arg1, defaultResult, complexityFunction, minCounter,
+            isFullSimplifyMode(), false, engine);
         engine.putCache(ast, temp);
         return temp;
 
@@ -1370,27 +1402,6 @@ public class SimplifyFunctions {
       setOptions(newSymbol, //
           F.list(F.Rule(S.Assumptions, S.$Assumptions), //
               F.Rule(S.ComplexityFunction, S.Automatic)));
-    }
-
-    private static IExpr simplifyStep(IExpr arg1, Function<IExpr, Long> complexityFunction,
-        long minCounter, IExpr result, EvalEngine engine, boolean fullSimplify) {
-      long count;
-      IExpr temp;
-      temp = arg1.accept(new SimplifyVisitor(complexityFunction, fullSimplify, engine));
-      while (temp.isPresent()) {
-        count = complexityFunction.apply(temp);
-        if (count == minCounter) {
-          return temp;
-        }
-        if (count < minCounter) {
-          minCounter = count;
-          result = temp;
-          temp = result.accept(new SimplifyVisitor(complexityFunction, fullSimplify, engine));
-        } else {
-          return result;
-        }
-      }
-      return result;
     }
 
     public boolean isFullSimplifyMode() {
@@ -1489,6 +1500,38 @@ public class SimplifyFunctions {
       };
     }
     return complexityFunction;
+  }
+
+  public static IExpr simplifyStep(IExpr arg1, IExpr defaultResult, boolean fullSimplify,
+      boolean noApart, EvalEngine engine) {
+    Function<IExpr, Long> complexityFunction = createComplexityFunction(F.NIL, engine);
+    long minCounter = complexityFunction.apply(arg1);
+    return simplifyStep(arg1, defaultResult, complexityFunction, minCounter, fullSimplify, noApart,
+        engine);
+  }
+
+  private static IExpr simplifyStep(IExpr arg1, IExpr defaultResult,
+      Function<IExpr, Long> complexityFunction, long minCounter, boolean fullSimplify,
+      boolean noApart, EvalEngine engine) {
+    long count;
+    IExpr temp;
+    temp = arg1
+        .accept(new Simplify.SimplifyVisitor(complexityFunction, fullSimplify, engine, noApart));
+    while (temp.isPresent()) {
+      count = complexityFunction.apply(temp);
+      if (count == minCounter) {
+        return temp;
+      }
+      if (count < minCounter) {
+        minCounter = count;
+        defaultResult = temp;
+        temp = defaultResult.accept(
+            new Simplify.SimplifyVisitor(complexityFunction, fullSimplify, engine, noApart));
+      } else {
+        return defaultResult;
+      }
+    }
+    return defaultResult;
   }
 
   /**
