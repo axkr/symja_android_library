@@ -16,6 +16,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
@@ -1471,9 +1472,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public Pair asNumerDenom() {
     if (this.isPlusTimesPower()) {
-      IExpr[] parts = Algebra.fractionalPartsRational(this, true, true);
-      if (parts != null) {
-        return F.pair(parts[0], parts[1]);
+      Optional<IExpr[]> parts = Algebra.fractionalPartsRational(this, true, true);
+      if (parts.isPresent()) {
+        final IExpr numerator = parts.get()[0];
+        final IExpr denominator = parts.get()[1];
+        return F.pair(numerator, denominator);
       }
     }
     return IASTMutable.super.asNumerDenom();
@@ -1835,6 +1838,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (obj == this) {
       return true;
     }
+    if (hashCode() != obj.hashCode()) {
+      return false;
+    }
     if (obj instanceof AbstractAST) {
       final IAST ast = (AbstractAST) obj;
       if (size() != ast.size()) {
@@ -1849,27 +1855,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       } else if (!head.equals(ast.head())) {
         return false;
       }
-      if (hashCode() != ast.hashCode()) {
-        return false;
-      }
       return forAll((x, i) -> x.equals(ast.get(i)), 1);
     }
-    // if (obj instanceof AbstractAST) {
-    // if (hashCode() != obj.hashCode()) {
-    // return false;
-    // }
-    // final IAST list = (IAST) obj;
-    // if (size() != list.size()) {
-    // return false;
-    // }
-    // IExpr head = head();
-    // if (head != ((AbstractAST) obj).head()) {
-    // if (head instanceof ISymbol) {
-    // return false;
-    // }
-    // }
-    // return forAll((x, i) -> x.equals(list.get(i)), 0);
-    // }
     return false;
   }
 
@@ -2656,13 +2643,23 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public int hashCode() {
     if (hashValue == 0) {
-      hashValue = 0x811c9dc5; // decimal 2166136261;
       int size = size();
-      for (int i = 0; i < size; i++) {
-        hashValue = (hashValue * 16777619) ^ (get(i).hashCode() & 0xff);
+      if (size <= 3) {
+        hashValue = (0x811c9dc5 * 16777619) ^ (size & 0xff); // decimal 2166136261;
+        for (int i = 0; i < size; i++) {
+          hashValue = (hashValue * 16777619) ^ (get(i).hashCode() & 0xff);
+        }
+      } else {
+        size = 4;
+        hashValue = (0x811c9dc5 * 16777619) ^ (size & 0xff); // decimal 2166136261;
+        hashValue = (hashValue * 16777619) ^ (head().hashCode() & 0xff);
+        hashValue = (hashValue * 16777619) ^ (arg1().hashCode() & 0xff);
+        hashValue = (hashValue * 16777619) ^ (arg2().hashCode() & 0xff);
+        hashValue = (hashValue * 16777619) ^ (arg3().hashCode() & 0xff);
       }
     }
     return hashValue;
+
   }
 
   /** {@inheritDoc} */

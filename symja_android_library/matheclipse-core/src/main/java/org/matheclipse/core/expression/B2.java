@@ -1065,7 +1065,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   @Override
   public int hashCode() {
     if (hashValue == 0 && arg2 != null) {
-      hashValue = 0x811c9dc5; // decimal 2166136261;
+      hashValue = (0x811c9dc5 * 16777619) ^ (SIZE & 0xff);// decimal 2166136261;
       hashValue = (hashValue * 16777619) ^ (head().hashCode() & 0xff);
       hashValue = (hashValue * 16777619) ^ (arg1.hashCode() & 0xff);
       hashValue = (hashValue * 16777619) ^ (arg2.hashCode() & 0xff);

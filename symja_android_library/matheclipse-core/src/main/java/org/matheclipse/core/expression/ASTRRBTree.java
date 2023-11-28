@@ -4,7 +4,14 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.RandomAccess;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.ObjIntConsumer;
@@ -258,6 +265,9 @@ public class ASTRRBTree extends AbstractAST
     if (obj == this) {
       return true;
     }
+    if (hashCode() != obj.hashCode()) {
+      return false;
+    }
     if (obj instanceof AbstractAST) {
       final IAST ast = (AbstractAST) obj;
       final int size = size();
@@ -367,6 +377,21 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public int hashCode() {
     if (hashValue == 0) {
+      int size = size();
+      if (size <= 3) {
+        hashValue = (0x811c9dc5 * 16777619) ^ (size & 0xff); // decimal 2166136261;
+        for (int i = 0; i < size; i++) {
+          hashValue = (hashValue * 16777619) ^ (get(i).hashCode() & 0xff);
+        }
+      } else {
+        size = 4;
+        hashValue = (0x811c9dc5 * 16777619) ^ (size & 0xff); // decimal 2166136261;
+        hashValue = (hashValue * 16777619) ^ (head().hashCode() & 0xff);
+        hashValue = (hashValue * 16777619) ^ (arg1().hashCode() & 0xff);
+        hashValue = (hashValue * 16777619) ^ (arg2().hashCode() & 0xff);
+        hashValue = (hashValue * 16777619) ^ (arg3().hashCode() & 0xff);
+      }
+
       hashValue = 0x811c9dc5; // decimal 2166136261;
       UnmodListIterator<IExpr> iter = rrbTree.listIterator(0);
       while (iter.hasNext()) {

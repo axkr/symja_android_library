@@ -549,6 +549,9 @@ public abstract class HMArrayList extends AbstractAST
     if (obj == this) {
       return true;
     }
+    if (hashCode() != obj.hashCode()) {
+      return false;
+    }
     if (obj instanceof AbstractAST) {
       final IAST ast = (AbstractAST) obj;
       final int size = lastIndex - firstIndex;
@@ -562,9 +565,6 @@ public abstract class HMArrayList extends AbstractAST
           return false;
         }
       } else if (!head.equals(ast.head())) {
-        return false;
-      }
-      if (hashCode() != ast.hashCode()) {
         return false;
       }
       return forAll((x, i) -> x.equals(ast.getRule(i)), 1);
@@ -815,9 +815,19 @@ public abstract class HMArrayList extends AbstractAST
   @Override
   public int hashCode() {
     if (hashValue == 0) {
-      hashValue = 0x811c9dc5; // decimal 2166136261;
-      for (int i = firstIndex; i < lastIndex; i++) {
-        hashValue = (hashValue * 16777619) ^ (array[i].hashCode() & 0xff);
+      int size = size();
+      if (size <= 3) {
+        hashValue = (0x811c9dc5 * 16777619) ^ (size & 0xff); // decimal 2166136261;
+        for (int i = firstIndex; i < lastIndex; i++) {
+          hashValue = (hashValue * 16777619) ^ (array[i].hashCode() & 0xff);
+        }
+      } else {
+        size = 4;
+        hashValue = (0x811c9dc5 * 16777619) ^ (size & 0xff); // decimal 2166136261;
+        hashValue = (hashValue * 16777619) ^ (head().hashCode() & 0xff);
+        hashValue = (hashValue * 16777619) ^ (arg1().hashCode() & 0xff);
+        hashValue = (hashValue * 16777619) ^ (arg2().hashCode() & 0xff);
+        hashValue = (hashValue * 16777619) ^ (arg3().hashCode() & 0xff);
       }
     }
     return hashValue;
