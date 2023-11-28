@@ -3,6 +3,7 @@ package org.matheclipse.core.form.output;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
@@ -904,20 +905,20 @@ public class OutputFormFactory {
 
   private void convertTimesFraction(final Appendable buf, final IAST timesAST,
       final InfixOperator oper, final int precedence, boolean caller) throws IOException {
-    IExpr[] parts =
+    Optional<IExpr[]> parts =
         Algebra.fractionalPartsTimesPower(timesAST, true, false, false, false, false, false);
-    if (parts == null) {
+    if (parts.isEmpty()) {
       convertTimesOperator(buf, timesAST, oper, precedence, caller);
       return;
     }
-    final IExpr numerator = parts[0];
-    final IExpr denominator = parts[1];
+    final IExpr numerator = parts.get()[0];
+    final IExpr denominator = parts.get()[1];
     if (!denominator.isOne()) {
       int currPrecedence = oper.getPrecedence();
       if (currPrecedence < precedence) {
         append(buf, "(");
       }
-      final IExpr fraction = parts[2];
+      final IExpr fraction = parts.get()[2];
       if (fraction != null) {
         convertNumber(buf, (IReal) fraction, Precedence.PLUS, caller);
         append(buf, "*");

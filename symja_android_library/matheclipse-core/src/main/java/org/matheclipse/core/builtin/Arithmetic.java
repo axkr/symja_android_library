@@ -38,6 +38,7 @@ import static org.matheclipse.core.expression.S.Power;
 import static org.matheclipse.core.expression.S.Times;
 import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
+import java.util.Optional;
 import java.util.function.DoubleFunction;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
@@ -1438,16 +1439,17 @@ public final class Arithmetic {
           }
 
           if (arg1.isTimes() || arg1.isPower()) {
-            IExpr[] parts = Algebra.fractionalPartsTimesPower((IAST) arg1, true, false, false,
-                false, false, false);
-            if (parts != null && !parts[1].isOne()
-                && !(parts[1].isAST(S.Sign) || parts[0].isAST(S.Sign))) {
-              final IExpr numerator = parts[0];
-              final IExpr denominator = parts[1];
-              IExpr tmp = engine.evaluate(F.Times(F.Sign(numerator), //
-                  F.Power(F.Sign(denominator), F.CN1)));
-              if (!tmp.equals(arg1)) {
-                return F.DirectedInfinity(tmp);
+            Optional<IExpr[]> parts = Algebra.fractionalPartsTimesPower((IAST) arg1, true, false,
+                false, false, false, false);
+            if (parts.isPresent()) {
+              final IExpr numerator = parts.get()[0];
+              final IExpr denominator = parts.get()[1];
+              if (!denominator.isOne() && !(denominator.isAST(S.Sign) || numerator.isAST(S.Sign))) {
+                IExpr tmp = engine.evaluate(F.Times(F.Sign(numerator), //
+                    F.Power(F.Sign(denominator), F.CN1)));
+                if (!tmp.equals(arg1)) {
+                  return F.DirectedInfinity(tmp);
+                }
               }
             }
           }

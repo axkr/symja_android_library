@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
@@ -1113,21 +1114,21 @@ public class TeXFormFactory {
 
     private void convertTimesFraction(final StringBuilder buf, final IAST timesAST,
         final InfixOperator oper, final int precedence, boolean caller) {
-      IExpr[] parts =
+      Optional<IExpr[]> parts =
           Algebra.fractionalPartsTimesPower(timesAST, true, false, false, false, false, false);
-      if (parts == null) {
+      if (parts.isEmpty()) {
         convertTimesOperator(buf, timesAST, oper, precedence, caller);
         return;
       }
-      IExpr numerator = parts[0];
-      final IExpr denominator = parts[1];
+      IExpr numerator = parts.get()[0];
+      final IExpr denominator = parts.get()[1];
       if (!denominator.isOne()) {
         boolean isNegative = numerator.isNegativeSigned();
         if (isNegative) {
           numerator = numerator.negate();
         }
         precedenceOpen(buf, precedence);
-        final IExpr fraction = parts[2];
+        final IExpr fraction = parts.get()[2];
         if (fraction != null) {
           fFactory.convertNumber(buf, fraction, Precedence.PLUS, caller);
           buf.append(fFactory.symbolOptions.getTimesSymbol());

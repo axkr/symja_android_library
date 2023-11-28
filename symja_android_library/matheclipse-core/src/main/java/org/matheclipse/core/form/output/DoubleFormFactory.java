@@ -2,6 +2,7 @@ package org.matheclipse.core.form.output;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Optional;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.hipparchus.linear.RealMatrix;
@@ -577,20 +578,20 @@ public abstract class DoubleFormFactory {
 
   private void convertTimesFraction(final StringBuilder buf, final IAST timesAST,
       final InfixOperator oper, final int precedence, boolean caller) {
-    IExpr[] parts =
+    Optional<IExpr[]> parts =
         Algebra.fractionalPartsTimesPower(timesAST, true, false, false, false, false, false);
-    if (parts == null) {
+    if (parts.isEmpty()) {
       convertTimesOperator(buf, timesAST, oper, precedence, caller);
       return;
     }
-    final IExpr numerator = parts[0];
-    final IExpr denominator = parts[1];
+    final IExpr numerator = parts.get()[0];
+    final IExpr denominator = parts.get()[1];
     if (!denominator.isOne()) {
       int currPrecedence = oper.getPrecedence();
       if (currPrecedence < precedence) {
         append(buf, "(");
       }
-      final IExpr fraction = parts[2];
+      final IExpr fraction = parts.get()[2];
       if (fraction != null) {
         convertNumber(buf, (IReal) fraction, Precedence.PLUS, caller);
         append(buf, "*");

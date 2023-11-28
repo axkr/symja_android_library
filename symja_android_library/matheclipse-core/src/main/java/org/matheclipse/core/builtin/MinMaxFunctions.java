@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.S.Power;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -396,10 +397,10 @@ public class MinMaxFunctions {
           return F.NIL;
         }
         if (ast.isTimes()) {
-          IExpr[] parts = Algebra.fractionalParts(ast, false);
-          if (parts != null) {
-            IExpr numerator = parts[0];
-            IExpr denominator = parts[1];
+          Optional<IExpr[]> parts = Algebra.fractionalParts(ast, false);
+          if (parts.isPresent()) {
+            IExpr numerator = parts.get()[0];
+            IExpr denominator = parts.get()[1];
             if (!denominator.isFree(variable)) {
               numerator.accept(this);
               return roots(denominator);

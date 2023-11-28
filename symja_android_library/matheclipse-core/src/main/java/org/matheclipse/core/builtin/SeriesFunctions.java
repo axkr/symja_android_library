@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.matheclipse.core.basic.Config;
@@ -828,12 +829,12 @@ public class SeriesFunctions {
       IExpr y = F.Power(x, F.CN1); // substituting by 1/x
       IExpr temp = F.evalQuiet(F.subst(arg1, x, y));
       if (temp.isTimes()) {
-        IExpr[] parts =
+        Optional<IExpr[]> parts =
             Algebra.fractionalPartsTimesPower((IAST) temp, false, false, true, true, true, true);
-        if (parts != null) {
-          if (!parts[1].isOne()) { // denominator != 1
+        if (parts.isPresent()) {
+          if (!parts.get()[1].isOne()) { // denominator != 1
             LimitData ndData = new LimitData(x, F.C0, F.Rule(x, F.C0), data.direction());
-            temp = numeratorDenominatorLimit(parts[0], parts[1], ndData, engine);
+            temp = numeratorDenominatorLimit(parts.get()[0], parts.get()[1], ndData, engine);
             if (temp.isPresent()) {
               return temp;
             }
@@ -849,9 +850,9 @@ public class SeriesFunctions {
       if (!isFreeResult.arg1().isOne()) {
         return F.Times(isFreeResult.arg1(), data.limit(isFreeResult.arg2()));
       }
-      IExpr[] parts =
+      Optional<IExpr[]> parts =
           Algebra.fractionalPartsTimesPower(timesAST, false, false, true, true, true, true);
-      if (parts == null) {
+      if (parts.isEmpty()) {
         IAST[] timesPolyFiltered = timesAST.filter(x -> x.isPolynomial(data.variable));
         if (timesPolyFiltered[0].size() > 1 && timesPolyFiltered[1].size() > 1) {
           IExpr first = engine.evaluate(data.limit(timesPolyFiltered[0].oneIdentity1()));
@@ -886,8 +887,8 @@ public class SeriesFunctions {
         }
       } else {
 
-        IExpr numerator = parts[0];
-        IExpr denominator = parts[1];
+        IExpr numerator = parts.get()[0];
+        IExpr denominator = parts.get()[1];
         IExpr limit = data.limitValue();
         ISymbol symbol = data.variable();
         if (limit.isInfinity() || limit.isNegativeInfinity()) {
@@ -901,7 +902,7 @@ public class SeriesFunctions {
           }
         }
 
-        IExpr plusResult = Algebra.partsApart(parts, symbol, engine);
+        IExpr plusResult = Algebra.partsApart(parts.get(), symbol, engine);
         // Algebra.partialFractionDecompositionRational(new PartialFractionGenerator(),
         // parts,symbol);
         if (plusResult.isPlus()) {
@@ -1095,9 +1096,10 @@ public class SeriesFunctions {
               return F.NIL;
             }
             if (function.isTimes()) {
-              IExpr[] numeratorDenominatorParts = Algebra.fractionalParts(function, false);
-              if (numeratorDenominatorParts != null) {
-                return quotientTaylorFunction(numeratorDenominatorParts, x, x0, m, n);
+              Optional<IExpr[]> numeratorDenominatorParts =
+                  Algebra.fractionalParts(function, false);
+              if (numeratorDenominatorParts.isPresent()) {
+                return quotientTaylorFunction(numeratorDenominatorParts.get(), x, x0, m, n);
               }
             }
 
@@ -1693,10 +1695,10 @@ public class SeriesFunctions {
         return temp;
       }
     } else if (function.isTimes()) {
-      IExpr[] numeratorDenominatorParts = Algebra.fractionalParts(function, false);
-      if (numeratorDenominatorParts != null) {
+      Optional<IExpr[]> numeratorDenominatorParts = Algebra.fractionalParts(function, false);
+      if (numeratorDenominatorParts.isPresent()) {
         ASTSeriesData sd =
-            Algebra.polynomialTaylorSeries(numeratorDenominatorParts, x, x0, n, denominator);
+            Algebra.polynomialTaylorSeries(numeratorDenominatorParts.get(), x, x0, n, denominator);
         if (sd != null) {
           return sd;
         }

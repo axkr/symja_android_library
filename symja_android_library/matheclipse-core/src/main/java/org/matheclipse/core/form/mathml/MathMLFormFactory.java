@@ -6,6 +6,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
@@ -961,13 +962,14 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
      */
     public boolean convertTimesFraction(final StringBuilder buf, final IAST f, final int precedence,
         final boolean caller) {
-      IExpr[] parts = Algebra.fractionalPartsTimesPower(f, false, true, false, false, false, false);
-      if (parts == null) {
+      Optional<IExpr[]> parts =
+          Algebra.fractionalPartsTimesPower(f, false, true, false, false, false, false);
+      if (parts.isEmpty()) {
         convertTimesOperator(buf, f, precedence, false, caller);
         return true;
       }
-      final IExpr numerator = parts[0];
-      final IExpr denominator = parts[1];
+      final IExpr numerator = parts.get()[0];
+      final IExpr denominator = parts.get()[1];
       precedenceOpen(buf, precedence);
       if (!denominator.isOne()) {
         boolean arg1Negate = false;

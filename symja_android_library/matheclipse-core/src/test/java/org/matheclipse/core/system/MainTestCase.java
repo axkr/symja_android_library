@@ -1,7 +1,8 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
 import java.io.StringWriter;
-
+import java.util.Optional;
 import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
@@ -11,8 +12,6 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.ParserConfig;
-
-import static org.junit.Assert.assertEquals;
 
 /** Tests system.reflection classes */
 public class MainTestCase extends ExprEvaluatorTestCase {
@@ -3343,9 +3342,9 @@ public void testSystem377() {
     EvalEngine engine = EvalEngine.get();
     IExpr exprNumerator = engine.parse("8+12*x+20*x^2+12*x^3+8*x^4+3*x^5");
     IExpr exprDenominator = engine.parse("8*x+12*x^3+6*x^5+x^7");
-    IExpr[] result = Algebra.cancelGCD(exprNumerator, exprDenominator);
-    assertEquals(result[0].toString(), "1");
-    assertEquals(result[1].toString(), "4+6*x+8*x^2+3*x^3");
+    Optional<IExpr[]> result = Algebra.cancelGCD(exprNumerator, exprDenominator);
+    assertEquals(result.get()[0].toString(), "1");
+    assertEquals(result.get()[1].toString(), "4+6*x+8*x^2+3*x^3");
   }
 
   @Test

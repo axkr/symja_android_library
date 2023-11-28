@@ -8,6 +8,7 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.S.Integrate;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -675,9 +676,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 
       if (arg1AST.size() >= 3 && arg1AST.isFree(S.Integrate) && arg1AST.isPlusTimesPower()) {
         if (!arg1AST.isEvalFlagOn(IAST.IS_DECOMPOSED_PARTIAL_FRACTION) && x.isSymbol()) {
-          IExpr[] parts = Algebra.fractionalParts(arg1, true);
-          if (parts != null) {
-            IExpr temp = Algebra.partsApart(parts, x, engine);
+          Optional<IExpr[]> parts = Algebra.fractionalParts(arg1, true);
+          if (parts.isPresent()) {
+            IExpr temp = Algebra.partsApart(parts.get(), x, engine);
             if (temp.isPresent() && !temp.equals(arg1)) {
               if (temp.isPlus()) {
                 return mapIntegrate((IAST) temp, x);
