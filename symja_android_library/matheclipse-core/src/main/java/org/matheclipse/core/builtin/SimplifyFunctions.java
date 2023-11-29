@@ -692,72 +692,78 @@ public class SimplifyFunctions {
         IExpr exprFactors = F.C1;
         while (i < timesAST.size()) {
           IExpr timesArg = timesAST.get(i);
-          if (timesArg.isPowerReciprocal() && timesArg.base().isPlus()
-              && timesArg.base().argSize() >= 2) {
-            // try multiplying the conjugate
-            // example plusDenominator(5+Sqrt(17)) => plusConjugate(5-Sqrt(17))
-            IAST plusDenominator = (IAST) timesArg.base();
-            IAST plusConjugate = plusDenominator.setAtCopy(plusDenominator.argSize(), plusDenominator.last().negate());
-            // example (5+Sqrt(17)) * (5-Sqrt(17))
-            IExpr newDenominator = eval(F.Expand(F.Times(plusDenominator, plusConjugate)));
-            if (!newDenominator.isZero() && newDenominator.leafCount() < plusDenominator.leafCount()) {
-              IExpr inversedDenominator = newDenominator.inverse();
-              if (inversedDenominator.isNumber()) {
-                numberFactors = numberFactors.times((INumber) inversedDenominator);
-              } else {
-                exprFactors = exprFactors.times(inversedDenominator);
-              }
-              // replace the reciprocal Power in the timesAST[i] with the plusConjugate
-              if (newTimes.isPresent()) {
-                newTimes.set(i, plusConjugate);
-              } else {
-                newTimes = timesAST.setAtClone(i, plusConjugate);
-              }
-              i++;
-              continue; // while
-            }
-          }
-          if ((i + 1 < timesAST.size()) && timesArg.isPower()
-              && ((fFullSimplify && timesArg.base().isAST())
-                  || (timesArg.base().isPlus() && timesArg.base().first().isReal()))) {
-            IExpr rhs = timesAST.get(i + 1);
-            if (rhs.isPower() && rhs.exponent().equals(timesArg.exponent()) //
-                && ((fFullSimplify && rhs.base().isAST()) || (rhs.base().isPlus()
-                    && rhs.base().first().equals(timesArg.base().first())))) {
-              if (fFullSimplify) {
-                IAST test = F.Times(timesArg.base(), rhs.base());
-                long minCounter = fComplexityFunction.apply(test);
-                temp = simplifyStep(test, F.NIL, fComplexityFunction, minCounter, fFullSimplify,
-                    false, fEngine);
-                if (temp.isPresent()) {
-                  IAST powerSimplified = F.Power(temp, rhs.exponent());
-                  if (newTimes.isPresent()) {
-                    newTimes.set(i, powerSimplified);
-                    newTimes.remove(i + 1);
+          if (timesArg.isPower()) {
+            IExpr base = timesArg.base();
+            IExpr exponent = timesArg.exponent();
+            if (timesArg.isPowerReciprocal()) {
+              if (base.isPlus() && base.argSize() >= 2 && base.argSize() <= 5) {
+                // try multiplying the conjugate
+                // example plusDenominator(5+Sqrt(17)) => plusConjugate(5-Sqrt(17))
+                IAST plusDenominator = (IAST) base;
+                IAST plusConjugate = plusDenominator.setAtCopy(plusDenominator.argSize(),
+                    plusDenominator.last().negate());
+                // example (5+Sqrt(17)) * (5-Sqrt(17))
+                IExpr newDenominator = eval(F.Expand(F.Times(plusDenominator, plusConjugate)));
+                if (!newDenominator.isZero()
+                    && newDenominator.leafCount() < plusDenominator.leafCount()) {
+                  IExpr inversedDenominator = newDenominator.inverse();
+                  if (inversedDenominator.isNumber()) {
+                    numberFactors = numberFactors.times((INumber) inversedDenominator);
                   } else {
-                    newTimes = timesAST.setAtClone(i, powerSimplified);
-                    newTimes.remove(i + 1);
+                    exprFactors = exprFactors.times(inversedDenominator);
+                  }
+                  // replace the reciprocal Power in the timesAST[i] with the plusConjugate
+                  if (newTimes.isPresent()) {
+                    newTimes.set(i, plusConjugate);
+                  } else {
+                    newTimes = timesAST.setAtClone(i, plusConjugate);
                   }
                   i++;
                   continue; // while
                 }
-              } else {
-                IExpr lhsRest = timesArg.base().rest();
-                IExpr rhsRest = rhs.base().rest();
-                IExpr zeroCandidate = eval(F.Plus(lhsRest, rhsRest));
-                if (zeroCandidate.isZero()) {
-                  // found something like: (2-rest)^(z) * (2+rest)^(z) ==> (4-rest^2)^(z)
-                  IAST powerSimplified = F
-                      .Power(F.Subtract(F.Sqr(rhs.base().first()), F.Sqr(lhsRest)), rhs.exponent());
-                  if (newTimes.isPresent()) {
-                    newTimes.set(i, powerSimplified);
-                    newTimes.remove(i + 1);
-                  } else {
-                    newTimes = timesAST.setAtClone(i, powerSimplified);
-                    newTimes.remove(i + 1);
+              }
+            }
+            if ((i + 1 < timesAST.size())
+                && ((fFullSimplify && base.isAST()) || (base.isPlus() && base.first().isReal()))) {
+              IExpr rhs = timesAST.get(i + 1);
+              if (rhs.isPower() && rhs.exponent().equals(exponent) //
+                  && ((fFullSimplify && rhs.base().isAST())
+                      || (rhs.base().isPlus() && rhs.base().first().equals(base.first())))) {
+                if (fFullSimplify) {
+                  IAST test = F.Times(base, rhs.base());
+                  long minCounter = fComplexityFunction.apply(test);
+                  temp = simplifyStep(test, F.NIL, fComplexityFunction, minCounter, fFullSimplify,
+                      false, fEngine);
+                  if (temp.isPresent()) {
+                    IAST powerSimplified = F.Power(temp, rhs.exponent());
+                    if (newTimes.isPresent()) {
+                      newTimes.set(i, powerSimplified);
+                      newTimes.remove(i + 1);
+                    } else {
+                      newTimes = timesAST.setAtClone(i, powerSimplified);
+                      newTimes.remove(i + 1);
+                    }
+                    i++;
+                    continue; // while
                   }
-                  i++;
-                  continue; // while
+                } else {
+                  IExpr lhsRest = base.rest();
+                  IExpr rhsRest = rhs.base().rest();
+                  IExpr zeroCandidate = eval(F.Plus(lhsRest, rhsRest));
+                  if (zeroCandidate.isZero()) {
+                    // found something like: (2-rest)^(z) * (2+rest)^(z) ==> (4-rest^2)^(z)
+                    IAST powerSimplified = F.Power(
+                        F.Subtract(F.Sqr(rhs.base().first()), F.Sqr(lhsRest)), rhs.exponent());
+                    if (newTimes.isPresent()) {
+                      newTimes.set(i, powerSimplified);
+                      newTimes.remove(i + 1);
+                    } else {
+                      newTimes = timesAST.setAtClone(i, powerSimplified);
+                      newTimes.remove(i + 1);
+                    }
+                    i++;
+                    continue; // while
+                  }
                 }
               }
             }
