@@ -5164,14 +5164,65 @@ public final class NumberTheory {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      VariablesSet eVar = new VariablesSet(ast.arg1());
+      final VariablesSet eVar;
+      boolean hasOption = ast.isAST2() ? true : false;
+      if (ast.isAST2() && ast.arg2().isFree(x -> x.isRuleAST(), false)) {
+        eVar = new VariablesSet(ast.arg2());
+        final VariablesSet exprVariables = new VariablesSet(ast.arg1());
+        if (eVar.size() != exprVariables.size()) {
+          // `1`
+          Errors.printMessage(S.SquareFreeQ, "error",
+              F.List(F.stringx("Currently not supported: number of variables in expression (" //
+                  + exprVariables.size() //
+                  + ") unequals number of user variables (" //
+                  + eVar.size() //
+                  + ")")),
+              engine);
+          return F.NIL;
+        }
+        hasOption = false;
+      } else {
+        eVar = new VariablesSet(ast.arg1());
+      }
       if (eVar.isSize(0)) {
         IExpr arg1 = ast.arg1();
         if (arg1.isZero()) {
           return S.False;
         }
-        if (arg1.isInteger()) {
-          return F.booleSymbol(Primality.isSquareFree(((IInteger) arg1).toBigNumerator()));
+        if (arg1.isExactNumber()) {
+          if (arg1.isInteger()) {
+            return F.booleSymbol(Primality.isSquareFree(((IInteger) arg1).toBigNumerator()));
+          }
+          if (arg1.isFraction()) {
+            return F.booleSymbol(Primality.isSquareFree(((IFraction) arg1).toBigNumerator()) //
+                && Primality.isSquareFree(((IFraction) arg1).toBigDenominator()));
+          }
+          if (arg1.isComplex()) {
+            IRational re = ((IComplex) arg1).re();
+            if (re.isInteger()) {
+              IRational im = ((IComplex) arg1).im();
+              if (im.isInteger()) {
+                IAST factors = GaussianInteger.factorize(((IInteger) re).toBigNumerator(),
+                    ((IInteger) im).toBigNumerator(), arg1);
+                if (factors.isListOfLists()) {
+                  for (int i = 1; i < factors.size(); i++) {
+                    IAST subList = factors.getAST(i);
+                    if (!subList.isList2()) {
+                      return S.False;
+                    }
+                    if (subList.second().isInteger()) {
+                      IInteger exponent = (IInteger) subList.second();
+                      if (exponent.isGE(F.C2)) {
+                        return S.False;
+                      }
+                    }
+                  }
+                  return S.True;
+                }
+              }
+            }
+          }
+          return S.False;
         }
         if (arg1.isAtom()) {
           return S.False;
@@ -5179,7 +5230,7 @@ public final class NumberTheory {
       }
       if (!eVar.isSize(1)) {
         // `1` currently not supported in `2`.
-        Errors.printMessage(S.SquareFreeQ, "unsupported", F.List(F.CEmptyList, S.SquareFreeQ),
+        Errors.printMessage(S.SquareFreeQ, "unsupported", F.List(eVar.getVarList(), S.SquareFreeQ),
             engine);
         return F.NIL;
       }
@@ -5187,7 +5238,7 @@ public final class NumberTheory {
         IExpr expr = F.evalExpandAll(ast.arg1(), engine);
         List<IExpr> varList = eVar.getVarList().copyTo();
 
-        if (ast.isAST2()) {
+        if (hasOption) {
           return F.booleSymbol(isSquarefreeWithOption(ast, expr, varList, engine));
         }
         return F.booleSymbol(isSquarefree(expr, varList));

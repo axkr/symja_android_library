@@ -23651,6 +23651,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSquareFreeQ() {
+    check("SquareFreeQ(-45+28*I)", //
+        "False");
+    check("SquareFreeQ(6+7*I)", //
+        "True");
+
+    // message: SquareFreeQ: Currently not supported: number of variables in expression (2) unequals
+    // number of user variables (1).
+    check("SquareFreeQ(x*y^2, x)", //
+        "SquareFreeQ(x*y^2,x)");
+    check("SquareFreeQ(x*y^2, y)", //
+        "SquareFreeQ(x*y^2,y)");
+
+    check("SquareFreeQ(5/6)", //
+        "True");
+    check("SquareFreeQ(3/4)", //
+        "False");
+
     check("SquareFreeQ(9)", //
         "False");
 
@@ -23676,6 +23693,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
     check("SquareFreeQ(x^2 + 1, Modulus -> 2)", //
         "False");
+    check("SquareFreeQ(6+6*x+x^2)", //
+        "True");
   }
 
   @Test
