@@ -1818,12 +1818,12 @@ public final class Arithmetic {
     @Override
     public IExpr e2ComArg(final IComplex c0, final IComplex c1) {
       // TODO implement GCD for gaussian integers
-      IInteger[] gi0 = c0.gaussianIntegers();
-      IInteger[] gi1 = c1.gaussianIntegers();
+      Optional<IInteger[]> gi0 = c0.gaussianIntegers();
+      Optional<IInteger[]> gi1 = c1.gaussianIntegers();
 
-      if (gi0 != null && gi1 != null) {
+      if (gi0.isPresent() && gi1.isPresent()) {
         // ComplexSym devidend = ComplexSym.valueOf(c0.getRealPart(), c0.getImaginaryPart());
-        IInteger[] result = GaussianInteger.gcd(gi0, gi1);
+        IInteger[] result = GaussianInteger.gcd(gi0.get(), gi1.get());
         if (result != null) {
           return F.complex(result[0], result[1]);
         }

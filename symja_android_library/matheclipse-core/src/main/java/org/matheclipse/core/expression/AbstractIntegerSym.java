@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
@@ -695,8 +696,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
   /** {@inheritDoc} */
   @Override
-  public IInteger[] gaussianIntegers() {
-    return new IInteger[] {this, F.C0};
+  public Optional<IInteger[]> gaussianIntegers() {
+    return Optional.of(new IInteger[] {this, F.C0});
   }
 
   /** {@inheritDoc} */

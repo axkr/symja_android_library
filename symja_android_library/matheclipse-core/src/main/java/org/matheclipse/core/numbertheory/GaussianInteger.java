@@ -19,6 +19,8 @@ import org.matheclipse.core.expression.ComplexSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBigNumber;
+import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 
@@ -29,10 +31,20 @@ public final class GaussianInteger {
   private BigInteger ValA, ValB;
   private int Ind;
 
-  public static IAST factorize(BigInteger re, BigInteger im, IExpr num) {
+  /**
+   * Factor a gaussian integer number.
+   * 
+   * @param gaussianInteger gaussian integer represented by an {@link IBigNumber} instance (i.e.
+   *        instance of {@link IComplex} or {@link IInteger})
+   * @param realPart the real part of the gaussian integer
+   * @param imaginaryPart the imaginary part of the gaussian integer
+   * @return
+   */
+  public static IAST factorize(IBigNumber gaussianInteger, BigInteger realPart,
+      BigInteger imaginaryPart) {
     GaussianInteger g = new GaussianInteger();
     SortedMap<ComplexSym, Integer> complexMap = new TreeMap<ComplexSym, Integer>();
-    g.gaussianFactorization2(re, im, complexMap);
+    g.gaussianFactorization2(realPart, imaginaryPart, complexMap);
     IASTAppendable list = F.ListAlloc(complexMap.size() + 1);
     IExpr factor = F.C1;
     IASTAppendable ast = F.TimesAlloc(complexMap.size());
@@ -46,7 +58,7 @@ public final class GaussianInteger {
         ast.append(F.Power(key, is));
       }
     }
-    factor = F.eval(F.Divide(num, ast));
+    factor = F.eval(F.Divide(gaussianInteger, ast));
     if (!factor.isOne()) {
       list.append(F.list(factor, F.C1));
     }
@@ -56,6 +68,38 @@ public final class GaussianInteger {
       list.append(F.list(key, is));
     }
     return list;
+  }
+
+  /**
+   * Test if the gaussian integer is square free.
+   * 
+   * @param gaussianInteger gaussian integer represented by an {@link IBigNumber} instance (i.e.
+   *        instance of {@link IComplex} or {@link IInteger})
+   * @param realPart the real part of the gaussian integer
+   * @param imaginaryPart the imaginary part of the gaussian integer
+   * 
+   * @return
+   */
+  public static boolean isSquareFree(IBigNumber gaussianInteger, IInteger realPart,
+      IInteger imaginaryPart) {
+    IAST factors =
+        factorize(gaussianInteger, realPart.toBigNumerator(), imaginaryPart.toBigNumerator());
+    if (factors.isListOfLists()) {
+      for (int i = 1; i < factors.size(); i++) {
+        IAST subList = factors.getAST(i);
+        if (!subList.isList2()) {
+          return false;
+        }
+        if (subList.second().isInteger()) {
+          IInteger exponent = (IInteger) subList.second();
+          if (exponent.isGE(F.C2)) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+    return false;
   }
 
   void gaussianFactorization2(BigInteger re, BigInteger im,
@@ -218,7 +262,7 @@ public final class GaussianInteger {
   }
 
   /**
-   * Greatest common divisor of the gaussian <code>IInteger</code> numbers <code>g1, g2</code>.
+   * Greatest common divisor of the gaussian {@link IInteger} numbers <code>g1, g2</code>.
    *
    * @param g1
    * @param g2

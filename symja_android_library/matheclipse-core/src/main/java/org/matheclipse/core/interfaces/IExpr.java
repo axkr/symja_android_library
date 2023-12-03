@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -1078,8 +1079,8 @@ public interface IExpr
    *
    * @return <code>null</code> if this is not a Gaussian integer
    */
-  default IInteger[] gaussianIntegers() {
-    return null;
+  default Optional<IInteger[]> gaussianIntegers() {
+    return Optional.empty();
   }
 
   @Override

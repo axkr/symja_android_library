@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
 import org.hipparchus.linear.FieldMatrix;
@@ -480,17 +481,18 @@ public class PredicateQ {
       if (!option.isTrue()) {
         return evalArg1Boole(arg1, engine);
       }
-      IInteger[] reImParts = arg1.gaussianIntegers();
-      if (reImParts == null) {
+      Optional<IInteger[]> reImParts = arg1.gaussianIntegers();
+      if (reImParts.isEmpty()) {
         return false;
       }
-      if (reImParts[1].isZero()) {
-        return reImParts[0].isEven();
+      IInteger[] gaussian = reImParts.get();
+      if (gaussian[1].isZero()) {
+        return gaussian[0].isEven();
       }
-      if (reImParts[0].isZero()) {
-        return reImParts[1].isEven();
+      if (gaussian[0].isZero()) {
+        return gaussian[1].isEven();
       }
-      return reImParts[0].isEven() && reImParts[1].isEven();
+      return gaussian[0].isEven() && gaussian[1].isEven();
     }
 
     @Override
@@ -951,20 +953,21 @@ public class PredicateQ {
       if (!option.isTrue()) {
         return evalArg1Boole(arg1, engine);
       }
-      IInteger[] reImParts = arg1.gaussianIntegers();
-      if (reImParts == null) {
+      Optional<IInteger[]> reImParts = arg1.gaussianIntegers();
+      if (reImParts.isEmpty()) {
         return false;
       }
-      if (reImParts[1].isZero()) {
-        return reImParts[0].isOdd();
+      IInteger[] gaussian = reImParts.get();
+      if (gaussian[1].isZero()) {
+        return gaussian[0].isOdd();
       }
-      if (reImParts[0].isZero()) {
-        return reImParts[1].isOdd();
+      if (gaussian[0].isZero()) {
+        return gaussian[1].isOdd();
       }
-      if (reImParts[0].isOdd() && reImParts[1].isOdd()) {
+      if (gaussian[0].isOdd() && gaussian[1].isOdd()) {
         return false;
       }
-      return reImParts[0].isOdd() || reImParts[1].isOdd();
+      return gaussian[0].isOdd() || gaussian[1].isOdd();
     }
 
     @Override
@@ -1241,24 +1244,25 @@ public class PredicateQ {
       if (!option.isTrue()) {
         return evalArg1Boole(arg1, engine);
       }
-      IInteger[] reImParts = arg1.gaussianIntegers();
-      if (reImParts == null) {
+      Optional<IInteger[]> reImParts = arg1.gaussianIntegers();
+      if (reImParts.isEmpty()) {
         return false;
       }
-      if (reImParts[1].isZero()) {
-        if (reImParts[0].isProbablePrime()) {
-          return reImParts[0].abs().mod(F.C4).equals(F.C3);
+      IInteger[] gaussian = reImParts.get();
+      if (gaussian[1].isZero()) {
+        if (gaussian[0].isProbablePrime()) {
+          return gaussian[0].abs().mod(F.C4).equals(F.C3);
         }
         return false;
       }
-      if (reImParts[0].isZero()) {
-        if (reImParts[1].isProbablePrime()) {
-          return reImParts[1].abs().mod(F.C4).equals(F.C3);
+      if (gaussian[0].isZero()) {
+        if (gaussian[1].isProbablePrime()) {
+          return gaussian[1].abs().mod(F.C4).equals(F.C3);
         }
         return false;
       }
       // re^2 + im^2 is probable prime?
-      return reImParts[0].powerRational(2L).add(reImParts[1].powerRational(2L)).isProbablePrime();
+      return gaussian[0].powerRational(2L).add(gaussian[1].powerRational(2L)).isProbablePrime();
     }
 
     @Override

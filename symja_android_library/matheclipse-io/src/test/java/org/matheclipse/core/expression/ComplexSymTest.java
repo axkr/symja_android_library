@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import java.math.BigInteger;
+import java.util.Optional;
 import org.junit.Test;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -14,26 +15,26 @@ public class ComplexSymTest {
   public void testSqrt1() {
     // https://math.stackexchange.com/a/44414
     ComplexSym c1 = ComplexSym.valueOf(BigInteger.valueOf(-7), BigInteger.valueOf(24));
-    IInteger[] parm1 = c1.gaussianIntegers();
+    Optional<IInteger[]> parm1 = c1.gaussianIntegers();
 
     // c + d*I
-    IInteger c = parm1[0];
-    IInteger d = parm1[1];
+    IInteger c = parm1.get()[0];
+    IInteger d = parm1.get()[1];
 
     ComplexSym c2 = ComplexSym.valueOf(BigInteger.valueOf(3), BigInteger.valueOf(4));
-    IInteger[] expected = c2.gaussianIntegers();
+    Optional<IInteger[]> expected = c2.gaussianIntegers();
 
     IExpr val1 = c.multiply(c).add(d.multiply(d)).sqrt();
     if (val1.isInteger()) {
       IExpr a = c.add((IInteger) val1).divide(F.C2).sqrt();
       if (a.isInteger()) {
-        assertEquals(expected[0], a);
+        assertEquals(expected.get()[0], a);
 
         IExpr val2 = ((IInteger) val1).subtract(c).divide(F.C2).sqrt();
         if (val2.isInteger()) {
           // Sqrt(c + d*I) -> a + b*I
           IExpr b = ((IInteger) val2).multiply(d.complexSign());
-          assertEquals(expected[1], b);
+          assertEquals(expected.get()[1], b);
           return;
         }
       }
@@ -49,10 +50,10 @@ public class ComplexSymTest {
     ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(1), BigInteger.valueOf(-1));
     ComplexSym c4 = ComplexSym.valueOf(BigInteger.valueOf(2), BigInteger.valueOf(-4));
 
-    IInteger[] parm1 = c1.gaussianIntegers();
-    IInteger[] parm2 = c2.gaussianIntegers();
-    IInteger[] expected = c3.gaussianIntegers();
-    IInteger[] expected2 = c4.gaussianIntegers();
+    IInteger[] parm1 = c1.gaussianIntegers().get();
+    IInteger[] parm2 = c2.gaussianIntegers().get();
+    IInteger[] expected = c3.gaussianIntegers().get();
+    IInteger[] expected2 = c4.gaussianIntegers().get();
 
     IInteger[] result = GaussianInteger.quotientRemainder(parm1, parm2);
 
@@ -70,10 +71,10 @@ public class ComplexSymTest {
     ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(2), BigInteger.valueOf(-2));
     ComplexSym c4 = ComplexSym.valueOf(BigInteger.valueOf(2), BigInteger.valueOf(-5));
 
-    IInteger[] parm1 = c1.gaussianIntegers();
-    IInteger[] parm2 = c2.gaussianIntegers();
-    IInteger[] expected = c3.gaussianIntegers();
-    IInteger[] expected2 = c4.gaussianIntegers();
+    IInteger[] parm1 = c1.gaussianIntegers().get();
+    IInteger[] parm2 = c2.gaussianIntegers().get();
+    IInteger[] expected = c3.gaussianIntegers().get();
+    IInteger[] expected2 = c4.gaussianIntegers().get();
 
     IInteger[] result = GaussianInteger.quotientRemainder(parm1, parm2);
 
@@ -91,10 +92,10 @@ public class ComplexSymTest {
     ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(-2), BigInteger.valueOf(1));
     ComplexSym c4 = ComplexSym.valueOf(BigInteger.valueOf(3), BigInteger.valueOf(-1));
 
-    IInteger[] parm1 = c1.gaussianIntegers();
-    IInteger[] parm2 = c2.gaussianIntegers();
-    IInteger[] expected = c3.gaussianIntegers();
-    IInteger[] expected2 = c4.gaussianIntegers();
+    IInteger[] parm1 = c1.gaussianIntegers().get();
+    IInteger[] parm2 = c2.gaussianIntegers().get();
+    IInteger[] expected = c3.gaussianIntegers().get();
+    IInteger[] expected2 = c4.gaussianIntegers().get();
 
     IInteger[] result = GaussianInteger.quotientRemainder(parm1, parm2);
 
@@ -112,10 +113,10 @@ public class ComplexSymTest {
     ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(1), BigInteger.valueOf(-1));
     ComplexSym c4 = ComplexSym.valueOf(BigInteger.valueOf(0), BigInteger.valueOf(-1));
 
-    IInteger[] parm1 = c1.gaussianIntegers();
-    IInteger[] parm2 = c2.gaussianIntegers();
-    IInteger[] expected = c3.gaussianIntegers();
-    IInteger[] expected2 = c4.gaussianIntegers();
+    IInteger[] parm1 = c1.gaussianIntegers().get();
+    IInteger[] parm2 = c2.gaussianIntegers().get();
+    IInteger[] expected = c3.gaussianIntegers().get();
+    IInteger[] expected2 = c4.gaussianIntegers().get();
 
     IInteger[] result = GaussianInteger.quotientRemainder(parm1, parm2);
 
@@ -133,10 +134,10 @@ public class ComplexSymTest {
     ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(1), BigInteger.valueOf(3));
     ComplexSym c4 = ComplexSym.valueOf(BigInteger.valueOf(0), BigInteger.valueOf(0));
 
-    IInteger[] parm1 = c1.gaussianIntegers();
-    IInteger[] parm2 = c2.gaussianIntegers();
-    IInteger[] expected = c3.gaussianIntegers();
-    IInteger[] expected2 = c4.gaussianIntegers();
+    IInteger[] parm1 = c1.gaussianIntegers().get();
+    IInteger[] parm2 = c2.gaussianIntegers().get();
+    IInteger[] expected = c3.gaussianIntegers().get();
+    IInteger[] expected2 = c4.gaussianIntegers().get();
 
     IInteger[] result = GaussianInteger.quotientRemainder(parm1, parm2);
 
@@ -154,10 +155,10 @@ public class ComplexSymTest {
     ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(1), BigInteger.valueOf(0));
     ComplexSym c4 = ComplexSym.valueOf(BigInteger.valueOf(0), BigInteger.valueOf(0));
 
-    IInteger[] parm1 = c1.gaussianIntegers();
-    IInteger[] parm2 = c2.gaussianIntegers();
-    IInteger[] expected = c3.gaussianIntegers();
-    IInteger[] expected2 = c4.gaussianIntegers();
+    IInteger[] parm1 = c1.gaussianIntegers().get();
+    IInteger[] parm2 = c2.gaussianIntegers().get();
+    IInteger[] expected = c3.gaussianIntegers().get();
+    IInteger[] expected2 = c4.gaussianIntegers().get();
 
     IInteger[] result = GaussianInteger.quotientRemainder(parm1, parm2);
 
@@ -175,10 +176,10 @@ public class ComplexSymTest {
     ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(1), BigInteger.valueOf(0));
     ComplexSym c4 = ComplexSym.valueOf(BigInteger.valueOf(0), BigInteger.valueOf(0));
 
-    IInteger[] parm1 = c1.gaussianIntegers();
-    IInteger[] parm2 = c2.gaussianIntegers();
-    IInteger[] expected = c3.gaussianIntegers();
-    IInteger[] expected2 = c4.gaussianIntegers();
+    IInteger[] parm1 = c1.gaussianIntegers().get();
+    IInteger[] parm2 = c2.gaussianIntegers().get();
+    IInteger[] expected = c3.gaussianIntegers().get();
+    IInteger[] expected2 = c4.gaussianIntegers().get();
 
     IInteger[] result = GaussianInteger.quotientRemainder(parm1, parm2);
 
@@ -196,10 +197,10 @@ public class ComplexSymTest {
     ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(0), BigInteger.valueOf(0));
     ComplexSym c4 = ComplexSym.valueOf(BigInteger.valueOf(0), BigInteger.valueOf(0));
 
-    IInteger[] parm1 = c1.gaussianIntegers();
-    IInteger[] parm2 = c2.gaussianIntegers();
-    IInteger[] expected = c3.gaussianIntegers();
-    IInteger[] expected2 = c4.gaussianIntegers();
+    IInteger[] parm1 = c1.gaussianIntegers().get();
+    IInteger[] parm2 = c2.gaussianIntegers().get();
+    IInteger[] expected = c3.gaussianIntegers().get();
+    IInteger[] expected2 = c4.gaussianIntegers().get();
 
     IInteger[] result = GaussianInteger.quotientRemainder(parm1, parm2);
 
@@ -217,10 +218,10 @@ public class ComplexSymTest {
     ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(1), BigInteger.valueOf(-1));
     ComplexSym c4 = ComplexSym.valueOf(BigInteger.valueOf(0), BigInteger.valueOf(0));
 
-    IInteger[] parm1 = c1.gaussianIntegers();
-    IInteger[] parm2 = c2.gaussianIntegers();
-    IInteger[] expected = c3.gaussianIntegers();
-    IInteger[] expected2 = c4.gaussianIntegers();
+    IInteger[] parm1 = c1.gaussianIntegers().get();
+    IInteger[] parm2 = c2.gaussianIntegers().get();
+    IInteger[] expected = c3.gaussianIntegers().get();
+    IInteger[] expected2 = c4.gaussianIntegers().get();
 
     IInteger[] result = GaussianInteger.quotientRemainder(parm1, parm2);
 
@@ -238,10 +239,10 @@ public class ComplexSymTest {
     ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(-11), BigInteger.valueOf(0));
     ComplexSym c4 = ComplexSym.valueOf(BigInteger.valueOf(0), BigInteger.valueOf(0));
 
-    IInteger[] parm1 = c1.gaussianIntegers();
-    IInteger[] parm2 = c2.gaussianIntegers();
-    IInteger[] expected = c3.gaussianIntegers();
-    IInteger[] expected2 = c4.gaussianIntegers();
+    IInteger[] parm1 = c1.gaussianIntegers().get();
+    IInteger[] parm2 = c2.gaussianIntegers().get();
+    IInteger[] expected = c3.gaussianIntegers().get();
+    IInteger[] expected2 = c4.gaussianIntegers().get();
 
     IInteger[] result = GaussianInteger.quotientRemainder(parm1, parm2);
 
@@ -258,9 +259,9 @@ public class ComplexSymTest {
     ComplexSym c2 = ComplexSym.valueOf(BigInteger.valueOf(0), BigInteger.valueOf(0));
     ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(0), BigInteger.valueOf(0));
 
-    IInteger[] parm1 = c1.gaussianIntegers();
-    IInteger[] parm2 = c2.gaussianIntegers();
-    IInteger[] parm3 = c3.gaussianIntegers();
+    IInteger[] parm1 = c1.gaussianIntegers().get();
+    IInteger[] parm2 = c2.gaussianIntegers().get();
+    IInteger[] parm3 = c3.gaussianIntegers().get();
 
     IInteger[] result = GaussianInteger.gcd(parm1, parm2);
 
@@ -276,9 +277,9 @@ public class ComplexSymTest {
     ComplexSym c2 = ComplexSym.valueOf(BigInteger.valueOf(1), BigInteger.valueOf(0));
     ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(1), BigInteger.valueOf(0));
 
-    IInteger[] parm1 = c1.gaussianIntegers();
-    IInteger[] parm2 = c2.gaussianIntegers();
-    IInteger[] parm3 = c3.gaussianIntegers();
+    IInteger[] parm1 = c1.gaussianIntegers().get();
+    IInteger[] parm2 = c2.gaussianIntegers().get();
+    IInteger[] parm3 = c3.gaussianIntegers().get();
 
     IInteger[] result = GaussianInteger.gcd(parm1, parm2);
 
@@ -294,9 +295,9 @@ public class ComplexSymTest {
     ComplexSym c2 = ComplexSym.valueOf(BigInteger.valueOf(0), BigInteger.valueOf(-1));
     ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(1), BigInteger.valueOf(0));
 
-    IInteger[] parm1 = c1.gaussianIntegers();
-    IInteger[] parm2 = c2.gaussianIntegers();
-    IInteger[] parm3 = c3.gaussianIntegers();
+    IInteger[] parm1 = c1.gaussianIntegers().get();
+    IInteger[] parm2 = c2.gaussianIntegers().get();
+    IInteger[] parm3 = c3.gaussianIntegers().get();
 
     IInteger[] result = GaussianInteger.gcd(parm1, parm2);
 
@@ -312,9 +313,9 @@ public class ComplexSymTest {
     ComplexSym c2 = ComplexSym.valueOf(BigInteger.valueOf(1), BigInteger.valueOf(-1));
     ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(-1), BigInteger.valueOf(0));
 
-    IInteger[] parm1 = c1.gaussianIntegers();
-    IInteger[] parm2 = c2.gaussianIntegers();
-    IInteger[] parm3 = c3.gaussianIntegers();
+    IInteger[] parm1 = c1.gaussianIntegers().get();
+    IInteger[] parm2 = c2.gaussianIntegers().get();
+    IInteger[] parm3 = c3.gaussianIntegers().get();
 
     IInteger[] result = GaussianInteger.gcd(parm1, parm2);
 
@@ -330,9 +331,9 @@ public class ComplexSymTest {
     ComplexSym c2 = ComplexSym.valueOf(BigInteger.valueOf(-1), BigInteger.valueOf(-1));
     ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(1), BigInteger.valueOf(0));
 
-    IInteger[] parm1 = c1.gaussianIntegers();
-    IInteger[] parm2 = c2.gaussianIntegers();
-    IInteger[] parm3 = c3.gaussianIntegers();
+    IInteger[] parm1 = c1.gaussianIntegers().get();
+    IInteger[] parm2 = c2.gaussianIntegers().get();
+    IInteger[] parm3 = c3.gaussianIntegers().get();
 
     IInteger[] result = GaussianInteger.gcd(parm1, parm2);
 
@@ -348,9 +349,9 @@ public class ComplexSymTest {
     ComplexSym c2 = ComplexSym.valueOf(BigInteger.valueOf(4), BigInteger.valueOf(11));
     ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(1), BigInteger.valueOf(0));
 
-    IInteger[] parm1 = c1.gaussianIntegers();
-    IInteger[] parm2 = c2.gaussianIntegers();
-    IInteger[] parm3 = c3.gaussianIntegers();
+    IInteger[] parm1 = c1.gaussianIntegers().get();
+    IInteger[] parm2 = c2.gaussianIntegers().get();
+    IInteger[] parm3 = c3.gaussianIntegers().get();
 
     IInteger[] result = GaussianInteger.gcd(parm1, parm2);
 
@@ -366,9 +367,9 @@ public class ComplexSymTest {
     ComplexSym c2 = ComplexSym.valueOf(BigInteger.valueOf(1), BigInteger.valueOf(8));
     ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(1), BigInteger.valueOf(-2));
 
-    IInteger[] parm1 = c1.gaussianIntegers();
-    IInteger[] parm2 = c2.gaussianIntegers();
-    IInteger[] parm3 = c3.gaussianIntegers();
+    IInteger[] parm1 = c1.gaussianIntegers().get();
+    IInteger[] parm2 = c2.gaussianIntegers().get();
+    IInteger[] parm3 = c3.gaussianIntegers().get();
 
     IInteger[] result = GaussianInteger.gcd(parm1, parm2);
 
@@ -384,9 +385,9 @@ public class ComplexSymTest {
     ComplexSym c2 = ComplexSym.valueOf(BigInteger.valueOf(14), BigInteger.valueOf(21));
     ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(-3), BigInteger.valueOf(2));
 
-    IInteger[] parm1 = c1.gaussianIntegers();
-    IInteger[] parm2 = c2.gaussianIntegers();
-    IInteger[] parm3 = c3.gaussianIntegers();
+    IInteger[] parm1 = c1.gaussianIntegers().get();
+    IInteger[] parm2 = c2.gaussianIntegers().get();
+    IInteger[] parm3 = c3.gaussianIntegers().get();
 
     IInteger[] result = GaussianInteger.gcd(parm1, parm2);
     IInteger expected = parm3[1];
@@ -401,9 +402,9 @@ public class ComplexSymTest {
     ComplexSym c2 = ComplexSym.valueOf(BigInteger.valueOf(10), BigInteger.valueOf(11));
     ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(-2), BigInteger.valueOf(3));
 
-    IInteger[] parm1 = c1.gaussianIntegers();
-    IInteger[] parm2 = c2.gaussianIntegers();
-    IInteger[] parm3 = c3.gaussianIntegers();
+    IInteger[] parm1 = c1.gaussianIntegers().get();
+    IInteger[] parm2 = c2.gaussianIntegers().get();
+    IInteger[] parm3 = c3.gaussianIntegers().get();
 
     IInteger[] result = GaussianInteger.gcd(parm1, parm2);
 
@@ -419,9 +420,9 @@ public class ComplexSymTest {
     ComplexSym c2 = ComplexSym.valueOf(BigInteger.valueOf(-10), BigInteger.valueOf(11));
     ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(1), BigInteger.valueOf(0));
 
-    IInteger[] parm1 = c1.gaussianIntegers();
-    IInteger[] parm2 = c2.gaussianIntegers();
-    IInteger[] parm3 = c3.gaussianIntegers();
+    IInteger[] parm1 = c1.gaussianIntegers().get();
+    IInteger[] parm2 = c2.gaussianIntegers().get();
+    IInteger[] parm3 = c3.gaussianIntegers().get();
 
     IInteger[] result = GaussianInteger.gcd(parm1, parm2);
 
@@ -433,12 +434,12 @@ public class ComplexSymTest {
   @Test
   public void testGcd11() {
 
-    IInteger[] one = ComplexSym.valueOf(BigInteger.ONE, BigInteger.ZERO).gaussianIntegers();
+    IInteger[] one = ComplexSym.valueOf(BigInteger.ONE, BigInteger.ZERO).gaussianIntegers().get();
     IInteger[] minusOne =
-        ComplexSym.valueOf(BigInteger.ONE.negate(), BigInteger.ZERO).gaussianIntegers();
-    IInteger[] I = ComplexSym.valueOf(BigInteger.ZERO, BigInteger.ONE).gaussianIntegers();
+        ComplexSym.valueOf(BigInteger.ONE.negate(), BigInteger.ZERO).gaussianIntegers().get();
+    IInteger[] I = ComplexSym.valueOf(BigInteger.ZERO, BigInteger.ONE).gaussianIntegers().get();
     IInteger[] minusI =
-        ComplexSym.valueOf(BigInteger.ZERO, BigInteger.ONE.negate()).gaussianIntegers();
+        ComplexSym.valueOf(BigInteger.ZERO, BigInteger.ONE.negate()).gaussianIntegers().get();
 
     // gcd(1,1) ==> 1
     IInteger[] result = GaussianInteger.gcd(one, one);

@@ -2698,15 +2698,15 @@ public final class NumberTheory {
             BigInteger re = BigInteger.ONE;
             if (arg1.isInteger()) {
               re = ((IInteger) arg1).toBigNumerator();
-              return GaussianInteger.factorize(re, BigInteger.ZERO, arg1);
+              return GaussianInteger.factorize((IInteger) arg1, re, BigInteger.ZERO);
             } else if (arg1.isComplex()) {
               IComplex c = (IComplex) arg1;
-              IRational rer = c.getRealPart();
-              IRational imr = c.getImaginaryPart();
-              if (rer.isInteger() && imr.isInteger()) {
-                re = ((IInteger) rer).toBigNumerator();
-                BigInteger im = ((IInteger) imr).toBigNumerator();
-                return GaussianInteger.factorize(re, im, arg1);
+              IRational real = c.getRealPart();
+              IRational imaginary = c.getImaginaryPart();
+              if (real.isInteger() && imaginary.isInteger()) {
+                re = ((IInteger) real).toBigNumerator();
+                BigInteger im = ((IInteger) imaginary).toBigNumerator();
+                return GaussianInteger.factorize((IComplex) arg1, re, im);
               }
             }
           }
@@ -5202,24 +5202,10 @@ public final class NumberTheory {
             if (re.isInteger()) {
               IRational im = ((IComplex) arg1).im();
               if (im.isInteger()) {
-                IAST factors = GaussianInteger.factorize(((IInteger) re).toBigNumerator(),
-                    ((IInteger) im).toBigNumerator(), arg1);
-                if (factors.isListOfLists()) {
-                  for (int i = 1; i < factors.size(); i++) {
-                    IAST subList = factors.getAST(i);
-                    if (!subList.isList2()) {
-                      return S.False;
-                    }
-                    if (subList.second().isInteger()) {
-                      IInteger exponent = (IInteger) subList.second();
-                      if (exponent.isGE(F.C2)) {
-                        return S.False;
-                      }
-                    }
-                  }
-                  return S.True;
-                }
+                return F.booleSymbol(
+                    GaussianInteger.isSquareFree((IComplex) arg1, (IInteger) re, (IInteger) im));
               }
+
             }
           }
           return S.False;

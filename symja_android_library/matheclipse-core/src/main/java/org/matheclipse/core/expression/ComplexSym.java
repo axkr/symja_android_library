@@ -9,6 +9,7 @@ import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.S.Pi;
 import java.math.BigInteger;
+import java.util.Optional;
 import java.util.function.Function;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -408,11 +409,11 @@ public class ComplexSym implements IComplex {
 
   /** {@inheritDoc} */
   @Override
-  public IInteger[] gaussianIntegers() {
+  public Optional<IInteger[]> gaussianIntegers() {
     if (fReal.isInteger() && fImaginary.isInteger()) {
-      return new IInteger[] {((IInteger) fReal), ((IInteger) fImaginary)};
+      return Optional.of(new IInteger[] {((IInteger) fReal), ((IInteger) fImaginary)});
     }
-    return null;
+    return Optional.empty();
   }
 
   @Override
