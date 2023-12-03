@@ -5351,7 +5351,7 @@ public class F extends S {
    * <p>
    * Intervals will be represented by objects with head {@link S#IntervalData} wrapped around a
    * sequence of quadruples of the form, e.g., <code>{a,Less,LessEqual,b}</code> representing the
-   * half open interval <code>(a,b]</code>. The empty interval is represented by
+   * half open interval <code>(a,b]</code>. The empty interval set is represented by
    * <code>Interval()</code>.
    * 
    * <p>

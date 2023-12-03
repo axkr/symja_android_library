@@ -19,7 +19,7 @@ import org.matheclipse.core.interfaces.IReal;
  * <p>
  * Intervals will be represented by objects with head {@link S#IntervalData} wrapped around a
  * sequence of quadruples of the form, e.g., <code>{a,Less,LessEqual,b}</code> representing the half
- * open interval <code>(a,b]</code>. The empty interval is represented by
+ * open interval <code>(a,b]</code>. The empty interval set is represented by
  * <code>IntervalData()</code>.
  * 
  * <p>
@@ -119,6 +119,14 @@ public class IntervalDataSym {
     return new Apfloat[] {h.nextDown(x), h.nextUp(x)};
   }
 
+  /**
+   * Rewrite an interval in terms of inequalities and logic operators.
+   * 
+   * @param andCopy
+   * @param interval
+   * @param variable
+   * @return
+   */
   public static IExpr intervalToOr(IAST andCopy, IAST interval, IExpr variable) {
     IASTAppendable orAST = F.ast(S.Or, interval.argSize());
     for (int i = 1; i < interval.size(); i++) {
@@ -463,6 +471,88 @@ public class IntervalDataSym {
         arg);
   }
 
+  /**
+   * The {@link S#Reals} domain is represented by <code>IntervalData({-oo, Less, Less, oo})</code>.
+   * 
+   * @return
+   */
+  public static IAST reals() {
+    return F.IntervalData(//
+        F.List(F.CNInfinity, //
+            S.Less, //
+            S.Less, //
+            F.CInfinity));
+  }
+
+  /**
+   * The empty interval set is represented by <code>IntervalData()</code>.
+   * 
+   * @return
+   */
+  public static IAST emptySet() {
+    return F.IntervalData();
+  }
+
+  /**
+   * Return an interval including neither boundary.
+   * 
+   * @param lhs left boundary
+   * @param rhs right boundary
+   * @return <code>IntervalData({lhs, Less, Less, rhs}))</code>
+   */
+  public static IAST open(final IExpr lhs, final IExpr rhs) {
+    return F.IntervalData(//
+        F.List(lhs, //
+            S.Less, //
+            S.Less, //
+            rhs));
+  }
+
+  /**
+   * Return an interval not including the left boundary.
+   * 
+   * @param lhs left boundary
+   * @param rhs right boundary
+   * @return <code>IntervalData({lhs, Less, LessEqual, rhs}))</code>
+   */
+  public static IAST lOpen(final IExpr lhs, final IExpr rhs) {
+    return F.IntervalData(//
+        F.List(lhs, //
+            S.Less, //
+            S.LessEqual, //
+            rhs));
+  }
+
+  /**
+   * Return an interval not including the right boundary.
+   * 
+   * @param lhs left boundary
+   * @param rhs right boundary
+   * @return <code>IntervalData({lhs, LessEqual, Less, rhs}))</code>
+   */
+  public static IAST rOpen(final IExpr lhs, final IExpr rhs) {
+    return F.IntervalData(//
+        F.List(lhs, //
+            S.LessEqual, //
+            S.Less, //
+            rhs));
+  }
+
+  /**
+   * Return an interval including each boundary.
+   * 
+   * @param lhs left boundary
+   * @param rhs right boundary
+   * @return <code>IntervalData({lhs, LessEqual, LessEqual, rhs}))</code>
+   */
+  public static IAST close(final IExpr lhs, final IExpr rhs) {
+    return F.IntervalData(//
+        F.List(lhs, //
+            S.LessEqual, //
+            S.LessEqual, //
+            rhs));
+  }
+
   public static IAST notInRange(final IExpr arg) {
     return F.IntervalData(//
         F.List(F.CNInfinity, //
@@ -531,27 +621,22 @@ public class IntervalDataSym {
     return (s1 == S.LessEqual || s2 == S.LessEqual) ? S.LessEqual : S.Less;
   }
 
-  public static IAST relationToInterval(int headID, IExpr rhs) {
+  public static IAST relationToInterval(int headID, IExpr value) {
     switch (headID) {
       case ID.Greater:
-        return F.IntervalData(//
-            F.List(rhs, S.Less, S.Less, F.CInfinity));
+        return open(value, F.CInfinity);
       case ID.GreaterEqual:
-        return F.IntervalData(//
-            F.List(rhs, S.LessEqual, S.Less, F.CInfinity));
+        return rOpen(value, F.CInfinity);
       case ID.Less:
-        return F.IntervalData(//
-            F.List(F.CNInfinity, S.Less, S.Less, rhs));
+        return open(F.CNInfinity, value);
       case ID.LessEqual:
-        return F.IntervalData(//
-            F.List(F.CNInfinity, S.Less, S.LessEqual, rhs));
+        return lOpen(F.CNInfinity, value);
       case ID.Equal:
-        return F.IntervalData(//
-            F.List(rhs, S.LessEqual, S.LessEqual, rhs));
+        return close(value, value);
       case ID.Unequal:
         return F.IntervalData(//
-            F.List(F.CNInfinity, S.Less, S.Less, rhs), //
-            F.List(rhs, S.Less, S.Less, F.CInfinity));
+            F.List(F.CNInfinity, S.Less, S.Less, value), //
+            F.List(value, S.Less, S.Less, F.CInfinity));
     }
     throw new ArgumentTypeStopException("Not implemented");
   }

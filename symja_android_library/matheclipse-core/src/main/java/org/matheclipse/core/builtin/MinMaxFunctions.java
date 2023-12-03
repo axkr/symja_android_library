@@ -271,6 +271,33 @@ public class MinMaxFunctions {
       }
     }
 
+
+    // public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    // IExpr function = ast.arg1();
+    // IExpr xExpr = ast.arg2();
+    // IExpr yExpr = ast.arg3();
+    // IBuiltInSymbol domain = S.Reals;
+    // try {
+    // if (xExpr.isSymbol() && yExpr.isSymbol()) {
+    // IAST constrained_interval = IntervalDataSym.reals();
+    // if (function.isAST()) {
+    // IAST f = (IAST) function;
+    // for (int i = 1; i < f.size(); i++) {
+    // IExpr arg = f.get(i);
+    // if (arg.isPower()) {
+    //
+    // } else if (arg.isLog()) {
+    //
+    // }
+    // }
+    // }
+    // }
+    // } catch (RuntimeException rex) {
+    // rex.printStackTrace();
+    // LOGGER.debug("FunctionRange.evaluate() failed", rex);
+    // }
+    // return F.NIL;
+    // }
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr function = ast.arg1();
@@ -557,20 +584,15 @@ public class MinMaxFunctions {
           int headID = temp.headID();
           switch (headID) {
             case ID.Greater:
-              return F.IntervalData(//
-                  F.List(rhs, S.Less, S.Less, F.CInfinity));
+              return IntervalDataSym.open(rhs, F.CInfinity);
             case ID.GreaterEqual:
-              return F.IntervalData(//
-                  F.List(rhs, S.LessEqual, S.Less, F.CInfinity));
+              return IntervalDataSym.rOpen(rhs, F.CInfinity);
             case ID.Less:
-              return F.IntervalData(//
-                  F.List(F.CNInfinity, S.Less, S.Less, rhs));
+              return IntervalDataSym.open(F.CNInfinity, rhs);
             case ID.LessEqual:
-              return F.IntervalData(//
-                  F.List(F.CNInfinity, S.Less, S.LessEqual, rhs));
+              return IntervalDataSym.lOpen(F.CNInfinity, rhs);
             case ID.Equal:
-              return F.IntervalData(//
-                  F.List(rhs, S.LessEqual, S.LessEqual, rhs));
+              return IntervalDataSym.close(rhs, rhs);
             case ID.Unequal:
               return F.IntervalData(//
                   F.List(F.CNInfinity, S.Less, S.Less, rhs), //
