@@ -3,10 +3,10 @@ package org.matheclipse.core.eval.util;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -312,6 +312,8 @@ public class OpenIntToSet<T> implements Serializable {
   /** Modifications count. */
   private transient int count;
 
+  private transient int hashValue;
+
   /** Build an empty map with default size and using zero for missing entries. */
   public OpenIntToSet(Comparator<T> comparator) {
     this(comparator, DEFAULT_EXPECTED_SIZE);
@@ -414,21 +416,56 @@ public class OpenIntToSet<T> implements Serializable {
     return previous;
   }
 
-
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
     }
-    if (obj == null) {
+    if (!(o instanceof OpenIntToSet<?>)) {
       return false;
     }
-    if (!(obj instanceof OpenIntToSet<?>)) {
+    OpenIntToSet<T> m = (OpenIntToSet<T>) o;
+    if (m.size() != size()) {
       return false;
     }
-    OpenIntToSet<T> other = (OpenIntToSet<T>) obj;
-    return Arrays.equals(keys, other.keys) && size == other.size
-        && Arrays.deepEquals(values, other.values);
+
+    try {
+      OpenIntToSet<T>.Iterator iter = iterator();
+      while (iter.hasNext()) {
+        iter.advance();
+        int key = iter.key();
+        Set<T> value = get(key);
+        if (value == null) {
+          if (!(m.get(key) == null && m.containsKey(key))) {
+            return false;
+          }
+        } else {
+          if (!value.equals(m.get(key))) {
+            return false;
+          }
+        }
+      }
+    } catch (ClassCastException unused) {
+      return false;
+    } catch (NullPointerException unused) {
+      return false;
+    }
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    if (hashValue == 0) {
+      OpenIntToSet<T>.Iterator iter = iterator();
+      while (iter.hasNext()) {
+        iter.advance();
+        int key = iter.key();
+        Set<T> value = get(key);
+        hashValue += key ^ Objects.hashCode(value);
+      }
+    }
+    return hashValue;
   }
 
   /**
@@ -505,16 +542,6 @@ public class OpenIntToSet<T> implements Serializable {
     states = newStates;
   }
 
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + Arrays.hashCode(keys);
-    result = prime * result + Arrays.deepHashCode(values);
-    result = prime * result + size;
-    return result;
-  }
-
   public boolean isEmpty() {
     return size == 0;
   }
@@ -541,6 +568,7 @@ public class OpenIntToSet<T> implements Serializable {
    * @return previous value associated with the key
    */
   public void put(final int key, final T value) {
+    hashValue = 0;
     int index = findInsertionIndex(key);
     boolean newMapping = true;
     if (index < 0) {
@@ -575,6 +603,7 @@ public class OpenIntToSet<T> implements Serializable {
       throws IOException, ClassNotFoundException {
     stream.defaultReadObject();
     count = 0;
+    hashValue = 0;
   }
 
   /**
@@ -584,7 +613,7 @@ public class OpenIntToSet<T> implements Serializable {
    * @return removed value
    */
   public Set<T> remove(final int key) {
-
+    hashValue = 0;
     final int hash = hashOf(key);
     int index = hash & mask;
     if (containsKey(key, index)) {
@@ -608,6 +637,7 @@ public class OpenIntToSet<T> implements Serializable {
   }
 
   public boolean remove(int key, T value) {
+    hashValue = 0;
     Set<T> set = get(key);
     return set != null && set.remove(value);
   }

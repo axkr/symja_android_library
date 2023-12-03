@@ -17,9 +17,9 @@ package org.matheclipse.core.eval.util;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -34,7 +34,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * fail-fast: they throw a <code>ConcurrentModificationException</code> when they detect the map has
  * been modified during iteration.
  */
-public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
+public final class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
 
   /** Iterator class for the map. */
   public class Iterator {
@@ -413,22 +413,55 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
     }
-    if (obj == null) {
+    if (!(o instanceof OpenIntToIExprHashMap<?>)) {
       return false;
     }
-    if (hashCode() != obj.hashCode()) {
+    OpenIntToIExprHashMap<T> m = (OpenIntToIExprHashMap<T>) o;
+    if (m.size() != size()) {
       return false;
     }
-    if (!(obj instanceof OpenIntToIExprHashMap<?>)) {
+
+    try {
+      OpenIntToIExprHashMap<T>.Iterator iter = iterator();
+      while (iter.hasNext()) {
+        iter.advance();
+        int key = iter.key();
+        T value = get(key);
+        if (value == null) {
+          if (!(m.get(key) == null && m.containsKey(key))) {
+            return false;
+          }
+        } else {
+          if (!value.equals(m.get(key))) {
+            return false;
+          }
+        }
+      }
+    } catch (ClassCastException unused) {
+      return false;
+    } catch (NullPointerException unused) {
       return false;
     }
-    OpenIntToIExprHashMap<T> other = (OpenIntToIExprHashMap<T>) obj;
-    return Arrays.equals(keys, other.keys) && size == other.size
-        && Arrays.deepEquals(values, other.values);
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    if (hashValue == 0) {
+      OpenIntToIExprHashMap<T>.Iterator iter = iterator();
+      while (iter.hasNext()) {
+        iter.advance();
+        int key = iter.key();
+        T value = get(key);
+        hashValue += key ^ Objects.hashCode(value);
+      }
+    }
+    return hashValue;
   }
 
   /**
@@ -500,19 +533,6 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
     states = newStates;
   }
 
-  @Override
-  public int hashCode() {
-    if (hashValue == 0) {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + Arrays.hashCode(keys);
-      result = prime * result + Arrays.deepHashCode(values);
-      result = prime * result + size;
-      hashValue = result;
-    }
-    return hashValue;
-  }
-
   /**
    * Get an iterator over map elements.
    *
@@ -569,6 +589,7 @@ public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
       throws IOException, ClassNotFoundException {
     stream.defaultReadObject();
     count = 0;
+    hashValue = 0;
   }
 
   /**

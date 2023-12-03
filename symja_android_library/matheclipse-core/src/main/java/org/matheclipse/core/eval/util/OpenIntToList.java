@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 /**
  * Open addressed map from int to List<T>.
@@ -27,29 +27,55 @@ import java.util.NoSuchElementException;
 public class OpenIntToList<T> implements Serializable {
 
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + Arrays.hashCode(keys);
-    result = prime * result + Arrays.deepHashCode(values);
-    result = prime * result + size;
-    return result;
+  public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    }
+    if (!(o instanceof OpenIntToList<?>)) {
+      return false;
+    }
+    OpenIntToList<T> m = (OpenIntToList<T>) o;
+    if (m.size() != size()) {
+      return false;
+    }
+
+    try {
+      OpenIntToList<T>.Iterator iter = iterator();
+      while (iter.hasNext()) {
+        iter.advance();
+        int key = iter.key();
+        List<T> value = get(key);
+        if (value == null) {
+          if (!(m.get(key) == null && m.containsKey(key))) {
+            return false;
+          }
+        } else {
+          if (!value.equals(m.get(key))) {
+            return false;
+          }
+        }
+      }
+    } catch (ClassCastException unused) {
+      return false;
+    } catch (NullPointerException unused) {
+      return false;
+    }
+
+    return true;
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
+  public int hashCode() {
+    if (hashValue == 0) {
+      OpenIntToList<T>.Iterator iter = iterator();
+      while (iter.hasNext()) {
+        iter.advance();
+        int key = iter.key();
+        List<T> value = get(key);
+        hashValue += key ^ Objects.hashCode(value);
+      }
     }
-    if (obj == null) {
-      return false;
-    }
-    if (!(obj instanceof OpenIntToList<?>)) {
-      return false;
-    }
-    OpenIntToList<T> other = (OpenIntToList<T>) obj;
-    return Arrays.equals(keys, other.keys) && size == other.size
-        && Arrays.deepEquals(values, other.values);
+    return hashValue;
   }
 
   /** Status indicator for free table entries. */
@@ -106,6 +132,8 @@ public class OpenIntToList<T> implements Serializable {
 
   /** Modifications count. */
   private transient int count;
+
+  private transient int hashValue;
 
   /** Build an empty map with default size and using zero for missing entries. */
   public OpenIntToList() {
@@ -365,7 +393,7 @@ public class OpenIntToList<T> implements Serializable {
    * @return removed value
    */
   public List<T> remove(final int key) {
-
+    hashValue = 0;
     final int hash = hashOf(key);
     int index = hash & mask;
     if (containsKey(key, index)) {
@@ -423,6 +451,7 @@ public class OpenIntToList<T> implements Serializable {
    * @return previous value associated with the key
    */
   public void put(final int key, final T value) {
+    hashValue = 0;
     int index = findInsertionIndex(key);
     boolean newMapping = true;
     if (index < 0) {
@@ -607,5 +636,6 @@ public class OpenIntToList<T> implements Serializable {
       throws IOException, ClassNotFoundException {
     stream.defaultReadObject();
     count = 0;
+    hashValue = 0;
   }
 }
