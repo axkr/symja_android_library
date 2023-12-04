@@ -696,12 +696,23 @@ public class SimplifyFunctions {
             IExpr base = timesArg.base();
             IExpr exponent = timesArg.exponent();
             if (timesArg.isPowerReciprocal()) {
-              if (base.isPlus() && base.argSize() >= 2 && base.argSize() <= 5) {
+              if (base.isPlus() && base.argSize() >= 2 && base.argSize() <= 10) {
                 // try multiplying the conjugate
                 // example plusDenominator(5+Sqrt(17)) => plusConjugate(5-Sqrt(17))
                 IAST plusDenominator = (IAST) base;
-                IAST plusConjugate = plusDenominator.setAtCopy(plusDenominator.argSize(),
-                    plusDenominator.last().negate());
+                // search for prefered Sqrt() expressions
+                int index = plusDenominator.lastIndexOf(x -> (x.isSqrt() && x.first().isNumber()) //
+                    || (x.isTimes() && x.last().isSqrt() && x.last().first().isNumber()));
+                if (index == -1) {
+                  index = plusDenominator.lastIndexOf(x -> x.isSqrt() //
+                      || (x.isTimes() && x.last().isSqrt()));
+                  if (index == -1) {
+                    // fall back to default
+                    index = plusDenominator.argSize();
+                  }
+                }
+                IAST plusConjugate =
+                    plusDenominator.setAtCopy(index, plusDenominator.get(index).negate());
                 // example (5+Sqrt(17)) * (5-Sqrt(17))
                 IExpr newDenominator = eval(F.Expand(F.Times(plusDenominator, plusConjugate)));
                 if (!newDenominator.isZero()

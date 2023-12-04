@@ -4769,6 +4769,17 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return -1;
   }
 
+  @Override
+  public final int lastIndexOf(Predicate<? super IExpr> test) {
+    int size = size();
+    for (int i = size - 1; i >= 0; i--) {
+      if (test.test(get(i))) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
   /** {@inheritDoc} */
   @Override
   public final long leafCount() {

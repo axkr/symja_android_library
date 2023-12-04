@@ -1280,8 +1280,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
     }
   }
 
-  public int lastIndexOf(IExpr object);
-
   /**
    * Maps the elements of this IAST with the unary <code>functor</code>. If the <code>functor</code>
    * returns <code>F.NIL</code> the original element of this AST list is used. <br>

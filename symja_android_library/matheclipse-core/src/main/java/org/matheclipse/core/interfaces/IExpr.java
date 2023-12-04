@@ -1418,6 +1418,7 @@ public interface IExpr
     return -1;
   }
 
+
   /**
    * Return the internal Java form of this expression.
    *
@@ -4185,6 +4186,38 @@ public interface IExpr
    */
   default IExpr last() {
     return F.NIL;
+  }
+
+  /**
+   * If this is of type {@link IAST}, find the last argument position, which fulfills the <code>
+   * predicate</code>. The search starts at index <code>argSize()</code>. Otherwise return
+   * <code>-1</code>.
+   *
+   * <p>
+   * <b>Note</b>: If this is an <code>IAssociation</code> the position of the rule will be searched.
+   *
+   * @param predicate
+   * @return the index of the last occurrence of the specified predicate, or <code>-1</code> if no
+   *         position was found
+   */
+  default int lastIndexOf(IExpr object) {
+    return -1;
+  }
+
+  /**
+   * If this is of type {@link IAST}, find the last argument position, which fulfills the <code>
+   * predicate</code>. The search starts at the last index <code>argSize()</code>. Otherwise return
+   * <code>-1</code>.
+   *
+   * <p>
+   * <b>Note</b>: If this is an <code>IAssociation</code> the position of the rule will be searched.
+   *
+   * @param predicate
+   * @return the index of the last occurrence of the specified predicate, or <code>-1</code> if no
+   *         position was found
+   */
+  default int lastIndexOf(final Predicate<? super IExpr> test) {
+    return -1;
   }
 
   /**
