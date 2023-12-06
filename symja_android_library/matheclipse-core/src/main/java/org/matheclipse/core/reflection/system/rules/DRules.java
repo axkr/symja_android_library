@@ -13,7 +13,7 @@ public class DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 78 };
+  final public static int[] SIZES = { 0, 79 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -253,6 +253,9 @@ public class DRules {
       Plus(Times(C1D2,Plus(Times(Power(g,f),Power(Times(Power(C2,f),CSqrtPi,Gamma(Plus(QQ(3L,2L),f))),CN1)),StruveH(Plus(CN1,f),g),Negate(StruveH(Plus(C1,f),g))),D(g,x)),Times(D(f,x),$($(Derivative(C1,C0),StruveH),f,g)))),
     // D(StruveL(f_,g_),x_?NotListQ):=1/2*(g^f/(2^f*Sqrt(Pi)*Gamma(3/2+f))+StruveL(-1+f,g)+StruveL(1+f,g))*D(g,x)+D(f,x)*Derivative(1,0)[StruveL][f,g]
     ISetDelayed(D(StruveL(f_,g_),PatternTest(x_,NotListQ)),
-      Plus(Times(C1D2,Plus(Times(Power(g,f),Power(Times(Power(C2,f),CSqrtPi,Gamma(Plus(QQ(3L,2L),f))),CN1)),StruveL(Plus(CN1,f),g),StruveL(Plus(C1,f),g)),D(g,x)),Times(D(f,x),$($(Derivative(C1,C0),StruveL),f,g))))
+      Plus(Times(C1D2,Plus(Times(Power(g,f),Power(Times(Power(C2,f),CSqrtPi,Gamma(Plus(QQ(3L,2L),f))),CN1)),StruveL(Plus(CN1,f),g),StruveL(Plus(C1,f),g)),D(g,x)),Times(D(f,x),$($(Derivative(C1,C0),StruveL),f,g)))),
+    // D(AppellF1(a_,b_,c_,d_,f_,g_),x_?NotListQ):=(a*b*AppellF1(1+a,1+b,c,1+d,f,g)*D(f,x))/d+(a*c*AppellF1(1+a,b,1+c,1+d,f,g)*D(g,x))/d/;FreeQ({a,b,c,d},x)
+    ISetDelayed(D(AppellF1(a_,b_,c_,d_,f_,g_),PatternTest(x_,NotListQ)),
+      Condition(Plus(Times(a,b,Power(d,CN1),AppellF1(Plus(C1,a),Plus(C1,b),c,Plus(C1,d),f,g),D(f,x)),Times(a,c,Power(d,CN1),AppellF1(Plus(C1,a),b,Plus(C1,c),Plus(C1,d),f,g),D(g,x))),FreeQ(List(a,b,c,d),x)))
   );
 }

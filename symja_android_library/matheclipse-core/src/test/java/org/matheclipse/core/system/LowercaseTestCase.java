@@ -5158,6 +5158,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "CatalanNumber(x)*(Log(4)+PolyGamma(0,1/2+x)-PolyGamma(0,2+x))");
     check("D(Sin(x^5)/x^10,x)", //
         "(5*Cos(x^5))/x^6+(-10*Sin(x^5))/x^11");
+    check("D(AppellF1(a,b1,b2,c,f1(x),f2(x)),x)", //
+        "(a*b1*AppellF1(1+a,1+b1,b2,1+c,f1(x),f2(x))*f1'(x))/c+(a*b2*AppellF1(1+a,b1,1+b2,\n" //
+            + "1+c,f1(x),f2(x))*f2'(x))/c");
   }
 
   @Test
@@ -11202,6 +11205,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHurwitzZeta() {
+    // https://github.com/mtommila/apfloat/issues/34
+    // checkNumeric("HurwitzZeta(-9223372036854775808/11,-0.8+I*1.2)", //
+    // "Overflow()");
     checkNumeric("HurwitzZeta(2.2,3.1)", //
         "0.26067453797192913");
 
