@@ -1,9 +1,9 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import javax.script.ScriptEngine;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,9 +20,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
-import junit.framework.TestCase;
-
-import static org.junit.Assert.assertEquals;
 
 @RunWith(JUnit4.class)
 public class PatternMatchingTestCase {
@@ -347,6 +344,22 @@ public class PatternMatchingTestCase {
         "4^2/;4>3/;4>2");
   }
 
+  @Test
+  public void testOptionalPattern() {
+    check("h[Power[a_.+f[e_.+x*f_.]*b_.,-1/2]] := {a,b,e,f}", //
+        "");
+    check("h[Power[f[c+Pi/2+d*x],-1/2]]", //
+        "{0,1,c+Pi/2,d}");
+    check("g[f[e_.+x*f_.]*b_.] := {b,e,f}", //
+        "");
+    check("g[f[c+Pi/2+d*x]]", //
+        "{1,c+Pi/2,d}");
+
+    check("f[e_.+x*f_.]:={e,f}", //
+        "");
+    check("f[c+Pi/2+d*x]", //
+        "{c+Pi/2,d}");
+  }
   // @Test
   // public void testTagSetDelayed1() {
   // check(

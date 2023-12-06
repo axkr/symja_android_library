@@ -1701,7 +1701,7 @@ public class PredicateQ {
       return false;
     }
     if (expr.isPlusTimesPower()) {
-      if (leafCount > (Config.MAX_POSSIBLE_ZERO_LEAFCOUNT / 3)) {
+      if (leafCount > (Config.MAX_POSSIBLE_ZERO_LEAFCOUNT / 4)) {
         return false;
       }
       expr = engine.evaluate(F.Together(expr));

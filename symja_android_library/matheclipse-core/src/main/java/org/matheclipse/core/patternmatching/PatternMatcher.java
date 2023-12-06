@@ -313,7 +313,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
    *
    * @param lhsPattern the expression which can contain pattern-matching objects
    * @param lhsEval the expression which can contain no patterns
-   * @return <code>null</code> if the matching isn't possible.
+   * @return <code>null</code> if the no parts could be removed
    */
   private static IAST[] removeFlat(final IAST lhsPattern, final IAST lhsEval) {
     IASTAppendable lhsPatternAST = lhsPattern.copyAppendable();
@@ -361,7 +361,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
    *
    * @param lhsPattern the expression which can contain pattern-matching objects
    * @param lhsEval the expression which can contain no patterns
-   * @return <code>null</code> if the matching isn't possible.
+   * @return <code>null</code> if no parts could be removed
    */
   private static IAST[] removeOrderless(final IAST lhsPattern, final IAST lhsEval) {
     int iIndex = 1;
@@ -373,6 +373,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         if (jIndex > 0) {
           break;
         }
+        // System.out.println(temp + " <-> " + lhsPattern + " <-> " + lhsEval);
         return null;
       }
       iIndex++;
@@ -391,6 +392,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
             lhsEvalAST.remove(indx);
             continue;
           }
+          // System.out.println(temp + " <-> " + lhsPatternAST + " <-> " + lhsEval);
           return null;
         }
         iIndex++;
@@ -676,28 +678,28 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       final ISymbol sym = lhsPatternAST.topHead();
 
       if (lhsPatternAST.size() <= lhsEvalAST.size()) {
-        if (lhsPatternAST.isOrderlessAST()) {
-          IExpr temp = fPatternMap.substituteASTPatternOrSymbols(lhsPatternAST, engine)
-              .orElse(lhsPatternAST);
-          if (temp.isAST(lhsPatternAST.head())) {
-            lhsPatternAST = (IAST) temp;
-            IAST[] removed = removeOrderless(lhsPatternAST, lhsEvalAST);
-            if (removed == null) {
-              return false;
+        if (lhsPatternAST.head().equals(lhsEvalAST.head())) {
+          if (lhsPatternAST.isOrderlessAST()) {
+            IExpr temp = fPatternMap.substituteASTPatternOrSymbols(lhsPatternAST, engine)
+                .orElse(lhsPatternAST);
+            if (temp.isAST(lhsPatternAST.head())) {
+              lhsPatternAST = (IAST) temp;
+              IAST[] removed = removeOrderless(lhsPatternAST, lhsEvalAST);
+              if (removed != null) {
+                lhsPatternAST = removed[0];
+                lhsEvalAST = removed[1];
+              }
             }
-            lhsPatternAST = removed[0];
-            lhsEvalAST = removed[1];
-          }
-        } else if (lhsPatternAST.isFlatAST()) {
-          IExpr temp = fPatternMap.substituteASTPatternOrSymbols(lhsPatternAST, engine)
-              .orElse(lhsPatternAST);
-          if (temp.isAST(lhsPatternAST.head())) {
-            IAST[] removed = removeFlat((IAST) temp, lhsEvalAST);
-            if (removed == null) {
-              return false;
+          } else if (lhsPatternAST.isFlatAST()) {
+            IExpr temp = fPatternMap.substituteASTPatternOrSymbols(lhsPatternAST, engine)
+                .orElse(lhsPatternAST);
+            if (temp.isAST(lhsPatternAST.head())) {
+              IAST[] removed = removeFlat((IAST) temp, lhsEvalAST);
+              if (removed != null) {
+                lhsPatternAST = removed[0];
+                lhsEvalAST = removed[1];
+              }
             }
-            lhsPatternAST = removed[0];
-            lhsEvalAST = removed[1];
           }
         }
 
