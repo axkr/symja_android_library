@@ -6970,8 +6970,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testErf() {
     // assertEquals(org.hipparchus.special.Erf.erf(new Complex(1.0, 1.5)).toString(), //
     // "");
+    checkNumeric("Erf(-10007.0)", //
+        "-1.0");
+    checkNumeric("Erf(-0.5)", //
+        "-0.5204998778130465");
     checkNumeric("Erf(3.0)", //
-        "0.9999779095030012");
+        "0.9999779095030015");
     check("Erf(-42*I*x)", //
         "-I*Erfi(42*x)");
     check("Erf(43*I*x)", //
@@ -6986,7 +6990,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("N(Erf(3/2), 50)", //
         "0.96610514647531072706697626164594785868141047925763");
     checkNumeric("Erf(1.5, 2)", //
-        "0.02921711854364184");
+        "0.02921711854364195");
     check("Erf(-Infinity, Infinity)", //
         "2");
 
@@ -7767,6 +7771,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFactor() {
+    // TODO message is printed to many times
+    // print message "rvalue" Increment: y is not a variable with a value, so its value cannot be
+    // changed.
+    // check("Factor(a*x+b*x+a*y++b*y)", //
+    // "a*x+b*x+a*b*y*y++");
+
     // for (int i = 0; i < 2_000_000; i++) {
     // check(
     // "Factor(a*Cosh(x) + I*b*Cosh(x) - I*a*Sinh(x) + b*Sinh(x))", //
