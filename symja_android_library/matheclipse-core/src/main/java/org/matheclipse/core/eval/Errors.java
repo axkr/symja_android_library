@@ -38,6 +38,10 @@ public class Errors {
 
   private static PebbleEngine PEBBLE_ENGINE = new PebbleEngine.Builder().build();
 
+  private final static Errors ERRORS_INSTANCE = new Errors();
+
+  private Errors() {}
+
   public static void initGeneralMessages() {
     for (int i = 0; i < Errors.MESSAGES.length; i += 2) {
       S.General.putMessage(IPatternMatcher.SET, Errors.MESSAGES[i],
@@ -532,6 +536,12 @@ public class Errors {
       logMessage(symbol, message, engine);
     } else {
       try {
+        final IAST cacheKey = F.List(symbol, F.stringx(messageShortcut), listOfParameters);
+        Object value = engine.getObjectCache(cacheKey);
+        if (value instanceof Errors) {
+          engine.setMessageShortcut(messageShortcut);
+          return F.NIL;
+        }
         Writer writer = new StringWriter();
         Map<String, Object> context = new HashMap<String, Object>();
         if (listOfParameters != null) {
@@ -543,6 +553,8 @@ public class Errors {
         templateApply(message, writer, context);
         engine.setMessageShortcut(messageShortcut);
         logMessage(symbol, writer.toString(), engine);
+
+        engine.putObjectCache(cacheKey, ERRORS_INSTANCE);
       } catch (IOException e) {
         LOGGER.error("IOFunctions.printMessage() failed", e);
       }
