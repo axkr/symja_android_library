@@ -1289,6 +1289,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testArrayQ() {
+    check("ArrayQ({{a, b}, {c, d}}, 2, SymbolQ)", //
+        "True");
+    check("ArrayQ(SparseArray({{1, 2} -> a, {2, 1} -> b}))", //
+        "True");
+    check("ArrayQ(SparseArray({{1, 2} -> a, {2, 1} -> b}), 1)", //
+        "False");
+    check("ArrayQ(SparseArray({{1, 2} -> a, {2, 1} -> b}), 2, SymbolQ)", //
+        "False");
+    check("ArrayQ(SparseArray({{1, 1} -> a, {1, 2} -> b}), 2, SymbolQ)", //
+        "True");
+
     check("ArrayQ(SparseArray({1, 2}))", //
         "True");
     check("ArrayQ({ })", //
@@ -1952,6 +1963,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testBeta() {
+    // TODO https://github.com/mtommila/apfloat/issues/31
+    // checkNumeric("Beta(-0.5,101/(1+Sqrt(5)),1317624576693539401)", //
+    // "");
     checkNumeric("Beta({-1},7*Sqrt(2),2.718281828459045)", //
         "{0.291809067060784+I*(-0.0953266740858263)}");
 
@@ -7043,10 +7057,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testErfi() {
-    checkNumeric("N(Erfi(1/2),50)", //
-        "0.6149520946965109808396811856236413930513456178954");
+    // https://github.com/Hipparchus-Math/hipparchus/issues/278
     checkNumeric("Erfi(1.5-I)", //
         "-0.7013604642514805+I*(-1.8468330146085417)");
+
+    checkNumeric("N(Erfi(1/2),50)", //
+        "0.6149520946965109808396811856236413930513456178954");
     check("Erfi({0.5, 1.5, 2.5})", //
         "{0.614952,4.58473,130.3958}");
     check("Erfi(I)", //
@@ -7774,8 +7790,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // TODO message is printed to many times
     // print message "rvalue" Increment: y is not a variable with a value, so its value cannot be
     // changed.
-    // check("Factor(a*x+b*x+a*y++b*y)", //
-    // "a*x+b*x+a*b*y*y++");
+    check("Factor(a*x+b*x+a*y++b*y)", //
+        "a*x+b*x+a*b*y*y++");
 
     // for (int i = 0; i < 2_000_000; i++) {
     // check(
@@ -18801,6 +18817,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolyLog() {
+    // TODO https://github.com/mtommila/apfloat/issues/34
+    // check("PolyLog(2147483647,-3.1415)", //
+    // " ");
+    check("PolyLog(2147483647,1)", //
+        "Zeta(2147483647)");
+
     check("PolyLog(n,1,z)", //
         "PolyLog(1+n,z)");
     check("PolyLog(0, 1, z)", //

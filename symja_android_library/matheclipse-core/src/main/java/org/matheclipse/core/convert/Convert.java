@@ -175,8 +175,7 @@ public class Convert {
       return null;
     }
     if (expr.isSparseArray()) {
-      ISparseArray array = (ISparseArray) expr;
-      return array.toFieldMatrix(false);
+      return ((ISparseArray) expr).toFieldMatrix(false);
     }
     if (expr.isList()) {
       IExpr[][] elements = list2Array(expr, ifNumericReturnNull);

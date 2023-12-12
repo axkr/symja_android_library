@@ -231,9 +231,15 @@ public class PredicateQ {
     private static int determineDepth(final IExpr expr, int depth, Predicate<IExpr> predicate) {
       int resultDepth = depth;
       if (expr.isSparseArray()) {
-        int[] dims = ((ISparseArray) expr).getDimension();
+        ISparseArray sparseArray = (ISparseArray) expr;
+        int[] dims = sparseArray.getDimension();
         if (dims == null) {
           return -1;
+        }
+        if (predicate != null) {
+          if (!sparseArray.forAll(predicate)) {
+            return -1;
+          }
         }
         return depth + dims.length;
       } else if (expr.isList()) {
@@ -290,13 +296,14 @@ public class PredicateQ {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = engine.evaluate(ast.arg1());
       Predicate<IExpr> test = null;
-      if ((ast.size() >= 4)) {
+      final int argSize = ast.argSize();
+      if ((argSize >= 3)) {
         final IExpr testArg3 = engine.evaluate(ast.arg3());
         test = x -> engine.evalTrue(testArg3, x);
       }
       int depth = determineDepth(arg1, 0, test);
       if (depth >= 0) {
-        if ((ast.size() >= 3)) {
+        if ((argSize >= 2)) {
           // Match the depth with the second argument
           final IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
           if (!matcher.test(F.ZZ(depth), engine)) {

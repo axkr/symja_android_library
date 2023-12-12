@@ -46,6 +46,7 @@ public class BuiltinUsage {
     USAGE[ID.ArcTanh] = "inverse hyperbolic tangent function";
     USAGE[ID.Arg] = "phase of a complex number";
     USAGE[ID.ArrayDepth] = "the rank of a tensor";
+    USAGE[ID.ArrayQ] = "test whether an object is a tensor of a given rank";
     USAGE[ID.Attributes] = "find the attributes of a symbol";
     USAGE[ID.Append] = "add an element at the end of an expression";
     USAGE[ID.AppendTo] = "add an element at the end of an stored list or expression";

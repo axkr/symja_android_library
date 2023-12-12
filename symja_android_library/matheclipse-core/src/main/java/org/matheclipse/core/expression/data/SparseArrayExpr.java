@@ -1568,18 +1568,22 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     return result.fullFormString();
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean forAll(Predicate<? super IExpr> predicate) {
-    if (!predicate.test(fDefaultValue)) {
-      return false;
+    int counter = fData.size();
+    if (totalSize(fDimension) > counter) {
+      if (!predicate.test(fDefaultValue)) {
+        return false;
+      }
     }
     for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
       IExpr value = entry.getValue();
+      counter++;
       if (!predicate.test(value)) {
         return false;
       }
     }
-
     return true;
   }
 
