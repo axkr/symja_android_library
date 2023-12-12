@@ -10,7 +10,7 @@ Transpose(m)
 Transpose(tensor, permutation-list)
 ```
 
-> transposes rows and columns in the `tensor` according to `permutation-list`.
+> transposes rows and columns in the `tensor` according to `permutation-list`.  If `tensor` is a `SparseArray` the result will also be a `SparseArray`.
 
 See:
 * [Wikipedia - Transpose](https://en.wikipedia.org/wiki/Transpose)

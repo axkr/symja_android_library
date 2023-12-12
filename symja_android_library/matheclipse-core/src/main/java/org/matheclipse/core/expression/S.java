@@ -9612,6 +9612,9 @@ public class S {
    */
   public final static IBuiltInSymbol SparseArray = S.initFinalSymbol("SparseArray", ID.SparseArray);
 
+  public final static IBuiltInSymbol SparseArrayQ =
+      S.initFinalSymbol("SparseArrayQ", ID.SparseArrayQ);
+
   public final static IBuiltInSymbol Specularity = S.initFinalSymbol("Specularity", ID.Specularity);
 
   /**

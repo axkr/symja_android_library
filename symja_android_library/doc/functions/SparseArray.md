@@ -32,7 +32,7 @@ SparseArray(Number of elements: 4 Dimensions: {3,3} Default value: 0)
 ```
 
 ### Related terms  
-[MatrixForm](MatrixForm.md), [Normal](Normal.md)
+[SparseArrayQ](SparseArrayQ.md), [MatrixForm](MatrixForm.md), [Normal](Normal.md)
 
 
 

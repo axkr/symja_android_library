@@ -523,6 +523,8 @@ public class BuiltinUsage {
     USAGE[ID.SortBy] = "sort by the values of a function applied to elements";
     USAGE[ID.Sow] = "send an expression to the innermost Reap";
     USAGE[ID.Span] = "general specification for spans or blocks of elements";
+    USAGE[ID.SparseArray] = "an array by the values of the non-zero elements";
+    USAGE[ID.SparseArrayQ] = "test whether an expression is a SparseArray";
     // USAGE[ID.SphericalHarmonicY] = "3D Spherical Harmonic";
     USAGE[ID.Split] = "split into runs of identical elements";
     USAGE[ID.SplitBy] = "split based on values of a function applied to elements";

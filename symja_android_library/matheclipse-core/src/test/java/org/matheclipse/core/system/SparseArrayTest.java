@@ -515,6 +515,14 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSparseArrayQ() {
+    check("s = SparseArray({{1, 1} -> 1, {2, 3} -> 4, {3, 1} -> -1})", //
+        "SparseArray(Number of elements: 3 Dimensions: {3,3} Default value: 0)");
+    check("SparseArrayQ(s)", //
+        "True");
+  }
+
+  @Test
   public void testSparseArrayPattern() {
     check("SparseArray({{i_, j_} /; (i > j+1)-> (i+j ) }, {4, 4}) // MatrixForm", //
         "{{0,0,0,0},\n" //
