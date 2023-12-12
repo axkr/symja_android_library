@@ -83,6 +83,7 @@ public class PredicateQ {
       S.QuantityQ.setEvaluator(new QuantityQ());
       S.RealValuedNumberQ.setEvaluator(new RealValuedNumberQ());
       S.RealValuedNumericQ.setEvaluator(new RealValuedNumericQ());
+      S.SparseArrayQ.setEvaluator(new SparseArrayQ());
       S.SquareMatrixQ.setEvaluator(new SquareMatrixQ());
       S.StringQ.setPredicateQ(x -> x.isString());
       S.SymbolQ.setPredicateQ(x -> x.isSymbol());
@@ -1325,6 +1326,25 @@ public class PredicateQ {
         return S.True;
       }
       return S.False;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  private static final class SparseArrayQ extends AbstractCoreFunctionEvaluator
+      implements IPredicate {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      final IExpr arg1 = engine.evaluate(ast.arg1());
+      return isSquareMatrixQ(arg1);
+    }
+
+    private IExpr isSquareMatrixQ(IExpr expr) {
+      return F.booleSymbol(expr.isSparseArray());
     }
 
     @Override
