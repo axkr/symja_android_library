@@ -2241,4 +2241,40 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     IAST rules = arrayRules();
     output.writeObject(rules);
   }
+
+  @Override
+  public ISparseArray transpose(int[] permutation) {
+    return transpose(permutation, x -> x);
+  }
+
+  @Override
+  public ISparseArray transpose(int[] permutation,
+      Function<? super IExpr, ? extends IExpr> function) {
+    int length = fDimension.length;
+    for (int i = 0; i < permutation.length; i++) {
+      if (permutation[i] > permutation.length) {
+        return null;
+      }
+    }
+    int[] resultDimensions = new int[length];
+    for (int i = 0; i < permutation.length; i++) {
+      resultDimensions[i] = fDimension[permutation[i] - 1];
+    }
+    final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
+    ISparseArray resultTensor =
+        new SparseArrayExpr(trie, resultDimensions, function.apply(getDefaultValue()), false);
+    Trie<int[], IExpr> data = toData();
+    for (TrieNode<int[], IExpr> entry : data.nodeSet()) {
+      int[] sequence = entry.getKey();
+      IExpr value = data.get(sequence);
+      if (value != null) {
+        int[] positions = new int[length];
+        for (int i = 0; i < positions.length; i++) {
+          positions[i] = sequence[permutation[i] - 1];
+        }
+        trie.put(positions, function.apply(value));
+      }
+    }
+    return resultTensor;
+  }
 }

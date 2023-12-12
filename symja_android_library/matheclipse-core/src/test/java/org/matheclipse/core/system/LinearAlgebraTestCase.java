@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
 import org.apfloat.Apint;
 import org.junit.Test;
 import org.matheclipse.core.eval.ExprEvaluator;
@@ -7,8 +8,6 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-
-import static org.junit.Assert.assertEquals;
 
 /** Tests built-in functions */
 public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
@@ -142,25 +141,19 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testConjugateTranspose() {
     check("ConjugateTranspose({{{0,0},{0,0}},{0,0}})", //
-        "ConjugateTranspose({{{0,0},{0,0}},{0,0}})");
+        "{{{0,0},0},{{0,0},0}}");
 
     check("ConjugateTranspose(SparseArray({{1,2+I,3},{4,5-I,6},{7,8,9}}))", //
         "SparseArray(Number of elements: 9 Dimensions: {3,3} Default value: 0)");
     check("ConjugateTranspose(SparseArray({{1,2+I,3},{4,5-I,6},{7,8,9}})) // Normal", //
         "{{1,4,7},\n" + " {2-I,5+I,8},\n" + " {3,6,9}}");
     check("ConjugateTranspose({{1,2+I,3},{4,5-I,6},{7,8,9}})", //
-        "{{1,4,7},\n" + //
-            " {2-I,5+I,8},\n" + //
-            " {3,6,9}}");
+        "{{1,4,7},{2-I,5+I,8},{3,6,9}}");
     check("ConjugateTranspose(N({{1,2+I,3},{4,5-I,6},{7,8,9}}))", //
-        "{{1.0,4.0,7.0},\n" + //
-            " {2.0+I*(-1.0),5.0+I*1.0,8.0},\n" + //
-            " {3.0,6.0,9.0}}");
+        "{{1.0,4.0,7.0},{2.0+I*(-1.0),5.0+I*1.0,8.0},{3.0,6.0,9.0}}");
 
     check("ConjugateTranspose({{1, 2*I, 3}, {3 + 4*I, 5, I}})", //
-        "{{1,3-I*4},\n" + //
-            " {-I*2,5},\n" + //
-            " {3,-I}}");
+        "{{1,3-I*4},{-I*2,5},{3,-I}}");
   }
 
   @Test
@@ -183,14 +176,11 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCoordinateBounds() {
-
     check("CoordinateBounds({{1.0,-1.0},{0.0,2.6457513110645907},{-1.0,-1.0}})", //
-        "{{-1.0,1.0},\n" //
-            + " {-1.0,2.64575}}");
+        "{{-1.0,1.0},{-1.0,2.64575}}");
 
     check("CoordinateBounds({{0, 1}, {1, 2}, {2, 1}, {3, 2}, {4, 0}})", //
-        "{{0,4},\n"//
-            + " {0,2}}");
+        "{{0,4},{0,2}}");
     check("CoordinateBounds({{0, 1}, {1, 2}, {2, 1}, {3, 2}, {4, 0}},2)", //
         "{{-2,6},{-2,4}}");
   }
@@ -2165,11 +2155,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testTranspose() {
     check("Transpose({{1,2},{3,4}})", //
-        "{{1,3},\n" //
-            + " {2,4}}");
+        "{{1,3},{2,4}}");
     check("Transpose({{1,2},{3,4},{5,6}})", //
-        "{{1,3,5},\n" //
-            + " {2,4,6}}");
+        "{{1,3,5},{2,4,6}}");
 
     check("Transpose({{-1}},{2})", //
         "Transpose({{-1}},{2})");
@@ -2201,10 +2189,33 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Transpose(m, {2,1,3})", //
         "{{{a(1,1,1),a(1,1,2)},{a(2,1,1),a(2,1,2)}},{{a(1,2,1),a(1,2,2)},{a(2,2,1),a(2,2,\n"
             + "2)}},{{a(1,3,1),a(1,3,2)},{a(2,3,1),a(2,3,2)}}}");
+
+    check("s = SparseArray(m)", //
+        "SparseArray(Number of elements: 12 Dimensions: {2,3,2} Default value: 0)");
+
+    check("t=Transpose(s, {1,3,2})", //
+        "SparseArray(Number of elements: 12 Dimensions: {2,2,3} Default value: 0)");
+    check("t // MatrixForm", //
+        "{{{a(1,1,1),a(1,2,1),a(1,3,1)},{a(1,1,2),a(1,2,2),a(1,3,2)}},\n" //
+            + " {{a(2,1,1),a(2,2,1),a(2,3,1)},{a(2,1,2),a(2,2,2),a(2,3,2)}}}");
+
+    check("t=Transpose(s, {3,2,1})", //
+        "SparseArray(Number of elements: 12 Dimensions: {2,3,2} Default value: 0)");
+    check("t // MatrixForm", //
+        "{{{a(1,1,1),a(2,1,1)},{a(1,2,1),a(2,2,1)},{a(1,3,1),a(2,3,1)}},\n" //
+            + " {{a(1,1,2),a(2,1,2)},{a(1,2,2),a(2,2,2)},{a(1,3,2),a(2,3,2)}}}");
+
+    check("t=Transpose(s, {2,1,3})", //
+        "SparseArray(Number of elements: 12 Dimensions: {3,2,2} Default value: 0)");
+    check("t // MatrixForm", //
+        "{{{a(1,1,1),a(1,1,2)},{a(2,1,1),a(2,1,2)}},\n" //
+            + " {{a(1,2,1),a(1,2,2)},{a(2,2,1),a(2,2,2)}},\n" //
+            + " {{a(1,3,1),a(1,3,2)},{a(2,3,1),a(2,3,2)}}}");
+
+
+
     check("Transpose({{1, 2, 3}, {4, 5, 6}})", //
-        "{{1,4},\n" + //
-            " {2,5},\n" + //
-            " {3,6}}");
+        "{{1,4},{2,5},{3,6}}");
   }
 
   @Test

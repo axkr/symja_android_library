@@ -23789,15 +23789,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{-2*Sqrt(2/5),-Sqrt(2/5),0,Sqrt(2/5),2*Sqrt(2/5)}");
 
     check("Standardize(SparseArray({{a,b},{c,d}}))", //
-        "{{(Sqrt(2)*(a+1/2*(-a-c)))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(2)*(b+1/\n"
-            + "2*(-b-d)))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))},\n"
-            + " {(Sqrt(2)*(1/2*(-a-c)+c))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(2)*(1/2*(-b-d)+d))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))}}");
+        "{{(Sqrt(2)*(a+1/2*(-a-c)))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(2)*(b+1/\n" //
+            + "2*(-b-d)))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))},{(Sqrt(2)*(1/2*(-a-c)+c))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(\n"
+            + "2)*(1/2*(-b-d)+d))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))}}");
     check("Standardize({6.5, 3.8, 6.6, 5.7, 6.0, 6.4, 5.3})", //
         "{0.75705,-1.99453,0.85896,-0.0582346,0.247497,0.655139,-0.465877}");
     check("Standardize({{a,b},{c,d}})", //
-        "{{(Sqrt(2)*(a+1/2*(-a-c)))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(2)*(b+1/\n"
-            + "2*(-b-d)))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))},\n"
-            + " {(Sqrt(2)*(1/2*(-a-c)+c))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(2)*(1/2*(-b-d)+d))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))}}");
+        "{{(Sqrt(2)*(a+1/2*(-a-c)))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(2)*(b+1/\n" //
+            + "2*(-b-d)))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))},{(Sqrt(2)*(1/2*(-a-c)+c))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(\n"//
+            + "2)*(1/2*(-b-d)+d))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))}}");
   }
 
   @Test

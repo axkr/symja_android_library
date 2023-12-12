@@ -4,6 +4,7 @@ import java.util.function.Function;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.parser.trie.Trie;
 
 public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>>, ITensorAccess {
@@ -109,6 +110,8 @@ public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>>, ITensorAcce
 
   public IASTMutable normal(int[] dims);
 
+  public IExpr set(int[] positions, IExpr value);
+
   /**
    * Convert this sparse array to a FieldMatrix. If conversion is not possible, return <code>null
    * </code>.
@@ -127,5 +130,31 @@ public interface ISparseArray extends IDataExpr<Trie<int[], IExpr>>, ITensorAcce
    */
   public IExpr total(IExpr head);
 
-  public IExpr set(int[] positions, IExpr value);
+  /**
+   * Transpose the sparse array according to the given permutation indices. The permutation index
+   * numbers start with offset <code>1</code>.
+   * 
+   * @param permutation the permutation indices
+   * @return the transposed sparse array or <code>null</code>, if an index is out of bounds for the
+   *         permutation length
+   */
+  public ISparseArray transpose(int[] permutation);
+
+  /**
+   * <p>
+   * Transpose the sparse array according to the given permutation indices. The permutation index
+   * numbers start with offset <code>1</code>.
+   * <p>
+   * <b>Note:</b> the <code>function</code> parameter is for example used to implement the
+   * {@link S#ConjugateTranspose} function. The function also applies to the sparse arrays default
+   * value.
+   * 
+   * @param permutation the permutation indices
+   * @param function a function which transforms the value which will be assigned to a new position,
+   * @return the transposed sparse array or <code>null</code>, if an index is out of bounds for the
+   *         permutation length
+   */
+  public ISparseArray transpose(int[] permutation,
+      Function<? super IExpr, ? extends IExpr> function);
+
 }

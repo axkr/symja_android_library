@@ -29,6 +29,7 @@ import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -5594,7 +5595,6 @@ public final class LinearAlgebra {
    * </pre>
    */
   public static class Transpose extends AbstractEvaluator {
-
     private static class TransposePermute {
       /** The current tensor. */
       final IAST tensor;
@@ -5604,10 +5604,13 @@ public final class LinearAlgebra {
       final int[] permutation;
       /** The position from which to extract the current element */
       int[] positions;
+      private final Function<? super IExpr, ? extends IExpr> function;
 
-      private TransposePermute(IAST tensor, IntList tensorDimensions, int[] permutation) {
+      private TransposePermute(IAST tensor, IntList tensorDimensions, int[] permutation,
+          Function<? super IExpr, ? extends IExpr> function) {
         this.tensor = tensor;
         this.dimensions = new int[tensorDimensions.size()];
+        this.function = function;
         for (int i = 0; i < tensorDimensions.size(); i++) {
           dimensions[i] = tensorDimensions.getInt(i);
         }
@@ -5633,7 +5636,7 @@ public final class LinearAlgebra {
               // Entry `1` in `2` is out of bounds for a permutation of length `3`.
               throw new ArgumentTypeStopException("perm2", F.List());
             }
-            resultList.append(part);
+            resultList.append(function.apply(part));
           }
         } else {
           int size = dimensions[permutation[permutationIndex] - 1];
@@ -5653,47 +5656,95 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
-        final int[] dim = ast.arg1().isMatrix();
-        if (dim != null) {
-          // TODO improve for sparse arrays
-          final FieldMatrix<IExpr> matrix = Convert.list2Matrix(ast.arg1());
-          if (matrix != null) {
-            final FieldMatrix<IExpr> transposed = matrix.transpose();
-            IExpr transposedMatrix = Convert.matrix2Expr(transposed).mapExpr(x -> transform(x));
-            // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set
-            // directly. isMatrix() must be used!
-            transposedMatrix.isMatrix(true);
-            return transposedMatrix;
-          }
-          if (dim[1] == 0) {
-            return F.CEmptyList;
-          }
-        } else if (ast.arg1().isListOfLists()) {
+      final IExpr arg1 = ast.arg1();
+      final IExpr arg2;
+      if (ast.isAST2()) {
+        arg2 = ast.arg2();
+      } else {
+        arg2 = F.NIL;
+      }
+      if (arg1.isList()) {
+        IAST tensor = (IAST) arg1;
+        IntArrayList dimension = dimensions(tensor, tensor.head(), Integer.MAX_VALUE);
+
+        final int[] permutation;
+        int length = dimension.size();
+        if (length < 2) {
           // Error messages inherits to ConjugateTranspose
           // The first two levels of `1` cannot be transposed.
           return Errors.printMessage(ast.topHead(), "nmtx", F.List(ast), engine);
         }
-      } else if (ast.isAST2()) {
-        if (ast.arg1().isList() && ast.arg2().isList()) {
-          IAST tensor = (IAST) ast.arg1();
-          IntArrayList dims = dimensions(tensor, tensor.head(), Integer.MAX_VALUE);
-          int[] permutation = Validate.checkListOfInts(ast, ast.arg2(), 1, dims.size(), engine);
-          if (permutation == null) {
-            return F.NIL;
-          }
-          for (int i = 0; i < permutation.length; i++) {
-            if (permutation[i] > permutation.length) {
-              // Entry `1` in `2` is out of bounds for a permutation of length `3`.
-              return Errors.printMessage(ast.topHead(), "perm2",
-                  F.List(F.ZZ(i + 1), ast.arg2(), F.ZZ(permutation.length)), engine);
-            }
-          }
-
-          return new TransposePermute(tensor, dims, permutation).transposeRecursive();
+        permutation = getPermutation(arg2, length, ast, engine);
+        if (permutation == null) {
+          return F.NIL;
         }
+        for (int i = 0; i < permutation.length; i++) {
+          if (permutation[i] > permutation.length) {
+            // Entry `1` in `2` is out of bounds for a permutation of length `3`.
+            return Errors.printMessage(ast.topHead(), "perm2",
+                F.List(F.ZZ(i + 1), arg2, F.ZZ(permutation.length)), engine);
+          }
+        }
+
+        return new TransposePermute(tensor, dimension, permutation, x -> transform(x))
+            .transposeRecursive();
       }
+
+      if (arg1.isSparseArray()) {
+        ISparseArray tensor = (ISparseArray) arg1;
+        int[] dimension = tensor.getDimension();
+        final int[] permutation;
+        int length = dimension.length;
+        if (length < 2) {
+          // Error messages inherits to ConjugateTranspose
+          // The first two levels of `1` cannot be transposed.
+          return Errors.printMessage(ast.topHead(), "nmtx", F.List(ast), engine);
+        }
+        permutation = getPermutation(arg2, length, ast, engine);
+        if (permutation == null) {
+          return F.NIL;
+        }
+        ISparseArray transposed = tensor.transpose(permutation, x -> transform(x));
+        if (transposed != null) {
+          return transposed;
+        }
+        // get error details:
+        for (int i = 0; i < permutation.length; i++) {
+          if (permutation[i] > permutation.length) {
+            // Entry `1` in `2` is out of bounds for a permutation of length `3`.
+            return Errors.printMessage(ast.topHead(), "perm2",
+                F.List(F.ZZ(i + 1), arg2, F.ZZ(permutation.length)), engine);
+          }
+        }
+
+      }
+
       return F.NIL;
+    }
+
+    /**
+     * 
+     * @param permutationList
+     * @param length the method assumes <code>length >= 2</code>
+     * @param ast
+     * @param engine
+     * @return <code>null</code> if <code>permutationList.isList()</code> and the permutation
+     *         indices could not be determined
+     */
+    private static int[] getPermutation(final IExpr permutationList, int length, final IAST ast,
+        EvalEngine engine) {
+      final int[] permutation;
+      if (permutationList.isList()) {
+        permutation = Validate.checkListOfInts(ast, permutationList, 1, length, engine);
+      } else {
+        permutation = new int[length];
+        for (int i = 0; i < length; i++) {
+          permutation[i] = i + 1;
+        }
+        permutation[0] = 2;
+        permutation[1] = 1;
+      }
+      return permutation;
     }
 
     @Override
