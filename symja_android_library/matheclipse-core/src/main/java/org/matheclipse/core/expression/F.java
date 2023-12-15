@@ -175,6 +175,8 @@ public class F extends S {
   public static final Cache<IAST, IExpr> REMEMBER_INTEGER_CACHE =
       CacheBuilder.newBuilder().maximumSize(500).build();
 
+  public static final IAST[] SLOT_CACHE = new IAST[100];
+
   /** Set to <code>true</code> at the start of initSymbols() method */
   private static volatile boolean isSystemStarted = false;
 
@@ -904,9 +906,17 @@ public class F extends S {
       C1DSqrt7 = new B2.Power(C7, CN1D2).functionEvaled();
       C1DSqrt10 = new B2.Power(C10, CN1D2).functionEvaled();
 
-      Slot1 = unaryAST1(Slot, C1).functionEvaled();
-      Slot2 = unaryAST1(Slot, C2).functionEvaled();
-      Slot3 = unaryAST1(Slot, C3).functionEvaled();
+      IAST Slot0 = new B1.Slot(C0);
+      Slot1 = new B1.Slot(C1);
+      Slot2 = new B1.Slot(C2);
+      Slot3 = new B1.Slot(C3);
+      SLOT_CACHE[0] = Slot0;
+      SLOT_CACHE[1] = Slot1;
+      SLOT_CACHE[2] = Slot2;
+      SLOT_CACHE[3] = Slot3;
+      for (int i = 4; i < 100; i++) {
+        SLOT_CACHE[i] = new B1.Slot(i);
+      }
 
       COMMON_IDS = new IExpr[] {CN1, CN2, CN3, CN4, CN5, CN6, CN7, CN8, CN9, CN10, C0, C1, C2, C3,
           C4, C5, C6, C7, C8, C9, C10, CI, CNI, C1D2, CN1D2, C1D3, CN1D3, C1D4, CN1D4, CD0, CD1,
@@ -9035,11 +9045,14 @@ public class F extends S {
   }
 
   public static IAST Slot(final int i) {
-    return new AST1(Slot, ZZ(i));
+    if (i < SLOT_CACHE.length && i >= 0) {
+      return SLOT_CACHE[i];
+    }
+    return new B1.Slot(ZZ(i));
   }
 
   public static IAST Slot(final String str) {
-    return new AST1(Slot, stringx(str));
+    return new B1.Slot(stringx(str));
   }
 
   public static IAST SlotSequence(final int i) {

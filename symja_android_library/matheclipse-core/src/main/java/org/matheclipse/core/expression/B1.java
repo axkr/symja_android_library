@@ -243,6 +243,32 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
+  static class Slot extends B1 {
+    public Slot() {
+      super();
+    }
+
+    Slot(IExpr arg1) {
+      super(arg1);
+      addEvalFlags(IAST.BUILT_IN_EVALED);
+    }
+
+    Slot(int slot) {
+      super(F.ZZ(slot));
+      addEvalFlags(IAST.BUILT_IN_EVALED);
+    }
+
+    @Override
+    public final IBuiltInSymbol head() {
+      return S.Slot;
+    }
+
+    @Override
+    public IASTMutable copy() {
+      return new Slot(arg1);
+    }
+  }
+
   static class Tan extends B1 {
     public Tan() {
       super();

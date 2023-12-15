@@ -1249,8 +1249,13 @@ public interface IPatternMap {
 
     @Override
     public final void initSlotValues() {
-      for (int i = 0; i < fSymbolsOrPatternValues.length; i++) {
-        fSymbolsOrPatternValues[i] = F.Slot(i + 1);
+      if (fSymbolsOrPatternValues.length < F.SLOT_CACHE.length - 1) {
+        System.arraycopy(F.SLOT_CACHE, 1, //
+            fSymbolsOrPatternValues, 0, fSymbolsOrPatternValues.length);
+      } else {
+        for (int i = 0; i < fSymbolsOrPatternValues.length; i++) {
+          fSymbolsOrPatternValues[i] = F.Slot(i + 1);
+        }
       }
     }
 
