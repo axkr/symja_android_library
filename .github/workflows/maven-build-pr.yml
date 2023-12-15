@@ -20,7 +20,7 @@ jobs:
 
     - run: mvn -f symja_android_library -B -U verify
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: Package
         path: '**/target/*.jar'
