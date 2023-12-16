@@ -25,7 +25,7 @@ See
 PowerMod(0, -1, 2)
 ```
 
-The argument 0 should be nonzero.
+The third argument of `PowerMod` should be nonzero.
 
 ```
 >> PowerMod(5, 2, 0)

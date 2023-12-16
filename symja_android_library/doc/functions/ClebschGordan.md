@@ -13,7 +13,7 @@ See:
 ### Examples
 
 ```  
-ClebschGordan({3/2, -3/2}, {3/2, 3/2}, {1, 0}) 
+>> ClebschGordan({3/2, -3/2}, {3/2, 3/2}, {1, 0}) 
 3/2*1/Sqrt(5)
 ```
 
