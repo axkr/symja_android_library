@@ -223,7 +223,6 @@ public class ASTRealMatrix extends AbstractAST
    */
   @Override
   public ASTRealMatrix clone() {
-    // return Convert.matrix2List(matrix, false);
     return new ASTRealMatrix(matrix.copy(), false);
   }
 

@@ -212,7 +212,6 @@ public class ASTRealVector extends AbstractAST
   @Override
   public ASTRealVector clone() {
     return new ASTRealVector(vector.copy(), false);
-    // return Convert.vector2List(vector, false);
   }
 
   /** {@inheritDoc} */

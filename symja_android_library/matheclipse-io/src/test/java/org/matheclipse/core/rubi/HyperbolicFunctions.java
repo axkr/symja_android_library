@@ -38,7 +38,6 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
 
   // {2641}
   public void test0011() {
-    fSeconds = 600;
     check( //
         "Integrate[1/Sqrt[I*Sinh[c + d*x]], x]", //
         "((-2*I)*EllipticF[(I*c - Pi/2 + I*d*x)/2, 2])/d", //
@@ -834,7 +833,6 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
 
   // {3130}
   public void test0133() {
-    fSeconds = 600;
     check( //
         "Integrate[(A + B*Cosh[x] + C*Sinh[x])/(a + b*Cosh[x] + b*Sinh[x]), x]", //
         "((2*a*A - b*(B - C))*x)/(2*a^2) - ((2*a*A*b - b^2*(B - C) - a^2*(B + C))*Log[a + b*Cosh[x] + b*Sinh[x]])/(2*a^2*b) - ((B - C)*(Cosh[x] - Sinh[x]))/(2*a)", //
@@ -843,7 +841,6 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
 
   // {3131}
   public void test0134() {
-    fSeconds = 20;
     check( //
         "Integrate[(A + C*Sinh[x])/(a + b*Cosh[x] - b*Sinh[x]), x]", //
         "((2*a*A - b*C)*x)/(2*a^2) + (C*Cosh[x])/(2*a) + ((2*a*A*b + a^2*C - b^2*C)*Log[a + b*Cosh[x] - b*Sinh[x]])/(2*a^2*b) + (C*Sinh[x])/(2*a)", //
@@ -940,7 +937,6 @@ public class HyperbolicFunctions extends AbstractRubiTestCase {
 
   // {6686}
   public void test0146() {
-    fSeconds = 600;
     check( //
         "Integrate[Csch[2*x]*Log[Tanh[x]], x]", //
         "Log[Tanh[x]]^2/4", //

@@ -429,26 +429,20 @@ public class OpenIntToSet<T> implements Serializable {
       return false;
     }
 
-    try {
-      OpenIntToSet<T>.Iterator iter = iterator();
-      while (iter.hasNext()) {
-        iter.advance();
-        int key = iter.key();
-        Set<T> value = get(key);
-        if (value == null) {
-          if (!(m.get(key) == null && m.containsKey(key))) {
-            return false;
-          }
-        } else {
-          if (!value.equals(m.get(key))) {
-            return false;
-          }
+    OpenIntToSet<T>.Iterator iter = iterator();
+    while (iter.hasNext()) {
+      iter.advance();
+      int key = iter.key();
+      Set<T> value = get(key);
+      if (value == null) {
+        if (!(m.get(key) == null && m.containsKey(key))) {
+          return false;
+        }
+      } else {
+        if (!value.equals(m.get(key))) {
+          return false;
         }
       }
-    } catch (ClassCastException unused) {
-      return false;
-    } catch (NullPointerException unused) {
-      return false;
     }
 
     return true;

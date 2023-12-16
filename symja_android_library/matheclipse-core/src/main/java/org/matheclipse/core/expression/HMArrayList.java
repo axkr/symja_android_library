@@ -549,6 +549,9 @@ public abstract class HMArrayList extends AbstractAST
     if (obj == this) {
       return true;
     }
+    if (obj == null) {
+      return false;
+    }
     if (hashCode() != obj.hashCode()) {
       return false;
     }

@@ -424,27 +424,20 @@ public final class OpenIntToIExprHashMap<T extends IExpr> implements Serializabl
     if (m.size() != size()) {
       return false;
     }
-
-    try {
-      OpenIntToIExprHashMap<T>.Iterator iter = iterator();
-      while (iter.hasNext()) {
-        iter.advance();
-        int key = iter.key();
-        T value = get(key);
-        if (value == null) {
-          if (!(m.get(key) == null && m.containsKey(key))) {
-            return false;
-          }
-        } else {
-          if (!value.equals(m.get(key))) {
-            return false;
-          }
+    OpenIntToIExprHashMap<T>.Iterator iter = iterator();
+    while (iter.hasNext()) {
+      iter.advance();
+      int key = iter.key();
+      T value = get(key);
+      if (value == null) {
+        if (!(m.get(key) == null && m.containsKey(key))) {
+          return false;
+        }
+      } else {
+        if (!value.equals(m.get(key))) {
+          return false;
         }
       }
-    } catch (ClassCastException unused) {
-      return false;
-    } catch (NullPointerException unused) {
-      return false;
     }
 
     return true;

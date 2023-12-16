@@ -221,18 +221,6 @@ public class ASTRRBTree extends AbstractAST
   }
 
   /**
-   * Removes all elements from this {@code ArrayList}, leaving it empty.
-   *
-   * @see #isEmpty
-   * @see #size
-   */
-  // @Override
-  // public void clear() {
-  // hashValue = 0;
-  // throw new UnsupportedOperationException();
-  // }
-
-  /**
    * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity
    * as this {@code HMArrayList}.
    *
@@ -264,6 +252,9 @@ public class ASTRRBTree extends AbstractAST
   public boolean equals(final Object obj) {
     if (obj == this) {
       return true;
+    }
+    if (obj == null) {
+      return false;
     }
     if (hashCode() != obj.hashCode()) {
       return false;

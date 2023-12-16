@@ -2,6 +2,7 @@ package org.matheclipse.core.generic;
 
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import org.hipparchus.analysis.BivariateFunction;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -17,7 +18,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  * @see org.matheclipse.core.reflection.system.Plot3D
  */
-public class BinaryNumerical implements BinaryOperator<IExpr> {
+public class BinaryNumerical implements BinaryOperator<IExpr>, BivariateFunction {
   final IExpr fun;
 
   final ISymbol variable1;

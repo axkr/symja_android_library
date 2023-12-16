@@ -1,7 +1,5 @@
 package org.matheclipse.core.rubi;
 
-import org.matheclipse.core.basic.Config;
-
 public class TrigFunctions extends AbstractRubiTestCase {
   static boolean init = true;
 
@@ -1985,46 +1983,34 @@ public class TrigFunctions extends AbstractRubiTestCase {
 
   // {2994}
   public void test0255() {
-    if (Config.EXPENSIVE_JUNIT_TESTS) {
-      fSeconds = 600;
-      check( //
-          "Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[2 + 3*Cos[c + d*x]]), x]", //
-          "-((Cot[c + d*x]*EllipticE[ArcSin[Sqrt[2 + 3*Cos[c + d*x]]/(Sqrt[5]*Sqrt[Cos[c + d*x]])], 5]*Sqrt[-1 - Sec[c + d*x]]*Sqrt[1 - Sec[c + d*x]])/d)", //
-          2994);
-    }
+    check( //
+        "Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[2 + 3*Cos[c + d*x]]), x]", //
+        "-((Cot[c + d*x]*EllipticE[ArcSin[Sqrt[2 + 3*Cos[c + d*x]]/(Sqrt[5]*Sqrt[Cos[c + d*x]])], 5]*Sqrt[-1 - Sec[c + d*x]]*Sqrt[1 - Sec[c + d*x]])/d)", //
+        2994);
   }
 
   // {2994}
   public void test0256() {
-    if (Config.EXPENSIVE_JUNIT_TESTS) {
-      fSeconds = 600;
       check( //
           "Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[-2 + 3*Cos[c + d*x]]), x]", //
           "-((Sqrt[5]*Cot[c + d*x]*EllipticE[ArcSin[Sqrt[-2 + 3*Cos[c + d*x]]/Sqrt[Cos[c + d*x]]], 1/5]*Sqrt[-1 + Sec[c + d*x]]*Sqrt[1 + Sec[c + d*x]])/d)", //
           2994);
-    }
   }
 
   // {2994}
   public void test0257() {
-    if (Config.EXPENSIVE_JUNIT_TESTS) {
-      fSeconds = 600;
       check( //
           "Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[3 + 2*Cos[c + d*x]]), x]", //
           "(2*Cot[c + d*x]*EllipticE[ArcSin[Sqrt[3 + 2*Cos[c + d*x]]/(Sqrt[5]*Sqrt[Cos[c + d*x]])], -5]*Sqrt[1 - Sec[c + d*x]]*Sqrt[1 + Sec[c + d*x]])/(3*d)", //
           2994);
-    }
   }
 
   // {2994}
   public void test0258() {
-    if (Config.EXPENSIVE_JUNIT_TESTS) {
-      fSeconds = 600;
       check( //
           "Integrate[(1 + Cos[c + d*x])/(Sqrt[3 - 2*Cos[c + d*x]]*Cos[c + d*x]^(3/2)), x]", //
           "(2*Sqrt[5]*Cot[c + d*x]*EllipticE[ArcSin[Sqrt[3 - 2*Cos[c + d*x]]/Sqrt[Cos[c + d*x]]], -1/5]*Sqrt[1 - Sec[c + d*x]]*Sqrt[1 + Sec[c + d*x]])/(3*d)", //
           2994);
-    }
   }
 
   // {3011}
@@ -2989,12 +2975,10 @@ public class TrigFunctions extends AbstractRubiTestCase {
 
   // {3936}
   public void test0389() {
-    fSeconds = 60;
     check( //
         "Integrate[Sqrt[c + d*Sec[e + f*x]]/Sqrt[a + b*Sec[e + f*x]], x]", //
         "(-2*Sqrt[a + b]*Cot[e + f*x]*EllipticPi[((a + b)*c)/(a*(c + d)), ArcSin[(Sqrt[c + d]*Sqrt[a + b*Sec[e + f*x]])/(Sqrt[a + b]*Sqrt[c + d*Sec[e + f*x]])], ((a + b)*(c - d))/((a - b)*(c + d))]*Sqrt[((b*c - a*d)*(1 - Sec[e + f*x]))/((a + b)*(c + d*Sec[e + f*x]))]*Sqrt[-(((b*c - a*d)*(1 + Sec[e + f*x]))/((a - b)*(c + d*Sec[e + f*x])))]*(c + d*Sec[e + f*x]))/(a*Sqrt[c + d]*f)", //
         3936);
-    fSeconds = 10;
   }
 
   // {3950}

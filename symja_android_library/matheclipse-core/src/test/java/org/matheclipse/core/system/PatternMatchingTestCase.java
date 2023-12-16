@@ -172,7 +172,6 @@ public class PatternMatchingTestCase {
     }
   }
 
-  /** Test system functions */
   @Test
   public void testSimplePatternMatching() {
     // the space between "x_" and "." operator is needed:
@@ -183,6 +182,18 @@ public class PatternMatchingTestCase {
     checkPattern("f[x_,y_]", "f[a,b]", "[a, b]");
     checkPattern("g[x_,y_]", "f[a,b]", "");
     checkPattern("g[x_,42, y_]", "g[a,42,b]", "[a, b]");
+  }
+
+  @Test
+  public void testWithPatternMatching() {
+    check("f[x_,y_]:=With[{w = False}, {x,y} /; TrueQ[w]]", //
+        "");
+    check("f[a,b]", //
+        "f[a,b]");
+    check("g[x_,y_]:=With[{w = True}, {x,y} /; TrueQ[w]]", //
+        "");
+    check("g[a,b]", //
+        "{a,b}");
   }
 
   // @Test

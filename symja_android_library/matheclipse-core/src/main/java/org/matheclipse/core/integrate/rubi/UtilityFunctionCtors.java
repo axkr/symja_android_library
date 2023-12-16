@@ -88,7 +88,7 @@ public class UtilityFunctionCtors {
   static ISymbol FalseQ = F.$rubi("FalseQ", new AbstractCoreFunctionEvaluator() {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.size() == 2) {
+      if (ast.argSize() == 1) {
         return engine.evaluate(ast.arg1()).isFalse() ? S.True : S.False;
       }
       return S.False;
@@ -98,11 +98,11 @@ public class UtilityFunctionCtors {
   static ISymbol FractionQ = F.$rubi("FractionQ", new AbstractCoreFunctionEvaluator() {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.size() == 2) {
+      if (ast.argSize() == 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
         return arg1.isFraction() ? S.True : S.False;
       }
-      if (ast.size() > 2) {
+      if (ast.argSize() > 1) {
         return ast.forAll(x -> engine.evaluate(x).isFraction(), 1) ? S.True : S.False;
       }
       return S.False;
@@ -112,11 +112,11 @@ public class UtilityFunctionCtors {
   static ISymbol IntegersQ = F.$rubi("IntegersQ", new AbstractCoreFunctionEvaluator() {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.size() == 2) {
+      if (ast.argSize() == 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
         return arg1.isInteger() ? S.True : S.False;
       }
-      if (ast.size() > 2) {
+      if (ast.argSize() > 1) {
         return ast.forAll(x -> engine.evaluate(x).isInteger(), 1) ? S.True : S.False;
       }
       return S.False;
@@ -126,7 +126,7 @@ public class UtilityFunctionCtors {
   static ISymbol ComplexNumberQ = F.$rubi("ComplexNumberQ", new AbstractCoreFunctionEvaluator() {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.size() == 2) {
+      if (ast.argSize() == 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
         return arg1.isComplex() || arg1.isComplexNumeric() ? S.True : S.False;
       }
@@ -137,7 +137,7 @@ public class UtilityFunctionCtors {
   static ISymbol PowerQ = F.$rubi("PowerQ", new AbstractCoreFunctionEvaluator() {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.size() == 2) {
+      if (ast.argSize() == 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
         return arg1.head().equals(F.Power) ? S.True : S.False;
       }
@@ -148,7 +148,7 @@ public class UtilityFunctionCtors {
   static ISymbol ProductQ = F.$rubi("ProductQ", new AbstractCoreFunctionEvaluator() {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.size() == 2) {
+      if (ast.argSize() == 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
         return arg1.head().equals(F.Times) ? S.True : S.False;
       }
@@ -159,7 +159,7 @@ public class UtilityFunctionCtors {
   static ISymbol SumQ = F.$rubi("SumQ", new AbstractCoreFunctionEvaluator() {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.size() == 2) {
+      if (ast.argSize() == 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
         return arg1.head().equals(F.Plus) ? S.True : S.False;
       }
@@ -169,7 +169,7 @@ public class UtilityFunctionCtors {
   static ISymbol NonsumQ = F.$rubi("NonsumQ", new AbstractCoreFunctionEvaluator() {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.size() == 2) {
+      if (ast.argSize() == 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
         return arg1.head().equals(F.Plus) ? S.False : S.True;
       }

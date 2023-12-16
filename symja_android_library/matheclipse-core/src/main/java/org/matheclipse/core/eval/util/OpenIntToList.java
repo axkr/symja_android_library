@@ -39,26 +39,20 @@ public class OpenIntToList<T> implements Serializable {
       return false;
     }
 
-    try {
-      OpenIntToList<T>.Iterator iter = iterator();
-      while (iter.hasNext()) {
-        iter.advance();
-        int key = iter.key();
-        List<T> value = get(key);
-        if (value == null) {
-          if (!(m.get(key) == null && m.containsKey(key))) {
-            return false;
-          }
-        } else {
-          if (!value.equals(m.get(key))) {
-            return false;
-          }
+    OpenIntToList<T>.Iterator iter = iterator();
+    while (iter.hasNext()) {
+      iter.advance();
+      int key = iter.key();
+      List<T> value = get(key);
+      if (value == null) {
+        if (!(m.get(key) == null && m.containsKey(key))) {
+          return false;
+        }
+      } else {
+        if (!value.equals(m.get(key))) {
+          return false;
         }
       }
-    } catch (ClassCastException unused) {
-      return false;
-    } catch (NullPointerException unused) {
-      return false;
     }
 
     return true;
