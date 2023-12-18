@@ -132,10 +132,13 @@ public class Iterator {
             }
           }
         }
-        // else {
         IExpr sub = evalEngine.evaluate(Divide(Subtract(maxCounterOrList, count), step));
         if (sub.isReal()) {
           return !sub.isNegative();
+        }
+        IExpr together = evalEngine.evaluate(F.Together(sub));
+        if (together.isReal()) {
+          return !together.isNegative();
         }
         try {
           double d = sub.evalf();
