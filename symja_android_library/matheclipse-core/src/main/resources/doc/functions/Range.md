@@ -12,6 +12,12 @@ Range(a, b)
 
 > returns a list of integers from `a` to `b`.
 
+```
+Range[a, b, di]
+```
+
+> returns a list of values from `a` to `b` using step $di$. More specifically, 'Range' starts from `a` and successively adds increments of `di` until the result is greater `(if di > 0)` or less `(if di < 0)` than `b`.
+        
 ### Examples
 
 ```

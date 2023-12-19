@@ -18,7 +18,7 @@ See
 ```
 
 ### Related terms 
-[E](E.md), [Pi](Pi.md) 
+[E](E.md), [Glaisher](Glaisher.md), [Khinchin](Khinchin.md), [Pi](Pi.md) 
 
 
 

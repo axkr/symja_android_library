@@ -45,6 +45,7 @@ b
 ```
 
 Lists can be nested:
+
 ```
 >> mymatrix = {{1, 2}, {3, 4}, {5, 6}};
 ```
@@ -81,6 +82,7 @@ d
 ```
 
 Lists can be used to assign values to multiple variables at once:
+
 ```
 >> {a, b} = {1, 2};
 

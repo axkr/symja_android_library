@@ -83,7 +83,7 @@ If you type `SIN(x)` or `sin(x)`, Symja assumes you always mean the same built-i
 
 Symja provides many common mathematical functions and constants.
 
-For example `[Log](functions/Log.md)` calculates the natural logarithm for base `[E](functions/E.md)`. `[Log2](functions/Log2.md)` and `[Log10](functions/Log10.md)` are variants for logarithm to the bases `2` and `10`.
+For example [Log](functions/Log.md) calculates the natural logarithm for base [E](functions/E.md). [Log2](functions/Log2.md) and [Log10](functions/Log10.md) are variants for logarithm to the bases `2` and `10`.
 
 ```
 >> Log(E)
@@ -104,7 +104,7 @@ Of course, Symja has complex numbers and uses the equation:
 
 $$\sqrt{-1}=I$$
 
-In Symja the imaginary unit is represented by the uppercase letter `[I](functions/I.md)`:
+In Symja the imaginary unit is represented by the uppercase letter [I](functions/I.md):
 
 ```
 >> Sqrt(-4)
@@ -123,7 +123,7 @@ In Symja the imaginary unit is represented by the uppercase letter `[I](function
 0.195577+I*0.842966
 ```
 
-`[Abs](functions/Abs.md)` calculates absolute values for complex numbers:
+[Abs](functions/Abs.md) calculates absolute values for complex numbers:
 
 ```
 >> Abs(-3)
