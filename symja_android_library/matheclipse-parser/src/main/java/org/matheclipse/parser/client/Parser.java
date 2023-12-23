@@ -27,6 +27,7 @@ import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.PostfixOperator;
+import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.client.operator.PrefixOperator;
 
 /**
@@ -866,19 +867,11 @@ public class Parser extends Scanner {
   }
 
   private ASTNode getTimesImplicit(ASTNode temp) throws SyntaxError {
-    FunctionNode func = fFactory.createAST(new SymbolNode("Times"));
-    func.add(temp);
     do {
-      getNextToken();
-
-      temp = parseExpression();
-      func.add(temp);
-      if (fToken != TT_PRECEDENCE_CLOSE) {
-        throwSyntaxError("\')\' expected.");
-      }
-      getNextToken();
+      temp = parseExpression(temp, Precedence.TIMES);
+      // parseExpression() has already called getNextToken() here:
     } while (fToken == TT_PRECEDENCE_OPEN);
-    return func;
+    return temp;
   }
 
   /**

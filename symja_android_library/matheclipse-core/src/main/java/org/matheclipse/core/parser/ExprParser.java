@@ -39,6 +39,7 @@ import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.IParserFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
+import org.matheclipse.parser.client.operator.Precedence;
 
 /**
  * Create an expression of the {@link IExpr} class-hierarchy from a math formula's string
@@ -380,8 +381,8 @@ public class ExprParser extends Scanner {
         getNextToken();
         if (fToken == TT_PRECEDENCE_OPEN) {
           if (!fExplicitTimes) {
-            Operator oper = fFactory.get("Times");
-            if (ParserConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
+            // Operator oper = fFactory.get("Times");
+            if (ParserConfig.DOMINANT_IMPLICIT_TIMES || Precedence.TIMES >= min_precedence) {
               return getTimesImplicit(temp);
             }
           }
@@ -483,8 +484,8 @@ public class ExprParser extends Scanner {
           getNextToken();
           if (fToken == TT_PRECEDENCE_OPEN) {
             if (!fExplicitTimes) {
-              Operator oper = fFactory.get("Times");
-              if (ParserConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
+              // Operator oper = fFactory.get("Times");
+              if (ParserConfig.DOMINANT_IMPLICIT_TIMES || Precedence.TIMES >= min_precedence) {
                 return getTimesImplicit(temp);
               }
             }
@@ -1078,20 +1079,19 @@ public class ExprParser extends Scanner {
     return symbol;
   }
 
+  /**
+   * Precondition <code>fToken == TT_PRECEDENCE_OPEN</code>
+   * 
+   * @param temp
+   * @return
+   * @throws SyntaxError
+   */
   private IExpr getTimesImplicit(IExpr temp) throws SyntaxError {
-    IASTAppendable func = F.TimesAlloc(8);
-    func.append(temp);
     do {
-      getNextToken();
-      temp = parseExpression();
-      func.append(temp);
-      if (fToken != TT_PRECEDENCE_CLOSE) {
-        throwSyntaxError("\')\' expected.");
-      }
-      getNextToken();
+      temp = parseExpression(temp, Precedence.TIMES);// parseExpression();
+      // parseExpression() has already called getNextToken() here:
     } while (fToken == TT_PRECEDENCE_OPEN);
-    func.addEvalFlags(IAST.TIMES_PARSED_IMPLICIT);
-    return func;
+    return temp;
   }
 
   /**
@@ -1278,7 +1278,7 @@ public class ExprParser extends Scanner {
    */
   private IExpr parseExpression(IExpr lhs, final int min_precedence) {
     IExpr rhs = null;
-    Operator oper;
+    // Operator oper;
     InfixExprOperator infixOperator;
     PostfixExprOperator postfixOperator;
     while (true) {
@@ -1298,9 +1298,9 @@ public class ExprParser extends Scanner {
 
         if (!fExplicitTimes) {
           // lazy evaluation of multiplication
-          oper = fFactory.get("Times");
-          if (ParserConfig.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
-            rhs = parseLookaheadOperator(oper.getPrecedence());
+          // oper = fFactory.get("Times");
+          if (ParserConfig.DOMINANT_IMPLICIT_TIMES || Precedence.TIMES >= min_precedence) {
+            rhs = parseLookaheadOperator(Precedence.TIMES);
             lhs = F.$(S.Times, lhs, rhs);
             ((IAST) lhs).addEvalFlags(IAST.TIMES_PARSED_IMPLICIT);
             continue;
