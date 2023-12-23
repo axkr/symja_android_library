@@ -137,7 +137,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     if (a.equals(BigInteger.ONE)) {
       return BigInteger.ONE;
     }
-    if (a.equals(BigInteger.ZERO)) {
+    if (a.signum() == 0) {
       return BigInteger.ZERO;
     }
     if (a.equals(BI_TWO)) {
@@ -192,7 +192,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   }
 
   public static BigInteger lcm(final BigInteger i0, final BigInteger i1) {
-    if (i0.equals(BigInteger.ZERO) && i1.equals(BigInteger.ZERO)) {
+    if (i0.signum() == 0 && i1.signum() == 0) {
       return BigInteger.ZERO;
     }
     BigInteger a = i0.abs();
@@ -434,7 +434,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
       BigInteger d2 = BigInteger.ONE;
       BigInteger x1;
       BigInteger x2;
-      while (!r.equals(BigInteger.ZERO)) {
+      while (r.signum() != 0) {
         qr = q.divideAndRemainder(r);
         q = qr[0];
         x1 = c1.subtract(q.multiply(d1));
@@ -1100,7 +1100,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   public IInteger quotient(final IInteger that) {
     BigInteger quotient = toBigNumerator().divide(that.toBigNumerator());
     BigInteger mod = toBigNumerator().remainder(that.toBigNumerator());
-    if (mod.equals(BigInteger.ZERO)) {
+    if (mod.signum() == 0) {
       return valueOf(quotient);
     }
     if (quotient.signum() < 0) {

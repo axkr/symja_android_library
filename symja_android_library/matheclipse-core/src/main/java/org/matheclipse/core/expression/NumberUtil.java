@@ -155,7 +155,7 @@ public class NumberUtil {
   }
 
   public static boolean isZero(BigInteger a) {
-    return a.equals(BigInteger.ZERO);
+    return a.signum() == 0;
   }
 
   public static boolean isOne(BigInteger a) {
@@ -331,7 +331,7 @@ public class NumberUtil {
     final BigInteger r = divrem[1];
 
     // return if we don't need to round, independent of rounding mode
-    if (r.equals(BigInteger.ZERO)) {
+    if (r.signum() == 0) {
       // [typically not reached since remainder is not zero
       // with normalized that are not integerp]
       if (!pos) {
@@ -390,7 +390,7 @@ public class NumberUtil {
       // neighbors are equidistant, in which case, round towards the even
       // neighbor.
       case BigDecimal.ROUND_HALF_EVEN:
-        up = (comp != 0 ? comp > 0 : !dv.remainder(BigInteger.valueOf(2L)).equals(BigInteger.ZERO));
+        up = (comp != 0 ? comp > 0 : dv.remainder(BigInteger.valueOf(2L)).signum() != 0);
         break;
 
       // case BigDecimal.ROUND_HALF_ODD:

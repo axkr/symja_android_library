@@ -696,7 +696,7 @@ public final class NumberTheory {
 
       BigInteger q;
       BigInteger tmp;
-      while (!r.equals(BigInteger.ZERO)) {
+      while (r.signum() != 0) {
         q = old_r.divide(r);
 
         tmp = old_r;

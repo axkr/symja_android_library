@@ -406,7 +406,7 @@ public class Primality implements IPrimality {
         break;
       }
       divRem = result.divideAndRemainder(BIprimes[i]);
-      if (divRem[1].equals(BigInteger.ZERO)) {
+      if (divRem[1].signum() == 0) {
         count = 0;
         Integer iCount = map.get(primes[i]);
         if (iCount != null) {
@@ -419,7 +419,7 @@ public class Primality implements IPrimality {
             break;
           }
           divRem = result.divideAndRemainder(BIprimes[i]);
-        } while (divRem[1].equals(BigInteger.ZERO));
+        } while (divRem[1].signum() == 0);
         map.put(primes[i], count);
       }
     }
@@ -518,7 +518,7 @@ public class Primality implements IPrimality {
         break;
       }
       divRem = result.divideAndRemainder(BIprimes[i]);
-      if (divRem[1].equals(BigInteger.ZERO)) {
+      if (divRem[1].signum() == 0) {
         count = 0;
         do {
           count++;
@@ -527,7 +527,7 @@ public class Primality implements IPrimality {
             break;
           }
           divRem = result.divideAndRemainder(BIprimes[i]);
-        } while (divRem[1].equals(BigInteger.ZERO));
+        } while (divRem[1].signum() == 0);
         IExpr exp = map.get(primes[i]);
         if (exp == null) {
           map.put(primes[i], F.ZZ(count).times(exponent));
@@ -660,7 +660,7 @@ public class Primality implements IPrimality {
         break;
       }
       divRem = result.divideAndRemainder(b);
-      if (divRem[1].equals(BigInteger.ZERO)) {
+      if (divRem[1].signum() == 0) {
         int count = map.get(prime);
         do {
           count++;
@@ -669,7 +669,7 @@ public class Primality implements IPrimality {
             break;
           }
           divRem = result.divideAndRemainder(b);
-        } while (divRem[1].equals(BigInteger.ZERO));
+        } while (divRem[1].signum() == 0);
         map.put(prime, count);
       }
     }
@@ -688,10 +688,10 @@ public class Primality implements IPrimality {
     BigInteger result = val;
     BigInteger count = BigInteger.ZERO;
     divRem = result.divideAndRemainder(base);
-    while (divRem[1].equals(BigInteger.ZERO)) {
+    while (divRem[1].signum() == 0) {
       count = count.add(BigInteger.ONE);
       result = divRem[0]; // quotient
-      if (result.equals(BigInteger.ZERO)) {
+      if (result.signum() == 0) {
         break;
       }
       divRem = result.divideAndRemainder(base);
@@ -841,7 +841,7 @@ public class Primality implements IPrimality {
     int count = 0;
     BigInteger temp = val;
     // handle even values
-    while (temp.and(BigInteger.ONE).equals(BigInteger.ZERO) && !temp.equals(BigInteger.ZERO)) {
+    while (temp.and(BigInteger.ONE).signum() == 0 && temp.signum() != 0) {
       temp = temp.shiftRight(1);
       count++;
       if (count == root) {
@@ -989,7 +989,7 @@ public class Primality implements IPrimality {
    * @return
    */
   public static BigInteger lcm(BigInteger arg1, BigInteger arg2) {
-    if (arg1.equals(BigInteger.ZERO) || arg2.equals(BigInteger.ZERO)) {
+    if (arg1.signum() == 0 || arg2.signum() == 0) {
       return BigInteger.ZERO;
     }
     BigInteger a = arg1.abs();
@@ -999,7 +999,7 @@ public class Primality implements IPrimality {
   }
 
   public static BigInteger charmichaelLambda(BigInteger value) {
-    if (value.equals(BigInteger.ZERO)) {
+    if (value.signum() == 0) {
       return BigInteger.ZERO;
     }
     if (value.signum() < 0) {
@@ -1035,7 +1035,7 @@ public class Primality implements IPrimality {
    * @throws ArithmeticException
    */
   public static BigInteger eulerPhi(BigInteger value) {
-    if (value.equals(BigInteger.ZERO)) {
+    if (value.signum() == 0) {
       return BigInteger.ZERO;
     }
     if (value.signum() < 0) {

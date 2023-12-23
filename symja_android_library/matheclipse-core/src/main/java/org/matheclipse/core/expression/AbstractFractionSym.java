@@ -78,7 +78,7 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   private static IFraction fractionOf(BigInteger numerator, BigInteger denominator) {
-    if (BigInteger.ZERO.equals(denominator)) {
+    if (denominator.signum() == 0) {
       throw getDivisionTroughZeroException(F.ZZ(numerator)); // Infinite expression `1` encountered.
     }
     if (hasIntValue(denominator) && hasIntValue(numerator)) {
@@ -237,7 +237,7 @@ public abstract class AbstractFractionSym implements IFraction {
   private static IFraction rationalize(double value, DoubleFunction<BigFraction> f) {
     try {
       BigFraction fraction = f.apply(value < 0 ? -value : value);
-      if (fraction != null) {// && !fraction.getNumerator().equals(BigInteger.ZERO)) {
+      if (fraction != null) {// && fraction.getNumerator().signum()!=0) {
         return valueOf(value < 0 ? fraction.negate() : fraction);
       }
     } catch (MathRuntimeException e) { // assume no solution
