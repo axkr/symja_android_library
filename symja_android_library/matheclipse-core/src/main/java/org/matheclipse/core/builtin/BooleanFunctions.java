@@ -456,8 +456,8 @@ public final class BooleanFunctions {
         return v;
       }
       // illegal arguments: \"`1`\" in `2`
-      String str = Errors.getMessage("argillegal",
-          F.list(logicExpr, F.stringx("LogicFormula")), EvalEngine.get());
+      String str = Errors.getMessage("argillegal", F.list(logicExpr, F.stringx("LogicFormula")),
+          EvalEngine.get());
       throw new ArgumentTypeException(str);
     }
 
@@ -1789,7 +1789,7 @@ public final class BooleanFunctions {
       IExpr.COMPARE_TERNARY b;
       IExpr arg1 = F.expandAll(a1, true, true);
       IExpr arg2 = F.expandAll(a2, true, true);
-    
+
       // b = CONST_EQUAL.compareTernary(arg1, arg2);
       b = arg1.equalTernary(arg2, engine);
       if (b == IExpr.COMPARE_TERNARY.FALSE) {
@@ -1798,7 +1798,7 @@ public final class BooleanFunctions {
       if (b == IExpr.COMPARE_TERNARY.TRUE) {
         return S.True;
       }
-    
+
       return BooleanFunctions.Equal.simplifyCompare(S.Equal, a1, a2);
     }
   }
@@ -3040,7 +3040,13 @@ public final class BooleanFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IASTMutable copy = ast.setAtCopy(0, getDummySymbol());
-      IExpr dummyEvaled = engine.evaluate(copy);
+      IExpr dummyEvaled = engine.evaluateNIL(copy);
+      boolean evaled = false;
+      if (dummyEvaled.isNIL()) {
+        dummyEvaled = copy;
+      } else {
+        evaled = true;
+      }
       if (dummyEvaled.isAST(getDummySymbol())) {
         copy = (IASTMutable) dummyEvaled;
         copy.set(0, S.Max);
@@ -3054,7 +3060,7 @@ public final class BooleanFunctions {
 
         int allocSize = F.allocLevel1(ast, x -> x.isList());
         IASTAppendable result = F.ast(S.Max, allocSize);
-        boolean evaled = flattenListRecursive(ast, result, engine);
+        evaled = flattenListRecursive(ast, result, engine) || evaled;
         return maximum(result, evaled);
       }
       return F.NIL;
@@ -3197,7 +3203,13 @@ public final class BooleanFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IASTMutable copy = ast.setAtCopy(0, getDummySymbol());
-      IExpr dummyEvaled = engine.evaluate(copy);
+      IExpr dummyEvaled = engine.evaluateNIL(copy);
+      boolean evaled = false;
+      if (dummyEvaled.isNIL()) {
+        dummyEvaled = copy;
+      } else {
+        evaled = true;
+      }
       if (dummyEvaled.isAST(getDummySymbol())) {
         copy = (IASTMutable) dummyEvaled;
         copy.set(0, S.Min);
@@ -3210,7 +3222,7 @@ public final class BooleanFunctions {
         }
         int allocSize = F.allocLevel1(ast, x -> x.isList());
         IASTAppendable result = F.ast(S.Min, allocSize);
-        boolean evaled = flattenListRecursive(ast, result, engine);
+        evaled = flattenListRecursive(ast, result, engine) || evaled;
         return minimum(result, evaled);
       }
       return F.NIL;
