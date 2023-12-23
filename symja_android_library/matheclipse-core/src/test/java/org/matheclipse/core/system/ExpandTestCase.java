@@ -17,7 +17,6 @@ import static org.matheclipse.core.expression.S.c;
 import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
 import static org.matheclipse.core.expression.S.z;
-
 import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
@@ -264,6 +263,40 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
         "u1^4-4*u1^3*u2+6*u1^2*u2^2-4*u1*u2^3+u2^4-6*u1^2*u3^2+12*u1*u2*u3^2-6*u2^2*u3^2+\n"
             + "9*u3^4");
   }
+
+  @Test
+  public void testExpandPattern() {
+    check("FullForm(Hold((a(1) + a(2))(x(1) + x(2))^2))", //
+        "Hold(Times(Plus(a(1), a(2)), Power(Plus(x(1), x(2)), 2)))");
+    check("FullForm(Hold((a(1) + a(2))*(x(1) + x(2))^2))", //
+        "Hold(Times(Plus(a(1), a(2)), Power(Plus(x(1), x(2)), 2)))");
+    check("Expand((a(1) + a(2))*(x(1) + x(2))^2, x(_))", //
+        "(a(1)+a(2))*x(1)^2+2*(a(1)+a(2))*x(1)*x(2)+(a(1)+a(2))*x(2)^2");
+  }
+
+  // @Test
+  // public void testExpandDenominator() {
+  // check("ExpandDenominator((x+y)*(x-y)/((x+1)*y))", //
+  // "((x-y)*(x+y))/(y+x*y)");
+  // check("ExpandDenominator((x - 1) (x - 2)/((x - 3) (x - 4)))", //
+  // "((-2+x)*(-1+x))/(12-7*x+x^2)");
+  // check("ExpandDenominator(1/(x + 1) + 2/(x + 1)^2 + 3/(x + 1)^3)", //
+  // "1/(1+x)+2/(1+2*x+x^2)+3/(1+3*x+3*x^2+x^3)");
+  // check("ExpandDenominator(x == c/(a + b)^2 && y >= c/(a - b)^2)", //
+  // "x==c/(a^2+2*a*b+b^2)&&y>=c/(a^2-2*a*b+b^2)");
+  // }
+  //
+  // @Test
+  // public void testExpandNumerator() {
+  // check("ExpandNumerator((x+y)*(x-y)/((x+1)*y))", //
+  // "(x^2-y^2)/((1+x)*y)");
+  // check("ExpandNumerator((x - 1) (x - 2)/((x - 3) (x - 4)))", //
+  // "(2-3*x+x^2)/((-4+x)*(-3+x))");
+  // check("ExpandNumerator((a + b)^2/x + (c + d) (c - d)/y)", //
+  // "(a^2+2*a*b+b^2)/x+(c^2-d^2)/y");
+  // check("ExpandNumerator(x == (a + b)^2/c && y >= (a - b)^2/c)", //
+  // "x==(a^2+2*a*b+b^2)/c&&y>=(a^2-2*a*b+b^2)/c");
+  // }
 
   @Test
   public void testRationalFunction001() {

@@ -18,7 +18,7 @@ class RelaxedParserTestCase {
   @Test
   void testParser1() {
     ASTNode obj = PARSE_RELAXED.parse("a()(0)(1)f[[x]]");
-    assertEquals("Times(Times(a(), Times(0, 1)), Part(f, x))", obj.toString());
+    assertEquals("Times(a(), Times(Times(0, 1), Part(f, x)))", obj.toString());
   }
 
   @Test
