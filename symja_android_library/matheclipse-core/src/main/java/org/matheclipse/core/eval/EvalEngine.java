@@ -505,7 +505,7 @@ public class EvalEngine implements Serializable {
    * @return
    */
   public IExpr addEvaluatedTraceStep(IExpr inputExpr, IExpr rewrittenExpr, IExpr... list) {
-    if (rewrittenExpr.isPresent()) {
+    if (fTraceMode && rewrittenExpr.isPresent()) {
       if (fTraceStack != null) {
         IASTAppendable listOfHints = F.ast(S.List, list.length + 1);
         listOfHints.appendAll(list, 0, list.length);
@@ -528,7 +528,7 @@ public class EvalEngine implements Serializable {
    * @see #setStepListener(IEvalStepListener)
    */
   public void addTraceInfoStep(IExpr inputExpr, IAST listOfHints) {
-    if (fTraceStack != null && inputExpr.isPresent()) {
+    if (fTraceMode && fTraceStack != null && inputExpr.isPresent()) {
       fTraceStack.add(inputExpr, inputExpr, getRecursionCounter(), -1, listOfHints);
     }
   }
@@ -542,7 +542,7 @@ public class EvalEngine implements Serializable {
    * @see #setStepListener(IEvalStepListener)
    */
   public void addTraceStep(IExpr inputExpr, IExpr rewrittenExpr, IAST listOfHints) {
-    if (fTraceStack != null && rewrittenExpr.isPresent()) {
+    if (fTraceMode && fTraceStack != null && rewrittenExpr.isPresent()) {
       fTraceStack.add(inputExpr, rewrittenExpr, getRecursionCounter(), -1, listOfHints);
     }
   }
@@ -556,13 +556,13 @@ public class EvalEngine implements Serializable {
    */
   public void addTraceStep(Supplier<IExpr> inputExpr, Supplier<IExpr> rewrittenExpr,
       IAST listOfHints) {
-    if (fTraceStack != null) {
+    if (fTraceMode && fTraceStack != null) {
       fTraceStack.add(inputExpr.get(), rewrittenExpr.get(), getRecursionCounter(), -1, listOfHints);
     }
   }
 
   public void addTraceStep(Supplier<IExpr> inputExpr, IExpr rewrittenExpr, IAST listOfHints) {
-    if (fTraceStack != null) {
+    if (fTraceMode && fTraceStack != null) {
       fTraceStack.add(inputExpr.get(), rewrittenExpr, getRecursionCounter(), -1, listOfHints);
     }
   }
@@ -2075,7 +2075,7 @@ public class EvalEngine implements Serializable {
 
   /**
    * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not possible return the
-   * input object. In &quot;quiet mode&quot; all warnings would be suppressed.
+   * input object. In &quot;quiet mode&quot; all warnings will be suppressed.
    *
    * @param expr the expression which should be evaluated
    * @return the evaluated object
@@ -2088,6 +2088,25 @@ public class EvalEngine implements Serializable {
       return evaluate(expr);
     } finally {
       setQuietMode(quiet);
+    }
+  }
+
+  /**
+   * Evaluate an expression in &quot;traceless mode&quot;. If evaluation is not possible return the
+   * input object. In &quot;traceless mode&quot; all trace outputs will be suppressed.
+   *
+   * @param expr the expression which should be evaluated in traceless mode
+   * @return the evaluated object
+   */
+  public final IExpr evalTraceless(final IExpr expr) {
+    boolean numericMode = fNumericMode;
+    boolean traceMode = fTraceMode;
+    try {
+      setTraceMode(false);
+      return evalWithoutNumericReset(expr);
+    } finally {
+      fNumericMode = numericMode;
+      fTraceMode = traceMode;
     }
   }
 
@@ -3535,7 +3554,7 @@ public class EvalEngine implements Serializable {
 
   /** @param b */
   public void setTraceMode(final boolean b) {
-    fTraceMode = b;
+    this.fTraceMode = b;
   }
 
   /**
