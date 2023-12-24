@@ -204,8 +204,11 @@ public class Config {
   /** Set to true if in fuzz testing mode */
   public static boolean FUZZ_TESTING = false;
 
-  /** Set to true if the fuzzy parser should be used in the free form Symja API */
+  /** Set to <code>true</code> if the fuzzy parser should be used in the free form Symja API */
   public static boolean FUZZY_PARSER = false;
+
+  /** Set to <code>true</code> if the parser should be used to map the user input exactly */
+  public static boolean USER_STEPS_PARSER = false;
 
   /**
    * Show the console output, if an expression has a head symbol with attribute <code>

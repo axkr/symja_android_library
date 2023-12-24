@@ -16,6 +16,8 @@ package org.matheclipse.core.parser;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.expression.B2;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.S;
@@ -146,20 +148,31 @@ public class ExprParserFactory implements IParserFactory {
     public IASTMutable createFunction(final IParserFactory factory, ExprParser parser,
         final IExpr lhs, final IExpr rhs) {
 
-      if (rhs.isInteger() && !rhs.isZero()) {
-        if (lhs.isInteger()) {
-          if (!parser.isHoldOrHoldFormOrDefer()) {
+      if (Config.USER_STEPS_PARSER) {
+        if (rhs.isInteger() && !rhs.isZero()) {
+          if (lhs.isInteger()) {
             return (IASTMutable) F.Rational(lhs, rhs);
           }
         }
-        return F.Times(F.fraction(F.C1, (IInteger) rhs), lhs);
-      }
+        return new B2.Divide(lhs, rhs);
+      } else {
 
-      if (lhs.equals(F.C1)) {
-        return (IASTMutable) F.Power(rhs, F.CN1);
-      }
-      if (rhs.isPower() && rhs.exponent().isNumber()) {
-        return F.Times(lhs, F.Power(rhs.base(), rhs.exponent().negate()));
+        if (rhs.isInteger() && !rhs.isZero()) {
+          if (lhs.isInteger()) {
+            if (!parser.isHoldOrHoldFormOrDefer()) {
+              return (IASTMutable) F.Rational(lhs, rhs);
+            }
+          }
+          return F.Times(F.fraction(F.C1, (IInteger) rhs), lhs);
+        }
+
+
+        if (lhs.equals(F.C1)) {
+          return (IASTMutable) F.Power(rhs, F.CN1);
+        }
+        if (rhs.isPower() && rhs.exponent().isNumber()) {
+          return F.Times(lhs, F.Power(rhs.base(), rhs.exponent().negate()));
+        }
       }
       return F.Times(lhs, F.Power(rhs, F.CN1));
     }
@@ -225,13 +238,17 @@ public class ExprParserFactory implements IParserFactory {
     @Override
     public IASTMutable createFunction(final IParserFactory factory, ExprParser parser,
         final IExpr lhs, final IExpr rhs) {
-      if (rhs.isNumber()) {
-        return (IASTMutable) F.Plus(lhs, rhs.negate());
+      if (Config.USER_STEPS_PARSER) {
+        return new B2.Subtract(lhs, rhs);
+      } else {
+        if (rhs.isNumber()) {
+          return (IASTMutable) F.Plus(lhs, rhs.negate());
+        }
+        if (rhs.isTimes() && rhs.first().isNumber()) {
+          return (IASTMutable) F.Plus(lhs, ((IAST) rhs).setAtCopy(1, rhs.first().negate()));
+        }
+        return (IASTMutable) F.Plus(lhs, F.Times(F.CN1, rhs));
       }
-      if (rhs.isTimes() && rhs.first().isNumber()) {
-        return (IASTMutable) F.Plus(lhs, ((IAST) rhs).setAtCopy(1, rhs.first().negate()));
-      }
-      return (IASTMutable) F.Plus(lhs, F.Times(F.CN1, rhs));
     }
   }
 
