@@ -139,7 +139,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public boolean isPlusTimesPower() {
-      return true;
+      return false;
     }
 
     @Override
@@ -622,7 +622,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
     @Override
     public boolean isPlusTimesPower() {
-      return true;
+      return false;
     }
 
     @Override
