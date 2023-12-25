@@ -1,7 +1,7 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
 import java.io.StringWriter;
-
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.matheclipse.core.basic.Config;
@@ -12,8 +12,6 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.tex.TeXFormFactory;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-
-import static org.junit.Assert.assertEquals;
 
 public class TeXFormTest extends ExprEvaluatorTestCase {
 
@@ -523,6 +521,8 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
    public void testTeXDivide() {
     check("TeXForm((x+1)/( 3- 2x))", //
         "\\frac{1 + x}{3-2 \\cdot x}");
+    check("TeXForm(a/b)", //
+        "\\frac{a}{b}");
   }
 
 

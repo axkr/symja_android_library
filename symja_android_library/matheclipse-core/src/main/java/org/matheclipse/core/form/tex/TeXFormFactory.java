@@ -2161,7 +2161,8 @@ public class TeXFormFactory {
     initTeXConverter(S.Equal,
         new TeXFormOperator(this, Precedence.EQUAL, this.symbolOptions.getEqualSymbol()));
     initTeXConverter(S.DirectedEdge, new TeXFormOperator(this, Precedence.DIRECTEDEDGE, "\\to "));
-    initTeXConverter(S.Divide, new TeXFormOperator(this, Precedence.DIVIDE, "\\text{/}"));
+    initTeXConverter(S.Divide, new BinaryFunction("frac{", "}{", "}"));
+    // new TeXFormOperator(this, Precedence.DIVIDE, "\\text{/}"));
     initTeXConverter(S.Apply, new TeXFormOperator(this, Precedence.APPLY, "\\text{@@}"));
     initTeXConverter(S.Set, new TeXFormOperator(this, Precedence.SET, " = "));
     // initTeXConverter(F.Minus,
