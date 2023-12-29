@@ -39,7 +39,7 @@ public class TeXFormStepsTest extends ExprEvaluatorTestCase {
     StringBuilder sb = new StringBuilder();
     fTeXFactory.convert(sb, new B2.Divide(F.a, F.b), 0);
     Assertions.assertEquals( //
-        "frac{a}{b}", //
+        "\\frac{a}{b}", //
         sb.toString());
   }
 

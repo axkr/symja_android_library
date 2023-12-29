@@ -71,6 +71,7 @@ public final class OutputFunctions {
       S.Prefix.setEvaluator(new PrefixEvaluator());
       S.Postfix.setEvaluator(new PostfixEvaluator());
       S.RomanNumeral.setEvaluator(new RomanNumeral());
+      S.Row.setEvaluator(new Row());
       S.TableForm.setEvaluator(new TableForm());
       S.TeXForm.setEvaluator(new TeXForm());
       S.TreeForm.setEvaluator(new TreeForm());
@@ -681,6 +682,34 @@ public final class OutputFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+  }
+
+  private static class Row extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      if (arg1.isList() && arg2.isString()) {
+        IAST list = (IAST) arg1;
+        String separator = arg2.toString();
+        StringBuilder buf = new StringBuilder();
+        for (int i = 1; i < list.size(); i++) {
+          buf.append(list.getRule(i).toString());
+          if (i < list.size() - 1) {
+            buf.append(separator);
+          }
+        }
+        return F.stringx(buf);
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
     }
   }
 

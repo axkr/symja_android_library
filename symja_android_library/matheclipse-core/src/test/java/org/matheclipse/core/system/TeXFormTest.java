@@ -568,6 +568,12 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
         "{\\left( -1\\right) }^{\\left( 1 + 2\\right) }");
   }
 
+  @Test
+  public void testTeXFormRow() {
+    check("TeXForm(Row({1,2,3,4}, \", \"))", //
+        "\\textnormal{1, 2, 3, 4}");
+  }
+
   @Override
   public void setUp() {
     super.setUp();

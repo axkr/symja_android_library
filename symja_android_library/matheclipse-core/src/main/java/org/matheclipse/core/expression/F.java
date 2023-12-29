@@ -8778,6 +8778,10 @@ public class F extends S {
     return new AST1(RotationTransform, x);
   }
 
+  public static IAST Row(final IAST list, String separator) {
+    return new AST2(Row, list, F.stringx(separator));
+  }
+
   public static IAST RowBox(final IAST list) {
     return new AST1(RowBox, list);
   }
