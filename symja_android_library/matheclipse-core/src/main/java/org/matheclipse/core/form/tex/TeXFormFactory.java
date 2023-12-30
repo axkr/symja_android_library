@@ -2146,7 +2146,7 @@ public class TeXFormFactory {
     initTeXConverter(S.GreaterEqual, new TeXFormOperator(this, Precedence.GREATEREQUAL, "\\geq "));
     initTeXConverter(S.SubtractFrom,
         new TeXFormOperator(this, Precedence.SUBTRACTFROM, "\\text{-=}"));
-    initTeXConverter(S.Subtract, new TeXFormOperator(this, Precedence.SUBTRACT, " - "));
+    initTeXConverter(S.Subtract, new TeXFormOperator(this, Precedence.SUBTRACT + 1, " - "));
     initTeXConverter(S.CompoundExpression,
         new TeXFormOperator(this, Precedence.COMPOUNDEXPRESSION, ";"));
     initTeXConverter(S.DivideBy, new TeXFormOperator(this, Precedence.DIVIDEBY, "\\text{/=}"));

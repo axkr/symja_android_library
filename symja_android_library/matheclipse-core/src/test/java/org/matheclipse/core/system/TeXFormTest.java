@@ -574,6 +574,12 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
         "\\textnormal{1, 2, 3, 4}");
   }
 
+  @Test
+  public void testTeXFormSubtract() {
+    check("TeXForm(Hold(Subtract(1+1/2,3+4/5)))", //
+        "\\text{Hold}(\\left( 1 + \\frac{1}{2}\\right)  - \\left( 3 + \\frac{4}{5}\\right) )");
+  }
+
   @Override
   public void setUp() {
     super.setUp();
