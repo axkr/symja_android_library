@@ -94,6 +94,8 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "(1+(-2*(-2-a+b)*z)/(-2+b)+((-2-a+b)*(-1-a+b)*z^2)/((-2+b)*(-1+b)))/(1-z)^(2+a)");
     check("FunctionExpand(PolyGamma(10, 1/2))", //
         "-7428153600*Zeta(11)");
+    check("FunctionExpand(DirichletEta(z))", //
+        "(1-2^(1-z))*Zeta(z)");
     check("FunctionExpand(Gamma(1/2,z))", //
         "Sqrt(Pi)*(1-Erf(Sqrt(z)))");
     check("FunctionExpand(Gamma(0,z))", //

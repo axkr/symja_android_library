@@ -41,7 +41,6 @@ import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
-import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
@@ -108,11 +107,21 @@ public class SpecialFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() == 4) {
+      if (ast.argSize() == 3) {
         IExpr z = ast.arg1();
         IExpr a = ast.arg2();
         IExpr b = ast.arg3();
         try {
+          if (z.isZero()) {
+            IExpr re = a.re();
+            if (re.isPositiveResult()) {
+              return F.C0;
+            }
+            if (re.isNegativeResult()) {
+              return F.CComplexInfinity;
+            }
+          }
+
           if (engine.isDoubleMode()) {
             double aDouble = Double.NaN;
             double bDouble = Double.NaN;
@@ -200,10 +209,12 @@ public class SpecialFunctions {
         if (s.isZero()) {
           return F.Power(F.Times(a, b, F.CatalanNumber(a)), -1);
         }
+
         IExpr sum = a.plus(b);
         if (sum.isInteger() && sum.isNegative()) {
           return F.C0;
         }
+
       } catch (ThrowException te) {
         Errors.printMessage(S.Beta, te, engine);
         return te.getValue();
@@ -371,47 +382,84 @@ public class SpecialFunctions {
     }
   }
 
-  private static final class DirichletEta extends AbstractArg1 {
+  private static final class DirichletEta extends AbstractFunctionEvaluator
+      implements IFunctionExpand {
 
     @Override
-    public IExpr e1DblArg(final double d) {
-      // if (F.isEqual(1.0, d)) {
-      // return F.num(Math.log(2.0));
-      // }
-      // return e1ComplexArg(Complex.valueOf(d));
-      return F.complexNum(ZetaJS.dirichletEta(d));
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        IExpr z = ast.arg1();
+        return F.Times(F.Subtract(F.C1, F.Power(F.C2, F.Subtract(F.C1, z))), F.Zeta(z));
+      }
+      return F.NIL;
     }
 
-    @Override
-    public IExpr e1ComplexArg(final Complex c) {
-      // Complex zeta;
-      // if (F.isEqual(c.getReal(), 1.0) && F.isZero(c.getImaginary())) {
-      // zeta = Complex.valueOf(Math.log(2.0), 0.0);
-      // } else {
-      // de.lab4inf.math.Complex x =
-      // new de.lab4inf.math.sets.ComplexNumber(c.getReal(), c.getImaginary());
-      // x = de.lab4inf.math.functions.Zeta.zeta(x);
-      // zeta = Complex.valueOf(x.real(), x.imag());
-      // }
-      // Complex dirichletEta =
-      //
-      // zeta.multiply(Complex.ONE.subtract(Complex.valueOf(2.0).pow(Complex.ONE.subtract(c))));
-      // return F.complex(dirichletEta.getReal(), dirichletEta.getImaginary());
-      return F.complexNum(ZetaJS.dirichletEta(c));
-    }
+    // @Override
+    // public IExpr e1DblArg(final double d) {
+    // if (F.isEqual(1.0, d)) {
+    // return F.num(Math.log(2.0));
+    // }
+    // return e1ComplexArg(Complex.valueOf(d));
+    // return F.complexNum(ZetaJS.dirichletEta(d));
+    // }
+
+    // @Override
+    // public IExpr e1ComplexArg(final Complex c) {
+    // Complex zeta;
+    // if (F.isEqual(c.getReal(), 1.0) && F.isZero(c.getImaginary())) {
+    // zeta = Complex.valueOf(Math.log(2.0), 0.0);
+    // } else {
+    // de.lab4inf.math.Complex x =
+    // new de.lab4inf.math.sets.ComplexNumber(c.getReal(), c.getImaginary());
+    // x = de.lab4inf.math.functions.Zeta.zeta(x);
+    // zeta = Complex.valueOf(x.real(), x.imag());
+    // }
+    // Complex dirichletEta =
+    //
+    // zeta.multiply(Complex.ONE.subtract(Complex.valueOf(2.0).pow(Complex.ONE.subtract(c))));
+    // return F.complex(dirichletEta.getReal(), dirichletEta.getImaginary());
+    // }
 
     @Override
-    public IExpr e1ObjArg(final IExpr arg1) {
-      if (arg1.isMinusOne()) {
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr z = ast.arg1();
+      if (z.isMinusOne()) {
         return F.C1D4;
       }
-      if (arg1.isZero()) {
+      if (z.isZero()) {
         return F.C1D2;
       }
-      if (arg1.isOne()) {
+      if (z.isOne()) {
         return F.Log(F.C2);
       }
+      if (engine.isDoubleMode()) {
+        return functionExpand(ast, EvalEngine.get());
+        // double zDouble = Double.NaN;
+        // try {
+        // zDouble = z.evalf();
+        // } catch (ValidateException ve) {
+        // }
+        // if (Double.isNaN(zDouble)) {
+        // Complex zc = z.evalfc();
+        // return F.complexNum(ZetaJS.dirichletEta(zc));
+        // } else {
+        // return F.complexNum(ZetaJS.dirichletEta(zDouble));
+        // }
+      } else if (engine.isArbitraryMode()) {
+        try {
+          return functionExpand(ast, EvalEngine.get());
+        } catch (ValidateException ve) {
+        }
+      }
+      if (z.isInteger()) {
+        return functionExpand(ast, EvalEngine.get());
+      }
       return NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
 
     @Override
