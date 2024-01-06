@@ -392,6 +392,30 @@ public class FractionSym extends AbstractFractionSym {
   }
 
   @Override
+  public IExpr lcm(IExpr that) {
+    if (that instanceof BigFractionSym) {
+      return ((BigFractionSym) that).lcm(this);
+    }
+    if (that instanceof FractionSym) {
+      return lcm((FractionSym) that);
+    }
+    return super.lcm(that);
+  }
+
+  public IFraction lcm(FractionSym other) {
+    /* new numerator = lcm(num, other.num) */
+    /* new denominator = gcd(denom, other.denom) */
+    FractionSym fs = other;
+    int numerator = fNumerator < 0 ? -fNumerator : fNumerator;
+    int numeratorOther = fs.fNumerator < 0 ? -fs.fNumerator : fs.fNumerator;
+    int gcddenom = ArithmeticUtils.gcd(numerator, numeratorOther);
+    long newNumerator = ((long) (numerator / gcddenom)) * (long) numeratorOther;
+
+    long newDenominator = ArithmeticUtils.gcd(fDenominator, fs.fDenominator);
+    return valueOf(newNumerator, newDenominator);
+  }
+
+  @Override
   public BigInteger toBigDenominator() {
     return BigInteger.valueOf(fDenominator);
   }

@@ -729,7 +729,7 @@ public class ApcomplexNum implements IComplexNum {
   /** {@inheritDoc} */
   @Override
   public INumber roundExpr() {
-    return F.complex(F.ZZ(NumberUtil.round(fApcomplex.real(), Config.ROUNDING_MODE)),
+    return F.CC(F.ZZ(NumberUtil.round(fApcomplex.real(), Config.ROUNDING_MODE)),
         F.ZZ(NumberUtil.round(fApcomplex.imag(), Config.ROUNDING_MODE)));
   }
 
@@ -745,7 +745,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public INumber ceilFraction() throws ArithmeticException {
-    return F.complex(F.ZZ(ApfloatMath.ceil(fApcomplex.real()).toBigInteger()),
+    return F.CC(F.ZZ(ApfloatMath.ceil(fApcomplex.real()).toBigInteger()),
         F.ZZ(ApfloatMath.ceil(fApcomplex.imag()).toBigInteger()));
   }
 
@@ -757,7 +757,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public INumber floorFraction() throws ArithmeticException {
-    return F.complex(F.ZZ(ApfloatMath.floor(fApcomplex.real()).toBigInteger()),
+    return F.CC(F.ZZ(ApfloatMath.floor(fApcomplex.real()).toBigInteger()),
         F.ZZ(ApfloatMath.floor(fApcomplex.imag()).toBigInteger()));
   }
 
@@ -817,7 +817,7 @@ public class ApcomplexNum implements IComplexNum {
       // floorFraction
       imInt = F.ZZ(ApfloatMath.floor(im).toBigInteger());
     }
-    return F.complex(reInt, imInt);
+    return F.CC(reInt, imInt);
   }
 
   @Override

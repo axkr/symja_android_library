@@ -175,6 +175,8 @@ public class BuiltinUsage {
     USAGE[ID.Exp] = "exponential function";
     USAGE[ID.Expand] = "expand out products and powers";
     USAGE[ID.ExpandAll] = "expand products and powers, including negative integer powers";
+    USAGE[ID.ExpandDenominator] = "expand products and powers in the denominator";
+    USAGE[ID.ExpandNumerator] = "expand products and powers in the numerator";
     USAGE[ID.ExpIntegralE] = "exponential integral function of order n";
     USAGE[ID.ExpIntegralEi] = "exponential integral function";
     USAGE[ID.Exponent] = "maximum power in which a form appears in a polynomial";

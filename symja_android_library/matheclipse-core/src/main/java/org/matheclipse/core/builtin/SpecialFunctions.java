@@ -78,6 +78,7 @@ public class SpecialFunctions {
     private static void init() {
       S.Beta.setEvaluator(new Beta());
       S.BetaRegularized.setEvaluator(new BetaRegularized());
+      S.DirichletBeta.setEvaluator(new DirichletBeta());
       S.DirichletEta.setEvaluator(new DirichletEta());
       S.Erf.setEvaluator(new Erf());
       S.Erfc.setEvaluator(new Erfc());
@@ -382,12 +383,61 @@ public class SpecialFunctions {
     }
   }
 
+  private static final class DirichletBeta extends AbstractFunctionEvaluator
+      implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        // (Zeta(z,1/4)/2^z-Zeta(z,3/4)/2^z)/2^z
+        IExpr z = ast.arg1();
+        IExpr v1 = F.Power(F.Power(F.C2, z), F.CN1);
+        return F.Times(v1,
+            F.Plus(F.Times(v1, F.Zeta(z, F.C1D4)), F.Times(F.CN1, v1, F.Zeta(z, F.QQ(3L, 4L)))));
+      }
+      return F.NIL;
+    }
+
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr z = ast.arg1();
+      if (z.isMinusOne()) {
+        return F.C0;
+      }
+      if (z.isZero()) {
+        return F.C1D2;
+      }
+      if (z.isOne()) {
+        return F.CPiQuarter;
+      }
+      if (engine.isDoubleMode()) {
+        return functionExpand(ast, engine);
+      } else if (engine.isArbitraryMode()) {
+        return functionExpand(ast, engine);
+      }
+      return NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
   private static final class DirichletEta extends AbstractFunctionEvaluator
       implements IFunctionExpand {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
+        // (1-2^(1-z))*Zeta(z)
         IExpr z = ast.arg1();
         return F.Times(F.Subtract(F.C1, F.Power(F.C2, F.Subtract(F.C1, z))), F.Zeta(z));
       }
@@ -433,7 +483,7 @@ public class SpecialFunctions {
         return F.Log(F.C2);
       }
       if (engine.isDoubleMode()) {
-        return functionExpand(ast, EvalEngine.get());
+        return functionExpand(ast, engine);
         // double zDouble = Double.NaN;
         // try {
         // zDouble = z.evalf();
@@ -446,13 +496,10 @@ public class SpecialFunctions {
         // return F.complexNum(ZetaJS.dirichletEta(zDouble));
         // }
       } else if (engine.isArbitraryMode()) {
-        try {
-          return functionExpand(ast, EvalEngine.get());
-        } catch (ValidateException ve) {
-        }
+        return functionExpand(ast, engine);
       }
       if (z.isInteger()) {
-        return functionExpand(ast, EvalEngine.get());
+        return functionExpand(ast, engine);
       }
       return NIL;
     }

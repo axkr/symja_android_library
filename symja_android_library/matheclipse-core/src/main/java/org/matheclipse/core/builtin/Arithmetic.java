@@ -856,7 +856,7 @@ public final class Arithmetic {
             } else {
               im = (IFraction) imaginaryExpr;
             }
-            return F.complex(re, im);
+            return F.CC(re, im);
           }
           if (realExpr instanceof INum && imaginaryExpr instanceof INum) {
             return F.complexNum(((INum) realExpr).doubleValue(),
@@ -1346,7 +1346,7 @@ public final class Arithmetic {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // arg1 * arg2^(-1)
+      // rewrite to arg1 * arg2^(-1)
       return F.Divide(ast.arg1(), ast.arg2());
     }
 
@@ -1812,20 +1812,18 @@ public final class Arithmetic {
 
     @Override
     public IExpr eComIntArg(final IComplex c0, final IInteger i1) {
-      return e2ComArg(c0, F.complex(i1, F.C0));
+      return e2ComArg(c0, F.CC(i1, F.C0));
     }
 
     @Override
     public IExpr e2ComArg(final IComplex c0, final IComplex c1) {
-      // TODO implement GCD for gaussian integers
-      Optional<IInteger[]> gi0 = c0.gaussianIntegers();
-      Optional<IInteger[]> gi1 = c1.gaussianIntegers();
+      Optional<GaussianInteger> gi0 = c0.gaussianInteger();
+      Optional<GaussianInteger> gi1 = c1.gaussianInteger();
 
       if (gi0.isPresent() && gi1.isPresent()) {
-        // ComplexSym devidend = ComplexSym.valueOf(c0.getRealPart(), c0.getImaginaryPart());
-        IInteger[] result = GaussianInteger.gcd(gi0.get(), gi1.get());
+        GaussianInteger result = gi0.get().gcd(gi1.get());
         if (result != null) {
-          return F.complex(result[0], result[1]);
+          return result.getComplex();
         }
       }
       return F.NIL;
@@ -2362,10 +2360,34 @@ public final class Arithmetic {
       return ARGS_1_INFINITY;
     }
 
+    @Override
+    public IExpr e2ComArg(final IComplex c0, final IComplex c1) {
+      Optional<GaussianInteger> gi0 = c0.gaussianInteger();
+      Optional<GaussianInteger> gi1 = c1.gaussianInteger();
+
+      if (gi0.isPresent() && gi1.isPresent()) {
+        GaussianInteger result = gi0.get().lcm(gi1.get());
+        if (result != null) {
+          return result.getComplex();
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr eComIntArg(final IComplex c0, final IInteger i1) {
+      return e2ComArg(c0, F.CC(i1, F.C0));
+    }
+
     /** Compute lcm of 2 integer numbers */
     @Override
     public IExpr e2IntArg(final IInteger i0, final IInteger i1) {
       return i0.lcm(i1);
+    }
+
+    @Override
+    public IExpr e2FraArg(IFraction f0, IFraction f1) {
+      return f0.lcm(f1);
     }
 
     @Override
@@ -2798,7 +2820,7 @@ public final class Arithmetic {
 
     @Override
     public IExpr eComIntArg(final IComplex c0, final IInteger i1) {
-      return c0.add(F.complex(i1, F.C0));
+      return c0.add(F.CC(i1, F.C0));
     }
 
     // private IExpr evalNumericMode(final IAST ast) {
@@ -3654,7 +3676,7 @@ public final class Arithmetic {
             return fractionFraction(F.fraction((IInteger) base, F.C1), (IFraction) exponent);
           }
           if (exponent instanceof IComplex) {
-            return complexComplex(F.complex((IInteger) base, F.C0), (IComplex) exponent);
+            return complexComplex(F.CC((IInteger) base), (IComplex) exponent);
           }
           return F.NIL;
         }
@@ -4896,26 +4918,8 @@ public final class Arithmetic {
           }
           return F.fraction(numerator, denominator);
 
-          // don't evaluate in numeric mode
-          // } else if (numeratorExpr instanceof INum && denominatorExpr instanceof INum) {
-          // INum numerator = (INum) numeratorExpr;
-          // INum denominator = (INum) denominatorExpr;
-          // if (denominator.isZero()) {
-          // engine.printMessage(
-          // "Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
-          // if (numerator.isZero()) {
-          // // 0^0
-          // return F.Indeterminate;
-          // }
-          // return F.CComplexInfinity;
-          // }
-          // if (numerator.isZero()) {
-          // return F.C0;
-          // }
-          // return F.num(numerator.doubleValue() / denominator.doubleValue());
-
-        } catch (Exception e) {
-          LOGGER.debug("Rational.evaluate() failed", e);
+        } catch (RuntimeException rex) {
+          return Errors.printMessage(S.Rational, rex, engine);
         }
       }
       return F.NIL;
@@ -6241,7 +6245,7 @@ public final class Arithmetic {
 
     @Override
     public IExpr eComIntArg(final IComplex c0, final IInteger i1) {
-      return c0.multiply(F.complex(i1, F.C0));
+      return c0.multiply(F.CC(i1));
     }
 
     // private IExpr evalNumericMode(final IAST ast) {

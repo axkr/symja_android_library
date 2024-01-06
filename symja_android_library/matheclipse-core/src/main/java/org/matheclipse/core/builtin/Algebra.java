@@ -119,6 +119,8 @@ public class Algebra {
       S.Distribute.setEvaluator(new Distribute());
       S.Expand.setEvaluator(new Expand());
       S.ExpandAll.setEvaluator(new ExpandAll());
+      S.ExpandDenominator.setEvaluator(new ExpandDenominator());
+      S.ExpandNumerator.setEvaluator(new ExpandNumerator());
       S.Factor.setEvaluator(new Factor());
       S.FactorSquareFree.setEvaluator(new FactorSquareFree());
       S.FactorSquareFreeList.setEvaluator(new FactorSquareFreeList());
@@ -2063,6 +2065,64 @@ public class Algebra {
     }
   }
 
+  private static class ExpandDenominator extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      IAST tempAST = StructureFunctions.threadListLogicEquationOperators(arg1, ast, 1);
+      if (tempAST.isPresent()) {
+        return tempAST;
+      }
+      if (arg1.isAST()) {
+        if (arg1.isPlus()) {
+          return ((IAST) arg1).mapThread(x -> F.ExpandDenominator(x));
+        }
+        Optional<IExpr[]> parts = fractionalParts(arg1, false);
+        if (parts.isPresent() && parts.get()[1].isAST()) {
+          IExpr denominator = engine.evaluate(F.Expand(parts.get()[1]));
+          return F.Divide(parts.get()[0], denominator);
+        }
+      }
+      return arg1;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+  }
+
+  private static class ExpandNumerator extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      IAST tempAST = StructureFunctions.threadListLogicEquationOperators(arg1, ast, 1);
+      if (tempAST.isPresent()) {
+        return tempAST;
+      }
+      if (arg1.isAST()) {
+        if (arg1.isPlus()) {
+          return ((IAST) arg1).mapThread(x -> F.ExpandNumerator(x));
+        }
+        Optional<IExpr[]> parts = fractionalParts(arg1, false);
+        if (parts.isPresent() && parts.get()[0].isAST()) {
+          IExpr numerator = engine.evaluate(F.Expand(parts.get()[0]));
+          return F.Divide(numerator, parts.get()[1]);
+        }
+      }
+      return arg1;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+  }
+
   /**
    *
    *
@@ -2814,7 +2874,7 @@ public class Algebra {
         Object[] objects = jas.factorTerms(poly);
         java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
         java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
-        if (lcm.equals(java.math.BigInteger.ZERO)) {
+        if (lcm.signum() == 0) {
           // no changes
           return expr;
         }
@@ -2909,7 +2969,7 @@ public class Algebra {
         Object[] objects = jas.factorTerms(poly);
         java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
         java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
-        if (lcm.equals(java.math.BigInteger.ZERO)) {
+        if (lcm.signum() == 0) {
           // no changes
           return expr;
         }
@@ -3219,13 +3279,13 @@ public class Algebra {
           return gcdWithOption(ast, expr, eVar, engine);
         }
         try {
-          // ASTRange r = new ASTRange(eVar.getVarList(), 1);
           List<IExpr> varList = eVar.getVarList().copyTo();
-          JASConvert<BigInteger> jas = new JASConvert<BigInteger>(varList, BigInteger.ZERO);
-          GenPolynomial<BigInteger> poly = jas.expr2JAS(expr, false);
-          GenPolynomial<BigInteger> temp;
-          GreatestCommonDivisorAbstract<BigInteger> factory =
-              GCDFactory.getImplementation(BigInteger.ZERO);
+          JASConvert<BigRational> jas =
+              new JASConvert<BigRational>(varList, BigRational.ZERO);
+          GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
+          GenPolynomial<BigRational> temp;
+          GreatestCommonDivisorAbstract<BigRational> factory =
+              GCDFactory.getImplementation(BigRational.ZERO, true);
 
           // TODO https://github.com/kredel/java-algebra-system/issues/15
           // JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
@@ -3239,12 +3299,12 @@ public class Algebra {
             poly = factory.gcd(poly, temp);
           }
           // TODO https://github.com/kredel/java-algebra-system/issues/15
-          // return jas.rationalPoly2Expr(poly.monic(), true);
-          return jas.integerPoly2Expr(poly.monic());
+          return jas.rationalPoly2Expr(poly, false);
+          // return jas.integerPoly2Expr(poly.monic());
         } catch (ArithmeticException aex) {
           LOGGER.log(engine.getLogLevel(), S.PolynomialGCD, aex);
           return F.NIL;
-        } catch (JASConversionException e) {
+        } catch (ClassCastException | JASConversionException e) {
           try {
             if (eVar.size() == 0) {
               return F.NIL;
@@ -3454,13 +3514,13 @@ public class Algebra {
         }
         try {
           List<IExpr> varList = eVar.getVarList().copyTo();
-          JASConvert<BigInteger> jas = new JASConvert<BigInteger>(varList, BigInteger.ZERO);
-          GenPolynomial<BigInteger> poly = jas.expr2JAS(expr, false);
-          GenPolynomial<BigInteger> gcd;
+          JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+          GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
+          GenPolynomial<BigRational> gcd;
           boolean evaled = false;
-          GenPolynomial<BigInteger> temp;
-          GreatestCommonDivisorAbstract<BigInteger> factory =
-              GCDFactory.getImplementation(BigInteger.ZERO);
+          GenPolynomial<BigRational> temp;
+          GreatestCommonDivisorAbstract<BigRational> factory =
+              GCDFactory.getImplementation(BigRational.ZERO, true);
           for (int i = 2; i < ast.size(); i++) {
             expr = F.evalExpandAll(ast.get(i), engine);
             temp = jas.expr2JAS(expr, false);
@@ -3473,7 +3533,7 @@ public class Algebra {
             poly = factory.lcm(poly, temp);
           }
           if (evaled) {
-            return jas.integerPoly2Expr(poly.monic());
+            return jas.rationalPoly2Expr(poly, false);
           }
         } catch (ClassCastException | JASConversionException e) {
           LOGGER.debug("PolynomialLCM.evaluate() failed", e);
@@ -4385,11 +4445,12 @@ public class Algebra {
         try {
           Optional<IExpr[]> result = cancelGCD(exprNumerator, exprDenominator);
           if (result.isPresent()) {
-            IExpr pInv = result.get()[2].inverse();
-            if (result.get()[0].isOne()) {
-              return F.Times(pInv, result.get()[1]);
+            IExpr[] parts = result.get();
+            IExpr pInv = parts[2].inverse();
+            if (parts[0].isOne()) {
+              return F.Times(pInv, parts[1]);
             }
-            return F.Times(result.get()[0], result.get()[1], pInv);
+            return F.Times(parts[0], parts[1], pInv);
           }
         } catch (JASConversionException jce) {
           LOGGER.debug("Together.togetherPlus()", jce);

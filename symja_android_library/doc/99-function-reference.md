@@ -1,6 +1,6 @@
 ## Reference of functions and built-in symbols
 
-Supported features icon:
+Supported features icon: 
 
 * &#x2705; - the symbol / function is supported. Note that this doesn't mean that every possible symbolic evaluation is supported
 * &#x2611; - the symbol / function is partially implemented and might not support most basic features of the function
@@ -259,6 +259,8 @@ Functions in alphabetical order:
 * &#x2611; [DiracDelta](functions/DiracDelta.md)
 * [DirectedEdge](functions/DirectedEdge.md)
 * &#x2705; [DirectedInfinity](functions/DirectedInfinity.md)
+* &#x2705; [DirichletBeta](functions/DirichletBeta.md)
+* &#x2705; [DirichletEta](functions/DirichletEta.md)
 * &#x2705; [DiscreteDelta](functions/DiscreteDelta.md)
 * &#x1F9EA; [DiscretePlot](functions/DiscretePlot.md)
 * &#x2705; [DiscreteUniformDistribution](functions/DiscreteUniformDistribution.md)
@@ -319,8 +321,8 @@ Functions in alphabetical order:
 * &#x2705; [Exp](functions/Exp.md)
 * &#x2705; [Expand](functions/Expand.md)
 * &#x2705; [ExpandAll](functions/ExpandAll.md)
-* [ExpandDenominator](functions/ExpandDenominator.md)
-* [ExpandNumerator](functions/ExpandNumerator.md)
+* &#x2705; [ExpandDenominator](functions/ExpandDenominator.md)
+* &#x2705; [ExpandNumerator](functions/ExpandNumerator.md)
 * &#x2705; [Expectation](functions/Expectation.md)
 * &#x2705; [ExpIntegralE](functions/ExpIntegralE.md)
 * &#x2705; [ExpIntegralEi](functions/ExpIntegralEi.md)

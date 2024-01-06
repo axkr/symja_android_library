@@ -211,15 +211,9 @@ public class F extends S {
     return PREDEFINED_PATTERNSEQUENCE_MAP.get(key);
   }
 
-  public static final ISymbolObserver SYMBOL_OBSERVER = new ISymbolObserver() {
-    @Override
-    public final boolean createPredefinedSymbol(String symbol) {
-      return false;
-    }
+  public static final ISymbolObserver SYMBOL_OBSERVER=new ISymbolObserver(){@Override public final boolean createPredefinedSymbol(String symbol){return false;}
 
-    @Override
-    public void createUserSymbol(ISymbol symbol) {}
-  };
+  @Override public void createUserSymbol(ISymbol symbol){}};
 
   /**
    * The constant object <code>NIL</code> (not in list) indicates in the evaluation process that no
@@ -2652,7 +2646,7 @@ public class F extends S {
    * @param re
    * @return
    */
-  public static IComplex CC(final IFraction re) {
+  public static IComplex CC(final IRational re) {
     return complex(re, F.C0);
   }
 
@@ -2994,22 +2988,29 @@ public class F extends S {
   }
 
   /**
+   * <p>
    * Create a symbolic complex number
-   *
+   * <p>
+   * Use {@link #CC(IRational, IRational)} instead
+   * 
    * @param re
-   * @return
    */
+  @Deprecated
   public static IComplex complex(final IRational re) {
     return complex(re, fraction(0L, 1L));
   }
 
   /**
+   * <p>
    * Create a symbolic complex number
+   * <p>
+   * Use {@link #CC(IRational, IRational)} instead
    *
    * @param re
    * @param im
    * @return
    */
+  @Deprecated
   public static IComplex complex(final IRational re, final IRational im) {
     return ComplexSym.valueOf(re, im);
   }
@@ -3649,9 +3650,10 @@ public class F extends S {
 
   /**
    * The division <code>numerator / denominator</code> will be represented by
-   * <code>numerator * denominator^(-1)</code>. If <code>numerator.isOne()==true</code> return
-   * <code>denominator^(-1)</code>. If <code>denominator.isOne()==true</code> return
-   * <code>numerator</code>.
+   * <code>numerator * denominator^(-1)</code> (full form:
+   * <code>Times(numerator, Power(denominator,-1))</code>). If <code>numerator.isOne()==true</code>
+   * return <code>denominator^(-1)</code> (full form: <code>Power(denominator,-1)</code>). If
+   * <code>denominator.isOne()==true</code> return <code>numerator</code>.
    *
    * @param numerator numerator
    * @param denominator denominator
@@ -3682,36 +3684,17 @@ public class F extends S {
 
   /**
    * The division <code>numerator / denominator</code> will be represented by
-   * <code>numerator * denominator^(-1)</code>. If <code>numerator.isOne()==true</code> return
-   * <code>denominator^(-1)</code>. If <code>denominator.isOne()==true</code> return
-   * <code>numerator</code>.
+   * <code>numerator * denominator^(-1)</code> (full form:
+   * <code>Times(numerator, Power(denominator,-1))</code>). If <code>numerator.isOne()==true</code>
+   * return <code>denominator^(-1)</code> (full form: <code>Power(denominator,-1)</code>). If
+   * <code>denominator.isOne()==true</code> return <code>numerator</code>.
    * 
    * @param numerator
    * @param denominator
    * @return
    */
   public static IExpr Divide(final int numerator, final IExpr denominator) {
-    if (denominator.isZero()) {
-      // Indeterminate expression `1` encountered.
-      Errors.printMessage(S.Power, "indet",
-          F.list(F.Times(F.ZZ(numerator), F.Power(denominator, F.CN1))), EvalEngine.get());
-      return S.Indeterminate;
-    }
-    IExpr arg2 = denominator.isNumber() ? denominator.inverse() : new B2.Power(denominator, CN1);
-    if (numerator == 1) {
-      return arg2;
-    }
-    if (denominator.isOne()) {
-      return F.ZZ(numerator);
-    }
-    IExpr arg1 = F.ZZ(numerator);
-    if (arg2.isNumber()) {
-      return arg1.times(arg2);
-    }
-    if (arg2.isLEOrdered(arg1)) {
-      return new B2.Times(arg2, arg1);
-    }
-    return new B2.Times(arg1, arg2);
+    return Divide(F.ZZ(numerator), denominator);
   }
 
   /**
@@ -3725,26 +3708,7 @@ public class F extends S {
    * @return
    */
   public static IExpr Divide(final IExpr numerator, final int denominator) {
-    if (denominator == 0) {
-      // Indeterminate expression `1` encountered.
-      Errors.printMessage(S.Power, "indet", F.list(F.Times(numerator, F.Power(F.C0, F.CN1))),
-          EvalEngine.get());
-      return S.Indeterminate;
-    }
-    IFraction arg2 = F.QQ(1, denominator);
-    if (numerator.isOne()) {
-      return arg2;
-    }
-    if (denominator == 1) {
-      return numerator;
-    }
-    if (numerator.isNumber()) {
-      return numerator.times(arg2);
-    }
-    if (arg2.isLEOrdered(numerator)) {
-      return new B2.Times(arg2, numerator);
-    }
-    return new B2.Times(numerator, arg2);
+    return Divide(numerator, F.ZZ(denominator));
   }
 
   public static IASTMutable DivideSides(final IExpr equationOrInequality) {
@@ -4282,6 +4246,14 @@ public class F extends S {
 
   public static IAST ExpandAll(final IExpr a0) {
     return new AST1(ExpandAll, a0);
+  }
+
+  public static IAST ExpandDenominator(final IExpr expr) {
+    return new AST1(ExpandDenominator, expr);
+  }
+
+  public static IAST ExpandNumerator(final IExpr expr) {
+    return new AST1(ExpandNumerator, expr);
   }
 
   public static IAST ExpIntegralE(final IExpr a0, final IExpr a1) {
@@ -6409,7 +6381,7 @@ public class F extends S {
   }
 
   /**
-   * Create an immutable list <code>{ }</code>.
+   * Create an immutable list from the arguments.
    *
    * @param a
    * @return
@@ -6455,6 +6427,30 @@ public class F extends S {
         break;
     }
     return ast(a, List);
+  }
+
+  public static IAST list(IExpr expr1, IExpr... array) {
+    IExpr[] args = new IExpr[array.length + 1];
+    args[0] = expr1;
+    System.arraycopy(array, 0, args, 1, array.length);
+    return F.List(args);
+  }
+
+  public static IAST list(IExpr expr1, IExpr expr2, IExpr... array) {
+    IExpr[] args = new IExpr[array.length + 2];
+    args[0] = expr1;
+    args[1] = expr2;
+    System.arraycopy(array, 0, args, 2, array.length);
+    return F.List(args);
+  }
+
+  public static IAST list(IExpr expr1, IExpr expr2, IExpr expr3, IExpr... array) {
+    IExpr[] args = new IExpr[array.length + 3];
+    args[0] = expr1;
+    args[1] = expr2;
+    args[2] = expr3;
+    System.arraycopy(array, 0, args, 3, array.length);
+    return F.List(args);
   }
 
   /**
@@ -8638,11 +8634,11 @@ public class F extends S {
   }
 
   /**
-   * Create a unique dummy symbol which is retrieved from the evaluation engines DUMMY context. A
-   * &quot;Dummy&quot; symbol is not known in string parsing.
+   * Create a unique dummy symbol which is retrieved from the evaluation engines
+   * {@link Context#DUMMY} context. A &quot;Dummy&quot; symbol is not known in string parsing.
    *
    * @param symbolName the name of the symbol
-   * @return the symbol object from the context path
+   * @return the symbol object from the {@link Context#DUMMY} context path
    * @see #symbol(String)
    */
   public static ISymbol Dummy(final char symbolName) {
@@ -8650,21 +8646,57 @@ public class F extends S {
   }
 
   /**
-   * Create a unique dummy symbol which is retrieved from the evaluation engines DUMMY context. A
-   * &quot;Dummy&quot; symbol is not known in string parsing.
+   * <p>
+   * Create a unique dummy symbol which is retrieved from the evaluation engines
+   * {@link Context#DUMMY} context.
+   * 
+   * <p>
+   * <b>Noter:</b> a &quot;Dummy&quot; symbol will not be found by the expression parser.
    *
    * @param symbolName the name of the symbol
-   * @return the symbol object from the context path
+   * @return the symbol object from the {@link Context#DUMMY} context path
    * @see #symbol(String)
    */
   public static ISymbol Dummy(final String symbolName) {
+    return Dummy(symbolName, null);
+  }
+
+  /**
+   * <p>
+   * Create a unique dummy symbol which is retrieved from the evaluation engines
+   * {@link Context#DUMMY} context.
+   * 
+   * <p>
+   * <b>Noter:</b> a &quot;Dummy&quot; symbol will not be found by the expression parser.
+   *
+   * @param symbolName the name of the symbol
+   * @param assumptionAST the assumptions which should be set for the symbol. Use <code>#1</code> or
+   *        {@link F#Slot1} in the <code>assumptionAST</code> expression for this symbol.
+   * @return the symbol object from the {@link Context#DUMMY} context path
+   * @see #symbol(String)
+   */
+  public static ISymbol Dummy(final String symbolName, IAST assumptionAST) {
     String name = symbolName;
     if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       if (symbolName.length() != 1) {
         name = symbolName.toLowerCase(Locale.ENGLISH);
       }
     }
-    return new Symbol(name, org.matheclipse.core.expression.Context.DUMMY);
+    ISymbol symbol = new Symbol(name, org.matheclipse.core.expression.Context.DUMMY);
+    if (assumptionAST != null) {
+      IExpr temp = Lambda.replaceSlots(assumptionAST, List(symbol)).orElse(assumptionAST);
+      if (temp.isAST()) {
+        EvalEngine engine = EvalEngine.get();
+        IAssumptions assumptions = engine.getAssumptions();
+        if (assumptions == null) {
+          assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(temp);
+          engine.setAssumptions(assumptions);
+        } else {
+          assumptions.addAssumption(temp);
+        }
+      }
+    }
+    return symbol;
   }
 
   /**

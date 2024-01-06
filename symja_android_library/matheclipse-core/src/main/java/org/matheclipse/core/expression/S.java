@@ -2768,6 +2768,9 @@ public class S {
 
   public final static IBuiltInSymbol Directive = S.initFinalSymbol("Directive", ID.Directive);
 
+  public final static IBuiltInSymbol DirichletBeta =
+      S.initFinalSymbol("DirichletBeta", ID.DirichletBeta);
+
   public final static IBuiltInSymbol DirichletEta =
       S.initFinalSymbol("DirichletEta", ID.DirichletEta);
 
@@ -3400,6 +3403,12 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol ExpandAll = S.initFinalSymbol("ExpandAll", ID.ExpandAll);
+
+  public final static IBuiltInSymbol ExpandDenominator =
+      S.initFinalSymbol("ExpandDenominator", ID.ExpandDenominator);
+
+  public final static IBuiltInSymbol ExpandNumerator =
+      S.initFinalSymbol("ExpandNumerator", ID.ExpandNumerator);
 
   /**
    * Expectation(pure-function, data-set) - returns the expected value of the `pure-function` for
@@ -4185,6 +4194,9 @@ public class S {
    */
   public final static IBuiltInSymbol FunctionExpand =
       S.initFinalSymbol("FunctionExpand", ID.FunctionExpand);
+
+  public final static IBuiltInSymbol FunctionPeriod =
+      S.initFinalSymbol("FunctionPeriod", ID.FunctionPeriod);
 
   public final static IBuiltInSymbol FunctionRange =
       S.initFinalSymbol("FunctionRange", ID.FunctionRange);

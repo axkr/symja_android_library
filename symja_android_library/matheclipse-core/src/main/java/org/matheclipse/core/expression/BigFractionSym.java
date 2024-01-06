@@ -233,7 +233,7 @@ public class BigFractionSym extends AbstractFractionSym {
     BigInteger denom = toBigDenominator().multiply(other.toBigNumerator());
     BigInteger nom = toBigNumerator().multiply(other.toBigDenominator());
     // +-inf : -c = -+inf
-    if (denom.equals(BigInteger.ZERO) && other.toBigNumerator().signum() == -1)
+    if (denom.signum() == 0 && other.toBigNumerator().signum() == -1)
       nom = nom.negate();
     return valueOf(nom, denom);
   }
@@ -370,12 +370,9 @@ public class BigFractionSym extends AbstractFractionSym {
     if (that.isZero()) {
       return this;
     }
-    BigInteger tdenom = this.toBigDenominator();
-    BigInteger odenom = that.toBigDenominator();
-    BigInteger gcddenom = tdenom.gcd(odenom);
-    BigInteger denom = tdenom.divide(gcddenom).multiply(odenom);
-    BigInteger num = toBigNumerator().gcd(that.toBigNumerator());
-    return AbstractFractionSym.valueOf(num, denom);
+    BigInteger p = toBigNumerator().gcd(that.toBigNumerator());
+    BigInteger q = AbstractIntegerSym.lcm(fFraction.getDenominator(), that.toBigDenominator());
+    return AbstractFractionSym.valueOf(p, q);
   }
 
   @Override
@@ -418,7 +415,7 @@ public class BigFractionSym extends AbstractFractionSym {
     BigInteger num = toBigDenominator().multiply(other.toBigNumerator());
     BigInteger denom = toBigNumerator().multiply(other.toBigDenominator());
 
-    if (denom.equals(BigInteger.ZERO) && toBigNumerator().signum() == -1) {
+    if (denom.signum() == 0 && toBigNumerator().signum() == -1) {
       num = num.negate();
     }
     return valueOf(num, denom);
@@ -513,6 +510,16 @@ public class BigFractionSym extends AbstractFractionSym {
     return fFraction.equals(BigFraction.ZERO);
   }
 
+  @Override
+  public IExpr lcm(IExpr that) {
+    if (that instanceof IFraction) {
+      BigFraction arg2 = ((IFraction) that).toBigFraction();
+      return valueOf(AbstractIntegerSym.lcm(fFraction.getNumerator(), arg2.getNumerator()),
+          fFraction.getDenominator().gcd(arg2.getDenominator()));
+    }
+    return super.lcm(that);
+  }
+
   /**
    * Return a new rational representing <code>this * other</code>.
    *
@@ -584,7 +591,7 @@ public class BigFractionSym extends AbstractFractionSym {
     if (toBigDenominator().equals(BigInteger.ONE)) {
       return F.ZZ(toBigNumerator());
     }
-    if (toBigNumerator().equals(BigInteger.ZERO)) {
+    if (toBigNumerator().signum() == 0) {
       return F.C0;
     }
     return this;
@@ -611,7 +618,7 @@ public class BigFractionSym extends AbstractFractionSym {
       // if (val != Integer.MIN_VALUE) {
       // return val;
       // }
-    } else if (toBigNumerator().equals(BigInteger.ZERO)) {
+    } else if (toBigNumerator().signum() == 0) {
       return 0;
     }
     throw new ArithmeticException("toInt: denominator != 1");
@@ -656,7 +663,7 @@ public class BigFractionSym extends AbstractFractionSym {
         // Android doesn't know method longValueExact
         return toBigNumerator().longValue();
       }
-    } else if (toBigNumerator().equals(BigInteger.ZERO)) {
+    } else if (toBigNumerator().signum() == 0) {
       return 0L;
     }
     throw new ArithmeticException("toLong: denominator != 1");

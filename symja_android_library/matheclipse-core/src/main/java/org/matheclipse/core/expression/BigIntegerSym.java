@@ -36,7 +36,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
   private static final long serialVersionUID = 6389228668633533063L;
 
   public static BigInteger eulerPhi(BigInteger value) throws ArithmeticException {
-    if (value.equals(BigInteger.ZERO)) {
+    if (value.signum() == 0) {
       return BigInteger.ZERO;
     }
     if (value.equals(BigInteger.ONE)) {
@@ -549,7 +549,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
   @Override
   public boolean isZero() {
-    return fBigIntValue.equals(BigInteger.ZERO);
+    return fBigIntValue.signum() == 0;
   }
 
   /** @return */

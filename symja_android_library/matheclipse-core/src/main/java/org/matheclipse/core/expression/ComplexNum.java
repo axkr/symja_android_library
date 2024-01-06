@@ -483,6 +483,13 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr erf() {
+    // TODO depends on // https://github.com/Hipparchus-Math/hipparchus/issues/278
+    // try {
+    // Complex erf = org.hipparchus.special.Erf.erf(fComplex);
+    // return F.complexNum(erf);
+    // } catch (Exception ce) {
+    // }
+    // return F.NIL;
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
     try {
       Apint two = new Apint(2);
@@ -501,6 +508,13 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr erfc() {
+    // TODO depends on // https://github.com/Hipparchus-Math/hipparchus/issues/278
+    // try {
+    // Complex erfc = org.hipparchus.special.Erf.erfc(fComplex);
+    // return F.complexNum(erfc);
+    // } catch (Exception ce) {
+    // }
+    // return F.NIL;
     IExpr erf = erf();
     if (erf.isPresent()) {
       Complex c = erf.evalfc();
@@ -733,7 +747,7 @@ public class ComplexNum implements IComplexNum {
     } else {
       imInt = F.ZZ(NumberUtil.toLong(Math.floor(im)));
     }
-    return F.complex(reInt, imInt);
+    return F.CC(reInt, imInt);
   }
 
   @Override
@@ -1021,7 +1035,7 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public INumber roundExpr() throws ArithmeticException {
-    return F.complex(F.ZZ(DoubleMath.roundToBigInteger(fComplex.getReal(), Config.ROUNDING_MODE)), //
+    return F.CC(F.ZZ(DoubleMath.roundToBigInteger(fComplex.getReal(), Config.ROUNDING_MODE)), //
         F.ZZ(DoubleMath.roundToBigInteger(fComplex.getImaginary(), Config.ROUNDING_MODE)));
   }
 

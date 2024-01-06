@@ -28,7 +28,8 @@ a^2+Sin(x+x*y)^2+2*a*Sin(x+x*y)
 ```
 
 
-
+### Related terms 
+[Expand](Expand.md), [ExpandDenominator](ExpandDenominator.md), [ExpandNumerator](ExpandNumerator.md)
 
 
 

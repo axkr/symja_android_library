@@ -57,7 +57,8 @@ Sqrt(y^2)/(2*x+2*y)
 18/(5+3*x+x^2)^3+(24*x)/(5+3*x+x^2)^3+(8*x^2)/(5+3*x+x^2)^3 
 ```
 
-
+### Related terms 
+[ExpandAll](ExpandAll.md), [ExpandDenominator](ExpandDenominator.md), [ExpandNumerator](ExpandNumerator.md)
 
 
 

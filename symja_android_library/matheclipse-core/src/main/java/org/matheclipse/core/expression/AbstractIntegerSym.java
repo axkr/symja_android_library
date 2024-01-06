@@ -735,6 +735,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   @Override
   public IInteger[] sqrtAndRemainder() {
     if (complexSign() > 0) {
+      // TODO BigInteger#sqrtAndRemainder() introduced in Android API level 33
+      // https://developer.android.com/reference/java/math/BigInteger#sqrtAndRemainder()
       BigInteger bignum = toBigNumerator();
       BigInteger s = BigIntegerMath.sqrt(bignum, RoundingMode.FLOOR);
       BigInteger r = bignum.subtract(s.multiply(s));

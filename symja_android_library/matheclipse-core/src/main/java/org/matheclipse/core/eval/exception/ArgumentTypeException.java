@@ -32,6 +32,12 @@ public class ArgumentTypeException extends ValidateException {
     throw new ArgumentTypeException(str);
   }
 
+  /**
+   * Print <code>illegal arguments: \"`1`\" in `2`</code>
+   * 
+   * @param arg1
+   * @param arg2
+   */
   public static void throwArg(IExpr arg1, IExpr arg2) {
     // illegal arguments: \"`1`\" in `2`
     String str = Errors.getMessage("argillegal", F.list(arg1, arg2));
