@@ -129,7 +129,7 @@ public class JASIExpr {
       ExpVector exp = monomial.exponent();
       BigRational re = coeff.getRe();
       BigRational im = coeff.getIm();
-      IASTAppendable monomTimes = F.Times(F.complex(F.fraction(re.numerator(), re.denominator()),
+      IASTAppendable monomTimes = F.Times(F.CC(F.fraction(re.numerator(), re.denominator()),
           F.fraction(im.numerator(), im.denominator())));
       long lExp;
       for (int i = 0; i < exp.length(); i++) {

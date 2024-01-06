@@ -25,6 +25,12 @@ public interface IComplexNum extends INumber, IInexactNumber {
 
   public double getRealPart();
 
+  /** {@inheritDoc} */
+  @Override
+  default COMPARE_TERNARY isIrrational() {
+    return COMPARE_TERNARY.UNDECIDABLE;
+  }
+
   @Override
   default long leafCount() {
     return 3;

@@ -71,8 +71,21 @@ public interface IInteger extends IRational {
    */
   public IInteger[] divideAndRemainder(final IInteger that);
 
+  /**
+   * &quot;integer quotientr&quot; of <code>this</code> divided by <code>that</code> also sometimes
+   * called &quot;floor division&quot;
+   * 
+   * @param that
+   * @return
+   */
   public IInteger iquo(final IInteger that);
 
+  /**
+   * &quot;integer remainder&quot; of <code>this</code> divided by <code>that</code>
+   * 
+   * @param that
+   * @return
+   */
   public IInteger irem(final IInteger that);
 
   /**
@@ -155,6 +168,7 @@ public interface IInteger extends IRational {
    *
    * @return <code>true</code> if this IInteger is an even number.
    */
+  @Override
   public boolean isEven();
 
   /**
@@ -162,6 +176,7 @@ public interface IInteger extends IRational {
    *
    * @return <code>true</code> if this IInteger is an odd number.
    */
+  @Override
   public boolean isOdd();
 
   /**

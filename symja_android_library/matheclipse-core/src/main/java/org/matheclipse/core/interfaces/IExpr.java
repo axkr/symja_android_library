@@ -1,10 +1,12 @@
 package org.matheclipse.core.interfaces;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -49,6 +51,7 @@ import org.matheclipse.core.expression.Pair;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.Predicates;
+import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
@@ -1080,11 +1083,22 @@ public interface IExpr
 
   /**
    * Return the Gaussian integers real and imaginary parts. If this is not a Gaussian integer return
-   * <code>null</code>
+   * <code>Optional.empty()</code>
    *
    * @return <code>null</code> if this is not a Gaussian integer
    */
+  @Deprecated
   default Optional<IInteger[]> gaussianIntegers() {
+    return Optional.empty();
+  }
+
+  /**
+   * Return the Gaussian integer. If this is not a Gaussian integer return
+   * <code>Optional.empty()</code>.
+   * 
+   * @return
+   */
+  default Optional<GaussianInteger> gaussianInteger() {
     return Optional.empty();
   }
 
@@ -2186,6 +2200,15 @@ public interface IExpr
   }
 
   /**
+   * Check if this is an even {@link IInteger}.
+   *
+   * @return <code>true</code> if this is an even {@link IInteger}.
+   */
+  default boolean isEven() {
+    return false;
+  }
+
+  /**
    * Check if this expression is an even integer result otherwise return false.
    *
    * @return <code>true</code> if this is an even integer result.
@@ -2953,6 +2976,22 @@ public interface IExpr
     return AbstractAssumptions.assumeUnequal(this, num);
   }
 
+  default COMPARE_TERNARY isIrrational() {
+    return COMPARE_TERNARY.UNDECIDABLE;
+  }
+
+  default Optional<IEvaluator> isInstance(Class<?> clazz) {
+    return Optional.empty();
+  }
+
+  default COMPARE_TERNARY isAlgebraic() {
+    return COMPARE_TERNARY.UNDECIDABLE;
+  }
+
+  default COMPARE_TERNARY isTranscendental() {
+    return COMPARE_TERNARY.UNDECIDABLE;
+  }
+
   /**
    * Test if this expression has a negative result (i.e. <code>Re(this)<0</code>) for it's real part
    * or is assumed to have a negative real part.
@@ -3260,6 +3299,15 @@ public interface IExpr
    * @return
    */
   default boolean isNumIntValue() {
+    return false;
+  }
+
+  /**
+   * Check if this is an odd {@link IInteger}.
+   *
+   * @return <code>true</code> if this is an odd {@link IInteger}.
+   */
+  default boolean isOdd() {
     return false;
   }
 
@@ -3755,6 +3803,17 @@ public interface IExpr
    * @return
    */
   default boolean isRealVector() {
+    return false;
+  }
+
+  /**
+   * Test if this expression is a relational binary operation
+   * {@link S#Equal},{@link S#Unequal},@link S#GreaterEqual},{@link S#LessEqual},@link S#Greater} or
+   * {@link S#Less}
+   * 
+   * @return
+   */
+  default boolean isRelationalBinary() {
     return false;
   }
 
@@ -6021,11 +6080,34 @@ public interface IExpr
   }
 
   /**
+   * Return the standard has() if there are no literal symbols, else check to see that symbol-deps
+   * are in the free symbols.
+   * 
+   * @param e
+   * @param sym
+   * @param other
+   * @return
+   */
+  private static boolean has(IExpr e, Set sym, ArrayList<IExpr> other) {
+    boolean has_other = e.has(other);
+    if (!sym.isEmpty()) {
+      return has_other;
+    }
+    if (!has_other) {
+      VariablesSet vars = new VariablesSet(e);
+      List<IExpr> free_symbols = vars.getArrayList();
+      free_symbols.addAll(sym);
+      return e.has(free_symbols);
+    }
+    return true;
+  }
+
+  /**
    * Expression <code>a/b -> [a, b]</code>
    * 
    * @return
    */
-  default public Pair asNumerDenom() {
+  default Pair asNumerDenom() {
     return F.pair(this, F.C1);
   }
 
@@ -6035,6 +6117,9 @@ public interface IExpr
     return dict;
   }
 
+  default IExpr lcm(IExpr that) {
+    return S.LCM.of(this, that);
+  }
 
   default IPair leadTerm(ISymbol x) {
     return leadTerm(x, F.NIL, 0);

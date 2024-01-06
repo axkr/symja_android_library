@@ -298,6 +298,30 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
     return this == S.Indeterminate;
   }
 
+  @Override
+  public final COMPARE_TERNARY isIrrational() {
+    if (isRealConstant()) {
+      return ((IRealConstant) fEvaluator).isIrrational();
+    }
+    return COMPARE_TERNARY.UNDECIDABLE;
+  }
+
+  @Override
+  public final COMPARE_TERNARY isAlgebraic() {
+    if (isRealConstant()) {
+      return ((IRealConstant) fEvaluator).isAlgebraic();
+    }
+    return COMPARE_TERNARY.UNDECIDABLE;
+  }
+
+  @Override
+  public final COMPARE_TERNARY isTranscendental() {
+    if (isRealConstant()) {
+      return ((IRealConstant) fEvaluator).isTranscendental();
+    }
+    return COMPARE_TERNARY.UNDECIDABLE;
+  }
+
   /** {@inheritDoc} */
   @Override
   public final boolean isPi() {

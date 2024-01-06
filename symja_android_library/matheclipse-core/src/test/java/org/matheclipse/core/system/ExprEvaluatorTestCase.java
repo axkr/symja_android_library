@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -8,7 +9,6 @@ import java.io.StringWriter;
 import java.math.RoundingMode;
 import java.util.Locale;
 import java.util.regex.Pattern;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -24,8 +24,6 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.SyntaxError;
-
-import static org.junit.Assert.assertEquals;
 
 @RunWith(JUnit4.class)
 public abstract class ExprEvaluatorTestCase {

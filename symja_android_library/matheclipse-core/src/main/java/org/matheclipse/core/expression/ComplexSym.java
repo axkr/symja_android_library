@@ -32,6 +32,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
@@ -49,6 +50,51 @@ public class ComplexSym implements IComplex {
   private static final ComplexSym ONE = ComplexSym.valueOf(1, 1, 0, 1);
   private static final ComplexSym POSITIVE_I = ComplexSym.valueOf(0, 1, 1, 1);
   private static final ComplexSym NEGATIVE_I = ComplexSym.valueOf(0, 1, -1, 1);
+
+  /**
+   * Return the normalized form of this number (i.e. if the imaginary part equals zero, return the
+   * real part as a fractional or integer number).
+   * 
+   * @param fReal
+   * @param fImaginary
+   * @return <code>null</code> if no new number was evaluated
+   */
+  private static INumber normalizeNull(IRational fReal, IRational fImaginary) {
+    if (fImaginary.isZero()) {
+      if (fReal instanceof IFraction) {
+        if (fReal.denominator().isOne()) {
+          return fReal.numerator();
+        }
+        if (fReal.numerator().isZero()) {
+          return F.C0;
+        }
+      }
+      return fReal;
+    }
+    if (fReal instanceof IFraction) {
+      if (fReal.denominator().isOne()) {
+        IRational newRe = fReal.numerator();
+        if (fImaginary instanceof IFraction && fImaginary.denominator().isOne()) {
+          IRational newIm = fImaginary.numerator();
+          return valueOf(newRe, newIm);
+        }
+        return valueOf(newRe, fImaginary);
+      }
+      if (fReal.numerator().isZero()) {
+        IRational newRe = F.C0;
+        if (fImaginary instanceof IFraction && fImaginary.denominator().isOne()) {
+          IRational newIm = fImaginary.numerator();
+          return valueOf(newRe, newIm);
+        }
+        return valueOf(newRe, fImaginary);
+      }
+    }
+    if (fImaginary instanceof IFraction && fImaginary.denominator().isOne()) {
+      IRational newIm = fImaginary.numerator();
+      return valueOf(fReal, newIm);
+    }
+    return null;
+  }
 
   public static ComplexSym valueOf(final BigFraction real, final BigFraction imaginary) {
     final ComplexSym c = new ComplexSym();
@@ -128,6 +174,103 @@ public class ComplexSym implements IComplex {
     return F.Sqrt(fReal.multiply(fReal).add(fImaginary.multiply(fImaginary)));
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public IExpr accept(IVisitor visitor) {
+    return visitor.visit(this);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean accept(IVisitorBoolean visitor) {
+    return visitor.visit(this);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int accept(IVisitorInt visitor) {
+    return visitor.visit(this);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public long accept(IVisitorLong visitor) {
+    return visitor.visit(this);
+  }
+
+  public ComplexSym add(final ComplexSym that) {
+    return ComplexSym.valueOf(fReal.add(that.fReal), fImaginary.add(that.fImaginary));
+  }
+
+  @Override
+  public IComplex add(final IComplex that) {
+    return ComplexSym.valueOf(fReal.add(that.getRealPart()),
+        fImaginary.add(that.getImaginaryPart()));
+  }
+
+  @Override
+  public ApcomplexNum apcomplexNumValue() {
+    return ApcomplexNum.valueOf(apcomplexValue());
+  }
+
+  @Override
+  public Apcomplex apcomplexValue() {
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    long precision = h.precision();
+    Apfloat real = h.divide(new Apfloat(fReal.toBigNumerator(), precision),
+        new Apfloat(fReal.toBigDenominator(), precision));
+    Apfloat imag = h.divide(new Apfloat(fImaginary.toBigNumerator(), precision),
+        new Apfloat(fImaginary.toBigDenominator(), precision));
+    return new Apcomplex(real, imag);
+  }
+
+  @Override
+  public INumber ceilFraction() {
+    return valueOf(fReal.ceilFraction(), fImaginary.ceilFraction());
+  }
+
+  @Override
+  public void checkBitLength() {
+    if (Integer.MAX_VALUE > Config.MAX_BIT_LENGTH) {
+      long bitLength = fReal.toBigNumerator().bitLength() + fReal.toBigDenominator().bitLength();
+      if (bitLength > Config.MAX_BIT_LENGTH / 4) {
+        BigIntegerLimitExceeded.throwIt(bitLength);
+      }
+      bitLength =
+          fImaginary.toBigNumerator().bitLength() + fImaginary.toBigDenominator().bitLength();
+      if (bitLength > Config.MAX_BIT_LENGTH / 4) {
+        BigIntegerLimitExceeded.throwIt(bitLength);
+      }
+    }
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int compareAbsValueToOne() {
+    IRational temp = fReal.multiply(fReal).add(fImaginary.multiply(fImaginary));
+    return temp.compareTo(F.C1);
+  }
+
+  /**
+   * Compares this expression with the specified expression for order. Returns a negative integer,
+   * zero, or a positive integer as this expression is canonical less than, equal to, or greater
+   * than the specified expression.
+   */
+  @Override
+  public int compareTo(final IExpr expr) {
+    if (expr.isNumber()) {
+      int c = fReal.compareTo(((INumber) expr).re());
+      if (c != 0) {
+        return c;
+      }
+      if (expr.isReal()) {
+        return !fImaginary.isPositive() ? -1 : 1;
+      }
+      return fImaginary.compareTo(((INumber) expr).im());
+    }
+    return IComplex.super.compareTo(expr);
+  }
+
   @Override
   public IExpr complexArg() {
     // ic == ( x + I * y )
@@ -169,88 +312,6 @@ public class ComplexSym implements IComplex {
     return F.C0;
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public IExpr accept(IVisitor visitor) {
-    return visitor.visit(this);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public boolean accept(IVisitorBoolean visitor) {
-    return visitor.visit(this);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public int accept(IVisitorInt visitor) {
-    return visitor.visit(this);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public long accept(IVisitorLong visitor) {
-    return visitor.visit(this);
-  }
-
-  public ComplexSym add(final ComplexSym parm1) {
-    return ComplexSym.valueOf(fReal.add(parm1.fReal), fImaginary.add(parm1.fImaginary));
-  }
-
-  @Override
-  public IComplex add(final IComplex parm1) {
-    return ComplexSym.valueOf(fReal.add(parm1.getRealPart()),
-        fImaginary.add(parm1.getImaginaryPart()));
-  }
-
-  @Override
-  public ApcomplexNum apcomplexNumValue() {
-    return ApcomplexNum.valueOf(apcomplexValue());
-  }
-
-  @Override
-  public Apcomplex apcomplexValue() {
-    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-    long precision = h.precision();
-    Apfloat real = h.divide(new Apfloat(fReal.toBigNumerator(), precision),
-        new Apfloat(fReal.toBigDenominator(), precision));
-    Apfloat imag = h.divide(new Apfloat(fImaginary.toBigNumerator(), precision),
-        new Apfloat(fImaginary.toBigDenominator(), precision));
-    return new Apcomplex(real, imag);
-  }
-
-  @Override
-  public INumber ceilFraction() {
-    return valueOf(fReal.ceilFraction(), fImaginary.ceilFraction());
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public int compareAbsValueToOne() {
-    IRational temp = fReal.multiply(fReal).add(fImaginary.multiply(fImaginary));
-    return temp.compareTo(F.C1);
-  }
-
-  /**
-   * Compares this expression with the specified expression for order. Returns a negative integer,
-   * zero, or a positive integer as this expression is canonical less than, equal to, or greater
-   * than the specified expression.
-   */
-  @Override
-  public int compareTo(final IExpr expr) {
-    if (expr.isNumber()) {
-      int c = fReal.compareTo(((INumber) expr).re());
-      if (c != 0) {
-        return c;
-      }
-      if (expr.isReal()) {
-        return !fImaginary.isPositive() ? -1 : 1;
-      }
-      return fImaginary.compareTo(((INumber) expr).im());
-    }
-    return IComplex.super.compareTo(expr);
-  }
-
   @Override
   public ComplexNum complexNumValue() {
     // double precision complex number
@@ -287,12 +348,6 @@ public class ComplexSym implements IComplex {
   @Override
   public IExpr dec() {
     return add(MINUS_ONE);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IExpr inc() {
-    return add(ONE);
   }
 
   @Override
@@ -336,21 +391,15 @@ public class ComplexSym implements IComplex {
     return (cTemp == null) ? F.NIL : cTemp;
   }
 
+  @Override
+  public INumber floorFraction() {
+    return valueOf(fReal.floorFraction(), fImaginary.floorFraction());
+  }
+
   /** {@inheritDoc} */
   @Override
   public IComplex fractionalPart() {
     return valueOf(fReal.fractionalPart(), fImaginary.fractionalPart());
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IComplex integerPart() {
-    return valueOf(fReal.integerPart(), fImaginary.integerPart());
-  }
-
-  @Override
-  public INumber floorFraction() {
-    return valueOf(fReal.floorFraction(), fImaginary.floorFraction());
   }
 
   @Override
@@ -416,9 +465,13 @@ public class ComplexSym implements IComplex {
     return Optional.empty();
   }
 
+  /** {@inheritDoc} */
   @Override
-  public double imDoubleValue() {
-    return fImaginary.doubleValue();
+  public Optional<GaussianInteger> gaussianInteger() {
+    if (fReal.isInteger() && fImaginary.isInteger()) {
+      return Optional.of(new GaussianInteger((IInteger) fReal, (IInteger) fImaginary));
+    }
+    return Optional.empty();
   }
 
   /**
@@ -429,11 +482,6 @@ public class ComplexSym implements IComplex {
   @Override
   public IRational getImaginaryPart() {
     return fImaginary;
-  }
-
-  @Override
-  public double reDoubleValue() {
-    return fReal.doubleValue();
   }
 
   /**
@@ -470,11 +518,28 @@ public class ComplexSym implements IComplex {
   }
 
   @Override
+  public double imDoubleValue() {
+    return fImaginary.doubleValue();
+  }
+
+  @Override
   public IRational imRational() {
     if (fImaginary.denominator().isOne()) {
       return fImaginary.numerator();
     }
     return fImaginary;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr inc() {
+    return add(ONE);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IComplex integerPart() {
+    return valueOf(fReal.integerPart(), fImaginary.integerPart());
   }
 
   @Override
@@ -527,6 +592,11 @@ public class ComplexSym implements IComplex {
   }
 
   @Override
+  public boolean isMinusOne() {
+    return fReal.isMinusOne() && fImaginary.isZero();
+  }
+
+  @Override
   public boolean isNegativeImaginaryUnit() {
     return equals(F.CNI);
   }
@@ -537,23 +607,18 @@ public class ComplexSym implements IComplex {
   }
 
   @Override
-  public boolean isMinusOne() {
-    return fReal.isMinusOne() && fImaginary.isZero();
-  }
-
-  @Override
   public boolean isZero() {
     return fReal.isZero() && fImaginary.isZero();
   }
 
   @Override
-  public long leafCountSimplify() {
-    return 1 + fReal.leafCountSimplify() + fImaginary.leafCountSimplify();
+  public long leafCount() {
+    return 1 + fReal.leafCount() + fImaginary.leafCount();
   }
 
   @Override
-  public long leafCount() {
-    return 1 + fReal.leafCount() + fImaginary.leafCount();
+  public long leafCountSimplify() {
+    return 1 + fReal.leafCountSimplify() + fImaginary.leafCountSimplify();
   }
 
   @Override
@@ -563,53 +628,6 @@ public class ComplexSym implements IComplex {
     return ComplexSym.valueOf(
         fReal.multiply(parm1.getRealPart()).subtract(fImaginary.multiply(parm1.getImaginaryPart())),
         fReal.multiply(parm1.getImaginaryPart()).add(parm1.getRealPart().multiply(fImaginary)));
-  }
-
-  /**
-   * Return the quotient and remainder as an array <code>[quotient, remainder]</code> of the
-   * division of <code>IComplex</code> numbers <code>this / c2</code>.
-   *
-   * <p>
-   * See
-   *
-   * <ul>
-   * <li><a href="https://en.wikipedia.org/wiki/Gaussian_integer">Wikipedia - Gaussian integer</a>
-   * <li><a href=
-   * "http://fermatslasttheorem.blogspot.com/2005/06/division-algorithm-for-gaussian.html">Division
-   * Algorithm for Gaussian Integers </a>
-   * </ul>
-   *
-   * @param c2
-   * @return the quotient and remainder as an array <code>[quotient, remainder]</code>
-   */
-  @Override
-  public IComplex[] quotientRemainder(final IComplex c2) {
-    final IRational re = c2.re();
-    final IRational im = c2.im();
-    IRational numeratorReal = fReal.multiply(re).subtract( //
-        fImaginary.multiply(im.negate()));
-
-    IRational numeratorImaginary = fReal.multiply(im.negate()).add( //
-        re.multiply(fImaginary));
-
-    IRational denominator = re.multiply(re).add( //
-        im.multiply(im));
-
-    if (denominator.isZero()) {
-      throw new IllegalArgumentException("Denominator can not be zero.");
-    }
-
-    IInteger divisionReal = numeratorReal.divideBy(denominator).roundExpr();
-    IInteger divisionImaginary = numeratorImaginary.divideBy(denominator).roundExpr();
-
-    IRational remainderReal =
-        fReal.subtract(re.multiply(divisionReal)).subtract(im.multiply(divisionImaginary).negate());
-    IRational remainderImaginary =
-        fImaginary.subtract(re.multiply(divisionImaginary)).subtract(im.multiply(divisionReal));
-
-    return new ComplexSym[] { //
-        valueOf(divisionReal, divisionImaginary), //
-        valueOf(remainderReal, remainderImaginary)};
   }
 
   @Override
@@ -623,51 +641,6 @@ public class ComplexSym implements IComplex {
     return (normalized == null) ? this : normalized;
   }
 
-  /**
-   * Return the normalized form of this number (i.e. if the imaginary part equals zero, return the
-   * real part as a fractional or integer number).
-   * 
-   * @param fReal
-   * @param fImaginary
-   * @return <code>null</code> if no new number was evaluated
-   */
-  private static INumber normalizeNull(IRational fReal, IRational fImaginary) {
-    if (fImaginary.isZero()) {
-      if (fReal instanceof IFraction) {
-        if (fReal.denominator().isOne()) {
-          return fReal.numerator();
-        }
-        if (fReal.numerator().isZero()) {
-          return F.C0;
-        }
-      }
-      return fReal;
-    }
-    if (fReal instanceof IFraction) {
-      if (fReal.denominator().isOne()) {
-        IRational newRe = fReal.numerator();
-        if (fImaginary instanceof IFraction && fImaginary.denominator().isOne()) {
-          IRational newIm = fImaginary.numerator();
-          return valueOf(newRe, newIm);
-        }
-        return valueOf(newRe, fImaginary);
-      }
-      if (fReal.numerator().isZero()) {
-        IRational newRe = F.C0;
-        if (fImaginary instanceof IFraction && fImaginary.denominator().isOne()) {
-          IRational newIm = fImaginary.numerator();
-          return valueOf(newRe, newIm);
-        }
-        return valueOf(newRe, fImaginary);
-      }
-    }
-    if (fImaginary instanceof IFraction && fImaginary.denominator().isOne()) {
-      IRational newIm = fImaginary.numerator();
-      return valueOf(fReal, newIm);
-    }
-    return null;
-  }
-
   @Override
   public final INumber numericNumber() {
     return F.complexNum(this);
@@ -676,6 +649,14 @@ public class ComplexSym implements IComplex {
   @Override
   public INumber opposite() {
     return ComplexSym.valueOf(fReal.negate(), fImaginary.negate());
+  }
+
+  @Override
+  public IExpr plus(final IExpr that) {
+    if (that instanceof INumber) {
+      return plus((INumber) that);
+    }
+    return IComplex.super.plus(that);
   }
 
   @Override
@@ -710,11 +691,23 @@ public class ComplexSym implements IComplex {
   }
 
   @Override
-  public IExpr plus(final IExpr that) {
-    if (that instanceof INumber) {
-      return plus((INumber) that);
+  public IComplex pow(final int n) {
+
+    if ((n == 0) && fReal.isZero() && fImaginary.isZero()) {
+      throw new ArithmeticException("Indeterminate: 0^0");
     }
-    return IComplex.super.plus(that);
+    if (n == Integer.MIN_VALUE) {
+      throw new java.lang.ArithmeticException();
+    }
+    if (n == 1) {
+      return this;
+    }
+
+    if (n < 0) {
+      IComplex res = powPositive(-n);
+      return res.inverse();
+    }
+    return powPositive(n);
   }
 
   @Override
@@ -736,26 +729,6 @@ public class ComplexSym implements IComplex {
       }
     }
     return IComplex.super.power(that);
-  }
-
-  @Override
-  public IComplex pow(final int n) {
-
-    if ((n == 0) && fReal.isZero() && fImaginary.isZero()) {
-      throw new ArithmeticException("Indeterminate: 0^0");
-    }
-    if (n == Integer.MIN_VALUE) {
-      throw new java.lang.ArithmeticException();
-    }
-    if (n == 1) {
-      return this;
-    }
-
-    if (n < 0) {
-      IComplex res = powPositive(-n);
-      return res.inverse();
-    }
-    return powPositive(n);
   }
 
   /**
@@ -824,19 +797,51 @@ public class ComplexSym implements IComplex {
     return r;
   }
 
+  /**
+   * Return the quotient and remainder as an array <code>[quotient, remainder]</code> of the
+   * division of <code>IComplex</code> numbers <code>this / c2</code>.
+   *
+   * <p>
+   * See
+   *
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Gaussian_integer">Wikipedia - Gaussian integer</a>
+   * <li><a href=
+   * "http://fermatslasttheorem.blogspot.com/2005/06/division-algorithm-for-gaussian.html">Division
+   * Algorithm for Gaussian Integers </a>
+   * </ul>
+   *
+   * @param c2
+   * @return the quotient and remainder as an array <code>[quotient, remainder]</code>
+   */
   @Override
-  public void checkBitLength() {
-    if (Integer.MAX_VALUE > Config.MAX_BIT_LENGTH) {
-      long bitLength = fReal.toBigNumerator().bitLength() + fReal.toBigDenominator().bitLength();
-      if (bitLength > Config.MAX_BIT_LENGTH / 4) {
-        BigIntegerLimitExceeded.throwIt(bitLength);
-      }
-      bitLength =
-          fImaginary.toBigNumerator().bitLength() + fImaginary.toBigDenominator().bitLength();
-      if (bitLength > Config.MAX_BIT_LENGTH / 4) {
-        BigIntegerLimitExceeded.throwIt(bitLength);
-      }
+  public IComplex[] quotientRemainder(final IComplex c2) {
+    final IRational re = c2.re();
+    final IRational im = c2.im();
+    IRational numeratorReal = fReal.multiply(re).subtract( //
+        fImaginary.multiply(im.negate()));
+
+    IRational numeratorImaginary = fReal.multiply(im.negate()).add( //
+        re.multiply(fImaginary));
+
+    IRational denominator = re.multiply(re).add( //
+        im.multiply(im));
+
+    if (denominator.isZero()) {
+      throw new IllegalArgumentException("Denominator can not be zero.");
     }
+
+    IInteger divisionReal = numeratorReal.divideBy(denominator).roundExpr();
+    IInteger divisionImaginary = numeratorImaginary.divideBy(denominator).roundExpr();
+
+    IRational remainderReal =
+        fReal.subtract(re.multiply(divisionReal)).subtract(im.multiply(divisionImaginary).negate());
+    IRational remainderImaginary =
+        fImaginary.subtract(re.multiply(divisionImaginary)).subtract(im.multiply(divisionReal));
+
+    return new ComplexSym[] { //
+        valueOf(divisionReal, divisionImaginary), //
+        valueOf(remainderReal, remainderImaginary)};
   }
 
   @Override
@@ -856,6 +861,11 @@ public class ComplexSym implements IComplex {
   @Override
   public IRational re() {
     return reRational();
+  }
+
+  @Override
+  public double reDoubleValue() {
+    return fReal.doubleValue();
   }
 
   @Override
@@ -895,6 +905,23 @@ public class ComplexSym implements IComplex {
     return null;
   }
 
+  public ComplexSym subtract(final ComplexSym that) {
+    return ComplexSym.valueOf(fReal.subtract(that.fReal), fImaginary.subtract(that.fImaginary));
+  }
+
+  @Override
+  public IComplex subtract(final IComplex that) {
+    return ComplexSym.valueOf(fReal.subtract(that.re()), fImaginary.subtract(that.im()));
+  }
+
+  @Override
+  public IExpr times(final IExpr that) {
+    if (that instanceof INumber) {
+      return times((INumber) that);
+    }
+    return IComplex.super.times(that);
+  }
+
   @Override
   public INumber times(final INumber that) {
     if (that.isZero()) {
@@ -924,14 +951,6 @@ public class ComplexSym implements IComplex {
       return F.complexNum(evalfc().multiply(((INum) that).evalf()));
     }
     throw new java.lang.ArithmeticException();
-  }
-
-  @Override
-  public IExpr times(final IExpr that) {
-    if (that instanceof INumber) {
-      return times((INumber) that);
-    }
-    return IComplex.super.times(that);
   }
 
   /** {@inheritDoc} */

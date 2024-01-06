@@ -1548,6 +1548,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testOuter() {
+    check("Outer(g, f(a, b), f(x, y, z))", //
+        "f(f(g(a,x),g(a,y),g(a,z)),f(g(b,x),g(b,y),g(b,z)))");
+
     check("Outer(f, {a, b}, {x, y, z})", //
         "{{f(a,x),f(a,y),f(a,z)},{f(b,x),f(b,y),f(b,z)}}");
     check("Outer(Times, {1, 2, 3, 4}, {a, b, c})", //
@@ -1577,6 +1580,16 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check(
         "Outer(StringJoin, {\"\", \"re\", \"un\"}, {\"cover\", \"draw\", \"wind\"}, {\"\", \"ing\", \"s\"})", //
         "{{{cover,covering,covers},{draw,drawing,draws},{wind,winding,winds}},{{recover,recovering,recovers},{redraw,redrawing,redraws},{rewind,rewinding,rewinds}},{{uncover,uncovering,uncovers},{undraw,undrawing,undraws},{unwind,unwinding,unwinds}}}");
+  }
+
+  @Test
+  public void testOuterSparseArray() {
+    check("(s1=SparseArray(Table(2^i -> i, {i, 3}))) // MatrixForm", //
+        "{0,1,0,2,0,0,0,3}");
+    check("(s2=SparseArray({1} -> 1, {4})) // MatrixForm", //
+        "{1,0,0,0}");
+    // check("Outer(Times,s1,s2) // MatrixForm", //
+    // "");
   }
 
   @Test

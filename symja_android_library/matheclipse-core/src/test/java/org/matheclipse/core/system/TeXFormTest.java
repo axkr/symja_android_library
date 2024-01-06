@@ -558,6 +558,18 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
   }
 
    @Test
+   public void testTeXFormMatrix() {
+     check("TeXForm(Hold({{1^(1+1),1^(1+2)},\n" //
+         + "     {1^(1+2),1^(2+2)}}))", //
+         "\\text{Hold}(\\left(\n" //
+             + "\\begin{array}{cc}\n" //
+             + "{1}^{\\left( 1 + 1\\right) } & {1}^{\\left( 1 + 2\\right) } \\\\\n" //
+             + "{1}^{\\left( 1 + 2\\right) } & {1}^{\\left( 2 + 2\\right) } \\\\\n" //
+             + "\\end{array}\n" //
+             + "\\right) )");
+   }
+
+   @Test
    public void testMinusOnePower() {
     // issue #770
     IExpr ast = F.Power(F.CN1, F.Plus(F.ZZ(1), F.ZZ(2)));

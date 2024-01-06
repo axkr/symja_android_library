@@ -2,9 +2,9 @@ package org.matheclipse.core.interfaces;
 
 /** An expression representing a complex number */
 public interface IComplex extends IBigNumber {
-  void checkBitLength();
-
   public IComplex add(IComplex val);
+
+  void checkBitLength();
 
   /**
    * Returns the imaginary part of a complex number
@@ -34,6 +34,14 @@ public interface IComplex extends IBigNumber {
   public IComplex multiply(IComplex val);
 
   /**
+   * Return the normalized form of this number (i.e. if the imaginary part equals zero, return the
+   * real part as a fractional or integer number).
+   *
+   * @return
+   */
+  public INumber normalize();
+
+  /**
    * Returns this number raised at the specified exponent. See
    * <a href="https://en.wikipedia.org/wiki/Exponentiation_by_squaring">Wikipedia - Exponentiation
    * by squaring</a>
@@ -48,6 +56,14 @@ public interface IComplex extends IBigNumber {
   public IComplex[] quotientRemainder(final IComplex c2);
 
   /**
+   * Returns the real part of a complex number
+   *
+   * @return real part
+   */
+  @Override
+  public IRational re();
+
+  /**
    * If possible, calculate the square root of this complex number. Otherwise return <code>null
    * </code>.
    *
@@ -55,19 +71,5 @@ public interface IComplex extends IBigNumber {
    */
   public IComplex sqrtCC();
 
-  /**
-   * Return the normalized form of this number (i.e. if the imaginary part equals zero, return the
-   * real part as a fractional or integer number).
-   *
-   * @return
-   */
-  public INumber normalize();
-
-  /**
-   * Returns the real part of a complex number
-   *
-   * @return real part
-   */
-  @Override
-  public IRational re();
+  public IComplex subtract(IComplex that);
 }

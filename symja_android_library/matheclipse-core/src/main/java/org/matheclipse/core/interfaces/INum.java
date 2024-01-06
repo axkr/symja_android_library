@@ -44,6 +44,12 @@ public interface INum extends IReal, IInexactNumber {
 
   /** {@inheritDoc} */
   @Override
+  default COMPARE_TERNARY isIrrational() {
+    return COMPARE_TERNARY.UNDECIDABLE;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public boolean isNumIntValue();
 
   /**

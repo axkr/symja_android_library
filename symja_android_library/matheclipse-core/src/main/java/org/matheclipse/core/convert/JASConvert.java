@@ -81,7 +81,7 @@ public class JASConvert<C extends RingElem<C>> {
   public static IComplex jas2Complex(edu.jas.poly.Complex<BigRational> c) {
     IFraction re = F.fraction(c.getRe().numerator(), c.getRe().denominator());
     IFraction im = F.fraction(c.getIm().numerator(), c.getIm().denominator());
-    return F.complex(re, im);
+    return F.CC(re, im);
   }
 
   public static INumber jas2Numeric(edu.jas.poly.Complex<BigRational> c, double epsilon) {
@@ -578,7 +578,7 @@ public class JASConvert<C extends RingElem<C>> {
       IASTAppendable monomTimes) {
     edu.jas.arith.BigInteger re = coeff.getRe();
     edu.jas.arith.BigInteger im = coeff.getIm();
-    monomTimes.append(F.complex(F.integer(re.getVal()), F.integer(im.getVal())));
+    monomTimes.append(F.CC(F.integer(re.getVal()), F.integer(im.getVal())));
     return expVectorToExpr(exp, monomTimes);
   }
 
@@ -602,7 +602,7 @@ public class JASConvert<C extends RingElem<C>> {
       IASTAppendable monomTimes) {
     BigRational re = coeff.getRe();
     BigRational im = coeff.getIm();
-    monomTimes.append(F.complex(F.fraction(re.numerator(), re.denominator()).normalize(),
+    monomTimes.append(F.CC(F.fraction(re.numerator(), re.denominator()).normalize(),
         F.fraction(im.numerator(), im.denominator()).normalize()));
     return expVectorToExpr(exp, monomTimes);
   }

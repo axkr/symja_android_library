@@ -117,6 +117,11 @@ public class TestExpr extends ExprEvaluatorTestCase {
 
     ISymbol x = F.x;
     ISymbol y = F.y;
+    // assert (-2*tan(4*x)).as_independent(x) == ( )
+    assertEquals(
+        Expr.asIndependent(F.Times(F.CN2, F.Tan(F.Times(F.C4, x)), x), F.List(x)).toString(), //
+        "{-2,x*Tan(4*x)}");
+
     // // assert S.Zero.as_independent(x, as_Add=True) == (0, 0)
     assertEquals(Expr.asIndependent(F.C0, F.List(x), Map.of("as_Add", S.True)).toString(), //
         "{0,0}");

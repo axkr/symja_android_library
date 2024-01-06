@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -7,7 +8,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,9 +28,6 @@ import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.reflection.system.Share;
 import org.matheclipse.core.visit.AbstractVisitor;
-import junit.framework.TestCase;
-
-import static org.junit.Assert.assertEquals;
 
 @RunWith(JUnit4.class)
 public class SerializableTest {
@@ -110,26 +107,27 @@ public class SerializableTest {
 
   @Test
   public void testComplex() {
-    equalsCopy(F.complex(F.fraction(1L, Integer.MAX_VALUE)));
-    equalsCopy(F.complex(F.fraction(1L, Integer.MIN_VALUE)));
-    equalsCopy(F.complex(F.fraction(1L, Integer.MAX_VALUE * 2L)));
-    equalsCopy(F.complex(F.fraction(1L, Integer.MIN_VALUE * 2L)));
-    equalsCopy(F.complex(F.fraction(Integer.MAX_VALUE, 7L)));
-    equalsCopy(F.complex(F.fraction(Integer.MIN_VALUE, 3L)));
-    equalsCopy(F.complex(F.fraction(Integer.MAX_VALUE * 2L, 5L)));
-    equalsCopy(F.complex(F.fraction(Integer.MIN_VALUE * 2L, 11L)));
+    equalsCopy(F.CC(F.fraction(1L, Integer.MAX_VALUE)));
+    equalsCopy(F.CC(F.fraction(1L, Integer.MIN_VALUE)));
+    equalsCopy(F.CC(F.fraction(1L, Integer.MAX_VALUE * 2L)));
+    equalsCopy(F.CC(F.fraction(1L, Integer.MIN_VALUE * 2L)));
+    equalsCopy(F.CC(F.fraction(Integer.MAX_VALUE, 7L)));
+    equalsCopy(F.CC(F.fraction(Integer.MIN_VALUE, 3L)));
+    equalsCopy(F.CC(F.fraction(Integer.MAX_VALUE * 2L, 5L)));
+    equalsCopy(F.CC(F.fraction(Integer.MIN_VALUE * 2L, 11L)));
 
-    equalsCopy(F.complex(F.fraction(1L, Integer.MAX_VALUE), F.fraction(1L, Integer.MAX_VALUE)));
-    equalsCopy(F.complex(F.fraction(1L, Integer.MIN_VALUE), F.fraction(1L, Integer.MIN_VALUE)));
+    equalsCopy(F.CC(F.fraction(1L, Integer.MAX_VALUE), F.fraction(1L, Integer.MAX_VALUE)));
+    equalsCopy(F.CC(F.fraction(1L, Integer.MIN_VALUE), F.fraction(1L, Integer.MIN_VALUE)));
     equalsCopy(
-        F.complex(F.fraction(1L, Integer.MAX_VALUE * 2L), F.fraction(1L, Integer.MAX_VALUE * 2L)));
+        F.CC(F.fraction(1L, Integer.MAX_VALUE * 2L), F.fraction(1L, Integer.MAX_VALUE * 2L)));
     equalsCopy(
-        F.complex(F.fraction(1L, Integer.MIN_VALUE * 2L), F.fraction(1L, Integer.MAX_VALUE * 2L)));
-    equalsCopy(F.complex(F.fraction(Integer.MAX_VALUE, 7L), F.fraction(Integer.MAX_VALUE, 7L)));
-    equalsCopy(F.complex(F.fraction(Integer.MIN_VALUE, 3L), F.fraction(Integer.MIN_VALUE, 3L)));
+        F.CC(F.fraction(1L, Integer.MIN_VALUE * 2L), F.fraction(1L, Integer.MAX_VALUE * 2L)));
+    equalsCopy(F.CC(F.fraction(Integer.MAX_VALUE, 7L), F.fraction(Integer.MAX_VALUE, 7L)));
+    equalsCopy(F.CC(F.fraction(Integer.MIN_VALUE, 3L), F.fraction(Integer.MIN_VALUE, 3L)));
     equalsCopy(
-        F.complex(F.fraction(Integer.MAX_VALUE * 2L, 5L), F.fraction(Integer.MAX_VALUE * 2L, 5L)));
-    equalsCopy(F.complex(F.fraction(Integer.MIN_VALUE * 2L, 11L),
+        F.CC(F.fraction(Integer.MAX_VALUE * 2L, 5L), F.fraction(Integer.MAX_VALUE * 2L, 5L)));
+    equalsCopy(
+        F.CC(F.fraction(Integer.MIN_VALUE * 2L, 11L),
         F.fraction(Integer.MIN_VALUE * 2L, 11L)));
   }
 

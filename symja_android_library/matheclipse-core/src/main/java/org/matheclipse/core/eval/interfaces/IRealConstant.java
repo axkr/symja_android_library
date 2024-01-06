@@ -1,5 +1,7 @@
 package org.matheclipse.core.eval.interfaces;
 
+import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
+
 /** Interface for &quot;real numeric constants&quot;. */
 public interface IRealConstant {
   /**
@@ -10,11 +12,31 @@ public interface IRealConstant {
    */
   double evalReal();
 
+  default boolean isReal() {
+    return true;
+  }
+
   default boolean isNegative() {
     return false;
   }
 
   default boolean isPositive() {
     return true;
+  }
+
+  default boolean isNumber() {
+    return true;
+  }
+
+  default COMPARE_TERNARY isIrrational() {
+    return COMPARE_TERNARY.UNDECIDABLE;
+  }
+
+  default COMPARE_TERNARY isAlgebraic() {
+    return COMPARE_TERNARY.UNDECIDABLE;
+  }
+
+  default COMPARE_TERNARY isTranscendental() {
+    return COMPARE_TERNARY.UNDECIDABLE;
   }
 }

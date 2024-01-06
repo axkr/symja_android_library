@@ -47,7 +47,7 @@ public abstract class AbstractArg2 extends AbstractFunctionEvaluator {
           return e2FraArg(F.fraction((IInteger) o0, F.C1), (IFraction) o1);
         }
         if (o1 instanceof IComplex) {
-          return e2ComArg(F.complex((IInteger) o0, F.C0), (IComplex) o1);
+          return e2ComArg(F.CC((IInteger) o0, F.C0), (IComplex) o1);
         }
 
         return F.NIL;

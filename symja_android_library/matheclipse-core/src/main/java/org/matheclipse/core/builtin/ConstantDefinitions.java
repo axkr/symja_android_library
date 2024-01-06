@@ -17,14 +17,15 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.EvalHistory;
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
-import org.matheclipse.core.eval.interfaces.ISetValueEvaluator;
 import org.matheclipse.core.eval.interfaces.IRealConstant;
+import org.matheclipse.core.eval.interfaces.ISetValueEvaluator;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ParserConfig;
@@ -668,6 +669,21 @@ public class ConstantDefinitions {
     public static final double CATALAN = 0.91596559417721901505460351493238411077414937428167;
 
     @Override
+    public COMPARE_TERNARY isIrrational() {
+      return COMPARE_TERNARY.UNDECIDABLE;
+    }
+
+    @Override
+    public COMPARE_TERNARY isAlgebraic() {
+      return COMPARE_TERNARY.UNDECIDABLE;
+    }
+
+    @Override
+    public COMPARE_TERNARY isTranscendental() {
+      return COMPARE_TERNARY.UNDECIDABLE;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.CONSTANT);
     }
@@ -776,6 +792,21 @@ public class ConstantDefinitions {
   private static class Degree extends AbstractSymbolEvaluator implements IRealConstant {
     public static final double DEGREE = 0.017453292519943295769236907684886127134428718885417;
 
+    @Override
+    public COMPARE_TERNARY isIrrational() {
+      return COMPARE_TERNARY.FALSE;
+    }
+
+    @Override
+    public COMPARE_TERNARY isAlgebraic() {
+      return COMPARE_TERNARY.FALSE;
+    }
+
+    @Override
+    public COMPARE_TERNARY isTranscendental() {
+      return COMPARE_TERNARY.FALSE;
+    }
+
     /** Constant Degree converted to Pi/180 */
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
@@ -830,6 +861,20 @@ public class ConstantDefinitions {
    * </pre>
    */
   private static class E extends AbstractSymbolEvaluator implements IRealConstant {
+    @Override
+    public COMPARE_TERNARY isIrrational() {
+      return COMPARE_TERNARY.TRUE;
+    }
+
+    @Override
+    public COMPARE_TERNARY isAlgebraic() {
+      return COMPARE_TERNARY.FALSE;
+    }
+
+    @Override
+    public COMPARE_TERNARY isTranscendental() {
+      return COMPARE_TERNARY.TRUE;
+    }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
@@ -860,6 +905,20 @@ public class ConstantDefinitions {
    * constant</a>
    */
   private static class EulerGamma extends AbstractSymbolEvaluator implements IRealConstant {
+    @Override
+    public COMPARE_TERNARY isIrrational() {
+      return COMPARE_TERNARY.UNDECIDABLE;
+    }
+
+    @Override
+    public COMPARE_TERNARY isAlgebraic() {
+      return COMPARE_TERNARY.UNDECIDABLE;
+    }
+
+    @Override
+    public COMPARE_TERNARY isTranscendental() {
+      return COMPARE_TERNARY.UNDECIDABLE;
+    }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
@@ -908,6 +967,21 @@ public class ConstantDefinitions {
     public static final double GLAISHER = 1.2824271291006226368753425688697917277676889273250;
 
     @Override
+    public COMPARE_TERNARY isIrrational() {
+      return COMPARE_TERNARY.UNDECIDABLE;
+    }
+
+    @Override
+    public COMPARE_TERNARY isAlgebraic() {
+      return COMPARE_TERNARY.UNDECIDABLE;
+    }
+
+    @Override
+    public COMPARE_TERNARY isTranscendental() {
+      return COMPARE_TERNARY.UNDECIDABLE;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.CONSTANT);
     }
@@ -931,6 +1005,21 @@ public class ConstantDefinitions {
   private static class GoldenAngle extends AbstractSymbolEvaluator
       implements IRealConstant {
     public static final double GOLDEN_ANGLE = 2.3999632297286533222315555066336138531249990110581;
+
+    @Override
+    public COMPARE_TERNARY isIrrational() {
+      return COMPARE_TERNARY.TRUE;
+    }
+
+    @Override
+    public COMPARE_TERNARY isAlgebraic() {
+      return COMPARE_TERNARY.FALSE;
+    }
+
+    @Override
+    public COMPARE_TERNARY isTranscendental() {
+      return COMPARE_TERNARY.TRUE;
+    }
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
@@ -993,6 +1082,21 @@ public class ConstantDefinitions {
   private static class GoldenRatio extends AbstractSymbolEvaluator
       implements IRealConstant {
     public static final double GOLDEN_RATIO = 1.6180339887498948482045868343656381177203091798058;
+
+    @Override
+    public COMPARE_TERNARY isIrrational() {
+      return COMPARE_TERNARY.TRUE;
+    }
+
+    @Override
+    public COMPARE_TERNARY isAlgebraic() {
+      return COMPARE_TERNARY.TRUE;
+    }
+
+    @Override
+    public COMPARE_TERNARY isTranscendental() {
+      return COMPARE_TERNARY.FALSE;
+    }
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
@@ -1068,7 +1172,7 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      return F.complex(F.C0, F.C1);
+      return F.CI;
     }
   }
 
@@ -1195,6 +1299,21 @@ public class ConstantDefinitions {
     public static final double KHINCHIN = 2.6854520010653064453097148354817956938203822939945;
 
     @Override
+    public COMPARE_TERNARY isIrrational() {
+      return COMPARE_TERNARY.UNDECIDABLE;
+    }
+
+    @Override
+    public COMPARE_TERNARY isAlgebraic() {
+      return COMPARE_TERNARY.UNDECIDABLE;
+    }
+
+    @Override
+    public COMPARE_TERNARY isTranscendental() {
+      return COMPARE_TERNARY.UNDECIDABLE;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.CONSTANT);
     }
@@ -1237,6 +1356,20 @@ public class ConstantDefinitions {
    * </pre>
    */
   private static class Pi extends AbstractSymbolEvaluator implements IRealConstant {
+    @Override
+    public COMPARE_TERNARY isIrrational() {
+      return COMPARE_TERNARY.TRUE;
+    }
+
+    @Override
+    public COMPARE_TERNARY isAlgebraic() {
+      return COMPARE_TERNARY.FALSE;
+    }
+
+    @Override
+    public COMPARE_TERNARY isTranscendental() {
+      return COMPARE_TERNARY.TRUE;
+    }
 
     @Override
     public void setUp(final ISymbol newSymbol) {

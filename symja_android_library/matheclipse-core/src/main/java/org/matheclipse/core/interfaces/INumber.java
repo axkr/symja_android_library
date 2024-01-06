@@ -219,6 +219,11 @@ public interface INumber extends IExpr, IAtomicEvaluate {
   public INumber integerPart();
 
   @Override
+  default COMPARE_TERNARY isIrrational() {
+    return COMPARE_TERNARY.FALSE;
+  }
+
+  @Override
   default boolean isNumber() {
     return true;
   }

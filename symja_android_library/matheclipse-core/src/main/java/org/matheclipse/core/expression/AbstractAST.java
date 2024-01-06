@@ -1838,6 +1838,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (obj == this) {
       return true;
     }
+    if (obj == null) {
+      return false;
+    }
     if (hashCode() != obj.hashCode()) {
       return false;
     }
@@ -2450,6 +2453,14 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   }
 
   @Override
+  public final IExpr lcm(IExpr that) {
+    if (that.isZero()) {
+      return F.C0;
+    }
+    return IASTMutable.super.lcm(that);
+  }
+
+  @Override
   public abstract IExpr get(int location);
 
   @Override
@@ -2613,23 +2624,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   @Override
   public final boolean hasTrigonometricFunction() {
-    return has(x -> {
-      if (x.isAST1()) {
-        final IExpr head = x.head();
-        if (head.isBuiltInSymbol()) {
-          return (head == S.ArcCos) || (head == S.ArcCsc) || (head == S.ArcCot)
-              || (head == S.ArcSec) || (head == S.ArcSin) || (head == S.ArcTan) || (head == S.Cos)
-              || (head == S.Csc) || (head == S.Cot) || (head == S.Sec) || (head == S.Sin)
-              || (head == S.Sinc) || (head == S.Tan) || (head == S.Cosh) || (head == S.Csch)
-              || (head == S.Coth) || (head == S.Sech) || (head == S.Sinh) || (head == S.Tanh)
-              || (head == S.Haversine) || (head == S.InverseHaversine);
-        }
-      }
-      if (x.isAST2()) {
-        return x.head() == S.ArcTan;
-      }
-      return false;
-    }, false);
+    return has(x -> isTrigonometricFunction(x), false);
   }
 
   /**
@@ -3545,6 +3540,47 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return false;
   }
 
+  @Override
+  public COMPARE_TERNARY isIrrational() {
+    if (head() == S.Plus) {
+      IAST plusAST = this;
+      for (int i = 1; i < plusAST.size(); i++) {
+        IExpr arg = plusAST.get(i);
+        COMPARE_TERNARY irrational = arg.isIrrational();
+        if (irrational == COMPARE_TERNARY.TRUE) {
+          IAST others = plusAST.removeAtCopy(i);
+          if (others.forAll(x -> x.isRational())) {
+            return COMPARE_TERNARY.TRUE;
+          }
+          return COMPARE_TERNARY.UNDECIDABLE;
+        }
+        if (irrational == COMPARE_TERNARY.UNDECIDABLE) {
+          return COMPARE_TERNARY.UNDECIDABLE;
+        }
+      }
+    } else if (head() == S.Times) {
+      IAST timesAST = this;
+      for (int i = 1; i < timesAST.size(); i++) {
+        IExpr arg = timesAST.get(i);
+        COMPARE_TERNARY irrational = arg.isIrrational();
+        if (irrational == COMPARE_TERNARY.TRUE) {
+          IAST others = timesAST.removeAtCopy(i);
+          if (others.forAll(x -> x.isRational() && !x.isZero())) {
+            return COMPARE_TERNARY.TRUE;
+          }
+          return COMPARE_TERNARY.UNDECIDABLE;
+        }
+        if (irrational == COMPARE_TERNARY.UNDECIDABLE) {
+          return COMPARE_TERNARY.UNDECIDABLE;
+        }
+      }
+      if (timesAST.forAll(x -> x.isReal())) {
+        return COMPARE_TERNARY.FALSE;
+      }
+    }
+    return COMPARE_TERNARY.UNDECIDABLE;
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean isEmptyIntervalData() {
@@ -4347,14 +4383,14 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return true;
     }
     if (isPower() && (!exponent().isZero() || !base().isZero())) {
-      final IExpr arg1 = arg1();
-      if (!arg1.isRealResult()) {
+      final IExpr base = base();
+      if (!base.isRealResult()) {
         return false;
       }
-      if (arg1.isNegativeResult()) {
+      if (base.isNegativeResult()) {
         return false;
       }
-      if (!arg2().isRealResult()) {
+      if (!exponent().isRealResult()) {
         return false;
       }
       return true;
@@ -4383,6 +4419,14 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         }
       }
       return containsNum;
+    }
+    return false;
+  }
+
+  @Override
+  public boolean isRelationalBinary() {
+    if (size() == 3) {
+      return isFunctionID(ID.Equal, ID.Unequal, ID.Greater, ID.GreaterEqual, ID.Less, ID.LessEqual);
     }
     return false;
   }
@@ -4577,6 +4621,24 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           ID.ArcSec, ID.Sin, ID.ArcSin, ID.Tan, ID.ArcTan);
     } else if (size() == 3) {
       return isFunctionID(ID.ArcTan);
+    }
+    return false;
+  }
+
+  private static boolean isTrigonometricFunction(IExpr x) {
+    if (x.isAST1()) {
+      final IExpr head = x.head();
+      if (head.isBuiltInSymbol()) {
+        return (head == S.ArcCos) || (head == S.ArcCsc) || (head == S.ArcCot) || (head == S.ArcSec)
+            || (head == S.ArcSin) || (head == S.ArcTan) || (head == S.Cos) || (head == S.Csc)
+            || (head == S.Cot) || (head == S.Sec) || (head == S.Sin) || (head == S.Sinc)
+            || (head == S.Tan) || (head == S.Cosh) || (head == S.Csch) || (head == S.Coth)
+            || (head == S.Sech) || (head == S.Sinh) || (head == S.Tanh) || (head == S.Haversine)
+            || (head == S.InverseHaversine);
+      }
+    }
+    if (x.isAST2()) {
+      return x.head() == S.ArcTan;
     }
     return false;
   }
@@ -5554,6 +5616,18 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       }
     }
     return F.NIL;
+  }
+
+  @Override
+  public Optional<IEvaluator> isInstance(Class<?> clazz) {
+    int headID = headID();
+    if (headID > 0) {
+      IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
+      if (clazz.isInstance(evaluator)) {
+        return Optional.of(evaluator);
+      }
+    }
+    return Optional.empty();
   }
 
   /**

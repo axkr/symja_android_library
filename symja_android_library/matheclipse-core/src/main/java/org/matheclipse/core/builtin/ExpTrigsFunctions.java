@@ -49,7 +49,9 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
+import org.matheclipse.core.eval.interfaces.IReciprocalTrigonometricFunction;
 import org.matheclipse.core.eval.interfaces.IRewrite;
+import org.matheclipse.core.eval.interfaces.ITrigonometricFunction;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
@@ -1212,7 +1214,12 @@ public class ExpTrigsFunctions {
    * trigonometric constants</a>
    */
   private static final class Cos extends AbstractTrigArg1
-      implements INumeric, IRewrite, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator, ITrigonometricFunction {
+
+    @Override
+    public IExpr period(IAST self, IExpr general_period, ISymbol symbol) {
+      return _period(self, F.C2Pi, symbol);
+    }
 
     @Override
     public double applyAsDouble(double operand) {
@@ -1482,7 +1489,12 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
    */
   private static final class Csc extends AbstractTrigArg1
-      implements INumeric, IRewrite, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator, IReciprocalTrigonometricFunction {
+
+    @Override
+    public IExpr period(IAST self, IExpr general_period, ISymbol symbol) {
+      return _period(self, F.C2Pi, symbol);
+    }
 
     @Override
     public double applyAsDouble(double operand) {
@@ -1761,7 +1773,12 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
    */
   private static final class Cot extends AbstractTrigArg1
-      implements INumeric, IRewrite, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator, ITrigonometricFunction {
+
+    @Override
+    public IExpr period(IAST self, IExpr general_period, ISymbol symbol) {
+      return _period(self, S.Pi, symbol);
+    }
 
     @Override
     public double applyAsDouble(double operand) {
@@ -2530,7 +2547,12 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
    */
   private static final class Sec extends AbstractTrigArg1
-      implements INumeric, IRewrite, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator, IReciprocalTrigonometricFunction {
+
+    @Override
+    public IExpr period(IAST self, IExpr general_period, ISymbol symbol) {
+      return _period(self, F.C2Pi, symbol);
+    }
 
     @Override
     public double applyAsDouble(double operand) {
@@ -2795,7 +2817,12 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
    */
   private static final class Sin extends AbstractTrigArg1
-      implements INumeric, IRewrite, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator, ITrigonometricFunction {
+
+    @Override
+    public IExpr period(IAST self, IExpr general_period, ISymbol symbol) {
+      return _period(self, F.C2Pi, symbol);
+    }
 
     @Override
     public double applyAsDouble(double operand) {
@@ -3192,12 +3219,17 @@ public class ExpTrigsFunctions {
 
   /**
    * Tan
-   *
+   * 
    * <p>
    * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
    */
   private static final class Tan extends AbstractTrigArg1
-      implements INumeric, IRewrite, DoubleUnaryOperator {
+      implements INumeric, IRewrite, DoubleUnaryOperator, ITrigonometricFunction {
+
+    @Override
+    public IExpr period(IAST self, IExpr general_period, ISymbol symbol) {
+      return _period(self, S.Pi, symbol);
+    }
 
     @Override
     public double applyAsDouble(double operand) {

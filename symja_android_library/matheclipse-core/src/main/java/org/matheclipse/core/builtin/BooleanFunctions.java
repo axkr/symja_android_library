@@ -3035,7 +3035,7 @@ public final class BooleanFunctions {
    * </pre>
    */
   private static class Max extends Min {
-    private final static ISymbol MAX_DUMMY_SYMBOL = F.Dummy("$max");
+    private final static ISymbol MAX_DUMMY_SYMBOL = F.Dummy("$Max");
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {

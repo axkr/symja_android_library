@@ -3135,6 +3135,7 @@ public final class Programming {
         }
 
         IExpr arg2 = engine.evaluate(ast.arg2());
+        // System.out.println(ast.setAtCopy(2, arg2));
         long seconds = 0L;
         try {
           if (arg2.isReal()) {
@@ -3726,8 +3727,7 @@ public final class Programming {
             // Local variable specification `1` contains `2`, which is an assignment to `3`; only
             // assignments to symbols are allowed.
             Errors.printMessage(S.Module, "lvset",
-                F.List(variablesList, variablesList.get(i), setFun.arg1()),
-                engine);
+                F.List(variablesList, variablesList.get(i), setFun.arg1()), engine);
             return false;
           }
           oldSymbol = (ISymbol) setFun.arg1();

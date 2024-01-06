@@ -7,8 +7,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import javax.annotation.concurrent.NotThreadSafe;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.BreakException;
@@ -132,8 +131,8 @@ import com.google.common.util.concurrent.TimeLimiter;
  * assertEquals(-0.5063656411097588, result, 0E-10);
  * </pre>
  */
+@NotThreadSafe
 public class ExprEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   static {
     F.initSymbols();
@@ -354,11 +353,11 @@ public class ExprEvaluator {
     } catch (final FailedException e) {
       return S.$Failed;
     } catch (final SyntaxError e) { // catches parser errors
-      LOGGER.debug("syntax error", e);
+      // LOGGER.debug("syntax error", e);
       return F.stringx(e.getMessage());
     } catch (SymjaMathException sma) {
       // sma.printStackTrace();
-      LOGGER.debug("ExprEvaluator.evalTopLevel() failed", sma);
+      // LOGGER.debug("ExprEvaluator.evalTopLevel() failed", sma);
       Errors.printMessage(expr.topHead(), sma, engineRef[0]);
       return expr;
     } finally {
@@ -380,10 +379,10 @@ public class ExprEvaluator {
         temp = engine.evaluate(expr);
       }
     } catch (ReturnException rex) {
-      LOGGER.debug("ExprEvaluator.evalTryCatch() failed", rex);
+      // LOGGER.debug("ExprEvaluator.evalTryCatch() failed", rex);
       return rex.getValue();
     } catch (BreakException | ContinueException conex) {
-      LOGGER.debug("ExprEvaluator.evalTryCatch() failed", conex);
+      // LOGGER.debug("ExprEvaluator.evalTryCatch() failed", conex);
       IAST ast = F.Continue();
       if (conex instanceof BreakException) {
         ast = F.Break();
@@ -392,20 +391,20 @@ public class ExprEvaluator {
       Errors.printMessage(S.Continue, "nofwd", F.list(ast), engine);
       temp = F.Hold(ast);
     } catch (ThrowException e) {
-      LOGGER.debug("ExprEvaluator.evalTryCatch() failed", e);
+      // LOGGER.debug("ExprEvaluator.evalTryCatch() failed", e);
       // Uncaught `1` returned to top level.
       IAST ast = F.Throw(e.getValue());
       Errors.printMessage(S.Throw, "nocatch", F.list(ast), engine);
       temp = F.Hold(ast);
     } catch (IterationLimitExceeded e) {
-      LOGGER.debug("ExprEvaluator.evalTryCatch() failed", e);
+      // LOGGER.debug("ExprEvaluator.evalTryCatch() failed", e);
       // Iteration limit of `1` exceeded.
       int iterationLimit = engine.getIterationLimit();
       Errors.printMessage(S.$IterationLimit, "itlim",
           F.list(iterationLimit < 0 ? F.CInfinity : F.ZZ(iterationLimit), expr), engine);
       temp = F.Hold(expr);
     } catch (RecursionLimitExceeded e) {
-      LOGGER.debug("ExprEvaluator.evalTryCatch() failed", e);
+      // LOGGER.debug("ExprEvaluator.evalTryCatch() failed", e);
       // Recursion depth of `1` exceeded during evaluation of `2`.
       int recursionLimit = engine.getRecursionLimit();
       Errors.printMessage(S.$RecursionLimit, "reclim2",
@@ -510,10 +509,10 @@ public class ExprEvaluator {
           } catch (org.matheclipse.core.eval.exception.TimeoutException
               | java.util.concurrent.TimeoutException
               | com.google.common.util.concurrent.UncheckedTimeoutException e) {
-            LOGGER.debug("ExprEvaluator.evaluateWithTimeout() failed", e);
+            // LOGGER.debug("ExprEvaluator.evaluateWithTimeout() failed", e);
             return S.$Aborted;
           } catch (Exception e) {
-            LOGGER.debug("ExprEvaluator.evaluateWithTimeout() failed", e);
+            // LOGGER.debug("ExprEvaluator.evaluateWithTimeout() failed", e);
             return S.Null;
           } finally {
             work.cancel();

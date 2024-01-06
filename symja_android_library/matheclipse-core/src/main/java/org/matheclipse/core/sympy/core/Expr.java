@@ -179,8 +179,10 @@ public class Expr {
       }
       indep.append(n);
     }
-    // TODO
-    return F.pair(indep.apply(S.Times).oneIdentity1(), depend.apply(S.Times).oneIdentity1());
+
+    IExpr first = F.eval(indep.apply(S.Times));
+    IExpr second = depend.apply(S.Times).oneIdentity1();
+    return F.pair(first, second);
   }
 
 

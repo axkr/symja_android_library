@@ -52,6 +52,7 @@ import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.core.reflection.system.rules.FunctionRangeRules;
+import org.matheclipse.core.sympy.calculus.Util;
 import org.matheclipse.core.visit.VisitorExpr;
 import com.google.common.base.Suppliers;
 
@@ -68,6 +69,7 @@ public class MinMaxFunctions {
       S.ArgMax.setEvaluator(new ArgMax());
       S.ArgMin.setEvaluator(new ArgMin());
       S.FunctionDomain.setEvaluator(new FunctionDomain());
+      S.FunctionPeriod.setEvaluator(new FunctionPeriod());
       S.FunctionRange.setEvaluator(new FunctionRange());
       S.Maximize.setEvaluator(new Maximize());
       S.Minimize.setEvaluator(new Minimize());
@@ -401,6 +403,7 @@ public class MinMaxFunctions {
       LAZY_MATCHER = Suppliers.memoize(Initializer::init);
     }
   }
+
   private static final class FunctionDomain extends AbstractFunctionEvaluator {
 
     static final class FunctionDomainRealsVisitor extends VisitorExpr {
@@ -735,6 +738,32 @@ public class MinMaxFunctions {
 
   }
 
+  private static final class FunctionPeriod extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr function = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      // TODO implement different domains
+      // ISymbol domain = S.Reals;
+      // if (ast.argSize() >= 3) {
+      // if (!domain.equals(ast.arg3())) {
+      //
+      // }
+      // }
+      IAST variables = arg2.makeList();
+      if (variables.argSize() != 1 || !variables.arg1().isSymbol()) {
+        return F.NIL;
+      }
+      return Util.periodicity(function, (ISymbol) variables.arg1());
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+  }
 
   /**
    *

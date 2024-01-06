@@ -6054,6 +6054,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDirichletBeta() {
+    check("DirichletBeta(-1)", //
+        "0");
+    check("DirichletBeta(0)", //
+        "1/2");
+    check("DirichletBeta(1)", //
+        "Pi/4");
+    check("DirichletBeta(1.3-I)", //
+        "0.898582+I*(-0.135951)");
+    check("Table(DirichletBeta(x), {x, -4, 4}) // N", //
+        "{2.5,0.0,-0.5,0.0,0.5,0.785398,0.915966,0.968946,0.988945}");
+  }
+
+  @Test
   public void testDirichletEta() {
     check("DirichletEta(1)", //
         "Log(2)");
@@ -10210,6 +10224,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // https://github.com/axkr/symja_android_library/issues/856
     check("FullSimplify((4+3*Sqrt(2)+Sqrt(3)+Sqrt(6))/(2+Sqrt(2)+Sqrt(3)))", //
         "1+Sqrt(2)");
+
+    check("FullSimplify((Cosh(x) - 1)/(Cosh(x) + Sinh(x))-(1 - Exp(-x))^2/2)", //
+        "0");
     check("FullSimplify(Sign(z)*Abs(z))", //
         "z");
     check("FullSimplify( Sqrt(9-4*Sqrt(5)))", //
@@ -10476,6 +10493,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFunctionPeriod() {
+    check("FunctionPeriod(E^Sin(x), x)", //
+        "2*Pi");
+    check("FunctionPeriod(Sin(x), x)", //
+        "2*Pi");
+    // TODO implement for multiple variables
+    check("FunctionPeriod(Cos(x) + Sin(y), {x, y})", //
+        "FunctionPeriod(Cos(x)+Sin(y),{x,y})");
+  }
+
+  @Test
   public void testFunctionRange() {
     // TODO
     // check("FunctionRange(Sqrt(x^2 - 1)/x, x, y)", //
@@ -10695,14 +10723,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testGCD() {
-
+    check("GCD(0,b)", //
+        "GCD(0,b)");
+    check("GCD(a,a)", //
+        "GCD(a,a)");
+    check("GCD(a,b)", //
+        "GCD(a,b)");
+    check("GCD(3/7,12/22)", //
+        "3/77");
     check("GCD(5+3*I, 2-8*I)", //
         "1+I");
     check("GCD(5+3*I, 2+8*I)", //
         "5+I*3");
     check("GCD(1+5*I, 3+2*I)", //
         "3+I*2");
-
+    check("GCD(5+I, 2+3*I)", //
+        "2+I*3");
     check("GCD(1,I)", //
         "1");
     check("GCD(I,I)", //
@@ -13494,6 +13530,55 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLCM() {
+    check("LCM(4+I, 1+16*I)", //
+        "65+I*12");
+    check("QuotientRemainder(1+16*I,1)", //
+        "{1+I*16,0}");
+    check("QuotientRemainder(5,3-I)", //
+        "{2,-1+I*2}");
+    check("LCM(5,3-I)", //
+        "5+I*5");
+    check("LCM(5,2+I)", //
+        "5");
+    check("LCM(-4 + 5*I, 2 + 3*I)", //
+        "23+I*2");
+    check("LCM(-5-I, -2-I)", //
+        "9+I*7");
+    check("LCM(-3,7)", //
+        "21");
+    check("LCM(0,b)", //
+        "0");
+    check("LCM(a,a)", //
+        "LCM(a,a)");
+    check("LCM(a,b)", //
+        "LCM(a,b)");
+    check("LCM(1/2,2)", //
+        "2");
+    check("LCM(2/3,4/9)", //
+        "4/3");
+    check("LCM(1/3,2/5,3/7)", //
+        "6");
+    check("LCM(2^32 / 3, 2^34 / 7)", //
+        "17179869184");
+    check("GCD(4+I, 1+16*I)", //
+        "1");
+    check("LCM(2^32 +I, 1+ 2^34 * I)", //
+        "73786976294838206465+I*12884901888");
+    check("LCM(5+I, 2+3*I)", //
+        "5+I");
+    check("LCM(6+ 9*I, 2 + 3*I)", //
+        "6+I*9");
+    check("LCM(3/7,12/22)", //
+        "6");
+    check("LCM(-3/7,12/22)", //
+        "6");
+    check("LCM(3/7,-12/22)", //
+        "6");
+    check("LCM(-3/7,-12/22)", //
+        "6");
+    check("LCM(-1/2)", //
+        "1/2");
+
     // System.out.println(Integer.MIN_VALUE); =>-2147483648
     check("LCM(-2147483648)", //
         "2147483648");
@@ -18946,8 +19031,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testPolynomialGCD() {
     // TODO https://github.com/kredel/java-algebra-system/issues/15
-    // check("PolynomialGCD(-1/2,x^2-5*x+(-1)*6)", //
-    // "1/2");
+    check("PolynomialGCD(-1/2,x^2-5*x+(-1)*6)", //
+        "1/2");
 
     check("PolynomialGCD(3*x+9,-3.14159)", //
         "PolynomialGCD(9+3*x,-3.14159)");
@@ -19005,9 +19090,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testPolynomialLCM() {
     // TODO https://github.com/kredel/java-algebra-system/issues/15
-    // check("PolynomialLCM(x^2+7*x+6,-1/2)", //
-    // "");
-
+    check("PolynomialLCM(x^2+7*x+6,-1/2)", //
+        "-6-7*x-x^2");
+    check("PolynomialGCD(1/2,2)", //
+        "1/2");
+    check("PolynomialLCM(1/2,2)", //
+        "2");
     check("PolynomialLCM({},0.5,x^4+(-1)*1,x^5+(-1)*1,x^6+(-1)*1,x^7+(-1)*1)", //
         "{}");
     check("PolynomialLCM(f(x)*y^3,f(x)*x^2)", //
@@ -19345,9 +19433,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPossibleZeroQ() {
-    check("PossibleZeroQ(Sqrt(x^2)-x,Assumptions -> Re(x)>0)", //
-        "True");
+
     check("PossibleZeroQ((x + 1) (x - 1) - x^2 + 1)", //
+        "True");
+    check("PossibleZeroQ(Sqrt(x^2)-x,Assumptions -> Re(x)>0)", //
         "True");
     check("PossibleZeroQ(Sqrt(x^2)-x)", //
         "False");
@@ -21119,6 +21208,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRange() {
+    check("Range(a, b, (b - a)/4)", //
+        "{a,a+1/4*(-a+b),a+1/2*(-a+b),a+3/4*(-a+b),b}");
+
     byte[] b0Array = new byte[] {0};
     ByteArrayExpr b0a = ByteArrayExpr.newInstance(b0Array);
     IAST range = F.Range(F.CNI, b0a, F.Quantity(F.num(1.2), F.stringx("m")));
@@ -22882,6 +22974,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSimplify() {
+
     check("Simplify((1/x-1/3)/(x-3))", //
         "-1/(3*x)");
 
@@ -26027,6 +26120,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testUnevaluated() {
+    check("list1={{{1},{2},{1,2},{1,2,3},{},{}},{{2},{3},{}}}", //
+        "{{{1},{2},{1,2},{1,2,3},{},{}},{{2},{3},{}}}");
+    check("list1 //. {} :> Unevaluated(##&[])", //
+        "{{{1},{2},{1,2},{1,2,3}},{{2},{3}}}");
+
     check("SetAttributes(symbolLength, HoldAll); " //
         + "symbolLength(s_Symbol) := StringLength(SymbolName(Unevaluated(s)))", //
         "");

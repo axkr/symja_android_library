@@ -1009,7 +1009,6 @@ public class Primality implements IPrimality {
       return BigInteger.ONE;
     }
 
-    // SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
     SortedMap<BigInteger, Integer> map = Config.PRIME_FACTORS.factorInteger(value);
     BigInteger l = BigInteger.ONE;
     for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {

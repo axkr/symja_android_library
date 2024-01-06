@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -113,24 +114,76 @@ public class Outer extends AbstractFunctionEvaluator {
     }
   }
 
+  // private static class OuterSparseArrayAlgorithm {
+  // final IAST ast;
+  // final IExpr f;
+  // final IExpr head;
+  //
+  // public OuterSparseArrayAlgorithm(final IAST ast, final IExpr head) {
+  // this.ast = ast;
+  // this.f = ast.arg1();
+  // this.head = head;
+  // }
+  //
+  // private ISparseArray outer(int astPosition, IExpr expr, ISparseArray current) {
+  //
+  // if (expr.isSparseArray()) {
+  // ISparseArray sparseArray = (ISparseArray) expr;
+  // int size = sparseArray.size();
+  // return F.mapRange(head, 1, size, i -> outer(astPosition, sparseArray.get(i), current));
+  // } else {
+  // return null;
+  // }
+  //
+  //
+  // if (ast.size() > astPosition) {
+  // try {
+  // current.append(expr);
+  // return outer(astPosition + 1, ast.get(astPosition), current);
+  // } finally {
+  // current.remove(current.argSize());
+  // }
+  // } else {
+  // IASTAppendable result = F.ast(f);
+  // result.appendArgs(current);
+  // result.append(expr);
+  // return result;
+  // }
+  // }
+  // }
+
   public Outer() {}
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     IExpr head = null;
-    for (int i = 2; i < ast.size(); i++) {
+    IExpr arg2 = ast.arg2();
+    if (arg2.isAST()) {
+      head = arg2.head();
+    } else if (arg2.isSparseArray()) {
+      head = S.SparseArray;
+    } else {
+      return F.NIL;
+    }
+    for (int i = 3; i < ast.size(); i++) {
       IExpr list = ast.get(i);
-      if (!list.isAST()) {
-        return F.NIL;
-      }
-      if (head == null) {
-        head = list.head();
-      } else if (!head.equals(list.head())) {
+      if (!head.equals(list.head())) {
         return F.NIL;
       }
     }
-    OuterAlgorithm algorithm = new OuterAlgorithm(ast, head);
-    return algorithm.outer(3, ast.arg2(), F.ListAlloc(ast.argSize()));
+    if (head != S.SparseArray) {
+      OuterAlgorithm algorithm = new OuterAlgorithm(ast, head);
+      return algorithm.outer(3, ast.arg2(), F.ListAlloc(ast.argSize()));
+    }
+    // OuterSparseArrayAlgorithm algorithm = new OuterSparseArrayAlgorithm(ast, head);
+    // final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
+    // ISparseArray resultTensor =
+    // new SparseArrayExpr(trie, resultDimensions, function.apply(getDefaultValue()), false);
+    // ISparseArray result = algorithm.outer(3, ast.arg2(), resultTensor);
+    // if (result != null) {
+    // return result;
+    // }
+    return F.NIL;
   }
 
   @Override

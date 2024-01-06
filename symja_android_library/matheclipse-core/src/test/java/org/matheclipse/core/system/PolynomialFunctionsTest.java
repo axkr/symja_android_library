@@ -1,13 +1,11 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertTrue;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-
 import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import com.google.common.math.DoubleMath;
-
-import static org.junit.Assert.assertTrue;
 
 public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
@@ -178,6 +176,10 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testJacobiP() {
+    // TODO https://github.com/mtommila/apfloat/issues/31
+    // check("JacobiP(-3, -0.5,-9223372036854775808/11,0.0)", //
+    // "(-1)^n*JacobiP(n,b,a,z)");
+
 
     // JacobiP[] == (-1)^n JacobiP[n, b, a, z]
     check("JacobiP(n, a, b, -z)", //
