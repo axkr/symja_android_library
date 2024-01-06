@@ -17,6 +17,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.NotThreadSafe;
 import org.apache.logging.log4j.Level;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
@@ -87,6 +88,7 @@ import com.google.common.cache.CacheBuilder;
  * </code> is associated with the current thread through a
  * <a href="https://en.wikipedia.org/wiki/Thread-local_storage">ThreadLocal</a> mechanism.
  */
+@NotThreadSafe
 public class EvalEngine implements Serializable {
 
   // private static final Logger LOGGER = LogManager.getLogger();
@@ -621,6 +623,7 @@ public class EvalEngine implements Serializable {
     engine.fTraceStack = fTraceStack;
     engine.f$Input = f$Input;
     engine.f$InputFileName = f$InputFileName;
+    engine.stackBegin();
     fCopiedEngine = engine;
     return engine;
   }
@@ -1820,7 +1823,7 @@ public class EvalEngine implements Serializable {
         stackPush(expr);
         while (true) {
           if (result.isUnevaluated()) {
-            return result.first();
+            return unevaluatedArg1(result.first());
           }
           final IExpr temp = result.evaluate(this);
           if (temp.isPresent()) {
@@ -1885,7 +1888,7 @@ public class EvalEngine implements Serializable {
       stackPush(expr);
 
       if (result.isUnevaluated()) {
-        return result.first();
+        return unevaluatedArg1(result.first());
       }
       fTraceStack.setUp(expr, fRecursionCounter);
       IExpr temp = result.evaluate(this);
@@ -1899,7 +1902,7 @@ public class EvalEngine implements Serializable {
         long iterationCounter = 1;
         while (true) {
           if (result.isUnevaluated()) {
-            return result.first();
+            return unevaluatedArg1(result.first());
           }
           temp = result.evaluate(this);
           if (temp.isPresent()) {
@@ -2150,10 +2153,11 @@ public class EvalEngine implements Serializable {
    */
   public IExpr evalRules(ISymbol symbol, IAST argsAST) {
     IAST ast;
+    boolean[] unevaluatedFunction = new boolean[] {false};
     if (argsAST.exists(x -> x.isAST(S.Unevaluated, 2))) {
       ast = argsAST.map(x -> {
         if (x.isUnevaluated()) {
-          return x.first();
+          return unevaluatedArg1(unevaluatedFunction, x.first());
         }
         return x;
       }, 1);
@@ -2165,7 +2169,29 @@ public class EvalEngine implements Serializable {
       return temp;
     }
 
-    return evalASTBuiltinFunction(symbol, ast);
+    temp = evalASTBuiltinFunction(symbol, ast);
+    if (temp.isPresent()) {
+      return temp;
+    }
+    if (unevaluatedFunction[0]) {
+      return ast;
+    }
+    return F.NIL;
+  }
+
+  private static IExpr unevaluatedArg1(IExpr arg1) {
+    if (arg1.head().isFunction()) {
+      return F.eval(arg1);
+    }
+    return arg1;
+  }
+
+  private static IExpr unevaluatedArg1(boolean[] unevaluatedFunction, IExpr arg1) {
+    if (arg1.head().isFunction()) {
+      unevaluatedFunction[0] = true;
+      return F.eval(arg1);
+    }
+    return arg1;
   }
 
   public IExpr evalUpRules(IAST ast) {
@@ -2836,7 +2862,7 @@ public class EvalEngine implements Serializable {
     return fEvalHistory;
   }
 
-  public synchronized OptionsStack pushOptionsStack() {
+  public OptionsStack pushOptionsStack() {
     fOptionsStack.push();
     return fOptionsStack;
   }
@@ -2863,11 +2889,11 @@ public class EvalEngine implements Serializable {
     globalObjectCache.put(key, value);
   }
 
-  public synchronized void popOptionsStack() {
+  public void popOptionsStack() {
     fOptionsStack.pop();
   }
 
-  public synchronized IdentityHashMap<ISymbol, IASTAppendable> peekOptionsStack() {
+  public IdentityHashMap<ISymbol, IASTAppendable> peekOptionsStack() {
     return fOptionsStack.peek();
   }
 
@@ -3044,16 +3070,16 @@ public class EvalEngine implements Serializable {
     rememberMap = new IdentityHashMap<Object, IExpr>();
   }
 
-  public synchronized Deque<IExpr> stackBegin() {
+  public Deque<IExpr> stackBegin() {
     fStack = new ArrayDeque<IExpr>(256);
     return fStack;
   }
 
-  public synchronized void stackPush(IExpr expr) {
+  public void stackPush(IExpr expr) {
     fStack.push(expr);
   }
 
-  public synchronized IExpr stackPop() {
+  public IExpr stackPop() {
     if (fStack.isEmpty()) {
       return F.NIL;
     }
@@ -3484,7 +3510,7 @@ public class EvalEngine implements Serializable {
     return fRandom;
   }
 
-  public synchronized long getSeed() {
+  public long getSeed() {
     return fRandomSeed;
   }
 
