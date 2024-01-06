@@ -30,10 +30,11 @@
 			<artifactId>matheclipse-parser</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
+	<!--	<dependency>
 			<groupId>de.uni-mannheim.rz.krum</groupId>
 			<artifactId>jas</artifactId>
 		</dependency>
+		-->
 		<dependency>
 			<groupId>org.apfloat</groupId>
 			<artifactId>apfloat</artifactId>
