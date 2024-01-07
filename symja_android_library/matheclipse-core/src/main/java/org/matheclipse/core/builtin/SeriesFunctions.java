@@ -484,7 +484,7 @@ public class SeriesFunctions {
           }
         }
         if (numerator.isPower() && numerator.exponent().isFraction()) {
-          return lHospitalesRuleWithNumeratorRoot(numerator, denominator, data, engine);
+          return lHospitalesRuleWithNumeratorRoot((IAST) numerator, denominator, data, engine);
         }
         IExpr expr =
             engine.evalQuiet(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
@@ -508,7 +508,7 @@ public class SeriesFunctions {
      * @param engine
      * @return
      */
-    private static IExpr lHospitalesRuleWithNumeratorRoot(IExpr numerator, IExpr denominator,
+    private static IExpr lHospitalesRuleWithNumeratorRoot(IAST numerator, IExpr denominator,
         LimitData data, EvalEngine engine) {
       // see github #230
       final ISymbol x = data.variable();

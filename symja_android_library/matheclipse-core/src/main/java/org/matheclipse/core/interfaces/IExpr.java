@@ -292,7 +292,7 @@ public interface IExpr
    * Accept a visitor with return type T
    *
    * @param visitor
-   * @return <code>F.NIL</code> if no evaluation was necessary
+   * @return {@link F#NIL} if no evaluation was necessary
    */
   public IExpr accept(IVisitor visitor);
 
