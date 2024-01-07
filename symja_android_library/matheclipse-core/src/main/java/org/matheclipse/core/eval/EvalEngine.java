@@ -2102,14 +2102,17 @@ public class EvalEngine implements Serializable {
    * @return the evaluated object
    */
   public final IExpr evalTraceless(final IExpr expr) {
+    boolean quiet = fQuietMode;
     boolean numericMode = fNumericMode;
     boolean traceMode = fTraceMode;
     try {
       setTraceMode(false);
+      setQuietMode(true);
       return evalWithoutNumericReset(expr);
     } finally {
       fNumericMode = numericMode;
       fTraceMode = traceMode;
+      fQuietMode = quiet;
     }
   }
 
