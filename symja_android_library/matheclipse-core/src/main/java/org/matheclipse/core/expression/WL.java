@@ -35,7 +35,6 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.tensor.qty.IQuantity;
-import com.google.common.io.ByteStreams;
 
 /**
  * Methods for handling the WXF serialization format.
@@ -1089,7 +1088,7 @@ public class WL {
       if (resourceAsStream == null) {
         return F.NIL;
       } else {
-        byte[] byteArray = ByteStreams.toByteArray(resourceAsStream);
+        byte[] byteArray = resourceAsStream.readAllBytes();
         return deserializeInternal(byteArray);
       }
     } catch (IOException ex) {

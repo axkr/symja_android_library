@@ -1,13 +1,14 @@
 package org.matheclipse.core.reflection.system;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -116,13 +117,11 @@ public class Export extends AbstractEvaluator {
             }
           }
         } else if (format.equals(Extension.DAT)) {
-          File file = new File(filename);
-          com.google.common.io.Files.write(arg2.toString(), file, Charset.defaultCharset());
+          Files.writeString(Path.of(filename), arg2.toString(), Charset.defaultCharset());
           return arg1;
         } else if (format.equals(Extension.WXF)) {
-          File file = new File(filename);
           byte[] bArray = WL.serialize(arg2);
-          com.google.common.io.Files.write(bArray, file);
+          Files.write(Path.of(filename), bArray);
           return arg1;
         }
 

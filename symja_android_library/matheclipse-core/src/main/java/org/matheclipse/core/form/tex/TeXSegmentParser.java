@@ -29,7 +29,6 @@ import org.matheclipse.parser.trie.TrieBuilder;
 import org.matheclipse.parser.trie.TrieMatch;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import com.google.common.base.CharMatcher;
 import uk.ac.ed.ph.snuggletex.InputError;
 import uk.ac.ed.ph.snuggletex.SnuggleEngine;
 import uk.ac.ed.ph.snuggletex.SnuggleInput;
@@ -610,7 +609,7 @@ class TeXSegmentParser {
   }
 
   protected static ISymbol createFunction(String str) {
-    if (CharMatcher.javaLetterOrDigit().matchesAllOf(str)) {
+    if (str.chars().allMatch(Character::isLetterOrDigit)) {
       return F.symbol(str);
     }
     return F.$s(str);
@@ -630,7 +629,7 @@ class TeXSegmentParser {
         return S.E;
       }
     }
-    if (CharMatcher.javaLetterOrDigit().matchesAllOf(str)) {
+    if (str.chars().allMatch(Character::isLetterOrDigit)) {
       return F.symbol(str);
     }
     return F.$s(str);

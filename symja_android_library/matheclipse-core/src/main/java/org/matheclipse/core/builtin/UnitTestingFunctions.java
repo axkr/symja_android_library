@@ -2,11 +2,13 @@ package org.matheclipse.core.builtin;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.function.Consumer;
 import org.apache.logging.log4j.LogManager;
@@ -27,8 +29,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ast.ASTNode;
-import com.google.common.io.Files;
-import com.google.common.io.Resources;
 
 public class UnitTestingFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -104,7 +104,7 @@ public class UnitTestingFunctions {
       // boolean packageMode = engine.isPackageMode();
       try {
         // engine.setPackageMode(true);
-        String str = Files.asCharSource(file, Charset.defaultCharset()).read();
+        String str = Files.readString(file.toPath(), Charset.defaultCharset());
         return runTests(engine, str);
       } catch (IOException e) {
         LOGGER.debug("TestReport.getFile() failed", e);
@@ -117,9 +117,9 @@ public class UnitTestingFunctions {
 
     private static IExpr getURL(URL url, IAST ast, EvalEngine engine) {
       // boolean packageMode = engine.isPackageMode();
-      try {
+      try (InputStream in = url.openStream()) {
         // engine.setPackageMode(true);
-        String str = Resources.toString(url, StandardCharsets.UTF_8);
+        String str = new String(in.readAllBytes(), StandardCharsets.UTF_8);
         return runTests(engine, str);
       } catch (IOException e) {
         LOGGER.debug("TestReport.getURL() failed", e);
