@@ -12,7 +12,10 @@ runs:
     - name: Set up JDK 11 for Maven Central Repository deployment
       uses: actions/setup-java@v3
       with:
-        java-version: '11'
+        # Also generates a corresponding Maven toolchains.xml
+        java-version: |
+          11
+          17
         distribution: 'temurin'
         cache: 'maven' # Cache Maven dependencies between workflow runs
         # Properties for deployment to OSSRH:

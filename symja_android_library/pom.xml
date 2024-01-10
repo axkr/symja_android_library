@@ -415,6 +415,11 @@
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-toolchains-plugin</artifactId>
+					<version>3.1.0</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-deploy-plugin</artifactId>
 					<version>3.1.1</version>
 				</plugin>
@@ -457,7 +462,7 @@
 						<tagNameFormat>v@{project.version}</tagNameFormat>
 						<autoVersionSubmodules>true</autoVersionSubmodules>
 						<useReleaseProfile>false</useReleaseProfile>
-						<releaseProfiles>publish-to-maven-central</releaseProfiles>
+						<releaseProfiles>publish-to-maven-central,exact-target-jdk</releaseProfiles>
 						<arguments>-Drelease.build=true</arguments>
 					</configuration>
 				</plugin>
@@ -599,6 +604,33 @@
 		</plugins>
 	</build>
 	<profiles>
+		<profile>
+			<id>exact-target-jdk</id>
+			<build>
+				<plugins>
+					<!-- Activate toolchains only on demand to not require a set up toolchains.xml for everyone building Symja-->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-toolchains-plugin</artifactId>
+						<executions>
+							<execution>
+								<goals>
+									<goal>toolchain</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<toolchains>
+								<jdk>
+									<version>${java.version}</version>
+								</jdk>
+							</toolchains>
+						</configuration>
+					</plugin>
+
+				</plugins>
+			</build>
+		</profile>
 		<profile>
 			<id>publish-to-maven-central</id>
 			<build>
