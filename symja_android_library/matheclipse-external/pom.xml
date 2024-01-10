@@ -57,12 +57,12 @@
 		<plugins>
 
 			<plugin>
-				<groupId>org.apache.felix</groupId>
-				<artifactId>maven-bundle-plugin</artifactId>
+				<groupId>biz.aQute.bnd</groupId>
+				<artifactId>bnd-maven-plugin</artifactId>
 				<configuration>
-					<instructions>
-						<Import-Package>!net.sf.saxon,*</Import-Package>
-					</instructions>
+					<bnd><![CDATA[
+						Import-Package: !net.sf.saxon,*
+					]]></bnd>
 				</configuration>
 			</plugin>
 
