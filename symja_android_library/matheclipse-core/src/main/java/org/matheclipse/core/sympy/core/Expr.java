@@ -15,7 +15,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.sympy.utilities.Iterables;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
 
 public class Expr {
 
@@ -87,12 +86,12 @@ public class Expr {
 
   private static boolean asIndependentHas(IExpr e, IASTAppendable other, Set<IExpr> sym) {
     boolean hasOther = e.has(x -> other.indexOf(x) >= 0, true);
-    if (sym.size() == 0) {
+    if (sym.isEmpty()) {
       return hasOther;
     }
     VariablesSet vs = new VariablesSet(e);
-    SetView<IExpr> intersection = Sets.intersection(sym, vs.getVariablesSet());
-    return hasOther || e.has(x -> intersection.contains(x), true);
+    Set<IExpr> intersection = Sets.intersection(sym, vs.getVariablesSet());
+    return hasOther || e.has(intersection::contains, true);
   }
 
   public static Pair asIndependent(IExpr self, IAST deps) {

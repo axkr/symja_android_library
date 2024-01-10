@@ -93,13 +93,13 @@ public class ExportString extends AbstractEvaluator {
           }
         }
         // } else if (format.equals(Extension.DAT)) {
-        // File file = new File(arg1.toString());
-        // com.google.common.io.Files.write(arg2.toString(), file, Charset.defaultCharset());
+        // Path file = Path.of(arg1.toString());
+        // Files.writeString(file, arg2.toString(), Charset.defaultCharset());
         // return arg1;
         // } else if (format.equals(Extension.WXF)) {
-        // File file = new File(arg1.toString());
+        // Path file = Path.of(arg1.toString());
         // byte[] bArray = WL.serialize(arg2);
-        // com.google.common.io.Files.write(bArray, file);
+        // Files.write(file, bArray);
         // return arg1;
       }
 

@@ -20,7 +20,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -60,7 +59,6 @@ import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FunctionNode;
 import com.google.common.io.CharStreams;
-import com.google.common.io.Resources;
 
 public class FileFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -640,15 +638,15 @@ public class FileFunctions {
       return S.Null;
     }
 
-    private static IExpr getFile(File file, IAST ast, String arg1Str, EvalEngine engine) {
+    private static IExpr getFile(Path file, IAST ast, String arg1Str, EvalEngine engine) {
       boolean packageMode = engine.isPackageMode();
       String input = engine.get$Input();
       String inputFileName = engine.get$InputFileName();
       try {
         engine.setPackageMode(true);
         engine.set$Input(arg1Str);
-        engine.set$InputFileName(file.getAbsolutePath());
-        String str = com.google.common.io.Files.asCharSource(file, Charset.defaultCharset()).read();
+        engine.set$InputFileName(file.toAbsolutePath().toString());
+        String str = Files.readString(file, Charset.defaultCharset());
         return Get.loadPackage(engine, str);
       } catch (IOException e) {
         // LOGGER.debug("Get.getFile() failed", e);
@@ -665,11 +663,11 @@ public class FileFunctions {
       boolean packageMode = engine.isPackageMode();
       String input = engine.get$Input();
       String inputFileName = engine.get$InputFileName();
-      try {
+      try (java.io.InputStream in = url.openStream()) {
         engine.setPackageMode(true);
         engine.set$Input(arg1Str);
         engine.set$InputFileName(url.getPath());
-        String str = Resources.toString(url, StandardCharsets.UTF_8);
+        String str = new String(in.readAllBytes(), StandardCharsets.UTF_8);
         return loadPackage(engine, str);
       } catch (IOException e) {
         // LOGGER.debug("FileFunctions.Get.getURL() failed", e);
@@ -695,12 +693,12 @@ public class FileFunctions {
             URL url = new URL(arg1Str);
             return getURL(url, ast, arg1Str, engine);
           }
-          File file = new File(arg1Str);
-          if (file.exists()) {
+          Path file = Path.of(arg1Str);
+          if (Files.isRegularFile(file)) {
             return getFile(file, ast, arg1Str, engine);
           } else {
-            file = FileSystems.getDefault().getPath(arg1Str).toAbsolutePath().toFile();
-            if (file.exists()) {
+            file = file.toAbsolutePath();
+            if (Files.isRegularFile(file)) {
               return getFile(file, ast, arg1Str, engine);
             }
           }
@@ -1160,22 +1158,18 @@ public class FileFunctions {
         }
         String arg1 = ((IStringX) ast.arg1()).toString();
         if (arg1.startsWith("https://") || arg1.startsWith("http://")) {
-          URL url;
-          try {
-            url = new URL(arg1);
-            String str;
-            str = Resources.toString(url, StandardCharsets.UTF_8);
+          try (java.io.InputStream in = new URL(arg1).openStream()) {
+            String str = new String(in.readAllBytes(), StandardCharsets.UTF_8);
             return F.stringx(str);
           } catch (IOException ioe) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), ioe);
             return F.NIL;
           }
         }
-        File file = new File(arg1);
-        if (file.exists()) {
+        Path file = Path.of(arg1);
+        if (Files.isRegularFile(file)) {
           try {
-            String str =
-                com.google.common.io.Files.asCharSource(file, Charset.defaultCharset()).read();
+            String str = Files.readString(file, Charset.defaultCharset());
             return F.stringx(str);
           } catch (IOException e) {
             LOGGER.log(engine.getLogLevel(), "ReadString exception", e);
@@ -1227,10 +1221,8 @@ public class FileFunctions {
       }
       String arg1Str = ((IStringX) ast.arg1()).toString();
       if (arg1Str.startsWith("https://") || arg1Str.startsWith("http://")) {
-        URL url;
-        try {
-          url = new URL(arg1Str);
-          String str = Resources.toString(url, StandardCharsets.UTF_8);
+        try (java.io.InputStream in = new URL(arg1Str).openStream()) {
+          String str = new String(in.readAllBytes(), StandardCharsets.UTF_8);
           return F.$s(str);
         } catch (IOException e) {
           LOGGER.debug("URLFetch.evaluate() failed", e);

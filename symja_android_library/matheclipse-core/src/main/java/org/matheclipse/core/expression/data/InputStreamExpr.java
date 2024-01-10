@@ -9,17 +9,16 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
-import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 
 public class InputStreamExpr extends DataExpr<InputStream> implements Externalizable {
@@ -63,7 +62,7 @@ public class InputStreamExpr extends DataExpr<InputStream> implements Externaliz
    */
   public Reader getReader() throws IOException {
     if (reader == null) {
-      String str = CharStreams.toString(new InputStreamReader(fData, Charsets.UTF_8));
+      String str = new String(fData.readAllBytes(), StandardCharsets.UTF_8);
       if (dataIn != null) {
         dataIn = null;
       }
@@ -108,10 +107,9 @@ public class InputStreamExpr extends DataExpr<InputStream> implements Externaliz
     return new InputStreamExpr(new FileInputStream(file), streamName, reader);
   }
 
-  public static InputStreamExpr newInstance(final Reader reader)
-      throws IOException, FileNotFoundException {
+  public static InputStreamExpr newInstance(final Reader reader) throws IOException {
     InputStream targetStream =
-        new ByteArrayInputStream(CharStreams.toString(reader).getBytes(Charsets.UTF_8));
+        new ByteArrayInputStream(CharStreams.toString(reader).getBytes(StandardCharsets.UTF_8));
     reader.reset();
     return new InputStreamExpr(targetStream, "String", reader);
   }

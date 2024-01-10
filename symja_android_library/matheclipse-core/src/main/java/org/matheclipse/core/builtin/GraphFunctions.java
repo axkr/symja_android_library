@@ -60,7 +60,6 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
 
 /** Functions for graph theory algorithms. */
 public class GraphFunctions {
@@ -184,7 +183,7 @@ public class GraphFunctions {
       for (IExpr v : Sets.intersection(graph1.vertexSet(), graph2.vertexSet())) {
         resultGraph.addVertex(v);
       }
-      SetView<? extends IExprEdge> graphSet = Sets.intersection(graph1.edgeSet(), graph2.edgeSet());
+      Set<? extends IExprEdge> graphSet = Sets.intersection(graph1.edgeSet(), graph2.edgeSet());
       for (IExprEdge e : graphSet) {
         IExpr v1 = e.lhs();
         IExpr v2 = e.rhs();
@@ -283,7 +282,7 @@ public class GraphFunctions {
       for (IExpr v : Sets.union(graph1.vertexSet(), graph2.vertexSet())) {
         resultGraph.addVertex(v);
       }
-      SetView<? extends IExprEdge> graphSet = Sets.difference(graph1.edgeSet(), graph2.edgeSet());
+      Set<? extends IExprEdge> graphSet = Sets.difference(graph1.edgeSet(), graph2.edgeSet());
       for (IExprEdge e : graphSet) {
         IExpr v1 = e.lhs();
         IExpr v2 = e.rhs();
@@ -362,7 +361,7 @@ public class GraphFunctions {
       for (IExpr v : Sets.union(graph1.vertexSet(), graph2.vertexSet())) {
         resultGraph.addVertex(v);
       }
-      SetView<? extends IExprEdge> graphSet = Sets.union(graph1.edgeSet(), graph2.edgeSet());
+      Set<? extends IExprEdge> graphSet = Sets.union(graph1.edgeSet(), graph2.edgeSet());
       for (IExprEdge e : graphSet) {
         IExpr v1 = e.lhs();
         IExpr v2 = e.rhs();
