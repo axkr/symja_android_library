@@ -18,7 +18,7 @@ jobs:
     - name: Set up Java
       uses: ./.github/actions/setup-java-for-deployment
 
-    - run: mvn -f symja_android_library -B -U verify
+    - run: mvn -f symja_android_library -B -U -Pexact-target-jdk verify
 
     - uses: actions/upload-artifact@v4
       with:
