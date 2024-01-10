@@ -1009,8 +1009,18 @@ public final class LinearAlgebra {
       // new GenPolynomialRing<edu.jas.poly.Complex<BigRational>>(cf, vars);
       // GenMatrix<edu.jas.poly.Complex<BigRational>> A;
       // pf.charPolynomial(A);
-      final IExpr[] valuesForIdentityMatrix = {F.C0, variable};
-      return F.Det(F.Subtract(matrix, diagonalMatrix(valuesForIdentityMatrix, dim)));
+
+      return F.Det(subtractDiagonalValue(dim, matrix, variable));
+    }
+
+    private static IASTAppendable subtractDiagonalValue(int dimension, IAST matrix, IExpr value) {
+      IASTAppendable subtractMatrix = F.ListAlloc(dimension);
+      for (int i = 1; i < dimension + 1; i++) {
+        IASTMutable row = ((IAST) matrix.get(i)).copy();
+        row.set(i, row.get(i).subtract(value));
+        subtractMatrix.append(row);
+      }
+      return subtractMatrix;
     }
 
     @Override

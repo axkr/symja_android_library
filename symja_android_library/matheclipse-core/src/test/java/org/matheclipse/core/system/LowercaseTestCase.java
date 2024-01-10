@@ -2788,18 +2788,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testCharacteristicPolynomial() {
-    check("CharacteristicPolynomial({{a, b}, {c, d}}, x)", //
-        "-b*c+a*d-a*x-d*x+x^2");
-    check("CharacteristicPolynomial({{1, 1, 1}, {1, 1/2, 1/3}, {1, 2, 3}},x)", //
-        "-1/3-7/3*x+9/2*x^2-x^3");
-    check("CharacteristicPolynomial(N({{1, 1, 1}, {1, 1/2, 1/3}, {1, 2, 3}}),x)", //
-        "-0.333333-2.33333*x+4.5*x^2-x^3");
-    check("CharacteristicPolynomial({{1, 2*I}, {3 + 4*I, 5}}, z)", //
-        "13-I*6-6*z+z^2");
-  }
-
-  @Test
   public void testCheck() {
     check("Check(0^(-42), failure)", //
         "failure");
@@ -26430,6 +26418,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testVariables() {
+    check("Variables(FactorInteger(1232))", //
+        "{}");
     check("Variables({x+y,x,z})", //
         "{x,y,z}");
     check("Variables(x + f(x)+Pi*E)", //

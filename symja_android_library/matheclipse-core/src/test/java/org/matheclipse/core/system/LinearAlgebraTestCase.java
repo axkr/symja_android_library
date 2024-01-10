@@ -73,6 +73,19 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+
+  @Test
+  public void testCharacteristicPolynomial() {
+    check("CharacteristicPolynomial({{a, b}, {c, d}}, x)", //
+        "-b*c+a*d-a*x-d*x+x^2");
+    check("CharacteristicPolynomial({{1, 1, 1}, {1, 1/2, 1/3}, {1, 2, 3}},x)", //
+        "-1/3-7/3*x+9/2*x^2-x^3");
+    check("CharacteristicPolynomial(N({{1, 1, 1}, {1, 1/2, 1/3}, {1, 2, 3}}),x)", //
+        "-0.333333-2.33333*x+4.5*x^2-x^3");
+    check("CharacteristicPolynomial({{1, 2*I}, {3 + 4*I, 5}}, z)", //
+        "13-I*6-6*z+z^2");
+  }
+
   @Test
   public void testCholeskyDecomposition() {
     check("matG=CholeskyDecomposition({{11.0,3.0},{3.0, 5.0}})", //
