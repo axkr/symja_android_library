@@ -106,8 +106,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>11</java.version>
 		<release.build>false</release.build>
-		<deployment.suppress>false</deployment.suppress> <!-- child modules can
-		set this true to not be published -->
+		<deployment.suppress>false</deployment.suppress> <!-- child modules can set this true to not be published -->
+		<guava.minimal.version>32.0</guava.minimal.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -594,6 +594,8 @@
 							Bundle-Name: ${project.artifactId}
 							# Suppress import of own exported packages
 							-exportcontents: *;-noimport:=true
+							#Import Guava without upper bound
+							Import-Package: com.google.common.*;version="${guava.minimal.version}", *
 							-noextraheaders: true
 						]]></bnd></configuration>
 					</execution>
