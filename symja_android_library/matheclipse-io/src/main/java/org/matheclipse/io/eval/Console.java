@@ -41,6 +41,12 @@ import org.matheclipse.parser.client.math.MathException;
  * See {@link MMAConsole}
  */
 public class Console {
+
+  private final static String RESET = "\u001B[0m";
+  private final static String GREEN = "\033[0;32m";
+  private final static String RED = "\033[0;31m";
+  private final static String BLUE = "\033[0;34m";
+
   /** No timeout limit as the default value for Symja expression evaluation. */
   private long fSeconds = -1;
 
@@ -123,7 +129,7 @@ public class Console {
 
     while (true) {
       try {
-        String inputExpression = console.readString(stdout, ">> ");
+        String inputExpression = console.readString(stdout, "\n" + BLUE + ">> " + RESET);
         if (inputExpression != null) {
           trimmedInput = inputExpression.trim();
           if (inputExpression.length() > 1
@@ -200,7 +206,7 @@ public class Console {
             stderr.println("Automatically closing brackets: " + postfix);
             trimmedInput = trimmedInput + postfix;
           }
-          stdout.println("In[" + COUNTER + "]:= " + trimmedInput);
+          stdout.println(GREEN + "In[" + COUNTER + "]:= " + RESET + trimmedInput);
           stdout.flush();
           // if (console.fPrettyPrinter) {
           // console.prettyPrinter(inputExpression);
@@ -222,7 +228,7 @@ public class Console {
   private String resultPrinter(String inputExpression) {
     String outputExpression = interpreter(inputExpression);
     if (outputExpression.length() > 0) {
-      stdout.print("Out[" + COUNTER + "]= ");
+      stdout.print(RED + "Out[" + COUNTER + "]= " + RESET);
       stdout.flush();
       stdout.println(Errors.shorten(outputExpression, 1000));
       stdout.flush();
