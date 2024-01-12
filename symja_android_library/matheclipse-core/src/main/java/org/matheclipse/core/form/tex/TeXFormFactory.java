@@ -1114,6 +1114,10 @@ public class TeXFormFactory {
 
     private void convertTimesFraction(final StringBuilder buf, final IAST timesAST,
         final InfixOperator oper, final int precedence, boolean caller) {
+      if (timesAST.exists(x -> x.isAST(S.HoldForm, 2))) {
+        convertTimesOperator(buf, timesAST, oper, precedence, caller);
+        return;
+      }
       Optional<IExpr[]> parts =
           Algebra.fractionalPartsTimesPower(timesAST, true, false, false, false, false, false);
       if (parts.isEmpty()) {

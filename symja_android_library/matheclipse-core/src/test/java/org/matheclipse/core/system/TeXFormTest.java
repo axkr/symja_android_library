@@ -592,6 +592,12 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
         "\\text{Hold}(\\left( 1 + \\frac{1}{2}\\right)  - \\left( 3 + \\frac{4}{5}\\right) )");
   }
 
+  @Test
+  public void testTeXFormHoldForm() {
+    check("TeXForm(HoldForm(1/2)*(1/3))", //
+        "\\frac{1}{3} \\cdot \\frac{1}{2}");
+  }
+
   @Override
   public void setUp() {
     super.setUp();
