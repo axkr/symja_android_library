@@ -36,7 +36,7 @@ import com.google.common.cache.CacheBuilder;
 public class Config {
 
   /** Show the stack trace, if an exception is thrown in evaluation */
-  public static final boolean SHOW_STACKTRACE = false;
+  public static boolean SHOW_STACKTRACE = false;
 
   /** Enable JSFiddle in JavaScript IFRAME output */
   public static boolean DISPLAY_JSFIDDLE_BUTTON = true;
