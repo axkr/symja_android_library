@@ -170,12 +170,16 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
         engine.pushOptionsStack();
         IEvalStepListener stepListener = engine.getStepListener();
+        final boolean isTraceMode =
+            Config.TRACE_REWRITE_RULE && engine.isTraceMode() && stepListener != null;
+        boolean isStepListenerSetUp = false;
         try {
           engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
-          if (Config.TRACE_REWRITE_RULE && stepListener != null) {
+          if (isTraceMode) {
             IExpr lhs = getLHSExprToMatch();
             if (lhs.isPresent()) {
               stepListener.setUp(lhs, 0);
+              isStepListenerSetUp = true;
               fReturnResult =
                   engine.addEvaluatedTraceStep(lhs, rhs, lhs.topHead(), F.$str("RewriteRule"));
             } else {
@@ -192,10 +196,11 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
           matched = true;
         } finally {
           engine.popOptionsStack();
+          if (isStepListenerSetUp) {
+            stepListener.tearDown(F.NIL, 0, matched);
+          }
         }
-        if (Config.TRACE_REWRITE_RULE && stepListener != null) {
-          stepListener.tearDown(null, 0, matched);
-        }
+
         patternMap.setRHSEvaluated(matched);
         return matched;
       }

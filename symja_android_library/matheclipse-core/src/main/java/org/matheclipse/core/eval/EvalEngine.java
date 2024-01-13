@@ -1857,9 +1857,7 @@ public class EvalEngine implements Serializable {
         throw AbortException.ABORTED;
       } finally {
         stackPop();
-        if (fTraceMode) {
-          fTraceStack.tearDown(iterationCounter == 0 ? F.NIL : result, fRecursionCounter, true);
-        }
+        // fTraceStack.tearDown(iterationCounter == 0 ? F.NIL : result, fRecursionCounter, true);
         fRecursionCounter--;
         if (fStopRequested) {
           throw TimeoutException.TIMED_OUT;
@@ -1883,6 +1881,7 @@ public class EvalEngine implements Serializable {
    */
   private IExpr evalLoopTraceMode(final IExpr expr) {
     IExpr result = expr;
+
     try {
       fRecursionCounter++;
       stackPush(expr);
@@ -1891,40 +1890,51 @@ public class EvalEngine implements Serializable {
         return unevaluatedArg1(result.first());
       }
       fTraceStack.setUp(expr, fRecursionCounter);
-      IExpr temp = result.evaluate(this);
-      if (temp.isPresent()) {
-        if (fStopRequested || Thread.currentThread().isInterrupted()) {
-          throw TimeoutException.TIMED_OUT;
-        }
-
-        fTraceStack.add(expr, temp, fRecursionCounter, 0L, EVALUATION_LOOP);
-        result = temp;
-        long iterationCounter = 1;
-        while (true) {
-          if (result.isUnevaluated()) {
-            return unevaluatedArg1(result.first());
+      boolean isEvaled = false;
+      try {
+        IExpr temp = result.evaluate(this);
+        if (temp.isPresent()) {
+          if (fStopRequested || Thread.currentThread().isInterrupted()) {
+            throw TimeoutException.TIMED_OUT;
           }
-          temp = result.evaluate(this);
-          if (temp.isPresent()) {
-            if (fStopRequested || Thread.currentThread().isInterrupted()) {
-              throw TimeoutException.TIMED_OUT;
+
+          fTraceStack.add(expr, temp, fRecursionCounter, 0L, EVALUATION_LOOP);
+          result = temp;
+          long iterationCounter = 1;
+          while (true) {
+            if (result.isUnevaluated()) {
+              isEvaled = true;
+              return unevaluatedArg1(result.first());
             }
-            if (Config.DEBUG) {
-              if (temp.equals(result)) {
-                // Endless iteration detected in `1` in evaluation loop.
-                Errors.printMessage(result.topHead(), "itendless", F.list(temp), this);
-                IterationLimitExceeded.throwIt(fIterationLimit, result);
+            temp = result.evaluate(this);
+            if (temp.isPresent()) {
+              if (fStopRequested || Thread.currentThread().isInterrupted()) {
+                throw TimeoutException.TIMED_OUT;
               }
-            }
-            fTraceStack.add(result, temp, fRecursionCounter, iterationCounter, EVALUATION_LOOP);
+              if (Config.DEBUG) {
+                if (temp.equals(result)) {
+                  // Endless iteration detected in `1` in evaluation loop.
+                  Errors.printMessage(result.topHead(), "itendless", F.list(temp), this);
+                  IterationLimitExceeded.throwIt(fIterationLimit, result);
+                }
+              }
+              fTraceStack.add(result, temp, fRecursionCounter, iterationCounter, EVALUATION_LOOP);
 
-            result = temp;
-            if (++iterationCounter >= fIterationLimit && fIterationLimit >= 0) {
-              IterationLimitExceeded.throwIt(iterationCounter, result);
+              result = temp;
+              if (++iterationCounter >= fIterationLimit && fIterationLimit >= 0) {
+                IterationLimitExceeded.throwIt(iterationCounter, result);
+              }
+              continue;
             }
-            continue;
+            isEvaled = true;
+            return result;
           }
-          return result;
+        }
+      } finally {
+        if (isEvaled) {
+          fTraceStack.tearDown(result, fRecursionCounter, true);
+        } else {
+          fTraceStack.tearDown(F.NIL, fRecursionCounter, false);
         }
       }
     } catch (UnsupportedOperationException uoe) {
@@ -1936,9 +1946,6 @@ public class EvalEngine implements Serializable {
       throw AbortException.ABORTED;
     } finally {
       stackPop();
-      if (fTraceMode) {
-        fTraceStack.tearDown(result, fRecursionCounter, true);
-      }
       fRecursionCounter--;
       if (fStopRequested) {
         throw TimeoutException.TIMED_OUT;

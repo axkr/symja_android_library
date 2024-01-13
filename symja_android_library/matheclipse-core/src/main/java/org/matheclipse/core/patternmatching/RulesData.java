@@ -15,6 +15,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IStringX;
@@ -421,11 +422,13 @@ public final class RulesData implements Serializable {
       engine.setEvalRHSMode(true);
       IPatternMatcher pmEvaluator;
       if (fPatternDownRules != null) {
-        IExpr result;
         int patternHash = 0;
         if (expr.isASTOrAssociation()) {
           patternHash = ((IAST) expr).patternHashCode();
         }
+        IEvalStepListener stepListener = engine.getStepListener();
+        final boolean isTraceMode =
+            Config.TRACE_REWRITE_RULE && engine.isTraceMode() && stepListener != null;
         for (IPatternMatcher patternEvaluator : fPatternDownRules) {
           // if (patternEvaluator.fLhsPatternExpr.isAST(S.Integrate)) {
           // LOGGER.info(((IPatternMatcher) patternEvaluator).getLHSPriority());
@@ -436,6 +439,23 @@ public final class RulesData implements Serializable {
           if (patternEvaluator.isPatternHashAllowed(patternHash)) {
             pmEvaluator = patternEvaluator.copy();
 
+            IExpr result = F.NIL;
+            if (isTraceMode) {
+              stepListener.setUp(expr, engine.getRecursionCounter());
+              try {
+                result = pmEvaluator.eval(expr, engine);
+                if (result.isPresent()) {
+                  return result;
+                }
+              } finally {
+                if (result.isPresent()) {
+                  stepListener.tearDown(result, engine.getRecursionCounter(), true);
+                } else {
+                  stepListener.tearDown(F.NIL, engine.getRecursionCounter(), false);
+                }
+              }
+              continue;
+            }
             result = pmEvaluator.eval(expr, engine);
             if (result.isPresent()) {
               return result;

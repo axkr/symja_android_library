@@ -604,7 +604,7 @@ public class Config {
       // don't use a Logger in Config startup methods. Print the message to console instead:
       System.out.println("Config.getVersion() failed: " + e.getMessage());
     }
-    return "3.0.1-SNAPSHOT";
+    return "3.1.0-SNAPSHOT";
   }
 
   /** A trie builder for mapping int[] sequences to IExpr. */
