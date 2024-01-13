@@ -18,6 +18,12 @@ public class ExprParserStepsTestCase extends ExprEvaluatorTestCase {
   EvalEngine engine;
   ExprParser parser;
 
+
+  private void checkParserFullForm(String expression, String expected) {
+    IExpr expr = parser.parse(expression);
+    assertEquals(expected, expr.fullFormString());
+  }
+
   @Override
   @Before
   public void setUp() {
@@ -32,31 +38,34 @@ public class ExprParserStepsTestCase extends ExprEvaluatorTestCase {
     Config.USER_STEPS_PARSER = false;
   }
 
+
   @Test
   public void testDivideSymbols() {
-    IExpr expr = parser.parse("a / b");
-    assertEquals("Divide(a, b)", //
-        expr.fullFormString());
+    checkParserFullForm("a / b", //
+        "Divide(a, b)");
   }
 
   @Test
   public void testDivideRational() {
-    IExpr expr = parser.parse("3/4");
-    assertEquals("Rational(3,4)", //
-        expr.fullFormString());
+    checkParserFullForm("3/4", //
+        "Rational(3, 4)");
   }
 
   @Test
   public void testSubtract() {
-    IExpr expr = parser.parse("a - b");
-    assertEquals("Subtract(a, b)", //
-        expr.fullFormString());
+    checkParserFullForm("a - b", //
+        "Subtract(a, b)");
   }
 
   @Test
   public void testDivide() {
-    IExpr expr = parser.parse("6÷4");
-    assertEquals("Rational(3,2)", //
-        expr.fullFormString());
+    checkParserFullForm("6÷4", //
+        "Rational(6, 4)");
+  }
+
+  @Test
+  public void testParser002() {
+    checkParserFullForm("2/4", //
+        "Rational(2, 4)");
   }
 }

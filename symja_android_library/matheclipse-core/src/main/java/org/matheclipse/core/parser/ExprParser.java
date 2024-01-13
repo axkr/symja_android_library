@@ -160,20 +160,24 @@ public class ExprParser extends Scanner {
         // break;
 
         case ID.Sqrt:
-          if (ast.isAST1()) {
-            // rewrite from input: Sqrt(x) => Power(x, 1/2)
-            return F.Power(ast.getUnevaluated(1), F.C1D2);
+          if (!Config.USER_STEPS_PARSER) {
+            if (ast.isAST1()) {
+              // rewrite from input: Sqrt(x) => Power(x, 1/2)
+              return F.Power(ast.getUnevaluated(1), F.C1D2);
+            }
           }
           break;
 
         case ID.Power:
-          if (ast.isPower() && ast.base().isPower() && ast.exponent().isMinusOne()) {
-            IAST arg1Power = (IAST) ast.base();
-            if (arg1Power.exponent().isNumber()) {
-              // Division operator
-              // rewrite from input: Power(Power(x, <number>),-1) => Power(x,
-              // - <number>)
-              return F.Power(arg1Power.getUnevaluated(1), arg1Power.getUnevaluated(2).negate());
+          if (!Config.USER_STEPS_PARSER) {
+            if (ast.isPower() && ast.base().isPower() && ast.exponent().isMinusOne()) {
+              IAST arg1Power = (IAST) ast.base();
+              if (arg1Power.exponent().isNumber()) {
+                // Division operator
+                // rewrite from input: Power(Power(x, <number>),-1) => Power(x,
+                // - <number>)
+                return F.Power(arg1Power.getUnevaluated(1), arg1Power.getUnevaluated(2).negate());
+              }
             }
           }
           break;
@@ -200,11 +204,15 @@ public class ExprParser extends Scanner {
           expr = PatternMatching.Repeated.CONST.evaluate(ast, fEngine);
           break;
         case ID.Complex:
-          expr = Arithmetic.CONST_COMPLEX.evaluate(ast, fEngine);
+          if (!Config.USER_STEPS_PARSER) {
+            expr = Arithmetic.CONST_COMPLEX.evaluate(ast, fEngine);
+          }
           break;
 
         case ID.Rational:
-          expr = Arithmetic.CONST_RATIONAL.evaluate(ast, fEngine);
+          if (!Config.USER_STEPS_PARSER) {
+            expr = Arithmetic.CONST_RATIONAL.evaluate(ast, fEngine);
+          }
           break;
         default:
           break;
