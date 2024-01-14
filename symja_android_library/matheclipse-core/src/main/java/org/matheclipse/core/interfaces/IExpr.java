@@ -4898,6 +4898,10 @@ public interface IExpr
         .eval(engine);
   }
 
+  default IExpr pochhammer(IExpr that) {
+    return F.Pochhammer(this, that);
+  }
+
   @Override
   default IExpr pow(double n) {
     return S.Power.of(this, F.num(n));

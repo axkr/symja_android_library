@@ -18761,6 +18761,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPochhammer() {
+    check("Pochhammer(1.011111111111000000000000000, 8)", //
+        "41552.27584908778038088829576");
+
     check("Pochhammer(2.4, 8.5)", //
         "2.31022*10^6");
     check("Pochhammer(0, 1285)", //
@@ -18780,8 +18783,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{-1/95040,-1/55440,-1/30240,-1/15120,-1/6720,-1/2520,-1/720,-1/120,ComplexInfinity,ComplexInfinity,ComplexInfinity}");
     check("Pochhammer({-2,-1,0,1,2,3},-2)", //
         "{1/12,1/6,1/2,ComplexInfinity,ComplexInfinity,1/2}");
-    check("Pochhammer(1.011111111111000000000000000, 8)", //
-        "41552.27584908778038088829576");
+
     check("Pochhammer(m, n) // FunctionExpand", //
         "Gamma(m+n)/Gamma(m)");
     check("Pochhammer(2.4, 8.5)", //

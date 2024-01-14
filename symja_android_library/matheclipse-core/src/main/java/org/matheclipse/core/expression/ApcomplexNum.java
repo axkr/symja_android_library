@@ -995,6 +995,16 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr pochhammer(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      Apcomplex pochhammer =
+          EvalEngine.getApfloat().pochhammer(apcomplexValue(), ((INumber) arg2).apcomplexValue());
+      return F.complexNum(pochhammer);
+    }
+    return IComplexNum.super.pochhammer(arg2);
+  }
+
+  @Override
   public IExpr pow(int n) {
     return valueOf(EvalEngine.getApfloat().pow(fApcomplex, n));
   }

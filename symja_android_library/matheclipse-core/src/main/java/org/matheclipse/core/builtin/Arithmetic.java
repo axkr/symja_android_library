@@ -3234,13 +3234,17 @@ public final class Arithmetic {
         }
       }
 
+      EvalEngine engine = EvalEngine.get();
+      if (engine.isDoubleMode() || engine.isArbitraryMode()) {
+        if (a.isNumber() && n.isNumber()) {
+          return a.pochhammer(n);
+        }
+      }
       if (n.isInteger()) {
-
         if (ni > Integer.MIN_VALUE) {
           if (ni > Config.MAX_POLYNOMIAL_DEGREE) {
             PolynomialDegreeLimitExceeded.throwIt(ni);
           }
-          EvalEngine engine = EvalEngine.get();
           if (ni > 0) {
             // Product(a + k, {k, 0, n - 1})
             return F.product(k -> F.Plus(a, k), 0, ni - 1).eval(engine);

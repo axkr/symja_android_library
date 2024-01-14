@@ -989,6 +989,21 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public IExpr pochhammer(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      if (arg2 instanceof IReal) {
+        Apfloat pochhammer =
+            EvalEngine.getApfloat().pochhammer(apfloatValue(), ((IReal) arg2).apfloatValue());
+        return F.num(pochhammer);
+      }
+      Apcomplex pochhammer =
+          EvalEngine.getApfloat().pochhammer(apfloatValue(), ((INumber) arg2).apcomplexValue());
+      return F.complexNum(pochhammer);
+    }
+    return INum.super.pochhammer(arg2);
+  }
+
+  @Override
   public ApfloatNum pow(double value) {
     return valueOf(EvalEngine.getApfloat().pow(fApfloat, new Apfloat(value)));
   }
