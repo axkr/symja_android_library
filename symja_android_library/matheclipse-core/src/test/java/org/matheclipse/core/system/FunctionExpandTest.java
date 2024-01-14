@@ -43,8 +43,15 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
             + "2)*Sin(t)^m)/(2*Sqrt(Pi)*(1-Cos(t))^m*Gamma(1-m)*Sqrt(Gamma(1+l+m)))");
     check("FunctionExpand({Degree, GoldenRatio})", //
         "{Pi/180,1/2*(1+Sqrt(5))}");
+
+    // (1-Erf(Sqrt(z)))==Erfc(Sqrt(z))
+    check("FunctionExpand(ExpIntegralE(1/2,z))", //
+        "(Sqrt(Pi)*(1-Erf(Sqrt(z))))/Sqrt(z)");
+    check("FunctionExpand(ExpIntegralE(-1/2,z))", //
+        "(Sqrt(z)/E^z+1/2*Sqrt(Pi)*(1-Erf(Sqrt(z))))/z^(3/2)");
     check("FunctionExpand(ExpIntegralE(n,z))", //
         "Gamma(1-n,z)/z^(1-n)");
+
     check("FunctionExpand(Sin(Pi/2^4))", //
         "Sqrt(2-Sqrt(2+Sqrt(2)))/2");
     check("FunctionExpand(Cos(Pi/2^4))", //

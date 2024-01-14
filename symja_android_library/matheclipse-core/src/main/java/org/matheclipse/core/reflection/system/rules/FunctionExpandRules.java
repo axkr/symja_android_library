@@ -81,9 +81,6 @@ public class FunctionExpandRules {
     // Erfi(1/Sqrt(a_^b_)):=(a^(b/2)*Erfi(a^((-1)*1/2*b)))/Sqrt(a^b)
     SetDelayed(Erfi(Power(Power(a_,b_),CN1D2)),
       Times(Power(a,Times(C1D2,b)),Power(Power(a,b),CN1D2),Erfi(Power(a,Times(CN1,C1D2,b))))),
-    // ExpIntegralE(n_,z_):=Gamma(1-n,z)/z^(1-n)
-    SetDelayed(ExpIntegralE(n_,z_),
-      Times(Power(z,Plus(CN1,n)),Gamma(Subtract(C1,n),z))),
     // ExpIntegralEi(Log(z_)):=LogIntegral(z)
     SetDelayed(ExpIntegralEi(Log(z_)),
       LogIntegral(z)),

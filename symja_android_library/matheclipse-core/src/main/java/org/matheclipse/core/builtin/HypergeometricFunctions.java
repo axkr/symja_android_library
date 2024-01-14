@@ -21,12 +21,14 @@ import org.matheclipse.core.eval.exception.ResultException;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
@@ -330,7 +332,45 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class ExpIntegralE extends AbstractFunctionEvaluator {
+  private static class ExpIntegralE extends AbstractFunctionEvaluator implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        IExpr v = ast.arg1();
+        IExpr z = ast.arg2();
+        if (v.isFraction() && ((IFraction) v).times(F.C2).isInteger()) {
+          IExpr n = ((IFraction) v).subtract(F.C1D2);
+          ISymbol k = F.Dummy("k");
+          // https://functions.wolfram.com/GammaBetaErf/ExpIntegralE/03/01/02/0014/
+          // (1-Erf(Sqrt(z))*Gamma(1/2-n)+Sum(z^(1/2+k)/Pochhammer(1/2-n,1+k+n),{k,0,-1-n})/E^z-Sum(z^(1/2+k)/Pochhammer(1/2-n,1+k+n),{k,-n,-1})/E^z)/z^(1/2-n)
+          return F
+              .Times(
+                  F.Power(z, F.Plus(F.CN1D2,
+                      n)),
+                  F.Plus(
+                      F.Times(F.Subtract(F.C1, F.Erf(F.Sqrt(z))), F
+                          .Gamma(F.Subtract(F.C1D2, n))),
+                      F.Times(
+                          F.Power(F
+                              .Exp(z), F.CN1),
+                          F.Sum(F.Times(F.Power(z, F.Plus(F.C1D2, k)),
+                              F.Power(F.Pochhammer(F.Subtract(F.C1D2, n), F.Plus(F.C1, k, n)),
+                                  F.CN1)),
+                              F.list(k, F.C0, F.Subtract(F.CN1, n)))),
+                      F.Times(
+                          F.CN1, F.Power(F
+                              .Exp(z), F.CN1),
+                          F.Sum(
+                              F.Times(F.Power(z, F.Plus(F.C1D2, k)), F.Power(
+                                  F.Pochhammer(F.Subtract(F.C1D2, n), F.Plus(F.C1, k, n)), F.CN1)),
+                              F.list(k, F.Negate(n), F.CN1)))));
+        }
+        // Gamma(1-v,z)/z^(1-v)
+        return F.Times(F.Power(z, F.Plus(F.CN1, v)), F.Gamma(F.Subtract(F.C1, v), z));
+      }
+      return F.NIL;
+    }
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {

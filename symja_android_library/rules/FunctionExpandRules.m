@@ -30,8 +30,7 @@
  Erfc(a_^b_) := 1-Erf(a^b),    
  Erfi(Power(Power(a_,b_), 1/2)) := (Sqrt(a^b)*Erfi(a^(b/2)))/a^(b/2),
  Erfi(Power(Power(a_,b_), -1/2)) := (a^(b/2)*Erfi(a^(-b/2)))/Sqrt(a^b),
-  
- ExpIntegralE(n_,z_) := z^(-1 + n)*Gamma(1 - n, z),
+
  ExpIntegralEi(Log(z_)) := LogIntegral(z),
  
  Factorial(z_) := Gamma(1+z),  
