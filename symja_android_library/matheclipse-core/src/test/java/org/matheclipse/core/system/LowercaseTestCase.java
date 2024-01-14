@@ -11655,8 +11655,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testHypergeometricU() {
     // TODO throws hypergeometric function pole
-    // check("HypergeometricU(3, 2, 1.0)", //
-    // "0.105479");
+    // https://github.com/mtommila/apfloat/issues/36
+    check("HypergeometricU(3.0, 1.0, 0.0)", //
+        "HypergeometricU(3.0,1.0,0.0)");
+    check("HypergeometricU(3, 2, 1.0)", //
+        "0.105479");
+    check("N(HypergeometricU(3, 2, 1),50)", //
+        "0.10547895651520888848838225094608093588873320977117");
+
 
     check("D(HypergeometricU(a,b,x), x)", //
         "-a*HypergeometricU(1+a,1+b,x)");
@@ -11673,9 +11679,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "0.76904+I*0.163012,1.05965+I*0.56395,1.44956+I*1.52035,1.97105+I*4.83136,ComplexInfinity," //
             + "2.45436,0.688641,0.312167,0.173724,0.1086,0.0732253,0.0520871,0.0385635}");
     check("Table( HypergeometricU(3, 1.0, x), {x,-2.0,2,0.25})", //
-        "{0.0852414+I*0.212584,0.0312283+I*0.264433,-0.0527303+I*0.306681,-0.171748+I*0.323467,-0.325706+I*0.288932," //
-            + "-0.500123+I*0.162311,-0.642219+I*(-0.119092),-0.575265+I*(-0.649898),Indeterminate,0.214115,0.105593,0.0644474," //
-            + "0.0436079,0.0314298,0.0236577,0.0183874,0.0146502}");
+        "{0.0852414+I*0.212584,0.0312283+I*0.264433,-0.0527303+I*0.306681,-0.171748+I*0.323467,-0.325706+I*0.288932,-0.500123+I*0.162311,-0.642219+I*(-0.119092),-0.575265+I*(-0.649898),HypergeometricU(3.0,1.0,0.0),0.214115,0.105593,0.0644474,0.0436079,0.0314298,0.0236577,0.0183874,0.0146502}");
   }
 
   @Test

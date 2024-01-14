@@ -564,13 +564,27 @@ public class Num implements INum {
   @Override
   public IExpr hypergeometricU(IExpr arg2, IExpr arg3) {
     try {
-      return F.complexNum(HypergeometricJS.hypergeometricU(new Complex(value), //
-          arg2.evalfc(), //
-          arg3.evalfc()));
-    } catch (RuntimeException e) {
-      // try as computation with complex numbers
+      Apcomplex hypergeometricU = EvalEngine.getApfloatDouble().hypergeometricU(apcomplexValue(),
+          ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue());
+      return F.complexNum(hypergeometricU.real().doubleValue(),
+          hypergeometricU.imag().doubleValue());
+    } catch (ArithmeticException aex) {
+      if (aex.getMessage().equals("Division by zero")) {
+        return F.ComplexInfinity;
+      } else {
+        // aex.printStackTrace();
+      }
     }
     return INum.super.hypergeometricU(arg2, arg3);
+
+    // try {
+    // return F.complexNum(HypergeometricJS.hypergeometricU(new Complex(value), //
+    // arg2.evalfc(), //
+    // arg3.evalfc()));
+    // } catch (RuntimeException e) {
+    // // try as computation with complex numbers
+    // }
+    // return INum.super.hypergeometricU(arg2, arg3);
   }
 
   /** {@inheritDoc} */

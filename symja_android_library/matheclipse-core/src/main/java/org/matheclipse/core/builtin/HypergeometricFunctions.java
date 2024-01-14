@@ -1389,26 +1389,28 @@ public class HypergeometricFunctions {
         return F.Times(F.Exp(z), F.Gamma(F.Subtract(F.C1, a), z));
       }
       try {
-        IExpr n = engine.evaluate(F.Subtract(b, a));
-        if (n.isInteger()) {
-          if (n.isOne()) {
-            // b==a+1 ==> z^(-a)
-            return F.Power(z, a.negate());
-          }
-          int nInt = n.toIntDefault();
-          if (nInt > 0) {
-            int nMinus1 = nInt - 1;
-            // Sum((Binomial(-1+n, -1-k+n)*Pochhammer(a, k))/z^k, {k, 0, n-1}) / z^a
-            return F.Times(F.Power(z, a.negate()), //
-                F.intSum( //
-                    k -> F.Times(F.Binomial(nMinus1, nMinus1 - k), F.Pochhammer(a, F.ZZ(k)),
-                        F.Power(z, -k)), //
-                    0, nMinus1));
+        {
+          IExpr n = engine.evaluate(F.Subtract(b, a));
+          if (n.isInteger()) {
+            if (n.isOne()) {
+              // b==a+1 ==> z^(-a)
+              return F.Power(z, a.negate());
+            }
+            int nInt = n.toIntDefault();
+            if (nInt > 0) {
+              int nMinus1 = nInt - 1;
+              // Sum((Binomial(-1+n, -1-k+n)*Pochhammer(a, k))/z^k, {k, 0, n-1}) / z^a
+              return F.Times(F.Power(z, a.negate()), //
+                  F.intSum( //
+                      k -> F.Times(F.Binomial(nMinus1, nMinus1 - k), F.Pochhammer(a, F.ZZ(k)),
+                          F.Power(z, -k)), //
+                      0, nMinus1));
+            }
           }
         }
         if (engine.isArbitraryMode()) {
           try {
-            IExpr res = a.hypergeometric1F1(b, z);
+            IExpr res = a.hypergeometricU(b, z);
             if (res.isNumber()) {
               return res;
             }
@@ -1418,22 +1420,50 @@ public class HypergeometricFunctions {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
         } else if (engine.isDoubleMode()) {
-          double aDouble = Double.NaN;
-          double bDouble = Double.NaN;
-          double zDouble = Double.NaN;
           try {
-            aDouble = a.evalf();
-            bDouble = b.evalf();
-            zDouble = z.evalf();
-            return F.complexNum(HypergeometricJS.hypergeometricU(new Complex(aDouble),
-                new Complex(bDouble), new Complex(zDouble)));
+            IExpr res = a.hypergeometricU(b, z);
+            if (res.isNumber()) {
+              return res;
+            }
           } catch (ValidateException ve) {
-            Errors.printMessage(ast.topHead(), ve, engine);
+            return Errors.printMessage(ast.topHead(), ve, engine);
+          } catch (RuntimeException rex) {
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
-          Complex ac = a.evalfc();
-          Complex bc = b.evalfc();
-          Complex zc = z.evalfc();
-          return F.complexNum(HypergeometricJS.hypergeometricU(ac, bc, zc));
+
+          // double aDouble = Double.NaN;
+          // double bDouble = Double.NaN;
+          // double zDouble = Double.NaN;
+          // try {
+          // aDouble = a.evalf();
+          // bDouble = b.evalf();
+          // zDouble = z.evalf();
+          // return F.complexNum(HypergeometricJS.hypergeometricU(new Complex(aDouble),
+          // new Complex(bDouble), new Complex(zDouble)));
+          // } catch (ValidateException ve) {
+          // Errors.printMessage(ast.topHead(), ve, engine);
+          // }
+          // Complex ac = a.evalfc();
+          // Complex bc = b.evalfc();
+          // Complex zc = z.evalfc();
+          // return F.complexNum(HypergeometricJS.hypergeometricU(ac, bc, zc));
+        }
+
+        if (a.isInteger() && a.isPositive() && (!b.isNumber() || !z.isNumber())) {
+          IInteger n = (IInteger) a;
+          ISymbol k = F.Dummy("k");
+          // (Gamma(-1+b,z)*z^(1-b)*E^z*LaguerreL(-1+n,1-b,-z)-Sum(LaguerreL(-1-k+n,-b+k+1,-z)/k*LaguerreL(-
+          // 1+k,-1+b-k,z),{k,1,-1+n}))/Pochhammer(2-b,-1+n)
+          return F.Times(F.Power(F.Pochhammer(F.Subtract(F.C2, b), F.Plus(F.CN1, n)), F.CN1),
+              F.Subtract(
+                  F.Times(F.Gamma(F.Plus(F.CN1, b), z), F.Power(z, F.Subtract(F.C1, b)), F.Exp(z),
+                      F.LaguerreL(F.Plus(F.CN1, n), F.Subtract(F.C1, b), F.Negate(z))),
+                  F.Sum(
+                      F.Times(F.Power(k, F.CN1),
+                          F.LaguerreL(F.Plus(F.CN1, F.Negate(k), n), F.Plus(F.Negate(b), k, F.C1),
+                              F.Negate(z)),
+                          F.LaguerreL(F.Plus(F.CN1, k), F.Plus(F.CN1, b, F.Negate(k)), z)),
+                      F.list(k, F.C1, F.Plus(F.CN1, n)))));
         }
       } catch (ThrowException te) {
         LOGGER.debug("HypergeometricU.evaluate() failed", te);
