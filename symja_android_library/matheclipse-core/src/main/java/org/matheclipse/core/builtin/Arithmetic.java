@@ -5364,7 +5364,7 @@ public final class Arithmetic {
    * 1.41421356237309504880168872420969807856967187537694
    * </pre>
    */
-  private static class Sqrt extends AbstractArg1 implements INumeric {
+  public static class Sqrt extends AbstractArg1 implements INumeric {
 
     @Override
     public IExpr e1ObjArg(final IExpr o) {
