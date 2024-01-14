@@ -324,6 +324,46 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr besselI(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      Apcomplex besselI = EvalEngine.getApfloatDouble().besselI(apcomplexValue(),
+          ((INumber) arg2).apcomplexValue());
+      return F.complexNum(besselI.real().doubleValue(), besselI.imag().doubleValue());
+    }
+    return IComplexNum.super.besselI(arg2);
+  }
+
+  @Override
+  public IExpr besselJ(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      Apcomplex besselJ = EvalEngine.getApfloatDouble().besselJ(apcomplexValue(),
+          ((INumber) arg2).apcomplexValue());
+      return F.complexNum(besselJ.real().doubleValue(), besselJ.imag().doubleValue());
+    }
+    return IComplexNum.super.besselJ(arg2);
+  }
+
+  @Override
+  public IExpr besselK(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      Apcomplex besselK = EvalEngine.getApfloatDouble().besselK(apcomplexValue(),
+          ((INumber) arg2).apcomplexValue());
+      return F.complexNum(besselK.real().doubleValue(), besselK.imag().doubleValue());
+    }
+    return IComplexNum.super.besselK(arg2);
+  }
+
+  @Override
+  public IExpr besselY(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      Apcomplex besselY = EvalEngine.getApfloatDouble().besselY(apcomplexValue(),
+          ((INumber) arg2).apcomplexValue());
+      return F.complexNum(besselY.real().doubleValue(), besselY.imag().doubleValue());
+    }
+    return IComplexNum.super.besselY(arg2);
+  }
+
+  @Override
   public INumber ceilFraction() throws ArithmeticException {
     try {
       return F.complex(NumberUtil.toLong(Math.ceil(fComplex.getReal())),

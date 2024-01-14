@@ -906,6 +906,46 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr besselI(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      Apcomplex besselI =
+          EvalEngine.getApfloat().besselI(apcomplexValue(), ((INumber) arg2).apcomplexValue());
+      return F.complexNum(besselI);
+    }
+    return IComplexNum.super.besselI(arg2);
+  }
+
+  @Override
+  public IExpr besselJ(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      Apcomplex besselJ =
+          EvalEngine.getApfloat().besselI(apcomplexValue(), ((INumber) arg2).apcomplexValue());
+      return F.complexNum(besselJ);
+    }
+    return IComplexNum.super.besselJ(arg2);
+  }
+
+  @Override
+  public IExpr besselK(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      Apcomplex besselK =
+          EvalEngine.getApfloat().besselK(apcomplexValue(), ((INumber) arg2).apcomplexValue());
+      return F.complexNum(besselK);
+    }
+    return IComplexNum.super.besselK(arg2);
+  }
+
+  @Override
+  public IExpr besselY(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      Apcomplex besselY =
+          EvalEngine.getApfloat().besselY(apcomplexValue(), ((INumber) arg2).apcomplexValue());
+      return F.complexNum(besselY);
+    }
+    return IComplexNum.super.besselY(arg2);
+  }
+
+  @Override
   public ApcomplexNum cbrt() {
     return valueOf(EvalEngine.getApfloat().cbrt(fApcomplex));
   }

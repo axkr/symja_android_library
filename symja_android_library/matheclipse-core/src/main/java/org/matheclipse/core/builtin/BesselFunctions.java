@@ -360,24 +360,38 @@ public class BesselFunctions {
         }
       }
 
-      if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
-        try {
-          double nDouble = Double.NaN;
-          double zDouble = Double.NaN;
+      // if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
+      // try {
+      // double nDouble = Double.NaN;
+      // double zDouble = Double.NaN;
+      // try {
+      // nDouble = n.evalf();
+      // zDouble = z.evalf();
+      // } catch (ValidateException ve) {
+      // }
+      // if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || zDouble < 0.0) {
+      // Complex nc = n.evalfc();
+      // Complex zc = z.evalfc();
+      // return F.complexNum(BesselJS.besselJ(nc, zc));
+      // } else {
+      // return F.num(BesselJS.besselJDouble(nDouble, zDouble));
+      // }
+      // } catch (RuntimeException rex) {
+      // return Errors.printMessage(S.BesselJ, rex, engine);
+      // }
+      // }
+      if (n.isNumber() && z.isNumber()) {
+        if (engine.isDoubleMode() || engine.isArbitraryMode()) {
           try {
-            nDouble = n.evalf();
-            zDouble = z.evalf();
+            IExpr res = n.besselJ(z);
+            if (res.isNumber()) {
+              return res;
+            }
           } catch (ValidateException ve) {
+            return Errors.printMessage(S.BesselJ, ve, engine);
+          } catch (RuntimeException rex) {
+            return Errors.printMessage(S.BesselJ, rex, engine);
           }
-          if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || zDouble < 0.0) {
-            Complex nc = n.evalfc();
-            Complex zc = z.evalfc();
-            return F.complexNum(BesselJS.besselJ(nc, zc));
-          } else {
-            return F.num(BesselJS.besselJDouble(nDouble, zDouble));
-          }
-        } catch (RuntimeException rex) {
-          return Errors.printMessage(S.BesselJ, rex, engine);
         }
       }
       return F.NIL;
@@ -526,25 +540,39 @@ public class BesselFunctions {
           (z.isDirectedInfinity(F.CI) || z.isDirectedInfinity(F.CNI))) {
         return F.C0;
       }
-      if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
-        try {
-          double nDouble = Double.NaN;
-          double zDouble = Double.NaN;
+      if (n.isNumber() && z.isNumber()) {
+        // if (engine.isDoubleMode()) {
+        // try {
+        // double nDouble = Double.NaN;
+        // double zDouble = Double.NaN;
+        // try {
+        // nDouble = n.evalf();
+        // zDouble = z.evalf();
+        // } catch (ValidateException ve) {
+        // }
+        // if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || zDouble < 0.0) {
+        // Complex nc = n.evalfc();
+        // Complex zc = z.evalfc();
+        // return F.complexNum(BesselJS.besselI(nc, zc));
+        // } else {
+        // return F.num(BesselJS.besselIDouble(nDouble, zDouble));
+        // }
+        //
+        // } catch (RuntimeException rex) {
+        // return Errors.printMessage(S.BesselI, rex, engine);
+        // }
+        // }
+        if (engine.isDoubleMode() || engine.isArbitraryMode()) {
           try {
-            nDouble = n.evalf();
-            zDouble = z.evalf();
+            IExpr res = n.besselI(z);
+            if (res.isNumber()) {
+              return res;
+            }
           } catch (ValidateException ve) {
+            return Errors.printMessage(ast.topHead(), ve, engine);
+          } catch (RuntimeException rex) {
+            return Errors.printMessage(S.BesselI, rex, engine);
           }
-          if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || zDouble < 0.0) {
-            Complex nc = n.evalfc();
-            Complex zc = z.evalfc();
-            return F.complexNum(BesselJS.besselI(nc, zc));
-          } else {
-            return F.num(BesselJS.besselIDouble(nDouble, zDouble));
-          }
-
-        } catch (RuntimeException rex) {
-          return Errors.printMessage(S.BesselI, rex, engine);
         }
       }
       return F.NIL;
@@ -616,25 +644,39 @@ public class BesselFunctions {
           (z.isDirectedInfinity(F.CI) || z.isDirectedInfinity(F.CNI))) {
         return F.C0;
       }
-      if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
-        try {
-          double nDouble = Double.NaN;
-          double zDouble = Double.NaN;
+      // if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
+      // try {
+      // double nDouble = Double.NaN;
+      // double zDouble = Double.NaN;
+      // try {
+      // nDouble = n.evalf();
+      // zDouble = z.evalf();
+      // } catch (ValidateException ve) {
+      // }
+      // if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || zDouble < 0.0) {
+      // Complex nc = n.evalfc();
+      // Complex zc = z.evalfc();
+      // return F.complexNum(BesselJS.besselK(nc, zc));
+      // } else {
+      // return F.num(BesselJS.besselKDouble(nDouble, zDouble));
+      // }
+      //
+      // } catch (RuntimeException rex) {
+      // return Errors.printMessage(S.BesselK, rex, engine);
+      // }
+      // }
+      if (n.isNumber() && z.isNumber()) {
+        if (engine.isDoubleMode() || engine.isArbitraryMode()) {
           try {
-            nDouble = n.evalf();
-            zDouble = z.evalf();
+            IExpr res = n.besselK(z);
+            if (res.isNumber()) {
+              return res;
+            }
           } catch (ValidateException ve) {
+            return Errors.printMessage(S.BesselK, ve, engine);
+          } catch (RuntimeException rex) {
+            return Errors.printMessage(S.BesselK, rex, engine);
           }
-          if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || zDouble < 0.0) {
-            Complex nc = n.evalfc();
-            Complex zc = z.evalfc();
-            return F.complexNum(BesselJS.besselK(nc, zc));
-          } else {
-            return F.num(BesselJS.besselKDouble(nDouble, zDouble));
-          }
-
-        } catch (RuntimeException rex) {
-          return Errors.printMessage(S.BesselK, rex, engine);
         }
       }
       return F.NIL;
@@ -707,25 +749,39 @@ public class BesselFunctions {
           (z.isInfinity() || z.isNegativeInfinity())) {
         return F.C0;
       }
-      if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
-        try {
-          double nDouble = Double.NaN;
-          double zDouble = Double.NaN;
+      // if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
+      // try {
+      // double nDouble = Double.NaN;
+      // double zDouble = Double.NaN;
+      // try {
+      // nDouble = n.evalf();
+      // zDouble = z.evalf();
+      // } catch (ValidateException ve) {
+      // }
+      // if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || zDouble < 0.0) {
+      // Complex nc = n.evalfc();
+      // Complex zc = z.evalfc();
+      // return F.complexNum(BesselJS.besselY(nc, zc));
+      // } else {
+      // return F.num(BesselJS.besselYDouble(nDouble, zDouble));
+      // }
+      //
+      // } catch (RuntimeException rex) {
+      // return Errors.printMessage(S.BesselY, rex, engine);
+      // }
+      // }
+      if (n.isNumber() && z.isNumber()) {
+        if (engine.isDoubleMode() || engine.isArbitraryMode()) {
           try {
-            nDouble = n.evalf();
-            zDouble = z.evalf();
+            IExpr res = n.besselY(z);
+            if (res.isNumber()) {
+              return res;
+            }
           } catch (ValidateException ve) {
+            return Errors.printMessage(S.BesselY, ve, engine);
+          } catch (RuntimeException rex) {
+            return Errors.printMessage(S.BesselY, rex, engine);
           }
-          if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || zDouble < 0.0) {
-            Complex nc = n.evalfc();
-            Complex zc = z.evalfc();
-            return F.complexNum(BesselJS.besselY(nc, zc));
-          } else {
-            return F.num(BesselJS.besselYDouble(nDouble, zDouble));
-          }
-
-        } catch (RuntimeException rex) {
-          return Errors.printMessage(S.BesselY, rex, engine);
         }
       }
       return F.NIL;

@@ -195,6 +195,66 @@ public class Num implements INum {
     return valueOf(Math.atan(value));
   }
 
+  @Override
+  public IExpr besselI(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      if (arg2 instanceof IReal) {
+        Apfloat besselI =
+            EvalEngine.getApfloatDouble().besselI(apfloatValue(), ((IReal) arg2).apfloatValue());
+        return F.num(besselI.doubleValue());
+      }
+      Apcomplex besselI = EvalEngine.getApfloatDouble().besselI(apfloatValue(),
+          ((INumber) arg2).apcomplexValue());
+      return F.complexNum(besselI.real().doubleValue(), besselI.imag().doubleValue());
+    }
+    return INum.super.besselI(arg2);
+  }
+
+  @Override
+  public IExpr besselJ(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      if (arg2 instanceof IReal) {
+        Apfloat besselJ =
+            EvalEngine.getApfloatDouble().besselJ(apfloatValue(), ((IReal) arg2).apfloatValue());
+        return F.num(besselJ.doubleValue());
+      }
+      Apcomplex besselJ =
+          EvalEngine.getApfloatDouble().besselJ(apfloatValue(), ((INumber) arg2).apcomplexValue());
+      return F.complexNum(besselJ.real().doubleValue(), besselJ.imag().doubleValue());
+    }
+    return INum.super.besselJ(arg2);
+  }
+
+  @Override
+  public IExpr besselK(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      if (arg2 instanceof IReal) {
+        Apfloat besselK =
+            EvalEngine.getApfloatDouble().besselK(apfloatValue(), ((IReal) arg2).apfloatValue());
+        return F.num(besselK.doubleValue());
+      }
+      Apcomplex besselK =
+          EvalEngine.getApfloatDouble().besselK(apfloatValue(), ((INumber) arg2).apcomplexValue());
+      return F.complexNum(besselK.real().doubleValue(), besselK.imag().doubleValue());
+    }
+    return INum.super.besselK(arg2);
+  }
+
+  @Override
+  public IExpr besselY(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      if (arg2 instanceof IReal) {
+        Apfloat besselY =
+            EvalEngine.getApfloatDouble().besselY(apfloatValue(), ((IReal) arg2).apfloatValue());
+        return F.num(besselY.doubleValue());
+      }
+      Apcomplex besselY =
+          EvalEngine.getApfloatDouble().besselY(apfloatValue(), ((INumber) arg2).apcomplexValue());
+      return F.complexNum(besselY.real().doubleValue(), besselY.imag().doubleValue());
+    }
+    return INum.super.besselI(arg2);
+  }
+
   /** {@inheritDoc} */
   @Override
   public IInteger ceilFraction() {

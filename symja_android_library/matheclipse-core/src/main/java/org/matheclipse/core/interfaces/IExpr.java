@@ -471,6 +471,22 @@ public interface IExpr
     return first();
   }
 
+  default IExpr besselI(IExpr that) {
+    return F.BesselI(this, that);
+  }
+
+  default IExpr besselJ(IExpr that) {
+    return F.BesselJ(this, that);
+  }
+
+  default IExpr besselK(IExpr that) {
+    return F.BesselK(this, that);
+  }
+
+  default IExpr besselY(IExpr that) {
+    return F.BesselY(this, that);
+  }
+
   @Override
   default IExpr cbrt() {
     return S.Power.of(this, F.C1D3);

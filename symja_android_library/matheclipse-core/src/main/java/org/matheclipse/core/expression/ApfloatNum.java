@@ -884,6 +884,66 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public IExpr besselI(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      if (arg2 instanceof IReal) {
+        Apfloat besselI =
+            EvalEngine.getApfloat().besselI(apfloatValue(), ((IReal) arg2).apfloatValue());
+        return F.num(besselI);
+      }
+      Apcomplex besselI =
+          EvalEngine.getApfloat().besselI(apfloatValue(), ((INumber) arg2).apcomplexValue());
+      return F.complexNum(besselI);
+    }
+    return INum.super.besselI(arg2);
+  }
+
+  @Override
+  public IExpr besselJ(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      if (arg2 instanceof IReal) {
+        Apfloat besselJ =
+            EvalEngine.getApfloat().besselJ(apfloatValue(), ((IReal) arg2).apfloatValue());
+        return F.num(besselJ);
+      }
+      Apcomplex besselJ =
+          EvalEngine.getApfloat().besselJ(apfloatValue(), ((INumber) arg2).apcomplexValue());
+      return F.complexNum(besselJ);
+    }
+    return INum.super.besselJ(arg2);
+  }
+
+  @Override
+  public IExpr besselK(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      if (arg2 instanceof IReal) {
+        Apfloat besselK =
+            EvalEngine.getApfloat().besselK(apfloatValue(), ((IReal) arg2).apfloatValue());
+        return F.num(besselK);
+      }
+      Apcomplex besselK =
+          EvalEngine.getApfloat().besselK(apfloatValue(), ((INumber) arg2).apcomplexValue());
+      return F.complexNum(besselK);
+    }
+    return INum.super.besselK(arg2);
+  }
+
+  @Override
+  public IExpr besselY(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      if (arg2 instanceof IReal) {
+        Apfloat besselY =
+            EvalEngine.getApfloat().besselY(apfloatValue(), ((IReal) arg2).apfloatValue());
+        return F.num(besselY);
+      }
+      Apcomplex besselY =
+          EvalEngine.getApfloat().besselY(apfloatValue(), ((INumber) arg2).apcomplexValue());
+      return F.complexNum(besselY);
+    }
+    return INum.super.besselY(arg2);
+  }
+
+  @Override
   public ApfloatNum cbrt() {
     return valueOf(EvalEngine.getApfloat().cbrt(fApfloat));
   }
