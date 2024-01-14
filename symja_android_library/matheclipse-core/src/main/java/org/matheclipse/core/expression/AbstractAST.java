@@ -4724,9 +4724,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           return true;
         }
         return !isPlusTimesPower();
-      } else {
-        return isSlot() || isSubscript();
       }
+      return isSlot() || isSubscript();
     }
     if (!head().isSymbol()) {
       return false;
