@@ -6832,8 +6832,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testErfi() {
     // https://github.com/Hipparchus-Math/hipparchus/issues/278
     checkNumeric("Erfi(1.5-I)", //
-        "-0.7013604642514805+I*(-1.8468330146085417)");
+        "-0.7013604642514806+I*(-1.8468330146085419)");
 
+    checkNumeric("N(Erfi(1/2),50)", //
+        "0.6149520946965109808396811856236413930513456178954");
+    check("Erfi(0.5000000000000000000000000000000000)", //
+        "0.6149520946965109808396811856236414");
     // https://github.com/mtommila/apfloat/issues/31
     // checkNumeric("N(Erfi(1/2),50)", //
     // "0.6149520946965109808396811856236413930513456178954");

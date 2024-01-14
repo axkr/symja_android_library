@@ -845,6 +845,10 @@ public interface IExpr
     return F.Erfc(this);
   }
 
+  default IExpr erfi() {
+    return F.Erfi(this);
+  }
+
   /**
    * Evaluate the expression in symbolic mode with the {@link EvalEngine} associated with the
    * current thread.

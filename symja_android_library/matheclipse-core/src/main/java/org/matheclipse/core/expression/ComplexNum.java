@@ -569,6 +569,12 @@ public class ComplexNum implements IComplexNum {
     return F.NIL;
   }
 
+  @Override
+  public IExpr erfi() {
+    Apcomplex erfi = EvalEngine.getApfloatDouble().erfi(apcomplexValue());
+    return F.complexNum(erfi.real().doubleValue(), erfi.imag().doubleValue());
+  }
+
   /** {@inheritDoc} */
   @Override
   public Complex evalfc() {

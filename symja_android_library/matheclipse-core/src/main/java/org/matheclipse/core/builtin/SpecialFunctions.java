@@ -702,13 +702,17 @@ public class SpecialFunctions {
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
-        // -I * Erf(I*z)
-        IExpr t = z.times(F.CI).erf();
-        if (t.isPresent()) {
-          return F.CNI.times(t);
-        }
-
+        return z.erfi();
       }
+      // if (ast.argSize() == 1) {
+      // IInexactNumber z = (IInexactNumber) ast.arg1();
+      // // -I * Erf(I*z)
+      // IExpr t = z.times(F.CI).erf();
+      // if (t.isPresent()) {
+      // return F.CNI.times(t);
+      // }
+      //
+      // }
       return F.NIL;
     }
 

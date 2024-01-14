@@ -442,6 +442,11 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr erfi() {
+    return valueOf(EvalEngine.getApfloat().erfi(fApcomplex));
+  }
+
+  @Override
   public INumber evalNumber() {
     return this;
   }

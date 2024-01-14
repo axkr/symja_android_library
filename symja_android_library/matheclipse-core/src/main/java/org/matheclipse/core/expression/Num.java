@@ -426,6 +426,12 @@ public class Num implements INum {
   }
 
   @Override
+  public IExpr erfi() {
+    Apfloat erfi = EvalEngine.getApfloatDouble().erfi(apfloatValue());
+    return F.num(erfi.doubleValue());
+  }
+
+  @Override
   public INumber evalNumber() {
     return this;
   }

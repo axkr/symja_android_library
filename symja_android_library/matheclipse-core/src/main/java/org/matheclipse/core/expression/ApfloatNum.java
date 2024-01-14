@@ -264,6 +264,11 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public IExpr erfi() {
+    return valueOf(EvalEngine.getApfloat().erfi(fApfloat));
+  }
+
+  @Override
   public IReal evalReal() {
     return this;
   }
