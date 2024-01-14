@@ -1012,6 +1012,17 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr pochhammer(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      Apcomplex pochhammer = EvalEngine.getApfloatDouble().pochhammer(apcomplexValue(),
+          ((INumber) arg2).apcomplexValue());
+      return F.complexNum(pochhammer.real().doubleValue(), pochhammer.imag().doubleValue());
+    }
+    return IComplexNum.super.pochhammer(arg2);
+  }
+
+
+  @Override
   public IComplexNum pow(final IComplexNum val) {
     if (Complex.equals(fComplex, Complex.ZERO, Config.DOUBLE_EPSILON)) {
       IReal sn = val.re();

@@ -881,6 +881,21 @@ public class Num implements INum {
   }
 
   @Override
+  public IExpr pochhammer(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      if (arg2 instanceof IReal) {
+        Apfloat pochhammer = EvalEngine.getApfloatDouble().pochhammer(apfloatValue(),
+            ((IReal) arg2).apfloatValue());
+        return F.num(pochhammer.doubleValue());
+      }
+      Apcomplex pochhammer = EvalEngine.getApfloatDouble().pochhammer(apfloatValue(),
+          ((INumber) arg2).apcomplexValue());
+      return F.complexNum(pochhammer.real().doubleValue(), pochhammer.imag().doubleValue());
+    }
+    return INum.super.pochhammer(arg2);
+  }
+
+  @Override
   public Num pow(int n) {
     return valueOf(Math.pow(value, n));
   }
