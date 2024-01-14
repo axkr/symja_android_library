@@ -1889,7 +1889,7 @@ public class EvalEngine implements Serializable {
       if (result.isUnevaluated()) {
         return unevaluatedArg1(result.first());
       }
-      fTraceStack.setUp(expr, fRecursionCounter);
+      fTraceStack.setUp(expr, fRecursionCounter, expr);
       boolean isEvaled = false;
       try {
         IExpr temp = result.evaluate(this);
@@ -1932,9 +1932,9 @@ public class EvalEngine implements Serializable {
         }
       } finally {
         if (isEvaled) {
-          fTraceStack.tearDown(result, fRecursionCounter, true);
+          fTraceStack.tearDown(result, fRecursionCounter, true, expr);
         } else {
-          fTraceStack.tearDown(F.NIL, fRecursionCounter, false);
+          fTraceStack.tearDown(F.NIL, fRecursionCounter, false, expr);
         }
       }
     } catch (UnsupportedOperationException uoe) {

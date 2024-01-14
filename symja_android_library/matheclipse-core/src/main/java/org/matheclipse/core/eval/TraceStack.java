@@ -76,12 +76,12 @@ public final class TraceStack extends AbstractEvalStepListener {
   }
 
   @Override
-  public void setUp(IExpr inputExpr, int recursionDepth) {
+  public void setUp(IExpr inputExpr, int recursionDepth, @Nullable Object stackMarker) {
     pushList();
   }
 
   @Override
-  public void tearDown(@Nullable IExpr result, int recursionDepth, boolean commitTraceFrame) {
+  public void tearDown(@Nullable IExpr result, int recursionDepth, boolean commitTraceFrame, @Nullable Object stackMarker) {
     popList(commitTraceFrame);
   }
 

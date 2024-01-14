@@ -178,10 +178,12 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
           if (isTraceMode) {
             IExpr lhs = getLHSExprToMatch();
             if (lhs.isPresent()) {
-              stepListener.setUp(lhs, 0);
-              isStepListenerSetUp = true;
-              fReturnResult =
-                  engine.addEvaluatedTraceStep(lhs, rhs, lhs.topHead(), F.$str("RewriteRule"));
+              stepListener.setUp(lhs, 0, lhs);
+              try {
+                fReturnResult = engine.addEvaluatedTraceStep(lhs, rhs, lhs.topHead(), F.$str("RewriteRule"));
+              } finally {
+                stepListener.tearDown(F.NIL, 0, true, lhs);
+              }
             } else {
               fReturnResult = engine.evaluate(rhs);
             }
@@ -196,9 +198,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
           matched = true;
         } finally {
           engine.popOptionsStack();
-          if (isStepListenerSetUp) {
-            stepListener.tearDown(F.NIL, 0, matched);
-          }
         }
 
         patternMap.setRHSEvaluated(matched);

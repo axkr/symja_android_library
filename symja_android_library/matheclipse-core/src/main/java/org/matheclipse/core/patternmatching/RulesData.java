@@ -441,7 +441,7 @@ public final class RulesData implements Serializable {
 
             IExpr result = F.NIL;
             if (isTraceMode) {
-              stepListener.setUp(expr, engine.getRecursionCounter());
+              stepListener.setUp(expr, engine.getRecursionCounter(), expr);
               try {
                 result = pmEvaluator.eval(expr, engine);
                 if (result.isPresent()) {
@@ -449,9 +449,9 @@ public final class RulesData implements Serializable {
                 }
               } finally {
                 if (result.isPresent()) {
-                  stepListener.tearDown(result, engine.getRecursionCounter(), true);
+                  stepListener.tearDown(result, engine.getRecursionCounter(), true, expr);
                 } else {
-                  stepListener.tearDown(F.NIL, engine.getRecursionCounter(), false);
+                  stepListener.tearDown(F.NIL, engine.getRecursionCounter(), false, expr);
                 }
               }
               continue;

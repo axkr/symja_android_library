@@ -1,6 +1,8 @@
 package org.matheclipse.core.interfaces;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 
@@ -32,28 +34,29 @@ public interface IEvalStepListener {
    * @param expr the input expression which should currently be evaluated
    * @param recursionDepth the current recursion depth of this evaluation step
    */
-  public abstract void setUp(IExpr expr, int recursionDepth);
+  public abstract void setUp(IExpr expr, int recursionDepth, @Nullable Object stackMarker);
 
   /**
    * Tear down this evaluation step (called finally at the evaluation loop).
    *
-   * @param result the result after evaluating the input from {@link #setUp(IExpr, int)}
+   * @param result the result after evaluating the input from {@link #setUp(IExpr, int, Object)}
    * @param recursionDepth the current recursion depth of this evaluation step
    * @param commitTraceFrame set to <code>true</code> if the current trace frame should be stored.
    */
   public abstract void tearDown(@Nonnull IExpr result, int recursionDepth,
-      boolean commitTraceFrame);
+      boolean commitTraceFrame, @Nullable Object stackMarker);
 
   /**
    * Tear down this evaluation step (called finally at the evaluation loop).
    *
-   * @param result the result after evaluating the input from {@link #setUp(IExpr, int)}
+   * @param result the result after evaluating the input from {@link #setUp(IExpr, int, Object)}
    * @param hints additional information for this step
    * @param recursionDepth the current recursion depth of this evaluation step
    * @param commitTraceFrame set to <code>true</code> if the current trace frame should be stored.
    */
-  default void tearDown(@Nonnull IExpr result, @Nonnull IAST hints, int recursionDepth, boolean commitTraceFrame) {
-    tearDown(result, recursionDepth, commitTraceFrame);
+  default void tearDown(@Nonnull IExpr result, @Nonnull IAST hints, int recursionDepth, boolean commitTraceFrame,
+                        @Nullable Object stackMarker) {
+    tearDown(result, recursionDepth, commitTraceFrame, stackMarker);
   }
 
   /**
