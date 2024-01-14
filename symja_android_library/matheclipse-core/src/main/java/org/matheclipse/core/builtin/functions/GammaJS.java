@@ -15,7 +15,6 @@ import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.generic.UnaryNumerical;
@@ -227,13 +226,15 @@ public class GammaJS extends JS {
 
   public static Complex fresnelS(Complex x) {
     Apcomplex apcomplex = new Apcomplex(new Apfloat(x.getReal()), new Apfloat(x.getImaginary()));
-    Apcomplex fresnelC = ApcomplexNum.fresnelS(apcomplex, EvalEngine.getApfloatDouble());
-    return new Complex(fresnelC.real().doubleValue(), fresnelC.imag().doubleValue());
+    Apcomplex fresnelS = EvalEngine.getApfloat().fresnelS(apcomplex);
+    // Apcomplex fresnelS = ApcomplexNum.fresnelS(apcomplex, EvalEngine.getApfloatDouble());
+    return new Complex(fresnelS.real().doubleValue(), fresnelS.imag().doubleValue());
   }
 
   public static Complex fresnelC(Complex x) {
     Apcomplex apcomplex = new Apcomplex(new Apfloat(x.getReal()), new Apfloat(x.getImaginary()));
-    Apcomplex fresnelC = ApcomplexNum.fresnelC(apcomplex, EvalEngine.getApfloatDouble());
+    Apcomplex fresnelC = EvalEngine.getApfloat().fresnelC(apcomplex);
+    // Apcomplex fresnelC = ApcomplexNum.fresnelC(apcomplex, EvalEngine.getApfloatDouble());
     return new Complex(fresnelC.real().doubleValue(), fresnelC.imag().doubleValue());
   }
 

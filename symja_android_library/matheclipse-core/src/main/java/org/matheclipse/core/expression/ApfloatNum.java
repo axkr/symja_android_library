@@ -7,7 +7,6 @@ import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.Apint;
-import org.apfloat.Aprational;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -87,12 +86,14 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr fresnelC() {
-    return ApcomplexNum.valueOf(ApcomplexNum.fresnelC(fApfloat, EvalEngine.getApfloat()));
+    return valueOf(EvalEngine.getApfloat().fresnelC(fApfloat));
+    // return ApcomplexNum.valueOf(ApcomplexNum.fresnelC(fApfloat, EvalEngine.getApfloat()));
   }
 
   @Override
   public IExpr fresnelS() {
-    return ApcomplexNum.valueOf(ApcomplexNum.fresnelS(fApfloat, EvalEngine.getApfloat()));
+    return valueOf(EvalEngine.getApfloat().fresnelS(fApfloat));
+    // return ApcomplexNum.valueOf(ApcomplexNum.fresnelS(fApfloat, EvalEngine.getApfloat()));
   }
 
   @Override
@@ -156,6 +157,23 @@ public class ApfloatNum implements INum {
     return INum.super.hypergeometric2F1(arg2, arg3, arg4);
   }
 
+  @Override
+  public IExpr hypergeometricU(IExpr arg2, IExpr arg3) {
+    if (arg2 instanceof IReal && arg3 instanceof IReal) {
+      try {
+        return valueOf(EvalEngine.getApfloat().hypergeometricU(fApfloat,
+            ((IReal) arg2).apfloatValue(), ((IReal) arg3).apfloatValue()));
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
+    }
+    if (arg2 instanceof INumber && arg3 instanceof INumber) {
+      return F.complexNum(EvalEngine.getApfloat().hypergeometricU(fApfloat,
+          ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue()));
+    }
+    return INum.super.hypergeometricU(arg2, arg3);
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean isNumEqualInteger(IInteger ii) throws ArithmeticException {
@@ -210,37 +228,39 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr erf() {
-    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-    try {
-      Apfloat erf = erf(fApfloat, h);
-      return F.num(erf);
-    } catch (Exception ce) {
-      //
-    }
-    return F.NIL;
+    return valueOf(EvalEngine.getApfloat().erf(fApfloat));
+    // FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    // try {
+    // Apfloat erf = erf(fApfloat, h);
+    // return F.num(erf);
+    // } catch (Exception ce) {
+    // //
+    // }
+    // return F.NIL;
   }
 
-  private static Apfloat erf(Apfloat x, FixedPrecisionApfloatHelper h) {
-    Apint two = new Apint(2);
-    // 1/2
-    Aprational oneHalf = new Aprational(Apint.ONE, new Apint(2));
-    // 3/2
-    Aprational threeHalf = new Aprational(new Apint(3), new Apint(2));
-    Apfloat erf = h.hypergeometric1F1(oneHalf, threeHalf, h.multiply(x, x).negate()).multiply(two)
-        .multiply(x).divide(h.sqrt(h.pi()));
-    return erf;
-  }
+  // private static Apfloat erf(Apfloat x, FixedPrecisionApfloatHelper h) {
+  // Apint two = new Apint(2);
+  // // 1/2
+  // Aprational oneHalf = new Aprational(Apint.ONE, new Apint(2));
+  // // 3/2
+  // Aprational threeHalf = new Aprational(new Apint(3), new Apint(2));
+  // Apfloat erf = h.hypergeometric1F1(oneHalf, threeHalf, h.multiply(x, x).negate()).multiply(two)
+  // .multiply(x).divide(h.sqrt(h.pi()));
+  // return erf;
+  // }
 
   @Override
   public IExpr erfc() {
-    FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-    try {
-      Apfloat c = erf(fApfloat, h);
-      return F.num(h.subtract(Apcomplex.ONE, c));
-    } catch (Exception ce) {
-      //
-    }
-    return F.NIL;
+    return valueOf(EvalEngine.getApfloat().erfc(fApfloat));
+    // FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    // try {
+    // Apfloat c = erf(fApfloat, h);
+    // return F.num(h.subtract(Apcomplex.ONE, c));
+    // } catch (Exception ce) {
+    // //
+    // }
+    // return F.NIL;
   }
 
   @Override

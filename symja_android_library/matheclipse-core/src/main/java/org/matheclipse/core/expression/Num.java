@@ -156,14 +156,17 @@ public class Num implements INum {
     return val.add(this);
   }
 
+
   @Override
   public ApcomplexNum apcomplexNumValue() {
-    return ApcomplexNum.valueOf(apcomplexValue());
+    // because of NumStr#apfloatValue()
+    return ApcomplexNum.valueOf(apfloatValue());
   }
 
   @Override
   public Apcomplex apcomplexValue() {
-    return new Apcomplex(new Apfloat(value));
+    // because of NumStr#apfloatValue()
+    return new Apcomplex(apfloatValue());
   }
 
   @Override
@@ -320,6 +323,9 @@ public class Num implements INum {
 
   @Override
   public IExpr erf() {
+    // Apfloat erf = EvalEngine.getApfloatDouble().erf(apfloatValue());
+    // return F.num(erf.doubleValue());
+
     try {
       return F.num(de.lab4inf.math.functions.Erf.erf(value));
     } catch (final MathIllegalStateException e) {
@@ -346,6 +352,8 @@ public class Num implements INum {
 
   @Override
   public IExpr erfc() {
+    // Apfloat erfc = EvalEngine.getApfloatDouble().erfc(apfloatValue());
+    // return F.num(erfc.doubleValue());
     try {
       return Num.valueOf(de.lab4inf.math.functions.Erf.erfc(value));
       // if (arg1 >= 0. && arg1 <= 2.0) {
@@ -454,13 +462,15 @@ public class Num implements INum {
 
   @Override
   public IExpr fresnelC() {
-    Apcomplex fresnelC = ApcomplexNum.fresnelC(apfloatValue(), EvalEngine.getApfloatDouble());
+    Apcomplex fresnelC = EvalEngine.getApfloatDouble().fresnelC(apfloatValue());
+    // Apcomplex fresnelC = ApcomplexNum.fresnelC(apfloatValue(), EvalEngine.getApfloatDouble());
     return F.complexNum(fresnelC.real().doubleValue(), fresnelC.imag().doubleValue());
   }
 
   @Override
   public IExpr fresnelS() {
-    Apcomplex fresnelS = ApcomplexNum.fresnelS(apfloatValue(), EvalEngine.getApfloatDouble());
+    Apcomplex fresnelS = EvalEngine.getApfloatDouble().fresnelS(apfloatValue());
+    // Apcomplex fresnelS = ApcomplexNum.fresnelS(apfloatValue(), EvalEngine.getApfloatDouble());
     return F.complexNum(fresnelS.real().doubleValue(), fresnelS.imag().doubleValue());
   }
 
@@ -549,6 +559,18 @@ public class Num implements INum {
     // // try as computation with complex numbers
     // }
     // return INum.super.hypergeometric2F1(arg2, arg3, arg4);
+  }
+
+  @Override
+  public IExpr hypergeometricU(IExpr arg2, IExpr arg3) {
+    try {
+      return F.complexNum(HypergeometricJS.hypergeometricU(new Complex(value), //
+          arg2.evalfc(), //
+          arg3.evalfc()));
+    } catch (RuntimeException e) {
+      // try as computation with complex numbers
+    }
+    return INum.super.hypergeometricU(arg2, arg3);
   }
 
   /** {@inheritDoc} */

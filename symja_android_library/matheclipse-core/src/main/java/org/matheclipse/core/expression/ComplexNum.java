@@ -483,6 +483,8 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr erf() {
+    // Apcomplex erf = EvalEngine.getApfloatDouble().erf(apcomplexValue());
+    // return F.complexNum(erf.real().doubleValue(), erf.imag().doubleValue());
     // TODO depends on // https://github.com/Hipparchus-Math/hipparchus/issues/278
     // try {
     // Complex erf = org.hipparchus.special.Erf.erf(fComplex);
@@ -490,6 +492,7 @@ public class ComplexNum implements IComplexNum {
     // } catch (Exception ce) {
     // }
     // return F.NIL;
+
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
     try {
       Apint two = new Apint(2);
@@ -508,6 +511,9 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr erfc() {
+    // Apcomplex erfc = EvalEngine.getApfloatDouble().erfc(apcomplexValue());
+    // return F.complexNum(erfc.real().doubleValue(), erfc.imag().doubleValue());
+
     // TODO depends on // https://github.com/Hipparchus-Math/hipparchus/issues/278
     // try {
     // Complex erfc = org.hipparchus.special.Erf.erfc(fComplex);
@@ -658,13 +664,15 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr fresnelC() {
-    Apcomplex fresnelC = ApcomplexNum.fresnelC(apcomplexValue(), EvalEngine.getApfloatDouble());
+    Apcomplex fresnelC = EvalEngine.getApfloatDouble().fresnelC(apcomplexValue());
+    // Apcomplex fresnelC = ApcomplexNum.fresnelC(apcomplexValue(), EvalEngine.getApfloatDouble());
     return F.complexNum(fresnelC.real().doubleValue(), fresnelC.imag().doubleValue());
   }
 
   @Override
   public IExpr fresnelS() {
-    Apcomplex fresnelS = ApcomplexNum.fresnelS(apcomplexValue(), EvalEngine.getApfloatDouble());
+    Apcomplex fresnelS = EvalEngine.getApfloatDouble().fresnelS(apcomplexValue());
+    // Apcomplex fresnelS = ApcomplexNum.fresnelS(apcomplexValue(), EvalEngine.getApfloatDouble());
     return F.complexNum(fresnelS.real().doubleValue(), fresnelS.imag().doubleValue());
   }
 
@@ -710,6 +718,18 @@ public class ComplexNum implements IComplexNum {
     // // try as computation with complex numbers
     // }
     // return IComplexNum.super.hypergeometric2F1(arg2, arg3, arg4);
+  }
+
+  @Override
+  public IExpr hypergeometricU(IExpr arg2, IExpr arg3) {
+    try {
+      return F.complexNum(HypergeometricJS.hypergeometricU(fComplex, //
+          arg2.evalfc(), //
+          arg3.evalfc()));
+    } catch (RuntimeException e) {
+      // try as computation with complex numbers
+    }
+    return IComplexNum.super.hypergeometricU(arg2, arg3);
   }
 
   /** {@inheritDoc} */

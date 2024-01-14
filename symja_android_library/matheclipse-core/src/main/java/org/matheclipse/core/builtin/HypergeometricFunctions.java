@@ -999,8 +999,7 @@ public class HypergeometricFunctions {
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
-        }
-        if (engine.isDoubleMode()) {
+        } else if (engine.isDoubleMode()) {
 
           double aDouble = Double.NaN;
           double bDouble = Double.NaN;
@@ -1407,7 +1406,18 @@ public class HypergeometricFunctions {
                     0, nMinus1));
           }
         }
-        if (engine.isDoubleMode()) {
+        if (engine.isArbitraryMode()) {
+          try {
+            IExpr res = a.hypergeometric1F1(b, z);
+            if (res.isNumber()) {
+              return res;
+            }
+          } catch (ValidateException ve) {
+            return Errors.printMessage(ast.topHead(), ve, engine);
+          } catch (RuntimeException rex) {
+            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          }
+        } else if (engine.isDoubleMode()) {
           double aDouble = Double.NaN;
           double bDouble = Double.NaN;
           double zDouble = Double.NaN;

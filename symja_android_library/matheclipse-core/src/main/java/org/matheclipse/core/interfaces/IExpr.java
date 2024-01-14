@@ -4933,6 +4933,10 @@ public interface IExpr
     return F.Hypergeometric2F1(this, arg2, arg3, arg4);
   }
 
+  default IExpr hypergeometricU(IExpr arg2, IExpr arg3) {
+    return F.HypergeometricU(this, arg2, arg3);
+  }
+
   /**
    * Returns an <code>IExpr</code> whose value is <code>(this ^ that)</code>. Calculates <code>
    * F.eval(F.Power(this, that))</code> in the common case and uses a specialized implementation for
