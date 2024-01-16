@@ -4,9 +4,6 @@ import java.util.function.Function;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
-import org.apfloat.Apint;
-import org.apfloat.Aprational;
-import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
 import org.matheclipse.core.basic.Config;
@@ -523,50 +520,50 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr erf() {
-    // Apcomplex erf = EvalEngine.getApfloatDouble().erf(apcomplexValue());
-    // return F.complexNum(erf.real().doubleValue(), erf.imag().doubleValue());
-    // TODO depends on // https://github.com/Hipparchus-Math/hipparchus/issues/278
+    Apcomplex erf = EvalEngine.getApfloatDouble().erf(apcomplexValue());
+    return F.complexNum(erf.real().doubleValue(), erf.imag().doubleValue());
+    // // TODO depends on // https://github.com/Hipparchus-Math/hipparchus/issues/278
+    // // try {
+    // // Complex erf = org.hipparchus.special.Erf.erf(fComplex);
+    // // return F.complexNum(erf);
+    // // } catch (Exception ce) {
+    // // }
+    // // return F.NIL;
+    //
+    // FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
     // try {
-    // Complex erf = org.hipparchus.special.Erf.erf(fComplex);
-    // return F.complexNum(erf);
+    // Apint two = new Apint(2);
+    // // 1/2
+    // Aprational oneHalf = new Aprational(Apint.ONE, new Apint(2));
+    // // 3/2
+    // Aprational threeHalf = new Aprational(new Apint(3), new Apint(2));
+    // Apcomplex x = apcomplexValue();
+    // Apcomplex erf = h.hypergeometric1F1(oneHalf, threeHalf, h.multiply(x, x).negate())
+    // .multiply(two).multiply(x).divide(h.sqrt(h.pi()));
+    // return F.complexNum(erf.real().doubleValue(), erf.imag().doubleValue());
     // } catch (Exception ce) {
     // }
     // return F.NIL;
-
-    FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
-    try {
-      Apint two = new Apint(2);
-      // 1/2
-      Aprational oneHalf = new Aprational(Apint.ONE, new Apint(2));
-      // 3/2
-      Aprational threeHalf = new Aprational(new Apint(3), new Apint(2));
-      Apcomplex x = apcomplexValue();
-      Apcomplex erf = h.hypergeometric1F1(oneHalf, threeHalf, h.multiply(x, x).negate())
-          .multiply(two).multiply(x).divide(h.sqrt(h.pi()));
-      return F.complexNum(erf.real().doubleValue(), erf.imag().doubleValue());
-    } catch (Exception ce) {
-    }
-    return F.NIL;
   }
 
   @Override
   public IExpr erfc() {
-    // Apcomplex erfc = EvalEngine.getApfloatDouble().erfc(apcomplexValue());
-    // return F.complexNum(erfc.real().doubleValue(), erfc.imag().doubleValue());
+    Apcomplex erfc = EvalEngine.getApfloatDouble().erfc(apcomplexValue());
+    return F.complexNum(erfc.real().doubleValue(), erfc.imag().doubleValue());
 
-    // TODO depends on // https://github.com/Hipparchus-Math/hipparchus/issues/278
-    // try {
-    // Complex erfc = org.hipparchus.special.Erf.erfc(fComplex);
-    // return F.complexNum(erfc);
-    // } catch (Exception ce) {
+    // // TODO depends on // https://github.com/Hipparchus-Math/hipparchus/issues/278
+    // // try {
+    // // Complex erfc = org.hipparchus.special.Erf.erfc(fComplex);
+    // // return F.complexNum(erfc);
+    // // } catch (Exception ce) {
+    // // }
+    // // return F.NIL;
+    // IExpr erf = erf();
+    // if (erf.isPresent()) {
+    // Complex c = erf.evalfc();
+    // return F.complexNum(Complex.ONE.subtract(c));
     // }
     // return F.NIL;
-    IExpr erf = erf();
-    if (erf.isPresent()) {
-      Complex c = erf.evalfc();
-      return F.complexNum(Complex.ONE.subtract(c));
-    }
-    return F.NIL;
   }
 
   @Override
@@ -706,6 +703,18 @@ public class ComplexNum implements IComplexNum {
   @Override
   public int hierarchy() {
     return DOUBLECOMPLEXID;
+  }
+
+  @Override
+  public IExpr ellipticE() {
+    Apcomplex ellipticE = EvalEngine.getApfloatDouble().ellipticE(apcomplexValue());
+    return F.complexNum(ellipticE.real().doubleValue(), ellipticE.imag().doubleValue());
+  }
+
+  @Override
+  public IExpr ellipticK() {
+    Apcomplex ellipticK = EvalEngine.getApfloatDouble().ellipticK(apcomplexValue());
+    return F.complexNum(ellipticK.real().doubleValue(), ellipticK.imag().doubleValue());
   }
 
   @Override

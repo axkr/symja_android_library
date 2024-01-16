@@ -4937,6 +4937,14 @@ public interface IExpr
     return S.Power.of(this, F.ZZ(n));
   }
 
+  default IExpr ellipticE() {
+    return F.EllipticE(this);
+  }
+
+  default IExpr ellipticK() {
+    return F.EllipticK(this);
+  }
+
   default IExpr fresnelC() {
     return F.FresnelC(this);
   }

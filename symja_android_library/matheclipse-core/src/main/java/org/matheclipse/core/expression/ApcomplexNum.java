@@ -206,6 +206,16 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr ellipticE() {
+    return valueOf(EvalEngine.getApfloat().ellipticE(fApcomplex));
+  }
+
+  @Override
+  public IExpr ellipticK() {
+    return valueOf(EvalEngine.getApfloat().ellipticK(fApcomplex));
+  }
+
+  @Override
   public IExpr hypergeometric0F1(IExpr arg2) {
     if (arg2 instanceof INumber) {
       return valueOf(

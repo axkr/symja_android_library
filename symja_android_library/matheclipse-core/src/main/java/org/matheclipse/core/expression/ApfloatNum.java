@@ -85,6 +85,16 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public IExpr ellipticE() {
+    return valueOf(EvalEngine.getApfloat().ellipticE(fApfloat));
+  }
+
+  @Override
+  public IExpr ellipticK() {
+    return valueOf(EvalEngine.getApfloat().ellipticK(fApfloat));
+  }
+
+  @Override
   public IExpr fresnelC() {
     return valueOf(EvalEngine.getApfloat().fresnelC(fApfloat));
     // return ApcomplexNum.valueOf(ApcomplexNum.fresnelC(fApfloat, EvalEngine.getApfloat()));

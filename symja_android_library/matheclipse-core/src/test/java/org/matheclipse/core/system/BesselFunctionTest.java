@@ -58,9 +58,9 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
         "0");
     // https://github.com/mtommila/apfloat/issues/37
     checkNumeric("BesselJ(-1.9999999999998,3.0)", //
-        "0.486084660895966");
+        "0.48609126058580704");
     checkNumeric("BesselJ(-1.999888,3.0)", //
-        "0.48604418359700347");
+        "0.48604418359704343");
 
     checkNumeric("BesselJ(0,0.001)", //
         "0.9999997500000157");
@@ -249,11 +249,11 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
     check("HankelH1(#2,#2)", //
         "HankelH1(#2,#2)");
     checkNumeric("HankelH1(2.0,3)", //
-        "0.486091260585958+I*(-0.16040039348497298)");
+        "0.486091260585958+I*(-0.16040039348491514)");
     checkNumeric("HankelH1(3,1.2)", //
-        "0.03287433692500416+I*(-3.5898996296131607)");
+        "0.03287433692500416+I*(-3.5898996296131624)");
     checkNumeric("HankelH1(4.0,Pi)", //
-        "0.15142457763119113+I*(-0.8284254758009484)");
+        "0.15142457763119113+I*(-0.8284254758009458)");
     checkNumeric("HankelH1(23/47,5.0-I)", //
         "-0.8840126453738697+I*(-0.37582703842509113)");
   }
@@ -261,11 +261,11 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
   @Test
   public void testHankelH2() {
     checkNumeric("HankelH2(3,1.2)", //
-        "0.03287433692500416+I*3.5898996296131607");
+        "0.03287433692500416+I*3.5898996296131624");
     checkNumeric("HankelH2(0.2,3)", //
         "-0.1337869677248155+I*(-0.4383481561883242)");
     checkNumeric("HankelH2(4.0,3*Pi)", //
-        "-0.27212624415123904+I*0.015631826514055692");
+        "-0.27212624415123904+I*0.015631826514063165");
     checkNumeric("HankelH2(23/47,5.0-I)", //
         "-0.1272388528903588+I*0.02641083531092656");
   }

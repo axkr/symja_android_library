@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.functions;
 
+import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
@@ -86,9 +87,12 @@ public class BesselJS extends JS {
     }
 
     BisectionSolver solver = new BisectionSolver();
-    ISymbol x = F.Dummy("x");
-    UnivariateDifferentiableFunction f =
-        new UnaryNumerical(F.BesselJ(F.num(n), x), x, EvalEngine.get(), true);
+    UnivariateFunction f = new UnivariateFunction() {
+      @Override
+      public double value(double x) {
+        return F.num(n).besselJ(F.num(x)).evalf();
+      }
+    };
     return solver.solve(100, f, e - delta < 0 ? 0 : e - delta, e + delta);
   }
 
@@ -210,9 +214,12 @@ public class BesselJS extends JS {
     }
 
     BisectionSolver solver = new BisectionSolver();
-    ISymbol x = F.Dummy("x");
-    UnivariateDifferentiableFunction f =
-        new UnaryNumerical(F.BesselY(F.num(n), x), x, EvalEngine.get(), true);
+    UnivariateFunction f = new UnivariateFunction() {
+      @Override
+      public double value(double x) {
+        return F.num(n).besselY(F.num(x)).evalf();
+      }
+    };
     return solver.solve(100, f, (m == 1 && fractionalPartN > -.5) ? 1e-10 : e - delta, e + delta);
     // }
   }
@@ -342,11 +349,11 @@ public class BesselJS extends JS {
   }
 
   public static Complex hankelH1(Complex n, Complex x) {
-    
+
     int useAsymptotic = 11;
 
     // dlmf.nist.gov/10.17
-    if ( x.getImaginary() > 0 && x.norm() > useAsymptotic ) {
+    if (x.getImaginary() > 0 && x.norm() > useAsymptotic) {
 
       Complex w = add(-Math.PI / 4.0, x, mul(n, -Math.PI / 2.0));
 
@@ -355,17 +362,17 @@ public class BesselJS extends JS {
       Complex p = Complex.ONE;
       int i = 1;
 
-      while ( Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE //
-          || Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE ) {
+      while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE //
+          || Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
         p = mul(1.0 / (i * 8.0), p, plusI, sub(mul(4.0, n, n), Math.pow(2 * i - 1, 2)), inv(x));
-        s = add( s, p );
+        s = add(s, p);
         i++;
       }
 
       return mul(div(Math.sqrt(2.0 / Math.PI), sqrt(x)), exp(mul(plusI, w)), s);
 
     }
-    
+
     // not duplicate special case
     if (n.isMathematicalInteger()) {
       return add(besselJ(n, x), mul(Complex.I, besselY(n, x)));

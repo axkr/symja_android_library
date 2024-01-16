@@ -524,29 +524,38 @@ public class EllipticIntegrals {
             F.Plus(F.Sqr(S.Pi), F.Times(F.C2, F.Power(F.Gamma(F.QQ(3L, 4L)), 4))));
       }
 
-      if (engine.isDoubleMode()) {
-        try {
-          double zDouble = Double.NaN;
-          try {
-            zDouble = z.evalf();
-          } catch (ValidateException ve) {
-          }
-          if (Double.isNaN(zDouble)) {
-            Complex zc = z.evalfc();
-            return F.complexNum(EllipticIntegralsJS.ellipticE(new Complex(Math.PI / 2.0), zc));
-          } else {
-            return F.complexNum(EllipticIntegralsJS.ellipticE(Math.PI / 2.0, zDouble));
-          }
-        } catch (ValidateException ve) {
-          LOGGER.debug("EllipticE.evaluate() failed", ve);
-        } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-          return F.NIL;
-        }
-      }
+      // if (engine.isDoubleMode()) {
+      // try {
+      // double zDouble = Double.NaN;
+      // try {
+      // zDouble = z.evalf();
+      // } catch (ValidateException ve) {
+      // }
+      // if (Double.isNaN(zDouble)) {
+      // Complex zc = z.evalfc();
+      // return F.complexNum(EllipticIntegralsJS.ellipticE(new Complex(Math.PI / 2.0), zc));
+      // } else {
+      // return F.complexNum(EllipticIntegralsJS.ellipticE(Math.PI / 2.0, zDouble));
+      // }
+      // } catch (ValidateException ve) {
+      // LOGGER.debug("EllipticE.evaluate() failed", ve);
+      // } catch (RuntimeException rex) {
+      // LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+      // return F.NIL;
+      // }
+      // }
 
       if (z.isInfinity() || z.isNegativeInfinity() || z.isComplexInfinity()) {
         return F.CComplexInfinity;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        IInexactNumber z = (IInexactNumber) ast.arg1();
+        return z.ellipticE();
       }
       return F.NIL;
     }
@@ -768,9 +777,13 @@ public class EllipticIntegrals {
           // (8 Pi^(3/2))/Gamma(-(1/4))^2
           return F.Times(F.C8, F.Power(S.Pi, F.QQ(3L, 2L)), F.Power(F.Gamma(F.CN1D4), -2));
         }
+
+        return m.ellipticK();
+
+
         // EllipticK(m_) := Pi/(2*ArithmeticGeometricMean(1,Sqrt(1-m)))
-        INumber m1 = m.negate().plus(F.C1);
-        return F.Times(F.C1D2, S.Pi, F.Power(F.ArithmeticGeometricMean(F.C1, F.Sqrt(m1)), -1));
+        // INumber m1 = m.negate().plus(F.C1);
+        // return F.Times(F.C1D2, S.Pi, F.Power(F.ArithmeticGeometricMean(F.C1, F.Sqrt(m1)), -1));
       }
       return F.NIL;
     }

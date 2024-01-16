@@ -5,7 +5,6 @@ import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
 import org.hipparchus.complex.Complex;
-import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
@@ -203,8 +202,8 @@ public class Num implements INum {
             EvalEngine.getApfloatDouble().besselI(apfloatValue(), ((IReal) arg2).apfloatValue());
         return F.num(besselI.doubleValue());
       }
-      Apcomplex besselI = EvalEngine.getApfloatDouble().besselI(apfloatValue(),
-          ((INumber) arg2).apcomplexValue());
+      Apcomplex besselI =
+          EvalEngine.getApfloatDouble().besselI(apfloatValue(), ((INumber) arg2).apcomplexValue());
       return F.complexNum(besselI.real().doubleValue(), besselI.imag().doubleValue());
     }
     return INum.super.besselI(arg2);
@@ -383,46 +382,46 @@ public class Num implements INum {
 
   @Override
   public IExpr erf() {
-    // Apfloat erf = EvalEngine.getApfloatDouble().erf(apfloatValue());
-    // return F.num(erf.doubleValue());
+    Apfloat erf = EvalEngine.getApfloatDouble().erf(apfloatValue());
+    return F.num(erf.doubleValue());
 
-    try {
-      return F.num(de.lab4inf.math.functions.Erf.erf(value));
-    } catch (final MathIllegalStateException e) {
-    }
-
-    return F.NIL;
-    // FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
     // try {
-    // Apint two = new Apint(2);
-    // // 1/2
-    // Aprational oneHalf = new Aprational(Apint.ONE, new Apint(2));
-    // // 3/2
-    // Aprational threeHalf = new Aprational(new Apint(3), new Apint(2));
-    // Apfloat x = apfloatValue();
-    // Apfloat erf = h.hypergeometric1F1(oneHalf, threeHalf, h.multiply(x,
-    // x).negate()).multiply(two)
-    // .multiply(x).divide(h.sqrt(h.pi()));
-    // return F.num(erf.doubleValue());
-    // } catch (Exception ce) {
-    // //
+    // return F.num(de.lab4inf.math.functions.Erf.erf(value));
+    // } catch (final MathIllegalStateException e) {
     // }
+    //
     // return F.NIL;
+    // // FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
+    // // try {
+    // // Apint two = new Apint(2);
+    // // // 1/2
+    // // Aprational oneHalf = new Aprational(Apint.ONE, new Apint(2));
+    // // // 3/2
+    // // Aprational threeHalf = new Aprational(new Apint(3), new Apint(2));
+    // // Apfloat x = apfloatValue();
+    // // Apfloat erf = h.hypergeometric1F1(oneHalf, threeHalf, h.multiply(x,
+    // // x).negate()).multiply(two)
+    // // .multiply(x).divide(h.sqrt(h.pi()));
+    // // return F.num(erf.doubleValue());
+    // // } catch (Exception ce) {
+    // // //
+    // // }
+    // // return F.NIL;
   }
 
   @Override
   public IExpr erfc() {
-    // Apfloat erfc = EvalEngine.getApfloatDouble().erfc(apfloatValue());
-    // return F.num(erfc.doubleValue());
-    try {
-      return Num.valueOf(de.lab4inf.math.functions.Erf.erfc(value));
-      // if (arg1 >= 0. && arg1 <= 2.0) {
-      // return Num.valueOf(org.hipparchus.special.Erf.erfc(arg1));
-      // }
-    } catch (final MathIllegalStateException e) {
-    }
-
-    return F.NIL;
+    Apfloat erfc = EvalEngine.getApfloatDouble().erfc(apfloatValue());
+    return F.num(erfc.doubleValue());
+    // try {
+    // return Num.valueOf(de.lab4inf.math.functions.Erf.erfc(value));
+    // // if (arg1 >= 0. && arg1 <= 2.0) {
+    // // return Num.valueOf(org.hipparchus.special.Erf.erfc(arg1));
+    // // }
+    // } catch (final MathIllegalStateException e) {
+    // }
+    //
+    // return F.NIL;
   }
 
   @Override
@@ -524,6 +523,18 @@ public class Num implements INum {
   @Override
   public int hierarchy() {
     return DOUBLEID;
+  }
+
+  @Override
+  public IExpr ellipticE() {
+    Apcomplex ellipticE = EvalEngine.getApfloatDouble().ellipticE(apfloatValue());
+    return F.complexNum(ellipticE.real().doubleValue(), ellipticE.imag().doubleValue());
+  }
+
+  @Override
+  public IExpr ellipticK() {
+    Apcomplex ellipticK = EvalEngine.getApfloatDouble().ellipticK(apfloatValue());
+    return F.complexNum(ellipticK.real().doubleValue(), ellipticK.imag().doubleValue());
   }
 
   @Override
@@ -950,8 +961,8 @@ public class Num implements INum {
   public IExpr pochhammer(IExpr arg2) {
     if (arg2 instanceof INumber) {
       if (arg2 instanceof IReal) {
-        Apfloat pochhammer = EvalEngine.getApfloatDouble().pochhammer(apfloatValue(),
-            ((IReal) arg2).apfloatValue());
+        Apfloat pochhammer =
+            EvalEngine.getApfloatDouble().pochhammer(apfloatValue(), ((IReal) arg2).apfloatValue());
         return F.num(pochhammer.doubleValue());
       }
       Apcomplex pochhammer = EvalEngine.getApfloatDouble().pochhammer(apfloatValue(),
