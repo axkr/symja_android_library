@@ -206,6 +206,16 @@ public interface IExpr
 
   public static final int BDDEXPRID = DATAID + 23;
 
+  /**
+   * Compares {@code a} expressions {@link #hierarchy()} number with the {@link #hierarchy()} number
+   * of {@code b}. Returns -1,0,1 as {@code a} expressions {@link #hierarchy()} number is canonical
+   * less than, equal to, or greater than the {@link #hierarchy()} number of {@code b}.
+   * 
+   */
+  static int compareHierarchy(IExpr a, IExpr b) {
+    return Integer.compare(a.hierarchy(), b.hierarchy());
+  }
+
   public static IExpr convertToExpr(COMPARE_TERNARY temp) {
     if (temp == COMPARE_TERNARY.TRUE) {
       return S.True;
@@ -214,6 +224,37 @@ public interface IExpr
       return S.False;
     }
     return F.NIL;
+  }
+
+  /**
+   * Return the standard has() if there are no literal symbols, else check to see that symbol-deps
+   * are in the free symbols.
+   * 
+   * @param e
+   * @param sym
+   * @param other
+   * @return
+   */
+  private static boolean has(IExpr e, Set sym, ArrayList<IExpr> other) {
+    boolean has_other = e.has(other);
+    if (!sym.isEmpty()) {
+      return has_other;
+    }
+    if (!has_other) {
+      VariablesSet vars = new VariablesSet(e);
+      List<IExpr> free_symbols = vars.getArrayList();
+      free_symbols.addAll(sym);
+      return e.has(free_symbols);
+    }
+    return true;
+  }
+
+  public static IASTAppendable join(IExpr head, IAST... lists) {
+    final IASTAppendable result = F.ast(head, lists.length);
+    for (int i = 0; i < lists.length; i++) {
+      result.appendArgs(lists[i]);
+    }
+    return result;
   }
 
   /**
@@ -354,6 +395,42 @@ public interface IExpr
   }
 
   /**
+   * Airy function Ai.
+   *
+   * @return Ai(x)
+   */
+  default IExpr airyAi() {
+    return F.AiryAi(this);
+  }
+
+  /**
+   * Derivative of the Airy function Ai.
+   * 
+   * @return Ai′(x)
+   */
+  default IExpr airyAiPrime() {
+    return F.AiryAiPrime(this);
+  }
+
+  /**
+   * Airy function Bi.
+   *
+   * @return Bi(x)
+   */
+  default IExpr airyBi() {
+    return F.AiryBi(this);
+  }
+
+  /**
+   * Derivative of the Airy function Bi.
+   *
+   * @return Bi′(x)
+   */
+  default IExpr airyBiPrime() {
+    return F.AiryBiPrime(this);
+  }
+
+  /**
    * Apply the <code>And</code> operator
    *
    * @param that
@@ -398,6 +475,230 @@ public interface IExpr
     return -1;
   }
 
+  default Pair asBaseExp() {
+    // a -> b ^ e
+    if (isPower()) {
+      IExpr b = base();
+      IExpr e = exponent();
+      if (b.isFraction() && b.isPositive()) {
+        IFraction frac = (IFraction) b;
+        if (frac.isLT(F.C1)) {
+          return F.pair(frac.inverse(), e.negate());
+        }
+      }
+      return F.pair(b, e);
+    }
+    if (isTimes()) {
+      IExpr e1 = F.NIL;
+      IAST args = (IAST) this;
+      IASTAppendable bases = F.TimesAlloc(args.argSize());
+      for (int i = 1; i < args.size(); i++) {
+        IExpr m = args.get(i);
+        Pair list = m.asBaseExp();
+        IExpr b = list.first();
+        IExpr e = list.second();
+        if (e1.isNIL()) {
+          e1 = e;
+        } else if (!e.equals(e1)) {
+          return F.pair(this, F.C1);
+        }
+        bases.append(b);
+      }
+      return F.pair(bases, e1);
+    }
+    return F.pair(this, F.C1);
+  }
+
+  /**
+   * Return the pair <code>{c, Plus(args)}</code> where this is written as an
+   * <code>Plus(...)</code>, <code>a</code>. <code>c</code> should be a Rational added to any terms
+   * of the <code>Plus(...)</code that are independent of deps. args should be a tuple of all other
+   * terms of ``a``; args is empty if self is a Number or if self is independent of deps (when
+   * given). This should be used when you do not know if self is an Add or not but you want to treat
+   * self as an Add or if you want to process the individual arguments of the tail of self as an
+   * Add.
+   * 
+   * @return
+   */
+  default Pair asCoeffAdd() {
+    if (isPlus()) {
+      Pair asCoeffAdd = first().asCoeffAdd();
+      IExpr coeff = asCoeffAdd.first();
+      if (!coeff.isZero()) {
+        IAST notrat = (IAST) asCoeffAdd.arg2();
+        IASTMutable list2 = ((IAST) this).removeAtCopy(1);
+        return F.pair(coeff, join(S.Plus, notrat, list2));
+      }
+      return F.pair(F.C0, this); // ((IAST) this).setAtCopy(0, S.Plus));
+    }
+    return F.pair(F.C0, F.Plus(this));
+  }
+
+  default Pair asCoeffAdd(Collection<IExpr> collection) {
+    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2076
+
+    if (!has(collection)) {
+      return F.pair(this, F.Plus());
+    }
+    if (isPlus()) {
+      IAST plusAST = (IAST) this;
+      IASTAppendable[] filter = plusAST.filter(arg -> arg.has(collection));
+      IASTAppendable l1 = filter[0];
+      IASTAppendable l2 = filter[1];
+      return F.pair(l2.oneIdentity0(), l1);
+    }
+    return F.pair(F.C0, F.Plus(this));
+  }
+
+  default Pair asCoeffAdd(IExpr x) {
+    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2076
+
+    if (!has(x)) {
+      return F.pair(this, F.Plus());
+    }
+    if (isPlus()) {
+      IAST plusAST = (IAST) this;
+      IASTAppendable[] filter = plusAST.filter(arg -> arg.has(x));
+      IASTAppendable l1 = filter[0];
+      IASTAppendable l2 = filter[1];
+      return F.pair(l2.oneIdentity0(), l1);
+    }
+    return F.pair(F.C0, F.Plus(this));
+  }
+
+  default IPair asCoeffExponent(ISymbol x) {
+    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L3479
+    // ``c*x**e -> c,e`` where x can be any symbolic expression.
+    EvalEngine engine = EvalEngine.get();
+    IExpr s = F.Cancel.of(engine, this);
+    s = F.Collect.of(engine, s, x);
+    Pair coeffMul = s.asCoeffmul(x, false);
+    IExpr c = coeffMul.first();
+    IExpr p = coeffMul.second();
+    if (p.isAST1()) {
+      Pair baseExp = p.first().asBaseExp();
+      IExpr b = baseExp.first();
+      IExpr e = baseExp.second();
+      if (b.equals(x)) {
+        return F.pair(c, e);
+      }
+    }
+    return F.pair(s, F.C0);
+  }
+
+  default Pair asCoeffmul() {
+    return asCoeffmul(null, true);
+  }
+
+  default Pair asCoeffmul(boolean rational) {
+    return asCoeffmul(null, rational);
+  }
+
+  default Pair asCoeffmul(ISymbol deps) {
+    return asCoeffmul(deps, true);
+  }
+
+  /**
+   * Return the list <code>{c, args}</code> where this is written as a <code>Times(...)</code>
+   * <code>m</code>.
+   * 
+   * @param rational
+   * @return
+   */
+  default Pair asCoeffmul(ISymbol deps, boolean rational) {
+    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
+    if (isTimes()) {
+      if (deps != null) {
+        // l1, l2 = sift(self.args, lambda x: x.has(*deps), binary=True)
+        // return self._new_rawargs(*l2), tuple(l1)
+        IAST temp = Iterables.siftBinary((IAST) this, x -> x.has(deps));
+        IASTAppendable l1 = (IASTAppendable) temp.first();
+        IASTAppendable l2 = (IASTAppendable) temp.second();
+        return F.pair(l2.oneIdentity0(), l1);
+      }
+      IExpr arg1 = first();
+      if (arg1.isNumber()) {
+        if (!rational || arg1.isRational()) {
+          return F.pair(arg1, ((IAST) this).rest().setAtCopy(0, S.List));
+        }
+        if (arg1.isNegativeResult()) {
+          IASTAppendable list2 = ((IAST) this).copyAppendable();
+          list2.set(0, S.List);
+          IExpr a1Negate = arg1.negate();
+          if (a1Negate.isOne()) {
+            list2.set(1, a1Negate);
+          } else {
+            list2.remove(1);
+          }
+          return F.pair(F.CN1, list2);
+        }
+      }
+      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(this);
+      if (negExpr.isPresent()) {
+        if (negExpr.isTimes()) {
+          return F.pair(F.CN1, ((IAST) negExpr).setAtCopy(0, S.List));
+        }
+        return F.pair(F.CN1, F.List(negExpr));
+      }
+      return F.pair(F.C1, ((IAST) this).setAtCopy(0, S.List));
+    }
+    if (deps != null) {
+      if (!has(deps)) {
+        return F.pair(this, F.List());
+      }
+    }
+    return F.pair(F.C1, F.List(this));
+  }
+
+  /**
+   * Return the list <code>{c, args}</code> where this is written as a <code>Times(...)</code>
+   * <code>m</code>.
+   * 
+   * @return
+   */
+  default Pair asCoeffMul() {
+    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
+    return asCoeffMul(false);
+  }
+
+  /**
+   * Return the list <code>{c, args}</code> where this is written as a <code>Times(...)</code>
+   * <code>m</code>.
+   * 
+   * @param rational
+   * @return
+   */
+  default Pair asCoeffMul(boolean rational) {
+    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
+    if (isTimes()) {
+      IExpr arg1 = first();
+      if (arg1.isNumber()) {
+        if (!rational || arg1.isRational()) {
+          return F.pair(arg1, ((IAST) this).rest().oneIdentity1());
+        }
+        if (arg1.isNegativeResult()) {
+          IASTAppendable list2 = ((IAST) this).copyAppendable();
+          IExpr a1Negate = arg1.negate();
+          if (a1Negate.isOne()) {
+            list2.remove(1);
+          } else {
+            list2.set(1, a1Negate);
+          }
+          return F.pair(F.CN1, list2.oneIdentity1());
+        }
+      }
+      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(this);
+      if (negExpr.isPresent()) {
+        if (negExpr.isTimes()) {
+          return F.pair(F.CN1, ((IAST) negExpr).oneIdentity1());
+        }
+        return F.pair(F.CN1, negExpr);
+      }
+      // return F.pair(F.C1, ((IAST) this).setAtCopy(0, S.List));
+    }
+    return F.pair(F.C1, this);
+  }
+
   @Override
   default IExpr asin() {
     return S.ArcSin.of(this);
@@ -406,6 +707,54 @@ public interface IExpr
   @Override
   default IExpr asinh() {
     return S.ArcSinh.of(this);
+  }
+
+  default IExpr asLeadingTerm(ISymbol x) {
+    return asLeadingTerm(x, F.NIL, 0);
+  }
+
+  default IExpr asLeadingTerm(ISymbol x, IExpr logx, int cdir) {
+    return asLeadingTerm(new ISymbol[] {x}, logx, cdir);
+  }
+
+  default IExpr asLeadingTerm(ISymbol x, int cdir) {
+    return asLeadingTerm(x, F.NIL, cdir);
+  }
+
+  default IExpr asLeadingTerm(ISymbol[] symbols, IExpr logx, int cdir) {
+    if (symbols.length > 1) {
+      IExpr c = this;
+      for (ISymbol x : symbols) {
+        c = c.asLeadingTerm(new ISymbol[] {x}, logx, cdir);
+      }
+      return c;
+    } else if (symbols.length == 0) {
+      return this;
+    }
+    ISymbol x = symbols[0];
+    if (isFree(x)) {
+      return this;
+    }
+    IExpr obj = evalAsLeadingTerm(x, logx, cdir);
+    if (obj.isPresent()) {
+      return Powsimp.powsimp(obj, true, "exp");
+    }
+    throw new UnsupportedOperationException("asLeadingTerm(" + this + "," + x);
+  }
+
+  /**
+   * Expression <code>a/b -> [a, b]</code>
+   * 
+   * @return
+   */
+  default Pair asNumerDenom() {
+    return F.pair(this, F.C1);
+  }
+
+  default public DefaultDict<IExpr> asPowersDict() {
+    DefaultDict<IExpr> dict = new DefaultDict<IExpr>(() -> F.C0);
+    dict.put(this, F.C1);
+    return dict;
   }
 
   default Object asType(Class<?> clazz) {
@@ -471,20 +820,59 @@ public interface IExpr
     return first();
   }
 
-  default IExpr besselI(IExpr that) {
-    return F.BesselI(this, that);
+  /**
+   * Modified Bessel function of the first kind.
+   * 
+   * @param x The argument.
+   *
+   * @return <i>I<sub>this</sub>(x)</i>
+   */
+  default IExpr besselI(IExpr x) {
+    return F.BesselI(this, x);
   }
 
-  default IExpr besselJ(IExpr that) {
-    return F.BesselJ(this, that);
+  /**
+   * Bessel function of the first kind.
+   * 
+   * @param x The argument.
+   *
+   * @return <i>J<sub>this</sub>(x)</i>
+   */
+  default IExpr besselJ(IExpr x) {
+    return F.BesselJ(this, x);
   }
 
-  default IExpr besselK(IExpr that) {
-    return F.BesselK(this, that);
+  /**
+   * Modified Bessel function of the second kind.
+   * 
+   * @param x The argument.
+   *
+   * @return <i>K<sub>this</sub>(x)</i>
+   *
+   * @throws ArithmeticException If <code>x</code> is &le; 0.
+   *
+   * @since 1.13.0
+   */
+  default IExpr besselK(IExpr x) {
+    return F.BesselK(this, x);
   }
 
-  default IExpr besselY(IExpr that) {
-    return F.BesselY(this, that);
+  /**
+   * Bessel function of the second kind.
+   * 
+   * @param x The argument.
+   *
+   * @return <i>Y<sub>this</sub>(x)</i>
+   */
+  default IExpr besselY(IExpr x) {
+    return F.BesselY(this, x);
+  }
+
+  default IExpr cancel() {
+    if (isPlusTimesPower()) {
+      return F.eval(F.Cancel(this));
+    }
+    return this;
   }
 
   @Override
@@ -513,16 +901,6 @@ public interface IExpr
       // }
     }
     return compareHierarchy(this, expr);
-  }
-
-  /**
-   * Compares {@code a} expressions {@link #hierarchy()} number with the {@link #hierarchy()} number
-   * of {@code b}. Returns -1,0,1 as {@code a} expressions {@link #hierarchy()} number is canonical
-   * less than, equal to, or greater than the {@link #hierarchy()} number of {@code b}.
-   * 
-   */
-  static int compareHierarchy(IExpr a, IExpr b) {
-    return Integer.compare(a.hierarchy(), b.hierarchy());
   }
 
   /**
@@ -716,6 +1094,14 @@ public interface IExpr
     throw new UnsupportedOperationException(toString());
   }
 
+  default IExpr ellipticE() {
+    return F.EllipticE(this);
+  }
+
+  default IExpr ellipticK() {
+    return F.EllipticK(this);
+  }
+
   /**
    * Check if this expression and that expression are both {@link IAST}s with the same number of
    * arguments, where all arguments from position <code>1</code> to the end position are equals each
@@ -837,14 +1223,29 @@ public interface IExpr
     return convertToExpr(temp);
   }
 
+  /**
+   * Error function.
+   * 
+   * @return <i>erf(x)</i>
+   */
   default IExpr erf() {
     return F.Erf(this);
   }
 
+  /**
+   * Complementary error function.
+   *
+   * @return <i>erfc(x)</i>
+   */
   default IExpr erfc() {
     return F.Erfc(this);
   }
 
+  /**
+   * Imaginary error function.
+   *
+   * @return <i>erfi(x)</i>
+   */
   default IExpr erfi() {
     return F.Erfi(this);
   }
@@ -871,14 +1272,28 @@ public interface IExpr
     return engine.evaluate(this);
   }
 
+  default IExpr evalAsLeadingTerm(ISymbol x, IExpr logx, int cdir) {
+    if (isAST() && head() instanceof IBuiltInSymbol) {
+      IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
+      if (evaluator instanceof IRewrite) {
+        IExpr obj = ((IRewrite) evaluator).evalAsLeadingTerm((IAST) this, x, logx, cdir);
+        if (obj.isPresent()) {
+          return obj;
+        }
+      }
+    }
+
+    return this;
+  }
+
   /**
-   * Evaluate the expression in symbolic mode with the specified {@link EvalEngine}.
+   * Evaluate the expression to a Java <code>double</code> value and wrap the result in a
+   * {@link Binary64} object.
    * 
-   * @param engine
-   * @return {@link F#NIL} if no evaluation was possible.
+   * @throws ArgumentTypeException
    */
-  default IExpr evalNIL(EvalEngine engine) {
-    return engine.evaluateNIL(this);
+  default Binary64 evalBinary64() throws ArgumentTypeException {
+    return new Binary64(evalf());
   }
 
   /**
@@ -891,27 +1306,6 @@ public interface IExpr
   @Deprecated
   default Complex evalComplex() throws ArgumentTypeException {
     return EvalEngine.get().evalComplex(this);
-  }
-
-  /**
-   * Evaluate the expression to a <code>org.hipparchus.complex.Complex</code> complex float value.
-   *
-   * @return
-   * @throws ArgumentTypeException
-   */
-  default Complex evalfc() throws ArgumentTypeException {
-    return EvalEngine.get().evalComplex(this);
-  }
-
-  /**
-   * Evaluate the expression to a <code>org.hipparchus.complex.Complex</code> complex float value.
-   *
-   * @param function maybe <code>null</code>; returns a substitution value for some expressions
-   * @return
-   * @throws ArgumentTypeException
-   */
-  default Complex evalfc(final Function<IExpr, IExpr> function) throws ArgumentTypeException {
-    return EvalEngine.get().evalComplex(this, function);
   }
 
   /**
@@ -936,16 +1330,6 @@ public interface IExpr
   }
 
   /**
-   * Evaluate the expression to a Java <code>double</code> value and wrap the result in a
-   * {@link Binary64} object.
-   * 
-   * @throws ArgumentTypeException
-   */
-  default Binary64 evalBinary64() throws ArgumentTypeException {
-    return new Binary64(evalf());
-  }
-
-  /**
    * Evaluate the expression to a Java <code>double</code> value.
    * 
    * @param function maybe <code>null</code>; returns a substitution value for some expressions
@@ -953,6 +1337,37 @@ public interface IExpr
    */
   default double evalf(final Function<IExpr, IExpr> function) throws ArgumentTypeException {
     return EvalEngine.get().evalDouble(this, function);
+  }
+
+  /**
+   * Evaluate the expression to a <code>org.hipparchus.complex.Complex</code> complex float value.
+   *
+   * @return
+   * @throws ArgumentTypeException
+   */
+  default Complex evalfc() throws ArgumentTypeException {
+    return EvalEngine.get().evalComplex(this);
+  }
+
+  /**
+   * Evaluate the expression to a <code>org.hipparchus.complex.Complex</code> complex float value.
+   *
+   * @param function maybe <code>null</code>; returns a substitution value for some expressions
+   * @return
+   * @throws ArgumentTypeException
+   */
+  default Complex evalfc(final Function<IExpr, IExpr> function) throws ArgumentTypeException {
+    return EvalEngine.get().evalComplex(this, function);
+  }
+
+  /**
+   * Evaluate the expression in symbolic mode with the specified {@link EvalEngine}.
+   * 
+   * @param engine
+   * @return {@link F#NIL} if no evaluation was possible.
+   */
+  default IExpr evalNIL(EvalEngine engine) {
+    return engine.evaluateNIL(this);
   }
 
   /**
@@ -993,6 +1408,15 @@ public interface IExpr
     return F.NIL;
   }
 
+  default IExpr evaluateHead(IAST ast, EvalEngine engine) {
+    IExpr result = engine.evaluateNIL(this);
+    if (result.isPresent()) {
+      // set the new evaluated header !
+      return ast.apply(result);
+    }
+    return F.NIL;
+  }
+
   /**
    * Evaluate an expression if unequal {@link F#NIL} or otherwise return <code>other</code>
    * 
@@ -1002,15 +1426,6 @@ public interface IExpr
    */
   default IExpr evaluateOrElse(EvalEngine engine, final IExpr other) {
     return engine.evaluate(this);
-  }
-
-  default IExpr evaluateHead(IAST ast, EvalEngine engine) {
-    IExpr result = engine.evaluateNIL(this);
-    if (result.isPresent()) {
-      // set the new evaluated header !
-      return ast.apply(result);
-    }
-    return F.NIL;
   }
 
   /**
@@ -1093,12 +1508,40 @@ public interface IExpr
   }
 
   /**
+   * Fresnel integral C.
+   *
+   * @return <i>C(x)</i>
+   */
+  default IExpr fresnelC() {
+    return F.FresnelC(this);
+  }
+
+  /**
+   * Fresnel integral S.
+   *
+   * @return <i>S(x)</i>
+   */
+  default IExpr fresnelS() {
+    return F.FresnelS(this);
+  }
+
+  /**
    * Return the <code>FullForm()</code> of this expression
    *
    * @return
    */
   default String fullFormString() {
     return toString();
+  }
+
+  /**
+   * Return the Gaussian integer. If this is not a Gaussian integer return
+   * <code>Optional.empty()</code>.
+   * 
+   * @return
+   */
+  default Optional<GaussianInteger> gaussianInteger() {
+    return Optional.empty();
   }
 
   /**
@@ -1109,16 +1552,6 @@ public interface IExpr
    */
   @Deprecated
   default Optional<IInteger[]> gaussianIntegers() {
-    return Optional.empty();
-  }
-
-  /**
-   * Return the Gaussian integer. If this is not a Gaussian integer return
-   * <code>Optional.empty()</code>.
-   * 
-   * @return
-   */
-  default Optional<GaussianInteger> gaussianInteger() {
     return Optional.empty();
   }
 
@@ -1153,6 +1586,7 @@ public interface IExpr
   public default Field<IExpr> getField() {
     return F.EXPR_FIELD;
   }
+
 
   default IExpr getOptionalValue() {
     return null;
@@ -1210,21 +1644,6 @@ public interface IExpr
   }
 
   /**
-   * * Compare if <code>this >= other</code:
-   * <ul>
-   * <li>return S.True if the comparison is <code>true</code></li>
-   * <li>return S.False if the comparison is <code>false</code></li>
-   * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
-   * </ul>
-   * 
-   * @param other
-   * @return
-   */
-  public default IExpr greaterEqualThan(int other) {
-    return greaterEqualThan(F.ZZ(other));
-  }
-
-  /**
    * Compare if <code>this >= that</code:
    * <ul>
    * <li>return S.True if the comparison is <code>true</code></li>
@@ -1241,7 +1660,7 @@ public interface IExpr
   }
 
   /**
-   * Compare if <code>this > other</code:
+   * * Compare if <code>this >= other</code:
    * <ul>
    * <li>return S.True if the comparison is <code>true</code></li>
    * <li>return S.False if the comparison is <code>false</code></li>
@@ -1251,8 +1670,8 @@ public interface IExpr
    * @param other
    * @return
    */
-  public default IExpr greaterThan(int other) {
-    return greaterThan(F.ZZ(other));
+  public default IExpr greaterEqualThan(int other) {
+    return greaterEqualThan(F.ZZ(other));
   }
 
   /**
@@ -1269,6 +1688,21 @@ public interface IExpr
   public default IExpr greaterThan(IExpr that) {
     COMPARE_TERNARY temp = BooleanFunctions.CONST_GREATER.prepareCompare(this, that);
     return convertToExpr(temp);
+  }
+
+  /**
+   * Compare if <code>this > other</code:
+   * <ul>
+   * <li>return S.True if the comparison is <code>true</code></li>
+   * <li>return S.False if the comparison is <code>false</code></li>
+   * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
+   * </ul>
+   * 
+   * @param other
+   * @return
+   */
+  public default IExpr greaterThan(int other) {
+    return greaterThan(F.ZZ(other));
   }
 
   /**
@@ -1296,10 +1730,6 @@ public interface IExpr
    * @return
    */
   default boolean has(IExpr pattern) {
-    return has(pattern, true);
-  }
-
-  default boolean hasFree(IExpr pattern) {
     return has(pattern, true);
   }
 
@@ -1346,6 +1776,10 @@ public interface IExpr
         false);
   }
 
+  default boolean hasFree(IExpr pattern) {
+    return has(pattern, true);
+  }
+
   /**
    * If this object is an instance of <code>IAST</code> get the first element (offset 0) of the
    * <code>IAST</code> list (i.e. <code>#get(0)</code> ). Otherwise return the specific header, i.e.
@@ -1376,6 +1810,54 @@ public interface IExpr
    * @return a unique integer id for the implementation of this expression
    */
   public int hierarchy();
+
+  /**
+   * Confluent hypergeometric function <i><sub>0</sub>F<sub>1</sub></i>.
+   * 
+   * @param x The second argument.
+   *
+   * @return <i><sub>0</sub>F<sub>1</sub>(; this; x)</i>
+   */
+  default IExpr hypergeometric0F1(IExpr x) {
+    return F.Hypergeometric0F1(this, x);
+  }
+
+  /**
+   * Kummer confluent hypergeometric function <i><sub>1</sub>F<sub>1</sub></i>.
+   * 
+   * @param b The second argument.
+   * @param x The third argument.
+   *
+   * @return <i><sub>1</sub>F<sub>1</sub>(this; b; x)</i>
+   */
+  default IExpr hypergeometric1F1(IExpr b, IExpr x) {
+    return F.Hypergeometric1F1(this, b, x);
+  }
+
+  /**
+   * Hypergeometric function <i><sub>2</sub>F<sub>1</sub></i>.
+   *
+   * @param b The second argument.
+   * @param c The third argument.
+   * @param x The fourth argument.
+   *
+   * @return <i><sub>2</sub>F<sub>1</sub>(this, b; c; x)</i>
+   */
+  default IExpr hypergeometric2F1(IExpr b, IExpr c, IExpr x) {
+    return F.Hypergeometric2F1(this, b, c, x);
+  }
+
+  /**
+   * Tricomi's confluent hypergeometric function <i>U</i>.
+   * 
+   * @param b The second argument.
+   * @param x The third argument.
+   *
+   * @return <i>U(this, b, x)</i>
+   */
+  default IExpr hypergeometricU(IExpr b, IExpr x) {
+    return F.HypergeometricU(this, b, x);
+  }
 
   @Override
   default IExpr hypot(IExpr y) throws MathIllegalArgumentException {
@@ -1457,7 +1939,6 @@ public interface IExpr
     return -1;
   }
 
-
   /**
    * Return the internal Java form of this expression.
    *
@@ -1527,6 +2008,10 @@ public interface IExpr
    */
   default boolean isAbs() {
     return false;
+  }
+
+  default COMPARE_TERNARY isAlgebraic() {
+    return COMPARE_TERNARY.UNDECIDABLE;
   }
 
   /**
@@ -1822,6 +2307,7 @@ public interface IExpr
   default boolean isAtom() {
     return true;
   }
+
 
   /**
    * Test if this expression is a <code>Blank[]</code> object
@@ -2160,7 +2646,6 @@ public interface IExpr
     return false;
   }
 
-
   /**
    * Test if this expression is an {@link IAST} and contains no argument
    *
@@ -2170,12 +2655,7 @@ public interface IExpr
     return false;
   }
 
-  /**
-   * Test if this expression is an {@link IAST} and contains at least 1 argument
-   *
-   * @return
-   */
-  default public boolean isNotEmpty() {
+  default boolean isEmptyIntervalData() {
     return false;
   }
 
@@ -2541,6 +3021,11 @@ public interface IExpr
     return this instanceof IInexactNumber;
   }
 
+  default int isInexactVector() {
+    // default: no vector
+    return -1;
+  }
+
   /**
    * Test if this expression is representing <code>Infinity</code> (i.e. <code>
    * Infinity->DirectedInfinity[1]</code>)
@@ -2549,6 +3034,10 @@ public interface IExpr
    */
   default boolean isInfinity() {
     return false;
+  }
+
+  default Optional<IEvaluator> isInstance(Class<?> clazz) {
+    return Optional.empty();
   }
 
   /**
@@ -2586,6 +3075,16 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is a closed/open ended interval expression with one
+   * <code>List[min, max]</code> argument <code>Interval[{min, max}]</code>
+   *
+   * @return
+   */
+  default boolean isInterval1() {
+    return false;
+  }
+
+  /**
    * Test if this expression is a mixed opened/closed interval expression with one or more
    * <code>{min, Less/LessEqual, Less/LessEqual, max}</code> list arguments which represent the
    * union of the interval ranges. The empty <code>IntervalData()</code> interval returns also
@@ -2597,18 +3096,22 @@ public interface IExpr
     return false;
   }
 
-  default boolean isEmptyIntervalData() {
+  /**
+   * Checks if the expression equals the {@link F#INVALID} <i>Not In List</i> expression. Often
+   * {@link F#INVALID} is returned for a functions expression which couldn't be evaluated and is not
+   * valid for the further processing. {@link F#INVALID} is used to define a value similar to
+   * {@link F#NIL} but indicating an error in the data. Return {@code true} if this expression
+   * equals {@link F#INVALID}, otherwise {@code false}.
+   *
+   * @return {@code true} if the expression equals {@link F#INVALID}, otherwise {@code false}.
+   * @see java.util.Optional#isPresent()
+   */
+  default boolean isInvalid() {
     return false;
   }
 
-  /**
-   * Test if this expression is a closed/open ended interval expression with one
-   * <code>List[min, max]</code> argument <code>Interval[{min, max}]</code>
-   *
-   * @return
-   */
-  default boolean isInterval1() {
-    return false;
+  default COMPARE_TERNARY isIrrational() {
+    return COMPARE_TERNARY.UNDECIDABLE;
   }
 
   /**
@@ -2638,17 +3141,6 @@ public interface IExpr
    * @return
    */
   default boolean isList(int[] dimensions) {
-    return false;
-  }
-
-  /**
-   * Test if <code>this</code> is a list of points in the given dimension. The head of the points
-   * can be {@link S#List}, {@link S#Labeled} or {@link S#Style}
-   * 
-   * @param pointDimension
-   * @return
-   */
-  default boolean isListOfPoints(int pointDimension) {
     return false;
   }
 
@@ -2741,6 +3233,17 @@ public interface IExpr
    * @return
    */
   default boolean isListOfMatrices() {
+    return false;
+  }
+
+  /**
+   * Test if <code>this</code> is a list of points in the given dimension. The head of the points
+   * can be {@link S#List}, {@link S#Labeled} or {@link S#Style}
+   * 
+   * @param pointDimension
+   * @return
+   */
+  default boolean isListOfPoints(int pointDimension) {
     return false;
   }
 
@@ -2992,36 +3495,6 @@ public interface IExpr
     return AbstractAssumptions.assumeNegative(this);
   }
 
-  default boolean isUnequalResult(INumber num) {
-    return AbstractAssumptions.assumeUnequal(this, num);
-  }
-
-  default COMPARE_TERNARY isIrrational() {
-    return COMPARE_TERNARY.UNDECIDABLE;
-  }
-
-  default Optional<IEvaluator> isInstance(Class<?> clazz) {
-    return Optional.empty();
-  }
-
-  default COMPARE_TERNARY isAlgebraic() {
-    return COMPARE_TERNARY.UNDECIDABLE;
-  }
-
-  default COMPARE_TERNARY isTranscendental() {
-    return COMPARE_TERNARY.UNDECIDABLE;
-  }
-
-  /**
-   * Test if this expression has a negative result (i.e. <code>Re(this)<0</code>) for it's real part
-   * or is assumed to have a negative real part.
-   *
-   * @return <code>true</code>, if the given expression is a negative real part function or value.
-   */
-  default boolean isReNegativeResult() {
-    return AbstractAssumptions.assumeReNegative(this);
-  }
-
   /**
    * <p>
    * Check if the expression is a negative signed expression. This method is used in output forms of
@@ -3059,6 +3532,19 @@ public interface IExpr
       return true;
     }
 
+    return false;
+  }
+
+  /**
+   * Checks if the expression equals the {@link F#NIL} <i>Not In List</i> expression. Often
+   * {@link F#NIL} is returned for a functions expression which couldn't be evaluated. {@link F#NIL}
+   * is used to define a value similar to <code>null</code>. Return {@code true} if this expression
+   * equals {@link F#NIL}, otherwise {@code false}.
+   *
+   * @return {@code true} if the expression equals {@link F#NIL}, otherwise {@code false}.
+   * @see java.util.Optional#isPresent()
+   */
+  default boolean isNIL() {
     return false;
   }
 
@@ -3141,6 +3627,15 @@ public interface IExpr
 
   default boolean isNotDefined() {
     return isIndeterminate() || isDirectedInfinity();
+  }
+
+  /**
+   * Test if this expression is an {@link IAST} and contains at least 1 argument
+   *
+   * @return
+   */
+  default public boolean isNotEmpty() {
+    return false;
   }
 
   /**
@@ -3364,6 +3859,7 @@ public interface IExpr
   default boolean isOneIdentityAST1() {
     return false;
   }
+
 
   /**
    * Test if this expression is the <code>Optional</code> function <code>Optional[&lt;pattern&gt;]
@@ -3613,16 +4109,6 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression has a positive result (i.e. <code>Re(this)>0</<code></code>) for it's
-   * real part or is assumed to have a positive real part.
-   *
-   * @return <code>true</code>, if the given expression is a positive real part function or value.
-   */
-  default boolean isRePositiveResult() {
-    return AbstractAssumptions.assumeRePositive(this);
-  }
-
-  /**
    * Test if this expression equals <code>0</code> in symbolic or numeric mode. For the numeric test
    * multiple random numbers with a <code>Chop()</code> function test are used.
    *
@@ -3661,34 +4147,6 @@ public interface IExpr
    * @return
    */
   default boolean isPredicateFunctionSymbol() {
-    return false;
-  }
-
-  /**
-   * Checks if the expression equals the {@link F#NIL} <i>Not In List</i> expression. Often
-   * {@link F#NIL} is returned for a functions expression which couldn't be evaluated. {@link F#NIL}
-   * is used to define a value similar to <code>null</code>. Return {@code true} if this expression
-   * equals {@link F#NIL}, otherwise {@code false}.
-   *
-   * @return {@code true} if the expression equals {@link F#NIL}, otherwise {@code false}.
-   * @see java.util.Optional#isPresent()
-   */
-  default boolean isNIL() {
-    return false;
-  }
-
-
-  /**
-   * Checks if the expression equals the {@link F#INVALID} <i>Not In List</i> expression. Often
-   * {@link F#INVALID} is returned for a functions expression which couldn't be evaluated and is not
-   * valid for the further processing. {@link F#INVALID} is used to define a value similar to
-   * {@link F#NIL} but indicating an error in the data. Return {@code true} if this expression
-   * equals {@link F#INVALID}, otherwise {@code false}.
-   *
-   * @return {@code true} if the expression equals {@link F#INVALID}, otherwise {@code false}.
-   * @see java.util.Optional#isPresent()
-   */
-  default boolean isInvalid() {
     return false;
   }
 
@@ -3838,6 +4296,16 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression has a negative result (i.e. <code>Re(this)<0</code>) for it's real part
+   * or is assumed to have a negative real part.
+   *
+   * @return <code>true</code>, if the given expression is a negative real part function or value.
+   */
+  default boolean isReNegativeResult() {
+    return AbstractAssumptions.assumeReNegative(this);
+  }
+
+  /**
    * Test if this expression is the <code>Repetead</code> function <code>Repetead(&lt;pattern1&gt;)
    * </code>.
    *
@@ -3845,6 +4313,16 @@ public interface IExpr
    */
   default boolean isRepeated() {
     return false;
+  }
+
+  /**
+   * Test if this expression has a positive result (i.e. <code>Re(this)>0</<code></code>) for it's
+   * real part or is assumed to have a positive real part.
+   *
+   * @return <code>true</code>, if the given expression is a positive real part function or value.
+   */
+  default boolean isRePositiveResult() {
+    return AbstractAssumptions.assumeRePositive(this);
   }
 
   default boolean isRGBColor() {
@@ -4112,6 +4590,10 @@ public interface IExpr
     return false;
   }
 
+  default COMPARE_TERNARY isTranscendental() {
+    return COMPARE_TERNARY.UNDECIDABLE;
+  }
+
   /**
    * Test if this expression is a trigonometric function.
    *
@@ -4142,6 +4624,10 @@ public interface IExpr
    */
   default boolean isUndefined() {
     return false;
+  }
+
+  default boolean isUnequalResult(INumber num) {
+    return AbstractAssumptions.assumeUnequal(this, num);
   }
 
   /**
@@ -4207,11 +4693,6 @@ public interface IExpr
    *         AST.
    */
   default int isVector() {
-    // default: no vector
-    return -1;
-  }
-
-  default int isInexactVector() {
     // default: no vector
     return -1;
   }
@@ -4304,6 +4785,38 @@ public interface IExpr
     return -1;
   }
 
+  default IExpr lcm(IExpr that) {
+    return S.LCM.of(this, that);
+  }
+
+  default IPair leadTerm(ISymbol x) {
+    return leadTerm(x, F.NIL, 0);
+  }
+
+  /**
+   * Returns the leading term <code>a*x**b</code> as a tuple (a, b).
+   * 
+   * @return
+   */
+  default IPair leadTerm(ISymbol x, IExpr logx, int cdir) {
+    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L3491
+    IExpr l = asLeadingTerm(x, logx, cdir);
+
+    ISymbol d = F.Dummy("logx");
+    if (l.has(F.Log(x))) {
+      l = l.subs(F.Log(x), d);
+    }
+    IPair coeffExp = l.asCoeffExponent(x);
+    IExpr c = coeffExp.first();
+    IExpr e = coeffExp.second();
+    if (!c.isFree(x)) {
+      throw new ValueError(
+          "cannot compute leadterm(%s, %s). The coefficient should have been free of %s");
+    }
+    c = c.subs(d, F.Log(x));
+    return F.pair(c, e);
+  }
+
   /**
    * Count the number of indivisible subexpressions (atoms/leaves) of this expression.
    *
@@ -4355,20 +4868,7 @@ public interface IExpr
         .eval();
   }
 
-  /**
-   * Compare if <code>this <= other</code:
-   * <ul>
-   * <li>return S.True if the comparison is <code>true</code></li>
-   * <li>return S.False if the comparison is <code>false</code></li>
-   * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
-   * </ul>
-   * 
-   * @param other
-   * @return
-   */
-  public default IExpr lessEqualThan(int other) {
-    return lessEqualThan(F.ZZ(other));
-  }
+
 
   /**
    * Compare if <code>this <= that</code:
@@ -4387,7 +4887,7 @@ public interface IExpr
   }
 
   /**
-   * Compare if <code>this < that</code:
+   * Compare if <code>this <= other</code:
    * <ul>
    * <li>return S.True if the comparison is <code>true</code></li>
    * <li>return S.False if the comparison is <code>false</code></li>
@@ -4397,8 +4897,8 @@ public interface IExpr
    * @param other
    * @return
    */
-  public default IExpr lessThan(int other) {
-    return lessThan(F.ZZ(other));
+  public default IExpr lessEqualThan(int other) {
+    return lessEqualThan(F.ZZ(other));
   }
 
   /**
@@ -4415,6 +4915,21 @@ public interface IExpr
   public default IExpr lessThan(IExpr that) {
     COMPARE_TERNARY temp = BooleanFunctions.CONST_LESS.prepareCompare(this, that);
     return convertToExpr(temp);
+  }
+
+  /**
+   * Compare if <code>this < that</code:
+   * <ul>
+   * <li>return S.True if the comparison is <code>true</code></li>
+   * <li>return S.False if the comparison is <code>false</code></li>
+   * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
+   * </ul>
+   * 
+   * @param other
+   * @return
+   */
+  public default IExpr lessThan(int other) {
+    return lessThan(F.ZZ(other));
   }
 
   /**
@@ -4516,6 +5031,18 @@ public interface IExpr
   }
 
   /**
+   * Return <code>this</code> if <code>isAST(head)==true</code>, otherwise create a new list <code>
+   * {this}</code> from this (i.e. return <code>F.unaryAST1(head, this)</code>).
+   *
+   * @return <code>this</code> if <code>isAST(head)==true</code>, otherwise return
+   *         <code>F.unaryAST1(head, this)
+   *     </code>.
+   */
+  default IAST makeAST(IExpr head) {
+    return F.unaryAST1(head, this);
+  }
+
+  /**
    * Return <code>this</code> if <code>isList()==true</code>, otherwise create a new list <code>
    * {this}</code> from this (i.e. return <code>F.List(this)</code>).
    *
@@ -4527,15 +5054,29 @@ public interface IExpr
   }
 
   /**
-   * Return <code>this</code> if <code>isAST(head)==true</code>, otherwise create a new list <code>
-   * {this}</code> from this (i.e. return <code>F.unaryAST1(head, this)</code>).
+   * If a value is present (i.e. this unequals F.NIL), apply the provided mapping function to it,
+   * and if the result is non-NIL, return the result. Otherwise return <code>F.NIL</code>
    *
-   * @return <code>this</code> if <code>isAST(head)==true</code>, otherwise return
-   *         <code>F.unaryAST1(head, this)
-   *     </code>.
+   * @param mapper a mapping function to apply to the value, if present
+   * @return an IExpr describing the result of applying a mapping function to the value of this
+   *         object, if a value is present, otherwise return <code>F.NIL</code>.
    */
-  default IAST makeAST(IExpr head) {
-    return F.unaryAST1(head, this);
+  default IExpr mapExpr(Function<? super IExpr, ? extends IExpr> mapper) {
+    return mapper.apply(this);
+  }
+
+  /**
+   * This method assumes that <code>this</code> is a list of lists in matrix form. It combines the
+   * column values in a list as argument for the given <code>function</code>. <b>Example</b> a
+   * matrix <code>{{x1, y1,...}, {x2, y2, ...}, ...}</code> will be converted to <code>
+   * {f.apply({x1, x2,...}), f.apply({y1, y2, ...}), ...}</code>
+   *
+   * @param dim the dimension of the matrix
+   * @param f a unary function
+   * @return
+   */
+  default IExpr mapMatrixColumns(int[] dim, Function<IExpr, IExpr> f) {
+    return F.NIL;
   }
 
   /**
@@ -4571,32 +5112,6 @@ public interface IExpr
    */
   default IASTMutable mapThread(final IAST replacement, int position) {
     return replacement.setAtCopy(position, this);
-  }
-
-  /**
-   * If a value is present (i.e. this unequals F.NIL), apply the provided mapping function to it,
-   * and if the result is non-NIL, return the result. Otherwise return <code>F.NIL</code>
-   *
-   * @param mapper a mapping function to apply to the value, if present
-   * @return an IExpr describing the result of applying a mapping function to the value of this
-   *         object, if a value is present, otherwise return <code>F.NIL</code>.
-   */
-  default IExpr mapExpr(Function<? super IExpr, ? extends IExpr> mapper) {
-    return mapper.apply(this);
-  }
-
-  /**
-   * This method assumes that <code>this</code> is a list of lists in matrix form. It combines the
-   * column values in a list as argument for the given <code>function</code>. <b>Example</b> a
-   * matrix <code>{{x1, y1,...}, {x2, y2, ...}, ...}</code> will be converted to <code>
-   * {f.apply({x1, x2,...}), f.apply({y1, y2, ...}), ...}</code>
-   *
-   * @param dim the dimension of the matrix
-   * @param f a unary function
-   * @return
-   */
-  default IExpr mapMatrixColumns(int[] dim, Function<IExpr, IExpr> f) {
-    return F.NIL;
   }
 
   /**
@@ -4727,8 +5242,6 @@ public interface IExpr
     return opposite();
   }
 
-
-
   @Override
   default IExpr newInstance(double arg) {
     return F.num(arg);
@@ -4749,6 +5262,10 @@ public interface IExpr
    */
   default IExpr normal(boolean nilIfUnevaluated) {
     return nilIfUnevaluated ? F.NIL : this;
+  }
+
+  default IExpr one() {
+    return F.C1;
   }
 
   /**
@@ -4935,38 +5452,6 @@ public interface IExpr
   @Override
   default IExpr pow(int n) {
     return S.Power.of(this, F.ZZ(n));
-  }
-
-  default IExpr ellipticE() {
-    return F.EllipticE(this);
-  }
-
-  default IExpr ellipticK() {
-    return F.EllipticK(this);
-  }
-
-  default IExpr fresnelC() {
-    return F.FresnelC(this);
-  }
-
-  default IExpr fresnelS() {
-    return F.FresnelS(this);
-  }
-
-  default IExpr hypergeometric0F1(IExpr that) {
-    return F.Hypergeometric0F1(this, that);
-  }
-
-  default IExpr hypergeometric1F1(IExpr arg2, IExpr arg3) {
-    return F.Hypergeometric1F1(this, arg2, arg3);
-  }
-
-  default IExpr hypergeometric2F1(IExpr arg2, IExpr arg3, IExpr arg4) {
-    return F.Hypergeometric2F1(this, arg2, arg3, arg4);
-  }
-
-  default IExpr hypergeometricU(IExpr arg2, IExpr arg3) {
-    return F.HypergeometricU(this, arg2, arg3);
   }
 
   /**
@@ -5336,6 +5821,31 @@ public interface IExpr
     return 0;
   }
 
+  default IExpr sqr() {
+    if (isPower()) {
+      return F.Power(base(), F.Times(F.C2, exponent()));
+    }
+    if (isTimes()) {
+      IAST times = (IAST) this;
+      int size = times.size();
+      IASTAppendable timesSqr = F.TimesAlloc(size);
+      IASTAppendable timesRest = F.TimesAlloc(size);
+      for (int i = 1; i < size; i++) {
+        final IExpr arg = times.get(i);
+        if (arg.isPower()) {
+          timesRest.append( //
+              F.Power(arg.base(), //
+                  F.Times(F.C2, arg.exponent())) //
+          );
+        } else {
+          timesSqr.append(arg);
+        }
+      }
+      return F.Times(timesRest, F.Sqr(timesSqr));
+    }
+    return F.Sqr(this);
+  }
+
   /**
    * Generate <code>Sqrt(this)</code>.
    *
@@ -5366,31 +5876,6 @@ public interface IExpr
       return F.Times(timesRest, F.Sqrt(timesSqrt));
     }
     return F.Sqrt(this);
-  }
-
-  default IExpr sqr() {
-    if (isPower()) {
-      return F.Power(base(), F.Times(F.C2, exponent()));
-    }
-    if (isTimes()) {
-      IAST times = (IAST) this;
-      int size = times.size();
-      IASTAppendable timesSqr = F.TimesAlloc(size);
-      IASTAppendable timesRest = F.TimesAlloc(size);
-      for (int i = 1; i < size; i++) {
-        final IExpr arg = times.get(i);
-        if (arg.isPower()) {
-          timesRest.append( //
-              F.Power(arg.base(), //
-                  F.Times(F.C2, arg.exponent())) //
-          );
-        } else {
-          timesSqr.append(arg);
-        }
-      }
-      return F.Times(timesRest, F.Sqr(timesSqr));
-    }
-    return F.Sqr(this);
   }
 
   /**
@@ -5484,6 +5969,10 @@ public interface IExpr
     return times(that);
   }
 
+  default boolean[][] toBooleanMatrix() {
+    return null;
+  }
+
   /**
    * Convert this {@link IAST} to a boolean vector. The elements of this {@link IAST} can be True
    * and False.
@@ -5504,10 +5993,6 @@ public interface IExpr
     return null;
   }
 
-  default boolean[][] toBooleanMatrix() {
-    return null;
-  }
-
   /**
    * Convert this object into a <code>byte[][]</code> matrix.
    *
@@ -5518,6 +6003,10 @@ public interface IExpr
     return null;
   }
 
+  default Complex[][] toComplexMatrix() {
+    return null;
+  }
+
   /**
    * Convert this object into a <code>Complex[]</code> vector.
    *
@@ -5525,10 +6014,6 @@ public interface IExpr
    *         vector
    */
   default Complex[] toComplexVector() {
-    return null;
-  }
-
-  default Complex[][] toComplexMatrix() {
     return null;
   }
 
@@ -5608,6 +6093,13 @@ public interface IExpr
     return toDoubleVector();
   }
 
+  default IExpr together() {
+    if (isPlusTimesPower()) {
+      return F.eval(F.Together(this));
+    }
+    return this;
+  }
+
   /**
    * Converts this number to an <code>int</code> value; unlike {@link #intValue} this method returns
    * <code>Integer.MIN_VALUE</code> if the value of this integer isn't in the range <code>
@@ -5680,14 +6172,6 @@ public interface IExpr
     return defaultValue;
   }
 
-  default Number toNumber() {
-    return toNumber(Double.NaN);
-  }
-
-  default Number toNumber(Number defaultValue) {
-    return evalf();
-  }
-
   /**
    * Return the <code>Mathematica()</code> form of this expression
    *
@@ -5695,6 +6179,14 @@ public interface IExpr
    */
   default String toMMA() {
     return WolframFormFactory.get().toString(this);
+  }
+
+  default Number toNumber() {
+    return toNumber(Double.NaN);
+  }
+
+  default Number toNumber(Number defaultValue) {
+    return evalf();
   }
 
   /**
@@ -5760,6 +6252,13 @@ public interface IExpr
 
   default String toWolframString() {
     return toString();
+  }
+
+  default IExpr trigsimp() {
+    if (isAST()) {
+      return F.eval(F.TrigSimplifyFu(this));
+    }
+    return this;
   }
 
   @Override
@@ -5828,382 +6327,8 @@ public interface IExpr
     return this;
   }
 
-  public static IASTAppendable join(IExpr head, IAST... lists) {
-    final IASTAppendable result = F.ast(head, lists.length);
-    for (int i = 0; i < lists.length; i++) {
-      result.appendArgs(lists[i]);
-    }
-    return result;
-  }
-
   default IExpr zero() {
     return F.C0;
-  }
-
-  default IExpr one() {
-    return F.C1;
-  }
-
-  default IExpr asLeadingTerm(ISymbol x) {
-    return asLeadingTerm(x, F.NIL, 0);
-  }
-
-  default IExpr asLeadingTerm(ISymbol x, int cdir) {
-    return asLeadingTerm(x, F.NIL, cdir);
-  }
-
-  default IExpr asLeadingTerm(ISymbol x, IExpr logx, int cdir) {
-    return asLeadingTerm(new ISymbol[] {x}, logx, cdir);
-  }
-
-  default IExpr asLeadingTerm(ISymbol[] symbols, IExpr logx, int cdir) {
-    if (symbols.length > 1) {
-      IExpr c = this;
-      for (ISymbol x : symbols) {
-        c = c.asLeadingTerm(new ISymbol[] {x}, logx, cdir);
-      }
-      return c;
-    } else if (symbols.length == 0) {
-      return this;
-    }
-    ISymbol x = symbols[0];
-    if (isFree(x)) {
-      return this;
-    }
-    IExpr obj = evalAsLeadingTerm(x, logx, cdir);
-    if (obj.isPresent()) {
-      return Powsimp.powsimp(obj, true, "exp");
-    }
-    throw new UnsupportedOperationException("asLeadingTerm(" + this + "," + x);
-  }
-
-  default IExpr evalAsLeadingTerm(ISymbol x, IExpr logx, int cdir) {
-    if (isAST() && head() instanceof IBuiltInSymbol) {
-      IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
-      if (evaluator instanceof IRewrite) {
-        IExpr obj = ((IRewrite) evaluator).evalAsLeadingTerm((IAST) this, x, logx, cdir);
-        if (obj.isPresent()) {
-          return obj;
-        }
-      }
-    }
-
-    return this;
-  }
-
-  default Pair asBaseExp() {
-    // a -> b ^ e
-    if (isPower()) {
-      IExpr b = base();
-      IExpr e = exponent();
-      if (b.isFraction() && b.isPositive()) {
-        IFraction frac = (IFraction) b;
-        if (frac.isLT(F.C1)) {
-          return F.pair(frac.inverse(), e.negate());
-        }
-      }
-      return F.pair(b, e);
-    }
-    if (isTimes()) {
-      IExpr e1 = F.NIL;
-      IAST args = (IAST) this;
-      IASTAppendable bases = F.TimesAlloc(args.argSize());
-      for (int i = 1; i < args.size(); i++) {
-        IExpr m = args.get(i);
-        Pair list = m.asBaseExp();
-        IExpr b = list.first();
-        IExpr e = list.second();
-        if (e1.isNIL()) {
-          e1 = e;
-        } else if (!e.equals(e1)) {
-          return F.pair(this, F.C1);
-        }
-        bases.append(b);
-      }
-      return F.pair(bases, e1);
-    }
-    return F.pair(this, F.C1);
-  }
-
-  /**
-   * Return the pair <code>{c, Plus(args)}</code> where this is written as an
-   * <code>Plus(...)</code>, <code>a</code>. <code>c</code> should be a Rational added to any terms
-   * of the <code>Plus(...)</code that are independent of deps. args should be a tuple of all other
-   * terms of ``a``; args is empty if self is a Number or if self is independent of deps (when
-   * given). This should be used when you do not know if self is an Add or not but you want to treat
-   * self as an Add or if you want to process the individual arguments of the tail of self as an
-   * Add.
-   * 
-   * @return
-   */
-  default Pair asCoeffAdd() {
-    if (isPlus()) {
-      Pair asCoeffAdd = first().asCoeffAdd();
-      IExpr coeff = asCoeffAdd.first();
-      if (!coeff.isZero()) {
-        IAST notrat = (IAST) asCoeffAdd.arg2();
-        IASTMutable list2 = ((IAST) this).removeAtCopy(1);
-        return F.pair(coeff, join(S.Plus, notrat, list2));
-      }
-      return F.pair(F.C0, this); // ((IAST) this).setAtCopy(0, S.Plus));
-    }
-    return F.pair(F.C0, F.Plus(this));
-  }
-
-  default Pair asCoeffAdd(Collection<IExpr> collection) {
-    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2076
-
-    if (!has(collection)) {
-      return F.pair(this, F.Plus());
-    }
-    if (isPlus()) {
-      IAST plusAST = (IAST) this;
-      IASTAppendable[] filter = plusAST.filter(arg -> arg.has(collection));
-      IASTAppendable l1 = filter[0];
-      IASTAppendable l2 = filter[1];
-      return F.pair(l2.oneIdentity0(), l1);
-    }
-    return F.pair(F.C0, F.Plus(this));
-  }
-
-  default Pair asCoeffAdd(IExpr x) {
-    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2076
-
-    if (!has(x)) {
-      return F.pair(this, F.Plus());
-    }
-    if (isPlus()) {
-      IAST plusAST = (IAST) this;
-      IASTAppendable[] filter = plusAST.filter(arg -> arg.has(x));
-      IASTAppendable l1 = filter[0];
-      IASTAppendable l2 = filter[1];
-      return F.pair(l2.oneIdentity0(), l1);
-    }
-    return F.pair(F.C0, F.Plus(this));
-  }
-
-  default Pair asCoeffmul() {
-    return asCoeffmul(null, true);
-  }
-
-  default Pair asCoeffmul(ISymbol deps) {
-    return asCoeffmul(deps, true);
-  }
-
-  default Pair asCoeffmul(boolean rational) {
-    return asCoeffmul(null, rational);
-  }
-
-  /**
-   * Return the list <code>{c, args}</code> where this is written as a <code>Times(...)</code>
-   * <code>m</code>.
-   * 
-   * @param rational
-   * @return
-   */
-  default Pair asCoeffmul(ISymbol deps, boolean rational) {
-    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
-    if (isTimes()) {
-      if (deps != null) {
-        // l1, l2 = sift(self.args, lambda x: x.has(*deps), binary=True)
-        // return self._new_rawargs(*l2), tuple(l1)
-        IAST temp = Iterables.siftBinary((IAST) this, x -> x.has(deps));
-        IASTAppendable l1 = (IASTAppendable) temp.first();
-        IASTAppendable l2 = (IASTAppendable) temp.second();
-        return F.pair(l2.oneIdentity0(), l1);
-      }
-      IExpr arg1 = first();
-      if (arg1.isNumber()) {
-        if (!rational || arg1.isRational()) {
-          return F.pair(arg1, ((IAST) this).rest().setAtCopy(0, S.List));
-        }
-        if (arg1.isNegativeResult()) {
-          IASTAppendable list2 = ((IAST) this).copyAppendable();
-          list2.set(0, S.List);
-          IExpr a1Negate = arg1.negate();
-          if (a1Negate.isOne()) {
-            list2.set(1, a1Negate);
-          } else {
-            list2.remove(1);
-          }
-          return F.pair(F.CN1, list2);
-        }
-      }
-      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(this);
-      if (negExpr.isPresent()) {
-        if (negExpr.isTimes()) {
-          return F.pair(F.CN1, ((IAST) negExpr).setAtCopy(0, S.List));
-        }
-        return F.pair(F.CN1, F.List(negExpr));
-      }
-      return F.pair(F.C1, ((IAST) this).setAtCopy(0, S.List));
-    }
-    if (deps != null) {
-      if (!has(deps)) {
-        return F.pair(this, F.List());
-      }
-    }
-    return F.pair(F.C1, F.List(this));
-  }
-
-  /**
-   * Return the list <code>{c, args}</code> where this is written as a <code>Times(...)</code>
-   * <code>m</code>.
-   * 
-   * @return
-   */
-  default Pair asCoeffMul() {
-    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
-    return asCoeffMul(false);
-  }
-
-  /**
-   * Return the list <code>{c, args}</code> where this is written as a <code>Times(...)</code>
-   * <code>m</code>.
-   * 
-   * @param rational
-   * @return
-   */
-  default Pair asCoeffMul(boolean rational) {
-    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
-    if (isTimes()) {
-      IExpr arg1 = first();
-      if (arg1.isNumber()) {
-        if (!rational || arg1.isRational()) {
-          return F.pair(arg1, ((IAST) this).rest().oneIdentity1());
-        }
-        if (arg1.isNegativeResult()) {
-          IASTAppendable list2 = ((IAST) this).copyAppendable();
-          IExpr a1Negate = arg1.negate();
-          if (a1Negate.isOne()) {
-            list2.remove(1);
-          } else {
-            list2.set(1, a1Negate);
-          }
-          return F.pair(F.CN1, list2.oneIdentity1());
-        }
-      }
-      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(this);
-      if (negExpr.isPresent()) {
-        if (negExpr.isTimes()) {
-          return F.pair(F.CN1, ((IAST) negExpr).oneIdentity1());
-        }
-        return F.pair(F.CN1, negExpr);
-      }
-      // return F.pair(F.C1, ((IAST) this).setAtCopy(0, S.List));
-    }
-    return F.pair(F.C1, this);
-  }
-
-  default IPair asCoeffExponent(ISymbol x) {
-    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L3479
-    // ``c*x**e -> c,e`` where x can be any symbolic expression.
-    EvalEngine engine = EvalEngine.get();
-    IExpr s = F.Cancel.of(engine, this);
-    s = F.Collect.of(engine, s, x);
-    Pair coeffMul = s.asCoeffmul(x, false);
-    IExpr c = coeffMul.first();
-    IExpr p = coeffMul.second();
-    if (p.isAST1()) {
-      Pair baseExp = p.first().asBaseExp();
-      IExpr b = baseExp.first();
-      IExpr e = baseExp.second();
-      if (b.equals(x)) {
-        return F.pair(c, e);
-      }
-    }
-    return F.pair(s, F.C0);
-  }
-
-  /**
-   * Return the standard has() if there are no literal symbols, else check to see that symbol-deps
-   * are in the free symbols.
-   * 
-   * @param e
-   * @param sym
-   * @param other
-   * @return
-   */
-  private static boolean has(IExpr e, Set sym, ArrayList<IExpr> other) {
-    boolean has_other = e.has(other);
-    if (!sym.isEmpty()) {
-      return has_other;
-    }
-    if (!has_other) {
-      VariablesSet vars = new VariablesSet(e);
-      List<IExpr> free_symbols = vars.getArrayList();
-      free_symbols.addAll(sym);
-      return e.has(free_symbols);
-    }
-    return true;
-  }
-
-  /**
-   * Expression <code>a/b -> [a, b]</code>
-   * 
-   * @return
-   */
-  default Pair asNumerDenom() {
-    return F.pair(this, F.C1);
-  }
-
-  default public DefaultDict<IExpr> asPowersDict() {
-    DefaultDict<IExpr> dict = new DefaultDict<IExpr>(() -> F.C0);
-    dict.put(this, F.C1);
-    return dict;
-  }
-
-  default IExpr lcm(IExpr that) {
-    return S.LCM.of(this, that);
-  }
-
-  default IPair leadTerm(ISymbol x) {
-    return leadTerm(x, F.NIL, 0);
-  }
-
-  /**
-   * Returns the leading term <code>a*x**b</code> as a tuple (a, b).
-   * 
-   * @return
-   */
-  default IPair leadTerm(ISymbol x, IExpr logx, int cdir) {
-    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L3491
-    IExpr l = asLeadingTerm(x, logx, cdir);
-
-    ISymbol d = F.Dummy("logx");
-    if (l.has(F.Log(x))) {
-      l = l.subs(F.Log(x), d);
-    }
-    IPair coeffExp = l.asCoeffExponent(x);
-    IExpr c = coeffExp.first();
-    IExpr e = coeffExp.second();
-    if (!c.isFree(x)) {
-      throw new ValueError(
-          "cannot compute leadterm(%s, %s). The coefficient should have been free of %s");
-    }
-    c = c.subs(d, F.Log(x));
-    return F.pair(c, e);
-  }
-
-  default IExpr cancel() {
-    if (isPlusTimesPower()) {
-      return F.eval(F.Cancel(this));
-    }
-    return this;
-  }
-
-  default IExpr together() {
-    if (isPlusTimesPower()) {
-      return F.eval(F.Together(this));
-    }
-    return this;
-  }
-
-  default IExpr trigsimp() {
-    if (isAST()) {
-      return F.eval(F.TrigSimplifyFu(this));
-    }
-    return this;
   }
 
 }

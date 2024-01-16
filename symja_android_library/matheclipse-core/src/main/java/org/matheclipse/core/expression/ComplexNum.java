@@ -300,6 +300,31 @@ public class ComplexNum implements IComplexNum {
     return newInstance(fComplex.add(((ComplexNum) val).fComplex));
   }
 
+
+  @Override
+  public IExpr airyAi() {
+    Apcomplex airyAi = EvalEngine.getApfloatDouble().airyAi(apcomplexValue());
+    return F.complexNum(airyAi.real().doubleValue(), airyAi.imag().doubleValue());
+  }
+
+  @Override
+  public IExpr airyAiPrime() {
+    Apcomplex airyAiPrime = EvalEngine.getApfloatDouble().airyAiPrime(apcomplexValue());
+    return F.complexNum(airyAiPrime.real().doubleValue(), airyAiPrime.imag().doubleValue());
+  }
+
+  @Override
+  public IExpr airyBi() {
+    Apcomplex airyBi = EvalEngine.getApfloatDouble().airyBi(apcomplexValue());
+    return F.complexNum(airyBi.real().doubleValue(), airyBi.imag().doubleValue());
+  }
+
+  @Override
+  public IExpr airyBiPrime() {
+    Apcomplex airyBiPrime = EvalEngine.getApfloatDouble().airyBiPrime(apcomplexValue());
+    return F.complexNum(airyBiPrime.real().doubleValue(), airyBiPrime.imag().doubleValue());
+  }
+
   @Override
   public ApcomplexNum apcomplexNumValue() {
     return ApcomplexNum.valueOf(apcomplexValue());

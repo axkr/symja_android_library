@@ -63,24 +63,32 @@ public class BesselFunctions {
         // 1/(3^(2/3)*Gamma(2/3))
         return F.Divide(F.Power(F.C3, F.CN2D3), F.Gamma(F.C2D3));
       }
-      if (engine.isDoubleMode() && z.isNumber()) {
-        if (!z.isComplexNumeric()) {
-          try {
-            Complex airyAi = BesselJS.airyAi(z.evalf());
-            if (F.isZero(airyAi.getImaginary())) {
-              return F.num(airyAi.getReal());
-            }
-            return F.complexNum(airyAi);
-          } catch (RuntimeException rex) {
-            return Errors.printMessage(S.AiryAi, rex, engine);
-          }
-        }
+      // if (engine.isDoubleMode() && z.isNumber()) {
+      // if (!z.isComplexNumeric()) {
+      // try {
+      // Complex airyAi = BesselJS.airyAi(z.evalf());
+      // if (F.isZero(airyAi.getImaginary())) {
+      // return F.num(airyAi.getReal());
+      // }
+      // return F.complexNum(airyAi);
+      // } catch (RuntimeException rex) {
+      // return Errors.printMessage(S.AiryAi, rex, engine);
+      // }
+      // }
+      //
+      // try {
+      // return F.complexNum(BesselJS.airyAi(z.evalfc()));
+      // } catch (RuntimeException rex) {
+      // return Errors.printMessage(S.AiryAi, rex, engine);
+      // }
+      // }
+      return F.NIL;
+    }
 
-        try {
-          return F.complexNum(BesselJS.airyAi(z.evalfc()));
-        } catch (RuntimeException rex) {
-          return Errors.printMessage(S.AiryAi, rex, engine);
-        }
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        return ast.arg1().airyAi();
       }
       return F.NIL;
     }
@@ -109,24 +117,32 @@ public class BesselFunctions {
         // -(1/(3^(1/3)*Gamma(1/3)))
         return F.Times(F.CN1, F.Power(F.C3, F.CN1D3), F.Power(F.Gamma(F.C1D3), F.CN1));
       }
-      if (engine.isDoubleMode() && z.isNumber()) {
-        if (!z.isComplexNumeric()) {
-          try {
-            Complex airyAiPrime = BesselJS.airyAiPrime(z.evalf());
-            if (F.isZero(airyAiPrime.getImaginary())) {
-              return F.num(airyAiPrime.getReal());
-            }
-            return F.complexNum(airyAiPrime);
-          } catch (RuntimeException rex) {
-            return Errors.printMessage(S.AiryAiPrime, rex, engine);
-          }
-        }
+      // if (engine.isDoubleMode() && z.isNumber()) {
+      // if (!z.isComplexNumeric()) {
+      // try {
+      // Complex airyAiPrime = BesselJS.airyAiPrime(z.evalf());
+      // if (F.isZero(airyAiPrime.getImaginary())) {
+      // return F.num(airyAiPrime.getReal());
+      // }
+      // return F.complexNum(airyAiPrime);
+      // } catch (RuntimeException rex) {
+      // return Errors.printMessage(S.AiryAiPrime, rex, engine);
+      // }
+      // }
+      //
+      // try {
+      // return F.complexNum(BesselJS.airyAiPrime(z.evalfc()));
+      // } catch (RuntimeException rex) {
+      // return Errors.printMessage(S.AiryAiPrime, rex, engine);
+      // }
+      // }
+      return F.NIL;
+    }
 
-        try {
-          return F.complexNum(BesselJS.airyAiPrime(z.evalfc()));
-        } catch (RuntimeException rex) {
-          return Errors.printMessage(S.AiryAiPrime, rex, engine);
-        }
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        return ast.arg1().airyAiPrime();
       }
       return F.NIL;
     }
@@ -155,25 +171,33 @@ public class BesselFunctions {
         // 1/(3^(1/6)*Gamma(2/3))
         return F.Divide(F.Power(F.C3, F.CN1D6), F.Gamma(F.C2D3));
       }
-      if (engine.isDoubleMode() && z.isNumber()) {
+      // if (engine.isDoubleMode() && z.isNumber()) {
+      //
+      // if (!z.isComplexNumeric()) {
+      // try {
+      // Complex airyBi = BesselJS.airyBi(z.evalf());
+      // if (F.isZero(airyBi.getImaginary())) {
+      // return F.num(airyBi.getReal());
+      // }
+      // return F.complexNum(airyBi);
+      // } catch (RuntimeException rex) {
+      // return Errors.printMessage(S.AiryBi, rex, engine);
+      // }
+      // }
+      //
+      // try {
+      // return F.complexNum(BesselJS.airyBi(z.evalfc()));
+      // } catch (RuntimeException rex) {
+      // return Errors.printMessage(S.AiryBi, rex, engine);
+      // }
+      // }
+      return F.NIL;
+    }
 
-        if (!z.isComplexNumeric()) {
-          try {
-            Complex airyBi = BesselJS.airyBi(z.evalf());
-            if (F.isZero(airyBi.getImaginary())) {
-              return F.num(airyBi.getReal());
-            }
-            return F.complexNum(airyBi);
-          } catch (RuntimeException rex) {
-            return Errors.printMessage(S.AiryBi, rex, engine);
-          }
-        }
-
-        try {
-          return F.complexNum(BesselJS.airyBi(z.evalfc()));
-        } catch (RuntimeException rex) {
-          return Errors.printMessage(S.AiryBi, rex, engine);
-        }
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        return ast.arg1().airyBi();
       }
       return F.NIL;
     }
@@ -192,6 +216,7 @@ public class BesselFunctions {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
     }
+
   }
 
   private static final class AiryBiPrime extends AbstractFunctionEvaluator {
@@ -202,24 +227,32 @@ public class BesselFunctions {
         // 3^(1/6)/Gamma(1/3)
         return F.Divide(F.Power(F.C3, F.C1D6), F.Gamma(F.C1D3));
       }
-      if (engine.isDoubleMode() && z.isNumber()) {
-        if (!z.isComplexNumeric()) {
-          try {
-            Complex airyBiPrime = BesselJS.airyBiPrime(z.evalf());
-            if (F.isZero(airyBiPrime.getImaginary())) {
-              return F.num(airyBiPrime.getReal());
-            }
-            return F.complexNum(airyBiPrime);
-          } catch (RuntimeException rex) {
-            return Errors.printMessage(S.AiryBiPrime, rex, engine);
-          }
-        }
+      // if (engine.isDoubleMode() && z.isNumber()) {
+      // if (!z.isComplexNumeric()) {
+      // try {
+      // Complex airyBiPrime = BesselJS.airyBiPrime(z.evalf());
+      // if (F.isZero(airyBiPrime.getImaginary())) {
+      // return F.num(airyBiPrime.getReal());
+      // }
+      // return F.complexNum(airyBiPrime);
+      // } catch (RuntimeException rex) {
+      // return Errors.printMessage(S.AiryBiPrime, rex, engine);
+      // }
+      // }
+      //
+      // try {
+      // return F.complexNum(BesselJS.airyBiPrime(z.evalfc()));
+      // } catch (RuntimeException rex) {
+      // return Errors.printMessage(S.AiryBiPrime, rex, engine);
+      // }
+      // }
+      return F.NIL;
+    }
 
-        try {
-          return F.complexNum(BesselJS.airyBiPrime(z.evalfc()));
-        } catch (RuntimeException rex) {
-          return Errors.printMessage(S.AiryBiPrime, rex, engine);
-        }
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        return ast.arg1().airyBiPrime();
       }
       return F.NIL;
     }

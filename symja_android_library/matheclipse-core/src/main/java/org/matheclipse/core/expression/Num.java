@@ -155,6 +155,25 @@ public class Num implements INum {
     return val.add(this);
   }
 
+  @Override
+  public IExpr airyAi() {
+    return F.num(EvalEngine.getApfloatDouble().airyAi(apfloatValue()));
+  }
+
+  @Override
+  public IExpr airyAiPrime() {
+    return F.num(EvalEngine.getApfloatDouble().airyAiPrime(apfloatValue()));
+  }
+
+  @Override
+  public IExpr airyBi() {
+    return F.num(EvalEngine.getApfloatDouble().airyBi(apfloatValue()));
+  }
+
+  @Override
+  public IExpr airyBiPrime() {
+    return F.num(EvalEngine.getApfloatDouble().airyBiPrime(apfloatValue()));
+  }
 
   @Override
   public ApcomplexNum apcomplexNumValue() {
@@ -364,6 +383,18 @@ public class Num implements INum {
   }
 
   @Override
+  public IExpr ellipticE() {
+    Apcomplex ellipticE = EvalEngine.getApfloatDouble().ellipticE(apfloatValue());
+    return F.complexNum(ellipticE.real().doubleValue(), ellipticE.imag().doubleValue());
+  }
+
+  @Override
+  public IExpr ellipticK() {
+    Apcomplex ellipticK = EvalEngine.getApfloatDouble().ellipticK(apfloatValue());
+    return F.complexNum(ellipticK.real().doubleValue(), ellipticK.imag().doubleValue());
+  }
+
+  @Override
   public boolean equals(final Object other) {
     if (this == other) {
       return true;
@@ -486,6 +517,20 @@ public class Num implements INum {
     return F.num(getRealPart() % 1);
   }
 
+  @Override
+  public IExpr fresnelC() {
+    Apcomplex fresnelC = EvalEngine.getApfloatDouble().fresnelC(apfloatValue());
+    // Apcomplex fresnelC = ApcomplexNum.fresnelC(apfloatValue(), EvalEngine.getApfloatDouble());
+    return F.complexNum(fresnelC.real().doubleValue(), fresnelC.imag().doubleValue());
+  }
+
+  @Override
+  public IExpr fresnelS() {
+    Apcomplex fresnelS = EvalEngine.getApfloatDouble().fresnelS(apfloatValue());
+    // Apcomplex fresnelS = ApcomplexNum.fresnelS(apfloatValue(), EvalEngine.getApfloatDouble());
+    return F.complexNum(fresnelS.real().doubleValue(), fresnelS.imag().doubleValue());
+  }
+
   /** {@inheritDoc} */
   @Override
   public String fullFormString() {
@@ -523,32 +568,6 @@ public class Num implements INum {
   @Override
   public int hierarchy() {
     return DOUBLEID;
-  }
-
-  @Override
-  public IExpr ellipticE() {
-    Apcomplex ellipticE = EvalEngine.getApfloatDouble().ellipticE(apfloatValue());
-    return F.complexNum(ellipticE.real().doubleValue(), ellipticE.imag().doubleValue());
-  }
-
-  @Override
-  public IExpr ellipticK() {
-    Apcomplex ellipticK = EvalEngine.getApfloatDouble().ellipticK(apfloatValue());
-    return F.complexNum(ellipticK.real().doubleValue(), ellipticK.imag().doubleValue());
-  }
-
-  @Override
-  public IExpr fresnelC() {
-    Apcomplex fresnelC = EvalEngine.getApfloatDouble().fresnelC(apfloatValue());
-    // Apcomplex fresnelC = ApcomplexNum.fresnelC(apfloatValue(), EvalEngine.getApfloatDouble());
-    return F.complexNum(fresnelC.real().doubleValue(), fresnelC.imag().doubleValue());
-  }
-
-  @Override
-  public IExpr fresnelS() {
-    Apcomplex fresnelS = EvalEngine.getApfloatDouble().fresnelS(apfloatValue());
-    // Apcomplex fresnelS = ApcomplexNum.fresnelS(apfloatValue(), EvalEngine.getApfloatDouble());
-    return F.complexNum(fresnelS.real().doubleValue(), fresnelS.imag().doubleValue());
   }
 
   @Override
@@ -738,15 +757,15 @@ public class Num implements INum {
     return value > that.doubleValue();
   }
 
-  @Override
-  public boolean isInexactNumber() {
-    return Double.isFinite(value);
-  }
-
   /** {@inheritDoc} */
   @Override
   public final boolean isIndeterminate() {
     return Double.isNaN(value);
+  }
+
+  @Override
+  public boolean isInexactNumber() {
+    return Double.isFinite(value);
   }
 
   @Override
@@ -927,20 +946,6 @@ public class Num implements INum {
   }
 
   @Override
-  public INumber plus(final INumber that) {
-    if (that instanceof IInexactNumber) {
-      return plus((IInexactNumber) that);
-    }
-    if (that instanceof IReal) {
-      return Num.valueOf(value + that.evalf());
-    }
-    if (that instanceof ComplexSym) {
-      return F.complexNum(new Complex(value).add(that.evalfc()));
-    }
-    throw new java.lang.ArithmeticException();
-  }
-
-  @Override
   public IInexactNumber plus(final IInexactNumber that) {
     if (that instanceof INum) {
       if (that instanceof ApfloatNum) {
@@ -953,6 +958,20 @@ public class Num implements INum {
         return apcomplexNumValue().add(((ApcomplexNum) that).apcomplexNumValue());
       }
       return ComplexNum.valueOf(value).add((ComplexNum) that);
+    }
+    throw new java.lang.ArithmeticException();
+  }
+
+  @Override
+  public INumber plus(final INumber that) {
+    if (that instanceof IInexactNumber) {
+      return plus((IInexactNumber) that);
+    }
+    if (that instanceof IReal) {
+      return Num.valueOf(value + that.evalf());
+    }
+    if (that instanceof ComplexSym) {
+      return F.complexNum(new Complex(value).add(that.evalfc()));
     }
     throw new java.lang.ArithmeticException();
   }
@@ -1017,6 +1036,11 @@ public class Num implements INum {
   @Override
   public IReal re() {
     return this;
+  }
+
+  @Override
+  public Num reciprocal() {
+    return inverse();
   }
 
   @Override
@@ -1114,20 +1138,6 @@ public class Num implements INum {
   }
 
   @Override
-  public INumber times(final INumber that) {
-    if (that instanceof IInexactNumber) {
-      return times((IInexactNumber) that);
-    }
-    if (that instanceof IReal) {
-      return Num.valueOf(value * that.evalf());
-    }
-    if (that instanceof ComplexSym) {
-      return F.complexNum(new Complex(value).multiply(that.evalfc()));
-    }
-    throw new java.lang.ArithmeticException();
-  }
-
-  @Override
   public IInexactNumber times(final IInexactNumber that) {
     if (that instanceof INum) {
       if (that instanceof ApfloatNum) {
@@ -1140,6 +1150,20 @@ public class Num implements INum {
         return apcomplexNumValue().multiply(((ApcomplexNum) that).apcomplexNumValue());
       }
       return ComplexNum.valueOf(value).multiply((ComplexNum) that);
+    }
+    throw new java.lang.ArithmeticException();
+  }
+
+  @Override
+  public INumber times(final INumber that) {
+    if (that instanceof IInexactNumber) {
+      return times((IInexactNumber) that);
+    }
+    if (that instanceof IReal) {
+      return Num.valueOf(value * that.evalf());
+    }
+    if (that instanceof ComplexSym) {
+      return F.complexNum(new Complex(value).multiply(that.evalfc()));
     }
     throw new java.lang.ArithmeticException();
   }
@@ -1203,11 +1227,6 @@ public class Num implements INum {
   @Override
   public INum zero() {
     return F.CD0;
-  }
-
-  @Override
-  public Num reciprocal() {
-    return inverse();
   }
 
 }
