@@ -1093,6 +1093,12 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr polyGamma(long n) {
+    Apcomplex polygamma = EvalEngine.getApfloat().polygamma(n, fApcomplex);
+    return F.complexNum(polygamma);
+  }
+
+  @Override
   public IExpr pow(double value) {
     return valueOf(EvalEngine.getApfloat().pow(fApcomplex, new Apfloat(value)));
   }

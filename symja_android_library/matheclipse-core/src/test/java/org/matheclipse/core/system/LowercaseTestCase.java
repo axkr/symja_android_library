@@ -18577,16 +18577,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolyGamma() {
+    // http://fungrim.org/entry/ea2482/
+    check("PolyGamma(2147483647,3.1415926535897930)", //
+        "6.8635957656483303*10^18039905265");
+
     check("N(PolyGamma(22/10), 50)", //
         "0.54429343674114503778612537088338122850774505912665");
     check("PolyGamma(2.20000000000000000000000)", //
         "0.544293436741145037786125");
 
-
-
-    // http://fungrim.org/entry/ea2482/
-    check("PolyGamma(2147483647,3.141592653589793)", //
-        "PolyGamma(2.14748*10^9,3.14159)");
     check("PolyGamma(3, 1)", //
         "Pi^4/15");
     check("PolyGamma(1, 1)", //

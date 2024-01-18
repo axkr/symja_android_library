@@ -1261,6 +1261,11 @@ public class ComplexNum implements IComplexNum {
     return IComplexNum.super.pochhammer(arg2);
   }
 
+  @Override
+  public IExpr polyGamma(long n) {
+    Apcomplex polygamma = EvalEngine.getApfloatDouble().polygamma(n, apcomplexValue());
+    return F.complexNum(polygamma.real().doubleValue(), polygamma.imag().doubleValue());
+  }
 
   @Override
   public IComplexNum pow(final IComplexNum val) {

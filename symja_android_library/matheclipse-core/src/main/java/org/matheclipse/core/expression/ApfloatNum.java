@@ -1187,6 +1187,12 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public IExpr polyGamma(long n) {
+    Apfloat polygamma = EvalEngine.getApfloat().polygamma(n, fApfloat);
+    return F.complexNum(polygamma);
+  }
+
+  @Override
   public ApfloatNum pow(double value) {
     return valueOf(EvalEngine.getApfloat().pow(fApfloat, new Apfloat(value)));
   }

@@ -5595,7 +5595,18 @@ public interface IExpr
   }
 
   default IExpr pochhammer(IExpr that) {
-    return F.Pochhammer(this, that);
+    return F.NIL;
+  }
+
+  /**
+   * Numeric polygamma function.
+   *
+   * @param n The order.
+   *
+   * @return <code>&psi;<sup>(n)</sup>(x)</code>
+   */
+  default IExpr polyGamma(long n) {
+    return F.NIL;
   }
 
   @Override

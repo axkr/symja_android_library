@@ -1775,43 +1775,49 @@ public class SpecialFunctions {
             return F.CComplexInfinity;
           }
         }
-        if (engine.isDoubleMode()) {
-          try {
-            int n = arg1.toIntDefault();
-            if (n >= 0) {
-              double xDouble = Double.NaN;
-              try {
-                xDouble = arg2.evalf();
-              } catch (ValidateException ve) {
-              }
-              if (Double.isNaN(xDouble)) {
-                // Complex xc = arg2.evalComplex();
-                //
-                // return
-              } else {
-                if (n == 0) {
-                  return F.num(GammaJS.polyGamma(xDouble));
-                }
-                return F.num(GammaJS.polyGamma(n, xDouble));
-              }
+        if (engine.isNumericMode()) {
+          if (arg1.isZero() && engine.isArbitraryMode()) {
+            if (arg2 instanceof ApfloatNum) {
+              return e1ApfloatArg(((ApfloatNum) arg2).apfloatValue());
             }
-          } catch (ValidateException ve) {
-            return Errors.printMessage(ast.topHead(), ve, engine);
-          } catch (ThrowException te) {
-            Errors.printMessage(S.PolyGamma, te, engine);
-            return te.getValue();
-          } catch (RuntimeException rex) {
-            Errors.printMessage(S.PolyGamma, rex, engine);
+            if (arg2 instanceof ApcomplexNum) {
+              return e1ApcomplexArg(((ApcomplexNum) arg2).apcomplexValue());
+            }
+          }
+          long n = arg1.toLongDefault();
+          if (n != Long.MIN_VALUE) {
+            return arg2.polyGamma(n);
           }
         }
-        if (arg1.isZero() && engine.isArbitraryMode()) {
-          if (arg2 instanceof ApfloatNum) {
-            return e1ApfloatArg(((ApfloatNum) arg2).apfloatValue());
-          }
-          if (arg2 instanceof ApcomplexNum) {
-            return e1ApcomplexArg(((ApcomplexNum) arg2).apcomplexValue());
-          }
-        }
+        // if (engine.isDoubleMode()) {
+        // try {
+        // int n = arg1.toIntDefault();
+        // if (n >= 0) {
+        // double xDouble = Double.NaN;
+        // try {
+        // xDouble = arg2.evalf();
+        // } catch (ValidateException ve) {
+        // }
+        // if (Double.isNaN(xDouble)) {
+        // // Complex xc = arg2.evalComplex();
+        // //
+        // // return
+        // } else {
+        // if (n == 0) {
+        // return F.num(GammaJS.polyGamma(xDouble));
+        // }
+        // return F.num(GammaJS.polyGamma(n, xDouble));
+        // }
+        // }
+        // } catch (ValidateException ve) {
+        // return Errors.printMessage(ast.topHead(), ve, engine);
+        // } catch (ThrowException te) {
+        // Errors.printMessage(S.PolyGamma, te, engine);
+        // return te.getValue();
+        // } catch (RuntimeException rex) {
+        // Errors.printMessage(S.PolyGamma, rex, engine);
+        // }
+        // }
       }
       return F.NIL;
     }

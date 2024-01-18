@@ -1273,6 +1273,12 @@ public class Num implements INum {
   }
 
   @Override
+  public IExpr polyGamma(long n) {
+    Apfloat polygamma = EvalEngine.getApfloatDouble().polygamma(n, apfloatValue());
+    return F.num(polygamma.doubleValue());
+  }
+
+  @Override
   public Num pow(int n) {
     return valueOf(Math.pow(value, n));
   }
