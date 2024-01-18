@@ -590,7 +590,7 @@
 							<goal>bnd-process</goal>
 						</goals>
 						<configuration><bnd><![CDATA[
-							Bundle-SymbolicName: org.$[replacestring;${artifactId};-;.]
+							Bundle-SymbolicName: org.$[replacestring;${project.artifactId};-;.]
 							Bundle-Name: ${project.artifactId}
 							# Suppress import of own exported packages
 							-exportcontents: *;-noimport:=true
