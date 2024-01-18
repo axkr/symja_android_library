@@ -1110,6 +1110,15 @@ public class SpecialFunctions {
     }
 
     @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        IInexactNumber z = (IInexactNumber) ast.arg1();
+        return z.inverseErf();
+      }
+      return F.NIL;
+    }
+
+    @Override
     public int status() {
       return ImplementationStatus.PARTIAL_SUPPORT;
     }
@@ -1173,6 +1182,15 @@ public class SpecialFunctions {
         // if (z.isLessThan(F.C2) && z.isGreaterThan(F.C1)) {
         // return F.InverseErfc(F.Subtract(F.C1, z));
         // }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        IInexactNumber z = (IInexactNumber) ast.arg1();
+        return z.inverseErfc();
       }
       return F.NIL;
     }

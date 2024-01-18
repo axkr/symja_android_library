@@ -36,6 +36,8 @@ public class ApfloatNum implements INum {
 
   public static final Apint MINUS_ONE = new Apint(-1);
 
+  public static final Apint TWO = new Apint(2);
+
   static Apfloat apfloatRint(Apfloat fApfloat) {
     if (fApfloat.scale() > 0) {
       return ApfloatMath.roundToPrecision(fApfloat, fApfloat.scale(), Config.ROUNDING_MODE);
@@ -724,6 +726,23 @@ public class ApfloatNum implements INum {
       return this;
     }
     return valueOf(EvalEngine.getApfloat().inverseRoot(fApfloat, 1));
+  }
+
+  @Override
+  public IExpr inverseErf() {
+    if (MINUS_ONE.compareTo(fApfloat) == -1 && fApfloat.compareTo(Apint.ONE) == -1) {
+      return valueOf(EvalEngine.getApfloat().inverseErf(fApfloat));
+    }
+    return INum.super.inverseErf();
+  }
+
+  @Override
+  public IExpr inverseErfc() {
+    if (Apint.ZERO.compareTo(fApfloat) == -1 && fApfloat.compareTo(TWO) == -1) {
+      // 0.0 < fApfloat && fApfloat < 2.0
+      return valueOf(EvalEngine.getApfloat().inverseErfc(fApfloat));
+    }
+    return INum.super.inverseErfc();
   }
 
   /** {@inheritDoc} */

@@ -2002,6 +2002,41 @@ public interface IExpr
   }
 
   /**
+   * Inverse error function.
+   *
+   * @param x The argument.
+   *
+   * @return erf<sup>−1</sup>(x) or {@link F#NIL} if <code>|x|</code> is &ge; 1.
+   */
+  default IExpr inverseErf() {
+    if (isOne()) {
+      return F.CInfinity;
+    }
+    if (isMinusOne()) {
+      return F.CNInfinity;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Inverse complementary error function.
+   *
+   * @param x The argument.
+   *
+   * @return erfc<sup>−1</sup>(x) or {@link F#NIL} if <code>x</code> is &le; 0 or &ge; 2.
+   * 
+   */
+  default IExpr inverseErfc() {
+    if (isZero()) {
+      return F.CInfinity;
+    }
+    if (isNumEqualInteger(F.C2)) {
+      return F.CNInfinity;
+    }
+    return F.NIL;
+  }
+
+  /**
    * Test if this expression is the function <code>Abs[&lt;arg&gt;]</code>
    *
    * @return

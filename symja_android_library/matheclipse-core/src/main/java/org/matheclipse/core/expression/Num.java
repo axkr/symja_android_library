@@ -746,6 +746,26 @@ public class Num implements INum {
     return valueOf(1 / value);
   }
 
+  @Override
+  public IExpr inverseErf() {
+    if (-1.0 < value && value < 1.0) {
+      return Num.valueOf(org.hipparchus.special.Erf.erfInv(value));
+      // Apfloat erf = EvalEngine.getApfloatDouble().inverseErf(apfloatValue());
+      // return F.num(erf.doubleValue());
+    }
+    return INum.super.inverseErf();
+  }
+
+  @Override
+  public IExpr inverseErfc() {
+    if (0.0 < value && value < 2.0) {
+      return Num.valueOf(org.hipparchus.special.Erf.erfcInv(value));
+      // Apfloat erfc = EvalEngine.getApfloatDouble().inverseErfc(apfloatValue());
+      // return F.num(erfc.doubleValue());
+    }
+    return INum.super.inverseErfc();
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean isE() {

@@ -6550,10 +6550,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testEllipticK() {
 
     check("EllipticK(0.999999999999999990000000000000000)", //
-        "20.95826765156927959");
+        "20.9582676515692789828830607366566");
     // reducing the accuracy gives ComplexInfinity in MMA:
     check("EllipticK(0.99999999999999999)", //
-        "20");
+        "20.958267651569279");
 
     check("N(EllipticK(8/10), 50)", //
         "2.2572053268208536550832560045233873972354192817399");
@@ -12441,6 +12441,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testInverseErf() {
+    check("N(InverseErf(33/100), 50)", //
+        "0.30133214613370582612850271815839477396582428282853");
+    check("InverseErf(0.330000000000000000000000)", //
+        "0.301332146133705826128502");
+
     check("InverseErf /@ {-1, 0, 1}", //
         "{-Infinity,0,Infinity}");
     checkNumeric("InverseErf /@ {0.9, 1.0, 1.1}", //
@@ -12463,6 +12468,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testInverseErfc() {
+    check("N(InverseErfc(33/100), 50)", //
+        "0.68880252811655645040250472890525783544948992349371");
+    check("InverseErfc(0.330000000000000000000000)", //
+        "0.688802528116556450402504");
+
     check("InverseErfc /@ {0, 1, 2}", //
         "{Infinity,0,-Infinity}");
     check("InverseErfc(0)", //
