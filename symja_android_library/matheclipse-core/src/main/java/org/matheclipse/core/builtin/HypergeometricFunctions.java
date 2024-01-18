@@ -939,9 +939,10 @@ public class HypergeometricFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber a = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
-        // z^(1/2*(1-a))*BesselI(-1+a,2*Sqrt(z))
-        return F.Times(F.Power(z, F.Times(F.C1D2, F.Subtract(F.C1, a))),
-            F.BesselI(F.Plus(F.CN1, a), F.Times(F.C2, F.Sqrt(z))));
+        return a.hypergeometric0F1Regularized(z);
+        // // z^(1/2*(1-a))*BesselI(-1+a,2*Sqrt(z))
+        // return F.Times(F.Power(z, F.Times(F.C1D2, F.Subtract(F.C1, a))),
+        // F.BesselI(F.Plus(F.CN1, a), F.Times(F.C2, F.Sqrt(z))));
       }
       return F.NIL;
     }
@@ -1096,8 +1097,9 @@ public class HypergeometricFunctions {
         IInexactNumber a = (IInexactNumber) ast.arg1();
         IInexactNumber b = (IInexactNumber) ast.arg2();
         IInexactNumber z = (IInexactNumber) ast.arg3();
-        // Hypergeometric1F1(a,b,z)/Gamma(b)
-        return F.Times(F.Power(F.Gamma(b), F.CN1), F.Hypergeometric1F1(a, b, z));
+        return a.hypergeometric1F1Regularized(b, z);
+        // // Hypergeometric1F1(a,b,z)/Gamma(b)
+        // return F.Times(F.Power(F.Gamma(b), F.CN1), F.Hypergeometric1F1(a, b, z));
       }
       return F.NIL;
     }
@@ -1245,15 +1247,27 @@ public class HypergeometricFunctions {
         // z)
         return F.Times(F.Sqr(a), z, F.Hypergeometric2F1(F.Plus(F.C1, a), F.Plus(F.C1, a), F.C2, z));
       }
-      if (engine.isNumericMode()) {
-        // TODO regularize Hypergeometric2F1 for negative integer values of the third parameter
-        if (a.isNumber() //
-            && b.isNumber() //
-            && (c.isNumber() //
-                && (!((INumber) c).fractionalPart().isZero() || c.isNonNegativeResult()))//
-            && z.isNumber()) {
-          return F.Divide(F.Hypergeometric2F1(a, b, c, z), F.Gamma(c));
-        }
+      // if (engine.isNumericMode()) {
+      // // TODO regularize Hypergeometric2F1 for negative integer values of the third parameter
+      // if (a.isNumber() //
+      // && b.isNumber() //
+      // && (c.isNumber() //
+      // && (!((INumber) c).fractionalPart().isZero() || c.isNonNegativeResult()))//
+      // && z.isNumber()) {
+      // return F.Divide(F.Hypergeometric2F1(a, b, c, z), F.Gamma(c));
+      // }
+      // }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 4) {
+        IInexactNumber a = (IInexactNumber) ast.arg1();
+        IInexactNumber b = (IInexactNumber) ast.arg2();
+        IInexactNumber c = (IInexactNumber) ast.arg3();
+        IInexactNumber z = (IInexactNumber) ast.arg4();
+        return a.hypergeometric2F1Regularized(b, c, z);
       }
       return F.NIL;
     }

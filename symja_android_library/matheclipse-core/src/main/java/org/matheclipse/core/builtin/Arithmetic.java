@@ -1690,19 +1690,22 @@ public final class Arithmetic {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
+        final int argSize = ast.argSize();
         IExpr a = ast.arg1();
-        if (ast.isAST3()) {
-          // see GammaRules.m - Gamma(a_, x_, y_) := Gamma(a, x) - Gamma(a, y)
-          return F.NIL;
-        }
-        if (ast.size() != 3) {
+        if (argSize == 1) {
           return unaryOperator(a);
         }
-        return binaryOperator(ast, a, ast.arg2());
+        if (argSize == 2) {
+          return binaryOperator(ast, a, ast.arg2());
+        }
+        if (argSize == 3) {
+          // see GammaRules.m - Gamma(a_, x_, y_) := Gamma(a, x) - Gamma(a, y)
+        }
       } catch (ApfloatRuntimeException | ValidateException e) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
-        return F.NIL;
+
       }
+      return F.NIL;
     }
 
     @Override
@@ -1755,6 +1758,31 @@ public final class Arithmetic {
         }
       }
       return NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      final int argSize = ast.argSize();
+      switch (argSize) {
+        case 1: {
+          IInexactNumber z = (IInexactNumber) ast.arg1();
+          return z.gamma();
+        }
+        case 2: {
+          IInexactNumber z1 = (IInexactNumber) ast.arg1();
+          IInexactNumber z2 = (IInexactNumber) ast.arg2();
+          return z1.gamma(z2);
+        }
+        case 3: {
+          IInexactNumber z1 = (IInexactNumber) ast.arg1();
+          IInexactNumber z2 = (IInexactNumber) ast.arg2();
+          IInexactNumber z3 = (IInexactNumber) ast.arg3();
+          return z1.gamma(z2, z3);
+        }
+        default:
+          break;
+      }
+      return F.NIL;
     }
 
     @Override

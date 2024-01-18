@@ -123,27 +123,27 @@ public class SpecialFunctions {
             }
           }
 
-          if (engine.isDoubleMode()) {
-            double aDouble = Double.NaN;
-            double bDouble = Double.NaN;
-            double zDouble = Double.NaN;
-            try {
-              zDouble = z.evalf();
-              aDouble = a.evalf();
-              bDouble = b.evalf();
-            } catch (ValidateException ve) {
-            }
-            if (Double.isNaN(aDouble) || Double.isNaN(bDouble) || Double.isNaN(zDouble)) {
-              Complex zc = z.evalfc();
-              Complex ac = a.evalfc();
-              Complex bc = b.evalfc();
-
-              return F.complexNum(GammaJS.beta(zc, ac, bc));
-
-            } else {
-              return GammaJS.incompleteBeta(zDouble, aDouble, bDouble);
-            }
-          }
+          // if (engine.isDoubleMode()) {
+          // double aDouble = Double.NaN;
+          // double bDouble = Double.NaN;
+          // double zDouble = Double.NaN;
+          // try {
+          // zDouble = z.evalf();
+          // aDouble = a.evalf();
+          // bDouble = b.evalf();
+          // } catch (ValidateException ve) {
+          // }
+          // if (Double.isNaN(aDouble) || Double.isNaN(bDouble) || Double.isNaN(zDouble)) {
+          // Complex zc = z.evalfc();
+          // Complex ac = a.evalfc();
+          // Complex bc = b.evalfc();
+          //
+          // return F.complexNum(GammaJS.beta(zc, ac, bc));
+          //
+          // } else {
+          // return GammaJS.incompleteBeta(zDouble, aDouble, bDouble);
+          // }
+          // }
 
           int bInt = b.toIntDefault();
           if (bInt > 0) {
@@ -178,25 +178,25 @@ public class SpecialFunctions {
         return F.CComplexInfinity;
       }
       try {
-        if (engine.isDoubleMode()) {
-
-          double aDouble = Double.NaN;
-          double bDouble = Double.NaN;
-          try {
-            aDouble = a.evalf();
-            bDouble = b.evalf();
-          } catch (ValidateException ve) {
-          }
-          if (Double.isNaN(aDouble) || Double.isNaN(bDouble)) {
-            Complex ac = a.evalfc();
-            Complex bc = b.evalfc();
-
-            return F.complexNum(GammaJS.beta(ac, bc));
-
-          } else {
-            return F.num(GammaJS.beta(aDouble, bDouble));
-          }
-        }
+        // if (engine.isDoubleMode()) {
+        //
+        // double aDouble = Double.NaN;
+        // double bDouble = Double.NaN;
+        // try {
+        // aDouble = a.evalf();
+        // bDouble = b.evalf();
+        // } catch (ValidateException ve) {
+        // }
+        // if (Double.isNaN(aDouble) || Double.isNaN(bDouble)) {
+        // Complex ac = a.evalfc();
+        // Complex bc = b.evalfc();
+        //
+        // return F.complexNum(GammaJS.beta(ac, bc));
+        //
+        // } else {
+        // return F.num(GammaJS.beta(aDouble, bDouble));
+        // }
+        // }
         if (a.isNumber() && b.isNumber()) {
           if (a.isInteger() && a.isPositive() && b.isInteger() && b.isPositive()) {
             // http://fungrim.org/entry/082a69/
@@ -223,6 +223,27 @@ public class SpecialFunctions {
         return Errors.printMessage(ast.topHead(), ve, engine);
       } catch (RuntimeException rex) {
         Errors.printMessage(S.Beta, rex, engine);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.isAST2()) {
+        IInexactNumber a = (IInexactNumber) ast.arg1();
+        IInexactNumber b = (IInexactNumber) ast.arg2();
+        return a.beta(b);
+      } else if (ast.isAST3()) {
+        IInexactNumber z = (IInexactNumber) ast.arg1();
+        IInexactNumber a = (IInexactNumber) ast.arg2();
+        IInexactNumber b = (IInexactNumber) ast.arg3();
+        return z.beta(a, b);
+      } else if (ast.argSize() == 4) {
+        IInexactNumber z0 = (IInexactNumber) ast.arg1();
+        IInexactNumber z1 = (IInexactNumber) ast.arg2();
+        IInexactNumber a = (IInexactNumber) ast.arg3();
+        IInexactNumber b = (IInexactNumber) ast.arg4();
+        return z0.beta(z1, a, b);
       }
       return F.NIL;
     }
@@ -1420,6 +1441,15 @@ public class SpecialFunctions {
         if (arg1.isInteger()) {
           return F.CInfinity;
         }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        IInexactNumber z = (IInexactNumber) ast.arg1();
+        return z.logGamma();
       }
       return F.NIL;
     }

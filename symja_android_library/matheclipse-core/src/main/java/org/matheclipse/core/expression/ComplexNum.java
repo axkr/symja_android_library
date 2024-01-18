@@ -4,6 +4,7 @@ import java.util.function.Function;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
+import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
 import org.matheclipse.core.basic.Config;
@@ -293,6 +294,16 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr agm(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      Apcomplex agm =
+          EvalEngine.getApfloatDouble().agm(apcomplexValue(), ((INumber) arg2).apcomplexValue());
+      return F.complexNum(agm.real().doubleValue(), agm.imag().doubleValue());
+    }
+    return IComplexNum.super.agm(arg2);
+  }
+
+  @Override
   public IComplexNum add(final IComplexNum val) {
     if (val instanceof ApcomplexNum) {
       return apcomplexNumValue().add(val);
@@ -343,6 +354,53 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IInexactNumber atan() {
     return valueOf(fComplex.atan());
+  }
+
+  @Override
+  public IExpr beta(IExpr b) {
+    if (b instanceof INumber) {
+      Apcomplex beta =
+          EvalEngine.getApfloatDouble().beta(apcomplexValue(), ((INumber) b).apcomplexValue());
+      return F.complexNum(beta.real().doubleValue(), beta.imag().doubleValue());
+    }
+    return IComplexNum.super.beta(b);
+  }
+
+  @Override
+  public IExpr beta(IExpr a, IExpr b) {
+    if (a instanceof INumber && b instanceof INumber) {
+      try {
+        Apcomplex beta = EvalEngine.getApfloatDouble().beta(apcomplexValue(),
+            ((INumber) a).apcomplexValue(), ((INumber) b).apcomplexValue());
+        return F.complexNum(beta.real().doubleValue(), beta.imag().doubleValue());
+      } catch (ArithmeticException aex) {
+        if (aex.getMessage().equals("Division by zero")) {
+          return F.ComplexInfinity;
+        } else {
+          // aex.printStackTrace();
+        }
+      }
+    }
+    return IComplexNum.super.beta(a, b);
+  }
+
+  @Override
+  public IExpr beta(IExpr x2, IExpr a, IExpr b) {
+    if (x2 instanceof INumber && a instanceof INumber && b instanceof INumber) {
+      try {
+        Apcomplex beta =
+            EvalEngine.getApfloatDouble().beta(apcomplexValue(), ((INumber) x2).apcomplexValue(),
+                ((INumber) a).apcomplexValue(), ((INumber) b).apcomplexValue());
+        return F.complexNum(beta.real().doubleValue(), beta.imag().doubleValue());
+      } catch (ArithmeticException aex) {
+        if (aex.getMessage().equals("Division by zero")) {
+          return F.ComplexInfinity;
+        } else {
+          // aex.printStackTrace();
+        }
+      }
+    }
+    return IComplexNum.super.beta(x2, a, b);
   }
 
   @Override
@@ -691,6 +749,52 @@ public class ComplexNum implements IComplexNum {
     return new Complex(fComplex.getReal(), fComplex.getImaginary());
   }
 
+  @Override
+  public IExpr gamma() {
+    if (isZero() || isMathematicalIntegerNegative()) {
+      return F.CComplexInfinity;
+    }
+    try {
+      Apcomplex gamma = EvalEngine.getApfloatDouble().gamma(apcomplexValue());
+      return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
+    } catch (OverflowException of) {
+      return F.Overflow();
+    } catch (ArithmeticException | ApfloatRuntimeException e) {
+    }
+    return IComplexNum.super.gamma();
+  }
+
+  @Override
+  public IExpr gamma(IExpr x) {
+    if (isZero() && x.isZero()) {
+      return F.CInfinity;
+    }
+    if (x instanceof INumber) {
+      Apcomplex gamma =
+          EvalEngine.getApfloatDouble().gamma(apcomplexValue(), ((INumber) x).apcomplexValue());
+      return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
+    }
+    return IComplexNum.super.gamma(x);
+  }
+
+  @Override
+  public IExpr gamma(IExpr x0, IExpr x1) {
+    if (isZero()) {
+      if (x0.isZero()) {
+        return F.CComplexInfinity;
+      }
+      if (x1.isZero()) {
+        return F.CNInfinity;
+      }
+    }
+    if (x0 instanceof INumber && x1 instanceof INumber) {
+      Apcomplex gamma = EvalEngine.getApfloatDouble().gamma(apcomplexValue(),
+          ((INumber) x0).apcomplexValue(), ((INumber) x0).apcomplexValue());
+      return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
+    }
+    return IComplexNum.super.gamma(x0, x1);
+  }
+
   /** @return */
   @Override
   public double getImaginaryPart() {
@@ -745,7 +849,6 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr fresnelC() {
     Apcomplex fresnelC = EvalEngine.getApfloatDouble().fresnelC(apcomplexValue());
-    // Apcomplex fresnelC = ApcomplexNum.fresnelC(apcomplexValue(), EvalEngine.getApfloatDouble());
     return F.complexNum(fresnelC.real().doubleValue(), fresnelC.imag().doubleValue());
   }
 
@@ -768,6 +871,17 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr hypergeometric0F1Regularized(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      Apcomplex hypergeometric0f1Regularized = EvalEngine.getApfloatDouble()
+          .hypergeometric0F1Regularized(apcomplexValue(), ((INumber) arg2).apcomplexValue());
+      return F.complexNum(hypergeometric0f1Regularized.real().doubleValue(),
+          hypergeometric0f1Regularized.imag().doubleValue());
+    }
+    return IComplexNum.super.hypergeometric0F1Regularized(arg2);
+  }
+
+  @Override
   public IExpr hypergeometric1F1(IExpr arg2, IExpr arg3) {
     try {
       return F.complexNum(HypergeometricJS.hypergeometric1F1(fComplex, //
@@ -777,6 +891,26 @@ public class ComplexNum implements IComplexNum {
       // try as computation with complex numbers
     }
     return IComplexNum.super.hypergeometric1F1(arg2, arg3);
+  }
+
+  @Override
+  public IExpr hypergeometric1F1Regularized(IExpr arg2, IExpr arg3) {
+    if (arg2 instanceof INumber && arg3 instanceof INumber) {
+      try {
+        Apcomplex hypergeometric1F1Regularized =
+            EvalEngine.getApfloatDouble().hypergeometric1F1Regularized(apcomplexValue(),
+                ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue());
+        return F.complexNum(hypergeometric1F1Regularized.real().doubleValue(),
+            hypergeometric1F1Regularized.imag().doubleValue());
+      } catch (ArithmeticException aex) {
+        if (aex.getMessage().equals("Division by zero")) {
+          return F.ComplexInfinity;
+        } else {
+          // aex.printStackTrace();
+        }
+      }
+    }
+    return IComplexNum.super.hypergeometric1F1Regularized(arg2, arg3);
   }
 
   @Override
@@ -798,6 +932,26 @@ public class ComplexNum implements IComplexNum {
     // // try as computation with complex numbers
     // }
     // return IComplexNum.super.hypergeometric2F1(arg2, arg3, arg4);
+  }
+
+  @Override
+  public IExpr hypergeometric2F1Regularized(IExpr arg2, IExpr arg3, IExpr arg4) {
+    if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
+      try {
+        Apcomplex hypergeometric2F1Regularized = EvalEngine.getApfloatDouble()
+            .hypergeometric2F1Regularized(apcomplexValue(), ((INumber) arg2).apcomplexValue(),
+                ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue());
+        return F.complexNum(hypergeometric2F1Regularized.real().doubleValue(),
+            hypergeometric2F1Regularized.imag().doubleValue());
+      } catch (ArithmeticException aex) {
+        if (aex.getMessage().equals("Division by zero")) {
+          return F.ComplexInfinity;
+        } else {
+          // aex.printStackTrace();
+        }
+      }
+    }
+    return IComplexNum.super.hypergeometric2F1Regularized(arg2, arg3, arg4);
   }
 
   @Override
@@ -987,6 +1141,12 @@ public class ComplexNum implements IComplexNum {
   @Override
   public ComplexNum log() {
     return valueOf(fComplex.log());
+  }
+
+  @Override
+  public IExpr logGamma() {
+    Apcomplex logGamma = EvalEngine.getApfloatDouble().logGamma(apcomplexValue());
+    return F.complexNum(logGamma.real().doubleValue(), logGamma.imag().doubleValue());
   }
 
   /**

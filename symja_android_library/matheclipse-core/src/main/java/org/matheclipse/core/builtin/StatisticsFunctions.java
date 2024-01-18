@@ -6,10 +6,6 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import org.apfloat.Apcomplex;
-import org.apfloat.ApcomplexMath;
-import org.apfloat.Apfloat;
-import org.apfloat.ApfloatMath;
 import org.hipparchus.distribution.RealDistribution;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.Array2DRowRealMatrix;
@@ -27,7 +23,6 @@ import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
@@ -35,8 +30,6 @@ import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
-import org.matheclipse.core.expression.ApcomplexNum;
-import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -44,13 +37,13 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
-import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IContinuousDistribution;
 import org.matheclipse.core.interfaces.IDiscreteDistribution;
 import org.matheclipse.core.interfaces.IDistribution;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
@@ -331,52 +324,11 @@ public class StatisticsFunctions {
    * Arithmetic-geometric mean)</a>
    * </ul>
    */
-  private static class ArithmeticGeometricMean extends AbstractArg2 {
-
+  private static class ArithmeticGeometricMean extends AbstractFunctionEvaluator {
     @Override
-    public IExpr e2ApcomplexArg(final ApcomplexNum a, final ApcomplexNum b) {
-      return F.complexNum(ApcomplexMath.agm(a.apcomplexValue(), b.apcomplexValue()));
-    }
-
-    @Override
-    public IExpr e2ApfloatArg(final ApfloatNum a, final ApfloatNum b) {
-      return F.num(ApfloatMath.agm(a.apfloatValue(), b.apfloatValue()));
-    }
-
-    @Override
-    public IExpr e2DblComArg(final IComplexNum a, final IComplexNum b) {
-      ApcomplexNum a1 = a.apcomplexNumValue();
-      ApcomplexNum b1 = b.apcomplexNumValue();
-      Apcomplex agm = ApcomplexMath.agm(a1.apcomplexValue(), b1.apcomplexValue());
-      return F.complex(agm.real().doubleValue(), agm.imag().doubleValue());
-      // IComplexNum a1 = a;
-      // IComplexNum b1 = b;
-      // while (a1.subtract(b1).abs().evalDouble() >= Config.DOUBLE_TOLERANCE) {
-      // IComplexNum arith = a1.add(b1).multiply(F.complexNum(1 / 2.0));
-      // IComplexNum geom = a1.multiply(b1).pow(F.complexNum(1 / 2.0));
-      // a1 = arith;
-      // b1 = geom;
-      // }
-      // return a1;
-    }
-
-    @Override
-    public IExpr e2DblArg(final INum a, final INum b) {
-      return F.num(ApfloatMath.agm(new Apfloat(a.doubleValue()), new Apfloat(b.doubleValue()))
-          .doubleValue());
-      // double a1 = a.doubleValue();
-      // double b1 = b.doubleValue();
-      // while (Math.abs(a1 - b1) >= Config.DOUBLE_TOLERANCE) {
-      // double arith = (a1 + b1) / 2.0;
-      // double geom = Math.sqrt(a1 * b1);
-      // a1 = arith;
-      // b1 = geom;
-      // }
-      // return F.num(a1);
-    }
-
-    @Override
-    public IExpr e2ObjArg(IAST ast, final IExpr a, final IExpr b) {
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr a = ast.arg1();
+      IExpr b = ast.arg2();
       if (a.isZero() || a.equals(b)) {
         return a;
       }
@@ -384,6 +336,63 @@ public class StatisticsFunctions {
         return b;
       }
       return F.NIL;
+    }
+
+    // @Override
+    // public IExpr e2ApcomplexArg(final ApcomplexNum a, final ApcomplexNum b) {
+    // return F.complexNum(ApcomplexMath.agm(a.apcomplexValue(), b.apcomplexValue()));
+    // }
+    //
+    // @Override
+    // public IExpr e2ApfloatArg(final ApfloatNum a, final ApfloatNum b) {
+    // return F.num(ApfloatMath.agm(a.apfloatValue(), b.apfloatValue()));
+    // }
+
+    // @Override
+    // public IExpr e2DblComArg(final IComplexNum a, final IComplexNum b) {
+    // ApcomplexNum a1 = a.apcomplexNumValue();
+    // ApcomplexNum b1 = b.apcomplexNumValue();
+    // Apcomplex agm = ApcomplexMath.agm(a1.apcomplexValue(), b1.apcomplexValue());
+    // return F.complex(agm.real().doubleValue(), agm.imag().doubleValue());
+    // // IComplexNum a1 = a;
+    // // IComplexNum b1 = b;
+    // // while (a1.subtract(b1).abs().evalDouble() >= Config.DOUBLE_TOLERANCE) {
+    // // IComplexNum arith = a1.add(b1).multiply(F.complexNum(1 / 2.0));
+    // // IComplexNum geom = a1.multiply(b1).pow(F.complexNum(1 / 2.0));
+    // // a1 = arith;
+    // // b1 = geom;
+    // // }
+    // // return a1;
+    // }
+
+    // @Override
+    // public IExpr e2DblArg(final INum a, final INum b) {
+    // return F.num(ApfloatMath.agm(new Apfloat(a.doubleValue()), new Apfloat(b.doubleValue()))
+    // .doubleValue());
+    // // double a1 = a.doubleValue();
+    // // double b1 = b.doubleValue();
+    // // while (Math.abs(a1 - b1) >= Config.DOUBLE_TOLERANCE) {
+    // // double arith = (a1 + b1) / 2.0;
+    // // double geom = Math.sqrt(a1 * b1);
+    // // a1 = arith;
+    // // b1 = geom;
+    // // }
+    // // return F.num(a1);
+    // }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        IInexactNumber a = (IInexactNumber) ast.arg1();
+        IInexactNumber b = (IInexactNumber) ast.arg2();
+        return a.agm(b);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
     }
 
     /** {@inheritDoc} */

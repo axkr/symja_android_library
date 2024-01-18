@@ -394,40 +394,44 @@ public interface IExpr
     return this;
   }
 
+  default IExpr agm(IExpr arg2) {
+    return F.NIL;
+  }
+
   /**
-   * Airy function Ai.
+   * Numeric airy function Ai.
    *
    * @return Ai(x)
    */
   default IExpr airyAi() {
-    return F.AiryAi(this);
+    return F.NIL;
   }
 
   /**
-   * Derivative of the Airy function Ai.
+   * Numeric derivative of the Airy function Ai.
    * 
    * @return Ai′(x)
    */
   default IExpr airyAiPrime() {
-    return F.AiryAiPrime(this);
+    return F.NIL;
   }
 
   /**
-   * Airy function Bi.
+   * Numeric airy function Bi.
    *
    * @return Bi(x)
    */
   default IExpr airyBi() {
-    return F.AiryBi(this);
+    return F.NIL;
   }
 
   /**
-   * Derivative of the Airy function Bi.
+   * Numeric derivative of the Airy function Bi.
    *
    * @return Bi′(x)
    */
   default IExpr airyBiPrime() {
-    return F.AiryBiPrime(this);
+    return F.NIL;
   }
 
   /**
@@ -828,7 +832,7 @@ public interface IExpr
    * @return <i>I<sub>this</sub>(x)</i>
    */
   default IExpr besselI(IExpr x) {
-    return F.BesselI(this, x);
+    return F.NIL;
   }
 
   /**
@@ -839,7 +843,7 @@ public interface IExpr
    * @return <i>J<sub>this</sub>(x)</i>
    */
   default IExpr besselJ(IExpr x) {
-    return F.BesselJ(this, x);
+    return F.NIL;
   }
 
   /**
@@ -854,7 +858,7 @@ public interface IExpr
    * @since 1.13.0
    */
   default IExpr besselK(IExpr x) {
-    return F.BesselK(this, x);
+    return F.NIL;
   }
 
   /**
@@ -865,7 +869,43 @@ public interface IExpr
    * @return <i>Y<sub>this</sub>(x)</i>
    */
   default IExpr besselY(IExpr x) {
-    return F.BesselY(this, x);
+    return F.NIL;
+  }
+
+  /**
+   * Beta function.
+   * 
+   * @param b The second argument.
+   *
+   * @return B(a, b)
+   */
+  default IExpr beta(IExpr b) {
+    return F.NIL;
+  }
+
+  /**
+   * Incomplete beta function.
+   * 
+   * @param a The second argument.
+   * @param b The third argument.
+   *
+   * @return B<sub>x</sub>(a, b)
+   */
+  default IExpr beta(IExpr a, IExpr b) {
+    return F.NIL;
+  }
+
+  /**
+   * Generalized incomplete beta function.
+   * 
+   * @param x2 The second argument.
+   * @param a The third argument.
+   * @param b The fourth argument.
+   *
+   * @return B<sub>(x1, x2)</sub>(a, b)
+   */
+  default IExpr beta(IExpr x2, IExpr a, IExpr b) {
+    return F.NIL;
   }
 
   default IExpr cancel() {
@@ -1095,11 +1135,11 @@ public interface IExpr
   }
 
   default IExpr ellipticE() {
-    return F.EllipticE(this);
+    return F.NIL;
   }
 
   default IExpr ellipticK() {
-    return F.EllipticK(this);
+    return F.NIL;
   }
 
   /**
@@ -1224,30 +1264,30 @@ public interface IExpr
   }
 
   /**
-   * Error function.
+   * Numeric error function.
    * 
    * @return <i>erf(x)</i>
    */
   default IExpr erf() {
-    return F.Erf(this);
+    return F.NIL;
   }
 
   /**
-   * Complementary error function.
+   * Numeric complementary error function.
    *
    * @return <i>erfc(x)</i>
    */
   default IExpr erfc() {
-    return F.Erfc(this);
+    return F.NIL;
   }
 
   /**
-   * Imaginary error function.
+   * Numeric imaginary error function.
    *
    * @return <i>erfi(x)</i>
    */
   default IExpr erfi() {
-    return F.Erfi(this);
+    return F.NIL;
   }
 
   /**
@@ -1508,21 +1548,21 @@ public interface IExpr
   }
 
   /**
-   * Fresnel integral C.
+   * Numeric fresnel integral C.
    *
    * @return <i>C(x)</i>
    */
   default IExpr fresnelC() {
-    return F.FresnelC(this);
+    return F.NIL;
   }
 
   /**
-   * Fresnel integral S.
+   * Numeric fresnel integral S.
    *
    * @return <i>S(x)</i>
    */
   default IExpr fresnelS() {
-    return F.FresnelS(this);
+    return F.NIL;
   }
 
   /**
@@ -1532,6 +1572,39 @@ public interface IExpr
    */
   default String fullFormString() {
     return toString();
+  }
+
+  /**
+   * Numeric gamma function.
+   * 
+   *
+   * @return <code>&Gamma;(z)</code>.
+   */
+  default IExpr gamma() {
+    return F.NIL;
+  }
+
+  /**
+   * Numeric incomplete gamma function.
+   * 
+   * @param x The second operand.
+   *
+   * @return <code>&Gamma;(a, x)</code>.
+   */
+  default IExpr gamma(IExpr x) {
+    return F.NIL;
+  }
+
+  /**
+   * Numeric generalized incomplete gamma function.
+   * 
+   * @param x0 The second operand.
+   * @param x1 The third operand.
+   *
+   * @return <code>&Gamma;(a, x0)</code> - <code>&Gamma;(a, x1)</code>.
+   */
+  default IExpr gamma(IExpr x0, IExpr x1) {
+    return F.NIL;
   }
 
   /**
@@ -1812,18 +1885,30 @@ public interface IExpr
   public int hierarchy();
 
   /**
-   * Confluent hypergeometric function <i><sub>0</sub>F<sub>1</sub></i>.
+   * Numeric confluent hypergeometric function <i><sub>0</sub>F<sub>1</sub></i>.
    * 
    * @param x The second argument.
    *
    * @return <i><sub>0</sub>F<sub>1</sub>(; this; x)</i>
    */
   default IExpr hypergeometric0F1(IExpr x) {
-    return F.Hypergeometric0F1(this, x);
+    return F.NIL;
   }
 
   /**
-   * Kummer confluent hypergeometric function <i><sub>1</sub>F<sub>1</sub></i>.
+   * Numeric regularized confluent hypergeometric function <i><sub>0</sub>F̃<sub>1</sub></i>.
+   *
+   * @param a The first argument.
+   * @param x The second argument.
+   *
+   * @return <i><sub>0</sub>F̃<sub>1</sub>(; a; x)</i>
+   */
+  default IExpr hypergeometric0F1Regularized(IExpr arg2) {
+    return F.NIL;
+  }
+
+  /**
+   * Numeric Kummer confluent hypergeometric function <i><sub>1</sub>F<sub>1</sub></i>.
    * 
    * @param b The second argument.
    * @param x The third argument.
@@ -1831,11 +1916,25 @@ public interface IExpr
    * @return <i><sub>1</sub>F<sub>1</sub>(this; b; x)</i>
    */
   default IExpr hypergeometric1F1(IExpr b, IExpr x) {
-    return F.Hypergeometric1F1(this, b, x);
+    return F.NIL;
   }
 
   /**
-   * Hypergeometric function <i><sub>2</sub>F<sub>1</sub></i>.
+   * Numeric regularized Kummer confluent hypergeometric function <i><sub>1</sub>F̃<sub>1</sub></i>.
+   *
+   * @param a The first argument.
+   * @param b The second argument.
+   * @param x The third argument.
+   *
+   * @return <i><sub>1</sub>F̃<sub>1</sub>(a; b; x)</i>
+   * @since 1.13.0
+   */
+  default IExpr hypergeometric1F1Regularized(IExpr b, IExpr x) {
+    return F.NIL;
+  }
+
+  /**
+   * Numeric hypergeometric function <i><sub>2</sub>F<sub>1</sub></i>.
    *
    * @param b The second argument.
    * @param c The third argument.
@@ -1844,11 +1943,25 @@ public interface IExpr
    * @return <i><sub>2</sub>F<sub>1</sub>(this, b; c; x)</i>
    */
   default IExpr hypergeometric2F1(IExpr b, IExpr c, IExpr x) {
-    return F.Hypergeometric2F1(this, b, c, x);
+    return F.NIL;
   }
 
   /**
-   * Tricomi's confluent hypergeometric function <i>U</i>.
+   * Numeric regularized hypergeometric function <i><sub>2</sub>F̃<sub>1</sub></i>.
+   *
+   * @param a The first argument.
+   * @param b The second argument.
+   * @param c The third argument.
+   * @param x The fourth argument.
+   *
+   * @return <i><sub>2</sub>F̃<sub>1</sub>(a, b; c; x)</i>
+   */
+  default IExpr hypergeometric2F1Regularized(IExpr b, IExpr c, IExpr x) {
+    return F.NIL;
+  }
+
+  /**
+   * Numeric Tricomi's confluent hypergeometric function <i>U</i>.
    * 
    * @param b The second argument.
    * @param x The third argument.
@@ -1856,7 +1969,7 @@ public interface IExpr
    * @return <i>U(this, b, x)</i>
    */
   default IExpr hypergeometricU(IExpr b, IExpr x) {
-    return F.HypergeometricU(this, b, x);
+    return F.NIL;
   }
 
   @Override
@@ -5053,6 +5166,17 @@ public interface IExpr
   @Override
   default IExpr log1p() {
     return S.Log.of(this.inc());
+  }
+
+  /**
+   * Numeric logarithm of the gamma function.
+   *
+   * @param z The argument.
+   *
+   * @return <code>log&Gamma;(z)</code>
+   */
+  default IExpr logGamma() {
+    return F.NIL;
   }
 
   /**

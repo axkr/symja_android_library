@@ -38,6 +38,12 @@ public final class NumStr extends Num {
     }
 
     fPrecision = fFloatStr.length();
+    // for (int i = fFloatStr.length() - 1; i > 1; i--) {
+    // if (fFloatStr.charAt(i) != '0') {
+    // break;
+    // }
+    // fPrecision--;
+    // }
     if (fFloatStr.startsWith("0.")) {
       fPrecision -= 2;
     } else if (fFloatStr.indexOf(".") > 0) {
