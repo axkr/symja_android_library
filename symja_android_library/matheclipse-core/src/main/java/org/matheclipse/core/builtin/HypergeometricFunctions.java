@@ -10,9 +10,9 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apfloat.ApfloatRuntimeException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -180,6 +180,44 @@ public class HypergeometricFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
+      IExpr temp = basicRewrite(z);
+      if (temp.isPresent()) {
+        return temp;
+      }
+      // if (engine.isDoubleMode()) {
+      // try {
+      // double zDouble = Double.NaN;
+      // try {
+      // zDouble = z.evalf();
+      // } catch (ValidateException ve) {
+      // }
+      // if (Double.isNaN(zDouble)) {
+      // Complex zc = z.evalfc();
+      // return F.complexNum(GammaJS.cosIntegral(zc));
+      //
+      // } else {
+      // if (F.isZero(zDouble)) {
+      // return F.CNInfinity;
+      // }
+      // if (zDouble <= 0) {
+      // return F.complexNum(GammaJS.cosIntegral(new Complex(zDouble)));
+      // }
+      // return F.num(de.lab4inf.math.functions.CosineIntegral.ci(zDouble));
+      // }
+      //
+      // } catch (ThrowException te) {
+      // LOGGER.debug("CosIntegral.evaluate() failed", te);
+      // return te.getValue();
+      // } catch (ValidateException ve) {
+      // return Errors.printMessage(ast.topHead(), ve, engine);
+      // } catch (RuntimeException rex) {
+      // LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+      // }
+      // }
+      return F.NIL;
+    }
+
+    private static IExpr basicRewrite(IExpr z) {
       if (z.isZero()) {
         return F.CNInfinity;
       }
@@ -195,35 +233,18 @@ public class HypergeometricFunctions {
       if (z.isComplexInfinity()) {
         return S.Indeterminate;
       }
-      if (engine.isDoubleMode()) {
-        try {
-          double zDouble = Double.NaN;
-          try {
-            zDouble = z.evalf();
-          } catch (ValidateException ve) {
-          }
-          if (Double.isNaN(zDouble)) {
-            Complex zc = z.evalfc();
-            return F.complexNum(GammaJS.cosIntegral(zc));
+      return F.NIL;
+    }
 
-          } else {
-            if (F.isZero(zDouble)) {
-              return F.CNInfinity;
-            }
-            if (zDouble <= 0) {
-              return F.complexNum(GammaJS.cosIntegral(new Complex(zDouble)));
-            }
-            return F.num(de.lab4inf.math.functions.CosineIntegral.ci(zDouble));
-          }
-
-        } catch (ThrowException te) {
-          LOGGER.debug("CosIntegral.evaluate() failed", te);
-          return te.getValue();
-        } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
-        } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        IInexactNumber z = (IInexactNumber) ast.arg1();
+        IExpr temp = basicRewrite(z);
+        if (temp.isPresent()) {
+          return temp;
         }
+        return z.cosIntegral();
       }
       return F.NIL;
     }
@@ -273,6 +294,40 @@ public class HypergeometricFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
+      IExpr temp = basicRewrite(z);
+      if (temp.isPresent()) {
+        return temp;
+      }
+      // if (engine.isDoubleMode()) {
+      // try {
+      // double zDouble = Double.NaN;
+      // try {
+      // zDouble = z.evalf();
+      // } catch (ValidateException ve) {
+      // }
+      // if (Double.isNaN(zDouble)) {
+      // Complex zc = z.evalfc();
+      // return F.complexNum(GammaJS.coshIntegral(zc));
+      // } else {
+      // if (F.isZero(zDouble)) {
+      // return F.CNInfinity;
+      // }
+      // return F.complexNum(GammaJS.coshIntegral(new Complex(zDouble)));
+      // }
+      //
+      // } catch (ThrowException te) {
+      // LOGGER.debug("CoshIntegral.evaluate() failed", te);
+      // return te.getValue();
+      // } catch (ValidateException ve) {
+      // return Errors.printMessage(ast.topHead(), ve, engine);
+      // } catch (RuntimeException rex) {
+      // LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+      // }
+      // }
+      return F.NIL;
+    }
+
+    private static IExpr basicRewrite(IExpr z) {
       if (z.isZero()) {
         return F.CNInfinity;
       }
@@ -291,32 +346,6 @@ public class HypergeometricFunctions {
       if (z.isComplexInfinity()) {
         return S.Indeterminate;
       }
-      if (engine.isDoubleMode()) {
-        try {
-          double zDouble = Double.NaN;
-          try {
-            zDouble = z.evalf();
-          } catch (ValidateException ve) {
-          }
-          if (Double.isNaN(zDouble)) {
-            Complex zc = z.evalfc();
-            return F.complexNum(GammaJS.coshIntegral(zc));
-          } else {
-            if (F.isZero(zDouble)) {
-              return F.CNInfinity;
-            }
-            return F.complexNum(GammaJS.coshIntegral(new Complex(zDouble)));
-          }
-
-        } catch (ThrowException te) {
-          LOGGER.debug("CoshIntegral.evaluate() failed", te);
-          return te.getValue();
-        } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
-        } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-        }
-      }
       return F.NIL;
     }
 
@@ -324,6 +353,19 @@ public class HypergeometricFunctions {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        IInexactNumber z = (IInexactNumber) ast.arg1();
+        IExpr temp = basicRewrite(z);
+        if (temp.isPresent()) {
+          return temp;
+        }
+        return z.coshIntegral();
+      }
+      return F.NIL;
     }
 
     @Override
@@ -376,6 +418,10 @@ public class HypergeometricFunctions {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
+      return basicRewrite(n, z);
+    }
+
+    private static IExpr basicRewrite(IExpr n, IExpr z) {
       if (n.isZero()) {
         // 1/(E^z*z)
         return F.Power(F.Times(z, F.Power(S.E, z)), -1);
@@ -390,30 +436,44 @@ public class HypergeometricFunctions {
           return F.CComplexInfinity;
         }
       }
-      if (engine.isDoubleMode()) {
-        try {
-          double nDouble = Double.NaN;
-          double zDouble = Double.NaN;
-          try {
-            nDouble = n.evalf();
-            zDouble = z.evalf();
-            return F.complexNum(GammaJS.expIntegralE(new Complex(nDouble), new Complex(zDouble)));
-          } catch (ValidateException ve) {
-          }
-          if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
-            Complex nc = n.evalfc();
-            Complex zc = z.evalfc();
-            return F.complexNum(GammaJS.expIntegralE(nc, zc));
-          }
+      // if (engine.isDoubleMode()) {
+      // try {
+      // double nDouble = Double.NaN;
+      // double zDouble = Double.NaN;
+      // try {
+      // nDouble = n.evalf();
+      // zDouble = z.evalf();
+      // return F.complexNum(GammaJS.expIntegralE(new Complex(nDouble), new Complex(zDouble)));
+      // } catch (ValidateException ve) {
+      // }
+      // if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
+      // Complex nc = n.evalfc();
+      // Complex zc = z.evalfc();
+      // return F.complexNum(GammaJS.expIntegralE(nc, zc));
+      // }
+      //
+      // } catch (ThrowException te) {
+      // LOGGER.debug("ExpIntegralE.evaluate() failed", te);
+      // return te.getValue();
+      // } catch (ValidateException ve) {
+      // return Errors.printMessage(ast.topHead(), ve, engine);
+      // } catch (RuntimeException rex) {
+      // LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+      // }
+      // }
+      return F.NIL;
+    }
 
-        } catch (ThrowException te) {
-          LOGGER.debug("ExpIntegralE.evaluate() failed", te);
-          return te.getValue();
-        } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
-        } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        IInexactNumber n = (IInexactNumber) ast.arg1();
+        IInexactNumber z = (IInexactNumber) ast.arg2();
+        IExpr temp = basicRewrite(n, z);
+        if (temp.isPresent()) {
+          return temp;
         }
+        return n.expIntegralE(z);
       }
       return F.NIL;
     }
@@ -471,6 +531,10 @@ public class HypergeometricFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
+      return basicRewrite(z);
+    }
+
+    private static IExpr basicRewrite(IExpr z) {
       if (z.isZero()) {
         return F.CNInfinity;
       }
@@ -489,32 +553,45 @@ public class HypergeometricFunctions {
       if (z.isComplexInfinity()) {
         return S.Indeterminate;
       }
-      if (engine.isDoubleMode()) {
-        try {
-          double zDouble = Double.NaN;
-          try {
-            zDouble = z.evalf();
-          } catch (ValidateException ve) {
-          }
-          if (Double.isNaN(zDouble)) {
-            Complex zc = z.evalfc();
-            return F.complexNum(GammaJS.expIntegralEi(zc));
+      // if (engine.isDoubleMode()) {
+      // try {
+      // double zDouble = Double.NaN;
+      // try {
+      // zDouble = z.evalf();
+      // } catch (ValidateException ve) {
+      // }
+      // if (Double.isNaN(zDouble)) {
+      // Complex zc = z.evalfc();
+      // return F.complexNum(GammaJS.expIntegralEi(zc));
+      //
+      // } else {
+      // if (F.isZero(zDouble)) {
+      // return F.CNInfinity;
+      // }
+      // return F.complexNum(GammaJS.expIntegralEi(zDouble));
+      // }
+      //
+      // } catch (ThrowException te) {
+      // LOGGER.debug("ExpIntegralEi.evaluate() failed", te);
+      // return te.getValue();
+      // } catch (ValidateException ve) {
+      // return Errors.printMessage(ast.topHead(), ve, engine);
+      // } catch (RuntimeException rex) {
+      // LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+      // }
+      // }
+      return F.NIL;
+    }
 
-          } else {
-            if (F.isZero(zDouble)) {
-              return F.CNInfinity;
-            }
-            return F.complexNum(GammaJS.expIntegralEi(zDouble));
-          }
-
-        } catch (ThrowException te) {
-          LOGGER.debug("ExpIntegralEi.evaluate() failed", te);
-          return te.getValue();
-        } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
-        } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        IInexactNumber z = (IInexactNumber) ast.arg1();
+        IExpr temp = basicRewrite(z);
+        if (temp.isPresent()) {
+          return temp;
         }
+        return z.expIntegralEi();
       }
       return F.NIL;
     }
@@ -869,7 +946,7 @@ public class HypergeometricFunctions {
       if (z.isInfinity()) {
         return F.CComplexInfinity;
       }
-      if (engine.isArbitraryMode()) {
+      if (engine.isNumericMode()) {
         try {
           IExpr res = b.hypergeometric0F1(z);
           if (res.isNumber()) {
@@ -881,31 +958,31 @@ public class HypergeometricFunctions {
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
-      if (engine.isDoubleMode()) {
-        try {
-          double bDouble = Double.NaN;
-          double zDouble = Double.NaN;
-          try {
-            bDouble = b.evalf();
-            zDouble = z.evalf();
-          } catch (ValidateException ve) {
-          }
-          if (Double.isNaN(bDouble) || Double.isNaN(zDouble)) {
-            Complex bc = b.evalfc();
-            Complex zc = z.evalfc();
-
-            return F.complexNum(HypergeometricJS.hypergeometric0F1(bc, zc));
-
-          } else {
-            return F.num(HypergeometricJS.hypergeometric0F1(bDouble, zDouble));
-          }
-
-        } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
-        } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-        }
-      }
+      // if (engine.isDoubleMode()) {
+      // try {
+      // double bDouble = Double.NaN;
+      // double zDouble = Double.NaN;
+      // try {
+      // bDouble = b.evalf();
+      // zDouble = z.evalf();
+      // } catch (ValidateException ve) {
+      // }
+      // if (Double.isNaN(bDouble) || Double.isNaN(zDouble)) {
+      // Complex bc = b.evalfc();
+      // Complex zc = z.evalfc();
+      //
+      // return F.complexNum(HypergeometricJS.hypergeometric0F1(bc, zc));
+      //
+      // } else {
+      // return F.num(HypergeometricJS.hypergeometric0F1(bDouble, zDouble));
+      // }
+      //
+      // } catch (ValidateException ve) {
+      // return Errors.printMessage(ast.topHead(), ve, engine);
+      // } catch (RuntimeException rex) {
+      // LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+      // }
+      // }
       return F.NIL;
     }
 
@@ -927,6 +1004,10 @@ public class HypergeometricFunctions {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr b = ast.arg1();
       IExpr z = ast.arg2();
+      return basicRewrite(b, z);
+    }
+
+    private IExpr basicRewrite(IExpr b, IExpr z) {
       if (z.isZero()) {
         // 1/Gamma(b)
         return F.Power(F.Gamma(b), F.CN1);
@@ -939,7 +1020,16 @@ public class HypergeometricFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber a = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
-        return a.hypergeometric0F1Regularized(z);
+        IExpr temp = basicRewrite(a, z);
+        if (temp.isPresent()) {
+          return temp;
+        }
+        try {
+          return a.hypergeometric0F1Regularized(z);
+        } catch (ArithmeticException | ApfloatRuntimeException e) {
+          // java.lang.ArithmeticException: Gamma of zero
+          Errors.printMessage(S.Hypergeometric0F1, e, engine);
+        }
         // // z^(1/2*(1-a))*BesselI(-1+a,2*Sqrt(z))
         // return F.Times(F.Power(z, F.Times(F.C1D2, F.Subtract(F.C1, a))),
         // F.BesselI(F.Plus(F.CN1, a), F.Times(F.C2, F.Sqrt(z))));
@@ -989,7 +1079,7 @@ public class HypergeometricFunctions {
           // (E^z * (-1 + a + z)) / (-1 + a)
           return F.Times(F.Power(S.E, z), F.Divide(F.Plus(F.CN1, a, z), F.Plus(a, F.CN1)));
         }
-        if (engine.isArbitraryMode()) {
+        if (engine.isNumericMode()) {
           try {
             IExpr res = a.hypergeometric1F1(b, z);
             if (res.isNumber()) {
@@ -1000,27 +1090,27 @@ public class HypergeometricFunctions {
           } catch (RuntimeException rex) {
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
-        } else if (engine.isDoubleMode()) {
-
-          double aDouble = Double.NaN;
-          double bDouble = Double.NaN;
-          double zDouble = Double.NaN;
-          try {
-            aDouble = a.evalf();
-            bDouble = b.evalf();
-            zDouble = z.evalf();
-          } catch (ValidateException ve) {
-          }
-          if (Double.isNaN(aDouble) || Double.isNaN(bDouble) || Double.isNaN(zDouble)) {
-            Complex ac = a.evalfc();
-            Complex bc = b.evalfc();
-            Complex zc = z.evalfc();
-
-            return F.complexNum(HypergeometricJS.hypergeometric1F1(ac, bc, zc));
-
-          } else {
-            return F.num(HypergeometricJS.hypergeometric1F1(aDouble, bDouble, zDouble));
-          }
+          // } else if (engine.isDoubleMode()) {
+          //
+          // double aDouble = Double.NaN;
+          // double bDouble = Double.NaN;
+          // double zDouble = Double.NaN;
+          // try {
+          // aDouble = a.evalf();
+          // bDouble = b.evalf();
+          // zDouble = z.evalf();
+          // } catch (ValidateException ve) {
+          // }
+          // if (Double.isNaN(aDouble) || Double.isNaN(bDouble) || Double.isNaN(zDouble)) {
+          // Complex ac = a.evalfc();
+          // Complex bc = b.evalfc();
+          // Complex zc = z.evalfc();
+          //
+          // return F.complexNum(HypergeometricJS.hypergeometric1F1(ac, bc, zc));
+          //
+          // } else {
+          // return F.num(HypergeometricJS.hypergeometric1F1(aDouble, bDouble, zDouble));
+          // }
         }
         if (a.equals(b)) {
           // E^z
@@ -1076,6 +1166,10 @@ public class HypergeometricFunctions {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
       IExpr z = ast.arg3();
+      return basicRewrite(a, b, z);
+    }
+
+    private static IExpr basicRewrite(IExpr a, IExpr b, IExpr z) {
       if (z.isZero()) {
         // 1/Gamma(b)
         return F.Power(F.Gamma(b), F.CN1);
@@ -1084,10 +1178,10 @@ public class HypergeometricFunctions {
         // E^z/Gamma(a)
         return F.Times(F.Exp(z), F.Power(F.Gamma(a), F.CN1));
       }
-      if (engine.isNumericMode()) {
-        // Hypergeometric1F1(a,b,z)/Gamma(b)
-        return F.Times(F.Power(F.Gamma(b), F.CN1), F.Hypergeometric1F1(a, b, z));
-      }
+      // if (engine.isNumericMode()) {
+      // // Hypergeometric1F1(a,b,z)/Gamma(b)
+      // return F.Times(F.Power(F.Gamma(b), F.CN1), F.Hypergeometric1F1(a, b, z));
+      // }
       return F.NIL;
     }
 
@@ -1097,7 +1191,20 @@ public class HypergeometricFunctions {
         IInexactNumber a = (IInexactNumber) ast.arg1();
         IInexactNumber b = (IInexactNumber) ast.arg2();
         IInexactNumber z = (IInexactNumber) ast.arg3();
-        return a.hypergeometric1F1Regularized(b, z);
+        IExpr temp = basicRewrite(a, b, z);
+        if (temp.isPresent()) {
+          return temp;
+        }
+        try {
+          return a.hypergeometric1F1Regularized(b, z);
+        } catch (ArithmeticException | ApfloatRuntimeException e) {
+          // java.lang.ArithmeticException: Gamma of zero
+          Errors.printMessage(S.Hypergeometric1F1, e, engine);
+          if (e.getMessage().equals("Division by zero")) {
+            return F.ComplexInfinity;
+          }
+
+        }
         // // Hypergeometric1F1(a,b,z)/Gamma(b)
         // return F.Times(F.Power(F.Gamma(b), F.CN1), F.Hypergeometric1F1(a, b, z));
       }
@@ -1162,7 +1269,7 @@ public class HypergeometricFunctions {
       }
 
       try {
-        if (engine.isArbitraryMode() || engine.isDoubleMode()) {
+        if (engine.isNumericMode()) {
           try {
             IExpr res = a.hypergeometric2F1(b, c, z);
             if (res.isNumber()) {
@@ -1231,6 +1338,10 @@ public class HypergeometricFunctions {
       IExpr b = ast.arg2();
       IExpr c = ast.arg3();
       IExpr z = ast.arg4();
+      return basicRewrite(a, b, c, z);
+    }
+
+    private static IExpr basicRewrite(IExpr a, IExpr b, IExpr c, IExpr z) {
       if (a.isZero() || b.isZero() || z.isZero()) {
         if (!c.isPossibleZero(true)) {
           // 1/Gamma(c)
@@ -1267,7 +1378,18 @@ public class HypergeometricFunctions {
         IInexactNumber b = (IInexactNumber) ast.arg2();
         IInexactNumber c = (IInexactNumber) ast.arg3();
         IInexactNumber z = (IInexactNumber) ast.arg4();
-        return a.hypergeometric2F1Regularized(b, c, z);
+        IExpr temp = basicRewrite(a, b, c, z);
+        if (temp.isPresent()) {
+          return temp;
+        }
+        try {
+          return a.hypergeometric2F1Regularized(b, c, z);
+        } catch (ArithmeticException e) {
+          Errors.printMessage(S.Hypergeometric2F1, e, engine);
+          if (e.getMessage().equals("Division by zero")) {
+            return F.ComplexInfinity;
+          }
+        }
       }
       return F.NIL;
     }
@@ -1552,7 +1674,11 @@ public class HypergeometricFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
+      IExpr z = ast.arg1();
+      return basicRewrite(z);
+    }
+
+    private static IExpr basicRewrite(IExpr arg1) {
       if (arg1.isZero()) {
         return F.C0;
       }
@@ -1565,38 +1691,51 @@ public class HypergeometricFunctions {
       if (arg1.isComplexInfinity()) {
         return F.CComplexInfinity;
       }
-      if (engine.isDoubleMode()) {
-        try {
-          double zDouble = Double.NaN;
-          try {
-            zDouble = arg1.evalf();
-          } catch (ValidateException ve) {
-          }
-          if (Double.isNaN(zDouble)) {
-            Complex zc = arg1.evalfc();
-            return F.complexNum(GammaJS.logIntegral(zc));
+      // if (engine.isDoubleMode()) {
+      // try {
+      // double zDouble = Double.NaN;
+      // try {
+      // zDouble = arg1.evalf();
+      // } catch (ValidateException ve) {
+      // }
+      // if (Double.isNaN(zDouble)) {
+      // Complex zc = arg1.evalfc();
+      // return F.complexNum(GammaJS.logIntegral(zc));
+      //
+      // } else {
+      // if (F.isZero(zDouble)) {
+      // return F.C0;
+      // }
+      // if (F.isEqual(zDouble, 1.0)) {
+      // return F.CNInfinity;
+      // }
+      // if (zDouble > 0.0) {
+      // return F.num(GammaJS.logIntegral(zDouble));
+      // }
+      // return F.complexNum(GammaJS.logIntegral(new Complex(zDouble)));
+      // }
+      //
+      // } catch (ThrowException te) {
+      // LOGGER.debug("LogIntegral.evaluate() failed", te);
+      // return te.getValue();
+      // } catch (ValidateException ve) {
+      // return Errors.printMessage(ast.topHead(), ve, engine);
+      // } catch (RuntimeException rex) {
+      // LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+      // }
+      // }
+      return F.NIL;
+    }
 
-          } else {
-            if (F.isZero(zDouble)) {
-              return F.C0;
-            }
-            if (F.isEqual(zDouble, 1.0)) {
-              return F.CNInfinity;
-            }
-            if (zDouble > 0.0) {
-              return F.num(GammaJS.logIntegral(zDouble));
-            }
-            return F.complexNum(GammaJS.logIntegral(new Complex(zDouble)));
-          }
-
-        } catch (ThrowException te) {
-          LOGGER.debug("LogIntegral.evaluate() failed", te);
-          return te.getValue();
-        } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
-        } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        IInexactNumber z = (IInexactNumber) ast.arg1();
+        IExpr temp = basicRewrite(z);
+        if (temp.isPresent()) {
+          return temp;
         }
+        return z.logIntegral();
       }
       return F.NIL;
     }
@@ -1648,6 +1787,57 @@ public class HypergeometricFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
+      IExpr temp = basicRewrite(z);
+      if (temp.isPresent()) {
+        return temp;
+      }
+      // if (engine.isDoubleMode()) {
+      // try {
+      // double zDouble = Double.NaN;
+      // try {
+      // zDouble = z.evalf();
+      // } catch (ValidateException ve) {
+      // }
+      // if (Double.isNaN(zDouble)) {
+      // Complex zc = z.evalfc();
+      // return F.complexNum(GammaJS.sinIntegral(zc));
+      //
+      // } else {
+      // if (F.isZero(zDouble)) {
+      // return F.C0;
+      // }
+      // if (zDouble <= 0) {
+      // return F.complexNum(GammaJS.sinIntegral(new Complex(zDouble)));
+      // }
+      // return F.num(de.lab4inf.math.functions.SineIntegral.si(zDouble));
+      // }
+      //
+      // } catch (ThrowException te) {
+      // LOGGER.debug("SinIntegral.evaluate() failed", te);
+      // return te.getValue();
+      // } catch (ValidateException ve) {
+      // return Errors.printMessage(ast.topHead(), ve, engine);
+      // } catch (RuntimeException rex) {
+      // LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+      // return F.NIL;
+      // }
+      // }
+      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
+      if (negExpr.isPresent()) {
+        return Negate(F.SinIntegral(negExpr));
+      }
+      if (z.isTimes() && z.first().isComplex() && z.first().re().isZero()) {
+        // I * SinhIntegral(-I*arg1)
+        return F.Times(S.I, F.SinhIntegral(F.Times(F.CNI, z)));
+      }
+      IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(z);
+      if (imPart.isPresent()) {
+        return F.Times(F.CI, F.SinhIntegral(imPart));
+      }
+      return F.NIL;
+    }
+
+    private static IExpr basicRewrite(IExpr z) {
       if (z.isZero()) {
         return F.C0;
       }
@@ -1663,48 +1853,18 @@ public class HypergeometricFunctions {
       if (z.isComplexInfinity()) {
         return S.Indeterminate;
       }
-      if (engine.isDoubleMode()) {
-        try {
-          double zDouble = Double.NaN;
-          try {
-            zDouble = z.evalf();
-          } catch (ValidateException ve) {
-          }
-          if (Double.isNaN(zDouble)) {
-            Complex zc = z.evalfc();
-            return F.complexNum(GammaJS.sinIntegral(zc));
+      return F.NIL;
+    }
 
-          } else {
-            if (F.isZero(zDouble)) {
-              return F.C0;
-            }
-            if (zDouble <= 0) {
-              return F.complexNum(GammaJS.sinIntegral(new Complex(zDouble)));
-            }
-            return F.num(de.lab4inf.math.functions.SineIntegral.si(zDouble));
-          }
-
-        } catch (ThrowException te) {
-          LOGGER.debug("SinIntegral.evaluate() failed", te);
-          return te.getValue();
-        } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
-        } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-          return F.NIL;
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        IInexactNumber z = (IInexactNumber) ast.arg1();
+        IExpr temp = basicRewrite(z);
+        if (temp.isPresent()) {
+          return temp;
         }
-      }
-      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
-      if (negExpr.isPresent()) {
-        return Negate(F.SinIntegral(negExpr));
-      }
-      if (z.isTimes() && z.first().isComplex() && z.first().re().isZero()) {
-        // I * SinhIntegral(-I*arg1)
-        return F.Times(S.I, F.SinhIntegral(F.Times(F.CNI, z)));
-      }
-      IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(z);
-      if (imPart.isPresent()) {
-        return F.Times(F.CI, F.SinhIntegral(imPart));
+        return z.sinIntegral();
       }
       return F.NIL;
     }
@@ -1726,6 +1886,54 @@ public class HypergeometricFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
+      IExpr temp = basicRewrite(z);
+      if (temp.isPresent()) {
+        return temp;
+      }
+      // if (engine.isDoubleMode()) {
+      // try {
+      // double zDouble = Double.NaN;
+      // try {
+      // zDouble = z.evalf();
+      // } catch (ValidateException ve) {
+      // }
+      // if (Double.isNaN(zDouble)) {
+      // Complex zc = z.evalfc();
+      // return F.complexNum(GammaJS.sinhIntegral(zc));
+      //
+      // } else {
+      // if (F.isZero(zDouble)) {
+      // return F.C0;
+      // }
+      // return F.complexNum(GammaJS.sinhIntegral(new Complex(zDouble)));
+      // }
+      //
+      // } catch (ThrowException te) {
+      // LOGGER.debug("SinhIntegral.evaluate() failed", te);
+      // return te.getValue();
+      // } catch (ValidateException ve) {
+      // return Errors.printMessage(ast.topHead(), ve, engine);
+      // } catch (RuntimeException rex) {
+      // LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+      // return F.NIL;
+      // }
+      // }
+      if (z.isTimes() && z.first().isComplex() && z.first().re().isZero()) {
+        // I * SinIntegral(-I*arg1)
+        return F.Times(S.I, F.SinIntegral(F.Times(F.CNI, z)));
+      }
+      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
+      if (negExpr.isPresent()) {
+        return Negate(F.SinhIntegral(negExpr));
+      }
+      IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(z);
+      if (imPart.isPresent()) {
+        return F.Times(F.CI, F.SinIntegral(imPart));
+      }
+      return F.NIL;
+    }
+
+    private static IExpr basicRewrite(IExpr z) {
       if (z.isZero()) {
         return F.C0;
       }
@@ -1741,45 +1949,18 @@ public class HypergeometricFunctions {
       if (z.isComplexInfinity()) {
         return S.Indeterminate;
       }
-      if (engine.isDoubleMode()) {
-        try {
-          double zDouble = Double.NaN;
-          try {
-            zDouble = z.evalf();
-          } catch (ValidateException ve) {
-          }
-          if (Double.isNaN(zDouble)) {
-            Complex zc = z.evalfc();
-            return F.complexNum(GammaJS.sinhIntegral(zc));
+      return F.NIL;
+    }
 
-          } else {
-            if (F.isZero(zDouble)) {
-              return F.C0;
-            }
-            return F.complexNum(GammaJS.sinhIntegral(new Complex(zDouble)));
-          }
-
-        } catch (ThrowException te) {
-          LOGGER.debug("SinhIntegral.evaluate() failed", te);
-          return te.getValue();
-        } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
-        } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-          return F.NIL;
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        IInexactNumber z = (IInexactNumber) ast.arg1();
+        IExpr temp = basicRewrite(z);
+        if (temp.isPresent()) {
+          return temp;
         }
-      }
-      if (z.isTimes() && z.first().isComplex() && z.first().re().isZero()) {
-        // I * SinIntegral(-I*arg1)
-        return F.Times(S.I, F.SinIntegral(F.Times(F.CNI, z)));
-      }
-      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
-      if (negExpr.isPresent()) {
-        return Negate(F.SinhIntegral(negExpr));
-      }
-      IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(z);
-      if (imPart.isPresent()) {
-        return F.Times(F.CI, F.SinIntegral(imPart));
+        return z.sinhIntegral();
       }
       return F.NIL;
     }

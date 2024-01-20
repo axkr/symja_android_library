@@ -287,32 +287,6 @@ public class ApcomplexNum implements IComplexNum {
   // }
 
   @Override
-  public IExpr beta(IExpr b) {
-    if (b instanceof INumber) {
-      return valueOf(EvalEngine.getApfloat().beta(fApcomplex, ((INumber) b).apcomplexValue()));
-    }
-    return IComplexNum.super.beta(b);
-  }
-
-  @Override
-  public IExpr beta(IExpr a, IExpr b) {
-    if (a instanceof INumber && b instanceof INumber) {
-      return valueOf(EvalEngine.getApfloat().beta(fApcomplex, ((INumber) a).apcomplexValue(),
-          ((INumber) b).apcomplexValue()));
-    }
-    return IComplexNum.super.beta(a, b);
-  }
-
-  @Override
-  public IExpr beta(IExpr x2, IExpr a, IExpr b) {
-    if (x2 instanceof INumber && a instanceof INumber && b instanceof INumber) {
-      return valueOf(EvalEngine.getApfloat().beta(fApcomplex, ((INumber) x2).apcomplexValue(),
-          ((INumber) a).apcomplexValue(), ((INumber) b).apcomplexValue()));
-    }
-    return IComplexNum.super.beta(x2, a, b);
-  }
-
-  @Override
   public IExpr besselI(IExpr arg2) {
     if (arg2 instanceof INumber) {
       Apcomplex besselI =
@@ -320,6 +294,36 @@ public class ApcomplexNum implements IComplexNum {
       return F.complexNum(besselI);
     }
     return IComplexNum.super.besselI(arg2);
+  }
+
+  @Override
+  public IExpr besselJ(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      Apcomplex besselJ =
+          EvalEngine.getApfloat().besselI(apcomplexValue(), ((INumber) arg2).apcomplexValue());
+      return F.complexNum(besselJ);
+    }
+    return IComplexNum.super.besselJ(arg2);
+  }
+
+  @Override
+  public IExpr besselK(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      Apcomplex besselK =
+          EvalEngine.getApfloat().besselK(apcomplexValue(), ((INumber) arg2).apcomplexValue());
+      return F.complexNum(besselK);
+    }
+    return IComplexNum.super.besselK(arg2);
+  }
+
+  @Override
+  public IExpr besselY(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      Apcomplex besselY =
+          EvalEngine.getApfloat().besselY(apcomplexValue(), ((INumber) arg2).apcomplexValue());
+      return F.complexNum(besselY);
+    }
+    return IComplexNum.super.besselY(arg2);
   }
 
   // public static Apcomplex fresnelS(Apcomplex z, FixedPrecisionApfloatHelper apfloat) {
@@ -350,33 +354,33 @@ public class ApcomplexNum implements IComplexNum {
   // }
 
   @Override
-  public IExpr besselJ(IExpr arg2) {
-    if (arg2 instanceof INumber) {
-      Apcomplex besselJ =
-          EvalEngine.getApfloat().besselI(apcomplexValue(), ((INumber) arg2).apcomplexValue());
-      return F.complexNum(besselJ);
+  public IExpr beta(IExpr b) {
+    if (b instanceof INumber) {
+      try {
+        return valueOf(EvalEngine.getApfloat().beta(fApcomplex, ((INumber) b).apcomplexValue()));
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // java.lang.ArithmeticException: Beta is infinite
+      }
     }
-    return IComplexNum.super.besselJ(arg2);
+    return IComplexNum.super.beta(b);
   }
 
   @Override
-  public IExpr besselK(IExpr arg2) {
-    if (arg2 instanceof INumber) {
-      Apcomplex besselK =
-          EvalEngine.getApfloat().besselK(apcomplexValue(), ((INumber) arg2).apcomplexValue());
-      return F.complexNum(besselK);
+  public IExpr beta(IExpr a, IExpr b) {
+    if (a instanceof INumber && b instanceof INumber) {
+      return valueOf(EvalEngine.getApfloat().beta(fApcomplex, ((INumber) a).apcomplexValue(),
+          ((INumber) b).apcomplexValue()));
     }
-    return IComplexNum.super.besselK(arg2);
+    return IComplexNum.super.beta(a, b);
   }
 
   @Override
-  public IExpr besselY(IExpr arg2) {
-    if (arg2 instanceof INumber) {
-      Apcomplex besselY =
-          EvalEngine.getApfloat().besselY(apcomplexValue(), ((INumber) arg2).apcomplexValue());
-      return F.complexNum(besselY);
+  public IExpr beta(IExpr x2, IExpr a, IExpr b) {
+    if (x2 instanceof INumber && a instanceof INumber && b instanceof INumber) {
+      return valueOf(EvalEngine.getApfloat().beta(fApcomplex, ((INumber) x2).apcomplexValue(),
+          ((INumber) a).apcomplexValue(), ((INumber) b).apcomplexValue()));
     }
-    return IComplexNum.super.besselY(arg2);
+    return IComplexNum.super.beta(x2, a, b);
   }
 
   @Override
@@ -501,6 +505,16 @@ public class ApcomplexNum implements IComplexNum {
   // return erf;
   // }
 
+  @Override
+  public IExpr coshIntegral() {
+    return valueOf(EvalEngine.getApfloat().coshIntegral(fApcomplex));
+  }
+
+  @Override
+  public IExpr cosIntegral() {
+    return valueOf(EvalEngine.getApfloat().cosIntegral(fApcomplex));
+  }
+
   /** {@inheritDoc} */
   @Override
   public double dabs() {
@@ -542,6 +556,11 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public long determinePrecision() {
     return precision();
+  }
+
+  @Override
+  public IExpr digamma() {
+    return valueOf(EvalEngine.getApfloat().digamma(fApcomplex));
   }
 
   public ApcomplexNum divide(final ApcomplexNum that) throws ArithmeticException {
@@ -651,6 +670,20 @@ public class ApcomplexNum implements IComplexNum {
     return valueOf(EvalEngine.getApfloat().exp(fApcomplex));
   }
 
+  @Override
+  public IExpr expIntegralE(IExpr z) {
+    if (z instanceof INumber) {
+      return valueOf(
+          EvalEngine.getApfloat().expIntegralE(fApcomplex, ((INumber) z).apcomplexValue()));
+    }
+    return IComplexNum.super.expIntegralE(z);
+  }
+
+  @Override
+  public IExpr expIntegralEi() {
+    return valueOf(EvalEngine.getApfloat().expIntegralEi(fApcomplex));
+  }
+
   /** {@inheritDoc} */
   @Override
   public ApcomplexNum expm1() {
@@ -723,24 +756,6 @@ public class ApcomplexNum implements IComplexNum {
     return buf.toString();
   }
 
-  public Complex getCMComplex() {
-    return new Complex(fApcomplex.real().doubleValue(), fApcomplex.imag().doubleValue());
-  }
-
-  public Apcomplex getComplex() {
-    return fApcomplex;
-  }
-
-  /** @return */
-  @Override
-  public double getImaginaryPart() {
-    double temp = fApcomplex.imag().doubleValue();
-    if (temp == (-0.0)) {
-      temp = 0.0;
-    }
-    return temp;
-  }
-
   @Override
   public IExpr gamma() {
     if (isZero() || isMathematicalIntegerNegative()) {
@@ -768,8 +783,14 @@ public class ApcomplexNum implements IComplexNum {
       }
     }
     if (x instanceof INumber) {
-      return F
-          .complexNum(EvalEngine.getApfloat().gamma(fApcomplex, ((INumber) x).apcomplexValue()));
+      try {
+        return F
+            .complexNum(EvalEngine.getApfloat().gamma(fApcomplex, ((INumber) x).apcomplexValue()));
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+        // java.lang.ArithmeticException: Upper gamma with first argument real part nonpositive and
+        // second argment zero
+      }
     }
     return IComplexNum.super.gamma(x);
   }
@@ -797,6 +818,24 @@ public class ApcomplexNum implements IComplexNum {
           ((INumber) x1).apcomplexValue()));
     }
     return IComplexNum.super.gamma(x0, x1);
+  }
+
+  public Complex getCMComplex() {
+    return new Complex(fApcomplex.real().doubleValue(), fApcomplex.imag().doubleValue());
+  }
+
+  public Apcomplex getComplex() {
+    return fApcomplex;
+  }
+
+  /** @return */
+  @Override
+  public double getImaginaryPart() {
+    double temp = fApcomplex.imag().doubleValue();
+    if (temp == (-0.0)) {
+      temp = 0.0;
+    }
+    return temp;
   }
 
   @Override
@@ -1003,6 +1042,11 @@ public class ApcomplexNum implements IComplexNum {
     return valueOf(EvalEngine.getApfloat().logGamma(fApcomplex));
   }
 
+  @Override
+  public IExpr logIntegral() {
+    return valueOf(EvalEngine.getApfloat().logIntegral(fApcomplex));
+  }
+
   /**
    * @param that
    * @return
@@ -1094,8 +1138,13 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr polyGamma(long n) {
-    Apcomplex polygamma = EvalEngine.getApfloat().polygamma(n, fApcomplex);
-    return F.complexNum(polygamma);
+    try {
+      Apcomplex polygamma = EvalEngine.getApfloat().polygamma(n, fApcomplex);
+      return F.complexNum(polygamma);
+    } catch (ArithmeticException aex) {
+      // java.lang.ArithmeticException: Polygamma of nonpositive integer
+    }
+    return IComplexNum.super.polyGamma(n);
   }
 
   @Override
@@ -1195,6 +1244,16 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public ApcomplexNum sinh() {
     return valueOf(EvalEngine.getApfloat().sinh(fApcomplex));
+  }
+
+  @Override
+  public IExpr sinhIntegral() {
+    return valueOf(EvalEngine.getApfloat().sinhIntegral(fApcomplex));
+  }
+
+  @Override
+  public IExpr sinIntegral() {
+    return valueOf(EvalEngine.getApfloat().sinIntegral(fApcomplex));
   }
 
   @Override

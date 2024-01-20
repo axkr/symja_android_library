@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.util.function.Supplier;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.InitialGuess;
 import org.hipparchus.optim.MaxEval;
 import org.hipparchus.optim.PointValuePair;
@@ -14,6 +15,10 @@ import org.hipparchus.optim.nonlinear.scalar.ObjectiveFunction;
 import org.hipparchus.optim.nonlinear.scalar.ObjectiveFunctionGradient;
 import org.hipparchus.optim.nonlinear.scalar.gradient.NonLinearConjugateGradientOptimizer;
 import org.hipparchus.optim.nonlinear.scalar.noderiv.PowellOptimizer;
+import org.hipparchus.optim.nonlinear.vector.constrained.ConstraintOptimizer;
+import org.hipparchus.optim.nonlinear.vector.constrained.LagrangeSolution;
+import org.hipparchus.optim.nonlinear.vector.constrained.LinearInequalityConstraint;
+import org.hipparchus.optim.nonlinear.vector.constrained.SQPOptimizerS;
 import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.JDKRandomGenerator;
 import org.hipparchus.random.RandomVectorGenerator;
@@ -28,6 +33,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.MultiVariateNumerical;
 import org.matheclipse.core.generic.MultiVariateVectorGradient;
+import org.matheclipse.core.generic.TwiceDifferentiableMultiVariateNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -101,16 +107,34 @@ public class FindMinimum extends AbstractFunctionEvaluator {
       return findExtremum(ast, engine, goalType);
     } catch (MathIllegalStateException miae) {
       // `1`.
-      return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())),
-          engine);
+      return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())), engine);
     } catch (MathRuntimeException mre) {
       Errors.printMessage(ast.topHead(), "error", F.list(F.$str(mre.getMessage())), engine);
       return F.CEmptyList;
     }
   }
 
+
   protected static IExpr findExtremum(IAST ast, EvalEngine engine, GoalType goalType) {
-    IExpr function = ast.arg1();
+    IAST relationList = ast.arg1().makeList();
+    IExpr function = F.NIL;
+    for (int i = 1; i < relationList.size(); i++) {
+      IExpr expr = relationList.get(i);
+      if (expr.isAnd()) {
+        IAST andAST = (IAST) expr;
+        for (int j = 1; j < andAST.size(); j++) {
+
+        }
+      }
+      if (expr.isRelationalBinary()) {
+
+      } else {
+        if (function.isPresent()) {
+          return F.NIL;
+        }
+        function = expr;
+      }
+    }
     IExpr arg2 = ast.arg2();
     if (!arg2.isList()) {
       arg2 = engine.evaluate(arg2);
@@ -186,6 +210,9 @@ public class FindMinimum extends AbstractFunctionEvaluator {
       }
     }
     if (initialValues != null) {
+      if (variableList.argSize() == 1 && method.equalsIgnoreCase("lagrange")) {
+        method = "Powell";
+      }
       OptimizeSupplier optimizeSupplier =
           new OptimizeSupplier(goalType, function, variableList, initialValues, method, engine);
       return engine.evalBlock(optimizeSupplier, variableList);
@@ -198,7 +225,7 @@ public class FindMinimum extends AbstractFunctionEvaluator {
     final IExpr originalFunction;
     final IAST variableList;
     final double[] initialValues;
-    final String method;
+    String method;
     final EvalEngine engine;
 
     public OptimizeSupplier(GoalType goalType, IExpr function, IAST variableList,
@@ -216,11 +243,39 @@ public class FindMinimum extends AbstractFunctionEvaluator {
       PointValuePair optimum = null;
       InitialGuess initialGuess = new InitialGuess(initialValues);
       IExpr function = engine.evaluate(originalFunction);
-      if (method.equals("Powell")) {
+      if (method.equalsIgnoreCase("lagrange")) {
+        try {
+          ConstraintOptimizer optim = new SQPOptimizerS();
+          TwiceDifferentiableMultiVariateNumerical twiceDifferentiableFunction =
+              new TwiceDifferentiableMultiVariateNumerical(function, variableList);
+          // x > 0, y > 0
+          LinearInequalityConstraint ineqc = new LinearInequalityConstraint(
+              new double[][] {{1.0, 0.0}, {0.0, 1.0}}, new double[] {0.0, 0.0});
+          LagrangeSolution lagrangeSolution = optim.optimize( //
+              new MaxEval(1000), //
+              new ObjectiveFunction(twiceDifferentiableFunction), //
+              goalType, //
+              initialGuess, ineqc);
+          if ((lagrangeSolution != null)) {
+            RealVector solutionVector = lagrangeSolution.getX();
+            IASTAppendable ruleList = F.mapRange(1, variableList.size(),
+                j -> F.Rule(variableList.get(j), F.num(solutionVector.getEntry(j - 1))));
+            final double value = lagrangeSolution.getValue();
+            return F.list(F.num(value), ruleList);
+          }
+          return F.NIL;
+        } catch (RuntimeException rex) {
+          rex.printStackTrace();
+          method = "Powell";
+        }
+      }
+      MultiVariateNumerical multivariateVariateNumerical =
+          new MultiVariateNumerical(function, variableList);
+      if (method.equalsIgnoreCase("powell")) {
         final PowellOptimizer optim = new PowellOptimizer(1e-10, Math.ulp(1d), 1e-10, Math.ulp(1d));
         optimum = optim.optimize( //
             new MaxEval(1000), //
-            new ObjectiveFunction(new MultiVariateNumerical(function, variableList)), //
+            new ObjectiveFunction(multivariateVariateNumerical), //
             goalType, //
             initialGuess);
       } else if (method.equals("ConjugateGradient")) {
@@ -245,16 +300,17 @@ public class FindMinimum extends AbstractFunctionEvaluator {
 
         optimum = optimizer.optimize(//
             new MaxEval(1000), //
-            new ObjectiveFunction(new MultiVariateNumerical(function, variableList)), //
+            new ObjectiveFunction(multivariateVariateNumerical), //
             new ObjectiveFunctionGradient(new MultiVariateVectorGradient(function, variableList)), //
             goalType, //
             initialGuess);
       }
 
+
       if ((optimum != null)) {
         final double[] point = optimum.getPointRef();
-        IASTAppendable ruleList =
-            F.mapRange(1, variableList.size(), j -> F.Rule(variableList.get(j), F.num(point[j - 1])));
+        IASTAppendable ruleList = F.mapRange(1, variableList.size(),
+            j -> F.Rule(variableList.get(j), F.num(point[j - 1])));
         final double value = optimum.getValue();
         return F.list(F.num(value), ruleList);
       }

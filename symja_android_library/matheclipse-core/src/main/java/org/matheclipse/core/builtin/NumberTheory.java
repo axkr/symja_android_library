@@ -259,16 +259,40 @@ public final class NumberTheory {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.arg1().isNegative()) {
+      IExpr n = ast.arg1();
+      if (n.isNegative()) {
         // Non-negative machine-sized integer expected at position `2` in `1`.
         return Errors.printMessage(S.BernoulliB, "intnm", F.List(ast, F.C1), engine);
       }
       if (ast.isAST1()) {
-        int bn = ast.arg1().toIntDefault();
+        if ((engine.isArbitraryMode() || engine.isDoubleMode()) && n.isPositive()) {
+          long ln = n.toIntDefault();
+          if (ln >= 0) {
+            FixedPrecisionApfloatHelper h;
+            if (engine.isArbitraryMode()) {
+              h = EvalEngine.getApfloat();
+              try {
+                return F.num(h.bernoulli(ln));
+              } catch (Exception ce) {
+                //
+              }
+            } else {
+              h = EvalEngine.getApfloatDouble();
+              try {
+                return F.num(h.bernoulli(ln).doubleValue());
+              } catch (Exception ce) {
+                //
+              }
+            }
+
+          }
+          return F.NIL;
+        }
+        int bn = n.toIntDefault();
         if (bn >= 0) {
           return bernoulliNumber(bn);
         }
-        IExpr temp = engine.evaluate(F.Subtract(ast.arg1(), F.C3));
+        IExpr temp = engine.evaluate(F.Subtract(n, F.C3));
         if (temp.isIntegerResult() && temp.isPositiveResult() && temp.isEvenResult()) {
           // http://fungrim.org/entry/a98234/
           return F.C0;
@@ -276,13 +300,12 @@ public final class NumberTheory {
         return F.NIL;
       }
       if (ast.isAST2()) {
-        IExpr n = ast.arg1();
         IExpr x = ast.arg2();
         int xInt = x.toIntDefault();
         if (xInt != Integer.MIN_VALUE) {
           if (xInt == 0) {
             // http://fungrim.org/entry/a1d2d7/
-            return F.BernoulliB(ast.arg1());
+            return F.BernoulliB(n);
           }
           if (xInt == 1 && n.isIntegerResult()) {
             // http://fungrim.org/entry/829185/

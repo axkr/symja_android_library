@@ -1776,16 +1776,17 @@ public class SpecialFunctions {
           }
         }
         if (engine.isNumericMode()) {
-          if (arg1.isZero() && engine.isArbitraryMode()) {
-            if (arg2 instanceof ApfloatNum) {
-              return e1ApfloatArg(((ApfloatNum) arg2).apfloatValue());
-            }
-            if (arg2 instanceof ApcomplexNum) {
-              return e1ApcomplexArg(((ApcomplexNum) arg2).apcomplexValue());
-            }
+          if (arg1.isZero()) {
+            return arg2.digamma();
+            // if (arg2 instanceof ApfloatNum) {
+            // return e1ApfloatArg(((ApfloatNum) arg2).apfloatValue());
+            // }
+            // if (arg2 instanceof ApcomplexNum) {
+            // return e1ApcomplexArg(((ApcomplexNum) arg2).apcomplexValue());
+            // }
           }
           long n = arg1.toLongDefault();
-          if (n != Long.MIN_VALUE) {
+          if (n != Long.MIN_VALUE && arg2.isNumber()) {
             return arg2.polyGamma(n);
           }
         }

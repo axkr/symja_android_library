@@ -1040,9 +1040,29 @@ public interface IExpr
     return S.Cos.of(this);
   }
 
+  /**
+   * Numeric cosine integral.
+   * <p>
+   *
+   * @return Ci(z)
+   */
+  default IExpr cosIntegral() {
+    return F.NIL;
+  }
+
   @Override
   default IExpr cosh() {
     return S.Cosh.of(this);
+  }
+
+  /**
+   * Numeric hyperbolic cosine integral.
+   * <p>
+   *
+   * @return Chi(z)
+   */
+  default IExpr coshIntegral() {
+    return F.NIL;
   }
 
   /**
@@ -1073,6 +1093,10 @@ public interface IExpr
    */
   default long determinePrecision() {
     return -1;
+  }
+
+  default IExpr digamma() {
+    return F.NIL;
   }
 
   @Override
@@ -1479,6 +1503,28 @@ public interface IExpr
    */
   default boolean exists(Predicate<? super IExpr> predicate) {
     return false;
+  }
+
+
+  /**
+   * Exponential integral E.
+   * <p>
+   * 
+   * @param z The second argument.
+   *
+   * @return <i>E<sub>ν</sub>(z)</i>
+   */
+  default IExpr expIntegralE(IExpr z) {
+    return F.NIL;
+  }
+
+  /**
+   * Numerical exponential integral Ei.
+   *
+   * @return Ei(z)
+   */
+  default IExpr expIntegralEi() {
+    return F.NIL;
   }
 
   @Override
@@ -5180,6 +5226,16 @@ public interface IExpr
   }
 
   /**
+   * Numeric logarithmic integral.
+   * <p>
+   *
+   * @return li(z)
+   */
+  default IExpr logIntegral() {
+    return F.NIL;
+  }
+
+  /**
    * If this is a <code>Interval[{lower, upper}]</code> expression return the <code>lower</code>
    * value. If this is a <code>IReal</code> expression return <code>this</code>.
    *
@@ -5964,6 +6020,16 @@ public interface IExpr
     return S.Sin.of(this);
   }
 
+  /**
+   * Numeic sine integral.
+   * <p>
+   *
+   * @return Si(z)
+   */
+  default IExpr sinIntegral() {
+    return F.NIL;
+  }
+
   @Override
   default FieldSinCos<IExpr> sinCos() {
     return new FieldSinCos<IExpr>(sin(), cos());
@@ -5972,6 +6038,16 @@ public interface IExpr
   @Override
   default IExpr sinh() {
     return S.Sinh.of(this);
+  }
+
+  /**
+   * Numeric hyperbolic sine integral.
+   * <p>
+   *
+   * @return Shi(z)
+   */
+  default IExpr sinhIntegral() {
+    return F.NIL;
   }
 
   @Override

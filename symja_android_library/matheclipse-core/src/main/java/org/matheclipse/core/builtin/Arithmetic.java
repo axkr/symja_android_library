@@ -1109,9 +1109,18 @@ public final class Arithmetic {
       IExpr base = ast.arg1();
       if (base.isNumericFunction(true)) {
         if (base.isComplex() || base.isComplexNumeric()) {
+          // The parameter `1` should be real-valued.
           return Errors.printMessage(ast.topHead(), "preal", F.list(base), engine);
         }
         if (base.isPositiveResult()) {
+          if (engine.isArbitraryMode() && base.isReal()) {
+            FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+            try {
+              return F.num(h.cbrt(((IReal) base).apfloatValue()));
+            } catch (RuntimeException rex) {
+              //
+            }
+          }
           return F.Power(base, F.C1D3);
         }
         return F.Times(F.CN1, F.Power(F.Negate(base), F.C1D3));

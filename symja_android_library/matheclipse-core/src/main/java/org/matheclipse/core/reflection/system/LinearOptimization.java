@@ -73,42 +73,7 @@ public class LinearOptimization extends LinearProgramming {
 
         IAST constraintsList = (IAST) ast.arg2();
         Collection<LinearConstraint> constraints = new ArrayList<LinearConstraint>();
-        for (int i = 1; i < constraintsList.size(); i++) {
-          IExpr temp = constraintsList.get(i);
-          int headID = temp.headID();
-          if (headID < 0) {
-            return messageConstraintIsNotConvex(temp, engine);
-          }
-          if (temp.isAST2()) {
-            IAST relation = (IAST) temp;
-            IExpr lhs = relation.arg1();
-            IExpr lhsList = createObjectiveFunction(lhs, variables, variablesMap, engine);
-            if (lhsList.isNIL()) {
-              return F.NIL;
-            }
-            double rhs = relation.arg2().evalf();
-            switch (headID) {
-              case ID.Equal:
-                constraints
-                    .add(new LinearConstraint(lhsList.toDoubleVector(), Relationship.EQ, rhs));
-                continue;
-              case ID.Greater:
-              case ID.GreaterEqual:
-                constraints
-                    .add(new LinearConstraint(lhsList.toDoubleVector(), Relationship.GEQ, rhs));
-                continue;
-              case ID.Less:
-              case ID.LessEqual:
-                constraints
-                    .add(new LinearConstraint(lhsList.toDoubleVector(), Relationship.LEQ, rhs));
-                continue;
-              default:
-                break;
-            }
-
-          }
-          return messageConstraintIsNotConvex(temp, engine);
-        }
+        createConstraints(constraintsList, variables, variablesMap, constraints, engine);
 
         LinearObjectiveFunction f =
             new LinearObjectiveFunction(objectiveFunction.toDoubleVector(), 0);
@@ -149,7 +114,48 @@ public class LinearOptimization extends LinearProgramming {
     return F.NIL;
   }
 
-  private static IExpr messageConstraintIsNotConvex(IExpr temp, EvalEngine engine) {
+  private boolean createConstraints(IAST constraintsList, IAST variables,
+      Map<IExpr, Integer> variablesMap, Collection<LinearConstraint> constraints,
+      EvalEngine engine) {
+    for (int i = 1; i < constraintsList.size(); i++) {
+      IExpr temp = constraintsList.get(i);
+      int headID = temp.headID();
+      if (headID < 0) {
+        messageConstraintIsNotConvex(temp, engine);
+        return false;
+      }
+      if (temp.isAST2()) {
+        IAST relation = (IAST) temp;
+        IExpr lhs = relation.arg1();
+        IExpr lhsList = createObjectiveFunction(lhs, variables, variablesMap, engine);
+        if (lhsList.isNIL()) {
+          return false;
+        }
+        double rhs = relation.arg2().evalf();
+        switch (headID) {
+          case ID.Equal:
+            constraints.add(new LinearConstraint(lhsList.toDoubleVector(), Relationship.EQ, rhs));
+            continue;
+          case ID.Greater:
+          case ID.GreaterEqual:
+            constraints.add(new LinearConstraint(lhsList.toDoubleVector(), Relationship.GEQ, rhs));
+            continue;
+          case ID.Less:
+          case ID.LessEqual:
+            constraints.add(new LinearConstraint(lhsList.toDoubleVector(), Relationship.LEQ, rhs));
+            continue;
+          default:
+            break;
+        }
+
+      }
+      messageConstraintIsNotConvex(temp, engine);
+      return false;
+    }
+    return true;
+  }
+
+  private static IAST messageConstraintIsNotConvex(IExpr temp, EvalEngine engine) {
     // The constraint `1` is not convex.
     return Errors.printMessage(S.LinearOptimization, "ctnc", F.List(temp), engine);
   }
