@@ -4682,6 +4682,9 @@ public class S {
   public final static IBuiltInSymbol HessenbergDecomposition =
       S.initFinalSymbol("HessenbergDecomposition", ID.HessenbergDecomposition);
 
+  public final static IBuiltInSymbol HessianMatrix =
+      S.initFinalSymbol("HessianMatrix", ID.HessianMatrix);
+
   /**
    * HexidecimalCharacter - represents the characters `0-9`, `a-f` and `A-F`.
    * 

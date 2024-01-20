@@ -21,6 +21,7 @@ public class VectorAnalysisFunctions {
       S.Curl.setEvaluator(new Curl());
       S.Div.setEvaluator(new Div());
       S.Grad.setEvaluator(new Grad());
+      S.HessianMatrix.setEvaluator(new HessianMatrix());
       S.RotationMatrix.setEvaluator(new RotationMatrix());
     }
   }
@@ -222,6 +223,25 @@ public class VectorAnalysisFunctions {
     }
   }
 
+  private static final class HessianMatrix extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg2().isList() && ast.arg2().size() > 1) {
+        final IExpr arg1 = ast.arg1();
+        final IAST variables = (IAST) ast.arg2();
+        // D(f(x, y), {{x, y}, 2})
+        return F.D(arg1, F.List(variables, F.C2));
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
 
   private static final class RotationMatrix extends AbstractFunctionEvaluator {
 

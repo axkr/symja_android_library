@@ -211,9 +211,15 @@ public class F extends S {
     return PREDEFINED_PATTERNSEQUENCE_MAP.get(key);
   }
 
-  public static final ISymbolObserver SYMBOL_OBSERVER=new ISymbolObserver(){@Override public final boolean createPredefinedSymbol(String symbol){return false;}
+  public static final ISymbolObserver SYMBOL_OBSERVER = new ISymbolObserver() {
+    @Override
+    public final boolean createPredefinedSymbol(String symbol) {
+      return false;
+    }
 
-  @Override public void createUserSymbol(ISymbol symbol){}};
+    @Override
+    public void createUserSymbol(ISymbol symbol) {}
+  };
 
   /**
    * The constant object <code>NIL</code> (not in list) indicates in the evaluation process that no
@@ -3416,6 +3422,10 @@ public class F extends S {
 
   public static IAST D(final IExpr f, final IExpr x) {
     return new AST2(D, f, x);
+  }
+
+  public static IAST D(final IExpr f, final IAST l1, IAST l2) {
+    return new AST3(D, f, l1, l2);
   }
 
   public static IAST Dashing(final IExpr a) {
