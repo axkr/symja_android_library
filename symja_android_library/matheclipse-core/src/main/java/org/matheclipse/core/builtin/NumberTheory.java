@@ -270,14 +270,14 @@ public final class NumberTheory {
           if (ln >= 0) {
             FixedPrecisionApfloatHelper h;
             if (engine.isArbitraryMode()) {
-              h = EvalEngine.getApfloat();
+              h = EvalEngine.getApfloat(engine);
               try {
                 return F.num(h.bernoulli(ln));
               } catch (Exception ce) {
                 //
               }
             } else {
-              h = EvalEngine.getApfloatDouble();
+              h = EvalEngine.getApfloatDouble(engine);
               try {
                 return F.num(h.bernoulli(ln).doubleValue());
               } catch (Exception ce) {

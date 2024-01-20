@@ -20274,25 +20274,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testProductLog() {
-    // check("ProductLog({0.5,-0.5,-3.0," + //
-    // Double.toString(Math.PI * (-0.5)) + //
-    // "," + //
-    // Double.toString(Math.PI * (0.5)) + //
-    // "," + //
-    // Double.toString(-Math.PI) + //
-    // "," + //
-    // Double.toString(Math.PI) + //
-    // "," + //
-    // Double.toString(-Math.E) + //
-    // "," + //
-    // Double.toString(Math.E) + //
-    // ",-I, I" + //
-    // "}) // N", //
-    // "");
-    check("ProductLog(9/3*Sqrt(5)*Log(5))", //
-        "ProductLog(3*Sqrt(5)*Log(5))");
     check("ProductLog(9/2*Sqrt(3)*Log(3))", //
         "3/2*Log(3)");
+    check("N(ProductLog(1/3), 100)", //
+        "0.2576276530497367042829162016260977909096926475032044915339511440663191292752043724596398879341002505");
+    check("Table(ProductLog(k, 2.3), {k, -2, 2})", //
+        "{-1.56175+I*(-10.85265),-0.696131+I*(-4.56093),0.918224,-0.696131+I*4.56093,-1.56175+I*10.85265}");
+
+
+    check("ProductLog(9/3*Sqrt(5)*Log(5))", //
+        "ProductLog(3*Sqrt(5)*Log(5))");
+
     check("ProductLog(1/2*Sqrt(7)*Log(7))", //
         "Log(7)/2");
 
@@ -20304,9 +20296,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Log(2)");
     check("ProductLog(-Log(2)/2)", //
         "-Log(2)");
-
-    check("Table(ProductLog(k, 2.3), {k, -2, 2})", //
-        "{-1.56175+I*(-10.85265),-0.696131+I*(-4.56093),0.918224,-0.696131+I*4.56093,-1.56175+I*10.85265}");
 
     check("ProductLog(1/Sqrt(5)) // N", //
         "0.323582");
@@ -23974,10 +23963,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSurd() {
+    checkNumeric("N(Surd(-2,  5),25)", //
+        "-1.148698354997035006798626");
+
     checkNumeric("N(Surd({-3, -2, -1, 0, 1, 2, 3}, 7))", //
         "{-1.169930812758687,-1.1040895136738123,-1.0,0.0,1.0,1.1040895136738123,1.169930812758687}");
-    checkNumeric("N(Surd( -2,  5),25)", //
-        "-1.148698354997035006798626");
+
 
     check("Surd(EulerGamma,3)", //
         "EulerGamma^(1/3)");

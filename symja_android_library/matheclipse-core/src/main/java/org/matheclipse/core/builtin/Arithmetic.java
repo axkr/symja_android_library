@@ -1114,7 +1114,7 @@ public final class Arithmetic {
         }
         if (base.isPositiveResult()) {
           if (engine.isArbitraryMode() && base.isReal()) {
-            FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+            FixedPrecisionApfloatHelper h = EvalEngine.getApfloat(engine);
             try {
               return F.num(h.cbrt(((IReal) base).apfloatValue()));
             } catch (RuntimeException rex) {
@@ -5458,6 +5458,7 @@ public final class Arithmetic {
         Errors.printMessage(S.Surd, "indet", F.List(F.Surd(af0, af1)), EvalEngine.get());
         return S.Indeterminate;
       }
+
       if (af0.isNegative()) {
         return af0.abs().pow(af1.inverse()).negate();
       }

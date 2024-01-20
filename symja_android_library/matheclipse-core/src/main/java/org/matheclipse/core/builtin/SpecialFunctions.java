@@ -21,11 +21,9 @@ import static org.matheclipse.core.expression.F.Sqr;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.Zeta;
 import static org.matheclipse.core.expression.S.Pi;
-import java.math.BigDecimal;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
-import org.apfloat.ApfloatMath;
 import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
@@ -65,7 +63,6 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.ParserConfig;
 
 public class SpecialFunctions {
 
@@ -2025,7 +2022,10 @@ public class SpecialFunctions {
         return d;
       }
       try {
-        return F.num(ApfloatMath.w(new Apfloat(d.doubleValue())).doubleValue());
+        FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
+        Apcomplex ac = d.apcomplexValue();
+        Apcomplex productLog = h.w(ac);
+        return F.complexNum(productLog.real().doubleValue(), productLog.imag().doubleValue());
       } catch (Exception ce) {
 
       }
@@ -2038,11 +2038,10 @@ public class SpecialFunctions {
       if (arg1.isZero()) {
         return arg1;
       }
-      Apcomplex c = new Apcomplex(
-          new Apfloat(new BigDecimal(arg1.getRealPart()), ParserConfig.MACHINE_PRECISION),
-          new Apfloat(new BigDecimal(arg1.getImaginaryPart()), ParserConfig.MACHINE_PRECISION));
-      c = ApcomplexMath.w(c);
-      return F.complexNum(c.real().doubleValue(), c.imag().doubleValue());
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
+      Apcomplex ac = arg1.apcomplexValue();
+      Apcomplex productLog = h.w(ac);
+      return F.complexNum(productLog.real().doubleValue(), productLog.imag().doubleValue());
     }
 
     @Override
@@ -2098,10 +2097,11 @@ public class SpecialFunctions {
       }
       if (k.isNumber()) {
         ki = k.toIntDefault();
+        EvalEngine engine = EvalEngine.get();
         if (ki == Integer.MIN_VALUE) {
           // Machine-sized integer expected at position `2` in `1`.
           return Errors.printMessage(S.ProductLog, "intm", F.list(F.ProductLog(k, z), F.C1),
-              EvalEngine.get());
+              engine);
         }
         // ProductLog(0,z_) := ProductLog(z)
         if (ki == 0) {
@@ -2121,29 +2121,30 @@ public class SpecialFunctions {
           }
         }
         if (z.isNumber()) {
-          if (z instanceof IComplexNum) {
+          if (engine.isArbitraryMode()) {
             if (z instanceof ApcomplexNum) {
-              FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-              ApcomplexNum acn = (ApcomplexNum) z;
-              return F.complexNum(h.w(acn.apcomplexValue(), ki));
-            }
-            if (z instanceof ComplexNum) {
-              ComplexNum cn = (ComplexNum) z;
-              Apcomplex c =
-                  new Apcomplex(new Apfloat(cn.getRealPart()), new Apfloat(cn.getImaginaryPart()));
-              c = ApcomplexMath.w(c, ki);
-              return F.complexNum(c.real().doubleValue(), c.imag().doubleValue());
+              FixedPrecisionApfloatHelper h = EvalEngine.getApfloat(engine);
+              Apcomplex ac = ((ApcomplexNum) z).apcomplexValue();
+              Apcomplex productLog = h.w(ac, ki);
+              return F.complexNum(productLog);
+            } else if (z instanceof ApfloatNum) {
+              FixedPrecisionApfloatHelper h = EvalEngine.getApfloat(engine);
+              Apcomplex ac = ((ApfloatNum) z).apcomplexValue();
+              Apcomplex productLog = h.w(ac, ki);
+              return F.complexNum(productLog);
             }
           }
-          if (z instanceof ApfloatNum) {
-            FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-            ApfloatNum an = (ApfloatNum) z;
-            return F.complexNum(h.w(an.apfloatValue(), ki));
-          }
-          if (z instanceof Num) {
-            Num n = (Num) z;
-            Apcomplex c = ApcomplexMath.w(new Apfloat(n.doubleValue()), ki);
-            return F.complexNum(c.real().doubleValue(), c.imag().doubleValue());
+
+          if (z instanceof ComplexNum) {
+            FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble(engine);
+            Apcomplex ac = ((ComplexNum) z).apcomplexValue();
+            Apcomplex productLog = h.w(ac, ki);
+            return F.complexNum(productLog.real().doubleValue(), productLog.imag().doubleValue());
+          } else if (z instanceof Num) {
+            FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble(engine);
+            Apcomplex ac = ((Num) z).apcomplexValue();
+            Apcomplex productLog = h.w(ac, ki);
+            return F.complexNum(productLog.real().doubleValue(), productLog.imag().doubleValue());
           }
         }
       }

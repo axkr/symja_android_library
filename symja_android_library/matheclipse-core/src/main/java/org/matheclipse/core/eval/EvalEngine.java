@@ -3779,7 +3779,11 @@ public class EvalEngine implements Serializable {
    *
    */
   public static FixedPrecisionApfloatHelper getApfloat() {
-    FixedPrecisionApfloatHelper h = get().fApfloatHelper;
+    return getApfloat(get());
+  }
+
+  public static FixedPrecisionApfloatHelper getApfloat(EvalEngine engine) {
+    FixedPrecisionApfloatHelper h = engine.fApfloatHelper;
     if (h == null) {
       h = new FixedPrecisionApfloatHelper(Config.MAX_PRECISION_APFLOAT - 1);
     }
@@ -3794,7 +3798,11 @@ public class EvalEngine implements Serializable {
    * @return
    */
   public static FixedPrecisionApfloatHelper getApfloatDouble() {
-    FixedPrecisionApfloatHelper h = get().fApfloatHelperDouble;
+    return getApfloatDouble(get());
+  }
+
+  public static FixedPrecisionApfloatHelper getApfloatDouble(EvalEngine engine) {
+    FixedPrecisionApfloatHelper h = engine.fApfloatHelperDouble;
     if (h == null) {
       h = new FixedPrecisionApfloatHelper(ParserConfig.MACHINE_PRECISION + 1);
     }

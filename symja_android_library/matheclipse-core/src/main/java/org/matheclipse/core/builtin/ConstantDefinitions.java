@@ -888,7 +888,7 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
-      return F.num(EvalEngine.getApfloat().exp(Apfloat.ONE));
+      return F.num(EvalEngine.getApfloat(engine).exp(Apfloat.ONE));
     }
 
     @Override
@@ -1036,7 +1036,7 @@ public class ConstantDefinitions {
     @Override
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
       // (3-Sqrt(5)) * Pi
-      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat(engine);
       return F.num(h.multiply(h.subtract(new Apfloat(3), h.sqrt(new Apfloat(5))), h.pi()));
     }
 
@@ -1113,7 +1113,7 @@ public class ConstantDefinitions {
     @Override
     public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
       // (1/2)*(1+Sqrt(5))
-      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat(engine);
       return F.num(h.multiply(h.add(h.sqrt(new Apfloat(5)), Apfloat.ONE), new Aprational("1/2")));
     }
 

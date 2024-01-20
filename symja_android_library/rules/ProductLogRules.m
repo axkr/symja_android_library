@@ -25,9 +25,9 @@ ProductLog(-1, x_*E^x_) := x
 ProductLog(Rational(k_,n_)*b_^Rational(c_,n_)*Log(b_)) :=
   Module( {a, v},
     a = N( (n*ProductLog((b^(c/n)*k*Log(b))/n))/Log(b) );
-	v = Rationalize(a,0);
+	v = Rationalize(a);
 	v*Log(b)/n
       /; IntegerQ(v) && 
          v >= 1 &&
-	     PossibleZeroQ( (((-b^(c/n))*k + b^(v/n)*v)*Log(b))/n ))  
+	     PossibleZeroQ( (((-b^(c/n))*k + b^(v/n)*v)*Log(b))/n ))   
 }
