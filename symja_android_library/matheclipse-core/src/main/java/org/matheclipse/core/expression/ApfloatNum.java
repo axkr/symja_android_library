@@ -612,7 +612,14 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr erfc() {
-    return valueOf(EvalEngine.getApfloat().erfc(fApfloat));
+    try {
+      return valueOf(EvalEngine.getApfloat().erfc(fApfloat));
+    } catch (OverflowException of) {
+      // return Underflow? https://github.com/mtommila/apfloat/issues/38
+      return F.Overflow();
+    } catch (ArithmeticException | ApfloatRuntimeException e) {
+      e.printStackTrace();
+    }
     // FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     // try {
     // Apfloat c = erf(fApfloat, h);
@@ -620,7 +627,7 @@ public class ApfloatNum implements INum {
     // } catch (Exception ce) {
     // //
     // }
-    // return F.NIL;
+    return INum.super.erfc();
   }
 
   @Override

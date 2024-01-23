@@ -160,7 +160,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     checkNumeric("HermiteH(1.30000000000000000000000000, 3)", //
         "10.1610479715174332429613241");
     checkNumeric("HermiteH(5.3 + I, .8 + I)", //
-        "4.818411899472077+I*157.4904443989487");
+        "4.818411899472307+I*157.49044439894882");
 
     check("HermiteH(i, x)", //
         "HermiteH(i,x)");

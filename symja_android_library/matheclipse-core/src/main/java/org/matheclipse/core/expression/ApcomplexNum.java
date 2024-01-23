@@ -635,7 +635,14 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr erfc() {
-    return valueOf(EvalEngine.getApfloat().erfc(fApcomplex));
+    try {
+      return valueOf(EvalEngine.getApfloat().erfc(fApcomplex));
+    } catch (OverflowException of) {
+      // return Underflow? https://github.com/mtommila/apfloat/issues/38
+      return F.Overflow();
+    } catch (ArithmeticException | ApfloatRuntimeException e) {
+      e.printStackTrace();
+    }
     // FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     // try {
     // Apcomplex c = erf(fApcomplex, h);
@@ -643,7 +650,7 @@ public class ApcomplexNum implements IComplexNum {
     // } catch (Exception ce) {
     // //
     // }
-    // return F.NIL;
+    return IComplexNum.super.erfc();
   }
 
   @Override
@@ -1007,6 +1014,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public boolean isZero() {
+    // return fApcomplex.isZero();
     return fApcomplex.real().signum() == 0 //
         && fApcomplex.imag().signum() == 0;
   }

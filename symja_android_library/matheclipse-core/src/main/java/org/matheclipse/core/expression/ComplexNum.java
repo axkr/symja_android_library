@@ -665,9 +665,16 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr erfc() {
-    Apcomplex erfc = EvalEngine.getApfloatDouble().erfc(apcomplexValue());
-    return F.complexNum(erfc.real().doubleValue(), erfc.imag().doubleValue());
-
+    try {
+      Apcomplex erfc = EvalEngine.getApfloatDouble().erfc(apcomplexValue());
+      return F.complexNum(erfc.real().doubleValue(), erfc.imag().doubleValue());
+    } catch (OverflowException of) {
+      // return Underflow? https://github.com/mtommila/apfloat/issues/38
+      return F.Overflow();
+    } catch (ArithmeticException | ApfloatRuntimeException e) {
+      e.printStackTrace();
+    }
+    return IComplexNum.super.erfc();
     // // TODO depends on // https://github.com/Hipparchus-Math/hipparchus/issues/278
     // // try {
     // // Complex erfc = org.hipparchus.special.Erf.erfc(fComplex);
@@ -975,11 +982,11 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr hypergeometric2F1Regularized(IExpr arg2, IExpr arg3, IExpr arg4) {
     if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
-        Apcomplex hypergeometric2F1Regularized = EvalEngine.getApfloatDouble()
-            .hypergeometric2F1Regularized(apcomplexValue(), ((INumber) arg2).apcomplexValue(),
-                ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue());
-        return F.complexNum(hypergeometric2F1Regularized.real().doubleValue(),
-            hypergeometric2F1Regularized.imag().doubleValue());
+      Apcomplex hypergeometric2F1Regularized = EvalEngine.getApfloatDouble()
+          .hypergeometric2F1Regularized(apcomplexValue(), ((INumber) arg2).apcomplexValue(),
+              ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue());
+      return F.complexNum(hypergeometric2F1Regularized.real().doubleValue(),
+          hypergeometric2F1Regularized.imag().doubleValue());
     }
     return IComplexNum.super.hypergeometric2F1Regularized(arg2, arg3, arg4);
   }

@@ -129,22 +129,6 @@ public final class NumStr extends Num {
   }
 
   @Override
-  public IExpr erf() {
-    if (EvalEngine.isApfloatMode()) {
-      return apfloatNumValue().erf();
-    }
-    return super.erf();
-  }
-
-  @Override
-  public IExpr erfc() {
-    if (EvalEngine.isApfloatMode()) {
-      return apfloatNumValue().erfc();
-    }
-    return super.erfc();
-  }
-
-  @Override
   public IExpr evaluate(EvalEngine engine) {
     if (engine.isNumericMode() && engine.isArbitraryMode()) {
       long precision =
@@ -183,22 +167,6 @@ public final class NumStr extends Num {
       return apfloatNumValue().exp();
     }
     return super.exp();
-  }
-
-  @Override
-  public IExpr fresnelC() {
-    if (EvalEngine.isApfloatMode()) {
-      return apcomplexNumValue().fresnelC();
-    }
-    return super.fresnelC();
-  }
-
-  @Override
-  public IExpr fresnelS() {
-    if (EvalEngine.isApfloatMode()) {
-      return apcomplexNumValue().fresnelS();
-    }
-    return super.fresnelS();
   }
 
   @Override

@@ -564,8 +564,23 @@ public class Num implements INum {
 
   @Override
   public IExpr erfc() {
-    Apfloat erfc = EvalEngine.getApfloatDouble().erfc(apfloatValue());
-    return F.num(erfc.doubleValue());
+    try {
+      Apfloat erfc = EvalEngine.getApfloatDouble().erfc(apfloatValue());
+      return F.num(erfc.doubleValue());
+    } catch (OverflowException of) {
+      // return Underflow? https://github.com/mtommila/apfloat/issues/38
+      return F.Overflow();
+    } catch (ArithmeticException | ApfloatRuntimeException e) {
+      e.printStackTrace();
+    }
+    // FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    // try {
+    // Apfloat c = erf(fApfloat, h);
+    // return F.num(h.subtract(Apcomplex.ONE, c));
+    // } catch (Exception ce) {
+    // //
+    // }
+    return INum.super.erfc();
     // try {
     // return Num.valueOf(de.lab4inf.math.functions.Erf.erfc(value));
     // // if (arg1 >= 0. && arg1 <= 2.0) {
