@@ -790,6 +790,11 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testNSolve() {
+    // check("NSolve({0==(x-3)^2+(y-3)^2-4,0==-x^2+10*x-26+y},{y,x})", //
+    // "{{x->3.0,y->5.0},{x->6.34781+I*(-1.02885),y->1.75806+I*(-2.7734)},{x->6.34781+I*1.02885,y->1.75806+I*2.7734},{x->4.30438,y->1.48389}}");
+    // check("NSolve({0==(x-3)^2+(y-3)^2-4,0==-x^2+10*x-26+y},{x,y})", //
+    // " ");
+
     // github #261 - JUnit test for Apfloat switching to complex Power calculation
     check("NSolve(0.00004244131815783 == x^5 , x)", //
         "{{x->-0.10802279680851234+I*0.07848315587546605},{x->-0.10802279680851212+I*(-0.07848315587546605)},{x->0.04126103682102799+I*(-0.1269884137508598)},"
@@ -1945,7 +1950,13 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->ConditionalExpression(ConditionalExpression(I*2*Pi*C(2)+Log(I*2*Pi*C(1)),C(\n"
             + "1)∈Integers),C(2)∈Integers)}}");
   }
-
+  
+  @Test
+  public void testIssue898() {
+    check("Solve(3^x-x^9==0, x)", //
+        "{{x->(-9*ProductLog(-Log(3)/9))/Log(3)}}");
+  }
+    
   /** The JUnit setup method */
   @Override
   public void setUp() {

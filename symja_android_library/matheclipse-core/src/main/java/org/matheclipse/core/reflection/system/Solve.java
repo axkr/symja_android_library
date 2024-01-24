@@ -556,10 +556,12 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         }
         IASTAppendable resultList = F.ListAlloc(1);
         resultList.append(res);
+
         IASTMutable crossChecking = crossChecking(termsEqualZeroList, resultList, engine);
         if (crossChecking.argSize() != 1) {
           return F.CEmptyList;
         }
+
         return solveNumeric(res, numericFlag, engine);
       }
 
@@ -931,12 +933,25 @@ public class Solve extends AbstractFunctionOptionEvaluator {
      * @param result list of result values which should be cross checked
      * @return
      */
-    private static IASTMutable crossChecking(IASTMutable termsEqualZero, IASTAppendable result,
+    private static IASTMutable crossChecking(IASTMutable termsEqualZero, IASTMutable result,
         EvalEngine engine) {
       int[] removedPositions = new int[result.size()];
       int untilPosition = 0;
       for (int j = 1; j < result.size(); j++) {
         IExpr expr = result.get(j);
+        if (expr.isListOfLists()) {
+          IASTMutable list = (IASTMutable) expr;
+          for (int i = 1; i < list.size(); i++) {
+            IASTMutable subList = ((IAST) list.get(i)).copy();
+            IASTMutable crossChecked = crossChecking(termsEqualZero, subList, engine);
+            if (crossChecked.isEmptyList()) {
+              list.set(i, S.Nothing);
+            } else {
+              list.set(i, crossChecked);
+            }
+          }
+          continue;
+        }
         // if (expr.isFree(S.ConditionalExpression, true)) {
         // TODO cross checking for ConditionalExpression
         for (int i = 1; i < termsEqualZero.size(); i++) {
