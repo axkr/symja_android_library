@@ -19205,6 +19205,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPower() {
+    check("1/(-7) // FullForm", //
+        "Rational(-1,7)");
     // TODO improve output - if base is Sqrt avoid parnethesis
     check("x^Sqrt(y)^a", //
         "x^(Sqrt(y))^a");

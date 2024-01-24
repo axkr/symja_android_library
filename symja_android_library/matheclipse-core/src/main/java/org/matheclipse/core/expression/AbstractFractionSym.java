@@ -112,11 +112,12 @@ public abstract class AbstractFractionSym implements IFraction {
       return FractionSym.ONE;
     }
     if (numerator > Long.MIN_VALUE && denominator > Long.MIN_VALUE) {
+      if (denominator < 0) {
+        numerator = -numerator;
+        denominator = -denominator;
+      }
       if (numerator != 1 && denominator != 1) {
         long gcd = Math.abs(ArithmeticUtils.gcd(numerator, denominator));
-        if (denominator < 0) {
-          gcd = -gcd;
-        }
         if (gcd != 1L) {
           if (Config.TRACE_BASIC_ARITHMETIC && EvalEngine.get().isTraceMode()) {
             if (EvalEngine.get().isTraceMode()) {
