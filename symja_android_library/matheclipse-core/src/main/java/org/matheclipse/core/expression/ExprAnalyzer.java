@@ -578,7 +578,7 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
         IExpr plusRest = plusAST.splice(i).oneIdentity0().negate().divide(num);
         if (plusRest.isFree(variable)) {
           IInteger b = (IInteger) base;
-          IAST c1 = F.C(1);
+          IAST c1 = F.C(fEngine.incConstantCounter());
           if (b.isNegative()) {
             // if (generateConditions().isTrue()) {
             return F.ConditionalExpression(F.Times( //

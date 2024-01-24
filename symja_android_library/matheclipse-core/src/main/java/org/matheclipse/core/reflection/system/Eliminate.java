@@ -493,13 +493,18 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
                     variable, multipleValues, engine);
               }
               // E ^ f(x) /; Element(f(x), Complexes)
-              IExpr c1 = F.C(1);
-              // ConditionalExpression(2*I*Pi*c1 + Log(exprwovar), Element(c1, Integers))
-              final IExpr exprwovar = exprWithoutVariable;
-              IExpr expr = F.Plus(F.Times(F.C2, F.CI, S.Pi, c1), engine.evaluate(F.Log(exprwovar)));
-              IExpr temp = F.ConditionalExpression(expr, F.Element(c1, S.Integers));
-              return extractVariableRecursive(exponent, temp, predicate, variable, multipleValues,
-                  engine);
+              try {
+                IExpr c_n = F.C(engine.incConstantCounter());
+                // ConditionalExpression(2*I*Pi*c1 + Log(exprwovar), Element(c1, Integers))
+                final IExpr exprwovar = exprWithoutVariable;
+                IExpr expr =
+                    F.Plus(F.Times(F.C2, F.CI, S.Pi, c_n), engine.evaluate(F.Log(exprwovar)));
+                IExpr temp = F.ConditionalExpression(expr, F.Element(c_n, S.Integers));
+                return extractVariableRecursive(exponent, temp, predicate, variable, multipleValues,
+                    engine);
+              } finally {
+                engine.decConstantCounter();
+              }
             }
             // a ^ f(x)
             IExpr value = F.Divide(F.Log(exprWithoutVariable), F.Log(base));

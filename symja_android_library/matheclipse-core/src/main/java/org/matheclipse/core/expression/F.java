@@ -2570,8 +2570,15 @@ public class F extends S {
     return new AST3(BrownianBridgeProcess, a0, a1, a2);
   }
 
-  public static IAST C(final int index) {
-    return new AST1(C, ZZ(index));
+  /**
+   * <code>C(n)</code> - represents the `n`-th constant in a solution to a differential equation or
+   * {@link S#ConditionalExpression}.
+   * 
+   * @param n
+   * @return
+   */
+  public static IAST C(final int n) {
+    return new AST1(C, ZZ(n));
   }
 
   public static IAST Cancel(final IExpr a) {

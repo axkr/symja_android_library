@@ -130,25 +130,29 @@ public class DSolve extends AbstractFunctionEvaluator {
       IExpr[] boundaryCondition, EvalEngine engine) {
     IAST listOfVariables = F.list(uFunction1Arg);
     if (listOfEquations.size() == 2) {
-      IExpr C_1 = F.C(1); // constant C(1)
-      IExpr equation = listOfEquations.arg1();
-      IExpr temp = solveSingleODE(equation, xVar, listOfVariables, C_1, engine);
-      if (temp.isNIL()) {
-        temp = odeSolve(engine, equation, xVar, uFunction1Arg, C_1);
-      }
-      if (temp.isPresent()) {
-        if (boundaryCondition != null) {
-          IExpr res = F.subst(temp, F.list(F.Rule(xVar, boundaryCondition[0])));
-          IExpr C1 = S.Roots.of(engine, F.Equal(res, boundaryCondition[1]), C_1);
-          if (C1.isAST(S.Equal, 3, C_1)) {
-            res = F.subst(temp, F.list(F.Rule(C_1, C1.second())));
-            temp = res;
+      IExpr c_n = F.C(engine.incConstantCounter()); // constant C(n)
+      try {
+        IExpr equation = listOfEquations.arg1();
+        IExpr temp = solveSingleODE(equation, xVar, listOfVariables, c_n, engine);
+        if (temp.isNIL()) {
+          temp = odeSolve(engine, equation, xVar, uFunction1Arg, c_n);
+        }
+        if (temp.isPresent()) {
+          if (boundaryCondition != null) {
+            IExpr res = F.subst(temp, F.list(F.Rule(xVar, boundaryCondition[0])));
+            IExpr C1 = S.Roots.of(engine, F.Equal(res, boundaryCondition[1]), c_n);
+            if (C1.isAST(S.Equal, 3, c_n)) {
+              res = F.subst(temp, F.list(F.Rule(c_n, C1.second())));
+              temp = res;
+            }
           }
+          if (arg2.isSymbol() && xVar.isSymbol()) {
+            return F.list(F.list(F.Rule(arg2, F.Function(F.list(xVar), temp))));
+          }
+          return F.list(F.list(F.Rule(arg2, temp)));
         }
-        if (arg2.isSymbol() && xVar.isSymbol()) {
-          return F.list(F.list(F.Rule(arg2, F.Function(F.list(xVar), temp))));
-        }
-        return F.list(F.list(F.Rule(arg2, temp)));
+      } finally {
+        engine.decConstantCounter();
       }
     }
     return F.NIL;
@@ -199,8 +203,8 @@ public class DSolve extends AbstractFunctionEvaluator {
             }
             return linearODE(p, q, xVar, C_1, engine);
           }
-        } catch (RuntimeException rex) { 
-          return Errors.printMessage(S.DSolve, rex, engine); 
+        } catch (RuntimeException rex) {
+          return Errors.printMessage(S.DSolve, rex, engine);
         }
       }
     }

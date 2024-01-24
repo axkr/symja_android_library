@@ -1939,7 +1939,12 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "{v1,v2,b1,b2})");
   }
 
-
+  @Test
+  public void testIssue897() {
+    check("Solve(E^E^x == 1, x)", //
+        "{{x->ConditionalExpression(ConditionalExpression(I*2*Pi*C(2)+Log(I*2*Pi*C(1)),C(\n"
+            + "1)∈Integers),C(2)∈Integers)}}");
+  }
 
   /** The JUnit setup method */
   @Override

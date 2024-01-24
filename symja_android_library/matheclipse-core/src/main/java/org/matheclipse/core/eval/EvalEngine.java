@@ -290,6 +290,8 @@ public class EvalEngine implements Serializable {
 
   transient ContextPath fContextPath;
 
+  transient int fConstantCounter;
+
   transient String f$Input = null;
 
   transient String f$InputFileName = null;
@@ -684,6 +686,16 @@ public class EvalEngine implements Serializable {
   // fTraceMode = false;
   // fTraceStack = null;
   // }
+
+  /**
+   * Decrement the counter for the constant {@link S#C} expressions. {@link F#C(int)} - represents
+   * the `n`-th constant in a solution for an equation.
+   * 
+   * @return
+   */
+  public int decConstantCounter() {
+    return --fConstantCounter;
+  }
 
   /**
    * Decrement the recursion counter by 1 and return the result.
@@ -3020,6 +3032,16 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * Increment the counter for the constant {@link S#C} expressions. {@link F#C(int)} - represents
+   * the `n`-th constant in a solution for an equation.
+   * 
+   * @return
+   */
+  public int incConstantCounter() {
+    return fConstantCounter++;
+  }
+
+  /**
    * Increment the counter, how often the experimental message was printed.
    *
    * @param symbol
@@ -3051,6 +3073,7 @@ public class EvalEngine implements Serializable {
     // fNumericPrecision = 15;
     fApfloatHelper = null;
     fApfloatHelperDouble = null;
+    fConstantCounter = 1;
     fSignificantFigures = 6;
     fRecursionCounter = 0;
     fNumericMode = false;
@@ -3280,6 +3303,7 @@ public class EvalEngine implements Serializable {
     // fNumericPrecision = 15;
     fApfloatHelper = null;
     fApfloatHelperDouble = null;
+    fConstantCounter = 1;
     fSignificantFigures = 6;
     fNumericMode = false;
     fEvalLHSMode = false;

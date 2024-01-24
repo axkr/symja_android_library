@@ -305,94 +305,99 @@ public class Solve extends AbstractFunctionOptionEvaluator {
      */
     private static IExpr substitute$InverseFunction(IExpr expr) {
       if (expr.isAST2() && expr.head() == ExprAnalyzer.$InverseFunction) {
-        IAST c1 = F.C(1);
-        IAST c1Integers = F.Element(c1, S.Integers);
-        IBuiltInSymbol symbol = (IBuiltInSymbol) expr.first();
-        IExpr arg = expr.second();
-        int headID = symbol.ordinal();
-        switch (headID) {
-          case ID.Cos:
-            return F.List(//
-                F.ConditionalExpression(//
-                    F.Plus(F.Negate(F.ArcCos(arg)), F.Times(2, S.Pi, c1)), //
-                    c1Integers), //
-                F.ConditionalExpression(//
-                    F.Plus(F.ArcCos(arg), F.Times(2, S.Pi, c1)), //
-                    c1Integers));
-          case ID.Cosh:
-            return F.List(//
-                F.ConditionalExpression(//
-                    F.Plus(F.Negate(F.ArcCosh(arg)), F.Times(2, F.CI, S.Pi, c1)), //
-                    c1Integers), //
-                F.ConditionalExpression(//
-                    F.Plus(F.ArcCosh(arg), F.Times(2, F.CI, S.Pi, c1)), //
-                    c1Integers));
-          case ID.Cot:
-            return F.ConditionalExpression(//
-                F.Plus(F.ArcCot(arg), F.Times(S.Pi, c1)), //
-                c1Integers);
-          case ID.Coth:
-            return F.ConditionalExpression(//
-                F.Plus(F.ArcCoth(arg), F.Times(F.CI, S.Pi, c1)), //
-                c1Integers);
-          case ID.Csc:
-            return F.List(//
-                F.ConditionalExpression(//
-                    F.Plus(S.Pi, F.Negate(F.ArcSin(F.Power(arg, F.CN1))), F.Times(2, S.Pi, c1)), //
-                    c1Integers), //
-                F.ConditionalExpression(//
-                    F.Plus(F.ArcSin(F.Power(arg, F.CN1)), F.Times(2, S.Pi, c1)), //
-                    c1Integers));
-          case ID.Csch:
-            return F.List(//
-                F.ConditionalExpression(//
-                    F.Plus(F.Times(F.CI, S.Pi), F.Negate(F.ArcSinh(F.Power(arg, F.CN1))),
-                        F.Times(2, F.CI, S.Pi, c1)), //
-                    c1Integers), //
-                F.ConditionalExpression(//
-                    F.Plus(F.ArcSinh(F.Power(arg, F.CN1)), F.Times(2, F.CI, S.Pi, c1)), //
-                    c1Integers));
-          case ID.Sec:
-            return F.List(//
-                F.ConditionalExpression(//
-                    F.Plus(F.Negate(F.ArcCos(F.Power(arg, F.CN1))), F.Times(2, S.Pi, c1)), //
-                    c1Integers), //
-                F.ConditionalExpression(//
-                    F.Plus(F.ArcCos(F.Power(arg, F.CN1)), F.Times(2, S.Pi, c1)), //
-                    c1Integers));
-          case ID.Sech:
-            return F.List(//
-                F.ConditionalExpression(//
-                    F.Plus(F.Negate(F.ArcCosh(F.Power(arg, F.CN1))), F.Times(2, F.CI, S.Pi, c1)), //
-                    c1Integers), //
-                F.ConditionalExpression(//
-                    F.Plus(F.ArcCosh(F.Power(arg, F.CN1)), F.Times(2, F.CI, S.Pi, c1)), //
-                    c1Integers));
-          case ID.Sin:
-            return F.List(//
-                F.ConditionalExpression(//
-                    F.Plus(S.Pi, F.Negate(F.ArcSin(arg)), F.Times(2, S.Pi, c1)), //
-                    c1Integers), //
-                F.ConditionalExpression(//
-                    F.Plus(F.ArcSin(arg), F.Times(2, S.Pi, c1)), //
-                    c1Integers));
-          case ID.Sinh:
-            return F.List(//
-                F.ConditionalExpression(//
-                    F.Plus(F.Times(F.CI, S.Pi), F.Negate(F.ArcSinh(arg)),
-                        F.Times(2, F.CI, S.Pi, c1)), //
-                    c1Integers), //
-                F.ConditionalExpression(//
-                    F.Plus(F.ArcSinh(arg), F.Times(2, F.CI, S.Pi, c1)), //
-                    c1Integers));
-          case ID.Tan:
-            return F.ConditionalExpression(//
-                F.Plus(F.ArcTan(arg), F.Times(S.Pi, c1)), //
-                c1Integers);
-          case ID.Tanh:
-            return F.ConditionalExpression(//
-                F.Plus(F.ArcTanh(arg), F.Times(F.CI, S.Pi, c1)), //
-                c1Integers);
+        EvalEngine engine = EvalEngine.get();
+        IAST c_n = F.C(engine.incConstantCounter());
+        try {
+          IAST c1Integers = F.Element(c_n, S.Integers);
+          IBuiltInSymbol symbol = (IBuiltInSymbol) expr.first();
+          IExpr arg = expr.second();
+          int headID = symbol.ordinal();
+          switch (headID) {
+            case ID.Cos:
+              return F.List(//
+                  F.ConditionalExpression(//
+                      F.Plus(F.Negate(F.ArcCos(arg)), F.Times(2, S.Pi, c_n)), //
+                      c1Integers), //
+                  F.ConditionalExpression(//
+                      F.Plus(F.ArcCos(arg), F.Times(2, S.Pi, c_n)), //
+                      c1Integers));
+            case ID.Cosh:
+              return F.List(//
+                  F.ConditionalExpression(//
+                      F.Plus(F.Negate(F.ArcCosh(arg)), F.Times(2, F.CI, S.Pi, c_n)), //
+                      c1Integers), //
+                  F.ConditionalExpression(//
+                      F.Plus(F.ArcCosh(arg), F.Times(2, F.CI, S.Pi, c_n)), //
+                      c1Integers));
+            case ID.Cot:
+              return F.ConditionalExpression(//
+                  F.Plus(F.ArcCot(arg), F.Times(S.Pi, c_n)), //
+                  c1Integers);
+            case ID.Coth:
+              return F.ConditionalExpression(//
+                  F.Plus(F.ArcCoth(arg), F.Times(F.CI, S.Pi, c_n)), //
+                  c1Integers);
+            case ID.Csc:
+              return F.List(//
+                  F.ConditionalExpression(//
+                      F.Plus(S.Pi, F.Negate(F.ArcSin(F.Power(arg, F.CN1))), F.Times(2, S.Pi, c_n)), //
+                      c1Integers), //
+                  F.ConditionalExpression(//
+                      F.Plus(F.ArcSin(F.Power(arg, F.CN1)), F.Times(2, S.Pi, c_n)), //
+                      c1Integers));
+            case ID.Csch:
+              return F.List(//
+                  F.ConditionalExpression(//
+                      F.Plus(F.Times(F.CI, S.Pi), F.Negate(F.ArcSinh(F.Power(arg, F.CN1))),
+                          F.Times(2, F.CI, S.Pi, c_n)), //
+                      c1Integers), //
+                  F.ConditionalExpression(//
+                      F.Plus(F.ArcSinh(F.Power(arg, F.CN1)), F.Times(2, F.CI, S.Pi, c_n)), //
+                      c1Integers));
+            case ID.Sec:
+              return F.List(//
+                  F.ConditionalExpression(//
+                      F.Plus(F.Negate(F.ArcCos(F.Power(arg, F.CN1))), F.Times(2, S.Pi, c_n)), //
+                      c1Integers), //
+                  F.ConditionalExpression(//
+                      F.Plus(F.ArcCos(F.Power(arg, F.CN1)), F.Times(2, S.Pi, c_n)), //
+                      c1Integers));
+            case ID.Sech:
+              return F.List(//
+                  F.ConditionalExpression(//
+                      F.Plus(F.Negate(F.ArcCosh(F.Power(arg, F.CN1))), F.Times(2, F.CI, S.Pi, c_n)), //
+                      c1Integers), //
+                  F.ConditionalExpression(//
+                      F.Plus(F.ArcCosh(F.Power(arg, F.CN1)), F.Times(2, F.CI, S.Pi, c_n)), //
+                      c1Integers));
+            case ID.Sin:
+              return F.List(//
+                  F.ConditionalExpression(//
+                      F.Plus(S.Pi, F.Negate(F.ArcSin(arg)), F.Times(2, S.Pi, c_n)), //
+                      c1Integers), //
+                  F.ConditionalExpression(//
+                      F.Plus(F.ArcSin(arg), F.Times(2, S.Pi, c_n)), //
+                      c1Integers));
+            case ID.Sinh:
+              return F.List(//
+                  F.ConditionalExpression(//
+                      F.Plus(F.Times(F.CI, S.Pi), F.Negate(F.ArcSinh(arg)),
+                          F.Times(2, F.CI, S.Pi, c_n)), //
+                      c1Integers), //
+                  F.ConditionalExpression(//
+                      F.Plus(F.ArcSinh(arg), F.Times(2, F.CI, S.Pi, c_n)), //
+                      c1Integers));
+            case ID.Tan:
+              return F.ConditionalExpression(//
+                  F.Plus(F.ArcTan(arg), F.Times(S.Pi, c_n)), //
+                  c1Integers);
+            case ID.Tanh:
+              return F.ConditionalExpression(//
+                  F.Plus(F.ArcTanh(arg), F.Times(F.CI, S.Pi, c_n)), //
+                  c1Integers);
+          }
+        } finally {
+          engine.decConstantCounter();
         }
       }
       return F.NIL;
