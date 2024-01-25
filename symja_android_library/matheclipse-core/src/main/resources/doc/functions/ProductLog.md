@@ -8,6 +8,7 @@ ProductLog(z)
  
 See
 * [Wikipedia - Lambert W function](https://en.wikipedia.org/wiki/Lambert_W_function)
+* [Wikipedia - Omega constant](https://en.wikipedia.org/wiki/Omega_constant)
 * [Fungrim - Lambert W function](http://fungrim.org/topic/Lambert_W-function/)
 
 ### Examples
