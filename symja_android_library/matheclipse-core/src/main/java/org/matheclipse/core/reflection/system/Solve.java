@@ -568,34 +568,38 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       if (termsEqualZeroList.size() > 2 && variables.size() >= 3) {
         // expensive recursion try
         IExpr firstEquation = termsEqualZeroList.arg1();
-        IExpr firstVariable = variables.arg1();
-        IAST[] reduced = Eliminate.eliminateOneVariable(F.list(F.Equal(firstEquation, F.C0)),
-            firstVariable, true, engine);
-        if (reduced != null) {
-          variables = variables.splice(1);
-          termsEqualZeroList = termsEqualZeroList.removeAtCopy(1);
-          // oneVariableRule = ( firstVariable -> reducedExpression )
-          IAST oneVariableRule = reduced[1];
-          IExpr replaced = termsEqualZeroList.replaceAll(oneVariableRule);
-          if (replaced.isList()) {
-            IExpr subResult = solveRecursive((IASTMutable) replaced, inequationsList, numericFlag,
-                variables, engine);
-            if (subResult.isListOfLists()) {
-              return F.mapList((IAST) subResult, t -> {
-                final IAST listOfRules = (IAST) t;
-                IExpr replaceAllExpr = oneVariableRule.second().replaceAll(listOfRules);
-                if (replaceAllExpr.isPresent()) {
-                  replaceAllExpr = S.Simplify.of(engine, replaceAllExpr);
-                  return listOfRules.appendClone(F.Rule(firstVariable, replaceAllExpr));
+
+        for (int i = 1; i < variables.size(); i++) {
+          IExpr variable = variables.get(i);
+
+          IAST[] reduced = Eliminate.eliminateOneVariable(F.list(F.Equal(firstEquation, F.C0)),
+              variable, true, engine);
+          if (reduced != null) {
+            variables = variables.splice(i);
+            termsEqualZeroList = termsEqualZeroList.removeAtCopy(1);
+            // oneVariableRule = ( firstVariable -> reducedExpression )
+            IAST oneVariableRule = reduced[1];
+            IExpr replaced = termsEqualZeroList.replaceAll(oneVariableRule);
+            if (replaced.isList()) {
+              IExpr subResult = solveRecursive((IASTMutable) replaced, inequationsList, numericFlag,
+                  variables, engine);
+              if (subResult.isListOfLists()) {
+                return F.mapList((IAST) subResult, t -> {
+                  final IAST listOfRules = (IAST) t;
+                  IExpr replaceAllExpr = oneVariableRule.second().replaceAll(listOfRules);
+                  if (replaceAllExpr.isPresent()) {
+                    replaceAllExpr = S.Simplify.of(engine, replaceAllExpr);
+                    return listOfRules.appendClone(F.Rule(variable, replaceAllExpr));
+                  }
+                  return F.NIL;
+                });
+              } else if (subResult.isList()) { // important for NSolve
+                replaced = oneVariableRule.second().replaceAll((IAST) subResult);
+                if (replaced.isPresent()) {
+                  IASTAppendable appendable = ((IAST) subResult).copyAppendable();
+                  appendable.append(F.Rule(variable, replaced));
+                  return appendable;
                 }
-                return F.NIL;
-              });
-            } else if (subResult.isList()) { // important for NSolve
-              replaced = oneVariableRule.second().replaceAll((IAST) subResult);
-              if (replaced.isPresent()) {
-                IASTAppendable appendable = ((IAST) subResult).copyAppendable();
-                appendable.append(F.Rule(firstVariable, replaced));
-                return appendable;
               }
             }
           }
@@ -1042,12 +1046,12 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         if (ast.arg1().isEmptyList()) {
           return F.list(F.CEmptyList);
         }
-        IAST userDefinedVariables =
+        IAST variables =
             Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
-        if (userDefinedVariables.isPresent()) {
+        if (variables.isPresent()) {
           IAST equationVariables = VariablesSet.getVariables(ast.arg1());
-          if (userDefinedVariables.isEmpty()) {
-            userDefinedVariables = equationVariables;
+          if (variables.isEmpty()) {
+            variables = equationVariables;
           }
 
           ISymbol domain = S.Complexes;
@@ -1058,11 +1062,11 @@ public class Solve extends AbstractFunctionOptionEvaluator {
             } else {
               domain = (ISymbol) ast.arg3();
               if (domain == S.Booleans) {
-                return BooleanFunctions.solveInstances(ast.arg1(), userDefinedVariables,
+                return BooleanFunctions.solveInstances(ast.arg1(), variables,
                     Integer.MAX_VALUE);
               }
               if (domain == S.Integers) {
-                return solveIntegers(ast, equationVariables, userDefinedVariables,
+                return solveIntegers(ast, equationVariables, variables,
                     Integer.MAX_VALUE, engine);
               }
 
@@ -1076,7 +1080,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
 
           IAssumptions oldAssumptions = engine.getAssumptions();
           try {
-            IAssumptions assum = setVariablesReals(userDefinedVariables, domain);
+            IAssumptions assum = setVariablesReals(variables, domain);
             if (assum != null) {
               engine.setAssumptions(assum);
             }
@@ -1093,7 +1097,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
             }
             IASTMutable termsEqualZeroList = lists[0];
             IExpr result = solveRecursive(termsEqualZeroList, lists[1], numericFlag,
-                userDefinedVariables, engine);
+                variables, engine);
             if (result.isNIL()) {
               // The system cannot be solved with the methods available to Solve.
               return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);
