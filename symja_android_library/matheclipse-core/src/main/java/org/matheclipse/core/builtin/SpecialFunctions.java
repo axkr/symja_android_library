@@ -379,7 +379,6 @@ public class SpecialFunctions {
             }
             return F.num(GammaJS.betaRegularized(zn, an, nn, wn));
           } catch (IllegalArgumentException | ValidateException e) {
-            // IAE: from de.lab4inf.math.functions.IncompleteBeta.checkParameters()
             // ValidateException: from org.matheclipse.core.eval.EvalEngine.evalDouble()
           }
         }
@@ -462,32 +461,6 @@ public class SpecialFunctions {
       return F.NIL;
     }
 
-    // @Override
-    // public IExpr e1DblArg(final double d) {
-    // if (F.isEqual(1.0, d)) {
-    // return F.num(Math.log(2.0));
-    // }
-    // return e1ComplexArg(Complex.valueOf(d));
-    // return F.complexNum(ZetaJS.dirichletEta(d));
-    // }
-
-    // @Override
-    // public IExpr e1ComplexArg(final Complex c) {
-    // Complex zeta;
-    // if (F.isEqual(c.getReal(), 1.0) && F.isZero(c.getImaginary())) {
-    // zeta = Complex.valueOf(Math.log(2.0), 0.0);
-    // } else {
-    // de.lab4inf.math.Complex x =
-    // new de.lab4inf.math.sets.ComplexNumber(c.getReal(), c.getImaginary());
-    // x = de.lab4inf.math.functions.Zeta.zeta(x);
-    // zeta = Complex.valueOf(x.real(), x.imag());
-    // }
-    // Complex dirichletEta =
-    //
-    // zeta.multiply(Complex.ONE.subtract(Complex.valueOf(2.0).pow(Complex.ONE.subtract(c))));
-    // return F.complex(dirichletEta.getReal(), dirichletEta.getImaginary());
-    // }
-
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
@@ -502,17 +475,6 @@ public class SpecialFunctions {
       }
       if (engine.isDoubleMode()) {
         return functionExpand(ast, engine);
-        // double zDouble = Double.NaN;
-        // try {
-        // zDouble = z.evalf();
-        // } catch (ValidateException ve) {
-        // }
-        // if (Double.isNaN(zDouble)) {
-        // Complex zc = z.evalfc();
-        // return F.complexNum(ZetaJS.dirichletEta(zc));
-        // } else {
-        // return F.complexNum(ZetaJS.dirichletEta(zDouble));
-        // }
       } else if (engine.isArbitraryMode()) {
         return functionExpand(ast, engine);
       }

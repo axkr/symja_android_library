@@ -1,7 +1,5 @@
 package org.matheclipse.core.builtin.functions;
 
-import static de.lab4inf.math.util.Accuracy.hasConverged;
-import static java.lang.Math.log;
 import static org.matheclipse.core.builtin.functions.HypergeometricJS.hypergeometric1F1;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -21,9 +19,6 @@ import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.math.DoubleMath;
-import de.lab4inf.math.Function;
-import de.lab4inf.math.gof.Visitor;
-import de.lab4inf.math.util.ContinuedFraction;
 
 /**
  * Ported from JavaScript file
@@ -37,53 +32,49 @@ public class GammaJS extends JS {
   private static final int MAX_ITERATIONS = 1500;
 
   /** Internal helper class for the continued fraction. */
-  static class RegularizedGammaFraction extends ContinuedFraction {
-    private final double a;
-
-    public RegularizedGammaFraction(final double a) {
-      this.a = a;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see de.lab4inf.math.util.ContinuedFraction#getA0(double)
-     */
-    @Override
-    protected double getA0(final double x) {
-      return getAn(0, x);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see de.lab4inf.math.util.ContinuedFraction#getAn(int, double)
-     */
-    @Override
-    protected double getAn(final int n, final double x) {
-      return (2.0 * n + 1.0) - a + x;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see de.lab4inf.math.util.ContinuedFraction#getBn(int, double)
-     */
-    @Override
-    protected double getBn(final int n, final double x) {
-      return n * (a - n);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see de.lab4inf.math.gof.Visitable#accept(de.lab4inf.math.gof.Visitor)
-     */
-    @Override
-    public void accept(final Visitor<Function> visitor) {
-      visitor.visit(this);
-    }
-  }
+  // static class RegularizedGammaFraction extends ContinuedFraction {
+  // private final double a;
+  //
+  // public RegularizedGammaFraction(final double a) {
+  // this.a = a;
+  // }
+  //
+  // /*
+  // * (non-Javadoc)
+  // *
+  // */
+  // @Override
+  // protected double getA0(final double x) {
+  // return getAn(0, x);
+  // }
+  //
+  // /*
+  // * (non-Javadoc)
+  // *
+  // */
+  // @Override
+  // protected double getAn(final int n, final double x) {
+  // return (2.0 * n + 1.0) - a + x;
+  // }
+  //
+  // /*
+  // * (non-Javadoc)
+  // *
+  // */
+  // @Override
+  // protected double getBn(final int n, final double x) {
+  // return n * (a - n);
+  // }
+  //
+  // /*
+  // * (non-Javadoc)
+  // *
+  // */
+  // @Override
+  // public void accept(final Visitor<Function> visitor) {
+  // visitor.visit(this);
+  // }
+  // }
 
   /**
    * Calculate the regularized gamma function P(a,x), with epsilon precision using maximal max
@@ -95,29 +86,30 @@ public class GammaJS extends JS {
    * @param max maximum number of iterations to complete
    * @return the regularized gamma function P(a,x)
    */
-  private static double regGammaP(final double a, final double x, final double eps, final int max) {
-    double ret = 0;
-    if ((a <= 0.0) || (x < 0.0)) {
-      throw new ArgumentTypeException(String.format("P(%f,%f)", a, x));
-    }
-    if (a >= 1 && x > a) {
-      ret = 1.0 - regGammaQ(a, x, eps, max);
-    } else if (x > 0) {
-      // calculate series expansion A&S 6.5.29
-      int n = 1;
-      final double ea = Math.exp(-x + (a * log(x)) - GammaJS.logGamma(a));
-      final double err = eps;
-      double an = 1.0 / a, so, sn = an;
-      do {
-        so = sn;
-        an *= x / (a + n);
-        sn += an;
-      } while (!hasConverged(sn, so, err, ++n, max));
-      // do the transformation 6.5.4
-      ret = ea * sn;
-    }
-    return ret;
-  }
+  // private static double regGammaP(final double a, final double x, final double eps, final int
+  // max) {
+  // double ret = 0;
+  // if ((a <= 0.0) || (x < 0.0)) {
+  // throw new ArgumentTypeException(String.format("P(%f,%f)", a, x));
+  // }
+  // if (a >= 1 && x > a) {
+  // ret = 1.0 - regGammaQ(a, x, eps, max);
+  // } else if (x > 0) {
+  // // calculate series expansion A&S 6.5.29
+  // int n = 1;
+  // final double ea = Math.exp(-x + (a * log(x)) - GammaJS.logGamma(a));
+  // final double err = eps;
+  // double an = 1.0 / a, so, sn = an;
+  // do {
+  // so = sn;
+  // an *= x / (a + n);
+  // sn += an;
+  // } while (!hasConverged(sn, so, err, ++n, max));
+  // // do the transformation 6.5.4
+  // ret = ea * sn;
+  // }
+  // return ret;
+  // }
 
   /**
    * Calculate the regularized gamma function Q(a,x) = 1 - P(a,x), with epsilon precision using
@@ -129,27 +121,27 @@ public class GammaJS extends JS {
    * @param maxIterations maximum number of iterations to complete
    * @return the regularized gamma function Q(a,x)
    */
-  private static double regGammaQ(final double a, final double x, final double epsilon,
-      final int maxIterations) {
-    double ret = 0;
-
-    if ((a <= 0.0) || (x < 0.0)) {
-      throw new ArgumentTypeException(String.format("Q(%f,%f)", a, x));
-    }
-    if (x < a || a < 1.0) {
-      ret = 1.0 - regGammaP(a, x, epsilon, maxIterations);
-    } else if (x > 0) {
-      // create continued fraction analog to A&S 6.5.31 / 26.4.10 ?
-      // this implementation is due to Wolfram research
-      // http://functions.wolfram.com/GammaBetaErf/GammaRegularized/10/0003/
-      final double ea = Math.exp(-x + (a * log(x)) - GammaJS.logGamma(a));
-      final double err = epsilon;
-      final ContinuedFraction cf = new RegularizedGammaFraction(a);
-      ret = 1.0 / cf.evaluate(x, err, maxIterations);
-      ret *= ea;
-    }
-    return ret;
-  }
+  // private static double regGammaQ(final double a, final double x, final double epsilon,
+  // final int maxIterations) {
+  // double ret = 0;
+  //
+  // if ((a <= 0.0) || (x < 0.0)) {
+  // throw new ArgumentTypeException(String.format("Q(%f,%f)", a, x));
+  // }
+  // if (x < a || a < 1.0) {
+  // ret = 1.0 - regGammaP(a, x, epsilon, maxIterations);
+  // } else if (x > 0) {
+  // // create continued fraction analog to A&S 6.5.31 / 26.4.10 ?
+  // // this implementation is due to Wolfram research
+  // // http://functions.wolfram.com/GammaBetaErf/GammaRegularized/10/0003/
+  // final double ea = Math.exp(-x + (a * log(x)) - GammaJS.logGamma(a));
+  // final double err = epsilon;
+  // final ContinuedFraction cf = new RegularizedGammaFraction(a);
+  // ret = 1.0 / cf.evaluate(x, err, maxIterations);
+  // ret *= ea;
+  // }
+  // return ret;
+  // }
 
   public static double factorialInt(double n) {
     if (n < 0.0) {
@@ -253,9 +245,10 @@ public class GammaJS extends JS {
    * @param y
    * @return
    */
-  public static double gamma(double x, double y) {
-    return org.hipparchus.special.Gamma.gamma(x) * regGammaQ(x, y, DEFAULT_EPSILON, MAX_ITERATIONS);
-  }
+  // public static double gamma(double x, double y) {
+  // return org.hipparchus.special.Gamma.gamma(x) * regGammaQ(x, y, DEFAULT_EPSILON,
+  // MAX_ITERATIONS);
+  // }
 
   /**
    * Incomplete gamma function.

@@ -148,35 +148,6 @@ public class HypergeometricFunctions {
 
   private static class CosIntegral extends AbstractFunctionEvaluator { // implements INumeric,
                                                                        // DoubleUnaryOperator {
-    // @Override
-    // public IExpr e1ComplexArg(final Complex c) {
-    // return F.complexNum(GammaJS.cosIntegral(c));
-    // }
-    //
-    // @Override
-    // public double applyAsDouble(double operand) {
-    // return de.lab4inf.math.functions.CosineIntegral.ci(operand);
-    // }
-    //
-    // @Override
-    // public IExpr e1DblArg(final double arg1) {
-    // if (F.isZero(arg1)) {
-    // return F.CNInfinity;
-    // }
-    // if (arg1<=0) {
-    // return F.complexNum(GammaJS.cosIntegral(new Complex(arg1)));
-    // }
-    // return F.num(de.lab4inf.math.functions.CosineIntegral.ci(arg1));
-    // }
-    //
-    // @Override
-    // public double evalReal(final double[] stack, final int top, final int size) {
-    // if (size != 1) {
-    // throw new UnsupportedOperationException();
-    // }
-    // return de.lab4inf.math.functions.CosineIntegral.ci(stack[top]);
-    // }
-
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
@@ -184,36 +155,6 @@ public class HypergeometricFunctions {
       if (temp.isPresent()) {
         return temp;
       }
-      // if (engine.isDoubleMode()) {
-      // try {
-      // double zDouble = Double.NaN;
-      // try {
-      // zDouble = z.evalf();
-      // } catch (ValidateException ve) {
-      // }
-      // if (Double.isNaN(zDouble)) {
-      // Complex zc = z.evalfc();
-      // return F.complexNum(GammaJS.cosIntegral(zc));
-      //
-      // } else {
-      // if (F.isZero(zDouble)) {
-      // return F.CNInfinity;
-      // }
-      // if (zDouble <= 0) {
-      // return F.complexNum(GammaJS.cosIntegral(new Complex(zDouble)));
-      // }
-      // return F.num(de.lab4inf.math.functions.CosineIntegral.ci(zDouble));
-      // }
-      //
-      // } catch (ThrowException te) {
-      // LOGGER.debug("CosIntegral.evaluate() failed", te);
-      // return te.getValue();
-      // } catch (ValidateException ve) {
-      // return Errors.printMessage(ast.topHead(), ve, engine);
-      // } catch (RuntimeException rex) {
-      // LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-      // }
-      // }
       return F.NIL;
     }
 
@@ -492,42 +433,6 @@ public class HypergeometricFunctions {
 
   private static class ExpIntegralEi extends AbstractFunctionEvaluator { // implements INumeric,
                                                                          // DoubleUnaryOperator {
-    // @Override
-    // public double applyAsDouble(double operand) {
-    // if (F.isZero(operand)) {
-    // return Double.NEGATIVE_INFINITY;
-    // }
-    // return GammaJS.expIntegralEi(operand);
-    // // return de.lab4inf.math.functions.ExponentialIntegalFunction.ei(operand);
-    // }
-    //
-    // @Override
-    // public IExpr e1DblArg(final double arg1) {
-    // if (F.isZero(arg1)) {
-    // return F.CNInfinity;
-    // }
-    // return F.num(GammaJS.expIntegralEi(arg1));
-    //
-    // // return F.num(de.lab4inf.math.functions.ExponentialIntegalFunction.ei(arg1));
-    // }
-    //
-    // @Override
-    // public double evalReal(final double[] stack, final int top, final int size) {
-    // if (size != 1) {
-    // throw new UnsupportedOperationException();
-    // }
-    // if (F.isZero(stack[top])) {
-    // return Double.NEGATIVE_INFINITY;
-    // }
-    // return GammaJS.expIntegralEi(stack[top]);
-    // // return de.lab4inf.math.functions.ExponentialIntegalFunction.ei(stack[top]);
-    // }
-    //
-    // @Override
-    // public IExpr e1ComplexArg(final Complex c) {
-    // return F.complexNum(GammaJS.expIntegralEi(c));
-    // }
-
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
@@ -553,33 +458,6 @@ public class HypergeometricFunctions {
       if (z.isComplexInfinity()) {
         return S.Indeterminate;
       }
-      // if (engine.isDoubleMode()) {
-      // try {
-      // double zDouble = Double.NaN;
-      // try {
-      // zDouble = z.evalf();
-      // } catch (ValidateException ve) {
-      // }
-      // if (Double.isNaN(zDouble)) {
-      // Complex zc = z.evalfc();
-      // return F.complexNum(GammaJS.expIntegralEi(zc));
-      //
-      // } else {
-      // if (F.isZero(zDouble)) {
-      // return F.CNInfinity;
-      // }
-      // return F.complexNum(GammaJS.expIntegralEi(zDouble));
-      // }
-      //
-      // } catch (ThrowException te) {
-      // LOGGER.debug("ExpIntegralEi.evaluate() failed", te);
-      // return te.getValue();
-      // } catch (ValidateException ve) {
-      // return Errors.printMessage(ast.topHead(), ve, engine);
-      // } catch (RuntimeException rex) {
-      // LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-      // }
-      // }
       return F.NIL;
     }
 
@@ -609,29 +487,6 @@ public class HypergeometricFunctions {
   }
 
   private static class FresnelC extends AbstractFunctionEvaluator {
-
-    // @Override
-    // public double applyAsDouble(double operand) {
-    // return de.lab4inf.math.functions.FresnelC.fresnelC(operand);
-    // }
-
-    // @Override
-    // public IExpr e1ComplexArg(final Complex c) {
-    // return F.complexNum(GammaJS.fresnelC(c));
-    // }
-    //
-    // @Override
-    // public IExpr e1DblArg(final double arg1) {
-    // return F.num(de.lab4inf.math.functions.FresnelC.fresnelC(arg1));
-    // }
-    //
-    // @Override
-    // public double evalReal(final double[] stack, final int top, final int size) {
-    // if (size != 1) {
-    // throw new UnsupportedOperationException();
-    // }
-    // return de.lab4inf.math.functions.FresnelC.fresnelC(stack[top]);
-    // }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -684,29 +539,6 @@ public class HypergeometricFunctions {
   }
 
   private static class FresnelS extends AbstractFunctionEvaluator {
-
-    // @Override
-    // public double applyAsDouble(double operand) {
-    // return de.lab4inf.math.functions.FresnelS.fresnelS(operand);
-    // }
-
-    // @Override
-    // public IExpr e1ComplexArg(final Complex c) {
-    // return F.complexNum(GammaJS.fresnelS(c));
-    // }
-    //
-    // @Override
-    // public IExpr e1DblArg(final double arg1) {
-    // return F.num(de.lab4inf.math.functions.FresnelS.fresnelS(arg1));
-    // }
-
-    // @Override
-    // public double evalReal(final double[] stack, final int top, final int size) {
-    // if (size != 1) {
-    // throw new UnsupportedOperationException();
-    // }
-    // return de.lab4inf.math.functions.FresnelS.fresnelS(stack[top]);
-    // }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1630,47 +1462,6 @@ public class HypergeometricFunctions {
   }
 
   private static class LogIntegral extends AbstractFunctionEvaluator { // implements INumeric,
-                                                                       // DoubleUnaryOperator {
-
-    // @Override
-    // public double applyAsDouble(double operand) {
-    // if (F.isZero(operand)) {
-    // return 0.0;
-    // }
-    // if (F.isEqual(operand, 1.0)) {
-    // return Double.NEGATIVE_INFINITY;
-    // }
-    // return GammaJS.logIntegral(operand);
-    // // return de.lab4inf.math.functions.LogarithmicIntegalFunction.li(operand);
-    // }
-    //
-    // @Override
-    // public IExpr e1DblArg(final double arg1) {
-    // if (F.isZero(arg1)) {
-    // return F.C0;
-    // }
-    // if (F.isEqual(arg1, 1.0)) {
-    // return F.CNInfinity;
-    // }
-    // if (arg1 <= 0) {
-    // return F.complexNum(GammaJS.logIntegral(new Complex(arg1)));
-    // }
-    // return F.num(GammaJS.logIntegral(arg1));
-    // // return F.num(de.lab4inf.math.functions.LogarithmicIntegalFunction.li(arg1));
-    // }
-    //
-    // @Override
-    // public double evalReal(final double[] stack, final int top, final int size) {
-    // if (size != 1) {
-    // throw new UnsupportedOperationException();
-    // }
-    // return applyAsDouble(stack[top]);
-    // }
-    //
-    // @Override
-    // public IExpr e1ComplexArg(final Complex c) {
-    // return F.complexNum(GammaJS.logIntegral(c));
-    // }
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -1691,39 +1482,6 @@ public class HypergeometricFunctions {
       if (arg1.isComplexInfinity()) {
         return F.CComplexInfinity;
       }
-      // if (engine.isDoubleMode()) {
-      // try {
-      // double zDouble = Double.NaN;
-      // try {
-      // zDouble = arg1.evalf();
-      // } catch (ValidateException ve) {
-      // }
-      // if (Double.isNaN(zDouble)) {
-      // Complex zc = arg1.evalfc();
-      // return F.complexNum(GammaJS.logIntegral(zc));
-      //
-      // } else {
-      // if (F.isZero(zDouble)) {
-      // return F.C0;
-      // }
-      // if (F.isEqual(zDouble, 1.0)) {
-      // return F.CNInfinity;
-      // }
-      // if (zDouble > 0.0) {
-      // return F.num(GammaJS.logIntegral(zDouble));
-      // }
-      // return F.complexNum(GammaJS.logIntegral(new Complex(zDouble)));
-      // }
-      //
-      // } catch (ThrowException te) {
-      // LOGGER.debug("LogIntegral.evaluate() failed", te);
-      // return te.getValue();
-      // } catch (ValidateException ve) {
-      // return Errors.printMessage(ast.topHead(), ve, engine);
-      // } catch (RuntimeException rex) {
-      // LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-      // }
-      // }
       return F.NIL;
     }
 
@@ -1755,35 +1513,6 @@ public class HypergeometricFunctions {
   private static class SinIntegral extends AbstractFunctionEvaluator { // implements INumeric,
                                                                        // DoubleUnaryOperator {
 
-    // @Override
-    // public double applyAsDouble(double operand) {
-    // return de.lab4inf.math.functions.SineIntegral.si(operand);
-    // }
-    //
-    // @Override
-    // public IExpr e1ComplexArg(final Complex c) {
-    // return F.complexNum(GammaJS.sinIntegral(c));
-    // }
-    //
-    // @Override
-    // public IExpr e1DblArg(final double arg1) {
-    // if (F.isZero(arg1)) {
-    // return F.CD0;
-    // }
-    // if (arg1<=0) {
-    // return F.complexNum(GammaJS.sinIntegral(new Complex(arg1)));
-    // }
-    // return F.num(de.lab4inf.math.functions.SineIntegral.si(arg1));
-    // }
-    //
-    // @Override
-    // public double evalReal(final double[] stack, final int top, final int size) {
-    // if (size != 1) {
-    // throw new UnsupportedOperationException();
-    // }
-    // return de.lab4inf.math.functions.SineIntegral.si(stack[top]);
-    // }
-
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
@@ -1791,37 +1520,6 @@ public class HypergeometricFunctions {
       if (temp.isPresent()) {
         return temp;
       }
-      // if (engine.isDoubleMode()) {
-      // try {
-      // double zDouble = Double.NaN;
-      // try {
-      // zDouble = z.evalf();
-      // } catch (ValidateException ve) {
-      // }
-      // if (Double.isNaN(zDouble)) {
-      // Complex zc = z.evalfc();
-      // return F.complexNum(GammaJS.sinIntegral(zc));
-      //
-      // } else {
-      // if (F.isZero(zDouble)) {
-      // return F.C0;
-      // }
-      // if (zDouble <= 0) {
-      // return F.complexNum(GammaJS.sinIntegral(new Complex(zDouble)));
-      // }
-      // return F.num(de.lab4inf.math.functions.SineIntegral.si(zDouble));
-      // }
-      //
-      // } catch (ThrowException te) {
-      // LOGGER.debug("SinIntegral.evaluate() failed", te);
-      // return te.getValue();
-      // } catch (ValidateException ve) {
-      // return Errors.printMessage(ast.topHead(), ve, engine);
-      // } catch (RuntimeException rex) {
-      // LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-      // return F.NIL;
-      // }
-      // }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
       if (negExpr.isPresent()) {
         return Negate(F.SinIntegral(negExpr));

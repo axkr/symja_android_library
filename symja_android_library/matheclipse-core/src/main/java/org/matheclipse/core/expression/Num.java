@@ -537,29 +537,6 @@ public class Num implements INum {
   public IExpr erf() {
     Apfloat erf = EvalEngine.getApfloatDouble().erf(apfloatValue());
     return F.num(erf.doubleValue());
-
-    // try {
-    // return F.num(de.lab4inf.math.functions.Erf.erf(value));
-    // } catch (final MathIllegalStateException e) {
-    // }
-    //
-    // return F.NIL;
-    // // FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
-    // // try {
-    // // Apint two = new Apint(2);
-    // // // 1/2
-    // // Aprational oneHalf = new Aprational(Apint.ONE, new Apint(2));
-    // // // 3/2
-    // // Aprational threeHalf = new Aprational(new Apint(3), new Apint(2));
-    // // Apfloat x = apfloatValue();
-    // // Apfloat erf = h.hypergeometric1F1(oneHalf, threeHalf, h.multiply(x,
-    // // x).negate()).multiply(two)
-    // // .multiply(x).divide(h.sqrt(h.pi()));
-    // // return F.num(erf.doubleValue());
-    // // } catch (Exception ce) {
-    // // //
-    // // }
-    // // return F.NIL;
   }
 
   @Override
@@ -573,23 +550,7 @@ public class Num implements INum {
     } catch (ArithmeticException | ApfloatRuntimeException e) {
       e.printStackTrace();
     }
-    // FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-    // try {
-    // Apfloat c = erf(fApfloat, h);
-    // return F.num(h.subtract(Apcomplex.ONE, c));
-    // } catch (Exception ce) {
-    // //
-    // }
     return INum.super.erfc();
-    // try {
-    // return Num.valueOf(de.lab4inf.math.functions.Erf.erfc(value));
-    // // if (arg1 >= 0. && arg1 <= 2.0) {
-    // // return Num.valueOf(org.hipparchus.special.Erf.erfc(arg1));
-    // // }
-    // } catch (final MathIllegalStateException e) {
-    // }
-    //
-    // return F.NIL;
   }
 
   @Override
@@ -610,14 +571,6 @@ public class Num implements INum {
 
   @Override
   public IExpr evaluate(EvalEngine engine) {
-    // if (value == Double.POSITIVE_INFINITY) {
-    // return F.Overflow();
-    // // return F.CInfinity;
-    // }
-    // if (value == Double.NEGATIVE_INFINITY) {
-    // return F.Underflow();
-    // // return F.CNInfinity;
-    // }
     if (Double.isNaN(value)) {
       return S.Indeterminate;
     }
@@ -716,12 +669,17 @@ public class Num implements INum {
       return F.CInfinity;
     }
     if (x instanceof IReal) {
-      try {
-        Apfloat gamma =
-            EvalEngine.getApfloatDouble().gamma(apfloatValue(), ((IReal) x).apfloatValue());
-        return F.num(gamma.doubleValue());
-      } catch (ArithmeticException | ApfloatRuntimeException e) {
-        // try as computation with complex numbers
+      if (isPositive() && x.isPositive()) {
+        try {
+          Apfloat gamma =
+              EvalEngine.getApfloatDouble().gamma(apfloatValue(), ((IReal) x).apfloatValue());
+          return F.num(gamma.doubleValue());
+        } catch (ArithmeticException | ApfloatRuntimeException e) {
+          // try as computation with complex numbers
+          if (Config.SHOW_STACKTRACE) {
+            e.printStackTrace();
+          }
+        }
       }
     }
     try {
@@ -731,7 +689,9 @@ public class Num implements INum {
         return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
       }
     } catch (ArithmeticException | ApfloatRuntimeException e) {
-      // try as computation with complex numbers
+      if (Config.SHOW_STACKTRACE) {
+        e.printStackTrace();
+      }
     }
     return INum.super.gamma(x);
   }

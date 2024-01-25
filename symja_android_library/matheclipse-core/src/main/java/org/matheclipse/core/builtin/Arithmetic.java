@@ -29,7 +29,6 @@ import static org.matheclipse.core.expression.F.Re;
 import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.num;
 import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.F.y_;
 import static org.matheclipse.core.expression.S.Conjugate;
@@ -59,7 +58,6 @@ import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
@@ -69,7 +67,6 @@ import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
-import org.matheclipse.core.eval.interfaces.AbstractArg12;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -1554,112 +1551,126 @@ public final class Arithmetic {
    * 1.1018024908797128
    * </pre>
    */
-  private static final class Gamma extends AbstractArg12 {
+  private static final class Gamma extends AbstractFunctionEvaluator {
 
-    @Override
-    public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      if (arg1.isInteger() && arg1.real().compareTo(Apfloat.ZERO) < 0) {
-        return F.CComplexInfinity;
-      }
-      return F.complexNum(ApcomplexMath.gamma(arg1));
-    }
+    // @Override
+    // public IExpr e1ApcomplexArg(Apcomplex arg1) {
+    // if (arg1.isInteger() && arg1.real().compareTo(Apfloat.ZERO) < 0) {
+    // return F.CComplexInfinity;
+    // }
+    // return F.complexNum(ApcomplexMath.gamma(arg1));
+    // }
+    //
+    // @Override
+    // public IExpr e1ApfloatArg(Apfloat arg1) {
+    // FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    // try {
+    // if (arg1.isInteger() && arg1.compareTo(Apfloat.ZERO) < 0) {
+    // return F.CComplexInfinity;
+    // }
+    // return F.num(h.gamma(arg1));
+    // } catch (ArithmeticException aex1) {
+    // try {
+    // return F.complexNum(h.gamma(new Apcomplex(arg1, Apcomplex.ZERO)));
+    // } catch (ArithmeticException aex2) {
+    // return F.NIL;
+    // }
+    // }
+    // }
+    //
+    // @Override
+    // public IExpr e1DblComArg(final IComplexNum c) {
+    // // Apcomplex gamma =
+    // // ApcomplexMath.gamma(c.apcomplexNumValue(Config.MACHINE_PRECISION).apcomplexValue());
+    // // return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
+    // if (c.isNumIntValue() && c.getRealPart() < 0) {
+    // return F.CComplexInfinity;
+    // }
+    //
+    // // TODO improve lanczos approx:
+    // return F.complexNum(lanczosApproxGamma(c.evalfc()));
+    // }
+    //
+    // @Override
+    // public IExpr e1DblArg(final INum arg1) {
+    // double d1 = arg1.doubleValue();
+    // if (arg1.isNumIntValue() && d1 < 0) {
+    // return F.CComplexInfinity;
+    // }
+    // double gamma = org.hipparchus.special.Gamma.gamma(d1);
+    // if (Double.isNaN(gamma)) {
+    // if (d1 > 0.0) {
+    // // Overflow occurred in computation.
+    // Errors.printMessage(S.Gamma, "ovfl", F.CEmptyList, EvalEngine.get());
+    // return F.Overflow();
+    // }
+    // return e1DblComArg(F.complexNum(d1));
+    // }
+    // return num(gamma);
+    // }
+    //
+    // @Override
+    // public IExpr e2DblComArg(final IComplexNum d0, final IComplexNum d1) {
+    // if (d0.isZero() && d1.isZero()) {
+    // return F.CInfinity;
+    // }
+    // return F.complexNum(GammaJS.gamma(d0.evalfc(), d1.evalfc()));
+    // }
+    //
+    // @Override
+    // public IExpr e2ApcomplexArg(final ApcomplexNum arg1, final ApcomplexNum arg2) {
+    // try {
+    // return F.complexNum(ApcomplexMath.gamma(arg1.apcomplexValue(), arg2.apcomplexValue()));
+    // } catch (ArithmeticException ae) {
+    // }
+    // return F.NIL;
+    // }
+    //
+    // @Override
+    // public IExpr e2ApfloatArg(final ApfloatNum arg1, final ApfloatNum arg2) {
+    // try {
+    // return F.num(ApfloatMath.gamma(arg1.apfloatValue(), arg2.apfloatValue()));
+    // } catch (ArithmeticException aex1) {
+    // try {
+    // return e2ApcomplexArg(ApcomplexNum.valueOf(arg1.apfloatValue()),
+    // ApcomplexNum.valueOf(arg2.apfloatValue()));
+    // } catch (ArithmeticException aex2) {
+    // }
+    // }
+    // return F.NIL;
+    // }
+    //
+    // @Override
+    // public IExpr e2DblArg(final INum d0, final INum d1) {
+    // if (d0.isZero() && d1.isZero()) {
+    // return F.CInfinity;
+    // }
+    // if (d0.isZero() || d0.isNegative() || d1.isNegative()) {
+    // return e2DblComArg(d0.evalfc(), d1.evalfc());
+    // }
+    // return d0.gamma(d1);
+    // }
 
-    @Override
-    public IExpr e1ApfloatArg(Apfloat arg1) {
-      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-      try {
-        if (arg1.isInteger() && arg1.compareTo(Apfloat.ZERO) < 0) {
-          return F.CComplexInfinity;
-        }
-        return F.num(h.gamma(arg1));
-      } catch (ArithmeticException aex1) {
-        try {
-          return F.complexNum(h.gamma(new Apcomplex(arg1, Apcomplex.ZERO)));
-        } catch (ArithmeticException aex2) {
-          return F.NIL;
-        }
-      }
-    }
 
-    @Override
-    public IExpr e1DblComArg(final IComplexNum c) {
-      // Apcomplex gamma =
-      // ApcomplexMath.gamma(c.apcomplexNumValue(Config.MACHINE_PRECISION).apcomplexValue());
-      // return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
-      if (c.isNumIntValue() && c.getRealPart() < 0) {
-        return F.CComplexInfinity;
-      }
-
-      // TODO improve lanczos approx:
-      return F.complexNum(lanczosApproxGamma(c.evalfc()));
-    }
-
-    @Override
-    public IExpr e1DblArg(final INum arg1) {
-      double d1 = arg1.doubleValue();
-      if (arg1.isNumIntValue() && d1 < 0) {
-        return F.CComplexInfinity;
-      }
-      double gamma = org.hipparchus.special.Gamma.gamma(d1);
-      if (Double.isNaN(gamma)) {
-        if (d1 > 0.0) {
-          // Overflow occurred in computation.
-          Errors.printMessage(S.Gamma, "ovfl", F.CEmptyList, EvalEngine.get());
-          return F.Overflow();
-        }
-        return e1DblComArg(F.complexNum(d1));
-      }
-      return num(gamma);
-    }
-
-    @Override
-    public IExpr e2DblComArg(final IComplexNum d0, final IComplexNum d1) {
-      if (d0.isZero() && d1.isZero()) {
-        return F.CInfinity;
-      }
-      return F.complexNum(GammaJS.gamma(d0.evalfc(), d1.evalfc()));
-    }
-
-    @Override
-    public IExpr e2ApcomplexArg(final ApcomplexNum arg1, final ApcomplexNum arg2) {
-      try {
-        return F.complexNum(ApcomplexMath.gamma(arg1.apcomplexValue(), arg2.apcomplexValue()));
-      } catch (ArithmeticException ae) {
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public IExpr e2ApfloatArg(final ApfloatNum arg1, final ApfloatNum arg2) {
-      try {
-        return F.num(ApfloatMath.gamma(arg1.apfloatValue(), arg2.apfloatValue()));
-      } catch (ArithmeticException aex1) {
-        try {
-          return e2ApcomplexArg(ApcomplexNum.valueOf(arg1.apfloatValue()),
-              ApcomplexNum.valueOf(arg2.apfloatValue()));
-        } catch (ArithmeticException aex2) {
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public IExpr e2DblArg(final INum d0, final INum d1) {
-      if (d0.isZero() && d1.isZero()) {
-        return F.CInfinity;
-      }
-      if (d0.isZero() || d0.isNegative() || d1.isNegative()) {
-        return F.complexNum(GammaJS.gamma(d0.evalfc(), d1.evalfc()));
-      }
-      double c = GammaJS.gamma(d0.doubleValue(), d1.doubleValue());
-      // if (F.isZero(c.getImaginary())) {
-      // return F.num(c.getReal());
-      // }
-      return F.num(c);
-    }
-
-    @Override
     public IExpr e2ObjArg(final IExpr o0, final IExpr z) {
+      IExpr temp = basicRewrite2(o0, z);
+      if (temp.isPresent()) {
+        return temp;
+      }
+      int n = o0.toIntDefault();
+      if (n > 0 && z.isNumericFunction(true)) {
+        int iterationLimit = EvalEngine.get().getIterationLimit();
+        if (iterationLimit >= 0 && iterationLimit <= n + 1) {
+          IterationLimitExceeded.throwIt(n, F.Gamma(o0, z));
+        }
+        // Gamma(n,z) = ((n - 1)! * Sum(z^k/k!, {k, 0, n - 1}))/E^z
+        IExpr sum = F.intSum(k -> F.Divide(F.Power(z, k), F.Factorial(F.ZZ(k))), 0, n - 1);
+        return F.Times(F.Factorial(F.ZZ(n - 1)), sum, F.Power(E, z.negate()));
+      }
+      return F.NIL;
+    }
+
+    private static IExpr basicRewrite2(final IExpr o0, final IExpr z) {
       if (z.isZero()) {
         if (o0.isZero()) {
           return F.CInfinity;
@@ -1678,21 +1689,6 @@ public final class Arithmetic {
           return F.Gamma(o0);
         }
       }
-      int n = o0.toIntDefault();
-      if (n > 0 && z.isNumericFunction(true)) {
-        //
-        // Gamma(n,z) = ((n - 1)! * Sum(z^k/k!, {k, 0, n - 1}))/E^z
-        //
-        int iterationLimit = EvalEngine.get().getIterationLimit();
-        if (iterationLimit >= 0 && iterationLimit <= n + 1) {
-          IterationLimitExceeded.throwIt(n, F.Gamma(o0, z));
-        }
-        IASTAppendable sum = F.PlusAlloc(n);
-        for (int k = 0; k < n; k++) {
-          sum.append(F.Divide(F.Power(z, k), F.Factorial(F.ZZ(k))));
-        }
-        return F.Times(F.Factorial(F.ZZ(n - 1)), sum, F.Power(E, z.negate()));
-      }
       return F.NIL;
     }
 
@@ -1702,10 +1698,10 @@ public final class Arithmetic {
         final int argSize = ast.argSize();
         IExpr a = ast.arg1();
         if (argSize == 1) {
-          return unaryOperator(a);
+          return e1ObjArg(a);
         }
         if (argSize == 2) {
-          return binaryOperator(ast, a, ast.arg2());
+          return e2ObjArg(a, ast.arg2());
         }
         if (argSize == 3) {
           // see GammaRules.m - Gamma(a_, x_, y_) := Gamma(a, x) - Gamma(a, y)
@@ -1722,13 +1718,10 @@ public final class Arithmetic {
       return ARGS_1_3;
     }
 
-    @Override
     public IExpr e1ObjArg(final IExpr arg1) {
-      if (arg1.isZero()) {
-        return F.CComplexInfinity;
-      }
-      if (arg1.isMathematicalIntegerNegative()) {
-        return F.CComplexInfinity;
+      IExpr temp = basicRewrite1(arg1);
+      if (temp.isPresent()) {
+        return temp;
       }
       if (arg1.isIntegerResult()) {
         // if (arg1.isNegative()) {
@@ -1769,17 +1762,35 @@ public final class Arithmetic {
       return NIL;
     }
 
+    private IExpr basicRewrite1(final IExpr arg1) {
+      if (arg1.isZero()) {
+        return F.CComplexInfinity;
+      }
+      if (arg1.isMathematicalIntegerNegative()) {
+        return F.CComplexInfinity;
+      }
+      return F.NIL;
+    }
+
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       final int argSize = ast.argSize();
       switch (argSize) {
         case 1: {
           IInexactNumber z = (IInexactNumber) ast.arg1();
+          IExpr temp = basicRewrite1(z);
+          if (temp.isPresent()) {
+            return temp;
+          }
           return z.gamma();
         }
         case 2: {
           IInexactNumber z1 = (IInexactNumber) ast.arg1();
           IInexactNumber z2 = (IInexactNumber) ast.arg2();
+          IExpr temp = basicRewrite2(z1, z2);
+          if (temp.isPresent()) {
+            return temp;
+          }
           return z1.gamma(z2);
         }
         case 3: {

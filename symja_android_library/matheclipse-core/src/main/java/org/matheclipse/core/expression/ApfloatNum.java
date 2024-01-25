@@ -739,10 +739,12 @@ public class ApfloatNum implements INum {
       return F.CInfinity;
     }
     if (x instanceof IReal) {
-      try {
-        return valueOf(EvalEngine.getApfloat().gamma(fApfloat, ((IReal) x).apfloatValue()));
-      } catch (ArithmeticException | ApfloatRuntimeException e) {
-        // try as computation with complex numbers
+      if (isPositive() && x.isPositive()) {
+        try {
+          return valueOf(EvalEngine.getApfloat().gamma(fApfloat, ((IReal) x).apfloatValue()));
+        } catch (ArithmeticException | ApfloatRuntimeException e) {
+          // try as computation with complex numbers
+        }
       }
     }
     if (x instanceof INumber) {

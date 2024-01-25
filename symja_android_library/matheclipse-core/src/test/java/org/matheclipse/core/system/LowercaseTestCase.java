@@ -10255,6 +10255,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testGamma() {
+    check("Gamma(4,3)", //
+        "78/E^3");
+
     check("Gamma(Underflow())", //
         "Overflow()");
     check("Log(Gamma(1.*^20))", //
@@ -10272,7 +10275,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Gamma(1009,-9223372036854775807/9223372036854775808)",
         "Hold(Gamma(1009,-9223372036854775807/9223372036854775808))");
     check("Gamma(-9223372036854775808/11,0.5)", //
-        "Hold(Gamma(-9223372036854775808/11,0.5))");
+        "Gamma(-8.38488*10^17,0.5)");
     check("Gamma(2147483647)", //
         "Hold(Gamma(2147483647))");
 
