@@ -7066,6 +7066,10 @@ public class F extends S {
     return quaternary(Max, a0, a1, a2, a3);
   }
 
+  public static IAST Max(final IExpr... args) {
+    return new AST(Max, args);
+  }
+
   public static IAST Maximize(final IExpr a0, final IExpr a1) {
     return new AST2(Maximize, a0, a1);
   }
@@ -7128,6 +7132,10 @@ public class F extends S {
 
   public static IAST Min(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
     return quaternary(Min, a0, a1, a2, a3);
+  }
+
+  public static IAST Min(final IExpr... args) {
+    return new AST(Min, args);
   }
 
   public static IAST Minimize(final IExpr a0, final IExpr a1) {
