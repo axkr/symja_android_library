@@ -4,7 +4,7 @@
 (*Integration Utility Functions*)
 
 
-(* $TimeLimit is the time constraint in seconds on some potentially expensive routines. *) 
+$TimeLimit::usage = "$TimeLimit is the time constraint in seconds on some potentially expensive routines.";
 If[Not[NumberQ[$TimeLimit]], $TimeLimit=5.0];
 
 
@@ -12,7 +12,8 @@ If[Not[NumberQ[$TimeLimit]], $TimeLimit=5.0];
 (*IntHide[u,x]*)
 
 
-IntHide[u_,x_Symbol] :=
+IntHide::usage = "IntHide[u,x] suppresses the display of steps while integrating u wrt x.";
+IntHide[u_,x_Symbol] := 
   Block[{$ShowSteps=False,$StepCounter=Null}, Int[u,x]]
 
 
@@ -24,7 +25,7 @@ IntHide[u_,x_Symbol] :=
 (*EveryQ[func,lst]*)
 
 
-(* EveryQ[func,lst] applies func to the elements of lst until False is returned and EveryQ returns False; else it returns True *)
+EveryQ::usage = "EveryQ[func,lst] applies func to the elements of lst until False is returned and EveryQ returns False; else it returns True.";
 EveryQ[func_,lst_] :=
   Catch[Scan[Function[If[func[#],Null,Throw[False]]],lst];True]
 
@@ -75,7 +76,7 @@ IntegersQ[__] = False;
 (*HalfIntegerQ[u]*)
 
 
-HalfIntegerQ::usage = "If m, n, ... are explicit half-integers, FractionQ[m,n,...] returns True; else it returns False.";
+HalfIntegerQ::usage = "If m, n, ... are explicit half-integers, HalfIntegerQ[m,n,...] returns True; else it returns False.";
 HalfIntegerQ[u__] := Scan[Function[If[Head[#]===Rational && Denominator[#]==2,Null,Return[False]]],{u}]===Null
 
 
@@ -92,7 +93,7 @@ FractionQ[__] = False;
 (*RationalQ[u]*)
 
 
-RationalQ::usage = "If m, n, ... are explicit integers or fractions, FractionQ[m,n,...] returns True; else it returns False.";
+RationalQ::usage = "If m, n, ... are explicit integers or fractions, RationalQ[m,n,...] returns True; else it returns False.";
 RationalQ[u__] := Scan[Function[If[IntegerQ[#] || Head[#]===Rational,Null,Return[False]]],{u}]===Null
 
 
@@ -144,6 +145,7 @@ SqrtNumberSumQ[u_] :=
 (*IndependentQ[u,x]*)
 
 
+IndependentQ::usage = "If u is independent of x, IndependentQ[u,x] returns True; else it returns False.";
 IndependentQ[u_,x_] :=
   FreeQ[u,x]
 
@@ -276,17 +278,12 @@ InverseHyperbolicQ[u_] := MemberQ[$InverseHyperbolicFunctions, If[AtomQ[u],u,Hea
 (*CalculusQ[u]*)
 
 
+CalculusQ::usage = "If u involves a calculus function (e.g. D, Integrate or Sum), CalculusQ[u] returns True; else it returns False.";
 $CalculusFunctions = {D, Integrate, Sum, Product, Int, Unintegrable, CannotIntegrate, Dif, Subst};
 CalculusQ[u_] := MemberQ[$CalculusFunctions, If[AtomQ[u],u,Head[u]]]
 
 
-$StopFunctions = {Hold, HoldForm, Defer, Pattern, If, Int, Unintegrable, CannotIntegrate};
-StopFunctionQ[u_] :=
-  If[AtomQ[Head[u]],
-    MemberQ[$StopFunctions,Head[u]],
-  StopFunctionQ[Head[u]]]
-
-
+HeldFormQ::usage = "If u is a held form (e.g. Hold, Defer or Pattern), HeldFormQ[u] returns True; else it returns False.";
 $HeldFunctions = {Hold, HoldForm, Defer, Pattern};
 HeldFormQ[u_] :=
   If[AtomQ[Head[u]],
@@ -294,13 +291,20 @@ HeldFormQ[u_] :=
   HeldFormQ[Head[u]]]
 
 
-(* InverseFunctionQ[u] returns True if u is a call on an inverse function; else returns False. *)
+StopFunctionQ::usage = "If u is a held form or unevaluated integral (e.g. Unintegrable), StopFunctionQ[u] returns True; else it returns False.";
+$StopFunctions = {Hold, HoldForm, Defer, Pattern, If, Int, Unintegrable, CannotIntegrate};
+StopFunctionQ[u_] :=
+  If[AtomQ[Head[u]],
+    MemberQ[$StopFunctions,Head[u]],
+  StopFunctionQ[Head[u]]]
+
+
+InverseFunctionQ::usage = "If u is a call on an inverse function, InverseFunctionQ[u] returns True; else it returns False.";
 InverseFunctionQ[u_] :=
   LogQ[u] || InverseTrigQ[u] && Length[u]<=1 || InverseHyperbolicQ[u] || Head[u]===Mods  || Head[u]===PolyLog 
 
 
-(* If u is free of trig, hyperbolic and calculus functions involving x,
-	TrigHyperbolicFreeQ[u,x] returns true; else it returns False. *)
+TrigHyperbolicFreeQ::usage = "If u is free of trig, hyperbolic and calculus functions involving x, TrigHyperbolicFreeQ[u,x] returns true; else it returns False.";
 TrigHyperbolicFreeQ[u_,x_Symbol] :=
   If[AtomQ[u],
     True,
@@ -309,8 +313,7 @@ TrigHyperbolicFreeQ[u_,x_Symbol] :=
   Catch[Scan[Function[If[TrigHyperbolicFreeQ[#,x],Null,Throw[False]]],u];True]]]
 
 
-(* If u is free of inverse, calculus and hypergeometric functions involving x,
-	InverseFunctionFreeQ[u,x] returns true; else it returns False. *)
+InverseFunctionFreeQ::usage = "If u is free of inverse, calculus and hypergeometric functions involving x, InverseFunctionFreeQ[u,x] returns true; else it returns False.";
 InverseFunctionFreeQ[u_,x_Symbol] :=
   If[AtomQ[u],
     True,
@@ -319,9 +322,7 @@ InverseFunctionFreeQ[u_,x_Symbol] :=
   Catch[Scan[Function[If[InverseFunctionFreeQ[#,x],Null,Throw[False]]],u];True]]]
 
 
-(* ElementaryExpressionQ[u] returns True if u is a sum, product, or power and all the operands
-	are elementary expressions; or if u is a call on a trig, hyperbolic, or inverse function
-	and all the arguments are elementary expressions; else it returns False. *)
+(* ElementaryExpressionQ::usage = "ElementaryExpressionQ[u] returns True if u is a sum, product, or power and all the operands are elementary expressions; or if u is a call on a trig, hyperbolic, or inverse function and all the arguments are elementary expressions; else it returns False."; *)
 (* ElementaryFunctionQ[u_] :=
   If[AtomQ[u],
     True,
@@ -331,9 +332,10 @@ InverseFunctionFreeQ[u_,x_Symbol] :=
 
 
 (* ::Subsection::Closed:: *)
-(*CalculusFreeQ[u]*)
+(*CalculusFreeQ[u,x]*)
 
 
+CalculusFreeQ::usage = "If u is free of calculus functions whose variable is x, CalculusFreeQ[u,x] returns True; else it returns False.";
 CalculusFreeQ[u_,x_] :=
   If[AtomQ[u],
     True,
@@ -346,7 +348,7 @@ CalculusFreeQ[u_,x_] :=
 (*IntegralFreeQ[u]*)
 
 
-(* If u is free of integrals, IntegralFreeQ[u] returns True; else it returns False. *)
+IntegralFreeQ::usage = "If u is free of integrals, IntegralFreeQ[u] returns True; else it returns False.";
 IntegralFreeQ[u_] :=
   FreeQ[u,Int] && FreeQ[u,Integral] && FreeQ[u,Unintegrable] && FreeQ[u,CannotIntegrate]
 
@@ -371,19 +373,19 @@ NeQ[u_,v_] := Not[Quiet[PossibleZeroQ[u-v]] || Refine[u==v]===True]
 (*Integer inequality predicates*)
 
 
-IGtQ::usage = "num must be a rational number.  If u is an integer and u>n, IGtQ[u,n] returns True; else it returns False.";
+IGtQ::usage = "n must be a rational number.  If u is an integer and u>n, IGtQ[u,n] returns True; else it returns False.";
 IGtQ[u_,n_] := IntegerQ[u] && u>n
 
 
-ILtQ::usage = "num must be a rational number.  If u is an integer and u<n, ILtQ[u,n] returns True; else it returns False.";
+ILtQ::usage = "n must be a rational number.  If u is an integer and u<n, ILtQ[u,n] returns True; else it returns False.";
 ILtQ[u_,n_] := IntegerQ[u] && u<n
 
 
-IGeQ::usage = "num must be a rational number.  If u is an integer and u>=n, IGeQ[u,n] returns True; else it returns False.";
+IGeQ::usage = "n must be a rational number.  If u is an integer and u>=n, IGeQ[u,n] returns True; else it returns False.";
 IGeQ[u_,n_] := IntegerQ[u] && u>=n
 
 
-ILeQ::usage = "num must be a rational number.  If u is an integer and u<=n, ILeQ[u,n] returns True; else it returns False.";
+ILeQ::usage = "n must be a rational number.  If u is an integer and u<=n, ILeQ[u,n] returns True; else it returns False.";
 ILeQ[u_,n_] := IntegerQ[u] && u<=n
 
 
@@ -391,85 +393,81 @@ ILeQ[u_,n_] := IntegerQ[u] && u<=n
 (*Numeric inequality predicates*)
 
 
-GtQ::usage = "If u>v, GtQ[u,v] returns True; else it returns False.";
+GtQ::usage = "If u>v, GtQ[u,v] returns True; else it returns False.  If u>v and v>w, GtQ[u,v,w] returns True; else it returns False.";
 GtQ[u_,v_] := 
-  If[RealValuedNumberQ[u],
-    If[RealValuedNumberQ[v],
+  If[RealNumberQ[u],
+    If[RealNumberQ[v],
       u>v,
     With[{vn=N[Together[v]]},
     Head[vn]===Real && u>vn]],
   With[{un=N[Together[u]]},
   If[Head[un]===Real,
-    If[RealValuedNumberQ[v],
+    If[RealNumberQ[v],
       un>v,
     With[{vn=N[Together[v]]},
     Head[vn]===Real && un>vn]],
   False]]]
 
-(* If u>v and v>w, GtQ[u,v,w] returns True; else it returns False. *)
 GtQ[u_,v_,w_] := GtQ[u,v] && GtQ[v,w]  
 
 
-LtQ::usage = "If u<v, LtQ[u,v] returns True; else it returns False.";
+LtQ::usage = "If u>v, LtQ[u,v] returns True; else it returns False.  If u<v and v<w, LtQ[u,v,w] returns True; else it returns False.";
 LtQ[u_,v_] := 
-  If[RealValuedNumberQ[u],
-    If[RealValuedNumberQ[v],
+  If[RealNumberQ[u],
+    If[RealNumberQ[v],
       u<v,
     With[{vn=N[Together[v]]},
     Head[vn]===Real && u<vn]],
   With[{un=N[Together[u]]},
   If[Head[un]===Real,
-    If[RealValuedNumberQ[v],
+    If[RealNumberQ[v],
       un<v,
     With[{vn=N[Together[v]]},
     Head[vn]===Real && un<vn]],
   False]]]
 
-(* If u<v and v<w, LtQ[u,v,w] returns True; else it returns False. *)
 LtQ[u_,v_,w_] := LtQ[u,v] && LtQ[v,w]  
 
 
-GeQ::usage = "If u>=v, GeQ[u,v] returns True; else it returns False.";
+GeQ::usage = "If u>v, GeQ[u,v] returns True; else it returns False.  If u>=v and v>=w, GeQ[u,v,w] returns True; else it returns False.";
 GeQ[u_,v_] := 
-  If[RealValuedNumberQ[u],
-    If[RealValuedNumberQ[v],
+  If[RealNumberQ[u],
+    If[RealNumberQ[v],
       u>=v,
     With[{vn=N[Together[v]]},
     Head[vn]===Real && u>=vn]],
   With[{un=N[Together[u]]},
   If[Head[un]===Real,
-    If[RealValuedNumberQ[v],
+    If[RealNumberQ[v],
       un>=v,
     With[{vn=N[Together[v]]},
     Head[vn]===Real && un>=vn]],
   False]]]
 
-(* If u>=v and v>=w, GeQ[u,v,w] returns True; else it returns False. *)
 GeQ[u_,v_,w_] := GeQ[u,v] && GeQ[v,w]  
 
 
-LeQ::usage = "If u<=v, LeQ[u,v] returns True; else it returns False.";
+LeQ::usage = "If u>v, LeQ[u,v] returns True; else it returns False.  If u<=v and v<=w, LeQ[u,v,w] returns True; else it returns False.";
 LeQ[u_,v_] := 
-  If[RealValuedNumberQ[u],
-    If[RealValuedNumberQ[v],
+  If[RealNumberQ[u],
+    If[RealNumberQ[v],
       u<=v,
     With[{vn=N[Together[v]]},
     Head[vn]===Real && u<=vn]],
   With[{un=N[Together[u]]},
   If[Head[un]===Real,
-    If[RealValuedNumberQ[v],
+    If[RealNumberQ[v],
       un<=v,
     With[{vn=N[Together[v]]},
     Head[vn]===Real && un<=vn]],
   False]]]
 
-(* If u<=v and v<=w, LeQ[u,v,w] returns True; else it returns False. *)
 LeQ[u_,v_,w_] := LeQ[u,v] && LeQ[v,w]  
 
-(*
-RealValuedNumberQ::usage = "If u is an explicit non-complex number, RealValuedNumberQ[u] returns True; else it returns False.";
-RealValuedNumberQ[u_] := NumberQ[u] && Head[u]=!=Complex
-*)
+
+RealNumberQ::usage = "If u is an explicit non-complex number, RealNumberQ[u] returns True; else it returns False.";
+RealNumberQ[u_] := NumberQ[u] && Head[u]=!=Complex
+
 
 (* ::Section::Closed:: *)
 (*Multinomial predicates*)
@@ -487,19 +485,23 @@ RealValuedNumberQ[u_] := NumberQ[u] && Head[u]=!=Complex
 (* Despite what the online help says, PolynomialQ[u,x^v] returns an error message if v is a sum. *)
 
 
-(* PolyQ[u,x^v,n] returns True iff u is a polynomial of degree n. *)
+PolyQ::usage = 
+"If u is a polynomial in x, PolyQ[u,x] returns True; else it returns False.
+If u is a polynomial in x of degree n, PolyQ[u,x,n] returns True; else it returns False.
+If v is free of x and u is a polynomial in x^v, PolyQ[u,x^v] returns True; else it returns False.
+If v is free of x and u is a polynomial in x^v of degree n, PolyQ[u,x^v,n] returns True; else it returns False.";
+
+
+PolyQ[u_,x_Symbol] :=
+  PolynomialQ[u,x] || PolynomialQ[Together[u],x]
+
+
 PolyQ[u_,x_Symbol,n_] :=
   If[PolynomialQ[u,x],
     EqQ[Exponent[u,x],n] && NeQ[Coefficient[u,x,n],0],
-  With[{v=Together[u]}, PolynomialQ[v,x] && EqQ[Exponent[v,x],n] && NeQ[Coefficient[v,x,n],0]]]
+  With[{v=Together[u]},
+  PolynomialQ[v,x] && EqQ[Exponent[v,x],n] && NeQ[Coefficient[v,x,n],0]]]
 
-PolyQ[u_,x_Symbol^v_,n_] :=
-  PolyQ[u,x^v] && EqQ[Expon[u,x^v],n] && NeQ[Coeff[u,x^v,n],0]
-
-
-(* If v is free of x and u is a polynomial in x^v, PolyQ[u,x^v] returns True; else it returns False. *)
-PolyQ[u_,x_Symbol] :=
-  PolynomialQ[u,x] || PolynomialQ[Together[u],x]
 
 PolyQ[u_,x_Symbol^n_Integer] :=
   If[PolynomialQ[u,x],
@@ -521,28 +523,31 @@ PolyQ[u_,v_] :=
   False
 
 
+PolyQ[u_,x_Symbol^v_,n_] :=
+  PolyQ[u,x^v] && EqQ[Expon[u,x^v],n] && NeQ[Coeff[u,x^v,n],0]
+
+
 (* ::Subsection::Closed:: *)
 (*ProperPolyQ[u,x]*)
 
 
-(* If u is a polynomial in x and the constant term is nonzero, ProperPolyQ[u,x] returns True; else it returns False. *)
+ProperPolyQ::usage = "If u is a polynomial in x and the constant term is nonzero, ProperPolyQ[u,x] returns True; else it returns False.";
 ProperPolyQ[u_,x_Symbol] :=
   PolyQ[u,x] && NeQ[Coeff[u,x,0],0]
 
 
 (* ::Subsection::Closed:: *)
-(*BinomialQ[u,x]*)
+(*BinomialQ[u,x,n]*)
 
 
-(* If u is equivalent to an expression of the form a+b*x^n where n and b are not 0, *)
-(* BinomialQ[u,x] returns True; else it returns False. *)
+BinomialQ::usage = 
+"If u is equivalent to an expression of the form a+b*x^n where n and b are not 0, BinomialQ[u,x] returns True; else it returns False.
+If u is equivalent to an expression of the form a+b*x^n, BinomialQ[u,x,n] returns True; else it returns False.";
 BinomialQ[u_,x_Symbol] :=
   If[ListQ[u],
     Catch[Scan[Function[If[Not[BinomialQ[#,x]],Throw[False]]],u]; True],
   ListQ[BinomialParts[u,x]]]
 
-
-(* If u is equivalent to an expression of the form a+b*x^n, BinomialQ[u,x,n] returns True; else it returns False. *)
 BinomialQ[u_,x_Symbol,n_] :=
   If[ListQ[u],
     Catch[Scan[Function[If[Not[BinomialQ[#,x,n]],Throw[False]]],u]; True],
@@ -553,8 +558,7 @@ BinomialQ[u_,x_Symbol,n_] :=
 (*TrinomialQ[u,x]*)
 
 
-(* If u is equivalent to an expression of the form a+b*x^n+c*x^(2*n) where n, b and c are not 0, *)
-(* TrinomialQ[u,x] returns True; else it returns False. *)
+TrinomialQ::usage = "If u is equivalent to an expression of the form a+b*x^n+c*x^(2*n) where n, b and c are not 0, TrinomialQ[u,x] returns True; else it returns False.";
 TrinomialQ[u_,x_Symbol] :=
   If[ListQ[u],
     Catch[Scan[Function[If[Not[TrinomialQ[#,x]],Throw[False]]],u]; True],
@@ -565,8 +569,7 @@ TrinomialQ[u_,x_Symbol] :=
 (*GeneralizedBinomialQ[u,x]*)
 
 
-(* If u is equivalent to an expression of the form a*x^q+b*x^n where n, q and b are not 0, *)
-(* GeneralizedBinomialQ[u,x] returns True; else it returns False. *)
+GeneralizedBinomialQ::usage = "If u is equivalent to an expression of the form a*x^q+b*x^n where n, q and b are not 0, GeneralizedBinomialQ[u,x] returns True; else it returns False.";
 GeneralizedBinomialQ[u_,x_Symbol] :=
   If[ListQ[u],
     Catch[Scan[Function[If[Not[GeneralizedBinomialQ[#,x]],Throw[False]]],u]; True],
@@ -577,8 +580,7 @@ GeneralizedBinomialQ[u_,x_Symbol] :=
 (*GeneralizedTrinomialQ[u,x]*)
 
 
-(* If u is equivalent to an expression of the form a*x^q+b*x^n+c*x^(2*n-q) where n, q, b and c are not 0, *)
-(* GeneralizedTrinomialQ[u,x] returns True; else it returns False. *)
+GeneralizedTrinomialQ::usage = "If u is equivalent to an expression of the form a*x^q+b*x^n+c*x^(2*n-q) where n, q, b and c are not 0, GeneralizedTrinomialQ[u,x] returns True; else it returns False.";
 GeneralizedTrinomialQ[u_,x_Symbol] :=
   If[ListQ[u],
     Catch[Scan[Function[If[Not[GeneralizedTrinomialQ[#,x]],Throw[False]]],u]; True],
@@ -593,7 +595,7 @@ GeneralizedTrinomialQ[u_,x_Symbol] :=
 (*PosQ[u]*)
 
 
-(* If u is not 0 and has a positive form, PosQ[u] returns True, else it returns False. *)
+PosQ::usage = "If u is not 0 and has a positive form, PosQ[u] returns True, else it returns False.";
 PosQ[u_] :=
   PosAux[TogetherSimplify[u]]
 
@@ -630,6 +632,7 @@ PosAux[u_] :=
 (*NegQ[u]*)
 
 
+NegQ::usage = "If u is not 0 and has a negative form, NegQ[u] returns True, else it returns False.";
 NegQ[u_] :=
   Not[PosQ[u]] && NeQ[u,0]
 
@@ -638,37 +641,26 @@ NegQ[u_] :=
 (*NiceSqrtQ[u]*)
 
 
+NiceSqrtQ::usage = "If u has a nice squareroot (e.g. a positive number or none of the degrees of the factors of the squareroot of u are fractions), NiceSqrtQ[u] returns True, else it returns False.";
 NiceSqrtQ[u_] :=
-  Not[LtQ[u,0]] && NiceSqrtAuxQ[u]
-
-NiceSqrtAuxQ[u_] :=
   If[RationalQ[u],
     u>0,
-  If[PowerQ[u],
-    EvenQ[u[[2]]],
-  If[ProductQ[u],
-    NiceSqrtAuxQ[First[u]] && NiceSqrtAuxQ[Rest[u]],
-  If[SumQ[u],
-    Function[NonsumQ[#] && NiceSqrtAuxQ[#]] [Simplify[u]],
-  False]]]]
+  Not[FractionalPowerFactorQ[Rt[u,2]]]]
 
 
 (* ::Subsection::Closed:: *)
-(*PerfectSquareQ[u]*)
+(*FractionalPowerFactorQ[u]*)
 
 
-(* If u is a rational number whose squareroot is rational or if u is of the form u1^n1 u2^n2 ... 
-	and n1, n2, ... are even, PerfectSquareQ[u] returns True; else it returns False. *)
-PerfectSquareQ[u_] :=
-  If[RationalQ[u],
-    u>0 && RationalQ[Sqrt[u]],
+FractionalPowerFactorQ::usage = "If a factor of u is a complex constant or a fractional power, FractionalPowerFactorQ[u] returns True; else it returns False.";
+FractionalPowerFactorQ[u_] :=
+  If[AtomQ[u],
+    Head[u]===Complex,
   If[PowerQ[u],
-    EvenQ[u[[2]]],
+    FractionQ[u[[2]]],
   If[ProductQ[u],
-    PerfectSquareQ[First[u]] && PerfectSquareQ[Rest[u]],
-  If[SumQ[u],
-    Function[NonsumQ[#] && PerfectSquareQ[#]] [Simplify[u]],
-  False]]]]
+    FractionalPowerFactorQ[First[u]] || FractionalPowerFactorQ[Rest[u]],
+  False]]]
 
 
 (* ::Section::Closed:: *)
@@ -679,7 +671,7 @@ PerfectSquareQ[u_] :=
 (*SimplerQ[u,v]*)
 
 
-(* If u is simpler than v, SimplerQ[u,v] returns True, else it returns False.  SimplerQ[u,u] returns False. *)
+SimplerQ::usage = "If u is simpler than v, SimplerQ[u,v] returns True, else it returns False.  SimplerQ[u,u] returns False.";
 SimplerQ[u_,v_] :=
   If[IntegerQ[u],
     If[IntegerQ[v],
@@ -734,7 +726,7 @@ SimplerQ[u_,v_] :=
 (*SimplerSqrtQ[u,v]*)
 
 
-(* If Rt[u,2] is simpler than Rt[v,2], SimplerSqrtQ[u,v] returns True, else it returns False.  SimplerSqrtQ[u,u] returns False. *)
+SimplerSqrtQ::usage = "If Rt[u,2] is simpler than Rt[v,2], SimplerSqrtQ[u,v] returns True, else it returns False.  SimplerSqrtQ[u,u] returns False.";
 SimplerSqrtQ[u_,v_] :=
   If[LtQ[v,0] && Not[LtQ[u,0]],
     True,
@@ -770,8 +762,9 @@ SimplerSqrtQ[u_,v_] :=
 (*SumSimplerQ[u,v]*)
 
 
-(* If u+v is simpler than u, SumSimplerQ[u,v] returns True, else it returns False. *)
-(* If for every term w of v there is a term of u equal to n*w where n<-1/2, u+v will be simpler than u. *)
+SumSimplerQ::usage = 
+"If u+v is simpler than u, SumSimplerQ[u,v] returns True, else it returns False.
+If for every term w of v there is a term of u equal to n*w where n<-1/2, u+v will be simpler than u.";
 SumSimplerQ[u_,v_] :=
   If[RationalQ[u,v],
     If[v==0,
@@ -801,14 +794,15 @@ SumSimplerAuxQ[u_,v_] :=
 (*SimplerIntegrandQ[u,v,x]*)
 
 
-(* SimplerIntegrandQ[u,v,x] returns True iff u is simpler to integrate wrt x than v. *)
+SimplerIntegrandQ::usage = "If u is simpler to integrate wrt x than v, SimplerIntegrandQ[u,v,x] returns True; else it returns False.";
 SimplerIntegrandQ[u_,v_,x_Symbol] :=
   Module[{lst=CancelCommonFactors[u,v],u1,v1},
   u1=lst[[1]];
   v1=lst[[2]];
 (*If[Head[u1]===Head[v1] && Length[u1]==Length[v1]==1,
     SimplerIntegrandQ[u1[[1]],v1[[1]],x], *)
-  If[LeafCount[u1]<3/4*LeafCount[v1],
+  If[LeafCount[u1]<6/10*LeafCount[v1],
+(*If[LeafCount[u1]<3/4*LeafCount[v1], *)
     True,
   If[RationalFunctionQ[u1,x],
     If[RationalFunctionQ[v1,x],
@@ -817,7 +811,7 @@ SimplerIntegrandQ[u_,v_,x_Symbol] :=
   False]]]
 
 
-(* CancelCommonFactors[u,v] returns {u',v'} are the noncommon factors of u and v respectively. *)
+CancelCommonFactors::usage = "CancelCommonFactors[u,v] returns the list {u',v'} where u' and v' are the noncommon factors of u and v respectively.";
 CancelCommonFactors[u_,v_] :=
   If[ProductQ[u],
     If[ProductQ[v],
@@ -842,13 +836,12 @@ CancelCommonFactors[u_,v_] :=
 (*BinomialParts[u,x]*)
 
 
-(* u is a binomial. BinomialDegree[u,x] returns the degree of x in u. *)
+BinomialDegree::usage = "u is a binomial. BinomialDegree[u,x] returns the degree of x in u.";
 BinomialDegree[u_,x_Symbol] :=
   BinomialParts[u,x][[3]]
 
 
-(* If u[x] is equivalent to an expression of the form a+b*x^n where n!=0 and b!=0,
-	BinomialParts[u,x] returns the list {a,b,n}; else it returns False. *)
+BinomialDegree::usage = "If u[x] is equivalent to an expression of the form a+b*x^n where n!=0 and b!=0, BinomialParts[u,x] returns the list {a,b,n}; else it returns False.";
 BinomialParts[u_,x_Symbol] :=
   If[PolynomialQ[u,x],
     If[Exponent[u,x]>0,
@@ -921,14 +914,12 @@ BinomialParts[u_,x_Symbol] :=
 (*TrinomialParts[u,x]*)
 
 
-(* If u is equivalent to a trinomial of the form a + b*x^n + c*x^(2*n) where n!=0, b!=0 and c!=0, 
-	TrinomialDegree[u,x] returns n. *)
+TrinomialDegree::usage = "If u is equivalent to a trinomial of the form a + b*x^n + c*x^(2*n) where n!=0, b!=0 and c!=0, TrinomialDegree[u,x] returns n.";
 TrinomialDegree[u_,x_Symbol] :=
   TrinomialParts[u,x][[4]]
 
 
-(* If u is equivalent to a trinomial of the form a + b*x^n + c*x^(2*n) where n!=0, b!=0 and c!=0,
-	TrinomialParts[u,x] returns the list {a,b,c,n}; else it returns False. *)
+TrinomialParts::usage = "If u is equivalent to a trinomial of the form a + b*x^n + c*x^(2*n) where n!=0, b!=0 and c!=0, TrinomialParts[u,x] returns the list {a,b,c,n}; else it returns False.";
 TrinomialParts[u_,x_Symbol] :=
   If[PolynomialQ[u,x],
     With[{lst=CoefficientList[u,x]},
@@ -1016,14 +1007,12 @@ TrinomialParts[u_,x_Symbol] :=
 (*GeneralizedBinomialParts[u,x]*)
 
 
-(* If u is equivalent to a generalized binomial of the form a*x^q + b*x^n where a, b, n, and q not equal 0,
-	GeneralizedBinomialDegree[u,x] returns n-q. *)
+GeneralizedBinomialDegree::usage = "If u is equivalent to a generalized binomial of the form a*x^q + b*x^n where a, b, n, and q not equal 0, GeneralizedBinomialDegree[u,x] returns n-q.";
 GeneralizedBinomialDegree[u_,x_Symbol] :=
   Function[#[[3]]-#[[4]]][GeneralizedBinomialParts[u,x]]
 
 
-(* If u is equivalent to a generalized binomial of the form a*x^q + b*x^n where a, b, n, and q not equal 0,
-	GeneralizedBinomialParts[u,x] returns the list {a,b,n,q}; else it returns False. *)
+GeneralizedBinomialParts::usage = "If u is equivalent to a generalized binomial of the form a*x^q + b*x^n where a, b, n, and q not equal 0, GeneralizedBinomialParts[u,x] returns the list {a,b,n,q}; else it returns False.";
 GeneralizedBinomialParts[a_.*x_^q_.+b_.*x_^n_.,x_Symbol] :=
   {a,b,n,q} /;
 FreeQ[{a,b,n,q},x] && PosQ[n-q]
@@ -1054,14 +1043,12 @@ GeneralizedBinomialParts[u_,x_Symbol] :=
 (*GeneralizedTrinomialParts[u,x]*)
 
 
-(* If u is equivalent to a generalized trinomial of the form a*x^q + b*x^n + c*x^(2*n-q) where n!=0, q!=0, b!=0 and c!=0, 
-	GeneralizedTrinomialDegree[u,x] returns n-q. *)
+GeneralizedTrinomialDegree::usage = "If u is equivalent to a generalized trinomial of the form a*x^q + b*x^n + c*x^(2*n-q) where n!=0, q!=0, b!=0 and c!=0, GeneralizedTrinomialDegree[u,x] returns n-q.";
 GeneralizedTrinomialDegree[u_,x_Symbol] :=
   Function[#[[4]]-#[[5]]][GeneralizedTrinomialParts[u,x]]
 
 
-(* If u is equivalent to a generalized trinomial of the form a*x^q + b*x^n + c*x^(2*n-q) where n!=0, q!=0, b!=0 and c!=0,
-	GeneralizedTrinomialParts[u,x] returns the list {a,b,c,n,q}; else it returns False. *)
+GeneralizedTrinomialParts::usage = "If u is equivalent to a generalized trinomial of the form a*x^q + b*x^n + c*x^(2*n-q) where n!=0, q!=0, b!=0 and c!=0, GeneralizedTrinomialParts[u,x] returns the list {a,b,c,n,q}; else it returns False.";
 GeneralizedTrinomialParts[a_.*x_^q_.+b_.*x_^n_.+c_.*x_^r_.,x_Symbol] :=
   {a,b,c,n,q} /;
 FreeQ[{a,b,c,n,q},x] && EqQ[r,2*n-q]
@@ -1074,7 +1061,7 @@ FreeQ[a,x]
 
 GeneralizedTrinomialParts[u_,x_Symbol] :=
   With[{lst=Expon[u,x,List]},
-  If[Length[lst]==3 && NeQ[lst[[0]],0] && EqQ[lst[[3]],2*lst[[2]]-lst[[1]]],
+  If[Length[lst]==3 && NeQ[lst[[1]],0] && EqQ[lst[[3]],2*lst[[2]]-lst[[1]]],
     {Coeff[u,x,lst[[1]]],Coeff[u,x,lst[[2]]],Coeff[u,x,lst[[3]]],lst[[2]],lst[[1]]},
   False]] /;
 PolyQ[u,x]
@@ -1100,44 +1087,10 @@ GeneralizedTrinomialParts[u_,x_Symbol] :=
 
 
 (* ::Subsection::Closed:: *)
-(*IntPart[u]*)
-
-
-(* IntPart[u] returns the sum of the integer terms of u. *) 
-IntPart[m_*u_,n_:1] :=
-  IntPart[u,m*n] /;
-RationalQ[m]
-
-IntPart[u_,n_:1] :=
-  If[RationalQ[u],
-    IntegerPart[n*u],
-  If[SumQ[u],
-    Map[Function[IntPart[#,n]],u],
-  0]]
-
-
-(* ::Subsection::Closed:: *)
-(*FracPart[u]*)
-
-
-(* IntPart[u] returns the sum of the non-integer terms of u. *) 
-FracPart[m_*u_,n_:1] :=
-  FracPart[u,m*n] /;
-RationalQ[m]
-
-FracPart[u_,n_:1] :=
-  If[RationalQ[u],
-    FractionalPart[n*u],
-  If[SumQ[u],
-    Map[Function[FracPart[#,n]],u],
-  n*u]]
-
-
-(* ::Subsection::Closed:: *)
 (*NumericFactor[u] *)
 
 
-(* NumericFactor[u] returns the real numeric factor of u. *)
+NumericFactor::usage = "NumericFactor[u] returns the real numeric factor of u.";
 NumericFactor[u_] :=
   If[NumberQ[u],
     If[EqQ[Im[u],0],
@@ -1163,7 +1116,7 @@ NumericFactor[u_] :=
   1]]]]
 
 
-(* NonnumericFactors[u] returns the product of the factors of u that are not real numbers. *)
+NumericFactor::usage = "NonnumericFactors[u] returns the product of the factors of u that are not real numbers.";
 NonnumericFactors[u_] :=
   If[NumberQ[u],
     If[EqQ[Im[u],0],
@@ -1189,7 +1142,7 @@ NonnumericFactors[u_] :=
 (*RemoveContent[u,x]*)
 
 
-(* RemoveContent[u,x] returns u with the content free of x removed. *)
+RemoveContent::usage = "RemoveContent[u,x] returns u with the content free of x removed.";
 RemoveContent[u_,x_Symbol] :=
   With[{v=NonfreeFactors[u,x]},
   With[{w=Together[v]},
@@ -1225,7 +1178,7 @@ RemoveContentAux[u_,x_Symbol] :=
 (*FreeFactors[u,x]*)
 
 
-(* FreeFactors[u,x] returns the product of the factors of u free of x. *)
+FreeFactors::usage = "FreeFactors[u,x] returns the product of the factors of u free of x.";
 FreeFactors[u_,x_] :=
   If[ProductQ[u],
     Map[Function[If[FreeQ[#,x],#,1]],u],
@@ -1238,7 +1191,7 @@ FreeFactors[u_,x_] :=
 (*NonfreeFactors[u,x]*)
 
 
-(* NonfreeFactors[u,x] returns the product of the factors of u not free of x. *)
+NonfreeFactors::usage = "NonfreeFactors[u,x] returns the product of the factors of u not free of x.";
 NonfreeFactors[u_,x_] :=
   If[ProductQ[u],
     Map[Function[If[FreeQ[#,x],1,#]],u],
@@ -1251,7 +1204,7 @@ NonfreeFactors[u_,x_] :=
 (*FreeTerms[u,x]*)
 
 
-(* FreeTerms[u,x] returns the sum of the terms of u free of x. *)
+FreeTerms::usage = "FreeTerms[u,x] returns the sum of the terms of u free of x.";
 FreeTerms[u_,x_] :=
   If[SumQ[u],
     Map[Function[If[FreeQ[#,x],#,0]],u],
@@ -1264,7 +1217,7 @@ FreeTerms[u_,x_] :=
 (*NonfreeTerms[u,x]*)
 
 
-(* NonfreeTerms[u,x] returns the sum of the terms of u not free of x. *)
+NonfreeTerms::usage = "NonfreeTerms[u,x] returns the sum of the terms of u not free of x.";
 NonfreeTerms[u_,x_] :=
   If[SumQ[u],
     Map[Function[If[FreeQ[#,x],0,#]],u],
@@ -1318,7 +1271,7 @@ RemainingTerms[u_] :=
 (*LeadFactor[u]*)
 
 
-(* LeadFactor[u] returns the leading factor of u. *)
+LeadFactor::usage = "LeadFactor[u] returns the leading factor of u.";
 LeadFactor[u_] :=
   If[ProductQ[u],
     LeadFactor[First[u]],
@@ -1333,7 +1286,7 @@ LeadFactor[u_] :=
 (*RemainingFactors[u]*)
 
 
-(* RemainingFactors[u] returns the remaining factors of u. *)
+RemainingFactors::usage = "RemainingFactors[u] returns the remaining factors of u.";
 RemainingFactors[u_] :=
   If[ProductQ[u],
     RemainingFactors[First[u]]*Rest[u],
@@ -1348,7 +1301,7 @@ RemainingFactors[u_] :=
 (*LeadBase[u]*)
 
 
-(* LeadBase[u] returns the base of the leading factor of u. *)
+LeadBase::usage = "LeadBase[u] returns the base of the leading factor of u.";
 LeadBase[u_] :=
   With[{v=LeadFactor[u]},
   If[PowerQ[v],
@@ -1360,7 +1313,7 @@ LeadBase[u_] :=
 (*LeadDegree[u]*)
 
 
-(* LeadDegree[u] returns the degree of the leading factor of u. *)
+LeadDegree::usage = "LeadDegree[u] returns the degree of the leading factor of u.";
 LeadDegree[u_] :=
   With[{v=LeadFactor[u]},
   If[PowerQ[v],
@@ -1372,7 +1325,7 @@ LeadDegree[u_] :=
 (*Numer[u]*)
 
 
-(* Numer[u] returns the numerator of u. *)
+Numer::usage = "Numer[u] returns the numerator of u.";
 Numer[m_Integer^n_Rational] :=
   1 /;
 n<0
@@ -1389,7 +1342,7 @@ Numer[u_] := Numerator[u]
 (*Denom[u]*)
 
 
-(* Denom[u] returns the denominator of u. *)
+Denom::usage = "Denom[u] returns the denominator of u.";
 Denom[m_Integer^n_Rational] :=
   m^-n /;
 n<0
@@ -1410,117 +1363,43 @@ Denom[u_] := Denominator[u]
 (*Multinomial Recognizer functions*)
 
 
-(* ::Item:: *)
-(*LinearQ[u,x] returns True iff u is a polynomial of degree 1.*)
-
-
+LinearQ::usage = "LinearQ[u,x] returns True iff u is a polynomial of degree 1.";
 LinearQ[u_,x_Symbol] :=
   If[ListQ[u],
     Catch[Scan[Function[If[PolyQ[#,x,1],Null,Throw[False]]],u]; True],
   PolyQ[u,x,1]]
 
 
-(* ::Input:: *)
-(* *)
-
-
-(* ::Item:: *)
-(*LinearProductQ[u,x] returns True iff u is a product of integer powers of linears. *)
-
-
-(* LinearProductQ[u_,x_Symbol] :=
-  ProductQ[NonfreeFactors[u,x]] && Catch[
-	Scan[Function[If[MatchQ[#,Pm_^m_. /; PolyQ[Pm,x,1] && IntegerQ[m]], Null, Throw[False]]],NonfreeFactors[u,x]];
-    True] *)
-
-
-(* ::Input:: *)
-(* *)
-
-
-(* ::Item:: *)
-(*QuadraticProductQ[u,x] returns True iff u is a product of integer powers of linear or quadratic polynomials. *)
-
-
-QuadraticProductQ[u_,x_Symbol] :=
-  ProductQ[NonfreeFactors[u,x]] && Catch[
-	Scan[Function[If[MatchQ[#,Pm_^m_. /; PolyQ[Pm,x] && Expon[Pm,x]<=2 && IntegerQ[m]], Null, Throw[False]]],NonfreeFactors[u,x]];
-    True]
-
-
-(* ::Input:: *)
-(* *)
-
-
-(* ::Item:: *)
-(*PowerOfLinearQ[u,x] returns True iff u is equivalent to an expression of the form (a+b x)^m.*)
-
-
-PowerOfLinearQ[u_^m_.,x_Symbol] :=
-  FreeQ[m,x] && PolynomialQ[u,x] && If[IntegerQ[m], MatchQ[FactorSquareFree[u], w_^n_. /; FreeQ[n,x] && LinearQ[w,x]], LinearQ[u,x]]
-
-
-(* ::Input:: *)
-(* *)
-
-
-(* ::Item:: *)
-(*QuadraticQ[u,x] returns True iff u is a polynomial of degree 2 and not a monomial of the form a x^2.*)
-
-
+QuadraticQ::usage = "QuadraticQ[u,x] returns True iff u is a polynomial of degree 2 and not a monomial of the form a x^2.";
 QuadraticQ[u_,x_Symbol] :=
   If[ListQ[u],
     Catch[Scan[Function[If[Not[QuadraticQ[#,x]],Throw[False]]],u]; True],
   PolyQ[u,x,2] && Not[Coefficient[u,x,0]===0 && Coefficient[u,x,1]===0]]
 
 
-(* ::Input:: *)
-(* *)
-
-
-(* ::Item:: *)
-(*LinearPairQ[u,v,x] returns True iff u and v are linear not equal x but u/v is a constant wrt x.*)
-
-
+LinearPairQ::usage = "LinearPairQ[u,v,x] returns True iff u and v are linear not equal x but u/v is a constant wrt x.";
 LinearPairQ[u_,v_,x_Symbol] :=
   LinearQ[u,x] && LinearQ[v,x] && NeQ[u,x] && EqQ[Coefficient[u,x,0]*Coefficient[v,x,1]-Coefficient[u,x,1]*Coefficient[v,x,0],0]
 
 
-(* ::Input:: *)
-(* *)
-
-
-(* ::Item:: *)
-(*If u is of the form a*x^n where n!=0 and a!=0, MonomialQ[u,x] returns True; else False.*)
-
-
+MonomialQ::usage = "If u is of the form a*x^n where n!=0 and a!=0, MonomialQ[u,x] returns True; else False.";
 MonomialQ[u_,x_Symbol] :=
   If[ListQ[u],
     Catch[Scan[Function[If[MonomialQ[#,x],Null,Throw[False]]],u]; True],
   MatchQ[u, a_.*x^n_. /; FreeQ[{a,n},x]]]
 
 
-(* ::Input:: *)
-(* *)
-
-
-(* ::Item:: *)
-(*u is sum whose terms are monomials.  MinimumExponent[u,x] returns the exponent of the term having the smallest exponent.*)
-
-
+MinimumMonomialExponent::usage = "u is sum whose terms are monomials.  MinimumExponent[u,x] returns the exponent of the term having the smallest exponent.";
 MinimumMonomialExponent[u_,x_Symbol] :=
   Module[{n=MonomialExponent[First[u],x]},
   Scan[Function[If[PosQ[n-MonomialExponent[#,x]],n=MonomialExponent[#,x]]],u];
   n]
 
 
-(* ::Input:: *)
-(* *)
-
-
-(* ::Item:: *)
-(*u is a monomial. MonomialExponent[u,x] returns the exponent of x in u.*)
-
+MonomialExponent::usage = "u is a monomial. MonomialExponent[u,x] returns the exponent of x in u.";
+MonomialExponent[a_,x_Symbol] :=
+  0 /; 
+FreeQ[a,x]
 
 MonomialExponent[a_.*x_^n_.,x_Symbol] :=
   n /; 
@@ -1531,52 +1410,21 @@ FreeQ[{a,n},x]
 (*Multinomial Match functions*)
 
 
-(* ::Item:: *)
-(*LinearMatchQ[u,x] returns True iff u matches patterns of the form a+b x where a and b are free of x.*)
-
-
+LinearMatchQ::usage = "LinearMatchQ[u,x] returns True iff u matches patterns of the form a+b x where a and b are free of x.";
 LinearMatchQ[u_,x_Symbol] :=
   If[ListQ[u],
     Catch[Scan[Function[If[Not[LinearMatchQ[#,x]],Throw[False]]],u]; True],
   MatchQ[u, a_.+b_.*x /; FreeQ[{a,b},x]]]
 
 
-(* ::Input:: *)
-(**)
-
-
-(* ::Item:: *)
-(*PowerOfLinearMatchQ[u,x] returns True iff u matches patterns of the form (a+b x)^m where a, b and m are free of x.*)
-
-
-PowerOfLinearMatchQ[u_,x_Symbol] :=
-  If[ListQ[u],
-    Catch[Scan[Function[If[Not[PowerOfLinearMatchQ[#,x]],Throw[False]]],u]; True],
-  MatchQ[u, (a_.+b_.*x)^m_. /; FreeQ[{a,b,m},x]]]
-
-
-(* ::Input:: *)
-(**)
-
-
-(* ::Item:: *)
-(*QuadraticMatchQ[u,x] returns True iff u matches patterns of the form a+b x+c x^2 or a+c x^2 where a, b and c are free of x.*)
-
-
+QuadraticMatchQ::usage = "QuadraticMatchQ[u,x] returns True iff u matches patterns of the form a+b x+c x^2 or a+c x^2 where a, b and c are free of x.";
 QuadraticMatchQ[u_,x_Symbol] :=
   If[ListQ[u],
     Catch[Scan[Function[If[Not[QuadraticMatchQ[#,x]],Throw[False]]],u]; True],
   MatchQ[u, a_.+b_.*x+c_.*x^2 /; FreeQ[{a,b,c},x]] || MatchQ[u, a_.+c_.*x^2 /; FreeQ[{a,c},x]]]
 
 
-(* ::Input:: *)
-(* *)
-
-
-(* ::Item:: *)
-(*CubicMatchQ[u,x] returns True iff u matches patterns of the form a+b x+c x^2+d x^3, a+b x+d x^3, a+c x^2+d x^3 or a+d x^3 where a, b, c and d are free of x.*)
-
-
+CubicMatchQ::usage = "CubicMatchQ[u,x] returns True iff u matches patterns of the form a+b x+c x^2+d x^3, a+b x+d x^3, a+c x^2+d x^3 or a+d x^3 where a, b, c and d are free of x.";
 CubicMatchQ[u_,x_Symbol] :=
   If[ListQ[u],
     Catch[Scan[Function[If[Not[CubicMatchQ[#,x]],Throw[False]]],u]; True],
@@ -1586,96 +1434,56 @@ CubicMatchQ[u_,x_Symbol] :=
   MatchQ[u, a_.+d_.*x^3 /; FreeQ[{a,d},x]]]
 
 
-(* ::Input:: *)
-(* *)
-
-
-(* ::Item:: *)
-(*BinomialMatchQ[u,x] returns True iff u matches patterns of the form a+b x^n where a, b and n are free of x.*)
-
-
+BinomialMatchQ::usage = "BinomialMatchQ[u,x] returns True iff u matches patterns of the form a+b x^n where a, b and n are free of x.";
 BinomialMatchQ[u_,x_Symbol] :=
   If[ListQ[u],
     Catch[Scan[Function[If[Not[BinomialMatchQ[#,x]],Throw[False]]],u]; True],
   MatchQ[u, a_.+b_.*x^n_. /; FreeQ[{a,b,n},x]]]
 
 
-(* ::Input:: *)
-(* *)
-
-
-(* ::Item:: *)
-(*GeneralizedBinomialMatchQ[u,x] returns True iff u matches patterns of the form a x^q+b x^n where a, b, n and q are free of x.*)
-
-
+GeneralizedBinomialMatchQ::usage = "GeneralizedBinomialMatchQ[u,x] returns True iff u matches patterns of the form a x^q+b x^n where a, b, n and q are free of x.";
 GeneralizedBinomialMatchQ[u_,x_Symbol] :=
   If[ListQ[u],
     Catch[Scan[Function[If[Not[GeneralizedBinomialMatchQ[#,x]],Throw[False]]],u]; True],
   MatchQ[u, a_.*x^q_.+b_.*x^n_. /; FreeQ[{a,b,n,q},x]]]
 
 
-(* ::Input:: *)
-(* *)
-
-
-(* ::Item:: *)
-(*TrinomialMatchQ[u,x] returns True iff u matches patterns of the form a+b x+c x^n or a+c x^(2 n) where a, b, c and n are free of x.*)
-
-
+TrinomialMatchQ::usage = "TrinomialMatchQ[u,x] returns True iff u matches patterns of the form a+b x+c x^n or a+c x^(2 n) where a, b, c and n are free of x.";
 TrinomialMatchQ[u_,x_Symbol] :=
   If[ListQ[u],
     Catch[Scan[Function[If[Not[TrinomialMatchQ[#,x]],Throw[False]]],u]; True],
   MatchQ[u, a_.+b_.*x^n_.+c_.*x^j_. /; FreeQ[{a,b,c,n},x] && EqQ[j-2*n,0]]]
 
 
-(* ::Input:: *)
-(* *)
-
-
-(* ::Item:: *)
-(*GeneralizedTrinomialMatchQ[u,x] returns True iff u matches patterns of the form a x^q+b x^n+c x^(2 n-q) where a, b, c, n and q are free of x.*)
-
-
+GeneralizedTrinomialMatchQ::usage = "GeneralizedTrinomialMatchQ[u,x] returns True iff u matches patterns of the form a x^q+b x^n+c x^(2 n-q) where a, b, c, n and q are free of x.";
 GeneralizedTrinomialMatchQ[u_,x_Symbol] :=
   If[ListQ[u],
     Catch[Scan[Function[If[Not[GeneralizedTrinomialMatchQ[#,x]],Throw[False]]],u]; True],
   MatchQ[u, a_.*x^q_.+b_.*x^n_.+c_.*x^r_. /; FreeQ[{a,b,c,n,q},x] && EqQ[r-(2*n-q),0]]]
 
 
-(* ::Input:: *)
-(* *)
-
-
-(* ::Item:: *)
-(*QuotientOfLinearsMatchQ[u,x] returns True iff u matches patterns of the form e (a+b x)/(c+d x) where a, b, c and d are free of x.*)
-
-
+QuotientOfLinearsMatchQ::usage = "QuotientOfLinearsMatchQ[u,x] returns True iff u matches patterns of the form e (a+b x)/(c+d x) where a, b, c and d are free of x.";
 QuotientOfLinearsMatchQ[u_,x_Symbol] :=
   If[ListQ[u],
     Catch[Scan[Function[If[Not[QuotientOfLinearsMatchQ[#,x]],Throw[False]]],u]; True],
   MatchQ[u, e_.*(a_.+b_.*x)/(c_.+d_.*x) /; FreeQ[{a,b,c,d,e},x]]]
 
 
-(* ::Input:: *)
-(* *)
-
-
 (* ::Subsection::Closed:: *)
 (*Polynomial Terms functions*)
 
 
-(* If u (x) is an expression of the form a*x^n where n is zero or a positive integer,
-	PolynomialTermQ[u,x] returns True; else it returns False. *)
+PolynomialTermQ::usage = "If u(x) is an expression of the form a*x^n where n is zero or a positive integer, PolynomialTermQ[u,x] returns True; else it returns False.";
 PolynomialTermQ[u_,x_Symbol] :=
   FreeQ[u,x] || MatchQ[u,a_.*x^n_. /; FreeQ[a,x] && IntegerQ[n] && n>0]
 
 
-(* u (x) is a sum.  PolynomialTerms[u,x] returns the sum of the polynomial terms of u (x). *)
+PolynomialTerms::usage = "u(x) is a sum.  PolynomialTerms[u,x] returns the sum of the polynomial terms of u(x).";
 PolynomialTerms[u_,x_Symbol] :=
   Map[Function[If[PolynomialTermQ[#,x],#,0]],u]
 
 
-(* u (x) is a sum.  NonpolynomialTerms[u,x] returns the sum of the nonpolynomial terms of u (x). *)
+NonpolynomialTerms::usage = "u(x) is a sum.  NonpolynomialTerms[u,x] returns the sum of the nonpolynomial terms of u(x).";
 NonpolynomialTerms[u_,x_Symbol] :=
   Map[Function[If[PolynomialTermQ[#,x],0,#]],u]
 
@@ -1684,14 +1492,12 @@ NonpolynomialTerms[u_,x_Symbol] :=
 (*PseudoBinomial Routines*)
 
 
-(* If u is equivalent to a polynomial of the form a+b*(c+d*x)^n where n\[Element]\[DoubleStruckCapitalZ] and n>2,
-	PseudoBinomialQ[u,x] returns True; else it returns False. *)
+PseudoBinomialQ::usage = "If u is equivalent to a polynomial of the form a+b*(c+d*x)^n where n\[Element]\[DoubleStruckCapitalZ] and n>2, PseudoBinomialQ[u,x] returns True; else it returns False.";
 PseudoBinomialQ[u_,x_Symbol] :=
   ListQ[PseudoBinomialParts[u,x]]
 
 
-(* If u is equivalent to a polynomial of the form a+b*(e+f*x)^n and v to a polynomial of the form c+d*(e+f*x)^n where n\[Element]\[DoubleStruckCapitalZ] and n>2,
-	PseudoBinomialPairQ[u,v,x] returns True; else it returns False. *)
+PseudoBinomialPairQ::usage = "If u is equivalent to a polynomial of the form a+b*(e+f*x)^n and v to a polynomial of the form c+d*(e+f*x)^n where n\[Element]\[DoubleStruckCapitalZ] and n>2, PseudoBinomialPairQ[u,v,x] returns True; else it returns False.";
 PseudoBinomialPairQ[u_,v_,x_Symbol] :=
   With[{lst1=PseudoBinomialParts[u,x]},
   If[AtomQ[lst1],
@@ -1702,14 +1508,13 @@ PseudoBinomialPairQ[u_,v_,x_Symbol] :=
   Drop[lst1,2]===Drop[lst2,2]]]]]
 
 
-(* u is pseudo-binomial in x, NormalizePseudoBinomial[u,x] returns u in the form a+b*(c+d*x)^n. *)
+NormalizePseudoBinomial::usage = "u is pseudo-binomial in x, NormalizePseudoBinomial[u,x] returns u in the form a+b*(c+d*x)^n.";
 NormalizePseudoBinomial[u_,x_Symbol] :=
   With[{lst=PseudoBinomialParts[u,x]},
   lst[[1]]+lst[[2]]*(lst[[3]]+lst[[4]]*x)^lst[[5]]]
 
 
-(* If u is equivalent to a polynomial of the form a+b*(c+d*x)^n where n\[Element]\[DoubleStruckCapitalZ] and n>2,
-	PseudoBinomialParts[u,x] returns the list {a,b,c,d,n}; else it returns False. *)
+PseudoBinomialParts::usage = "If u is equivalent to a polynomial of the form a+b*(c+d*x)^n where n\[Element]\[DoubleStruckCapitalZ] and n>2, PseudoBinomialParts[u,x] returns the list {a,b,c,d,n}; else it returns False.";
 PseudoBinomialParts[u_,x_Symbol] :=
   If[PolynomialQ[u,x] && Expon[u,x]>2,
     Module[{a,c,d,n},
@@ -1727,9 +1532,7 @@ PseudoBinomialParts[u_,x_Symbol] :=
 (*Perfect Power Test Function*)
 
 
-(* If u (x) is equivalent to a polynomial raised to an integer power greater than 1,
-	PerfectPowerTest[u,x] returns u (x) as an expanded polynomial raised to the power;
-	else it returns False. *)
+PerfectPowerTest::usage = "If u (x) is equivalent to a polynomial raised to an integer power greater than 1, PerfectPowerTest[u,x] returns u (x) as an expanded polynomial raised to the power; else it returns False.";
 PerfectPowerTest[u_,x_Symbol] :=
   If[PolynomialQ[u,x],
     Module[{lst=FactorSquareFreeList[u],gcd=0,v=1},
@@ -1747,8 +1550,7 @@ PerfectPowerTest[u_,x_Symbol] :=
 (*Square Free Factor Test Function*)
 
 
-(* If u (x) can be square free factored, SquareFreeFactorTest[u,x] returns u (x) in
-	factored form; else it returns False. *)
+(* SquareFreeFactorTest::usage = "If u (x) can be square free factored, SquareFreeFactorTest[u,x] returns u (x) in factored form; else it returns False."; *)
 (* SquareFreeFactorTest[u_,x_Symbol] :=
   If[PolynomialQ[u,x],
     With[{v=FactorSquareFree[u]},
@@ -1763,10 +1565,10 @@ PerfectPowerTest[u_,x_Symbol] :=
 
 
 (* ::Subsection::Closed:: *)
-(*RationalFunctionQ*)
+(*RationalFunctionQ[u,x]*)
 
 
-(* If u is a rational function of x, RationalFunctionQ[u,x] returns True; else it returns False. *)
+RationalFunctionQ::usage = "If u is a rational function of x, RationalFunctionQ[u,x] returns True; else it returns False.";
 RationalFunctionQ[u_,x_Symbol] :=
   If[AtomQ[u] || FreeQ[u,x],
     True,
@@ -1778,10 +1580,10 @@ RationalFunctionQ[u_,x_Symbol] :=
 
 
 (* ::Subsection::Closed:: *)
-(*RationalFunctionFactors*)
+(*RationalFunctionFactors[u,x]*)
 
 
-(* RationalFunctionFactors[u,x] returns the product of the factors of u that are rational functions of x. *)
+RationalFunctionFactors::usage = "RationalFunctionFactors[u,x] returns the product of the factors of u that are rational functions of x.";
 RationalFunctionFactors[u_,x_Symbol] :=
   If[ProductQ[u],
     Map[Function[If[RationalFunctionQ[#,x],#,1]],u],
@@ -1791,10 +1593,10 @@ RationalFunctionFactors[u_,x_Symbol] :=
 
 
 (* ::Subsection::Closed:: *)
-(*NonrationalFunctionFactors*)
+(*NonrationalFunctionFactors[u,x]*)
 
 
-(* NonrationalFunctionFactors[u,x] returns the product of the factors of u that are not rational functions of x. *)
+NonrationalFunctionFactors::usage = "NonrationalFunctionFactors[u,x] returns the product of the factors of u that are not rational functions of x.";
 NonrationalFunctionFactors[u_,x_Symbol] :=
   If[ProductQ[u],
     Map[Function[If[RationalFunctionQ[#,x],1,#]],u],
@@ -1804,12 +1606,10 @@ NonrationalFunctionFactors[u_,x_Symbol] :=
 
 
 (* ::Subsection::Closed:: *)
-(*RationalFunctionExponents*)
+(*RationalFunctionExponents[u,x]*)
 
 
-(* u is a polynomial or rational function of x. *)
-(* RationalFunctionExponents[u,x] returns a list of the exponent of the *)
-(* numerator of u and the exponent of the denominator of u. *)
+RationalFunctionExponents::usage = "u is a polynomial or rational function of x.  RationalFunctionExponents[u,x] returns a list of the exponent of the numerator of u and the exponent of the denominator of u.";
 RationalFunctionExponents[u_,x_Symbol] :=
   If[PolynomialQ[u,x],
     {Exponent[u,x],0},
@@ -1831,11 +1631,10 @@ RationalFunctionExponents[u_,x_Symbol] :=
 
 
 (* ::Subsection::Closed:: *)
-(*RationalFunctionExpand*)
+(*RationalFunctionExpand[u,x]*)
 
 
-(* u is a polynomial or rational function of x. *)
-(* RationalFunctionExpand[u,x] returns the expansion of the factors of u that are rational functions times the other factors. *)
+RationalFunctionExpand::usage = "u is a polynomial or rational function of x.  RationalFunctionExpand[u,x] returns the expansion of the factors of u that are rational functions times the other factors.";
 RationalFunctionExpand[u_*v_^n_,x_Symbol] :=
   With[{w=RationalFunctionExpand[u,x]},
   If[SumQ[w],
@@ -1856,11 +1655,10 @@ RationalFunctionExpand[u_,x_Symbol] :=
 
 
 (* ::Subsection::Closed:: *)
-(*PolyGCD*)
+(*PolyGCD[u,v,x]*)
 
 
-(* u and v are polynomials in x. *)
-(* PolyGCD[u,v,x] returns the factors of the gcd of u and v dependent on x. *)
+PolyGCD::usage = "u and v are polynomials in x.  PolyGCD[u,v,x] returns the factors of the gcd of u and v dependent on x.";
 PolyGCD[u_,v_,x_Symbol] :=
   NonfreeFactors[PolynomialGCD[u,v],x]
 
@@ -1873,8 +1671,7 @@ PolyGCD[u_,v_,x_Symbol] :=
 (*AlgebraicFunctionQ*)
 
 
-(* AlgebraicFunctionQ[u,x] returns True iff u is an algebraic of x *)
-(* If flag is True, exponents can be nonnumeric. *)
+AlgebraicFunctionQ::usage = "AlgebraicFunctionQ[u,x] returns True iff u is an algebraic function of x. If flag is True, exponents can be nonnumeric.";
 AlgebraicFunctionQ[u_,x_Symbol,flag_:False] :=
   If[AtomQ[u] || FreeQ[u,x],
     True,
@@ -1895,7 +1692,7 @@ AlgebraicFunctionQ[u_,x_Symbol,flag_:False] :=
 (*AlgebraicFunctionFactors*)
 
 
-(* AlgebraicFunctionFactors[u,x] returns the product of the factors of u that are algebraic functions of x. *)
+(* AlgebraicFunctionFactors::usage = "AlgebraicFunctionFactors[u,x] returns the product of the factors of u that are algebraic functions of x."; *)
 (* AlgebraicFunctionFactors[u_,x_Symbol,flag_:False] :=
   If[ProductQ[u],
     Map[Function[If[AlgebraicFunctionQ[#,x,flag],#,1]],u],
@@ -1906,7 +1703,7 @@ AlgebraicFunctionQ[u_,x_Symbol,flag_:False] :=
 (*NonalgebraicFunctionFactors*)
 
 
-(* NonalgebraicFunctionFactors[u,x] returns the product of the factors of u that are not algebraic functions of x. *)
+(* NonalgebraicFunctionFactors::usage = "NonalgebraicFunctionFactors[u,x] returns the product of the factors of u that are not algebraic functions of x."; *)
 (* NonalgebraicFunctionFactors[u_,x_Symbol,flag_:False] :=
   If[ProductQ[u],
     Map[Function[If[AlgebraicFunctionQ[#,x,flag],1,#]],u],
@@ -1958,8 +1755,7 @@ QuotientOfLinearsP[u_,x_] :=
 (*QuotientOfLinearsParts*)
 
 
-(* If u is equivalent to an expression of the form (a+b*x)/(c+d*x), QuotientOfLinearsParts[u,x] 
-	returns the list {a, b, c, d}. *)
+QuotientOfLinearsParts::usage = "If u is equivalent to an expression of the form (a+b*x)/(c+d*x), QuotientOfLinearsParts[u,x] returns the list {a, b, c, d}.";
 QuotientOfLinearsParts[a_*u_,x_] :=
   Apply[Function[{a*#1, a*#2, #3, #4}], QuotientOfLinearsParts[u,x]] /;
 FreeQ[a,x]
@@ -1992,10 +1788,7 @@ QuotientOfLinearsParts[u_,x_] :=
 (*SubstForFractionalPowerOfQuotientOfLinears*)
 
 
-(* If u has a subexpression of the form ((a+b*x)/(c+d*x))^(m/n) where m and n>1 are integers, 
-	SubstForFractionalPowerOfQuotientOfLinears[u,x] returns the list {v,n,(a+b*x)/(c+d*x),b*c-a*d} where v is u
-	with subexpressions of the form ((a+b*x)/(c+d*x))^(m/n) replaced by x^m and x replaced
-	by (-a+c*x^n)/(b-d*x^n), and all times x^(n-1)/(b-d*x^n)^2; else it returns False. *)
+SubstForFractionalPowerOfQuotientOfLinears::usage = "If u has a subexpression of the form ((a+b*x)/(c+d*x))^(m/n) where m and n>1 are integers, SubstForFractionalPowerOfQuotientOfLinears[u,x] returns the list {v,n,(a+b*x)/(c+d*x),b*c-a*d} where v is u with subexpressions of the form ((a+b*x)/(c+d*x))^(m/n) replaced by x^m and x replaced by (-a+c*x^n)/(b-d*x^n), and all times x^(n-1)/(b-d*x^n)^2; else it returns False.";
 SubstForFractionalPowerOfQuotientOfLinears[u_,x_Symbol] :=
   Module[{lst=FractionalPowerOfQuotientOfLinears[u,1,False,x]},
   If[AtomQ[lst] || AtomQ[lst[[2]]],
@@ -2009,8 +1802,7 @@ SubstForFractionalPowerOfQuotientOfLinears[u_,x_Symbol] :=
   {NonfreeFactors[lst,x],n,tmp,FreeFactors[lst,x]*(b*c-a*d)}]]]]]
 
 
-(* If the substitution x=v^(1/n) will not complicate algebraic subexpressions of u, 
-	SubstForFractionalPowerQ[u,v,x] returns True; else it returns False. *)
+SubstForFractionalPowerQ::usage = "If the substitution x=v^(1/n) will not complicate algebraic subexpressions of u, SubstForFractionalPowerQ[u,v,x] returns True; else it returns False.";
 SubstForFractionalPowerQ[u_,v_,x_Symbol] :=
   If[AtomQ[u] || FreeQ[u,x],
     True,
@@ -2026,8 +1818,7 @@ SubstForFractionalPowerAuxQ[u_,v_,x_] :=
   Catch[Scan[Function[If[SubstForFractionalPowerAuxQ[#,v,x],Throw[True]]],u];False]]]
 
 
-(* If u has a subexpression of the form ((a+b*x)/(c+d*x))^(m/n), 
-	FractionalPowerOfQuotientOfLinears[u,1,False,x] returns {n,(a+b*x)/(c+d*x)}; else it returns False. *)
+FractionalPowerOfQuotientOfLinears::usage = "If u has a subexpression of the form ((a+b*x)/(c+d*x))^(m/n), FractionalPowerOfQuotientOfLinears[u,1,False,x] returns {n,(a+b*x)/(c+d*x)}; else it returns False.";
 FractionalPowerOfQuotientOfLinears[u_,n_,v_,x_] :=
   If[AtomQ[u] || FreeQ[u,x],
     {n,v},
@@ -2044,9 +1835,7 @@ FractionalPowerOfQuotientOfLinears[u_,n_,v_,x_] :=
 (*SubstForInverseFunctionOfQuotientOfLinears*)
 
 
-(* If u has a subexpression of the form g[(a+b*x)/(c+d*x)] where g is the inverse of function h 
-	and f[x,g[(a+b*x)/(c+d*x)]] equals u, SubstForInverseFunctionOfQuotientOfLinears[u,x] returns 
-	the list {f[(-a+c*h[x])/(b-d*h[x]),x]*h'[x]/(b-d*h[x])^2, g[(a+b*x)/(c+d*x)], b*c-a*d} *)
+SubstForInverseFunctionOfQuotientOfLinears::usage = "If u has a subexpression of the form g[(a+b*x)/(c+d*x)] where g is the inverse of function h and f[x,g[(a+b*x)/(c+d*x)]] equals u, SubstForInverseFunctionOfQuotientOfLinears[u,x] returns the list {f[(-a+c*h[x])/(b-d*h[x]),x]*h'[x]/(b-d*h[x])^2, g[(a+b*x)/(c+d*x)], b*c-a*d}.";
 SubstForInverseFunctionOfQuotientOfLinears[u_,x_Symbol] :=
   With[{tmp=InverseFunctionOfQuotientOfLinears[u,x]},
   If[AtomQ[tmp],
@@ -2056,8 +1845,7 @@ SubstForInverseFunctionOfQuotientOfLinears[u_,x_Symbol] :=
   {SubstForInverseFunction[u,tmp,(-a+c*h[x])/(b-d*h[x]),x]*D[h[x],x]/(b-d*h[x])^2, tmp, b*c-a*d}]]]]
 
 
-(* If u has a subexpression of the form g[(a+b*x)/(c+d*x)] where g is an inverse function, 
-	InverseFunctionOfQuotientOfLinears[u,x] returns g[(a+b*x)/(c+d*x)]; else it returns False. *)
+InverseFunctionOfQuotientOfLinears::usage = "If u has a subexpression of the form g[(a+b*x)/(c+d*x)] where g is an inverse function, InverseFunctionOfQuotientOfLinears[u,x] returns g[(a+b*x)/(c+d*x)]; else it returns False.";
 InverseFunctionOfQuotientOfLinears[u_,x_Symbol] :=
   If[AtomQ[u] || CalculusQ[u] || FreeQ[u,x],
     False,
@@ -2073,8 +1861,7 @@ InverseFunctionOfQuotientOfLinears[u_,x_Symbol] :=
 (*Substitution for inverse functions*)
 
 
-(* SubstForFractionalPower[u,v,n,w,x] returns u with subexpressions equal to v^(m/n) replaced 
-	by x^m and x replaced by w. *)
+SubstForFractionalPower::usage = "SubstForFractionalPower[u,v,n,w,x] returns u with subexpressions equal to v^(m/n) replaced by x^m and x replaced by w.";
 SubstForFractionalPower[u_,v_,n_,w_,x_Symbol] :=
   If[AtomQ[u],
     If[u===x,
@@ -2085,8 +1872,7 @@ SubstForFractionalPower[u_,v_,n_,w_,x_Symbol] :=
   Map[Function[SubstForFractionalPower[#,v,n,w,x]],u]]]
 
 
-(* SubstForInverseFunction[u,v,w,x] returns u with subexpressions equal to v replaced by x 
-	and x replaced by w. *)
+SubstForInverseFunction::usage = "SubstForInverseFunction[u,v,w,x] returns u with subexpressions equal to v replaced by x and x replaced by w.";
 SubstForInverseFunction[u_,v_,x_Symbol] :=
 (*  Module[{a=Coefficient[v[[1]],0],b=Coefficient[v[[1]],1]},
   SubstForInverseFunction[u,v,-a/b+InverseFunction[Head[v]]/b,x]] *)
@@ -2107,11 +1893,8 @@ SubstForInverseFunction[u_,v_,w_,x_Symbol] :=
 (*Absurd number factors*)
 
 
-(* ::Text:: *)
-(*Definition: A number is absurd if it is a rational number, a positive rational number raised to a fractional power, or a product of absurd numbers.*)
-
-
-(* AbsurdNumberQ[u] returns True if u is an absurd number, else it returns False. *)
+AbsurdNumberQ::usage = "AbsurdNumberQ[u] returns True if u is an absurd number, else it returns False.  A number is absurd if it is a rational number, a positive rational number raised to a fractional power, or a product of absurd numbers.";
+(*  *)
 AbsurdNumberQ[u_] :=
   RationalQ[u]
 
@@ -2122,7 +1905,7 @@ AbsurdNumberQ[u_*v_] :=
   AbsurdNumberQ[u] && AbsurdNumberQ[v]
 
 
-(* AbsurdNumberFactors[u] returns the product of the factors of u that are absurd numbers. *)
+AbsurdNumberFactors::usage = "AbsurdNumberFactors[u] returns the product of the factors of u that are absurd numbers.";
 AbsurdNumberFactors[u_] :=
   If[AbsurdNumberQ[u],
     u,
@@ -2131,7 +1914,7 @@ AbsurdNumberFactors[u_] :=
   NumericFactor[u]]]
 
 
-(* NonabsurdNumberFactors[u] returns the product of the factors of u that are not absurd numbers. *)
+NonabsurdNumberFactors::usage = "NonabsurdNumberFactors[u] returns the product of the factors of u that are not absurd numbers.";
 NonabsurdNumberFactors[u_] :=
   If[AbsurdNumberQ[u],
     1,
@@ -2140,8 +1923,7 @@ NonabsurdNumberFactors[u_] :=
   NonnumericFactors[u]]]
 
 
-(* m must be an absurd number.  FactorAbsurdNumber[m] returns the prime factorization of m *) 
-(* as list of base-degree pairs where the bases are prime numbers and the degrees are rational. *)
+FactorAbsurdNumber::usage = "m must be an absurd number.  FactorAbsurdNumber[m] returns the prime factorization of m as list of base-degree pairs where the bases are prime numbers and the degrees are rational.";
 FactorAbsurdNumber[m_] :=
   If[RationalQ[m],
     FactorInteger[m],
@@ -2158,7 +1940,7 @@ CombineExponents[lst_] :=
   Prepend[CombineExponents[Rest[lst]],First[lst]]]]
 
 
-(* m, n, ... must be absurd numbers.  AbsurdNumberGCD[m,n,...] returns the gcd of m, n, ... *) 
+AbsurdNumberGCD::usage = "m, n, ... must be absurd numbers.  AbsurdNumberGCD[m,n,...] returns the gcd of m, n, ... .";
 AbsurdNumberGCD[seq__] :=
   With[{lst={seq}},
   If[Length[lst]==1,
@@ -2166,8 +1948,7 @@ AbsurdNumberGCD[seq__] :=
   AbsurdNumberGCDList[FactorAbsurdNumber[First[lst]],FactorAbsurdNumber[Apply[AbsurdNumberGCD,Rest[lst]]]]]]
 
 
-(* lst1 and lst2 must be absurd number prime factorization lists. *)
-(* AbsurdNumberGCDList[lst1,lst2] returns the gcd of the absurd numbers represented by lst1 and lst2. *) 
+AbsurdNumberGCDList::usage = "lst1 and lst2 must be absurd number prime factorization lists.  AbsurdNumberGCDList[lst1,lst2] returns the gcd of the absurd numbers represented by lst1 and lst2.";
 AbsurdNumberGCDList[lst1_,lst2_] :=
   If[lst1==={},
     Apply[Times,Map[Function[#[[1]]^Min[#[[2]],0]],lst2]],
@@ -2194,7 +1975,7 @@ AbsurdNumberGCDList[lst1_,lst2_] :=
 (*NormalizeIntegrand*)
 
 
-(* NormalizeIntegrand[u,x] returns u in a standard form recognizable by integration rules. *) 
+NormalizeIntegrand::usage = "NormalizeIntegrand[u,x] returns u in a standard form recognizable by integration rules.";
 NormalizeIntegrand[u_,x_Symbol] :=
   With[{v=NormalizeLeadTermSigns[NormalizeIntegrandAux[u,x]]},
   If[v===NormalizeLeadTermSigns[u],
@@ -2266,8 +2047,7 @@ NormalizeTogether[u_] :=
   NormalizeLeadTermSigns[Together[u]]
 
 
-(* NormalizeLeadTermSigns[u] returns an expression equal u but with not more than one sum 
-	factor raised to a integer degree having a lead term with a negative coefficient. *)
+NormalizeLeadTermSigns::usage = "NormalizeLeadTermSigns[u] returns an expression equal u but with not more than one sum factor raised to a integer degree having a lead term with a negative coefficient.";
 NormalizeLeadTermSigns[u_] :=
   With[{lst=If[ProductQ[u], Map[SignOfFactor,u], SignOfFactor[u]]},
   If[lst[[1]]==1,
@@ -2275,9 +2055,7 @@ NormalizeLeadTermSigns[u_] :=
   AbsorbMinusSign[lst[[2]]]]]
 
 
-(* AbsorbMinusSign[u] returns an expression equal to -u.  If there is a factor of u of the 
-	form v^m where v is a sum and m is an odd power, the minus sign is distributed over v;
-	otherwise -u is returned. *)
+AbsorbMinusSign::usage = "AbsorbMinusSign[u] returns an expression equal to -u.  If there is a factor of u of the form v^m where v is a sum and m is an odd power, the minus sign is distributed over v; otherwise -u is returned.";
 AbsorbMinusSign[u_.*v_Plus] :=
   u*(-v)
 
@@ -2293,8 +2071,7 @@ AbsorbMinusSign[u_] :=
 (*NormalizeSumFactors*)
 
 
-(* NormalizeSumFactors[u] returns an expression equal u but with the numeric coefficient of 
-	the lead term of sum factors made positive where possible. *)
+NormalizeSumFactors::usage = "NormalizeSumFactors[u] returns an expression equal u but with the numeric coefficient of the lead term of sum factors made positive where possible.";
 NormalizeSumFactors[u_] :=
   If[AtomQ[u] || StopFunctionQ[u],
     u,
@@ -2303,8 +2080,7 @@ NormalizeSumFactors[u_] :=
   Map[NormalizeSumFactors,u]]]
 
 
-(* SignOfFactor[u] returns the list {n,v} where n*v equals u, n^2 equals 1, and the lead 
-	term of the sum factors of v raised to integer degrees all have positive coefficients. *)
+SignOfFactor::usage = "SignOfFactor[u] returns the list {n,v} where n*v equals u, n^2 equals 1, and the lead term of the sum factors of v raised to integer degrees all have positive coefficients.";
 SignOfFactor[u_] :=
   If[RationalQ[u] && u<0 || SumQ[u] && NumericFactor[First[u]]<0,
     {-1, -u},
@@ -2313,19 +2089,6 @@ SignOfFactor[u_] :=
   If[ProductQ[u],
     Map[SignOfFactor,u],
   {1, u}]]]
-
-
-(* ::Subsection::Closed:: *)
-(*NormalizePowerOfLinear*)
-
-
-(* u can be square-free factored into an expression of the form (a+b*x)^m. *)
-(* NormalizePowerOfLinear[u,x] returns u in the form (a+b*x)^m. *)
-NormalizePowerOfLinear[u_,x_Symbol] :=
-  With[{v=FactorSquareFree[u]},
-  If[PowerQ[v] && LinearQ[v[[1]],x] && FreeQ[v[[2]],x],
-    ExpandToSum[v[[1]],x]^v[[2]],
-  ExpandToSum[v,x]]]
 
 
 (* ::Subsection::Closed:: *)
@@ -2372,7 +2135,7 @@ MergeMonomials[u_,x_Symbol] :=
 (*SimplifyIntegrand*)
 
 
-(* SimplifyIntegrand[u,x] simplifies u and returns the result in a standard form recognizable by integration rules. *) 
+SimplifyIntegrand::usage = "SimplifyIntegrand[u,x] simplifies u and returns the result in a standard form recognizable by integration rules.";
 SimplifyIntegrand[u_,x_Symbol] :=
   Module[{v},
   v=NormalizeLeadTermSigns[NormalizeIntegrandAux[Simplify[u],x]];
@@ -2410,8 +2173,7 @@ TogetherSimplify[u_] :=
   $TimeLimit,u]
 
 
-(* TogetherSimplify could replace SmartSimplify, but results in more complicated *)
-(* antiderivatives and would require thousands of changes to test suite. *)
+(* TogetherSimplify could replace SmartSimplify, but results in more complicated antiderivatives and would require thousands of changes to test suite. *)
 SmartSimplify[u_] :=
   TimeConstrained[
     Module[{v,w},
@@ -2433,7 +2195,62 @@ SubstForExpn[u_,v_,w_] :=
 
 
 (* ::Subsection::Closed:: *)
-(*Simp*)
+(*Simp[expn]*)
+
+
+Simp::usage = "Simp[u] and Simp[u,x] simplifies and returns u.";
+
+
+Simp[(e_.*(a_+b_)^r_.)^p_.*(c_+d_)^q_.] :=
+  With[{u=Simplify[(a+b)/(c+d)]},
+  If[IntegerQ[p] || GtQ[e,0] && GtQ[u,0] && GtQ[r,0],
+    e^p*u^(p*r),
+  e^IntPart[p]*u^(r*IntPart[p])*(e*(a+b)^r)^FracPart[p]/(c+d)^(r*FracPart[p])]] /;
+IntegerQ[r] && EqQ[p*r+q,0]
+
+
+Simp[(g_.*(a_+b_)^s_.)^p_.*(c_+d_)^q_.*(e_+f_)^r_.] :=
+  With[{u=Simplify[(a+b)/((c+d)*(e+f))]},
+  If[IntegerQ[p],
+    g^p*u^(p*s),
+  If[GtQ[g,0] && GtQ[u,0] && (NeQ[g,1] || NeQ[u,1]),
+    g^p*u^(p*s)*Simp[((c+d)^s*(e+f)^s)^p/((c+d)^(p*s)*(e+f)^(p*s))],
+  If[GtQ[g,0] && EqQ[a,c^2] && EqQ[b,-d^2] && GtQ[c,0],
+    g^p*Simp[(c-d)^(p*s)/(e+f)^(p*s)],
+  If[GtQ[g,0] && EqQ[a,e^2] && EqQ[b,-f^2] && GtQ[e,0],
+    g^p*Simp[(e-f)^(p*s)/(c+d)^(p*s)],
+  g^IntPart[p]*u^(s*IntPart[p])*(g*(a+b)^s)^FracPart[p]/((c+d)^(s*FracPart[p])*(e+f)^(s*FracPart[p]))]]]]] /;
+IntegerQ[s] && EqQ[p*s+q,0] && EqQ[p*s+r,0]
+
+
+Simp[(u_^q_.*v_^r_.)^p_.*u_^pq_.*v_^pr_.] :=
+  If[IntegerQ[p],
+    1,
+  (u^q*v^r)^FracPart[p]/(u^(q*FracPart[p])*v^(r*FracPart[p]))] /;
+IntegersQ[q,r] && EqQ[pq+p*q,0] && EqQ[pr+p*r,0]
+
+
+Simp[(u_*v_)^p_.] :=
+  If[IntegerQ[p] || GtQ[u,0] || GtQ[v,0],
+    Simp[u^p]*Simp[v^p],
+  (u*v)^p]
+
+
+Simp[(a_+b_)^p_.*(c_+d_)^q_*(e_+f_)^q_] :=
+  (a/c^2)^p*(c+d)^(p+q)*(e+f)^(p+q) /;
+IntegerQ[p] && EqQ[e,c] && EqQ[f,-d] && EqQ[b*c^2+a*d^2,0]
+
+
+Simp[(a_+b_)^p_*(c_+d_)^p_] :=
+  (a^2-b^2)^p /;
+ EqQ[a,c] && EqQ[b,-d] && GtQ[a,0]
+
+
+Simp[u_] := Simplify[u]
+
+
+(* ::Subsection::Closed:: *)
+(*Simp[expn,var]*)
 
 
 Simp[u_,x_] :=
@@ -2553,8 +2370,7 @@ RationalQ[m,n,nz]
 (*FractionalPowerOfSquareQ*)
 
 
-(* If a subexpression of u is of the form ((v+w)^2)^n where n is a fraction, *)
-(* FractionalPowerOfSquareQ[u] returns (v+w)^2; else it returns False. *)
+FractionalPowerOfSquareQ::usage = "If a subexpression of u is of the form ((v+w)^2)^n where n is a fraction, FractionalPowerOfSquareQ[u] returns (v+w)^2; else it returns False.";
 FractionalPowerOfSquareQ[u_] :=
   If[AtomQ[u],
     False,
@@ -2566,8 +2382,7 @@ FractionalPowerOfSquareQ[u_] :=
     False]]]]
 
 
-(* If a subexpression of u is of the form w^n where n is a fraction but not equal to v, *)
-(* FractionalPowerSubexpressionQ[u,v,w] returns True; else it returns False. *)
+FractionalPowerSubexpressionQ::usage = "If a subexpression of u is of the form w^n where n is a fraction but not equal to v, FractionalPowerSubexpressionQ[u,v,w] returns True; else it returns False.";
 FractionalPowerSubexpressionQ[u_,v_,w_] :=
   If[AtomQ[u],
     False,
@@ -2789,21 +2604,21 @@ IntegerQ[p]
 
 
 SimpFixFactor[(a_.*c_^r_ + b_.*x_^n_.)^p_.,x_] :=
-  c^(r*p)*SimpFixFactor[(a+b/c^r*x^n)^p,x] /;
+  c^(p*r)*SimpFixFactor[(a+b/c^r*x^n)^p,x] /;
 FreeQ[{a,b,c},x] && IntegersQ[n,p] && AtomQ[c] && RationalQ[r] && r<0
 
 SimpFixFactor[(a_. + b_.*c_^r_*x_^n_.)^p_.,x_] :=
-  c^(r*p)*SimpFixFactor[(a/c^r+b*x^n)^p,x] /;
+  c^(p*r)*SimpFixFactor[(a/c^r+b*x^n)^p,x] /;
 FreeQ[{a,b,c},x] && IntegersQ[n,p] && AtomQ[c] && RationalQ[r] && r<0
 
 
 SimpFixFactor[(a_.*c_^s_. + b_.*c_^r_.*x_^n_.)^p_.,x_] :=
-  c^(s*p)*SimpFixFactor[(a+b*c^(r-s)*x^n)^p,x] /;
-FreeQ[{a,b,c},x] && IntegersQ[n,p] && RationalQ[s,r] && 0<s<=r && c^(s*p)=!=-1
+  c^(p*s)*SimpFixFactor[(a+b*c^(r-s)*x^n)^p,x] /;
+FreeQ[{a,b,c},x] && IntegersQ[n,p] && RationalQ[s,r] && 0<s<=r && c^(p*s)=!=-1
 
 SimpFixFactor[(a_.*c_^s_. + b_.*c_^r_.*x_^n_.)^p_.,x_] :=
-  c^(r*p)*SimpFixFactor[(a*c^(s-r)+b*x^n)^p,x] /;
-FreeQ[{a,b,c},x] && IntegersQ[n,p] && RationalQ[s,r] && 0<r<s && c^(r*p)=!=-1
+  c^(p*r)*SimpFixFactor[(a*c^(s-r)+b*x^n)^p,x] /;
+FreeQ[{a,b,c},x] && IntegersQ[n,p] && RationalQ[s,r] && 0<r<s && c^(p*r)=!=-1
 
 SimpFixFactor[u_,x_] := u
 
@@ -2812,7 +2627,7 @@ SimpFixFactor[u_,x_] := u
 (*FactorNumericGcd*)
 
 
-(* FactorNumericGcd[u] returns u with the gcd of the numeric coefficients of terms of sums factored out. *)
+FactorNumericGcd::usage = "FactorNumericGcd[u] returns u with the gcd of the numeric coefficients of terms of sums factored out.";
 FactorNumericGcd[u_] :=
   If[PowerQ[u] && RationalQ[u[[2]]],
     FactorNumericGcd[u[[1]]]^u[[2]],
@@ -2828,7 +2643,7 @@ FactorNumericGcd[u_] :=
 (*MergeFactors*)
 
 
-(* MergeFactors[u,v] returns the product of u and v, but with the mergeable factors of u merged into v. *)
+MergeFactors::usage = "MergeFactors[u,v] returns the product of u and v, but with the mergeable factors of u merged into v.";
 MergeFactors[u_,v_] :=
   If[ProductQ[u],
     MergeFactors[Rest[u],MergeFactors[First[u],v]],
@@ -2843,8 +2658,7 @@ MergeFactors[u_,v_] :=
   u*v]]]
 
 
-(* If MergeableFactorQ[bas,deg,v], MergeFactor[bas,deg,v] return the product of bas^deg and v, 
-	but with bas^deg merged into the factor of v whose base equals bas. *)
+MergeFactor::usage = "If MergeableFactorQ[bas,deg,v], MergeFactor[bas,deg,v] return the product of bas^deg and v, but with bas^deg merged into the factor of v whose base equals bas.";
 MergeFactor[bas_,deg_,v_] :=
   If[bas===v,
     bas^(deg+1),
@@ -2859,7 +2673,7 @@ MergeFactor[bas_,deg_,v_] :=
   MergeFactor[bas,deg,First[v]] + MergeFactor[bas,deg,Rest[v]]]]]
 
 
-(* MergeableFactorQ[bas,deg,v] returns True iff bas equals the base of a factor of v or bas is a factor of every term of v. *)
+MergeableFactorQ::usage = "MergeableFactorQ[bas,deg,v] returns True iff bas equals the base of a factor of v or bas is a factor of every term of v.";
 MergeableFactorQ[bas_,deg_,v_] :=
   If[bas===v,
     RationalQ[deg+1] && (deg+1>=0 || RationalQ[deg] && deg>0),
@@ -2876,12 +2690,12 @@ MergeableFactorQ[bas_,deg_,v_] :=
 (*TrigSimplify*)
 
 
-(* TrigSimplifyQ[u] returns True if TrigSimplify[u] actually simplifies u; else False. *)
+TrigSimplifyQ::usage = "TrigSimplifyQ[u] returns True if TrigSimplify[u] actually simplifies u; else False.";
 TrigSimplifyQ[u_] :=
   ActivateTrig[u]=!=TrigSimplify[u]
 
 
-(* TrigSimplify[u] returns a bottom-up trig simplification of u. *)
+TrigSimplify::usage = "TrigSimplify[u] returns a bottom-up trig simplification of u.";
 TrigSimplify[u_] :=
   ActivateTrig[TrigSimplifyRecur[u]]
 
@@ -3122,6 +2936,40 @@ TrigSimplifyAux[u_.*(c_.*tan[v_]^n_.*tan[w_]^n_.)^p_.] :=
 IntegerQ[n] && EqQ[w,2*v]
 
 
+(* ::Subsection::Closed:: *)
+(*IntPart[u]*)
+
+
+IntPart::usage = "IntPart[u] returns the sum of the integer terms of u.";
+IntPart[m_*u_,n_:1] :=
+  IntPart[u,m*n] /;
+RationalQ[m]
+
+IntPart[u_,n_:1] :=
+  If[RationalQ[u],
+    IntegerPart[n*u],
+  If[SumQ[u],
+    Map[Function[IntPart[#,n]],u],
+  0]]
+
+
+(* ::Subsection::Closed:: *)
+(*FracPart[u]*)
+
+
+FracPart::usage = "FracPart[u] returns the sum of the non-integer terms of u.";
+FracPart[m_*u_,n_:1] :=
+  FracPart[u,m*n] /;
+RationalQ[m]
+
+FracPart[u_,n_:1] :=
+  If[RationalQ[u],
+    FractionalPart[n*u],
+  If[SumQ[u],
+    Map[Function[FracPart[#,n]],u],
+  n*u]]
+
+
 (* ::Section::Closed:: *)
 (*Factoring functions*)
 
@@ -3130,8 +2978,8 @@ IntegerQ[n] && EqQ[w,2*v]
 (*ContentFactor*)
 
 
-(* ContentFactor[expn] returns expn with the content of sum factors factored out. *)
 (* Basis: a*b+a*c == a*(b+c) *)
+ContentFactor::usage = "ContentFactor[expn] returns expn with the content of sum factors factored out.";
 ContentFactor[expn_] :=
   TimeConstrained[ContentFactorAux[expn],$TimeLimit,expn];
 
@@ -3154,8 +3002,8 @@ ContentFactorAux[expn_] :=
   expn]]]]
 
 
-(* UnifyNegativeBaseFactors[u] returns u with factors of the form (-v)^m and v^n where n is an integer replaced with (-1)^n*(-v)^(m+n). *)
-(* This should be done automatically by the host CAS! *)
+(* FWIW: This simplification should be done automatically by the host CAS! *)
+UnifyNegativeBaseFactors::usage = "UnifyNegativeBaseFactors[u] returns u with factors of the form (-v)^m and v^n where n is an integer replaced with (-1)^n*(-v)^(m+n).";
 UnifyNegativeBaseFactors[u_.*(-v_)^m_*v_^n_.] :=
   UnifyNegativeBaseFactors[(-1)^n*u*(-v)^(m+n)] /;
 IntegerQ[n]
@@ -3164,10 +3012,8 @@ UnifyNegativeBaseFactors[u_] :=
   u
 
 
-(* If lst is a list of n terms, CommonFactors[lst] returns a n+1-element list whose first
-	element is the product of the factors common to all terms of lst, and whose remaining
-	elements are quotients of each term divided by the common factor. *)
-CommonFactors [lst_] :=
+CommonFactors::usage = "If lst is a list of n terms, CommonFactors[lst] returns a n+1-element list whose first element is the product of the factors common to all terms of lst, and whose remaining elements are quotients of each term divided by the common factor.";
+CommonFactors[lst_] :=
   Module[{lst1,lst2,lst3,lst4,common,base,num},
   lst1=Map[NonabsurdNumberFactors,lst];
   lst2=Map[AbsurdNumberFactors,lst];
@@ -3253,7 +3099,7 @@ Smallest[lst_List] :=
 (*MonomialFactor*)
 
 
-(* MonomialFactor[u,x] returns the list {n,v} where x^n*v==u and n is free of x. *)
+MonomialFactor::usage = "MonomialFactor[u,x] returns the list {n,v} where x^n*v==u and n is free of x.";
 MonomialFactor[u_,x_Symbol] :=
   If[AtomQ[u],
     If[u===x,
@@ -3301,8 +3147,7 @@ MinimumDegree[deg1_,deg2_] :=
 (*ConstantFactor*)
 
 
-(* ConstantFactor[u,x] returns a 2-element list of the factors of u[x] free of x and the 
-	factors not free of u[x].  Common constant factors of the terms of sums are also collected. *)
+ConstantFactor::usage = "ConstantFactor[u,x] returns a 2-element list of the factors of u[x] free of x and the factors not free of u[x].  Common constant factors of the terms of sums are also collected.";
 ConstantFactor[u_,x_Symbol] :=
   If[FreeQ[u,x],
     {u,1},
@@ -3328,7 +3173,7 @@ ConstantFactor[u_,x_Symbol] :=
   {1,u}]]]]]
 
 
-(* PositiveFactors[u] returns the positive factors of u *)
+PositiveFactors::usage = "PositiveFactors[u] returns the positive factors of u.";
 PositiveFactors[u_] :=
   If[EqQ[u,0],
     1,
@@ -3341,7 +3186,7 @@ PositiveFactors[u_] :=
   1]]]]
 
 
-(* NonpositiveFactors[u] returns the nonpositive factors of u *)
+NonpositiveFactors::usage = "NonpositiveFactors[u] returns the nonpositive factors of u.";
 NonpositiveFactors[u_] :=
   If[EqQ[u,0],
     u,
@@ -3439,10 +3284,8 @@ PolynomialInSubstAux[u_,v_,x_] :=
 (*PolynomialDivide*)
 
 
-(* ::Item:: *)
-(*u and v are polynomials in x.  PolynomialDivide[u,v,x] returns the polynomial quotient of u and v plus the polynomial remainder divided by v.*)
-
-
+PolynomialDivide::usage = "If u and v are polynomials in x, PolynomialDivide[u,v,x] returns the polynomial quotient of u and v plus the polynomial remainder divided by v.
+If u[w] and v[w] are polynomials in w, PolynomialDivide[u,v,w,x] returns the polynomial quotient of u[x] and v[x] plus the polynomial remainder divided by v[x] with x replaced by w.";
 PolynomialDivide[u_,v_,x_Symbol] :=
   Module[{quo=PolynomialQuotient[u,v,x],rem=PolynomialRemainder[u,v,x],free,monomial},
   quo=Apply[Plus,Map[Function[Simp[Together[Coefficient[quo,x,#]*x^#],x]],Exponent[quo,x,List]]];
@@ -3456,10 +3299,6 @@ PolynomialDivide[u_,v_,x_Symbol] :=
   If[BinomialQ[v,x],
     quo+free*monomial*rem/ExpandToSum[v,x],
   quo+free*monomial*rem/v]]
-
-
-(* ::Item:: *)
-(*u[w] and v[w] are polynomials in w.  PolynomialDivide[u,v,w,x] returns the polynomial quotient of u[x] and v[x] plus the polynomial remainder divided by v[x] with x replaced by w.*)
 
 
 PolynomialDivide[u_,v_,w_,x_Symbol] :=
@@ -3520,17 +3359,37 @@ ExpandTrig[u_,v_,x_Symbol] :=
 
 
 (* ::Subsection::Closed:: *)
-(*ExpandIntegrand[u,x]*)
+(*ExpandIntegrand[u,v,x]*)
 
 
 Clear[ExpandIntegrand];
 
+
+ExpandIntegrand[(a_.+b_.*Log[c_.*x_^n_.])^p_.,x_^m_.*(d_+e_.*x_^r_.)^q_.,x_Symbol] :=
+  DistributeOverTerms[(a+b*Log[c*x^n])^p,CollectRecipTerms[ExpandIntegrand[x^m*(d+e*x^r)^q,x],x],x] /;
+FreeQ[{a,b,c,d,e,n},x] && IGtQ[p,0] && IGtQ[r,0] && ILtQ[m,0] && ILtQ[q,0]   && EqQ[r,1]
+
+
 ExpandIntegrand[u_,v_,x_Symbol] :=
-  Module[{w=ExpandIntegrand[v,x],r},
-  r=NonfreeTerms[w,x];
-  If[SumQ[r],
-    u*FreeTerms[w,x]+Map[Function[MergeMonomials[u*#,x]],r],
-  u*FreeTerms[w,x]+MergeMonomials[u*r,x]]]
+  DistributeOverTerms[u,ExpandIntegrand[v,x],x]
+
+
+DistributeOverTerms[u_,v_,x_Symbol] :=
+  With[{w=NonfreeTerms[v,x]},
+  u*FreeTerms[v,x] + If[SumQ[w], 
+    Map[Function[MergeMonomials[u*#,x]],w], 
+    MergeMonomials[u*w,x]]]
+
+
+CollectRecipTerms[u_.+A_./x_+B_./(d_+e_.*x_),x_Symbol] :=
+  u+A*d/(x*(d+e*x)) /;
+FreeQ[{A,B,d,e},x] && EqQ[B+A*e,0]
+
+CollectRecipTerms[u_,x_Symbol] := u
+
+
+(* ::Subsection::Closed:: *)
+(*ExpandIntegrand[u,x]*)
 
 
 (* ExpandIntegrand[u_,x_Symbol] :=
@@ -3671,6 +3530,7 @@ FreeQ[{a,b,c,d},x] && IGtQ[m,0]
 ExpandIntegrand[(a_+b_.*x_)^m_.*(A_+B_.*x_)/(c_+d_.*x_),x_Symbol] :=
   If[RationalQ[a,b,c,d,A,B],
     ExpandExpression[(a+b*x)^m*(A+B*x)/(c+d*x),x],
+(*  PolynomialDivide[(a+b*x)^m*(A+B*x),c+d*x,x], *)
   Module[{tmp1,tmp2},
   tmp1=(A*d-B*c)/d;
   tmp2=ExpandIntegrand[(a+b*x)^m/(c+d*x),x];
@@ -3684,12 +3544,12 @@ ExpandIntegrand[u_*(a_+b_.*x_)^m_.*(c_+d_.*x_)^n_.,x_Symbol] :=
 FreeQ[{a,b,c,d,m,n},x] && PolynomialQ[u,x] && Not[IntegerQ[m]] && IGtQ[n-m,0]
 
 
-(* u is a polynomial in x.  ExpandIntegrand[u*(a+b*x)^m,x] expands u*(a+b*x)^m into a sum of terms of the form A*(a+b*x)^n. *)
 ExpandIntegrand[u_*(a_+b_.*x_)^m_.,x_Symbol] :=
   With[{sum1=ExpandLinearProduct[(a+b*x)^m,u,a,b,x]},
   If[Not[IntegerQ[m]] || m>2 && LinearQ[u,x],
     sum1,
   With[{sum2=ExpandExpression[u*(a+b*x)^m,x]},
+(* With[{sum2=If[EqQ[m,-1], PolynomialDivide[u,a+b*x,x], ExpandExpression[u*(a+b*x)^m,x]]}, *)
   If[SumQ[sum2],
     If[m>0,
       If[Length[sum2]<=Exponent[u,x]+2 || LeafCount[sum2]<=2/3*LeafCount[sum1],
@@ -3927,6 +3787,10 @@ ExpandExpression[u_,x_Symbol] :=
   SimplifyTerm[u,x]]]]]]]
 
 
+(* ::Subsection::Closed:: *)
+(*ExpandCleanup[u,x]*)
+
+
 ExpandCleanup[u_+v_/(a_+b_.*x_)+w_/(c_+d_.*x_),x_Symbol] :=
   ExpandCleanup[u+(c*v+a*w)/(a*c+b*d*x^2),x] /;
 FreeQ[{a,b,c,d},x] && EqQ[b*c+a*d,0] && EqQ[d*v+b*w,0]
@@ -3981,8 +3845,7 @@ CollectReciprocals[u_,x_Symbol] := u
 (*Note: The code reduces the exponents by their gcd.*)
 
 
-(* Assumes m and n are integers and 0<m<n. *)
-(* ExpandBinomial[a,b,m,n,u,x] expands u^m/(a+b*u^n) into a sum of terms of the form 1/(r+s*u). *)
+ExpandBinomial::usage = "Assumes m and n are integers and 0<m<n. ExpandBinomial[a,b,m,n,u,x] expands u^m/(a+b*u^n) into a sum of terms of the form 1/(r+s*u).";
 ExpandBinomial[a_,b_,m_,n_,u_,x_Symbol] :=
   If[OddQ[n/GCD[m,n]] && PosQ[a/b],
     With[{g=GCD[m,n],r=Numerator[Rt[a/b,n/GCD[m,n]]],s=Denominator[Rt[a/b,n/GCD[m,n]]]},
@@ -4003,9 +3866,23 @@ ExpandBinomial[a_,b_,m_,n_,u_,x_Symbol] :=
 (*SmartApart[u,x]*)
 
 
-(* SmartApart[u,x] returns the partial fraction expansion of u wrt x, avoiding the 
-	strange behavior in the built-in Apart function that rationalizes denominators 
-    involving fractional powers resulting in hard to integrate expressions. *)
+SmartApart::usage = "SmartApart[u,x] returns the partial fraction expansion of u wrt x, avoiding the undesired side-effects of Apart[u,x]."
+
+
+(* Apart[u,x] has the side-effect of factoring out -1 from terms having negative integer powers of linears when the coefficient of x is negative. *)
+(* SmartApart[Px_.*(a_.+b_.*x_)^m_,x_Symbol] :=
+  Module[{$a,$b},
+  ReplaceAll[Apart[Px*($a+$b*x)^m,x],{$a->a,$b->b}]] /;
+FreeQ[{a,b},x] && ILtQ[m,0] && PolynomialQ[Px,x] *)
+
+
+(* SmartApart[Px_.*(a_.+b_.*x_)^m_*(c_.+d_.*x_)^n_,x_Symbol] :=
+  Module[{$a,$b,$c,$d},
+  ReplaceAll[Apart[Px*($a+$b*x)^m*($c+$d*x)^n,x],{$a->a,$b->b,$c->c,$d->d}]] /;
+FreeQ[{a,b,c,d},x] && ILtQ[m,0] && ILtQ[n,0] && PolynomialQ[Px,x] *)
+
+
+(* Apart[u,x] rationalizes denominators involving fractional powers resulting in hard to integrate expressions. *)
 SmartApart[u_,x_Symbol] :=
   With[{alst=MakeAssocList[u,x]},
   With[{tmp=KernelSubst[Apart[GensymSubst[u,x,alst]],x,alst]},
@@ -4017,8 +3894,7 @@ SmartApart[u_,v_,x_Symbol] :=
   If[tmp===Indeterminate, u, tmp]]]
 
 
-(* MakeAssocList[u,x,alst] returns an association list of gensymed symbols with the nonatomic 
-  parameters of a u that are not integer powers, products or sums. *)
+MakeAssocList::usage = "MakeAssocList[u,x,alst] returns an association list of gensymed symbols with the nonatomic parameters of a u that are not integer powers, products or sums.";
 MakeAssocList[u_,x_Symbol,alst_List:{}] :=
   If[AtomQ[u],
     alst,
@@ -4034,7 +3910,7 @@ MakeAssocList[u_,x_Symbol,alst_List:{}] :=
   alst]]]]
 
 
-(* GensymSubst[u,x,alst] returns u with the kernels in alst free of x replaced by gensymed names. *)
+GensymSubst::usage = "GensymSubst[u,x,alst] returns u with the kernels in alst free of x replaced by gensymed names.";
 GensymSubst[u_,x_Symbol,alst_List] :=
   If[AtomQ[u],
     u,
@@ -4050,7 +3926,7 @@ GensymSubst[u_,x_Symbol,alst_List] :=
   u]]]]
 
 
-(* KernelSubst[u,x,alst] returns u with the gensymed names in alst replaced by kernels free of x. *)
+KernelSubst::usage = "KernelSubst[u,x,alst] returns u with the gensymed names in alst replaced by kernels free of x.";
 KernelSubst[u_,x_Symbol,alst_List] :=
   If[AtomQ[u],
     With[{tmp=Select[alst,Function[#[[1]]===u],1]},
@@ -4065,6 +3941,25 @@ KernelSubst[u_,x_Symbol,alst_List] :=
   If[ProductQ[u] || SumQ[u],
     Map[Function[KernelSubst[#,x,alst]],u],
   u]]]
+
+
+(* ::Subsection::Closed:: *)
+(*IncrementalExpand[u,x]*)
+
+
+IncrementalExpand[u_,v_,x_Symbol] :=
+  DistributeOverTerms[u,IncrementalExpand[v,x],x]
+
+
+IncrementalExpand[u_,x_Symbol] :=
+  ApartCollect[SmartApart[u,x],x]
+
+
+ApartCollect[u_+v_.*Px_^m_Integer+w_.*Px_^n_Integer,x_Symbol] :=
+  ApartCollect[u+Together[v*Px^m+w*Px^n],x] /;
+PolyQ[Px,x] && GtQ[Expon[Px,x],0] && m<0 && n<0
+
+ApartCollect[u_,x_Symbol] := u
 
 
 (* ::Subsection::Closed:: *)
@@ -4086,15 +3981,14 @@ IGtQ[n,0] && Not[FreeQ[u,x]]
 (*UnifySum[u,x]*)
 
 
-(* UnifySum[u,x] returns u with terms having indentical nonfree factors of x collected into a single term. *)  
+UnifySum::usage = "UnifySum[u,x] returns u with terms having indentical nonfree factors of x collected into a single term.";
 UnifySum[u_,x_Symbol] :=
   If[SumQ[u],
     Apply[Plus,UnifyTerms[Apply[List,u],x]],  
   SimplifyTerm[u,x]]
 
 
-(* lst is a list of terms. *)
-(* UnifyTerms[lst,x] returns lst with terms collected into a single element. *)  
+UnifyTerms::usage = "lst is a list of terms.  UnifyTerms[lst,x] returns lst with terms collected into a single element.";
 UnifyTerms[lst_,x_] :=
   If[lst==={},
     lst,
@@ -4114,7 +4008,7 @@ UnifyTerm[term_,lst_,x_] :=
 (*ExpandLinearProduct[v,u,a,b,x]*)
 
 
-(* If u is a polynomial in x, ExpandLinearProduct[v,u,a,b,x] expands v*u into a sum of terms of the form c*v*(a+b*x)^n where n is a positive integer. *)
+ExpandLinearProduct::usage = "If u is a polynomial in x, ExpandLinearProduct[v,u,a,b,x] expands v*u into a sum of terms of the form c*v*(a+b*x)^n where n is a positive integer.";
 ExpandLinearProduct[v_,u_,a_,b_,x_Symbol] :=
   Module[{lst},
   lst=CoefficientList[ReplaceAll[u,x->(x-a)/b],x];
@@ -4190,88 +4084,43 @@ ExpandTrigToExp[u_,v_,x_Symbol] :=
 
 
 (* ::Subsection::Closed:: *)
-(*Distrib*)
+(*Star[u,v]*)
 
 
-(* Distrib[u,v] returns the sum of u times each term of v. *)
-Distrib[u_,v_] :=
-  If[SumQ[v],
-    Map[Function[u*#],v],
-  u*v]
+Star::usage = "Star[u,v] displays as u*v, and returns the product of u and v with u distributed over the terms of v.";
 
 
-(* ::Subsection::Closed:: *)
-(*Dist*)
+DownValues[Star]={};
 
 
-(* Dist[u,v] returns the sum of u times each term of v, provided v is free of Int. *)
-DownValues[Dist]={};
-UpValues[Dist]={};
-
-(*
-Dist /: Dist[u_,v_,x_]+Dist[w_,v_,x_] := 
-  If[EqQ[u+w,0],
-    0,
-  Dist[u+w,v,x]]
-
-Dist /: Dist[u_,v_,x_]-Dist[w_,v_,x_] := 
-  If[EqQ[u-w,0],
-    0,
-  Dist[u-w,v,x]]
-
-Dist /: w_*Dist[u_,v_,x_] := 
-  Dist[w*u,v,x] /; 
-w=!=-1
-*)
-
-Dist[u_,Defer[Dist][v_,w_,x_],x_] := 
-  Dist[u*v,w,x]
-
-(*
-Dist[u_,v_*w_,x_] := 
-  Dist[u*v,w,x] /;
-$ShowSteps===True && IntegralFreeQ[v] && Not[IntegralFreeQ[w]]
-*)
-
-Dist[u_,v_,x_] := 
-  If[u===1,
-    v,
-  If[u===0,
-    Print["*** Warning ***:  Dist[0,",v,",",x,"]"];
-    0,
-  If[NumericFactor[u]<0 && NumericFactor[-u]>0,
-    -Dist[-u,v,x],
-  If[SumQ[v],
-    Map[Function[Dist[u,#,x]],v],
-  If[IntegralFreeQ[v],
-(*  Simp[Simp[u,x]*v,x], *)
-    Simp[u*v,x],
-(*If[$ShowSteps=!=True,
-    Simp[u*v,x],
-  Module[{w=Simp[u,x]},
-  If[w=!=u,
-    Dist[w,v,x], *)
-  With[{w=Simp[u*x^2,x]/x^2},
-  If[w=!=u && FreeQ[w,x] && w===Simp[w,x] && w===Simp[w*x^2,x]/x^2,
-    Dist[w,v,x],
-  If[$ShowSteps=!=True,
-    Simp[u*v,x],
-  Defer[Dist][u,v,x]]]]]]]]]
+Star[u_,v_] := (
+  Print["*** Warning ***:  0*", v, "]"];
+  0 ) /; 
+EqQ[u,0]
 
 
-(* ::Subsection::Closed:: *)
-(*DistributeDegree*)
+Star[u_,v_] := 
+  Map[Function[Star[u,#]],v] /; 
+SumQ[v]
 
 
-(* DistributeDegree[u,m] returns the product of the factors of u each raised to the mth degree. *)
-DistributeDegree[u_,m_] :=
-  If[AtomQ[u],
-    u^m,
-  If[PowerQ[u],
-    u[[1]]^(u[[2]]*m),
-  If[ProductQ[u],
-    Map[Function[DistributeDegree[#,m]],u],
-  u^m]]]
+Star[u_,Star[v_,w_]] := 
+  Star[u*v,w]
+
+
+Star[u_,v_] := 
+  -Star[-u,v] /;
+NumericFactor[u]<0 && NumericFactor[-u]>0
+
+
+Star[u_,v_] := 
+  u*v /;
+Not[TrueQ[$ShowSteps]] || EqQ[u^2,1] || IntegralFreeQ[v]
+
+
+Star[u_,v_*w_] := 
+  Star[u*v,w] /;
+IntegralFreeQ[v]
 
 
 (* ::Section::Closed:: *)
@@ -4282,7 +4131,7 @@ DistributeDegree[u_,m_] :=
 (*FunctionOfPower*)
 
 
-(* FunctionOfPower[u,x] returns the gcd of the integer degrees of x in u. *)
+(* FunctionOfPower::usage = "FunctionOfPower[u,x] returns the gcd of the integer degrees of x in u."; *)
 (* FunctionOfPower[u_,x_Symbol] :=
   FunctionOfPower[u,Null,x]
 
@@ -4304,8 +4153,7 @@ FunctionOfPower[u_,n_,x_] :=
 (*FunctionOfLinear*)
 
 
-(* If u (x) is equivalent to an expression of the form f (a+b*x) and not the case that a==0 and
-	b==1, FunctionOfLinear[u,x] returns the list {f (x),a,b}; else it returns False. *)
+FunctionOfLinear::usage = "If u (x) is equivalent to an expression of the form f (a+b*x) and not the case that a==0 and b==1, FunctionOfLinear[u,x] returns the list {f (x),a,b}; else it returns False.";
 FunctionOfLinear[u_,x_Symbol] :=
   With[{lst=FunctionOfLinear[u,False,False,x,False]},
   If[AtomQ[lst] || FalseQ[lst[[1]]] || lst[[1]]===0 && lst[[2]]===1,
@@ -4360,8 +4208,7 @@ FunctionOfLinearSubst[u_,a_,b_,x_] :=
   Map[Function[FunctionOfLinearSubst[#,a,b,x]],u]]]]]]
 
 
-(* DivideDegreesOfFactors[u,n] returns the product of the base of the factors of u raised to
-	the degree of the factors divided by n. *)
+DivideDegreesOfFactors::usage = "DivideDegreesOfFactors[u,n] returns the product of the base of the factors of u raised to the degree of the factors divided by n.";
 DivideDegreesOfFactors[u_,n_] :=
   If[ProductQ[u],
     Map[Function[LeadBase[#]^(LeadDegree[#]/n)],u],
@@ -4372,8 +4219,7 @@ DivideDegreesOfFactors[u_,n_] :=
 (*FunctionOfInverseLinear*)
 
 
-(* If u is a function of an inverse linear binomial of the form 1/(a+b*x), 
-	FunctionOfInverseLinear[u,x] returns the list {a,b}; else it returns False. *)
+FunctionOfInverseLinear::usage = "If u is a function of an inverse linear binomial of the form 1/(a+b*x), FunctionOfInverseLinear[u,x] returns the list {a,b}; else it returns False.";
 FunctionOfInverseLinear[u_,x_Symbol] :=
   FunctionOfInverseLinear[u,Null,x]
 
@@ -4402,29 +4248,27 @@ FunctionOfInverseLinear[u_,lst_,x_] :=
 (*FunctionOfExponential*)
 
 
-(* FunctionOfExponentialQ[u,x] returns True iff u is a function of F^v where F is a constant and v is linear in x, *)
-(* and such an exponential explicitly occurs in u (i.e. not just implicitly in hyperbolic functions). *) 
+FunctionOfExponentialQ::usage = "FunctionOfExponentialQ[u,x] returns True iff u is a function of F^v where F is a constant and v is linear in x, and such an exponential explicitly occurs in u (i.e. not just implicitly in hyperbolic functions).";
 FunctionOfExponentialQ[u_,x_Symbol] :=
   Block[{$base$=Null,$expon$=Null,$exponFlag$=False},
     FunctionOfExponentialTest[u,x] && $exponFlag$]
 
 
-(* u is a function of F^v where v is linear in x.  FunctionOfExponential[u,x] returns F^v. *)
+FunctionOfExponential::usage = "u is a function of F^v where v is linear in x.  FunctionOfExponential[u,x] returns F^v.";
 FunctionOfExponential[u_,x_Symbol] :=
   Block[{$base$=Null,$expon$=Null,$exponFlag$=False},
     FunctionOfExponentialTest[u,x];
     $base$^$expon$]
 
 
-(* u is a function of F^v where v is linear in x.  FunctionOfExponentialFunction[u,x] returns u with F^v replaced by x. *)
+FunctionOfExponentialFunction::usage = "u is a function of F^v where v is linear in x.  FunctionOfExponentialFunction[u,x] returns u with F^v replaced by x.";
 FunctionOfExponentialFunction[u_,x_Symbol] :=
   Block[{$base$=Null,$expon$=Null,$exponFlag$=False},
     FunctionOfExponentialTest[u,x];
     SimplifyIntegrand[FunctionOfExponentialFunctionAux[u,x],x]]
 
 
-(* u is a function of F^v where v is linear in x, and the fluid variables $base$=F and $expon$=v. *)
-(* FunctionOfExponentialFunctionAux[u,x] returns u with F^v replaced by x. *)
+FunctionOfExponentialFunctionAux::usage = "u is a function of F^v where v is linear in x, and the fluid variables $base$=F and $expon$=v.  FunctionOfExponentialFunctionAux[u,x] returns u with F^v replaced by x.";
 FunctionOfExponentialFunctionAux[u_,x_] :=
   If[AtomQ[u],
     u,
@@ -4447,10 +4291,7 @@ FunctionOfExponentialFunctionAux[u_,x_] :=
   Map[Function[FunctionOfExponentialFunctionAux[#,x]],u]]]]]
 
 
-(* FunctionOfExponentialTest[u,x] returns True iff u is a function of F^v where F is a constant and v is linear in x. *)
-(* Before it is called, the fluid variables $base$ and $expon$ should be set to Null and $exponFlag$ to False. *)
-(* If u is a function of F^v, $base$ and $expon$ are set to F and v, respectively. *)
-(* If an explicit exponential occurs in u, $exponFlag$ is set to True. *)
+FunctionOfExponentialTest::usage = "FunctionOfExponentialTest[u,x] returns True iff u is a function of F^v where F is a constant and v is linear in x.  Before it is called, the fluid variables $base$ and $expon$ should be set to Null and $exponFlag$ to False.  If u is a function of F^v, $base$ and $expon$ are set to F and v, respectively.  If an explicit exponential occurs in u, $exponFlag$ is set to True.";
 FunctionOfExponentialTest[u_,x_] :=
   If[FreeQ[u,x],
     True,
@@ -4501,16 +4342,14 @@ FunctionOfExponentialTestAux[base_,expon_,x_] :=
 (*FunctionOfTrigOfLinearQ*)
 
 
-(* If u is an algebraic function of trig functions of a linear function of x, 
-    FunctionOfTrigOfLinearQ[u,x] returns True; else it returns False. *)
+FunctionOfTrigOfLinearQ::usage = "If u is an algebraic function of trig functions of a linear function of x, FunctionOfTrigOfLinearQ[u,x] returns True; else it returns False.";
 FunctionOfTrigOfLinearQ[u_,x_Symbol] :=
   If[MatchQ[u,(c_.+d_.*x)^m_.*(a_.+b_.*trig_[e_.+f_.*x])^n_. /; FreeQ[{a,b,c,d,e,f,m,n},x] && (TrigQ[trig] || HyperbolicQ[trig])],
     True,
   Not[MemberQ[{Null, False}, FunctionOfTrig[u,Null,x]]] && AlgebraicTrigFunctionQ[u,x]]
 
 
-(* If u is a function of trig functions of v where v is a linear function of x, 
-	FunctionOfTrig[u,x] returns v; else it returns False. *)
+FunctionOfTrig::usage = "If u is a function of trig functions of v where v is a linear function of x, FunctionOfTrig[u,x] returns v; else it returns False.";
 FunctionOfTrig[u_,x_Symbol] :=
   With[{v=FunctionOfTrig[ActivateTrig[u],Null,x]},
   If[v===Null, False, v]]
@@ -4541,7 +4380,7 @@ FunctionOfTrig[u_,v_,x_] :=
   w]]]]]]
 
 
-(* If u is algebraic function of trig functions, AlgebraicTrigFunctionQ[u,x] returns True; else it returns False. *)
+AlgebraicTrigFunctionQ::usage = "If u is algebraic function of trig functions, AlgebraicTrigFunctionQ[u,x] returns True; else it returns False.";
 AlgebraicTrigFunctionQ[u_,x_Symbol] :=
   If[AtomQ[u],
     True,
@@ -4560,8 +4399,7 @@ AlgebraicTrigFunctionQ[u_,x_Symbol] :=
 (*FunctionOfHyperbolic*)
 
 
-(* If u is a function of hyperbolic trig functions of v where v is linear in x, 
-	FunctionOfHyperbolic[u,x] returns v; else it returns False. *)
+FunctionOfHyperbolic::usage = "If u is a function of hyperbolic trig functions of v where v is linear in x, FunctionOfHyperbolic[u,x] returns v; else it returns False.";
 FunctionOfHyperbolic[u_,x_Symbol] :=
   With[{v=FunctionOfHyperbolic[u,Null,x]},
   If[v===Null, False, v]]
@@ -4589,8 +4427,7 @@ FunctionOfHyperbolic[u_,v_,x_] :=
 (*FunctionOfQ*)
 
 
-(* v is a function of x.
-	If u is a function of v, FunctionOfQ[v,u,x] returns True; else it returns False. *)
+FunctionOfQ::usage = "v is a function of x.  If u is a function of v, FunctionOfQ[v,u,x] returns True; else it returns False.";
 FunctionOfQ[v_,u_,x_Symbol,PureFlag_:False] :=
   If[FreeQ[u,x],
     False,
@@ -4671,8 +4508,7 @@ FunctionOfExpnQ[u_,v_,x_] :=
 (*Pure function of trig functions predicates*)
 
 
-(* If u is a pure function of Sin[v] and/or Csc[v], PureFunctionOfSinQ[u,v,x] returns True; 
-	else it returns False. *)
+PureFunctionOfSinQ::usage = "If u is a pure function of Sin[v] and/or Csc[v], PureFunctionOfSinQ[u,v,x] returns True; else it returns False.";
 PureFunctionOfSinQ[u_,v_,x_] :=
   If[AtomQ[u],
     u=!=x,
@@ -4683,8 +4519,7 @@ PureFunctionOfSinQ[u_,v_,x_] :=
   Catch[Scan[Function[If[Not[PureFunctionOfSinQ[#,v,x]],Throw[False]]],u];True]]]]
 
 
-(* If u is a pure function of Cos[v] and/or Sec[v], PureFunctionOfCosQ[u,v,x] returns True; 
-	else it returns False. *)
+PureFunctionOfCosQ::usage = "If u is a pure function of Cos[v] and/or Sec[v], PureFunctionOfCosQ[u,v,x] returns True; else it returns False.";
 PureFunctionOfCosQ[u_,v_,x_] :=
   If[AtomQ[u],
     u=!=x,
@@ -4695,8 +4530,7 @@ PureFunctionOfCosQ[u_,v_,x_] :=
   Catch[Scan[Function[If[Not[PureFunctionOfCosQ[#,v,x]],Throw[False]]],u];True]]]]
 
 
-(* If u is a pure function of Tan[v] and/or Cot[v], PureFunctionOfTanQ[u,v,x] returns True; 
-	else it returns False. *)
+PureFunctionOfTanQ::usage = "If u is a pure function of Tan[v] and/or Cot[v], PureFunctionOfTanQ[u,v,x] returns True; else it returns False.";
 PureFunctionOfTanQ[u_,v_,x_] :=
   If[AtomQ[u],
     u=!=x,
@@ -4707,8 +4541,7 @@ PureFunctionOfTanQ[u_,v_,x_] :=
   Catch[Scan[Function[If[Not[PureFunctionOfTanQ[#,v,x]],Throw[False]]],u];True]]]]
 
 
-(* If u is a pure function of Cot[v], PureFunctionOfCotQ[u,v,x] returns True; 
-	else it returns False. *)
+PureFunctionOfCotQ::usage = "If u is a pure function of Cot[v], PureFunctionOfCotQ[u,v,x] returns True; else it returns False.";
 PureFunctionOfCotQ[u_,v_,x_] :=
   If[AtomQ[u],
     u=!=x,
@@ -4723,7 +4556,7 @@ PureFunctionOfCotQ[u_,v_,x_] :=
 (*Function of trig functions predicates*)
 
 
-(* If u is a function of Sin[v], FunctionOfSinQ[u,v,x] returns True; else it returns False. *)
+FunctionOfSinQ::usage = "If u is a function of Sin[v], FunctionOfSinQ[u,v,x] returns True; else it returns False.";
 FunctionOfSinQ[u_,v_,x_] :=
   If[AtomQ[u],
     u=!=x,
@@ -4760,7 +4593,7 @@ FunctionOfSinQ[u_,v_,x_] :=
   Catch[Scan[Function[If[Not[FunctionOfSinQ[#,v,x]],Throw[False]]],u];True]]]]]]
 
 
-(* If u is a function of Cos[v], FunctionOfCosQ[u,v,x] returns True; else it returns False. *)
+FunctionOfCosQ::usage = "If u is a function of Cos[v], FunctionOfCosQ[u,v,x] returns True; else it returns False.";
 FunctionOfCosQ[u_,v_,x_] :=
   If[AtomQ[u],
     u=!=x,
@@ -4788,8 +4621,7 @@ FunctionOfCosQ[u_,v_,x_] :=
   Catch[Scan[Function[If[Not[FunctionOfCosQ[#,v,x]],Throw[False]]],u];True]]]]]]
 
 
-(* If u is a function of the form f[Tan[v],Cot[v]] where f is independent of x,
-	FunctionOfTanQ[u,v,x] returns True; else it returns False. *)
+FunctionOfTanQ::usage = "If u is a function of the form f[Tan[v],Cot[v]] where f is independent of x, FunctionOfTanQ[u,v,x] returns True; else it returns False.";
 FunctionOfTanQ[u_,v_,x_] :=
   If[AtomQ[u],
     u=!=x,
@@ -4825,9 +4657,7 @@ OddTrigPowerQ[u_,v_,x_] :=
   False]]]]
 
 
-(* u is a function of the form f[Tan[v],Cot[v]] where f is independent of x.
-FunctionOfTanWeight[u,v,x] returns a nonnegative number if u is best considered a function
-of Tan[v]; else it returns a negative number. *)
+FunctionOfTanWeight::usage = "u is a function of the form f[Tan[v],Cot[v]] where f is independent of x.  FunctionOfTanWeight[u,v,x] returns a nonnegative number if u is best considered a function of Tan[v]; else it returns a negative number.";
 FunctionOfTanWeight[u_,v_,x_] :=
   If[AtomQ[u],
     0,
@@ -4850,8 +4680,7 @@ FunctionOfTanWeight[u_,v_,x_] :=
   Apply[Plus,Map[Function[FunctionOfTanWeight[#,v,x]],Apply[List,u]]]]]]]]
 
 
-(* If u (x) is equivalent to an expression of the form f (Sin[v],Cos[v],Tan[v],Cot[v],Sec[v],Csc[v])
-	where f is independent of x, FunctionOfTrigQ[u,v,x] returns True; else it returns False. *)
+FunctionOfTrigQ::usage = "If u (x) is equivalent to an expression of the form f (Sin[v],Cos[v],Tan[v],Cot[v],Sec[v],Csc[v]) where f is independent of x, FunctionOfTrigQ[u,v,x] returns True; else it returns False.";
 FunctionOfTrigQ[u_,v_,x_Symbol] :=
   If[AtomQ[u],
     u=!=x,
@@ -4868,8 +4697,7 @@ FunctionOfTrigQ[u_,v_,x_Symbol] :=
 (*Pure function of hyperbolic functions predicates*)
 
 
-(* If u is a pure function of Sinh[v] and/or Csch[v], PureFunctionOfSinhQ[u,v,x] returns True; 
-	else it returns False. *)
+PureFunctionOfSinhQ::usage = "If u is a pure function of Sinh[v] and/or Csch[v], PureFunctionOfSinhQ[u,v,x] returns True; else it returns False.";
 PureFunctionOfSinhQ[u_,v_,x_] :=
   If[AtomQ[u],
     u=!=x,
@@ -4880,8 +4708,7 @@ PureFunctionOfSinhQ[u_,v_,x_] :=
   Catch[Scan[Function[If[Not[PureFunctionOfSinhQ[#,v,x]],Throw[False]]],u];True]]]]
 
 
-(* If u is a pure function of Cosh[v] and/or Sech[v], PureFunctionOfCoshQ[u,v,x] returns True; 
-	else it returns False. *)
+PureFunctionOfCoshQ::usage = "If u is a pure function of Cosh[v] and/or Sech[v], PureFunctionOfCoshQ[u,v,x] returns True; else it returns False.";
 PureFunctionOfCoshQ[u_,v_,x_] :=
   If[AtomQ[u],
     u=!=x,
@@ -4892,8 +4719,7 @@ PureFunctionOfCoshQ[u_,v_,x_] :=
   Catch[Scan[Function[If[Not[PureFunctionOfCoshQ[#,v,x]],Throw[False]]],u];True]]]]
 
 
-(* If u is a pure function of Tanh[v] and/or Coth[v], PureFunctionOfTanhQ[u,v,x] returns True; 
-	else it returns False. *)
+PureFunctionOfTanhQ::usage = "If u is a pure function of Tanh[v] and/or Coth[v], PureFunctionOfTanhQ[u,v,x] returns True; else it returns False.";
 PureFunctionOfTanhQ[u_,v_,x_] :=
   If[AtomQ[u],
     u=!=x,
@@ -4904,8 +4730,7 @@ PureFunctionOfTanhQ[u_,v_,x_] :=
   Catch[Scan[Function[If[Not[PureFunctionOfTanhQ[#,v,x]],Throw[False]]],u];True]]]]
 
 
-(* If u is a pure function of Coth[v], PureFunctionOfCothQ[u,v,x] returns True; 
-	else it returns False. *)
+PureFunctionOfCothQ::usage = "If u is a pure function of Coth[v], PureFunctionOfCothQ[u,v,x] returns True; else it returns False.";
 PureFunctionOfCothQ[u_,v_,x_] :=
   If[AtomQ[u],
     u=!=x,
@@ -4920,7 +4745,7 @@ PureFunctionOfCothQ[u_,v_,x_] :=
 (*Function of hyperbolic functions predicates*)
 
 
-(* If u is a function of Sinh[v], FunctionOfSinhQ[u,v,x] returns True; else it returns False. *)
+FunctionOfSinhQ::usage = "If u is a function of Sinh[v], FunctionOfSinhQ[u,v,x] returns True; else it returns False.";
 FunctionOfSinhQ[u_,v_,x_] :=
   If[AtomQ[u],
     u=!=x,
@@ -4957,7 +4782,7 @@ FunctionOfSinhQ[u_,v_,x_] :=
   Catch[Scan[Function[If[Not[FunctionOfSinhQ[#,v,x]],Throw[False]]],u];True]]]]]]
 
 
-(* If u is a function of Cosh[v], FunctionOfCoshQ[u,v,x] returns True; else it returns False. *)
+FunctionOfCoshQ::usage = "If u is a function of Cosh[v], FunctionOfCoshQ[u,v,x] returns True; else it returns False.";
 FunctionOfCoshQ[u_,v_,x_] :=
   If[AtomQ[u],
     u=!=x,
@@ -4985,8 +4810,7 @@ FunctionOfCoshQ[u_,v_,x_] :=
   Catch[Scan[Function[If[Not[FunctionOfCoshQ[#,v,x]],Throw[False]]],u];True]]]]]]
 
 
-(* If u is a function of the form f[Tanh[v],Coth[v]] where f is independent of x,
-	FunctionOfTanhQ[u,v,x] returns True; else it returns False. *)
+FunctionOfTanhQ::usage = "If u is a function of the form f[Tanh[v],Coth[v]] where f is independent of x, FunctionOfTanhQ[u,v,x] returns True; else it returns False.";
 FunctionOfTanhQ[u_,v_,x_] :=
   If[AtomQ[u],
     u=!=x,
@@ -5022,9 +4846,7 @@ OddHyperbolicPowerQ[u_,v_,x_] :=
   False]]]]
 
 
-(* u is a function of the form f[Tanh[v],Coth[v]] where f is independent of x.
-FunctionOfTanhWeight[u,v,x] returns a nonnegative number if u is best considered a function
-of Tanh[v]; else it returns a negative number. *)
+FunctionOfTanhWeight::usage = "u is a function of the form f[Tanh[v],Coth[v]] where f is independent of x.  FunctionOfTanhWeight[u,v,x] returns a nonnegative number if u is best considered a function of Tanh[v]; else it returns a negative number.";
 FunctionOfTanhWeight[u_,v_,x_] :=
   If[AtomQ[u],
     0,
@@ -5047,8 +4869,7 @@ FunctionOfTanhWeight[u_,v_,x_] :=
   Apply[Plus,Map[Function[FunctionOfTanhWeight[#,v,x]],Apply[List,u]]]]]]]]
 
 
-(* If u (x) is equivalent to a function of the form f (Sinh[v],Cosh[v],Tanh[v],Coth[v],Sech[v],Csch[v])
-	where f is independent of x, FunctionOfHyperbolicQ[u,v,x] returns True; else it returns False. *)
+FunctionOfHyperbolicQ::usage = "If u (x) is equivalent to a function of the form f (Sinh[v],Cosh[v],Tanh[v],Coth[v],Sech[v],Csch[v]) where f is independent of x, FunctionOfHyperbolicQ[u,v,x] returns True; else it returns False.";
 FunctionOfHyperbolicQ[u_,v_,x_Symbol] :=
   If[AtomQ[u],
     u=!=x,
@@ -5059,10 +4880,7 @@ FunctionOfHyperbolicQ[u_,v_,x_Symbol] :=
   Catch[Scan[Function[If[FunctionOfHyperbolicQ[#,v,x],Null,Throw[False]]],u];True]]]]
 
 
-(* If func[w]^m is a factor of u where m is odd and w is an integer multiple of v, 
-	FindTrigFactor[func1,func2,u,v,True] returns the list {w,u/func[w]^n}; else it returns False. *)
-(* If func[w]^m is a factor of u where m is odd and w is an integer multiple of v not equal to v, 
-	FindTrigFactor[func1,func2,u,v,False] returns the list {w,u/func[w]^n}; else it returns False. *)
+FindTrigFactor::usage = "If func[w]^m is a factor of u where m is odd and w is an integer multiple of v, FindTrigFactor[func1,func2,u,v,True] returns the list {w,u/func[w]^n}; else it returns False.  If func[w]^m is a factor of u where m is odd and w is an integer multiple of v not equal to v, FindTrigFactor[func1,func2,u,v,False] returns the list {w,u/func[w]^n}; else it returns False.";
 FindTrigFactor[func1_,func2_,u_,v_,flag_] :=
   If[u===1,
     False,
@@ -5077,17 +4895,17 @@ FindTrigFactor[func1_,func2_,u_,v_,flag_] :=
   {lst[[1]], LeadFactor[u]*lst[[2]]}]]]]
 
 
-(* If u/v is an integer, IntegerQuotientQ[u,v] returns True; else it returns False. *)
+IntegerQuotientQ::usage = "If u/v is an integer, IntegerQuotientQ[u,v] returns True; else it returns False.";
 IntegerQuotientQ[u_,v_] :=
 (* u===v || EqQ[u,v] || IntegerQ[u/v] *)
   IntegerQ[Simplify[u/v]]
 
-(* If u/v is odd, OddQuotientQ[u,v] returns True; else it returns False. *)
+OddQuotientQ::usage = "If u/v is odd, OddQuotientQ[u,v] returns True; else it returns False.";
 OddQuotientQ[u_,v_] :=
 (* u===v || EqQ[u,v] || OddQ[u/v] *)
   OddQ[Simplify[u/v]]
 
-(* If u/v is even, EvenQuotientQ[u,v] returns True; else it returns False. *)
+EvenQuotientQ::usage = "If u/v is even, EvenQuotientQ[u,v] returns True; else it returns False.";
 EvenQuotientQ[u_,v_] :=
   EvenQ[Simplify[u/v]]
 
@@ -5096,8 +4914,7 @@ EvenQuotientQ[u_,v_] :=
 (*FunctionOfDensePolynomialsQ*)
 
 
-(* If all occurrences of x in u (x) are in dense polynomials, FunctionOfDensePolynomialsQ[u,x]
-	returns True; else it returns False. *)
+FunctionOfDensePolynomialsQ::usage = "If all occurrences of x in u (x) are in dense polynomials, FunctionOfDensePolynomialsQ[u,x] returns True; else it returns False.";
 FunctionOfDensePolynomialsQ[u_,x_Symbol] :=
   If[FreeQ[u,x],
     True,
@@ -5112,8 +4929,7 @@ FunctionOfDensePolynomialsQ[u_,x_Symbol] :=
 (*FunctionOfLog*)
 
 
-(* If u (x) is equivalent to an expression of the form f (Log[a*x^n]), FunctionOfLog[u,x] returns
-	the list {f (x),a*x^n,n}; else it returns False. *)
+FunctionOfLog::usage = "If u (x) is equivalent to an expression of the form f (Log[a*x^n]), FunctionOfLog[u,x] returns the list {f (x),a*x^n,n}; else it returns False.";
 FunctionOfLog[u_,x_Symbol] :=
   With[{lst=FunctionOfLog[u,False,False,x]},
   If[AtomQ[lst] || FalseQ[lst[[2]]],
@@ -5144,8 +4960,7 @@ FunctionOfLog[u_,v_,n_,x_] :=
 (*PowerVariableExpn*)
 
 
-(* If m is an integer, u is an expression of the form f[(c*x)^n] and g=GCD[m,n]>1,
-   PowerVariableExpn[u,m,x] returns the list {x^(m/g)*f[(c*x)^(n/g)],g,c}; else it returns False. *)
+PowerVariableExpn::usage = "If m is an integer, u is an expression of the form f[(c*x)^n] and g=GCD[m,n]>1, PowerVariableExpn[u,m,x] returns the list {x^(m/g)*f[(c*x)^(n/g)],g,c}; else it returns False.";
 PowerVariableExpn[u_,m_,x_Symbol] :=
   If[IntegerQ[m],
     With[{lst=PowerVariableDegree[u,m,1,x]},
@@ -5288,8 +5103,7 @@ FunctionOfSquareRootOfQuadratic[u_,v_,x_Symbol] :=
   False]]]
 
 
-(* SquareRootOfQuadraticSubst[u,vv,xx,x] returns u with fractional powers replaced by vv raised
-	to the power and x replaced by xx. *)
+SquareRootOfQuadraticSubst::usage = "SquareRootOfQuadraticSubst[u,vv,xx,x] returns u with fractional powers replaced by vv raised to the power and x replaced by xx.";
 SquareRootOfQuadraticSubst[u_,vv_,xx_,x_Symbol] :=
   If[AtomQ[u] || FreeQ[u,x],
     If[u===x,
@@ -5310,7 +5124,7 @@ SquareRootOfQuadraticSubst[u_,vv_,xx_,x_Symbol] :=
 (*Subst[u,v,w]*)
 
 
-(* Subst[u,x,v] returns u with all nondummy occurences of x replaced by v and resulting constant terms replaced by 0. *) 
+Subst::usage = "Subst[u,x,v] returns u with all nondummy occurences of x replaced by v and resulting constant terms replaced by 0.";
 Subst[u_,x_Symbol,v_] :=
   If[PowerQ[v] && Not[IntegerQ[v[[2]]]] && 
       MatchQ[v[[1]],a_+b_.*x+c_.*x^2 /; FreeQ[{a,b,c},x] && Not[AtomQ[b]]] && 
@@ -5362,8 +5176,7 @@ Subst[u_,v_,w_] :=
 (*SubstAux[u,x,v]*)
 
 
-(* x is a variable symbol. *)
-(* SubstAux[u,x,v] returns u with all nondummy occurences of x replaced by v *)
+SubstAux::usage = "x is a variable symbol.  SubstAux[u,x,v] returns u with all nondummy occurences of x replaced by v.  x is a variable symbol. flag is True if v is a binomial in x; else it is False.  SubstAux[u,x,v,flag] returns u with all nondummy occurences of x replaced by v.";
 SubstAux[a_+b_.*x_,x_,c_.*F_[z_]^2,False] :=
   a*Simplify[1-F[z]^2] /;
 FreeQ[{a,b,c},x] && MemberQ[{Sin,Cos,Sec,Csc,Cosh,Tanh,Coth,Sech},F] && EqQ[a+b*c,0]
@@ -5389,9 +5202,11 @@ SubstAux[F_[a_.*x_^m_.],x_,b_.*x_^n_,flag_] :=
 FreeQ[{a,b},x] && IGtQ[m,0] && ILtQ[n,0] && MemberQ[{ArcSin,ArcCos,ArcTan,ArcCot,ArcSec,ArcCsc,ArcSinh,ArcCosh,ArcTanh,ArcCoth,ArcSech,ArcCsch},F]
 
 
-(* ::Code::Bold:: *)
-(* x is a variable symbol. flag is True if v is a binomial in x; else it is False. *)
-(* SubstAux[u,x,v,flag] returns u with all nondummy occurences of x replaced by v *)
+SubstAux[e_+f_.*x_,x_,(a_.+b_.*x_)/(c_.+d_.*x_),flag_] :=
+  Together[c*e+a*f]/(c+d*x) /;
+FreeQ[{a,b,c,d,e,f},x] && EqQ[d*e+b*f,0]
+
+
 SubstAux[u_,x_,v_,flag_] :=
   If[AtomQ[u],
     If[u===x,
@@ -5407,8 +5222,8 @@ SubstAux[u_,x_,v_,flag_] :=
     If[u[[2]]===x || FreeQ[u[[1]],x],
       SubstAux[u[[1]],u[[2]],SubstAux[u[[3]],x,v,flag],flag],
     Defer[Subst][u,x,v]],
-  If[Head[u]===Defer[Dist],
-    Defer[Dist][SubstAux[u[[1]],x,v,flag],SubstAux[u[[2]],x,v,flag],u[[3]]],
+(*If[Head[u]===Defer[Dist],
+    Defer[Dist][SubstAux[u[[1]],x,v,flag],SubstAux[u[[2]],x,v,flag],u[[3]]], *)
   If[SimplifyFlag && MemberQ[{Unintegrable,CannotIntegrate},Head[u]] && u[[2]]===x,
     With[{w=Simplify[D[v,x]]}, FreeFactors[w,x]*Head[u][Subst[u[[1]],x,v]*NonfreeFactors[w,x],x]],
   If[CalculusQ[u] && Not[FreeQ[x,u[[2]]]] || HeldFormQ[u] && Head[u]=!=Defer[AppellF1],
@@ -5417,11 +5232,11 @@ SubstAux[u_,x_,v_,flag_] :=
     Head[u][Simplify[SubstAux[u[[1]],x,v,flag]]],
   If[flag && Head[u]===PolyLog && Length[u]==2 && LinearQ[u[[2]],x],
     PolyLog[SubstAux[u[[1]],x,v,flag],Simplify[SubstAux[u[[2]],x,v,flag]]],
-  With[{w=Map[Function[SubstAux[#,x,v,flag]],u]},
+  With[{w=Simp[Map[Function[SubstAux[#,x,v,flag]],u],x]},
   If[PolyQ[w,x],
     With[{z=If[LinearQ[v,x] || MonomialQ[v,x],ExpandToSum[w,x],Simplify[w]]},
 (*  Print[{u,v,w,z}]; *)
-    If[LeafCount[z]<=If[LinearQ[u,x],3/4,9/10]*LeafCount[w],
+    If[LeafCount[z]<=If[LinearQ[u,x], 3/4, 9/10]*LeafCount[w],
       If[EqQ[NumericFactor[z]^2,1],
         z,
       NumericFactor[z]*NonnumericFactors[z]],
@@ -5434,22 +5249,20 @@ SubstAux[u_,x_,v_,flag_] :=
     If[LeafCount[z]<9/10*LeafCount[w],
       z,
     w]],
-  w]]]]]]]]]]]]]
+  w]]]]]]]]]]]]
 
 
 (* ::Subsection::Closed:: *)
 (*SimplifyAntiderivative[u,x]*)
 
 
-(* ::Item::Closed:: *)
-(*SimplifyAntiderivative[u,x] returns the simplest, continuous expression whose derivative wrt x equals the derivative of u wrt x.*)
+SimplifyAntiderivative::usage = "SimplifyAntiderivative[u,x] returns the simplest, continuous expression whose derivative wrt x equals the derivative of u wrt x.";
+Clear[SimplifyAntiderivative];
 
 
 (* ::Item:: *)
 (*Basis: D[c*F[x], x] == c*D[F[x], x]*)
 
-
-Clear[SimplifyAntiderivative];
 
 SimplifyAntiderivative[c_*u_,x_Symbol] :=
   With[{v=SimplifyAntiderivative[u,x]},
@@ -5797,7 +5610,10 @@ SimplifyAntiderivative[u_,x_Symbol] :=
   If[FreeQ[u,x],
     0,
   If[LogQ[u],
-    Log[RemoveContent[u[[1]],x]],
+    With[{v=RemoveContent[u[[1]],x]},
+    If[v===u[[1]],
+      u,
+    SimplifyAntiderivative[Log[v],x]]],
   If[SumQ[u],
     SimplifyAntiderivativeSum[Map[Function[SimplifyAntiderivative[#,x]],u],x],
   u]]]
@@ -5876,11 +5692,11 @@ SimplifyAntiderivativeSum[u_,x_Symbol] := u
 (*Basis: D[ArcTan[a*Tan[f[x]]], x] == D[f[x] + ArcTan[(Cos[f[x]]*Sin[f[x]])/(1/(a - 1) + Sin[f[x]]^2)], x] == D[f[x] - ArcTan[(Cos[f[x]]*Sin[f[x]])/(a/(1 - a) + Cos[f[x]]^2)], x]*)
 
 
-(* ::Item::Bold:: *)
+(* ::Item:: *)
 (*Note: If  a>0 and f[x] is real, then 1/(1-a)-Sin[f[x]]^2 is nonzero and f[x]-ArcTan[(Cos[f[x]] Sin[f[x]])/(1/(1-a)-Sin[f[x]]^2)] is continuous, unlike ArcTan[a Tan[f[x]]].*)
 
 
-(* RectifyTangent[u,a,b,x] returns an expression whose derivative equals the derivative of b*ArcTan[a*Tan[u]] wrt x. *)
+RectifyTangent::usage = "RectifyTangent[u,a,b,x] returns an expression whose derivative equals the derivative of b*ArcTan[a*Tan[u]] wrt x.  RectifyTangent[u,a,b,r,x] returns an expression whose derivative equals the derivative of r*ArcTan[a+b*Tan[u]] wrt x.";
 RectifyTangent[u_,a_,b_,x_Symbol] :=
   If[MatchQ[Together[a],d_.*Complex[0,c_]],
     Module[{c=a/I,e},
@@ -5944,7 +5760,6 @@ RectifyTangent[u_,a_,b_,x_Symbol] :=
 (*Basis: D[ArcTan[a + b*Tan[f[x]]], x] == D[f[x] - ArcTan[(a*b - 2*a*b*Cos[f[x]]^2 + (1 + a^2 - b^2)*Cos[f[x]]*Sin[f[x]])/(b*(1 + b) + (1 + a^2 - b^2)*Cos[f[x]]^2 + 2*a*b*Cos[f[x]]*Sin[f[x]])], x]*)
 
 
-(* RectifyTangent[u,a,b,r,x] returns an expression whose derivative equals the derivative of r*ArcTan[a+b*Tan[u]] wrt x. *)
 RectifyTangent[u_,a_,b_,r_,x_Symbol] :=
   If[MatchQ[Together[a],d_.*Complex[0,c_]] && MatchQ[Together[b],d_.*Complex[0,c_]],
     Module[{c=a/I,d=b/I,e},
@@ -6020,7 +5835,7 @@ FreeQ[{a,b,c},x] *)
 (*Basis: D[ArcCot[a*Cot[f[x]]], x] == D[f[x] - ArcTan[(Cos[f[x]]*Sin[f[x]])/(1/(a - 1) + Cos[f[x]]^2)], x] == D[f[x] + ArcTan[(Cos[f[x]]*Sin[f[x]])/(a/(1 - a) + Sin[f[x]]^2)], x]*)
 
 
-(* RectifyCotangent[u,a,b,x] returns an expression whose derivative equals the derivative of b*ArcCot[a*Cot[u]] wrt x. *)
+RectifyCotangent::usage = "RectifyCotangent[u,a,b,x] returns an expression whose derivative equals the derivative of b*ArcCot[a*Cot[u]] wrt x.  RectifyCotangent[u,a,b,r,x] returns an expression whose derivative equals the derivative of r*ArcTan[a+b*Cot[u]] wrt x.";
 RectifyCotangent[u_,a_,b_,x_Symbol] :=
   If[MatchQ[Together[a],d_.*Complex[0,c_]],
     Module[{c=a/I,e},
@@ -6084,7 +5899,6 @@ RectifyCotangent[u_,a_,b_,x_Symbol] :=
 (*Basis: D[ArcTan[a + b*Cot[f[x]]], x] == D[-f[x] - ArcTan[(a*b - 2*a*b*Sin[f[x]]^2 + (1 + a^2 - b^2)*Cos[f[x]]*Sin[f[x]])/(b*(1 + b) + (1 + a^2 - b^2)*Sin[f[x]]^2 + 2*a*b*Cos[f[x]]*Sin[f[x]])], x]*)
 
 
-(* RectifyCotangent[u,a,b,r,x] returns an expression whose derivative equals the derivative of r*ArcTan[a+b*Cot[u]] wrt x. *)
 RectifyCotangent[u_,a_,b_,r_,x_Symbol] :=
   If[MatchQ[Together[a],d_.*Complex[0,c_]] && MatchQ[Together[b],d_.*Complex[0,c_]],
     Module[{c=a/I,d=b/I,e},
@@ -6146,12 +5960,11 @@ SmartDenominator[u_] := Denominator[u]
 (*SubstFor*)
 
 
-(* u is a function of v.  SubstFor[w,v,u,x] returns w times u with v replaced by x. *)
+SubstFor::usage = "u is a function of v.  SubstFor[w,v,u,x] returns w times u with v replaced by x.  u is a function of v.  SubstFor[v,u,x] returns u with v replaced by x.";
 SubstFor[w_,v_,u_,x_] :=
   SimplifyIntegrand[w*SubstFor[v,u,x],x]
 
 
-(* u is a function of v.  SubstFor[v,u,x] returns u with v replaced by x. *)
 SubstFor[v_,u_,x_] :=
   If[AtomQ[v],
     Subst[u,v,x],
@@ -6175,7 +5988,7 @@ SubstFor[v_,u_,x_] :=
     _, SubstForAux[u,v,x]]]]]
 
 
-(* u is a function of v.  SubstForAux[u,v,x] returns u with v replaced by x. *)
+SubstForAux::usage = "u is a function of v.  SubstForAux[u,v,x] returns u with v replaced by x.";
 SubstForAux[u_,v_,x_] :=
   If[u===v,
     x,
@@ -6196,8 +6009,7 @@ SubstForAux[u_,v_,x_] :=
   Map[Function[SubstForAux[#,v,x]],u]]]]]]
 
 
-(* u (v) is an expression of the form f (Sin[v],Cos[v],Tan[v],Cot[v],Sec[v],Csc[v]). *)
-(* SubstForTrig[u,sin,cos,v,x] returns the expression f (sin,cos,sin/cos,cos/sin,1/cos,1/sin). *)
+SubstForTrig::usage = " u(v) is an expression of the form f(Sin[v],Cos[v],Tan[v],Cot[v],Sec[v],Csc[v]).  SubstForTrig[u,sin,cos,v,x] returns the expression f(sin,cos,sin/cos,cos/sin,1/cos,1/sin).";
 SubstForTrig[u_,sin_,cos_,v_,x_] :=
   If[AtomQ[u],
     u,
@@ -6211,9 +6023,7 @@ SubstForTrig[u_,sin_,cos_,v_,x_] :=
   Map[Function[SubstForTrig[#,sin,cos,v,x]],u]]]]
 
 
-(* u (v) is an expression of the form f (Sinh[v],Cosh[v],Tanh[v],Coth[v],Sech[v],Csch[v]). *)
-(* SubstForHyperbolic[u,sinh,cosh,v,x] returns the expression
-		f (sinh,cosh,sinh/cosh,cosh/sinh,1/cosh,1/sinh). *)
+SubstForHyperbolic::usage = "u (v) is an expression of the form f (Sinh[v],Cosh[v],Tanh[v],Coth[v],Sech[v],Csch[v]).  SubstForHyperbolic[u,sinh,cosh,v,x] returns the expression f(sinh,cosh,sinh/cosh,cosh/sinh,1/cosh,1/sinh).";
 SubstForHyperbolic[u_,sinh_,cosh_,v_,x_] :=
   If[AtomQ[u],
     u,
@@ -6231,10 +6041,7 @@ SubstForHyperbolic[u_,sinh_,cosh_,v_,x_] :=
 (*SubstForFractionalPowerOfLinear*)
 
 
-(* If u has a subexpression of the form (a+b*x)^(m/n) where m and n>1 are integers, 
-	SubstForFractionalPowerOfLinear[u,x] returns the list {v,n,a+b*x,1/b} where v is u
-	with subexpressions of the form (a+b*x)^(m/n) replaced by x^m and x replaced
-	by -a/b+x^n/b, and all times x^(n-1); else it returns False. *)
+SubstForFractionalPowerOfLinear::usage = "If u has a subexpression of the form (a+b*x)^(m/n) where m and n>1 are integers, SubstForFractionalPowerOfLinear[u,x] returns the list {v,n,a+b*x,1/b} where v is u with subexpressions of the form (a+b*x)^(m/n) replaced by x^m and x replaced by -a/b+x^n/b, and all times x^(n-1); else it returns False.";
 SubstForFractionalPowerOfLinear[u_,x_Symbol] :=
   With[{lst=FractionalPowerOfLinear[u,1,False,x]},
   If[AtomQ[lst] || FalseQ[lst[[2]]],
@@ -6244,8 +6051,7 @@ SubstForFractionalPowerOfLinear[u_,x_Symbol] :=
   {NonfreeFactors[tmp,x],n,lst[[2]],FreeFactors[tmp,x]/b}]]]]
 
 
-(* If u has a subexpression of the form (a+b*x)^(m/n), 
-	FractionalPowerOfLinear[u,1,False,x] returns {n,a+b*x}; else it returns False. *)
+FractionalPowerOfLinear::usage = "If u has a subexpression of the form (a+b*x)^(m/n), FractionalPowerOfLinear[u,1,False,x] returns {n,a+b*x}; else it returns False.";
 FractionalPowerOfLinear[u_,n_,v_,x_] :=
   If[AtomQ[u] || FreeQ[u,x],
     {n,v},
@@ -6262,8 +6068,7 @@ FractionalPowerOfLinear[u_,n_,v_,x_] :=
 (*InverseFunctionOfLinear*)
 
 
-(* If u has a subexpression of the form g[a+b*x] where g is an inverse function, 
-	InverseFunctionOfLinear[u,x] returns g[a+b*x]; else it returns False. *)
+InverseFunctionOfLinear::usage = "If u has a subexpression of the form g[a+b*x] where g is an inverse function, InverseFunctionOfLinear[u,x] returns g[a+b*x]; else it returns False.";
 InverseFunctionOfLinear[u_,x_Symbol] :=
   If[AtomQ[u] || CalculusQ[u] || FreeQ[u,x],
     False,
@@ -6317,6 +6122,21 @@ TryPureTanhSubst[u_,x_Symbol] :=
   u===ExpandIntegrand[u,x]
 
 
+(* ::Subsection::Closed:: *)
+(*SubstPower[F[x],x,n]*)
+
+
+SubstPower::usage = "SubstPower[F[x],x,n] returns F[x] with x^m replaced by x^(m*n) and x replaced by x^n.";
+SubstPower[Fx_,x_Symbol,n_Integer] :=
+  If[AtomQ[Fx],
+    If[Fx===x,
+      x^n,
+    Fx],
+  If[PowerQ[Fx] && Fx[[1]]===x && FreeQ[Fx[[2]],x],
+    x^(n*Fx[[2]]),
+  Map[Function[SubstPower[#,x,n]],Fx]]]
+
+
 (* ::Section::Closed:: *)
 (*Inert trig functions*)
 
@@ -6353,10 +6173,7 @@ ActivateTrig[u_] :=
 (*DeactivateTrig[u,x]*)
 
 
-(* u is a function of trig functions of a linear function of x. *)
-(* DeactivateTrig[u,x] returns u with the trig functions replaced with inert trig functions. *)
-
-
+DeactivateTrig::usage = "u is a function of trig functions of a linear function of x.  DeactivateTrig[u,x] returns u with the trig functions replaced with inert trig functions.";
 DeactivateTrig[(c_.+d_.*x_)^m_.*(a_.+b_.*trig_[e_.+f_.*x_])^n_.,x_] :=
   (c+d*x)^m*(a+b*DeactivateTrig[trig[e+f*x],x])^n /;
 FreeQ[{a,b,c,d,e,f,m,n},x] && (TrigQ[trig] || HyperbolicQ[trig])
@@ -6676,8 +6493,7 @@ ReduceInertTrig[func_,u_] :=
   func[u]
 
 
-(* func is an inert function and m is rational *)
-(* ReduceInertTrig[func,m_,u_] returns func[m*Pi+u] with m reduced 0<=m<1/2. *)
+ReduceInertTrig::usage = "func is an inert function and m is rational  ReduceInertTrig[func,m_,u_] returns func[m*Pi+u] with m reduced 0<=m<1/2.";
 ReduceInertTrig[func_,m_,u_] :=
   If[m<0,
     If[m>=-1/4,
@@ -7571,7 +7387,7 @@ KnownTrigIntegrandQ[list_,u_,x_Symbol] :=
 (*DeactivateInverseHyperbolic[u,x]*)
 
 
-(* DeactivateInverseHyperbolic[u,x] returns u with inverse trig and hyperbolic functions replaced with inert inverse hyperbolic functions. *)
+(* DeactivateInverseHyperbolic::usage = "DeactivateInverseHyperbolic[u,x] returns u with inverse trig and hyperbolic functions replaced with inert inverse hyperbolic functions."; *)
 (* DeactivateInverseHyperbolic[u_,x_] :=
   If[AtomQ[u],
     u,
@@ -7598,8 +7414,7 @@ KnownTrigIntegrandQ[list_,u_,x_Symbol] :=
 (*Derivative divides function*)
 
 
-(* If the derivative of u wrt x is a constant wrt x, PiecewiseLinearQ[u,x] returns True;
-	else it returns False. *)
+PiecewiseLinearQ::usage = "If the derivative of u wrt x is a constant wrt x, PiecewiseLinearQ[u,x] returns True; else it returns False.";
 PiecewiseLinearQ[u_,v_,x_Symbol] :=
   PiecewiseLinearQ[u,x] && PiecewiseLinearQ[v,x]
 
@@ -7612,7 +7427,7 @@ PiecewiseLinearQ[u_,x_Symbol] :=
    },{F,G}]]
 
 
-(* If u divided by y is free of x, Divides[y,u,x] returns the quotient; else it returns False. *)
+Divides::usage = "If u divided by y is free of x, Divides[y,u,x] returns the quotient; else it returns False.";
 Divides[y_,u_,x_Symbol] :=
   With[{v=Simplify[u/y]},
   If[FreeQ[v,x],
@@ -7620,8 +7435,7 @@ Divides[y_,u_,x_Symbol] :=
   False]]
 
 
-(* If y not equal to x, y is easy to differentiate wrt x, and u divided by the derivative of y 
-  is free of x, DerivativeDivides[y,u,x] returns the quotient; else it returns False. *)
+DerivativeDivides::usage = "If y not equal to x, y is easy to differentiate wrt x, and u divided by the derivative of y is free of x, DerivativeDivides[y,u,x] returns the quotient; else it returns False.";
 DerivativeDivides[y_,u_,x_Symbol] :=
   If[MatchQ[y,a_.*x /; FreeQ[a,x]],
     False,
@@ -7636,7 +7450,7 @@ DerivativeDivides[y_,u_,x_Symbol] :=
   False]]
 
 
-(* If u is easy to differentiate wrt x, EasyDQ[u,x] returns True; else it returns False. *)
+EasyDQ::usage = "If u is easy to differentiate wrt x, EasyDQ[u,x] returns True; else it returns False.";
 EasyDQ[u_.*x_^m_.,x_Symbol] :=
   EasyDQ[u,x] /;
 FreeQ[m,x]
@@ -7669,7 +7483,7 @@ EasyDQ[u_,x_Symbol] :=
   False]]]]]]]]
 
 
-(* ProductOfLinearPowersQ[u,x] returns True iff u is a product of factors of the form v^n where v is linear in x. *)
+ProductOfLinearPowersQ::usage = "ProductOfLinearPowersQ[u,x] returns True iff u is a product of factors of the form v^n where v is linear in x.";
 ProductOfLinearPowersQ[u_,x_Symbol] :=
   FreeQ[u,x] ||
   MatchQ[u, v_^n_. /; LinearQ[v,x] && FreeQ[n,x]] || 
@@ -7684,7 +7498,7 @@ ProductOfLinearPowersQ[u_,x_Symbol] :=
 (*Rt[u,n]*)
 
 
-(* Rt[u,n] returns the simplest nth root of u. *)
+Rt::usage = "Rt[u,n] returns the simplest nth root of u.";
 Rt[u_,n_Integer] :=
   RtAux[TogetherSimplify[u],n]
 
@@ -7700,7 +7514,7 @@ NthRoot[u_,n_] := u^(1/n)
 (*TrigSquare[u]*)
 
 
-(* If u is an expression of the form a-a*Sin[z]^2 or a-a*Cos[z]^2, TrigSquare[u] returns Cos[z]^2 or Sin[z]^2 respectively, else it returns False. *)
+TrigSquare::usage = "If u is an expression of the form a-a*Sin[z]^2 or a-a*Cos[z]^2, TrigSquare[u] returns Cos[z]^2 or Sin[z]^2 respectively, else it returns False.";
 TrigSquare[u_] :=
   If[SumQ[u],
     With[{lst=SplitSum[Function[SplitProduct[TrigSquareQ,#]],u]},
@@ -7782,22 +7596,22 @@ RtAux[u_,n_] :=
 (*Factor base predicates*)
 
 
-(* If u is an atom or an atom raised to an odd degree, AtomBaseQ[u] returns True; else it returns False. *)
+AtomBaseQ::usage = "If u is an atom or an atom raised to an odd degree, AtomBaseQ[u] returns True; else it returns False.";
 AtomBaseQ[u_] :=
   AtomQ[u] || PowerQ[u] && OddQ[u[[2]]] && AtomBaseQ[u[[1]]]
 
 
-(* If u is an sum or a sum raised to an odd degree, SumBaseQ[u] returns True; else it returns False. *)
+SumBaseQ::usage = "If u is an sum or a sum raised to an odd degree, SumBaseQ[u] returns True; else it returns False.";
 SumBaseQ[u_] :=
   SumQ[u] || PowerQ[u] && OddQ[u[[2]]] && SumBaseQ[u[[1]]]
 
 
-(* If u is a sum or a sum raised to an odd degree whose lead term has a negative form, NegSumBaseQ[u] returns True; else it returns False. *)
+NegSumBaseQ::usage = "If u is a sum or a sum raised to an odd degree whose lead term has a negative form, NegSumBaseQ[u] returns True; else it returns False.";
 NegSumBaseQ[u_] :=
   SumQ[u] && NegQ[First[u]] || PowerQ[u] && OddQ[u[[2]]] && NegSumBaseQ[u[[1]]]
 
 
-(* If all terms of u have a negative form, AllNegTermQ[u] returns True; else it returns False. *)
+AllNegTermQ::usage = "If all terms of u have a negative form, AllNegTermQ[u] returns True; else it returns False.";
 AllNegTermQ[u_] :=
   If[PowerQ[u] && OddQ[u[[2]]],
     AllNegTermQ[u[[1]]],
@@ -7806,7 +7620,7 @@ AllNegTermQ[u_] :=
   NegQ[u]]]
 
 
-(* If some term of u has a negative form, SomeNegTermQ[u] returns True; else it returns False. *)
+SomeNegTermQ::usage = "If some term of u has a negative form, SomeNegTermQ[u] returns True; else it returns False.";
 SomeNegTermQ[u_] :=
   If[PowerQ[u] && OddQ[u[[2]]],
     SomeNegTermQ[u[[1]]],
@@ -7819,7 +7633,7 @@ SomeNegTermQ[u_] :=
 (*TrigSquareQ[u]*)
 
 
-(* If u is an expression of the form Sin[z]^2 or Cos[z]^2, TrigSquareQ[u] returns True, else it returns False. *)
+TrigSquareQ::usage = "If u is an expression of the form Sin[z]^2 or Cos[z]^2, TrigSquareQ[u] returns True, else it returns False.";
 TrigSquareQ[u_] :=
   PowerQ[u] && EqQ[u[[2]],2] && MemberQ[{Sin,Cos},Head[u[[1]]]]
 
@@ -7828,7 +7642,7 @@ TrigSquareQ[u_] :=
 (*SplitProduct[func,u]*)
 
 
-(* If func[v] is True for a factor v of u, SplitProduct[func,u] returns {v, u/v} where v is the first such factor; else it returns False. *)
+SplitProduct::usage = "If func[v] is True for a factor v of u, SplitProduct[func,u] returns {v, u/v} where v is the first such factor; else it returns False.";
 SplitProduct[func_,u_] :=
   If[ProductQ[u],
     If[func[First[u]],
@@ -7846,7 +7660,7 @@ SplitProduct[func_,u_] :=
 (*SplitSum[func,u]*)
 
 
-(* If func[v] is nonatomic for a term v of u, SplitSum[func,u] returns {func[v], u-v} where v is the first such term; else it returns False. *)
+SplitSum::usage = "If func[v] is nonatomic for a term v of u, SplitSum[func,u] returns {func[v], u-v} where v is the first such term; else it returns False.";
 SplitSum[func_,u_] :=
   If[SumQ[u],
     If[Not[AtomQ[func[First[u]]]],
@@ -7864,14 +7678,12 @@ SplitSum[func_,u_] :=
 (*IntSum*)
 
 
-(* If u is free of x or of the form c*(a+b*x)^m, IntSum[u,x] returns the antiderivative of u wrt x; 
-	else it returns d*Int[v,x] where d*v=u and d is free of x. *)
+IntSum::usage = "If u is free of x or of the form c*(a+b*x)^m, IntSum[u,x] returns the antiderivative of u wrt x; else it returns d*Int[v,x] where d*v=u and d is free of x.";
 IntSum[u_,x_Symbol] :=
   Simp[FreeTerms[u,x]*x,x] + IntTerm[NonfreeTerms[u,x],x]
 
 
-(* If u is of the form c*(a+b*x)^m, IntTerm[u,x] returns the antiderivative of u wrt x; 
-	else it returns d*Int[v,x] where d*v=u and d is free of x. *)
+IntTerm::usage = "If u is of the form c*(a+b*x)^m, IntTerm[u,x] returns the antiderivative of u wrt x; else it returns d*Int[v,x] where d*v=u and d is free of x.";
 IntTerm[u_,x_Symbol] :=
   Map[Function[IntTerm[#,x]],u] /;
 SumQ[u]
@@ -7886,7 +7698,7 @@ IntTerm[c_.*v_^m_.,x_Symbol] :=
 FreeQ[{c,m},x] && LinearQ[v,x]
 
 IntTerm[u_,x_Symbol] :=
-  Dist[FreeFactors[u,x], Int[NonfreeFactors[u,x],x], x]
+  Star[FreeFactors[u,x], Int[NonfreeFactors[u,x],x]]
 
 
 (* ::Section::Closed:: *)
@@ -7915,8 +7727,8 @@ FixIntRules[] :=
   (DownValues[Int]=FixIntRules[DownValues[Int]]; Null)
 
 
-FixIntRules[rulelist_] := Block[{Int, Subst, Simp, Dist},
-  SetAttributes[{Simp,Dist,Int,Subst},HoldAll];
+FixIntRules[rulelist_] := Block[{Int, Subst, Simp, Star},
+  SetAttributes[{Int, Subst, Simp, Star},HoldAll];
   Map[Function[FixIntRule[#,#[[1,1,2,1]]]], rulelist]]
 
 
@@ -8011,13 +7823,7 @@ FixRhsIntRule[u_-v_,x_] :=
 FixRhsIntRule[-u_,x_] :=
   -FixRhsIntRule[u,x]
 
-FixRhsIntRule[a_*u_,x_] :=
-  Dist[a,u,x] /;
-MemberQ[{Int,Subst},Head[Unevaluated[u]]]
-
 FixRhsIntRule[u_,x_] :=
-  If[Head[Unevaluated[u]]===Dist && Length[Unevaluated[u]]==2,
-    Insert[Unevaluated[u],x,3],
-  If[MemberQ[{Int, Unintegrable, CannotIntegrate, Subst, Simp, Dist}, Head[Unevaluated[u]]],
+  If[MemberQ[{Int, Unintegrable, CannotIntegrate, Subst, Simp}, Head[Unevaluated[u]]],
     u,
-  Simp[u,x]]]
+  Simp[u,x]]
