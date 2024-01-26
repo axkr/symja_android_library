@@ -6618,35 +6618,34 @@ public class F extends S {
    * See: <a href=
    * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Log.md">Log</a>
    *
-   * @param z
    * @param base
+   * @param z
    * @return
    */
-  public static IAST Log(final IExpr z, final IExpr base) {
-
-    return new AST2(Log, z, base);
+  public static IAST Log(final IExpr base, final IExpr z) {
+    return new AST2(Log, base, z);
   }
 
   /**
    * Returns the logarithm of <code>z</code> for the <code>base</code>.
    * 
-   * @param z
    * @param base
+   * @param z
    * @return
    */
-  public static IAST Log(final IExpr z, final int base) {
-    return new AST2(Log, z, F.ZZ(base));
+  public static IAST Log(final IExpr base, final int z) {
+    return Log(base, F.ZZ(z));
   }
 
   /**
    * Returns the logarithm of <code>z</code> for the <code>base</code>.
    * 
-   * @param z
    * @param base
+   * @param z
    * @return
    */
-  public static IAST Log(final int z, final int base) {
-    return new AST2(Log, F.ZZ(z), F.ZZ(base));
+  public static IAST Log(final int base, final int z) {
+    return Log(F.ZZ(base), F.ZZ(z));
   }
 
   /**
