@@ -347,10 +347,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
     }
 
     IExpr arg1 = ast.arg1();
-    IExpr arg2 = ast.arg2();
-    if (!arg2.isList()) {
-      arg2 = engine.evaluate(arg2);
-    }
+    IExpr arg2 = ast.arg2().makeList();
     int l1 = arg1.isVector();
     int l2 = arg2.argSize();
     if (l1 > 0 && l1 == l2 && arg1.isList() && arg2.isList()) {
@@ -359,8 +356,11 @@ public class FindRoot extends AbstractFunctionEvaluator {
           engine);
     } else if (arg2.isList()) {
       IAST list = (IAST) arg2;
-      if (list.size() >= 3 && list.arg1().isSymbol()) {
-        IReal min = list.arg2().evalReal();
+      if (list.size() >= 2 && list.arg1().isSymbol()) {
+        IReal min = F.CD1;
+        if (list.argSize() > 1) {
+          min = list.arg2().evalReal();
+        }
         if (min != null) {
           IReal max = null;
           if (list.size() > 3) {
@@ -505,6 +505,6 @@ public class FindRoot extends AbstractFunctionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.HOLDALL);
+    // newSymbol.setAttributes(ISymbol.HOLDALL);
   }
 }

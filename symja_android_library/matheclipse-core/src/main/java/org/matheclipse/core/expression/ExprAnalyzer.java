@@ -22,7 +22,7 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
    * Use <code>Infinity</code> as an equation expression for which we get no solution (i.e. <code>
    * (-1)==0  =>  False</code>)
    */
-  private static IExpr NO_EQUATION_SOLUTION = F.CInfinity;
+  // private static IExpr NO_EQUATION_SOLUTION = F.CInfinity;
 
   public static final ISymbol $InverseFunction = F.Dummy("$InverseFunction");
 
@@ -552,10 +552,10 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
       IReal arg2 = (IReal) exponent;
       if (arg2.isPositive()) {
         IExpr plus = plusAST.splice(i).oneIdentity0();
-        if (plus.isPositiveResult()) {
-          // no solution possible
-          return NO_EQUATION_SOLUTION;
-        }
+        // if (plus.isPositiveResult()) {
+        // // no solution possible
+        // return NO_EQUATION_SOLUTION;
+        // }
         fOriginalExpr = plusAST;
         if (num.isOne()) {
           return fEngine

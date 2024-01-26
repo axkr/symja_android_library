@@ -1957,6 +1957,19 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->(-9*ProductLog(-Log(3)/9))/Log(3)}}");
   }
 
+  @Test
+  public void testIssue902() {
+    check("Solve(100==x^2.5,x)", //
+        "{{x->6.30957}}");
+    check("Solve(-100==x^2.5,x)", //
+        "{{x->1.94977+I*6.00076}}");
+
+    check("Solve(100==x^(5/2),x)", //
+        "{{x->10^(4/5)}}");
+    check("Solve(-100==x^(5/2),x)", //
+        "{{x->(-1)^(2/5)*10^(4/5)}}");
+  }
+
   /** The JUnit setup method */
   @Override
   public void setUp() {
