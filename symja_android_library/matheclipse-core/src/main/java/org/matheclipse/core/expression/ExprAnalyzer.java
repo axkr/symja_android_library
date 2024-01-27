@@ -41,10 +41,12 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
   private int fEquationType;
 
   /** The expression which should be <code>0</code>. */
-  private IExpr fExpr;
+  private IExpr fTogetherExpr = null;
 
   /** The original expression if unequal <code>null</code>. */
-  private IExpr fOriginalExpr = null;
+  private IExpr fPowerRewrittenExpr = null;
+
+  private final IExpr fOriginalExpr;
 
   /** The numerator of the expression */
   private IExpr fNumerator;
@@ -91,11 +93,12 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
     super();
     this.fEngine = engine;
     this.fGenerateConditions = generateConditions;
-    this.fExpr = function;
+    this.fTogetherExpr = function;
+    this.fOriginalExpr = function;
     this.fNumerator = function;
     this.fDenominator = F.C1;
-    if (this.fExpr.isAST()) {
-      splitNumeratorDenominator((IAST) this.fExpr);
+    if (this.fTogetherExpr.isAST()) {
+      splitNumeratorDenominator((IAST) this.fTogetherExpr);
     }
     this.fListOfVariables = listOfVariables;
     this.fVariableSet = new HashSet<IExpr>();
@@ -157,10 +160,10 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
       return false;
     if (fEquationType != other.fEquationType)
       return false;
-    if (fExpr == null) {
-      if (other.fExpr != null)
+    if (fTogetherExpr == null) {
+      if (other.fTogetherExpr != null)
         return false;
-    } else if (!fExpr.equals(other.fExpr))
+    } else if (!fTogetherExpr.equals(other.fTogetherExpr))
       return false;
     if (fLeafCount != other.fLeafCount)
       return false;
@@ -197,8 +200,21 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
   }
 
   /** @return the expr */
-  public IExpr getExpr() {
-    return fExpr;
+  public IExpr getOriginalExpr() {
+    return fOriginalExpr;
+  }
+
+  /** @return the expr */
+  public IExpr getTogetherExpr() {
+    return fTogetherExpr;
+  }
+
+  /**
+   * 
+   * @return the original expression; may be <code>null</code>.
+   */
+  public IExpr getPowerRewrittenExpr() {
+    return fPowerRewrittenExpr;
   }
 
   public int getNumberOfVars() {
@@ -276,6 +292,12 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
     return fVariableSet;
   }
 
+  public IAST variables() {
+    IASTAppendable list = F.ListAlloc(fVariableSet.size());
+    list.appendAll(fVariableSet);
+    return list;
+  }
+
   private void getTimesArgumentEquationType(IExpr expr) {
     if (expr.isVariable()) {
       fLeafCount++;
@@ -338,7 +360,7 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
     int result = 1;
     result = prime * result + ((fDenominator == null) ? 0 : fDenominator.hashCode());
     result = prime * result + fEquationType;
-    result = prime * result + ((fExpr == null) ? 0 : fExpr.hashCode());
+    result = prime * result + ((fTogetherExpr == null) ? 0 : fTogetherExpr.hashCode());
     result = prime * result + (int) (fLeafCount ^ (fLeafCount >>> 32));
     result = prime * result + ((fMatrixRow == null) ? 0 : fMatrixRow.hashCode());
     result = prime * result + ((fNumerator == null) ? 0 : fNumerator.hashCode());
@@ -362,18 +384,20 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
   }
 
   /**
-   * Check every rule in the <code>listOfResultRules</code> if it's valid in the original
+   * Crosscheck every rule in the <code>listOfResultRules</code> if it's valid in the original
    * expression.
-   *
+   * 
+   * @param expr TODO
    * @param listOfResultRules list of possible solution rules.
+   *
    * @return
    */
-  public IAST mapOnOriginal(IAST listOfResultRules) {
-    if (fOriginalExpr != null) {
+  public IAST mapOnOriginal(IExpr expr, IAST listOfResultRules) {
+    if (expr != null) {
       return F.mapList(listOfResultRules, element -> {
-        IExpr temp = fOriginalExpr.replaceAll((IAST) element);
+        IExpr temp = expr.replaceAll((IAST) element);
         if (temp.isPresent()) {
-          temp = fEngine.evaluate(temp);
+          temp = fEngine.evaluate(F.Chop(temp));
           if (temp.isZero()) {
             return element;
           }
@@ -556,7 +580,7 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
         // // no solution possible
         // return NO_EQUATION_SOLUTION;
         // }
-        fOriginalExpr = plusAST;
+        fPowerRewrittenExpr = plusAST;
         if (num.isOne()) {
           return fEngine
               .evaluate(F.Subtract(F.Expand(F.Power(F.Negate(plus), arg2.inverse())), base));
@@ -734,15 +758,15 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
     IExpr[] result = Algebra.numeratorDenominator(ast, true, fEngine);
     this.fNumerator = result[0];
     this.fDenominator = result[1];
-    this.fExpr = result[2];
+    this.fTogetherExpr = result[2];
   }
 
   @Override
   public String toString() {
     if (fDenominator.isOne()) {
-      return fExpr.toString();
+      return fTogetherExpr.toString();
     }
-    return fExpr.toString() //
+    return fTogetherExpr.toString() //
         + " [ " + fNumerator.toString() + " / " + fDenominator.toString() + " ]";
   }
 }

@@ -185,12 +185,13 @@ public class Solve extends AbstractFunctionOptionEvaluator {
      */
     protected IASTAppendable analyzeSublistRecursive(ArrayList<ExprAnalyzer> analyzerList,
         IAST variables, IASTAppendable resultList, int maximumNumberOfResults,
-        IASTAppendable matrix, IASTAppendable vector, EvalEngine engine) throws NoSolution {
+        IASTAppendable matrix, IASTAppendable vector, boolean numericFlag, EvalEngine engine)
+        throws NoSolution {
       ExprAnalyzer exprAnalyzer;
       Collections.sort(analyzerList);
-      int currEquation = 0;
-      while (currEquation < analyzerList.size()) {
-        exprAnalyzer = analyzerList.get(currEquation);
+      int[] currEquation = new int[] {0};
+      while (currEquation[0] < analyzerList.size()) {
+        exprAnalyzer = analyzerList.get(currEquation[0]);
         if (exprAnalyzer.getNumberOfVars() == 0) {
           // check if the equation equals zero.
           IExpr expr = exprAnalyzer.getNumerator();
@@ -202,60 +203,27 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               throw new NoSolution(NoSolution.NO_SOLUTION_FOUND);
             }
           }
-        } else if (exprAnalyzer.getNumberOfVars() == 1 && exprAnalyzer.isLinearOrPolynomial()) {
-          IAST listOfRules = rootsOfUnivariatePolynomial(exprAnalyzer, engine);
-          if (listOfRules.isPresent()) {
-            listOfRules = exprAnalyzer.mapOnOriginal(listOfRules);
-            listOfRules = substituteInverseResults(listOfRules, engine);
-            boolean evaled = false;
-            ++currEquation;
-            for (int k = 1; k < listOfRules.size(); k++) {
-              if (currEquation >= analyzerList.size()) {
-                resultList.append(F.list(listOfRules.getAST(k)));
-                if (maximumNumberOfResults > 0 && maximumNumberOfResults <= resultList.size()) {
-                  return resultList;
-                }
-                evaled = true;
-              } else {
-                // collect linear and univariate polynomial equations:
-                IAST substitutionRule = listOfRules.getAST(k);
-                IExpr substitutionVariable = substitutionRule.arg1();
-                IAST subVariables = variables.remove(x -> x.equals(substitutionVariable));
-                if (subVariables.isPresent()) {
-                  ArrayList<ExprAnalyzer> subAnalyzerList = substituteRulesInAnalyzerList(
-                      analyzerList, currEquation, substitutionRule, subVariables, engine);
-                  try {
-                    IASTAppendable subMatrix = F.ListAlloc();
-                    IASTAppendable subVector = F.ListAlloc();
-                    IAST subResultList = analyzeSublistRecursive(subAnalyzerList, subVariables,
-                        F.ListAlloc(), maximumNumberOfResults, subMatrix, subVector, engine);
-                    if (subResultList.isPresent()) {
-                      evaled = true;
-                      IASTAppendable tempResult = addSubResultsToResultsList(resultList,
-                          subResultList, substitutionRule, maximumNumberOfResults);
-                      if (tempResult.isPresent()) {
-                        return tempResult;
-                      }
-                      if (subVector.size() > 1) {
-                        IASTAppendable linearSolution = solveRowReducedMatrix(subMatrix, subVector,
-                            subVariables, F.NIL, substitutionRule, resultList, engine);
-                        if (linearSolution.isPresent()) {
-                          matrix.clear();
-                          vector.clear();
-                          return linearSolution;
-                        }
-                      }
-                    }
-                  } catch (NoSolution e) {
-                    if (e.getType() == NoSolution.WRONG_SOLUTION) {
-                      evaled = true;
-                    }
-                  }
-                }
-              }
+        } else if (exprAnalyzer.getNumberOfVars() == 1) {
+          IAST listOfRules = F.NIL;
+          if (exprAnalyzer.isLinearOrPolynomial()) {
+            listOfRules = rootsOfUnivariatePolynomial(exprAnalyzer, engine);
+            if (listOfRules.isPresent()) {
+              listOfRules =
+                  exprAnalyzer.mapOnOriginal(exprAnalyzer.getPowerRewrittenExpr(), listOfRules);
             }
-            if (evaled) {
-              return resultList;
+          } else if (numericFlag) {
+            listOfRules = findRoot(exprAnalyzer, engine);
+            if (listOfRules.isPresent()) {
+              listOfRules =
+                  exprAnalyzer.mapOnOriginal(exprAnalyzer.getOriginalExpr(), listOfRules);
+            }
+          }
+          if (listOfRules.isPresent()) {
+            IASTAppendable temp = substituteNumericResults(analyzerList, variables, resultList,
+                matrix, vector, maximumNumberOfResults, exprAnalyzer, currEquation, listOfRules,
+                numericFlag, engine);
+            if (temp.isPresent()) {
+              return temp;
             }
           }
           throw new NoSolution(NoSolution.NO_SOLUTION_FOUND);
@@ -265,9 +233,67 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         } else {
           throw new NoSolution(NoSolution.NO_SOLUTION_FOUND);
         }
-        currEquation++;
+        currEquation[0]++;
       }
       return resultList;
+    }
+
+    private IASTAppendable substituteNumericResults(ArrayList<ExprAnalyzer> analyzerList,
+        IAST variables, IASTAppendable resultList, IASTAppendable matrix, IASTAppendable vector,
+        int maximumNumberOfResults, ExprAnalyzer exprAnalyzer, int[] currEquation, IAST listOfRules,
+        boolean numericFlag, EvalEngine engine) throws NoSolution {
+      listOfRules = substituteInverseResults(listOfRules, engine);
+      boolean evaled = false;
+      ++currEquation[0];
+      for (int k = 1; k < listOfRules.size(); k++) {
+        if (currEquation[0] >= analyzerList.size()) {
+          resultList.append(F.list(listOfRules.getAST(k)));
+          if (maximumNumberOfResults > 0 && maximumNumberOfResults <= resultList.size()) {
+            return resultList;
+          }
+          evaled = true;
+        } else {
+          // collect linear and univariate polynomial equations:
+          IAST substitutionRule = listOfRules.getAST(k);
+          IExpr substitutionVariable = substitutionRule.arg1();
+          IAST subVariables = variables.remove(x -> x.equals(substitutionVariable));
+          if (subVariables.isPresent()) {
+            ArrayList<ExprAnalyzer> subAnalyzerList = substituteRulesInAnalyzerList(analyzerList,
+                currEquation[0], substitutionRule, subVariables, engine);
+            try {
+              IASTAppendable subMatrix = F.ListAlloc();
+              IASTAppendable subVector = F.ListAlloc();
+              IAST subResultList = analyzeSublistRecursive(subAnalyzerList, subVariables,
+                  F.ListAlloc(), maximumNumberOfResults, subMatrix, subVector, numericFlag, engine);
+              if (subResultList.isPresent()) {
+                evaled = true;
+                IASTAppendable tempResult = addSubResultsToResultsList(resultList, subResultList,
+                    substitutionRule, maximumNumberOfResults);
+                if (tempResult.isPresent()) {
+                  return tempResult;
+                }
+                if (subVector.size() > 1) {
+                  IASTAppendable linearSolution = solveRowReducedMatrix(subMatrix, subVector,
+                      subVariables, F.NIL, substitutionRule, resultList, engine);
+                  if (linearSolution.isPresent()) {
+                    matrix.clear();
+                    vector.clear();
+                    return linearSolution;
+                  }
+                }
+              }
+            } catch (NoSolution e) {
+              if (e.getType() == NoSolution.WRONG_SOLUTION) {
+                evaled = true;
+              }
+            }
+          }
+        }
+      }
+      if (evaled) {
+        return resultList;
+      }
+      return F.NIL;
     }
 
     /**
@@ -458,7 +484,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       ExprAnalyzer exprAnalyzer;
       ArrayList<ExprAnalyzer> subAnalyzerList = new ArrayList<ExprAnalyzer>();
       for (int i = analyzerListStartPosition; i < analyzerList.size(); i++) {
-        IExpr expr = analyzerList.get(i).getExpr();
+        IExpr expr = analyzerList.get(i).getTogetherExpr();
         IExpr temp = expr.replaceAll(substitutionRule);
         if (temp.isPresent()) {
           expr = engine.evaluate(temp);
@@ -489,6 +515,29 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         IAST temp = rootsOfUnivariatePolynomial(numerator, denominator, variable, engine);
         if (temp.isPresent()) {
           return temp;
+        }
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Evaluate the roots of a univariate polynomial with the Roots() function.
+     *
+     * @param exprAnalyzer
+     * @param engine
+     * @return
+     */
+    private static IAST findRoot(ExprAnalyzer exprAnalyzer, EvalEngine engine) {
+      // try to solve the original expr for one of the variables in the symbol set
+      IExpr originalExpr = exprAnalyzer.getOriginalExpr();
+      if (originalExpr != null) {
+        for (IExpr variable : exprAnalyzer.getVariableSet()) {
+          IExpr temp = engine.evaluate( //
+              F.FindRoot(originalExpr, //
+                  F.List(variable, F.C1)));
+          if (temp.isList()) {
+            return (IAST) temp;
+          }
         }
       }
       return F.NIL;
@@ -710,13 +759,14 @@ public class Solve extends AbstractFunctionOptionEvaluator {
      * @param termsEqualZeroList the list of expressions, which should equal <code>0</code>
      * @param variables the variables for which the equations should be solved
      * @param maximumNumberOfResults the maximum number of results which should be returned
+     * @param numericFlag
      * @param engine the evaluation engine
      * @return a &quot;list of rules list&quot; which solves the equations, or an empty list if no
      *         solution exists, or <code>F.NIL</code> if the equations are not solvable by this
      *         algorithm.
      */
     protected IASTMutable solveEquations(IASTMutable termsEqualZeroList, IAST inequationsList,
-        IAST variables, int maximumNumberOfResults, EvalEngine engine) {
+        IAST variables, int maximumNumberOfResults, boolean numericFlag, EvalEngine engine) {
       try {
         IASTMutable list = PolynomialFunctions.solveGroebnerBasis(termsEqualZeroList, variables);
         if (list.isPresent()) {
@@ -770,7 +820,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       try {
         IASTAppendable resultList = F.ListAlloc();
         resultList = analyzeSublistRecursive(analyzerList, variables, resultList,
-            maximumNumberOfResults, matrix, vector, engine);
+            maximumNumberOfResults, matrix, vector, numericFlag, engine);
         if (vector.size() > 1) {
           return solveRowReducedMatrix(matrix, vector, variables, inequationsList, F.NIL,
               resultList, engine);
@@ -859,7 +909,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       IASTMutable originalTermsEqualZero = termsEqualZero.copy();
       try {
         IASTMutable resultList =
-            solveEquations(termsEqualZero, inequationsList, variables, 0, engine);
+            solveEquations(termsEqualZero, inequationsList, variables, 0, numericFlag, engine);
         if (resultList.isPresent() && !resultList.isEmpty()) {
           return resultList;
         }
@@ -992,7 +1042,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         if (!times.get(j).isFree(Predicates.in(variables), true)) {
           // try to get a solution from this Times() factor
           IASTMutable clonedEqualZeroList = termsEqualZeroList.setAtCopy(i, times.get(j));
-          temp = solveEquations(clonedEqualZeroList, inequationsList, variables, 0, engine);
+          temp = solveEquations(clonedEqualZeroList, inequationsList, variables, 0, numericFlag,
+              engine);
           if (temp.size() > 1) {
             for (int k = 1; k < temp.size(); k++) {
               IExpr solution = temp.get(k);
@@ -1046,8 +1097,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         if (ast.arg1().isEmptyList()) {
           return F.list(F.CEmptyList);
         }
-        IAST variables =
-            Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
+        IAST variables = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
         if (variables.isPresent()) {
           IAST equationVariables = VariablesSet.getVariables(ast.arg1());
           if (variables.isEmpty()) {
@@ -1062,12 +1112,10 @@ public class Solve extends AbstractFunctionOptionEvaluator {
             } else {
               domain = (ISymbol) ast.arg3();
               if (domain == S.Booleans) {
-                return BooleanFunctions.solveInstances(ast.arg1(), variables,
-                    Integer.MAX_VALUE);
+                return BooleanFunctions.solveInstances(ast.arg1(), variables, Integer.MAX_VALUE);
               }
               if (domain == S.Integers) {
-                return solveIntegers(ast, equationVariables, variables,
-                    Integer.MAX_VALUE, engine);
+                return solveIntegers(ast, equationVariables, variables, Integer.MAX_VALUE, engine);
               }
 
               if (domain != S.Reals && domain != S.Complexes) {
@@ -1096,8 +1144,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               return checkDomain(result, domain);
             }
             IASTMutable termsEqualZeroList = lists[0];
-            IExpr result = solveRecursive(termsEqualZeroList, lists[1], numericFlag,
-                variables, engine);
+            IExpr result =
+                solveRecursive(termsEqualZeroList, lists[1], numericFlag, variables, engine);
             if (result.isNIL()) {
               // The system cannot be solved with the methods available to Solve.
               return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);

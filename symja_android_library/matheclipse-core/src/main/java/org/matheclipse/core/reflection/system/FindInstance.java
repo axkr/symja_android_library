@@ -52,8 +52,8 @@ public class FindInstance extends Solve {
    * expressions).
    */
   @Override
-  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
-      final EvalEngine engine, IAST originalAST) {
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
+      IAST originalAST) {
     IAST vars = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
     if (vars.isNIL()) {
       return F.NIL;
@@ -105,7 +105,8 @@ public class FindInstance extends Solve {
       }
       IASTMutable termsEqualZeroList = Validate.checkEquations(ast, 1);
       SolveData solveData = new Solve.SolveData(options);
-      return solveData.solveEquations(termsEqualZeroList, F.List(), vars, maxChoices, engine);
+      return solveData.solveEquations(termsEqualZeroList, F.List(), vars, maxChoices, false,
+          engine);
     } catch (final ValidateException ve) {
       return Errors.printMessage(ast.topHead(), ve, engine);
     } catch (RuntimeException rex) {

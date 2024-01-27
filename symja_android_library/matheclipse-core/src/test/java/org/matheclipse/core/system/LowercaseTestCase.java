@@ -16980,34 +16980,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testNSolve() {
-    // check("125*2^(3-2*z)", //
-    // "");
-
-    checkNumeric("NSolve({2==x-0.091*y, y==0.054-0.0171*z, x==Exp(z)+1}, {x,y,z})", //
-        "{{z->0.004894386769035739,y->0.053916305986249774,x->2.004906383844749}}");
-
-    // check("Eliminate({sin(x)-11==y, x+y==-9}, {y,x})",
-    // "x+Sin(x)==2");
-    // checkNumeric("FindRoot(x+Sin(x)==2, {x,0})", //
-    // "{x->1.1060601577062719}");
-
-    // NSolve calls Solve in numeric mode
-    checkNumeric("NSolve({Sin(x)-11==y, x+y==-9}, {y,x})", //
-        "{{x->1.1060601577062719,y->-10.106060157706272}}");
-    // Solve doesn't get the result
-    checkNumeric("Solve({Sin(x)-11==y, x+y==-9}, {y,x})", //
-        "Solve({-11+Sin(x)==y,x+y==-9},{y,x})");
-
-    checkNumeric("NSolve(x+Sin(x)==2, x)", //
-        "{{x->1.1060601577062719}}");
-    checkNumeric("NSolve(x^3 + 2.0*x^2 - 5*x -3.0 ==0,x)", //
-        "{{x->-3.253418039587852},{x->-0.5199693720627907},{x->1.7733874116506425}}");
-    checkNumeric("NSolve(x^3 + 2*x^2 - 5*x -3 ==0,x)", //
-        "{{x->1.773387411650643},{x->-0.5199693720627908+I*4.440892098500626E-16},{x->-3.253418039587852+I*(-3.3306690738754696E-16)}}");
-  }
-
-  @Test
   public void testNumberQ() {
     check("NumberQ(3,4)", //
         "NumberQ(3,4)");

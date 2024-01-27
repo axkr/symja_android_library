@@ -790,6 +790,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testNSolve() {
+    check("NSolve(2*x^(x-3)==3^(x-2),x)", //
+        "{{x->2.0}}");
+
     check("NSolve({0==(x-3)^2+(y-3)^2-4,0==-x^2+10*x-26+y},{y,x})", //
         "{{x->3.0,y->5.0},{x->6.34781+I*(-1.02885),y->1.75806+I*(-2.7734)},{x->6.34781+I*1.02885,y->1.75806+I*2.7734},{x->4.30438,y->1.48389}}");
     check("NSolve({0==(x-3)^2+(y-3)^2-4,0==-x^2+10*x-26+y},{x,y})", //
@@ -835,8 +838,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->1.0,y->2.0,z->3.0}}");
     // github #201 begin
     check(
-        "NSolve({m1*u1^2 + m2*u2^2 == m1*v1^2 + m2*v2^2, m1*u1 + m2*u2 == m1*v1 + m2*v2}, {v1, v2})",
-        //
+        "NSolve({m1*u1^2 + m2*u2^2 == m1*v1^2 + m2*v2^2, m1*u1 + m2*u2 == m1*v1 + m2*v2}, {v1, v2})", //
         "{{v2->u2,v1->u1},{v2->(2.0*m1*u1-m1*u2+m2*u2)/(m1+m2),v1->(m1*u1+m2*u2+(-m2*(2.0*m1*u1-m1*u2+m2*u2))/(m1+m2))/m1}}");
     check("NSolve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == v2 - v1}, {v1, v2})", //
         "{{v1->(-m1*u1-m2*u2+m2*(-u1+u2))/(-m1-m2),v2->(-m1*u1+m1*(u1-u2)-m2*u2)/(-m1-m2)}}");
@@ -860,7 +862,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
     // prints error message / wrong result in numeric mode
     check("NSolve(2*x^(x-3)==3^(x-2),x)", //
-        "{}");
+        "{{x->2.0}}");
 
     // https://github.com/tranleduy2000/ncalc/issues/79
     // 0x + 50y + 2z = 20
@@ -1186,6 +1188,35 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // checkNumeric("NSolve(x/y==z/x,x)", //
     // "{{x->-81.08825721072822},{x->81.08825721072822}}");
   }
+
+  @Test
+  public void testNSolve002() {
+    // check("125*2^(3-2*z)", //
+    // "");
+
+    checkNumeric("NSolve({2==x-0.091*y, y==0.054-0.0171*z, x==Exp(z)+1}, {x,y,z})", //
+        "{{z->0.004894386769035759,y->0.053916305986249774,x->2.004906383844749}}");
+
+    // check("Eliminate({sin(x)-11==y, x+y==-9}, {y,x})",
+    // "x+Sin(x)==2");
+    // checkNumeric("FindRoot(x+Sin(x)==2, {x,0})", //
+    // "{x->1.1060601577062719}");
+
+    // NSolve calls Solve in numeric mode
+    checkNumeric("NSolve({Sin(x)-11==y, x+y==-9}, {y,x})", //
+        "{{x->1.1060601577062719,y->-10.106060157706272}}");
+    // Solve doesn't get the result
+    checkNumeric("Solve({Sin(x)-11==y, x+y==-9}, {y,x})", //
+        "Solve({-11+Sin(x)==y,x+y==-9},{y,x})");
+
+    checkNumeric("NSolve(x+Sin(x)==2, x)", //
+        "{{x->1.1060601577062719}}");
+    checkNumeric("NSolve(x^3 + 2.0*x^2 - 5*x -3.0 ==0,x)", //
+        "{{x->-3.253418039587852},{x->-0.5199693720627907},{x->1.7733874116506425}}");
+    checkNumeric("NSolve(x^3 + 2*x^2 - 5*x -3 ==0,x)", //
+        "{{x->1.773387411650643},{x->-0.5199693720627908+I*4.440892098500626E-16},{x->-3.253418039587852+I*(-3.3306690738754696E-16)}}");
+  }
+
 
   @Test
   public void testChocoSolver001() {
@@ -1959,6 +1990,16 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testIssue902() {
+    check("Expand(x^2.5 + x^0.5-100 )", //
+        "-100+Sqrt(x)+x^2.5");
+    check("FindRoot(x^2.5 + x^0.5-100,x)", //
+        "{x->6.24602}");
+    check("Solve(100 == x^2.5 + x^0.5,x)", //
+        "{{x->6.24602}}");
+    check("Solve(-100 == x^2.5 + x^0.5,x)", //
+        "Solve(-100==Sqrt(x)+x^2.5,x)");
+
+
     check("Solve(100==x^2.5,x)", //
         "{{x->6.30957}}");
     check("Solve(-100==x^2.5,x)", //
