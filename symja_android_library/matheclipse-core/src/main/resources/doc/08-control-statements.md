@@ -68,7 +68,7 @@ The result of a compound expression is its last part or `Null` if it ends with a
 >> 1; 2; 3;
 ```
 
-Inside For, While, and Do loops, Break() exits the loop and Continue() continues to the next iteration.
+Inside `For`, `While`, and `Do` loops, `Break()` exits the loop and `Continue()` continues to the next iteration.
 
 ```
 >> For(i = 1, i <= 5, i++, If(i == 4, Break()); Print(i))

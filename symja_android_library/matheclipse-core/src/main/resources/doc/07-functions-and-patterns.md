@@ -201,14 +201,19 @@ Pure functions are very handy when functions are used only locally, e.g., when c
 {1,4,9,16,25}
 ```
 
-Sort according to the second part of a list:
+Sort using the second element of a list as a key:
 
 ```
 >> Sort({{x, 10}, {y, 2}, {z, 5}}, #1[[2]] < #2[[2]] &)
 {{y,2},{z,5},{x,10}}
 ```
 
-Functions can be applied using postfix notation, in addition to using `()`:
+Functions can be applied using prefix or postfix notation, in addition to using `()`:
+
+```
+>> h @ 3
+9
+```
 
 ```
 >> 3 // h
