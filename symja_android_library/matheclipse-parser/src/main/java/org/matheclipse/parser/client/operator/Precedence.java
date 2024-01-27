@@ -88,6 +88,7 @@ public class Precedence {
   public static final int SPAN = 305;
   public static final int STRINGEXPRESSION = 135;
   public static final int PATTERN = 150;
+  public static final int STAR = 390;
   public static final int STRINGJOIN = 600;
   public static final int SUBTRACT = 310;
   public static final int SUBTRACTFROM = 100;

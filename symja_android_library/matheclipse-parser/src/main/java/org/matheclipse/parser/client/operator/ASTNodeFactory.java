@@ -114,6 +114,19 @@ public class ASTNodeFactory implements INodeParserFactory {
     }
   }
 
+  private static class StarOperator extends InfixOperator {
+    public StarOperator(final String oper, final String functionName, final int precedence,
+        final int grouping) {
+      super(oper, functionName, precedence, grouping);
+    }
+
+    @Override
+    public ASTNode createFunction(final INodeParserFactory factory, final ASTNode lhs,
+        final ASTNode rhs) {
+      return factory.createFunction(factory.createSymbol("Star"), lhs, rhs);
+    }
+  }
+
   private static class PatternOperator extends InfixOperator {
     public PatternOperator(final String oper, final String functionName, final int precedence,
         final int grouping) {
@@ -245,7 +258,8 @@ public class ASTNodeFactory implements INodeParserFactory {
       "Repeated", "ReplaceAll", "TagSet", "Composition", "RightComposition", "StringExpression",
       "Pattern", "TwoWayRule", "TwoWayRule", "DirectedEdge", "UndirectedEdge", "CenterDot",
       "CircleDot", "CircleTimes", "Distributed", "Element", "NotElement", "Intersection",
-      "NotEqual", "Wedge", "TensorProduct", "Equivalent", "Implies", "PlusMinus", "PlusMinus",
+      "NotEqual", "Wedge", "TensorProduct", "Equivalent", "Implies", "PlusMinus", "PlusMinus", //
+      "Star", // Rubi Star operator
       "§TILDE§"};
 
   static final String[] OPERATOR_STRINGS =
@@ -273,6 +287,7 @@ public class ASTNodeFactory implements INodeParserFactory {
           "\uF523", // Implies
           "\u00b1", // PlusMinus infix operator
           "\u00b1", // PlusMinus prefix operator
+          "\u22c6", // Rubi Star infix operator
           "~"};
 
   public static final ApplyOperator APPLY_HEAD_OPERATOR =
@@ -409,6 +424,7 @@ public class ASTNodeFactory implements INodeParserFactory {
           new InfixOperator("\u00b1", "PlusMinus", Precedence.PLUSMINUS,
               InfixOperator.LEFT_ASSOCIATIVE),
           new PrefixOperator("\u00b1", "PlusMinus", Precedence.PLUSMINUS),
+          new StarOperator("\u22c6", "Star", Precedence.STAR, InfixOperator.NONE),
           new TildeOperator("~", "§TILDE§", Precedence.TILDE_OPERATOR, InfixOperator.NONE)};
       StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
 

@@ -679,6 +679,7 @@ public class ConvertRubi {
     F.PREDEFINED_INTERNAL_FORM_STRINGS.put("SqrtQ", Context.RUBI_STR + "SqrtQ");
     F.PREDEFINED_INTERNAL_FORM_STRINGS.put("SquareRootOfQuadraticSubst",
         Context.RUBI_STR + "SquareRootOfQuadraticSubst");
+    F.PREDEFINED_INTERNAL_FORM_STRINGS.put("Star", Context.RUBI_STR + "Star");
     F.PREDEFINED_INTERNAL_FORM_STRINGS.put("StopFunctionQ", Context.RUBI_STR + "StopFunctionQ");
     F.PREDEFINED_INTERNAL_FORM_STRINGS.put("Subst", Context.RUBI_STR + "Subst");
     F.PREDEFINED_INTERNAL_FORM_STRINGS.put("SubstAux", Context.RUBI_STR + "SubstAux");
@@ -753,9 +754,13 @@ public class ConvertRubi {
     addPredefinedSymbols();
     // use same order as in Rubi.m
     String userHome = System.getProperty("user.home");
+    // String[] fileNames = { //
+    // userHome
+    // + "/git/symja_android_library/symja_android_library/Rubi/RubiRules4.16.0_FullLHS.m",};
     String[] fileNames = { //
         userHome
-            + "/git/symja_android_library/symja_android_library/Rubi/RubiRules4.16.0_FullLHS.m",};
+            + "/git/symja_android_library/symja_android_library/Rubi/RubiRules_4.17.3.0_FullLHS.m",};
+
     IASTAppendable listOfRules = F.ListAlloc(10000);
     int fcnt = 0;
 
