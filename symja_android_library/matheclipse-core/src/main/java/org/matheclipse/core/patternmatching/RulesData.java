@@ -432,8 +432,12 @@ public final class RulesData implements Serializable {
         for (IPatternMatcher patternEvaluator : fPatternDownRules) {
           // if (patternEvaluator.fLhsPatternExpr.isAST(S.Integrate)) {
           // LOGGER.info(((IPatternMatcher) patternEvaluator).getLHSPriority());
-          // if (((IPatternMatcher) patternEvaluator).getLHSPriority() == 5665) {
-          // LOGGER.info("Debug from this line");
+          // System.out.println("Rule: " + patternEvaluator.getLHSPriority());
+          // if (patternEvaluator.getLHSPriority() >= 7301) {
+          // debug rule from here
+          // rule 7301 is CannotIntegrate on 27th JAN 2024
+          // System.out.println("Rule " + patternEvaluator.getLHSPriority() + "found!\n"
+          // + patternEvaluator.toString());
           // }
           // }
           if (patternEvaluator.isPatternHashAllowed(patternHash)) {
@@ -456,11 +460,18 @@ public final class RulesData implements Serializable {
               }
               continue;
             }
+            // try {
             result = pmEvaluator.eval(expr, engine);
             if (result.isPresent()) {
               return result;
             }
-
+            // } catch (Exception ex) {
+            // // For Integrate:
+            // // org.matheclipse.core.eval.exception.TimeoutException
+            // System.out.println(ex.toString());
+            // ex.printStackTrace();
+            // throw ex;
+            // }
           }
         }
       }
