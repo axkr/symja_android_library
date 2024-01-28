@@ -220,7 +220,8 @@ public class MMAConsole {
     if (outputExpression.length() > 0) {
       stdout.print(RED + "Out[" + COUNTER + "]= " + RESET);
       stdout.flush();
-      stdout.println(Errors.shorten(outputExpression, 1000));
+      stdout.println(
+          Errors.shorten(outputExpression, fEvaluator.getEvalEngine().getOutputSizeLimit()));
       stdout.flush();
     }
     return outputExpression;

@@ -298,12 +298,13 @@ public class IOFunctions {
           IAST messageName = (IAST) ast.arg1();
           String messageShortcut = messageName.arg2().toString();
           if (messageName.arg1().isSymbol()) {
-            IExpr temp = Errors.message((ISymbol) messageName.arg1(), messageShortcut, ast);
+            IExpr temp = Errors.message((ISymbol) messageName.arg1(), messageShortcut, ast,
+                engine.getOutputSizeLimit());
             if (temp.isPresent()) {
               return temp;
             }
           }
-          return Errors.message(S.General, messageShortcut, ast);
+          return Errors.message(S.General, messageShortcut, ast, engine.getOutputSizeLimit());
         }
       }
       return F.NIL;
@@ -354,7 +355,7 @@ public class IOFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return F.stringx(Errors.shorten(ast.arg1()));
+      return F.stringx(Errors.shorten(ast.arg1(), engine.getOutputSizeLimit()));
     }
 
     @Override

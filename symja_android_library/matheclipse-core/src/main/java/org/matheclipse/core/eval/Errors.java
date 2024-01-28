@@ -372,7 +372,8 @@ public class Errors {
       "zzdsex", "Non deserialized expression `1`." //
   };
 
-  public static IExpr message(ISymbol symbol, String messageShortcut, final IAST list) {
+  public static IExpr message(ISymbol symbol, String messageShortcut, final IAST list,
+      int maximumLength) {
     IExpr temp = symbol.evalMessage(messageShortcut);
     String message = null;
     if (temp.isPresent()) {
@@ -384,7 +385,7 @@ public class Errors {
       }
     }
     if (message != null) {
-      message = rawMessage(list, message);
+      message = rawMessage(list, message, maximumLength);
       return F.stringx(symbol.toString() + ": " + message);
     }
     return F.NIL;
@@ -601,22 +602,24 @@ public class Errors {
       return message;
     }
     for (int i = 1; i < listOfArgs.size(); i++) {
-      message = StringUtils.replace(message, "`" + (i) + "`", shorten(listOfArgs.get(i)));
+      message = StringUtils.replace(message, "`" + (i) + "`",
+          shorten(listOfArgs.get(i), engine.getOutputSizeLimit()));
     }
     engine.setMessageShortcut(messageShortcut);
     return message;
   }
 
-  private static String rawMessage(final IAST list, String message) {
+  private static String rawMessage(final IAST list, String message, int maximumLength) {
     for (int i = 2; i < list.size(); i++) {
-      message = StringUtils.replace(message, "`" + (i - 1) + "`", shorten(list.get(i)));
+      message =
+          StringUtils.replace(message, "`" + (i - 1) + "`", shorten(list.get(i), maximumLength));
     }
     return message;
   }
 
   /**
-   * Shorten the output string generated from <code>expr</code> to a maximum length of <code>
-   * Config.SHORTEN_STRING_LENGTH</code> characters. Insert <code>&lt;&lt;SHORT&gt;&gt;</code> as
+   * Shorten the output string generated from <code>expr</code> to a maximum length of
+   * {@link Config#SHORTEN_STRING_LENGTH} characters. Insert <code>&lt;&lt;SHORT&gt;&gt;</code> as
    * substitute in the middle of the expression if necessary.
    *
    * @param expr

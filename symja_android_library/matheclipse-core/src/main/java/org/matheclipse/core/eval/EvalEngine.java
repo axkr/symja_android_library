@@ -306,6 +306,8 @@ public class EvalEngine implements Serializable {
   /** The number of significant figures in the output expression */
   protected int fSignificantFigures;
 
+  protected int fOutputSizeLimit;
+
   protected int fRecursionLimit;
 
   protected int fIterationLimit;
@@ -2927,6 +2929,9 @@ public class EvalEngine implements Serializable {
     return fOutPrintStream != null ? fOutPrintStream : System.out;
   }
 
+  public int getOutputSizeLimit() {
+    return fOutputSizeLimit;
+  }
   /**
    * Get the reap list object associated to the most enclosing <code>Reap()</code> statement. The
    * even indices in <code>java.util.List</code> contain the tag defined in <code>Sow()</code>. If
@@ -3076,6 +3081,7 @@ public class EvalEngine implements Serializable {
     fConstantCounter = 1;
     fSignificantFigures = 6;
     fRecursionCounter = 0;
+    fOutputSizeLimit = Config.SHORTEN_STRING_LENGTH;
     fNumericMode = false;
     fTogetherMode = false;
     fNoSimplifyMode = false;
@@ -3499,6 +3505,10 @@ public class EvalEngine implements Serializable {
   public void setPrintStreamsOf(EvalEngine engine) {
     this.fOutPrintStream = engine.fOutPrintStream;
     this.fErrorPrintStream = engine.fErrorPrintStream;
+  }
+
+  public void setOutputSizeLimit(final int i) {
+    fOutputSizeLimit = i;
   }
 
   /**

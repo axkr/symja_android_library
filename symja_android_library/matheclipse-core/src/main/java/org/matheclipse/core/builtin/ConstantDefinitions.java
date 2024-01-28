@@ -87,6 +87,7 @@ public class ConstantDefinitions {
       S.$MinMachineNumber.setEvaluator(new $MinMachineNumber());
       S.$Notebooks.setEvaluator(new $Notebooks());
       S.$OperatingSystem.setEvaluator(new $OperatingSystem());
+      S.$OutputSizeLimit.setEvaluator(new $OutputSizeLimit());
       S.$Packages.setEvaluator(new $Packages());
       S.$Path.setEvaluator(new $Path());
       S.$PathnameSeparator.setEvaluator(new $PathnameSeparator());
@@ -434,6 +435,36 @@ public class ConstantDefinitions {
         return F.stringx("Unix");
       }
       return F.stringx("Unknown");
+    }
+  }
+
+  private static class $OutputSizeLimit extends AbstractSymbolEvaluator
+      implements ISetValueEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      int outputSizeLimit = engine.getOutputSizeLimit();
+      if (symbol.hasAssignedSymbolValue()) {
+        IExpr value = symbol.assignedValue();
+        outputSizeLimit = value.toIntDefault();
+        engine.setOutputSizeLimit(outputSizeLimit);
+      }
+
+      return F.ZZ(outputSizeLimit);
+    }
+
+    @Override
+    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+      int outputSizeLimit = rightHandSide.toIntDefault();
+      if (outputSizeLimit < 0) {
+        // Positive machine-sized integer expected at position `2` in `1`.
+        return Errors.printMessage(S.$OutputSizeLimit, "intpm",
+            F.list(F.C2, F.Set(S.$OutputSizeLimit, rightHandSide)), engine);
+      }
+      engine.setOutputSizeLimit(outputSizeLimit);
+      IInteger value = F.ZZ(outputSizeLimit);
+      S.$OutputSizeLimit.assignValue(value, setDelayed);
+      return value;
     }
   }
 
@@ -1002,8 +1033,7 @@ public class ConstantDefinitions {
     }
   }
 
-  private static class GoldenAngle extends AbstractSymbolEvaluator
-      implements IRealConstant {
+  private static class GoldenAngle extends AbstractSymbolEvaluator implements IRealConstant {
     public static final double GOLDEN_ANGLE = 2.3999632297286533222315555066336138531249990110581;
 
     @Override
@@ -1079,8 +1109,7 @@ public class ConstantDefinitions {
    * 1.618033988749895
    * </pre>
    */
-  private static class GoldenRatio extends AbstractSymbolEvaluator
-      implements IRealConstant {
+  private static class GoldenRatio extends AbstractSymbolEvaluator implements IRealConstant {
     public static final double GOLDEN_RATIO = 1.6180339887498948482045868343656381177203091798058;
 
     @Override
