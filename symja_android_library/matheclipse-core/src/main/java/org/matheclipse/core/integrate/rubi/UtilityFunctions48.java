@@ -3,13 +3,11 @@ package org.matheclipse.core.integrate.rubi;
 
 import static org.matheclipse.core.expression.F.$;
 import static org.matheclipse.core.expression.F.$p;
-import static org.matheclipse.core.expression.F.$rubi;
 import static org.matheclipse.core.expression.F.$s;
 import static org.matheclipse.core.expression.F.$str;
 import static org.matheclipse.core.expression.F.And;
 import static org.matheclipse.core.expression.F.AppendTo;
 import static org.matheclipse.core.expression.F.AtomQ;
-import static org.matheclipse.core.expression.F.Block;
 import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C2;
@@ -41,7 +39,6 @@ import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.RuleDelayed;
 import static org.matheclipse.core.expression.F.SameQ;
 import static org.matheclipse.core.expression.F.Set;
-import static org.matheclipse.core.expression.F.SetAttributes;
 import static org.matheclipse.core.expression.F.Slot1;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.With;
@@ -57,8 +54,6 @@ import static org.matheclipse.core.expression.S.Condition;
 import static org.matheclipse.core.expression.S.FSymbol;
 import static org.matheclipse.core.expression.S.False;
 import static org.matheclipse.core.expression.S.GSymbol;
-import static org.matheclipse.core.expression.S.HoldAll;
-import static org.matheclipse.core.expression.S.Integrate;
 import static org.matheclipse.core.expression.S.Module;
 import static org.matheclipse.core.expression.S.Null;
 import static org.matheclipse.core.expression.S.Pattern;
@@ -72,7 +67,6 @@ import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Coeff;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.EqQ;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.F;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.FixIntRule;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.FixIntRules;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.FixRhsIntRule;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.FreeFactors;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.FreeTerms;
@@ -111,8 +105,8 @@ ISetDelayed(702,RuleName($p("name")),
     CompoundExpression(AppendTo($s("§$rulenamelist"),$s("name")),Null)),
       // ISetDelayed(703,FixIntRules(),
       // CompoundExpression(Set(DownValues(Integrate),FixIntRules(DownValues(Integrate))),Null)),
-ISetDelayed(704,FixIntRules($p("rulelist")),
-    Block(List(Integrate,$rubi("Subst"),$rubi("Simp"),$rubi("Star")),CompoundExpression(SetAttributes(List(Integrate,$rubi("Subst"),$rubi("Simp"),$rubi("Star")),HoldAll),Map(Function(FixIntRule(Slot1,Part(Slot1,C1,C1,C2,C1))),$s("rulelist"))))),
+      // ISetDelayed(704,FixIntRules($p("rulelist")),
+      // Block(List(Integrate,$rubi("Subst"),$rubi("Simp"),$rubi("Star")),CompoundExpression(SetAttributes(List(Integrate,$rubi("Subst"),$rubi("Simp"),$rubi("Star")),HoldAll),Map(Function(FixIntRule(Slot1,Part(Slot1,C1,C1,C2,C1))),$s("rulelist"))))),
 ISetDelayed(705,FixIntRule($p("§rule")),
     If(AtomQ(Part($s("§rule"),C1,C1,CN1)),FixIntRule($s("§rule"),Part($s("§rule"),C1,C1,CN1)),If(And(SameQ(Head(Part($s("§rule"),C1,C1,CN1)),Pattern),AtomQ(Part($s("§rule"),C1,C1,CN1,C1))),FixIntRule($s("§rule"),Part($s("§rule"),C1,C1,CN1,C1)),Print($str("Invalid integration rule: "),Part($s("§rule"),C1,C1,CN1))))),
 ISetDelayed(706,FixIntRule(RuleDelayed($p("lhs"),$(F_,$(G_,$p("§list"),$(F_,Plus(u_,v_),$p("test2"))),$p("test1"))),x_),

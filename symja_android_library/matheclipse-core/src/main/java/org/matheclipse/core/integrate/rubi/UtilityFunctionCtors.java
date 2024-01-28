@@ -574,13 +574,13 @@ public class UtilityFunctionCtors {
     return F.binaryAST2(F.$rubi("FixIntRule"), a0, a1);
   }
 
-  public static IAST FixIntRules() {
-    return F.headAST0(F.$rubi("FixIntRules"));
-  }
+  // public static IAST FixIntRules() {
+  // return F.headAST0(F.$rubi("FixIntRules"));
+  // }
 
-  public static IAST FixIntRules(final IExpr a0) {
-    return F.unaryAST1(F.$rubi("FixIntRules"), a0);
-  }
+  // public static IAST FixIntRules(final IExpr a0) {
+  // return F.unaryAST1(F.$rubi("FixIntRules"), a0);
+  // }
 
   public static IAST FixRhsIntRule(final IExpr a0, final IExpr a1) {
     return F.binaryAST2(F.$rubi("FixRhsIntRule"), a0, a1);

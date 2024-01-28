@@ -86,6 +86,7 @@ import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.ExpandInt
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Expon;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.GtQ;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.IGtQ;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.IntSum;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.InverseFunctionQ;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.LeQ;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.LinearQ;
@@ -126,8 +127,7 @@ IIntegrate(2007,Integrate(Times(u_DEFAULT,Power($p("§px"),p_)),x_Symbol),
     Condition(With(list(Set(a,Rt(Coeff($s("§px"),x,C0),Expon($s("§px"),x))),Set(b,Rt(Coeff($s("§px"),x,Expon($s("§px"),x)),Expon($s("§px"),x)))),Condition(Integrate(Times(u,Power(Plus(a,Times(b,x)),Times(Expon($s("§px"),x),p))),x),EqQ($s("§px"),Power(Plus(a,Times(b,x)),Expon($s("§px"),x))))),And(IntegerQ(p),PolyQ($s("§px"),x),GtQ(Expon($s("§px"),x),C1),NeQ(Coeff($s("§px"),x,C0),C0)))),
 IIntegrate(2008,Integrate(Times(u_DEFAULT,Power($p("§px"),p_)),x_Symbol),
     Condition(With(list(Set(a,Rt(Coeff($s("§px"),x,C0),Expon($s("§px"),x))),Set(b,Rt(Coeff($s("§px"),x,Expon($s("§px"),x)),Expon($s("§px"),x)))),Condition(Simp(Star(Times(Power(Power(Plus(a,Times(b,x)),Expon($s("§px"),x)),p),Power(Power(Plus(a,Times(b,x)),Times(Expon($s("§px"),x),p)),CN1)),Integrate(Times(u,Power(Plus(a,Times(b,x)),Times(Expon($s("§px"),x),p))),x)),x),EqQ($s("§px"),Power(Plus(a,Times(b,x)),Expon($s("§px"),x))))),And(Not(IntegerQ(p)),PolyQ($s("§px"),x),GtQ(Expon($s("§px"),x),C1),NeQ(Coeff($s("§px"),x,C0),C0)))),
-      // IIntegrate(2009,Integrate(u_,x_Symbol),
-      // Condition(Simp(IntSum(u,x),x),SumQ(u))),
+      IIntegrate(2009, Integrate(u_, x_Symbol), Condition(Simp(IntSum(u, x), x), SumQ(u))),
 IIntegrate(2010,Integrate(Times(u_,Power(Times(c_DEFAULT,x_),m_DEFAULT)),x_Symbol),
     Condition(Integrate(ExpandIntegrand(Times(Power(Times(c,x),m),u),x),x),And(FreeQ(list(c,m),x),SumQ(u),Not(LinearQ(u,x)),Not(MatchQ(u,Condition(Plus(a_,Times(b_DEFAULT,v_)),And(FreeQ(list(a,b),x),InverseFunctionQ(v)))))))),
 IIntegrate(2011,Integrate(Times(u_DEFAULT,Power(Plus(a_,Times(b_DEFAULT,v_)),m_DEFAULT),Power(Plus(c_,Times(d_DEFAULT,v_)),n_DEFAULT)),x_Symbol),
