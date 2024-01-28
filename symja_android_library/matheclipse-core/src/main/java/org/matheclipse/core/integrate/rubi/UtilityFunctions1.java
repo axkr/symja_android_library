@@ -9,6 +9,7 @@ import static org.matheclipse.core.expression.F.CI;
 import static org.matheclipse.core.expression.F.First;
 import static org.matheclipse.core.expression.F.FreeQ;
 import static org.matheclipse.core.expression.F.Function;
+import static org.matheclipse.core.expression.F.Head;
 import static org.matheclipse.core.expression.F.ISetDelayed;
 import static org.matheclipse.core.expression.F.If;
 import static org.matheclipse.core.expression.F.IntegerQ;
@@ -31,6 +32,7 @@ import static org.matheclipse.core.expression.F.v_;
 import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.S.False;
 import static org.matheclipse.core.expression.S.Null;
+import static org.matheclipse.core.expression.S.Rational;
 import static org.matheclipse.core.expression.S.m;
 import static org.matheclipse.core.expression.S.n;
 import static org.matheclipse.core.expression.S.u;
@@ -52,6 +54,8 @@ import org.matheclipse.core.interfaces.IAST;
  */
 class UtilityFunctions1 { 
   public static IAST RULES = List( 
+ISetDelayed(6,RationalQ($ps("u")),
+    SameQ(Scan(Function(If(Or(IntegerQ(Slot1),SameQ(Head(Slot1),Rational)),Null,Return(False))),list(u)),Null)),
 ISetDelayed(7,FractionOrNegativeQ($ps("u")),
     SameQ(Scan(Function(If(Or(FractionQ(Slot1),And(IntegerQ(Slot1),Less(Slot1,C0))),Null,Return(False))),list(u)),Null)),
 ISetDelayed(8,SqrtNumberQ(Power(m_,n_)),

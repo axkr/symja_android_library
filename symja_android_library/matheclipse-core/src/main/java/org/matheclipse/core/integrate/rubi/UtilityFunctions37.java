@@ -1,111 +1,9 @@
 package org.matheclipse.core.integrate.rubi;
 
 
-import static org.matheclipse.core.expression.F.$;
-import static org.matheclipse.core.expression.F.$p;
-import static org.matheclipse.core.expression.F.$rubi;
-import static org.matheclipse.core.expression.F.$s;
-import static org.matheclipse.core.expression.F.And;
-import static org.matheclipse.core.expression.F.AppendTo;
-import static org.matheclipse.core.expression.F.AtomQ;
-import static org.matheclipse.core.expression.F.Block;
-import static org.matheclipse.core.expression.F.C0;
-import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.C2;
-import static org.matheclipse.core.expression.F.CI;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Cancel;
-import static org.matheclipse.core.expression.F.CompoundExpression;
-import static org.matheclipse.core.expression.F.Condition;
-import static org.matheclipse.core.expression.F.Cos;
-import static org.matheclipse.core.expression.F.First;
-import static org.matheclipse.core.expression.F.FreeQ;
-import static org.matheclipse.core.expression.F.Function;
-import static org.matheclipse.core.expression.F.Head;
-import static org.matheclipse.core.expression.F.ISetDelayed;
-import static org.matheclipse.core.expression.F.If;
-import static org.matheclipse.core.expression.F.Im;
-import static org.matheclipse.core.expression.F.IntegerQ;
-import static org.matheclipse.core.expression.F.Integrate;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.ListQ;
-import static org.matheclipse.core.expression.F.Log;
-import static org.matheclipse.core.expression.F.Map;
-import static org.matheclipse.core.expression.F.MemberQ;
-import static org.matheclipse.core.expression.F.Module;
-import static org.matheclipse.core.expression.F.Negate;
-import static org.matheclipse.core.expression.F.Not;
-import static org.matheclipse.core.expression.F.OddQ;
-import static org.matheclipse.core.expression.F.Or;
-import static org.matheclipse.core.expression.F.Part;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Re;
-import static org.matheclipse.core.expression.F.Rest;
-import static org.matheclipse.core.expression.F.SameQ;
-import static org.matheclipse.core.expression.F.Set;
-import static org.matheclipse.core.expression.F.SetAttributes;
-import static org.matheclipse.core.expression.F.Sin;
-import static org.matheclipse.core.expression.F.Slot1;
-import static org.matheclipse.core.expression.F.Sqr;
-import static org.matheclipse.core.expression.F.Subtract;
-import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.With;
-import static org.matheclipse.core.expression.F.c_DEFAULT;
-import static org.matheclipse.core.expression.F.list;
-import static org.matheclipse.core.expression.F.m_DEFAULT;
-import static org.matheclipse.core.expression.F.n_;
-import static org.matheclipse.core.expression.F.u_;
-import static org.matheclipse.core.expression.F.v_;
-import static org.matheclipse.core.expression.F.x_Symbol;
-import static org.matheclipse.core.expression.S.Cos;
-import static org.matheclipse.core.expression.S.False;
-import static org.matheclipse.core.expression.S.HoldAll;
-import static org.matheclipse.core.expression.S.Integrate;
-import static org.matheclipse.core.expression.S.Null;
-import static org.matheclipse.core.expression.S.Sin;
-import static org.matheclipse.core.expression.S.a;
-import static org.matheclipse.core.expression.S.b;
-import static org.matheclipse.core.expression.S.c;
-import static org.matheclipse.core.expression.S.m;
-import static org.matheclipse.core.expression.S.n;
-import static org.matheclipse.core.expression.S.u;
-import static org.matheclipse.core.expression.S.v;
-import static org.matheclipse.core.expression.S.x;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.AllNegTermQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.AtomBaseQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Coeff;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.ComplexNumberQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Dist;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.EqQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.FixIntRule;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.FixIntRules;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.FreeFactors;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.FreeTerms;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.GtQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.IntSum;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.IntTerm;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.LinearQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.LtQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.NegQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.NegSumBaseQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.NonfreeFactors;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.NonfreeTerms;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.NthRoot;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.PosQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.PowerQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.ProductQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.RemoveContent;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.RtAux;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.RuleName;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Simp;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SomeNegTermQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SplitProduct;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SplitSum;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SumBaseQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SumQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.TrigSquare;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.TrigSquareQ;
+import static org.matheclipse.core.expression.F.*;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.*;
+
 import org.matheclipse.core.interfaces.IAST;
 /** 
  * UtilityFunctions rules from the <a href="https://rulebasedintegration.org/">Rubi -
@@ -114,41 +12,33 @@ import org.matheclipse.core.interfaces.IAST;
  */
 class UtilityFunctions37 { 
   public static IAST RULES = List( 
-ISetDelayed(671,NthRoot(u_,n_),
-    Power(u,Power(n,CN1))),
-ISetDelayed(672,TrigSquare(u_),
-    If(SumQ(u),With(list(Set($s("lst"),SplitSum(Function(SplitProduct($rubi("TrigSquareQ"),Slot1)),u))),If(And(Not(AtomQ($s("lst"))),EqQ(Plus(Part($s("lst"),C1,C2),Part($s("lst"),C2)),C0)),If(SameQ(Head(Part(Part($s("lst"),C1,C1),C1)),Sin),Times(Part($s("lst"),C2),Sqr(Cos(Part(Part($s("lst"),C1,C1),C1,C1)))),Times(Part($s("lst"),C2),Sqr(Sin(Part(Part($s("lst"),C1,C1),C1,C1))))),False)),False)),
-ISetDelayed(673,RtAux(u_,n_),
-    If(PowerQ(u),Power(Part(u,C1),Times(Part(u,C2),Power(n,CN1))),If(ProductQ(u),Module(list($s("lst")),CompoundExpression(Set($s("lst"),SplitProduct(Function(GtQ(Slot1,C0)),u)),If(ListQ($s("lst")),Times(RtAux(Part($s("lst"),C1),n),RtAux(Part($s("lst"),C2),n)),CompoundExpression(Set($s("lst"),SplitProduct(Function(LtQ(Slot1,C0)),u)),If(ListQ($s("lst")),If(EqQ(Part($s("lst"),C1),CN1),With(list(Set(v,Part($s("lst"),C2))),If(And(PowerQ(v),LtQ(Part(v,C2),C0)),Power(RtAux(Negate(Power(Part(v,C1),Negate(Part(v,C2)))),n),CN1),If(ProductQ(v),If(ListQ(SplitProduct($rubi("SumBaseQ"),v)),CompoundExpression(Set($s("lst"),SplitProduct($rubi("AllNegTermQ"),v)),If(ListQ($s("lst")),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Part($s("lst"),C2),n)),CompoundExpression(Set($s("lst"),SplitProduct($rubi("NegSumBaseQ"),v)),If(ListQ($s("lst")),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Part($s("lst"),C2),n)),CompoundExpression(Set($s("lst"),SplitProduct($rubi("SomeNegTermQ"),v)),If(ListQ($s("lst")),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Part($s("lst"),C2),n)),CompoundExpression(Set($s("lst"),SplitProduct($rubi("SumBaseQ"),v)),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Part($s("lst"),C2),n))))))))),CompoundExpression(Set($s("lst"),SplitProduct($rubi("AtomBaseQ"),v)),If(ListQ($s("lst")),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Part($s("lst"),C2),n)),Times(RtAux(Negate(First(v)),n),RtAux(Rest(v),n))))),If(OddQ(n),Negate(RtAux(v,n)),NthRoot(u,n))))),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Negate(Part($s("lst"),C2)),n))),CompoundExpression(Set($s("lst"),SplitProduct($rubi("AllNegTermQ"),u)),If(And(ListQ($s("lst")),ListQ(SplitProduct($rubi("SumBaseQ"),Part($s("lst"),C2)))),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Negate(Part($s("lst"),C2)),n)),CompoundExpression(Set($s("lst"),SplitProduct($rubi("NegSumBaseQ"),u)),If(And(ListQ($s("lst")),ListQ(SplitProduct($rubi("NegSumBaseQ"),Part($s("lst"),C2)))),Times(RtAux(Negate(Part($s("lst"),C1)),n),RtAux(Negate(Part($s("lst"),C2)),n)),Map(Function(RtAux(Slot1,n)),u)))))))))),With(list(Set(v,TrigSquare(u))),If(Not(AtomQ(v)),RtAux(v,n),If(And(OddQ(n),LtQ(u,C0)),Negate(RtAux(Negate(u),n)),If(ComplexNumberQ(u),With(list(Set(a,Re(u)),Set(b,Im(u))),If(And(Not(And(IntegerQ(a),IntegerQ(b))),IntegerQ(Times(a,Power(Plus(Sqr(a),Sqr(b)),CN1))),IntegerQ(Times(b,Power(Plus(Sqr(a),Sqr(b)),CN1)))),Power(RtAux(Subtract(Times(a,Power(Plus(Sqr(a),Sqr(b)),CN1)),Times(b,Power(Plus(Sqr(a),Sqr(b)),CN1),CI)),n),CN1),NthRoot(u,n))),If(And(OddQ(n),NegQ(u),PosQ(Negate(u))),Negate(RtAux(Negate(u),n)),NthRoot(u,n))))))))),
-ISetDelayed(674,AtomBaseQ(u_),
-    Or(AtomQ(u),And(PowerQ(u),OddQ(Part(u,C2)),AtomBaseQ(Part(u,C1))))),
-ISetDelayed(675,SumBaseQ(u_),
-    Or(SumQ(u),And(PowerQ(u),OddQ(Part(u,C2)),SumBaseQ(Part(u,C1))))),
-ISetDelayed(676,NegSumBaseQ(u_),
-    Or(And(SumQ(u),NegQ(First(u))),And(PowerQ(u),OddQ(Part(u,C2)),NegSumBaseQ(Part(u,C1))))),
-ISetDelayed(677,AllNegTermQ(u_),
-    If(And(PowerQ(u),OddQ(Part(u,C2))),AllNegTermQ(Part(u,C1)),If(SumQ(u),And(NegQ(First(u)),AllNegTermQ(Rest(u))),NegQ(u)))),
-ISetDelayed(678,SomeNegTermQ(u_),
-    If(And(PowerQ(u),OddQ(Part(u,C2))),SomeNegTermQ(Part(u,C1)),If(SumQ(u),Or(NegQ(First(u)),SomeNegTermQ(Rest(u))),NegQ(u)))),
-ISetDelayed(679,TrigSquareQ(u_),
-    And(PowerQ(u),EqQ(Part(u,C2),C2),MemberQ(list(Sin,Cos),Head(Part(u,C1))))),
-ISetDelayed(680,SplitProduct($p("func"),u_),
-    If(ProductQ(u),If($($s("func"),First(u)),list(First(u),Rest(u)),With(list(Set($s("lst"),SplitProduct($s("func"),Rest(u)))),If(AtomQ($s("lst")),False,list(Part($s("lst"),C1),Times(First(u),Part($s("lst"),C2)))))),If($($s("func"),u),list(u,C1),False))),
-ISetDelayed(681,SplitSum($p("func"),u_),
-    If(SumQ(u),If(Not(AtomQ($($s("func"),First(u)))),list($($s("func"),First(u)),Rest(u)),With(list(Set($s("lst"),SplitSum($s("func"),Rest(u)))),If(AtomQ($s("lst")),False,list(Part($s("lst"),C1),Plus(First(u),Part($s("lst"),C2)))))),If(Not(AtomQ($($s("func"),u))),list($($s("func"),u),C0),False))),
-ISetDelayed(682,IntSum(u_,x_Symbol),
-    Plus(Simp(Times(FreeTerms(u,x),x),x),IntTerm(NonfreeTerms(u,x),x))),
-ISetDelayed(683,IntTerm(u_,x_Symbol),
-    Condition(Map(Function(IntTerm(Slot1,x)),u),SumQ(u))),
-ISetDelayed(684,IntTerm(Times(c_DEFAULT,Power(v_,m_DEFAULT)),x_Symbol),
-    Condition(With(list(Set(u,Cancel(v))),If(EqQ(m,CN1),Simp(Times(c,Log(RemoveContent(u,x)),Power(Coeff(u,x,C1),CN1)),x),If(And(EqQ(m,C1),EqQ(c,C1),SumQ(u)),IntSum(u,x),Simp(Times(c,Power(u,Plus(m,C1)),Power(Times(Coeff(u,x,C1),Plus(m,C1)),CN1)),x)))),And(FreeQ(list(c,m),x),LinearQ(v,x)))),
-ISetDelayed(685,IntTerm(u_,x_Symbol),
-    Dist(FreeFactors(u,x),Integrate(NonfreeFactors(u,x),x),x)),
-ISetDelayed(686,RuleName($p("name")),
-    CompoundExpression(AppendTo($s("§$rulenamelist"),$s("name")),Null)),
-      // ISetDelayed(687,FixIntRules(),
-      // CompoundExpression(Set(DownValues(Integrate),FixIntRules(DownValues(Integrate))),Null)),
-ISetDelayed(688,FixIntRules($p("rulelist")),
-    Block(List(Integrate,$rubi("Subst"),$rubi("Simp"),$rubi("Dist")),CompoundExpression(SetAttributes(List($rubi("Simp"),$rubi("Dist"),Integrate,$rubi("Subst")),HoldAll),Map(Function(FixIntRule(Slot1,Part(Slot1,C1,C1,C2,C1))),$s("rulelist")))))
+ISetDelayed(505,RectifyCotangent(u_,a_,b_,r_,x_Symbol),
+    If(And(MatchQ(Together(a),Times(d_DEFAULT,Complex(C0,c_))),MatchQ(Together(b),Times(d_DEFAULT,Complex(C0,c_)))),Module(list(Set(c,Times(a,Power(CI,CN1))),Set(d,Times(b,Power(CI,CN1))),e),If(LtQ(d,C0),RectifyTangent(u,Negate(a),Negate(b),Negate(r),x),CompoundExpression(Set(e,SmartDenominator(Together(Plus(c,Times(d,x))))),Set(c,Times(c,e)),Set(d,Times(d,e)),If(EvenQ(Denominator(NumericFactor(Together(u)))),Subtract(Times(CI,r,C1D4,Log(RemoveContent(Plus(Simplify(Plus(Sqr(Plus(c,e)),Sqr(d))),Times(CN1,Simplify(Subtract(Sqr(Plus(c,e)),Sqr(d))),Cos(Times(C2,u))),Times(Simplify(Times(C2,Plus(c,e),d)),Sin(Times(C2,u)))),x))),Times(CI,r,C1D4,Log(RemoveContent(Plus(Simplify(Plus(Sqr(Subtract(c,e)),Sqr(d))),Times(CN1,Simplify(Subtract(Sqr(Subtract(c,e)),Sqr(d))),Cos(Times(C2,u))),Times(Simplify(Times(C2,Subtract(c,e),d)),Sin(Times(C2,u)))),x)))),Subtract(Times(CI,r,C1D4,Log(RemoveContent(Plus(Simplify(Sqr(Plus(c,e))),Times(CN1,Simplify(Subtract(Sqr(Plus(c,e)),Sqr(d))),Sqr(Cos(u))),Times(Simplify(Times(C2,Plus(c,e),d)),Cos(u),Sin(u))),x))),Times(CI,r,C1D4,Log(RemoveContent(Plus(Simplify(Sqr(Subtract(c,e))),Times(CN1,Simplify(Subtract(Sqr(Subtract(c,e)),Sqr(d))),Sqr(Cos(u))),Times(Simplify(Times(C2,Subtract(c,e),d)),Cos(u),Sin(u))),x)))))))),If(LtQ(b,C0),RectifyCotangent(u,Negate(a),Negate(b),Negate(r),x),If(EvenQ(Denominator(NumericFactor(Together(u)))),Subtract(Times(CN1,r,SimplifyAntiderivative(u,x)),Times(r,ArcTan(Simplify(Times(Plus(Times(C2,a,b,Cos(Times(C2,u))),Times(Subtract(Plus(C1,Sqr(a)),Sqr(b)),Sin(Times(C2,u)))),Power(Plus(Sqr(a),Sqr(Plus(C1,b)),Times(CN1,Subtract(Plus(C1,Sqr(a)),Sqr(b)),Cos(Times(C2,u))),Times(C2,a,b,Sin(Times(C2,u)))),CN1)))))),Subtract(Times(CN1,r,SimplifyAntiderivative(u,x)),Times(r,ArcTan(ActivateTrig(Simplify(Times(Plus(Times(a,b),Times(CN1,C2,a,b,Sqr($($s("§sin"),u))),Times(Subtract(Plus(C1,Sqr(a)),Sqr(b)),$($s("§cos"),u),$($s("§sin"),u))),Power(Plus(Times(b,Plus(C1,b)),Times(Subtract(Plus(C1,Sqr(a)),Sqr(b)),Sqr($($s("§sin"),u))),Times(C2,a,b,$($s("§cos"),u),$($s("§sin"),u))),CN1))))))))))),
+ISetDelayed(506,SmartNumerator(Power(u_,n_)),
+    Condition(SmartDenominator(Power(u,Negate(n))),And(RationalQ(n),Less(n,C0)))),
+ISetDelayed(507,SmartNumerator(Times(u_,v_)),
+    Times(SmartNumerator(u),SmartNumerator(v))),
+ISetDelayed(508,SmartNumerator(u_),
+    Numerator(u)),
+ISetDelayed(509,SmartDenominator(Power(u_,n_)),
+    Condition(SmartNumerator(Power(u,Negate(n))),And(RationalQ(n),Less(n,C0)))),
+ISetDelayed(510,SmartDenominator(Times(u_,v_)),
+    Times(SmartDenominator(u),SmartDenominator(v))),
+ISetDelayed(511,SmartDenominator(u_),
+    Denominator(u)),
+ISetDelayed(512,SubstFor(w_,v_,u_,x_),
+    SimplifyIntegrand(Times(w,SubstFor(v,u,x)),x)),
+ISetDelayed(513,SubstFor(v_,u_,x_),
+    If(AtomQ(v),Subst(u,v,x),If(Not(InertTrigFreeQ(u)),SubstFor(v,ActivateTrig(u),x),If(NeQ(FreeFactors(v,x),C1),SubstFor(NonfreeFactors(v,x),u,Times(x,Power(FreeFactors(v,x),CN1))),Switch(Head(v),Sin,SubstForTrig(u,x,Sqrt(Subtract(C1,Sqr(x))),Part(v,C1),x),Cos,SubstForTrig(u,Sqrt(Subtract(C1,Sqr(x))),x,Part(v,C1),x),Tan,SubstForTrig(u,Times(x,Power(Plus(C1,Sqr(x)),CN1D2)),Power(Plus(C1,Sqr(x)),CN1D2),Part(v,C1),x),Cot,SubstForTrig(u,Power(Plus(C1,Sqr(x)),CN1D2),Times(x,Power(Plus(C1,Sqr(x)),CN1D2)),Part(v,C1),x),Sec,SubstForTrig(u,Power(Subtract(C1,Sqr(x)),CN1D2),Power(x,CN1),Part(v,C1),x),Csc,SubstForTrig(u,Power(x,CN1),Power(Subtract(C1,Sqr(x)),CN1D2),Part(v,C1),x),Sinh,SubstForHyperbolic(u,x,Sqrt(Plus(C1,Sqr(x))),Part(v,C1),x),Cosh,SubstForHyperbolic(u,Sqrt(Plus(CN1,Sqr(x))),x,Part(v,C1),x),Tanh,SubstForHyperbolic(u,Times(x,Power(Subtract(C1,Sqr(x)),CN1D2)),Power(Subtract(C1,Sqr(x)),CN1D2),Part(v,C1),x),Coth,SubstForHyperbolic(u,Power(Plus(CN1,Sqr(x)),CN1D2),Times(x,Power(Plus(CN1,Sqr(x)),CN1D2)),Part(v,C1),x),Sech,SubstForHyperbolic(u,Power(Plus(CN1,Sqr(x)),CN1D2),Power(x,CN1),Part(v,C1),x),Csch,SubstForHyperbolic(u,Power(x,CN1),Power(Plus(C1,Sqr(x)),CN1D2),Part(v,C1),x),$b(),SubstForAux(u,v,x)))))),
+ISetDelayed(514,SubstForAux(u_,v_,x_),
+    If(SameQ(u,v),x,If(AtomQ(u),If(And(PowerQ(v),FreeQ(Part(v,C2),x),EqQ(u,Part(v,C1))),Power(x,Simplify(Power(Part(v,C2),CN1))),u),If(And(PowerQ(u),FreeQ(Part(u,C2),x)),If(EqQ(Part(u,C1),v),Power(x,Part(u,C2)),If(And(PowerQ(v),FreeQ(Part(v,C2),x),EqQ(Part(u,C1),Part(v,C1))),Power(x,Simplify(Times(Part(u,C2),Power(Part(v,C2),CN1)))),Power(SubstForAux(Part(u,C1),v,x),Part(u,C2)))),If(And(ProductQ(u),NeQ(FreeFactors(u,x),C1)),Times(FreeFactors(u,x),SubstForAux(NonfreeFactors(u,x),v,x)),If(And(ProductQ(u),ProductQ(v)),SubstForAux(First(u),First(v),x),Map(Function(SubstForAux(Slot1,v,x)),u))))))),
+ISetDelayed(515,SubstForTrig(u_,$p("§sin"),$p("§cos"),v_,x_),
+    If(AtomQ(u),u,If(And(TrigQ(u),IntegerQuotientQ(Part(u,C1),v)),If(Or(SameQ(Part(u,C1),v),EqQ(Part(u,C1),v)),Switch(Head(u),Sin,$s("§sin"),Cos,$s("§cos"),Tan,Times($s("§sin"),Power($s("§cos"),CN1)),Cot,Times($s("§cos"),Power($s("§sin"),CN1)),Sec,Power($s("§cos"),CN1),Csc,Power($s("§sin"),CN1)),Map(Function(SubstForTrig(Slot1,$s("§sin"),$s("§cos"),v,x)),ReplaceAll(TrigExpand($(Head(u),Times(Simplify(Times(Part(u,C1),Power(v,CN1))),x))),Rule(x,v)))),If(And(ProductQ(u),SameQ(Head(Part(u,C1)),Cos),SameQ(Head(Part(u,C2)),Sin),EqQ(Part(u,C1,C1),Times(C1D2,v)),EqQ(Part(u,C2,C1),Times(C1D2,v))),Times(C1D2,$s("§sin"),SubstForTrig(Drop(u,C2),$s("§sin"),$s("§cos"),v,x)),Map(Function(SubstForTrig(Slot1,$s("§sin"),$s("§cos"),v,x)),u))))),
+ISetDelayed(516,SubstForHyperbolic(u_,$p("§sinh"),$p("§cosh"),v_,x_),
+    If(AtomQ(u),u,If(And(HyperbolicQ(u),IntegerQuotientQ(Part(u,C1),v)),If(Or(SameQ(Part(u,C1),v),EqQ(Part(u,C1),v)),Switch(Head(u),Sinh,$s("§sinh"),Cosh,$s("§cosh"),Tanh,Times($s("§sinh"),Power($s("§cosh"),CN1)),Coth,Times($s("§cosh"),Power($s("§sinh"),CN1)),Sech,Power($s("§cosh"),CN1),Csch,Power($s("§sinh"),CN1)),Map(Function(SubstForHyperbolic(Slot1,$s("§sinh"),$s("§cosh"),v,x)),ReplaceAll(TrigExpand($(Head(u),Times(Simplify(Times(Part(u,C1),Power(v,CN1))),x))),Rule(x,v)))),If(And(ProductQ(u),SameQ(Head(Part(u,C1)),Cosh),SameQ(Head(Part(u,C2)),Sinh),EqQ(Part(u,C1,C1),Times(C1D2,v)),EqQ(Part(u,C2,C1),Times(C1D2,v))),Times(C1D2,$s("§sinh"),SubstForHyperbolic(Drop(u,C2),$s("§sinh"),$s("§cosh"),v,x)),Map(Function(SubstForHyperbolic(Slot1,$s("§sinh"),$s("§cosh"),v,x)),u))))),
+ISetDelayed(517,SubstForFractionalPowerOfLinear(u_,x_Symbol),
+    With(list(Set($s("lst"),FractionalPowerOfLinear(u,C1,False,x))),If(Or(AtomQ($s("lst")),FalseQ(Part($s("lst"),C2))),False,With(list(Set(n,Part($s("lst"),C1)),Set(a,Coefficient(Part($s("lst"),C2),x,C0)),Set(b,Coefficient(Part($s("lst"),C2),x,C1))),With(list(Set($s("tmp"),Simplify(Times(Power(x,Subtract(n,C1)),SubstForFractionalPower(u,Part($s("lst"),C2),n,Plus(Times(CN1,a,Power(b,CN1)),Times(Power(x,n),Power(b,CN1))),x))))),List(NonfreeFactors($s("tmp"),x),n,Part($s("lst"),C2),Times(FreeFactors($s("tmp"),x),Power(b,CN1)))))))),
+ISetDelayed(518,FractionalPowerOfLinear(u_,n_,v_,x_),
+    If(Or(AtomQ(u),FreeQ(u,x)),list(n,v),If(CalculusQ(u),False,If(And(FractionalPowerQ(u),LinearQ(Part(u,C1),x),Or(FalseQ(v),EqQ(Part(u,C1),v))),list(LCM(Denominator(Part(u,C2)),n),Part(u,C1)),Catch(Module(list(Set($s("lst"),list(n,v))),CompoundExpression(Scan(Function(If(AtomQ(Set($s("lst"),FractionalPowerOfLinear(Slot1,Part($s("lst"),C1),Part($s("lst"),C2),x))),Throw(False))),u),$s("lst"))))))))
   );
 }

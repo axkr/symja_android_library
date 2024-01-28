@@ -299,7 +299,7 @@ public class Integrate extends AbstractFunctionEvaluator {
         }
         return F.NIL;
       }
-      if (arg1.isList() && arg2.isSymbol()) {
+      if (arg1.isList() && arg2.isVariable()) {
         return mapIntegrate((IAST) arg1, arg2);
       }
 
@@ -364,9 +364,25 @@ public class Integrate extends AbstractFunctionEvaluator {
             return temp;
           }
         }
+        IExpr temp = integrateTimesPower(fx, x);
+        if (temp.isPresent()) {
+          return temp;
+        }
         result = integrateByRubiRules(fx, x, ast, engine);
         if (result.isPresent()) {
-          IExpr temp = result.replaceAll(f -> {
+          // CannotIntegrate should be last Rubi rule in rules file
+          // if (result.isAST(F.$rubi("CannotIntegrate"), 3)) {
+          // temp = integrateTimesPower(fx, x);
+          // if (temp.isPresent()) {
+          // return temp;
+          // }
+          //
+          // result = callRestIntegrate(fx, x, engine);
+          // if (result.isPresent()) {
+          // return result;
+          // }
+          // }
+          temp = result.replaceAll(f -> {
             if (f.isAST(UtilityFunctionCtors.Unintegrable, 3)) {
               IAST integrate = F.Integrate(f.first(), f.second());
               integrate.addEvalFlags(IAST.BUILT_IN_EVALED);
@@ -381,38 +397,10 @@ public class Integrate extends AbstractFunctionEvaluator {
           return temp.orElse(result);
         }
 
-        if (fx.isTimes()) {
-          IAST[] temp = fx.filter(arg -> arg.isFree(x));
-          IExpr free = temp[0].oneIdentity1();
-          if (!free.isOne()) {
-            IExpr rest = temp[1].oneIdentity1();
-            // Integrate[free_ * rest_,x_Symbol] -> free*Integrate[rest, x] /; FreeQ[free,x]
-            return Times(free, Integrate(rest, x));
-          }
-        }
-        if (fx.isPower()) {
-          // base ^ exponent
-          IExpr base = fx.base();
-          IExpr exponent = fx.exponent();
-          if (base.equals(x) && exponent.isFree(x)) {
-            if (exponent.isMinusOne()) {
-              // Integrate[ 1 / x_ , x_ ] -> Log[x]
-              return Log(x);
-            }
-            // Integrate[ x_ ^n_ , x_ ] -> x^(n+1)/(n+1) /; FreeQ[n, x]
-            IExpr temp = Plus(F.C1, exponent);
-            return Divide(Power(x, temp), temp);
-          }
-          if (exponent.equals(x) && base.isFree(x)) {
-            if (base.isE()) {
-              // E^x
-              return fx;
-            }
-            // a^x / Log(a)
-            return F.Divide(fx, F.Log(base));
-          }
-        }
-
+        // temp = integrateTimesPower(fx, x);
+        // if (temp.isPresent()) {
+        // return temp;
+        // }
         result = callRestIntegrate(fx, x, engine);
         if (result.isPresent()) {
           return result;
@@ -423,6 +411,41 @@ public class Integrate extends AbstractFunctionEvaluator {
       engine.setAssumptions(oldAssumptions);
       engine.setNumericMode(numericMode);
     }
+  }
+
+  private IExpr integrateTimesPower(final IAST function, final IExpr x) {
+    if (function.isTimes()) {
+      IAST[] temp = function.filter(arg -> arg.isFree(x));
+      IExpr free = temp[0].oneIdentity1();
+      if (!free.isOne()) {
+        IExpr rest = temp[1].oneIdentity1();
+        // Integrate[free_ * rest_,x_] -> free*Integrate[rest, x] /; FreeQ[free,x]
+        return Times(free, Integrate(rest, x));
+      }
+    }
+    if (function.isPower()) {
+      // base ^ exponent
+      IExpr base = function.base();
+      IExpr exponent = function.exponent();
+      if (base.equals(x) && exponent.isFree(x)) {
+        if (exponent.isMinusOne()) {
+          // Integrate[ 1 / x_ , x_] -> Log[x]
+          return Log(x);
+        }
+        // Integrate[ x_ ^n_ , x_ ] -> x^(n+1)/(n+1) /; FreeQ[n, x]
+        IExpr temp = Plus(F.C1, exponent);
+        return Divide(Power(x, temp), temp);
+      }
+      if (exponent.equals(x) && base.isFree(x)) {
+        if (base.isE()) {
+          // E^x
+          return function;
+        }
+        // a^x / Log(a)
+        return F.Divide(function, F.Log(base));
+      }
+    }
+    return F.NIL;
   }
 
   /**

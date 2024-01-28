@@ -12,6 +12,18 @@ import org.matheclipse.core.interfaces.IAST;
  */
 class UtilityFunctions4 { 
   public static IAST RULES = List( 
+ISetDelayed(24,TrigHyperbolicFreeQ(u_,x_Symbol),
+    If(AtomQ(u),True,If(Or(TrigQ(u),HyperbolicQ(u),CalculusQ(u)),FreeQ(u,x),Catch(CompoundExpression(Scan(Function(If(TrigHyperbolicFreeQ(Slot1,x),Null,Throw(False))),u),True))))),
+ISetDelayed(25,InverseFunctionFreeQ(u_,x_Symbol),
+    If(AtomQ(u),True,If(Or(InverseFunctionQ(u),CalculusQ(u),SameQ(Head(u),Hypergeometric2F1),SameQ(Head(u),AppellF1)),FreeQ(u,x),Catch(CompoundExpression(Scan(Function(If(InverseFunctionFreeQ(Slot1,x),Null,Throw(False))),u),True))))),
+ISetDelayed(26,CalculusFreeQ(u_,x_),
+    If(AtomQ(u),True,If(Or(And(CalculusQ(u),SameQ(Part(u,C2),x)),HeldFormQ(u)),False,Catch(CompoundExpression(Scan(Function(If(CalculusFreeQ(Slot1,x),Null,Throw(False))),u),True))))),
+ISetDelayed(27,IntegralFreeQ(u_),
+    And(FreeQ(u,Integrate),FreeQ(u,$rubi("Integral")),FreeQ(u,$rubi("Unintegrable")),FreeQ(u,$rubi("CannotIntegrate")))),
+ISetDelayed(28,EqQ(u_,v_),
+    Or(Quiet(PossibleZeroQ(Subtract(u,v))),SameQ(Refine(Equal(u,v)),True))),
+ISetDelayed(29,NeQ(u_,v_),
+    Not(Or(Quiet(PossibleZeroQ(Subtract(u,v))),SameQ(Refine(Equal(u,v)),True)))),
 ISetDelayed(30,IGtQ(u_,n_),
     And(IntegerQ(u),Greater(u,n))),
 ISetDelayed(31,ILtQ(u_,n_),
@@ -19,22 +31,6 @@ ISetDelayed(31,ILtQ(u_,n_),
 ISetDelayed(32,IGeQ(u_,n_),
     And(IntegerQ(u),GreaterEqual(u,n))),
 ISetDelayed(33,ILeQ(u_,n_),
-    And(IntegerQ(u),LessEqual(u,n))),
-ISetDelayed(34,GtQ(u_,v_),
-    If(RealValuedNumberQ(u),If(RealValuedNumberQ(v),Greater(u,v),With(list(Set($s("vn"),N(Together(v)))),And(SameQ(Head($s("vn")),Real),Greater(u,$s("vn"))))),With(list(Set($s("un"),N(Together(u)))),If(SameQ(Head($s("un")),Real),If(RealValuedNumberQ(v),Greater($s("un"),v),With(list(Set($s("vn"),N(Together(v)))),And(SameQ(Head($s("vn")),Real),Greater($s("un"),$s("vn"))))),False)))),
-ISetDelayed(35,GtQ(u_,v_,w_),
-    And(GtQ(u,v),GtQ(v,w))),
-ISetDelayed(36,LtQ(u_,v_),
-    If(RealValuedNumberQ(u),If(RealValuedNumberQ(v),Less(u,v),With(list(Set($s("vn"),N(Together(v)))),And(SameQ(Head($s("vn")),Real),Less(u,$s("vn"))))),With(list(Set($s("un"),N(Together(u)))),If(SameQ(Head($s("un")),Real),If(RealValuedNumberQ(v),Less($s("un"),v),With(list(Set($s("vn"),N(Together(v)))),And(SameQ(Head($s("vn")),Real),Less($s("un"),$s("vn"))))),False)))),
-ISetDelayed(37,LtQ(u_,v_,w_),
-    And(LtQ(u,v),LtQ(v,w))),
-ISetDelayed(38,GeQ(u_,v_),
-    If(RealValuedNumberQ(u),If(RealValuedNumberQ(v),GreaterEqual(u,v),With(list(Set($s("vn"),N(Together(v)))),And(SameQ(Head($s("vn")),Real),GreaterEqual(u,$s("vn"))))),With(list(Set($s("un"),N(Together(u)))),If(SameQ(Head($s("un")),Real),If(RealValuedNumberQ(v),GreaterEqual($s("un"),v),With(list(Set($s("vn"),N(Together(v)))),And(SameQ(Head($s("vn")),Real),GreaterEqual($s("un"),$s("vn"))))),False)))),
-ISetDelayed(39,GeQ(u_,v_,w_),
-    And(GeQ(u,v),GeQ(v,w))),
-ISetDelayed(40,LeQ(u_,v_),
-    If(RealValuedNumberQ(u),If(RealValuedNumberQ(v),LessEqual(u,v),With(list(Set($s("vn"),N(Together(v)))),And(SameQ(Head($s("vn")),Real),LessEqual(u,$s("vn"))))),With(list(Set($s("un"),N(Together(u)))),If(SameQ(Head($s("un")),Real),If(RealValuedNumberQ(v),LessEqual($s("un"),v),With(list(Set($s("vn"),N(Together(v)))),And(SameQ(Head($s("vn")),Real),LessEqual($s("un"),$s("vn"))))),False)))),
-ISetDelayed(41,LeQ(u_,v_,w_),
-    And(LeQ(u,v),LeQ(v,w)))
+    And(IntegerQ(u),LessEqual(u,n)))
   );
 }

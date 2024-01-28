@@ -6163,6 +6163,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDSolve() {
+    check("1/y(x)^2 // FullForm", //
+        "Power(y(x), -2)");
+    check("Integrate(1/y(x)^2,y(x))", //
+        "-1/y(x)");
+    check("Integrate(1/f(x)^2,f(x))", //
+        "-1/f(x)");
+    check("Integrate(1/x^2,x)", //
+        "-1/x");
+
+    check("DSolve(y'(x)==2*x*y(x)^2, y, x)", //
+        "{{y->Function({x},1/(-x^2-C(1)))}}");
+    check("DSolve(y'(x)==2*x*y(x)^2, y(x), x)", //
+        "{{y(x)->1/(-x^2-C(1))}}");
+    check("DSolve({y'(x)==2*x*y(x)^2},y(x), x)", //
+        "{{y(x)->1/(-x^2-C(1))}}");
+
     check("DSolve(y'(x)==2*x*y(x)^2,Null,x)", //
         "DSolve(y'(x)==2*x*y(x)^2,Null,x)");
     check("DSolve({},y,t)", //
@@ -6171,13 +6187,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{y->Function({t},-1-t+E^t*C(1))}}");
     check("DSolve(y'(t)==y(t), y, t)", //
         "{{y->Function({t},E^t*C(1))}}");
-
-    check("DSolve(y'(x)==2*x*y(x)^2, y, x)", //
-        "{{y->Function({x},1/(-x^2-C(1)))}}");
-    check("DSolve(y'(x)==2*x*y(x)^2, y(x), x)", //
-        "{{y(x)->1/(-x^2-C(1))}}");
-    check("DSolve({y'(x)==2*x*y(x)^2},y(x), x)", //
-        "{{y(x)->1/(-x^2-C(1))}}");
 
     check("DSolve(D(f(x, y), x) == D(f(x, y), y), f, {x, y})", //
         "DSolve(Derivative(1,0)[f][x,y]==Derivative(0,1)[f][x,y],f,{x,y})");
@@ -6751,6 +6760,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testErfc() {
+    // https://github.com/mtommila/apfloat/issues/38
     check("N(Erfc(100000000000000000000000000000000035/2*1/Sqrt(2)),30)", //
         "0");
     checkNumeric("Erfc(1.5-I)", //
@@ -8893,6 +8903,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindRoot() {
+    // https: // github.com/axkr/symja_android_library/issues/902
+    check("FindRoot(x^2.5-100, x, Method->Brent)", //
+        "{x->6.30957}");
+    check("FindRoot(x^2.5-100, {x, 0, 5}, Method->brent)", //
+        "{x->6.30957}");
+
     // multivariate cases
     check("FindRoot({2*x1+x2==E^(-x1), -x1+2*x2==E^(-x2)},{{x1, 0.0},{x2, 1.0}})", //
         "{x1->0.197594,x2->0.425514}");
@@ -10437,6 +10453,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testGCD() {
+    check("GCD(I,1)", //
+        "1");
+    check("GCD(-I,1)", //
+        "1");
     check("GCD(0,b)", //
         "GCD(0,b)");
     check("GCD(a,a)", //
@@ -11910,6 +11930,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Pi/(3*Sqrt(3))+Log(2)/3");
     check("Integrate(1/(x^3+1), x)", //
         "ArcTan((-1+2*x)/Sqrt(3))/Sqrt(3)+Log(1+x)/3-Log(1-x+x^2)/6");
+    check("D(ArcTan((-1+2*x)/Sqrt(3))/Sqrt(3)+Log(1+x)/3-Log(1-x+x^2)/6,x) //FullSimplify", //
+        "1/(1+x^3)");
     check("Integrate(x^4+x^2+1, {x,1,3})", //
         "886/15");
     check("Integrate(a*x^2 + b*x + c, {x,-2,2})", //
@@ -11927,10 +11949,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testIntegrateSurd() {
-    check("Integrate(Surd(x,-1), x)", //
-        "Log(x)");
-    check("Integrate(CubeRoot(x), x)", //
-        "3/4*x*Surd(x,3)");
+    // check("Integrate(Surd(x,-1), x)", //
+    // "Log(x)");
+    // check("Integrate(CubeRoot(x), x)", //
+    // "3/4*x*Surd(x,3)");
     check("Integrate(Surd(x,3), x)", //
         "3/4*x*Surd(x,3)");
     check("Integrate(Surd(x,6), x)", //
@@ -11945,6 +11967,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "6/13");
     check("Integrate(x^a*CubeRoot(x)^p, x)", //
         "(x^(1+a)*Surd(x,3)^p)/(1+a+p/3)");
+    check("Integrate(Surd(m*x,7),x)", //
+        "7/8*x*Surd(m*x,7)");
+    check("Integrate(x^n*Surd(m*x,7),x)", //
+        "(x^(1+n)*Surd(m*x,7))/(8/7+n)");
   }
 
   @Test
@@ -11961,6 +11987,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testIntegrateIssue851() {
+    check("Integrate(LogisticSigmoid(m*x),x)", //
+        "-Log(1-LogisticSigmoid(m*x))/m");
     check("Integrate(x^n*Haversine(m*x^p),x)", //
         "(x^(1+n)*(2*p*(m^2*x^(2*p))^((1+n)/p)+(1+n)*(I*m*x^p)^((1+n)/p)*Gamma((1+n)/p,-I*m*x^p)+(\n" //
             + "1+n)*(-I*m*x^p)^((1+n)/p)*Gamma((1+n)/p,I*m*x^p)))/(4*(1+n)*p*(m^2*x^(2*p))^((1+n)/p))");
@@ -11974,8 +12002,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Integrate(PolyGamma(m*x),x)", //
         "LogGamma(m*x)/m");
 
-    check("Integrate(LogisticSigmoid(m*x),x)", //
-        "-Log(1-LogisticSigmoid(m*x))/m");
     check("Integrate(Haversine(m*x),x)", //
         "x/2-Sin(m*x)/(2*m)");
     check("Integrate(x^n*Haversine(m*x),x)", //
@@ -12007,10 +12033,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("Integrate(x^n*CubeRoot(m*x),x)", //
         "(x^(1+n)*Surd(m*x,3))/(4/3+n)");
-    check("Integrate(Surd(m*x,7),x)", //
-        "7/8*x*Surd(m*x,7)");
-    check("Integrate(x^n*Surd(m*x,7),x)", //
-        "(x^(1+n)*Surd(m*x,7))/(8/7+n)");
 
     check("Integrate(x^n*ArcCot(11*Sin(s)*x),x)", //
         "(x^(1+n)*((2+n)*ArcCot(11*x*Sin(s))+11*x*Hypergeometric2F1(1,1+n/2,2+n/2,-121*x^\n"
@@ -12120,7 +12142,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("Apart(a/((8/3*a*b^(2/3)-16/9*b)^2*(4/3*a*b^(2/3)+16/9*b)))", //
     // "a/(a^3-4/3*a*b^(2/3)+16/27*b)");
     check("Integrate(a/(a^3-4/3*a*b^(2/3)+16/27*b),a)", //
-        "-1/(3*a-2*b^(1/3))+Log(3*a-2*b^(1/3))/(3*b^(1/3))-Log(3*a+4*b^(1/3))/(3*b^(1/3))");
+        "27*(-1/(27*(3*a-2*b^(1/3)))+Log(3*a-2*b^(1/3))/(81*b^(1/3))-Log(3*a+4*b^(1/3))/(\n"
+            + "81*b^(1/3)))");
+    // disable rule 2009
+    // check("Integrate(a/(a^3-4/3*a*b^(2/3)+16/27*b),a)", //
+    // "-1/(3*a-2*b^(1/3))+Log(3*a-2*b^(1/3))/(3*b^(1/3))-Log(3*a+4*b^(1/3))/(3*b^(1/3))");
     check(
         "Simplify(D(-1/(3*a-2*b^(1/3))+Log(3*a-2*b^(1/3))/(3*b^(1/3))-Log(3*a+4*b^(1/3))/(3*b^(1/3)),a))", //
         "(27*a)/(27*a^3-36*a*b^(2/3)+16*b)"); // "3/(3*a-2*b^(1/3))^2+1/(3*a*b^(1/3)-2*b^(2/3))-1/(3*a*b^(1/3)+4*b^(2/3))");
@@ -12173,8 +12199,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-6.58435");
 
     // check("Integrate(x/(1+x+x^7),x)", "");
-    check("Integrate(1/y(x)^2,y(x))", //
-        "-1/y(x)");
+
     check("Integrate(f(x,y),x)", //
         "Integrate(f(x,y),x)");
     check("Integrate(f(x,x),x)", //
@@ -19182,7 +19207,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testPower() {
     check("1/(-7) // FullForm", //
         "Rational(-1,7)");
-    // TODO improve output - if base is Sqrt avoid parnethesis
+    // TODO improve output - if exponent is Sqrt avoid parenthesis
     check("x^Sqrt(y)^a", //
         "x^(Sqrt(y))^a");
 

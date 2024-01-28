@@ -1,38 +1,9 @@
 package org.matheclipse.core.integrate.rubi;
 
 
-import static org.matheclipse.core.expression.F.$s;
-import static org.matheclipse.core.expression.F.And;
-import static org.matheclipse.core.expression.F.AtomQ;
-import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.Catch;
-import static org.matheclipse.core.expression.F.CompoundExpression;
-import static org.matheclipse.core.expression.F.Function;
-import static org.matheclipse.core.expression.F.Head;
-import static org.matheclipse.core.expression.F.ISetDelayed;
-import static org.matheclipse.core.expression.F.If;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.MemberQ;
-import static org.matheclipse.core.expression.F.Not;
-import static org.matheclipse.core.expression.F.Part;
-import static org.matheclipse.core.expression.F.Return;
-import static org.matheclipse.core.expression.F.SameQ;
-import static org.matheclipse.core.expression.F.Scan;
-import static org.matheclipse.core.expression.F.Slot1;
-import static org.matheclipse.core.expression.F.Throw;
-import static org.matheclipse.core.expression.F.u_;
-import static org.matheclipse.core.expression.S.False;
-import static org.matheclipse.core.expression.S.Log;
-import static org.matheclipse.core.expression.S.Null;
-import static org.matheclipse.core.expression.S.True;
-import static org.matheclipse.core.expression.S.u;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.ComplexFreeQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.ComplexNumberQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.FractionalPowerFreeQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.FractionalPowerQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.HyperbolicQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.LogQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.TrigQ;
+import static org.matheclipse.core.expression.F.*;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.*;
+
 import org.matheclipse.core.interfaces.IAST;
 /** 
  * UtilityFunctions rules from the <a href="https://rulebasedintegration.org/">Rubi -
@@ -48,8 +19,6 @@ ISetDelayed(14,ComplexFreeQ(u_),
 ISetDelayed(15,LogQ(u_),
     SameQ(Head(u),Log)),
 ISetDelayed(16,TrigQ(u_),
-    MemberQ($s("§$trigfunctions"),If(AtomQ(u),u,Head(u)))),
-ISetDelayed(17,HyperbolicQ(u_),
-          MemberQ($s("§$hyperbolicfunctions"), If(AtomQ(u), u, Head(u))))
+    MemberQ($s("§$trigfunctions"),If(AtomQ(u),u,Head(u))))
   );
 }

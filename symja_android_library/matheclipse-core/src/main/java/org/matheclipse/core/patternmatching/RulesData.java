@@ -430,15 +430,16 @@ public final class RulesData implements Serializable {
         final boolean isTraceMode =
             Config.TRACE_REWRITE_RULE && engine.isTraceMode() && stepListener != null;
         for (IPatternMatcher patternEvaluator : fPatternDownRules) {
-          // if (patternEvaluator.fLhsPatternExpr.isAST(S.Integrate)) {
-          // LOGGER.info(((IPatternMatcher) patternEvaluator).getLHSPriority());
-          // System.out.println("Rule: " + patternEvaluator.getLHSPriority());
-          // if (patternEvaluator.getLHSPriority() >= 7301) {
-          // debug rule from here
-          // rule 7301 is CannotIntegrate on 27th JAN 2024
-          // System.out.println("Rule " + patternEvaluator.getLHSPriority() + "found!\n"
-          // + patternEvaluator.toString());
-          // }
+          if (patternEvaluator.fLhsPatternExpr.isAST(S.Integrate)) {
+            // LOGGER.info(((IPatternMatcher) patternEvaluator).getLHSPriority());
+            // System.out.println("Rule: " + patternEvaluator.getLHSPriority());
+            // if (patternEvaluator.getLHSPriority() >= 7301) {
+            // debug rule from here
+            // rule 7301 is CannotIntegrate on 27th JAN 2024
+            // System.out.println("Rule " + patternEvaluator.getLHSPriority() + "found!\n"
+            // + patternEvaluator.toString());
+          }
+
           // }
           if (patternEvaluator.isPatternHashAllowed(patternHash)) {
             pmEvaluator = patternEvaluator.copy();
@@ -460,18 +461,10 @@ public final class RulesData implements Serializable {
               }
               continue;
             }
-            // try {
             result = pmEvaluator.eval(expr, engine);
             if (result.isPresent()) {
               return result;
             }
-            // } catch (Exception ex) {
-            // // For Integrate:
-            // // org.matheclipse.core.eval.exception.TimeoutException
-            // System.out.println(ex.toString());
-            // ex.printStackTrace();
-            // throw ex;
-            // }
           }
         }
       }
@@ -627,8 +620,8 @@ public final class RulesData implements Serializable {
         IPatternMatcher.SET_DELAYED, leftHandSide, rightHandSide, false, patternHash);
     pmEvaluator.setLHSPriority(priority);
     if (fPatternDownRules == null) {
-      fPatternDownRules = new ArrayList<IPatternMatcher>(7000);
-      fPriorityDownRules = new IntArrayList(7000);
+      fPatternDownRules = new ArrayList<IPatternMatcher>(8000);
+      fPriorityDownRules = new IntArrayList(8000);
     }
     fPatternDownRules.add(pmEvaluator);
     fPriorityDownRules.add(priority);

@@ -1715,9 +1715,9 @@ public void testSystem057() {
     check("Integrate(Log(x)*x^2,x)", //
         "-x^3/9+1/3*x^3*Log(x)");
     check("Integrate((x^2+1)*Log(x),x)", //
-        "-x-x^3/9+1/3*(3*x+x^3)*Log(x)");
-    check("Simplify(D(ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1),x))",
-        "x/(1+x^3)");
+        "1/9*(-9*x-x^3)+x*Log(x)+1/3*x^3*Log(x)");
+    check("Simplify(D(1/9*(-9*x-x^3)+x*Log(x)+1/3*x^3*Log(x),x))",
+        "(1+x^2)*Log(x)");
 
     check("Integrate(x/(x^3+1),x)", //
         "ArcTan((-1+2*x)/Sqrt(3))/Sqrt(3)-Log(1+x)/3+Log(1-x+x^2)/6");
@@ -1773,9 +1773,9 @@ public void testSystem057() {
     check("D(2*E^x-Gamma(3,-x),x)", //
         "2*E^x-E^x*x^2");
     check("Integrate((x^2+1)*Log(x),x)", //
-        "-x-x^3/9+1/3*(3*x+x^3)*Log(x)");
-    check("D(-x-Gamma(2,-3*Log(x))/9+x*Log(x),x)", //
-        "Log(x)+x^2*Log(x)");
+        "1/9*(-9*x-x^3)+x*Log(x)+1/3*x^3*Log(x)");
+    check("Simplify(D(1/9*(-9*x-x^3)+x*Log(x)+1/3*x^3*Log(x),x))", //
+        "(1+x^2)*Log(x)");
 
     check("Apart(2*x^2/(x^3+1))", //
         "2/3*1/(1+x)+2/3*(-1+2*x)/(1-x+x^2)");

@@ -18,12 +18,10 @@ import static org.matheclipse.core.expression.F.Function;
 import static org.matheclipse.core.expression.F.Head;
 import static org.matheclipse.core.expression.F.ISetDelayed;
 import static org.matheclipse.core.expression.F.If;
-import static org.matheclipse.core.expression.F.IntegerQ;
 import static org.matheclipse.core.expression.F.Integrate;
 import static org.matheclipse.core.expression.F.Length;
 import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Module;
-import static org.matheclipse.core.expression.F.Or;
 import static org.matheclipse.core.expression.F.Part;
 import static org.matheclipse.core.expression.F.Reap;
 import static org.matheclipse.core.expression.F.Return;
@@ -47,7 +45,6 @@ import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.EveryQ;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.HalfIntegerQ;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.IntHide;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Map2;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.RationalQ;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.ReapList;
 import org.matheclipse.core.interfaces.IAST;
 /** 
@@ -66,10 +63,7 @@ ISetDelayed(3,Map2($p("func"),$p("lst1"),$p("lst2")),
 ISetDelayed(4,ReapList(u_),
     With(list(Set($s("lst"),Part(Reap(u),C2))),If(SameQ($s("lst"),List()),$s("lst"),Part($s("lst"),C1)))),
 ISetDelayed(5,HalfIntegerQ($ps("u")),
-    SameQ(Scan(Function(If(And(SameQ(Head(Slot1),Rational),Equal(Denominator(Slot1),C2)),Null,Return(False))),list(u)),Null)),
-ISetDelayed(6,RationalQ($ps("u")),
-          SameQ(Scan(
-              Function(If(Or(IntegerQ(Slot1), SameQ(Head(Slot1), Rational)), Null, Return(False))),
-              list(u)), Null))
+          SameQ(Scan(Function(If(And(SameQ(Head(Slot1), Rational), Equal(Denominator(Slot1), C2)),
+              Null, Return(False))), list(u)), Null))
   );
 }
