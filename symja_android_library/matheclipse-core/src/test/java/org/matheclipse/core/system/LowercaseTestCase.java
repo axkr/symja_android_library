@@ -11949,10 +11949,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testIntegrateSurd() {
-    // check("Integrate(Surd(x,-1), x)", //
-    // "Log(x)");
-    // check("Integrate(CubeRoot(x), x)", //
-    // "3/4*x*Surd(x,3)");
+    check("Integrate(Surd(x,-1), x)", //
+        "Log(x)");
+    check("Integrate(CubeRoot(x), x)", //
+        "3/4*x*Surd(x,3)");
     check("Integrate(Surd(x,3), x)", //
         "3/4*x*Surd(x,3)");
     check("Integrate(Surd(x,6), x)", //

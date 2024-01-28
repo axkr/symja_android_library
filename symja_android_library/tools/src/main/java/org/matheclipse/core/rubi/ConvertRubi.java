@@ -143,6 +143,69 @@ public class ConvertRubi {
   // return expr;
   // }
 
+  public static void appendSetToBuffer(IAST ast, StringBuffer buffer, boolean last,
+      IASTAppendable listOfRules) {
+    if (ast.get(1).topHead().toString().equalsIgnoreCase("Int")) {
+      IAST integrate = (IAST) ast.get(1);
+      if (integrate.get(1).isPlus()) {
+        System.out.println(ast.toString());
+        return;
+      }
+    }
+
+    IExpr leftHandSide = ast.get(1);
+    IExpr rightHandSide = ast.arg2();
+    // if (!rightHandSide.isFree(x -> x.topHead().toString().equalsIgnoreCase("unintegrable"),
+    // true)) {
+    // System.out.println("IGNORED: " + ast.toString());
+    // } else {
+
+    GLOBAL_COUNTER++;
+    // System.out.println(leftHandSide.toString());
+    if (ast.get(1).isAST()) {
+      // leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, EvalEngine.get());
+      IExpr temp = leftHandSide;
+
+      if (leftHandSide.topHead().toString().equalsIgnoreCase("int")) {
+        if (temp.size() == 3) {
+          ((IASTMutable) temp).set(0, S.Integrate);
+        }
+        buffer.append("IIntegrate(" + GLOBAL_COUNTER + ",");
+      } else {
+        try {
+          leftHandSide = EvalEngine.get().evalHoldPattern((IAST) temp);
+        } catch (Exception ex) {
+          System.out.println("GLOBAL_COUNTER: " + GLOBAL_COUNTER);
+          ex.printStackTrace();
+          leftHandSide = temp;
+        }
+        buffer.append("ISet(");
+      }
+    } else {
+      buffer.append("ISet(");
+    }
+    buffer.append(leftHandSide.internalFormString(true, 0));
+    buffer.append(",\n    ");
+
+    // if (rightHandSide.topHead().toString().equalsIgnoreCase("CompoundExpression")) {
+    // System.out.println(rightHandSide.toString());
+    // }
+    ISymbol s = F.symbol("Int");
+    IExpr temp = ast.arg2().replaceAll(F.Rule(s, S.Integrate)); // F.$s("AbortRubi")));
+    if (temp.isPresent()) {
+      rightHandSide = temp;
+    }
+    // for Rubi patternExpression must be set to true in internalFormString() for right-hand-side
+    buffer.append(rightHandSide.internalFormString(true, 0));
+    if (last) {
+      buffer.append(")\n");
+    } else {
+      buffer.append("),\n");
+    }
+    // }
+    listOfRules.append(F.List(leftHandSide, rightHandSide));
+  }
+
   public static void appendSetDelayedToBuffer(IAST ast, StringBuffer buffer, boolean last,
       IASTAppendable listOfRules) {
     if (ast.get(1).topHead().toString().equalsIgnoreCase("Int")) {

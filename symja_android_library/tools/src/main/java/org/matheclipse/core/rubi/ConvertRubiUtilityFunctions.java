@@ -106,6 +106,10 @@ public class ConvertRubiUtilityFunctions {
       IAST ast = (IAST) expr;
       addToFunctionSet(ast, functionSet);
       ConvertRubi.appendSetDelayedToBuffer(ast, buffer, last, listOfRules);
+      // } else if (expr.isAST(S.Set, 3)) {
+      // IAST ast = (IAST) expr;
+      // addToFunctionSet(ast, functionSet);
+      // ConvertRubi.appendSetToBuffer(ast, buffer, last, listOfRules);
     } else if (expr.isAST(S.If, 4)) {
       IAST ast = (IAST) expr;
       if (ast.get(1).toString().equals("§showsteps")) {
@@ -114,6 +118,10 @@ public class ConvertRubiUtilityFunctions {
           ast = (IAST) expr;
           addToFunctionSet(ast, functionSet);
           ConvertRubi.appendSetDelayedToBuffer(ast, buffer, last, listOfRules);
+          // } else if (expr.isAST(S.Set, 3)) {
+          // ast = (IAST) expr;
+          // addToFunctionSet(ast, functionSet);
+          // ConvertRubi.appendSetToBuffer(ast, buffer, last, listOfRules);
         }
       }
     }
