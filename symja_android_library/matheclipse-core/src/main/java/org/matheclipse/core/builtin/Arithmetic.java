@@ -2835,7 +2835,8 @@ public final class Arithmetic {
    * 30
    * </pre>
    */
-  public static class Plus extends AbstractArgMultiple implements IRewrite, INumeric {
+  public static class Plus extends AbstractArgMultiple
+      implements IRewrite, INumeric {
 
     private static HashedOrderlessMatcherPlus PLUS_ORDERLESS_MATCHER;
 
@@ -4175,6 +4176,17 @@ public final class Arithmetic {
           // E^Log(x_) := x
           return exponent.first();
         }
+        if (exponent.isDirectedInfinity()) {
+          if (exponent.isDirectedInfinity(F.CI)) {
+            return S.Indeterminate;
+          }
+          if (exponent.isDirectedInfinity(F.CNI)) {
+            return S.Indeterminate;
+          }
+          if (exponent.isComplexInfinity()) {
+            return S.Indeterminate;
+          }
+        }
         if (exponent.isPlusTimesPower()) {
           IExpr expandedFunction = F.evalExpand(exponent);
           if (expandedFunction.isPlus()) {
@@ -4321,6 +4333,14 @@ public final class Arithmetic {
               return F.Power(base.base(), exponent.times(base.exponent()));
             }
             return F.Power(base.base(), F.Times(exponent, base.exponent()));
+          }
+        }
+        if (exponent.isMinusOne()) {
+          if (base.equals(F.Overflow())) {
+            return F.Underflow();
+          }
+          if (base.equals(F.Underflow())) {
+            return F.Overflow();
           }
         }
       }

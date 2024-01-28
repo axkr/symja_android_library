@@ -6752,7 +6752,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testErfc() {
     check("N(Erfc(100000000000000000000000000000000035/2*1/Sqrt(2)),30)", //
-        "Overflow()");
+        "0");
     checkNumeric("Erfc(1.5-I)", //
         "-0.07839920749893345+I*(-0.02796371123865584)");
     check("Erfc({0.5, 1.0, 1.5})", //

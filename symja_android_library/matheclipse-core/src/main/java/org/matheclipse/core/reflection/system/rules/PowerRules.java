@@ -13,7 +13,7 @@ public class PowerRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 5, 5 };
+  final public static int[] SIZES = { 2, 3 };
 
   final public static IAST RULES = List(
     IInit(Power, SIZES),
@@ -31,21 +31,6 @@ public class PowerRules {
       Module(list(Set(r,Re(c)),Set(j,Im(c))),Condition(If(EvenQ(j),C1,CN1),And(Equal(r,C0),IntegerQ(j))))),
     // E^(Pi*c_Complex+x_):=Module({r=Re(c),j=Im(c)},If(EvenQ(j),E^x,-E^x)/;r==0&&IntegerQ(j))
     ISetDelayed(Exp(Plus(Times(Pi,$p(c,Complex)),x_)),
-      Module(list(Set(r,Re(c)),Set(j,Im(c))),Condition(If(EvenQ(j),Exp(x),Negate(Exp(x))),And(Equal(r,C0),IntegerQ(j))))),
-    // E^I*Infinity=Indeterminate
-    ISet(Exp(DirectedInfinity(CI)),
-      Indeterminate),
-    // E^-I*Infinity=Indeterminate
-    ISet(Exp(DirectedInfinity(CNI)),
-      Indeterminate),
-    // E^ComplexInfinity=Indeterminate
-    ISet(Exp(CComplexInfinity),
-      Indeterminate),
-    // 1/Overflow():=Underflow()
-    ISetDelayed(Power(Overflow(),CN1),
-      Underflow()),
-    // 1/Underflow():=Overflow()
-    ISetDelayed(Power(Underflow(),CN1),
-      Overflow())
+      Module(list(Set(r,Re(c)),Set(j,Im(c))),Condition(If(EvenQ(j),Exp(x),Negate(Exp(x))),And(Equal(r,C0),IntegerQ(j)))))
   );
 }
