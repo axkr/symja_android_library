@@ -18579,6 +18579,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolyLog() {
+    check("PolyLog(2,E^(4*I*Pi))", //
+        "Pi^2/6");
+    check("PolyLog(2,E^(42*I*Pi))", //
+        "Pi^2/6");
+    check("PolyLog(2,E^(41*I*Pi))", //
+        "-Pi^2/12");
     // TODO https://github.com/mtommila/apfloat/issues/34
     // check("PolyLog(2147483647,-3.1415)", //
     // " ");
