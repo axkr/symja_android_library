@@ -58,7 +58,7 @@ public class UtilityFunctionCtors {
   // public static ISymbol IntegerPowerQ = F.$rubi("IntegerPowerQ");
   // public static ISymbol FractionalPowerQ = F.$rubi("FractionalPowerQ");
 
-  public static ISymbol EqQ = F.$rubi("EqQ");
+  // public static ISymbol EqQ = F.$rubi("EqQ");
   public static ISymbol GeQ = F.$rubi("GeQ");
   public static ISymbol GtQ = F.$rubi("GtQ");
   public static ISymbol IGtQ = F.$rubi("IGtQ");
@@ -69,7 +69,7 @@ public class UtilityFunctionCtors {
   public static ISymbol LtQ = F.$rubi("LtQ");
   public static ISymbol LeQ = F.$rubi("LeQ");
   public static ISymbol NegQ = F.$rubi("NegQ");
-  public static ISymbol NeQ = F.$rubi("NeQ");
+  // public static ISymbol NeQ = F.$rubi("NeQ");
   public static ISymbol PolyQ = F.$rubi("PolyQ");
   public static ISymbol PosQ = F.$rubi("PosQ");
 
@@ -417,6 +417,23 @@ public class UtilityFunctionCtors {
   public static IAST EasyDQ(final IExpr a0, final IExpr a1) {
     return F.binaryAST2(F.$rubi("EasyDQ"), a0, a1);
   }
+
+  static ISymbol EqQ = F.$rubi("EqQ", new AbstractCoreFunctionEvaluator() {
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        // TODO implement Refine
+        // Or(Quiet(PossibleZeroQ(Subtract(u,v))),SameQ(Refine(Equal(u,v)),True)))
+        IExpr u = ast.arg1();
+        IExpr v = ast.arg2();
+        if (u.equals(v)) {
+          return S.True;
+        }
+        return u.subtract(v).isPossibleZero(true) ? S.True : S.False;
+      }
+      return S.False;
+    }
+  });
 
   public static final class EqQ extends B2 {
     public EqQ() {
@@ -1322,6 +1339,24 @@ public class UtilityFunctionCtors {
   public static IAST NegSumBaseQ(final IExpr a0) {
     return F.unaryAST1(F.$rubi("NegSumBaseQ"), a0);
   }
+
+
+  static ISymbol NeQ = F.$rubi("NeQ", new AbstractCoreFunctionEvaluator() {
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        // TODO implement Refine
+        // ! Or(Quiet(PossibleZeroQ(Subtract(u,v))),SameQ(Refine(Equal(u,v)),True)))
+        IExpr u = ast.arg1();
+        IExpr v = ast.arg2();
+        if (u.equals(v)) {
+          return S.False;
+        }
+        return u.subtract(v).isPossibleZero(true) ? S.False : S.True;
+      }
+      return S.True;
+    }
+  });
 
   private static final class NeQ extends B2 {
     public NeQ() {
