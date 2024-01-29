@@ -55,8 +55,8 @@ public class UtilityFunctionCtors {
   public static final ISymbol Z = initFinalHiddenSymbol("Z");
 
   public static ISymbol Dist = F.$rubi("Dist");
-  public static ISymbol IntegerPowerQ = F.$rubi("IntegerPowerQ");
-  public static ISymbol FractionalPowerQ = F.$rubi("FractionalPowerQ");
+  // public static ISymbol IntegerPowerQ = F.$rubi("IntegerPowerQ");
+  // public static ISymbol FractionalPowerQ = F.$rubi("FractionalPowerQ");
 
   public static ISymbol EqQ = F.$rubi("EqQ");
   public static ISymbol GeQ = F.$rubi("GeQ");
@@ -166,6 +166,7 @@ public class UtilityFunctionCtors {
       return S.False;
     }
   });
+
   static ISymbol NonsumQ = F.$rubi("NonsumQ", new AbstractCoreFunctionEvaluator() {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -176,6 +177,30 @@ public class UtilityFunctionCtors {
       return S.False;
     }
   });
+
+  public static ISymbol IntegerPowerQ =
+      F.$rubi("IntegerPowerQ", new AbstractCoreFunctionEvaluator() {
+        @Override
+        public IExpr evaluate(IAST ast, EvalEngine engine) {
+          if (ast.argSize() == 1) {
+            IExpr arg1 = engine.evaluate(ast.arg1());
+            return arg1.isPower() && arg1.exponent().isInteger() ? S.True : S.False;
+          }
+          return S.False;
+        }
+      });
+
+  public static ISymbol FractionalPowerQ =
+      F.$rubi("FractionalPowerQ", new AbstractCoreFunctionEvaluator() {
+        @Override
+        public IExpr evaluate(IAST ast, EvalEngine engine) {
+          if (ast.argSize() == 1) {
+            IExpr arg1 = engine.evaluate(ast.arg1());
+            return arg1.isPower() && arg1.exponent().isFraction() ? S.True : S.False;
+          }
+          return S.False;
+        }
+      });
 
   public static IAST F(final IExpr a0) {
     return F.unaryAST1(F.FSymbol, a0);
