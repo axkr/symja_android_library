@@ -444,7 +444,7 @@ public class UtilityFunctionCtors {
         }
         return arg1.subtract(arg2).isPossibleZero(true) ? S.False : S.True;
       }
-      return S.False;
+      return S.True;
     }
   });
 
