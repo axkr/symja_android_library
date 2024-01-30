@@ -2450,12 +2450,12 @@ public final class NumberTheory {
             double dN = n.evalf();
             double doubleH = h.evalf();
             if (h.isZero()) {
-              while (engine.evalTrue(F.Greater(n, F.C0))) {
+              while (n.isPositive()) {// engine.evalTrue(F.Greater(n, F.C0))) {
                 result = result.multiply(x);
                 n = n.dec();
               }
               return result;
-            } else if (engine.evalTrue(F.Greater(h, F.C0))) {
+            } else if (h.isPositive()) {// engine.evalTrue(F.Greater(h, F.C0))) {
               long iterationLimit = EvalEngine.get().getIterationLimit();
               long k = 0L;
               double i = real - (dN - 1) * doubleH;
