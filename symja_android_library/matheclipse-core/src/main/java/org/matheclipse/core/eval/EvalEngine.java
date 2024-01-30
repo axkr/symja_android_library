@@ -44,6 +44,7 @@ import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.AbstractAST.NILPointer;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.BuiltinFunctionCalls;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
@@ -1064,11 +1065,31 @@ public class EvalEngine implements Serializable {
               return result;
             }
           } else {
-
-            IExpr result = fNumericMode ? functionEvaluator.numericEval(newAST, this)
-                : functionEvaluator.evaluate(newAST, this);
-            if (result.isPresent()) {
-              return result;
+            if (Config.PROFILE_MODE) {
+              long beginTime = System.nanoTime();
+              try {
+                IExpr result = fNumericMode ? functionEvaluator.numericEval(newAST, this)
+                    : functionEvaluator.evaluate(newAST, this);
+                if (result.isPresent()) {
+                  return result;
+                }
+              } finally {
+                long endTime = System.nanoTime();
+                BuiltinFunctionCalls calls = new BuiltinFunctionCalls(symbol);
+                BuiltinFunctionCalls b = Config.PRINT_PROFILE.get(calls);
+                if (b == null) {
+                  Config.PRINT_PROFILE.put(calls, calls);
+                } else {
+                  calls = b;
+                }
+                calls.incCalls(endTime - beginTime);
+              }
+            } else {
+              IExpr result = fNumericMode ? functionEvaluator.numericEval(newAST, this)
+                  : functionEvaluator.evaluate(newAST, this);
+              if (result.isPresent()) {
+                return result;
+              }
             }
           }
         } catch (ValidateException ve) {
@@ -2932,6 +2953,7 @@ public class EvalEngine implements Serializable {
   public int getOutputSizeLimit() {
     return fOutputSizeLimit;
   }
+
   /**
    * Get the reap list object associated to the most enclosing <code>Reap()</code> statement. The
    * even indices in <code>java.util.List</code> contain the tag defined in <code>Sow()</code>. If

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -12,6 +13,7 @@ import org.apfloat.Apfloat;
 import org.apfloat.ApfloatContext;
 import org.hipparchus.util.Precision;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.BuiltinFunctionCalls;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
@@ -378,6 +380,11 @@ public class Config {
 
   public static Consumer<IExpr> PRINT_OUT = x -> {
   };
+
+  public final static boolean PROFILE_MODE = false;
+
+  public static HashMap<BuiltinFunctionCalls, BuiltinFunctionCalls> PRINT_PROFILE =
+      PROFILE_MODE ? new HashMap<BuiltinFunctionCalls, BuiltinFunctionCalls>() : null;
 
   /** The algorithm which should be used for the factorization of integer numbers. */
   // public static Function<IInteger, IAST> FACTOR_INTEGER = Primality::factorIInteger;

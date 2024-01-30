@@ -2018,8 +2018,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public IExpr evaluate(EvalEngine engine) {
     final IExpr head = head();
     if (head instanceof IBuiltInSymbol) {
-      final IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
+      IBuiltInSymbol symbol = (IBuiltInSymbol) head;
+      final IEvaluator evaluator = symbol.getEvaluator();
       if (evaluator instanceof ICoreFunctionEvaluator) {
+        if (isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+          return F.NIL;
+        }
         try {
           ICoreFunctionEvaluator functionEvaluator = (ICoreFunctionEvaluator) evaluator;
           EvalEngine.OptionsResult opres = engine.checkBuiltinArguments(this, functionEvaluator);
@@ -2027,7 +2031,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
             return F.NIL;
           }
           IAST ast = opres.result;
-          IBuiltInSymbol header = ((IBuiltInSymbol) head);
+          IBuiltInSymbol header = symbol;
           if ((header.getAttributes() & ISymbol.SEQUENCEHOLD) != ISymbol.SEQUENCEHOLD) {
             IExpr temp;
             if ((temp = F.flattenSequence(this)).isPresent()) {
@@ -2044,6 +2048,22 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           IExpr evaluateTemp = evalEvaluate(engine);
           if (evaluateTemp.isPresent()) {
             return evaluateTemp;
+          }
+          if (Config.PROFILE_MODE) {
+            long beginTime = System.nanoTime();
+            try {
+              return functionEvaluator.evaluate(ast, engine);
+            } finally {
+              long endTime = System.nanoTime();
+              BuiltinFunctionCalls calls = new BuiltinFunctionCalls(symbol);
+              BuiltinFunctionCalls b = Config.PRINT_PROFILE.get(calls);
+              if (b == null) {
+                Config.PRINT_PROFILE.put(calls, calls);
+              } else {
+                calls = b;
+              }
+              calls.incCalls(endTime - beginTime);
+            }
           }
           return functionEvaluator.evaluate(ast, engine);
         } catch (ValidateException ve) {

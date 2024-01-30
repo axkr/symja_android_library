@@ -13,6 +13,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.BuiltinFunctionCalls;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
@@ -11923,6 +11924,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "ArcTanh(1/Sqrt(3))");
     check("Integrate((1 + x^3)*x^(1/3), {x, -1, 1})", //
         "51/52+27/52*(-1)^(1/3)");
+    if (Config.PROFILE_MODE) {
+      BuiltinFunctionCalls.printStatistics();
+    }
   }
 
   @Test
