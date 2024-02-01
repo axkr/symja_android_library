@@ -4314,12 +4314,32 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is the function <code>Power[&lt;arg1&gt;, &lt;arg2&gt;]</code>
+   * Test if this expression is the function <code>Power(&lt;base&gt;, &lt;exponent&gt;)</code>
    *
    * @return
    */
   default boolean isPower() {
     return false;
+  }
+
+  /**
+   * Test if this expression is the function <code>Power(&lt;base&gt;, &lt;exponent&gt;)</code> with
+   * exponent of type {@link IFraction}.
+   *
+   * @return
+   */
+  default boolean isPowerFraction() {
+    return isPower() && exponent().isFraction();
+  }
+
+  /**
+   * Test if this expression is the function <code>Power(&lt;base&gt;, &lt;exponent&gt;)</code> with
+   * exponent of type {@link IInteger}.
+   *
+   * @return
+   */
+  default boolean isPowerInteger() {
+    return isPower() && exponent().isInteger();
   }
 
   /**

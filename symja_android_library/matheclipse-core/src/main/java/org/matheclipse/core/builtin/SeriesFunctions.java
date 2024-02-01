@@ -483,7 +483,7 @@ public class SeriesFunctions {
             }
           }
         }
-        if (numerator.isPower() && numerator.exponent().isFraction()) {
+        if (numerator.isPowerFraction()) {
           return lHospitalesRuleWithNumeratorRoot((IAST) numerator, denominator, data, engine);
         }
         IExpr expr =

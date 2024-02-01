@@ -113,7 +113,7 @@ public class PolynomialHomogenization {
     }
 
     private IExpr rewriteEvenCosSinFunctions(IExpr x) {
-      if (x.isPower() && x.exponent().isInteger() && x.base().isAST1()) {
+      if (x.isPowerInteger() && x.base().isAST1()) {
         int[] array = statsMap.get(x.base().first());
         if (array != null) {
           boolean rewriteToSin = array[DECISION] > 0;

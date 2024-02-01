@@ -184,7 +184,7 @@ public class UtilityFunctionCtors {
         public IExpr evaluate(IAST ast, EvalEngine engine) {
           if (ast.argSize() == 1) {
             IExpr arg1 = engine.evaluate(ast.arg1());
-            return arg1.isPower() && arg1.exponent().isInteger() ? S.True : S.False;
+            return arg1.isPowerInteger() ? S.True : S.False;
           }
           return S.False;
         }
@@ -196,7 +196,7 @@ public class UtilityFunctionCtors {
         public IExpr evaluate(IAST ast, EvalEngine engine) {
           if (ast.argSize() == 1) {
             IExpr arg1 = engine.evaluate(ast.arg1());
-            return arg1.isPower() && arg1.exponent().isFraction() ? S.True : S.False;
+            return arg1.isPowerFraction() ? S.True : S.False;
           }
           return S.False;
         }

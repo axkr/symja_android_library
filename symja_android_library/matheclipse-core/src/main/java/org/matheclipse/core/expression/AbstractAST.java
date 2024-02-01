@@ -3511,7 +3511,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (symbol.equals(S.Floor) || symbol.equals(S.Ceiling) || symbol.equals(S.IntegerPart)) {
       return true;
     }
-    if (isPower() && exponent().isInteger() && base().isPositive()) {
+    if (isPowerInteger() && base().isPositive()) {
       if (base().isIntegerResult()) {
         return true;
       }
@@ -4282,7 +4282,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (symbol.equals(S.Floor) || symbol.equals(S.Ceiling) || symbol.equals(S.IntegerPart)) {
       return true;
     }
-    if (isPower() && arg2().isInteger() && arg2().isPositive()) {
+    if (isPowerInteger() && exponent().isPositive()) {
       if (arg1().isRationalResult()) {
         return true;
       }

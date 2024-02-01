@@ -34,7 +34,7 @@ public class HashedOrderlessMatcherTimes extends HashedOrderlessMatcher {
   protected void createSpecialHashValues(final IAST orderlessAST, int[] hashValues) {
     for (int i = 0; i < hashValues.length; i++) {
       IExpr temp = orderlessAST.get(i + 1);
-      if (temp.isPower() && temp.exponent().isInteger()) {
+      if (temp.isPowerInteger()) {
         hashValues[i] = temp.base().accept(HashValueVisitor.HASH_VALUE_VISITOR);
       } else {
         hashValues[i] = temp.accept(HashValueVisitor.HASH_VALUE_VISITOR);
@@ -59,13 +59,13 @@ public class HashedOrderlessMatcherTimes extends HashedOrderlessMatcher {
     IExpr temp;
     IExpr arg1 = orderlessAST.get(i + 1);
     IReal num1 = F.C1;
-    if (arg1.isPower() && arg1.exponent().isInteger()) {
+    if (arg1.isPowerInteger()) {
       num1 = (IReal) arg1.exponent();
       arg1 = arg1.base();
     }
     IExpr arg2 = orderlessAST.get(j + 1);
     IReal num2 = F.C1;
-    if (arg2.isPower() && arg2.exponent().isInteger()) {
+    if (arg2.isPowerInteger()) {
       num2 = (IReal) arg2.exponent();
       arg2 = arg2.base();
     }

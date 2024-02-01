@@ -3,7 +3,6 @@ package org.matheclipse.core.sympy.series;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.sympy.exception.ValueError;
@@ -25,10 +24,10 @@ public class Gruntz {
     // la = a.exp
     // if isinstance(b, Basic) and (isinstance(b, exp) or (b.is_Pow and b.base == S.Exp1)):
     // lb = b.exp
-    if (a.isPower() && a.base().equals(S.E)) {
+    if (a.isExp()) {
       la = a.exponent();
     }
-    if (b.isPower() && b.base().equals(S.E)) {
+    if (b.isExp()) {
       lb = b.exponent();
     }
     IExpr div = F.eval(F.Divide(la, lb));

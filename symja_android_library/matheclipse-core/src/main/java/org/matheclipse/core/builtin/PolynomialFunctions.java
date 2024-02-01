@@ -164,7 +164,7 @@ public class PolynomialFunctions {
       // for (int i = 1; i < arg2AST.size(); i++) {
       // long value = 1L;
       // IExpr a1 = arg2AST.get(i);
-      // if (a1.isPower() && a1.exponent().isInteger()) {
+      // if (a1.isPowerInteger()) {
       // a1 = arg2AST.get(i).base();
       // IInteger ii = (IInteger) arg2AST.get(i).exponent();
       // try {

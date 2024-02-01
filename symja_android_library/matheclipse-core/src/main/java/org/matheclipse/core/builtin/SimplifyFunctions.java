@@ -216,7 +216,7 @@ public class SimplifyFunctions {
           // check the arguments
           return ast.forAll(x -> x.accept(this));
         }
-        if (ast.isPower() && (ast.exponent().isInteger())) {
+        if (ast.isPowerInteger()) {
           // check the arguments
           return ast.base().accept(this);
         }

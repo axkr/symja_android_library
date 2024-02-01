@@ -151,7 +151,7 @@ public class Algebra {
         IAST timesAST = (IAST) expr;
         for (int i = 1; i < timesAST.size(); i++) {
           final IExpr arg = timesAST.get(i);
-          if (arg.isPower() && arg.exponent().isInteger()) {
+          if (arg.isPowerInteger()) {
             if (!arg.base().isNumber()) {
               map.put(arg.base(), (IInteger) arg.exponent());
             }
@@ -161,7 +161,7 @@ public class Algebra {
             }
           }
         }
-      } else if (expr.isPower() && expr.exponent().isInteger()) {
+      } else if (expr.isPowerInteger()) {
         if (!expr.base().isNumber()) {
           map.put(expr.base(), (IInteger) expr.exponent());
         }
@@ -184,7 +184,7 @@ public class Algebra {
             boolean foundValue = false;
             for (int i = 1; i < timesAST.size(); i++) {
               final IExpr arg = timesAST.get(i);
-              if (arg.isPower() && arg.exponent().isInteger()) {
+              if (arg.isPowerInteger()) {
                 if (arg.base().equals(key)) {
                   IInteger value = entry.getValue();
                   IInteger exponent = (IInteger) arg.exponent();
@@ -230,7 +230,7 @@ public class Algebra {
           while (iter.hasNext()) {
             Map.Entry<IExpr, IInteger> entry = iter.next();
             final IExpr key = entry.getKey();
-            if (expr.isPower() && expr.exponent().isInteger()) {
+            if (expr.isPowerInteger()) {
               if (!expr.base().equals(key)) {
                 iter.remove();
                 if (map.size() == 0) {
@@ -731,8 +731,7 @@ public class Algebra {
         // use long values see: https://lgtm.com/rules/7900075/
         long numerExponent = 1L;
         long denominatorExponent = 1L;
-        if (((numerator.isPower() && numerator.exponent().isInteger()) //
-            || (denominator.isPower() && denominator.exponent().isInteger()))) {
+        if (numerator.isPowerInteger() || denominator.isPowerInteger()) {
           if (numerator.isPower()) {
             numerExponent = numerator.exponent().toIntDefault();
             numerator = numerator.base();
@@ -3280,8 +3279,7 @@ public class Algebra {
         }
         try {
           List<IExpr> varList = eVar.getVarList().copyTo();
-          JASConvert<BigRational> jas =
-              new JASConvert<BigRational>(varList, BigRational.ZERO);
+          JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
           GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
           GenPolynomial<BigRational> temp;
           GreatestCommonDivisorAbstract<BigRational> factory =

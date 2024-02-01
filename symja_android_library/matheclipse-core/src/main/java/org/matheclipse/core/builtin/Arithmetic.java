@@ -2835,8 +2835,7 @@ public final class Arithmetic {
    * 30
    * </pre>
    */
-  public static class Plus extends AbstractArgMultiple
-      implements IRewrite, INumeric {
+  public static class Plus extends AbstractArgMultiple implements IRewrite, INumeric {
 
     private static HashedOrderlessMatcherPlus PLUS_ORDERLESS_MATCHER;
 
@@ -4239,8 +4238,7 @@ public final class Arithmetic {
         } else if (exponent.isTimes()) {
           IAST logBase = F.Log(base);
           IAST times = (IAST) ast.exponent();
-          int index = times
-              .indexOf(x -> x.isPower() && x.first().equals(logBase) && x.exponent().isInteger());
+          int index = times.indexOf(x -> x.isPowerInteger() && x.base().equals(logBase));
           if (index > 0) {
             // x ^ (rest_ * Log(x) ^ intExponent) ==> E ^ (rest * Log(x) ^ (intExponent+1))
             IAST pow = (IAST) times.get(index);

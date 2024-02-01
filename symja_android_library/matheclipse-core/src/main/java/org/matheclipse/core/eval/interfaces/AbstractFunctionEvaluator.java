@@ -373,7 +373,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
           timesAppendable.set(i, negativeExpr);
           neg = neg.negate();
         }
-      } else if (arg.isPower() && arg.base().isPlus() && arg.exponent().isInteger()) {
+      } else if (arg.isPowerInteger() && arg.base().isPlus()) {
         long exponent = arg.exponent().toLongDefault();
         if (exponent != Long.MIN_VALUE) {
           IExpr negativeExpr = getNormalizedNegativePlus((IAST) arg.base(), true);
