@@ -42,6 +42,9 @@ public class FunctionExpandRules {
     // ArcSin(1/x_):=ArcCsc(x)
     SetDelayed(ArcSin(Power(x_,CN1)),
       ArcCsc(x)),
+    // Beta(y_,z_,a_,b_):=-Beta(y,a,b)+Beta(z,a,b)
+    SetDelayed(Beta(y_,z_,a_,b_),
+      Plus(Negate(Beta(y,a,b)),Beta(z,a,b))),
     // BetaRegularized(z_,a_,b_):=(Beta(z,a,b)*Gamma(a+b))/(Gamma(a)*Gamma(b))
     SetDelayed(BetaRegularized(z_,a_,b_),
       Times(Beta(z,a,b),Power(Times(Gamma(a),Gamma(b)),CN1),Gamma(Plus(a,b)))),

@@ -1643,6 +1643,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testBeta() {
+    // https://functions.wolfram.com/GammaBetaErf/Beta4/03/01/03/0003/
+    check("Beta(z, 1, a, 3)", //
+        "Beta(a,3)-Beta(z,a,3)");
+
     // TODO https://github.com/mtommila/apfloat/issues/31
     // checkNumeric("Beta(-0.5,101/(1+Sqrt(5)),1317624576693539401)", //
     // "");
@@ -11146,6 +11150,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometric2F1() {
+    check("Hypergeometric2F1(a, a + 1/2, 2*a, z)", //
+        "(1+Sqrt(1-z))^(1-2*a)/(2^(1-2*a)*Sqrt(1-z))");
+
     // https://github.com/mtommila/apfloat/issues/29
     checkNumeric("Hypergeometric2F1(-3.0, -1, -2, 1.0)", //
         "-0.5");

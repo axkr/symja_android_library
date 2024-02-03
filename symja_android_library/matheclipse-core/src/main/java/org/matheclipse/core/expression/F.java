@@ -2541,12 +2541,40 @@ public class F extends S {
     return new AST2(BesselK, a0, a1);
   }
 
-  public static IAST Beta(final IExpr a0, final IExpr a1) {
-    return new AST2(Beta, a0, a1);
+  /**
+   * Beta function
+   * 
+   * @param a
+   * @param b
+   * @return
+   */
+  public static IAST Beta(final IExpr a, final IExpr b) {
+    return new AST2(Beta, a, b);
   }
 
-  public static IAST Beta(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(Beta, a0, a1, a2);
+  /**
+   * Incomplete Beta function
+   * 
+   * @param z
+   * @param a
+   * @param b
+   * @return
+   */
+  public static IAST Beta(final IExpr z, final IExpr a, final IExpr b) {
+    return new AST3(Beta, z, a, b);
+  }
+
+  /**
+   * Generalized incomplete Beta function
+   * 
+   * @param z1
+   * @param z2
+   * @param a
+   * @param b
+   * @return
+   */
+  public static IAST Beta(final IExpr z1, final IExpr z2, final IExpr a, final IExpr b) {
+    return quaternary(Beta, z1, z2, a, b);
   }
 
   public static IAST BetaRegularized(final IExpr a0, final IExpr a1, final IExpr a2) {

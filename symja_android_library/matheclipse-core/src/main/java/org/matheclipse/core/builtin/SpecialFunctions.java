@@ -101,79 +101,48 @@ public class SpecialFunctions {
     }
   }
 
-  private static class Beta extends AbstractFunctionEvaluator {
+  private static class Beta extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.argSize() == 3) {
+      if (ast.argSize() == 4) {
+        // generalized incomplete Beta(z1, z2, a, b)
+        IExpr z1 = ast.arg1();
+        IExpr z2 = ast.arg2();
+        IExpr a = ast.arg3();
+        IExpr b = ast.arg4();
+
+        return generalizedIncompleteBeta(z1, z2, a, b);
+      }
+      if (ast.isAST3()) {
+        // incomplete Beta(z, a, b)
         IExpr z = ast.arg1();
         IExpr a = ast.arg2();
         IExpr b = ast.arg3();
-        try {
-          if (z.isZero()) {
-            IExpr re = a.re();
-            if (re.isPositiveResult()) {
-              return F.C0;
-            }
-            if (re.isNegativeResult()) {
-              return F.CComplexInfinity;
-            }
-          }
-
-          // if (engine.isDoubleMode()) {
-          // double aDouble = Double.NaN;
-          // double bDouble = Double.NaN;
-          // double zDouble = Double.NaN;
-          // try {
-          // zDouble = z.evalf();
-          // aDouble = a.evalf();
-          // bDouble = b.evalf();
-          // } catch (ValidateException ve) {
-          // }
-          // if (Double.isNaN(aDouble) || Double.isNaN(bDouble) || Double.isNaN(zDouble)) {
-          // Complex zc = z.evalfc();
-          // Complex ac = a.evalfc();
-          // Complex bc = b.evalfc();
-          //
-          // return F.complexNum(GammaJS.beta(zc, ac, bc));
-          //
-          // } else {
-          // return GammaJS.incompleteBeta(zDouble, aDouble, bDouble);
-          // }
-          // }
-
-          int bInt = b.toIntDefault();
-          if (bInt > 0) {
-            IInteger n = F.ZZ(bInt);
-            if (a.isOne()) {
-              return
-              // [$ ( (1/n)*(1 - (1 - z)^n) ) $]
-              F.Times(F.Power(n, F.CN1), F.Subtract(F.C1, F.Power(F.Subtract(F.C1, z), n))); // $$;
-            }
-            // if (bInt <= 1) {
-            // ISymbol k = F.Dummy("k");
-            // return
-            // // [$ (Beta(a,n)*z^a*Sum((Pochhammer(a, k)*(1-z)^k)/k!, {k, 0, n - 1})) $]
-            // F.Times(F.Beta(a, n), F.Power(z, a),
-            // F.Sum(F.Times(F.Power(F.Subtract(F.C1, z), k), F.Power(F.Factorial(k), F.CN1),
-            // F.Pochhammer(a, k)), F.list(k, F.C0, F.Plus(F.CN1, n)))); // $$;
-            // }
-          }
-        } catch (ThrowException te) {
-          Errors.printMessage(S.Beta, te, engine);
-          return te.getValue();
-        } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
-        } catch (RuntimeException rex) {
-          Errors.printMessage(S.Beta, rex, engine);
-        }
-        return F.NIL;
+        return incompleteBeta(z, a, b);
       }
+
+      // Beta(a,b)
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
+      return beta(a, b);
+    }
+
+    /**
+     * Beta(a,b) function.
+     * 
+     * @param a
+     * @param b
+     * @param ast
+     * @param engine
+     * 
+     * @return
+     */
+    private static IExpr beta(IExpr a, IExpr b) {
       if (a.isZero() || b.isZero()) {
         return F.CComplexInfinity;
       }
+      EvalEngine engine = EvalEngine.get();
       try {
         // if (engine.isDoubleMode()) {
         //
@@ -217,9 +186,113 @@ public class SpecialFunctions {
         Errors.printMessage(S.Beta, te, engine);
         return te.getValue();
       } catch (ValidateException ve) {
-        return Errors.printMessage(ast.topHead(), ve, engine);
+        return Errors.printMessage(S.Beta, ve, engine);
       } catch (RuntimeException rex) {
         Errors.printMessage(S.Beta, rex, engine);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Incomplete Beta(z, a, b)
+     * 
+     * @param z
+     * @param a
+     * @param b
+     * 
+     * @return
+     */
+    private static IExpr incompleteBeta(IExpr z, IExpr a, IExpr b) {
+      EvalEngine engine = EvalEngine.get();
+      try {
+        if (z.isZero()) {
+          IExpr re = a.re();
+          if (re.isPositiveResult()) {
+            return F.C0;
+          }
+          if (re.isNegativeResult()) {
+            return F.CComplexInfinity;
+          }
+        }
+
+        // if (engine.isDoubleMode()) {
+        // double aDouble = Double.NaN;
+        // double bDouble = Double.NaN;
+        // double zDouble = Double.NaN;
+        // try {
+        // zDouble = z.evalf();
+        // aDouble = a.evalf();
+        // bDouble = b.evalf();
+        // } catch (ValidateException ve) {
+        // }
+        // if (Double.isNaN(aDouble) || Double.isNaN(bDouble) || Double.isNaN(zDouble)) {
+        // Complex zc = z.evalfc();
+        // Complex ac = a.evalfc();
+        // Complex bc = b.evalfc();
+        //
+        // return F.complexNum(GammaJS.beta(zc, ac, bc));
+        //
+        // } else {
+        // return GammaJS.incompleteBeta(zDouble, aDouble, bDouble);
+        // }
+        // }
+
+        int bInt = b.toIntDefault();
+        if (bInt > 0) {
+          IInteger n = F.ZZ(bInt);
+          if (a.isOne()) {
+            return
+            // [$ ( (1/n)*(1 - (1 - z)^n) ) $]
+            F.Times(F.Power(n, F.CN1), F.Subtract(F.C1, F.Power(F.Subtract(F.C1, z), n))); // $$;
+          }
+          // if (bInt <= 1) {
+          // ISymbol k = F.Dummy("k");
+          // return
+          // // [$ (Beta(a,n)*z^a*Sum((Pochhammer(a, k)*(1-z)^k)/k!, {k, 0, n - 1})) $]
+          // F.Times(F.Beta(a, n), F.Power(z, a),
+          // F.Sum(F.Times(F.Power(F.Subtract(F.C1, z), k), F.Power(F.Factorial(k), F.CN1),
+          // F.Pochhammer(a, k)), F.list(k, F.C0, F.Plus(F.CN1, n)))); // $$;
+          // }
+        }
+      } catch (ThrowException te) {
+        Errors.printMessage(S.Beta, te, engine);
+        return te.getValue();
+      } catch (ValidateException ve) {
+        return Errors.printMessage(S.Beta, ve, engine);
+      } catch (RuntimeException rex) {
+        Errors.printMessage(S.Beta, rex, engine);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Generalized incomplete Beta(z1, z2, a, b)
+     * 
+     * @param z1
+     * @param z2
+     * @param a
+     * @param b
+     * @return
+     */
+    private static IExpr generalizedIncompleteBeta(IExpr z1, IExpr z2, IExpr a, IExpr b) {
+      if (z2.isZero()) {
+        IExpr aRe = a.re();
+        if (aRe.isPositive()) {
+          // https://functions.wolfram.com/GammaBetaErf/Beta4/03/01/03/0001/
+          return F.Negate(F.Beta(z1, a, b));
+        }
+        if (aRe.isNegative()) {
+          // https://functions.wolfram.com/GammaBetaErf/Beta4/03/01/03/0002/
+          return F.CComplexInfinity;
+        }
+      }
+
+      if (z2.isOne()) {
+        IExpr bRe = b.re();
+        if (bRe.isPositive()) {
+          // https://functions.wolfram.com/GammaBetaErf/Beta4/03/01/03/0003/
+          return F.Subtract(F.Beta(a, b), F.Beta(z1, a, b));
+        }
       }
       return F.NIL;
     }
@@ -227,15 +300,18 @@ public class SpecialFunctions {
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.isAST2()) {
+        // beta:
         IInexactNumber a = (IInexactNumber) ast.arg1();
         IInexactNumber b = (IInexactNumber) ast.arg2();
         return a.beta(b);
       } else if (ast.isAST3()) {
+        // incomplete beta:
         IInexactNumber z = (IInexactNumber) ast.arg1();
         IInexactNumber a = (IInexactNumber) ast.arg2();
         IInexactNumber b = (IInexactNumber) ast.arg3();
         return z.beta(a, b);
       } else if (ast.argSize() == 4) {
+        // generalized incomplete beta:
         IInexactNumber z0 = (IInexactNumber) ast.arg1();
         IInexactNumber z1 = (IInexactNumber) ast.arg2();
         IInexactNumber a = (IInexactNumber) ast.arg3();
@@ -247,7 +323,7 @@ public class SpecialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+      return ARGS_2_4;
     }
 
     @Override

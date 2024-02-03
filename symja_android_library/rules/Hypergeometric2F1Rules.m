@@ -2,6 +2,7 @@
 Hypergeometric2F1(0, b_, c_, z_) = 1,
 Hypergeometric2F1(a_, 0, c_, z_) = 1,
 Hypergeometric2F1(a_, b_, c_, 0) = 1,
+Hypergeometric2F1(1/2,3/2,1,2) = -((2*EllipticE(2))/Pi),
 
 Hypergeometric2F1(-1/2,1/2,1, z_):= (2*EllipticE(z))/Pi,
 

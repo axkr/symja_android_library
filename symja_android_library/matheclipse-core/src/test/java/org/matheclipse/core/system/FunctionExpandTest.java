@@ -70,10 +70,6 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "x^2");
     check("FunctionExpand(Abs(x)^3,Element(x,Reals))", //
         "Abs(x)^3");
-    check("FunctionExpand(BetaRegularized(z,a,b))", //
-        "(Beta(z,a,b)*Gamma(a+b))/(Gamma(a)*Gamma(b))");
-    check("FunctionExpand(BetaRegularized(z0,z1,a,b))", //
-        "((-Beta(z0,a,b)+Beta(z1,a,b))*Gamma(a+b))/(Gamma(a)*Gamma(b))");
 
     check("FunctionExpand(ProductLog(a*Log(a)), a > 42)", //
         "Log(a)");
@@ -218,10 +214,7 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "-Pi*LegendreP(3/2,-1/2,x)");
     check("FunctionExpand({Degree, GoldenRatio})", //
         "{Pi/180,1/2*(1+Sqrt(5))}");
-    check("FunctionExpand(Beta(z,3,b))", //
-        "(2*(1-(1-z)^b*(1+b*z+1/2*b*(1+b)*z^2)))/(b*(1+b)*(2+b))");
-    check("FunctionExpand(BetaRegularized(z, a, b))", //
-        "(Beta(z,a,b)*Gamma(a+b))/(Gamma(a)*Gamma(b))");
+
   }
 
   @Test
@@ -240,6 +233,22 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
   public void testFunctionExpandHarmonicNumber() {
     check("FunctionExpand(HarmonicNumber(1/3-1))", //
         "-Pi/(2*Sqrt(3))-Log(6)-Log(Sqrt(3)/2)");
+  }
+
+  @Test
+  public void testFunctionExpandBeta() {
+
+    check("FunctionExpand(Beta(z,3,b))", //
+        "(2*(1-(1-z)^b*(1+b*z+1/2*b*(1+b)*z^2)))/(b*(1+b)*(2+b))");
+    check("FunctionExpand(Beta(z1,z2,a,b))", //
+        "-Beta(z1,a,b)+Beta(z2,a,b)");
+
+    check("FunctionExpand(BetaRegularized(z, a, b))", //
+        "(Beta(z,a,b)*Gamma(a+b))/(Gamma(a)*Gamma(b))");
+    check("FunctionExpand(BetaRegularized(z,a,b))", //
+        "(Beta(z,a,b)*Gamma(a+b))/(Gamma(a)*Gamma(b))");
+    check("FunctionExpand(BetaRegularized(z0,z1,a,b))", //
+        "((-Beta(z0,a,b)+Beta(z1,a,b))*Gamma(a+b))/(Gamma(a)*Gamma(b))");
   }
 
   @Test

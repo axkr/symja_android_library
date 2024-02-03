@@ -1089,6 +1089,15 @@ public class HypergeometricFunctions {
         F.Power(F.Subtract(F.C1, z), F.Negate(a)); // $$;
       }
 
+      if (a.equals(b.plus(F.C1D2))//
+          && c.equals(b.times(F.C2))) {
+        // Hypergeometric2F1(b+1/2, b, 2*b, z) :=
+        // (1+Sqrt(1-z))^(1-2*b)/(2^(1-2*b)*Sqrt(1-z))
+        return F.Times(F.Power(F.C2, F.Plus(F.CN1, F.Times(F.C2, b))),
+            F.Power(F.Plus(F.C1, F.Sqrt(F.Subtract(F.C1, z))), F.Plus(F.C1, F.Times(F.CN2, b))),
+            F.Power(F.Subtract(F.C1, z), F.CN1D2));
+      }
+
       try {
         if (engine.isNumericMode()) {
           try {

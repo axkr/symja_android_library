@@ -12,6 +12,8 @@
  ArcSin(Sqrt(x_^2)) := (Sqrt(x^2)*ArcSin(x))/x,
  ArcSin(x_^(-1)) := ArcCsc(x),
  
+ Beta(y_, z_, a_, b_) := -Beta(y, a, b)+Beta(z, a, b), 
+  
  BetaRegularized(z_, a_, b_) := (Beta(z, a, b)*Gamma(a + b))/(Gamma(a)*Gamma(b)),
  BetaRegularized(y_, z_, a_, b_) := ((-Beta(y, a, b) + Beta(z, a, b))*Gamma(a + b))/(Gamma(a)*Gamma(b)),
   
