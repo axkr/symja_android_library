@@ -90,10 +90,10 @@ public class HypergeometricFunctions {
       // // permutation symmetry
       // return F.AppellF1(a, b1, b2, c, z2, z1);
       // }
-      if (z1.isZero() && z2.isZero()) {
-        return F.C1;
-      }
       if (z1.isZero()) {
+        if (z2.isZero()) {
+          return F.C1;
+        }
         return F.Hypergeometric2F1(a, b2, c, z2);
       }
       if (z2.isZero()) {
@@ -104,34 +104,23 @@ public class HypergeometricFunctions {
             F.Hypergeometric2F1(a, b2, c, F.C1));
       }
 
-      if (z1.subtract(z2).isPossibleZero(true)) {
+      // avoid isPossibleZero for Rubi evaluation
+      if (z1.subtract(z2).isZero()) {
         // Hypergeometric2F1(a, b1 + b2, c, z1)
         return F.Hypergeometric2F1(a, F.Plus(b1, b2), c, z1);
       }
-      if (b1.subtract(b2).isPossibleZero(true) && z1.plus(z2).isPossibleZero(true)) {
+      if (b1.subtract(b2).isZero() && z1.plus(z2).isZero()) {
         // HypergeometricPFQ({1/2+a/2,a/2,b1},{1/2+c/2,c/2},z1^2)
         return F.HypergeometricPFQ(F.list(F.Plus(F.C1D2, F.Divide(a, F.C2)), F.Divide(a, F.C2), b1), //
             F.list(F.Plus(F.C1D2, F.Divide(c, F.C2)), F.Divide(c, F.C2)), F.Sqr(z1));
       }
-      if (b1.plus(b2).subtract(c).isPossibleZero(true)) {
+      if (b1.plus(b2).subtract(c).isZero()) {
         // Hypergeometric2F1(a, b1, b1 + b2, (z1 - z2)/(1 - z2)) / (1 - z2)^a
         return F.Times( //
             F.Hypergeometric2F1(a, //
                 b1, F.Plus(b1, b2), F.Divide(F.Subtract(z1, z2), F.Subtract(F.C1, z2))),
             F.Power(F.Subtract(F.C1, z2), a));
       }
-      // if (engine.isDoubleMode()) {
-      // try {
-      // } catch (ThrowException te) {
-      // LOGGER.debug("AppellF1.evaluate() failed", te);
-      // return te.getValue();
-      // } catch (ValidateException ve) {
-      // LOGGER.debug("AppellF1.evaluate() failed", ve);
-      // } catch (RuntimeException rex) {
-      // LOGGER.error("AppellF1.evaluate() failed", rex);
-      // return engine.printMessage(ast.topHead(), rex);
-      // }
-      // }
       return F.NIL;
     }
 

@@ -3096,6 +3096,11 @@ public final class Programming {
           fEngine.setTimeConstrainedMillis(timeConstrainedMillis);
           return fEngine.evaluate(fExpr);
         } catch (org.matheclipse.core.eval.exception.TimeoutException e) {
+          if (Config.DEBUG) {
+            System.out
+                .println("TimeConstrained evaluation failed: " + fExpr + "\nseconds: " + fSeconds);
+          }
+          // Errors.printMessage(S.TimeConstrained, e, fEngine);
           return S.$Aborted;
         } catch (final RecursionLimitExceeded | ASTElementLimitExceeded re) {
           throw re;

@@ -8658,8 +8658,12 @@ public class F extends S {
   }
 
   /**
+   * <p>
    * Create a unique dummy symbol which is retrieved from the evaluation engines
-   * {@link Context#DUMMY} context. A &quot;Dummy&quot; symbol is not known in string parsing.
+   * {@link Context#DUMMY} context.
+   * 
+   * <p>
+   * <b>Note:</b> a &quot;Dummy&quot; symbol will not be found by the expression parser.
    *
    * @param symbolName the name of the symbol
    * @return the symbol object from the {@link Context#DUMMY} context path
@@ -8675,7 +8679,7 @@ public class F extends S {
    * {@link Context#DUMMY} context.
    * 
    * <p>
-   * <b>Noter:</b> a &quot;Dummy&quot; symbol will not be found by the expression parser.
+   * <b>Note:</b> a &quot;Dummy&quot; symbol will not be found by the expression parser.
    *
    * @param symbolName the name of the symbol
    * @return the symbol object from the {@link Context#DUMMY} context path
@@ -8691,7 +8695,7 @@ public class F extends S {
    * {@link Context#DUMMY} context.
    * 
    * <p>
-   * <b>Noter:</b> a &quot;Dummy&quot; symbol will not be found by the expression parser.
+   * <b>Note:</b> a &quot;Dummy&quot; symbol will not be found by the expression parser.
    *
    * @param symbolName the name of the symbol
    * @param assumptionAST the assumptions which should be set for the symbol. Use <code>#1</code> or
@@ -8724,8 +8728,12 @@ public class F extends S {
   }
 
   /**
+   * <p>
    * Create a unique dummy symbol with prefix "$", which is retrieved from the evaluation engines
-   * DUMMY context. A &quot;Dummy&quot; symbol is not known in string parsing.
+   * DUMMY context.
+   * <p>
+   * <b>Note:</b> a &quot;Dummy&quot; symbol will not be found by the expression parser.
+   *
    *
    * @return the symbol object from the context path
    */
