@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
@@ -17,7 +18,20 @@ public class ListLinePlot extends ListPlot {
   public ListLinePlot() {}
 
   @Override
-  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
+      IAST originalAST) {
+
+    if (argSize > 0 && argSize < ast.size()) {
+      ast = ast.copyUntil(argSize + 1);
+    }
+    if (options[0].isTrue()) {
+      IExpr temp = S.Manipulate.of(engine, ast);
+      if (temp.headID() == ID.JSFormData) {
+        return temp;
+      }
+      return F.NIL;
+    }
+
     GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
     graphicsOptions.setJoined(true);
     IAST graphicsPrimitives = listPlot(ast, graphicsOptions, engine);
