@@ -49,8 +49,8 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
     if (expectedArgSize != null) {
       // the ast function must at least contain the minimum number of arguments
       minNumberOfArgs = expectedArgSize[0];
-      if (minNumberOfArgs < 1) {
-        minNumberOfArgs = 1;
+      if (minNumberOfArgs < 0) {
+        minNumberOfArgs = 0;
       }
     }
 
