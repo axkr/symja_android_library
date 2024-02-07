@@ -12190,6 +12190,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Integrate(f(x,y),x)");
     check("Integrate(f(x,x),x)", //
         "Integrate(f(x,x),x)");
+
+    if (Config.PROFILE_MODE) {
+      BuiltinFunctionCalls.printStatistics();
+    }
   }
 
   @Test
@@ -18590,6 +18594,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolyLog() {
+    check("PolyLog(2,z) + PolyLog(2,1-z)", //
+        "Pi^2/6-Log(1-z)*Log(z)");
+    check("PolyLog(2,Sin(7)) + PolyLog(2,1-Sin(7))", //
+        "Pi^2/6-Log(1-Sin(7))*Log(Sin(7))");
+
     check("PolyLog(2,E^(4*I*Pi))", //
         "Pi^2/6");
     check("PolyLog(2,E^(42*I*Pi))", //
@@ -20804,6 +20813,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRandomReal() {
+    // check("RandomReal(WorkingPrecision -> 50)", //
+    // "0.02914582860934237466618813817377889841321841114067");
     check("NonNegative(RandomReal(-Sqrt(2)/2)*(-1.0))", //
         "True");
     check("NonNegative(RandomReal({-Sqrt(2)/2,-1.0})*(-1.0))", //

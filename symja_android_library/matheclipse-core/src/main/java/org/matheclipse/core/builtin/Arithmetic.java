@@ -3111,12 +3111,18 @@ public final class Arithmetic {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT
           | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-      PLUS_ORDERLESS_MATCHER = Arithmetic.Plus.initPlusHashMatcher();
+      PLUS_ORDERLESS_MATCHER = initPlusHashMatcher();
       super.setUp(newSymbol);
     }
 
     private static HashedOrderlessMatcherPlus initPlusHashMatcher() {
       HashedOrderlessMatcherPlus plusMatcher = new HashedOrderlessMatcherPlus();
+      // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/PolyLog/17/02/02/01/0001/
+      // PolyLog(2,z) + PolyLog(2,1-z) == Pi^2/6-Log(1-z)*Log(z)
+      plusMatcher.definePatternHashRule(F.PolyLog(C2, x_), F.PolyLog(C2, y_), //
+          F.Plus(F.Times(F.QQ(1L, 6L), F.Sqr(F.Pi)),
+              F.Times(F.CN1, F.Log(F.Subtract(F.C1, x)), F.Log(x))), //
+          F.Equal(F.Plus(F.CN1, y), F.Negate(x)));
 
       plusMatcher.definePatternHashRule(Power(Sin(x_), C2), Power(Cos(x_), C2), //
           C1);
