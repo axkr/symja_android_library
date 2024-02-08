@@ -1606,6 +1606,17 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
   public IAST removePositionsAtCopy(Predicate<IExpr> predicate);
 
   /**
+   * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not
+   * copied) and remove the elements defined in the given <code>removedPositionsArray</code> and
+   * replace the first position with <code>newEntry</code>.
+   * 
+   * @param removedPositions
+   * @param newEntry
+   * @return
+   */
+  public IASTAppendable replaceSubset(int[] removedPositions, IExpr newEntry);
+
+  /**
    * Create a new <code>IAST</code> and remove all arguments from position <code>fromPosition</code>
    * inclusive to the end of this AST.
    *

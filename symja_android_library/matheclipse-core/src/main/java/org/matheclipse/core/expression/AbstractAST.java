@@ -1205,6 +1205,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return null;
     }
 
+    @Override
+    public IASTAppendable replaceSubset(int[] removedPositions, IExpr newEntry) {
+      ArgumentTypeException.throwNIL();
+      return null;
+    }
+
 
     @Override
     public IAssociation reverse(IAssociation newAssoc) {
@@ -5586,11 +5592,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     // if (untilIndex == 1) {
     // return removeAtCopy(removedPositions[0]);
     // }
-    IASTAppendable ast = copyAppendable();
+    IASTAppendable result = copyAppendable();
     for (int j = untilIndex - 1; j >= 0; j--) {
-      ast.remove(removedPositions[j]);
+      result.remove(removedPositions[j]);
     }
-    return ast;
+    return result;
   }
 
   @Override
@@ -5606,6 +5612,17 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return removePositionsAtCopy(removedPositions, untilIndex);
     }
     return this;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IASTAppendable replaceSubset(int[] removedPositions, IExpr newEntry) {
+    IASTAppendable result = copyAppendable();
+    result.set(removedPositions[0], newEntry);
+    for (int j = size() - 1; j >= 1; j--) {
+      result.remove(removedPositions[j]);
+    }
+    return result;
   }
 
   /**
