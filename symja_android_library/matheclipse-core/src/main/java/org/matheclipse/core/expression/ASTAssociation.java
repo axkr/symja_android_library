@@ -815,11 +815,22 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   /** {@inheritDoc} */
   @Override
-  public IASTAppendable replaceSubset(int[] removedPositions, IExpr newEntry) {
+  public IASTAppendable replaceSubset(int[] replacePosition, IExpr[] newEntries,
+      int[] removePositions) {
     ASTAssociation assoc = copy();
-    assoc.set(removedPositions[0], newEntry);
-    for (int j = size() - 1; j >= 1; j--) {
-      assoc.remove(removedPositions[j]);
+    for (int j = 0; j < replacePosition.length; j++) {
+      int position = replacePosition[j];
+      if (position <= 0) {
+        break;
+      }
+      assoc.set(position, newEntries[j]);
+    }
+    for (int j = removePositions.length - 1; j >= 0; j--) {
+      int position = removePositions[j];
+      if (position <= 0) {
+        break;
+      }
+      assoc.remove(position);
     }
     return assoc;
   }

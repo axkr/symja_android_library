@@ -7,10 +7,18 @@ import java.util.function.Predicate;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /** Interface for the pattern matcher */
 public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Serializable {
+
+  /**
+   * Dummy <code>right-hand-side</code> for a rule in {@link S#SubsetCases} to get the sublists in
+   * list that match the <code>left-hand-side pattern</code>.
+   */
+  public final static ISymbol DUMMY_SUBSET_CASES = F.Dummy("§subsetcases§");
 
   public static class EquivalenceComparator implements Comparator<IPatternMatcher>, Serializable {
 

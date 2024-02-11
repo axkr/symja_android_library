@@ -98,6 +98,7 @@ import org.matheclipse.core.builtin.SpecialFunctions;
 import org.matheclipse.core.builtin.StatisticsFunctions;
 import org.matheclipse.core.builtin.StringFunctions;
 import org.matheclipse.core.builtin.StructureFunctions;
+import org.matheclipse.core.builtin.SubsetFunctions;
 import org.matheclipse.core.builtin.TensorFunctions;
 import org.matheclipse.core.builtin.UnitTestingFunctions;
 import org.matheclipse.core.builtin.VectorAnalysisFunctions;
@@ -984,6 +985,7 @@ public class F extends S {
       LinearAlgebra.initialize();
       TensorFunctions.initialize();
       ListFunctions.initialize();
+      SubsetFunctions.initialize();
       SequenceFunctions.initialize();
       Combinatoric.initialize();
       IntegerFunctions.initialize();

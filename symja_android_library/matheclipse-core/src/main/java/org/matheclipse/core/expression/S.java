@@ -9670,6 +9670,8 @@ public class S {
   public final static IBuiltInSymbol SphericalHarmonicY =
       S.initFinalSymbol("SphericalHarmonicY", ID.SphericalHarmonicY);
 
+  public final static IBuiltInSymbol Splice = S.initFinalSymbol("Splice", ID.Splice);
+
   /**
    * Split(list) - splits `list` into collections of consecutive identical elements.
    * 
@@ -10155,6 +10157,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Subsets = S.initFinalSymbol("Subsets", ID.Subsets);
+
+  public final static IBuiltInSymbol SubsetCases = S.initFinalSymbol("SubsetCases", ID.SubsetCases);
+
+  public final static IBuiltInSymbol SubsetCount = S.initFinalSymbol("SubsetCount", ID.SubsetCount);
+
+  public final static IBuiltInSymbol SubsetPosition =
+      S.initFinalSymbol("SubsetPosition", ID.SubsetPosition);
+
+  public final static IBuiltInSymbol SubsetReplace =
+      S.initFinalSymbol("SubsetReplace", ID.SubsetReplace);
 
   public final static IBuiltInSymbol Subsuperscript =
       S.initFinalSymbol("Subsuperscript", ID.Subsuperscript);
@@ -11443,6 +11455,9 @@ public class S {
 
   public final static IBuiltInSymbol WordSeparators =
       S.initFinalSymbol("WordSeparators", ID.WordSeparators);
+
+  public final static IBuiltInSymbol WorkingPrecision =
+      S.initFinalSymbol("WorkingPrecision", ID.WorkingPrecision);
 
   public final static IBuiltInSymbol Write = S.initFinalSymbol("Write", ID.Write);
 

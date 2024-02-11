@@ -1,6 +1,7 @@
 package org.matheclipse.core.generic;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -133,6 +134,69 @@ public class Functors {
         }
       }
       return F.NIL;
+    }
+  }
+
+  public static class SubsetPatternFunctor implements Function<IAST, IExpr> {
+
+    private final List<PatternMatcherAndEvaluator> fMatchers;
+    private IExpr[] fSubstitutedMatches;
+    private final EvalEngine fEngine;
+
+    /**
+     * @param matchers
+     * @param engine
+     */
+    public SubsetPatternFunctor(List<PatternMatcherAndEvaluator> matchers, EvalEngine engine) {
+      this.fMatchers = matchers;
+      this.fEngine = engine;
+      this.fSubstitutedMatches = null;
+    }
+
+    @Override
+    public IExpr apply(final IAST arg) {
+      if (fMatchers != null) {
+        final int argSize = arg.argSize();
+
+        int[] allReplaceIndex = new int[] {0};
+        int[] allRemoveIndex = new int[] {0};
+        int[] allReplacePositions = new int[argSize];
+        IExpr[] allReplaceExprs = new IExpr[argSize];
+        int[] allRemovePositions = new int[argSize];
+        this.fSubstitutedMatches = new IExpr[argSize];
+        boolean evaled = false;
+        for (int i = 0; i < fMatchers.size(); i++) {
+          PatternMatcherAndEvaluator matcher = fMatchers.get(i);
+          if (matcher != null) {
+            IExpr lhs = matcher.getLHS();
+            if (lhs.isAST()) {
+              IAST lhsPatternExpr = (IAST) lhs;
+              boolean matched = matcher.matchASTSubset(lhsPatternExpr, arg, allReplacePositions,
+                  allReplaceExprs, allReplaceIndex, allRemovePositions, allRemoveIndex, fEngine);
+
+              while (matched) {
+                IExpr rhs = matcher.replacePatternMatch(matcher.getLHS(), matcher.getPatternMap(),
+                    fEngine, false);
+                allReplaceExprs[allReplaceIndex[0]] = rhs;
+                this.fSubstitutedMatches[allReplaceIndex[0]++] = matcher.getSubstitutedMatch();
+
+                evaled = true;
+                matched = matcher.matchASTSubset(lhsPatternExpr, arg, allReplacePositions,
+                    allReplaceExprs, allReplaceIndex, allRemovePositions, allRemoveIndex, fEngine);
+              }
+            }
+          }
+        }
+        if (evaled) {
+          Arrays.sort(allRemovePositions);
+          return arg.replaceSubset(allReplacePositions, allReplaceExprs, allRemovePositions);
+        }
+      }
+      return F.NIL;
+    }
+
+    public IExpr[] getSubstitutedMatches() {
+      return fSubstitutedMatches;
     }
   }
 
@@ -316,6 +380,20 @@ public class Functors {
     return listRules(equalRules, result);
   }
 
+  public static SubsetPatternFunctor subsetRules(IAST astRules, EvalEngine engine) {
+    List<PatternMatcherAndEvaluator> matchers = new ArrayList<PatternMatcherAndEvaluator>();
+    if (astRules.isRuleAST()) {
+      createPatternMatcherSubset(matchers, astRules);
+    } else {
+      throw new ArgumentTypeException(
+          "rule expression (x->y or x:>y) expected instead of " + astRules.toString());
+    }
+    if (matchers.size() > 0) {
+      return new SubsetPatternFunctor(matchers, engine);
+    }
+    return null;
+  }
+
   public static Function<IExpr, IExpr> listRules(Map<IExpr, IExpr> rulesMap,
       IASTAppendable result) {
     return new ListRulesPatternFunctor(rulesMap, result);
@@ -390,6 +468,17 @@ public class Functors {
         matchers.add(
             new PatternMatcherList(IPatternMatcher.SET, rule.arg1(), evalOneIdentity(rule.arg2())));
       }
+    }
+  }
+
+  private static void createPatternMatcherSubset(List<PatternMatcherAndEvaluator> matchers,
+      IAST rule) {
+    if (rule.isRuleDelayed()) {
+      matchers.add(
+          new PatternMatcherAndEvaluator(IPatternMatcher.SET_DELAYED, rule.arg1(), rule.arg2()));
+    } else {
+      matchers.add(new PatternMatcherAndEvaluator(IPatternMatcher.SET, rule.arg1(),
+          evalOneIdentity(rule.arg2())));
     }
   }
 

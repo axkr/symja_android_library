@@ -23420,6 +23420,35 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSplice() {
+    check("Splice({a,b,c})", //
+        "Splice({a,b,c})");
+    check("Splice(12)", //
+        "Splice(12)");
+
+    check("{1,2,Splice({x,x,x}),2,4,3}", //
+        "{1,2,x,x,x,2,4,3}");
+    check("{a, b, c, Splice({ }), d, e}", //
+        "{a,b,c,d,e}");
+    check("h(a, b, c, Splice({1, 2, 3}), d, e)", //
+        "h(a,b,c,Splice({1,2,3}),d,e)");
+    check("{a, b, c, Splice[{1, 2, 3}], d, e}", //
+        "{a,b,c,1,2,3,d,e}");
+
+    check("{a, b, c, Splice[{1, 2, 3},h], d, e}", //
+        "{a,b,c,Splice({1,2,3},h),d,e}");
+    check("h(a, b, c, Splice({1, 2, 3}, h), d, e)", //
+        "h(a,b,c,1,2,3,d,e)");
+    check("h(a, b, c, Splice({{1,1},{2,2}}, h), d, e)", //
+        "h(a,b,c,{1,1},{2,2},d,e)");
+
+    check("f(1, 2, 3, Splice({x, y}, f | g), 4, 5)", //
+        "f(1,2,3,x,y,4,5)");
+    check("f(a)[1, 2, 3, Splice({x, y}, _f), 4, 5]", //
+        "f(a)[1,2,3,x,y,4,5]");
+  }
+
+  @Test
   public void testSplit() {
     check("Split({x, x, x, y, x, y, y, z})", //
         "{{x,x,x},{y},{x},{y,y},{z}}");

@@ -1725,6 +1725,97 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     return lhsPatternExpr.matchPattern(lhsEvalExpr, fPatternMap);
   }
 
+  public boolean matchASTSubset(IAST lhsPatternAST, IAST lhsEvalAST, int[] allReplacePositions,
+      IExpr[] allReplaceExprs, int[] allReplaceIndex, int[] allRemovePositions,
+      int[] allRemoveIndex, EvalEngine engine) {
+    IPatternMap patternMap = null;
+    patternMap = createPatternMap();
+    patternMap.initPattern();
+    setLHSExprToMatch(lhsEvalAST);
+
+    int lhsPatternSize = lhsPatternAST.size();
+    int lhsEvalSize = lhsEvalAST.size();
+    if (lhsPatternSize > lhsEvalSize) {
+      return false;
+    }
+
+    boolean matched = false;
+    IExpr[] patternValuesStart = fPatternMap.copyPattern();
+    try {
+
+      int replacePosition = -1;
+      int[] removePositions = new int[lhsPatternSize - 2];
+      StackMatcher stackMatcher = new StackMatcher(engine);
+      for (int i = 1; i < lhsPatternSize; i++) {
+        IExpr patternArg = lhsPatternAST.getRule(i);
+
+        for (int j = 1; j < lhsEvalSize; j++) {
+          if (replacePosition == j //
+              || isUsedIndex(removePositions, j) //
+              || isUsedIndex(allReplacePositions, j) //
+              || isUsedIndex(allRemovePositions, j)) {
+            continue;
+          }
+          IExpr evalArg = lhsEvalAST.getRule(j);
+          IExpr[] patternValues = fPatternMap.copyPattern();
+          try {
+            // if (patternArg.isPatternSequence(false)) {
+            // IPatternSequence patternSequence = (IPatternSequence) patternArg;
+            // matched = matchBlankSequence(patternSequence, lhsPatternAST, j, lhsEvalAST, engine,
+            // stackMatcher);
+            // } else {
+            matched = matchExpr(patternArg, evalArg, engine, stackMatcher);
+            // }
+            if (matched) {
+              if (replacePosition < 0) {
+                replacePosition = j;
+              } else {
+                removePositions[i - 2] = j;
+              }
+              break;
+            }
+          } finally {
+            if (!matched) {
+              fPatternMap.resetPattern(patternValues);
+            }
+          }
+        }
+        if (!matched) {
+          return false;
+        }
+      }
+      if (matched) {
+        matched = stackMatcher.matchRest();
+        if (matched) {
+          // IExpr rhs = replacePatternMatch(lhsEvalAST, fPatternMap, engine, false);
+          allReplacePositions[allReplaceIndex[0]] = replacePosition;
+          // allReplaceExprs[allReplaceIndex[0]] = rhs;
+          for (int i = 0; i < removePositions.length; i++) {
+            allRemovePositions[allRemoveIndex[0]++] = removePositions[i];
+          }
+          return true;
+        }
+      }
+    } finally {
+      if (!matched) {
+        fPatternMap.resetPattern(patternValuesStart);
+      }
+    }
+    return false;
+  }
+
+  private static boolean isUsedIndex(int[] removePositions, int j) {
+    for (int k = 0; k < removePositions.length; k++) {
+      if (removePositions[k] <= 0) {
+        return false;
+      }
+      if (j == removePositions[k]) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
     fSetFlags = objectInput.readShort();

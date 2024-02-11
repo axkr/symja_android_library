@@ -2,6 +2,8 @@ package org.matheclipse.core.builtin;
 
 import java.math.BigInteger;
 import java.util.Random;
+import org.apfloat.Apfloat;
+import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.util.MathArrays;
@@ -14,6 +16,7 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -25,6 +28,7 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.ParserConfig;
 
 public final class RandomFunctions {
 
@@ -534,7 +538,8 @@ public final class RandomFunctions {
       return F.NIL;
     }
 
-    private static IExpr randomPrime(BigInteger lowerLimit, BigInteger upperLimit, EvalEngine engine) {
+    private static IExpr randomPrime(BigInteger lowerLimit, BigInteger upperLimit,
+        EvalEngine engine) {
 
       if (lowerLimit.isProbablePrime(32)
           && upperLimit.compareTo(lowerLimit.nextProbablePrime()) < 0) {
@@ -585,10 +590,62 @@ public final class RandomFunctions {
    * 0.53275
    * </pre>
    */
-  private static final class RandomReal extends AbstractFunctionEvaluator {
+  private static final class RandomReal extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, IAST originalAST) {
+      if (argSize >= 0 && argSize < ast.size()) {
+        ast = ast.copyUntil(argSize + 1);
+      }
+      if (options[0].isReal()) {
+        int workingPrecision = options[0].toIntDefault();
+        if (workingPrecision <= 0) {
+          return F.NIL;
+        }
+        if (ParserConfig.MACHINE_PRECISION <= workingPrecision) {
+          // WorkingPrecision
+          if (ast.isAST0()) {
+            // RandomReal() gives a value between 0.0 and 1.0
+            long oldPrecision = engine.getNumericPrecision();
+            try {
+              FixedPrecisionApfloatHelper apfloat = engine.setNumericPrecision(workingPrecision);
+              Apfloat random = apfloat.random();
+              return F.num(random);
+            } finally {
+              engine.setNumericPrecision(oldPrecision);
+            }
+          } else {
+            // IExpr arg1 = ast.arg1();
+            // if (ast.isAST1()) {
+            // return randomApfloat(arg1, workingPrecision, engine);
+            // } else if (ast.isAST2()) {
+            // if (ast.arg2().isList()) {
+            // if (ast.arg2().argSize() == 1) {
+            // int n = ast.arg2().first().toIntDefault();
+            // if (n <= 0) {
+            // return F.NIL;
+            // }
+            // return randomASTRealVector(arg1, n, engine);
+            // }
+            // IAST list = (IAST) ast.arg2();
+            // int[] dimension = Validate.checkListOfInts(ast, list, 1, Integer.MAX_VALUE, engine);
+            // if (dimension == null) {
+            // return F.NIL;
+            // }
+            // return Tensors.build(() -> randomApfloat(arg1, workingPrecision, engine),
+            // dimension);
+            // }
+            // int n = ast.arg2().toIntDefault();
+            // if (n > 0) {
+            // return randomASTRealVector(arg1, n, engine);
+            // }
+            // }
+          }
+          return F.NIL;
+        }
+
+      }
 
       if (ast.isAST0()) {
         // RandomReal() gives a double value between 0.0 and 1.0
@@ -658,6 +715,52 @@ public final class RandomFunctions {
       }
     }
 
+    // private static IExpr randomApfloat(IExpr arg1, int workingPrecision, EvalEngine engine) {
+    // if (arg1.isList2()) {
+    // IReal min = arg1.first().evalReal();
+    // IReal max = arg1.second().evalReal();
+    // if (min == null || max == null) {
+    // return F.NIL;
+    // }
+    // if (min.isGE(max)) {
+    // IReal temp = min;
+    // min = max;
+    // max = temp;
+    // if (min == max) {
+    // return min;
+    // }
+    // }
+    //
+    // long oldPrecision = engine.getNumericPrecision();
+    // try {
+    // FixedPrecisionApfloatHelper apfloat = engine.setNumericPrecision(workingPrecision);
+    // Apfloat random = apfloat.random();
+    // return F.num(random);
+    // } finally {
+    // engine.setNumericPrecision(oldPrecision);
+    // }
+    //
+    // Random tlr = engine.getRandom();
+    // return F.num(boundedNextDouble(tlr, min, max));
+    // } else {
+    // boolean isNegative = false;
+    // IReal max = arg1.evalReal();
+    // if (max.isNegative()) {
+    // isNegative = true;
+    // max = max.abs();
+    // }
+    // if (max.isZero()) {
+    // return F.CD0;
+    // }
+    // Random tlr = engine.getRandom();
+    // double nextDouble = boundedNextDouble(tlr, max);
+    // if (isNegative) {
+    // nextDouble *= -1;
+    // }
+    // return F.num(nextDouble);
+    // }
+    // }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_2;
@@ -717,6 +820,13 @@ public final class RandomFunctions {
         }
       }
       return new ASTRealVector(array, false);
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.WorkingPrecision};
+      IExpr[] optionValues = new IExpr[] {S.Automatic};
+      setOptions(newSymbol, optionKeys, optionValues);
     }
   }
 

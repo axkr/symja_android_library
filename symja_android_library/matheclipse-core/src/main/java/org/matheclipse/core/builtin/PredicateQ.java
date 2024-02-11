@@ -549,7 +549,7 @@ public class PredicateQ {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.size() == 3) {
+      if (ast.isAST2()) {
         final IExpr arg1 = engine.evaluate(ast.arg1());
         final IExpr arg2 = engine.evalPattern(ast.arg2());
         return F.booleSymbol(arg1.isFree(arg2, true));

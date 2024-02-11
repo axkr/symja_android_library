@@ -50,8 +50,8 @@ public class AST2Expr {
 
   public static final String[] DOLLAR_STRINGS = {"$Aborted", "$Assumptions", "$BaseDirectory",
       "$Cancel", "$CharacterEncoding", "$Context", "$CreationDate", "$ContextPath",
-      "$DisplayFunction", "$Failed", "$HistoryLength", "$HomeDirectory", "$IdentityMatrix", // for
-                                                                                            // MarixD
+      "$DisplayFunction", "$Failed", "$HistoryLength", "$HomeDirectory", //
+      "$IdentityMatrix", // for MatrixD
       "$Input", "$InputFileName", "$IterationLimit", "$Line", "$MachineEpsilon",
       "$MachinePrecision", "$MaxMachineNumber", "$MessageList", "$MinMachineNumber", "$Notebooks",
       "$OperatingSystem", "$OutputSizeLimit", "$Packages", "$Path", "$PathnameSeparator",
@@ -93,7 +93,7 @@ public class AST2Expr {
       "Today", "TooLarge", "Top", "Trig", "True", "Unknown", "UseTypeChecking", "Variable",
       "Vectors", "VertexLabels", "VertexShapeFunction", "VertexSize", "VertexStyle", "ViewPoint",
       "White", "Whitespace", "WhitespaceCharacter", "Word", "WordCharacter", "WordSeparators",
-      "Yellow", "ZeroTest"};
+      "WorkingPrecision", "Yellow", "ZeroTest"};
 
   public static final String[] FUNCTION_STRINGS = {"AASTriangle", "Abort", "Abs", "AbsArg",
       "AbsoluteCorrelation", "AbsoluteTime", "AbsoluteTiming", "Accumulate", "AddTo", "AddSides",
@@ -285,8 +285,8 @@ public class AST2Expr {
       "SingularValueDecomposition", "SingularValueList", "Sinh", "SinIntegral", "SinhIntegral",
       "SixJSymbol", "Skewness", "SokalSneathDissimilarity", "Solve", "Sort", "SortBy", "Sow",
       "Span", "SparseArray", "SparseArrayQ", "Specularity", "Sphere", "SphericalBesselJ",
-      "SphericalBesselY", "SphericalHankelH1", "SphericalHankelH2", "SphericalHarmonicY", "Split",
-      "SplitBy", "SpotLight", "Sqrt", "SqrtBox", "SquaredEuclideanDistance", "SquareFreeQ",
+      "SphericalBesselY", "SphericalHankelH1", "SphericalHankelH2", "SphericalHarmonicY", "Splice",
+      "Split", "SplitBy", "SpotLight", "Sqrt", "SqrtBox", "SquaredEuclideanDistance", "SquareFreeQ",
       "SquareMatrixQ", "SSSTriangle", "Stack", "StackBegin", "StandardDeviation", "StandardForm",
       "Standardize", "StarGraph", "StieltjesGamma", "StirlingS1", "StirlingS2", "StreamPlot",
       "StringCases", "StringCount", "StringContainsQ", "StringDrop", "StringExpression",
@@ -295,12 +295,13 @@ public class AST2Expr {
       "StringTake", "StringTemplate", "StringToByteArray", "StringToStream", "StringTrim",
       "StringQ", "StringReplace", "StringReverse", "Structure", "StruveH", "StruveL",
       "StudentTDistribution", "Style", "StyleForm", "Subdivide", "Subfactorial", "Summary",
-      "Subscript", "SubscriptBox", "Subsuperscript", "SubsuperscriptBox", "SubsetQ", "Subsets",
-      "Subtract", "SubtractFrom", "SubtractSides", "Sum", "Superscript", "SuperscriptBox", "Surd",
-      "SurfaceArea", "SurfaceGraphics", "SurvivalFunction", "Switch", "SyntaxLength", "SymbolName",
-      "SymbolQ", "Symmetric", "SymmetricMatrixQ", "SyntaxQ", "SystemDialogInput", "Table",
-      "TableForm", "TagSet", "TagSetDelayed", "Take", "TakeLargest", "TakeLargestBy",
-      "TakeSmallest", "TakeSmallestBy", "TakeWhile", "Tally", "Tan", "Tanh", "TautologyQ", "Taylor",
+      "Subscript", "SubscriptBox", "Subsuperscript", "SubsuperscriptBox", "Subsets", "SubsetCases",
+      "SubsetCount", "SubsetPosition", "SubsetQ", "SubsetReplace", "Subtract", "SubtractFrom",
+      "SubtractSides", "Sum", "Superscript", "SuperscriptBox", "Surd", "SurfaceArea",
+      "SurfaceGraphics", "SurvivalFunction", "Switch", "SyntaxLength", "SymbolName", "SymbolQ",
+      "Symmetric", "SymmetricMatrixQ", "SyntaxQ", "SystemDialogInput", "Table", "TableForm",
+      "TagSet", "TagSetDelayed", "Take", "TakeLargest", "TakeLargestBy", "TakeSmallest",
+      "TakeSmallestBy", "TakeWhile", "Tally", "Tan", "Tanh", "TautologyQ", "Taylor",
       "TemplateApply", "TemplateExpression", "TemplateIf", "TemplateSlot", "TensorDimensions",
       "TensorProduct", "TensorRank", "TensorSymmetry", "TestReport", "TestReportObject",
       "TestResultObject", "Tetrahedron", "Text", "TextCell", "TextElement", "TextString",

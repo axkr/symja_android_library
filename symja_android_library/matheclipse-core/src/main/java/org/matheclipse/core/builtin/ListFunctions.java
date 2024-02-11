@@ -5666,30 +5666,6 @@ public final class ListFunctions {
     }
   }
 
-  /**
-   *
-   *
-   * <pre>
-   * Rationalize(expression)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * convert numerical real or imaginary parts in (sub-)expressions into rational numbers.
-   *
-   * </blockquote>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; Rationalize(6.75)
-   * 27/4
-   *
-   * &gt;&gt; Rationalize(0.25+I*0.33333)
-   * 1/4+I*33333/100000
-   * </pre>
-   */
   private static final class Replace extends AbstractEvaluator {
 
     private static final class ReplaceFunction implements Function<IExpr, IExpr> {

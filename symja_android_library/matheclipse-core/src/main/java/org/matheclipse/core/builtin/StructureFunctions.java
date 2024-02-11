@@ -253,10 +253,6 @@ public class StructureFunctions {
       return F.NIL;
     }
 
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
-    }
   }
 
   private static class ByteCount extends AbstractCoreFunctionEvaluator {

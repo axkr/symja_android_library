@@ -3440,12 +3440,13 @@ public class EvalEngine implements Serializable {
     fSignificantFigures = figures;
   }
 
-  public void setNumericPrecision(long precision) {
+  public FixedPrecisionApfloatHelper setNumericPrecision(long precision) {
     if (ParserConfig.MACHINE_PRECISION > precision) {
       fApfloatHelper = null;
     } else {
       fApfloatHelper = new FixedPrecisionApfloatHelper(precision);
     }
+    return fApfloatHelper;
   }
 
   public void setSignificantFigures(int figures) {
@@ -3891,6 +3892,24 @@ public class EvalEngine implements Serializable {
       return 0;
     }
     return counter;
+  }
+
+  /**
+   * Return the expression at number <code>frame</code> on the caller stack.
+   * 
+   * @param frame the frame number on the stack
+   * @return
+   */
+  public IExpr getStackFrame(int frame) {
+    Deque<IExpr> stack = getStack();
+    Iterator<IExpr> iterator = stack.iterator();
+    while (iterator.hasNext()) {
+      IExpr temp = iterator.next();
+      if (frame-- == 0) {
+        return temp;
+      }
+    }
+    return F.NIL;
   }
 
   /**

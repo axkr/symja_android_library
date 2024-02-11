@@ -24,9 +24,12 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
   protected transient IExpr fReturnResult = F.NIL;
 
+  protected transient IExpr fSubstitutedMatch = F.NIL;
+
   /** Public constructor for serialization. */
   public PatternMatcherAndEvaluator() {
     fRightHandSide = F.NIL;
+    fSubstitutedMatch = F.NIL;
   }
 
   /**
@@ -108,42 +111,42 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
    * @param pm2
    * @return
    */
-  private static int equivalentRHS(final IExpr patternExpr1, final IExpr patternExpr2,
-      final IPatternMap pm1, final IPatternMap pm2) {
-    IExpr p1, p2;
-    if (patternExpr1.isCondition()) {
-      p1 = patternExpr1.second();
-      if (patternExpr2.isCondition()) {
-        p2 = patternExpr2.second();
-        if (equivalent(p1, p2, pm1, pm2)) {
-          return 0;
-        }
-        return p1.compareTo(p2);
-      } else if (patternExpr2.isModuleOrWithCondition()) {
-        p2 = patternExpr2.last().second();
-        if (equivalent(p1, p2, pm1, pm2)) {
-          return 0;
-        }
-        return p1.compareTo(p2);
-      }
-    } else if (patternExpr1.isModuleOrWithCondition()) {
-      p1 = patternExpr1.last().second();
-      if (patternExpr2.isCondition()) {
-        p2 = patternExpr2.second();
-        if (equivalent(p1, p2, pm1, pm2)) {
-          return 0;
-        }
-        return p1.compareTo(p2);
-      } else if (patternExpr2.isModuleOrWithCondition()) {
-        p2 = patternExpr2.last().second();
-        if (equivalent(p1, p2, pm1, pm2)) {
-          return 0;
-        }
-        return p1.compareTo(p2);
-      }
-    }
-    return 0;
-  }
+  // private static int equivalentRHS(final IExpr patternExpr1, final IExpr patternExpr2,
+  // final IPatternMap pm1, final IPatternMap pm2) {
+  // IExpr p1, p2;
+  // if (patternExpr1.isCondition()) {
+  // p1 = patternExpr1.second();
+  // if (patternExpr2.isCondition()) {
+  // p2 = patternExpr2.second();
+  // if (equivalent(p1, p2, pm1, pm2)) {
+  // return 0;
+  // }
+  // return p1.compareTo(p2);
+  // } else if (patternExpr2.isModuleOrWithCondition()) {
+  // p2 = patternExpr2.last().second();
+  // if (equivalent(p1, p2, pm1, pm2)) {
+  // return 0;
+  // }
+  // return p1.compareTo(p2);
+  // }
+  // } else if (patternExpr1.isModuleOrWithCondition()) {
+  // p1 = patternExpr1.last().second();
+  // if (patternExpr2.isCondition()) {
+  // p2 = patternExpr2.second();
+  // if (equivalent(p1, p2, pm1, pm2)) {
+  // return 0;
+  // }
+  // return p1.compareTo(p2);
+  // } else if (patternExpr2.isModuleOrWithCondition()) {
+  // p2 = patternExpr2.last().second();
+  // if (equivalent(p1, p2, pm1, pm2)) {
+  // return 0;
+  // }
+  // return p1.compareTo(p2);
+  // }
+  // }
+  // return 0;
+  // }
 
   /**
    * Check if the condition for the right-hand-sides <code>Module[], With[] or Condition[]</code>
@@ -180,7 +183,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
             if (lhs.isPresent()) {
               stepListener.setUp(lhs, 0, lhs);
               try {
-                fReturnResult = engine.addEvaluatedTraceStep(lhs, rhs, lhs.topHead(), F.$str("RewriteRule"));
+                fReturnResult =
+                    engine.addEvaluatedTraceStep(lhs, rhs, lhs.topHead(), F.$str("RewriteRule"));
               } finally {
                 stepListener.tearDown(F.NIL, 0, true, lhs);
               }
@@ -258,7 +262,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
    * @param evaluate
    * @return
    */
-  private IExpr replacePatternMatch(final IExpr leftHandSide, IPatternMap patternMap,
+  public IExpr replacePatternMatch(final IExpr leftHandSide, IPatternMap patternMap,
       EvalEngine engine, boolean evaluate) {
     // if (RulesData.showSteps) {
     // if (fLhsPatternExpr.head().equals(S.Integrate)) {
@@ -285,7 +289,12 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     engine.pushOptionsStack();
     try {
       engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
-      IExpr result = patternMap.substituteSymbols(fRightHandSide, F.CEmptySequence);
+      if (fRightHandSide == DUMMY_SUBSET_CASES) {
+        fSubstitutedMatch = patternMap.substitutePatterns(fLhsPatternExpr, F.CEmptySequence);
+      } else {
+        fSubstitutedMatch = patternMap.substituteSymbols(fRightHandSide, F.CEmptySequence);
+      }
+      IExpr result = fSubstitutedMatch;
       if (evaluate) {
         if (Config.TRACE_REWRITE_RULE) {
           return engine.addEvaluatedTraceStep(leftHandSide, result, leftHandSide.topHead(),
@@ -349,6 +358,10 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
   @Override
   public IExpr getRHS() {
     return IExpr.ofNullable(fRightHandSide);
+  }
+
+  public IExpr getSubstitutedMatch() {
+    return fSubstitutedMatch;
   }
 
   public IAST getAsAST() {

@@ -1206,7 +1206,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     @Override
-    public IASTAppendable replaceSubset(int[] removedPositions, IExpr newEntry) {
+    public IASTAppendable replaceSubset(int[] replacePosition, IExpr[] newEntries,
+        int[] removePositions) {
       ArgumentTypeException.throwNIL();
       return null;
     }
@@ -5616,11 +5617,22 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public IASTAppendable replaceSubset(int[] removedPositions, IExpr newEntry) {
+  public IASTAppendable replaceSubset(int[] replacePosition, IExpr[] newEntries,
+      int[] removePositions) {
     IASTAppendable result = copyAppendable();
-    result.set(removedPositions[0], newEntry);
-    for (int j = size() - 1; j >= 1; j--) {
-      result.remove(removedPositions[j]);
+    for (int j = 0; j < replacePosition.length; j++) {
+      int position = replacePosition[j];
+      if (position <= 0) {
+        break;
+      }
+      result.set(position, newEntries[j]);
+    }
+    for (int j = removePositions.length - 1; j >= 0; j--) {
+      int position = removePositions[j];
+      if (position <= 0) {
+        break;
+      }
+      result.remove(position);
     }
     return result;
   }

@@ -141,6 +141,11 @@ public interface IPatternMap {
     }
 
     @Override
+    public IExpr substitutePatterns(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
+      return rhsExpr;
+    }
+
+    @Override
     public String toString() {
       StringBuilder buf = new StringBuilder();
       buf.append("Patterns[");
@@ -154,6 +159,9 @@ public interface IPatternMap {
     }
   }
 
+  /**
+   * Match exactly one pattern symbol.
+   */
   static final class PatternMap1 implements IPatternMap {
     private static final int SIZE = 1;
 
@@ -371,6 +379,18 @@ public interface IPatternMap {
     }
 
     @Override
+    public IExpr substitutePatterns(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
+      final EvalEngine engine = EvalEngine.get();
+      return rhsExpr.replaceAll((IExpr input) -> {
+        if (input == fPatternObject1) {
+          // compare object references with operator '==' here !
+          return fValue1 != null ? fValue1 : nilOrEmptySequence;
+        }
+        return F.NIL;
+      }).orElse(rhsExpr);
+    }
+
+    @Override
     public String toString() {
       StringBuilder buf = new StringBuilder();
       buf.append("Patterns[");
@@ -386,6 +406,9 @@ public interface IPatternMap {
     }
   }
 
+  /**
+   * Match exactly two pattern symbols.
+   */
   static class PatternMap2 implements IPatternMap {
     private static final int SIZE = 2;
 
@@ -663,6 +686,22 @@ public interface IPatternMap {
     }
 
     @Override
+    public IExpr substitutePatterns(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
+      final EvalEngine engine = EvalEngine.get();
+      return rhsExpr.replaceAll((IExpr input) -> {
+        if (input == fPatternObject1) {
+          // compare object references with operator '==' here !
+          return fValue1 != null ? fValue1 : nilOrEmptySequence;
+        }
+        if (input == fPatternObject2) {
+          // compare object references with operator '==' here !
+          return fValue2 != null ? fValue2 : nilOrEmptySequence;
+        }
+        return F.NIL;
+      }).orElse(rhsExpr);
+    }
+
+    @Override
     public String toString() {
       StringBuilder buf = new StringBuilder();
       buf.append("Patterns[");
@@ -688,6 +727,9 @@ public interface IPatternMap {
     }
   }
 
+  /**
+   * Match exactly three pattern symbols.
+   */
   static class PatternMap3 implements IPatternMap {
     private static final int SIZE = 3;
 
@@ -1017,6 +1059,26 @@ public interface IPatternMap {
           }
         } else if (input.isAST(S.OptionValue, 2, 4)) {
           return PatternMatching.optionValueReplace((IAST) input, true, engine);
+        }
+        return F.NIL;
+      }).orElse(rhsExpr);
+    }
+
+    @Override
+    public IExpr substitutePatterns(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
+      final EvalEngine engine = EvalEngine.get();
+      return rhsExpr.replaceAll((IExpr input) -> {
+        if (input == fPatternObject1) {
+          // compare object references with operator '==' here !
+          return fValue1 != null ? fValue1 : nilOrEmptySequence;
+        }
+        if (input == fPatternObject2) {
+          // compare object references with operator '==' here !
+          return fValue2 != null ? fValue2 : nilOrEmptySequence;
+        }
+        if (input == fPatternObject3) {
+          // compare object references with operator '==' here !
+          return fValue3 != null ? fValue3 : nilOrEmptySequence;
         }
         return F.NIL;
       }).orElse(rhsExpr);
@@ -1450,6 +1512,30 @@ public interface IPatternMap {
           if (input.isAST(S.OptionValue, 2, 4)) {
             final int length = fSymbolsOrPattern.length;
             return PatternMatching.optionValueReplace((IAST) input, true, engine);
+          }
+          return F.NIL;
+        }).orElse(rhsExpr);
+      }
+      return rhsExpr;
+    }
+
+
+    @Override
+    public IExpr substitutePatterns(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
+      final EvalEngine engine = EvalEngine.get();
+      if (fSymbolsOrPatternValues != null) {
+        return rhsExpr.replaceAll((IExpr input) -> {
+          if (input instanceof IPatternObject) {
+            final ISymbol symbol = (ISymbol) input;
+            final int length = fSymbolsOrPattern.length;
+            for (int i = 0; i < length; i++) {
+              // compare object references with operator '==' here !
+              if (symbol == fSymbolsOrPattern[i]) {
+                return fSymbolsOrPatternValues[i] != null ? fSymbolsOrPatternValues[i]
+                    : nilOrEmptySequence;
+              }
+            }
+            return F.NIL;
           }
           return F.NIL;
         }).orElse(rhsExpr);
@@ -1903,6 +1989,8 @@ public interface IPatternMap {
    * @return
    */
   public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence);
+
+  public IExpr substitutePatterns(final IExpr rhsExpr, final IExpr nilOrEmptySequence);
 
   public boolean setOptionsPattern(final EvalEngine engine, ISymbol lhsHead);
 }

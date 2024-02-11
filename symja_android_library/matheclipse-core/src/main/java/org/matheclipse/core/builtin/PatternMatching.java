@@ -19,6 +19,7 @@ import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetValueEvaluator;
@@ -27,6 +28,7 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.BuiltinUsage;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.Documentation;
@@ -77,6 +79,7 @@ public final class PatternMatching {
       S.SetDelayed.setEvaluator(new SetDelayed());
       // }
       S.SetSystemOptions.setEvaluator(new SetSystemOptions());
+      S.Splice.setEvaluator(new Splice());
       S.SystemOptions.setEvaluator(new SystemOptions());
       S.Unique.setEvaluator(new Unique());
       if (!Config.FUZZY_PARSER) {
@@ -2011,6 +2014,82 @@ public final class PatternMatching {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+  /**
+   * <pre>
+   * <code>Splice(list-of-elements)
+   * </code>
+   * </pre>
+   * 
+   * <p>
+   * the <code>list-of-elements</code> will automatically be converted into a <code>Sequence</code>
+   * of elements.
+   * </p>
+   * 
+   * <pre>
+   * <code>Splice(list-of-elements, head-pattern)
+   * </code>
+   * </pre>
+   * 
+   * <p>
+   * the <code>list-of-elements</code> will automatically be converted into a <code>Sequence</code>
+   * of elements, if the calling expression matches the <code>head-pattern</code>.
+   * </p>
+   * 
+   * <h3>Examples</h3>
+   * 
+   * <pre>
+   * <code>&gt;&gt; h(a, b, c, Splice({{1,1},{2,2}}, h), d, e) 
+   * h(a,b,c,{1,1},{2,2},d,e)
+   * </code>
+   * </pre>
+   */
+  private static final class Splice extends AbstractEvaluator {
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isAST()) {
+        IAST list = (IAST) arg1;
+        IExpr headPattern = S.List;
+        if (ast.isAST2()) {
+          headPattern = ast.arg2();
+        }
+        IExpr peek = engine.getStackFrame(1);
+        if (peek.isPresent() && peek.isAST()) {
+          IExpr topHead = peek.head();
+          if (headPattern.isFreeOfPatterns()) {
+            if (topHead.equals(headPattern)) {
+              if (list.size() == 1) {
+                return S.Nothing;
+              }
+              return list.apply(S.Sequence);
+            }
+            return F.NIL;
+          }
+
+          IPatternMatcher matcher = engine.evalPatternMatcher(headPattern);
+          if (matcher.test(topHead)) {
+            if (topHead.size() == 1) {
+              return S.Nothing;
+            }
+            return ((IAST) arg1).apply(S.Sequence);
+          }
+          return F.NIL;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+  }
 
   private static final class SystemOptions extends AbstractFunctionEvaluator {
 
