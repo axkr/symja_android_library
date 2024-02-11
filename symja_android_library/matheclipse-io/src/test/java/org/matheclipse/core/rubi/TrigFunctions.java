@@ -1991,26 +1991,26 @@ public class TrigFunctions extends AbstractRubiTestCase {
 
   // {2994}
   public void test0256() {
-      check( //
-          "Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[-2 + 3*Cos[c + d*x]]), x]", //
-          "-((Sqrt[5]*Cot[c + d*x]*EllipticE[ArcSin[Sqrt[-2 + 3*Cos[c + d*x]]/Sqrt[Cos[c + d*x]]], 1/5]*Sqrt[-1 + Sec[c + d*x]]*Sqrt[1 + Sec[c + d*x]])/d)", //
-          2994);
+    check( //
+        "Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[-2 + 3*Cos[c + d*x]]), x]", //
+        "-((Sqrt[5]*Cot[c + d*x]*EllipticE[ArcSin[Sqrt[-2 + 3*Cos[c + d*x]]/Sqrt[Cos[c + d*x]]], 1/5]*Sqrt[-1 + Sec[c + d*x]]*Sqrt[1 + Sec[c + d*x]])/d)", //
+        2994);
   }
 
   // {2994}
   public void test0257() {
-      check( //
-          "Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[3 + 2*Cos[c + d*x]]), x]", //
-          "(2*Cot[c + d*x]*EllipticE[ArcSin[Sqrt[3 + 2*Cos[c + d*x]]/(Sqrt[5]*Sqrt[Cos[c + d*x]])], -5]*Sqrt[1 - Sec[c + d*x]]*Sqrt[1 + Sec[c + d*x]])/(3*d)", //
-          2994);
+    check( //
+        "Integrate[(1 + Cos[c + d*x])/(Cos[c + d*x]^(3/2)*Sqrt[3 + 2*Cos[c + d*x]]), x]", //
+        "(2*Cot[c + d*x]*EllipticE[ArcSin[Sqrt[3 + 2*Cos[c + d*x]]/(Sqrt[5]*Sqrt[Cos[c + d*x]])], -5]*Sqrt[1 - Sec[c + d*x]]*Sqrt[1 + Sec[c + d*x]])/(3*d)", //
+        2994);
   }
 
   // {2994}
   public void test0258() {
-      check( //
-          "Integrate[(1 + Cos[c + d*x])/(Sqrt[3 - 2*Cos[c + d*x]]*Cos[c + d*x]^(3/2)), x]", //
-          "(2*Sqrt[5]*Cot[c + d*x]*EllipticE[ArcSin[Sqrt[3 - 2*Cos[c + d*x]]/Sqrt[Cos[c + d*x]]], -1/5]*Sqrt[1 - Sec[c + d*x]]*Sqrt[1 + Sec[c + d*x]])/(3*d)", //
-          2994);
+    check( //
+        "Integrate[(1 + Cos[c + d*x])/(Sqrt[3 - 2*Cos[c + d*x]]*Cos[c + d*x]^(3/2)), x]", //
+        "(2*Sqrt[5]*Cot[c + d*x]*EllipticE[ArcSin[Sqrt[3 - 2*Cos[c + d*x]]/Sqrt[Cos[c + d*x]]], -1/5]*Sqrt[1 - Sec[c + d*x]]*Sqrt[1 + Sec[c + d*x]])/(3*d)", //
+        2994);
   }
 
   // {3011}
@@ -2871,10 +2871,17 @@ public class TrigFunctions extends AbstractRubiTestCase {
 
   // {3889}
   public void test0376() {
-    check( //
-        "Integrate[(e*Tan[c + d*x])^m/Sqrt[a + a*Sec[c + d*x]], x]", //
-        "(2^(1/2 + m)*AppellF1[(1 + m)/2, -1/2 + m, 1, (3 + m)/2, -((a - a*Sec[c + d*x])/(a + a*Sec[c + d*x])), (a - a*Sec[c + d*x])/(a + a*Sec[c + d*x])]*((1 + Sec[c + d*x])^(-1))^(1/2 + m)*(e*Tan[c + d*x])^(1 + m))/(d*e*(1 + m)*Sqrt[a + a*Sec[c + d*x]])", //
-        3889);
+    // try {
+    // fSeconds = 1000;
+      check( //
+          "Integrate[(e*Tan[c + d*x])^m/Sqrt[a + a*Sec[c + d*x]], x]", //
+          "(2^(1/2 + m)*AppellF1[(1 + m)/2, -1/2 + m, 1, (3 + m)/2, -((a - a*Sec[c + d*x])/(a + a*Sec[c + d*x])), (a - a*Sec[c + d*x])/(a + a*Sec[c + d*x])]*((1 + Sec[c + d*x])^(-1))^(1/2 + m)*(e*Tan[c + d*x])^(1 + m))/(d*e*(1 + m)*Sqrt[a + a*Sec[c + d*x]])", //
+          3889);
+    // } finally {
+    // if (Config.PROFILE_MODE) {
+    // BuiltinFunctionCalls.printStatistics();
+    // }
+    // }
   }
 
   // {3889}
