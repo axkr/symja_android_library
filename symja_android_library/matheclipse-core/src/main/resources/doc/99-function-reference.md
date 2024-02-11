@@ -1,6 +1,6 @@
 ## Reference of functions and built-in symbols
 
-Supported features icon: 
+Supported features icon:
 
 * &#x2705; - the symbol / function is supported. Note that this doesn't mean that every possible symbolic evaluation is supported
 * &#x2611; - the symbol / function is partially implemented and might not support most basic features of the function
@@ -884,6 +884,7 @@ Functions in alphabetical order:
 * &#x2705; [Sphere](functions/Sphere.md)
 * &#x1F9EA; [SphericalBesselJ](functions/SphericalBesselJ.md)
 * &#x1F9EA; [SphericalBesselY](functions/SphericalBesselY.md)
+* [Splice](functions/Splice.md)
 * &#x2705; [Split](functions/Split.md)
 * &#x2705; [SplitBy](functions/SplitBy.md)
 * &#x2705; [Sqrt](functions/Sqrt.md)
@@ -928,7 +929,9 @@ Functions in alphabetical order:
 * &#x2705; [StudentTDistribution](functions/StudentTDistribution.md)
 * &#x2705; [Subdivide](functions/Subdivide.md)
 * &#x2611; [Subfactorial](functions/Subfactorial.md)
+* [SubsetCases](functions/SubsetCases.md)
 * &#x2705; [SubsetQ](functions/SubsetQ.md)
+* &#x1F9EA; [SubsetReplace](functions/SubsetReplace.md)
 * &#x2705; [Subsets](functions/Subsets.md)
 * &#x2705; [Subtract](functions/Subtract.md)
 * &#x2705; [SubtractFrom](functions/SubtractFrom.md)

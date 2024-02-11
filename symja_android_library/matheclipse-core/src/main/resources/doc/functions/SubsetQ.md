@@ -15,12 +15,9 @@ See:
 >> SubsetQ({a,b,c},{a,b})
 True
 ```
- 
 
-
-
-
-
+### Related terms
+[SubsetCases.md](SubsetCases.md), [SubsetReplace](SubsetReplace.md)
 
 ### Implementation status
 
