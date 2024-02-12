@@ -75,6 +75,7 @@ public final class OutputFunctions {
       S.TableForm.setEvaluator(new TableForm());
       S.TeXForm.setEvaluator(new TeXForm());
       S.TreeForm.setEvaluator(new TreeForm());
+      S.ScientificForm.setEvaluator(new ScientificForm());
     }
   }
 
@@ -837,6 +838,39 @@ public final class OutputFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDALL);
+    }
+  }
+
+  private static class ScientificForm extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        IExpr arg1 = engine.evaluate(ast.arg1());
+        IExpr arg2 = engine.evaluate(ast.arg2());
+        int n = arg2.toIntDefault();
+        if (n > 0) {
+
+        }
+        return F.NIL;
+      }
+      if (ast.isAST1()) {
+        IExpr arg1 = engine.evaluate(ast.arg1());
+
+
+        return F.NIL;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
 
     @Override

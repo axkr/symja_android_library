@@ -9249,6 +9249,9 @@ public class S {
   public final static IBuiltInSymbol SchurDecomposition =
       S.initFinalSymbol("SchurDecomposition", ID.SchurDecomposition);
 
+  public final static IBuiltInSymbol ScientificForm =
+      S.initFinalSymbol("ScientificForm", ID.ScientificForm);
+
   /**
    * Sec(z) - returns the secant of `z`.
    * 
