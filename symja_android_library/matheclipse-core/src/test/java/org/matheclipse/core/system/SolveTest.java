@@ -2011,6 +2011,15 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->(-1)^(2/5)*10^(4/5)}}");
   }
 
+
+
+  @Test
+  public void testIssue914() {
+    check("Solve({A==20^300,A==26158/5},{A})", //
+        "{}");
+  }
+
+
   /** The JUnit setup method */
   @Override
   public void setUp() {

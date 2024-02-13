@@ -529,6 +529,11 @@ public class RootsFunctions {
    */
   protected static IAST findRoots(double... coefficients) {
     try {
+      for (int j = 0; j < coefficients.length; j++) {
+        if (!Double.isFinite(coefficients[j])) {
+          return F.NIL;
+        }
+      }
       LaguerreSolver laguerreSolver = new LaguerreSolver();
       org.hipparchus.complex.Complex[] solveAllComplex =
           laguerreSolver.solveAllComplex(coefficients, 0.0);
