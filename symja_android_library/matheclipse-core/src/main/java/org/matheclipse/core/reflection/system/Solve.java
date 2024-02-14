@@ -548,7 +548,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       IExpr temp = F.NIL;
 
       if (numerator.isNumericMode() && denominator.isOne()) {
-        temp = RootsFunctions.roots(numerator, F.list(variable), engine);
+        temp = RootsFunctions.complexRoots(numerator, F.list(variable), engine);
       }
       if (temp.isNIL()) {
         temp = RootsFunctions.rootsOfVariable(numerator, denominator, F.list(variable),

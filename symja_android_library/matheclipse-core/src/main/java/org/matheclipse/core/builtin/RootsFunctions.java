@@ -3,9 +3,11 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.evalExpandAll;
 import java.util.List;
+import javax.annotation.Nonnull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.analysis.solvers.LaguerreSolver;
+import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Expr2Object;
 import org.matheclipse.core.convert.JASConvert;
@@ -215,7 +217,7 @@ public class RootsFunctions {
         }
       }
 
-      IExpr temp = roots(arg1, variables, engine);
+      IExpr temp = complexRoots(arg1, variables, engine);
       if (!temp.isList()) {
         return F.NIL;
       }
@@ -421,7 +423,7 @@ public class RootsFunctions {
     }
   }
 
-  public static IAST roots(final IExpr arg1, IAST variables, EvalEngine engine) {
+  public static IAST complexRoots(final IExpr arg1, IAST variables, EvalEngine engine) {
     if (variables.size() != 2) {
       // factor only possible for univariate polynomials
       LOGGER.log(engine.getLogLevel(),
@@ -449,9 +451,10 @@ public class RootsFunctions {
             }
           }
         } else {
-          LaguerreSolver solver = new LaguerreSolver(Config.DEFAULT_ROOTS_CHOP_DELTA);
-          // see https://github.com/Hipparchus-Math/hipparchus/issues/177 for initial value
-          org.hipparchus.complex.Complex[] roots = solver.solveAllComplex(coefficients, 1.0);
+          org.hipparchus.complex.Complex[] roots = allComplexRootsLaguerre(coefficients);
+          if (roots == null) {
+            return F.NIL;
+          }
           list = Object2Expr.convertComplex(true, roots);
         }
         EvalAttributes.sort(list);
@@ -534,12 +537,12 @@ public class RootsFunctions {
           return F.NIL;
         }
       }
-      LaguerreSolver laguerreSolver = new LaguerreSolver();
-      org.hipparchus.complex.Complex[] solveAllComplex =
-          laguerreSolver.solveAllComplex(coefficients, 0.0);
-      return F.mapRange(0, solveAllComplex.length,
-          i -> F.chopExpr(
-              F.complexNum(solveAllComplex[i].getReal(), solveAllComplex[i].getImaginary()),
+      org.hipparchus.complex.Complex[] complexRoots = allComplexRootsLaguerre(coefficients);
+      if (complexRoots == null) {
+        return F.NIL;
+      }
+      return F.mapRange(0, complexRoots.length,
+          i -> F.chopExpr(F.complexNum(complexRoots[i].getReal(), complexRoots[i].getImaginary()),
               Config.DEFAULT_ROOTS_CHOP_DELTA));
     } catch (RuntimeException rex) {
       // solveAllComplex may throw MathIllegalArgumentException, NullArgumentException,
@@ -997,6 +1000,36 @@ public class RootsFunctions {
       return QuarticSolver.evalAndSort(newResult, sort);
     }
     return F.NIL;
+  }
+
+  /**
+   * <p>
+   * Implements the <a href="http://mathworld.wolfram.com/LaguerresMethod.html"> Laguerre's
+   * Method</a> for root finding of real coefficient polynomials.
+   * <p>
+   * Laguerre's method is global in the sense that it can start with any initial approximation and
+   * be able to solve all roots from that point. The algorithm requires a bracketing condition.
+   * 
+   * @param coefficients Polynomial coefficients.
+   * @return the points at which the function value is zero or <code>null</code> if the solver
+   *         couldn't find a solution.
+   */
+  private static org.hipparchus.complex.Complex[] allComplexRootsLaguerre(
+      @Nonnull double[] coefficients) {
+    for (int j = 0; j < coefficients.length; j++) {
+      if (!Double.isFinite(coefficients[j])) {
+        return null;
+      }
+    }
+    try {
+      LaguerreSolver solver = new LaguerreSolver(Config.DEFAULT_ROOTS_CHOP_DELTA);
+      // see https://github.com/Hipparchus-Math/hipparchus/issues/177 for initial value
+      // https://stackoverflow.com/q/65960318
+      return solver.solveAllComplex(coefficients, 1.0);
+    } catch (MathRuntimeException mre) {
+      //
+    }
+    return null;
   }
 
   /**
