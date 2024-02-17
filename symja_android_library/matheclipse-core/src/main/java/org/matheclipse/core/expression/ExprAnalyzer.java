@@ -673,13 +673,24 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
       }
       if (a.isPresent()) {
         // variable + ((b)*Log(base) + a * ProductLog(-(Log(base)/(base^(b/a)*a))) )/(a*Log(base))
-        IAST inverseFunction = F.Plus(variable,
-            F.Times(
-                F.Plus(F.Times(b, F.Log(base)),
-                    F.Times(a,
-                        F.ProductLog(F.Times(num, F.Log(base),
-                            F.Power(F.Times(a, F.Power(base, F.Divide(b, a))), F.CN1))))),
+        IAST z =
+            F.Times(num, F.Log(base), F.Power(F.Times(a, F.Power(base, F.Divide(b, a))), F.CN1));
+        IAST inverseFunction =
+            F.Plus(variable, F.Times(F.Plus(F.Times(b, F.Log(base)), F.Times(a, F.ProductLog(z))),
                 F.Power(F.Times(a, F.Log(base)), F.CN1)));
+        // https://en.wikipedia.org/wiki/Lambert_W_function
+        // When dealing with real numbers only, the two branches W(0) and W(−1) suffice ...
+        IReal zReal = z.evalReal();
+        if (zReal != null) {
+            if (zReal.isNegative() && zReal.isGT(F.CND1DE)) {
+              // TODO branch W(-1)
+              // IAST inverseFunctionNegative = F.Plus(variable,
+              // F.Times(F.Plus(F.Times(b, F.Log(base)), F.Times(a, F.ProductLog(F.CN1, z))),
+              // F.Power(F.Times(a, F.Log(base)), F.CN1)));
+              // return F.List(fEngine.evaluate(inverseFunction),
+              // fEngine.evaluate(inverseFunctionNegative));
+            }
+        }
         return fEngine.evaluate(inverseFunction);
       }
     }
