@@ -827,9 +827,9 @@ public class ComplexNum implements IComplexNum {
       return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
     } catch (OverflowException of) {
       return F.Overflow();
-    } catch (ArithmeticException | ApfloatRuntimeException e) {
+    } catch (ArithmeticException | ApfloatRuntimeException are) {
+      return Errors.printMessage(S.Gamma, are, EvalEngine.get());
     }
-    return IComplexNum.super.gamma();
   }
 
   @Override
@@ -842,10 +842,11 @@ public class ComplexNum implements IComplexNum {
         Apcomplex gamma =
             EvalEngine.getApfloatDouble().gamma(apcomplexValue(), ((INumber) x).apcomplexValue());
         return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
-      } catch (ArithmeticException | ApfloatRuntimeException e) {
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
         // try as computation with complex numbers
         // java.lang.ArithmeticException: Upper gamma with first argument real part nonpositive and
         // second argment zero
+        return Errors.printMessage(S.Gamma, are, EvalEngine.get());
       }
     }
     return IComplexNum.super.gamma(x);
@@ -862,9 +863,16 @@ public class ComplexNum implements IComplexNum {
       }
     }
     if (x0 instanceof INumber && x1 instanceof INumber) {
-      Apcomplex gamma = EvalEngine.getApfloatDouble().gamma(apcomplexValue(),
-          ((INumber) x0).apcomplexValue(), ((INumber) x0).apcomplexValue());
-      return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
+      try {
+        Apcomplex gamma = EvalEngine.getApfloatDouble().gamma(apcomplexValue(),
+            ((INumber) x0).apcomplexValue(), ((INumber) x0).apcomplexValue());
+        return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        // try as computation with complex numbers
+        // java.lang.ArithmeticException: Upper gamma with first argument real part nonpositive and
+        // second argment zero
+        return Errors.printMessage(S.Gamma, are, EvalEngine.get());
+      }
     }
     return IComplexNum.super.gamma(x0, x1);
   }

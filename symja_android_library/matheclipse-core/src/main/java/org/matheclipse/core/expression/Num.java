@@ -9,6 +9,7 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
@@ -658,9 +659,10 @@ public class Num implements INum {
       return F.num(gamma.doubleValue());
     } catch (OverflowException of) {
       return F.Overflow();
-    } catch (ArithmeticException | ApfloatRuntimeException e) {
+    } catch (ArithmeticException | ApfloatRuntimeException are) {
+      return Errors.printMessage(S.Gamma, are, EvalEngine.get());
     }
-    return INum.super.gamma();
+    // return INum.super.gamma();
   }
 
   @Override
@@ -688,10 +690,11 @@ public class Num implements INum {
             EvalEngine.getApfloatDouble().gamma(apcomplexValue(), ((INumber) x).apcomplexValue());
         return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
       }
-    } catch (ArithmeticException | ApfloatRuntimeException e) {
+    } catch (ArithmeticException | ApfloatRuntimeException are) {
       if (Config.SHOW_STACKTRACE) {
-        e.printStackTrace();
+        are.printStackTrace();
       }
+      return Errors.printMessage(S.Gamma, are, EvalEngine.get());
     }
     return INum.super.gamma(x);
   }
@@ -716,9 +719,13 @@ public class Num implements INum {
       }
     }
     if (x0 instanceof INumber && x1 instanceof INumber) {
-      Apcomplex gamma = EvalEngine.getApfloatDouble().gamma(apcomplexValue(),
-          ((INumber) x0).apcomplexValue(), ((INumber) x1).apcomplexValue());
-      return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
+      try {
+        Apcomplex gamma = EvalEngine.getApfloatDouble().gamma(apcomplexValue(),
+            ((INumber) x0).apcomplexValue(), ((INumber) x1).apcomplexValue());
+        return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.Gamma, are, EvalEngine.get());
+      }
     }
     return INum.super.gamma(x0, x1);
   }

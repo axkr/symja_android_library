@@ -10,6 +10,7 @@ import org.apfloat.Apint;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.OverflowException;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -728,9 +729,10 @@ public class ApfloatNum implements INum {
       return valueOf(EvalEngine.getApfloat().gamma(fApfloat));
     } catch (OverflowException of) {
       return F.Overflow();
-    } catch (ArithmeticException | ApfloatRuntimeException e) {
+    } catch (ArithmeticException | ApfloatRuntimeException are) {
+      return Errors.printMessage(S.Gamma, are, EvalEngine.get());
     }
-    return INum.super.gamma();
+    // return INum.super.gamma();
   }
 
   @Override
@@ -751,10 +753,11 @@ public class ApfloatNum implements INum {
       try {
         return F
             .complexNum(EvalEngine.getApfloat().gamma(fApfloat, ((INumber) x).apcomplexValue()));
-      } catch (ArithmeticException | ApfloatRuntimeException e) {
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
         // try as computation with complex numbers
         // java.lang.ArithmeticException: Upper gamma with first argument real part nonpositive and
         // second argment zero
+        return Errors.printMessage(S.Gamma, are, EvalEngine.get());
       }
     }
     return INum.super.gamma(x);
@@ -779,8 +782,12 @@ public class ApfloatNum implements INum {
       }
     }
     if (x0 instanceof INumber && x1 instanceof INumber) {
-      return F.complexNum(EvalEngine.getApfloat().gamma(fApfloat, ((INumber) x0).apcomplexValue(),
-          ((INumber) x1).apcomplexValue()));
+      try {
+        return F.complexNum(EvalEngine.getApfloat().gamma(fApfloat, ((INumber) x0).apcomplexValue(),
+            ((INumber) x1).apcomplexValue()));
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.Gamma, are, EvalEngine.get());
+      }
     }
     return INum.super.gamma(x0, x1);
   }

@@ -772,9 +772,10 @@ public class ApcomplexNum implements IComplexNum {
       return valueOf(EvalEngine.getApfloat().gamma(fApcomplex));
     } catch (OverflowException of) {
       return F.Overflow();
-    } catch (ArithmeticException | ApfloatRuntimeException e) {
+    } catch (ArithmeticException | ApfloatRuntimeException are) {
+      return Errors.printMessage(S.Gamma, are, EvalEngine.get());
     }
-    return IComplexNum.super.gamma();
+    // return IComplexNum.super.gamma();
   }
 
   @Override
@@ -782,21 +783,22 @@ public class ApcomplexNum implements IComplexNum {
     if (isZero() && x.isZero()) {
       return F.CInfinity;
     }
-    if (x instanceof IReal) {
-      try {
-        return valueOf(EvalEngine.getApfloat().gamma(fApcomplex, ((IReal) x).apfloatValue()));
-      } catch (ArithmeticException | ApfloatRuntimeException e) {
-        // try as computation with complex numbers
-      }
-    }
+    // if (x instanceof IReal) {
+    // try {
+    // return valueOf(EvalEngine.getApfloat().gamma(fApcomplex, ((IReal) x).apfloatValue()));
+    // } catch (ArithmeticException | ApfloatRuntimeException e) {
+    // // try as computation with complex numbers
+    // }
+    // }
     if (x instanceof INumber) {
       try {
         return F
             .complexNum(EvalEngine.getApfloat().gamma(fApcomplex, ((INumber) x).apcomplexValue()));
-      } catch (ArithmeticException | ApfloatRuntimeException e) {
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
         // try as computation with complex numbers
         // java.lang.ArithmeticException: Upper gamma with first argument real part nonpositive and
         // second argment zero
+        return Errors.printMessage(S.Gamma, are, EvalEngine.get());
       }
     }
     return IComplexNum.super.gamma(x);
@@ -812,17 +814,22 @@ public class ApcomplexNum implements IComplexNum {
         return F.CNInfinity;
       }
     }
-    if (x0 instanceof IReal && x1 instanceof IReal) {
-      try {
-        return valueOf(EvalEngine.getApfloat().gamma(fApcomplex, ((IReal) x0).apfloatValue(),
-            ((IReal) x1).apfloatValue()));
-      } catch (ArithmeticException | ApfloatRuntimeException e) {
-        // try as computation with complex numbers
-      }
-    }
+    // if (x0 instanceof IReal && x1 instanceof IReal) {
+    // try {
+    // return valueOf(EvalEngine.getApfloat().gamma(fApcomplex, ((IReal) x0).apfloatValue(),
+    // ((IReal) x1).apfloatValue()));
+    // } catch (ArithmeticException | ApfloatRuntimeException e) {
+    // // try as computation with complex numbers
+    // }
+    // }
     if (x0 instanceof INumber && x1 instanceof INumber) {
-      return F.complexNum(EvalEngine.getApfloat().gamma(fApcomplex, ((INumber) x0).apcomplexValue(),
-          ((INumber) x1).apcomplexValue()));
+      try {
+        return F.complexNum(EvalEngine.getApfloat().gamma(fApcomplex,
+            ((INumber) x0).apcomplexValue(), ((INumber) x1).apcomplexValue()));
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.Gamma, are, EvalEngine.get());
+      }
+
     }
     return IComplexNum.super.gamma(x0, x1);
   }

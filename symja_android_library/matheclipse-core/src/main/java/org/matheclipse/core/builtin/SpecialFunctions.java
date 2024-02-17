@@ -2118,7 +2118,7 @@ public class SpecialFunctions {
 
     @Override
     public IExpr e1ObjArg(final IExpr o) {
-      if (o.isZero()) {
+      if (o.equals(F.C0) || o.equals(F.CD0)) {
         return F.C0;
       }
       return F.NIL;
@@ -2127,7 +2127,7 @@ public class SpecialFunctions {
     @Override
     public IExpr e2ObjArg(IExpr k, IExpr z) {
       int ki = Integer.MIN_VALUE;
-      if (z.isZero()) {
+      if (z.equals(F.C0) || z.equals(F.CD0)) {
         // ProductLog(k_?NumberQ,0) := -Infinity/;k!=0
         if (k.isNonZeroComplexResult()) {
           return F.CNInfinity;
