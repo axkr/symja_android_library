@@ -8232,6 +8232,9 @@ public class S {
    */
   public final static IBuiltInSymbol PowerMod = S.initFinalSymbol("PowerMod", ID.PowerMod);
 
+  public final static IBuiltInSymbol PowersRepresentations =
+      S.initFinalSymbol("PowersRepresentations", ID.PowersRepresentations);
+
   public final static IBuiltInSymbol PrecedenceForm =
       S.initFinalSymbol("PrecedenceForm", ID.PrecedenceForm);
 
@@ -9736,6 +9739,8 @@ public class S {
    */
   public final static IBuiltInSymbol SquareMatrixQ =
       S.initFinalSymbol("SquareMatrixQ", ID.SquareMatrixQ);
+
+  public final static IBuiltInSymbol SquaresR = S.initFinalSymbol("SquaresR", ID.SquaresR);
 
   /**
    * SSSTriangle(a, b, c) - returns a triangle from 3 sides `a`, `b` and `c`.

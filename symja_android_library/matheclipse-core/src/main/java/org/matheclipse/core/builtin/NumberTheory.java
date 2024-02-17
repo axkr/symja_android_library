@@ -4435,7 +4435,7 @@ public final class NumberTheory {
     private static IExpr termPartitionsQ1(EvalEngine engine, IInteger n, int k) {
       // DivisorSigma(1, k)*PartitionsQ(n - k)
       final IInteger k2 = F.ZZ(k);
-      return Times(F.DivisorSigma(C1, k2), F.PartitionsQ(Plus(Negate(k2), n))).eval(engine);
+      return Times(F.DivisorSigma(F.C1, k2), F.PartitionsQ(Plus(Negate(k2), n))).eval(engine);
     }
 
     private static IExpr sumPartitionsQ2(EvalEngine engine, IInteger n) {
@@ -5326,6 +5326,183 @@ public final class NumberTheory {
     }
   }
 
+  private static class SquaresR extends AbstractFunctionEvaluator {
+
+    /**
+     * TODO use Wikipedia formulas for small d
+     * <a href="https://en.wikipedia.org/wiki/Sum_of_squares_function">Wikipedia - Sum of squares
+     * function</a>
+     * 
+     * @param d
+     * @param n
+     * @return
+     */
+    private static int squaresR(int d, long n) {
+      if (d == 0) {
+        // Only one way to represent 0 as a sum of 0 squares
+        return n == 0 ? 1 : 0;
+      }
+      if (n < 0) {
+        // No way to represent a negative number as a sum of squares
+        return 0;
+      }
+
+      int count = 0;
+      for (long i = 0; i <= n; i++) {
+        long square = LongMath.checkedPow(i, 2);
+        if (square > n) {
+          return count;
+        }
+        long n2 = n - square;
+        long squaresR = squaresR(d - 1, n2);
+        // Add the number of ways to represent n - i^2 as a sum of d - 1 squares
+        if (i == 0) {
+          count += squaresR;
+        } else {
+          count += 2 * squaresR;
+        }
+      }
+      return count;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int d = ast.arg1().toIntDefault();
+      if (d <= 0) {
+        // The value `1` in position `2` must be a non-negative machine sized integer
+        return Errors.printMessage(S.SquaresR, "pint", F.List(ast.arg1(), F.C1), engine);
+      }
+      int n = ast.arg2().toIntDefault();
+      if (n == Integer.MIN_VALUE) {
+        // Machine-sized integer expected at position `2` in `1`.
+        return Errors.printMessage(S.SquaresR, "pint", F.List(ast.arg2(), F.C2), engine);
+      }
+
+      try {
+        int squaresR = squaresR(d, n);
+        if (squaresR >= 0) {
+          return F.ZZ(squaresR);
+        }
+      } catch (ArithmeticException aex) {
+        // from LongMath#checkedPow()
+        return Errors.printMessage(S.SquaresR, aex, engine);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
+
+  private static class PowersRepresentations extends AbstractFunctionEvaluator {
+
+    /**
+     * Compute <code>PowersRepresentations(n,k,p)</code> recursively and collect the resulting
+     * integer lists in <code>resultList</code>.
+     * 
+     * @param resultList
+     * @param intList
+     * @param start
+     * @param n the number which should be represented by the sum of powers
+     *        <code>n1^k + n2^k + ...</code>
+     * @param k the resulting number of integers in each intList
+     * @param p the exponent
+     */
+    private static void powersRepresentationsRecursive(IASTAppendable resultList,
+        IASTAppendable intList, long start, long n, int k, int p) {
+      if (k == 0) {
+        if (n == 0) {
+          resultList.append(intList);
+        }
+        return;
+      }
+      if (n < 0) {
+        return;
+      }
+
+      for (long i = start; i <= n; i++) {
+        long checkedPow = LongMath.checkedPow(i, p);
+        if (checkedPow > n) {
+          return;
+        }
+        long n2 = n - checkedPow;
+        IASTAppendable subList = intList.copyAppendable();
+        subList.append(i);
+        powersRepresentationsRecursive(resultList, subList, i, n2, k - 1, p);
+      }
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      long n = ast.arg1().toLongDefault();
+      if (n == Long.MIN_VALUE) {
+        // Machine-sized integer expected at position `2` in `1`.
+        return Errors.printMessage(S.PowersRepresentations, "pint", F.List(ast.arg1(), F.C1),
+            engine);
+      }
+      int k = ast.arg2().toIntDefault();
+      if (k < 0) {
+        // The value `1` in position `2` must be a non-negative machine sized integer
+        return Errors.printMessage(S.PowersRepresentations, "pint", F.List(ast.arg2(), F.C2),
+            engine);
+      }
+      int p = ast.arg3().toIntDefault();
+      if (p < 0) {
+        // The value `1` of argument `2` must be a positive integer
+        return Errors.printMessage(S.PowersRepresentations, "ppnt", F.List(ast.arg3(), F.C3),
+            engine);
+      }
+      if (k == 0) {
+        return F.CEmptyList;
+      }
+      if (n < 0) {
+        return F.CEmptyList;
+      }
+
+      try {
+        IASTAppendable result = F.ListAlloc();
+        powersRepresentationsRecursive(result, F.ListAlloc(k), 0, n, k, p);
+        return result;
+      } catch (ArithmeticException aex) {
+        // from LongMath#checkedPow()
+        return Errors.printMessage(S.PowersRepresentations, aex, engine);
+      }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
+
   /**
    *
    *
@@ -5389,10 +5566,10 @@ public final class NumberTheory {
           } else {
             factorPlusMinus1 = F.C1;
           }
-          temp.append(
-              Times(factorPlusMinus1, F.Binomial(Plus(value, nSubtract1), Plus(value, nSubtractm)),
-                  F.Binomial(nTimes2Subtractm, F.Subtract(nSubtractm, value)),
-                  F.StirlingS2(Plus(value, nSubtractm), value)));
+          temp.append(F.Times(factorPlusMinus1,
+              F.Binomial(Plus(value, nSubtract1), Plus(value, nSubtractm)),
+              F.Binomial(nTimes2Subtractm, F.Subtract(nSubtractm, value)),
+              F.StirlingS2(Plus(value, nSubtractm), value)));
           leafCount += temp.leafCount();
           if (leafCount > Config.MAX_AST_SIZE) {
             ASTElementLimitExceeded.throwIt(leafCount);
@@ -5701,6 +5878,7 @@ public final class NumberTheory {
       S.PartitionsQ.setEvaluator(new PartitionsQ());
       S.PerfectNumber.setEvaluator(new PerfectNumber());
       S.PerfectNumberQ.setEvaluator(new PerfectNumberQ());
+      S.PowersRepresentations.setEvaluator(new PowersRepresentations());
       S.Prime.setEvaluator(new Prime());
       S.PrimePi.setEvaluator(new PrimePi());
       S.PrimeOmega.setEvaluator(new PrimeOmega());
@@ -5712,6 +5890,7 @@ public final class NumberTheory {
       S.Rationalize.setEvaluator(new Rationalize());
       S.RootReduce.setEvaluator(new RootReduce());
       S.SquareFreeQ.setEvaluator(new SquareFreeQ());
+      S.SquaresR.setEvaluator(new SquaresR());
       S.StirlingS1.setEvaluator(new StirlingS1());
       S.StirlingS2.setEvaluator(new StirlingS2());
       S.Subfactorial.setEvaluator(new Subfactorial());
@@ -5964,17 +6143,17 @@ public final class NumberTheory {
       return F.CN1;
     }
     n = n.add(F.C1);
-    if (!(n.compareInt(0) > 0)) {
-      return F.C0;
+    if (n.isPositive()) {
+      IInteger i = F.C1;
+      IInteger c = F.C1;
+      final IInteger temp1 = n.shiftLeft(1).subtract(F.C1);
+      while (i.compareTo(n) < 0) {
+        c = c.multiply(temp1.subtract(i)).div(i);
+        i = i.add(F.C1);
+      }
+      return c.div(n);
     }
-    IInteger i = F.C1;
-    IInteger c = F.C1;
-    final IInteger temp1 = n.shiftLeft(1).subtract(F.C1);
-    while (i.compareTo(n) < 0) {
-      c = c.multiply(temp1.subtract(i)).div(i);
-      i = i.add(F.C1);
-    }
-    return c.div(n);
+    return F.C0;
   }
 
   public static BigInteger divisorSigma(int exponent, int n) {

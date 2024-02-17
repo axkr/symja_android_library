@@ -274,6 +274,7 @@ public class Errors {
       "phy", "`1` is not physical.", //
       "pilist",
       "The arguments to `1` must be two lists of integers of identical length, with the second list only containing positive integers.", //
+      "pint", "The value `1` in position `2` must be a non-negative machine sized integer.", //
       "plen", "`1` and `2` should have the same length.", //
       "plld", "Endpoints in `1` must be distinct machine-size real numbers.", //
       "pllim", "Range specification `1` is not of the form {x, xmin, xmax}.", //
@@ -287,6 +288,7 @@ public class Errors {
       "posprm", "Parameter `1` at position `2` in `3` is expected to be positive.", //
       "posr", "The left hand side of `2` in `1` doesn't match an int-array of depth `3`.", //
       "post", "The threshold `1` should be positive.", //
+      "ppnt", "The value `1` of argument `2`  must be a positive integer.", //
       "preal", "The parameter `1` should be real-valued.", //
       "precsm", "Requested precision `1` is smaller than `2`.", //
       "precgt", "Requested precision `1` is greater than `2`.", //

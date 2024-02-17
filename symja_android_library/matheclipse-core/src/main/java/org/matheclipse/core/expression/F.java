@@ -603,6 +603,12 @@ public class F extends S {
   /** Constant double &quot;1.0&quot; */
   public static final Num CD1 = new Num(1.0);
 
+  /** Constant double &quot;(-1.0)/E&quot; */
+  public static final Num CND1DE = new Num((-1.0) / Math.E);
+
+  /** Constant double &quot;(1.0)/E&quot; */
+  public static final Num CD1DE = new Num(1.0 / Math.E);
+
   /** Complex numerical imaginary unit. */
   public static final IComplexNum CDI = ComplexNum.I;
 
