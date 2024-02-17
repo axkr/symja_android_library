@@ -10260,6 +10260,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testGamma() {
+    check("Gamma(-9223372036854775808/11,-3.141592653589793,3/4)", //
+        "Gamma(-8.384883669867978*10^17,-3.141592653589793)-Gamma(-8.384883669867978*10^17,0.75)");
+
+
     check("Gamma(4,3)", //
         "78/E^3");
 
@@ -20277,6 +20281,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testProductLog() {
+    // https://docs.sympy.org/latest/modules/functions/elementary.html#sympy.functions.elementary.exponential.LambertW
+    check("ProductLog(1.2)", //
+        "0.635564");
+    check("ProductLog(-1, 1.2)", //
+        "-1.34748+I*(-4.41624)");
+    // -1/E < z < 0.0
+    check("ProductLog(-0.12)", //
+        "-0.137718");
+    check("ProductLog(-1, -0.12)", //
+        "-3.32033");
+
     check("ProductLog(9/2*Sqrt(3)*Log(3))", //
         "3/2*Log(3)");
     check("N(ProductLog(1/3), 100)", //
@@ -23621,6 +23636,42 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "2*(-b-d)))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))},{(Sqrt(2)*(1/2*(-a-c)+c))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(\n"//
             + "2)*(1/2*(-b-d)+d))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))}}");
   }
+
+
+  @Test
+  public void testSquaresR() {
+    check("SquaresR(8, 30)", //
+        "395136");
+    check("Table(SquaresR(2, n), {n, 10})", //
+        "{4,4,0,4,8,0,0,4,4,8}");
+    check("SquaresR(2, 45)", //
+        "8");
+    check("SquaresR(2, 100)", //
+        "12");
+  }
+
+  @Test
+  public void testPowersRepresentations() {
+    check("PowersRepresentations(8174, 6, 3)", //
+        "{{0,0,4,10,13,17},{0,3,6,7,9,19},{0,7,10,12,12,15},{1,1,1,11,14,16},{1,3,5,12,13,\n" //
+            + "16},{1,4,5,5,10,19},{1,5,6,10,10,18},{2,3,4,6,10,19},{3,3,3,4,13,18},{3,5,9,10,\n" //
+            + "13,16},{4,5,6,13,13,15},{4,9,12,12,12,13},{5,9,9,13,13,13},{7,7,10,10,14,14}}");
+    check("PowersRepresentations(100, 1, 2)", //
+        "{{10}}");
+    check("PowersRepresentations(1729, 0, 3)", //
+        "{}");
+    check("PowersRepresentations(1729, 2, 3)", //
+        "{{1,12},{9,10}}");
+    check("PowersRepresentations(102, 3, 2)", //
+        "{{1,1,10},{2,7,7}}");
+    check("PowersRepresentations(100, 2, 2)", //
+        "{{0,10},{6,8}}");
+    check("PowersRepresentations(87539319, 2, 3)", //
+        "{{167,436},{228,423},{255,414}}");
+    check("PowersRepresentations(6963472309248, 2, 3)", //
+        "{{2421,19083},{5436,18948},{10200,18072},{13322,16630}}");
+  }
+
 
   @Test
   public void testStack() {
