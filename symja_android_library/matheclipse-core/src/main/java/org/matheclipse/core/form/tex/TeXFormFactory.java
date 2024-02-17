@@ -1787,7 +1787,7 @@ public class TeXFormFactory {
     IRational im = c.getImaginaryPart();
     if (!re.isZero()) {
       convertInternal(buf, re, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
-      if (im.compareInt(0) >= 0) {
+      if (im.isNonNegativeResult()) {
         buf.append(" + ");
       } else {
         buf.append(" - ");

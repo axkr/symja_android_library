@@ -108,7 +108,7 @@ public final class FrobeniusSolver implements OutputPortUnsafe<IInteger[]> {
 
   private boolean assertEq(IInteger[] equation) {
     for (IInteger i : equation) {
-      if (i.compareInt(0) == 0) {
+      if (i.isZero()) {
         return false;
       }
     }

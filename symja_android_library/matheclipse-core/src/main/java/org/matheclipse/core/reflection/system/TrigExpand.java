@@ -127,7 +127,7 @@ public class TrigExpand extends AbstractEvaluator {
     private IExpr expandTimes(IAST ast, IAST timesAST) {
       if (timesAST.arg1().isInteger()) {
         IInteger n = (IInteger) timesAST.arg1();
-        if (n.compareInt(0) > 0) {
+        if (n.isPositive()) {
           try {
             IExpr theta = timesAST.rest().oneIdentity1();
             if (ast.isSin()) {

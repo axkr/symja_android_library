@@ -46,7 +46,7 @@ final class SingleSolutionProvider extends SolutionProviderAbstract {
     IInteger remainder;
     for (i = 0; i < coefficients.length; ++i) {
       remainder = currentRemainder[i].subtract(coefficients[i].multiply(currentCounter));
-      if (remainder.compareInt(0) < 0) {
+      if (remainder.isNegative()) {
         currentCounter = F.C0;
         currentSolution = null;
         return null;
