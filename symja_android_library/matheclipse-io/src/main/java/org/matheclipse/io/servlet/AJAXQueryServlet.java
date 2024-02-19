@@ -44,6 +44,7 @@ import org.matheclipse.logging.ThreadLocalNotifyingAppender.ThreadLocalNotifierC
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
+import com.google.common.util.concurrent.MoreExecutors;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -200,13 +201,17 @@ public class AJAXQueryServlet extends HttpServlet {
     });
 
     try {
-      return
-          task.get(Config.SERVER_REQUEST_TIMEOUT_SECONDS * 1000, TimeUnit.MILLISECONDS);
+      return task.get(Config.SERVER_REQUEST_TIMEOUT_SECONDS * 1000, TimeUnit.MILLISECONDS);
     } catch (InterruptedException e) {
       return JSONBuilder.createJSONError("Timeout exceeded. Calculation interrupted!");
     } catch (ExecutionException | TimeoutException e) {
       engine.setStopRequested(true);
       return JSONBuilder.createJSONError("Timeout exceeded. Calculation aborted!");
+    } finally {
+      if (!task.cancel(true)) {
+        LOGGER.warn("task.cancel() failed!");
+      }
+      MoreExecutors.shutdownAndAwaitTermination(executors, 1, TimeUnit.SECONDS);
     }
   }
 
