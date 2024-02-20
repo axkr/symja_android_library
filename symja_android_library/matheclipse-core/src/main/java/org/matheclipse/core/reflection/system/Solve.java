@@ -214,8 +214,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           } else if (numericFlag) {
             listOfRules = findRoot(exprAnalyzer, engine);
             if (listOfRules.isPresent()) {
-              listOfRules =
-                  exprAnalyzer.mapOnOriginal(exprAnalyzer.getOriginalExpr(), listOfRules);
+              listOfRules = exprAnalyzer.mapOnOriginal(exprAnalyzer.getOriginalExpr(), listOfRules);
             }
           }
           if (listOfRules.isPresent()) {
@@ -618,6 +617,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         // expensive recursion try
         IExpr firstEquation = termsEqualZeroList.arg1();
 
+        IASTMutable reducedEqualZeroList = termsEqualZeroList.copyAppendable();
         for (int i = 1; i < variables.size(); i++) {
           IExpr variable = variables.get(i);
 
@@ -625,15 +625,15 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               variable, true, engine);
           if (reduced != null) {
             variables = variables.splice(i);
-            termsEqualZeroList = termsEqualZeroList.removeAtCopy(1);
+            reducedEqualZeroList = reducedEqualZeroList.removeAtCopy(1);
             // oneVariableRule = ( firstVariable -> reducedExpression )
             IAST oneVariableRule = reduced[1];
-            IExpr replaced = termsEqualZeroList.replaceAll(oneVariableRule);
+            IExpr replaced = reducedEqualZeroList.replaceAll(oneVariableRule);
             if (replaced.isList()) {
               IExpr subResult = solveRecursive((IASTMutable) replaced, inequationsList, numericFlag,
                   variables, engine);
               if (subResult.isListOfLists()) {
-                return F.mapList((IAST) subResult, t -> {
+                IASTMutable result = F.mapList((IAST) subResult, t -> {
                   final IAST listOfRules = (IAST) t;
                   IExpr replaceAllExpr = oneVariableRule.second().replaceAll(listOfRules);
                   if (replaceAllExpr.isPresent()) {
@@ -642,12 +642,13 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                   }
                   return F.NIL;
                 });
+                return crossChecking(termsEqualZeroList, result, engine);
               } else if (subResult.isList()) { // important for NSolve
                 replaced = oneVariableRule.second().replaceAll((IAST) subResult);
                 if (replaced.isPresent()) {
-                  IASTAppendable appendable = ((IAST) subResult).copyAppendable();
-                  appendable.append(F.Rule(variable, replaced));
-                  return appendable;
+                  IASTAppendable result = ((IAST) subResult).copyAppendable();
+                  result.append(F.Rule(variable, replaced));
+                  return crossChecking(termsEqualZeroList, result, engine);
                 }
               }
             }
@@ -941,7 +942,6 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                 solveTimesAST((IAST) termEQZero, termsEqualZero, inequationsList, numericFlag,
                     variables, multipleValues, engine, subSolutionSet, i);
               }
-
             }
           }
         }
@@ -1019,6 +1019,10 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                 break;
               }
             } else {
+              if (possibleZero.isIndeterminate()) {
+                removedPositions[untilPosition++] = j;
+                break;
+              }
               if (!engine.evalTrue(F.PossibleZeroQ(replaceAll))) {
                 removedPositions[untilPosition++] = j;
                 break;

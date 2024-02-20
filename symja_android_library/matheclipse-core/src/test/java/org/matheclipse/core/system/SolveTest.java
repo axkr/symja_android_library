@@ -1413,7 +1413,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
   public void testSolveIssue413() {
     // eval quiet without message
     check("Solve({8.0*E - 9 == x0/x1, x0==x1^4.0},{x0, x1}) ", //
-        "{{x1->-1.16797+I*2.02298,x0->-14.88721+I*25.78541},{x1->-1.16797+I*(-2.02298),x0->-14.88721+I*(-25.78541)},{x1->0.0,x0->0.0},{x1->2.33594,x0->29.77443}}");
+        "{{x1->-1.16797+I*2.02298,x0->-14.88721+I*25.78541},{x1->-1.16797+I*(-2.02298),x0->-14.88721+I*(-25.78541)},{x1->2.33594,x0->29.77443}}");
     // eval quiet without message
     check("Solve({x0^2.0*Sin(x1)==5.0,x1^3.0*Cos(x0)==5.0},{x0,x1}) ", //
         "Solve({x0^2.0*Sin(x1)==5.0,x1^3.0*Cos(x0)==5.0},{x0,x1})");
@@ -2015,8 +2015,27 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testIssue914() {
+    // TODO
+    // check("Solve(5==35500*(1+x/4)^(4*7),x)", //
+    // "");
     check("Solve({A==20^300,A==26158/5},{A})", //
         "{}");
+  }
+
+  // @Test
+  // public void testIssue916() {
+  // TODO
+  // check("ProductLog(-Log(7)/5243338316756303634461458718861951455543)//N", //
+  // "-3.7112*10^-40");
+  // check("Solve(7^x-x==47, x)", //
+  // "{{x->-47},{x->-(47*Log(7)+ProductLog(-1,-Log(7)/\n" //
+  // + "5243338316756303634461458718861951455543))/Log(7)}}");
+  // }
+
+  @Test
+  public void testIssue918() {
+    check("Solve({x==Pi*y^2, 5==x/y}, {x,y})", //
+        "{{y->5/Pi,x->25/Pi}}");
   }
 
 
