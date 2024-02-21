@@ -115,7 +115,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    */
   public ExprPolynomial(ExprPolynomialRing r, IExpr c, ExpVectorLong e) {
     this(r);
-    if (!c.isZERO()) {
+    if (!c.isZero()) {
       val.put(e, c);
     }
   }
