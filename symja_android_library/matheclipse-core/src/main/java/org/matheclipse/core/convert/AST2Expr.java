@@ -163,7 +163,7 @@ public class AST2Expr {
       "FactorSquareFreeList", "FactorTerms", "FactorTermsList", "Flatten", "FlattenAt",
       "FlatTopWindow", "Fibonacci", "File", "FileFormat", "FileHash", "FileNameJoin", "FilePrint",
       "FileNameTake", "FileNames", "FilterRules", "FindClusters", "FindCycle", "FindEulerianCycle",
-      "FindEdgeCover", "FindFit", "FindGraphCommunities", "FindGraphIsomorphism",
+      "FindEdgeCover", "FindFit", "FindFormula", "FindGraphCommunities", "FindGraphIsomorphism",
       "FindIndependentEdgeSet", "FindIndependentVertexSet", "FindHamiltonianCycle", "FindInstance",
       "FindLinearRecurrence", "FindMaximum", "FindMinimum", "FindPermutation", "FindRoot",
       "FindShortestPath", "FindShortestTour", "FindSpanningTree", "FindVertexCover", "First",

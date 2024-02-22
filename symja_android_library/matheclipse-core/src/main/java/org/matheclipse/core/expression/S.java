@@ -3678,6 +3678,8 @@ public class S {
    */
   public final static IBuiltInSymbol FindFit = S.initFinalSymbol("FindFit", ID.FindFit);
 
+  public final static IBuiltInSymbol FindFormula = S.initFinalSymbol("FindFormula", ID.FindFormula);
+
   public final static IBuiltInSymbol FindGraphCommunities =
       S.initFinalSymbol("FindGraphCommunities", ID.FindGraphCommunities);
 

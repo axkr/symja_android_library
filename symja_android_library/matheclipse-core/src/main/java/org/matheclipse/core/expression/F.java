@@ -4405,6 +4405,14 @@ public class F extends S {
     return quaternary(FindFit, a0, a1, a2, a3);
   }
 
+  public static IAST FindFormula(final IExpr data, final IExpr x) {
+    return new AST2(FindFormula, data, x);
+  }
+
+  public static IAST FindFormula(final IExpr data, final IExpr x, IExpr n) {
+    return new AST3(FindFormula, data, x, n);
+  }
+
   public static IAST FindMaximum(final IExpr f, final IExpr x) {
     return new AST2(FindMaximum, f, x);
   }
