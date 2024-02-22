@@ -1025,9 +1025,10 @@ public class RootsFunctions {
       LaguerreSolver solver = new LaguerreSolver(Config.DEFAULT_ROOTS_CHOP_DELTA);
       // see https://github.com/Hipparchus-Math/hipparchus/issues/177 for initial value
       // https://stackoverflow.com/q/65960318
-      return solver.solveAllComplex(coefficients, 1.0);
+      return solver.solveAllComplex(coefficients, 100_000, 1.0);
     } catch (MathRuntimeException mre) {
-      //
+      // mre.printStackTrace();
+      // org.hipparchus.exception.MathIllegalStateException: maximal count (100,000) exceeded
     }
     return null;
   }
