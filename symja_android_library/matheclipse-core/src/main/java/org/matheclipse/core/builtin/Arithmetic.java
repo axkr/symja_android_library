@@ -37,6 +37,8 @@ import static org.matheclipse.core.expression.S.Power;
 import static org.matheclipse.core.expression.S.Times;
 import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.DoubleFunction;
 import java.util.function.DoubleUnaryOperator;
@@ -4260,53 +4262,30 @@ public final class Arithmetic {
       if (base.isAST()) {
         IAST powBase = (IAST) base;
         if (powBase.isTimes()) {
+          final IAST baseTimes = powBase;
           if (exponent.isInteger() || exponent.isMinusOne()) {
-            // (a * b * c)^n => a^n * b^n * c^n
-            return powBase.mapThread(Power(F.Slot1, exponent), 1);
+            return baseTimes.mapThread(Power(F.Slot1, exponent), 1);
           }
-          // following rule produces "iteration limit exceeded"
-          // if (powBase.first().isMinusOne() && exponent.isReal() && powBase.isNegativeResult()) {
-          // // ((-1) * rest) ^ (exponent) ;rest is real result
-          // return F.Times(F.Power(powBase.first(), exponent),
-          // F.Power(powBase.rest().oneIdentity1(), exponent));
-          // }
-          if ((base.size() > 2)) {
-            IASTAppendable filterAST = powBase.copyHead();
-            IASTAppendable restAST = powBase.copyHead();
-            IASTAppendable simplifiedTimesArgs = powBase.copyHead();
-            powBase.forEach(x -> {
-              if (x.isRealResult()) {
-                if (x.isMinusOne()) {
-                  restAST.append(x);
-                } else {
-                  if (x.isNegativeResult()) {
-                    filterAST.append(x.negate());
-                    restAST.append(F.CN1);
-                  } else {
-                    if (exponent.isReal() && x.isPower() && x.base().isNumber()) {
-                      if (powerPowerRealExponent((IAST) x, (IReal) exponent)) {
-                        simplifiedTimesArgs.append(F.Power(x.base(), x.exponent().times(exponent)));
-                        return;
-                      }
-                    }
-                    filterAST.append(x);
-                  }
-                }
-              } else {
-                restAST.append(x);
-              }
-            });
-            IExpr temp = EvalEngine.get().evaluate(restAST);
-            if (simplifiedTimesArgs.size() > 1 || (filterAST.size() > 1 && !temp.isNumber())) {
-              if (filterAST.size() > 1) {
-                simplifiedTimesArgs.append(Power(filterAST, exponent));
-              }
-              if (restAST.size() > 1) {
-                simplifiedTimesArgs.append(Power(temp, exponent));
-              }
-              return simplifiedTimesArgs;
+          if (exponent.isFraction()) {
+            // (a * b * c)^n => a^n * b^n * c^n => result * (rest ^ exponent)
+            IExpr temp = powerTimesFraction(baseTimes, (IFraction) exponent);
+            if (temp.isPresent()) {
+              return temp;
             }
           }
+
+          IExpr temp = powerTimesN(baseTimes, exponent);
+          if (temp.isPresent()) {
+            return temp;
+          }
+
+          // following rule produces "iteration limit exceeded"
+          // if (baseTimes.first().isMinusOne() && exponent.isReal() &&
+          // baseTimes.isNegativeResult())
+          // { ((-1) * rest) ^ (exponent) ;rest is real result
+          // return F.Times(F.Power(baseTimes.first(), exponent),
+          // F.Power(baseTimes.rest().oneIdentity1(), exponent));
+          // }
         } else if (base.isPower()) {
           if (base.exponent().isReal() && exponent.isReal()) {
             IExpr baseBase = base.base();
@@ -4391,6 +4370,119 @@ public final class Arithmetic {
             ast.addEvalFlags(IAST.IS_ALL_EXPANDED);
           }
         }
+      }
+      return F.NIL;
+    }
+
+    private static IExpr powerTimesN(IAST baseTimes, final IExpr exponent) {
+      // for non-rational exponents
+      IASTAppendable filterAST = baseTimes.copyHead();
+      IASTAppendable restAST = baseTimes.copyHead();
+      IASTAppendable simplifiedTimesArgs = baseTimes.copyHead();
+      baseTimes.forEach(x -> {
+        if (x.isRealResult()) {
+          if (x.isMinusOne()) {
+            restAST.append(x);
+          } else {
+            if (x.isNegativeResult()) {
+              filterAST.append(x.negate());
+              restAST.append(F.CN1);
+            } else {
+              if (exponent.isReal() && x.isPower() && x.base().isNumber()) {
+                if (powerPowerRealExponent((IAST) x, (IReal) exponent)) {
+                  simplifiedTimesArgs.append(F.Power(x.base(), x.exponent().times(exponent)));
+                  return;
+                }
+              }
+              filterAST.append(x);
+            }
+          }
+        } else {
+          restAST.append(x);
+        }
+      });
+      IExpr temp = EvalEngine.get().evaluate(restAST);
+      if (simplifiedTimesArgs.size() > 1 || (filterAST.size() > 1 && !temp.isNumber())) {
+        if (filterAST.size() > 1) {
+          simplifiedTimesArgs.append(Power(filterAST, exponent));
+        }
+        if (restAST.size() > 1) {
+          simplifiedTimesArgs.append(Power(temp, exponent));
+        }
+        return simplifiedTimesArgs;
+      }
+      return F.NIL;
+    }
+
+    private static IExpr powerTimesFraction(IAST baseTimes, final IFraction exponent) {
+      IASTAppendable result = F.TimesAlloc(baseTimes.argSize());
+      IASTAppendable rest = F.TimesAlloc(baseTimes.argSize());
+      boolean evaled = false;
+      EvalEngine engine = EvalEngine.get();
+      HashMap<IFraction, IASTAppendable> exponent2Times = new HashMap<IFraction, IASTAppendable>();
+      exponent2Times.put(exponent, rest);
+      for (int j = 1; j < baseTimes.size(); j++) {
+        IExpr arg = baseTimes.get(j);
+        if (!arg.isPower()) {
+          if (arg.isMinusOne() || arg.isImaginaryUnit() || arg.isNegativeImaginaryUnit()) {
+            rest.append(arg);
+            continue;
+          }
+          if (arg.isFraction()) {
+            IInteger numerator = ((IFraction) arg).numerator();
+            IExpr n = F.NIL;
+            IExpr d = F.NIL;
+            if (!numerator.isOne() && !numerator.isMinusOne()) {
+              n = engine.evaluateNIL(F.Power(numerator, exponent));
+            }
+            IInteger denominator = ((IFraction) arg).denominator();
+            if (!denominator.isOne() && !denominator.isMinusOne()) {
+              d = engine.evaluateNIL(F.Power(denominator, exponent));
+            }
+            if (n.isPresent() || d.isPresent()) {
+              result.append(F.Power(arg, exponent));
+              evaled = true;
+              continue;
+            }
+          } else {
+            IExpr temp = engine.evaluateNIL(F.Power(arg, exponent));
+            if (temp.isPresent()) {
+              if (temp.isTimes()) {
+                // filter same fractional exponents into 1 Power expression
+                IAST timesAST = (IAST) temp;
+                for (int i = 1; i < timesAST.size(); i++) {
+                  IExpr element = timesAST.get(i);
+                  if (element.isPower() && element.exponent().isFraction()) {
+                    IFraction exp = (IFraction) element.exponent();
+                    IASTAppendable times = exponent2Times.get(exp);
+                    if (times == null) {
+                      times = F.TimesAlloc(4);
+                      exponent2Times.put(exp, times);
+                    }
+                    times.append(element.base());
+                  } else {
+                    result.append(element);
+                  }
+                }
+              } else {
+                result.append(temp);
+              }
+              evaled = true;
+              continue;
+            }
+          }
+        }
+        rest.append(arg);
+      }
+      if (evaled) {
+        for (Map.Entry<IFraction, IASTAppendable> entry : exponent2Times.entrySet()) {
+          IFraction exp = entry.getKey();
+          rest = entry.getValue();
+          if (rest.argSize() > 0) {
+            result.append(F.Power(rest.oneIdentity1(), exp));
+          }
+        }
+        return result;
       }
       return F.NIL;
     }
