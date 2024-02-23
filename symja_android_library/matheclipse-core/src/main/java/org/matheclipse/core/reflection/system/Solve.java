@@ -802,18 +802,51 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         }
       }
 
+      int start = 1;
       ExprAnalyzer exprAnalyzer;
       ArrayList<ExprAnalyzer> analyzerList = new ArrayList<ExprAnalyzer>();
-      IsWrongSolveExpression predicate = new IsWrongSolveExpression();
+
+      return solveEquationsMultiple(termsEqualZeroList, start, inequationsList, variables,
+          maximumNumberOfResults, numericFlag, analyzerList, engine);
+    }
+
+    private IASTMutable solveEquationsMultiple(IASTMutable termsEqualZeroList, int start,
+        IAST inequationsList, IAST variables, int maximumNumberOfResults, boolean numericFlag,
+        ArrayList<ExprAnalyzer> analyzerList, EvalEngine engine) {
+      ExprAnalyzer exprAnalyzer;
+      IsWrongSolveExpression IS_WRONG_SOLVE_EXPRESSION = new IsWrongSolveExpression();
       // collect linear and univariate polynomial equations:
-      for (IExpr expr : termsEqualZeroList) {
-        if (expr.has(predicate, true)) {
+      for (int i = start; i < termsEqualZeroList.size(); i++) {
+        IExpr expr = termsEqualZeroList.get(i);
+        if (expr.has(IS_WRONG_SOLVE_EXPRESSION, true)) {
           LOGGER.log(engine.getLogLevel(), "Solve: the system contains the wrong object: {}",
-              predicate.getWrongExpr());
+              IS_WRONG_SOLVE_EXPRESSION.getWrongExpr());
           throw new NoEvalException();
         }
         exprAnalyzer = new ExprAnalyzer(expr, variables, isGenerateConditions(), engine);
-        exprAnalyzer.simplifyAndAnalyze();
+        IExpr rewrittenNumerator = exprAnalyzer.rewriteNumerator();
+        if (rewrittenNumerator.isPresent()) {
+          if (rewrittenNumerator.isList()) {
+            IAST list = (IAST) rewrittenNumerator;
+            IASTAppendable result = F.ListAlloc(list.argSize());
+            for (int j = 1; j < list.size(); j++) {
+              IASTMutable copy = termsEqualZeroList.copy();
+              ArrayList<ExprAnalyzer> analyzersCopy =
+                  (ArrayList<ExprAnalyzer>) analyzerList.clone();
+              copy.set(i, list.get(j));
+              IASTMutable solveEquationsMultiple = solveEquationsMultiple(copy, i, inequationsList,
+                  variables, maximumNumberOfResults, numericFlag, analyzersCopy, engine);
+              if (solveEquationsMultiple.isPresent()) {
+                result.appendArgs(solveEquationsMultiple);
+              }
+            }
+            if (result.size() > 1) {
+              return result;
+            }
+            return F.NIL;
+          }
+        }
+        exprAnalyzer.exprAnalyze(rewrittenNumerator);
         analyzerList.add(exprAnalyzer);
       }
       IASTAppendable matrix = F.ListAlloc();

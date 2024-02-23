@@ -684,11 +684,11 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
         if (zReal != null) {
             if (zReal.isNegative() && zReal.isGT(F.CND1DE)) {
               // TODO branch W(-1)
-              // IAST inverseFunctionNegative = F.Plus(variable,
-              // F.Times(F.Plus(F.Times(b, F.Log(base)), F.Times(a, F.ProductLog(F.CN1, z))),
-              // F.Power(F.Times(a, F.Log(base)), F.CN1)));
-              // return F.List(fEngine.evaluate(inverseFunction),
-              // fEngine.evaluate(inverseFunctionNegative));
+              IAST inverseFunctionNegative = F.Plus(variable,
+                  F.Times(F.Plus(F.Times(b, F.Log(base)), F.Times(a, F.ProductLog(F.CN1, z))),
+                      F.Power(F.Times(a, F.Log(base)), F.CN1)));
+              return F.List(fEngine.evaluate(inverseFunction),
+                  fEngine.evaluate(inverseFunctionNegative));
             }
         }
         return fEngine.evaluate(inverseFunction);
@@ -746,6 +746,29 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
    * it has linear, polynomial or other form.
    */
   public int simplifyAndAnalyze() {
+    IExpr temp = rewriteNumerator();
+    if (temp.isPresent()) {
+      if (temp.isAST() && fDenominator.isOne()) {
+        splitNumeratorDenominator((IAST) temp);
+      } else {
+        fNumerator = temp;
+      }
+    }
+    return analyze(fNumerator);
+  }
+
+  public int exprAnalyze(IExpr temp) {
+    if (temp.isPresent()) {
+      if (temp.isAST() && fDenominator.isOne()) {
+        splitNumeratorDenominator((IAST) temp);
+      } else {
+        fNumerator = temp;
+      }
+    }
+    return analyze(fNumerator);
+  }
+
+  public IExpr rewriteNumerator() {
     IExpr temp = F.NIL;
     if (fNumerator.isPlus()) {
       temp = rewritePlusWithInverseFunctions((IAST) fNumerator);
@@ -754,15 +777,7 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
     } else if (fNumerator.isAST() && !fNumerator.isFree(Predicates.in(fListOfVariables), true)) {
       temp = rewriteInverseFunction((IAST) fNumerator, F.C0);
     }
-    if (temp.isPresent()) {
-      if (temp.isAST() && fDenominator.isOne()) {
-        splitNumeratorDenominator((IAST) temp);
-      } else {
-        fNumerator = temp;
-      }
-    }
-
-    return analyze(fNumerator);
+    return temp;
   }
 
   public void splitNumeratorDenominator(IAST ast) {
