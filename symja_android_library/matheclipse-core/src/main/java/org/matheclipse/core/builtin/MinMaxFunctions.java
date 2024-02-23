@@ -1112,7 +1112,7 @@ public class MinMaxFunctions {
           goal, //
           new InitialGuess(init) //
       );
-      final double[] point = solution.getPoint();
+      // final double[] point = solution.getPoint();
       // System.out.println("sol=" + Arrays.toString(solution.getPoint()));
 
       double[] values = solution.getPointRef();

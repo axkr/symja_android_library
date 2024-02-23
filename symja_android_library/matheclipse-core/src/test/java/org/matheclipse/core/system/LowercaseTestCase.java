@@ -4064,6 +4064,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCorrelation() {
+    check("Correlation({a,b},{c,d})", //
+        "((a-b)*(Conjugate(c)-Conjugate(d)))/(Sqrt((a-b)*(Conjugate(a)-Conjugate(b)))*Sqrt((c-d)*(Conjugate(c)-Conjugate(d))))");
+
+
     check("Correlation({1.5, 3, 5, 10}, {2, 1.25, 15, 8})", //
         "0.475976");
     check("N(Correlation({5.0, 3/4, 1}, {2, 1/2, 1}))", //
@@ -9966,8 +9970,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x^2");
     // see Logarithms#test0128() Rubi rule 2447 ==> -(Sqrt(-(e/d))/(2*e))
     check(
-        "FullSimplify( (d-2*d*Sqrt(-e/d)*x-e*x^2)/(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2) )",
-        //
+        "FullSimplify( (d-2*d*Sqrt(-e/d)*x-e*x^2)/(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2) )", //
         "1/(2*d*Sqrt(-e/d))");
     check(
         "PolynomialQuotientRemainder((d-2*d*Sqrt(-e/d)*x-e*x^2),(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2),x)",
@@ -11980,11 +11983,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(x^(1+n)*(2*p*(m^2*x^(2*p))^((1+n)/p)+(1+n)*(I*m*x^p)^((1+n)/p)*Gamma((1+n)/p,-I*m*x^p)+(\n" //
             + "1+n)*(-I*m*x^p)^((1+n)/p)*Gamma((1+n)/p,I*m*x^p)))/(4*(1+n)*p*(m^2*x^(2*p))^((1+n)/p))");
     check("Integrate(x^n*ArcSin(m*x^p),x)", //
-        "(x^(1+n)*((1+n+p)*ArcSin(m*x^p)-m*p*x^p*Hypergeometric2F1(1/2,(1+n+p)/(2*p),(1+n+\n" //
-            + "3*p)/(2*p),m^2*x^(2*p))))/((1+n)*(1+n+p))");
+        "(x^(1+n)*ArcSin(m*x^p))/(1+n)+(-m*p*x^(1+n+p)*Hypergeometric2F1(1/2,(1+n+p)/(2*p),\n"
+            + "1+(1+n+p)/(2*p),m^2*x^(2*p)))/((1+n)*(1+n+p))");
     check("Integrate(x^n*ArcSinh(m*x^p),x)", //
-        "(x^(1+n)*((1+n+p)*ArcSinh(m*x^p)-m*p*x^p*Hypergeometric2F1(1/2,(1+n+p)/(2*p),(1+n+\n"//
-            + "3*p)/(2*p),-m^2*x^(2*p))))/((1+n)*(1+n+p))");
+        "(x^(1+n)*ArcSinh(m*x^p))/(1+n)+(-m*p*x^(1+n+p)*Hypergeometric2F1(1/2,(1+n+p)/(2*p),\n"
+            + "1+(1+n+p)/(2*p),-m^2*x^(2*p)))/((1+n)*(1+n+p))");
 
     check("Integrate(PolyGamma(m*x),x)", //
         "LogGamma(m*x)/m");
@@ -12028,8 +12031,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(x^(1+n)*Surd(m*x,7))/(8/7+n)");
 
     check("Integrate(x^n*ArcCot(11*Sin(s)*x),x)", //
-        "(x^(1+n)*((2+n)*ArcCot(11*x*Sin(s))+11*x*Hypergeometric2F1(1,1+n/2,2+n/2,-121*x^\n"
-            + "2*Sin(s)^2)*Sin(s)))/((1+n)*(2+n))");
+        "(x^(1+n)*ArcCot(11*x*Sin(s)))/(1+n)+(11*x^(2+n)*Hypergeometric2F1(1,1/2*(2+n),1/\n"//
+            + "2*(4+n),-121*x^2*Sin(s)^2)*Sin(s))/(2+3*n+n^2)");
 
     check("Integrate(ArcSin(x),x)", //
         "Sqrt(1-x^2)+x*ArcSin(x)");
@@ -12042,12 +12045,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/6*x^2*(3*ArcSin(x)+3/2*(x*(Sqrt(1-x^2)*Sqrt(x^2)-ArcSin(Sqrt(x^2))))/(x^2)^(3/\n" //
             + "2))");
     check("Integrate(x^n*ArcSin(m*x),x)", //
-        "(x^(1+n)*((2+n)*ArcSin(m*x)-m*x*Hypergeometric2F1(1/2,1+n/2,2+n/2,m^2*x^2)))/((1+n)*(\n"//
-            + "2+n))");
+        "(x^(1+n)*ArcSin(m*x))/(1+n)+(-m*x^(2+n)*Hypergeometric2F1(1/2,1/2*(2+n),1/2*(4+n),m^\n" //
+            + "2*x^2))/(2+3*n+n^2)");
 
     check("Integrate(x^n*ArcTanh(m*x),x)", //
-        "(x^(1+n)*((2+n)*ArcTanh(m*x)-m*x*Hypergeometric2F1(1,1+n/2,2+n/2,m^2*x^2)))/((1+n)*(\n" //
-            + "2+n))");
+        "(x^(1+n)*ArcTanh(m*x))/(1+n)+(-m*x^(2+n)*Hypergeometric2F1(1,1/2*(2+n),1/2*(4+n),m^\n"
+            + "2*x^2))/(2+3*n+n^2)");
     check("Integrate(x*ArcTanh(3*x),{x,0,1})", //
         "1/6*(1/9*(9-3*ArcTanh(3))+3*ArcTanh(3))");
   }
@@ -19210,6 +19213,31 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPower() {
+    check("(2*x*y)^n", //
+        "2^n*(x*y)^n");
+    check("Sqrt(-d) // FullForm", //
+        "Power(Times(-1, d), Rational(1,2))");
+    check("(-27)^(1/3) // FullForm", //
+        "Times(3, Power(-1, Rational(1,3)))");
+    check("(-27/Pi)^(2/3) // FullForm", //
+        "Times(9, Power(Times(-1, Power(Pi, -1)), Rational(2,3)))");
+
+    check("(-Pi/27)^(1/3) // FullForm", //
+        "Times(Rational(1,3), Power(Times(-1, Pi), Rational(1,3)))");
+
+    check("(Pi/27)^(1/3) // FullForm", //
+        "Times(Rational(1,3), Power(Pi, Rational(1,3)))");
+    check("(27/Pi)^(1/3) // FullForm", //
+        "Times(3, Power(Pi, Rational(-1,3)))");
+    check("Sqrt(Pi/4) // FullForm", //
+        "Times(Rational(1,2), Power(Pi, Rational(1,2)))");
+    check("Sqrt(4/Pi) // FullForm", //
+        "Times(2, Power(Pi, Rational(-1,2)))");
+    check("Sqrt(Pi/2) // FullForm", //
+        "Power(Times(Rational(1,2), Pi), Rational(1,2))");
+    check("Sqrt(2/Pi) // FullForm", //
+        "Power(Times(2, Power(Pi, -1)), Rational(1,2))");
+
     check("1/(-7) // FullForm", //
         "Rational(-1,7)");
     // TODO improve output - if base is Sqrt avoid parnethesis

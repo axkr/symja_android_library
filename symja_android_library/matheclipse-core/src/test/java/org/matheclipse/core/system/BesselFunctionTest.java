@@ -267,9 +267,9 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
         "Sqrt(Pi/2)*(1/(E^x*x^2)+1/(E^x*x))*Sqrt(x)");
     check("BesselK(1317624576693539401,3.0-2*I)", //
         "BesselK(1.31762*10^18,3.0+I*(-2.0))");
-    check("BesselK(-1/2, z)", //
-        "Sqrt(Pi/2)/(E^z*Sqrt(z))");
     check("BesselK(1/2, z)", //
+        "Sqrt(Pi/2)/(E^z*Sqrt(z))");
+    check("BesselK(-1/2, z)", //
         "Sqrt(Pi/2)/(E^z*Sqrt(z))");
 
     checkNumeric("BesselK(I+1, -I*Infinity)", //

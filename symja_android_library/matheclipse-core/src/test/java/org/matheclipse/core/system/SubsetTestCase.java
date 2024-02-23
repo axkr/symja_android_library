@@ -18,11 +18,10 @@ public class SubsetTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSubsetReplace() {
-
-
     // TODO add specialized matcher for pattern sequences
-    // check("SubsetReplace({1, a, 2, b, 3}, {__Integer} :> X)", //
-    // "{X,a,X,b,X}");
+    check("SubsetReplace({1, a, 2, b, 3}, {__Integer} :> X)", //
+        "{X,a,X,b,X}");
+
     check("SubsetReplace({1, 2, 3, 2, 3, 4, 3}, {3, 3} :> Splice({x, x, x}))", //
         "{1,2,x,x,x,2,4,3}");
 
@@ -34,9 +33,9 @@ public class SubsetTestCase extends ExprEvaluatorTestCase {
         "{1,x,3,5,6}");
     check("SubsetReplace({a, x_Integer} :> f(x))[{1, 2, 3, a, a, b, c}]", //
         "{3,f(1),f(2),b,c}");
-    check("SubsetReplace({1, 2, 3, a, a, b, c},{{2,3}->x, {a, x_Integer} :> f[x]})", //
+    check("SubsetReplace({1, 2, 3, a, a, b, c},{{2,3}->x, {a, x_Integer} :> f(x)})", //
         "{x,f(1),a,b,c}");
-    check("SubsetReplace({1, 2, 3, a, a, b, c},{{2,3}->x, {a, x_Integer} :> f[x]}, 1)", //
+    check("SubsetReplace({1, 2, 3, a, a, b, c},{{2,3}->x, {a, x_Integer} :> f(x)}, 1)", //
         "{1,x,a,a,b,c}");
   }
 

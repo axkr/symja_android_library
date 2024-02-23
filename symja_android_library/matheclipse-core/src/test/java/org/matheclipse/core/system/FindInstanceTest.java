@@ -21,8 +21,7 @@ public class FindInstanceTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testMod() {
-    check(
-        "FindInstance(Mod(x^2+y^2,2) == 1 && Mod(x-2*y,3) == 2, {x, y}, Integers,5)", //
+    check("FindInstance(Mod(x^2+y^2,2) == 1 && Mod(x-2*y,3) == 2, {x, y}, Integers,5)", //
         "{{x->0,y->-25},{x->0,y->-19},{x->0,y->-13},{x->0,y->-7},{x->0,y->-1}}");
   }
 
@@ -39,6 +38,8 @@ public class FindInstanceTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindInstance() {
+    check("FindInstance(x+5.0==a,x)", //
+        "{{x->-5.0+a}}");
     check("FindInstance(-1+4*Sin(x)==0,x)", //
         "{{x->ArcSin(1/4)}}");
     check("FindInstance(2*Sin(x)==1/2,x)", //
@@ -47,8 +48,6 @@ public class FindInstanceTest extends ExprEvaluatorTestCase {
 
     check("FindInstance({x^2==4,x+y^2==6}, {x,y})", //
         "{{x->-2,y->-2*Sqrt(2)}}");
-    check("FindInstance(x+5.0==a,x)", "{{x->-5.0+a}}");
-
 
     check("FindInstance(Sin((-3+x^2)/x) ==2,{x})", //
         "{{x->1/2*(ArcSin(2)-Sqrt(12+ArcSin(2)^2))}}");

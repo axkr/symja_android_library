@@ -4,7 +4,7 @@ import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 
-/** Tests forSolve and Roots functions */
+/** Tests for FunctionExpand function */
 public class FunctionExpandTest extends ExprEvaluatorTestCase {
 
   @Test

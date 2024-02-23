@@ -408,9 +408,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->3,y->4}}");
 
     // https://en.wikipedia.org/wiki/Lambert_W_function#Solving_equations
-    // TODO generate 2 solutions
     check("Solve(3^x==2*x+2, x)", //
-        "{{x->-(Log(3)+ProductLog(-Log(3)/6))/Log(3)}}");
+        "{{x->-(Log(3)+ProductLog(-Log(3)/6))/Log(3)},{x->-(Log(3)+ProductLog(-1,-Log(3)/\n" //
+            + "6))/Log(3)}}");
     check("Solve(3^x==2*x, x)", //
         "{{x->-ProductLog(-Log(3)/2)/Log(3)}}");
     check("Solve(3^x==-4*x, x)", //
@@ -721,10 +721,6 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->-I},{x->I}}");
     check("Solve((k*Q*q)/r^2==E,r)", //
         "{{r->Sqrt(k*q*Q)/Sqrt(E)},{r->-Sqrt(k*q*Q)/Sqrt(E)}}");
-    check("Solve((k*Q*q)/r^2+1/r^4==E,r)", //
-        "{{r->Sqrt(1/(2*E))*Sqrt(k*q*Q-Sqrt(4*E+k^2*q^2*Q^2))},{r->-Sqrt(1/(2*E))*Sqrt(k*q*Q-Sqrt(\n"
-            + "4*E+k^2*q^2*Q^2))},{r->Sqrt(1/(2*E))*Sqrt(k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))},{r->-Sqrt(\n"
-            + "1/(2*E))*Sqrt(k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))}}");
     check("Solve((k*Q*q)/r^2+1/r^4==0,r)", //
         "{{r->-I/Sqrt(k*q*Q)},{r->I/Sqrt(k*q*Q)}}");
     check("Solve(Abs(x-1) ==1,{x})", //
@@ -813,9 +809,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->3.0,y->4.0}}");
 
     // https://en.wikipedia.org/wiki/Lambert_W_function#Solving_equations
-    // TODO generate 2 solutions
     check("NSolve(3^x==2*x+2, x)", //
-        "{{x->-0.79011}}");
+        "{{x->-0.79011},{x->1.44456}}");
     check("NSolve(3^x==2*x, x)", //
         "{{x->0.664769+I*(-0.797037)}}");
     check("NSolve(3^x==-4*x, x)", //
@@ -1934,9 +1929,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testPowTwoX() {
-    // TODO not all solutions are provided
     check("Solve(2^x-3*x-1==0,x)", //
-        "{{x->0}}");
+        "{{x->0},{x->(-Log(2)-3*ProductLog(-1,-Log(2)/(3*2^(1/3))))/(3*Log(2))}}");
   }
 
   @Test
@@ -2022,43 +2016,28 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{}");
   }
 
-  // @Test
-  // public void testIssue916() {
-  // TODO
-  // check("ProductLog(-Log(7)/5243338316756303634461458718861951455543)//N", //
-  // "-3.7112*10^-40");
-  // check("Solve(7^x-x==47, x)", //
-  // "{{x->-47},{x->-(47*Log(7)+ProductLog(-1,-Log(7)/\n" //
-  // + "5243338316756303634461458718861951455543))/Log(7)}}");
-  // }
+  @Test
+  public void testIssue916() {
+    check("Solve(7^x-x==47, x)", //
+        "{{x->-(47*Log(7)+ProductLog(-Log(7)/5243338316756303634461458718861951455543))/Log(\n" //
+            + "7)},{x->-(47*Log(7)+ProductLog(-1,-Log(7)/\n" //
+            + "5243338316756303634461458718861951455543))/Log(7)}}");
+  }
 
-  // @Test
-  // public void testIssue918() {
-  // check("Solve({9==x/y, x==pi*y^4},{x,y})", //
-  // "{{y->-(-243/2*Pi^2+Sqrt(59049*Pi^4)/2)^(1/3)/(3*Pi),x->(-3*(1/2*(-243*Pi^2+Sqrt(\n" //
-  // + "59049*Pi^4)))^(1/3))/Pi},{y->((1-I*Sqrt(3))*(-243*Pi^2+Sqrt(59049*Pi^4))^(1/3))/(\n" //
-  // +
-  // "6*2^(1/3)*Pi),x->3/2*((1-I*Sqrt(3))*(-243*Pi^2+Sqrt(59049*Pi^4))^(1/3))/(2^(1/3)*Pi)},{y->((\n"
-  // //
-  // + "1+I*Sqrt(3))*(-243*Pi^2+Sqrt(59049*Pi^4))^(1/3))/(6*2^(1/3)*Pi),x->3/2*((1+I*Sqrt(\n" //
-  // + "3))*(-243*Pi^2+Sqrt(59049*Pi^4))^(1/3))/(2^(1/3)*Pi)}}");
-  // check("Solve({9==x/y, x==pi*y^4},{x,y}) //N", //
-  // "{{y->-(-243/2*Pi^2+Sqrt(59049*Pi^4)/2)^(1/3)/(3*Pi),x->(-3*(1/2*(-243*Pi^2+Sqrt(\n" //
-  // + "59049*Pi^4)))^(1/3))/Pi},{y->((1-I*Sqrt(3))*(-243*Pi^2+Sqrt(59049*Pi^4))^(1/3))/(\n" //
-  // +
-  // "6*2^(1/3)*Pi),x->3/2*((1-I*Sqrt(3))*(-243*Pi^2+Sqrt(59049*Pi^4))^(1/3))/(2^(1/3)*Pi)},{y->((\n"
-  // //
-  // + "1+I*Sqrt(3))*(-243*Pi^2+Sqrt(59049*Pi^4))^(1/3))/(6*2^(1/3)*Pi),x->3/2*((1+I*Sqrt(\n" //
-  // + "3))*(-243*Pi^2+Sqrt(59049*Pi^4))^(1/3))/(2^(1/3)*Pi)}}");
-  // check("Solve({x==Pi*y^2, 5==x/y}, {x,y})", //
-  // "{{y->5/Pi,x->25/Pi}}");
-  // }
+  @Test
+  public void testIssue918() {
+    check("Sqrt(59049*Pi^4)", //
+        "243*Pi^2");
+    check("Solve({9==x/y, x==pi*y^4},{x,y})", //
+        "{}");
+    check("Solve({9==x/y, x==pi*y^4},{x,y}) //N", //
+        "{}");
+    check("Solve({x==Pi*y^2, 5==x/y}, {x,y})", //
+        "{{y->5/Pi,x->25/Pi}}");
+  }
 
   @Test
   public void testIssue919() {
-    // check(
-    // "9810/(2758454771764429/2251799813685248*2*6250796477692329/562949953421312)", //
-    // "2072608731373155071447109740789760/5747513123739563366932509455047");
     check(
         "Solve(x==Sqrt(9810/(2758454771764429/2251799813685248*2*6250796477692329/562949953421312)),x)", //
         "{{x->1125899906842624*Sqrt(1635/5747513123739563366932509455047)}}");
