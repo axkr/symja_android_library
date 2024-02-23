@@ -63,7 +63,6 @@ public class FindFormula extends AbstractFunctionOptionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    super.setUp(newSymbol);
-    // setOptions(newSymbol, S.GenerateConditions, S.False);
+    setOptions(newSymbol, S.TargetFunctions, S.All);
   }
 }
