@@ -5,9 +5,6 @@ import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.IdentityHashMap;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import org.apache.commons.text.StringEscapeUtils;
@@ -18,7 +15,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.BreakException;
@@ -26,7 +22,6 @@ import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ContinueException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.NoEvalException;
-import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.ThrowException;
@@ -53,9 +48,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.ModuleReplaceAll;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.SimpleTimeLimiter;
-import com.google.common.util.concurrent.TimeLimiter;
 
 public final class Programming {
   private static final Logger LOGGER2 = LogManager.getLogger();
@@ -3073,55 +3065,58 @@ public final class Programming {
   private static class TimeConstrained extends AbstractCoreFunctionEvaluator
       implements IFastFunctionEvaluator {
 
-    static class EvalControlledCallable implements Callable<IExpr> {
-      private final EvalEngine fEngine;
-      private IExpr fExpr;
-      private long fSeconds;
-
-      /**
-       * Copy the current threads engine state into a new <code>EvalEngine</code> and do the
-       * calculation in this <code>Callable</code> with the new <code>EvalEngine</code>.
-       *
-       * @param engine
-       */
-      public EvalControlledCallable(EvalEngine engine) {
-        fEngine = engine.copy();
-      }
-
-      @Override
-      public IExpr call() {
-        EvalEngine.set(fEngine);
-        try {
-          long timeConstrainedMillis = System.currentTimeMillis() + fSeconds * 1000L;
-          fEngine.setTimeConstrainedMillis(timeConstrainedMillis);
-          return fEngine.evaluate(fExpr);
-        } catch (org.matheclipse.core.eval.exception.TimeoutException e) {
-          if (Config.DEBUG) {
-            System.out
-                .println("TimeConstrained evaluation failed: " + fExpr + "\nseconds: " + fSeconds);
-          }
-          // Errors.printMessage(S.TimeConstrained, e, fEngine);
-          return S.$Aborted;
-        } catch (final RecursionLimitExceeded | ASTElementLimitExceeded re) {
-          throw re;
-        } catch (Exception | OutOfMemoryError | StackOverflowError e) {
-          Errors.printMessage(S.TimeConstrained, e, EvalEngine.get());
-        } finally {
-          fEngine.setTimeConstrainedMillis(-1);
-          EvalEngine.remove();
-        }
-        return S.$Aborted;
-      }
-
-      public void cancel() {
-        fEngine.stopRequest();
-      }
-
-      public void setExpr(IExpr fExpr, long seconds) {
-        this.fExpr = fExpr;
-        this.fSeconds = seconds;
-      }
-    }
+    // static class EvalControlledCallable implements Callable<IExpr> {
+    // private Thread thread = null;
+    // private final EvalEngine fEngine;
+    // private IExpr fExpr;
+    // private long fSeconds;
+    //
+    // /**
+    // * Copy the current threads engine state into a new <code>EvalEngine</code> and do the
+    // * calculation in this <code>Callable</code> with the new <code>EvalEngine</code>.
+    // *
+    // * @param engine
+    // */
+    // public EvalControlledCallable(EvalEngine engine) {
+    // fEngine = engine.copy();
+    // }
+    //
+    // @Override
+    // public IExpr call() {
+    // this.thread = Thread.currentThread();
+    // EvalEngine.set(fEngine);
+    // try {
+    // long timeConstrainedMillis = System.currentTimeMillis() + fSeconds * 1000L;
+    // fEngine.setTimeConstrainedMillis(timeConstrainedMillis);
+    // return fEngine.evaluate(fExpr);
+    // } catch (org.matheclipse.core.eval.exception.TimeoutException e) {
+    // if (Config.DEBUG) {
+    // System.out
+    // .println("TimeConstrained evaluation failed: " + fExpr + "\nseconds: " + fSeconds);
+    // }
+    // // Errors.printMessage(S.TimeConstrained, e, fEngine);
+    // return S.$Aborted;
+    // } catch (final RecursionLimitExceeded | ASTElementLimitExceeded re) {
+    // throw re;
+    // } catch (Exception | OutOfMemoryError | StackOverflowError e) {
+    // Errors.printMessage(S.TimeConstrained, e, EvalEngine.get());
+    // } finally {
+    // fEngine.setTimeConstrainedMillis(-1);
+    // EvalEngine.remove();
+    // }
+    // return S.$Aborted;
+    // }
+    //
+    // public void cancel() {
+    // fEngine.stopRequest();
+    // thread.stop();
+    // }
+    //
+    // public void setExpr(IExpr fExpr, long seconds) {
+    // this.fExpr = fExpr;
+    // this.fSeconds = seconds;
+    // }
+    // }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3155,36 +3150,42 @@ public final class Programming {
           // Positive machine-sized integer expected at position `2` in `1`.
           return Errors.printMessage(ast.topHead(), "intpm", F.list(F.C2, ast), engine);
         }
-        final ExecutorService executorService = Executors.newSingleThreadExecutor();
-        TimeLimiter timeLimiter = SimpleTimeLimiter.create(executorService); // Executors.newSingleThreadExecutor());
-        EvalControlledCallable work = new EvalControlledCallable(engine);
-
-        try {
-          seconds = seconds > 1 ? seconds - 1 : seconds;
-          work.setExpr(ast.arg1(), seconds);
-          return timeLimiter.callWithTimeout(work, seconds, TimeUnit.SECONDS);
-        } catch (org.matheclipse.core.eval.exception.TimeoutException
-            | java.util.concurrent.TimeoutException
-            | com.google.common.util.concurrent.UncheckedTimeoutException e) {
-          Errors.printMessage(S.TimeConstrained, e, EvalEngine.get());
-          if (ast.isAST3()) {
-            return ast.arg3();
-          }
-          return S.$Aborted;
-        } catch (Exception e) {
-          // Appengine example: com.google.apphosting.api.DeadlineExceededException
-          Errors.printMessage(S.TimeConstrained, e, EvalEngine.get());
-          if (ast.isAST3()) {
-            return ast.arg3();
-          }
-          return S.Null;
-        } finally {
-          work.cancel();
-          MoreExecutors.shutdownAndAwaitTermination(executorService, 1, TimeUnit.SECONDS);
-        }
+        return engine.evalTimeConstrained(ast, seconds);
       }
       return engine.checkBuiltinArgsSize(ast, this);
     }
+
+    // private IExpr evalTimeConstrained(final IAST ast, long seconds, EvalEngine engine) {
+    // final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    // TimeLimiter timeLimiter = SimpleTimeLimiter.create(executorService); //
+    // Executors.newSingleThreadExecutor());
+    // EvalControlledCallable work = new EvalControlledCallable(engine);
+    //
+    // try {
+    // seconds = seconds > 1 ? seconds - 1 : seconds;
+    // work.setExpr(ast.arg1(), seconds);
+    // return timeLimiter.callWithTimeout(work, seconds, TimeUnit.SECONDS);
+    // } catch (org.matheclipse.core.eval.exception.TimeoutException
+    // | java.util.concurrent.TimeoutException
+    // | com.google.common.util.concurrent.UncheckedTimeoutException e) {
+    // Errors.printMessage(S.TimeConstrained, e, EvalEngine.get());
+    // if (ast.isAST3()) {
+    // return ast.arg3();
+    // }
+    // return S.$Aborted;
+    // } catch (Exception e) {
+    // // Appengine example: com.google.apphosting.api.DeadlineExceededException
+    // Errors.printMessage(S.TimeConstrained, e, EvalEngine.get());
+    // if (ast.isAST3()) {
+    // return ast.arg3();
+    // }
+    // return S.Null;
+    // } finally {
+    // if (!MoreExecutors.shutdownAndAwaitTermination(executorService, 1, TimeUnit.SECONDS)) {
+    // work.cancel();
+    // }
+    // }
+    // }
 
     @Override
     public int[] expectedArgSize(IAST ast) {

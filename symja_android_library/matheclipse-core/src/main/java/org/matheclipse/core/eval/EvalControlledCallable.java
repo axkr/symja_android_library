@@ -4,6 +4,7 @@ import java.io.StringWriter;
 import java.util.concurrent.Callable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
@@ -16,6 +17,7 @@ import org.matheclipse.parser.client.math.MathException;
 public class EvalControlledCallable implements Callable<IExpr> {
   private static final Logger LOGGER = LogManager.getLogger();
 
+  private Thread fThread = null;
   protected final EvalEngine fEngine;
   private IExpr fExpr;
 
@@ -29,6 +31,7 @@ public class EvalControlledCallable implements Callable<IExpr> {
 
   @Override
   public IExpr call() {
+    fThread = Thread.currentThread();
     EvalEngine.remove();
     EvalEngine.setReset(fEngine);
     final StringWriter buf = new StringWriter();
@@ -82,5 +85,14 @@ public class EvalControlledCallable implements Callable<IExpr> {
 
   public void cancel() {
     fEngine.stopRequest();
+    try {
+      Thread.sleep(Config.TIME_CONSTRAINED_SLEEP_MILLISECONDS);
+    } catch (InterruptedException e) {
+      //
+    }
+    // if (fThread.isAlive()) {
+    // call the deprecated method as last possible exit
+    // fThread.stop();
+    // }
   }
 }

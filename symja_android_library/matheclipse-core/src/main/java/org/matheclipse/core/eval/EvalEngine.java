@@ -11,6 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
@@ -25,6 +29,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.FlowControlException;
@@ -83,6 +88,9 @@ import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.SimpleTimeLimiter;
+import com.google.common.util.concurrent.TimeLimiter;
 
 /**
  * The main evaluation algorithms for the Symja computer algebra system. A single <code>EvalEngine
@@ -118,6 +126,59 @@ public class EvalEngine implements Serializable {
 
     public void push() {
       push(new IdentityHashMap<ISymbol, IASTAppendable>());
+    }
+  }
+
+  private static class EvalControlledCallable implements Callable<IExpr> {
+    private Thread thread = null;
+    private final EvalEngine fEngine;
+    private IExpr fExpr;
+    private long fSeconds;
+
+    /**
+     * Copy the current threads engine state into a new <code>EvalEngine</code> and do the
+     * calculation in this <code>Callable</code> with the new <code>EvalEngine</code>.
+     *
+     * @param engine
+     */
+    public EvalControlledCallable(EvalEngine engine) {
+      fEngine = engine.copy();
+    }
+
+    @Override
+    public IExpr call() {
+      this.thread = Thread.currentThread();
+      EvalEngine.set(fEngine);
+      try {
+        long timeConstrainedMillis = System.currentTimeMillis() + fSeconds * 1000L;
+        fEngine.setTimeConstrainedMillis(timeConstrainedMillis);
+        return fEngine.evaluate(fExpr);
+      } catch (org.matheclipse.core.eval.exception.TimeoutException e) {
+        if (Config.DEBUG) {
+          System.out
+              .println("TimeConstrained evaluation failed: " + fExpr + "\nseconds: " + fSeconds);
+        }
+        // Errors.printMessage(S.TimeConstrained, e, fEngine);
+        return S.$Aborted;
+      } catch (final RecursionLimitExceeded | ASTElementLimitExceeded re) {
+        throw re;
+      } catch (Exception | OutOfMemoryError | StackOverflowError e) {
+        Errors.printMessage(S.TimeConstrained, e, EvalEngine.get());
+      } finally {
+        fEngine.setTimeConstrainedMillis(-1);
+        EvalEngine.remove();
+      }
+      return S.$Aborted;
+    }
+
+    public void cancel() {
+      fEngine.stopRequest();
+      thread.stop();
+    }
+
+    public void setExpr(IExpr fExpr, long seconds) {
+      this.fExpr = fExpr;
+      this.fSeconds = seconds;
     }
   }
 
@@ -2462,6 +2523,37 @@ public class EvalEngine implements Serializable {
     return F.NIL;
   }
 
+  public IExpr evalTimeConstrained(final IAST ast, long seconds) {
+    final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    TimeLimiter timeLimiter = SimpleTimeLimiter.create(executorService); // Executors.newSingleThreadExecutor());
+    EvalControlledCallable work = new EvalControlledCallable(this);
+
+    try {
+      seconds = seconds > 1 ? seconds - 1 : seconds;
+      work.setExpr(ast.arg1(), seconds);
+      return timeLimiter.callWithTimeout(work, seconds, TimeUnit.SECONDS);
+    } catch (org.matheclipse.core.eval.exception.TimeoutException
+        | java.util.concurrent.TimeoutException
+        | com.google.common.util.concurrent.UncheckedTimeoutException e) {
+      Errors.printMessage(S.TimeConstrained, e, EvalEngine.get());
+      if (ast.isAST3()) {
+        return ast.arg3();
+      }
+      return S.$Aborted;
+    } catch (Exception e) {
+      // Appengine example: com.google.apphosting.api.DeadlineExceededException
+      Errors.printMessage(S.TimeConstrained, e, EvalEngine.get());
+      if (ast.isAST3()) {
+        return ast.arg3();
+      }
+      return S.Null;
+    } finally {
+      if (!MoreExecutors.shutdownAndAwaitTermination(executorService, 1, TimeUnit.SECONDS)) {
+        work.cancel();
+      }
+    }
+  }
+
   /**
    * Evaluate the expression and return the <code>Trace[expr]</code> (i.e. all (sub-)expressions
    * needed to calculate the result).
@@ -3581,7 +3673,7 @@ public class EvalEngine implements Serializable {
     return fRandomSeed;
   }
 
-  public synchronized void setSeed(long seed) {
+  public void setSeed(long seed) {
     fRandomSeed = seed;
     fRandom.setSeed(seed);
   }

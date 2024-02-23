@@ -211,7 +211,9 @@ public class AJAXQueryServlet extends HttpServlet {
       if (!task.cancel(true)) {
         LOGGER.warn("task.cancel() failed!");
       }
-      MoreExecutors.shutdownAndAwaitTermination(executors, 1, TimeUnit.SECONDS);
+      if (!MoreExecutors.shutdownAndAwaitTermination(executors, 1, TimeUnit.SECONDS)) {
+        LOGGER.warn("MoreExecutors.shutdownAndAwaitTermination() failed!");
+      }
     }
   }
 
