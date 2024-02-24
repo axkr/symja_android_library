@@ -4419,8 +4419,7 @@ public final class Arithmetic {
       IASTAppendable rest = F.TimesAlloc(baseTimes.argSize());
       boolean evaled = false;
       EvalEngine engine = EvalEngine.get();
-      HashMap<IFraction, IASTAppendable> exponent2Times = new HashMap<IFraction, IASTAppendable>();
-      exponent2Times.put(exponent, rest);
+      HashMap<IFraction, IASTAppendable> exponent2Times = null;
       for (int j = 1; j < baseTimes.size(); j++) {
         IExpr arg = baseTimes.get(j);
         if (!arg.isPower()) {
@@ -4453,7 +4452,14 @@ public final class Arithmetic {
                 for (int i = 1; i < timesAST.size(); i++) {
                   IExpr element = timesAST.get(i);
                   if (element.isPower() && element.exponent().isFraction()) {
+                    if (element.exponent().equals(exponent)) {
+                      rest.append(element.base());
+                      continue;
+                    }
                     IFraction exp = (IFraction) element.exponent();
+                    if (exponent2Times == null) {
+                      exponent2Times = new HashMap<IFraction, IASTAppendable>();
+                    }
                     IASTAppendable times = exponent2Times.get(exp);
                     if (times == null) {
                       times = F.TimesAlloc(4);
@@ -4475,6 +4481,10 @@ public final class Arithmetic {
         rest.append(arg);
       }
       if (evaled) {
+        if (rest.argSize() > 0) {
+          result.append(F.Power(rest.oneIdentity1(), exponent));
+        }
+        if (exponent2Times != null) {
         for (Map.Entry<IFraction, IASTAppendable> entry : exponent2Times.entrySet()) {
           IFraction exp = entry.getKey();
           rest = entry.getValue();
@@ -4482,6 +4492,7 @@ public final class Arithmetic {
             result.append(F.Power(rest.oneIdentity1(), exp));
           }
         }
+      }
         return result;
       }
       return F.NIL;
