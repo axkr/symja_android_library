@@ -31,6 +31,18 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "{{0,1,0},\n" //
             + " {0,0,1},\n" + " {1,0,0}}");
   }
+  
+  @Test
+  public void testBipartiteGraphQ() {
+    check("BipartiteGraphQ(CompleteGraph({2,3}))", //
+        "True");
+    check("BipartiteGraphQ(WheelGraph(6))", //
+        "False");
+    check("BipartiteGraphQ(CycleGraph(8))", //
+        "True");
+    check("BipartiteGraphQ(GridGraph({3, 4}))", //
+        "True");
+  }
 
   @Test
   public void testClosenessCentrality() {

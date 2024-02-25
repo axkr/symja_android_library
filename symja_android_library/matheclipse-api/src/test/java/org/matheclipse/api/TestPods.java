@@ -2095,7 +2095,7 @@ public class TestPods {
             + "      \"error\" : \"false\",\n" //
             + "      \"numsubpods\" : 1,\n" //
             + "      \"subpods\" : [ {\n" //
-            + "        \"markdown\" : \"## Chop\\n\\n```\\nChop(numerical-expr)\\n```\\n\\n> replaces numerical values in the `numerical-expr` which are close to zero with symbolic value `0`.\\n\\n### Examples\\n\\n```\\n>> Chop(0.00000000001)\\n0\\n```\\n\\n\\n\\n\\n\\n\\n### Implementation status\\n\\n* &#x2705; - full supported\\n\\n### Github\\n\\n* [Implementation of Chop](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L704) \\n[Github master](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L702)\\n\\n\"\n" //
+            + "        \"markdown\" : \"## Chop\\n\\n```\\nChop(numerical-expr)\\n```\\n\\n> replaces numerical values in the `numerical-expr` which are close to zero with symbolic value `0`.\\n\\n### Examples\\n\\n```\\n>> Chop(0.00000000001)\\n0\\n```\\n\\n\\n\\n\\n\\n\\n### Implementation status\\n\\n* &#x2705; - full supported\\n\\n### Github\\n\\n* [Implementation of Chop](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L704) \\n[Github master](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L704)\\n\\n\"\n" //
             + "      } ]\n" //
             + "    } ]\n" //
             + "  }\n" //

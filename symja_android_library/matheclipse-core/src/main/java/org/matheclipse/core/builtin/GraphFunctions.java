@@ -73,6 +73,7 @@ public class GraphFunctions {
     private static void init() {
 
       S.BetweennessCentrality.setEvaluator(new BetweennessCentrality());
+      S.BipartiteGraphQ.setEvaluator(new BipartiteGraphQ());
       S.ClosenessCentrality.setEvaluator(new ClosenessCentrality());
       S.AdjacencyMatrix.setEvaluator(new AdjacencyMatrix());
       S.ConnectedGraphQ.setEvaluator(new ConnectedGraphQ());
@@ -1265,6 +1266,26 @@ public class GraphFunctions {
 
       Map<IExpr, Double> scores = bc.getScores();
       return scores;
+    }
+  }
+
+  private static class BipartiteGraphQ extends AbstractEvaluator {
+
+    @Override
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+
+      GraphExpr<?> gex = createGraph(ast.arg1());
+      if (gex == null) {
+        return F.NIL;
+      }
+      Graph<IExpr, ? extends IExprEdge> graph = (Graph<IExpr, ? extends IExprEdge>) gex.toData();
+      return GraphTests.isBipartite(graph) ? S.True : S.False;
+
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
   }
 

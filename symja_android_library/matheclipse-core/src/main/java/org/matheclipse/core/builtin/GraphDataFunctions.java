@@ -11,6 +11,7 @@ import org.jgrapht.generate.CompleteBipartiteGraphGenerator;
 import org.jgrapht.generate.CompleteGraphGenerator;
 import org.jgrapht.generate.GeneralizedPetersenGraphGenerator;
 import org.jgrapht.generate.GnmRandomGraphGenerator;
+import org.jgrapht.generate.GridGraphGenerator;
 import org.jgrapht.generate.HyperCubeGraphGenerator;
 import org.jgrapht.generate.RingGraphGenerator;
 import org.jgrapht.generate.StarGraphGenerator;
@@ -57,6 +58,7 @@ public class GraphDataFunctions {
 
       S.CompleteGraph.setEvaluator(new CompleteGraph());
       S.CycleGraph.setEvaluator(new CycleGraph());
+      S.GridGraph.setEvaluator(new GridGraph());
       S.HypercubeGraph.setEvaluator(new HypercubeGraph());
       S.PathGraph.setEvaluator(new PathGraph());
       S.PetersenGraph.setEvaluator(new PetersenGraph());
@@ -217,6 +219,46 @@ public class GraphDataFunctions {
 
     private static IExpr cycleGraph(EvalEngine engine, int order) {
       RingGraphGenerator<IExpr, ExprEdge> gen = new RingGraphGenerator<IExpr, ExprEdge>(order);
+      Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
+          .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
+          .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
+          .buildGraph();
+      gen.generateGraph(target);
+      return GraphExpr.newInstance(target);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  private static class GridGraph extends AbstractEvaluator {
+
+    @Override
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+      IExpr list = ast.arg1();
+      if (list.isList2()) {
+        int m = list.first().toIntDefault();
+        if (m <= 0) {
+          // Positive machine-sized integer expected at position `2` in `1`
+          return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
+        }
+        int n = list.second().toIntDefault();
+        if (n <= 0) {
+          // Positive machine-sized integer expected at position `2` in `1`
+          return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
+        }
+        if (m * n > Config.MAX_GRAPH_VERTICES_SIZE) {
+          ASTElementLimitExceeded.throwIt(m * n);
+        }
+        return gridGraph(engine, m, n);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr gridGraph(EvalEngine engine, int m, int n) {
+      GridGraphGenerator<IExpr, ExprEdge> gen = new GridGraphGenerator<IExpr, ExprEdge>(m, n);
       Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
           .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
           .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //

@@ -1178,6 +1178,9 @@ public class S {
   public final static IBuiltInSymbol BioSequenceTranslate =
       S.initFinalSymbol("BioSequenceTranslate", ID.BioSequenceTranslate);
 
+  public final static IBuiltInSymbol BipartiteGraphQ =
+      S.initFinalSymbol("BipartiteGraphQ", ID.BipartiteGraphQ);
+
   /**
    * BitLengthi(x) - gives the number of bits needed to represent the integer `x`. The sign of `x`
    * is ignored.
@@ -4529,6 +4532,8 @@ public class S {
   public final static IBuiltInSymbol GreaterThan = S.initFinalSymbol("GreaterThan", ID.GreaterThan);
 
   public final static IBuiltInSymbol Green = S.initFinalSymbol("Green", ID.Green);
+
+  public final static IBuiltInSymbol GridGraph = S.initFinalSymbol("GridGraph", ID.GridGraph);
 
   /**
    * GroebnerBasis({polynomial-list},{variable-list}) - returns a Gröbner basis for the
