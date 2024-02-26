@@ -2010,8 +2010,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
   @Test
   public void testIssue914() {
     // TODO
-    // check("Solve(5==35500*(1+x/4)^(4*7),x)", //
-    // "");
+    check("Solve(5==35500*(1+x/4)^(4*7),x)", //
+        "Solve((1+x/4)^28==1/7100,x)");
     check("Solve({A==20^300,A==26158/5},{A})", //
         "{}");
   }

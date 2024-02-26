@@ -4374,6 +4374,13 @@ public final class Arithmetic {
       return F.NIL;
     }
 
+    /**
+     * Evaluate expressions <code>Times(...) ^ exponent</code>.
+     * 
+     * @param baseTimes
+     * @param exponent
+     * @return
+     */
     private static IExpr powerTimesN(IAST baseTimes, final IExpr exponent) {
       // for non-rational exponents
       IASTAppendable filterAST = baseTimes.copyHead();
@@ -4414,6 +4421,13 @@ public final class Arithmetic {
       return F.NIL;
     }
 
+    /**
+     * Evaluate expressions <code>Times(...) ^ (fractional-number)</code>
+     * 
+     * @param baseTimes
+     * @param exponent
+     * @return
+     */
     private static IExpr powerTimesFraction(IAST baseTimes, final IFraction exponent) {
       IASTAppendable result = F.TimesAlloc(baseTimes.argSize());
       IASTAppendable rest = F.TimesAlloc(baseTimes.argSize());
@@ -4485,14 +4499,14 @@ public final class Arithmetic {
           result.append(F.Power(rest.oneIdentity1(), exponent));
         }
         if (exponent2Times != null) {
-        for (Map.Entry<IFraction, IASTAppendable> entry : exponent2Times.entrySet()) {
-          IFraction exp = entry.getKey();
-          rest = entry.getValue();
-          if (rest.argSize() > 0) {
-            result.append(F.Power(rest.oneIdentity1(), exp));
+          for (Map.Entry<IFraction, IASTAppendable> entry : exponent2Times.entrySet()) {
+            IFraction exp = entry.getKey();
+            rest = entry.getValue();
+            if (rest.argSize() > 0) {
+              result.append(F.Power(rest.oneIdentity1(), exp));
+            }
           }
         }
-      }
         return result;
       }
       return F.NIL;

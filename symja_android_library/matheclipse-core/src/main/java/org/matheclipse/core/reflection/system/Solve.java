@@ -970,10 +970,12 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                   }
                 }
               }
-              termEQZero = S.Factor.of(engine, termEQZero);
-              if (termEQZero.isTimes()) {
-                solveTimesAST((IAST) termEQZero, termsEqualZero, inequationsList, numericFlag,
-                    variables, multipleValues, engine, subSolutionSet, i);
+              if (termEQZero.leafCount() < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT / 2) {
+                termEQZero = S.Factor.of(engine, termEQZero);
+                if (termEQZero.isTimes()) {
+                  solveTimesAST((IAST) termEQZero, termsEqualZero, inequationsList, numericFlag,
+                      variables, multipleValues, engine, subSolutionSet, i);
+                }
               }
             }
           }

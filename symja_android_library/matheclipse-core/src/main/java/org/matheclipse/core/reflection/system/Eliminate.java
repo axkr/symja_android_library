@@ -382,7 +382,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
         }
       } else {
         int size = ast.size();
-        if (size > 2) {
+        if (size > 2 && ast.leafCount() < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT / 2) {
           if (exprWithoutVariable.isZero() && ast.isPlus()) {
             IAST elimZeroPlus = F.binaryAST2(elimzeroplus, ast, variable);
             IExpr result = zeroPlusMatcher().apply(elimZeroPlus);

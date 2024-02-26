@@ -532,11 +532,6 @@ public class RootsFunctions {
    */
   protected static IAST findRoots(double... coefficients) {
     try {
-      for (int j = 0; j < coefficients.length; j++) {
-        if (!Double.isFinite(coefficients[j])) {
-          return F.NIL;
-        }
-      }
       org.hipparchus.complex.Complex[] complexRoots = allComplexRootsLaguerre(coefficients);
       if (complexRoots == null) {
         return F.NIL;
@@ -1025,7 +1020,7 @@ public class RootsFunctions {
       LaguerreSolver solver = new LaguerreSolver(Config.DEFAULT_ROOTS_CHOP_DELTA);
       // see https://github.com/Hipparchus-Math/hipparchus/issues/177 for initial value
       // https://stackoverflow.com/q/65960318
-      return solver.solveAllComplex(coefficients, 100_000, 1.0);
+      return solver.solveAllComplex(coefficients, 10_000, 1.0);
     } catch (MathRuntimeException mre) {
       // mre.printStackTrace();
       // org.hipparchus.exception.MathIllegalStateException: maximal count (100,000) exceeded
