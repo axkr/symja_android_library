@@ -54,19 +54,22 @@ import org.matheclipse.core.visit.VisitorExpr;
 public class OptimizeExpression extends AbstractFunctionEvaluator {
 
   private static class ReferenceCounter implements Comparable<ReferenceCounter> {
-    IASTMutable reference;
+    final private IASTMutable expr;
 
-    int counter;
+    final private long leafCount;
+    private int counter;
 
-
-    public ReferenceCounter(IASTMutable reference) {
-      this.reference = reference;
+    public ReferenceCounter(IASTMutable referenceExpr) {
+      this.expr = referenceExpr;
+      this.leafCount = referenceExpr.leafCount();
       counter = 1;
     }
 
     @Override
     public int compareTo(ReferenceCounter o) {
-      return counter > o.counter ? 1 : counter == o.counter ? 0 : -1;
+      return leafCount < o.leafCount ? 1
+          : leafCount != o.leafCount ? -1
+              : (counter > o.counter ? 1 : counter != o.counter ? -1 : 0);
     }
 
     @Override
@@ -91,7 +94,10 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
       ++counter;
     }
 
-
+    @Override
+    public String toString() {
+      return "ReferenceCounter: [count: " + counter + ", expr: " + expr + "]";
+    }
   }
 
   private static class ShareFunction implements Function<IASTMutable, IASTMutable> {
@@ -110,11 +116,11 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
         return F.NIL;
       } else {
         value.incCounter();
-        if (value.reference == t) {
+        if (value.expr == t) {
           return F.NIL;
         }
       }
-      return value.reference;
+      return value.expr;
     }
   }
 
@@ -136,17 +142,21 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
       if (ast.size() <= 1) {
         return F.NIL;
       }
-      IExpr temp = fFunction.apply(ast);
+      IASTMutable result = visitAST(ast);
+      if (result.isNIL()) {
+        result = ast;
+      }
+      IExpr temp = fFunction.apply(result);
       if (temp.isPresent()) {
         return temp;
       }
-      return visitAST(ast);
+      return result;
     }
 
     @Override
-    protected IExpr visitAST(IAST ast) {
+    protected IASTMutable visitAST(IAST ast) {
       IExpr temp;
-      boolean evaled = false;
+      IASTMutable result = F.NIL;
       int i = 1;
       while (i < ast.size()) {
         IExpr arg = ast.getRule(i);
@@ -154,13 +164,15 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
           temp = visit((IASTMutable) arg);
           if (temp.isPresent()) {
             // share the object with the same id:
-            ((IASTMutable) ast).set(i, temp);
-            evaled = true;
+            if (result.isNIL()) {
+              result = ast.copy();
+            }
+            result.set(i, temp);
           }
         }
         i++;
       }
-      return evaled ? ast : F.NIL;
+      return result;
     }
   }
 
@@ -172,7 +184,7 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
       ArrayList<ReferenceCounter> list = new ArrayList<ReferenceCounter>();
       for (Map.Entry<IASTMutable, ReferenceCounter> entry : function.map.entrySet()) {
         ReferenceCounter rc = entry.getValue();
-        if (rc.counter >= minReferences && rc.reference.leafCount() > minLeafCounter) {
+        if (rc.counter >= minReferences && rc.expr.leafCount() > minLeafCounter) {
           list.add(rc);
         }
       }
@@ -180,7 +192,7 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
       Collections.sort(list, Collections.reverseOrder());
       IASTAppendable result = F.ListAlloc(list.size());
       for (ReferenceCounter rc : list) {
-        IASTMutable ref = rc.reference;
+        IASTMutable ref = rc.expr;
         result.append(ref);
       }
       return result;
@@ -198,6 +210,7 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
   public static IAST cse(final IASTMutable ast) {
     return cse(ast, () -> "v");
   }
+
   /**
    * Perform common subexpression elimination on an expression.Try to optimize/extract common
    * sub-{@link IASTMutable} expressions to minimize the number of operations
@@ -220,21 +233,43 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
       }
 
       int varCounter = 1;
-      Collections.sort(list, Collections.reverseOrder());
+      Collections.sort(list);
       IASTAppendable variableSubstitutions = F.ListAlloc(list.size());
       IASTAppendable replaceList = F.ListAlloc(list.size());
+
       for (ReferenceCounter referenceCounter : list) {
-        IExpr reference = referenceCounter.reference;
-        IExpr temp = reference.replaceAll(variableSubstitutions).orElse(reference);
+        IExpr reference = referenceCounter.expr;
+        IExpr temp1 = reference.replaceAll(variableSubstitutions).orElse(reference);
         ISymbol dummyVariable = F.Dummy(variablePrefix.get() + varCounter);
-        replaceList.append(F.Rule(dummyVariable, temp));
-        variableSubstitutions.append(F.Rule(reference, dummyVariable));
-        varCounter++;
+
+        IAST subs = F.Rule(reference, dummyVariable);
+        IExpr temp2 = sharedExpr.replaceRepeated(subs);
+        if (temp2 != sharedExpr && temp2.isPresent()) {
+          sharedExpr = temp2;
+          replaceList.append(F.Rule(dummyVariable, temp1));
+          variableSubstitutions.append(subs);
+          varCounter++;
+        }
       }
-      sharedExpr = sharedExpr.replaceRepeated(variableSubstitutions);
-      if (sharedExpr.isPresent()) {
-        return F.list(sharedExpr, replaceList);
+
+      if (replaceList.argSize() > 1) {
+        // replace expressions with variables `vN` inside the substitution rules:
+        IASTAppendable resultReplaceList2 = F.ListAlloc(replaceList.argSize());
+        resultReplaceList2.append(replaceList.last());
+        for (int i = replaceList.size() - 2; i > 0; i--) {
+          final IExpr lhs = replaceList.get(i).first();
+          IExpr rhs = replaceList.get(i).second();
+          for (int j = replaceList.size() - 1; j > i; j--) {
+            IExpr temp = rhs.replaceAll((IAST) variableSubstitutions.get(j));
+            if (temp.isPresent()) {
+              rhs = temp;
+            }
+          }
+          resultReplaceList2.append(F.Rule(lhs, rhs));
+        }
+        return F.list(sharedExpr, resultReplaceList2);
       }
+      return F.list(sharedExpr, replaceList);
     }
     return F.list(ast, F.CEmptyList);
   }
@@ -265,7 +300,8 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
     // replacement rules
     cseAsJavaRecursive((IAST) arg2, buf);
     buf.append("return ");
-    buf.append(arg1.internalJavaString(SourceCodeProperties.JAVA_FORM_PROPERTIES_NO_SYMBOL_PREFIX, 1, x -> null));
+    buf.append(arg1.internalJavaString(SourceCodeProperties.JAVA_FORM_PROPERTIES_NO_SYMBOL_PREFIX,
+        1, x -> null));
     buf.append(";\n");
   }
 

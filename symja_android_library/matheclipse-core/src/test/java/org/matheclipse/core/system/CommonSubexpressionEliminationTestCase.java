@@ -1,11 +1,10 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.ISymbol;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Test {@link F#cseAsJava(org.matheclipse.core.interfaces.IExpr, StringBuilder)} common
@@ -27,11 +26,11 @@ public class CommonSubexpressionEliminationTestCase extends ExprEvaluatorTestCas
         ast.toString());
     StringBuilder buf = new StringBuilder();
     F.cseAsJava(ast, buf);
-    assertEquals("IExpr v1 = F.Negate(y);\n" //
-        + "IExpr v2 = F.Times(F.CI,x);\n" //
-        + "IExpr v3 = F.Sqr(x);\n" //
-        + "return F.Plus(F.Times(F.CN1D2,F.Arg(F.Plus(F.C1,F.Negate(v1),F.Negate(v2)))),F.Times(F.C1D2,F.Arg(F.Plus(F.C1,v1,v2))),F.Times(F.CI,F.Plus(F.Times(F.CN1D4,F.Log(F.Plus(F.Sqr(F.Plus(F.C1,v1)),v3))),F.Times(F.C1D4,F.Log(F.Plus(v3,F.Sqr(F.Plus(F.C1,y))))))));\n",
-        buf.toString());
+    assertEquals("IExpr v3 = F.Negate(y);\n" //
+        + "IExpr v2 = F.Sqr(x);\n" //
+        + "IExpr v1 = F.Times(F.CI,x);\n" //
+        + "return F.Plus(F.Times(F.C1D2,F.Arg(F.Plus(F.C1,v1,v3))),F.Times(F.CN1D2,F.Arg(F.Plus(F.C1,F.Negate(v1),y))),F.Times(F.CI,F.Plus(F.Times(F.CN1D4,F.Log(F.Plus(v2,F.Sqr(F.Plus(F.C1,v3))))),F.Times(F.C1D4,F.Log(F.Plus(v2,F.Sqr(F.Plus(F.C1,y))))))));\n" //
+        + "", buf.toString());
   }
 
   @Test
@@ -42,16 +41,18 @@ public class CommonSubexpressionEliminationTestCase extends ExprEvaluatorTestCas
         F.Power(F.Subtract(F.Cos(F.Times(F.C2, y)), F.Cosh(F.Times(F.C2, x))), F.CN1), F.Sin(y)),
         F.Times(F.CN1, F.C2, F.Cos(y),
             F.Power(F.Subtract(F.Cos(F.Times(F.C2, y)), F.Cosh(F.Times(F.C2, x))), F.CN1),
-            F.Sinh(x)));
+            F.Sinh(x)),
+        F.Cos(F.Times(F.C2, y)));
     assertEquals(
-        "(2*I*Cosh(x)*Sin(y))/(Cos(2*y)-Cosh(2*x))+((-1)*2*Cos(y)*Sinh(x))/(Cos(2*y)-Cosh(\n"
-            + "2*x))", //
+        "Cos(2*y)+(2*I*Cosh(x)*Sin(y))/(Cos(2*y)-Cosh(2*x))+((-1)*2*Cos(y)*Sinh(x))/(Cos(\n" //
+            + "2*y)-Cosh(2*x))", //
         ast.toString());
     StringBuilder buf = new StringBuilder();
     F.cseAsJava(ast, buf);
-    assertEquals(
-        "IExpr v1 = F.Power(F.Subtract(F.Cos(F.Times(F.C2,y)),F.Cosh(F.Times(F.C2,x))),F.CN1);\n" //
-            + "return F.Plus(F.Times(F.CC(0L,1L,2L,1L),v1,F.Cosh(x),F.Sin(y)),F.Times(F.CN2,v1,F.Cos(y),F.Sinh(x)));\n", //
+    assertEquals("IExpr v2 = F.Cos(F.Times(F.C2,y));\n" //
+        + "IExpr v1 = F.Power(F.Subtract(v2,F.Cosh(F.Times(F.C2,x))),F.CN1);\n" //
+        + "return F.Plus(v2,F.Times(F.CC(0L,1L,2L,1L),v1,F.Cosh(x),F.Sin(y)),F.Times(F.CN2,v1,F.Cos(y),F.Sinh(x)));\n" //
+        + "", //
         buf.toString());
   }
 
@@ -69,10 +70,10 @@ public class CommonSubexpressionEliminationTestCase extends ExprEvaluatorTestCas
 
     StringBuilder buf = new StringBuilder();
     F.cseAsJava(ast, buf);
-    assertEquals("IExpr v1 = F.Times(F.C2,x);\n" //
-        + "IExpr v2 = F.Times(F.C2,y);\n" //
-        + "IExpr v3 = F.Power(F.Plus(F.Cos(v2),F.Cosh(v1)),F.CN1);\n" //
-        + "return F.Plus(F.Times(F.CI,v3,F.Sin(v2)),F.Times(v3,F.Sinh(v1)));\n", //
+    assertEquals("IExpr v3 = F.Times(F.C2,y);\n" //
+        + "IExpr v2 = F.Times(F.C2,x);\n" //
+        + "IExpr v1 = F.Power(F.Plus(F.Cos(v3),F.Cosh(v2)),F.CN1);\n" //
+        + "return F.Plus(F.Times(F.CI,v1,F.Sin(v3)),F.Times(v1,F.Sinh(v2)));\n", //
         buf.toString());
   }
 }

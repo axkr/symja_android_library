@@ -10449,6 +10449,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testGCD() {
+    // Long.MIN_VALUE = -9223372036854775808
+    check("-9223372036854775808/2", //
+        "-4611686018427387904");
+    check("-9223372036854775808/7", //
+        "-9223372036854775808/7");
+    check("GCD(-9223372036854775808,-9223372036854775808)", //
+        "9223372036854775808");
+    // Integer.MIN_VALUE = -2147483648
+    check("-2147483648/2", //
+        "-1073741824");
+    check("GCD(-2147483648,-2147483648)", //
+        "2147483648");
+
     check("GCD(0,b)", //
         "GCD(0,b)");
     check("GCD(a,a)", //
@@ -17338,18 +17351,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testOptimizeExpression() {
+    check("OptimizeExpression( (x+1)^2+(x+1)^3)", //
+        "{v1^2+v1^3,{v1->1+x}}");
     check("OptimizeExpression(Sqrt(Sin(x)))", //
         "{Sqrt(Sin(x)),{}}");
     check("OptimizeExpression(Sqrt(Sin(x)+5)*Sqrt(Sin(x)+4))", //
         "{Sqrt(4+v1)*Sqrt(5+v1),{v1->Sin(x)}}");
     check("OptimizeExpression(Sqrt(Sin(x+1) + 5 + Cos(y))*Sqrt(Sin(x+1) + 4 + Cos(y)))", //
-        "{Sqrt(4+v1+v2)*Sqrt(5+v1+v2),{v1->Cos(y),v2->Sin(1+x)}}");
+        "{Sqrt(4+v1+v2)*Sqrt(5+v1+v2),{v2->Cos(y),v1->Sin(1+x)}}");
     check("OptimizeExpression((x-y)*(z-y) + sqrt((x-y)*(z-y)))", //
-        "{Sqrt(v2)+v2,{v1->-y,v2->(v1+x)*(v1+z)}}");
-
+        "{Sqrt(v1)+v1,{v1->(x-y)*(-y+z)}}");
 
     check("OptimizeExpression(#1+1+(#1+1)*(#1+1)&)", //
-        "{v1*v1+v1&,{v1->1+#1,v2->#1}}");
+        "{v1*v1+v1&,{v1->1+#1}}");
     check("OptimizeExpression(f(x))", //
         "{f(x),{}}");
     check(
@@ -17358,14 +17372,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + " 12*(1 + a^2)^(3/2)*Log(1 + Sqrt(1 + 1/a^2)) - \n"
             + " 6*(4*(Sqrt(1 + a^2) - a*(2 + a^2 - a*Sqrt(1 + a^2)))*Log(a) + a*Log(1 + a^2)))", //
         //
-        "{-3*a-2*a^3+4*v1*v4+4*v1*v2*v4+12*v3^(3/2)*Log(1+Sqrt(1+1/a^2))-6*(4*(v1-a*(2-a*v1+v2))*Log(a)+a*Log(v3))," //
-            + "{v1->Sqrt(\n" + "1+a^2)," //
-            + "v2->a^2," //
-            + "v3->1+v2," //
-            + "v4->5-9*Log(2)}}");
+        "{-3*a-2*a^3+4*v1*v2+4*v1*v2*v4+12*v3^(3/2)*Log(1+Sqrt(1+1/a^2))-6*(4*(v1-a*(2-a*v1+v4))*Log(a)+a*Log(v3))," //
+            + "{v4->a^\n" //
+            + "2," //
+            + "v3->1+v4," //
+            + "v2->5-9*Log(2)," //
+            + "v1->Sqrt(1+v4)}}");
+
     check(
         "OptimizeExpression((3 + 3*a^2 + Sqrt(5 + 6*a + 5*a^2) + a*(4 + Sqrt(5 + 6*a + 5*a^2)))/6)", //
-        "{1/6*(3+3*v1+v2+a*(4+v2)),{v1->a^2,v2->Sqrt(5+6*a+5*v1)}}");
+        "{1/6*(3+v1+a*(4+v1)+3*v2),{v2->a^2,v1->Sqrt(5+6*a+5*v2)}}");
 
     check("OptimizeExpression( Sin(x) + Cos(Sin(x)))", //
         "{v1+Cos(v1),{v1->Sin(x)}}");

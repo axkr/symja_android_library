@@ -18,7 +18,7 @@ import org.matheclipse.core.visit.VisitorExpr;
  */
 public class Share extends AbstractFunctionEvaluator {
 
-  private static class ShareFunction implements Function<IASTMutable, IExpr> {
+  private static class ShareFunction implements Function<IASTMutable, IASTMutable> {
     java.util.Map<IASTMutable, IASTMutable> map;
 
     public ShareFunction() {
@@ -26,8 +26,8 @@ public class Share extends AbstractFunctionEvaluator {
     }
 
     @Override
-    public IExpr apply(IASTMutable t) {
-      IExpr value = map.get(t);
+    public IASTMutable apply(IASTMutable t) {
+      IASTMutable value = map.get(t);
       if (value == null) {
         map.put(t, t);
         return F.NIL;
@@ -46,10 +46,10 @@ public class Share extends AbstractFunctionEvaluator {
    * F.NIL</code> if no substitution occurred.
    */
   private static class ShareReplaceAll extends VisitorExpr {
-    final Function<IASTMutable, IExpr> fFunction;
+    final Function<IASTMutable, IASTMutable> fFunction;
     public int fCounter;
 
-    public ShareReplaceAll(Function<IASTMutable, IExpr> function) {
+    public ShareReplaceAll(Function<IASTMutable, IASTMutable> function) {
       super();
       this.fFunction = function;
       this.fCounter = 0;
@@ -60,16 +60,20 @@ public class Share extends AbstractFunctionEvaluator {
       if (ast.size() <= 1) {
         return F.NIL;
       }
-      IExpr temp = fFunction.apply(ast);
+      IASTMutable temp = visitAST(ast);
+      if (temp.isNIL()) {
+        temp = ast;
+      }
+      temp = fFunction.apply(temp);
       if (temp.isPresent()) {
         fCounter++;
         return temp;
       }
-      return visitAST(ast);
+      return F.NIL;
     }
 
     @Override
-    protected IExpr visitAST(IAST ast) {
+    protected IASTMutable visitAST(IAST ast) {
       IExpr temp;
       boolean evaled = false;
       int i = 1;
@@ -85,7 +89,7 @@ public class Share extends AbstractFunctionEvaluator {
         }
         i++;
       }
-      return evaled ? ast : F.NIL;
+      return evaled ? (IASTMutable) ast : F.NIL;
     }
   }
 
