@@ -5365,6 +5365,46 @@ public final class NumberTheory {
       return count;
     }
 
+    private IExpr squaresR2(IInteger n, EvalEngine engine) {
+      if (n.isZero()) {
+        return F.C1;
+      }
+      if (n.isOne()) {
+        return F.C4;
+      }
+      IASTAppendable factorsList = n.factorInteger();
+      if (factorsList.isList()) {
+        return squaresR2(factorsList, engine);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr squaresR2(IAST factorsList, EvalEngine engine) {
+      for (int i = 1; i < factorsList.size(); i++) {
+        IAST subList = factorsList.getAST(i);
+        IInteger p = (IInteger) subList.first();
+        IExpr exponent = subList.second();
+        if (exponent.isOdd()) {
+          IInteger mod = p.mod(4);
+          if (mod.equals(F.C3)) {
+            return F.C0;
+          }
+        }
+      }
+      IInteger result = F.C4;
+      for (int i = 1; i < factorsList.size(); i++) {
+        IAST subList = factorsList.getAST(i);
+        IInteger p = (IInteger) subList.first();
+        IExpr exponent = subList.second();
+        IInteger mod = p.mod(4);
+        if (mod.equals(F.C1)) {
+          // result = result * (exponent + 1)
+          result = result.multiply(((IInteger) exponent).inc());
+        }
+      }
+      return result;
+    }
+
     /** {@inheritDoc} */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -5372,6 +5412,11 @@ public final class NumberTheory {
       if (d <= 0) {
         // The value `1` in position `2` must be a non-negative machine sized integer
         return Errors.printMessage(S.SquaresR, "pint", F.List(ast.arg1(), F.C1), engine);
+      }
+      IExpr arg2 = ast.arg2();
+      if (d == 2 && arg2.isInteger()) {
+        IInteger n = (IInteger) arg2;
+        return squaresR2(n, engine);
       }
       int n = ast.arg2().toIntDefault();
       if (n == Integer.MIN_VALUE) {

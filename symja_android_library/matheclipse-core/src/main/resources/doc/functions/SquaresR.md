@@ -8,6 +8,7 @@ SquaresR(k, int-number)
 
 See
 * [Wikipedia - Sum of squares function](https://en.wikipedia.org/wiki/Sum_of_squares_function)
+* [Wikipedia - Sum of two quares function](https://en.wikipedia.org/wiki/Sum_of_two_squares_theorem)
 
 ### Examples
 
@@ -15,4 +16,3 @@ See
 >> SquaresR(8, 30)
 395136
 ```
- 

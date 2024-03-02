@@ -23684,14 +23684,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSquaresR() {
-    check("SquaresR(8, 30)", //
-        "395136");
-    check("Table(SquaresR(2, n), {n, 10})", //
-        "{4,4,0,4,8,0,0,4,4,8}");
-    check("SquaresR(2, 45)", //
-        "8");
-    check("SquaresR(2, 100)", //
-        "12");
+    check("Table(SquaresR(2, n), {n, 100})", //
+        "{4,4,0,4,8,0,0,4,4,8,0,0,8,0,0,4,8,4,0,8,0,0,0,0,12,8,0,0,8,0,0,4,0,8,0,4,8,0,0,\n" //
+            + "8,8,0,0,0,8,0,0,0,4,12,0,8,8,0,0,0,0,8,0,0,8,0,0,4,16,0,0,8,0,0,0,4,8,8,0,0,0,0,\n" //
+            + "0,8,4,8,0,0,16,0,0,0,8,8,0,0,0,0,0,0,8,4,0,12}");
+    check("Sum(SquaresR(2, k), {k, 0, 20^2})", //
+        "1257");
+    check("sierpinski(n_) := Sum(SquaresR(2, k)/k, {k, n})-Pi * Log(n);", //
+        "");
+    check("N(sierpinski(10000))", //
+        "2.58509");
   }
 
   @Test
