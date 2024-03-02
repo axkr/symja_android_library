@@ -2677,6 +2677,10 @@ public class F extends S {
     return Object2Expr.convert(obj, true, false);
   }
 
+  public static IAST Cases(final IExpr a0, final IExpr a1) {
+    return new AST2(Cases, a0, a1);
+  }
+
   public static IAST CatalanNumber(final IExpr a) {
     return new AST1(CatalanNumber, a);
   }
@@ -7533,9 +7537,7 @@ public class F extends S {
     if (engine.isArbitraryMode()) {
       return ApfloatNum.valueOf(value.toBigNumerator(), value.toBigDenominator());
     }
-    final double n = value.toBigNumerator().doubleValue();
-    final double d = value.toBigDenominator().doubleValue();
-    return num(n / d);
+    return Num.valueOf(value.doubleValue());
   }
 
   public static INum num(final IInteger value) {
