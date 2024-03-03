@@ -183,6 +183,7 @@ public class Errors {
       "listrp", "List or SparseArray or structured array expected at position `1` in `2`.", //
       "locked", "Symbol `1` is locked.", //
       "lowlen", "Required length `1` is smaller than maximum `2` of support of `3`.", //
+      "lpsnf", "No solution can be found that satisfies the constraints.", //
       "lslc", "Coefficient matrix and target vector or matrix do not have the same dimensions.", //
       "lstpat", "List or pattern matching a list expected at position `1` in `2`.", //
       "lvlist", "Local variable specification `1` is not a List.", //

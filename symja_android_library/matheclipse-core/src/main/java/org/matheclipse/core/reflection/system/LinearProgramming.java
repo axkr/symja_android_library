@@ -2,9 +2,8 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.optim.PointValuePair;
 import org.hipparchus.optim.linear.LinearConstraint;
@@ -15,6 +14,7 @@ import org.hipparchus.optim.linear.PivotSelectionRule;
 import org.hipparchus.optim.linear.Relationship;
 import org.hipparchus.optim.linear.SimplexSolver;
 import org.hipparchus.optim.nonlinear.scalar.GoalType;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -77,7 +77,6 @@ import org.matheclipse.core.interfaces.IReal;
  * </pre>
  */
 public class LinearProgramming extends AbstractFunctionEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   public LinearProgramming() {
     super();
@@ -138,13 +137,15 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
                 if (sn != null) {
                   constraints.add(new LinearConstraint(arg2D, Relationship.GEQ, sn.doubleValue()));
                 } else {
-                  LOGGER.log(engine.getLogLevel(), "Numeric vector or number expected!");
-                  return F.NIL;
+                  // `1`.
+                  return Errors.printMessage(ast.topHead(), "error",
+                      F.list(F.$str("Numeric vector or number expected.")), engine);
                 }
               }
             } else {
-              LOGGER.log(engine.getLogLevel(), "Numeric vector expected!");
-              return F.NIL;
+              // `1`.
+              return Errors.printMessage(ast.topHead(), "error",
+                  F.list(F.$str("Numeric vector expected.")), engine);
             }
           }
           SimplexSolver solver = new SimplexSolver();
@@ -156,11 +157,24 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
         }
       }
     } catch (MathIllegalArgumentException miae) {
+      if (Config.DEBUG) {
+        miae.printStackTrace();
+      }
       // `1`.
-      return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())),
-          engine);
+      return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())), engine);
+    } catch (MathIllegalStateException mise) {
+      if (Config.DEBUG) {
+        mise.printStackTrace();
+      }
+      // No solution can be found that satisfies the constraints.
+      return Errors.printMessage(ast.topHead(), "lpsnf", F.CEmptyList, engine);
     } catch (MathRuntimeException mre) {
-      LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
+      if (Config.DEBUG) {
+        mre.printStackTrace();
+      }
+      // `1`.
+      return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(mre.getMessage())), engine);
+
     }
     return F.NIL;
   }

@@ -32,4 +32,23 @@ public class LinearOptimizationTest extends ExprEvaluatorTestCase {
         "{0.6,0.0}");
   }
 
+  @Test
+  public void testLinearProgrammingNoFeasibleSolution() {
+    // message: LinearProgramming: No solution can be found that satisfies the constraints.
+    check("LinearProgramming({-2, -1,-2}, {{1, 2,0},{3,2,1},{0,1,0}}, {{5, -1},{4,-1},{3,1}})", //
+        "LinearProgramming({-2,-1,-2},{{1,2,0},{3,2,1},{0,1,0}},{{5,-1},{4,-1},{3,1}})");
+  }
+
+  @Test
+  public void testSystem803() {
+    // see
+    // http://google-opensource.blogspot.com/2009/06/introducing-apache-commons-math.html
+    check(
+        "LinearProgramming({-2, 1, -5}, {{1, 2, 0},{3, 2, 0},{0,1,0},{0,0,1}}, {{6,-1},{12,-1},{0,1},{1,0}})",
+        "{4.0,0.0,1.0}");
+    // message: LinearProgramming: inconsistent dimensions: 2 != 3.
+    check("LinearProgramming({-2, 1, -5}, {{1, 2},{3, 2},{0,1}},{{6,-1},{12,-1},{0,1}})", //
+        "LinearProgramming({-2,1,-5},{{1,2},{3,2},{0,1}},{{6,-1},{12,-1},{0,1}})");
+  }
+
 }

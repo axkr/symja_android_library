@@ -3718,19 +3718,6 @@ public void testSystem377() {
   // };
 
   @Test
-  public void testSystem803() {
-    // see
-    // http://google-opensource.blogspot.com/2009/06/introducing-apache-commons-math.html
-    check(
-        "LinearProgramming({-2, 1, -5}, {{1, 2, 0},{3, 2, 0},{0,1,0},{0,0,1}}, {{6,-1},{12,-1},{0,1},{1,0}})",
-        "{4.0,0.0,1.0}");
-    // creates unbounded error
-    // check("LinearProgramming({-2, 1, -5}, {{1, 2},{3, 2},{0,1}},
-    // {{6,-1},{12,-1},{0,1}})",
-    // "{4.0,0.0,1.0}");
-  }
-
-  @Test
   public void testSystem804() {
     // check("Simplify(x*(x^2.00))", "x^3.0");
     // check("Simplify(5.0+4.0(x-0.0)+3.0(x-0.0)(x-1.0)+1.0(x-0.0)(x-1.0)(x-2.0))",
