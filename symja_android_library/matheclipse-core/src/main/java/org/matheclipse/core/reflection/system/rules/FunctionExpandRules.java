@@ -293,6 +293,12 @@ public class FunctionExpandRules {
       Times(Power(Exp(Times(C1D2,z)),CN1),Power(z,Plus(C1D2,m)),HypergeometricU(Plus(C1D2,Negate(k),m),Plus(C1,Times(C2,m)),z))),
     // Zeta(n_Integer,x_):=PolyGamma(-1+n,x)/((-1)^n*(-1+n)!)/;EvenQ(n)&&n>1
     SetDelayed(Zeta($p(n, Integer),x_),
-      Condition(Times(Power(Times(Power(CN1,n),Factorial(Plus(CN1,n))),CN1),PolyGamma(Plus(CN1,n),x)),And(EvenQ(n),Greater(n,C1))))
+      Condition(Times(Power(Times(Power(CN1,n),Factorial(Plus(CN1,n))),CN1),PolyGamma(Plus(CN1,n),x)),And(EvenQ(n),Greater(n,C1)))),
+    // Zeta'(m_Integer):=With({n=-m/2},1/2*(-1)^n*(2*n)!/(2*Pi)^(2*n)*Zeta(2*n+1)/;EvenQ(m)&&m<-1)
+    SetDelayed($($(Derivative(C1),Zeta),$p(m, Integer)),
+      With(list(Set(n,Times(CN1D2,m))),Condition(Times(C1D2,Power(CN1,n),Power(Power(C2Pi,Times(C2,n)),CN1),Factorial(Times(C2,n)),Zeta(Plus(Times(C2,n),C1))),And(EvenQ(m),Less(m,CN1))))),
+    // Zeta'(2):=1/6*Pi^2*(EulerGamma+Log(2)-12*Log(Glaisher)+Log(Pi))
+    SetDelayed($($(Derivative(C1),Zeta),C2),
+      Times(QQ(1L,6L),Sqr(Pi),Plus(EulerGamma,Log(C2),Times(ZZ(-12L),Log(Glaisher)),Log(Pi))))
   );
 }

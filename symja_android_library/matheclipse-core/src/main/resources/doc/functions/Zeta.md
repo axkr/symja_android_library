@@ -9,6 +9,7 @@ Zeta(z)
  
 See: 
 * [Wikipedia - Riemann zeta function](https://en.wikipedia.org/wiki/Riemann_zeta_function)
+* [Wikipedia - Particular values of the Riemann zeta function](https://en.wikipedia.org/wiki/Particular_values_of_the_Riemann_zeta_function)
 * [Fungrim - Riemann zeta function](http://fungrim.org/topic/Riemann_zeta_function/) 
 
 ### Examples

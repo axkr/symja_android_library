@@ -26627,13 +26627,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testZeta() {
+    // https://en.wikipedia.org/wiki/Particular_values_of_the_Riemann_zeta_function
+    check("Zeta'(0)", //
+        "-Log(2*Pi)/2");
+    check("Zeta'(-1)", //
+        "1/12-Log(Glaisher)");
+
     checkNumeric("Zeta(3,-4.0)", //
         "Zeta(3.0,-4.0)");
     checkNumeric("Zeta(2.2,3.1)", //
         "0.26067453797192913");
-
     check("Zeta(6)", //
         "Pi^6/945");
+    check("Zeta(-1)", //
+        "-1/12");
     check("Zeta(-11)", //
         "691/32760");
     check("Zeta(-42)", //

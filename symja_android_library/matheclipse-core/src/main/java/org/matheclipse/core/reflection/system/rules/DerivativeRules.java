@@ -13,7 +13,7 @@ public class DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 120 };
+  final public static int[] SIZES = { 0, 122 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -400,6 +400,12 @@ public class DerivativeRules {
       Function(Times(C1D2,Plus(Negate(StruveH(Plus(Slot1,C1),Slot2)),StruveH(Plus(CN1,Slot1),Slot2),Times(Power(Times(CSqrtPi,Gamma(Plus(Slot1,QQ(3L,2L)))),CN1),Power(Times(C1D2,Slot2),Slot1)))))),
     // Derivative(0,1)[StruveL]:=1/2*(StruveL(-1+#1,#2)+StruveL(#1+1,#2)+(#2/2)^#1/(Sqrt(Pi)*Gamma(#1+3/2)))&
     ISetDelayed($(Derivative(C0,C1),StruveL),
-      Function(Times(C1D2,Plus(StruveL(Plus(CN1,Slot1),Slot2),StruveL(Plus(Slot1,C1),Slot2),Times(Power(Times(CSqrtPi,Gamma(Plus(Slot1,QQ(3L,2L)))),CN1),Power(Times(C1D2,Slot2),Slot1))))))
+      Function(Times(C1D2,Plus(StruveL(Plus(CN1,Slot1),Slot2),StruveL(Plus(Slot1,C1),Slot2),Times(Power(Times(CSqrtPi,Gamma(Plus(Slot1,QQ(3L,2L)))),CN1),Power(Times(C1D2,Slot2),Slot1)))))),
+    // Zeta'(0):=-Log(2*Pi)/2
+    ISetDelayed($($(Derivative(C1),Zeta),C0),
+      Times(CN1D2,Log(C2Pi))),
+    // Zeta'(-1):=1/12-Log(Glaisher)
+    ISetDelayed($($(Derivative(C1),Zeta),CN1),
+      Subtract(QQ(1L,12L),Log(Glaisher)))
   );
 }

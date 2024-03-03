@@ -152,5 +152,8 @@
  WhittakerW(k_, m_, z_) := (z^(1/2+m) * HypergeometricU(1/2-k+m, 1+2*m, z))/E^(z/2),
 
  Zeta(n_Integer, x_) := 1/((-1)^n*(n-1)!) * PolyGamma(n-1,x)
-   /; EvenQ(n) && n>1
+   /; EvenQ(n) && n>1,
+ Derivative(1)[Zeta][m_Integer] := With({n=m/(-2)},  1/2 * (-1)^n * (2*n)!/(2*Pi)^(2*n)*Zeta(2*n+1)
+   /; EvenQ(m) && m<(-1)),
+ Derivative(1)[Zeta][2] := 1/6*Pi^2*(EulerGamma+Log(2)-12*Log(Glaisher)+Log(Pi))
 }
