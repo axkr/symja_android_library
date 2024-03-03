@@ -5380,26 +5380,19 @@ public final class NumberTheory {
     }
 
     private static IExpr squaresR2(IAST factorsList, EvalEngine engine) {
+      IInteger result = F.C4;
       for (int i = 1; i < factorsList.size(); i++) {
         IAST subList = factorsList.getAST(i);
-        IInteger p = (IInteger) subList.first();
-        IExpr exponent = subList.second();
+        IInteger mod = ((IInteger) subList.arg1()).mod(4);
+        IExpr exponent = subList.arg2();
         if (exponent.isOdd()) {
-          IInteger mod = p.mod(4);
           if (mod.equals(F.C3)) {
             return F.C0;
           }
         }
-      }
-      IInteger result = F.C4;
-      for (int i = 1; i < factorsList.size(); i++) {
-        IAST subList = factorsList.getAST(i);
-        IInteger p = (IInteger) subList.first();
-        IExpr exponent = subList.second();
-        IInteger mod = p.mod(4);
-        if (mod.equals(F.C1)) {
+        if (mod.isOne()) {
           // result = result * (exponent + 1)
-          result = result.multiply(((IInteger) exponent).inc());
+          result = result.multiply(((IInteger) subList.second()).inc());
         }
       }
       return result;
