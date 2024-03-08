@@ -3192,6 +3192,9 @@ public class S {
   public final static IBuiltInSymbol EllipticTheta =
       S.initFinalSymbol("EllipticTheta", ID.EllipticTheta);
 
+  public final static IBuiltInSymbol EmpiricalDistribution =
+      S.initFinalSymbol("EmpiricalDistribution", ID.EmpiricalDistribution);
+
   /**
    * End( ) - end a context definition started with `Begin`
    * 
@@ -9569,6 +9572,8 @@ public class S {
       S.initFinalSymbol("SlotSequence", ID.SlotSequence);
 
   public final static IBuiltInSymbol Small = S.initFinalSymbol("Small", ID.Small);
+
+  public final static IBuiltInSymbol SudokuSolve = S.initFinalSymbol("SudokuSolve", ID.SudokuSolve);
 
   /**
    * SokalSneathDissimilarity(u, v) - returns the Sokal-Sneath dissimilarity between the two boolean

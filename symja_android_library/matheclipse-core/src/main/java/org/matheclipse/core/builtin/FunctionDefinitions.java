@@ -92,6 +92,7 @@ public final class FunctionDefinitions {
       S.Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
       S.Reduce.setEvaluator(new org.matheclipse.core.reflection.system.Reduce());
       S.Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
+      S.SudokuSolve.setEvaluator(new org.matheclipse.core.reflection.system.SudokuSolve());
       S.Sum.setEvaluator(new org.matheclipse.core.reflection.system.Sum());
       S.Taylor.setEvaluator(new org.matheclipse.core.reflection.system.Taylor());
       S.TrigExpand.setEvaluator(new org.matheclipse.core.reflection.system.TrigExpand());
