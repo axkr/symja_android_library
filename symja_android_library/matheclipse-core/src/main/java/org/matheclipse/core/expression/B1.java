@@ -250,12 +250,12 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
 
     Slot(IExpr arg1) {
       super(arg1);
-      addEvalFlags(IAST.BUILT_IN_EVALED);
+      builtinEvaled();
     }
 
     Slot(int slot) {
       super(F.ZZ(slot));
-      addEvalFlags(IAST.BUILT_IN_EVALED);
+      builtinEvaled();
     }
 
     @Override

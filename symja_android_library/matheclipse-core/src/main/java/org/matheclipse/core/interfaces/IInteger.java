@@ -3,6 +3,8 @@ package org.matheclipse.core.interfaces;
 import java.math.BigInteger;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import com.google.common.math.IntMath;
+import com.google.common.math.LongMath;
 
 /** An expression representing a big integer number */
 public interface IInteger extends IRational {
@@ -385,4 +387,24 @@ public interface IInteger extends IRational {
   public BigInteger toBigNumerator();
 
   public byte[] toByteArray();
+
+  /**
+   * Returns the greatest common divisor of {@code a, b}. Returns {@code 0} if {@code a == 0 && b ==
+   * 0}.
+   * <p>
+   * See: <a href="https://medium.com/@m.langer798/stein-vs-stein-on-the-jvm-c911809bfce1">GCD:
+   * Stein vs. Stein on the JVM</a>
+   * 
+   * @param p
+   * @param q
+   * @return
+   */
+  public static long gcd(int p, int q) {
+    if (p == Integer.MIN_VALUE || q == Integer.MIN_VALUE) {
+      long pl = p;
+      long ql = q;
+      return LongMath.gcd(pl < 0L ? -pl : pl, ql < 0L ? -ql : ql);
+    }
+    return IntMath.gcd(p < 0 ? -p : p, q < 0 ? -q : q);
+  }
 }

@@ -292,11 +292,9 @@ public class IntegerSym extends AbstractIntegerSym {
       return that;
     }
     if (that instanceof IntegerSym) {
-      try {
-        return valueOf(ArithmeticUtils.gcd(fIntValue, ((IntegerSym) that).fIntValue));
-      } catch (MathRuntimeException ex) {
-        //
-      }
+      int p = fIntValue;
+      int q = ((IntegerSym) that).fIntValue;
+      return valueOf(IInteger.gcd(p, q));
     }
     return valueOf(toBigNumerator().gcd(that.toBigNumerator()));
   }

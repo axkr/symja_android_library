@@ -5382,9 +5382,9 @@ public final class NumberTheory {
     private static IExpr squaresR2(IAST factorsList, EvalEngine engine) {
       IInteger result = F.C4;
       for (int i = 1; i < factorsList.size(); i++) {
-        IAST subList = factorsList.getAST(i);
-        IInteger mod = ((IInteger) subList.arg1()).mod(4);
-        IExpr exponent = subList.arg2();
+        IAST primeExponentList = (IAST) factorsList.get(i);
+        IInteger mod = ((IInteger) primeExponentList.arg1()).mod(4);
+        IExpr exponent = primeExponentList.arg2();
         if (exponent.isOdd()) {
           if (mod.equals(F.C3)) {
             return F.C0;
@@ -5392,7 +5392,7 @@ public final class NumberTheory {
         }
         if (mod.isOne()) {
           // result = result * (exponent + 1)
-          result = result.multiply(((IInteger) subList.second()).inc());
+          result = result.multiply(((IInteger) primeExponentList.second()).inc());
         }
       }
       return result;

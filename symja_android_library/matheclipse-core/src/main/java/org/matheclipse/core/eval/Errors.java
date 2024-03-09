@@ -146,6 +146,8 @@ public class Errors {
       "intrange", "Integer expected in range `1` to `2`.", //
       "intype", "Interpreter type specification `1` is invalid.", //
       "inv", "The argument `2`  in  `1`  is not a valid parameter.", //
+      "invcpts",
+      "`1` should be a rectangular array of machine-sized real numbers of any depth, whose dimensions are greater than 1.", //
       "inv02", "The argument `2`  in  `1`  is not valid. 0 or 2 arguments expected.", //
       "invak", "The argument is not a rule or a list of rules.", //
       "invdt", "The argument `1` is not a valid Association.", //

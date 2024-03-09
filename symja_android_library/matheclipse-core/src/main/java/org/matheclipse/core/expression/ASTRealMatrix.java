@@ -526,7 +526,7 @@ public class ASTRealMatrix extends AbstractAST
 
   /** {@inheritDoc} */
   @Override
-  public double[][] toDoubleMatrix() {
+  public double[][] toDoubleMatrix(boolean setMatrixFormat) {
     return matrix.getData();
   }
 

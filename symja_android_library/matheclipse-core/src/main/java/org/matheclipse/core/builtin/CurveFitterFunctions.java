@@ -151,7 +151,7 @@ public class CurveFitterFunctions {
     protected static boolean addWeightedObservedPoints(IAST data, WeightedObservedPoints obs) {
       int[] isMatrix = data.isMatrix();
       if (isMatrix != null && isMatrix[1] == 2) {
-        final double[][] elements = data.toDoubleMatrix();
+        final double[][] elements = data.toDoubleMatrix(true);
         if (elements == null) {
           return false;
         }
@@ -333,7 +333,7 @@ public class CurveFitterFunctions {
       if (arg1.isList()) {
         int[] dim = arg1.isMatrix();
         if (dim != null && dim[1] == 2) {
-          double[][] matrix = arg1.toDoubleMatrix();
+          double[][] matrix = arg1.toDoubleMatrix(true);
           if (matrix != null) {
             return createSimpleRegression(matrix, arg3);
           }

@@ -102,7 +102,7 @@ public class ImageFormat {
     DataBufferByte dataBufferByte = (DataBufferByte) writableRaster.getDataBuffer();
     byte[] bytes = dataBufferByte.getData();
     ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-    double[][] doubleMatrix = matrix.toDoubleMatrix();
+    double[][] doubleMatrix = matrix.toDoubleMatrix(true);
     if (doubleMatrix != null) {
       for (int i = 0; i < doubleMatrix.length; i++) {
         for (int j = 0; j < doubleMatrix[i].length; j++) {
@@ -133,7 +133,7 @@ public class ImageFormat {
     if (flattenedArray.isList()) {
       int[] rgbArray = new int[width * height];
       RGBColor color;
-      double[][] doubleMatrix = flattenedArray.toDoubleMatrix();
+      double[][] doubleMatrix = flattenedArray.toDoubleMatrix(true);
 
       for (int i = 0; i < doubleMatrix.length; i++) {
         int red = (int) (255.0 * doubleMatrix[i][0]);
@@ -166,7 +166,7 @@ public class ImageFormat {
     if (flattenedArray.isList()) {
       int[] rgbArray = new int[width * height];
       RGBColor color;
-      double[][] doubleMatrix = flattenedArray.toDoubleMatrix();
+      double[][] doubleMatrix = flattenedArray.toDoubleMatrix(true);
 
       for (int i = 0; i < doubleMatrix.length; i++) {
         int red = (int) (doubleMatrix[i][0]);

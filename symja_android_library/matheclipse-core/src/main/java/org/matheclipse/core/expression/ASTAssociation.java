@@ -266,10 +266,10 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
         }
       }
       if (result.isPresent()) {
-        result.addEvalFlags(IAST.BUILT_IN_EVALED);
+        result.builtinEvaled();
         return result;
       }
-      addEvalFlags(IAST.BUILT_IN_EVALED);
+      builtinEvaled();
     }
     return F.NIL;
   }

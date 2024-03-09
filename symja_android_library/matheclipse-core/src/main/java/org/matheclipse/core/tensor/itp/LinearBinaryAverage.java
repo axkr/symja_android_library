@@ -1,6 +1,7 @@
 // code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor.itp;
 
+import java.util.Arrays;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -21,6 +22,22 @@ public enum LinearBinaryAverage implements BinaryAverage {
 
   @Override // from BinaryAverage
   public IExpr split(IExpr p, IExpr q, IExpr scalar) {
+    if (scalar.isOne()) {
+      return q.copy();
+    }
     return EvalEngine.get().evaluate(q.subtract(p).times(scalar).add(p));
   }
+
+  @Override // from BinaryAverage
+  public double[] split(final double[] p, final double[] q, final double scalar) {
+    if (scalar == 1.0) {
+      return Arrays.copyOf(q, q.length);
+    }
+    double[] result = new double[p.length];
+    for (int i = 0; i < p.length; i++) {
+      result[i] = (q[i] - p[i]) * scalar + p[i];
+    }
+    return result;
+  }
+
 }

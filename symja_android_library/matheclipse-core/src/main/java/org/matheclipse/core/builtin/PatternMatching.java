@@ -1415,7 +1415,7 @@ public final class PatternMatching {
       IExpr arg1 = ast.arg1();
       if (arg1 instanceof IPatternObject) {
         IPatternObject po = (IPatternObject) arg1;
-        if (po.isPatternOptional() || po.isPatternDefault()) {
+        if (po.isPatternDefault()) {
           // Pattern `1` contains inappropriate optional object.
           return Errors.printMessage(S.PatternTest, "patop", F.list(ast), engine);
         }

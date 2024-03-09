@@ -147,9 +147,9 @@ public final class Arithmetic {
           new org.hipparchus.complex.Complex(1.5056327351493116e-7) //
       };
 
-  public static final Plus CONST_PLUS = new Plus();
-  public static final Times CONST_TIMES = new Times();
-  public static final Power CONST_POWER = new Power();
+  public static final IFunctionEvaluator CONST_PLUS = new Plus();
+  public static final IFunctionEvaluator CONST_TIMES = new Times();
+  public static final IFunctionEvaluator CONST_POWER = new Power();
   public static final IFunctionEvaluator CONST_COMPLEX = new Complex();
   public static final IFunctionEvaluator CONST_RATIONAL = new Rational();
 
@@ -2972,7 +2972,7 @@ public final class Arithmetic {
         }
       }
       if (engine.isSymbolicMode(S.Plus.getAttributes())) {
-        ast.addEvalFlags(IAST.BUILT_IN_EVALED);
+        ast.builtinEvaled();
       }
       return F.NIL;
     }
@@ -3483,7 +3483,8 @@ public final class Arithmetic {
    * a^b
    * </pre>
    */
-  public static class Power extends AbstractFunctionEvaluator implements INumeric, IFunctionExpand {
+  private static class Power extends AbstractFunctionEvaluator
+      implements INumeric, IFunctionExpand {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
@@ -3768,7 +3769,7 @@ public final class Arithmetic {
       }
 
       if (engine.isSymbolicMode(S.Power.getAttributes())) {
-        ast.addEvalFlags(IAST.BUILT_IN_EVALED);
+        ast.builtinEvaled();
       }
       return F.NIL;
     }
@@ -5969,7 +5970,7 @@ public final class Arithmetic {
    * 30
    * </pre>
    */
-  public static class Times extends AbstractArgMultiple implements INumeric {
+  private static class Times extends AbstractArgMultiple implements INumeric {
     /** Constructor for the singleton */
     public static final Times CONST = new Times();
 
@@ -6624,7 +6625,7 @@ public final class Arithmetic {
       }
 
       if (engine.isSymbolicMode(S.Times.getAttributes())) {
-        ast.addEvalFlags(IAST.BUILT_IN_EVALED);
+        ast.builtinEvaled();
       }
       return F.NIL;
     }

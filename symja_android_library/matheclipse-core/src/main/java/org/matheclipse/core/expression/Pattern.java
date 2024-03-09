@@ -76,7 +76,7 @@ public class Pattern extends Blank {
   public int[] addPattern(List<GenericPair<IExpr, IPatternObject>> patternIndexMap) {
     IPatternMap.addPattern(patternIndexMap, this);
     int[] result = new int[2];
-    if (isPatternDefault() || isPatternOptional()) {
+    if (isPatternDefault()) {
       // the ast contains a pattern with default value (i.e. "x_." or
       // "x_:")
       result[0] = IAST.CONTAINS_DEFAULT_PATTERN;

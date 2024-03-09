@@ -6,6 +6,16 @@ import org.junit.Test;
 public class PartTest extends ExprEvaluatorTestCase {
 
   @Test
+  public void testIndexed() {
+    check("Indexed({a, b}, 1)", //
+        "a");
+    check("Indexed(c,1)", //
+        "Indexed(c,{1})");
+    check("Indexed(c, {1,2})", //
+        "Indexed(c,{1,2})");
+  }
+
+  @Test
   public void testPartErrors() {
 
     //

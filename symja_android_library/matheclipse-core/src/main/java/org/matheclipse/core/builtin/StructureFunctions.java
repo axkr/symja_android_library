@@ -620,7 +620,7 @@ public class StructureFunctions {
         if (temp.isPresent() && !temp.equals(ast)) {
           return temp;
         }
-        ast.addEvalFlags(IAST.BUILT_IN_EVALED);
+        ast.builtinEvaled();
         return F.NIL;
       }
 
@@ -662,7 +662,7 @@ public class StructureFunctions {
         }
 
       }
-      ast.addEvalFlags(IAST.BUILT_IN_EVALED);
+      ast.builtinEvaled();
       return F.NIL;
     }
 

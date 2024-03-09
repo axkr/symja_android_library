@@ -1,6 +1,10 @@
 package org.matheclipse.core.interfaces;
 
-public interface ITernaryComparator {
+import org.matheclipse.core.eval.EvalEngine;
+
+public interface ITernaryComparator extends IEvaluator {
+
+  IExpr.COMPARE_TERNARY prepareCompare(IExpr a0, IExpr a1, EvalEngine engine);
 
   /**
    *

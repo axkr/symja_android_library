@@ -1846,7 +1846,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         if (lhs instanceof IPatternSequence) {
           if (i == lhsPattern.size() - 1) {
             IPatternSequence pattern = (IPatternSequence) lhs;
-            if (pattern.getSymbol() != null && !pattern.isPatternOptional()) {
+            if (pattern.getSymbol() != null && !pattern.isPatternDefault()) {
               if (matchPattern((IPatternSequence) lhs, rhs, stackMatcher, engine)) {
                 removedPositionsArray[removedPosition++] = i;
                 matchedPattern = true;
@@ -1859,7 +1859,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
           return UNEVALED;
         }
         IPatternObject pattern = (IPatternObject) lhs;
-        if (pattern.getSymbol() != null && !pattern.isPatternOptional()) {
+        if (pattern.getSymbol() != null && !pattern.isPatternDefault()) {
           if (matchPattern((IPatternObject) lhs, rhs, stackMatcher, engine)) {
             removedPositionsArray[removedPosition++] = i;
             matchedPattern = true;

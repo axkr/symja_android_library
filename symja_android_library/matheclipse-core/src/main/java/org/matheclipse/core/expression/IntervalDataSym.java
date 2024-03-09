@@ -294,7 +294,7 @@ public class IntervalDataSym {
     if (EvalAttributes.sort(result, INTERVAL_COMPARATOR)) {
       evaled = true;
     }
-    result.addEvalFlags(IAST.BUILT_IN_EVALED);
+    result.builtinEvaled();
     if (result.size() > 2) {
       int j = 1;
       IAST list1 = (IAST) result.arg1();
@@ -370,7 +370,7 @@ public class IntervalDataSym {
       return result;
     }
     if (intervalList instanceof IASTMutable) {
-      intervalList.addEvalFlags(IAST.BUILT_IN_EVALED);
+      intervalList.builtinEvaled();
       if (EvalAttributes.sort((IASTMutable) intervalList, INTERVAL_COMPARATOR)) {
         return intervalList;
       }

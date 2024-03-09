@@ -367,13 +367,10 @@ public class Integrate extends AbstractFunctionEvaluator {
         result = integrateByRubiRules(fx, x, ast, engine);
         if (result.isPresent()) {
           IExpr temp = result.replaceAll(f -> {
-            if (f.isAST(UtilityFunctionCtors.Unintegrable, 3)) {
+            if (f.isAST(UtilityFunctionCtors.Unintegrable, 3)
+                || f.isAST(F.$rubi("CannotIntegrate"), 3)) {
               IAST integrate = F.Integrate(f.first(), f.second());
-              integrate.addEvalFlags(IAST.BUILT_IN_EVALED);
-              return integrate;
-            } else if (f.isAST(F.$rubi("CannotIntegrate"), 3)) {
-              IAST integrate = F.Integrate(f.first(), f.second());
-              integrate.addEvalFlags(IAST.BUILT_IN_EVALED);
+              integrate.builtinEvaled();
               return integrate;
             }
             return F.NIL;

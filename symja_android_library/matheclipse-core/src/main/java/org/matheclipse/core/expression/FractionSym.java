@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.function.Function;
 import org.hipparchus.fraction.BigFraction;
-import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
@@ -95,16 +94,16 @@ public class FractionSym extends AbstractFractionSym {
       if (fDenominator == fs.fDenominator) {
         return valueOf((long) fNumerator + fs.fNumerator, fDenominator);
       }
-      int gcd = ArithmeticUtils.gcd(fDenominator, fs.fDenominator);
-      if (gcd == 1) {
+      long gcd = IInteger.gcd(fDenominator, fs.fDenominator);
+      if (gcd == 1L) {
         long denomgcd = fDenominator;
         long otherdenomgcd = fs.fDenominator;
         long newdenom = denomgcd * otherdenomgcd;
         long newnum = otherdenomgcd * fNumerator + (long) fDenominator * (long) fs.fNumerator;
         return valueOf(newnum, newdenom);
       }
-      long denomgcd = ((long) fDenominator) / gcd;
-      long otherdenomgcd = ((long) fs.fDenominator) / gcd;
+      long denomgcd = (fDenominator) / gcd;
+      long otherdenomgcd = (fs.fDenominator) / gcd;
       long newdenom = denomgcd * fs.fDenominator;
       long newnum = otherdenomgcd * fNumerator + denomgcd * fs.fNumerator;
       return valueOf(newnum, newdenom);
@@ -384,9 +383,9 @@ public class FractionSym extends AbstractFractionSym {
     /* new numerator = gcd(num, other.num) */
     /* new denominator = lcm(denom, other.denom) */
     FractionSym fs = (FractionSym) other;
-    int gcddenom = ArithmeticUtils.gcd(fDenominator, fs.fDenominator);
-    long denom = ((long) (fDenominator / gcddenom)) * (long) fs.fDenominator;
-    long num = ArithmeticUtils.gcd(fNumerator < 0 ? -fNumerator : fNumerator,
+    long gcddenom = IInteger.gcd(fDenominator, fs.fDenominator);
+    long denom = (fDenominator / gcddenom) * fs.fDenominator;
+    long num = IInteger.gcd(fNumerator < 0 ? -fNumerator : fNumerator,
         fs.fNumerator < 0 ? -fs.fNumerator : fs.fNumerator);
     return valueOf(num, denom);
   }
@@ -408,10 +407,10 @@ public class FractionSym extends AbstractFractionSym {
     FractionSym fs = other;
     int numerator = fNumerator < 0 ? -fNumerator : fNumerator;
     int numeratorOther = fs.fNumerator < 0 ? -fs.fNumerator : fs.fNumerator;
-    int gcddenom = ArithmeticUtils.gcd(numerator, numeratorOther);
-    long newNumerator = ((long) (numerator / gcddenom)) * (long) numeratorOther;
+    long gcddenom = IInteger.gcd(numerator, numeratorOther);
+    long newNumerator = (numerator / gcddenom) * numeratorOther;
 
-    long newDenominator = ArithmeticUtils.gcd(fDenominator, fs.fDenominator);
+    long newDenominator = IInteger.gcd(fDenominator, fs.fDenominator);
     return valueOf(newNumerator, newDenominator);
   }
 

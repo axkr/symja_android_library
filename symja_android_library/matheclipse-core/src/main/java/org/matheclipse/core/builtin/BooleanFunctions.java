@@ -70,11 +70,11 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 
 public final class BooleanFunctions {
 
-  public static final Equal CONST_EQUAL = new Equal();
-  public static final Greater CONST_GREATER = new Greater();
-  public static final Less CONST_LESS = new Less();
-  public static final GreaterEqual CONST_GREATER_EQUAL = new GreaterEqual();
-  public static final LessEqual CONST_LESS_EQUAL = new LessEqual();
+  public static final IComparatorFunction CONST_EQUAL = new Equal();
+  public static final ITernaryComparator CONST_GREATER = new Greater();
+  public static final ITernaryComparator CONST_LESS = new Less();
+  public static final ITernaryComparator CONST_GREATER_EQUAL = new GreaterEqual();
+  public static final ITernaryComparator CONST_LESS_EQUAL = new LessEqual();
 
   private static final int[] FULL_BITSETS = new int[] { //
       0b1, //
@@ -1675,7 +1675,7 @@ public final class BooleanFunctions {
    * {True, True, True}
    * </pre>
    */
-  static class Equal extends AbstractFunctionEvaluator implements IComparatorFunction {
+  private static class Equal extends AbstractFunctionEvaluator implements IComparatorFunction {
 
     /**
      * Create the result for a <code>simplifyCompare()</code> step <code>
@@ -2059,7 +2059,7 @@ public final class BooleanFunctions {
    * {True, True, True}
    * </pre>
    */
-  public static class Greater extends AbstractCoreFunctionEvaluator
+  private static class Greater extends AbstractCoreFunctionEvaluator
       implements ITernaryComparator, IComparatorFunction {
     public static final Greater CONST = new Greater();
 
@@ -2286,7 +2286,8 @@ public final class BooleanFunctions {
       return F.NIL;
     }
 
-    private IExpr.COMPARE_TERNARY prepareCompare(IExpr a0, IExpr a1, EvalEngine engine) {
+    @Override
+    public IExpr.COMPARE_TERNARY prepareCompare(IExpr a0, IExpr a1, EvalEngine engine) {
       if ((!a0.isReal() && a0.isNumericFunction(true))
           || (a1.isInexactNumber() && a0.isRational())) {
         a0 = engine.evalN(a0);
@@ -2297,10 +2298,6 @@ public final class BooleanFunctions {
       }
 
       return compareTernary(a0, a1);
-    }
-
-    public IExpr.COMPARE_TERNARY prepareCompare(final IExpr o0, final IExpr o1) {
-      return prepareCompare(o0, o1, EvalEngine.get());
     }
 
     @Override
@@ -2454,7 +2451,7 @@ public final class BooleanFunctions {
    * {True, True, True}
    * </pre>
    */
-  public static final class GreaterEqual extends Greater {
+  private static final class GreaterEqual extends Greater {
     public static final GreaterEqual CONST = new GreaterEqual();
 
     /** {@inheritDoc} */
@@ -2757,7 +2754,7 @@ public final class BooleanFunctions {
    * {True, True, True}
    * </pre>
    */
-  public static final class Less extends Greater {
+  private static final class Less extends Greater {
 
     /** {@inheritDoc} */
     @Override
@@ -2846,7 +2843,7 @@ public final class BooleanFunctions {
    * {True, True, True}
    * </pre>
    */
-  public static final class LessEqual extends Greater {
+  private static final class LessEqual extends Greater {
 
     /** {@inheritDoc} */
     @Override
@@ -3061,7 +3058,7 @@ public final class BooleanFunctions {
         int allocSize = F.allocLevel1(ast, x -> x.isList());
         IASTAppendable result = F.ast(S.Max, allocSize);
         evaled = flattenListRecursive(ast, result, engine) || evaled;
-        return maximum(result, evaled);
+        return maximum(result, evaled, engine);
       }
       return F.NIL;
     }
@@ -3076,7 +3073,7 @@ public final class BooleanFunctions {
       return ARGS_0_INFINITY;
     }
 
-    private static IExpr maximum(IAST list, boolean flattenedList) {
+    private static IExpr maximum(IAST list, boolean flattenedList, EvalEngine engine) {
       boolean evaled = false;
       IASTAppendable f = list.remove(x -> x.isNegativeInfinity());
       if (f.isPresent()) {
@@ -3104,7 +3101,7 @@ public final class BooleanFunctions {
         if (max1.equals(max2)) {
           continue;
         }
-        comp = BooleanFunctions.CONST_LESS.prepareCompare(max1, max2);
+        comp = BooleanFunctions.CONST_LESS.prepareCompare(max1, max2, engine);
 
         if (comp == IExpr.COMPARE_TERNARY.TRUE) {
           max1 = max2;
@@ -3223,7 +3220,7 @@ public final class BooleanFunctions {
         int allocSize = F.allocLevel1(ast, x -> x.isList());
         IASTAppendable result = F.ast(S.Min, allocSize);
         evaled = flattenListRecursive(ast, result, engine) || evaled;
-        return minimum(result, evaled);
+        return minimum(result, evaled, engine);
       }
       return F.NIL;
     }
@@ -3259,7 +3256,7 @@ public final class BooleanFunctions {
       return evaled;
     }
 
-    private static IExpr minimum(IAST list, final boolean flattenedList) {
+    private static IExpr minimum(IAST list, final boolean flattenedList, EvalEngine engine) {
       boolean evaled = false;
       IASTAppendable f = list.remove(x -> x.isInfinity());
       if (f.isPresent()) {
@@ -3291,7 +3288,7 @@ public final class BooleanFunctions {
         if (min1.equals(min2)) {
           continue;
         }
-        comp = BooleanFunctions.CONST_GREATER.prepareCompare(min1, min2);
+        comp = BooleanFunctions.CONST_GREATER.prepareCompare(min1, min2, engine);
 
         if (comp == IExpr.COMPARE_TERNARY.TRUE) {
           min1 = min2;

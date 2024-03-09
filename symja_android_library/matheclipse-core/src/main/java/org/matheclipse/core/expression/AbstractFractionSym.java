@@ -1,7 +1,6 @@
 package org.matheclipse.core.expression;
 
 import static org.matheclipse.core.expression.NumberUtil.hasIntValue;
-import static org.matheclipse.core.expression.NumberUtil.hasLongValue;
 import java.math.BigInteger;
 import java.util.NoSuchElementException;
 import java.util.function.DoubleFunction;
@@ -50,9 +49,7 @@ public abstract class AbstractFractionSym implements IFraction {
     if (i1.equals(BigInteger.ONE) || i2.equals(BigInteger.ONE)) {
       return BigInteger.ONE;
     } else if (hasIntValue(i1) && hasIntValue(i2)) {
-      return BigInteger.valueOf(ArithmeticUtils.gcd(i1.intValue(), i2.intValue()));
-    } else if (hasLongValue(i1) && hasLongValue(i2)) {
-      return BigInteger.valueOf(ArithmeticUtils.gcd(i1.longValue(), i2.longValue()));
+      return BigInteger.valueOf(IInteger.gcd(i1.intValue(), i2.intValue()));
     } else {
       return i1.gcd(i2);
     }

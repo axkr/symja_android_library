@@ -806,7 +806,7 @@ public class GraphFunctions {
             int[] dim = ast.arg1().isMatrix();
             if (dim != null) {
               IAST m = (IAST) ast.arg1();
-              double[][] matrix = m.toDoubleMatrix();
+              double[][] matrix = m.toDoubleMatrix(true);
               if (matrix != null) {
                 int rowDim = dim[0];
                 int colDim = dim[1];

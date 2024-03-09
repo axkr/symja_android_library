@@ -1789,7 +1789,7 @@ public class ManipulateFunction {
     }
 
     private static IExpr matrixPlot(IExpr arg) {
-      double[][] matrix = arg.toDoubleMatrix();
+      double[][] matrix = arg.toDoubleMatrix(true);
       if (matrix != null && matrix.length > 0) {
         final int rowCount = matrix.length;
         String[] yStrs = new String[rowCount];

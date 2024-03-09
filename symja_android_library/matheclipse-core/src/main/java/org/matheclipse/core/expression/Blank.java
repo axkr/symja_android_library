@@ -85,7 +85,7 @@ public class Blank implements IPattern {
   public int[] addPattern(List<GenericPair<IExpr, IPatternObject>> patternIndexMap) {
     IPatternMap.addPattern(patternIndexMap, this);
     int[] result = new int[2];
-    if (isPatternDefault() || isPatternOptional()) {
+    if (isPatternDefault()) {
       // the ast contains a pattern with default value (i.e. "_." or
       // "_:")
       result[0] = IAST.CONTAINS_DEFAULT_PATTERN;
@@ -311,12 +311,6 @@ public class Blank implements IPattern {
   @Override
   public final boolean isPatternExpr() {
     return true;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public boolean isPatternOptional() {
-    return false; // fOptionalValue != null;
   }
 
   @Override

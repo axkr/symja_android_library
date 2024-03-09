@@ -2031,7 +2031,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
 
   /** {@inheritDoc} */
   @Override
-  public double[][] toDoubleMatrix() {
+  public double[][] toDoubleMatrix(boolean setMatrixFormat) {
     if (fDimension.length == 2 && fDimension[0] > 0 && fDimension[1] > 0) {
       IExpr value = null;
       try {
