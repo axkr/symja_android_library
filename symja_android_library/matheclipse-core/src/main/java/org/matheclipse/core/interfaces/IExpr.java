@@ -206,6 +206,8 @@ public interface IExpr
 
   public static final int BDDEXPRID = DATAID + 23;
 
+  public static final int BEZIERFUNCTONID = DATAID + 24;
+
   /**
    * Compares {@code a} expressions {@link #hierarchy()} number with the {@link #hierarchy()} number
    * of {@code b}. Returns -1,0,1 as {@code a} expressions {@link #hierarchy()} number is canonical
@@ -1774,7 +1776,8 @@ public interface IExpr
    * @return <code>S.True, S.False or F.NIL</code
    */
   public default IExpr greaterEqualThan(IExpr that) {
-    COMPARE_TERNARY temp = BooleanFunctions.CONST_GREATER_EQUAL.prepareCompare(this, that);
+    COMPARE_TERNARY temp =
+        BooleanFunctions.CONST_GREATER_EQUAL.prepareCompare(this, that, EvalEngine.get());
     return convertToExpr(temp);
   }
 
@@ -1805,7 +1808,8 @@ public interface IExpr
    * @return <code>S.True, S.False or F.NIL</code
    */
   public default IExpr greaterThan(IExpr that) {
-    COMPARE_TERNARY temp = BooleanFunctions.CONST_GREATER.prepareCompare(this, that);
+    COMPARE_TERNARY temp =
+        BooleanFunctions.CONST_GREATER.prepareCompare(this, that, EvalEngine.get());
     return convertToExpr(temp);
   }
 
@@ -4144,7 +4148,9 @@ public interface IExpr
    * f[x_, y_:value]</code>)
    *
    * @return
+   * @deprecated use {@link #isPatternDefault()}
    */
+  @Deprecated
   default boolean isPatternOptional() {
     return false;
   }
@@ -5096,7 +5102,8 @@ public interface IExpr
    * @return <code>S.True, S.False or F.NIL</code
    */
   public default IExpr lessEqualThan(IExpr that) {
-    COMPARE_TERNARY temp = BooleanFunctions.CONST_LESS_EQUAL.prepareCompare(this, that);
+    COMPARE_TERNARY temp =
+        BooleanFunctions.CONST_LESS_EQUAL.prepareCompare(this, that, EvalEngine.get());
     return convertToExpr(temp);
   }
 
@@ -5127,7 +5134,7 @@ public interface IExpr
    * @return <code>S.True, S.False or F.NIL</code
    */
   public default IExpr lessThan(IExpr that) {
-    COMPARE_TERNARY temp = BooleanFunctions.CONST_LESS.prepareCompare(this, that);
+    COMPARE_TERNARY temp = BooleanFunctions.CONST_LESS.prepareCompare(this, that, EvalEngine.get());
     return convertToExpr(temp);
   }
 
@@ -6319,11 +6326,21 @@ public interface IExpr
 
   /**
    * Convert this object into a <code>double[][]</code> matrix.
-   *
+   * 
+   * @return
+   */
+  default double[][] toDoubleMatrix() {
+    return toDoubleMatrix(true);
+  }
+
+  /**
+   * Convert this object into a <code>double[][]</code> matrix.
+   * 
+   * @param setMatrixFormat set matrix {@link IAST#IS_MATRIX} in this object
    * @return <code>null</code> if this object can not be converted into a <code>double[]</code>
    *         matrix
    */
-  default double[][] toDoubleMatrix() {
+  default double[][] toDoubleMatrix(boolean setMatrixFormat) {
     return null;
   }
 
@@ -6335,7 +6352,7 @@ public interface IExpr
    *         matrix
    */
   default double[][] toDoubleMatrixIgnore() {
-    return toDoubleMatrix();
+    return toDoubleMatrix(true);
   }
 
   /**
@@ -6477,7 +6494,7 @@ public interface IExpr
    * @return <code>null</code> if this object can not be converted into a RealMatrix
    */
   default RealMatrix toRealMatrix() {
-    final double[][] elements = toDoubleMatrix();
+    final double[][] elements = toDoubleMatrix(true);
     if (elements != null && elements.length > 0 && elements[0].length > 0) {
       return new Array2DRowRealMatrix(elements, false);
     }

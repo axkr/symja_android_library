@@ -1036,7 +1036,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
     /** {@inheritDoc} */
     @Override
-    public double[][] toDoubleMatrix() {
+    public double[][] toDoubleMatrix(boolean setMatrixFormat) {
       return null;
     }
 
@@ -2632,6 +2632,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
    * @return
    * @see #putProperty(PROPERTY, Object)
    */
+  @Override
   public Object getProperty(PROPERTY key) {
     EnumMap<PROPERTY, Object> map = propertyCache().getIfPresent(this);
     if (map == null) {
@@ -5494,6 +5495,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
    * @return
    * @see #getProperty(PROPERTY)
    */
+  @Override
   public Object putProperty(PROPERTY key, Object value) {
     Cache<IAST, EnumMap<PROPERTY, Object>> propertyCache = propertyCache();
     EnumMap<PROPERTY, Object> map = propertyCache.getIfPresent(this);
@@ -5820,8 +5822,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public double[][] toDoubleMatrix() {
-    int[] dim = isMatrix();
+  public double[][] toDoubleMatrix(boolean setMatrixFormat) {
+    int[] dim = isMatrix(setMatrixFormat);
     if (dim == null) {
       return null;
     }

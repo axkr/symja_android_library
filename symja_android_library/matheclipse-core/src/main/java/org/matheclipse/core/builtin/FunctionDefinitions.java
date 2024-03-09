@@ -13,6 +13,7 @@ public final class FunctionDefinitions {
 
     private static void init() {
       S.Beep.setEvaluator(new org.matheclipse.core.reflection.system.Beep());
+      S.BezierFunction.setEvaluator(new org.matheclipse.core.reflection.system.BezierFunction());
       S.ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
       S.D.setEvaluator(new org.matheclipse.core.reflection.system.D());
       S.Derivative.setEvaluator(new org.matheclipse.core.reflection.system.Derivative());

@@ -194,7 +194,7 @@ public class AST2Expr {
       "HypergeometricPFQRegularized", "Icosahedron", "Identity", "IdentityMatrix", "If", "Im",
       "Image", "ImageData", "ImageChannels", "ImageColorSpace", "ImageDimensions", "ImageQ",
       "ImageCrop", "ImageResize", "ImageRotate", "ImageScaled", "ImageSize", "ImageType",
-      "ImplicitD", "Implies", "Import", "ImportString", "In", "Increment", "IndexGraph",
+      "ImplicitD", "Implies", "Import", "ImportString", "In", "Increment", "Indexed", "IndexGraph",
       "Inequality", "InexactNumberQ", "Infix", "Information", "Inner", "Input", "InputField",
       "InputForm", "InputStream", "InputString", "Insert", "InstallJava", "InstanceOf",
       "IntegerDigits", "IntegerExponent", "IntegerLength", "IntegerName", "IntegerPart",

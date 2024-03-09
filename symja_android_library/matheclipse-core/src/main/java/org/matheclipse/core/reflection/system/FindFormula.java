@@ -30,7 +30,7 @@ public class FindFormula extends AbstractFunctionOptionEvaluator {
       int[] isMatrix = data.isMatrix();
       if (isMatrix != null && isMatrix[1] == 2 && data.isList()) {
         IAST matrix = (IAST) data;
-        double[][] doubleMatrix = matrix.toDoubleMatrix();
+        double[][] doubleMatrix = matrix.toDoubleMatrix(true);
         if (doubleMatrix != null) {
           if (ast.argSize() > 2) {
             n = ast.arg3().toIntDefault();

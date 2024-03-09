@@ -49,7 +49,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
    * </code> object.
    */
   public enum PROPERTY {
-    CSS;
+    CSS, //
+    EMPIRICAL_DISTRIBUTION; // org.hipparchus.stat.fitting.EmpiricalDistribution
   }
 
   /** NO_FLAG ACTIVATED */
@@ -1108,6 +1109,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
    */
   public IExpr getPart(final IntList positions);
 
+  public Object getProperty(PROPERTY key);
   /**
    * If this is an <code>IAssociation</code> return the rule at the position. Otherwise call
    * {@link #get(int)}.
@@ -1566,6 +1568,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
    */
   public IASTAppendable prependClone(IExpr expr);
 
+  public Object putProperty(PROPERTY key, Object value);
+
   /**
    * Removes all objects which satisfy the given predicate.
    *
@@ -1759,6 +1763,13 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
     IASTMutable ast = copy();
     ast.set(i, expr);
     return ast;
+  }
+
+  /**
+   * call <code>setEvalFlags(IAST.BUILT_IN_EVALED)</code>
+   */
+  public default void builtinEvaled() {
+    setEvalFlags(IAST.BUILT_IN_EVALED);
   }
 
   /**

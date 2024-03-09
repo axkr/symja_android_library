@@ -488,7 +488,7 @@ public class Convert {
       return new Array2DRowRealMatrix(array, false);
     }
 
-    final double[][] elements = listMatrix.toDoubleMatrix();
+    final double[][] elements = listMatrix.toDoubleMatrix(true);
     if (elements == null) {
       return null;
     }

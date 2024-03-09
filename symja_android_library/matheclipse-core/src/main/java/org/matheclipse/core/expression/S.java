@@ -5032,6 +5032,8 @@ public class S {
   public final static IBuiltInSymbol Indeterminate =
       S.initFinalSymbol("Indeterminate", ID.Indeterminate);
 
+  public final static IBuiltInSymbol Indexed = S.initFinalSymbol("Indexed", ID.Indexed);
+
   public final static IBuiltInSymbol IndexGraph = S.initFinalSymbol("IndexGraph", ID.IndexGraph);
 
   public final static IBuiltInSymbol Inequality = S.initFinalSymbol("Inequality", ID.Inequality);

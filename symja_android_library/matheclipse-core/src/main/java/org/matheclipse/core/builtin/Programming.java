@@ -77,6 +77,7 @@ public final class Programming {
       S.FixedPointList.setEvaluator(new FixedPointList());
       S.For.setEvaluator(new For());
       S.If.setEvaluator(new If());
+      S.Indexed.setEvaluator(new Indexed());
       S.Interrupt.setEvaluator(new Interrupt());
       S.List.setEvaluator(new ListFunction());
       S.Module.setEvaluator(new Module());
@@ -1287,6 +1288,37 @@ public final class Programming {
     }
   }
 
+  private static final class Indexed extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg2 = ast.arg2();
+      if (!arg2.isList()) {
+        return ast.setAtCopy(2, F.List(arg2));
+      }
+      IExpr arg1 = ast.arg1();
+      int[] positions = arg2.toIntVector();
+      if (positions != null) {
+        if (arg1.isAST()) {
+          try {
+            return ((IAST) arg1).getPart(positions);
+          } catch (ArrayIndexOutOfBoundsException aioobe) {
+            //
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
   /**
    *
    *
@@ -2447,7 +2479,7 @@ public final class Programming {
 
     public IExpr sparseEvaluate(final IAST ast, ISparseArray arg1, EvalEngine engine) {
 
-      ast.addEvalFlags(IAST.BUILT_IN_EVALED);
+      ast.builtinEvaled();
       if (ast.size() >= 3) {
         IASTMutable evaledAST = F.NIL;
 
