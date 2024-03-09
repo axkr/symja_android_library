@@ -14,6 +14,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.stat.StatUtils;
 import org.hipparchus.stat.correlation.PearsonsCorrelation;
+import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.stat.projection.PCA;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
@@ -34,6 +35,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IAST.PROPERTY;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -80,6 +82,7 @@ public class StatisticsFunctions {
       S.Covariance.setEvaluator(new Covariance());
       S.CauchyDistribution.setEvaluator(new CauchyDistribution());
       S.DiscreteUniformDistribution.setEvaluator(new DiscreteUniformDistribution());
+      S.EmpiricalDistribution.setEvaluator(new EmpiricalDistribution());
       S.ErlangDistribution.setEvaluator(new ErlangDistribution());
       S.Expectation.setEvaluator(new Expectation());
       S.ExponentialDistribution.setEvaluator(new ExponentialDistribution());
@@ -912,6 +915,11 @@ public class StatisticsFunctions {
       }
 
       return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
     }
 
     @Override
@@ -3637,6 +3645,165 @@ public class StatisticsFunctions {
     }
   }
 
+  private static final class EmpiricalDistribution extends AbstractEvaluator
+      implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate, ICentralMoment {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      org.hipparchus.stat.fitting.EmpiricalDistribution empiricalDistribution =
+          (org.hipparchus.stat.fitting.EmpiricalDistribution) ast
+              .getProperty(PROPERTY.EMPIRICAL_DISTRIBUTION);
+      if (empiricalDistribution == null) {
+        int size = arg1.isVector();
+        if (size > 0) {
+          double[] sourceData = arg1.toDoubleVector();
+          if (sourceData != null) {
+            org.hipparchus.stat.fitting.EmpiricalDistribution dist =
+                new org.hipparchus.stat.fitting.EmpiricalDistribution();
+            dist.load(sourceData);
+            ast.putProperty(PROPERTY.EMPIRICAL_DISTRIBUTION, dist);
+          }
+        }
+      }
+      ast.builtinEvaled();
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public IExpr mean(IAST dist) {
+      if (dist.isAST1()) {
+        org.hipparchus.stat.fitting.EmpiricalDistribution empiricalDistribution =
+            (org.hipparchus.stat.fitting.EmpiricalDistribution) dist
+                .getProperty(PROPERTY.EMPIRICAL_DISTRIBUTION);
+        if (empiricalDistribution != null) {
+          return F.num(empiricalDistribution.getNumericalMean());
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr median(IAST dist) {
+      if (dist.isAST1()) {
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr variance(IAST dist) {
+      if (dist.isAST1()) {
+        org.hipparchus.stat.fitting.EmpiricalDistribution empiricalDistribution =
+            (org.hipparchus.stat.fitting.EmpiricalDistribution) dist
+                .getProperty(PROPERTY.EMPIRICAL_DISTRIBUTION);
+        if (empiricalDistribution != null) {
+          StreamingStatistics sampleStats =
+              (StreamingStatistics) empiricalDistribution.getSampleStats();
+          return F.num(sampleStats.getPopulationVariance());
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr skewness(IAST dist) {
+      if (dist.isAST1()) {
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST1()) {
+        org.hipparchus.stat.fitting.EmpiricalDistribution empiricalDistribution =
+            (org.hipparchus.stat.fitting.EmpiricalDistribution) dist
+                .getProperty(PROPERTY.EMPIRICAL_DISTRIBUTION);
+        if (empiricalDistribution != null) {
+          if (!engine.isArbitraryMode()) {
+            try {
+              double x = k.evalf();
+              return F.num(empiricalDistribution.cumulativeProbability(x));
+            } catch (RuntimeException rex) {
+              //
+            }
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
+      if (dist.isAST1()) {
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+      if (dist.isAST1()) {
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST1()) {
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST1()) {
+        org.hipparchus.stat.fitting.EmpiricalDistribution empiricalDistribution =
+            (org.hipparchus.stat.fitting.EmpiricalDistribution) dist
+                .getProperty(PROPERTY.EMPIRICAL_DISTRIBUTION);
+        if (empiricalDistribution != null) {
+          if (!engine.isArbitraryMode()) {
+            try {
+              double x = k.evalf();
+              return F.num(empiricalDistribution.density(x));
+            } catch (RuntimeException rex) {
+              //
+            }
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      if (dist.isAST1()) {
+        org.hipparchus.stat.fitting.EmpiricalDistribution empiricalDistribution =
+            (org.hipparchus.stat.fitting.EmpiricalDistribution) dist
+                .getProperty(PROPERTY.EMPIRICAL_DISTRIBUTION);
+        if (empiricalDistribution != null) {
+          return F.num(empiricalDistribution.getNextValue());
+        }
+        // see exception handling in RandonmVariate() function
+        // double rate = dist.arg1().evalf();
+        // if (rate > 0.0) {
+        // // return F.num(new ExponentialGenerator(rate, random).nextValue());
+        // RandomDataGenerator rdg = new RandomDataGenerator();
+        // double[] vector = rdg.nextDeviates(
+        // new org.hipparchus.distribution.continuous.ExponentialDistribution(rate), size);
+        // return new ASTRealVector(vector, false);
+        // }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+
+  }
   /**
    *
    *
@@ -7468,7 +7635,7 @@ public class StatisticsFunctions {
           int[] matrixDimensions = arg1.isMatrix();
           if (matrixDimensions != null) {
             if (arg1.isRealMatrix()) {
-              double[][] matrix = arg1.toDoubleMatrix();
+              double[][] matrix = arg1.toDoubleMatrix(true);
               if (matrix == null) {
                 return F.NIL;
               }

@@ -192,9 +192,28 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "Piecewise({{GammaRegularized(v/2,0,k/2),k>0}},0)");
     check("PDF(ChiSquareDistribution(v), k)", //
         "Piecewise({{1/(2^(v/2)*E^(k/2)*k^(1-v/2)*Gamma(v/2)),k>0}},0)");
-    // TODO
-    // check("Skewness(ChiSquareDistribution(v))", //
-    // "");
+    check("Skewness(ChiSquareDistribution(v))", //
+        "2*Sqrt(2)*Sqrt(1/v)");
+  }
+
+  @Test
+  public void testEmpiricalDistribution() {
+    check(
+        "data={0.056996052779672735, -0.044108236741598965, -0.9261489534265283, -0.43709234535272856, " //
+            + "-0.2720099029639003, 0.3173834473707418, 1.9652135846762475, -1.426022310225606, " //
+            + "0.8632622190346015, -0.8927279617406512};", //
+        "");
+    check("edata=EmpiricalDistribution(data);", //
+        "");
+    check("{CDF(edata,0.25),CDF(edata,1),CDF(edata,3),CDF(edata,4),CDF(edata,5)}", //
+        "{0.7,0.9,1.0,1.0,1.0}");
+    // TODO https://github.com/Hipparchus-Math/hipparchus/pull/317
+    check("{PDF(edata,0.25),PDF(edata,1),PDF(edata,3),PDF(edata,4),PDF(edata,5)}", //
+        "{Indeterminate,Indeterminate,0.0,0.0,0.0}");
+    check("Mean(edata)", //
+        "-0.0795254");
+    check("Variance(edata)", //
+        "0.860326");
   }
 
   @Test
