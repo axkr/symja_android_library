@@ -475,6 +475,9 @@ public class SeriesFunctions {
               IInteger exp = frac.denominator(); // == 2
               IExpr expr = engine.evalQuiet(F.Times(F.D(F.Power(numerator, exp), x),
                   F.Power(F.D(denominator.base(), x), F.CN1)));
+              if (expr.isTimes() && expr.leafCount() < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT) {
+                expr = engine.evalQuiet(F.Expand(expr));
+              }
               expr = evalLimit(expr, data, engine);
               if (expr.isNumber()) {
                 // Sqrt( expr )
