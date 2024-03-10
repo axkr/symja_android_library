@@ -757,7 +757,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
 
     tr10 = TrigSimplifyFu.tr10(F.Sin(F.Plus(F.a, F.b, F.c)));
     assertEquals(tr10.toString(), //
-        "Sin(a)*Cos(b)*Cos(c)+Sin(a)*-Sin(b)*Sin(c)+Cos(a)*Cos(c)*Sin(b)+Cos(a)*Cos(b)*Sin(c)");
+        "Cos(c)*Cos(b)*Sin(a)+Cos(c)*Cos(a)*Sin(b)+Cos(a)*Cos(b)*Sin(c)+-Sin(a)*Sin(b)*Sin(c)");
   }
 
   @Test

@@ -25704,12 +25704,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("TrigExpand(Sinh(a+b+c))", //
         "Cosh(b)*Cosh(c)*Sinh(a)+Cosh(a)*Cosh(c)*Sinh(b)+Cosh(a)*Cosh(b)*Sinh(c)+Sinh(a)*Sinh(b)*Sinh(c)");
 
+    check("TrigExpand(Coth(a+b))", //
+        "(Cosh(a)*Cosh(b))/(Cosh(b)*Sinh(a)+Cosh(a)*Sinh(b))+" //
+            + "(Sinh(a)*Sinh(b))/(Cosh(b)*Sinh(a)+Cosh(a)*Sinh(b))");
+
     check("TrigExpand(Tanh(a+b))", //
-        "Tanh(a)/(1+Tanh(a)*Tanh(b))+Tanh(b)/(1+Tanh(a)*Tanh(b))");
+        "(Cosh(b)*Sinh(a))/(Cosh(a)*Cosh(b)+Sinh(a)*Sinh(b))+" //
+            + "(Cosh(a)*Sinh(b))/(Cosh(a)*Cosh(b)+Sinh(a)*Sinh(b))");
     check("TrigExpand(Tanh(a+b+c))", //
-        "Tanh(a)/(1+(Tanh(a)*Tanh(b))/(1+Tanh(b)*Tanh(c))+(Tanh(a)*Tanh(c))/(1+Tanh(b)*Tanh(c)))+Tanh(b)/((\n"
-            + "1+Tanh(b)*Tanh(c))*(1+(Tanh(a)*Tanh(b))/(1+Tanh(b)*Tanh(c))+(Tanh(a)*Tanh(c))/(1+Tanh(b)*Tanh(c))))+Tanh(c)/((\n"
-            + "1+Tanh(b)*Tanh(c))*(1+(Tanh(a)*Tanh(b))/(1+Tanh(b)*Tanh(c))+(Tanh(a)*Tanh(c))/(1+Tanh(b)*Tanh(c))))");
+        "(Cosh(b)*Cosh(c)*Sinh(a))/(Cosh(a)*Cosh(b)*Cosh(c)+Cosh(c)*Sinh(a)*Sinh(b)+Cosh(b)*Sinh(a)*Sinh(c)+Cosh(a)*Sinh(b)*Sinh(c))+"//
+            + "(Cosh(a)*Cosh(c)*Sinh(b))/(Cosh(a)*Cosh(b)*Cosh(c)+Cosh(c)*Sinh(a)*Sinh(b)+Cosh(b)*Sinh(a)*Sinh(c)+Cosh(a)*Sinh(b)*Sinh(c))+"//
+            + "(Cosh(a)*Cosh(b)*Sinh(c))/(Cosh(a)*Cosh(b)*Cosh(c)+Cosh(c)*Sinh(a)*Sinh(b)+Cosh(b)*Sinh(a)*Sinh(c)+Cosh(a)*Sinh(b)*Sinh(c))+"//
+            + "(Sinh(a)*Sinh(b)*Sinh(c))/(Cosh(a)*Cosh(b)*Cosh(c)+Cosh(c)*Sinh(a)*Sinh(b)+Cosh(b)*Sinh(a)*Sinh(c)+Cosh(a)*Sinh(b)*Sinh(c))");
 
     check("TrigExpand(Csc(a+b+c))", //
         "1/(Cos(b)*Cos(c)*Sin(a)+Cos(a)*Cos(c)*Sin(b)+Cos(a)*Cos(b)*Sin(c)-Sin(a)*Sin(b)*Sin(c))");

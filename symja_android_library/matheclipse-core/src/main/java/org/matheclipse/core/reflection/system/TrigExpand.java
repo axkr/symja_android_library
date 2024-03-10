@@ -19,7 +19,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.visit.VisitorPlusTimesPowerReplaceAll;
@@ -109,8 +108,12 @@ public class TrigExpand extends AbstractEvaluator {
         return expandCoshSinhPlus(plusAST, true);
       } else if (ast.isAST(S.Csch, 2)) {
         return expandCschPlus(plusAST, 1);
+      } else if (ast.isAST(S.Coth, 2)) {
+        // Cosh(x) / Sinh(x)
+        return F.Divide(expandCoshSinhPlus(plusAST, true), expandCoshSinhPlus(plusAST, false));
       } else if (ast.isTanh()) {
-        return expandTanhPlus(plusAST, 1);
+        // Sinh(x) / Cosh(x)
+        return F.Divide(expandCoshSinhPlus(plusAST, false), expandCoshSinhPlus(plusAST, true));
       }
       return F.NIL;
     }
@@ -298,28 +301,6 @@ public class TrigExpand extends AbstractEvaluator {
           F.Power(F.Plus(F.Times(F.Cosh(b), F.Cosh(a)), F.Times(F.Sinh(a), F.Sinh(b))), F.CN1)));
     }
 
-    /**
-     * <code>Tanh(a+b+c+...)</code>
-     *
-     * @param plusAST
-     * @param startPosition
-     * @return
-     */
-    private static IExpr expandTanhPlus(IAST plusAST, int startPosition) {
-      IASTAppendable result = F.TimesAlloc(2);
-      IExpr lhs = plusAST.get(startPosition);
-      if (startPosition == plusAST.size() - 2) {
-        // (Tanh(x)+Tanh(y)) / (1+Tanh(x)*Tanh(y))
-        IExpr rhs = plusAST.get(startPosition + 1);
-        result.append(Plus(F.Tanh(lhs), F.Tanh(rhs)));
-        result.append(F.Power(Plus(F.C1, Times(F.Tanh(lhs), F.Tanh(rhs))), F.CN1));
-      } else {
-        result.append(Plus(F.Tanh(lhs), expandTanhPlus(plusAST, startPosition + 1)));
-        result.append(F.Power(
-            Plus(F.C1, Times(F.Tanh(lhs), expandTanhPlus(plusAST, startPosition + 1))), F.CN1));
-      }
-      return result;
-    }
   }
 
   public TrigExpand() {}
