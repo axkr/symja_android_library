@@ -106,9 +106,9 @@ public class TrigExpand extends AbstractEvaluator {
       } else if (ast.isAST(S.Sech, 2)) {
         return expandSechPlus(plusAST, 1);
       } else if (ast.isSinh()) {
-        return expandSinhPlus(plusAST, 1);
+        return expandCoshSinhPlus(plusAST, false);
       } else if (ast.isCosh()) {
-        return expandCoshPlus(plusAST, 1);
+        return expandCoshSinhPlus(plusAST, true);
       } else if (ast.isAST(S.Csch, 2)) {
         return expandCschPlus(plusAST, 1);
       } else if (ast.isTanh()) {
@@ -149,11 +149,11 @@ public class TrigExpand extends AbstractEvaluator {
             } else if (ast.isSinh()) {
               int nInt = n.toInt();
               // return expandSinhPlus(F.constantArray(F.Plus, theta, nInt), 1);
-              return expandSinhPlus(theta.constantArray(S.Plus, 0, nInt), 1);
+              return expandCoshSinhPlus(theta.constantArray(S.Plus, 0, nInt), false);
             } else if (ast.isCosh()) {
               int nInt = n.toInt();
               // return expandCoshPlus(F.constantArray(F.Plus, theta, nInt), 1);
-              return expandCoshPlus(theta.constantArray(S.Plus, 0, nInt), 1);
+              return expandCoshSinhPlus(theta.constantArray(S.Plus, 0, nInt), true);
             } else if (ast.isAST(S.Csch, 2)) {
               // Csch(theta)/ChebyshevU(n - 1, Cosh(theta))
               return F.TrigExpand(F.Times(F.Csch(theta),
@@ -236,20 +236,20 @@ public class TrigExpand extends AbstractEvaluator {
      * @param startPosition
      * @return
      */
-    private static IExpr expandSinhPlus(IAST plusAST, int startPosition) {
-      IASTAppendable result = F.PlusAlloc(2);
-      IExpr lhs = plusAST.get(startPosition);
-      if (startPosition == plusAST.size() - 2) {
-        // Sinh(x)*Cosh(y) + Cosh(x)*Sinh(y)
-        IExpr rhs = plusAST.get(startPosition + 1);
-        result.append(Times(F.Sinh(lhs), F.Cosh(rhs)));
-        result.append(Times(F.Cosh(lhs), F.Sinh(rhs)));
-      } else {
-        result.append(Times(F.Sinh(lhs), expandCoshPlus(plusAST, startPosition + 1)));
-        result.append(Times(F.Cosh(lhs), expandSinhPlus(plusAST, startPosition + 1)));
-      }
-      return result;
-    }
+    // private static IExpr expandSinhPlus(IAST plusAST, int startPosition) {
+    // IASTAppendable result = F.PlusAlloc(2);
+    // IExpr lhs = plusAST.get(startPosition);
+    // if (startPosition == plusAST.size() - 2) {
+    // // Sinh(x)*Cosh(y) + Cosh(x)*Sinh(y)
+    // IExpr rhs = plusAST.get(startPosition + 1);
+    // result.append(Times(F.Sinh(lhs), F.Cosh(rhs)));
+    // result.append(Times(F.Cosh(lhs), F.Sinh(rhs)));
+    // } else {
+    // result.append(Times(F.Sinh(lhs), expandCoshPlus(plusAST, startPosition + 1)));
+    // result.append(Times(F.Cosh(lhs), expandSinhPlus(plusAST, startPosition + 1)));
+    // }
+    // return result;
+    // }
 
     /**
      * <code>Sin(a+b+c+...)</code>
@@ -273,26 +273,49 @@ public class TrigExpand extends AbstractEvaluator {
     }
 
     /**
+     * <code>if (coshResult==true) then Cosh(a+b+c+...)  else Sinh(a+b+c+...)</code>
+     * 
+     * @param plusAST
+     * @param coshResult
+     * @return
+     */
+    private static IExpr expandCoshSinhPlus(IAST plusAST, boolean coshResult) {
+      IExpr lhs = plusAST.arg1();
+      IExpr rhs = plusAST.arg2();
+      // Cosh(lhs)*Cosh(rhs) + Sinh(lhs)*Sinh(rhs)
+      IExpr coshPlus = F.Plus(Times(F.Cosh(lhs), F.Cosh(rhs)), Times(F.Sinh(lhs), F.Sinh(rhs)));
+      // Sinh(lhs)*Cosh(rhs) + Cosh(lhs)*Sinh(rhs)
+      IExpr sinhPlus = F.Plus(Times(F.Sinh(lhs), F.Cosh(rhs)), Times(F.Cosh(lhs), F.Sinh(rhs)));
+      for (int i = 3; i < plusAST.size(); i++) {
+        lhs = plusAST.get(i);
+        IExpr coshTemp = F.Plus(Times(F.Cosh(lhs), coshPlus), Times(F.Sinh(lhs), sinhPlus));
+        IExpr sinhTemp = F.Plus(Times(F.Sinh(lhs), coshPlus), Times(F.Cosh(lhs), sinhPlus));
+        coshPlus = coshTemp;
+        sinhPlus = sinhTemp;
+      }
+      return coshResult ? coshPlus : sinhPlus;
+    }
+    /**
      * <code>Cosh(a+b+c+...)</code>
      *
      * @param plusAST
      * @param startPosition
      * @return
      */
-    private static IExpr expandCoshPlus(IAST plusAST, int startPosition) {
-      IASTAppendable result = F.PlusAlloc(2);
-      IExpr lhs = plusAST.get(startPosition);
-      if (startPosition == plusAST.size() - 2) {
-        // Cosh(x)*Cosh(y) + Sinh(x)*Sinh(y)
-        IExpr rhs = plusAST.get(startPosition + 1);
-        result.append(Times(F.Cosh(lhs), F.Cosh(rhs)));
-        result.append(Times(F.Sinh(lhs), F.Sinh(rhs)));
-      } else {
-        result.append(Times(F.Cosh(lhs), expandCoshPlus(plusAST, startPosition + 1)));
-        result.append(Times(F.Sinh(lhs), expandSinhPlus(plusAST, startPosition + 1)));
-      }
-      return result;
-    }
+    // private static IExpr expandCoshPlus(IAST plusAST, int startPosition) {
+    // IASTAppendable result = F.PlusAlloc(2);
+    // IExpr lhs = plusAST.get(startPosition);
+    // if (startPosition == plusAST.size() - 2) {
+    // // Cosh(x)*Cosh(y) + Sinh(x)*Sinh(y)
+    // IExpr rhs = plusAST.get(startPosition + 1);
+    // result.append(Times(F.Cosh(lhs), F.Cosh(rhs)));
+    // result.append(Times(F.Sinh(lhs), F.Sinh(rhs)));
+    // } else {
+    // result.append(Times(F.Cosh(lhs), expandCoshPlus(plusAST, startPosition + 1)));
+    // result.append(Times(F.Sinh(lhs), expandSinhPlus(plusAST, startPosition + 1)));
+    // }
+    // return result;
+    // }
 
     /**
      * <code>Csch(a+b+c+...)</code>
