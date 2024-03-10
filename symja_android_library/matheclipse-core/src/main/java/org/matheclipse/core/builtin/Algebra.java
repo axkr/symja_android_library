@@ -5498,9 +5498,13 @@ public class Algebra {
       // base ^ (a+b+c...)
       IAST plusAST = (IAST) exponent;
       IAST[] result = plusAST.filterNIL(AbstractFunctionEvaluator::getNormalizedNegativeExpression);
-      parts[1] = base.power(result[0].oneIdentity0());
-      parts[0] = base.power(result[1].oneIdentity0());
-      return Optional.of(parts);
+      IAST plus = result[0];
+      if (plus.argSize() > 0) {
+        parts[1] = base.power(plus.oneIdentity0());
+        parts[0] = base.power(result[1].oneIdentity0());
+        return Optional.of(parts);
+      }
+      return Optional.empty();
     }
     IExpr positiveExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(exponent);
     if (positiveExpr.isPresent()) {

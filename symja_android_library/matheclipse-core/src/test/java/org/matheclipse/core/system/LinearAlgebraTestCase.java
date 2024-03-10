@@ -504,6 +504,14 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Norm(a)^2", //
         "12");
   }
+  @Test
+  public void testDotIssue932() {
+    // issue #932 StackOverflowError
+    check("{{0,1,-1+2^m},{1-2^m,2,-1+2^m},{2^m,-2,-2^m}}.{{1,0,1},{0,1,1},{1,-1,-1}}", //
+        "{{-1+2^m,2-2^m,2-2^m},\n" //
+            + " {0,3-2^m,4-2^(1+m)},\n" //
+            + " {0,-2+2^m,-2+2^(1+m)}}");
+  }
 
   @Test
   public void testEigensystem() {
