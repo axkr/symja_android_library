@@ -25657,6 +25657,21 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Cosh(a)*Cosh(b)*Cosh(c)+Cosh(c)*Sinh(a)*Sinh(b)+Cosh(b)*Sinh(a)*Sinh(c)+Cosh(a)*Sinh(b)*Sinh(c)");
     check("TrigExpand(Cosh(a+b+c+d))", //
         "Cosh(a)*Cosh(b)*Cosh(c)*Cosh(d)+Cosh(c)*Cosh(d)*Sinh(a)*Sinh(b)+Cosh(b)*Cosh(d)*Sinh(a)*Sinh(c)+Cosh(a)*Cosh(d)*Sinh(b)*Sinh(c)+Cosh(b)*Cosh(c)*Sinh(a)*Sinh(d)+Cosh(a)*Cosh(c)*Sinh(b)*Sinh(d)+Cosh(a)*Cosh(b)*Sinh(c)*Sinh(d)+Sinh(a)*Sinh(b)*Sinh(c)*Sinh(d)");
+    // issue #930
+    check("TrigExpand(Sin(a+b))", //
+        "Cos(b)*Sin(a)+Cos(a)*Sin(b)");
+    check("TrigExpand(Sin(a+b+c))", //
+        "Cos(b)*Cos(c)*Sin(a)+Cos(a)*Cos(c)*Sin(b)+Cos(a)*Cos(b)*Sin(c)-Sin(a)*Sin(b)*Sin(c)");
+    check("TrigExpand(Sin(a+b+c+d))", //
+        "Cos(b)*Cos(c)*Cos(d)*Sin(a)+Cos(a)*Cos(c)*Cos(d)*Sin(b)+Cos(a)*Cos(b)*Cos(d)*Sin(c)-Cos(d)*Sin(a)*Sin(b)*Sin(c)+Cos(a)*Cos(b)*Cos(c)*Sin(d)-Cos(c)*Sin(a)*Sin(b)*Sin(d)-Cos(b)*Sin(a)*Sin(c)*Sin(d)-Cos(a)*Sin(b)*Sin(c)*Sin(d)");
+    // issue #930
+    check("TrigExpand(Cos(a+b))", //
+        "Cos(a)*Cos(b)-Sin(a)*Sin(b)");
+    check("TrigExpand(Cos(a+b+c))", //
+        "Cos(a)*Cos(b)*Cos(c)-Cos(c)*Sin(a)*Sin(b)-Cos(b)*Sin(a)*Sin(c)-Cos(a)*Sin(b)*Sin(c)");
+    check("TrigExpand(Cos(a+b+c+d))", //
+        "Cos(a)*Cos(b)*Cos(c)*Cos(d)-Cos(c)*Cos(d)*Sin(a)*Sin(b)-Cos(b)*Cos(d)*Sin(a)*Sin(c)-Cos(a)*Cos(d)*Sin(b)*Sin(c)-Cos(b)*Cos(c)*Sin(a)*Sin(d)-Cos(a)*Cos(c)*Sin(b)*Sin(d)-Cos(a)*Cos(b)*Sin(c)*Sin(d)+Sin(a)*Sin(b)*Sin(c)*Sin(d)");
+
 
     check("TrigExpand( Csch(2*x) )", //
         "1/2*Csch(x)*Sech(x)");
