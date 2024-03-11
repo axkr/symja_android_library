@@ -75,7 +75,7 @@ jobs:
         git push origin --delete draft_${{ env.release_version }}	# delete draft branch
 
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         name: Symja ${{ env.release_version }}
         tag_name: ${{ env.release_tag }}
