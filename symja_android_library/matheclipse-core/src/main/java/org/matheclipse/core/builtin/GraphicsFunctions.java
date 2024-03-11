@@ -7,6 +7,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -660,6 +661,7 @@ public class GraphicsFunctions {
       S.Cylinder.setEvaluator(new Cylinder());
       S.Dodecahedron.setEvaluator(new Dodecahedron());
       S.Icosahedron.setEvaluator(new Icosahedron());
+      S.Labeled.setEvaluator(new Labeled());
       S.Line.setEvaluator(new Line());
       S.Octahedron.setEvaluator(new Octahedron());
       S.Point.setEvaluator(new Point());
@@ -675,6 +677,24 @@ public class GraphicsFunctions {
       S.GraphicsJSON.setEvaluator(new GraphicsJSON());
       S.Graphics3DJSON.setEvaluator(new Graphics3DJSON());
     }
+  }
+
+  private static final class Labeled extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IASTMutable evalArgs = engine.evalArgsN(ast, ISymbol.NOATTRIBUTE);
+      if (evalArgs.isPresent()) {
+        return evalArgs;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+
   }
 
   private static class Line extends AbstractEvaluator implements IGraphics2D, IGraphics3D {

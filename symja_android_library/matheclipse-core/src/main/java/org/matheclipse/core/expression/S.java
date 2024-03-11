@@ -11685,4 +11685,8 @@ public class S {
     return domain == Algebraics || domain == Booleans || domain == Complexes || domain == Integers
         || domain == Primes || domain == Rationals || domain == Reals;
   }
+
+  static {
+    C.setAttributes(ISymbol.NHOLDALL);
+  }
 }

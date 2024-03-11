@@ -827,6 +827,22 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * Evaluate the arguments of the given <code>ast</code> numerically, if {@link #isNumericMode()}
+   * is <code>true</code> taking the attributes
+   * <code>HoldFirst, NHoldFirst, HoldRest, NHoldRest, NumericFunction</code> into account.
+   *
+   * @param ast
+   * @param attributes
+   * @return <code>F.NIL</code> is no evaluation was possible
+   */
+  public IASTMutable evalArgsN(final IAST ast, final int attributes) {
+    if (isNumericMode()) {
+      return evalArgs(ast, attributes, true);
+    }
+    return F.NIL;
+  }
+
+  /**
    * Evaluate the arguments of the given ast, taking the attributes <code>
    * HoldFirst, NHoldFirst, HoldRest, NHoldRest, NumericFunction</code> into account.
    *

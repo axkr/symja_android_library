@@ -15979,6 +15979,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testN() {
+    // issue #937
+    check("(x==-157079632679/100000000000) // N", //
+        "x==-1.5708");
+    check("ConditionalExpression(x==-157079632679/100000000000*C(1),C(1)∈Integers) // N", //
+        "ConditionalExpression(x==-1.5708*C(1),C(1)∈Integers)");
     check("N({Labeled(4/3,\"test\")})", //
         "{Labeled(1.33333,test)}");
     check("N(Labeled(4/3,\"test\"))", //

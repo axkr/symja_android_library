@@ -4044,20 +4044,23 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         }
       }
     }
-    if (allowList) {
-      if (head().isSymbol() && ((ISymbol) head()).isNumericFunctionAttribute() || isList()) {
-        // check if all arguments are &quot;numeric&quot;
-        boolean forAll = forAll(x -> x.isNumericFunction(allowList), 1);
-        addEvalFlags(
-            forAll ? IAST.IS_NUMERIC_FUNCTION_OR_LIST : IAST.IS_NOT_NUMERIC_FUNCTION_OR_LIST);
-        return forAll;
-      }
-    } else {
-      if (head().isSymbol() && ((ISymbol) head()).isNumericFunctionAttribute()) {
-        // check if all arguments are &quot;numeric&quot;
-        boolean forAll = forAll(x -> x.isNumericFunction(allowList), 1);
-        addEvalFlags(forAll ? IAST.IS_NUMERIC_FUNCTION : IAST.IS_NOT_NUMERIC_FUNCTION);
-        return forAll;
+    if (head().isSymbol()) {
+      ISymbol header = (ISymbol) head();
+      if (allowList) {
+        if (header.isNumericFunctionAttribute() || isList()) {
+          // check if all arguments are &quot;numeric&quot;
+          boolean forAll = forAll(x -> x.isNumericFunction(allowList), 1);
+          addEvalFlags(
+              forAll ? IAST.IS_NUMERIC_FUNCTION_OR_LIST : IAST.IS_NOT_NUMERIC_FUNCTION_OR_LIST);
+          return forAll;
+        }
+      } else {
+        if (header.isNumericFunctionAttribute()) {
+          // check if all arguments are &quot;numeric&quot;
+          boolean forAll = forAll(x -> x.isNumericFunction(allowList), 1);
+          addEvalFlags(forAll ? IAST.IS_NUMERIC_FUNCTION : IAST.IS_NOT_NUMERIC_FUNCTION);
+          return forAll;
+        }
       }
     }
     return false;
