@@ -1324,6 +1324,16 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr polyLog(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      Apcomplex polylog = EvalEngine.getApfloatDouble().polylog(apcomplexValue(),
+          ((INumber) arg2).apcomplexValue());
+      return F.complexNum(polylog.real().doubleValue(), polylog.imag().doubleValue());
+    }
+    return IComplexNum.super.polyLog(arg2);
+  }
+
+  @Override
   public IComplexNum pow(final IComplexNum val) {
     if (Complex.equals(fComplex, Complex.ZERO, Config.DOUBLE_EPSILON)) {
       IReal sn = val.re();

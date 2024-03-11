@@ -5692,6 +5692,10 @@ public interface IExpr
     return F.NIL;
   }
 
+  default IExpr polyLog(IExpr x) {
+    return F.NIL;
+  }
+
   @Override
   default IExpr pow(double n) {
     return S.Power.of(this, F.num(n));

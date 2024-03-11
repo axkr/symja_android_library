@@ -1163,6 +1163,15 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr polyLog(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      return valueOf(
+          EvalEngine.getApfloat().polylog(fApcomplex, ((INumber) arg2).apcomplexValue()));
+    }
+    return IComplexNum.super.polyLog(arg2);
+  }
+
+  @Override
   public IExpr pow(double value) {
     return valueOf(EvalEngine.getApfloat().pow(fApcomplex, new Apfloat(value)));
   }

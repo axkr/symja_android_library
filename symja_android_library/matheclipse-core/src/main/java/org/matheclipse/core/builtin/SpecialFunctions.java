@@ -1941,26 +1941,28 @@ public class SpecialFunctions {
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 2) {
-        IInexactNumber n = (IInexactNumber) ast.arg1();
+        IInexactNumber v = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
 
-        IExpr temp = polyLogSymbolic(n, z);
+        IExpr temp = polyLogSymbolic(v, z);
         if (temp.isPresent()) {
           return temp;
         }
+        // issue #929
+        // return v.polyLog(z);
 
         if (engine.isDoubleMode()) {
           try {
             double nDouble = Double.NaN;
             double xDouble = Double.NaN;
             try {
-              nDouble = n.evalf();
+              nDouble = v.evalf();
               xDouble = z.evalf();
             } catch (ValidateException ve) {
             }
 
             if (Double.isNaN(nDouble) || Double.isNaN(xDouble)) {
-              Complex nComplex = n.evalfc();
+              Complex nComplex = v.evalfc();
               Complex xComplex = z.evalfc();
               return F.complexNum(ZetaJS.polyLog(nComplex, xComplex));
             } else {

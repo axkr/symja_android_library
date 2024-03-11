@@ -1286,6 +1286,23 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public IExpr polyLog(IExpr arg2) {
+    if (arg2 instanceof IReal) {
+      try {
+        return valueOf(
+            EvalEngine.getApfloat().polylog(fApfloat, ((IReal) arg2).apfloatValue()));
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
+    }
+    if (arg2 instanceof INumber) {
+      return F.complexNum(
+          EvalEngine.getApfloat().polylog(fApfloat, ((INumber) arg2).apcomplexValue()));
+    }
+    return INum.super.polyLog(arg2);
+  }
+
+  @Override
   public ApfloatNum pow(double value) {
     return valueOf(EvalEngine.getApfloat().pow(fApfloat, new Apfloat(value)));
   }

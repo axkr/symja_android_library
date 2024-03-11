@@ -1340,6 +1340,22 @@ public class Num implements INum {
     return INum.super.polyGamma(n);
   }
 
+
+  @Override
+  public IExpr polyLog(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      if (arg2 instanceof IReal) {
+        Apfloat polylog =
+            EvalEngine.getApfloatDouble().polylog(apfloatValue(), ((IReal) arg2).apfloatValue());
+        return F.num(polylog.doubleValue());
+      }
+      Apcomplex polylog = EvalEngine.getApfloatDouble().polylog(apfloatValue(),
+          ((INumber) arg2).apcomplexValue());
+      return F.complexNum(polylog.real().doubleValue(), polylog.imag().doubleValue());
+    }
+    return INum.super.polyLog(arg2);
+  }
+
   @Override
   public Num pow(int n) {
     return valueOf(Math.pow(value, n));
