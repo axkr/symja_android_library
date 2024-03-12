@@ -235,6 +235,13 @@ public class F extends S {
   // public final static ISymbol usage = initFinalHiddenSymbol("usage");
 
   /**
+   * Built-in function IDs those arguments should be evaluated numerically in numeric mode:
+   */
+  public static final int[] SORTED_NUMERIC_ARGS_IDS = new int[] {//
+      ID.Equal, ID.Greater, ID.GreaterEqual, ID.Labeled, ID.Less, ID.LessEqual, ID.Unequal //
+  };
+
+  /**
    * Used to represent a formal pattern <code>a_</code> that will be used only for predefined
    * pattern-matching rules and can match one expression.
    */

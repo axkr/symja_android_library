@@ -683,10 +683,6 @@ public class GraphicsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IASTMutable evalArgs = engine.evalArgsN(ast, ISymbol.NOATTRIBUTE);
-      if (evalArgs.isPresent()) {
-        return evalArgs;
-      }
       return F.NIL;
     }
 

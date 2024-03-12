@@ -3,6 +3,7 @@ package org.matheclipse.core.eval;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -827,22 +828,6 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Evaluate the arguments of the given <code>ast</code> numerically, if {@link #isNumericMode()}
-   * is <code>true</code> taking the attributes
-   * <code>HoldFirst, NHoldFirst, HoldRest, NHoldRest, NumericFunction</code> into account.
-   *
-   * @param ast
-   * @param attributes
-   * @return <code>F.NIL</code> is no evaluation was possible
-   */
-  public IASTMutable evalArgsN(final IAST ast, final int attributes) {
-    if (isNumericMode()) {
-      return evalArgs(ast, attributes, true);
-    }
-    return F.NIL;
-  }
-
-  /**
    * Evaluate the arguments of the given ast, taking the attributes <code>
    * HoldFirst, NHoldFirst, HoldRest, NHoldRest, NumericFunction</code> into account.
    *
@@ -856,6 +841,9 @@ public class EvalEngine implements Serializable {
     final int astSize = ast.size();
 
     if (astSize > 1) {
+      if (!numericFunction) {
+        numericFunction = isNumericArg(ast);
+      }
       boolean numericMode = fNumericMode;
       boolean localNumericMode = fNumericMode;
       final boolean isNumericFunction;
@@ -954,6 +942,20 @@ public class EvalEngine implements Serializable {
       return rlist[0];
     }
     return F.NIL;
+  }
+
+  /**
+   * Test if the arguments of this <code>ast</code> should be evaluated numerically in numeric mode.
+   * 
+   * @param ast
+   * @return
+   */
+  private boolean isNumericArg(final IAST ast) {
+    int id = ast.headID();
+    if (id >= 0) {
+      return Arrays.binarySearch(F.SORTED_NUMERIC_ARGS_IDS, id) >= 0;
+    }
+    return false;
   }
 
   /**
@@ -1437,11 +1439,12 @@ public class EvalEngine implements Serializable {
     }
     final int astSize = mutableAST.size();
     final boolean localNumericMode = fNumericMode;
+    final boolean argNumericMode = isNumericArg(mutableAST);
     IASTMutable[] rlist = new IASTMutable[] {F.NIL};
     mutableAST.forEach(1, astSize, (arg, i) -> {
       if (!arg.isUnevaluated()) {
         fNumericMode = localNumericMode;
-        evalArg(rlist, mutableAST, arg, i, false);
+        evalArg(rlist, mutableAST, arg, i, argNumericMode);
       }
     });
     if (rlist[0].isPresent()) {

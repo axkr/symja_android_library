@@ -1734,11 +1734,6 @@ public final class BooleanFunctions {
         return S.Undefined;
       }
 
-      IAST evalArgs = engine.evalArgsN(ast, ISymbol.NOATTRIBUTE);
-      if (evalArgs.isPresent()) {
-        return evalArgs;
-      }
-
       if (ast.size() > 2) {
         IExpr.COMPARE_TERNARY b = IExpr.COMPARE_TERNARY.UNDECIDABLE;
         if (ast.isAST2()) {
@@ -2214,11 +2209,6 @@ public final class BooleanFunctions {
           return S.Undefined;
         }
         return S.True;
-      }
-
-      IASTMutable evalArgs = engine.evalArgsN(ast, ISymbol.NOATTRIBUTE);
-      if (evalArgs.isPresent()) {
-        return evalArgs;
       }
 
       IASTAppendable flattened;
@@ -4671,10 +4661,6 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IASTMutable evalArgs = engine.evalArgsN(ast, ISymbol.NOATTRIBUTE);
-      if (evalArgs.isPresent()) {
-        return evalArgs;
-      }
       if (ast.exists(x -> x.equals(S.Undefined))) {
         return S.Undefined;
       }
