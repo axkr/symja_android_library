@@ -2043,6 +2043,16 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->1125899906842624*Sqrt(1635/5747513123739563366932509455047)}}");
   }
 
+  @Test
+  public void testIssue939() {
+    check("Solve(8000 ==60*(x^3/32*Pi),x)", //
+        "{{x->(8*(-5)^(2/3))/(3*Pi)^(1/3)},{x->(8*5^(2/3))/(3*Pi)^(1/3)},{x->(-8*(-1)^(1/\n"
+            + "3)*5^(2/3))/(3*Pi)^(1/3)}}");
+    check("Solve(8000/(x^3/32*Pi)==60,x)", //
+        "{{x->(8*(-5)^(2/3))/(3*Pi)^(1/3)},{x->(8*5^(2/3))/(3*Pi)^(1/3)},{x->(-8*(-1)^(1/\n"
+            + "3)*5^(2/3))/(3*Pi)^(1/3)}}");
+  }
+
   /** The JUnit setup method */
   @Override
   public void setUp() {

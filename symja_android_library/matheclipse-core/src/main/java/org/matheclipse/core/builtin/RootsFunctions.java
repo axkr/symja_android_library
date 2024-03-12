@@ -771,11 +771,11 @@ public class RootsFunctions {
       }
       IExpr zDenominator;
       if (rhsDenominator.isTimes()) {
-        IASTMutable temp = rhsDenominator.mapThread(F.Power(F.Slot1, F.QQ(-1, varDegree)), 1);
         if (rhsDenominator.first().isNegative()) {
           isNegative = !isNegative;
-          temp.set(1, rhsDenominator.first().negate());
+          rhsDenominator = ((IAST) rhsDenominator).setAtCopy(1, rhsDenominator.first().negate());
         }
+        IASTMutable temp = rhsDenominator.mapThread(F.Power(F.Slot1, F.QQ(-1, varDegree)), 1);
         zDenominator = EvalEngine.get().evaluate(temp);
       } else {
         if (rhsDenominator.isNegative()) {
