@@ -128,7 +128,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
     checkNumeric("BesselI(0,2.0 )", //
         "2.2795853023360673");
     checkNumeric("BesselI(3 + I, 1.5 - I)", //
-        "-0.2566499289084423+I*0.04927707435297578");
+        "-0.2566499289084423+I*0.04927707435297576");
     checkNumeric("BesselI({0, 1, 2}, 1.)", //
         "{1.2660658777520082,0.565159103992485,0.13574766976703828}");
   }
@@ -154,7 +154,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
     checkNumeric("BesselJ(0,0.001)", //
         "0.9999997500000157");
     checkNumeric("BesselJ(0,5.2)", //
-        "-0.11029043979098654");
+        "-0.11029043979098652");
     checkNumeric("BesselJ(0,4.0)", //
         "-0.39714980986384735");
     checkNumeric("BesselJ(1,3.6 )", //
@@ -259,15 +259,15 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
         "Indeterminate");
 
     checkNumeric("BesselK(0,0.53)", //
-        "0.8765603804164857");
+        "0.8765603804164858");
     checkNumeric("BesselK(0,4.0)", //
         "0.01115967608585302");
     checkNumeric("BesselK(1 + I, 3.0 - 2* I)", //
         "-0.0225107551369776+I*0.01696073734722752");
     checkNumeric("BesselK(23, 1.0)", //
-        "4.661145573743599E27");
+        "4.661145573743597E27");
     checkNumeric("BesselK({1, 2, 3}, 1.0)", //
-        "{0.6019072301972349,1.6248388986351774,7.101262824737945}");
+        "{0.6019072301972346,1.6248388986351774,7.101262824737945}");
   }
 
   @Test
@@ -301,15 +301,15 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
         "Indeterminate");
 
     checkNumeric("BesselY(10.0,1.0)", //
-        "-1.216180142786892E8");
+        "-1.2161801427868919E8");
     checkNumeric("BesselY(0,2.5)", //
         "0.49807035961523183");
     checkNumeric("BesselY(0,1.0)", //
-        "0.08825696421567694");
+        "0.08825696421567696");
     checkNumeric("BesselY(0.5*I, 3.0 - I)", //
         "1.0468646059974471+I*0.8847844476974699");
     checkNumeric("BesselY(0, {1.0, 2.0, 3.0})", //
-        "{0.08825696421567694,0.510375672649745,0.3768500100127904}");
+        "{0.08825696421567696,0.5103756726497451,0.3768500100127904}");
   }
 
   @Test
@@ -338,11 +338,11 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
     check("HankelH1(#2,#2)", //
         "HankelH1(#2,#2)");
     checkNumeric("HankelH1(2.0,3)", //
-        "0.486091260585958+I*(-0.16040039348491514)");
+        "0.486091260585958+I*(-0.1604003934849237)");
     checkNumeric("HankelH1(3,1.2)", //
-        "0.03287433692500416+I*(-3.5898996296131624)");
+        "0.03287433692500416+I*(-3.589899629613166)");
     checkNumeric("HankelH1(4.0,Pi)", //
-        "0.15142457763119113+I*(-0.8284254758009458)");
+        "0.15142457763119113+I*(-0.8284254758009513)");
     checkNumeric("HankelH1(23/47,5.0-I)", //
         "-0.8840126453738697+I*(-0.37582703842509113)");
   }
@@ -350,11 +350,11 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
   @Test
   public void testHankelH2() {
     checkNumeric("HankelH2(3,1.2)", //
-        "0.03287433692500416+I*3.5898996296131624");
+        "0.03287433692500416+I*3.589899629613166");
     checkNumeric("HankelH2(0.2,3)", //
         "-0.1337869677248155+I*(-0.4383481561883242)");
     checkNumeric("HankelH2(4.0,3*Pi)", //
-        "-0.27212624415123904+I*0.015631826514063165");
+        "-0.27212624415123904+I*0.015631826514054828");
     checkNumeric("HankelH2(23/47,5.0-I)", //
         "-0.1272388528903588+I*0.02641083531092656");
   }

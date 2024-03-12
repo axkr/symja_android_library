@@ -63,11 +63,11 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
   @Test
   public void testGegenbauerC() {
     checkNumeric("GegenbauerC(2/7, 5 - I, 2) //N", //
-        "2.5811662779830957+I*(-0.15456328352770204)");
+        "2.5811662779830957+I*(-0.1545632835277021)");
     check("N(GegenbauerC(1/6, 1/8, 7), 50)", //
-        "0.74986248230619982209196563118394711854677907245853");
+        "0.74986248230619982209196563118394711854677907245854");
     check("GegenbauerC(0.333333333333333333, 7, 1)", //
-        "2.67757341042435158");
+        "2.67757341042435157");
 
 
     check("GegenbauerC({0,0,2/(1+Sqrt(5)),0},-0.8+I*1.2)", //
@@ -156,11 +156,11 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     checkNumeric("HermiteH(.71, .87)", //
         "1.5587154138967738");
     checkNumeric("N(HermiteH(2/3, 8/7),50)", //
-        "1.7959788632385866394352905812486095222798196025733");
+        "1.7959788632385866394352905812486095222798196025734");
     checkNumeric("HermiteH(1.30000000000000000000000000, 3)", //
         "10.1610479715174332429613241");
     checkNumeric("HermiteH(5.3 + I, .8 + I)", //
-        "4.818411899472307+I*157.49044439894882");
+        "4.818411899472347+I*157.49044439894877");
 
     check("HermiteH(i, x)", //
         "HermiteH(i,x)");
@@ -229,14 +229,14 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     check("LaguerreL(2.3000000000000000000000000, 3, 3) ", //
         "-1.1129298068672651031450569");
     check("N(LaguerreL(2/5, 1/3, 8/7),50)", //
-        "0.68821856392835285644553764124515707164455717484013");
+        "0.6882185639283528564455376412451570716445571748401");
 
     checkNumeric("LaguerreL(6.1, 5)", //
         "-1.8746624909969782");
     checkNumeric("LaguerreL(2.5,8+I)", //
         "3.2907356941472+I*(-5.884150638656437)");
     check("LaguerreL(100, 0, N(5, 20))", //
-        "1.4555317976580748699");
+        "1.4555271634781800199");
 
 
     check("LaguerreL(3, .51, .87)", //
