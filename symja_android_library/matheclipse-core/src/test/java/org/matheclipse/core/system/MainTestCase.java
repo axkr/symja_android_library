@@ -4146,22 +4146,6 @@ public void testSystem377() {
     check("f(a, b, c, d) /. f(start__, end__) -> {{start}, {end}}", "{{a},{b,c,d}}");
   }
 
-  // @Test
-  // public void testSystem1108() {
-  // check("LaplaceTransform(t^3*E^(-3*t), t, s)", "6*(3+s)^(-4)");
-  // check("LaplaceTransform(2*t^5+ t^2/2, t, s)", "240*s^(-6)+s^(-3)");
-  // check("LaplaceTransform(Exp(t^2), t, s)", "LaplaceTransform(E^t^2,t,s)");
-  // check("LaplaceTransform(Log(t), t, s)", "(-EulerGamma-Log(s))*s^(-1)");
-  //
-  // check("LaplaceTransform(1, t, s)", "s^(-1)");
-  // check("LaplaceTransform(t^3, t, s)", "6*s^(-4)");
-  // check("LaplaceTransform(t, t, s)", "s^(-2)");
-  // check("LaplaceTransform(t*Exp(4*t), t, s)", "(4-s)^(-2)");
-  //
-  // check("LaplaceTransform(t^3*Cosh(t), t, s)", "");
-  // check("LaplaceTransform(t*Sin(2*t)*Exp(-3*t), t, s)", "");
-  // }
-
   @Test
   public void testIssue80() {
     // issue #80: LinearProgramming with expressions

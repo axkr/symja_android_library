@@ -26,12 +26,12 @@ public class LaplaceTransformRules {
     // LaplaceTransform(Sqrt(t_),t_,s_):=Sqrt(Pi)/(2*s^(3/2))/;FreeQ(s,t)
     ISetDelayed(LaplaceTransform(Sqrt(t_),t_,s_),
       Condition(Times(CSqrtPi,Power(Times(C2,Power(s,QQ(3L,2L))),CN1)),FreeQ(s,t))),
-    // LaplaceTransform(Sin(t_),t_,s_):=1/(s^2+1)/;FreeQ(s,t)
-    ISetDelayed(LaplaceTransform(Sin(t_),t_,s_),
-      Condition(Power(Plus(Sqr(s),C1),CN1),FreeQ(s,t))),
-    // LaplaceTransform(Cos(t_),t_,s_):=s/(s^2+1)/;FreeQ(s,t)
-    ISetDelayed(LaplaceTransform(Cos(t_),t_,s_),
-      Condition(Times(Power(Plus(Sqr(s),C1),CN1),s),FreeQ(s,t))),
+    // LaplaceTransform(Sin(a_.*t_),t_,s_):=a/(s^2+a^2)/;FreeQ({a,s},t)&&FreeQ(a,s)
+    ISetDelayed(LaplaceTransform(Sin(Times(a_DEFAULT,t_)),t_,s_),
+      Condition(Times(a,Power(Plus(Sqr(s),Sqr(a)),CN1)),And(FreeQ(list(a,s),t),FreeQ(a,s)))),
+    // LaplaceTransform(Cos(a_.*t_),t_,s_):=s/(s^2+a^2)/;FreeQ({a,s},t)&&FreeQ(a,s)
+    ISetDelayed(LaplaceTransform(Cos(Times(a_DEFAULT,t_)),t_,s_),
+      Condition(Times(Power(Plus(Sqr(s),Sqr(a)),CN1),s),And(FreeQ(list(a,s),t),FreeQ(a,s)))),
     // LaplaceTransform(Sinh(t_),t_,s_):=c/(-1+s^2)/;FreeQ(s,t)
     ISetDelayed(LaplaceTransform(Sinh(t_),t_,s_),
       Condition(Times(c,Power(Plus(CN1,Sqr(s)),CN1)),FreeQ(s,t))),

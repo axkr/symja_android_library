@@ -13211,12 +13211,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Gamma(4/3)/s^(4/3)");
     check("LaplaceTransform(t^a, t, s)", //
         "Gamma(1+a)/s^(1+a)");
-    check("LaplaceTransform(Sin(t), t, s)", //
-        "1/(1+s^2)");
-    check("LaplaceTransform(Sin(t), t, t)", //
-        "LaplaceTransform(Sin(t),t,t)");
+    // issue #941
     check("LaplaceTransform(Cos(t), t, s)", //
         "s/(1+s^2)");
+    check("LaplaceTransform(Cos(a*b*t), t, s)", //
+        "s/(a^2*b^2+s^2)");
+    check("LaplaceTransform(Sin(t), t, s)", //
+        "1/(1+s^2)");
+    check("LaplaceTransform(Sin(a*b*t), t, s)", //
+        "(a*b)/(a^2*b^2+s^2)");
+
+    check("LaplaceTransform(Sin(t), t, t)", //
+        "LaplaceTransform(Sin(t),t,t)");
     check("LaplaceTransform(Sinh(t), t, s)", //
         "c/(-1+s^2)");
     check("LaplaceTransform(Cosh(t), t, s)", //
@@ -15979,6 +15985,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testN() {
+    // issue #942
+    // check("Tan(Pi/2) // N", //
+    // "ComplexInfinity");
     // issue #937
     check("(x==-157079632679/100000000000) // N", //
         "x==-1.5708");

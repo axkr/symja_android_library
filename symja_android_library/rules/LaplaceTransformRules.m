@@ -6,10 +6,10 @@
    
  LaplaceTransform(t_^(1/2), t_, s_) := Sqrt(Pi)/(2*s^(3/2))
    /; FreeQ(s, t),
- LaplaceTransform(Sin(t_), t_, s_) := 1/(s^2+1)
-   /; FreeQ(s, t),
- LaplaceTransform(Cos(t_), t_, s_) := s/(s^2+1)
-   /; FreeQ(s, t),
+ LaplaceTransform(Sin(a_.*t_), t_, s_) := a/(s^2+a^2)
+   /; FreeQ({a,s}, t)&&FreeQ(a,s),
+ LaplaceTransform(Cos(a_.*t_), t_, s_) := s/(s^2+a^2)
+   /; FreeQ({a,s}, t)&&FreeQ(a,s),
  LaplaceTransform(Sinh(t_), t_, s_) := c/(s^2-1)
    /; FreeQ(s, t),
  LaplaceTransform(Cosh(t_), t_, s_) := s/(s^2-1)
