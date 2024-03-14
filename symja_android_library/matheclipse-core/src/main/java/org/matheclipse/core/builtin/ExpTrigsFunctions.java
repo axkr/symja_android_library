@@ -2355,13 +2355,15 @@ public class ExpTrigsFunctions {
       if (arg1.isAST(S.Underflow, 1)) {
         return F.Underflow();
       }
-      // arg1.re()^2 + arg1.im()^2
-      EvalEngine engine = EvalEngine.get();
-      IExpr temp = engine.evaluate(F.Plus(F.Sqr(arg1.re()), F.Sqr(arg1.im())));
-      if (temp.isOne()) {
-        // Log(x + I*y) == (1/2)*Log(x^2 + y^2) + I*Arg(x + I y) with Log(1) == 0
-        // ==> I*Arg(x + I y)
-        return F.Times(F.CI, F.Arg(arg1));
+      if (arg1.isNumericFunction()) {
+        // arg1.re()^2 + arg1.im()^2
+        EvalEngine engine = EvalEngine.get();
+        IExpr temp = engine.evaluate(F.Plus(F.Sqr(arg1.re()), F.Sqr(arg1.im())));
+        if (temp.isOne()) {
+          // Log(x + I*y) == (1/2)*Log(x^2 + y^2) + I*Arg(x + I y) with Log(1) == 0
+          // ==> I*Arg(x + I y)
+          return F.Times(F.CI, F.Arg(arg1));
+        }
       }
       return F.NIL;
     }
