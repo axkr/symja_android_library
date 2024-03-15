@@ -13,7 +13,7 @@ public class ProductLogRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 12, 5 };
+  final public static int[] SIZES = { 12, 4 };
 
   final public static IAST RULES = List(
     IInit(ProductLog, SIZES),
@@ -64,9 +64,6 @@ public class ProductLogRules {
       Condition(x,GreaterEqual(x,CN1))),
     // ProductLog(-1,E^x_*x_):=x/;x<=-1
     ISetDelayed(ProductLog(CN1,Times(Exp(x_),x_)),
-      Condition(x,LessEqual(x,CN1))),
-    // ProductLog(Log(b_)*k_/n_*b_^(c_/n_)):=Module({a,v},a=N((n*ProductLog((b^(c/n)*k*Log(b))/n))/Log(b));v=Rationalize(a);v*Log(b)/n/;IntegerQ(v)&&v>=1&&PossibleZeroQ(((-b^(c/n)*k+b^(v/n)*v)*Log(b))/n))
-    ISetDelayed(ProductLog(Times(Log(b_),Rational(k_,n_),Power(b_,Rational(c_,n_)))),
-      Module(list(a,v),CompoundExpression(Set(a,N(Times(n,Power(Log(b),CN1),ProductLog(Times(Power(b,Times(c,Power(n,CN1))),k,Power(n,CN1),Log(b)))))),Set(v,Rationalize(a)),Condition(Times(v,Power(n,CN1),Log(b)),And(IntegerQ(v),GreaterEqual(v,C1),PossibleZeroQ(Times(Power(n,CN1),Plus(Times(CN1,Power(b,Times(c,Power(n,CN1))),k),Times(Power(b,Times(Power(n,CN1),v)),v)),Log(b))))))))
+      Condition(x,LessEqual(x,CN1)))
   );
 }

@@ -2120,8 +2120,51 @@ public class SpecialFunctions {
 
     @Override
     public IExpr e1ObjArg(final IExpr o) {
+      IExpr temp = functionExpandLogArg(o);
+      if (temp.isPresent()) {
+        return temp;
+      }
       if (o.equals(F.C0) || o.equals(F.CD0)) {
         return F.C0;
+      }
+      return F.NIL;
+    }
+
+    private static IExpr functionExpandLogArg(final IExpr o) {
+      if (o.isTimes() && o.first().isFraction() && o.argSize() == 3) {
+        // ProductLog(Rational(k_,n_)*b_^Rational(c_,n_)*Log(b_)) :=
+        // Module( {a, v},
+        // a = N( (n*ProductLog((b^(c/n)*k*Log(b))/n))/Log(b) );
+        // v = Rationalize(a);
+        // v*Log(b)/n
+        // /; IntegerQ(v) && v >= 1 && PossibleZeroQ( (((-b^(c/n))*k + b^(v/n)*v)*Log(b))/n ))
+        IAST times = (IAST) o;
+        if (times.arg2().isPower() && times.arg3().isLog()) {
+          IAST power = (IAST) times.arg2();
+          if (power.base().isInteger() && power.base().equals(times.arg3().first())
+              && power.exponent().isFraction()) {
+            IInteger b = (IInteger) times.arg3().first();
+            IFraction arg1 = (IFraction) times.arg1();
+            IInteger k = arg1.numerator();
+            IInteger n = arg1.denominator();
+            IFraction powExponent = (IFraction) power.exponent();
+            if (n.equals(powExponent.denominator())) {
+              EvalEngine engine = EvalEngine.get();
+              IExpr a = engine
+                  .evalNumericFunction(F.Times(n, F.ProductLog(F.Times(arg1, F.Power(b, powExponent), F.Log(b))),
+                      F.Power(F.Log(b), F.CN1)));
+              IExpr v = engine.evaluate(F.Rationalize(a));
+              if (v.isInteger() && ((IInteger) v).isGE(F.C1)) {
+                IFraction resultFactor = F.QQ((IInteger) v, n);
+                IExpr isZero = engine.evaluate(F.Plus(F.Times(k.negate(), F.Power(b, powExponent)),
+                    F.Times(v, F.Power(b, resultFactor))));
+                if (isZero.isZero()) {
+                  return engine.evaluate(F.Times(resultFactor, F.Log(b)));
+                }
+              }
+            }
+          }
+        }
       }
       return F.NIL;
     }

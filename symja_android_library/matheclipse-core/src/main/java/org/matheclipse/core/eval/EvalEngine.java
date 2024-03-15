@@ -787,8 +787,8 @@ public class EvalEngine implements Serializable {
    *
    * @param result0 store the result of the evaluation in the i-th argument of the ast in <code>
    *     result0[0]</code>. <code>result0[0]</code> should be <code>F.NIL</code> if no evaluation
-   *        occured.
-   * @param ast the original <code>ast</code> for whixh the arguments should be evaluated
+   *        occurred.
+   * @param ast the original <code>ast</code> for which the arguments should be evaluated
    * @param arg the i-th argument of <code>ast</code>
    * @param i <code>arg</code> is the i-th argument of <code>ast</code>
    * @param isNumericFunction if <code>true</code> the <code>NumericFunction</code> attribute is set
@@ -1671,14 +1671,14 @@ public class EvalEngine implements Serializable {
       result = expr.toIntDefault();
     }
     if (expr.isNumericFunction(true)) {
-      IExpr numericResult = evalN(expr);
+      IExpr numericResult = evalNumericFunction(expr);
       if (numericResult.isReal()) {
         result = numericResult.toIntDefault();
       }
     } else {
       IExpr temp = evaluateNIL(expr);
       if (temp.isNumericFunction(true)) {
-        IExpr numericResult = evalN(temp);
+        IExpr numericResult = evalNumericFunction(temp);
         if (numericResult.isReal()) {
           result = numericResult.toIntDefault();
         }
@@ -2091,6 +2091,26 @@ public class EvalEngine implements Serializable {
       PrintStream stream = getOutPrintStream();
       stream.println("  " + unevaledExpr.toString() + " --> " + evaledExpr.toString() + "\n");
     }
+  }
+
+  public final IExpr evalNumericFunction(final IExpr expr) {
+    if (expr.isNumericFunction(true)) {
+      final boolean oldNumericMode = isNumericMode();
+      final long oldDigitPrecision = getNumericPrecision();
+      final int oldSignificantFigures = getSignificantFigures();
+      try {
+        setNumericMode(true, oldDigitPrecision, oldSignificantFigures);
+        IExpr temp = evalWithoutNumericReset(expr);
+        if (temp.isListOrAssociation() || temp.isRuleAST()) {
+          return ((IAST) temp).mapThread(arg -> evalNumericFunction(arg));
+        }
+        return temp;
+      } finally {
+        setNumericMode(oldNumericMode);
+        setNumericPrecision(oldDigitPrecision);
+      }
+    }
+    return expr;
   }
 
   /**
