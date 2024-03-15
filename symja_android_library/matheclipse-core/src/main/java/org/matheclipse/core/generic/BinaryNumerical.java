@@ -48,9 +48,10 @@ public class BinaryNumerical implements BinaryOperator<IExpr>, BivariateFunction
   @Override
   public IExpr apply(final IExpr firstArg, final IExpr secondArg) {
     return fEngine
-        .evalN(F.subst(fun, F.list(F.Rule(variable1, firstArg), F.Rule(variable2, secondArg))));
+        .evalNumericFunction(F.subst(fun, F.list(F.Rule(variable1, firstArg), F.Rule(variable2, secondArg))));
   }
 
+  @Override
   public double value(final double x, final double y) {
     double result = 0.0;
     try {

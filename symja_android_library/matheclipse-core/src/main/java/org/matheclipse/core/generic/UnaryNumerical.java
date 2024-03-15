@@ -90,7 +90,7 @@ public class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDifferent
 
   @Override
   public IExpr apply(final IExpr value) {
-    return fEngine.evalN(F.subst(fUnaryFunction, F.Rule(fVariable, value)));
+    return fEngine.evalNumericFunction(F.subst(fUnaryFunction, F.Rule(fVariable, value)));
   }
 
   /**
@@ -102,7 +102,7 @@ public class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDifferent
    */
   public IExpr applyLimit(IExpr value) {
     try {
-      return fEngine.evalN(F.Limit(fUnaryFunction, F.Rule(fVariable, value)));
+      return fEngine.evalNumericFunction(F.Limit(fUnaryFunction, F.Rule(fVariable, value)));
     } catch (RuntimeException rex) {
       return S.Indeterminate;
     }
@@ -117,7 +117,7 @@ public class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDifferent
   @Override
   public IExpr apply(double value) {
     try {
-      return fEngine.evalN(F.subst(fUnaryFunction, F.Rule(fVariable, F.num(value))));
+      return fEngine.evalNumericFunction(F.subst(fUnaryFunction, F.Rule(fVariable, F.num(value))));
     } catch (RuntimeException rex) {
       return S.Indeterminate;
     }

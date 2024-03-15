@@ -113,7 +113,7 @@ public class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDifferenti
    */
   public IExpr applyLimit(IExpr value) {
     try {
-      return fEngine.evalN(F.Limit(fUnaryFunction, F.Rule(fVariable, value)));
+      return fEngine.evalNumericFunction(F.Limit(fUnaryFunction, F.Rule(fVariable, value)));
     } catch (RuntimeException rex) {
       return S.Indeterminate;
     }
@@ -128,7 +128,7 @@ public class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDifferenti
   @Override
   public IExpr apply(double value) {
     try {
-      return fEngine.evalN(F.subst(fUnaryFunction, F.Rule(fVariable, F.num(value))));
+      return fEngine.evalNumericFunction(F.subst(fUnaryFunction, F.Rule(fVariable, F.num(value))));
     } catch (RuntimeException rex) {
       return S.Indeterminate;
     }

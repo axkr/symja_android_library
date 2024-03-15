@@ -314,7 +314,7 @@ public final class Arithmetic {
         return ((INumber) arg1).abs();
       }
       if (arg1.isNumericFunction(true)) {
-        IExpr temp = engine.evalN(arg1);
+        IExpr temp = engine.evalNumericFunction(arg1);
         if (temp.isReal()) {
           return arg1.copySign((IReal) temp);
         }
@@ -6360,7 +6360,7 @@ public final class Arithmetic {
 
         switch (arg2Ordinal) {
           case ID.Plus:
-            if (arg1.isFraction() && arg1.isNegative() && arg2.isPlus()) {
+            if (arg1.isFraction() && arg2.isPlus() && arg1.isNegative()) {
               return F.Times(arg1.negate(), arg2.negate());
             }
             break;
@@ -6375,7 +6375,7 @@ public final class Arithmetic {
             }
             break;
           case ID.Log:
-            if (arg1.isNegative() && arg2.isLog() && arg2.first().isFraction() && arg1.isReal()) {
+            if (arg1.isReal() && arg2.isLog() && arg1.isNegative() && arg2.first().isFraction()) {
               IFraction f = (IFraction) arg2.first();
               if (f.isPositive() && f.isLT(F.C1)) {
                 // -<number> * Log(<fraction>) -> <number> * Log(<fraction>.inverse())

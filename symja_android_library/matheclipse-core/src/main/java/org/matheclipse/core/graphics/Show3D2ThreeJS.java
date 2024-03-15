@@ -40,7 +40,7 @@ public class Show3D2ThreeJS {
   @Deprecated
   private static void graphics3dToSVG(IAST ast, StringBuilder buf) {
     EvalEngine engine = EvalEngine.get();
-    IAST numericAST = (IAST) engine.evalN(ast);
+    IAST numericAST = (IAST) engine.evalNumericFunction(ast);
     double[] viewpoints = new double[] {1.3, -2.4, 2.0};
     if (numericAST.size() > 2) {
       final OptionArgs options = new OptionArgs(numericAST.topHead(), numericAST, 2, engine);
