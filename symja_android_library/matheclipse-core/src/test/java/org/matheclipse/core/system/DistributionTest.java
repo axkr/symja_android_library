@@ -207,9 +207,9 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "");
     check("{CDF(edata,0.25),CDF(edata,1),CDF(edata,3),CDF(edata,4),CDF(edata,5)}", //
         "{0.7,0.9,1.0,1.0,1.0}");
-    // TODO https://github.com/Hipparchus-Math/hipparchus/pull/317
+    // https://github.com/Hipparchus-Math/hipparchus/pull/317
     check("{PDF(edata,0.25),PDF(edata,1),PDF(edata,3),PDF(edata,4),PDF(edata,5)}", //
-        "{Indeterminate,Indeterminate,0.0,0.0,0.0}");
+        "{0.0,0.0,0.0,0.0,0.0}");
     check("Mean(edata)", //
         "-0.0795254");
     check("Variance(edata)", //
