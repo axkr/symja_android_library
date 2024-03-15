@@ -2356,9 +2356,9 @@ public class ExpTrigsFunctions {
         return F.Underflow();
       }
       if (arg1.isNumericFunction()) {
-        // arg1.re()^2 + arg1.im()^2
+        // Re(arg1)^2 + Im(arg1)^2
         EvalEngine engine = EvalEngine.get();
-        IExpr temp = engine.evaluate(F.Plus(F.Sqr(arg1.re()), F.Sqr(arg1.im())));
+        IExpr temp = engine.evaluate(F.Plus(F.Sqr(F.Re(arg1)), F.Sqr(F.Im(arg1))));
         if (temp.isOne()) {
           // Log(x + I*y) == (1/2)*Log(x^2 + y^2) + I*Arg(x + I y) with Log(1) == 0
           // ==> I*Arg(x + I y)
