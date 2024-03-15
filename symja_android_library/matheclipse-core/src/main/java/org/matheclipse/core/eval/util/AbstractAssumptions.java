@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.IRealConstant;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -596,9 +597,12 @@ public abstract class AbstractAssumptions implements IAssumptions {
     }
     if (expr.isNumericFunction()) {
       try {
-        Complex c = expr.evalfc();
-        if (F.isZero(c.getImaginaryPart())) {
-          return S.True;
+        INumber c = expr.evalNumber();
+        if (c != null) {
+          if (c.isReal()) {
+            return S.True;
+          }
+          return S.False;
         }
       } catch (ArgumentTypeException ate) {
 
@@ -636,65 +640,79 @@ public abstract class AbstractAssumptions implements IAssumptions {
   }
 
   public static boolean isNegativeResult(IAST ast) {
-    IReal e = ast.evalReal();
+    // evalReal "chops" imaginary parts to 0
+    INumber e = ast.evalNumber();
+    // IReal e = ast.evalReal();
     if (e != null) {
-      return e.isNegative();
+      if (e.isReal()) {
+        return e.isNegative();
+      }
+      return false;
     }
+
     IExpr head = ast.head();
-    if (head.isSymbol()) {
-      ISymbol symbol = (ISymbol) head;
-      int size = ast.size();
-      if (size == 2) {
-        IExpr arg1 = ast.arg1();
-        if (symbol.equals(S.Log) && assumePositive(arg1) && assumeLessThan(arg1, F.C1)) {
-          return true;
-        }
-      }
-      if (ast.isPlus()) {
-        for (int i = 1; i < size; i++) {
-          IExpr x = ast.get(i);
-          if (x.isNegativeResult() || assumeNegative(x)) {
-            continue;
-          }
-          return false;
-        }
-        return true;
-      }
-      if (ast.isTimes()) {
-        boolean flag = false;
-        for (int i = 1; i < size; i++) {
-          IExpr x = ast.get(i);
-          if (x.isNonNegativeResult() || assumeNonNegative(x)) {
-          } else {
-            if (x.isNegativeResult()) {
-            } else if (assumeNegative(x)) {
-            } else {
-              return false;
-            }
-            flag = !flag;
-          }
-        }
-        return flag;
-      }
-      if (ast.isPower()) {
-        IExpr base = ast.base();
-        IExpr exponent = ast.exponent();
-        if (base.isNegativeResult() && exponent.isInteger()) {
-          IInteger iArg2 = (IInteger) exponent;
-          if (iArg2.isOdd()) {
+    if (head.isBuiltInSymbol()) {
+      IBuiltInSymbol symbol = (IBuiltInSymbol) head;
+      int ordinal = symbol.ordinal();
+      if (ordinal >= ID.Log && ordinal <= ID.Times) {
+        int size = ast.size();
+        if (ast.isLog()) {
+          IExpr arg1 = ast.arg1();
+          if (assumePositive(arg1) && assumeLessThan(arg1, F.C1)) {
             return true;
           }
         }
-        return false;
+        if (ast.isPlus()) {
+          for (int i = 1; i < size; i++) {
+            IExpr x = ast.get(i);
+            if (x.isNegativeResult() || assumeNegative(x)) {
+              continue;
+            }
+            return false;
+          }
+          return true;
+        }
+        if (ast.isTimes()) {
+          boolean flag = false;
+          for (int i = 1; i < size; i++) {
+            IExpr x = ast.get(i);
+            if (x.isNonNegativeResult() || assumeNonNegative(x)) {
+            } else {
+              if (x.isNegativeResult()) {
+              } else if (assumeNegative(x)) {
+              } else {
+                return false;
+              }
+              flag = !flag;
+            }
+          }
+          return flag;
+        }
+        if (ast.isPower()) {
+          IExpr base = ast.base();
+          IExpr exponent = ast.exponent();
+          if (base.isNegativeResult() && exponent.isInteger()) {
+            IInteger iArg2 = (IInteger) exponent;
+            if (iArg2.isOdd()) {
+              return true;
+            }
+          }
+          return false;
+        }
       }
     }
     return false;
   }
 
   public static boolean isNonNegativeResult(IAST ast) {
-    IReal e = ast.evalReal();
+    // evalReal "chops" imaginary parts to 0
+    INumber e = ast.evalNumber();
+    // IReal e = ast.evalReal();
     if (e != null) {
-      return !e.isNegative();
+      if (e.isReal()) {
+        return !e.isNegative();
+      }
+      return false;
     }
     IExpr head = ast.head();
     if (head.isSymbol()) {
