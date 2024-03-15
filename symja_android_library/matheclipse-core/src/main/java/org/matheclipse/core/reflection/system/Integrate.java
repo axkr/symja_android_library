@@ -593,13 +593,15 @@ public class Integrate extends AbstractFunctionEvaluator {
   }
 
   /**
-   * Given a <code>function</code> of a real variable <code>x</code> and an interval <code>
-   * [lower, upper]
-   * </code> of the real line, calculate the definite integral <code>F(upper)-F(lower)</code>.
+   * Given a continuous <code>function</code> of a real variable <code>x</code> and an interval
+   * <code>[lower, upper]</code> of the real line, calculate the definite integral
+   * <code>F(upper)-F(lower)</code>.
    *
    * <p>
    * See: <a href="https://en.wikipedia.org/wiki/Integral">Wikipedia - Integral</a>
-   *
+   * <p>
+   * <b>Note:</b>: the method does not check whether the domain of integration is continuous.
+   * 
    * @param function a function of <code>x</code>
    * @param xValueList a list of the form <code>{x, lower, upper}</code> with <code>3</code>
    *        arguments

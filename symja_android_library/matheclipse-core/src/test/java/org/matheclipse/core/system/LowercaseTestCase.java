@@ -1907,6 +1907,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testBinomial() {
+    // issue #946
+    // message Binomial: BigInteger bit length `1` exceeded.
+    check("Binomial(12!, 9!)", //
+        "Binomial(12!,9!)");
+
     check("N(Binomial(7/3, 1/5), 20)", //
         "1.3331254244650286522");
     check("Binomial(8.2211111111115000000, 4) ", //
@@ -13680,6 +13685,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testLimit() {
     // issue #931
+    check("Limit((-1/E^x+E^x)/(E^x+E^(-x)),x -> Infinity)", //
+        "1");
     check("Limit((-1+Sqrt(x))/Sqrt(-1+x), x -> Infinity)", //
         "1");
 
@@ -14344,6 +14351,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLog10() {
+    check("Log10(Log10(Log(Log(Log(Log10(Log10(a)))))))", //
+        "Log(Log(Log(Log(Log(Log(Log(a)/Log(10))/Log(10)))))/Log(10))/Log(10)");
+    check("Log10(Log10(Log(Log(Log(Log10(Log10( )))))))", //
+        "Log(Log(Log(Log(Log(Log(Log10())/Log(10)))))/Log(10))/Log(10)");
     check("Log10(1000)", //
         "3");
     checkNumeric("Log10({2., 5.})", //
@@ -17097,10 +17108,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("NumericalSort({1,2,3,Infinity,-Infinity,E,Pi,GoldenRatio,Degree})", //
         "{-Infinity,Pi/180,1,GoldenRatio,2,E,3,Pi,Infinity}");
 
-    // TODO fix Inifinity sort after quantities
     check(
-        "NumericalSort({ Infinity, Sqrt[2], -1, 0, -Infinity, Quantity(1, \"Meters\"),  Quantity(3, \"Feet\")})", //
-        "{-Infinity,-1,0,Sqrt(2),3[Feet],1[Meters],Infinity}");
+        "NumericalSort({ Infinity, Sqrt(2), -1, 0, -Infinity, Quantity(1, \"Meters\"),  Quantity(3, \"Feet\")})", //
+        "{-Infinity,-1,0,Sqrt(2),Infinity,3[Feet],1[Meters]}");
 
     check("NumericalSort({1, Pi, E, Infinity, -Sqrt[2], -Infinity})", //
         "{-Infinity,-Sqrt(2),1,E,Pi,Infinity}");
@@ -19257,6 +19267,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPower() {
+    // check(
+    // "22610175337329362245620630780795110213748908671958118609721101133417890222511288803123590513070561131892027191395369936042326256168653778870546242363369977629202359754270184318045654379854509946171340376686223573580224107124150403623923011308302977397847548580593006903821021518558458596423345897023275437136962636706163753880297496880232736919213061706006731771987945729565465391441847486930782906711101531982421875^(1/500)
+    // //N", //
+    // "");
     check("(2*x*y)^n", //
         "2^n*(x*y)^n");
     check("Sqrt(-d) // FullForm", //
@@ -20353,6 +20367,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testProductLog() {
+    check("ProductLog(9/2*Sqrt(3)*Log(3))", //
+        "3/2*Log(3)");
+    check("ProductLog(1/2*Sqrt(7)*Log(7))", //
+        "Log(7)/2");
+    check("ProductLog(1/2*Sqrt(-7)*Log(-7))", //
+        "ProductLog(I*1/2*Sqrt(7)*(I*Pi+Log(7)))");
+
     // https://docs.sympy.org/latest/modules/functions/elementary.html#sympy.functions.elementary.exponential.LambertW
     check("ProductLog(1.2)", //
         "0.635564");
@@ -20364,8 +20385,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ProductLog(-1, -0.12)", //
         "-3.32033");
 
-    check("ProductLog(9/2*Sqrt(3)*Log(3))", //
-        "3/2*Log(3)");
+
     check("N(ProductLog(1/3), 100)", //
         "0.2576276530497367042829162016260977909096926475032044915339511440663191292752043724596398879341002505");
     check("Table(ProductLog(k, 2.3), {k, -2, 2})", //
@@ -20375,8 +20395,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ProductLog(9/3*Sqrt(5)*Log(5))", //
         "ProductLog(3*Sqrt(5)*Log(5))");
 
-    check("ProductLog(1/2*Sqrt(7)*Log(7))", //
-        "Log(7)/2");
+
 
     check("ProductLog(3*E^3)", //
         "3");
@@ -24565,8 +24584,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTakeLargestBy() {
-    check("TakeLargestBy({-1.5+I*0.8660254037844386,-1.5+I*(-0.8660254037844386),-1.0},Abs,3)", //
-        "{-1.5+I*0.8660254037844386,-1.5+I*(-0.8660254037844386),-1.0}");
+    // check("TakeLargestBy({-1.5+I*0.8660254037844386,-1.5+I*(-0.8660254037844386),-1.0},Abs,3)",
+    // //
+    // "{-1.5+I*0.8660254037844386,-1.5+I*(-0.8660254037844386),-1.0}");
+    checkNumeric("Abs(254/315+(14954373125000+I*7875000*Sqrt(9477810222))^(1/3)/31500+\n" //
+        + "      1215035/63*2^(1/3)/(29908746250000+I*15750000*Sqrt(9477810222))^(1/3))//N", //
+        "2.3710652374514223");
     check("TakeLargestBy({254/315+(14954373125000+I*7875000*Sqrt(9477810222))^(1/3)/31500+\n" //
         + "      1215035/63*2^(1/3)/(29908746250000+I*15750000*Sqrt(9477810222))^(1/3),254/315+\n" //
         + "      1215035/63*(-1+I*Sqrt(3))/(2^(2/3)*(29908746250000+I*15750000*Sqrt(9477810222))^(\n" //

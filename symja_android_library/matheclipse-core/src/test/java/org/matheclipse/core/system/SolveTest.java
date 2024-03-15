@@ -1,6 +1,6 @@
 package org.matheclipse.core.system;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -393,6 +393,11 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->-a},{x->b}}");
 
     // github #261 - JUnit test for Apfloat switching to complex Power calculation
+    // checkNumeric("Solve(0.00004244131815783 == x^5 , x)", //
+    // "{{x->-0.10802279680851234+I*0.07848315587546606},"//
+    // + "{x->-0.10802279680851212+I*(-0.07848315587546606)},"//
+    // + "{x->0.04126103682102799+I*(-0.1269884137508598)},"//
+    // + "{x->0.04126103682102799+I*0.1269884137508598},{x->0.13352351997496842}}");
     check("Solve(0.00004244131815783 == x^5 , x)", //
         "{{x->-0.10802279680851234+I*0.07848315587546605},{x->-0.10802279680851212+I*(-0.07848315587546605)},"//
             + "{x->0.04126103682102799+I*(-0.1269884137508598)}," //
@@ -795,10 +800,17 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->3.0,y->5.0},{x->6.34781+I*(-1.02885),y->1.75806+I*(-2.7734)},{x->6.34781+I*1.02885,y->1.75806+I*2.7734},{x->4.30438,y->1.48389}}");
 
     // github #261 - JUnit test for Apfloat switching to complex Power calculation
+    // checkNumeric("NSolve(0.00004244131815783 == x^5 , x)", //
+    // "{{x->-0.10802279680851234+I*0.07848315587546606}," //
+    // + "{x->-0.10802279680851212+I*(-0.07848315587546606)}," //
+    // + "{x->0.04126103682102799+I*(-0.1269884137508598)}," //
+    // + "{x->0.04126103682102799+I*0.1269884137508598},{x->0.13352351997496842}}");
     check("NSolve(0.00004244131815783 == x^5 , x)", //
         "{{x->-0.10802279680851234+I*0.07848315587546605},{x->-0.10802279680851212+I*(-0.07848315587546605)},{x->0.04126103682102799+I*(-0.1269884137508598)},"
             //
             + "{x->0.04126103682102799+I*0.1269884137508598},{x->0.1335235199749684}}");
+
+
     // github #247
     check("NSolve((k+3)/(4)==(k)/2,{k})", //
         "{{k->3.0}}");

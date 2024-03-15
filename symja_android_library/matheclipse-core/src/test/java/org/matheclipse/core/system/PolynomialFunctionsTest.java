@@ -74,9 +74,10 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
         "{ComplexInfinity,ComplexInfinity,1.17445+I*2.30854,ComplexInfinity}");
     check("GegenbauerC(2, 0.5)", //
         "-0.5");
+    // checkNumeric("GegenbauerC(5,1/8,7) //N", //
+    // "16839.531372070312");
     checkNumeric("GegenbauerC(5,1/8,7) //N", //
         "16839.53137207032");
-
     checkNumeric("Table(GegenbauerC(10, x), {x, 1, 5})", //
         "{1/5,262087/5,22619537/5,457470751/5,4517251249/5}");
     check("GegenbauerC({1/3, 1/2}, 1/6, 0)", //
