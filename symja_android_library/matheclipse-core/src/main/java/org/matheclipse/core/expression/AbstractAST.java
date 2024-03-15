@@ -50,6 +50,7 @@ import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
@@ -1961,7 +1962,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public final INumber evalNumber() {
     if (isNumericFunction(true)) {
-      IExpr result = EvalEngine.get().evalN(this);
+      IExpr result = EvalEngine.get().evalNumericFunction(this);
       if (result.isNumber()) {
         return (INumber) result;
       }
@@ -1973,7 +1974,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public final IReal evalReal() {
     if (isNumericFunction(true)) {
-      IExpr result = EvalEngine.get().evalN(this);
+      IExpr result = EvalEngine.get().evalNumericFunction(this);
       if (result.isReal()) {
         return (IReal) result;
       }
@@ -1986,7 +1987,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     } else if (isAST(S.Labeled, 3, 4)) {
       IExpr arg1 = arg1();
       if (arg1.isNumericFunction(true)) {
-        IExpr result = EvalEngine.get().evalN(arg1);
+        IExpr result = EvalEngine.get().evalNumericFunction(arg1);
         if (result.isReal()) {
           return (IReal) result;
         }
@@ -3963,8 +3964,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public boolean isNegative() {
     if (isNumericFunction(true)) {
-
-      IExpr result = EvalEngine.get().evalN(this);
+      IExpr result = EvalEngine.get().evalNumericFunction(this);
       if (result.isReal()) {
         return result.isNegative();
       }
@@ -4050,6 +4050,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         if (header.isNumericFunctionAttribute() || isList()) {
           // check if all arguments are &quot;numeric&quot;
           boolean forAll = forAll(x -> x.isNumericFunction(allowList), 1);
+          if (forAll && !isList()) {
+            forAll = hasExpectedArgSize(header);
+          }
           addEvalFlags(
               forAll ? IAST.IS_NUMERIC_FUNCTION_OR_LIST : IAST.IS_NOT_NUMERIC_FUNCTION_OR_LIST);
           return forAll;
@@ -4058,12 +4061,37 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         if (header.isNumericFunctionAttribute()) {
           // check if all arguments are &quot;numeric&quot;
           boolean forAll = forAll(x -> x.isNumericFunction(allowList), 1);
+          if (forAll) {
+            forAll = hasExpectedArgSize(header);
+          }
           addEvalFlags(forAll ? IAST.IS_NUMERIC_FUNCTION : IAST.IS_NOT_NUMERIC_FUNCTION);
           return forAll;
         }
       }
     }
     return false;
+  }
+
+  private boolean hasExpectedArgSize(ISymbol header) {
+    if (header.isBuiltInSymbol()) {
+      IEvaluator evaluator = ((IBuiltInSymbol) header).getEvaluator();
+      if (evaluator instanceof IFunctionEvaluator) {
+        int[] expected = ((IFunctionEvaluator) evaluator).expectedArgSize(this);
+        if (expected != null) {
+          int argSize = argSize();
+          if (argSize < expected[0] || argSize > expected[1]
+              || (expected[1] == Integer.MAX_VALUE && expected.length == 2)) {
+            if (argSize < expected[0]) {
+              return false;
+            }
+            if (argSize > expected[1]) {
+              return false;
+            }
+          }
+        }
+      }
+    }
+    return true;
   }
 
   /** {@inheritDoc} */
@@ -4254,7 +4282,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public boolean isPositive() {
     if (isNumericFunction(true)) {
-      IExpr result = EvalEngine.get().evalN(this);
+      IExpr result = EvalEngine.get().evalNumericFunction(this);
       if (result.isReal()) {
         return ((IReal) result).isPositive();
       }
@@ -4399,9 +4427,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         }
       }
     }
-    IReal e = evalReal();
+    INumber e = evalNumber();
     if (e != null) {
-      return true;
+      if (e.isReal()) {
+        return true;
+      }
+      return false;
     }
     if (isPlus() || isTimes()) {
       // check if all arguments are &quot;real values&quot;
