@@ -4,6 +4,7 @@ import static java.lang.Math.addExact;
 import static java.lang.Math.floorMod;
 import static java.lang.Math.multiplyExact;
 import static java.lang.Math.subtractExact;
+import static java.math.RoundingMode.CEILING;
 import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C2;
@@ -6048,7 +6049,8 @@ public final class NumberTheory {
    * @param k
    * @return
    */
-  public static IInteger binomial(final IInteger n, final IInteger k) {
+  public static IInteger binomial(final IInteger n, final IInteger k)
+      throws BigIntegerLimitExceeded {
     if (n.isZero() && k.isZero()) {
       return F.C1;
     }
@@ -6068,7 +6070,12 @@ public final class NumberTheory {
           if (ki > ni) {
             return F.C0;
           }
-          return AbstractIntegerSym.valueOf(BigIntegerMath.binomial(ni, ki));
+          long bits = LongMath.log2(ni, CEILING) * ki;
+          if (bits < Config.MAX_BIT_LENGTH) {
+            return AbstractIntegerSym.valueOf(BigIntegerMath.binomial(ni, ki));
+          } else {
+            BigIntegerLimitExceeded.throwIt(bits);
+          }
         }
       }
 
