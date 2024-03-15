@@ -476,7 +476,7 @@ public class SeriesFunctions {
               IExpr expr = engine.evalQuiet(F.Times(F.D(F.Power(numerator, exp), x),
                   F.Power(F.D(denominator.base(), x), F.CN1)));
               if (expr.isTimes() && expr.leafCount() < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT) {
-                expr = engine.evalQuiet(F.Expand(expr));
+                expr = engine.evalQuiet(F.Simplify(expr));
               }
               expr = evalLimit(expr, data, engine);
               if (expr.isNumber()) {
@@ -491,6 +491,9 @@ public class SeriesFunctions {
         }
         IExpr expr =
             engine.evalQuiet(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
+        if (expr.isTimes() && expr.leafCount() < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT) {
+          expr = engine.evalQuiet(F.Simplify(expr));
+        }
         return evalLimit(expr, data, engine);
       } catch (RecursionLimitExceeded rle) {
         engine.setRecursionLimit(recursionLimit);

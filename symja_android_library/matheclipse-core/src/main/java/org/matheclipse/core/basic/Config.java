@@ -309,7 +309,7 @@ public class Config {
   public static int INTEGRATE_RUBI_TIMELIMIT = 8;
 
   /** Define the recursion limit for <code>Limit#lHospitalesRule()</code> method. */
-  public static int LIMIT_LHOSPITAL_RECURSION_LIMIT = 128;
+  public static int LIMIT_LHOSPITAL_RECURSION_LIMIT = 20;
 
   /**
    * Flag for thread usage.
