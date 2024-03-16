@@ -6580,14 +6580,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testEllipticK() {
 
+    check("N(EllipticK(8/10), 50)", //
+        "2.2572053268208536550832560045233873972354192817399");
+
     check("EllipticK(0.999999999999999990000000000000000)", //
         "20.9582676515692789828830607366566");
     // reducing the accuracy gives ComplexInfinity in MMA:
     check("EllipticK(0.99999999999999999)", //
         "20.958267651569278");
-
-    check("N(EllipticK(8/10), 50)", //
-        "2.2572053268208536550832560045233873972354192817399");
 
     checkNumeric("EllipticK(2.5+I)", //
         "1.1551450606569331+I*0.9528453714670536");
@@ -15997,8 +15997,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testN() {
     // issue #942
-    // check("Tan(Pi/2) // N", //
-    // "ComplexInfinity");
+    check("Tan(Pi/2) // N", //
+        "ComplexInfinity");
     // issue #937
     check("(x==-157079632679/100000000000) // N", //
         "x==-1.5708");
@@ -24208,11 +24208,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     checkNumeric("Surd(-3,3)", //
         "-3^(1/3)");
     checkNumeric("N((-3)^(1/3))", //
-        "0.7211247851537043+I*1.2490247664834064");
+        "0.7211247851537042+I*1.2490247664834064");
     checkNumeric("Surd(-3,3)-(-3)^(1/3)", //
         "-(-3)^(1/3)-3^(1/3)");
     checkNumeric("Surd(-3.,3)-(-3)^(1/3)", //
-        "-2.1633743554611127+I*(-1.2490247664834064)");
+        "-2.1633743554611122+I*(-1.2490247664834064)");
     checkNumeric("Surd(-3,3)", //
         "-3^(1/3)");
     checkNumeric("Surd(-3.,3)", //

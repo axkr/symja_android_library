@@ -99,6 +99,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBigNumber;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -2656,14 +2657,14 @@ public final class Arithmetic {
       final int oldSignificantFigures = engine.getSignificantFigures();
       try {
         long numericPrecision = oldDigitPrecision; // Config.MACHINE_PRECISION;
-        if (expr.isNumericFunction(true)) {
-          engine.setNumericMode(true, numericPrecision, oldSignificantFigures);
-          IExpr temp = engine.evalWithoutNumericReset(expr);
-          if (temp.isListOrAssociation() || temp.isRuleAST()) {
-            return ((IAST) temp).mapThread(F.N(F.Slot1), 1);
-          }
-          return temp;
-        }
+        // if (expr.isNumericFunction(true)) {
+        // engine.setNumericMode(true, numericPrecision, oldSignificantFigures);
+        // IExpr temp = engine.evalWithoutNumericReset(expr);
+        // if (temp.isListOrAssociation() || temp.isRuleAST()) {
+        // return ((IAST) temp).mapThread(F.N(F.Slot1), 1);
+        // }
+        // return temp;
+        // }
         expr = engine.evaluate(expr);
         if (expr.isInexactNumber()) {
           return expr;
@@ -3561,7 +3562,7 @@ public final class Arithmetic {
       return F.NIL;
     }
 
-    public IExpr binaryOperator(IAST ast, final IExpr base, final IExpr exponent,
+    public static IExpr binaryOperator(IAST ast, final IExpr base, final IExpr exponent,
         EvalEngine engine) {
       try {
         if (base.isInexactNumber() && exponent.isInexactNumber()) {
@@ -7032,6 +7033,57 @@ public final class Arithmetic {
       return S.Times;
     }
 
+  }
+
+  /**
+   * Eval in double numeric mode by "widen the input domain" to Apfloat values.
+   * 
+   * @param powerAST2 "binary {@link S#Power} function"
+   * @return
+   */
+  public static IExpr intPowerFractionNumeric(IAST powerAST2) {
+    IExpr base = powerAST2.base();
+    IExpr exponent = powerAST2.exponent();
+    if ((base instanceof IBigNumber) && exponent.isFraction()) {
+      IFraction exp = (IFraction) exponent;
+      int denom = exp.denominator().toIntDefault();
+      if (denom > 0L) {
+        if (base.isRational()) {
+          IRational iBase = (IRational) base;
+          double fNum = base.evalf();
+          if (!Double.isFinite(fNum) || fNum <= Double.MIN_VALUE || fNum >= Double.MAX_VALUE) {
+            if (iBase.isPositive()) {
+              // special case root of "rational base"
+              ApfloatNum apfloat = iBase.apfloatNumValue();
+              if (exp.numerator().isOne()) {
+                return F.num(apfloat.rootN(denom).doubleValue());
+              } else if (exp.numerator().isMinusOne()) {
+                return F.num(apfloat.rootN(denom).inverse().doubleValue());
+              }
+            } else if (iBase.isNegative()) {
+              ApcomplexNum apcomplex = iBase.apcomplexNumValue();
+              if (exp.numerator().isOne()) {
+                return F.complexNum(apcomplex.rootN(denom).evalfc());
+              } else if (exp.numerator().isMinusOne()) {
+                return F.complexNum(apcomplex.rootN(denom).inverse().evalfc());
+              }
+            }
+          }
+        } else if (base.isComplex()) {
+          IComplex iBase = (IComplex) base;
+          org.hipparchus.complex.Complex fComplex = base.evalfc();
+          if (!fComplex.isFinite()) {
+            ApcomplexNum apcomplex = iBase.apcomplexNumValue();
+            if (exp.numerator().isOne()) {
+              return F.complexNum(apcomplex.rootN(denom).evalfc());
+            } else if (exp.numerator().isMinusOne()) {
+              return F.complexNum(apcomplex.rootN(denom).inverse().evalfc());
+            }
+          }
+        }
+      }
+    }
+    return F.NIL;
   }
 
   /**

@@ -849,6 +849,12 @@ public class EvalEngine implements Serializable {
       final boolean isNumericFunction;
       if ((ISymbol.NUMERICFUNCTION & attributes) == ISymbol.NUMERICFUNCTION) {
         isNumericFunction = true;
+        if (isDoubleMode() && ast.isPower()) {
+          IExpr temp = Arithmetic.intPowerFractionNumeric(ast);
+          if (temp.isPresent()) {
+            return F.unaryAST1(S.Power, temp);
+          }
+        }
       } else {
         isNumericFunction = numericFunction;
       }
@@ -1633,7 +1639,7 @@ public class EvalEngine implements Serializable {
       if (function != null) {
         expr = expr.accept(new VisitorReplaceEvalf(function)).orElse(expr);
       }
-      IExpr result = evalN(expr);
+      IExpr result = evalNumericFunction(expr);
       if (result.isReal()) {
         return ((IReal) result).doubleValue();
       }
@@ -1648,12 +1654,29 @@ public class EvalEngine implements Serializable {
         if (F.isZero(cc.getImaginaryPart())) {
           return cc.getRealPart();
         }
-      }
-      if (result.isQuantity()) {
-        return result.evalReal().doubleValue();
-      }
-      if (result.isAST(S.Labeled, 3, 4)) {
-        return result.first().evalReal().doubleValue();
+      } else {
+        result = evalN(expr);
+        if (result.isReal()) {
+          return ((IReal) result).doubleValue();
+        }
+        if (result.isInfinity()) {
+          return Double.POSITIVE_INFINITY;
+        }
+        if (result.isNegativeInfinity()) {
+          return Double.NEGATIVE_INFINITY;
+        }
+        if (result.isComplexNumeric()) {
+          IComplexNum cc = (IComplexNum) result;
+          if (F.isZero(cc.getImaginaryPart())) {
+            return cc.getRealPart();
+          }
+        }
+        if (result.isQuantity()) {
+          return result.evalReal().doubleValue();
+        }
+        if (result.isAST(S.Labeled, 3, 4)) {
+          return result.first().evalReal().doubleValue();
+        }
       }
     } finally {
       fQuietMode = quietMode;
