@@ -8627,9 +8627,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // Fibonacci(11,{13,2,3,a})
     check("Fibonacci(11,{13,2,3,a})", //
         "{145336221161,5741,141481,1+15*a^2+35*a^4+28*a^6+9*a^8+a^10}");
-    // message Polynomial degree 101 exceeded
-    check("Fibonacci(101,11/9223372036854775807)", //
-        "Fibonacci(101,11/9223372036854775807)");
+    // message Polynomial degree 151 exceeded
+    check("Fibonacci(151,11/9223372036854775807)", //
+        "Fibonacci(151,11/9223372036854775807)");
 
     // iter limit
     check("Fibonacci(2147483647)", //
@@ -14485,8 +14485,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     // slow
     // message Polynomial degree 101 exceeded
-    check("LucasL(101,1/1317624576693539401)", //
-        "LucasL(101,1/1317624576693539401)");
+    check("LucasL(151,1/1317624576693539401)", //
+        "LucasL(151,1/1317624576693539401)");
     check("LucasL(Quantity(1.2,\"m\"),2.718281828459045)", //
         "LucasL(1.2[m],2.71828)");
 

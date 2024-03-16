@@ -253,7 +253,7 @@ public abstract class ExprEvaluatorTestCase {
       Config.MAX_AST_SIZE = 20000;
       Config.MAX_MATRIX_DIMENSION_SIZE = 100;
       Config.MAX_BIT_LENGTH = 200000;
-      Config.MAX_POLYNOMIAL_DEGREE = 100;
+      Config.MAX_POLYNOMIAL_DEGREE = 150;
       Config.FILESYSTEM_ENABLED = false;
       Config.ROUNDING_MODE = RoundingMode.HALF_EVEN;
       // fScriptEngine = fScriptManager.getEngineByExtension("m");

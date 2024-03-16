@@ -5214,11 +5214,11 @@ public class Algebra {
         ComplexRing<BigRational> cfac = new ComplexRing<BigRational>(BigRational.ZERO);
         JASConvert<Complex<BigRational>> jas = new JASConvert<Complex<BigRational>>(varList, cfac);
         GenPolynomial<Complex<BigRational>> polyRat = jas.expr2JAS(expr, numeric2Rational);
-        return factorComplex(expr, polyRat, jas, head, cfac).eval(engine);
+        return factorComplex(polyRat, jas, head, cfac, expr).eval(engine);
       } else {
         JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
         GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numeric2Rational);
-        return factorRational(polyRat, jas, head, expr);
+        return factorRational(polyRat, jas, head);
       }
     } catch (RuntimeException rex) {
       LOGGER.debug("Algebra.factorComplex() failed", rex);
@@ -5237,10 +5237,16 @@ public class Algebra {
    * @param head the head of the factorization result AST (typically <code>F.Times</code> or <code>
    *     F.List</code>)
    * @param cfac
+   * @param original the original expression
    * @return
    */
-  private static IExpr factorComplex(IExpr expr, GenPolynomial<Complex<BigRational>> polynomial,
-      JASConvert<? extends RingElem<?>> jas, ISymbol head, ComplexRing<BigRational> cfac) {
+  private static IExpr factorComplex(GenPolynomial<Complex<BigRational>> polynomial,
+      JASConvert<? extends RingElem<?>> jas, ISymbol head, ComplexRing<BigRational> cfac,
+      IExpr original) {
+    if (polynomial.degree() > Config.MAX_POLYNOMIAL_DEGREE) {
+      // Exponent ist out of bounds for function `1`.
+      return Errors.printMessage(S.Factor, "lrgexp", F.List(S.Factor));
+    }
     FactorComplex<BigRational> factorAbstract = new FactorComplex<BigRational>(cfac);
     SortedMap<GenPolynomial<Complex<BigRational>>, Long> map = factorAbstract.factors(polynomial);
 
@@ -5253,7 +5259,7 @@ public class Algebra {
       if (entry.getValue().equals(1L) && map.size() <= 2
           && (key.equals(F.CNI) || key.equals(F.CI))) {
         // hack: factoring -I and I out of an expression should give no new factorized expression
-        return expr;
+        return original;
       }
       result.append(F.Power(jas.complexPoly2Expr(entry.getKey()), F.ZZ(entry.getValue())));
     }
@@ -5307,7 +5313,11 @@ public class Algebra {
   }
 
   public static IAST factorRational(GenPolynomial<BigRational> polyRat, JASConvert<BigRational> jas,
-      ISymbol head, IExpr original) {
+      ISymbol head) {
+    if (polyRat.degree() > Config.MAX_POLYNOMIAL_DEGREE) {
+      // Exponent ist out of bounds for function `1`.
+      return Errors.printMessage(S.Factor, "lrgexp", F.List(S.Factor));
+    }
     Object[] objects = jas.factorTerms(polyRat);
     GenPolynomial<edu.jas.arith.BigInteger> poly =
         (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];

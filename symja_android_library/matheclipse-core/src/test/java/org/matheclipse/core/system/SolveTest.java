@@ -789,6 +789,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->-81.08825721072805},{x->81.08825721072805}}");
   }
 
+
   @Test
   public void testNSolve() {
     check("NSolve(2*x^(x-3)==3^(x-2),x)", //
@@ -2063,6 +2064,13 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(8000/(x^3/32*Pi)==60,x)", //
         "{{x->(8*(-5)^(2/3))/(3*Pi)^(1/3)},{x->(8*5^(2/3))/(3*Pi)^(1/3)},{x->(-8*(-1)^(1/\n"
             + "3)*5^(2/3))/(3*Pi)^(1/3)}}");
+  }
+
+  @Test
+  public void testIssue947() {
+    // message: Exponent ist out of bounds for function Factor.
+    check("Solve(2^(1250000/x) == 500, x)", //
+        "{{x->(1250000*Log(2))/Log(500)}}");
   }
 
   /** The JUnit setup method */

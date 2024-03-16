@@ -917,7 +917,7 @@ public class RootsFunctions {
       }
       // }
       IASTAppendable newResult = F.ListAlloc(8);
-      IAST factorRational = Algebra.factorRational(polyRat, jas, S.List, null);
+      IAST factorRational = Algebra.factorRational(polyRat, jas, S.List);
       if (factorRational.isNIL()) {
         factorRational = F.Times(expr);
       }
@@ -936,7 +936,7 @@ public class RootsFunctions {
           }
         } else {
           polyRat = jas.expr2JAS(temp, numericSolutions);
-          IAST factorComplex = Algebra.factorRational(polyRat, jas, S.List, null);
+          IAST factorComplex = Algebra.factorRational(polyRat, jas, S.List);
           if (factorComplex.isNIL()) {
             factorComplex = F.Times(expr);
           }
