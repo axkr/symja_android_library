@@ -18650,10 +18650,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testPolyLog() {
     // issue #929
-    // check("(PolyLog(2,E^(I*1/270*Pi^2)))/Pi // N", //
-    // " ");
-    // check("PolyLog(2,0.9993319736282411 + 0.03654595031305655*I)", //
-    // "");
+    // message Infinite or NaN number in z1 calculation.
+    check("(PolyLog(2,E^(I*1/270*Pi^2)))/Pi // N", //
+        "0.31831*PolyLog(2.0,0.999332+I*0.036546)");
+    check("PolyLog(2,0.9993319736282411 + 0.03654595031305655*I)", //
+        "PolyLog(2,0.9993319736282411+I*0.03654595031305655)");
 
     check("PolyLog(2,z) + PolyLog(2,1-z)", //
         "Pi^2/6-Log(1-z)*Log(z)");

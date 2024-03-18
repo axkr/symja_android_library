@@ -372,7 +372,7 @@ public class ZetaJS extends JS {
       return x.divide(Complex.ONE.subtract(x).multiply(Complex.ONE.subtract(x)));
     }
 
-    if (cabs(x) >= 1.0) {
+    if (cabs(x) > 1.0) {
 
       if (F.isZero(n.getImaginary()) && F.isNumIntValue(n.getReal()) && n.getReal() > 0.0) {
 
@@ -447,7 +447,7 @@ public class ZetaJS extends JS {
       return new Complex(x / (oneMinusX * oneMinusX));
     }
 
-    if (Math.abs(x) >= 1.0) {
+    if (Math.abs(x) > 1.0) {
       if (F.isNumIntValue(n) && n > 0.0) {
         final int nInt = NumberUtil.toInt(n);
         Complex twoPiI = new Complex(0, 2 * Math.PI);
