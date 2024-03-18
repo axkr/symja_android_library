@@ -117,6 +117,8 @@
  PolyGamma(n_Integer, 1/2) := (-1)^(n + 1)*n!*(2^(n + 1) - 1)*Zeta(n+1)  
   /; n>0,
   
+ PolyLog(2,(3-Sqrt(5))/2) = Pi^2/15 - ArcCsch(2)^2,
+ 
  Power(Abs(x_),y_Integer) := x^y
   /; EvenQ(y) && Element(x,Reals),
  Power(I,x_) := E^Distribute(1/2*I*Pi*x),

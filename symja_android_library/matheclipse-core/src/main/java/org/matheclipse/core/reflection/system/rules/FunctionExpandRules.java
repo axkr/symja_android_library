@@ -234,6 +234,18 @@ public class FunctionExpandRules {
     // PolyGamma(n_Integer,1/2):=(-1)^(n+1)*n!*(-1+2^(n+1))*Zeta(n+1)/;n>0
     SetDelayed(PolyGamma($p(n, Integer),C1D2),
       Condition(Times(Power(CN1,Plus(n,C1)),Factorial(n),Plus(CN1,Power(C2,Plus(n,C1))),Zeta(Plus(n,C1))),Greater(n,C0))),
+    // PolyLog(2,1/2*(3-Sqrt(5)))=Pi^2/15-ArcCsch(2)^2
+    Set(PolyLog(C2,Times(C1D2,Subtract(C3,CSqrt5))),
+      Subtract(Times(QQ(1L,15L),Sqr(Pi)),Sqr(ArcCsch(C2)))),
+    // PolyLog(2,1/2*(-1+Sqrt(5)))=Pi^2/10-ArcCsch(2)^2
+    Set(PolyLog(C2,Times(C1D2,Plus(CN1,CSqrt5))),
+      Subtract(Times(QQ(1L,10L),Sqr(Pi)),Sqr(ArcCsch(C2)))),
+    // PolyLog(2,1/2*(1-Sqrt(5)))=(-1)*1/10*Pi^2+ArcCsch(2)^2+1/2*(Pi^2/15-ArcCsch(2)^2)
+    Set(PolyLog(C2,Times(C1D2,Subtract(C1,CSqrt5))),
+      Plus(Times(QQ(-1L,10L),Sqr(Pi)),Times(C1D2,Subtract(Times(QQ(1L,15L),Sqr(Pi)),Sqr(ArcCsch(C2)))),Sqr(ArcCsch(C2)))),
+    // PolyLog(2,1/2*(-1-Sqrt(5)))=(-1)*1/10*Pi^2-ArcCsch(2)^2
+    Set(PolyLog(C2,Times(C1D2,Subtract(CN1,CSqrt5))),
+      Subtract(Times(QQ(-1L,10L),Sqr(Pi)),Sqr(ArcCsch(C2)))),
     // Abs(x_)^y_Integer:=x^y/;EvenQ(y)&&x∈Reals
     SetDelayed(Power(Abs(x_),$p(y, Integer)),
       Condition(Power(x,y),And(EvenQ(y),Element(x,Reals)))),

@@ -322,6 +322,16 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testFunctionExpandPolyLog() {
+    // https://people.mpim-bonn.mpg.de/zagier/files/doi/10.1007/978-3-540-30308-4_1/fulltext.pdf
+    check("FunctionExpand(PolyLog(2,(3-Sqrt(5))/2))", //
+        "Pi^2/15-ArcCsch(2)^2");
+    check("FunctionExpand(PolyLog(2,(-1+Sqrt(5))/2))", //
+        "Pi^2/10-ArcCsch(2)^2");
+    check("FunctionExpand(PolyLog(2,(1-Sqrt(5))/2))", //
+        "-Pi^2/10+1/2*(Pi^2/15-ArcCsch(2)^2)+ArcCsch(2)^2");
+    check("FunctionExpand(PolyLog(2,(-1-Sqrt(5))/2))", //
+        "-Pi^2/10-ArcCsch(2)^2");
+
     check("FunctionExpand( PolyLog(2, E^( 4/5*Pi*I )) )", //
         "Pi^2/150+1/25*(E^(I*4/5*Pi)*PolyGamma(1,1/5)+PolyGamma(1,2/5)/E^(I*2/5*Pi)+E^(\n" //
             + "I*2/5*Pi)*PolyGamma(1,3/5)+PolyGamma(1,4/5)/E^(I*4/5*Pi))");
