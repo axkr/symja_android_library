@@ -118,6 +118,9 @@
   /; n>0,
   
  PolyLog(2,(3-Sqrt(5))/2) = Pi^2/15 - ArcCsch(2)^2,
+ PolyLog(2,(-1+Sqrt(5))/2) = Pi^2/10 - ArcCsch(2)^2,
+ PolyLog(2,(1-Sqrt(5))/2) = -(Pi^2/10) + ArcCsch(2)^2 + (1/2)*(Pi^2/15 - ArcCsch(2)^2) ,
+ PolyLog(2,(-1-Sqrt(5))/2) = -(Pi^2/10) - ArcCsch(2)^2,
  
  Power(Abs(x_),y_Integer) := x^y
   /; EvenQ(y) && Element(x,Reals),
