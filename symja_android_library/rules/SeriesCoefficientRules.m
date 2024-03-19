@@ -114,7 +114,10 @@
     /; FreeQ(k,x) && FreeQ(n,x),  
     
   SeriesCoefficient(ChebyshevU(k_, x_),{x_Symbol, 0, n_?NotListQ}) := Piecewise({{((-(1/2))^n*Sqrt(Pi)*Gamma(3/2 + n)*Pochhammer(-k, n)*Pochhammer(2 + k, n))/(n!*Gamma((1/2)*(1 - k + n))*Gamma((1/2)*(3 + k + n))*Pochhammer(3/2, n)), n >= 0}}, 0)
-    /; FreeQ(k,x) && FreeQ(n,x) 
+    /; FreeQ(k,x) && FreeQ(n,x),
  
-    
+  SeriesCoefficient(EllipticE(x_),{x_Symbol, 0, n_?NotListQ}) := Piecewise({{-((Gamma(-(1/2) + n)*Gamma(1/2 + n))/(4*Gamma(1+n)^2)), n >= 0}}, 0)
+    /; FreeQ(n,x),
+  SeriesCoefficient(EllipticK(x_),{x_Symbol, 0, n_?NotListQ}) := Piecewise({{Gamma(1/2+n)^2/(2*Gamma(1+n)^2), n >= 0}}, 0)
+    /; FreeQ(n,x)
 } 

@@ -13,7 +13,7 @@ public class SeriesCoefficientRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 46 };
+  final public static int[] SIZES = { 0, 48 };
 
   final public static IAST RULES = List(
     IInit(SeriesCoefficient, SIZES),
@@ -154,6 +154,12 @@ public class SeriesCoefficientRules {
       Condition(Piecewise(list(list(Times(Power(CN1D2,n),CSqrtPi,Gamma(Plus(C1D2,n)),Power(Times(Factorial(n),Gamma(Times(C1D2,Plus(C1,Negate(k),n))),Gamma(Times(C1D2,Plus(C1,k,n))),Pochhammer(C1D2,n)),CN1),Pochhammer(Negate(k),n),Pochhammer(k,n)),GreaterEqual(n,C0))),C0),And(FreeQ(k,x),FreeQ(n,x)))),
     // SeriesCoefficient(ChebyshevU(k_,x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{((-1/2)^n*Sqrt(Pi)*Gamma(3/2+n)*Pochhammer(-k,n)*Pochhammer(2+k,n))/(n!*Gamma(1/2*(1-k+n))*Gamma(1/2*(3+k+n))*Pochhammer(3/2,n)),n>=0}},0)/;FreeQ(k,x)&&FreeQ(n,x)
     ISetDelayed(SeriesCoefficient(ChebyshevU(k_,x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(list(list(Times(Power(CN1D2,n),CSqrtPi,Gamma(Plus(QQ(3L,2L),n)),Power(Times(Factorial(n),Gamma(Times(C1D2,Plus(C1,Negate(k),n))),Gamma(Times(C1D2,Plus(C3,k,n))),Pochhammer(QQ(3L,2L),n)),CN1),Pochhammer(Negate(k),n),Pochhammer(Plus(C2,k),n)),GreaterEqual(n,C0))),C0),And(FreeQ(k,x),FreeQ(n,x))))
+      Condition(Piecewise(list(list(Times(Power(CN1D2,n),CSqrtPi,Gamma(Plus(QQ(3L,2L),n)),Power(Times(Factorial(n),Gamma(Times(C1D2,Plus(C1,Negate(k),n))),Gamma(Times(C1D2,Plus(C3,k,n))),Pochhammer(QQ(3L,2L),n)),CN1),Pochhammer(Negate(k),n),Pochhammer(Plus(C2,k),n)),GreaterEqual(n,C0))),C0),And(FreeQ(k,x),FreeQ(n,x)))),
+    // SeriesCoefficient(EllipticE(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{(-Gamma(-1/2+n)*Gamma(1/2+n))/(4*Gamma(1+n)^2),n>=0}},0)/;FreeQ(n,x)
+    ISetDelayed(SeriesCoefficient(EllipticE(x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
+      Condition(Piecewise(list(list(Times(CN1,Gamma(Plus(CN1D2,n)),Gamma(Plus(C1D2,n)),Power(Times(C4,Sqr(Gamma(Plus(C1,n)))),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x))),
+    // SeriesCoefficient(EllipticK(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{Gamma(1/2+n)^2/(2*Gamma(1+n)^2),n>=0}},0)/;FreeQ(n,x)
+    ISetDelayed(SeriesCoefficient(EllipticK(x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
+      Condition(Piecewise(list(list(Times(Sqr(Gamma(Plus(C1D2,n))),Power(Times(C2,Sqr(Gamma(Plus(C1,n)))),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x)))
   );
 }
