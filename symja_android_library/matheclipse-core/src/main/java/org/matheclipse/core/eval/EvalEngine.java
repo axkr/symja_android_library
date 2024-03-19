@@ -1694,14 +1694,14 @@ public class EvalEngine implements Serializable {
       result = expr.toIntDefault();
     }
     if (expr.isNumericFunction(true)) {
-      IExpr numericResult = evalNumericFunction(expr);
+      IExpr numericResult = evalNumericFunction(expr, false);
       if (numericResult.isReal()) {
         result = numericResult.toIntDefault();
       }
     } else {
       IExpr temp = evaluateNIL(expr);
       if (temp.isNumericFunction(true)) {
-        IExpr numericResult = evalNumericFunction(temp);
+        IExpr numericResult = evalNumericFunction(temp, false);
         if (numericResult.isReal()) {
           result = numericResult.toIntDefault();
         }
@@ -2117,7 +2117,11 @@ public class EvalEngine implements Serializable {
   }
 
   public final IExpr evalNumericFunction(final IExpr expr) {
-    if (expr.isNumericFunction(true)) {
+    return evalNumericFunction(expr, true);
+  }
+
+  public final IExpr evalNumericFunction(final IExpr expr, boolean checkNumericFunction) {
+    if (!checkNumericFunction || expr.isNumericFunction(true)) {
       final boolean oldNumericMode = isNumericMode();
       final long oldDigitPrecision = getNumericPrecision();
       final int oldSignificantFigures = getSignificantFigures();

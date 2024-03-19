@@ -774,9 +774,13 @@ public abstract class AbstractAssumptions implements IAssumptions {
   }
 
   public static boolean isPositiveResult(IAST ast) {
-    IReal e = ast.evalReal();
+    INumber e = ast.evalNumber();
+    // IReal e = ast.evalReal();
     if (e != null) {
-      return e.isPositive();
+      if (e.isReal()) {
+        return e.isPositive();
+      }
+      return false;
     }
     IExpr head = ast.head();
     if (head.isSymbol()) {

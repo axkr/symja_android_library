@@ -932,4 +932,14 @@ public abstract class AbstractFractionSym implements IFraction {
     }
     return IFraction.super.times(that);
   }
+
+  @Override
+  public int toIntRoot() {
+    return Integer.MIN_VALUE;
+  }
+
+  @Override
+  public int toIntRoot(int defaultValue) {
+    return defaultValue;
+  }
 }

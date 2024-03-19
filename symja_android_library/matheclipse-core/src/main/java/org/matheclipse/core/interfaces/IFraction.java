@@ -95,6 +95,33 @@ public interface IFraction extends IRational {
   @Override
   public BigInteger toBigNumerator();
 
+  /**
+   * Converts this number into the `n-th` root integer value if possible. The fraction should be of
+   * the form <code>1 / denominator</code> for a &quot;positive root&quot; or
+   * <code>-1 / denominator</code> for a &quot;negative root&quot;
+   * 
+   * <p>
+   * This method returns the <code>Integer.MAX_VALUE</code> if this fractions numerator unequals
+   * <code>-1</code> or <code>1</code>, or the denominator equals <code>Integer.MAX_VALUE</code>.
+   * 
+   * @return
+   */
+  public int toIntRoot();
+
+  /**
+   * Converts this number into the `n-th` root integer value if possible. The fraction should be of
+   * the form <code>1 / denominator</code> for a &quot;positive root&quot; or
+   * <code>-1 / denominator</code> for a &quot;negative root&quot;
+   * 
+   * <p>
+   * This method returns the <code>defaultValue</code> if this fractions numerator unequals
+   * <code>-1</code> or <code>1</code>, or the denominator equals <code>Integer.MAX_VALUE</code>.
+   * 
+   * @param defaultValue
+   * @return
+   */
+  public int toIntRoot(int defaultValue);
+
   @Override
   default Pair asCoeffMul(boolean rational) {
     // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/numbers.py#L2034

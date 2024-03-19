@@ -697,6 +697,23 @@ public class FractionSym extends AbstractFractionSym {
     return defaultValue;
   }
 
+  public int toIntRoot() {
+    return toIntRoot(Integer.MIN_VALUE);
+  }
+
+  public int toIntRoot(int defaultValue) {
+    if (fDenominator == Integer.MIN_VALUE) {
+      return defaultValue;
+    }
+    if (fNumerator == 1) {
+      return fDenominator;
+    }
+    if (fNumerator == -1) {
+      return -fDenominator;
+    }
+    return defaultValue;
+  }
+
   /** {@inheritDoc} */
   @Override
   public long toLongDefault(long defaultValue) {

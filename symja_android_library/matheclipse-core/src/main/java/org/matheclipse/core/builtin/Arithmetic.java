@@ -315,7 +315,7 @@ public final class Arithmetic {
         return ((INumber) arg1).abs();
       }
       if (arg1.isNumericFunction(true)) {
-        IExpr temp = engine.evalNumericFunction(arg1);
+        IExpr temp = engine.evalNumericFunction(arg1, false);
         if (temp.isReal()) {
           return arg1.copySign((IReal) temp);
         }
@@ -7042,43 +7042,29 @@ public final class Arithmetic {
    * @return
    */
   public static IExpr intPowerFractionNumeric(IAST powerAST2) {
-    IExpr base = powerAST2.base();
-    IExpr exponent = powerAST2.exponent();
+    final IExpr base = powerAST2.base();
+    final IExpr exponent = powerAST2.exponent();
     if ((base instanceof IBigNumber) && exponent.isFraction()) {
-      IFraction exp = (IFraction) exponent;
-      int denom = exp.denominator().toIntDefault();
-      if (denom > 0L) {
+      final int nthRoot = ((IFraction) exponent).toIntRoot();
+      if (nthRoot != Integer.MIN_VALUE) {
         if (base.isRational()) {
-          IRational iBase = (IRational) base;
-          double fNum = base.evalf();
+          IRational ratBase = (IRational) base;
+          final double fNum = base.evalf();
           if (!Double.isFinite(fNum) || fNum <= Double.MIN_VALUE || fNum >= Double.MAX_VALUE) {
-            if (iBase.isPositive()) {
-              // special case root of "rational base"
-              ApfloatNum apfloat = iBase.apfloatNumValue();
-              if (exp.numerator().isOne()) {
-                return F.num(apfloat.rootN(denom).doubleValue());
-              } else if (exp.numerator().isMinusOne()) {
-                return F.num(apfloat.rootN(denom).inverse().doubleValue());
-              }
-            } else if (iBase.isNegative()) {
-              ApcomplexNum apcomplex = iBase.apcomplexNumValue();
-              if (exp.numerator().isOne()) {
-                return F.complexNum(apcomplex.rootN(denom).evalfc());
-              } else if (exp.numerator().isMinusOne()) {
-                return F.complexNum(apcomplex.rootN(denom).inverse().evalfc());
-              }
+            if (ratBase.isPositive()) {
+              ApfloatNum apfloat = ratBase.apfloatNumValue();
+              return F.num(apfloat.rootN(nthRoot).doubleValue());
+            } else if (ratBase.isNegative()) {
+              ApcomplexNum apcomplex = ratBase.apcomplexNumValue();
+              return F.complexNum(apcomplex.rootN(nthRoot).evalfc());
             }
           }
         } else if (base.isComplex()) {
-          IComplex iBase = (IComplex) base;
+          final IComplex cmpBase = (IComplex) base;
           org.hipparchus.complex.Complex fComplex = base.evalfc();
           if (!fComplex.isFinite()) {
-            ApcomplexNum apcomplex = iBase.apcomplexNumValue();
-            if (exp.numerator().isOne()) {
-              return F.complexNum(apcomplex.rootN(denom).evalfc());
-            } else if (exp.numerator().isMinusOne()) {
-              return F.complexNum(apcomplex.rootN(denom).inverse().evalfc());
-            }
+            ApcomplexNum apcomplex = cmpBase.apcomplexNumValue();
+            return F.complexNum(apcomplex.rootN(nthRoot).evalfc());
           }
         }
       }
@@ -7087,7 +7073,7 @@ public final class Arithmetic {
   }
 
   /**
-   * Try simpplifying <code>(power0Arg1 ^ power0Arg2) * (power1Arg1 ^ power1Arg2)</code>
+   * Try simplifying <code>(power0Arg1 ^ power0Arg2) * (power1Arg1 ^ power1Arg2)</code>
    *
    * @param power0Arg1
    * @param power0Arg2

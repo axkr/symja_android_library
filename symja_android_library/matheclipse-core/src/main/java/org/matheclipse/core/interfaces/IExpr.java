@@ -1216,10 +1216,10 @@ public interface IExpr
     IExpr arg1 = this;
     IExpr arg2 = that;
     if (!arg1.isReal() && arg1.isNumericFunction(x -> x.isDirectedInfinity() ? "" : null)) {
-      arg1 = engine.evalNumericFunction(arg1);
+      arg1 = engine.evalNumericFunction(arg1, false);
     }
     if (!arg2.isReal() && arg2.isNumericFunction(x -> x.isDirectedInfinity() ? "" : null)) {
-      arg2 = engine.evalNumericFunction(arg2);
+      arg2 = engine.evalNumericFunction(arg2, false);
     }
     if (arg2.isInexactNumber() && arg1.isExactNumber()) {
       arg1 = engine.evalNumericFunction(arg1);
@@ -1443,7 +1443,7 @@ public interface IExpr
    */
   default INumber evalNumber() {
     if (isNumber()) {
-      IExpr result = EvalEngine.get().evalNumericFunction(this);
+      IExpr result = EvalEngine.get().evalNumericFunction(this, false);
       if (result.isNumber()) {
         return (INumber) result;
       }
