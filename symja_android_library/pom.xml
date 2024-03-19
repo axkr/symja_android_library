@@ -360,12 +360,12 @@
 			<dependency>
 				<groupId>org.apache.arrow</groupId>
 				<artifactId>arrow-vector</artifactId>
-				<version>15.0.1</version>
+				<version>15.0.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.arrow</groupId>
 				<artifactId>arrow-memory-netty</artifactId>
-				<version>15.0.1</version>
+				<version>15.0.2</version>
 				<exclusions>
 					<exclusion>
 						<groupId>com.fasterxml.jackson.core</groupId>
