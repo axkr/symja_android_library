@@ -4,7 +4,7 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
-import org.hipparchus.analysis.solvers.BisectionSolver;
+import org.hipparchus.analysis.solvers.RiddersSolver;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
@@ -12,6 +12,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -21,6 +22,34 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <a href="https://github.com/paulmasson/math/blob/master/src/functions/bessel.js">bessel.js</a>
  */
 public class BesselJS extends JS {
+
+  private static final class BesselYUnivariateFunction implements UnivariateFunction {
+    private final Num n;
+
+    private BesselYUnivariateFunction(double n) {
+      this.n = F.num(n);
+    }
+
+    @Override
+    public double value(double x) {
+      return n.besselY(F.num(x)).evalf();
+    }
+  }
+
+  private static final class BesselJUnivariateFunction implements UnivariateFunction {
+    private final Num n;
+
+    private BesselJUnivariateFunction(double n) {
+      this.n = F.num(n);
+    }
+
+    @Override
+    public double value(double x) {
+      return n.besselJ(F.num(x)).evalf();
+    }
+  }
+
+  private final static RiddersSolver RIDDERS_SOLVER = new RiddersSolver();
 
   private BesselJS() {}
 
@@ -86,14 +115,8 @@ public class BesselJS extends JS {
       e += (n % 1) * Math.PI;
     }
 
-    BisectionSolver solver = new BisectionSolver();
-    UnivariateFunction f = new UnivariateFunction() {
-      @Override
-      public double value(double x) {
-        return F.num(n).besselJ(F.num(x)).evalf();
-      }
-    };
-    return solver.solve(100, f, e - delta < 0 ? 0 : e - delta, e + delta);
+    UnivariateFunction f = new BesselJUnivariateFunction(n);
+    return RIDDERS_SOLVER.solve(100, f, e - delta < 0 ? 0 : e - delta, e + delta);
   }
 
   public static Complex besselY(double n, double x) {
@@ -213,14 +236,10 @@ public class BesselJS extends JS {
       }
     }
 
-    BisectionSolver solver = new BisectionSolver();
-    UnivariateFunction f = new UnivariateFunction() {
-      @Override
-      public double value(double x) {
-        return F.num(n).besselY(F.num(x)).evalf();
-      }
-    };
-    return solver.solve(100, f, (m == 1 && fractionalPartN > -.5) ? 1e-10 : e - delta, e + delta);
+
+    UnivariateFunction f = new BesselYUnivariateFunction(n);
+    return RIDDERS_SOLVER.solve(100, f, (m == 1 && fractionalPartN > -.5) ? 1e-10 : e - delta,
+        e + delta);
     // }
   }
 
