@@ -2,7 +2,7 @@ package org.matheclipse.core.system;
 
 import org.junit.Test;
 
-public class BooleanTests extends ExprEvaluatorTestCase {
+public class BooleanTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testAllTrue() {
