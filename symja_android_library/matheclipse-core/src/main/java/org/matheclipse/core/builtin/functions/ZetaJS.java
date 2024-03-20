@@ -5,13 +5,10 @@ import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
-import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.expression.S;
 
 public class ZetaJS extends JS {
@@ -352,143 +349,155 @@ public class ZetaJS extends JS {
   }
 
   public static Complex polyLog(final Complex n, final Complex x) {
-    if (x.equals(Complex.ONE)) {
-      return zeta(n);
-    }
-
-    if (x.equals(Complex.MINUS_ONE)) {
-      return dirichletEta(n).negate();
-    }
-
-    if (n.equals(Complex.ONE)) {
-      return Complex.ONE.subtract(x).log().negate();
-    }
-
-    if (n.equals(Complex.ZERO)) {
-      return x.divide(Complex.ONE.subtract(x));
-    }
-
-    if (n.equals(Complex.MINUS_ONE)) {
-      return x.divide(Complex.ONE.subtract(x).multiply(Complex.ONE.subtract(x)));
-    }
-
-    if (cabs(x) > 1.0) {
-
-      if (F.isZero(n.getImaginary()) && F.isNumIntValue(n.getReal()) && n.getReal() > 0.0) {
-
-        final int nInt = NumberUtil.toInt(n.getReal());
-        Complex twoPiI = new Complex(0, 2 * Math.PI);
-
-        // Crandall, Note on Fast Polylogarithm Computation
-
-        Complex t1 = polyLog(n, x.reciprocal()).multiply(Math.pow(-1.0, nInt));
-        Complex t2 = twoPiI.pow(nInt).divide(GammaJS.factorialInt(nInt))
-            .multiply(bernoulli(nInt, x.log().divide(twoPiI)));
-
-        Complex t3 = x.getImaginary() < 0.0 || (F.isZero(x.getImaginary()) && x.getReal() >= 1.0)
-            ? twoPiI.multiply(x.log().pow(nInt - 1).divide(GammaJS.factorialInt(nInt - 1)))
-            : Complex.ZERO;
-
-        return t1.add(t2).add(t3).negate();
-      }
-
-      Complex v = Complex.ONE.subtract(n);
-      Complex I = Complex.I;
-      Complex L = x.negate().log().divide(new Complex(0, 2.0 * Math.PI));
-
-      Complex z1 = I.pow(v).multiply(hurwitzZeta(v, L.add(0.5)));
-      if (z1.isInfinite() || z1.isNaN()) {
-        throw new ArgumentTypeException("Infinite or NaN number in z1 calculation.");
-      }
-      Complex z2 = I.pow(v.negate()).multiply(hurwitzZeta(v, new Complex(0.5).subtract(L)));
-      if (z2.isInfinite() || z2.isNaN()) {
-        throw new ArgumentTypeException("Infinite or NaN number in z2 calculation.");
-      }
-      return GammaJS.gamma(v).multiply(new Complex(2.0 * Math.PI).pow(v.negate()))
-          .multiply(z1.add(z2));
-    }
-
-    Complex s = x;
-    Complex p = Complex.ONE; // complex(1);
-    int i = 1;
-
-    int iterationLimit = EvalEngine.get().getIterationLimit();
-    while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE
-        || Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
-      if (i++ > iterationLimit && iterationLimit > 0) {
-        IterationLimitExceeded.throwIt(i, S.PolyLog);
-      }
-      p = x.pow(i).divide(new Complex(i).pow(n));
-      s = s.add(p);
-    }
-
-    return s;
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
+    Apcomplex nApfloat = new Apcomplex(new Apfloat(n.getReal()), new Apfloat(n.getImaginary()));
+    Apcomplex xApfloat = new Apcomplex(new Apfloat(x.getReal()), new Apfloat(x.getImaginary()));
+    Apcomplex polylog = h.polylog(nApfloat, xApfloat);
+    return new Complex(polylog.real().doubleValue(), polylog.imag().doubleValue());
+    //
+    // if (x.equals(Complex.ONE)) {
+    // return zeta(n);
+    // }
+    //
+    // if (x.equals(Complex.MINUS_ONE)) {
+    // return dirichletEta(n).negate();
+    // }
+    //
+    // if (n.equals(Complex.ONE)) {
+    // return Complex.ONE.subtract(x).log().negate();
+    // }
+    //
+    // if (n.equals(Complex.ZERO)) {
+    // return x.divide(Complex.ONE.subtract(x));
+    // }
+    //
+    // if (n.equals(Complex.MINUS_ONE)) {
+    // return x.divide(Complex.ONE.subtract(x).multiply(Complex.ONE.subtract(x)));
+    // }
+    //
+    // if (cabs(x) > 1.0) {
+    //
+    // if (F.isZero(n.getImaginary()) && F.isNumIntValue(n.getReal()) && n.getReal() > 0.0) {
+    //
+    // final int nInt = NumberUtil.toInt(n.getReal());
+    // Complex twoPiI = new Complex(0, 2 * Math.PI);
+    //
+    // // Crandall, Note on Fast Polylogarithm Computation
+    //
+    // Complex t1 = polyLog(n, x.reciprocal()).multiply(Math.pow(-1.0, nInt));
+    // Complex t2 = twoPiI.pow(nInt).divide(GammaJS.factorialInt(nInt))
+    // .multiply(bernoulli(nInt, x.log().divide(twoPiI)));
+    //
+    // Complex t3 = x.getImaginary() < 0.0 || (F.isZero(x.getImaginary()) && x.getReal() >= 1.0)
+    // ? twoPiI.multiply(x.log().pow(nInt - 1).divide(GammaJS.factorialInt(nInt - 1)))
+    // : Complex.ZERO;
+    //
+    // return t1.add(t2).add(t3).negate();
+    // }
+    //
+    // Complex v = Complex.ONE.subtract(n);
+    // Complex I = Complex.I;
+    // Complex L = x.negate().log().divide(new Complex(0, 2.0 * Math.PI));
+    //
+    // Complex z1 = I.pow(v).multiply(hurwitzZeta(v, L.add(0.5)));
+    // if (z1.isInfinite() || z1.isNaN()) {
+    // throw new ArgumentTypeException("Infinite or NaN number in z1 calculation.");
+    // }
+    // Complex z2 = I.pow(v.negate()).multiply(hurwitzZeta(v, new Complex(0.5).subtract(L)));
+    // if (z2.isInfinite() || z2.isNaN()) {
+    // throw new ArgumentTypeException("Infinite or NaN number in z2 calculation.");
+    // }
+    // return GammaJS.gamma(v).multiply(new Complex(2.0 * Math.PI).pow(v.negate()))
+    // .multiply(z1.add(z2));
+    // }
+    //
+    // Complex s = x;
+    // Complex p = Complex.ONE; // complex(1);
+    // int i = 1;
+    //
+    // int iterationLimit = EvalEngine.get().getIterationLimit();
+    // while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE
+    // || Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+    // if (i++ > iterationLimit && iterationLimit > 0) {
+    // IterationLimitExceeded.throwIt(i, S.PolyLog);
+    // }
+    // p = x.pow(i).divide(new Complex(i).pow(n));
+    // s = s.add(p);
+    // }
+    //
+    // return s;
   }
 
-  public static Complex polyLog(final double n, final double x) {
-    if (F.isEqual(x, 1.0)) {
-      return new Complex(zeta(n));
-    }
+  public static double polyLog(final double n, final double x) {
+    FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
 
-    if (F.isEqual(x, -1.0)) {
-      return dirichletEta(n).negate();
-    }
-
-    double oneMinusX = 1.0 - x;
-    if (F.isEqual(n, 1.0)) {
-      return new Complex(-Math.log(oneMinusX));
-    }
-
-    if (F.isEqual(n, 0.0)) {
-      return new Complex(x / oneMinusX);
-    }
-
-    if (F.isEqual(n, -1.0)) {
-      return new Complex(x / (oneMinusX * oneMinusX));
-    }
-
-    if (Math.abs(x) > 1.0) {
-      if (F.isNumIntValue(n) && n > 0.0) {
-        final int nInt = NumberUtil.toInt(n);
-        Complex twoPiI = new Complex(0, 2 * Math.PI);
-
-        // Crandall, Note on Fast Polylogarithm Computation
-
-        Complex t1 = polyLog(n, 1 / x).multiply(Math.pow(-1.0, nInt));
-
-        Complex t2 = twoPiI.pow(nInt).divide(GammaJS.factorialInt(n))
-            .multiply(bernoulli(nInt, new Complex(x).log().divide(twoPiI)));
-
-        Complex y = new Complex(x); // just for test
-        Complex t3 = y.getImaginary() < 0.0 || (F.isZero(y.getImaginary()) && y.getReal() >= 1.0)
-            ? twoPiI.multiply(Math.pow(Math.log(x), n - 1) / GammaJS.factorialInt(n - 1))
-            : Complex.ZERO;
-
-        Complex result = t1.add(t2).add(t3).negate();
-
-        // real on negative real axis
-        if (x < 0) {
-          return new Complex(result.getReal());
-        }
-
-        return result;
-      }
-      return polyLog(new Complex(n), new Complex(x));
-    }
-
-    double s = x;
-    double p = 1;
-    int i = 1;
-
-    int iterationLimit = EvalEngine.get().getIterationLimit();
-    while (Math.abs(p) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
-      if (i++ > iterationLimit && iterationLimit > 0) {
-        IterationLimitExceeded.throwIt(i, S.PolyLog);
-      }
-      p = Math.pow(x, i) / Math.pow(i, n);
-      s += p;
-    }
-
-    return new Complex(s);
+    Apfloat nApfloat = new Apfloat(n);
+    Apfloat xApfloat = new Apfloat(x);
+    Apfloat polylog = h.polylog(nApfloat, xApfloat);
+    return polylog.doubleValue();
+    // if (F.isEqual(x, 1.0)) {
+    // return new Complex(zeta(n));
+    // }
+    //
+    // if (F.isEqual(x, -1.0)) {
+    // return dirichletEta(n).negate();
+    // }
+    //
+    // double oneMinusX = 1.0 - x;
+    // if (F.isEqual(n, 1.0)) {
+    // return new Complex(-Math.log(oneMinusX));
+    // }
+    //
+    // if (F.isEqual(n, 0.0)) {
+    // return new Complex(x / oneMinusX);
+    // }
+    //
+    // if (F.isEqual(n, -1.0)) {
+    // return new Complex(x / (oneMinusX * oneMinusX));
+    // }
+    //
+    // if (Math.abs(x) > 1.0) {
+    // if (F.isNumIntValue(n) && n > 0.0) {
+    // final int nInt = NumberUtil.toInt(n);
+    // Complex twoPiI = new Complex(0, 2 * Math.PI);
+    //
+    // // Crandall, Note on Fast Polylogarithm Computation
+    //
+    // Complex t1 = polyLog(n, 1 / x).multiply(Math.pow(-1.0, nInt));
+    //
+    // Complex t2 = twoPiI.pow(nInt).divide(GammaJS.factorialInt(n))
+    // .multiply(bernoulli(nInt, new Complex(x).log().divide(twoPiI)));
+    //
+    // Complex y = new Complex(x); // just for test
+    // Complex t3 = y.getImaginary() < 0.0 || (F.isZero(y.getImaginary()) && y.getReal() >= 1.0)
+    // ? twoPiI.multiply(Math.pow(Math.log(x), n - 1) / GammaJS.factorialInt(n - 1))
+    // : Complex.ZERO;
+    //
+    // Complex result = t1.add(t2).add(t3).negate();
+    //
+    // // real on negative real axis
+    // if (x < 0) {
+    // return new Complex(result.getReal());
+    // }
+    //
+    // return result;
+    // }
+    // return polyLog(new Complex(n), new Complex(x));
+    // }
+    //
+    // double s = x;
+    // double p = 1;
+    // int i = 1;
+    //
+    // int iterationLimit = EvalEngine.get().getIterationLimit();
+    // while (Math.abs(p) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+    // if (i++ > iterationLimit && iterationLimit > 0) {
+    // IterationLimitExceeded.throwIt(i, S.PolyLog);
+    // }
+    // p = Math.pow(x, i) / Math.pow(i, n);
+    // s += p;
+    // }
+    //
+    // return new Complex(s);
   }
 }

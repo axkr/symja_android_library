@@ -1345,7 +1345,7 @@ public class Num implements INum {
   @Override
   public IExpr polyLog(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      if (arg2 instanceof IReal) {
+      if (arg2 instanceof IReal && ((IReal) arg2).isLE(F.C1)) {
         try {
           Apfloat polylog =
               EvalEngine.getApfloatDouble().polylog(apfloatValue(), ((IReal) arg2).apfloatValue());
