@@ -1949,29 +1949,7 @@ public class SpecialFunctions {
           return temp;
         }
         // issue #929
-        // return v.polyLog(z);
-
-        if (engine.isDoubleMode()) {
-          try {
-            double nDouble = Double.NaN;
-            double xDouble = Double.NaN;
-            try {
-              nDouble = v.evalf();
-              xDouble = z.evalf();
-            } catch (ValidateException ve) {
-            }
-
-            if (Double.isNaN(nDouble) || Double.isNaN(xDouble)) {
-              Complex nComplex = v.evalfc();
-              Complex xComplex = z.evalfc();
-              return F.complexNum(ZetaJS.polyLog(nComplex, xComplex));
-            } else {
-              return F.complexNum(ZetaJS.polyLog(nDouble, xDouble));
-            }
-          } catch (RuntimeException rex) {
-            Errors.printMessage(S.PolyLog, rex, engine);
-          }
-        }
+        return v.polyLog(z);
       }
       return F.NIL;
     }
@@ -2001,6 +1979,14 @@ public class SpecialFunctions {
       }
 
       if (n.isReal()) {
+        if (z.isInfinity() || z.isNegativeInfinity()) {
+          if (n.isZero() || n.isMathematicalIntegerNegative()) {
+            return S.Indeterminate;
+          }
+          if (n.isMathematicalIntegerNonNegative()) {
+            return F.CNInfinity;
+          }
+        }
         if (n.isZero()) {
           // arg2/(1 - arg2)
           return Times(z, Power(Plus(C1, Negate(z)), -1));
@@ -2150,8 +2136,8 @@ public class SpecialFunctions {
             IFraction powExponent = (IFraction) power.exponent();
             if (n.equals(powExponent.denominator())) {
               EvalEngine engine = EvalEngine.get();
-              IExpr a = engine
-                  .evalNumericFunction(F.Times(n, F.ProductLog(F.Times(arg1, F.Power(b, powExponent), F.Log(b))),
+              IExpr a = engine.evalNumericFunction(
+                  F.Times(n, F.ProductLog(F.Times(arg1, F.Power(b, powExponent), F.Log(b))),
                       F.Power(F.Log(b), F.CN1)));
               IExpr v = engine.evaluate(F.Rationalize(a));
               if (v.isInteger() && ((IInteger) v).isGE(F.C1)) {

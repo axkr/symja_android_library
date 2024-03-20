@@ -4,6 +4,7 @@ import java.util.function.Function;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
+import org.apfloat.LossOfPrecisionException;
 import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.MathUtils;
@@ -1345,13 +1346,21 @@ public class Num implements INum {
   public IExpr polyLog(IExpr arg2) {
     if (arg2 instanceof INumber) {
       if (arg2 instanceof IReal) {
-        Apfloat polylog =
-            EvalEngine.getApfloatDouble().polylog(apfloatValue(), ((IReal) arg2).apfloatValue());
-        return F.num(polylog.doubleValue());
+        try {
+          Apfloat polylog =
+              EvalEngine.getApfloatDouble().polylog(apfloatValue(), ((IReal) arg2).apfloatValue());
+          return F.num(polylog.doubleValue());
+        } catch (ArithmeticException | ApfloatRuntimeException e) {
+          // java.lang.ArithmeticException: Result would be complex
+        }
       }
-      Apcomplex polylog = EvalEngine.getApfloatDouble().polylog(apfloatValue(),
-          ((INumber) arg2).apcomplexValue());
-      return F.complexNum(polylog.real().doubleValue(), polylog.imag().doubleValue());
+      try {
+        Apcomplex polylog = EvalEngine.getApfloatDouble().polylog(apfloatValue(),
+            ((INumber) arg2).apcomplexValue());
+        return F.complexNum(polylog.real().doubleValue(), polylog.imag().doubleValue());
+      } catch (LossOfPrecisionException lope) {
+        // Complete loss of precision
+      }
     }
     return INum.super.polyLog(arg2);
   }

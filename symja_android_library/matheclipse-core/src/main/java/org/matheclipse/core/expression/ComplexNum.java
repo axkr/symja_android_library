@@ -4,6 +4,7 @@ import java.util.function.Function;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
+import org.apfloat.LossOfPrecisionException;
 import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
@@ -1326,9 +1327,13 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr polyLog(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      Apcomplex polylog = EvalEngine.getApfloatDouble().polylog(apcomplexValue(),
-          ((INumber) arg2).apcomplexValue());
-      return F.complexNum(polylog.real().doubleValue(), polylog.imag().doubleValue());
+      try {
+        Apcomplex polylog = EvalEngine.getApfloatDouble().polylog(apcomplexValue(),
+            ((INumber) arg2).apcomplexValue());
+        return F.complexNum(polylog.real().doubleValue(), polylog.imag().doubleValue());
+      } catch (LossOfPrecisionException lope) {
+        // Complete loss of precision
+      }
     }
     return IComplexNum.super.polyLog(arg2);
   }

@@ -18649,12 +18649,37 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolyLog() {
+    check("PolyLog(-42,Infinity)", //
+        "Indeterminate");
+    check("PolyLog(0,Infinity)", //
+        "Indeterminate");
+    check("PolyLog(2,Infinity)", //
+        "-Infinity");
+    check("PolyLog(42,-Infinity)", //
+        "-Infinity");
+
+    checkNumeric("PolyLog(1, 0.333333)", //
+        "0.4054646081082894");
+
+
+    checkNumeric("PolyLog(2, 0.9)", //
+        "1.2997147230049588");
+    checkNumeric("PolyLog(0, 5.0)", //
+        "-1.25");
+
+    checkNumeric("N(PolyLog(1, 1/3), 50)", //
+        "0.40546510810816438197801311546434913657199042346249");
+    checkNumeric("PolyLog(2, 0.300000000000000000)", //
+        "0.326129510075476069");
+    checkNumeric("PolyLog(0.2 + I, 0.5 - I)", //
+        "-0.08985258966284129+I*(-0.5958648241210646)");
+
     // issue #929
     // message Infinite or NaN number in z1 calculation.
-    check("(PolyLog(2,E^(I*1/270*Pi^2)))/Pi // N", //
-        "0.31831*PolyLog(2.0,0.999332+I*0.036546)");
-    check("PolyLog(2,0.9993319736282411 + 0.03654595031305655*I)", //
-        "PolyLog(2,0.9993319736282411+I*0.03654595031305655)");
+    checkNumeric("(PolyLog(2,E^(I*1/270*Pi^2)))/Pi // N", //
+        "0.5054280619497805+I*0.0501372676125785");
+    checkNumeric("PolyLog(2,0.9993319736282411 + 0.03654595031305655*I)", //
+        "1.5878490863395573+I*0.1575108716027421");
 
     check("PolyLog(2,z) + PolyLog(2,1-z)", //
         "Pi^2/6-Log(1-z)*Log(z)");
@@ -18667,6 +18692,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Pi^2/6");
     check("PolyLog(2,E^(41*I*Pi))", //
         "-Pi^2/12");
+
+
+
+
+
     // TODO https://github.com/mtommila/apfloat/issues/34
     // check("PolyLog(2147483647,-3.1415)", //
     // " ");
@@ -18682,15 +18712,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(z+11*z^2+11*z^3+z^4)/(1-z)^5");
     check("PolyLog(-2147483648,2.718281828459045)", //
         "PolyLog(-2.14748*10^9,2.71828)");
-
-    check("PolyLog(0.2 + I, 0.5 - I)", //
-        "-0.0898526+I*(-0.595865)");
-    check("PolyLog(2, 0.9)", //
-        "1.29971");
-    check("PolyLog(0, 5.0)", //
-        "-1.25");
-    check("PolyLog(1, 0.333333)", //
-        "0.405465");
 
     check("PolyLog(2,0)", //
         "0");

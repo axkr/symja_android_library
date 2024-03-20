@@ -7,6 +7,7 @@ import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.FixedPrecisionApfloatHelper;
+import org.apfloat.LossOfPrecisionException;
 import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
@@ -1001,14 +1002,12 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public boolean isMinusOne() {
-    return fApcomplex.real().compareTo(ApfloatNum.MINUS_ONE) == 0 //
-        && fApcomplex.imag().signum() == 0;
+    return fApcomplex.imag().isZero() && fApcomplex.real().compareTo(ApfloatNum.MINUS_ONE) == 0;
   }
 
   @Override
   public boolean isOne() {
-    return fApcomplex.real().compareTo(Apfloat.ONE) == 0 //
-        && fApcomplex.imag().signum() == 0;
+    return fApcomplex.imag().isZero() && fApcomplex.real().compareTo(Apfloat.ONE) == 0;
   }
 
   @Override
@@ -1021,9 +1020,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public boolean isZero() {
-    // return fApcomplex.isZero();
-    return fApcomplex.real().signum() == 0 //
-        && fApcomplex.imag().signum() == 0;
+    return fApcomplex.isZero();
   }
 
   @Override
@@ -1165,8 +1162,12 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr polyLog(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      return valueOf(
-          EvalEngine.getApfloat().polylog(fApcomplex, ((INumber) arg2).apcomplexValue()));
+      try {
+        return valueOf(
+            EvalEngine.getApfloat().polylog(fApcomplex, ((INumber) arg2).apcomplexValue()));
+      } catch (LossOfPrecisionException lope) {
+        // Complete loss of precision
+      }
     }
     return IComplexNum.super.polyLog(arg2);
   }

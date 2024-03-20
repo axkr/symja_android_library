@@ -8,6 +8,7 @@ import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.Apint;
 import org.apfloat.FixedPrecisionApfloatHelper;
+import org.apfloat.LossOfPrecisionException;
 import org.apfloat.OverflowException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
@@ -1085,10 +1086,6 @@ public class ApfloatNum implements INum {
     return fApfloat.compareTo(Apfloat.ONE) == 0;
   }
 
-  // public ApfloatNum apfloatNumValue() {
-  // return this;
-  // }
-
   /** {@inheritDoc} */
   @Override
   public boolean isPi() {
@@ -1118,7 +1115,7 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public boolean isZero() {
-    return fApfloat.signum() == 0;
+    return fApfloat.isZero();
   }
 
   @Override
@@ -1287,17 +1284,21 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr polyLog(IExpr arg2) {
-    if (arg2 instanceof IReal) {
-      try {
-        return valueOf(
-            EvalEngine.getApfloat().polylog(fApfloat, ((IReal) arg2).apfloatValue()));
-      } catch (ArithmeticException | ApfloatRuntimeException e) {
-        // try as computation with complex numbers
-      }
-    }
     if (arg2 instanceof INumber) {
-      return F.complexNum(
-          EvalEngine.getApfloat().polylog(fApfloat, ((INumber) arg2).apcomplexValue()));
+      if (arg2 instanceof IReal) {
+        try {
+          return valueOf(EvalEngine.getApfloat().polylog(fApfloat, ((IReal) arg2).apfloatValue()));
+        } catch (ArithmeticException | ApfloatRuntimeException e) {
+          // java.lang.ArithmeticException: Result would be complex
+        }
+      }
+
+      try {
+        return F.complexNum(
+            EvalEngine.getApfloat().polylog(fApfloat, ((INumber) arg2).apcomplexValue()));
+      } catch (LossOfPrecisionException lope) {
+        // Complete loss of precision
+      }
     }
     return INum.super.polyLog(arg2);
   }
