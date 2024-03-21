@@ -41,6 +41,7 @@ import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
@@ -5418,7 +5419,15 @@ public final class NumberTheory {
         return Errors.printMessage(S.SquaresR, "pint", F.List(ast.arg2(), F.C2), engine);
       }
 
+
+      final int recursionLimit = engine.getRecursionLimit();
       try {
+        if (recursionLimit > 0) {
+          int counter = engine.incRecursionCounter();
+          if (d > recursionLimit || counter + d > recursionLimit) {
+            RecursionLimitExceeded.throwIt(counter, ast);
+          }
+        }
         int squaresR = squaresR(d, n);
         if (squaresR >= 0) {
           return F.ZZ(squaresR);
