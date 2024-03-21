@@ -511,7 +511,11 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr digamma() {
-    return valueOf(EvalEngine.getApfloat().digamma(fApfloat));
+    try {
+      return valueOf(EvalEngine.getApfloat().digamma(fApfloat));
+    } catch (ArithmeticException | ApfloatRuntimeException aex) {
+    }
+    return INum.super.digamma();
   }
 
   // public Apfloat apfloatValue() {
@@ -1276,7 +1280,7 @@ public class ApfloatNum implements INum {
     try {
       Apfloat polygamma = EvalEngine.getApfloat().polygamma(n, fApfloat);
       return F.complexNum(polygamma);
-    } catch (ArithmeticException aex) {
+    } catch (ArithmeticException | ApfloatRuntimeException aex) {
       // java.lang.ArithmeticException: Polygamma of nonpositive integer
     }
     return INum.super.polyGamma(n);

@@ -596,8 +596,12 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr digamma() {
-    Apcomplex digamma = EvalEngine.getApfloatDouble().digamma(apcomplexValue());
-    return F.complexNum(digamma.real().doubleValue(), digamma.imag().doubleValue());
+    try {
+      Apcomplex digamma = EvalEngine.getApfloatDouble().digamma(apcomplexValue());
+      return F.complexNum(digamma.real().doubleValue(), digamma.imag().doubleValue());
+    } catch (ArithmeticException | ApfloatRuntimeException aex) {
+    }
+    return IComplexNum.super.digamma();
   }
 
   @Override
@@ -1318,7 +1322,7 @@ public class ComplexNum implements IComplexNum {
     try {
       Apcomplex polygamma = EvalEngine.getApfloatDouble().polygamma(n, apcomplexValue());
       return F.complexNum(polygamma.real().doubleValue(), polygamma.imag().doubleValue());
-    } catch (ArithmeticException aex) {
+    } catch (ArithmeticException | ApfloatRuntimeException aex) {
       // java.lang.ArithmeticException: Polygamma of nonpositive integer
     }
     return IComplexNum.super.polyGamma(n);

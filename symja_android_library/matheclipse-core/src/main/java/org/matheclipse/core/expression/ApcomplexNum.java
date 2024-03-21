@@ -561,7 +561,11 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr digamma() {
-    return valueOf(EvalEngine.getApfloat().digamma(fApcomplex));
+    try {
+      return valueOf(EvalEngine.getApfloat().digamma(fApcomplex));
+    } catch (ArithmeticException | ApfloatRuntimeException aex) {
+    }
+    return IComplexNum.super.digamma();
   }
 
   public ApcomplexNum divide(final ApcomplexNum that) throws ArithmeticException {
@@ -1153,7 +1157,7 @@ public class ApcomplexNum implements IComplexNum {
     try {
       Apcomplex polygamma = EvalEngine.getApfloat().polygamma(n, fApcomplex);
       return F.complexNum(polygamma);
-    } catch (ArithmeticException aex) {
+    } catch (ArithmeticException | ApfloatRuntimeException aex) {
       // java.lang.ArithmeticException: Polygamma of nonpositive integer
     }
     return IComplexNum.super.polyGamma(n);

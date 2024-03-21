@@ -465,8 +465,12 @@ public class Num implements INum {
 
   @Override
   public IExpr digamma() {
-    Apfloat digamma = EvalEngine.getApfloatDouble().digamma(apfloatValue());
-    return F.num(digamma.doubleValue());
+    try {
+      Apfloat digamma = EvalEngine.getApfloatDouble().digamma(apfloatValue());
+      return F.num(digamma.doubleValue());
+    } catch (ArithmeticException | ApfloatRuntimeException aex) {
+    }
+    return INum.super.digamma();
   }
 
   @Override
@@ -1335,7 +1339,7 @@ public class Num implements INum {
     try {
       Apfloat polygamma = EvalEngine.getApfloatDouble().polygamma(n, apfloatValue());
       return F.num(polygamma.doubleValue());
-    } catch (ArithmeticException aex) {
+    } catch (ArithmeticException | ApfloatRuntimeException aex) {
       // java.lang.ArithmeticException: Polygamma of nonpositive integer
     }
     return INum.super.polyGamma(n);
