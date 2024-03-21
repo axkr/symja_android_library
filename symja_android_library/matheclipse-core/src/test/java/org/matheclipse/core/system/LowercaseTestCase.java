@@ -10974,6 +10974,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHurwitzZeta() {
+    checkNumeric("N(HurwitzZeta(1/3, 8/7), 50)", //
+        "-1.1389367444490991746548674334535727810961919460755");
+    checkNumeric("HurwitzZeta(2.3000000000000000000000000, 48)", //
+        "0.0050854686158964511510171449");
+
     // https://github.com/mtommila/apfloat/issues/34
     // checkNumeric("HurwitzZeta(-9223372036854775808/11,-0.8+I*1.2)", //
     // "Overflow()");
@@ -18594,6 +18599,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolyGamma() {
+    check("PolyGamma(-0.8)", //
+        "-4.03904");
     // http://fungrim.org/entry/ea2482/
     check("PolyGamma(2147483647,3.1415926535897930)", //
         "6.8635973023279951*10^18039905265");
@@ -18649,6 +18656,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolyLog() {
+    // check("PolyLog(10007,-1.5707963267948966)", //
+    // "");
     check("PolyLog(-42,Infinity)", //
         "Indeterminate");
     check("PolyLog(0,Infinity)", //
@@ -18692,8 +18701,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Pi^2/6");
     check("PolyLog(2,E^(41*I*Pi))", //
         "-Pi^2/12");
-
-
 
 
 
@@ -23756,6 +23763,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSquaresR() {
+    // message: $RecursionLimit: Recursion depth of 512 exceeded during evaluation of
+    // SquaresR(2147483647,11).
+    check("SquaresR(2147483647,11)", //
+        "Hold(SquaresR(2147483647,11))");
+
     check("Table(SquaresR(2, n), {n, 100})", //
         "{4,4,0,4,8,0,0,4,4,8,0,0,8,0,0,4,8,4,0,8,0,0,0,0,12,8,0,0,8,0,0,4,0,8,0,4,8,0,0,\n" //
             + "8,8,0,0,0,8,0,0,0,4,12,0,8,8,0,0,0,0,8,0,0,8,0,0,4,16,0,0,8,0,0,0,4,8,8,0,0,0,0,\n" //

@@ -244,7 +244,7 @@ public class TensorFunctions {
                       }
                     }
                   }
-                  IASTAppendable result = F.ast(S.KroneckerProduct);
+                  IASTAppendable result = F.ast(S.KroneckerProduct, ast.size() - i);
                   result.append(temp);
                   result.appendAll(ast, i + 1, ast.size());
                   return result;
@@ -254,7 +254,7 @@ public class TensorFunctions {
                 return F.NIL;
               }
 
-              IASTAppendable result = F.ast(S.KroneckerProduct);
+              IASTAppendable result = F.ast(S.KroneckerProduct, ast.size() - i);
               result.append(tensor1);
               result.appendAll(ast, i, ast.size());
               return result;

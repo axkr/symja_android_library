@@ -7,8 +7,8 @@ import org.matheclipse.core.eval.EvalEngine;
 /** Tests for tensor functions */
 public class TensorTest extends ExprEvaluatorTestCase {
 
-   @Test
-   public void testHodgeDual() {
+  @Test
+  public void testHodgeDual() {
     // check(
     // "Normal@HodgeDual({{a, b},{ c,d}})", //
     // "(b-c)/2");
@@ -41,8 +41,8 @@ public class TensorTest extends ExprEvaluatorTestCase {
             + "0,0},{0,0,0,0,0}},{{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}}}}");
   }
 
-   @Test
-   public void testLeviCivitaTensor() {
+  @Test
+  public void testLeviCivitaTensor() {
     if (Config.EXPENSIVE_JUNIT_TESTS) {
       check("LeviCivitaTensor(7);", //
           "");
@@ -69,8 +69,8 @@ public class TensorTest extends ExprEvaluatorTestCase {
             + "0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}}}}");
   }
 
-   @Test
-   public void testTensorDimensions() {
+  @Test
+  public void testTensorDimensions() {
     check("A=Array(a, {2, 3, 4});TensorDimensions(A)", //
         "{2,3,4}");
     check("TensorDimensions({{1,2},{3,4},{a,b},{c,d}})", //
@@ -79,8 +79,8 @@ public class TensorTest extends ExprEvaluatorTestCase {
         "{2,3,4}");
   }
 
-   @Test
-   public void testTensorRank() {
+  @Test
+  public void testTensorRank() {
     check("TensorRank(3.14)", //
         "0");
     check("TensorRank(Pi+E)", //
@@ -97,8 +97,8 @@ public class TensorTest extends ExprEvaluatorTestCase {
         "3");
   }
 
-   @Test
-   public void testTensorSymmetry() {
+  @Test
+  public void testTensorSymmetry() {
     check("TensorSymmetry({{a,b,c,d}, {b,e,f,g}, {c,f,h,i},{d,g,i,j}})", //
         "Symmetric({1,2})");
     check("TensorSymmetry({{0, a, b}, {-a, 0, c}, {-b, -c, 0}})", //
@@ -113,8 +113,22 @@ public class TensorTest extends ExprEvaluatorTestCase {
         "Symmetric({1,2})");
   }
 
-   @Test
-   public void testKroneckerProduct() {
+  @Test
+  public void testKroneckerProduct() {
+    // https://rosettacode.org/wiki/Kronecker_product
+    check("a = {{0, 1, 0},{1, 1, 1},{0, 1, 0}}; b = {{1, 1, 1, 1},{1, 0, 0, 1},{1, 1, 1, 1}};", //
+        "");
+    check("KroneckerProduct(a,b)", //
+        "{{0,0,0,0,1,1,1,1,0,0,0,0}," //
+            + "{0,0,0,0,1,0,0,1,0,0,0,0}," //
+            + "{0,0,0,0,1,1,1,1,0,0,0,0},{\n" //
+            + "1,1,1,1,1,1,1,1,1,1,1,1}," //
+            + "{1,0,0,1,1,0,0,1,1,0,0,1}," //
+            + "{1,1,1,1,1,1,1,1,1,1,1,1},{0,\n" //
+            + "0,0,0,1,1,1,1,0,0,0,0}," //
+            + "{0,0,0,0,1,0,0,1,0,0,0,0}," //
+            + "{0,0,0,0,1,1,1,1,0,0,0,0}}");
+
 
     check("av = {1, 2, 3}; bv = {4, 5};", //
         "");
@@ -168,8 +182,8 @@ public class TensorTest extends ExprEvaluatorTestCase {
         "{{0,5,0,10},{6,7,12,14},{0,15,0,20},{18,21,24,28}}");
   }
 
-   @Test
-   public void testTensorProduct() {
+  @Test
+  public void testTensorProduct() {
 
     check("ta = {{1,4,-7}, {-2,3,3}}; tb = {{8,-9,-6,5},{1,-3,-4,7},{2,8,-8,-3},{1,2,-5,-1}};", //
         "");
@@ -219,8 +233,8 @@ public class TensorTest extends ExprEvaluatorTestCase {
 
 
 
-   @Test
-   public void testRotationTransform() {
+  @Test
+  public void testRotationTransform() {
     check("TransformationFunction(#2)[Sequence()]", //
         "TransformationFunction(#2)[]"); //
 
@@ -241,8 +255,8 @@ public class TensorTest extends ExprEvaluatorTestCase {
             + "0,1}})");
   }
 
-   @Test
-   public void testScalingTransform() {
+  @Test
+  public void testScalingTransform() {
     check("ScalingTransform({a, b, c})", //
         "TransformationFunction(\n" //
             + "{{a,0,0,0},\n" //
@@ -254,22 +268,22 @@ public class TensorTest extends ExprEvaluatorTestCase {
         "TransformationFunction({{1/2*(1+s),1/2*(-1+s),0},{1/2*(-1+s),1/2*(1+s),0},{0,0,1}})");
   }
 
-   @Test
-   public void testShearingTransform() {
+  @Test
+  public void testShearingTransform() {
     check("ShearingTransform(\\[Theta], {1, 0}, {0, 1})", //
         "TransformationFunction({{1,Tan(θ),0},{0,1,0},{0,0,1}})");
   }
 
-   @Test
-   public void testTransformationFunction() {
+  @Test
+  public void testTransformationFunction() {
     check("r = RotationTransform(\\[Theta]);", //
         "");
     check("r({x, y})", //
         "{x*Cos(θ)-y*Sin(θ),y*Cos(θ)+x*Sin(θ)}");
   }
 
-   @Test
-   public void testTranslationTransform() {
+  @Test
+  public void testTranslationTransform() {
 
     check("t = TranslationTransform({x0, y0})", //
         "TransformationFunction(\n" //
