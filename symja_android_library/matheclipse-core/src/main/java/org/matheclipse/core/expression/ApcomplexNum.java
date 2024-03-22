@@ -402,6 +402,48 @@ public class ApcomplexNum implements IComplexNum {
         F.ZZ(ApfloatMath.ceil(fApcomplex.imag()).toBigInteger()));
   }
 
+  @Override
+  public IExpr chebyshevT(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      // if (arg2 instanceof IReal) {
+      // try {
+      // Apcomplex chebyshevT =
+      // EvalEngine.getApfloat().chebyshevT(apcomplexValue(), ((IReal) arg2).apfloatValue());
+      // return F.complexNum(chebyshevT);
+      // } catch (ApfloatRuntimeException are) {
+      //
+      // }
+      // }
+      try {
+        Apcomplex chebyshevT =
+            EvalEngine.getApfloat().chebyshevT(apcomplexValue(), ((INumber) arg2).apcomplexValue());
+        return F.complexNum(chebyshevT);
+      } catch (ApfloatRuntimeException are) {
+
+      }
+    }
+    return IComplexNum.super.chebyshevT(arg2);
+  }
+
+  @Override
+  public IExpr chebyshevU(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      // if (arg2 instanceof IReal) {
+      // Apcomplex chebyshevU =
+      // EvalEngine.getApfloat().chebyshevU(apcomplexValue(), ((IReal) arg2).apfloatValue());
+      // return F.complexNum(chebyshevU);
+      // }
+      try {
+        Apcomplex chebyshevU =
+            EvalEngine.getApfloat().chebyshevU(apcomplexValue(), ((INumber) arg2).apcomplexValue());
+        return F.complexNum(chebyshevU);
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+
+      }
+    }
+    return IComplexNum.super.chebyshevU(arg2);
+  }
+
   /** {@inheritDoc} */
   @Override
   public int compareAbsValueToOne() {
@@ -445,7 +487,7 @@ public class ApcomplexNum implements IComplexNum {
   public IExpr complexArg() {
     try {
       return F.num(EvalEngine.getApfloat().arg(fApcomplex));
-    } catch (ArithmeticException aex) {
+    } catch (ArithmeticException | ApfloatRuntimeException ex) {
       // Indeterminate expression `1` encountered.
       Errors.printMessage(S.Arg, "indet", F.list(F.Arg(this)), EvalEngine.get());
       return S.Indeterminate;
@@ -878,6 +920,26 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr harmonicNumber() {
+    Apcomplex harmonicNumber = EvalEngine.getApfloat().harmonicNumber(fApcomplex);
+    return valueOf(harmonicNumber);
+  }
+
+  @Override
+  public IExpr harmonicNumber(IExpr r) {
+    if (r instanceof INumber) {
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+      if (r instanceof IReal) {
+        Apcomplex harmonicNumber = h.harmonicNumber(fApcomplex, ((IReal) r).apfloatValue());
+        return valueOf(harmonicNumber);
+      }
+      Apcomplex harmonicNumber = h.harmonicNumber(fApcomplex, ((INumber) r).apcomplexValue());
+      return valueOf(harmonicNumber);
+    }
+    return IComplexNum.super.harmonicNumber(r);
+  }
+
+  @Override
   public final int hashCode() {
     return fApcomplex.hashCode();
   }
@@ -885,6 +947,20 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public ISymbol head() {
     return S.Complex;
+  }
+
+  @Override
+  public IExpr hermiteH(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      try {
+        Apcomplex hermiteH =
+            EvalEngine.getApfloat().hermiteH(apcomplexValue(), ((INumber) arg2).apcomplexValue());
+        return F.complexNum(hermiteH);
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+
+      }
+    }
+    return IComplexNum.super.hermiteH(arg2);
   }
 
   @Override
@@ -1034,8 +1110,86 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr laguerreL(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      try {
+        return F.complexNum(
+            EvalEngine.getApfloat().laguerreL(fApcomplex, ((INumber) arg2).apcomplexValue()));
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
+    }
+    return IComplexNum.super.laguerreL(arg2);
+  }
+
+  @Override
+  public IExpr laguerreL(IExpr arg2, IExpr arg3) {
+    if (arg2 instanceof INumber && arg3 instanceof INumber) {
+      try {
+        return F.complexNum(EvalEngine.getApfloat().laguerreL(fApcomplex,
+            ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue()));
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
+    }
+    return IComplexNum.super.laguerreL(arg2, arg3);
+  }
+
+  @Override
   public long leafCountSimplify() {
     return 5;
+  }
+
+  @Override
+  public IExpr legendreP(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      try {
+        return F.complexNum(
+            EvalEngine.getApfloat().legendreP(fApcomplex, ((INumber) arg2).apcomplexValue()));
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
+    }
+    return IComplexNum.super.legendreP(arg2);
+  }
+
+  @Override
+  public IExpr legendreP(IExpr arg2, IExpr arg3) {
+    if (arg2 instanceof INumber && arg3 instanceof INumber) {
+      try {
+        return F.complexNum(EvalEngine.getApfloat().legendreP(fApcomplex,
+            ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue()));
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
+    }
+    return IComplexNum.super.legendreP(arg2, arg3);
+  }
+
+  @Override
+  public IExpr legendreQ(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      try {
+        return F.complexNum(
+            EvalEngine.getApfloat().legendreQ(fApcomplex, ((INumber) arg2).apcomplexValue()));
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
+    }
+    return IComplexNum.super.legendreQ(arg2);
+  }
+
+  @Override
+  public IExpr legendreQ(IExpr arg2, IExpr arg3) {
+    if (arg2 instanceof INumber && arg3 instanceof INumber) {
+      try {
+        return F.complexNum(EvalEngine.getApfloat().legendreQ(fApcomplex,
+            ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue()));
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
+    }
+    return IComplexNum.super.legendreQ(arg2, arg3);
   }
 
   @Override

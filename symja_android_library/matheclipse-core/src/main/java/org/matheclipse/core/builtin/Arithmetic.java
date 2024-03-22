@@ -50,7 +50,6 @@ import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
-import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.InfiniteExpansionException;
 import org.apfloat.LossOfPrecisionException;
@@ -1931,26 +1930,26 @@ public final class Arithmetic {
    */
   private static final class HarmonicNumber extends AbstractEvaluator {
 
-    public IExpr e1ApfloatArg(Apfloat arg1) {
-      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-      try {
-        return F.num(h.digamma(arg1.add(Apfloat.ONE)).add(ApfloatMath.euler(arg1.precision())));
-      } catch (Exception ce) {
-        //
-      }
-      return F.NIL;
-    }
-
-    public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      FixedPrecisionApcomplexHelper h = EvalEngine.getApfloat();
-      try {
-        return F
-            .complexNum(h.digamma(arg1.add(Apfloat.ONE)).add(ApfloatMath.euler(arg1.precision())));
-      } catch (Exception ce) {
-        //
-      }
-      return F.NIL;
-    }
+    // public IExpr e1ApfloatArg(Apfloat arg1) {
+    // FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+    // try {
+    // return F.num(h.digamma(arg1.add(Apfloat.ONE)).add(ApfloatMath.euler(arg1.precision())));
+    // } catch (Exception ce) {
+    // //
+    // }
+    // return F.NIL;
+    // }
+    //
+    // public IExpr e1ApcomplexArg(Apcomplex arg1) {
+    // FixedPrecisionApcomplexHelper h = EvalEngine.getApfloat();
+    // try {
+    // return F
+    // .complexNum(h.digamma(arg1.add(Apfloat.ONE)).add(ApfloatMath.euler(arg1.precision())));
+    // } catch (Exception ce) {
+    // //
+    // }
+    // return F.NIL;
+    // }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2077,31 +2076,19 @@ public final class Arithmetic {
         if (n.isMathematicalIntegerNegative()) {
           return F.CComplexInfinity;
         }
-        if (engine.isArbitraryMode()) {
-          if (n instanceof ApfloatNum) {
-            return e1ApfloatArg(((ApfloatNum) n).apfloatValue());
-          }
-          if (n instanceof ApcomplexNum) {
-            return e1ApcomplexArg(((ApcomplexNum) n).apcomplexValue());
-          }
-        }
-        IAST harmonicNumber = harmoniNumberPolyGamma(n);
-        return engine.evaluate(harmonicNumber);
+        return n.harmonicNumber();
       } else if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber r = (IInexactNumber) ast.arg2();
-        IAST harmonicNumber;
-        if (r.isOne()) {
-          harmonicNumber = harmoniNumberPolyGamma(n);
-        } else {
-          harmonicNumber = F.Plus(F.Negate(F.HurwitzZeta(r, F.Plus(F.C1, n))), F.Zeta(r));
+        if (n.isMathematicalIntegerNegative() && r.isPositive()) {
+          return F.CComplexInfinity;
         }
-        return engine.evaluate(harmonicNumber);
+        return n.harmonicNumber(r);
       }
       return F.NIL;
     }
 
-    private IAST harmoniNumberPolyGamma(IInexactNumber n) {
+    private IAST harmonicNumberPolyGamma(IInexactNumber n) {
       return F.Plus(S.EulerGamma, F.PolyGamma(F.C0, F.Plus(F.C1, n)));
     }
 
@@ -7039,33 +7026,40 @@ public final class Arithmetic {
    * Eval in double numeric mode by "widen the input domain" to Apfloat values.
    * 
    * @param powerAST2 "binary {@link S#Power} function"
+   * @param engine TODO
    * @return
    */
-  public static IExpr intPowerFractionNumeric(IAST powerAST2) {
+  public static IExpr intPowerFractionNumeric(IAST powerAST2, EvalEngine engine) {
     final IExpr base = powerAST2.base();
     final IExpr exponent = powerAST2.exponent();
     if ((base instanceof IBigNumber) && exponent.isFraction()) {
       final int nthRoot = ((IFraction) exponent).toIntRoot();
       if (nthRoot != Integer.MIN_VALUE) {
-        if (base.isRational()) {
-          IRational ratBase = (IRational) base;
-          final double fNum = base.evalf();
-          if (!Double.isFinite(fNum) || fNum <= Double.MIN_VALUE || fNum >= Double.MAX_VALUE) {
-            if (ratBase.isPositive()) {
-              ApfloatNum apfloat = ratBase.apfloatNumValue();
-              return F.num(apfloat.rootN(nthRoot).doubleValue());
-            } else if (ratBase.isNegative()) {
-              ApcomplexNum apcomplex = ratBase.apcomplexNumValue();
+        long oldPrecision = engine.getNumericPrecision();
+        try {
+          engine.setNumericPrecision(ParserConfig.MACHINE_PRECISION * 2);
+          if (base.isRational()) {
+            IRational ratBase = (IRational) base;
+            final double fNum = base.evalf();
+            if (!Double.isFinite(fNum) || fNum <= Double.MIN_VALUE || fNum >= Double.MAX_VALUE) {
+              if (ratBase.isPositive()) {
+                ApfloatNum apfloat = ratBase.apfloatNumValue();
+                return F.num(apfloat.rootN(nthRoot).doubleValue());
+              } else if (ratBase.isNegative()) {
+                ApcomplexNum apcomplex = ratBase.apcomplexNumValue();
+                return F.complexNum(apcomplex.rootN(nthRoot).evalfc());
+              }
+            }
+          } else if (base.isComplex()) {
+            final IComplex cmpBase = (IComplex) base;
+            org.hipparchus.complex.Complex fComplex = base.evalfc();
+            if (!fComplex.isFinite()) {
+              ApcomplexNum apcomplex = cmpBase.apcomplexNumValue();
               return F.complexNum(apcomplex.rootN(nthRoot).evalfc());
             }
           }
-        } else if (base.isComplex()) {
-          final IComplex cmpBase = (IComplex) base;
-          org.hipparchus.complex.Complex fComplex = base.evalfc();
-          if (!fComplex.isFinite()) {
-            ApcomplexNum apcomplex = cmpBase.apcomplexNumValue();
-            return F.complexNum(apcomplex.rootN(nthRoot).evalfc());
-          }
+        } finally {
+          engine.setNumericPrecision(oldPrecision);
         }
       }
     }

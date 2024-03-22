@@ -1,5 +1,8 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
+import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -8,9 +11,6 @@ import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.form.ApfloatToMMA;
 import org.matheclipse.core.form.output.OutputFormFactory;
-import junit.framework.TestCase;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Convert a <code>Apfloat</code> value into a string similar to the Mathematica output format.
@@ -146,5 +146,11 @@ public class ApfloatToMMATest {
     StringBuilder buf = new StringBuilder();
     ApfloatToMMA.apfloatToMMA(buf, new Apfloat(Math.pow(6.7, 8)), 3, 5, true);
     assertEquals("4.06067*10^6", buf.toString());
+  }
+
+  @Test
+  public void testApcomplexRoot() {
+    Apcomplex root = ApcomplexMath.root(new Apcomplex("-1"), 180);
+    assertEquals("(0.9, 0.01)", root.toString(true));
   }
 }

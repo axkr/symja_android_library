@@ -927,6 +927,14 @@ public interface IExpr
     return S.Ceiling.of(this);
   }
 
+  default IExpr chebyshevT(IExpr arg2) {
+    return F.NIL;
+  }
+
+  default IExpr chebyshevU(IExpr arg2) {
+    return F.NIL;
+  }
+
   /**
    * Compares this expression with the specified expression for canonical order. Returns a negative
    * integer, zero, or a positive integer as this expression is canonical less than, equal to, or
@@ -1042,16 +1050,6 @@ public interface IExpr
     return S.Cos.of(this);
   }
 
-  /**
-   * Numeric cosine integral.
-   * <p>
-   *
-   * @return Ci(z)
-   */
-  default IExpr cosIntegral() {
-    return F.NIL;
-  }
-
   @Override
   default IExpr cosh() {
     return S.Cosh.of(this);
@@ -1064,6 +1062,16 @@ public interface IExpr
    * @return Chi(z)
    */
   default IExpr coshIntegral() {
+    return F.NIL;
+  }
+
+  /**
+   * Numeric cosine integral.
+   * <p>
+   *
+   * @return Ci(z)
+   */
+  default IExpr cosIntegral() {
     return F.NIL;
   }
 
@@ -1508,6 +1516,11 @@ public interface IExpr
   }
 
 
+  @Override
+  default IExpr exp() {
+    return S.Exp.of(this);
+  }
+
   /**
    * Exponential integral E.
    * <p>
@@ -1527,11 +1540,6 @@ public interface IExpr
    */
   default IExpr expIntegralEi() {
     return F.NIL;
-  }
-
-  @Override
-  default IExpr exp() {
-    return S.Exp.of(this);
   }
 
   @Override
@@ -1828,6 +1836,14 @@ public interface IExpr
     return greaterThan(F.ZZ(other));
   }
 
+  default IExpr harmonicNumber() {
+    return F.NIL;
+  }
+
+  default IExpr harmonicNumber(IExpr r) {
+    return F.NIL;
+  }
+
   /**
    * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the
    * expression itself, did not match the collection of pattern-matching expressions. Calls
@@ -1925,6 +1941,10 @@ public interface IExpr
     return head.isBuiltInSymbol() ? //
         ((IBuiltInSymbol) head).ordinal() : //
         ID.UNKNOWN;
+  }
+
+  default IExpr hermiteH(IExpr arg2) {
+    return F.NIL;
   }
 
   /**
@@ -4961,6 +4981,14 @@ public interface IExpr
     return isZero() || AbstractAssumptions.assumeEqual(this, F.C0);
   }
 
+  default IExpr laguerreL(IExpr arg2) {
+    return F.NIL;
+  }
+
+  default IExpr laguerreL(IExpr arg2, IExpr arg3) {
+    return F.NIL;
+  }
+
   /**
    * Get the last element of the <code>AST</code> list (i.e. get(size()-1). Return <code>F.NIL
    * </code> if this object isn't an <code>AST</code> or has <code>0</code> arguments (i.e. only a
@@ -5056,6 +5084,22 @@ public interface IExpr
    */
   default long leafCountSimplify() {
     return leafCount();
+  }
+
+  default IExpr legendreP(IExpr arg2) {
+    return F.NIL;
+  }
+
+  default IExpr legendreP(IExpr arg2, IExpr arg3) {
+    return F.NIL;
+  }
+
+  default IExpr legendreQ(IExpr arg2) {
+    return F.NIL;
+  }
+
+  default IExpr legendreQ(IExpr arg2, IExpr arg3) {
+    return F.NIL;
   }
 
   /**
@@ -6051,16 +6095,6 @@ public interface IExpr
     return S.Sin.of(this);
   }
 
-  /**
-   * Numeic sine integral.
-   * <p>
-   *
-   * @return Si(z)
-   */
-  default IExpr sinIntegral() {
-    return F.NIL;
-  }
-
   @Override
   default FieldSinCos<IExpr> sinCos() {
     return new FieldSinCos<IExpr>(sin(), cos());
@@ -6069,6 +6103,11 @@ public interface IExpr
   @Override
   default IExpr sinh() {
     return S.Sinh.of(this);
+  }
+
+  @Override
+  default FieldSinhCosh<IExpr> sinhCosh() {
+    return new FieldSinhCosh<IExpr>(sinh(), cosh());
   }
 
   /**
@@ -6081,9 +6120,14 @@ public interface IExpr
     return F.NIL;
   }
 
-  @Override
-  default FieldSinhCosh<IExpr> sinhCosh() {
-    return new FieldSinhCosh<IExpr>(sinh(), cosh());
+  /**
+   * Numeic sine integral.
+   * <p>
+   *
+   * @return Si(z)
+   */
+  default IExpr sinIntegral() {
+    return F.NIL;
   }
 
   /**

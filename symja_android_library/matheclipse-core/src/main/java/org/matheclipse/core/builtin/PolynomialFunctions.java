@@ -1321,8 +1321,9 @@ public class PolynomialFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
+        return n.chebyshevT(z);
         // (n, z) => Cos(n*ArcCos(z))
-        return F.Cos.of(engine, F.Times(n, F.ArcCos(z)));
+        // return F.Cos.of(engine, F.Times(n, F.ArcCos(z)));
       }
 
       return F.NIL;
@@ -1434,9 +1435,10 @@ public class PolynomialFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
+        return n.chebyshevU(z);
         // Sin((n + 1)*ArcCos(z))/Sqrt(1 - z^2)
-        return F.Times.of(engine, F.Power(F.Plus(F.C1, F.Negate(F.Sqr(z))), F.CN1D2),
-            F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(z))));
+        // return F.Times.of(engine, F.Power(F.Plus(F.C1, F.Negate(F.Sqr(z))), F.CN1D2),
+        // F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(z))));
       }
 
       return F.NIL;
@@ -1737,24 +1739,26 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
-      if (ast.argSize() == 2) {
+      if (ast.isAST2()) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
-        if (z.isZero()) {
-          IExpr hermiteH = hermiteHZero(n);
-          return engine.evaluate(hermiteH);
-        }
-        // https://functions.wolfram.com/Polynomials/HermiteH/26/01/02/0001/
+        return n.hermiteH(z);
+        // if (z.isZero()) {
+        // IExpr hermiteH = hermiteHZero(n);
+        // return engine.evaluate(hermiteH);
+        // }
+        // // https://functions.wolfram.com/Polynomials/HermiteH/26/01/02/0001/
+        // //
         // 2^n*Sqrt(Pi)*((-2*z*Hypergeometric1F1(1/2*(1-n),3/2,z^2))/Gamma((-1)*1/2*n)+Hypergeometric1F1((-1)*1/2*n,1/2,z^2)/Gamma(1/2*(1-n)))
-        IExpr v1 = F.Times(F.C1D2, F.Subtract(F.C1, n));
-        IExpr v2 = F.Times(F.CN1, F.C1D2, n);
-        IExpr v3 = F.Sqr(z);
-        IAST hermiteH = F.Times(F.Power(F.C2, n), F.CSqrtPi,
-            F.Plus(
-                F.Times(F.CN2, z, F.Power(F.Gamma(v2), F.CN1),
-                    F.Hypergeometric1F1(v1, F.QQ(3L, 2L), v3)),
-                F.Times(F.Power(F.Gamma(v1), F.CN1), F.Hypergeometric1F1(v2, F.C1D2, v3))));
-        return engine.evaluate(hermiteH);
+        // IExpr v1 = F.Times(F.C1D2, F.Subtract(F.C1, n));
+        // IExpr v2 = F.Times(F.CN1, F.C1D2, n);
+        // IExpr v3 = F.Sqr(z);
+        // IAST hermiteH = F.Times(F.Power(F.C2, n), F.CSqrtPi,
+        // F.Plus(
+        // F.Times(F.CN2, z, F.Power(F.Gamma(v2), F.CN1),
+        // F.Hypergeometric1F1(v1, F.QQ(3L, 2L), v3)),
+        // F.Times(F.Power(F.Gamma(v1), F.CN1), F.Hypergeometric1F1(v2, F.C1D2, v3))));
+        // return engine.evaluate(hermiteH);
       }
 
       return F.NIL;
@@ -1970,16 +1974,22 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
-      if (ast.argSize() >= 2 && ast.argSize() <= 3) {
+      if (ast.isAST2() || ast.isAST3()) {
         final IInexactNumber n = (IInexactNumber) ast.arg1();
         final IInexactNumber l;
         final IInexactNumber z;
+        IExpr temp = F.NIL;
         if (ast.isAST2()) {
           l = F.CD0;
           z = (IInexactNumber) ast.arg2();
+          temp = n.laguerreL(z);
         } else {
           l = (IInexactNumber) ast.arg2();
           z = (IInexactNumber) ast.arg3();
+          temp = n.laguerreL(l, z);
+        }
+        if (temp.isPresent()) {
+          return temp;
         }
         if (l.isZero()) {
           // https://en.wikipedia.org/wiki/Laguerre_polynomials
@@ -2061,10 +2071,33 @@ public class PolynomialFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int degree = ast.arg1().toIntDefault();
       if (degree >= 0) {
-        if (degree > Config.MAX_POLYNOMIAL_DEGREE) {
-          PolynomialDegreeLimitExceeded.throwIt(degree);
+        if (ast.isAST2()) {
+          if (degree > Config.MAX_POLYNOMIAL_DEGREE) {
+            PolynomialDegreeLimitExceeded.throwIt(degree);
+          }
+          return PolynomialsUtils.createLegendrePolynomial(degree, ast.arg2());
         }
-        return PolynomialsUtils.createLegendrePolynomial(degree, ast.arg2());
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.isAST2() || ast.isAST3()) {
+        final IInexactNumber n = (IInexactNumber) ast.arg1();
+        final IInexactNumber z;
+        IExpr temp = F.NIL;
+        if (ast.isAST2()) {
+          z = (IInexactNumber) ast.arg2();
+          temp = n.legendreP(z);
+        } else {
+          final IInexactNumber m = (IInexactNumber) ast.arg2();
+          z = (IInexactNumber) ast.arg3();
+          temp = n.legendreP(m, z);
+        }
+        if (temp.isPresent()) {
+          return temp;
+        }
       }
       return F.NIL;
     }
@@ -2119,6 +2152,27 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.isAST2() || ast.isAST3()) {
+        final IInexactNumber n = (IInexactNumber) ast.arg1();
+        final IInexactNumber z;
+        IExpr temp = F.NIL;
+        if (ast.isAST2()) {
+          z = (IInexactNumber) ast.arg2();
+          temp = n.legendreQ(z);
+        } else {
+          final IInexactNumber m = (IInexactNumber) ast.arg2();
+          z = (IInexactNumber) ast.arg3();
+          temp = n.legendreQ(m, z);
+        }
+        if (temp.isPresent()) {
+          return temp;
+        }
+      }
       return F.NIL;
     }
 

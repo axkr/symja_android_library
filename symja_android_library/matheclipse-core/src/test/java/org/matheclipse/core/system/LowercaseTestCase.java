@@ -10677,20 +10677,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHarmonicNumber() {
+    checkNumeric("HarmonicNumber(-0.5,0.5)", //
+        "-0.8554558653879558");
     check("D(HarmonicNumber(x),{x,4})", //
         "24/x^5+PolyGamma(4,x)");
     check("HarmonicNumber(-9223372036854775808/11,0.5)", //
         "ComplexInfinity");
     check("N(HarmonicNumber(1/17, 5), 50)", //
-        "0.25327615206118707521034626118754228313433140885935");
+        "0.25327615206118707521034626118754228313433140885746");
     check("HarmonicNumber(0.33000000000000000000) ", //
-        "0.44152364693736352809");
+        "0.44152364693736352811");
 
     check("n /. FindRoot(HarmonicNumber(n) == 1.5, {n, 5})", //
         "2.0");
     check("HarmonicNumber(400,{-1,-2})", //
         "{80200,21413400}");
-    check("HarmonicNumber(0.8)", "0.862207");
+    check("HarmonicNumber(0.8)", //
+        "0.862207");
     check("HarmonicNumber(130.71)", //
         "5.45402");
     check("HarmonicNumber(0.8,3 )", //
@@ -16001,6 +16004,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testN() {
+
+    check("N((-1)^(1/180), 50)", //
+        "0.99984769515639123915701155881391485169274031058318+I*0.01745240643728351281941897851631619247225272030713");
+
     // issue #942
     check("Tan(Pi/2) // N", //
         "ComplexInfinity");

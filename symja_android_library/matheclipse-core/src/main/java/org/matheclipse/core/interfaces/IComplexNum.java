@@ -43,4 +43,5 @@ public interface IComplexNum extends INumber, IInexactNumber {
   public IComplexNum pow(IComplexNum val);
 
   public long precision();
+
 }

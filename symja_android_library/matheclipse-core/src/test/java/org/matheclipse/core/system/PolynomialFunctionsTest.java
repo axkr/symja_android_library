@@ -148,20 +148,22 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testHermiteH() {
+    // TODO
     checkNumeric("HermiteH({-1,2.987,0,1},-1009)", //
-        "{HermiteH(-1,-1009),Indeterminate,1,-2018}");
+        // "{HermiteH(-1,-1009),-1.3103460085601044*10^442134,1,-2018}");
+        "{HermiteH(-1,-1009),-Infinity,1,-2018}");
     checkNumeric("HermiteH( 1 ,-1009)", //
         "-2018");
     checkNumeric("HermiteH(3.1, 5)", //
-        "1177.0141932545182");
+        "1177.0141932572576");
     checkNumeric("HermiteH(.71, .87)", //
-        "1.5587154138967738");
+        "1.558715413902994");
     checkNumeric("N(HermiteH(2/3, 8/7),50)", //
         "1.7959788632385866394352905812486095222798196025734");
     checkNumeric("HermiteH(1.30000000000000000000000000, 3)", //
         "10.1610479715174332429613241");
     checkNumeric("HermiteH(5.3 + I, .8 + I)", //
-        "4.818411899472347+I*157.49044439894877");
+        "4.818411899082359+I*157.49044439917662");
 
     check("HermiteH(i, x)", //
         "HermiteH(i,x)");
@@ -230,14 +232,14 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     check("LaguerreL(2.3000000000000000000000000, 3, 3) ", //
         "-1.1129298068672651031450569");
     check("N(LaguerreL(2/5, 1/3, 8/7),50)", //
-        "0.6882185639283528564455376412451570716445571748401");
+        "0.68821856392835285644553764124515707164455717484011");
 
     checkNumeric("LaguerreL(6.1, 5)", //
-        "-1.8746624909969782");
+        "-1.874662491004828");
     checkNumeric("LaguerreL(2.5,8+I)", //
-        "3.2907356941472+I*(-5.884150638656437)");
+        "3.290735694157826+I*(-5.88415063864657)");
     check("LaguerreL(100, 0, N(5, 20))", //
-        "1.4555271634781800199");
+        "1.455527163410546");
 
 
     check("LaguerreL(3, .51, .87)", //
@@ -299,6 +301,16 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     // "Sqrt(Pi)/(Gamma((1 - Pi)/2) * Gamma(1 + Pi/2))", //
     // "Sqrt(Pi)/(Gamma(1/2*(1-Pi))*Gamma(1+Pi/2))");
 
+    check("{LegendreP(2, 2), LegendreP(2, 2, 2), LegendreP(1.5, 2)}//N", //
+        "{5.5,-9.0,3.24394}");
+    check("N(LegendreP(3/2, 2), 50)", //
+        "3.2439396660408049154502287929704557672075154110176");
+    check("LegendreP(3/2, 2.000000000000000000000000000)", //
+        "3.243939666040804915450228792");
+    checkNumeric("LegendreP(3/2 + I, 1.5 - I)", //
+        "5.204659495086081+I*0.2994794549763052");
+
+
     check("LegendreP(-(1/2), 1 - 2*z)", //
         "(2*EllipticK(z))/Pi");
     check("LegendreP(Pi,0)", //
@@ -324,6 +336,17 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testLegendreQ() {
+    checkNumeric("LegendreQ(1/3, 0.5)", //
+        "-0.03995329475988969");
+    checkNumeric("{LegendreQ(2, 0.5), LegendreQ(2, 2, 0.5), LegendreQ(1/2, 0.5)}", //
+        "{-0.8186632680417568,4.0692721580849565,-0.2655964076372758}");
+
+    checkNumeric("N(LegendreQ(3/2, 1/2), 50)", //
+        "-0.89590282092473162125852553313186422570428299415015");
+    checkNumeric("LegendreQ(1 - I, 2 + I, 0.5)", //
+        "9.486593283969226+I*5.441832617637285");
+
+
     // TODO control number of error message output
     // check("LegendreQ(1009,z)", //
     // "");
