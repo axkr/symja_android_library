@@ -850,7 +850,7 @@ public class EvalEngine implements Serializable {
       if ((ISymbol.NUMERICFUNCTION & attributes) == ISymbol.NUMERICFUNCTION) {
         isNumericFunction = true;
         if (isDoubleMode() && ast.isPower()) {
-          IExpr temp = Arithmetic.intPowerFractionNumeric(ast);
+          IExpr temp = Arithmetic.intPowerFractionNumeric(ast, this);
           if (temp.isPresent()) {
             return F.unaryAST1(S.Power, temp);
           }
@@ -1946,7 +1946,7 @@ public class EvalEngine implements Serializable {
     if ((fRecursionLimit > 0) && (fRecursionCounter > fRecursionLimit)) {
       RecursionLimitExceeded.throwIt(fRecursionLimit, expr);
     }
-    if (fStopRequested || Thread.currentThread().isInterrupted()) {
+    if (fStopRequested || Thread.interrupted()) {
       // check before going one recursion deeper
       throw TimeoutException.TIMED_OUT;
     }
@@ -1965,7 +1965,7 @@ public class EvalEngine implements Serializable {
           }
           final IExpr temp = result.evaluate(this);
           if (temp.isPresent()) {
-            if (fStopRequested || Thread.currentThread().isInterrupted()) {
+            if (fStopRequested || Thread.interrupted()) {
               throw TimeoutException.TIMED_OUT;
             }
             if (Config.DEBUG && temp.equals(result)) {

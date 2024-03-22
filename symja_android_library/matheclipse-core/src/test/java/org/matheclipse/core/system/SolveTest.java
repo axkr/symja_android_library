@@ -2068,6 +2068,14 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testIssue947() {
+    // TODO
+    // check("13000-534803/50*(1+6/125/360)^(360*m)", //
+    // "");
+    // check("Solve(13000==534803/50*(1+6/125/360)^(360*m),m)", //
+    // "");
+    check("Solve(13000*50/534803==(1+6/125/360)^(360*m),m)", //
+        "{{m->Log(650000/534803)/(360*Log(7501/7500))}}");
+
     // message: Exponent ist out of bounds for function Factor.
     check("Solve(2^(1250000/x) == 500, x)", //
         "{{x->(1250000*Log(2))/Log(500)}}");

@@ -351,7 +351,7 @@ public class Config {
   public static final long MACHINE_PRECISION = ParserConfig.MACHINE_PRECISION;
 
   /** The maximum precision which could be requested from a user for numerical calculations. */
-  public static long MAX_PRECISION_APFLOAT = Short.MAX_VALUE;
+  public static long MAX_PRECISION_APFLOAT = 512;
 
   /** Print trigonometric functions in lower case characters. */
   public static boolean MATHML_TRIG_LOWERCASE = true;
