@@ -67,6 +67,7 @@ import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
@@ -2804,19 +2805,23 @@ public final class NumberTheory {
           return fibonacci(n);
         }
       } else if (arg1.isInexactNumber()) {
-        INumber n = ((INumber) arg1).evaluatePrecision(engine);
+        final IInexactNumber n = (IInexactNumber) arg1;
         if (ast.isAST2() && ast.arg2().isInexactNumber()) {
-          INumber x = ((INumber) ast.arg2()).evaluatePrecision(engine);
-          return
-          // [$ ((x + Sqrt(4 + x^2))^n/2^n - (2^n*Cos(n*Pi))/(x + Sqrt(4 + x^2))^n)/Sqrt(4 + x^2) $]
-          F.Times(F.Power(F.Plus(F.C4, F.Sqr(x)), F.CN1D2),
-              F.Plus(
-                  F.Times(F.Power(F.Power(F.C2, n), F.CN1),
-                      F.Power(F.Plus(x, F.Sqrt(F.Plus(F.C4, F.Sqr(x)))), n)),
-                  F.Times(F.CN1, F.Power(F.C2, n),
-                      F.Power(F.Power(F.Plus(x, F.Sqrt(F.Plus(F.C4, F.Sqr(x)))), n), F.CN1),
-                      F.Cos(F.Times(n, S.Pi))))); // $$;
+          final IInexactNumber x = (IInexactNumber) ast.arg2();
+          return n.fibonacci(x);
+          // INumber x = ((INumber) ast.arg2()).evaluatePrecision(engine);
+          // return
+          // // [$ ((x + Sqrt(4 + x^2))^n/2^n - (2^n*Cos(n*Pi))/(x + Sqrt(4 + x^2))^n)/Sqrt(4 + x^2)
+          // $]
+          // F.Times(F.Power(F.Plus(F.C4, F.Sqr(x)), F.CN1D2),
+          // F.Plus(
+          // F.Times(F.Power(F.Power(F.C2, n), F.CN1),
+          // F.Power(F.Plus(x, F.Sqrt(F.Plus(F.C4, F.Sqr(x)))), n)),
+          // F.Times(F.CN1, F.Power(F.C2, n),
+          // F.Power(F.Power(F.Plus(x, F.Sqrt(F.Plus(F.C4, F.Sqr(x)))), n), F.CN1),
+          // F.Cos(F.Times(n, S.Pi))))); // $$;
         }
+
         return
         // [$ ( GoldenRatio^n - Cos(Pi*n) * GoldenRatio^(-n) ) / Sqrt(5) $]
         F.Times(F.C1DSqrt5, F.Plus(F.Power(S.GoldenRatio, n),

@@ -1569,6 +1569,10 @@ public interface IExpr
     return ExprRingFactory.CONST;
   }
 
+  default IExpr fibonacci(IExpr arg2) {
+    return F.NIL;
+  }
+
   /**
    * Get the first element of this <code>AST</code> list (i.e. get(1)). Return <code>F.NIL</code> if
    * this object isn't an <code>AST</code>.
@@ -1687,6 +1691,14 @@ public interface IExpr
   @Override
   default IExpr gcd(IExpr that) {
     return S.GCD.of(this, that);
+  }
+ 
+  default IExpr gegenbauerC(IExpr arg2) {
+    return F.NIL;
+  }
+ 
+  default IExpr gegenbauerC(IExpr arg2, IExpr arg3) {
+    return F.NIL;
   }
 
   /**

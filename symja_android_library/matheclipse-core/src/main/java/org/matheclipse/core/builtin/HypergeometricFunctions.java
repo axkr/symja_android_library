@@ -713,31 +713,49 @@ public class HypergeometricFunctions {
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
-      if (ast.argSize() == 2) {
-        IInexactNumber n = (IInexactNumber) ast.arg1();
-        if (n.isZero()) {
-          Errors.printMessage(S.GegenbauerC, "infy", F.List(F.Divide(F.C1, F.C0)), engine);
-          return F.CComplexInfinity;
+      if (ast.isAST2() || ast.isAST3()) {
+        final IInexactNumber n = (IInexactNumber) ast.arg1();
+        final IInexactNumber l;
+        final IInexactNumber z;
+        IExpr temp = F.NIL;
+        if (ast.isAST2()) {
+          l = F.CD0;
+          z = (IInexactNumber) ast.arg2();
+          temp = n.gegenbauerC(z);
+        } else {
+          l = (IInexactNumber) ast.arg2();
+          z = (IInexactNumber) ast.arg3();
+          temp = n.gegenbauerC(l, z);
         }
-        IInexactNumber z = (IInexactNumber) ast.arg2();
-        // (2*Cos(n*ArcCos(z)))/n
-        IInexactNumber cos = n.times(z.acos()).cos();
-        return cos.plus(cos).times(n.reciprocal());
-      }
-      if (ast.argSize() == 3) {
-        IInexactNumber n = (IInexactNumber) ast.arg1();
-        if (n.isZero()) {
-          return F.C1;
+        if (temp.isPresent()) {
+          return temp;
         }
-        IInexactNumber l = (IInexactNumber) ast.arg2();
-        IInexactNumber z = (IInexactNumber) ast.arg3();
-        // https://functions.wolfram.com/HypergeometricFunctions/GegenbauerC3General/26/04/01/0001/
-        // Pochhammer(2*l,n)/Pochhammer(l+1/2,n)*JacobiP(n,-1/2+l,-1/2+l,z)
-        INumber v1 = l.plus(F.CN1D2);
-        IAST gegenbauerC = F.Times(F.JacobiP(n, v1, v1, z),
-            F.Power(F.Pochhammer(F.Plus(F.C1D2, l), n), F.CN1), F.Pochhammer(F.Times(F.C2, l), n));
-        return engine.evaluate(gegenbauerC);
       }
+      // if (ast.argSize() == 2) {
+      // IInexactNumber n = (IInexactNumber) ast.arg1();
+      // if (n.isZero()) {
+      // Errors.printMessage(S.GegenbauerC, "infy", F.List(F.Divide(F.C1, F.C0)), engine);
+      // return F.CComplexInfinity;
+      // }
+      // IInexactNumber z = (IInexactNumber) ast.arg2();
+      // // (2*Cos(n*ArcCos(z)))/n
+      // IInexactNumber cos = n.times(z.acos()).cos();
+      // return cos.plus(cos).times(n.reciprocal());
+      // }
+      // if (ast.argSize() == 3) {
+      // IInexactNumber n = (IInexactNumber) ast.arg1();
+      // if (n.isZero()) {
+      // return F.C1;
+      // }
+      // IInexactNumber l = (IInexactNumber) ast.arg2();
+      // IInexactNumber z = (IInexactNumber) ast.arg3();
+      // // https://functions.wolfram.com/HypergeometricFunctions/GegenbauerC3General/26/04/01/0001/
+      // // Pochhammer(2*l,n)/Pochhammer(l+1/2,n)*JacobiP(n,-1/2+l,-1/2+l,z)
+      // INumber v1 = l.plus(F.CN1D2);
+      // IAST gegenbauerC = F.Times(F.JacobiP(n, v1, v1, z),
+      // F.Power(F.Pochhammer(F.Plus(F.C1D2, l), n), F.CN1), F.Pochhammer(F.Times(F.C2, l), n));
+      // return engine.evaluate(gegenbauerC);
+      // }
 
       return F.NIL;
     }

@@ -8622,6 +8622,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFibonacci() {
+    checkNumeric("Fibonacci(5.8, 3)", //
+        "283.4827308329499");
     // check("Fibonacci(10007,Quantity(1.2,\"m\"))", //
     // "Fibonacci(10007,1.2[m])");
     // Fibonacci(11,{13,2,3,a})
@@ -8636,7 +8638,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Hold(Fibonacci(2147483647))");
 
     check("Fibonacci(0.2114411444411100011, 5)", //
-        "0.1598551917369153726");
+        "0.1598551917369153725");
     check("Fibonacci(5.8)", //
         "7.26639");
     check("Fibonacci(1+I/2)//N", //

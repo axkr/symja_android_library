@@ -798,6 +798,20 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr fibonacci(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      try {
+        Apcomplex fibonacci = EvalEngine.getApfloatDouble().fibonacci(apcomplexValue(),
+            ((INumber) arg2).apcomplexValue());
+        return F.complexNum(fibonacci.real().doubleValue(), fibonacci.imag().doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
+    }
+    return IComplexNum.super.fibonacci(arg2);
+  }
+
+  @Override
   public INumber floorFraction() throws ArithmeticException {
     try {
       return F.complex(NumberUtil.toLong(Math.floor(fComplex.getReal())),
@@ -927,6 +941,34 @@ public class ComplexNum implements IComplexNum {
       }
     }
     return IComplexNum.super.gamma(x0, x1);
+  }
+
+  @Override
+  public IExpr gegenbauerC(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      try {
+        Apcomplex gegenbauerC = EvalEngine.getApfloatDouble().gegenbauerC(apcomplexValue(),
+            ((INumber) arg2).apcomplexValue());
+        return F.complexNum(gegenbauerC.real().doubleValue(), gegenbauerC.imag().doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
+    }
+    return IComplexNum.super.gegenbauerC(arg2);
+  }
+
+  @Override
+  public IExpr gegenbauerC(IExpr arg2, IExpr arg3) {
+    if (arg2 instanceof INumber && arg3 instanceof INumber) {
+      try {
+        Apcomplex gegenbauerC = EvalEngine.getApfloat().gegenbauerC(apcomplexValue(),
+            ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue());
+        return F.complexNum(gegenbauerC.real().doubleValue(), gegenbauerC.imag().doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
+    }
+    return IComplexNum.super.gegenbauerC(arg2, arg3);
   }
 
   public Complex getCMComplex() {

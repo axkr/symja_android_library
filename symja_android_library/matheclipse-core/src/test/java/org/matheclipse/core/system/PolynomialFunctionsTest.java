@@ -63,11 +63,11 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
   @Test
   public void testGegenbauerC() {
     checkNumeric("GegenbauerC(2/7, 5 - I, 2) //N", //
-        "2.5811662779830957+I*(-0.1545632835277021)");
+        "2.5811662779830957+I*(-0.15456328352770213)");
     check("N(GegenbauerC(1/6, 1/8, 7), 50)", //
         "0.74986248230619982209196563118394711854677907245854");
     check("GegenbauerC(0.333333333333333333, 7, 1)", //
-        "2.67757341042435157");
+        "2.67757341042435161");
 
 
     check("GegenbauerC({0,0,2/(1+Sqrt(5)),0},-0.8+I*1.2)", //
@@ -76,8 +76,8 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
         "-0.5");
     checkNumeric("GegenbauerC(5,1/8,7) //N", //
         "16839.531372070312");
-    // checkNumeric("GegenbauerC(5,1/8,7) //N", //
-    // "16839.53137207032");
+    checkNumeric("N(GegenbauerC(2/7, 5 - I, 2))", //
+        "2.5811662779830957+I*(-0.15456328352770213)");
     checkNumeric("Table(GegenbauerC(10, x), {x, 1, 5})", //
         "{1/5,262087/5,22619537/5,457470751/5,4517251249/5}");
     check("GegenbauerC({1/3, 1/2}, 1/6, 0)", //

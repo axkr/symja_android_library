@@ -689,6 +689,28 @@ public class Num implements INum {
     return valueOf(EvalEngine.getApfloatDouble().expIntegralEi(apfloatValue()).doubleValue());
   }
 
+  @Override
+  public IExpr fibonacci(IExpr arg2) {
+    if (arg2 instanceof IReal) {
+      try {
+        return valueOf(EvalEngine.getApfloatDouble()
+            .fibonacci(apfloatValue(), ((IReal) arg2).apfloatValue()).doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
+    }
+    if (arg2 instanceof INumber) {
+      try {
+        Apcomplex fibonacci = EvalEngine.getApfloatDouble().fibonacci(apfloatValue(),
+            ((INumber) arg2).apcomplexValue());
+        return F.complexNum(fibonacci.real().doubleValue(), fibonacci.imag().doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
+    }
+    return INum.super.fibonacci(arg2);
+  }
+
   /** {@inheritDoc} */
   @Override
   public IInteger floorFraction() {
@@ -803,6 +825,50 @@ public class Num implements INum {
       }
     }
     return INum.super.gamma(x0, x1);
+  }
+
+  @Override
+  public IExpr gegenbauerC(IExpr arg2) {
+    if (arg2 instanceof IReal) {
+      try {
+        return valueOf(EvalEngine.getApfloatDouble()
+            .gegenbauerC(apfloatValue(), ((IReal) arg2).apfloatValue()).doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
+    }
+    if (arg2 instanceof INumber) {
+      try {
+        Apcomplex gegenbauerC = EvalEngine.getApfloatDouble().gegenbauerC(apfloatValue(),
+            ((INumber) arg2).apcomplexValue());
+        return F.complexNum(gegenbauerC.real().doubleValue(), gegenbauerC.imag().doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
+    }
+    return INum.super.gegenbauerC(arg2);
+  }
+
+  @Override
+  public IExpr gegenbauerC(IExpr arg2, IExpr arg3) {
+    if (arg2 instanceof IReal && arg3 instanceof IReal) {
+      try {
+        return valueOf(EvalEngine.getApfloatDouble().gegenbauerC(apfloatValue(),
+            ((IReal) arg2).apfloatValue(), ((IReal) arg3).apfloatValue()).doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
+    }
+    if (arg2 instanceof INumber && arg3 instanceof INumber) {
+      try {
+        Apcomplex gegenbauerC = EvalEngine.getApfloat().gegenbauerC(apfloatValue(),
+            ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue());
+        return F.complexNum(gegenbauerC.real().doubleValue(), gegenbauerC.imag().doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
+    }
+    return INum.super.gegenbauerC(arg2, arg3);
   }
 
   @Override
