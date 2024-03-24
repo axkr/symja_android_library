@@ -23,6 +23,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
@@ -268,8 +269,11 @@ public final class NumberTheory {
         return Errors.printMessage(S.BernoulliB, "intnm", F.List(ast, F.C1), engine);
       }
       if (ast.isAST1()) {
+        if (n.isZero()) {
+          return F.C1;
+        }
         if ((engine.isArbitraryMode() || engine.isDoubleMode()) && n.isPositive()) {
-          long ln = n.toIntDefault();
+          long ln = n.toLongDefault();
           if (ln >= 0) {
             FixedPrecisionApfloatHelper h;
             if (engine.isArbitraryMode()) {
@@ -304,6 +308,51 @@ public final class NumberTheory {
       }
       if (ast.isAST2()) {
         IExpr x = ast.arg2();
+        if (n.isZero()) {
+          return F.C1;
+        }
+        if ((engine.isArbitraryMode() || engine.isDoubleMode()) && n.isPositive()
+            && x.isNumber()) {
+          INumber z = (INumber) x;
+          long ln = n.toLongDefault();
+          if (ln >= 0) {
+            FixedPrecisionApfloatHelper h;
+            if (engine.isArbitraryMode()) {
+              h = EvalEngine.getApfloat(engine);
+            } else {
+              h = EvalEngine.getApfloatDouble(engine);
+            }
+            if (z.isReal()) {
+              IReal r = (IReal) z;
+              try {
+                if (engine.isArbitraryMode()) {
+                  return F.num(h.bernoulliB(ln, r.apfloatValue()));
+                } else {
+                  return F.num(h.bernoulliB(ln, r.apfloatValue()).doubleValue());
+                }
+              } catch (ArithmeticException | IllegalArgumentException
+                  | ApfloatRuntimeException ex) {
+                //
+                System.out.println(n.toString() + ", " + z.toString());
+                ex.printStackTrace();
+              }
+            }
+            try {
+              Apcomplex bernoulliB = h.bernoulliB(ln, z.apcomplexValue());
+              if (engine.isArbitraryMode()) {
+                return F.complexNum(bernoulliB);
+              } else {
+                return F.complexNum(bernoulliB.real().doubleValue(),
+                    bernoulliB.imag().doubleValue());
+              }
+            } catch (ArithmeticException | IllegalArgumentException | ApfloatRuntimeException ex) {
+              //
+              System.out.println(n.toString() + ", " + z.toString());
+              ex.printStackTrace();
+            }
+          }
+        }
+
         int xInt = x.toIntDefault();
         if (xInt != Integer.MIN_VALUE) {
           if (xInt == 0) {
