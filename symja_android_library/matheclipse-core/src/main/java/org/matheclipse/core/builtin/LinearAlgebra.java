@@ -122,6 +122,7 @@ public final class LinearAlgebra {
       S.FromPolarCoordinates.setEvaluator(new FromPolarCoordinates());
       S.FromSphericalCoordinates.setEvaluator(new FromSphericalCoordinates());
       S.HessenbergDecomposition.setEvaluator(new HessenbergDecomposition());
+      S.HankelMatrix.setEvaluator(new HankelMatrix());
       S.HilbertMatrix.setEvaluator(new HilbertMatrix());
       S.IdentityMatrix.setEvaluator(new IdentityMatrix());
       S.Inner.setEvaluator(new Inner());
@@ -2667,6 +2668,72 @@ public final class LinearAlgebra {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
+  private static class HankelMatrix extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      final int length1 = arg1.isVector();
+      if (length1 >= 0) {
+        final IAST vector1;
+        if (length1 == 0) {
+          // Argument `1` at position `2` is not a non-empty vector.
+          return Errors.printMessage(S.HankelMatrix, "vector", F.List(arg1, F.C1), engine);
+        }
+        IExpr normal = arg1.normal(false);
+        if (normal.isAST()) {
+          vector1 = (IAST) normal;
+          if (vector1.isPresent()) {
+            if (ast.isAST1()) {
+              return F.matrix((i, j) -> (i + j + 1) <= length1 ? vector1.get(i + j + 1) : F.C0,
+                  length1, length1);
+            }
+            if (ast.isAST2()) {
+              IExpr arg2 = ast.arg2();
+              int length2 = arg2.isVector();
+              final IAST vector2;
+              IExpr normal2 = arg2.normal(false);
+              if (normal.isAST()) {
+                vector2 = (IAST) normal2;
+                if (vector2.isPresent()) {
+                  if (length2 > 0 && !vector1.get(length1).equals(vector2.get(1))) {
+                    // Warning: the column element `1` and row element `2` at positions `3` and `4`
+                    // are
+                    // not the same. Using column element.
+                    Errors.printMessage(S.HankelMatrix, "crs",
+                        F.List(vector1.get(length1), vector2.get(1), F.ZZ(length1), F.C1), engine);
+                  }
+                  return F.matrix((i, j) -> (i + j + 1) <= length1 ? vector1.get(i + j + 1)
+                      : vector2.get(i + j + 2 - length1), length1, length2);
+                }
+              }
+            }
+          }
+        }
+      } else {
+        if (ast.isAST1()) {
+          int n = arg1.toIntDefault();
+          if (n > 0) {
+            return F.matrix((i, j) -> (i + j + 1) <= n ? F.ZZ(i + j + 1) : F.C0, n, n);
+          }
+          if (n != Integer.MAX_VALUE) {
+            // Positive machine-sized integer expected at position `2` in `1`.
+            return Errors.printMessage(S.HankelMatrix, "intpm", F.List(F.C1, ast), engine);
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
 
     @Override

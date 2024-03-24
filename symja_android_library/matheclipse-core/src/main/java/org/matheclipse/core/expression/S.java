@@ -4608,6 +4608,9 @@ public class S {
 
   public final static IBuiltInSymbol HankelH2 = S.initFinalSymbol("HankelH2", ID.HankelH2);
 
+  public final static IBuiltInSymbol HankelMatrix =
+      S.initFinalSymbol("HankelMatrix", ID.HankelMatrix);
+
   public final static IBuiltInSymbol HannWindow = S.initFinalSymbol("HannWindow", ID.HannWindow);
 
   /**

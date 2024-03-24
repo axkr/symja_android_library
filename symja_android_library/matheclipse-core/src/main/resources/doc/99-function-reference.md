@@ -430,6 +430,7 @@ Functions in alphabetical order:
 * &#x2705; [GumbelDistribution](functions/GumbelDistribution.md)
 * &#x2705; [HamiltonianGraphQ](functions/HamiltonianGraphQ.md)
 * &#x2705; [HammingDistance](functions/HammingDistance.md)
+* [HankelMatrix](functions/HankelMatrix.md)
 * &#x2705; [HarmonicMean](functions/HarmonicMean.md)
 * &#x2705; [HarmonicNumber](functions/HarmonicNumber.md)
 * &#x2705; [Haversine](functions/Haversine.md)

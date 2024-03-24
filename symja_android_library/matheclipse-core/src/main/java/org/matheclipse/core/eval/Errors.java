@@ -82,8 +82,10 @@ public class Errors {
       "coef", "The first argument `1` of `2` should be a non-empty list of positive integers.", //
       "color", "`1` is not a valid color or gray-level specification.", //
       "compat", "`1` and `2` are incompatible units", //
-      "condp", "Pattern `1` appears on the right-hand-side of condition `2`.", "cxt",
-      "`1` is not a valid context name.", //
+      "condp", "Pattern `1` appears on the right-hand-side of condition `2`.", //
+      "crs",
+      "Warning: the column element `1` and row element `2` at positions `3` and `4` are not the same. Using column element.", //
+      "cxt", "`1` is not a valid context name.", //
       "ctnc", "The constraint `1` is not convex.", //
       "depth",
       "The array depth of the expression at position `1` of `2` must be at least equal to the specified rank `3`.", //
@@ -362,6 +364,7 @@ public class Errors {
       "The argument `1` at position `2` should be a vector of real numbers with length equal to the vector given at position `3`.", //
       "vloc",
       "The variable `1` cannot be localized so that it can be assigned to numerical values.", //
+      "vector", "Argument `1` at position `2` is not a non-empty vector.", //
       "vpow2", "Argument `1` is restricted to vectors with a length of power of 2.", //
       "vrule", "Cannot set `1` to `2`, which is not a valid list of replacement rules.", //
       "write", "Tag `1` in `2` is Protected.", //

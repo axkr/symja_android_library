@@ -341,7 +341,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
 
   @Test
-  public void testDiagonalnMatrixQ() {
+  public void testDiagonalMatrixQ() {
     check("DiagonalMatrixQ({{a, 0, 0}, {b, 0, 0}, {0, 0, c}})", //
         "False");
     check("DiagonalMatrixQ({{0, a, 0, 0}, {0, 0, b, 0}, {0, 0, 0, c}}, 1)", //
@@ -504,6 +504,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Norm(a)^2", //
         "12");
   }
+
   @Test
   public void testDotIssue932() {
     // issue #932 StackOverflowError
@@ -874,6 +875,48 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{r*Cos(p)*Sin(t),r*Sin(p)*Sin(t),r*Cos(t)}");
     check("FromSphericalCoordinates({{1, Pi/2, 0}, {2, 3/4*Pi, Pi}, {1, Pi/4, Pi/4}})", //
         "{{1,0,0},{-Sqrt(2),0,-Sqrt(2)},{1/2,1/2,1/Sqrt(2)}}");
+  }
+
+  @Test
+  public void testHankelMatrix() {
+
+    // no message
+    check("HankelMatrix({x, y, z}, {z, a, b, c, d})", //
+        "{{x,y,z,a,b},\n"//
+            + " {y,z,a,b,c},\n"//
+            + " {z,a,b,c,d}}");
+
+    check("HankelMatrix({f, a, b, c, d},{d, y, z})", //
+        "{{f,a,b},\n"//
+            + " {a,b,c},\n"//
+            + " {b,c,d},\n"//
+            + " {c,d,y},\n"//
+            + " {d,y,z}}");
+
+    // Warning: the column element z and row element f at positions 3 and 1 are not
+    // the same. Using column element.
+    check("HankelMatrix({x, y, z}, {f, a, b, c, d})", //
+        "{{x,y,z,a,b},\n"//
+            + " {y,z,a,b,c},\n"//
+            + " {z,a,b,c,d}}");
+    // Warning: the column element d and row element x at positions 5 and 1 are not
+    // the same. Using column element.
+    check("HankelMatrix({f, a, b, c, d},{x, y, z})", //
+        "{{f,a,b},\n"//
+            + " {a,b,c},\n"//
+            + " {b,c,d},\n"//
+            + " {c,d,y},\n"//
+            + " {d,y,z}}");
+    check("HankelMatrix({a,b,c,d})", //
+        "{{a,b,c,d},\n"//
+            + " {b,c,d,0},\n"//
+            + " {c,d,0,0},\n"//
+            + " {d,0,0,0}}");
+    check("HankelMatrix(4)", //
+        "{{1,2,3,4},\n" //
+            + " {2,3,4,0},\n" //
+            + " {3,4,0,0},\n" //
+            + " {4,0,0,0}}");
   }
 
   @Test
