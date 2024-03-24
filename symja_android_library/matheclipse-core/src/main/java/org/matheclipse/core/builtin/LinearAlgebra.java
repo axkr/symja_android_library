@@ -2697,13 +2697,18 @@ public final class LinearAlgebra {
             if (ast.isAST2()) {
               IExpr arg2 = ast.arg2();
               int length2 = arg2.isVector();
+              if (length2 < 0) {
+                // Argument `1` at position `2` is not a non-empty vector.
+                return Errors.printMessage(S.HankelMatrix, "vector", F.List(arg2, F.C2), engine);
+              }
               final IAST vector2;
               IExpr normal2 = arg2.normal(false);
               if (normal.isAST()) {
                 vector2 = (IAST) normal2;
                 if (vector2.isPresent()) {
                   if (length2 > 0 && !vector1.get(length1).equals(vector2.get(1))) {
-                    // Warning: the column element `1` and row element `2` at positions `3` and `4`
+                    // Warning: the column element `1` and row element `2` at positions `3` and
+                    // `4`
                     // are
                     // not the same. Using column element.
                     Errors.printMessage(S.HankelMatrix, "crs",

@@ -1302,8 +1302,8 @@ public final class Programming {
         if (arg1.isAST()) {
           try {
             return ((IAST) arg1).getPart(positions);
-          } catch (ArrayIndexOutOfBoundsException aioobe) {
-            //
+          } catch (IndexOutOfBoundsException ex) {
+            // ex.printStackTrace();
           }
         }
       }
@@ -3182,7 +3182,8 @@ public final class Programming {
           // Positive machine-sized integer expected at position `2` in `1`.
           return Errors.printMessage(ast.topHead(), "intpm", F.list(F.C2, ast), engine);
         }
-        return engine.evalTimeConstrained(ast, seconds);
+        return engine.evalTimeConstrained(ast.arg1(), ast.argSize() >= 3 ? ast.arg3() : F.NIL,
+            seconds);
       }
       return engine.checkBuiltinArgsSize(ast, this);
     }

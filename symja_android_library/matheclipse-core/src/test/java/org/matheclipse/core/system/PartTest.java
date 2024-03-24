@@ -7,6 +7,12 @@ public class PartTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testIndexed() {
+    check("Indexed({7}+Sqrt(2),1)", //
+        "7+Sqrt(2)");
+    // message Part: Part 2 of {7+Sqrt(2)} does not exist.
+    check("Indexed({7}+Sqrt(2),2)", //
+        "Indexed({7+Sqrt(2)},{2})");
+
     check("Indexed({a, b}, 1)", //
         "a");
     check("Indexed(c,1)", //

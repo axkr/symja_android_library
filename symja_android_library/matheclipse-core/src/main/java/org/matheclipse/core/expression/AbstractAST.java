@@ -2596,7 +2596,15 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       if (!expr.isAST()) {
         break;
       }
-      expr = ((IAST) expr).get(positions[i]);
+
+      // throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 2");
+      IAST list = (IAST) expr;
+      if (list.size() <= positions[i]) {
+        Errors.printMessage(S.Part, "partw", F.List(F.ZZ(positions[i]), expr));
+        throw new IndexOutOfBoundsException(
+            "Index: " + Integer.valueOf(positions[i]) + ", Size: " + list.size());
+      }
+      expr = list.get(positions[i]);
       if (i == (size - 1)) {
         return expr;
       }

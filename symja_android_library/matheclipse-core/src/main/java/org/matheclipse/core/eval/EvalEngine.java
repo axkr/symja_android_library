@@ -2589,28 +2589,32 @@ public class EvalEngine implements Serializable {
     return F.NIL;
   }
 
-  public IExpr evalTimeConstrained(final IAST ast, long seconds) {
+  public IExpr evalTimeConstrained(final IExpr expr, long seconds) {
+    return evalTimeConstrained(expr, F.NIL, seconds);
+  }
+
+  public IExpr evalTimeConstrained(final IExpr expr, IExpr defaultValue, long seconds) {
     final ExecutorService executorService = Executors.newSingleThreadExecutor();
     TimeLimiter timeLimiter = SimpleTimeLimiter.create(executorService); // Executors.newSingleThreadExecutor());
     EvalControlledCallable work = new EvalControlledCallable(this);
 
     try {
       seconds = seconds > 1 ? seconds - 1 : seconds;
-      work.setExpr(ast.arg1(), seconds);
+      work.setExpr(expr, seconds);
       return timeLimiter.callWithTimeout(work, seconds, TimeUnit.SECONDS);
     } catch (org.matheclipse.core.eval.exception.TimeoutException
         | java.util.concurrent.TimeoutException
         | com.google.common.util.concurrent.UncheckedTimeoutException e) {
       Errors.printMessage(S.TimeConstrained, e, EvalEngine.get());
-      if (ast.isAST3()) {
-        return ast.arg3();
+      if (defaultValue.isPresent()) {
+        return defaultValue;
       }
       return S.$Aborted;
     } catch (Exception e) {
       // Appengine example: com.google.apphosting.api.DeadlineExceededException
       Errors.printMessage(S.TimeConstrained, e, EvalEngine.get());
-      if (ast.isAST3()) {
-        return ast.arg3();
+      if (defaultValue.isPresent()) {
+        return defaultValue;
       }
       return S.Null;
     } finally {
