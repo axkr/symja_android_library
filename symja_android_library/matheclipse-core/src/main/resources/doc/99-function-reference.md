@@ -1,6 +1,6 @@
 ## Reference of functions and built-in symbols
 
-Supported features icon:
+Supported features icon: 
 
 * &#x2705; - the symbol / function is supported. Note that this doesn't mean that every possible symbolic evaluation is supported
 * &#x2611; - the symbol / function is partially implemented and might not support most basic features of the function
@@ -430,6 +430,8 @@ Functions in alphabetical order:
 * &#x2705; [GumbelDistribution](functions/GumbelDistribution.md)
 * &#x2705; [HamiltonianGraphQ](functions/HamiltonianGraphQ.md)
 * &#x2705; [HammingDistance](functions/HammingDistance.md)
+* &#x2705; [HankelH1](functions/HankelH1.md)
+* &#x2705; [HankelH2](functions/HankelH2.md)
 * [HankelMatrix](functions/HankelMatrix.md)
 * &#x2705; [HarmonicMean](functions/HarmonicMean.md)
 * &#x2705; [HarmonicNumber](functions/HarmonicNumber.md)
