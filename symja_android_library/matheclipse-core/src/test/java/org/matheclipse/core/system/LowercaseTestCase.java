@@ -19312,6 +19312,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPower() {
+    check("Power(5,2,3) // FullForm", //
+        "390625");
+    check("Power(Power(5,2),3) // FullForm", //
+        "15625");
     // check(
     // "22610175337329362245620630780795110213748908671958118609721101133417890222511288803123590513070561131892027191395369936042326256168653778870546242363369977629202359754270184318045654379854509946171340376686223573580224107124150403623923011308302977397847548580593006903821021518558458596423345897023275437136962636706163753880297496880232736919213061706006731771987945729565465391441847486930782906711101531982421875^(1/500)
     // //N", //
@@ -23779,6 +23783,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSquaresR() {
+    // TODO
+    // check("SquaresR({3},2147483647)", //
+    // "0");
+
     // message: $RecursionLimit: Recursion depth of 512 exceeded during evaluation of
     // SquaresR(2147483647,11).
     check("SquaresR(2147483647,11)", //
@@ -23798,6 +23806,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPowersRepresentations() {
+    // Message
+    check("PowersRepresentations(2147483647,1,{0})", //
+        "PowersRepresentations(2147483647,1,{0})");
     check("PowersRepresentations(8174, 6, 3)", //
         "{{0,0,4,10,13,17},{0,3,6,7,9,19},{0,7,10,12,12,15},{1,1,1,11,14,16},{1,3,5,12,13,\n" //
             + "16},{1,4,5,5,10,19},{1,5,6,10,10,18},{2,3,4,6,10,19},{3,3,3,4,13,18},{3,5,9,10,\n" //

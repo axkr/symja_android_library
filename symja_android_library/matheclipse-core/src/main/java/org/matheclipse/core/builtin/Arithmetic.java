@@ -4880,7 +4880,7 @@ public final class Arithmetic {
      */
     private static IExpr powerFoldRight(final IAST ast, EvalEngine engine) {
       IExpr last = ast.last();
-      for (int i = ast.size() - 2; i >= 0; i--) {
+      for (int i = ast.size() - 2; i > 0; i--) {
         final IExpr arg = ast.get(i);
         IExpr temp = Power.ofNIL(engine, arg, last);
         if (temp.isPresent()) {
