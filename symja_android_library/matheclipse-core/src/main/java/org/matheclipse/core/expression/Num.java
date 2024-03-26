@@ -4,6 +4,7 @@ import java.util.function.Function;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
+import org.apfloat.InfiniteExpansionException;
 import org.apfloat.LossOfPrecisionException;
 import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
@@ -337,7 +338,7 @@ public class Num implements INum {
         Apcomplex beta = EvalEngine.getApfloatDouble().beta(apcomplexValue(),
             ((INumber) a).apcomplexValue(), ((INumber) b).apcomplexValue());
         return F.complexNum(beta.real().doubleValue(), beta.imag().doubleValue());
-      } catch (ArithmeticException aex) {
+      } catch (ArithmeticException | ApfloatRuntimeException aex) {
         if (aex.getMessage().equals("Division by zero")) {
           return F.ComplexInfinity;
         } else {
@@ -368,6 +369,8 @@ public class Num implements INum {
             EvalEngine.getApfloatDouble().beta(apcomplexValue(), ((INumber) x2).apcomplexValue(),
                 ((INumber) a).apcomplexValue(), ((INumber) b).apcomplexValue());
         return F.complexNum(beta.real().doubleValue(), beta.imag().doubleValue());
+      } catch (ApfloatRuntimeException aex) {
+
       } catch (ArithmeticException aex) {
         if (aex.getMessage().equals("Division by zero")) {
           return F.ComplexInfinity;
@@ -406,7 +409,7 @@ public class Num implements INum {
         Apcomplex chebyshevT = EvalEngine.getApfloatDouble().chebyshevT(apfloatValue(),
             ((INumber) arg2).apcomplexValue());
         return F.complexNum(chebyshevT.real().doubleValue(), chebyshevT.imag().doubleValue());
-      } catch (ArithmeticException | ApfloatRuntimeException are) {
+      } catch (ApfloatRuntimeException are) {
 
       }
     }
@@ -1103,11 +1106,15 @@ public class Num implements INum {
       }
     }
     if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
-      Apcomplex hypergeometric2F1Regularized = EvalEngine.getApfloatDouble()
-          .hypergeometric2F1Regularized(apcomplexValue(), ((INumber) arg2).apcomplexValue(),
-              ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue());
-      return F.complexNum(hypergeometric2F1Regularized.real().doubleValue(),
-          hypergeometric2F1Regularized.imag().doubleValue());
+      try {
+        Apcomplex hypergeometric2F1Regularized = EvalEngine.getApfloatDouble()
+            .hypergeometric2F1Regularized(apcomplexValue(), ((INumber) arg2).apcomplexValue(),
+                ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue());
+        return F.complexNum(hypergeometric2F1Regularized.real().doubleValue(),
+            hypergeometric2F1Regularized.imag().doubleValue());
+      } catch (ApfloatRuntimeException ex) {
+        // org.apfloat.OverflowException: Apfloat disk file storage is disabled
+      }
     }
     return INum.super.hypergeometric2F1Regularized(arg2, arg3, arg4);
   }
@@ -1354,9 +1361,8 @@ public class Num implements INum {
   public IExpr laguerreL(IExpr arg2) {
     if (arg2 instanceof IReal) {
       try {
-        return valueOf(
-            EvalEngine.getApfloatDouble().laguerreL(apfloatValue(), ((IReal) arg2).apfloatValue())
-                .doubleValue());
+        return valueOf(EvalEngine.getApfloatDouble()
+            .laguerreL(apfloatValue(), ((IReal) arg2).apfloatValue()).doubleValue());
       } catch (ArithmeticException | ApfloatRuntimeException e) {
         // try as computation with complex numbers
       }
@@ -1377,9 +1383,9 @@ public class Num implements INum {
   public IExpr laguerreL(IExpr arg2, IExpr arg3) {
     if (arg2 instanceof IReal && arg3 instanceof IReal) {
       try {
-        return valueOf(
-            EvalEngine.getApfloatDouble().laguerreL(apfloatValue(), ((IReal) arg2).apfloatValue(),
-                ((IReal) arg3).apfloatValue()).doubleValue());
+        return valueOf(EvalEngine.getApfloatDouble()
+            .laguerreL(apfloatValue(), ((IReal) arg2).apfloatValue(), ((IReal) arg3).apfloatValue())
+            .doubleValue());
       } catch (ArithmeticException | ApfloatRuntimeException e) {
         // try as computation with complex numbers
       }
@@ -1405,9 +1411,8 @@ public class Num implements INum {
   public IExpr legendreP(IExpr arg2) {
     if (arg2 instanceof IReal) {
       try {
-        return valueOf(
-            EvalEngine.getApfloatDouble().legendreP(apfloatValue(), ((IReal) arg2).apfloatValue())
-                .doubleValue());
+        return valueOf(EvalEngine.getApfloatDouble()
+            .legendreP(apfloatValue(), ((IReal) arg2).apfloatValue()).doubleValue());
       } catch (ArithmeticException | ApfloatRuntimeException e) {
         // try as computation with complex numbers
       }
@@ -1428,8 +1433,9 @@ public class Num implements INum {
   public IExpr legendreP(IExpr arg2, IExpr arg3) {
     if (arg2 instanceof IReal && arg3 instanceof IReal) {
       try {
-        return valueOf(EvalEngine.getApfloatDouble().legendreP(apfloatValue(),
-            ((IReal) arg2).apfloatValue(), ((IReal) arg3).apfloatValue()).doubleValue());
+        return valueOf(EvalEngine.getApfloatDouble()
+            .legendreP(apfloatValue(), ((IReal) arg2).apfloatValue(), ((IReal) arg3).apfloatValue())
+            .doubleValue());
       } catch (ArithmeticException | ApfloatRuntimeException e) {
         // try as computation with complex numbers
       }
@@ -1450,9 +1456,8 @@ public class Num implements INum {
   public IExpr legendreQ(IExpr arg2) {
     if (arg2 instanceof IReal) {
       try {
-        return valueOf(
-            EvalEngine.getApfloatDouble().legendreQ(apfloatValue(), ((IReal) arg2).apfloatValue())
-                .doubleValue());
+        return valueOf(EvalEngine.getApfloatDouble()
+            .legendreQ(apfloatValue(), ((IReal) arg2).apfloatValue()).doubleValue());
       } catch (ArithmeticException | ApfloatRuntimeException e) {
         // try as computation with complex numbers
       }
@@ -1474,8 +1479,9 @@ public class Num implements INum {
   public IExpr legendreQ(IExpr arg2, IExpr arg3) {
     if (arg2 instanceof IReal && arg3 instanceof IReal) {
       try {
-        return valueOf(EvalEngine.getApfloatDouble().legendreQ(apfloatValue(),
-            ((IReal) arg2).apfloatValue(), ((IReal) arg3).apfloatValue()).doubleValue());
+        return valueOf(EvalEngine.getApfloatDouble()
+            .legendreQ(apfloatValue(), ((IReal) arg2).apfloatValue(), ((IReal) arg3).apfloatValue())
+            .doubleValue());
       } catch (ArithmeticException | ApfloatRuntimeException e) {
         // try as computation with complex numbers
       }
@@ -1653,6 +1659,9 @@ public class Num implements INum {
         return F.complexNum(polylog.real().doubleValue(), polylog.imag().doubleValue());
       } catch (LossOfPrecisionException lope) {
         // Complete loss of precision
+      } catch (InfiniteExpansionException iee) {
+        // Cannot calculate power to infinite precision
+      } catch (ArithmeticException | ApfloatRuntimeException ex) {
       }
     }
     return INum.super.polyLog(arg2);

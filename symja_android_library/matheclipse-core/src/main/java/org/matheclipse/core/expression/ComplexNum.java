@@ -5,6 +5,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.FixedPrecisionApfloatHelper;
+import org.apfloat.InfiniteExpansionException;
 import org.apfloat.LossOfPrecisionException;
 import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
@@ -419,7 +420,7 @@ public class ComplexNum implements IComplexNum {
         Apcomplex beta = EvalEngine.getApfloatDouble().beta(apcomplexValue(),
             ((INumber) a).apcomplexValue(), ((INumber) b).apcomplexValue());
         return F.complexNum(beta.real().doubleValue(), beta.imag().doubleValue());
-      } catch (ArithmeticException aex) {
+      } catch (ArithmeticException | ApfloatRuntimeException aex) {
         if (aex.getMessage().equals("Division by zero")) {
           return F.ComplexInfinity;
         } else {
@@ -438,6 +439,8 @@ public class ComplexNum implements IComplexNum {
             EvalEngine.getApfloatDouble().beta(apcomplexValue(), ((INumber) x2).apcomplexValue(),
                 ((INumber) a).apcomplexValue(), ((INumber) b).apcomplexValue());
         return F.complexNum(beta.real().doubleValue(), beta.imag().doubleValue());
+      } catch (ApfloatRuntimeException e) {
+        //
       } catch (ArithmeticException aex) {
         if (aex.getMessage().equals("Division by zero")) {
           return F.ComplexInfinity;
@@ -463,20 +466,20 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr chebyshevT(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      if (arg2 instanceof IReal) {
-        try {
-          Apcomplex chebyshevT = EvalEngine.getApfloatDouble().chebyshevT(apcomplexValue(),
-              ((IReal) arg2).apfloatValue());
-          return F.complexNum(chebyshevT.real().doubleValue(), chebyshevT.imag().doubleValue());
-        } catch (ArithmeticException | ApfloatRuntimeException are) {
-
-        }
-      }
+      // if (arg2 instanceof IReal) {
+      // try {
+      // Apcomplex chebyshevT = EvalEngine.getApfloatDouble().chebyshevT(apcomplexValue(),
+      // ((IReal) arg2).apfloatValue());
+      // return F.complexNum(chebyshevT.real().doubleValue(), chebyshevT.imag().doubleValue());
+      // } catch (ArithmeticException | ApfloatRuntimeException are) {
+      //
+      // }
+      // }
       try {
         Apcomplex chebyshevT = EvalEngine.getApfloatDouble().chebyshevT(apcomplexValue(),
             ((INumber) arg2).apcomplexValue());
         return F.complexNum(chebyshevT.real().doubleValue(), chebyshevT.imag().doubleValue());
-      } catch (ArithmeticException | ApfloatRuntimeException are) {
+      } catch (ApfloatRuntimeException are) {
 
       }
     }
@@ -486,15 +489,15 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr chebyshevU(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      if (arg2 instanceof IReal) {
-        try {
-          Apcomplex chebyshevU = EvalEngine.getApfloatDouble().chebyshevU(apcomplexValue(),
-              ((IReal) arg2).apfloatValue());
-          return F.complexNum(chebyshevU.real().doubleValue(), chebyshevU.imag().doubleValue());
-        } catch (ArithmeticException | ApfloatRuntimeException are) {
-
-        }
-      }
+      // if (arg2 instanceof IReal) {
+      // try {
+      // Apcomplex chebyshevU = EvalEngine.getApfloatDouble().chebyshevU(apcomplexValue(),
+      // ((IReal) arg2).apfloatValue());
+      // return F.complexNum(chebyshevU.real().doubleValue(), chebyshevU.imag().doubleValue());
+      // } catch (ArithmeticException | ApfloatRuntimeException are) {
+      //
+      // }
+      // }
       try {
         Apcomplex chebyshevU = EvalEngine.getApfloatDouble().chebyshevU(apcomplexValue(),
             ((INumber) arg2).apcomplexValue());
@@ -1118,11 +1121,15 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr hypergeometric2F1Regularized(IExpr arg2, IExpr arg3, IExpr arg4) {
     if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
-      Apcomplex hypergeometric2F1Regularized = EvalEngine.getApfloatDouble()
-          .hypergeometric2F1Regularized(apcomplexValue(), ((INumber) arg2).apcomplexValue(),
-              ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue());
-      return F.complexNum(hypergeometric2F1Regularized.real().doubleValue(),
-          hypergeometric2F1Regularized.imag().doubleValue());
+      try {
+        Apcomplex hypergeometric2F1Regularized = EvalEngine.getApfloatDouble()
+            .hypergeometric2F1Regularized(apcomplexValue(), ((INumber) arg2).apcomplexValue(),
+                ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue());
+        return F.complexNum(hypergeometric2F1Regularized.real().doubleValue(),
+            hypergeometric2F1Regularized.imag().doubleValue());
+      } catch (ApfloatRuntimeException ex) {
+        // org.apfloat.OverflowException: Apfloat disk file storage is disabled
+      }
     }
     return IComplexNum.super.hypergeometric2F1Regularized(arg2, arg3, arg4);
   }
@@ -1544,9 +1551,13 @@ public class ComplexNum implements IComplexNum {
         return F.complexNum(polylog.real().doubleValue(), polylog.imag().doubleValue());
       } catch (LossOfPrecisionException lope) {
         // Complete loss of precision
+      } catch (InfiniteExpansionException iee) {
+        // Cannot calculate power to infinite precision
+      } catch (ArithmeticException | ApfloatRuntimeException ex) {
       }
     }
     return IComplexNum.super.polyLog(arg2);
+
   }
 
   @Override

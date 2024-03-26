@@ -7,6 +7,7 @@ import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.FixedPrecisionApfloatHelper;
+import org.apfloat.InfiniteExpansionException;
 import org.apfloat.LossOfPrecisionException;
 import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
@@ -369,8 +370,12 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr beta(IExpr a, IExpr b) {
     if (a instanceof INumber && b instanceof INumber) {
-      return valueOf(EvalEngine.getApfloat().beta(fApcomplex, ((INumber) a).apcomplexValue(),
-          ((INumber) b).apcomplexValue()));
+      try {
+        return valueOf(EvalEngine.getApfloat().beta(fApcomplex, ((INumber) a).apcomplexValue(),
+            ((INumber) b).apcomplexValue()));
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
     }
     return IComplexNum.super.beta(a, b);
   }
@@ -378,8 +383,18 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr beta(IExpr x2, IExpr a, IExpr b) {
     if (x2 instanceof INumber && a instanceof INumber && b instanceof INumber) {
-      return valueOf(EvalEngine.getApfloat().beta(fApcomplex, ((INumber) x2).apcomplexValue(),
-          ((INumber) a).apcomplexValue(), ((INumber) b).apcomplexValue()));
+      try {
+        return valueOf(EvalEngine.getApfloat().beta(fApcomplex, ((INumber) x2).apcomplexValue(),
+            ((INumber) a).apcomplexValue(), ((INumber) b).apcomplexValue()));
+      } catch (ApfloatRuntimeException e) {
+        //
+      } catch (ArithmeticException aex) {
+        if (aex.getMessage().equals("Division by zero")) {
+          return F.ComplexInfinity;
+        } else {
+          // aex.printStackTrace();
+        }
+      }
     }
     return IComplexNum.super.beta(x2, a, b);
   }
@@ -1056,9 +1071,13 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr hypergeometric2F1Regularized(IExpr arg2, IExpr arg3, IExpr arg4) {
     if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
-      return valueOf(EvalEngine.getApfloat().hypergeometric2F1Regularized(fApcomplex,
-          ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue(),
-          ((INumber) arg4).apcomplexValue()));
+      try {
+        return valueOf(EvalEngine.getApfloat().hypergeometric2F1Regularized(fApcomplex,
+            ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue(),
+            ((INumber) arg4).apcomplexValue()));
+      } catch (ApfloatRuntimeException ex) {
+        // org.apfloat.OverflowException: Apfloat disk file storage is disabled
+      }
     }
     return IComplexNum.super.hypergeometric2F1Regularized(arg2, arg3, arg4);
   }
@@ -1364,6 +1383,9 @@ public class ApcomplexNum implements IComplexNum {
             EvalEngine.getApfloat().polylog(fApcomplex, ((INumber) arg2).apcomplexValue()));
       } catch (LossOfPrecisionException lope) {
         // Complete loss of precision
+      } catch (InfiniteExpansionException iee) {
+        // Cannot calculate power to infinite precision
+      } catch (ArithmeticException | ApfloatRuntimeException ex) {
       }
     }
     return IComplexNum.super.polyLog(arg2);

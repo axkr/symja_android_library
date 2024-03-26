@@ -8,6 +8,7 @@ import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.Apint;
 import org.apfloat.FixedPrecisionApfloatHelper;
+import org.apfloat.InfiniteExpansionException;
 import org.apfloat.LossOfPrecisionException;
 import org.apfloat.OverflowException;
 import org.matheclipse.core.basic.Config;
@@ -363,8 +364,12 @@ public class ApfloatNum implements INum {
       }
     }
     if (a instanceof INumber && b instanceof INumber) {
-      return F.complexNum(EvalEngine.getApfloat().beta(fApfloat, ((INumber) a).apcomplexValue(),
-          ((INumber) b).apcomplexValue()));
+      try {
+        return F.complexNum(EvalEngine.getApfloat().beta(fApfloat, ((INumber) a).apcomplexValue(),
+            ((INumber) b).apcomplexValue()));
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        // try as computation with complex numbers
+      }
     }
     return INum.super.beta(a, b);
   }
@@ -383,6 +388,7 @@ public class ApfloatNum implements INum {
       try {
         return F.complexNum(EvalEngine.getApfloat().beta(fApfloat, ((INumber) x2).apcomplexValue(),
             ((INumber) a).apcomplexValue(), ((INumber) b).apcomplexValue()));
+      } catch (ApfloatRuntimeException aex) {
       } catch (ArithmeticException aex) {
         if (aex.getMessage().equals("Division by zero")) {
           return F.ComplexInfinity;
@@ -418,8 +424,8 @@ public class ApfloatNum implements INum {
           Apfloat chebyshevT =
               EvalEngine.getApfloat().chebyshevT(apfloatValue(), ((IReal) arg2).apfloatValue());
           return F.complexNum(chebyshevT);
-        } catch (ApfloatRuntimeException are) {
-
+        } catch (ArithmeticException | ApfloatRuntimeException are) {
+          // java.lang.ArithmeticException: Result would be complex
         }
       }
       try {
@@ -1103,9 +1109,13 @@ public class ApfloatNum implements INum {
       }
     }
     if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
-      return F.complexNum(EvalEngine.getApfloat().hypergeometric2F1Regularized(fApfloat,
-          ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue(),
-          ((INumber) arg4).apcomplexValue()));
+      try {
+        return F.complexNum(EvalEngine.getApfloat().hypergeometric2F1Regularized(fApfloat,
+            ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue(),
+            ((INumber) arg4).apcomplexValue()));
+      } catch (ApfloatRuntimeException ex) {
+        // org.apfloat.OverflowException: Apfloat disk file storage is disabled
+      }
     }
     return INum.super.hypergeometric2F1Regularized(arg2, arg3, arg4);
   }
@@ -1590,6 +1600,9 @@ public class ApfloatNum implements INum {
             EvalEngine.getApfloat().polylog(fApfloat, ((INumber) arg2).apcomplexValue()));
       } catch (LossOfPrecisionException lope) {
         // Complete loss of precision
+      } catch (InfiniteExpansionException iee) {
+        // Cannot calculate power to infinite precision
+      } catch (ArithmeticException | ApfloatRuntimeException ex) {
       }
     }
     return INum.super.polyLog(arg2);

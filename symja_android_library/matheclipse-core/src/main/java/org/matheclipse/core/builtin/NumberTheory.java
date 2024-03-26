@@ -5566,7 +5566,7 @@ public final class NumberTheory {
             engine);
       }
       int p = ast.arg3().toIntDefault();
-      if (p < 0) {
+      if (p <= 0) {
         // The value `1` of argument `2` must be a positive integer
         return Errors.printMessage(S.PowersRepresentations, "ppnt", F.List(ast.arg3(), F.C3),
             engine);
@@ -5599,10 +5599,9 @@ public final class NumberTheory {
       return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
+    // @Override
+    // public void setUp(final ISymbol newSymbol) {
+    // }
   }
 
   /**
