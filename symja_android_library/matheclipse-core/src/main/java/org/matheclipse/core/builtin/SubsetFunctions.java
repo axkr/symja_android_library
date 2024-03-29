@@ -80,6 +80,9 @@ public class SubsetFunctions {
         try {
           int maxNumberOfResults = Integer.MAX_VALUE;
           IAST arg1 = (IAST) ast.arg1();
+          if (arg1.argSize() == 0) {
+            return F.NIL;
+          }
           IExpr rules = ast.arg2();
           if (ast.isAST3()) {
             IExpr arg3 = engine.evaluate(ast.arg3());

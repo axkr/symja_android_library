@@ -6,6 +6,8 @@ public class SubsetTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSubsetCases() {
+    check("SubsetCases(1/0,{{}})", //
+        "SubsetCases(ComplexInfinity,{{}})");
     check("SubsetCases({1, 2, 3, a, a, b, c}, {a, _Integer})", //
         "{{a,1},{a,2}}");
     check("SubsetCases({1, 2, 3, a, a, b, c}, {a, x_Integer} :> f(x))", //
@@ -18,6 +20,8 @@ public class SubsetTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSubsetReplace() {
+    check("SubsetReplace(ComplexInfinity, {3, 3} :> Splice({x, x, x}))", //
+        "ComplexInfinity");
     // TODO add specialized matcher for pattern sequences
     check("SubsetReplace({1, a, 2, b, 3}, {__Integer} :> X)", //
         "{X,a,X,b,X}");
