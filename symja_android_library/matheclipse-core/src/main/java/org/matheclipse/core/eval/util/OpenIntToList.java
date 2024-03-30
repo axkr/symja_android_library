@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 
 /**
  * Open addressed map from int to List<T>.
@@ -26,60 +26,114 @@ import java.util.Objects;
  */
 public class OpenIntToList<T> implements Serializable {
 
-  @Override
-  public boolean equals(Object o) {
-    if (o == this) {
-      return true;
-    }
-    if (!(o instanceof OpenIntToList<?>)) {
-      return false;
-    }
-    OpenIntToList<T> m = (OpenIntToList<T>) o;
-    if (m.size() != size()) {
-      return false;
+  /** Iterator class for the map. */
+  public class Iterator {
+
+    /** Reference modification count. */
+    private final int referenceCount;
+
+    /** Index of current element. */
+    private int current;
+
+    /** Index of next element. */
+    private int next;
+
+    /** Simple constructor. */
+    private Iterator() {
+
+      // preserve the modification count of the map to detect concurrent
+      // modifications later
+      referenceCount = count;
+
+      // initialize current index
+      next = -1;
+      try {
+        advance();
+      } catch (NoSuchElementException nsee) { // NOPMD
+        // ignored
+      }
     }
 
-    OpenIntToList<T>.Iterator iter = iterator();
-    while (iter.hasNext()) {
-      iter.advance();
-      int key = iter.key();
-      List<T> value = get(key);
-      if (value == null) {
-        if (!(m.get(key) == null && m.containsKey(key))) {
-          return false;
+    /**
+     * Advance iterator one step further.
+     *
+     * @exception ConcurrentModificationException if the map is modified during iteration
+     * @exception NoSuchElementException if there is no element left in the map
+     */
+    public void advance() throws ConcurrentModificationException, NoSuchElementException {
+
+      if (referenceCount != count) {
+        throw new ConcurrentModificationException();
+      }
+
+      // advance on step
+      current = next;
+
+      // prepare next step
+      try {
+        while (states[++next] != FULL) { // NOPMD
+          // nothing to do
         }
-      } else {
-        if (!value.equals(m.get(key))) {
-          return false;
+      } catch (ArrayIndexOutOfBoundsException e) {
+        next = -2;
+        if (current < 0) {
+          throw new NoSuchElementException();
         }
       }
     }
 
-    return true;
-  }
-
-  @Override
-  public int hashCode() {
-    if (hashValue == 0) {
-      OpenIntToList<T>.Iterator iter = iterator();
-      while (iter.hasNext()) {
-        iter.advance();
-        int key = iter.key();
-        List<T> value = get(key);
-        hashValue += key ^ Objects.hashCode(value);
-      }
+    /**
+     * Check if there is a next element in the map.
+     *
+     * @return true if there is a next element
+     */
+    public boolean hasNext() {
+      return next >= 0;
     }
-    return hashValue;
+
+    /**
+     * Get the key of current entry.
+     *
+     * @return key of current entry
+     * @exception ConcurrentModificationException if the map is modified during iteration
+     * @exception NoSuchElementException if there is no element left in the map
+     */
+    public int key() throws ConcurrentModificationException, NoSuchElementException {
+      if (referenceCount != count) {
+        throw new ConcurrentModificationException();
+      }
+      if (current < 0) {
+        throw new NoSuchElementException();
+      }
+      return keys[current];
+    }
+
+    /**
+     * Get the value of current entry.
+     *
+     * @return value of current entry
+     * @exception ConcurrentModificationException if the map is modified during iteration
+     * @exception NoSuchElementException if there is no element left in the map
+     */
+    public List<T> value() throws ConcurrentModificationException, NoSuchElementException {
+      if (referenceCount != count) {
+        throw new ConcurrentModificationException();
+      }
+      if (current < 0) {
+        throw new NoSuchElementException();
+      }
+      return values[current];
+    }
   }
 
   /** Status indicator for free table entries. */
-  protected static final byte FREE = 0;
+  private static final byte FREE = 0;
 
   /** Status indicator for full table entries. */
-  protected static final byte FULL = 1;
+  private static final byte FULL = 1;
 
   /** Status indicator for removed table entries. */
-  protected static final byte REMOVED = 2;
+  private static final byte REMOVED = 2;
 
   /** Serializable version identifier. */
   private static final long serialVersionUID = 5483913974727729407L;
@@ -106,66 +160,14 @@ public class OpenIntToList<T> implements Serializable {
   /** Number of bits to perturb the index when probing for collision resolution. */
   private static final int PERTURB_SHIFT = 5;
 
-  /** Keys table. */
-  private int[] keys;
-
-  /** Values table. */
-  private List<T>[] values;
-
-  /** States table. */
-  private byte[] states;
-
-  /** Return value for missing entries. */
-  // private final List<T> missingEntries;
-
-  /** Current size of the map. */
-  private int size;
-
-  /** Bit mask for hash values. */
-  private int mask;
-
-  /** Modifications count. */
-  private transient int count;
-
-  private transient int hashValue;
-
-  /** Build an empty map with default size and using zero for missing entries. */
-  public OpenIntToList() {
-    this(DEFAULT_EXPECTED_SIZE);
-  }
-
   /**
-   * Build an empty map with specified size.
+   * Change the index sign
    *
-   * @param expectedSize expected number of elements in the map
+   * @param index initial index
+   * @return changed index
    */
-  @SuppressWarnings("unchecked")
-  public OpenIntToList(final int expectedSize) {
-    final int capacity = computeCapacity(expectedSize);
-    keys = new int[capacity];
-    values = new ArrayList[capacity];
-    states = new byte[capacity];
-    mask = capacity - 1;
-  }
-
-  /**
-   * Copy constructor.
-   *
-   * @param source map to copy
-   */
-  @SuppressWarnings("unchecked")
-  public OpenIntToList(final OpenIntToList<T> source) {
-    final int length = source.keys.length;
-    keys = new int[length];
-    System.arraycopy(source.keys, 0, keys, 0, length);
-    values = new ArrayList[length];
-    System.arraycopy(source.values, 0, values, 0, length);
-    states = new byte[length];
-    System.arraycopy(source.states, 0, states, 0, length);
-    // missingEntries = source.missingEntries;
-    size = source.size;
-    mask = source.mask;
-    count = source.count;
+  private static int changeIndexSign(final int index) {
+    return -index - 1;
   }
 
   /**
@@ -184,110 +186,6 @@ public class OpenIntToList<T> implements Serializable {
       return capacity;
     }
     return nextPowerOfTwo(capacity);
-  }
-
-  /**
-   * Find the smallest power of two greater than the input value
-   *
-   * @param i input value
-   * @return smallest power of two greater than the input value
-   */
-  private static int nextPowerOfTwo(final int i) {
-    return Integer.highestOneBit(i) << 1;
-  }
-
-  /**
-   * Get the stored value associated with the given key
-   *
-   * @param key key associated with the data
-   * @return data associated with the key
-   */
-  public List<T> get(final int key) {
-
-    final int hash = hashOf(key);
-    int index = hash & mask;
-    if (containsKey(key, index)) {
-      return values[index];
-    }
-
-    if (states[index] == FREE) {
-      return null;
-    }
-
-    int j = index;
-    for (int perturb = perturb(hash); states[index] != FREE; perturb >>= PERTURB_SHIFT) {
-      j = probe(perturb, j);
-      index = j & mask;
-      if (containsKey(key, index)) {
-        return values[index];
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Check if a value is associated with a key.
-   *
-   * @param key key to check
-   * @return true if a value is associated with key
-   */
-  public boolean containsKey(final int key) {
-
-    final int hash = hashOf(key);
-    int index = hash & mask;
-    if (containsKey(key, index)) {
-      return true;
-    }
-
-    if (states[index] == FREE) {
-      return false;
-    }
-
-    int j = index;
-    for (int perturb = perturb(hash); states[index] != FREE; perturb >>= PERTURB_SHIFT) {
-      j = probe(perturb, j);
-      index = j & mask;
-      if (containsKey(key, index)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  /**
-   * Get an iterator over map elements.
-   *
-   * <p>
-   * The specialized iterators returned are fail-fast: they throw a <code>
-   * ConcurrentModificationException</code> when they detect the map has been modified during
-   * iteration.
-   *
-   * @return iterator over the map elements
-   */
-  public Iterator iterator() {
-    return new Iterator();
-  }
-
-  /**
-   * Perturb the hash for starting probing.
-   *
-   * @param hash initial hash
-   * @return perturbed hash
-   */
-  private static int perturb(final int hash) {
-    return hash & 0x7fffffff;
-  }
-
-  /**
-   * Find the index at which a key should be inserted
-   *
-   * @param key key to lookup
-   * @return index at which key should be inserted
-   */
-  private int findInsertionIndex(final int key) {
-    return findInsertionIndex(keys, states, key, mask);
   }
 
   /**
@@ -347,6 +245,37 @@ public class OpenIntToList<T> implements Serializable {
   }
 
   /**
+   * Compute the hash value of a key
+   *
+   * @param key key to hash
+   * @return hash value of the key
+   */
+  private static int hashOf(final int key) {
+    final int h = key ^ ((key >>> 20) ^ (key >>> 12));
+    return h ^ (h >>> 7) ^ (h >>> 4);
+  }
+
+  /**
+   * Find the smallest power of two greater than the input value
+   *
+   * @param i input value
+   * @return smallest power of two greater than the input value
+   */
+  private static int nextPowerOfTwo(final int i) {
+    return Integer.highestOneBit(i) << 1;
+  }
+
+  /**
+   * Perturb the hash for starting probing.
+   *
+   * @param hash initial hash
+   * @return perturbed hash
+   */
+  private static int perturb(final int hash) {
+    return hash & 0x7fffffff;
+  }
+
+  /**
    * Compute next probe for collision resolution
    *
    * @param perturb perturbed hash
@@ -357,45 +286,84 @@ public class OpenIntToList<T> implements Serializable {
     return (j << 2) + j + perturb + 1;
   }
 
-  /**
-   * Change the index sign
-   *
-   * @param index initial index
-   * @return changed index
-   */
-  private static int changeIndexSign(final int index) {
-    return -index - 1;
+  /** Return value for missing entries. */
+  // private final List<T> missingEntries;
+
+  /** Keys table. */
+  private int[] keys;
+
+  /** Values table. */
+  private List<T>[] values;
+
+  /** States table. */
+  private byte[] states;
+
+  /** Current size of the map. */
+  private int size;
+
+  /** Bit mask for hash values. */
+  private int mask;
+
+  /** Modifications count. */
+  private transient int count;
+
+  private transient int hashValue;
+
+  /** Build an empty map with default size and using zero for missing entries. */
+  public OpenIntToList() {
+    this(DEFAULT_EXPECTED_SIZE);
   }
 
   /**
-   * Get the number of elements stored in the map.
+   * Build an empty map with specified size.
    *
-   * @return number of elements stored in the map
+   * @param expectedSize expected number of elements in the map
    */
-  public int size() {
-    return size;
-  }
-
-  public boolean isEmpty() {
-    return size == 0;
+  @SuppressWarnings("unchecked")
+  public OpenIntToList(final int expectedSize) {
+    final int capacity = computeCapacity(expectedSize);
+    keys = new int[capacity];
+    values = new ArrayList[capacity];
+    states = new byte[capacity];
+    mask = capacity - 1;
   }
 
   /**
-   * Remove the value associated with a key.
+   * Copy constructor.
    *
-   * @param key key to which the value is associated
-   * @return removed value
+   * @param source map to copy
    */
-  public List<T> remove(final int key) {
-    hashValue = 0;
+  @SuppressWarnings("unchecked")
+  public OpenIntToList(final OpenIntToList<T> source) {
+    final int length = source.keys.length;
+    keys = new int[length];
+    System.arraycopy(source.keys, 0, keys, 0, length);
+    values = new ArrayList[length];
+    System.arraycopy(source.values, 0, values, 0, length);
+    states = new byte[length];
+    System.arraycopy(source.states, 0, states, 0, length);
+    // missingEntries = source.missingEntries;
+    size = source.size;
+    mask = source.mask;
+    count = source.count;
+  }
+
+  /**
+   * Check if a value is associated with a key.
+   *
+   * @param key key to check
+   * @return true if a value is associated with key
+   */
+  public boolean containsKey(final int key) {
+
     final int hash = hashOf(key);
     int index = hash & mask;
     if (containsKey(key, index)) {
-      return doRemove(index);
+      return true;
     }
 
     if (states[index] == FREE) {
-      return null;
+      return false;
     }
 
     int j = index;
@@ -403,11 +371,11 @@ public class OpenIntToList<T> implements Serializable {
       j = probe(perturb, j);
       index = j & mask;
       if (containsKey(key, index)) {
-        return doRemove(index);
+        return true;
       }
     }
 
-    return null;
+    return false;
   }
 
   /**
@@ -435,6 +403,146 @@ public class OpenIntToList<T> implements Serializable {
     --size;
     ++count;
     return previous;
+  }
+
+  /**
+   * Check if keys are equal.
+   * 
+   * @param other other map
+   * @return true if keys are equal
+   */
+  private boolean equalKeys(final OpenIntToList<T> other) {
+    return Arrays.equals(keys, other.keys);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    @SuppressWarnings("unchecked")
+    final OpenIntToList<T> that = (OpenIntToList<T>) o;
+    if (that.size != size) {
+      return false;
+    }
+    return equalKeys(that) && equalStates(that) && Arrays.equals(values, that.values);
+  }
+
+  /**
+   * Check if states are equal.
+   * 
+   * @param other other map
+   * @return true if states are equal
+   */
+  private boolean equalStates(final OpenIntToList<T> other) {
+    return Arrays.equals(states, other.states);
+  }
+
+  /**
+   * Find the index at which a key should be inserted
+   *
+   * @param key key to lookup
+   * @return index at which key should be inserted
+   */
+  private int findInsertionIndex(final int key) {
+    return findInsertionIndex(keys, states, key, mask);
+  }
+
+  /**
+   * Get the stored value associated with the given key
+   *
+   * @param key key associated with the data
+   * @return data associated with the key
+   */
+  public List<T> get(final int key) {
+
+    final int hash = hashOf(key);
+    int index = hash & mask;
+    if (containsKey(key, index)) {
+      return values[index];
+    }
+
+    if (states[index] == FREE) {
+      return null;
+    }
+
+    int j = index;
+    for (int perturb = perturb(hash); states[index] != FREE; perturb >>= PERTURB_SHIFT) {
+      j = probe(perturb, j);
+      index = j & mask;
+      if (containsKey(key, index)) {
+        return values[index];
+      }
+    }
+
+    return null;
+  }
+
+  /** Grow the tables. */
+  private void growTable() {
+
+    final int oldLength = states.length;
+    final int[] oldKeys = keys;
+    final List<T>[] oldValues = values;
+    final byte[] oldStates = states;
+
+    final int newLength = RESIZE_MULTIPLIER * oldLength;
+    final int[] newKeys = new int[newLength];
+    @SuppressWarnings("unchecked")
+    final List<T>[] newValues = new ArrayList[newLength];
+    final byte[] newStates = new byte[newLength];
+    final int newMask = newLength - 1;
+    for (int i = 0; i < oldLength; ++i) {
+      if (oldStates[i] == FULL) {
+        final int key = oldKeys[i];
+        final int index = findInsertionIndex(newKeys, newStates, key, newMask);
+        newKeys[index] = key;
+        newValues[index] = oldValues[i];
+        newStates[index] = FULL;
+      }
+    }
+
+    mask = newMask;
+    keys = newKeys;
+    values = newValues;
+    states = newStates;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int hashCode() {
+    return keysStatesHashCode() + 67 * Arrays.hashCode(values);
+  }
+
+  public boolean isEmpty() {
+    return size == 0;
+  }
+
+  /**
+   * Get an iterator over map elements.
+   *
+   * <p>
+   * The specialized iterators returned are fail-fast: they throw a <code>
+   * ConcurrentModificationException</code> when they detect the map has been modified during
+   * iteration.
+   *
+   * @return iterator over the map elements
+   */
+  public Iterator iterator() {
+    return new Iterator();
+  }
+
+  /**
+   * Compute partial hashcode on keys and states.
+   * 
+   * @return partial hashcode on keys and states
+   */
+  private int keysStatesHashCode() {
+    return 53 * Arrays.hashCode(keys) + 31 * Arrays.hashCode(states);
   }
 
   /**
@@ -468,156 +576,6 @@ public class OpenIntToList<T> implements Serializable {
     }
   }
 
-  /** Grow the tables. */
-  private void growTable() {
-
-    final int oldLength = states.length;
-    final int[] oldKeys = keys;
-    final List<T>[] oldValues = values;
-    final byte[] oldStates = states;
-
-    final int newLength = RESIZE_MULTIPLIER * oldLength;
-    final int[] newKeys = new int[newLength];
-    @SuppressWarnings("unchecked")
-    final List<T>[] newValues = new ArrayList[newLength];
-    final byte[] newStates = new byte[newLength];
-    final int newMask = newLength - 1;
-    for (int i = 0; i < oldLength; ++i) {
-      if (oldStates[i] == FULL) {
-        final int key = oldKeys[i];
-        final int index = findInsertionIndex(newKeys, newStates, key, newMask);
-        newKeys[index] = key;
-        newValues[index] = oldValues[i];
-        newStates[index] = FULL;
-      }
-    }
-
-    mask = newMask;
-    keys = newKeys;
-    values = newValues;
-    states = newStates;
-  }
-
-  /**
-   * Check if tables should grow due to increased size.
-   *
-   * @return true if tables should grow
-   */
-  private boolean shouldGrowTable() {
-    return size > (mask + 1) * LOAD_FACTOR;
-  }
-
-  /**
-   * Compute the hash value of a key
-   *
-   * @param key key to hash
-   * @return hash value of the key
-   */
-  private static int hashOf(final int key) {
-    final int h = key ^ ((key >>> 20) ^ (key >>> 12));
-    return h ^ (h >>> 7) ^ (h >>> 4);
-  }
-
-  /** Iterator class for the map. */
-  public class Iterator {
-
-    /** Reference modification count. */
-    private final int referenceCount;
-
-    /** Index of current element. */
-    private int current;
-
-    /** Index of next element. */
-    private int next;
-
-    /** Simple constructor. */
-    private Iterator() {
-
-      // preserve the modification count of the map to detect concurrent
-      // modifications later
-      referenceCount = count;
-
-      // initialize current index
-      next = -1;
-      try {
-        advance();
-      } catch (NoSuchElementException nsee) { // NOPMD
-        // ignored
-      }
-    }
-
-    /**
-     * Check if there is a next element in the map.
-     *
-     * @return true if there is a next element
-     */
-    public boolean hasNext() {
-      return next >= 0;
-    }
-
-    /**
-     * Get the key of current entry.
-     *
-     * @return key of current entry
-     * @exception ConcurrentModificationException if the map is modified during iteration
-     * @exception NoSuchElementException if there is no element left in the map
-     */
-    public int key() throws ConcurrentModificationException, NoSuchElementException {
-      if (referenceCount != count) {
-        throw new ConcurrentModificationException();
-      }
-      if (current < 0) {
-        throw new NoSuchElementException();
-      }
-      return keys[current];
-    }
-
-    /**
-     * Get the value of current entry.
-     *
-     * @return value of current entry
-     * @exception ConcurrentModificationException if the map is modified during iteration
-     * @exception NoSuchElementException if there is no element left in the map
-     */
-    public List<T> value() throws ConcurrentModificationException, NoSuchElementException {
-      if (referenceCount != count) {
-        throw new ConcurrentModificationException();
-      }
-      if (current < 0) {
-        throw new NoSuchElementException();
-      }
-      return values[current];
-    }
-
-    /**
-     * Advance iterator one step further.
-     *
-     * @exception ConcurrentModificationException if the map is modified during iteration
-     * @exception NoSuchElementException if there is no element left in the map
-     */
-    public void advance() throws ConcurrentModificationException, NoSuchElementException {
-
-      if (referenceCount != count) {
-        throw new ConcurrentModificationException();
-      }
-
-      // advance on step
-      current = next;
-
-      // prepare next step
-      try {
-        while (states[++next] != FULL) { // NOPMD
-          // nothing to do
-        }
-      } catch (ArrayIndexOutOfBoundsException e) {
-        next = -2;
-        if (current < 0) {
-          throw new NoSuchElementException();
-        }
-      }
-    }
-  }
-
   /**
    * Read a serialized object.
    *
@@ -631,5 +589,53 @@ public class OpenIntToList<T> implements Serializable {
     stream.defaultReadObject();
     count = 0;
     hashValue = 0;
+  }
+
+  /**
+   * Remove the value associated with a key.
+   *
+   * @param key key to which the value is associated
+   * @return removed value
+   */
+  public List<T> remove(final int key) {
+    hashValue = 0;
+    final int hash = hashOf(key);
+    int index = hash & mask;
+    if (containsKey(key, index)) {
+      return doRemove(index);
+    }
+
+    if (states[index] == FREE) {
+      return null;
+    }
+
+    int j = index;
+    for (int perturb = perturb(hash); states[index] != FREE; perturb >>= PERTURB_SHIFT) {
+      j = probe(perturb, j);
+      index = j & mask;
+      if (containsKey(key, index)) {
+        return doRemove(index);
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Check if tables should grow due to increased size.
+   *
+   * @return true if tables should grow
+   */
+  private boolean shouldGrowTable() {
+    return size > (mask + 1) * LOAD_FACTOR;
+  }
+
+  /**
+   * Get the number of elements stored in the map.
+   *
+   * @return number of elements stored in the map
+   */
+  public int size() {
+    return size;
   }
 }

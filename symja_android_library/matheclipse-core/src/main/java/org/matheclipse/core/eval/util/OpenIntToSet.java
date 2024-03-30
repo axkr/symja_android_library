@@ -3,10 +3,10 @@ package org.matheclipse.core.eval.util;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -130,13 +130,13 @@ public class OpenIntToSet<T> implements Serializable {
   }
 
   /** Status indicator for free table entries. */
-  protected static final byte FREE = 0;
+  private static final byte FREE = 0;
 
   /** Status indicator for full table entries. */
-  protected static final byte FULL = 1;
+  private static final byte FULL = 1;
 
   /** Status indicator for removed table entries. */
-  protected static final byte REMOVED = 2;
+  private static final byte REMOVED = 2;
 
   /** Serializable version identifier. */
   private static final long serialVersionUID = 5483913974727729407L;
@@ -416,50 +416,41 @@ public class OpenIntToSet<T> implements Serializable {
     return previous;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (o == this) {
-      return true;
-    }
-    if (!(o instanceof OpenIntToSet<?>)) {
-      return false;
-    }
-    OpenIntToSet<T> m = (OpenIntToSet<T>) o;
-    if (m.size() != size()) {
-      return false;
-    }
-
-    OpenIntToSet<T>.Iterator iter = iterator();
-    while (iter.hasNext()) {
-      iter.advance();
-      int key = iter.key();
-      Set<T> value = get(key);
-      if (value == null) {
-        if (!(m.get(key) == null && m.containsKey(key))) {
-          return false;
-        }
-      } else {
-        if (!value.equals(m.get(key))) {
-          return false;
-        }
-      }
-    }
-
-    return true;
+  /**
+   * Check if keys are equal.
+   * 
+   * @param other other map
+   * @return true if keys are equal
+   */
+  private boolean equalKeys(final OpenIntToSet<T> other) {
+    return Arrays.equals(keys, other.keys);
   }
 
+  /** {@inheritDoc} */
   @Override
-  public int hashCode() {
-    if (hashValue == 0) {
-      OpenIntToSet<T>.Iterator iter = iterator();
-      while (iter.hasNext()) {
-        iter.advance();
-        int key = iter.key();
-        Set<T> value = get(key);
-        hashValue += key ^ Objects.hashCode(value);
-      }
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
     }
-    return hashValue;
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    @SuppressWarnings("unchecked")
+    final OpenIntToSet<T> that = (OpenIntToSet<T>) o;
+    if (that.size != size) {
+      return false;
+    }
+    return equalKeys(that) && equalStates(that) && Arrays.equals(values, that.values);
+  }
+
+  /**
+   * Check if states are equal.
+   * 
+   * @param other other map
+   * @return true if states are equal
+   */
+  private boolean equalStates(final OpenIntToSet<T> other) {
+    return Arrays.equals(states, other.states);
   }
 
   /**
@@ -536,6 +527,12 @@ public class OpenIntToSet<T> implements Serializable {
     states = newStates;
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public int hashCode() {
+    return keysStatesHashCode() + 67 * Arrays.hashCode(values);
+  }
+
   public boolean isEmpty() {
     return size == 0;
   }
@@ -552,6 +549,15 @@ public class OpenIntToSet<T> implements Serializable {
    */
   public Iterator iterator() {
     return new Iterator();
+  }
+
+  /**
+   * Compute partial hashcode on keys and states.
+   * 
+   * @return partial hashcode on keys and states
+   */
+  private int keysStatesHashCode() {
+    return 53 * Arrays.hashCode(keys) + 31 * Arrays.hashCode(states);
   }
 
   /**
