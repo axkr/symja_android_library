@@ -1011,13 +1011,14 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr harmonicNumber(IExpr r) {
     if (r instanceof INumber) {
-      FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
-      if (r instanceof IReal) {
-        Apcomplex harmonicNumber = h.harmonicNumber(apcomplexValue(), ((IReal) r).apfloatValue());
+      try {
+        FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
+        Apcomplex harmonicNumber =
+            h.harmonicNumber(apcomplexValue(), ((INumber) r).apcomplexValue());
         return F.complexNum(harmonicNumber);
+      } catch (ArithmeticException | ApfloatRuntimeException aex) {
+
       }
-      Apcomplex harmonicNumber = h.harmonicNumber(apcomplexValue(), ((INumber) r).apcomplexValue());
-      return F.complexNum(harmonicNumber);
     }
     return IComplexNum.super.harmonicNumber(r);
   }

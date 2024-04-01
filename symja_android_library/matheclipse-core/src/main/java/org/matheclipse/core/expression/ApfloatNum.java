@@ -952,13 +952,22 @@ public class ApfloatNum implements INum {
   public IExpr harmonicNumber(IExpr r) {
     if (r instanceof INumber) {
       if (r instanceof IReal) {
-        Apfloat harmonicNumber =
-            EvalEngine.getApfloat().harmonicNumber(fApfloat, ((IReal) r).apfloatValue());
-        return F.num(harmonicNumber);
+        if (this.isGE(F.C1) || r.isInteger()) {
+          try {
+            Apfloat harmonicNumber =
+                EvalEngine.getApfloat().harmonicNumber(fApfloat, ((IReal) r).apfloatValue());
+            return F.num(harmonicNumber);
+          } catch (ArithmeticException | ApfloatRuntimeException e) {
+            // try as computation with complex numbers
+          }
+        }
       }
-      Apcomplex harmonicNumber =
-          EvalEngine.getApfloat().harmonicNumber(fApfloat, ((INumber) r).apcomplexValue());
-      return F.complexNum(harmonicNumber);
+      try {
+        Apcomplex harmonicNumber =
+            EvalEngine.getApfloat().harmonicNumber(fApfloat, ((INumber) r).apcomplexValue());
+        return F.complexNum(harmonicNumber);
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+      }
     }
     return INum.super.harmonicNumber(r);
   }

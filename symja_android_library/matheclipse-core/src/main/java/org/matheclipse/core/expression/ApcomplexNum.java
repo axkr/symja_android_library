@@ -982,13 +982,13 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr harmonicNumber(IExpr r) {
     if (r instanceof INumber) {
-      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-      if (r instanceof IReal) {
-        Apcomplex harmonicNumber = h.harmonicNumber(fApcomplex, ((IReal) r).apfloatValue());
+      try {
+        FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+        Apcomplex harmonicNumber = h.harmonicNumber(fApcomplex, ((INumber) r).apcomplexValue());
         return valueOf(harmonicNumber);
+      } catch (ArithmeticException | ApfloatRuntimeException aex) {
+
       }
-      Apcomplex harmonicNumber = h.harmonicNumber(fApcomplex, ((INumber) r).apcomplexValue());
-      return valueOf(harmonicNumber);
     }
     return IComplexNum.super.harmonicNumber(r);
   }

@@ -898,12 +898,14 @@ public class Num implements INum {
   public IExpr harmonicNumber(IExpr r) {
     if (r instanceof INumber) {
       if (r instanceof IReal) {
-        try {
-          Apfloat harmonicNumber = EvalEngine.getApfloatDouble().harmonicNumber(apfloatValue(),
-              ((IReal) r).apfloatValue());
-          return F.num(harmonicNumber.doubleValue());
-        } catch (ArithmeticException | ApfloatRuntimeException aex) {
+        if (this.isGE(F.C1) || r.isInteger()) {
+          try {
+            Apfloat harmonicNumber = EvalEngine.getApfloatDouble().harmonicNumber(apfloatValue(),
+                ((IReal) r).apfloatValue());
+            return F.num(harmonicNumber.doubleValue());
+          } catch (ArithmeticException | ApfloatRuntimeException aex) {
 
+          }
         }
       }
       try {
