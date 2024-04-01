@@ -139,7 +139,7 @@ public class SubsetFunctions {
             if (maxNumberOfResult == 0) {
               return result;
             }
-          } else if (rule.isList()) {
+          } else if (rule.isList() && rule.size() > 1) {
             IExpr temp =
                 applyRule(F.Rule(rule, IPatternMatcher.DUMMY_SUBSET_CASES), result, engine);
             if (temp.isAST()) {

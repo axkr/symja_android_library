@@ -459,7 +459,11 @@ public class Errors {
     if (Config.SHOW_STACKTRACE) {
       exception.printStackTrace();
     }
-    return printMessage(symbol, "error", F.List(exception.getMessage()), engine);
+    String message = exception.getMessage();
+    if (message == null) {
+      return printMessage(symbol, "error", F.List(exception.toString()), engine);
+    }
+    return printMessage(symbol, "error", F.List(message), engine);
   }
 
   /**
