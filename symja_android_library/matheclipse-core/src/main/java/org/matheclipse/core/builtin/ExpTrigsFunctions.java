@@ -601,18 +601,14 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
-      IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CI);
+      IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
       if (imPart.isPresent()) {
-        return F.Times(F.CI, F.ArcCsc(imPart));
+        return F.Times(F.CNI, F.ArcCsc(imPart));
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
         return Negate(ArcCsch(negExpr));
       }
-      // IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
-      // if (imPart.isPresent()) {
-      // return F.Times(F.CNI, F.ArcCsc(imPart));
-      // }
       return F.NIL;
     }
 
