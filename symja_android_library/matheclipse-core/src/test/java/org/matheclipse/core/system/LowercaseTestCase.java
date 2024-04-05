@@ -15725,10 +15725,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "10");
     check("xm=10;Module({t=xm}, xm=xm+1;t);xm", //
         "11");
+    EvalEngine.resetModuleCounter4JUnit();
     check("Module({a}, Block({a}, a))", //
-        "a$4");
+        "a$1");
     check("Module({a}, Block({}, a))", //
-        "a$5");
+        "a$2");
     check("t === Module({t}, t)", //
         "False");
     check("$g(x_) := Module({v=x},int(v,x)/;v=!=x);$g(f(x))", //
@@ -15751,13 +15752,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "$gcd(m0_, n0_) :=\n" + " Module({m = m0, n = n0},\n"
             + "  While(n != 0, {m, n} = {n, Mod(m, n)});\n" + "  m\n" + "  );$gcd(18, 21)", //
         "3");
-
+    EvalEngine.resetModuleCounter4JUnit();
     check("{Module({x}, x), Module({x}, x)}", //
-        "{x$14,x$15}");
+        "{x$1,x$2}");
     check("Module({e = Expand((1 + x)^5)}, Function(x, e))", //
-        "Function(x$16,e$16)");
+        "Function(x$3,e$3)");
     check("Module({a,b}, Block({c}, c+a))", //
-        "a$17+c");
+        "a$4+c");
 
     if (Config.SERVER_MODE == false) {
       check("f(x0_) :=\n" + " Module({x = x0},\n" + "  While(x > 0, x = Log(x));\n" + "  x\n"
@@ -15778,8 +15779,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{y,z,3}");
     check("Module({x,f}, f(0)=0;f(x_):=f(x-1)+x;f(3))", //
         "6");
+
+    EvalEngine.resetModuleCounter4JUnit();
     check("Module({x},Function(y,x+y))", //
-        "Function(y$25,x$25+y$25)");
+        "Function(y$1,x$1+y$1)");
     // check("Module({y},Function(y,x+y))",//
     // "x$22$23+y");
 
