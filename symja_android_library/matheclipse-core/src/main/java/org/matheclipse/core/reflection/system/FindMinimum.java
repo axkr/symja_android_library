@@ -123,7 +123,16 @@ public class FindMinimum extends AbstractFunctionEvaluator {
       if (expr.isAnd()) {
         IAST andAST = (IAST) expr;
         for (int j = 1; j < andAST.size(); j++) {
-
+          // IExpr temp = andAST.get(i);
+          // if (temp.isRelationalBinary()) {
+          // if (temp.isAST(S.Greater, 3)) {
+          // // x > 0, y > 0
+          // LinearInequalityConstraint ineqc = new LinearInequalityConstraint(
+          // new double[][] {{1.0, 0.0}, {0.0, 1.0}}, new double[] {0.0, 0.0});
+          // }
+          // } else {
+          // return F.NIL;
+          // }
         }
       }
       if (expr.isRelationalBinary()) {

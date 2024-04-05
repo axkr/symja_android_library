@@ -6,7 +6,6 @@ public class SubsetTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSubsetCases() {
-
     check("SubsetCases(I+{x,-3,-1/2},2*{{}})", //
         "SubsetCases({I+x,-3+I,-1/2+I},{{}})");
     check("SubsetCases(1/0,{{}})", //

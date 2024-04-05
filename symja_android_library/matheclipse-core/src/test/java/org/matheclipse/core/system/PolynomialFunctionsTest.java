@@ -148,6 +148,9 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testHermiteH() {
+    // TODO interrupt long running apfloat calculations
+    // checkNumeric("HermiteH(2.718281828459045,10007)", //
+    // "");
     // TODO
     checkNumeric("HermiteH({-1,2.987,0,1},-1009)", //
         // "{HermiteH(-1,-1009),-1.3103460085601044*10^442134,1,-2018}");
@@ -205,6 +208,9 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testLaguerreL() {
+    // TODO
+    // check("LaguerreL(-9223372036854775808/11,-3.141592653589793)", //
+    // " ");
     // test for java.util.TimSort: IllegalArgumentException - Comparison method violates its general
     // contract!
     check("LaguerreL(42,-1+I)", //

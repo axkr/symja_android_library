@@ -600,6 +600,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testArcCsc() {
+    check("ArcCsc(-1+I)", //
+        "-I*ArcCsch(1+I)");
     check("ArcCsc(3.5)", //
         "0.289752");
     check("ArcCsc(1.0+3.5*I)", //
@@ -618,6 +620,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testArcCsch() {
+    check("ArcCsch(-1+I)", //
+        "-I*ArcCsc(1+I)");
     check("arccsch(0)", //
         "ComplexInfinity");
     checkNumeric("ArcCsch(1.0)", //
@@ -669,6 +673,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testArcSin() {
+    check("ArcSin(-1+I)", //
+        "I*ArcSinh(1+I)");
     check("ArcSin({x,-3,-1/2})", //
         "{ArcSin(x),-ArcSin(3),-Pi/6}");
     check("ArcSin(Sin(-1/2))", //
@@ -710,6 +716,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testArcSinh() {
+    check("ArcSinh(-1+I)", //
+        "I*ArcSin(1+I)");
     check("ArcSinh(0)", //
         "0");
     check("ArcSinh(0.0)", //
@@ -727,6 +735,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("ArcTan(Re(Sin(3+I*2)),Im(Sin(3+I*2)))", //
     // "ArcTan(Im(Sin(3+I*2))/Re(Sin(3+I*2)))");
 
+    check("ArcTan(-1+I)", //
+        "I*ArcTanh(1+I)");
     check("N(ArcTan(2, 1), 50)", //
         "0.4636476090008061162142562314612144020285370542861");
     check("N(ArcTan(2, 4), 50)", //
@@ -869,7 +879,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testArcTanh() {
-
+    check("ArcTanh(-1+I)", //
+        "I*ArcTan(1+I)");
     check("ArcTanh(0)", //
         "0");
     check("ArcTanh(1)", //
@@ -8877,7 +8888,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindMinimum() {
-    // check("FindMinimum({x+y,3*x+2*y >= 7 && x >= 0 && y >= 0}, {x, y})", //
+    // check("FindMinimum({x+y,3*x+2*y >= 7 && x >= 0 && y >= 0}, {x, y},\"Lagrange\")", //
     // "");
     // check("FindMinimum({Sin(x)*Sin(2*y),x^2 + y^2 < 3}, {{x, 2}, {y, 2}})", //
     // "");
@@ -10686,6 +10697,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHarmonicNumber() {
+    checkNumeric("HarmonicNumber({-3.1415,2.987,-1,0,1},0.5)", //
+        "{-0.19602750271156133+I*4.277725609252295,2.277519248535999,ComplexInfinity,0.0,1.0000000000000007}");
     checkNumeric("HarmonicNumber(-0.5,0.5)", //
         "-0.8554558653879558");
     check("D(HarmonicNumber(x),{x,4})", //
@@ -11176,6 +11189,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometric1F1Regularized() {
+    // TODO interrupt long running calculations
+    // check("Hypergeometric1F1Regularized(-9223372036854775808/11,-0.8,-11)", //
+    // "");
 
     check("N(Hypergeometric1F1Regularized(2,-4,2), 50)", //
         "1891.5983613262464581709894299072020001741607860612");
@@ -12791,7 +12807,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("JSForm(Sign(x)*Abs(x)^(1/3))", //
         "Math.cbrt(Math.abs(x))*Math.sign(x)");
     check("JSForm(Clip(x))", //
-        "\n" + " (function() {\n" + "if (x<-1) { return -1;}\n" + "if (x>1) { return 1;}\n"
+        "\n" //
+            + " (function() {\n" //
+            + "if (x<-1) { return -1;}\n" //
+            + "if (x>1) { return 1;}\n" //
             + " return x;})()\n");
     check("JSForm(Clip(x, {-2, 4}))", //
         "\n" + " (function() {\n" + "if (x<-2) { return -2;}\n" + "if (x>4) { return 4;}\n"
@@ -12801,8 +12820,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(20.085536923187664)-Math.cos((9.869604401089358)/x)");
 
     check("Piecewise({{x, 0 < x < 1}, {x^3, 1 < x < 2}}) // JSForm", //
-        "\n" + " (function() {\n" + "if (0<x && x<1) { return x;}\n"
-            + "if (1<x && x<2) { return Math.pow(x,3);}\n" + " return 0;})()\n" + "");
+        "\n" //
+            + " (function() {\n" //
+            + "if (0<x && x<1) { return x;}\n" //
+            + "if (1<x && x<2) { return Math.pow(x,3);}\n" //
+            + " return 0;})()\n" //
+            + "");
     check("JSForm(4*EllipticE(x)+KleinInvariantJ(t)^3, \"Mathcell\")", //
         "add(mul(4,ellipticE(x)),pow(kleinJ(t),3))");
     check("JSForm(Cot(x))", //
@@ -12824,6 +12847,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("JSForm(E^3-Cos(Pi^2/x) )", //
         "(20.085536923187664)-Math.cos((9.869604401089358)/x)");
     // JSXGraph.org syntax
+    EvalEngine.resetModuleCounter4JUnit();
     check(
         "JSForm(Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}, PlotRange->{-1,2}), {a,0,10}))", //
         "var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,showCopyright:false,boundingbox:[-0.8641592653589794,2.7,7.147344572538565,-1.7]});\n"
@@ -23784,8 +23808,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testSquaresR() {
     // TODO
-    // check("SquaresR({3},2147483647)", //
-    // "0");
+    // check("TimeConstrained(SquaresR({3},2147483647),3)", //
+    // "");
 
     // message: $RecursionLimit: Recursion depth of 512 exceeded during evaluation of
     // SquaresR(2147483647,11).
@@ -25024,10 +25048,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testTimeConstrained() {
     if (!Config.TIMECONSTRAINED_NO_THREAD) {
-      check("TimeConstrained(Do(i^2, {i, 10000000}), 1)", //
-          "$Aborted");
-      check("TimeConstrained(Pause(1); t=TimeRemaining(); Print(t);t>1&&Head(t)==Real, 10)", //
-          "True");
+      // Config.FUZZ_TESTING = true;
+      try {
+        check("TimeConstrained( Beta(I*1/2,1.5707963267948966,2147483647), 2)", //
+            "$Aborted");
+
+        check("TimeConstrained(Do(i^2, {i, 10000000}), 1)", //
+            "$Aborted");
+        check("TimeConstrained(Pause(1); t=TimeRemaining(); Print(t);t>1&&Head(t)==Real, 10)", //
+            "True");
+      } finally {
+        // Config.FUZZ_TESTING = false;
+      }
     }
   }
 
