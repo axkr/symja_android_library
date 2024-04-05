@@ -12716,6 +12716,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testJacobiSymbol() {
+    check("JacobiSymbol(12345, 331)", //
+        "-1");
+    check("JacobiSymbol(98, 331)", //
+        "-1");
     check("JacobiSymbol(10^10+1, Prime(1000))", //
         "1");
     check("JacobiSymbol(10^11+1, Prime(2000))", //

@@ -8,6 +8,7 @@ JacobiSymbol(m, n)
 
 See
 * [Wikipedia - Jacobi symbol](https://en.wikipedia.org/wiki/Jacobi_symbol)
+* [Wikipedia - Legendre symbol](https://en.wikipedia.org/wiki/Legendre_symbol)
 
 ### Examples
 
@@ -16,9 +17,12 @@ See
 -1
 ```
 
+The `JacobiSymbol(a, n)` is a generalization of the Legendre symbol that allows for a composite second (bottom) argument n, although n must still be odd and positive. 
 
-
-
+```
+>> JacobiSymbol(12345, 331)
+-1
+```
 
 
 ### Implementation status
