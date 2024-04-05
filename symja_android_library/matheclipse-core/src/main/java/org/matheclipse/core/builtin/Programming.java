@@ -3173,6 +3173,10 @@ public final class Programming {
           if (arg2.isReal()) {
             arg2 = ((IReal) arg2).ceilFraction();
             seconds = ((IReal) arg2).toLong();
+            if (seconds < 0) {
+              // Positive machine-sized integer expected at position `2` in `1`.
+              return Errors.printMessage(ast.topHead(), "intpm", F.list(F.C2, ast), engine);
+            }
           } else {
             // Positive machine-sized integer expected at position `2` in `1`.
             return Errors.printMessage(ast.topHead(), "intpm", F.list(F.C2, ast), engine);

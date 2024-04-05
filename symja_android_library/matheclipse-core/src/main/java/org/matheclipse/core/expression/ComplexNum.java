@@ -3,10 +3,10 @@ package org.matheclipse.core.expression;
 import java.util.function.Function;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
-import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.InfiniteExpansionException;
 import org.apfloat.LossOfPrecisionException;
+import org.apfloat.NumericComputationException;
 import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
@@ -406,7 +406,7 @@ public class ComplexNum implements IComplexNum {
         Apcomplex beta =
             EvalEngine.getApfloatDouble().beta(apcomplexValue(), ((INumber) b).apcomplexValue());
         return F.complexNum(beta.real().doubleValue(), beta.imag().doubleValue());
-      } catch (ArithmeticException | ApfloatRuntimeException e) {
+      } catch (ArithmeticException | NumericComputationException e) {
         // java.lang.ArithmeticException: Beta is infinite
       }
     }
@@ -420,11 +420,9 @@ public class ComplexNum implements IComplexNum {
         Apcomplex beta = EvalEngine.getApfloatDouble().beta(apcomplexValue(),
             ((INumber) a).apcomplexValue(), ((INumber) b).apcomplexValue());
         return F.complexNum(beta.real().doubleValue(), beta.imag().doubleValue());
-      } catch (ArithmeticException | ApfloatRuntimeException aex) {
-        if (aex.getMessage().equals("Division by zero")) {
+      } catch (ArithmeticException | NumericComputationException aex) {
+        if ("Division by zero".equals(aex.getMessage())) {
           return F.ComplexInfinity;
-        } else {
-          // aex.printStackTrace();
         }
       }
     }
@@ -439,13 +437,11 @@ public class ComplexNum implements IComplexNum {
             EvalEngine.getApfloatDouble().beta(apcomplexValue(), ((INumber) x2).apcomplexValue(),
                 ((INumber) a).apcomplexValue(), ((INumber) b).apcomplexValue());
         return F.complexNum(beta.real().doubleValue(), beta.imag().doubleValue());
-      } catch (ApfloatRuntimeException e) {
+      } catch (NumericComputationException e) {
         //
       } catch (ArithmeticException aex) {
-        if (aex.getMessage().equals("Division by zero")) {
+        if ("Division by zero".equals(aex.getMessage())) {
           return F.ComplexInfinity;
-        } else {
-          // aex.printStackTrace();
         }
       }
     }
@@ -471,7 +467,7 @@ public class ComplexNum implements IComplexNum {
       // Apcomplex chebyshevT = EvalEngine.getApfloatDouble().chebyshevT(apcomplexValue(),
       // ((IReal) arg2).apfloatValue());
       // return F.complexNum(chebyshevT.real().doubleValue(), chebyshevT.imag().doubleValue());
-      // } catch (ArithmeticException | ApfloatRuntimeException are) {
+      // } catch (ArithmeticException | NumericComputationException are) {
       //
       // }
       // }
@@ -479,7 +475,7 @@ public class ComplexNum implements IComplexNum {
         Apcomplex chebyshevT = EvalEngine.getApfloatDouble().chebyshevT(apcomplexValue(),
             ((INumber) arg2).apcomplexValue());
         return F.complexNum(chebyshevT.real().doubleValue(), chebyshevT.imag().doubleValue());
-      } catch (ApfloatRuntimeException are) {
+      } catch (NumericComputationException are) {
 
       }
     }
@@ -494,7 +490,7 @@ public class ComplexNum implements IComplexNum {
       // Apcomplex chebyshevU = EvalEngine.getApfloatDouble().chebyshevU(apcomplexValue(),
       // ((IReal) arg2).apfloatValue());
       // return F.complexNum(chebyshevU.real().doubleValue(), chebyshevU.imag().doubleValue());
-      // } catch (ArithmeticException | ApfloatRuntimeException are) {
+      // } catch (ArithmeticException | NumericComputationException are) {
       //
       // }
       // }
@@ -502,7 +498,7 @@ public class ComplexNum implements IComplexNum {
         Apcomplex chebyshevU = EvalEngine.getApfloatDouble().chebyshevU(apcomplexValue(),
             ((INumber) arg2).apcomplexValue());
         return F.complexNum(chebyshevU.real().doubleValue(), chebyshevU.imag().doubleValue());
-      } catch (ArithmeticException | ApfloatRuntimeException are) {
+      } catch (ArithmeticException | NumericComputationException are) {
 
       }
     }
@@ -649,7 +645,7 @@ public class ComplexNum implements IComplexNum {
     try {
       Apcomplex digamma = EvalEngine.getApfloatDouble().digamma(apcomplexValue());
       return F.complexNum(digamma.real().doubleValue(), digamma.imag().doubleValue());
-    } catch (ArithmeticException | ApfloatRuntimeException aex) {
+    } catch (ArithmeticException | NumericComputationException aex) {
     }
     return IComplexNum.super.digamma();
   }
@@ -726,7 +722,7 @@ public class ComplexNum implements IComplexNum {
     } catch (OverflowException of) {
       // return Underflow? https://github.com/mtommila/apfloat/issues/38
       return F.Overflow();
-    } catch (ArithmeticException | ApfloatRuntimeException e) {
+    } catch (ArithmeticException | NumericComputationException e) {
       e.printStackTrace();
     }
     return IComplexNum.super.erfc();
@@ -807,7 +803,7 @@ public class ComplexNum implements IComplexNum {
         Apcomplex fibonacci = EvalEngine.getApfloatDouble().fibonacci(apcomplexValue(),
             ((INumber) arg2).apcomplexValue());
         return F.complexNum(fibonacci.real().doubleValue(), fibonacci.imag().doubleValue());
-      } catch (ArithmeticException | ApfloatRuntimeException e) {
+      } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
     }
@@ -896,7 +892,7 @@ public class ComplexNum implements IComplexNum {
       return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
     } catch (OverflowException of) {
       return F.Overflow();
-    } catch (ArithmeticException | ApfloatRuntimeException are) {
+    } catch (ArithmeticException | NumericComputationException are) {
       return Errors.printMessage(S.Gamma, are, EvalEngine.get());
     }
   }
@@ -911,7 +907,7 @@ public class ComplexNum implements IComplexNum {
         Apcomplex gamma =
             EvalEngine.getApfloatDouble().gamma(apcomplexValue(), ((INumber) x).apcomplexValue());
         return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
-      } catch (ArithmeticException | ApfloatRuntimeException are) {
+      } catch (ArithmeticException | NumericComputationException are) {
         // try as computation with complex numbers
         // java.lang.ArithmeticException: Upper gamma with first argument real part nonpositive and
         // second argment zero
@@ -936,7 +932,7 @@ public class ComplexNum implements IComplexNum {
         Apcomplex gamma = EvalEngine.getApfloatDouble().gamma(apcomplexValue(),
             ((INumber) x0).apcomplexValue(), ((INumber) x0).apcomplexValue());
         return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
-      } catch (ArithmeticException | ApfloatRuntimeException are) {
+      } catch (ArithmeticException | NumericComputationException are) {
         // try as computation with complex numbers
         // java.lang.ArithmeticException: Upper gamma with first argument real part nonpositive and
         // second argment zero
@@ -953,7 +949,7 @@ public class ComplexNum implements IComplexNum {
         Apcomplex gegenbauerC = EvalEngine.getApfloatDouble().gegenbauerC(apcomplexValue(),
             ((INumber) arg2).apcomplexValue());
         return F.complexNum(gegenbauerC.real().doubleValue(), gegenbauerC.imag().doubleValue());
-      } catch (ArithmeticException | ApfloatRuntimeException e) {
+      } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
     }
@@ -967,7 +963,7 @@ public class ComplexNum implements IComplexNum {
         Apcomplex gegenbauerC = EvalEngine.getApfloat().gegenbauerC(apcomplexValue(),
             ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue());
         return F.complexNum(gegenbauerC.real().doubleValue(), gegenbauerC.imag().doubleValue());
-      } catch (ArithmeticException | ApfloatRuntimeException e) {
+      } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
     }
@@ -1016,7 +1012,7 @@ public class ComplexNum implements IComplexNum {
         Apcomplex harmonicNumber =
             h.harmonicNumber(apcomplexValue(), ((INumber) r).apcomplexValue());
         return F.complexNum(harmonicNumber);
-      } catch (ArithmeticException | ApfloatRuntimeException aex) {
+      } catch (ArithmeticException | NumericComputationException aex) {
 
       }
     }
@@ -1040,7 +1036,7 @@ public class ComplexNum implements IComplexNum {
         Apcomplex hermiteH = EvalEngine.getApfloatDouble().hermiteH(apcomplexValue(),
             ((INumber) arg2).apcomplexValue());
         return F.complexNum(hermiteH.real().doubleValue(), hermiteH.imag().doubleValue());
-      } catch (ArithmeticException | ApfloatRuntimeException are) {
+      } catch (ArithmeticException | NumericComputationException are) {
 
       }
     }
@@ -1128,7 +1124,7 @@ public class ComplexNum implements IComplexNum {
                 ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue());
         return F.complexNum(hypergeometric2F1Regularized.real().doubleValue(),
             hypergeometric2F1Regularized.imag().doubleValue());
-      } catch (ApfloatRuntimeException ex) {
+      } catch (NumericComputationException ex) {
         // org.apfloat.OverflowException: Apfloat disk file storage is disabled
       }
     }
@@ -1321,7 +1317,7 @@ public class ComplexNum implements IComplexNum {
         Apcomplex laguerreL = EvalEngine.getApfloatDouble().laguerreL(apcomplexValue(),
             ((INumber) arg2).apcomplexValue());
         return F.complexNum(laguerreL.real().doubleValue(), laguerreL.imag().doubleValue());
-      } catch (ArithmeticException | ApfloatRuntimeException e) {
+      } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
     }
@@ -1335,7 +1331,7 @@ public class ComplexNum implements IComplexNum {
         Apcomplex laguerreL = EvalEngine.getApfloatDouble().laguerreL(apcomplexValue(),
             ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue());
         return F.complexNum(laguerreL.real().doubleValue(), laguerreL.imag().doubleValue());
-      } catch (ArithmeticException | ApfloatRuntimeException e) {
+      } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
     }
@@ -1354,7 +1350,7 @@ public class ComplexNum implements IComplexNum {
         Apcomplex legendreP = EvalEngine.getApfloatDouble().legendreP(apcomplexValue(),
             ((INumber) arg2).apcomplexValue());
         return F.complexNum(legendreP.real().doubleValue(), legendreP.imag().doubleValue());
-      } catch (ArithmeticException | ApfloatRuntimeException e) {
+      } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
     }
@@ -1368,7 +1364,7 @@ public class ComplexNum implements IComplexNum {
         Apcomplex legendreP = EvalEngine.getApfloatDouble().legendreP(apcomplexValue(),
             ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue());
         return F.complexNum(legendreP.real().doubleValue(), legendreP.imag().doubleValue());
-      } catch (ArithmeticException | ApfloatRuntimeException e) {
+      } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
     }
@@ -1382,7 +1378,7 @@ public class ComplexNum implements IComplexNum {
         Apcomplex legendreQ = EvalEngine.getApfloatDouble().legendreQ(apcomplexValue(),
             ((INumber) arg2).apcomplexValue());
         return F.complexNum(legendreQ.real().doubleValue(), legendreQ.imag().doubleValue());
-      } catch (ArithmeticException | ApfloatRuntimeException e) {
+      } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
     }
@@ -1396,7 +1392,7 @@ public class ComplexNum implements IComplexNum {
         Apcomplex legendreQ = EvalEngine.getApfloatDouble().legendreQ(apcomplexValue(),
             ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue());
         return F.complexNum(legendreQ.real().doubleValue(), legendreQ.imag().doubleValue());
-      } catch (ArithmeticException | ApfloatRuntimeException e) {
+      } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
     }
@@ -1537,7 +1533,7 @@ public class ComplexNum implements IComplexNum {
     try {
       Apcomplex polygamma = EvalEngine.getApfloatDouble().polygamma(n, apcomplexValue());
       return F.complexNum(polygamma.real().doubleValue(), polygamma.imag().doubleValue());
-    } catch (ArithmeticException | ApfloatRuntimeException aex) {
+    } catch (ArithmeticException | NumericComputationException aex) {
       // java.lang.ArithmeticException: Polygamma of nonpositive integer
     }
     return IComplexNum.super.polyGamma(n);
@@ -1554,7 +1550,7 @@ public class ComplexNum implements IComplexNum {
         // Complete loss of precision
       } catch (InfiniteExpansionException iee) {
         // Cannot calculate power to infinite precision
-      } catch (ArithmeticException | ApfloatRuntimeException ex) {
+      } catch (ArithmeticException | NumericComputationException ex) {
       }
     }
     return IComplexNum.super.polyLog(arg2);
@@ -1586,7 +1582,7 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
-  public long precision() throws ApfloatRuntimeException {
+  public long precision() throws NumericComputationException {
     return 15;
   }
 

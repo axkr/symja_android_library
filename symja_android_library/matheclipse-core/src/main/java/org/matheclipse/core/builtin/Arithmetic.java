@@ -49,10 +49,10 @@ import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
-import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.InfiniteExpansionException;
 import org.apfloat.LossOfPrecisionException;
+import org.apfloat.NumericComputationException;
 import org.apfloat.OverflowException;
 import org.apfloat.internal.BackingStorageException;
 import org.hipparchus.fraction.BigFraction;
@@ -1708,7 +1708,7 @@ public final class Arithmetic {
         if (argSize == 3) {
           // see GammaRules.m - Gamma(a_, x_, y_) := Gamma(a, x) - Gamma(a, y)
         }
-      } catch (ApfloatRuntimeException | ValidateException e) {
+      } catch (NumericComputationException | ValidateException e) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
 
       }

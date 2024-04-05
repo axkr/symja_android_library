@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.function.Function;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
-import org.apfloat.ApfloatRuntimeException;
+import org.apfloat.NumericComputationException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
@@ -599,7 +599,7 @@ public class HypergeometricJS extends JS {
       Apfloat hypergeometric2f1 = EvalEngine.getApfloatDouble().hypergeometric2F1(new Apfloat(a),
           new Apfloat(b), new Apfloat(c), new Apfloat(x));
       return hypergeometric2f1.doubleValue();
-    } catch (ArithmeticException | ApfloatRuntimeException ex) {
+    } catch (ArithmeticException | NumericComputationException ex) {
       if (ex.getMessage().equals("Division by zero")) {
         throw new ResultException(F.CComplexInfinity);
       }

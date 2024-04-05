@@ -10,7 +10,7 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apfloat.ApfloatRuntimeException;
+import org.apfloat.NumericComputationException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
@@ -865,7 +865,7 @@ public class HypergeometricFunctions {
         }
         try {
           return a.hypergeometric0F1Regularized(z);
-        } catch (ArithmeticException | ApfloatRuntimeException e) {
+        } catch (ArithmeticException | NumericComputationException e) {
           // java.lang.ArithmeticException: Gamma of zero
           Errors.printMessage(S.Hypergeometric0F1, e, engine);
         }
@@ -1036,7 +1036,7 @@ public class HypergeometricFunctions {
         }
         try {
           return a.hypergeometric1F1Regularized(b, z);
-        } catch (ArithmeticException | ApfloatRuntimeException e) {
+        } catch (ArithmeticException | NumericComputationException e) {
           // java.lang.ArithmeticException: Gamma of zero
           Errors.printMessage(S.Hypergeometric1F1, e, engine);
           if (e.getMessage().equals("Division by zero")) {

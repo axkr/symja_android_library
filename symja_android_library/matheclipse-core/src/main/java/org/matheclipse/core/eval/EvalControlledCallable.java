@@ -4,6 +4,7 @@ import java.io.StringWriter;
 import java.util.concurrent.Callable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apfloat.ApfloatInterruptedException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
@@ -63,7 +64,7 @@ public class EvalControlledCallable implements Callable<IExpr> {
         fEngine.addInOut(fExpr, temp);
       }
       return temp;
-    } catch (org.matheclipse.core.eval.exception.TimeoutException e) {
+    } catch (ApfloatInterruptedException | org.matheclipse.core.eval.exception.TimeoutException e) {
       return S.$Aborted;
     } catch (final SyntaxError se) {
       LOGGER.error("EvalControlledCallable.call() failed", se);

@@ -23,9 +23,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
-import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.apfloat.FixedPrecisionApfloatHelper;
+import org.apfloat.NumericComputationException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.fraction.BigFraction;
@@ -331,7 +331,7 @@ public final class NumberTheory {
                   return F.num(h.bernoulliB(ln, r.apfloatValue()).doubleValue());
                 }
               } catch (ArithmeticException | IllegalArgumentException
-                  | ApfloatRuntimeException ex) {
+                  | NumericComputationException ex) {
                 //
                 System.out.println(n.toString() + ", " + z.toString());
                 ex.printStackTrace();
@@ -345,7 +345,8 @@ public final class NumberTheory {
                 return F.complexNum(bernoulliB.real().doubleValue(),
                     bernoulliB.imag().doubleValue());
               }
-            } catch (ArithmeticException | IllegalArgumentException | ApfloatRuntimeException ex) {
+            } catch (ArithmeticException | IllegalArgumentException
+                | NumericComputationException ex) {
               //
               System.out.println(n.toString() + ", " + z.toString());
               ex.printStackTrace();

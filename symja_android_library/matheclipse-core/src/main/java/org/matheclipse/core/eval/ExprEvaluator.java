@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.NotThreadSafe;
+import org.apfloat.ApfloatInterruptedException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.BreakException;
@@ -506,7 +507,8 @@ public class ExprEvaluator {
             F.await();
             TimeLimiter timeLimiter = SimpleTimeLimiter.create(executorService);
             return timeLimiter.callWithTimeout(work, timeoutDuration, timeUnit);
-          } catch (org.matheclipse.core.eval.exception.TimeoutException
+          } catch (ApfloatInterruptedException
+              | org.matheclipse.core.eval.exception.TimeoutException
               | java.util.concurrent.TimeoutException
               | com.google.common.util.concurrent.UncheckedTimeoutException e) {
             // LOGGER.debug("ExprEvaluator.evaluateWithTimeout() failed", e);

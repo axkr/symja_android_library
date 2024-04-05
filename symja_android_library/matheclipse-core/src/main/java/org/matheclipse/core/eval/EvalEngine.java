@@ -24,6 +24,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;
 import org.apache.logging.log4j.Level;
+import org.apfloat.ApfloatInterruptedException;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
@@ -154,7 +155,8 @@ public class EvalEngine implements Serializable {
         long timeConstrainedMillis = System.currentTimeMillis() + fSeconds * 1000L;
         fEngine.setTimeConstrainedMillis(timeConstrainedMillis);
         return fEngine.evaluate(fExpr);
-      } catch (org.matheclipse.core.eval.exception.TimeoutException e) {
+      } catch (ApfloatInterruptedException | org.matheclipse.core.eval.exception.TimeoutException
+          | com.google.common.util.concurrent.UncheckedTimeoutException e) {
         if (Config.DEBUG) {
           System.out
               .println("TimeConstrained evaluation failed: " + fExpr + "\nseconds: " + fSeconds);
@@ -174,7 +176,7 @@ public class EvalEngine implements Serializable {
 
     public void cancel() {
       fEngine.stopRequest();
-      thread.stop();
+      // thread.stop();
     }
 
     public void setExpr(IExpr fExpr, long seconds) {
@@ -284,7 +286,7 @@ public class EvalEngine implements Serializable {
   }
 
   /** If set to <code>true</code> the current thread should stop evaluation; */
-  transient volatile boolean fStopRequested;
+  // transient volatile boolean fStopRequested;
 
   transient int fRecursionCounter;
 
@@ -683,7 +685,7 @@ public class EvalEngine implements Serializable {
     engine.fRelaxedSyntax = fRelaxedSyntax;
     engine.fSeconds = fSeconds;
     engine.fSessionID = fSessionID;
-    engine.fStopRequested = false;
+    // engine.fStopRequested = false;
     engine.fTogetherMode = fTogetherMode;
     engine.fNoSimplifyMode = fNoSimplifyMode;
     engine.fTraceMode = fTraceMode;
@@ -1946,7 +1948,7 @@ public class EvalEngine implements Serializable {
     if ((fRecursionLimit > 0) && (fRecursionCounter > fRecursionLimit)) {
       RecursionLimitExceeded.throwIt(fRecursionLimit, expr);
     }
-    if (fStopRequested || Thread.interrupted()) {
+    if (Thread.interrupted()) {
       // check before going one recursion deeper
       throw TimeoutException.TIMED_OUT;
     }
@@ -1965,7 +1967,7 @@ public class EvalEngine implements Serializable {
           }
           final IExpr temp = result.evaluate(this);
           if (temp.isPresent()) {
-            if (fStopRequested || Thread.interrupted()) {
+            if (Thread.interrupted()) {
               throw TimeoutException.TIMED_OUT;
             }
             if (Config.DEBUG && temp.equals(result)) {
@@ -1997,7 +1999,7 @@ public class EvalEngine implements Serializable {
         stackPop();
         // fTraceStack.tearDown(iterationCounter == 0 ? F.NIL : result, fRecursionCounter, true);
         fRecursionCounter--;
-        if (fStopRequested) {
+        if (Thread.interrupted()) {
           throw TimeoutException.TIMED_OUT;
         }
       }
@@ -2032,7 +2034,7 @@ public class EvalEngine implements Serializable {
       try {
         IExpr temp = result.evaluate(this);
         if (temp.isPresent()) {
-          if (fStopRequested || Thread.currentThread().isInterrupted()) {
+          if (Thread.interrupted()) {
             throw TimeoutException.TIMED_OUT;
           }
 
@@ -2046,7 +2048,7 @@ public class EvalEngine implements Serializable {
             }
             temp = result.evaluate(this);
             if (temp.isPresent()) {
-              if (fStopRequested || Thread.currentThread().isInterrupted()) {
+              if (Thread.interrupted()) {
                 throw TimeoutException.TIMED_OUT;
               }
               if (Config.DEBUG) {
@@ -2085,7 +2087,7 @@ public class EvalEngine implements Serializable {
     } finally {
       stackPop();
       fRecursionCounter--;
-      if (fStopRequested) {
+      if (Thread.interrupted()) {
         throw TimeoutException.TIMED_OUT;
       }
     }
@@ -2605,12 +2607,25 @@ public class EvalEngine implements Serializable {
     } catch (org.matheclipse.core.eval.exception.TimeoutException
         | java.util.concurrent.TimeoutException
         | com.google.common.util.concurrent.UncheckedTimeoutException e) {
+      if (Config.FUZZ_TESTING) {
+        System.err.println("TIMEOUT: " + expr);
+        // e.printStackTrace();
+        Throwable cause = e.getCause();
+        if (cause != null) {
+          cause.printStackTrace();
+        }
+      }
+      // e.printStackTrace();
       Errors.printMessage(S.TimeConstrained, e, EvalEngine.get());
       if (defaultValue.isPresent()) {
         return defaultValue;
       }
       return S.$Aborted;
     } catch (Exception e) {
+      if (Config.FUZZ_TESTING) {
+        System.err.println("TIMECONSTRAINED exception: " + expr);
+        e.printStackTrace();
+      }
       // Appengine example: com.google.apphosting.api.DeadlineExceededException
       Errors.printMessage(S.TimeConstrained, e, EvalEngine.get());
       if (defaultValue.isPresent()) {
@@ -3030,7 +3045,7 @@ public class EvalEngine implements Serializable {
   }
 
   public int getIterationLimit() {
-    if (fStopRequested) {
+    if (Thread.interrupted()) {
       throw TimeoutException.TIMED_OUT;
     }
     return fIterationLimit;
@@ -3129,7 +3144,7 @@ public class EvalEngine implements Serializable {
   }
 
   public int getRecursionCounter() {
-    if (fStopRequested) {
+    if (Thread.currentThread().interrupted()) {
       throw TimeoutException.TIMED_OUT;
     }
     return fRecursionCounter;
@@ -3137,7 +3152,7 @@ public class EvalEngine implements Serializable {
 
   /** @return */
   public int getRecursionLimit() {
-    if (fStopRequested) {
+    if (Thread.interrupted()) {
       throw TimeoutException.TIMED_OUT;
     }
     return fRecursionLimit;
@@ -3279,7 +3294,6 @@ public class EvalEngine implements Serializable {
     fDollarSymbolMap = null;
     fTraceMode = false;
     fTraceStack = null;
-    fStopRequested = false;
     fCopiedEngine = null;
     fSeconds = 0;
     fModifiedVariablesList = null;
@@ -3407,11 +3421,6 @@ public class EvalEngine implements Serializable {
     return fDisabledTrigRules;
   }
 
-  /** @return Returns the stopRequested. */
-  public final boolean isStopRequested() {
-    return fStopRequested;
-  }
-
   /**
    * Basic arithmetic operations (especially in linear algebra functions) like for example
    * {@link IExpr#plus(IExpr)} and {@link IExpr#times(IExpr)} are tried to be simplified with a
@@ -3504,7 +3513,6 @@ public class EvalEngine implements Serializable {
     fNoSimplifyMode = false;
     fTraceMode = false;
     fTraceStack = null;
-    fStopRequested = false;
     fCopiedEngine = null;
     fSeconds = 0;
     fModifiedVariablesList = null;
@@ -3776,7 +3784,6 @@ public class EvalEngine implements Serializable {
 
   /** @param stopRequested The stopRequested to set. */
   public void setStopRequested(final boolean stopRequested) {
-    fStopRequested = stopRequested;
     if (stopRequested && fCopiedEngine != null) {
       fCopiedEngine.setStopRequested(true);
     }
