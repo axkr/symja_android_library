@@ -48,6 +48,7 @@ public class AssociationFunctions {
       S.KeyTake.setEvaluator(new KeyTake());
       S.LetterCounts.setEvaluator(new LetterCounts());
       S.Lookup.setEvaluator(new Lookup());
+      S.Merge.setEvaluator(new Merge());
       S.Structure.setEvaluator(new Structure());
       S.Summary.setEvaluator(new Summary());
       S.Values.setEvaluator(new Values());
@@ -125,8 +126,7 @@ public class AssociationFunctions {
           }
         }
         // The argument `1` is not a valid Association.
-        return Errors.printMessage(S.AssociateTo, "invak", F.list(symbolValue),
-            EvalEngine.get());
+        return Errors.printMessage(S.AssociateTo, "invak", F.list(symbolValue), EvalEngine.get());
       }
     }
 
@@ -165,8 +165,7 @@ public class AssociationFunctions {
             return symbol.assignedValue();
           }
           // The argument `1` is not a valid Association.
-          return Errors.printMessage(ast.topHead(), "invak", F.list(oldValue),
-              EvalEngine.get());
+          return Errors.printMessage(ast.topHead(), "invak", F.list(oldValue), EvalEngine.get());
         }
         // The argument is not a rule or a list of rules.
         return Errors.printMessage(ast.topHead(), "invdt", F.List(), EvalEngine.get());
@@ -304,8 +303,7 @@ public class AssociationFunctions {
         } else {
           if (symbol.isProtected()) {
             // Symbol `1` is Protected.
-            return Errors.printMessage(builtinSymbol, "wrsym", F.list(symbol),
-                EvalEngine.get());
+            return Errors.printMessage(builtinSymbol, "wrsym", F.list(symbol), EvalEngine.get());
           }
           try {
             IExpr lhsHead = engine.evaluate(symbol);
@@ -1015,6 +1013,45 @@ public class AssociationFunctions {
     }
   }
 
+  private static class Merge extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isList()) {
+        IExpr head = ast.arg2();
+        IAST list = (IAST) arg1;
+        IAssociation assocResult = F.assoc();
+        for (int i = 1; i < list.size(); i++) {
+          IExpr temp = list.get(i);
+          if (temp.isRuleAST()) {
+            assocResult.mergeRule((IAST) temp, head, engine);
+          } else if (temp.isAssociation()) {
+            IAssociation assoc = (IAssociation) temp;
+            for (int j = 1; j < assoc.size(); j++) {
+              assocResult.mergeRule(assoc.getRule(j), head, engine);
+            }
+          } else if (temp.isListOfRules()) {
+            IAST rulesList = (IAST) temp;
+            for (int j = 1; j < rulesList.size(); j++) {
+              assocResult.mergeRule((IAST) rulesList.get(j), head, engine);
+            }
+          } else {
+            return Errors.printMessage(S.Merge, "list1", F.List(temp), engine);
+          }
+        }
+        return assocResult;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2_1;
+    }
+  }
+
+
   private static class Structure extends AbstractEvaluator {
 
     @Override
@@ -1031,6 +1068,7 @@ public class AssociationFunctions {
       return ARGS_1_1;
     }
   }
+
 
   /**
    *
@@ -1118,6 +1156,7 @@ public class AssociationFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+
   private static class Summary extends AbstractEvaluator {
 
     @Override
@@ -1134,6 +1173,7 @@ public class AssociationFunctions {
       return ARGS_1_1;
     }
   }
+
 
   /**
    *
@@ -1203,6 +1243,7 @@ public class AssociationFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
+
   }
 
   /**

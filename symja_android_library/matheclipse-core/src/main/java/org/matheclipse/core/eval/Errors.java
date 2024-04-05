@@ -181,6 +181,7 @@ public class Errors {
       "linobj",
       "The objective function `1` is not a numeric valued linear function of the variables `2`.", //
       "list", "List expected at position `1` in `2`.", //
+      "list1", "The argument `1` is not a valid list of Associations or rules or list of rules.", //
       "listofbigints", "List of Java BigInteger numbers expected in `1`.", //
       "listofints", "List of Java int numbers expected in `1`.", //
       "listoflongs", "List of Java long numbers expected in `1`.", //

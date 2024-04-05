@@ -6711,6 +6711,7 @@ public class S {
 
   public final static IBuiltInSymbol MemoryInUse = S.initFinalSymbol("MemoryInUse", ID.MemoryInUse);
 
+  public final static IBuiltInSymbol Merge = S.initFinalSymbol("Merge", ID.Merge);
   /**
    * MersennePrimeExponent(n) - returns the `n`th mersenne prime exponent. `2^n - 1` must be a prime
    * number. Currently `0 < n <= 47` can be computed, otherwise the function returns unevaluated.

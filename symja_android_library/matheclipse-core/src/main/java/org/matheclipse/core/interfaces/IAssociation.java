@@ -3,6 +3,7 @@ package org.matheclipse.core.interfaces;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Supplier;
+import org.matheclipse.core.eval.EvalEngine;
 
 public interface IAssociation extends IASTAppendable {
 
@@ -26,12 +27,12 @@ public interface IAssociation extends IASTAppendable {
   @Override
   public IAssociation copy();
 
+  @Override
+  public IASTAppendable copyAST();
+
   /** Copy this association as empty association */
   @Override
   public IASTAppendable copyHead(final int intialCapacity);
-
-  @Override
-  public IASTAppendable copyAST();
 
   /**
    * Return the key which points to the <code>position</code>.
@@ -49,7 +50,10 @@ public interface IAssociation extends IASTAppendable {
    * @return <code>F.NIL</code> if no rule was found.
    */
   @Override
-  public IAST getRule(String key);
+  public IAST getRule(IExpr key);
+
+  @Override
+  public IAST getRule(int position);
 
   /**
    * Assuming this is a list of rules or an <code>IAssociation</code>. Return the first rule which
@@ -59,10 +63,7 @@ public interface IAssociation extends IASTAppendable {
    * @return <code>F.NIL</code> if no rule was found.
    */
   @Override
-  public IAST getRule(IExpr key);
-
-  @Override
-  public IAST getRule(int position);
+  public IAST getRule(String key);
 
   /**
    * Return the value associated to the <code>key</code>. If no value is available return <code>
@@ -121,6 +122,8 @@ public interface IAssociation extends IASTAppendable {
 
   /** Return the list of rules as a matrix or list */
   public IAST matrixOrList();
+
+  public void mergeRule(IAST rule, IExpr head, EvalEngine engine);
 
   /** Return the list of rules <code>{a->b, c:>d, ...}</code> represented by this association. */
   @Override

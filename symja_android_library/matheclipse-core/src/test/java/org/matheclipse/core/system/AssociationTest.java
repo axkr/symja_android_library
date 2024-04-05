@@ -501,6 +501,36 @@ public class AssociationTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testMerge() {
+    check("Merge({<|x->1|>, x->2, x->3, {y->4}}, Identity)", //
+        "<|x->{1,2,3},y->{4}|>");
+    // Merge: The argument test is not a valid list of Associations or rules or list of rules.
+    check("Merge({<|a -> x|>, test, a -> y, {b -> z}}, Identity)", //
+        "Merge({<|a->x|>,test,a->y,{b->z}},Identity)");
+
+    check("Merge({<|a -> x|>, a -> y, {b -> z}}, Identity)", //
+        "<|a->{x,y},b->{z}|>");
+    check("Merge({<|a -> 1, b -> 2|>, <|a -> 5, b -> 10|>}, Total)", //
+        "<|a->6,b->12|>");
+    check("Merge({<|a -> 1, b -> 2|>, <|b -> 4, c -> 5|>}, Identity)", //
+        "<|a->{1},b->{2,4},c->{5}|>");
+    check("Merge({<||>}, f)", //
+        "<||>");
+    check("Merge({a -> x, a -> y, b -> z}, f)", //
+        "<|a->f({x,y}),b->{z}|>");
+    check("Merge({}, f)", //
+        "<||>");
+
+
+    // operator form
+    check("mrg=Merge(Total)", //
+        "Merge(Total)");
+    check("mrg({<|a -> 1, b -> 2|>, <|a -> 3, b -> 1|>})", //
+        "<|a->4,b->3|>");
+
+  }
+
+  @Test
   public void testNormal() {
     check("assoc = AssociationThread({\"U\",\"V\"},{1,2}) ", //
         "<|U->1,V->2|>");

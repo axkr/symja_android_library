@@ -1,6 +1,6 @@
 ## Reference of functions and built-in symbols
 
-Supported features icon: 
+Supported features icon:
 
 * &#x2705; - the symbol / function is supported. Note that this doesn't mean that every possible symbolic evaluation is supported
 * &#x2611; - the symbol / function is partially implemented and might not support most basic features of the function
@@ -432,7 +432,7 @@ Functions in alphabetical order:
 * &#x2705; [HammingDistance](functions/HammingDistance.md)
 * &#x2705; [HankelH1](functions/HankelH1.md)
 * &#x2705; [HankelH2](functions/HankelH2.md)
-* [HankelMatrix](functions/HankelMatrix.md)
+* &#x2705; [HankelMatrix](functions/HankelMatrix.md)
 * &#x2705; [HarmonicMean](functions/HarmonicMean.md)
 * &#x2705; [HarmonicNumber](functions/HarmonicNumber.md)
 * &#x2705; [Haversine](functions/Haversine.md)
@@ -618,6 +618,7 @@ Functions in alphabetical order:
 * &#x2705; [Median](functions/Median.md)
 * &#x2705; [MedianFilter](functions/MedianFilter.md)
 * &#x2705; [MemberQ](functions/MemberQ.md)
+* [Merge](functions/Merge.md)
 * &#x2611; [MersennePrimeExponent](functions/MersennePrimeExponent.md)
 * &#x2611; [MersennePrimeExponentQ](functions/MersennePrimeExponentQ.md)
 * &#x2705; [Message](functions/Message.md)

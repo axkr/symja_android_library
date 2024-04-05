@@ -230,7 +230,7 @@ public class AST2Expr {
       "MatrixD", "MatrixExp", "MatrixLog", "MatrixForm", "MatrixFunction",
       "MatrixMinimalPolynomial", "MatrixPlot", "MatrixPower", "MatrixQ", "MatrixRank", "Max",
       "MaxFilter", "Maximize", "MaxMemoryUsed", "Mean", "MeanFilter", "MeanDeviation", "Median",
-      "MedianFilter", "MeijerG", "MemberQ", "MemoryAvailable", "MemoryInUse", "MeshRange",
+      "MedianFilter", "MeijerG", "MemberQ", "MemoryAvailable", "MemoryInUse", "Merge", "MeshRange",
       "MessageName", "Message", "Messages", "MersennePrimeExponent", "MersennePrimeExponentQ",
       "Min", "MinFilter", "MinimalPolynomial", "Minimize", "MinMax", "Minor", "Minors", "Minus",
       "Missing", "MissingQ", "Mod", "ModularInverse", "Module", "MoebiusMu", "MonomialList", "Most",

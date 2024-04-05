@@ -735,6 +735,31 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
   }
 
   @Override
+  public final void mergeRule(IAST rule, IExpr head, EvalEngine engine) {
+    int index = size();
+    if (rule.isRuleAST()) {
+      int valueIndex = getInt(rule.first());
+      if (valueIndex == 0) {
+        append(rule.setAtClone(2, F.List(rule.second())));
+        keyToIndexMap.assoc(rule.first(), index++);
+      } else {
+        IExpr value = getValue(valueIndex);
+        IASTMutable newRule = rule.copy();
+        IAST newList;
+        if (value.isList()) {
+          newList = ((IAST) value).appendClone(rule.second());
+        } else {
+          newList = F.List(value, rule.second());
+        }
+        newRule.set(2, engine.evaluate(F.unaryAST1(head, newList)));
+        set(valueIndex, newRule);
+      }
+    } else {
+      throw new ArgumentTypeException("rule expression expected instead of " + rule.toString());
+    }
+  }
+
+  @Override
   public void prependRules(IAST listOfRules) {
     prependRules(listOfRules, 1, listOfRules.size());
   }

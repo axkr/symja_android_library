@@ -1165,6 +1165,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     @Override
+    public void mergeRule(IAST rule, IExpr head, EvalEngine engine) {
+      ArgumentTypeException.throwNIL();
+    }
+
+    @Override
     public IASTMutable normal(boolean nilIfUnevaluated) {
       ArgumentTypeException.throwNIL();
       return null;
@@ -1241,6 +1246,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     public void prependRules(IAST listOfRules, int startPosition, int endPosition) {
       ArgumentTypeException.throwNIL();
     }
+
   }
 
   /** The enumeration map which possibly maps the properties (keys) to a user defined object. */
