@@ -235,27 +235,27 @@
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-clustering</artifactId>
-				<version>3.1</version>
+				<version>3.2-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-fft</artifactId>
-				<version>3.1</version>
+				<version>3.2-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-fitting</artifactId>
-				<version>3.1</version>
+				<version>3.2-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-ode</artifactId>
-				<version>3.1</version>
+				<version>3.2-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-optim</artifactId>
-				<version>3.1</version>
+				<version>3.2-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.antlr</groupId>
