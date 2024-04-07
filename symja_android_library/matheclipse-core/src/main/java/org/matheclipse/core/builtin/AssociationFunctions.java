@@ -1019,30 +1019,36 @@ public class AssociationFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
-        IExpr head = ast.arg2();
-        IAST list = (IAST) arg1;
-        IAssociation assocResult = F.assoc();
-        for (int i = 1; i < list.size(); i++) {
-          IExpr temp = list.get(i);
-          if (temp.isRuleAST()) {
-            assocResult.mergeRule((IAST) temp, head, engine);
-          } else if (temp.isAssociation()) {
-            IAssociation assoc = (IAssociation) temp;
-            for (int j = 1; j < assoc.size(); j++) {
-              assocResult.mergeRule(assoc.getRule(j), head, engine);
-            }
-          } else if (temp.isListOfRules()) {
-            IAST rulesList = (IAST) temp;
-            for (int j = 1; j < rulesList.size(); j++) {
-              assocResult.mergeRule((IAST) rulesList.get(j), head, engine);
-            }
-          } else {
-            return Errors.printMessage(S.Merge, "list1", F.List(temp), engine);
-          }
+        IAssociation result = F.assoc();
+        if (mergeListRecursive((IAST) arg1, ast.arg2(), result, engine)) {
+          return result;
         }
-        return assocResult;
+        return F.NIL;
       }
-      return F.NIL;
+      return Errors.printMessage(S.Merge, "list1", F.List(arg1), engine);
+    }
+
+    private static boolean mergeListRecursive(final IAST list, final IExpr head,
+        IAssociation result, EvalEngine engine) {
+      for (int i = 1; i < list.size(); i++) {
+        IExpr temp = list.get(i);
+        if (temp.isRuleAST()) {
+          result.mergeRule((IAST) temp, head, engine);
+        } else if (temp.isAssociation()) {
+          IAssociation assoc = (IAssociation) temp;
+          for (int j = 1; j < assoc.size(); j++) {
+            result.mergeRule(assoc.getRule(j), head, engine);
+          }
+        } else if (temp.isList()) {
+          if (!mergeListRecursive((IAST) temp, head, result, engine)) {
+            return false;
+          }
+        } else {
+          Errors.printMessage(S.Merge, "list1", F.List(temp), engine);
+          return false;
+        }
+      }
+      return true;
     }
 
     @Override

@@ -502,6 +502,10 @@ public class AssociationTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testMerge() {
+    check("Merge({<|x->1|>, x->2, x->3, {{y->4, <|a -> x|>},z->5}}, Identity)", //
+        "<|x->{1,2,3},y->{4},a->{x},z->{5}|>");
+    check("Merge({<|x->1|>, x->2, x->3, {{y->4},z->5}}, Identity)", //
+        "<|x->{1,2,3},y->{4},z->{5}|>");
     check("Merge({<|x->1|>, x->2, x->3, {y->4}}, Identity)", //
         "<|x->{1,2,3},y->{4}|>");
     // Merge: The argument test is not a valid list of Associations or rules or list of rules.
