@@ -1722,6 +1722,30 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testBetaRegularized() {
+    // 4 args
+    checkNumeric("BetaRegularized({2, 3, 5, 7}, 2, 7/2,1.5)", //
+        "{0.0,I*(-103.37304852766407),I*(-1069.1375512159648),I*(-4377.740983381134)}");
+
+    // 3 args
+    check("N(BetaRegularized(15/17, 5, 1), 50)", //
+        "0.53482498589646703858205438998434349374620120195202");
+    check("BetaRegularized(0.211111111111111111, 5, 1)", //
+        "0.000419329539873664243");
+    checkNumeric("N(BetaRegularized(23/47, 5 - I, 2))", //
+        "0.0847097829416838+I*0.05452582633879841");
+
+    checkNumeric("BetaRegularized({2, 3, 5, 7}, 2.5, 0.5)", //
+        "{1.0000000000000002+I*(-2.661837923372428),1.0000000000000002+I*(-5.407884471224193),1.0000000000000002+I*(-13.256264306821171),1.0000000000000002+I*(-24.415962537061436)}");
+
+    check("BetaRegularized(0,0,0)", //
+        "Indeterminate");
+    check("BetaRegularized(2 , 2 , 3)", //
+        "8");
+    check("BetaRegularized(2 , 7 , 17)", //
+        "5512320");
+    check("BetaRegularized(2 , 7 , -17)", //
+        "0");
+
     // see github #203
     check("BetaRegularized(1.0000001,1,1)", //
         "1.0");
@@ -1739,8 +1763,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("BetaRegularized({0.25,0.5,0.75},0.5,2147483647)", //
         "{BetaRegularized(0.25,0.5,2.14748*10^9),BetaRegularized(0.5,0.5,2.14748*10^9),BetaRegularized(0.75,0.5,2.14748*10^9)}");
 
-    check("BetaRegularized(-1.5707963267948966,-I,-I)", //
-        "BetaRegularized(-1.5707963267948966,I*(-1),I*(-1))");
+    checkNumeric("BetaRegularized(-1.5707963267948966,-I,-I)", //
+        "0.8506422193103679+I*(-1.41891817181187441)");
     check("BetaRegularized(2,-2147483648,17)", //
         "1");
     check("BetaRegularized(0,1+I,b)", //
@@ -1760,12 +1784,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{0.0117248,0.0755868,0.25317}");
     check("BetaRegularized(0.99 , 255.0 , 2.0)", //
         "0.273655");
-    check("BetaRegularized(2 , 2 , 3)", //
-        "8");
-    check("BetaRegularized(2 , 7 , 17)", //
-        "5512320");
-    check("BetaRegularized(2 , 7 , -17)", //
-        "0");
   }
 
   @Test

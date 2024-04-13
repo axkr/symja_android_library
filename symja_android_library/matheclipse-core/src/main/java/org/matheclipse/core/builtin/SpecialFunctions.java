@@ -52,7 +52,6 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -356,14 +355,14 @@ public class SpecialFunctions {
       try {
         IExpr z = ast.arg1();
         IExpr a = ast.arg2();
-        IExpr n = ast.arg3();
+        IExpr b = ast.arg3();
         if (a.isZero() || (a.isInteger() && a.isNegative())) {
-          if (n.isZero() || (n.isInteger() && n.isNegative())) {
+          if (b.isZero() || (b.isInteger() && b.isNegative())) {
             return S.Indeterminate;
           }
           return F.C1;
         }
-        if (n.isZero() || (n.isInteger() && n.isNegative())) {
+        if (b.isZero() || (b.isInteger() && b.isNegative())) {
           return F.C0;
         }
         if (z.isZero()) {
@@ -374,48 +373,55 @@ public class SpecialFunctions {
             return F.CComplexInfinity;
           }
         } else if (z.isOne()) {
-          if (engine.evalGreater(F.Re(n), F.C0)) {
+          if (engine.evalGreater(F.Re(b), F.C0)) {
             return F.C1;
           }
         }
-        if (engine.isDoubleMode()) {
-          try {
-            double zn = engine.evalDouble(z);
-            double an = engine.evalDouble(a);
-            double nn = engine.evalDouble(n);
-            int iterationLimit = EvalEngine.get().getIterationLimit();
-            int aInt = (int) an;
-            if (aInt > iterationLimit && iterationLimit > 0) {
-              IterationLimitExceeded.throwIt(aInt, ast.topHead());
-            }
-            int nInt = (int) nn;
-            if (nInt > iterationLimit && iterationLimit > 0) {
-              IterationLimitExceeded.throwIt(nInt, ast.topHead());
-            }
-            // TODO improve with regularizedIncompleteBetaFunction() ???
-            // https://github.com/haifengl/smile/blob/master/math/src/main/java/smile/math/special/Beta.java
-            return F.num(GammaJS.betaRegularized(zn, an, nn));
-          } catch (ValidateException ve) {
-            // from org.matheclipse.core.eval.EvalEngine.evalDouble()
-          }
-        }
-        int ni = n.toIntDefault();
-        if (ni != Integer.MIN_VALUE) {
-          if (ni < 0) {
-            // for n>=0; BetaRegularized(z, a, -n)=0
+        int bi = b.toIntDefault();
+        if (bi != Integer.MIN_VALUE) {
+          if (bi < 0) {
+            // https://functions.wolfram.com/GammaBetaErf/BetaRegularized/03/01/01/0002/
             return F.C0;
           }
-          if (ni > Config.MAX_POLYNOMIAL_DEGREE) {
-            PolynomialDegreeLimitExceeded.throwIt(ni);
+        }
+        if (engine.isNumericMode()) {
+          if (engine.isDoubleMode()) {
+            try {
+              double zd = engine.evalDouble(z);
+              double ad = engine.evalDouble(a);
+              double bd = engine.evalDouble(b);
+              int iterationLimit = EvalEngine.get().getIterationLimit();
+              int aInt = (int) ad;
+              if (aInt > iterationLimit && iterationLimit > 0) {
+                IterationLimitExceeded.throwIt(aInt, ast.topHead());
+              }
+              int nInt = (int) bd;
+              if (nInt > iterationLimit && iterationLimit > 0) {
+                IterationLimitExceeded.throwIt(nInt, ast.topHead());
+              }
+              // TODO improve with regularizedIncompleteBetaFunction() ???
+              // https://github.com/haifengl/smile/blob/master/math/src/main/java/smile/math/special/Beta.java
+              return F.num(GammaJS.betaRegularized(zd, ad, bd));
+            } catch (ValidateException ve) {
+              // from org.matheclipse.core.eval.EvalEngine.evalDouble()
+            }
           }
-          IASTAppendable sum = F.PlusAlloc(ni);
-          // {k, 0, n - 1}
-          for (int k = 0; k < ni; k++) {
-            // (Pochhammer(a, k)*(1 - z)^k)/k!
-            IInteger kk = F.ZZ(k);
-            sum.append(F.Times(F.Power(F.Plus(F.C1, F.Negate(z)), kk), F.Power(F.Factorial(kk), -1),
-                F.Pochhammer(a, kk)));
+          if (z.isNumber() && a.isNumber() && b.isNumber()) {
+            // (Beta(z,a,b)*Gamma(a+b))/(Gamma(a)*Gamma(b))
+            return F.Times(F.Beta(z, a, b), F.Power(F.Times(F.Gamma(a), F.Gamma(b)), F.CN1),
+                F.Gamma(F.Plus(a, b)));
           }
+        }
+        if (bi != Integer.MIN_VALUE) {
+          if (bi > Config.MAX_POLYNOMIAL_DEGREE) {
+            PolynomialDegreeLimitExceeded.throwIt(bi);
+          }
+          // https://functions.wolfram.com/GammaBetaErf/BetaRegularized/03/01/01/0001/
+
+          // ((1-z)^k*Pochhammer(a,k))/k!
+          IExpr sum = F.sum(k -> F.Times(F.Power(F.Subtract(F.C1, z), k),
+              F.Power(F.Factorial(k), F.CN1),
+              F.Pochhammer(a, k)), 0, bi - 1);
           // z^a * sum
           return F.Times(F.Power(z, a), sum);
         }
@@ -434,28 +440,22 @@ public class SpecialFunctions {
      */
     private static IExpr betaRegularized4(final IAST ast, EvalEngine engine) {
       try {
-        IExpr z = ast.arg1();
-        IExpr a = ast.arg2();
-        IExpr n = ast.arg3();
-        IExpr w = ast.arg4();
-        if (engine.isDoubleMode()) {
-          try {
-            double zn = engine.evalDouble(z);
-            double an = engine.evalDouble(a);
-            double nn = engine.evalDouble(n);
-            double wn = engine.evalDouble(w);
-            int iterationLimit = EvalEngine.get().getIterationLimit();
-            int aInt = (int) an;
-            if (aInt > iterationLimit && iterationLimit > 0) {
-              IterationLimitExceeded.throwIt(aInt, ast.topHead());
-            }
-            int nInt = (int) nn;
-            if (nInt > iterationLimit && iterationLimit > 0) {
-              IterationLimitExceeded.throwIt(nInt, ast.topHead());
-            }
-            return F.num(GammaJS.betaRegularized(zn, an, nn, wn));
-          } catch (IllegalArgumentException | ValidateException e) {
-            // ValidateException: from org.matheclipse.core.eval.EvalEngine.evalDouble()
+        IExpr z1 = ast.arg1();
+        IExpr z2 = ast.arg2();
+        IExpr a = ast.arg3();
+        IExpr b = ast.arg4();
+        int bi = b.toIntDefault();
+        if (bi != Integer.MIN_VALUE) {
+          if (bi < 0) {
+            // https://functions.wolfram.com/GammaBetaErf/BetaRegularized4/03/01/01/0001/
+            return F.C0;
+          }
+        }
+        if (engine.isNumericMode()) {
+          if (z1.isNumber() && z2.isNumber() && a.isNumber() && b.isNumber()) {
+            // ((-Beta(z1,a,b)+Beta(z2,a,b))*Gamma(a+b))/(Gamma(a)*Gamma(b))
+            return F.Times(F.Plus(F.Negate(F.Beta(z1, a, b)), F.Beta(z2, a, b)),
+                F.Power(F.Times(F.Gamma(a), F.Gamma(b)), F.CN1), F.Gamma(F.Plus(a, b)));
           }
         }
       } catch (RuntimeException rex) {
