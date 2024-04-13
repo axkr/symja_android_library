@@ -420,8 +420,7 @@ public class SpecialFunctions {
 
           // ((1-z)^k*Pochhammer(a,k))/k!
           IExpr sum = F.sum(k -> F.Times(F.Power(F.Subtract(F.C1, z), k),
-              F.Power(F.Factorial(k), F.CN1),
-              F.Pochhammer(a, k)), 0, bi - 1);
+              F.Power(F.Factorial(k), F.CN1), F.Pochhammer(a, k)), 0, bi - 1);
           // z^a * sum
           return F.Times(F.Power(z, a), sum);
         }
@@ -822,30 +821,7 @@ public class SpecialFunctions {
       } else if (a.isInteger() && a.isNegative()) {
         return F.C0;
       }
-      if (engine.isDoubleMode()) {
-        try {
-          double aDouble = Double.NaN;
-          double z1Double = Double.NaN;
-          try {
-            aDouble = a.evalf();
-            z1Double = z1.evalf();
-          } catch (ValidateException ve) {
-          }
-          if (Double.isNaN(aDouble) || Double.isNaN(z1Double)) {
-            // TODO complex numbers
-          } else {
-            return F.num(GammaJS.gammaRegularized(aDouble, z1Double));
-          }
-        } catch (ThrowException te) {
-          Errors.printMessage(S.GammaRegularized, te, engine);
-          return te.getValue();
-        } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
-        } catch (RuntimeException rex) {
-          Errors.printMessage(S.GammaRegularized, rex, engine);
-          return F.NIL;
-        }
-      }
+
       if (z1.isZero()) {
         IExpr temp = a.re();
         if (temp.isPositive()) {
@@ -858,41 +834,18 @@ public class SpecialFunctions {
         // (E/Gamma[a])*Subfactorial(a - 1)
         return F.Times(S.E, F.Power(F.Gamma(a), -1), F.Subfactorial(F.Plus(F.CN1, a)));
       }
+
+      if (engine.isNumericMode()) {
+        if (a.isNumber() && z1.isNumber()) {
+          // Gamma(a,z1)/Gamma(a)
+          return F.Times(F.Power(F.Gamma(a), F.CN1), F.Gamma(a, z1));
+        }
+      }
       return F.NIL;
     }
 
     private static IExpr gammaRegularzed3(IExpr a, IExpr z1, IExpr z2, final IAST ast,
         EvalEngine engine) {
-      if (engine.isDoubleMode()) {
-        try {
-          double aDouble = Double.NaN;
-          double z1Double = Double.NaN;
-          double z2Double = Double.NaN;
-          try {
-            aDouble = a.evalf();
-            z1Double = z1.evalf();
-            z2Double = z2.evalf();
-          } catch (ValidateException ve) {
-          }
-          if (Double.isNaN(aDouble) || Double.isNaN(z1Double) || Double.isNaN(z2Double)) {
-            // TODO
-            // Complex sc = s.evalComplex();
-            // Complex ac = a.evalComplex();
-            // return F.complexNum(ZetaJS.hurwitzZeta(sc, ac));
-          } else {
-            return F.num(GammaJS.gammaRegularized(aDouble, z1Double, z2Double));
-          }
-        } catch (ThrowException te) {
-          Errors.printMessage(S.GammaRegularized, te, engine);
-          return te.getValue();
-        } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
-        } catch (RuntimeException rex) {
-          Errors.printMessage(S.GammaRegularized, rex, engine);
-          return F.NIL;
-        }
-      }
-
       if (a.isOne()) {
         // E^(-arg2)-E^(-arg3)
         return F.Subtract(F.Power(S.E, F.Negate(z1)), F.Power(S.E, F.Negate(z2)));
@@ -900,7 +853,14 @@ public class SpecialFunctions {
       if (a.isInteger() && a.isNegative()) {
         return F.C0;
       }
-      // TODO add more rules
+      if (engine.isNumericMode()) {
+        if (a.isNumber() && z1.isNumber() && z2.isNumber()) {
+          // Gamma(a,z1)/Gamma(a)-Gamma(a,z2)/Gamma(a)
+          IExpr v1 = F.Power(F.Gamma(a), F.CN1);
+          return F.Plus(F.Times(v1, F.Gamma(a, z1)), F.Times(F.CN1, v1, F.Gamma(a, z2)));
+        }
+      }
+
       return F.NIL;
     }
 
@@ -920,6 +880,7 @@ public class SpecialFunctions {
       super.setUp(newSymbol);
     }
   }
+
 
   private static class HypergeometricPFQRegularized extends AbstractFunctionEvaluator {
 
@@ -944,6 +905,7 @@ public class SpecialFunctions {
       super.setUp(newSymbol);
     }
   }
+
 
   private static class HurwitzLerchPhi extends AbstractFunctionEvaluator {
 
@@ -979,6 +941,7 @@ public class SpecialFunctions {
       super.setUp(newSymbol);
     }
   }
+
 
   private static final class HurwitzZeta extends AbstractFunctionEvaluator {
 
@@ -1113,6 +1076,7 @@ public class SpecialFunctions {
     }
   }
 
+
   /**
    * Returns the inverse erf.
    *
@@ -1185,6 +1149,7 @@ public class SpecialFunctions {
       super.setUp(newSymbol);
     }
   }
+
 
   /**
    * Returns the inverse erf.
@@ -1263,6 +1228,7 @@ public class SpecialFunctions {
     }
   }
 
+
   private static class InverseBetaRegularized extends AbstractFunctionEvaluator {
 
     @Override
@@ -1325,6 +1291,7 @@ public class SpecialFunctions {
     }
   }
 
+
   private static class InverseGammaRegularized extends AbstractFunctionEvaluator {
 
     @Override
@@ -1367,6 +1334,7 @@ public class SpecialFunctions {
       super.setUp(newSymbol);
     }
   }
+
 
   private static class LerchPhi extends AbstractFunctionEvaluator {
 
@@ -1414,6 +1382,7 @@ public class SpecialFunctions {
       super.setUp(newSymbol);
     }
   }
+
 
   private static class LogGamma extends AbstractTrigArg1 implements INumeric {
 
@@ -1500,6 +1469,7 @@ public class SpecialFunctions {
       super.setUp(newSymbol);
     }
   }
+
 
   private static class MeijerG extends AbstractFunctionEvaluator {
 
@@ -1698,6 +1668,7 @@ public class SpecialFunctions {
     }
   }
 
+
   private static class PolyGamma extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     public IExpr e1ApfloatArg(Apfloat arg1) {
@@ -1875,6 +1846,7 @@ public class SpecialFunctions {
     }
   }
 
+
   private static class PolyLog extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
@@ -2035,6 +2007,7 @@ public class SpecialFunctions {
       super.setUp(newSymbol);
     }
   }
+
 
   /**
    * Lambert W function See: <a href="http://en.wikipedia.org/wiki/Lambert_W_function">Wikipedia -
@@ -2222,6 +2195,7 @@ public class SpecialFunctions {
     }
   }
 
+
   private static class StieltjesGamma extends AbstractFunctionEvaluator {
 
     @Override
@@ -2254,6 +2228,7 @@ public class SpecialFunctions {
       super.setUp(newSymbol);
     }
   }
+
 
   private static final class StruveH extends AbstractFunctionEvaluator implements IFunctionExpand {
 
@@ -2346,6 +2321,7 @@ public class SpecialFunctions {
     }
   }
 
+
   private static final class StruveL extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
@@ -2437,6 +2413,7 @@ public class SpecialFunctions {
       super.setUp(newSymbol);
     }
   }
+
 
   private static final class Zeta extends AbstractArg12 {
 
@@ -2627,6 +2604,7 @@ public class SpecialFunctions {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
+
   }
 
   public static void initialize() {

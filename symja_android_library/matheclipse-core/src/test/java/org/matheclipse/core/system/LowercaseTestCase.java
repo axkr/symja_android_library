@@ -8015,6 +8015,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFactorialPower() {
+
+    check("N(FactorialPower(1/3, 7, 3), 50)", //
+        "131965.39551897576588934613625971650663008687700045");
+    checkNumeric("FactorialPower(1 + I, I, 3.)", //
+        "0.6161330645515811+I*1.0098175021356184");
+
     check("FactorialPower(-5, 3, 0.5)", //
         "-165.0");
 
@@ -10418,6 +10424,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testGammaRegularized() {
+    check("N(GammaRegularized(5, 3,{2,3,5,7}), 50)", //
+        "{-0.13208373813251677697126440853762923150933999928159," //
+            + "0," //
+            + "0.37476995945855965484415039060643335707553920092208," //
+            + "0.64227163664170072066013711492328393408012799819306}");
+
+    check("N(GammaRegularized(2, 33/10), 50)", //
+        "0.15859761982533202341609593038851663410395766708586");
+
+    checkNumeric("N(GammaRegularized(2 + 3 I, 4 - I))", //
+        "-1.152239855432952+I*(-0.23324343668111)");
     check("GammaRegularized(1, 1.5)", //
         "0.22313");
     check("GammaRegularized(2,  2.2)", //
