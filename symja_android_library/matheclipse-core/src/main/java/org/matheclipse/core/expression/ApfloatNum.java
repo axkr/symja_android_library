@@ -1473,11 +1473,21 @@ public class ApfloatNum implements INum {
   public IExpr logIntegral() {
     try {
       return valueOf(EvalEngine.getApfloat().logIntegral(fApfloat));
-    } catch (ArithmeticException aex) {
+    } catch (ArithmeticException | NumericComputationException ex) {
       // java.lang.ArithmeticException: Result would be complex
     }
     Apcomplex logIntegral = EvalEngine.getApfloat().logIntegral(apcomplexValue());
     return F.complexNum(logIntegral);
+  }
+
+  @Override
+  public IExpr logisticSigmoid() {
+    try {
+      return valueOf(EvalEngine.getApfloat().logisticSigmoid(fApfloat));
+    } catch (NumericComputationException ex) {
+    }
+    Apcomplex logisticSigmoid = EvalEngine.getApfloat().logisticSigmoid(apcomplexValue());
+    return F.complexNum(logisticSigmoid);
   }
 
   /** @return */
@@ -1717,6 +1727,11 @@ public class ApfloatNum implements INum {
   @Override
   public ApfloatNum sin() {
     return valueOf(EvalEngine.getApfloat().sin(fApfloat));
+  }
+
+  @Override
+  public ApfloatNum sinc() {
+    return valueOf(EvalEngine.getApfloat().sinc(fApfloat));
   }
 
   @Override

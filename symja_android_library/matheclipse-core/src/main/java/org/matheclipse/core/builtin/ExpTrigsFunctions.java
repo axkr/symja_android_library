@@ -2484,6 +2484,15 @@ public class ExpTrigsFunctions {
     }
 
     @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        IInexactNumber z = (IInexactNumber) ast.arg1();
+        return z.logisticSigmoid();
+      }
+      return F.NIL;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -3059,6 +3068,18 @@ public class ExpTrigsFunctions {
       IExpr sin = S.Sin.ofNIL(engine, arg1);
       if (sin.isPresent() && !sin.isSin()) {
         return sin.divide(arg1);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        IInexactNumber z = (IInexactNumber) ast.arg1();
+        if (z.isZero()) {
+          return F.C1;
+        }
+        return z.sinc();
       }
       return F.NIL;
     }

@@ -1517,11 +1517,22 @@ public class Num implements INum {
     try {
       Apfloat logIntegral = EvalEngine.getApfloatDouble().logIntegral(apfloatValue());
       return F.num(logIntegral.doubleValue());
-    } catch (ArithmeticException aex) {
+    } catch (ArithmeticException | NumericComputationException ex) {
       // java.lang.ArithmeticException: Result would be complex
     }
     Apcomplex logIntegral = EvalEngine.getApfloatDouble().logIntegral(apcomplexValue());
     return F.complexNum(logIntegral.real().doubleValue(), logIntegral.imag().doubleValue());
+  }
+
+  @Override
+  public IExpr logisticSigmoid() {
+    try {
+      Apfloat logisticSigmoid = EvalEngine.getApfloatDouble().logisticSigmoid(apfloatValue());
+      return F.num(logisticSigmoid.doubleValue());
+    } catch (NumericComputationException ex) {
+    }
+    Apcomplex logisticSigmoid = EvalEngine.getApfloatDouble().logisticSigmoid(apcomplexValue());
+    return F.complexNum(logisticSigmoid.real().doubleValue(), logisticSigmoid.imag().doubleValue());
   }
 
   public long longValue() {
@@ -1752,6 +1763,14 @@ public class Num implements INum {
   @Override
   public INum sin() {
     return valueOf(Math.sin(value));
+  }
+
+  @Override
+  public INum sinc() {
+    if (isZero()) {
+      return F.CD1;
+    }
+    return valueOf(Math.sin(value) / value);
   }
 
   @Override

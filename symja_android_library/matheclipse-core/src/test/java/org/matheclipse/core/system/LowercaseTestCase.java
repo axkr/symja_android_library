@@ -8089,6 +8089,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFactorial() {
+    check("Factorial(5.211111111111111111)", //
+        "172.7183563387097672");
     check("(5/2)!", //
         "15/8*Sqrt(Pi)");
     check("(-7/2)!", //
@@ -8144,6 +8146,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("N(Factorial2(3/13), 10)", //
         "0.9953739588");
+    check("Factorial2(5.211111111111111111)", //
+        "18.6046636633029321");
+
     check("Factorial2(2.0 + I)", //
         "5.15473+I*3.27618");
 
@@ -14498,6 +14503,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLogisticSigmoid() {
+    checkNumeric("LogisticSigmoid(0.8)", //
+        "0.6899744811276125");
+    checkNumeric("N(LogisticSigmoid(1/9),50)", //
+        "0.52774923505451317879089698533394369096217714446845");
+    checkNumeric("LogisticSigmoid(1.0000000000000000000000)", //
+        "0.73105857863000487925115");
+    checkNumeric("N(LogisticSigmoid(1 + 9 I))", //
+        "1.4298207928844138+I*0.32606870958127954");
+
     check("LogisticSigmoid(I*Pi)", //
         "LogisticSigmoid(I*Pi)");
     check("D(LogisticSigmoid(x),x)", //
@@ -14514,11 +14528,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     checkNumeric("LogisticSigmoid(0.5 + 2.3*I)", //
         "1.0647505893884985+I*0.8081774171575825");
     checkNumeric("LogisticSigmoid({-0.2, 0.1, 0.3})", //
-        "{0.45016600268752216,0.52497918747894,0.574442516811659}");
+        "{0.4501660026875221,0.52497918747894,0.5744425168116589}");
     checkNumeric("LogisticSigmoid(0.5 + 2.3*I)", //
         "1.0647505893884985+I*0.8081774171575825");
-    checkNumeric("LogisticSigmoid({-0.2, 0.1, 0.3})", //
-        "{0.45016600268752216,0.52497918747894,0.574442516811659}");
   }
 
   @Test
@@ -23228,6 +23240,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSinc() {
+    checkNumeric("Sinc(3.5)", //
+        "-0.10022377933989138");
+    checkNumeric("N(Sinc(35/10),50)", //
+        "-0.10022377933989138517724822858389588145285192455445");
+    checkNumeric("Sinc(1 + 3.5*I)", //
+        "3.413480749977026+I*(-3.009162956293193)");
+    checkNumeric("N(Sinc(1+35/10*I),50)", //
+        "3.4134807499770263967370518627588410722367885846662+I*(-3.0091629562931933945895646489407216870241346727697)");
+
     check("Sinc(-x)", //
         "Sinc(x)");
     check("Table(Sinc(n*Pi/3), {n, 0, 6})", //

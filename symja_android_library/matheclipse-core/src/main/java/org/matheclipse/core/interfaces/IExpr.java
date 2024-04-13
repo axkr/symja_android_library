@@ -1692,11 +1692,11 @@ public interface IExpr
   default IExpr gcd(IExpr that) {
     return S.GCD.of(this, that);
   }
- 
+
   default IExpr gegenbauerC(IExpr arg2) {
     return F.NIL;
   }
- 
+
   default IExpr gegenbauerC(IExpr arg2, IExpr arg3) {
     return F.NIL;
   }
@@ -5319,6 +5319,15 @@ public interface IExpr
   }
 
   /**
+   * Logistic sigmoid.
+   *
+   * @return &sigma;(z)
+   */
+  default IExpr logisticSigmoid() {
+    return F.NIL;
+  }
+
+  /**
    * If this is a <code>Interval[{lower, upper}]</code> expression return the <code>lower</code>
    * value. If this is a <code>IReal</code> expression return <code>this</code>.
    *
@@ -6105,6 +6114,16 @@ public interface IExpr
   @Override
   default IExpr sin() {
     return S.Sin.of(this);
+  }
+
+  /**
+   * The <code>Sinc</code> function is defined as <code>Sin(z)/z</code> and
+   * <code>Sinc(0) == 1</code>
+   * 
+   * @return sinc(z)
+   */
+  default IExpr sinc() {
+    return F.NIL;
   }
 
   @Override

@@ -1275,6 +1275,11 @@ public class ApcomplexNum implements IComplexNum {
     return valueOf(EvalEngine.getApfloat().logIntegral(fApcomplex));
   }
 
+  @Override
+  public IExpr logisticSigmoid() {
+    return valueOf(EvalEngine.getApfloat().logisticSigmoid(fApcomplex));
+  }
+
   /**
    * @param that
    * @return
@@ -1483,6 +1488,11 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public ApcomplexNum sin() {
     return valueOf(EvalEngine.getApfloat().sin(fApcomplex));
+  }
+
+  @Override
+  public ApcomplexNum sinc() {
+    return valueOf(EvalEngine.getApfloat().sinc(fApcomplex));
   }
 
   @Override

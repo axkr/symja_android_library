@@ -1416,6 +1416,12 @@ public class ComplexNum implements IComplexNum {
     return F.complexNum(logIntegral.real().doubleValue(), logIntegral.imag().doubleValue());
   }
 
+  @Override
+  public IExpr logisticSigmoid() {
+    Apcomplex logisticSigmoid = EvalEngine.getApfloatDouble().logisticSigmoid(apcomplexValue());
+    return F.complexNum(logisticSigmoid.real().doubleValue(), logisticSigmoid.imag().doubleValue());
+  }
+
   /**
    * Returns a {@code ComplexNum} whose value is {@code this * factor}. Implements preliminary
    * checks for {@code NaN} and infinity followed by the definitional formula:
@@ -1624,6 +1630,14 @@ public class ComplexNum implements IComplexNum {
   @Override
   public ComplexNum sin() {
     return valueOf(fComplex.sin());
+  }
+
+  @Override
+  public ComplexNum sinc() {
+    if (isZero()) {
+      return ONE;
+    }
+    return valueOf(fComplex.sin().divide(fComplex));
   }
 
   @Override
