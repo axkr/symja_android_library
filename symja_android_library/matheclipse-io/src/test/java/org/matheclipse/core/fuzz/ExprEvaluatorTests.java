@@ -152,7 +152,8 @@ public class ExprEvaluatorTests {
             // System.err.flush();
             // }
 
-            thread = new SlowComputationThread(">> " + mutant.toString(), engine);
+            thread = new SlowComputationThread(Thread.currentThread(), ">> " + mutant.toString(),
+                engine);
             thread.start();
             engine.evaluate(mutant);
 
@@ -635,8 +636,10 @@ public class ExprEvaluatorTests {
     private String str;
     private AtomicBoolean running;
     private EvalEngine engine;
+    private Thread parent;
 
-    SlowComputationThread(String str, EvalEngine engine) {
+    SlowComputationThread(Thread parent, String str, EvalEngine engine) {
+      this.parent = parent;
       this.str = str;
       this.running = new AtomicBoolean(true);
       this.engine = engine;
@@ -659,6 +662,7 @@ public class ExprEvaluatorTests {
         if (running.get()) {
           System.err.println("SLOW: " + str);
           engine.setStopRequested(true);
+          parent.interrupt();
         }
       }
     }
@@ -688,7 +692,7 @@ public class ExprEvaluatorTests {
       } else {
         ast = F.ast(sym);
       }
-      SlowComputationThread thread = null;
+      // SlowComputationThread thread = null;
       try {
         for (int k = 0; k < j; k++) {
           int seedIndex = random.nextInt(1, seedList.size());
@@ -716,8 +720,10 @@ public class ExprEvaluatorTests {
         }
         // System.out.println(">> " + ast.toString());
         // System.out.print(".");
-        thread = new SlowComputationThread(">> " + ast.toString(), engine);
-        thread.start();
+
+        // thread = new SlowComputationThread(Thread.currentThread(), ">> " + ast.toString(),
+        // engine);
+        // thread.start();
 
         // IAST debugTest = (IAST) engine.parse(
         // "Integrate(2/(1+Sqrt(5)))[x^(Heads->True), {{0}}+I,OptionValue(
@@ -733,7 +739,7 @@ public class ExprEvaluatorTests {
         if (evaluator != null && DIRECT_EVALUATOR_TESTS) {
           result = evaluator.evaluate(ast, engine);
         } else {
-          result = eval.eval(ast);
+          result = eval.getEvalEngine().evalTimeConstrained(ast, 20);
         }
         if (result.isAST()) {
           if (!result.isFree(x -> x == null || x.isNIL(), true)) {
@@ -781,10 +787,10 @@ public class ExprEvaluatorTests {
           fail();
         }
       } finally {
-        if (thread != null) {
-          thread.terminate();
-          thread.interrupt();
-        }
+        // if (thread != null) {
+        // thread.terminate();
+        // thread.interrupt();
+        // }
       }
     }
   }

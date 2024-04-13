@@ -485,12 +485,14 @@ public abstract class AbstractFractionSym implements IFraction {
   public IASTAppendable factorInteger() {
     IInteger num = numerator();
     IInteger den = denominator();
-    IASTAppendable result = den.factorInteger();
-
+    IASTAppendable numResult = num.factorInteger();
+    IASTAppendable denResult = den.factorInteger();
     // negate the exponents of the denominator part
-    result.forEach(list -> ((IASTMutable) list).set(2, list.second().negate()));
+    denResult.forEach(list -> ((IASTMutable) list).set(2, list.second().negate()));
+    IASTAppendable result = F.ListAlloc(denResult.argSize() + numResult.argSize());
     // add the factors from the numerator part
-    result.appendArgs(num.factorInteger());
+    result.appendArgs(denResult);
+    result.appendArgs(numResult);
     EvalAttributes.sort(result);
     return result;
   }

@@ -2335,15 +2335,11 @@ public final class NumberTheory {
       if (arg1.isNegativeInfinity()) {
         return S.Indeterminate;
       }
-      if (arg1.isDirectedInfinity()) {
-        if (arg1.isComplexInfinity()) {
-          return S.Indeterminate;
-        }
-        if (arg1.isAST1()) {
-          if (arg1.first().equals(F.CI) || arg1.first().equals(F.CNI)) {
-            return F.C0;
-          }
-        }
+      if (arg1.isDirectedInfinity(F.CI) || arg1.isDirectedInfinity(F.CNI)) {
+        return F.C0;
+      }
+      if (arg1.isComplexInfinity()) {
+        return S.Indeterminate;
       }
       return F.NIL;
     }
@@ -2678,6 +2674,12 @@ public final class NumberTheory {
         return F.CInfinity;
       }
       if (arg1.isNegativeInfinity()) {
+        return S.Indeterminate;
+      }
+      if (arg1.isDirectedInfinity(F.CI) || arg1.isDirectedInfinity(F.CNI)) {
+        return F.CComplexInfinity;
+      }
+      if (arg1.isComplexInfinity()) {
         return S.Indeterminate;
       }
       if (engine.isNumericMode() && arg1.isNumber()) {

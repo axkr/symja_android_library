@@ -30,6 +30,7 @@ import org.matheclipse.parser.client.SyntaxError;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
+import edu.jas.kern.PreemptingException;
 
 /**
  * Evaluate math expressions to <code>IExpr</code> results.
@@ -507,7 +508,7 @@ public class ExprEvaluator {
             F.await();
             TimeLimiter timeLimiter = SimpleTimeLimiter.create(executorService);
             return timeLimiter.callWithTimeout(work, timeoutDuration, timeUnit);
-          } catch (ApfloatInterruptedException
+          } catch (PreemptingException | ApfloatInterruptedException
               | org.matheclipse.core.eval.exception.TimeoutException
               | java.util.concurrent.TimeoutException
               | com.google.common.util.concurrent.UncheckedTimeoutException e) {

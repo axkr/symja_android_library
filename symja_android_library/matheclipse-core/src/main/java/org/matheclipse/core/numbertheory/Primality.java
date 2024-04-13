@@ -1351,7 +1351,7 @@ public class Primality implements IPrimality {
     Int2IntMap map = new Int2IntRBTreeMap();
     // SortedMap<Integer, Integer> map = new TreeMap<Integer, Integer>();
     BigInteger rest = countPrimes32749(big, map);
-    int allocSize = 1;
+    int allocSize = 2;
     for (Int2IntMap.Entry entry : map.int2IntEntrySet()) {
       allocSize += entry.getIntValue();
     }

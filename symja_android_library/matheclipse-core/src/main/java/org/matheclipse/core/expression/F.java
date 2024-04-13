@@ -6183,7 +6183,7 @@ public class F extends S {
    * @return
    */
   public static int allocMin8(int size) {
-    return size < 7 ? size : 7;
+    return size < 7 && size > 0 ? size : 7;
   }
 
   /**
@@ -6203,7 +6203,7 @@ public class F extends S {
    * @return
    */
   public static int allocMin16(int size) {
-    return size < 15 ? size : 15;
+    return size < 15 && size > 0 ? size : 15;
   }
 
   /**
@@ -6223,7 +6223,7 @@ public class F extends S {
    * @return
    */
   public static int allocMin32(int size) {
-    return size < 31 ? size : 31;
+    return size < 31 && size > 0 ? size : 31;
   }
 
   /**
@@ -9722,7 +9722,7 @@ public class F extends S {
     if (from > to && step > 0) {
       return F.C1;
     }
-    IASTAppendable result = ast(S.Times, 15);
+    IASTAppendable result = F.TimesAlloc(F.allocMin32(to - from + 1));
     long numberOfLeaves = 0;
     INumber number = F.C1;
     // insert number as placeholder
@@ -9761,7 +9761,7 @@ public class F extends S {
     if (iMin > iMax) {
       return F.C0;
     }
-    IASTAppendable result = ast(S.Plus, 15);
+    IASTAppendable result = F.PlusAlloc(F.allocMin32(iMax - iMin + 1));
     int numberOfLeaves = 0;
     EvalEngine engine = EvalEngine.get();
     INumber number = F.C0;
@@ -9819,7 +9819,7 @@ public class F extends S {
     if (from > to && step > 0) {
       return F.C0;
     }
-    IASTAppendable result = ast(S.Plus, 15);
+    IASTAppendable result = F.PlusAlloc(F.allocMin32(to - from + 1));
     long numberOfLeaves = 0;
     INumber number = F.C0;
     // insert number as placeholder

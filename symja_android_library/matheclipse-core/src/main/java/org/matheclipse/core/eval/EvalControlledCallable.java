@@ -14,6 +14,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
+import edu.jas.kern.PreemptingException;
 
 public class EvalControlledCallable implements Callable<IExpr> {
   private static final Logger LOGGER = LogManager.getLogger();
@@ -64,7 +65,8 @@ public class EvalControlledCallable implements Callable<IExpr> {
         fEngine.addInOut(fExpr, temp);
       }
       return temp;
-    } catch (ApfloatInterruptedException | org.matheclipse.core.eval.exception.TimeoutException e) {
+    } catch (PreemptingException | ApfloatInterruptedException
+        | org.matheclipse.core.eval.exception.TimeoutException e) {
       return S.$Aborted;
     } catch (final SyntaxError se) {
       LOGGER.error("EvalControlledCallable.call() failed", se);

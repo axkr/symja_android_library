@@ -93,6 +93,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
+import edu.jas.kern.PreemptingException;
 
 /**
  * The main evaluation algorithms for the Symja computer algebra system. A single <code>EvalEngine
@@ -155,7 +156,8 @@ public class EvalEngine implements Serializable {
         long timeConstrainedMillis = System.currentTimeMillis() + fSeconds * 1000L;
         fEngine.setTimeConstrainedMillis(timeConstrainedMillis);
         return fEngine.evaluate(fExpr);
-      } catch (ApfloatInterruptedException | org.matheclipse.core.eval.exception.TimeoutException
+      } catch (PreemptingException | ApfloatInterruptedException
+          | org.matheclipse.core.eval.exception.TimeoutException
           | com.google.common.util.concurrent.UncheckedTimeoutException e) {
         if (Config.DEBUG) {
           System.out
@@ -2611,8 +2613,9 @@ public class EvalEngine implements Serializable {
         System.err.println("TIMEOUT: " + expr);
         // e.printStackTrace();
         Throwable cause = e.getCause();
-        if (cause != null) {
+        if (cause != null && !(cause instanceof FlowControlException)) {
           cause.printStackTrace();
+          throw new NullPointerException();
         }
       }
       // e.printStackTrace();
@@ -2624,7 +2627,12 @@ public class EvalEngine implements Serializable {
     } catch (Exception e) {
       if (Config.FUZZ_TESTING) {
         System.err.println("TIMECONSTRAINED exception: " + expr);
+        Throwable cause = e.getCause();
         e.printStackTrace();
+        if (cause != null && !(cause instanceof FlowControlException)) {
+          cause.printStackTrace();
+          throw new NullPointerException();
+        }
       }
       // Appengine example: com.google.apphosting.api.DeadlineExceededException
       Errors.printMessage(S.TimeConstrained, e, EvalEngine.get());
