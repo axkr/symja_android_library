@@ -15773,8 +15773,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{x$1,x$2}");
     check("Module({e = Expand((1 + x)^5)}, Function(x, e))", //
         "Function(x$3,e$3)");
+    EvalEngine.resetModuleCounter4JUnit();
     check("Module({a,b}, Block({c}, c+a))", //
-        "a$4+c");
+        "a$1+c");
 
     if (Config.SERVER_MODE == false) {
       check("f(x0_) :=\n" + " Module({x = x0},\n" + "  While(x > 0, x = Log(x));\n" + "  x\n"
