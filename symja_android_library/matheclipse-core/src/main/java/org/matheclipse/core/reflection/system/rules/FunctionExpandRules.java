@@ -132,6 +132,9 @@ public class FunctionExpandRules {
     // GammaRegularized(a_,z_):=Gamma(a,z)/Gamma(a)
     SetDelayed(GammaRegularized(a_,z_),
       Times(Power(Gamma(a),CN1),Gamma(a,z))),
+    // GammaRegularized(a_,y_,z_):=Gamma(a,y)/Gamma(a)-Gamma(a,z)/Gamma(a)
+    SetDelayed(GammaRegularized(a_,y_,z_),
+      Plus(Times(Power(Gamma(a),CN1),Gamma(a,y)),Times(CN1,Power(Gamma(a),CN1),Gamma(a,z)))),
     // GegenbauerC(n_,x_):=(2*Cos(n*ArcCos(x)))/n
     SetDelayed(GegenbauerC(n_,x_),
       Times(C2,Power(n,CN1),Cos(Times(n,ArcCos(x))))),

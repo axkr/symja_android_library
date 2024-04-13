@@ -58,6 +58,7 @@
  Gamma(1/2, z_) := Sqrt(Pi)*(1 - Erf(Sqrt(z))),
 
  GammaRegularized(a_, z_) := Gamma(a,z) / Gamma(a),
+ GammaRegularized(a_, y_, z_) :=  Gamma(a,y)/Gamma(a)-Gamma(a,z)/Gamma(a),
  
  GegenbauerC(n_, x_) := (2*Cos(n*ArcCos(x)))/n,
  

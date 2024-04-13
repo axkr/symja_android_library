@@ -850,6 +850,9 @@ public class SpecialFunctions {
         // E^(-arg2)-E^(-arg3)
         return F.Subtract(F.Power(S.E, F.Negate(z1)), F.Power(S.E, F.Negate(z2)));
       }
+      if (a.isZero()) {
+        return F.C0;
+      }
       if (a.isInteger() && a.isNegative()) {
         return F.C0;
       }
@@ -880,7 +883,6 @@ public class SpecialFunctions {
       super.setUp(newSymbol);
     }
   }
-
 
   private static class HypergeometricPFQRegularized extends AbstractFunctionEvaluator {
 
