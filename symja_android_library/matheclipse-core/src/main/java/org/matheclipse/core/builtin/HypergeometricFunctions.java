@@ -1700,34 +1700,42 @@ public class HypergeometricFunctions {
       IExpr m = ast.arg2();
       IExpr z = ast.arg3();
 
-      if (engine.isDoubleMode()) {
-        try {
-          double kDouble = Double.NaN;
-          double mDouble = Double.NaN;
-          double zDouble = Double.NaN;
-          try {
-            kDouble = k.evalf();
-            mDouble = m.evalf();
-            zDouble = z.evalf();
-            return F.complexNum(HypergeometricJS.whittakerM(new Complex(kDouble),
-                new Complex(mDouble), new Complex(zDouble)));
-          } catch (ValidateException ve) {
-            Errors.printMessage(ast.topHead(), ve, engine);
-          }
-          Complex kc = k.evalfc();
-          Complex mc = m.evalfc();
-          Complex zc = z.evalfc();
-          return F.complexNum(HypergeometricJS.whittakerM(kc, mc, zc));
-
-        } catch (ThrowException te) {
-          LOGGER.debug("WhittakerM.evaluate() failed", te);
-          return te.getValue();
-        } catch (ValidateException ve) {
-          return Errors.printMessage(ast.topHead(), ve, engine);
-        } catch (RuntimeException rex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+      if (engine.isNumericMode()) {
+        if (k.isNumber() && m.isNumber() && z.isNumber()) {
+          // (z^(1/2+m)*Hypergeometric1F1(1/2-k+m,1+2*m,z))/E^(z/2)
+          return F.Times(F.Power(F.Exp(F.Times(F.C1D2, z)), F.CN1), F.Power(z, F.Plus(F.C1D2, m)),
+              F.Hypergeometric1F1(F.Plus(F.C1D2, F.Negate(k), m), F.Plus(F.C1, F.Times(F.C2, m)),
+                  z));
         }
       }
+      // if (engine.isDoubleMode()) {
+      // try {
+      // double kDouble = Double.NaN;
+      // double mDouble = Double.NaN;
+      // double zDouble = Double.NaN;
+      // try {
+      // kDouble = k.evalf();
+      // mDouble = m.evalf();
+      // zDouble = z.evalf();
+      // return F.complexNum(HypergeometricJS.whittakerM(new Complex(kDouble),
+      // new Complex(mDouble), new Complex(zDouble)));
+      // } catch (ValidateException ve) {
+      // Errors.printMessage(ast.topHead(), ve, engine);
+      // }
+      // Complex kc = k.evalfc();
+      // Complex mc = m.evalfc();
+      // Complex zc = z.evalfc();
+      // return F.complexNum(HypergeometricJS.whittakerM(kc, mc, zc));
+      //
+      // } catch (ThrowException te) {
+      // LOGGER.debug("WhittakerM.evaluate() failed", te);
+      // return te.getValue();
+      // } catch (ValidateException ve) {
+      // return Errors.printMessage(ast.topHead(), ve, engine);
+      // } catch (RuntimeException rex) {
+      // LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+      // }
+      // }
       return F.NIL;
     }
 
@@ -1755,36 +1763,13 @@ public class HypergeometricFunctions {
       IExpr k = ast.arg1();
       IExpr m = ast.arg2();
       IExpr z = ast.arg3();
-      // TODO
-      // if (engine.isDoubleMode()) {
-      // try {
-      // double kDouble = Double.NaN;
-      // double mDouble = Double.NaN;
-      // double zDouble = Double.NaN;
-      // try {
-      // kDouble = k.evalDouble();
-      // mDouble = m.evalDouble();
-      // zDouble = z.evalDouble();
-      // return F.complexNum(HypergeometricJS.whittakerW(new Complex(kDouble), new Complex(mDouble),
-      // new Complex(zDouble)));
-      // } catch (ValidateException ve) {
-      // LOGGER.debug("WhittakerW.evaluate() failed", ve);
-      // }
-      // Complex kc = k.evalComplex();
-      // Complex mc = m.evalComplex();
-      // Complex zc = z.evalComplex();
-      // return F.complexNum(HypergeometricJS.whittakerW(kc, mc, zc));
-      //
-      // } catch (ThrowException te) {
-      // LOGGER.debug("WhittakerW.evaluate() failed", te);
-      // return te.getValue();
-      // } catch (ValidateException ve) {
-      // LOGGER.debug("WhittakerW.evaluate() failed", ve);
-      // } catch (RuntimeException rex) {
-      // LOGGER.error("WhittakerW.evaluate() failed", rex);
-      // return engine.printMessage(ast.topHead(), rex);
-      // }
-      // }
+      if (engine.isNumericMode()) {
+        if (k.isNumber() && m.isNumber() && z.isNumber() && !z.isZero()) {
+          // (z^(1/2+m)*HypergeometricU(1/2-k+m,1+2*m,z))/E^(z/2)
+          return F.Times(F.Power(F.Exp(F.Times(F.C1D2, z)), F.CN1), F.Power(z, F.Plus(F.C1D2, m)),
+              F.HypergeometricU(F.Plus(F.C1D2, F.Negate(k), m), F.Plus(F.C1, F.Times(F.C2, m)), z));
+        }
+      }
       return F.NIL;
     }
 
