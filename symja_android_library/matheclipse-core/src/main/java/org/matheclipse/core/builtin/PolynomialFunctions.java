@@ -1811,16 +1811,17 @@ public class PolynomialFunctions {
         if (n.isMathematicalIntegerNonNegative()) {
           return jacobiPSum(n, a, b, z, engine);
         }
-        INumber aNegate = a.negate();
-        if (!aNegate.isMathematicalIntegerNonNegative()) {
-          // https://functions.wolfram.com/Polynomials/JacobiP/26/01/02/0001/
-          // Gamma(a+n+1)/(Gamma(n+1)*Gamma(a+1))*Hypergeometric2F1(-n,a+b+n+1,a+1,1/2*(1-z))
-          IExpr v1 = F.Plus(a, F.C1);
-          IAST jacobiP = F.Times(F.Power(F.Gamma(F.Plus(F.C1, n)), F.CN1),
-              F.Power(F.Gamma(v1), F.CN1), F.Gamma(F.Plus(n, v1)), F.Hypergeometric2F1(F.Negate(n),
-                  F.Plus(b, n, v1), v1, F.Times(F.C1D2, F.Subtract(F.C1, z))));
-          return engine.evaluate(jacobiP);
-        }
+        return n.jacobiP(a, b, z);
+        // INumber aNegate = a.negate();
+        // if (!aNegate.isMathematicalIntegerNonNegative()) {
+        // // https://functions.wolfram.com/Polynomials/JacobiP/26/01/02/0001/
+        // // Gamma(a+n+1)/(Gamma(n+1)*Gamma(a+1))*Hypergeometric2F1(-n,a+b+n+1,a+1,1/2*(1-z))
+        // IExpr v1 = F.Plus(a, F.C1);
+        // IAST jacobiP = F.Times(F.Power(F.Gamma(F.Plus(F.C1, n)), F.CN1),
+        // F.Power(F.Gamma(v1), F.CN1), F.Gamma(F.Plus(n, v1)), F.Hypergeometric2F1(F.Negate(n),
+        // F.Plus(b, n, v1), v1, F.Times(F.C1D2, F.Subtract(F.C1, z))));
+        // return engine.evaluate(jacobiP);
+        // }
 
       }
 
@@ -1832,12 +1833,34 @@ public class PolynomialFunctions {
       // Sum((Binomial(a+n,k)*Binomial(b+n,-k+n)*(z+1)^k)/(-1+z)^(k-n),{k,0,n})/2^n
       int ni = n.toIntDefault();
       if (ni >= 0) {
+        if (z.isZero()) {
+          // https://functions.wolfram.com/Polynomials/JacobiP/03/01/01/0001/
+          // Gamma(1+a+n)/(2^n*Gamma(1+a)*n!)*Hypergeometric2F1(-b-n,-n,1+a,-1)
+          IExpr v2 = F.Negate(n);
+          IExpr v1 = F.Plus(F.C1, a);
+          return F.Times(F.Power(F.C2, v2), F.Power(F.Factorial(n), F.CN1),
+              F.Power(F.Gamma(v1), F.CN1), F.Gamma(F.Plus(n, v1)),
+              F.Hypergeometric2F1(v2, F.Plus(F.Negate(b), v2), v1, F.CN1));
+        }
+        if (z.isOne()) {
+          // https://functions.wolfram.com/Polynomials/JacobiP/03/01/01/0002/
+          // Gamma(a+n+1)/(n!*Gamma(a+1))
+          return F.Times(F.Power(F.Times(F.Factorial(n), F.Gamma(F.Plus(a, F.C1))), F.CN1),
+              F.Gamma(F.Plus(a, n, F.C1)));
+        }
+        if (z.isMinusOne()) {
+          // https://functions.wolfram.com/Polynomials/JacobiP/03/01/01/0003/
+          // Gamma(-b)/(Gamma(-b-n)*n!)
+          IExpr v1 = F.Negate(b);
+          return F.Times(F.Power(F.Factorial(n), F.CN1), F.Gamma(v1),
+              F.Power(F.Gamma(F.Plus(F.Negate(n), v1)), F.CN1));
+        }
         // https://functions.wolfram.com/Polynomials/JacobiP/03/01/04/0008/
         // Sum((Binomial(a+n,k)*Binomial(b+n,-k+n)*(z+1)^k)/(-1+z)^(k-n),{k,0,n})/2^n
         IExpr sum = F.sum(
             k -> F.Times(F.Binomial(F.Plus(a, n), k),
                 F.Binomial(F.Plus(b, n), F.Plus(k.negate(), n)), F.Power(F.Plus(z, F.C1), k),
-                F.Power(F.Plus(F.CN1, z), F.Plus(k.negate(), n))), //
+                F.Power(F.Plus(F.CN1, z), F.Subtract(n, k))), //
             0, ni);
         IAST jacobiP = F.Times(F.Power(F.Power(F.C2, n), F.CN1), sum);
         return engine.evaluate(jacobiP);

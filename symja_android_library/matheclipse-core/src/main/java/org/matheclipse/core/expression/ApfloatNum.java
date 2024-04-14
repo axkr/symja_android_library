@@ -1097,7 +1097,7 @@ public class ApfloatNum implements INum {
         return F.complexNum(
             EvalEngine.getApfloat().hypergeometric2F1(fApfloat, ((INumber) arg2).apcomplexValue(),
                 ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue()));
-      } catch (ArithmeticException aex) {
+      } catch (ArithmeticException | NumericComputationException aex) {
         if (aex.getMessage().equals("Division by zero")) {
           return F.ComplexInfinity;
         } else {
@@ -1312,6 +1312,27 @@ public class ApfloatNum implements INum {
     return F.isZero(fApfloat.doubleValue(), tolerance);
   }
 
+  @Override
+  public IExpr jacobiP(IExpr arg2, IExpr arg3, IExpr arg4) {
+    if (arg2 instanceof IReal && arg3 instanceof IReal && arg4 instanceof IReal) {
+      try {
+        return valueOf(EvalEngine.getApfloat().jacobiP(fApfloat, ((IReal) arg2).apfloatValue(),
+            ((IReal) arg3).apfloatValue(), ((IReal) arg4).apfloatValue()));
+      } catch (ArithmeticException | NumericComputationException e) {
+        // try as computation with complex numbers
+      }
+    }
+    if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
+      try {
+        return F
+            .complexNum(EvalEngine.getApfloat().jacobiP(fApfloat, ((INumber) arg2).apcomplexValue(),
+                ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue()));
+      } catch (ArithmeticException aex) {
+        //
+      }
+    }
+    return INum.super.jacobiP(arg2, arg3, arg4);
+  }
 
   @Override
   public IExpr laguerreL(IExpr arg2) {

@@ -1097,11 +1097,15 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr hypergeometric2F1(IExpr arg2, IExpr arg3, IExpr arg4) {
     if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
-      Apcomplex hypergeometric2f1 = EvalEngine.getApfloatDouble().hypergeometric2F1(
-          apcomplexValue(), ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue(),
-          ((INumber) arg4).apcomplexValue());
-      return F.complexNum(hypergeometric2f1.real().doubleValue(),
-          hypergeometric2f1.imag().doubleValue());
+      try {
+        Apcomplex hypergeometric2f1 = EvalEngine.getApfloatDouble().hypergeometric2F1(
+            apcomplexValue(), ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue(),
+            ((INumber) arg4).apcomplexValue());
+        return F.complexNum(hypergeometric2f1.real().doubleValue(),
+            hypergeometric2f1.imag().doubleValue());
+      } catch (ArithmeticException | NumericComputationException e) {
+        // try as computation with complex numbers
+      }
     }
     return IComplexNum.super.hypergeometric2F1(arg2, arg3, arg4);
     // try {
@@ -1308,6 +1312,21 @@ public class ComplexNum implements IComplexNum {
   public boolean isZero(double tolerance) {
     return F.isZero(fComplex.getReal(), tolerance) && //
         F.isZero(fComplex.getImaginary(), tolerance);
+  }
+
+  @Override
+  public IExpr jacobiP(IExpr arg2, IExpr arg3, IExpr arg4) {
+    if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
+      try {
+        Apcomplex jacobiP = EvalEngine.getApfloatDouble().jacobiP(apcomplexValue(),
+            ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue(),
+            ((INumber) arg4).apcomplexValue());
+        return F.complexNum(jacobiP.real().doubleValue(), jacobiP.imag().doubleValue());
+      } catch (ArithmeticException | NumericComputationException e) {
+        // try as computation with complex numbers
+      }
+    }
+    return IComplexNum.super.jacobiP(arg2, arg3, arg4);
   }
 
   @Override

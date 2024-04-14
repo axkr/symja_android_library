@@ -186,6 +186,18 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     // check("JacobiP(-3, -0.5,-9223372036854775808/11,0.0)", //
     // "(-1)^n*JacobiP(n,b,a,z)");
 
+    checkNumeric("N(JacobiP(3, 1/2, 1, 7))", //
+        "1844.0");
+    check("N(JacobiP(2.3, 1/2, 1/8, 12))", //
+        "752.0365");
+    check("N(JacobiP(5, 1/2, 1, 3))", //
+        "3846.375");
+    check("N(JacobiP(2/3, 1/2, 9, 7), 50)", //
+        "11.670621287206595077877422103270342556210833297972");
+    check("JacobiP(2, 2, 9, .33333333333333333333333333333)", //
+        "-0.999999999999999999999999999976");
+    checkNumeric("JacobiP(2 + 3*I, 1.2, .8, 7)", //
+        "32.01331219559314+I*179.3594719971409");
 
     // JacobiP[] == (-1)^n JacobiP[n, b, a, z]
     check("JacobiP(n, a, b, -z)", //
@@ -193,16 +205,8 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
     check("JacobiP(2, a, b, z)", //
         "1/4*(1/2*(1+b)*(2+b)*(1-z)^2+(2+a)*(2+b)*(-1+z)*(1+z)+1/2*(1+a)*(2+a)*(1+z)^2)");
-
-    check("N(JacobiP(5, 1/2, 1, 3))", //
-        "3846.375");
-
-    check("N(JacobiP(3.0, 1/2, 1, 7))", //
-        "1844.0");
-
-    // TODO improve numeric calculation
-    check("N(JacobiP(2.3, 1/2, 1/8, 12))", //
-        "752.0365");
+    check("Table(JacobiP(3, 1, 2, z), {z, -1, 5})", //
+        "{-10,Hypergeometric2F1(-5,-3,2,-1)/2,4,127/2,242,1205/2,1208}");
 
   }
 

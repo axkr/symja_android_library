@@ -1061,9 +1061,13 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr hypergeometric2F1(IExpr arg2, IExpr arg3, IExpr arg4) {
     if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
-      return valueOf(
-          EvalEngine.getApfloat().hypergeometric2F1(fApcomplex, ((INumber) arg2).apcomplexValue(),
-              ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue()));
+      try {
+        return valueOf(
+            EvalEngine.getApfloat().hypergeometric2F1(fApcomplex, ((INumber) arg2).apcomplexValue(),
+                ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue()));
+      } catch (ArithmeticException | NumericComputationException e) {
+        // try as computation with complex numbers
+      }
     }
     return IComplexNum.super.hypergeometric2F1(arg2, arg3, arg4);
   }
@@ -1165,6 +1169,20 @@ public class ApcomplexNum implements IComplexNum {
   public boolean isZero(double tolerance) {
     return F.isZero(fApcomplex.real().doubleValue(), tolerance) && //
         F.isZero(fApcomplex.imag().doubleValue(), tolerance);
+  }
+
+  @Override
+  public IExpr jacobiP(IExpr arg2, IExpr arg3, IExpr arg4) {
+    if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
+      try {
+        return valueOf(
+            EvalEngine.getApfloat().jacobiP(fApcomplex, ((INumber) arg2).apcomplexValue(),
+                ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue()));
+      } catch (ArithmeticException | NumericComputationException e) {
+        // try as computation with complex numbers
+      }
+    }
+    return IComplexNum.super.jacobiP(arg2, arg3, arg4);
   }
 
   @Override

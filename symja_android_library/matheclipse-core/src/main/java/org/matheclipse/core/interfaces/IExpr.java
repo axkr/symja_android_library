@@ -4993,6 +4993,19 @@ public interface IExpr
     return isZero() || AbstractAssumptions.assumeEqual(this, F.C0);
   }
 
+  /**
+   * Jacobi function. For nonnegative integer values of <code>ν</code> gives the Jacobi polynomial.
+   * <p>
+   *
+   * @param b
+   * @param c
+   * @param x
+   * @return
+   */
+  default IExpr jacobiP(IExpr a, IExpr b, IExpr z) {
+    return F.NIL;
+  }
+
   default IExpr laguerreL(IExpr arg2) {
     return F.NIL;
   }
