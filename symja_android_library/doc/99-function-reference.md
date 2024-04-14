@@ -1051,6 +1051,8 @@ Functions in alphabetical order:
 * &#x2705; [While](functions/While.md)
 * [Whitespace](functions/Whitespace.md)
 * [WhitespaceCharacter](functions/WhitespaceCharacter.md)
+* &#x1F9EA; [WhittakerM](functions/WhittakerM.md)
+* &#x1F9EA; [WhittakerW](functions/WhittakerW.md)
 * &#x2705; [With](functions/With.md)
 * [WordBoundary](functions/WordBoundary.md)
 * &#x2705; [Xor](functions/Xor.md)

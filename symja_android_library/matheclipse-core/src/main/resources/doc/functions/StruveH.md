@@ -7,7 +7,7 @@ StruveH(n, z)
 > returns the Struve function `H_n(z)`.
 
 See
-* [Wikipedia - Struve_function](https://en.wikipedia.org/wiki/Struve_function)
+* [Wikipedia - Struve function](https://en.wikipedia.org/wiki/Struve_function)
  
 ### Examples
 

@@ -26737,6 +26737,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testWhittakerM() {
+    checkNumeric("N(WhittakerM(2, 1/2, 2*2*I))", //
+        "0.3080150149255876+I*(-8.938966760794024)");
+
     check("N(WhittakerM(2, 1/3, 1/7), 100)", //
         "0.1656497719066782903103648280719871043760680518713012567635165215951597907345740933330557755894455857");
     check("WhittakerM(2, 1.33333333333333333333, 1)", //
@@ -26771,6 +26774,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testWhittakerW() {
+    checkNumeric("N(WhittakerW(2, 1/2, 2*2*I))", //
+        "-0.6160300298511752+I*17.877933521588048");
+
     check("D(WhittakerW(a,b,x), x)", //
         "(1/2-a/x)*WhittakerW(a,b,x)-WhittakerW(1+a,b,x)/x");
     check("WhittakerW(0, 0, 0)", //
