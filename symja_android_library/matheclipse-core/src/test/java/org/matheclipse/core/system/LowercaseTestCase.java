@@ -15800,10 +15800,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("xm=10;Module({t=xm}, xm=xm+1;t);xm", //
         "11");
     EvalEngine.resetModuleCounter4JUnit();
-    check("Module({a}, Block({a}, a))", //
-        "a$1");
-    check("Module({a}, Block({}, a))", //
-        "a$2");
+    check("{Module({a}, Block({a}, a)),Module({a}, Block({}, a))}", //
+        "{a$1,a$2}");
     check("t === Module({t}, t)", //
         "False");
     check("$g(x_) := Module({v=x},int(v,x)/;v=!=x);$g(f(x))", //
