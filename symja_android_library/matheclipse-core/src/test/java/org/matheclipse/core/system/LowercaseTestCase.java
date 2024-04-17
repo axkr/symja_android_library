@@ -8901,8 +8901,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindMaximum() {
+    // print message: The Function value False is not a real number at {x}={2.0}.
+    check("FindMaximum(False,{x, 2})", //
+        "FindMaximum(False,{x,2})");
+
     check("FindMaximum(-Abs(x + 1) - Abs(x + 1.01) - Abs(y + 1),{x, y})", //
-        "{-0.01,{x->-1.00724,y->-1.0}}");
+        "{-0.01,{x->-1.00719,y->-1.0}}");
 
     check("FindMaximum(x*Cos(x), {x,2.0} )", //
         "{0.561096,{x->0.860334}}");
@@ -8917,12 +8921,27 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindMinimum() {
-    // check("FindMinimum({x+y,3*x+2*y >= 7 && x >= 0 && y >= 0}, {x, y},\"Lagrange\")", //
-    // "");
+    check(
+        "FindMinimum({x+y,3*x+2*y >= 7 , x >= 0 , y >= 0}, {x, y},Method -> \"SequentialQuadratic\")", //
+        "{2.33333,{x->2.33333,y->-8.32917*10^-11}}");
+    check(
+        "FindMinimum({x+y,3*x+2*y >= 7 && x >= 0 && y >= 0}, {x, y},Method -> \"SequentialQuadratic\")", //
+        "{2.33333,{x->2.33333,y->-8.32917*10^-11}}");
+    // TODO Less and Greater are converted the same as GreaterEqual, LessEqual
+    check(
+        "FindMinimum({x+y,3*x+2*y > 7 && x > 0 && y > 0}, {x, y},Method -> \"SequentialQuadratic\")", //
+        "{2.33333,{x->2.33333,y->-8.32917*10^-11}}");
+    check(
+        "FindMinimum({x+y,3*x+2*y > 7 && -x < 0 && -y < 0}, {x, y},Method -> \"SequentialQuadratic\")", //
+        "{2.33333,{x->2.33333,y->-8.32917*10^-11}}");
     // check("FindMinimum({Sin(x)*Sin(2*y),x^2 + y^2 < 3}, {{x, 2}, {y, 2}})", //
     // "");
     check("FindMinimum(Abs(x + 1) + Abs(x + 1.01) + Abs(y + 1),{x, y})", //
-        "{0.01,{x->-1.00724,y->-1.0}}");
+        "{0.01,{x->-1.00719,y->-1.0}}");
+    check(
+        "FindMinimum(Abs(x + 1) + Abs(x + 1.01) + Abs(y+1), {x, y}, Method -> \"ConjugateGradient\")", //
+        "{0.01,{x->-1.01,y->-1.0}}");
+
     check("FindMinimum(Sin(x), {x,1} )", //
         "{-1.0,{x->-1.5708}}");
     check("FindMinimum(x*Cos(x), {x,5.0} )", //
@@ -11430,6 +11449,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometricPFQ() {
+
+    check("HypergeometricPFQ({0,a1,a2,a3,a4},{b1,b2,b3},z)", //
+        "1");
+
     // message HypergeometricPFQ: general hypergeometric argument currently restricted.
     check("HypergeometricPFQ({1, 1, 1}, {3/2, 3/2, 3/2}, 10.0)", //
         "HypergeometricPFQ({1,1,1},{3/2,3/2,3/2},10.0)");

@@ -32,26 +32,21 @@ This is the default method, if no `method_name` is given.
 Implements the ConjugateGradient optimizer.  
 This is a derivative based method and the functions must be symbolically differentiatable.
 
+#### SequentialQuadratic
+
+Implements the sequentiel quadratic optimizer.  
+This is a derivative, multivariate based method and the functions must be symbolically differentiatable.
+
 ### Examples
 
 ```
 >> FindMinimum(Sin(x), {x, 0.5}) 
 {-1.0,{x->-1.5708}}
+
+>> FindMinimum(Sin(x)*Sin(2*y), {{x, 2}, {y, 2}}, Method -> "ConjugateGradient") 
+{-1.0,{x->1.5708,y->2.35619}}        
 ```
 
 ### Related terms 
 [FindMaximum](FindMaximum.md), [FindRoot](FindRoot.md), [NRoots](NRoots.md), [Solve](Solve.md)
  
-
-
-
-
-
-
-### Implementation status
-
-* &#x2611; - partially implemented
-
-### Github
-
-* [Implementation of FindMinimum](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/FindMinimum.java#L94) 

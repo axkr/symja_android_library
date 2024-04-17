@@ -21,12 +21,30 @@ public class MultiVariateVectorGradient implements MultivariateVectorFunction {
   final EvalEngine fEngine;
   final Object2IntOpenHashMap<IExpr> fIndexMap;
 
-  public MultiVariateVectorGradient(final IExpr function, final IAST variablesList) {
-    this(function, variablesList, EvalEngine.get());
+  /**
+   * Create a multivariate vectorial function.
+   * 
+   * @param function the (multivariate-) function
+   * @param variablesList
+   * @param useAbsReal substitute {@link S#Abs} with {@link S#AbsReal} function, because of assuming
+   *        real input values
+   */
+  public MultiVariateVectorGradient(final IExpr function, final IAST variablesList,
+      boolean useAbsReal) {
+    this(function, variablesList, useAbsReal, EvalEngine.get());
   }
 
+  /**
+   * Create a multivariate vectorial function.
+   * 
+   * @param function the (multivariate-) function
+   * @param variablesList
+   * @param useAbsReal substitute {@link S#Abs} with {@link S#AbsReal} function, because of assuming
+   *        real input values
+   * @param engine
+   */
   public MultiVariateVectorGradient(final IExpr function, final IAST variablesList,
-      final EvalEngine engine) {
+      boolean useAbsReal, final EvalEngine engine) {
 
     fVariableList = variablesList;
     fIndexMap = new Object2IntOpenHashMap<IExpr>(fVariableList.argSize());
@@ -34,8 +52,12 @@ public class MultiVariateVectorGradient implements MultivariateVectorFunction {
       fIndexMap.put(variablesList.get(i), i);
     }
     fEngine = engine;
-    fFunction = function;
-    IExpr gradientList = S.Grad.of(engine, function, fVariableList);
+    if (useAbsReal) {
+      fFunction = F.subst(function, x -> x == S.Abs ? S.RealAbs : F.NIL);
+    } else {
+      fFunction = function;
+    }
+    IExpr gradientList = S.Grad.of(engine, fFunction, fVariableList);
     if (gradientList.isList() && gradientList.size() == variablesList.size()) {
       fGradientFunctions = (IAST) gradientList;
     } else {
@@ -46,8 +68,7 @@ public class MultiVariateVectorGradient implements MultivariateVectorFunction {
     variablesList.exists(x -> {
       if (!x.isVariable() || x.isBuiltInSymbol()) {
         // Cannot assign to raw object `1`.
-        throw new ArgumentTypeException(
-            Errors.getMessage("setraw", F.list(x), EvalEngine.get()));
+        throw new ArgumentTypeException(Errors.getMessage("setraw", F.list(x), EvalEngine.get()));
       }
       return false;
     });

@@ -253,7 +253,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
           IAST equalAST = (IAST) function;
           function = F.Plus(equalAST.arg1(), F.Negate(equalAST.arg2()));
         }
-        UnivariateDifferentiableFunction f = new UnaryNumerical(function, xVar, engine, true);
+        UnivariateDifferentiableFunction f = new UnaryNumerical(function, xVar, true, true, engine);
         BaseAbstractUnivariateSolver<UnivariateFunction> solver = null;
         if (method.equalsIgnoreCase("Bisection")) {
           solver = new BisectionSolver();

@@ -40,14 +40,15 @@ public class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDifferent
    * @param variable the functions variable name
    */
   public UnaryNumerical(final IExpr unaryFunction, final ISymbol variable) {
-    this(unaryFunction, variable, EvalEngine.get(), false);
+    this(unaryFunction, variable, false, true, EvalEngine.get());
   }
 
   /**
    * <p>
    * This class represents a unary function which computes both the value and the first derivative
    * of a mathematical function. The derivative is computed with respect to the input
-   * {@code variable}
+   * {@code variable}. Functions which contains the {@link S#Abs} function will be converted to
+   * {@link S#AbsReal} function, because of assuming real input values
    * </p>
    * 
    * @param unaryFunction the unary function
@@ -56,7 +57,7 @@ public class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDifferent
    */
   public UnaryNumerical(final IExpr unaryFunction, final ISymbol variable,
       final EvalEngine engine) {
-    this(unaryFunction, variable, engine, false);
+    this(unaryFunction, variable, false, true, engine);
   }
 
   /**
@@ -68,23 +69,47 @@ public class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDifferent
    * 
    * @param unaryFunction the unary function
    * @param variable the functions variable name
+   * @param useAbsReal substitute {@link S#Abs} with {@link S#AbsReal} function, because of assuming
+   *        real input values
    * @param engine the evaluation engine
+   */
+  public UnaryNumerical(final IExpr unaryFunction, final ISymbol variable, boolean useAbsReal,
+      final EvalEngine engine) {
+    this(unaryFunction, variable, false, useAbsReal, engine);
+  }
+
+  /**
+   * <p>
+   * This class represents a unary function which computes both the value and the first derivative
+   * of a mathematical function. The derivative is computed with respect to the input
+   * {@code variable}
+   * </p>
+   * 
+   * @param unaryFunction the unary function
+   * @param variable the functions variable name
    * @param firstDerivative if <code>true</code> evaluate the first derivative of
    *        {@code unaryFunction} directly in the constructor.
+   * @param useAbsReal substitute {@link S#Abs} with {@link S#AbsReal} function, because of assuming
+   *        real input values
+   * @param engine the evaluation engine
    */
-  public UnaryNumerical(final IExpr unaryFunction, final ISymbol variable, final EvalEngine engine,
-      boolean firstDerivative) {
+  public UnaryNumerical(final IExpr unaryFunction, final ISymbol variable, boolean firstDerivative,
+      boolean useAbsReal, final EvalEngine engine) {
     if (!variable.isVariable() || variable.isBuiltInSymbol()) {
       // Cannot assign to raw object `1`.
       throw new ArgumentTypeException(
           Errors.getMessage("setraw", F.list(variable), EvalEngine.get()));
     }
     fVariable = variable;
-    fUnaryFunction = unaryFunction;
+    if (useAbsReal) {
+      fUnaryFunction = F.subst(unaryFunction, x -> x == S.Abs ? S.RealAbs : F.NIL);
+    } else {
+      fUnaryFunction = unaryFunction;
+    }
     fEngine = engine;
     if (firstDerivative) {
       IExpr temp = engine.evaluate(F.D(fUnaryFunction, fVariable));
-      fFirstDerivative = new UnaryNumerical(temp, fVariable, engine, false);
+      fFirstDerivative = new UnaryNumerical(temp, fVariable, false, useAbsReal, engine);
     }
   }
 
@@ -175,7 +200,7 @@ public class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDifferent
     }
     final IAST ast = F.D(fUnaryFunction, fVariable);
     IExpr expr = fEngine.evaluate(ast);
-    fFirstDerivative = new UnaryNumerical(expr, fVariable, fEngine, false);
+    fFirstDerivative = new UnaryNumerical(expr, fVariable, false, true, fEngine);
     return fFirstDerivative;
   }
 

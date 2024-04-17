@@ -25,13 +25,35 @@ public class TwiceDifferentiableMultiVariateNumerical extends TwiceDifferentiabl
   final EvalEngine fEngine;
   final Object2IntOpenHashMap<IExpr> fVariableIndex;
 
-  public TwiceDifferentiableMultiVariateNumerical(final IExpr function, final IAST variablesList) {
-    this(function, variablesList, EvalEngine.get());
+  /**
+   * Create a multivariate twice differentiable vectorial function.
+   * 
+   * @param function the (multivariate-) function
+   * @param variablesList
+   * @param useAbsReal substitute {@link S#Abs} with {@link S#AbsReal} function, because of assuming
+   *        real input values
+   */
+  public TwiceDifferentiableMultiVariateNumerical(final IExpr function, final IAST variablesList,
+      boolean useAbsReal) {
+    this(function, variablesList, useAbsReal, EvalEngine.get());
   }
 
+  /**
+   * Create a multivariate twice differentiable vectorial function.
+   * 
+   * @param function the (multivariate-) function
+   * @param variablesList
+   * @param useAbsReal substitute {@link S#Abs} with {@link S#AbsReal} function, because of assuming
+   *        real input values
+   * @param engine
+   */
   public TwiceDifferentiableMultiVariateNumerical(final IExpr function, final IAST variablesList,
-      final EvalEngine engine) {
-    fFunction = function;
+      boolean useAbsReal, final EvalEngine engine) {
+    if (useAbsReal) {
+      fFunction = F.subst(function, x -> x == S.Abs ? S.RealAbs : F.NIL);
+    } else {
+      fFunction = function;
+    }
     fVariableList = variablesList;
     fVariableIndex = new Object2IntOpenHashMap<IExpr>(fVariableList.argSize());
     for (int i = 1; i < fVariableList.size(); i++) {
@@ -39,7 +61,7 @@ public class TwiceDifferentiableMultiVariateNumerical extends TwiceDifferentiabl
     }
     fEngine = engine;
 
-    IExpr gradientList = S.Grad.of(engine, function, fVariableList);
+    IExpr gradientList = S.Grad.of(engine, fFunction, fVariableList);
     if (gradientList.isList() && gradientList.size() >= variablesList.size()) {
       fGradientFunctions = (IAST) gradientList;
     } else {
@@ -47,7 +69,7 @@ public class TwiceDifferentiableMultiVariateNumerical extends TwiceDifferentiabl
       throw new ArgumentTypeException(
           Errors.getMessage("setraw", F.list(gradientList), EvalEngine.get()));
     }
-    IExpr hessianMatrix = S.HessianMatrix.of(engine, function, fVariableList);
+    IExpr hessianMatrix = S.HessianMatrix.of(engine, fFunction, fVariableList);
     int[] dimensions = hessianMatrix.isMatrix();
 
     if (dimensions != null) {

@@ -40,7 +40,7 @@ public class NFourierTransform extends AbstractFunctionEvaluator {
         // }
       }
 
-      UnivariateFunction f = new UnaryNumerical(expr, (ISymbol) variable, engine);
+      UnivariateFunction f = new UnaryNumerical(expr, (ISymbol) variable, false, engine);
       FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.STANDARD);
       org.hipparchus.complex.Complex[] result =
           fft.transform(f, -1.0, 1.0, 8, TransformType.FORWARD);

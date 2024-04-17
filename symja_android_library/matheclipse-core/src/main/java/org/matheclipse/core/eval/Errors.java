@@ -106,6 +106,8 @@ public class Errors {
       "empt", "Argument `1` should be a non-empty list.", //
       "eqf", "`1` is not a well-formed equation.", //
       "eqin", "`1` should be an equation or inequality.", //
+      "eqineq",
+      "Constraints in `1` are not all equality or inequality constraints. Constraints with Unequal(!=) are not supported.", //
       "error", "`1`.", //
       "exact", "Argument `1` is not an exact number.", //
       "exdims", "The dimensions cannot be determined from the position `1`.", //
@@ -241,22 +243,20 @@ public class Errors {
       "normal", "Nonatomic expression expected at position `1` in `2`.", //
       "nostr", "`1` is not a string.", //
       "notdata", "The first argument is not a vector or matrix.", //
-      "notent", "`2` is not a known entity, class, or tag for `1`.", //
-      "npa", "The angle `1` should be a positive number less than `2`.", //
-      "nps", "The triangle side `1`should be a positive number.", //
-      "nquan",
-      "The Quantile specification `1` should be a number or a list of numbers between `2` and `3`.",
-      "nvld", "The expression `1` is not a valid interval.", //
       "notent",
       "`1` is not a known entity, class or tag for GraphData. Use GraphData for a list of entities.", //
       "notunicode",
       "A character unicode, which should be a non-negative integer less than 1114112, is expected at position `2` in `1`.", //
-
       "noval", "Symbol `1` in part assignment does not have an immediate value.", //
       "npa", "The angle `1` should be a positive number less than `2`.", //
+      "nps", "The triangle side `1`should be a positive number.", //
+      "nquan",
+      "The Quantile specification `1` should be a number or a list of numbers between `2` and `3`.",
+      "nrnum", "The Function value `1` is not a real number at `2`=`3`.",
       "nsmet", "The system cannot be solved with the methods available to `1`.", //
       "nsolc", "There are no points which satisfy the constraints.", //
       "nupr", "`1` is not a univariate polynomial with rational number coefficients.", //
+      "nvld", "The expression `1` is not a valid interval.", //
       "nvm", "The first Norm argument should be a scalar, vector or matrix.", //
       "nwargs",
       "Argument `2` in `1` is not of the form i, {i,j}, {i,Infinity}, or All, where i and j are non-negative machine-sized integers.", //

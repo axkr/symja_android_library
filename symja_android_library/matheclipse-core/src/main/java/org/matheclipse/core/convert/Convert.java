@@ -613,6 +613,13 @@ public class Convert {
     return F.mapRange(0, vector.length, i -> F.complexNum(vector[i]));
   }
 
+  public static IAST toVector(double[] vector) {
+    if (vector == null) {
+      return F.NIL;
+    }
+    return F.mapRange(0, vector.length, i -> F.num(vector[i]));
+  }
+
   /**
    * Converts a FieldMatrix to the list expression representation.
    *

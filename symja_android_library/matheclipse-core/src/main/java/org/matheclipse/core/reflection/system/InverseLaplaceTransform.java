@@ -189,7 +189,8 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator {
     if (value instanceof InverseLaplaceTransformStehfest) {
       laplace = (InverseLaplaceTransformStehfest) value;
     } else {
-      final UnaryNumerical unaryNumerical = new UnaryNumerical(function, (ISymbol) s, engine);
+      final UnaryNumerical unaryNumerical =
+          new UnaryNumerical(function, (ISymbol) s, false, engine);
       laplace = new InverseLaplaceTransformStehfest(unaryNumerical);
       engine.putObjectCache(cacheKey, laplace);
     }

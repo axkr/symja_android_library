@@ -115,7 +115,8 @@ public class ND extends AbstractFunctionEvaluator {
       FiniteDifferencesDifferentiator differentiator =
           new FiniteDifferencesDifferentiator(15, 0.01);
       UnivariateDifferentiableFunction f =
-          differentiator.differentiate(new UnaryNumerical(function, variable, EvalEngine.get()));
+          differentiator
+              .differentiate(new UnaryNumerical(function, variable, false, EvalEngine.get()));
       return F.num(f.value(factory.variable(0, a3Double)).getPartialDerivative(order));
     }
     return F.NIL;

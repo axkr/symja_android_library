@@ -34,6 +34,11 @@ This is a derivative based method and the functions must be symbolically differe
 
 ### Examples
 
+#### SequentialQuadratic
+
+Implements the sequentiel quadratic optimizer.  
+This is a derivative, multivariate based method and the functions must be symbolically differentiatable.
+
 ```
 >> FindMaximum(Sin(x), {x, 0.5}) 
 {1.0,{x->1.5708}}
@@ -41,17 +46,4 @@ This is a derivative based method and the functions must be symbolically differe
 
 ### Related terms 
 [FindMinimum](FindMinimum.md), [FindRoot](FindRoot.md), [NRoots](NRoots.md), [Solve](Solve.md)
- 
-
-
-
-
-
-
-### Implementation status
-
-* &#x2611; - partially implemented
-
-### Github
-
-* [Implementation of FindMaximum](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/FindMaximum.java#L73) 
+  

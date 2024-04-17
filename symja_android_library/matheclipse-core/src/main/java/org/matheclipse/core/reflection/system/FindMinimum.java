@@ -1,11 +1,13 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.ArrayList;
 import java.util.function.Supplier;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.InitialGuess;
 import org.hipparchus.optim.MaxEval;
+import org.hipparchus.optim.OptimizationData;
 import org.hipparchus.optim.PointValuePair;
 import org.hipparchus.optim.SimpleValueChecker;
 import org.hipparchus.optim.nonlinear.scalar.GoalType;
@@ -17,12 +19,15 @@ import org.hipparchus.optim.nonlinear.scalar.gradient.NonLinearConjugateGradient
 import org.hipparchus.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 import org.hipparchus.optim.nonlinear.vector.constrained.ConstraintOptimizer;
 import org.hipparchus.optim.nonlinear.vector.constrained.LagrangeSolution;
+import org.hipparchus.optim.nonlinear.vector.constrained.LinearEqualityConstraint;
 import org.hipparchus.optim.nonlinear.vector.constrained.LinearInequalityConstraint;
 import org.hipparchus.optim.nonlinear.vector.constrained.SQPOptimizerS;
 import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.JDKRandomGenerator;
 import org.hipparchus.random.RandomVectorGenerator;
 import org.hipparchus.random.UncorrelatedRandomVectorGenerator;
+import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -36,7 +41,9 @@ import org.matheclipse.core.generic.MultiVariateVectorGradient;
 import org.matheclipse.core.generic.TwiceDifferentiableMultiVariateNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -109,6 +116,7 @@ public class FindMinimum extends AbstractFunctionEvaluator {
       // `1`.
       return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())), engine);
     } catch (MathRuntimeException mre) {
+      mre.printStackTrace();
       Errors.printMessage(ast.topHead(), "error", F.list(F.$str(mre.getMessage())), engine);
       return F.CEmptyList;
     }
@@ -117,23 +125,33 @@ public class FindMinimum extends AbstractFunctionEvaluator {
 
   protected static IExpr findExtremum(IAST ast, EvalEngine engine, GoalType goalType) {
     IAST relationList = ast.arg1().makeList();
-    IExpr function = F.NIL;
-    for (int i = 1; i < relationList.size(); i++) {
+    if (relationList.argSize() == 0) {
+      return F.NIL;
+    }
+    IExpr function = relationList.arg1();
+    if (relationList.argSize() > 2 && !relationList.arg2().isAnd()) {
+      relationList = F.List(function, relationList.copyFrom(2).apply(S.And));
+    }
+    IExpr arg2 = ast.arg2();
+    if (!arg2.isList()) {
+      arg2 = engine.evaluate(arg2);
+    }
+    VariablesSet vars = new VariablesSet(arg2);
+    if (vars.size() == 0) {
+      return F.NIL;
+    }
+    OptimizationData[] optimizationData = new OptimizationData[0];
+    for (int i = 2; i < relationList.size(); i++) {
       IExpr expr = relationList.get(i);
       if (expr.isAnd()) {
         IAST andAST = (IAST) expr;
-        for (int j = 1; j < andAST.size(); j++) {
-          // IExpr temp = andAST.get(i);
-          // if (temp.isRelationalBinary()) {
-          // if (temp.isAST(S.Greater, 3)) {
-          // // x > 0, y > 0
-          // LinearInequalityConstraint ineqc = new LinearInequalityConstraint(
-          // new double[][] {{1.0, 0.0}, {0.0, 1.0}}, new double[] {0.0, 0.0});
-          // }
-          // } else {
-          // return F.NIL;
-          // }
+        optimizationData = new OptimizationData[2];
+        if (!createLinearConstraints(andAST, vars, engine, optimizationData)) {
+          // Constraints in `1` are not all equality or inequality constraints. Constraints with
+          // Unequal(!=) are not supported.
+          return Errors.printMessage(ast.topHead(), "eqineq", F.List(andAST), engine);
         }
+        continue;
       }
       if (expr.isRelationalBinary()) {
 
@@ -143,10 +161,6 @@ public class FindMinimum extends AbstractFunctionEvaluator {
         }
         function = expr;
       }
-    }
-    IExpr arg2 = ast.arg2();
-    if (!arg2.isList()) {
-      arg2 = engine.evaluate(arg2);
     }
     if (arg2.isList() && arg2.argSize() >= 2) {
       String method = "Powell";
@@ -170,20 +184,214 @@ public class FindMinimum extends AbstractFunctionEvaluator {
           }
         }
       }
-      return optimizeGoal(method, maxIterations, goalType, function, (IAST) arg2, engine);
+      return optimizeGoal(method, maxIterations, goalType, function, (IAST) arg2, engine,
+          optimizationData);
     }
     return F.NIL;
   }
 
+
+  private static boolean createLinearConstraints(IAST andAST, VariablesSet vars, EvalEngine engine,
+      OptimizationData[] optimizationData) {
+    if (andAST.size() > 1) {
+      int varsSize = vars.size();
+      IASTAppendable varsList = vars.getVarList();
+      double[] inequalitiesConstants = new double[andAST.size() - 1];
+      ArrayList<double[]> inequalitiesList = new ArrayList<double[]>();
+      int[] inequalitiesConstantsIndex = new int[] {0};
+      double[] equalitiesConstants = new double[andAST.size() - 1];
+      ArrayList<double[]> equalitiesList = new ArrayList<double[]>();
+      int[] equalitiesConstantsIndex = new int[] {0};
+      for (int i = 1; i < andAST.size(); i++) {
+        IExpr temp = andAST.get(i);
+        if (temp.isRelationalBinary()) {
+          if (temp.isAST(S.Equal, 3)) {
+            if (!createEqualityRelation((IAST) temp, equalitiesList, equalitiesConstants,
+                equalitiesConstantsIndex, varsList, engine)) {
+              return false;
+            }
+          } else if (temp.isAST(S.Less, 3)) {
+            if (!createInequalityRelation((IAST) temp, inequalitiesList, inequalitiesConstants,
+                inequalitiesConstantsIndex, varsList, true, engine)) {
+              return false;
+            }
+          } else if (temp.isAST(S.LessEqual, 3)) {
+            if (!createInequalityRelation((IAST) temp, inequalitiesList, inequalitiesConstants,
+                inequalitiesConstantsIndex, varsList, true, engine)) {
+              return false;
+            }
+            // if (!createEqualityRelation((IAST) temp, equalitiesList, equalitiesConstants,
+            // equalitiesConstantsIndex, varsList, engine)) {
+            // return false;
+            // }
+          } else if (temp.isAST(S.Greater, 3)) {
+            if (!createInequalityRelation((IAST) temp, inequalitiesList, inequalitiesConstants,
+                inequalitiesConstantsIndex, varsList, false, engine)) {
+              return false;
+            }
+          } else if (temp.isAST(S.GreaterEqual, 3)) {
+            if (!createInequalityRelation((IAST) temp, inequalitiesList, inequalitiesConstants,
+                inequalitiesConstantsIndex, varsList, false, engine)) {
+              return false;
+            }
+            // if (!createEqualityRelation((IAST) temp, equalitiesList, equalitiesConstants,
+            // equalitiesConstantsIndex, varsList, engine)) {
+            // return false;
+            // }
+          }
+        } else {
+          return false;
+        }
+      }
+      if (inequalitiesList.size() > 0) {
+        LinearInequalityConstraint ineqc =
+            createLinearInequalitiyConstraints(inequalitiesConstants, inequalitiesList, varsSize);
+        optimizationData[0] = ineqc;
+      }
+      if (equalitiesList.size() > 0) {
+        LinearEqualityConstraint eqc =
+            createLinearEqualityConstraints(varsSize, equalitiesConstants, equalitiesList);
+        optimizationData[1] = eqc;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  private static boolean createEqualityRelation(IAST relation, ArrayList<double[]> equalitiesList,
+      double[] equalitiesConstants, int[] equalitiesConstantsIndex, IASTAppendable varsList,
+      EvalEngine engine) {
+    double[] coefficients = new double[varsList.size() - 1];
+    equalitiesList.add(coefficients);
+    IASTAppendable rhs = F.PlusAlloc(4);
+    IExpr lhs;
+    lhs = engine.evaluate(F.Subtract(relation.first(), relation.second()));
+    IAST plus = lhs.makeAST(S.Plus);
+    for (int j = 1; j < plus.size(); j++) {
+      IExpr addend = plus.get(j);
+      if (addend.isFree(x -> varsList.contains(x), false)) {
+        rhs.append(addend.negate());
+        continue;
+      }
+      if (addend.isTimes()) {
+        IAST times = (IAST) addend;
+        for (int k = 1; k < times.size(); k++) {
+          IExpr factor = times.get(k);
+          int offset = getVariableOffset(varsList, factor);
+          if (offset >= 0) {
+            IASTMutable coefficient = times.removeAtCopy(k);
+            if (!coefficient.isFree(x -> varsList.contains(x), false)) {
+              return false;
+            }
+            coefficients[offset] = coefficient.evalf();
+          }
+        }
+        continue;
+      }
+      int offset = getVariableOffset(varsList, addend);
+      if (offset < 0) {
+        return false;
+      }
+      coefficients[offset] = 1.0;
+    }
+    equalitiesConstants[equalitiesConstantsIndex[0]++] = rhs.evalf();
+    return true;
+  }
+
+  private static boolean createInequalityRelation(IAST relation,
+      ArrayList<double[]> inequalitiesList, double[] inequalitiesConstants,
+      int[] inequalitiesConstantsIndex, IASTAppendable varsList, boolean lessOperator,
+      EvalEngine engine) {
+    double[] coefficients = new double[varsList.size() - 1];
+    inequalitiesList.add(coefficients);
+    IASTAppendable rhs = F.PlusAlloc(4);
+    IExpr lhs;
+    if (lessOperator) {
+      // negate both sides to get a "greater" relation
+      lhs = engine.evaluate(F.Subtract(F.Negate(relation.first()), F.Negate(relation.second())));
+    } else {
+      lhs = engine.evaluate(F.Subtract(relation.first(), relation.second()));
+    }
+    IAST plus = lhs.makeAST(S.Plus);
+    for (int j = 1; j < plus.size(); j++) {
+      IExpr addend = plus.get(j);
+      if (addend.isFree(x -> varsList.contains(x), false)) {
+        rhs.append(addend.negate());
+        continue;
+      }
+      if (addend.isTimes()) {
+        IAST times = (IAST) addend;
+        for (int k = 1; k < times.size(); k++) {
+          IExpr factor = times.get(k);
+          int offset = getVariableOffset(varsList, factor);
+          if (offset >= 0) {
+            IASTMutable coefficient = times.removeAtCopy(k);
+            if (!coefficient.isFree(x -> varsList.contains(x), false)) {
+              return false;
+            }
+            coefficients[offset] = coefficient.evalf();
+          }
+        }
+        continue;
+      }
+      int offset = getVariableOffset(varsList, addend);
+      if (offset < 0) {
+        return false;
+      }
+      coefficients[offset] = 1.0;
+    }
+    inequalitiesConstants[inequalitiesConstantsIndex[0]++] = rhs.evalf();
+    return true;
+  }
+
+
+  private static LinearEqualityConstraint createLinearEqualityConstraints(int varsSize,
+      double[] equalitiesConstants, ArrayList<double[]> equalitiesList) {
+    double[][] coefficientMatrix = new double[equalitiesList.size()][varsSize];
+    double[] constantVector = new double[equalitiesList.size()];
+    System.arraycopy(equalitiesConstants, 0, constantVector, 0, equalitiesList.size());
+    for (int i = 0; i < equalitiesList.size(); i++) {
+      double[] ds = equalitiesList.get(i);
+      System.arraycopy(ds, 0, coefficientMatrix[i], 0, ds.length);
+    }
+    LinearEqualityConstraint eqc = new LinearEqualityConstraint(coefficientMatrix, constantVector);
+    return eqc;
+  }
+
+
+  private static LinearInequalityConstraint createLinearInequalitiyConstraints(
+      double[] inequalitiesConstants, ArrayList<double[]> inequalitiesList, int varsSize) {
+    double[][] coefficientMatrix = new double[inequalitiesList.size()][varsSize];
+    double[] constantVector = new double[inequalitiesList.size()];
+    System.arraycopy(inequalitiesConstants, 0, constantVector, 0, inequalitiesList.size());
+    for (int i = 0; i < inequalitiesList.size(); i++) {
+      double[] ds = inequalitiesList.get(i);
+      System.arraycopy(ds, 0, coefficientMatrix[i], 0, ds.length);
+    }
+    LinearInequalityConstraint ineqc =
+        new LinearInequalityConstraint(coefficientMatrix, constantVector);
+    return ineqc;
+  }
+
+
+  private static int getVariableOffset(IASTAppendable varsList, IExpr addend) {
+    for (int k = 1; k < varsList.size(); k++) {
+      if (addend.equals(varsList.get(k))) {
+        return k - 1;
+      }
+    }
+    return -1;
+  }
+
   private static IExpr optimizeGoal(String method, int maxIterations, GoalType goalType,
-      IExpr function, IAST list, EvalEngine engine) {
+      IExpr function, IAST list, EvalEngine engine, OptimizationData[] optimizationData) {
     double[] initialValues = null;
     IAST variableList = null;
     int[] dimension = list.isMatrix();
     if (dimension == null) {
       if (list.argSize() == 1) {
         initialValues = new double[1];
-        initialValues[0] = 1.0;
+        initialValues[0] = 1.999999999999999;
         variableList = F.list(list.arg1());
       } else if (list.argSize() == 2 && !list.arg2().isSymbol()) {
         initialValues = new double[1];
@@ -193,7 +401,7 @@ public class FindMinimum extends AbstractFunctionEvaluator {
         initialValues = new double[list.argSize()];
         variableList = list;
         for (int i = 0; i < initialValues.length; i++) {
-          initialValues[i] = 1.0;
+          initialValues[i] = 1.999999999999999;
         }
       }
     } else {
@@ -219,14 +427,65 @@ public class FindMinimum extends AbstractFunctionEvaluator {
       }
     }
     if (initialValues != null) {
-      if (variableList.argSize() == 1 && method.equalsIgnoreCase("lagrange")) {
+      IExpr initialValue =
+          testInitialValue(function, variableList, initialValues, goalType,
+              engine);
+      if (initialValue.isNIL()) {
+        return F.NIL;
+      }
+
+      if (variableList.argSize() == 1 && method.equalsIgnoreCase("sequentialquadratic")) {
         method = "Powell";
       }
-      OptimizeSupplier optimizeSupplier =
-          new OptimizeSupplier(goalType, function, variableList, initialValues, method, engine);
+      OptimizeSupplier optimizeSupplier = new OptimizeSupplier(goalType, function, variableList,
+          initialValues, method, optimizationData, engine);
       return engine.evalBlock(optimizeSupplier, variableList);
     }
     return F.NIL;
+  }
+
+
+  /**
+   * Print message &quot;nrnum&quot; if the function doesn't evaluate to a real number for the
+   * initial values.
+   * 
+   * @param function
+   * @param variableList
+   * @param initialStartValues
+   * @param rules
+   * @param goalType
+   * @param engine
+   * 
+   * @return
+   */
+  private static IExpr testInitialValue(IExpr function, IAST variableList, double[] initialValues,
+      GoalType goalType, EvalEngine engine) {
+    IAST initialStartValues = Convert.toVector(initialValues);
+    IASTAppendable rules = F.ListAlloc();
+    for (int i = 1; i < initialStartValues.size(); i++) {
+      rules.append(F.Rule(variableList.get(i), initialStartValues.get(i)));
+    }
+    IExpr initialResult = F.NIL;
+    try {
+      initialResult = engine.evaluate(function.replaceAll(rules));
+      if (!initialResult.isNumericFunction(true)) {
+        // The Function value `1` is not a real number at `2`=`3`.
+        return Errors.printMessage(goalType == GoalType.MINIMIZE ? S.FindMinimum : S.FindMaximum,
+            "nrnum", F.List(initialResult, variableList, initialStartValues), engine);
+      }
+      IReal realNumber = initialResult.evalReal();
+      if (realNumber == null) {
+        // The Function value `1` is not a real number at `2`=`3`.
+        return Errors.printMessage(goalType == GoalType.MINIMIZE ? S.FindMinimum : S.FindMaximum,
+            "nrnum", F.List(initialResult, variableList, initialStartValues), engine);
+      }
+      return realNumber;
+    } catch (RuntimeException rex) {
+      //
+    }
+    // The Function value `1` is not a real number at `2`=`3`.
+    return Errors.printMessage(goalType == GoalType.MINIMIZE ? S.FindMinimum : S.FindMaximum,
+        "nrnum", F.List(function, variableList, initialStartValues), engine);
   }
 
   private static class OptimizeSupplier implements Supplier<IExpr> {
@@ -234,16 +493,19 @@ public class FindMinimum extends AbstractFunctionEvaluator {
     final IExpr originalFunction;
     final IAST variableList;
     final double[] initialValues;
+    OptimizationData[] optimizationData;
     String method;
     final EvalEngine engine;
 
     public OptimizeSupplier(GoalType goalType, IExpr function, IAST variableList,
-        double[] initialValues, String method, EvalEngine engine) {
+        double[] initialValues, String method, OptimizationData[] optimizationData,
+        EvalEngine engine) {
       this.goalType = goalType;
       this.originalFunction = function;
       this.variableList = variableList;
       this.initialValues = initialValues;
       this.method = method;
+      this.optimizationData = optimizationData;
       this.engine = engine;
     }
 
@@ -252,19 +514,19 @@ public class FindMinimum extends AbstractFunctionEvaluator {
       PointValuePair optimum = null;
       InitialGuess initialGuess = new InitialGuess(initialValues);
       IExpr function = engine.evaluate(originalFunction);
-      if (method.equalsIgnoreCase("lagrange")) {
+      if (method.equalsIgnoreCase("sequentialquadratic")) {
         try {
           ConstraintOptimizer optim = new SQPOptimizerS();
           TwiceDifferentiableMultiVariateNumerical twiceDifferentiableFunction =
-              new TwiceDifferentiableMultiVariateNumerical(function, variableList);
+              new TwiceDifferentiableMultiVariateNumerical(function, variableList, true);
           // x > 0, y > 0
-          LinearInequalityConstraint ineqc = new LinearInequalityConstraint(
-              new double[][] {{1.0, 0.0}, {0.0, 1.0}}, new double[] {0.0, 0.0});
+          // LinearInequalityConstraint ineqc = new LinearInequalityConstraint(
+          // new double[][] {{1.0, 0.0}, {0.0, 1.0}}, new double[] {0.0, 0.0});
           LagrangeSolution lagrangeSolution = optim.optimize( //
               new MaxEval(1000), //
               new ObjectiveFunction(twiceDifferentiableFunction), //
               goalType, //
-              initialGuess, ineqc);
+              initialGuess, optimizationData[0], optimizationData[1]);
           if ((lagrangeSolution != null)) {
             RealVector solutionVector = lagrangeSolution.getX();
             IASTAppendable ruleList = F.mapRange(1, variableList.size(),
@@ -287,7 +549,7 @@ public class FindMinimum extends AbstractFunctionEvaluator {
             new ObjectiveFunction(multivariateVariateNumerical), //
             goalType, //
             initialGuess);
-      } else if (method.equals("ConjugateGradient")) {
+      } else if (method.equalsIgnoreCase("conjugategradient")) {
         GradientMultivariateOptimizer underlying = new NonLinearConjugateGradientOptimizer(
             NonLinearConjugateGradientOptimizer.Formula.POLAK_RIBIERE,
             new SimpleValueChecker(1e-10, 1e-10));
@@ -310,7 +572,7 @@ public class FindMinimum extends AbstractFunctionEvaluator {
         optimum = optimizer.optimize(//
             new MaxEval(1000), //
             new ObjectiveFunction(multivariateVariateNumerical), //
-            new ObjectiveFunctionGradient(new MultiVariateVectorGradient(function, variableList)), //
+            new ObjectiveFunctionGradient(new MultiVariateVectorGradient(function, variableList, true)), //
             goalType, //
             initialGuess);
       }
