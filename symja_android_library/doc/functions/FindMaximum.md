@@ -32,12 +32,12 @@ This is the default method, if no `method_name` is given.
 Implements the ConjugateGradient optimizer.  
 This is a derivative based method and the functions must be symbolically differentiatable.
 
-### Examples
-
 #### SequentialQuadratic
 
 Implements the sequentiel quadratic optimizer.  
 This is a derivative, multivariate based method and the functions must be symbolically differentiatable.
+
+### Examples
 
 ```
 >> FindMaximum(Sin(x), {x, 0.5}) 
