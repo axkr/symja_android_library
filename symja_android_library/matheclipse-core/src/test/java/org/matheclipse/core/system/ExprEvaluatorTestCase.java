@@ -70,7 +70,8 @@ public abstract class ExprEvaluatorTestCase {
     }
   }
 
-  public void check(ExprEvaluator scriptEngine, String evalString, String expectedResult,
+  public synchronized void check(ExprEvaluator scriptEngine, String evalString,
+      String expectedResult,
       int resultLength) {
     try {
       if (evalString.length() == 0 && expectedResult.length() == 0) {

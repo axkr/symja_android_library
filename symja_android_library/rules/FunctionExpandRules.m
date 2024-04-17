@@ -1,6 +1,10 @@
 {
  Abs(x_^n_Integer) := (Im(x)^2+Re(x)^2)^(n/2)
    /; EvenQ(n),
+   
+ AngerJ(a_,b_) := (2*Cos(1/2*a*Pi)*HypergeometricPFQ({1},{1-a/2,1+a/2},(-1)*1/4*b^2)*Sin(1/2*a*Pi))/(a*Pi)+(-2*b*Cos(1/2*a*Pi)*HypergeometricPFQ({1},{3/2-a/2,3/2+a/2},(-1)*1/4*b^2)*Sin(1/2*a*Pi))/((-1+a)*(1+a)*Pi),
+ AngerJ(a_,b_,c_) := (Cos(1/2*a*Pi)*Gamma(1+b)*HypergeometricPFQ({1/2+b/2,1+b/2},{1/2,1-a/2+b/2,1+a/2+b/2},(-1)*1/4*c^2))/(Gamma(1-a/2+b/2)*Gamma(1+a/2+b/2))+(c*Gamma(2+b)*HypergeometricPFQ({1+b/2,3/2+b/2},{3/2,3/2-a/2+b/2,3/2+a/2+b/2},(-1)*1/4*c^2)*Sin(1/2*a*Pi))/(2*Gamma(3/2-a/2+b/2)*Gamma(3/2+a/2+b/2)), 
+ 
  ArcCos(x_^(-1)) := ArcSec(x),
  ArcSec(x_^(-1)) := ArcCos(x),
  ArcCot(Sqrt(x_^2)) := (Sqrt(x^2)*ArcCot(x))/x,
