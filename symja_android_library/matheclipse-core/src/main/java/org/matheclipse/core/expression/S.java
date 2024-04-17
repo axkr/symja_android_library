@@ -426,6 +426,8 @@ public class S {
    */
   public final static IBuiltInSymbol And = S.initFinalSymbol("And", ID.And);
 
+  public final static IBuiltInSymbol AngerJ = S.initFinalSymbol("AngerJ", ID.AngerJ);
+
   /**
    * AngleVector(phi) - returns the point at angle `phi` on the unit circle.
    * 

@@ -1268,8 +1268,9 @@ public class HypergeometricFunctions {
       if (c.isZero() && a.isList() && b.isList()) {
         return F.C1;
       }
+      IAST aVector = F.NIL;
       if (a.isVector() > 0) {
-        IAST aVector = (IAST) a.normal(false);
+        aVector = (IAST) a.normal(false);
         if (!aVector.isEvalFlagOn(IAST.IS_SORTED)) {
           IASTMutable aResult = aVector.copy();
           if (EvalAttributes.sortWithFlags(aResult)) {
@@ -1280,6 +1281,10 @@ public class HypergeometricFunctions {
         a = aVector;
       }
       if (b.isVector() > 0) {
+        if (aVector.isPresent() && aVector.arg1().isZero()) {
+          // https://functions.wolfram.com/HypergeometricFunctions/HypergeometricPFQ/03/01/03/0001/
+          return F.C1;
+        }
         IAST bVector = (IAST) b.normal(false);
         if (!bVector.isEvalFlagOn(IAST.IS_SORTED)) {
           IASTMutable bResult = bVector.copy();

@@ -4,7 +4,7 @@
 WhittakerW(a, b, z)
 ```
 
-> returns the Whittaker function `M_a,b(z)`.
+> returns the Whittaker function `W_a,b(z)`.
 
 See
 * [Wikipedia - Whittaker function](https://en.wikipedia.org/wiki/Whittaker_function)

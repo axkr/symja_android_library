@@ -13,7 +13,7 @@ public class HypergeometricPFQRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 9 };
+  final public static int[] SIZES = { 0, 11 };
 
   final public static IAST RULES = List(
     IInit(HypergeometricPFQ, SIZES),
@@ -43,6 +43,12 @@ public class HypergeometricPFQRules {
       Times(Power(z,CN1),Plus(Negate(EulerGamma),CoshIntegral(Times(C2,Sqrt(z))),Negate(Log(Times(C2,Sqrt(z))))))),
     // HypergeometricPFQ({1,1,1},{2,2},z_):=PolyLog(2,z)/z
     ISetDelayed(HypergeometricPFQ(list(C1,C1,C1),list(C2,C2),z_),
-      Times(Power(z,CN1),PolyLog(C2,z)))
+      Times(Power(z,CN1),PolyLog(C2,z))),
+    // HypergeometricPFQ({1},{1/2,c_},z_):=1+Sqrt(Pi)*z^(1/4*(3-2*c))*Gamma(c)*StruveL(1+1/2*(-3+2*c),2*Sqrt(z))
+    ISetDelayed(HypergeometricPFQ(list(C1),list(C1D2,c_),z_),
+      Plus(C1,Times(CSqrtPi,Power(z,Times(C1D4,Plus(C3,Times(CN2,c)))),Gamma(c),StruveL(Plus(C1,Times(C1D2,Plus(CN3,Times(C2,c)))),Times(C2,Sqrt(z)))))),
+    // HypergeometricPFQ({1},{3/2,c_},z_):=1/2*Sqrt(Pi)*z^(1/4-c/2)*Gamma(c)*StruveL(-3/2+c,2*Sqrt(z))
+    ISetDelayed(HypergeometricPFQ(list(C1),list(QQ(3L,2L),c_),z_),
+      Times(C1D2,CSqrtPi,Power(z,Plus(C1D4,Times(CN1D2,c))),Gamma(c),StruveL(Plus(QQ(-3L,2L),c),Times(C2,Sqrt(z)))))
   );
 }

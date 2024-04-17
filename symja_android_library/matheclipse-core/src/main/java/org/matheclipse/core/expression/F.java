@@ -1734,6 +1734,14 @@ public class F extends S {
     return function(And, expr);
   }
 
+  public static IAST AngerJ(final IExpr v, final IExpr z) {
+    return new AST2(AngerJ, v, z);
+  }
+
+  public static IAST AngerJ(final IExpr v, final IExpr m, final IExpr z) {
+    return new AST3(AngerJ, v, m, z);
+  }
+
   /**
    * <code>expr1 && expr2</code> evaluates each expression in turn, returning {@link S#False} as
    * soon as an expression evaluates to {@link S#False}. If all expressions evaluate to

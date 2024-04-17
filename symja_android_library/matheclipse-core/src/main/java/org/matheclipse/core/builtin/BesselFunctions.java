@@ -11,6 +11,7 @@ import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
+import java.math.RoundingMode;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.eval.Errors;
@@ -25,6 +26,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.FunctionExpand;
+import com.google.common.math.IntMath;
 
 public class BesselFunctions {
 
@@ -35,6 +37,7 @@ public class BesselFunctions {
   private static class Initializer {
 
     private static void init() {
+      S.AngerJ.setEvaluator(new AngerJ());
       S.AiryAi.setEvaluator(new AiryAi());
       S.AiryAiPrime.setEvaluator(new AiryAiPrime());
       S.AiryBi.setEvaluator(new AiryBi());
@@ -53,6 +56,76 @@ public class BesselFunctions {
       S.SphericalHankelH2.setEvaluator(new SphericalHankelH2());
       S.WeberE.setEvaluator(new WeberE());
     }
+  }
+
+  private static final class AngerJ extends AbstractFunctionEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      final IExpr n = ast.arg1();
+
+      if (ast.isAST2()) {
+        // https://dlmf.nist.gov/11.10#vii
+        final IExpr z = ast.arg2();
+        if (z.isZero()) {
+          // Sinc(n*Pi)
+          return F.Sinc(F.Times(n, F.Pi));
+        }
+        int ni = n.toIntDefault();
+        if (ni != Integer.MIN_VALUE) {
+          if (ni >= 0) {
+            return F.BesselJ(n, z);
+          } else {
+            if ((ni & 0x1) == 0x1) {
+              return F.Negate(F.BesselJ(F.ZZ(-ni), z));
+            }
+            return F.BesselJ(F.ZZ(-ni), z);
+          }
+        }
+
+        if (engine.isNumericMode()) {
+          if (n.isNumber() && z.isNumber()) {
+            try {
+              return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
+
+            } catch (RuntimeException rex) {
+              return Errors.printMessage(S.AngerJ, rex, engine);
+            }
+          }
+        }
+        return F.NIL;
+      }
+      if (ast.isAST3()) {
+        IExpr m = ast.arg2();
+        IExpr z = ast.arg3();
+        if (engine.isNumericMode()) {
+          if (n.isNumber() && m.isNumber() && z.isNumber()) {
+            try {
+              return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
+            } catch (RuntimeException rex) {
+              return Errors.printMessage(S.AngerJ, rex, engine);
+            }
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      super.setUp(newSymbol);
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+    }
+
   }
 
   private static final class AiryAi extends AbstractFunctionEvaluator {
@@ -1273,12 +1346,49 @@ public class BesselFunctions {
   private static final class WeberE extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr n = ast.arg1();
-      IExpr z = ast.arg2();
+      final IExpr n = ast.arg1();
+
       if (ast.isAST2()) {
+        // https://dlmf.nist.gov/11.10#vii
+        final IExpr z = ast.arg2();
         if (n.isZero()) {
+          if (z.isZero()) {
+            return F.C0;
+          }
           return F.Negate(F.StruveH(n, z));
         }
+        if (z.isZero()) {
+          // 1/2*n*Pi*Sinc(1/2*n*Pi)^2
+          return F.Times(F.C1D2, n, F.Pi, F.Sqr(F.Sinc(F.Times(F.C1D2, n, F.Pi))));
+        }
+
+        int ni = n.toIntDefault();
+        if (ni != Integer.MIN_VALUE) {
+          // https://dlmf.nist.gov/11.10#vi
+          if (ni > 0) {
+            // -StruveH(n,z)+Sum(Gamma(k+1/2)/((z/2)^(1+2*k-n)*Gamma(-k+n+1/2)),{k,0,Floor(1/2*(-1+n))})/Pi
+            int maxK = (ni - 1) / 2;
+            IExpr sum = F.sum(k -> F.Times(F.Gamma(F.Plus(k, F.C1D2)),
+                F.Power(F.Times(F.C1D2, z), F.Plus(F.CN1, F.Times(F.CN2, k), n)),
+                F.Power(F.Gamma(F.Plus(F.Negate(k), n, F.C1D2)), F.CN1)), 0, maxK);
+            return engine
+                .evaluate(F.Plus(F.Negate(F.StruveH(n, z)), F.Times(F.Power(F.Pi, F.CN1), sum)));
+          }
+          if (ni < 0) {
+            IExpr npos = F.ZZ(-ni);
+            // -StruveH(n,z)+(-1)^(npos+1)/Pi*Sum(((z/2)^(n+2*k+1)*Gamma(-1/2-k+npos))/Gamma(k+3/2),{k,0,Ceiling(1/2*(-3+npos))})
+            int maxK = IntMath.divide(-ni - 3, 2, RoundingMode.CEILING);
+            IExpr sum = F.sum(k -> F.Times(
+                F.Times(F.Power(F.Times(F.C1D2, z), F.Plus(n, F.Times(F.C2, k), F.C1)),
+                    F.Power(F.Gamma(F.Plus(k, F.QQ(3L, 2L))), F.CN1),
+                    F.Gamma(F.Plus(F.CN1D2, F.Negate(k), npos)))),
+                0, maxK);
+            return F.Plus(F.Negate(F.StruveH(n, z)),
+                F.Times(F.Power(F.CN1, F.Plus(npos, F.C1)), F.Power(F.Pi, F.CN1),
+                    sum));
+          }
+        }
+
         if (engine.isNumericMode()) {
           if (n.isNumber() && z.isNumber()) {
             try {
@@ -1288,12 +1398,12 @@ public class BesselFunctions {
               return Errors.printMessage(S.WeberE, rex, engine);
             }
           }
-          return F.NIL;
         }
+        return F.NIL;
       }
       if (ast.isAST3()) {
-        IExpr m = z;
-        z = ast.arg3();
+        IExpr m = ast.arg2();
+        IExpr z = ast.arg3();
         if (engine.isNumericMode()) {
           if (n.isNumber() && m.isNumber() && z.isNumber()) {
             try {
@@ -1322,6 +1432,7 @@ public class BesselFunctions {
       super.setUp(newSymbol);
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
     }
+
   }
 
   public static void initialize() {

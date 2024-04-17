@@ -4,6 +4,32 @@ import org.junit.Test;
 
 public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
+  @Test
+  public void testAngerJ() {
+    check("AngerJ(-42,z)", //
+        "BesselJ(42,z)");
+    check("AngerJ(-43,z)", //
+        "-BesselJ(43,z)");
+    check("AngerJ(-44,z)", //
+        "BesselJ(44,z)");
+    check("AngerJ(-45,z)", //
+        "-BesselJ(45,z)");
+    check("AngerJ(-1,z)", //
+        "-BesselJ(1,z)");
+    check("AngerJ(42,z)", //
+        "BesselJ(42,z)");
+    check("AngerJ(43,z)", //
+        "BesselJ(43,z)");
+    check("AngerJ(1,z)", //
+        "BesselJ(1,z)");
+    check("AngerJ(0,z)", //
+        "BesselJ(0,z)");
+    check("AngerJ(n,0)", //
+        "Sinc(n*Pi)");
+    // TODO
+    // checkNumeric("AngerJ(1,2.0)", //
+    // "");
+  }
 
   @Test
   public void testAiryAi() {
@@ -389,8 +415,44 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testWeberE() {
+    check("WeberE(a, 0)", //
+        "1/2*a*Pi*Sinc(1/2*a*Pi)^2");
+    check("WeberE(1, 0)", //
+        "2/Pi");
+    check("WeberE(1, z)", //
+        "2/Pi-StruveH(1,z)");
+
+    checkNumeric("Table(WeberE(n,Sqrt(3)),{n,-1.0,-10.0,-1})", //
+        "{-0.1169147394592414,0.1765050158610133,-0.29070613422346014,"//
+            + "0.09542537933720352,-0.15004481335939523,0.0357535606026218,"//
+            + "-0.09766312070144068,0.01854285187800997,-0.07362840767018497"//
+            + ",0.011520811269292608}");
+    checkNumeric("WeberE(1.0, 2.0)", //
+        "-0.01014395591598094");
+
+    checkNumeric("WeberE(0.5, -4.0)", //
+        "0.6366197723675813*HypergeometricPFQ({1},{0.75,1.25},-4.0)+1.6976527263135508*HypergeometricPFQ({\n"
+            + "1},{1.25,1.75},-4.0)");
+
     check("WeberE(1.5, 3.5)", //
         "0.212207*HypergeometricPFQ({1},{0.25,1.75},-3.0625)+0.891268*HypergeometricPFQ({\n"
             + "1},{0.75,2.25},-3.0625)");
+    checkNumeric("Table(WeberE(n,b),{n,1,10})", //
+        "{2/Pi-StruveH(1,b)," //
+            + "2/3*b/Pi-StruveH(2,b)," //
+            + "(2/3+2/15*b^2)/Pi-StruveH(3,b)," //
+            + "(2/15*b+\n" //
+            + "2/105*b^3)/Pi-StruveH(4,b)," //
+            + "(2/5+2/105*b^2+2/945*b^4)/Pi-StruveH(5,b)," //
+            + "(2/35*b+2/\n" //
+            + "945*b^3+2/10395*b^5)/Pi-StruveH(6,b)," //
+            + "(2/7+2/315*b^2+2/10395*b^4+2/135135*b^6)/Pi-StruveH(\n" //
+            + "7,b)," //
+            + "(2/63*b+2/3465*b^3+2/135135*b^5+2/2027025*b^7)/Pi-StruveH(8,b)," //
+            + "(2/9+2/693*b^\n" //
+            + "2+2/45045*b^4+2/2027025*b^6+2/34459425*b^8)/Pi-StruveH(9,b)," //
+            + "(2/99*b+2/9009*b^3+2/\n" //
+            + "675675*b^5+2/34459425*b^7+2/654729075*b^9)/Pi-StruveH(10,b)}"); //
+
   }
 }

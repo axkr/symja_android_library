@@ -12,6 +12,12 @@ public class FunctionExpandRules {
     // Abs(x_^n_Integer):=(Im(x)^2+Re(x)^2)^(n/2)/;EvenQ(n)
     SetDelayed(Abs(Power(x_,$p(n, Integer))),
       Condition(Power(Plus(Sqr(Im(x)),Sqr(Re(x))),Times(C1D2,n)),EvenQ(n))),
+    // AngerJ(a_,b_):=(2*Cos(1/2*a*Pi)*HypergeometricPFQ({1},{1-a/2,1+a/2},(-1)*1/4*b^2)*Sin(1/2*a*Pi))/(a*Pi)+(-2*b*Cos(1/2*a*Pi)*HypergeometricPFQ({1},{3/2-a/2,3/2+a/2},(-1)*1/4*b^2)*Sin(1/2*a*Pi))/((-1+a)*(1+a)*Pi)
+    SetDelayed(AngerJ(a_,b_),
+      Plus(Times(C2,Power(Times(a,Pi),CN1),Cos(Times(C1D2,a,Pi)),HypergeometricPFQ(list(C1),list(Plus(C1,Times(CN1D2,a)),Plus(C1,Times(C1D2,a))),Times(CN1,C1D4,Sqr(b))),Sin(Times(C1D2,a,Pi))),Times(CN2,b,Power(Times(Plus(CN1,a),Plus(C1,a),Pi),CN1),Cos(Times(C1D2,a,Pi)),HypergeometricPFQ(list(C1),list(Plus(QQ(3L,2L),Times(CN1D2,a)),Plus(QQ(3L,2L),Times(C1D2,a))),Times(CN1,C1D4,Sqr(b))),Sin(Times(C1D2,a,Pi))))),
+    // AngerJ(a_,b_,c_):=(Cos(1/2*a*Pi)*Gamma(1+b)*HypergeometricPFQ({1/2+b/2,1+b/2},{1/2,1-a/2+b/2,1+a/2+b/2},(-1)*1/4*c^2))/(Gamma(1-a/2+b/2)*Gamma(1+a/2+b/2))+(c*Gamma(2+b)*HypergeometricPFQ({1+b/2,3/2+b/2},{3/2,3/2-a/2+b/2,3/2+a/2+b/2},(-1)*1/4*c^2)*Sin(1/2*a*Pi))/(2*Gamma(3/2-a/2+b/2)*Gamma(3/2+a/2+b/2))
+    SetDelayed(AngerJ(a_,b_,c_),
+      Plus(Times(Cos(Times(C1D2,a,Pi)),Power(Times(Gamma(Plus(C1,Times(CN1D2,a),Times(C1D2,b))),Gamma(Plus(C1,Times(C1D2,a),Times(C1D2,b)))),CN1),Gamma(Plus(C1,b)),HypergeometricPFQ(list(Plus(C1D2,Times(C1D2,b)),Plus(C1,Times(C1D2,b))),list(C1D2,Plus(C1,Times(CN1D2,a),Times(C1D2,b)),Plus(C1,Times(C1D2,a),Times(C1D2,b))),Times(CN1,C1D4,Sqr(c)))),Times(c,Power(Times(C2,Gamma(Plus(QQ(3L,2L),Times(CN1D2,a),Times(C1D2,b))),Gamma(Plus(QQ(3L,2L),Times(C1D2,a),Times(C1D2,b)))),CN1),Gamma(Plus(C2,b)),HypergeometricPFQ(list(Plus(C1,Times(C1D2,b)),Plus(QQ(3L,2L),Times(C1D2,b))),list(QQ(3L,2L),Plus(QQ(3L,2L),Times(CN1D2,a),Times(C1D2,b)),Plus(QQ(3L,2L),Times(C1D2,a),Times(C1D2,b))),Times(CN1,C1D4,Sqr(c))),Sin(Times(C1D2,a,Pi))))),
     // ArcCos(1/x_):=ArcSec(x)
     SetDelayed(ArcCos(Power(x_,CN1)),
       ArcSec(x)),
