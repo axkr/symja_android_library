@@ -147,9 +147,9 @@ public class FindMinimum extends AbstractFunctionEvaluator {
         IAST andAST = (IAST) expr;
         optimizationData = new OptimizationData[2];
         if (!createLinearConstraints(andAST, vars, engine, optimizationData)) {
-          // Constraints in `1` are not all equality or inequality constraints. Constraints with
-          // Unequal(!=) are not supported.
-          return Errors.printMessage(ast.topHead(), "eqineq", F.List(andAST), engine);
+          // Constraints in `1` are not all 'equality' or 'less equal' or 'greater equal'
+          // constraints. Constraints with Unequal(!=) are not supported.
+          return Errors.printMessage(ast.topHead(), "eqgele", F.List(andAST), engine);
         }
         continue;
       }
@@ -210,34 +210,20 @@ public class FindMinimum extends AbstractFunctionEvaluator {
                 equalitiesConstantsIndex, varsList, engine)) {
               return false;
             }
-          } else if (temp.isAST(S.Less, 3)) {
-            if (!createInequalityRelation((IAST) temp, inequalitiesList, inequalitiesConstants,
-                inequalitiesConstantsIndex, varsList, true, engine)) {
-              return false;
-            }
           } else if (temp.isAST(S.LessEqual, 3)) {
+            // see https://github.com/Hipparchus-Math/hipparchus/discussions/334
             if (!createInequalityRelation((IAST) temp, inequalitiesList, inequalitiesConstants,
                 inequalitiesConstantsIndex, varsList, true, engine)) {
-              return false;
-            }
-            // if (!createEqualityRelation((IAST) temp, equalitiesList, equalitiesConstants,
-            // equalitiesConstantsIndex, varsList, engine)) {
-            // return false;
-            // }
-          } else if (temp.isAST(S.Greater, 3)) {
-            if (!createInequalityRelation((IAST) temp, inequalitiesList, inequalitiesConstants,
-                inequalitiesConstantsIndex, varsList, false, engine)) {
               return false;
             }
           } else if (temp.isAST(S.GreaterEqual, 3)) {
+            // https://github.com/Hipparchus-Math/hipparchus/discussions/334
             if (!createInequalityRelation((IAST) temp, inequalitiesList, inequalitiesConstants,
                 inequalitiesConstantsIndex, varsList, false, engine)) {
               return false;
             }
-            // if (!createEqualityRelation((IAST) temp, equalitiesList, equalitiesConstants,
-            // equalitiesConstantsIndex, varsList, engine)) {
-            // return false;
-            // }
+          } else {
+            return false;
           }
         } else {
           return false;

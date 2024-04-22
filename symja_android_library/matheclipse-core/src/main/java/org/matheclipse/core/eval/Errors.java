@@ -108,6 +108,8 @@ public class Errors {
       "eqin", "`1` should be an equation or inequality.", //
       "eqineq",
       "Constraints in `1` are not all equality or inequality constraints. Constraints with Unequal(!=) are not supported.", //
+      "eqgele",
+      "Constraints in `1` are not all 'equality' or 'less equal' or 'greater equal' linear constraints. Constraints with Unequal(!=) are not supported.", //
       "error", "`1`.", //
       "exact", "Argument `1` is not an exact number.", //
       "exdims", "The dimensions cannot be determined from the position `1`.", //
@@ -252,8 +254,8 @@ public class Errors {
       "nps", "The triangle side `1`should be a positive number.", //
       "nquan",
       "The Quantile specification `1` should be a number or a list of numbers between `2` and `3`.",
-      "nrnum", "The Function value `1` is not a real number at `2`=`3`.",
-      "nsmet", "The system cannot be solved with the methods available to `1`.", //
+      "nrnum", "The Function value `1` is not a real number at `2`=`3`.", "nsmet",
+      "The system cannot be solved with the methods available to `1`.", //
       "nsolc", "There are no points which satisfy the constraints.", //
       "nupr", "`1` is not a univariate polynomial with rational number coefficients.", //
       "nvld", "The expression `1` is not a valid interval.", //

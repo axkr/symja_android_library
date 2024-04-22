@@ -8927,13 +8927,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check(
         "FindMinimum({x+y,3*x+2*y >= 7 && x >= 0 && y >= 0}, {x, y},Method -> \"SequentialQuadratic\")", //
         "{2.33333,{x->2.33333,y->-8.32917*10^-11}}");
-    // TODO Less and Greater are converted the same as GreaterEqual, LessEqual
+    // TODO Less and Greater are not allowed at the moment
+    // message: FindMinimum: Constraints in `1` are not all 'equality' or 'less
+    // equal' or 'greater equal' linear constraints. Constraints with Unequal(!=) are not supported.
     check(
         "FindMinimum({x+y,3*x+2*y > 7 && x > 0 && y > 0}, {x, y},Method -> \"SequentialQuadratic\")", //
-        "{2.33333,{x->2.33333,y->-8.32917*10^-11}}");
-    check(
-        "FindMinimum({x+y,3*x+2*y > 7 && -x < 0 && -y < 0}, {x, y},Method -> \"SequentialQuadratic\")", //
-        "{2.33333,{x->2.33333,y->-8.32917*10^-11}}");
+        "FindMinimum({x+y,3*x+2*y>7&&x>0&&y>0},{x,y},Method->SequentialQuadratic)");
+
     // check("FindMinimum({Sin(x)*Sin(2*y),x^2 + y^2 < 3}, {{x, 2}, {y, 2}})", //
     // "");
     check("FindMinimum(Abs(x + 1) + Abs(x + 1.01) + Abs(y + 1),{x, y})", //
