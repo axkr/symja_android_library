@@ -84,7 +84,7 @@ public class Documentation {
           out.append(temp.toString());
         }
       }
-      IAST list = IOFunctions.getNamesByPrefix(name);
+      IAST list = IOFunctions.getDocumentationByPrefix(name, true);
 
       if (list.size() > 2) {
         for (int i = 1; i < list.size(); i++) {

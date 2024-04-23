@@ -507,21 +507,29 @@ public class IOFunctions {
     return list;
   }
 
-  public static IAST getNamesByPrefix(String name) {
-
+  public static IAST getDocumentationByPrefix(String name, boolean useAsterisk) {
     if (name.length() == 0) {
       return F.CEmptyList;
     }
-    final boolean exact;
-    if (name.charAt(name.length() - 1) == '*') {
-      name = name.substring(0, name.length() - 1);
+    boolean exact = false;
+    if (useAsterisk) {
+      if (name.charAt(name.length() - 1) == '*') {
+        name = name.substring(0, name.length() - 1);
+        if (name.length() == 0) {
+          return getAllNames();
+        }
+      } else {
+        exact = true;
+      }
+    } else {
       if (name.length() == 0) {
         return getAllNames();
       }
-      exact = false;
-    } else {
-      exact = true;
     }
+    return getNamesByPrefix(name, exact);
+  }
+
+  private static IAST getNamesByPrefix(String name, final boolean exact) {
     SuggestTree suggestTree = AST2Expr.getSuggestTree();
     // name = ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? name.toLowerCase() : name;
     name = name.toLowerCase(Locale.US);

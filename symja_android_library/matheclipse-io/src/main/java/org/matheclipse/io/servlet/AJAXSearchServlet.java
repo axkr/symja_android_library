@@ -70,7 +70,7 @@ public class AJAXSearchServlet extends HttpServlet {
 
   private static void findDocumentation(Appendable out, String trimmedInput) {
     String name = trimmedInput; // .substring(1);
-    IAST list = IOFunctions.getNamesByPrefix(name);
+    IAST list = IOFunctions.getDocumentationByPrefix(name, false);
     try {
       if (list.size() != 2) {
         for (int i = 1; i < list.size(); i++) {
