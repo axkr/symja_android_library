@@ -13,10 +13,17 @@ FindRoot(f, {x, xmin, xmax}, MaxIterations->maxiter)
 > searches for a numerical root of `f` for the variable `x`, with `maxiter` iterations. The default maximum iteraton is `100`.
 
 ```
+FindRoot(f, {x, xmin, xmax}, AccuracyGoal->n)
+```
+
+> searches for a numerical root of `f` for the variable `x`, with accuracy `1*^-n`
+
+```
 FindRoot(f, {x, xmin, xmax}, Method->method_name)
 ```
 
 > searches for a numerical root of `f` for the variable `x`, with one of the method names listed below.
+
 
 ```
 FindRoot({f(x1,x2,...), g(x1,x2,...), ...}, {{x1, initialValue1}, {x2, initialValue2}, ...})

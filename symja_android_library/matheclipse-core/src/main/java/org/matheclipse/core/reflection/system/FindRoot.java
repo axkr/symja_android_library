@@ -17,21 +17,20 @@ import org.hipparchus.analysis.solvers.RiddersSolver;
 import org.hipparchus.analysis.solvers.SecantSolver;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.Assumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
-import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -199,7 +198,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <a href="NRoots.md">NRoots</a>, <a href="Solve.md">Solve</a>
  * </p>
  */
-public class FindRoot extends AbstractFunctionEvaluator {
+public class FindRoot extends AbstractFunctionOptionEvaluator {
 
   private static class UnivariateSolverSupplier implements Supplier<IExpr> {
     final IExpr originalFunction;
@@ -216,6 +215,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
     final IReal maxMaybeNull;
     final int maxIterations;
     final String method;
+    final double accuracy;
     final EvalEngine engine;
 
     /**
@@ -228,16 +228,18 @@ public class FindRoot extends AbstractFunctionEvaluator {
      *        interval was defined
      * @param maxIterations
      * @param method
+     * @param accuracyGoal TODO
      * @param engine
      */
-    public UnivariateSolverSupplier(IExpr function, IAST variableList, IReal min,
-        IReal max, int maxIterations, String method, EvalEngine engine) {
+    public UnivariateSolverSupplier(IExpr function, IAST variableList, IReal min, IReal max,
+        int maxIterations, String method, int accuracyGoal, EvalEngine engine) {
       this.originalFunction = function;
       this.variableList = variableList;
       this.min = min;
       this.maxMaybeNull = max;
       this.maxIterations = maxIterations;
       this.method = method;
+      this.accuracy = accuracy(accuracyGoal);
       this.engine = engine;
     }
 
@@ -256,24 +258,24 @@ public class FindRoot extends AbstractFunctionEvaluator {
         UnivariateDifferentiableFunction f = new UnaryNumerical(function, xVar, true, true, engine);
         BaseAbstractUnivariateSolver<UnivariateFunction> solver = null;
         if (method.equalsIgnoreCase("Bisection")) {
-          solver = new BisectionSolver();
+          solver = new BisectionSolver(accuracy);
           // } else if (method.isSymbolName("Laguerre")) {
           // solver = new LaguerreSolver();
         } else if (method.equalsIgnoreCase("Muller")) {
-          solver = new MullerSolver();
+          solver = new MullerSolver(accuracy);
         } else if (method.equalsIgnoreCase("Ridders")) {
-          solver = new RiddersSolver();
+          solver = new RiddersSolver(accuracy);
         } else if (method.equalsIgnoreCase("Secant")) {
-          solver = new SecantSolver();
+          solver = new SecantSolver(accuracy);
         } else if (method.equalsIgnoreCase("RegulaFalsi")) {
-          solver = new RegulaFalsiSolver();
+          solver = new RegulaFalsiSolver(accuracy);
         } else if (method.equalsIgnoreCase("Illinois")) {
-          solver = new IllinoisSolver();
+          solver = new IllinoisSolver(accuracy);
         } else if (method.equalsIgnoreCase("Pegasus")) {
-          solver = new PegasusSolver();
+          solver = new PegasusSolver(accuracy);
         } else if (maxMaybeNull == null || method.equalsIgnoreCase("Newton")) {
           try {
-            NewtonRaphsonSolver nrs = new NewtonRaphsonSolver();
+            NewtonRaphsonSolver nrs = new NewtonRaphsonSolver(accuracy);
             if (maxMaybeNull == null) {
               return F.num(nrs.solve(maxIterations, f, min.doubleValue()));
             }
@@ -286,7 +288,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
         } else {
           // default: BracketingNthOrderBrentSolver
           try {
-            solver = new BracketingNthOrderBrentSolver();
+            solver = new BracketingNthOrderBrentSolver(accuracy, 5);
             return F
                 .num(solver.solve(maxIterations, f, min.doubleValue(), maxMaybeNull.doubleValue()));
           } catch (MathRuntimeException mex) {
@@ -296,7 +298,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
             if (mex instanceof org.hipparchus.exception.MathIllegalArgumentException) {
 
               try {
-                NewtonRaphsonSolver nrs = new NewtonRaphsonSolver();
+                NewtonRaphsonSolver nrs = new NewtonRaphsonSolver(accuracy);
                 return F.num(
                     nrs.solve(maxIterations, f, min.doubleValue(), maxMaybeNull.doubleValue()));
               } catch (MathRuntimeException mre) {
@@ -304,8 +306,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
 
             }
 
-            // switch to BisectionSolver
-            solver = new BisectionSolver();
+            solver = new BisectionSolver(accuracy);
           }
         }
 
@@ -322,27 +323,41 @@ public class FindRoot extends AbstractFunctionEvaluator {
   public FindRoot() {}
 
   @Override
-  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
+      IAST originalAST) {
+    if (argSize > 0 && argSize < ast.size()) {
+      ast = ast.copyUntil(argSize + 1);
+    }
     // default: BracketingNthOrderBrentSolver
     String method = "Brent";
     int maxIterations = 100;
-    if (ast.size() >= 4) {
-      final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
-      maxIterations = options.getOptionMaxIterations(S.MaxIterations);
+    int accuracyGoal = 6;
+    if (options[0].isInteger()) {
+      // S.MaxIterations
+      maxIterations = options[0].toIntDefault();
       if (maxIterations == Integer.MIN_VALUE) {
         return F.NIL;
       }
       if (maxIterations < 0) {
         maxIterations = 100;
       }
-
-      IExpr optionMethod = options.getOption(S.Method);
-      if (optionMethod.isSymbol() || optionMethod.isString()) {
-        method = optionMethod.toString();
-      } else {
+    }
+    if (!options[1].equals(S.Automatic)) {
+      if (options[1].isSymbol() || options[1].isString()) {
+        // S.Method
+        method = options[1].toString();
+      }
+    } else {
+      if (ast.size() >= 4) {
         if (ast.arg3().isSymbol()) {
           method = ast.arg3().toString();
         }
+      }
+    }
+    if (!options[2].equals(S.Automatic)) {
+      if (options[2].isInteger()) {
+        // S.AccuracyGoal
+        accuracyGoal = options[2].toIntDefault();
       }
     }
 
@@ -351,9 +366,9 @@ public class FindRoot extends AbstractFunctionEvaluator {
     int l1 = arg1.isVector();
     int l2 = arg2.argSize();
     if (l1 > 0 && l1 == l2 && arg1.isList() && arg2.isList()) {
-      return multivariateFindRoot((IAST) arg1, (IAST) arg2, Config.SPECIAL_FUNCTIONS_TOLERANCE,
-          maxIterations,
-          engine);
+      double accuracy = accuracy(accuracyGoal);
+      return multivariateFindRoot((IAST) arg1, (IAST) arg2, accuracy,
+          maxIterations, engine);
     } else if (arg2.isList()) {
       IAST list = (IAST) arg2;
       if (list.size() >= 2 && list.arg1().isSymbol()) {
@@ -368,16 +383,15 @@ public class FindRoot extends AbstractFunctionEvaluator {
           }
           try {
             UnivariateSolverSupplier optimizeSupplier = new UnivariateSolverSupplier(ast.arg1(),
-                list, min, max, maxIterations, method, engine);
+                list, min, max, maxIterations, method, accuracyGoal, engine);
             IExpr result = engine.evalBlock(optimizeSupplier, list);
             return F.list(F.Rule(list.arg1(), result));
           } catch (MathIllegalStateException miae) {
             // `1`.
-            return Errors.printMessage(ast.topHead(), "error",
-                F.list(F.$str(miae.getMessage())), engine);
-          } catch (MathRuntimeException mre) {
-            Errors.printMessage(ast.topHead(), "error", F.list(F.$str(mre.getMessage())),
+            return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())),
                 engine);
+          } catch (MathRuntimeException mre) {
+            Errors.printMessage(ast.topHead(), "error", F.list(F.$str(mre.getMessage())), engine);
             return F.CEmptyList;
           }
         }
@@ -392,7 +406,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
    * 
    * @param listOfEquations a list of equations
    * @param matrixOfVarValuePairs a matrix of variables and their initial values
-   * @param tolerance the tolerance where the the iteration should stop
+   * @param tolerance the tolerance where the iteration should stop
    * @param maxIterations maximum iterations
    * @param engine
    * @return
@@ -441,8 +455,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
    * @return
    */
   private static IExpr multivariateNewton(IAST vectorValuedFunction, IAST vectorOfVariables,
-      IAST initialGuessVector, double tolerance,
-      int maxIterations, EvalEngine engine) {
+      IAST initialGuessVector, double tolerance, int maxIterations, EvalEngine engine) {
 
     IExpr jacobianMatrix = S.Grad.ofNIL(engine, vectorValuedFunction, vectorOfVariables);
     if (jacobianMatrix.isMatrix(false) != null) {
@@ -479,6 +492,54 @@ public class FindRoot extends AbstractFunctionEvaluator {
   }
 
   /**
+   * Convert the accuracyGoal in to a <code>double</code> tolerance value.
+   * 
+   * @param accuracyGoal
+   * @return <code>1e- accuracyGoal </code>
+   */
+  private static double accuracy(int accuracyGoal) {
+    if (accuracyGoal > 0) {
+      switch (accuracyGoal) {
+        case 1:
+          return 1e-1;
+        case 2:
+          return 1e-2;
+        case 3:
+          return 1e-4;
+        case 4:
+          return 1e-4;
+        case 5:
+          return 1e-5;
+        case 6:
+          return 1e-6;
+        case 7:
+          return 1e-7;
+        case 8:
+          return 1e-8;
+        case 9:
+          return 1e-9;
+        case 10:
+          return 1e-10;
+        case 11:
+          return 1e-11;
+        case 12:
+          return 1e-12;
+        case 13:
+          return 1e-13;
+        case 14:
+          return 1e-14;
+        case 15:
+          return 1e-15;
+        case 16:
+          return 1e-16;
+        default:
+          break;
+      }
+    }
+    // default
+    return 1e-6;
+  }
+  /**
    * Create the substitution map.
    * 
    * @param variables
@@ -500,11 +561,16 @@ public class FindRoot extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_2_INFINITY;
+    return IFunctionEvaluator.ARGS_2_3;
   }
 
   @Override
   public void setUp(final ISymbol newSymbol) {
     // newSymbol.setAttributes(ISymbol.HOLDALL);
+    setOptions(newSymbol, //
+        new IBuiltInSymbol[] {//
+            S.MaxIterations, S.Method, S.AccuracyGoal}, //
+        new IExpr[] {//
+            F.C100, S.Automatic, S.Automatic});
   }
 }

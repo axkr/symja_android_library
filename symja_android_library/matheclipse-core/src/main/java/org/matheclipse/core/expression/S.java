@@ -283,6 +283,9 @@ public class S {
    */
   public final static IBuiltInSymbol Accumulate = S.initFinalSymbol("Accumulate", ID.Accumulate);
 
+  public final static IBuiltInSymbol AccuracyGoal =
+      S.initFinalSymbol("AccuracyGoal", ID.AccuracyGoal);
+
   /**
    * AddSides(compare-expr, value) - add `value` to all elements of the `compare-expr`.
    * `compare-expr` can be `True`, `False` or an comparison expression with head `Equal, Unequal,
