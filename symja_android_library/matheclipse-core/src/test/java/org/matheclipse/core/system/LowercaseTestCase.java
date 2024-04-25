@@ -8975,6 +8975,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindRoot() {
+    // automatic: AccuracyGoal->6
+    checkNumeric("10-x /. FindRoot(Sin(x - 10) - x + 10, {x, 0})", //
+        "1.498271155142561E-6");
+    checkNumeric("10-x /. FindRoot(Sin(x - 10) - x + 10, {x, 0},AccuracyGoal->4)", //
+        "1.9439351756744827E-4");
+    // Message FindRoot: interval does not bracket a root: f(NaN) = NaN, f(NaN) = NaN.
+    checkNumeric("10-x /. FindRoot(Sin(x - 10) - x + 10, {x, 0},AccuracyGoal->8)", //
+        "10-x/.FindRoot(10-x-Sin(10-x),{x,0},AccuracyGoal->8)");
+    // Message FindRoot: Value of option AccuracyGoal->test is not Automatic or a machine-sized
+    // integer.
+    checkNumeric("10-x /. FindRoot(Sin(x - 10) - x + 10, {x, 0},AccuracyGoal->test)", //
+        "10-x/.FindRoot(10-x-Sin(10-x),{x,0},AccuracyGoal->test)");
+
     // multivariate cases
     check("FindRoot({2*x1+x2==E^(-x1), -x1+2*x2==E^(-x2)},{{x1, 0.0},{x2, 1.0}})", //
         "{x1->0.197594,x2->0.425514}");
@@ -9006,12 +9019,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     checkNumeric("FindRoot(30*x/0.000002==30, {x, 0, 5}, Method->brent)", //
         "{x->2.0E-6}");
     // github issue #60
+    // Message FindRoot: Method->brent is only applicable for univariate real functions and requires
+    // two real starting values that bracket the root.
     check("FindRoot(cos(x) + 2, {x, 0, 5}, Method->brent)", //
-        "{}");
+        "FindRoot(2+Cos(x),{x,0,5},Method->brent)");
+    // FindRoot: Method->bisection is only applicable for univariate real functions and requires two
+    // real starting values that bracket the root.
     check("FindRoot(cos(x) + 2, {x, 0, 5}, Method->bisection)", //
-        "{}");
+        "FindRoot(2+Cos(x),{x,0,5},Method->bisection)");
     check("FindRoot(cos(x) + 2, {x, 0, 5}, Method->newton)", //
-        "{}");
+        "FindRoot(2+Cos(x),{x,0,5},Method->newton)");
 
     // github issue #43
     check("findroot(abs(x-1)-2x-3==0, {x, -10, 10})", //
@@ -9019,11 +9036,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     // github issue #103
     check("FindRoot(2^x==0,{x,-100, 100}, Method->Brent)", //
-        "{}");
+        "FindRoot(2^x==0,{x,-100,100},Method->brent)");
     // FindRoot: interval does not bracket a root: f(-1) = 0.5, f(100) =
     // 1,267,650,600,228,229,400,000,000,000,000
     check("FindRoot(2^x==0,{x,-1,100}, Method->Brent)", //
-        "{}");
+        "FindRoot(2^x==0,{x,-1,100},Method->brent)");
 
     checkNumeric("N(2^(-100))", //
         "7.888609052210118E-31");
@@ -9042,15 +9059,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     }
 
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})", //
-        "{x->3.434189629596888}");
+        "{x->3.4341896575482007}");
     checkNumeric("$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n"
         + "$R=100;\n" + "$d=0.00;\n" + "$vn=0;\n" + "$EAj=0;\n" + "$zj=0;\n" + "$sz=1;\n"
         + "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA))+(Sum((($R*(1+$d)^(Floor(i0/$Z)))/(1+$AA))*(1+p-$g)^(($n-i0-$vn)/$Z),{i0,0,$n-1}))+(Sum(($EAj*(1+p-$g)^(($n-$zj)/$Z))/(1+$AA),{j,1,$sz})) - 30199, {p, 0, 0.1})", //
-        "{p->0.04999709394010556}");
+        "{p->0.04999709393822403}");
     checkNumeric(
         "$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n" + "$res=15474;\n"
             + "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA)) - $res, {p, 0, 0.1})", //
-        "{p->0.04999346433486661}");
+        "{p->0.049993464334866594}");
 
     checkNumeric("Exp(3.4341896)", //
         "31.006274895944433");
@@ -9058,9 +9075,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "31.006276680299816");
     // default to Newton method
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})", //
-        "{x->3.434189629596888}");
-    checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Newton)", //
         "{x->3.4341896575482007}");
+    checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Brent)", //
+        "{x->3.434189629596888}");
 
     // only a start value is given:
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,3}, Method->Newton)", "{x->3.4341896575482007}");
@@ -11190,6 +11207,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometric1F1() {
+    // check("Hypergeometric1F1({0,0,0},a,{{0,0},{0,0},0})", //
+    // "{{1,1},{1,1},1}");
     checkNumeric("Hypergeometric1F1(-0.5, 1.0 / 3.0, -1)", //
         "2.269314995817225");
     // assertThat(Maja.hypergeo1F1(-0.5, 1.0 / 3.0, -1)).isEqualTo(2.269314995817403);
@@ -11267,8 +11286,27 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometric2F1() {
-    check("Hypergeometric2F1(a, a + 1/2, 2*a, z)", //
-        "(1+Sqrt(1-z))^(1-2*a)/(2^(1-2*a)*Sqrt(1-z))");
+    // https://dlmf.nist.gov/15.4
+    // check("Hypergeometric2F1(a,b,1/2*a+1/2*b+1/2, 1/2)", //
+    // "(Sqrt(Pi)*Gamma(1/2+a/2+b/2))/(Gamma(1/2+a/2)*Gamma(1/2+b/2))");
+    // check("Hypergeometric2F1(1,a,a+1,-1)", //
+    // "1/2*a*(PolyGamma(0,1/2+a/2)-PolyGamma(0,a/2))");
+    // check("Hypergeometric2F1(a,b,a-b+1, -1)", //
+    // "(Sqrt(Pi)*Gamma(1+a-b))/(2^a*Gamma(1/2+a/2)*Gamma(1+a/2-b))");
+    // check("Hypergeometric2F1(a+1,b,a,z)", //
+    // "(-a+a*z-b*z)/(a*(1-z)^b*(-1+z))");
+    // check("Hypergeometric2F1(a,1-a,1/2,z)", //
+    // "Cos((1-2*a)*ArcSin(Sqrt(z)))/Sqrt(1-z)");
+    // check("Hypergeometric2F1(1-a,a,1/2,z)", //
+    // "Cos((-1+2*a)*ArcSin(Sqrt(z)))/Sqrt(1-z)");
+    // check("Hypergeometric2F1(a,-a,1/2,z)", //
+    // "Cos(2*a*ArcSin(Sqrt(z)))");
+    // check("Hypergeometric2F1(1/2,1,3/2,3)", //
+    // "ArcTanh(3)/3");
+    // check("Hypergeometric2F1(1/2,1,3/2,t^2)", //
+    // "ArcTanh(t)/t");
+    // check("Hypergeometric2F1(a, a + 1/2, 2*a, z)", //
+    // "(1+Sqrt(1-z))^(1-2*a)/(2^(1-2*a)*Sqrt(1-z))");
 
     // https://github.com/mtommila/apfloat/issues/29
     checkNumeric("Hypergeometric2F1(-3.0, -1, -2, 1.0)", //

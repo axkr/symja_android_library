@@ -54,6 +54,7 @@ public class Errors {
    * printed for that shortcut.
    */
   private static final String[] MESSAGES = { //
+      "accg", "Value of option `1` is not Automatic or a machine-sized integer.", //
       "affind", "`1` should be a list of `2` or more affinely independent points.", //
       "argillegal", "Illegal arguments: \"`1`\" in `2`", //
       "argb", "`1` called with `2` arguments; between `3` and `4` arguments are expected.", //
@@ -72,6 +73,8 @@ public class Errors {
       "asm", "The sum of angles `1` and `2` should be less than `3`.", //
       "attnf", "`1` is not a known attribute.", //
       "base", "Requested base `1` in `2` should be between 2 and `3`.", //
+      "bbrac",
+      "`1` is only applicable for univariate real functions and requires two real starting values that bracket the root.", //
       "bdpt", "Evaluation point `1` is not a valid set of polar or hyperspherical coordinates.", //
       "bset",
       "The second argument `1` of Element should be one of: Primes, Integers, Rationals, Algebraics, Reals, Complexes or Booleans.", //
@@ -87,6 +90,7 @@ public class Errors {
       "Warning: the column element `1` and row element `2` at positions `3` and `4` are not the same. Using column element.", //
       "cxt", "`1` is not a valid context name.", //
       "ctnc", "The constraint `1` is not convex.", //
+      "cvmit", "Failed to converge to the requested accuracy or precision within `1` iterations.", //
       "depth",
       "The array depth of the expression at position `1` of `2` must be at least equal to the specified rank `3`.", //
       "divz", "The argument `1` should be nonzero.", //

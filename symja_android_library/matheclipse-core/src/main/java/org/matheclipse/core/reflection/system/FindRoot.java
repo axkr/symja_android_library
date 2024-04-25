@@ -15,6 +15,7 @@ import org.hipparchus.analysis.solvers.PegasusSolver;
 import org.hipparchus.analysis.solvers.RegulaFalsiSolver;
 import org.hipparchus.analysis.solvers.RiddersSolver;
 import org.hipparchus.analysis.solvers.SecantSolver;
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.eval.Errors;
@@ -257,7 +258,9 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
         }
         UnivariateDifferentiableFunction f = new UnaryNumerical(function, xVar, true, true, engine);
         BaseAbstractUnivariateSolver<UnivariateFunction> solver = null;
-        if (method.equalsIgnoreCase("Bisection")) {
+        if (method.equalsIgnoreCase("Brent")) {
+          solver = new BracketingNthOrderBrentSolver(accuracy, 5);
+        } else if (method.equalsIgnoreCase("Bisection")) {
           solver = new BisectionSolver(accuracy);
           // } else if (method.isSymbolName("Laguerre")) {
           // solver = new LaguerreSolver();
@@ -274,40 +277,39 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
         } else if (method.equalsIgnoreCase("Pegasus")) {
           solver = new PegasusSolver(accuracy);
         } else if (maxMaybeNull == null || method.equalsIgnoreCase("Newton")) {
-          try {
-            NewtonRaphsonSolver nrs = new NewtonRaphsonSolver(accuracy);
-            if (maxMaybeNull == null) {
-              return F.num(nrs.solve(maxIterations, f, min.doubleValue()));
-            }
-            return F
-                .num(nrs.solve(maxIterations, f, min.doubleValue(), maxMaybeNull.doubleValue()));
-          } catch (MathRuntimeException mex) {
-            // switch to BracketingNthOrderBrentSolver
-            solver = new BracketingNthOrderBrentSolver();
+          // try {
+          NewtonRaphsonSolver nrs = new NewtonRaphsonSolver(accuracy);
+          if (maxMaybeNull == null) {
+            return F.num(nrs.solve(maxIterations, f, min.doubleValue()));
           }
-        } else {
-          // default: BracketingNthOrderBrentSolver
-          try {
-            solver = new BracketingNthOrderBrentSolver(accuracy, 5);
-            return F
-                .num(solver.solve(maxIterations, f, min.doubleValue(), maxMaybeNull.doubleValue()));
-          } catch (MathRuntimeException mex) {
-            // org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a
-            // root
-
-            if (mex instanceof org.hipparchus.exception.MathIllegalArgumentException) {
-
-              try {
-                NewtonRaphsonSolver nrs = new NewtonRaphsonSolver(accuracy);
-                return F.num(
-                    nrs.solve(maxIterations, f, min.doubleValue(), maxMaybeNull.doubleValue()));
-              } catch (MathRuntimeException mre) {
-              }
-
-            }
-
-            solver = new BisectionSolver(accuracy);
-          }
+          return F.num(nrs.solve(maxIterations, f, min.doubleValue(), maxMaybeNull.doubleValue()));
+          // } catch (MathRuntimeException mex) {
+          // // switch to BracketingNthOrderBrentSolver
+          // solver = new BracketingNthOrderBrentSolver(accuracy, 5);
+          // }
+          // } else {
+          // // default: NewtonRaphsonSolver
+          // try {
+          // NewtonRaphsonSolver nrs = new NewtonRaphsonSolver(accuracy);
+          // return F
+          // .num(nrs.solve(maxIterations, f, min.doubleValue(), maxMaybeNull.doubleValue()));
+          // } catch (MathRuntimeException mex) {
+          // // org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a
+          // // root
+          //
+          // if (mex instanceof org.hipparchus.exception.MathIllegalArgumentException) {
+          // MathIllegalArgumentException mie = (MathIllegalArgumentException) mex;
+          // // try {
+          // // NewtonRaphsonSolver nrs = new NewtonRaphsonSolver(accuracy);
+          // // return F.num(
+          // // nrs.solve(maxIterations, f, min.doubleValue(), maxMaybeNull.doubleValue()));
+          // // } catch (MathRuntimeException mre) {
+          // // }
+          // return F.NIL;
+          // }
+          //
+          // // solver = new BisectionSolver(accuracy);
+          // }
         }
 
         if (maxMaybeNull == null) {
@@ -329,7 +331,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       ast = ast.copyUntil(argSize + 1);
     }
     // default: BracketingNthOrderBrentSolver
-    String method = "Brent";
+    String method = "Newton";
     int maxIterations = 100;
     int accuracyGoal = 6;
     if (options[0].isInteger()) {
@@ -358,6 +360,10 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       if (options[2].isInteger()) {
         // S.AccuracyGoal
         accuracyGoal = options[2].toIntDefault();
+      } else {
+        // Value of option `1` is not Automatic or a machine-sized integer.
+        return Errors.printMessage(S.FindRoot, "accg", F.List(F.Rule(S.AccuracyGoal, options[2])),
+            engine);
       }
     }
 
@@ -367,8 +373,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     int l2 = arg2.argSize();
     if (l1 > 0 && l1 == l2 && arg1.isList() && arg2.isList()) {
       double accuracy = accuracy(accuracyGoal);
-      return multivariateFindRoot((IAST) arg1, (IAST) arg2, accuracy,
-          maxIterations, engine);
+      return multivariateFindRoot((IAST) arg1, (IAST) arg2, accuracy, maxIterations, engine);
     } else if (arg2.isList()) {
       IAST list = (IAST) arg2;
       if (list.size() >= 2 && list.arg1().isSymbol()) {
@@ -387,12 +392,24 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
             IExpr result = engine.evalBlock(optimizeSupplier, list);
             return F.list(F.Rule(list.arg1(), result));
           } catch (MathIllegalStateException miae) {
+            if (miae.getSpecifier() == LocalizedCoreFormats.CONVERGENCE_FAILED) {
+              // Failed to converge to the requested accuracy or precision within `1` iterations.
+              return Errors.printMessage(ast.topHead(), "cvmit", F.list(F.ZZ(maxIterations)),
+                  engine);
+            }
             // `1`.
             return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())),
                 engine);
           } catch (MathRuntimeException mre) {
-            Errors.printMessage(ast.topHead(), "error", F.list(F.$str(mre.getMessage())), engine);
-            return F.CEmptyList;
+            if (mre.getSpecifier() == LocalizedCoreFormats.NOT_BRACKETING_INTERVAL
+                || mre.getSpecifier() == LocalizedCoreFormats.ENDPOINTS_NOT_AN_INTERVAL) {
+              // `1` is only applicable for univariate real functions and requires two real starting
+              // values that bracket the root.
+              return Errors.printMessage(ast.topHead(), "bbrac", F.list(F.Rule(S.Method, method)),
+                  engine);
+            }
+            return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(mre.getMessage())),
+                engine);
           }
         }
       }
@@ -539,6 +556,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     // default
     return 1e-6;
   }
+
   /**
    * Create the substitution map.
    * 
