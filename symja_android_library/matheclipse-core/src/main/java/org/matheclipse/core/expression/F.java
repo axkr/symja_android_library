@@ -5530,6 +5530,11 @@ public class F extends S {
     return new AST1(InverseFunction, a);
   }
 
+  public static IAST InverseFunction(final IExpr function, final IExpr nthArg,
+      final IExpr totalArgs) {
+    return new AST3(InverseFunction, function, nthArg, totalArgs);
+  }
+
   public static IAST InverseGammaRegularized(final IExpr a0, final IExpr a1) {
     return new AST2(InverseGammaRegularized, a0, a1);
   }

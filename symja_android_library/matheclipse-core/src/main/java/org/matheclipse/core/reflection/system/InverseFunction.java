@@ -59,7 +59,15 @@ public class InverseFunction extends AbstractFunctionEvaluator {
         }
       } else if (ast.isAST3()) {
         int argSize = ast.arg3().toIntDefault();
-        if (argSize == 2) {
+        if (argSize == 1) {
+          int argPosition = ast.arg2().toIntDefault();
+          if (argPosition == 1) {
+            IExpr temp = getUnaryInverseFunction((ISymbol) arg1);
+            if (temp != null) {
+              return temp;
+            }
+          }
+        } else if (argSize == 2) {
           int argPosition = ast.arg2().toIntDefault();
           if (argPosition == 1 || argPosition == 2) {
             IExpr temp = getBinaryInverseFunction((ISymbol) arg1, argPosition, argSize);
@@ -183,6 +191,17 @@ public class InverseFunction extends AbstractFunctionEvaluator {
         case ID.JacobiSC:
           if (argPosition == 1 && argSize == 2) {
             return S.InverseJacobiSC;
+          }
+          break;
+        case ID.Power:
+          if (argSize == 2) {
+            if (argPosition == 1) {
+              // #1^(1/#2)&
+              return F.Function(F.Power(F.Slot1, F.Power(F.Slot2, F.CN1)));
+            }
+            if (argPosition == 2) {
+              return S.Log;
+            }
           }
           break;
       }
