@@ -13,6 +13,7 @@ import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import org.hipparchus.linear.AnyMatrix;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.expression.F;
@@ -42,7 +43,7 @@ import it.unimi.dsi.fastutil.ints.IntList;
  * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>,
  * <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed acyclic graph</a>
  */
-public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
+public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
 
   /**
    * The enumeration for the properties (keys) of the map possibly associated with this <code>IAST
@@ -176,16 +177,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
   public IAST addEvalFlags(int i);
 
   /**
-   * Set {@link IAST#BUILT_IN_EVALED} flag.
-   * 
-   * @return
-   */
-  default IAST functionEvaled() {
-    addEvalFlags(IAST.BUILT_IN_EVALED);
-    return this;
-  }
-
-  /**
    * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not
    * copied) and add the <code>expr</code> at the given <code>position</code>.
    *
@@ -245,18 +236,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
   public IExpr arg1();
 
   /**
-   * Get the argument of the {@link IAST} function (i.e. {@link #get(int)} ) and if the expression
-   * is the function {@link F#Unevaluated(IExpr)} return the first argument of the
-   * {@link F#Unevaluated(IExpr)} function.
-   * 
-   * @param position
-   * @return
-   */
-  default IExpr getUnevaluated(int position) {
-    return get(position);
-  }
-
-  /**
    * Get the second argument (i.e. the third element of the underlying list structure) of the <code>
    * AST</code> function (i.e. get(2) ). <br>
    * <b>Example:</b> for the AST representing the expression <code>x^y</code> (i.e. <code>
@@ -311,6 +290,13 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
    * @return <code>null</code> if a set couldn't be created
    */
   public Set<IExpr> asSet();
+
+  /**
+   * call <code>setEvalFlags(IAST.BUILT_IN_EVALED)</code>
+   */
+  public default void builtinEvaled() {
+    setEvalFlags(IAST.BUILT_IN_EVALED);
+  }
 
   /** Set the cached hash value to zero. */
   public void clearHashCache();
@@ -375,22 +361,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
 
   /**
    * <p>
-   * Return a copy of the pure <code>IAST</code> instance (the elements themselves are not copied).
-   * Additionally to the <code>copy()</code> method, if this is a {@link IAssociation} the values of
-   * the rules are copied.
-   * <p>
-   * Because it's not allowed to set the header object (offset 0) to an arbitrary expression after a
-   * <code>copy()</code>, this method should only be used if the arguments (offset 1..argSize)
-   * should be set to new expressions.
-   *
-   * @return a copy of this <code>IAST</code> instance.
-   */
-  default IASTMutable copyAST() {
-    return copy();
-  }
-
-  /**
-   * <p>
    * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not
    * copied). In contrast to the {@link #copy()} method, this method doesn't return exactly the same
    * type for a given <code>AST0, AST1, AST2, AST3...</code> object but transforms it into a new
@@ -414,6 +384,22 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
    * @return a copy of this <code>IAST</code> instance.
    */
   public IASTAppendable copyAppendable(int additionalCapacity);
+
+  /**
+   * <p>
+   * Return a copy of the pure <code>IAST</code> instance (the elements themselves are not copied).
+   * Additionally to the <code>copy()</code> method, if this is a {@link IAssociation} the values of
+   * the rules are copied.
+   * <p>
+   * Because it's not allowed to set the header object (offset 0) to an arbitrary expression after a
+   * <code>copy()</code>, this method should only be used if the arguments (offset 1..argSize)
+   * should be set to new expressions.
+   *
+   * @return a copy of this <code>IAST</code> instance.
+   */
+  default IASTMutable copyAST() {
+    return copy();
+  }
 
   /**
    * <p>
@@ -669,25 +655,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
 
   /**
    * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST
-   * </code> and append the arguments which satisfy the predicate.
-   *
-   * @param predicate the predicate which filters each argument in this <code>AST</code>
-   * @return the selected ast
-   */
-  public IAST select(Predicate<? super IExpr> predicate);
-
-  /**
-   * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST
-   * </code> and append up to <code>maxMatches</code> arguments which satisfy the predicate.
-   *
-   * @param predicate the predicate which filters each argument in this <code>AST</code>
-   * @param maxMatches the maximum number of matches
-   * @return the selected ast
-   */
-  public IAST select(Predicate<? super IExpr> predicate, int maxMatches);
-
-  /**
-   * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST
    * </code> and append the arguments which satisfy the predicate to the <code>0th element</code> of
    * the result array, or otherwise append it to the <code>1st element</code> of the result array.
    *
@@ -825,19 +792,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
   public boolean forAll(Predicate<? super IExpr> predicate, int startOffset);
 
   /**
-   * Check all atomic (non IAST objects) leaf elements by applying the <code>predicate</code> to
-   * each leaf argument in this <code>AST</code> and sub-<code>AST</code>s and return <code>true
-   * </code> if all of the leaf elements starting from index <code>startOffset</code> satisfy the
-   * predicate.
-   *
-   * @param predicate the predicate which filters each argument in this <code>AST</code>
-   * @param startOffset start offset from which the leaf elements have to be tested
-   * @return the <code>true</code> if the predicate is true for all elements or <code>false</code>
-   *         otherwise
-   */
-  public boolean forAllLeaves(Predicate<? super IExpr> predicate, int startOffset);
-
-  /**
    * Check all {@link IAST} recursively, which don't have <code>head</code> as head element and
    * apply the <code>predicate</code> to each leaf argument in this {@link IAST} and
    * sub-<code>AST</code>s and return <code>true</code> if all of the leaf elements starting from
@@ -851,20 +805,25 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
   public boolean forAllLeaves(IExpr head, Predicate<? super IExpr> predicate, int startOffset);
 
   /**
+   * Check all atomic (non IAST objects) leaf elements by applying the <code>predicate</code> to
+   * each leaf argument in this <code>AST</code> and sub-<code>AST</code>s and return <code>true
+   * </code> if all of the leaf elements starting from index <code>startOffset</code> satisfy the
+   * predicate.
+   *
+   * @param predicate the predicate which filters each argument in this <code>AST</code>
+   * @param startOffset start offset from which the leaf elements have to be tested
+   * @return the <code>true</code> if the predicate is true for all elements or <code>false</code>
+   *         otherwise
+   */
+  public boolean forAllLeaves(Predicate<? super IExpr> predicate, int startOffset);
+
+  /**
    * Iterate over all <code>value-elements</code> from index <code>1</code> to <code>size()-1</code>
    * and call the method <code>Consumer.accept()</code> for these elements. <b>Note:</b> the 0-th
    * element (i.e. the head of the AST) will not be selected.
    */
   @Override
   public void forEach(Consumer<? super IExpr> action);
-
-  /**
-   * Iterate over all elements from index <code>1</code> to <code>size()-1</code> and call the
-   * method <code>Consumer.accept()</code> for these elements. <b>Note:</b> the 0-th element (i.e.
-   * the head of the AST) will not be selected. If the element is an Association the complete rule
-   * will be selected as element.
-   */
-  public void forEachRule(Consumer<? super IExpr> action);
 
   /**
    * Iterate over all <code>value-elements</code> from index <code>startOffset</code> to
@@ -877,15 +836,27 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
   public void forEach(Consumer<? super IExpr> action, int startOffset);
 
   /**
-   * Iterate over all elements from index <code>startOffset</code> to <code>size()-1</code> and call
-   * the method <code>Consumer.accept()</code> for these elements. <b>Note:</b> the 0-th element
-   * (i.e. the head of the AST) will not be selected. If the element is an Association the complete
-   * rule will be selected as element.
-   *
-   * @param action
-   * @param startOffset the start offset from which the action.accept() method should be executed
+   * Every <code>entry</code> of this {@link IAST} is assumed to be a list of at least 2 elements.
+   * <code>biFunction.apply(entry.first(), entry.second())</code> will be called for every entry of
+   * this {@link IAST}. If it returns {@link F#NIL}, the result won't be appended to
+   * <code>appendableList</code>. Otherwise the result will be appended to
+   * <code>appendableList</code>.
+   * 
+   * @param appendableList
+   * @param biFunction
+   * @return
    */
-  public void forEachRule(Consumer<? super IExpr> action, int startOffset);
+  default IASTAppendable forEach(IASTAppendable appendableList,
+      BiFunction<IExpr, IExpr, IExpr> biFunction) {
+    for (int i = 1; i < size(); i++) {
+      IAST entry = (IAST) get(i);
+      IExpr bf = biFunction.apply(entry.first(), entry.second());
+      if (bf.isPresent()) {
+        appendableList.append(bf);
+      }
+    }
+    return appendableList;
+  }
 
   /**
    * Consume all <code>value-elements</code> generated by the given function from index
@@ -949,26 +920,32 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
   }
 
   /**
-   * Every <code>entry</code> of this {@link IAST} is assumed to be a list of at least 2 elements.
-   * <code>biFunction.apply(entry.first(), entry.second())</code> will be called for every entry of
-   * this {@link IAST}. If it returns {@link F#NIL}, the result won't be appended to
-   * <code>appendableList</code>. Otherwise the result will be appended to
-   * <code>appendableList</code>.
+   * Iterate over all elements from index <code>1</code> to <code>size()-1</code> and call the
+   * method <code>Consumer.accept()</code> for these elements. <b>Note:</b> the 0-th element (i.e.
+   * the head of the AST) will not be selected. If the element is an Association the complete rule
+   * will be selected as element.
+   */
+  public void forEachRule(Consumer<? super IExpr> action);
+
+  /**
+   * Iterate over all elements from index <code>startOffset</code> to <code>size()-1</code> and call
+   * the method <code>Consumer.accept()</code> for these elements. <b>Note:</b> the 0-th element
+   * (i.e. the head of the AST) will not be selected. If the element is an Association the complete
+   * rule will be selected as element.
+   *
+   * @param action
+   * @param startOffset the start offset from which the action.accept() method should be executed
+   */
+  public void forEachRule(Consumer<? super IExpr> action, int startOffset);
+
+  /**
+   * Set {@link IAST#BUILT_IN_EVALED} flag.
    * 
-   * @param appendableList
-   * @param biFunction
    * @return
    */
-  default IASTAppendable forEach(IASTAppendable appendableList,
-      BiFunction<IExpr, IExpr, IExpr> biFunction) {
-    for (int i = 1; i < size(); i++) {
-      IAST entry = (IAST) get(i);
-      IExpr bf = biFunction.apply(entry.first(), entry.second());
-      if (bf.isPresent()) {
-        appendableList.append(bf);
-      }
-    }
-    return appendableList;
+  default IAST functionEvaled() {
+    addEvalFlags(IAST.BUILT_IN_EVALED);
+    return this;
   }
 
   /**
@@ -992,65 +969,24 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
   public IExpr get(int location);
 
   /**
-   * If this is an <code>IAssociation</code> return the value of the rule at the position. Otherwise
-   * call {@link #get(int)}.
-   *
-   * @param position
-   * @return
-   */
-  default IExpr getValue(int position) {
-    return get(position);
-  }
-
-  /**
-   * Assuming this is a list of rules or an <code>IAssociation</code>. Return the first rule which
-   * equals the <code>key</code> argument.
-   *
-   * @param key
-   * @return
-   */
-  default IAST getRule(String key) {
-    int index = indexOf(x -> x.isRuleAST() && x.first().equals(F.$str(key)));
-    if (index > 0) {
-      return (IAST) get(index);
-    }
-    return F.NIL;
-  }
-
-  /**
-   * Assuming this is a list of rules or an <code>IAssociation</code>. Return the first rule which
-   * equals the <code>key</code> argument.
-   *
-   * @param key
-   * @return
-   */
-  default IAST getRule(IExpr key) {
-    int index = indexOf(x -> x.isRuleAST() && x.first().equals(key));
-    if (index > 0) {
-      return (IAST) get(index);
-    }
-    return F.NIL;
-  }
-
-  /**
-   * Returns <code>length</code> number of elements specified in the <code>items</code> position
-   * array in this {@code IAST}.
-   *
-   * @param items ascending ordered array of positions which should be selected from this {@code
-   *     IAST}.
-   * @param length the end position (exclusive) to which the <code>items</code> array is filled with
-   *        valid element positions
-   * @return
-   */
-  public IAST getItems(int[] items, int length);
-
-  /**
    * Casts an <code>IExpr</code> at position <code>index</code> to an <code>IAST</code>.
    *
    * @param index
    * @return
    */
   public IAST getAST(int index);
+
+  /**
+   * If this is a matrix, return the column dimension. Otherwise return <code>-1</code>.
+   */
+  @Override
+  default int getColumnDimension() {
+    int[] matrix = isMatrix(false);
+    if (matrix != null) {
+      return matrix[1];
+    }
+    return -1;
+  }
 
   /**
    * Get the evaluation flags for this list.
@@ -1073,6 +1009,18 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
    * @return
    */
   public IInteger getInt(int index);
+
+  /**
+   * Returns <code>length</code> number of elements specified in the <code>items</code> position
+   * array in this {@code IAST}.
+   *
+   * @param items ascending ordered array of positions which should be selected from this {@code
+   *     IAST}.
+   * @param length the end position (exclusive) to which the <code>items</code> array is filled with
+   *        valid element positions
+   * @return
+   */
+  public IAST getItems(int[] items, int length);
 
   /**
    * Casts an <code>IExpr</code> which is a list at position <code>index</code> to an <code>IAST
@@ -1110,6 +1058,34 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
   public IExpr getPart(final IntList positions);
 
   public Object getProperty(PROPERTY key);
+
+  /**
+   * If this is a matrix, return the row dimension. Otherwise return <code>-1</code>.
+   */
+  @Override
+  default int getRowDimension() {
+    int[] matrix = isMatrix(false);
+    if (matrix != null) {
+      return matrix[0];
+    }
+    return -1;
+  }
+
+  /**
+   * Assuming this is a list of rules or an <code>IAssociation</code>. Return the first rule which
+   * equals the <code>key</code> argument.
+   *
+   * @param key
+   * @return
+   */
+  default IAST getRule(IExpr key) {
+    int index = indexOf(x -> x.isRuleAST() && x.first().equals(key));
+    if (index > 0) {
+      return (IAST) get(index);
+    }
+    return F.NIL;
+  }
+
   /**
    * If this is an <code>IAssociation</code> return the rule at the position. Otherwise call
    * {@link #get(int)}.
@@ -1118,6 +1094,44 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
    * @return
    */
   default IExpr getRule(int position) {
+    return get(position);
+  }
+
+  /**
+   * Assuming this is a list of rules or an <code>IAssociation</code>. Return the first rule which
+   * equals the <code>key</code> argument.
+   *
+   * @param key
+   * @return
+   */
+  default IAST getRule(String key) {
+    int index = indexOf(x -> x.isRuleAST() && x.first().equals(F.$str(key)));
+    if (index > 0) {
+      return (IAST) get(index);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Get the argument of the {@link IAST} function (i.e. {@link #get(int)} ) and if the expression
+   * is the function {@link F#Unevaluated(IExpr)} return the first argument of the
+   * {@link F#Unevaluated(IExpr)} function.
+   * 
+   * @param position
+   * @return
+   */
+  default IExpr getUnevaluated(int position) {
+    return get(position);
+  }
+
+  /**
+   * If this is an <code>IAssociation</code> return the value of the rule at the position. Otherwise
+   * call {@link #get(int)}.
+   *
+   * @param position
+   * @return
+   */
+  default IExpr getValue(int position) {
     return get(position);
   }
 
@@ -1155,6 +1169,11 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
    */
   public boolean hasTrigonometricFunction();
 
+  @Override
+  default boolean isASTOrAssociation() {
+    return true;
+  }
+
   /**
    * Test if this AST contains no argument
    *
@@ -1162,11 +1181,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
    */
   @Override
   public boolean isEmpty();
-
-  @Override
-  default boolean isASTOrAssociation() {
-    return true;
-  }
 
   /**
    * Are the given evaluation flags disabled for this list ?
@@ -1199,12 +1213,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
    */
   public boolean isFreeAt(int position, final IExpr pattern);
 
-  /** {@inheritDoc} */
-  @Override
-  default boolean isNumberOrInfinity() {
-    return isInfinity() || isNegativeInfinity();
-  }
-
   @Override
   default boolean isNotDefined() {
     if (isIndeterminate() || isDirectedInfinity()) {
@@ -1220,7 +1228,21 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
 
   /** {@inheritDoc} */
   @Override
+  default boolean isNumberOrInfinity() {
+    return isInfinity() || isNegativeInfinity();
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public boolean isPatternMatchingFunction();
+
+  default boolean isRealsIntervalData() {
+    return isAST(S.IntervalData, 5)//
+        && arg1().equals(F.CNIInfinity)//
+        && arg2() == S.Less //
+        && arg3() == S.Less //
+        && arg4().equals(F.CIInfinity);
+  }
 
   /**
    * Check if the object at index 0 (i.e. the head of the list) is the same object as <code>head
@@ -1233,6 +1255,11 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
   @Override
   default boolean isSameHeadSizeGE(ISymbol head, int length) {
     return head() == head && length <= size();
+  }
+
+  @Override
+  default boolean isSquare() {
+    return false;
   }
 
   /** {@inheritDoc} */
@@ -1254,10 +1281,11 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
    * @param builder join the elements as strings
    * @param delimiter the delimiter that separates each element
    */
-  default void joinToString(StringBuilder builder, CharSequence delimiter) {
+  default void joinToString(StringBuilder builder, BiConsumer<StringBuilder, IExpr> consumer,
+      CharSequence delimiter) {
     final int size = size();
     for (int i = 1; i < size; i++) {
-      builder.append(get(i).toString());
+      consumer.accept(builder, get(i));
       if (i < size - 1) {
         builder.append(delimiter);
       }
@@ -1271,11 +1299,10 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
    * @param builder join the elements as strings
    * @param delimiter the delimiter that separates each element
    */
-  default void joinToString(StringBuilder builder, BiConsumer<StringBuilder, IExpr> consumer,
-      CharSequence delimiter) {
+  default void joinToString(StringBuilder builder, CharSequence delimiter) {
     final int size = size();
     for (int i = 1; i < size; i++) {
-      consumer.accept(builder, get(i));
+      builder.append(get(i).toString());
       if (i < size - 1) {
         builder.append(delimiter);
       }
@@ -1429,6 +1456,27 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
   public IAST mapRight(IASTAppendable list, BiFunction<IExpr, IExpr, IExpr> binaryFunction,
       IExpr rightArg);
 
+  /**
+   * Maps the elements of this IAST on the first level of arguments with the unary
+   * <code>function</code>.
+   *
+   * @param function a unary function which maps each argument
+   * @return
+   */
+  public IASTMutable mapThread(Function<IExpr, IExpr> function);
+
+  /**
+   * Maps the elements of <code>this</code> IAST and of <code>that</code> IAST on the first level of
+   * arguments with the binary <code>function</code>. The size of the result is the minimum size of
+   * <code>this</code> and <code>that</code>.
+   * 
+   * @param that
+   * @param function a unary function which maps each argument of <code>this</code> IAST and
+   *        <code>that</code>
+   * @return the size of the result is the minimum size of <code>this</code> and <code>that</code>.
+   */
+  public IASTMutable mapThread(IAST that, BiFunction<IExpr, IExpr, IExpr> function);
+
   /** {@inheritDoc} */
   @Override
   public IASTMutable mapThread(final IAST replacement, int positionInReplacement);
@@ -1458,27 +1506,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
    */
   public IASTMutable mapThreadEvaled(EvalEngine engine, final IAST replacement,
       int positionInReplacement);
-
-  /**
-   * Maps the elements of this IAST on the first level of arguments with the unary
-   * <code>function</code>.
-   *
-   * @param function a unary function which maps each argument
-   * @return
-   */
-  public IASTMutable mapThread(Function<IExpr, IExpr> function);
-
-  /**
-   * Maps the elements of <code>this</code> IAST and of <code>that</code> IAST on the first level of
-   * arguments with the binary <code>function</code>. The size of the result is the minimum size of
-   * <code>this</code> and <code>that</code>.
-   * 
-   * @param that
-   * @param function a unary function which maps each argument of <code>this</code> IAST and
-   *        <code>that</code>
-   * @return the size of the result is the minimum size of <code>this</code> and <code>that</code>.
-   */
-  public IASTMutable mapThread(IAST that, BiFunction<IExpr, IExpr, IExpr> function);
 
   /**
    * Maps the elements of this IAST with the unary functor <code>
@@ -1597,33 +1624,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
   public IASTMutable removeAtCopy(int position);
 
   /**
-   * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not
-   * copied) and remove the elements defined in the given <code>removedPositionsArray</code> up to
-   * <code>untilIndex</code> (exclusive).
-   *
-   * @param removedPositions
-   * @param untilIndex up to this position (exclusive) the elements will be removed from the copy
-   * @return an IAST with removed element at the given position.
-   */
-  public IASTAppendable removePositionsAtCopy(int[] removedPositions, int untilIndex);
-
-  public IAST removePositionsAtCopy(Predicate<IExpr> predicate);
-
-  /**
-   * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not
-   * copied) and replace the <code>replacePosition</code> with <code>newEntry</code> and remove the
-   * elements defined in the given <code>removedPositionsArray</code>
-   * 
-   * @param replacePosition
-   * @param newEntries
-   * @param removePositions
-   * 
-   * @return
-   */
-  public IASTAppendable replaceSubset(int[] replacePosition, IExpr[] newEntries,
-      int[] removePositions);
-
-  /**
    * Create a new <code>IAST</code> and remove all arguments from position <code>fromPosition</code>
    * inclusive to the end of this AST.
    *
@@ -1684,6 +1684,33 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
    */
   public IAST removeIf(Predicate<? super IExpr> predicate);
 
+  /**
+   * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not
+   * copied) and remove the elements defined in the given <code>removedPositionsArray</code> up to
+   * <code>untilIndex</code> (exclusive).
+   *
+   * @param removedPositions
+   * @param untilIndex up to this position (exclusive) the elements will be removed from the copy
+   * @return an IAST with removed element at the given position.
+   */
+  public IASTAppendable removePositionsAtCopy(int[] removedPositions, int untilIndex);
+
+  public IAST removePositionsAtCopy(Predicate<IExpr> predicate);
+
+  /**
+   * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not
+   * copied) and replace the <code>replacePosition</code> with <code>newEntry</code> and remove the
+   * elements defined in the given <code>removedPositionsArray</code>
+   * 
+   * @param replacePosition
+   * @param newEntries
+   * @param removePositions
+   * 
+   * @return
+   */
+  public IASTAppendable replaceSubset(int[] replacePosition, IExpr[] newEntries,
+      int[] removePositions);
+
   /** {@inheritDoc} */
   @Override
   default IAST rest() {
@@ -1740,6 +1767,25 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
   }
 
   /**
+   * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST
+   * </code> and append the arguments which satisfy the predicate.
+   *
+   * @param predicate the predicate which filters each argument in this <code>AST</code>
+   * @return the selected ast
+   */
+  public IAST select(Predicate<? super IExpr> predicate);
+
+  /**
+   * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST
+   * </code> and append up to <code>maxMatches</code> arguments which satisfy the predicate.
+   *
+   * @param predicate the predicate which filters each argument in this <code>AST</code>
+   * @param maxMatches the maximum number of matches
+   * @return the selected ast
+   */
+  public IAST select(Predicate<? super IExpr> predicate, int maxMatches);
+
+  /**
    * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not
    * copied) and set the <code>expr</code> at the given <code>position</code>.
    *
@@ -1763,13 +1809,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
     IASTMutable ast = copy();
     ast.set(i, expr);
     return ast;
-  }
-
-  /**
-   * call <code>setEvalFlags(IAST.BUILT_IN_EVALED)</code>
-   */
-  public default void builtinEvaled() {
-    setEvalFlags(IAST.BUILT_IN_EVALED);
   }
 
   /**
@@ -1832,6 +1871,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
    */
   public IAST splice(int index, int howMany, IExpr... items);
 
+
   /**
    * Returns a sequential {@link Stream} which starts at index <code>1</code>of the specified array
    * as its source.
@@ -1871,7 +1911,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
    */
   public IExpr[] toArray();
 
-
   default IExpr[] toArray(int startIndex) {
     IExpr[] result = new IExpr[size() - startIndex];
     int j = 0;
@@ -1889,12 +1928,4 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess {
    */
   @Override
   public ISymbol topHead();
-
-  default boolean isRealsIntervalData() {
-    return isAST(S.IntervalData, 5)//
-        && arg1().equals(F.CNIInfinity)//
-        && arg2() == S.Less //
-        && arg3() == S.Less //
-        && arg4().equals(F.CIInfinity);
-  }
 }
