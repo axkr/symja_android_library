@@ -11207,8 +11207,21 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometric1F1() {
-    // check("Hypergeometric1F1({0,0,0},a,{{0,0},{0,0},0})", //
-    // "{{1,1},{1,1},1}");
+    checkNumeric("Hypergeometric1F1(1,{2,3,4},5.0)", //
+        "{29.482631820515323,11.393052728206126,6.235831636923676}");
+    check("Hypergeometric1F1(3,b,z)", //
+        "1/2*(-1+b)*(4-b+z+(2-b)*(3-b)*E^z*z^(1-b)*(Gamma(-1+b)-Gamma(-1+b,z))+2*(3-b)*E^z*z^(\n"
+            + "2-b)*(Gamma(-1+b)-Gamma(-1+b,z))+E^z*z^(3-b)*(Gamma(-1+b)-Gamma(-1+b,z)))");
+    check("Hypergeometric1F1(a,a+1,z)", //
+        "(a*(Gamma(a,0)-Gamma(a,-z)))/(-z)^a");
+    check("Hypergeometric1F1(1,a+1,z)", //
+        "(a*E^z*(Gamma(a)-Gamma(a,z)))/z^a");
+    check("Hypergeometric1F1(a-1, a, z)", //
+        "(-1+a)*(-z)^(1-a)*(Gamma(-1+a,0)-Gamma(-1+a,-z))");
+    check("Hypergeometric1F1(a, a - 1, z)", //
+        "(E^z*(-1+a+z))/(-1+a)");
+    check("Hypergeometric1F1({0,0,0},a,{{0,0},{0,0},0})", //
+        "{{1,1},{1,1},1}");
     checkNumeric("Hypergeometric1F1(-0.5, 1.0 / 3.0, -1)", //
         "2.269314995817225");
     // assertThat(Maja.hypergeo1F1(-0.5, 1.0 / 3.0, -1)).isEqualTo(2.269314995817403);
@@ -11229,8 +11242,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // TODO check wrong
     check("Hypergeometric1F1(3,Quantity(1.2,\"m\"),-1+I)", //
         "Hypergeometric1F1(3,1.2[m],-1+I)");
-    check("Hypergeometric1F1(a, a - 1, z)", //
-        "(E^z*(-1+a+z))/(-1+a)");
     check("Hypergeometric1F1(2 + I, {2,3,4}, 0.5)", //
         "{1.61833+I*0.379258,1.391+I*0.228543,1.28402+I*0.161061}");
 
@@ -11261,8 +11272,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-0.5");
     check("Hypergeometric1F1(1,2,3.0)", //
         "6.36185");
-    checkNumeric("Hypergeometric1F1(1,{2,3,4},5.0)", //
-        "{29.48263182051029,11.393052728194332,6.2358316369166005}");
+
   }
 
   @Test
@@ -11287,26 +11297,26 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testHypergeometric2F1() {
     // https://dlmf.nist.gov/15.4
-    // check("Hypergeometric2F1(a,b,1/2*a+1/2*b+1/2, 1/2)", //
-    // "(Sqrt(Pi)*Gamma(1/2+a/2+b/2))/(Gamma(1/2+a/2)*Gamma(1/2+b/2))");
-    // check("Hypergeometric2F1(1,a,a+1,-1)", //
-    // "1/2*a*(PolyGamma(0,1/2+a/2)-PolyGamma(0,a/2))");
-    // check("Hypergeometric2F1(a,b,a-b+1, -1)", //
-    // "(Sqrt(Pi)*Gamma(1+a-b))/(2^a*Gamma(1/2+a/2)*Gamma(1+a/2-b))");
-    // check("Hypergeometric2F1(a+1,b,a,z)", //
-    // "(-a+a*z-b*z)/(a*(1-z)^b*(-1+z))");
-    // check("Hypergeometric2F1(a,1-a,1/2,z)", //
-    // "Cos((1-2*a)*ArcSin(Sqrt(z)))/Sqrt(1-z)");
-    // check("Hypergeometric2F1(1-a,a,1/2,z)", //
-    // "Cos((-1+2*a)*ArcSin(Sqrt(z)))/Sqrt(1-z)");
-    // check("Hypergeometric2F1(a,-a,1/2,z)", //
-    // "Cos(2*a*ArcSin(Sqrt(z)))");
-    // check("Hypergeometric2F1(1/2,1,3/2,3)", //
-    // "ArcTanh(3)/3");
-    // check("Hypergeometric2F1(1/2,1,3/2,t^2)", //
-    // "ArcTanh(t)/t");
-    // check("Hypergeometric2F1(a, a + 1/2, 2*a, z)", //
-    // "(1+Sqrt(1-z))^(1-2*a)/(2^(1-2*a)*Sqrt(1-z))");
+    check("Hypergeometric2F1(a,b,1/2*a+1/2*b+1/2, 1/2)", //
+        "(Sqrt(Pi)*Gamma(1/2+a/2+b/2))/(Gamma(1/2+a/2)*Gamma(1/2+b/2))");
+    check("Hypergeometric2F1(1,a,a+1,-1)", //
+        "1/2*a*(PolyGamma(0,1/2+a/2)-PolyGamma(0,a/2))");
+    check("Hypergeometric2F1(a,b,a-b+1, -1)", //
+        "(Sqrt(Pi)*Gamma(1+a-b))/(2^a*Gamma(1/2+a/2)*Gamma(1+a/2-b))");
+    check("Hypergeometric2F1(a+1,b,a,z)", //
+        "(-a+a*z-b*z)/(a*(1-z)^b*(-1+z))");
+    check("Hypergeometric2F1(a,1-a,1/2,z)", //
+        "Cos((-1+2*(1-a))*ArcSin(Sqrt(z)))/Sqrt(1-z)");
+    check("Hypergeometric2F1(1-a,a,1/2,z)", //
+        "Cos((-1+2*(1-a))*ArcSin(Sqrt(z)))/Sqrt(1-z)");
+    check("Hypergeometric2F1(a,-a,1/2,z)", //
+        "Cos(2*a*ArcSin(Sqrt(z)))");
+    check("Hypergeometric2F1(1/2,1,3/2,3)", //
+        "ArcTanh(3)/3");
+    check("Hypergeometric2F1(1/2,1,3/2,t^2)", //
+        "ArcTanh(t)/t");
+    check("Hypergeometric2F1(a, a + 1/2, 2*a, z)", //
+        "(1+Sqrt(1-z))^(1-2*a)/(2^(1-2*a)*Sqrt(1-z))");
 
     // https://github.com/mtommila/apfloat/issues/29
     checkNumeric("Hypergeometric2F1(-3.0, -1, -2, 1.0)", //
@@ -12676,6 +12686,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testInverseFunction() {
+    check("InverseFunction(Power,1,2)", //
+        "#1^(1/#2)&");
+    check("InverseFunction(Power,2,2)", //
+        "Log");
+    check("InverseFunction(Power,2,2)[x^y]", //
+        "Log(x^y)");
+    check("InverseFunction(Power,2,2)[x,y]", //
+        "Log(y)/Log(x)");
+
+
     check("InverseFunction(2^# &)", //
         "Log(#1)/Log(2)&");
 
@@ -18753,6 +18773,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolyGamma() {
+    checkNumeric("PolyGamma(0, 0.166667)", //
+        "-6.332115065894639");
+    checkNumeric("PolyGamma(0, 0.166667+1/2)", //
+        "-1.3182333944951956");
     check("PolyGamma(-0.8)", //
         "-4.03904");
     // http://fungrim.org/entry/ea2482/
