@@ -383,6 +383,11 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       } else {
         int size = ast.size();
         if (size > 2 && ast.leafCount() < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT / 2) {
+          IExpr lambertWEquationResult =
+              solveLambertWEquation(ast, exprWithoutVariable, variable, multipleValues, engine);
+          if (lambertWEquationResult.isPresent()) {
+            return lambertWEquationResult;
+          }
           if (exprWithoutVariable.isZero() && ast.isPlus()) {
             IAST elimZeroPlus = F.binaryAST2(elimzeroplus, ast, variable);
             IExpr result = zeroPlusMatcher().apply(elimZeroPlus);
@@ -509,6 +514,62 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             // a ^ f(x)
             IExpr value = F.Divide(F.Log(exprWithoutVariable), F.Log(base));
             return extractVariableRecursive(exponent, value, predicate, variable, multipleValues,
+                engine);
+          }
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * <p>
+   * Solve <code>a*E^(b*f(x))*f(x) == z </code> as
+   * <code>InverseFunction(f, 1, 1)(ProductLog((b*z)/a)/b)</code>
+   * 
+   * <p>
+   * See: <a href=
+   * "https://de.wikipedia.org/wiki/Lambertsche_W-Funktion#Verwendung_au%C3%9Ferhalb_der_Kombinatorik">DE:Wikipedia
+   * - Lambertsche_W-Funktion Verwendung_ausserhalb der Kombinatorik</a>
+   * 
+   * @param exprWithVariable the left-hand-side expression which contains a variable
+   * @param exprWithoutVariable the right-hand-side expression which contains no variable
+   * @param variable the variable
+   * @param multipleValues
+   * @param engine
+   * @return
+   */
+  private static IExpr solveLambertWEquation(IAST exprWithVariable, IExpr exprWithoutVariable,
+      IExpr variable, boolean multipleValues, EvalEngine engine) {
+    if (exprWithVariable.isTimes()) {
+      IASTAppendable[] variableFilter = exprWithVariable.filter(x -> x.isFree(variable));
+      int expIndexOf = variableFilter[1].indexOf(x -> x.isExp());
+      if (expIndexOf > 0) {
+        IExpr variableFunction1 = variableFilter[1].removeAtCopy(expIndexOf).oneIdentity1();
+        if (variableFunction1.isAST1()) {
+          IExpr expFunction = variableFilter[1].get(expIndexOf);
+
+          IExpr a = variableFilter[0].oneIdentity1();
+          IExpr b = F.C1;
+          IExpr z = exprWithoutVariable;
+
+          IExpr variableFunction2 = expFunction.exponent();
+          if (variableFunction2.isTimes()) {
+            IASTAppendable[] f1TimesFilter =
+                ((IAST) variableFunction2).filter(x -> x.isFree(variable));
+            if (f1TimesFilter[0].argSize() > 0) {
+              b = f1TimesFilter[0].oneIdentity1();
+              variableFunction2 = f1TimesFilter[1].oneIdentity1();
+            }
+          }
+
+          if (variableFunction1.equals(variableFunction2)) {
+            IExpr head = variableFunction1.head();
+            // ProductLog((b*z)/a)
+            IAST lambertW = F.ProductLog(F.Times(a.inverse(), b, z));
+            IExpr result =
+                F.unaryAST1(F.InverseFunction(head, F.C1, F.C1), F.Times(b.inverse(), lambertW));
+            return resultWithIfunMessage(result, variable, exprWithoutVariable, multipleValues,
                 engine);
           }
         }

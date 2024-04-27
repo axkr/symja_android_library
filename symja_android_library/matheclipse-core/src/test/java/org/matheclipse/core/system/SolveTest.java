@@ -344,6 +344,12 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSolveProductLog() {
+    check("Solve(a*Sin(x)*E^(b*Sin(x))==z,x)", //
+        "{{x->ArcSin(ProductLog((b*z)/a)/b)}}");
+    check("Solve(Sin(x)*E^(Sin(x))==z,x)", //
+        "{{x->ArcSin(ProductLog(z))}}");
+
+
     check("Solve(x^2==2^x,x)", //
         "{{x->2},{x->(-2*ProductLog(Log(2)/2))/Log(2)}}");
   }
