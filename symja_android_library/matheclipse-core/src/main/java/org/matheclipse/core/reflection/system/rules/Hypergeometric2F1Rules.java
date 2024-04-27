@@ -13,19 +13,10 @@ public class Hypergeometric2F1Rules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 4, 94 };
+  final public static int[] SIZES = { 1, 95 };
 
   final public static IAST RULES = List(
     IInit(Hypergeometric2F1, SIZES),
-    // Hypergeometric2F1(0,b_,c_,z_)=1
-    ISet(Hypergeometric2F1(C0,b_,c_,z_),
-      C1),
-    // Hypergeometric2F1(a_,0,c_,z_)=1
-    ISet(Hypergeometric2F1(a_,C0,c_,z_),
-      C1),
-    // Hypergeometric2F1(a_,b_,c_,0)=1
-    ISet(Hypergeometric2F1(a_,b_,c_,C0),
-      C1),
     // Hypergeometric2F1(1/2,3/2,1,2)=((-1)*2*EllipticE(2))/Pi
     ISet(Hypergeometric2F1(C1D2,QQ(3L,2L),C1,C2),
       Times(CN2,Power(Pi,CN1),EllipticE(C2))),
@@ -149,9 +140,12 @@ public class Hypergeometric2F1Rules {
     // Hypergeometric2F1(1/2,1,1,z_):=1/Sqrt(1-z)
     ISetDelayed(Hypergeometric2F1(C1D2,C1,C1,z_),
       Power(Subtract(C1,z),CN1D2)),
-    // Hypergeometric2F1(1/2,1,3/2,z_):=ArcTanh(Sqrt(z))/Sqrt(z)
-    ISetDelayed(Hypergeometric2F1(C1D2,C1,QQ(3L,2L),z_),
-      Times(Power(z,CN1D2),ArcTanh(Sqrt(z)))),
+    // Hypergeometric2F1(1/2,1,3/2,z_?RealValuedNumericQ):=ArcTanh(z)/z
+    ISetDelayed(Hypergeometric2F1(C1D2,C1,QQ(3L,2L),PatternTest(z_,RealValuedNumericQ)),
+      Times(Power(z,CN1),ArcTanh(z))),
+    // Hypergeometric2F1(1/2,1,3/2,z_^2):=ArcTanh(z)/z
+    ISetDelayed(Hypergeometric2F1(C1D2,C1,QQ(3L,2L),Sqr(z_)),
+      Times(Power(z,CN1),ArcTanh(z))),
     // Hypergeometric2F1(1/2,1,2,z_):=(2-2*Sqrt(1-z))/z
     ISetDelayed(Hypergeometric2F1(C1D2,C1,C2,z_),
       Times(Plus(C2,Times(CN2,Sqrt(Subtract(C1,z)))),Power(z,CN1))),

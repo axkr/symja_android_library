@@ -16,11 +16,11 @@ public class JacobiTestCase extends ExprEvaluatorTestCase {
         "1.01656");
     check(
         "{JacobiAmplitude(z,0), JacobiAmplitude(z,1),JacobiAmplitude(0,m), JacobiAmplitude(EllipticK(m),m)}", //
-        "{z,-Pi/2+2*ArcTan(E^z),0,Pi/2}");
+        "{z,Gudermannian(z),0,Pi/2}");
     check("{JacobiAmplitude(Infinity,0), JacobiAmplitude(Infinity,1) }", //
         "{Infinity,Pi/2}");
     check("{JacobiAmplitude(z,0), JacobiAmplitude(z,1)}", //
-        "{z,-Pi/2+2*ArcTan(E^z)}");
+        "{z,Gudermannian(z)}");
     check("JacobiAmplitude({a,b},c)", //
         "{JacobiAmplitude(a,c),JacobiAmplitude(b,c)}");
     check("Table(JacobiAmplitude(x, 2/3), {x,-4.0, 4.0, 1/4})", //

@@ -1461,7 +1461,8 @@ public class EllipticIntegrals {
         return z;
       }
       if (m.isOne()) {
-        return F.Plus(F.CNPiHalf, F.Times(2, F.ArcTan(F.Power(S.E, z))));
+        // return F.Plus(F.CNPiHalf, F.Times(2, F.ArcTan(F.Power(S.E, z))));
+        return F.Gudermannian(z);
       }
       if (z.isZero()) {
         return F.C0;

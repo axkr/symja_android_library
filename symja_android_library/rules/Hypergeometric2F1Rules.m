@@ -1,7 +1,4 @@
 { 
-Hypergeometric2F1(0, b_, c_, z_) = 1,
-Hypergeometric2F1(a_, 0, c_, z_) = 1,
-Hypergeometric2F1(a_, b_, c_, 0) = 1,
 Hypergeometric2F1(1/2,3/2,1,2) = -((2*EllipticE(2))/Pi),
 
 Hypergeometric2F1(-1/2,1/2,1, z_):= (2*EllipticE(z))/Pi,
@@ -47,7 +44,8 @@ Hypergeometric2F1(1/2,1,-3/2,z_) := (-3 + 5*(2 - 3*z)*z)/(3*(-1 + z)^3),
 Hypergeometric2F1(1/2,1,-1/2,z_) := (1 - 3*z)/(-1 + z)^2, 
 Hypergeometric2F1(1/2,1,1/2,z_) := 1/(1 - z),
 Hypergeometric2F1(1/2,1,1,z_) := 1/Sqrt(1 - z), 
-Hypergeometric2F1(1/2,1,3/2,z_) := ArcTanh(Sqrt(z))/Sqrt(z), 
+Hypergeometric2F1(1/2,1,3/2,z_?RealValuedNumericQ) := ArcTanh(z)/z,
+Hypergeometric2F1(1/2,1,3/2,z_^2) := ArcTanh(z)/z,
 Hypergeometric2F1(1/2,1,2,z_) := (2 - 2*Sqrt(1 - z))/z, 
 Hypergeometric2F1(1/2,1,5/2,z_) :=  (3*(Sqrt(z) + (-1 + z)*ArcTanh(Sqrt(z))))/(2*z^(3/2)), 
 Hypergeometric2F1(1/2,1,3,z_) := -((4*(2 - 2*Sqrt(1-z) + (-3 + 2*Sqrt(1-z))*z))/(3*z^2)), 

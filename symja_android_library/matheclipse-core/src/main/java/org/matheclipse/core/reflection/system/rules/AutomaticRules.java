@@ -41,7 +41,6 @@ public class AutomaticRules {
     rules = GammaRules.RULES;
     rules = GudermannianRules.RULES;
     rules = HurwitzLerchPhiRules.RULES;
-    rules = Hypergeometric0F1Rules.RULES;
     rules = Hypergeometric1F1Rules.RULES;
     rules = Hypergeometric2F1RegularizedRules.RULES;
     rules = Hypergeometric2F1Rules.RULES;
