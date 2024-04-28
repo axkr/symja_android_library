@@ -11207,6 +11207,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometric1F1() {
+    checkNumeric("Hypergeometric1F1(1,1/2,z)", //
+        "1+E^z*Sqrt(Pi)*Sqrt(z)*Erf(Sqrt(z))");
     checkNumeric("Hypergeometric1F1(1,{2,3,4},5.0)", //
         "{29.482631820515323,11.393052728206126,6.235831636923676}");
     check("Hypergeometric1F1(3,b,z)", //
@@ -11497,7 +11499,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometricPFQ() {
-
+    check("HypergeometricPFQ({1, 1}, {1/2, 1}, z)", //
+        "1+E^z*Sqrt(Pi)*Sqrt(z)*Erf(Sqrt(z))");
     check("HypergeometricPFQ({0,a1,a2,a3,a4},{b1,b2,b3},z)", //
         "1");
 
@@ -11518,7 +11521,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
     check("HypergeometricPFQ({a, b}, {c, b}, z)", //
         "HypergeometricPFQ({a},{c},z)");
-
   }
 
   @Test

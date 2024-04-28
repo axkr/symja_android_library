@@ -525,7 +525,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
   /**
    * <p>
    * Solve <code>a*E^(b*f(x))*f(x) == z </code> as
-   * <code>InverseFunction(f, 1, 1)(ProductLog((b*z)/a)/b)</code>
+   * <code>InverseFunction(f, 1, 1)[ProductLog((b*z)/a)/b]</code>
    * 
    * <p>
    * See: <a href=

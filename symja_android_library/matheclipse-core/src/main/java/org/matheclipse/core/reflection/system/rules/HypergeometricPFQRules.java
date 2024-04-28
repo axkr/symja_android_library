@@ -13,7 +13,7 @@ public class HypergeometricPFQRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 11 };
+  final public static int[] SIZES = { 0, 12 };
 
   final public static IAST RULES = List(
     IInit(HypergeometricPFQ, SIZES),
@@ -35,6 +35,9 @@ public class HypergeometricPFQRules {
     // HypergeometricPFQ({1,1},{2,2},z_):=-(EulerGamma+Gamma(0,-z)+Log(-z))/z
     ISetDelayed(HypergeometricPFQ(list(C1,C1),list(C2,C2),z_),
       Times(CN1,Power(z,CN1),Plus(EulerGamma,Gamma(C0,Negate(z)),Log(Negate(z))))),
+    // HypergeometricPFQ({1,1},{1/2,1},z_):=1+E^z*Sqrt(Pi)*Sqrt(z)*Erf(Sqrt(z))
+    ISetDelayed(HypergeometricPFQ(list(C1,C1),list(C1D2,C1),z_),
+      Plus(C1,Times(Exp(z),CSqrtPi,Sqrt(z),Erf(Sqrt(z))))),
     // HypergeometricPFQ({1/2},{3/2,3/2},z_):=SinhIntegral(2*Sqrt(z))/(2*Sqrt(z))
     ISetDelayed(HypergeometricPFQ(list(C1D2),list(QQ(3L,2L),QQ(3L,2L)),z_),
       Times(Power(Times(C2,Sqrt(z)),CN1),SinhIntegral(Times(C2,Sqrt(z))))),
