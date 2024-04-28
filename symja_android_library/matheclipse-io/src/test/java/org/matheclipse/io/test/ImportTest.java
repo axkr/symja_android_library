@@ -1,10 +1,10 @@
 // code by jph
 package org.matheclipse.io.test;
 
+import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.util.Arrays;
 import javax.imageio.ImageIO;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -16,9 +16,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.io.Extension;
 import org.matheclipse.io.builtin.Import;
 import org.matheclipse.io.tensor.io.ImageFormat;
-import junit.framework.TestCase;
-
-import static org.junit.Assert.assertEquals;
 
 @RunWith(JUnit4.class)
 public class ImportTest {
@@ -83,4 +80,12 @@ public class ImportTest {
   // // ---
   // }
   // }
+
+  @Test
+  public void testMat() throws Exception {
+    File file = new File(ImportTest.class.getResource("/io/multiDimMatrix.mat").getFile());
+    IExpr importResult =
+        Import.importFromPath(F.stringx("dummy"), Extension.MAT, file, EvalEngine.get());
+    System.out.println(importResult);
+  }
 }

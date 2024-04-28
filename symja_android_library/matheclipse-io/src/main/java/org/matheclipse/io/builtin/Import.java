@@ -90,7 +90,11 @@ public class Import extends AbstractEvaluator {
         case GIF:
         case JPEG:
         case PNG:
-          try (InputStream inputStream = new ReaderInputStream(reader, Charset.defaultCharset())) {
+          reader = new FileReader(fileName);
+          try (InputStream inputStream = //
+              ReaderInputStream.builder()//
+                  .setReader(reader)//
+                  .get()) {
             return ImageFormat.from(ImageIO.read(inputStream));
           }
         case CSV:
@@ -110,6 +114,29 @@ public class Import extends AbstractEvaluator {
           return jsonImport(fileName, false);
         case M:
           return S.Get.of(engine, pathName);
+        // case MAT:
+        // reader = new FileReader(file);
+        // try (InputStream inputStream = new FileInputStream(file)) {//
+        // ByteBuffer buffer = ByteBuffer.allocate(inputStream.available());
+        // int bytes = inputStream.read(buffer.array());
+        // if (bytes != buffer.array().length) {
+        // throw new AssertionError("Could not read full contents of " + file.getName());
+        // }
+        // try (Source source = Sources.wrap(buffer)) {
+        // Mat5File mat = Mat5.newReader(source)//
+        // .setReducedHeader(false)//
+        // .readMat();
+        // // String description = mat.getDescription();
+        // for (MatFile.Entry entry : mat.getEntries()) {
+        // String name = entry.getName();
+        // Array value = entry.getValue();
+        // if (value instanceof AbstractMatrixBase) {
+        // return Mat5Symja.getTensor((AbstractMatrixBase) value);
+        // }
+        // }
+        // }
+        // }
+        // return F.NIL;
         case TABLE:
           reader = new FileReader(fileName);
           return Convert.fromCSV(reader);
@@ -145,6 +172,7 @@ public class Import extends AbstractEvaluator {
     }
     return F.NIL;
   }
+
 
   // public static IExpr fromCSV(FileReader reader) throws IOException {
   // EvalEngine engine = EvalEngine.get();

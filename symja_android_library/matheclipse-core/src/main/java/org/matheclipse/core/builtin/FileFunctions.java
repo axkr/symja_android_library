@@ -94,6 +94,7 @@ public class FileFunctions {
         S.Put.setEvaluator(new Put());
         S.Read.setEvaluator(new Read());
         S.ReadString.setEvaluator(new ReadString());
+        S.Save.setEvaluator(new Save());
         S.StringToStream.setEvaluator(new StringToStream());
         S.URLFetch.setEvaluator(new URLFetch());
         S.Write.setEvaluator(new Write());
@@ -872,7 +873,8 @@ public class FileFunctions {
 
         final int argSize = ast.argSize();
         if (!(ast.last() instanceof IStringX)) {
-          return Errors.printMessage(S.Put, "string", F.List(), engine);
+          // String expected at position `1` in `2`.
+          return Errors.printMessage(S.Put, "string", F.List(F.ZZ(argSize), ast), engine);
         }
         IStringX fileName = (IStringX) ast.last();
 
@@ -1183,6 +1185,44 @@ public class FileFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+  }
+
+  private static final class Save extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (Config.isFileSystemEnabled(engine)) {
+
+        if (!(ast.arg1() instanceof IStringX)) {
+          // String expected at position `1` in `2`.
+          return Errors.printMessage(S.Save, "string", F.List(F.C1, ast), engine);
+        }
+        IStringX fileName = (IStringX) ast.arg1();
+        IExpr arg2 = ast.arg2();
+        StringBuilder buf = new StringBuilder();
+        if (arg2.isSymbol()) {
+          buf.append(((ISymbol) arg2).definition());
+        }
+        try (FileWriter writer = new FileWriter(fileName.toString())) {
+          writer.write(buf.toString());
+        } catch (IOException e) {
+          LOGGER.log(engine.getLogLevel(), "Save: file {} I/O exception !", fileName, e);
+          return F.NIL;
+        }
+        return S.Null;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDREST);
     }
   }
 

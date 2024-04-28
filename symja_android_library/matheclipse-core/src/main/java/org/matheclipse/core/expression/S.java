@@ -4165,6 +4165,10 @@ public class S {
 
   public final static IBuiltInSymbol Full = S.initFinalSymbol("Full", ID.Full);
 
+
+  public final static IBuiltInSymbol FullDefinition =
+      S.initFinalSymbol("FullDefinition", ID.FullDefinition);
+
   /**
    * FullForm(expression) - shows the internal representation of the given `expression`.
    * 
@@ -9225,6 +9229,8 @@ public class S {
    */
   public final static IBuiltInSymbol SatisfiableQ =
       S.initFinalSymbol("SatisfiableQ", ID.SatisfiableQ);
+
+  public final static IBuiltInSymbol Save = S.initFinalSymbol("Save", ID.Save);
 
   /**
    * SawtoothWave(expr) - returns the sawtooth wave value of `expr`.

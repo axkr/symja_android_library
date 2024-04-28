@@ -93,6 +93,7 @@ public final class PatternMatching {
         S.ClearAll.setEvaluator(new ClearAll());
         S.Context.setEvaluator(new Context());
         S.Definition.setEvaluator(new Definition());
+        S.FullDefinition.setEvaluator(new FullDefinition());
         S.OptionsPattern.setEvaluator(OptionsPattern.CONST);
         S.OwnValues.setEvaluator(new OwnValues());
         S.Repeated.setEvaluator(Repeated.CONST);
@@ -719,6 +720,73 @@ public final class PatternMatching {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+  }
+
+  private static final class FullDefinition extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // TODO copied from Definition. Implement FullDefinition details.
+      IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
+      if (arg1.isPresent()) {
+        ISymbol symbol = (ISymbol) arg1;
+        try {
+          String definitionString;
+          if (symbol.equals(S.In)) {
+            IAST list = engine.getEvalHistory().definitionIn();
+            definitionString = definitionToString(S.In, list);
+          } else if (symbol.equals(S.Out)) {
+            IAST list = engine.getEvalHistory().definitionOut();
+            definitionString = definitionToString(S.Out, list);
+          } else {
+            definitionString = symbol.definitionToString();
+          }
+          return F.stringx(definitionString);
+        } catch (IOException ioe) {
+          return Errors.printMessage(S.Definition, ioe, engine);
+        }
+      }
+      return S.Null;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDALL);
+    }
+
+    public static String definitionToString(ISymbol symbol, IAST list) {
+
+      StringWriter buf = new StringWriter();
+      IAST attributesList = AttributeFunctions.attributesList(symbol);
+      if (attributesList.size() > 1) {
+        buf.append("Attributes(");
+        buf.append(symbol.toString());
+        buf.append(")=");
+        buf.append(attributesList.toString());
+        buf.append("\n");
+      }
+
+      EvalEngine engine = EvalEngine.get();
+      OutputFormFactory off = OutputFormFactory.get(engine.isRelaxedSyntax());
+      off.setIgnoreNewLine(true);
+
+      // IAST list = definition();
+      for (int i = 1; i < list.size(); i++) {
+        if (!off.convert(buf, list.get(i))) {
+          return "ERROR-IN-OUTPUTFORM";
+        }
+        if (i < list.size() - 1) {
+          buf.append("\n");
+          off.setColumnCounter(0);
+        }
+      }
+      return buf.toString();
     }
   }
 
