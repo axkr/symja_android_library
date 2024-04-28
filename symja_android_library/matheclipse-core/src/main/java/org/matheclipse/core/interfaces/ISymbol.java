@@ -212,6 +212,8 @@ public interface ISymbol extends IExpr {
    */
   public IAST definition();
 
+  public IAST fullDefinition();
+
   /**
    * Return the rules associated to this symbol in <code>String</code> representation
    *
@@ -220,6 +222,7 @@ public interface ISymbol extends IExpr {
    */
   public String definitionToString() throws IOException;
 
+  public String fullDefinitionToString();
   /**
    * Evaluate the given expression for the &quot;down value&quot; rules associated with this symbol
    *

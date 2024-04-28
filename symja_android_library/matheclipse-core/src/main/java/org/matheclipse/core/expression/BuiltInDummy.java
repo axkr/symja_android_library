@@ -276,6 +276,23 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
+  public IAST fullDefinition() {
+    IASTAppendable result = F.ListAlloc();
+    if (hasAssignedSymbolValue()) {
+      if (isEvalFlagOn(SETDELAYED_FLAG_ASSIGNED_VALUE)) {
+        result.append(F.SetDelayed(this, assignedValue()));
+      } else {
+        result.append(F.Set(this, assignedValue()));
+      }
+    }
+    if (fRulesData != null) {
+      result.appendAll(fRulesData.definition());
+    }
+    return result;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public String definitionToString() {
     StringWriter buf = new StringWriter();
     IAST attributesList = AttributeFunctions.attributesList(this);
@@ -296,6 +313,25 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
       }
       if (i < list.size() - 1) {
         buf.append("\n");
+        off.setColumnCounter(0);
+      }
+    }
+    return buf.toString();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public String fullDefinitionToString() {
+    IAST fullDefinition = fullDefinition();
+    OutputFormFactory off = OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax());
+    off.setIgnoreNewLine(true);
+    StringWriter buf = new StringWriter();
+    for (int i = 1; i < fullDefinition.size(); i++) {
+      if (!off.convert(buf, fullDefinition.getRule(i))) {
+        return "ERROR-IN-OUTPUTFORM";
+      }
+      if (i < fullDefinition.size() - 1) {
+        buf.append("\n\n");
         off.setColumnCounter(0);
       }
     }

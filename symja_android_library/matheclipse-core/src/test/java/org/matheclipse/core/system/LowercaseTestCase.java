@@ -3354,7 +3354,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
     check("Definition(q)", //
         "q(0,0)=1\n" //
-            + "q(i_,j_)/;i<0||j<0=0\n" + "q(i_,j_):=q(i,j)=q(-1+i,j)+q(i,-1+j)");
+            + "\n" //
+            + "q(i_,j_)/;i<0||j<0=0\n" //
+            + "\n" //
+            + "q(i_,j_):=q(i,j)=q(-1+i,j)+q(i,-1+j)");
     check("q(5,5)", //
         "252");
 
@@ -4960,7 +4963,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("f(x_):={x}", //
         "");
     check("Definition(f)", //
-        "Attributes(f)={Listable}\n" + "f(x_):={x}");
+        "Attributes(f)={Listable}\n"//
+            + "\n"//
+            + "f(x_):={x}");
   }
 
   @Test

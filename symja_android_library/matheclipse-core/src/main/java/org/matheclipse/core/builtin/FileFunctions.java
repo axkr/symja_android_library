@@ -1202,7 +1202,7 @@ public class FileFunctions {
         IExpr arg2 = ast.arg2();
         StringBuilder buf = new StringBuilder();
         if (arg2.isSymbol()) {
-          buf.append(((ISymbol) arg2).definition());
+          buf.append(((ISymbol) arg2).fullDefinitionToString());
         }
         try (FileWriter writer = new FileWriter(fileName.toString())) {
           writer.write(buf.toString());

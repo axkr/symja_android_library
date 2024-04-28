@@ -10,16 +10,20 @@ public class FileFunctionsTest extends ExprEvaluatorTestCase {
     Config.FILESYSTEM_ENABLED = true;
     check("temp = FileNameJoin({$TemporaryDirectory, \"saved.txt\"});Print(temp);", //
         "");
-    check("a = 1000", //
-        "1000");
-    check("Save(temp, a)", //
+    check("g(x_) := x^3;"//
+        + "SetAttributes(f, Listable);"//
+        + "f(x_) := g(x^2);", //
         "");
-    check("Clear(a)", //
+    check("Save(temp, f)", //
         "");
+    check("Clear(f,g)", //
+        "");
+    check("{f(2),g(7)}", //
+        "{f(2),g(7)}");
     check("Get(temp)", //
-        "{1000}");
-    check("a", //
-        "1000");
+        "");
+    check("{f(2),g(7)}", //
+        "{64,343}");
   }
 
 
