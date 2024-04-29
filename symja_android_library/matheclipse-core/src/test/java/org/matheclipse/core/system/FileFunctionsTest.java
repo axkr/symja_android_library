@@ -16,14 +16,18 @@ public class FileFunctionsTest extends ExprEvaluatorTestCase {
         "");
     check("Save(temp, f)", //
         "");
-    check("Clear(f,g)", //
+    check("ClearAll(f,g)", //
         "");
+    check("Attributes(f)", //
+        "{}");
     check("{f(2),g(7)}", //
         "{f(2),g(7)}");
     check("Get(temp)", //
         "");
     check("{f(2),g(7)}", //
         "{64,343}");
+    check("Attributes(f)", //
+        "{Listable}");
   }
 
 

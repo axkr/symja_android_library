@@ -286,6 +286,11 @@ public class Symbol implements ISymbol, Serializable {
       Iterator<ISymbol> iterator = symbolSet.iterator();
       while (iterator.hasNext()) {
         ISymbol symbol = iterator.next();
+
+        IAST attributesList = AttributeFunctions.attributesList(symbol);
+        if (attributesList.size() > 1) {
+          fullDefinition.append(F.Set(F.Attributes(symbol), attributesList));
+        }
         IAST subRules = symbol.definition();
         fullDefinition.appendArgs(subRules);
       }
