@@ -13857,6 +13857,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLimit() {
+    check("Limit(7-2*x+4*x^2,x->Infinity)", //
+        "Infinity");
+    check("Limit(Sqrt(7-2*x+4*x^2),x->Infinity)", //
+        "Infinity");
+    check("Limit(1+2*x+Sqrt(7-2*x+4*x^2),x->Infinity)", //
+        "Infinity");
+    check("Limit((-6+6*x)/(1+2*x+Sqrt(7-2*x+4*x^2)),x->Infinity)", //
+        "3/2");
+    check("Limit(1-Sqrt(7-2*x+4*x^2)+2*x,x->Infinity)", //
+        "3/2");
+
+
     // issue #931
     check("Limit((-1/E^x+E^x)/(E^x+E^(-x)),x -> Infinity)", //
         "1");

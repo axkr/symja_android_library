@@ -593,7 +593,7 @@ public class SeriesFunctions {
         LimitData data, EvalEngine engine) {
       IExpr numValue;
       IExpr denValue;
-      IExpr limitValue = data.limitValue();
+      // final IExpr limitValue = data.limitValue();
       // IAST rule = data.getRule();
       if (denominator.isOne() && numerator.isTimes()) {
         // Limit[a_*b_*c_,sym->lim] ->
@@ -602,23 +602,27 @@ public class SeriesFunctions {
       }
       if (!denominator.isNumber() || denominator.isZero()) {
         IExpr result = F.NIL;
-        ISymbol x = data.variable();
-        denValue = engine.evalModuleDummySymbol(denominator, x, limitValue, true);
+        // ISymbol x = data.variable();
+        denValue = evalLimitQuiet(denominator, data);
+        // denValue = engine.evalModuleDummySymbol(denominator, x, limitValue, true);
         if (denValue.isIndeterminate()) {
           return F.NIL;
         } else if (denValue.isZero()) {
-          numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
+          numValue = evalLimitQuiet(numerator, data);
+          // numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
           if (numValue.isZero()) {
             return lHospitalesRule(numerator, denominator, data, engine);
           }
           return F.NIL;
         } else if (denValue.isInfinity()) {
-          numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
+          numValue = evalLimitQuiet(numerator, data);
+          // numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
           if (numValue.isInfinity()) {
             return lHospitalesRule(numerator, denominator, data, engine);
           } else if (numValue.isNegativeInfinity()) {
             numerator = engine.evaluate(numerator.negate());
-            numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
+            numValue = evalLimitQuiet(numerator, data);
+            // numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
             if (numValue.isInfinity()) {
               result = lHospitalesRule(numerator, denominator, data, engine);
               if (result.isPresent()) {
@@ -629,9 +633,11 @@ public class SeriesFunctions {
           return F.NIL;
         } else if (denValue.isNegativeInfinity()) {
           denominator = engine.evaluate(denominator.negate());
-          denValue = engine.evalModuleDummySymbol(denominator, x, limitValue, true);
+          denValue = evalLimitQuiet(denominator, data);
+          // denValue = engine.evalModuleDummySymbol(denominator, x, limitValue, true);
           if (denValue.isInfinity()) {
-            numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
+            numValue = evalLimitQuiet(numerator, data);
+            // numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
             if (numValue.isInfinity()) {
               result = lHospitalesRule(numerator, denominator, data, engine);
               if (result.isPresent()) {
@@ -640,44 +646,22 @@ public class SeriesFunctions {
               }
             } else if (numValue.isNegativeInfinity()) {
               numerator = engine.evaluate(numerator.negate());
-              numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
+              numValue = evalLimitQuiet(numerator, data);
+              // numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
               if (numValue.isInfinity()) {
                 // tried both cases numerator.negate() and denominator.negate()
                 return lHospitalesRule(numerator, denominator, data, engine);
               }
             }
-            return F.NIL;
           }
-          // numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
-          // if (numValue.isInfinity()) {
-          // return lHospitalesRule(numerator, denominator, data);
-          // } else if (numValue.isNegativeInfinity()) {
-          // numValue = engine.evalModuleDummySymbol(numerator.negate(), x, limitValue, true);
-          // if (numValue.isInfinity()) {
-          // result = lHospitalesRule(numerator, denominator, data);
-          // if (result.isPresent()) {
-          // return result.negate();
-          // }
-          // }
-          // }
           return F.NIL;
-          // } else if (denValue.isZero() || denValue.isDirectedInfinity() ||
-          // denValue.isComplexInfinity()
-          // || denValue.isIndeterminate()) {
-          // numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
-          // if (numValue.isZero() || numValue.isDirectedInfinity() || numValue.isComplexInfinity()
-          // || numValue.isIndeterminate()) {
-          // return lHospitalesRule(numerator, denominator, data);
-          // }
-          // return F.NIL;
-
         }
       }
 
       return F.Times(data.limit(numerator), F.Power(data.limit(denominator), F.CN1));
     }
 
-    private static IExpr plusLimit(final IAST arg1, LimitData data, EvalEngine engine) {
+    private static IExpr plusLimit(final IAST plusAST, LimitData data, EvalEngine engine) {
       // Limit[a_+b_+c_,sym->lim] ->
       // Limit[a,sym->lim]+Limit[b,sym->lim]+Limit[c,sym->lim]
       // IAST rule = data.getRule();
@@ -686,7 +670,7 @@ public class SeriesFunctions {
         ISymbol symbol = data.variable();
         try {
           ExprPolynomialRing ring = new ExprPolynomialRing(symbol);
-          ExprPolynomial poly = ring.create(arg1);
+          ExprPolynomial poly = ring.create(plusAST);
           IExpr coeff = poly.leadingBaseCoefficient();
           long oddDegree = poly.degree() % 2;
           if (oddDegree == 1) {
@@ -696,7 +680,35 @@ public class SeriesFunctions {
         } catch (RuntimeException rex) {
         }
       }
-      return data.mapLimit(arg1);
+      IAST mapLimit = data.mapLimit(plusAST);
+      if (mapLimit.isPresent()) {
+        if (mapLimit.isFree(x -> x.equals(S.Limit), true)) {
+          IExpr temp = F.eval(mapLimit);
+          if (temp.isIndeterminate() && plusAST.isPlus()) {
+            int indexOf = plusAST.indexOf(x -> !x.isFree(y -> y.isSqrt(), false));
+            if (indexOf > 0) {
+              temp = timesConjugateLHospital(plusAST, indexOf, data);
+              if (temp.isPresent()) {
+                return temp;
+              }
+            }
+          }
+        }
+        return mapLimit;
+      }
+      return F.NIL;
+    }
+
+    private static IExpr timesConjugateLHospital(final IAST plusAST, int indexOf, LimitData data) {
+      IExpr temp;
+      IExpr factor1 = plusAST.removeAtCopy(indexOf).oneIdentity0();
+      IExpr factor2 = plusAST.get(indexOf);
+      IExpr numerator = F.evalExpand(F.Subtract(F.Sqr(factor1), F.Sqr(factor2)));
+      IExpr denominator = F.eval(F.Subtract(factor1, factor2));
+      // IASTMutable timesConjugate = F.Times(numerator, F.Power(denominator, F.CN1));
+      return numeratorDenominatorLimit(numerator, denominator, data, EvalEngine.get());
+      // temp = evalLimitQuiet(timesConjugate, data);
+
     }
 
     private static IExpr powerLimit(final IAST powerAST, LimitData data, EvalEngine engine) {
