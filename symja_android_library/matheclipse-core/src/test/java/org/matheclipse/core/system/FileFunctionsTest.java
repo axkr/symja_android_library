@@ -11,6 +11,7 @@ public class FileFunctionsTest extends ExprEvaluatorTestCase {
     check("temp = FileNameJoin({$TemporaryDirectory, \"saved.txt\"});Print(temp);", //
         "");
     check("g(x_) := x^3;"//
+        + "g(x_,y_) := f(x,y);"//
         + "SetAttributes(f, Listable);"//
         + "f(x_) := g(x^2);", //
         "");

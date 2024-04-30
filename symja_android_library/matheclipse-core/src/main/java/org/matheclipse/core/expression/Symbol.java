@@ -276,13 +276,9 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public IAST fullDefinition() {
     Set<ISymbol> symbolSet = new HashSet<ISymbol>();
-    IAST rules = definition();
-    for (int i = 1; i < rules.size(); i++) {
-      IExpr rule = rules.get(i);
-      collectSymbolsRecursive(rule, symbolSet, x -> x.isSymbol() && !(x.isProtected()));
-    }
+    collectSymbolsRecursive(this, symbolSet, x -> x.isSymbol() && !(x.isProtected()));
     if (symbolSet.size() > 0) {
-      IASTAppendable fullDefinition = F.ListAlloc(rules.size() + symbolSet.size());
+      IASTAppendable fullDefinition = F.ListAlloc();
       Iterator<ISymbol> iterator = symbolSet.iterator();
       while (iterator.hasNext()) {
         ISymbol symbol = iterator.next();
@@ -299,17 +295,30 @@ public class Symbol implements ISymbol, Serializable {
     return F.NIL;
   }
 
+  private static void collectSymbolsRecursive(ISymbol symbol, Set<ISymbol> symbolSet,
+      Predicate<ISymbol> predicate) {
+    final IAST rules = symbol.definition();
+    for (int i = 1; i < rules.size(); i++) {
+      IExpr rule = rules.get(i);
+      collectSymbolsRecursive(rule, symbolSet, predicate);
+    }
+  }
+
   private static void collectSymbolsRecursive(IExpr expr, Set<ISymbol> symbolSet,
       Predicate<ISymbol> predicate) {
     if (expr.isAST()) {
       IAST list = (IAST) expr;
       IExpr head = expr.head();
       if (head.isSymbol()) {
-        if (predicate.test((ISymbol) head)) {
-          symbolSet.add((ISymbol) head);
+        final ISymbol symbol = (ISymbol) head;
+        if (predicate.test(symbol)) {
+          if (!symbolSet.contains(symbol)) {
+            symbolSet.add(symbol);
+            collectSymbolsRecursive(symbol, symbolSet, predicate);
+          }
         }
       } else {
-        collectSymbolsRecursive(head, symbolSet, x -> x.isSymbol());
+        collectSymbolsRecursive(head, symbolSet, predicate);
       }
       for (int i = 1; i < list.size(); i++) {
         IExpr arg = list.getRule(i);
@@ -317,8 +326,12 @@ public class Symbol implements ISymbol, Serializable {
       }
     } else {
       if (expr.isSymbol()) {
-        if (predicate.test((ISymbol) expr)) {
-          symbolSet.add((ISymbol) expr);
+        final ISymbol symbol = (ISymbol) expr;
+        if (predicate.test(symbol)) {
+          if (!symbolSet.contains(symbol)) {
+            symbolSet.add(symbol);
+            collectSymbolsRecursive(symbol, symbolSet, predicate);
+          }
         }
       }
     }
