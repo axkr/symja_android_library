@@ -9,7 +9,7 @@
 	<artifactId>matheclipse-core</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
-	<description>The Symja core module</description>
+	<description>Symja Java Symbolic Math core library.</description>
 	<licenses>
 		<license>
 			<name>GNU Lesser General Public License, Version 3</name>
@@ -68,7 +68,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.logicng</groupId>
-			<artifactId>logicng-j11</artifactId>
+			<artifactId>logicng</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.gavaghan</groupId>

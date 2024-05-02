@@ -274,8 +274,8 @@
 			</dependency>
 			<dependency>
 				<groupId>org.logicng</groupId>
-				<artifactId>logicng-j11</artifactId>
-				<version>2.4.3</version>
+				<artifactId>logicng</artifactId>
+				<version>2.5.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.owasp.encoder</groupId>
