@@ -2379,6 +2379,10 @@ public interface IExpr
     return false;
   }
 
+  default boolean isAST(IExpr header, int length, Predicate<IExpr> pred) {
+    return false;
+  }
+
   /**
    * Test if this expression is an {@link IAST} function, which contains the given <b>header
    * element</b> at index position <code>0</code> and optional <b>argument elements</b> at the index

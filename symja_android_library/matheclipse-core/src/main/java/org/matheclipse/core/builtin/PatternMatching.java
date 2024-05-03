@@ -540,11 +540,12 @@ public final class PatternMatching {
         buf.append(symbol.toString());
         buf.append(")=");
         buf.append(attributesList.toString());
-        buf.append("\n");
+        buf.append("\n\n");
       }
 
       EvalEngine engine = EvalEngine.get();
       OutputFormFactory off = OutputFormFactory.get(engine.isRelaxedSyntax());
+      off.setInputForm(true);
       off.setIgnoreNewLine(true);
 
       // IAST list = definition();
@@ -553,7 +554,7 @@ public final class PatternMatching {
           return "ERROR-IN-OUTPUTFORM";
         }
         if (i < list.size() - 1) {
-          buf.append("\n");
+          buf.append("\n\n");
           off.setColumnCounter(0);
         }
       }
@@ -731,21 +732,17 @@ public final class PatternMatching {
       IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
       if (arg1.isPresent()) {
         ISymbol symbol = (ISymbol) arg1;
-        try {
-          String definitionString;
-          if (symbol.equals(S.In)) {
-            IAST list = engine.getEvalHistory().definitionIn();
-            definitionString = definitionToString(S.In, list);
-          } else if (symbol.equals(S.Out)) {
-            IAST list = engine.getEvalHistory().definitionOut();
-            definitionString = definitionToString(S.Out, list);
-          } else {
-            definitionString = symbol.definitionToString();
-          }
-          return F.stringx(definitionString);
-        } catch (IOException ioe) {
-          return Errors.printMessage(S.Definition, ioe, engine);
+        String definitionString;
+        if (symbol.equals(S.In)) {
+          IAST list = engine.getEvalHistory().definitionIn();
+          definitionString = fullDefinitionToString(S.In, list);
+        } else if (symbol.equals(S.Out)) {
+          IAST list = engine.getEvalHistory().definitionOut();
+          definitionString = fullDefinitionToString(S.Out, list);
+        } else {
+          definitionString = symbol.fullDefinitionToString();
         }
+        return F.stringx(definitionString);
       }
       return S.Null;
     }
@@ -760,7 +757,7 @@ public final class PatternMatching {
       newSymbol.setAttributes(ISymbol.HOLDALL);
     }
 
-    public static String definitionToString(ISymbol symbol, IAST list) {
+    public static String fullDefinitionToString(ISymbol symbol, IAST list) {
 
       StringWriter buf = new StringWriter();
       IAST attributesList = AttributeFunctions.attributesList(symbol);
@@ -769,11 +766,12 @@ public final class PatternMatching {
         buf.append(symbol.toString());
         buf.append(")=");
         buf.append(attributesList.toString());
-        buf.append("\n");
+        buf.append("\n\n");
       }
 
       EvalEngine engine = EvalEngine.get();
       OutputFormFactory off = OutputFormFactory.get(engine.isRelaxedSyntax());
+      off.setInputForm(true);
       off.setIgnoreNewLine(true);
 
       // IAST list = definition();
@@ -782,7 +780,7 @@ public final class PatternMatching {
           return "ERROR-IN-OUTPUTFORM";
         }
         if (i < list.size() - 1) {
-          buf.append("\n");
+          buf.append("\n\n");
           off.setColumnCounter(0);
         }
       }

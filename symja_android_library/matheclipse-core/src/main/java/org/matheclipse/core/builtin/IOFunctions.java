@@ -391,22 +391,7 @@ public class IOFunctions {
           ignoreCase = true;
         }
       }
-      if (arg1.isString()) {
-        int indx = arg1.toString().indexOf("`");
-        if (indx < 0) {
-          arg1 = F.$str("System`" + arg1.toString());
-        }
-      }
-
-      Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
-      java.util.regex.Pattern pattern =
-          StringFunctions.toRegexPattern(arg1, true, ignoreCase, ast, groups, engine);
-
-      if (pattern == null) {
-        return F.NIL;
-      }
-
-      return getNamesByPattern(pattern, engine);
+      return getNamesByPattern(arg1, ignoreCase, ast, engine);
     }
 
     @Override
@@ -453,6 +438,41 @@ public class IOFunctions {
     Initializer.init();
   }
 
+  /**
+   * Returns a list of {@link IStringX} of the defined symbol names.
+   * 
+   * @param pattern
+   * @param ignoreCase
+   * @param ast
+   * @param engine
+   * @return
+   */
+  public static IAST getNamesByPattern(IExpr pattern, boolean ignoreCase, final IAST ast,
+      EvalEngine engine) {
+    if (pattern.isString()) {
+      int indx = pattern.toString().indexOf("`");
+      if (indx < 0) {
+        pattern = F.$str("System`" + pattern.toString());
+      }
+    }
+    Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
+    java.util.regex.Pattern regexPattern =
+        StringFunctions.toRegexPattern(pattern, true, ignoreCase, ast, groups, engine);
+
+    if (regexPattern == null) {
+      return F.NIL;
+    }
+
+    return getNamesByPattern(regexPattern, engine);
+  }
+
+  /**
+   * Returns a list of {@link IStringX} of the defined symbol names.
+   * 
+   * @param pattern
+   * @param engine
+   * @return
+   */
   public static IAST getNamesByPattern(java.util.regex.Pattern pattern, EvalEngine engine) {
     ContextPath contextPath = engine.getContextPath();
     IASTAppendable list = F.ListAlloc(31);
@@ -500,6 +520,71 @@ public class IOFunctions {
             } else {
               list.append(F.$str(fullName));
             }
+          }
+        }
+      }
+    }
+    return list;
+  }
+
+  /**
+   * Returns a list of {@link ISymbol} of the defined symbol names.
+   * 
+   * @param pattern
+   * @param ignoreCase
+   * @param ast
+   * @param engine
+   * @return
+   */
+  public static IAST getSymbolsByPattern(IExpr pattern, boolean ignoreCase, final IAST ast,
+      EvalEngine engine) {
+    if (pattern.isString()) {
+      int indx = pattern.toString().indexOf("`");
+      if (indx < 0) {
+        pattern = F.$str("System`" + pattern.toString());
+      }
+    }
+    Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
+    java.util.regex.Pattern regexPattern =
+        StringFunctions.toRegexPattern(pattern, true, ignoreCase, ast, groups, engine);
+
+    if (regexPattern == null) {
+      return F.NIL;
+    }
+
+    return getSymbolsByPattern(regexPattern, engine);
+  }
+
+  /**
+   * Returns a list of {@link ISymbol} of the defined symbol names.
+   * 
+   * @param pattern
+   * @param engine
+   * @return
+   */
+  public static IAST getSymbolsByPattern(java.util.regex.Pattern pattern, EvalEngine engine) {
+    ContextPath contextPath = engine.getContextPath();
+    IASTAppendable list = F.ListAlloc(31);
+    Map<String, Context> contextMap = contextPath.getContextMap();
+    for (Map.Entry<String, Context> mapEntry : contextMap.entrySet()) {
+      Context context = mapEntry.getValue();
+      for (Map.Entry<String, ISymbol> entry : context.entrySet()) {
+        String fullName = context.completeContextName() + entry.getKey();
+        java.util.regex.Matcher matcher = pattern.matcher(fullName);
+        if (matcher.matches()) {
+          list.append(entry.getValue());
+        }
+      }
+    }
+
+    for (Context context : contextPath) {
+      String completeContextName = context.completeContextName();
+      if (!contextMap.containsKey(completeContextName)) {
+        for (Map.Entry<String, ISymbol> entry : context.entrySet()) {
+          String fullName = completeContextName + entry.getKey();
+          java.util.regex.Matcher matcher = pattern.matcher(fullName);
+          if (matcher.matches()) {
+            list.append(entry.getValue());
           }
         }
       }

@@ -1,9 +1,15 @@
 package org.matheclipse.core.interfaces;
 
 import java.io.IOException;
+import java.io.StringWriter;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.function.DoubleFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import org.hipparchus.special.elliptic.jacobi.Theta;
+import org.matheclipse.core.builtin.AttributeFunctions;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -11,6 +17,7 @@ import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -120,241 +127,89 @@ public interface ISymbol extends IExpr {
   /** ISymbol flag to indicate that the symbols value is defined by SetDelayed */
   public static final int SETDELAYED_FLAG_ASSIGNED_VALUE = 0x10000002;
 
-  /**
-   * Add the attributes to the existing attributes bit-set.
-   *
-   * @param attributes
-   */
-  public void addAttributes(final int attributes);
-
-  /**
-   * Set the <code>OwnValues</code> value of this variable. The value is assigned with the '='
-   * operator.
-   *
-   * @param value the assigned 'right-hand-side' expression
-   */
-  default void assignValue(IExpr value) {
-    assignValue(value, false);
+  private static void collectSymbolsRecursive(IAST symbolsList, Set<ISymbol> symbolSet,
+      Predicate<ISymbol> predicate) {
+    for (int i = 1; i < symbolsList.size(); i++) {
+      final IAST rules = ((ISymbol) symbolsList.get(i)).definition();
+      for (int j = 1; j < rules.size(); j++) {
+        IExpr rule = rules.get(j);
+        collectSymbolsRecursive(rule, symbolSet, predicate);
+      }
+    }
   }
 
-  /**
-   * Set the <code>OwnValues</code> value of this variable
-   *
-   * @param value the assigned 'right-hand-side' expression
-   * @param setDelayed if <code>true</code>, the value is assigned with the ':=' SetDelayed operator
-   *        otherwise with the '=' operator.
-   */
-  public void assignValue(IExpr value, boolean setDelayed);
-
-  /**
-   * Get the <code>OwnValues</code> value which is assigned to the symbol or <code>null</code>, if
-   * no value is assigned.
-   *
-   * @return <code>null</code>, if no value is assigned.
-   */
-  public IExpr assignedValue();
-
-  /**
-   * Clear the associated rules (<code>OwnValues</code>, <code>DownValues</code> and <code>UpValues
-   * </code>) for this symbol but don't clear the attribute flags.
-   *
-   * @param engine the evaluation engine
-   */
-  public void clear(EvalEngine engine);
-
-  /** Clear the <code>OwnValues</code> value which is assigned to this symbol. */
-  public void clearValue();
-
-  /**
-   * Clear all associated rules (<code>OwnValues</code>, <code>DownValues</code> and <code>UpValues
-   * </code>) and attribute flags for this symbol.
-   *
-   * @param engine the evaluation engine
-   */
-  public void clearAll(EvalEngine engine);
-
-  /**
-   * Remove the attribute flags from the existing attributes bit-set.
-   *
-   * @param attributes
-   */
-  public void clearAttributes(final int attributes);
-
-  /**
-   * Remove the evaluation flags from the existing flags bit-set.
-   *
-   * @param flags
-   */
-  public void clearEvalFlags(final int flags);
-
-  /**
-   * Check if ths symbol contains a "DownRule" or "UpRule"
-   *
-   * @return <code>true</code> if this symbol contains a "DownRule" or "UpRule"
-   */
-  public boolean containsRules();
-
-  /**
-   * Create internal rules data structure with precalculated sizes
-   *
-   * <ul>
-   * <li>index 0 - number of equal rules in <code>RULES</code>
-   * </ul>
-   *
-   * @param sizes
-   */
-  public RulesData createRulesData(int[] sizes);
-
-  /**
-   * Return a list of the rules associated to this symbol
-   *
-   * @return
-   */
-  public IAST definition();
-
-  public IAST fullDefinition();
-
-  /**
-   * Return the rules associated to this symbol in <code>String</code> representation
-   *
-   * @return the <code>String</code> representation of the symbol definition
-   * @throws IOException
-   */
-  public String definitionToString() throws IOException;
-
-  public String fullDefinitionToString();
-  /**
-   * Evaluate the given expression for the &quot;down value&quot; rules associated with this symbol
-   *
-   * @param engine
-   * @param expression
-   * @return <code>F.NIL</code> if no evaluation was possible
-   */
-  public IExpr evalDownRule(EvalEngine engine, IExpr expression);
-
-  public IExpr evalMessage(String messageName);
-
-  /**
-   * Evaluate the given expression for the &quot;up value&quot; rules (i.e. defined with UpSet and
-   * UpsetDelayed) associated with this symbol.
-   *
-   * @param expression
-   * @param engine
-   * @return <code>F.NIL</code> if no evaluation was possible
-   */
-  public IExpr evalUpRules(IExpr expression, EvalEngine engine);
-
-  default IAST f(IExpr arg1) {
-    return F.unaryAST1(this, arg1);
+  private static void collectSymbolsRecursive(IExpr expr, Set<ISymbol> symbolSet,
+      Predicate<ISymbol> predicate) {
+    if (expr.isAST()) {
+      IAST list = (IAST) expr;
+      IExpr head = expr.head();
+      if (head.isSymbol()) {
+        final ISymbol symbol = (ISymbol) head;
+        if (predicate.test(symbol)) {
+          if (!symbolSet.contains(symbol)) {
+            symbolSet.add(symbol);
+          }
+        }
+      } else {
+        collectSymbolsRecursive(head, symbolSet, predicate);
+      }
+      for (int i = 1; i < list.size(); i++) {
+        IExpr arg = list.getRule(i);
+        collectSymbolsRecursive(arg, symbolSet, predicate);
+      }
+    } else {
+      if (expr.isSymbol()) {
+        final ISymbol symbol = (ISymbol) expr;
+        if (predicate.test(symbol)) {
+          if (!symbolSet.contains(symbol)) {
+            symbolSet.add(symbol);
+          }
+        }
+      }
+    }
   }
 
-  default IAST f(IExpr arg1, IExpr arg2) {
-    return F.binaryAST2(this, arg1, arg2);
+  static IAST fullDefinitionList(IAST symbolsList) {
+    Set<ISymbol> symbolSet = new HashSet<ISymbol>();
+    for (int i = 1; i < symbolsList.size(); i++) {
+      symbolSet.add((ISymbol) symbolsList.get(i));
+    }
+    ISymbol.collectSymbolsRecursive(symbolsList, symbolSet, x -> x.isSymbol() && !(x.isProtected()));
+    if (symbolSet.size() > 0) {
+      IASTAppendable fullDefinition = F.ListAlloc();
+      Iterator<ISymbol> iterator = symbolSet.iterator();
+      while (iterator.hasNext()) {
+        ISymbol symbol = iterator.next();
+
+        IAST attributesList = AttributeFunctions.attributesList(symbol);
+        if (attributesList.size() > 1) {
+          fullDefinition.append(F.Set(F.Attributes(symbol), attributesList));
+        }
+        IAST subRules = symbol.definition();
+        fullDefinition.appendArgs(subRules);
+      }
+      return fullDefinition;
+    }
+    return F.NIL;
   }
 
-  default IAST f(IExpr arg1, IExpr arg2, IExpr arg3) {
-    return F.ternaryAST3(this, arg1, arg2, arg3);
+  static String fullDefinitionListToString(IAST list) {
+    IAST fullDefinition = fullDefinitionList(list);
+    OutputFormFactory off = OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax());
+    off.setInputForm(true);
+    off.setIgnoreNewLine(true);
+    StringWriter buf = new StringWriter();
+    for (int i = 1; i < fullDefinition.size(); i++) {
+      if (!off.convert(buf, fullDefinition.getRule(i))) {
+        return "ERROR-IN-OUTPUTFORM";
+      }
+      if (i < fullDefinition.size() - 1) {
+        buf.append("\n\n");
+        off.setColumnCounter(0);
+      }
+    }
+    return buf.toString();
   }
-
-  /**
-   * Get the value which is assigned to the symbol or <code>null</code>, if no value is assigned.
-   *
-   * @return <code>null</code>, if no value is assigned.
-   * @deprecated use {@link #assignedValue()} instead
-   */
-  @Deprecated
-  default IExpr get() {
-    return assignedValue();
-  }
-
-  /**
-   * Get the Attributes of this symbol (i.e. LISTABLE, FLAT, ORDERLESS,...)
-   *
-   * @return
-   * @see IBuiltInSymbol#FLAT
-   */
-  public int getAttributes();
-
-  /**
-   * Get the context this symbol is assigned to.
-   *
-   * @return
-   */
-  public Context getContext();
-
-  /**
-   * Get the <i>general default value</i> for this symbol (i.e. <code>1</code> is the default value
-   * for <code>Times</code>, <code>0</code> is the default value for <code>Plus</code>). The general
-   * default value is used in pattern-matching for expressions like <code>a_. * b_. + c_</code>
-   *
-   * @return the default value or <code>F.NIL</code> if undefined.
-   */
-  public IExpr getDefaultValue();
-
-  /**
-   * Get the <i>default value</i> at the arguments position for this symbol (i.e. <code>1</code> is
-   * the default value for <code>Power</code> at <code>position</code> <code>2</code>). The default
-   * value is used in pattern-matching for expressions like <code>a ^ b_.</code>
-   *
-   * @param position the position for the default value
-   * @return the default value or <code>F.NIL</code> if undefined.
-   */
-  public IExpr getDefaultValue(int position);
-
-  /**
-   * Get the pattern matching rules associated with a symbol. <code>RulesData</code> contains <code>
-   * DownValues</code> and <code>UpValues</code> rules for pattern matching. <b>Note:</b> <code>
-   * OwnValues</code> are directly stored in a symbol.
-   *
-   * @return <code>null</code> if no rules are defined
-   */
-  public RulesData getRulesData();
-
-  /**
-   * Get the pure symbol name string without the context prefix.
-   *
-   * @return
-   */
-  public String getSymbolName();
-
-  /**
-   * Get the full symbol name string with the context prefix included.
-   *
-   * @return
-   */
-  default String getContextSymbolName() {
-    return getContext().getContextName() + getSymbolName();
-  }
-
-  /**
-   * Is a (local or global) value assigned for this symbol?
-   *
-   * @return <code>true</code> if this symbol has an assigned value.
-   */
-  public boolean hasAssignedSymbolValue();
-
-  /**
-   * Does this symbols attribute set contains the <code>Flat</code> attribute?
-   *
-   * @return <code>true</code> if this symbols attribute set contains the <code>Flat</code>
-   *         attribute.
-   */
-  boolean hasFlatAttribute();
-
-  /**
-   * Does this symbols attribute set contains the {@link ISymbol#HOLDALLCOMPLETE} attribute?
-   *
-   * @return
-   */
-  boolean hasHoldAllCompleteAttribute();
-
-  /**
-   * Does this symbols attribute set contains the <code>Listable</code> attribute?
-   *
-   * @return <code>true</code> if this symbols attribute set contains {@link Theta} <code>Listable
-   *     </code> attribute.
-   */
-  boolean hasListableAttribute();
 
   /**
    * Does the attributes flag set contains the {@link ISymbol#FLAT} bit set?
@@ -406,6 +261,248 @@ public interface ISymbol extends IExpr {
   public static boolean hasOrderlessFlatAttribute(int attributes) {
     return (attributes & FLATORDERLESS) == FLATORDERLESS;
   }
+
+  /**
+   * Add the attributes to the existing attributes bit-set.
+   *
+   * @param attributes
+   */
+  public void addAttributes(final int attributes);
+
+  /**
+   * Get the <code>OwnValues</code> value which is assigned to the symbol or <code>null</code>, if
+   * no value is assigned.
+   *
+   * @return <code>null</code>, if no value is assigned.
+   */
+  public IExpr assignedValue();
+
+  /**
+   * Set the <code>OwnValues</code> value of this variable. The value is assigned with the '='
+   * operator.
+   *
+   * @param value the assigned 'right-hand-side' expression
+   */
+  default void assignValue(IExpr value) {
+    assignValue(value, false);
+  }
+
+  /**
+   * Set the <code>OwnValues</code> value of this variable
+   *
+   * @param value the assigned 'right-hand-side' expression
+   * @param setDelayed if <code>true</code>, the value is assigned with the ':=' SetDelayed operator
+   *        otherwise with the '=' operator.
+   */
+  public void assignValue(IExpr value, boolean setDelayed);
+
+  /**
+   * Clear the associated rules (<code>OwnValues</code>, <code>DownValues</code> and <code>UpValues
+   * </code>) for this symbol but don't clear the attribute flags.
+   *
+   * @param engine the evaluation engine
+   */
+  public void clear(EvalEngine engine);
+
+  /**
+   * Clear all associated rules (<code>OwnValues</code>, <code>DownValues</code> and <code>UpValues
+   * </code>) and attribute flags for this symbol.
+   *
+   * @param engine the evaluation engine
+   */
+  public void clearAll(EvalEngine engine);
+
+  /**
+   * Remove the attribute flags from the existing attributes bit-set.
+   *
+   * @param attributes
+   */
+  public void clearAttributes(final int attributes);
+
+  /**
+   * Remove the evaluation flags from the existing flags bit-set.
+   *
+   * @param flags
+   */
+  public void clearEvalFlags(final int flags);
+
+  /** Clear the <code>OwnValues</code> value which is assigned to this symbol. */
+  public void clearValue();
+
+  /**
+   * Check if ths symbol contains a "DownRule" or "UpRule"
+   *
+   * @return <code>true</code> if this symbol contains a "DownRule" or "UpRule"
+   */
+  public boolean containsRules();
+
+  /**
+   * Create internal rules data structure with precalculated sizes
+   *
+   * <ul>
+   * <li>index 0 - number of equal rules in <code>RULES</code>
+   * </ul>
+   *
+   * @param sizes
+   */
+  public RulesData createRulesData(int[] sizes);
+
+  /**
+   * Return a list of the rules associated to this symbol
+   *
+   * @return
+   */
+  public IAST definition();
+
+  /**
+   * Return the rules associated to this symbol in <code>String</code> representation
+   *
+   * @return the <code>String</code> representation of the symbol definition
+   * @throws IOException
+   */
+  public String definitionToString() throws IOException;
+
+  @Override
+  default IExpr evalAsLeadingTerm(ISymbol x, IExpr logx, int cdir) {
+    return x;
+  }
+
+  /**
+   * Evaluate the given expression for the &quot;down value&quot; rules associated with this symbol
+   *
+   * @param engine
+   * @param expression
+   * @return <code>F.NIL</code> if no evaluation was possible
+   */
+  public IExpr evalDownRule(EvalEngine engine, IExpr expression);
+
+  public IExpr evalMessage(String messageName);
+
+  /**
+   * Evaluate the given expression for the &quot;up value&quot; rules (i.e. defined with UpSet and
+   * UpsetDelayed) associated with this symbol.
+   *
+   * @param expression
+   * @param engine
+   * @return <code>F.NIL</code> if no evaluation was possible
+   */
+  public IExpr evalUpRules(IExpr expression, EvalEngine engine);
+
+  default IAST f(IExpr arg1) {
+    return F.unaryAST1(this, arg1);
+  }
+
+  default IAST f(IExpr arg1, IExpr arg2) {
+    return F.binaryAST2(this, arg1, arg2);
+  }
+
+  default IAST f(IExpr arg1, IExpr arg2, IExpr arg3) {
+    return F.ternaryAST3(this, arg1, arg2, arg3);
+  }
+
+  public IAST fullDefinition();
+
+  public String fullDefinitionToString();
+
+  /**
+   * Get the value which is assigned to the symbol or <code>null</code>, if no value is assigned.
+   *
+   * @return <code>null</code>, if no value is assigned.
+   * @deprecated use {@link #assignedValue()} instead
+   */
+  @Deprecated
+  default IExpr get() {
+    return assignedValue();
+  }
+
+  /**
+   * Get the Attributes of this symbol (i.e. LISTABLE, FLAT, ORDERLESS,...)
+   *
+   * @return
+   * @see IBuiltInSymbol#FLAT
+   */
+  public int getAttributes();
+
+  /**
+   * Get the context this symbol is assigned to.
+   *
+   * @return
+   */
+  public Context getContext();
+
+  /**
+   * Get the full symbol name string with the context prefix included.
+   *
+   * @return
+   */
+  default String getContextSymbolName() {
+    return getContext().getContextName() + getSymbolName();
+  }
+
+  /**
+   * Get the <i>general default value</i> for this symbol (i.e. <code>1</code> is the default value
+   * for <code>Times</code>, <code>0</code> is the default value for <code>Plus</code>). The general
+   * default value is used in pattern-matching for expressions like <code>a_. * b_. + c_</code>
+   *
+   * @return the default value or <code>F.NIL</code> if undefined.
+   */
+  public IExpr getDefaultValue();
+
+  /**
+   * Get the <i>default value</i> at the arguments position for this symbol (i.e. <code>1</code> is
+   * the default value for <code>Power</code> at <code>position</code> <code>2</code>). The default
+   * value is used in pattern-matching for expressions like <code>a ^ b_.</code>
+   *
+   * @param position the position for the default value
+   * @return the default value or <code>F.NIL</code> if undefined.
+   */
+  public IExpr getDefaultValue(int position);
+
+  /**
+   * Get the pattern matching rules associated with a symbol. <code>RulesData</code> contains <code>
+   * DownValues</code> and <code>UpValues</code> rules for pattern matching. <b>Note:</b> <code>
+   * OwnValues</code> are directly stored in a symbol.
+   *
+   * @return <code>null</code> if no rules are defined
+   */
+  public RulesData getRulesData();
+
+  /**
+   * Get the pure symbol name string without the context prefix.
+   *
+   * @return
+   */
+  public String getSymbolName();
+
+  /**
+   * Is a (local or global) value assigned for this symbol?
+   *
+   * @return <code>true</code> if this symbol has an assigned value.
+   */
+  public boolean hasAssignedSymbolValue();
+
+  /**
+   * Does this symbols attribute set contains the <code>Flat</code> attribute?
+   *
+   * @return <code>true</code> if this symbols attribute set contains the <code>Flat</code>
+   *         attribute.
+   */
+  boolean hasFlatAttribute();
+
+  /**
+   * Does this symbols attribute set contains the {@link ISymbol#HOLDALLCOMPLETE} attribute?
+   *
+   * @return
+   */
+  boolean hasHoldAllCompleteAttribute();
+
+  /**
+   * Does this symbols attribute set contains the <code>Listable</code> attribute?
+   *
+   * @return <code>true</code> if this symbols attribute set contains {@link Theta} <code>Listable
+   *     </code> attribute.
+   */
+  boolean hasListableAttribute();
 
   /**
    * Does this symbols attribute set contains the <code>OneIdentity</code> attribute?
@@ -505,16 +602,6 @@ public interface ISymbol extends IExpr {
   public boolean isString(String symbolName);
 
   /**
-   * Returns <code>true</code>, if this symbol has the given name. The comparison of the symbols
-   * name with the given name is done according to the <code>Config.PARSER_USE_LOWERCASE_SYMBOLS
-   * </code> setting.
-   *
-   * @param name the symbol name
-   * @return
-   */
-  public boolean isSymbolName(String name);
-
-  /**
    * Returns <code>true</code>, if this symbol is in the set of defined <code>ids</code>.
    *
    * @param ids the symbol ordinal number
@@ -524,6 +611,16 @@ public interface ISymbol extends IExpr {
   default boolean isSymbolID(int... ids) {
     return false;
   }
+
+  /**
+   * Returns <code>true</code>, if this symbol has the given name. The comparison of the symbols
+   * name with the given name is done according to the <code>Config.PARSER_USE_LOWERCASE_SYMBOLS
+   * </code> setting.
+   *
+   * @param name the symbol name
+   * @return
+   */
+  public boolean isSymbolName(String name);
 
   @Override
   public default IExpr[] linear(IExpr variable) {
@@ -558,6 +655,22 @@ public interface ISymbol extends IExpr {
   }
 
   /**
+   * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>,
+   * The <code>args</code> are converted from Java boolean to {@link S#True} or {@link S#False}
+   * values.
+   *
+   * @param args
+   * @return
+   */
+  default IExpr of(boolean... args) {
+    IExpr[] array = new IExpr[args.length];
+    for (int i = 0; i < array.length; i++) {
+      array[i] = args[i] ? S.True : S.False;
+    }
+    return of(array);
+  }
+
+  /**
    * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>.
    *
    * @param engine the current evaluation engine
@@ -577,18 +690,6 @@ public interface ISymbol extends IExpr {
    *         expression
    */
   public IExpr of(EvalEngine engine, Object... args);
-
-  /**
-   * Evaluate this symbol for the arguments as function <code>
-   * symbol(arg, part1, part2, .... , partN)</code>.
-   *
-   * @param engine the current evaluation engine
-   * @param arg the main argument
-   * @param parts the arguments for which this function symbol should be evaluated
-   * @return the evaluated expression; if no evaluation was possible return the created input
-   *         expression.
-   */
-  public IExpr of1(EvalEngine engine, IExpr arg, IExpr... parts);
 
   /**
    * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>.
@@ -620,21 +721,6 @@ public interface ISymbol extends IExpr {
 
   /**
    * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>,
-   * The <code>args</code> are converted from Java double to {@link INum} values.
-   *
-   * @param args
-   * @return
-   */
-  default double ofN(double... args) throws ArgumentTypeException {
-    IExpr[] array = new IExpr[args.length];
-    for (int i = 0; i < array.length; i++) {
-      array[i] = F.num(args[i]);
-    }
-    return of(array).evalf();
-  }
-
-  /**
-   * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>,
    * The <code>args</code> are converted from Java <code>String</code> to <code>IStringX</code>
    * values.
    *
@@ -650,19 +736,30 @@ public interface ISymbol extends IExpr {
   }
 
   /**
+   * Evaluate this symbol for the arguments as function <code>
+   * symbol(arg, part1, part2, .... , partN)</code>.
+   *
+   * @param engine the current evaluation engine
+   * @param arg the main argument
+   * @param parts the arguments for which this function symbol should be evaluated
+   * @return the evaluated expression; if no evaluation was possible return the created input
+   *         expression.
+   */
+  public IExpr of1(EvalEngine engine, IExpr arg, IExpr... parts);
+
+  /**
    * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>,
-   * The <code>args</code> are converted from Java boolean to {@link S#True} or {@link S#False}
-   * values.
+   * The <code>args</code> are converted from Java double to {@link INum} values.
    *
    * @param args
    * @return
    */
-  default IExpr of(boolean... args) {
+  default double ofN(double... args) throws ArgumentTypeException {
     IExpr[] array = new IExpr[args.length];
     for (int i = 0; i < array.length; i++) {
-      array[i] = args[i] ? S.True : S.False;
+      array[i] = F.num(args[i]);
     }
-    return of(array);
+    return of(array).evalf();
   }
 
   /**
@@ -674,6 +771,22 @@ public interface ISymbol extends IExpr {
    * @return <code>F.NIL</code> if no evaluation was possible.
    */
   public IExpr ofNIL(EvalEngine engine, IExpr... args);
+
+  /**
+   * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>,
+   * The objects are converted from Java form to IExpr for according to method
+   * {@link Object2Expr#convert(Object, boolean, boolean)}.
+   *
+   * @param args the objects which should be used as arguments
+   * @return
+   */
+  default IExpr ofObject(Object... args) {
+    IExpr[] array = new IExpr[args.length];
+    for (int i = 0; i < array.length; i++) {
+      array[i] = Object2Expr.convert(args[i], true, false);
+    }
+    return of(array);
+  }
 
   /**
    * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>
@@ -693,22 +806,6 @@ public interface ISymbol extends IExpr {
    * @return if the result isn't a boolean value return <code>false</code>.
    */
   public boolean ofQ(IExpr... args);
-
-  /**
-   * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>,
-   * The objects are converted from Java form to IExpr for according to method
-   * {@link Object2Expr#convert(Object, boolean, boolean)}.
-   *
-   * @param args the objects which should be used as arguments
-   * @return
-   */
-  default IExpr ofObject(Object... args) {
-    IExpr[] array = new IExpr[args.length];
-    for (int i = 0; i < array.length; i++) {
-      array[i] = Object2Expr.convert(args[i], true, false);
-    }
-    return of(array);
-  }
 
   /**
    * Get the ordinal number of this built-in symbol in the enumeration of built-in symbols. If this
@@ -925,9 +1022,4 @@ public interface ISymbol extends IExpr {
    * @return <code>false</code> if the symbol contains no rule definion.
    */
   public boolean writeRules(java.io.ObjectOutputStream stream) throws java.io.IOException;
-
-  @Override
-  default IExpr evalAsLeadingTerm(ISymbol x, IExpr logx, int cdir) {
-    return x;
-  }
 }

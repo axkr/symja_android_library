@@ -4,14 +4,10 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.AttributeFunctions;
 import org.matheclipse.core.convert.AST2Expr;
@@ -275,66 +271,8 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public IAST fullDefinition() {
-    Set<ISymbol> symbolSet = new HashSet<ISymbol>();
-    collectSymbolsRecursive(this, symbolSet, x -> x.isSymbol() && !(x.isProtected()));
-    if (symbolSet.size() > 0) {
-      IASTAppendable fullDefinition = F.ListAlloc();
-      Iterator<ISymbol> iterator = symbolSet.iterator();
-      while (iterator.hasNext()) {
-        ISymbol symbol = iterator.next();
-
-        IAST attributesList = AttributeFunctions.attributesList(symbol);
-        if (attributesList.size() > 1) {
-          fullDefinition.append(F.Set(F.Attributes(symbol), attributesList));
-        }
-        IAST subRules = symbol.definition();
-        fullDefinition.appendArgs(subRules);
-      }
-      return fullDefinition;
-    }
-    return F.NIL;
-  }
-
-  private static void collectSymbolsRecursive(ISymbol symbol, Set<ISymbol> symbolSet,
-      Predicate<ISymbol> predicate) {
-    final IAST rules = symbol.definition();
-    for (int i = 1; i < rules.size(); i++) {
-      IExpr rule = rules.get(i);
-      collectSymbolsRecursive(rule, symbolSet, predicate);
-    }
-  }
-
-  private static void collectSymbolsRecursive(IExpr expr, Set<ISymbol> symbolSet,
-      Predicate<ISymbol> predicate) {
-    if (expr.isAST()) {
-      IAST list = (IAST) expr;
-      IExpr head = expr.head();
-      if (head.isSymbol()) {
-        final ISymbol symbol = (ISymbol) head;
-        if (predicate.test(symbol)) {
-          if (!symbolSet.contains(symbol)) {
-            symbolSet.add(symbol);
-            collectSymbolsRecursive(symbol, symbolSet, predicate);
-          }
-        }
-      } else {
-        collectSymbolsRecursive(head, symbolSet, predicate);
-      }
-      for (int i = 1; i < list.size(); i++) {
-        IExpr arg = list.getRule(i);
-        collectSymbolsRecursive(arg, symbolSet, predicate);
-      }
-    } else {
-      if (expr.isSymbol()) {
-        final ISymbol symbol = (ISymbol) expr;
-        if (predicate.test(symbol)) {
-          if (!symbolSet.contains(symbol)) {
-            symbolSet.add(symbol);
-            collectSymbolsRecursive(symbol, symbolSet, predicate);
-          }
-        }
-      }
-    }
+    IAST list = this.makeList();
+    return ISymbol.fullDefinitionList(list);
   }
 
   /** {@inheritDoc} */
@@ -351,6 +289,7 @@ public class Symbol implements ISymbol, Serializable {
     }
 
     OutputFormFactory off = OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax());
+    off.setInputForm(true);
     off.setIgnoreNewLine(true);
     IAST list = definition();
     for (int i = 1; i < list.size(); i++) {
@@ -368,20 +307,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public String fullDefinitionToString() {
-    IAST fullDefinition = fullDefinition();
-    OutputFormFactory off = OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax());
-    off.setIgnoreNewLine(true);
-    StringWriter buf = new StringWriter();
-    for (int i = 1; i < fullDefinition.size(); i++) {
-      if (!off.convert(buf, fullDefinition.getRule(i))) {
-        return "ERROR-IN-OUTPUTFORM";
-      }
-      if (i < fullDefinition.size() - 1) {
-        buf.append("\n\n");
-        off.setColumnCounter(0);
-      }
-    }
-    return buf.toString();
+    return ISymbol.fullDefinitionListToString(this.makeList());
   }
 
   /** {@inheritDoc} */

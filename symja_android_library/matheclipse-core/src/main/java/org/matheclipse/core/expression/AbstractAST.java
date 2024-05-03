@@ -3097,6 +3097,20 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
+  public boolean isAST(final IExpr header, final int length, Predicate<IExpr> pred) {
+    if (isAST(header, length)) {
+      for (int i = 1; i < length; i++) {
+        if (!pred.test(get(i))) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public boolean isAST(IExpr header, int length, IExpr... args) {
     if (isAST(header, length)) {
       for (int i = 0; i < args.length; i++) {

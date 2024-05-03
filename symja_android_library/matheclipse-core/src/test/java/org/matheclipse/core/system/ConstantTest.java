@@ -26,8 +26,18 @@ public class ConstantTest extends ExprEvaluatorTestCase {
         "5");
     check("In(-1)", //
         "5");
-    check("Definition(In)", "Attributes(In)={Listable,NHoldFirst,Protected}\n" + "In(1):=x=1\n"
-        + "In(2):=x=x+1\n" + "In(3):=Do(In(2),{3})\n" + "In(4):=x\n" + "In(5):=In(-1)");
+    check("Definition(In)", //
+        "Attributes(In)={Listable,NHoldFirst,Protected}\n" //
+            + "\n" //
+            + "In(1):=x=1\n" //
+            + "\n" //
+            + "In(2):=x=x + 1\n" //
+            + "\n" //
+            + "In(3):=Do(In(2),{3})\n" //
+            + "\n" //
+            + "In(4):=x\n" //
+            + "\n" //
+            + "In(5):=In(-1)");
   }
 
   @Test
@@ -73,9 +83,27 @@ public class ConstantTest extends ExprEvaluatorTestCase {
     check("%", //
         "");
     check("Definition(Out)",
-        "Attributes(Out)={Listable,NHoldFirst,Protected}\n" + "Out(2)=42\n" + "Out(4)=43\n"
-            + "Out(5)=44\n" + "Out(6)=42\n" + "Out(7)=44\n" + "Out(8)=Hold(%)\n"
-            + "Out(9)=Hold(Out(4))\n" + "Out(10)=Out(0)\n" + "Out(11)=Null\n" + "Out(12)=Null");
+        "Attributes(Out)={Listable,NHoldFirst,Protected}\n" //
+        + "\n" //
+        + "Out(2)=42\n" //
+        + "\n" //
+        + "Out(4)=43\n" //
+        + "\n" //
+        + "Out(5)=44\n" //
+        + "\n" //
+        + "Out(6)=42\n" //
+        + "\n" //
+        + "Out(7)=44\n" //
+        + "\n" //
+        + "Out(8)=Hold(%)\n" //
+        + "\n" //
+        + "Out(9)=Hold(Out(4))\n" //
+        + "\n" //
+        + "Out(10)=Out(0)\n" //
+        + "\n" //
+        + "Out(11)=Null\n" //
+        + "\n" //
+        + "Out(12)=Null");
   }
 
   @Test

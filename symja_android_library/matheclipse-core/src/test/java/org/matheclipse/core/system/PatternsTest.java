@@ -9,7 +9,6 @@ import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.S.a;
 import static org.matheclipse.core.expression.S.f;
 import static org.matheclipse.core.expression.S.x;
-
 import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
@@ -60,11 +59,11 @@ public class PatternsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testEvalateddPatternRule() {
+  public void testEvaluatedPatternRule() {
     check("f(a_+b_,a_,b_) := {a,b}", //
         "");
     check("Definition(f)", //
-        "f(a_+b_,a_,b_):={a,b}");
+        "f(a_ + b_,a_,b_):={a,b}");
     check("f(5,3,2)", //
         "f(5,3,2)");
 

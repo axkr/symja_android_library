@@ -1200,17 +1200,26 @@ public class FileFunctions {
         }
         IStringX fileName = (IStringX) ast.arg1();
         IExpr arg2 = ast.arg2();
-        StringBuilder buf = new StringBuilder();
+
+        IAST symbolsList = F.NIL;
         if (arg2.isSymbol()) {
-          buf.append(((ISymbol) arg2).fullDefinitionToString());
+          symbolsList = arg2.makeList();
+        } else if (arg2.isList(IExpr::isSymbol)) {
+          symbolsList = (IAST) arg2;
+        } else if (arg2.isString()) {
+          boolean ignoreCase = false;
+          symbolsList = IOFunctions.getSymbolsByPattern(arg2, ignoreCase, ast, engine);
         }
-        try (FileWriter writer = new FileWriter(fileName.toString())) {
-          writer.write(buf.toString());
-        } catch (IOException e) {
-          LOGGER.log(engine.getLogLevel(), "Save: file {} I/O exception !", fileName, e);
-          return F.NIL;
+        if (symbolsList.isPresent()) { 
+          String str = ISymbol.fullDefinitionListToString(symbolsList);
+          try (FileWriter writer = new FileWriter(fileName.toString())) {
+            writer.write(str);
+          } catch (IOException e) {
+            LOGGER.log(engine.getLogLevel(), "Save: file {} I/O exception !", fileName, e);
+            return F.NIL;
+          }
+          return S.Null;
         }
-        return S.Null;
       }
       return F.NIL;
     }
