@@ -29,8 +29,10 @@ public enum Extension {
   JPEG, //
   /** JSON */
   JSON, //
-  /** MATLAB m file */
+  /** Mathematica *.m file */
   M, //
+  /** MATLAB *.mat file */
+  MAT, //
   /** compressed image format with alpha channel */
   PNG, //
   /** RawJSON */
