@@ -682,6 +682,7 @@ public final class ExpVectorShort extends ExpVector
      * ExpVector dependent variables.
      * @return number of indices where val has positive exponents.
      */
+    @Override
     public int dependentVariables() {
         int l = 0;
         for (int i = 0; i < val.length; i++) {

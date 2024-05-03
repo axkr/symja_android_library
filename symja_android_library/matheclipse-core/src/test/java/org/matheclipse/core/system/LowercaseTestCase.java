@@ -3357,7 +3357,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "q(i_,j_)/;i<0||j<0=0\n" //
             + "\n" //
-            + "q(i_,j_):=q(i,j)=q(-1+i,j)+q(i,-1+j)");
+            + "q(i_,j_):=q(i,j)=q(-1 + i,j) + q(i,-1 + j)");
     check("q(5,5)", //
         "252");
 
@@ -4938,6 +4938,27 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDefinition() {
+    check("Definition(ArcSinh)", //
+        "Attributes(ArcSinh)={Listable,NumericFunction,Protected}\n" //
+            + "\n" //
+            + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
+            + "\n" //
+            + "ArcSinh(Undefined)=Undefined\n" //
+            + "\n" //
+            + "ArcSinh(Infinity)=Infinity\n" //
+            + "\n" //
+            + "ArcSinh(I*Infinity)=Infinity\n" //
+            + "\n" //
+            + "ArcSinh(I)=I*1/2*Pi\n" //
+            + "\n" //
+            + "ArcSinh(0)=0\n" //
+            + "\n" //
+            + "ArcSinh(I*1/2)=I*1/6*Pi\n" //
+            + "\n" //
+            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
+            + "\n" //
+            + "ArcSinh(ComplexInfinity)=ComplexInfinity");
+
     check("a := 42", //
         "");
     check("Definition(a)", //
@@ -10003,6 +10024,39 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFullDefinition() {
+    check("FullDefinition(ArcSinh)", //
+        "Attributes(ArcSinh)={Listable,NumericFunction,Protected}\n" //
+            + "\n" //
+            + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
+            + "\n" //
+            + "ArcSinh(Undefined)=Undefined\n" //
+            + "\n" //
+            + "ArcSinh(Infinity)=Infinity\n" //
+            + "\n" //
+            + "ArcSinh(I*Infinity)=Infinity\n" //
+            + "\n" //
+            + "ArcSinh(I)=I*1/2*Pi\n" //
+            + "\n" //
+            + "ArcSinh(0)=0\n" //
+            + "\n" //
+            + "ArcSinh(I*1/2)=I*1/6*Pi\n" //
+            + "\n" //
+            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
+            + "\n" //
+            + "ArcSinh(ComplexInfinity)=ComplexInfinity");
+
+    check("a(x_):=b(x,y);b[u_,v_]:={{u,v},a}", //
+        "");
+    check("a(test)", //
+        "{{test,y},a}");
+    check("FullDefinition(a)", //
+        "a(x_):=b(x,y)\n" //
+            + "\n" //
+            + "b(u_,v_):={{u,v},a}");
+  }
+
+  @Test
   public void testFullForm() {
     check("N( 1/2+8 ,12)//FullForm", //
         "8.5`");
@@ -11617,11 +11671,27 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("In(2)", //
         "1.41422");
     check("Definition(Out)", //
-        "Attributes(Out)={Listable,NHoldFirst,Protected}\n" + "Out(1)=1.0\n" + "Out(2)=1.5\n"
-            + "Out(3)=1.4166666666666665\n" + "Out(4)=1.4142156862745097");
+        "Attributes(Out)={Listable,NHoldFirst,Protected}\n" //
+            + "\n" //
+            + "Out(1)=1.0`\n" //
+            + "\n" //
+            + "Out(2)=1.5`\n" //
+            + "\n" //
+            + "Out(3)=1.4166666666666665`\n" //
+            + "\n" //
+            + "Out(4)=1.4142156862745097`");
     check("Definition(In)", //
-        "Attributes(In)={Listable,NHoldFirst,Protected}\n" + "In(1):=a=1.0\n" + "In(2):=a=a/2+1/a\n"
-            + "In(3):=In(2)\n" + "In(4):=In(2)\n" + "In(5):=Definition(Out)");
+        "Attributes(In)={Listable,NHoldFirst,Protected}\n" //
+            + "\n" //
+            + "In(1):=a=1.0`\n" //
+            + "\n" //
+            + "In(2):=a=a/2 + 1/a\n" //
+            + "\n" //
+            + "In(3):=In(2)\n" //
+            + "\n" //
+            + "In(4):=In(2)\n" //
+            + "\n" //
+            + "In(5):=Definition(Out)");
   }
 
   @Test
@@ -11639,9 +11709,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("a-Sqrt(3)", //
         "2.22045*10^-16");
     check("Definition(In)", //
-        "Attributes(In)={Listable,NHoldFirst,Protected}\n" + "In(1):=a=1.0\n" + "In(2):=b=3/2\n"
-            + "In(3):=a=a/2+b/a\n" + "In(4):=In(3)\n" + "In(5):=Do(In(3),{3})\n"
-            + "In(6):=-Sqrt(3)+a");
+        "Attributes(In)={Listable,NHoldFirst,Protected}\n" //
+            + "\n" //
+            + "In(1):=a=1.0`\n" //
+            + "\n" //
+            + "In(2):=b=3/2\n" //
+            + "\n" //
+            + "In(3):=a=a/2 + b/a\n" //
+            + "\n" //
+            + "In(4):=In(3)\n" //
+            + "\n" //
+            + "In(5):=Do(In(3),{3})\n" //
+            + "\n" //
+            + "In(6):=-Sqrt(3) + a");
   }
 
   @Test
@@ -13975,7 +14055,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Limit((Cosh(t)-1)/t^2,t->0)", //
         "1/2");
     check("Limit(Gamma(1/t)*Cos(Sin(1/t)),t->0)", //
-        "Limit(Cos(Sin(1/t))*Gamma(1/t),t->0)");
+        "Indeterminate");
     check("Limit(Gamma(1/t),t->Infinity)", //
         "Infinity");
     check("Limit(Gamma(1/t),t->-Infinity)", //
@@ -14039,8 +14119,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2");
     check("Limit((x^2-3*x+2)/(x^3+2*x-1), x->Infinity)", //
         "0");
-    check("Limit(Sqrt(3*x-2), x->-Infinity)", //
-        "Sqrt(-Infinity)");
+    check("Limit(Sqrt(3*x-2), x->-Infinity) // FullForm", //
+        "DirectedInfinity(Complex(0,1))");
 
     check("Limit((x-1)^2/(x^2-1), x->1)", //
         "0");
@@ -14125,7 +14205,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Infinity");
 
     check("Limit(Log(x^y), x->0)", //
-        "(-Infinity)*y");
+        "ConditionalExpression(-Infinity,y>0)");
     check("Limit(Log(y*x, b), x->1)", //
         "Log(b)/Log(y)");
     check("Limit(Log(y*x), x->0)", //
@@ -14204,6 +14284,33 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
     check("Limit(c*(x^(-10)), x->Infinity)", //
         "0");
+  }
+
+  @Test
+  public void testLimitIssue536() {
+    // Issue 536
+    check("Integrate(Sqrt((4+x)/(4-x)), x) ", //
+        "(-4+x)*(Sqrt((4+x)/(4-x))-ArcTan(Sqrt((4+x)/(4-x)))+(-(4+x)*ArcTan(Sqrt((4+x)/(4-x))))/(\n"//
+            + "4-x))");
+    // TODO avoid endless recursion:
+    // check(
+    // "Limit((-4+x)*(Sqrt((4+x)/(4-x))-ArcTan(Sqrt((4+x)/(4-x)))+(-(4+x)*ArcTan(Sqrt((4+x)/(4-x))))/(4-x)),x->4)",
+    // //
+    // "Indeterminate");
+    check("Limit(ArcTan(Sqrt((4 + x)/(4 - x))),x->4)", //
+        "Pi/2");
+    check("Limit(Sqrt((4 + x)/(4 - x)),x->4,Direction->1)", //
+        "Infinity");
+    check("Limit(Sqrt((4 + x)/(4 - x)),x->4,Direction->-1)", //
+        "I*Infinity");
+    check("Limit(Sqrt((4 + x)/(4 - x)),x->4,Direction->\"FromBelow\")", //
+        "Infinity");
+    check("Limit(Sqrt((4 + x)/(4 - x)),x->4,Direction->\"FromAbove\")", //
+        "I*Infinity");
+    check("Limit(ArcTan(Sqrt((4 + x)/(4 - x))),x->4,Direction->1)", //
+        "Pi/2");
+    check("Limit(ArcTan(Sqrt((4 + x)/(4 - x))),x->4,Direction->-1)", //
+        "Pi/2");
   }
 
   @Test
@@ -19493,6 +19600,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPower() {
+    check("Power(-Infinity, 43)", //
+        "-Infinity");
+    check("Sqrt(-Infinity)", //
+        "I*Infinity");
+    check("Power(-Infinity, 4/3) // FullForm", //
+        "DirectedInfinity(Times(-1, Power(-1, Rational(1,3))))");
+    check("Power(-Infinity, 4/3)", //
+        "DirectedInfinity(-(-1)^(1/3))");
+
     check("Power(5,2,3) // FullForm", //
         "390625");
     check("Power(Power(5,2),3) // FullForm", //

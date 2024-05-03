@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-
 import edu.jas.kern.StringUtil;
 
 
@@ -168,6 +167,7 @@ public final class ModIntRing implements ModularRingFactory<ModInt>, Iterable<Mo
      * Get the module part as BigInteger.
      * @return modul.
      */
+    @Override
     public BigInteger getIntegerModul() {
         return new BigInteger(modul);
     }
@@ -208,6 +208,7 @@ public final class ModIntRing implements ModularRingFactory<ModInt>, Iterable<Mo
      * @param c
      * @return a copy of c.
      */
+    @Override
     public ModInt copy(ModInt c) {
         return new ModInt(this, c.val);
     }
@@ -217,6 +218,7 @@ public final class ModIntRing implements ModularRingFactory<ModInt>, Iterable<Mo
      * Get the zero element.
      * @return 0 as ModInt.
      */
+    @Override
     public ModInt getZERO() {
         return new ModInt(this, 0);
     }
@@ -226,6 +228,7 @@ public final class ModIntRing implements ModularRingFactory<ModInt>, Iterable<Mo
      * Get the one element.
      * @return 1 as ModInt.
      */
+    @Override
     public ModInt getONE() {
         return new ModInt(this, 1);
     }
@@ -236,6 +239,7 @@ public final class ModIntRing implements ModularRingFactory<ModInt>, Iterable<Mo
      * @return list of generators for the algebraic structure.
      * @see edu.jas.structure.ElemFactory#generators()
      */
+    @Override
     public List<ModInt> generators() {
         List<ModInt> g = new ArrayList<ModInt>(1);
         g.add(getONE());
@@ -248,6 +252,7 @@ public final class ModIntRing implements ModularRingFactory<ModInt>, Iterable<Mo
      * @return true if this structure is finite, else false.
      * @see edu.jas.structure.ElemFactory#isFinite()
      */
+    @Override
     public boolean isFinite() {
         return true;
     }
@@ -257,6 +262,7 @@ public final class ModIntRing implements ModularRingFactory<ModInt>, Iterable<Mo
      * Query if this ring is commutative.
      * @return true.
      */
+    @Override
     public boolean isCommutative() {
         return true;
     }
@@ -266,6 +272,7 @@ public final class ModIntRing implements ModularRingFactory<ModInt>, Iterable<Mo
      * Query if this ring is associative.
      * @return true.
      */
+    @Override
     public boolean isAssociative() {
         return true;
     }
@@ -275,6 +282,7 @@ public final class ModIntRing implements ModularRingFactory<ModInt>, Iterable<Mo
      * Query if this ring is a field.
      * @return true if module is prime, else false.
      */
+    @Override
     public boolean isField() {
         if (isField > 0) {
             return true;
@@ -297,6 +305,7 @@ public final class ModIntRing implements ModularRingFactory<ModInt>, Iterable<Mo
      * Characteristic of this ring.
      * @return characteristic of this ring.
      */
+    @Override
     public java.math.BigInteger characteristic() {
         return new java.math.BigInteger(Integer.toString(modul));
     }
@@ -307,6 +316,7 @@ public final class ModIntRing implements ModularRingFactory<ModInt>, Iterable<Mo
      * @param a BigInteger.
      * @return a ModInt.
      */
+    @Override
     public ModInt fromInteger(java.math.BigInteger a) {
         return new ModInt(this, a);
     }
@@ -327,6 +337,7 @@ public final class ModIntRing implements ModularRingFactory<ModInt>, Iterable<Mo
      * @param a lon.
      * @return a ModInt.
      */
+    @Override
     public ModInt fromInteger(long a) {
         return new ModInt(this, a);
     }
@@ -386,6 +397,7 @@ public final class ModIntRing implements ModularRingFactory<ModInt>, Iterable<Mo
      * @param n such that 0 &le; v &le; (2<sup>n</sup>-1).
      * @return a random integer mod modul.
      */
+    @Override
     public ModInt random(int n) {
         return random(n, random);
     }
@@ -397,6 +409,7 @@ public final class ModIntRing implements ModularRingFactory<ModInt>, Iterable<Mo
      * @param rnd is a source for random bits.
      * @return a random integer mod modul.
      */
+    @Override
     public ModInt random(int n, Random rnd) {
         java.math.BigInteger v = new java.math.BigInteger(n, rnd);
         return new ModInt(this, v); // rnd.nextInt() not ok
@@ -408,6 +421,7 @@ public final class ModIntRing implements ModularRingFactory<ModInt>, Iterable<Mo
      * @param s String.
      * @return ModInt from s.
      */
+    @Override
     public ModInt parse(String s) {
         return new ModInt(this, s);
     }
@@ -418,6 +432,7 @@ public final class ModIntRing implements ModularRingFactory<ModInt>, Iterable<Mo
      * @param r Reader.
      * @return next ModInt from r.
      */
+    @Override
     public ModInt parse(Reader r) {
         return parse(StringUtil.nextString(r));
     }
@@ -431,6 +446,7 @@ public final class ModIntRing implements ModularRingFactory<ModInt>, Iterable<Mo
      * @param a other ModInt.
      * @return S, with S mod c.modul == c and S mod a.modul == a.
      */
+    @Override
     public ModInt chineseRemainder(ModInt c, ModInt ci, ModInt a) {
         //if (true) { 
         //    if (c.ring.modul < a.ring.modul) {
@@ -483,6 +499,7 @@ public final class ModIntRing implements ModularRingFactory<ModInt>, Iterable<Mo
      * Get a ModInt iterator.
      * @return a iterator over all modular integers in this ring.
      */
+    @Override
     public Iterator<ModInt> iterator() {
         return new ModIntIterator(this);
     }
@@ -520,6 +537,7 @@ class ModIntIterator implements Iterator<ModInt> {
      * Test for availability of a next element.
      * @return true if the iteration has more elements, else false.
      */
+    @Override
     public synchronized boolean hasNext() {
         return curr < ring.modul;
     }
@@ -529,6 +547,7 @@ class ModIntIterator implements Iterator<ModInt> {
      * Get next integer.
      * @return next integer.
      */
+    @Override
     public synchronized ModInt next() {
         ModInt i = new ModInt(ring, curr);
         curr++;
@@ -539,6 +558,7 @@ class ModIntIterator implements Iterator<ModInt> {
     /**
      * Remove an element if allowed.
      */
+    @Override
     public void remove() {
         throw new UnsupportedOperationException("cannot remove elements");
     }
