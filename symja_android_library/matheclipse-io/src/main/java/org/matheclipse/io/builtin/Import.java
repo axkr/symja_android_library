@@ -1,6 +1,7 @@
 package org.matheclipse.io.builtin;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,6 +23,7 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.ExpressionJSONConvert;
 import org.matheclipse.core.convert.JSONConvert;
+import org.matheclipse.core.convert.matlab.Mat5Symja;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -114,29 +116,10 @@ public class Import extends AbstractEvaluator {
           return jsonImport(fileName, false);
         case M:
           return S.Get.of(engine, pathName);
-        // case MAT:
-        // reader = new FileReader(file);
-        // try (InputStream inputStream = new FileInputStream(file)) {//
-        // ByteBuffer buffer = ByteBuffer.allocate(inputStream.available());
-        // int bytes = inputStream.read(buffer.array());
-        // if (bytes != buffer.array().length) {
-        // throw new AssertionError("Could not read full contents of " + file.getName());
-        // }
-        // try (Source source = Sources.wrap(buffer)) {
-        // Mat5File mat = Mat5.newReader(source)//
-        // .setReducedHeader(false)//
-        // .readMat();
-        // // String description = mat.getDescription();
-        // for (MatFile.Entry entry : mat.getEntries()) {
-        // String name = entry.getName();
-        // Array value = entry.getValue();
-        // if (value instanceof AbstractMatrixBase) {
-        // return Mat5Symja.getTensor((AbstractMatrixBase) value);
-        // }
-        // }
-        // }
-        // }
-        // return F.NIL;
+        case MAT:
+          try (InputStream inputStream = new FileInputStream(file)) {//
+            return Mat5Symja.importMAT(inputStream, file.getName());
+          }
         case TABLE:
           reader = new FileReader(fileName);
           return Convert.fromCSV(reader);
@@ -172,7 +155,6 @@ public class Import extends AbstractEvaluator {
     }
     return F.NIL;
   }
-
 
   // public static IExpr fromCSV(FileReader reader) throws IOException {
   // EvalEngine engine = EvalEngine.get();

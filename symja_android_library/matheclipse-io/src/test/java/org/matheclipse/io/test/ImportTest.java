@@ -2,6 +2,7 @@
 package org.matheclipse.io.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import java.io.File;
 import java.util.Arrays;
 import javax.imageio.ImageIO;
@@ -16,6 +17,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.io.Extension;
 import org.matheclipse.io.builtin.Import;
 import org.matheclipse.io.tensor.io.ImageFormat;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 @RunWith(JUnit4.class)
 public class ImportTest {
@@ -81,11 +83,48 @@ public class ImportTest {
   // }
   // }
 
-  // @Test
-  // public void testMat() throws Exception {
-  // File file = new File(ImportTest.class.getResource("/io/multiDimMatrix.mat").getFile());
-  // IExpr importResult =
-  // Import.importFromPath(F.stringx("dummy"), Extension.MAT, file, EvalEngine.get());
-  // System.out.println(importResult);
-  // }
+  @Test
+  public void testDenseRowColSparseMat() throws Exception {
+    File file = new File(ImportTest.class.getResource("/io/mat/denseRowColSparse.mat").getFile());
+    IExpr importResult =
+        Import.importFromPath(F.stringx("dummy"), Extension.MAT, file, EvalEngine.get());
+    if (importResult instanceof IAST && importResult.isPresent()) {
+      System.out.println(importResult);
+      IntArrayList dimensions = LinearAlgebra.dimensions(((IAST) importResult));
+      assertEquals(dimensions.toString(), "[8, 9]");
+      return;
+    }
+
+    fail();
+  }
+
+  @Test
+  public void testMultiDimMatrixMat() throws Exception {
+    File file = new File(ImportTest.class.getResource("/io/mat/multiDimMatrix.mat").getFile());
+    IExpr importResult =
+        Import.importFromPath(F.stringx("dummy"), Extension.MAT, file, EvalEngine.get());
+    if (importResult instanceof IAST && importResult.isPresent()) {
+      System.out.println(importResult);
+      IntArrayList dimensions = LinearAlgebra.dimensions(((IAST) importResult));
+      assertEquals(dimensions.toString(), "[2, 3, 4, 5, 6]");
+      return;
+    }
+
+    fail();
+  }
+
+  @Test
+  public void testLogicalMat() throws Exception {
+    File file = new File(ImportTest.class.getResource("/io/mat/logical.mat").getFile());
+    IExpr importResult =
+        Import.importFromPath(F.stringx("dummy"), Extension.MAT, file, EvalEngine.get());
+    if (importResult instanceof IAST && importResult.isPresent()) {
+      System.out.println(importResult);
+      IntArrayList dimensions = LinearAlgebra.dimensions(((IAST) importResult));
+      assertEquals(dimensions.toString(), "[1, 2]");
+      return;
+    }
+
+    fail();
+  }
 }

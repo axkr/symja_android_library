@@ -107,10 +107,6 @@
 			<groupId>org.apache.arrow</groupId>
 			<artifactId>arrow-memory-netty</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>us.hebi.matlab.mat</groupId>
-			<artifactId>mfl-core</artifactId>
-		</dependency>
 		<!-- logging dependencies -->
 
 		<dependency>
