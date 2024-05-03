@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import java.awt.image.BufferedImage;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -119,12 +120,15 @@ public class Export extends AbstractEvaluator {
         } else if (format.equals(Extension.DAT)) {
           Files.writeString(Path.of(filename), arg2.toString(), Charset.defaultCharset());
           return arg1;
+        } else if (format.equals(Extension.MAT)) {
+          //
         } else if (format.equals(Extension.WXF)) {
           byte[] bArray = WL.serialize(arg2);
           Files.write(Path.of(filename), bArray);
           return arg1;
         }
-
+      } catch (FileNotFoundException ex) {
+        LOGGER.log(engine.getLogLevel(), "Export: file {}", arg1, ex);
       } catch (IOException ioe) {
         LOGGER.log(engine.getLogLevel(), "Export: file {} not found!", arg1, ioe);
       } catch (Exception ex) {
