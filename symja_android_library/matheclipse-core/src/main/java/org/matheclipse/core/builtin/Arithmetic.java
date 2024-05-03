@@ -1442,7 +1442,9 @@ public final class Arithmetic {
             IExpr a1 = engine.evalN(abs);
             if (!a1.isOne()) {
               IExpr arg1Abs = engine.evaluate(F.Divide(arg1, abs));
-              return F.DirectedInfinity(arg1Abs);
+              if (!arg1Abs.equals(arg1)) {
+                return F.DirectedInfinity(arg1Abs);
+              }
             }
           }
 
@@ -1521,7 +1523,7 @@ public final class Arithmetic {
     @Override
     public void setUp(final ISymbol newSymbol) {
       // don't set ISymbol.NUMERICFUNCTION);
-      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE);
+      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 
@@ -4090,6 +4092,8 @@ public final class Arithmetic {
               } else {
                 return F.CInfinity;
               }
+            } else if (realExponent.isFraction()) {
+              return F.DirectedInfinity(F.Power(F.CN1, realExponent));
             } else {
               int exp = realExponent.toIntDefault();
               if (exp != Integer.MIN_VALUE) {

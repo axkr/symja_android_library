@@ -343,24 +343,59 @@ public class SeriesFunctions {
           // example Limit(E^(3*x), x->a) ==> E^(3*a)
           return expr.replaceAll(data.rule()).orElse(expr);
         }
-        final IAST arg1 = (IAST) expression;
-        if (arg1.isAbs() || arg1.isSin() || arg1.isCos()) {
-          IExpr temp = data.limit(arg1.arg1());
+        final IAST ast = (IAST) expression;
+        if (ast.isAST1() && ast.topHead().isNumericFunctionAttribute()) {
+          IExpr temp = data.limit(ast.arg1());
           if (temp.isPresent()) {
-            return engine.evalQuiet(F.unaryAST1(arg1.head(), temp));
+            if (temp.isIndeterminate() && data.direction == Direction.TWO_SIDED) {
+              return evalSplitTwoSided(ast, data, engine);
+            }
+            return engine.evalQuiet(F.unaryAST1(ast.head(), temp));
           }
-        } else if (arg1.isPlus()) {
-          return plusLimit(arg1, data, engine);
-        } else if (arg1.isTimes()) {
-          return timesLimit(arg1, data, engine);
-        } else if (arg1.isLog()) {
-          return logLimit(arg1, data, engine);
-        } else if (arg1.isPower()) {
-          return powerLimit(arg1, data, engine);
+        } else if (ast.isPlus()) {
+          return plusLimit(ast, data, engine);
+        } else if (ast.isTimes()) {
+          return timesLimit(ast, data, engine);
+        } else if (ast.isLog()) {
+          return logLimit(ast, data, engine);
+        } else if (ast.isPower()) {
+          return powerLimit(ast, data, engine);
         }
       }
 
       return F.NIL;
+    }
+
+    /**
+     * <p>
+     * Evaluate the limit of a single argument function by evaluating the separate directions
+     * (FROM_BELOW, FROM_ABOVE) and comparing the result for equality.
+     * 
+     * <p>
+     * TODO create similar mechanism for functions with multiple arguments.
+     * 
+     * @param functionArg1 a function with one argument
+     * @param data
+     * @param engine
+     * @return {@link S#Indeterminate} if no limit can be found
+     */
+    private static IExpr evalSplitTwoSided(final IAST functionArg1, LimitData data,
+        EvalEngine engine) {
+      LimitData copy =
+          new LimitData(data.variable, data.limitValue, data.rule, Direction.FROM_BELOW);
+      IExpr belowValue = copy.limit(functionArg1.arg1());
+      if (belowValue.isPresent() && !belowValue.isIndeterminate()) {
+        copy = new LimitData(data.variable, data.limitValue, data.rule, Direction.FROM_ABOVE);
+        IExpr aboveValue = copy.limit(functionArg1.arg1());
+        if (aboveValue.isPresent() && !aboveValue.isIndeterminate()) {
+          IExpr f1 = engine.evalQuiet(F.unaryAST1(functionArg1.head(), belowValue));
+          IExpr f2 = engine.evalQuiet(F.unaryAST1(functionArg1.head(), aboveValue));
+          if (f1.equals(f2) && !f1.isIndeterminate() && f1.isPresent() && f1.isFree(S.Interval)) {
+            return f1;
+          }
+        }
+      }
+      return S.Indeterminate;
     }
 
     /**
@@ -494,7 +529,9 @@ public class SeriesFunctions {
         if (expr.isTimes() && expr.leafCount() < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT) {
           expr = engine.evalQuiet(F.Simplify(expr));
         }
-        return evalLimit(expr, data, engine);
+        if (expr.isFree(v -> v.equals(S.D) || v.equals(S.Derivative), true)) {
+          return evalLimit(expr, data, engine);
+        }
       } catch (RecursionLimitExceeded rle) {
         engine.setRecursionLimit(recursionLimit);
       } finally {
@@ -587,7 +624,7 @@ public class SeriesFunctions {
      * @param denominator
      * @param data the limit data definition
      * @param engine
-     * @return <code>F.NIL</code> if no limit found
+     * @return <code>F.NIL</code> if no limit was found
      */
     private static IExpr numeratorDenominatorLimit(IExpr numerator, IExpr denominator,
         LimitData data, EvalEngine engine) {
@@ -657,8 +694,8 @@ public class SeriesFunctions {
           return F.NIL;
         }
       }
-
-      return F.Times(data.limit(numerator), F.Power(data.limit(denominator), F.CN1));
+      return F.NIL;
+      // return F.Times(data.limit(numerator), F.Power(data.limit(denominator), F.CN1));
     }
 
     private static IExpr plusLimit(final IAST plusAST, LimitData data, EvalEngine engine) {
@@ -685,7 +722,7 @@ public class SeriesFunctions {
         if (mapLimit.isFree(x -> x.equals(S.Limit), true)) {
           IExpr temp = F.eval(mapLimit);
           if (temp.isIndeterminate() && plusAST.isPlus()) {
-            int indexOf = plusAST.indexOf(x -> !x.isFree(y -> y.isSqrt(), false));
+            int indexOf = plusAST.indexOf(x -> isSqrtExpression(x));
             if (indexOf > 0) {
               temp = timesConjugateLHospital(plusAST, indexOf, data);
               if (temp.isPresent()) {
@@ -699,8 +736,21 @@ public class SeriesFunctions {
       return F.NIL;
     }
 
+    /**
+     * Test if <code>y</code> matches pattern <code>Sqrt(_)</code> or
+     * <code>Times(f1,...,Sqrt(_),...,fn)</code>
+     * 
+     * @param y
+     * @return
+     */
+    private static boolean isSqrtExpression(IExpr y) {
+      if (y.isTimes()) {
+        return ((IAST) y).exists(x -> x.isSqrt());
+      }
+      return y.isSqrt();
+    }
+
     private static IExpr timesConjugateLHospital(final IAST plusAST, int indexOf, LimitData data) {
-      IExpr temp;
       IExpr factor1 = plusAST.removeAtCopy(indexOf).oneIdentity0();
       IExpr factor2 = plusAST.get(indexOf);
       IExpr numerator = F.evalExpand(F.Subtract(F.Sqr(factor1), F.Sqr(factor2)));
@@ -991,11 +1041,12 @@ public class SeriesFunctions {
           final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
           IExpr option = options.getOption(S.Direction);
           if (option.isPresent()) {
-            if (option.isOne()) {
+            if (option.isOne() || option.isString("FromBelow")) {
               direction = Direction.FROM_BELOW;
-            } else if (option.isMinusOne()) {
+            } else if (option.isMinusOne() || option.isString("FromAbove")) {
               direction = Direction.FROM_ABOVE;
-            } else if (option.equals(S.Automatic) || option.equals(S.Reals)) {
+            } else if (option.equals(S.Automatic) || option.equals(S.Reals)
+                || option.isString("TwoSided")) {
               direction = Direction.TWO_SIDED;
             } else {
               // Value of `1` should be a number, Reals, Complexes, FromAbove, FromBelow, TwoSided

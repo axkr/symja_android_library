@@ -1446,10 +1446,11 @@ public class OutputFormFactory {
                   return;
                 }
                 if (list.isAST1()) {
-                  if (list.arg1().isOne()) {
+                  IExpr arg1 = list.arg1();
+                  if (arg1.isOne()) {
                     append(buf, "Infinity");
                     return;
-                  } else if (list.arg1().isMinusOne()) {
+                  } else if (arg1.isMinusOne()) {
                     if (Precedence.PLUS < precedence) {
                       append(buf, "(");
                     }
@@ -1458,10 +1459,10 @@ public class OutputFormFactory {
                       append(buf, ")");
                     }
                     return;
-                  } else if (list.arg1().isImaginaryUnit()) {
+                  } else if (arg1.isImaginaryUnit()) {
                     append(buf, "I*Infinity");
                     return;
-                  } else if (list.arg1().isNegativeImaginaryUnit()) {
+                  } else if (arg1.isNegativeImaginaryUnit()) {
                     append(buf, "-I*Infinity");
                     return;
                   }
