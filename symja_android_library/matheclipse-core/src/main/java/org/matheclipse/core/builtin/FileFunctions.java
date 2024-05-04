@@ -600,8 +600,8 @@ public class FileFunctions {
       try {
         final List<ASTNode> node = parseReader(is, engine);
         return evaluatePackage(node, engine);
-      } catch (final Exception e) {
-        LOGGER.error("Get.loadPackage() failed", e);
+      } catch (final RuntimeException rex) {
+        Errors.printMessage(S.Get, rex, engine);
       }
       return S.Null;
     }
@@ -1188,6 +1188,70 @@ public class FileFunctions {
     }
   }
 
+  /**
+   * <pre>
+   * <code>Save(&quot;path-to-filename&quot;, expression)
+   * </code>
+   * </pre>
+   * 
+   * <p>
+   * if the file system is enabled, export the <code>FullDefinition</code> of the
+   * <code>expression</code> to the &quot;path-to-filename&quot; file. The saved file can be
+   * imported with <code>Get</code>.
+   * </p>
+   * 
+   * <pre>
+   * <code>Save(&quot;path-to-filename&quot;, &quot;Global`*&quot;)
+   * </code>
+   * </pre>
+   * 
+   * <p>
+   * if the file system is enabled, export the <code>FullDefinition</code> of all symbols in the
+   * <code>&quot;Global</code>*&quot;` context to the &quot;path-to-filename&quot; file.
+   * </p>
+   * 
+   * <h3>Examples</h3>
+   * <p>
+   * Save a definition with dependent symbol definitions into temporary file
+   * </p>
+   * 
+   * <pre>
+   * <code>&gt;&gt; g(x_) := x^3;
+   * 
+   * &gt;&gt; g(x_,y_) := f(x,y); 
+   * 
+   * &gt;&gt; SetAttributes(f, Listable); 
+   * 
+   * &gt;&gt; f(x_) := g(x^2); 
+   * 
+   * &gt;&gt; temp = FileNameJoin({$TemporaryDirectory, \&quot;savedlist.txt\&quot;});Print(temp); 
+   * 
+   * &gt;&gt; Save(temp, {f,g}) 
+   *  
+   * &gt;&gt; ClearAll(f,g) 
+   *   
+   * &gt;&gt; &quot;Attributes(f)  
+   * 
+   * &gt;&gt; {f(2),g(7)}
+   * 
+   * &gt;&gt; Get(temp) 
+   *      
+   * &gt;&gt; {f(2),g(7)} 
+   * {64,343}
+   * 
+   * &gt;&gt; Attributes(f) 
+   * {Listable}
+   * </code>
+   * </pre>
+   * 
+   * <h3>Related terms</h3>
+   * <p>
+   * <a href="BinaryDeserialize.md">BinaryDeserialize</a>,
+   * <a href="BinarySerialize.md">BinarySerialize</a>, <a href="ByteArray.md">ByteArray</a>,
+   * <a href="ByteArrayQ.md">ByteArrayQ</a>, <a href="Export.md">Export</a>,
+   * <a href="Import.md">Import</a>
+   * </p>
+   */
   private static final class Save extends AbstractFunctionEvaluator {
 
     @Override
@@ -1210,7 +1274,7 @@ public class FileFunctions {
           boolean ignoreCase = false;
           symbolsList = IOFunctions.getSymbolsByPattern(arg2, ignoreCase, ast, engine);
         }
-        if (symbolsList.isPresent()) { 
+        if (symbolsList.isPresent()) {
           String str = ISymbol.fullDefinitionListToString(symbolsList);
           try (FileWriter writer = new FileWriter(fileName.toString())) {
             writer.write(str);
@@ -1377,8 +1441,13 @@ public class FileFunctions {
         result = evaluatePackageRecursive(((FunctionNode) astNode), 1, compoundExpression, ast2Expr,
             engine);
       } else {
-        temp = ast2Expr.convert(astNode);
-        result = engine.evaluate(temp);
+        try {
+          temp = ast2Expr.convert(astNode);
+          result = engine.evaluate(temp);
+        } catch (final RuntimeException rex) {
+          result = S.Null;
+          Errors.printMessage(S.Get, rex, engine);
+        }
       }
       i++;
     }

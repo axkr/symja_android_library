@@ -4,7 +4,6 @@ import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.RuleDelayed;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.StringWriter;
 import java.util.Deque;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -32,7 +31,6 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.Documentation;
-import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -461,38 +459,48 @@ public final class PatternMatching {
   }
 
   /**
-   *
-   *
    * <pre>
-   * Definition(symbol)
+   * <code>Definition(symbol)
+   * </code>
    * </pre>
-   *
-   * <blockquote>
-   *
+   * 
    * <p>
-   * prints user-defined values and rules associated with <code>symbol</code>.
-   *
-   * </blockquote>
-   *
+   * prints values and rules associated with <code>symbol</code>.
+   * </p>
+   * 
    * <h3>Examples</h3>
-   *
+   * 
    * <pre>
-   * &gt;&gt; Definition(ArcSinh)
-   * {ArcSinh(0)=0,
-   *  ArcSinh(I*1/2)=I*1/6*Pi,
-   *  ArcSinh(I)=I*1/2*Pi,
-   *  ArcSinh(1)=Log(1+Sqrt(2)),
-   *  ArcSinh(I*1/2*Sqrt(2))=I*1/4*Pi,
-   *  ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi,
-   *  ArcSinh(Infinity)=Infinity,
-   *  ArcSinh(I*Infinity)=Infinity,
-   *  ArcSinh(ComplexInfinity)=ComplexInfinity}
-   *
-   * &gt;&gt; a=2
+   * <code>&gt;&gt; Definition(ArcSinh)
+   * Attributes(ArcSinh)={Listable,NumericFunction,Protected}
+   * 
+   * ArcSinh(I/Sqrt(2))=I*1/4*Pi
+   * 
+   * ArcSinh(Undefined)=Undefined
+   * 
+   * ArcSinh(Infinity)=Infinity
+   * 
+   * ArcSinh(I*Infinity)=Infinity
+   * 
+   * ArcSinh(I)=I*1/2*Pi
+   * 
+   * ArcSinh(0)=0
+   * 
+   * ArcSinh(I*1/2)=I*1/6*Pi
+   * 
+   * ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi
+   * 
+   * ArcSinh(ComplexInfinity)=ComplexInfinity
+   * </code>
+   * </pre>
+   * 
+   * <pre>
+   * <code>&gt;&gt; a=2
    * 2
-   *
+   * 
    * &gt;&gt; Definition(a)
    * {a=2}
+   * </code>
    * </pre>
    */
   private static final class Definition extends AbstractCoreFunctionEvaluator {
@@ -503,16 +511,7 @@ public final class PatternMatching {
       if (arg1.isPresent()) {
         ISymbol symbol = (ISymbol) arg1;
         try {
-          String definitionString;
-          if (symbol.equals(S.In)) {
-            IAST list = engine.getEvalHistory().definitionIn();
-            definitionString = definitionToString(S.In, list);
-          } else if (symbol.equals(S.Out)) {
-            IAST list = engine.getEvalHistory().definitionOut();
-            definitionString = definitionToString(S.Out, list);
-          } else {
-            definitionString = symbol.definitionToString();
-          }
+          String definitionString = symbol.definitionToString();
           return F.stringx(definitionString);
         } catch (IOException ioe) {
           return Errors.printMessage(S.Definition, ioe, engine);
@@ -531,35 +530,6 @@ public final class PatternMatching {
       newSymbol.setAttributes(ISymbol.HOLDALL);
     }
 
-    public static String definitionToString(ISymbol symbol, IAST list) {
-
-      StringWriter buf = new StringWriter();
-      IAST attributesList = AttributeFunctions.attributesList(symbol);
-      if (attributesList.size() > 1) {
-        buf.append("Attributes(");
-        buf.append(symbol.toString());
-        buf.append(")=");
-        buf.append(attributesList.toString());
-        buf.append("\n\n");
-      }
-
-      EvalEngine engine = EvalEngine.get();
-      OutputFormFactory off = OutputFormFactory.get(engine.isRelaxedSyntax());
-      off.setInputForm(true);
-      off.setIgnoreNewLine(true);
-
-      // IAST list = definition();
-      for (int i = 1; i < list.size(); i++) {
-        if (!off.convert(buf, list.get(i))) {
-          return "ERROR-IN-OUTPUTFORM";
-        }
-        if (i < list.size() - 1) {
-          buf.append("\n\n");
-          off.setColumnCounter(0);
-        }
-      }
-      return buf.toString();
-    }
   }
 
   /**
@@ -724,24 +694,61 @@ public final class PatternMatching {
     }
   }
 
+  /**
+   * <pre>
+   * <code>FullDefinition(symbol)
+   * </code>
+   * </pre>
+   * 
+   * <p>
+   * prints value and rule definitions associated with <code>symbol</code> and dependent symbols
+   * without attribute <code>Protected</code> recursively.
+   * </p>
+   * 
+   * <h3>Examples</h3>
+   * 
+   * <pre>
+   * <code>&gt;&gt; FullDefinition(ArcSinh)
+   * Attributes(ArcSinh)={Listable,NumericFunction,Protected}
+   * 
+   * ArcSinh(I/Sqrt(2))=I*1/4*Pi
+   * 
+   * ArcSinh(Undefined)=Undefined
+   * 
+   * ArcSinh(Infinity)=Infinity
+   * 
+   * ArcSinh(I*Infinity)=Infinity
+   * 
+   * ArcSinh(I)=I*1/2*Pi
+   * 
+   * ArcSinh(0)=0
+   * 
+   * ArcSinh(I*1/2)=I*1/6*Pi
+   * 
+   * ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi
+   * 
+   * ArcSinh(ComplexInfinity)=ComplexInfinity
+   * </code>
+   * </pre>
+   * 
+   * <pre>
+   * <code>&gt;&gt; a(x_):=b(x,y);b[u_,v_]:={{u,v},a} 
+   * 
+   * &gt;&gt; FullDefinition(a) 
+   * a(x_):=b(x,y)
+   * 
+   * b(u_,v_):={{u,v},a}
+   * </code>
+   * </pre>
+   */
   private static final class FullDefinition extends AbstractCoreFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // TODO copied from Definition. Implement FullDefinition details.
       IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
       if (arg1.isPresent()) {
         ISymbol symbol = (ISymbol) arg1;
-        String definitionString;
-        if (symbol.equals(S.In)) {
-          IAST list = engine.getEvalHistory().definitionIn();
-          definitionString = fullDefinitionToString(S.In, list);
-        } else if (symbol.equals(S.Out)) {
-          IAST list = engine.getEvalHistory().definitionOut();
-          definitionString = fullDefinitionToString(S.Out, list);
-        } else {
-          definitionString = symbol.fullDefinitionToString();
-        }
+        String definitionString = symbol.fullDefinitionToString();
         return F.stringx(definitionString);
       }
       return S.Null;
@@ -757,35 +764,6 @@ public final class PatternMatching {
       newSymbol.setAttributes(ISymbol.HOLDALL);
     }
 
-    public static String fullDefinitionToString(ISymbol symbol, IAST list) {
-
-      StringWriter buf = new StringWriter();
-      IAST attributesList = AttributeFunctions.attributesList(symbol);
-      if (attributesList.size() > 1) {
-        buf.append("Attributes(");
-        buf.append(symbol.toString());
-        buf.append(")=");
-        buf.append(attributesList.toString());
-        buf.append("\n\n");
-      }
-
-      EvalEngine engine = EvalEngine.get();
-      OutputFormFactory off = OutputFormFactory.get(engine.isRelaxedSyntax());
-      off.setInputForm(true);
-      off.setIgnoreNewLine(true);
-
-      // IAST list = definition();
-      for (int i = 1; i < list.size(); i++) {
-        if (!off.convert(buf, list.get(i))) {
-          return "ERROR-IN-OUTPUTFORM";
-        }
-        if (i < list.size() - 1) {
-          buf.append("\n\n");
-          off.setColumnCounter(0);
-        }
-      }
-      return buf.toString();
-    }
   }
 
 
@@ -829,7 +807,36 @@ public final class PatternMatching {
     }
   }
 
-
+  /**
+   * <pre>
+   * <code>HoldComplete(expr)
+   * </code>
+   * </pre>
+   * 
+   * <p>
+   * <code>HoldComplete</code> doesn't evaluate <code>expr</code>. <code>Hold</code> evaluates
+   * <code>UpValues</code>for its arguments. <code>HoldComplete</code> doesn't evaluate
+   * <code>UpValues</code>.
+   * </p>
+   * 
+   * <h3>Examples</h3>
+   * 
+   * <pre>
+   * <code>&gt;&gt; HoldComplete(3*2)
+   * HoldComplete(3*2) 
+   * 
+   * &gt;&gt; Attributes(HoldComplete)
+   * {HoldAllComplete,Protected,SequenceHold}
+   * </code>
+   * </pre>
+   * 
+   * <h3>Related terms</h3>
+   * <p>
+   * <a href="Hold.md">Hold</a>, <a href="HoldForm.md">HoldForm</a>,
+   * <a href="HoldPattern.md">HoldPattern</a>, <a href="ReleaseHold.md">ReleaseHold</a>,
+   * <a href="Unevaluated.md">Unevaluated</a>
+   * </p>
+   */
   private static final class HoldComplete extends AbstractCoreFunctionEvaluator {
 
     @Override

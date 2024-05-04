@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.Collection;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
@@ -250,22 +249,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public IAST definition() {
-    List<IAST> rules = null;
-    if (fRulesData != null) {
-      rules = fRulesData.definition();
-    }
-    IASTAppendable result = F.ListAlloc(rules == null ? 1 : rules.size() + 1);
-    if (hasAssignedSymbolValue()) {
-      if (isEvalFlagOn(SETDELAYED_FLAG_ASSIGNED_VALUE)) {
-        result.append(F.SetDelayed(this, assignedValue()));
-      } else {
-        result.append(F.Set(this, assignedValue()));
-      }
-    }
-    if (rules != null) {
-      result.appendAll(rules);
-    }
-    return result;
+    return ISymbol.symbolDefinition(this);
   }
 
   /** {@inheritDoc} */

@@ -260,18 +260,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public IAST definition() {
-    IASTAppendable result = F.ListAlloc();
-    if (hasAssignedSymbolValue()) {
-      if (isEvalFlagOn(SETDELAYED_FLAG_ASSIGNED_VALUE)) {
-        result.append(F.SetDelayed(this, assignedValue()));
-      } else {
-        result.append(F.Set(this, assignedValue()));
-      }
-    }
-    if (fRulesData != null) {
-      result.appendAll(fRulesData.definition());
-    }
-    return result;
+    return ISymbol.symbolDefinition(this);
   }
 
   /** {@inheritDoc} */

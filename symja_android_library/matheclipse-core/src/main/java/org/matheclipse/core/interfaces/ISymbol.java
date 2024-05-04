@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.function.DoubleFunction;
 import java.util.function.Function;
@@ -130,10 +131,13 @@ public interface ISymbol extends IExpr {
   private static void collectSymbolsRecursive(IAST symbolsList, Set<ISymbol> symbolSet,
       Predicate<ISymbol> predicate) {
     for (int i = 1; i < symbolsList.size(); i++) {
-      final IAST rules = ((ISymbol) symbolsList.get(i)).definition();
-      for (int j = 1; j < rules.size(); j++) {
-        IExpr rule = rules.get(j);
-        collectSymbolsRecursive(rule, symbolSet, predicate);
+      ISymbol symbol = (ISymbol) symbolsList.get(i);
+      if (predicate.test(symbol)) {
+        final IAST rules = symbol.definition();
+        for (int j = 1; j < rules.size(); j++) {
+          IExpr rule = rules.get(j);
+          collectSymbolsRecursive(rule, symbolSet, predicate);
+        }
       }
     }
   }
@@ -174,7 +178,8 @@ public interface ISymbol extends IExpr {
     for (int i = 1; i < symbolsList.size(); i++) {
       symbolSet.add((ISymbol) symbolsList.get(i));
     }
-    ISymbol.collectSymbolsRecursive(symbolsList, symbolSet, x -> x.isSymbol() && !(x.isProtected()));
+    ISymbol.collectSymbolsRecursive(symbolsList, symbolSet,
+        x -> x.isSymbol() && !(x.isProtected()));
     if (symbolSet.size() > 0) {
       IASTAppendable fullDefinition = F.ListAlloc();
       Iterator<ISymbol> iterator = symbolSet.iterator();
@@ -260,6 +265,42 @@ public interface ISymbol extends IExpr {
    */
   public static boolean hasOrderlessFlatAttribute(int attributes) {
     return (attributes & FLATORDERLESS) == FLATORDERLESS;
+  }
+
+  static IAST symbolDefinition(ISymbol symbol) {
+  
+    if (symbol.equals(S.In)) {
+      IAST list = EvalEngine.get().getEvalHistory().definitionIn();
+      IASTAppendable result = F.ListAlloc(list.isNIL() ? 1 : list.size());
+      result.appendArgs(list);
+      return result;
+    } else if (symbol.equals(S.Out)) {
+      IAST list = EvalEngine.get().getEvalHistory().definitionOut();
+      IASTAppendable result = F.ListAlloc(list.isNIL() ? 1 : list.size());
+      result.appendArgs(list);
+      return result;
+    }
+  
+    List<IAST> rules = null;
+    RulesData rulesData = symbol.getRulesData();
+    if (rulesData != null) {
+      rules = rulesData.definition();
+    }
+    IASTAppendable result = F.ListAlloc(rules == null ? 1 : rules.size() + 1);
+    result = F.ListAlloc(rules == null ? 1 : rules.size() + 1);
+  
+    if (symbol.hasAssignedSymbolValue()) {
+      IExpr assignedValue = symbol.assignedValue();
+      if (symbol.isEvalFlagOn(SETDELAYED_FLAG_ASSIGNED_VALUE)) {
+        result.append(F.SetDelayed(symbol, assignedValue));
+      } else {
+        result.append(F.Set(symbol, assignedValue));
+      }
+    }
+    if (rules != null) {
+      result.appendAll(rules);
+    }
+    return result;
   }
 
   /**
@@ -349,8 +390,6 @@ public interface ISymbol extends IExpr {
 
   /**
    * Return a list of the rules associated to this symbol
-   *
-   * @return
    */
   public IAST definition();
 

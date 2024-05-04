@@ -32,6 +32,8 @@ ArcSinh(ComplexInfinity)=ComplexInfinity
 
 ```
 >> a(x_):=b(x,y);b[u_,v_]:={{u,v},a} 
+
+>> FullDefinition(a) 
 a(x_):=b(x,y)
 
 b(u_,v_):={{u,v},a}

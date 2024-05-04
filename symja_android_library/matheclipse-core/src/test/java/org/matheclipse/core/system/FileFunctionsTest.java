@@ -35,6 +35,91 @@ public class FileFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSaveIn() {
+    Config.FILESYSTEM_ENABLED = true;
+    check("g(x_) := x^3", //
+        "");
+
+    check("g(x_,y_) := f(x,y)", //
+        "");
+
+    check("SetAttributes(f, Listable)", //
+        "");
+
+    check("f(x_) := g(x^2) ", //
+        "");
+
+    check("temp = FileNameJoin({$TemporaryDirectory, \"savedin.txt\"});Print(temp);", //
+        "");
+    check("FullDefinition(In)", //
+        "Attributes(In)={Listable,NHoldFirst,Protected}\n" //
+            + "\n" //
+            + "In(1):=g(x_):=x^3\n" //
+            + "\n" //
+            + "In(2):=g(x_,y_):=f(x,y)\n" //
+            + "\n" //
+            + "In(3):=SetAttributes(f,Listable)\n" //
+            + "\n" //
+            + "In(4):=f(x_):=g(x^2)\n" //
+            + "\n" //
+            + "In(5):=(temp=FileNameJoin({$TemporaryDirectory,\"savedin.txt\"});Print(temp);Null)");
+
+    check("Save(temp, In)", //
+        "");
+    //
+    // check("ClearAll(f,g)", //
+    // "");
+    // check("Attributes(f)", //
+    // "{}");
+    // check("{f(2),g(7)}", //
+    // "{f(2),g(7)}");
+    //
+    // check("Get(temp)", //
+    // "");
+    // check("{f(2),g(7)}", //
+    // "{64,343}");
+    // check("Attributes(f)", //
+    // "{Listable}");
+  }
+
+  @Test
+  public void testSaveOut() {
+    Config.FILESYSTEM_ENABLED = true;
+    check("g(x_) := x^3", //
+        "");
+
+    check("g(x_,y_) := f(x,y)", //
+        "");
+
+    check("SetAttributes(f, Listable)", //
+        "");
+
+    check("f(x_) := g(x^2) ", //
+        "");
+    check("hello = \"hello world\" ", //
+        "hello world");
+    check("temp = FileNameJoin({$TemporaryDirectory, \"savedout.txt\"});Print(temp);", //
+        "");
+    check("FullDefinition(Out)", //
+        "Attributes(Out)={Listable,NHoldFirst,Protected}\n" //
+            + "\n" //
+            + "Out(1)=Null\n" //
+            + "\n" //
+            + "Out(2)=Null\n" //
+            + "\n" //
+            + "Out(3)=Null\n" //
+            + "\n" //
+            + "Out(4)=Null\n" //
+            + "\n" //
+            + "Out(5)=\"hello world\"\n" //
+            + "\n" //
+            + "Out(6)=Null");
+
+    check("Save(temp, Out)", //
+        "");
+  }
+
+  @Test
   public void testSaveList() {
     Config.FILESYSTEM_ENABLED = true;
 

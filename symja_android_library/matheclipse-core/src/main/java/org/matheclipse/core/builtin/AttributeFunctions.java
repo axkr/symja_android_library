@@ -194,7 +194,8 @@ public class AttributeFunctions {
         }
       }
       if (sym.isProtected()) {
-        Errors.printMessage(S.ClearAttributes, "write", F.list(sym), EvalEngine.get());
+        // Tag `1` in `2` is Protected.
+        Errors.printMessage(S.ClearAttributes, "write", F.list(sym, expr), EvalEngine.get());
         throw new FailedException();
       }
       if (attributes.isSymbol()) {

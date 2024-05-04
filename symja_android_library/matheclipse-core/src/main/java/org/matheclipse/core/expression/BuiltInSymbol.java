@@ -157,12 +157,6 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
   /** {@inheritDoc} */
   @Override
-  public String definitionToString() {
-    return super.definitionToString();
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public boolean equals(final Object obj) {
     return this == obj;
   }
