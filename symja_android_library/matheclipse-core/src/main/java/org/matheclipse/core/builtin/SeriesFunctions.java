@@ -266,11 +266,12 @@ public class SeriesFunctions {
     }
 
     private static IExpr evalLimitQuiet(final IExpr expr, LimitData data) {
+      if (expr.isNumber()) {
+        return expr;
+      }
       EvalEngine engine = EvalEngine.get();
       boolean quiet = engine.isQuietMode();
       try {
-        // engine.setQuietMode(true);
-        // return evalLimit(expr, data, true);
         IExpr direction =
             data.direction() == Direction.TWO_SIDED ? S.Reals : F.ZZ(data.direction().toInt());
         return F.Limit(expr, data.rule(), F.Rule(S.Direction, direction)).eval(engine);
@@ -344,26 +345,95 @@ public class SeriesFunctions {
           return expr.replaceAll(data.rule()).orElse(expr);
         }
         final IAST ast = (IAST) expression;
-        if (ast.isAST1() && ast.topHead().isNumericFunctionAttribute()) {
-          IExpr temp = data.limit(ast.arg1());
-          if (temp.isPresent()) {
-            if (temp.isIndeterminate() && data.direction == Direction.TWO_SIDED) {
-              return evalSplitTwoSided(ast, data, engine);
-            }
-            return engine.evalQuiet(F.unaryAST1(ast.head(), temp));
-          }
-        } else if (ast.isPlus()) {
+        if (ast.isPlus()) {
           return plusLimit(ast, data, engine);
         } else if (ast.isTimes()) {
           return timesLimit(ast, data, engine);
-        } else if (ast.isLog()) {
-          return logLimit(ast, data, engine);
-        } else if (ast.isPower()) {
+        } else if (ast.isPower() && !ast.base().isPositive() && !ast.exponent().isPositive()) {
           return powerLimit(ast, data, engine);
+        } else if (ast.argSize() > 0 && ast.topHead().isNumericFunctionAttribute()) {
+          IASTMutable copy = ast.copy();
+          IExpr temp = F.NIL;
+          boolean indeterminate = false;
+          for (int i = 1; i < ast.size(); i++) {
+            temp = data.limit(ast.get(i));
+            if (temp.isPresent()) {
+              if (temp.isIndeterminate()) {
+                if (data.direction != Direction.TWO_SIDED) {
+                  return S.Indeterminate;
+                }
+                indeterminate = true;
+              }
+              copy.set(i, temp);
+            } else {
+              copy.set(i, S.Indeterminate);
+              indeterminate = true;
+            }
+          }
+          if (!indeterminate) {
+            temp = engine.evalQuiet(copy);
+            if (temp.isPresent() && !temp.isIndeterminate()) {
+              return temp;
+            }
+          }
+          if (data.direction == Direction.TWO_SIDED && indeterminate) {
+            return evalLimitTwoSided(copy, ast, data, engine);
+          }
+          return S.Indeterminate;
         }
       }
 
       return F.NIL;
+    }
+
+    /**
+     * <p>
+     * Evaluate the limit of a function by evaluating the separate directions
+     * <code>({@link Direction#FROM_BELOW}, {@link Direction#FROM_ABOVE}</code> for the arguments
+     * and comparing the function evaluation result for equality.
+     * 
+     * @param astLimitEvaluated the limit evaluation which can contain {@link S#Indeterminate} as
+     *        arguments
+     * @param astOriginal the original ast with all non {@link S#Indeterminate} arguments
+     * @param limitTwoSided containing the <code>{@link Direction#TWO_SIDED}</code> data for limit
+     *        determining
+     * @param engine
+     * @return {@link S#Indeterminate} if no limit can be found
+     */
+    private static IExpr evalLimitTwoSided(IASTMutable astLimitEvaluated, final IAST astOriginal,
+        LimitData limitTwoSided, EvalEngine engine) {
+      IASTMutable copy1 = astOriginal.copy();
+      IASTMutable copy2 = astOriginal.copy();
+      for (int i = 1; i < astOriginal.size(); i++) {
+        IExpr arg = astLimitEvaluated.get(i);
+        if (arg.isIndeterminate()) {
+          arg = astOriginal.get(i);
+          LimitData limitBelow = new LimitData(limitTwoSided.variable, limitTwoSided.limitValue,
+              limitTwoSided.rule, Direction.FROM_BELOW);
+          IExpr belowValue = limitBelow.limit(arg);
+          if (belowValue.isPresent() && !belowValue.isIndeterminate()) {
+            LimitData limitAbove = new LimitData(limitTwoSided.variable, limitTwoSided.limitValue,
+                limitTwoSided.rule, Direction.FROM_ABOVE);
+            IExpr aboveValue = limitAbove.limit(arg);
+            if (aboveValue.isPresent() && !aboveValue.isIndeterminate()) {
+              copy1.set(i, belowValue);
+              copy2.set(i, aboveValue);
+              continue;
+            }
+          }
+          return S.Indeterminate;
+        } else {
+          copy1.set(i, astLimitEvaluated.get(i));
+          copy2.set(i, astLimitEvaluated.get(i));
+        }
+      }
+      IExpr f1 = engine.evalQuiet(copy1);
+      IExpr f2 = engine.evalQuiet(copy2);
+      if (f1.equals(f2) && !f1.isIndeterminate() && f1.isPresent() && f1.isFree(S.Interval)) {
+        return f1;
+
+      }
+      return S.Indeterminate;
     }
 
     /**
@@ -379,24 +449,24 @@ public class SeriesFunctions {
      * @param engine
      * @return {@link S#Indeterminate} if no limit can be found
      */
-    private static IExpr evalSplitTwoSided(final IAST functionArg1, LimitData data,
-        EvalEngine engine) {
-      LimitData copy =
-          new LimitData(data.variable, data.limitValue, data.rule, Direction.FROM_BELOW);
-      IExpr belowValue = copy.limit(functionArg1.arg1());
-      if (belowValue.isPresent() && !belowValue.isIndeterminate()) {
-        copy = new LimitData(data.variable, data.limitValue, data.rule, Direction.FROM_ABOVE);
-        IExpr aboveValue = copy.limit(functionArg1.arg1());
-        if (aboveValue.isPresent() && !aboveValue.isIndeterminate()) {
-          IExpr f1 = engine.evalQuiet(F.unaryAST1(functionArg1.head(), belowValue));
-          IExpr f2 = engine.evalQuiet(F.unaryAST1(functionArg1.head(), aboveValue));
-          if (f1.equals(f2) && !f1.isIndeterminate() && f1.isPresent() && f1.isFree(S.Interval)) {
-            return f1;
-          }
-        }
-      }
-      return S.Indeterminate;
-    }
+    // private static IExpr evalSplitTwoSided(final IAST functionArg1, LimitData data,
+    // EvalEngine engine) {
+    // LimitData copy =
+    // new LimitData(data.variable, data.limitValue, data.rule, Direction.FROM_BELOW);
+    // IExpr belowValue = copy.limit(functionArg1.arg1());
+    // if (belowValue.isPresent() && !belowValue.isIndeterminate()) {
+    // copy = new LimitData(data.variable, data.limitValue, data.rule, Direction.FROM_ABOVE);
+    // IExpr aboveValue = copy.limit(functionArg1.arg1());
+    // if (aboveValue.isPresent() && !aboveValue.isIndeterminate()) {
+    // IExpr f1 = engine.evalQuiet(F.unaryAST1(functionArg1.head(), belowValue));
+    // IExpr f2 = engine.evalQuiet(F.unaryAST1(functionArg1.head(), aboveValue));
+    // if (f1.equals(f2) && !f1.isIndeterminate() && f1.isPresent() && f1.isFree(S.Interval)) {
+    // return f1;
+    // }
+    // }
+    // }
+    // return S.Indeterminate;
+    // }
 
     /**
      * Evaluate the limits of the arguments of the <code>function</code> and evaluate the <code>
@@ -638,60 +708,71 @@ public class SeriesFunctions {
         return data.mapLimit((IAST) numerator);
       }
       if (!denominator.isNumber() || denominator.isZero()) {
-        IExpr result = F.NIL;
-        // ISymbol x = data.variable();
-        denValue = evalLimitQuiet(denominator, data);
-        // denValue = engine.evalModuleDummySymbol(denominator, x, limitValue, true);
-        if (denValue.isIndeterminate()) {
-          return F.NIL;
-        } else if (denValue.isZero()) {
-          numValue = evalLimitQuiet(numerator, data);
-          // numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
-          if (numValue.isZero()) {
-            return lHospitalesRule(numerator, denominator, data, engine);
+        int recursionLimit = engine.getRecursionLimit();
+        try {
+          if (recursionLimit <= 0 || recursionLimit > Config.LIMIT_LHOSPITAL_RECURSION_LIMIT) {
+            // set recursion limit for using l'Hospitales rule
+            engine.setRecursionLimit(Config.LIMIT_LHOSPITAL_RECURSION_LIMIT);
           }
-          return F.NIL;
-        } else if (denValue.isInfinity()) {
-          numValue = evalLimitQuiet(numerator, data);
-          // numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
-          if (numValue.isInfinity()) {
-            return lHospitalesRule(numerator, denominator, data, engine);
-          } else if (numValue.isNegativeInfinity()) {
-            numerator = engine.evaluate(numerator.negate());
-            numValue = evalLimitQuiet(numerator, data);
-            // numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
-            if (numValue.isInfinity()) {
-              result = lHospitalesRule(numerator, denominator, data, engine);
-              if (result.isPresent()) {
-                return result.negate();
-              }
-            }
-          }
-          return F.NIL;
-        } else if (denValue.isNegativeInfinity()) {
-          denominator = engine.evaluate(denominator.negate());
+          IExpr result = F.NIL;
+          // ISymbol x = data.variable();
           denValue = evalLimitQuiet(denominator, data);
           // denValue = engine.evalModuleDummySymbol(denominator, x, limitValue, true);
-          if (denValue.isInfinity()) {
+          if (denValue.isIndeterminate()) {
+            return F.NIL;
+          } else if (denValue.isZero()) {
+            numValue = evalLimitQuiet(numerator, data);
+            // numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
+            if (numValue.isZero()) {
+              return lHospitalesRule(numerator, denominator, data, engine);
+            }
+            return F.NIL;
+          } else if (denValue.isInfinity()) {
             numValue = evalLimitQuiet(numerator, data);
             // numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
             if (numValue.isInfinity()) {
-              result = lHospitalesRule(numerator, denominator, data, engine);
-              if (result.isPresent()) {
-                // negate because denominator.negate()
-                return result.negate();
-              }
+              return lHospitalesRule(numerator, denominator, data, engine);
             } else if (numValue.isNegativeInfinity()) {
               numerator = engine.evaluate(numerator.negate());
               numValue = evalLimitQuiet(numerator, data);
               // numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
               if (numValue.isInfinity()) {
-                // tried both cases numerator.negate() and denominator.negate()
-                return lHospitalesRule(numerator, denominator, data, engine);
+                result = lHospitalesRule(numerator, denominator, data, engine);
+                if (result.isPresent()) {
+                  return result.negate();
+                }
               }
             }
+            return F.NIL;
+          } else if (denValue.isNegativeInfinity()) {
+            denominator = engine.evaluate(denominator.negate());
+            denValue = evalLimitQuiet(denominator, data);
+            // denValue = engine.evalModuleDummySymbol(denominator, x, limitValue, true);
+            if (denValue.isInfinity()) {
+              numValue = evalLimitQuiet(numerator, data);
+              // numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
+              if (numValue.isInfinity()) {
+                result = lHospitalesRule(numerator, denominator, data, engine);
+                if (result.isPresent()) {
+                  // negate because denominator.negate()
+                  return result.negate();
+                }
+              } else if (numValue.isNegativeInfinity()) {
+                numerator = engine.evaluate(numerator.negate());
+                numValue = evalLimitQuiet(numerator, data);
+                // numValue = engine.evalModuleDummySymbol(numerator, x, limitValue, true);
+                if (numValue.isInfinity()) {
+                  // tried both cases numerator.negate() and denominator.negate()
+                  return lHospitalesRule(numerator, denominator, data, engine);
+                }
+              }
+            }
+            return F.NIL;
           }
-          return F.NIL;
+        } catch (RecursionLimitExceeded rle) {
+          engine.setRecursionLimit(recursionLimit);
+        } finally {
+          engine.setRecursionLimit(recursionLimit);
         }
       }
       return F.NIL;
@@ -762,44 +843,47 @@ public class SeriesFunctions {
     }
 
     private static IExpr powerLimit(final IAST powerAST, LimitData data, EvalEngine engine) {
-      // IAST rule = data.getRule();
       IExpr base = powerAST.arg1();
       IExpr exponent = powerAST.arg2();
       if (exponent.equals(data.variable())) {
-        if (data.limitValue().isZero() && !base.isZero()) {
-          return F.C1;
-        }
-        if (base.isFree(data.variable()) && !base.isZero()) {
-          boolean isInfinityLimit = data.limitValue().isInfinity();
-          if (isInfinityLimit || data.limitValue().isNegativeInfinity()) {
-            if (F.Log(base).isNumericFunction(true)) {
-              if (F.Log(base).greater(F.C0).isTrue()) {
-                // if (S.Greater.ofQ(F.Log(base), F.C0)) {
-                return isInfinityLimit ? F.CInfinity : F.C0;
+        if (!base.isZero()) {
+          if (data.limitValue().isZero()) {
+            return F.C1;
+          }
+          if (base.isFree(data.variable())) {
+            boolean isInfinityLimit = data.limitValue().isInfinity();
+            if (isInfinityLimit || data.limitValue().isNegativeInfinity()) {
+              if (F.Log(base).isNumericFunction(true)) {
+                if (F.Log(base).greater(F.C0).isTrue()) {
+                  return isInfinityLimit ? F.CInfinity : F.C0;
+                }
+              } else if (base.isNumericFunction(s -> s.isSymbol() ? "" : null)) {
+                return F.ConditionalExpression(isInfinityLimit ? F.CInfinity : F.C0,
+                    F.Greater(F.Log(base), F.C0));
               }
-            } else if (base.isNumericFunction(s -> s.isSymbol() ? "" : null)) {
-              return F.ConditionalExpression(isInfinityLimit ? F.CInfinity : F.C0,
-                  F.Greater(F.Log(base), F.C0));
             }
           }
         }
-      }
-      if (base.isRealResult() && !base.isZero()) {
-        IExpr temp = evalReplaceAll(powerAST, data, engine);
-        if (temp.isPresent()) {
-          return temp;
+        if (base.isRealResult()) {
+          IExpr temp = evalReplaceAll(powerAST, data, engine);
+          if (temp.isPresent()) {
+            return temp;
+          }
         }
       }
       if (exponent.isFree(data.variable())) {
         final IExpr temp = evalLimitQuiet(base, data);
         if (temp.isPresent()) {
-          if (temp.isZero() && !exponent.isNumericFunction(true)) {
-            // ConditionalExpression(0, exponent > 0)
-            return F.ConditionalExpression(F.C0, F.Greater(exponent, F.C0));
-          }
-          if (!temp.isZero() && temp.isFree(data.variable())) {
-            // ConditionalExpression(0, exponent > 0)
-            return F.Power(temp, exponent);
+          if (temp.isZero()) {
+            if (!exponent.isNumericFunction(true)) {
+              // ConditionalExpression(0, exponent > 0)
+              return F.ConditionalExpression(F.C0, F.Greater(exponent, F.C0));
+            }
+          } else {
+            if (temp.isFree(data.variable())) {
+              // ConditionalExpression(0, exponent > 0)
+              return F.Power(temp, exponent);
+            }
           }
         }
         if (base.isTimes()) {
@@ -993,26 +1077,46 @@ public class SeriesFunctions {
       return data.mapLimit(timesAST);
     }
 
-    private static IExpr logLimit(final IAST logAST, LimitData data, EvalEngine engine) {
-      if (logAST.isAST2() && !logAST.isFree(data.variable())) {
-        return F.NIL;
-      }
-      IExpr firstArg = logAST.arg1();
-      if (firstArg.isPower() && firstArg.exponent().isFree(data.variable())) {
-        IAST arg1 = logAST.setAtCopy(1, firstArg.base());
-        return F.Times(firstArg.exponent(), data.limit(arg1));
-      } else if (firstArg.isTimes()) {
-        IAST isFreeResult =
-            firstArg.partitionTimes(x -> x.isFree(data.variable(), true), F.C1, F.C1, S.List);
-        if (!isFreeResult.arg1().isOne()) {
-          IAST arg1 = logAST.setAtCopy(1, isFreeResult.arg1());
-          IAST arg2 = logAST.setAtCopy(1, isFreeResult.arg2());
-          return F.Plus(arg1, data.limit(arg2));
-        }
-      }
-      return F.NIL;
-    }
+    // private static IExpr logLimit(final IAST logAST, LimitData data, EvalEngine engine) {
+    // if (logAST.isAST2() && !logAST.isFree(data.variable())) {
+    // return F.NIL;
+    // }
+    // IExpr firstArg = logAST.arg1();
+    // if (firstArg.isPower() && firstArg.exponent().isFree(data.variable())) {
+    // IAST arg1 = logAST.setAtCopy(1, firstArg.base());
+    // return F.Times(firstArg.exponent(), data.limit(arg1));
+    // } else if (firstArg.isTimes()) {
+    // IAST isFreeResult =
+    // firstArg.partitionTimes(x -> x.isFree(data.variable(), true), F.C1, F.C1, S.List);
+    // if (!isFreeResult.arg1().isOne()) {
+    // IAST arg1 = logAST.setAtCopy(1, isFreeResult.arg1());
+    // IAST arg2 = logAST.setAtCopy(1, isFreeResult.arg2());
+    // return F.Plus(arg1, data.limit(arg2));
+    // }
+    // }
+    // return F.NIL;
+    // }
 
+    // private static IExpr logLimit(final IAST logAST, LimitData data, EvalEngine engine) {
+    // if (logAST.isAST2() && !logAST.isFree(data.variable())) {
+    // return F.NIL;
+    // }
+    // IExpr firstArg = logAST.arg1();
+    // if (firstArg.isPower() && firstArg.exponent().isFree(data.variable())) {
+    // IAST arg1 = logAST.setAtCopy(1, firstArg.base());
+    // return F.Times(firstArg.exponent(), data.limit(arg1));
+    // } else if (firstArg.isTimes()) {
+    // IAST isFreeResult =
+    // firstArg.partitionTimes(x -> x.isFree(data.variable(), true), F.C1, F.C1, S.List);
+    // if (!isFreeResult.arg1().isOne()) {
+    // IAST arg1 = logAST.setAtCopy(1, isFreeResult.arg1());
+    // IAST arg2 = logAST.setAtCopy(1, isFreeResult.arg2());
+    // return F.Plus(arg1, data.limit(arg2));
+    // }
+    // }
+    // return F.NIL;
+    // }
+    
     /**
      * Limit of a function. See <a href="http://en.wikipedia.org/wiki/List_of_limits">List of
      * Limits</a>

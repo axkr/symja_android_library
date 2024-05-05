@@ -10832,6 +10832,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHarmonicNumber() {
+    check("HarmonicNumber(Infinity,1)", //
+        "Infinity");
+    check("HarmonicNumber(Infinity,5)", //
+        "Zeta(5)");
     checkNumeric("HarmonicNumber({-3.1415,2.987,-1,0,1},0.5)", //
         "{-0.19602750271156133+I*4.277725609252295,2.277519248535999,ComplexInfinity,0.0,1.0000000000000007}");
     checkNumeric("HarmonicNumber(-0.5,0.5)", //
@@ -14288,15 +14292,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLimitIssue536() {
+    // avoid endless recursion:
+    check(
+        "Limit(Sqrt((4+x)/(4-x))-Pi/2,x->4)", //
+        "Indeterminate");
+    // TODO get -4*Pi
+    check(
+        "Limit((-4+x)*(Sqrt((4+x)/(4-x))-ArcTan(Sqrt((4+x)/(4-x)))+(-(4+x)*ArcTan(Sqrt((4+x)/(4-x))))/(4-x)), x->4)", //
+        "Indeterminate");
+
     // Issue 536
     check("Integrate(Sqrt((4+x)/(4-x)), x) ", //
         "(-4+x)*(Sqrt((4+x)/(4-x))-ArcTan(Sqrt((4+x)/(4-x)))+(-(4+x)*ArcTan(Sqrt((4+x)/(4-x))))/(\n"//
             + "4-x))");
-    // TODO avoid endless recursion:
-    // check(
-    // "Limit((-4+x)*(Sqrt((4+x)/(4-x))-ArcTan(Sqrt((4+x)/(4-x)))+(-(4+x)*ArcTan(Sqrt((4+x)/(4-x))))/(4-x)),x->4)",
-    // //
-    // "Indeterminate");
+
     check("Limit(ArcTan(Sqrt((4 + x)/(4 - x))),x->4)", //
         "Pi/2");
     check("Limit(Sqrt((4 + x)/(4 - x)),x->4,Direction->1)", //
@@ -21042,6 +21051,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("Expectation((x + 3)/(x + 5), Distributed(x, ExponentialDistribution(2)))", //
     // "Expectation((3+x)/(5+x),x\uF3D2ExponentialDistribution(2))");
 
+    check("Limit((-3*x)/(E^(x^2/2)*Sqrt(2*Pi))+4*Erf(x/Sqrt(2)), x -> -Infinity)", //
+        "-4");
     check("Expectation(2*x+3, x \\[Distributed] NormalDistribution() )", //
         "3");
     check("Expectation(3*x^2 + 5, Distributed(x, NormalDistribution()))", //

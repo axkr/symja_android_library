@@ -3581,9 +3581,12 @@ public void testSystem377() {
     check("Limit((5/4)^(-x), x->Infinity)", "0");
 
     // the Basel problem: http://en.wikipedia.org/wiki/Basel_problem
-    check("Limit(Sum(x^(-2),{x,1,m}), m->Infinity)", "Pi^2/6");
-    check("Limit(Sum(x^(-5),{x,1,m}), m->Infinity)", "Limit(HarmonicNumber(m,5),m->Infinity)");
-    check("Limit(Sum(x^(-10),{x,1,m}), m->Infinity)", "Pi^10/93555");
+    check("Limit(Sum(x^(-2),{x,1,m}), m->Infinity)", //
+        "Pi^2/6");
+    check("Limit(Sum(x^(-5),{x,1,m}), m->Infinity)", //
+        "Zeta(5)");
+    check("Limit(Sum(x^(-10),{x,1,m}), m->Infinity)", //
+        "Pi^10/93555");
 
     check("Limit((4-x^4)/(2*x^3-5*x^4),x->Infinity)", "1/5");
     check("Limit(Sum(k,{k,0,x}),x->5)", "15"); // issue 50
