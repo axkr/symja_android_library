@@ -2068,10 +2068,7 @@ public final class Arithmetic {
             return result;
           }
 
-          final IExpr arg2Negate = arg2.negate();
-          return F.sum(i -> Power(i, arg2Negate), 1, n);
-          // IASTAppendable result = F.PlusAlloc(n);
-          // return result.appendArgs(n + 1, i -> Power(F.ZZ(i), arg2Negate));
+          return F.sum(i -> Power(i, arg2.negate()), 1, n);
         }
         return F.NIL;
       }

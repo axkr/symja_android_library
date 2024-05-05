@@ -10880,6 +10880,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{m/2+m^2/2,m/6+m^2/2+m^3/3,m^2/4+m^3/2+m^4/4,-m/30+m^3/3+m^4/2+m^5/5,-m^2/12+5/\n"
             + "12*m^4+m^5/2+m^6/6}");
 
+    check("HarmonicNumber(z, -2)", //
+        "z/6+z^2/2+z^3/3");
     check("HarmonicNumber(10007, -2)", //
         "334083895140");
     check("HarmonicNumber(10007, -1)", //

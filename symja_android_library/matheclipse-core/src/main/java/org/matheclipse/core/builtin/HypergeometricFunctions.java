@@ -311,31 +311,41 @@ public class HypergeometricFunctions {
         IExpr v = ast.arg1();
         IExpr z = ast.arg2();
         if (v.isFraction() && ((IFraction) v).times(F.C2).isInteger()) {
-          IExpr n = ((IFraction) v).subtract(F.C1D2);
-          ISymbol k = F.Dummy("k");
-          // https://functions.wolfram.com/GammaBetaErf/ExpIntegralE/03/01/02/0014/
-          // (1-Erf(Sqrt(z))*Gamma(1/2-n)+Sum(z^(1/2+k)/Pochhammer(1/2-n,1+k+n),{k,0,-1-n})/E^z-Sum(z^(1/2+k)/Pochhammer(1/2-n,1+k+n),{k,-n,-1})/E^z)/z^(1/2-n)
-          return F
-              .Times(
-                  F.Power(z, F.Plus(F.CN1D2,
-                      n)),
-                  F.Plus(
-                      F.Times(F.Subtract(F.C1, F.Erf(F.Sqrt(z))), F
-                          .Gamma(F.Subtract(F.C1D2, n))),
-                      F.Times(
-                          F.Power(F
-                              .Exp(z), F.CN1),
-                          F.Sum(F.Times(F.Power(z, F.Plus(F.C1D2, k)),
-                              F.Power(F.Pochhammer(F.Subtract(F.C1D2, n), F.Plus(F.C1, k, n)),
-                                  F.CN1)),
-                              F.list(k, F.C0, F.Subtract(F.CN1, n)))),
-                      F.Times(
-                          F.CN1, F.Power(F
-                              .Exp(z), F.CN1),
-                          F.Sum(
-                              F.Times(F.Power(z, F.Plus(F.C1D2, k)), F.Power(
-                                  F.Pochhammer(F.Subtract(F.C1D2, n), F.Plus(F.C1, k, n)), F.CN1)),
-                              F.list(k, F.Negate(n), F.CN1)))));
+          IExpr ni = ((IFraction) v).subtract(F.C1D2);
+          int n = ni.toIntDefault();
+          if (n != Integer.MIN_VALUE) {
+            if (n >= 0) {
+              // https://functions.wolfram.com/GammaBetaErf/ExpIntegralE/03/01/02/0004/
+              // ((-1)^n*Sqrt(Pi))/(z^(1/2-n)*Pochhammer(1/2,n))*Erfc(Sqrt(z))-Sum(z^k/Pochhammer(
+              // 1/2-n,k+1),{k,0,-1+n})/E^z
+              IExpr sum = engine.evaluate(F.sum(
+                  k -> F.Times(F.Power(z, k),
+                      F.Power(F.Pochhammer(F.Subtract(F.C1D2, ni), F.Plus(k, F.C1)), F.CN1)),
+                  0, n - 1));
+              return F.Plus(
+                  F.Times(F.Power(F.CN1, n), F.CSqrtPi, F.Power(z, F.Plus(F.CN1D2, ni)),
+                      F.Power(F.Pochhammer(F.C1D2, ni), F.CN1), F.Erfc(F.Sqrt(z))),
+                  F.Times(F.CN1, F.Power(F.Exp(z), F.CN1), sum));
+            }
+            // https://functions.wolfram.com/GammaBetaErf/ExpIntegralE/03/01/02/0014/
+            // (1-Erf(Sqrt(z))*Gamma(1/2-n)+Sum(z^(1/2+k)/Pochhammer(1/2-n,1+k+n),{k,0,-1-n})/E^z-Sum(z^(1/2+k)/Pochhammer(1/2-n,1+k+n),{k,-n,-1})/E^z)/z^(1/2-n)
+            IExpr sum1 = engine.evaluate(F.sum(
+                k -> F.Times(F.Power(z, F.Plus(F.C1D2, k)),
+                    F.Power(F.Pochhammer(F.Subtract(F.C1D2, ni), F.Plus(F.C1, k, ni)), F.CN1)),
+                0, -1 - n));
+            IExpr sum2 =
+                engine
+                    .evaluate(F.sum(
+                        k -> F.Times(F.Power(z, F.Plus(F.C1D2, k)),
+                            F.Power(F.Pochhammer(F.Subtract(F.C1D2, ni), F.Plus(F.C1, k, ni)),
+                                F.CN1)),
+                -n, -1));
+            return F.Times(F.Power(z, F.Plus(F.CN1D2, ni)),
+                F.Plus(F.Times(F.Subtract(F.C1, F.Erf(F.Sqrt(z))), F.Gamma(F.Subtract(F.C1D2, ni))),
+                    F.Times(F.Power(F.Exp(z), F.CN1), sum1),
+                    F.Times(F.CN1, F.Power(F.Exp(z), F.CN1), sum2)));
+          }
+          return F.NIL;
         }
         // Gamma(1-v,z)/z^(1-v)
         return F.Times(F.Power(z, F.Plus(F.CN1, v)), F.Gamma(F.Subtract(F.C1, v), z));
@@ -1513,23 +1523,27 @@ public class HypergeometricFunctions {
         }
 
         if (a.isInteger() && a.isPositive() && (!b.isNumber() || !z.isNumber())) {
-          IInteger n = (IInteger) a;
-          ISymbol k = F.Dummy("k");
-          // (Gamma(-1+b,z)*z^(1-b)*E^z*LaguerreL(-1+n,1-b,-z)-Sum(LaguerreL(-1-k+n,-b+k+1,-z)/k*LaguerreL(-
-          // 1+k,-1+b-k,z),{k,1,-1+n}))/Pochhammer(2-b,-1+n)
-          return F.Times(F.Power(F.Pochhammer(F.Subtract(F.C2, b), F.Plus(F.CN1, n)), F.CN1),
-              F.Subtract(
-                  F.Times(F.Gamma(F.Plus(F.CN1, b), z), F.Power(z, F.Subtract(F.C1, b)), F.Exp(z),
-                      F.LaguerreL(F.Plus(F.CN1, n), F.Subtract(F.C1, b), F.Negate(z))),
-                  F.Sum(
-                      F.Times(F.Power(k, F.CN1),
-                          F.LaguerreL(F.Plus(F.CN1, F.Negate(k), n), F.Plus(F.Negate(b), k, F.C1),
-                              F.Negate(z)),
-                          F.LaguerreL(F.Plus(F.CN1, k), F.Plus(F.CN1, b, F.Negate(k)), z)),
-                      F.list(k, F.C1, F.Plus(F.CN1, n)))));
+          IInteger ni = (IInteger) a;
+          int n = ni.toIntDefault();
+          if (n != Integer.MIN_VALUE) {
+            // ISymbol k = F.Dummy("k");
+            // (Gamma(-1+b,z)*z^(1-b)*E^z*LaguerreL(-1+n,1-b,-z)-Sum(LaguerreL(-1-k+n,-b+k+1,-z)/k*LaguerreL(-
+            // 1+k,-1+b-k,z),{k,1,-1+n}))/Pochhammer(2-b,-1+n)
+            IExpr sum = engine.evaluate(F.sum(k ->
+                F.Times(F.Power(k, F.CN1),
+                    F.LaguerreL(F.Plus(F.CN1, F.Negate(k), ni),
+                        F.Plus(F.Negate(b), k, F.C1), F.Negate(z)),
+                    F.LaguerreL(F.Plus(F.CN1, k), F.Plus(F.CN1, b, F.Negate(k)), z)),
+                1, n - 1));
+            return F.Times(F.Power(F.Pochhammer(F.Subtract(F.C2, b), F.Plus(F.CN1, ni)), F.CN1),
+                F.Subtract(
+                    F.Times(F.Gamma(F.Plus(F.CN1, b), z), F.Power(z, F.Subtract(F.C1, b)), F.Exp(z),
+                        F.LaguerreL(F.Plus(F.CN1, ni), F.Subtract(F.C1, b), F.Negate(z))),
+                    sum));
+          }
         }
       } catch (ThrowException te) {
-        LOGGER.debug("HypergeometricU.evaluate() failed", te);
+        // LOGGER.debug("HypergeometricU.evaluate() failed", te);
         return te.getValue();
       } catch (ValidateException ve) {
         return Errors.printMessage(ast.topHead(), ve, engine);

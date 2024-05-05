@@ -709,8 +709,7 @@ public class F extends S {
   public static final IAST CNIInfinity;
 
   /**
-   * Represents <code>ComplexInfinity</code> (i.e. <code>ComplexInfinity-&gt;DirectedInfinity()
-   * </code>)
+   * Represents {@link S#ComplexInfinity} as {@link F#DirectedInfinity()}.
    */
   public static final IAST CComplexInfinity;
 
