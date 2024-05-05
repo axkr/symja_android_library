@@ -2009,13 +2009,19 @@ public final class Arithmetic {
         return F.HarmonicNumber(arg1);
       } else {
         // generalized harmonic number
-        if (arg2.isInteger()) {
-          if (arg1.isInfinity()) {
-            if (arg2.isPositive() && ((IInteger) arg2).isEven()) {
-              // Module({v=s/2},((2*Pi)^(2*v)*(-1)^(v+1)*BernoulliB(2*v))/(2*(2*v)!))
-              IExpr v = Times(C1D2, arg2);
-              return Times(Power(F.C2Pi, Times(C2, v)), Power(CN1, Plus(v, C1)),
-                  BernoulliB(Times(C2, v)), Power(Times(C2, Factorial(Times(C2, v))), CN1));
+        if (arg1.isInfinity()) {
+          if (arg2.isOne()) {
+            return F.CInfinity;
+          }
+          if (arg2.isInteger()) {
+            if (arg2.isPositive()) {
+              if (((IInteger) arg2).isEven()) {
+                // Module({v=s/2},((2*Pi)^(2*v)*(-1)^(v+1)*BernoulliB(2*v))/(2*(2*v)!))
+                IExpr v = Times(C1D2, arg2);
+                return Times(Power(F.C2Pi, Times(C2, v)), Power(CN1, Plus(v, C1)),
+                    BernoulliB(Times(C2, v)), Power(Times(C2, Factorial(Times(C2, v))), CN1));
+              }
+              return F.Zeta(arg2);
             }
             return F.NIL;
           }
