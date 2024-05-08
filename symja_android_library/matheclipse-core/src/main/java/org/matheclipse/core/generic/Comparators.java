@@ -58,6 +58,25 @@ public final class Comparators {
     }
   }
 
+  public static final class SameTestComparator implements Comparator<IExpr>, Serializable {
+
+    private static final long serialVersionUID = -3985330284976712163L;
+
+    final BiPredicate<IExpr, IExpr> sameTest;
+
+    public SameTestComparator(BiPredicate<IExpr, IExpr> sameTest) {
+      this.sameTest = sameTest;
+    }
+
+    @Override
+    public final int compare(final IExpr o1, final IExpr o2) {
+      if (sameTest.test(o1,o2)) {
+        return 0;
+      }
+      return o1.compareTo(o2);
+    }
+  }
+
   /**
    * Compares an expression with another expression for order. Returns a negative integer, zero, or
    * a positive integer if this expression is canonical less than, equal to, or greater than the

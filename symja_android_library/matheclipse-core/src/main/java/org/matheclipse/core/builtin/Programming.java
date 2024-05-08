@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.IdentityHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
@@ -28,6 +29,7 @@ import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFastFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
@@ -35,6 +37,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -885,19 +888,21 @@ public final class Programming {
    * 0.739085
    * </pre>
    */
-  private static final class FixedPoint extends AbstractCoreFunctionEvaluator {
+  private static final class FixedPoint extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine, IAST originalAST) {
+      final BiPredicate<IExpr, IExpr> sameTest = Predicates.sameTest(option[0], engine);
       boolean numericMode = engine.isNumericMode();
       try {
         IExpr f = ast.arg1();
-        if (f.isAtom() && !f.isSymbol()) {
-          // Nonatomic expression expected at position `1` in `2`.
-          return Errors.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
-        }
+        // if (f.isAtom() && !f.isSymbol()) {
+        // // Nonatomic expression expected at position `1` in `2`.
+        // return Errors.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
+        // }
         int maxIterations = Integer.MAX_VALUE;
-        if (ast.isAST3()) {
+        if (argSize == 3) {
           IExpr arg3 = ast.arg3();
           if (arg3.isInfinity()) {
             maxIterations = Integer.MAX_VALUE;
@@ -925,7 +930,7 @@ public final class Programming {
             if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
               IterationLimitExceeded.throwIt(iterationCounter, ast);
             }
-          } while ((!current.isSame(last)) && (--maxIterations > 0));
+          } while ((!sameTest.test(current, last)) && (--maxIterations > 0));
           return current;
         }
       } finally {
@@ -938,10 +943,10 @@ public final class Programming {
       return ARGS_2_3;
     }
 
-    // @Override
-    // public void setUp(final ISymbol newSymbol) {
-    // newSymbol.setAttributes(ISymbol.HOLDALL);
-    // }
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.SameTest, S.Automatic);
+    }
 
   }
 
@@ -1015,20 +1020,22 @@ public final class Programming {
    * 0.7390851332151607
    * </pre>
    */
-  private static final class FixedPointList extends AbstractCoreFunctionEvaluator {
+  private static final class FixedPointList extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine, IAST originalAST) {
+      final BiPredicate<IExpr, IExpr> sameTest = Predicates.sameTest(option[0], engine);
       boolean numericMode = engine.isNumericMode();
       try {
         IExpr f = ast.arg1();
-        if (f.isNumber()) {
-          // Nonatomic expression expected at position `1` in `2`.
-          return Errors.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
-        }
+        // if (f.isNumber()) {
+        // // Nonatomic expression expected at position `1` in `2`.
+        // return Errors.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
+        // }
         IExpr current = ast.arg2();
         int iterations = Integer.MAX_VALUE;
-        if (ast.isAST3()) {
+        if (argSize == 3) {
           if (ast.arg3().isInfinity()) {
             iterations = Integer.MAX_VALUE;
           } else if (ast.arg3().isNegativeInfinity()) {
@@ -1059,7 +1066,7 @@ public final class Programming {
           if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
             IterationLimitExceeded.throwIt(iterationCounter, ast);
           }
-        } while ((!current.isSame(last)) && (--iterations > 0));
+        } while ((!sameTest.test(current, last)) && (--iterations > 0));
         return list;
       } finally {
         engine.setNumericMode(numericMode);
@@ -1069,6 +1076,11 @@ public final class Programming {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.SameTest, S.Automatic);
     }
   }
 

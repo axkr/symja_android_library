@@ -49,6 +49,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DispatchExpr;
 import org.matheclipse.core.generic.Comparators;
+import org.matheclipse.core.generic.Comparators.SameTestComparator;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
@@ -1591,13 +1592,14 @@ public final class ListFunctions {
    * {4}
    * </pre>
    */
-  private static final class Complement extends AbstractFunctionEvaluator {
-
-    public Complement() {}
+  private static final class Complement extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine, IAST originalAST) {
       if (ast.arg1().isASTOrAssociation() && ast.arg2().isASTOrAssociation()) {
+        final BiPredicate<IExpr, IExpr> test = Predicates.sameTest(option[0], engine);
+        SameTestComparator sameTest = new Comparators.SameTestComparator(test);
         IExpr head1 = ast.arg1().head();
         if (!ast.arg2().head().equals(head1)) {
           // Heads `1` and `2` at positions `3` and `4` are expected to be the same.
@@ -1609,9 +1611,9 @@ public final class ListFunctions {
         }
         final IAST arg1 = (IAST) ast.arg1();
         final IAST arg2 = (IAST) ast.arg2();
-        IAST result = complement(head1, arg1, arg2);
+        IAST result = complement(head1, arg1, arg2, sameTest);
         if (result.isPresent()) {
-          for (int i = 3; i < ast.size(); i++) {
+          for (int i = 3; i < argSize + 1; i++) {
             IExpr expr = ast.get(i);
             if (!expr.head().equals(head1)) {
               // Heads `1` and `2` at positions `3` and `4` are expected to be the same.
@@ -1619,7 +1621,7 @@ public final class ListFunctions {
                   F.List(expr.head(), head1, F.ZZ(i), F.C1), engine);
             }
             if (expr.isASTOrAssociation()) {
-              result = complement(head1, result, (IAST) expr);
+              result = complement(head1, result, (IAST) expr, sameTest);
             }
           }
           return result;
@@ -1633,11 +1635,14 @@ public final class ListFunctions {
       return ARGS_2_INFINITY;
     }
 
-    public static IAST complement(IExpr head, final IAST arg1, final IAST arg2) {
-      Set<IExpr> set2 = arg2.asSet();
+    public static IAST complement(IExpr head, final IAST arg1, IAST arg2,
+        SameTestComparator sameTest) {
+      Set<IExpr> set2 = arg2.asSet(sameTest);
       if (set2 != null) {
-        Set<IExpr> set3 = new HashSet<IExpr>();
-        arg1.forEach(x -> {
+        Set<IExpr> set3 = new TreeSet<IExpr>(sameTest);
+        IASTMutable arg1Copy = arg1.copy();
+        EvalAttributes.sort(arg1Copy);
+        arg1Copy.forEach(x -> {
           if (!set2.contains(x)) {
             set3.add(x);
           }
@@ -1648,6 +1653,11 @@ public final class ListFunctions {
         return result;
       }
       return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.SameTest, S.Automatic);
     }
   }
 
@@ -3613,18 +3623,22 @@ public final class ListFunctions {
    * (set theory)</a>
    * </ul>
    */
-  private static final class Intersection extends AbstractFunctionEvaluator {
+  private static final class Intersection extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() > 1) {
-        if (ast.isAST1()) {
+    public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine, IAST originalAST) {
+      if (argSize > 0) {
+        final BiPredicate<IExpr, IExpr> test = Predicates.sameTest(option[0], engine);
+        SameTestComparator sameTest = new Comparators.SameTestComparator(test);
+        if (argSize == 1) {
           if (ast.arg1().isASTOrAssociation()) {
             IAST arg1 = (IAST) ast.arg1();
-            Set<IExpr> set = arg1.asSet();
+            arg1 = EvalAttributes.copySort(arg1);
+            Set<IExpr> set = arg1.asSet(sameTest);
             if (set != null) {
               final IASTMutable result = F.ListAlloc(set);
-              EvalAttributes.sort(result, Comparators.CANONICAL_COMPARATOR);
+              // EvalAttributes.sort(result, Comparators.CANONICAL_COMPARATOR);
               return result;
             }
           }
@@ -3637,14 +3651,19 @@ public final class ListFunctions {
             return F.NIL;
           }
           IExpr head1 = result.head();
-          for (int i = 2; i < ast.size(); i++) {
+          for (int i = 2; i < argSize + 1; i++) {
             IAST expr = (IAST) ast.get(i);
             if (!expr.head().equals(head1)) {
               // Heads `1` and `2` at positions `3` and `4` are expected to be the same.
               return Errors.printMessage(S.Intersection, "heads2",
                   F.List(expr.head(), head1, F.ZZ(i), F.C1), engine);
             }
-            result = intersection(head1, result, expr);
+
+            if (option[0].equals(S.Automatic)) {
+              result = intersection(head1, result, expr);
+            } else {
+              result = intersection(head1, result, expr, sameTest);
+            }
           }
           if (result.size() > 2) {
             EvalAttributes.sort((IASTMutable) result, Comparators.CANONICAL_COMPARATOR);
@@ -3691,9 +3710,61 @@ public final class ListFunctions {
       return result;
     }
 
+    public static IAST intersection(IExpr head, IAST ast1, IAST ast2, SameTestComparator sameTest) {
+      if (ast1.isEmpty() || ast2.isEmpty()) {
+        if (head == S.List) {
+          return F.CEmptyList;
+        }
+        return F.headAST0(head);
+      }
+
+      // IASTAppendable unionList = F.ListAlloc(ast1.size() + ast2.size());
+      // unionList.appendArgs(ast1);
+      // unionList.appendArgs(ast2);
+      // unionList.sortInplace();
+      // int size = unionList.size();
+      //
+      // Set<IExpr> resultSet = new TreeSet<IExpr>(sameTest);
+      // for (int i = 1; i < size; i++) {
+      // resultSet.add(unionList.get(i));
+      // }
+      // IASTAppendable result = F.ast(head, resultSet.size());
+      // result.appendAll(resultSet);
+
+      Set<IExpr> set1 = new TreeSet<IExpr>(sameTest);
+      // Set<IExpr> set1 = new HashSet<IExpr>(ast1.size() + ast2.size() / 10);
+      Set<IExpr> set2 = new TreeSet<IExpr>(sameTest);
+      // Set<IExpr> set2 = new HashSet<IExpr>(ast1.size() + ast2.size() / 10);
+      Set<IExpr> resultSet = new TreeSet<IExpr>(sameTest);
+      int size = ast1.size();
+      IASTMutable ast1Copy = ast1.copy();
+      EvalAttributes.sort(ast1Copy, Comparators.REVERSE_CANONICAL_COMPARATOR);
+      for (int i = 1; i < size; i++) {
+        set1.add(ast1Copy.get(i));
+      }
+      size = ast2.size();
+      for (int i = 1; i < size; i++) {
+        set2.add(ast2.get(i));
+      }
+      for (IExpr expr : set1) {
+        if (set2.contains(expr)) {
+          resultSet.add(expr);
+        }
+      }
+      IASTAppendable result = F.ast(head, resultSet.size());
+      result.appendAll(resultSet);
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
+    }
+
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
+      setOptions(newSymbol, S.SameTest, S.Automatic);
     }
   }
 
@@ -7952,18 +8023,21 @@ public final class ListFunctions {
    * {1,2,3,4}
    * </pre>
    */
-  private static final class Union extends AbstractFunctionEvaluator {
+  private static final class Union extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() > 1) {
-        if (ast.isAST1()) {
+    public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine, IAST originalAST) {
+      if (argSize > 0) {
+        final BiPredicate<IExpr, IExpr> test = Predicates.sameTest(option[0], engine);
+        SameTestComparator sameTest = new Comparators.SameTestComparator(test);
+        if (argSize == 1) {
           if (ast.arg1().isASTOrAssociation()) {
             IAST arg1 = (IAST) ast.arg1();
-            Set<IExpr> set = arg1.asSet();
+            arg1 = EvalAttributes.copySort(arg1);
+            Set<IExpr> set = arg1.asSet(sameTest);
             if (set != null) {
               final IASTAppendable result = F.mapSet(set, x -> x);
-              EvalAttributes.sort(result, Comparators.CANONICAL_COMPARATOR);
               return result;
             }
           }
@@ -7976,17 +8050,18 @@ public final class ListFunctions {
           }
           IAST result = ((IAST) ast.arg1());
           IExpr head1 = result.head();
-          for (int i = 2; i < ast.size(); i++) {
+          for (int i = 2; i < argSize + 1; i++) {
             IAST expr = (IAST) ast.get(i);
             if (!expr.head().equals(head1)) {
               // Heads `1` and `2` at positions `3` and `4` are expected to be the same.
               return Errors.printMessage(S.Union, "heads2",
                   F.List(expr.head(), head1, F.ZZ(i), F.ZZ(1)), engine);
             }
-            result = union(head1, result, expr);
-          }
-          if (result.size() > 2) {
-            EvalAttributes.sort((IASTMutable) result, Comparators.CANONICAL_COMPARATOR);
+            if (option[0].equals(S.Automatic)) {
+              result = union(head1, result, expr);
+            } else {
+              result = union(head1, result, expr, sameTest);
+            }
           }
           return result;
         }
@@ -8017,9 +8092,40 @@ public final class ListFunctions {
       return result;
     }
 
+    /**
+     * Create the (ordered) union from both ASTs.
+     * 
+     * @param ast1 first AST set
+     * @param ast2 second AST set
+     *
+     * @return the union of the sets ast1 and ast2
+     */
+    public static IASTMutable union(IExpr newHead, IAST ast1, IAST ast2,
+        SameTestComparator sameTest) {
+      IASTAppendable unionList = F.ListAlloc(ast1.size() + ast2.size());
+      unionList.appendArgs(ast1);
+      unionList.appendArgs(ast2);
+      unionList.sortInplace();
+      int size = unionList.size();
+
+      Set<IExpr> resultSet = new TreeSet<IExpr>(sameTest);
+      for (int i = 1; i < size; i++) {
+        resultSet.add(unionList.get(i));
+      }
+      IASTAppendable result = F.ast(newHead, resultSet.size());
+      result.appendAll(resultSet);
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
+    }
+
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
+      setOptions(newSymbol, S.SameTest, S.Automatic);
     }
   }
 

@@ -21,6 +21,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.RandomAccess;
@@ -504,9 +505,9 @@ public abstract class HMArrayList extends AbstractAST
   }
 
   @Override
-  public Set<IExpr> asSet() {
+  public Set<IExpr> asSet(Comparator<? super IExpr> comparator) {
     int size = size();
-    Set<IExpr> set = new TreeSet<>();
+    Set<IExpr> set = new TreeSet<>(comparator);
     for (int i = 1; i < size; i++) {
       set.add(array[firstIndex + i]);
     }

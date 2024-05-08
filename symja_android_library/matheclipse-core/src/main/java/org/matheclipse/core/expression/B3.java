@@ -4,6 +4,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Comparator;
 import java.util.RandomAccess;
 import java.util.Set;
 import java.util.TreeSet;
@@ -449,8 +450,8 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
   }
 
   @Override
-  public Set<IExpr> asSet() {
-    Set<IExpr> set = new TreeSet<>();
+  public Set<IExpr> asSet(Comparator<? super IExpr> comparator) {
+    Set<IExpr> set = new TreeSet<>(comparator);
     set.add(arg1);
     set.add(arg2);
     set.add(arg3);

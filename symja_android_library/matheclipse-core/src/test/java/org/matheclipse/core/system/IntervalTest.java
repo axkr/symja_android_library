@@ -6,8 +6,6 @@ public class IntervalTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testIntersection() {
-    check("Intersection(Quantity(1.2,\"m\"))", //
-        "Intersection(1.2[m])");
     check("Intersection({a,a,b,c})", //
         "{a,b,c}");
     check("Intersection({a,a,b,c},{b,a})", //
@@ -16,6 +14,9 @@ public class IntervalTest extends ExprEvaluatorTestCase {
         "{}");
     check(" Intersection({}, {a, b, c}, {a,b}, {b,c})", //
         "{}");
+
+    check("Intersection(Quantity(1.2,\"m\"))", //
+        "Intersection(1.2[m])");
   }
 
   @Test

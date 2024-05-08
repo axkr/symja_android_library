@@ -4,6 +4,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Comparator;
 import java.util.RandomAccess;
 import java.util.Set;
 import java.util.TreeSet;
@@ -181,9 +182,9 @@ public class ASTRealVector extends AbstractAST
   }
 
   @Override
-  public Set<IExpr> asSet() {
+  public Set<IExpr> asSet(Comparator<? super IExpr> comparator) {
     int size = size();
-    Set<IExpr> set = new TreeSet<>();
+    Set<IExpr> set = new TreeSet<>(comparator);
     for (int i = 1; i < size; i++) {
       set.add(get(i));
     }

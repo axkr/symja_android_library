@@ -1,9 +1,11 @@
 package org.matheclipse.core.builtin;
 
+import java.util.function.BiPredicate;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPredicate;
@@ -56,8 +58,11 @@ public class ContainsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
+
+
       if (argSize >= 2 && validateArgs(ast.arg1(), ast.arg2(), engine)) {
-        IExpr sameTest = option[0].equals(S.Automatic) ? S.SameQ : option[0];
+        final BiPredicate<IExpr, IExpr> sameTest = Predicates.sameTest(option[0], engine);
+        // IExpr sameTest = option[0].equals(S.Automatic) ? S.SameQ : option[0];
         IAST list1 = (IAST) ast.arg1();
         IAST list2 = (IAST) ast.arg2();
         return containsFunction(list1, list2, sameTest, engine);
@@ -69,11 +74,12 @@ public class ContainsFunctions {
       return arg1.isListOrAssociation() && arg2.isListOrAssociation();
     }
 
-    public IExpr containsFunction(IAST list1, IAST list2, IExpr sameTest, EvalEngine engine) {
+    public IExpr containsFunction(IAST list1, IAST list2, BiPredicate<IExpr, IExpr> sameTest,
+        EvalEngine engine) {
       for (int i = 1; i < list1.size(); i++) {
         IExpr list1Arg = list1.get(i);
 
-        if (list2.exists(x -> engine.evalTrue(sameTest, list1Arg, x))) {
+        if (list2.exists(x -> sameTest.test(list1Arg, x))) {
           return S.True;
         }
       }
@@ -95,7 +101,8 @@ public class ContainsFunctions {
     static final ContainsExactly CONST = new ContainsExactly();
 
     @Override
-    public IExpr containsFunction(IAST list1, IAST list2, IExpr sameTest, EvalEngine engine) {
+    public IExpr containsFunction(IAST list1, IAST list2, BiPredicate<IExpr, IExpr> sameTest,
+        EvalEngine engine) {
       if (ContainsAll.CONST.containsFunction(list1, list2, sameTest, engine).isTrue()) {
         if (ContainsOnly.CONST.containsFunction(list1, list2, sameTest, engine).isTrue()) {
           return S.True;
@@ -109,14 +116,15 @@ public class ContainsFunctions {
     static final ContainsAll CONST = new ContainsAll();
 
     @Override
-    public IExpr containsFunction(IAST list1, IAST list2, IExpr sameTest, EvalEngine engine) {
+    public IExpr containsFunction(IAST list1, IAST list2, BiPredicate<IExpr, IExpr> sameTest,
+        EvalEngine engine) {
       boolean evaledTrue;
       for (int i = 1; i < list2.size(); i++) {
         IExpr list2Arg = list2.get(i);
         evaledTrue = false;
         for (int j = 1; j < list1.size(); j++) {
           IExpr list1Arg = list1.get(j);
-          if (engine.evalTrue(sameTest, list1Arg, list2Arg)) {
+          if (sameTest.test(list1Arg, list2Arg)) {
             evaledTrue = true;
             break;
           }
@@ -133,14 +141,15 @@ public class ContainsFunctions {
     static final ContainsOnly CONST = new ContainsOnly();
 
     @Override
-    public IExpr containsFunction(IAST list1, IAST list2, IExpr sameTest, EvalEngine engine) {
+    public IExpr containsFunction(IAST list1, IAST list2, BiPredicate<IExpr, IExpr> sameTest,
+        EvalEngine engine) {
       boolean evaledTrue;
       for (int i = 1; i < list1.size(); i++) {
         IExpr list1Arg = list1.get(i);
         evaledTrue = false;
         for (int j = 1; j < list2.size(); j++) {
           IExpr list2Arg = list2.get(j);
-          if (engine.evalTrue(sameTest, list1Arg, list2Arg)) {
+            if (sameTest.test(list1Arg, list2Arg)) {
             evaledTrue = true;
             break;
           }
@@ -157,10 +166,11 @@ public class ContainsFunctions {
     static final ContainsNone CONST = new ContainsNone();
 
     @Override
-    public IExpr containsFunction(IAST list1, IAST list2, IExpr sameTest, EvalEngine engine) {
+    public IExpr containsFunction(IAST list1, IAST list2, BiPredicate<IExpr, IExpr> sameTest,
+        EvalEngine engine) {
       for (int i = 1; i < list1.size(); i++) {
         IExpr list1Arg = list1.get(i);
-        if (list2.exists(x -> engine.evalTrue(sameTest, list1Arg, x))) {
+        if (list2.exists(x -> sameTest.test(list1Arg, x))) {
           return S.False;
         }
       }

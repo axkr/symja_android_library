@@ -272,6 +272,21 @@ public class Predicates {
   }
 
   /**
+   * Create a predicate, which represents the {@link S#SameTest} option.
+   * 
+   * @param head if the <code>head ==
+   * {@link S#Automatic}</code> use {@link IExpr#isSame(IExpr)}, otherwise evaluate the binary
+   *        function <code>head(x,y)</code> to <code>true</code> ({@link S#True})
+   * @param engine
+   * @return
+   */
+  public static BiPredicate<IExpr, IExpr> sameTest(final IExpr head, final EvalEngine engine) {
+    return head.equals(S.Automatic) ? //
+        (x, y) -> x.isSame(y) : //
+        (x, y) -> engine.evalTrue(head, x, y);
+  }
+
+  /**
    * Convert the pattern into a pattern-matching predicate used in {@link F#FreeQ(IExpr, IExpr)}.
    * FreeQ does test for subsequences (MemberQ does not test for subsequences).
    *

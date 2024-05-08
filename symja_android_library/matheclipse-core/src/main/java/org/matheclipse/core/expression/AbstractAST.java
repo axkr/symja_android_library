@@ -332,7 +332,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     @Override
-    public Set<IExpr> asSet() {
+    public Set<IExpr> asSet(Comparator<? super IExpr> comparator) {
       ArgumentTypeException.throwNIL();
       return null;
     }
@@ -1523,7 +1523,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   }
 
   @Override
-  public Set<IExpr> asSet() {
+  public Set<IExpr> asSet(Comparator<? super IExpr> comparator) {
     return null;
   }
 

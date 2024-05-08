@@ -2,6 +2,7 @@ package org.matheclipse.core.interfaces;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -18,6 +19,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.visit.IVisitor;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -284,12 +286,18 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
     return size() - 1;
   }
 
+  default Set<IExpr> asSet() {
+    return asSet(Comparators.CANONICAL_COMPARATOR);
+  }
+
   /**
    * Collect all arguments of this AST in a new set.
+   * 
+   * @param comparator TODO
    *
    * @return <code>null</code> if a set couldn't be created
    */
-  public Set<IExpr> asSet();
+  public Set<IExpr> asSet(Comparator<? super IExpr> comparator);
 
   /**
    * call <code>setEvalFlags(IAST.BUILT_IN_EVALED)</code>

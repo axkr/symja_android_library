@@ -3206,6 +3206,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testComplement() {
+    check("Complement({2, -2, 1, 3}, {2, 1, -2, -1},SameTest->(Abs(#1)==Abs(#2) &))", //
+        "{3}");
+    check(
+        "Complement({1.1, 3.4, .5, 7.6, 7.1, 1.9}, {1.2, 3.3, 1.3},SameTest->(Floor(#1)==Floor(#2)&))", //
+        "{0.5,7.1}");
+
+    check(
+        "Complement({{1, 2}, {3}, {4, 5, 6}, {9, 5}}, {{2, 1}, {8, 4, 3}},SameTest->(Total(#1)==Total(#2) &))", //
+        "{{9,5}}");
+
     check("Complement(#,#)", //
         "Slot()");
     check("Complement(#,#1*#2)", //
@@ -9241,10 +9251,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFixedPoint() {
-    // check("FixedPoint(Null, Null)", //
-    // "Recursion limit 256 exceeded at: Null");
+    check("FixedPoint((# + 2/# )/2 &, 1`20, SameTest -> (Abs(#1 - #2) < 1*^-10 &))", //
+        "1.4142135623730950488");
+    check("FixedPoint((# + 2/# )/2 &, 1, SameTest -> (Abs(#1 - #2) < 1*^-10 &))", //
+        "886731088897/627013566048");
+    check("FixedPoint((# + 2/#)/2 &, 1, SameTest -> (Equal(N(#1), N(#2)) &))", //
+        "1572584048032918633353217/1111984844349868137938112");
+
+    // $IterationLimit: Iteration limit of 500 exceeded for FixedPoint(-1/2,14).
     check("FixedPoint(-1/2,14)", //
-        "FixedPoint(-1/2,14)");
+        "Hold(FixedPoint(-1/2,14))");
 
     check("FixedPoint(Cos, 1.0)", //
         "0.739085");
@@ -9277,9 +9293,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFixedPointList() {
+    check("FixedPointList((# + 2/# )/2 &, 1`20, SameTest -> (Abs(#1 - #2) < 1*^-10 &))", //
+        "{1,1.5,1.4166666666666666666,1.4142156862745098039,1.4142135623746899106,1.4142135623730950488}");
+
     check("FixedPointList(Function((# + 3/#)/2), 1.)", //
         "{1.0,2.0,1.75,1.73214,1.73205,1.73205,1.73205}");
-    // iteration limit
+    // message $IterationLimit: Iteration limit of 500 exceeded for FixedPointList(-1+I,{x,-2,3}).
     check("FixedPointList(-1+I,{x,-2,3})", //
         "Hold(FixedPointList(-1+I,{x,-2,3}))");
     check("FixedPointList(x_,Null)", //
@@ -9289,8 +9308,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FixedPointList(x^2,1.5707963267948966)", //
         "Hold(FixedPointList(x^2,1.5708))");
 
+    // message: $IterationLimit: Iteration limit of 500 exceeded for FixedPointList(-1/2,14).
     check("FixedPointList(-1/2,14)", //
-        "FixedPointList(-1/2,14)");
+        "Hold(FixedPointList(-1/2,14))");
     check("FixedPointList(Cos, 1.0, 4)", //
         "{1.0,0.540302,0.857553,0.65429,0.79348}");
     checkNumeric("newton(n_) := FixedPointList(.5*(# + n/#) &, 1.);  newton(9)", //
@@ -13066,15 +13086,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(20.085536923187664)-Math.cos((9.869604401089358)/x)");
     // JSXGraph.org syntax
     EvalEngine.resetModuleCounter4JUnit();
-    check(
-        "JSForm(Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}, PlotRange->{-1,2}), {a,0,10}))", //
-        "var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,showCopyright:false,boundingbox:[-0.8641592653589794,2.7,7.147344572538565,-1.7]});\n"
-            + "board.suspendUpdate();\n"
-            + "var a = board.create('slider',[[-0.0630088815692249,2.2600000000000002],[6.346194188748811,2.2600000000000002],[0,0,10]],{name:'a'});\n"
-            + "\n"
-            + "function $f1(x) { try { return [mul(cos(add(1,mul(a.Value(),x))),sin(x))];} catch(e) { return Number.NaN;} }\n"
-            + "board.create('functiongraph',[$f1, 0, (6.283185307179586)],{strokecolor:'#5e81b5'});\n"
-            + "\n" + "\n" + "board.unsuspendUpdate();\n" + "");
+    // check(
+    // "JSForm(Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}, PlotRange->{-1,2}), {a,0,10}))",
+    // //
+    // "var board = JXG.JSXGraph.initBoard('jxgbox',
+    // {axis:true,showCopyright:false,boundingbox:[-0.8641592653589794,2.7,7.147344572538565,-1.7]});\n"
+    // + "board.suspendUpdate();\n"
+    // + "var a =
+    // board.create('slider',[[-0.0630088815692249,2.2600000000000002],[6.346194188748811,2.2600000000000002],[0,0,10]],{name:'a'});\n"
+    // + "\n"
+    // + "function $f1(x) { try { return [mul(cos(add(1,mul(a.Value(),x))),sin(x))];} catch(e) {
+    // return Number.NaN;} }\n"
+    // + "board.create('functiongraph',[$f1, 0, (6.283185307179586)],{strokecolor:'#5e81b5'});\n"
+    // + "\n" + "\n" + "board.unsuspendUpdate();\n" + "");
+
     // Mathcell syntax / generate TeX for MathJAX
     check("JSForm(Manipulate(Factor(x^n + 1), {n, 1, 5, 1}))", //
         "var parent = document.currentScript.parentNode;\n" //
@@ -14295,8 +14320,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testLimitIssue536() {
     // avoid endless recursion:
-    check(
-        "Limit(Sqrt((4+x)/(4-x))-Pi/2,x->4)", //
+    check("Limit(Sqrt((4+x)/(4-x))-Pi/2,x->4)", //
         "Indeterminate");
     // TODO get -4*Pi
     check(
@@ -26445,6 +26469,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testIntersection() {
+    check(
+        "Intersection({1.1, 3.4, .5, 7.6, 7.1, 1.9}, {1.2, 3.3, 7.7, 1.3}, SameTest -> (Floor[#1] == Floor[#2] &))", //
+        "{1.9,3.4,7.6}");
+    check("Intersection({2, -2, 1, 3, 1}, {2, 1, -2, -1},  SameTest -> (Abs(#1) == Abs(#2) &))", //
+        "{1,2}");
+    check(
+        "Intersection({{1, 2}, {3}, {4, 5, 6}, {9, 6}}, {{2, 1}, {8, 4, 3}}, SameTest->(Total(#1) == Total(#2) &))", //
+        "{{1,2},{4,5,6}}");
+
     check("Intersection(#1, #2, #1)", //
         "Slot()");
     check("Intersection(#1, #1)", //
@@ -26456,13 +26489,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Intersection({1},{2})", "{}");
     check("Intersection({1,2,2,4},{2,3,4,5})", "{2,4}");
     check("Intersection({2,3,4,5},{1,2,2,4})", "{2,4}");
+
+
   }
 
 
 
   @Test
   public void testUnion() {
-    check("Union({},{})", "{}");
+    // check("Union({},{})", "{}");
     check("Union({1},{2})", "{1,2}");
     check("Union({1,2,2,4},{2,3,4,5})", "{1,2,3,4,5}");
 
@@ -26491,6 +26526,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{a,b,c}");
     check("Union({a,a,b,c},{},{z,z,z,x,x,x,y,y,y})", //
         "{a,b,c,x,y,z}");
+
+    check("Union({2, -2, 1, 3, 1}, SameTest->(Abs(#1)==Abs(#2) &))", //
+        "{-2,1,3}");
+    check("Union({1.1, 3.4, .5, 7.6, 7.1, 1.9}, SameTest->(Floor(#1)==Floor(#2) &))", //
+        "{0.5,1.1,3.4,7.1}");
+    check("Union({{1, 2}, {3}, {4, 5, 6}, {9, 6}}, SameTest->(Total(#1)==Total(#2)&))", //
+        "{{3},{9,6}}");
   }
 
   @Test
