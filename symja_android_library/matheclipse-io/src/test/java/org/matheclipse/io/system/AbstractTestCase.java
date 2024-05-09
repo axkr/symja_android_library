@@ -1,5 +1,6 @@
 package org.matheclipse.io.system;
 
+import static org.junit.Assert.assertEquals;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -9,7 +10,6 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -21,10 +21,8 @@ import org.matheclipse.core.eval.TimeConstrainedEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
 import org.matheclipse.io.IOInit;
-import junit.framework.TestCase;
-
-import static org.junit.Assert.assertEquals;
 
 /** Tests system.reflection classes */
 @RunWith(JUnit4.class)
@@ -179,6 +177,7 @@ public abstract class AbstractTestCase {
         Config.MAX_BIT_LENGTH = 200000;
         Config.MAX_POLYNOMIAL_DEGREE = 100;
         Config.FILESYSTEM_ENABLED = false;
+        Config.PRIME_FACTORS = new BigIntegerPrimality();
         fScriptEngine = fScriptManager.getEngineByExtension("m");
         fScriptEngine.put("PRINT_STACKTRACE", Boolean.TRUE);
         fScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
