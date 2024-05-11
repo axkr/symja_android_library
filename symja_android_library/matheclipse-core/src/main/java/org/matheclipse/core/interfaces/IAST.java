@@ -1028,7 +1028,22 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    *        valid element positions
    * @return
    */
-  public IAST getItems(int[] items, int length);
+  default IAST getItems(int[] items, int length) {
+    return getItems(items, length, 0);
+  };
+
+  /**
+   * Returns <code>length</code> number of elements specified in the <code>items</code> position
+   * array in this {@code IAST}.
+   *
+   * @param items ascending ordered array of positions which should be selected from this {@code
+   *     IAST}.
+   * @param length the end position (exclusive) to which the <code>items</code> array is filled with
+   *        valid element positions
+   * @param offset TODO
+   * @return
+   */
+  public IAST getItems(int[] items, int length, int offset);
 
   /**
    * Casts an <code>IExpr</code> which is a list at position <code>index</code> to an <code>IAST

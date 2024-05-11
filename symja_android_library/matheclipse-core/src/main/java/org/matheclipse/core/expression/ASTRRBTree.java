@@ -356,11 +356,11 @@ public class ASTRRBTree extends AbstractAST
   }
 
   @Override
-  public IAST getItems(int[] items, int length) {
+  public IAST getItems(int[] items, int length, int offset) {
     MutRrbt<IExpr> mutableRrb = StaticImports.mutableRrb();
     mutableRrb.append(head());
     for (int i = 0; i < length; i++) {
-      mutableRrb = mutableRrb.append(get(items[i]));
+      mutableRrb = mutableRrb.append(get(items[i] + offset));
     }
     return new ASTRRBTree(mutableRrb);
   }

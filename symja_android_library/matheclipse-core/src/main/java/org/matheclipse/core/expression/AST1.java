@@ -334,11 +334,11 @@ public class AST1 extends AST0 {
   }
 
   @Override
-  public IAST getItems(int[] items, int length) {
+  public IAST getItems(int[] items, int length, int offset) {
     if (length == 0) {
       return new AST0(head());
     }
-    if (length == 1 && items[0] == 1) {
+    if (length == 1 && items[0] + offset == 1) {
       return this;
     }
     throw new IndexOutOfBoundsException("Index: 0, Size: " + size());

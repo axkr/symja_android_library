@@ -675,6 +675,18 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testEigenvectorsIssue979() {
+    // TODO Hipparchus checks submatrices for singularity
+    check("Eigenvectors({{1,0,0},\n" //
+        + "{-2,1,0},\n"//
+        + "{0,1,1}})", //
+        "Eigenvectors(\n"//
+            + "{{1,0,0},\n"//
+            + " {-2,1,0},\n"//
+            + " {0,1,1}})");
+  }
+
+  @Test
   public void testEigenvectorsIssue718() {
     check("Eigenvectors({{-1,-5},{0,4}})", //
         "{{-0.707107,0.707107},{1.0,0.0}}");
@@ -1427,45 +1439,107 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMinors() {
+    check("Minors({{a, b, c},{d, e, f}},0)", //
+        "{{1}}");
+    check("Minors({{a, b, c},{d, e, f}},1)", //
+        "{{a,b,c},\n" //
+            + " {d,e,f}}");
+    check("Minors({{a, b, c},{d, e, f}},2)", //
+        "{{-b*d+a*e,-c*d+a*f,-c*e+b*f}}");
+    check("Minors({{a, b, c},{d, e, f}},3)", //
+        "{}");
+    check("Minors({{a, b},{c,d},{e, f}},1)", //
+        "{{a,b},\n" //
+            + " {c,d},\n" //
+            + " {e,f}}");
+    check("Minors({{a, b},{c,d},{e, f}},2)", //
+        "{{-b*c+a*d},\n" //
+            + " {-b*e+a*f},\n" //
+            + " {-d*e+c*f}}");
+
+    check("(mat = Table(i^2 + i j + j^3, {i, 4}, {j, 4})) // MatrixForm", //
+        "{{3,11,31,69},\n" //
+            + " {7,16,37,76},\n" //
+            + " {13,23,45,85},\n" //
+            + " {21,32,55,96}}");
+    check("Minors(mat,3) // MatrixForm", //
+        "{{-24,-84,-96,-36},\n" //
+            + " {-72,-252,-288,-108},\n" //
+            + " {-72,-252,-288,-108},\n" //
+            + " {-24,-84,-96,-36}}");
+
+    check("Subsets[{a, b, c}, {2}]", //
+        "{{a,b},{a,c},{b,c}}");
+
     check("Minors({ {a} })", //
         "{{1}}");
-    check("Minors({ {a},{b},{c}  })", //
+    check("Minors({ {a},{b},{c} })", //
         "{{1}}");
-    check("Minors({ {  }  })", //
+    check("Minors({ { } })", //
         "{}");
-    check("Minors({ {  },{}  })", //
+    check("Minors({ { },{} })", //
         "{}");
 
 
     // https://en.wikipedia.org/wiki/Minor_(linear_algebra)
     check("Minors({{1,4,7},{3,0,5},{-1,9,11}})", //
-        "{{-12,-16,20},{13,18,-19},{27,38,-45}}");
+        "{{-12,-16,20},\n" //
+            + " {13,18,-19},\n" //
+            + " {27,38,-45}}");
 
     check("m0 = Array(Subscript(a, ##) &, {3, 3})", //
         "{{Subscript(a,1,1),Subscript(a,1,2),Subscript(a,1,3)},{Subscript(a,2,1),Subscript(a,\n"
             + "2,2),Subscript(a,2,3)},{Subscript(a,3,1),Subscript(a,3,2),Subscript(a,3,3)}}");
     check("Minors(m0)", //
-        "{{-Subscript(a,1,2)*Subscript(a,2,1)+Subscript(a,1,1)*Subscript(a,2,2),-Subscript(a,\n"
-            + "1,3)*Subscript(a,2,1)+Subscript(a,1,1)*Subscript(a,2,3),-Subscript(a,1,3)*Subscript(a,\n"
-            + "2,2)+Subscript(a,1,2)*Subscript(a,2,3)},{-Subscript(a,1,2)*Subscript(a,3,1)+Subscript(a,\n"
-            + "1,1)*Subscript(a,3,2),-Subscript(a,1,3)*Subscript(a,3,1)+Subscript(a,1,1)*Subscript(a,\n"
-            + "3,3),-Subscript(a,1,3)*Subscript(a,3,2)+Subscript(a,1,2)*Subscript(a,3,3)},{-Subscript(a,\n"
-            + "2,2)*Subscript(a,3,1)+Subscript(a,2,1)*Subscript(a,3,2),-Subscript(a,2,3)*Subscript(a,\n"
-            + "3,1)+Subscript(a,2,1)*Subscript(a,3,3),-Subscript(a,2,3)*Subscript(a,3,2)+Subscript(a,\n"
-            + "2,2)*Subscript(a,3,3)}}");
+        "{{-Subscript(a,1,2)*Subscript(a,2,1)+Subscript(a,1,1)*Subscript(a,2,2),-Subscript(a,\n" //
+            + "1,3)*Subscript(a,2,1)+Subscript(a,1,1)*Subscript(a,2,3),-Subscript(a,1,3)*Subscript(a,\n" //
+            + "2,2)+Subscript(a,1,2)*Subscript(a,2,3)},\n" //
+            + " {-Subscript(a,1,2)*Subscript(a,3,1)+Subscript(a,1,1)*Subscript(a,3,2),-Subscript(a,\n" //
+            + "1,3)*Subscript(a,3,1)+Subscript(a,1,1)*Subscript(a,3,3),-Subscript(a,1,3)*Subscript(a,\n" //
+            + "3,2)+Subscript(a,1,2)*Subscript(a,3,3)},\n" //
+            + " {-Subscript(a,2,2)*Subscript(a,3,1)+Subscript(a,2,1)*Subscript(a,3,2),-Subscript(a,\n" //
+            + "2,3)*Subscript(a,3,1)+Subscript(a,2,1)*Subscript(a,3,3),-Subscript(a,2,3)*Subscript(a,\n" //
+            + "3,2)+Subscript(a,2,2)*Subscript(a,3,3)}}");
 
     check("m1 = Table(i^2 + i j + j^3, {i, 4}, {j, 4})", //
         "{{3,11,31,69},{7,16,37,76},{13,23,45,85},{21,32,55,96}}");
     check("Minors(m1)", //
-        "{{-24,-84,-96,-36},{-72,-252,-288,-108},{-72,-252,-288,-108},{-24,-84,-96,-36}}");
+        "{{-24,-84,-96,-36},\n" //
+            + " {-72,-252,-288,-108},\n" //
+            + " {-72,-252,-288,-108},\n" //
+            + " {-24,-84,-96,-36}}");
 
     check("Minors(Partition(Range(9), 3))", //
-        "{{-3,-6,-3},{-6,-12,-6},{-3,-6,-3}}");
+        "{{-3,-6,-3},\n" //
+            + " {-6,-12,-6},\n" //
+            + " {-3,-6,-3}}"); //
 
     check("m2 = Partition(Range(16), 4)", //
         "{{1,2,3,4},{5,6,7,8},{9,10,11,12},{13,14,15,16}}");
     check("Minors(m2)", //
-        "{{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}}");
+        "{{0,0,0,0},\n" //
+            + " {0,0,0,0},\n" //
+            + " {0,0,0,0},\n" //
+            + " {0,0,0,0}}");
+
+
+    check("(mat = Partition(Range(12), 4)) // MatrixForm", //
+        "{{1,2,3,4},\n" //
+            + " {5,6,7,8},\n" //
+            + " {9,10,11,12}}");
+
+    check("Minors(mat, 2) // MatrixForm", //
+        "{{-4,-8,-12,-4,-8,-4},\n" //
+            + " {-8,-16,-24,-8,-16,-8},\n" //
+            + " {-4,-8,-12,-4,-8,-4}}");
+    check("Minors(mat, 2, Identity) // MatrixForm", //
+        "{{{{1,2},{5,6}},{{1,3},{5,7}},{{1,4},{5,8}},{{2,3},{6,7}},{{2,4},{6,8}},{{3,4},{\n" //
+            + "7,8}}},\n" //
+            + " {{{1,2},{9,10}},{{1,3},{9,11}},{{1,4},{9,12}},{{2,3},{10,11}},{{2,4},{10,12}},{{\n" //
+            + "3,4},{11,12}}},\n" //
+            + " {{{5,6},{9,10}},{{5,7},{9,11}},{{5,8},{9,12}},{{6,7},{10,11}},{{6,8},{10,12}},{{\n" //
+        + "7,8},{11,12}}}}");
+
   }
 
   @Test

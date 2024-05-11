@@ -388,9 +388,9 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   }
 
   @Override
-  public IAST getItems(int[] items, int length) {
+  public IAST getItems(int[] items, int length, int offset) {
     IAST result = normal(false);
-    return result.getItems(items, length);
+    return result.getItems(items, length, offset);
   }
 
   public int getDenominator() {

@@ -360,11 +360,11 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
   }
 
   @Override
-  public IAST getItems(int[] items, int length) {
+  public IAST getItems(int[] items, int length, int offset) {
     ASTAssociation assoc = new ASTAssociation();
     if (length > 0) {
       for (int i = 0; i < length; i++) {
-        assoc.appendRule(getRule(items[i]));
+        assoc.appendRule(getRule(items[i] + offset));
       }
     }
     return assoc;

@@ -323,7 +323,7 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
   }
 
   @Override
-  public IAST getItems(int[] items, int length) {
+  public IAST getItems(int[] items, int length, int offset) {
     if (length == 0) {
       return this;
     }

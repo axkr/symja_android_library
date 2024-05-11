@@ -318,10 +318,10 @@ public class ASTRealVector extends AbstractAST
   }
 
   @Override
-  public IAST getItems(int[] items, int length) {
+  public IAST getItems(int[] items, int length, int offset) {
     double[] v = new double[length];
     for (int i = 0; i < length; i++) {
-      v[i] = vector.getEntry(items[i] - 1);
+      v[i] = vector.getEntry(items[i] + offset - 1);
     }
     return new ASTRealVector(v, false);
   }

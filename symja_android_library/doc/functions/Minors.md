@@ -5,7 +5,20 @@ Minors(matrix)
 ```
 
 > returns the minors of the matrix.
-	
+
+
+```
+Minors(matrix, n) 
+```
+
+> returns the minors of the matrix with the determinant of the minors of size  `n` x `n`
+
+```
+Minors(matrix, n, function) 
+```
+
+> returns the minors of the matrix with the function applied on the minors of size  `n` x `n`
+
 See:
 * [Wikipedia - Minor (linear algebra)](https://en.wikipedia.org/wiki/Minor_(linear_algebra))
 	

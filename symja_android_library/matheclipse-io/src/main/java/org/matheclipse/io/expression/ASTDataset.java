@@ -276,13 +276,13 @@ public class ASTDataset extends AbstractAST
   }
 
   @Override
-  public IAST getItems(int[] items, int length) {
+  public IAST getItems(int[] items, int length, int offset) {
     if (length <= 0) {
       return newTablesawTable(Table.create(fTable.name()));
     }
     int[] rows = new int[length];
     for (int i = 0; i < length; i++) {
-      rows[i] = items[i] - 1;
+      rows[i] = items[i] + offset - 1;
     }
     return newTablesawTable(fTable.rows(rows));
   }

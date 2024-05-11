@@ -426,7 +426,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     @Override
-    public IAST getItems(int[] items, int length) {
+    public IAST getItems(int[] items, int length, int offset) {
       ArgumentTypeException.throwNIL();
       return F.NIL;
       // throw new UnsupportedOperationException();
@@ -2252,7 +2252,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (length == argSize()) {
       return this;
     }
-    return getItems(items, length);
+    return getItems(items, length, 0);
   }
 
   @Override
@@ -2271,7 +2271,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (length == argSize()) {
       return this;
     }
-    return getItems(items, length);
+    return getItems(items, length, 0);
   }
 
   /** {@inheritDoc} */

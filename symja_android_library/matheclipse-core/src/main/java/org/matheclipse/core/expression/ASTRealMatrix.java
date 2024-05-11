@@ -330,10 +330,10 @@ public class ASTRealMatrix extends AbstractAST
   }
 
   @Override
-  public IAST getItems(int[] items, int length) {
+  public IAST getItems(int[] items, int length, int offset) {
     double[][] m = new double[length][];
     for (int i = 0; i < length; i++) {
-      m[i] = matrix.getRow(items[i] - 1);
+      m[i] = matrix.getRow(items[i] + offset - 1);
     }
     return new ASTRealMatrix(m, false);
   }

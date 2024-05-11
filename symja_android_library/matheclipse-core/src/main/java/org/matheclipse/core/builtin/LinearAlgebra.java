@@ -28,6 +28,7 @@ import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -55,6 +56,7 @@ import org.hipparchus.linear.RiccatiEquationSolver;
 import org.hipparchus.linear.RiccatiEquationSolverImpl;
 import org.hipparchus.linear.SchurTransformer;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.combinatoric.KSubsetsIterable;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -139,7 +141,6 @@ public final class LinearAlgebra {
       S.MatrixLog.setEvaluator(new MatrixLog());
       S.MatrixPower.setEvaluator(new MatrixPower());
       S.MatrixRank.setEvaluator(new MatrixRank());
-      // S.Minor.setEvaluator(new Minor());
       S.Minors.setEvaluator(new Minors());
       S.Norm.setEvaluator(new Norm());
       S.Normalize.setEvaluator(new Normalize());
@@ -1335,16 +1336,16 @@ public final class LinearAlgebra {
           final IAST v2 = (IAST) arg2.normal(false);
 
           if ((v1.isAST3()) || (v2.isAST3())) {
-            return List(Plus(Times(v1.arg2(), v2.arg3()), Times(CN1, v1.arg3(), v2.arg2())),
-                Plus(Times(v1.arg3(), v2.arg1()), Times(CN1, v1.arg1(), v2.arg3())),
-                Plus(Times(v1.arg1(), v2.arg2()), Times(CN1, v1.arg2(), v2.arg1())));
+            return List(Plus(F.Times(v1.arg2(), v2.arg3()), Times(F.CN1, v1.arg3(), v2.arg2())),
+                Plus(F.Times(v1.arg3(), v2.arg1()), Times(F.CN1, v1.arg1(), v2.arg3())),
+                Plus(F.Times(v1.arg1(), v2.arg2()), Times(F.CN1, v1.arg2(), v2.arg1())));
           }
         }
       } else if (ast.isAST1()) {
         int dim1 = arg1.isVector();
         if (dim1 == 2) {
           final IAST v1 = (IAST) arg1.normal(false);
-          return List(Negate(v1.arg2()), v1.arg1());
+          return List(F.Negate(v1.arg2()), v1.arg1());
         }
         // The arguments are expected to be vectors of equal length, and the number of arguments is
         // expected to be 1 less than their length.
@@ -4115,48 +4116,6 @@ public final class LinearAlgebra {
     }
   }
 
-  // private static final class Minor extends AbstractFunctionEvaluator {
-  //
-  // @Override
-  // public IExpr evaluate(final IAST ast, EvalEngine engine) {
-  // IExpr arg1 = ast.arg1();
-  // IExpr arg2 = ast.arg2();
-  // int[] dims = arg1.isMatrix();
-  // if (dims != null && arg2.isList2()) {
-  // if (dims[0] != dims[1]) {
-  // // TODO error message
-  // return F.NIL;
-  // }
-  // IAST matrix = (IAST) arg1;
-  // int i = arg2.first().toIntDefault();
-  // int j = arg2.second().toIntDefault();
-  // if (i <= 0 || j <= 0) {
-  // // TODO error message
-  // return F.NIL;
-  // }
-  // if (i > dims[0] || j > dims[1]) {
-  // // TODO error message
-  // return F.NIL;
-  // }
-  // if (i + j < 0) {
-  // // TODO overflow error message
-  // return F.NIL;
-  // }
-  // // (-1)^(i + j)*Det(Drop(matrix, {i}, {j}))
-  // return F.Det(
-  // F.Drop(matrix, F.list(F.ZZ(i)), F.list(F.ZZ(j))) //
-  // );
-  // }
-  // return F.NIL;
-  // }
-  //
-  // @Override
-  // public int[] expectedArgSize(IAST ast) {
-  // return ARGS_2_2;
-  // }
-  // }
-
-
   public static class Minors extends AbstractFunctionEvaluator {
 
     @Override
@@ -4171,8 +4130,6 @@ public final class LinearAlgebra {
           if (dims[1] == 1) {
             return F.List(F.List(F.C1));
           }
-          // TODO error message
-          return F.NIL;
         } else {
           if (dims[0] == 1) {
             return F.List(F.List(F.C1));
@@ -4182,37 +4139,69 @@ public final class LinearAlgebra {
           // TODO error message
           return F.NIL;
         }
-        int n = dims[0] < dims[1] ? dims[0] : dims[1];
+        int minimumSize = dims[0] < dims[1] ? //
+            dims[0] : dims[0] == dims[1] ? //
+                dims[0] - 1 : //
+                dims[1];
+        int minorSize = minimumSize;
         if (ast.argSize() >= 2) {
           int intValue = ast.arg2().toIntDefault();
           if (intValue < 0) {
             return F.NIL;
           }
-        } else {
-
+          minorSize = intValue;
+          if (minorSize <= 0) {
+            return F.List(F.List(F.C1));
+          }
+          if (minorSize > dims[0] || minorSize > dims[1]) {
+            return F.CEmptyList;
+          }
+        }
+        IExpr head = S.Det;
+        if (ast.argSize() == 3) {
+          head = ast.arg3();
+        }
+        int numberOfResultRows = dims[0];
+        if (minorSize == numberOfResultRows && minorSize != dims[1]) {
+          numberOfResultRows = minorSize - 1;
         }
         if (arg1.isSparseArray()) {
           arg1 = arg1.normal(false);
         }
         IAST matrix = (IAST) arg1;
-        IASTAppendable result = F.ListAlloc(n + 1);
-        for (int i = 1; i <= n; i++) {
-          IASTAppendable row = F.ListAlloc(n + 1);
-          for (int j = 1; j <= n; j++) {
-            IExpr det = engine.evaluate(F.Det( //
-                F.Drop(matrix, F.list(F.ZZ(n - i + 1)), F.list(F.ZZ(n - j + 1)))));
-            row.append(det);
-          }
-          result.append(row);
+        KSubsetsIterable kColumnSubsets = new KSubsetsIterable(dims[1], minorSize);
+        Iterator<int[]> columnsIterator = kColumnSubsets.iterator();
+        IASTAppendable resultMatrix = F.ListAlloc(minorSize);
+        for (int i = 0; i < numberOfResultRows; i++) {
+          resultMatrix.append(F.ListAlloc(minorSize));
         }
-        return result;
+        while (columnsIterator.hasNext()) {
+          int[] columnIndex = columnsIterator.next();
+          KSubsetsIterable kRowSubsets = new KSubsetsIterable(dims[0], minorSize);
+          Iterator<int[]> rowsIterator = kRowSubsets.iterator();
+          int index = 1;
+          while (rowsIterator.hasNext()) {
+            IASTAppendable resultRow = (IASTAppendable) resultMatrix.get(index++);
+            int[] rowIndex = rowsIterator.next();
+            IASTAppendable minor = F.ListAlloc(minorSize + 1);
+            for (int i = 0; i < minorSize; i++) {
+              IAST originalRow = (IAST) matrix.get(rowIndex[i] + 1);
+              minor.append(originalRow.getItems(columnIndex, minorSize, 1));
+            }
+            IExpr det = engine.evaluate(F.unaryAST1(head, minor));
+            resultRow.append(det);
+          }
+        }
+        resultMatrix.setEvalFlags(IAST.IS_MATRIX);
+        return resultMatrix;
       }
+      // }
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
   }
 

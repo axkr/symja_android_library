@@ -392,18 +392,18 @@ public class AST2 extends AST1 {
   }
 
   @Override
-  public IAST getItems(int[] items, int length) {
+  public IAST getItems(int[] items, int length, int offset) {
     if (length == 0) {
       return new AST0(head());
     }
     if (length == 2) {
-      if (items[0] == 1 && items[1] == 2) {
+      if (items[0] + offset == 1 && items[1] + offset == 2) {
         return this;
       } else {
-        return new AST2(head(), get(items[0]), get(items[1]));
+        return new AST2(head(), get(items[0] + offset), get(items[1] + offset));
       }
     } else if (length == 1) {
-      return new AST1(head(), get(items[0]));
+      return new AST1(head(), get(items[0] + offset));
     }
 
     throw new IndexOutOfBoundsException("Index: 0, Size: " + size());
