@@ -4163,10 +4163,6 @@ public final class LinearAlgebra {
           arg1 = arg1.normal(false);
         }
         IAST matrix = (IAST) arg1;
-        KSubsetsIterable kColumnSubsets = new KSubsetsIterable(dims[1], minorSize);
-        Iterator<int[]> columnsIterator = kColumnSubsets.iterator();
-        IASTAppendable resultMatrix = F.ListAlloc(minorSize);
-
         long numberOfResultRows = LongMath.binomial(dims[0], minorSize);
         if (numberOfResultRows > Integer.MAX_VALUE || Config.MAX_AST_SIZE < numberOfResultRows) {
           throw new ASTElementLimitExceeded(numberOfResultRows);
@@ -4176,31 +4172,50 @@ public final class LinearAlgebra {
             || Config.MAX_AST_SIZE < numberOfResultColumns) {
           throw new ASTElementLimitExceeded(numberOfResultColumns);
         }
+        IASTAppendable resultMatrix = F.ListAlloc(minorSize);
         for (int i = 0; i < numberOfResultRows; i++) {
           resultMatrix.append(F.ListAlloc(minorSize));
         }
+
+        Iterator<int[]> columnsIterator = new KSubsetsIterable(dims[1], minorSize).iterator();
         for (int columnIndex = 0; columnIndex < numberOfResultColumns; columnIndex++) {
           int[] columnIndeces = columnsIterator.next();
-          KSubsetsIterable kRowSubsets = new KSubsetsIterable(dims[0], minorSize);
-          Iterator<int[]> rowsIterator = kRowSubsets.iterator();
-          int index = 1;
+
+          Iterator<int[]> rowsIterator = new KSubsetsIterable(dims[0], minorSize).iterator();
           for (int rowIndex = 0; rowIndex < numberOfResultRows; rowIndex++) {
-            IASTAppendable resultRow = (IASTAppendable) resultMatrix.get(index++);
             int[] rowIndeces = rowsIterator.next();
-            IASTAppendable minor = F.ListAlloc(minorSize + 1);
-            for (int minorIndex = 0; minorIndex < minorSize; minorIndex++) {
-              IAST originalRow = (IAST) matrix.get(rowIndeces[minorIndex] + 1);
-              minor.append(originalRow.getItems(columnIndeces, minorSize, 1));
-            }
-            IExpr det = engine.evaluate(F.unaryAST1(function, minor));
+
+            IASTAppendable resultRow = (IASTAppendable) resultMatrix.get(rowIndex + 1);
+            IExpr det = createDetMinor(matrix, minorSize, function, rowIndeces, columnIndeces);
+            det = engine.evaluate(det);
             resultRow.append(det);
           }
         }
         resultMatrix.setEvalFlags(IAST.IS_MATRIX);
         return resultMatrix;
       }
-      // }
       return F.NIL;
+    }
+
+    /**
+     * Create a particular minor matrix with size <code>minorSize</code> from the
+     * <code>(rowIndeces, columnIndeces)</code> combination.
+     * 
+     * @param matrix the given matrix
+     * @param minorSize minor matrix has size <code>(minorSize, minorSize)</code>
+     * @param function the {@link S#Det} or user-defined function
+     * @param rowIndeces the row indeces which should be selected
+     * @param columnIndeces the column indeces which should be selected
+     * @return
+     */
+    private static IExpr createDetMinor(IAST matrix, int minorSize, IExpr function,
+        int[] rowIndeces, int[] columnIndeces) {
+      IASTAppendable minor = F.ListAlloc(minorSize + 1);
+      for (int minorIndex = 0; minorIndex < minorSize; minorIndex++) {
+        IAST matrixRow = (IAST) matrix.get(rowIndeces[minorIndex] + 1);
+        minor.append(matrixRow.getItems(columnIndeces, minorSize, 1));
+      }
+      return F.unaryAST1(function, minor);
     }
 
     @Override
