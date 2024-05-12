@@ -2,6 +2,7 @@ package org.matheclipse.core.combinatoric;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import com.google.common.math.LongMath;
 
 
 /**
@@ -62,7 +63,7 @@ public final class KSubsetsIterable implements Iterable<int[]> {
       throw new IllegalArgumentException("KSubsets: k>n - " + k + " > " + n);
     }
 
-    bin = binomial(n, k);
+    bin = LongMath.binomial(n, k);
     first = true;
   }
 
@@ -71,15 +72,4 @@ public final class KSubsetsIterable implements Iterable<int[]> {
     return new KSubsetsIterator();
   }
 
-  public static long binomial(final long n, final long k) {
-    long bin = 1;
-    long kSub = k;
-    if (kSub > (n / 2)) {
-      kSub = n - kSub;
-    }
-    for (long i = 1; i <= kSub; i++) {
-      bin = (bin * (n - i + 1)) / i;
-    }
-    return bin;
-  }
 }
