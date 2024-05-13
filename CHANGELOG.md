@@ -26,6 +26,7 @@ Noteworthy changes are documented in this file.
 - added [SubsetCases](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/SubsetCases.md), [SubsetReplace](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/SubsetReplace.md)
 - improved [N](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/N.md) evaluation (#937, #942)
 - improved [TrigExpand](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/TrigExpand.md) (#930)
+- use rational gcd and lcm in [PolynomialGCD](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/PolynomialGCD.md), [PolynomialLCM](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/PolynomialLCM.md)
  
 ## [v3.0.0](https://github.com/axkr/symja_android_library/compare/v3.0.0) - 2023-11-11
 - Java 11 required
