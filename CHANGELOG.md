@@ -14,8 +14,8 @@ Noteworthy changes are documented in this file.
 - improved `FullSimplify, Simplify, Together` (#856)
 - improved `LeviCivitaTensor, Hypergeometric0F1Regularized, Hypergeometric1F1Regularized, Hypergeometric2F1Regularized`
 - Fix bug in `ComplexSym#powPositive)` for n==0
-- fix some bugs in `Limit`
-- fix bugs in `Minors` (#766)
+- fix some bugs in [Limit](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/Limit.md)
+- fix bugs in [Minors](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/Minors.md) (#766)
 - improve `Definition` add [FullDefinition](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/FullDefinition.md) [Save](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/Save.md) function  (#972)
 - add `SameTest` option for `FixedPoint*, Contains*` and set functions `Union, Intersectioin, Complement`
 - very basic Matlab read file support(#982)
