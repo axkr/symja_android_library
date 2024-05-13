@@ -9,11 +9,24 @@ Noteworthy changes are documented in this file.
 - function documentation: [symja_android_library/doc/function](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions)
 
 - migrate JUnit 3 to JUnit 4 (#861)
+- using apfloat 1.13.0, 1.14.0 [Changelog](http://www.apfloat.org/apfloat_java/history.html)
 - improved `Position` (#859)
 - improved `FullSimplify, Simplify, Together` (#856)
 - improved `LeviCivitaTensor, Hypergeometric0F1Regularized, Hypergeometric1F1Regularized, Hypergeometric2F1Regularized`
 - Fix bug in `ComplexSym#powPositive)` for n==0
-
+- fix some bugs in `Limit`
+- fix bugs in `Minors` (#766)
+- improve `Definition` add [FullDefinition](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/FullDefinition.md) [Save](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/Save.md) function  (#972)
+- add `SameTest` option for `FixedPoint*, Contains*` and set functions `Union, Intersectioin, Complement`
+- very basic Matlab read file support(#982)
+- [FindRoot](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/FindRoot.md): use Newton method as default instead of Brent (#974)
+- Search keywords in web interface without * at the end (#971)
+- [FindMinimum](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/FindMinimum.md), FindMaximum add method "SequentialQuadratic" 87857a8d29b721cb9879c7188f46f0071e9962b3
+- improve, fix bugs in [Merge](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/Merge.md)
+- added [SubsetCases](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/SubsetCases.md), [SubsetReplace](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/SubsetReplace.md)
+- improved [N](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/N.md) evaluation (#937, #942)
+- improved [TrigExpand](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/TrigExpand.md) (#930)
+ 
 ## [v3.0.0](https://github.com/axkr/symja_android_library/compare/v3.0.0) - 2023-11-11
 - Java 11 required
 - Maven modules matheclipse-parser, matheclipse-logging, matheclipse-core are LGPL licensed
