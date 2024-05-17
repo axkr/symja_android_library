@@ -209,7 +209,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-      public void testPower() {
+  public void testPower() {
     check("(2/3)^(-2)", //
         "9/4");
 
@@ -294,7 +294,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-public void testSystem000b() {
+  public void testSystem000b() {
     check("-0.1*(-10. + 1.*i)", //
         "-0.1*(-10.0+i)");
     check("Factor(1.0-0.1*i)", //
@@ -652,7 +652,7 @@ public void testSystem000b() {
   }
 
   @Test
-      public void testSystem007() {
+  public void testSystem007() {
     check("2/3*3/4", //
         "1/2");
     check("-12528^(1/2)", //
@@ -715,7 +715,7 @@ public void testSystem000b() {
   }
 
   @Test
-public void testSystem013() {
+  public void testSystem013() {
     check("$a=2;$a-=b", //
         "2-b");
   }
@@ -861,7 +861,7 @@ public void testSystem013() {
   }
 
   @Test
- public void testSystem038() {
+  public void testSystem038() {
     // bitbucket issue#15
     check("Together(-(2*x-6)^(-1)-2*(-x+2)*(2*x-6)^(-2))", //
         "-1/(-18+12*x-2*x^2)");
@@ -945,7 +945,7 @@ public void testSystem013() {
   }
 
   @Test
- public void testSystem044() {
+  public void testSystem044() {
 
     check("$test(F_(a_)):={a,b,F,m,x};$test(g(h))", "{h,b,g,m,x}");
     check("clear($test);$test(F_(a_.*x_^m_.)):={a,b,F,m,x};$test(g(h*y^2))", "{h,b,g,2,y}");
@@ -1029,7 +1029,7 @@ public void testSystem013() {
   }
 
   @Test
-public void testSystem057() {
+  public void testSystem057() {
     check("$var=10", "10");
     check("$var", "10");
     check("$var+$var", "20");
@@ -1069,7 +1069,7 @@ public void testSystem057() {
 
   // test attribute ISymbol.FLAT
   @Test
-    public void testSystem061() {
+  public void testSystem061() {
     check("SetAttributes($f, Flat)", "");
     check("$f(a,b,$f(x,y,$f(u,v)),z)", "$f(a,b,x,y,u,v,z)");
     check("$f(x_,y_):={x,y}", "");
@@ -1078,7 +1078,7 @@ public void testSystem057() {
 
   // test attribute ISymbol.ORDERLESS
   @Test
-    public void testSystem062() {
+  public void testSystem062() {
     check("$i(a_+(b_.*x_^n_)^p_) := {a,b,n,p,x}", "");
     check("SetAttributes($o, Orderless)", "");
     check("$o(z,d,a,b,g)", "$o(a,b,d,g,z)");
@@ -1097,7 +1097,7 @@ public void testSystem057() {
   }
 
   @Test
-    public void testSystem064() {
+  public void testSystem064() {
     check("SetAttributes($ooi, {Orderless, OneIdentity})", "");
     check("$ooi(z,d,a,b,g)", "$ooi(a,b,d,g,z)");
     check("$ooi(9,12,3,33)", "$ooi(3,9,12,33)");
@@ -1107,7 +1107,7 @@ public void testSystem057() {
 
   // test attribute ISymbol.ORDERLESS && ISymbol.FLAT
   @Test
-    public void testSystem065() {
+  public void testSystem065() {
     check("SetAttributes($of, {Orderless,Flat})", "");
     check("$of(z,d,a,b,g)", "$of(a,b,d,g,z)");
     check("$of(9,12,3,33)", "$of(3,9,12,33)");
@@ -1145,7 +1145,7 @@ public void testSystem057() {
   }
 
   @Test
-    public void testSystem069() {
+  public void testSystem069() {
     check("SetAttributes($l, Listable)", "");
     check("$l({a,b,c},d)", "{$l(a,d),$l(b,d),$l(c,d)}");
   }
@@ -1157,18 +1157,18 @@ public void testSystem057() {
   }
 
   @Test
-    public void testSystem071() {
+  public void testSystem071() {
     checkNumeric("N(EulerGamma)", "0.5772156649015329");
     check("D(Sinh(x),x)", "Cosh(x)");
   }
 
   @Test
-    public void testSystem072() {
+  public void testSystem072() {
     check("$isatom(_?AtomQ) := True;$isatom(10)", "True");
   }
 
   @Test
-    public void testSystem073() {
+  public void testSystem073() {
     check("D(Log(Sin(x)),x)", "Cot(x)");
   }
 
@@ -1220,7 +1220,7 @@ public void testSystem057() {
   }
 
   @Test
-      public void testSystem102() {
+  public void testSystem102() {
     check(
         "LinearSolve({ { 1/10, 6/5, 1/9 },{ 1, 59/45, 1/10 },{6/5, 1/10, 1/9 } },{ 1/10, 6/5, 1/9 })",
         "{99109/101673,10898/11297,-9034/869}");
@@ -1351,7 +1351,7 @@ public void testSystem057() {
   }
 
   @Test
- public void testSystem123() {
+  public void testSystem123() {
     check("I!=2/3!=42", "True");
   }
 
@@ -1366,7 +1366,7 @@ public void testSystem057() {
   }
 
   @Test
- public void testSystem126() {
+  public void testSystem126() {
     check("42.01===42.0", "False");
   }
 
@@ -1473,7 +1473,7 @@ public void testSystem057() {
   }
 
   @Test
-    public void testSystem137() {
+  public void testSystem137() {
     check("Fibonacci(10)", //
         "55");
     check("StirlingS2(6,3)", //
@@ -1673,7 +1673,7 @@ public void testSystem057() {
   }
 
   @Test
-    public void testSystem168() {
+  public void testSystem168() {
     check("Exponent(2,x)", "0");
     check("Coefficient(2,x,1)", "0");
     check("Exponent(Cos(a+b*x)^2+Cos(a+b*x)^ex,Cos(a+b*x))", "Max(2,ex)");
@@ -1899,7 +1899,7 @@ public void testSystem057() {
   }
 
   @Test
-    public void testSystem178() {
+  public void testSystem178() {
     check("!False", "True");
   }
 
@@ -1914,12 +1914,12 @@ public void testSystem057() {
   }
 
   @Test
-public void testSystem181() {
+  public void testSystem181() {
     check("Pi!=E", "True");
   }
 
   @Test
-public void testSystem182() {
+  public void testSystem182() {
     check("I==I", "True");
   }
 
@@ -1934,7 +1934,7 @@ public void testSystem182() {
   }
 
   @Test
- public void testSystem185() {
+  public void testSystem185() {
     check("Function(x,(x^3))[]", //
         "Function(x,x^3)[]");
   }
@@ -1981,7 +1981,7 @@ public void testSystem182() {
   }
 
   @Test
-    public void testSystem194() {
+  public void testSystem194() {
     check("(n!)^x", //
         "(n!)^x");
     check("(n++)^(n!)", //
@@ -2003,7 +2003,7 @@ public void testSystem182() {
   }
 
   @Test
-public void testSystem197() {
+  public void testSystem197() {
     check("FoldList(fl, 0, {1, 2, 3})", //
         "{0,fl(0,1),fl(fl(0,1),2),fl(fl(fl(0,1),2),3)}");
   }
@@ -2082,7 +2082,7 @@ public void testSystem197() {
   }
 
   @Test
-    public void testSystem209() {
+  public void testSystem209() {
     check("Table(i0*j,{i0,3},{j,2})", //
         "{{1,2},{2,4},{3,6}}");
   }
@@ -2130,7 +2130,7 @@ public void testSystem197() {
   }
 
   @Test
-      public void testSystem216() {
+  public void testSystem216() {
     check(
         "Extract({ArcCsc,ArcSec,ArcCot,ArcTan}, Position({ArcSin,ArcCos,ArcTan,ArcCot},ArcCos))[[1]]", //
         "ArcSec");
@@ -2160,13 +2160,13 @@ public void testSystem197() {
   }
 
   @Test
- public void testSystem218() {
+  public void testSystem218() {
     check("Position({u+v+w^5, 42, w^10}, w^_)", //
         "{{1,3},{3}}");
   }
 
   @Test
-    public void testSystem219() {
+  public void testSystem219() {
     check("Position({u+v+w^5, 42, w^10}, w^_, {1})", //
         "{{3}}");
   }
@@ -2231,7 +2231,7 @@ public void testSystem197() {
   }
 
   @Test
-public void testSystem231() {
+  public void testSystem231() {
     check("Drop({1,2,3,4,5,6,7,8,9,10},-3)", "{1,2,3,4,5,6,7}");
   }
 
@@ -2271,7 +2271,7 @@ public void testSystem231() {
   }
 
   @Test
- public void testSystem239() {
+  public void testSystem239() {
     check("SignCmp(0.0)", "0.0");
   }
 
@@ -2306,7 +2306,7 @@ public void testSystem231() {
   }
 
   @Test
-    public void testSystem246() {
+  public void testSystem246() {
     check("Ceiling(42+x+y)", "42+Ceiling(x+y)");
     check("Ceiling(42)", "42");
     check("Ceiling(Pi)", "4");
@@ -2317,7 +2317,7 @@ public void testSystem231() {
   }
 
   @Test
-      public void testSystem247() {
+  public void testSystem247() {
     check("Round(1.1)", //
         "1");
     check("Round(1.5)", //
@@ -2382,12 +2382,12 @@ public void testSystem231() {
   }
 
   @Test
-    public void testSystem251() {
+  public void testSystem251() {
     check("IntegerPart(3/4)", "0");
   }
 
   @Test
- public void testSystem252() {
+  public void testSystem252() {
     check("Ceiling(-3/4)", "0");
   }
 
@@ -2397,7 +2397,7 @@ public void testSystem231() {
   }
 
   @Test
- public void testSystem254() {
+  public void testSystem254() {
     check("IntegerPart(-3/4)", "0");
   }
 
@@ -2432,7 +2432,7 @@ public void testSystem231() {
   }
 
   @Test
-public void testSystem261() {
+  public void testSystem261() {
     check("Ceiling(-0.75)", "0");
   }
 
@@ -2478,7 +2478,7 @@ public void testSystem261() {
   }
 
   @Test
- public void testSystem267() {
+  public void testSystem267() {
     check("Negative(0.0)", "False");
   }
 
@@ -2620,7 +2620,7 @@ public void testSystem261() {
   }
 
   @Test
-public void testSystem295() {
+  public void testSystem295() {
     check("Head(3.12)", "Real");
   }
 
@@ -2630,7 +2630,7 @@ public void testSystem295() {
   }
 
   @Test
-public void testSystem297() {
+  public void testSystem297() {
     check("Head(g(x)[y])", "g(x)");
   }
 
@@ -2645,7 +2645,7 @@ public void testSystem297() {
   }
 
   @Test
-    public void testSystem300() {
+  public void testSystem300() {
     check("RotateLeft(r(1,2,3,4))", "r(2,3,4,1)");
   }
 
@@ -2665,7 +2665,7 @@ public void testSystem297() {
   }
 
   @Test
-public void testSystem304() {
+  public void testSystem304() {
     check("Reverse(r(1,2,3,4))", "r(4,3,2,1)");
   }
 
@@ -2705,7 +2705,7 @@ public void testSystem304() {
   }
 
   @Test
- public void testSystem310() {
+  public void testSystem310() {
     check("Apply(g, {{{u(w)}}}, {2,-2})", "{{g(g(w))}}");
   }
 
@@ -2779,9 +2779,9 @@ public void testSystem304() {
   public void testSystem319() {
     check("Arg(-2.1)", "Pi");
     // } @Test
-  // public void testSystem300() { check("Arg(-2.1*I)", "");
+    // public void testSystem300() { check("Arg(-2.1*I)", "");
     // } @Test
-// public void testSystem300() { check("Arg(2.1 I)",
+    // public void testSystem300() { check("Arg(2.1 I)",
     // "1.5707963267948966");
   }
 
@@ -2791,7 +2791,7 @@ public void testSystem304() {
   }
 
   @Test
-    public void testSystem321() {
+  public void testSystem321() {
     check("ArcCos(Infinity)", "I*Infinity");
   }
 
@@ -2974,7 +2974,7 @@ public void testSystem304() {
   }
 
   @Test
-    public void testSystem360() {
+  public void testSystem360() {
     check("ToUnicode(\"123abcABC\") // InputForm", //
         "\"\\u0031\\u0032\\u0033\\u0061\\u0062\\u0063\\u0041\\u0042\\u0043\"");
   }
@@ -3001,7 +3001,7 @@ public void testSystem304() {
   }
 
   @Test
-    public void testSystem365() {
+  public void testSystem365() {
     check("$predecr=10;--$predecr", "9");
   }
 
@@ -3067,7 +3067,7 @@ public void testSystem304() {
   }
 
   @Test
-public void testSystem377() {
+  public void testSystem377() {
     check("Min({7,3,8,11,22,-15,4,3},{{47,15}})", "-15");
   }
 
@@ -3269,7 +3269,7 @@ public void testSystem377() {
   }
 
   @Test
-    public void testSystem397() {
+  public void testSystem397() {
     check("Re(42+I)", //
         "42");
     check("Im(1/3+I)", //
@@ -3517,7 +3517,7 @@ public void testSystem377() {
   }
 
   @Test
- public void testSystem412() {
+  public void testSystem412() {
     check("DiagonalMatrix({1,2,3,4})",
         "{{1,0,0,0},\n" + " {0,2,0,0},\n" + " {0,0,3,0},\n" + " {0,0,0,4}}");
     check("DiagonalMatrix({1,2,3,4},2)",
@@ -4122,7 +4122,9 @@ public void testSystem377() {
             " {-2,1,0,-7,1,0}}");
     check("NullSpace({{0,0,0}," + "{0,0,0}," + "{0,0,0}," + "{0,0,0}})",
         "{{1,0,0},\n" + " {0,1,0},\n" + " {0,0,1}}");
-    check("NullSpace({{0,0}," + "{0,0}," + "{0,0}," + "{0,0}})", "{{1,0},\n" + " {0,1}}");
+    check("NullSpace({{0,0}," + "{0,0}," + "{0,0}," + "{0,0}})", //
+        "{{1,0},\n" //
+            + " {0,1}}");
   }
 
   @Test
@@ -4132,38 +4134,50 @@ public void testSystem377() {
 
   @Test
   public void testSystem1106() {
-    check("InterpolatingPolynomial({{1,7},{3,11},{5,27}},x)", "7+(2+3/2*(-3+x))*(-1+x)");
+    check("InterpolatingPolynomial({{1,7},{3,11},{5,27}},x)", //
+        "7+(2+3/2*(-3+x))*(-1+x)");
   }
 
   @Test
-    public void testSystem1107() {
-    check("f(4) /. f(x_) /; x > 0 -> x ^ 2", "16");
+  public void testSystem1107() {
+    check("f(4) /. f(x_) /; x > 0 -> x ^ 2", //
+        "16");
 
-    check("a + b + c /. a + b -> t", "c+t");
-    check("a + b + c /. a + c -> t", "b+t");
+    check("a + b + c /. a + b -> t", //
+        "c+t");
+    check("a + b + c /. a + c -> t", //
+        "b+t");
     // check("a + 2 + b + c + x * y /. n_Integer + s__Symbol + rest_ -> {n,
     // s, rest}", "");
-    check("f(a, b, c, d) /. f(first_, rest___) -> {first, {rest}}", "{a,{b,c,d}}");
+    check("f(a, b, c, d) /. f(first_, rest___) -> {first, {rest}}", //
+        "{a,{b,c,d}}");
 
-    check("f(4) /. f(x_?(# > 0&)) -> x ^ 2", "16");
-    check("f(4) /. f(x_) /; x > 0 -> x ^ 2", "16");
+    check("f(4) /. f(x_?(# > 0&)) -> x ^ 2", //
+        "16");
+    check("f(4) /. f(x_) /; x > 0 -> x ^ 2", //
+        "16");
 
-    check("f(a, b, c, d) /. f(start__, end__) -> {{start}, {end}}", "{{a},{b,c,d}}");
+    check("f(a, b, c, d) /. f(start__, end__) -> {{start}, {end}}", //
+        "{{a},{b,c,d}}");
   }
 
   @Test
   public void testIssue80() {
     // issue #80: LinearProgramming with expressions
-    check("NMinimize({-2*x+y-5, 2*y+x<=6&&2*y+3*x<=12&&y>=0},{x,y})", "{-13.0,{x->4.0,y->0.0}}");
-    check("NMaximize({-2*x+y-5, 2*y+x<=6&&2*y+3*x<=12&&y>=0},{x,y})", "{-2.0,{x->0.0,y->3.0}}");
+    check("NMinimize({-2*x+y-5, 2*y+x<=6&&2*y+3*x<=12&&y>=0},{x,y})", //
+        "{-13.0,{x->4.0,y->0.0}}");
+    check("NMaximize({-2*x+y-5, 2*y+x<=6&&2*y+3*x<=12&&y>=0},{x,y})", //
+        "{-2.0,{x->0.0,y->3.0}}");
   }
 
   @Test
   public void testIssue95() {
     // check("Solve((-5+x)^(3/4)==5*x,x)", "{{x->5+5*5^(1/3)}}");
     // check("Solve(Sqrt(x-5)+Sqrt(x+5)==5,x)", "{{x->29/4}}");
-    check("Solve((-5+x)^(3/4)==5,x)", "{{x->5+5*5^(1/3)}}");
-    check("Solve((-5+x)^(1/2)==5,x)", "{{x->30}}");
+    check("Solve((-5+x)^(3/4)==5,x)", //
+        "{{x->5+5*5^(1/3)}}");
+    check("Solve((-5+x)^(1/2)==5,x)", //
+        "{{x->30}}");
   }
 
   @Test

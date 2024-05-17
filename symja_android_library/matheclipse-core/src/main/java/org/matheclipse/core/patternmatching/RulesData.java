@@ -37,7 +37,7 @@ public final class RulesData implements Serializable {
   public static final int DEFAULT_VALUE_INDEX = Integer.MIN_VALUE;
 
   /**
-   * If this method returns <code>false</code>, the matching can try to match the <code>lha</code>
+   * If this method returns <code>false</code>, the matching can try to match the <code>lhs</code>
    * with a hash value in a step before the &quot;real structural pattern matching&quot;.
    *
    * @param lhs the left-hand-side of pattern matching definition
