@@ -917,29 +917,17 @@ public final class BooleanFunctions {
    * Boole(a==7)
    * </pre>
    */
-  private static class Boole extends AbstractCoreFunctionEvaluator {
+  private static class Boole extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = engine.evaluateNIL(ast.arg1());
-      if (arg1.isPresent()) {
-        return booleValue(arg1, F.Boole(arg1));
-      }
-      return booleValue(ast.arg1(), F.NIL);
-    }
-
-    private IExpr booleValue(final IExpr arg1, IExpr defaultValue) {
+      IExpr arg1 = ast.arg1();
       if (arg1.isTrue()) {
         return F.C1;
       } else if (arg1.isFalse()) {
         return F.C0;
-      } else if (arg1.isSymbol()) {
-        return defaultValue;
-      } else if (arg1.isList()) {
-        // Boole has attribute Listable
-        return ((IAST) arg1).mapThread(x -> F.Boole(x));
       }
-      return defaultValue;
+      return F.NIL;
     }
 
     @Override
