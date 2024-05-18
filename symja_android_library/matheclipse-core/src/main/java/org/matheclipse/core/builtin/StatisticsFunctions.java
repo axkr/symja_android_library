@@ -3724,14 +3724,14 @@ public class StatisticsFunctions {
             (org.hipparchus.stat.fitting.EmpiricalDistribution) dist
                 .getProperty(PROPERTY.EMPIRICAL_DISTRIBUTION);
         if (empiricalDistribution != null) {
-          if (!engine.isArbitraryMode()) {
-            try {
-              double x = k.evalf();
-              return F.num(empiricalDistribution.cumulativeProbability(x));
-            } catch (RuntimeException rex) {
-              //
-            }
+          // if (!engine.isArbitraryMode()) {
+          try {
+            double x = k.evalf();
+            return F.num(empiricalDistribution.cumulativeProbability(x));
+          } catch (RuntimeException rex) {
+            //
           }
+          // }
         }
       }
       return F.NIL;
@@ -3765,14 +3765,14 @@ public class StatisticsFunctions {
             (org.hipparchus.stat.fitting.EmpiricalDistribution) dist
                 .getProperty(PROPERTY.EMPIRICAL_DISTRIBUTION);
         if (empiricalDistribution != null) {
-          if (!engine.isArbitraryMode()) {
-            try {
-              double x = k.evalf();
-              return F.num(empiricalDistribution.density(x));
-            } catch (RuntimeException rex) {
-              //
-            }
+          // if (!engine.isArbitraryMode()) {
+          try {
+            double x = k.evalf();
+            return F.num(empiricalDistribution.density(x));
+          } catch (RuntimeException rex) {
+            //
           }
+          // }
         }
       }
       return F.NIL;

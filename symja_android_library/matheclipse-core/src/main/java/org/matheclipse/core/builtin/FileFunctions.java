@@ -1443,6 +1443,7 @@ public class FileFunctions {
       } else {
         try {
           temp = ast2Expr.convert(astNode);
+          engine.setDeterminePrecision(temp);
           result = engine.evaluate(temp);
         } catch (final RuntimeException rex) {
           result = S.Null;

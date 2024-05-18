@@ -14,6 +14,7 @@ import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -250,6 +251,30 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public IAST definition() {
     return ISymbol.symbolDefinition(this);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public long determinePrecision() {
+    IExpr assignedValue = assignedValue();
+    if (assignedValue != null) {
+      EvalEngine engine = EvalEngine.get();
+      final int recursionLimit = engine.getRecursionLimit();
+      try {
+        if (recursionLimit > 0) {
+          int counter = engine.incRecursionCounter();
+          if (counter > recursionLimit) {
+            RecursionLimitExceeded.throwIt(counter, this);
+          }
+        }
+        return assignedValue.determinePrecision();
+      } finally {
+        if (recursionLimit > 0) {
+          engine.decRecursionCounter();
+        }
+      }
+    }
+    return -1;
   }
 
   /** {@inheritDoc} */

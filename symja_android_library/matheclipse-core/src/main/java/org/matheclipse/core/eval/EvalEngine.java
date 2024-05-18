@@ -775,6 +775,18 @@ public class EvalEngine implements Serializable {
     return --fRecursionCounter;
   }
 
+  public void setDeterminePrecision(IExpr expr) {
+    try {
+      // determine the precision of the input before evaluation
+      long precision = expr.determinePrecision();
+      if (precision > getNumericPrecision()) {
+        setNumericPrecision(precision);
+      }
+    } catch (RecursionLimitExceeded rle) {
+      //
+    }
+  }
+
   private IAST endTrace() {
     setTraceMode(false);
     IAST ast = ((TraceStack) fTraceStack).getList();

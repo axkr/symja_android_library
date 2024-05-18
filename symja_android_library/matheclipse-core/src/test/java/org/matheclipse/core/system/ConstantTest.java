@@ -108,7 +108,7 @@ public class ConstantTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testRecursionLimit() {
-    // messges $RecursionLimit: Recursion depth of ... exceeded during evaluation of ...
+    // messages $RecursionLimit: Recursion depth of ... exceeded during evaluation of ...
     check("a = a + a", //
         "Hold(a=a+a)");
     check("a", //

@@ -1138,11 +1138,7 @@ public class ExprParser extends Scanner {
 
       throwSyntaxError("End-of-file not reached.");
     }
-    // determine the precision of the input before evaluation
-    long precision = temp.determinePrecision();
-    if (precision > fEngine.getNumericPrecision()) {
-      fEngine.setNumericPrecision(precision);
-    }
+    fEngine.setDeterminePrecision(temp);
     return temp;
   }
 
