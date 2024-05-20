@@ -7070,6 +7070,9 @@ public final class Arithmetic {
         }
       }
     }
+    if (base == S.E && exponent.isNumericFunction()) {
+      return F.unaryAST1(S.Exp, exponent);
+    }
     return F.NIL;
   }
 

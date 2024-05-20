@@ -455,6 +455,8 @@ public class BooleanTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testEqual() {
+    check("(E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi==0", //
+        "True");
     // TODO
     // check(
     // "0.1111111111111111 == 0.1111111111111126", //
@@ -589,8 +591,6 @@ public class BooleanTest extends ExprEvaluatorTestCase {
         "True");
     check("Pi==3", //
         "False");
-    check("(E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi==0", //
-        "True");
   }
 
   @Test

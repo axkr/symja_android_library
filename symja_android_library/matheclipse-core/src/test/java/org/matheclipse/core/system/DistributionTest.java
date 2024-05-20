@@ -557,7 +557,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     checkNumeric("N(PDF(HypergeometricDistribution(20,50,100), 10))", //
         "0.19687121770654945");
     checkNumeric("N(PDF(PoissonDistribution(10), 15))", //
-        "0.03471806963068414");
+        "0.03471806963068413");
   }
 
   @Test

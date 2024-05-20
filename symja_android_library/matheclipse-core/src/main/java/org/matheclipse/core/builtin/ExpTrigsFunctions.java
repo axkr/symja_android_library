@@ -2040,6 +2040,32 @@ public class ExpTrigsFunctions {
     }
 
     @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        try {
+          IInexactNumber z = (IInexactNumber) ast.arg1();
+          if (z.isNumber()) {
+            IExpr result = z.exp();
+            if (result instanceof INumber && ((INumber) result).isInfinite()) {
+              return F.Overflow();
+            }
+            return result;
+          }
+        } catch (ValidateException ve) {
+          return Errors.printMessage(ast.topHead(), ve, engine);
+        } catch (RuntimeException rex) {
+          return Errors.printMessage(ast.topHead(), rex, engine);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
     public void setUp(ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
     }

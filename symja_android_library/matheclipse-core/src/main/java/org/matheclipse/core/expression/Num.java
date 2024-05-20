@@ -661,7 +661,11 @@ public class Num implements INum {
 
   @Override
   public INum exp() {
-    return valueOf(Math.exp(value));
+    double exp = Math.exp(value);
+    // if (Double.isInfinite(exp)) {
+    // throw OverflowException();
+    // }
+    return valueOf(exp);
   }
 
   @Override

@@ -1776,8 +1776,18 @@ public final class BooleanFunctions {
         return a1.equals(a2) ? S.True : S.False;
       }
       IExpr.COMPARE_TERNARY b;
-      IExpr arg1 = F.expandAll(a1, true, true);
-      IExpr arg2 = F.expandAll(a2, true, true);
+      final IExpr arg1;
+      if (a1.isNumber()) {
+        arg1 = a1;
+      } else {
+        arg1 = engine.evaluate(F.expandAll(a1, true, true));
+      }
+      IExpr arg2;
+      if (a2.isNumber()) {
+        arg2 = a2;
+      } else {
+        arg2 = engine.evaluate(F.expandAll(a2, true, true));
+      }
 
       // b = CONST_EQUAL.compareTernary(arg1, arg2);
       b = arg1.equalTernary(arg2, engine);
@@ -4655,7 +4665,7 @@ public final class BooleanFunctions {
       if (ast.size() > 2) {
         IExpr.COMPARE_TERNARY b = IExpr.COMPARE_TERNARY.UNDECIDABLE;
         if (ast.isAST2()) {
-          return unequalNull(ast.arg1(), ast.arg2(), engine);
+          return unequalNIL(ast.arg1(), ast.arg2(), engine);
         }
 
         IASTMutable result = ast.copy();
@@ -4957,7 +4967,7 @@ public final class BooleanFunctions {
    * @param a2 second argument
    * @return {@link F#NIL} or the simplified expression, if equality couldn't be determined.
    */
-  public static IExpr unequalNull(IExpr a1, IExpr a2, EvalEngine engine) {
+  public static IExpr unequalNIL(IExpr a1, IExpr a2, EvalEngine engine) {
     if ((a1.isExactNumber() || a1.isString()) //
         && (a2.isExactNumber() || a2.isString())) {
       if (a1.isQuantity() && a2.isQuantity()) {
@@ -4966,8 +4976,18 @@ public final class BooleanFunctions {
       return a1.equals(a2) ? S.False : S.True;
     }
     IExpr.COMPARE_TERNARY b;
-    IExpr arg1 = F.expandAll(a1, true, true);
-    IExpr arg2 = F.expandAll(a2, true, true);
+    final IExpr arg1;
+    if (a1.isNumber()) {
+      arg1 = a1;
+    } else {
+      arg1 = engine.evaluate(F.expandAll(a1, true, true));
+    }
+    IExpr arg2;
+    if (a2.isNumber()) {
+      arg2 = a2;
+    } else {
+      arg2 = engine.evaluate(F.expandAll(a2, true, true));
+    }
     // b = CONST_EQUAL.compareTernary(arg1, arg2);
     b = arg1.equalTernary(arg2, engine);
     if (b == IExpr.COMPARE_TERNARY.FALSE) {

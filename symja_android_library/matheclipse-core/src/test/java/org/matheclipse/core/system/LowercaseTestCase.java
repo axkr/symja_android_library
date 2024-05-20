@@ -7043,7 +7043,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Exp(1)", //
         "E");
     checkNumeric("Exp(10.0)", //
-        "22026.465794806703");
+        "22026.465794806718");
     check("Exp(x) //FullForm", //
         "Power(E, x)");
 
@@ -7325,7 +7325,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "7-75996063*E^8*Pi^8+4691115*E^9*Pi^9-208494*E^10*Pi^10+6318*E^11*Pi^11-117*E^12*Pi^\n"
             + "12+E^13*Pi^13");
     check("N(t)", //
-        "0.174561");
+        "-0.0236816");
     // shorten the result because of failing bitbucket pipeline
     check("N(t, 30)", //
         "-0.0000416<<SHORT>>", 10);
@@ -8739,7 +8739,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     }
 
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})", //
-        "{x->3.4341896575482007}");
+        "{x->3.4341896575482003}");
     checkNumeric("$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n"
         + "$R=100;\n" + "$d=0.00;\n" + "$vn=0;\n" + "$EAj=0;\n" + "$zj=0;\n" + "$sz=1;\n"
         + "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA))+(Sum((($R*(1+$d)^(Floor(i0/$Z)))/(1+$AA))*(1+p-$g)^(($n-i0-$vn)/$Z),{i0,0,$n-1}))+(Sum(($EAj*(1+p-$g)^(($n-$zj)/$Z))/(1+$AA),{j,1,$sz})) - 30199, {p, 0, 0.1})", //
@@ -8750,26 +8750,27 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{p->0.049993464334866594}");
 
     checkNumeric("Exp(3.4341896)", //
-        "31.006274895944433");
+        "31.00627489594444");
     checkNumeric("Pi^3.0", //
         "31.006276680299816");
     // default to Newton method
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})", //
-        "{x->3.4341896575482007}");
+        "{x->3.4341896575482003}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Brent)", //
-        "{x->3.434189629596888}");
+        "{x->3.4341896295968874}");
 
     // only a start value is given:
-    checkNumeric("FindRoot(Exp(x)==Pi^3,{x,3}, Method->Newton)", "{x->3.4341896575482007}");
+    checkNumeric("FindRoot(Exp(x)==Pi^3,{x,3}, Method->Newton)", //
+        "{x->3.4341896575482003}");
 
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Bisection)", //
         "{x->3.434189647436142}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Brent)", //
-        "{x->3.434189629596888}");
+        "{x->3.4341896295968874}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Muller)", //
         "{x->3.4341896575483015}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Ridders)", //
-        "{x->3.4341896575482007}");
+        "{x->3.4341896575482003}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Secant)", //
         "{x->3.4341896575036097}");
     // FindRoot: maximal count (100) exceeded
@@ -8779,12 +8780,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Method->RegulaFalsi, MaxIterations->32000)", //
         "FindRoot(E^x==Pi^3,{x,1,10},Method->regulafalsi,MaxIterations->32000)");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Illinois)", //
-        "{x->3.4341896915055257}");
+        "{x->3.434189691505525}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Pegasus)", //
-        "{x->3.4341896575481976}");
+        "{x->3.434189657548197}");
 
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Brent)", //
-        "{x->3.434189629596888}");
+        "{x->3.4341896295968874}");
     check("FindRoot(Sin(x),{x,-0.5,0.5}, Secant)", //
         "{x->0.0}");
   }
@@ -10939,7 +10940,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     checkNumeric("Hypergeometric1F1(1,1/2,z)", //
         "1+E^z*Sqrt(Pi)*Sqrt(z)*Erf(Sqrt(z))");
     checkNumeric("Hypergeometric1F1(1,{2,3,4},5.0)", //
-        "{29.482631820515323,11.393052728206126,6.235831636923676}");
+        "{29.482631820515323,11.393052728206127,6.235831636923677}");
     check("Hypergeometric1F1(3,b,z)", //
         "1/2*(-1+b)*(4-b+z+(2-b)*(3-b)*E^z*z^(1-b)*(Gamma(-1+b)-Gamma(-1+b,z))+2*(3-b)*E^z*z^(\n"
             + "2-b)*(Gamma(-1+b)-Gamma(-1+b,z))+E^z*z^(3-b)*(Gamma(-1+b)-Gamma(-1+b,z)))");
@@ -12650,9 +12651,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("JavaForm(E^3-Cos(Pi^2/x), Prefix->True)", //
         "F.Subtract(F.Exp(F.C3),F.Cos(F.Times(F.Sqr(F.Pi),F.Power(F.x,F.CN1))))");
     check("JavaForm(E^3-Cos(Pi^2/x), Float->True)", //
-        "(20.085536923187664)-Math.cos((9.869604401089358)/x)");
+        "(20.085536923187668)-Math.cos((9.869604401089358)/x)");
     check("JavaForm(E^3-Cos(Pi^2/x), Float)", //
-        "(20.085536923187664)-Math.cos((9.869604401089358)/x)");
+        "(20.085536923187668)-Math.cos((9.869604401089358)/x)");
 
     check("JavaForm(Hold(D(sin(x)*cos(x),x)), prefix->True)", //
         "F.D(F.Times(F.Sin(F.x),F.Cos(F.x)),F.x)");
@@ -12699,7 +12700,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + " return x;})()\n" + "");
 
     check("JSForm(E^3-Cos(Pi^2/x))", //
-        "(20.085536923187664)-Math.cos((9.869604401089358)/x)");
+        "(20.085536923187668)-Math.cos((9.869604401089358)/x)");
 
     check("Piecewise({{x, 0 < x < 1}, {x^3, 1 < x < 2}}) // JSForm", //
         "\n" //
@@ -12727,7 +12728,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("JSForm(a+b)", //
         "a+b");
     check("JSForm(E^3-Cos(Pi^2/x) )", //
-        "(20.085536923187664)-Math.cos((9.869604401089358)/x)");
+        "(20.085536923187668)-Math.cos((9.869604401089358)/x)");
     // JSXGraph.org syntax
     EvalEngine.resetModuleCounter4JUnit();
     // check(
@@ -14163,6 +14164,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLog() {
+    checkNumeric("Log(Exp(1.4))", //
+        "1.4");
+
     checkNumeric("Log(-1.4)", //
         "0.3364722366212129+I*3.141592653589793");
 
@@ -14250,7 +14254,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Log(1.4)", //
         "0.336472");
     checkNumeric("Log(Exp(1.4))", //
-        "1.3999999999999997");
+        "1.4");
 
     check("Log(-1)", //
         "I*Pi");
@@ -16657,7 +16661,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     checkNumeric("NIntegrate(Exp(-x),{x,0,Infinity})", //
         "1.0");
     checkNumeric("NIntegrate(Exp(-x^2),{x,0,Infinity})", //
-        "0.886226925452758");
+        "0.8862269254527579");
     checkNumeric("NIntegrate(Exp(-x^2),{x,-Infinity,Infinity})", //
         "1.772453850905516");
 
@@ -26022,6 +26026,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testUnequal() {
+    check("(E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi!=0", //
+        "False");
+
     check("\"11\"!=11", //
         "True");
     check("a!=a", //
@@ -26057,8 +26064,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
     check("{\"a\",b}!={\"a\",c}", //
         "{a,b}!={a,c}");
-    check("(E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi!=0", //
-        "False");
     check("a!=a!=a!=a", //
         "False");
   }
@@ -26712,10 +26717,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     checkNumeric("WhittakerW(2, 0.5, 0.0)", //
         "WhittakerW(2.0,0.5,0.0)");
     checkNumeric("Table( WhittakerW(6, 4, x), {x,-2.0,2,0.25})", //
-        "{2333.0618193174946+I*38.12532949300777,1090.9576562383036+I*73.57215676581899,464.5499885712876+I*152.94532831470107," //
-            + "174.10978469218307+I*351.7626599831295,54.254490548428286+I*935.8127384437696,12.63276840854038+I*3129.88616177697," //
-            + "1.7295419807639405+I*15861.825767596809,0.06481415341111611+I*220852.59445363315,WhittakerW(6.0,4.0,0.0),339121.7767806576," //
-            + "37468.50169122885,11421.860441795448,5313.868067440274,3138.141359549763,2164.6812989167843,1662.3688694569853,1374.640737551975}");
+        "{2333.0618193174946+I*38.12532949300777,1090.9576562383038+I*73.572156765819,464.5499885712877+I*152.9453283147011,174.10978469218307+I*351.7626599831295,54.254490548428286+I*935.8127384437696,12.63276840854038+I*3129.88616177697,1.7295419807639405+I*15861.825767596809,0.06481415341111611+I*220852.59445363315,WhittakerW(6.0,4.0,0.0),339121.7767806576,37468.50169122885,11421.860441795448,5313.868067440274,3138.141359549763,2164.6812989167843,1662.3688694569848,1374.640737551975}");
   }
 
   @Test

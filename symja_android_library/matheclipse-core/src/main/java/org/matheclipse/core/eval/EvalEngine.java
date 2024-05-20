@@ -959,6 +959,9 @@ public class EvalEngine implements Serializable {
           && rlist[0].isNIL() //
           && ast.isNumericArgument(true)) {
         // one of the arguments is a numeric value
+        if (ast.isPower() && ast.base() == S.E) {
+          return F.unaryAST1(S.Exp, ast.exponent());
+        }
         return evalArgs(ast, attributes, isNumericFunction);
       }
       return rlist[0];
