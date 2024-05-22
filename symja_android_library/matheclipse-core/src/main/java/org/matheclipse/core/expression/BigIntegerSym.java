@@ -185,8 +185,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
         return fBigIntValue.compareTo(((BigIntegerSym) expr).fBigIntValue);
       }
       if (expr instanceof IFraction) {
-        return -((IFraction) expr)
-            .compareTo(AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE));
+        return AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE).compareTo(expr);
       }
     }
     if (expr.isReal()) {
@@ -476,8 +475,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
       return fBigIntValue.compareTo(((BigIntegerSym) obj).fBigIntValue) > 0;
     }
     if (obj instanceof IFraction) {
-      return -((IFraction) obj)
-          .compareTo(AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE)) > 0;
+      return AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE).compareTo(obj) > 0;
     }
     return fBigIntValue.doubleValue() > obj.doubleValue();
   }
@@ -496,8 +494,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
       return fBigIntValue.compareTo(((BigIntegerSym) obj).fBigIntValue) < 0;
     }
     if (obj instanceof IFraction) {
-      return -((IFraction) obj)
-          .compareTo(AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE)) < 0;
+      return AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE).compareTo(obj) < 0;
     }
     return fBigIntValue.doubleValue() < obj.doubleValue();
   }

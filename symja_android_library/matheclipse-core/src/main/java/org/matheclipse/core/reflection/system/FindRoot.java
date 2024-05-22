@@ -276,7 +276,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
           solver = new IllinoisSolver(accuracy);
         } else if (method.equalsIgnoreCase("Pegasus")) {
           solver = new PegasusSolver(accuracy);
-        } else if (maxMaybeNull == null || method.equalsIgnoreCase("Newton")) {
+        } else {
           // try {
           NewtonRaphsonSolver nrs = new NewtonRaphsonSolver(accuracy);
           if (maxMaybeNull == null) {

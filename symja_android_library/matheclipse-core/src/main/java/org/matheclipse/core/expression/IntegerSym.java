@@ -441,7 +441,7 @@ public class IntegerSym extends AbstractIntegerSym {
       return toBigNumerator().compareTo(((BigIntegerSym) obj).toBigNumerator()) > 0;
     }
     if (obj instanceof AbstractFractionSym) {
-      return -((AbstractFractionSym) obj).compareTo(AbstractFractionSym.valueOf(fIntValue)) > 0;
+      return AbstractFractionSym.valueOf(fIntValue).compareTo(obj) > 0;
     }
     return doubleValue() > obj.doubleValue();
   }
@@ -463,7 +463,7 @@ public class IntegerSym extends AbstractIntegerSym {
       return toBigNumerator().compareTo(((BigIntegerSym) obj).toBigNumerator()) < 0;
     }
     if (obj instanceof AbstractFractionSym) {
-      return -((AbstractFractionSym) obj).compareTo(AbstractFractionSym.valueOf(fIntValue)) < 0;
+      return AbstractFractionSym.valueOf(fIntValue).compareTo(obj) < 0;
     }
     return doubleValue() < obj.doubleValue();
   }

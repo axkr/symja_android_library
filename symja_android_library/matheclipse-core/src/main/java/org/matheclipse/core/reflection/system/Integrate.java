@@ -335,9 +335,9 @@ public class Integrate extends AbstractFunctionEvaluator {
       boolean showSteps = false;
       if (showSteps) {
         LOGGER.info(arg1);
-        if (DEBUG_EXPR.contains(arg1)) {
-          // System.exit(-1);
-        }
+        // if (DEBUG_EXPR.contains(arg1)) {
+        // System.exit(-1);
+        // }
         DEBUG_EXPR.add(arg1);
       }
       if (arg1.isAST()) {

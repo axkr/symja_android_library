@@ -168,8 +168,7 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
    */
   @Override
   public IAST clone() {
-    AST0 result = new AST0(arg0);
-    return result;
+    return new AST0(arg0);
   }
 
   /** {@inheritDoc} */
