@@ -13,11 +13,11 @@ public class ReduceTest extends ExprEvaluatorTestCase {
   @Test
   public void testReduce002() {
     check("Reduce(x > 1 && x < 5 || x >= 5 && x < 8)", //
-        "x>1&&x<8");
+        "1<x&&x<8");
     check("Reduce(x > 1 && x < 5 || x >= 9/2 && x < 8)", //
-        "x>1&&x<8");
+        "1<x&&x<8");
     check("Reduce(x > 1 && x < 4 || x >= 9/2 && x < 8)", //
-        "(x>1&&x<4)||(x>=9/2&&x<8)");
+        "(1<x&&x<4)||(9/2<=x&&x<8)");
   }
 
   @Test
@@ -62,14 +62,14 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "x<7");
 
     check("Reduce(x>1 &&x < 2 || x < 7 && x>1/2)", //
-        "x>1/2&&x<7");
+        "1/2<x&&x<7");
     check("Reduce(x<1 &&x < 2 )", //
         "x<1");
 
     check("Reduce(x > 1 && x < 4 || x >= 4)", //
         "x>1");
     check("Reduce(x < 2 || x < 7 && x>3)", //
-        "x<2||(x<7&&x>3)");
+        "x<2||(3<x&&x<7)");
     check("Reduce(x < 2 || x < 7 && x>1/2)", //
         "x<7");
   }
@@ -84,8 +84,8 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "x==1");
     check("Reduce(x^6-1==0&&x>0,x)", //
         "x==1");
-    check("Reduce(x^6-1==0,x)", //
-        "x==-1||x==1||x==(-1)^(1/3)||x==-(-1)^(1/3)||x==(-1)^(2/3)||x==-(-1)^(2/3)");
+    check("Reduce(x^6-1==0,x,Reals)", //
+        "x==-1||x==1");
     check("Reduce(x==1&&x>0,x)", //
         "x==1");
 
@@ -108,12 +108,43 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "x==(-b-Sqrt(b^2-4*a*c))/(2*a)||x==(-b+Sqrt(b^2-4*a*c))/(2*a)");
     // TODO add a != 0 condition
     check("Reduce(a*x^2 + b*x + c == 0&&x>0, x)", //
-        "(x==(-b-Sqrt(b^2-4*a*c))/(2*a)||x==(-b+Sqrt(b^2-4*a*c))/(2*a))&&x>0");
+        "x>0||x>0");
+  }
+
+  @Test
+  public void testReduceMultivariate() {
+    // TODO Reduce: Reduce is only implemented to reduce one variable.
+    check("Reduce(x^2 - y^3 == 1, {x, y})", //
+        "Reduce(x^2-y^3==1,{x,y})");
+  }
+
+  @Test
+  public void testReduceComplexes() {
+    check("Reduce(x^3==EulerGamma,x)", //
+        "x==-(-EulerGamma)^(1/3)||x==EulerGamma^(1/3)||x==(-1)^(2/3)*EulerGamma^(1/3)");
+    check("Reduce(x^6-1==0,x)", //
+        "x==-1||x==1||x==(-1)^(1/3)||x==-(-1)^(1/3)||x==(-1)^(2/3)||x==-(-1)^(2/3)");
   }
 
   @Test
   public void testReduceConstant() {
-    check("Reduce(x^3==EulerGamma,x)", //
-        "x==-(-EulerGamma)^(1/3)||x==EulerGamma^(1/3)||x==(-1)^(2/3)*EulerGamma^(1/3)");
+    check("Reduce(x^3==EulerGamma,x,Reals)", //
+        "x==EulerGamma^(1/3)");
+  }
+
+  @Test
+  public void testReduceAndOr() {
+    check("{a = x > 1 && x < 5, b = x > 5 && x < 8}", //
+        "{x>1&&x<5,x>5&&x<8}");
+    check("Reduce(a&&b)", //
+        "False");
+
+    check("{a = x > 1 && x < 5, b = x >= 5 && x < 8}", //
+        "{x>1&&x<5,x>=5&&x<8}");
+    check("Reduce(a||b)", //
+        "1<x&&x<8");
+
+
+
   }
 }
