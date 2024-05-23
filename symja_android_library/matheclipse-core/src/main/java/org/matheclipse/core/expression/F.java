@@ -5318,6 +5318,10 @@ public class F extends S {
     return new B2.Integrate(f, x);
   }
 
+  public static IAST Integrate(final IExpr f, final IExpr x, final IExpr assumptions) {
+    return new AST3(Integrate, f, x, assumptions);
+  }
+
   public static IAST Interpolation(final IExpr list) {
     return new AST1(Interpolation, list);
   }

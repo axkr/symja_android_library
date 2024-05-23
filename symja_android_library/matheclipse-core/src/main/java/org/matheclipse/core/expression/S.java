@@ -3993,6 +3993,9 @@ public class S {
    */
   public final static IBuiltInSymbol Fourier = S.initFinalSymbol("Fourier", ID.Fourier);
 
+  public final static IBuiltInSymbol FourierCosTransform =
+      S.initFinalSymbol("FourierCosTransform", ID.FourierCosTransform);
+
   public final static IBuiltInSymbol FourierDCT = S.initFinalSymbol("FourierDCT", ID.FourierDCT);
 
   /**
@@ -4028,6 +4031,9 @@ public class S {
    */
   public final static IBuiltInSymbol FourierMatrix =
       S.initFinalSymbol("FourierMatrix", ID.FourierMatrix);
+
+  public final static IBuiltInSymbol FourierSinTransform =
+      S.initFinalSymbol("FourierSinTransform", ID.FourierSinTransform);
 
   /**
    * FractionalPart(number) - get the fractional part of a `number`.
