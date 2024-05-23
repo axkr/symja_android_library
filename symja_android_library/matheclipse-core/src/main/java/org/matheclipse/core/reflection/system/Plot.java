@@ -177,17 +177,17 @@ public class Plot extends ListPlot {
       }
       return F.NIL;
     }
-    if (argSize > 0 && argSize < ast.argSize()) {
-      ast = ast.copyUntil(argSize + 1);
-    }
-    final OptionArgs optionArgs = new OptionArgs(ast.topHead(), ast, 3, engine, true);
 
+    final OptionArgs optionArgs = new OptionArgs(ast.topHead(), ast, 3, engine, true);
     if (optionArgs.isTrue(S.JSForm)) {
       IExpr temp = S.Manipulate.of(engine, ast);
       if (temp.headID() == ID.JSFormData) {
         return temp;
       }
       return F.NIL;
+    }
+    if (argSize > 0 && argSize < ast.argSize()) {
+      ast = ast.copyUntil(argSize + 1);
     }
     IExpr function = ast.arg1();
     if (ast.arg2().isList3()) {
