@@ -148,6 +148,9 @@ public class Config {
   /** Maximum degree of a polynomial generating function */
   public static int MAX_POLYNOMIAL_DEGREE = Integer.MAX_VALUE;
 
+  /** Maximum degree of a polynomial for Laguerre solver */
+  public static int MAX_POLYNOMIAL_DEGREE_LAGUERRE_SOLVER = Integer.MAX_VALUE;
+
   /** Maximum number of loop runs in some Symja functions */
   public static long MAX_LOOP_COUNT = Long.MAX_VALUE;
 
