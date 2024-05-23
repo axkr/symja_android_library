@@ -4967,7 +4967,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "ArcSinh(I*1/2)=I*1/6*Pi\n" //
             + "\n" //
-        + "ArcSinh(ComplexInfinity)=ComplexInfinity");
+            + "ArcSinh(ComplexInfinity)=ComplexInfinity");
 
     check("a := 42", //
         "");
@@ -23273,6 +23273,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSinIntegral() {
+    checkNumeric(" D(SinIntegral(x), {x, 2})", //
+        "Cos(x)/x-Sin(x)/x^2");
+    checkNumeric("Table(D(SinIntegral(x), {x, n}), {n, 1, 4})", //
+        "{Sinc(x),"//
+            + "Cos(x)/x-Sin(x)/x^2,"//
+            + "(-2*Cos(x))/x^2+(2*Sin(x))/x^3-Sin(x)/x,"//
+            + "(6*Cos(x))/x^\n" //
+            + "3-Cos(x)/x+(-6*Sin(x))/x^4+(3*Sin(x))/x^2}");
+
     checkNumeric("SinIntegral(-3.1)", //
         "-1.8516593076745196");
     check("SinIntegral(-3/4*I*x)", //

@@ -13,7 +13,7 @@ public class DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 79 };
+  final public static int[] SIZES = { 0, 81 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -89,6 +89,9 @@ public class DRules {
     // D(LegendreQ(g_,h_,f_),x_?NotListQ):=(D(f,x)*(f*(-1-g)*LegendreQ(g,h,f)+(1+g-h)*LegendreQ(1+g,h,f)))/(-1+f^2)/;FreeQ({g,h},x)
     ISetDelayed(D(LegendreQ(g_,h_,f_),PatternTest(x_,NotListQ)),
       Condition(Times(Power(Plus(CN1,Sqr(f)),CN1),D(f,x),Plus(Times(f,Subtract(CN1,g),LegendreQ(g,h,f)),Times(Plus(C1,g,Negate(h)),LegendreQ(Plus(C1,g),h,f)))),FreeQ(list(g,h),x))),
+    // D(PolyGamma(0,x_),{x_,n_}):=PolyGamma(n,x)/;(IntegerQ(n)&&n>=0)||SymbolQ(n)
+    ISetDelayed(D(PolyGamma(C0,x_),list(x_,n_)),
+      Condition(PolyGamma(n,x),Or(And(IntegerQ(n),GreaterEqual(n,C0)),SymbolQ(n)))),
     // D(PolyGamma(g_,f_),x_?NotListQ):=PolyGamma(1+g,f)*D(f,x)/;FreeQ({g},x)
     ISetDelayed(D(PolyGamma(g_,f_),PatternTest(x_,NotListQ)),
       Condition(Times(PolyGamma(Plus(C1,g),f),D(f,x)),FreeQ(list(g),x))),
@@ -161,15 +164,9 @@ public class DRules {
     // D(ArcSec(x_),{x_,2}):=(1-2*x^2)/(Sqrt(1-1/x^2)*x^3*(-1+x^2))
     ISetDelayed(D(ArcSec(x_),list(x_,C2)),
       Times(Plus(C1,Times(CN2,Sqr(x))),Power(Times(Sqrt(Subtract(C1,Power(x,CN2))),Power(x,C3),Plus(CN1,Sqr(x))),CN1))),
-    // D(Cos(x_),{x_,2}):=-Cos(x)
-    ISetDelayed(D(Cos(x_),list(x_,C2)),
-      Negate(Cos(x))),
     // D(Cot(x_),{x_,2}):=2*Cot(x)*Csc(x)^2
     ISetDelayed(D(Cot(x_),list(x_,C2)),
       Times(C2,Cot(x),Sqr(Csc(x)))),
-    // D(Sin(x_),{x_,2}):=-Sin(x)
-    ISetDelayed(D(Sin(x_),list(x_,C2)),
-      Negate(Sin(x))),
     // D(Tan(x_),{x_,2}):=2*Sec(x)^2*Tan(x)
     ISetDelayed(D(Tan(x_),list(x_,C2)),
       Times(C2,Sqr(Sec(x)),Tan(x))),
@@ -179,6 +176,18 @@ public class DRules {
     // D(Sec(x_),{x_,2}):=Sec(x)^3+Sec(x)*Tan(x)^2
     ISetDelayed(D(Sec(x_),list(x_,C2)),
       Plus(Power(Sec(x),C3),Times(Sec(x),Sqr(Tan(x))))),
+    // D(Cos(x_),{x_,n_}):=Cos(1/2*n*Pi+x)/;(IntegerQ(n)&&n>=0)||SymbolQ(n)
+    ISetDelayed(D(Cos(x_),list(x_,n_)),
+      Condition(Cos(Plus(Times(C1D2,n,Pi),x)),Or(And(IntegerQ(n),GreaterEqual(n,C0)),SymbolQ(n)))),
+    // D(Sin(x_),{x_,n_}):=Sin(1/2*n*Pi+x)/;(IntegerQ(n)&&n>=0)||SymbolQ(n)
+    ISetDelayed(D(Sin(x_),list(x_,n_)),
+      Condition(Sin(Plus(Times(C1D2,n,Pi),x)),Or(And(IntegerQ(n),GreaterEqual(n,C0)),SymbolQ(n)))),
+    // D(Cosh(x_),{x_,n_}):=-I^n*Cos(1/2*n*Pi-I*x)/;(IntegerQ(n)&&n>=0)||SymbolQ(n)
+    ISetDelayed(D(Cosh(x_),list(x_,n_)),
+      Condition(Times(Power(CNI,n),Cos(Plus(Times(C1D2,n,Pi),Times(CNI,x)))),Or(And(IntegerQ(n),GreaterEqual(n,C0)),SymbolQ(n)))),
+    // D(Sinh(x_),{x_,n_}):=I*-I^n*Sin(1/2*n*Pi-I*x)/;(IntegerQ(n)&&n>=0)||SymbolQ(n)
+    ISetDelayed(D(Sinh(x_),list(x_,n_)),
+      Condition(Times(CI,Power(CNI,n),Sin(Plus(Times(C1D2,n,Pi),Times(CNI,x)))),Or(And(IntegerQ(n),GreaterEqual(n,C0)),SymbolQ(n)))),
     // D(x_^a_,{x_,n_}):=If(IntegerQ(n),Pochhammer(a-n+1,n)*x^(a-n),FactorialPower(a,n)*x^(a-n))/;((IntegerQ(n)&&n>=0)||SymbolQ(n))&&FreeQ(a,x)
     ISetDelayed(D(Power(x_,a_),list(x_,n_)),
       Condition(If(IntegerQ(n),Times(Pochhammer(Plus(a,Negate(n),C1),n),Power(x,Subtract(a,n))),Times(FactorialPower(a,n),Power(x,Subtract(a,n)))),And(Or(And(IntegerQ(n),GreaterEqual(n,C0)),SymbolQ(n)),FreeQ(a,x)))),
@@ -209,9 +218,6 @@ public class DRules {
     // D(HarmonicNumber(x_),{x_,n_Integer}):=((-1)^n*n!)/x^(1+n)+EulerGamma*KroneckerDelta(n)+PolyGamma(n,x)/;(IntegerQ(n)&&n>=1)||FreeQ(n,_?NumberQ)
     ISetDelayed(D(HarmonicNumber(x_),list(x_,$p(n, Integer))),
       Condition(Plus(Times(Power(CN1,n),Power(x,Subtract(CN1,n)),Factorial(n)),Times(EulerGamma,KroneckerDelta(n)),PolyGamma(n,x)),Or(And(IntegerQ(n),GreaterEqual(n,C1)),FreeQ(n,PatternTest($b(),NumberQ))))),
-    // D(PolyGamma(0,x_),{x_,n_Integer}):=PolyGamma(n,x)/;(IntegerQ(n)&&n>=0)||FreeQ(n,_?NumberQ)
-    ISetDelayed(D(PolyGamma(C0,x_),list(x_,$p(n, Integer))),
-      Condition(PolyGamma(n,x),Or(And(IntegerQ(n),GreaterEqual(n,C0)),FreeQ(n,PatternTest($b(),NumberQ))))),
     // D(ArcTan(f_,g_),x_?NotListQ):=With({d=(-g*D(f,x)+f*D(g,x))/(f^2+g^2)},If(PossibleZeroQ(d),0,d))
     ISetDelayed(D(ArcTan(f_,g_),PatternTest(x_,NotListQ)),
       With(list(Set(d,Times(Power(Plus(Sqr(f),Sqr(g)),CN1),Plus(Times(CN1,g,D(f,x)),Times(f,D(g,x)))))),If(PossibleZeroQ(d),C0,d))),

@@ -41,6 +41,8 @@
   D(LegendreQ(g_, h_, f_),x_?NotListQ):= ((f*(-1-g)*LegendreQ(g,h,f)+(1+g-h)*LegendreQ(1+g,h,f))*D(f,x))/(-1+f^2)
     /; FreeQ({g,h},x),
     
+  D(PolyGamma(0, x_), {x_, n_}) := PolyGamma(n, x)
+    /; (IntegerQ(n) && n >= 0)||SymbolQ(n), 
   D(PolyGamma(g_, f_),x_?NotListQ):=  PolyGamma(1+g, f)*D(f,x)
     /; FreeQ({g},x),
   D(HurwitzZeta(f_,g_),x_?NotListQ):=(-f)*HurwitzZeta(1 + f, g)*D(g,x)
@@ -83,14 +85,22 @@
   D(ArcTanh(x_), {x_, 2}) := (2*x)/(1 - x^2)^2,
   D(ArcCsc(x_), {x_, 2}) :=  (-1+2*x^2)/(Sqrt(1 - 1/x^2)*x^3*(-1+x^2)),
   D(ArcSec(x_), {x_, 2}) := (1-2*x^2)/(Sqrt(1-1/x^2)*x^3*(-1+x^2)),
-   
-  D(Cos(x_), {x_, 2}) := -Cos(x),
+    
   D(Cot(x_), {x_, 2}) := 2*Cot(x)*Csc(x)^2,
-  D(Sin(x_), {x_, 2}) := -Sin(x),
   D(Tan(x_), {x_, 2}) := 2*Sec(x)^2*Tan(x),
   D(Csc(x_), {x_, 2}) := Csc(x)^3+Csc(x)*Cot(x)^2,
   D(Sec(x_), {x_, 2}) := Sec(x)^3+Sec(x)*Tan(x)^2,
   
+  D(Cos(x_), {x_, n_}) := Cos((n*Pi)/2 + x)
+    /; (IntegerQ(n) && n >= 0)||SymbolQ(n),
+  D(Sin(x_), {x_, n_}) := Sin((n*Pi)/2+x)
+    /; (IntegerQ(n) && n >= 0)||SymbolQ(n), 
+    
+  D(Cosh(x_), {x_, n_}) := (-I)^n*Cos((n*Pi)/2-I*x)
+    /; (IntegerQ(n) && n >= 0)||SymbolQ(n),
+  D(Sinh(x_), {x_, n_}) := I*(-I)^n*Sin((n*Pi)/2-I*x) 
+    /; (IntegerQ(n) && n >= 0)||SymbolQ(n),
+    
   D(x_^a_, {x_, n_}) := If(IntegerQ(n), Pochhammer(a - n + 1, n)*x^(a - n), FactorialPower(a, n)*x^(a - n))
     /; ((IntegerQ(n) && n >= 0)||SymbolQ(n)) && FreeQ(a,x),
   D(a_^x_, {x_, n_Integer}) := a^x*Log(a)^n
@@ -121,8 +131,6 @@
 
   D(HarmonicNumber(x_), {x_, n_Integer}) := (-1)^n*x^(-1 - n)*n! + EulerGamma*KroneckerDelta(n) + PolyGamma(n, x)  
     /; (IntegerQ(n) && n >= 1)||FreeQ(n,_?NumberQ),
-  D(PolyGamma(0, x_), {x_, n_Integer}) := PolyGamma(n, x)
-    /; (IntegerQ(n) && n >= 0)||FreeQ(n,_?NumberQ), 
      
   D(ArcTan(f_, g_),x_?NotListQ):= With({d=((-g*D(f,x)+f*D(g,x))/(f^2 + g^2))},If(PossibleZeroQ(d),0,d)),
   D(BesselJ(f_, g_),x_?NotListQ):= 1/2*(BesselJ(-1+f, g)-BesselJ(1+f, g))*D(g,x)+D(f,x)*Derivative(1,0)[BesselJ][f,g],

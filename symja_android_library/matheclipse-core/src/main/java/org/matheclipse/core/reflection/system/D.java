@@ -356,11 +356,11 @@ public class D extends AbstractFunctionEvaluator {
                 // a symbolic expression or a non-negative integer.
                 return Errors.printMessage(S.D, "dvar", F.List(xList), engine);
               }
-              IAST derivativeN = createDerivativeN(fx.head(), (IAST) fx, x, xListN);
-              IExpr derivativeNEvaled = engine.evaluateNIL(derivativeN);
-              if (derivativeNEvaled.isPresent()) {
-                return derivativeNEvaled;
-              }
+              // IAST derivativeN = createDerivativeN(fx.head(), (IAST) fx, x, xListN);
+              // IExpr derivativeNEvaled = engine.evaluateNIL(derivativeN);
+              // if (derivativeNEvaled.isPresent()) {
+              // return derivativeNEvaled;
+              // }
             }
           }
           IExpr arg2 = xListN;
