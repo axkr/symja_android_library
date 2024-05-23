@@ -1,7 +1,10 @@
 package org.matheclipse.core.visit;
 
 import java.util.function.Function;
+
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -188,6 +191,7 @@ public class VisitorLevelSpecification extends AbstractLevelVisitor {
       int[] minDepth = new int[] {0};
       try {
         fCurrentLevel++;
+        checkRecursionLimit(assoc);
         if (fIncludeHeads) {
           // no include head for associations
         }
@@ -228,6 +232,7 @@ public class VisitorLevelSpecification extends AbstractLevelVisitor {
       int[] minDepth = new int[] {0};
       try {
         fCurrentLevel++;
+        checkRecursionLimit(ast);
         if (fIncludeHeads) {
           final IExpr temp = ast.get(0).accept(this);
           if (temp.isPresent()) {
@@ -268,6 +273,12 @@ public class VisitorLevelSpecification extends AbstractLevelVisitor {
       }
     }
     return result[0];
+  }
+
+  private void checkRecursionLimit(IExpr expr) {
+    if (this.fCurrentLevel > EvalEngine.get().getRecursionLimit()) {
+      RecursionLimitExceeded.throwIt(this.fCurrentLevel, expr);
+    }
   }
 
   /**
