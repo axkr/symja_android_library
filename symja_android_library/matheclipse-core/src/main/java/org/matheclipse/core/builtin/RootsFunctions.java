@@ -17,6 +17,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
+import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -1011,6 +1012,12 @@ public class RootsFunctions {
    */
   private static org.hipparchus.complex.Complex[] allComplexRootsLaguerre(
       @Nonnull double[] coefficients) {
+
+    if (coefficients.length > Config.MAX_POLYNOMIAL_DEGREE_LAGUERRE_SOLVER) {
+      // PolynomialDegreeLimitExceeded.throwIt(coefficients.length);
+      return null;
+    }
+
     for (int j = 0; j < coefficients.length; j++) {
       if (!Double.isFinite(coefficients[j])) {
         return null;

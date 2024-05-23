@@ -2087,6 +2087,13 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->(1250000*Log(2))/Log(500)}}");
   }
 
+  @Test
+  public void testSolveBigExponent() {
+    // message: Exponent ist out of bounds for function Factor.
+    check("Solve(40==5000000/E^(x/(2*1/10^6)),x)", //
+        "{{x->ConditionalExpression(I*1/250000*Pi*C(1)+Log(125000)/500000,C(1)∈Integers)}}");
+  }
+
   /** The JUnit setup method */
   @Override
   public void setUp() {
