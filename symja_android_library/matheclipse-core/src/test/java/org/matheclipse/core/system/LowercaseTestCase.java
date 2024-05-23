@@ -4951,13 +4951,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Definition(ArcSinh)", //
         "Attributes(ArcSinh)={Listable,NumericFunction,Protected}\n" //
             + "\n" //
-            + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
-            + "\n" //
             + "ArcSinh(Undefined)=Undefined\n" //
+            + "\n" //
+            + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
             + "\n" //
             + "ArcSinh(Infinity)=Infinity\n" //
             + "\n" //
             + "ArcSinh(I*Infinity)=Infinity\n" //
+            + "\n" //
+            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
             + "\n" //
             + "ArcSinh(I)=I*1/2*Pi\n" //
             + "\n" //
@@ -4965,9 +4967,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "ArcSinh(I*1/2)=I*1/6*Pi\n" //
             + "\n" //
-            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
-            + "\n" //
-            + "ArcSinh(ComplexInfinity)=ComplexInfinity");
+        + "ArcSinh(ComplexInfinity)=ComplexInfinity");
 
     check("a := 42", //
         "");
@@ -5221,6 +5221,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRamseyNumber() {
+    // https://en.wikipedia.org/wiki/Ramsey%27s_theorem#Known_values
     check("Table(RamseyNumber(1,j), {j,1,20})", //
         "{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}");
     check("Table(RamseyNumber(2,j), {j,1,20})", //
@@ -8438,7 +8439,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     // Test data generator http://people.cs.nctu.edu.tw/~rsliang/dbscan/testdatagen.html
     // check("FindClusters({{83.08303244924173,58.83387754182331},{45.05445510940626,23.469642649637535},{14.96417921432294,69.0264096390456},{73.53189604333602,34.896145021310076},{73.28498173551634,33.96860806993209},{73.45828098873608,33.92584423092194},{73.9657889183145,35.73191006924026},{74.0074097183533,36.81735596177168},{73.41247541410848,34.27314856695011},{73.9156256353017,36.83206791547127},{74.81499205809087,37.15682749846019},{74.03144880081527,37.57399178552441},{74.51870941207744,38.674258946906775},{74.50754595105536,35.58903978415765},{74.51322752749547,36.030572259100154},{59.27900996617973,46.41091720294207},{59.73744793841615,46.20015558367595},{58.81134076672606,45.71150126331486},{58.52225539437495,47.416083617601544},{58.218626647023484,47.36228902172297},{60.27139669447206,46.606106348801404},{60.894962462363765,46.976924697402865},{62.29048673878424,47.66970563563518},{61.03857608977705,46.212924720020965}},
-    // 2.0, \r\n" +
+    // 2.0, \n" // +
     // "5, Method->\"DBSCAN\", DistanceFunction->EuclideanDistance)",//
     // "{{{73.5319,34.89615},{73.28498,33.96861},{73.45828,33.92584},{73.96579,35.73191},{74.00741,36.81736},{73.41248,34.27315},{73.91563,36.83207},{74.50755,35.58904},{74.51323,36.03057},{74.81499,37.15683},{74.03145,37.57399},{74.51871,38.67426}},{{59.27901,46.41092},{59.73745,46.20016},{58.81134,45.7115},{58.52226,47.41608},{58.21863,47.36229},{60.2714,46.60611},{60.89496,46.97692},{61.03858,46.21292},{62.29049,47.66971}}}");
     // check("FindClusters({{ 83.08303244924173, 58.83387754182331 },\n" + //
@@ -9693,21 +9694,21 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FullDefinition(ArcSinh)", //
         "Attributes(ArcSinh)={Listable,NumericFunction,Protected}\n" //
             + "\n" //
-            + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
-            + "\n" //
             + "ArcSinh(Undefined)=Undefined\n" //
+            + "\n" //
+            + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
             + "\n" //
             + "ArcSinh(Infinity)=Infinity\n" //
             + "\n" //
             + "ArcSinh(I*Infinity)=Infinity\n" //
+            + "\n" //
+            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
             + "\n" //
             + "ArcSinh(I)=I*1/2*Pi\n" //
             + "\n" //
             + "ArcSinh(0)=0\n" //
             + "\n" //
             + "ArcSinh(I*1/2)=I*1/6*Pi\n" //
-            + "\n" //
-            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
             + "\n" //
             + "ArcSinh(ComplexInfinity)=ComplexInfinity");
 
@@ -13613,6 +13614,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLimit() {
+    check("Limit(SinIntegral(t*(1-w)),t->Infinity, Assumptions->w>1)", //
+        "-Pi/2");
+    check("Limit(t*(1-w),t->Infinity, Assumptions->w>1)", //
+        "-Infinity");
+    // check("Limit(-SinIntegral(t*(1-w))/2+SinIntegral(t*(1+w))/2,t->Infinity)", //
+    // " ");
+
     check("Limit(7-2*x+4*x^2,x->Infinity)", //
         "Infinity");
     check("Limit(Sqrt(7-2*x+4*x^2),x->Infinity)", //
@@ -20961,9 +20969,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testRandomVariate() {
     // check("RandomVariate(HypergeometricDistribution(44,18,57), 10^2)", //
-    // "{16,16,14,11,14,13,14,14,13,15,13,11,14,15,15,13,15,13,14,15,15,13,16,13,14,12,\r\n" +
-    // "16,12,14,13,13,17,16,15,16,12,15,13,13,16,15,16,15,14,15,14,10,15,17,14,15,13,14,\r\n" +
-    // "13,11,15,15,15,16,15,14,12,16,13,15,16,14,12,13,15,12,13,15,12,12,10,14,16,15,12,\r\n" +
+    // "{16,16,14,11,14,13,14,14,13,15,13,11,14,15,15,13,15,13,14,15,15,13,16,13,14,12,\n" // +
+    // "16,12,14,13,13,17,16,15,16,12,15,13,13,16,15,16,15,14,15,14,10,15,17,14,15,13,14,\n" // +
+    // "13,11,15,15,15,16,15,14,12,16,13,15,16,14,12,13,15,12,13,15,12,12,10,14,16,15,12,\n" // +
     // "15,16,16,14,14,13,17,14,15,13,15,15,14,15,15,12,12,14,13,15}");
 
     // check("RandomVariate(GammaDistribution(0.5,0.6), {2,3,4})", //
@@ -21587,6 +21595,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("Refine((-1)^(x+y), Element(k/2, Integers))", //
     // "(-1)^y");
 
+    check("Refine(1-w<0,w>1)", //
+        "True");
     check("Refine(Sqrt(x^2 y^2), x>0&&y<-10)", //
         "-x*y");
     check("Refine(Csc(Pi*(1/2+m)), Element(m, Integers))", //

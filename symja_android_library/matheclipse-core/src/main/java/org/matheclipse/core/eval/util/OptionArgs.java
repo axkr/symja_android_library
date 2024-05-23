@@ -58,6 +58,17 @@ public class OptionArgs {
     return assumptionExpr;
   }
 
+  public static IExpr determineAssumptions(IExpr assumptionOption) {
+    IExpr assumptionExpr = assumptionOption;
+    if (assumptionOption.equals(S.$Assumptions)) {
+      assumptionExpr = S.$Assumptions.assignedValue();
+      if (assumptionExpr == null) {
+        assumptionExpr = F.NIL;
+      }
+    }
+    return assumptionExpr;
+  }
+
   /** The default options list determined by evaluating {@link F#Options(symbol)} */
   private IAST fDefaultOptionsList = F.NIL;
 

@@ -16,6 +16,8 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
+import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
@@ -23,6 +25,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -88,7 +91,7 @@ public class SeriesFunctions {
    * 7
    * </pre>
    */
-  private static final class Limit extends AbstractFunctionEvaluator {
+  private static final class Limit extends AbstractFunctionOptionEvaluator {
 
     /** Direction of limit computation */
     private static enum Direction {
@@ -1000,7 +1003,18 @@ public class SeriesFunctions {
       IAST isFreeResult =
           timesAST.partitionTimes(x -> x.isFree(data.variable(), true), F.C1, F.C1, S.List);
       if (!isFreeResult.arg1().isOne()) {
-        return F.Times(isFreeResult.arg1(), data.limit(isFreeResult.arg2()));
+        IExpr freeOfVariable = isFreeResult.arg1();
+        IExpr limit = data.limit(isFreeResult.arg2());
+        if (limit.isInfinity() || limit.isNegativeInfinity()) {
+          if (engine.evaluate(F.Greater(freeOfVariable, F.C0)).isTrue()) {
+            return limit.isInfinity() ? F.CInfinity : F.CNInfinity;
+          }
+          if (engine.evaluate(F.Less(freeOfVariable, F.C0)).isTrue()) {
+            return limit.isInfinity() ? F.CNInfinity : F.CInfinity;
+          }
+        }
+
+        return F.Times(freeOfVariable, limit);
       }
       Optional<IExpr[]> parts =
           Algebra.fractionalPartsTimesPower(timesAST, false, false, true, true, true, true);
@@ -1116,13 +1130,15 @@ public class SeriesFunctions {
     // }
     // return F.NIL;
     // }
-    
+
     /**
      * Limit of a function. See <a href="http://en.wikipedia.org/wiki/List_of_limits">List of
      * Limits</a>
      */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine, IAST originalAST) {
+
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (!arg2.isRuleAST()) {
@@ -1141,38 +1157,55 @@ public class SeriesFunctions {
       try {
         engine.setNumericMode(false);
         Direction direction = Direction.TWO_SIDED; // no direction as default
-        if (ast.isAST3()) {
-          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-          IExpr option = options.getOption(S.Direction);
-          if (option.isPresent()) {
-            if (option.isOne() || option.isString("FromBelow")) {
-              direction = Direction.FROM_BELOW;
-            } else if (option.isMinusOne() || option.isString("FromAbove")) {
-              direction = Direction.FROM_ABOVE;
-            } else if (option.equals(S.Automatic) || option.equals(S.Reals)
-                || option.isString("TwoSided")) {
-              direction = Direction.TWO_SIDED;
-            } else {
-              // Value of `1` should be a number, Reals, Complexes, FromAbove, FromBelow, TwoSided
-              // or a list of these.
-              return Errors.printMessage(S.Limit, "ldir", F.List(ast.arg3()), engine);
-            }
+
+        final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+        IExpr directionOption = option[0];
+        if (directionOption.isPresent()) {
+          if (directionOption.isOne() || directionOption.isString("FromBelow")) {
+            direction = Direction.FROM_BELOW;
+          } else if (directionOption.isMinusOne() || directionOption.isString("FromAbove")) {
+            direction = Direction.FROM_ABOVE;
+          } else if (directionOption.equals(S.Automatic) || directionOption.equals(S.Reals)
+              || directionOption.isString("TwoSided")) {
+            direction = Direction.TWO_SIDED;
           } else {
-            // Value of `1` should be a number, Reals, Complexes, FromAbove, FromBelow, TwoSided or
-            // a list of these.
-            return Errors.printMessage(S.Limit, "ldir", F.List(S.Null), engine);
+            // Value of `1` should be a number, Reals, Complexes, FromAbove, FromBelow, TwoSided
+            // or a list of these.
+            return Errors.printMessage(S.Limit, "ldir", F.List(ast.arg3()), engine);
           }
+        } else {
+          // Value of `1` should be a number, Reals, Complexes, FromAbove, FromBelow, TwoSided or
+          // a list of these.
+          return Errors.printMessage(S.Limit, "ldir", F.List(S.Null), engine);
+        }
+
+        IExpr assumptionOption = option[1];
+        IExpr generateConditionOption = option[2];
+        IAssumptions oldAssumptions = engine.getAssumptions();
+        try {
+          IExpr assumptionExpr = OptionArgs.determineAssumptions(assumptionOption);
+          if (assumptionExpr.isPresent() && assumptionExpr.isAST()) {
+            IAssumptions assumptions =
+                org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
+            if (assumptions != null) {
+              engine.setAssumptions(assumptions);
+            }
+          }
+
           if (direction == Direction.TWO_SIDED) {
             IExpr temp = S.Limit.evalDownRule(engine, F.Limit(arg1, arg2));
             if (temp.isPresent()) {
               return temp;
             }
           }
+
+          ISymbol symbol = (ISymbol) rule.arg1();
+          IExpr limit = rule.arg2();
+          LimitData data = new LimitData(symbol, limit, rule, direction);
+          return evalLimit(arg1, data, engine);
+        } finally {
+          engine.setAssumptions(oldAssumptions);
         }
-        ISymbol symbol = (ISymbol) rule.arg1();
-        IExpr limit = rule.arg2();
-        LimitData data = new LimitData(symbol, limit, rule, direction);
-        return evalLimit(arg1, data, engine);
       } finally {
         engine.setNumericMode(numericMode);
       }
@@ -1180,12 +1213,15 @@ public class SeriesFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+      return ARGS_2_2;
     }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.NHOLDALL);
+      setOptions(newSymbol, //
+          new IBuiltInSymbol[] {S.Direction, S.Assumptions, S.GenerateConditions}, //
+          new IExpr[] {S.Reals, S.$Assumptions, S.Automatic});
       super.setUp(newSymbol);
     }
   }

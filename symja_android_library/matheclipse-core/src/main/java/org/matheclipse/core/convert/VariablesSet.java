@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -441,8 +442,39 @@ public class VariablesSet {
     return list;
   }
 
+  /**
+   * Return the set of variables.
+   * 
+   * @return
+   */
+  public Set<IExpr> toSet() {
+    return fVariablesSet;
+  }
+
+  /**
+   * 
+   * @return
+   * @deprecated use {@link #toSet()} instead
+   */
+  @Deprecated
   public Set<IExpr> getVariablesSet() {
     return fVariablesSet;
+  }
+
+  /**
+   * Return a map of variables with &quot;variable&quot;<code>->value
+   * </code> entries.
+   * 
+   * @param domain
+   * @return
+   */
+  public Map<IExpr, IExpr> toMap(IExpr value) {
+    HashMap<IExpr, IExpr> map = new HashMap<IExpr, IExpr>();
+    final Iterator<IExpr> iter = fVariablesSet.iterator();
+    while (iter.hasNext()) {
+      map.put(iter.next(), value);
+    }
+    return map;
   }
 
   /**
