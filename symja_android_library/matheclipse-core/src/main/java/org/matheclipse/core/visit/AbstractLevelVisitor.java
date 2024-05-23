@@ -27,6 +27,8 @@ public abstract class AbstractLevelVisitor extends AbstractVisitor {
 
   protected int fCurrentDepth;
 
+  protected EvalEngine fEngine;
+
   /**
    * Create a LevelSpecification from an IInteger or IAST list-object.<br>
    * <br>
@@ -45,6 +47,7 @@ public abstract class AbstractLevelVisitor extends AbstractVisitor {
   public AbstractLevelVisitor(final IExpr unevaledLevelExpr, boolean includeHeads,
       int startValueForAll, final EvalEngine engine) {
     this.fIncludeHeads = includeHeads;
+    this.fEngine = engine;
     IExpr levelExpr = engine.evaluate(unevaledLevelExpr);
     fFromLevel = fToLevel = -1;
     fFromDepth = fToDepth = 0;
@@ -149,7 +152,7 @@ public abstract class AbstractLevelVisitor extends AbstractVisitor {
       return;
     }
     // Level specification `1` is not of the form n, {n}, or {m, n}.
-    String str = Errors.getMessage("level", F.list(levelExpr), EvalEngine.get());
+    String str = Errors.getMessage("level", F.list(levelExpr), fEngine);
     throw new ArgumentTypeException(str);
     // throw new MathException("Invalid Level specification: " + levelExpr.toString());
   }
@@ -167,8 +170,8 @@ public abstract class AbstractLevelVisitor extends AbstractVisitor {
    * @param toDepth
    * @param includeHeads
    */
-  public AbstractLevelVisitor(final int fromLevel,
-      final int toLevel, final int fromDepth, final int toDepth, final boolean includeHeads) {
+  public AbstractLevelVisitor(final int fromLevel, final int toLevel, final int fromDepth,
+      final int toDepth, final boolean includeHeads) {
     fIncludeHeads = includeHeads;
     fFromLevel = fromLevel;
     fToLevel = toLevel;
@@ -176,6 +179,7 @@ public abstract class AbstractLevelVisitor extends AbstractVisitor {
     fFromDepth = fromDepth;
     fCurrentDepth = -1;
     fToDepth = toDepth;
+    fEngine = EvalEngine.get();
   }
 
   public void incCurrentLevel() {
