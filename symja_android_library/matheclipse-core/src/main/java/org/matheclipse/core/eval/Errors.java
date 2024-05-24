@@ -136,6 +136,7 @@ public class Errors {
       "incmp", "The arguments `1` and `2` in `3` are incompatible.", //
       "incom",
       "Length `1` of dimension `2` in `3` is incommensurate with length `4` of dimension `5` in `6`.", //
+      "ilim", "Invalid integration variable or limit(s) in `1`.", //
       "incomp", "Expressions `1` and `2` have incompatible shapes.", //
       "incpt", "incompatible elements in `1` cannot be joined.", //
       "indet", "Indeterminate expression `1` encountered.", //

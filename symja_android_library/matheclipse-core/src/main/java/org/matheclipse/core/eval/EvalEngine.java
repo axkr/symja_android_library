@@ -1295,9 +1295,6 @@ public class EvalEngine implements Serializable {
     if (functionEvaluator instanceof AbstractFunctionOptionEvaluator
         || functionEvaluator instanceof AbstractCoreFunctionOptionEvaluator) {
       opres = getOptions(functionEvaluator, opres, ast, expected);
-      if (opres != null) {
-        return opres;
-      }
     }
 
     return opres;

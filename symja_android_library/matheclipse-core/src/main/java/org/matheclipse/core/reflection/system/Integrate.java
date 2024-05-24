@@ -22,7 +22,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
@@ -85,7 +85,8 @@ import com.google.common.cache.CacheBuilder;
  * -Log(Cos(x))-Tan(x)^2/2+Tan(x)^4/4
  * </pre>
  */
-public class Integrate extends AbstractFunctionEvaluator {
+public class Integrate extends AbstractFunctionOptionEvaluator {
+
   private static final Logger LOGGER = LogManager.getLogger();
   private static Thread INIT_THREAD = null;
 
@@ -226,7 +227,8 @@ public class Integrate extends AbstractFunctionEvaluator {
   public Integrate() {}
 
   @Override
-  public IExpr evaluate(IAST holdallAST, EvalEngine engine) {
+  public IExpr evaluate(IAST holdallAST, final int argSize, final IExpr[] option,
+      final EvalEngine engine, IAST originalAST) {
     if (Config.JAS_NO_THREADS) {
       // Android changed: call static initializer in evaluate() method.
       new IntegrateInitializer().run();
@@ -242,14 +244,8 @@ public class Integrate extends AbstractFunctionEvaluator {
     IAssumptions oldAssumptions = engine.getAssumptions();
     boolean numericMode = engine.isNumericMode();
     try {
-      OptionArgs options = null;
-      if (holdallAST.size() > 3) {
-        options = new OptionArgs(S.Integrate, holdallAST, holdallAST.size() - 1, engine);
-        if (!options.isInvalidPosition()) {
-          holdallAST = holdallAST.most();
-        }
-      }
-      IExpr assumptionExpr = OptionArgs.determineAssumptions(holdallAST, -1, options);
+      IExpr assumptionOption = option[0];
+      IExpr assumptionExpr = OptionArgs.determineAssumptions(assumptionOption);
       if (assumptionExpr.isPresent() && assumptionExpr.isAST()) {
         IAssumptions assumptions =
             org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
@@ -261,7 +257,7 @@ public class Integrate extends AbstractFunctionEvaluator {
       boolean evaled = false;
       IExpr result;
       engine.setNumericMode(false);
-      if (holdallAST.size() < 3 || holdallAST.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+      if (argSize < 2 || holdallAST.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
         return F.NIL;
       }
       final IExpr arg1Holdall = holdallAST.arg1();
@@ -275,12 +271,13 @@ public class Integrate extends AbstractFunctionEvaluator {
       if (arg1.isIndeterminate()) {
         return S.Indeterminate;
       }
-      if (holdallAST.size() > 3) {
+      if (argSize > 2) {
         // reduce arguments by folding Integrate[fxy, x, y] to
         // Integrate[Integrate[fxy, y], x] ...
         return holdallAST.foldRight((x, y) -> engine.evaluateNIL(F.Integrate(x, y)), arg1, 2);
       }
 
+      holdallAST = holdallAST.copyUntil(argSize + 1);
       IExpr arg2 = engine.evaluateNIL(holdallAST.arg2());
       if (arg2.isPresent()) {
         evaled = true;
@@ -296,8 +293,10 @@ public class Integrate extends AbstractFunctionEvaluator {
           if (temp.isFreeAST(S.Integrate)) {
             return definiteIntegral(temp, xList, engine);
           }
+          return F.NIL;
         }
-        return F.NIL;
+        // Invalid integration variable or limit(s) in `1`.
+        return Errors.printMessage(S.Integrate, "ilim", F.List(arg2), engine);
       }
       if (arg1.isList() && arg2.isSymbol()) {
         return mapIntegrate((IAST) arg1, arg2);
@@ -894,8 +893,14 @@ public class Integrate extends AbstractFunctionEvaluator {
   }
 
   @Override
+  public int[] expectedArgSize(IAST ast) {
+    return ARGS_2_INFINITY;
+  }
+
+  @Override
   public void setUp(final ISymbol newSymbol) {
     newSymbol.setAttributes(ISymbol.HOLDALL);
+    setOptions(newSymbol, S.Assumptions, S.$Assumptions);
     super.setUp(newSymbol);
 
     if (Config.THREAD_FACTORY != null) {
@@ -909,6 +914,6 @@ public class Integrate extends AbstractFunctionEvaluator {
     } else {
       // see #evaluate() method
     }
-    setOptions(newSymbol, F.list(F.Rule(S.Assumptions, S.$Assumptions)));
+
   }
 }

@@ -1158,7 +1158,7 @@ public class SeriesFunctions {
         engine.setNumericMode(false);
         Direction direction = Direction.TWO_SIDED; // no direction as default
 
-        final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
+        // final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
         IExpr directionOption = option[0];
         if (directionOption.isPresent()) {
           if (directionOption.isOne() || directionOption.isString("FromBelow")) {
