@@ -29,6 +29,8 @@ public interface IPatternMap {
    */
   public static final int DEFAULT_RULE_PRIORITY = Integer.MAX_VALUE;
 
+  public static final IExpr[] EMPTY_EXPR_ARRAY = new IExpr[] {};
+
   static final class PatternMap0 implements IPatternMap {
     private static final int SIZE = 0;
 
@@ -39,7 +41,7 @@ public interface IPatternMap {
 
     @Override
     public IExpr[] copyPattern() {
-      return new IExpr[] {};
+      return EMPTY_EXPR_ARRAY;
     }
 
     @Override

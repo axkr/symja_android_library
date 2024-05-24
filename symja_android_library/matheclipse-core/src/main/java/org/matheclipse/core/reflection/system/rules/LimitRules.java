@@ -35,9 +35,9 @@ public class LimitRules {
     // Limit(x_^(a_.*x_^n_.),x_Symbol->Infinity):=With({r=ConditionalExpression(1,a∈Reals&&n<0)},r/;r=!=Undefined)
     ISetDelayed(Limit(Power(x_,Times(a_DEFAULT,Power(x_,n_DEFAULT))),Rule(x_Symbol,oo)),
       With(list(Set(r,ConditionalExpression(C1,And(Element(a,Reals),Less(n,C0))))),Condition(r,UnsameQ(r,Undefined)))),
-    // Limit(x_^m_?RealValuedNumberQ,x_Symbol->Infinity):=If(m<0,0,Infinity)
-    ISetDelayed(Limit(Power(x_,PatternTest(m_,RealValuedNumberQ)),Rule(x_Symbol,oo)),
-      If(Less(m,C0),C0,oo)),
+    // Limit(x_^p_,x_Symbol->Infinity):=If(p<0,0,Infinity,ConditionalExpression(Infinity,p>0))
+    ISetDelayed(Limit(Power(x_,p_),Rule(x_Symbol,oo)),
+      If(Less(p,C0),C0,oo,ConditionalExpression(oo,Greater(p,C0)))),
     // Limit(m_?NumberQ^x_,x_Symbol->Infinity):=If(m>1,Infinity,If(m==1,1,0))/;Positive(m)
     ISetDelayed(Limit(Power(PatternTest(m_,NumberQ),x_),Rule(x_Symbol,oo)),
       Condition(If(Greater(m,C1),oo,If(Equal(m,C1),C1,C0)),Positive(m))),

@@ -13299,6 +13299,27 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLimit() {
+    check("Limit((1+1/n)^n,n->Infinity)", //
+        "E");
+    check("Limit(Sin(x)/x,x->0)", //
+        "1");
+    check("Limit(Sin(x)/x,x->Infinity)", //
+        "0");
+
+    check("Limit(Log(x+1)/x,x->Infinity)", //
+        "0");
+    check("Limit((E^x-1)/x,x->0)", //
+        "1");
+    check("Limit(Log(a,x)/x,x->Infinity)", //
+        "0");
+
+    check("Limit(a^x*x^p,x->Infinity)", //
+        "ConditionalExpression(Infinity,p>0&&Log(a)>0)");
+    check("Limit(x^p,x->Infinity)", //
+        "ConditionalExpression(Infinity,p>0)");
+    check("Limit(a^x,x->Infinity)", //
+        "ConditionalExpression(Infinity,Log(a)>0)");
+
     check("Limit(SinIntegral(t*(1-w)),t->Infinity, Assumptions->w>1)", //
         "-Pi/2");
     check("Limit(t*(1-w),t->Infinity, Assumptions->w>1)", //
