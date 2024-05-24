@@ -6084,8 +6084,8 @@ public final class NumberTheory {
       if ((temp & 0x00000001) == 0x00000001) { // odd?
         d = result.multiply(c);
         result = a.multiply(c).add(result.multiply(b).add(d));
-        if (result.bitLength() > Config.MAX_AST_SIZE * 8) {
-          IterationLimitExceeded.throwIt(result.bitLength(), F.Fibonacci(F.ZZ(iArg)));
+        if (result.bitLength() > Config.MAX_BIT_LENGTH) {
+          BigIntegerLimitExceeded.throwIt(result.bitLength());
         }
         a = a.multiply(b).add(d);
       }

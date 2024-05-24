@@ -8361,9 +8361,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Fibonacci(151,11/9223372036854775807)", //
         "Fibonacci(151,11/9223372036854775807)");
 
-    // iter limit
+    // big integer limit
     check("Fibonacci(2147483647)", //
-        "Hold(Fibonacci(2147483647))");
+        "Fibonacci(2147483647)");
 
     check("Fibonacci(0.2114411444411100011, 5)", //
         "0.1598551917369153725");
