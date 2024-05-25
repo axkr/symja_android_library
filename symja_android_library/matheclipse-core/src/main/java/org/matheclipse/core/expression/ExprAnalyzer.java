@@ -460,8 +460,9 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
   private IExpr rewriteInverseFunction(IExpr numericPart, IAST functionToInvert, IExpr rhs) {
     IExpr arg1 = functionToInvert.arg1();
     if (fGenerateConditions) {
-      if (functionToInvert.isFunctionID(ID.Cos, ID.Cosh, ID.Cot, ID.Coth, ID.Csc, ID.Csch, ID.Sec,
-          ID.Sech, ID.Sin, ID.Sinh, ID.Tan, ID.Tanh)) {
+      if (functionToInvert.isFunctionID(ID.ArcCos, ID.ArcCot, ID.ArcSin, ID.ArcTan, ID.Cos,
+          ID.Cosh, ID.Cot, ID.Coth, ID.Csc, ID.Csch, ID.Log, ID.Sec, ID.Sech, ID.Sin, ID.Sinh,
+          ID.Tan, ID.Tanh)) {
         // return dummy placeholder function
         return fEngine
             .evaluate(F.Subtract(arg1, $InverseFunction((IBuiltInSymbol) functionToInvert.head(),
@@ -682,14 +683,14 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
         // When dealing with real numbers only, the two branches W(0) and W(−1) suffice ...
         IReal zReal = z.evalReal();
         if (zReal != null) {
-            if (zReal.isNegative() && zReal.isGT(F.CND1DE)) {
-              // TODO branch W(-1)
-              IAST inverseFunctionNegative = F.Plus(variable,
-                  F.Times(F.Plus(F.Times(b, F.Log(base)), F.Times(a, F.ProductLog(F.CN1, z))),
-                      F.Power(F.Times(a, F.Log(base)), F.CN1)));
-              return F.List(fEngine.evaluate(inverseFunction),
-                  fEngine.evaluate(inverseFunctionNegative));
-            }
+          if (zReal.isNegative() && zReal.isGT(F.CND1DE)) {
+            // TODO branch W(-1)
+            IAST inverseFunctionNegative = F.Plus(variable,
+                F.Times(F.Plus(F.Times(b, F.Log(base)), F.Times(a, F.ProductLog(F.CN1, z))),
+                    F.Power(F.Times(a, F.Log(base)), F.CN1)));
+            return F.List(fEngine.evaluate(inverseFunction),
+                fEngine.evaluate(inverseFunctionNegative));
+          }
         }
         return fEngine.evaluate(inverseFunction);
       }

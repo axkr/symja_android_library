@@ -1710,6 +1710,21 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSolveGenerateConditions() {
+    check("Solve(ArcCos(a+x)==b, x, GenerateConditions->True)", //
+        "{{x->ConditionalExpression(-a+Cos(b),(Re(b)==0&&Im(b)>=0)||0<Re(b)<Pi||(Re(b)==Pi&&Im(b)<=\n" //
+            + "0))}}");
+    check("Solve(ArcCot(a+x)==b, x, GenerateConditions->True)", //
+        "{{x->ConditionalExpression(-a+Cot(b),(Re(b)==-Pi/2&&Im(b)<0)||(-Pi/2<Re(b)<Pi/2&&b!=\n" //
+            + "0)||(Re(b)==Pi/2&&Im(b)>=0))}}");
+    check("Solve(ArcSin(a+x)==b, x, GenerateConditions->True)", //
+        "{{x->ConditionalExpression(-a+Sin(b),(Re(b)==-Pi/2&&Im(b)>=0)||-Pi/2<Re(b)<Pi/2||(Re(b)==Pi/\n" //
+            + "2&&Im(b)<=0))}}");
+    check("Solve(ArcTan(a+x)==b, x, GenerateConditions->True)", //
+        "{{x->ConditionalExpression(-a+Tan(b),(Re(b)==-Pi/2&&Im(b)<0)||-Pi/2<Re(b)<Pi/2||(Re(b)==Pi/\n" //
+            + "2&&Im(b)>0))}}");
+
+    check("Solve(Log(a+x)==b, x, GenerateConditions->True)", //
+        "{{x->ConditionalExpression(-a+E^b,-Pi<Im(b)&&Im(b)<=Pi)}}");
     check("Solve(Coth(2*a+3*x)==b, x, GenerateConditions->True)", //
         "{{x->ConditionalExpression(-2/3*a+ArcCoth(b)/3+I*1/3*Pi*C(1),C(1)∈Integers)}}");
 

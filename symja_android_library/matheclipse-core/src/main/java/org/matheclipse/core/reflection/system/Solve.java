@@ -338,6 +338,30 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           IExpr arg = expr.second();
           int headID = symbol.ordinal();
           switch (headID) {
+            case ID.ArcCos:
+              return F.ConditionalExpression(//
+                  F.Cos(arg), //
+                  F.Or(F.And(F.Equal(F.Re(arg), F.C0), F.GreaterEqual(F.Im(arg), F.C0)),
+                      F.Less(F.C0, F.Re(arg), F.Pi),
+                      F.And(F.Equal(F.Re(arg), F.Pi), F.LessEqual(F.Im(arg), F.C0))));
+            case ID.ArcCot:
+              return F.ConditionalExpression(//
+                  F.Cot(arg), //
+                  F.Or(F.And(F.Equal(F.Re(arg), F.CNPiHalf), F.Less(F.Im(arg), F.C0)),
+                      F.And(F.Less(F.CNPiHalf, F.Re(arg), F.CPiHalf), F.Unequal(arg, F.C0)),
+                      F.And(F.Equal(F.Re(arg), F.CPiHalf), F.GreaterEqual(F.Im(arg), F.C0))));
+            case ID.ArcSin:
+              return F.ConditionalExpression(//
+                  F.Sin(arg), //
+                  F.Or(F.And(F.Equal(F.Re(arg), F.CNPiHalf), F.GreaterEqual(F.Im(arg), F.C0)),
+                      F.Less(F.CNPiHalf, F.Re(arg), F.CPiHalf),
+                      F.And(F.Equal(F.Re(arg), F.CPiHalf), F.LessEqual(F.Im(arg), F.C0))));
+            case ID.ArcTan:
+              return F.ConditionalExpression(//
+                  F.Tan(arg), //
+                  F.Or(F.And(F.Equal(F.Re(arg), F.CNPiHalf), F.Less(F.Im(arg), F.C0)),
+                      F.Less(F.CNPiHalf, F.Re(arg), F.CPiHalf),
+                      F.And(F.Equal(F.Re(arg), F.CPiHalf), F.Greater(F.Im(arg), F.C0))));
             case ID.Cos:
               return F.List(//
                   F.ConditionalExpression(//
@@ -379,6 +403,11 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                   F.ConditionalExpression(//
                       F.Plus(F.ArcSinh(F.Power(arg, F.CN1)), F.Times(2, F.CI, S.Pi, c_n)), //
                       c1Integers));
+            case ID.Log:
+              IExpr imArg = F.Im(arg);
+              return F.ConditionalExpression(//
+                  F.Power(S.E, arg), //
+                  F.And(F.Less(F.CNPi, imArg), F.LessEqual(imArg, S.Pi)));
             case ID.Sec:
               return F.List(//
                   F.ConditionalExpression(//
