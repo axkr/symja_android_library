@@ -54,9 +54,8 @@ public class NumberLinePlot extends ListPlot {
           } catch (ArgumentTypeException ate) {
             //
           }
-          result.append(numberLine);
         }
-
+        result.append(numberLine);
       }
       GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
       graphicsOptions.setJoined(false);
