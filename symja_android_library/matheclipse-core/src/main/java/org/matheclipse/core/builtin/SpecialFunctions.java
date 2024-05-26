@@ -1979,6 +1979,20 @@ public class SpecialFunctions {
       if (z.isZero()) {
         return F.C0;
       }
+      if (n.isOne()) {
+        int pInt = p.toIntDefault();
+        if (pInt > 1) {
+          // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/PolyLog3/03/01/03/0002/
+          IExpr v4 = F.CN1.pow(pInt);
+          IExpr sum = F.sum(k -> F.Times(F.Power(F.Factorial(F.Plus(F.CN1, F.Negate(k), p)), F.CN1),
+              F.Power(F.CN1, k), F.Power(F.Log(F.Subtract(F.C1, z)), F.Plus(F.CN1, F.Negate(k), p)),
+              F.PolyLog(F.Plus(k, F.C2), F.Subtract(F.C1, z))), 0, pInt - 1);
+          return F.Plus(
+              F.Times(v4, F.Power(F.Factorial(p), F.CN1),
+                  F.Power(F.Log(F.Subtract(F.C1, z)), p), F.Log(z)),
+              F.Times(v4, sum), F.Zeta(F.Plus(p, F.C1)));
+        }
+      }
       if (p.isOne()) {
         return F.PolyLog(n.inc(), z);
       }

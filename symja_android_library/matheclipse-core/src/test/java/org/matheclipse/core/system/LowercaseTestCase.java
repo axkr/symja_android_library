@@ -18372,6 +18372,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testPolyLog() {
     // check("PolyLog(10007,-1.5707963267948966)", //
     // "");
+    check("PolyLog(1, 3, z)", //
+        "Pi^4/90-1/6*Log(1-z)^3*Log(z)-1/2*Log(1-z)^2*PolyLog(2,1-z)+Log(1-z)*PolyLog(3,1-z)-PolyLog(\n" //
+            + "4,1-z)");
+    check("PolyLog(1, 4, z)", //
+        "1/24*Log(1-z)^4*Log(z)+1/6*Log(1-z)^3*PolyLog(2,1-z)-1/2*Log(1-z)^2*PolyLog(3,1-z)+Log(\n" //
+            + "1-z)*PolyLog(4,1-z)-PolyLog(5,1-z)+Zeta(5)");
     check("PolyLog(-42,Infinity)", //
         "Indeterminate");
     check("PolyLog(0,Infinity)", //
