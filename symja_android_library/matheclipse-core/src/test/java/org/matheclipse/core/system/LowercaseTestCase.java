@@ -11209,6 +11209,21 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometricPFQ() {
+    check("HypergeometricPFQ({}, {}, z)", //
+        "E^z");
+    check("HypergeometricPFQ(ConstantArray(1,1), ConstantArray(2,0), z)", //
+        "1/(1-z)");
+    check("HypergeometricPFQ(ConstantArray(1,2), ConstantArray(2,1), z)", //
+        "-Log(1-z)/z");
+    check("HypergeometricPFQ(ConstantArray(1,3), ConstantArray(2,2), z)", //
+        "PolyLog(2,z)/z");
+    check("HypergeometricPFQ({1,1,1,1,1,1}, {2,2,2,2,2}, z)", //
+        "PolyLog(5,z)/z");
+    check("HypergeometricPFQ(ConstantArray(1,42), ConstantArray(2,41), z)", //
+        "PolyLog(41,z)/z");
+
+    check("HypergeometricPFQ({1, 1}, {1/2, 1}, z)", //
+        "1+E^z*Sqrt(Pi)*Sqrt(z)*Erf(Sqrt(z))");
     check("HypergeometricPFQ({1, 1}, {1/2, 1}, z)", //
         "1+E^z*Sqrt(Pi)*Sqrt(z)*Erf(Sqrt(z))");
     check("HypergeometricPFQ({0,a1,a2,a3,a4},{b1,b2,b3},z)", //
@@ -11818,8 +11833,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("IntegerPartitions(1/2)", //
         "{}");
   }
-
-
 
 
 

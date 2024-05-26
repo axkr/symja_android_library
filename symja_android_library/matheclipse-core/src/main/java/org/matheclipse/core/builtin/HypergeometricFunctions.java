@@ -333,12 +333,9 @@ public class HypergeometricFunctions {
                 k -> F.Times(F.Power(z, F.Plus(F.C1D2, k)),
                     F.Power(F.Pochhammer(F.Subtract(F.C1D2, ni), F.Plus(F.C1, k, ni)), F.CN1)),
                 0, -1 - n));
-            IExpr sum2 =
-                engine
-                    .evaluate(F.sum(
-                        k -> F.Times(F.Power(z, F.Plus(F.C1D2, k)),
-                            F.Power(F.Pochhammer(F.Subtract(F.C1D2, ni), F.Plus(F.C1, k, ni)),
-                                F.CN1)),
+            IExpr sum2 = engine.evaluate(F.sum(
+                k -> F.Times(F.Power(z, F.Plus(F.C1D2, k)),
+                    F.Power(F.Pochhammer(F.Subtract(F.C1D2, ni), F.Plus(F.C1, k, ni)), F.CN1)),
                 -n, -1));
             return F.Times(F.Power(z, F.Plus(F.CN1D2, ni)),
                 F.Plus(F.Times(F.Subtract(F.C1, F.Erf(F.Sqrt(z))), F.Gamma(F.Subtract(F.C1D2, ni))),
@@ -1344,12 +1341,12 @@ public class HypergeometricFunctions {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
-      IExpr c = ast.arg3();
-      if (c.isList()) {
+      IExpr z = ast.arg3();
+      if (z.isList()) {
         // thread elementwise over list in arg3
-        return c.mapThread(ast.setAtCopy(3, F.Slot1), 3);
+        return z.mapThread(ast.setAtCopy(3, F.Slot1), 3);
       }
-      if (c.isZero() && a.isList() && b.isList()) {
+      if (z.isZero() && a.isList() && b.isList()) {
         return F.C1;
       }
       IAST aVector = F.NIL;
@@ -1358,7 +1355,7 @@ public class HypergeometricFunctions {
         if (!aVector.isEvalFlagOn(IAST.IS_SORTED)) {
           IASTMutable aResult = aVector.copy();
           if (EvalAttributes.sortWithFlags(aResult)) {
-            return F.HypergeometricPFQ(aResult, b, c);
+            return F.HypergeometricPFQ(aResult, b, z);
           }
           aVector.addEvalFlags(IAST.IS_SORTED);
         }
@@ -1373,7 +1370,7 @@ public class HypergeometricFunctions {
         if (!bVector.isEvalFlagOn(IAST.IS_SORTED)) {
           IASTMutable bResult = bVector.copy();
           if (EvalAttributes.sortWithFlags(bResult)) {
-            return F.HypergeometricPFQ(a, bResult, c);
+            return F.HypergeometricPFQ(a, bResult, z);
           }
           bVector.addEvalFlags(IAST.IS_SORTED);
         }
@@ -1382,10 +1379,14 @@ public class HypergeometricFunctions {
 
       // numeric mode isn't set here
 
-      if (c.isInexactNumber() || a.isInexactVector() > 0 || b.isInexactVector() > 0) {
-        return numericHypergeometricPFQ(a, b, c, ast, engine);
+      if (a.argSize() > 0 && b.argSize() == a.argSize() - 1) {
+        if (a.forAll(x -> x.isOne()) && b.forAll(x -> x.isNumEqualInteger(F.C2))) {
+          return F.Divide(F.PolyLog(F.ZZ(b.argSize()), z), z);
+        }
       }
-
+      if (z.isInexactNumber() || a.isInexactVector() > 0 || b.isInexactVector() > 0) {
+        return numericHypergeometricPFQ(a, b, z, ast, engine);
+      }
       return F.NIL;
     }
 
@@ -1529,16 +1530,16 @@ public class HypergeometricFunctions {
             // ISymbol k = F.Dummy("k");
             // (Gamma(-1+b,z)*z^(1-b)*E^z*LaguerreL(-1+n,1-b,-z)-Sum(LaguerreL(-1-k+n,-b+k+1,-z)/k*LaguerreL(-
             // 1+k,-1+b-k,z),{k,1,-1+n}))/Pochhammer(2-b,-1+n)
-            IExpr sum = engine.evaluate(F.sum(k ->
-                F.Times(F.Power(k, F.CN1),
-                    F.LaguerreL(F.Plus(F.CN1, F.Negate(k), ni),
-                        F.Plus(F.Negate(b), k, F.C1), F.Negate(z)),
-                    F.LaguerreL(F.Plus(F.CN1, k), F.Plus(F.CN1, b, F.Negate(k)), z)),
-                1, n - 1));
+            IExpr sum =
+                engine.evaluate(F.sum(
+                    k -> F.Times(F.Power(k, F.CN1),
+                        F.LaguerreL(F.Plus(F.CN1, F.Negate(k), ni), F.Plus(F.Negate(b), k, F.C1),
+                            F.Negate(z)),
+                        F.LaguerreL(F.Plus(F.CN1, k), F.Plus(F.CN1, b, F.Negate(k)), z)),
+                    1, n - 1));
             return F.Times(F.Power(F.Pochhammer(F.Subtract(F.C2, b), F.Plus(F.CN1, ni)), F.CN1),
-                F.Subtract(
-                    F.Times(F.Gamma(F.Plus(F.CN1, b), z), F.Power(z, F.Subtract(F.C1, b)), F.Exp(z),
-                        F.LaguerreL(F.Plus(F.CN1, ni), F.Subtract(F.C1, b), F.Negate(z))),
+                F.Subtract(F.Times(F.Gamma(F.Plus(F.CN1, b), z), F.Power(z, F.Subtract(F.C1, b)),
+                    F.Exp(z), F.LaguerreL(F.Plus(F.CN1, ni), F.Subtract(F.C1, b), F.Negate(z))),
                     sum));
           }
         }
