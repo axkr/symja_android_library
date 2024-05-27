@@ -291,6 +291,11 @@ public class Config {
   public static double DEFAULT_ROOTS_CHOP_DELTA = 1.0e-5;
 
   /**
+   * Epsilon criteria for final AV=VD check in Eigen decompositions.
+   */
+  public static double DEFAULT_EPSILON_AV_VD_CHECK = 1.0e-4;
+
+  /**
    * Tolerance used in special function algorithms ported from
    * <a href="https://github.com/paulmasson/math">math.js</a> and in the JavaScript based plot
    * functions.

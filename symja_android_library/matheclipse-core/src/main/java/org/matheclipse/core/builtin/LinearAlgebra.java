@@ -42,6 +42,7 @@ import org.hipparchus.linear.BlockFieldMatrix;
 import org.hipparchus.linear.ComplexEigenDecomposition;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.DependentVectorsHandler;
+import org.hipparchus.linear.EigenDecompositionNonSymmetric;
 import org.hipparchus.linear.FieldDecompositionSolver;
 import org.hipparchus.linear.FieldLUDecomposition;
 import org.hipparchus.linear.FieldMatrix;
@@ -1986,14 +1987,23 @@ public final class LinearAlgebra {
 
     @Override
     public IAST realMatrixEval(RealMatrix matrix, EvalEngine engine) {
-      ComplexEigenDecomposition ced = new OrderedComplexEigenDecomposition(matrix, //
-          ComplexEigenDecomposition.DEFAULT_EIGENVECTORS_EQUALITY, //
-          ComplexEigenDecomposition.DEFAULT_EPSILON, //
-          ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK, //
-          (c1, c2) -> Double.compare(c2.norm(), c1.norm()));
-      IAST eigenvalues = Convert.complexValues2List(ced.getEigenvalues());
+      try {
+        ComplexEigenDecomposition ced = new OrderedComplexEigenDecomposition(matrix, //
+            ComplexEigenDecomposition.DEFAULT_EIGENVECTORS_EQUALITY, //
+            ComplexEigenDecomposition.DEFAULT_EPSILON, //
+            Config.DEFAULT_EPSILON_AV_VD_CHECK, // ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK
+            (c1, c2) -> Double.compare(c2.norm(), c1.norm()));
+        IAST eigenvalues = Convert.complexValues2List(ced.getEigenvalues());
+        IAST eigenvectors = F.mapRange(0, matrix.getColumnDimension(),
+            j -> S.Normalize.of(engine, Convert.complexVector2List(ced.getEigenvector(j))));
+        return F.List(eigenvalues, eigenvectors);
+      } catch (RuntimeException rex) {
+
+      }
+      EigenDecompositionNonSymmetric edns = new EigenDecompositionNonSymmetric(matrix);
+      IAST eigenvalues = Convert.complexValues2List(edns.getEigenvalues());
       IAST eigenvectors = F.mapRange(0, matrix.getColumnDimension(),
-          j -> S.Normalize.of(engine, Convert.complexVector2List(ced.getEigenvector(j))));
+          j -> S.Normalize.of(engine, Convert.complexVector2List(edns.getEigenvector(j))));
       return F.List(eigenvalues, eigenvectors);
     }
 
@@ -2197,13 +2207,26 @@ public final class LinearAlgebra {
 
     @Override
     public IAST realMatrixEval(RealMatrix matrix, EvalEngine engine) {
-      // TODO https://github.com/Hipparchus-Math/hipparchus/issues/174
-      ComplexEigenDecomposition ced = new OrderedComplexEigenDecomposition(matrix, //
-          ComplexEigenDecomposition.DEFAULT_EIGENVECTORS_EQUALITY, //
-          ComplexEigenDecomposition.DEFAULT_EPSILON, //
-          ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK, //
-          Comparators.COMPLEX_NORM_REVERSE_COMPARATOR);
-      Complex[] eigenvalues = ced.getEigenvalues();
+      try {
+        // https://github.com/Hipparchus-Math/hipparchus/issues/337
+        // TODO https://github.com/Hipparchus-Math/hipparchus/issues/174
+        ComplexEigenDecomposition ced = new OrderedComplexEigenDecomposition(matrix, //
+            ComplexEigenDecomposition.DEFAULT_EIGENVECTORS_EQUALITY, //
+            ComplexEigenDecomposition.DEFAULT_EPSILON, //
+            Config.DEFAULT_EPSILON_AV_VD_CHECK, // ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK
+            Comparators.COMPLEX_NORM_REVERSE_COMPARATOR);
+        Complex[] eigenvalues = ced.getEigenvalues();
+        return F.mapRange(0, eigenvalues.length, (int i) -> {
+          if (F.isZero(eigenvalues[i].getImaginary())) {
+            return F.num(eigenvalues[i].getReal());
+          }
+          return F.complexNum(eigenvalues[i].getReal(), eigenvalues[i].getImaginary());
+        });
+      } catch (RuntimeException rex) {
+        // rex.printStackTrace();
+      }
+      EigenDecompositionNonSymmetric edns = new EigenDecompositionNonSymmetric(matrix);
+      Complex[] eigenvalues = edns.getEigenvalues();
       return F.mapRange(0, eigenvalues.length, (int i) -> {
         if (F.isZero(eigenvalues[i].getImaginary())) {
           return F.num(eigenvalues[i].getReal());
@@ -2473,14 +2496,21 @@ public final class LinearAlgebra {
 
     @Override
     public IAST realMatrixEval(RealMatrix matrix, EvalEngine engine) {
-      // TODO https://github.com/Hipparchus-Math/hipparchus/issues/174
-      ComplexEigenDecomposition ced = new OrderedComplexEigenDecomposition(matrix, //
-          ComplexEigenDecomposition.DEFAULT_EIGENVECTORS_EQUALITY, //
-          ComplexEigenDecomposition.DEFAULT_EPSILON, //
-          ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK, //
-          (c1, c2) -> Double.compare(c2.norm(), c1.norm()));
+      try {
+        // TODO https://github.com/Hipparchus-Math/hipparchus/issues/174
+        ComplexEigenDecomposition ced = new OrderedComplexEigenDecomposition(matrix, //
+            ComplexEigenDecomposition.DEFAULT_EIGENVECTORS_EQUALITY, //
+            ComplexEigenDecomposition.DEFAULT_EPSILON, //
+            Config.DEFAULT_EPSILON_AV_VD_CHECK, // ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK
+            (c1, c2) -> Double.compare(c2.norm(), c1.norm()));
+        return F.mapRange(0, matrix.getColumnDimension(),
+            j -> S.Normalize.of(engine, Convert.complexVector2List(ced.getEigenvector(j))));
+      } catch (RuntimeException rex) {
+
+      }
+      EigenDecompositionNonSymmetric edns = new EigenDecompositionNonSymmetric(matrix);
       return F.mapRange(0, matrix.getColumnDimension(),
-          j -> S.Normalize.of(engine, Convert.complexVector2List(ced.getEigenvector(j))));
+          j -> S.Normalize.of(engine, Convert.complexVector2List(edns.getEigenvector(j))));
     }
 
     @Override

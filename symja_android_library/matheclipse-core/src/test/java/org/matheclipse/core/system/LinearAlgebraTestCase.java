@@ -516,6 +516,11 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testEigensystem() {
+    check("Chop(Eigensystem({{1,0,0,0,0},{3,1,0,0,0},{6,3,2,0,0},{10,6,3,2,0},{15,10,6,3,2}}))", //
+        "{{2.00004,1.99998+I*0.0000311927,1.99998+I*(-0.0000311927),1.0,1.0},{{0,0,0,2.18359*10^-6,1.0},{\n" //
+            + "0,0,0,0,0},{0,0,0,0,0},{2.87584*10^-9,0.223607,-0.67082,0.67082,-0.223607},{0,0,\n" //
+            + "0,0,0}}}");
+
     // example from https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors
     check(//
         "Chop(Eigensystem({{2.0,0.0,0.0,0.0},{1.0,2.0,0.0,0.0},{0.0,1.0,3.0,0.0},{0.0,0.0,1.0,3.0}}), 10^-7)", //
@@ -534,6 +539,10 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testEigenvalues() {
+    check("Eigenvalues({{1, 0, 0}, {-2, 1, 0}, {0, 1, 1}})", //
+        "{1,1,1}");
+    check("Eigenvalues({{1,0,0,0,0},{3,1,0,0,0},{6,3,2,0,0},{10,6,3,2,0},{15,10,6,3,2}})", //
+        "{2.00004,1.99998+I*(-0.0000311927),1.99998+I*0.0000311927,1.0,1.0}");
     check("Eigenvalues({{7}},-1)", //
         "{7.0}");
     check("Eigenvalues({{-1}},1)", //
@@ -635,6 +644,12 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testEigenvectors() {
+    // TODO https://github.com/Hipparchus-Math/hipparchus/issues/337
+    check("Eigenvectors({{1, 0, 0}, {-2, 1, 0}, {0, 1, 1}})", //
+        "{{0.0,0.0,1.0},{0.0,-6.66134*10^-16,1.0},{0.0,6.66134*10^-16,-1.0}}");
+    check("Eigenvectors({{1,0,0,0,0},{3,1,0,0,0},{6,3,2,0,0},{10,6,3,2,0},{15,10,6,3,2}})", //
+        "{{0.0,0.0,2.62433*10^-12,2.18359*10^-6,1.0},{0.0,0.0,0.0,0.0,0.0},{0.0,0.0,0.0,0.0,0.0},{2.87584*10^-9,0.223607,-0.67082,0.67082,-0.223607},{0.0,0.0,0.0,0.0,0.0}}");
+
     check("Eigenvectors(SparseArray({{1.0, 2.0, 3}, {4, 5, 6}, {7, 8, 9}}))", //
         "{{0.231971,0.525322,0.818673},{0.78583,0.0867513,-0.612328},{-0.408248,0.816497,-0.408248}}");
     check("Eigenvectors({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}) // MatrixForm", //
@@ -676,14 +691,12 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testEigenvectorsIssue979() {
+    // https://github.com/Hipparchus-Math/hipparchus/issues/337
     // TODO Hipparchus checks submatrices for singularity
     check("Eigenvectors({{1,0,0},\n" //
         + "{-2,1,0},\n"//
         + "{0,1,1}})", //
-        "Eigenvectors(\n"//
-            + "{{1,0,0},\n"//
-            + " {-2,1,0},\n"//
-            + " {0,1,1}})");
+        "{{0.0,0.0,1.0},{0.0,-6.66134*10^-16,1.0},{0.0,6.66134*10^-16,-1.0}}");
   }
 
   @Test
