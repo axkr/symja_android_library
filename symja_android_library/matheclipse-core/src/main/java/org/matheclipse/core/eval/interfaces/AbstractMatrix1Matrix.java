@@ -30,7 +30,10 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
         if (matrix != null) {
           Predicate<IExpr> zeroChecker = AbstractMatrix1Expr.optionZeroTest(ast, 2, engine);
           matrix = matrixEval(matrix, zeroChecker);
-          return Convert.matrix2List(matrix);
+          if (matrix != null) {
+            return Convert.matrix2List(matrix);
+          }
+          return F.NIL;
         }
       }
     } catch (LimitException le) {
@@ -67,7 +70,10 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
           }
           Predicate<IExpr> zeroChecker = AbstractMatrix1Expr.optionZeroTest(ast, 2, engine);
           fieldMatrix = matrixEval(fieldMatrix, zeroChecker);
-          return Convert.matrix2List(fieldMatrix);
+          if (fieldMatrix != null) {
+            return Convert.matrix2List(fieldMatrix);
+          }
+          return F.NIL;
         }
 
         matrix = ast.arg1().toRealMatrix();
@@ -104,7 +110,7 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
    * Evaluate the symbolic matrix for this algorithm.
    *
    * @param matrix the matrix which contains symbolic values
-   * @return
+   * @return <code>null</code> if no result could be evaluated
    */
   public abstract FieldMatrix<IExpr> matrixEval(FieldMatrix<IExpr> matrix,
       Predicate<IExpr> zeroChecker);

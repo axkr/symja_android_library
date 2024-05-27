@@ -882,6 +882,12 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testInverse() {
+    // message Inverse: Matrix {{0,1},{0,0}} is singular.
+    check("Inverse({{0, 1.0}, {0, 0}})", //
+        "Inverse(\n" //
+            + "{{0,1.0},\n" //
+            + " {0,0}})");
+
     check("Inverse(s*{{1,0,0},{0,1,0},{0,0,1}}-{{-1,1,1},{-4,-4,1},{1,1,1}})", //
         "{{(5-3*s-s^2)/(10-s-4*s^2-s^3),s/(-10+s+4*s^2+s^3),(5+s)/(-10+s+4*s^2+s^3)},\n" //
             + " {(5-4*s)/(-10+s+4*s^2+s^3),(2-s^2)/(10-s-4*s^2-s^3),(3-s)/(10-s-4*s^2-s^3)},\n" //
