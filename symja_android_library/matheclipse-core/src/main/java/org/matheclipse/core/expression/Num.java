@@ -534,6 +534,10 @@ public class Num implements INum {
   @Override
   public IExpr digamma() {
     try {
+      double doubleDigamma = org.hipparchus.special.Gamma.digamma(value);
+      if (Double.isFinite(doubleDigamma)) {
+        return F.complexNum(doubleDigamma);
+      }
       Apfloat digamma = EvalEngine.getApfloatDouble().digamma(apfloatValue());
       return F.num(digamma.doubleValue());
     } catch (ArithmeticException | NumericComputationException aex) {
@@ -786,6 +790,10 @@ public class Num implements INum {
       return F.CComplexInfinity;
     }
     try {
+      double doubleGamma = org.hipparchus.special.Gamma.gamma(value);
+      if (Double.isFinite(doubleGamma)) {
+        return F.num(doubleGamma);
+      }
       Apfloat gamma = EvalEngine.getApfloatDouble().gamma(apfloatValue());
       return F.num(gamma.doubleValue());
     } catch (OverflowException of) {
@@ -1573,6 +1581,10 @@ public class Num implements INum {
   @Override
   public IExpr logGamma() {
     if (isPositive()) {
+      double doubleLoggamma = org.hipparchus.special.Gamma.logGamma(value);
+      if (Double.isFinite(doubleLoggamma)) {
+        return F.complexNum(doubleLoggamma);
+      }
       Apfloat logGamma = EvalEngine.getApfloatDouble().logGamma(apfloatValue());
       return F.num(logGamma.doubleValue());
     }

@@ -11,6 +11,7 @@ import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -643,6 +644,10 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr digamma() {
     try {
+      Complex complexDigamma = org.hipparchus.special.Gamma.digamma(fComplex);
+      if (complexDigamma.isFinite()) {
+        return F.complexNum(complexDigamma);
+      }
       Apcomplex digamma = EvalEngine.getApfloatDouble().digamma(apcomplexValue());
       return F.complexNum(digamma.real().doubleValue(), digamma.imag().doubleValue());
     } catch (ArithmeticException | NumericComputationException aex) {
@@ -691,7 +696,7 @@ public class ComplexNum implements IComplexNum {
     try {
       // TODO depends on // https://github.com/Hipparchus-Math/hipparchus/issues/278
       Complex complexErf = org.hipparchus.special.Erf.erf(fComplex);
-      if (!complexErf.isFinite()) {
+      if (complexErf.isFinite()) {
         return F.complexNum(complexErf);
       }
       Apcomplex erf = EvalEngine.getApfloatDouble().erf(apcomplexValue());
@@ -711,7 +716,7 @@ public class ComplexNum implements IComplexNum {
       try {
         // TODO depends on // https://github.com/Hipparchus-Math/hipparchus/issues/278
         Complex complexErfc = org.hipparchus.special.Erf.erfc(fComplex);
-        if (!complexErfc.isFinite()) {
+        if (complexErfc.isFinite()) {
           return F.complexNum(complexErfc);
         }
       } catch (RuntimeException rex) {
@@ -732,7 +737,7 @@ public class ComplexNum implements IComplexNum {
     try {
       // TODO depends on // https://github.com/Hipparchus-Math/hipparchus/issues/278
       // Complex complexErfi = org.hipparchus.special.Erf.erfInv(fComplex);
-      // if (!complexErfi.isFinite()) {
+      // if (complexErfi.isFinite()) {
       // return F.complexNum(complexErfi);
       // }
       Apcomplex erfi = EvalEngine.getApfloatDouble().erfi(apcomplexValue());
@@ -887,6 +892,15 @@ public class ComplexNum implements IComplexNum {
       return F.CComplexInfinity;
     }
     try {
+      // hipparchus #gamma(Complex) is not as accurate as apfloat implementation
+      // Complex complexGamma = org.hipparchus.special.Gamma.gamma(fComplex);
+      // if (complexGamma.isFinite()) {
+      // return F.complexNum(complexGamma);
+      // }
+      Complex complexGamma = Arithmetic.lanczosApproxGamma(fComplex);
+      if (complexGamma.isFinite()) {
+        return F.complexNum(complexGamma);
+      }
       Apcomplex gamma = EvalEngine.getApfloatDouble().gamma(apcomplexValue());
       return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
     } catch (OverflowException of) {
@@ -1424,6 +1438,11 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr logGamma() {
+    // hipparchus #logGamma(Complex) is not as accurate as apfloat implementation
+    // Complex complexLoggamma = org.hipparchus.special.Gamma.logGamma(fComplex);
+    // if (complexLoggamma.isFinite()) {
+    // return F.complexNum(complexLoggamma);
+    // }
     Apcomplex logGamma = EvalEngine.getApfloatDouble().logGamma(apcomplexValue());
     return F.complexNum(logGamma.real().doubleValue(), logGamma.imag().doubleValue());
   }
