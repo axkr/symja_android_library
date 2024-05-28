@@ -83,7 +83,7 @@ public class OutputFormFactory {
    */
   private final boolean fComplexReImI;
 
-  private boolean fIgnoreNewLine = false;
+  private boolean fIgnoreNewLine = Config.DEFAULT_OUTPUT_FORM_IGNORE_NEW_LINE;
 
   /** If <code>true</code> print leading and trailing quotes in Symja strings */
   protected boolean fInputForm = false;
