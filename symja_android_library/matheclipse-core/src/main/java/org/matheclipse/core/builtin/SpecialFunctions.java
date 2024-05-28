@@ -17,7 +17,6 @@ import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.QQ;
-import static org.matheclipse.core.expression.F.Sqr;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.Zeta;
 import static org.matheclipse.core.expression.S.Pi;
@@ -2565,7 +2564,7 @@ public class SpecialFunctions {
         return Plus(CN1, Zeta(s));
       }
       if (a.isNumEqualRational(C1D2)) {
-        return Times(Plus(CN1, Sqr(s)), Zeta(s));
+        return Times(Plus(CN1, F.Power(F.C2, s)), Zeta(s));
       }
       EvalEngine engine = EvalEngine.get();
       if (engine.isDoubleMode()) {
