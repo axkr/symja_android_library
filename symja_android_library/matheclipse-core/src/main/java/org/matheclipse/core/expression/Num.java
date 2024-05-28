@@ -609,13 +609,31 @@ public class Num implements INum {
 
   @Override
   public IExpr erf() {
-    Apfloat erf = EvalEngine.getApfloatDouble().erf(apfloatValue());
-    return F.num(erf.doubleValue());
+    try {
+      double doubleErf = org.hipparchus.special.Erf.erf(value);
+      if (Double.isFinite(doubleErf)) {
+        return F.num(doubleErf);
+      }
+      Apfloat erf = EvalEngine.getApfloatDouble().erf(apfloatValue());
+      return F.num(erf.doubleValue());
+    } catch (OverflowException of) {
+      // return Underflow? https://github.com/mtommila/apfloat/issues/38
+      return F.Overflow();
+    } catch (ArithmeticException | NumericComputationException e) {
+      e.printStackTrace();
+    }
+    // Apfloat erf = EvalEngine.getApfloatDouble().erf(apfloatValue());
+    // return F.num(erf.doubleValue());
+    return INum.super.erf();
   }
 
   @Override
   public IExpr erfc() {
     try {
+      double doubleErfc = org.hipparchus.special.Erf.erfc(value);
+      if (Double.isFinite(doubleErfc)) {
+        return F.num(doubleErfc);
+      }
       Apfloat erfc = EvalEngine.getApfloatDouble().erfc(apfloatValue());
       return F.num(erfc.doubleValue());
     } catch (OverflowException of) {
@@ -629,8 +647,22 @@ public class Num implements INum {
 
   @Override
   public IExpr erfi() {
-    Apfloat erfi = EvalEngine.getApfloatDouble().erfi(apfloatValue());
-    return F.num(erfi.doubleValue());
+    try {
+      // double doubleErfi = org.hipparchus.special.Erf.erfInv(value);
+      // if (Double.isFinite(doubleErfi)) {
+      // return F.num(doubleErfi);
+      // }
+      Apfloat erfi = EvalEngine.getApfloatDouble().erfi(apfloatValue());
+      return F.num(erfi.doubleValue());
+    } catch (OverflowException of) {
+      // return Underflow? https://github.com/mtommila/apfloat/issues/38
+      return F.Overflow();
+    } catch (ArithmeticException | NumericComputationException e) {
+      e.printStackTrace();
+    }
+    return INum.super.erfi();
+    // Apfloat erfi = EvalEngine.getApfloatDouble().erfi(apfloatValue());
+    // return F.num(erfi.doubleValue());
   }
 
   @Override
@@ -1212,9 +1244,12 @@ public class Num implements INum {
   @Override
   public IExpr inverseErf() {
     if (-1.0 < value && value < 1.0) {
-      return Num.valueOf(org.hipparchus.special.Erf.erfInv(value));
-      // Apfloat erf = EvalEngine.getApfloatDouble().inverseErf(apfloatValue());
-      // return F.num(erf.doubleValue());
+      double erfInv = org.hipparchus.special.Erf.erfInv(value);
+      if (Double.isFinite(erfInv)) {
+        return Num.valueOf(erfInv);
+      }
+      Apfloat inverseErf = EvalEngine.getApfloatDouble().inverseErf(apfloatValue());
+      return F.num(inverseErf.doubleValue());
     }
     return INum.super.inverseErf();
   }
@@ -1222,9 +1257,12 @@ public class Num implements INum {
   @Override
   public IExpr inverseErfc() {
     if (0.0 < value && value < 2.0) {
-      return Num.valueOf(org.hipparchus.special.Erf.erfcInv(value));
-      // Apfloat erfc = EvalEngine.getApfloatDouble().inverseErfc(apfloatValue());
-      // return F.num(erfc.doubleValue());
+      double erfcInv = org.hipparchus.special.Erf.erfcInv(value);
+      if (Double.isFinite(erfcInv)) {
+        return Num.valueOf(erfcInv);
+      }
+      Apfloat inverseErfc = EvalEngine.getApfloatDouble().inverseErfc(apfloatValue());
+      return F.num(inverseErfc.doubleValue());
     }
     return INum.super.inverseErfc();
   }
