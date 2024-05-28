@@ -280,6 +280,14 @@ public class Config {
    */
   public static double ZERO_IN_OUTPUT_FORMAT = 1.0e-100;
 
+  /**
+   * The default value of {@link OutputFormFactory}#fIgnoreNewLine,
+   * <p>
+   * This option allow to control the default value of OutputFormFactory#fIgnoreNewLine,
+   * which obtains from OutputFormFactory#get* methods
+   */
+  public static boolean DEFAULT_OUTPUT_FORM_IGNORE_NEW_LINE = false;
+
   /** The real which added to 1.0 gives the next double value greater than 1.0 */
   public static double MACHINE_EPSILON = Math.nextUp(1.0) - 1.0;
 
