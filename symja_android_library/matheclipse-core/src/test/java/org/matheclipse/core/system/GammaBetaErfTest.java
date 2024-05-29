@@ -1229,11 +1229,11 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "0");
     check("PolyGamma(-2)", //
         "ComplexInfinity");
-    check("PolyGamma(1,1/4)", //
+    check("PolyGamma(1,1/4)//FunctionExpand", //
         "8*Catalan+Pi^2");
-    check("PolyGamma(1,3/4)", //
+    check("PolyGamma(1,3/4)//FunctionExpand", //
         "-8*Catalan+Pi^2");
-    check("PolyGamma(2,5/6)", //
+    check("PolyGamma(2,5/6)//FunctionExpand", //
         "4*Sqrt(3)*Pi^3-182*Zeta(3)");
     check("PolyGamma({1,2,3,4,5})", //
         "{-EulerGamma,1-EulerGamma,3/2-EulerGamma,11/6-EulerGamma,25/12-EulerGamma}");
