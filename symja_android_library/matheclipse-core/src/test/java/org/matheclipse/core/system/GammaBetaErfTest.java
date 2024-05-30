@@ -1182,6 +1182,11 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolyGamma() {
+    // TODO calculate for complex n:
+    checkNumeric("PolyGamma(6 + I, 2.5 + 3 I)", //
+        "PolyGamma(6.0+I*1.0,2.5+I*3.0)");
+
+
     checkNumeric("PolyGamma(0, 0.166667)", //
         "-6.332115068746184");
     checkNumeric("PolyGamma(0, 0.166667+1/2)", //

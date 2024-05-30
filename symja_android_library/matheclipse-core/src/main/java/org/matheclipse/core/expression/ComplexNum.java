@@ -1437,6 +1437,15 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr log(final IExpr base) {
+    if (base instanceof INumber) {
+      Complex complexBase = ((INumber) base).evalfc();
+      return valueOf(fComplex.log().divide(complexBase.log()));
+    }
+    return IComplexNum.super.log(base);
+  }
+
+  @Override
   public IExpr logGamma() {
     // hipparchus #logGamma(Complex) is not as accurate as apfloat implementation
     // Complex complexLoggamma = org.hipparchus.special.Gamma.logGamma(fComplex);

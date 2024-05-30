@@ -240,9 +240,13 @@ public class Num implements INum {
   public IExpr besselI(IExpr arg2) {
     if (arg2 instanceof INumber) {
       if (arg2 instanceof IReal) {
-        Apfloat besselI =
-            EvalEngine.getApfloatDouble().besselI(apfloatValue(), ((IReal) arg2).apfloatValue());
-        return F.num(besselI.doubleValue());
+        try {
+          Apfloat besselI =
+              EvalEngine.getApfloatDouble().besselI(apfloatValue(), ((IReal) arg2).apfloatValue());
+          return F.num(besselI.doubleValue());
+        } catch (ArithmeticException aex) {
+          // result would be complex exception
+        }
       }
       Apcomplex besselI =
           EvalEngine.getApfloatDouble().besselI(apfloatValue(), ((INumber) arg2).apcomplexValue());
@@ -255,9 +259,13 @@ public class Num implements INum {
   public IExpr besselJ(IExpr arg2) {
     if (arg2 instanceof INumber) {
       if (arg2 instanceof IReal) {
-        Apfloat besselJ =
-            EvalEngine.getApfloatDouble().besselJ(apfloatValue(), ((IReal) arg2).apfloatValue());
-        return F.num(besselJ.doubleValue());
+        try {
+          Apfloat besselJ =
+              EvalEngine.getApfloatDouble().besselJ(apfloatValue(), ((IReal) arg2).apfloatValue());
+          return F.num(besselJ.doubleValue());
+        } catch (ArithmeticException aex) {
+          // result would be complex exception
+        }
       }
       Apcomplex besselJ =
           EvalEngine.getApfloatDouble().besselJ(apfloatValue(), ((INumber) arg2).apcomplexValue());
@@ -270,9 +278,13 @@ public class Num implements INum {
   public IExpr besselK(IExpr arg2) {
     if (arg2 instanceof INumber) {
       if (arg2 instanceof IReal) {
-        Apfloat besselK =
-            EvalEngine.getApfloatDouble().besselK(apfloatValue(), ((IReal) arg2).apfloatValue());
-        return F.num(besselK.doubleValue());
+        try {
+          Apfloat besselK =
+              EvalEngine.getApfloatDouble().besselK(apfloatValue(), ((IReal) arg2).apfloatValue());
+          return F.num(besselK.doubleValue());
+        } catch (ArithmeticException aex) {
+          // result would be complex exception
+        }
       }
       Apcomplex besselK =
           EvalEngine.getApfloatDouble().besselK(apfloatValue(), ((INumber) arg2).apcomplexValue());
@@ -285,9 +297,13 @@ public class Num implements INum {
   public IExpr besselY(IExpr arg2) {
     if (arg2 instanceof INumber) {
       if (arg2 instanceof IReal) {
-        Apfloat besselY =
-            EvalEngine.getApfloatDouble().besselY(apfloatValue(), ((IReal) arg2).apfloatValue());
-        return F.num(besselY.doubleValue());
+        try {
+          Apfloat besselY =
+              EvalEngine.getApfloatDouble().besselY(apfloatValue(), ((IReal) arg2).apfloatValue());
+          return F.num(besselY.doubleValue());
+        } catch (ArithmeticException aex) {
+          // result would be complex exception
+        }
       }
       Apcomplex besselY =
           EvalEngine.getApfloatDouble().besselY(apfloatValue(), ((INumber) arg2).apcomplexValue());
@@ -1576,6 +1592,20 @@ public class Num implements INum {
       return ComplexNum.valueOf(new Complex(value).log());
     }
     return valueOf(Math.log(value));
+  }
+
+  @Override
+  public IExpr log(final IExpr base) {
+    if (base instanceof INumber) {
+      if (base instanceof IReal) {
+        if (isNegative()) {
+          return ComplexNum.valueOf(value).log(ComplexNum.valueOf(base.evalfc()));
+        }
+        return valueOf(Math.log(value) / Math.log(base.evalf()));
+      }
+      return ComplexNum.valueOf(value).log(ComplexNum.valueOf(base.evalfc()));
+    }
+    return INum.super.log(base);
   }
 
   @Override

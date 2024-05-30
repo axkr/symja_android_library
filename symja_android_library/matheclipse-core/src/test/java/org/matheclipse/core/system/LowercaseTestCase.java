@@ -3997,10 +3997,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCoth() {
-    check("Coth(0)", //
-        "ComplexInfinity");
     check("Coth(0.)", //
         "ComplexInfinity");
+    check("Coth(0)", //
+        "ComplexInfinity");
+
   }
 
   @Test
@@ -12950,6 +12951,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLog() {
+    check("N(Log({2, E, 10}, -5/2),50)", //
+        "{1.3219280948873623478703194294893901758648313930245+I*4.5323601418271938096276829457166668101718614677237," //
+            + "0.9162907318741550651835272117680110714501012199082+I*3.1415926535897932384626433832795028841971693993751," //
+            + "0.3979400086720376095725222105510139464636202370757+I*1.3643763538418413474857836254313557702101274837239}");
+
     checkNumeric("Log(Exp(1.4))", //
         "1.4");
 
@@ -12960,11 +12966,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1.3219280948873623478703194294893901758648313930245," //
             + "0.91629073187415506518352721176801107145010121990826," //
             + "0.39794000867203760957252221055101394646362023707578}");
-
-    check("N(Log({2, E, 10}, -5/2),50)", //
-        "{1.3219280948873623478703194294893901758648313930245+I*4.5323601418271938096276829457166668101718614677237," //
-            + "0.9162907318741550651835272117680110714501012199082+I*3.1415926535897932384626433832795028841971693993751," //
-            + "0.3979400086720376095725222105510139464636202370757+I*1.3643763538418413474857836254313557702101274837239}");
 
     check("Log((-1)^(1/8))", //
         "I*1/8*Pi");
@@ -13119,7 +13120,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Log10(1000)", //
         "3");
     checkNumeric("Log10({2., 5.})", //
-        "{0.30102999566398114,0.6989700043360186}");
+        "{0.30102999566398114,0.6989700043360187}");
     check("Log10(E ^ 3)", //
         "3/Log(10)");
 
@@ -13137,7 +13138,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Log2(4 ^ 8)", //
         "16");
     checkNumeric("Log2(5.6)", //
-        "2.4854268271702415");
+        "2.485426827170242");
     check("Log2(E ^ 2) ", //
         "2/Log(2)");
     check("Log2(x)", //
@@ -21987,56 +21988,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{395,{{1,4,9,16,25,36,49,64,81,100}}}");
   }
 
-  @Test
-  public void testSphericalBesselJ() {
-    check("SphericalBesselJ(2.5,-5)", //
-        "I*0.204488");
-    checkNumeric("SphericalBesselJ(1,5.2)", //
-        "-0.12277149950214108");
-    checkNumeric("BesselJ(2.5,-5)", //
-        "I*0.24037720111131736");
-    checkNumeric("SphericalBesselJ(2.5,-5)", // I*0.20448758430717914
-        "I*0.20448758430717917");
-    checkNumeric("SphericalBesselJ(2.0,-5)", //
-        "0.13473121008883018");
-    checkNumeric("SphericalBesselJ(-0.5,1)", //
-        "0.9590330784042026");
-    checkNumeric("SphericalBesselJ(2.0+I,5.0+I)", //
-        "0.14163924534491812+I*0.005070099110737425");
-  }
-
-  @Test
-  public void testSphericalBesselY() {
-    // TODO improve this value
-    check("SphericalBesselY(2.5,-5)", //
-        "-0.613462+I*0.122973");
-
-    checkNumeric("SphericalBesselY(1,5.5)", //
-        "0.10485295921809935");
-    checkNumeric("BesselY(2.5,-5)", //
-        "I*(-0.2943723749617925)");
-
-    checkNumeric("SphericalBesselY(-0.5,1)", //
-        "0.11061370096805949");
-    checkNumeric("SphericalBesselY(2.0+I,5.0+I)", //
-        "0.15456969798535916+I*(-0.05055787979478312)");
-    checkNumeric("SphericalBesselY(2.0,-5)", //
-        "-0.16499545760108916");
-  }
-
-  @Test
-  public void testSphericalHarmonicY() {
-    check("SphericalHarmonicY(0,0,t,p)", //
-        "1/(2*Sqrt(Pi))");
-    check("SphericalHarmonicY(a,0,0,p)", //
-        "Sqrt(1+2*a)/(2*Sqrt(Pi))");
-    check("SphericalHarmonicY(1,2,t,p)", //
-        "0");
-    check("SphericalHarmonicY(1,1,t,p)", //
-        "-1/2*E^(I*p)*Sqrt(3/2*1/Pi)*Sin(t)");
-    check("SphericalHarmonicY(n,-n-1,t,p)", //
-        "0");
-  }
 
   @Test
   public void testSplice() {

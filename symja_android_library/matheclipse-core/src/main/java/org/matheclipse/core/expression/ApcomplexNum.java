@@ -1274,6 +1274,15 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr log(final IExpr base) {
+    if (base instanceof INumber) {
+      return ApcomplexNum.valueOf(
+          EvalEngine.getApfloat().log(apcomplexValue(), ((INumber) base).apcomplexValue()));
+    }
+    return IComplexNum.super.log(base);
+  }
+
+  @Override
   public ApcomplexNum log10() {
     return valueOf(EvalEngine.getApfloat().log(fApcomplex, new Apfloat(10)));
   }
