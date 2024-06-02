@@ -78,6 +78,7 @@ public final class FunctionDefinitions {
       S.LogLogPlot.setEvaluator(new org.matheclipse.core.reflection.system.LogLogPlot());
 
       S.MatrixD.setEvaluator(new org.matheclipse.core.reflection.system.MatrixD());
+      S.MeijerG.setEvaluator(new org.matheclipse.core.reflection.system.MeijerG());
 
       S.ND.setEvaluator(new org.matheclipse.core.reflection.system.ND());
       S.NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());

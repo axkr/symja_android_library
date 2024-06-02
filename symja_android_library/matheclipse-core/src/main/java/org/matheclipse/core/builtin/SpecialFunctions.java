@@ -88,7 +88,6 @@ public class SpecialFunctions {
       S.InverseGammaRegularized.setEvaluator(new InverseGammaRegularized());
       S.LerchPhi.setEvaluator(new LerchPhi());
       S.LogGamma.setEvaluator(new LogGamma());
-      S.MeijerG.setEvaluator(new MeijerG());
       S.PolyGamma.setEvaluator(new PolyGamma());
       S.PolyLog.setEvaluator(new PolyLog());
       S.ProductLog.setEvaluator(new ProductLog());
@@ -1472,203 +1471,6 @@ public class SpecialFunctions {
   }
 
 
-  private static class MeijerG extends AbstractFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() == 4) {
-        IExpr arg1 = ast.arg1();
-        IExpr arg2 = ast.arg2();
-        IExpr z = ast.arg3();
-        if (z.isList()) {
-          return z.mapThread(ast.setAtCopy(3, F.Slot1), 3);
-        }
-        if (arg1.isList() && arg2.isList()) {
-          IAST list1 = (IAST) arg1;
-          IAST list2 = (IAST) arg2;
-          if (list1.size() == 3 && list1.arg1().isList() && list1.arg2().isList() && //
-              list2.size() == 3 && list2.arg1().isList() && list2.arg2().isList()) {
-            IAST k1 = (IAST) list1.arg1();
-            IAST k2 = (IAST) list1.arg2();
-            IAST l1 = (IAST) list2.arg1();
-            IAST l2 = (IAST) list2.arg2();
-            int n = k1.argSize();
-            int p = k2.argSize();
-            int m = l1.argSize();
-            int q = l2.argSize();
-            switch (n) {
-              case 0:
-                // 0
-                switch (p) {
-                  case 0:
-                    // 0,0
-                    switch (m) {
-                      case 0:
-                        switch (q) {
-                          case 0:
-                            // 0,0,0,0
-                            // `1` currently not supported in `2`.
-                            return Errors.printMessage(S.MeijerG, "unsupported",
-                                F.List(F.CEmptyList, S.MeijerG), engine);
-                        }
-                        break;
-                      case 1:
-                        IExpr b1 = l1.arg1();
-                        switch (q) {
-                          case 1:
-                            // 0,0,1,1
-                            IExpr b2 = l2.arg1();
-                            return
-                            // [$ z^(b1 + (1/2)*(-b1 + b2))*BesselJ(b1 - b2, 2*Sqrt(z)) $]
-                            F.Times(
-                                F.Power(z, F.Plus(b1, F.Times(F.C1D2, F.Plus(F.Negate(b1), b2)))),
-                                F.BesselJ(F.Subtract(b1, b2), F.Times(F.C2, F.Sqrt(z)))); // $$;
-                        }
-                        break;
-                    }
-                    break;
-                  case 1:
-                    // 0,1
-                    IExpr a2 = k2.arg1();
-                    switch (m) {
-                      case 1:
-                        // 0,1,1
-                        IExpr b1 = l1.arg1();
-                        switch (q) {
-                          case 1:
-                            // 0,1,1,1
-                            IExpr b2 = l2.arg1();
-                            return
-                            // [$ (z^b1*Hypergeometric1F1Regularized(1 - a2 + b1, 1 + b1 - b2,
-                            // z))/Gamma(a2
-                            // - b1) $]
-                            F.Times(F.Power(z, b1), F.Power(F.Gamma(F.Subtract(a2, b1)), F.CN1),
-                                F.Hypergeometric1F1Regularized(F.Plus(F.C1, F.Negate(a2), b1),
-                                    F.Plus(F.C1, b1, F.Negate(b2)), z)); // $$;
-                        }
-                        break;
-                    }
-                    break;
-                }
-                break;
-              case 1:
-                // 1
-                IExpr a1 = k1.arg1();
-                switch (p) {
-                  case 0:
-                    // 1,0
-                    switch (m) {
-                      case 0:
-                        // 1,0,0
-                        switch (q) {
-                          case 0:
-                            // 1,0,0,0
-                            return
-                            // [$ z^(-1 + a1)/E^z^(-1) $]
-                            F.Times(F.Power(F.Exp(F.Power(z, F.CN1)), F.CN1),
-                                F.Power(z, F.Plus(F.CN1, a1))); // $$;
-                          case 1:
-                            // 1,0,0,1
-                            IExpr b2 = l2.arg1();
-                            if (z.isPositive()) {
-                              return
-                              // [$ (z^b2/Gamma(a1 - b2))*(z - 1)^(a1 - b2 - 1)*UnitStep(z - 1) $]
-                              F.Times(F.Power(z, b2), F.Power(F.Gamma(F.Subtract(a1, b2)), F.CN1),
-                                  F.Power(F.Plus(F.CN1, z), F.Plus(F.CN1, a1, F.Negate(b2))),
-                                  F.UnitStep(F.Plus(F.CN1, z))); // $$;
-                            }
-                        }
-                        break;
-                      case 1:
-                        // 1,0,1
-                        IExpr b1 = l1.arg1();
-                        switch (q) {
-                          case 1:
-                            // 1,0,1,1
-                            IExpr b2 = l2.arg1();
-                            return
-                            // [$ z^b1*Gamma(1 - a1 + b1)*Hypergeometric1F1Regularized(1 - a1 + b1,
-                            // 1 +
-                            // b1 - b2, -z) $]
-                            F.Times(F.Power(z, b1), F.Gamma(F.Plus(F.C1, F.Negate(a1), b1)),
-                                F.Hypergeometric1F1Regularized(F.Plus(F.C1, F.Negate(a1), b1),
-                                    F.Plus(F.C1, b1, F.Negate(b2)), F.Negate(z))); // $$;
-                        }
-                        break;
-                    }
-                    break;
-                  case 1:
-                    // 1,1
-                    IExpr a2 = k2.arg1();
-                    switch (m) {
-                      case 0:
-                        // 1,1,0
-                        switch (q) {
-                          case 0:
-                            // 1,1,0,0
-                            return
-                            // [$ z^(-1 + a1 + (1/2)*(-a1 + a2))*BesselJ(-a1 + a2, 2/Sqrt(z)) $]
-                            F.Times(
-                                F.Power(z,
-                                    F.Plus(F.CN1, a1, F.Times(F.C1D2, F.Plus(F.Negate(a1), a2)))),
-                                F.BesselJ(F.Plus(F.Negate(a1), a2),
-                                    F.Times(F.C2, F.Power(z, F.CN1D2)))); // $$;
-                          case 1:
-                            // 1,1,0,1
-                            IExpr b2 = l2.arg1();
-                            return
-                            // [$ (z^(-1 + a1)*Hypergeometric1F1Regularized(1 - a1 + b2, 1 - a1 +
-                            // a2,
-                            // 1/z))/Gamma(a1 - b2) $]
-                            F.Times(F.Power(z, F.Plus(F.CN1, a1)),
-                                F.Power(F.Gamma(F.Subtract(a1, b2)), F.CN1),
-                                F.Hypergeometric1F1Regularized(F.Plus(F.C1, F.Negate(a1), b2),
-                                    F.Plus(F.C1, F.Negate(a1), a2), F.Power(z, F.CN1))); // $$;
-                        }
-                        break;
-                      case 1:
-                        IExpr b1 = l1.arg1();
-                        switch (q) {
-                          case 0:
-                            // 1,1,1,0
-                            return
-                            // [$ z^(-1 + a1)*Gamma(1 - a1 + b1)*Hypergeometric1F1Regularized(1 - a1
-                            // + b1, 1
-                            // - a1 + a2, -(1/z)) $]
-                            F.Times(F.Power(z, F.Plus(F.CN1, a1)),
-                                F.Gamma(F.Plus(F.C1, F.Negate(a1), b1)),
-                                F.Hypergeometric1F1Regularized(F.Plus(F.C1, F.Negate(a1), b1),
-                                    F.Plus(F.C1, F.Negate(a1), a2), F.Negate(F.Power(z, F.CN1)))); // $$;
-                        }
-                        break;
-                    }
-                    break;
-                }
-                break;
-            }
-          }
-        }
-      }
-      return F.NIL;
-    }
-
-    // @Override
-    // public IAST getRuleAST() {
-    // return RULES;
-    // }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.EXPERIMENTAL;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
-      super.setUp(newSymbol);
-    }
-  }
-
 
   private static class PolyGamma extends AbstractFunctionEvaluator implements IFunctionExpand {
 
@@ -1986,10 +1788,11 @@ public class SpecialFunctions {
           IExpr sum = F.sum(k -> F.Times(F.Power(F.Factorial(F.Plus(F.CN1, F.Negate(k), p)), F.CN1),
               F.Power(F.CN1, k), F.Power(F.Log(F.Subtract(F.C1, z)), F.Plus(F.CN1, F.Negate(k), p)),
               F.PolyLog(F.Plus(k, F.C2), F.Subtract(F.C1, z))), 0, pInt - 1);
-          return F.Plus(
-              F.Times(v4, F.Power(F.Factorial(p), F.CN1),
-                  F.Power(F.Log(F.Subtract(F.C1, z)), p), F.Log(z)),
-              F.Times(v4, sum), F.Zeta(F.Plus(p, F.C1)));
+          return F
+              .Plus(
+                  F.Times(v4, F.Power(F.Factorial(p), F.CN1),
+                      F.Power(F.Log(F.Subtract(F.C1, z)), p), F.Log(z)),
+                  F.Times(v4, sum), F.Zeta(F.Plus(p, F.C1)));
         }
       }
       if (p.isOne()) {
