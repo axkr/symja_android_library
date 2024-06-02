@@ -54,67 +54,118 @@ public class MainTestCase extends ExprEvaluatorTestCase {
   public void testSystem000() {
     // assertEquals(PrimeList.getMersennePrime(4).toString(), "15");
     // assertEquals(PrimeList.getMersennePrime(128).toString(), "15");
-    check("1^(-1)", "1");
-    check("test+0", "test");
-    check("Times(3, Power(1, -1))", "3");
-    check("%", "3");
-    check("%%%*%2", "test^2");
-    check("%10", "Out(10)");
-    check("1-x", "1-x");
-    check("5+x^4*(33+x^2)", "5+(33+x^2)*x^4");
-    check("x^(-7)", "1/x^7");
-    check("x^(-7.0)", "1/x^7.0");
-    check("x^(1+I*3)", "x^(1+I*3)");
-    check("x^(-1+I*3)", "1/x^(1-I*3)");
-    check("x^(1.0+I*3)", "x^(1.0+I*3.0)");
-    check("x^(-1+I*3.0)", "1/x^(1.0+I*(-3.0))");
-    check("x^(I*3)", "x^(I*3)");
-    check("x^(I*3.0)", "x^(I*3.0)");
-    check("x^(-I*3)", "1/x^(I*3)");
-    check("x^(-I*3.0)", "1/x^(I*3.0)");
-    check("Sin(3/10*Pi)", "1/4*(1+Sqrt(5))");
+    check("1^(-1)", //
+        "1");
+    check("test+0", //
+        "test");
+    check("Times(3, Power(1, -1))", //
+        "3");
+    check("%", //
+        "3");
+    check("%%%*%2", //
+        "test^2");
+    check("%10", //
+        "Out(10)");
+    check("1-x", //
+        "1-x");
+    check("5+x^4*(33+x^2)", //
+        "5+(33+x^2)*x^4");
+    check("x^(-7)", //
+        "1/x^7");
+    check("x^(-7.0)", //
+        "1/x^7.0");
+    check("x^(1+I*3)", //
+        "x^(1+I*3)");
+    check("x^(-1+I*3)", //
+        "1/x^(1-I*3)");
+    check("x^(1.0+I*3)", //
+        "x^(1.0+I*3.0)");
+    check("x^(-1+I*3.0)", //
+        "1/x^(1.0+I*(-3.0))");
+    check("x^(I*3)", //
+        "x^(I*3)");
+    check("x^(I*3.0)", //
+        "x^(I*3.0)");
+    check("x^(-I*3)", //
+        "1/x^(I*3)");
+    check("x^(-I*3.0)", //
+        "1/x^(I*3.0)");
+    check("Sin(3/10*Pi)", //
+        "1/4*(1+Sqrt(5))");
 
-    check("Sin(Pi/5)", "Sqrt(1/2*(5-Sqrt(5)))/2");
-    check("Sin({a,b,c})", "{Sin(a),Sin(b),Sin(c)}");
-    check("2^(-1)", "1/2");
-    check("x^3+x^2+x+42", "42+x+x^2+x^3");
-    check("x^3+2*x^2+4*x+3", "3+4*x+2*x^2+x^3");
-    check("y*x^3+y*x^2+y*x+y+x+42", "42+x+y+x*y+x^2*y+x^3*y");
-    check("2*I", "I*2");
+    check("Sin(Pi/5)", //
+        "Sqrt(5/8-Sqrt(5)/8)");
+    check("Sin({a,b,c})", //
+        "{Sin(a),Sin(b),Sin(c)}");
+    check("2^(-1)", //
+        "1/2");
+    check("x^3+x^2+x+42", //
+        "42+x+x^2+x^3");
+    check("x^3+2*x^2+4*x+3", //
+        "3+4*x+2*x^2+x^3");
+    check("y*x^3+y*x^2+y*x+y+x+42", //
+        "42+x+y+x*y+x^2*y+x^3*y");
+    check("2*I", //
+        "I*2");
 
-    check("a+Sin(x)^2+Cos(x)^2+2/3", "5/3+a");
-    check("a+Sin(x)^2+Cos(y)^2+2/3", "2/3+a+Cos(y)^2+Sin(x)^2");
-    check("a+ArcSin(x)+ArcCos(x)+2/3", "2/3+a+Pi/2");
-    check("a+ArcTan(17)+ArcTan(1/17)+2/3", "2/3+a+Pi/2");
-    check("a+ArcTan(-2)+ArcTan(-1/2)+2/3", "2/3+a-Pi/2");
-    check("ArcTan((-1+2*x)*3^(-1/2))", "ArcTan((-1+2*x)/Sqrt(3))");
+    check("a+Sin(x)^2+Cos(x)^2+2/3", //
+        "5/3+a");
+    check("a+Sin(x)^2+Cos(y)^2+2/3", //
+        "2/3+a+Cos(y)^2+Sin(x)^2");
+    check("a+ArcSin(x)+ArcCos(x)+2/3", //
+        "2/3+a+Pi/2");
+    check("a+ArcTan(17)+ArcTan(1/17)+2/3", //
+        "2/3+a+Pi/2");
+    check("a+ArcTan(-2)+ArcTan(-1/2)+2/3", //
+        "2/3+a-Pi/2");
+    check("ArcTan((-1+2*x)*3^(-1/2))", //
+        "ArcTan((-1+2*x)/Sqrt(3))");
 
-    check("Tan(x)^(-2)", "Cot(x)^2");
-    check("Cot(x)^(-2)", "Tan(x)^2");
-    check("Sec(x)^(-2)", "Cos(x)^2");
-    check("Cos(x)^(-2)", "Sec(x)^2");
-    check("Csc(x)^(-2)", "Sin(x)^2");
-    check("Sin(x)^(-2)", "Csc(x)^2");
+    check("Tan(x)^(-2)", //
+        "Cot(x)^2");
+    check("Cot(x)^(-2)", //
+        "Tan(x)^2");
+    check("Sec(x)^(-2)", //
+        "Cos(x)^2");
+    check("Cos(x)^(-2)", //
+        "Sec(x)^2");
+    check("Csc(x)^(-2)", //
+        "Sin(x)^2");
+    check("Sin(x)^(-2)", //
+        "Csc(x)^2");
 
-    check("x - (11 + (7 - x))", "-18+2*x");
+    check("x - (11 + (7 - x))", //
+        "-18+2*x");
 
-    check("1/Sqrt(x)*a", "a/Sqrt(x)");
+    check("1/Sqrt(x)*a", //
+        "a/Sqrt(x)");
 
-    check("-Cos(x)", "-Cos(x)");
-    check("4-Cos(x)", "4-Cos(x)");
-    check("x*(a+b)", "(a+b)*x");
+    check("-Cos(x)", //
+        "-Cos(x)");
+    check("4-Cos(x)", //
+        "4-Cos(x)");
+    check("x*(a+b)", //
+        "(a+b)*x");
 
-    check("x*E^x", "E^x*x");
-    check("x*Cos(x)", "x*Cos(x)");
-    check("Cos(x)*x", "x*Cos(x)");
+    check("x*E^x", //
+        "E^x*x");
+    check("x*Cos(x)", //
+        "x*Cos(x)");
+    check("Cos(x)*x", //
+        "x*Cos(x)");
 
-    check("3.0*x+x^3.0+5.0", "5.0+3.0*x+x^3.0");
-    check("5.0+3.0*x+x^3.0", "5.0+3.0*x+x^3.0");
+    check("3.0*x+x^3.0+5.0", //
+        "5.0+3.0*x+x^3.0");
+    check("5.0+3.0*x+x^3.0", //
+        "5.0+3.0*x+x^3.0");
 
-    check("I^2", "-1");
-    check("i^2", "i^2");
+    check("I^2", //
+        "-1");
+    check("i^2", //
+        "i^2");
 
-    check("Pi<E", "False");
+    check("Pi<E", //
+        "False");
 
     check("z/.(a/.b)", //
         "z/.(a/.b)");

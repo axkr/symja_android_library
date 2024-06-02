@@ -1031,7 +1031,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Array(f, 5, {0,Pi/2})", //
         "{f(0),f(Pi/8),f(Pi/4),f(3/8*Pi),f(Pi/2)}");
     check("Array(Sin(2*#) - Cos(3*#) &,  5, {0,Pi/2})", //
-        "{-1,1/Sqrt(2)-Sqrt(2-Sqrt(2))/2,1+1/Sqrt(2),1/Sqrt(2)+Sqrt(2+Sqrt(2))/2,0}");
+        "{-1,1/Sqrt(2)-Sin(Pi/8),1+1/Sqrt(2),1/Sqrt(2)+Cos(Pi/8),0}");
     check("Array(f, -10, {0,1})", //
         "Array(f,-10,{0,1})");
     check("Array(f, 5, a)", //
@@ -3687,6 +3687,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCos() {
+    check("Cos(11/8*Pi)", //
+        "-Sin(Pi/8)");
 
     // {-(1/2), (1/4)*(1 - Sqrt(5)), -Sin(Pi/30), Sin(Pi/30), (1/4)*(-1 + Sqrt(5)),
     // 1/2, Sin((7*Pi)/30), (1/4)*(1 + Sqrt(5)), Cos((2*Pi)/15), Cos(Pi/15), 1,
@@ -6472,8 +6474,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
 
 
-
-
   @Test
   public void testEuclideanDistance() {
     check("EuclideanDistance({-1, -1}, {1.0, 1})", //
@@ -6608,6 +6608,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testExp() {
+    check("Sin(Pi/5)", //
+        "Sqrt(5/8-Sqrt(5)/8)");
+    check("Sinh(1/5*Pi*I)", //
+        "I*Sqrt(5/8-Sqrt(5)/8)");
+    check("ExpToTrig(Exp(I*Pi/5))", //
+        "1/4+Sqrt(5)/4+I*Sqrt(5/8-Sqrt(5)/8)");
+
+    check("Exp(Interval({-1, Log(2)}))", //
+        "Interval({1/E,2})");
+    check("Table(Exp(I*n*Pi/2), {n, 0, 4})", //
+        "{1,I,-1,-I,1}");
+    check("Exp(9/2*I*Pi)", //
+        "I");
+
     check("\\[ExponentialE]", //
         "E");
     check("Exp(10.*^20)", //
@@ -11126,7 +11140,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
 
 
-
   @Test
   public void testInverseCDF() {
     // https://github.com/axkr/symja_android_library/issues/147
@@ -12951,14 +12964,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLog() {
-    check("N(Log({2, E, 10}, -5/2),50)", //
-        "{1.3219280948873623478703194294893901758648313930245+I*4.5323601418271938096276829457166668101718614677237," //
-            + "0.9162907318741550651835272117680110714501012199082+I*3.1415926535897932384626433832795028841971693993751," //
-            + "0.3979400086720376095725222105510139464636202370757+I*1.3643763538418413474857836254313557702101274837239}");
-
+    checkNumeric("Sum(i^(-1)*(-1)^(i - 1)*(x-1)^i, {i, 1, Infinity})", //
+        "Log(x)");
     checkNumeric("Log(Exp(1.4))", //
         "1.4");
-
     checkNumeric("Log(-1.4)", //
         "0.3364722366212129+I*3.141592653589793");
 
@@ -13113,6 +13122,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLog10() {
+    checkNumeric("Log10(Interval({1/3, 2}))", //
+        "Interval({-Log(3)/Log(10),Log(2)/Log(10)})");
+    check("N(Log10(45), 100)", //
+        "1.65321251377534367937631691178573759163206784691928318834930381948335011629289773659900945917704643");
+    checkNumeric("N(Log10(4+I))", //
+        "0.6152244606891369+I*0.10639288158003271");
+
     check("Log10(Log10(Log(Log(Log(Log10(Log10(a)))))))", //
         "Log(Log(Log(Log(Log(Log(Log(a)/Log(10))/Log(10)))))/Log(10))/Log(10)");
     check("Log10(Log10(Log(Log(Log(Log10(Log10( )))))))", //
@@ -13126,10 +13142,25 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("Log10(x)", //
         "Log(x)/Log(10)");
+
+    check("Log10(ComplexInfinity)", //
+        "Infinity");
+    check("Table(Log10(n), {n, {0, 1, 10, 100}})", //
+        "{-Infinity,0,1,2}");
+    check("Table(Log10(1/n), {n, {1, 10, 100}})", //
+        "{0,-1,-2}");
   }
 
   @Test
   public void testLog2() {
+
+    check("Log2(Interval({1/3, 2}))", //
+        "Interval({-Log(3)/Log(2),1})");
+    check("N(Log2(45), 100)", //
+        "5.491853096329674710777797317385023193384460208409542732966261704898131232197342340894700693195546639");
+    checkNumeric("N(Log2(2 + I))", //
+        "1.1609640474436813+I*0.6689021062254881");
+
     check("Log(2, 0)", //
         "-Infinity");
     check("Log2(0)", //
@@ -13139,13 +13170,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "16");
     checkNumeric("Log2(5.6)", //
         "2.485426827170242");
+    checkNumeric("Log2(-5.6)", //
+        "2.485426827170242+I*4.532360141827194");
     check("Log2(E ^ 2) ", //
         "2/Log(2)");
     check("Log2(x)", //
         "Log(x)/Log(2)");
+    check("Table(Log2(n), {n, {1, 2, 4, 8}})", //
+        "{0,1,2,3}");
+    check("Table(Log2(1/n), {n, {1, 2, 4, 8}})", //
+        "{0,-1,-2,-3}");
   }
-
-
 
 
 
@@ -14000,6 +14035,30 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMeijerG() {
+    checkNumeric("MeijerG({{ }, {}}, {{0}, {}}, 0)", //
+        "1");
+    checkNumeric("MeijerG({{ }, {a2}}, {{0}, {b2}}, 0)", //
+        "1/(Gamma(a2)*Gamma(1-b2))");
+    checkNumeric("MeijerG({{1}, {a2}}, {{b1}, {}}, 0)", //
+        "Gamma(b1)*Hypergeometric1F1Regularized(b1,a2,ComplexInfinity)");
+    checkNumeric("MeijerG({{1}, {a2}}, {{}, {b2}}, 0)", //
+        "Hypergeometric1F1Regularized(b2,a2,ComplexInfinity)/Gamma(1-b2)");
+    checkNumeric("MeijerG({{1}, {}}, {{}, {}}, 0)", //
+        "Infinity");
+    checkNumeric("MeijerG({{0}, {}}, {{}, {}}, 0)", //
+        "-Infinity");
+    checkNumeric("MeijerG({{a1}, {}}, {{0}, {}}, 0)", //
+        "Gamma(1-a1)");
+    checkNumeric("MeijerG({{1/2}, {}}, {{0}, {0}}, 0)", //
+        "Sqrt(Pi)");
+    checkNumeric("MeijerG({{}, {}}, {{b1}, {}},z)", //
+        "z^b1/E^z");
+    checkNumeric("MeijerG({{1/2}, {1/2}}, {{}, {}}, 0)//N", //
+        "ComplexInfinity");
+    checkNumeric("MeijerG({{1}, {2}}, {{2.3}, {4}}, 3)", //
+        "0.0");
+    check("MeijerG({{1, 1}, {}}, {{1}, {0}}, z)", //
+        "Log(1+z)");
     // TODO
     checkNumeric("N(MeijerG({{}, {2}}, {{1/2, 3/2}, {}}, 3), 50)", //
         "MeijerG({{},{2}},{{1/2,3/2},{}},3)");
@@ -21615,7 +21674,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSin() {
-
+    check("Sin(11/8*Pi)", //
+        "-Cos(Pi/8)");
     // check("Sin(4/15*Pi)", //
     // "Cos(7/30*Pi)");
     check("trigs={Sin,Cos,Tan,Cot}", //

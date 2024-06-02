@@ -89,6 +89,16 @@ public class PatternsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testMatchQ() {
+    check("MatchQ(a* I*3, (f1_.)* Complex(0, 3))", //
+        "True");
+    check("MatchQ(a* I*3, (f1_.)* Complex(0, j_))", //
+        "True");
+    check("MatchQ(a*(1+I*3), (f1_.)* Complex(0, j_))", //
+        "False");
+  }
+
+  @Test
   public void testOptions() {
     // TODO define options for Plot and other built-ins
     // check("Options(Plot)", //

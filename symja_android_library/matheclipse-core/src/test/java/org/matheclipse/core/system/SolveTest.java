@@ -10,6 +10,17 @@ import org.matheclipse.core.interfaces.IExpr;
 /** Tests forSolve and Roots functions */
 public class SolveTest extends ExprEvaluatorTestCase {
 
+
+  @Test
+  public void testSimple() {
+    check("Solve(True,{x,y,z})", //
+        "{{}}");
+    check("Solve(False,{x,y,z})", //
+        "{}");
+    check("Solve({},{x,y,z})", //
+        "{{}}");
+  }
+
   @Test
   public void testSinX() {
     check("Solve(Sin(x)==b,x)", //
