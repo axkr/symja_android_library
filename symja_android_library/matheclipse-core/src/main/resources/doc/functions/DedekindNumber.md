@@ -13,7 +13,7 @@ See
 ### Examples
 
 ```
->> Table(DedekindNumber(i), {i,0,11})",
+>> Table(DedekindNumber(i), {i,0,11})
 {2,3,6,20,168,7581,7828354,2414682040998,56130437228687557907788,286386577668298411128469151667598498812366,DedekindNumber(10),DedekindNumber(11)}
 ```
 

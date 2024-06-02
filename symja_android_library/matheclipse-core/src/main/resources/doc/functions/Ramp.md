@@ -13,7 +13,7 @@ See
 
 ```
 >> PiecewiseExpand(Ramp(x)) 
-Piecewise({{x,x>=0},0})
+Piecewise({{x,x>=0}},0)
 ```
 
 ### Related terms 

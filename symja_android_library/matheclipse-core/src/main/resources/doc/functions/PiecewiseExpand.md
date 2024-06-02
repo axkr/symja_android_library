@@ -24,7 +24,7 @@ See:
 
 ```
 >> PiecewiseExpand(Abs(x), Reals) 
-Piecewise({{-x,x<0},x})
+Piecewise({{-x,x<0}},x)
 ```
  
 
