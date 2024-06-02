@@ -272,6 +272,7 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
     check("FunctionExpand(Tan(ArcSin(x)/2))", //
         "x/(1+Sqrt(1-x)*Sqrt(1+x))");
   }
+
   @Test
   public void testFunctionExpandMeijerG() {
     check("FunctionExpand(MeijerG({{},{a2}},{{b1},{}},z))", //
@@ -289,6 +290,22 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testFunctionExpandPolyGamma() {
+    // https://en.wikipedia.org/wiki/Balanced_polygamma_function#Special_values
+
+    check("FunctionExpand(PolyGamma(-2,1/4))", //
+        "Catalan/(4*Pi)+9/8*Log(Glaisher)+1/8*(Log(2)+Log(Pi))");
+    check("FunctionExpand(PolyGamma(-2,1/2))", //
+        "5/24*Log(2)+3/2*Log(Glaisher)+Log(Pi)/4");
+    check("FunctionExpand(PolyGamma(-3,1/2))", //
+        "Log(Glaisher)/2+1/16*(Log(2)+Log(Pi))+7/32*Zeta(3)/Pi^2");
+    check("FunctionExpand(PolyGamma(-2,1))", //
+        "1/2*(Log(2)+Log(Pi))");
+    check("FunctionExpand(PolyGamma(-2,2))", //
+        "-1+Log(2)+Log(Pi)");
+    check("FunctionExpand(PolyGamma(-3,2))", //
+        "-3/4+Log(2)+2*Log(Glaisher)+Log(Pi)");
+
+
     check("FunctionExpand(PolyGamma(2, 3/4))", //
         "2*Pi^3-56*Zeta(3)");
     check("FunctionExpand(PolyGamma(2,5/6))", //

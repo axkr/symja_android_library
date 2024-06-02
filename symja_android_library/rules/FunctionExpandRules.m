@@ -127,6 +127,15 @@
  PolyGamma(2,3/4) = 2*Pi^3-56*Zeta(3),
  PolyGamma(2,1/6) = -4*Sqrt(3)*Pi^3 - 182*Zeta(3),
  PolyGamma(2,5/6) = 4*Sqrt(3)*Pi^3 - 182*Zeta(3),
+ 
+ PolyGamma(-2,1/2) = 1/24*5*Log(2)+1/2*3*Log(Glaisher)+Log(Pi)/4,
+ PolyGamma(-2,1/4) = Catalan/(4*Pi)+1/8*9*Log(Glaisher)+1/8*(Log(2)+Log(Pi)),
+ PolyGamma(-2,1) = (1/2)*(Log[2] + Log[Pi]),
+ PolyGamma(-2,2) = -1+Log(2)+Log(Pi),
+ PolyGamma(-3,1/2) = Log(Glaisher)/2+1/16*(Log(2)+Log(Pi))+(7*Zeta(3))/(32*Pi^2),
+ PolyGamma(-3,1) = Log(Glaisher)+1/4*(Log(2)+Log(Pi)),
+ PolyGamma(-3,2) = (-3/4)+Log(2)+2*Log(Glaisher)+Log(Pi),
+ 
  PolyGamma(n_Integer, 1/2) := (-1)^(n + 1)*n!*(2^(n + 1) - 1)*Zeta(n+1)  
   /; n>0,
   

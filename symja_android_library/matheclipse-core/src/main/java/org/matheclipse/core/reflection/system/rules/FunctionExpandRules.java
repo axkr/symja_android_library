@@ -264,6 +264,27 @@ public class FunctionExpandRules {
     // PolyGamma(2,5/6)=4*Sqrt(3)*Pi^3-182*Zeta(3)
     Set(PolyGamma(C2,QQ(5L,6L)),
       Plus(Times(C4,CSqrt3,Power(Pi,C3)),Times(ZZ(-182L),Zeta(C3)))),
+    // PolyGamma(-2,1/2)=1/24*5*Log(2)+1/2*3*Log(Glaisher)+Log(Pi)/4
+    Set(PolyGamma(CN2,C1D2),
+      Plus(Times(QQ(5L,24L),Log(C2)),Times(QQ(3L,2L),Log(Glaisher)),Times(C1D4,Log(Pi)))),
+    // PolyGamma(-2,1/4)=Catalan/(4*Pi)+1/8*9*Log(Glaisher)+1/8*(Log(2)+Log(Pi))
+    Set(PolyGamma(CN2,C1D4),
+      Plus(Times(C1D4,Catalan,Power(Pi,CN1)),Times(QQ(9L,8L),Log(Glaisher)),Times(QQ(1L,8L),Plus(Log(C2),Log(Pi))))),
+    // PolyGamma(-2,1)=1/2*(Log(2)+Log(Pi))
+    Set(PolyGamma(CN2,C1),
+      Times(C1D2,Plus(Log(C2),Log(Pi)))),
+    // PolyGamma(-2,2)=-1+Log(2)+Log(Pi)
+    Set(PolyGamma(CN2,C2),
+      Plus(CN1,Log(C2),Log(Pi))),
+    // PolyGamma(-3,1/2)=Log(Glaisher)/2+1/16*(Log(2)+Log(Pi))+(7*Zeta(3))/(32*Pi^2)
+    Set(PolyGamma(CN3,C1D2),
+      Plus(Times(C1D2,Log(Glaisher)),Times(QQ(1L,16L),Plus(Log(C2),Log(Pi))),Times(QQ(7L,32L),Power(Pi,CN2),Zeta(C3)))),
+    // PolyGamma(-3,1)=Log(Glaisher)+1/4*(Log(2)+Log(Pi))
+    Set(PolyGamma(CN3,C1),
+      Plus(Log(Glaisher),Times(C1D4,Plus(Log(C2),Log(Pi))))),
+    // PolyGamma(-3,2)=-3/4+Log(2)+2*Log(Glaisher)+Log(Pi)
+    Set(PolyGamma(CN3,C2),
+      Plus(QQ(-3L,4L),Log(C2),Times(C2,Log(Glaisher)),Log(Pi))),
     // PolyGamma(n_Integer,1/2):=(-1)^(n+1)*n!*(-1+2^(n+1))*Zeta(n+1)/;n>0
     SetDelayed(PolyGamma($p(n, Integer),C1D2),
       Condition(Times(Power(CN1,Plus(n,C1)),Factorial(n),Plus(CN1,Power(C2,Plus(n,C1))),Zeta(Plus(n,C1))),Greater(n,C0))),
