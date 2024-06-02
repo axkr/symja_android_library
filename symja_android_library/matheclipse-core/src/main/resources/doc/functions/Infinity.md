@@ -29,7 +29,7 @@ Pi ^ 2 / 6
 DirectedInfinity(1)
  
 >> (2 + 3.5*I) / Infinity
-0.0"
+0.0
  
 >> Infinity + Infinity
 Infinity

@@ -99,8 +99,7 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "-7*Sqrt(1-x^2)+56*(1-x^2)^(3/2)-112*(1-x^2)^(5/2)+64*(1-x^2)^(7/2)");
     check("FunctionExpand(Hypergeometric2F1(a, b, b -2, z))", //
         "(1+(-2*(-2-a+b)*z)/(-2+b)+((-2-a+b)*(-1-a+b)*z^2)/((-2+b)*(-1+b)))/(1-z)^(2+a)");
-    check("FunctionExpand(PolyGamma(10, 1/2))", //
-        "-7428153600*Zeta(11)");
+
     check("FunctionExpand(DirichletEta(z))", //
         "(1-2^(1-z))*Zeta(z)");
     check("FunctionExpand(Gamma(1/2,z))", //
@@ -198,10 +197,7 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
             + "1+Cos(3*Pi*(-1/6+x))),x>1/6&&x<=1/2}},0)");
     check("FunctionExpand(Log(10*E))", //
         "1+Log(10)");
-    check("FunctionExpand(PolyGamma(-2, 1))", //
-        "1/2*(Log(2)+Log(Pi))");
-    check("FunctionExpand(PolyGamma(-3, 1))", //
-        "Log(Glaisher)+1/4*(Log(2)+Log(Pi))");
+
     check("FunctionExpand(Fibonacci(n + 3), Element(n, Integers))", //
         "2*Fibonacci(n)+LucasL(n)");
     check("FunctionExpand(CatalanNumber(x))", //
@@ -287,6 +283,16 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testFunctionExpandPolyGamma() {
+    check("FunctionExpand(PolyGamma(2, 3/4))", //
+        "2*Pi^3-56*Zeta(3)");
+    check("FunctionExpand(PolyGamma(2,5/6))", //
+        "4*Sqrt(3)*Pi^3-182*Zeta(3)");
+    check("FunctionExpand(PolyGamma(10, 1/2))", //
+        "-7428153600*Zeta(11)");
+    check("FunctionExpand(PolyGamma(-2, 1))", //
+        "1/2*(Log(2)+Log(Pi))");
+    check("FunctionExpand(PolyGamma(-3, 1))", //
+        "Log(Glaisher)+1/4*(Log(2)+Log(Pi))");
     check("FunctionExpand(PolyGamma(-z))", //
         "1/z+Pi*Cot(Pi*z)+PolyGamma(0,z)");
     check("FunctionExpand(PolyGamma(0,1/2))", //

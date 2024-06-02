@@ -165,7 +165,7 @@
 			<dependency>
 				<groupId>io.javalin</groupId>
 				<artifactId>javalin</artifactId>
-				<version>6.1.4</version>
+				<version>6.1.6</version>
 			</dependency>
 			<dependency>
 				<groupId>io.pebbletemplates</groupId>
@@ -427,7 +427,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>3.4.1</version>
+					<version>3.5.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>

@@ -5304,6 +5304,10 @@ public interface IExpr
     return S.Log.of(this);
   }
 
+  default IExpr log(final IExpr base) {
+    return F.NIL;
+  }
+
   @Override
   default IExpr log10() {
     return S.Log.of(F.C10, this);

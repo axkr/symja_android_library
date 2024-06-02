@@ -30,7 +30,7 @@ Compute the greatest common divisor and check the result:
 ```
 >> numbers = {10, 20, 14};
 
->> {gcd, factors} = ExtendedGCD(Sequence @@ numbers)
+>> {gcdVal, factors} = ExtendedGCD(Sequence @@ numbers)
 {2,{3,0,-2}}
 
 >> Plus @@ (numbers * factors)

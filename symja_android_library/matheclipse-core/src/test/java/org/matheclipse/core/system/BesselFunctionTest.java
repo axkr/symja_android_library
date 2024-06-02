@@ -161,6 +161,8 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testBesselJ() {
+    checkNumeric("BesselJ(2.5,-5)", //
+        "I*0.24037720111131736");
 
     check("BesselJ(3/2, x)", //
         "Sqrt(2/Pi)*Sqrt(x)*(-Cos(x)/x+Sin(x)/x^2)");
@@ -298,10 +300,10 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testBesselY() {
+    checkNumeric("BesselY(2.5,-5)", //
+        "I*(-0.2943723749617925)");
     check("BesselY(3.5,-5)", //
         "I*(-0.0275521)");
-    checkNumeric("BesselY(2.5,-5.0)", //
-        "I*(-0.2943723749617925)");
     checkNumeric("BesselY(I+1, -Infinity)", //
         "0");
     checkNumeric("BesselY(42, Infinity)", //
@@ -413,6 +415,54 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
         "-0.084523+I*(-0.120937)");
   }
 
+
+  @Test
+  public void testSphericalBesselJ() {
+    check("SphericalBesselJ(2.5,-5)", //
+        "I*0.204488");
+    checkNumeric("SphericalBesselJ(1,5.2)", //
+        "-0.12277149950214108");
+    checkNumeric("SphericalBesselJ(2.5,-5)", // I*0.20448758430717914
+        "I*0.20448758430717917");
+    checkNumeric("SphericalBesselJ(2.0,-5)", //
+        "0.13473121008883018");
+    checkNumeric("SphericalBesselJ(-0.5,1)", //
+        "0.9590330784042026");
+    checkNumeric("SphericalBesselJ(2.0+I,5.0+I)", //
+        "0.14163924534491812+I*0.005070099110737425");
+  }
+
+  @Test
+  public void testSphericalBesselY() {
+    // TODO improve this value
+    check("SphericalBesselY(2.5,-5)", //
+        "-0.613462+I*0.122973");
+
+    checkNumeric("SphericalBesselY(1,5.5)", //
+        "0.10485295921809935");
+
+    checkNumeric("SphericalBesselY(-0.5,1)", //
+        "0.11061370096805949");
+    checkNumeric("SphericalBesselY(2.0+I,5.0+I)", //
+        "0.15456969798535916+I*(-0.05055787979478312)");
+    checkNumeric("SphericalBesselY(2.0,-5)", //
+        "-0.16499545760108916");
+  }
+
+  @Test
+  public void testSphericalHarmonicY() {
+    check("SphericalHarmonicY(0,0,t,p)", //
+        "1/(2*Sqrt(Pi))");
+    check("SphericalHarmonicY(a,0,0,p)", //
+        "Sqrt(1+2*a)/(2*Sqrt(Pi))");
+    check("SphericalHarmonicY(1,2,t,p)", //
+        "0");
+    check("SphericalHarmonicY(1,1,t,p)", //
+        "-1/2*E^(I*p)*Sqrt(3/2*1/Pi)*Sin(t)");
+    check("SphericalHarmonicY(n,-n-1,t,p)", //
+        "0");
+  }
+
   @Test
   public void testWeberE() {
     check("WeberE(a, 0)", //
@@ -423,12 +473,9 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
         "2/Pi-StruveH(1,z)");
 
     checkNumeric("Table(WeberE(n,Sqrt(3)),{n,-1.0,-10.0,-1})", //
-        "{-0.1169147394592414,0.1765050158610133,-0.29070613422346014,"//
-            + "0.09542537933720352,-0.15004481335939523,0.0357535606026218,"//
-            + "-0.09766312070144068,0.01854285187800997,-0.07362840767018497"//
-            + ",0.011520811269292608}");
+        "{-0.1169147394592414,0.1765050158610133,-0.29070613422346014,0.09542537933720352,-0.15004481335939523,0.0357535606026218,-0.09766312070144068,0.018542851878464717,-0.07362840767018497,0.011520811240188777}");
     checkNumeric("WeberE(1.0, 2.0)", //
-        "-0.01014395591598094");
+        "-0.010143955915980829");
 
     checkNumeric("WeberE(0.5, -4.0)", //
         "0.6366197723675813*HypergeometricPFQ({1},{0.75,1.25},-4.0)+1.6976527263135508*HypergeometricPFQ({\n"

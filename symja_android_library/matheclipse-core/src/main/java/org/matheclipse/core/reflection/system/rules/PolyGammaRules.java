@@ -13,7 +13,7 @@ public class PolyGammaRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 8, 2 };
+  final public static int[] SIZES = { 7, 2 };
 
   final public static IAST RULES = List(
     IInit(PolyGamma, SIZES),
@@ -32,15 +32,12 @@ public class PolyGammaRules {
     // PolyGamma(1,1)=Pi^2/6
     ISet(PolyGamma(C1,C1),
       Times(QQ(1L,6L),Sqr(Pi))),
-    // PolyGamma(1,1/4)=Pi^2+8*Catalan
-    ISet(PolyGamma(C1,C1D4),
-      Plus(Times(C8,Catalan),Sqr(Pi))),
-    // PolyGamma(1,3/4)=-8*Catalan+Pi^2
-    ISet(PolyGamma(C1,QQ(3L,4L)),
-      Plus(Times(CN8,Catalan),Sqr(Pi))),
-    // PolyGamma(2,5/6)=4*Sqrt(3)*Pi^3-182*Zeta(3)
-    ISet(PolyGamma(C2,QQ(5L,6L)),
-      Plus(Times(C4,CSqrt3,Power(Pi,C3)),Times(ZZ(-182L),Zeta(C3)))),
+    // PolyGamma(1,1/2)=Pi^2/2
+    ISet(PolyGamma(C1,C1D2),
+      Times(C1D2,Sqr(Pi))),
+    // PolyGamma(3,1/2)=Pi^4
+    ISet(PolyGamma(C3,C1D2),
+      Power(Pi,C4)),
     // PolyGamma(0,n_Integer):=-EulerGamma+HarmonicNumber(-1+n)/;n>0
     ISetDelayed(PolyGamma(C0,$p(n, Integer)),
       Condition(Plus(Negate(EulerGamma),HarmonicNumber(Plus(CN1,n))),Greater(n,C0))),

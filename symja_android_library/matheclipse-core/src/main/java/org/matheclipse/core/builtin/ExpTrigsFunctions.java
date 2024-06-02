@@ -1391,6 +1391,9 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
+      if (arg1.isZero()) {
+        return F.CComplexInfinity;
+      }
       return F.complexNum(ApcomplexMath.cosh(arg1).divide(ApcomplexMath.sinh(arg1)));
     }
 
@@ -1401,11 +1404,17 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ComplexArg(final Complex arg1) {
+      if (arg1.isZero()) {
+        return F.CComplexInfinity;
+      }
       return F.complexNum(arg1.cosh().divide(arg1.sinh()));
     }
 
     @Override
     public IExpr e1DblArg(final double arg1) {
+      if (F.isZero(arg1)) {
+        return F.CComplexInfinity;
+      }
       return F.num(Math.cosh(arg1) / Math.sinh(arg1));
     }
 
@@ -2312,6 +2321,14 @@ public class ExpTrigsFunctions {
           return engine.evaluate(F.Plus(num.negate().log(), F.Times(CI, S.Pi)));
         }
         return num.log();
+      }
+      if (ast.argSize() == 2) {
+        IInexactNumber base = (IInexactNumber) ast.arg1();
+        IInexactNumber num = (IInexactNumber) ast.arg2();
+        if (num.isZero()) {
+          return F.Indeterminate;
+        }
+        return num.log(base);
       }
       return F.NIL;
     }

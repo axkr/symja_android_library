@@ -119,6 +119,14 @@
  LogGamma(x_) := Log(Gamma(x)) 
   /; x>0,
 
+ PolyGamma(1,1/4) = 8*Catalan + Pi^2,
+ PolyGamma(1,3/4) = -8*Catalan + Pi^2,
+ PolyGamma(2,1) = (-2)*Zeta(3),
+ PolyGamma(2,1/2) = -14*Zeta(3),
+ PolyGamma(2,1/4) = -2*Pi^3-56*Zeta(3),
+ PolyGamma(2,3/4) = 2*Pi^3-56*Zeta(3),
+ PolyGamma(2,1/6) = -4*Sqrt(3)*Pi^3 - 182*Zeta(3),
+ PolyGamma(2,5/6) = 4*Sqrt(3)*Pi^3 - 182*Zeta(3),
  PolyGamma(n_Integer, 1/2) := (-1)^(n + 1)*n!*(2^(n + 1) - 1)*Zeta(n+1)  
   /; n>0,
   

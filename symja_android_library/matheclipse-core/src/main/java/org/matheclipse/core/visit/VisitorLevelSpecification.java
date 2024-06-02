@@ -273,8 +273,9 @@ public class VisitorLevelSpecification extends AbstractLevelVisitor {
 
   private void checkRecursionLimit(IExpr expr) {
     fCurrentLevel++;
-    if (fEngine.getRecursionCounter() + fCurrentLevel > fEngine.getRecursionLimit()) {
-      RecursionLimitExceeded.throwIt(this.fCurrentLevel, expr);
+    int currentDepth = fEngine.getRecursionCounter() + fCurrentLevel;
+    if (currentDepth > fEngine.getRecursionLimit()) {
+      RecursionLimitExceeded.throwIt(currentDepth, expr);
     }
   }
 

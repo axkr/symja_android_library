@@ -1139,9 +1139,12 @@ public class EvalEngine implements Serializable {
 
     if (!symbol.equals(S.Integrate)) {
       IExpr result;
+      // if (!isNumericMode() || (ISymbol.NUMERICFUNCTION & attributes) != ISymbol.NUMERICFUNCTION)
+      // {
       if ((result = symbol.evalDownRule(this, ast)).isPresent()) {
         return result;
       }
+      // }
     }
 
     if (symbol.isBuiltInSymbol()) {
