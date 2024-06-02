@@ -33,11 +33,10 @@ public class ComplexExpandTest extends ExprEvaluatorTestCase {
     check("ComplexExpand(Re(z),z)", //
         "Re(z)");
 
-    // cos(Pi/8),sin(Pi/8) evaled in trace
     check("ComplexExpand(Sqrt(1+I))", //
-        "(I*Sqrt(2-Sqrt(2)))/2^(3/4)+Sqrt(2+Sqrt(2))/2^(3/4)");
+        "2^(1/4)*Cos(Pi/8)+I*2^(1/4)*Sin(Pi/8)");
     check("ComplexExpand((1+I)^(-1/2))", //
-        "(-I*1/2*Sqrt(2-Sqrt(2)))/2^(1/4)+Sqrt(2+Sqrt(2))/(2*2^(1/4))");
+        "Cos(Pi/8)/2^(1/4)+(-I*Sin(Pi/8))/2^(1/4)");
 
     check("ComplexExpand(a*(b+c))", //
         "a*b+a*c");

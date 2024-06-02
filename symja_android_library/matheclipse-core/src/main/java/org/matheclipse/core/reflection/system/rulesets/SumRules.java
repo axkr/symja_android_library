@@ -47,6 +47,9 @@ matcher.caseOf(Sum(Power(Factorial(i_),CN1),list(i_Symbol,C0,oo)),
     // Sum(x_^i_/i_!,{i_Symbol,0,Infinity}):=E^x/;FreeQ(x,i)
 matcher.caseOf(Sum(Times(Power(Factorial(i_),CN1),Power(x_,i_)),list(i_Symbol,C0,oo)),
       Condition(Exp(x),FreeQ(x,i)));
+    // Sum((-1+x_)^i_/(i_*(-1)^(1-i_)),{i_Symbol,1,Infinity}):=Log(x)/;FreeQ(x,i)
+matcher.caseOf(Sum(Times(Power(i_,CN1),Power(CN1,Plus(CN1,i_)),Power(Plus(CN1,x_),i_)),list(i_Symbol,C1,oo)),
+      Condition(Log(x),FreeQ(x,i)));
     // Sum(1/((-1)^i_*(2*i_+1)),{i_Symbol,1,Infinity}):=1/4*(-4+Pi)
 matcher.caseOf(Sum(Times(Power(CN1,Negate(i_)),Power(Plus(Times(C2,i_),C1),CN1)),list(i_Symbol,C1,oo)),
       Times(C1D4,Plus(CN4,Pi)));

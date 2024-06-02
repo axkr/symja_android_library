@@ -155,17 +155,17 @@ public class FourierTest extends ExprEvaluatorTestCase {
             + " {1/Sqrt(2),0,-1/Sqrt(2)},\n"//
             + " {1/2,-1/Sqrt(2),1/2}}");
     check("FourierDSTMatrix(7, 1)", //
-        "{{Sqrt(2-Sqrt(2))/4,1/(2*Sqrt(2)),Sqrt(2+Sqrt(2))/4,1/2,Sqrt(2+Sqrt(2))/4,1/(2*Sqrt(\n" //
-            + "2)),Sqrt(2-Sqrt(2))/4},\n" //
+        "{{Sin(Pi/8)/2,1/(2*Sqrt(2)),Cos(Pi/8)/2,1/2,Cos(Pi/8)/2,1/(2*Sqrt(2)),Sin(Pi/8)/\n" //
+            + "2},\n" //
             + " {1/(2*Sqrt(2)),1/2,1/(2*Sqrt(2)),0,-1/(2*Sqrt(2)),-1/2,-1/(2*Sqrt(2))},\n" //
-            + " {Sqrt(2+Sqrt(2))/4,1/(2*Sqrt(2)),-Sqrt(2-Sqrt(2))/4,-1/2,-Sqrt(2-Sqrt(2))/4,1/(\n" //
-            + "2*Sqrt(2)),Sqrt(2+Sqrt(2))/4},\n" //
+            + " {Cos(Pi/8)/2,1/(2*Sqrt(2)),-Sin(Pi/8)/2,-1/2,-Sin(Pi/8)/2,1/(2*Sqrt(2)),Cos(Pi/\n" //
+            + "8)/2},\n" //
             + " {1/2,0,-1/2,0,1/2,0,-1/2},\n" //
-            + " {Sqrt(2+Sqrt(2))/4,-1/(2*Sqrt(2)),-Sqrt(2-Sqrt(2))/4,1/2,-Sqrt(2-Sqrt(2))/4,-1/(\n" //
-            + "2*Sqrt(2)),Sqrt(2+Sqrt(2))/4},\n" //
+            + " {Cos(Pi/8)/2,-1/(2*Sqrt(2)),-Sin(Pi/8)/2,1/2,-Sin(Pi/8)/2,-1/(2*Sqrt(2)),Cos(Pi/\n" //
+            + "8)/2},\n" //
             + " {1/(2*Sqrt(2)),-1/2,1/(2*Sqrt(2)),0,-1/(2*Sqrt(2)),1/2,-1/(2*Sqrt(2))},\n" //
-            + " {Sqrt(2-Sqrt(2))/4,-1/(2*Sqrt(2)),Sqrt(2+Sqrt(2))/4,-1/2,Sqrt(2+Sqrt(2))/4,-1/(\n" //
-            + "2*Sqrt(2)),Sqrt(2-Sqrt(2))/4}}");
+            + " {Sin(Pi/8)/2,-1/(2*Sqrt(2)),Cos(Pi/8)/2,-1/2,Cos(Pi/8)/2,-1/(2*Sqrt(2)),Sin(Pi/\n" //
+            + "8)/2}}");
     check("FourierDSTMatrix(7, 3)", //
         "{{(2*Sin(Pi/14))/Sqrt(7),(2*Sin(3/14*Pi))/Sqrt(7),(2*Sin(5/14*Pi))/Sqrt(7),2/Sqrt(\n" //
             + "7),(2*Sin(5/14*Pi))/Sqrt(7),(2*Sin(3/14*Pi))/Sqrt(7),(2*Sin(Pi/14))/Sqrt(7)},\n" //

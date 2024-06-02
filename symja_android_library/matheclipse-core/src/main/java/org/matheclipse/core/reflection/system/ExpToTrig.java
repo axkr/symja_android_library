@@ -59,7 +59,15 @@ public class ExpToTrig extends AbstractEvaluator {
             ((IAST) exponent).forEach(arg -> result.append(F.Plus(F.Cosh(arg), F.Sinh(arg))));
             return result;
           }
-          return F.Plus(F.Cosh(exponent), F.Sinh(exponent));
+          IExpr cosh = engine.evaluate(F.Cosh(exponent));
+          if (cosh.isTimes()) {
+            cosh = F.evalExpand(cosh);
+          }
+          IExpr sinh = engine.evaluate(F.Sinh(exponent));
+          if (sinh.isTimes()) {
+            sinh = F.evalExpand(sinh);
+           }
+          return F.Plus(cosh, sinh);
         }
       }
       return F.NIL;

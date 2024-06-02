@@ -272,6 +272,12 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
     check("FunctionExpand(Tan(ArcSin(x)/2))", //
         "x/(1+Sqrt(1-x)*Sqrt(1+x))");
   }
+  @Test
+  public void testFunctionExpandMeijerG() {
+    check("FunctionExpand(MeijerG({{},{a2}},{{b1},{}},z))", //
+        "Piecewise({{z^b1/((1-z)^(1-a2+b1)*Gamma(a2-b1)),(z==1&&-Re(a2)+Re(b1)<-1)||Abs(z)<\n"
+            + "1},{0,Abs(z)>1}},Indeterminate)");
+  }
 
   @Test
   public void testFunctionExpandMultinomial() {
@@ -300,8 +306,8 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
     check("FunctionExpand(PolyGamma(0,1/3))", //
         "-EulerGamma-Pi/(2*Sqrt(3))-Log(6)-Log(Sqrt(3)/2)");
     check("FunctionExpand(PolyGamma(0,1/5))", //
-        "-EulerGamma-1/2*Sqrt(1+2/Sqrt(5))*Pi-Log(10)+1/2*(-1+Sqrt(5))*Log(Sqrt(1/2*(5-Sqrt(\n" //
-            + "5)))/2)+1/2*(-1-Sqrt(5))*Log(Sqrt(1/2*(5+Sqrt(5)))/2)");
+        "-EulerGamma-1/2*Sqrt(1+2/Sqrt(5))*Pi-Log(10)+1/4*(-1+Sqrt(5))*Log(5/8-Sqrt(5)/8)+\n"
+            + "1/4*(-1-Sqrt(5))*Log(5/8+Sqrt(5)/8)");
   }
 
   @Test
