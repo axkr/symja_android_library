@@ -12,5 +12,5 @@
  ToIntervalData(Greater(b_, x_), x_) := IntervalData({-Infinity, Less, Less, b}),
  ToIntervalData(GreaterEqual(b_, x_), x_) := IntervalData({-Infinity, Less, LessEqual, b}),
 
- ToIntervalData(Reals) := IntervalData({-Infinity, Less, Less, Infinity})
+ ToIntervalData(Reals) = IntervalData({-Infinity, Less, Less, Infinity})
  }

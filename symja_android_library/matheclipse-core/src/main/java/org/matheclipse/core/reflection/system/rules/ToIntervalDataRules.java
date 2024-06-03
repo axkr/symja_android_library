@@ -13,7 +13,7 @@ public class ToIntervalDataRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 7 };
+  final public static int[] SIZES = { 1, 6 };
 
   final public static IAST RULES = List(
     IInit(ToIntervalData, SIZES),
@@ -38,8 +38,8 @@ public class ToIntervalDataRules {
     // ToIntervalData(b_>=x_,x_):=IntervalData({-Infinity,Less,LessEqual,b})
     ISetDelayed(ToIntervalData(GreaterEqual(b_,x_),x_),
       IntervalData(List(Negate(oo),Less,LessEqual,b))),
-    // ToIntervalData(Reals):=IntervalData({-Infinity,Less,Less,Infinity})
-    ISetDelayed(ToIntervalData(Reals),
-      IntervalData(List(Negate(oo),Less,Less,oo)))
+    // ToIntervalData(Reals)=IntervalData({-Infinity,Less,Less,Infinity})
+    ISet(ToIntervalData(Reals),
+      IntervalData(List(Noo,Less,Less,oo)), true)
   );
 }

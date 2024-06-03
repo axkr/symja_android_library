@@ -19,31 +19,31 @@ public class TanhRules {
     IInit(Tanh, SIZES),
     // Tanh(Undefined)=Undefined
     ISet(Tanh(Undefined),
-      Undefined),
+      Undefined, true),
     // Tanh(0)=0
     ISet(Tanh(C0),
-      C0),
+      C0, true),
     // Tanh(I*1/4*Pi)=I
     ISet(Tanh(Times(CC(0L,1L,1L,4L),Pi)),
-      CI),
+      CI, true),
     // Tanh(I*1/3*Pi)=Sqrt(3)*I
     ISet(Tanh(Times(CC(0L,1L,1L,3L),Pi)),
-      Times(CI,CSqrt3)),
+      Times(CI,CSqrt3), true),
     // Tanh(I*1/2*Pi)=ComplexInfinity
     ISet(Tanh(Times(CC(0L,1L,1L,2L),Pi)),
-      CComplexInfinity),
+      CComplexInfinity, true),
     // Tanh(I*2/3*Pi)=-Sqrt(3)*I
     ISet(Tanh(Times(CC(0L,1L,2L,3L),Pi)),
-      Times(CNI,CSqrt3)),
+      Times(CNI,CSqrt3), true),
     // Tanh(I*3/4*Pi)=-I
     ISet(Tanh(Times(CC(0L,1L,3L,4L),Pi)),
-      CNI),
+      CNI, true),
     // Tanh(I*5/6*Pi)=-I/Sqrt(3)
     ISet(Tanh(Times(CC(0L,1L,5L,6L),Pi)),
-      Times(CNI,C1DSqrt3)),
+      Times(CNI,C1DSqrt3), true),
     // Tanh(I*Pi)=0
     ISet(Tanh(Times(CI,Pi)),
-      C0),
+      C0, true),
     // Tanh(ArcSinh(x_)):=x/Sqrt(1+x^2)
     ISetDelayed(Tanh(ArcSinh(x_)),
       Times(x,Power(Plus(C1,Sqr(x)),CN1D2))),
@@ -67,9 +67,9 @@ public class TanhRules {
       Times(Plus(CN1,Sqr(x)),Power(Plus(C1,Sqr(x)),CN1))),
     // Tanh(Infinity)=1
     ISet(Tanh(oo),
-      C1),
+      C1, true),
     // Tanh(ComplexInfinity)=Indeterminate
     ISet(Tanh(CComplexInfinity),
-      Indeterminate)
+      Indeterminate, true)
   );
 }

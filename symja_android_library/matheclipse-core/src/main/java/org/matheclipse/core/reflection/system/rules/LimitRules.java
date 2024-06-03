@@ -13,7 +13,7 @@ public class LimitRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 67, 23 };
+  final public static int[] SIZES = { 65, 25 };
 
   final public static IAST RULES = List(
     IInit(Limit, SIZES),
@@ -44,11 +44,11 @@ public class LimitRules {
     // Limit(m_?NumberQ^(-x_),x_Symbol->Infinity):=0/;m>1
     ISetDelayed(Limit(Power(PatternTest(m_,NumberQ),Negate(x_)),Rule(x_Symbol,oo)),
       Condition(C0,Greater(m,C1))),
-    // Limit(E^x_,x_Symbol->Infinity):=Infinity
-    ISetDelayed(Limit(Exp(x_),Rule(x_Symbol,oo)),
+    // Limit(E^x_,x_Symbol->Infinity)=Infinity
+    ISet(Limit(Exp(x_),Rule(x_Symbol,oo)),
       oo),
-    // Limit(E^x_,x_Symbol->-Infinity):=0
-    ISetDelayed(Limit(Exp(x_),Rule(x_Symbol,Noo)),
+    // Limit(E^x_,x_Symbol->-Infinity)=0
+    ISet(Limit(Exp(x_),Rule(x_Symbol,Noo)),
       C0),
     // Limit(Log(x_),x_Symbol->0)=-Infinity
     ISet(Limit(Log(x_),Rule(x_Symbol,C0)),
@@ -62,20 +62,20 @@ public class LimitRules {
     // Limit((1+1/x_)^x_,x_Symbol->Infinity)=E
     ISet(Limit(Power(Plus(C1,Power(x_,CN1)),x_),Rule(x_Symbol,oo)),
       E),
-    // Limit((1+a_./x_)^(b_.*x_),x_Symbol->-Infinity)=E^(a*b)/;FreeQ({a,b},x)
-    ISet(Limit(Power(Plus(C1,Times(a_DEFAULT,Power(x_,CN1))),Times(b_DEFAULT,x_)),Rule(x_Symbol,Noo)),
+    // Limit((1+a_./x_)^(b_.*x_),x_Symbol->-Infinity):=E^(a*b)/;FreeQ({a,b},x)
+    ISetDelayed(Limit(Power(Plus(C1,Times(a_DEFAULT,Power(x_,CN1))),Times(b_DEFAULT,x_)),Rule(x_Symbol,Noo)),
       Condition(Exp(Times(a,b)),FreeQ(list(a,b),x))),
-    // Limit((1+a_./x_)^(b_.*x_),x_Symbol->Infinity)=E^(a*b)/;FreeQ({a,b},x)
-    ISet(Limit(Power(Plus(C1,Times(a_DEFAULT,Power(x_,CN1))),Times(b_DEFAULT,x_)),Rule(x_Symbol,oo)),
+    // Limit((1+a_./x_)^(b_.*x_),x_Symbol->Infinity):=E^(a*b)/;FreeQ({a,b},x)
+    ISetDelayed(Limit(Power(Plus(C1,Times(a_DEFAULT,Power(x_,CN1))),Times(b_DEFAULT,x_)),Rule(x_Symbol,oo)),
       Condition(Exp(Times(a,b)),FreeQ(list(a,b),x))),
     // Limit((1+x_)^(1/x_),x_Symbol->0)=E
     ISet(Limit(Power(Plus(C1,x_),Power(x_,CN1)),Rule(x_Symbol,C0)),
       E),
-    // Limit(((a_.+x_)/(b_.+x_))^(c_.+x_),x_Symbol->-Infinity)=E^(a-b)/;FreeQ({a,b,c},x)
-    ISet(Limit(Power(Times(Plus(a_DEFAULT,x_),Power(Plus(b_DEFAULT,x_),CN1)),Plus(c_DEFAULT,x_)),Rule(x_Symbol,Noo)),
+    // Limit(((a_.+x_)/(b_.+x_))^(c_.+x_),x_Symbol->-Infinity):=E^(a-b)/;FreeQ({a,b,c},x)
+    ISetDelayed(Limit(Power(Times(Plus(a_DEFAULT,x_),Power(Plus(b_DEFAULT,x_),CN1)),Plus(c_DEFAULT,x_)),Rule(x_Symbol,Noo)),
       Condition(Exp(Subtract(a,b)),FreeQ(list(a,b,c),x))),
-    // Limit(((a_.+x_)/(b_.+x_))^(c_.+x_),x_Symbol->Infinity)=E^(a-b)/;FreeQ({a,b,c},x)
-    ISet(Limit(Power(Times(Plus(a_DEFAULT,x_),Power(Plus(b_DEFAULT,x_),CN1)),Plus(c_DEFAULT,x_)),Rule(x_Symbol,oo)),
+    // Limit(((a_.+x_)/(b_.+x_))^(c_.+x_),x_Symbol->Infinity):=E^(a-b)/;FreeQ({a,b,c},x)
+    ISetDelayed(Limit(Power(Times(Plus(a_DEFAULT,x_),Power(Plus(b_DEFAULT,x_),CN1)),Plus(c_DEFAULT,x_)),Rule(x_Symbol,oo)),
       Condition(Exp(Subtract(a,b)),FreeQ(list(a,b,c),x))),
     // Limit(HarmonicNumber(y_Symbol,s_Integer),x_Symbol->Infinity):=With({v=s/2},((-1)^(v+1)*(2*Pi)^(2*v)*BernoulliB(2*v))/(2*(2*v)!))/;EvenQ(s)&&Positive(s)
     ISetDelayed(Limit(HarmonicNumber(y_Symbol,$p(s, Integer)),Rule(x_Symbol,oo)),

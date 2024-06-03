@@ -144,7 +144,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.core.patternmatching.IPatternMap;
-import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.reflection.system.rules.AutomaticRules;
 import org.matheclipse.core.tensor.QuantityParser;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
@@ -5608,11 +5607,35 @@ public class F extends S {
    * @param rhs right-hand-side of the assignment
    * @return <code>F.NIL</code>
    */
-  public static IAST ISet(final IExpr lhs, final IExpr rhs) {
-    if (lhs.isAST()) {
-      ((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
-    }
-    PatternMatching.setDownRule(IPatternMatcher.NOFLAG, lhs, rhs, true);
+  public static IAST ISet(final IAST lhs, final IExpr rhs) {
+    return ISet(lhs, rhs, false);
+  }
+
+  /**
+   * Assign the evaluated <code>rhs</code> to the <code>lhs</code>.<br>
+   * <b>Note:</b> this method returns <code>F.NIL</code>.
+   *
+   * @param lhs left-hand-side of the assignment
+   * @param rhs right-hand-side of the assignment
+   * @param equalRule <code>true</code> if the leftHandSide could be matched with equality
+   * @return <code>F.NIL</code>
+   */
+  public static IAST ISet(final IAST lhs, final IExpr rhs, boolean equalRule) {
+    lhs.addEvalFlags(IAST.IS_FLATTENED_OR_SORTED_MASK);
+    PatternMatching.setDownRule(lhs, rhs, equalRule, true);
+    return NIL;
+  }
+
+  /**
+   * Assign the evaluated <code>rhs</code> to the <code>lhs</code>.<br>
+   * <b>Note:</b> this method returns <code>F.NIL</code>.
+   * 
+   * @param lhs left-hand-side of the assignment
+   * @param rhs right-hand-side of the assignment
+   * @return
+   */
+  public static IAST ISet(final ISymbol lhs, final IExpr rhs) {
+    PatternMatching.setDownRule(lhs, rhs);
     return NIL;
   }
 
@@ -5624,24 +5647,38 @@ public class F extends S {
    * @param rhs right-hand-side of the assignment
    * @return <code>NIL</code>
    */
-  public static IAST ISetDelayed(final IExpr lhs, final IExpr rhs) {
-    if (lhs.isAST()) {
-      ((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
-    }
+  public static IAST ISetDelayed(final IAST lhs, final IExpr rhs) {
+    lhs.addEvalFlags(IAST.IS_FLATTENED_OR_SORTED_MASK);
     PatternMatching.setDelayedDownRule(IPatternMap.DEFAULT_RULE_PRIORITY, lhs, rhs, true);
     return NIL;
   }
 
-  public static IAST ISetDelayed(int priority, final IExpr lhs, final IExpr rhs) {
-    if (lhs.isAST()) {
-      ((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
-    }
+  /**
+   * Assign the unevaluated <code>rhs</code> to the <code>lhs</code>.<br>
+   * <b>Note:</b> this method returns <code>NIL</code>.
+   * 
+   * @param priority
+   * @param lhs left-hand-side of the assignment
+   * @param rhs right-hand-side of the assignment
+   * @return <code>NIL</code>
+   */
+  public static IAST ISetDelayed(int priority, final IAST lhs, final IExpr rhs) {
+    lhs.addEvalFlags(IAST.IS_FLATTENED_OR_SORTED_MASK);
     PatternMatching.setDelayedDownRule(priority, lhs, rhs, true);
     return NIL;
   }
 
+  /**
+   * Assign the unevaluated <code>rhs</code> to the <code>lhs</code>.<br>
+   * <b>Note:</b> this method returns <code>NIL</code>.
+   * 
+   * @param priority
+   * @param lhs left-hand-side of the assignment
+   * @param rhs right-hand-side of the assignment
+   * @return <code>NIL</code>
+   */
   public static IExpr IIntegrate(int priority, final IAST lhs, final IExpr rhs) {
-    lhs.setEvalFlags(lhs.getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
+    lhs.addEvalFlags(IAST.IS_FLATTENED_OR_SORTED_MASK);
     org.matheclipse.core.reflection.system.Integrate.INTEGRATE_RULES_DATA.integrate(lhs, rhs,
         priority);
     return NIL;

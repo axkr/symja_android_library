@@ -19,30 +19,30 @@ public class ArcTanhRules {
     IInit(ArcTanh, SIZES),
     // ArcTanh(Undefined)=Undefined
     ISet(ArcTanh(Undefined),
-      Undefined),
+      Undefined, true),
     // ArcTanh(0)=0
     ISet(ArcTanh(C0),
-      C0),
+      C0, true),
     // ArcTanh(I/Sqrt(3))=Pi*I*1/6
     ISet(ArcTanh(Times(CI,C1DSqrt3)),
-      Times(CC(0L,1L,1L,6L),Pi)),
+      Times(CC(0L,1L,1L,6L),Pi), true),
     // ArcTanh(I)=Pi*I*1/4
     ISet(ArcTanh(CI),
-      Times(CC(0L,1L,1L,4L),Pi)),
+      Times(CC(0L,1L,1L,4L),Pi), true),
     // ArcTanh(I*Sqrt(3))=Pi*I*1/3
     ISet(ArcTanh(Times(CI,CSqrt3)),
-      Times(CC(0L,1L,1L,3L),Pi)),
+      Times(CC(0L,1L,1L,3L),Pi), true),
     // ArcTanh(1)=Infinity
     ISet(ArcTanh(C1),
-      oo),
+      oo, true),
     // ArcTanh(Infinity)=-1/2*Pi*I
     ISet(ArcTanh(oo),
-      Times(CC(0L,1L,-1L,2L),Pi)),
+      Times(CC(0L,1L,-1L,2L),Pi), true),
     // ArcTanh(I*Infinity)=1/2*Pi*I
     ISet(ArcTanh(DirectedInfinity(CI)),
-      Times(CC(0L,1L,1L,2L),Pi)),
+      Times(CC(0L,1L,1L,2L),Pi), true),
     // ArcTanh(ComplexInfinity)=Pi/2
     ISet(ArcTanh(CComplexInfinity),
-      CPiHalf)
+      CPiHalf, true)
   );
 }

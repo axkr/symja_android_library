@@ -19,7 +19,7 @@ public class Hypergeometric2F1Rules {
     IInit(Hypergeometric2F1, SIZES),
     // Hypergeometric2F1(1/2,3/2,1,2)=((-1)*2*EllipticE(2))/Pi
     ISet(Hypergeometric2F1(C1D2,QQ(3L,2L),C1,C2),
-      Times(CN2,Power(Pi,CN1),EllipticE(C2))),
+      Times(CN2,Power(Pi,CN1),EllipticE(C2)), true),
     // Hypergeometric2F1(-1/2,1/2,1,z_):=(2*EllipticE(z))/Pi
     ISetDelayed(Hypergeometric2F1(CN1D2,C1D2,C1,z_),
       Times(C2,Power(Pi,CN1),EllipticE(z))),

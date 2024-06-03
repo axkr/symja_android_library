@@ -19,69 +19,69 @@ public class ArcCosRules {
     IInit(ArcCos, SIZES),
     // ArcCos(Undefined)=Undefined
     ISet(ArcCos(Undefined),
-      Undefined),
+      Undefined, true),
     // ArcCos(0)=Pi/2
     ISet(ArcCos(C0),
-      CPiHalf),
+      CPiHalf, true),
     // ArcCos(1/2)=Pi/3
     ISet(ArcCos(C1D2),
-      CPiThird),
+      CPiThird, true),
     // ArcCos(-1/2)=2/3*Pi
     ISet(ArcCos(CN1D2),
-      Times(QQ(2L,3L),Pi)),
+      Times(QQ(2L,3L),Pi), true),
     // ArcCos(1/Sqrt(2))=Pi/4
     ISet(ArcCos(C1DSqrt2),
-      CPiQuarter),
+      CPiQuarter, true),
     // ArcCos(-1/Sqrt(2))=3/4*Pi
     ISet(ArcCos(Negate(C1DSqrt2)),
-      Times(QQ(3L,4L),Pi)),
+      Times(QQ(3L,4L),Pi), true),
     // ArcCos(Sqrt(3)/2)=Pi/6
     ISet(ArcCos(Times(C1D2,CSqrt3)),
-      Times(QQ(1L,6L),Pi)),
+      Times(QQ(1L,6L),Pi), true),
     // ArcCos(-Sqrt(3)/2)=5/6*Pi
     ISet(ArcCos(Times(CN1D2,CSqrt3)),
-      Times(QQ(5L,6L),Pi)),
+      Times(QQ(5L,6L),Pi), true),
     // ArcCos(Sqrt(2+Sqrt(2))/2)=Pi/8
     ISet(ArcCos(Times(C1D2,Sqrt(Plus(C2,CSqrt2)))),
-      Times(QQ(1L,8L),Pi)),
+      Times(QQ(1L,8L),Pi), true),
     // ArcCos(Sqrt(2-Sqrt(2))/2)=3/8*Pi
     ISet(ArcCos(Times(C1D2,Sqrt(Subtract(C2,CSqrt2)))),
-      Times(QQ(3L,8L),Pi)),
+      Times(QQ(3L,8L),Pi), true),
     // ArcCos(-Sqrt(2+Sqrt(2))/2)=7/8*Pi
     ISet(ArcCos(Times(CN1D2,Sqrt(Plus(C2,CSqrt2)))),
-      Times(QQ(7L,8L),Pi)),
+      Times(QQ(7L,8L),Pi), true),
     // ArcCos((1+Sqrt(3))/(2*Sqrt(2)))=Pi/12
     ISet(ArcCos(Times(C1D2,C1DSqrt2,Plus(C1,CSqrt3))),
-      Times(QQ(1L,12L),Pi)),
+      Times(QQ(1L,12L),Pi), true),
     // ArcCos((-1-Sqrt(3))/(2*Sqrt(2)))=11/12*Pi
     ISet(ArcCos(Times(C1D2,C1DSqrt2,Subtract(CN1,CSqrt3))),
-      Times(QQ(11L,12L),Pi)),
+      Times(QQ(11L,12L),Pi), true),
     // ArcCos(1/4*(-1+Sqrt(5)))=2/5*Pi
     ISet(ArcCos(Times(C1D4,Plus(CN1,CSqrt5))),
-      Times(QQ(2L,5L),Pi)),
+      Times(QQ(2L,5L),Pi), true),
     // ArcCos(1/4*(1+Sqrt(5)))=Pi/5
     ISet(ArcCos(Times(C1D4,Plus(C1,CSqrt5))),
-      Times(QQ(1L,5L),Pi)),
+      Times(QQ(1L,5L),Pi), true),
     // ArcCos(1)=0
     ISet(ArcCos(C1),
-      C0),
+      C0, true),
     // ArcCos(-1)=Pi
     ISet(ArcCos(CN1),
-      Pi),
+      Pi, true),
     // ArcCos(Infinity)=I*Infinity
     ISet(ArcCos(oo),
-      DirectedInfinity(CI)),
+      DirectedInfinity(CI), true),
     // ArcCos(-Infinity)=-I*Infinity
     ISet(ArcCos(Noo),
-      DirectedInfinity(CNI)),
+      DirectedInfinity(CNI), true),
     // ArcCos(I*Infinity)=-I*Infinity
     ISet(ArcCos(DirectedInfinity(CI)),
-      DirectedInfinity(CNI)),
+      DirectedInfinity(CNI), true),
     // ArcCos(-I*Infinity)=I*Infinity
     ISet(ArcCos(DirectedInfinity(CNI)),
-      DirectedInfinity(CI)),
+      DirectedInfinity(CI), true),
     // ArcCos(ComplexInfinity)=ComplexInfinity
     ISet(ArcCos(CComplexInfinity),
-      CComplexInfinity)
+      CComplexInfinity, true)
   );
 }

@@ -13,7 +13,7 @@ public class QuantileRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 16 };
+  final public static int[] SIZES = { 1, 15 };
 
   final public static IAST RULES = List(
     IInit(Quantile, SIZES),
@@ -38,9 +38,9 @@ public class QuantileRules {
     // Quantile(GammaDistribution(a_,b_,g_,d_)):=ConditionalExpression(Piecewise({{d+b*InverseGammaRegularized(a,0,#1)^(1/g),0<#1<1},{d,#1<=0}},Infinity),0<=#1<=1)&
     ISetDelayed(Quantile(GammaDistribution(a_,b_,g_,d_)),
       Function(ConditionalExpression(Piecewise(list(list(Plus(d,Times(b,Power(InverseGammaRegularized(a,C0,Slot1),Power(g,CN1)))),Less(C0,Slot1,C1)),list(d,LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
-    // Quantile(GumbelDistribution()):=ConditionalExpression(Piecewise({{Log(-Log(1-#1)),0<#1<1},{-Infinity,#1<=0}},Infinity),0<=#1<=1)&
-    ISetDelayed(Quantile(GumbelDistribution()),
-      Function(ConditionalExpression(Piecewise(list(list(Log(Negate(Log(Subtract(C1,Slot1)))),Less(C0,Slot1,C1)),list(Negate(oo),LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
+    // Quantile(GumbelDistribution())=ConditionalExpression(Piecewise({{Log(-Log(1-#1)),0<#1<1},{-Infinity,#1<=0}},Infinity),0<=#1<=1)&
+    ISet(Quantile(GumbelDistribution()),
+      Function(ConditionalExpression(Piecewise(list(list(Log(Negate(Log(Subtract(C1,Slot1)))),Less(C0,Slot1,C1)),list(Negate(oo),LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1))), true),
     // Quantile(GumbelDistribution(a_,b_)):=ConditionalExpression(Piecewise({{a+b*Log(-Log(1-#1)),0<#1<1},{-Infinity,#1<=0}},Infinity),0<=#1<=1)&
     ISetDelayed(Quantile(GumbelDistribution(a_,b_)),
       Function(ConditionalExpression(Piecewise(list(list(Plus(a,Times(b,Log(Negate(Log(Subtract(C1,Slot1)))))),Less(C0,Slot1,C1)),list(Negate(oo),LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),

@@ -19,48 +19,48 @@ public class ArcCoshRules {
     IInit(ArcCosh, SIZES),
     // ArcCosh(Undefined)=Undefined
     ISet(ArcCosh(Undefined),
-      Undefined),
+      Undefined, true),
     // ArcCosh(0)=I*Pi/2
     ISet(ArcCosh(C0),
-      Times(CC(0L,1L,1L,2L),Pi)),
+      Times(CC(0L,1L,1L,2L),Pi), true),
     // ArcCosh(1/2)=I*Pi/3
     ISet(ArcCosh(C1D2),
-      Times(CC(0L,1L,1L,3L),Pi)),
+      Times(CC(0L,1L,1L,3L),Pi), true),
     // ArcCosh(-1/2)=2/3*I*Pi
     ISet(ArcCosh(CN1D2),
-      Times(CC(0L,1L,2L,3L),Pi)),
+      Times(CC(0L,1L,2L,3L),Pi), true),
     // ArcCosh(1/Sqrt(2))=1/4*I*Pi
     ISet(ArcCosh(C1DSqrt2),
-      Times(CC(0L,1L,1L,4L),Pi)),
+      Times(CC(0L,1L,1L,4L),Pi), true),
     // ArcCosh(-1/Sqrt(2))=3/4*I*Pi
     ISet(ArcCosh(Negate(C1DSqrt2)),
-      Times(CC(0L,1L,3L,4L),Pi)),
+      Times(CC(0L,1L,3L,4L),Pi), true),
     // ArcCosh(Sqrt(3)/2)=1/6*I*Pi
     ISet(ArcCosh(Times(C1D2,CSqrt3)),
-      Times(CC(0L,1L,1L,6L),Pi)),
+      Times(CC(0L,1L,1L,6L),Pi), true),
     // ArcCosh(-Sqrt(3)/2)=5/6*I*Pi
     ISet(ArcCosh(Times(CN1D2,CSqrt3)),
-      Times(CC(0L,1L,5L,6L),Pi)),
+      Times(CC(0L,1L,5L,6L),Pi), true),
     // ArcCosh(1)=0
     ISet(ArcCosh(C1),
-      C0),
+      C0, true),
     // ArcCosh(-1)=Pi*I
     ISet(ArcCosh(CN1),
-      Times(CI,Pi)),
+      Times(CI,Pi), true),
     // ArcCosh(Infinity)=Infinity
     ISet(ArcCosh(oo),
-      oo),
+      oo, true),
     // ArcCosh(-Infinity)=Infinity
     ISet(ArcCosh(Noo),
-      oo),
+      oo, true),
     // ArcCosh(I*Infinity)=Infinity
     ISet(ArcCosh(DirectedInfinity(CI)),
-      oo),
+      oo, true),
     // ArcCosh(-I*Infinity)=Infinity
     ISet(ArcCosh(DirectedInfinity(CNI)),
-      oo),
+      oo, true),
     // ArcCosh(ComplexInfinity)=Infinity
     ISet(ArcCosh(CComplexInfinity),
-      oo)
+      oo, true)
   );
 }

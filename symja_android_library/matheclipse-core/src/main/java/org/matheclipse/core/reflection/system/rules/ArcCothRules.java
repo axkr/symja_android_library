@@ -19,30 +19,30 @@ public class ArcCothRules {
     IInit(ArcCoth, SIZES),
     // ArcCoth(Undefined)=Undefined
     ISet(ArcCoth(Undefined),
-      Undefined),
+      Undefined, true),
     // ArcCoth(0)=I*Pi/2
     ISet(ArcCoth(C0),
-      Times(CC(0L,1L,1L,2L),Pi)),
+      Times(CC(0L,1L,1L,2L),Pi), true),
     // ArcCoth(I/Sqrt(3))=-1/3*Pi*I
     ISet(ArcCoth(Times(CI,C1DSqrt3)),
-      Times(CC(0L,1L,-1L,3L),Pi)),
+      Times(CC(0L,1L,-1L,3L),Pi), true),
     // ArcCoth(I)=-1/4*Pi*I
     ISet(ArcCoth(CI),
-      Times(CC(0L,1L,-1L,4L),Pi)),
+      Times(CC(0L,1L,-1L,4L),Pi), true),
     // ArcCoth(I*Sqrt(3))=-1/6*Pi*I
     ISet(ArcCoth(Times(CI,CSqrt3)),
-      Times(CC(0L,1L,-1L,6L),Pi)),
+      Times(CC(0L,1L,-1L,6L),Pi), true),
     // ArcCoth(1)=Infinity
     ISet(ArcCoth(C1),
-      oo),
+      oo, true),
     // ArcCoth(Infinity)=0
     ISet(ArcCoth(oo),
-      C0),
+      C0, true),
     // ArcCoth(I*Infinity)=0
     ISet(ArcCoth(DirectedInfinity(CI)),
-      C0),
+      C0, true),
     // ArcCoth(ComplexInfinity)=0
     ISet(ArcCoth(CComplexInfinity),
-      C0)
+      C0, true)
   );
 }

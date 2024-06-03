@@ -19,82 +19,82 @@ public class CotRules {
     IInit(Cot, SIZES),
     // Cot(Undefined)=Undefined
     ISet(Cot(Undefined),
-      Undefined),
+      Undefined, true),
     // Cot(0)=ComplexInfinity
     ISet(Cot(C0),
-      CComplexInfinity),
+      CComplexInfinity, true),
     // Cot(Pi/12)=2+Sqrt(3)
     ISet(Cot(Times(QQ(1L,12L),Pi)),
-      Plus(C2,CSqrt3)),
+      Plus(C2,CSqrt3), true),
     // Cot(Pi/10)=Sqrt(5+2*Sqrt(5))
     ISet(Cot(Times(QQ(1L,10L),Pi)),
-      Sqrt(Plus(C5,Times(C2,CSqrt5)))),
+      Sqrt(Plus(C5,Times(C2,CSqrt5))), true),
     // Cot(Pi/8)=Sqrt(2)+1
     ISet(Cot(Times(QQ(1L,8L),Pi)),
-      Plus(C1,CSqrt2)),
+      Plus(C1,CSqrt2), true),
     // Cot(Pi/6)=Sqrt(3)
     ISet(Cot(Times(QQ(1L,6L),Pi)),
-      CSqrt3),
+      CSqrt3, true),
     // Cot(Pi/5)=Sqrt(1+2/Sqrt(5))
     ISet(Cot(Times(QQ(1L,5L),Pi)),
-      Sqrt(Plus(C1,Times(C2,C1DSqrt5)))),
+      Sqrt(Plus(C1,Times(C2,C1DSqrt5))), true),
     // Cot(Pi/4)=1
     ISet(Cot(CPiQuarter),
-      C1),
+      C1, true),
     // Cot(3/10*Pi)=Sqrt(5-2*Sqrt(5))
     ISet(Cot(Times(QQ(3L,10L),Pi)),
-      Sqrt(Plus(C5,Times(CN2,CSqrt5)))),
+      Sqrt(Plus(C5,Times(CN2,CSqrt5))), true),
     // Cot(Pi/3)=1/Sqrt(3)
     ISet(Cot(CPiThird),
-      C1DSqrt3),
+      C1DSqrt3, true),
     // Cot(3/8*Pi)=-1+Sqrt(2)
     ISet(Cot(Times(QQ(3L,8L),Pi)),
-      Plus(CN1,CSqrt2)),
+      Plus(CN1,CSqrt2), true),
     // Cot(2/5*Pi)=Sqrt(1-2/Sqrt(5))
     ISet(Cot(Times(QQ(2L,5L),Pi)),
-      Sqrt(Plus(C1,Times(CN2,C1DSqrt5)))),
+      Sqrt(Plus(C1,Times(CN2,C1DSqrt5))), true),
     // Cot(5/12*Pi)=2-Sqrt(3)
     ISet(Cot(Times(QQ(5L,12L),Pi)),
-      Subtract(C2,CSqrt3)),
+      Subtract(C2,CSqrt3), true),
     // Cot(Pi/2)=0
     ISet(Cot(CPiHalf),
-      C0),
+      C0, true),
     // Cot(7/12*Pi)=-2+Sqrt(3)
     ISet(Cot(Times(QQ(7L,12L),Pi)),
-      Plus(CN2,CSqrt3)),
+      Plus(CN2,CSqrt3), true),
     // Cot(3/5*Pi)=-Sqrt(1-2/Sqrt(5))
     ISet(Cot(Times(QQ(3L,5L),Pi)),
-      Negate(Sqrt(Plus(C1,Times(CN2,C1DSqrt5))))),
+      Negate(Sqrt(Plus(C1,Times(CN2,C1DSqrt5)))), true),
     // Cot(5/8*Pi)=1-Sqrt(2)
     ISet(Cot(Times(QQ(5L,8L),Pi)),
-      Subtract(C1,CSqrt2)),
+      Subtract(C1,CSqrt2), true),
     // Cot(2/3*Pi)=-1/Sqrt(3)
     ISet(Cot(Times(QQ(2L,3L),Pi)),
-      Negate(C1DSqrt3)),
+      Negate(C1DSqrt3), true),
     // Cot(7/10*Pi)=-Sqrt(5-2*Sqrt(5))
     ISet(Cot(Times(QQ(7L,10L),Pi)),
-      Negate(Sqrt(Plus(C5,Times(CN2,CSqrt5))))),
+      Negate(Sqrt(Plus(C5,Times(CN2,CSqrt5)))), true),
     // Cot(3/4*Pi)=-1
     ISet(Cot(Times(QQ(3L,4L),Pi)),
-      CN1),
+      CN1, true),
     // Cot(4/5*Pi)=-Sqrt(1+2/Sqrt(5))
     ISet(Cot(Times(QQ(4L,5L),Pi)),
-      Negate(Sqrt(Plus(C1,Times(C2,C1DSqrt5))))),
+      Negate(Sqrt(Plus(C1,Times(C2,C1DSqrt5)))), true),
     // Cot(5/6*Pi)=-Sqrt(3)
     ISet(Cot(Times(QQ(5L,6L),Pi)),
-      Negate(CSqrt3)),
+      Negate(CSqrt3), true),
     // Cot(7/8*Pi)=-1-Sqrt(2)
     ISet(Cot(Times(QQ(7L,8L),Pi)),
-      Subtract(CN1,CSqrt2)),
+      Subtract(CN1,CSqrt2), true),
     // Cot(9/10*Pi)=-Sqrt(5+2*Sqrt(5))
     ISet(Cot(Times(QQ(9L,10L),Pi)),
-      Negate(Sqrt(Plus(C5,Times(C2,CSqrt5))))),
+      Negate(Sqrt(Plus(C5,Times(C2,CSqrt5)))), true),
     // Cot(11/12*Pi)=-2-Sqrt(3)
     ISet(Cot(Times(QQ(11L,12L),Pi)),
-      Subtract(CN2,CSqrt3)),
+      Subtract(CN2,CSqrt3), true),
     // Cot(Pi)=ComplexInfinity
     ISet(Cot(Pi),
-      CComplexInfinity),
+      CComplexInfinity, true),
     // Cot(ArcSin(x_)):=Sqrt(1-x^2)/x
     ISetDelayed(Cot(ArcSin(x_)),
       Times(Power(x,CN1),Sqrt(Subtract(C1,Sqr(x))))),
@@ -121,12 +121,12 @@ public class CotRules {
       Times(Power(Subtract(C1,Power(x,CN2)),CN1D2),Power(x,CN1))),
     // Cot(I*Infinity)=-I
     ISet(Cot(DirectedInfinity(CI)),
-      CNI),
+      CNI, true),
     // Cot(-I*Infinity)=I
     ISet(Cot(DirectedInfinity(CNI)),
-      CI),
+      CI, true),
     // Cot(ComplexInfinity)=Indeterminate
     ISet(Cot(CComplexInfinity),
-      Indeterminate)
+      Indeterminate, true)
   );
 }
