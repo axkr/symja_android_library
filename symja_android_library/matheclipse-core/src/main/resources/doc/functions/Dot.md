@@ -1,14 +1,21 @@
 ## Dot
 
 ```
-Dot(x, y) or x . y
+Dot(x, y) 
 ```
 
-> `x . y` computes the vector dot product or matrix product `x . y`.
+```
+x . y
+```
 
-**Note**: the `Dot` operator has the attribute `Flat` ([associative property](https://en.wikipedia.org/wiki/Associative_property)) but not `Orderless` ([commutative property](https://en.wikipedia.org/wiki/Commutative_property)).
+> computes products of vectors, matrices, and tensors.
 
-See:    
+**Note**: the `Dot` operator has the
+attribute `Flat` ([associative property](https://en.wikipedia.org/wiki/Associative_property)) but
+not `Orderless` ([commutative property](https://en.wikipedia.org/wiki/Commutative_property)).
+
+See:
+
 * [Wikipedia - Matrix multiplication](https://en.wikipedia.org/wiki/Matrix_multiplication)
 * [Youtube - Matrix multiplication as composition | Essence of linear algebra, chapter 4](https://youtu.be/XkY2DOUCWMU)
 
@@ -40,20 +47,15 @@ a.b
 
 Wrong dimensions print an error message:
 
-
 ```
 {{a, b}, {c, d}}.{{x, y}}
 ```
 
 **Dot: Tensors {{a,b},{c,d}} and {{x,y}} have incompatible shapes.**
 
-### Related terms 
-[Flat](Flat.md), [MatrixPower](MatrixPower.md), [Orderless](Orderless.md), [Times](Times.md) 
+### Related terms
 
-
-
-
-
+[Flat](Flat.md), [MatrixPower](MatrixPower.md), [Orderless](Orderless.md), [Times](Times.md)
 
 ### Implementation status
 

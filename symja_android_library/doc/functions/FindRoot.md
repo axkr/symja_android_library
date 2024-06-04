@@ -19,7 +19,7 @@ FindRoot(f, {x, xmin, xmax}, AccuracyGoal->n)
 > searches for a numerical root of `f` for the variable `x`, with accuracy `1*^-n`
 
 ```
-FindRoot(f, {x, xmin, xmax}, Method->method_name)
+FindRoot(f, {x, xmin, xmax}, Method->methodName)
 ```
 
 > searches for a numerical root of `f` for the variable `x`, with one of the method names listed below.
@@ -41,7 +41,7 @@ Implements the Brent algorithm for finding zeros of real univariate functions (`
 The function should be continuous but not necessarily smooth. 
 The solve method returns a zero `x` of the function `f` in the given interval `[xmin, xmax]`.
 
-This is the default method, if no `method_name` is given.
+This is the default method, if no `methodName` is given.
 
 #### Newton
 

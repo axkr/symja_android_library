@@ -142,7 +142,7 @@ public class IntegerFunctions {
    *
    *
    * <pre>
-   * BitLengthi(x)
+   * BitLength(x)
    * </pre>
    *
    * <blockquote>

@@ -7,7 +7,7 @@ FindMaximum(f, {x, xstart})
 > searches for a local numerical maximum of `f` for the variable `x` and the start value `xstart`. 
 
 ```
-FindMaximum(f, {x, xstart}, Method->method_name)
+FindMaximum(f, {x, xstart}, Method->methodName)
 ```
 
 > searches for a local numerical maximum of `f` for the variable `x` and the start value `xstart`, with one of the following method names:
@@ -25,7 +25,7 @@ See
 
 Implements the Powell optimizer. 
 
-This is the default method, if no `method_name` is given.
+This is the default method, if no `methodName` is given.
 
 #### ConjugateGradient
 
