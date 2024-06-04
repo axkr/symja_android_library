@@ -19,25 +19,25 @@ public class CothRules {
     IInit(Coth, SIZES),
     // Coth(Undefined)=Undefined
     ISet(Coth(Undefined),
-      Undefined),
+      Undefined, true),
     // Coth(0)=ComplexInfinity
     ISet(Coth(C0),
-      CComplexInfinity),
+      CComplexInfinity, true),
     // Coth(0.0)=ComplexInfinity
     ISet(Coth(CD0),
-      CComplexInfinity),
+      CComplexInfinity, true),
     // Coth(I*1/4*Pi)=-I
     ISet(Coth(Times(CC(0L,1L,1L,4L),Pi)),
-      CNI),
+      CNI, true),
     // Coth(I*1/2*Pi)=0
     ISet(Coth(Times(CC(0L,1L,1L,2L),Pi)),
-      C0),
+      C0, true),
     // Coth(I*3/4*Pi)=I
     ISet(Coth(Times(CC(0L,1L,3L,4L),Pi)),
-      CI),
+      CI, true),
     // Coth(I*Pi)=ComplexInfinity
     ISet(Coth(Times(CI,Pi)),
-      CComplexInfinity),
+      CComplexInfinity, true),
     // Coth(ArcSinh(x_)):=Sqrt(1+x^2)/x
     ISetDelayed(Coth(ArcSinh(x_)),
       Times(Power(x,CN1),Sqrt(Plus(C1,Sqr(x))))),
@@ -61,9 +61,9 @@ public class CothRules {
       Times(Plus(C1,Sqr(x)),Power(Plus(CN1,Sqr(x)),CN1))),
     // Coth(Infinity)=1
     ISet(Coth(oo),
-      C1),
+      C1, true),
     // Coth(ComplexInfinity)=Indeterminate
     ISet(Coth(CComplexInfinity),
-      Indeterminate)
+      Indeterminate, true)
   );
 }

@@ -13,7 +13,7 @@ public class InterquartileRangeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 1, 4 };
+  final public static int[] SIZES = { 2, 3 };
 
   final public static IAST RULES = List(
     IInit(InterquartileRange, SIZES),
@@ -23,9 +23,9 @@ public class InterquartileRangeRules {
     // InterquartileRange(ExponentialDistribution(n_))=Log(3)/n
     ISet(InterquartileRange(ExponentialDistribution(n_)),
       Times(Power(n,CN1),Log(C3))),
-    // InterquartileRange(GumbelDistribution()):=Log(Log(4)/Log(4/3))
-    ISetDelayed(InterquartileRange(GumbelDistribution()),
-      Log(Times(Power(Log(QQ(4L,3L)),CN1),Log(C4)))),
+    // InterquartileRange(GumbelDistribution())=Log(Log(4)/Log(4/3))
+    ISet(InterquartileRange(GumbelDistribution()),
+      Log(Times(Power(Log(QQ(4L,3L)),CN1),Log(C4))), true),
     // InterquartileRange(GumbelDistribution(n_,m_)):=m*Log(Log(4)/Log(4/3))
     ISetDelayed(InterquartileRange(GumbelDistribution(n_,m_)),
       Times(m,Log(Times(Power(Log(QQ(4L,3L)),CN1),Log(C4))))),

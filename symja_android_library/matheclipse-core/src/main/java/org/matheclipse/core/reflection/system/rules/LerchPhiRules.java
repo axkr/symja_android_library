@@ -13,31 +13,31 @@ public class LerchPhiRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 6, 1 };
+  final public static int[] SIZES = { 7, 0 };
 
   final public static IAST RULES = List(
     IInit(LerchPhi, SIZES),
     // LerchPhi(-1,1,0)=-Log(2)
     ISet(LerchPhi(CN1,C1,C0),
-      Negate(Log(C2))),
+      Negate(Log(C2)), true),
     // LerchPhi(-1,2,1/2)=4*Catalan
     ISet(LerchPhi(CN1,C2,C1D2),
-      Times(C4,Catalan)),
+      Times(C4,Catalan), true),
     // LerchPhi(0,1,0)=0
     ISet(LerchPhi(C0,C1,C0),
-      C0),
+      C0, true),
     // LerchPhi(1,1,0)=Infinity
     ISet(LerchPhi(C1,C1,C0),
-      oo),
+      oo, true),
     // LerchPhi(1,2,1)=Pi^2/6
     ISet(LerchPhi(C1,C2,C1),
-      Times(QQ(1L,6L),Sqr(Pi))),
+      Times(QQ(1L,6L),Sqr(Pi)), true),
     // LerchPhi(2,1,0)=-I*Pi
     ISet(LerchPhi(C2,C1,C0),
-      Times(CNI,Pi)),
-    // LerchPhi(1/2-I*1/2,2,1):=(1+I)*PolyLog(2,1/2-I/2)
-    ISetDelayed(LerchPhi(CC(1L,2L,-1L,2L),C2,C1),
-      Times(Plus(C1,CI),PolyLog(C2,Plus(C1D2,Times(CN1D2,CI))))),
+      Times(CNI,Pi), true),
+    // LerchPhi(1/2-I*1/2,2,1)=(1+I)*PolyLog(2,1/2-I/2)
+    ISet(LerchPhi(CC(1L,2L,-1L,2L),C2,C1),
+      Times(CC(1L,1L,1L,1L),PolyLog(C2,CC(1L,2L,-1L,2L))), true),
     // LerchPhi(z_,s_,i_Integer):=Module({n=-i},z^n*(PolyLog(s,z)+Sum(1/(z^k*k^s),{k,1,n}))/;i<0)
     ISetDelayed(LerchPhi(z_,s_,$p(i, Integer)),
       Module(list(Set(n,Negate(i))),Condition(Times(Power(z,n),Plus(PolyLog(s,z),Sum(Power(Times(Power(z,k),Power(k,s)),CN1),list(k,C1,n)))),Less(i,C0)))),

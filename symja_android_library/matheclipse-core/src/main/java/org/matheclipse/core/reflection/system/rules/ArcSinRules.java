@@ -19,57 +19,57 @@ public class ArcSinRules {
     IInit(ArcSin, SIZES),
     // ArcSin(Undefined)=Undefined
     ISet(ArcSin(Undefined),
-      Undefined),
+      Undefined, true),
     // ArcSin(0)=0
     ISet(ArcSin(C0),
-      C0),
+      C0, true),
     // ArcSin(Sqrt(2-Sqrt(3))/2)=Pi/12
     ISet(ArcSin(Times(C1D2,Sqrt(Subtract(C2,CSqrt3)))),
-      Times(QQ(1L,12L),Pi)),
+      Times(QQ(1L,12L),Pi), true),
     // ArcSin((-1+Sqrt(3))/(2*Sqrt(2)))=Pi/12
     ISet(ArcSin(Times(C1D2,C1DSqrt2,Plus(CN1,CSqrt3))),
-      Times(QQ(1L,12L),Pi)),
+      Times(QQ(1L,12L),Pi), true),
     // ArcSin(1/4*(-1+Sqrt(5)))=Pi/10
     ISet(ArcSin(Times(C1D4,Plus(CN1,CSqrt5))),
-      Times(QQ(1L,10L),Pi)),
+      Times(QQ(1L,10L),Pi), true),
     // ArcSin(1/4*(1+Sqrt(5)))=3/10*Pi
     ISet(ArcSin(Times(C1D4,Plus(C1,CSqrt5))),
-      Times(QQ(3L,10L),Pi)),
+      Times(QQ(3L,10L),Pi), true),
     // ArcSin(Sqrt(2-Sqrt(2))/2)=Pi/8
     ISet(ArcSin(Times(C1D2,Sqrt(Subtract(C2,CSqrt2)))),
-      Times(QQ(1L,8L),Pi)),
+      Times(QQ(1L,8L),Pi), true),
     // ArcSin(1/2)=Pi/6
     ISet(ArcSin(C1D2),
-      Times(QQ(1L,6L),Pi)),
+      Times(QQ(1L,6L),Pi), true),
     // ArcSin(Sqrt(1/2*(5-Sqrt(5)))/2)=Pi/5
     ISet(ArcSin(Times(C1D2,Sqrt(Times(C1D2,Subtract(C5,CSqrt5))))),
-      Times(QQ(1L,5L),Pi)),
+      Times(QQ(1L,5L),Pi), true),
     // ArcSin(1/Sqrt(2))=Pi/4
     ISet(ArcSin(C1DSqrt2),
-      CPiQuarter),
+      CPiQuarter, true),
     // ArcSin(Sqrt(3)/2)=Pi/3
     ISet(ArcSin(Times(C1D2,CSqrt3)),
-      CPiThird),
+      CPiThird, true),
     // ArcSin(Sqrt(2+Sqrt(2))/2)=3/8*Pi
     ISet(ArcSin(Times(C1D2,Sqrt(Plus(C2,CSqrt2)))),
-      Times(QQ(3L,8L),Pi)),
+      Times(QQ(3L,8L),Pi), true),
     // ArcSin(Sqrt(1/2*(5+Sqrt(5)))/2)=2/5*Pi
     ISet(ArcSin(Times(C1D2,Sqrt(Times(C1D2,Plus(C5,CSqrt5))))),
-      Times(QQ(2L,5L),Pi)),
+      Times(QQ(2L,5L),Pi), true),
     // ArcSin((1+Sqrt(3))/(2*Sqrt(2)))=5/12*Pi
     ISet(ArcSin(Times(C1D2,C1DSqrt2,Plus(C1,CSqrt3))),
-      Times(QQ(5L,12L),Pi)),
+      Times(QQ(5L,12L),Pi), true),
     // ArcSin(1)=Pi/2
     ISet(ArcSin(C1),
-      CPiHalf),
+      CPiHalf, true),
     // ArcSin(Infinity)=-I*Infinity
     ISet(ArcSin(oo),
-      DirectedInfinity(CNI)),
+      DirectedInfinity(CNI), true),
     // ArcSin(I*Infinity)=I*Infinity
     ISet(ArcSin(DirectedInfinity(CI)),
-      DirectedInfinity(CI)),
+      DirectedInfinity(CI), true),
     // ArcSin(ComplexInfinity)=ComplexInfinity
     ISet(ArcSin(CComplexInfinity),
-      CComplexInfinity)
+      CComplexInfinity, true)
   );
 }

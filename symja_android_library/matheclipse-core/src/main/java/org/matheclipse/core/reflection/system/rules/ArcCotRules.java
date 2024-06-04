@@ -19,66 +19,66 @@ public class ArcCotRules {
     IInit(ArcCot, SIZES),
     // ArcCot(Undefined)=Undefined
     ISet(ArcCot(Undefined),
-      Undefined),
+      Undefined, true),
     // ArcCot(0)=Pi/2
     ISet(ArcCot(C0),
-      CPiHalf),
+      CPiHalf, true),
     // ArcCot(2-Sqrt(3))=5/12*Pi
     ISet(ArcCot(Subtract(C2,CSqrt3)),
-      Times(QQ(5L,12L),Pi)),
+      Times(QQ(5L,12L),Pi), true),
     // ArcCot(-2+Sqrt(3))=-5/12*Pi
     ISet(ArcCot(Plus(CN2,CSqrt3)),
-      Times(QQ(-5L,12L),Pi)),
+      Times(QQ(-5L,12L),Pi), true),
     // ArcCot(-1+Sqrt(2))=3/8*Pi
     ISet(ArcCot(Plus(CN1,CSqrt2)),
-      Times(QQ(3L,8L),Pi)),
+      Times(QQ(3L,8L),Pi), true),
     // ArcCot(1-Sqrt(2))=-3/8*Pi
     ISet(ArcCot(Subtract(C1,CSqrt2)),
-      Times(QQ(-3L,8L),Pi)),
+      Times(QQ(-3L,8L),Pi), true),
     // ArcCot(1/Sqrt(3))=Pi/3
     ISet(ArcCot(C1DSqrt3),
-      CPiThird),
+      CPiThird, true),
     // ArcCot(1)=Pi/4
     ISet(ArcCot(C1),
-      CPiQuarter),
+      CPiQuarter, true),
     // ArcCot(Sqrt(1+2/Sqrt(5)))=Pi/5
     ISet(ArcCot(Sqrt(Plus(C1,Times(C2,C1DSqrt5)))),
-      Times(QQ(1L,5L),Pi)),
+      Times(QQ(1L,5L),Pi), true),
     // ArcCot(Sqrt(3))=Pi/6
     ISet(ArcCot(CSqrt3),
-      Times(QQ(1L,6L),Pi)),
+      Times(QQ(1L,6L),Pi), true),
     // ArcCot(1+Sqrt(2))=Pi/8
     ISet(ArcCot(Plus(C1,CSqrt2)),
-      Times(QQ(1L,8L),Pi)),
+      Times(QQ(1L,8L),Pi), true),
     // ArcCot(Sqrt(5+2*Sqrt(5)))=Pi/10
     ISet(ArcCot(Sqrt(Plus(C5,Times(C2,CSqrt5)))),
-      Times(QQ(1L,10L),Pi)),
+      Times(QQ(1L,10L),Pi), true),
     // ArcCot(2+Sqrt(3))=Pi/12
     ISet(ArcCot(Plus(C2,CSqrt3)),
-      Times(QQ(1L,12L),Pi)),
+      Times(QQ(1L,12L),Pi), true),
     // ArcCot(Sqrt(5-2*Sqrt(5)))=3/10*Pi
     ISet(ArcCot(Sqrt(Plus(C5,Times(CN2,CSqrt5)))),
-      Times(QQ(3L,10L),Pi)),
+      Times(QQ(3L,10L),Pi), true),
     // ArcCot(Sqrt(5+2*Sqrt(5)))=Pi/10
     ISet(ArcCot(Sqrt(Plus(C5,Times(C2,CSqrt5)))),
-      Times(QQ(1L,10L),Pi)),
+      Times(QQ(1L,10L),Pi), true),
     // ArcCot(I)=-I*Infinity
     ISet(ArcCot(CI),
-      DirectedInfinity(CNI)),
+      DirectedInfinity(CNI), true),
     // ArcCot(Infinity)=0
     ISet(ArcCot(oo),
-      C0),
+      C0, true),
     // ArcCot(-Infinity)=0
     ISet(ArcCot(Noo),
-      C0),
+      C0, true),
     // ArcCot(I*Infinity)=0
     ISet(ArcCot(DirectedInfinity(CI)),
-      C0),
+      C0, true),
     // ArcCot(-I*Infinity)=0
     ISet(ArcCot(DirectedInfinity(CNI)),
-      C0),
+      C0, true),
     // ArcCot(ComplexInfinity)=0
     ISet(ArcCot(CComplexInfinity),
-      C0)
+      C0, true)
   );
 }

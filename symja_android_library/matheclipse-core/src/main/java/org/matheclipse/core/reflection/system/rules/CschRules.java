@@ -19,46 +19,46 @@ public class CschRules {
     IInit(Csch, SIZES),
     // Csch(Undefined)=Undefined
     ISet(Csch(Undefined),
-      Undefined),
+      Undefined, true),
     // Csch(0)=ComplexInfinity
     ISet(Csch(C0),
-      CComplexInfinity),
+      CComplexInfinity, true),
     // Csch(I*1/6*Pi)=(-2)*I
     ISet(Csch(Times(CC(0L,1L,1L,6L),Pi)),
-      CC(0L,1L,-2L,1L)),
+      CC(0L,1L,-2L,1L), true),
     // Csch(I*1/4*Pi)=-Sqrt(2)*I
     ISet(Csch(Times(CC(0L,1L,1L,4L),Pi)),
-      Times(CNI,CSqrt2)),
+      Times(CNI,CSqrt2), true),
     // Csch(I*1/2*Pi)=-I
     ISet(Csch(Times(CC(0L,1L,1L,2L),Pi)),
-      CNI),
+      CNI, true),
     // Csch(I*3/4*Pi)=-Sqrt(2)*I
     ISet(Csch(Times(CC(0L,1L,3L,4L),Pi)),
-      Times(CNI,CSqrt2)),
+      Times(CNI,CSqrt2), true),
     // Csch(I*5/6*Pi)=(-2)*I
     ISet(Csch(Times(CC(0L,1L,5L,6L),Pi)),
-      CC(0L,1L,-2L,1L)),
+      CC(0L,1L,-2L,1L), true),
     // Csch(I*Pi)=ComplexInfinity
     ISet(Csch(Times(CI,Pi)),
-      CComplexInfinity),
+      CComplexInfinity, true),
     // Csch(I*7/6*Pi)=2*I
     ISet(Csch(Times(CC(0L,1L,7L,6L),Pi)),
-      CC(0L,1L,2L,1L)),
+      CC(0L,1L,2L,1L), true),
     // Csch(I*5/4*Pi)=Sqrt(2)*I
     ISet(Csch(Times(CC(0L,1L,5L,4L),Pi)),
-      Times(CI,CSqrt2)),
+      Times(CI,CSqrt2), true),
     // Csch(I*3/2*Pi)=I
     ISet(Csch(Times(CC(0L,1L,3L,2L),Pi)),
-      CI),
+      CI, true),
     // Csch(I*7/4*Pi)=Sqrt(2)*I
     ISet(Csch(Times(CC(0L,1L,7L,4L),Pi)),
-      Times(CI,CSqrt2)),
+      Times(CI,CSqrt2), true),
     // Csch(I*11/6*Pi)=2*I
     ISet(Csch(Times(CC(0L,1L,11L,6L),Pi)),
-      CC(0L,1L,2L,1L)),
+      CC(0L,1L,2L,1L), true),
     // Csch(I*2*Pi)=ComplexInfinity
     ISet(Csch(Times(CC(0L,1L,2L,1L),Pi)),
-      CComplexInfinity),
+      CComplexInfinity, true),
     // Csch(ArcSinh(x_)):=1/x
     ISetDelayed(Csch(ArcSinh(x_)),
       Power(x,CN1)),
@@ -82,9 +82,9 @@ public class CschRules {
       Times(C2,x,Power(Plus(CN1,Sqr(x)),CN1))),
     // Csch(Infinity)=0
     ISet(Csch(oo),
-      C0),
+      C0, true),
     // Csch(ComplexInfinity)=Indeterminate
     ISet(Csch(CComplexInfinity),
-      Indeterminate)
+      Indeterminate, true)
   );
 }

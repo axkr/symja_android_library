@@ -19,10 +19,10 @@ public class PowerRules {
     IInit(Power, SIZES),
     // E^(I*1/2*Pi)=I
     ISet(Exp(Times(CC(0L,1L,1L,2L),Pi)),
-      CI),
+      CI, true),
     // E^(I*3/2*Pi)=-I
     ISet(Exp(Times(CC(0L,1L,3L,2L),Pi)),
-      CNI),
+      CNI, true),
     // E^(I*Pi*n_):=(-1)^n/;n∈Integers
     ISetDelayed(Exp(Times(CI,Pi,n_)),
       Condition(Power(CN1,n),Element(n,Integers))),

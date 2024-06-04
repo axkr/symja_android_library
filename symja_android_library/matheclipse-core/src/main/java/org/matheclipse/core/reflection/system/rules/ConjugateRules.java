@@ -19,7 +19,7 @@ public class ConjugateRules {
     IInit(Conjugate, SIZES),
     // Conjugate(Undefined)=Undefined
     ISet(Conjugate(Undefined),
-      Undefined),
+      Undefined, true),
     // Conjugate(Erf(x_)):=Erf(Conjugate(x))
     ISetDelayed(Conjugate(Erf(x_)),
       Erf(Conjugate(x))),

@@ -19,10 +19,10 @@ public class StieltjesGammaRules {
     IInit(StieltjesGamma, SIZES),
     // StieltjesGamma(Undefined)=Undefined
     ISet(StieltjesGamma(Undefined),
-      Undefined),
+      Undefined, true),
     // StieltjesGamma(0)=EulerGamma
     ISet(StieltjesGamma(C0),
-      EulerGamma),
+      EulerGamma, true),
     // StieltjesGamma(0,a_):=-PolyGamma(0,a)
     ISetDelayed(StieltjesGamma(C0,a_),
       Negate(PolyGamma(C0,a))),

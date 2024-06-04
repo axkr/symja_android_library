@@ -617,11 +617,11 @@ public final class RulesData implements Serializable {
    * @param rightHandSide right hand side term rewriting rule
    * @param priority the priority of the rule
    */
-  public final IPatternMatcher integrate(final IExpr leftHandSide, final IExpr rightHandSide,
+  public final IPatternMatcher integrate(final IAST leftHandSide, final IExpr rightHandSide,
       final int priority) {
     int patternHash = 0;
     if (!isComplicatedPatternRule(leftHandSide)) {
-      patternHash = ((IAST) leftHandSide).patternHashCode();
+      patternHash = leftHandSide.patternHashCode();
     }
     final PatternMatcherAndEvaluator pmEvaluator = new PatternMatcherAndEvaluator(
         IPatternMatcher.SET_DELAYED, leftHandSide, rightHandSide, false, patternHash);

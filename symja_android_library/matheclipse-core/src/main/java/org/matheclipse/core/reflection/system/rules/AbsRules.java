@@ -19,13 +19,13 @@ public class AbsRules {
     IInit(Abs, SIZES),
     // Abs(Undefined)=Undefined
     ISet(Abs(Undefined),
-      Undefined),
+      Undefined, true),
     // Abs(E)=E
     ISet(Abs(E),
-      E),
+      E, true),
     // Abs(Pi)=Pi
     ISet(Abs(Pi),
-      Pi),
+      Pi, true),
     // Abs(Conjugate(x_)):=Abs(x)
     ISetDelayed(Abs(Conjugate(x_)),
       Abs(x))

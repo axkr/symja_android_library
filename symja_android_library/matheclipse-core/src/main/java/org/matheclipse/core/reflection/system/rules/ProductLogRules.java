@@ -19,40 +19,40 @@ public class ProductLogRules {
     IInit(ProductLog, SIZES),
     // ProductLog(Undefined)=Undefined
     ISet(ProductLog(Undefined),
-      Undefined),
+      Undefined, true),
     // ProductLog(0)=0
     ISet(ProductLog(C0),
-      C0),
+      C0, true),
     // ProductLog(-Pi/2)=I*Pi/2
     ISet(ProductLog(CNPiHalf),
-      Times(CC(0L,1L,1L,2L),Pi)),
+      Times(CC(0L,1L,1L,2L),Pi), true),
     // ProductLog(-1/E)=-1
     ISet(ProductLog(Negate(Exp(CN1))),
-      CN1),
+      CN1, true),
     // ProductLog(E)=1
     ISet(ProductLog(E),
-      C1),
+      C1, true),
     // ProductLog(-1,-Pi/2)=-1/2*Pi*I
     ISet(ProductLog(CN1,CNPiHalf),
-      Times(CC(0L,1L,-1L,2L),Pi)),
+      Times(CC(0L,1L,-1L,2L),Pi), true),
     // ProductLog(-1,-1/E)=-1
     ISet(ProductLog(CN1,Negate(Exp(CN1))),
-      CN1),
+      CN1, true),
     // ProductLog(Infinity)=Infinity
     ISet(ProductLog(oo),
-      oo),
+      oo, true),
     // ProductLog(-Infinity)=Infinity
     ISet(ProductLog(Noo),
-      oo),
+      oo, true),
     // ProductLog(I*Infinity)=Infinity
     ISet(ProductLog(DirectedInfinity(CI)),
-      oo),
+      oo, true),
     // ProductLog(-I*Infinity)=Infinity
     ISet(ProductLog(DirectedInfinity(CNI)),
-      oo),
+      oo, true),
     // ProductLog(ComplexInfinity)=Infinity
     ISet(ProductLog(CComplexInfinity),
-      oo),
+      oo, true),
     // ProductLog(Log(x_)*x_):=Log(x)/;x>1/E
     ISetDelayed(ProductLog(Times(Log(x_),x_)),
       Condition(Log(x),Greater(x,Exp(CN1)))),

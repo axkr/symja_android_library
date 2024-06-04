@@ -19,7 +19,7 @@ public class HurwitzLerchPhiRules {
     IInit(HurwitzLerchPhi, SIZES),
     // HurwitzLerchPhi(0,1,1)=1
     ISet(HurwitzLerchPhi(C0,C1,C1),
-      C1),
+      C1, true),
     // HurwitzLerchPhi(z_,s_,1):=PolyLog(s,z)/z
     ISetDelayed(HurwitzLerchPhi(z_,s_,C1),
       Times(Power(z,CN1),PolyLog(s,z))),

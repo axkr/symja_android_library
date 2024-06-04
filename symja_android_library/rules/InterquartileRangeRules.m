@@ -3,7 +3,7 @@ InterquartileRange(BernoulliDistribution(n_)) :=
   Piecewise({{1, 1/4<n<=3/4}}, 0),
 InterquartileRange(ExponentialDistribution(n_)) =
   Log(3)/n,
-InterquartileRange(GumbelDistribution()) :=
+InterquartileRange(GumbelDistribution()) =
   Log(Log(4)/Log(4/3)),
 InterquartileRange(GumbelDistribution(n_,m_)) :=
   m*Log(Log(4)/Log(4/3)),

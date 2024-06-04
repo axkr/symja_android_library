@@ -19,58 +19,58 @@ public class ArcTanRules {
     IInit(ArcTan, SIZES),
     // ArcTan(Undefined)=Undefined
     ISet(ArcTan(Undefined),
-      Undefined),
+      Undefined, true),
     // ArcTan(0)=0
     ISet(ArcTan(C0),
-      C0),
+      C0, true),
     // ArcTan(0,0)=Indeterminate
     ISet(ArcTan(C0,C0),
-      Indeterminate),
+      Indeterminate, true),
     // ArcTan(2-Sqrt(3))=Pi/12
     ISet(ArcTan(Subtract(C2,CSqrt3)),
-      Times(QQ(1L,12L),Pi)),
+      Times(QQ(1L,12L),Pi), true),
     // ArcTan(-2+Sqrt(3))=-Pi/12
     ISet(ArcTan(Plus(CN2,CSqrt3)),
-      Times(QQ(-1L,12L),Pi)),
+      Times(QQ(-1L,12L),Pi), true),
     // ArcTan(-1+Sqrt(2))=Pi/8
     ISet(ArcTan(Plus(CN1,CSqrt2)),
-      Times(QQ(1L,8L),Pi)),
+      Times(QQ(1L,8L),Pi), true),
     // ArcTan(1-Sqrt(2))=-Pi/8
     ISet(ArcTan(Subtract(C1,CSqrt2)),
-      Times(QQ(-1L,8L),Pi)),
+      Times(QQ(-1L,8L),Pi), true),
     // ArcTan(1/Sqrt(3))=Pi/6
     ISet(ArcTan(C1DSqrt3),
-      Times(QQ(1L,6L),Pi)),
+      Times(QQ(1L,6L),Pi), true),
     // ArcTan(Sqrt(5-2*Sqrt(5)))=Pi/5
     ISet(ArcTan(Sqrt(Plus(C5,Times(CN2,CSqrt5)))),
-      Times(QQ(1L,5L),Pi)),
+      Times(QQ(1L,5L),Pi), true),
     // ArcTan(1)=Pi/4
     ISet(ArcTan(C1),
-      CPiQuarter),
+      CPiQuarter, true),
     // ArcTan(1,1)=Pi/4
     ISet(ArcTan(C1,C1),
-      CPiQuarter),
+      CPiQuarter, true),
     // ArcTan(-1,-1)=-3/4*Pi
     ISet(ArcTan(CN1,CN1),
-      Times(QQ(-3L,4L),Pi)),
+      Times(QQ(-3L,4L),Pi), true),
     // ArcTan(Sqrt(3))=Pi/3
     ISet(ArcTan(CSqrt3),
-      CPiThird),
+      CPiThird, true),
     // ArcTan(1+Sqrt(2))=3/8*Pi
     ISet(ArcTan(Plus(C1,CSqrt2)),
-      Times(QQ(3L,8L),Pi)),
+      Times(QQ(3L,8L),Pi), true),
     // ArcTan(2+Sqrt(3))=5/12*Pi
     ISet(ArcTan(Plus(C2,CSqrt3)),
-      Times(QQ(5L,12L),Pi)),
+      Times(QQ(5L,12L),Pi), true),
     // ArcTan(Sqrt(5-2*Sqrt(5)))=Pi/5
     ISet(ArcTan(Sqrt(Plus(C5,Times(CN2,CSqrt5)))),
-      Times(QQ(1L,5L),Pi)),
+      Times(QQ(1L,5L),Pi), true),
     // ArcTan(Sqrt(5+2*Sqrt(5)))=2/5*Pi
     ISet(ArcTan(Sqrt(Plus(C5,Times(C2,CSqrt5)))),
-      Times(QQ(2L,5L),Pi)),
+      Times(QQ(2L,5L),Pi), true),
     // ArcTan(I)=I*Infinity
     ISet(ArcTan(CI),
-      DirectedInfinity(CI)),
+      DirectedInfinity(CI), true),
     // ArcTan(Undefined,y_):=Undefined
     ISetDelayed(ArcTan(Undefined,y_),
       Undefined),
@@ -82,19 +82,19 @@ public class ArcTanRules {
       C0),
     // ArcTan(Infinity)=Pi/2
     ISet(ArcTan(oo),
-      CPiHalf),
+      CPiHalf, true),
     // ArcTan(-Infinity)=(-1)*1/2*Pi
     ISet(ArcTan(Noo),
-      CNPiHalf),
+      CNPiHalf, true),
     // ArcTan(I*Infinity)=Pi/2
     ISet(ArcTan(DirectedInfinity(CI)),
-      CPiHalf),
+      CPiHalf, true),
     // ArcTan(-I*Infinity)=(-1)*1/2*Pi
     ISet(ArcTan(DirectedInfinity(CNI)),
-      CNPiHalf),
+      CNPiHalf, true),
     // ArcTan(ComplexInfinity)=Indeterminate
     ISet(ArcTan(CComplexInfinity),
-      Indeterminate),
+      Indeterminate, true),
     // ArcTan(x_?RealValuedNumberQ,y_?RealValuedNumberQ):=If(x==0,If(y==0,Indeterminate,If(y>0,Pi/2,(-1)*1/2*Pi)),If(x>0,ArcTan(y/x),If(y>=0,ArcTan(y/x)+Pi,-Pi+ArcTan(y/x))))
     ISetDelayed(ArcTan(PatternTest(x_,RealValuedNumberQ),PatternTest(y_,RealValuedNumberQ)),
       If(Equal(x,C0),If(Equal(y,C0),Indeterminate,If(Greater(y,C0),CPiHalf,Times(CN1,C1D2,Pi))),If(Greater(x,C0),ArcTan(Times(Power(x,CN1),y)),If(GreaterEqual(y,C0),Plus(ArcTan(Times(Power(x,CN1),y)),Pi),Plus(CNPi,ArcTan(Times(Power(x,CN1),y))))))),

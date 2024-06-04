@@ -13,13 +13,13 @@ public class StandardDeviationRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 2 };
+  final public static int[] SIZES = { 1, 1 };
 
   final public static IAST RULES = List(
     IInit(StandardDeviation, SIZES),
-    // StandardDeviation(NormalDistribution()):=1
-    ISetDelayed(StandardDeviation(NormalDistribution()),
-      C1),
+    // StandardDeviation(NormalDistribution())=1
+    ISet(StandardDeviation(NormalDistribution()),
+      C1, true),
     // StandardDeviation(NormalDistribution(m_,s_)):=s
     ISetDelayed(StandardDeviation(NormalDistribution(m_,s_)),
       s)

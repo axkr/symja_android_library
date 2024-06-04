@@ -2235,21 +2235,24 @@ public final class PatternMatching {
     return leftHandSide.topHead();
   }
 
-  public static IExpr setDownRule(int flags, IExpr leftHandSide, IExpr rightHandSide,
+  /**
+   * 
+   * @param leftHandSide
+   * @param rightHandSide
+   * @param equalRule <code>true</code> if the leftHandSide could be matched with equality
+   * @param packageMode
+   * @return
+   */
+  public static IExpr setDownRule(IAST leftHandSide, IExpr rightHandSide, boolean equalRule,
       boolean packageMode) {
-    // final Object[] result = new Object[] { null, rightHandSide };
-    if (leftHandSide.isAST()) {
-      final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
-      lhsSymbol.putDownRule(IPatternMatcher.SET, false, (IAST) leftHandSide, rightHandSide,
-          packageMode);
-      return rightHandSide;
-    }
-    if (leftHandSide.isSymbol()) {
-      ((ISymbol) leftHandSide).assignValue(rightHandSide, false);
-      return rightHandSide;
-    }
+    final ISymbol lhsSymbol = leftHandSide.topHead();
+    lhsSymbol.putDownRule(IPatternMatcher.SET, equalRule, leftHandSide, rightHandSide, packageMode);
+    return rightHandSide;
+  }
 
-    throw new RuleCreationError(leftHandSide);
+  public static IExpr setDownRule(ISymbol leftHandSide, IExpr rightHandSide) {
+    leftHandSide.assignValue(rightHandSide, false);
+    return rightHandSide;
   }
 
   private static void setDelayedDownRule(IExpr leftHandSide, int flags, IExpr rightHandSide,

@@ -19,25 +19,25 @@ public class PolyGammaRules {
     IInit(PolyGamma, SIZES),
     // PolyGamma(0,-5/2)=46/15-EulerGamma-Log(4)
     ISet(PolyGamma(C0,QQ(-5L,2L)),
-      Plus(QQ(46L,15L),Negate(EulerGamma),Negate(Log(C4)))),
+      Plus(QQ(46L,15L),Negate(EulerGamma),Negate(Log(C4))), true),
     // PolyGamma(0,1)=-EulerGamma
     ISet(PolyGamma(C0,C1),
-      Negate(EulerGamma)),
+      Negate(EulerGamma), true),
     // PolyGamma(-1,1)=0
     ISet(PolyGamma(CN1,C1),
-      C0),
+      C0, true),
     // PolyGamma(-1,0)=Infinity
     ISet(PolyGamma(CN1,C0),
-      oo),
+      oo, true),
     // PolyGamma(1,1)=Pi^2/6
     ISet(PolyGamma(C1,C1),
-      Times(QQ(1L,6L),Sqr(Pi))),
+      Times(QQ(1L,6L),Sqr(Pi)), true),
     // PolyGamma(1,1/2)=Pi^2/2
     ISet(PolyGamma(C1,C1D2),
-      Times(C1D2,Sqr(Pi))),
+      Times(C1D2,Sqr(Pi)), true),
     // PolyGamma(3,1/2)=Pi^4
     ISet(PolyGamma(C3,C1D2),
-      Power(Pi,C4)),
+      Power(Pi,C4), true),
     // PolyGamma(0,n_Integer):=-EulerGamma+HarmonicNumber(-1+n)/;n>0
     ISetDelayed(PolyGamma(C0,$p(n, Integer)),
       Condition(Plus(Negate(EulerGamma),HarmonicNumber(Plus(CN1,n))),Greater(n,C0))),

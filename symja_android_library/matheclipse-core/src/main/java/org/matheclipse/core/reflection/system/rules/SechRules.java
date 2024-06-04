@@ -19,79 +19,79 @@ public class SechRules {
     IInit(Sech, SIZES),
     // Sech(Undefined)=Undefined
     ISet(Sech(Undefined),
-      Undefined),
+      Undefined, true),
     // Sech(0)=1
     ISet(Sech(C0),
-      C1),
+      C1, true),
     // Sech(I*1/6*Pi)=2/Sqrt(3)
     ISet(Sech(Times(CC(0L,1L,1L,6L),Pi)),
-      Times(C2,C1DSqrt3)),
+      Times(C2,C1DSqrt3), true),
     // Sech(I*1/5*Pi)=-1+Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,1L,5L),Pi)),
-      Plus(CN1,CSqrt5)),
+      Plus(CN1,CSqrt5), true),
     // Sech(I*1/4*Pi)=Sqrt(2)
     ISet(Sech(Times(CC(0L,1L,1L,4L),Pi)),
-      CSqrt2),
+      CSqrt2, true),
     // Sech(I*1/3*Pi)=2
     ISet(Sech(Times(CC(0L,1L,1L,3L),Pi)),
-      C2),
+      C2, true),
     // Sech(I*2/5*Pi)=1+Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,2L,5L),Pi)),
-      Plus(C1,CSqrt5)),
+      Plus(C1,CSqrt5), true),
     // Sech(I*1/2*Pi)=ComplexInfinity
     ISet(Sech(Times(CC(0L,1L,1L,2L),Pi)),
-      CComplexInfinity),
+      CComplexInfinity, true),
     // Sech(I*2/3*Pi)=-2
     ISet(Sech(Times(CC(0L,1L,2L,3L),Pi)),
-      CN2),
+      CN2, true),
     // Sech(I*3/4*Pi)=-Sqrt(2)
     ISet(Sech(Times(CC(0L,1L,3L,4L),Pi)),
-      Negate(CSqrt2)),
+      Negate(CSqrt2), true),
     // Sech(I*4/5*Pi)=1-Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,4L,5L),Pi)),
-      Subtract(C1,CSqrt5)),
+      Subtract(C1,CSqrt5), true),
     // Sech(I*5/6*Pi)=-2/Sqrt(3)
     ISet(Sech(Times(CC(0L,1L,5L,6L),Pi)),
-      Times(CN2,C1DSqrt3)),
+      Times(CN2,C1DSqrt3), true),
     // Sech(I*Pi)=-1
     ISet(Sech(Times(CI,Pi)),
-      CN1),
+      CN1, true),
     // Sech(I*7/6*Pi)=-2/Sqrt(3)
     ISet(Sech(Times(CC(0L,1L,7L,6L),Pi)),
-      Times(CN2,C1DSqrt3)),
+      Times(CN2,C1DSqrt3), true),
     // Sech(I*6/5*Pi)=1-Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,6L,5L),Pi)),
-      Subtract(C1,CSqrt5)),
+      Subtract(C1,CSqrt5), true),
     // Sech(I*5/4*Pi)=-Sqrt(2)
     ISet(Sech(Times(CC(0L,1L,5L,4L),Pi)),
-      Negate(CSqrt2)),
+      Negate(CSqrt2), true),
     // Sech(I*4/3*Pi)=-2
     ISet(Sech(Times(CC(0L,1L,4L,3L),Pi)),
-      CN2),
+      CN2, true),
     // Sech(I*7/5*Pi)=-1-Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,7L,5L),Pi)),
-      Subtract(CN1,CSqrt5)),
+      Subtract(CN1,CSqrt5), true),
     // Sech(I*3/2*Pi)=ComplexInfinity
     ISet(Sech(Times(CC(0L,1L,3L,2L),Pi)),
-      CComplexInfinity),
+      CComplexInfinity, true),
     // Sech(I*8/5*Pi)=1+Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,8L,5L),Pi)),
-      Plus(C1,CSqrt5)),
+      Plus(C1,CSqrt5), true),
     // Sech(I*5/3*Pi)=2
     ISet(Sech(Times(CC(0L,1L,5L,3L),Pi)),
-      C2),
+      C2, true),
     // Sech(I*7/4*Pi)=Sqrt(2)
     ISet(Sech(Times(CC(0L,1L,7L,4L),Pi)),
-      CSqrt2),
+      CSqrt2, true),
     // Sech(I*9/5*Pi)=-1+Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,9L,5L),Pi)),
-      Plus(CN1,CSqrt5)),
+      Plus(CN1,CSqrt5), true),
     // Sech(I*11/6*Pi)=2/Sqrt(3)
     ISet(Sech(Times(CC(0L,1L,11L,6L),Pi)),
-      Times(C2,C1DSqrt3)),
+      Times(C2,C1DSqrt3), true),
     // Sech(I*2*Pi)=1
     ISet(Sech(Times(CC(0L,1L,2L,1L),Pi)),
-      C1),
+      C1, true),
     // Sech(ArcSinh(x_)):=1/Sqrt(1+x^2)
     ISetDelayed(Sech(ArcSinh(x_)),
       Power(Plus(C1,Sqr(x)),CN1D2)),
@@ -115,9 +115,9 @@ public class SechRules {
       Times(C2,x,Power(Plus(C1,Sqr(x)),CN1))),
     // Sech(Infinity)=0
     ISet(Sech(oo),
-      C0),
+      C0, true),
     // Sech(ComplexInfinity)=Indeterminate
     ISet(Sech(CComplexInfinity),
-      Indeterminate)
+      Indeterminate, true)
   );
 }

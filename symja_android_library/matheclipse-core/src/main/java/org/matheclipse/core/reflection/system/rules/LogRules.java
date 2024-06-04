@@ -19,13 +19,13 @@ public class LogRules {
     IInit(Log, SIZES),
     // Log(Undefined)=Undefined
     ISet(Log(Undefined),
-      Undefined),
+      Undefined, true),
     // Log(1)=0
     ISet(Log(C1),
-      C0),
+      C0, true),
     // Log(E)=1
     ISet(Log(E),
-      C1),
+      C1, true),
     // Log(E^x_?RealValuedNumberQ):=x
     ISetDelayed(Log(Exp(PatternTest(x_,RealValuedNumberQ))),
       x),
@@ -34,43 +34,43 @@ public class LogRules {
       Plus(x,Times(C2,CI,Pi,Floor(Times(Power(C2Pi,CN1),Subtract(Pi,Im(x))))))),
     // Log(E^I)=I
     ISet(Log(Exp(CI)),
-      CI),
+      CI, true),
     // Log(1/E^I)=-I
     ISet(Log(Exp(CNI)),
-      CNI),
+      CNI, true),
     // Log(0.0)=Indeterminate
     ISet(Log(CD0),
-      Indeterminate),
+      Indeterminate, true),
     // Log(0)=-Infinity
     ISet(Log(C0),
-      Noo),
+      Noo, true),
     // Log(I)=I*1/2*Pi
     ISet(Log(CI),
-      Times(CC(0L,1L,1L,2L),Pi)),
+      Times(CC(0L,1L,1L,2L),Pi), true),
     // Log(-I)=I*1/2*-Pi
     ISet(Log(CNI),
-      Times(CC(0L,1L,-1L,2L),Pi)),
+      Times(CC(0L,1L,-1L,2L),Pi), true),
     // Log(GoldenRatio)=ArcCsch(2)
     ISet(Log(GoldenRatio),
-      ArcCsch(C2)),
+      ArcCsch(C2), true),
     // Log(1/2*(1+Sqrt(5)))=ArcCsch(2)
     ISet(Log(Times(C1D2,Plus(C1,CSqrt5))),
-      ArcCsch(C2)),
+      ArcCsch(C2), true),
     // Log(Infinity)=Infinity
     ISet(Log(oo),
-      oo),
+      oo, true),
     // Log(-Infinity)=Infinity
     ISet(Log(Noo),
-      oo),
+      oo, true),
     // Log(I*Infinity)=Infinity
     ISet(Log(DirectedInfinity(CI)),
-      oo),
+      oo, true),
     // Log(-I*Infinity)=Infinity
     ISet(Log(DirectedInfinity(CNI)),
-      oo),
+      oo, true),
     // Log(ComplexInfinity)=Infinity
     ISet(Log(CComplexInfinity),
-      oo),
+      oo, true),
     // Log(a_,b_):=Log(b)/Log(a)
     ISetDelayed(Log(a_,b_),
       Times(Log(b),Power(Log(a),CN1))),

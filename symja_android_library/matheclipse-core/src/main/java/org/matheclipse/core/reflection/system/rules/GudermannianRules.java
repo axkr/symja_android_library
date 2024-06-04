@@ -19,24 +19,24 @@ public class GudermannianRules {
     IInit(Gudermannian, SIZES),
     // Gudermannian(Undefined)=Undefined
     ISet(Gudermannian(Undefined),
-      Undefined),
+      Undefined, true),
     // Gudermannian(0)=0
     ISet(Gudermannian(C0),
-      C0),
+      C0, true),
     // Gudermannian(I*2*Pi)=0
     ISet(Gudermannian(Times(CC(0L,1L,2L,1L),Pi)),
-      C0),
+      C0, true),
     // Gudermannian(I*3/2*Pi)=-I*Infinity
     ISet(Gudermannian(Times(CC(0L,1L,3L,2L),Pi)),
-      DirectedInfinity(CNI)),
+      DirectedInfinity(CNI), true),
     // Gudermannian(Infinity)=Pi/2
     ISet(Gudermannian(oo),
-      CPiHalf),
+      CPiHalf, true),
     // Gudermannian(-Infinity)=(-1)*1/2*Pi
     ISet(Gudermannian(Noo),
-      CNPiHalf),
+      CNPiHalf, true),
     // Gudermannian(ComplexInfinity)=Indeterminate
     ISet(Gudermannian(CComplexInfinity),
-      Indeterminate)
+      Indeterminate, true)
   );
 }

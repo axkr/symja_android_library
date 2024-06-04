@@ -19,58 +19,58 @@ public class SinhRules {
     IInit(Sinh, SIZES),
     // Sinh(Undefined)=Undefined
     ISet(Sinh(Undefined),
-      Undefined),
+      Undefined, true),
     // Sinh(0)=0
     ISet(Sinh(C0),
-      C0),
+      C0, true),
     // Sinh(I*1/6*Pi)=I/2
     ISet(Sinh(Times(CC(0L,1L,1L,6L),Pi)),
-      CC(0L,1L,1L,2L)),
+      CC(0L,1L,1L,2L), true),
     // Sinh(I*1/4*Pi)=1/2*Sqrt(2)*I
     ISet(Sinh(Times(CC(0L,1L,1L,4L),Pi)),
-      Times(CI,C1DSqrt2)),
+      Times(CI,C1DSqrt2), true),
     // Sinh(I*1/3*Pi)=1/2*Sqrt(3)*I
     ISet(Sinh(Times(CC(0L,1L,1L,3L),Pi)),
-      Times(CC(0L,1L,1L,2L),CSqrt3)),
+      Times(CC(0L,1L,1L,2L),CSqrt3), true),
     // Sinh(I*1/2*Pi)=I
     ISet(Sinh(Times(CC(0L,1L,1L,2L),Pi)),
-      CI),
+      CI, true),
     // Sinh(I*2/3*Pi)=1/2*Sqrt(3)*I
     ISet(Sinh(Times(CC(0L,1L,2L,3L),Pi)),
-      Times(CC(0L,1L,1L,2L),CSqrt3)),
+      Times(CC(0L,1L,1L,2L),CSqrt3), true),
     // Sinh(I*3/4*Pi)=1/2*Sqrt(2)*I
     ISet(Sinh(Times(CC(0L,1L,3L,4L),Pi)),
-      Times(CI,C1DSqrt2)),
+      Times(CI,C1DSqrt2), true),
     // Sinh(I*5/6*Pi)=I/2
     ISet(Sinh(Times(CC(0L,1L,5L,6L),Pi)),
-      CC(0L,1L,1L,2L)),
+      CC(0L,1L,1L,2L), true),
     // Sinh(I*Pi)=0
     ISet(Sinh(Times(CI,Pi)),
-      C0),
+      C0, true),
     // Sinh(I*7/6*Pi)=-I/2
     ISet(Sinh(Times(CC(0L,1L,7L,6L),Pi)),
-      CC(0L,1L,-1L,2L)),
+      CC(0L,1L,-1L,2L), true),
     // Sinh(I*5/4*Pi)=-1/2*Sqrt(2)*I
     ISet(Sinh(Times(CC(0L,1L,5L,4L),Pi)),
-      Times(CNI,C1DSqrt2)),
+      Times(CNI,C1DSqrt2), true),
     // Sinh(I*4/3*Pi)=-1/2*Sqrt(3)*I
     ISet(Sinh(Times(CC(0L,1L,4L,3L),Pi)),
-      Times(CC(0L,1L,-1L,2L),CSqrt3)),
+      Times(CC(0L,1L,-1L,2L),CSqrt3), true),
     // Sinh(I*3/2*Pi)=-I
     ISet(Sinh(Times(CC(0L,1L,3L,2L),Pi)),
-      CNI),
+      CNI, true),
     // Sinh(I*5/3*Pi)=-1/2*Sqrt(3)*I
     ISet(Sinh(Times(CC(0L,1L,5L,3L),Pi)),
-      Times(CC(0L,1L,-1L,2L),CSqrt3)),
+      Times(CC(0L,1L,-1L,2L),CSqrt3), true),
     // Sinh(I*7/4*Pi)=-1/2*Sqrt(2)*I
     ISet(Sinh(Times(CC(0L,1L,7L,4L),Pi)),
-      Times(CNI,C1DSqrt2)),
+      Times(CNI,C1DSqrt2), true),
     // Sinh(I*11/6*Pi)=-I/2
     ISet(Sinh(Times(CC(0L,1L,11L,6L),Pi)),
-      CC(0L,1L,-1L,2L)),
+      CC(0L,1L,-1L,2L), true),
     // Sinh(I*2*Pi)=0
     ISet(Sinh(Times(CC(0L,1L,2L,1L),Pi)),
-      C0),
+      C0, true),
     // Sinh(I*1/2*Pi+x_):=I*Cosh(x)
     ISetDelayed(Sinh(Plus(Times(CC(0L,1L,1L,2L),Pi),x_)),
       Times(CI,Cosh(x))),
@@ -100,9 +100,9 @@ public class SinhRules {
       Plus(Times(CN1D2,Power(x,CN1)),Times(C1D2,x))),
     // Sinh(Infinity)=Infinity
     ISet(Sinh(oo),
-      oo),
+      oo, true),
     // Sinh(ComplexInfinity)=Indeterminate
     ISet(Sinh(CComplexInfinity),
-      Indeterminate)
+      Indeterminate, true)
   );
 }

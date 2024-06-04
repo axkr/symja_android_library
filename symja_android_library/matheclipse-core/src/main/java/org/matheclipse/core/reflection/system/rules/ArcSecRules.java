@@ -19,96 +19,96 @@ public class ArcSecRules {
     IInit(ArcSec, SIZES),
     // ArcSec(Undefined)=Undefined
     ISet(ArcSec(Undefined),
-      Undefined),
+      Undefined, true),
     // ArcSec(0)=ComplexInfinity
     ISet(ArcSec(C0),
-      CComplexInfinity),
+      CComplexInfinity, true),
     // ArcSec(1)=0
     ISet(ArcSec(C1),
-      C0),
+      C0, true),
     // ArcSec(-1)=Pi
     ISet(ArcSec(CN1),
-      Pi),
+      Pi, true),
     // ArcSec(-Sqrt(2)+Sqrt(6))=Pi/12
     ISet(ArcSec(Plus(Negate(CSqrt2),CSqrt6)),
-      Times(QQ(1L,12L),Pi)),
+      Times(QQ(1L,12L),Pi), true),
     // ArcSec(Sqrt(2)-Sqrt(6))=11/12*Pi
     ISet(ArcSec(Subtract(CSqrt2,CSqrt6)),
-      Times(QQ(11L,12L),Pi)),
+      Times(QQ(11L,12L),Pi), true),
     // ArcSec(Sqrt(2-2/Sqrt(5)))=Pi/10
     ISet(ArcSec(Sqrt(Plus(C2,Times(CN2,C1DSqrt5)))),
-      Times(QQ(1L,10L),Pi)),
+      Times(QQ(1L,10L),Pi), true),
     // ArcSec(-Sqrt(2-2/Sqrt(5)))=9/10*Pi
     ISet(ArcSec(Negate(Sqrt(Plus(C2,Times(CN2,C1DSqrt5))))),
-      Times(QQ(9L,10L),Pi)),
+      Times(QQ(9L,10L),Pi), true),
     // ArcSec(2/Sqrt(2+Sqrt(2)))=Pi/8
     ISet(ArcSec(Times(C2,Power(Plus(C2,CSqrt2),CN1D2))),
-      Times(QQ(1L,8L),Pi)),
+      Times(QQ(1L,8L),Pi), true),
     // ArcSec(-2/Sqrt(2+Sqrt(2)))=7/8*Pi
     ISet(ArcSec(Times(CN2,Power(Plus(C2,CSqrt2),CN1D2))),
-      Times(QQ(7L,8L),Pi)),
+      Times(QQ(7L,8L),Pi), true),
     // ArcSec(2/Sqrt(3))=Pi/6
     ISet(ArcSec(Times(C2,C1DSqrt3)),
-      Times(QQ(1L,6L),Pi)),
+      Times(QQ(1L,6L),Pi), true),
     // ArcSec(-2/Sqrt(3))=5/6*Pi
     ISet(ArcSec(Times(CN2,C1DSqrt3)),
-      Times(QQ(5L,6L),Pi)),
+      Times(QQ(5L,6L),Pi), true),
     // ArcSec(-1+Sqrt(5))=Pi/5
     ISet(ArcSec(Plus(CN1,CSqrt5)),
-      Times(QQ(1L,5L),Pi)),
+      Times(QQ(1L,5L),Pi), true),
     // ArcSec(1-Sqrt(5))=4/5*Pi
     ISet(ArcSec(Subtract(C1,CSqrt5)),
-      Times(QQ(4L,5L),Pi)),
+      Times(QQ(4L,5L),Pi), true),
     // ArcSec(Sqrt(2))=Pi/4
     ISet(ArcSec(CSqrt2),
-      CPiQuarter),
+      CPiQuarter, true),
     // ArcSec(-Sqrt(2))=3/4*Pi
     ISet(ArcSec(Negate(CSqrt2)),
-      Times(QQ(3L,4L),Pi)),
+      Times(QQ(3L,4L),Pi), true),
     // ArcSec(Sqrt(2+2/Sqrt(5)))=3/10*Pi
     ISet(ArcSec(Sqrt(Plus(C2,Times(C2,C1DSqrt5)))),
-      Times(QQ(3L,10L),Pi)),
+      Times(QQ(3L,10L),Pi), true),
     // ArcSec(-Sqrt(2+2/Sqrt(5)))=7/10*Pi
     ISet(ArcSec(Negate(Sqrt(Plus(C2,Times(C2,C1DSqrt5))))),
-      Times(QQ(7L,10L),Pi)),
+      Times(QQ(7L,10L),Pi), true),
     // ArcSec(2)=Pi/3
     ISet(ArcSec(C2),
-      CPiThird),
+      CPiThird, true),
     // ArcSec(-2)=2/3*Pi
     ISet(ArcSec(CN2),
-      Times(QQ(2L,3L),Pi)),
+      Times(QQ(2L,3L),Pi), true),
     // ArcSec(Sqrt(2*(2+Sqrt(2))))=3/8*Pi
     ISet(ArcSec(Sqrt(Times(C2,Plus(C2,CSqrt2)))),
-      Times(QQ(3L,8L),Pi)),
+      Times(QQ(3L,8L),Pi), true),
     // ArcSec(-Sqrt(2*(2+Sqrt(2))))=5/8*Pi
     ISet(ArcSec(Negate(Sqrt(Times(C2,Plus(C2,CSqrt2))))),
-      Times(QQ(5L,8L),Pi)),
+      Times(QQ(5L,8L),Pi), true),
     // ArcSec(1+Sqrt(5))=2/5*Pi
     ISet(ArcSec(Plus(C1,CSqrt5)),
-      Times(QQ(2L,5L),Pi)),
+      Times(QQ(2L,5L),Pi), true),
     // ArcSec(-1-Sqrt(5))=3/5*Pi
     ISet(ArcSec(Subtract(CN1,CSqrt5)),
-      Times(QQ(3L,5L),Pi)),
+      Times(QQ(3L,5L),Pi), true),
     // ArcSec(Sqrt(2)+Sqrt(6))=5/12*Pi
     ISet(ArcSec(Plus(CSqrt2,CSqrt6)),
-      Times(QQ(5L,12L),Pi)),
+      Times(QQ(5L,12L),Pi), true),
     // ArcSec(-Sqrt(2)-Sqrt(6))=7/12*Pi
     ISet(ArcSec(Subtract(Negate(CSqrt2),CSqrt6)),
-      Times(QQ(7L,12L),Pi)),
+      Times(QQ(7L,12L),Pi), true),
     // ArcSec(Infinity)=Pi/2
     ISet(ArcSec(oo),
-      CPiHalf),
+      CPiHalf, true),
     // ArcSec(-Infinity)=Pi/2
     ISet(ArcSec(Noo),
-      CPiHalf),
+      CPiHalf, true),
     // ArcSec(I*Infinity)=Pi/2
     ISet(ArcSec(DirectedInfinity(CI)),
-      CPiHalf),
+      CPiHalf, true),
     // ArcSec(-I*Infinity)=Pi/2
     ISet(ArcSec(DirectedInfinity(CNI)),
-      CPiHalf),
+      CPiHalf, true),
     // ArcSec(ComplexInfinity)=Pi/2
     ISet(ArcSec(CComplexInfinity),
-      CPiHalf)
+      CPiHalf, true)
   );
 }

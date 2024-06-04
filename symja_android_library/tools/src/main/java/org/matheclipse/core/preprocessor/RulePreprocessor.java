@@ -74,7 +74,7 @@ public class RulePreprocessor {
   public RulePreprocessor() {}
 
   public static void appendSetDelayedToRule(IAST ast, StringBuilder buffer, boolean evalRHS,
-      boolean last) {
+      boolean last, boolean createISet) {
     IExpr leftHandSide = ast.arg1();
     IExpr rightHandSide = ast.arg2();
     if (leftHandSide.isAST()) {
@@ -91,6 +91,9 @@ public class RulePreprocessor {
     buffer.append(leftHandSide.internalJavaString(p, 1, x -> null));
     buffer.append(",\n      ");
     buffer.append(rightHandSide.internalJavaString(p, 1, x -> null));
+    if (createISet && leftHandSide.isFreeOfPatterns() && !leftHandSide.isSymbol()) {
+      buffer.append(", true");
+    }
     if (last) {
       buffer.append(")\n");
     } else {
@@ -227,7 +230,7 @@ public class RulePreprocessor {
 
           buffer.append("    ISetDelayed(");
 
-          appendSetDelayedToRule(ast, buffer, false, last);
+          appendSetDelayedToRule(ast, buffer, false, last, true);
         } else if (expr.isAST(S.Set, 3)) {
           IASTMutable ast = ((IAST) expr).copy();
           if (ast.arg1().isAST()) {
@@ -237,7 +240,7 @@ public class RulePreprocessor {
 
           buffer.append("    ISet(");
 
-          appendSetDelayedToRule(ast, buffer, true, last);
+          appendSetDelayedToRule(ast, buffer, true, last, true);
         } else if (expr.isAST(S.Rule, 3)) {
           IASTMutable ast = ((IAST) expr).copy();
           if (ast.arg1().isAST()) {
@@ -245,7 +248,7 @@ public class RulePreprocessor {
           }
           buffer.append("    // " + ast.toString().replaceAll("\\n", "") + "\n");
           buffer.append("    Rule(");
-          appendSetDelayedToRule(ast, buffer, true, last);
+          appendSetDelayedToRule(ast, buffer, true, last, false);
         }
       }
     } else {
@@ -254,17 +257,17 @@ public class RulePreprocessor {
 
         buffer.append("    ISetDelayed(");
 
-        appendSetDelayedToRule(ast, buffer, false, true);
+        appendSetDelayedToRule(ast, buffer, false, true, false);
       } else if (expr.isAST(S.Set, 3)) {
         IAST ast = (IAST) expr;
 
         buffer.append("    ISet(");
 
-        appendSetDelayedToRule(ast, buffer, true, true);
+        appendSetDelayedToRule(ast, buffer, true, true, false);
       } else if (expr.isAST(S.Rule, 3)) {
         IAST ast = (IAST) expr;
         buffer.append("    Rule(");
-        appendSetDelayedToRule(ast, buffer, true, true);
+        appendSetDelayedToRule(ast, buffer, true, true, false);
       }
     }
     out.print(LIST0);
@@ -379,12 +382,12 @@ public class RulePreprocessor {
           IAST ast = (IAST) expr;
           buffer.append("    // " + ast.toString().replaceAll("\\n", "") + "\n");
           buffer.append("    SetDelayed(");
-          appendSetDelayedToRule(ast, buffer, false, last);
+          appendSetDelayedToRule(ast, buffer, false, last, false);
         } else if (expr.isAST(S.Set, 3)) {
           IAST ast = (IAST) expr;
           buffer.append("    // " + ast.toString().replaceAll("\\n", "") + "\n");
           buffer.append("    Set(");
-          appendSetDelayedToRule(ast, buffer, true, last);
+          appendSetDelayedToRule(ast, buffer, true, last, false);
           // } else if (expr.isAST(F.Rule, 3)) {
           // IAST ast = (IAST) expr;
           // buffer.append(" // " + ast.toString().replaceAll("\\n", "") + "\n");
@@ -548,8 +551,7 @@ public class RulePreprocessor {
 
   private static boolean isSpecialRuleList(String className) {
     return className.equals("IntegratePowerTimesFunctionRules")
-        || className.equals("FunctionExpandRules")
-        || className.equals("FunctionRangeRules")
+        || className.equals("FunctionExpandRules") || className.equals("FunctionRangeRules")
         || className.equals("PodDefaultsRules");
   }
 

@@ -19,7 +19,7 @@ public class StruveLRules {
     IInit(StruveL, SIZES),
     // StruveL(-1,0)=Times(2/Pi)
     ISet(StruveL(CN1,C0),
-      Times(C2,Power(Pi,CN1))),
+      Times(C2,Power(Pi,CN1)), true),
     // StruveL(-1/2,z_):=Sqrt(2/(Pi*z))*Sinh(z)
     ISetDelayed(StruveL(CN1D2,z_),
       Times(Sqrt(Times(C2,Power(Times(Pi,z),CN1))),Sinh(z))),

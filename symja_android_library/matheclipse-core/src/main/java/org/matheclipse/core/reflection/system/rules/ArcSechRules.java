@@ -19,60 +19,60 @@ public class ArcSechRules {
     IInit(ArcSech, SIZES),
     // ArcSech(Undefined)=Undefined
     ISet(ArcSech(Undefined),
-      Undefined),
+      Undefined, true),
     // ArcSech(0)=Infinity
     ISet(ArcSech(C0),
-      oo),
+      oo, true),
     // ArcSech(1)=0
     ISet(ArcSech(C1),
-      C0),
+      C0, true),
     // ArcSech(-1)=I*Pi
     ISet(ArcSech(CN1),
-      Times(CI,Pi)),
+      Times(CI,Pi), true),
     // ArcSech(2/Sqrt(3))=1/6*Pi*I
     ISet(ArcSech(Times(C2,C1DSqrt3)),
-      Times(CC(0L,1L,1L,6L),Pi)),
+      Times(CC(0L,1L,1L,6L),Pi), true),
     // ArcSech(-2/Sqrt(3))=5/6*Pi*I
     ISet(ArcSech(Times(CN2,C1DSqrt3)),
-      Times(CC(0L,1L,5L,6L),Pi)),
+      Times(CC(0L,1L,5L,6L),Pi), true),
     // ArcSech(-1+Sqrt(5))=1/5*Pi*I
     ISet(ArcSech(Plus(CN1,CSqrt5)),
-      Times(CC(0L,1L,1L,5L),Pi)),
+      Times(CC(0L,1L,1L,5L),Pi), true),
     // ArcSech(1-Sqrt(5))=4/5*Pi*I
     ISet(ArcSech(Subtract(C1,CSqrt5)),
-      Times(CC(0L,1L,4L,5L),Pi)),
+      Times(CC(0L,1L,4L,5L),Pi), true),
     // ArcSech(Sqrt(2))=1/4*Pi*I
     ISet(ArcSech(CSqrt2),
-      Times(CC(0L,1L,1L,4L),Pi)),
+      Times(CC(0L,1L,1L,4L),Pi), true),
     // ArcSech(-Sqrt(2))=3/4*Pi*I
     ISet(ArcSech(Negate(CSqrt2)),
-      Times(CC(0L,1L,3L,4L),Pi)),
+      Times(CC(0L,1L,3L,4L),Pi), true),
     // ArcSech(2)=1/3*Pi*I
     ISet(ArcSech(C2),
-      Times(CC(0L,1L,1L,3L),Pi)),
+      Times(CC(0L,1L,1L,3L),Pi), true),
     // ArcSech(-2)=2/3*Pi*I
     ISet(ArcSech(CN2),
-      Times(CC(0L,1L,2L,3L),Pi)),
+      Times(CC(0L,1L,2L,3L),Pi), true),
     // ArcSech(1+Sqrt(5))=2/5*Pi*I
     ISet(ArcSech(Plus(C1,CSqrt5)),
-      Times(CC(0L,1L,2L,5L),Pi)),
+      Times(CC(0L,1L,2L,5L),Pi), true),
     // ArcSech(-1-Sqrt(5))=3/5*Pi*I
     ISet(ArcSech(Subtract(CN1,CSqrt5)),
-      Times(CC(0L,1L,3L,5L),Pi)),
+      Times(CC(0L,1L,3L,5L),Pi), true),
     // ArcSech(Infinity)=1/2*Pi*I
     ISet(ArcSech(oo),
-      Times(CC(0L,1L,1L,2L),Pi)),
+      Times(CC(0L,1L,1L,2L),Pi), true),
     // ArcSech(-Infinity)=1/2*Pi*I
     ISet(ArcSech(Noo),
-      Times(CC(0L,1L,1L,2L),Pi)),
+      Times(CC(0L,1L,1L,2L),Pi), true),
     // ArcSech(I*Infinity)=-1/2*Pi*I
     ISet(ArcSech(DirectedInfinity(CI)),
-      Times(CC(0L,1L,-1L,2L),Pi)),
+      Times(CC(0L,1L,-1L,2L),Pi), true),
     // ArcSech(-I*Infinity)=1/2*Pi*I
     ISet(ArcSech(DirectedInfinity(CNI)),
-      Times(CC(0L,1L,1L,2L),Pi)),
+      Times(CC(0L,1L,1L,2L),Pi), true),
     // ArcSech(ComplexInfinity)=Indeterminate
     ISet(ArcSech(CComplexInfinity),
-      Indeterminate)
+      Indeterminate, true)
   );
 }
