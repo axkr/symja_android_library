@@ -1872,7 +1872,7 @@ public class S {
   public final static IBuiltInSymbol Column = S.initFinalSymbol("Column", ID.Column);
 
   /**
-   * Commonest(data-values-list) - the mode of a list of data values is the value that appears most
+   * Commonest(dataValueList) - the mode of a list of data values is the value that appears most
    * often.
    * 
    * @see <a href=
@@ -5327,8 +5327,8 @@ public class S {
       S.initFinalSymbol("IntervalComplement", ID.IntervalComplement);
 
   /**
-   * IntervalData({a, left-end, right-end, b}) - represents the open/closed ends interval from `a`
-   * to `b`. `left-end` and `right-end` must have the value `Less` for representing an open ended
+   * IntervalData({a, leftEnd, rightEnd, b}) - represents the open/closed ends interval from `a`
+   * to `b`. `leftEnd` and `rightEnd` must have the value `Less` for representing an open ended
    * interval or `LessEqual` for representing a closed ended interval.
    * 
    * @see <a href=
@@ -5350,8 +5350,8 @@ public class S {
       S.initFinalSymbol("IntervalIntersection", ID.IntervalIntersection);
 
   /**
-   * IntervalMemberQ(interval, interval-or-real-number) - returns `True`, if
-   * `interval-or-real-number` is completly sourrounded by `interval`
+   * IntervalMemberQ(interval, intervalOrRealNumber) - returns `True`, if
+   * `intervalOrRealNumber` is completly sourrounded by `interval`
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IntervalMemberQ.md">IntervalMemberQ
@@ -7854,7 +7854,7 @@ public class S {
       S.initFinalSymbol("PermutationCycles", ID.PermutationCycles);
 
   /**
-   * PermutationCyclesQ(cycles-expression) - if `cycles-expression` is a valid `Cycles({{...},{...},
+   * PermutationCyclesQ(cyclesExpression) - if `cyclesExpression` is a valid `Cycles({{...},{...},
    * ...})` expression return `True`.
    * 
    * @see <a href=
@@ -7909,8 +7909,8 @@ public class S {
       S.initFinalSymbol("Permutations", ID.Permutations);
 
   /**
-   * Permute(list, Cycles({permutation-cycles})) - permutes the `list` from the cycles in
-   * `permutation-cycles`.
+   * Permute(list, Cycles({permutationCycles})) - permutes the `list` from the cycles in
+   * `permutationCycles`.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Permute.md">Permute
@@ -7938,8 +7938,8 @@ public class S {
   public final static IBuiltInSymbol Pi = S.initFinalSymbol("Pi", ID.Pi);
 
   /**
-   * Pick(nested-list, nested-selection) - returns the elements of `nested-list` that have value
-   * `True` in the corresponding position in `nested-selection`.
+   * Pick(nestedList, nestedSelection) - returns the elements of `nestedList` that have value
+   * `True` in the corresponding position in `nestedSelection`.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Pick.md">Pick
@@ -9660,7 +9660,7 @@ public class S {
   public final static IBuiltInSymbol Span = S.initFinalSymbol("Span", ID.Span);
 
   /**
-   * SparseArray(nested-list) - create a sparse array from a `nested-list` structure.
+   * SparseArray(nestedList) - create a sparse array from a `nestedList` structure.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SparseArray.md">SparseArray
@@ -10475,8 +10475,8 @@ public class S {
 
   /**
    * Tally(list) - return the elements and their number of occurrences in `list` in a new result
-   * list. The `binary-predicate` tests if two elements are equivalent. `SameQ` is used as the
-   * default `binary-predicate`.
+   * list. The `binaryPredicate` tests if two elements are equivalent. `SameQ` is used as the
+   * default `binaryPredicate`.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Tally.md">Tally

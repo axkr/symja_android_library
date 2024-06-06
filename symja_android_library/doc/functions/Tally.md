@@ -7,10 +7,10 @@ Tally(list)
 or 
 
 ```
-Tally(list, binary-predicate)
+Tally(list, binaryPredicate)
 ```
 
-> return the elements and their number of occurrences in `list` in a new result list. The `binary-predicate` tests if two elements are equivalent. `SameQ` is used as the default `binary-predicate`.
+> return the elements and their number of occurrences in `list` in a new result list. The `binaryPredicate` tests if two elements are equivalent. `SameQ` is used as the default `binaryPredicate`.
 
 ### Examples
 

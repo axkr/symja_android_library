@@ -1,10 +1,10 @@
 ## IntervalMemberQ
  
 ```
-IntervalMemberQ(interval, interval-or-real-number)
+IntervalMemberQ(interval, intervalOrRealNumber)
 ```
 
-> returns `True`, if `interval-or-real-number` is completly sourrounded by `interval`
+> returns `True`, if `intervalOrRealNumber` is completly sourrounded by `interval`
 
 
 See 

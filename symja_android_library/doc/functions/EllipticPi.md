@@ -4,7 +4,7 @@
 EllipticPi(n,m)
 ```
 
-or 
+> returns the complete elliptic integral of the third kind.
 
 ```
 EllipticPi(n,m,z)

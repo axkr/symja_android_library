@@ -1,10 +1,10 @@
 ## SquaresR
 
 ```
-SquaresR(k, int-number)
+SquaresR(k, intNumber)
 ```
 
-> counts the numbers of the representation of `int-number` as sum of `x^2` terms which occur `k` times. 
+> counts the numbers of the representation of `intNumber` as sum of `x^2` terms which occur `k` times. 
 
 See
 * [Wikipedia - Sum of squares function](https://en.wikipedia.org/wiki/Sum_of_squares_function)

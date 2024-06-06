@@ -13,10 +13,10 @@ IntegerPartitions(n, k)
 > lists the possible ways to partition `n` into smaller integers, using up to `k` elements.
 
 ```
-IntegerPartitions(n, {lower, upper}, {list-of-integers})
+IntegerPartitions(n, {lower, upper}, {listOfIntegers})
 ```
 
-> lists the possible ways to partition `n` with the numbers in `{list-of-integers}`, using between `lower` and `upper` number of elements.
+> lists the possible ways to partition `n` with the numbers in `{listOfIntegers}`, using between `lower` and `upper` number of elements.
 
 See
 * [Wikipedia - Partition (number theory)](https://en.wikipedia.org/wiki/Partition_(number_theory))

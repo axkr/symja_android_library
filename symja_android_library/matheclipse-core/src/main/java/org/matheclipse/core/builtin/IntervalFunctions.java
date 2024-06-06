@@ -299,14 +299,14 @@ public class IntervalFunctions {
    *
    *
    * <pre>
-   * <code>IntervalMemberQ(interval, interval-or-real-number)
+   * <code>IntervalMemberQ(interval, intervalOrRealNumber)
    * </code>
    * </pre>
    *
    * <blockquote>
    *
    * <p>
-   * returns <code>True</code>, if <code>interval-or-real-number</code> is completly sourrounded by
+   * returns <code>True</code>, if <code>intervalOrRealNumber</code> is completly sourrounded by
    * <code>interval</code>
    *
    * </blockquote>

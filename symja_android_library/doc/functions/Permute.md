@@ -1,10 +1,10 @@
 ## Permute
 
 ```
-Permute(list, Cycles({permutation-cycles}))
+Permute(list, Cycles({permutationCycles}))
 ```
 
-> permutes the `list` from the cycles in `permutation-cycles`.
+> permutes the `list` from the cycles in `permutationCycles`.
 
 ```
 Permute(list, permutation-list)

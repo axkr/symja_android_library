@@ -7,13 +7,13 @@ ArrayRules(sparse-array)
 > return the array of rules which define the sparse array.
 
 ```
-ArrayRules(sparse-array, default-value)
+ArrayRules(sparse-array, defaultValue)
 ```
 
-> return the array of rules which define the sparse array and set the new `default-value`.
+> return the array of rules which define the sparse array and set the new `defaultValue`.
  
 ```
-ArrayRules(nested-lists)
+ArrayRules(nestedLists)
 ```
 
 > return the array of rules which define the nested lists.

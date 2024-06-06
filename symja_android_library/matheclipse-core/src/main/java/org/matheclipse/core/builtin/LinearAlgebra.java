@@ -2946,6 +2946,7 @@ public final class LinearAlgebra {
    *
    * <pre>
    * &gt;&gt; Inner(Times, {a, b}, {c, d}, Plus) == {a, b} . {c, d}
+   * True
    * </pre>
    *
    * <p>

@@ -1,14 +1,14 @@
 ## Pick
 
 ``` 
-Pick(nested-list, nested-selection)
+Pick(nestedList, nestedSelection)
 ```
-> returns the elements of `nested-list` that have value `True` in the corresponding position in `nested-selection`.
+> returns the elements of `nestedList` that have value `True` in the corresponding position in `nestedSelection`.
 
 ``` 
-Pick(nested-list, nested-selection, pattern)
+Pick(nestedList, nestedSelection, pattern)
 ```
-> returns the elements of `nested-list` those values in the corresponding position in `nested-selection` match the `pattern`.
+> returns the elements of `nestedList` those values in the corresponding position in `nestedSelection` match the `pattern`.
 
 ### Examples
 

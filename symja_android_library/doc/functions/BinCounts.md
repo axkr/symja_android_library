@@ -1,16 +1,16 @@
 ## BinCounts
 
 ```
-BinCounts(list, width-of-bin)
+BinCounts(list, widthOfBin)
 ```
 
-or 
+> count the number of elements, if `list`, is divided into successive bins with width `widthOfBin`.
 
 ```
-BinCounts(list, {min, max, width-of-bin} )
+BinCounts(list, {min, max, widthOfBin})
 ```
 
-> count the number of elements, if `list`, is divided into successive bins with width `width-of-bin`.
+> returns the count of elements in `list` that fall within each bin defined by the range from `min` to `max` with bins of width `widthOfBin`.
 
 ### Examples
 
@@ -20,6 +20,9 @@ BinCounts(list, {min, max, width-of-bin} )
 
 >> BinCounts({1,2,3,4,5},10) 
 {5}
+
+>> BinCounts[{4, 3, 1, 2, 4, 3, 6, 4}, {0, 10, 2}]
+{2,5,1,0,0}
 ```
 
 

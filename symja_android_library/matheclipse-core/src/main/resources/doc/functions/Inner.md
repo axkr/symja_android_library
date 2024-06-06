@@ -20,6 +20,7 @@ g(f(a, x), f(b, y))
 
 ```
 >> Inner(Times, {a, b}, {c, d}, Plus) == {a, b} . {c, d}
+True
 ```
 
 The inner product of two boolean matrices:

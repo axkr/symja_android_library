@@ -7,10 +7,10 @@ RandomVariate(distribution)
 > create a pseudo random variate from the `distribution`.
 
 ```
-RandomVariate(distribution, number-of-variates)
+RandomVariate(distribution, numberOfVariates)
 ```
 
-> create `number-of-variates` pseudo random variates from the `distribution`.
+> create `numberOfVariates` pseudo random variates from the `distribution`.
  
 ```
 RandomVariate(distribution, {n1, n2,...})

@@ -1,13 +1,13 @@
 ## Commonest 
 
 ``` 
-Commonest(data-values-list)
+Commonest(dataValueList)
 ```
 
 > the mode of a list of data values is the value that appears most often.
 
 ``` 
-Commonest(data-values-list, n)
+Commonest(dataValueList, n)
 ```
 
 > return the `n` values that appears most often.

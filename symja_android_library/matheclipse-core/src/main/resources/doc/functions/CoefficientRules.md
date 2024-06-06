@@ -13,8 +13,8 @@ See:
 ### Examples
 
 ```
-CoefficientRules(x^3+3*x^2*y+3*x*y^2+y^3, {x,y}) 
->> {{3,0}->1,{2,1}->3,{1,2}->3,{0,3}->1} 
+>> CoefficientRules(x^3+3*x^2*y+3*x*y^2+y^3, {x,y}) 
+{{3,0}->1,{2,1}->3,{1,2}->3,{0,3}->1} 
 ```
 
 Non integer or negative exponents returns only one rule:

@@ -10,14 +10,12 @@ x . y
 
 > computes products of vectors, matrices, and tensors.
 
-**Note**: the `Dot` operator has the
-attribute `Flat` ([associative property](https://en.wikipedia.org/wiki/Associative_property)) but
-not `Orderless` ([commutative property](https://en.wikipedia.org/wiki/Commutative_property)).
+**Note**: the `Dot` operator has the attribute `Flat` ([associative property](https://en.wikipedia.org/wiki/Associative_property)) but not `Orderless` ([commutative property](https://en.wikipedia.org/wiki/Commutative_property)).
 
 See:
 
 * [Wikipedia - Matrix multiplication](https://en.wikipedia.org/wiki/Matrix_multiplication)
-* [Youtube - Matrix multiplication as composition | Essence of linear algebra, chapter 4](https://youtu.be/XkY2DOUCWMU)
+* [YouTube - Matrix multiplication as composition | Essence of linear algebra, chapter 4](https://youtu.be/XkY2DOUCWMU)
 
 ### Examples
 

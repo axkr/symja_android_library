@@ -633,13 +633,13 @@ public final class Combinatoric {
    * <code>k</code> elements.
    *
    * <pre>
-   * <code>IntegerPartitions(n, {lower, upper}, {list-of-integers})
+   * <code>IntegerPartitions(n, {lower, upper}, {listOfIntegers})
    * </code>
    * </pre>
    *
    * <p>
    * lists the possible ways to partition <code>n</code> with the numbers in <code>
-   * {list-of-integers}</code>, using between <code>lower</code> and <code>upper</code> number of
+   * {listOfIntegers}</code>, using between <code>lower</code> and <code>upper</code> number of
    * elements.
    *
    * <p>
@@ -1354,12 +1354,12 @@ public final class Combinatoric {
    *
    *
    * <pre>
-   * <code>Permute(list, Cycles({permutation-cycles}))
+   * <code>Permute(list, Cycles({permutationCycles}))
    * </code>
    * </pre>
    *
    * <p>
-   * permutes the <code>list</code> from the cycles in <code>permutation-cycles</code>.
+   * permutes the <code>list</code> from the cycles in <code>permutationCycles</code>.
    *
    * <pre>
    * <code>Permute(list, permutation-list)
@@ -1542,12 +1542,12 @@ public final class Combinatoric {
    *
    *
    * <pre>
-   * <code>PermutationCyclesQ(cycles-expression)
+   * <code>PermutationCyclesQ(cyclesExpression)
    * </code>
    * </pre>
    *
    * <p>
-   * if <code>cycles-expression</code> is a valid <code>Cycles({{...},{...}, ...})</code> expression
+   * if <code>cyclesExpression</code> is a valid <code>Cycles({{...},{...}, ...})</code> expression
    * return <code>True</code>.
    *
    * <p>

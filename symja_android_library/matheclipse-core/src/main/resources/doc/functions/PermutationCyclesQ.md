@@ -1,10 +1,10 @@
 ## PermutationCyclesQ
 
 ```
-PermutationCyclesQ(cycles-expression)
+PermutationCyclesQ(cyclesExpression)
 ```
 
-> if `cycles-expression` is a valid `Cycles({{...},{...}, ...})` expression return `True`.
+> if `cyclesExpression` is a valid `Cycles({{...},{...}, ...})` expression return `True`.
  
 See 
 * [Wikipedia - Permutation](https://en.wikipedia.org/wiki/Permutation)

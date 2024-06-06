@@ -7,7 +7,7 @@ Grad(function, list-of-variables)
 > gives the gradient of the function.
 
 ```
-Grad({f1, f2,...},  {v1, v2,...)
+Grad({f1, f2,...},  {v1, v2,...})
 ```
 
 > returns the Jacobian matrix for the vector of functions.

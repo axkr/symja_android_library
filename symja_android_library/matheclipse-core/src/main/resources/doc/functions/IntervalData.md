@@ -1,10 +1,10 @@
 ## IntervalData
 
 ```
-IntervalData({a, left-end, right-end, b})
+IntervalData({a, leftEnd, rightEnd, b})
 ```
 
-> represents the open/closed ends interval from `a` to `b`. `left-end` and `right-end` must have the value `Less` for representing an open ended interval or `LessEqual` for representing a closed ended interval.
+> represents the open/closed ends interval from `a` to `b`. `leftEnd` and `rightEnd` must have the value `Less` for representing an open ended interval or `LessEqual` for representing a closed ended interval.
 
 
 See 

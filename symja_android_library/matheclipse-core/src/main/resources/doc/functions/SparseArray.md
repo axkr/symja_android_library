@@ -1,22 +1,22 @@
 ## SparseArray
 
 ```
-SparseArray(nested-list)
+SparseArray(nestedList)
 ```
 
-> create a sparse array from a `nested-list` structure.
+> create a sparse array from a `nestedList` structure.
 
 ```
-SparseArray(array-rules, list-of-integers, default-value)
+SparseArray(arrayRules, listOfIntegers, defaultValue)
 ```
 
-> create a sparse array from `array-rules` with dimension `list-of-integers` and undefined elements are having `default-value`.
+> create a sparse array from `arrayRules` with dimension `listOfIntegers` and undefined elements are having `defaultValue`.
 
 ```
-SparseArray(Automatic, list-of-integers, default-value, crs-list)
+SparseArray(Automatic, listOfIntegers, defaultValue, crsList)
 ```
 
-> create a sparse array from the compressed-row-storage `crs-list` with dimension `list-of-integers` and undefined elements are having `default-value`.
+> create a sparse array from the compressed-row-storage `crsList` with dimension `listOfIntegers` and undefined elements are having `defaultValue`.
 
 See
 * [Netlib - Compressed Row Storage (CRS)](http://netlib.org/utk/papers/templates/node91.html)

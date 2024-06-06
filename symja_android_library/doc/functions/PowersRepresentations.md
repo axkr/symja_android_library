@@ -1,10 +1,10 @@
 ## PowersRepresentations
 
 ```
-PowersRepresentations(int-number, k, exponent)
+PowersRepresentations(intNumber, k, exponent)
 ```
 
-> computes the representations of the `int-number` as sum of `x^exponent` terms which occur `k` times. 
+> computes the representations of the `intNumber` as sum of `x^exponent` terms which occur `k` times. 
 
 See
 * [Wikipedia - Sum of squares function](https://en.wikipedia.org/wiki/Sum_of_squares_function)

@@ -1435,7 +1435,7 @@ public final class ListFunctions {
    *
    *
    * <pre>
-   * <code>Commonest(data-values-list)
+   * <code>Commonest(dataValueList)
    * </code>
    * </pre>
    *
@@ -1447,7 +1447,7 @@ public final class ListFunctions {
    * </blockquote>
    *
    * <pre>
-   * <code>Commonest(data-values-list, n)
+   * <code>Commonest(dataValueList, n)
    * </code>
    * </pre>
    *
@@ -4944,28 +4944,28 @@ public final class ListFunctions {
    *
    *
    * <pre>
-   * <code>Pick(nested-list, nested-selection)
+   * <code>Pick(nestedList, nestedSelection)
    * </code>
    * </pre>
    *
    * <blockquote>
    *
    * <p>
-   * returns the elements of <code>nested-list</code> that have value <code>True</code> in the
-   * corresponding position in <code>nested-selection</code>.
+   * returns the elements of <code>nestedList</code> that have value <code>True</code> in the
+   * corresponding position in <code>nestedSelection</code>.
    *
    * </blockquote>
    *
    * <pre>
-   * <code>Pick(nested-list, nested-selection, pattern)
+   * <code>Pick(nestedList, nestedSelection, pattern)
    * </code>
    * </pre>
    *
    * <blockquote>
    *
    * <p>
-   * returns the elements of <code>nested-list</code> those values in the corresponding position in
-   * <code>nested-selection</code> match the <code>pattern</code>.
+   * returns the elements of <code>nestedList</code> those values in the corresponding position in
+   * <code>nestedSelection</code> match the <code>pattern</code>.
    *
    * </blockquote>
    *
@@ -7279,7 +7279,7 @@ public final class ListFunctions {
    * or
    *
    * <pre>
-   * <code>Tally(list, binary-predicate)
+   * <code>Tally(list, binaryPredicate)
    * </code>
    * </pre>
    *
@@ -7287,8 +7287,8 @@ public final class ListFunctions {
    *
    * <p>
    * return the elements and their number of occurrences in <code>list</code> in a new result list.
-   * The <code>binary-predicate</code> tests if two elements are equivalent. <code>SameQ
-   * </code> is used as the default <code>binary-predicate</code>.
+   * The <code>binaryPredicate</code> tests if two elements are equivalent. <code>SameQ
+   * </code> is used as the default <code>binaryPredicate</code>.
    *
    * </blockquote>
    *

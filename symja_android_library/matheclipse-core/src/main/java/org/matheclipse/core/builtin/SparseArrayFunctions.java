@@ -43,7 +43,7 @@ public class SparseArrayFunctions {
    * </blockquote>
    *
    * <pre>
-   * <code>ArrayRules(nested-lists)
+   * <code>ArrayRules(nestedLists)
    * </code>
    * </pre>
    *
@@ -109,40 +109,40 @@ public class SparseArrayFunctions {
    *
    *
    * <pre>
-   * <code>SparseArray(nested-list)
+   * <code>SparseArray(nestedList)
    * </code>
    * </pre>
    *
    * <blockquote>
    *
    * <p>
-   * create a sparse array from a <code>nested-list</code> structure.
+   * create a sparse array from a <code>nestedList</code> structure.
    *
    * </blockquote>
    *
    * <pre>
-   * <code>SparseArray(array-rules, list-of-integers, default-value)
+   * <code>SparseArray(arrayRules, listOfIntegers, defaultValue)
    * </code>
    * </pre>
    *
    * <blockquote>
    *
    * <p>
-   * create a sparse array from <code>array-rules</code> with dimension <code>list-of-integers
-   * </code> and undefined elements are having <code>default-value</code>.
+   * create a sparse array from <code>arrayRules</code> with dimension <code>listOfIntegers
+   * </code> and undefined elements are having <code>defaultValue</code>.
    *
    * </blockquote>
    *
    * <pre>
-   * <code>SparseArray(Automatic, list-of-integers, default-value, crs-list)
+   * <code>SparseArray(Automatic, listOfIntegers, defaultValue, crsList)
    * </code>
    * </pre>
    *
    * <blockquote>
    *
    * <p>
-   * create a sparse array from the compressed-row-storage <code>crs-list</code> with dimension
-   * <code>list-of-integers</code> and undefined elements are having <code>default-value</code>.
+   * create a sparse array from the compressed-row-storage <code>crsList</code> with dimension
+   * <code>listOfIntegers</code> and undefined elements are having <code>defaultValue</code>.
    *
    * </blockquote>
    *
