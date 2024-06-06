@@ -9394,7 +9394,7 @@ public class S {
       S.initFinalSymbol("SeriesCoefficient", ID.SeriesCoefficient);
 
   /**
-   * SeriesData(x, x0, {coeff0, coeff1, coeff2,...}, nMin, nMax, denominator}) - internal structure
+   * SeriesData(x, x0, {coeff0, coeff1, coeff2,...}, nMin, nMax, denominator) - internal structure
    * of a power series at the point `x = x0` the `coeff_i` are coefficients of the power series.
    * 
    * @see <a href=

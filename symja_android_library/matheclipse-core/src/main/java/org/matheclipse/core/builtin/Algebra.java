@@ -1339,7 +1339,8 @@ public class Algebra {
    * the rational powers number:
    *
    * <pre>
-   * &gt;&gt; Expand((x + 3)^(5/2)+(x + 1)^(3/2)) Sqrt(1+x)+x*Sqrt(1+x)+9*Sqrt(3+x)+6*x*Sqrt(3+x)+x^2*Sqrt(3+x)
+   * &gt;&gt; Expand((x + 3)^(5/2)+(x + 1)^(3/2))
+   * Sqrt(1+x)+x*Sqrt(1+x)+9*Sqrt(3+x)+6*x*Sqrt(3+x)+x^2*Sqrt(3+x)
    * </pre>
    *
    * <p>

@@ -1819,7 +1819,7 @@ public class SeriesFunctions {
    *
    *
    * <pre>
-   * SeriesData(x, x0, {coeff0, coeff1, coeff2,...}, nMin, nMax, denominator})
+   * SeriesData(x, x0, {coeff0, coeff1, coeff2,...}, nMin, nMax, denominator)
    * </pre>
    *
    * <blockquote>

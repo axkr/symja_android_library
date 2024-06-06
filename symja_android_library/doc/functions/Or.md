@@ -1,7 +1,7 @@
 ## Or
 
 ```
-Or(expr1, expr2, ...)'
+Or(expr1, expr2, ...)
 ```
 
 > `expr1 || expr2 || ...` evaluates each expression in turn, returning `True` as soon as an expression evaluates to `True`. If all expressions evaluate to `False`, `Or` returns `False`.

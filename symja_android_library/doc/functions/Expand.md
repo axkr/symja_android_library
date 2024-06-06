@@ -31,7 +31,8 @@ a^2*c^2+2*a*b*c^2+b^2*c^2+2*a^2*c*d+4*a*b*c*d+2*b^2*c*d+a^2*d^2+2*a*b*d^2+b^2*d^
 `Expand` expands out rational powers by expanding the `Floor()` part of the rational powers number:
 
 ```
->> Expand((x + 3)^(5/2)+(x + 1)^(3/2)) Sqrt(1+x)+x*Sqrt(1+x)+9*Sqrt(3+x)+6*x*Sqrt(3+x)+x^2*Sqrt(3+x)
+>> Expand((x + 3)^(5/2)+(x + 1)^(3/2)) 
+Sqrt(1+x)+x*Sqrt(1+x)+9*Sqrt(3+x)+6*x*Sqrt(3+x)+x^2*Sqrt(3+x)
 ```
 
 `Expand` expands items in lists and rules:  

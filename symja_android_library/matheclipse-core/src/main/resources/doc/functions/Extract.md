@@ -7,7 +7,7 @@ Extract(expr, list)
 > extracts parts of `expr` specified by `list`.
 
 ```
-Extract(expr, {list1, list2, ...})'
+Extract(expr, {list1, list2, ...})
 ```
 
 > extracts a list of parts.
