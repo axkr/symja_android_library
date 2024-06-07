@@ -2990,6 +2990,7 @@ public final class Arithmetic {
       return F.NIL;
     }
 
+    /** {@inheritDoc} */
     @Override
     public HashedOrderlessMatcher getHashRuleMap() {
       return PLUS_ORDERLESS_MATCHER;
@@ -5971,6 +5972,7 @@ public final class Arithmetic {
 
     private static HashedOrderlessMatcherTimes TIMES_ORDERLESS_MATCHER;
 
+    /** {@inheritDoc} */
     @Override
     public HashedOrderlessMatcher getHashRuleMap() {
       return TIMES_ORDERLESS_MATCHER;
@@ -6180,7 +6182,6 @@ public final class Arithmetic {
 
       // the case where both args are numbers is already handled in binaryOperator()
       if (arg1.isReal() || arg2.isReal()) {
-
         if (arg1.isZero()) {
           return evalZeroTimesX(arg1, arg2, false);
         } else if (arg2.isZero()) {
@@ -6203,42 +6204,6 @@ public final class Arithmetic {
       if (arg1.isNumber() && arg2.isNumber()) {
         return F.NIL;
       }
-      if (arg1.isAST(S.Underflow, 1)) {
-        if (arg2.isNumericFunction()) {
-          if (EvalEngine.get().isNumericMode()) {
-            return F.CD0;
-          }
-          return arg1;
-        }
-        if (arg2.isAST(S.Overflow, 1)) {
-          return S.Indeterminate;
-        }
-      } else if (arg2.isAST(S.Underflow, 1)) {
-        if (arg1.isNumericFunction()) {
-          if (EvalEngine.get().isNumericMode()) {
-            return F.CD0;
-          }
-          return arg2;
-        }
-        if (arg1.isAST(S.Overflow, 1)) {
-          return S.Indeterminate;
-        }
-      }
-      if (arg1.isAST(S.Overflow, 1)) {
-        if (arg2.isNumericFunction()) {
-          return arg1;
-        }
-        if (arg2.isAST(S.Underflow, 1)) {
-          return S.Indeterminate;
-        }
-      } else if (arg2.isAST(S.Overflow, 1)) {
-        if (arg1.isNumericFunction()) {
-          return arg2;
-        }
-        if (arg1.isAST(S.Underflow, 1)) {
-          return S.Indeterminate;
-        }
-      }
 
       if (arg1.isSymbol() || arg2.isSymbol()) {
         if (arg1 == arg2) {
@@ -6254,72 +6219,65 @@ public final class Arithmetic {
         }
       }
 
-      // note: not a general rule
-      // if (arg1.isMinusOne() && arg2.isPlus()) {
-      // return ((IAST) arg2).map(x -> x.negate(), 1);
-      // }
-
-      if (arg1.isIntervalData()) {
-        if (arg2.isIntervalData()) {
-          return IntervalDataSym.times((IAST) arg1, (IAST) arg2);
-        }
-        if (arg2.isRealResult()) {
-          return IntervalDataSym.times(arg2, (IAST) arg1);
-        }
-        // donn't create Power(...,...)
-        return F.NIL;
-      } else if (arg2.isIntervalData()) {
-        if (arg1.isRealResult()) {
-          return IntervalDataSym.times(arg1, (IAST) arg2);
-        }
-        // donn't create Power(...,...)
-        return F.NIL;
-      } else if (arg1.isInterval()) {
-        if (arg2.isInterval()) {
-          return IntervalSym.times((IAST) arg1, (IAST) arg2);
-        }
-        if (arg2.isRealResult()) {
-          // return timesInterval(arg1, arg2);
-          return IntervalSym.times(arg2, (IAST) arg1);
-        }
-        // donn't create Power(...,...)
-        return F.NIL;
-      } else if (arg2.isInterval()) {
-        if (arg1.isRealResult()) {
-          // return timesInterval(arg1, arg2);
-          return IntervalSym.times(arg1, (IAST) arg2);
-        }
-        // donn't create Power(...,...)
-        return F.NIL;
-      } else if (arg1.equals(arg2)) {
-        return F.Power(arg1, C2);
-      }
-
-      if (arg1.isQuantity()) {
-        IQuantity q = (IQuantity) arg1;
-        return q.times(arg2, true);
-      } else if (arg2.isQuantity()) {
-        IQuantity q = (IQuantity) arg2;
-        return q.times(arg1, true);
-      } else if (arg1.isAST() || arg2.isAST()) {
-        final int arg1Ordinal = arg1.headID();
-        final int arg2Ordinal = arg2.headID();
-        if (arg1Ordinal < 0 && arg2Ordinal < 0) {
-          return F.NIL;
-        }
-        if (arg1Ordinal == ID.DirectedInfinity && arg1.isDirectedInfinity()) {
-          IExpr temp = eInfinity((IAST) arg1, arg2);
-          if (temp.isPresent()) {
-            return temp;
-          }
-        } else if (arg2Ordinal == ID.DirectedInfinity && arg2.isDirectedInfinity()) {
-          IExpr temp = eInfinity((IAST) arg2, arg1);
-          if (temp.isPresent()) {
-            return temp;
-          }
-        }
-
+      final int arg1Ordinal = arg1.headID();
+      if (arg1Ordinal >= ID.DirectedInfinity) {
         switch (arg1Ordinal) {
+          case ID.DirectedInfinity:
+            if (arg1.isDirectedInfinity()) {
+              IExpr temp = eInfinity((IAST) arg1, arg2);
+              if (temp.isPresent()) {
+                return temp;
+              }
+            }
+            break;
+          case ID.Underflow:
+            if (arg1.isAST(S.Underflow, 1)) {
+              if (arg2.isNumericFunction()) {
+                if (EvalEngine.get().isNumericMode()) {
+                  return F.CD0;
+                }
+                return arg1;
+              }
+              if (arg2.isAST(S.Overflow, 1)) {
+                return S.Indeterminate;
+              }
+            }
+            break;
+          case ID.Overflow:
+            if (arg1.isAST(S.Overflow, 1)) {
+              if (arg2.isNumericFunction()) {
+                return arg1;
+              }
+              if (arg2.isAST(S.Underflow, 1)) {
+                return S.Indeterminate;
+              }
+            }
+            break;
+          case ID.Interval:
+            if (arg1.isInterval()) {
+              if (arg2.isInterval()) {
+                return IntervalSym.times((IAST) arg1, (IAST) arg2);
+              }
+              if (arg2.isRealResult()) {
+                // return timesInterval(arg1, arg2);
+                return IntervalSym.times(arg2, (IAST) arg1);
+              }
+              // don't create Power(...,...)
+              return F.NIL;
+            }
+            break;
+          case ID.IntervalData:
+            if (arg1.isIntervalData()) {
+              if (arg2.isIntervalData()) {
+                return IntervalDataSym.times((IAST) arg1, (IAST) arg2);
+              }
+              if (arg2.isRealResult()) {
+                return IntervalDataSym.times(arg2, (IAST) arg1);
+              }
+              // donn't create Power(...,...)
+              return F.NIL;
+            }
+            break;
           case ID.Power:
             if (arg1.size() == 3) {
               // (x^a) * b
@@ -6353,7 +6311,65 @@ public final class Arithmetic {
           default:
         }
 
+      }
+
+      final int arg2Ordinal = arg2.headID();
+      if (arg2Ordinal >= ID.DirectedInfinity) {
         switch (arg2Ordinal) {
+          case ID.DirectedInfinity:
+            if (arg2.isDirectedInfinity()) {
+              IExpr temp = eInfinity((IAST) arg2, arg1);
+              if (temp.isPresent()) {
+                return temp;
+              }
+            }
+            break;
+          case ID.Underflow:
+            if (arg2.isAST(S.Underflow, 1)) {
+              if (arg1.isNumericFunction()) {
+                if (EvalEngine.get().isNumericMode()) {
+                  return F.CD0;
+                }
+                return arg2;
+              }
+              if (arg1.isAST(S.Overflow, 1)) {
+                return S.Indeterminate;
+              }
+            }
+            break;
+          case ID.Overflow:
+            if (arg2.isAST(S.Overflow, 1)) {
+              if (arg1.isNumericFunction()) {
+                return arg2;
+              }
+              if (arg1.isAST(S.Underflow, 1)) {
+                return S.Indeterminate;
+              }
+            }
+            break;
+          case ID.Interval:
+            if (arg2.isInterval()) {
+              if (arg1.isInterval()) {
+                return IntervalSym.times((IAST) arg1, (IAST) arg2);
+              }
+              return IntervalSym.times(arg1, (IAST) arg2);
+            }
+            if (arg1.isRealResult()) {
+              // return timesInterval(arg1, arg2);
+              return IntervalSym.times(arg1, (IAST) arg2);
+            }
+            // donn't create Power(...,...)
+            return F.NIL;
+          case ID.IntervalData:
+            if (arg2.isIntervalData()) {
+              if (arg1.isRealResult()) {
+                return IntervalDataSym.times(arg1, (IAST) arg2);
+              }
+              // donn't create Power(...,...)
+              return F.NIL;
+            }
+            break;
+
           case ID.Plus:
             if (arg1.isFraction() && arg2.isPlus() && arg1.isNegative()) {
               return F.Times(arg1.negate(), arg2.negate());
@@ -6378,21 +6394,6 @@ public final class Arithmetic {
               }
             }
             break;
-
-          case ID.Interval:
-            if (arg2.isInterval()) {
-              if (arg1.isInterval()) {
-                return IntervalSym.times((IAST) arg1, (IAST) arg2);
-              }
-              return IntervalSym.times(arg1, (IAST) arg2);
-            }
-            break;
-          // case ID.Quantity:
-          // if (arg2.isQuantity()) {
-          // IQuantity q = (IQuantity) arg2;
-          // return q.times(arg1);
-          // }
-          // break;
           case ID.SeriesData:
             if (arg2 instanceof ASTSeriesData) {
               return ((ASTSeriesData) arg2).times(arg1);
@@ -6402,6 +6403,18 @@ public final class Arithmetic {
           default:
         }
       }
+
+      if (arg1.equals(arg2)) {
+        return F.Power(arg1, C2);
+      }
+      if (arg1.isQuantity()) {
+        IQuantity q = (IQuantity) arg1;
+        return q.times(arg2, true);
+      } else if (arg2.isQuantity()) {
+        IQuantity q = (IQuantity) arg2;
+        return q.times(arg1, true);
+      }
+
       return F.NIL;
     }
 
@@ -6530,7 +6543,7 @@ public final class Arithmetic {
       return evaluateTimesOp(ast, engine);
     }
 
-    protected IExpr evaluateTimesOp(IAST ast, EvalEngine engine) {
+    protected IExpr evaluateTimesOp(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       int size = ast.size();
       if (size == 3) {
@@ -6556,26 +6569,30 @@ public final class Arithmetic {
         IExpr tempArg1 = arg1;
         boolean evaled = false;
         int i = 2;
-        boolean isIASTAppendable = false;
-        IAST astTimes = ast;
-        while (i < astTimes.size()) {
 
-          IExpr binaryResult = binaryOperator(astTimes, tempArg1, astTimes.get(i), engine);
+        IAST argsRemovedTimes = ast;
+        // true if args are removed from original Times ast
+        boolean isArgsRemovedTimes = false;
+        while (i < argsRemovedTimes.size()) {
+
+          IExpr binaryResult =
+              binaryOperator(argsRemovedTimes, tempArg1, argsRemovedTimes.get(i), engine);
 
           if (binaryResult.isNIL()) {
 
-            for (int j = i + 1; j < astTimes.size(); j++) {
-              binaryResult = binaryOperator(astTimes, tempArg1, astTimes.get(j), engine);
+            for (int j = i + 1; j < argsRemovedTimes.size(); j++) {
+              binaryResult =
+                  binaryOperator(argsRemovedTimes, tempArg1, argsRemovedTimes.get(j), engine);
 
               if (binaryResult.isPresent()) {
                 evaled = true;
                 tempArg1 = binaryResult;
-                if (isIASTAppendable) {
-                  ((IASTAppendable) astTimes).remove(j);
+                if (isArgsRemovedTimes) {
+                  ((IASTAppendable) argsRemovedTimes).remove(j);
                 } else {
                   // creates an IASTAppendable
-                  astTimes = astTimes.splice(j);
-                  isIASTAppendable = true;
+                  argsRemovedTimes = argsRemovedTimes.splice(j);
+                  isArgsRemovedTimes = true;
                 }
                 break;
               }
@@ -6583,13 +6600,13 @@ public final class Arithmetic {
 
             if (binaryResult.isNIL()) {
               if (result.isNIL()) {
-                result = F.ast(sym, astTimes.size() - i + 1);
+                result = F.ast(sym, argsRemovedTimes.size() - i + 1);
               }
               result.append(tempArg1);
-              if (i == astTimes.argSize()) {
-                result.append(astTimes.get(i));
+              if (i == argsRemovedTimes.argSize()) {
+                result.append(argsRemovedTimes.get(i));
               } else {
-                tempArg1 = astTimes.get(i);
+                tempArg1 = argsRemovedTimes.get(i);
               }
               i++;
             }
@@ -6598,9 +6615,9 @@ public final class Arithmetic {
             evaled = true;
             tempArg1 = binaryResult;
 
-            if (i == astTimes.argSize()) {
+            if (i == argsRemovedTimes.argSize()) {
               if (result.isNIL()) {
-                result = F.ast(sym, astTimes.size() - i + 1);
+                result = F.ast(sym, argsRemovedTimes.size() - i + 1);
               }
               result.append(tempArg1);
             }
@@ -6616,7 +6633,7 @@ public final class Arithmetic {
 
           return distributeLeadingFactor(result, F.NIL);
         }
-        return distributeLeadingFactor(F.NIL, astTimes);
+        return distributeLeadingFactor(F.NIL, argsRemovedTimes);
       }
 
       if (engine.isSymbolicMode(S.Times.getAttributes())) {

@@ -24678,12 +24678,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testUnitConvert() {
+    check("UnitConvert(Quantity(Pi, \"deg\"), \"rad\")", //
+        "Pi^2/180[rad]");
     check("UnitConvert(Quantity(\"StandardAccelerationOfGravity\"),\"m/s^2\")", //
         "196133/20000[m*s^-2]");
     check("UnitConvert(Quantity(111, \"cm\"),\"m\" )", //
         "111/100[m]");
-    check("UnitConvert(Quantity(Pi, \"deg\"), \"rad\")", //
-        "Pi^2/180[rad]");
+
     check("UnitConvert(Quantity(Pi, \"rad\"), \"deg\")", //
         "180[deg]");
     check("UnitConvert(Quantity(Pi, \"grad\"), \"rad\")", //

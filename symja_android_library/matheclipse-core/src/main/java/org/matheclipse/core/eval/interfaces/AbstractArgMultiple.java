@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplex;
@@ -106,6 +107,10 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
     return null;
   }
 
+  /**
+   * Return a matcher for an {@link IAST} with attribute {@link S#Orderless} (i.e. WITH HEAD
+   * {@link S#Plus} or {@link S#Times}).
+   */
   public HashedOrderlessMatcher getHashRuleMap() {
     return null;
   }
@@ -121,10 +126,9 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
   public IAST evaluateHashsRepeated(final IAST orderlessAST, final EvalEngine engine) {
     if (!engine.isDisabledTrigRules()) {
       HashedOrderlessMatcher hashRuleMap = getHashRuleMap();
-      if (hashRuleMap == null) {
-        return F.NIL;
+      if (hashRuleMap != null) {
+        return hashRuleMap.evaluateRepeated(orderlessAST, engine);
       }
-      return hashRuleMap.evaluateRepeated(orderlessAST, engine);
     }
     return F.NIL;
   }
