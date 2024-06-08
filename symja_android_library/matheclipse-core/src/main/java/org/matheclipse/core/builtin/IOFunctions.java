@@ -607,9 +607,9 @@ public class IOFunctions {
         exact = true;
       }
     } else {
-      if (name.length() == 0) {
-        return getAllNames();
-      }
+      // if (name.length() == 0) {
+      // return getAllNames();
+      // }
     }
     return getNamesByPrefix(name, exact);
   }

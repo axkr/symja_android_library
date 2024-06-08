@@ -1656,8 +1656,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
                 // O-3
                 return compareToASTDecreasing(this, rhs);
               }
-            } else if (!rhsExpr.isSameHeadSizeGE(S.Plus, 1)
-                && !rhsExpr.isSameHeadSizeGE(S.Times, 1)) {
+            } else if (rhsOrdinal != ID.Plus && rhsOrdinal != ID.Times) {
               // O-10
               return compareToASTDecreasingArg1(this, rhsExpr, F.C0);
             }
@@ -1681,8 +1680,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
               }
               // O-9
               return compareToASTIncreasingArg1(this, rhsExpr, F.C1);
-            } else if (!rhsExpr.isSameHeadSizeGE(S.Times, 1)
-                && !rhsExpr.isSameHeadSizeGE(S.Plus, 1)) {
+            } else if (rhsOrdinal != ID.Plus && rhsOrdinal != ID.Times) {
               // O-9
               return compareToASTIncreasingArg1(this, rhsExpr, F.C1);
             }
@@ -3032,7 +3030,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public final boolean isAlternatives() {
-    return isSameHeadSizeGE(S.Alternatives, 1);
+    return head() == S.Alternatives;
   }
 
   /** {@inheritDoc} */
@@ -3665,7 +3663,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isList() {
-    return isSameHeadSizeGE(S.List, 1);
+    return head() == S.List;
   }
 
 
@@ -4592,7 +4590,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public final boolean isSequence() {
-    return isSameHeadSizeGE(S.Sequence, 1);
+    return head() == S.Sequence;
   }
 
   /** {@inheritDoc} */
