@@ -1,25 +1,19 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.Beta;
-import static org.matheclipse.core.expression.F.BetaRegularized;
 import static org.matheclipse.core.expression.F.Binomial;
-import static org.matheclipse.core.expression.F.Factorial;
 import static org.matheclipse.core.expression.F.a_;
 import static org.matheclipse.core.expression.F.b_;
 import static org.matheclipse.core.expression.F.m_;
 import static org.matheclipse.core.expression.F.n_;
 import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.F.y_;
-import static org.matheclipse.core.expression.F.z_;
 import static org.matheclipse.core.expression.S.a;
 import static org.matheclipse.core.expression.S.b;
 import static org.matheclipse.core.expression.S.c;
-import static org.matheclipse.core.expression.S.k;
 import static org.matheclipse.core.expression.S.m;
 import static org.matheclipse.core.expression.S.n;
 import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
-import static org.matheclipse.core.expression.S.z;
 import java.util.function.Supplier;
 import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.builtin.StructureFunctions;
@@ -79,27 +73,27 @@ public class FunctionExpand extends AbstractEvaluator {
     private static Matcher init() {
       Matcher MATCHER = new Matcher();
       // Beta
-      MATCHER.caseOf(Beta(z_, a_, b_), //
-          // [$ Beta(a, b)*(1 - (1 - z)^b*Sum((Pochhammer(b, k)*z^k)/k!, {k, 0, a - 1})) /;
-          // IntegerQ(a)&&a>0
-          // $]
-          F.Condition(
-              F.Times(F.Beta(a, b), F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Subtract(F.C1, z), b),
-                  F.Sum(F.Times(F.Power(z, k), F.Power(F.Factorial(k), F.CN1), F.Pochhammer(b, k)),
-                      F.list(k, F.C0, F.Plus(F.CN1, a)))))),
-              F.And(F.IntegerQ(a), F.Greater(a, F.C0)))); // $$);
-
-      MATCHER.caseOf(Beta(a_, b_), //
-          // [$ Factorial(a-1)*Product((k+b)^(-1),{k,0,a-1}) /; IntegerQ(a)&&a>0 $]
-          F.Condition(
-              F.Times(F.Factorial(F.Plus(F.CN1, a)),
-                  F.Product(F.Power(F.Plus(k, b), F.CN1), F.list(k, F.C0, F.Plus(F.CN1, a)))),
-              F.And(F.IntegerQ(a), F.Greater(a, F.C0)))); // $$);
-
-      MATCHER.caseOf(BetaRegularized(z_, a_, b_), //
-          // [$ (Beta(z, a, b)*Gamma(a + b))/(Gamma(a)*Gamma(b)) $]
-          F.Times(F.Beta(z, a, b), F.Power(F.Times(F.Gamma(a), F.Gamma(b)), F.CN1),
-              F.Gamma(F.Plus(a, b)))); // $$);
+      // MATCHER.caseOf(Beta(z_, a_, b_), //
+      // // [$ Beta(a, b)*(1 - (1 - z)^b*Sum((Pochhammer(b, k)*z^k)/k!, {k, 0, a - 1})) /;
+      // // IntegerQ(a)&&a>0
+      // // $]
+      // F.Condition(
+      // F.Times(F.Beta(a, b), F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Subtract(F.C1, z), b),
+      // F.Sum(F.Times(F.Power(z, k), F.Power(F.Factorial(k), F.CN1), F.Pochhammer(b, k)),
+      // F.list(k, F.C0, F.Plus(F.CN1, a)))))),
+      // F.And(F.IntegerQ(a), F.Greater(a, F.C0)))); // $$);
+      //
+      // MATCHER.caseOf(Beta(a_, b_), //
+      // // [$ Factorial(a-1)*Product((k+b)^(-1),{k,0,a-1}) /; IntegerQ(a)&&a>0 $]
+      // F.Condition(
+      // F.Times(F.Factorial(F.Plus(F.CN1, a)),
+      // F.Product(F.Power(F.Plus(k, b), F.CN1), F.list(k, F.C0, F.Plus(F.CN1, a)))),
+      // F.And(F.IntegerQ(a), F.Greater(a, F.C0)))); // $$);
+      //
+      // MATCHER.caseOf(F.BetaRegularized(z_, a_, b_), //
+      // // [$ (Beta(z, a, b)*Gamma(a + b))/(Gamma(a)*Gamma(b)) $]
+      // F.Times(F.Beta(z, a, b), F.Power(F.Times(F.Gamma(a), F.Gamma(b)), F.CN1),
+      // F.Gamma(F.Plus(a, b)))); // $$);
 
       MATCHER.caseOf(Binomial(a_, b_), //
           // [$ If(IntegerQ(b)&&Positive(b),Product(a-c,{c,0,b-1})/b!, If(IntegerQ(a)&&Positive(a),
@@ -153,9 +147,9 @@ public class FunctionExpand extends AbstractEvaluator {
           F.Times(F.Power(x, F.CN1), F.Sqrt(F.Sqr(x)), F.SinIntegral(x))); // $$);
 
       // Factorial
-      MATCHER.caseOf(Factorial(x_), //
-          // [$ Gamma(1+x) $]
-          F.Gamma(F.Plus(F.C1, x))); // $$);
+      // MATCHER.caseOf(Factorial(x_), //
+      // // [$ Gamma(1+x) $]
+      // F.Gamma(F.Plus(F.C1, x))); // $$);
 
       // Haversine
       MATCHER.caseOf(F.Haversine(x_), //

@@ -23,6 +23,7 @@ import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -1286,7 +1287,16 @@ public class PolynomialFunctions {
    * 1-32*x^2+160*x^4-256*x^6+128*x^8
    * </pre>
    */
-  private static final class ChebyshevT extends AbstractFunctionEvaluator {
+  private static final class ChebyshevT extends AbstractFunctionEvaluator
+      implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
+      IExpr z = ast.arg2();
+      // Cos(n*ArcCos(z))
+      return F.Cos(F.Times(n, F.ArcCos(z)));
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1375,7 +1385,17 @@ public class PolynomialFunctions {
    * 1-40*x^2+240*x^4-448*x^6+256*x^8
    * </pre>
    */
-  private static final class ChebyshevU extends AbstractFunctionEvaluator {
+  private static final class ChebyshevU extends AbstractFunctionEvaluator
+      implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
+      IExpr z = ast.arg2();
+      // Sin((1+n)*ArcCos(z))/(Sqrt(1-z)*Sqrt(1+z))
+      return F.Times(F.Power(F.Times(F.Sqrt(F.Subtract(F.C1, z)), F.Sqrt(F.Plus(F.C1, z))), F.CN1),
+          F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(z))));
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1436,9 +1456,6 @@ public class PolynomialFunctions {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
         return n.chebyshevU(z);
-        // Sin((n + 1)*ArcCos(z))/Sqrt(1 - z^2)
-        // return F.Times.of(engine, F.Power(F.Plus(F.C1, F.Negate(F.Sqr(z))), F.CN1D2),
-        // F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(z))));
       }
 
       return F.NIL;

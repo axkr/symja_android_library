@@ -3830,6 +3830,59 @@ public final class LinearAlgebra {
                 engine);
           }
         }
+        if (dim[0] == 1) {
+          IAST m = (IAST) ast.arg1().normal(false);
+          IExpr a = m.first().first();
+          return F.List(F.List(F.Power(S.E, a)));
+        }
+        if (dim[0] == 2) {
+          IAST m = (IAST) ast.arg1().normal(false);
+          IExpr a = m.first().first();
+          IExpr b = m.first().second();
+          IExpr c = m.second().first();
+          IExpr d = m.second().second();
+          if (a.isZero() && d.isZero()) {
+            if (b.equals(c.negate())) {
+              // {{Cos(b),Sin(b)},{-Sin(b),Cos(b)}}
+              IExpr v2 = F.Sin(b);
+              IExpr v1 = F.Cos(b);
+              return F.list(F.list(v1, v2), F.list(F.Negate(v2), v1));
+            }
+          }
+          IExpr v7 = F.Sqr(d);
+          IExpr v6 = F.Negate(d);
+          IExpr v5 = F.Negate(a);
+          IExpr v4 = F.Times(F.C1D2, d);
+          IExpr v3 = F.Times(F.C1D2, a);
+          IExpr v2 = F.Plus(F.Sqr(a), F.Times(F.C4, b, c), F.Times(F.CN2, a, d));
+          IExpr v1 = F.Exp(F.Plus(v3, v4, F.Times(F.CN1D2, F.Sqrt(F.Plus(v2, v7)))));
+          return F
+              .list(
+                  F.list(
+                      F.Plus(
+                          F.Times(
+                              F.C1D2, v1, F.Power(F.Plus(v2, v7), F.CN1D2), F.Plus(d, v5,
+                                  F.Sqrt(F.Plus(v2, v7)))),
+                          F.Times(F.C1D2,
+                              F.Exp(F.Plus(v3, v4, F.Times(F.C1D2, F.Sqrt(F.Plus(v2, v7))))),
+                              F.Power(F.Plus(v2, v7), F.CN1D2),
+                              F.Plus(a, v6, F.Sqrt(F.Plus(v2, v7))))),
+                      F.Plus(
+                          F.Times(
+                              b, F.Exp(F.Plus(v3, v4,
+                                  F.Times(F.C1D2, F.Sqrt(F.Plus(v2, v7))))),
+                              F.Power(F.Plus(v2, v7), F.CN1D2)),
+                          F.Times(F.CN1, b, v1, F.Power(F.Plus(v2, v7), F.CN1D2)))),
+                  F.list(F.Plus(F.Times(c,
+                      F.Exp(F.Plus(v3, v4, F.Times(F.C1D2, F.Sqrt(F.Plus(v2, v7))))), F
+                          .Power(F.Plus(v2, v7), F.CN1D2)),
+                      F.Times(F.CN1, c, v1, F.Power(F.Plus(v2, v7), F.CN1D2))),
+                      F.Plus(F.Times(F.C1D2,
+                          F.Exp(F.Plus(v3, v4, F.Times(F.C1D2, F.Sqrt(F.Plus(v2, v7))))),
+                          F.Power(F.Plus(v2, v7), F.CN1D2), F.Plus(d, v5, F.Sqrt(F.Plus(v2, v7)))),
+                          F.Times(F.C1D2, v1, F.Power(F.Plus(v2, v7), F.CN1D2),
+                              F.Plus(a, v6, F.Sqrt(F.Plus(v2, v7)))))));
+        }
       }
 
       return F.NIL;

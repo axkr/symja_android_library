@@ -146,7 +146,7 @@
   D(PolyLog(f_, g_),x_?NotListQ) := (PolyLog(-1 + f, g)*D(g,x))/g + D(f,x)*Derivative(1, 0)[PolyLog][f, g],
   D(PolyLog(f_, g_, h_),x_?NotListQ) := (PolyLog(-1+f,g,h)*D(h,x))/h + D(g,x)*Derivative(0,1,0)[PolyLog][f,g,h] + D(f,x)*Derivative(1,0,0)[PolyLog][f,g,h],
   
-  D(ProductLog(f_),x_?NotListQ) := (ProductLog[f]*D(f, x))/(f*(1 + ProductLog[f])),
+  D(ProductLog(f_),x_?NotListQ) := (ProductLog(f)*D(f, x))/(f*(1 + ProductLog(f))),
   D(ProductLog(f_, g_),x_?NotListQ):= ProductLog(f,g)*D(g,x)/(g*(1+ProductLog(f,g)))+D(f,x)*Derivative(1,0)[ProductLog][f,g],
   
   D(JacobiAmplitude(f_, g_),x_?NotListQ) := JacobiDN(f, g)*D(f,x)+(((EllipticE(JacobiAmplitude(f, g), g) + f*(-1 + g))*JacobiDN(f, g) - g*JacobiCN(f, g)*JacobiSN(f, g))*D(g,x))/(2*(-1 + g)*g),

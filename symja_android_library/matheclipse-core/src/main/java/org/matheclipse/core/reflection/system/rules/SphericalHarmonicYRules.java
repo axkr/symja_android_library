@@ -13,19 +13,46 @@ public class SphericalHarmonicYRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 1, 1 };
+  final public static int[] SIZES = { 1, 10 };
 
   final public static IAST RULES = List(
     IInit(SphericalHarmonicY, SIZES),
     // SphericalHarmonicY(0,0,t_,p_)=1/(2*Sqrt(Pi))
     ISet(SphericalHarmonicY(C0,C0,t_,p_),
       Times(C1D2,Power(Pi,CN1D2))),
+    // SphericalHarmonicY(1,-1,t_,p_):=(Sqrt(3/(2*Pi))*Sin(t))/(2*E^(I*p))
+    ISetDelayed(SphericalHarmonicY(C1,CN1,t_,p_),
+      Times(C1D2,Power(Exp(Times(CI,p)),CN1),Sqrt(Times(C3,Power(C2Pi,CN1))),Sin(t))),
     // SphericalHarmonicY(1,1,t_,p_):=-1/2*E^(I*p)*Sqrt(3/(2*Pi))*Sin(t)
     ISetDelayed(SphericalHarmonicY(C1,C1,t_,p_),
       Times(CN1D2,Exp(Times(CI,p)),Sqrt(Times(C3,Power(C2Pi,CN1))),Sin(t))),
     // SphericalHarmonicY(n_,0,0,p_):=Sqrt(1+2*n)/(2*Sqrt(Pi))
     ISetDelayed(SphericalHarmonicY(n_,C0,C0,p_),
       Times(Sqrt(Plus(C1,Times(C2,n))),Power(Times(C2,CSqrtPi),CN1))),
+    // SphericalHarmonicY(2,-2,t_,p_):=(Sqrt(15/(2*Pi))*Sin(t)^2)/(4*E^(2*I*p))
+    ISetDelayed(SphericalHarmonicY(C2,CN2,t_,p_),
+      Times(C1D4,Power(Exp(Times(C2,CI,p)),CN1),Sqrt(Times(ZZ(15L),Power(C2Pi,CN1))),Sqr(Sin(t)))),
+    // SphericalHarmonicY(3,-3,t_,p_):=(Sqrt(35/Pi)*Sin(t)^3)/(8*E^(3*I*p))
+    ISetDelayed(SphericalHarmonicY(C3,CN3,t_,p_),
+      Times(QQ(1L,8L),Power(Exp(Times(C3,CI,p)),CN1),Sqrt(Times(ZZ(35L),Power(Pi,CN1))),Power(Sin(t),C3))),
+    // SphericalHarmonicY(3,-2,t_,p_):=(Sqrt(105/(2*Pi))*Cos(t)*Sin(t)^2)/(4*E^(2*I*p))
+    ISetDelayed(SphericalHarmonicY(C3,CN2,t_,p_),
+      Times(C1D4,Power(Exp(Times(C2,CI,p)),CN1),Sqrt(Times(ZZ(105L),Power(C2Pi,CN1))),Cos(t),Sqr(Sin(t)))),
+    // SphericalHarmonicY(3,-1,t_,p_):=(Sqrt(21/Pi)*(-1+5*Cos(t)^2)*Sin(t))/(8*E^(I*p))
+    ISetDelayed(SphericalHarmonicY(C3,CN1,t_,p_),
+      Times(QQ(1L,8L),Power(Exp(Times(CI,p)),CN1),Sqrt(Times(ZZ(21L),Power(Pi,CN1))),Plus(CN1,Times(C5,Sqr(Cos(t)))),Sin(t))),
+    // SphericalHarmonicY(3,0,t_,p_):=1/4*Sqrt(7/Pi)*(-3*Cos(t)+5*Cos(t)^3)
+    ISetDelayed(SphericalHarmonicY(C3,C0,t_,p_),
+      Times(C1D4,Sqrt(Times(C7,Power(Pi,CN1))),Plus(Times(CN3,Cos(t)),Times(C5,Power(Cos(t),C3))))),
+    // SphericalHarmonicY(3,1,t_,p_):=-1/8*E^(I*p)*Sqrt(21/Pi)*(-1+5*Cos(t)^2)*Sin(t)
+    ISetDelayed(SphericalHarmonicY(C3,C1,t_,p_),
+      Times(QQ(-1L,8L),Exp(Times(CI,p)),Sqrt(Times(ZZ(21L),Power(Pi,CN1))),Plus(CN1,Times(C5,Sqr(Cos(t)))),Sin(t))),
+    // SphericalHarmonicY(3,2,t_,p_):=1/4*E^(2*I*p)*Sqrt(105/(2*Pi))*Cos(t)*Sin(t)^2
+    ISetDelayed(SphericalHarmonicY(C3,C2,t_,p_),
+      Times(C1D4,Exp(Times(C2,CI,p)),Sqrt(Times(ZZ(105L),Power(C2Pi,CN1))),Cos(t),Sqr(Sin(t)))),
+    // SphericalHarmonicY(3,3,t_,p_):=-1/8*E^(3*I*p)*Sqrt(35/Pi)*Sin(t)^3
+    ISetDelayed(SphericalHarmonicY(C3,C3,t_,p_),
+      Times(QQ(-1L,8L),Exp(Times(C3,CI,p)),Sqrt(Times(ZZ(35L),Power(Pi,CN1))),Power(Sin(t),C3))),
     // SphericalHarmonicY(n_Integer,0,t_,p_):=(Sqrt(1+2*n)*LegendreP(n,Cos(t)))/(2*Sqrt(Pi))
     ISetDelayed(SphericalHarmonicY($p(n, Integer),C0,t_,p_),
       Times(Sqrt(Plus(C1,Times(C2,n))),Power(Times(C2,CSqrtPi),CN1),LegendreP(n,Cos(t)))),

@@ -1156,6 +1156,23 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMatrixExp() {
+    check("MatrixExp({{0, 1}, {-1, 0}}*t)", //
+        "{{Cos(t),Sin(t)},{-Sin(t),Cos(t)}}");
+    check("MatrixExp({{0, a}, {b, 0}})", //
+        "{{1/(2*E^Sqrt(a*b))+E^Sqrt(a*b)/2,-a/(2*Sqrt(a*b)*E^Sqrt(a*b))+(a*E^Sqrt(a*b))/(\n" //
+            + "2*Sqrt(a*b))},{-b/(2*Sqrt(a*b)*E^Sqrt(a*b))+(b*E^Sqrt(a*b))/(2*Sqrt(a*b)),1/(2*E^Sqrt(a*b))+E^Sqrt(a*b)/\n"
+            + "2}}");
+    check("MatrixExp({{a,b}, {c,d}})", //
+        "{{((-a+d+Sqrt(a^2+4*b*c-2*a*d+d^2))*E^(a/2+d/2-Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/(2*Sqrt(a^\n" //
+            + "2+4*b*c-2*a*d+d^2))+((a-d+Sqrt(a^2+4*b*c-2*a*d+d^2))*E^(a/2+d/2+Sqrt(a^2+4*b*c-2*a*d+d^\n" //
+            + "2)/2))/(2*Sqrt(a^2+4*b*c-2*a*d+d^2)),(-b*E^(a/2+d/2-Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/Sqrt(a^\n" //
+            + "2+4*b*c-2*a*d+d^2)+(b*E^(a/2+d/2+Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/Sqrt(a^2+4*b*c-2*a*d+d^\n" //
+            + "2)},{(-c*E^(a/2+d/2-Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/Sqrt(a^2+4*b*c-2*a*d+d^2)+(c*E^(a/\n" //
+            + "2+d/2+Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/Sqrt(a^2+4*b*c-2*a*d+d^2),((a-d+Sqrt(a^2+4*b*c-\n" //
+            + "2*a*d+d^2))*E^(a/2+d/2-Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/(2*Sqrt(a^2+4*b*c-2*a*d+d^2))+((-a+d+Sqrt(a^\n" //
+            + "2+4*b*c-2*a*d+d^2))*E^(a/2+d/2+Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/(2*Sqrt(a^2+4*b*c-2*a*d+d^\n" //
+            + "2))}}");
+
     check("MatrixExp({{3.4, 1.2}, {0.001, -0.9}})", //
         "{{29.97054,8.24991},\n" + //
             " {0.00687492,0.408375}}");
@@ -1166,8 +1183,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{7.38906,0.0,0.0},\n" + //
             " {0.0,1.46869,-2.28736},\n" + //
             " {0.0,2.28736,1.46869}}");
-    // check("MatrixExp({{0, 1}, {-1, 0}}*t)", //
-    // "");
+
   }
 
   @Test
@@ -1636,12 +1652,8 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPauliMatrix() {
-    check("PauliMatrix(0)", //
-        "{{1,0},{0,1}}");
-    check("PauliMatrix(2)", //
-        "{{0,-I},{I,0}}");
-    check("Table(PauliMatrix(k), {k, 3})", //
-        "{{{0,1},{1,0}},{{0,-I},{I,0}},{{1,0},{0,-1}}}");
+    check("PauliMatrix({1,2,3,4})", //
+        "{{{0,1},{1,0}},{{0,-I},{I,0}},{{1,0},{0,-1}},{{1,0},{0,1}}}");
   }
 
   @Test

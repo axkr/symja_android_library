@@ -59,9 +59,6 @@ public class GammaRules {
     // Gamma(x_,Undefined):=Undefined
     ISetDelayed(Gamma(x_,Undefined),
       Undefined),
-    // Gamma(a_,-1):=E*Subfactorial(-1+a)
-    ISetDelayed(Gamma(a_,CN1),
-      Times(E,Subfactorial(Plus(CN1,a)))),
     // Gamma(a_,Infinity):=0
     ISetDelayed(Gamma(a_,oo),
       C0),

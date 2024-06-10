@@ -8,6 +8,12 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testBeta() {
+    check("Beta(1,b) // FunctionExpand", //
+        "1/b");
+    check("Beta(10,b) // FunctionExpand", //
+        "362880/(b*(1+b)*(2+b)*(3+b)*(4+b)*(5+b)*(6+b)*(7+b)*(8+b)*(9+b))");
+
+
     // https://functions.wolfram.com/GammaBetaErf/Beta4/03/01/03/0003/
     check("Beta(z, 1, a, 3)", //
         "Beta(a,3)-Beta(z,a,3)");
@@ -36,11 +42,6 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "0.0266833");
     check("Beta(2.5 + I, 1 - I)", //
         "0.0831078+I*0.142164");
-
-    check("Beta(1,b) // FunctionExpand", //
-        "1/b");
-    check("Beta(10,b) // FunctionExpand", //
-        "362880/(b*(1+b)*(2+b)*(3+b)*(4+b)*(5+b)*(6+b)*(7+b)*(8+b)*(9+b))");
 
     check("Beta(2.3, 3.2)", //
         "0.0540298");

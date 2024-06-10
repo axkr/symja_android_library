@@ -58,7 +58,50 @@ public class BesselFunctions {
     }
   }
 
-  private static final class AngerJ extends AbstractFunctionEvaluator {
+  private static final class AngerJ extends AbstractFunctionEvaluator implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      IExpr a = ast.arg1();
+      IExpr b = ast.arg2();
+      if (ast.isAST3()) {
+        IExpr c = ast.arg2();
+        // (Cos(1/2*a*Pi)*Gamma(1+b)*HypergeometricPFQ({1/2+b/2,1+b/2},{1/2,1-a/2+b/2,1+a/2+b/2},(-1)*1/4*c^2))/(Gamma(1-a/2+b/2)*Gamma(1+a/2+b/2))+(c*Gamma(2+b)*HypergeometricPFQ({1+b/2,3/2+b/2},{3/2,3/2-a/2+b/2,3/2+a/2+b/2},(-1)*1/4*c^2)*Sin(1/2*a*Pi))/(2*Gamma(3/2-a/2+b/2)*Gamma(3/2+a/2+b/2))
+        IExpr v8 = F.Sqr(c);
+        IExpr v7 = F.Times(F.C1D2, b);
+        IExpr v6 = F.Times(F.C1D2, a, F.Pi);
+        IExpr v5 = F.Plus(F.C1, v7);
+        IExpr v4 = F.Plus(F.C1, F.Times(F.CN1D2, a));
+        IExpr v3 = F.Plus(F.C1, F.Times(F.C1D2, a), v7);
+        IExpr v2 = F.Plus(F.QQ(3L, 2L), F.Times(F.C1D2, a), v7);
+        IExpr v1 = F.Plus(F.QQ(3L, 2L), F.Times(F.CN1D2, a), v7);
+        return F.Plus(
+            F.Times(F.Cos(v6), F.Gamma(F.Plus(F.C1, b)), F.Power(F.Gamma(v3), F.CN1),
+                F.Power(F.Gamma(F.Plus(v4, v7)), F.CN1),
+                F.HypergeometricPFQ(F.list(v5, F.Plus(F.C1D2, v7)),
+                    F.list(F.C1D2, v3, F.Plus(v4, v7)), F.Times(F.CN1D4, v8))),
+            F.Times(F.C1D2, c, F.Gamma(F.Plus(F.C2, b)), F.Power(F.Gamma(v1), F.CN1),
+                F.Power(F.Gamma(v2), F.CN1),
+                F.HypergeometricPFQ(F.list(v5, F.Plus(F.QQ(3L, 2L), v7)),
+                    F.list(F.QQ(3L, 2L), v1, v2), F.Times(F.CN1D4, v8)),
+                F.Sin(v6)));
+      }
+      // (2*Cos(1/2*a*Pi)*HypergeometricPFQ({1},{1-a/2,1+a/2},(-1)*1/4*b^2)*Sin(1/2*a*Pi))/(a*Pi)+(-2*b*Cos(1/2*a*Pi)*HypergeometricPFQ({1},{3/2-a/2,3/2+a/2},(-1)*1/4*b^2)*Sin(1/2*a*Pi))/((-1+a)*(1+a)*Pi)
+      IExpr v6 = F.list(F.C1);
+      IExpr v5 = F.Times(F.C1D2, a);
+      IExpr v4 = F.Times(F.CN1D2, a);
+      IExpr v3 = F.Sin(F.Times(F.Pi, v5));
+      IExpr v2 = F.Cos(F.Times(F.Pi, v5));
+      IExpr v1 = F.Times(F.CN1, F.C1D4, F.Sqr(b));
+      return F.Plus(
+          F.Times(F.C2, F.Power(a, F.CN1), F.Power(F.Pi, F.CN1), v2, v3,
+              F.HypergeometricPFQ(v6, F.list(F.Plus(F.C1, v4), F.Plus(F.C1, v5)), v1)),
+          F.Times(F.CN2, F.Power(F.Plus(F.CN1, a), F.CN1), F.Power(F.Plus(F.C1, a), F.CN1), b,
+              F.Power(F.Pi, F.CN1), v2, v3, F.HypergeometricPFQ(v6,
+                  F.list(F.Plus(F.QQ(3L, 2L), v4), F.Plus(F.QQ(3L, 2L), v5)), v1)));
+
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr n = ast.arg1();
@@ -84,12 +127,7 @@ public class BesselFunctions {
 
         if (engine.isNumericMode()) {
           if (n.isNumber() && z.isNumber()) {
-            try {
-              return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
-
-            } catch (RuntimeException rex) {
-              return Errors.printMessage(S.AngerJ, rex, engine);
-            }
+            return functionExpand(ast, engine);
           }
         }
         return F.NIL;
@@ -99,11 +137,7 @@ public class BesselFunctions {
         IExpr z = ast.arg3();
         if (engine.isNumericMode()) {
           if (n.isNumber() && m.isNumber() && z.isNumber()) {
-            try {
-              return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
-            } catch (RuntimeException rex) {
-              return Errors.printMessage(S.AngerJ, rex, engine);
-            }
+            return functionExpand(ast, engine);
           }
         }
       }
@@ -939,7 +973,16 @@ public class BesselFunctions {
     }
   }
 
-  private static final class HankelH1 extends AbstractFunctionEvaluator {
+  private static final class HankelH1 extends AbstractFunctionEvaluator implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
+      IExpr z = ast.arg2();
+      // BesselJ(n,z)+I*BesselY(n,z)
+      return F.Plus(F.BesselJ(n, z), F.Times(F.CI, F.BesselY(n, z)));
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
@@ -974,8 +1017,7 @@ public class BesselFunctions {
             return Errors.printMessage(S.HankelH1, rex, engine);
           }
         } else if (engine.isArbitraryMode()) {
-          // BesselJ(n,z)+I*BesselY(n,z)
-          return F.Plus(F.BesselJ(n, z), F.Times(F.CI, F.BesselY(n, z)));
+          return functionExpand(ast, engine);
         }
       }
       return F.NIL;
@@ -992,7 +1034,16 @@ public class BesselFunctions {
     }
   }
 
-  private static final class HankelH2 extends AbstractFunctionEvaluator {
+  private static final class HankelH2 extends AbstractFunctionEvaluator implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
+      IExpr z = ast.arg2();
+      // BesselJ(n,z) - I*BesselY(n,z)
+      return F.Plus(F.BesselJ(n, z), F.Times(F.CNI, F.BesselY(n, z)));
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
@@ -1075,7 +1126,32 @@ public class BesselFunctions {
    * </code>
    * </pre>
    */
-  private static final class SphericalBesselJ extends AbstractFunctionEvaluator {
+  private static final class SphericalBesselJ extends AbstractFunctionEvaluator
+      implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
+      IExpr z = ast.arg2();
+      int ni = n.toIntDefault();
+      switch (ni) {
+        case 0:
+          // Sin(z)/z
+          return F.Times(F.Power(z, F.CN1), F.Sin(z));
+        case 1:
+          // -Cos(z)/z+Sin(z)/z^2
+          return F.Plus(F.Times(F.CN1, F.Power(z, F.CN1), F.Cos(z)),
+              F.Times(F.Power(z, F.CN2), F.Sin(z)));
+        case 2:
+          // ((-1)*3*Cos(z))/z^2+((3-z^2)*Sin(z))/z^3
+          return F.Plus(F.Times(F.CN1, F.C3, F.Power(z, F.CN2), F.Cos(z)),
+              F.Times(F.Power(z, F.CN3), F.Subtract(F.C3, F.Sqr(z)), F.Sin(z)));
+      }
+      // (Sqrt(Pi/2)*BesselJ(1/2*(1+2*n),z))/Sqrt(z)
+      return F.Times(F.Sqrt(F.CPiHalf), F.Power(z, F.CN1D2),
+          F.BesselJ(F.Times(F.C1D2, F.Plus(F.C1, F.Times(F.C2, n))), z));
+
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1155,18 +1231,27 @@ public class BesselFunctions {
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         IExpr a = ast.arg1();
+        int ai = a.toIntDefault();
         IExpr b = ast.arg2();
-        if (a.isZero()) {
-          // ((-1)*I*E^(I*b))/b
-          return F.Times(F.CN1, F.CI, F.Power(b, F.CN1), F.Exp(F.Times(F.CI, b)));
-        }
-        if (a.isOne()) {
-          // ((-I-b)*E^(I*b))/b^2
-          return F.Times(F.Power(b, F.CN2), F.Subtract(F.CNI, b), F.Exp(F.Times(F.CI, b)));
-        }
-        if (a.isMinusOne()) {
-          // E^(I*b)/b
-          return F.Times(F.Power(b, F.CN1), F.Exp(F.Times(F.CI, b)));
+        switch (ai) {
+          case 0:
+            // ((-1)*I*E^(I*b))/b
+            return F.Times(F.CN1, F.CI, F.Power(b, F.CN1), F.Exp(F.Times(F.CI, b)));
+          case 1:
+            // ((-I-b)*E^(I*b))/b^2
+            return F.Times(F.Power(b, F.CN2), F.Subtract(F.CNI, b), F.Exp(F.Times(F.CI, b)));
+          case -1:
+            // E^(I*b)/b
+            return F.Times(F.Power(b, F.CN1), F.Exp(F.Times(F.CI, b)));
+          case 2:
+            // (I*(-3+3*I*b+b^2)*E^(I*b))/b^3
+            return F.Times(F.CI, F.Power(b, F.CN3), F.Plus(F.CN3, F.Times(F.C3, F.CI, b), F.Sqr(b)),
+                F.Exp(F.Times(F.CI, b)));
+          case 3:
+            // (((-15)*I-15*b+6*I*b^2+b^3)*E^(I*b))/b^4
+            return F.Times(F.Power(b, F.CN4), F.Plus(F.Times(F.ZZ(-15L), F.CI),
+                F.Times(F.ZZ(-15L), b), F.Times(F.C6, F.CI, F.Sqr(b)), F.Power(b, F.C3)),
+                F.Exp(F.Times(F.CI, b)));
         }
         // SphericalHankelH1(a_,b_):=(Sqrt(Pi/2)*BesselJ(1/2*(1+2*a),b))/Sqrt(b)+(I*Sqrt(Pi/2)*BesselY(1/2*(1+2*a),b))/Sqrt(b)
         return F.Plus(
@@ -1215,19 +1300,29 @@ public class BesselFunctions {
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         IExpr a = ast.arg1();
+        int ai = a.toIntDefault();
         IExpr b = ast.arg2();
-        if (a.isZero()) {
-          // I/(E^(I*b)*b)
-          return F.Times(F.CI, F.Power(F.Times(F.Exp(F.Times(F.CI, b)), b), F.CN1));
-        }
-        if (a.isOne()) {
-          // (I-b)/(E^(I*b)*b^2)
-          return F.Times(F.Subtract(F.CI, b),
-              F.Power(F.Times(F.Exp(F.Times(F.CI, b)), F.Sqr(b)), F.CN1));
-        }
-        if (a.isMinusOne()) {
-          // 1/(E^(I*b)*b)
-          return F.Power(F.Times(F.Exp(F.Times(F.CI, b)), b), F.CN1);
+        switch (ai) {
+          case 0:
+            // I/(E^(I*b)*b)
+            return F.Times(F.CI, F.Power(F.Times(F.Exp(F.Times(F.CI, b)), b), F.CN1));
+          case 1:
+            // (I-b)/(E^(I*b)*b^2)
+            return F.Times(F.Subtract(F.CI, b),
+                F.Power(F.Times(F.Exp(F.Times(F.CI, b)), F.Sqr(b)), F.CN1));
+          case -1:
+            // 1/(E^(I*b)*b)
+            return F.Power(F.Times(F.Exp(F.Times(F.CI, b)), b), F.CN1);
+          case 2:
+            // ((-1)*I*(-3+(-3)*I*b+b^2))/(E^(I*b)*b^3)
+            return F.Times(F.CN1, F.CI, F.Plus(F.CN3, F.Times(F.CN3, F.CI, b), F.Sqr(b)),
+                F.Power(F.Times(F.Exp(F.Times(F.CI, b)), F.Power(b, F.C3)), F.CN1));
+          case 3:
+            // (15*I-15*b+(-6)*I*b^2+b^3)/(E^(I*b)*b^4)
+            return F.Times(
+                F.Plus(F.Times(F.ZZ(15L), F.CI), F.Times(F.ZZ(-15L), b),
+                    F.Times(F.CN6, F.CI, F.Sqr(b)), F.Power(b, F.C3)),
+                F.Power(F.Times(F.Exp(F.Times(F.CI, b)), F.Power(b, F.C4)), F.CN1));
         }
         // SphericalHankelH2(a_,b_):=(Sqrt(Pi/2)*BesselJ(1/2*(1+2*a),b))/Sqrt(b)+(-I*Sqrt(Pi/2)*BesselY(1/2*(1+2*a),b))/Sqrt(b)
         return F.Plus(
@@ -1294,7 +1389,18 @@ public class BesselFunctions {
    *
    * <h3>Examples</h3>
    */
-  private static final class SphericalBesselY extends AbstractFunctionEvaluator {
+  private static final class SphericalBesselY extends AbstractFunctionEvaluator
+      implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
+      IExpr z = ast.arg2();
+      // (Sqrt(Pi/2)*BesselY(1/2*(1+2*n),z))/Sqrt(z)
+      return F.Times(F.Sqrt(F.CPiHalf), F.Power(z, F.CN1D2),
+          F.BesselY(F.Times(F.C1D2, F.Plus(F.C1, F.Times(F.C2, n))), z));
+
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1378,14 +1484,13 @@ public class BesselFunctions {
             IExpr npos = F.ZZ(-ni);
             // -StruveH(n,z)+(-1)^(npos+1)/Pi*Sum(((z/2)^(n+2*k+1)*Gamma(-1/2-k+npos))/Gamma(k+3/2),{k,0,Ceiling(1/2*(-3+npos))})
             int maxK = IntMath.divide(-ni - 3, 2, RoundingMode.CEILING);
-            IExpr sum = F.sum(k -> F.Times(
-                F.Times(F.Power(F.Times(F.C1D2, z), F.Plus(n, F.Times(F.C2, k), F.C1)),
+            IExpr sum = F.sum(
+                k -> F.Times(F.Times(F.Power(F.Times(F.C1D2, z), F.Plus(n, F.Times(F.C2, k), F.C1)),
                     F.Power(F.Gamma(F.Plus(k, F.QQ(3L, 2L))), F.CN1),
                     F.Gamma(F.Plus(F.CN1D2, F.Negate(k), npos)))),
                 0, maxK);
             return F.Plus(F.Negate(F.StruveH(n, z)),
-                F.Times(F.Power(F.CN1, F.Plus(npos, F.C1)), F.Power(F.Pi, F.CN1),
-                    sum));
+                F.Times(F.Power(F.CN1, F.Plus(npos, F.C1)), F.Power(F.Pi, F.CN1), sum));
           }
         }
 

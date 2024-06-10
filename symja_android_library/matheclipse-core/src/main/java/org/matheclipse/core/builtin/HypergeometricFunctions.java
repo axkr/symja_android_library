@@ -190,35 +190,7 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class CoshIntegral extends AbstractFunctionEvaluator { // implements INumeric,
-                                                                        // DoubleUnaryOperator {
-
-    // @Override
-    // public double applyAsDouble(double z) {
-    // if (F.isZero(z)) {
-    // return Double.NEGATIVE_INFINITY;
-    // }
-    // // 1/4*(2*(ExpIntegralEi(-z)+ExpIntegralEi(z))+Log(-1/z)+Log(1/z)-Log(-z)+3*Log(z))
-    // return 0.25 * (2.0 * (ExpIntegralEi.CONST.applyAsDouble(-z) +
-    // ExpIntegralEi.CONST.applyAsDouble(z))
-    // + Math.log(-1 / z) + Math.log(1 / z) - Math.log(-z) + 3 * Math.log(z));
-    // }
-    //
-    // @Override
-    // public IExpr e1DblArg(final double arg1) {
-    // if (F.isZero(arg1)) {
-    // return F.CNInfinity;
-    // }
-    // return F.num(applyAsDouble(arg1));
-    // }
-    //
-    // @Override
-    // public double evalReal(final double[] stack, final int top, final int size) {
-    // if (size != 1) {
-    // throw new UnsupportedOperationException();
-    // }
-    // return applyAsDouble(stack[top]);
-    // }
+  private static class CoshIntegral extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -585,7 +557,19 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static final class GegenbauerC extends AbstractFunctionEvaluator {
+  private static final class GegenbauerC extends AbstractFunctionEvaluator
+      implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
+      if (ast.argSize() == 2) {
+        IExpr z = ast.arg2();
+        // (2*Cos(n*ArcCos(z)))/n
+        return F.Times(F.C2, F.Power(n, F.CN1), F.Cos(F.Times(n, F.ArcCos(z))));
+      }
+      return F.NIL;
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {

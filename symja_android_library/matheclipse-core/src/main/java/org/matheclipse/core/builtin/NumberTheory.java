@@ -311,8 +311,7 @@ public final class NumberTheory {
         if (n.isZero()) {
           return F.C1;
         }
-        if ((engine.isArbitraryMode() || engine.isDoubleMode()) && n.isPositive()
-            && x.isNumber()) {
+        if ((engine.isArbitraryMode() || engine.isDoubleMode()) && n.isPositive() && x.isNumber()) {
           INumber z = (INumber) x;
           long ln = n.toLongDefault();
           if (ln >= 0) {
@@ -664,15 +663,24 @@ public final class NumberTheory {
    * 14
    * </pre>
    */
-  private static class CatalanNumber extends AbstractTrigArg1 {
+  private static class CatalanNumber extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
-    public IExpr evaluateArg1(final IExpr n, EvalEngine engine) {
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
+      // (2^(2*n)*Gamma(1/2+n))/(Sqrt(Pi)*Gamma(2+n))
+      return F.Times(F.Power(F.C2, F.Times(F.C2, n)), F.Gamma(F.Plus(n, F.C1D2)),
+          F.Power(F.Times(F.Sqrt(S.Pi), F.Gamma(F.Plus(n, F.C2))), F.CN1));
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
       if (n.isInteger()) {
         return catalanNumber((IInteger) n);
       } else if (n.isFraction()) {
         if (((IFraction) n).denominator().equals(F.C2)) {
-          return functionExpand(n);
+          return functionExpand(ast, engine);
         }
       }
 
@@ -684,22 +692,20 @@ public final class NumberTheory {
       IExpr arg1 = ast.arg1();
       try {
         if (arg1.isInexactNumber()) {
-          return functionExpand(arg1);
+          return functionExpand(ast, engine);
         }
       } catch (LimitException le) {
         throw le;
       } catch (RuntimeException rex) {
         return Errors.printMessage(S.CatalanNumber, rex, engine);
       }
-      return evaluateArg1(arg1, engine);
+      return F.NIL;
     }
 
-    private static IExpr functionExpand(final IExpr n) {
-      // (2^(2*n)*Gamma(1/2+n))/(Sqrt(Pi)*Gamma(2+n))
-      return F.Times(F.Power(F.C2, F.Times(F.C2, n)), F.Gamma(F.Plus(n, F.C1D2)),
-          F.Power(F.Times(F.Sqrt(S.Pi), F.Gamma(F.Plus(n, F.C2))), F.CN1));
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
-
 
     @Override
     public int status() {
@@ -2277,7 +2283,14 @@ public final class NumberTheory {
    * "Not(Factorial(a))"
    * </pre>
    */
-  private static class Factorial extends AbstractTrigArg1 {
+  private static class Factorial extends AbstractTrigArg1 implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      IExpr z = ast.arg1();
+      // Gamma(1+z)
+      return F.Gamma(F.Plus(F.C1, z));
+    }
 
     @Override
     public IExpr e1ComplexArg(Complex c) {
@@ -2613,7 +2626,17 @@ public final class NumberTheory {
    * 3
    * </pre>
    */
-  private static class Factorial2 extends AbstractEvaluator {
+  private static class Factorial2 extends AbstractEvaluator implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
+      // 2^(n/2+1/4*(1-Cos(n*Pi)))*Pi^(1/4*(-1+Cos(n*Pi)))*Gamma(1+n/2)
+      IExpr v2 = F.Cos(F.Times(n, F.Pi));
+      IExpr v1 = F.Times(F.C1D2, n);
+      return F.Times(F.Power(F.C2, F.Plus(v1, F.Times(F.C1D4, F.Subtract(F.C1, v2)))),
+          F.Power(F.Pi, F.Times(F.C1D4, F.Plus(F.CN1, v2))), F.Gamma(F.Plus(F.C1, v1)));
+    }
 
     public static IInteger factorial2(final IInteger iArg) {
       IInteger result = F.C1;
@@ -2683,10 +2706,7 @@ public final class NumberTheory {
         return S.Indeterminate;
       }
       if (engine.isNumericMode() && arg1.isNumber()) {
-        IExpr temp = S.FunctionExpand.ofNIL(engine, F.Unevaluated(F.Factorial2(arg1)));
-        if (temp.isPresent()) {
-          return temp;
-        }
+        return functionExpand(ast, engine);
       }
       return F.NIL;
     }
@@ -2835,7 +2855,29 @@ public final class NumberTheory {
    * 280571172992510140037611932413038677189525
    * </pre>
    */
-  private static class Fibonacci extends AbstractFunctionEvaluator {
+  private static class Fibonacci extends AbstractFunctionEvaluator implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
+      if (n.isPlus() && n.first().isInteger()) {
+        IASTAppendable[] filter = ((IAST) n).filter(x -> x.isInteger());
+        if (filter[0].argSize() > 0) {
+          IExpr m = filter[0].oneIdentity0();
+          n = filter[1].oneIdentity0();
+          if (n.isIntegerResult()) {
+            // Fibonacci(m_Integer+n_) := ((1/2)*Fibonacci(m)*LucasL(n) +
+            // (1/2)*Fibonacci(n)*LucasL(m)) /; Element(n, Integers)
+            return F.Plus(F.Times(F.C1D2, F.Fibonacci(m), F.LucasL(n)),
+                F.Times(F.C1D2, F.Fibonacci(n), F.LucasL(m)));
+          }
+        }
+      }
+      // ((1/2*(1+Sqrt(5)))^n-(2/(1+Sqrt(5)))^n*Cos(n*Pi))/Sqrt(5)
+      IExpr v1 = F.Plus(F.C1, F.CSqrt5);
+      return F.Times(F.C1DSqrt5, F.Plus(F.Times(F.Power(F.C1D2, n), F.Power(v1, n)), F.Times(F.CN1,
+          F.Power(F.C2, n), F.Power(F.Power(v1, F.CN1), n), F.Cos(F.Times(n, F.Pi)))));
+    }
 
     /**
      * Fibonacci sequence. Algorithm in <code>O(log(n))</code> time.F See:
@@ -3516,7 +3558,23 @@ public final class NumberTheory {
    * Lucas number. See: <a href= "https://en.wikipedia.org/wiki/Lucas_number">Wikipedia: Lucas
    * number</a>
    */
-  private static class LucasL extends AbstractFunctionEvaluator {
+  private static class LucasL extends AbstractFunctionEvaluator implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
+      if (ast.isAST1()) {
+        // (1/2*(1+Sqrt(5)))^n+(2/(1+Sqrt(5)))^n*Cos(n*Pi)
+        IExpr v1 = F.Plus(F.C1, F.CSqrt5);
+        return F.Plus(F.Times(F.Power(F.C1D2, n), F.Power(v1, n)),
+            F.Times(F.Power(F.C2, n), F.Power(F.Power(v1, F.CN1), n), F.Cos(F.Times(n, F.Pi))));
+      }
+      IExpr z = ast.arg2();
+      // (z/2+Sqrt(1+z^2/4))^n+Cos(n*Pi)/(z/2+Sqrt(1+z^2/4))^n
+      IExpr v1 =
+          F.Power(F.Plus(F.Times(F.C1D2, z), F.Sqrt(F.Plus(F.C1, F.Times(F.C1D4, F.Sqr(z))))), n);
+      return F.Plus(v1, F.Times(F.Power(v1, F.CN1), F.Cos(F.Times(n, F.Pi))));
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -5847,7 +5905,14 @@ public final class NumberTheory {
    * 176214841
    * </pre>
    */
-  private static class Subfactorial extends AbstractFunctionEvaluator {
+  private static class Subfactorial extends AbstractFunctionEvaluator implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
+      // Gamma(1+n,-1)/E
+      return F.Times(F.Exp(F.CN1), F.Gamma(F.Plus(F.C1, n), F.CN1));
+    }
 
     /**
      * Iterative subfactorial algorithm based on the recurrence: <code>
@@ -5905,13 +5970,8 @@ public final class NumberTheory {
       if (arg1.isZero()) {
         return F.C1;
       }
-      if (arg1.isInexactNumber()) {
-        // Gamma(1+arg1, -1) / E
-        return F.Times(F.Gamma(F.Plus(F.C1, arg1), F.CN1), F.Power(S.E, F.CN1));
-      }
       if (engine.isNumericMode() && arg1.isNumericFunction()) {
-        // Gamma(1+arg1, -1) / E
-        return F.Times(F.Gamma(F.Plus(F.C1, arg1), F.CN1), F.Power(S.E, F.CN1));
+        return functionExpand(ast, engine);
       }
       return F.NIL;
     }

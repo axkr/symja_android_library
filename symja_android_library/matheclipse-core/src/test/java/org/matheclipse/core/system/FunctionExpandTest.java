@@ -9,6 +9,35 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testFunctionExpand() {
+    check("FunctionExpand(AngerJ(a,b))", //
+        "(2*Cos(1/2*a*Pi)*HypergeometricPFQ({1},{1-a/2,1+a/2},-b^2/4)*Sin(1/2*a*Pi))/(a*Pi)+(-\n"//
+            + "2*b*Cos(1/2*a*Pi)*HypergeometricPFQ({1},{3/2-a/2,3/2+a/2},-b^2/4)*Sin(1/2*a*Pi))/((-\n"//
+            + "1+a)*(1+a)*Pi)");
+    check("FunctionExpand(AngerJ(a,b,c))", //
+        "(Cos(1/2*a*Pi)*Gamma(1+b)*HypergeometricPFQ({1/2+b/2,1+b/2},{1/2,1-a/2+b/2,1+a/2+b/\n"
+            + "2},-b^2/4))/(Gamma(1-a/2+b/2)*Gamma(1+a/2+b/2))+(b*Gamma(2+b)*HypergeometricPFQ({\n"
+            + "1+b/2,3/2+b/2},{3/2,3/2-a/2+b/2,3/2+a/2+b/2},-b^2/4)*Sin(1/2*a*Pi))/(2*Gamma(3/2-a/\n"
+            + "2+b/2)*Gamma(3/2+a/2+b/2))");
+    check("FunctionExpand(GegenbauerC(n,z))", //
+        "(2*Cos(n*ArcCos(z)))/n");
+    check("FunctionExpand(Fibonacci(n + 3), Element(n, Integers))", //
+        "2*Fibonacci(n)+LucasL(n)");
+    check("FunctionExpand(LucasL(n))", //
+        "(1/2)^n*(1+Sqrt(5))^n+2^n*((1/(1+Sqrt(5))))^n*Cos(n*Pi)");
+    check("FunctionExpand(LucasL(n,z))", //
+        "(z/2+Sqrt(1+z^2/4))^n+Cos(n*Pi)/(z/2+Sqrt(1+z^2/4))^n");
+    check("FunctionExpand(CatalanNumber(n))", //
+        "(2^(2*n)*Gamma(1/2+n))/(Sqrt(Pi)*Gamma(2+n))");
+    check("FunctionExpand(Subfactorial(n))", //
+        "Gamma(1+n,-1)/E");
+    check("FunctionExpand(SphericalBesselJ(2,z))", //
+        "(-3*Cos(z))/z^2+((3-z^2)*Sin(z))/z^3");
+    check("FunctionExpand(SphericalBesselY(a,b))", //
+        "(Sqrt(Pi/2)*BesselY(1/2*(1+2*a),b))/Sqrt(b)");
+    check("FunctionExpand(HankelH1(n,z))", //
+        "BesselJ(n,z)+I*BesselY(n,z)");
+    check("FunctionExpand(HankelH2(n,z))", //
+        "BesselJ(n,z)-I*BesselY(n,z)");
     check("FunctionExpand(Factorial2(n))", //
         "2^(n/2+1/4*(1-Cos(n*Pi)))*Pi^(1/4*(-1+Cos(n*Pi)))*Gamma(1+n/2)");
     check("FunctionExpand(Pochhammer(a, n))", //
@@ -35,9 +64,6 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "ArcCot(x)");
     check("FunctionExpand(ArcSin(1/x))", //
         "ArcCsc(x)");
-    check("FunctionExpand(SphericalHarmonicY(3,1,t,p)) ", //
-        "(2*Sqrt(7/3)*E^(I*p)*(3/16*Sqrt(Pi)*Cos(t)-15/16*Sqrt(Pi)*Cos(t)^3)*Sec(t)*Sqrt(Sin(t)^\n"
-            + "2))/Pi");
     check("FunctionExpand(SphericalHarmonicY(l,m,t,p))", //
         "(E^(I*m*p)*Sqrt(1+2*l)*Sqrt(Gamma(1+l-m))*Hypergeometric2F1(-l,1+l,1-m,Sin(t/2)^\n"
             + "2)*Sin(t)^m)/(2*Sqrt(Pi)*(1-Cos(t))^m*Gamma(1-m)*Sqrt(Gamma(1+l+m)))");
@@ -198,8 +224,6 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
     check("FunctionExpand(Log(10*E))", //
         "1+Log(10)");
 
-    check("FunctionExpand(Fibonacci(n + 3), Element(n, Integers))", //
-        "2*Fibonacci(n)+LucasL(n)");
     check("FunctionExpand(CatalanNumber(x))", //
         "(2^(2*x)*Gamma(1/2+x))/(Sqrt(Pi)*Gamma(2+x))");
     check("FunctionExpand(ChebyshevT(n, x))", //
@@ -242,7 +266,6 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
         "(2*(1-(1-z)^b*(1+b*z+1/2*b*(1+b)*z^2)))/(b*(1+b)*(2+b))");
     check("FunctionExpand(Beta(z1,z2,a,b))", //
         "-Beta(z1,a,b)+Beta(z2,a,b)");
-
     check("FunctionExpand(BetaRegularized(z, a, b))", //
         "(Beta(z,a,b)*Gamma(a+b))/(Gamma(a)*Gamma(b))");
     check("FunctionExpand(BetaRegularized(z,a,b))", //
@@ -329,12 +352,16 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testFunctionExpandSphericalHankelH1() {
+    check("FunctionExpand(SphericalHankelH1(3,b))", //
+        "((-I*15-15*b+I*6*b^2+b^3)*E^(I*b))/b^4");
     check("FunctionExpand(SphericalHankelH1(a,b))", //
         "(Sqrt(Pi/2)*BesselJ(1/2*(1+2*a),b))/Sqrt(b)+(I*Sqrt(Pi/2)*BesselY(1/2*(1+2*a),b))/Sqrt(b)");
   }
 
   @Test
   public void testFunctionExpandSphericalHankelH2() {
+    check("FunctionExpand(SphericalHankelH2(3,b))", //
+        "(I*15-15*b-I*6*b^2+b^3)/(b^4*E^(I*b))");
     check("FunctionExpand(SphericalHankelH2(a,b))", //
         "(Sqrt(Pi/2)*BesselJ(1/2*(1+2*a),b))/Sqrt(b)+(-I*Sqrt(Pi/2)*BesselY(1/2*(1+2*a),b))/Sqrt(b)");
   }

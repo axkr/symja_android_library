@@ -14,14 +14,14 @@
  f2(ArcCoth,x_,n_,m_) := (x^(1+n)*((2+n)*ArcCoth(m*x)-m*x*Hypergeometric2F1(1,1+n/2,2+n/2,m^2*x^2)))/((1+n)*(2+n))
    /; n!=(-1)&&n!=(-2),
  
- f2(ArcSin,x_,n_,m_) := (x^(1+n)*((2+n)*ArcSin[m*x]-m*x*Hypergeometric2F1[1/2,1+n/2,2+n/2,m^2*x^2]))/((1+n)*(2+n))
+ f2(ArcSin,x_,n_,m_) := (x^(1+n)*((2+n)*ArcSin(m*x)-m*x*Hypergeometric2F1(1/2,1+n/2,2+n/2,m^2*x^2)))/((1+n)*(2+n))
    /; n!=(-1)&&n!=(-2),
  f3(ArcSin,x_,n_,m_,p_) := (x^(1+n)*((1+n+p)*ArcSin(m*x^p)-m*p*x^p*Hypergeometric2F1(1/2,(1+n+p)/(2*p),(1+n+3*p)/(2*p),m^2*x^(2*p))))/((1+n)*(1+n+p)) 
     /; n!=(-1)&&(n+p)!=(-1),
     
  f2(ArcSinh,x_,n_,m_) := (x^(1+n)*((2+n)*ArcSinh(m*x)-m*x*Hypergeometric2F1(1/2,1+n/2,2+n/2,-m^2*x^2)))/((1+n)*(2+n))
    /; n!=(-1)&&n!=(-2),
- f3(ArcSinh,x_,n_,m_,p_) := (x^(1 + n)*((1 + n + p)*ArcSinh[m*x^p]-m*p*x^p*Hypergeometric2F1[1/2, (1 + n + p)/(2*p), (1 + n + 3*p)/(2*p),(-m^2)*x^(2*p)]))/((1 + n)*(1 + n + p)) 
+ f3(ArcSinh,x_,n_,m_,p_) := (x^(1 + n)*((1 + n + p)*ArcSinh(m*x^p)-m*p*x^p*Hypergeometric2F1(1/2, (1 + n + p)/(2*p), (1 + n + 3*p)/(2*p),(-m^2)*x^(2*p))))/((1 + n)*(1 + n + p)) 
      /; n!=(-1)&&(n+p)!=(-1),
      
  f2(ArcTan,x_,n_,m_) := x^(1+n)/((1+n)*(2+n))*((2+n)*ArcTan(m*x)-m*x*Hypergeometric2F1(1,1+n/2,2+n/2,-m^2*x^2))   

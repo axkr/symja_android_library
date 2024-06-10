@@ -2,9 +2,6 @@
  Abs(x_^n_Integer) := (Im(x)^2+Re(x)^2)^(n/2)
    /; EvenQ(n),
    
- AngerJ(a_,b_) := (2*Cos(1/2*a*Pi)*HypergeometricPFQ({1},{1-a/2,1+a/2},(-1)*1/4*b^2)*Sin(1/2*a*Pi))/(a*Pi)+(-2*b*Cos(1/2*a*Pi)*HypergeometricPFQ({1},{3/2-a/2,3/2+a/2},(-1)*1/4*b^2)*Sin(1/2*a*Pi))/((-1+a)*(1+a)*Pi),
- AngerJ(a_,b_,c_) := (Cos(1/2*a*Pi)*Gamma(1+b)*HypergeometricPFQ({1/2+b/2,1+b/2},{1/2,1-a/2+b/2,1+a/2+b/2},(-1)*1/4*c^2))/(Gamma(1-a/2+b/2)*Gamma(1+a/2+b/2))+(c*Gamma(2+b)*HypergeometricPFQ({1+b/2,3/2+b/2},{3/2,3/2-a/2+b/2,3/2+a/2+b/2},(-1)*1/4*c^2)*Sin(1/2*a*Pi))/(2*Gamma(3/2-a/2+b/2)*Gamma(3/2+a/2+b/2)), 
- 
  ArcCos(x_^(-1)) := ArcSec(x),
  ArcSec(x_^(-1)) := ArcCos(x),
  ArcCot(Sqrt(x_^2)) := (Sqrt(x^2)*ArcCot(x))/x,
@@ -15,15 +12,6 @@
  ArcCsc(x_^(-1)) := ArcSin(x),
  ArcSin(Sqrt(x_^2)) := (Sqrt(x^2)*ArcSin(x))/x,
  ArcSin(x_^(-1)) := ArcCsc(x),
- 
- Beta(y_, z_, a_, b_) := -Beta(y, a, b)+Beta(z, a, b), 
-  
- BetaRegularized(z_, a_, b_) := (Beta(z, a, b)*Gamma(a + b))/(Gamma(a)*Gamma(b)),
- BetaRegularized(y_, z_, a_, b_) := ((-Beta(y, a, b) + Beta(z, a, b))*Gamma(a + b))/(Gamma(a)*Gamma(b)),
-  
- CatalanNumber(n_) := (2^(2*n)*Gamma(1/2+n))/(Sqrt(Pi)*Gamma(2+n)),
- ChebyshevT(n_,x_) :=  Cos(n*ArcCos(x)),
- ChebyshevU(n_,x_) :=  Sin((1 + n)*ArcCos(x))/(Sqrt(1 - x)*Sqrt(1 + x)),
  
  Cos(n_Integer*ArcSin(z_)) := ChebyshevT(n, Sqrt(1-z^2))
   /; n>0,
@@ -39,8 +27,6 @@
 
  ExpIntegralEi(Log(z_)) := LogIntegral(z),
  
- Factorial(z_) := Gamma(1+z),  
- Factorial2(n_) := 2^(n/2 + (1/4)*(1 - Cos(n*Pi)))*Pi^((1/4)*(-1 + Cos(n*Pi)))*Gamma(1 + n/2),
  FactorialPower(x_,n_Integer,-1) := Product(x+k,{k,0,n-1})
    /; n>0,  
  FactorialPower(x_,n_,-1) := (x^n*Gamma(1-x))/((-x)^n*Gamma(1-n-x)),
@@ -49,11 +35,6 @@
  FactorialPower(x_,n_) := Gamma(1+x)/Gamma(1-n+x),
  FactorialPower(x_,n_,h_) := (x^n*Gamma(1+x/h))/((x/h)^n*Gamma(1-n+x/h))
    /; UnsameQ(h,0),
- 
- Fibonacci(m_Integer+n_) := ((1/2)*Fibonacci(m)*LucasL(n) + (1/2)*Fibonacci(n)*LucasL(m)) 
-  /; Element(n, Integers),
- Fibonacci(n_+a_) := ((2/(1 + Sqrt(5)))^(-a-n)-((1/2)*(1+Sqrt(5)))^(-a-n)*Cos((a+n)*Pi))/Sqrt(5)
-  /; Element(n, Integers),
   
  Gamma(a_.Integer+z_)*Gamma(b_.Integer+z_)^(-1)*x_. := If(b<a, x*Product((z+i), {i,b,a-1}), x*Product((z+i), {i,a,b-1})^(-1)),
  Gamma(-1, z_) := 1/(E^z*z) + ExpIntegralEi(-z) + (1/2)*(Log(-(1/z)) - Log(-z)) + Log(z),
@@ -64,13 +45,8 @@
  GammaRegularized(a_, z_) := Gamma(a,z) / Gamma(a),
  GammaRegularized(a_, y_, z_) :=  Gamma(a,y)/Gamma(a)-Gamma(a,z)/Gamma(a),
  
- GegenbauerC(n_, x_) := (2*Cos(n*ArcCos(x)))/n,
- 
  Gudermannian(z_) := Piecewise({{(1/2)*(Pi - 4*ArcCot(E^z)), Re(z)>0||(Re(z)==0&&Im(z)>=0 )}}, (1/2)*(-Pi + 4*ArcTan(E^z))), 
  
- HankelH1(n_, z_) := BesselJ(n,z) + I*BesselY(n,z),
- HankelH2(n_, z_) := BesselJ(n,z) - I*BesselY(n,z),
-  
  HarmonicNumber(n_) := EulerGamma + PolyGamma(0, 1 + n),
  HarmonicNumber(z_, n_) := -HurwitzZeta(n, 1 + z) + Zeta(n),
  Haversine(z_) := (1/2)*(1-Cos(z)),
@@ -130,7 +106,7 @@
  
  PolyGamma(-2,1/2) = 1/24*5*Log(2)+1/2*3*Log(Glaisher)+Log(Pi)/4,
  PolyGamma(-2,1/4) = Catalan/(4*Pi)+1/8*9*Log(Glaisher)+1/8*(Log(2)+Log(Pi)),
- PolyGamma(-2,1) = (1/2)*(Log[2] + Log[Pi]),
+ PolyGamma(-2,1) = (1/2)*(Log(2) + Log(Pi)),
  PolyGamma(-2,2) = -1+Log(2)+Log(Pi),
  PolyGamma(-3,1/2) = Log(Glaisher)/2+1/16*(Log(2)+Log(Pi))+(7*Zeta(3))/(32*Pi^2),
  PolyGamma(-3,1) = Log(Glaisher)+1/4*(Log(2)+Log(Pi)),
@@ -161,16 +137,11 @@
   /; z!=0,
  SinIntegral(Sqrt(z_^n_)) := (Sqrt(z^n)*SinIntegral(z^(n/2)))/z^(n/2), 
  SinhIntegral(Sqrt(z_^n_)) := (Sqrt(z^n)*SinhIntegral(z^(n/2)))/z^(n/2),
- 
- SphericalBesselJ(a_,b_) := (Sqrt(Pi/2)*BesselJ((1/2)*(1 + 2*a), b))/Sqrt(b),
- SphericalBesselY(a_,b_) := (Sqrt(Pi/2)*BesselY((1/2)*(1 + 2*a), b))/Sqrt(b),
- 
+  
  SphericalHarmonicY(l_, 0, t_,p_) := (Sqrt(1+2*l)*LegendreP(l,Cos(t)))/(2*Sqrt(Pi)),
  SphericalHarmonicY(l_,1,t_,p_) := (-E^(I*p)*l*(1+l)*Sqrt(1+2*l)*Sqrt(Gamma(l))*Hypergeometric2F1(1-l,2+l,2,Sin(t/2)^2)*Sin(t))/(4*Sqrt(Pi)*Sqrt(Gamma(2+l))),
  SphericalHarmonicY(l_,m_,t_,p_) := (E^(I*m*p)*Sqrt(1+2*l)*Sqrt(Gamma(1+l-m))*Hypergeometric2F1(-l,1+l,1-m,Sin(t/2)^2)*Sin(t)^m)/((1-Cos(t))^m*2*Sqrt(Pi)*Gamma(1-m)*Sqrt(Gamma(1+l+m))),
- 
- Subfactorial(n_) :=  Gamma(1+n, -1) / E,
-  
+
  WeberE(a_,b_) := (2*b*Cos((a*Pi)/2)^2*HypergeometricPFQ({1},{3/2-a/2,3/2+a/2},-(b^2/4)))/((-1+a)*(1+a)*Pi)+(2*HypergeometricPFQ({1},{1-a/2,1+a/2},-(b^2/4))*Sin((a*Pi)/2)^2)/(a*Pi),
  WeberE(a_,b_,c_) := -((c*Cos((a*Pi)/2)*Gamma(2+b)*HypergeometricPFQ({1+b/2,3/2+b/2},{3/2,3/2-a/2+b/2,3/2+a/2+b/2},-(c^2/4)))/(2*Gamma(3/2-a/2+b/2)*Gamma(3/2+a/2+b/2)))+(Gamma(1+b)*HypergeometricPFQ({1/2+b/2,1+b/2},{1/2,1-a/2+b/2,1+a/2+b/2},-(c^2/4))*Sin((a*Pi)/2))/(Gamma(1-a/2+b/2)*Gamma(1+a/2+b/2)), 
  

@@ -51,6 +51,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -101,6 +102,60 @@ public class SpecialFunctions {
   private static class Beta extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      int argSize = ast.argSize();
+      switch (argSize) {
+        case 4: {
+          // generalized incomplete Beta(z1, z2, a, b)
+          IExpr z1 = ast.arg1();
+          IExpr z2 = ast.arg2();
+          IExpr a = ast.arg3();
+          IExpr b = ast.arg4();
+          // -Beta(z1,a,b)+Beta(z2,a,b)
+          return F.Plus(F.Negate(functionExpandOriginal(F.Beta(z1, a, b), engine)),
+              functionExpandOriginal(F.Beta(z2, a, b), engine));
+        }
+        case 3: {
+
+          IExpr z = ast.arg1();
+          IExpr a = ast.arg2();
+          IExpr b = ast.arg3();
+          if (a.isInteger() && a.isPositive()) {
+            // https://functions.wolfram.com/GammaBetaErf/Beta3/03/01/02/0003/
+            IInteger n = (IInteger) a;
+            int ni = a.toIntDefault();
+            // Beta(n,b)*(1-(1-z)^b*Sum((z^k*Pochhammer(b,k))/k!,{k,0,-1+n}))
+            IExpr sum = F.sum(
+                k -> F.Times(F.Power(z, k), F.Power(F.Factorial(k), F.CN1), F.Pochhammer(b, k)), 0,
+                ni - 1);
+            return F.Times(functionExpandOriginal(F.Beta(n, b), engine),
+                F.Plus(F.C1, F.Times(F.CN1, F.Power(F.Subtract(F.C1, z), b), sum)));
+          }
+        }
+          break;
+
+        case 2: {
+          IExpr a = ast.arg1();
+          IExpr b = ast.arg2();
+
+          if (a.isInteger() && a.isPositive()) {
+            IInteger n = (IInteger) a;
+            int ni = n.toIntDefault();
+            IASTAppendable timsAST = F.TimesAlloc(ni + 1);
+            for (int i = 0; i < ni; i++) {
+              timsAST.append(F.Plus(F.ZZ(i), b));
+            }
+            return F.Divide(F.Factorial(F.Plus(F.CN1, n)), timsAST);
+          }
+          // (Gamma(a)*Gamma(b))/Gamma(a+b)
+          return F.Times(F.Gamma(a), F.Gamma(b), F.Power(F.Gamma(F.Plus(a, b)), F.CN1));
+        }
+      }
+      return F.NIL;
+
+    }
+
+    @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.argSize() == 4) {
         // generalized incomplete Beta(z1, z2, a, b)
@@ -118,11 +173,13 @@ public class SpecialFunctions {
         IExpr b = ast.arg3();
         return incompleteBeta(z, a, b);
       }
-
-      // Beta(a,b)
-      IExpr a = ast.arg1();
-      IExpr b = ast.arg2();
-      return beta(a, b);
+      if (ast.isAST2()) {
+        // Beta(a,b)
+        IExpr a = ast.arg1();
+        IExpr b = ast.arg2();
+        return beta(a, b);
+      }
+      return F.NIL;
     }
 
     /**
@@ -335,7 +392,36 @@ public class SpecialFunctions {
     }
   }
 
-  private static class BetaRegularized extends AbstractFunctionEvaluator {
+  private static class BetaRegularized extends AbstractFunctionEvaluator
+      implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      int argSize = ast.argSize();
+      switch (argSize) {
+        case 4: {
+          // generalized incomplete Beta(z1, z2, a, b)
+          IExpr z1 = ast.arg1();
+          IExpr z2 = ast.arg2();
+          IExpr a = ast.arg3();
+          IExpr b = ast.arg4();
+          // ((-Beta(z1,a,b)+Beta(z2,a,b))*Gamma(a+b))/(Gamma(a)*Gamma(b))
+          return F.Times(F.Plus(F.Negate(F.Beta(z1, a, b)), F.Beta(z2, a, b)),
+              F.Power(F.Times(F.Gamma(a), F.Gamma(b)), F.CN1), F.Gamma(F.Plus(a, b)));
+        }
+        case 3: {
+          IExpr z = ast.arg1();
+          IExpr a = ast.arg2();
+          IExpr b = ast.arg3();
+          // (Beta(z,a,b)*Gamma(a+b))/(Gamma(a)*Gamma(b))
+          return F.Times(F.Beta(z, a, b), F.Power(F.Times(F.Gamma(a), F.Gamma(b)), F.CN1),
+              F.Gamma(F.Plus(a, b)));
+        }
+
+      }
+      return F.NIL;
+
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -348,7 +434,7 @@ public class SpecialFunctions {
       return F.NIL;
     }
 
-    private static IExpr betaRegularized3(final IAST ast, EvalEngine engine) {
+    private IExpr betaRegularized3(final IAST ast, EvalEngine engine) {
 
       try {
         IExpr z = ast.arg1();
@@ -405,9 +491,7 @@ public class SpecialFunctions {
             }
           }
           if (z.isNumber() && a.isNumber() && b.isNumber()) {
-            // (Beta(z,a,b)*Gamma(a+b))/(Gamma(a)*Gamma(b))
-            return F.Times(F.Beta(z, a, b), F.Power(F.Times(F.Gamma(a), F.Gamma(b)), F.CN1),
-                F.Gamma(F.Plus(a, b)));
+            return functionExpand(ast, engine);
           }
         }
         if (bi != Integer.MIN_VALUE) {
@@ -435,7 +519,7 @@ public class SpecialFunctions {
      * @param engine
      * @return
      */
-    private static IExpr betaRegularized4(final IAST ast, EvalEngine engine) {
+    private IExpr betaRegularized4(final IAST ast, EvalEngine engine) {
       try {
         IExpr z1 = ast.arg1();
         IExpr z2 = ast.arg2();
@@ -450,15 +534,18 @@ public class SpecialFunctions {
         }
         if (engine.isNumericMode()) {
           if (z1.isNumber() && z2.isNumber() && a.isNumber() && b.isNumber()) {
-            // ((-Beta(z1,a,b)+Beta(z2,a,b))*Gamma(a+b))/(Gamma(a)*Gamma(b))
-            return F.Times(F.Plus(F.Negate(F.Beta(z1, a, b)), F.Beta(z2, a, b)),
-                F.Power(F.Times(F.Gamma(a), F.Gamma(b)), F.CN1), F.Gamma(F.Plus(a, b)));
+            return functionExpand(ast, engine);
           }
         }
       } catch (RuntimeException rex) {
         Errors.printMessage(S.BetaRegularized, rex, engine);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_4;
     }
 
     @Override
@@ -501,9 +588,7 @@ public class SpecialFunctions {
       if (z.isOne()) {
         return F.CPiQuarter;
       }
-      if (engine.isDoubleMode()) {
-        return functionExpand(ast, engine);
-      } else if (engine.isArbitraryMode()) {
+      if (engine.isNumericMode()) {
         return functionExpand(ast, engine);
       }
       return NIL;
@@ -546,12 +631,7 @@ public class SpecialFunctions {
       if (z.isOne()) {
         return F.Log(F.C2);
       }
-      if (engine.isDoubleMode()) {
-        return functionExpand(ast, engine);
-      } else if (engine.isArbitraryMode()) {
-        return functionExpand(ast, engine);
-      }
-      if (z.isInteger()) {
+      if (engine.isNumericMode() || z.isInteger()) {
         return functionExpand(ast, engine);
       }
       return NIL;

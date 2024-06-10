@@ -14,7 +14,6 @@
 
   Gamma(Undefined, y_):=Undefined,
   Gamma(x_, Undefined):=Undefined,
-  Gamma(a_, -1):=E*Subfactorial(a - 1),
   Gamma(a_, Infinity):=0,
   Gamma(1/2, z_?NumericQ):=Sqrt(Pi)*Erfc(Sqrt(z)),
   Gamma(-(1/2), z_?NumericQ):=2/(E^z*Sqrt(z)) - 2*Sqrt(Pi)*Erfc(Sqrt(z)),
