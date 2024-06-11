@@ -354,7 +354,7 @@ public class SeriesFunctions {
           return timesLimit(ast, data, engine);
         } else if (ast.isPower() && !ast.base().isPositive() && !ast.exponent().isPositive()) {
           return powerLimit(ast, data, engine);
-        } else if (ast.isAST(S.Piecewise)) {
+        } else if (ast.isAST(S.Piecewise, 3)) {
           return piecewiseLimit(ast, data, engine);
         } else if (ast.argSize() > 0 && ast.topHead().isNumericFunctionAttribute()) {
           IASTMutable copy = ast.copy();
@@ -791,32 +791,76 @@ public class SeriesFunctions {
       if (limit.isReal()) {
         int[] piecewiseDimension = piecwiseAST.isPiecewise();
         if (piecewiseDimension != null && piecewiseDimension[0] > 0) {
-          IAST matrixNx2 = (IAST) piecwiseAST.first();
+          IAST matrixOfValueConditionPairs = (IAST) piecwiseAST.first();
+          IExpr defaultPiecewiseValue = piecwiseAST.second();
+          IExpr limitFromBelow = F.NIL;
+          IExpr limitFromAbove = F.NIL;
           for (int i = 0; i < piecewiseDimension[0]; i++) {
-            IAST row2 = matrixNx2.getAST(i + 1);
-            IExpr result = row2.first();
-            IExpr comparison = row2.second();
+            IAST row = matrixOfValueConditionPairs.getAST(i + 1);
+            IExpr arg1Result = row.arg1();
+            IExpr arg2Comparison = row.arg2();
 
-            if (data.direction == Direction.FROM_BELOW) {
-              if (comparison.isAST(S.Less, 3) && comparison.first().equals(variable)
-                  && comparison.second().equals(limit)) {
-                comparison = ((IAST) comparison).setAtCopy(0, S.LessEqual);
+            IExpr tempComparison = arg2Comparison;
+            if (data.direction == Direction.FROM_BELOW //
+                || data.direction == Direction.TWO_SIDED) {
+              if (arg2Comparison.isAST(S.Less, 3) && arg2Comparison.first().equals(variable)
+                  && arg2Comparison.second().equals(limit)) {
+                tempComparison = ((IAST) arg2Comparison).setAtCopy(0, S.LessEqual);
               }
-            } else if (data.direction == Direction.FROM_ABOVE) {
-              if (comparison.isAST(S.Greater, 3) && comparison.first().equals(variable)
-                  && comparison.second().equals(limit)) {
-                comparison = ((IAST) comparison).setAtCopy(0, S.GreaterEqual);
+              IExpr temp = engine.evaluate(F.subs(tempComparison, variable, limit));
+              if (temp.isTrue()) {
+                temp = engine.evaluate(F.subs(arg1Result, variable, limit));
+                if (limitFromBelow.isPresent() && !limitFromBelow.equals(temp)) {
+                  return S.Indeterminate;
+                }
+                limitFromBelow = temp;
+              } else if (!temp.isFalse()) {
+                return F.NIL;
               }
             }
-            IExpr temp = engine.evaluate(F.subs(comparison, variable, limit));
-            if (temp.isTrue()) {
-              return engine.evaluate(F.subs(result, variable, limit));
-            } else if (!temp.isFalse()) {
-              return F.NIL;
-            }
 
+            tempComparison = arg2Comparison;
+            if (data.direction == Direction.FROM_ABOVE //
+                || data.direction == Direction.TWO_SIDED) {
+              if (arg2Comparison.isAST(S.Greater, 3) && arg2Comparison.first().equals(variable)
+                  && arg2Comparison.second().equals(limit)) {
+                tempComparison = ((IAST) arg2Comparison).setAtCopy(0, S.GreaterEqual);
+              }
+              IExpr temp = engine.evaluate(F.subs(tempComparison, variable, limit));
+              if (temp.isTrue()) {
+                temp = engine.evaluate(F.subs(arg1Result, variable, limit));
+                if (limitFromAbove.isPresent() && !limitFromAbove.equals(temp)) {
+                  return S.Indeterminate;
+                }
+                limitFromAbove = temp;
+              } else if (!temp.isFalse()) {
+                return F.NIL;
+              }
+
+            }
           }
-          return piecwiseAST.second();
+
+          if (data.direction == Direction.FROM_BELOW) {
+            if (limitFromBelow.isPresent()) {
+              return limitFromBelow;
+            }
+            return engine.evaluate(F.subs(defaultPiecewiseValue, variable, limit));
+          }
+          if (data.direction == Direction.FROM_ABOVE) {
+            if (limitFromAbove.isPresent()) {
+              return limitFromAbove;
+            }
+            return engine.evaluate(F.subs(defaultPiecewiseValue, variable, limit));
+          }
+          if (data.direction == Direction.TWO_SIDED) {
+            if (limitFromBelow.isPresent() && limitFromBelow.equals(limitFromAbove)) {
+              return limitFromBelow;
+            }
+            if (limitFromBelow.isNIL() && limitFromAbove.isNIL()) {
+              return engine.evaluate(F.subs(defaultPiecewiseValue, variable, limit));
+            }
+            return S.Indeterminate;
+          }
         }
       }
       return F.NIL;

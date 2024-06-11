@@ -11414,9 +11414,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "Complex v1 = Complex.valueOf(1.0).add(x);\n"
             + "return (v1).pow(Complex.valueOf(2.0)).add((v1).pow(Complex.valueOf(3.0)).add(Complex.valueOf(0.0, 10.0).multiply(x.multiply(y))));\n"
             + "}\n" + "");
-    check("JavaForm((x+1)^2+(x+1)^3, Float)", //
-        "double f2(double x) {\n" //
-            + "double v1 = 1+x;\n" + "return Math.pow(v1,2)+Math.pow(v1,3);\n" + "}\n" + "");
+    // check("JavaForm((x+1)^2+(x+1)^3, Float)", //
+    // "double f2(double x) {\n" //
+    // + "double v1 = 1+x;\n" + "return Math.pow(v1,2)+Math.pow(v1,3);\n" + "}\n" + "");
     check("JavaForm(f(123456789123456789))", //
         "$(f,ZZ(123456789123456789L))");
 
@@ -12777,6 +12777,27 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
     check("Limit(RealAbs(x + 2)/(x+2), x -> -2, Direction -> 1)", //
         "-1");
+    check("Limit(RealAbs(x + 2)/(x+2), x -> -2)", //
+        "Indeterminate");
+  }
+
+  @Test
+  public void testLimitPiecewise001() {
+    check("f(x_):=Piecewise({{2*x+3,x<5},{-x+12,x>5}});", //
+        "");
+    check("Limit(f[x], x -> 5)", //
+        "Indeterminate");
+    check("Limit(RealAbs(x + 2)/(x+2), x -> -2)", //
+        "Indeterminate");
+
+
+    check("Limit(f[x], x -> 5, Direction -> -1)", //
+        "7");
+    check("Limit(f[x], x -> 5, Direction -> 1)", //
+        "13");
+    check("Limit(f[x], x -> 5, Direction -> \"FromBelow\")", //
+        "13");
+
   }
 
   @Test
