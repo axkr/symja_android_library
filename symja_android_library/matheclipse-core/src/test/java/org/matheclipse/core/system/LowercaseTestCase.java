@@ -12763,6 +12763,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testLimitIssue1001() {
+    // github issue #1001
+    check("Simplify(RealAbs(x + 2)/(x+2))", //
+        "Piecewise({{-1,x<-2}},1)");
+    check("Simplify(RealAbs(x - 2)/(x-2))", //
+        "Piecewise({{-1,x<2}},1)");
+    check("Limit(RealAbs(x + 2), x -> -2, Direction -> -1)", //
+        "0");
+    check("Limit(x + 2, x -> -2, Direction -> -1)", //
+        "0");
+    check("Limit(RealAbs(x + 2)/(x+2), x -> -2, Direction -> -1)", //
+        "1");
+    check("Limit(RealAbs(x + 2)/(x+2), x -> -2, Direction -> 1)", //
+        "-1");
+  }
+
+  @Test
   public void testLimitIssue536() {
     // avoid endless recursion:
     check("Limit(Sqrt((4+x)/(4-x))-Pi/2,x->4)", //
@@ -24161,6 +24178,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTotal() {
+    // TODO only add up elements inside List, Association, SparseArray,...
+    // check("t = Array(Subscript(a, ##) &, {2, 3, 4})", //
+    // "{{{Subscript(a,1,1,1),Subscript(a,1,1,2),Subscript(a,1,1,3),Subscript(a,1,1,4)},{Subscript(a,\n"
+    // //
+    // + "1,2,1),Subscript(a,1,2,2),Subscript(a,1,2,3),Subscript(a,1,2,4)},{Subscript(a,1,\n" //
+    // + "3,1),Subscript(a,1,3,2),Subscript(a,1,3,3),Subscript(a,1,3,4)}},{{Subscript(a,2,\n" //
+    // + "1,1),Subscript(a,2,1,2),Subscript(a,2,1,3),Subscript(a,2,1,4)},{Subscript(a,2,2,\n" //
+    // +
+    // "1),Subscript(a,2,2,2),Subscript(a,2,2,3),Subscript(a,2,2,4)},{Subscript(a,2,3,1),Subscript(a,\n"
+    // //
+    // + "2,3,2),Subscript(a,2,3,3),Subscript(a,2,3,4)}}}");
+    // check("Total(t, {-1})", //
+    // "");
+
     check("Total({x^2, 3*x^3, 1})", //
         "1+x^2+3*x^3");
 
@@ -24198,6 +24229,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{6,15,24}");
     check("Total({{1,2,3},{4,5,6},{7,8,9}},2)", //
         "45");
+
   }
 
   @Test

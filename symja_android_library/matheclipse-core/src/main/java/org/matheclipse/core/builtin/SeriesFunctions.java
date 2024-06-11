@@ -315,7 +315,7 @@ public class SeriesFunctions {
         return limitValue;
       }
 
-      if (limitValue.isNumericFunction(true)) {
+      if (limitValue.isNumericFunction(true) && expression.isFree(x -> x == S.Piecewise, true)) {
         IExpr temp = evalReplaceAll(expression, data, engine);
         if (temp.isPresent()) {
           return temp;
@@ -354,6 +354,8 @@ public class SeriesFunctions {
           return timesLimit(ast, data, engine);
         } else if (ast.isPower() && !ast.base().isPositive() && !ast.exponent().isPositive()) {
           return powerLimit(ast, data, engine);
+        } else if (ast.isAST(S.Piecewise)) {
+          return piecewiseLimit(ast, data, engine);
         } else if (ast.argSize() > 0 && ast.topHead().isNumericFunctionAttribute()) {
           IASTMutable copy = ast.copy();
           IExpr temp = F.NIL;
@@ -603,6 +605,7 @@ public class SeriesFunctions {
           expr = engine.evalQuiet(F.Simplify(expr));
         }
         if (expr.isFree(v -> v.equals(S.D) || v.equals(S.Derivative), true)) {
+          engine.incRecursionCounter();
           return evalLimit(expr, data, engine);
         }
       } catch (RecursionLimitExceeded rle) {
@@ -780,6 +783,43 @@ public class SeriesFunctions {
       }
       return F.NIL;
       // return F.Times(data.limit(numerator), F.Power(data.limit(denominator), F.CN1));
+    }
+
+    private static IExpr piecewiseLimit(final IAST piecwiseAST, LimitData data, EvalEngine engine) {
+      IExpr limit = data.limitValue();
+      IExpr variable = data.variable();
+      if (limit.isReal()) {
+        int[] piecewiseDimension = piecwiseAST.isPiecewise();
+        if (piecewiseDimension != null && piecewiseDimension[0] > 0) {
+          IAST matrixNx2 = (IAST) piecwiseAST.first();
+          for (int i = 0; i < piecewiseDimension[0]; i++) {
+            IAST row2 = matrixNx2.getAST(i + 1);
+            IExpr result = row2.first();
+            IExpr comparison = row2.second();
+
+            if (data.direction == Direction.FROM_BELOW) {
+              if (comparison.isAST(S.Less, 3) && comparison.first().equals(variable)
+                  && comparison.second().equals(limit)) {
+                comparison = ((IAST) comparison).setAtCopy(0, S.LessEqual);
+              }
+            } else if (data.direction == Direction.FROM_ABOVE) {
+              if (comparison.isAST(S.Greater, 3) && comparison.first().equals(variable)
+                  && comparison.second().equals(limit)) {
+                comparison = ((IAST) comparison).setAtCopy(0, S.GreaterEqual);
+              }
+            }
+            IExpr temp = engine.evaluate(F.subs(comparison, variable, limit));
+            if (temp.isTrue()) {
+              return engine.evaluate(F.subs(result, variable, limit));
+            } else if (!temp.isFalse()) {
+              return F.NIL;
+            }
+
+          }
+          return piecwiseAST.second();
+        }
+      }
+      return F.NIL;
     }
 
     private static IExpr plusLimit(final IAST plusAST, LimitData data, EvalEngine engine) {
@@ -1226,6 +1266,7 @@ public class SeriesFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -1405,6 +1446,7 @@ public class SeriesFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -1459,6 +1501,7 @@ public class SeriesFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -1494,6 +1537,7 @@ public class SeriesFunctions {
       return F.NIL;
     }
   }
+
 
   /**
    *
@@ -1548,6 +1592,7 @@ public class SeriesFunctions {
     }
 
   }
+
 
   /**
    *
@@ -1815,6 +1860,7 @@ public class SeriesFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -1875,6 +1921,7 @@ public class SeriesFunctions {
       }
       return F.NIL;
     }
+
   }
 
 

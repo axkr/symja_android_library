@@ -29,6 +29,7 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcherPlus;
@@ -654,6 +655,19 @@ public class SimplifyFunctions {
         final IExpr denominator = eval(F.Denominator(timesAST));
         if (!denominator.isNumber()) {
           final IExpr numerator = eval(F.Numerator(timesAST));
+          if (numerator.isAST(S.RealAbs, 2) && numerator.first().equals(denominator)
+              && denominator.isPlus() && denominator.first().isRational()) {
+            IRational n = (IRational) denominator.first();
+            IExpr rest = denominator.rest().oneIdentity0();
+            // Piecewise({{-1,rest<(-n)}},1)
+            return F.Piecewise(F.list(F.list(F.CN1, F.Less(rest, n.negate()))), F.C1);
+          } else if (denominator.isAST(S.RealAbs, 2) && denominator.first().equals(numerator)
+              && numerator.isPlus() && numerator.first().isRational()) {
+            IRational n = (IRational) numerator.first();
+            IExpr rest = numerator.rest().oneIdentity0();
+            // Piecewise({{-1,rest<(-n)}},1)
+            return F.Piecewise(F.list(F.list(F.CN1, F.Less(rest, n.negate()))), F.C1);
+          }
           if (fFullSimplify || numerator.isTimes() || denominator.isTimes()) {
             IExpr numer = F.evalExpandAll(numerator);
             IExpr denom = F.evalExpandAll(denominator);
