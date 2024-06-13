@@ -1,4 +1,8 @@
 ## Norm
+```
+Norm(v)
+```
+> returns the norm of the vector `v`
 
 ```
 Norm(m, l)
