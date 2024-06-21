@@ -33,6 +33,7 @@ import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBigNumber;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISparseArray;
@@ -41,6 +42,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
+import edu.jas.arith.BigComplex;
+import edu.jas.arith.BigRational;
 import edu.jas.vector.GenMatrix;
 import edu.jas.vector.GenMatrixRing;
 
@@ -292,6 +295,64 @@ public class Convert {
           }
         }
         return new Array2DRowFieldMatrix<Complex>(elements, false);
+      } catch (ValidateException vex) {
+        // pass
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns a <code>GenMatrix<BigComplex></code> if possible.
+   *
+   * @param expr must be a Symja matrix
+   * @return <code>null</code> if the conversion isn't possible.
+   */
+  public static GenMatrix<BigComplex> list2GenMatrixComplex(IExpr expr)
+      throws ClassCastException, IndexOutOfBoundsException {
+    if (expr == null) {
+      return null;
+    }
+    int[] dim = expr.isMatrix();
+    if (dim == null || dim[0] == 0 || dim[1] == 0) {
+      return null;
+    }
+    GenMatrixRing<BigComplex> ring = new GenMatrixRing<BigComplex>(BigComplex.I, dim[0], dim[1]);
+    if (expr.isSparseArray()) {
+      // TODO optimize for sparse arrays
+      // ISparseArray array = (ISparseArray) expr;
+      expr = ((ISparseArray) expr).normal(false);
+    }
+    if (expr.isList()) {
+      try {
+        IAST list = (IAST) expr;
+        IAST currInRow = (IAST) list.arg1();
+        if (currInRow.isAST0()) {
+          // special case 0-Matrix
+          BigComplex[][] array = new BigComplex[0][0];
+
+          return new GenMatrix<BigComplex>(ring, array);
+
+        }
+        final int rowSize = expr.argSize();
+        final int colSize = currInRow.argSize();
+
+        final BigComplex[][] elements = new BigComplex[rowSize][colSize];
+        for (int i = 1; i < rowSize + 1; i++) {
+          currInRow = (IAST) list.get(i);
+          if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
+            return null;
+          }
+          for (int j = 1; j < colSize + 1; j++) {
+            IExpr element = currInRow.get(j);
+            if (element instanceof IBigNumber) {
+              elements[i - 1][j - 1] = ((IBigNumber) element).toBigComplex();
+            } else {
+              return null;
+            }
+          }
+        }
+        return new GenMatrix<BigComplex>(ring, elements);
       } catch (ValidateException vex) {
         // pass
       }
@@ -676,6 +737,29 @@ public class Convert {
 
     final IASTAppendable out =
         F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> matrix.get(i, j)));
+    if (matrixFormat) {
+      // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
+      // isMatrix() must be used!
+      out.isMatrix(true);
+    }
+    return out;
+  }
+
+  public static IASTAppendable genmatrixComplex2List(final GenMatrix<BigComplex> matrix,
+      boolean matrixFormat) {
+    if (matrix == null) {
+      return F.NIL;
+    }
+    final int rowSize = matrix.ring.rows;
+    final int colSize = matrix.ring.cols;
+
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> {
+      BigComplex bigComplex = matrix.get(i, j);
+      BigRational re = bigComplex.getRe();
+      BigRational im = bigComplex.getIm();
+      return F.CC(F.QQ(re.numerator(), re.denominator()),
+          F.QQ(im.numerator(), im.denominator()));
+    }));
     if (matrixFormat) {
       // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
       // isMatrix() must be used!

@@ -8330,6 +8330,10 @@ public class F extends S {
     return AbstractFractionSym.valueOf(numerator, denominator);
   }
 
+  public static IFraction QQ(final BigInteger numerator, final BigInteger denominator) {
+    return AbstractFractionSym.valueOf(numerator, denominator);
+  }
+
   /**
    * Create a "fractional" number <code>numerator / denominator</code>
    *

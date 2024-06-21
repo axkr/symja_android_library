@@ -9,6 +9,7 @@ CharacteristicPolynomial(matrix, var)
 See:  
 * [Wikipedia - Characteristic polynomial](https://en.wikipedia.org/wiki/Characteristic_polynomial)
 * [Wikipedia - Eigenvalues and Eigenvectors](https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors)
+* [Wikipedia - Faddeev-LeVerrier algorithm](https://en.wikipedia.org/wiki/Faddeev%E2%80%93LeVerrier_algorithm)
 
 ### Examples
  

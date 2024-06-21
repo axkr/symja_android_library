@@ -59,6 +59,7 @@ import org.hipparchus.linear.SchurTransformer;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.combinatoric.KSubsetsIterable;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -93,6 +94,10 @@ import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.math.LongMath;
+import edu.jas.arith.BigComplex;
+import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.GenPolynomialRing;
+import edu.jas.vector.GenMatrix;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 
@@ -1003,17 +1008,24 @@ public final class LinearAlgebra {
      * @param variable the variable which should be used in the resulting characteristic polynomial
      * @return
      */
-    public static IAST generateCharacteristicPolynomial(int dim, IAST matrix, IExpr variable) {
+    public static IExpr generateCharacteristicPolynomial(int dim, IAST matrix, IExpr variable) {
       // TODO use JAS public GenPolynomial<C> charPolynomial(GenMatrix<C> A) {
       // see: https://en.wikipedia.org/wiki/Faddeev%E2%80%93LeVerrier_algorithm
 
-      // BigRational rf = new BigRational();
-      // ComplexRing<BigRational> cf = new ComplexRing<BigRational>(rf);
-      // String[] vars = new String[] {variable.toString()};
-      // GenPolynomialRing<edu.jas.poly.Complex<BigRational>> pf =
-      // new GenPolynomialRing<edu.jas.poly.Complex<BigRational>>(cf, vars);
-      // GenMatrix<edu.jas.poly.Complex<BigRational>> A;
-      // pf.charPolynomial(A);
+      GenMatrix<BigComplex> genMatrix = Convert.list2GenMatrixComplex(matrix);
+      if (genMatrix != null //
+          && genMatrix.ring.rows == genMatrix.ring.cols //
+          && genMatrix.ring.rows > 1) {
+        String[] vars = new String[] {variable.toString()};
+        GenPolynomialRing<BigComplex> pf = new GenPolynomialRing<BigComplex>(BigComplex.I, vars);
+
+        GenPolynomial<BigComplex> charPolynomial = pf.charPolynomial(genMatrix);
+        JASConvert<BigComplex> jas = new JASConvert<BigComplex>(variable, BigComplex.I);
+
+        IExpr bigcomplexPoly2Expr = jas.bigcomplexPoly2Expr(charPolynomial);
+        // System.out.println(charPolynomial.toString());
+        return bigcomplexPoly2Expr;
+      }
 
       return F.Det(subtractDiagonalValue(dim, matrix, variable));
     }
@@ -1039,7 +1051,7 @@ public final class LinearAlgebra {
           // `1` is not a valid variable.
           return Errors.printMessage(ast.topHead(), "ivar", F.list(variable), engine);
         }
-        IAST det = generateCharacteristicPolynomial(dimensions[0], matrix, variable);
+        IExpr det = generateCharacteristicPolynomial(dimensions[0], matrix, variable);
         IExpr polynomial = engine.evaluate(det);
         if (!polynomial.isList()) {
           return polynomial;
@@ -2096,7 +2108,7 @@ public final class LinearAlgebra {
             } else {
               boolean hasNumericArgument = arg1.isNumericArgument(true);// (IAST.CONTAINS_NUMERIC_ARG);
               if (!hasNumericArgument) {
-                if (dim[0] <= 4 && dim[1] <= 4) {
+                // if (dim[0] <= 4 && dim[1] <= 4) {
                   ISymbol x = F.Dummy("x");
                   IExpr m = engine.evaluate(F.CharacteristicPolynomial(arg1, x));
                   if (m.isPolynomial(x)) {
@@ -2112,7 +2124,7 @@ public final class LinearAlgebra {
                       }
                     }
                   }
-                }
+                  // }
               }
             }
           }

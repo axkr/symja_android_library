@@ -76,10 +76,50 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCharacteristicPolynomial() {
+    // https://codegolf.stackexchange.com/questions/150613/characteristic-polynomial
+    // [0] -> [1 0]
+    check("CharacteristicPolynomial({{0}}, x)", //
+        "-x");
+
+    // [1] -> [1 -1]
+    check("CharacteristicPolynomial({{1}}, x)", //
+        "1-x");
+
+    // [1 1; 0 1] -> [1 -2 1]
+    check("CharacteristicPolynomial({{1,1},{0,1}}, x)", //
+        "1-2*x+x^2");
+
+    // [80 80; 57 71] -> [1 -151 1120]
+    check("CharacteristicPolynomial({{80,80},{57,71}}, x)", //
+        "1120-151*x+x^2");
+
+    // [1 2 0; 2 -3 5; 0 1 1] -> [1 1 -14 12]
+    check("CharacteristicPolynomial({{1, 2, 0},{2, -3, 5},{0, 1, 1}}, x)", //
+        "12-14*x+x^2+x^3");
+
+    // [4 2 1 3; 4 -3 9 0; -1 1 0 3; 20 -4 5 20] -> [1 -21 -83 559 -1987]
+    check("CharacteristicPolynomial({{4, 2, 1, 3},{4, -3, 9, 0},{-1, 1, 0, 3},{20, -4, 5, 20}}, x)", //
+        "-1987+559*x-83*x^2-21*x^3+x^4");
+
+    // [0 5 0 12 -3 -6; 6 3 7 16 4 2; 4 0 5 1 13 -2; 12 10 12 -2 1 -6; 16 13 12 -4 7 10; 6 17 0 3 3
+    // -1] -> [1 -12 -484 3249 -7065 -836601 -44200]
+    check(
+        "CharacteristicPolynomial({{0, 5, 0, 12, -3, -6},{6, 3, 7, 16, 4, 2},{4, 0, 5, 1, 13, -2},"//
+            + "{12, 10, 12, -2, 1, -6},{16, 13, 12, -4, 7, 10},{6, 17, 0, 3, 3, -1}}, x)", //
+        "-44200-836601*x-7065*x^2+3249*x^3-484*x^4-12*x^5+x^6");
+
+    // [1 0 0 1 0 0 0; 1 1 0 0 1 0 1; 1 1 0 1 1 0 0; 1 1 0 1 1 0 0; 1 1 0 1 1 1 1; 1 1 1 0 1 1 1; 0
+    // 1 0 0 0 0 1] -> [1 -6 10 -6 3 -2 0 0]
+    check(
+        "CharacteristicPolynomial({{1, 0, 0, 1, 0, 0, 0},{1, 1, 0, 0, 1, 0, 1},{1, 1, 0, 1, 1, 0, 0},"//
+            + "{1, 1, 0, 1, 1, 0, 0},{1, 1, 0, 1, 1, 1, 1},{1, 1, 1, 0, 1, 1, 1},{0, 1, 0, 0, 0, 0, 1}" //
+            + "}, x)", //
+        "-2*x^2+3*x^3-6*x^4+10*x^5-6*x^6+x^7");
+
     check("CharacteristicPolynomial({{a, b}, {c, d}}, x)", //
         "-b*c+a*d-a*x-d*x+x^2");
     check("CharacteristicPolynomial({{1, 1, 1}, {1, 1/2, 1/3}, {1, 2, 3}},x)", //
-        "-1/3-7/3*x+9/2*x^2-x^3");
+        "1/3+7/3*x-9/2*x^2+x^3");
     check("CharacteristicPolynomial(N({{1, 1, 1}, {1, 1/2, 1/3}, {1, 2, 3}}),x)", //
         "-0.333333-2.33333*x+4.5*x^2-x^3");
     check("CharacteristicPolynomial({{1, 2*I}, {3 + 4*I, 5}}, z)", //
@@ -542,7 +582,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Eigenvalues({{1, 0, 0}, {-2, 1, 0}, {0, 1, 1}})", //
         "{1,1,1}");
     check("Eigenvalues({{1,0,0,0,0},{3,1,0,0,0},{6,3,2,0,0},{10,6,3,2,0},{15,10,6,3,2}})", //
-        "{2.00004,1.99998+I*(-0.0000311927),1.99998+I*0.0000311927,1.0,1.0}");
+        "{2,2,2,1,1}");
     check("Eigenvalues({{7}},-1)", //
         "{7.0}");
     check("Eigenvalues({{-1}},1)", //
@@ -557,7 +597,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             + "{{-1}},2)");
     check(
         "Eigenvalues({{0,1,1,0,1,0,0,0},{1,0,0,1,0,1,0,0},{1,0,0,1,0,0,1,0},{0,1,1,0,0,0,0,1},{1,0,0,0,0,1,1,0},{0,1,0,0,1,0,0,1},{0,0,1,0,1,0,0,1},{0,0,0,1,0,1,1,0}})", //
-        "{-3.0,3.0,-1.0,-1.0,-1.0,1.0,1.0,1.0}");
+        "{-3,3,-1,-1,-1,1,1,1}");
 
     // print message: Eigenvalues: Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s}
     // expected at position 2 in Eigenvalues({{1,0},{0,1}},{1,1,1,1}).
@@ -593,31 +633,20 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             + "1/3))+((-1+I*Sqrt(3))*(29908746250000+I*15750000*Sqrt(9477810222))^(1/3))/(63000*\n"
             + "2^(1/3))}");
 
-    // check("m = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}", //
-    // "{{1,2,3},{4,5,6},{7,8,9}}");
-    // check("Roots(CharacteristicPolynomial(m,x)==0, x)", //
-    // "x==0||x==15/2-3/2*Sqrt(33)||x==15/2+3/2*Sqrt(33)");
-    // check("EigenValues(m)", //
-    // "{15/2+3/2*Sqrt(33),15/2-3/2*Sqrt(33),0}");
+    check("m = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}", //
+        "{{1,2,3},{4,5,6},{7,8,9}}");
+    check("Roots(CharacteristicPolynomial(m,x)==0, x)", //
+        "x==0||x==3/2*(5-Sqrt(33))||x==3/2*(5+Sqrt(33))");
+    check("EigenValues(m)", //
+        "{3/2*(5+Sqrt(33)),3/2*(5-Sqrt(33)),0}");
 
     // 4x4
-    // check("Eigenvalues(SparseArray({{1, 3} -> 2, {2, 2} -> 3, {3, 1} -> 1, {4, 2} -> 5}, {4,
-    // 4}))", //
-    // "");
+    check("Eigenvalues(SparseArray({{1, 3} -> 2, {2, 2} -> 3, {3, 1} -> 1, {4, 2} -> 5}, {4, 4}))", //
+        "{3,-Sqrt(2),Sqrt(2),0}");
 
     // 3x3
-    // check("Eigenvalues({{1,2,3},{3,2,1},{2,1,3}})", //
-    // "{2+(14*2^(1/3))/(216+I*204*Sqrt(6))^(1/3)+(216+I*204*Sqrt(6))^(1/3)/(3*2^(1/3)),\n"
-    // + "2+(14*2^(1/3)*(-1/2-I*1/2*Sqrt(3)))/(216+I*204*Sqrt(6))^(1/3)+((-1/2+I*1/2*Sqrt(\n"
-    // + "3))*(216+I*204*Sqrt(6))^(1/3))/(3*2^(1/3)),2+(14*2^(1/3)*(-1/2+I*1/2*Sqrt(3)))/(\n"
-    // + "216+I*204*Sqrt(6))^(1/3)+((-1/2-I*1/2*Sqrt(3))*(216+I*204*Sqrt(6))^(1/3))/(3*2^(\n"
-    // + "1/3))}");
-    // check("Eigenvalues({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", //
-    // "{5+(93*2^(1/3))/(9180+I*486*Sqrt(11))^(1/3)+(9180+I*486*Sqrt(11))^(1/3)/(3*2^(1/\n"
-    // + "3)),5+(93*2^(1/3)*(-1/2-I*1/2*Sqrt(3)))/(9180+I*486*Sqrt(11))^(1/3)+((-1/2+I*1/2*Sqrt(\n"
-    // + "3))*(9180+I*486*Sqrt(11))^(1/3))/(3*2^(1/3)),5+(93*2^(1/3)*(-1/2+I*1/2*Sqrt(3)))/(\n"
-    // + "9180+I*486*Sqrt(11))^(1/3)+((-1/2-I*1/2*Sqrt(3))*(9180+I*486*Sqrt(11))^(1/3))/(3*\n"
-    // + "2^(1/3))}");
+    check("Eigenvalues({{1,2,3},{3,2,1},{2,1,3}})", //
+        "{6,-Sqrt(2),Sqrt(2)}");
     check("Eigenvalues({{1.1, 2.2, 3.25}, {0.76, 4.6, 5}, {0.1, 0.1, 6.1}}) // N", //
         "{6.60674,4.52536,0.667901}");
 
@@ -1200,7 +1229,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("MatrixMinimalPolynomial({{3, -1, 0}, {0, 2, 0}, {1, -1, 2}}, x)", //
         "6-5*x+x^2");
     check("CharacteristicPolynomial({{3, -1, 0}, {0, 2, 0}, {1, -1, 2}}, x)", //
-        "12-16*x+7*x^2-x^3");
+        "-12+16*x-7*x^2+x^3");
     check("Factor(6-5*x+x^2)", //
         "(-3+x)*(-2+x)");
     check("Factor(12-16*x+7*x^2-x^3)", //

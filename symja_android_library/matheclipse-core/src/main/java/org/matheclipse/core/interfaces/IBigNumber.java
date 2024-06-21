@@ -1,5 +1,7 @@
 package org.matheclipse.core.interfaces;
 
+import edu.jas.arith.BigComplex;
+
 /**
  * Implemented by all exact &quot;symbolic&quot; number interfaces (i.e. IInteger IFraction,
  * IComplex)
@@ -25,4 +27,12 @@ public interface IBigNumber extends INumber {
    * @return
    */
   public IRational imRational();
+
+  /**
+   * Returns this number as {@link edu.jas.arith.BigComplex} number.
+   *
+   * @return <code>this</code> number s big complex representation.
+   */
+  public BigComplex toBigComplex();
+
 }

@@ -3,6 +3,7 @@ package org.matheclipse.core.interfaces;
 import java.math.BigInteger;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.expression.F;
+import edu.jas.arith.BigComplex;
 
 /** Interface for "rational" numbers (i.e. numbers implementing IInteger or IFraction) */
 public interface IRational extends IReal, IBigNumber {
@@ -205,6 +206,16 @@ public interface IRational extends IReal, IBigNumber {
    * @return <code>this</code> number s big fraction.
    */
   public BigFraction toBigFraction();
+
+  /**
+   * Returns this number as {@link edu.jas.arith.BigComplex} number.
+   *
+   * @return <code>this</code> number s big complex representation.
+   */
+  @Override
+  default BigComplex toBigComplex() {
+    return new BigComplex(this.toBigRational());
+  }
 
   /**
    * Returns this number as {@link edu.jas.arith.BigRational} number.

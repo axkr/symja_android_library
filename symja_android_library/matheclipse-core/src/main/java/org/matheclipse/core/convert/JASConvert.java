@@ -21,6 +21,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import edu.jas.arith.BigComplex;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModIntegerRing;
 import edu.jas.integrate.Integral;
@@ -273,6 +274,22 @@ public class JASConvert<C extends RingElem<C>> {
       ExpVector exp = monomial.exponent();
       IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
       monomialToExpr(coeff, exp, monomTimes);
+      result.append(monomTimes.oneIdentity1());
+    }
+    return result.oneIdentity0();
+  }
+
+  public IExpr bigcomplexPoly2Expr(final GenPolynomial<BigComplex> poly)
+      throws ArithmeticException, JASConversionException {
+    if (poly.length() == 0) {
+      return F.C0;
+    }
+    IASTAppendable result = F.PlusAlloc(poly.length());
+    for (Monomial<BigComplex> monomial : poly) {
+      BigComplex coeff = monomial.coefficient();
+      ExpVector exp = monomial.exponent();
+      IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
+      monomialBigComplexToExpr(coeff, exp, monomTimes);
       result.append(monomTimes.oneIdentity1());
     }
     return result.oneIdentity0();
@@ -587,6 +604,15 @@ public class JASConvert<C extends RingElem<C>> {
     if (!coeff.isONE()) {
       monomTimes.append(algebraicNumber2Expr(coeff));
     }
+    return expVectorToExpr(exp, monomTimes);
+  }
+
+  public boolean monomialBigComplexToExpr(BigComplex coeff, ExpVector exp,
+      IASTAppendable monomTimes) {
+    BigRational re = coeff.getRe();
+    BigRational im = coeff.getIm();
+    monomTimes.append(F.CC(F.fraction(re.numerator(), re.denominator()).normalize(),
+        F.fraction(im.numerator(), im.denominator()).normalize()));
     return expVectorToExpr(exp, monomTimes);
   }
 

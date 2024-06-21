@@ -38,6 +38,7 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.parser.client.ParserConfig;
+import edu.jas.arith.BigComplex;
 
 /** A symbolic complex number implementation */
 public class ComplexSym implements IComplex {
@@ -960,6 +961,11 @@ public class ComplexSym implements IComplex {
       return fReal.toIntDefault(defaultValue);
     }
     return defaultValue;
+  }
+
+  @Override
+  public BigComplex toBigComplex() {
+    return new BigComplex(fReal.toBigRational(), fImaginary.toBigRational());
   }
 
   @Override
