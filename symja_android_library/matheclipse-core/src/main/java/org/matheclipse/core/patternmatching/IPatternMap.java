@@ -1625,42 +1625,8 @@ public interface IPatternMap {
 
       determinePatternsRecursive(patternIndexMap, (IAST) lhsPatternExpr, priority,
           ruleWithoutPattern, 1);
-      int size = patternIndexMap.size();
-      switch (size) {
-        case 1:
-          PatternMap1 patternMap1 = new PatternMap1();
-          patternMap1.fSymbol1 = patternIndexMap.get(0).getFirst();
-          patternMap1.fPatternObject1 = patternIndexMap.get(0).getSecond();
-          return patternMap1;
-        case 2:
-          PatternMap2 patternMap2 = new PatternMap2();
-          patternMap2.fSymbol1 = patternIndexMap.get(0).getFirst();
-          patternMap2.fPatternObject1 = patternIndexMap.get(0).getSecond();
-          patternMap2.fSymbol2 = patternIndexMap.get(1).getFirst();
-          patternMap2.fPatternObject2 = patternIndexMap.get(1).getSecond();
-          return patternMap2;
-        case 3:
-          PatternMap3 patternMap3 = new PatternMap3();
-          patternMap3.fSymbol1 = patternIndexMap.get(0).getFirst();
-          patternMap3.fPatternObject1 = patternIndexMap.get(0).getSecond();
-          patternMap3.fSymbol2 = patternIndexMap.get(1).getFirst();
-          patternMap3.fPatternObject2 = patternIndexMap.get(1).getSecond();
-          patternMap3.fSymbol3 = patternIndexMap.get(2).getFirst();
-          patternMap3.fPatternObject3 = patternIndexMap.get(2).getSecond();
-          return patternMap3;
-      }
-      PatternMap patternMap = new PatternMap();
-      patternMap.fRuleWithoutPattern = ruleWithoutPattern[0];
-      patternMap.fSymbolsOrPattern = new IExpr[size];
-      patternMap.fSymbolsOrPatternValues = new IExpr[size];
-      patternMap.fPatternObjects = new IPatternObject[size];
-      int i = 0;
-      for (GenericPair<IExpr, IPatternObject> entry : patternIndexMap) {
-        patternMap.fSymbolsOrPattern[i] = entry.getFirst();
-        patternMap.fPatternObjects[i] = entry.getSecond();
-        i++;
-      }
-      return patternMap;
+      boolean isRuleWithoutPattern = ruleWithoutPattern[0];
+      return createPatternMap(patternIndexMap, isRuleWithoutPattern);
     } else if (lhsPatternExpr instanceof PatternNested) {
       PatternNested pattern2 = (PatternNested) lhsPatternExpr;
       // PatternMap1 patternMap1 = new PatternMap1();
@@ -1689,6 +1655,87 @@ public interface IPatternMap {
       return patternMap1;
     }
     return new PatternMap0();
+  }
+
+  public static IPatternMap createSymbolValue(
+      List<GenericPair<IExpr, ISymbol>> patternIndexMap) {
+    int size = patternIndexMap.size();
+    switch (size) {
+      case 1:
+        PatternMap1 patternMap1 = new PatternMap1();
+        patternMap1.fValue1 = patternIndexMap.get(0).getFirst();
+        patternMap1.fSymbol1 = patternIndexMap.get(0).getSecond();
+        return patternMap1;
+      case 2:
+        PatternMap2 patternMap2 = new PatternMap2();
+        patternMap2.fValue1 = patternIndexMap.get(0).getFirst();
+        patternMap2.fSymbol1 = patternIndexMap.get(0).getSecond();
+        patternMap2.fValue2 = patternIndexMap.get(1).getFirst();
+        patternMap2.fSymbol2 = patternIndexMap.get(1).getSecond();
+        return patternMap2;
+      case 3:
+        PatternMap3 patternMap3 = new PatternMap3();
+        patternMap3.fValue1 = patternIndexMap.get(0).getFirst();
+        patternMap3.fSymbol1 = patternIndexMap.get(0).getSecond();
+        patternMap3.fValue2 = patternIndexMap.get(1).getFirst();
+        patternMap3.fSymbol2 = patternIndexMap.get(1).getSecond();
+        patternMap3.fValue3 = patternIndexMap.get(2).getFirst();
+        patternMap3.fSymbol3 = patternIndexMap.get(2).getSecond();
+        return patternMap3;
+    }
+    PatternMap patternMap = new PatternMap();
+    patternMap.fRuleWithoutPattern = true;
+    patternMap.fSymbolsOrPattern = new IExpr[size];
+    patternMap.fSymbolsOrPatternValues = new IExpr[size];
+    patternMap.fPatternObjects = new IPatternObject[size];
+    int i = 0;
+    for (GenericPair<IExpr, ISymbol> entry : patternIndexMap) {
+      patternMap.fSymbolsOrPatternValues[i] = entry.getFirst();
+      patternMap.fSymbolsOrPattern[i] = entry.getSecond();
+      i++;
+    }
+    return patternMap;
+  }
+
+  public static IPatternMap createPatternMap(
+      List<GenericPair<IExpr, IPatternObject>> patternIndexMap,
+      boolean isRuleWithoutPattern) {
+    int size = patternIndexMap.size();
+    switch (size) {
+      case 1:
+        PatternMap1 patternMap1 = new PatternMap1();
+        patternMap1.fSymbol1 = patternIndexMap.get(0).getFirst();
+        patternMap1.fPatternObject1 = patternIndexMap.get(0).getSecond();
+        return patternMap1;
+      case 2:
+        PatternMap2 patternMap2 = new PatternMap2();
+        patternMap2.fSymbol1 = patternIndexMap.get(0).getFirst();
+        patternMap2.fPatternObject1 = patternIndexMap.get(0).getSecond();
+        patternMap2.fSymbol2 = patternIndexMap.get(1).getFirst();
+        patternMap2.fPatternObject2 = patternIndexMap.get(1).getSecond();
+        return patternMap2;
+      case 3:
+        PatternMap3 patternMap3 = new PatternMap3();
+        patternMap3.fSymbol1 = patternIndexMap.get(0).getFirst();
+        patternMap3.fPatternObject1 = patternIndexMap.get(0).getSecond();
+        patternMap3.fSymbol2 = patternIndexMap.get(1).getFirst();
+        patternMap3.fPatternObject2 = patternIndexMap.get(1).getSecond();
+        patternMap3.fSymbol3 = patternIndexMap.get(2).getFirst();
+        patternMap3.fPatternObject3 = patternIndexMap.get(2).getSecond();
+        return patternMap3;
+    }
+    PatternMap patternMap = new PatternMap();
+    patternMap.fRuleWithoutPattern = isRuleWithoutPattern;
+    patternMap.fSymbolsOrPattern = new IExpr[size];
+    patternMap.fSymbolsOrPatternValues = new IExpr[size];
+    patternMap.fPatternObjects = new IPatternObject[size];
+    int i = 0;
+    for (GenericPair<IExpr, IPatternObject> entry : patternIndexMap) {
+      patternMap.fSymbolsOrPattern[i] = entry.getFirst();
+      patternMap.fPatternObjects[i] = entry.getSecond();
+      i++;
+    }
+    return patternMap;
   }
 
   /**

@@ -4,12 +4,14 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.List;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.generic.GenericPair;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
@@ -216,6 +218,16 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     return replace(leftHandSide, engine, true);
   }
 
+  public static IExpr evalInternal(final IExpr leftHandSide, final IExpr rightHandSide,
+      List<GenericPair<IExpr, ISymbol>> patternIndexMap) {
+    PatternMatcherAndEvaluator pm = new PatternMatcherAndEvaluator();
+    IPatternMap patternMap = IPatternMap.createSymbolValue(patternIndexMap);
+    pm.fPatternMap = patternMap;
+    pm.fRightHandSide = rightHandSide;
+    pm.setLHSExprToMatch(leftHandSide);
+    return pm.replacePatternMatch(leftHandSide, patternMap, EvalEngine.get(), true);
+  }
+
   public IExpr replace(final IExpr leftHandSide, EvalEngine engine, boolean evaluate) {
     IPatternMap patternMap = null;
     if (isRuleWithoutPatterns()) {
@@ -288,7 +300,9 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
     engine.pushOptionsStack();
     try {
-      engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
+      if (fLhsPatternExpr != null) {
+        engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
+      }
       if (fRightHandSide == DUMMY_SUBSET_CASES) {
         fSubstitutedMatch = patternMap.substitutePatterns(fLhsPatternExpr, F.CEmptySequence);
       } else {

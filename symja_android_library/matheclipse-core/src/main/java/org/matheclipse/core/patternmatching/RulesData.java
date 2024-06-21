@@ -574,7 +574,7 @@ public final class RulesData implements Serializable {
 
   public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule,
       final IExpr leftHandSide, final IExpr rightHandSide) {
-    return putDownRule(IPatternMatcher.SET_DELAYED, false, leftHandSide, rightHandSide,
+    return putDownRule(setSymbol, false, leftHandSide, rightHandSide,
         IPatternMap.DEFAULT_RULE_PRIORITY);
   }
 
