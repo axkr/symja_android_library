@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.optim.nonlinear.scalar.GoalType;
@@ -8,7 +10,9 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -74,14 +78,21 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class FindMaximum extends FindMinimum {
 
   @Override
-  public IExpr evaluate(IAST ast, EvalEngine engine) {
+  public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+      IAST originalAST) {
     GoalType goalType = GoalType.MAXIMIZE;
     try {
-      return findExtremum(ast, engine, goalType);
-    } catch (MathIllegalStateException miae) {
+      return findExtremum(ast, goalType, engine, options);
+    } catch (MathIllegalArgumentException miae) {
       // `1`.
-      return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())),
-          engine);
+      return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())), engine);
+    } catch (MathIllegalStateException mise) {
+      if (mise.getSpecifier().equals(LocalizedCoreFormats.MAX_COUNT_EXCEEDED)) {
+        // Failed to converge to the requested accuracy or precision within `1` iterations.
+        return Errors.printMessage(ast.topHead(), "cvmit", F.list(F.$str("?")), engine);
+      }
+      // `1`.
+      return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(mise.getMessage())), engine);
     } catch (MathRuntimeException mre) {
       Errors.printMessage(ast.topHead(), "error", F.list(F.$str(mre.getMessage())), engine);
       return F.CEmptyList;
@@ -95,11 +106,16 @@ public class FindMaximum extends FindMinimum {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_2_INFINITY;
+    return IFunctionEvaluator.ARGS_2_3;
   }
 
   @Override
   public void setUp(final ISymbol newSymbol) {
     newSymbol.setAttributes(ISymbol.HOLDALL);
+    setOptions(newSymbol, //
+        new IBuiltInSymbol[] {//
+            S.MaxIterations, S.Method}, //
+        new IExpr[] {//
+            F.C100, S.Automatic});
   }
 }

@@ -2,6 +2,8 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
 import java.util.function.Supplier;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.RealVector;
@@ -30,9 +32,8 @@ import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
-import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -42,6 +43,7 @@ import org.matheclipse.core.generic.TwiceDifferentiableMultiVariateNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -105,16 +107,25 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </code>
  * </pre>
  */
-public class FindMinimum extends AbstractFunctionEvaluator {
+public class FindMinimum extends AbstractFunctionOptionEvaluator {
+
 
   @Override
-  public IExpr evaluate(IAST ast, EvalEngine engine) {
+  public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+      IAST originalAST) {
     GoalType goalType = GoalType.MINIMIZE;
     try {
-      return findExtremum(ast, engine, goalType);
-    } catch (MathIllegalStateException miae) {
+      return findExtremum(ast, goalType, engine, options);
+    } catch (MathIllegalArgumentException miae) {
       // `1`.
       return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())), engine);
+    } catch (MathIllegalStateException mise) {
+      if (mise.getSpecifier().equals(LocalizedCoreFormats.MAX_COUNT_EXCEEDED)) {
+        // Failed to converge to the requested accuracy or precision within `1` iterations.
+        return Errors.printMessage(ast.topHead(), "cvmit", F.list(F.$str("?")), engine);
+      }
+      // `1`.
+      return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(mise.getMessage())), engine);
     } catch (MathRuntimeException mre) {
       mre.printStackTrace();
       Errors.printMessage(ast.topHead(), "error", F.list(F.$str(mre.getMessage())), engine);
@@ -123,7 +134,8 @@ public class FindMinimum extends AbstractFunctionEvaluator {
   }
 
 
-  protected static IExpr findExtremum(IAST ast, EvalEngine engine, GoalType goalType) {
+  protected static IExpr findExtremum(IAST ast, GoalType goalType, EvalEngine engine,
+      IExpr[] options) {
     IAST relationList = ast.arg1().makeList();
     if (relationList.argSize() == 0) {
       return F.NIL;
@@ -165,27 +177,51 @@ public class FindMinimum extends AbstractFunctionEvaluator {
     if (arg2.isList() && arg2.argSize() >= 2) {
       String method = "Powell";
       int maxIterations = 100;
-      if (ast.size() >= 4) {
-        final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
-        maxIterations = options.getOptionMaxIterations(S.MaxIterations);
+
+      if (options[0].isInteger()) {
+        // S.MaxIterations
+        maxIterations = options[0].toIntDefault();
         if (maxIterations == Integer.MIN_VALUE) {
           return F.NIL;
         }
         if (maxIterations < 0) {
           maxIterations = 100;
         }
-
-        IExpr optionMethod = options.getOption(S.Method);
-        if (optionMethod.isSymbol() || optionMethod.isString()) {
-          method = optionMethod.toString();
-        } else {
+      }
+      if (!options[1].equals(S.Automatic)) {
+        if (options[1].isSymbol() || options[1].isString()) {
+          // S.Method
+          method = options[1].toString();
+        }
+      } else {
+        if (ast.size() >= 4) {
           if (ast.arg3().isSymbol()) {
             method = ast.arg3().toString();
           }
         }
       }
-      return optimizeGoal(method, maxIterations, goalType, function, (IAST) arg2, engine,
-          optimizationData);
+
+      // if (ast.size() >= 4) {
+      // final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
+      // maxIterations = options.getOptionMaxIterations(S.MaxIterations);
+      // if (maxIterations == Integer.MIN_VALUE) {
+      // return F.NIL;
+      // }
+      // if (maxIterations < 0) {
+      // maxIterations = 100;
+      // }
+      //
+      // IExpr optionMethod = options.getOption(S.Method);
+      // if (optionMethod.isSymbol() || optionMethod.isString()) {
+      // method = optionMethod.toString();
+      // } else {
+      // if (ast.arg3().isSymbol()) {
+      // method = ast.arg3().toString();
+      // }
+      // }
+      // }
+      return optimizeGoal(goalType, function, (IAST) arg2, maxIterations, method, optimizationData,
+          engine);
     }
     return F.NIL;
   }
@@ -369,8 +405,8 @@ public class FindMinimum extends AbstractFunctionEvaluator {
     return -1;
   }
 
-  private static IExpr optimizeGoal(String method, int maxIterations, GoalType goalType,
-      IExpr function, IAST list, EvalEngine engine, OptimizationData[] optimizationData) {
+  private static IExpr optimizeGoal(GoalType goalType, IExpr function, IAST list,
+      int maxIterations, String method, OptimizationData[] optimizationData, EvalEngine engine) {
     double[] initialValues = null;
     IAST variableList = null;
     int[] dimension = list.isMatrix();
@@ -414,8 +450,7 @@ public class FindMinimum extends AbstractFunctionEvaluator {
     }
     if (initialValues != null) {
       IExpr initialValue =
-          testInitialValue(function, variableList, initialValues, goalType,
-              engine);
+          testInitialValue(function, variableList, initialValues, goalType, engine);
       if (initialValue.isNIL()) {
         return F.NIL;
       }
@@ -424,7 +459,7 @@ public class FindMinimum extends AbstractFunctionEvaluator {
         method = "Powell";
       }
       OptimizeSupplier optimizeSupplier = new OptimizeSupplier(goalType, function, variableList,
-          initialValues, method, optimizationData, engine);
+          initialValues, maxIterations, method, optimizationData, engine);
       return engine.evalBlock(optimizeSupplier, variableList);
     }
     return F.NIL;
@@ -475,6 +510,7 @@ public class FindMinimum extends AbstractFunctionEvaluator {
   }
 
   private static class OptimizeSupplier implements Supplier<IExpr> {
+    final int maxIterations;
     final GoalType goalType;
     final IExpr originalFunction;
     final IAST variableList;
@@ -484,12 +520,13 @@ public class FindMinimum extends AbstractFunctionEvaluator {
     final EvalEngine engine;
 
     public OptimizeSupplier(GoalType goalType, IExpr function, IAST variableList,
-        double[] initialValues, String method, OptimizationData[] optimizationData,
-        EvalEngine engine) {
+        double[] initialValues, int maxIterations, String method,
+        OptimizationData[] optimizationData, EvalEngine engine) {
       this.goalType = goalType;
       this.originalFunction = function;
       this.variableList = variableList;
       this.initialValues = initialValues;
+      this.maxIterations = maxIterations;
       this.method = method;
       this.optimizationData = optimizationData;
       this.engine = engine;
@@ -509,7 +546,7 @@ public class FindMinimum extends AbstractFunctionEvaluator {
           // LinearInequalityConstraint ineqc = new LinearInequalityConstraint(
           // new double[][] {{1.0, 0.0}, {0.0, 1.0}}, new double[] {0.0, 0.0});
           LagrangeSolution lagrangeSolution = optim.optimize( //
-              new MaxEval(1000), //
+              new MaxEval(maxIterations), //
               new ObjectiveFunction(twiceDifferentiableFunction), //
               goalType, //
               initialGuess, optimizationData[0], optimizationData[1]);
@@ -531,7 +568,7 @@ public class FindMinimum extends AbstractFunctionEvaluator {
       if (method.equalsIgnoreCase("powell")) {
         final PowellOptimizer optim = new PowellOptimizer(1e-10, Math.ulp(1d), 1e-10, Math.ulp(1d));
         optimum = optim.optimize( //
-            new MaxEval(1000), //
+            new MaxEval(maxIterations), //
             new ObjectiveFunction(multivariateVariateNumerical), //
             goalType, //
             initialGuess);
@@ -556,9 +593,10 @@ public class FindMinimum extends AbstractFunctionEvaluator {
             new MultiStartMultivariateOptimizer(underlying, nbStarts, generator);
 
         optimum = optimizer.optimize(//
-            new MaxEval(1000), //
+            new MaxEval(maxIterations), //
             new ObjectiveFunction(multivariateVariateNumerical), //
-            new ObjectiveFunctionGradient(new MultiVariateVectorGradient(function, variableList, true)), //
+            new ObjectiveFunctionGradient(
+                new MultiVariateVectorGradient(function, variableList, true)), //
             goalType, //
             initialGuess);
       }
@@ -582,11 +620,17 @@ public class FindMinimum extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_2_INFINITY;
+    return IFunctionEvaluator.ARGS_2_3;
   }
 
   @Override
   public void setUp(final ISymbol newSymbol) {
     newSymbol.setAttributes(ISymbol.HOLDALL);
+    setOptions(newSymbol, //
+        new IBuiltInSymbol[] {//
+            S.MaxIterations, S.Method}, //
+        new IExpr[] {//
+            F.C100, S.Automatic});
   }
+
 }
