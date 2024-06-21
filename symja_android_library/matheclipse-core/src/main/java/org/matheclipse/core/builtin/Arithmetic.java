@@ -3262,7 +3262,14 @@ public final class Arithmetic {
    * 6652800
    * </pre>
    */
-  private static final class Pochhammer extends AbstractArg2 {
+  private static final class Pochhammer extends AbstractArg2 implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      IExpr a = ast.arg1();
+      IExpr n = ast.arg2();
+      return F.Divide(F.Gamma(F.Plus(a, n)), F.Gamma(a));
+    }
 
     @Override
     public IExpr e2ObjArg(IAST ast, final IExpr a, final IExpr n) {
@@ -3306,7 +3313,8 @@ public final class Arithmetic {
         }
       }
       if (a.isNumber() && n.isNumber()) {
-        return F.Divide(F.Gamma(F.Plus(a, n)), F.Gamma(a));
+        // return F.Divide(F.Gamma(F.Plus(a, n)), F.Gamma(a));
+        return functionExpand(ast, engine);
       }
       return F.NIL;
     }

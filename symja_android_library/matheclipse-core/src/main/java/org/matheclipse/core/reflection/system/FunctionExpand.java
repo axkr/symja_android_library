@@ -161,9 +161,9 @@ public class FunctionExpand extends AbstractEvaluator {
           F.Times(F.C2, F.ArcSin(F.Sqrt(x)))); // $$);
 
       // Pochhammer
-      MATCHER.caseOf(F.Pochhammer(x_, y_), //
-          // [$ Gamma(x+y)/Gamma(x) $]
-          F.Times(F.Power(F.Gamma(x), F.CN1), F.Gamma(F.Plus(x, y)))); // $$);
+      // MATCHER.caseOf(F.Pochhammer(x_, y_), //
+      // // [$ Gamma(x+y)/Gamma(x) $]
+      // F.Times(F.Power(F.Gamma(x), F.CN1), F.Gamma(F.Plus(x, y)))); // $$);
       // PolyGamma
       MATCHER.caseOf(F.PolyGamma(F.CN2, F.C1), //
           // [$ (1/2)*(Log(2)+Log(Pi)) $]

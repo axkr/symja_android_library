@@ -11,6 +11,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -18,6 +19,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class EllipticIntegrals {
@@ -86,7 +88,33 @@ public class EllipticIntegrals {
    * symmetric form</a>
    * </ul>
    */
-  private static class CarlsonRC extends AbstractFunctionEvaluator {
+  private static class CarlsonRC extends AbstractFunctionEvaluator implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        IExpr a = ast.arg1();
+        IExpr b = ast.arg2();
+        if (a.isReal() && b.isReal()) {
+          // https://en.wikipedia.org/wiki/Carlson_symmetric_form#Special_cases
+          IReal x = (IReal) a;
+          IReal y = (IReal) b;
+          if (x.isLT(y)) {
+            if (x.divide(y).isPositive()) {
+              // ArcCos( Sqrt(x/y) ) / Sqrt(y-x)
+              return F.Times(F.ArcCos(F.Sqrt(F.Divide(x, y))), F.Power(F.Subtract(y, x), F.CN1D2));
+            }
+          } else if (x.isGT(y)) {
+            if (x.divide(y).isPositive()) {
+              // ArcCosh( Sqrt(x/y) ) / Sqrt(x-y)
+              return F.Times(F.ArcCosh(F.Sqrt(F.Divide(x, y))), F.Power(F.Subtract(x, y), F.CN1D2));
+            }
+          }
+        }
+      }
+
+      return F.NIL;
+    }
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -753,8 +781,7 @@ public class EllipticIntegrals {
       if (m.isNumber()) {
         // EllipticK(m_) := Pi/(2*ArithmeticGeometricMean(1,Sqrt(1-m)))
         INumber m1 = ((INumber) m).negate().plus(F.C1);
-        return F.Times(F.C1D2, S.Pi,
-            F.Power(F.ArithmeticGeometricMean(F.C1, F.Sqrt(m1)), -1));
+        return F.Times(F.C1D2, S.Pi, F.Power(F.ArithmeticGeometricMean(F.C1, F.Sqrt(m1)), -1));
       }
       return F.NIL;
     }
