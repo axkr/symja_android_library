@@ -22,7 +22,7 @@ jobs:
       with:
         gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
 
-    - run: mvn -f symja_android_library -B -U -P publish-to-maven-central,exact-target-jdk deploy -Dgpg.skip=true
+    - run: mvn -f symja_android_library -B -U -P publish-to-maven-central,exact-target-jdk deploy
       # Deployment of all modules is deferred to the last module by nexus-staging-maven-plugin
       env:
         MAVEN_USERNAME: ${{ secrets.OSSRH_TOKEN_USERNAME }}
