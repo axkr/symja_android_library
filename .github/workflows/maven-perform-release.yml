@@ -64,8 +64,8 @@ jobs:
     - run: mvn -f symja_android_library -B release:perform -DlocalCheckout=true
       # Deployment of all modules is deferred to the last module by nexus-staging-maven-plugin
       env:
-        MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-        MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+        MAVEN_USERNAME: ${{ secrets.OSSRH_TOKEN_USERNAME }}
+        MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN_PASSWORD }}
         MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
     - name: Publish release commits and tag to master
