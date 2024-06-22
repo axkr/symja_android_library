@@ -27,7 +27,7 @@ jobs:
     # Perform the usual maven-release-plugin procedure, but prevent the release commits
     # and tag from being pushed to the master immediately. They are only pushed after
     # the release is performed successfully. This avoids to have the release
-    # commits on the master in case release publication fails in the last step).
+    # commits on the master in case release publication fails in the last step.
     # All file-system/git-operations are performed on the runnner's clone of this repo
 
     - run: mvn -f symja_android_library -B release:clean release:prepare -DpushChanges=false
