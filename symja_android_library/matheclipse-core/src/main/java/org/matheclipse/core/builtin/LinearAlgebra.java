@@ -1049,12 +1049,16 @@ public final class LinearAlgebra {
         IExpr variable = ast.arg2();
         if (!variable.isVariable()) {
           // `1` is not a valid variable.
-          return Errors.printMessage(ast.topHead(), "ivar", F.list(variable), engine);
+          return Errors.printMessage(S.CharacteristicPolynomial, "ivar", F.list(variable), engine);
         }
-        IExpr det = generateCharacteristicPolynomial(dimensions[0], matrix, variable);
-        IExpr polynomial = engine.evaluate(det);
-        if (!polynomial.isList()) {
-          return polynomial;
+        try {
+          IExpr det = generateCharacteristicPolynomial(dimensions[0], matrix, variable);
+          IExpr polynomial = engine.evaluate(det);
+          if (!polynomial.isList()) {
+            return polynomial;
+          }
+        } catch (IllegalArgumentException | UnsupportedOperationException iae) {
+          return Errors.printMessage(S.CharacteristicPolynomial, iae, engine);
         }
       }
 
@@ -2109,22 +2113,22 @@ public final class LinearAlgebra {
               boolean hasNumericArgument = arg1.isNumericArgument(true);// (IAST.CONTAINS_NUMERIC_ARG);
               if (!hasNumericArgument) {
                 // if (dim[0] <= 4 && dim[1] <= 4) {
-                  ISymbol x = F.Dummy("x");
-                  IExpr m = engine.evaluate(F.CharacteristicPolynomial(arg1, x));
-                  if (m.isPolynomial(x)) {
-                    IExpr eigenValues =
-                        RootsFunctions.roots(m, false, F.List(x), false, true, engine);
-                    if (eigenValues.isList()) {
-                      if (eigenValues.forAll(v -> v.isNumericFunction())) {
-                        IAST sortFunction =
-                            sortValuesIfNumeric((IASTMutable) eigenValues, numberOfEigenvalues);
-                        if (sortFunction.isPresent()) {
-                          return engine.evaluate(sortFunction);
-                        }
+                ISymbol x = F.Dummy("x");
+                IExpr m = engine.evaluate(F.CharacteristicPolynomial(arg1, x));
+                if (m.isPolynomial(x)) {
+                  IExpr eigenValues =
+                      RootsFunctions.roots(m, false, F.List(x), false, true, engine);
+                  if (eigenValues.isList()) {
+                    if (eigenValues.forAll(v -> v.isNumericFunction())) {
+                      IAST sortFunction =
+                          sortValuesIfNumeric((IASTMutable) eigenValues, numberOfEigenvalues);
+                      if (sortFunction.isPresent()) {
+                        return engine.evaluate(sortFunction);
                       }
                     }
                   }
-                  // }
+                }
+                // }
               }
             }
           }
