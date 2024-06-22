@@ -11006,6 +11006,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testInterpolation() {
+    checkNumeric("Interpolation(Table({x, Exp(4/(1+x^2))}, {x, 0, 3, 0.5}), 2.5)", //
+        "1.7362439627994641");
+    checkNumeric("ipf=Interpolation(Table({x, Exp(4/(1+x^2))}, {x, 0, 3, 0.5})); ipf(2.5) ", //
+        "1.7362439627994641");
+    checkNumeric("Exp(4/(1 + 2.5^2))", //
+        "1.7362439627994641");
     // print message: InterpolatingFunction: Input value {10} lies outside the range of data in the
     // interpolating
     // function. Extrapolation will be used.

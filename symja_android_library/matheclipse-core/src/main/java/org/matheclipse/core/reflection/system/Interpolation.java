@@ -3,47 +3,58 @@ package org.matheclipse.core.reflection.system;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
-import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
-public class Interpolation extends AbstractEvaluator {
+public class Interpolation extends AbstractFunctionOptionEvaluator {
 
   public Interpolation() {}
 
   @Override
-  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+  public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+      IAST originalAST) {
     int[] dims = ast.arg1().isMatrix();
     if (dims != null && dims[0] > 2 && dims[1] >= 2) {
       String method = "";
-      final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-      IExpr option = options.getOption(S.Method);
-      if (option.isPresent()) {
+      IExpr option = options[0];
+      if (option.isPresent() && option != S.Automatic) {
         method = option.toString();
       }
-      if (!method.isEmpty()) {
-        // TODO: if ("Spline".equals(method)) {
-        if ("Hermite".equals(method)) {
-          return hermiteInterpolate((IAST) ast.arg1(), dims, engine);
+      IExpr temp = interpolation(ast, dims, method, engine);
+      if (temp instanceof InterpolatingFunctionExpr) {
+        if (ast.isAST2()) {
+          InterpolatingFunctionExpr ipf = (InterpolatingFunctionExpr) temp;
+          return F.unaryAST1(ipf, ast.arg2());
         }
-        return Errors.printMessage(ast.topHead(), "optx", F.list(S.Method, ast), engine);
       }
-      if (ast.isAST1()) {
-        if (dims[1] >= 2) {
-          int rowsSize = dims[0];
-          if (rowsSize >= 4) {
-            return piecewisePolynomialInterpolate(ast, rowsSize, engine);
-          }
-        }
+      return temp;
+    }
+    return F.NIL;
+  }
 
-        return F.NIL;
+  public IExpr interpolation(IAST ast, int[] dims, String method, EvalEngine engine) {
+    if (!method.isEmpty()) {
+      // TODO: if ("Spline".equals(method)) {
+      if ("Hermite".equalsIgnoreCase(method)) {
+        return hermiteInterpolate((IAST) ast.arg1(), dims, engine);
+      }
+      return Errors.printMessage(ast.topHead(), "optx", F.list(S.Method, ast), engine);
+    }
+    if (ast.argSize() == 1 || ast.argSize() == 2) {
+      if (dims[1] >= 2) {
+        int rowsSize = dims[0];
+        if (rowsSize >= 4) {
+          return piecewisePolynomialInterpolate(ast, rowsSize, engine);
+        }
       }
     }
     return F.NIL;
@@ -51,7 +62,7 @@ public class Interpolation extends AbstractEvaluator {
 
   public IExpr piecewisePolynomialInterpolate(final IAST ast, int rowsSize, EvalEngine engine) {
     final IAST function = ast;
-    if (function.isAST1()) {
+    if (function.argSize() == 1 || function.argSize() == 2) {
 
       if (rowsSize >= 4) {
         IAST matrix = (IAST) function.arg1();
@@ -133,6 +144,15 @@ public class Interpolation extends AbstractEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_1_5;
+    return IFunctionEvaluator.ARGS_1_2;
+  }
+
+  @Override
+  public void setUp(final ISymbol newSymbol) {
+    setOptions(newSymbol, //
+        new IBuiltInSymbol[] {//
+            S.Method}, //
+        new IExpr[] {//
+            S.Automatic});
   }
 }
