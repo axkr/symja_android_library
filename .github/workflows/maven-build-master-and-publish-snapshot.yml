@@ -7,7 +7,7 @@ name: Maven build and publish Master Snapshot
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, enable-gpg-signing ]
 
 jobs:
   maven-build-master-and-publish-to-maven-central:
@@ -22,9 +22,14 @@ jobs:
       with:
         gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
 
-    - run: mvn -f symja_android_library -B -U -P publish-to-maven-central,exact-target-jdk deploy
+    - run: mvn -f symja_android_library -B -U -e -Ppublish-to-maven-central,exact-target-jdk install
       # Deployment of all modules is deferred to the last module by nexus-staging-maven-plugin
       env:
         MAVEN_USERNAME: ${{ secrets.OSSRH_TOKEN_USERNAME }}
         MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN_PASSWORD }}
         MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+    - uses: actions/upload-artifact@v4
+      with:
+        name: Package
+        path: '**/target/*'
+        
