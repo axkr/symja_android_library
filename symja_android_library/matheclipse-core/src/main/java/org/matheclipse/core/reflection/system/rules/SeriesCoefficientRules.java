@@ -13,10 +13,13 @@ public class SeriesCoefficientRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 48 };
+  final public static int[] SIZES = { 0, 49 };
 
   final public static IAST RULES = List(
     IInit(SeriesCoefficient, SIZES),
+    // SeriesCoefficient(Fibonacci(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{-((-I*Pi-ArcCsch(2))^n+(I*Pi-ArcCsch(2))^n-2*ArcCsch(2)^n)/(2*Sqrt(5)*n!),n>=1}},0)/;FreeQ(n,x)
+    ISetDelayed(SeriesCoefficient(Fibonacci(x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
+      Condition(Piecewise(list(list(Times(CN1,Plus(Power(Subtract(Times(CNI,Pi),ArcCsch(C2)),n),Power(Subtract(Times(CI,Pi),ArcCsch(C2)),n),Times(CN2,Power(ArcCsch(C2),n))),Power(Times(C2,CSqrt5,Factorial(n)),CN1)),GreaterEqual(n,C1))),C0),FreeQ(n,x))),
     // SeriesCoefficient(HarmonicNumber(x_),{x_Symbol,a_,n_?NotListQ}):=Piecewise({{HarmonicNumber(a),n==0},{(-1)^(1+n)*Zeta(1+n,1+a),n>=1}},0)/;FreeQ(a,x)&&FreeQ(n,x)
     ISetDelayed(SeriesCoefficient(HarmonicNumber(x_),list(x_Symbol,a_,PatternTest(n_,NotListQ))),
       Condition(Piecewise(list(list(HarmonicNumber(a),Equal(n,C0)),list(Times(Power(CN1,Plus(C1,n)),Zeta(Plus(C1,n),Plus(C1,a))),GreaterEqual(n,C1))),C0),And(FreeQ(a,x),FreeQ(n,x)))),

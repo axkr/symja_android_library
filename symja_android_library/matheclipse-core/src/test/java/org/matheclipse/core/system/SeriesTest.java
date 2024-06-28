@@ -433,6 +433,10 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSeriesCoefficient() {
+    check("SeriesCoefficient(Fibonacci(z), {z, 0, n})", //
+        "Piecewise({{(-(-I*Pi-ArcCsch(2))^n-(I*Pi-ArcCsch(2))^n+2*ArcCsch(2)^n)/(2*Sqrt(5)*n!),n>=\n" //
+            + "1}},0)");
+
     // check("SeriesCoefficient(x^x,{x,2,4})", //
     // " ");
     check("SeriesCoefficient(1/x,{x,0,n})", //

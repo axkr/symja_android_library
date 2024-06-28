@@ -1,4 +1,7 @@
 {
+  SeriesCoefficient(Fibonacci(x_),{x_Symbol, 0, n_?NotListQ}) := Piecewise({{-((((-I)*Pi - ArcCsch(2))^n + (I*Pi - ArcCsch(2))^n-2*ArcCsch(2)^n)/(2*Sqrt(5)*n!)), n >= 1}}, 0)
+    /; FreeQ(n,x), 
+    
   SeriesCoefficient(HarmonicNumber(x_),{x_Symbol, a_, n_?NotListQ}) := Piecewise({{HarmonicNumber(a), n == 0}, {(-1)^(1 + n)*Zeta(1 + n, 1 + a), n >= 1}}, 0)
     /; FreeQ(a,x)&&FreeQ(n,x), 
     
