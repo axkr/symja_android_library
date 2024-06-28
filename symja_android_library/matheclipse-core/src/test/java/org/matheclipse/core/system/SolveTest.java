@@ -2120,6 +2120,18 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->ConditionalExpression(I*1/250000*Pi*C(1)+Log(125000)/500000,C(1)∈Integers)}}");
   }
 
+  @Test
+  public void testBigNSolve() {
+    check(
+        "NSolve({v1x==(((m1-m2)*u1*Cos(a1-Abs(a1-a2))+2*m2*u2*Cos(a2-Abs(a1-a2)))*Cos(Abs(a1-a2)))/(m1+m2)+u2*Cos(Abs(a1-a2))*Sin(a2-Abs(a1-a2)),v1y==u1*Cos(Abs(a1-a2))*Sin(a1-Abs(a1-a2))+(((m1-m2)*u1*Cos(a1-Abs(a1-a2))+\n" //
+            + "2*m2*u2*Cos(a2-Abs(a1-a2)))*Sin(Abs(a1-a2)))/(m1+m2),v2x==((2*m1*u1*Cos(a1-Abs(a1-a2))+(-m1+m2)*u2*Cos(a2-Abs(a1-a2)))*Cos(Abs(a1-a2)))/(m1+m2)+u2*Cos(Abs(a1-a2))*Sin(a2-Abs(a1-a2)),v2y==u2*Cos(Abs(a1-a2))*Sin(a2-Abs(a1-a2))+((\n" //
+            + "2*m1*u1*Cos(a1-Abs(a1-a2))+(-m1+m2)*u2*Cos(a2-Abs(a1-a2)))*Sin(Abs(a1-a2)))/(m1+m2),Tan(b1)==v1y/v1x,Tan(b2)==v2y/v2x,v1==Sqrt(v1x^\r\n"
+            + "2+v1y^2),v2==Sqrt(v2x^2+v2y^2),m1==1,m2==2,a1==Pi,a2==0,u1==3,u2==4},{m1,m2,v1x,v1y,v2x,v2y,v1,v2,a1,a2,b1,b2,u1,u2})", //
+        "{{a1->3.14159,a2->0.0,b1->0.0,b2->0.0,m1->1.0,m2->2.0,u1->3.0,u2->4.0,v1->-6.33333,v1x->6.33333,v1y->0.0,v2->-0.666667,v2x->-0.666667,v2y->0.0},{a1->3.14159,a2->0.0,b1->0.0,b2->0.0,m1->1.0,m2->2.0,u1->3.0,u2->4.0,v1->-6.33333,v1x->6.33333,v1y->0.0,v2->0.666667,v2x->-0.666667,v2y->0.0},{a1->3.14159,a2->0.0,b1->0.0,b2->0.0,m1->1.0,m2->2.0,u1->3.0,u2->4.0,v1->6.33333,v1x->6.33333,v1y->0.0,v2->-0.666667,v2x->-0.666667,v2y->0.0},{a1->3.14159,a2->0.0,b1->0.0,b2->0.0,m1->1.0,m2->2.0,u1->3.0,u2->4.0,v1->6.33333,v1x->6.33333,v1y->0.0,v2->0.666667,v2x->-0.666667,v2y->0.0}}");
+  }
+
+
+
   /** The JUnit setup method */
   @Override
   public void setUp() {

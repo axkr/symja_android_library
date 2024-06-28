@@ -1454,73 +1454,104 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("-1/3+x>6", "x>19/3");
     check("2*x+1>3*x", "1+2*x>3*x");
 
-    check("Sin(Pi/100)>Sin(Pi/101)", "True");
+    check("Sin(Pi/100)>Sin(Pi/101)", //
+        "True");
   }
 
   @Test
   public void testSystem128() {
-    check("5>4>a>3", "4>a>3");
+    check("5>4>a>3", //
+        "4>a>3");
   }
 
   @Test
   public void testSystem129() {
-    check("5>4>a>3>2>c", "4>a>3>2>c");
+    check("5>4>a>3>2>c", //
+        "4>a>3>2>c");
+
   }
 
   @Test
   public void testSystem130() {
-    check("5>4>a>3>2>1>z>w", "4>a>3>1>z>w");
+    check("5>4>a>3>2>1>z>w", //
+        "4>a>3>1>z>w");
   }
 
   @Test
   public void testSystem131() {
-    check("5>=5", "True");
-    check("3*x>=6", "x>=2");
-    check("-3*x>=6", "x<=-2");
-    check("3+x>=6", "x>=3");
-    check("-3+x>=6", "x>=9");
+    check("5>=5", //
+        "True");
+    check("3*x>=6", //
+        "x>=2");
+    check("-3*x>=6", //
+        "x<=-2");
+    check("3+x>=6", //
+        "x>=3");
+    check("-3+x>=6", //
+        "x>=9");
   }
 
   @Test
   public void testSystem132() {
-    check("5>=4>=a>=3", "4>=a>=3");
+    check("5>=4>=a>=3", //
+        "4>=a>=3");
   }
 
   @Test
   public void testSystem133() {
-    check("5>=4>=a>=3>=2>=c", "4>=a>=3>=2>=c");
+    check("5>=4>=a>=3>=2>=c", //
+        "4>=a>=3>=2>=c");
   }
 
   @Test
   public void testSystem134() {
-    check("5>=4>=a>=3>=2>=1>=z>=w", "4>=a>=3>=1>=z>=w");
+    check("5>=4>=a>=3>=2>=1>=z>=w", //
+        "4>=a>=3>=1>=z>=w");
   }
 
   @Test
   public void testSystem135() {
-    check("3<4<a<5<6", "4<a<5");
-    check("-1<1/2<1", "True");
-    check("3*x<6", "x<2");
-    check("-3*x<6", "x>-2");
-    check("3+x<6", "x<3");
-    check("-3+x<6", "x<9");
+    check("3<4<a<5<6", //
+        "4<a<5");
+    check("-1<1/2<1", //
+        "True");
+    check("3*x<6", //
+        "x<2");
+    check("-3*x<6", //
+        "x>-2");
+    check("3+x<6", //
+        "x<3");
+    check("-3+x<6", //
+        "x<9");
   }
 
   @Test
   public void testSystem136() {
-    check("0<1<=1", "True");
-    check("4<=4<=a<=5<=6", "4<=a<=5");
-    check("0<(1<2)", "True");
-    check("0>1>=1", "False");
-    check("0>(3>2)", "False");
-    check("4>=4>3", "True");
-    check("4>3>=3", "True");
+    check("0<1<=1", //
+        "True");
+    check("4<=4<=a<=5<=6", //
+        "4<=a<=5");
+    check("0<(1<2)", //
+        "True");
+    check("0>1>=1", //
+        "False");
+    check("0>(3>2)", //
+        "False");
+    check("4>=4>3", //
+        "True");
+    check("4>3>=3", //
+        "True");
 
-    check("4<=4<5", "True");
-    check("3*x<=6", "x<=2");
-    check("-3*x<=6", "x>=-2");
-    check("3+x<=6", "x<=3");
-    check("-3+x<=6", "x<=9");
+    check("4<=4<5", //
+        "True");
+    check("3*x<=6", //
+        "x<=2");
+    check("-3*x<=6", //
+        "x>=-2");
+    check("3+x<=6", //
+        "x<=3");
+    check("-3+x<=6", //
+        "x<=9");
   }
 
   @Test
@@ -3872,10 +3903,11 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "{1-a^4-a^2*b^2+a^6*b^2,-a-b+a^3*b^2+a^2*b^3,-a+a^5-c+a^4*c,-2*a^2+a*b+a^4*b^2-a*c+b*c,a^\n"
             + "2+2*a*c+c^2,a+b+c+d}");
     check(
-        "GroebnerBasis({a+b+c+d, a*b+a*d+b*c+c*d, a*b*c+a*b*d+a*c*d+b*c*d,1-a*b*c*d}, {d,c,b,a},MonomialOrder ->DegreeReverseLexicographic)",
-        "{a+b+c+d,a^2+2*a*c+c^2,-a^3+a*b^2-a^2*c+b^2*c,-1-a^4+a^3*b+a^2*b^2-a^3*c+a^2*b*c,-a+a^\n"
+        "GroebnerBasis({a+b+c+d, a*b+a*d+b*c+c*d, a*b*c+a*b*d+a*c*d+b*c*d,1-a*b*c*d}, {d,c,b,a},MonomialOrder ->DegreeReverseLexicographic)", //
+        "{a+b+c+d,a^2+2*a*c+c^2,-a^3+a*b^2-a^2*c+b^2*c,-1-a^4+a^3*b+a^2*b^2-a^3*c+a^2*b*c,-a+a^\n" //
             + "5-c+a^4*c,-a-b+a^3*b^2+a^2*b^3,-2*a^2+a*b+a^4*b^2-a*c+b*c}");
-    check("GroebnerBasis({x-1},{x})", "{-1+x}");
+    check("GroebnerBasis({x-1},{x})", //
+        "{-1+x}");
     // check(
     // "GroebnerBasis({a+b+c+d, a*b+a*d+b*c+c*d, a*b*c+a*b*d+a*c*d+b*c*d,
     // 1-a*b*c*d}, {d,c,b,a}, MonomialOrder->DegreeReverseLexicographic,
@@ -4047,15 +4079,21 @@ public class MainTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSystem1100() {
-    check("Coefficient(10*(x^2)+2*(y^2)+2*x,x,2)", "10");
+    check("Coefficient(10*(x^2)+2*(y^2)+2*x,x,2)", //
+        "10");
 
     // see Issue#28
-    check("Coefficient(y^2, x,2)", "0");
-    check("Coefficient(10*(x^2)+2*(y^2)+2*x,x,2)", "10");
-    check("Coefficient(10*(x^2)+1*(y^2)+2*x,x,2)", "10");
+    check("Coefficient(y^2, x,2)", //
+        "0");
+    check("Coefficient(10*(x^2)+2*(y^2)+2*x,x,2)", //
+        "10");
+    check("Coefficient(10*(x^2)+1*(y^2)+2*x,x,2)", //
+        "10");
     // see Issue#21
-    check("Coefficient(a*(x^3) + 0.5*(x^2) + 0.25*x + d, x, 2)", "0.5");
-    check("Coefficient(a*(x^3) + 0.5*(x^2) + 0.25*x + d, x, 2)", "0.5");
+    check("Coefficient(a*(x^3) + 0.5*(x^2) + 0.25*x + d, x, 2)", //
+        "0.5");
+    check("Coefficient(a*(x^3) + 0.5*(x^2) + 0.25*x + d, x, 2)", //
+        "0.5");
   }
 
   @Test
@@ -4069,7 +4107,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         + "{ 0.0, 0.0, 46.0, 666.0, 34.0, 13.0, 67.0, 9.0, 12.0, 45.0, 38.0, 0.0 }})", "6");
     // see Issue#25
     check(
-        "MatrixRank({{2, 0, -1, 0, 0},{1, 0, 0, -1, 0},{3, 0, 0, -2, -1},{0, 1, 0, 0, -2},{0, 1, -1, 0, 0}})",
+        "MatrixRank({{2, 0, -1, 0, 0},{1, 0, 0, -1, 0},{3, 0, 0, -2, -1},{0, 1, 0, 0, -2},{0, 1, -1, 0, 0}})", //
         "4");
     check("MatrixRank({{1, 2, 3, 4 },\n" + "{ 1, 1, 1, 1 },\n" + "{ 2, 3, 4, 5 },\n"
         + "{ 2, 2, 2, 2 }})", "2");
@@ -4080,12 +4118,14 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         + "{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },\n"
         + "{ 56.0,  4.0, 24.0, 56.0, 78.0, 0.0, 13.0, 0.0, 24.0, 57.0, 8.0, 1.0 },\n"
         + "{ 0.0, 0.0, 46.0, 666.0, 34.0, 13.0, 67.0, 9.0, 12.0, 45.0, 38.0, 0.0 }})", "6");
-    check("MatrixRank({{ 0, 0, 0, 0 }})", "0");
-    check("MatrixRank({{ 0.0, 1.0, 0.0, 0.0 }})", "1");
+    check("MatrixRank({{ 0, 0, 0, 0 }})", //
+        "0");
+    check("MatrixRank({{ 0.0, 1.0, 0.0, 0.0 }})", //
+        "1");
     check("MatrixRank({{1, 2, 0},\n" + "{0, 0, 0},\n" + "{0, 0, 0},\n" + "{0, 0, 0},\n"
         + "{0, 0, 1},\n" + "{0, 0, -1},\n" + "{1, 2, 1}})", "2");
 
-    check("MatrixRank({{ 5.0, 7.0, 10.0, 3.0, 5.0, 8.0 },\n"
+    check("MatrixRank({{ 5.0, 7.0, 10.0, 3.0, 5.0, 8.0 },\n" //
         + "{ 5.0, 2.0, 3.0, 10.0, 11.0, 9.0 },\n" + "{ 4.0, 3.0, 9.0, 12.0, 8.0, 9.0 }})", "3");
   }
 
@@ -4138,8 +4178,10 @@ public class MainTestCase extends ExprEvaluatorTestCase {
             + " {0.0,0.0,0.0,0.0,0.0,1.0,-71.94246,-45.37189,-9.85987,-42.21689,-13.79002,0.454309},\n"
             + " {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0}}");
 
-    check("RowReduce({{ 0, 0, 0, 0 }})", "{{0,0,0,0}}");
-    check("RowReduce({{ 0.0, 1.0, 0.0, 0.0 }})", "{{0.0,1.0,0.0,0.0}}");
+    check("RowReduce({{ 0, 0, 0, 0 }})", //
+        "{{0,0,0,0}}");
+    check("RowReduce({{ 0.0, 1.0, 0.0, 0.0 }})", //
+        "{{0.0,1.0,0.0,0.0}}");
 
     check(
         "RowReduce({{1, 2, 0},\n" + "{0, 0, 0},\n" + "{0, 0, 0},\n" + "{0, 0, 0},\n"
@@ -4158,14 +4200,18 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("RowReduce({{1,1,0,1,5},{1,0,0,2,2},{0,0,1,4,-1},{0,0,0,0,0}})",
         "{{1,0,0,2,2},\n" + " {0,1,0,-1,3},\n" + " {0,0,1,4,-1},\n" + " {0,0,0,0,0}}");
 
-    check("RowReduce({{0,0,0},{0,0,0}})", "{{0,0,0},\n" + " {0,0,0}}");
+    check("RowReduce({{0,0,0},{0,0,0}})", //
+        "{{0,0,0},\n"//
+            + " {0,0,0}}");
   }
 
   @Test
   public void testSystem1103() {
     // see Issue#77
-    check("NullSpace({{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}})", "{}");
-    check("NullSpace({{1,1.4,0},{3,2.5,7},{0.2546,2,0}})", "{}");
+    check("NullSpace({{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}})", //
+        "{}");
+    check("NullSpace({{1,1.4,0},{3,2.5,7},{0.2546,2,0}})", //
+        "{}");
     // see Issue#25
     check("NullSpace({{1,0,-3,0,2,-8}," + "{0,1,5,0,-1,4}," + "{0,0,0,1,7,-9}," + "{0,0,0,0,0,0}})", //
         "{{8,-4,0,9,0,1},\n" + //
@@ -4180,7 +4226,8 @@ public class MainTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSystem1105() {
-    check("$p(Sin(x_)^m_IntegerQ):=f(x)^(-m)/;m<0;$p(Sin(x)^2)", "$p(Sin(x)^2)");
+    check("$p(Sin(x_)^m_IntegerQ):=f(x)^(-m)/;m<0;$p(Sin(x)^2)", //
+        "$p(Sin(x)^2)");
   }
 
   @Test
@@ -4234,12 +4281,18 @@ public class MainTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testIssue96() {
     // check("LinearSolve({{2,8},{-5,-20}},{6,-15})", "{3,0}");
-    check("Solve({2*x+7*y==6,-5*x-20*y==-15},{x,y})", "{{x->3,y->0}}");
-    check("Solve({2*x+8*y==6,-5*x-20*y==-15},{x,y})", "{{x->3-4*y}}");
-    check("Solve({3*x+2*y-z==1,2*x-2*y+4*z==-2,-x+1/2*y-z==0},{x,y,z})", "{{x->1,y->-2,z->-2}}");
-    check("Solve({x+3*y-2*z==5,3*x+5*y+6*z==7},{x,y,z})", "{{x->-1-7*z,y->2+3*z}}");
-    check("Solve({x+y==62,x-6==4*(y-6)},{x,y})", "{{x->46,y->16}}");
-    check("Solve({3*x==2,4*x==2},{x})", "{}");
+    check("Solve({2*x+7*y==6,-5*x-20*y==-15},{x,y})", //
+        "{{x->3,y->0}}");
+    check("Solve({2*x+8*y==6,-5*x-20*y==-15},{x,y})", //
+        "{{x->3-4*y}}");
+    check("Solve({3*x+2*y-z==1,2*x-2*y+4*z==-2,-x+1/2*y-z==0},{x,y,z})", //
+        "{{x->1,y->-2,z->-2}}");
+    check("Solve({x+3*y-2*z==5,3*x+5*y+6*z==7},{x,y,z})", //
+        "{{x->-1-7*z,y->2+3*z}}");
+    check("Solve({x+y==62,x-6==4*(y-6)},{x,y})", //
+        "{{x->46,y->16}}");
+    check("Solve({3*x==2,4*x==2},{x})", //
+        "{}");
   }
 
   @Test
@@ -4271,20 +4324,24 @@ public class MainTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testHMCLinearSolve() {
     // https://www.math.hmc.edu/calculus/tutorials/linearsystems
-    check("LinearSolve({{1,0,0},{0,1,0},{0,0,1}},{2,3,-4})", "{2,3,-4}");
-    check("LinearSolve({{1,0,-3},{0,1,2},{0,0,0}},{-5,4,0})", "{-5,4,0}");
+    check("LinearSolve({{1,0,0},{0,1,0},{0,0,1}},{2,3,-4})", //
+        "{2,3,-4}");
+    check("LinearSolve({{1,0,-3},{0,1,2},{0,0,0}},{-5,4,0})", //
+        "{-5,4,0}");
 
     // prints additional message to console
-    check("LinearSolve({{1,0,0},{0,1,0},{0,0,0}},{3,2,1})",
+    check("LinearSolve({{1,0,0},{0,1,0},{0,0,0}},{3,2,1})", //
         "LinearSolve(\n" + "{{1,0,0},\n" + " {0,1,0},\n" + " {0,0,0}},{3,2,1})");
 
-    check("LinearSolve({{1,2,3},{2,-1,1},{3,0,-1}},{9,8,3})", "{2,-1,3}");
+    check("LinearSolve({{1,2,3},{2,-1,1},{3,0,-1}},{9,8,3})", //
+        "{2,-1,3}");
   }
 
   @Test
   public void testHMCSolve() {
     // https://www.math.hmc.edu/calculus/tutorials/linearsystems
-    check("Solve({x+2*y+3*z==9,2*x-y+z==8,3*x-z==3},{x,y,z})", "{{x->2,y->-1,z->3}}");
+    check("Solve({x+2*y+3*z==9,2*x-y+z==8,3*x-z==3},{x,y,z})", //
+        "{{x->2,y->-1,z->3}}");
   }
 
   @Test

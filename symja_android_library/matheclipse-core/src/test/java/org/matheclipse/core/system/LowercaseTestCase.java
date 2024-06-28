@@ -9141,6 +9141,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFullSimplify() {
+    check("FullSimplify( 3*E^(-x)+7*E^x )", //
+        "10*Cosh(x)+4*Sinh(x)");
+    check("Simplify( 3*E^(-x)+7*E^x )", //
+        "3/E^x+7*E^x");
+
+
     // https://github.com/axkr/symja_android_library/issues/856
     check("FullSimplify((4+3*Sqrt(2)+Sqrt(3)+Sqrt(6))/(2+Sqrt(2)+Sqrt(3)))", //
         "1+Sqrt(2)");
