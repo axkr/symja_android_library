@@ -4715,16 +4715,21 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   private static boolean isTrigonometricFunction(IExpr x) {
     if (x.isAST1()) {
-      final IExpr head = x.head();
-      if (head.isBuiltInSymbol()) {
-        return (head == S.ArcCos) || (head == S.ArcCsc) || (head == S.ArcCot) || (head == S.ArcSec)
-            || (head == S.ArcSin) || (head == S.ArcTan) || (head == S.Cos) || (head == S.Csc)
-            || (head == S.Cot) || (head == S.Sec) || (head == S.Sin) || (head == S.Sinc)
-            || (head == S.Tan) || (head == S.Cosh) || (head == S.Csch) || (head == S.Coth)
-            || (head == S.Sech) || (head == S.Sinh) || (head == S.Tanh) || (head == S.Haversine)
-            || (head == S.InverseHaversine);
-      }
+      return ((IAST) x).isFunctionID(ID.ArcCos, ID.ArcCsc, ID.ArcCot, ID.ArcSec, ID.ArcSin,
+          ID.ArcTan, ID.Cos, ID.Cosh, ID.Cot, ID.Coth, ID.Csc, ID.Csch, ID.Haversine,
+          ID.InverseHaversine, ID.Sec, ID.Sech, ID.Sin, ID.Sinh, ID.Sinc, ID.Tan, ID.Tanh);
     }
+    // if (x.isAST1()) {
+    // final IExpr head = x.head();
+    // if (head.isBuiltInSymbol()) {
+    // return (head == S.ArcCos) || (head == S.ArcCsc) || (head == S.ArcCot) || (head == S.ArcSec)
+    // || (head == S.ArcSin) || (head == S.ArcTan) || (head == S.Cos) || (head == S.Csc)
+    // || (head == S.Cot) || (head == S.Sec) || (head == S.Sin) || (head == S.Sinc)
+    // || (head == S.Tan) || (head == S.Cosh) || (head == S.Csch) || (head == S.Coth)
+    // || (head == S.Sech) || (head == S.Sinh) || (head == S.Tanh) || (head == S.Haversine)
+    // || (head == S.InverseHaversine);
+    // }
+    // }
     if (x.isAST2()) {
       return x.head() == S.ArcTan;
     }
@@ -4734,29 +4739,39 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isHyperbolicFunction() {
-    int id = headID();
-    if (id >= 0) {
-      if (size() == 2) {
-        return id == ID.Cosh || id == ID.ArcCosh || id == ID.Coth || id == ID.ArcCoth
-            || id == ID.Csch || id == ID.ArcCsch || id == ID.Sech || id == ID.ArcSech
-            || id == ID.Sinh || id == ID.ArcSinh || id == ID.Tanh || id == ID.ArcTanh;
-      }
+    if (size() == 2) {
+      return isFunctionID(ID.ArcCosh, ID.ArcCoth, ID.ArcCsch, ID.ArcSech, ID.ArcSinh, ID.ArcTanh,
+          ID.Cosh, ID.Coth, ID.Csch, ID.Sech, ID.Sinh, ID.Tanh);
     }
     return false;
+    // int id = headID();
+    // if (id >= 0) {
+    // if (size() == 2) {
+    // return id == ID.Cosh || id == ID.ArcCosh || id == ID.Coth || id == ID.ArcCoth
+    // || id == ID.Csch || id == ID.ArcCsch || id == ID.Sech || id == ID.ArcSech
+    // || id == ID.Sinh || id == ID.ArcSinh || id == ID.Tanh || id == ID.ArcTanh;
+    // }
+    // }
+    // return false;
   }
 
   @Override
   public final boolean isPatternMatchingFunction() {
-    final int id = headID();
-    if (id >= ID.Alternatives && id <= ID.RepeatedNull) {
-      if (size() >= 2) {
-        return id == ID.HoldPattern || id == ID.Literal || id == ID.Condition
-            || id == ID.Alternatives || id == ID.Except || id == ID.Complex || id == ID.Rational
-            || id == ID.Optional || id == ID.PatternTest || id == ID.Repeated
-            || id == ID.RepeatedNull;
-      }
+    if (size() >= 2) {
+      return isFunctionID(ID.Alternatives, ID.Complex, ID.Condition, ID.Except, ID.HoldPattern,
+          ID.Literal, ID.Optional, ID.PatternTest, ID.Rational, ID.Repeated, ID.RepeatedNull);
     }
     return false;
+    // final int id = headID();
+    // if (id >= ID.Alternatives && id <= ID.RepeatedNull) {
+    // if (size() >= 2) {
+    // return id == ID.HoldPattern || id == ID.Literal || id == ID.Condition
+    // || id == ID.Alternatives || id == ID.Except || id == ID.Complex || id == ID.Rational
+    // || id == ID.Optional || id == ID.PatternTest || id == ID.Repeated
+    // || id == ID.RepeatedNull;
+    // }
+    // }
+    // return false;
   }
 
   /** {@inheritDoc} */

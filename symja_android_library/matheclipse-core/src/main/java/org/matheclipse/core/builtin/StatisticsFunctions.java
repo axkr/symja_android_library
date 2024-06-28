@@ -3437,7 +3437,7 @@ public class StatisticsFunctions {
     }
 
     @Override
-    public IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
+    public IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker, IAST ast) {
       return F.NIL;
     }
 
@@ -3455,7 +3455,7 @@ public class StatisticsFunctions {
     }
 
     @Override
-    public IExpr realMatrixEval(RealMatrix matrix, EvalEngine engine) {
+    public IExpr realMatrixEval(RealMatrix matrix, EvalEngine engine, IAST ast) {
       if (matrix.getRowDimension() <= 1) {
         // The argument `1` should have at least `2` arguments.
         return Errors.printMessage(S.Covariance, "shlen",
