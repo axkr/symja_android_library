@@ -13,9 +13,12 @@
  ArcSin(Sqrt(x_^2)) := (Sqrt(x^2)*ArcSin(x))/x,
  ArcSin(x_^(-1)) := ArcCsc(x),
  
+ Cos(Pi/60) = -(-1/8*Sqrt(3)*(-1+Sqrt(5))-Sqrt(1/2*(5+Sqrt(5)))/4)/Sqrt(2)-(1/8*(-1+Sqrt(5))-Sqrt(3/2*(5+Sqrt(5)))/4)/Sqrt(2),
  Cos(n_Integer*ArcSin(z_)) := ChebyshevT(n, Sqrt(1-z^2))
   /; n>0,
- 
+ Cos(n_Integer*ArcCot(z_)) := n*Sum(((-1)^k*(-1-k+n)!)/(2^(1+2*k-n)*k!*(-2*k+n)!)*((1+z^2)/z^2)^(k-n/2),{k,0,Floor(n/2)})
+   /; n > 0,
+  
  CosIntegral(Sqrt(z_^n_)) := CosIntegral(z^(n/2)) - Log(z^(n/2)) + Log(z^n)/2,
  CoshIntegral(Sqrt(z_^n_)) :=  CoshIntegral(z^(n/2)) - Log(z^(n/2)) + Log(z^n)/2,
  
@@ -128,6 +131,7 @@
   /; x > 1/E,
  E^ProductLog(x_) := x/ProductLog(x),
   
+ Sin(Pi/60) = -(-1/8*Sqrt(3)*(-1+Sqrt(5))-Sqrt(1/2*(5+Sqrt(5)))/4)/Sqrt(2)+(1/8*(-1+Sqrt(5))-Sqrt(3/2*(5+Sqrt(5)))/4)/Sqrt(2),
  Sin(n_Integer*ArcSin(z_)) := z*ChebyshevU(n - 1, Sqrt(1 - z^2))
   /; n > 0,
  Sin(n_Integer*ArcTan(z_)) := Sum((-1)^k*Binomial(n, 2*k + 1)*z^(2*k + 1), {k, 0, Floor((n-1)/2)}) / (1 + z^2)^(n/2) 

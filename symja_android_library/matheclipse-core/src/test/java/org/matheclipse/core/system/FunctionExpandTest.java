@@ -242,6 +242,20 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFunctionExpandCos() {
+    check("FunctionExpand(Cos(3*Degree))", //
+        "(1/8*Sqrt(3)*(-1+Sqrt(5))+Sqrt(1/2*(5+Sqrt(5)))/4)/Sqrt(2)+(1/8*(1-Sqrt(5))+Sqrt(\n" //
+            + "3/2*(5+Sqrt(5)))/4)/Sqrt(2)");
+  }
+
+  @Test
+  public void testFunctionExpandSin() {
+    check("FunctionExpand(Sin(3*Degree))", //
+        "(1/8*Sqrt(3)*(-1+Sqrt(5))+Sqrt(1/2*(5+Sqrt(5)))/4)/Sqrt(2)+(1/8*(-1+Sqrt(5))-Sqrt(\n"
+            + "3/2*(5+Sqrt(5)))/4)/Sqrt(2)");
+  }
+
+  @Test
   public void testFunctionExpandFactorialPower() {
     check("FunctionExpand(FactorialPower(b,3))", //
         "(-2+b)*(-1+b)*b");

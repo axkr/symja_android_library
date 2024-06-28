@@ -42,9 +42,15 @@ public class FunctionExpandRules {
     // ArcSin(1/x_):=ArcCsc(x)
     SetDelayed(ArcSin(Power(x_,CN1)),
       ArcCsc(x)),
+    // Cos(Pi/60)=-(-1/8*Sqrt(3)*(-1+Sqrt(5))-Sqrt(1/2*(5+Sqrt(5)))/4)/Sqrt(2)-(1/8*(-1+Sqrt(5))-Sqrt(3/2*(5+Sqrt(5)))/4)/Sqrt(2)
+    Set(Cos(Times(QQ(1L,60L),Pi)),
+      Plus(Times(C1DSqrt2,Plus(Times(QQ(1L,8L),CSqrt3,Plus(CN1,CSqrt5)),Times(C1D4,Sqrt(Times(C1D2,Plus(C5,CSqrt5)))))),Times(C1DSqrt2,Plus(Times(QQ(1L,8L),Subtract(C1,CSqrt5)),Times(C1D4,Sqrt(Times(QQ(3L,2L),Plus(C5,CSqrt5)))))))),
     // Cos(n_Integer*ArcSin(z_)):=ChebyshevT(n,Sqrt(1-z^2))/;n>0
     SetDelayed(Cos(Times(ArcSin(z_),$p(n, Integer))),
       Condition(ChebyshevT(n,Sqrt(Subtract(C1,Sqr(z)))),Greater(n,C0))),
+    // Cos(n_Integer*ArcCot(z_)):=n*Sum(((-1)^k*(-1-k+n)!)/(2^(1+2*k-n)*k!*(-2*k+n)!)*((1+z^2)/z^2)^(k-n/2),{k,0,Floor(n/2)})/;n>0
+    SetDelayed(Cos(Times(ArcCot(z_),$p(n, Integer))),
+      Condition(Times(n,Sum(Times(Power(CN1,k),Factorial(Plus(CN1,Negate(k),n)),Power(Times(Power(C2,Plus(C1,Times(C2,k),Negate(n))),Factorial(k),Factorial(Plus(Times(CN2,k),n))),CN1),Power(Times(Power(z,CN2),Plus(C1,Sqr(z))),Plus(k,Times(CN1D2,n)))),list(k,C0,Floor(Times(C1D2,n))))),Greater(n,C0))),
     // CosIntegral(Sqrt(z_^n_)):=CosIntegral(z^(n/2))-Log(z^(n/2))+Log(z^n)/2
     SetDelayed(CosIntegral(Sqrt(Power(z_,n_))),
       Plus(CosIntegral(Power(z,Times(C1D2,n))),Negate(Log(Power(z,Times(C1D2,n)))),Times(C1D2,Log(Power(z,n))))),
@@ -267,6 +273,9 @@ public class FunctionExpandRules {
     // E^ProductLog(x_):=x/ProductLog(x)
     SetDelayed(Exp(ProductLog(x_)),
       Times(x,Power(ProductLog(x),CN1))),
+    // Sin(Pi/60)=-(-1/8*Sqrt(3)*(-1+Sqrt(5))-Sqrt(1/2*(5+Sqrt(5)))/4)/Sqrt(2)+(1/8*(-1+Sqrt(5))-Sqrt(3/2*(5+Sqrt(5)))/4)/Sqrt(2)
+    Set(Sin(Times(QQ(1L,60L),Pi)),
+      Plus(Times(C1DSqrt2,Plus(Times(QQ(1L,8L),CSqrt3,Plus(CN1,CSqrt5)),Times(C1D4,Sqrt(Times(C1D2,Plus(C5,CSqrt5)))))),Times(C1DSqrt2,Plus(Times(QQ(1L,8L),Plus(CN1,CSqrt5)),Times(CN1D4,Sqrt(Times(QQ(3L,2L),Plus(C5,CSqrt5)))))))),
     // Sin(n_Integer*ArcSin(z_)):=z*ChebyshevU(-1+n,Sqrt(1-z^2))/;n>0
     SetDelayed(Sin(Times(ArcSin(z_),$p(n, Integer))),
       Condition(Times(z,ChebyshevU(Plus(CN1,n),Sqrt(Subtract(C1,Sqr(z))))),Greater(n,C0))),
