@@ -410,13 +410,6 @@ public class SimplifyFunctions {
           }
 
           try {
-            temp = eval(F.ExpToTrig(expr));
-            simplifiedResult.checkLess(temp);
-          } catch (ValidateException ve) {
-            //
-          }
-
-          try {
             IExpr together = expr;
             if (simplifiedResult.minCounter < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT) {
               together = eval(F.Together(expr));
@@ -440,6 +433,10 @@ public class SimplifyFunctions {
                   tryPolynomialQuotientRemainder(numerator, denominator, simplifiedResult);
                 }
               }
+
+              temp = eval(F.ExpToTrig(expr));
+              simplifiedResult.checkLess(temp);
+
             }
 
           } catch (ValidateException wat) {
@@ -917,7 +914,10 @@ public class SimplifyFunctions {
             plusAST.setEvalFlags(plusAST.getEvalFlags() ^ IAST.IS_HASH_EVALED);
             temp = hashRuleMap.evaluateRepeated(plusAST, fEngine);
             if (temp.isPresent()) {
-              return eval(temp);
+              temp = eval(temp);
+              if (sResult.checkLess(temp)) {
+                return temp;
+              }
             }
           }
           functionExpand(plusAST, sResult);
