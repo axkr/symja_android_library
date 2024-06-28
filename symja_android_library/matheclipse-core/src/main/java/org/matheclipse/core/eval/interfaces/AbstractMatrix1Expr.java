@@ -49,13 +49,13 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
         if (ast.arg1().isNumericArgument(true)) {
           RealMatrix m = ast.arg1().toRealMatrix();
           if (m != null) {
-            return realMatrixEval(m, engine);
+            return realMatrixEval(m, engine, ast);
           }
         }
         matrix = Convert.list2Matrix(ast.arg1());
         if (matrix != null) {
           Predicate<IExpr> zeroChecker = optionZeroTest(ast, 2, engine);
-          return matrixEval(matrix, zeroChecker);
+          return matrixEval(matrix, zeroChecker, ast);
         }
       }
     } catch (LimitException le) {
@@ -79,9 +79,10 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
    *
    * @param matrix the matrix which contains symbolic values
    * @param zeroChecker test if a calculation is <code>0</code>.
+   * @param ast TODO
    * @return <code>F.NIL</code> if the evaluation isn't possible
    */
-  public abstract IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker);
+  public abstract IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker, IAST ast);
 
   @Override
   public IExpr numericEval(final IAST ast, final EvalEngine engine) {
@@ -89,23 +90,27 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
     IExpr arg1 = ast.arg1();
     int[] dim = checkMatrixDimensions(arg1);
     if (dim != null) {
+      int maxValues = -1;
+      if (ast.isAST2()) {
+        maxValues = ast.arg2().toIntDefault(-1);
+      }
       try {
         if (engine.isArbitraryMode()) {
           FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(arg1);
           if (fieldMatrix != null) {
             Predicate<IExpr> zeroChecker = optionZeroTest(ast, 2, engine);
-            return matrixEval(fieldMatrix, zeroChecker);
+            return matrixEval(fieldMatrix, zeroChecker, ast);
           }
           return F.NIL;
         }
         matrix = arg1.toRealMatrix();
         if (matrix != null) {
-          return realMatrixEval(matrix, engine);
+          return realMatrixEval(matrix, engine, ast);
         } else {
           FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(arg1);
           if (fieldMatrix != null) {
             Predicate<IExpr> zeroChecker = optionZeroTest(ast, 2, engine);
-            return matrixEval(fieldMatrix, zeroChecker);
+            return matrixEval(fieldMatrix, zeroChecker, ast);
           }
         }
       } catch (LimitException le) {
@@ -139,7 +144,9 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
    *
    * @param matrix the matrix which contains numeric values
    * @param engine TODO
+   * @param ast TODO
    * @return <code>F.NIL</code> if the evaluation isn't possible
    */
-  public abstract IExpr realMatrixEval(RealMatrix matrix, EvalEngine engine);
+  public abstract IExpr realMatrixEval(RealMatrix matrix, EvalEngine engine, IAST ast);
+
 }

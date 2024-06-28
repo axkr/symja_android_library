@@ -3,6 +3,7 @@ package org.matheclipse.core.system;
 import static org.junit.Assert.assertEquals;
 import org.apfloat.Apint;
 import org.junit.Test;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
@@ -556,10 +557,14 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testEigensystem() {
-    check("Chop(Eigensystem({{1,0,0,0,0},{3,1,0,0,0},{6,3,2,0,0},{10,6,3,2,0},{15,10,6,3,2}}))", //
-        "{{2.00004,1.99998+I*0.0000311927,1.99998+I*(-0.0000311927),1.0,1.0},{{0,0,0,2.18359*10^-6,1.0},{\n" //
-            + "0,0,0,0,0},{0,0,0,0,0},{2.87584*10^-9,0.223607,-0.67082,0.67082,-0.223607},{0,0,\n" //
-            + "0,0,0}}}");
+    check("Eigensystem(Table(If(Abs(i - j) < 3, 1.0, 0), {i, 5}, {j, 5}), 3)", //
+        "{{3.93543,1.61803,-0.618034},"//
+            + "{{0.350542,0.469959,0.559033,0.469959,0.350542}," //
+            + "{-0.601501,-0.371748,8.98084*10^-17,0.371748,0.601501},"//
+            + "{0.371748,-0.601501,-4.53187*10^-16,0.601501,-0.371748}}}");
+
+    check("Eigensystem({{1,0,0,0,0},{3,1,0,0,0},{6,3,2,0,0},{10,6,3,2,0},{15,10,6,3,2}})", //
+        "{{2,2,2,1,1},{{0,0,0,0,1},{0,0,0,0,0},{0,0,0,0,0},{0,-1,3,-3,1},{0,0,0,0,0}}}");
 
     // example from https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors
     check(//
@@ -567,22 +572,22 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{3.0,3.0,2.0,2.0},{{0,0,0,1.0},{0,0,0,0},{0,0.57735,-0.57735,0.57735},{0,0,0,0}}}");
 
     check("Eigensystem({{1,0,0},{0,1,0},{0,0,1}})", //
-        "{{1.0,1.0,1.0},{{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}}}");
+        "{{1,1,1},{{1,0,0},{0,1,0},{0,0,1}}}");
     check("Eigensystem({{1,0,0},{-2,1,0},{0,0,1}})", //
-        "{{1.0,1.0,1.0},{{-2.50055*10^-13,1.0,0.0},{0.0,0.0,1.0},{0.0,0.0,0.0}}}");
+        "{{1,1,1},{{0,1,0},{0,0,1},{0,0,0}}}");
 
     check("Eigensystem({{1.1, 2.2, 3.25}, {0.76, 4.6, 5}, {0.1, 0.1, 6.1}})", //
         "{{6.60674,4.52536,0.667901},{{0.48687,0.833694,0.260598},{0.479424,0.873368,-0.085911},{0.985096,-0.171352,-0.0149803}}}");
-    check("Eigensystem(Table(N(1/(i + j + 1) ), {i, 3}, {j, 3}))", //
+    check("Eigensystem(N(Table(1/(i + j + 1), {i, 3}, {j, 3})))", //
         "{{0.657051,0.0189263,0.000212737},{{0.703153,0.549268,0.451532},{-0.668535,0.29444,0.68291},{-0.242151,0.782055,-0.574241}}}");
   }
 
   @Test
   public void testEigenvalues() {
-    check("Eigenvalues({{1, 0, 0}, {-2, 1, 0}, {0, 1, 1}})", //
-        "{1,1,1}");
     check("Eigenvalues({{1,0,0,0,0},{3,1,0,0,0},{6,3,2,0,0},{10,6,3,2,0},{15,10,6,3,2}})", //
         "{2,2,2,1,1}");
+    check("Eigenvalues({{1, 0, 0}, {-2, 1, 0}, {0, 1, 1}})", //
+        "{1,1,1}");
     check("Eigenvalues({{7}},-1)", //
         "{7.0}");
     check("Eigenvalues({{-1}},1)", //
@@ -673,17 +678,47 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testEigenvectors() {
-    // TODO https://github.com/Hipparchus-Math/hipparchus/issues/337
-    check("Eigenvectors({{1, 0, 0}, {-2, 1, 0}, {0, 1, 1}})", //
-        "{{0.0,0.0,1.0},{0.0,-6.66134*10^-16,1.0},{0.0,6.66134*10^-16,-1.0}}");
-    check("Eigenvectors({{1,0,0,0,0},{3,1,0,0,0},{6,3,2,0,0},{10,6,3,2,0},{15,10,6,3,2}})", //
-        "{{0.0,0.0,2.62433*10^-12,2.18359*10^-6,1.0},{0.0,0.0,0.0,0.0,0.0},{0.0,0.0,0.0,0.0,0.0},{2.87584*10^-9,0.223607,-0.67082,0.67082,-0.223607},{0.0,0.0,0.0,0.0,0.0}}");
+    check("Eigenvectors({{-8, -6, 9, 10}, {-6, -4, 0, 6}, {0, 0, -4, 0}, {-10, -6, 9, 12}})", //
+        "{{1,1,0,1},{0,3,2,0},{1,0,0,1},{0,0,0,0}}");
+
+    if (Config.EXPENSIVE_JUNIT_TESTS) {
+      // slow because of first trying symbolic computation
+      check("Eigenvectors({{1/3, 1/2, 3/5}, {1/2, 4/5, 1}, {3/5, 1, 9/7}}) // N", //
+          "{{0.488797,0.792073,1.0},{-1.3983+I*(-1.49544*10^-11),-0.399603+I*(-3.33265*10^-13),1.0},{1.30633+I*(-4.69012*10^-12),-2.06866+I*(-1.40389*10^-12),1.0}}");
+    }
+
+    check("Eigenvectors({{Pi, 1/3}, {I, 5}})", //
+        "{{-I*1/2*(-5+Pi-Sqrt(25+I*4/3-10*Pi+Pi^2)),1},{-I*1/2*(-5+Pi+Sqrt(25+I*4/3-10*Pi+Pi^\n"
+            + "2)),1}}");
 
     check("Eigenvectors(SparseArray({{1.0, 2.0, 3}, {4, 5, 6}, {7, 8, 9}}))", //
         "{{0.231971,0.525322,0.818673},{0.78583,0.0867513,-0.612328},{-0.408248,0.816497,-0.408248}}");
+
+
+    check("Eigenvectors({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}})", //
+        "{{1,0,0},{0,1,0},{0,0,1}}");
+
+    // only 2 eigenvectors => fill up with 0.0 vector
+    // see https://github.com/Hipparchus-Math/hipparchus/issues/249
+    check("Eigenvectors({{1,0,0},{-2,1,0},{0,0,1}})", //
+        "{{0,1,0},{0,0,1},{0,0,0}}");
+    check("Eigenvalues({{1,0,0},{-2,1,0},{0,0,1}})", //
+        "{1,1,1}");
+
+    check("Eigenvectors({{-8, -6, 9, 10}, {-6, -4, 0, 6}, {0, 0, -4, 0}, {-10, -6, 9, 12}})", //
+        "{{1,1,0,1},{0,3,2,0},{1,0,0,1},{0,0,0,0}}");
+
+    // TODO https://github.com/Hipparchus-Math/hipparchus/issues/337
+    check("Eigenvectors({{1, 0, 0}, {-2, 1, 0}, {0, 1, 1}})", //
+        "{{0,0,1},{0,0,0},{0,0,0}}");
+    check("Eigenvectors({{1,0,0,0,0},{3,1,0,0,0},{6,3,2,0,0},{10,6,3,2,0},{15,10,6,3,2}})", //
+        "{{0,0,0,0,1},{0,0,0,0,0},{0,0,0,0,0},{0,-1,3,-3,1},{0,0,0,0,0}}");
     check("Eigenvectors({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}) // MatrixForm", //
-        "{{0.231971,0.525322,0.818673},\n" //
-            + " {0.78583,0.0867513,-0.612328},\n" + " {-0.408248,0.816497,-0.408248}}");
+        "{{-(82680+14472*Sqrt(33))/((-13-3*Sqrt(33))*(9636+1692*Sqrt(33))),(-12*(17+3*Sqrt(\n" //
+            + "33)))/(-330-54*Sqrt(33)),1},\n" //
+            + " {(-82680+14472*Sqrt(33))/((9636-1692*Sqrt(33))*(-13+3*Sqrt(33))),(-12*(17-3*Sqrt(\n" //
+            + "33)))/(-330+54*Sqrt(33)),1},\n" //
+            + " {1,-2,1}}");
 
     check("Eigenvalues({{1.1, 2.2, 3.25}, {0.76, 4.6, 5}, {0.1, 0.1, 6.1}}) // MatrixForm", //
         "{6.60674,4.52536,0.667901}");
@@ -706,15 +741,6 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Eigenvectors({{a, b}, {c, d}})", //
         "{{(a-d-Sqrt(a^2+4*b*c-2*a*d+d^2))/(2*c),1},{(a-d+Sqrt(a^2+4*b*c-2*a*d+d^2))/(2*c),\n" + //
             "1}}");
-    check("Eigenvectors({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}})", //
-        "{{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}}");
-
-    // only 2 eigenvectors => fill up with 0.0 vector
-    // see https://github.com/Hipparchus-Math/hipparchus/issues/249
-    check("Eigenvectors({{1,0,0},{-2,1,0},{0,0,1}})", //
-        "{{-2.50055*10^-13,1.0,0.0},{0.0,0.0,1.0},{0.0,0.0,0.0}}");
-    check("Eigenvalues({{1,0,0},{-2,1,0},{0,0,1}})", //
-        "{1,1,1}");
 
   }
 
@@ -725,7 +751,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Eigenvectors({{1,0,0},\n" //
         + "{-2,1,0},\n"//
         + "{0,1,1}})", //
-        "{{0.0,0.0,1.0},{0.0,-6.66134*10^-16,1.0},{0.0,6.66134*10^-16,-1.0}}");
+        "{{0,0,1},{0,0,0},{0,0,0}}");
   }
 
   @Test
@@ -735,10 +761,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("{Normalize[{-1,1}],Normalize[{1,0}] }", //
         "{{-1/Sqrt(2),1/Sqrt(2)},{1,0}}");
     check("Eigenvectors({{-2,-2,4}, {-1,-3,7}, {2, 4, 6.00001}})", //
-        "{{0.223932,0.482825,0.846602},{0.580105,0.74736,-0.323932},{0.894427,-0.447214,0.0}}");
+        "{{0.223932,0.482825,0.846602},{0.580105,0.74736,-0.323932},{0.894427,-0.447214,-7.22845*10^-18}}");
+
   }
-
-
 
   @Test
   public void testFromPolarCoordinates() {
@@ -1493,6 +1518,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNullSpace() {
+    check("NullSpace({{10, 4, -6, -4}, {4, 10, -15, -4}, {0, 0, 0, 0}, {4, 4, -6, 2}} )", //
+        "{{0,3,2,0}}");
+
     // TODO check results:
     check("NullSpace({{1, 2}, {2, 4}})", //
         "{{-2,1}}");
@@ -1852,6 +1880,11 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRowReduce001() {
+    check("RowReduce({{10, 4, -6, -4}, {4, 10, -15, -4}, {0, 0, 0, 0}, {4, 4, -6, 2}} )", //
+        "{{1,0,0,0},\n" //
+            + " {0,1,-3/2,0},\n" //
+            + " {0,0,0,1},\n" //
+            + " {0,0,0,0}}");
     check("RowReduce(\n" //
         + "{{1,-1,1}, {1,5,7}, {1,-7,-5}})", //
         "{{1,0,2},\n"//

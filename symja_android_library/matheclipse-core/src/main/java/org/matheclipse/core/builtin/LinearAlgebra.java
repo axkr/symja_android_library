@@ -5,8 +5,6 @@ import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.C4;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.CN1D2;
 import static org.matheclipse.core.expression.F.CN2;
 import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.Dot;
@@ -57,6 +55,7 @@ import org.hipparchus.linear.RiccatiEquationSolver;
 import org.hipparchus.linear.RiccatiEquationSolverImpl;
 import org.hipparchus.linear.SchurTransformer;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.combinatoric.KSubsetsIterable;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.JASConvert;
@@ -91,6 +90,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.INumericArray;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.math.LongMath;
@@ -1001,34 +1001,13 @@ public final class LinearAlgebra {
   private static final class CharacteristicPolynomial extends AbstractFunctionEvaluator {
 
     /**
-     * Generate the characteristic polynomial of a square matrix.
+     * Generate the characteristic polynomial of a <code>n x n</code> square matrix.
      *
-     * @param dim dimension of the square matrix
-     * @param matrix the square matrix
+     * @param n dimension of the <code>n x n</code> square matrix
+     * @param matrix the <code>n x n</code> square matrix
      * @param variable the variable which should be used in the resulting characteristic polynomial
-     * @return
+     * @return {@link F#NIL} if the {@link GenMatrix} couldn't be generated
      */
-    public static IExpr generateCharacteristicPolynomial(int dim, IAST matrix, IExpr variable) {
-      // TODO use JAS public GenPolynomial<C> charPolynomial(GenMatrix<C> A) {
-      // see: https://en.wikipedia.org/wiki/Faddeev%E2%80%93LeVerrier_algorithm
-
-      GenMatrix<BigComplex> genMatrix = Convert.list2GenMatrixComplex(matrix);
-      if (genMatrix != null //
-          && genMatrix.ring.rows == genMatrix.ring.cols //
-          && genMatrix.ring.rows > 1) {
-        String[] vars = new String[] {variable.toString()};
-        GenPolynomialRing<BigComplex> pf = new GenPolynomialRing<BigComplex>(BigComplex.I, vars);
-
-        GenPolynomial<BigComplex> charPolynomial = pf.charPolynomial(genMatrix);
-        JASConvert<BigComplex> jas = new JASConvert<BigComplex>(variable, BigComplex.I);
-
-        IExpr bigcomplexPoly2Expr = jas.bigcomplexPoly2Expr(charPolynomial);
-        // System.out.println(charPolynomial.toString());
-        return bigcomplexPoly2Expr;
-      }
-
-      return F.Det(subtractDiagonalValue(dim, matrix, variable));
-    }
 
     private static IASTAppendable subtractDiagonalValue(int dimension, IAST matrix, IExpr value) {
       IASTAppendable subtractMatrix = F.ListAlloc(dimension);
@@ -1044,7 +1023,8 @@ public final class LinearAlgebra {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int[] dimensions = ast.arg1().isMatrix();
       if (dimensions != null && dimensions[0] == dimensions[1]) {
-        // a matrix with square dimensions
+        // a matrix with nXn square dimensions
+        int n = dimensions[0];
         IAST matrix = (IAST) ast.arg1().normal(false);
         IExpr variable = ast.arg2();
         if (!variable.isVariable()) {
@@ -1052,7 +1032,10 @@ public final class LinearAlgebra {
           return Errors.printMessage(S.CharacteristicPolynomial, "ivar", F.list(variable), engine);
         }
         try {
-          IExpr det = generateCharacteristicPolynomial(dimensions[0], matrix, variable);
+          IExpr det = characteristicPolynomial(n, matrix, variable);
+          if (det.isNIL()) {
+            det = F.Det(subtractDiagonalValue(n, matrix, variable));
+          }
           IExpr polynomial = engine.evaluate(det);
           if (!polynomial.isList()) {
             return polynomial;
@@ -1495,12 +1478,13 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr matrixEval(final FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
+    public IExpr matrixEval(final FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker,
+        IAST ast) {
       return determinant(matrix, zeroChecker);
     }
 
     @Override
-    public IExpr realMatrixEval(RealMatrix matrix, EvalEngine engine) {
+    public IExpr realMatrixEval(RealMatrix matrix, EvalEngine engine, IAST ast) {
       final org.hipparchus.linear.LUDecomposition lu =
           new org.hipparchus.linear.LUDecomposition(matrix);
       return F.num(lu.getDeterminant());
@@ -1992,35 +1976,79 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (ToggleFeature.EIGENSYSTEM_SYMBOLIC) {
+        if (!engine.isNumericMode() && !arg1.isNumericArgument(true) && !arg1.isSparseArray()) {
+          int maxValues = -1;
+          if (ast.isAST2()) {
+            maxValues = ast.arg2().toIntDefault(-1);
+          }
+          IAST temp = eigensystemSymbolic(ast, arg1, maxValues, false, engine);
+          if (temp.isPresent()) {
+            return temp;
+          }
+        }
+      }
       // switch to numeric calculation
       return numericEval(ast, engine);
     }
 
     @Override
-    public IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
+    public IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker, IAST ast) {
       return F.NIL;
     }
 
     @Override
-    public IAST realMatrixEval(RealMatrix matrix, EvalEngine engine) {
+    public IAST realMatrixEval(RealMatrix matrix, EvalEngine engine, IAST ast) {
+      IExpr numberOfEigenvalues = ast.argSize() > 1 ? ast.arg2() : F.NIL;
+      int maxValues = -1;
+      if (numberOfEigenvalues.isPresent()) {
+        int n = numberOfEigenvalues.toIntDefault();
+        if (n == Integer.MIN_VALUE) {
+          // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
+          // `1`.
+          return Errors.printMessage(S.Eigenvalues, "seqs", F.List(ast, F.C2), engine);
+        }
+        maxValues = n;
+      }
       try {
         ComplexEigenDecomposition ced = new OrderedComplexEigenDecomposition(matrix, //
             ComplexEigenDecomposition.DEFAULT_EIGENVECTORS_EQUALITY, //
             ComplexEigenDecomposition.DEFAULT_EPSILON, //
             Config.DEFAULT_EPSILON_AV_VD_CHECK, // ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK
             (c1, c2) -> Double.compare(c2.norm(), c1.norm()));
-        IAST eigenvalues = Convert.complexValues2List(ced.getEigenvalues());
-        IAST eigenvectors = F.mapRange(0, matrix.getColumnDimension(),
+        Complex[] eigenvalues = ced.getEigenvalues();
+        int vectorSize = eigenvalues.length;
+        if (maxValues >= 0 && maxValues < vectorSize) {
+          vectorSize = maxValues;
+        }
+        IAST values = F.mapRange(0, vectorSize, (int i) -> {
+          if (F.isZero(eigenvalues[i].getImaginary())) {
+            return F.num(eigenvalues[i].getReal());
+          }
+          return F.complexNum(eigenvalues[i].getReal(), eigenvalues[i].getImaginary());
+        });
+        IAST vectors = F.mapRange(0, vectorSize,
             j -> S.Normalize.of(engine, Convert.complexVector2List(ced.getEigenvector(j))));
-        return F.List(eigenvalues, eigenvectors);
+        return F.List(values, vectors);
       } catch (RuntimeException rex) {
 
       }
       EigenDecompositionNonSymmetric edns = new EigenDecompositionNonSymmetric(matrix);
-      IAST eigenvalues = Convert.complexValues2List(edns.getEigenvalues());
-      IAST eigenvectors = F.mapRange(0, matrix.getColumnDimension(),
+      Complex[] eigenvalues = edns.getEigenvalues();
+      int vectorSize = eigenvalues.length;
+      if (maxValues >= 0 && maxValues < vectorSize) {
+        vectorSize = maxValues;
+      }
+      IAST values = F.mapRange(0, vectorSize, (int i) -> {
+        if (F.isZero(eigenvalues[i].getImaginary())) {
+          return F.num(eigenvalues[i].getReal());
+        }
+        return F.complexNum(eigenvalues[i].getReal(), eigenvalues[i].getImaginary());
+      });
+      IAST vectors = F.mapRange(0, vectorSize,
           j -> S.Normalize.of(engine, Convert.complexVector2List(edns.getEigenvector(j))));
-      return F.List(eigenvalues, eigenvectors);
+      return F.List(values, vectors);
     }
 
     @Override
@@ -2068,6 +2096,7 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr numberOfEigenvalues = ast.argSize() > 1 ? ast.arg2() : F.NIL;
+      int maxValues = -1;
       if (numberOfEigenvalues.isPresent()) {
         int n = numberOfEigenvalues.toIntDefault();
         if (n == Integer.MIN_VALUE) {
@@ -2075,7 +2104,7 @@ public final class LinearAlgebra {
           // `1`.
           return Errors.printMessage(S.Eigenvalues, "seqs", F.List(ast, F.C2), engine);
         }
-
+        maxValues = n;
       }
       if (ast.isAST1() && !engine.isNumericMode()) {
         FieldMatrix<IExpr> matrix;
@@ -2110,25 +2139,52 @@ public final class LinearAlgebra {
                 }
               }
             } else {
-              boolean hasNumericArgument = arg1.isNumericArgument(true);// (IAST.CONTAINS_NUMERIC_ARG);
-              if (!hasNumericArgument) {
-                // if (dim[0] <= 4 && dim[1] <= 4) {
-                ISymbol x = F.Dummy("x");
-                IExpr m = engine.evaluate(F.CharacteristicPolynomial(arg1, x));
-                if (m.isPolynomial(x)) {
-                  IExpr eigenValues =
-                      RootsFunctions.roots(m, false, F.List(x), false, true, engine);
-                  if (eigenValues.isList()) {
-                    if (eigenValues.forAll(v -> v.isNumericFunction())) {
-                      IAST sortFunction =
-                          sortValuesIfNumeric((IASTMutable) eigenValues, numberOfEigenvalues);
-                      if (sortFunction.isPresent()) {
-                        return engine.evaluate(sortFunction);
-                      }
-                    }
+
+              // GenMatrix<BigComplex> genMatrix = Convert.list2GenMatrixComplex(arg1);
+              // if (genMatrix != null //
+              // && genMatrix.ring.rows == genMatrix.ring.cols //
+              // && genMatrix.ring.rows > 1) {
+              // GenMatrix<BigComplex> rowEchelonMatrix =
+              // new LinAlg<BigComplex>().rowEchelonForm(genMatrix.copy());
+              // IASTAppendable result = Convert.genmatrixComplex2List(rowEchelonMatrix, false);
+              // IASTAppendable eigenValues = F.ListAlloc(result.argSize());
+              // for (int i = 1; i < result.size(); i++) {
+              // eigenValues.append(result.getPart(i, i));
+              // }
+              // if (eigenValues.forAll(v -> v.isNumericFunction())) {
+              // IAST sortFunction = sortValuesIfNumeric(eigenValues, numberOfEigenvalues);
+              // if (sortFunction.isPresent()) {
+              // return engine.evaluate(sortFunction);
+              // }
+              // }
+              // }
+
+              // if (dim[0] <= 4 && dim[1] <= 4) {
+              // ISymbol x = F.Dummy("x");
+              // IExpr m = engine.evaluate(F.CharacteristicPolynomial(arg1, x));
+              // if (m.isPolynomial(x)) {
+              // IExpr eigenValues =
+              // RootsFunctions.roots(m, false, F.List(x), false, true, engine);
+              // if (eigenValues.isList()) {
+              // if (eigenValues.forAll(v -> v.isNumericFunction())) {
+              // IAST sortFunction =
+              // sortValuesIfNumeric((IASTMutable) eigenValues, numberOfEigenvalues);
+              // if (sortFunction.isPresent()) {
+              // IExpr sortedEigenvalues = engine.evaluate(sortFunction);
+              // return sortedEigenvalues;
+              // }
+              // }
+              // }
+              // }
+              // }
+
+              if (ToggleFeature.EIGENSYSTEM_SYMBOLIC) {
+                if (!engine.isNumericMode() && !arg1.isNumericArgument(true)) {
+                  IAST temp = eigensystemSymbolic(ast, arg1, maxValues, true, engine);
+                  if (temp.isList1()) {
+                    return temp.first();
                   }
                 }
-                // }
               }
             }
           }
@@ -2148,46 +2204,7 @@ public final class LinearAlgebra {
       return F.NIL;
     }
 
-    /**
-     * If the <code>eigenValuesList</code> entries are numeric, the elements are sorted in order of
-     * decreasing absolute value.
-     * 
-     * @param eigenValuesList
-     * @param numberOfEigenvalues if this is a positive {@link IInteger} value return the number of
-     *        eigenvalues in decreasing order; if this is a negative {@link IInteger} value return
-     *        the number of eigenvalues in increasing order. If {@link F#NIL} return all possible
-     *        eigenvalues in decreasing order.
-     * @return
-     */
-    private IAST sortValuesIfNumeric(IAST eigenValuesList, final IExpr numberOfEigenvalues) {
-      if (eigenValuesList.forAll(v -> v.isNumericFunction())) {
-        eigenValuesList = eigenValuesList.copy();
-        ((IASTMutable) eigenValuesList).sortInplace();
-        if (numberOfEigenvalues != null && numberOfEigenvalues.isPresent()) {
-          int n = numberOfEigenvalues.toIntDefault();
-          if (n < 0) {
-            if (n == Integer.MIN_VALUE) {
-              return F.NIL;
-            }
-            n = -n;
-            if (eigenValuesList.argSize() <= n) {
-              // Cannot take eigenvalues `1` through `2` out of the total of `3` eigenvalues.
-              return Errors.printMessage(S.Eigenvalues, "takeeigen",
-                  F.List(F.C1, F.ZZ(n), F.ZZ(eigenValuesList.argSize())));
-            }
-            return F.Reverse(F.TakeSmallestBy(eigenValuesList, S.Abs, F.ZZ(n)));
-          }
-          if (eigenValuesList.argSize() < n) {
-            // Cannot take eigenvalues `1` through `2` out of the total of `3` eigenvalues.
-            return Errors.printMessage(S.Eigenvalues, "takeeigen",
-                F.List(F.C1, F.ZZ(n), F.ZZ(eigenValuesList.argSize())));
-          }
-          return F.TakeLargestBy(eigenValuesList, S.Abs, F.ZZ(n));
-        }
-        return F.TakeLargestBy(eigenValuesList, S.Abs, F.ZZ(eigenValuesList.argSize()));
-      }
-      return eigenValuesList;
-    }
+
 
     private static IAST pickValues(IAST eigenValuesList, final IExpr numberOfEigenvalues) {
       if (eigenValuesList.forAll(v -> v.isNumericFunction())) {
@@ -2217,12 +2234,23 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
+    public IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker, IAST ast) {
       return F.NIL;
     }
 
     @Override
-    public IAST realMatrixEval(RealMatrix matrix, EvalEngine engine) {
+    public IAST realMatrixEval(RealMatrix matrix, EvalEngine engine, IAST ast) {
+      IExpr numberOfEigenvalues = ast.argSize() > 1 ? ast.arg2() : F.NIL;
+      int maxValues = -1;
+      if (numberOfEigenvalues.isPresent()) {
+        int n = numberOfEigenvalues.toIntDefault();
+        if (n == Integer.MIN_VALUE) {
+          // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
+          // `1`.
+          return Errors.printMessage(S.Eigenvalues, "seqs", F.List(ast, F.C2), engine);
+        }
+        maxValues = n;
+      }
       try {
         // https://github.com/Hipparchus-Math/hipparchus/issues/337
         // TODO https://github.com/Hipparchus-Math/hipparchus/issues/174
@@ -2232,7 +2260,11 @@ public final class LinearAlgebra {
             Config.DEFAULT_EPSILON_AV_VD_CHECK, // ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK
             Comparators.COMPLEX_NORM_REVERSE_COMPARATOR);
         Complex[] eigenvalues = ced.getEigenvalues();
-        return F.mapRange(0, eigenvalues.length, (int i) -> {
+        int vectorSize = eigenvalues.length;
+        if (maxValues >= 0 && maxValues < vectorSize) {
+          vectorSize = maxValues;
+        }
+        return F.mapRange(0, vectorSize, (int i) -> {
           if (F.isZero(eigenvalues[i].getImaginary())) {
             return F.num(eigenvalues[i].getReal());
           }
@@ -2243,7 +2275,11 @@ public final class LinearAlgebra {
       }
       EigenDecompositionNonSymmetric edns = new EigenDecompositionNonSymmetric(matrix);
       Complex[] eigenvalues = edns.getEigenvalues();
-      return F.mapRange(0, eigenvalues.length, (int i) -> {
+      int vectorSize = eigenvalues.length;
+      if (maxValues >= 0 && maxValues < vectorSize) {
+        vectorSize = maxValues;
+      }
+      return F.mapRange(0, vectorSize, (int i) -> {
         if (F.isZero(eigenvalues[i].getImaginary())) {
           return F.num(eigenvalues[i].getReal());
         }
@@ -2437,10 +2473,11 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
       if (ast.size() == 2) {
         FieldMatrix<IExpr> matrix;
         try {
-
+          IExpr arg1 = ast.arg1();
           int[] dim = ast.arg1().isMatrix();
           if (dim != null) {
             if (dim[0] == 1 && dim[1] == 1) {
@@ -2468,25 +2505,44 @@ public final class LinearAlgebra {
                     // { - (1/(2*c)) * (-a + d + Sqrt(a^2 + 4*b*c - 2*a*d + d^2)), 1},
                     // { - (1/(2*c)) * (-a + d - Sqrt(a^2 + 4*b*c - 2*a*d + d^2)), 1}
                     // }
-                    IExpr sqrtExpr = Sqrt(Plus(Sqr(matrix.getEntry(0, 0)),
-                        Times(C4, matrix.getEntry(0, 1), matrix.getEntry(1, 0)),
-                        Times(CN2, matrix.getEntry(0, 0), matrix.getEntry(1, 1)),
-                        Sqr(matrix.getEntry(1, 1))));
-                    result2X2 =
-                        List(
-                            List(Times(
-                                CN1D2, Power(matrix.getEntry(1, 0), CN1),
-                                Plus(sqrtExpr, Negate(matrix.getEntry(0, 0)),
-                                    matrix.getEntry(1, 1))),
-                                C1),
-                            List(Times(CN1D2, Power(matrix.getEntry(1, 0), CN1),
-                                Plus(Negate(sqrtExpr), Negate(matrix.getEntry(0, 0)),
-                                    matrix.getEntry(1, 1))),
-                                C1));
+                    IExpr a = matrix.getEntry(0, 0);
+                    IExpr b = matrix.getEntry(0, 1);
+                    IExpr c = matrix.getEntry(1, 0);
+                    IExpr d = matrix.getEntry(1, 1);
+                    // Sqrt(a^2+4*b*c-2*a*d+d^2)
+                    IExpr sqrtExpr = F.Sqrt(
+                        F.Plus(F.Sqr(a), F.Times(F.C4, b, c), F.Times(F.CN2, a, d), F.Sqr(d)));
+                    result2X2 = List(
+                        List(F.Times(F.Power(F.Times(F.C2, c), F.CN1),
+                            F.Plus(a, F.Negate(d), F.Negate(sqrtExpr))), C1),
+                        List(F.Times(F.Power(F.Times(F.C2, c), F.CN1),
+                            F.Plus(a, F.Negate(d), sqrtExpr)), C1));
                   }
 
                   if (result2X2.isPresent()) {
                     return result2X2;
+                  }
+                }
+              }
+            } else {
+              if (ToggleFeature.EIGENSYSTEM_SYMBOLIC) {
+                if (!engine.isNumericMode() && !arg1.isNumericArgument(true)
+                    && !arg1.isSparseArray()) {
+                  IExpr numberOfEigenvalues = ast.argSize() > 1 ? ast.arg2() : F.NIL;
+                  int maxValues = -1;
+                  if (numberOfEigenvalues.isPresent()) {
+                    int n = numberOfEigenvalues.toIntDefault();
+                    if (n == Integer.MIN_VALUE) {
+                      // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at
+                      // position `2` in
+                      // `1`.
+                      return Errors.printMessage(S.Eigenvalues, "seqs", F.List(ast, F.C2), engine);
+                    }
+                    maxValues = n;
+                  }
+                  IAST temp = eigensystemSymbolic(ast, arg1, maxValues, false, engine);
+                  if (temp.isList2()) {
+                    return temp.second();
                   }
                 }
               }
@@ -2506,20 +2562,35 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
+    public IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker, IAST ast) {
       return F.NIL;
     }
 
     @Override
-    public IAST realMatrixEval(RealMatrix matrix, EvalEngine engine) {
+    public IAST realMatrixEval(RealMatrix matrix, EvalEngine engine, IAST ast) {
       try {
+        IExpr numberOfEigenvalues = ast.argSize() > 1 ? ast.arg2() : F.NIL;
+        int maxValues = -1;
+        if (numberOfEigenvalues.isPresent()) {
+          int n = numberOfEigenvalues.toIntDefault();
+          if (n == Integer.MIN_VALUE) {
+            // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
+            // `1`.
+            return Errors.printMessage(S.Eigenvalues, "seqs", F.List(ast, F.C2), engine);
+          }
+          maxValues = n;
+        }
         // TODO https://github.com/Hipparchus-Math/hipparchus/issues/174
         ComplexEigenDecomposition ced = new OrderedComplexEigenDecomposition(matrix, //
             ComplexEigenDecomposition.DEFAULT_EIGENVECTORS_EQUALITY, //
             ComplexEigenDecomposition.DEFAULT_EPSILON, //
             Config.DEFAULT_EPSILON_AV_VD_CHECK, // ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK
             (c1, c2) -> Double.compare(c2.norm(), c1.norm()));
-        return F.mapRange(0, matrix.getColumnDimension(),
+        int vectorSize = matrix.getColumnDimension();
+        if (maxValues >= 0 && maxValues < vectorSize) {
+          vectorSize = maxValues;
+        }
+        return F.mapRange(0, vectorSize,
             j -> S.Normalize.of(engine, Convert.complexVector2List(ced.getEigenvector(j))));
       } catch (RuntimeException rex) {
 
@@ -4642,11 +4713,12 @@ public final class LinearAlgebra {
             if (nullspace == null) {
               return F.CEmptyList;
             }
+            IASTMutable nullspaceVectors = Convert.matrix2List(nullspace);
+            pullOutDenominators(nullspaceVectors, engine);
 
-            IASTMutable list2 = Convert.matrix2List(nullspace);
             // rows in descending orders
-            EvalAttributes.sort(list2, Comparators.REVERSE_CANONICAL_COMPARATOR);
-            return list2;
+            EvalAttributes.sort(nullspaceVectors, Comparators.REVERSE_CANONICAL_COMPARATOR);
+            return nullspaceVectors;
           }
         }
       } catch (final MathRuntimeException | ClassCastException | IndexOutOfBoundsException e) {
@@ -4657,6 +4729,39 @@ public final class LinearAlgebra {
       }
 
       return F.NIL;
+    }
+
+    /**
+     * Multiply the row vectors by the denominators {@link S#LCM} if all values are of type
+     * {@link IRational}.
+     * 
+     * @param nullspaceVectors
+     * @param engine
+     */
+    private static void pullOutDenominators(IASTMutable nullspaceVectors, EvalEngine engine) {
+      for (int i = 1; i < nullspaceVectors.size(); i++) {
+        IAST vector = (IAST) nullspaceVectors.get(i);
+        if (vector.argSize() > 0 && vector.forAll(x -> x.isRational())) {
+          IRational lcm = F.C1;
+          for (int j = 1; j < vector.size(); j++) {
+            IRational arg = (IRational) vector.get(j);
+            if (!arg.isZero() && !arg.isOne()) {
+              lcm = (IRational) lcm.lcm(arg.denominator());
+            }
+          }
+          if (!lcm.isOne() && !lcm.isZero()) {
+            IASTAppendable normalizedVector = F.ListAlloc();
+            for (int j = 1; j < vector.size(); j++) {
+              IRational arg = (IRational) vector.get(j);
+              if (!arg.isZero()) {
+                arg = lcm.multiply(arg);
+              }
+              normalizedVector.append(arg);
+            }
+            nullspaceVectors.set(i, normalizedVector);
+          }
+        }
+      }
     }
 
     @Override
@@ -6205,6 +6310,26 @@ public final class LinearAlgebra {
 
   }
 
+  public static IExpr characteristicPolynomial(int n, IAST matrix, IExpr variable) {
+    // see: https://en.wikipedia.org/wiki/Faddeev%E2%80%93LeVerrier_algorithm
+
+    GenMatrix<BigComplex> genMatrix = Convert.list2GenMatrixComplex(matrix);
+    if (genMatrix != null //
+        && genMatrix.ring.rows == genMatrix.ring.cols //
+        && genMatrix.ring.rows > 1) {
+      String[] vars = new String[] {variable.toString()};
+      GenPolynomialRing<BigComplex> pf = new GenPolynomialRing<BigComplex>(BigComplex.I, vars);
+
+      GenPolynomial<BigComplex> charPolynomial = pf.charPolynomial(genMatrix);
+      JASConvert<BigComplex> jas = new JASConvert<BigComplex>(variable, BigComplex.I);
+
+      IExpr bigcomplexPoly2Expr = jas.bigcomplexPoly2Expr(charPolynomial);
+      return bigcomplexPoly2Expr;
+    }
+
+    return F.NIL;
+  }
+
   /**
    * Use cramer's rule to solve linear equations represented by a <code>2 x 3</code> augmented
    * matrix which represents the system <code>M.x == b</code>, where the columns of the <code>2 x 2
@@ -6584,6 +6709,63 @@ public final class LinearAlgebra {
     }
   }
 
+  public static IAST eigensystemSymbolic(final IAST ast, IExpr arg1, int maxValues,
+      boolean onlyEigenvalues, EvalEngine engine) {
+    ISymbol x = F.Dummy("x");
+    int[] dimensions = Convert.checkNonEmptySquareMatrix(ast.topHead(), arg1);
+    if (dimensions != null) {
+      arg1 = arg1.normal(false);
+      IExpr characteristicPolynomial = characteristicPolynomial(dimensions[0], (IAST) arg1, x);
+      if (characteristicPolynomial.isPolynomial(x)) {
+        IExpr eigenValues =
+            RootsFunctions.roots(characteristicPolynomial, false, F.List(x), false, true, engine);
+        if (eigenValues.isList()) {
+          if (eigenValues.forAll(v -> v.isNumericFunction())) {
+            IAST sortFunction = sortValuesIfNumeric((IASTMutable) eigenValues, F.NIL);
+            if (sortFunction.isPresent()) {
+              IAST sortedEigenvalues = (IAST) engine.evaluate(sortFunction);
+              if (onlyEigenvalues) {
+                return F.list(sortedEigenvalues);
+              }
+              IASTAppendable eigenvectors = F.ListAlloc(sortedEigenvalues.argSize());
+              int i = 1;
+              IExpr lastEigenvalue = F.NIL;
+              IExpr eigenvalue = F.NIL;
+              while (i < sortedEigenvalues.size()) {
+                eigenvalue = sortedEigenvalues.get(i);
+                if (lastEigenvalue.equals(eigenvalue)) {
+                  eigenvectors.append(F.constantArray(F.C0, sortedEigenvalues.argSize()));
+                  i++;
+                  continue;
+                }
+                lastEigenvalue = eigenvalue;
+                IExpr nullSpace = engine.evaluate(F.NullSpace(F.Subtract(arg1,
+                    F.Times(eigenvalue, F.IdentityMatrix(sortedEigenvalues.argSize())))));
+                if (nullSpace.isListOfLists()) {
+                  IAST list = (IAST) nullSpace;
+                  int size = list.size();
+                  if (maxValues >= 0 && sortedEigenvalues.argSize() > maxValues) {
+                    sortedEigenvalues = sortedEigenvalues.copyUntil(maxValues + 1);
+                    size = maxValues + 1;
+                  }
+                  for (int j = 1; j < size; j++) {
+                    eigenvectors.append(list.get(j));
+                  }
+                  i += list.argSize();
+                } else {
+                  // switch to numeric calculation
+                  return F.NIL;
+                }
+              }
+              return F.List(sortedEigenvalues, eigenvectors);
+            }
+          }
+        }
+      }
+    }
+    return F.NIL;
+  }
+
   public static void initialize() {
     Initializer.init();
   }
@@ -6800,6 +6982,47 @@ public final class LinearAlgebra {
     }
     resultList.append(list);
     return resultList;
+  }
+
+  /**
+   * If the <code>eigenValuesList</code> entries are numeric, the elements are sorted in order of
+   * decreasing absolute value.
+   * 
+   * @param eigenValuesList
+   * @param numberOfEigenvalues if this is a positive {@link IInteger} value return the number of
+   *        eigenvalues in decreasing order; if this is a negative {@link IInteger} value return the
+   *        number of eigenvalues in increasing order. If {@link F#NIL} return all possible
+   *        eigenvalues in decreasing order.
+   * @return
+   */
+  private static IAST sortValuesIfNumeric(IAST eigenValuesList, final IExpr numberOfEigenvalues) {
+    if (eigenValuesList.forAll(v -> v.isNumericFunction())) {
+      eigenValuesList = eigenValuesList.copy();
+      ((IASTMutable) eigenValuesList).sortInplace();
+      if (numberOfEigenvalues != null && numberOfEigenvalues.isPresent()) {
+        int n = numberOfEigenvalues.toIntDefault();
+        if (n < 0) {
+          if (n == Integer.MIN_VALUE) {
+            return F.NIL;
+          }
+          n = -n;
+          if (eigenValuesList.argSize() <= n) {
+            // Cannot take eigenvalues `1` through `2` out of the total of `3` eigenvalues.
+            return Errors.printMessage(S.Eigenvalues, "takeeigen",
+                F.List(F.C1, F.ZZ(n), F.ZZ(eigenValuesList.argSize())));
+          }
+          return F.Reverse(F.TakeSmallestBy(eigenValuesList, S.Abs, F.ZZ(n)));
+        }
+        if (eigenValuesList.argSize() < n) {
+          // Cannot take eigenvalues `1` through `2` out of the total of `3` eigenvalues.
+          return Errors.printMessage(S.Eigenvalues, "takeeigen",
+              F.List(F.C1, F.ZZ(n), F.ZZ(eigenValuesList.argSize())));
+        }
+        return F.TakeLargestBy(eigenValuesList, S.Abs, F.ZZ(n));
+      }
+      return F.TakeLargestBy(eigenValuesList, S.Abs, F.ZZ(eigenValuesList.argSize()));
+    }
+    return eigenValuesList;
   }
 
   public static IExpr toPolarCoordinates(IExpr x, IExpr y) {

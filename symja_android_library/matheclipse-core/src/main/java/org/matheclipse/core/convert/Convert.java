@@ -756,9 +756,11 @@ public class Convert {
     final IASTAppendable out = F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> {
       BigComplex bigComplex = matrix.get(i, j);
       BigRational re = bigComplex.getRe();
+      if (bigComplex.getIm().isZERO()) {
+        return F.QQ(re.numerator(), re.denominator());
+      }
       BigRational im = bigComplex.getIm();
-      return F.CC(F.QQ(re.numerator(), re.denominator()),
-          F.QQ(im.numerator(), im.denominator()));
+      return F.CC(F.QQ(re.numerator(), re.denominator()), F.QQ(im.numerator(), im.denominator()));
     }));
     if (matrixFormat) {
       // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
@@ -786,8 +788,13 @@ public class Convert {
     final int rowSize = matrix.getRowDimension();
     final int colSize = matrix.getColumnDimension();
 
-    final IASTAppendable out = F.mapRange(0, rowSize,
-        i -> F.mapRange(0, colSize, j -> F.complexNum(matrix.getEntry(i, j))));
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> {
+      Complex entry = matrix.getEntry(i, j);
+      if (entry.isReal()) {
+        return F.num(entry.getRealPart());
+      }
+      return F.complexNum(entry);
+    }));
     if (matrixFormat) {
       // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
       // isMatrix() must be used!
@@ -913,7 +920,13 @@ public class Convert {
       return F.NIL;
     }
     final int rowSize = vector.getDimension();
-    final IASTAppendable out = F.mapRange(0, rowSize, i -> F.complexNum(vector.getEntry(i)));
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> {
+      Complex cmp = vector.getEntry(i);
+      if (cmp.isReal()) {
+        return F.num(cmp.getReal());
+      }
+      return F.complexNum(cmp);
+    });
     if (vectorFormat) {
       out.addEvalFlags(IAST.IS_VECTOR);
     }
@@ -940,7 +953,13 @@ public class Convert {
       return F.NIL;
     }
     final int rowSize = vector.length;
-    final IASTAppendable out = F.mapRange(0, rowSize, i -> F.complexNum(vector[i]));
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> {
+      Complex cmp = vector[i];
+      if (cmp.isReal()) {
+        return F.num(cmp.getReal());
+      }
+      return F.complexNum(cmp);
+    });
     if (vectorFormat) {
       out.addEvalFlags(IAST.IS_VECTOR);
     }

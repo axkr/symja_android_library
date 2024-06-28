@@ -1,5 +1,7 @@
 package org.matheclipse.core.basic;
 
+import org.matheclipse.core.expression.S;
+
 /**
  * Toggle a new experimental Symja function <b>ON</b> or <b>OFF</b>, usually by changing the method
  * implementations of the <code>IFunctionEvaluator</code> interface according to the defined
@@ -34,6 +36,16 @@ public class ToggleFeature {
   public static boolean DSOLVE = true;
 
   /**
+   * If <code>true</code> calculate &quot;eigen&quot; functions {@link S#Eigensystem},
+   * {@link S#Eigenvalues}, {@link S#Eigenvectors} symbolically. If <code>false</code> always
+   * calculate numerically.
+   */
+  public static boolean EIGENSYSTEM_SYMBOLIC = true;
+
+  /** If <code>true</code>, enable experimental f<code>MANIPULATE()</code> function */
+  public static boolean MANIPULATE = true;
+
+  /**
    * If <code>true</code>, enable <code>org.matheclipse.core.reflection.system.Series</code> and
    * <code>org.matheclipse.core.reflection.system.SeriesData</code> functions.
    */
@@ -45,7 +57,4 @@ public class ToggleFeature {
    * org.matheclipse.core.reflection.system.SeriesData</code> functions.
    */
   public static boolean SERIES_DENOMINATOR = false;
-
-  /** If <code>true</code>, enable experimental f<code>MANIPULATE()</code> function */
-  public static boolean MANIPULATE = true;
 }
