@@ -44,6 +44,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Pattern;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.GenericPair;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -112,7 +113,7 @@ public class DecisionTree {
   }
 
   private static boolean insertRule(DecisionTree[] dts, IAST lhs, IExpr rhs) {
-    if (!lhs.forAll(x -> x.isFreeOfPatterns() || (x.isPattern() && !x.isPatternDefault()), 0)) {
+    if (!lhs.forAll(x -> isCompilableRule(x), 0)) {
       return false;
     }
     if (lhs.forAll(x -> x.isFreeOfPatterns(), 0)) {
@@ -179,6 +180,34 @@ public class DecisionTree {
             set.add(node);
           }
         }
+      } else if (arg.isAST(S.PatternTest, 3)) {
+        IAST patternTest = (IAST) arg;
+        // Pattern p = (Pattern) patternTest.arg1();
+        // IExpr testExpr = patternTest.arg2();
+        if (node != null) {
+          DecisionTree subNet = node.decisionTree();
+          if (subNet == null) {
+            subNet = new DecisionTree();
+            node.decisionTree = subNet;
+            net = subNet;
+          }
+        }
+        TreeSet<DiscriminationNode> set = net.get(i);
+        if (set == null) {
+          set = new TreeSet<DiscriminationNode>();
+          node = new DiscriminationNode(patternTest, null, null);
+          set.add(node);
+          net.put(i, set);
+        } else {
+          node = new DiscriminationNode(patternTest, null, null);
+          DiscriminationNode floor = set.floor(node);
+          if (floor != null && floor.equals(node)) {
+            node = floor;
+            net = node.decisionTree;
+          } else {
+            set.add(node);
+          }
+        }
       }
     }
     if (node != null) {
@@ -190,6 +219,23 @@ public class DecisionTree {
       node.patternDownRules.add(pm);
     }
     return true;
+  }
+
+  public static boolean isCompilableRule(IExpr x) {
+    if (x.isFreeOfPatterns()) {
+      return true;
+    }
+    if (x.isPattern() && !x.isPatternDefault()) {
+      return true;
+    }
+    if (x.isAST(S.PatternTest, 3) && x.first().isPattern()) {
+      IPattern pattern = (IPattern) x.first();
+      IExpr patternTest = x.second();
+      if (patternTest.isFreeOfPatterns() && !pattern.isPatternDefault()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -254,10 +300,24 @@ public class DecisionTree {
         IExpr expr = node.expr();
         CharSequence patternValueVar = null;
         ISymbol patternSymbol = null;
+        IExpr exprTest = null;
         IPattern pattern = null;
         if (expr.isPattern()) {
           patternEval = true;
           pattern = (IPattern) expr;
+          patternSymbol = pattern.getSymbol();
+          for (int i = 0; i < patternIndexMap.size(); i++) {
+            GenericPair<ISymbol, String> pair = patternIndexMap.get(i);
+            if (pair.getFirst().equals(patternSymbol)) {
+              patternValueVar = pair.getSecond();
+              break;
+            }
+          }
+        } else if (expr.isAST(S.PatternTest, 3)) {
+          IAST patternTest = (IAST) expr;
+          patternEval = true;
+          pattern = (IPattern) patternTest.arg1();
+          exprTest = patternTest.arg2();
           patternSymbol = pattern.getSymbol();
           for (int i = 0; i < patternIndexMap.size(); i++) {
             GenericPair<ISymbol, String> pair = patternIndexMap.get(i);
@@ -272,7 +332,16 @@ public class DecisionTree {
         try {
           if (patternValueVar == null) {
             buf.append("IPattern " + x + " = (IPattern)" + toJava(pattern) + ";\n");
-            buf.append("if (" + x + ".isConditionMatched(" + arg + ",null)) {\n");
+            if (exprTest == null) {
+              buf.append("if (" + x + ".isConditionMatched(" //
+                  + arg + ",null)) {\n");
+            } else {
+              String t = EvalEngine.uniqueName("t");
+              buf.append("IExpr " + t + " = " + toJava(exprTest) + ";\n");
+              buf.append("if (engine.evalTrue(" + t + "," + arg + ") &&" //
+                  + x + ".isConditionMatched(" //
+                  + arg + ",null)) {\n");
+            }
             buf.append("patternIndexMap.push(new GenericPair<IExpr, ISymbol>(" + arg + ", " + x
                 + ".getSymbol()));\n");
             buf.append("try {\n");
@@ -343,7 +412,7 @@ public class DecisionTree {
     IExpr rhs2 =
         Times(C1D2, Power(Exp(Times(CI, p)), CN1), Sqrt(Times(C3, Power(C2Pi, CN1))), Sin(t));
     // SphericalHarmonicY(1, 1, t_, p_) := (-1/2)*E^(I*p)*Sqrt(3/(2*Pi))*Sin(t),
-    IAST lhs3 = SphericalHarmonicY(C1, C1, t_, p_);
+    IAST lhs3 = SphericalHarmonicY(C1, C1, t_, F.PatternTest(p_, S.IntegerQ));
     IExpr rhs3 = Times(CN1D2, Exp(Times(CI, p)), Sqrt(Times(C3, Power(C2Pi, CN1))), Sin(t));
     IAST lhs3a = SphericalHarmonicY(C1, C3, t_, t_);
     IExpr rhs3a = Times(CN1D2, Exp(Times(CI, t)), Sqrt(Times(C3, Power(C2Pi, CN1))), Sin(t));
@@ -548,7 +617,8 @@ public class DecisionTree {
             try {
               IExpr a21 = evalLHS.get(4);
               IPattern x22 = F.p_;
-              if (x22.isConditionMatched(a21, null)) {
+              IExpr t23 = F.IntegerQ;
+              if (engine.evalTrue(t23, a21) && x22.isConditionMatched(a21, null)) {
                 patternIndexMap.push(new GenericPair<IExpr, ISymbol>(a21, x22.getSymbol()));
                 try {
                   result = PatternMatcherAndEvaluator.evalInternal(evalLHS,
@@ -570,16 +640,16 @@ public class DecisionTree {
           }
 
         }
-        IExpr x23 = F.C3;
-        if (x23.equals(a12)) {
-          IExpr a24 = evalLHS.get(3);
-          IPattern x25 = F.t_;
-          if (x25.isConditionMatched(a24, null)) {
-            patternIndexMap.push(new GenericPair<IExpr, ISymbol>(a24, x25.getSymbol()));
+        IExpr x24 = F.C3;
+        if (x24.equals(a12)) {
+          IExpr a25 = evalLHS.get(3);
+          IPattern x26 = F.t_;
+          if (x26.isConditionMatched(a25, null)) {
+            patternIndexMap.push(new GenericPair<IExpr, ISymbol>(a25, x26.getSymbol()));
             try {
-              IExpr a26 = evalLHS.get(4);
-              IExpr x27 = a24;
-              if (x27.equals(a26)) {
+              IExpr a27 = evalLHS.get(4);
+              IExpr x28 = a25;
+              if (x28.equals(a27)) {
                 result =
                     PatternMatcherAndEvaluator.evalInternal(evalLHS,
                         F.Times(F.CN1D2, F.Exp(F.Times(F.CI, t)),
@@ -604,7 +674,4 @@ public class DecisionTree {
     return F.NIL;
 
   }
-
-
-
 }
