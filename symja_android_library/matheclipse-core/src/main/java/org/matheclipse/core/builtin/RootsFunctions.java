@@ -17,7 +17,6 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
-import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -714,7 +713,7 @@ public class RootsFunctions {
       IExpr r = z.arg1();
       IExpr theta = z.arg2();
 
-      IRational fraction = F.fraction(1, n);
+      IRational fraction = F.QQ(1, n);
       IExpr f1 = F.Power(r, fraction);
       return F.mapRange(0, n, k -> {
         IAST argCosSin = F.Times(fraction, F.Plus(theta, F.Times(F.ZZ(k + k), S.Pi)));
@@ -751,24 +750,25 @@ public class RootsFunctions {
     }
 
     boolean isNegative = false;
-    IExpr rhsNumerator = EvalEngine.get().evaluate(b.negate());
+    final EvalEngine engine = EvalEngine.get();
+    IExpr rhsNumerator = engine.evaluate(b.negate());
     IExpr rhsDenominator = a;
     if ((varDegree & 0x0001) == 0x0001) {
       // odd
       IExpr zNumerator;
       if (rhsNumerator.isTimes()) {
-        IASTMutable temp = rhsNumerator.mapThread(F.Power(F.Slot1, F.fraction(1, varDegree)), 1);
+        IASTMutable temp = rhsNumerator.mapThread(F.Power(F.Slot1, F.QQ(1, varDegree)), 1);
         if (rhsNumerator.first().isNegative()) {
           isNegative = true;
           temp.set(1, rhsNumerator.first().negate());
         }
-        zNumerator = EvalEngine.get().evaluate(temp);
+        zNumerator = engine.evaluate(temp);
       } else {
         if (rhsNumerator.isNegative()) {
           isNegative = true;
           rhsNumerator = rhsNumerator.negate();
         }
-        zNumerator = EvalEngine.get().evaluate(F.Power(rhsNumerator, F.QQ(1, varDegree)));
+        zNumerator = engine.evaluate(F.Power(rhsNumerator, F.QQ(1, varDegree)));
       }
       IExpr zDenominator;
       if (rhsDenominator.isTimes()) {
@@ -777,13 +777,13 @@ public class RootsFunctions {
           rhsDenominator = ((IAST) rhsDenominator).setAtCopy(1, rhsDenominator.first().negate());
         }
         IASTMutable temp = rhsDenominator.mapThread(F.Power(F.Slot1, F.QQ(-1, varDegree)), 1);
-        zDenominator = EvalEngine.get().evaluate(temp);
+        zDenominator = engine.evaluate(temp);
       } else {
         if (rhsDenominator.isNegative()) {
           isNegative = !isNegative;
           rhsDenominator = rhsDenominator.negate();
         }
-        zDenominator = EvalEngine.get().evaluate(F.Power(rhsDenominator, F.QQ(-1, varDegree)));
+        zDenominator = engine.evaluate(F.Power(rhsDenominator, F.QQ(-1, varDegree)));
       }
       final int increment = isNegative ? 1 : 0;
       return F.mapRange(0, varDegree, i -> //
@@ -793,30 +793,53 @@ public class RootsFunctions {
       // even
       IExpr zNumerator;
       if (rhsNumerator.isTimes()) {
-        IExpr temp = rhsNumerator.mapThread(F.Power(F.Slot1, F.QQ(1, varDegree)), 1);
-        zNumerator = EvalEngine.get().evaluate(temp);
+        IExpr temp = ((IAST) rhsNumerator).map(x -> powerOrExprMapper(x, 1, varDegree));
+        zNumerator = engine.evaluate(temp);
       } else {
-        zNumerator = EvalEngine.get().evaluate(F.Power(rhsNumerator, F.QQ(1, varDegree)));
+        IExpr temp = powerOrExprMapper(rhsNumerator, 1, varDegree);
+        zNumerator = engine.evaluate(temp);
       }
       IExpr zDenominator;
       if (rhsDenominator.isTimes()) {
-        IExpr temp = rhsDenominator.mapThread(F.Power(F.Slot1, F.QQ(-1, varDegree)), 1);
-        zDenominator = EvalEngine.get().evaluate(temp);
+        IExpr temp = ((IAST) rhsDenominator).map(x -> powerOrExprMapper(x, -1, varDegree));
+        zDenominator = engine.evaluate(temp);
       } else {
-        zDenominator = EvalEngine.get().evaluate(F.Power(rhsDenominator, F.QQ(-1, varDegree)));
+        IExpr temp = powerOrExprMapper(rhsDenominator, -1, varDegree);
+        zDenominator = engine.evaluate(temp);
       }
 
       IASTAppendable result = F.ListAlloc(varDegree);
       long size = varDegree / 2;
       int k = 0; // isNegative?1:0;
       for (int i = 1; i <= size; i++) {
-        result.append(
-            F.Times(F.CN1, F.Power(F.CN1, F.fraction(k, varDegree)), zNumerator, zDenominator));
-        result.append(F.Times(F.Power(F.CN1, F.fraction(k, varDegree)), zNumerator, zDenominator));
+        IExpr power = engine.evaluate(F.Power(F.CN1, F.QQ(k, varDegree)));
+        IAST times1 =
+            F.Times(F.CN1, power, zNumerator, zDenominator);
+        IAST times2 = F.Times(power, zNumerator, zDenominator);
+        result.append(engine.evaluate(times1));
+        result.append(engine.evaluate(times2));
         k += 2;
       }
       return result;
     }
+  }
+
+  /**
+   * Calculate <code>x ^ (numerator/denominator)</code>. If <code>x</code> is a {@link S#Power}
+   * expression with rational exponent, try to merge the exponents into one rational number
+   * 
+   * @param x
+   * @param numerator
+   * @param denominator
+   * @return
+   */
+  private static IExpr powerOrExprMapper(IExpr x, int numerator, int denominator) {
+    if (x.isPower() && x.exponent().isRational()) {
+      IAST power = (IAST) x;
+      return F.Power(power.base(),
+          ((IRational) power.exponent()).multiply(F.QQ(numerator, denominator)));
+    }
+    return F.Power(x, F.QQ(numerator, denominator));
   }
 
   /**
