@@ -26,6 +26,11 @@ public class VectorAnalysisTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testGrad() {
+    check("Grad(6+a+b^4,{a,b})", //
+        "{1,4*b^3}");
+    check("Grad({6+a+b^4},{a,b})", //
+        "{{1,4*b^3}}");
+
     // create Jacobian matrix
 
     // https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant

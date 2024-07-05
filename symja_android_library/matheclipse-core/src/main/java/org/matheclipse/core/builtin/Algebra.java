@@ -4334,7 +4334,8 @@ public class Algebra {
           }
           IExpr gcd;
           if (!c.isFree(IExpr::isInexactNumber, false)) {
-            gcd = engine.evaluate(F.Rationalize(c));
+            gcd = NumberTheory.rationalize(c, false);
+            // gcd = engine.evaluate(F.Rationalize(c));
             gcd = engine.evalN(gcd);
           } else {
             gcd = engine.evaluate(c);

@@ -2113,6 +2113,22 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->(1250000*Log(2))/Log(500)}}");
   }
 
+  // @Test
+  // public void testIssue1019() {
+    // check("Rationalize(-16.132546675703985)", //
+    // "");
+  // check("th==2400;tk==320;" //
+  // + "Solve({th^4 - tw^4 -1.77*^-6*qw == 0,\n" //
+  // + " tw^2 - t1^2 +2454*(tw - t1) - 0.2319 *qw ==0,\n" //
+  // + " t1^4 - t2^4 +4.601*^6*(t1^2 - t2^2) + 1.129*^10*(t1 - t2) - 1.6229*^8 * qw == 0,\n" //
+  // + " t2^2 - t3^2 + 2454 *(t2 -t3) -0.2319 *qw ==0,\n" //
+  // + " tw -t3 -0.0549*qs == 0,\n" //
+  // + " t3^4 - tb^4 -4.141*^5*(qs + qw) == 0,\n" //
+  // + " tb - tk -8.164*^-8*(qs +qw) == 0}, {tw,t1,t2,t3,tb,qw,qs,th,tk})", //
+  // "");
+  // }
+
+
   @Test
   public void testSolveBigExponent() {
     // message: Exponent ist out of bounds for function Factor.
@@ -2132,13 +2148,19 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testRootsSolve() {
-    check("Solve(Power(x^(-4), -1/4) - Power(y^(-1/4), -1/4)==0,x)", //
-        "{{x->y^(1/16)}}");
-
+    check("Solve(x^4-(y/z)^4==0,x)", //
+        "{{x->y/z},{x->-y/z},{x->(-I*y)/z},{x->(I*y)/z}}");
+    check("Solve(Power(x^(-4), -1/4) - Power((y/z)^(-4), -1/4)==0,x)", //
+        "{{x->y/z},{x->-y/z},{x->(-I*y)/z},{x->(I*y)/z}}");
+    check("Solve(Power(x^(-4), -1/4) - Power((y/(-z))^(-4), -1/4)==0,x)", //
+        "{{x->y/z},{x->-y/z},{x->(-I*y)/z},{x->(I*y)/z}}");
     check("Solve(Power(x^(-4), -1/4) - Power(y^(-4), -1/4)==0,x)", //
         "{{x->-y},{x->-I*y},{x->I*y},{x->y}}");
     check("Solve(x^4-y^4==0,x)", //
         "{{x->-y},{x->-I*y},{x->I*y},{x->y}}");
+    // TODO
+    check("Solve(Power(x^(-4), -1/4) - Power(y^(-1/4), -1/4)==0,x)", //
+        "{{x->y^(1/16)}}");
 
 
   }

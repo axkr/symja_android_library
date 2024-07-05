@@ -205,7 +205,7 @@ public class VectorAnalysisFunctions {
 
         if (function.isList()) {
           IntArrayList dimensions = LinearAlgebra.dimensions((IAST) function, S.List);
-          if (dimensions.size() == 1 && dimensions.getInt(0) >= variables.argSize()) {
+          if (dimensions.size() == 1 && dimensions.getInt(0) > 0) {
             // create jacobian matrix
             return F.Outer.of(engine, S.D, function, variables);
           }
