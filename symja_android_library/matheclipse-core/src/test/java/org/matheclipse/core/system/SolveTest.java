@@ -2031,8 +2031,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
   public void testIssue902() {
     check("Expand(x^2.5 + x^0.5-100 )", //
         "-100+Sqrt(x)+x^2.5");
-    check("FindRoot(x^2.5 + x^0.5-100,x)", //
-        "{x->6.24602}");
+
     check("Solve(100 == x^2.5 + x^0.5,x)", //
         "{{x->6.24602}}");
     check("Solve(-100 == x^2.5 + x^0.5,x)", //

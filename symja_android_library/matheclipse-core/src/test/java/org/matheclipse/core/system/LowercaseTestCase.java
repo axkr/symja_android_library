@@ -8070,8 +8070,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindMinimum() {
-     check("FindMinimum(x^3-12*x^2+45*x+8, {x,4} )", //
-         "{58.0,{x->5.0}}");
+    check("FindMinimum(x^3-12*x^2+45*x+8, {x,4} )", //
+        "{58.0,{x->5.0}}");
     check("FindMinimum(x^3-12*x^2+45*x+8, {x,1} )", //
         "FindMinimum(-12*x^2+x^3+45*x+8,{x,1})");
 
@@ -8129,20 +8129,35 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindRoot() {
-    // automatic: AccuracyGoal->6
-    checkNumeric("10-x /. FindRoot(Sin(x - 10) - x + 10, {x, 0})", //
-        "1.498271155142561E-6");
-    checkNumeric("10-x /. FindRoot(Sin(x - 10) - x + 10, {x, 0},AccuracyGoal->4)", //
-        "1.9439351756744827E-4");
-    // Message FindRoot: interval does not bracket a root: f(NaN) = NaN, f(NaN) = NaN.
-    checkNumeric("10-x /. FindRoot(Sin(x - 10) - x + 10, {x, 0},AccuracyGoal->8)", //
-        "10-x/.FindRoot(10-x-Sin(10-x),{x,0},AccuracyGoal->8)");
-    // Message FindRoot: Value of option AccuracyGoal->test is not Automatic or a machine-sized
-    // integer.
-    checkNumeric("10-x /. FindRoot(Sin(x - 10) - x + 10, {x, 0},AccuracyGoal->test)", //
-        "10-x/.FindRoot(10-x-Sin(10-x),{x,0},AccuracyGoal->test)");
+    // print message: FindRoot: Search specification x should be a list with 1 to 3 elements.
+    check("FindRoot(x^2.5 + x^0.5-100,x)", //
+        "FindRoot(-100+Sqrt(x)+x^2.5,x)");
+    check("FindRoot(x^2.5 + x^0.5-100,{x,1.0})", //
+        "{x->6.24602}");
 
-    // multivariate cases
+    // ???
+    check("FindRoot({2400^4 - tw^4 -1.77*^-6*qw == 0,\n" //
+        + "        tw^2 - t1^2 +2454*(tw - t1) - 0.2319 *qw ==0,\n" //
+        + "        t1^4 - t2^4 +4.601*^6*(t1^2 - t2^2) + 1.129*^10*(t1 - t2) - 1.6229*^8 * qw == 0,\n" //
+        + "        t2^2 - t3^2 + 2454 *(t2 -t3) -0.2319 *qw ==0,\n" //
+        + "        tw -t3 -0.0549*qs == 0,\n" //
+        + "        t3^4 - tb^4 -4.141*^5*(qs + qw) == 0,\n" //
+        + "        tb - 320 -8.164*^-8*(qs +qw) == 0}, {{tw,2400+0.000015*I},{t1,-230-240*I},{t2,-241-230*I},{t3,4},{tb,1},{qw,1},{qs,1}})", //
+        "{tw->2400.0,t1->2385.213,t2->708.4835,t3->680.6299,tb->320.0402,qw->461596.8,qs->31318.22}");
+    check("{2400^4 - tw^4 -1.77*^-6*qw,\n" //
+        + "        tw^2 - t1^2 +2454*(tw - t1) - 0.2319 *qw,\n" //
+        + "        t1^4 - t2^4 +4.601*^6*(t1^2 - t2^2) + 1.129*^10*(t1 - t2) - 1.6229*^8 * qw,\n" //
+        + "        t2^2 - t3^2 + 2454 *(t2 -t3) -0.2319 *qw,\n" //
+        + "        tw -t3 -0.0549*qs,\n" //
+        + "        t3^4 - tb^4 -4.141*^5*(qs + qw),\n" //
+        + "        tb - 320 -8.164*^-8*(qs +qw)} /. {tw->2400.0,t1->2385.213,t2->708.4835,t3->680.6299,tb->320.0402,qw->461596.8,qs->31318.22}", //
+        "{-0.816406,1.94471,-2.61528*10^7,0.245478,-0.000178,-35512.4,-0.0000415822}");
+
+    // https://en.wikipedia.org/wiki/Newton%27s_method#Example
+    check("FindRoot({5*x1^2+x1*x2^2+Sin(2*x2)^2==2, Exp(2*x1-x2)+4*x2==3},{{x1, 1.0},{x2, 1.0}})", //
+        "{x1->0.567297,x2->-0.309442}");
+
+    // other multivariate cases
     check("FindRoot({2*x1+x2==E^(-x1), -x1+2*x2==E^(-x2)},{{x1, 0.0},{x2, 1.0}})", //
         "{x1->0.197594,x2->0.425514}");
     check(
@@ -8155,6 +8170,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{x->0.442854,y->1.55715}");
     check("FindRoot({Sin(x + y), Cos(x - y), x^2 + y^2 - z}, {{x, 1}, {y, 0}, {z, 0}})", //
         "{x->0.785398,y->-0.785398,z->1.2337}");
+
+    // automatic: AccuracyGoal->6
+    checkNumeric("10-x /. FindRoot(Sin(x - 10) - x + 10, {x, 0})", //
+        "1.498271155142561E-6");
+    checkNumeric("10-x /. FindRoot(Sin(x - 10) - x + 10, {x, 0},AccuracyGoal->4)", //
+        "1.9439351756744827E-4");
+    // Message FindRoot: interval does not bracket a root: f(NaN) = NaN, f(NaN) = NaN.
+    checkNumeric("10-x /. FindRoot(Sin(x - 10) - x + 10, {x, 0},AccuracyGoal->8)", //
+        "10-x/.FindRoot(10-x-Sin(10-x),{x,0},AccuracyGoal->8)");
+    // Message FindRoot: Value of option AccuracyGoal->test is not Automatic or a machine-sized
+    // integer.
+    checkNumeric("10-x /. FindRoot(Sin(x - 10) - x + 10, {x, 0},AccuracyGoal->test)", //
+        "10-x/.FindRoot(10-x-Sin(10-x),{x,0},AccuracyGoal->test)");
 
     // univariate cases
     check("FindRoot(sin(x)==x^2, {x, -6.6, 3.99999999})", //
@@ -8262,6 +8290,24 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{x->3.4341896295968874}");
     check("FindRoot(Sin(x),{x,-0.5,0.5}, Secant)", //
         "{x->0.0}");
+
+    check("FindRoot(Cos(x)==x,{x,0})", //
+        "{x->0.739085}");
+    check("FindRoot(Sin(x),{x,3})", //
+        "{x->3.14159}");
+    check("FindRoot(Sin(x),{x,6})", //
+        "{x->6.28319}");
+    check("FindRoot(Sin(x)==2,{x,I})", //
+        "{x->1.5708+I*1.31696}");
+    // TODO
+    // check("FindRoot(Zeta(1/2 + I*t), {t, 12})", //
+    // " ");
+    check("FindRoot({Sin(x)==Cos(y), x+y==1}, {{x, 1}, {y, 1}})", //
+        "{x->-1.85619,y->2.85619}");
+    // TODO solve linear equation
+    // check("FindRoot({{1, 2}, {3, 4}} . x == {5, 6}, {x, {1, 1}})", //
+    // " ");
+
   }
 
 
@@ -9947,6 +9993,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHurwitzLerchPhi() {
+    check("HurwitzLerchPhi(-1,1,1)", //
+        "Log(2)");
     check("HurwitzLerchPhi(-1,-1,1)", //
         "1/4");
     check("HurwitzLerchPhi(2,1,1)", //

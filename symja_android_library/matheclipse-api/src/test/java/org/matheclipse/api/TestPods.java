@@ -1829,7 +1829,7 @@ public class TestPods {
             + "      \"error\" : \"false\",\n" //
             + "      \"numsubpods\" : 1,\n" //
             + "      \"subpods\" : [ {\n" //
-            + "        \"plaintext\" : \"Rationalize(1.4142135623730951)\",\n" //
+            + "        \"plaintext\" : \"Rationalize(1.41421)\",\n" //
             + "        \"sinput\" : \"Rationalize(1.4142135623730951`)\",\n" //
             + "        \"latex\" : \"\\\\text{Rationalize}(1.41421)\"\n" //
             + "      } ]\n" //

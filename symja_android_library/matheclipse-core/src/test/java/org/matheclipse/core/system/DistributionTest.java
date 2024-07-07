@@ -722,7 +722,6 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     exprEvaluator.eval("M1 = {{8, 10, 6, 9, 9}, {4, 6, 9,6, 5}}");
     IExpr result = exprEvaluator.eval("N[ChiSquareTest[M1, M2]]");
     assertEquals(result.toString(), //
-        "{chi2->2.75265306122449,p->0.6000329492570032,df->4.0," //
-            + "expected->{{7.0,9.333333333333334,8.75,8.75,8.166666666666666},{5.0,6.666666666666667,6.25,6.25,5.833333333333333}}}");
+        "{chi2->2.75265,p->0.600033,df->4.0,expected->{{7.0,9.33333,8.75,8.75,8.16667},{5.0,6.66667,6.25,6.25,5.83333}}}");
   }
 }

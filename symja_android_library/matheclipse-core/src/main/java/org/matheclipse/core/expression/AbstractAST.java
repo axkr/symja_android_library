@@ -6195,7 +6195,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    if (OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax()).convert(sb, this)) {
+    EvalEngine engine = EvalEngine.get();
+    if (OutputFormFactory.get(engine.isRelaxedSyntax(), false, false,
+        engine.getSignificantFigures() - 1, engine.getSignificantFigures() + 1).convert(sb, this)) {
       return sb.toString();
     }
     sb = null;

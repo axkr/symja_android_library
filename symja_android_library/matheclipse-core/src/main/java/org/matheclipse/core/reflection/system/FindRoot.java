@@ -15,11 +15,13 @@ import org.hipparchus.analysis.solvers.PegasusSolver;
 import org.hipparchus.analysis.solvers.RegulaFalsiSolver;
 import org.hipparchus.analysis.solvers.RiddersSolver;
 import org.hipparchus.analysis.solvers.SecantSolver;
+import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -367,50 +369,83 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       }
     }
 
-    IExpr arg1 = ast.arg1();
-    IExpr arg2 = ast.arg2().makeList();
+    IAST arg1 = ast.arg1().makeList();
+    if (!ast.arg2().isList()) {
+      // Search specification `1` should be a list with 1 to 3 elements.
+      return Errors.printMessage(S.FindRoot, "fdss", F.List(ast.arg2()), engine);
+    }
+    IAST arg2 = (IAST) ast.arg2();
+    boolean complexStartvalue = false;
+    for (int i = 1; i < arg1.size(); i++) {
+      if (arg1.get(i).hasComplexNumber()) {
+        complexStartvalue = true;
+      }
+    }
+    if (arg2.isList2() && !arg2.isListOfLists()) {
+      // if (arg2.isListOfLists()) {
+      // IAST list = (IAST) arg2;
+      // for (int i = 1; i < list.size(); i++) {
+      //
+      // }
+      // } else {
+      try {
+        IExpr startValue = arg2.second();
+        double doubleValue = startValue.evalf();
+      } catch (ArgumentTypeException ate) {
+        complexStartvalue = true;
+      }
+      // }
+      arg2 = F.List(arg2);
+    }
     int l1 = arg1.isVector();
     int l2 = arg2.argSize();
-    if (l1 > 0 && l1 == l2 && arg1.isList() && arg2.isList()) {
+    if ((complexStartvalue || l2 > 1) && l1 == l2 && arg1.isList() && arg2.isList()) {
       double accuracy = accuracy(accuracyGoal);
-      return multivariateFindRoot((IAST) arg1, (IAST) arg2, accuracy, maxIterations, engine);
-    } else if (arg2.isList()) {
-      IAST list = (IAST) arg2;
-      if (list.size() >= 2 && list.arg1().isSymbol()) {
-        IReal min = F.CD1;
-        if (list.argSize() > 1) {
-          min = list.arg2().evalReal();
+      return multivariateFindRoot(arg1, arg2, accuracy, maxIterations, engine);
+    } else if ((arg2.isList2() || arg2.isList3()) && !arg2.isListOfLists()) {
+      return univariateFindRoot(ast.arg1(), arg2, method, maxIterations, accuracyGoal, engine);
+    } else if (arg2.isList1() && (arg2.first().isList2() || arg2.first().isList3())) {
+      return univariateFindRoot(ast.arg1(), (IAST) arg2.first(), method, maxIterations,
+          accuracyGoal, engine);
+    }
+    return F.NIL;
+  }
+
+  private static IExpr univariateFindRoot(IExpr listOfEquations, IAST varValuePairs, String method,
+      int maxIterations, int accuracyGoal, final EvalEngine engine) {
+    IAST list = varValuePairs;
+    if (list.size() >= 2 && list.arg1().isSymbol()) {
+      IReal min = F.CD1;
+      if (list.argSize() > 1) {
+        min = list.arg2().evalReal();
+      }
+      if (min != null) {
+        IReal max = null;
+        if (list.size() > 3) {
+          max = list.arg3().evalReal();
         }
-        if (min != null) {
-          IReal max = null;
-          if (list.size() > 3) {
-            max = list.arg3().evalReal();
+        try {
+          UnivariateSolverSupplier optimizeSupplier = new UnivariateSolverSupplier(listOfEquations,
+              list, min, max, maxIterations, method, accuracyGoal, engine);
+          IExpr result = engine.evalBlock(optimizeSupplier, list);
+          return F.list(F.Rule(list.arg1(), result));
+        } catch (MathIllegalStateException miae) {
+          if (miae.getSpecifier() == LocalizedCoreFormats.CONVERGENCE_FAILED) {
+            // Failed to converge to the requested accuracy or precision within `1` iterations.
+            return Errors.printMessage(S.FindRoot, "cvmit", F.list(F.ZZ(maxIterations)), engine);
           }
-          try {
-            UnivariateSolverSupplier optimizeSupplier = new UnivariateSolverSupplier(ast.arg1(),
-                list, min, max, maxIterations, method, accuracyGoal, engine);
-            IExpr result = engine.evalBlock(optimizeSupplier, list);
-            return F.list(F.Rule(list.arg1(), result));
-          } catch (MathIllegalStateException miae) {
-            if (miae.getSpecifier() == LocalizedCoreFormats.CONVERGENCE_FAILED) {
-              // Failed to converge to the requested accuracy or precision within `1` iterations.
-              return Errors.printMessage(ast.topHead(), "cvmit", F.list(F.ZZ(maxIterations)),
-                  engine);
-            }
-            // `1`.
-            return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())),
-                engine);
-          } catch (MathRuntimeException mre) {
-            if (mre.getSpecifier() == LocalizedCoreFormats.NOT_BRACKETING_INTERVAL
-                || mre.getSpecifier() == LocalizedCoreFormats.ENDPOINTS_NOT_AN_INTERVAL) {
-              // `1` is only applicable for univariate real functions and requires two real starting
-              // values that bracket the root.
-              return Errors.printMessage(ast.topHead(), "bbrac", F.list(F.Rule(S.Method, method)),
-                  engine);
-            }
-            return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(mre.getMessage())),
+          // `1`.
+          return Errors.printMessage(S.FindRoot, "error", F.list(F.$str(miae.getMessage())),
+              engine);
+        } catch (MathRuntimeException mre) {
+          if (mre.getSpecifier() == LocalizedCoreFormats.NOT_BRACKETING_INTERVAL
+              || mre.getSpecifier() == LocalizedCoreFormats.ENDPOINTS_NOT_AN_INTERVAL) {
+            // `1` is only applicable for univariate real functions and requires two real starting
+            // values that bracket the root.
+            return Errors.printMessage(S.FindRoot, "bbrac", F.list(F.Rule(S.Method, method)),
                 engine);
           }
+          return Errors.printMessage(S.FindRoot, "error", F.list(F.$str(mre.getMessage())), engine);
         }
       }
     }
@@ -420,6 +455,10 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
   /**
    * Call Newton's method for finding the root of a differentiable, multivariate, vector-valued
    * function.
+   * <p>
+   * See:
+   * <a href="https://en.wikipedia.org/wiki/Newton%27s_method#k_variables,_k_functions">Wikipedia -
+   * Newton's method - k_variables, _k_functions</a>
    * 
    * @param listOfEquations a list of equations
    * @param matrixOfVarValuePairs a matrix of variables and their initial values
@@ -435,10 +474,22 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     IASTAppendable vectorOfVariables = F.ListAlloc(matrixOfVarValuePairs.argSize());
     IASTAppendable initialGuess = F.ListAlloc(matrixOfVarValuePairs.argSize());
     for (int i = 1; i < matrixOfVarValuePairs.size(); i++) {
-      IExpr element = matrixOfVarValuePairs.get(i);
-      if (element.isList2()) {
-        vectorOfVariables.append(element.first());
-        initialGuess.append(engine.evalDouble(element.second()));
+      IExpr variableInitialGuessPair = matrixOfVarValuePairs.get(i);
+      if (variableInitialGuessPair.isList2()) {
+        vectorOfVariables.append(variableInitialGuessPair.first());
+        IExpr guessedValue = variableInitialGuessPair.second();
+        try {
+          double doubleValue = guessedValue.evalf();
+          if (Double.isFinite(doubleValue)) {
+            initialGuess.append(doubleValue);
+          } else {
+            Complex complexValue = engine.evalComplex(guessedValue);
+            initialGuess.append(complexValue);
+          }
+        } catch (ArgumentTypeException ate) {
+          Complex complexValue = engine.evalComplex(guessedValue);
+          initialGuess.append(complexValue);
+        }
       } else {
         return F.NIL;
       }

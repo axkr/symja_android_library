@@ -1,5 +1,6 @@
 package org.matheclipse.core.texparser;
 
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,9 +10,6 @@ import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IExpr;
-import junit.framework.TestCase;
-
-import static org.junit.Assert.assertEquals;
 
 /** Tests LaTeX import (parsing) function */
 @RunWith(JUnit4.class)
@@ -482,7 +480,7 @@ public class TeXConverterTestCase  {
     IExpr input = teXSliceParser.parse("\\operatorname{Pol}(3,2)");
 
     IExpr result = evaluator.eval(F.N(input));
-    assertEquals(result.toString(), "{-1.2484405096414273,2.727892280477045}");
+    assertEquals(result.toString(), "{-1.24844,2.72789}");
   }
 
   @Test

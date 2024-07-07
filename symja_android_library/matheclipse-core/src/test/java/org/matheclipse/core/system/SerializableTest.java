@@ -95,40 +95,39 @@ public class SerializableTest {
 
   @Test
   public void testFraction() {
-    equalsCopy(F.fraction(1L, Integer.MAX_VALUE));
-    equalsCopy(F.fraction(1L, Integer.MIN_VALUE));
-    equalsCopy(F.fraction(1L, Integer.MAX_VALUE * 2L));
-    equalsCopy(F.fraction(1L, Integer.MIN_VALUE * 2L));
-    equalsCopy(F.fraction(Integer.MAX_VALUE, 7L));
-    equalsCopy(F.fraction(Integer.MIN_VALUE, 3L));
-    equalsCopy(F.fraction(Integer.MAX_VALUE * 2L, 5L));
-    equalsCopy(F.fraction(Integer.MIN_VALUE * 2L, 11L));
+    equalsCopy(F.QQ(1L, Integer.MAX_VALUE));
+    equalsCopy(F.QQ(1L, Integer.MIN_VALUE));
+    equalsCopy(F.QQ(1L, Integer.MAX_VALUE * 2L));
+    equalsCopy(F.QQ(1L, Integer.MIN_VALUE * 2L));
+    equalsCopy(F.QQ(Integer.MAX_VALUE, 7L));
+    equalsCopy(F.QQ(Integer.MIN_VALUE, 3L));
+    equalsCopy(F.QQ(Integer.MAX_VALUE * 2L, 5L));
+    equalsCopy(F.QQ(Integer.MIN_VALUE * 2L, 11L));
   }
 
   @Test
   public void testComplex() {
-    equalsCopy(F.CC(F.fraction(1L, Integer.MAX_VALUE)));
-    equalsCopy(F.CC(F.fraction(1L, Integer.MIN_VALUE)));
-    equalsCopy(F.CC(F.fraction(1L, Integer.MAX_VALUE * 2L)));
-    equalsCopy(F.CC(F.fraction(1L, Integer.MIN_VALUE * 2L)));
-    equalsCopy(F.CC(F.fraction(Integer.MAX_VALUE, 7L)));
-    equalsCopy(F.CC(F.fraction(Integer.MIN_VALUE, 3L)));
-    equalsCopy(F.CC(F.fraction(Integer.MAX_VALUE * 2L, 5L)));
-    equalsCopy(F.CC(F.fraction(Integer.MIN_VALUE * 2L, 11L)));
+    equalsCopy(F.CC(F.QQ(1L, Integer.MAX_VALUE)));
+    equalsCopy(F.CC(F.QQ(1L, Integer.MIN_VALUE)));
+    equalsCopy(F.CC(F.QQ(1L, Integer.MAX_VALUE * 2L)));
+    equalsCopy(F.CC(F.QQ(1L, Integer.MIN_VALUE * 2L)));
+    equalsCopy(F.CC(F.QQ(Integer.MAX_VALUE, 7L)));
+    equalsCopy(F.CC(F.QQ(Integer.MIN_VALUE, 3L)));
+    equalsCopy(F.CC(F.QQ(Integer.MAX_VALUE * 2L, 5L)));
+    equalsCopy(F.CC(F.QQ(Integer.MIN_VALUE * 2L, 11L)));
 
-    equalsCopy(F.CC(F.fraction(1L, Integer.MAX_VALUE), F.fraction(1L, Integer.MAX_VALUE)));
-    equalsCopy(F.CC(F.fraction(1L, Integer.MIN_VALUE), F.fraction(1L, Integer.MIN_VALUE)));
+    equalsCopy(F.CC(F.QQ(1L, Integer.MAX_VALUE), F.QQ(1L, Integer.MAX_VALUE)));
+    equalsCopy(F.CC(F.QQ(1L, Integer.MIN_VALUE), F.QQ(1L, Integer.MIN_VALUE)));
     equalsCopy(
-        F.CC(F.fraction(1L, Integer.MAX_VALUE * 2L), F.fraction(1L, Integer.MAX_VALUE * 2L)));
+        F.CC(F.QQ(1L, Integer.MAX_VALUE * 2L), F.QQ(1L, Integer.MAX_VALUE * 2L)));
     equalsCopy(
-        F.CC(F.fraction(1L, Integer.MIN_VALUE * 2L), F.fraction(1L, Integer.MAX_VALUE * 2L)));
-    equalsCopy(F.CC(F.fraction(Integer.MAX_VALUE, 7L), F.fraction(Integer.MAX_VALUE, 7L)));
-    equalsCopy(F.CC(F.fraction(Integer.MIN_VALUE, 3L), F.fraction(Integer.MIN_VALUE, 3L)));
+        F.CC(F.QQ(1L, Integer.MIN_VALUE * 2L), F.QQ(1L, Integer.MAX_VALUE * 2L)));
+    equalsCopy(F.CC(F.QQ(Integer.MAX_VALUE, 7L), F.QQ(Integer.MAX_VALUE, 7L)));
+    equalsCopy(F.CC(F.QQ(Integer.MIN_VALUE, 3L), F.QQ(Integer.MIN_VALUE, 3L)));
     equalsCopy(
-        F.CC(F.fraction(Integer.MAX_VALUE * 2L, 5L), F.fraction(Integer.MAX_VALUE * 2L, 5L)));
+        F.CC(F.QQ(Integer.MAX_VALUE * 2L, 5L), F.QQ(Integer.MAX_VALUE * 2L, 5L)));
     equalsCopy(
-        F.CC(F.fraction(Integer.MIN_VALUE * 2L, 11L),
-        F.fraction(Integer.MIN_VALUE * 2L, 11L)));
+        F.CC(F.QQ(Integer.MIN_VALUE * 2L, 11L), F.QQ(Integer.MIN_VALUE * 2L, 11L)));
   }
 
   @Test

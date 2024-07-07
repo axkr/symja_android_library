@@ -17,7 +17,6 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.ZZ;
-import static org.matheclipse.core.expression.F.fraction;
 import static org.matheclipse.core.expression.S.Times;
 import java.util.Set;
 import java.util.TreeSet;
@@ -466,7 +465,7 @@ public class QuarticSolver {
         // - ((1 - I Sqrt[3]) delta3)/(6*2^(1/3)*a)
         result.append(Plus(value,
             Times(Plus(C1, Times(CI, Sqrt(C3))), CN1, delta0,
-                Power(Times(C3, Power(C2, fraction(2L, 3L)), a, delta3), CN1)),
+                Power(Times(C3, Power(C2, F.QQ(2L, 3L)), a, delta3), CN1)),
             Times(CN1, Plus(C1, Times(CN1, CI, Sqrt(C3))), delta3,
                 Power(Times(ZZ(6L), Power(C2, C1D3), a), CN1))));
 
@@ -474,7 +473,7 @@ public class QuarticSolver {
         // - ((1 + I Sqrt[3]) delta3)/(6*2^(1/3)*a)
         result.append(Plus(value,
             Times(Plus(C1, Times(CN1, CI, Sqrt(C3))), CN1, delta0,
-                Power(Times(C3, Power(C2, fraction(2L, 3L)), a, delta3), CN1)),
+                Power(Times(C3, Power(C2, F.QQ(2L, 3L)), a, delta3), CN1)),
             Times(CN1, Plus(C1, Times(CI, Sqrt(C3))), delta3,
                 Power(Times(ZZ(6L), Power(C2, C1D3), a), CN1))));
       }

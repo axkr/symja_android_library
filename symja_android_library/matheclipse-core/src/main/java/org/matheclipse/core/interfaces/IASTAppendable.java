@@ -16,6 +16,7 @@ import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
+import org.hipparchus.complex.Complex;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.ObjIntFunction;
 
@@ -359,6 +360,10 @@ public interface IASTAppendable extends IASTMutable {
    */
   default boolean append(double value) {
     return append(F.num(value));
+  }
+
+  default boolean append(Complex value) {
+    return append(F.complexNum(value));
   }
 
   /**

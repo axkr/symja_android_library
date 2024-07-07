@@ -32,13 +32,13 @@ public class JacobianTest extends ExprEvaluatorTestCase {
     IASTAppendable vector = Convert.vector2List(pair.getFirst());
     IASTAppendable matrix = Convert.matrix2List(pair.getSecond());
     assertEquals(//
-        "{1.0,5.0,2.0,0.8414709848078965}", //
+        "{1.0,5.0,2.0,0.841471}", //
         vector.toString());
     assertEquals(//
         "{{1.0,0.0,0.0},\n" //
             + " {0.0,0.0,5.0},\n" //
             + " {0.0,8.0,-2.0},\n" //
-            + " {0.5403023058681398,0.0,0.8414709848078965}}", //
+            + " {0.540302,0.0,0.841471}}", //
         matrix.toString());
   }
 

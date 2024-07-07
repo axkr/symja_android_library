@@ -30,7 +30,6 @@ import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.UnsameQ;
 import static org.matheclipse.core.expression.F.a_DEFAULT;
 import static org.matheclipse.core.expression.F.b_DEFAULT;
-import static org.matheclipse.core.expression.F.fraction;
 import static org.matheclipse.core.expression.S.I;
 import static org.matheclipse.core.expression.S.Pi;
 import static org.matheclipse.core.expression.S.Sin;
@@ -60,7 +59,6 @@ import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Subst;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SubstAux;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.TrigSimplifyAux;
 import javax.script.ScriptException;
-
 import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -346,7 +344,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
   @Test
   public void testRubi009() {
     IAST ast;
-    ast = FixSimplify(fraction(5L, 3L));
+    ast = FixSimplify(F.QQ(5L, 3L));
     check(ast, "5/3");
   }
 
