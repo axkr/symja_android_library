@@ -369,39 +369,21 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       }
     }
 
-    IAST arg1 = ast.arg1().makeList();
+    IAST listOfEquations = ast.arg1().makeList();
     if (!ast.arg2().isList()) {
       // Search specification `1` should be a list with 1 to 3 elements.
       return Errors.printMessage(S.FindRoot, "fdss", F.List(ast.arg2()), engine);
     }
     IAST arg2 = (IAST) ast.arg2();
-    boolean complexStartvalue = false;
-    for (int i = 1; i < arg1.size(); i++) {
-      if (arg1.get(i).hasComplexNumber()) {
-        complexStartvalue = true;
-      }
-    }
-    if (arg2.isList2() && !arg2.isListOfLists()) {
-      // if (arg2.isListOfLists()) {
-      // IAST list = (IAST) arg2;
-      // for (int i = 1; i < list.size(); i++) {
-      //
-      // }
-      // } else {
-      try {
-        IExpr startValue = arg2.second();
-        double doubleValue = startValue.evalf();
-      } catch (ArgumentTypeException ate) {
-        complexStartvalue = true;
-      }
-      // }
+    boolean needsComplexComputation = needsComplexComputation(listOfEquations, arg2);
+    if (!arg2.isListOfLists()) {
       arg2 = F.List(arg2);
     }
-    int l1 = arg1.isVector();
+    int l1 = listOfEquations.isVector();
     int l2 = arg2.argSize();
-    if ((complexStartvalue || l2 > 1) && l1 == l2 && arg1.isList() && arg2.isList()) {
+    if ((needsComplexComputation || l2 > 1) && l1 == l2 && listOfEquations.isList() && arg2.isList()) {
       double accuracy = accuracy(accuracyGoal);
-      return multivariateFindRoot(arg1, arg2, accuracy, maxIterations, engine);
+      return multivariateFindRoot(listOfEquations, arg2, accuracy, maxIterations, engine);
     } else if ((arg2.isList2() || arg2.isList3()) && !arg2.isListOfLists()) {
       return univariateFindRoot(ast.arg1(), arg2, method, maxIterations, accuracyGoal, engine);
     } else if (arg2.isList1() && (arg2.first().isList2() || arg2.first().isList3())) {
@@ -409,6 +391,33 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
           accuracyGoal, engine);
     }
     return F.NIL;
+  }
+
+  /**
+   * Test if the computation requires complex number calculations.
+   * 
+   * @param listOfEquations
+   * @param varValuePairs
+   * @return
+   */
+  private static boolean needsComplexComputation(IAST listOfEquations, IAST varValuePairs) {
+    boolean needsComplexComputation = false;
+    for (int i = 1; i < listOfEquations.size(); i++) {
+      if (listOfEquations.get(i).hasComplexNumber()) {
+        needsComplexComputation = true;
+      }
+    }
+    if (varValuePairs.isList2() && !varValuePairs.isListOfLists()) {
+      if (!needsComplexComputation) {
+        try {
+          IExpr startValue = varValuePairs.second();
+          double doubleValue = startValue.evalf();
+        } catch (ArgumentTypeException ate) {
+          needsComplexComputation = true;
+        }
+      }
+    }
+    return needsComplexComputation;
   }
 
   private static IExpr univariateFindRoot(IExpr listOfEquations, IAST varValuePairs, String method,
