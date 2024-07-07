@@ -3063,7 +3063,7 @@ public class F extends S {
    */
   @Deprecated
   public static IComplex complex(final IRational re) {
-    return complex(re, fraction(0L, 1L));
+    return complex(re, QQ(0L, 1L));
   }
 
   /**
@@ -4442,6 +4442,10 @@ public class F extends S {
     return new AST2(FindRoot, f, x);
   }
 
+  public static IAST FindRoot(final IExpr f, final IExpr x, final IExpr option) {
+    return new AST3(FindRoot, f, x, option);
+  }
+
   public static IAST FindShortestPath(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(FindShortestPath, a0, a1, a2);
   }
@@ -4528,7 +4532,9 @@ public class F extends S {
    * @param numerator numerator of the fractional number
    * @param denominator denumerator of the fractional number
    * @return IFraction
+   * @deprecated
    */
+  @Deprecated
   public static IRational fraction(final long numerator, final long denominator) {
     return AbstractFractionSym.valueOf(numerator, denominator);
   }

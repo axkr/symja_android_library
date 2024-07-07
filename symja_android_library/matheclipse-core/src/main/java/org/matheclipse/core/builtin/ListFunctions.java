@@ -2674,7 +2674,7 @@ public final class ListFunctions {
       int n = list.size() - 1;
       for (java.util.Map.Entry<IExpr, Integer> entry : map.entrySet()) {
         int count = entry.getValue();
-        IRational p = F.fraction(count, n);
+        IRational p = F.QQ(count, n);
         IAST times = F.Times(p, logAST.setAtCopy(logASTIndex, p));
         result.append(times);
       }
@@ -5007,7 +5007,7 @@ public final class ListFunctions {
         }
         try {
           IASTAppendable result = arg1AST.copyHead();
-          IExpr temp = recursePick(arg1AST, arg2AST, matcher, result);
+          IExpr temp = pickRecursive(arg1AST, arg2AST, matcher, result);
           return temp;
         } catch (AbortException aex) {
           // Expressions `1` and `2` have incompatible shapes.
@@ -5030,7 +5030,7 @@ public final class ListFunctions {
      * @return the elements of <code>list</code> those values in the corresponding position in
      *         <code>selection</code> match with <code>matcher</code>.
      */
-    private static IExpr recursePick(IAST list, IAST selection, IPatternMatcher matcher,
+    private static IExpr pickRecursive(IAST list, IAST selection, IPatternMatcher matcher,
         IASTAppendable result) {
       for (int i = 1; i < list.size(); i++) {
         IExpr arg1 = list.getRule(i);
@@ -5042,7 +5042,7 @@ public final class ListFunctions {
             throw AbortException.ABORTED;
           }
           IASTAppendable appendable = ((IAST) arg1).copyHead();
-          IExpr temp = recursePick((IAST) arg1, (IAST) arg2, matcher, appendable);
+          IExpr temp = pickRecursive((IAST) arg1, (IAST) arg2, matcher, appendable);
           result.append(temp);
         }
       }

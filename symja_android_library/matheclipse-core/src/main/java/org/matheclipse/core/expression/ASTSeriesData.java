@@ -837,7 +837,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         if (denominator == 1) {
           exp = F.ZZ(i);
         } else {
-          exp = F.fraction(i, denominator).normalize();
+          exp = F.QQ(i, denominator).normalize();
         }
         IExpr pow = x.subtract(x0).power(exp);
         result.append(F.Times(expr, pow));
