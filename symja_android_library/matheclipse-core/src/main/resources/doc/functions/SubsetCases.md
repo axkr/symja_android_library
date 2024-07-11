@@ -18,6 +18,8 @@ SubsetCases(list, sublist)
 
 > returns a list of the matching sublist pattern expressions `sublist` in `list`.
 
+**Note:** this function doesn't support pattern sequences at the moment.
+
 ### Examples
 
 ```

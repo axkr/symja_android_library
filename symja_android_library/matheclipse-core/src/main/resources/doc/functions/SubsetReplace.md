@@ -11,6 +11,8 @@ SubsetReplace(list, sublist :> rhs)
 ```
 
 > replaces the sublist pattern expression `sublist` in `list` with the right-hand-side `rhs`.
+
+**Note:** this function doesn't support pattern sequences at the moment.
  
 ### Examples
 

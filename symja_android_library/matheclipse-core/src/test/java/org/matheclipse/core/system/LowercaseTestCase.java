@@ -15320,6 +15320,26 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNearest() {
+    check("Nearest({1, 2, 3, 5, 7, 11, 13, 17, 19}, 9)", //
+        "{7,11}");
+    check(
+        "Nearest({{1.5, .6}, {2, 0}, {1.25, 1.25}}, {0, 0}, " //
+            + "DistanceFunction -> (3*Abs(#1[[1]]-#2[[1]]) + 2*Abs(#1[[2]]-#2[[2]]) &))", //
+        "{{1.5,0.6}}");
+    check(
+        "dist({u_, v_}, {x_, y_}) := 3*Abs(u-x) + 2*Abs(v-y)", //
+        "");
+    check(
+        "Nearest({{1.5, .6}, {2, 0}, {1.25, 1.25}}, {0, 0}, DistanceFunction -> dist)", //
+        "{{1.5,0.6}}");
+    check(
+        "Nearest({{1.5, .6}, {2, 0}, {1.25, 1.25}}, {0, 0}, DistanceFunction -> ManhattanDistance)", //
+        "{{2,0}}");
+    check(
+        "Nearest({{1.5, .6}, {2, 0}, {1.25, 1.25}}, {0, 0}, DistanceFunction -> ChessboardDistance)", //
+        "{{1.25,1.25}}");
+
+
     check("Nearest({1, 2, 4, 8, 16, 32}, 20)", //
         "{16}");
     check("Nearest({1, 2, 4, 8, 16, 24, 32}, 20)", //
@@ -15328,11 +15348,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNearestTo() {
+    check("NearestTo(9)[{1, 2, 3, 5, 7, 11, 13, 17, 19}]", //
+        "{7,11}");
+    check(
+        "NearestTo({0, 0}, DistanceFunction->ManhattanDistance) [{{1.5, .6}, {2, 0}, {1.25, 1.25}}]", //
+        "{{2,0}}");
+    check(
+        "NearestTo({0, 0}, DistanceFunction->ChessboardDistance) [{{1.5, .6}, {2, 0}, {1.25, 1.25}}]", //
+        "{{1.25,1.25}}");
+    check("NearestTo({0, 0}) [{{1.5, .6}, {2, 0}, {1.25, 1.25}}]", //
+        "{{1.5,0.6}}");
+
     check("NearestTo(20)[{1, 2, 4, 8, 16, 32}]", //
         "{16}");
     // TODO improve Nearest
     check("NearestTo(20,3)[{1, 2, 4, 8, 16, 32}]", //
-        "Nearest({1,2,4,8,16,32},20,3)");
+        "Nearest({1,2,4,8,16,32},20,3,DistanceFunction->Automatic)");
   }
 
   @Test
@@ -19753,6 +19784,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRange() {
+    check("Range(0,10,Pi)", //
+        "{0,Pi,2*Pi,3*Pi}");
+
+    check("Range(1+Sqrt(2),-2+I*2)", //
+        "Range(1+Sqrt(2),-2+I*2)");
+    check("Range(I, I+3)", //
+        "{I,1+I,2+I,3+I}");
+
+
     check("Range(a, b, (b - a)/4)", //
         "{a,a+1/4*(-a+b),a+1/2*(-a+b),a+3/4*(-a+b),b}");
 

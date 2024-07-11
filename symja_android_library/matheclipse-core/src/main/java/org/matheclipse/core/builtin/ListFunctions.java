@@ -4397,21 +4397,39 @@ public final class ListFunctions {
     }
   }
 
-  private static final class Nearest extends AbstractFunctionEvaluator {
-
+  private static final class Nearest extends AbstractFunctionOptionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
+        IAST originalAST) {
       if (ast.arg1().isASTOrAssociation()) {
-        if (ast.isAST2() && ast.arg2().isNumber()) {
-          IAST listArg1 = (IAST) ast.arg1();
-          if (listArg1.argSize() > 0) {
-            INumber arg2 = (INumber) ast.arg2();
-            // Norm() is the default distance function for numeric data
-            IExpr distanceFunction = F.Function(F.Norm(F.Subtract(F.Slot1, F.Slot2)));
-            return numericalNearest(listArg1, arg2, distanceFunction, engine);
+        IAST listArg1 = (IAST) ast.arg1();
+        if (listArg1.argSize() > 0) {
+          if (argSize == 2) {
+            if (ast.arg2().isNumber()) {
+              INumber arg2 = (INumber) ast.arg2();
+              IExpr distanceFunction;
+              if (option[0] == S.Automatic) {
+                // Norm() is the default distance function for numeric data
+                distanceFunction = F.Function(F.Norm(F.Subtract(F.Slot1, F.Slot2)));
+              } else {
+                distanceFunction = F.Function(F.binary(option[0], F.Slot1, F.Slot2));
+              }
+              return nearest(listArg1, arg2, distanceFunction, engine);
+            }
+
+            IExpr arg2 = ast.arg2();
+            IExpr distanceFunction;
+            if (option[0] == S.Automatic) {
+              // Norm() is the default distance function for numeric data
+              distanceFunction = F.Function(F.Norm(F.Subtract(F.Slot1, F.Slot2)));
+            } else {
+              distanceFunction = F.Function(F.binary(option[0], F.Slot1, F.Slot2));
+            }
+            return nearest(listArg1, arg2, distanceFunction, engine);
           }
         }
       }
+
 
       return F.NIL;
     }
@@ -4419,6 +4437,11 @@ public final class ListFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.DistanceFunction, S.Automatic);
     }
 
     /**
@@ -4429,29 +4452,29 @@ public final class ListFunctions {
      * @param engine
      * @return the list of elements from <code>inputList</code> to which x is nearest
      */
-    private static IAST numericalNearest(IAST inputList, INumber x, IExpr distanceFunction,
+    private static IAST nearest(IAST inputList, IExpr x, IExpr distanceFunction,
         EvalEngine engine) {
       try {
-        IASTAppendable nearest = null;
+        IASTAppendable result = null;
         IExpr distance = F.NIL;
         IASTAppendable temp;
         for (int i = 1; i < inputList.size(); i++) {
           temp = F.ast(distanceFunction);
           temp.append(x);
           temp.append(inputList.get(i));
-          if (nearest == null) {
-            nearest = F.ListAlloc(8);
-            nearest.append(inputList.get(i));
+          if (result == null) {
+            result = F.ListAlloc(8);
+            result.append(inputList.get(i));
             distance = temp;
           } else {
             IExpr comparisonResult = engine.evaluate(F.Greater(distance, temp));
             if (comparisonResult.isTrue()) {
-              nearest = F.ListAlloc(8);
-              nearest.append(inputList.get(i));
+              result = F.ListAlloc(8);
+              result.append(inputList.get(i));
               distance = temp;
             } else if (comparisonResult.isFalse()) {
               if (S.Equal.ofQ(engine, distance, temp)) {
-                nearest.append(inputList.get(i));
+                result.append(inputList.get(i));
               }
               continue;
             } else {
@@ -4460,14 +4483,15 @@ public final class ListFunctions {
             }
           }
         }
-        return nearest;
+        return result;
       } catch (RuntimeException e) {
       }
       return F.NIL;
     }
   }
 
-  private static class NearestTo extends AbstractFunctionEvaluator {
+  private static class NearestTo extends AbstractFunctionOptionEvaluator {
+
     IBuiltInSymbol operatorHead;
     IBuiltInSymbol comparatorHead;
 
@@ -4477,13 +4501,23 @@ public final class ListFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.isAST1()) {
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
+        IAST originalAST) {
+      if (ast.argSize() == 1) {
         IExpr head = ast.head();
-        if (head.isAST(operatorHead, 2)) {
-          return F.binaryAST2(comparatorHead, ast.arg1(), head.first());
-        } else if (head.isAST(operatorHead, 3)) {
-          return F.ternaryAST3(comparatorHead, ast.arg1(), head.first(), head.second());
+        if (head.isAST(operatorHead)) {
+          option = new IExpr[1];
+          argSize = AbstractFunctionEvaluator.determineOptions(option, (IAST) head, head.argSize(),
+              ARGS_1_1, optionSymbols, engine);
+
+
+          IAST distanceFunction = F.Rule(S.DistanceFunction, option[0]);
+          if (argSize == 1) {
+            return F.ternaryAST3(comparatorHead, ast.arg1(), head.first(), distanceFunction);
+          } else if (argSize == 2) {
+            return F.quaternary(comparatorHead, ast.arg1(), head.first(), head.second(),
+                distanceFunction);
+          }
         }
       }
       return F.NIL;
@@ -4495,7 +4529,9 @@ public final class ListFunctions {
     }
 
     @Override
-    public void setUp(final ISymbol newSymbol) {}
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.DistanceFunction, S.Automatic);
+    }
   }
 
   /**
