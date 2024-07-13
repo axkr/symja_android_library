@@ -56,6 +56,12 @@ import org.matheclipse.core.sympy.calculus.Util;
 import org.matheclipse.core.visit.VisitorExpr;
 import com.google.common.base.Suppliers;
 
+/**
+ * The MinMaxFunctions class is a part of the symbolic math library and is used for mathematical
+ * optimization. It contains several nested classes, each representing a different mathematical
+ * function or operation. The class contains a static initializer block that sets evaluators for
+ * various mathematical functions.
+ */
 public class MinMaxFunctions {
   private static final Logger LOGGER = LogManager.getLogger();
 
@@ -65,6 +71,9 @@ public class MinMaxFunctions {
    */
   private static class Initializer {
 
+    /**
+     * The init method sets the evaluators for various mathematical functions.
+     */
     private static void init() {
       S.ArgMax.setEvaluator(new ArgMax());
       S.ArgMin.setEvaluator(new ArgMin());
@@ -75,6 +84,11 @@ public class MinMaxFunctions {
       S.Minimize.setEvaluator(new Minimize());
       S.NMaximize.setEvaluator(new NMaximize());
       S.NMinimize.setEvaluator(new NMinimize());
+
+      // S.NArgMax.setEvaluator(new NArgMax());
+      // S.NArgMin.setEvaluator(new NArgMin());
+      // S.NMaxValue.setEvaluator(new NMaxValue());
+      // S.NMinValue.setEvaluator(new NMinValue());
     }
   }
 
@@ -132,6 +146,48 @@ public class MinMaxFunctions {
   }
 
   /**
+   * The NArgMax function is used to find the values of the variables that maximize the given
+   * function.
+   */
+  private static class NArgMax extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr maximize = engine.evaluate(F.NMaximize(ast.arg1(), ast.arg2()));
+      if (maximize.isList2() && maximize.second().isListOfRules()) {
+        IAST listOfRules = (IAST) maximize.second();
+        return listOfRules.map(x -> x.second());
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  /**
+   * The NMaxValue function is used to find the maximum value for the given function.
+   */
+  private static class NMaxValue extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr maximize = engine.evaluate(F.NMaximize(ast.arg1(), ast.arg2()));
+      if (maximize.isList2() && maximize.second().isListOfRules()) {
+        return maximize.first();
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  /**
    *
    *
    * <pre>
@@ -174,6 +230,48 @@ public class MinMaxFunctions {
             return subList.last().second();
           }
         }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  /**
+   * The NArgMin function is used to find the values of the variables that minimize the given
+   * function.
+   */
+  private static class NArgMin extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr minimize = engine.evaluate(F.NMinimize(ast.arg1(), ast.arg2()));
+      if (minimize.isList2() && minimize.second().isListOfRules()) {
+        IAST listOfRules = (IAST) minimize.second();
+        return listOfRules.map(x -> x.second());
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  /**
+   * The NMinValue function is used to find the minimum value for the given function.
+   */
+  private static class NMinValue extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr minimize = engine.evaluate(F.NMinimize(ast.arg1(), ast.arg2()));
+      if (minimize.isList2() && minimize.second().isListOfRules()) {
+        return minimize.first();
       }
       return F.NIL;
     }
