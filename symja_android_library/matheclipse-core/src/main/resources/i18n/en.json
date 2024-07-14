@@ -1,0 +1,30 @@
+{   
+  "Evaluate": "Evaluate `2`",
+  
+  "QuarticSolve::BiquadraticRHSRule": "The equation $a \\cdot {x^2} + b = 0$ is rewritten as `3`",
+  "QuarticSolve::BiquadraticResult1": "The first solution is the square root `3`",
+  "QuarticSolve::BiquadraticResult2": "The second solution is the square root `3`",
+  "QuarticSolve::QuadraticFormulaStart": "All equations of the form $a \\cdot x^2+b \\cdot x+c=0$ can be solved using the quadratic formula: $2 \\cdot a - b \\pm \\sqrt{b \\cdot 2 - 4 \\cdot a \\cdot c}$. The quadratic formula gives two solutions, one when ± is addition and one when it is subtraction.",
+  "QuarticSolve::QuadraticFormulaStandard": "This equation is in standard form: $a \\cdot x^2+b \\cdot x+c=0$. Substitute `3` for a, `4` for b, and `5` for c in the quadratic formula, $2 \\cdot a - b \\pm \\sqrt{b \\cdot 2 - 4 \\cdot a \\cdot c}$.",
+  "QuarticSolve::QuadraticFormulaSquareB": "Square `3`.",
+  "QuarticSolve::QuadraticFormulaTimes": "Multiply `3` times `4`.",
+  "QuarticSolve::QuadraticFormulaPlus": "Add `3` to `4`.",
+  "QuarticSolve::QuadraticFormulaSqrt": "Take the square root of `3`.",
+  "QuarticSolve::QuadraticFormulaSolvePlus": "Now solve the equation `3` when ± is plus. Add `4` to `5`.",
+  "QuarticSolve::QuadraticFormulaSolveMinus": "Now solve the equation `3` when ± is minus. Subtract `4` from `5`.",
+  "QuarticSolve::QuadraticEquation": "Determine the coefficients $a, b, c$ from the quadratic polynomial $a \\cdot {x}^{2} + b \\cdot {x} + c$ as a = `3`, b = `4` and c = `5`.",
+  "QuarticSolve::DiscriminantRule": "The discriminant $\\Delta = b^2 - 4 \\cdot a \\cdot c$, which determines the number of the roots is `3`. The square root of the discriminant appears in the quadratic formula $x_{1,2}=\\frac{-b \\pm \\sqrt { \\Delta }}{2 \\cdot a}$ for the roots of the quadratic polynomial.",
+  "QuarticSolve::DiscriminantEquals0Rule": "Because the discriminant $\\Delta$ is $0$ in the quadratic formula there's only one solution $\\frac{-b}{\\left 2*a\\right}$, which is `1`.",
+  "QuarticSolve::LinearEquation": "Determine the coefficients $a, b$ from the linear polynomial $a \\cdot {x} + b$ as a = `3` and b = `4`.",
+  "QuarticSolve::LinearEquationPlus": "Add `3` from both sides. Anything plus zero gives itself.",
+  "QuarticSolve::LinearEquationSubtract": "Subtract `3` from both sides. Anything subtracted from zero gives its negation.",
+  "QuarticSolve::LinearEquationDivide": "Divide both sides by `3`.",
+  "QuarticSolve::LinearResult": "The solution is `3` = `4`.",
+  "QuarticSolve::Divide": "Divide `3` by `4` to get `5`.",
+  "QuarticSolve::QuadraticResult1": "Because the discriminant $\\Delta$ unequals $0$ in the quadratic formula there are two solutions in the quadratic formula. The first solution $\\frac{-b + \\sqrt{\\Delta}}{\\left 2*a\\right}$, is `1`.",
+  "QuarticSolve::QuadraticResult2": "Because the discriminant $\\Delta$ unequals $0$ in the quadratic formula there are two solutions in the quadratic formula. The second solution $\\frac{-b + \\sqrt{\\Delta}}{\\left 2*a\\right}$, is `1`.",
+  "QuarticSolve::CubicEquation": "Determine the coefficients $a, b, c, d$ from the cubic polynomial $a \\cdot {x}^{3} + b \\cdot {x}^{2} + c \\cdot x + d$ as a = `3`, b = `4`, c = `5` and d = `6`.",
+   
+  "RewriteRule": "General rewrite rule: expression `2` is rewritten as `1`."
+  
+}

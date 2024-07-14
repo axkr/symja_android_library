@@ -57,4 +57,6 @@ public class ToggleFeature {
    * org.matheclipse.core.reflection.system.SeriesData</code> functions.
    */
   public static boolean SERIES_DENOMINATOR = false;
+
+  public static boolean SHOW_STEPS = true;
 }
