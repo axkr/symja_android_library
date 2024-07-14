@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.math.RoundingMode;
 import java.util.Locale;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import org.junit.After;
 import org.junit.Before;
@@ -18,12 +19,20 @@ import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.TimeConstrainedEvaluator;
+import org.matheclipse.core.eval.steps.LocaleMap;
+import org.matheclipse.core.eval.steps.RuleDescription;
+import org.matheclipse.core.eval.steps.TraceStackSteps;
+import org.matheclipse.core.eval.steps.output.JSONStepsTemplate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 @RunWith(JUnit4.class)
 public abstract class ExprEvaluatorTestCase {
@@ -71,8 +80,7 @@ public abstract class ExprEvaluatorTestCase {
   }
 
   public synchronized void check(ExprEvaluator scriptEngine, String evalString,
-      String expectedResult,
-      int resultLength) {
+      String expectedResult, int resultLength) {
     try {
       if (evalString.length() == 0 && expectedResult.length() == 0) {
         return;
@@ -113,6 +121,52 @@ public abstract class ExprEvaluatorTestCase {
     } catch (Exception e) {
       e.printStackTrace();
       assertEquals("", "1");
+    }
+  }
+
+  /**
+   * Checks the steps of evaluating a mathematical expression in JSON format.
+   *
+   * @param input the input mathematical expression as a string
+   * @param filter a predicate used to filter the symbols that should be included in the JSON output
+   * @param expected the expected JSON string representing the steps of evaluation
+   */
+  protected void checkJSON(String input, Predicate<ISymbol> filter, String expected) {
+    try {
+      // disable Out[] history
+      ExprEvaluator util = new ExprEvaluator(true, (short) -1);
+      EvalEngine engine = util.getEvalEngine();
+      TraceStackSteps stepListener = new TraceStackSteps();
+      EvalEngine.get().setStepListener(stepListener);
+      System.out.println("\n" + input);
+      IExpr expr = engine.parse(input);
+      if (expr != null) {
+
+        // this eval call doesn't reset the EvalEngine
+        IExpr result = util.eval(expr);
+        // disable math-steps tracing during JSON output generation
+        engine.setStepListener(null);
+        RuleDescription desc = LocaleMap.get("en");
+
+        OutputFormFactory outputFormFactory = OutputFormFactory.get(true);
+        outputFormFactory.setIgnoreNewLine(true);
+        String actual = outputFormFactory.toString(result);
+
+        System.out.println("\nResult: " + actual);
+        assertEquals(expected, actual);
+
+        JSONStepsTemplate templateSteps = stepListener.createJSONSteps(filter, desc);
+        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        try {
+          String output = ow.writeValueAsString(templateSteps);
+          System.out.println(output);
+        } catch (JsonProcessingException e) {
+          e.printStackTrace();
+        }
+
+      }
+    } finally {
+      EvalEngine.get().setStepListener(null);
     }
   }
 
