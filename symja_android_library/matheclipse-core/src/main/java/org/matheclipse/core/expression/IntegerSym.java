@@ -90,6 +90,17 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
+  public IInteger add(final int that) {
+    if (fIntValue == 0) {
+      return valueOf(that);
+    }
+    if (that == 0) {
+      return this;
+    }
+    return valueOf((long) fIntValue + (long) that);
+  }
+
+  @Override
   public IReal add(IReal that) {
     if (that instanceof IRational) {
       return add((IRational) that);

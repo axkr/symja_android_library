@@ -2259,7 +2259,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
           if (!first) {
             tag(tempBuffer, "mo", "+");
           }
-          exp = F.fraction(i, den).normalize();
+          exp = F.QQ(i, den).normalize();
           pow = x0Term.power(exp);
 
           call = convertSeriesDataArg(tempBuffer, coefficient, pow, call);
@@ -2267,7 +2267,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
           first = false;
         }
       }
-      plusArg = F.Power(F.O(x.subtract(x0)), F.fraction(power, den).normalize());
+      plusArg = F.Power(F.O(x.subtract(x0)), F.QQ(power, den).normalize());
       if (!plusArg.isZero()) {
         tag(tempBuffer, "mo", "+");
         convertInternal(tempBuffer, plusArg, Integer.MIN_VALUE, false);

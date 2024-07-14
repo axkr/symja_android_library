@@ -2430,63 +2430,60 @@ public final class Programming {
       if (ast.isAST1()) {
         return ast.arg1();
       }
-      if (ast.size() >= 3) {
-        if (ast.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
-          return F.NIL;
-        }
-
-        IASTMutable evaledAST = F.NIL;
-        IExpr arg1 = engine.evaluateNIL(ast.arg1());
-        if (arg1.isPresent()) {
-          evaledAST = ast.setAtCopy(1, arg1);
-          if (!arg1.isASTOrAssociation()) {
-            if (arg1.isSparseArray()) {
-              return sparseEvaluate(evaledAST, (ISparseArray) arg1, engine).orElse(evaledAST);
-            }
-            if (ast.size() == 3 && ast.arg2().isZero()) {
-              return arg1.head();
-            }
-            // Part specification `1` is longer than depth of object.
-            Errors.printMessage(S.Part, "partd", F.list(evaledAST), engine);
-            // return the evaluated result:
-            return evaledAST;
-          }
-        } else {
-          arg1 = ast.arg1();
-          if (!arg1.isASTOrAssociation()) {
-            if (arg1.isSparseArray()) {
-              return sparseEvaluate(ast, (ISparseArray) arg1, engine);
-            }
-            if (ast.size() == 3 && ast.arg2().isZero()) {
-              return arg1.head();
-            }
-            // Part specification `1` is longer than depth of object.
-            return Errors.printMessage(S.Part, "partd", F.list(ast), engine);
-          }
-        }
-
-        IAST arg1AST = (IAST) arg1;
-        IExpr temp;
-        int astSize = ast.size();
-        for (int i = 2; i < astSize; i++) {
-          temp = engine.evaluateNIL(ast.get(i));
-          if (temp.isPresent()) {
-            if (evaledAST.isPresent()) {
-              evaledAST.set(i, temp);
-            } else {
-              evaledAST = ast.setAtCopy(i, temp);
-              evaledAST.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
-            }
-          }
-        }
-
-        if (evaledAST.isPresent()) {
-          return part(arg1AST, evaledAST, 2, engine);
-        }
-        return part(arg1AST, ast, 2, engine);
+      if (ast.size() < 3 || ast.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+        return F.NIL;
       }
 
-      return F.NIL;
+      IASTMutable evaledAST = F.NIL;
+      IExpr arg1 = engine.evaluateNIL(ast.arg1());
+      if (arg1.isPresent()) {
+        evaledAST = ast.setAtCopy(1, arg1);
+        if (!arg1.isASTOrAssociation()) {
+          if (arg1.isSparseArray()) {
+            return sparseEvaluate(evaledAST, (ISparseArray) arg1, engine).orElse(evaledAST);
+          }
+          if (ast.size() == 3 && ast.arg2().isZero()) {
+            return arg1.head();
+          }
+          // Part specification `1` is longer than depth of object.
+          Errors.printMessage(S.Part, "partd", F.list(evaledAST), engine);
+          // return the evaluated result:
+          return evaledAST;
+        }
+      } else {
+        arg1 = ast.arg1();
+        if (!arg1.isASTOrAssociation()) {
+          if (arg1.isSparseArray()) {
+            return sparseEvaluate(ast, (ISparseArray) arg1, engine);
+          }
+          if (ast.size() == 3 && ast.arg2().isZero()) {
+            return arg1.head();
+          }
+          // Part specification `1` is longer than depth of object.
+          return Errors.printMessage(S.Part, "partd", F.list(ast), engine);
+        }
+      }
+
+      IAST arg1AST = (IAST) arg1;
+      IExpr temp;
+      int astSize = ast.size();
+      for (int i = 2; i < astSize; i++) {
+        temp = engine.evaluateNIL(ast.get(i));
+        if (temp.isPresent()) {
+          if (evaledAST.isPresent()) {
+            evaledAST.set(i, temp);
+          } else {
+            evaledAST = ast.setAtCopy(i, temp);
+            evaledAST.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+          }
+        }
+      }
+
+      if (evaledAST.isPresent()) {
+        return part(arg1AST, evaledAST, 2, engine);
+      }
+      return part(arg1AST, ast, 2, engine);
+
     }
 
     public IExpr sparseEvaluate(final IAST ast, ISparseArray arg1, EvalEngine engine) {
@@ -2535,21 +2532,16 @@ public final class Programming {
               return Errors.printMessage(builtinSymbol, "write", F.list(symbol), EvalEngine.get());
             }
             try {
+              IExpr result;
               if (rightHandSide.isList()) {
-                IExpr res = Programming.assignPart(temp, part, 2, (IAST) rightHandSide, 1, engine);
-                if (res.isPresent()) {
-                  // symbol.putDownRule(IPatternMatcher.SET, true, symbol, res, false);
-                  symbol.assignValue(res, false);
-                }
-                return rightHandSide;
+                result = Programming.assignPart(temp, part, 2, (IAST) rightHandSide, 1, engine);
               } else {
-                IExpr res = Programming.assignPart(temp, part, 2, rightHandSide, engine);
-                if (res.isPresent()) {
-                  // symbol.putDownRule(IPatternMatcher.SET, true, symbol, res, false);
-                  symbol.assignValue(res, false);
-                }
-                return rightHandSide;
+                result = Programming.assignPart(temp, part, 2, rightHandSide, engine);
               }
+              if (result.isPresent()) {
+                symbol.assignValue(result, false);
+              }
+              return rightHandSide;
             } catch (SymjaMathException sme) {
               return Errors.printMessage(S.Off, sme, engine);
             }

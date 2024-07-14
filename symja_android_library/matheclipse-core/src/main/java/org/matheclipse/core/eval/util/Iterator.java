@@ -861,8 +861,8 @@ public class Iterator {
 
     final IReal stepReal;
 
-    public IRealIterator(final ISymbol symbol, final IReal lowerLimit,
-        final IReal upperLimit, final IReal step) {
+    public IRealIterator(final ISymbol symbol, final IReal lowerLimit, final IReal upperLimit,
+        final IReal step) {
       this.variable = symbol;
       this.lowerLimit = lowerLimit;
       this.upperLimit = upperLimit;
@@ -1334,15 +1334,14 @@ public class Iterator {
             return new QuantityIterator(variable, (IQuantity) lowerLimit, (IQuantity) upperLimit,
                 (IQuantity) step);
           } else if (lowerLimit.isReal() && upperLimit.isReal() && step.isReal()) {
-            return new IRealIterator(variable, (IReal) lowerLimit,
-                (IReal) upperLimit, (IReal) step);
+            return new IRealIterator(variable, (IReal) lowerLimit, (IReal) upperLimit,
+                (IReal) step);
           }
 
           break;
         default:
           // Argument `1` at position `2` does not have the correct form for an iterator.
-          String str =
-              Errors.getMessage("itform", F.list(list, F.ZZ(position)), EvalEngine.get());
+          String str = Errors.getMessage("itform", F.list(list, F.ZZ(position)), EvalEngine.get());
           throw new ArgumentTypeException(str);
 
         // lowerLimit = null;
@@ -1350,7 +1349,7 @@ public class Iterator {
         // step = null;
         // variable = null;
       }
-
+      checkAppropriateBounds(list, lowerLimit, upperLimit, step);
       return new ExprIterator(variable, lowerLimit, upperLimit, step, fNumericMode, evalEngine);
     } catch (LimitException le) {
       throw le;
@@ -1466,8 +1465,7 @@ public class Iterator {
           } else if (lowerLimit.isQuantity() && upperLimit.isQuantity()) {
             return new QuantityIterator(symbol, (IQuantity) lowerLimit, (IQuantity) upperLimit);
           } else if (lowerLimit.isReal() && upperLimit.isReal()) {
-            return new IRealIterator(variable, (IReal) lowerLimit,
-                (IReal) upperLimit, F.C1);
+            return new IRealIterator(variable, (IReal) lowerLimit, (IReal) upperLimit, F.C1);
           }
           break;
         case 4:
@@ -1500,8 +1498,8 @@ public class Iterator {
             return new QuantityIterator(symbol, (IQuantity) lowerLimit, (IQuantity) upperLimit,
                 (IQuantity) step);
           } else if (lowerLimit.isReal() && upperLimit.isReal() && step.isReal()) {
-            return new IRealIterator(variable, (IReal) lowerLimit,
-                (IReal) upperLimit, (IReal) step);
+            return new IRealIterator(variable, (IReal) lowerLimit, (IReal) upperLimit,
+                (IReal) step);
           }
           break;
         default:
@@ -1510,6 +1508,7 @@ public class Iterator {
           step = null;
           variable = null;
       }
+      checkAppropriateBounds(list, lowerLimit, upperLimit, step);
       return new ExprIterator(variable, lowerLimit, upperLimit, step, fNumericMode, evalEngine);
     } catch (LimitException le) {
       throw le;
@@ -1519,6 +1518,24 @@ public class Iterator {
       throw new ClassCastException();
     } finally {
       evalEngine.setNumericMode(localNumericMode);
+    }
+  }
+
+  /**
+   * Throws {@link ArgumentTypeException} if the range specification does not have appropriate
+   * bounds.
+   * 
+   * @param list
+   * @param lowerLimit
+   * @param upperLimit
+   * @param step
+   */
+  public static void checkAppropriateBounds(final IAST list, IExpr lowerLimit, IExpr upperLimit,
+      IExpr step) throws ArgumentTypeException {
+    if (step.isRealResult() && lowerLimit.isRealResult() && upperLimit.hasComplexNumber()) {
+      // Range specification in `1` does not have appropriate bounds.
+      String str = Errors.getMessage("range", F.list(list), EvalEngine.get());
+      throw new ArgumentTypeException(str);
     }
   }
 }

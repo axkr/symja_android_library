@@ -53,7 +53,7 @@ public class Object2Expr {
     CAST_MAP.put(Boolean.class, b -> ((Boolean) b) ? S.True : S.False);
     CAST_MAP.put(org.hipparchus.fraction.Fraction.class, f -> {
       org.hipparchus.fraction.Fraction frac = (org.hipparchus.fraction.Fraction) f;
-      return F.fraction(frac.getNumerator(), frac.getDenominator());
+      return F.QQ(frac.getNumerator(), frac.getDenominator());
     });
     CAST_MAP.put(org.hipparchus.fraction.BigFraction.class, f -> {
       org.hipparchus.fraction.BigFraction frac = (org.hipparchus.fraction.BigFraction) f;

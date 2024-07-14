@@ -1848,16 +1848,16 @@ public class OutputFormFactory {
       long den = seriesData.getDenominator();
       boolean call = NO_PLUS_CALL;
       if (nmax > nmin) {
-        INumber exp = F.fraction(nmin, den).normalize();
+        INumber exp = F.QQ(nmin, den).normalize();
         IExpr pow = x.subtract(x0).power(exp);
         call = convertSeriesDataArg(tempBuffer, seriesData.coefficient(nmin), pow, call);
         for (int i = nmin + 1; i < nmax; i++) {
-          exp = F.fraction(i, den).normalize();
+          exp = F.QQ(i, den).normalize();
           pow = x.subtract(x0).power(exp);
           call = convertSeriesDataArg(tempBuffer, seriesData.coefficient(i), pow, call);
         }
       }
-      plusArg = F.Power(F.O(x.subtract(x0)), F.fraction(order, den).normalize());
+      plusArg = F.Power(F.O(x.subtract(x0)), F.QQ(order, den).normalize());
       if (!plusArg.isZero()) {
         convertPlusArgument(tempBuffer, plusArg, call);
         call = PLUS_CALL;
