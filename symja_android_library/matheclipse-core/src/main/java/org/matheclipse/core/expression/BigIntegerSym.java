@@ -126,6 +126,11 @@ public class BigIntegerSym extends AbstractIntegerSym {
   }
 
   @Override
+  public IInteger add(final int that) {
+    return valueOf(fBigIntValue.add(BigInteger.valueOf(that)));
+  }
+
+  @Override
   public IReal add(IReal that) {
     if (that instanceof IRational) {
       return add((IRational) that);

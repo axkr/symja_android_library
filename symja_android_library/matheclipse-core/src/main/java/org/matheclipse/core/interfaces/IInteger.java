@@ -28,6 +28,14 @@ public interface IInteger extends IRational {
   public IInteger add(IInteger val);
 
   /**
+   * <code>this + val</code>
+   *
+   * @param val
+   * @return
+   */
+  public IInteger add(int val);
+
+  /**
    * Returns the number of bits in the minimal two's-complement representation of this IInteger,
    * <i>excluding</i> a sign bit. For positive IIntegers, this is equivalent to the number of bits
    * in the ordinary binary representation.

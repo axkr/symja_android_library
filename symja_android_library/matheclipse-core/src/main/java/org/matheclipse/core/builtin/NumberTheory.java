@@ -2632,35 +2632,19 @@ public final class NumberTheory {
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       // 2^(n/2+1/4*(1-Cos(n*Pi)))*Pi^(1/4*(-1+Cos(n*Pi)))*Gamma(1+n/2)
-      IExpr v2 = F.Cos(F.Times(n, F.Pi));
-      IExpr v1 = F.Times(F.C1D2, n);
-      return F.Times(F.Power(F.C2, F.Plus(v1, F.Times(F.C1D4, F.Subtract(F.C1, v2)))),
-          F.Power(F.Pi, F.Times(F.C1D4, F.Plus(F.CN1, v2))), F.Gamma(F.Plus(F.C1, v1)));
+      IExpr cosNPi = F.Cos(F.Times(n, F.Pi));
+      IExpr halfN = F.Times(F.C1D2, n);
+      return F.Times(F.Power(F.C2, F.Plus(halfN, F.Times(F.C1D4, F.Subtract(F.C1, cosNPi)))),
+          F.Power(F.Pi, F.Times(F.C1D4, F.Plus(F.CN1, cosNPi))), F.Gamma(F.Plus(F.C1, halfN)));
     }
 
-    public static IInteger factorial2(final IInteger iArg) {
-      IInteger result = F.C1;
-      final IInteger biggi = iArg;
-      IInteger start;
-      if (biggi.compareTo(F.C0) == -1) {
-        result = F.CN1;
-        if (biggi.isOdd()) {
-          start = F.CN3;
-        } else {
-          start = F.CN2;
-        }
-        for (IInteger i = start; i.compareTo(biggi) >= 0; i = i.add(F.CN2)) {
-          result = result.multiply(i);
-        }
-      } else {
-        if (biggi.isOdd()) {
-          start = F.C3;
-        } else {
-          start = F.C2;
-        }
-        for (IInteger i = start; i.compareTo(biggi) <= 0; i = i.add(F.C2)) {
-          result = result.multiply(i);
-        }
+    public static IInteger factorial2(final IInteger n) {
+      final boolean isNegative = n.isNegative();
+      IInteger result = isNegative ? F.CN1 : F.C1;
+      final IInteger start = n.isOdd() ? (isNegative ? F.CN3 : F.C3) : (isNegative ? F.CN2 : F.C2);
+      for (IInteger i = start; isNegative ? i.compareTo(n) >= 0 : i.compareTo(n) <= 0; i =
+          i.add(2)) {
+        result = result.multiply(i);
       }
 
       return result;
@@ -2689,7 +2673,7 @@ public final class NumberTheory {
             case -6:
               return F.CComplexInfinity;
             case -7:
-              return F.fraction(-1L, 15L);
+              return F.QQ(-1L, 15L);
           }
         }
       }
@@ -6069,30 +6053,24 @@ public final class NumberTheory {
     return engine.evalEqual(n, k.plus(delta));
   }
 
-  public static IInteger factorial(int ni) {
-    BigInteger result;
-    if (ni < 0) {
-      int positiveN = -1 * ni;
-      int iterationLimit = EvalEngine.get().getIterationLimit();
-      if (iterationLimit >= 0 && iterationLimit < positiveN) {
-        IterationLimitExceeded.throwIt(positiveN, F.Factorial(F.ZZ(ni)));
-      }
-      result = BigIntegerMath.factorial(positiveN);
-      if ((ni & 0x0001) == 0x0001) {
-        // odd integer number
-        result = result.multiply(BigInteger.valueOf(-1L));
-      }
-    } else {
-      int iterationLimit = EvalEngine.get().getIterationLimit();
-      if (iterationLimit >= 0 && iterationLimit < ni) {
-        IterationLimitExceeded.throwIt(ni, F.Factorial(F.ZZ(ni)));
-      }
-
-      if (ni <= 20) {
-        return AbstractIntegerSym.valueOf(LongMath.factorial(ni));
-      }
-      result = BigIntegerMath.factorial(ni);
+  public static IInteger factorial(int n) {
+    final int absN = Math.abs(n);
+    final int iterationLimit = EvalEngine.get().getIterationLimit();
+    if (iterationLimit >= 0 && iterationLimit < absN) {
+      IterationLimitExceeded.throwIt(absN, F.Factorial(F.ZZ(n)));
     }
+
+    BigInteger result;
+    if (absN <= 20) {
+      result = BigInteger.valueOf(LongMath.factorial(absN));
+    } else {
+      result = BigIntegerMath.factorial(absN);
+    }
+
+    if (n < 0 && n % 2 != 0) {
+      result = result.negate();
+    }
+
     return AbstractIntegerSym.valueOf(result);
   }
 
@@ -6351,28 +6329,25 @@ public final class NumberTheory {
   /**
    * Gives the multinomial coefficient <code>(k0+k1+...)!/(k0! * k1! ...)</code>.
    *
-   * @param k the non-negative coefficients
+   * @param kArray the non-negative coefficients
    * @param n the sum of the non-negative coefficients
    * @return
    */
-  public static IInteger multinomial(final int[] k, final int n) {
-    IInteger bn = AbstractIntegerSym.valueOf(n);
+  public static IInteger multinomial(final int[] kArray, final int n) {
     IInteger pPlus = F.C1;
     IRational pNeg = F.C1;
     int nNeg = 0;
-    for (int i = 0; i < k.length; i++) {
-      if (k[i] != 0) {
-        if (k[i] < 0) {
+    for (int k : kArray) {
+      if (k != 0) {
+        if (k < 0) {
           nNeg++;
-          int temp = -1 - k[i];
+          int temp = -1 - k;
           pNeg = pNeg.divideBy(factorial(temp));
           if ((temp & 1) == 1) {
             pNeg = pNeg.negate();
           }
-        } else if (k[i] > 0) {
-          pPlus = pPlus.multiply(factorial(k[i]));
         } else {
-          return F.C0;
+          pPlus = pPlus.multiply(factorial(k));
         }
       }
     }
@@ -6391,42 +6366,38 @@ public final class NumberTheory {
     if (nNeg > 0) {
       return F.C0;
     }
-    IInteger result = factorial(bn).div(pPlus);
+    IInteger result = factorial(n).div(pPlus);
     return result;
   }
 
   /**
    * Gives the multinomial coefficient <code>(k0+k1+...)!/(k0! * k1! ...)</code>.
    *
-   * @param k the non-negative coefficients
+   * @param kArray the non-negative coefficients
    * @return
    */
-  public static IInteger multinomial(IInteger[] k) {
+  public static IInteger multinomial(IInteger[] kArray) {
     IInteger n = F.C0;
-    for (int i = 0; i < k.length; i++) {
-      n = n.add(k[i]);
+    for (int i = 0; i < kArray.length; i++) {
+      n = n.add(kArray[i]);
     }
     int ni = n.toIntDefault();
-    if (ni != Integer.MIN_VALUE) {
-      int[] ki = new int[k.length];
-      boolean evaled = true;
-      for (int i = 0; i < k.length; i++) {
-        ki[i] = k[i].toIntDefault();
-        if (ki[i] == Integer.MIN_VALUE) {
-          evaled = false;
-          break;
-        }
-      }
-      if (evaled) {
-        return multinomial(ki, ni);
+    if (ni == Integer.MIN_VALUE) {
+      return null;
+    }
+    int[] kIntArray = new int[kArray.length];
+    boolean evaled = true;
+    for (int i = 0; i < kArray.length; i++) {
+      kIntArray[i] = kArray[i].toIntDefault();
+      if (kIntArray[i] == Integer.MIN_VALUE) {
+        evaled = false;
+        break;
       }
     }
+    if (evaled) {
+      return multinomial(kIntArray, ni);
+    }
     return null;
-    // IInteger result = factorial(n);
-    // for (int i = 0; i < k.length; i++) {
-    // result = result.div(factorial(k[i]));
-    // }
-    // return result;
   }
 
   /**
