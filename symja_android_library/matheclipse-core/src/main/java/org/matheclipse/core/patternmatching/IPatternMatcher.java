@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -147,6 +148,8 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
    * @return <code>F.NIL</code> if the match wasn't successful, the evaluated expression otherwise.
    */
   public abstract IExpr eval(final IExpr leftHandSide, EvalEngine engine);
+
+  public abstract IAST getAsAST();
 
   /**
    * Get the "left-hand-side" of a pattern-matching rule.

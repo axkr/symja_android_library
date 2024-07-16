@@ -75,7 +75,7 @@ public class Functors {
         return temp;
       }
       for (int i = 0; i < fMatchers.size(); i++) {
-        temp = fMatchers.get(i).replace(arg, fEngine, false);
+        temp = fMatchers.get(i).replace(arg, fEngine);
         if (temp.isPresent()) {
           return temp;
         }
@@ -122,7 +122,7 @@ public class Functors {
         for (int i = 0; i < fMatchers.size(); i++) {
           PatternMatcherList matcher = fMatchers.get(i);
           if (matcher != null) {
-            matcher.replace(arg, fEngine, false);
+            matcher.replaceEvaled(arg, fEngine);
             IAST list = matcher.getReplaceList();
             if (list.size() > 1) {
               for (int j = 1; j < list.size(); j++) {

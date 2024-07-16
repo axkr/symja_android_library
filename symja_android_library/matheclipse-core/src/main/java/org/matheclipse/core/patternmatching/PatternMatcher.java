@@ -604,6 +604,46 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     return F.NIL;
   }
 
+  @Override
+  public IAST getAsAST() {
+    ISymbol setSymbol = getSetSymbol();
+    IAST temp = F.binaryAST2(setSymbol, getLHS(), getRHS());
+    if (isFlagOn(HOLDPATTERN)) {
+      return F.HoldPattern(temp);
+    }
+    if (isFlagOn(LITERAL)) {
+      return F.Literal(temp);
+    }
+    return temp;
+  }
+
+  /**
+   * Return <code>Set</code> or <code>SetDelayed</code> symbol.
+   *
+   * @return <code>null</code> if no symbol was defined
+   */
+  public ISymbol getSetSymbol() {
+    if (isFlagOn(SET_DELAYED)) {
+      return S.SetDelayed;
+    }
+    if (isFlagOn(SET)) {
+      return S.Set;
+    }
+    if (isFlagOn(UPSET_DELAYED)) {
+      return S.UpSetDelayed;
+    }
+    if (isFlagOn(UPSET)) {
+      return S.UpSet;
+    }
+    if (isFlagOn(TAGSET_DELAYED)) {
+      return S.TagSetDelayed;
+    }
+    if (isFlagOn(TAGSET)) {
+      return S.TagSet;
+    }
+    return null;
+  }
+
   /**
    * Get the priority of this pattern-matcher. Lower values have higher priorities.
    *

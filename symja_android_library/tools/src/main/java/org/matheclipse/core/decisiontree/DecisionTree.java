@@ -356,7 +356,12 @@ public class DecisionTree {
             for (int i = 0; i < downRules.size(); i++) {
               IPatternMatcher pm = downRules.get(i);
               if (patternEval) {
-
+                buf.append("    // "
+                    + pm.getLHS().internalJavaString(RulesToDecisionTree.SCP, 1, fn -> null)
+                    + " :=\n");
+                buf.append("        // "
+                    + pm.getRHS().internalJavaString(RulesToDecisionTree.SCP, 1, fn -> null)
+                    + "\n");
                 buf.append("result = PatternMatcherAndEvaluator.evalInternal(evalLHS,"
                     + toJava(pm.getRHS()) + ", patternIndexMap );\n");
 

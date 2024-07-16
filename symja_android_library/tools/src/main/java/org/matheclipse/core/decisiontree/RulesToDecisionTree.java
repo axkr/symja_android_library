@@ -21,7 +21,7 @@ import org.matheclipse.parser.client.ParserConfig;
 
 /** Generate java sources for Symja rule files. */
 public class RulesToDecisionTree {
-  private static SourceCodeProperties p =
+  static SourceCodeProperties SCP =
       SourceCodeProperties.of(false, false, SourceCodeProperties.Prefix.NONE, false);
 
   /**
@@ -35,7 +35,6 @@ public class RulesToDecisionTree {
   static final String HEADER_CLASS = "\n" + "import static org.matheclipse.core.expression.F.*;\n" //
       + "import org.matheclipse.core.interfaces.IAST;\n" //
       + "import static org.matheclipse.core.expression.S.*;\n" //
-      + "import java.util.Stack;\n" //
       + "import java.util.Stack;\n" //
       + "import org.matheclipse.core.eval.EvalEngine;\n" //
       + "import org.matheclipse.core.expression.F;\n" //
@@ -97,9 +96,9 @@ public class RulesToDecisionTree {
     if (evalRHS) {
       rightHandSide = F.eval(rightHandSide);
     }
-    buffer.append(leftHandSide.internalJavaString(p, 1, x -> null));
+    buffer.append(leftHandSide.internalJavaString(SCP, 1, x -> null));
     buffer.append(",\n      ");
-    buffer.append(rightHandSide.internalJavaString(p, 1, x -> null));
+    buffer.append(rightHandSide.internalJavaString(SCP, 1, x -> null));
     if (createISet && leftHandSide.isFreeOfPatterns() && !leftHandSide.isSymbol()) {
       buffer.append(", true");
     }
@@ -125,9 +124,9 @@ public class RulesToDecisionTree {
     if (evalRHS) {
       rightHandSide = F.eval(rightHandSide);
     }
-    buffer.append(leftHandSide.internalJavaString(p, 1, x -> null));
+    buffer.append(leftHandSide.internalJavaString(SCP, 1, x -> null));
     buffer.append(",\n      ");
-    buffer.append(rightHandSide.internalJavaString(p, 1, x -> null));
+    buffer.append(rightHandSide.internalJavaString(SCP, 1, x -> null));
     buffer.append(");\n");
   }
 
@@ -222,11 +221,16 @@ public class RulesToDecisionTree {
         buffer.append("    IInit(");
         buffer.append(symbolName);
         if (equalsRuleCounter > 0 || simpleRuleCounter > 0 || list.size() > 1) {
-          buffer.append(", SIZES),\n");
+          if (!symbolName.equals("SphericalHarmonicY")) {
+            buffer.append(", SIZES),\n");
+          } else {
+            buffer.append(", SIZES) \n");
+          }
         } else {
           buffer.append(", SIZES) \n");
         }
       }
+
 
       for (int i = 1; i < list.size(); i++) {
         last = i == (list.argSize());

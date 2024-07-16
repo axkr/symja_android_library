@@ -215,7 +215,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
   /** {@inheritDoc} */
   @Override
   public IExpr eval(final IExpr leftHandSide, EvalEngine engine) {
-    return replace(leftHandSide, engine, true);
+    return replaceEvaled(leftHandSide, engine);
   }
 
   public static IExpr evalInternal(final IExpr leftHandSide, final IExpr rightHandSide,
@@ -228,12 +228,12 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     return pm.replacePatternMatch(leftHandSide, patternMap, EvalEngine.get(), true);
   }
 
-  public IExpr replace(final IExpr leftHandSide, EvalEngine engine, boolean evaluate) {
+  public IExpr replace(final IExpr leftHandSide, EvalEngine engine) {
     IPatternMap patternMap = null;
     if (isRuleWithoutPatterns()) {
       // no patterns found match equally:
       if (fLhsPatternExpr.equals(leftHandSide)) {
-        return replaceEqualMatch(leftHandSide, engine, evaluate);
+        return replaceEqualMatch(leftHandSide, engine, false);
       }
       if (!(fLhsPatternExpr.isOrderlessAST() && leftHandSide.isOrderlessAST())) {
         if (!(fLhsPatternExpr.isFlatAST() && leftHandSide.isFlatAST())) {
@@ -250,7 +250,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       patternMap.initPattern();
       setLHSExprToMatch(leftHandSide);
       if (matchExpr(fLhsPatternExpr, leftHandSide, engine, new StackMatcher(engine))) {
-        return replacePatternMatch(leftHandSide, patternMap, engine, evaluate);
+        return replacePatternMatch(leftHandSide, patternMap, engine, false);
       }
     }
 
@@ -260,6 +260,40 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     }
     return F.NIL;
   }
+
+  public IExpr replaceEvaled(final IExpr leftHandSide, EvalEngine engine) {
+    IPatternMap patternMap = null;
+    if (isRuleWithoutPatterns()) {
+      // no patterns found match equally:
+      if (fLhsPatternExpr.equals(leftHandSide)) {
+        return replaceEqualMatch(leftHandSide, engine, true);
+      }
+      if (!(fLhsPatternExpr.isOrderlessAST() && leftHandSide.isOrderlessAST())) {
+        if (!(fLhsPatternExpr.isFlatAST() && leftHandSide.isFlatAST())) {
+          return F.NIL;
+        }
+        // replaceSubExpressionOrderlessFlat() below implements equals matching for
+        // special cases, if the AST is Orderless or Flat
+      }
+      if (fLhsPatternExpr.size() == leftHandSide.size()) {
+        return F.NIL;
+      }
+    } else {
+      patternMap = createPatternMap();
+      patternMap.initPattern();
+      setLHSExprToMatch(leftHandSide);
+      if (matchExpr(fLhsPatternExpr, leftHandSide, engine, new StackMatcher(engine))) {
+        return replacePatternMatch(leftHandSide, patternMap, engine, true);
+      }
+    }
+
+    if (fLhsPatternExpr.isASTOrAssociation() && leftHandSide.isASTOrAssociation()) {
+      return replaceSubExpressionOrderlessFlat((IAST) fLhsPatternExpr, (IAST) leftHandSide,
+          fRightHandSide, engine);
+    }
+    return F.NIL;
+  }
+
 
   /**
    * A match which contains a pattern was found.
@@ -276,12 +310,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
    */
   public IExpr replacePatternMatch(final IExpr leftHandSide, IPatternMap patternMap,
       EvalEngine engine, boolean evaluate) {
-    // if (RulesData.showSteps) {
-    // if (fLhsPatternExpr.head().equals(S.Integrate)) {
-    // IExpr rhs = fRightHandSide.orElse(S.Null);
-    // }
-    // }
-
     if (fReturnResult.isPresent()) {
       if (isFlagOn(IPatternMatcher.SET_DELAYED)) {
         boolean oldEvalRHSMode = engine.isEvalRHSMode();
@@ -298,8 +326,10 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       return fReturnResult;
     }
 
+    boolean oldEvalRHSMode = engine.isEvalRHSMode();
     engine.pushOptionsStack();
     try {
+      engine.setEvalRHSMode(true);
       if (fLhsPatternExpr != null) {
         engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
       }
@@ -332,6 +362,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       return result;
     } finally {
       engine.popOptionsStack();
+      engine.setEvalRHSMode(oldEvalRHSMode);
     }
   }
 
@@ -378,6 +409,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     return fSubstitutedMatch;
   }
 
+  @Override
   public IAST getAsAST() {
     ISymbol setSymbol = getSetSymbol();
     IAST temp = F.binaryAST2(setSymbol, getLHS(), getRHS());
@@ -395,6 +427,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
    *
    * @return <code>null</code> if no symbol was defined
    */
+  @Override
   public ISymbol getSetSymbol() {
     if (isFlagOn(SET_DELAYED)) {
       return S.SetDelayed;
