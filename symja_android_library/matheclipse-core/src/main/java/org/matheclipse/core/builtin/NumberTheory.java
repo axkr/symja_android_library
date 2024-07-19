@@ -3221,6 +3221,59 @@ public final class NumberTheory {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+
+  private static class GoldbachList extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int maxPairs = Integer.MAX_VALUE;
+      if (ast.isAST2()) {
+        maxPairs = ast.arg2().toIntDefault();
+        if (maxPairs <= 0) {
+          return F.NIL;
+        }
+      }
+      if (ast.arg1().isInteger()) {
+        IInteger n = (IInteger) ast.arg1();
+        if (n.isOdd()) {
+          return F.CEmptyList;
+        }
+        IInteger nHalf = n.div(F.C2);
+        nHalf.toIntDefault();
+        IASTAppendable list = F.ListAlloc();
+        for (IInteger i = F.C3; nHalf.isGE(i); i = i.add(2)) {
+          if (i.isProbablePrime()) {
+            IInteger j = n.subtract(i);
+            if (j.isProbablePrime()) {
+              list.append(F.List(i, j));
+              if (list.argSize() >= maxPairs) {
+                break;
+              }
+            }
+          }
+        }
+        return list;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
+
   private static class Hyperfactorial extends AbstractEvaluator {
 
     private static IExpr hyperfactorial(int n) {
@@ -6005,6 +6058,7 @@ public final class NumberTheory {
       S.FactorialPower.setEvaluator(new FactorialPower());
       S.Factorial2.setEvaluator(new Factorial2());
       S.FactorInteger.setEvaluator(new FactorInteger());
+      S.GoldbachList.setEvaluator(new GoldbachList());
       S.Fibonacci.setEvaluator(new Fibonacci());
       S.FindLinearRecurrence.setEvaluator(new FindLinearRecurrence());
       S.FrobeniusNumber.setEvaluator(new FrobeniusNumber());

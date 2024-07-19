@@ -85,10 +85,10 @@ public class MinMaxFunctions {
       S.NMaximize.setEvaluator(new NMaximize());
       S.NMinimize.setEvaluator(new NMinimize());
 
-      // S.NArgMax.setEvaluator(new NArgMax());
-      // S.NArgMin.setEvaluator(new NArgMin());
-      // S.NMaxValue.setEvaluator(new NMaxValue());
-      // S.NMinValue.setEvaluator(new NMinValue());
+      S.NArgMax.setEvaluator(new NArgMax());
+      S.NArgMin.setEvaluator(new NArgMin());
+      S.NMaxValue.setEvaluator(new NMaxValue());
+      S.NMinValue.setEvaluator(new NMinValue());
     }
   }
 

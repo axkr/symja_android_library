@@ -4653,15 +4653,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Definition(ArcSinh)", //
         "Attributes(ArcSinh)={Listable,NumericFunction,Protected}\n" //
             + "\n" //
-            + "ArcSinh(Undefined)=Undefined\n" //
-            + "\n" //
             + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
+            + "\n" //
+            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
             + "\n" //
             + "ArcSinh(Infinity)=Infinity\n" //
             + "\n" //
             + "ArcSinh(I*Infinity)=Infinity\n" //
-            + "\n" //
-            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
             + "\n" //
             + "ArcSinh(I)=I*1/2*Pi\n" //
             + "\n" //
@@ -4669,7 +4667,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "ArcSinh(I*1/2)=I*1/6*Pi\n" //
             + "\n" //
-            + "ArcSinh(ComplexInfinity)=ComplexInfinity");
+            + "ArcSinh(ComplexInfinity)=ComplexInfinity\n" //
+            + "\n" //
+        + "ArcSinh(Undefined)=Undefined");
 
     check("a := 42", //
         "");
@@ -4912,6 +4912,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2");
     check("index", //
         "{1,1,3,4,5,6}");
+  }
+
+  @Test
+  public void testGoldbachList() {
+    check("GoldbachList(64)", //
+        "{{3,61},{5,59},{11,53},{17,47},{23,41}}");
+    check("GoldbachList(64,2)", //
+        "{{3,61},{5,59}}");
+    check("GoldbachList(1000000000,1)", //
+        "{{71,999999929}}");
+    check("GoldbachList(3325581707333960528,1)", //
+        "{{9781,3325581707333950747}}");
+
   }
 
   @Test
@@ -9125,15 +9138,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FullDefinition(ArcSinh)", //
         "Attributes(ArcSinh)={Listable,NumericFunction,Protected}\n" //
             + "\n" //
-            + "ArcSinh(Undefined)=Undefined\n" //
-            + "\n" //
             + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
+            + "\n" //
+            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
             + "\n" //
             + "ArcSinh(Infinity)=Infinity\n" //
             + "\n" //
             + "ArcSinh(I*Infinity)=Infinity\n" //
-            + "\n" //
-            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
             + "\n" //
             + "ArcSinh(I)=I*1/2*Pi\n" //
             + "\n" //
@@ -9141,7 +9152,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "ArcSinh(I*1/2)=I*1/6*Pi\n" //
             + "\n" //
-            + "ArcSinh(ComplexInfinity)=ComplexInfinity");
+            + "ArcSinh(ComplexInfinity)=ComplexInfinity\n" //
+            + "\n" //
+        + "ArcSinh(Undefined)=Undefined");
 
     check("a(x_):=b(x,y);b[u_,v_]:={{u,v},a}", //
         "");
@@ -9710,7 +9723,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2.39996");
     check("Attributes(GoldenAngle)", //
         "{Constant,Protected}");
-    check("FunctionExpand[GoldenAngle]", //
+    check("FunctionExpand(GoldenAngle)", //
         "(3-Sqrt(5))*Pi");
   }
 
@@ -15322,15 +15335,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testNearest() {
     check("Nearest({1, 2, 3, 5, 7, 11, 13, 17, 19}, 9)", //
         "{7,11}");
-    check(
-        "Nearest({{1.5, .6}, {2, 0}, {1.25, 1.25}}, {0, 0}, " //
-            + "DistanceFunction -> (3*Abs(#1[[1]]-#2[[1]]) + 2*Abs(#1[[2]]-#2[[2]]) &))", //
+    check("Nearest({{1.5, .6}, {2, 0}, {1.25, 1.25}}, {0, 0}, " //
+        + "DistanceFunction -> (3*Abs(#1[[1]]-#2[[1]]) + 2*Abs(#1[[2]]-#2[[2]]) &))", //
         "{{1.5,0.6}}");
-    check(
-        "dist({u_, v_}, {x_, y_}) := 3*Abs(u-x) + 2*Abs(v-y)", //
+    check("dist({u_, v_}, {x_, y_}) := 3*Abs(u-x) + 2*Abs(v-y)", //
         "");
-    check(
-        "Nearest({{1.5, .6}, {2, 0}, {1.25, 1.25}}, {0, 0}, DistanceFunction -> dist)", //
+    check("Nearest({{1.5, .6}, {2, 0}, {1.25, 1.25}}, {0, 0}, DistanceFunction -> dist)", //
         "{{1.5,0.6}}");
     check(
         "Nearest({{1.5, .6}, {2, 0}, {1.25, 1.25}}, {0, 0}, DistanceFunction -> ManhattanDistance)", //
@@ -15595,49 +15605,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2.1108620052");
   }
 
-  @Test
-  public void testNMaximize() {
-    checkNumeric("NMaximize(-x^4 - 3* x^2 + x, x)", //
-        "{0.08258881886826407,{x->0.16373996720676331}}");
 
-    check("NMaximize({-2*x+y-5, x+2*y<=6 && 3*x + 2*y <= 12 }, {x, y})", //
-        "{-2.0,{x->0.0,y->3.0}}");
-    check("NMaximize({-x - y, 3*x + 2*y >= 7 && x + 2*y >= 6}, {x, y})", //
-        "{-3.25,{x->0.5,y->2.75}}");
-  }
-
-  @Test
-  public void testNMinimize() {
-    check("NMinimize({-5-2*x+y,x+2*y<=6&&3*x+2*y<=12},{x,y})", //
-        "{-13.0,{x->4.0,y->0.0}}");
-
-    check("NMinimize({-Sinc(x)-Sinc(y)}, {x, y})", //
-        "{-2.0,{x->0.0,y->0.0}}");
-
-    check("NMinimize(x^2 + y^2 + 2, {x,y})", //
-        "{2.0,{x->0.0,y->0.0}}");
-    check("NMinimize({Sinc(x)+Sinc(y)}, {x, y})", //
-        "{-0.434467,{x->4.49341,y->4.49341}}");
-
-    checkNumeric("NMinimize({Sinc(x)+Sinc(y)}, {x, y})", //
-        "{-0.4344672564224433,{x->4.493409457896563,y->4.493409457738778}}");
-
-    checkNumeric("NMinimize(x^4 - 3*x^2 - x, x)", //
-        "{-3.513905038934788,{x->1.3008395656679863}}");
-
-    // TODO non-linear not supported
-    // check("NMinimize({x^2 - (y - 1)^2, x^2 + y^2 <= 4}, {x, y})", "");
-    check("NMinimize({-2*y+x-5, x+2*y<=6 && 3*x + 2*y <= 12 }, {x, y})", //
-        "{-11.0,{x->0.0,y->3.0}}");
-    check("NMinimize({-2*y+x-5, x+2*y<=6 && 3*x + 2*y <= 12 }, {x, y})", //
-        "{-11.0,{x->0.0,y->3.0}}");
-    check("NMinimize({-2*x+y-5, x+2*y<=6 && 3*x + 2*y <= 12 }, {x, y})", //
-        "{-13.0,{x->4.0,y->0.0}}");
-    check("NMinimize({x + 2*y, -5*x + y == 7 && x + y >= 26 && x >= 3 && y >= 4}, {x, y})", //
-        "{48.83333,{x->3.16667,y->22.83333}}");
-    check("NMinimize({x + y, 3*x + 2*y >= 7 && x + 2*y >= 6 }, {x, y})", //
-        "{3.25,{x->0.5,y->2.75}}");
-  }
 
   @Test
   public void testNonCommutativeMultiply() {

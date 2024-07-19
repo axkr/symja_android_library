@@ -1187,8 +1187,8 @@ public class S {
       S.initFinalSymbol("BipartiteGraphQ", ID.BipartiteGraphQ);
 
   /**
-   * BitLength(x) - gives the number of bits needed to represent the integer `x`. The sign of `x`
-   * is ignored.
+   * BitLength(x) - gives the number of bits needed to represent the integer `x`. The sign of `x` is
+   * ignored.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BitLength.md">BitLength
@@ -4363,6 +4363,9 @@ public class S {
    */
   public final static IBuiltInSymbol Glaisher = S.initFinalSymbol("Glaisher", ID.Glaisher);
 
+  public final static IBuiltInSymbol GoldbachList =
+      S.initFinalSymbol("GoldbachList", ID.GoldbachList);
+
   public final static IBuiltInSymbol GoldenAngle = S.initFinalSymbol("GoldenAngle", ID.GoldenAngle);
 
   /**
@@ -5327,8 +5330,8 @@ public class S {
       S.initFinalSymbol("IntervalComplement", ID.IntervalComplement);
 
   /**
-   * IntervalData({a, leftEnd, rightEnd, b}) - represents the open/closed ends interval from `a`
-   * to `b`. `leftEnd` and `rightEnd` must have the value `Less` for representing an open ended
+   * IntervalData({a, leftEnd, rightEnd, b}) - represents the open/closed ends interval from `a` to
+   * `b`. `leftEnd` and `rightEnd` must have the value `Less` for representing an open ended
    * interval or `LessEqual` for representing a closed ended interval.
    * 
    * @see <a href=
@@ -5350,8 +5353,8 @@ public class S {
       S.initFinalSymbol("IntervalIntersection", ID.IntervalIntersection);
 
   /**
-   * IntervalMemberQ(interval, intervalOrRealNumber) - returns `True`, if
-   * `intervalOrRealNumber` is completly sourrounded by `interval`
+   * IntervalMemberQ(interval, intervalOrRealNumber) - returns `True`, if `intervalOrRealNumber` is
+   * completly sourrounded by `interval`
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IntervalMemberQ.md">IntervalMemberQ
@@ -6972,6 +6975,10 @@ public class S {
    */
   public final static IBuiltInSymbol Names = S.initFinalSymbol("Names", ID.Names);
 
+  public final static IBuiltInSymbol NArgMax = S.initFinalSymbol("NArgMax", ID.NArgMax);
+
+  public final static IBuiltInSymbol NArgMin = S.initFinalSymbol("NArgMin", ID.NArgMin);
+
   /**
    * Nand(arg1, arg2, ...) - Logical NAND function. It evaluates its arguments in order, giving
    * `True` immediately if any of them are `False`, and `False` if they are all `True`.
@@ -7143,6 +7150,8 @@ public class S {
    */
   public final static IBuiltInSymbol NMaximize = S.initFinalSymbol("NMaximize", ID.NMaximize);
 
+  public final static IBuiltInSymbol NMaxValue = S.initFinalSymbol("NMaxValue", ID.NMaxValue);
+
   /**
    * NMinimize({maximize_function, constraints}, variables_list) - the `NMinimize` function provides
    * an implementation of [George Dantzig's simplex
@@ -7154,6 +7163,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol NMinimize = S.initFinalSymbol("NMinimize", ID.NMinimize);
+
+  public final static IBuiltInSymbol NMinValue = S.initFinalSymbol("NMinValue", ID.NMinValue);
 
   public final static IBuiltInSymbol NonCommutativeMultiply =
       S.initFinalSymbol("NonCommutativeMultiply", ID.NonCommutativeMultiply);
@@ -7938,8 +7949,8 @@ public class S {
   public final static IBuiltInSymbol Pi = S.initFinalSymbol("Pi", ID.Pi);
 
   /**
-   * Pick(nestedList, nestedSelection) - returns the elements of `nestedList` that have value
-   * `True` in the corresponding position in `nestedSelection`.
+   * Pick(nestedList, nestedSelection) - returns the elements of `nestedList` that have value `True`
+   * in the corresponding position in `nestedSelection`.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Pick.md">Pick
