@@ -42,7 +42,7 @@ public class ToggleFeature {
    */
   public static boolean EIGENSYSTEM_SYMBOLIC = true;
 
-  /** If <code>true</code>, enable experimental f<code>MANIPULATE()</code> function */
+  /** If <code>true</code>, enable experimental f<code>Manipulate()</code> function */
   public static boolean MANIPULATE = true;
 
   /**

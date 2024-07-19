@@ -37,17 +37,15 @@ public class MultisetPartitionsIterator {
     this.handler = visitor;
   }
 
-  public void reset() {
-    rosen.reset();
-    for (int i = 0; i < result.length; i++) {
-      result[i] = null;
-    }
-    initPatternMap();
-  }
+  // public void reset() {
+  // rosen.reset();
+  // Arrays.fill(result, null);
+  // handler.initPatternMap();
+  // }
 
-  public void initPatternMap() {
-    handler.initPatternMap();
-  }
+  // public void initPatternMap() {
+  // handler.initPatternMap();
+  // }
 
   public boolean execute() {
     while (rosen.hasNext()) {

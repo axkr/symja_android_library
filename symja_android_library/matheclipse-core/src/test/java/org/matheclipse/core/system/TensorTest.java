@@ -180,6 +180,11 @@ public class TensorTest extends ExprEvaluatorTestCase {
         "");
     check("KroneckerProduct(ta, tb)", //
         "{{0,5,0,10},{6,7,12,14},{0,15,0,20},{18,21,24,28}}");
+
+    check("a = {{a11, a12}, {a21, a22}}; b = {{b11, b12}, {b21, b22}};", //
+        "");
+    check("KroneckerProduct(a, b)", //
+        "{{a11*b11,a11*b12,a12*b11,a12*b12},{a11*b21,a11*b22,a12*b21,a12*b22},{a21*b11,a21*b12,a22*b11,a22*b12},{a21*b21,a21*b22,a22*b21,a22*b22}}");
   }
 
   @Test

@@ -55,7 +55,7 @@ public class ImageFormat {
   private static final IExpr[] LOOKUP = new IExpr[256];
 
   static {
-    IntStream.range(0, 256).forEach(index -> LOOKUP[index] = F.fraction(index, 1));
+    IntStream.range(0, 256).forEach(index -> LOOKUP[index] = F.QQ(index, 1));
   }
 
   /**

@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
 import org.hipparchus.util.RosenNumberPartitionIterator;
 import org.junit.Test;
 import org.matheclipse.core.combinatoric.MultisetPartitionsIterator;
@@ -8,8 +9,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.patternmatching.FlatOrderlessStepVisitor;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcher;
-
-import static org.junit.Assert.assertEquals;
 
 /** Tests for combinatorial functions */
 public class CombinatoricTestCase extends ExprEvaluatorTestCase {
@@ -236,7 +235,7 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
       b = iter.execute();
       if (!b) {
         System.out.println(iter.toString());
-        iter.initPatternMap();
+        // iter.initPatternMap();
       }
     }
     assertEquals(true, b);
