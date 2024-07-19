@@ -18,17 +18,5 @@ See
 ```
 
 ### Related terms 
-[E](E.md), [EulerGamma](EulerGamma.md) 
-
-
-
-
-
-
-### Implementation status
-
-* &#x2705; - full supported
-
-### Github
-
-* [Implementation of GoldenRatio](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ConstantDefinitions.java#L993) 
+[GoldenAngle](GoldenAngle.md), [E](E.md), [EulerGamma](EulerGamma.md) 
+ 

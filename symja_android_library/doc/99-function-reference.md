@@ -412,6 +412,8 @@ Functions in alphabetical order:
 * &#x2705; [GeometricMean](functions/GeometricMean.md)
 * &#x2705; [Get](functions/Get.md)
 * &#x2705; [Glaisher](functions/Glaisher.md)
+* [GoldbachList](functions/GoldbachList.md)
+* &#x2705; [GoldenAngle](functions/GoldenAngle.md)
 * &#x2705; [GoldenRatio](functions/GoldenRatio.md)
 * &#x2705; [Grad](functions/Grad.md)
 * [Graph](functions/Graph.md)
