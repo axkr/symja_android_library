@@ -274,6 +274,12 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFunctionExpandJacobiP() {
+    check("FunctionExpand(JacobiP(n,a,b,1))", //
+        "Gamma(1+a+n)/(Gamma(1+a)*Gamma(1+n))");
+  }
+
+  @Test
   public void testFunctionExpandBeta() {
 
     check("FunctionExpand(Beta(z,3,b))", //

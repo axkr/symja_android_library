@@ -240,7 +240,7 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final RulesData createRulesData(int[] sizes) {
+  public RulesData createRulesData(int[] sizes) {
     if (fRulesData == null) {
       fRulesData = new RulesData(sizes);
     }

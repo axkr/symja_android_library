@@ -300,6 +300,9 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testBesselY() {
+    check("BesselY(-5/2, z)", //
+        "(Sqrt(2/Pi)*((-3*Cos(z))/z-Sin(z)+(3*Sin(z))/z^2))/Sqrt(z)");
+
     checkNumeric("BesselY(2.5,-5)", //
         "I*(-0.2943723749617925)");
     check("BesselY(3.5,-5)", //

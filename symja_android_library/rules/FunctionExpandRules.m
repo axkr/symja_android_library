@@ -64,6 +64,8 @@
  
  Hypergeometric0F1(a_,z_) := z^(1/2-a/2)*BesselI(-1+a,2*Sqrt(z))*Gamma(a),
  Hypergeometric1F1(a_,1,z_) := LaguerreL(-a,z),
+ Hypergeometric1F1(a_,b_,z_) := (E^(z/2)*z^(1/2-a)*BesselI(1/2*(-1+b),z/2)*Gamma(1/2+a))/4^(1/2-a)
+  /; a==b/2,
  
  Hypergeometric2F1(2, b_, c_, -1/2) := (3-b)/3
   /; (5/2 - 1/2*b)==Expand(c),

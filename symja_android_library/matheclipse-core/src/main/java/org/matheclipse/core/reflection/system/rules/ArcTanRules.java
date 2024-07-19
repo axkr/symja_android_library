@@ -13,7 +13,7 @@ public class ArcTanRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 24, 1 };
+  final public static int[] SIZES = { 23, 2 };
 
   final public static IAST RULES = List(
     IInit(ArcTan, SIZES),
@@ -77,8 +77,8 @@ public class ArcTanRules {
     // ArcTan(x_,Undefined):=Undefined
     ISetDelayed(ArcTan(x_,Undefined),
       Undefined),
-    // ArcTan(Infinity,y_)=0
-    ISet(ArcTan(oo,y_),
+    // ArcTan(Infinity,y_):=0
+    ISetDelayed(ArcTan(oo,y_),
       C0),
     // ArcTan(Infinity)=Pi/2
     ISet(ArcTan(oo),

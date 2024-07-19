@@ -48,6 +48,7 @@ import org.matheclipse.core.eval.interfaces.AbstractArg12;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.eval.interfaces.IMatch;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.interfaces.IReciprocalTrigonometricFunction;
 import org.matheclipse.core.eval.interfaces.IRewrite;
@@ -903,7 +904,14 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" >
    * Inverse_trigonometric functions</a>
    */
-  private static final class ArcTan extends AbstractArg12 implements INumeric, IRewrite {
+  private static final class ArcTan extends AbstractArg12 implements INumeric, IRewrite, IMatch
+  {
+
+    @Override
+    public IExpr match3(IAST ast, EvalEngine engine) {
+      return F.NIL;
+      // return ArcTanRules.match3(ast, engine);
+    }
 
     @Override
     public IExpr e1ObjArg(final IExpr arg1) {
@@ -2244,7 +2252,17 @@ public class ExpTrigsFunctions {
   }
 
   /** See <a href="http://en.wikipedia.org/wiki/Logarithm">Wikipedia - Logarithm</a> */
-  private static final class Log extends AbstractArg12 implements INumeric, IRewrite {
+  private static final class Log extends AbstractArg12 implements INumeric, IRewrite, IMatch {
+    @Override
+    public IExpr match3(IAST ast, EvalEngine engine) {
+      return F.NIL;
+      // return LogRules.match3(ast, engine);
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      return super.evaluate(ast, engine);
+    }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {

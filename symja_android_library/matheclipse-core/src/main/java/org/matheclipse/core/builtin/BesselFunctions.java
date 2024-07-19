@@ -19,6 +19,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
+import org.matheclipse.core.eval.interfaces.IMatch;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -410,7 +411,12 @@ public class BesselFunctions {
    * </code>
    * </pre>
    */
-  private static final class BesselJ extends AbstractFunctionEvaluator {
+  private static final class BesselJ extends AbstractFunctionEvaluator implements IMatch {
+    @Override
+    public IExpr match3(IAST ast, EvalEngine engine) {
+      return F.NIL;
+      // return BesselJRules.match3(ast, engine);
+    }
 
     /**
      * Precondition <code> n - 1/2 </code> is an integer number.
@@ -650,7 +656,12 @@ public class BesselFunctions {
    * </code>
    * </pre>
    */
-  private static final class BesselI extends AbstractFunctionEvaluator {
+  private static final class BesselI extends AbstractFunctionEvaluator implements IMatch {
+    @Override
+    public IExpr match3(IAST ast, EvalEngine engine) {
+      return F.NIL;
+      // return BesselIRules.match3(ast, engine);
+    }
 
 
     @Override
@@ -760,7 +771,12 @@ public class BesselFunctions {
    * </code>
    * </pre>
    */
-  private static final class BesselK extends AbstractFunctionEvaluator {
+  private static final class BesselK extends AbstractFunctionEvaluator implements IMatch {
+    @Override
+    public IExpr match3(IAST ast, EvalEngine engine) {
+      return F.NIL;
+      // return BesselKRules.match3(ast, engine);
+    }
 
 
     @Override
@@ -864,7 +880,12 @@ public class BesselFunctions {
    * </code>
    * </pre>
    */
-  private static final class BesselY extends AbstractFunctionEvaluator {
+  private static final class BesselY extends AbstractFunctionEvaluator implements IMatch {
+    @Override
+    public IExpr match3(IAST ast, EvalEngine engine) {
+      return F.NIL;
+      // return BesselYRules.match3(ast, engine);
+    }
 
 
     @Override
@@ -1127,7 +1148,12 @@ public class BesselFunctions {
    * </pre>
    */
   private static final class SphericalBesselJ extends AbstractFunctionEvaluator
-      implements IFunctionExpand {
+      implements IFunctionExpand, IMatch {
+    @Override
+    public IExpr match3(IAST ast, EvalEngine engine) {
+      return F.NIL;
+      // return SphericalBesselJRules.match3(ast, engine);
+    }
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
@@ -1390,7 +1416,12 @@ public class BesselFunctions {
    * <h3>Examples</h3>
    */
   private static final class SphericalBesselY extends AbstractFunctionEvaluator
-      implements IFunctionExpand {
+      implements IFunctionExpand, IMatch {
+    @Override
+    public IExpr match3(IAST ast, EvalEngine engine) {
+      return F.NIL;
+      // return SphericalBesselYRules.match3(ast, engine);
+    }
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {

@@ -9,13 +9,16 @@ import java.util.List;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.interfaces.IMatch;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvalStepListener;
+import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IStringX;
@@ -92,6 +95,8 @@ public final class RulesData implements Serializable {
 
   private Map<IExpr, PatternMatcherEquals> fEqualDownRules;
 
+  private IMatch fMatcher;
+
   /**
    * List of pattern matchers. The corresponding priority is stored in <code>fPriorityDownRules
    * </code>.
@@ -113,6 +118,26 @@ public final class RulesData implements Serializable {
   public RulesData(int[] sizes) {
     // this.context = context;
     clear();
+    if (sizes.length > 0) {
+      int capacity;
+      if (sizes[0] > 0) {
+        capacity = sizes[0];
+        if (capacity < 8) {
+          capacity = 8;
+        }
+        fEqualDownRules = new HashMap<IExpr, PatternMatcherEquals>(capacity);
+      }
+    }
+  }
+
+  public RulesData(int[] sizes, IBuiltInSymbol head) {
+    // this.context = context;
+    clear();
+    IEvaluator evaluator = head.getEvaluator();
+    if (evaluator instanceof IMatch) {
+      fMatcher = (IMatch) evaluator;
+    }
+
     if (sizes.length > 0) {
       int capacity;
       if (sizes[0] > 0) {
@@ -412,14 +437,20 @@ public final class RulesData implements Serializable {
         return res.getRHS();
       }
     }
-
     if (!expr.isASTOrAssociation()) {
       return F.NIL;
     }
-
     boolean evalRHSMode = engine.isEvalRHSMode();
     try {
       engine.setEvalRHSMode(true);
+
+      if (fMatcher != null && expr.isAST() && expr.size() < 6) {
+        IExpr temp = evalDecisionTree(expr, engine);
+        if (temp.isPresent()) {
+          return temp;
+        }
+      }
+
       IPatternMatcher pmEvaluator;
       if (fPatternDownRules != null) {
         int patternHash = 0;
@@ -479,6 +510,34 @@ public final class RulesData implements Serializable {
       engine.setEvalRHSMode(evalRHSMode);
     }
     return F.NIL;
+  }
+
+  /**
+   * Try matching the <code>expr</code> expression with the pattern-matching rules create with the
+   * <code>org.matheclipse.core.decisiontree.RulesToDecionTree</code> if a matching rule was found,
+   * return the evaluated right-hand-side of that matching rule, otherwise return {@link F#NIL}.
+   *
+   * @param expr the expression which will be tested for matching an existing pattern-matching rule
+   * @param engine the evaluation engine
+   * @return {@link F#NIL} if no matching/evaluation was possible
+   */
+  private IExpr evalDecisionTree(final IExpr expr, EvalEngine engine) {
+    IExpr match = F.NIL;
+    switch (expr.size()) {
+      case 2:
+        match = fMatcher.match2((IAST) expr, engine);
+        break;
+      case 3:
+        match = fMatcher.match3((IAST) expr, engine);
+        break;
+      case 4:
+        match = fMatcher.match4((IAST) expr, engine);
+        break;
+      case 5:
+        match = fMatcher.match5((IAST) expr, engine);
+        break;
+    }
+    return match;
   }
 
   private static boolean isShowSteps(IPatternMatcher pmEvaluator) {

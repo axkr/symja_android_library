@@ -22,7 +22,7 @@
  
  ArcTan(Undefined, y_):=Undefined,
  ArcTan(x_, Undefined):=Undefined,
- ArcTan(Infinity, y_)=0, 
+ ArcTan(Infinity, y_):=0, 
  ArcTan(Infinity)=Pi/2,
  ArcTan(-Infinity)=-Pi/2,
  ArcTan(I*Infinity)=Pi/2,

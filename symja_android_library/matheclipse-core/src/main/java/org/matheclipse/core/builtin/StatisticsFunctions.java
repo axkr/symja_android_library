@@ -2605,7 +2605,7 @@ public class StatisticsFunctions {
           }
           return F.num(StatUtils.geometricMean(arg1DoubleArray));
         }
-        return F.Power(list.apply(S.Times), F.fraction(1, arg1.argSize()));
+        return F.Power(list.apply(S.Times), F.QQ(1, arg1.argSize()));
       }
       return F.NIL;
     }

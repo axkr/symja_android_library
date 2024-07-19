@@ -20,6 +20,7 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPredicate;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.ParserConfig;
 
 /** Implements Symbols for function, constant and variable names */
@@ -153,6 +154,15 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
       return fOrdinal < ordinal ? -1 : fOrdinal == ordinal ? 0 : 1;
     }
     return super.compareTo(expr);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final RulesData createRulesData(int[] sizes) {
+    if (fRulesData == null) {
+      fRulesData = new RulesData(sizes, this);
+    }
+    return fRulesData;
   }
 
   /** {@inheritDoc} */

@@ -210,6 +210,8 @@ public class JacobiTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testJacobiSC() {
+    check("JacobiSC((I*EllipticK(1 - m))/2, m)", //
+        "I/Sqrt(1+Sqrt(m))");
     check("JacobiSC(Pi/3,0.333333)", //
         "1.54453");
     check("JacobiSC(0.2,0.5)", //
@@ -222,8 +224,7 @@ public class JacobiTestCase extends ExprEvaluatorTestCase {
         "");
     check("f(1/2*I*x)", //
         "{x}");
-    check("JacobiSC((I*EllipticK(1 - m))/2, m)", //
-        "I/Sqrt(1+Sqrt(m))");
+
     check("JacobiSC(z,0)", //
         "Tan(z)");
     check("JacobiSC(z,1)", //

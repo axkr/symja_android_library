@@ -76,6 +76,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
+import org.matheclipse.core.eval.interfaces.IMatch;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
@@ -1555,7 +1556,18 @@ public final class Arithmetic {
    * 1.1018024908797128
    * </pre>
    */
-  private static final class Gamma extends AbstractFunctionEvaluator {
+  private static final class Gamma extends AbstractFunctionEvaluator implements IMatch {
+    @Override
+    public IExpr match3(IAST ast, EvalEngine engine) {
+      return F.NIL;
+      // return GammaRules.match3(ast, engine);
+    }
+
+    @Override
+    public IExpr match4(IAST ast, EvalEngine engine) {
+      return F.NIL;
+      // return GammaRules.match4(ast, engine);
+    }
 
     // @Override
     // public IExpr e1ApcomplexArg(Apcomplex arg1) {

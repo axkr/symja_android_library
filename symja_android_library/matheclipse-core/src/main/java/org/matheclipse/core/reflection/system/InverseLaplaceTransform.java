@@ -6,6 +6,7 @@ import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IMatch;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -25,7 +26,7 @@ import com.google.common.math.DoubleMath;
  * </pre>
  *
  * <blockquote>
- *
+ * 
  * <p>
  * returns the inverse laplace transform.
  *
@@ -45,7 +46,7 @@ import com.google.common.math.DoubleMath;
  * 3*E^t+2*Cos(2*t)
  * </pre>
  */
-public class InverseLaplaceTransform extends AbstractFunctionEvaluator {
+public class InverseLaplaceTransform extends AbstractFunctionEvaluator implements IMatch {
 
   /**
    * The {@code InverseLaplaceTransformStehfest} implements the numerical calculation of the inverse
@@ -131,9 +132,13 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator {
 
   }
 
-
-
   public InverseLaplaceTransform() {}
+
+  @Override
+  public IExpr match4(IAST ast, EvalEngine engine) {
+    return F.NIL;
+    // return InverseLaplaceTransformRules.match4(ast, engine);
+  }
 
   /** See: <a href="http://www.solitaryroad.com/c913.html">Inverse Laplace transforms</a> */
   @Override

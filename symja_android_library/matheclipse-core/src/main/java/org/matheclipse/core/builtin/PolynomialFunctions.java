@@ -24,6 +24,7 @@ import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
+import org.matheclipse.core.eval.interfaces.IMatch;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -1145,10 +1146,17 @@ public class PolynomialFunctions {
 
 
 
-  private static final class SphericalHarmonicY extends AbstractFunctionEvaluator {
+  private static final class SphericalHarmonicY extends AbstractFunctionEvaluator
+      implements IMatch {
+    @Override
+    public IExpr match5(IAST ast, EvalEngine engine) {
+      return F.NIL;
+      // return SphericalHarmonicYRules.match5(ast, engine);
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
       IExpr l = ast.arg1();
       IExpr m = ast.arg2();
       IExpr t = ast.arg3();
@@ -1798,11 +1806,16 @@ public class PolynomialFunctions {
     }
   }
 
-  private static final class JacobiP extends AbstractFunctionEvaluator {
+  private static final class JacobiP extends AbstractFunctionEvaluator implements IMatch {
+    @Override
+    public IExpr match5(IAST ast, EvalEngine engine) {
+      return F.NIL;
+      // return JacobiPRules.match5(ast, engine);
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-
+      // }
       IExpr n = ast.arg1();
       IExpr a = ast.arg2();
       IExpr b = ast.arg3();
@@ -2105,7 +2118,12 @@ public class PolynomialFunctions {
    * 3/8-15/4*x^2+35/8*x^4
    * </pre>
    */
-  private static final class LegendreP extends AbstractFunctionEvaluator {
+  private static final class LegendreP extends AbstractFunctionEvaluator implements IMatch {
+    @Override
+    public IExpr match3(IAST ast, EvalEngine engine) {
+      return F.NIL;
+      // return LegendrePRules.match3(ast, engine);
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2188,7 +2206,12 @@ public class PolynomialFunctions {
    * 55/24*z-35/8*z^3-3/16*Log(1-z)+15/8*z^2*Log(1-z)-35/16*z^4*Log(1-z)+3/16*Log(1+z)-15/8*z^2*Log(1+z)+35/16*z^4*Log(1+z)
    * </pre>
    */
-  static final class LegendreQ extends AbstractFunctionEvaluator {
+  static final class LegendreQ extends AbstractFunctionEvaluator implements IMatch {
+    @Override
+    public IExpr match3(IAST ast, EvalEngine engine) {
+      return F.NIL;
+      // return LegendreQRules.match3(ast, engine);
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
