@@ -343,6 +343,9 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "-0.5204998778130466");
     checkNumeric("Erf(3.0)", //
         "0.9999779095030014");
+
+    check("Erf(-z)", //
+        "-Erf(z)");
     check("Erf(-42*I*x)", //
         "-I*Erfi(42*x)");
     check("Erf(43*I*x)", //
@@ -462,6 +465,12 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testExpIntegralEi() {
+    check("ExpIntegralEi(0)", //
+        "-Infinity");
+    check("ExpIntegralEi(Infinity)", //
+        "Infinity");
+    check("ExpIntegralEi(-Infinity)", //
+        "0");
     checkNumeric("ExpIntegralEi(I*1.0)", //
         "0.3374039229009681+I*2.5168793971620795");
     checkNumeric("ExpIntegralEi(-I*1.0)", //
@@ -915,6 +924,28 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testInverseErf() {
+    check("D(InverseErf(f(x),y),x)", //
+        "f'(x)/E^(f(x)^2-InverseErf(f(x),y)^2)");
+    check("D(InverseErf(x,f(y)),y)", //
+        "1/2*E^InverseErf(x,f(y))^2*Sqrt(Pi)*f'(y)");
+    check("InverseErf(Indeterminate,z)", //
+        "Indeterminate");
+    check("InverseErf(z,Indeterminate)", //
+        "Indeterminate");
+    check("InverseErf(0,0)", //
+        "0");
+    check("InverseErf(0,1)", //
+        "Infinity");
+    check("InverseErf(1,0)", //
+        "1");
+    check("InverseErf(0,z)", //
+        "InverseErf(z)");
+    check("InverseErf(Infinity,z)", //
+        "InverseErfc(-z)");
+    check("InverseErf(z,0)", //
+        "z");
+
+
     check("InverseErf({0.5, 1.5, 2.5})", //
         "{0.476936,InverseErf(1.5),InverseErf(2.5)}");
     check("N(InverseErf(33/100), 50)", //
@@ -922,7 +953,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
     check("InverseErf(0.330000000000000000000000)", //
         "0.301332146133705826128502");
 
-    check("InverseErf /@ {-1, 0, 1}", //
+    check("InverseErf({-1, 0, 1})", //
         "{-Infinity,0,Infinity}");
     checkNumeric("InverseErf /@ {0.9, 1.0, 1.1}", //
         "{1.1630871536766743,Infinity,InverseErf(1.1)}");

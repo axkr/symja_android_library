@@ -655,21 +655,42 @@ public class SpecialFunctions {
    *
    * @see org.matheclipse.core.reflection.system.InverseErf
    */
-  private static final class Erf extends AbstractFunctionEvaluator {
+  private static final class Erf extends AbstractFunctionEvaluator implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        // Erf(z2) - Erf(z1)
+        return F.Subtract(F.Erf(ast.arg2()), F.Erf(ast.arg1()));
+      }
+      return F.NIL;
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.argSize() == 2) {
-        return F.Subtract(F.Erf(ast.arg2()), F.Erf(ast.arg1()));
+      if (ast.isAST2()) {
+        IExpr z0 = ast.arg1();
+        IExpr z1 = ast.arg2();
+        if (z0.isZero()) {
+          return F.Erf(z1);
+        }
+        if (z1.isZero()) {
+          return F.Negate(F.Erf(z0));
+        }
+        if (z0.isNegativeInfinity() && z1.isInfinity()) {
+          return F.C2;
+        }
+        return F.NIL;
       }
+
       IExpr z = ast.arg1();
       if (z.isZero()) {
         return F.C0;
       }
-      if (z.equals(CInfinity)) {
+      if (z.isInfinity()) {
         return F.C1;
       }
-      if (z.equals(CNInfinity)) {
+      if (z.isNegativeInfinity()) {
         return F.CN1;
       }
       if (z.isComplexInfinity()) {
@@ -1168,18 +1189,17 @@ public class SpecialFunctions {
    *
    * @see org.matheclipse.core.reflection.system.Erf
    */
-  private static final class InverseErf extends AbstractTrigArg1 implements INumeric {
+  private static final class InverseErf extends AbstractFunctionEvaluator implements INumeric {
 
-    @Override
-    public IExpr e1DblArg(final double arg1) {
-      try {
-        if (arg1 >= -1.0 && arg1 <= 1.0) {
-          return Num.valueOf(org.hipparchus.special.Erf.erfInv(arg1));
-        }
-      } catch (final MathIllegalStateException e) {
-      }
-      return F.NIL;
-    }
+    // public IExpr e1DblArg(final double arg1) {
+    // try {
+    // if (arg1 >= -1.0 && arg1 <= 1.0) {
+    // return Num.valueOf(org.hipparchus.special.Erf.erfInv(arg1));
+    // }
+    // } catch (final MathIllegalStateException e) {
+    // }
+    // return F.NIL;
+    // }
 
     @Override
     public double evalReal(final double[] stack, final int top, final int size) {
@@ -1197,11 +1217,12 @@ public class SpecialFunctions {
     }
 
     @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
-      if (arg1.isList()) {
-        return ((IAST) arg1).mapThread(x -> F.InverseErf(x));
-      }
-      if (arg1.isReal()) {
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (ast.isAST1()) {
+        // if (arg1.isList()) {
+        // return ((IAST) arg1).mapThread(x -> F.InverseErf(x));
+        // }
         if (arg1.isZero()) {
           return F.C0;
         }
@@ -1210,6 +1231,24 @@ public class SpecialFunctions {
         }
         if (arg1.isMinusOne()) {
           return F.CNInfinity;
+        }
+        return F.NIL;
+      }
+      if (ast.isAST2()) {
+        IExpr arg2 = ast.arg2();
+        if (arg1.isZero()) {
+          return F.InverseErf(arg2);
+        } else if (arg1.isInfinity()) {
+          return F.InverseErfc(arg2.negate());
+        }
+        if (arg2.isZero()) {
+          if (arg1.isOne()) {
+            return F.C1;
+          }
+          if (arg1.isMinusOne()) {
+            return F.CN1;
+          }
+          return arg1;
         }
       }
       return F.NIL;
@@ -1230,8 +1269,13 @@ public class SpecialFunctions {
     }
 
     @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }

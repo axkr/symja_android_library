@@ -3936,6 +3936,10 @@ public class F extends S {
     return new AST1(Erf, a);
   }
 
+  public static IAST Erf(final IExpr a0, final IExpr a1) {
+    return new AST2(Erf, a0, a1);
+  }
+
   public static IAST Erfc(final IExpr a) {
     return new AST1(Erfc, a);
   }
@@ -5528,6 +5532,10 @@ public class F extends S {
 
   public static IAST InverseErf(final IExpr a0) {
     return new AST1(InverseErf, a0);
+  }
+
+  public static IAST InverseErf(final IExpr a0, final IExpr a1) {
+    return new AST2(InverseErf, a0, a1);
   }
 
   public static IAST InverseErfc(final IExpr a0) {

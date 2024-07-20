@@ -13,7 +13,7 @@ public class DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 81 };
+  final public static int[] SIZES = { 0, 83 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -56,6 +56,12 @@ public class DRules {
     // D(JacobiSN(g_,f_),x_?NotListQ):=JacobiCN(f,g)*JacobiDN(f,g)*D(f,x)+(D(g,x)*JacobiCN(f,g)*JacobiDN(f,g)*(f*(1-g)-JacobiEpsilon(f,g)+g*JacobiCD(f,g)*JacobiSN(f,g)))/(2*(1-g)*g)
     ISetDelayed(D(JacobiSN(g_,f_),PatternTest(x_,NotListQ)),
       Plus(Times(JacobiCN(f,g),JacobiDN(f,g),D(f,x)),Times(Power(Times(C2,Subtract(C1,g),g),CN1),D(g,x),JacobiCN(f,g),JacobiDN(f,g),Plus(Times(f,Subtract(C1,g)),Negate(JacobiEpsilon(f,g)),Times(g,JacobiCD(f,g),JacobiSN(f,g)))))),
+    // D(Erf(g_,f_),x_?NotListQ):=(2*D(f,x))/(E^f^2*Sqrt(Pi))+(-2*D(g,x))/(E^g^2*Sqrt(Pi))
+    ISetDelayed(D(Erf(g_,f_),PatternTest(x_,NotListQ)),
+      Plus(Times(C2,Power(Times(Exp(Sqr(f)),CSqrtPi),CN1),D(f,x)),Times(CN2,Power(Times(Exp(Sqr(g)),CSqrtPi),CN1),D(g,x)))),
+    // D(InverseErf(g_,f_),x_?NotListQ):=1/2*E^InverseErf(g,f)^2*Sqrt(Pi)*D(f,x)+D(g,x)/E^(g^2-InverseErf(g,f)^2)
+    ISetDelayed(D(InverseErf(g_,f_),PatternTest(x_,NotListQ)),
+      Plus(Times(C1D2,Exp(Sqr(InverseErf(g,f))),CSqrtPi,D(f,x)),Times(Power(Exp(Subtract(Sqr(g),Sqr(InverseErf(g,f)))),CN1),D(g,x)))),
     // D(BernoulliB(g_,f_),x_?NotListQ):=BernoulliB(-1+g,f)*g*D(f,x)/;FreeQ({g},x)
     ISetDelayed(D(BernoulliB(g_,f_),PatternTest(x_,NotListQ)),
       Condition(Times(BernoulliB(Plus(CN1,g),f),g,D(f,x)),FreeQ(list(g),x))),

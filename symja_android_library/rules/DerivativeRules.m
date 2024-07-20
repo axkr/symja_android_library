@@ -99,6 +99,11 @@ Derivative(1,0,0)[CarlsonRG] = ((1/4)*CarlsonRF(#,#2,#3) - (1/12)*CarlsonRD(#2,#
 Derivative(0,1,0)[CarlsonRG] = ((1/4)*CarlsonRF(#,#2,#3) - (1/12)*CarlsonRD(#,#3,#2)*#2) &,
 Derivative(0,0,1)[CarlsonRG] = ((1/4)*CarlsonRF(#,#2,#3) - (1/12)*CarlsonRD(#,#2,#3)*#3) &,
 
+Derivative(0,1)[Erf] = 2/(E^(#2^2)*Sqrt(Pi))&,
+Derivative(1,0)[Erf] = -2/(E^(#^2)*Sqrt(Pi))&,
+Derivative(0,1)[InverseErf] = 1/2*E^InverseErf(#,#2)^2*Sqrt(Pi)&,
+Derivative(1,0)[InverseErf] = E^(InverseErf[#,#2]^2-#^2)&,
+
 Derivative(0,1)[Gamma] = (-E^(-#2))*#2^(-1+#) &,
 Derivative(1,0)[Gamma] =  Gamma(#, #2)*Log(#2) + MeijerG({{}, {1, 1}}, {{0, 0, #}, {}}, #2) &,
 Derivative(1,0)[HarmonicNumber] = #2*(Zeta(#2+1) - HarmonicNumber(#1,#2+1)) &,

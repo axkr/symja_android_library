@@ -13,7 +13,7 @@ public class DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 122, 0 };
+  final public static int[] SIZES = { 126, 0 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -278,6 +278,18 @@ public class DerivativeRules {
     // Derivative(0,0,1)[CarlsonRG]=CarlsonRF(#1,#2,#3)/4-1/12*CarlsonRD(#1,#2,#3)*#3&
     ISet($(Derivative(C0,C0,C1),CarlsonRG),
       Function(Plus(Times(C1D4,CarlsonRF(Slot1,Slot2,Slot(C3))),Times(QQ(-1L,12L),CarlsonRD(Slot1,Slot2,Slot(C3)),Slot(C3)))), true),
+    // Derivative(0,1)[Erf]=2/(E^#2^2*Sqrt(Pi))&
+    ISet($(Derivative(C0,C1),Erf),
+      Function(Times(C2,Power(Times(Exp(Sqr(Slot2)),CSqrtPi),CN1))), true),
+    // Derivative(1,0)[Erf]=-2/(E^#1^2*Sqrt(Pi))&
+    ISet($(Derivative(C1,C0),Erf),
+      Function(Times(CN2,Power(Times(Exp(Sqr(Slot1)),CSqrtPi),CN1))), true),
+    // Derivative(0,1)[InverseErf]=1/2*E^InverseErf(#1,#2)^2*Sqrt(Pi)&
+    ISet($(Derivative(C0,C1),InverseErf),
+      Function(Times(C1D2,Exp(Sqr(InverseErf(Slot1,Slot2))),CSqrtPi)), true),
+    // Derivative(1,0)[InverseErf]=E^(InverseErf(#1,#2)^2-#1^2)&
+    ISet($(Derivative(C1,C0),InverseErf),
+      Function(Exp(Subtract(Sqr(InverseErf(Slot1,Slot2)),Sqr(Slot1)))), true),
     // Derivative(0,1)[Gamma]=-E^(-#2)/#2^(1-#1)&
     ISet($(Derivative(C0,C1),Gamma),
       Function(Times(CN1,Exp(Negate(Slot2)),Power(Slot2,Plus(CN1,Slot1)))), true),

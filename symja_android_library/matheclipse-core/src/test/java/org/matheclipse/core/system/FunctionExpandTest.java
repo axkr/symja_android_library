@@ -70,6 +70,8 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
     check("FunctionExpand({Degree, GoldenRatio})", //
         "{Pi/180,1/2*(1+Sqrt(5))}");
 
+    check("FunctionExpand(Erf(x,y))", //
+        "-Erf(x)+Erf(y)");
     // (1-Erf(Sqrt(z)))==Erfc(Sqrt(z))
     check("FunctionExpand(ExpIntegralE(1/2,z))", //
         "(Sqrt(Pi)*Erfc(Sqrt(z)))/Sqrt(z)");

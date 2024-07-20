@@ -4669,7 +4669,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "ArcSinh(ComplexInfinity)=ComplexInfinity\n" //
             + "\n" //
-        + "ArcSinh(Undefined)=Undefined");
+            + "ArcSinh(Undefined)=Undefined");
 
     check("a := 42", //
         "");
@@ -9154,7 +9154,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "ArcSinh(ComplexInfinity)=ComplexInfinity\n" //
             + "\n" //
-        + "ArcSinh(Undefined)=Undefined");
+            + "ArcSinh(Undefined)=Undefined");
 
     check("a(x_):=b(x,y);b[u_,v_]:={{u,v},a}", //
         "");

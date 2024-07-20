@@ -17,6 +17,9 @@
   D(JacobiSD(g_, f_),x_?NotListQ):= JacobiCD(f,g)*JacobiND(f,g)*D(f,x) + (JacobiCD(f,g)*JacobiND(f,g)*(f*(1 - g) - JacobiEpsilon(f,g) + g*JacobiDN(f,g)*JacobiSC(f,g))*D(g,x))/(2*(1 - g)*g),
   D(JacobiSN(g_, f_),x_?NotListQ):= JacobiCN(f,g)*JacobiDN(f,g)*D(f,x) + (JacobiCN(f,g)*JacobiDN(f,g)*(f*(1 - g) - JacobiEpsilon(f,g) + g*JacobiCD(f,g)*JacobiSN(f,g))*D(g,x))/(2*(1 - g)*g),
     
+  D(Erf(g_, f_),x_?NotListQ):= (2*D(f,x))/(E^f^2*Sqrt(Pi))+(-2*D(g,x))/(E^g^2*Sqrt(Pi)),
+  D(InverseErf(g_, f_),x_?NotListQ):= 1/2*E^InverseErf(g,f)^2*Sqrt(Pi)*D(f,x)+D(g,x)/E^(g^2-InverseErf(g,f)^2),
+    
   D(BernoulliB(g_, f_),x_?NotListQ):= BernoulliB(-1+g, f)*g*D(f,x)
     /; FreeQ({g},x), 
   D(ChebyshevT(g_, f_),x_?NotListQ):= ChebyshevU(-1+g, f)*g*D(f,x)
