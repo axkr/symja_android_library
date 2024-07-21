@@ -323,12 +323,14 @@ public class AST extends HMArrayList implements Externalizable {
 
   @Override
   public IAST getItems(int[] items, int length, int offset) {
-    AST result = new AST(length, true);
-    result.set(0, head());
-    for (int i = 0; i < length; i++) {
-      result.set(i + 1, get(items[i] + offset));
+    IExpr[] resultArray = new IExpr[length + 1];
+    int resultIndex = 0;
+    resultArray[resultIndex++] = array[firstIndex];
+    final int index = firstIndex + offset;
+    for (int j = 0; j < length; j++) {
+      resultArray[resultIndex++] = array[index + items[j]];
     }
-    return result;
+    return new AST(resultArray);
   }
 
   @Override
