@@ -1,6 +1,5 @@
 package org.matheclipse.core.builtin;
 
-import static org.matheclipse.core.expression.F.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -3682,77 +3681,43 @@ public final class ListFunctions {
      * @return the intersection set of the sets ast1 and ast2
      */
     public static IAST intersection(IExpr head, IAST ast1, IAST ast2) {
-      if (ast1.isEmpty() || ast2.isEmpty()) {
-        if (head == S.List) {
-          return F.CEmptyList;
-        }
-        return F.headAST0(head);
-      }
-
-      Set<IExpr> set1 = new HashSet<IExpr>(ast1.size() + ast2.size() / 10);
-      Set<IExpr> set2 = new HashSet<IExpr>(ast1.size() + ast2.size() / 10);
-      Set<IExpr> resultSet = new TreeSet<IExpr>();
-      int size = ast1.size();
-      for (int i = 1; i < size; i++) {
-        set1.add(ast1.get(i));
-      }
-      size = ast2.size();
-      for (int i = 1; i < size; i++) {
-        set2.add(ast2.get(i));
-      }
-      for (IExpr expr : set1) {
-        if (set2.contains(expr)) {
-          resultSet.add(expr);
-        }
-      }
-      IASTAppendable result = F.ast(head, resultSet.size());
-      result.appendAll(resultSet);
-      return result;
+      return intersection(head, ast1, ast2, Comparators.CANONICAL_COMPARATOR);
     }
 
-    public static IAST intersection(IExpr head, IAST ast1, IAST ast2, SameTestComparator sameTest) {
+    /**
+     * Create the (ordered) intersection set from both ASTs.
+     * 
+     * @param head
+     * @param ast1 first AST set
+     * @param ast2 second AST set
+     * @param sameTest comparator for identifying the same objects
+     * @return the intersection set of the sets ast1 and ast2 according to the <code>sameTest</code>
+     *         comparator
+     */
+    public static IAST intersection(IExpr head, IAST ast1, IAST ast2, Comparator<IExpr> sameTest) {
       if (ast1.isEmpty() || ast2.isEmpty()) {
         if (head == S.List) {
           return F.CEmptyList;
         }
         return F.headAST0(head);
       }
-
-      // IASTAppendable unionList = F.ListAlloc(ast1.size() + ast2.size());
-      // unionList.appendArgs(ast1);
-      // unionList.appendArgs(ast2);
-      // unionList.sortInplace();
-      // int size = unionList.size();
-      //
-      // Set<IExpr> resultSet = new TreeSet<IExpr>(sameTest);
-      // for (int i = 1; i < size; i++) {
-      // resultSet.add(unionList.get(i));
-      // }
-      // IASTAppendable result = F.ast(head, resultSet.size());
-      // result.appendAll(resultSet);
-
-      Set<IExpr> set1 = new TreeSet<IExpr>(sameTest);
-      // Set<IExpr> set1 = new HashSet<IExpr>(ast1.size() + ast2.size() / 10);
-      Set<IExpr> set2 = new TreeSet<IExpr>(sameTest);
-      // Set<IExpr> set2 = new HashSet<IExpr>(ast1.size() + ast2.size() / 10);
-      Set<IExpr> resultSet = new TreeSet<IExpr>(sameTest);
-      int size = ast1.size();
-      IASTMutable ast1Copy = ast1.copy();
-      EvalAttributes.sort(ast1Copy, Comparators.REVERSE_CANONICAL_COMPARATOR);
-      for (int i = 1; i < size; i++) {
-        set1.add(ast1Copy.get(i));
+      IAST smaller = ast1;
+      IAST larger = ast2;
+      if (smaller.size() > larger.size()) {
+        IAST temp = smaller;
+        smaller = larger;
+        larger = temp;
       }
-      size = ast2.size();
-      for (int i = 1; i < size; i++) {
-        set2.add(ast2.get(i));
-      }
-      for (IExpr expr : set1) {
-        if (set2.contains(expr)) {
-          resultSet.add(expr);
+      Set<IExpr> hashSet = smaller.asSet(sameTest);
+      IASTAppendable result = F.ast(head, Math.max(smaller.size() / 10, 2));
+      IASTMutable largerCopy = larger.copy();
+      largerCopy.sortInplace(Comparators.REVERSE_CANONICAL_COMPARATOR);
+      for (final IExpr expr : largerCopy) {
+        if (hashSet.contains(expr)) {
+          result.append(expr);
+          hashSet.remove(expr);
         }
       }
-      IASTAppendable result = F.ast(head, resultSet.size());
-      result.appendAll(resultSet);
       return result;
     }
 
@@ -5619,7 +5584,7 @@ public final class ListFunctions {
         }
       }
 
-      return evaluateTable(ast, List(), engine);
+      return evaluateTable(ast, F.List(), engine);
     }
 
     /**
