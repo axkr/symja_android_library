@@ -165,7 +165,7 @@
 			<dependency>
 				<groupId>io.javalin</groupId>
 				<artifactId>javalin</artifactId>
-				<version>6.1.6</version>
+				<version>6.2.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.pebbletemplates</groupId>
