@@ -226,6 +226,7 @@ public class Errors {
       "For compiling functions, Symja needs to be executed on a Java Development Kit with javax.tools.JavaCompiler installed.", //
       "nconvss",
       "The argument `1` cannot be converted to a NumericArray of type `2` using method `3`", //
+      "ncvi", "NIntegrate failed to converge after `1` refinements in `2` in the region `3`.", //
       "nliter", "Non-list iterator `1` at position `2` does not evaluate to a real numeric value.", //
       "nil", "unexpected NIL expression encountered.", //
       "ninv", "`1` is not invertible modulo `2`.", //

@@ -294,4 +294,75 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
+  public void testNIntegrate() {
+    // "tanh-sinh" strategy
+    checkNumeric("NIntegrate(Exp(x)/x, {x, -Infinity, -1}, Method ->DoubleExponential)", //
+        "-0.2193839343955203");
+    // message NIntegrate failed to converge after 1000 refinements in x in the region
+    // {-Infinity,-1}.
+    checkNumeric("NIntegrate(x, {x, -Infinity, -1}, Method ->DoubleExponential)", //
+        "NIntegrate(x,{x,-Infinity,-1},Method->doubleexponential)");
+
+    // https://github.com/Hipparchus-Math/hipparchus/issues/279
+    checkNumeric("NIntegrate(Exp(-x),{x,0,Infinity})", //
+        "1.0");
+    checkNumeric("NIntegrate(Exp(-x^2),{x,0,Infinity})", //
+        "0.8862269254527579");
+    checkNumeric("NIntegrate(Exp(-x^2),{x,-Infinity,Infinity})", //
+        "1.772453850905516");
+
+    // TOTO integrable singularity at x==0
+    checkNumeric("NIntegrate(1/Sqrt(x),{x,0,1}, Method->GaussKronrod)", //
+        "NIntegrate(1/Sqrt(x),{x,0,1},Method->gausskronrod)");
+    checkNumeric("NIntegrate(1/Sqrt(x),{x,0,1}, Method->LegendreGauss )", //
+        "1.9913364016175945");
+    checkNumeric("NIntegrate(Cos(200*x),{x,0,1}, Method->GaussKronrod)", //
+        "-0.0043664864860701");
+    checkNumeric("NIntegrate(Cos(200*x),{x,0,1}, Method->LegendreGauss )", //
+        "-0.0043664864860699");
+
+    // github #150
+    // NIntegrate: (method=LegendreGauss) 1,001 is larger than the maximum (1,000)
+    checkNumeric("NIntegrate(1/x, {x, 0, 1}, MaxPoints->1001)", //
+        "NIntegrate(1/x,{x,0,1},MaxPoints->1001)");
+    // wrong result
+    checkNumeric("NIntegrate(1/x, {x,0,5}, Method->LegendreGauss)", //
+        "10.374755035279286");
+
+    // github #61
+    // these methods correctly show "NIntegrate(method=method-nsme) maximal count (xxxxx) exceeded"
+    checkNumeric("NIntegrate(1/x, {x,0,5}, Method->Romberg)", //
+        "NIntegrate(1/x,{x,0,5},Method->romberg)");
+    checkNumeric("NIntegrate(1/x, {x,0,5}, Method->Simpson)", //
+        "NIntegrate(1/x,{x,0,5},Method->simpson)");
+    checkNumeric("NIntegrate(1/x, {x,0,5}, Method->Trapezoid)", //
+        "NIntegrate(1/x,{x,0,5},Method->trapezoid)");
+
+    // github #26
+    checkNumeric(
+        "NIntegrate(ln(x^2), {x, -5, 99}, Method->Romberg, MaxPoints->400, MaxIterations->10000000)", //
+        "717.9282476448197");
+
+    checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1})", //
+        "-0.0208333333333333");
+    // LegendreGauss is default method
+    checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->LegendreGauss)", //
+        "-0.0208333333333333");
+    checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Simpson)", //
+        "-0.0208333320915699");
+    checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Trapezoid)", //
+        "-0.0208333271245165");
+    checkNumeric(
+        "NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Trapezoid, MaxIterations->5000)", //
+        "-0.0208333271245165");
+    checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Romberg)", //
+        "-0.0208333333333333");
+    checkNumeric("NIntegrate (x, {x, 0,2}, Method->Simpson)", //
+        "2.0");
+    checkNumeric("NIntegrate(Cos(x), {x, 0, Pi})", //
+        "1.0E-16");
+    checkNumeric("NIntegrate(1/Sin(Sqrt(x)), {x, 0, 1}, PrecisionGoal->10)", //
+        "2.1108620052");
+  }
 }
