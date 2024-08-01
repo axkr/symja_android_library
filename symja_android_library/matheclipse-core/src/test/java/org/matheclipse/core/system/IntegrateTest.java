@@ -297,7 +297,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   @Test
   public void testNIntegrate() {
     // avoid Indeterminate at 0
-    checkNumeric("NIntegrate(1/Sqrt(x), {x, 0.001, 1}, Method -> \"GaussLobatto\")", //
+    checkNumeric("NIntegrate(1/Sqrt(x), {x, 0.001, 1}, Method -> \"GaussLobattoRule\")", //
         "1.9367544467966367");
     checkNumeric("NIntegrate(1/Sqrt(x), {x, 0.001, 1}, Method -> \"NewtonCotesRule\")", //
         "1.936754446797901");

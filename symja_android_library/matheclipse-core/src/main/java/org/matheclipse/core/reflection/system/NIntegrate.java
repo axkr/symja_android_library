@@ -146,7 +146,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       }
       // NIntegrate failed to converge after `1` refinements in `2` in the region `3`.
       throw new ArgumentTypeException("ncvi", F.List(F.ZZ(result.evaluations), xVar, list.rest()));
-    } else if ("GaussLobatto".equalsIgnoreCase(method)) {
+    } else if ("GaussLobattoRule".equalsIgnoreCase(method)) {
       Quadrature quadrature = new GaussLobatto(Config.SPECIAL_FUNCTIONS_TOLERANCE, 1000);
       QuadratureResult result = quadrature.integrate(f, min, max);
       if (result.converged) {
