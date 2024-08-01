@@ -94,9 +94,8 @@ public final class Simpson extends Quadrature {
     return myMethod.toString() + "-Simpson";
   }
 
-  private static final double[] simpson13(final DoubleUnaryOperator func,
-      final double a, final double mid, final double b, final double fa, final double fmid,
-      final double fb) {
+  private static final double[] simpson13(final DoubleUnaryOperator func, final double a,
+      final double mid, final double b, final double fa, final double fmid, final double fb) {
     final double lmid = 0.5 * (a + mid);
     final double rmid = 0.5 * (mid + b);
     final double flmid = func.applyAsDouble(lmid);
@@ -110,8 +109,8 @@ public final class Simpson extends Quadrature {
     return result;
   }
 
-  private final QuadratureResult globalSimpson(final DoubleUnaryOperator func,
-      final double a, final double b) {
+  private final QuadratureResult globalSimpson(final DoubleUnaryOperator func, final double a,
+      final double b) {
 
     // estimate the error on [a, b] using Lyness'-Richardson
     final double m0 = 0.5 * (a + b);
@@ -182,8 +181,8 @@ public final class Simpson extends Quadrature {
     return new QuadratureResult(est, error, fev, true);
   }
 
-  private final QuadratureResult localSimpson(final DoubleUnaryOperator func,
-      final double a, final double b) {
+  private final QuadratureResult localSimpson(final DoubleUnaryOperator func, final double a,
+      final double b) {
 
     // initialize the first interval
     final double m0 = 0.5 * (a + b);
