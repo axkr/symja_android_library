@@ -29,6 +29,9 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.integral.ClenshawCurtis;
+import org.matheclipse.core.numerics.integral.GaussLobatto;
+import org.matheclipse.core.numerics.integral.NewtonCotes;
 import org.matheclipse.core.numerics.integral.Quadrature;
 import org.matheclipse.core.numerics.integral.Quadrature.QuadratureResult;
 import org.matheclipse.core.numerics.integral.TanhSinh;
@@ -127,17 +130,39 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       integrator = new TrapezoidIntegrator();
     } else if ("GaussKronrod".equalsIgnoreCase(method)) {
       return gausKronrodRule(maxIterations, f, min, max);
-    } else if ("DoubleExponential".equalsIgnoreCase(method)) {
-      Quadrature quadrature = new TanhSinh(1e-8, 1000);
+    } else if ("ClenshawCurtisRule".equalsIgnoreCase(method)) {
+      Quadrature quadrature = new ClenshawCurtis(Config.SPECIAL_FUNCTIONS_TOLERANCE, 1000);
       QuadratureResult result = quadrature.integrate(f, min, max);
       if (result.converged) {
         return result.estimate;
       }
       // NIntegrate failed to converge after `1` refinements in `2` in the region `3`.
       throw new ArgumentTypeException("ncvi", F.List(F.ZZ(result.evaluations), xVar, list.rest()));
-      // Errors. printMessage(S.NIntegrate, "ncvi", F.List(F.ZZ(result.evaluations), xVar,
-      // list.rest()),
-      // engine);
+    } else if ("DoubleExponential".equalsIgnoreCase(method)) {
+      Quadrature quadrature = new TanhSinh(Config.SPECIAL_FUNCTIONS_TOLERANCE, maxIterations);
+      QuadratureResult result = quadrature.integrate(f, min, max);
+      if (result.converged) {
+        return result.estimate;
+      }
+      // NIntegrate failed to converge after `1` refinements in `2` in the region `3`.
+      throw new ArgumentTypeException("ncvi", F.List(F.ZZ(result.evaluations), xVar, list.rest()));
+    } else if ("GaussLobatto".equalsIgnoreCase(method)) {
+      Quadrature quadrature = new GaussLobatto(Config.SPECIAL_FUNCTIONS_TOLERANCE, 1000);
+      QuadratureResult result = quadrature.integrate(f, min, max);
+      if (result.converged) {
+        return result.estimate;
+      }
+      // NIntegrate failed to converge after `1` refinements in `2` in the region `3`.
+      throw new ArgumentTypeException("ncvi", F.List(F.ZZ(result.evaluations), xVar, list.rest()));
+
+    } else if ("NewtonCotesRule".equalsIgnoreCase(method)) {
+      Quadrature quadrature = new NewtonCotes(Config.SPECIAL_FUNCTIONS_TOLERANCE, 1000);
+      QuadratureResult result = quadrature.integrate(f, min, max);
+      if (result.converged) {
+        return result.estimate;
+      }
+      // NIntegrate failed to converge after `1` refinements in `2` in the region `3`.
+      throw new ArgumentTypeException("ncvi", F.List(F.ZZ(result.evaluations), xVar, list.rest()));
     } else {
       if (maxPoints > 1000) {
         // github 150 - avoid StackOverflow from recursion
