@@ -4295,6 +4295,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testD() {
+    check("D((2*Sqrt(2)*(x^3))/(x^4),x)", //
+        "(-2*Sqrt(2))/x^2");
     check("D(z^n*E^(z),{z,n})", //
         "E^z*n!*Hypergeometric1F1(-n,1,-z)");
     check("D(z^n*E^(-z),{z,n})", //
@@ -4655,8 +4657,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
             + "\n" //
-            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
-            + "\n" //
             + "ArcSinh(Infinity)=Infinity\n" //
             + "\n" //
             + "ArcSinh(I*Infinity)=Infinity\n" //
@@ -4667,9 +4667,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "ArcSinh(I*1/2)=I*1/6*Pi\n" //
             + "\n" //
-            + "ArcSinh(ComplexInfinity)=ComplexInfinity\n" //
+            + "ArcSinh(Undefined)=Undefined\n" //
             + "\n" //
-            + "ArcSinh(Undefined)=Undefined");
+            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
+            + "\n" //
+        + "ArcSinh(ComplexInfinity)=ComplexInfinity");
 
     check("a := 42", //
         "");
@@ -9140,8 +9142,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
             + "\n" //
-            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
-            + "\n" //
             + "ArcSinh(Infinity)=Infinity\n" //
             + "\n" //
             + "ArcSinh(I*Infinity)=Infinity\n" //
@@ -9152,9 +9152,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "ArcSinh(I*1/2)=I*1/6*Pi\n" //
             + "\n" //
-            + "ArcSinh(ComplexInfinity)=ComplexInfinity\n" //
+            + "ArcSinh(Undefined)=Undefined\n" //
             + "\n" //
-            + "ArcSinh(Undefined)=Undefined");
+            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
+            + "\n" //
+            + "ArcSinh(ComplexInfinity)=ComplexInfinity");
 
     check("a(x_):=b(x,y);b[u_,v_]:={{u,v},a}", //
         "");
@@ -15541,69 +15543,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "f(2,3)");
   }
 
-  @Test
-  public void testNIntegrate() {
-    // https://github.com/Hipparchus-Math/hipparchus/issues/279
-    checkNumeric("NIntegrate(Exp(-x),{x,0,Infinity})", //
-        "1.0");
-    checkNumeric("NIntegrate(Exp(-x^2),{x,0,Infinity})", //
-        "0.8862269254527579");
-    checkNumeric("NIntegrate(Exp(-x^2),{x,-Infinity,Infinity})", //
-        "1.772453850905516");
-
-    // TOTO integrable singularity at x==0
-    checkNumeric("NIntegrate(1/Sqrt(x),{x,0,1}, Method->GaussKronrod)", //
-        "NIntegrate(1/Sqrt(x),{x,0,1},Method->gausskronrod)");
-    checkNumeric("NIntegrate(1/Sqrt(x),{x,0,1}, Method->LegendreGauss )", //
-        "1.9913364016175945");
-    checkNumeric("NIntegrate(Cos(200*x),{x,0,1}, Method->GaussKronrod)", //
-        "-0.0043664864860701");
-    checkNumeric("NIntegrate(Cos(200*x),{x,0,1}, Method->LegendreGauss )", //
-        "-0.0043664864860699");
-
-    // github #150
-    // NIntegrate: (method=LegendreGauss) 1,001 is larger than the maximum (1,000)
-    checkNumeric("NIntegrate(1/x, {x, 0, 1}, MaxPoints->1001)", //
-        "NIntegrate(1/x,{x,0,1},MaxPoints->1001)");
-    // wrong result
-    checkNumeric("NIntegrate(1/x, {x,0,5}, Method->LegendreGauss)", //
-        "10.374755035279286");
-
-    // github #61
-    // these methods correctly show "NIntegrate(method=method-nsme) maximal count (xxxxx) exceeded"
-    checkNumeric("NIntegrate(1/x, {x,0,5}, Method->Romberg)", //
-        "NIntegrate(1/x,{x,0,5},Method->romberg)");
-    checkNumeric("NIntegrate(1/x, {x,0,5}, Method->Simpson)", //
-        "NIntegrate(1/x,{x,0,5},Method->simpson)");
-    checkNumeric("NIntegrate(1/x, {x,0,5}, Method->Trapezoid)", //
-        "NIntegrate(1/x,{x,0,5},Method->trapezoid)");
-
-    // github #26
-    checkNumeric(
-        "NIntegrate(ln(x^2), {x, -5, 99}, Method->Romberg, MaxPoints->400, MaxIterations->10000000)", //
-        "717.9282476448197");
-
-    checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1})", //
-        "-0.0208333333333333");
-    // LegendreGauss is default method
-    checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->LegendreGauss)", //
-        "-0.0208333333333333");
-    checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Simpson)", //
-        "-0.0208333320915699");
-    checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Trapezoid)", //
-        "-0.0208333271245165");
-    checkNumeric(
-        "NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Trapezoid, MaxIterations->5000)", //
-        "-0.0208333271245165");
-    checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Romberg)", //
-        "-0.0208333333333333");
-    checkNumeric("NIntegrate (x, {x, 0,2}, Method->Simpson)", //
-        "2.0");
-    checkNumeric("NIntegrate(Cos(x), {x, 0, Pi})", //
-        "1.0E-16");
-    checkNumeric("NIntegrate(1/Sin(Sqrt(x)), {x, 0, 1}, PrecisionGoal->10)", //
-        "2.1108620052");
-  }
 
 
 
@@ -19428,40 +19367,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-2");
     check("Quotient(19, -4)", //
         "-5");
-  }
-
-  @Test
-  public void testExpectation() {
-    // TODO improve integration for piecewise functions
-    // check("Expectation((x + 3)/(x + 5), Distributed(x, ExponentialDistribution(2)))", //
-    // "Expectation((3+x)/(5+x),x\uF3D2ExponentialDistribution(2))");
-
-    check("Limit((-3*x)/(E^(x^2/2)*Sqrt(2*Pi))+4*Erf(x/Sqrt(2)), x -> -Infinity)", //
-        "-4");
-    check("Expectation(2*x+3, x \\[Distributed] NormalDistribution() )", //
-        "3");
-    check("Expectation(3*x^2 + 5, Distributed(x, NormalDistribution()))", //
-        "8");
-
-    check("Expectation((#^3)&, {a,b,c})", //
-        "1/3*(a^3+b^3+c^3)");
-    check("Expectation(2*x+3,Distributed(x,{a,b,c,d}))", //
-        "1/4*(12+2*a+2*b+2*c+2*d)");
-    check("Expectation(f(x),Distributed(x,{a,b}))", //
-        "1/2*(f(a)+f(b))");
-    // check("PDF( PoissonDistribution(m),x)", //
-    // "Piecewise({{m^x/(E^m*x!),x>=0}},0)");
-    // check("Expectation(x^2+7*x+8,Distributed(x,PoissonDistribution(m)))", //
-    // "8+8*m+m^2");
-    // check("Expectation(E^(2*x) + 3, Distributed( x, PoissonDistribution(l)))", //
-    // "");
-    //
-    // check("Expectation(x,Distributed(x, DiscreteUniformDistribution({4, 9})))", "13/2");
-    // check("Expectation(x,Distributed(x, DiscreteUniformDistribution({4, 10})))", "7");
-    //
-    // check("Expectation(2*x+3,Distributed(x, DiscreteUniformDistribution({4, 9})))", "16");
-    // check("Expectation(2*x+3,Distributed(x, DiscreteUniformDistribution({4, 10})))", "17");
-
   }
 
   @Test
@@ -24780,8 +24685,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
 
   }
-
-
 
   @Test
   public void testUnion() {

@@ -17,12 +17,15 @@ import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.eval;
 import static org.matheclipse.core.expression.S.x;
-
 import org.junit.Test;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -210,5 +213,28 @@ public class CompareToTestCase extends ExprEvaluatorTestCase {
 
     check("a+b-Infinity", //
         "-Infinity+a+b");
+  }
+
+  @Test
+  public void testComplexMultiplicationEqualityIssue1030a() {
+    // I - Imaginary unit - internally converted to the complex number `0+1*i` by the evaluation
+    // engine.
+    IExpr i = S.I;
+    IInteger two = F.ZZ(2);
+    EvalEngine engine = EvalEngine.get();
+    IExpr left = engine.evaluate(i.multiply(two));
+    IExpr right = engine.evaluate(two.multiply(i));
+    assertEquals(left + "/" + right, 0, left.compareTo(right));
+  }
+
+  @Test
+  public void testComplexMultiplicationEqualityIssue1030b() {
+    // Complex imaginary unit "0 + I". The parsed symbol "I" is converted on input by the parser to
+    // this constant.
+    IComplex i = F.CI;
+    IInteger two = F.ZZ(2);
+    IExpr left = i.multiply(two);
+    IExpr right = two.multiply(i);
+    assertEquals(left + "/" + right, 0, left.compareTo(right));
   }
 }

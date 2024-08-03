@@ -2878,59 +2878,6 @@ public final class Arithmetic {
       return c0.add(F.CC(i1, F.C0));
     }
 
-    // private IExpr evalNumericMode(final IAST ast) {
-    // INum number = F.CD0;
-    // int start = -1;
-    // for (int i = 1; i < ast.size(); i++) {
-    // final IExpr arg = ast.get(i);
-    // if (arg instanceof INum) {
-    // if (arg instanceof ApfloatNum) {
-    // number = number.add((INum) arg);
-    // } else {
-    // if (number instanceof ApfloatNum) {
-    // number = number.add(((INum) arg).apfloatNumValue());
-    // } else {
-    // number = number.add((INum) arg);
-    // }
-    // }
-    // } else if (arg instanceof IComplexNum) {
-    // start = i;
-    // break;
-    // } else {
-    // return F.NIL;
-    // }
-    // }
-    // if (start < 0) {
-    // return number;
-    // }
-    // IComplexNum complexNumber;
-    // if (number instanceof Num) {
-    // complexNumber = F.complexNum(number.doubleValue());
-    // } else {
-    // complexNumber = F.complexNum(number.apfloatValue());
-    // }
-    // for (int i = start; i < ast.size(); i++) {
-    // final IExpr arg = ast.get(i);
-    // if (arg instanceof INum) {
-    // number = (INum) arg;
-    // if (number instanceof Num) {
-    // complexNumber = complexNumber.add(F.complexNum(((Num) number).doubleValue()));
-    // } else {
-    // complexNumber = complexNumber.add(F.complexNum(number.apfloatValue()));
-    // }
-    // } else if (arg instanceof IComplexNum) {
-    // if (complexNumber instanceof ApcomplexNum) {
-    // complexNumber = complexNumber.add(((IComplexNum) arg).apcomplexNumValue());
-    // } else {
-    // complexNumber = complexNumber.add((IComplexNum) arg);
-    // }
-    // } else {
-    // return F.NIL;
-    // }
-    // }
-    // return complexNumber;
-    // }
-
     @Override
     public double evalReal(final double[] stack, final int top, final int size) {
       double result = 0;
@@ -2963,17 +2910,11 @@ public final class Arithmetic {
         }
         return evaluatePlusOp(ast, engine);
       } else {
-        if (size == 1) {
-          if (ast.head() == S.Plus) {
-            return F.C0;
-          }
-          return F.NIL;
-        }
-        if (size == 2) {
-          if (ast.head() == S.Plus) {
+        if (ast.head() == S.Plus) {
+          if (size == 2) {
             return ast.arg1();
           }
-          return F.NIL;
+          return F.C0;
         }
       }
       if (engine.isSymbolicMode(S.Plus.getAttributes())) {
@@ -3105,9 +3046,10 @@ public final class Arithmetic {
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
-      if (ast.argSize() > 0) {
+      final int size = ast.size();
+      if (size > 1) {
         IInexactNumber num = (IInexactNumber) ast.arg1();
-        for (int i = 2; i < ast.size(); i++) {
+        for (int i = 2; i < size; i++) {
           num = num.plus((IInexactNumber) ast.get(i));
         }
         return num;
@@ -4090,93 +4032,9 @@ public final class Arithmetic {
         return powerSurd(base, exponent);
       }
       if (base.isReal() || exponent.isReal()) {
-        if (exponent.isReal()) {
-          IReal realExponent = (IReal) exponent;
-          if (base.isPower()) {
-            if (powerPowerRealExponent((IAST) base, realExponent)) {
-              return Power(base.base(), base.exponent().times(realExponent));
-              // return temp;
-            }
-          }
-
-          if (base.isInfinity()) {
-            if (realExponent.isNegative()) {
-              return F.C0;
-            } else {
-              return F.CInfinity;
-            }
-          } else if (base.isNegativeInfinity()) {
-            if (realExponent.isNegative()) {
-              return F.C0;
-            }
-            if (realExponent.isInteger()) {
-              IInteger ii = (IInteger) realExponent;
-              if (ii.isOdd()) {
-                return F.CNInfinity;
-              } else {
-                return F.CInfinity;
-              }
-            } else if (realExponent.isFraction()) {
-              return F.DirectedInfinity(F.Power(F.CN1, realExponent));
-            } else {
-              int exp = realExponent.toIntDefault();
-              if (exp != Integer.MIN_VALUE) {
-                if ((exp & 0x1) == 0x1) {
-                  return F.CNInfinity;
-                } else {
-                  return F.CInfinity;
-                }
-              }
-            }
-          }
-          if (exponent.isMinusOne() || exponent.isInteger()) {
-            if (base.isNumber()) {
-              if (exponent.isMinusOne()) {
-                return ((INumber) base).inverse();
-              }
-              try {
-                long n = ((IInteger) exponent).toLong();
-                return ((INumber) base).power(n);
-              } catch (ArithmeticException ae) {
-
-              }
-            } else {
-              IExpr o1negExpr = F.NIL;
-              if (exponent.isInteger() && ((IInteger) exponent).isEven()) {
-                o1negExpr = AbstractFunctionEvaluator.getPowerNegativeExpression(base, true);
-              } else {
-                o1negExpr = AbstractFunctionEvaluator.getPowerNegativeExpression(base, false);
-              }
-              if (o1negExpr.isPresent()) {
-                if (exponent.isMinusOne()) {
-                  return Times(CN1, Power(o1negExpr, CN1));
-                } else {
-                  IInteger ii = (IInteger) exponent;
-                  if (ii.isEven()) {
-                    return Power(o1negExpr, exponent);
-                  }
-                }
-              }
-              if (exponent.isMinusOne() && base.isTimes()) {
-                IExpr temp = powerTimesInverse((IAST) base, (IReal) exponent);
-                if (temp.isPresent()) {
-                  return temp;
-                }
-              }
-            }
-          }
-        } else {
-          if (base.isFraction() && base.isPositive() && ((IFraction) base).isLT(F.C1)) {
-            IExpr o1negExpr = AbstractFunctionEvaluator.getPowerNegativeExpression(exponent, true);
-            if (o1negExpr.isPresent()) {
-              return F.Power(base.inverse(), o1negExpr);
-            }
-          }
-        }
-
-        if (base.isReal() && base.isNegative() && exponent.isNumEqualRational(F.C1D2)) {
-          // extract I for sqrt
-          return F.Times(F.CI, F.Power(F.Negate(base), exponent));
+        IExpr temp = powerRealBaseOrRealExponent(base, exponent);
+        if (temp.isPresent()) {
+          return temp;
         }
       }
       if (base.isDirectedInfinity() && !exponent.isReal()) {
@@ -4192,62 +4050,10 @@ public final class Arithmetic {
         if (base.isNegativeInfinity() && exponent.isNegativeResult()) {
           return F.C0;
         }
-      }
-
-      if (base.isE()) {
-        // E^exponent_
-        if (exponent.isLog()) {
-          // E^Log(x_) := x
-          return exponent.first();
-        }
-        if (exponent.isDirectedInfinity()) {
-          if (exponent.isDirectedInfinity(F.CI)) {
-            return S.Indeterminate;
-          }
-          if (exponent.isDirectedInfinity(F.CNI)) {
-            return S.Indeterminate;
-          }
-          if (exponent.isComplexInfinity()) {
-            return S.Indeterminate;
-          }
-        }
-        if (exponent.isPlusTimesPower()) {
-          IExpr expandedFunction = F.evalExpand(exponent);
-          if (expandedFunction.isPlus()) {
-            return powerEPlus((IAST) expandedFunction);
-          }
-          if (expandedFunction.isTimes()) {
-            IAST times = (IAST) expandedFunction;
-
-            int index = times.indexOf(x -> x.isLog());
-            if (index > 0) {
-              // E^(rest_*Log(x_)):=x^rest /; FreeQ(rest,x)
-              IAST log = (IAST) times.get(index);
-              IExpr logArg1 = log.first();
-              IAST rest = times.removeAtCopy(index);
-              if (rest.isFree(logArg1)) {
-                return F.Power(logArg1, rest);
-              }
-            }
-            IExpr i = Times.of(times, F.CNI, F.Power(S.Pi, F.CN1));
-            if (i.isRational()) {
-              IRational rat = (IRational) i;
-              if (rat.isGT(F.C1) || rat.isLE(F.CN1)) {
-                IInteger t = rat.trunc();
-                t = t.add(t.irem(F.C2));
-                // exp(I*(i - t)*Pi)
-                return S.Exp.of(F.Times(F.CI, S.Pi, F.Subtract(i, t)));
-              } else {
-                IRational t1 = rat.multiply(F.C6).normalize();
-                IRational t2 = rat.multiply(F.C4).normalize();
-                if (t1.isInteger() || t2.isInteger()) {
-                  // Cos(- I*times) + I*Sin(- I*times)
-                  return S.Plus.of(F.Cos(F.Times(F.CNI, times)),
-                      F.Times(F.CI, F.Sin(F.Times(F.CNI, times))));
-                }
-              }
-            }
-          }
+      } else if (base.isE()) {
+        IExpr temp = powerEBase(exponent);
+        if (temp.isPresent()) {
+          return temp;
         }
       } else {
         if (exponent.isPower()) {
@@ -4277,115 +4083,310 @@ public final class Arithmetic {
       }
 
       if (base.isAST()) {
-        IAST powBase = (IAST) base;
-        if (powBase.isTimes()) {
-          final IAST baseTimes = powBase;
-          if (exponent.isInteger() || exponent.isMinusOne()) {
-            return baseTimes.mapThread(Power(F.Slot1, exponent), 1);
-          }
-          if (exponent.isFraction()) {
-            // (a * b * c)^n => a^n * b^n * c^n => result * (rest ^ exponent)
-            IExpr temp = powerTimesFraction(baseTimes, (IFraction) exponent);
-            if (temp.isPresent()) {
-              return temp;
-            }
-          }
-
-          IExpr temp = powerTimesN(baseTimes, exponent);
-          if (temp.isPresent()) {
-            return temp;
-          }
-
-          // following rule produces "iteration limit exceeded"
-          // if (baseTimes.first().isMinusOne() && exponent.isReal() &&
-          // baseTimes.isNegativeResult())
-          // { ((-1) * rest) ^ (exponent) ;rest is real result
-          // return F.Times(F.Power(baseTimes.first(), exponent),
-          // F.Power(baseTimes.rest().oneIdentity1(), exponent));
-          // }
-        } else if (base.isPower()) {
-          if (base.exponent().isReal() && exponent.isReal()) {
-            IExpr baseBase = base.base();
-            IExpr baseExponent = base.exponent();
-            IExpr temp = baseExponent.times(exponent);
-            if (temp.isOne()) {
-              if (baseExponent.isNumEqualInteger(C2)) {
-                if (baseBase.isRePositiveResult()) {
-                  return baseBase;
-                }
-                if (baseBase.isReNegativeResult()) {
-                  return F.Negate(baseBase);
-                }
-              }
-              // (a ^ b )^exponent => a ^ (b * exponent) && b*exponent==1
-              if (baseBase.isNonNegativeResult()) {
-                return baseBase;
-              }
-              if (baseBase.isRealResult() && //
-                  base.exponent().isEvenResult()) {
-                return F.Abs(baseBase);
-              }
-            }
-          }
-          if (exponent.isInteger()) {
-            // (a ^ b )^n => a ^ (b * n)
-            if (base.exponent().isNumber()) {
-              return F.Power(base.base(), exponent.times(base.exponent()));
-            }
-            return F.Power(base.base(), F.Times(exponent, base.exponent()));
-          }
+        IExpr temp = powerASTBase((IAST) base, exponent);
+        if (temp.isPresent()) {
+          return temp;
         }
-        if (exponent.isMinusOne()) {
-          if (base.equals(F.Overflow())) {
-            return F.Underflow();
-          }
-          if (base.equals(F.Underflow())) {
-            return F.Overflow();
-          }
+      } else if (exponent.isFraction() && base.isRational()) {
+        IExpr temp =
+            powerRationalBaseAndFractionExponent(ast, (IRational) base, (IFraction) exponent);
+        if (temp.isPresent()) {
+          return temp;
         }
       }
-      if (exponent.isFraction() && base.isRational()) {
+      return F.NIL;
+    }
 
-        if (((IFraction) exponent).isGT(F.C1)) {
-          // exponent > 1
-          IInteger expNumerator = ((IFraction) exponent).numerator();
-          IInteger expDenominator = ((IFraction) exponent).denominator();
-          IInteger expDiv = expNumerator.div(expDenominator);
-          IInteger expMod = expNumerator.mod(expDenominator);
-          return F.Times(base.power(expDiv), base.power(F.QQ(expMod, expDenominator)));
-        } else if (((IFraction) exponent).isLT(F.CN1)) {
-          // exponent < -1
-          IInteger expNumerator = ((IFraction) exponent).numerator().negate();
-          IInteger expDenominator = ((IFraction) exponent).denominator();
-          IInteger expDiv = expNumerator.div(expDenominator);
-          IInteger expMod = expNumerator.mod(expDenominator);
-          return F.Times(F.Power(base.power(expDiv), F.CN1),
-              F.Power(base.power(F.QQ(expMod, expDenominator)), F.CN1));
-        } else if (base.isNegative() && ((IFraction) exponent).isNegative()) {
-          return F.Times(F.CN1, F.Power(F.CN1, F.C1.add(exponent)),
-              F.Power(base.negate(), exponent));
+    /**
+     * This method handles the power operation for real base or real exponent.
+     *
+     * @param base the base of the power operation
+     * @param exponent the exponent of the power operation
+     * @return the result of the power operation if it can be computed, otherwise returns
+     *         {@link F#NIL}
+     * 
+     */
+    private static IExpr powerRealBaseOrRealExponent(final IExpr base, final IExpr exponent) {
+      if (exponent.isReal()) {
+        IReal realExponent = (IReal) exponent;
+        if (base.isPower()) {
+          if (powerPowerRealExponent((IAST) base, realExponent)) {
+            return Power(base.base(), base.exponent().times(realExponent));
+          }
         }
-        if (base.isRational() && !ast.isAllExpanded()) {
-          // try factorizing base
-          IRational num = ((IRational) base);
-          IInteger expNumerator = ((IFraction) exponent).numerator();
-          IInteger expDenominator = ((IFraction) exponent).denominator();
-          int denominator = expDenominator.toIntDefault();
-          if (denominator > 1) {
-            int numerator = 1;
-            if (!expNumerator.isOne()) {
-              numerator = expNumerator.toIntDefault();
+
+        if (base.isInfinity()) {
+          if (realExponent.isNegative()) {
+            return F.C0;
+          } else {
+            return F.CInfinity;
+          }
+        } else if (base.isNegativeInfinity()) {
+          if (realExponent.isNegative()) {
+            return F.C0;
+          }
+          if (realExponent.isInteger()) {
+            IInteger ii = (IInteger) realExponent;
+            if (ii.isOdd()) {
+              return F.CNInfinity;
+            } else {
+              return F.CInfinity;
             }
-            if (numerator > 0) {
-              IExpr temp = num.factorSmallPrimes(numerator, denominator);
+          } else if (realExponent.isFraction()) {
+            return F.DirectedInfinity(F.Power(F.CN1, realExponent));
+          } else {
+            int exp = realExponent.toIntDefault();
+            if (exp != Integer.MIN_VALUE) {
+              if ((exp & 0x1) == 0x1) {
+                return F.CNInfinity;
+              } else {
+                return F.CInfinity;
+              }
+            }
+          }
+        }
+        if (exponent.isMinusOne() || exponent.isInteger()) {
+          if (base.isNumber()) {
+            if (exponent.isMinusOne()) {
+              return ((INumber) base).inverse();
+            }
+            try {
+              long n = ((IInteger) exponent).toLong();
+              return ((INumber) base).power(n);
+            } catch (ArithmeticException ae) {
+
+            }
+          } else {
+            IExpr o1negExpr = F.NIL;
+            if (exponent.isInteger() && ((IInteger) exponent).isEven()) {
+              o1negExpr = AbstractFunctionEvaluator.getPowerNegativeExpression(base, true);
+            } else {
+              o1negExpr = AbstractFunctionEvaluator.getPowerNegativeExpression(base, false);
+            }
+            if (o1negExpr.isPresent()) {
+              if (exponent.isMinusOne()) {
+                return Times(CN1, Power(o1negExpr, CN1));
+              } else {
+                IInteger ii = (IInteger) exponent;
+                if (ii.isEven()) {
+                  return Power(o1negExpr, exponent);
+                }
+              }
+            }
+            if (exponent.isMinusOne() && base.isTimes()) {
+              IExpr temp = powerTimesInverse((IAST) base, (IReal) exponent);
               if (temp.isPresent()) {
                 return temp;
               }
             }
           }
-          if (ast.isPresent()) {
-            ast.addEvalFlags(IAST.IS_ALL_EXPANDED);
+        }
+      } else {
+        if (base.isFraction() && base.isPositive() && ((IFraction) base).isLT(F.C1)) {
+          IExpr o1negExpr = AbstractFunctionEvaluator.getPowerNegativeExpression(exponent, true);
+          if (o1negExpr.isPresent()) {
+            return F.Power(base.inverse(), o1negExpr);
           }
+        }
+      }
+
+      if (base.isReal() && base.isNegative() && exponent.isNumEqualRational(F.C1D2)) {
+        // extract I for sqrt
+        return F.Times(F.CI, F.Power(F.Negate(base), exponent));
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Handles the symbolic power evaluation for a rational base and a fractional exponent.
+     *
+     * @param ast the abstract syntax tree representing the power operation
+     * @param base the base of the power operation, which should be a rational number
+     * @param exponent the exponent of the power operation, which should be a fractional number
+     * @return the result of the symbolic power evaluation if it can be evaluated, otherwise returns
+     *         {@link F#NIL}
+     */
+    private static IExpr powerRationalBaseAndFractionExponent(IAST ast, final IRational base,
+        final IFraction exponent) {
+      if (exponent.isGT(F.C1)) {
+        // exponent > 1
+        IInteger expNumerator = exponent.numerator();
+        IInteger expDenominator = exponent.denominator();
+        IInteger expDiv = expNumerator.div(expDenominator);
+        IInteger expMod = expNumerator.mod(expDenominator);
+        return F.Times(base.power(expDiv), base.power(F.QQ(expMod, expDenominator)));
+      } else if (exponent.isLT(F.CN1)) {
+        // exponent < -1
+        IInteger expNumerator = exponent.numerator().negate();
+        IInteger expDenominator = exponent.denominator();
+        IInteger expDiv = expNumerator.div(expDenominator);
+        IInteger expMod = expNumerator.mod(expDenominator);
+        return F.Times(F.Power(base.power(expDiv), F.CN1),
+            F.Power(base.power(F.QQ(expMod, expDenominator)), F.CN1));
+      } else if (base.isNegative() && exponent.isNegative()) {
+        return F.Times(F.CN1, F.Power(F.CN1, F.C1.add(exponent)), F.Power(base.negate(), exponent));
+      }
+      if (base.isRational() && !ast.isAllExpanded()) {
+        // try factorizing base
+        IRational num = (base);
+        IInteger expNumerator = exponent.numerator();
+        IInteger expDenominator = exponent.denominator();
+        int denominator = expDenominator.toIntDefault();
+        if (denominator > 1) {
+          int numerator = 1;
+          if (!expNumerator.isOne()) {
+            numerator = expNumerator.toIntDefault();
+          }
+          if (numerator > 0) {
+            IExpr temp = num.factorSmallPrimes(numerator, denominator);
+            if (temp.isPresent()) {
+              return temp;
+            }
+          }
+        }
+        if (ast.isPresent()) {
+          ast.addEvalFlags(IAST.IS_ALL_EXPANDED);
+        }
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Simplify <code>E^(exponent)</code> to a more simple form.
+     *
+     * @param plus
+     * @return
+     */
+    private static IExpr powerEBase(final IExpr exponent) {
+      // E^exponent_
+      if (exponent.isLog()) {
+        // E^Log(x_) := x
+        return exponent.first();
+      }
+      if (exponent.isDirectedInfinity()) {
+        if (exponent.isDirectedInfinity(F.CI)) {
+          return S.Indeterminate;
+        }
+        if (exponent.isDirectedInfinity(F.CNI)) {
+          return S.Indeterminate;
+        }
+        if (exponent.isComplexInfinity()) {
+          return S.Indeterminate;
+        }
+      }
+      if (exponent.isPlusTimesPower()) {
+        IExpr expandedFunction = F.evalExpand(exponent);
+        if (expandedFunction.isPlus()) {
+          return powerEPlus((IAST) expandedFunction);
+        }
+        if (expandedFunction.isTimes()) {
+          IAST times = (IAST) expandedFunction;
+
+          int index = times.indexOf(x -> x.isLog());
+          if (index > 0) {
+            // E^(rest_*Log(x_)):=x^rest /; FreeQ(rest,x)
+            IAST log = (IAST) times.get(index);
+            IExpr logArg1 = log.first();
+            IAST rest = times.removeAtCopy(index);
+            if (rest.isFree(logArg1)) {
+              return F.Power(logArg1, rest);
+            }
+          }
+          IExpr i = Times.of(times, F.CNI, F.Power(S.Pi, F.CN1));
+          if (i.isRational()) {
+            IRational rat = (IRational) i;
+            if (rat.isGT(F.C1) || rat.isLE(F.CN1)) {
+              IInteger t = rat.trunc();
+              t = t.add(t.irem(F.C2));
+              // exp(I*(i - t)*Pi)
+              return S.Exp.of(F.Times(F.CI, S.Pi, F.Subtract(i, t)));
+            } else {
+              IRational t1 = rat.multiply(F.C6).normalize();
+              IRational t2 = rat.multiply(F.C4).normalize();
+              if (t1.isInteger() || t2.isInteger()) {
+                // Cos(- I*times) + I*Sin(- I*times)
+                return S.Plus.of(F.Cos(F.Times(F.CNI, times)),
+                    F.Times(F.CI, F.Sin(F.Times(F.CNI, times))));
+              }
+            }
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    /**
+     * This method handles the power operation for an {@link IAST} base and an arbitrary exponent.
+     *
+     * @param base the base of the power operation, which should be an AST
+     * @param exponent the exponent of the power operation
+     * @return the result of the power operation if it can be computed, otherwise returns
+     *         {@link F#NIL}
+     */
+    private static IExpr powerASTBase(final IAST base, final IExpr exponent) {
+      if (base.isTimes()) {
+        final IAST baseTimes = base;
+        if (exponent.isInteger() || exponent.isMinusOne()) {
+          return baseTimes.mapThread(Power(F.Slot1, exponent), 1);
+        }
+        if (exponent.isFraction()) {
+          // (a * b * c)^n => a^n * b^n * c^n => result * (rest ^ exponent)
+          IExpr temp = powerTimesFraction(baseTimes, (IFraction) exponent);
+          if (temp.isPresent()) {
+            return temp;
+          }
+        }
+
+        IExpr temp = powerTimesN(baseTimes, exponent);
+        if (temp.isPresent()) {
+          return temp;
+        }
+
+        // following rule produces "iteration limit exceeded"
+        // if (baseTimes.first().isMinusOne() && exponent.isReal() &&
+        // baseTimes.isNegativeResult())
+        // { ((-1) * rest) ^ (exponent) ;rest is real result
+        // return F.Times(F.Power(baseTimes.first(), exponent),
+        // F.Power(baseTimes.rest().oneIdentity1(), exponent));
+        // }
+      } else if (base.isPower()) {
+        if (base.exponent().isReal() && exponent.isReal()) {
+          IExpr baseBase = base.base();
+          IExpr baseExponent = base.exponent();
+          IExpr temp = baseExponent.times(exponent);
+          if (temp.isOne()) {
+            if (baseExponent.isNumEqualInteger(C2)) {
+              if (baseBase.isRePositiveResult()) {
+                return baseBase;
+              }
+              if (baseBase.isReNegativeResult()) {
+                return F.Negate(baseBase);
+              }
+            }
+            // (a ^ b )^exponent => a ^ (b * exponent) && b*exponent==1
+            if (baseBase.isNonNegativeResult()) {
+              return baseBase;
+            }
+            if (baseBase.isRealResult() && //
+                base.exponent().isEvenResult()) {
+              return F.Abs(baseBase);
+            }
+          }
+        }
+        if (exponent.isInteger()) {
+          // (a ^ b )^n => a ^ (b * n)
+          if (base.exponent().isNumber()) {
+            return F.Power(base.base(), exponent.times(base.exponent()));
+          }
+          return F.Power(base.base(), F.Times(exponent, base.exponent()));
+        }
+      }
+      if (exponent.isMinusOne()) {
+        if (base.equals(F.Overflow())) {
+          return F.Underflow();
+        }
+        if (base.equals(F.Underflow())) {
+          return F.Overflow();
         }
       }
       return F.NIL;
@@ -4483,11 +4484,11 @@ public final class Arithmetic {
                 for (int i = 1; i < timesAST.size(); i++) {
                   IExpr element = timesAST.get(i);
                   if (element.isPower() && element.exponent().isFraction()) {
-                    if (element.exponent().equals(exponent)) {
+                    IFraction exp = (IFraction) element.exponent();
+                    if (exp.equals(exponent)) {
                       rest.append(element.base());
                       continue;
                     }
-                    IFraction exp = (IFraction) element.exponent();
                     if (exponent2Times == null) {
                       exponent2Times = new HashMap<IFraction, IASTAppendable>();
                     }
@@ -6201,42 +6202,26 @@ public final class Arithmetic {
     public IExpr e2ObjArg(IAST ast, final IExpr arg1, final IExpr arg2) {
 
       // the case where both args are numbers is already handled in binaryOperator()
-      if (arg1.isReal() || arg2.isReal()) {
-        if (arg1.isZero()) {
-          return evalZeroTimesX(arg1, arg2, false);
-        } else if (arg2.isZero()) {
-          return evalZeroTimesX(arg2, arg1, true);
-        } else if (arg1.isOne()) {
-          return arg2;
-        } else if (arg2.isOne()) {
-          return arg1;
-        }
-        if (arg1 instanceof INum) {
-          if (arg2.isAST(S.Overflow, 1)) {
-            return arg2;
-          }
-        } else if (arg2 instanceof INum) {
-          if (arg1.isAST(S.Overflow, 1)) {
-            return arg1;
-          }
-        }
-      }
-      if (arg1.isNumber() && arg2.isNumber()) {
+      if (arg1 == arg2) {
+        return F.Power(arg1, C2);
+      } else if (arg1.isZero()) {
+        return evalZeroTimesX(arg1, arg2, false);
+      } else if (arg2.isZero()) {
+        return evalZeroTimesX(arg2, arg1, true);
+      } else if (arg1.isOne()) {
+        return arg2;
+      } else if (arg2.isOne()) {
+        return arg1;
+      } else if (arg1 instanceof INum && arg2.isAST(S.Overflow, 1)) {
+        return arg2;
+      } else if (arg2 instanceof INum && arg1.isAST(S.Overflow, 1)) {
+        return arg1;
+      } else if (arg1.isNumber() && arg2.isNumber()) {
         return F.NIL;
-      }
-
-      if (arg1.isSymbol() || arg2.isSymbol()) {
-        if (arg1 == arg2) {
-          return F.Power(arg1, C2);
-        } else if (arg1.isSymbol()) {
-          if (arg2.isAtom()) {
-            return F.NIL;
-          }
-        } else if (arg2.isSymbol()) {
-          if (arg1.isAtom()) {
-            return F.NIL;
-          }
-        }
+      } else if (arg1.isSymbol() && arg2.isAtom()) {
+        return F.NIL;
+      } else if (arg2.isSymbol() && arg1.isAtom()) {
+        return F.NIL;
       }
 
       final int arg1Ordinal = arg1.headID();

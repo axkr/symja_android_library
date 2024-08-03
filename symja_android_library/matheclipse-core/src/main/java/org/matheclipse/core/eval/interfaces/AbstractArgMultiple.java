@@ -19,7 +19,6 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher;
-import org.matheclipse.core.patternmatching.hash.HashedPatternRules;
 
 /** */
 public abstract class AbstractArgMultiple extends AbstractArg2 {
@@ -116,12 +115,14 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
   }
 
   /**
-   * Evaluate an <code>Orderless</code> AST if the <code>getHashRuleMap()</code> method returns a
-   * <code>HashedOrderlessMatcher</code>,
+   * Evaluates the given {@link ISymbol#ORDERLESS} AST repeatedly using the HashedOrderlessMatcher.
+   * This method is used when the evaluation engine's trigonometric rules are not disabled.
    *
-   * @param orderlessAST
-   * @return
-   * @see HashedPatternRules
+   * @param orderlessAST the AST to be evaluated, which should have the {@link ISymbol#ORDERLESS}
+   *        attribute
+   * @param engine the evaluation engine used for the evaluation
+   * @return the result of the evaluation if the HashedOrderlessMatcher is not null, otherwise
+   *         returns {@link F#NIL}
    */
   public IAST evaluateHashsRepeated(final IAST orderlessAST, final EvalEngine engine) {
     if (!engine.isDisabledTrigRules()) {
@@ -265,14 +266,14 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
             return e2FraArg((IFraction) o0, (IFraction) o1);
           }
           if (o1 instanceof IComplex) {
-            return e2ComArg(F.complex((IFraction) o0), (IComplex) o1);
+            return e2ComArg(F.CC((IFraction) o0), (IComplex) o1);
           }
         } else if (o0 instanceof IComplex) {
           if (o1 instanceof IInteger) {
             return eComIntArg((IComplex) o0, (IInteger) o1);
           }
           if (o1 instanceof IFraction) {
-            return e2ComArg((IComplex) o0, F.complex((IFraction) o1));
+            return e2ComArg((IComplex) o0, F.CC((IFraction) o1));
           }
           if (o1 instanceof IComplex) {
             return e2ComArg((IComplex) o0, (IComplex) o1);

@@ -1,5 +1,11 @@
 package org.matheclipse.core.interfaces;
 
+/**
+ * The IInexactNumber interface represents an inexact number in the system. It extends the INumber
+ * interface, inheriting all of its methods. In addition to the methods inherited from INumber,
+ * IInexactNumber also defines methods for arithmetic operations and trigonometric functions that
+ * are specific to inexact numbers.
+ */
 public interface IInexactNumber extends INumber {
 
   public IInexactNumber plus(final IInexactNumber that);

@@ -206,6 +206,22 @@ public class ProductTest extends ExprEvaluatorTestCase {
     check("Product(i^(x),{i,1,n})", //
         "(n!)^x");
   }
+  //
+  // @Test
+  // public void testNProduct001() {
+  // check("NProduct(1+E^(2/3*I*n)/n^2, {n, 1, Infinity})", //
+  // "1.43706+I*1.07945");
+  // check("NProduct(1+1/i^2, {i, 1, Infinity})", //
+  // "3.67607");
+  // }
+  //
+  // @Test
+  // public void testNProduct002() {
+  // check("NProduct(1+1/2^i, {i,0,Infinity,2})", //
+  // "2.71182");
+  // check("NProduct(1+1/2^(2*j), {j,0,Infinity})", //
+  // "2.71182");
+  // }
 
   @Test
   public void testProduct012() {
