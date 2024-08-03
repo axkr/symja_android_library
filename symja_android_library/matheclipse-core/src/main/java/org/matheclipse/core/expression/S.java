@@ -7010,6 +7010,10 @@ public class S {
    */
   public final static IBuiltInSymbol NDSolve = S.initFinalSymbol("NDSolve", ID.NDSolve);
 
+
+  public final static IBuiltInSymbol NExpectation =
+      S.initFinalSymbol("NExpectation", ID.NExpectation);
+
   public final static IBuiltInSymbol Nearest = S.initFinalSymbol("Nearest", ID.Nearest);
 
   public final static IBuiltInSymbol NearestTo = S.initFinalSymbol("NearestTo", ID.NearestTo);
@@ -7299,6 +7303,11 @@ public class S {
 
   public final static IBuiltInSymbol Now = S.initFinalSymbol("Now", ID.Now);
 
+  public final static IBuiltInSymbol NProbability =
+      S.initFinalSymbol("NProbability", ID.NProbability);
+
+  public final static IBuiltInSymbol NProduct = S.initFinalSymbol("NProduct", ID.NProduct);
+
   /**
    * NRoots(polynomial==0) - gives the numerical roots of a univariate polynomial `polynomial`.
    * 
@@ -7316,6 +7325,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol NSolve = S.initFinalSymbol("NSolve", ID.NSolve);
+
+  public final static IBuiltInSymbol NSum = S.initFinalSymbol("NSum", ID.NSum);
 
   /**
    * Null - is the implicit result of expressions that do not yield a result.

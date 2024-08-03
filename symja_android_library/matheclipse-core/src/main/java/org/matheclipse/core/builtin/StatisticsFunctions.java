@@ -52,6 +52,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.NSum;
 
 public class StatisticsFunctions {
 
@@ -105,6 +106,8 @@ public class StatisticsFunctions {
       S.MeanDeviation.setEvaluator(new MeanDeviation());
       S.Median.setEvaluator(new Median());
       S.NakagamiDistribution.setEvaluator(new NakagamiDistribution());
+      S.NExpectation.setEvaluator(new NExpectation());
+      S.NProbability.setEvaluator(new NProbability());
       S.NormalDistribution.setEvaluator(new NormalDistribution());
       S.PearsonCorrelationTest.setEvaluator(new PearsonCorrelationTest());
       S.ParetoDistribution.setEvaluator(new ParetoDistribution());
@@ -148,9 +151,6 @@ public class StatisticsFunctions {
 
   /** Functionality for a discrete probability distribution */
   private interface IExpectationDiscreteDistribution extends IDiscreteDistribution {
-    /** @return lowest value a random variable from this distribution may attain */
-    IExpr lowerBound(IAST dist);
-
     IExpr randomVariate(Random random, IAST dist, int size);
 
     /**
@@ -596,7 +596,7 @@ public class StatisticsFunctions {
    * <a href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
   private static final class BernoulliDistribution extends AbstractEvaluator
-      implements ICDF, IDistribution, IPDF, IStatistics, IRandomVariate, ICentralMoment {
+      implements ICDF, IDiscreteDistribution, IPDF, IStatistics, IRandomVariate, ICentralMoment {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -756,7 +756,7 @@ public class StatisticsFunctions {
   }
 
   private static final class BetaDistribution extends AbstractEvaluator
-      implements IDistribution, IRandomVariate, IStatistics, IPDF, ICDF {
+      implements IContinuousDistribution, IRandomVariate, IStatistics, IPDF, ICDF {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1439,7 +1439,7 @@ public class StatisticsFunctions {
   }
 
   private static final class ChiSquareDistribution extends AbstractEvaluator
-      implements ICDF, IDistribution, IPDF, IStatistics, IRandomVariate, ICentralMoment {
+      implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate, ICentralMoment {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1697,7 +1697,7 @@ public class StatisticsFunctions {
   }
 
   private static final class CauchyDistribution extends AbstractEvaluator
-      implements ICDF, IDistribution, IPDF, IStatistics, IRandomVariate, ICentralMoment {
+      implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate, ICentralMoment {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1936,7 +1936,7 @@ public class StatisticsFunctions {
   }
 
   private static final class FRatioDistribution extends AbstractEvaluator
-      implements ICDF, IDistribution, IPDF, IStatistics {
+      implements ICDF, IContinuousDistribution, IPDF, IStatistics {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2130,7 +2130,7 @@ public class StatisticsFunctions {
    * <a href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
   private static final class FrechetDistribution extends AbstractEvaluator
-      implements ICDF, IDistribution, IPDF, IStatistics, IRandomVariate {
+      implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2300,7 +2300,7 @@ public class StatisticsFunctions {
   }
 
   private static final class GammaDistribution extends AbstractEvaluator
-      implements ICentralMoment, IDistribution, IRandomVariate, IStatistics, IPDF, ICDF {
+      implements ICentralMoment, IContinuousDistribution, IRandomVariate, IStatistics, IPDF, ICDF {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2744,7 +2744,7 @@ public class StatisticsFunctions {
   }
 
   private static final class GompertzMakehamDistribution extends AbstractEvaluator
-      implements ICDF, IDistribution, IPDF, IStatistics, IRandomVariate {
+      implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2917,7 +2917,7 @@ public class StatisticsFunctions {
    * <a href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
   private static final class GumbelDistribution extends AbstractEvaluator
-      implements ICDF, IDistribution, IPDF, IStatistics, IRandomVariate {
+      implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3834,7 +3834,7 @@ public class StatisticsFunctions {
    * <a href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
   private static final class ErlangDistribution extends AbstractEvaluator
-      implements ICDF, IDistribution, IPDF, IStatistics {
+      implements ICDF, IContinuousDistribution, IPDF, IStatistics {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -4062,6 +4062,8 @@ public class StatisticsFunctions {
               // }
               // }
             }
+          } else if (distribution.isDiscreteDistribution()) {
+            // TODO
           }
         }
       } catch (RuntimeException rex) {
@@ -4072,10 +4074,156 @@ public class StatisticsFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
   }
+
+  private static class NExpectation extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      try {
+        IExpr xExpr = ast.arg1();
+        if (xExpr.isFunction() && ast.arg2().isList()) {
+          IAST data = (IAST) ast.arg2();
+          IASTAppendable sum = F.PlusAlloc(data.size());
+          for (int i = 1; i < data.size(); i++) {
+            sum.append(F.unaryAST1(xExpr, data.get(i)));
+          }
+          return sum.divide(F.ZZ(data.argSize()));
+        }
+        if (ast.arg2().isAST(S.Distributed, 3)) {
+          IExpr x = ast.arg2().first();
+          IExpr distribution = ast.arg2().second();
+          if (distribution.isList()) {
+            IAST data = (IAST) distribution;
+            // Sum( predicate , data ) / data.argSize()
+            IASTAppendable sum = F.PlusAlloc(data.size());
+            for (int i = 1; i < data.size(); i++) {
+              sum.append(F.subst(xExpr, F.Rule(x, data.get(i))));
+            }
+            return sum.divide(F.ZZ(data.argSize()));
+          } else if (distribution.isContinuousDistribution()) {
+            IExpr pdf = S.PDF.of(engine, distribution, x);
+            return F.NIntegrate(F.Times(ast.arg1(), pdf), F.list(x, F.CNInfinity, F.CInfinity));
+          } else if (distribution.isDiscreteDistribution()) {
+            // final IExpr xNegate = EvalEngine.get().evaluate(F.Negate(x));
+            // IExpr fNegate = F.subst(ast.arg1(), v -> v.equals(x) ? xNegate : F.NIL);
+            // IExpr pdfNegate = S.PDF.of(engine, distribution, xNegate);
+            // IAST function = F.Times(fNegate, pdfNegate);
+            // IAST nsum1 = F.NSum(function, F.list(x, F.C0, F.CInfinity));
+            IDiscreteDistribution dist = getDiscreteDistribution(distribution);
+            IExpr pdf = S.PDF.of(engine, distribution, x);
+            IAST function = F.Times(ast.arg1(), pdf);
+            IExpr lowerBound = dist.lowerBound();
+            return NSum.nsum(function, x, lowerBound, F.CInfinity,
+                F.NSum(function, F.list(x, lowerBound, F.CInfinity)));
+          }
+        }
+      } catch (RuntimeException rex) {
+        return Errors.printMessage(S.Expectation, rex, engine);
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  private static class NProbability extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.size() == 3) {
+        try {
+          if (ast.arg2().isList()) {
+            IExpr predicate = ast.arg1();
+            IAST data = (IAST) ast.arg2();
+            if (predicate.isFunction()) {
+              // Sum( Boole(predicate), data ) / data.argSize()
+              int sum = 0;
+              for (int i = 1; i < data.size(); i++) {
+                if (engine.evalTrue(predicate, data.get(i))) {
+                  sum++;
+                }
+              }
+              return F.QQ(sum, data.argSize());
+            }
+          } else if (ast.arg2().isAST(S.Distributed, 3)) {
+            IExpr predicate = ast.arg1();
+            IExpr x = ast.arg2().first();
+            IExpr distribution = ast.arg2().second();
+            if (distribution.isList()) {
+              IAST data = (IAST) distribution;
+              // Sum( Boole(predicate), data ) / data.argSize()
+              int sum = 0;
+              for (int i = 1; i < data.size(); i++) {
+                if (engine.evalTrue(F.subst(predicate, F.Rule(x, data.get(i))))) {
+                  sum++;
+                }
+              }
+              return F.QQ(sum, data.argSize());
+            } else if (distribution.isDiscreteDistribution()) {
+              IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
+              if (pdf.isPresent()) {
+                IDiscreteDistribution dist = getDiscreteDistribution(distribution);
+                int[] interval = dist.range(distribution, predicate, x);
+                if (interval != null) {
+                  // for discrete distributions take the sum:
+                  IASTAppendable sum = F.PlusAlloc(10);
+                  for (int i = interval[0]; i <= interval[1]; i++) {
+                    if (engine.evalTrue(F.subst(predicate, F.Rule(x, F.ZZ(i))))) {
+                      sum.append(F.subst(pdf, F.Rule(x, F.ZZ(i))).evalf());
+                    }
+                  }
+                  return sum;
+                } else {
+                  return engine.evaluate(F.NSum(F.Times(F.Boole(predicate), pdf),
+                      F.List(x, F.CNInfinity, F.CInfinity)));
+
+                }
+              }
+            } else if (distribution.isContinuousDistribution()) {
+              IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
+              if (pdf.isPresent()) {
+                return engine.evaluate(F.NIntegrate(F.Times(F.Boole(predicate), pdf),
+                    F.List(x, F.CNInfinity, F.CInfinity)));
+              }
+            }
+          }
+        } catch (RuntimeException rex) {
+          return Errors.printMessage(S.Probability, rex, engine);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
 
   private static final class ExponentialDistribution extends AbstractEvaluator
       implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate, ICentralMoment {
@@ -4241,6 +4389,7 @@ public class StatisticsFunctions {
 
   }
 
+
   private static final class InterquartileRange extends AbstractFunctionEvaluator {
 
     @Override
@@ -4268,6 +4417,7 @@ public class StatisticsFunctions {
       super.setUp(newSymbol);
     }
   }
+
 
   /**
    *
@@ -4426,6 +4576,7 @@ public class StatisticsFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -4497,6 +4648,7 @@ public class StatisticsFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+
   /**
    *
    *
@@ -4527,7 +4679,7 @@ public class StatisticsFunctions {
    * <a href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
   private static final class LogNormalDistribution extends AbstractEvaluator
-      implements ICDF, IDistribution, IPDF, IStatistics, IRandomVariate, ICentralMoment {
+      implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate, ICentralMoment {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -4713,6 +4865,7 @@ public class StatisticsFunctions {
 
   }
 
+
   /**
    *
    *
@@ -4812,6 +4965,7 @@ public class StatisticsFunctions {
     }
   }
 
+
   private static final class MeanDeviation extends AbstractFunctionEvaluator {
 
     @Override
@@ -4870,6 +5024,7 @@ public class StatisticsFunctions {
       newSymbol.setAttributes(ISymbol.NOATTRIBUTE);
     }
   }
+
 
   /**
    *
@@ -5096,8 +5251,9 @@ public class StatisticsFunctions {
     }
   }
 
+
   private static final class NakagamiDistribution extends AbstractEvaluator
-      implements ICDF, IDistribution, IPDF, IStatistics {
+      implements ICDF, IContinuousDistribution, IPDF, IStatistics {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -5247,6 +5403,7 @@ public class StatisticsFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
+
 
   /**
    *
@@ -5570,6 +5727,7 @@ public class StatisticsFunctions {
     }
   }
 
+
   private static final class PrincipalComponents extends AbstractFunctionOptionEvaluator {
 
     @Override
@@ -5623,6 +5781,8 @@ public class StatisticsFunctions {
       setOptions(newSymbol, S.Method, F.stringx("Covariance"));
     }
   }
+
+
   /**
    *
    *
@@ -5690,25 +5850,30 @@ public class StatisticsFunctions {
               return F.QQ(sum, data.argSize());
             } else if (distribution.isDiscreteDistribution()) {
               IDiscreteDistribution dist = getDiscreteDistribution(distribution);
-              int[] interval = dist.range(distribution, predicate, x);
-              if (interval != null) {
-                IExpr pdf = S.PDF.of(engine, distribution, x);
-                // for discrete distributions take the sum:
-                IASTAppendable sum = F.PlusAlloc(10);
-                for (int i = interval[0]; i <= interval[1]; i++) {
-                  if (engine.evalTrue(F.subst(predicate, F.Rule(x, F.ZZ(i))))) {
-                    sum.append(F.subst(pdf, F.Rule(x, F.ZZ(i))));
+              IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
+              if (pdf.isPresent()) {
+                int[] interval = dist.range(distribution, predicate, x);
+                if (interval != null) {
+                  // for discrete distributions take the sum:
+                  IASTAppendable sum = F.PlusAlloc(10);
+                  for (int i = interval[0]; i <= interval[1]; i++) {
+                    if (engine.evalTrue(F.subst(predicate, F.Rule(x, F.ZZ(i))))) {
+                      sum.append(F.subst(pdf, F.Rule(x, F.ZZ(i))));
+                    }
                   }
+                  return sum;
+                } else {
+                  return engine.evaluate(F.Sum(F.Times(F.Boole(predicate), pdf),
+                      F.List(x, F.CNInfinity, F.CInfinity)));
                 }
-                return sum;
               }
             } else if (distribution.isContinuousDistribution()) {
-              // IDistribution dist = getDistribution(distribution);
-              // IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
-              // if (pdf.isPresent()) {
-              // return engine.evaluate(F.Integrate(F.Times(F.Boole(predicate), pdf),
-              // F.List(x, F.CNInfinity, F.CInfinity)));
-              // }
+              IDistribution dist = getDistribution(distribution);
+              IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
+              if (pdf.isPresent()) {
+                return engine.evaluate(F.Integrate(F.Times(F.Boole(predicate), pdf),
+                    F.List(x, F.CNInfinity, F.CInfinity)));
+              }
             }
           }
         } catch (RuntimeException rex) {
@@ -5719,10 +5884,16 @@ public class StatisticsFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
   }
+
 
   /**
    *
@@ -5837,6 +6008,7 @@ public class StatisticsFunctions {
       return ARGS_1_2;
     }
   }
+
 
   private static final class ParetoDistribution extends AbstractEvaluator
       implements IContinuousDistribution, IStatistics, IPDF, ICDF {
@@ -6205,6 +6377,7 @@ public class StatisticsFunctions {
 
   }
 
+
   private static final class PearsonCorrelationTest extends AbstractEvaluator {
 
     @Override
@@ -6312,6 +6485,7 @@ public class StatisticsFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+
   /**
    *
    *
@@ -6343,6 +6517,10 @@ public class StatisticsFunctions {
    */
   private static final class PoissonDistribution extends AbstractEvaluator
       implements ICDF, IDiscreteDistribution, IPDF, IStatistics, IRandomVariate {
+    @Override
+    public IExpr lowerBound() {
+      return F.C0;
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -6357,13 +6535,25 @@ public class StatisticsFunctions {
     @Override
     public IExpr mean(IAST dist) {
       if (dist.isAST1()) {
-        return dist.arg1();
+        IExpr arg1 = dist.arg1();
+        if (arg1.isReal() && !arg1.isPositive()) {
+          // Parameter `1` at position `2` in `3` is expected to be positive.
+          return Errors.printMessage(S.PoissonDistribution, "posprm", F.List(arg1, F.C1, dist));
+        }
+        return arg1;
       }
       return F.NIL;
     }
 
     @Override
     public IExpr median(IAST dist) {
+      if (dist.isAST1()) {
+        IExpr arg1 = dist.arg1();
+        if (arg1.isReal() && !arg1.isPositive()) {
+          // Parameter `1` at position `2` in `3` is expected to be positive.
+          return Errors.printMessage(S.PoissonDistribution, "posprm", F.List(arg1, F.C1, dist));
+        }
+      }
       return F.NIL;
     }
 
@@ -6371,6 +6561,10 @@ public class StatisticsFunctions {
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr p = dist.arg1();
+        if (p.isReal() && !p.isPositive()) {
+          // Parameter `1` at position `2` in `3` is expected to be positive.
+          return Errors.printMessage(S.PoissonDistribution, "posprm", F.List(p, F.C1, dist));
+        }
         //
         IExpr function =
             // [$ Piecewise({{GammaRegularized(1 + Floor(#), p), # >= 0}}, 0) & $]
@@ -6391,6 +6585,10 @@ public class StatisticsFunctions {
     public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST1()) {
         IExpr p = dist.arg1();
+        if (p.isReal() && !p.isPositive()) {
+          // Parameter `1` at position `2` in `3` is expected to be positive.
+          return Errors.printMessage(S.PoissonDistribution, "posprm", F.List(p, F.C1, dist));
+        }
         //
         IExpr function =
             // [$ Piecewise({{p^#/(E ^ p * #!), # >= 0}}, 0) & $]
@@ -6406,7 +6604,12 @@ public class StatisticsFunctions {
     @Override
     public IExpr variance(IAST dist) {
       if (dist.isAST1()) {
-        return dist.arg1();
+        IExpr arg1 = dist.arg1();
+        if (arg1.isReal() && !arg1.isPositive()) {
+          // Parameter `1` at position `2` in `3` is expected to be positive.
+          return Errors.printMessage(S.PoissonDistribution, "posprm", F.List(arg1, F.C1, dist));
+        }
+        return arg1;
       }
       return F.NIL;
     }
@@ -6415,6 +6618,10 @@ public class StatisticsFunctions {
     public IExpr skewness(IAST dist) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
+        if (n.isReal() && !n.isPositive()) {
+          // Parameter `1` at position `2` in `3` is expected to be positive.
+          return Errors.printMessage(S.PoissonDistribution, "posprm", F.List(n, F.C1, dist));
+        }
         return n.sqrt().inverse();
       }
       return F.NIL;
@@ -6433,7 +6640,12 @@ public class StatisticsFunctions {
     public IExpr randomVariate(Random random, IAST dist, int size) {
       if (dist.isAST1()) {
         // see exception handling in RandonmVariate() function
-        double mean = dist.arg1().evalf();
+        IExpr arg1 = dist.arg1();
+        if (arg1.isReal() && !arg1.isPositive()) {
+          // Parameter `1` at position `2` in `3` is expected to be positive.
+          return Errors.printMessage(S.PoissonDistribution, "posprm", F.List(arg1, F.C1, dist));
+        }
+        double mean = arg1.evalf();
         // return F.ZZ(new PoissonGenerator(mean, random).nextValue());
         RandomDataGenerator rdg = new RandomDataGenerator();
         int[] vector = rdg
@@ -6443,6 +6655,7 @@ public class StatisticsFunctions {
       return F.NIL;
     }
   }
+
 
   private static final class PoissonProcess extends AbstractEvaluator {
 
@@ -6464,6 +6677,7 @@ public class StatisticsFunctions {
     public void setUp(final ISymbol newSymbol) {}
 
   }
+
 
   /**
    *
@@ -6652,6 +6866,7 @@ public class StatisticsFunctions {
     }
   }
 
+
   private static class Quartiles extends AbstractFunctionEvaluator {
 
     private static final IAST Q = F.list(F.C1D4, F.C1D2, F.C3D4);
@@ -6681,6 +6896,7 @@ public class StatisticsFunctions {
       return ARGS_1_2;
     }
   }
+
 
   private static final class RandomVariate extends AbstractEvaluator {
 
@@ -6788,6 +7004,7 @@ public class StatisticsFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -6889,6 +7106,7 @@ public class StatisticsFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+
   /**
    *
    *
@@ -6944,6 +7162,7 @@ public class StatisticsFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
+
 
   /**
    *
@@ -7050,6 +7269,7 @@ public class StatisticsFunctions {
     }
   }
 
+
   private static final class Standardize extends AbstractEvaluator {
 
     @Override
@@ -7084,8 +7304,9 @@ public class StatisticsFunctions {
     }
   }
 
+
   private static final class StudentTDistribution extends AbstractEvaluator
-      implements ICDF, IDistribution, IPDF, IStatistics {
+      implements ICDF, IContinuousDistribution, IPDF, IStatistics {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -7248,6 +7469,7 @@ public class StatisticsFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+
   private static final class SurvivalFunction extends AbstractFunctionEvaluator {
 
     @Override
@@ -7291,6 +7513,7 @@ public class StatisticsFunctions {
       return false;
     }
   }
+
 
   private static final class TTest extends AbstractEvaluator {
 
@@ -7351,6 +7574,8 @@ public class StatisticsFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
+
+
   /**
    *
    *
@@ -7394,7 +7619,7 @@ public class StatisticsFunctions {
    * <a href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
   private static final class UniformDistribution extends AbstractEvaluator
-      implements IDistribution, IStatistics, ICDF, IPDF, IRandomVariate {
+      implements IContinuousDistribution, IStatistics, ICDF, IPDF, IRandomVariate {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -7562,6 +7787,7 @@ public class StatisticsFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -7692,6 +7918,7 @@ public class StatisticsFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -7722,7 +7949,7 @@ public class StatisticsFunctions {
    * <a href="StandardDeviation.md">StandardDeviation</a>, <a href="Variance.md">Variance</a>
    */
   private static final class WeibullDistribution extends AbstractEvaluator
-      implements ICDF, IDistribution, IPDF, IStatistics, IRandomVariate {
+      implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -7914,6 +8141,7 @@ public class StatisticsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
+
   }
 
   /**

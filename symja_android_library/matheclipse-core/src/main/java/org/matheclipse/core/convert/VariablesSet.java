@@ -201,7 +201,8 @@ public class VariablesSet {
       }
       IExpr head = list.head();
       if (head.isVariable() && list.forAll(x -> x.isInteger())) {
-        if (!list.isNumericFunction(true)) {
+        if (!list.isNumericFunction(true) && !list.isBooleanFunction()
+            && !list.isComparatorFunction()) {
           fCollection.add(list);
           return true;
         }

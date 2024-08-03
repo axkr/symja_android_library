@@ -27,6 +27,7 @@ Sum(expr, {i, imin, imax}, {j, jmin, jmax}, ...)
 		
 See
 * [Wikipedia - Summation](https://en.wikipedia.org/wiki/Summation)
+* [Wikipedia - Faulhaber's formula](https://en.wikipedia.org/wiki/Faulhaber%27s_formula)
 
 ### Examples
 

@@ -93,6 +93,7 @@ public final class FunctionDefinitions {
       S.NonCommutativeMultiply
           .setEvaluator(new org.matheclipse.core.reflection.system.NonCommutativeMultiply());
       S.NSolve.setEvaluator(new org.matheclipse.core.reflection.system.NSolve());
+      S.NSum.setEvaluator(new org.matheclipse.core.reflection.system.NSum());
       S.NumberLinePlot.setEvaluator(new org.matheclipse.core.reflection.system.NumberLinePlot());
 
       S.Out.setEvaluator(new org.matheclipse.core.reflection.system.Out());

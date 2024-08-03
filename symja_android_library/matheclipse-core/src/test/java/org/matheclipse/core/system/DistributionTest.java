@@ -225,6 +225,102 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testExpectation() {
+    // TODO improve integration for piecewise functions
+    // check("Expectation((x + 3)/(x + 5), Distributed(x, ExponentialDistribution(2)))", //
+    // "Expectation((3+x)/(5+x),x\uF3D2ExponentialDistribution(2))");
+
+    check("Limit((-3*x)/(E^(x^2/2)*Sqrt(2*Pi))+4*Erf(x/Sqrt(2)), x -> -Infinity)", //
+        "-4");
+    check("Expectation(2*x+3, x \\[Distributed] NormalDistribution() )", //
+        "3");
+    check("Expectation(3*x^2 + 5, Distributed(x, NormalDistribution()))", //
+        "8");
+
+    check("Expectation((#^3)&, {a,b,c})", //
+        "1/3*(a^3+b^3+c^3)");
+    check("Expectation(2*x+3,Distributed(x,{a,b,c,d}))", //
+        "1/4*(12+2*a+2*b+2*c+2*d)");
+    check("Expectation(f(x),Distributed(x,{a,b}))", //
+        "1/2*(f(a)+f(b))");
+    // check("PDF( PoissonDistribution(m),x)", //
+    // "Piecewise({{m^x/(E^m*x!),x>=0}},0)");
+    // check("Expectation(x^2+7*x+8,Distributed(x,PoissonDistribution(m)))", //
+    // "8+8*m+m^2");
+    // check("Expectation(E^(2*x) + 3, Distributed( x, PoissonDistribution(l)))", //
+    // "");
+    //
+    // check("Expectation(x,Distributed(x, DiscreteUniformDistribution({4, 9})))", "13/2");
+    // check("Expectation(x,Distributed(x, DiscreteUniformDistribution({4, 10})))", "7");
+    //
+    // check("Expectation(2*x+3,Distributed(x, DiscreteUniformDistribution({4, 9})))", "16");
+    // check("Expectation(2*x+3,Distributed(x, DiscreteUniformDistribution({4, 10})))", "17");
+
+  }
+
+  @Test
+  public void testNExpectation() {
+    check("NExpectation(Abs(2*x-1), Distributed(x, GammaDistribution(3.5,2)))", //
+        "13.00025");
+
+    // check("NExpectation(E^x, Distributed(x, HypergeometricDistribution(20,50,100)))", //
+    // "-4.77816*10^-10");
+    // check("NExpectation(E^x, Distributed(x, GeometricDistribution(0.1)))", //
+    // "-0.0691346");
+    // check("NExpectation(E^x, Distributed(x, DiscreteUniformDistribution({20,40})))", //
+    // "");
+    // check(
+    // "NExpectation(E^x, Distributed(x, BinomialDistribution(10,0.4)))", //
+    // "187.049");
+    check("NExpectation(E^x, Distributed(x, PoissonDistribution(1.0)))", //
+        "5.57494");
+    check("NExpectation(x^2+7*x+8, Distributed(x, PoissonDistribution(2.7)))", //
+        "36.89");
+    check("NExpectation(2*x+7, Distributed(x, PoissonDistribution(1)))", //
+        "9.0");
+
+    check("NExpectation(x^2+7*x+8, Distributed(x, NormalDistribution()))", //
+        "9.0");
+    check("NExpectation((x-1)^2+E^(-x), Distributed(x, NormalDistribution()))", //
+        "3.64872");
+    check("NExpectation(2*x+3, Distributed(x, NormalDistribution()))", //
+        "3.0");
+
+    check("NExpectation(Abs(2*x-1), Distributed(x, ExponentialDistribution(3)))", //
+        "0.63084");
+    check("NExpectation((x + 3)/(x + 5), Distributed(x, ExponentialDistribution(2)))", //
+        "0.633747");
+    check("NExpectation(E^(-3*x^2)+1, Distributed(x, ExponentialDistribution(2)))", //
+        "1.59157");
+    check(
+        "NExpectation(Piecewise({{5, x<1}, {x^2+3, x>=1}}), Distributed(x, ExponentialDistribution(2)))", //
+        "5.06767");
+  }
+
+
+  @Test
+  public void testNProbability() {
+    check("NProbability(E^x<3, Distributed(x,PoissonDistribution(1)))", //
+        "0.735759");
+    check("NProbability(x < 3, Distributed(x,NormalDistribution()))", //
+        "0.99865");
+    check("NProbability(3 < x < 5, Distributed(x,NormalDistribution()))", //
+        "0.00134961");
+    check("NProbability(E^x < 3, Distributed(x,NormalDistribution()))", //
+        "0.864031");
+    check("NProbability(x^2 > 3 || Abs[x] < 1, Distributed(x,ExponentialDistribution(2)))", //
+        "0.895966");
+    check("Sum(1/(E*x!), {x,0,Infinity})", //
+        "1");
+    check("NSum(1/(E*x!), {x,0,Infinity})", //
+        "1.0");
+    // check("NProbability(E^x < 3, Distributed(x,PoissonDistribution(1)))", //
+    // "");
+
+
+  }
+
+  @Test
   public void testExponentialDistribution() {
     check("Mean(ExponentialDistribution(x))", //
         "1/x");
@@ -587,6 +683,17 @@ public class DistributionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testPoissonDistribution() {
+    // Message: PoissonDistribution: Parameter -1.5 at position 1 in PoissonDistribution(-1.5) is
+    // expected to be positive.
+    check("Mean(PoissonDistribution(-1.5))", //
+        "Mean(PoissonDistribution(-1.5))");
+    // Message: PoissonDistribution: Parameter -1.5 at position 1 in PoissonDistribution(-1.5) is
+    // expected to be positive.
+    check("Variance(PoissonDistribution(-1.5))", //
+        "Variance(PoissonDistribution(-1.5))");
+
+    check("Mean(PoissonDistribution(1.5))", //
+        "1.5");
     check("Mean(PoissonDistribution(m))", //
         "m");
     check("Variance(PoissonDistribution(m))", //
@@ -601,6 +708,9 @@ public class DistributionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testProbability() {
+    // check("Probability(E^x<3, Distributed(x, NormalDistribution()))", //
+    // "");
+
     // check("RandomVariate(NormalDistribution(), 10)", //
     // "{-0.21848,1.67503,0.78687,0.9887,2.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223}");
     check(
@@ -629,6 +739,8 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "517/720*1/E");
     check("Probability(1 < x < 7, Distributed(x, PoissonDistribution(1)))", //
         "517/720*1/E");
+    check("Probability(E^x<3, Distributed(x,PoissonDistribution(1)))", //
+        "2/E");
   }
 
   @Test

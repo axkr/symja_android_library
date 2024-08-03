@@ -2,8 +2,14 @@ package org.matheclipse.core.interfaces;
 
 import org.matheclipse.core.eval.util.Assumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
+import org.matheclipse.core.expression.F;
 
 public interface IDiscreteDistribution extends IDistribution {
+
+  default IExpr lowerBound() {
+    return F.C0;
+  }
+
   /**
    * Return the distributions lower and upper bounds reduced by the predicate's assumptions.
    *
@@ -17,7 +23,8 @@ public interface IDiscreteDistribution extends IDistribution {
     if (assumptions != null) {
       int[] result = new int[] {getSupportLowerBound(discreteDistribution),
           getSupportUpperBound(discreteDistribution)};
-      return assumptions.reduceRange(x, result);
+      int[] reducedRange = assumptions.reduceRange(x, result);
+      return reducedRange != null ? reducedRange : result;
     }
     return null;
   }

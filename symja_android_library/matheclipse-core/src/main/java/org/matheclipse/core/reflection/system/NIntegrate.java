@@ -131,7 +131,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
     } else if ("GaussKronrod".equalsIgnoreCase(method)) {
       return gausKronrodRule(maxIterations, f, min, max);
     } else if ("ClenshawCurtisRule".equalsIgnoreCase(method)) {
-      Quadrature quadrature = new ClenshawCurtis(Config.SPECIAL_FUNCTIONS_TOLERANCE, 1000);
+      Quadrature quadrature = new ClenshawCurtis(Config.SPECIAL_FUNCTIONS_TOLERANCE, maxIterations);
       QuadratureResult result = quadrature.integrate(f, min, max);
       if (result.converged) {
         return result.estimate;
@@ -147,7 +147,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       // NIntegrate failed to converge after `1` refinements in `2` in the region `3`.
       throw new ArgumentTypeException("ncvi", F.List(F.ZZ(result.evaluations), xVar, list.rest()));
     } else if ("GaussLobattoRule".equalsIgnoreCase(method)) {
-      Quadrature quadrature = new GaussLobatto(Config.SPECIAL_FUNCTIONS_TOLERANCE, 1000);
+      Quadrature quadrature = new GaussLobatto(Config.SPECIAL_FUNCTIONS_TOLERANCE, maxIterations);
       QuadratureResult result = quadrature.integrate(f, min, max);
       if (result.converged) {
         return result.estimate;
@@ -156,7 +156,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       throw new ArgumentTypeException("ncvi", F.List(F.ZZ(result.evaluations), xVar, list.rest()));
 
     } else if ("NewtonCotesRule".equalsIgnoreCase(method)) {
-      Quadrature quadrature = new NewtonCotes(Config.SPECIAL_FUNCTIONS_TOLERANCE, 1000);
+      Quadrature quadrature = new NewtonCotes(Config.SPECIAL_FUNCTIONS_TOLERANCE, maxIterations);
       QuadratureResult result = quadrature.integrate(f, min, max);
       if (result.converged) {
         return result.estimate;

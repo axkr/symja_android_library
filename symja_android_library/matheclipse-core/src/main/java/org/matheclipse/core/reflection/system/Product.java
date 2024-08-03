@@ -133,10 +133,11 @@ public class Product extends ListFunctions.Table implements ProductRules {
     }
     IAST preevaledProduct = engine.preevalForwardBackwardAST(ast, 1);
     arg1 = preevaledProduct.arg1();
-    return evaluateProduct(preevaledProduct, arg1, engine);
+    return evaluateProduct(preevaledProduct, arg1, false, engine);
   }
 
-  private IExpr evaluateProduct(final IAST preevaledProduct, IExpr arg1, EvalEngine engine) {
+  protected static IExpr evaluateProduct(final IAST preevaledProduct, IExpr arg1,
+      boolean approximationMode, EvalEngine engine) {
     if (preevaledProduct.size() > 2) {
       final IAST list = preevaledProduct.last().makeList();
       if (list.isAST1()) {
@@ -296,7 +297,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
     return F.NIL;
   }
 
-  private IExpr productPowerFormula(IExpr powerAST, IExpr k, IExpr from, IExpr to) {
+  private static IExpr productPowerFormula(IExpr powerAST, IExpr k, IExpr from, IExpr to) {
     if (from.isOne()) {
       // ((-1+variable)!)^exponent
       return F.Power(F.Factorial(to), powerAST.exponent());
@@ -325,7 +326,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 
   @Override
   public int status() {
-    return ImplementationStatus.PARTIAL_SUPPORT;
+    return ImplementationStatus.EXPERIMENTAL;
   }
 
   @Override
