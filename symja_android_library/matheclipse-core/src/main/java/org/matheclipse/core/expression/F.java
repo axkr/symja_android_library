@@ -7471,6 +7471,10 @@ public class F extends S {
     return AST.newInstance(intialArgumentsCapacity, head, false);
   }
 
+  public static IAST NIntegrate(final IExpr f, final IExpr x) {
+    return new AST2(NIntegrate, f, x);
+  }
+
   public static IAST NewLimit(final IExpr f, final IExpr rule) {
     return new AST2(NewLimit, f, rule);
   }
@@ -7510,6 +7514,10 @@ public class F extends S {
 
   public static IAST NormalDistribution(final IExpr a0, final IExpr a1) {
     return new AST2(NormalDistribution, a0, a1);
+  }
+
+  public static IAST NSum(final IExpr f, final IExpr x) {
+    return new AST2(NSum, f, x);
   }
 
   public static IAST ParetoDistribution(final IExpr a0, final IExpr a1) {

@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.SortedSet;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
@@ -286,18 +286,23 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
     return size() - 1;
   }
 
-  default Set<IExpr> asSet() {
-    return asSet(Comparators.CANONICAL_COMPARATOR);
+  /**
+   * Converts the elements of this AST into a SortedSet.
+   * 
+   * @return a SortedSet containing the elements of this AST
+   */
+  default SortedSet<IExpr> asSortedSet() {
+    return asSortedSet(Comparators.CANONICAL_COMPARATOR);
   }
 
   /**
-   * Collect all arguments of this AST in a new set.
+   * Converts the elements of this AST into a SortedSet.
    * 
-   * @param comparator TODO
-   *
-   * @return <code>null</code> if a set couldn't be created
+   * @param comparator the Comparator to be used for sorting the elements in the set
+   * @return a SortedSet containing the elements of this AST, sorted according to the provided
+   *         Comparator
    */
-  public Set<IExpr> asSet(Comparator<? super IExpr> comparator);
+  public SortedSet<IExpr> asSortedSet(Comparator<? super IExpr> comparator);
 
   /**
    * call <code>setEvalFlags(IAST.BUILT_IN_EVALED)</code>

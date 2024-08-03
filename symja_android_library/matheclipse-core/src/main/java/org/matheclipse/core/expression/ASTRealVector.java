@@ -6,7 +6,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Comparator;
 import java.util.RandomAccess;
-import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
@@ -182,9 +182,9 @@ public class ASTRealVector extends AbstractAST
   }
 
   @Override
-  public Set<IExpr> asSet(Comparator<? super IExpr> comparator) {
+  public SortedSet<IExpr> asSortedSet(Comparator<? super IExpr> comparator) {
     int size = size();
-    Set<IExpr> set = new TreeSet<>(comparator);
+    SortedSet<IExpr> set = new TreeSet<>(comparator);
     for (int i = 1; i < size; i++) {
       set.add(get(i));
     }

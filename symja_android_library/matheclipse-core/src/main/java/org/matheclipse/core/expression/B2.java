@@ -6,7 +6,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Comparator;
 import java.util.RandomAccess;
-import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
@@ -837,8 +837,8 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   }
 
   @Override
-  public Set<IExpr> asSet(Comparator<? super IExpr> comparator) {
-    Set<IExpr> set = new TreeSet<>(comparator);
+  public SortedSet<IExpr> asSortedSet(Comparator<? super IExpr> comparator) {
+    SortedSet<IExpr> set = new TreeSet<>(comparator);
     set.add(arg1);
     set.add(arg2);
     return set;

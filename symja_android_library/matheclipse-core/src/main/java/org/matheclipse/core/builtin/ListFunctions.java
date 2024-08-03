@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
@@ -156,6 +157,10 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final ISymbol[] variables, final IExpr[] index) {
+      if (variables.length == 1) {
+        IExpr temp = F.subst(fValue, x -> x.equals(variables[0]) ? index[0] : F.NIL);
+        return fEngine.evaluate(temp);
+      }
       HashMap<ISymbol, IExpr> map = new HashMap<ISymbol, IExpr>();
       for (int i = 0; i < variables.length; i++) {
         ISymbol variable = variables[i];
@@ -163,7 +168,7 @@ public final class ListFunctions {
           map.put(variable, index[i]);
         }
       }
-      IExpr temp = map.size() == 0 ? fValue : fValue.replaceAll(map).orElse(fValue);
+      IExpr temp = map.size() == 0 ? fValue : F.subst(fValue, map);
       return fEngine.evaluate(temp);
     }
   }
@@ -393,9 +398,9 @@ public final class ListFunctions {
                 }
                 if (temp.isNumber()) {
                   if (fPrototypeList.head().equals(S.Plus)) {
-                    return tablePlus(temp, iter, index);
+                    return tablePlus((INumber) temp, iter, index);
                   } else {
-                    return tableTimes(temp, iter, index);
+                    return tableTimes((INumber) temp, iter, index);
                   }
                 } else {
                   return createGenericTable(iter, index, iter.allocHint(), temp, null);
@@ -434,11 +439,21 @@ public final class ListFunctions {
                 }
                 if (temp.isNumber()) {
                   if (fPrototypeList.head().equals(S.Plus)) {
-                    return tablePlus(temp, iter, index);
+                    return tablePlus((INumber) temp, iter, index);
                   } else {
-                    return tableTimes(temp, iter, index);
+                    return tableTimes((INumber) temp, iter, index);
                   }
                 } else {
+                  // if (iter.isApproximationMode() && temp.isNumericFunction(true)) {
+                  // INumber num = temp.evalNumber();
+                  // if (num != null) {
+                  // if (fPrototypeList.head().equals(S.Plus)) {
+                  // return tablePlus(num, iter, index);
+                  // } else {
+                  // return tableTimes(num, iter, index);
+                  // }
+                  // }
+                  // }
                   return createGenericTable(iter, index, iter.allocHint(), temp, null);
                 }
               }
@@ -455,46 +470,95 @@ public final class ListFunctions {
       return fFunction.evaluate(fCurrentVariable, fCurrentIndex);
     }
 
-    private IExpr tablePlus(IExpr temp, final IIterator<IExpr> iter, final int index) {
-      INumber num;
+    private IExpr tablePlus(INumber num, final IIterator<IExpr> iter, final int index) {
       int counter = 0;
-      num = (INumber) temp;
+      IExpr sumResult = num;
       while (iter.hasNext()) {
         fCurrentIndex[index] = iter.next();
         fCurrentVariable[index] = iter.getVariable();
-        temp = table();
+        IExpr temp = table();
         if (temp == null) {
           temp = fDefaultValue;
         }
-        if (temp.isNumber()) {
-          num = (INumber) num.plus(temp);
+        if (temp.isNumericFunction(true)) {
+          // if (iter.isApproximationMode()) {
+          // try {
+          // Complex c = temp.evalfc();
+          // if (c.isReal()) {
+          // final double realPart = c.getReal();
+          // if (F.isZero(realPart, 1.0e-12)) {
+          // break;
+          // }
+          // sumResult = sumResult.add(c.getReal());
+          // counter++;
+          // continue;
+          // }
+          // if (F.isZero(c, 1.0e-6)) {
+          // break;
+          // }
+          // sumResult = sumResult.plus(F.complexNum(c));
+          // } catch (ArgumentTypeException ate) {
+          // sumResult = sumResult.plus(temp);
+          // }
+          // } else {
+          sumResult = sumResult.plus(temp);
+          // }
         } else {
-          return createGenericTable(iter, index, iter.allocHint() - counter, num, temp);
+          return createGenericTable(iter, index, iter.allocHint() - counter, sumResult, temp);
         }
         counter++;
       }
-      return num;
+      return sumResult;
     }
 
-    private IExpr tableTimes(IExpr temp, final IIterator<IExpr> iter, final int index) {
-      INumber num;
+    private IExpr tableTimes(INumber num, final IIterator<IExpr> iter, final int index) {
       int counter = 0;
-      num = (INumber) temp;
+      IExpr productResult = num;
       while (iter.hasNext()) {
         fCurrentIndex[index] = iter.next();
         fCurrentVariable[index] = iter.getVariable();
-        temp = table();
+        IExpr temp = table();
         if (temp == null) {
           temp = fDefaultValue;
         }
-        if (temp.isNumber()) {
-          num = (INumber) num.times(temp);
+        if (temp.isNumericFunction(true)) {
+          // if (iter.isApproximationMode()) {
+          // try {
+          // Complex c = temp.evalfc();
+          // if (c.isReal()) {
+          // final double realPart = c.getReal();
+          // if (F.isZero(realPart, 1.0e-12)) {
+          // return F.C0;
+          // }
+          // if (F.isFuzzyEquals(realPart, 1.0, 1.0e-12)) {
+          // break;
+          // }
+          // productResult = productResult.multiply(c.getReal());
+          // counter++;
+          // continue;
+          // }
+          // if (F.isZero(c, 1.0e-6)) {
+          // return F.C0;
+          // }
+          // if (F.isFuzzyEquals(c, Complex.ONE, 1.0e-6)) {
+          // break;
+          // }
+          // productResult = productResult.times(F.complexNum(c));
+          // } catch (ArgumentTypeException ate) {
+          // productResult = productResult.times(temp);
+          // }
+          // } else {
+          if (temp.isZero()) {
+            return F.C0;
+          }
+          productResult = productResult.times(temp);
+          // }
         } else {
-          return createGenericTable(iter, index, iter.allocHint() - counter, num, temp);
+          return createGenericTable(iter, index, iter.allocHint() - counter, productResult, temp);
         }
         counter++;
       }
-      return num;
+      return productResult;
     }
 
     /**
@@ -1636,7 +1700,7 @@ public final class ListFunctions {
 
     public static IAST complement(IExpr head, final IAST arg1, IAST arg2,
         SameTestComparator sameTest) {
-      Set<IExpr> set2 = arg2.asSet(sameTest);
+      Set<IExpr> set2 = arg2.asSortedSet(sameTest);
       if (set2 != null) {
         Set<IExpr> set3 = new TreeSet<IExpr>(sameTest);
         IASTMutable arg1Copy = arg1.copy();
@@ -3634,7 +3698,7 @@ public final class ListFunctions {
           if (ast.arg1().isASTOrAssociation()) {
             IAST arg1 = (IAST) ast.arg1();
             arg1 = EvalAttributes.copySort(arg1);
-            Set<IExpr> set = arg1.asSet(sameTest);
+            Set<IExpr> set = arg1.asSortedSet(sameTest);
             if (set != null) {
               final IASTMutable result = F.ListAlloc(set);
               // EvalAttributes.sort(result, Comparators.CANONICAL_COMPARATOR);
@@ -3673,53 +3737,7 @@ public final class ListFunctions {
       return F.NIL;
     }
 
-    /**
-     * Create the (ordered) intersection set from both ASTs.
-     *
-     * @param ast1 first AST set
-     * @param ast2 second AST set
-     * @return the intersection set of the sets ast1 and ast2
-     */
-    public static IAST intersection(IExpr head, IAST ast1, IAST ast2) {
-      return intersection(head, ast1, ast2, Comparators.CANONICAL_COMPARATOR);
-    }
 
-    /**
-     * Create the (ordered) intersection set from both ASTs.
-     * 
-     * @param head
-     * @param ast1 first AST set
-     * @param ast2 second AST set
-     * @param sameTest comparator for identifying the same objects
-     * @return the intersection set of the sets ast1 and ast2 according to the <code>sameTest</code>
-     *         comparator
-     */
-    public static IAST intersection(IExpr head, IAST ast1, IAST ast2, Comparator<IExpr> sameTest) {
-      if (ast1.isEmpty() || ast2.isEmpty()) {
-        if (head == S.List) {
-          return F.CEmptyList;
-        }
-        return F.headAST0(head);
-      }
-      IAST smaller = ast1;
-      IAST larger = ast2;
-      if (smaller.size() > larger.size()) {
-        IAST temp = smaller;
-        smaller = larger;
-        larger = temp;
-      }
-      Set<IExpr> hashSet = smaller.asSet(sameTest);
-      IASTAppendable result = F.ast(head, Math.max(smaller.size() / 10, 2));
-      IASTMutable largerCopy = larger.copy();
-      largerCopy.sortInplace(Comparators.REVERSE_CANONICAL_COMPARATOR);
-      for (final IExpr expr : largerCopy) {
-        if (hashSet.contains(expr)) {
-          result.append(expr);
-          hashSet.remove(expr);
-        }
-      }
-      return result;
-    }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
@@ -8036,7 +8054,7 @@ public final class ListFunctions {
           if (ast.arg1().isASTOrAssociation()) {
             IAST arg1 = (IAST) ast.arg1();
             arg1 = EvalAttributes.copySort(arg1);
-            Set<IExpr> set = arg1.asSet(sameTest);
+            Set<IExpr> set = arg1.asSortedSet(sameTest);
             if (set != null) {
               final IASTAppendable result = F.mapSet(set, x -> x);
               return result;
@@ -8070,53 +8088,6 @@ public final class ListFunctions {
       return F.NIL;
     }
 
-    /**
-     * Create the (ordered) union from both ASTs.
-     * 
-     * @param ast1 first AST set
-     * @param ast2 second AST set
-     *
-     * @return the union of the sets ast1 and ast2
-     */
-    public static IASTMutable union(IExpr newHead, IAST ast1, IAST ast2) {
-      Set<IExpr> resultSet = new TreeSet<IExpr>();
-      int size = ast1.size();
-      for (int i = 1; i < size; i++) {
-        resultSet.add(ast1.get(i));
-      }
-      size = ast2.size();
-      for (int i = 1; i < size; i++) {
-        resultSet.add(ast2.get(i));
-      }
-      IASTAppendable result = F.ast(newHead, resultSet.size());
-      result.appendAll(resultSet);
-      return result;
-    }
-
-    /**
-     * Create the (ordered) union from both ASTs.
-     * 
-     * @param ast1 first AST set
-     * @param ast2 second AST set
-     *
-     * @return the union of the sets ast1 and ast2
-     */
-    public static IASTMutable union(IExpr newHead, IAST ast1, IAST ast2,
-        SameTestComparator sameTest) {
-      IASTAppendable unionList = F.ListAlloc(ast1.size() + ast2.size());
-      unionList.appendArgs(ast1);
-      unionList.appendArgs(ast2);
-      unionList.sortInplace();
-      int size = unionList.size();
-
-      Set<IExpr> resultSet = new TreeSet<IExpr>(sameTest);
-      for (int i = 1; i < size; i++) {
-        resultSet.add(unionList.get(i));
-      }
-      IASTAppendable result = F.ast(newHead, resultSet.size());
-      result.appendAll(resultSet);
-      return result;
-    }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
@@ -8184,6 +8155,94 @@ public final class ListFunctions {
     }
     // `1` is not a variable with a value, so its value cannot be changed.
     return Errors.printMessage(ast.topHead(), "rvalue", F.list(symbol), engine);
+  }
+
+  /**
+   * Create the (ordered) intersection set from both ASTs.
+   *
+   * @param ast1 first AST set
+   * @param ast2 second AST set
+   * @return the intersection set of the sets ast1 and ast2
+   */
+  public static IAST intersection(IExpr head, IAST ast1, IAST ast2) {
+    return intersection(head, ast1, ast2, Comparators.CANONICAL_COMPARATOR);
+  }
+
+  /**
+   * Create the (ordered) intersection set from both ASTs.
+   * 
+   * @param head
+   * @param ast1 first AST set
+   * @param ast2 second AST set
+   * @param sameTest comparator for identifying the same objects
+   * @return the intersection set of the sets ast1 and ast2 according to the <code>sameTest</code>
+   *         comparator
+   */
+  public static IAST intersection(IExpr head, IAST ast1, IAST ast2, Comparator<IExpr> sameTest) {
+    if (ast1.isEmpty() || ast2.isEmpty()) {
+      if (head == S.List) {
+        return F.CEmptyList;
+      }
+      return F.headAST0(head);
+    }
+    IAST smaller = ast1;
+    IAST larger = ast2;
+    if (smaller.size() > larger.size()) {
+      IAST temp = smaller;
+      smaller = larger;
+      larger = temp;
+    }
+    SortedSet<IExpr> hashSet = smaller.asSortedSet(sameTest);
+    IASTAppendable result = F.ast(head, Math.max(smaller.size() / 10, 2));
+    IASTMutable largerCopy = larger.copy();
+    largerCopy.sortInplace(Comparators.REVERSE_CANONICAL_COMPARATOR);
+    for (final IExpr expr : largerCopy) {
+      if (hashSet.contains(expr)) {
+        result.append(expr);
+        hashSet.remove(expr);
+      }
+    }
+    return result;
+  }
+
+
+  /**
+   * Create the (ordered) union from both ASTs.
+   * 
+   * @param ast1 first AST set
+   * @param ast2 second AST set
+   *
+   * @return the union of the sets ast1 and ast2
+   */
+  public static IASTMutable union(IExpr newHead, IAST ast1, IAST ast2) {
+    SortedSet<IExpr> resultSet = ast1.asSortedSet();
+    int size = ast2.size();
+    for (int i = 1; i < size; i++) {
+      resultSet.add(ast2.get(i));
+    }
+    IASTAppendable result = F.ast(newHead, resultSet.size());
+    result.appendAll(resultSet);
+    return result;
+  }
+
+  /**
+   * Create the (ordered) union from both ASTs.
+   * 
+   * @param ast1 first AST set
+   * @param ast2 second AST set
+   *
+   * @return the union of the sets ast1 and ast2
+   */
+  public static IASTMutable union(IExpr newHead, IAST ast1, IAST ast2,
+      SameTestComparator sameTest) {
+    IASTAppendable unionList = F.ListAlloc(ast1.size() + ast2.size());
+    unionList.appendArgs(ast1);
+    unionList.appendArgs(ast2);
+    unionList.sortInplace();
+    SortedSet<IExpr> resultSet = unionList.asSortedSet(sameTest);
+    IASTAppendable result = F.ast(newHead, resultSet.size());
+    result.appendAll(resultSet);
+    return result;
   }
 
   /**

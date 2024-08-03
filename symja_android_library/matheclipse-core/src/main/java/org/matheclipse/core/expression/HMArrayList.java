@@ -25,7 +25,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.RandomAccess;
-import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
@@ -505,9 +505,9 @@ public abstract class HMArrayList extends AbstractAST
   }
 
   @Override
-  public Set<IExpr> asSet(Comparator<? super IExpr> comparator) {
+  public SortedSet<IExpr> asSortedSet(Comparator<? super IExpr> comparator) {
     int size = size();
-    Set<IExpr> set = new TreeSet<>(comparator);
+    SortedSet<IExpr> set = new TreeSet<>(comparator);
     for (int i = 1; i < size; i++) {
       set.add(array[firstIndex + i]);
     }
@@ -618,7 +618,7 @@ public abstract class HMArrayList extends AbstractAST
   public final IAST filter(IASTAppendable filterAST, IASTAppendable restAST,
       Predicate<? super IExpr> predicate) {
     for (int i = firstIndex + 1; i < lastIndex; i++) {
-      IExpr temp = array[i];
+      final IExpr temp = array[i];
       if (predicate.test(temp)) {
         filterAST.append(temp);
       } else {

@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
+import java.util.SortedSet;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
@@ -332,7 +332,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     @Override
-    public Set<IExpr> asSet(Comparator<? super IExpr> comparator) {
+    public SortedSet<IExpr> asSortedSet(Comparator<? super IExpr> comparator) {
       ArgumentTypeException.throwNIL();
       return null;
     }
@@ -1523,7 +1523,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   }
 
   @Override
-  public Set<IExpr> asSet(Comparator<? super IExpr> comparator) {
+  public SortedSet<IExpr> asSortedSet(Comparator<? super IExpr> comparator) {
     return null;
   }
 
@@ -4093,6 +4093,18 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           addEvalFlags(forAll ? IAST.IS_NUMERIC_FUNCTION : IAST.IS_NOT_NUMERIC_FUNCTION);
           return forAll;
         }
+      }
+      if (isAST(S.Boole, 2) && arg1().isComparatorFunction()) {
+        AbstractAST comparatorFunction = (AbstractAST) arg1();
+        boolean forAll = comparatorFunction.forAll(x -> x.isNumericFunction(allowList), 1);
+        if (forAll) {
+          forAll = comparatorFunction.hasExpectedArgSize(comparatorFunction.topHead());
+        }
+        addEvalFlags(forAll ? IAST.IS_NUMERIC_FUNCTION : IAST.IS_NOT_NUMERIC_FUNCTION);
+        return forAll;
+      } else if (isPiecewise() != null) {
+        VariablesSet varSet = new VariablesSet(this);
+        return varSet.size() == 0;
       }
     }
     return false;

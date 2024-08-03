@@ -1,7 +1,7 @@
 package org.matheclipse.core.expression;
 
 import java.util.Comparator;
-import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
@@ -82,8 +82,8 @@ public final class AST3 extends AST2 {
   }
 
   @Override
-  public Set<IExpr> asSet(Comparator<? super IExpr> comparator) {
-    Set<IExpr> set = new TreeSet<>(comparator);
+  public SortedSet<IExpr> asSortedSet(Comparator<? super IExpr> comparator) {
+    SortedSet<IExpr> set = new TreeSet<>(comparator);
     set.add(arg1);
     set.add(arg2);
     set.add(arg3);
