@@ -23,18 +23,18 @@ public class LimitRules {
     // Limit(x_/(x_!)^(1/x_),x_Symbol->Infinity):=E
     ISetDelayed(Limit(Times(Power(Factorial(x_),Negate(Power(x_,CN1))),x_),Rule(x_Symbol,oo)),
       E),
-    // Limit(x_^(b_.+a_.*x_^n_.),x_Symbol->0):=With({r=ConditionalExpression(1,a∈Reals&&b>0&&n>0)},r/;r=!=Undefined)
+    // Limit(x_^(b_.+a_.*x_^n_.),x_Symbol->0):=With({r=ConditionalExpression(1,a∈Reals&&b>0&&n>0)},r/;r=!=Undefined&&FreeQ({a,b,n},x))
     ISetDelayed(Limit(Power(x_,Plus(b_DEFAULT,Times(a_DEFAULT,Power(x_,n_DEFAULT)))),Rule(x_Symbol,C0)),
-      With(list(Set(r,ConditionalExpression(C1,And(Element(a,Reals),Greater(b,C0),Greater(n,C0))))),Condition(r,UnsameQ(r,Undefined)))),
-    // Limit(x_^(b_.+a_.*x_^n_.),x_Symbol->0):=With({r=ConditionalExpression(0,b∈Reals&&a>0&&n<0&&Cos(-n*Pi)>0&&Sin(-n*Pi)>0)},r/;r=!=Undefined)
+      With(list(Set(r,ConditionalExpression(C1,And(Element(a,Reals),Greater(b,C0),Greater(n,C0))))),Condition(r,And(UnsameQ(r,Undefined),FreeQ(list(a,b,n),x))))),
+    // Limit(x_^(b_.+a_.*x_^n_.),x_Symbol->0):=With({r=ConditionalExpression(0,b∈Reals&&a>0&&n<0&&Cos(-n*Pi)>0&&Sin(-n*Pi)>0)},r/;r=!=Undefined&&FreeQ({a,b,n},x))
     ISetDelayed(Limit(Power(x_,Plus(b_DEFAULT,Times(a_DEFAULT,Power(x_,n_DEFAULT)))),Rule(x_Symbol,C0)),
-      With(list(Set(r,ConditionalExpression(C0,And(Element(b,Reals),Greater(a,C0),Less(n,C0),Greater(Cos(Times(CN1,n,Pi)),C0),Greater(Sin(Times(CN1,n,Pi)),C0))))),Condition(r,UnsameQ(r,Undefined)))),
-    // Limit(x_^(b_.+a_.*x_^n_.),x_Symbol->Infinity):=With({r=ConditionalExpression(Infinity,b∈Reals&&a>0&&n>0)},r/;r=!=Undefined)
+      With(list(Set(r,ConditionalExpression(C0,And(Element(b,Reals),Greater(a,C0),Less(n,C0),Greater(Cos(Times(CN1,n,Pi)),C0),Greater(Sin(Times(CN1,n,Pi)),C0))))),Condition(r,And(UnsameQ(r,Undefined),FreeQ(list(a,b,n),x))))),
+    // Limit(x_^(b_.+a_.*x_^n_.),x_Symbol->Infinity):=With({r=ConditionalExpression(Infinity,b∈Reals&&a>0&&n>0)},r/;r=!=Undefined&&FreeQ({a,b,n},x))
     ISetDelayed(Limit(Power(x_,Plus(b_DEFAULT,Times(a_DEFAULT,Power(x_,n_DEFAULT)))),Rule(x_Symbol,oo)),
-      With(list(Set(r,ConditionalExpression(oo,And(Element(b,Reals),Greater(a,C0),Greater(n,C0))))),Condition(r,UnsameQ(r,Undefined)))),
-    // Limit(x_^(a_.*x_^n_.),x_Symbol->Infinity):=With({r=ConditionalExpression(1,a∈Reals&&n<0)},r/;r=!=Undefined)
+      With(list(Set(r,ConditionalExpression(oo,And(Element(b,Reals),Greater(a,C0),Greater(n,C0))))),Condition(r,And(UnsameQ(r,Undefined),FreeQ(list(a,b,n),x))))),
+    // Limit(x_^(a_.*x_^n_.),x_Symbol->Infinity):=With({r=ConditionalExpression(1,a∈Reals&&n<0)},r/;r=!=Undefined&&FreeQ({a,n},x))
     ISetDelayed(Limit(Power(x_,Times(a_DEFAULT,Power(x_,n_DEFAULT))),Rule(x_Symbol,oo)),
-      With(list(Set(r,ConditionalExpression(C1,And(Element(a,Reals),Less(n,C0))))),Condition(r,UnsameQ(r,Undefined)))),
+      With(list(Set(r,ConditionalExpression(C1,And(Element(a,Reals),Less(n,C0))))),Condition(r,And(UnsameQ(r,Undefined),FreeQ(list(a,n),x))))),
     // Limit(x_^p_,x_Symbol->Infinity):=If(p<0,0,Infinity,ConditionalExpression(Infinity,p>0))
     ISetDelayed(Limit(Power(x_,p_),Rule(x_Symbol,oo)),
       If(Less(p,C0),C0,oo,ConditionalExpression(oo,Greater(p,C0)))),
