@@ -28,7 +28,7 @@ with the constraints:
   x  + 2y <=  6
   3x + 2y <= 12
         x >= 0
-		y >= 0
+        y >= 0
 ```
 
 ### Related terms
