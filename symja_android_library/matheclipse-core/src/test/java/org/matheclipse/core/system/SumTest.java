@@ -19,6 +19,7 @@ public class SumTest extends ExprEvaluatorTestCase {
 
     check("Sum((1-n)^k,{k,0,Infinity})", //
         "1/n");
+    // Faulhabers Formula
     check("Sum(k^n, {k, 0, m})", //
         "0^n+HarmonicNumber(m,-n)");
     check("Sum(i, {i, 1, 1000000000}) ", //
@@ -46,6 +47,10 @@ public class SumTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSum002() {
+    check("Sum(1/(E*x!),{x,4,Infinity})", //
+        "(-8/3+E)/E");
+    check("Sum(1/(E*x!),{x,0,Infinity})", //
+        "1");
     check("Sum((-1)^i*x^(2*i+1)/(2*i+1)!, {i,0,Infinity})", //
         "Sin(x)");
     check("Sum((-1)^i*x^(2*i)/(2*i)!, {i,0,Infinity})", //
@@ -60,6 +65,8 @@ public class SumTest extends ExprEvaluatorTestCase {
         "Cosh(x)");
     check("Sum(1/(i!),{i,0,Infinity})", //
         "E");
+    check("Sum(a/(i!),{i,0,Infinity})", //
+        "a*E");
     check("Sum(x^i/(i!),{i,0,Infinity})", //
         "E^x");
   }
@@ -429,5 +436,91 @@ public class SumTest extends ExprEvaluatorTestCase {
         "25");
     check("Sum(k+a,{k,1,n})", //
         "a*n+1/2*n*(1+n)");
+  }
+
+  @Test
+  public void testNSum001() {
+
+    // TODO multi dimensional case
+    // check("approxSum = NSum((-1)^n*(2/n)^k/k^2, {n,2,Infinity}, {k,1,Infinity})", //
+    // "");
+
+    check("approxSum = NSum(1/i^2, {i,100,Infinity})", //
+        "0.0100502");
+    check("restSum = NSum(1/i^2, {i, 10^6,Infinity})", //
+        "5.0097*10^-7");
+    check("approxSum - restSum", //
+        "0.0100497");
+    check("NSum(1/i^2, {i, 100, 10^6})", //
+        "0.0100492");
+    check("NSum((-5)^i/i!, {i, 0, Infinity})", //
+        "0.00673795");
+    //
+    // check("NSum(Log(x)/x^(2+2*I), {x, 1,Infinity})", //
+    // "-0.181854+I*(-0.13788)");
+  }
+
+  @Test
+  public void testNSum002() {
+    checkNumeric("NSum((-1)^(k-1)/k^(1.0+1.0/k), {k,1,Infinity})", //
+        "0.7795115373932017");
+
+    check("NSum(1/(n^2*Log(n)), {n,2,Infinity})", //
+        "0.605523");
+
+
+    // reciprocal power
+    checkNumeric("NSum((-1)^(k-1)/k^1.5, {k,1,Infinity})", //
+        "0.7651470246254165");
+    checkNumeric("NSum((-1)^(k-1)/k, {k,1,Infinity})", //
+        "0.6931471805598466");
+    checkNumeric("NSum((-1)^(k-1)/(2*k-1), {k,1,Infinity})", //
+        "0.7853981633974484");
+    checkNumeric("NSum((-1)^(k-1)/k^0.5, {k,1,Infinity})", //
+        "0.6048986434216349");
+    checkNumeric("NSum((-1)^(k-1)/k^0.25, {k,1,Infinity})", //
+        "0.5544873859140664");
+    // checkNumeric("NSum((-1)^(k-1)/k^(1.0+1.0/k), {k,1,Infinity})", //
+    // "0.7795115373932017");
+    checkNumeric("NSum((-1)^(k-1)*Sin(1.0/k), {k,1,Infinity})", //
+        "0.5507968481337557");
+
+    // slow converging
+    checkNumeric("NSum((-1)^(k-1)/Log(k+1), {k,1,Infinity})", //
+        "0.9242998972228648");
+    checkNumeric("NSum((-1)^(k-1)*Log(k+1)/(k+1), {k,1,Infinity})", //
+        "0.1598689037423625");
+    checkNumeric("NSum((-1)^(k-1)/Sqrt(Log(k+1)), {k,1,Infinity})", //
+        "0.6902444509828015");
+    checkNumeric("NSum((-1)^(k-1)/Log(Log(k+1)), {k,1,Infinity})", //
+        "-11.477968013987113");
+    checkNumeric("NSum((-1)^(k-1)*Log(k+1)/Sqrt(k+1), {k,1,Infinity})", //
+        "0.19328883163929184");
+
+
+    // alternating
+    checkNumeric("NSum((-1)^(k)*Abs(Sin(k))/k, {k,1,Infinity})", //
+        "-0.3990669196651801");
+    checkNumeric("NSum((-1)^(k)/(k+Sin(k)), {k,1,Infinity})", //
+        "-0.3545906405017761");
+    // new InfiniteSeries(k -> Math.pow(-1, k) * Math.abs(Math.sin(k)) / k, -0.4050635),
+    // new InfiniteSeries(k -> Math.pow(-1, k) / (k + Math.sin(k)), -0.3545469),
+
+    // really weird
+    checkNumeric("NSum(1/(k^3 * Sin(k*Pi*Sqrt(2))), {k,1,Infinity})", //
+        "-0.7900651974157363");
+    checkNumeric("NSum(Sin(1+k)/Log(1+k), {k,1,Infinity})", //
+        "0.6839137866251765");
+    // new InfiniteSeries(k -> 1.0 / (Math.pow(k, 3) * Math.sin(k * Math.PI * Constants.SQRT2)),
+    // -0.791727),
+    // new InfiniteSeries(k -> Math.sin(1 + k) / Math.log(1 + k), 0.6839137) };
+  }
+
+  @Test
+  public void testNSum003() {
+    // check("NSum(E^x*Piecewise({{1/(E*x!), x >= 0}}, 0),{x,-Infinity,Infinity})", //
+    // "");
+    checkNumeric("NSum(1/E^(k^2), {k,-Infinity,Infinity})", //
+        "1.7726372048266523");
   }
 }

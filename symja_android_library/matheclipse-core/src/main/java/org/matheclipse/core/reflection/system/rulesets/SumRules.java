@@ -41,12 +41,12 @@ matcher.caseOf(Sum(Times(Power(CN1,i_),Power(Factorial(Times(C2,i_)),CN1),Power(
     // Sum((-1)^i_*x_^(2*i_+1)/(2*i_+1),{i_Symbol,0,Infinity}):=ArcTanh(x)/;FreeQ(x,i)
 matcher.caseOf(Sum(Times(Power(CN1,i_),Power(Plus(Times(C2,i_),C1),CN1),Power(x_,Plus(Times(C2,i_),C1))),list(i_Symbol,C0,oo)),
       Condition(ArcTanh(x),FreeQ(x,i)));
-    // Sum(1/i_!,{i_Symbol,0,Infinity}):=E/;FreeQ(x,i)
-matcher.caseOf(Sum(Power(Factorial(i_),CN1),list(i_Symbol,C0,oo)),
-      Condition(E,FreeQ(x,i)));
-    // Sum(x_^i_/i_!,{i_Symbol,0,Infinity}):=E^x/;FreeQ(x,i)
-matcher.caseOf(Sum(Times(Power(Factorial(i_),CN1),Power(x_,i_)),list(i_Symbol,C0,oo)),
-      Condition(Exp(x),FreeQ(x,i)));
+    // Sum(x_^i_/i_!,{i_Symbol,1,Infinity}):=-1+E^x/;FreeQ(x,i)
+matcher.caseOf(Sum(Times(Power(Factorial(i_),CN1),Power(x_,i_)),list(i_Symbol,C1,oo)),
+      Condition(Plus(CN1,Exp(x)),FreeQ(x,i)));
+    // Sum(a_./i_!,{i_Symbol,1,Infinity}):=a*(-1+E)/;FreeQ(a,i)
+matcher.caseOf(Sum(Times(Power(Factorial(i_),CN1),a_DEFAULT),list(i_Symbol,C1,oo)),
+      Condition(Times(a,Plus(CN1,E)),FreeQ(a,i)));
     // Sum((-1+x_)^i_/(i_*(-1)^(1-i_)),{i_Symbol,1,Infinity}):=Log(x)/;FreeQ(x,i)
 matcher.caseOf(Sum(Times(Power(i_,CN1),Power(CN1,Plus(CN1,i_)),Power(Plus(CN1,x_),i_)),list(i_Symbol,C1,oo)),
       Condition(Log(x),FreeQ(x,i)));

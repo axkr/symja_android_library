@@ -158,7 +158,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
     return evaluateSum(preevaledSum, engine);
   }
 
-  private static IExpr evaluateSum(final IAST preevaledSum, EvalEngine engine) {
+  protected static IExpr evaluateSum(final IAST preevaledSum, EvalEngine engine) {
     if (preevaledSum.size() > 2) {
       try {
         IAST list = preevaledSum.last().makeList();
