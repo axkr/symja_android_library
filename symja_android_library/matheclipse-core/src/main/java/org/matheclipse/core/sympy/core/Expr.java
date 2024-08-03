@@ -398,10 +398,10 @@ public class Expr {
     }
     boolean one_c = self_c || x_c;
     // xargs, nx = x.args_cnc(cset=True, warn=bool(not x_c))
-    Set<IExpr> xargs = ((IAST) argsCnc(x).first()).asSet();
+    Set<IExpr> xargs = ((IAST) argsCnc(x).first()).asSortedSet();
     for (int i = 1; i < args.size(); i++) {
       IExpr a = args.get(i);
-      Set<IExpr> margs = ((IAST) argsCnc(a).first()).asSet();
+      Set<IExpr> margs = ((IAST) argsCnc(a).first()).asSortedSet();
       if (xargs.size() > margs.size()) {
         continue;
       }

@@ -406,12 +406,12 @@ public class TestExpr extends ExprEvaluatorTestCase {
     // [{x, y}, [A, 1 + A]]
     // assert Mul(x, x, evaluate=False).args_cnc(cset=True, warn=False) == \
     // [{x}, []]
-    assertEquals(((IAST) argsCnc(F.Times(x, x)).first()).asSet().toString(), "[x]");
+    assertEquals(((IAST) argsCnc(F.Times(x, x)).first()).asSortedSet().toString(), "[x]");
     assertEquals(((IAST) argsCnc(F.Times(x, x)).second()).toString(), "{}");
 
     // assert Mul(x, x**2, evaluate=False).args_cnc(cset=True, warn=False) == \
     // [{x, x**2}, []]
-    assertEquals(((IAST) argsCnc(F.Times(x, F.Power(x, 2))).first()).asSet().toString(), //
+    assertEquals(((IAST) argsCnc(F.Times(x, F.Power(x, 2))).first()).asSortedSet().toString(), //
         "[x, x^2]");
     assertEquals(((IAST) argsCnc(F.Times(x, F.Power(x, 2))).second()).toString(), //
         "{}");
