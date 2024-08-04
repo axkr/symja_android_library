@@ -438,6 +438,16 @@ public class SumTest extends ExprEvaluatorTestCase {
         "a*n+1/2*n*(1+n)");
   }
 
+
+  @Test
+  public void testSumPolyLogInifinity() {
+    // https://www.johndcook.com/blog/2024/08/03/polylog/
+    check("Sum(n^3/2^n,{n, 1, Infinity})", //
+        "26");
+    check("Sum(n^k/c^n,{n, 1, Infinity})", //
+        "PolyLog(-k,1/c)");
+  }
+
   @Test
   public void testNSum001() {
 
@@ -452,7 +462,7 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("approxSum - restSum", //
         "0.0100497");
     check("NSum(1/i^2, {i, 100, 10^6})", //
-        "0.0100492");
+        "0.0100502");
     check("NSum((-5)^i/i!, {i, 0, Infinity})", //
         "0.00673795");
     //

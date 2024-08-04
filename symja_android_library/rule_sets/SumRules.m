@@ -13,6 +13,9 @@ Sum(1/(i_^k_), {i_Symbol,1,Infinity}) := Zeta(k)
   
 Sum(k_^(a_.*i_), {i_Symbol,1,Infinity}) := -(k^a)/(-1+(k^a))
   /; FreeQ(k,i) && a<0 && (k>1 || k<(-1)),
+Sum(i_^k_*c_^(-i_), {i_Symbol,1,Infinity}) := PolyLog(-k, 1/c)
+  /;  FreeQ({c,k},i), 
+
 Sum(x_^(2*i_+1)/(2*i_+1)!, {i_Symbol,0,Infinity}) := Sinh(x)
   /;  FreeQ(x,i),
 Sum((-1)^i_*x_^(2*i_+1)/(2*i_+1)!, {i_Symbol,0,Infinity}) := Sin(x)
