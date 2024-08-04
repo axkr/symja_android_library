@@ -446,6 +446,8 @@ public class SumTest extends ExprEvaluatorTestCase {
         "26");
     check("Sum(n^k/c^n,{n, 1, Infinity})", //
         "PolyLog(-k,1/c)");
+    check("Sum(n^k*c^(a*n),{n, 1, Infinity})", //
+        "PolyLog(-k,c^a)");
   }
 
   @Test

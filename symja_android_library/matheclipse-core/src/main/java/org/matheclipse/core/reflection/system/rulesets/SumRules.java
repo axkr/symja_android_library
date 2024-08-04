@@ -26,9 +26,9 @@ matcher.caseOf(Sum(Power(Power(i_,k_),CN1),list(i_Symbol,C1,oo)),
     // Sum(k_^(a_.*i_),{i_Symbol,1,Infinity}):=-k^a/(-1+k^a)/;FreeQ(k,i)&&a<0&&(k>1||k<-1)
 matcher.caseOf(Sum(Power(k_,Times(a_DEFAULT,i_)),list(i_Symbol,C1,oo)),
       Condition(Times(CN1,Power(k,a),Power(Plus(CN1,Power(k,a)),CN1)),And(FreeQ(k,i),Less(a,C0),Or(Greater(k,C1),Less(k,CN1)))));
-    // Sum(i_^k_/c_^i_,{i_Symbol,1,Infinity}):=PolyLog(-k,1/c)/;FreeQ({c,k},i)
-matcher.caseOf(Sum(Times(Power(i_,k_),Power(c_,Negate(i_))),list(i_Symbol,C1,oo)),
-      Condition(PolyLog(Negate(k),Power(c,CN1)),FreeQ(list(c,k),i)));
+    // Sum(i_^k_*c_^(a_.*i_),{i_Symbol,1,Infinity}):=PolyLog(-k,c^a)/;FreeQ({a,c,k},i)
+matcher.caseOf(Sum(Times(Power(i_,k_),Power(c_,Times(a_DEFAULT,i_))),list(i_Symbol,C1,oo)),
+      Condition(PolyLog(Negate(k),Power(c,a)),FreeQ(list(a,c,k),i)));
     // Sum(x_^(2*i_+1)/(2*i_+1)!,{i_Symbol,0,Infinity}):=Sinh(x)/;FreeQ(x,i)
 matcher.caseOf(Sum(Times(Power(Factorial(Plus(Times(C2,i_),C1)),CN1),Power(x_,Plus(Times(C2,i_),C1))),list(i_Symbol,C0,oo)),
       Condition(Sinh(x),FreeQ(x,i)));
