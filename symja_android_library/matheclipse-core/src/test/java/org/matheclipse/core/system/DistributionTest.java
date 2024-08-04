@@ -264,9 +264,9 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "13.00025");
 
     // check("NExpectation(E^x, Distributed(x, HypergeometricDistribution(20,50,100)))", //
-    // "-4.77816*10^-10");
+    // "");
     // check("NExpectation(E^x, Distributed(x, GeometricDistribution(0.1)))", //
-    // "-0.0691346");
+    // "");
     // check("NExpectation(E^x, Distributed(x, DiscreteUniformDistribution({20,40})))", //
     // "");
     // check(

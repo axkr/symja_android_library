@@ -4106,25 +4106,42 @@ public class StatisticsFunctions {
             IAST data = (IAST) distribution;
             // Sum( predicate , data ) / data.argSize()
             IASTAppendable sum = F.PlusAlloc(data.size());
+            INumber sumValue = F.C0;
+            sum.append(sumValue);
             for (int i = 1; i < data.size(); i++) {
-              sum.append(F.subst(xExpr, F.Rule(x, data.get(i))));
+              IExpr summand = engine.evaluate(F.subst(xExpr, F.Rule(x, data.get(i))));
+              if (summand.isNumber()) {
+                sumValue = sumValue.plus((INumber) summand);
+              } else {
+                sum.append(summand);
+              }
             }
-            return sum.divide(F.ZZ(data.argSize()));
+            sum.set(1, sumValue);
+            return engine.evaluate(sum.divide(F.ZZ(data.argSize())));
           } else if (distribution.isContinuousDistribution()) {
             IExpr pdf = S.PDF.of(engine, distribution, x);
-            return F.NIntegrate(F.Times(ast.arg1(), pdf), F.list(x, F.CNInfinity, F.CInfinity));
+            if (pdf.isPresent()) {
+              return F.NIntegrate(F.Times(ast.arg1(), pdf), F.list(x, F.CNInfinity, F.CInfinity));
+            }
           } else if (distribution.isDiscreteDistribution()) {
-            // final IExpr xNegate = EvalEngine.get().evaluate(F.Negate(x));
-            // IExpr fNegate = F.subst(ast.arg1(), v -> v.equals(x) ? xNegate : F.NIL);
-            // IExpr pdfNegate = S.PDF.of(engine, distribution, xNegate);
-            // IAST function = F.Times(fNegate, pdfNegate);
-            // IAST nsum1 = F.NSum(function, F.list(x, F.C0, F.CInfinity));
-            IDiscreteDistribution dist = getDiscreteDistribution(distribution);
             IExpr pdf = S.PDF.of(engine, distribution, x);
-            IAST function = F.Times(ast.arg1(), pdf);
-            IExpr lowerBound = dist.lowerBound();
-            return NSum.nsum(function, x, lowerBound, F.CInfinity,
-                F.NSum(function, F.list(x, lowerBound, F.CInfinity)));
+            if (pdf.isPresent()) {
+              IDiscreteDistribution dist = getDiscreteDistribution(distribution);
+              int supportUpperBound = dist.getSupportUpperBound(distribution);
+              if (supportUpperBound < Integer.MAX_VALUE) {
+                int supportLowerBound = dist.getSupportLowerBound(distribution);
+                if (supportLowerBound > Integer.MIN_VALUE
+                    && supportLowerBound < supportUpperBound) {
+                  IAST function = F.Times(ast.arg1(), pdf);
+                  int lowerBound = dist.getSupportLowerBound(distribution);
+                  return NSum.nsum(function, x, F.ZZ(lowerBound), F.ZZ(supportUpperBound),
+                      F.NSum(function, F.list(x, F.ZZ(lowerBound), F.ZZ(supportUpperBound))));
+                }
+              }
+              IAST function = F.Times(ast.arg1(), pdf);
+              return NSum.nsum(function, x, F.CNInfinity, F.CInfinity,
+                  F.NSum(function, F.list(x, F.CNInfinity, F.CInfinity)));
+            }
           }
         }
       } catch (RuntimeException rex) {
@@ -6517,10 +6534,6 @@ public class StatisticsFunctions {
    */
   private static final class PoissonDistribution extends AbstractEvaluator
       implements ICDF, IDiscreteDistribution, IPDF, IStatistics, IRandomVariate {
-    @Override
-    public IExpr lowerBound() {
-      return F.C0;
-    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {

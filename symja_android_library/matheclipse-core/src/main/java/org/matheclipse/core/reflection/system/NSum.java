@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import java.util.Iterator;
 import java.util.function.Function;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
@@ -170,14 +169,22 @@ public class NSum extends Sum {
       long start = lowerLimit.toLongDefault();
       long end = upperLimit.toLongDefault();
       if (start != Long.MIN_VALUE && end != Long.MIN_VALUE) {
-        LongComplexFunction longComplexFunction = new LongComplexFunction(function, variable);
-        Iterator<Complex> iter = Sequences.toIterable(longComplexFunction, start, end).iterator();
-        Complex result = Complex.ZERO;
-        for (long i = start; i < end; i++) {
-          Complex c = iter.next();
-          result = result.add(c);
-        }
-        return F.complexNum(result);
+        LongDoubleFunction longDoubleFunction = new LongDoubleFunction(function, variable);
+
+        Iterable<Double> iter = Sequences.toIterable(longDoubleFunction, start, end);
+        SeriesAlgorithm alg = new Ensemble(1e-8, 1000, 5);
+        SeriesSolution limit = alg.limit(iter, true);
+        return F.num(limit.limit);
+
+        // LongComplexFunction longComplexFunction = new LongComplexFunction(function, variable);
+        // Iterator<Complex> iter = Sequences.toIterable(longComplexFunction, start,
+        // end).iterator();
+        // Complex result = Complex.ZERO;
+        // for (long i = start; i < end; i++) {
+        // Complex c = iter.next();
+        // result = result.add(c);
+        // }
+        // return F.complexNum(result);
       }
     }
     return F.NIL;
