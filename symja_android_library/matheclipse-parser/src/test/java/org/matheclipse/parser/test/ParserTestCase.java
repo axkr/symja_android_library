@@ -716,4 +716,22 @@ class ParserTestCase {
     ASTNode obj = PARSE_UNRELAXED.parse("x \\[LessEqual] (x^3)");
     assertEquals("LessEqual(x, Power(x, 3))", obj.toString());
   }
+
+  @Test
+  void testParser85() {
+    ASTNode obj = PARSE_UNRELAXED.parse("f[,b,c]");
+    assertEquals("f(Null, b, c)", obj.toString());
+  }
+
+  @Test
+  void testParser86() {
+    ASTNode obj = PARSE_UNRELAXED.parse("f[a, ,c]");
+    assertEquals("f(a, Null, c)", obj.toString());
+  }
+
+  @Test
+  void testParser87() {
+    ASTNode obj = PARSE_UNRELAXED.parse("f[a,b,]");
+    assertEquals("f(a, b, Null)", obj.toString());
+  }
 }

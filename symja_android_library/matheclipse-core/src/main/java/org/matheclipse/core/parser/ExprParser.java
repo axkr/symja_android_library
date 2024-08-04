@@ -344,7 +344,11 @@ public class ExprParser extends Scanner {
   /** construct the arguments for an expression */
   private void getArguments(final IASTAppendable function) throws SyntaxError {
     do {
-      function.append(parseExpression());
+      if (fToken == TT_COMMA) {
+        function.append(S.Null);
+      } else {
+        function.append(parseExpression());
+      }
 
       if (fToken != TT_COMMA) {
         break;

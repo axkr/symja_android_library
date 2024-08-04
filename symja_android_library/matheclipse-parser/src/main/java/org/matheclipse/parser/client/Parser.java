@@ -172,7 +172,11 @@ public class Parser extends Scanner {
   /** construct the arguments for an expression */
   private void getArguments(final FunctionNode function) throws SyntaxError {
     do {
-      function.add(parseExpression());
+      if (fToken == TT_COMMA) {
+        function.add(fFactory.createSymbol("Null"));
+      } else {
+        function.add(parseExpression());
+      }
 
       if (fToken != TT_COMMA) {
         break;

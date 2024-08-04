@@ -91,4 +91,22 @@ class RelaxedParserTestCase {
     ASTNode obj = PARSE_RELAXED.parse("I_m==a*c");
     assertEquals("Equal(I_m, Times(a, c))", obj.toString());
   }
+
+  @Test
+  void testParser13() {
+    ASTNode obj = PARSE_RELAXED.parse("f(,b,c)");
+    assertEquals("f(Null, b, c)", obj.toString());
+  }
+
+  @Test
+  void testParser14() {
+    ASTNode obj = PARSE_RELAXED.parse("f(a, ,c)");
+    assertEquals("f(a, Null, c)", obj.toString());
+  }
+
+  @Test
+  void testParser15() {
+    ASTNode obj = PARSE_RELAXED.parse("f(a,b,)");
+    assertEquals("f(a, b, Null)", obj.toString());
+  }
 }
