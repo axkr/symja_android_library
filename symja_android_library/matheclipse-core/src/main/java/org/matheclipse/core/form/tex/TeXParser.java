@@ -187,19 +187,21 @@ public class TeXParser extends TeXScanner {
   public IExpr parse(String texStr) {
     IExpr expression = parseTeXExpression(texStr);
     // IExpr expression = Lambda.replaceSlots(expression, x->.TeXSliceParser.class.);
-    return expression.replaceAll(x -> {
-      if (x.isSlot()) {
-        int slot = x.first().toIntDefault();
-        if (slot >= 1) {
-          IExpr replacement = fMapOfVariables.get(slot);
-          if (replacement != null) {
-            return replacement;
-          }
+    return expression.replaceAll(x -> replaceSlots(x)).orElse(expression);
+
+  }
+
+  private IExpr replaceSlots(IExpr x) {
+    if (x.isSlot()) {
+      int slot = x.first().toIntDefault();
+      if (slot >= 1) {
+        IExpr replacement;
+        if ((replacement = fMapOfVariables.get(slot)) != null) {
+          return replacement;
         }
       }
-      return F.NIL;
-    }).orElse(expression);
-
+    }
+    return F.NIL;
   }
 
   /**
@@ -225,31 +227,7 @@ public class TeXParser extends TeXScanner {
         ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
         lastTeXIndex = fCurrentPosition;
       } else if (fToken == TT_CHARACTER) {
-        if (fCurrentChar == 0x2026) { // ellipsis
-          endTeXIndex = fCurrentPosition - 1;
-          ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
-          lastTeXIndex = fCurrentPosition;
-        } else if (fCurrentChar == 0x2032) { // derivative
-          endTeXIndex = fCurrentPosition - 1;
-          ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
-          ptBuf.append("'");
-          lastTeXIndex = fCurrentPosition;
-        } else if (fCurrentChar == 0x2061) { // apply function
-          endTeXIndex = fCurrentPosition - 1;
-          ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
-          lastTeXIndex = fCurrentPosition;
-        } else if (fCurrentChar == 0x221E) { // infinity
-          endTeXIndex = fCurrentPosition - 1;
-          ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
-          ptBuf.append(" \\infty ");
-          lastTeXIndex = fCurrentPosition;
-        } else if (fCurrentChar == 0x00B0) { // degree
-          endTeXIndex = fCurrentPosition - 1;
-          ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
-          ptBuf.append(" \\degree ");
-          lastTeXIndex = fCurrentPosition;
-        }
-
+        lastTeXIndex = parseSpecialCharacters(texStr, ptBuf, lastTeXIndex);
       } else if (fToken == TT_PERCENT) {
         endTeXIndex = fCurrentPosition - 2;
         ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
@@ -260,22 +238,14 @@ public class TeXParser extends TeXScanner {
         String identifier = getIdentifier();
         IExpr functionName = TeXSegmentParser.FUNCTION_HEADER_MAP.get(identifier);
         if (functionName != null) {
-          IExpr head = functionName;// TeXSegmentParser.createFunction(functionName);
+          IExpr functionHead = functionName;
           getNextToken();
-          int derivativeCounter = 0;
-          while (fToken == TT_CHARACTER //
-              && (fCurrentChar == 0x2032 || fCurrentChar == '\'')) { // derivative
-            derivativeCounter++;
-            getNextToken();
-          }
-          if (derivativeCounter > 0) {
-            head = F.unaryAST1(F.Derivative(F.ZZ(derivativeCounter)), head);
-          }
+          functionHead = countDerivatives(functionHead);
           if (fToken == TT_COMMAND) {
             if (fCommandString.equals("left")) {
               IExpr temp = convertLeftRight(texStr, lastTeXIndex);
               if (temp.isPresent()) {
-                temp = F.unaryAST1(head, temp);
+                temp = F.unaryAST1(functionHead, temp);
                 int endOfSubExpr = fCurrentPosition - 1;
                 // ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
                 lastTeXIndex =
@@ -360,32 +330,7 @@ public class TeXParser extends TeXScanner {
         }
       } else if (fToken == TT_BEGIN) {
         endTeXIndex = fCurrentPosition - "\\begin".length();
-        getNextToken();
-        if (fToken == TT_LIST_OPEN) {
-          getNextToken();
-          if (fToken == TT_IDENTIFIER) {
-            String identifier = getIdentifier();
-            getNextToken();
-            if (fToken == TT_LIST_CLOSE) {
-              int startIndex = fCurrentPosition;
-              getNextToken();
-              String typeOfList = identifier;
-              if (typeOfList.equals("array")) {
-                IExpr temp = parseArrayAsList(startIndex);
-                int endOfSubExpr = fCurrentPosition;
-                lastTeXIndex =
-                    addSlotValue(temp, texStr, lastTeXIndex, endTeXIndex, endOfSubExpr, ptBuf);
-              } else if (typeOfList.equals("bmatrix") //
-                  || typeOfList.equals("matrix") //
-                  || typeOfList.equals("pmatrix")) {
-                IExpr temp = parseMatrixAsList(typeOfList, startIndex);
-                int endOfSubExpr = fCurrentPosition;
-                lastTeXIndex =
-                    addSlotValue(temp, texStr, lastTeXIndex, endTeXIndex, endOfSubExpr, ptBuf);
-              }
-            }
-          }
-        }
+        lastTeXIndex = parseBegin(texStr, ptBuf, lastTeXIndex, endTeXIndex);
       }
       getNextToken();
     }
@@ -400,6 +345,88 @@ public class TeXParser extends TeXScanner {
       return parseMathExpr(texStr);
     }
     return result;
+  }
+
+  /**
+   * This method counts the number of derivative characters in the current token and applies them to
+   * the given expression. A derivative character is represented by either 0x2032 or a single quote
+   * ('). The method modifies the head of the expression by applying the Derivative function for
+   * each derivative character found.
+   *
+   * @param functionHead the initial function head expression to which the derivatives will be
+   *        applied.
+   * @return The modified expression with the derivatives applied. If no derivative characters are
+   *         found, the original function head expression is returned.
+   */
+  private IExpr countDerivatives(IExpr functionHead) {
+    int derivativeCounter = 0;
+    // Loop while the current token is a character and that character is a derivative character
+    while (fToken == TT_CHARACTER //
+        && (fCurrentChar == 0x2032 || fCurrentChar == '\'')) {
+      derivativeCounter++;
+      getNextToken();
+    }
+    return derivativeCounter > 0 ? F.unaryAST1(F.Derivative(F.ZZ(derivativeCounter)), functionHead)
+        : functionHead;
+  }
+
+  private int parseSpecialCharacters(String texStr, StringBuilder ptBuf, int lastTeXIndex) {
+    int endTeXIndex;
+    if (fCurrentChar == 0x2026) { // ellipsis
+      endTeXIndex = fCurrentPosition - 1;
+      ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
+      lastTeXIndex = fCurrentPosition;
+    } else if (fCurrentChar == 0x2032) { // derivative
+      endTeXIndex = fCurrentPosition - 1;
+      ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
+      ptBuf.append("'");
+      lastTeXIndex = fCurrentPosition;
+    } else if (fCurrentChar == 0x2061) { // apply function
+      endTeXIndex = fCurrentPosition - 1;
+      ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
+      lastTeXIndex = fCurrentPosition;
+    } else if (fCurrentChar == 0x221E) { // infinity
+      endTeXIndex = fCurrentPosition - 1;
+      ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
+      ptBuf.append(" \\infty ");
+      lastTeXIndex = fCurrentPosition;
+    } else if (fCurrentChar == 0x00B0) { // degree
+      endTeXIndex = fCurrentPosition - 1;
+      ptBuf.append(texStr.substring(lastTeXIndex, endTeXIndex));
+      ptBuf.append(" \\degree ");
+      lastTeXIndex = fCurrentPosition;
+    }
+    return lastTeXIndex;
+  }
+
+  private int parseBegin(String texStr, StringBuilder ptBuf, int lastTeXIndex, int endTeXIndex) {
+    getNextToken();
+    if (fToken == TT_LIST_OPEN) {
+      getNextToken();
+      if (fToken == TT_IDENTIFIER) {
+        String identifier = getIdentifier();
+        getNextToken();
+        if (fToken == TT_LIST_CLOSE) {
+          int startIndex = fCurrentPosition;
+          getNextToken();
+          String typeOfList = identifier;
+          if (typeOfList.equals("array")) {
+            IExpr temp = parseArrayAsList(startIndex);
+            int endOfSubExpr = fCurrentPosition;
+            lastTeXIndex =
+                addSlotValue(temp, texStr, lastTeXIndex, endTeXIndex, endOfSubExpr, ptBuf);
+          } else if (typeOfList.equals("bmatrix") //
+              || typeOfList.equals("matrix") //
+              || typeOfList.equals("pmatrix")) {
+            IExpr temp = parseMatrixAsList(typeOfList, startIndex);
+            int endOfSubExpr = fCurrentPosition;
+            lastTeXIndex =
+                addSlotValue(temp, texStr, lastTeXIndex, endTeXIndex, endOfSubExpr, ptBuf);
+          }
+        }
+      }
+    }
+    return lastTeXIndex;
   }
 
   private int parseLeftRight(String texStr, StringBuilder ptBuf, int lastTeXIndex) {
@@ -454,63 +481,65 @@ public class TeXParser extends TeXScanner {
     int i = 0;
     while (i < texStr.length()) {
       ch = texStr.charAt(i);
-      if (ch == '\\' && i < texStr.length() - 1) {
+      if (ch == '\\') {
         // command
-        int commandStart = i;
-        StringBuilder command = new StringBuilder();
-        ch = texStr.charAt(++i);
-        while (Character.isLetter(ch) && i < texStr.length() - 1) {
-          command.append(ch);
-          ch = texStr.charAt(++i);
-        }
-        String commandStr = command.toString();
-
-        if (commandStr.equals("left")) {
-          if (ch == '.') {
-            // ignore command
-            i++;
-            continue;
-          }
-          if (ch == '|') {
-            buf.append("| {"); // simulate opening Abs()
-            i++;
-            continue;
-          }
-        } else if (commandStr.equals("right")) {
-          if (ch == '.') {
-            // ignore command
-            i++;
-            continue;
-          }
-          if (ch == '|') {
-            buf.append("} |"); // simulate closing Abs()
-            i++;
-            continue;
-          }
-        }
         if (i < texStr.length() - 1) {
-          IExpr function = TeXSegmentParser.FUNCTION_HEADER_MAP_ARG1.get(commandStr);
-          if (function != null) {
-            // TODO make this for all one argument numeric builtin commands?
-            boolean isVariable = false;
-            while (ch == ' ' || TeXScanner.isTeXIdentifierPart(ch)) {
-              if (ch != ' ') {
-                isVariable = true;
-              }
-              if (i >= texStr.length() - 1) {
-                break;
-              }
-              ch = texStr.charAt(++i);
+          int commandStart = i;
+          StringBuilder command = new StringBuilder();
+          ch = texStr.charAt(++i);
+          while (Character.isLetter(ch) && i < texStr.length() - 1) {
+            command.append(ch);
+            ch = texStr.charAt(++i);
+          }
+          String commandStr = command.toString();
+
+          if (commandStr.equals("left")) {
+            if (ch == '.') {
+              // ignore command
+              i++;
+              continue;
             }
-            if (isVariable) {
-              buf.append("{");
-              buf.append(texStr.substring(commandStart, i));
-              buf.append("}");
+            if (ch == '|') {
+              buf.append("| {"); // simulate opening Abs()
+              i++;
+              continue;
+            }
+          } else if (commandStr.equals("right")) {
+            if (ch == '.') {
+              // ignore command
+              i++;
+              continue;
+            }
+            if (ch == '|') {
+              buf.append("} |"); // simulate closing Abs()
+              i++;
               continue;
             }
           }
+          if (i < texStr.length() - 1) {
+            IExpr function = TeXSegmentParser.FUNCTION_HEADER_MAP_ARG1.get(commandStr);
+            if (function != null) {
+              // TODO make this for all one argument numeric builtin commands?
+              boolean isVariable = false;
+              while (ch == ' ' || TeXScanner.isTeXIdentifierPart(ch)) {
+                if (ch != ' ') {
+                  isVariable = true;
+                }
+                if (i >= texStr.length() - 1) {
+                  break;
+                }
+                ch = texStr.charAt(++i);
+              }
+              if (isVariable) {
+                buf.append("{");
+                buf.append(texStr.substring(commandStart, i));
+                buf.append("}");
+                continue;
+              }
+            }
+          }
+          buf.append("\\" + command.toString());
         }
-        buf.append("\\" + command.toString());
       } else {
         buf.append(ch);
         i++;
