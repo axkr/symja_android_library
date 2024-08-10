@@ -1,5 +1,6 @@
-package org.matheclipse.core.numerics.series.dp;
+package org.matheclipse.core.numerics.series.dp.complex;
 
+import org.hipparchus.complex.Complex;
 import org.matheclipse.core.numerics.utils.Constants;
 import org.matheclipse.core.numerics.utils.SimpleMath;
 
@@ -15,29 +16,29 @@ import org.matheclipse.core.numerics.utils.SimpleMath;
  * </ul>
  * </p>
  */
-public final class Cohen extends SeriesAlgorithm {
+public final class CohenComplex extends SeriesAlgorithmComplex {
 
-  private final double[] myTab;
-  private double mySign0;
+  private final Complex[] myTab;
+  private Complex mySign0;
 
-  public Cohen(final double tolerance, final int maxIters, final int patience) {
+  public CohenComplex(final double tolerance, final int maxIters, final int patience) {
     super(tolerance, maxIters, patience);
-    myTab = new double[maxIters];
+    myTab = new Complex[maxIters];
   }
 
   @Override
-  public final double next(final double e, final double term) {
+  public final Complex next(final Complex e, final Complex term) {
 
     // add next element
     final int n = myIndex + 1;
-    myTab[myIndex] = Math.abs(e);
+    myTab[myIndex] = e.abs();
 
     // record the sign of the first term, since this method
     // requires the first term of the sequence to be positive
     if (myIndex == 0) {
-      mySign0 = Math.signum(e);
-      if (mySign0 == 0.0) {
-        mySign0 = 1.0;
+      mySign0 = e.sign();
+      if (mySign0.isZero()) {
+        mySign0 = Complex.ONE;
       }
     }
 
@@ -48,16 +49,16 @@ public final class Cohen extends SeriesAlgorithm {
     // apply the Chebychef polynomial recursively (Algorithm 1)
     double b = -1.0;
     double c = -d;
-    double s = 0.0;
+    Complex s = Complex.ZERO;
     for (int k = 0; k < n; ++k) {
       c = b - c;
-      s += c * myTab[k];
+      s = s.add(myTab[k].multiply(c));
       final double numer = (k + n) * (k - n);
       final double denom = (k + 0.5) * (k + 1);
       b *= numer / denom;
     }
     ++myIndex;
-    return mySign0 * s / d;
+    return mySign0.multiply(s).divide(d);
   }
 
   @Override

@@ -1,24 +1,24 @@
-package org.matheclipse.core.numerics.series.dp;
+package org.matheclipse.core.numerics.series.dp.complex;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.matheclipse.core.numerics.series.dp.Levin.RemainderSequence;
-import org.matheclipse.core.numerics.series.dp.SeriesAlgorithm.SeriesSolution;
-import org.matheclipse.core.numerics.series.dp.WynnEpsilon.ShanksMethod;
+import org.hipparchus.complex.Complex;
+import org.matheclipse.core.numerics.series.dp.complex.LevinComplex.RemainderSequence;
+import org.matheclipse.core.numerics.series.dp.complex.WynnEpsilonComplex.ShanksMethod;
 
 /**
- * An ensemble algorithm for evaluating the limits of sequences and series of real values. This
+ * An ensemble algorithm for evaluating the limits of sequences and series of complex values. This
  * algorithms works by initializing a number of convergence acceleration algorithms with different
  * properties, and running them in parallel. The estimates of the sequence's or corresponding series
  * limit are extracted from the instance that has converged first to a stable limit to the desired
  * tolerance.
  */
-public final class Ensemble extends SeriesAlgorithm {
+public final class EnsembleComplex extends SeriesAlgorithmComplex {
 
   private static final int PRINT_DIGITS = 18;
 
   private final int myPrint;
-  private final List<SeriesAlgorithm> myMethods;
+  private final List<SeriesAlgorithmComplex> myMethods;
   private final List<Boolean> myForAlternating;
   private final List<Boolean> myForSequence;
 
@@ -26,7 +26,7 @@ public final class Ensemble extends SeriesAlgorithm {
   private boolean myIsAlternating, myCheckForSequenceOnly;
   private double myOldSignum;
   private boolean[] myExcept;
-  private double[] myPrevEst, myEst;
+  private Complex[] myPrevEst, myEst;
 
   /**
    * Creates a new instance of an ensemble convergence acceleration algorithm.
@@ -40,7 +40,7 @@ public final class Ensemble extends SeriesAlgorithm {
    *        estimate of a sequence's or series's limit at each iteration according to each algorithm
    *        instance
    */
-  public Ensemble(final double tolerance, final int maxIters, final int patience,
+  public EnsembleComplex(final double tolerance, final int maxIters, final int patience,
       final int printProgress) {
     super(tolerance, maxIters, patience);
     myPrint = printProgress;
@@ -49,54 +49,54 @@ public final class Ensemble extends SeriesAlgorithm {
     myForSequence = new ArrayList<>();
 
     // only for alternating series
-    myMethods.add(new Cohen(myTol, myMaxIters, 1));
+    myMethods.add(new CohenComplex(myTol, myMaxIters, 1));
     myForAlternating.add(true);
     myForSequence.add(false);
-    myMethods.add(new Levin(myTol, myMaxIters, 1, RemainderSequence.D));
+    myMethods.add(new LevinComplex(myTol, myMaxIters, 1, RemainderSequence.D));
     myForAlternating.add(true);
     myForSequence.add(false);
 
     // for alternating and linear series
-    myMethods.add(new Aitken(myTol, myMaxIters, 1));
+    myMethods.add(new AitkenComplex(myTol, myMaxIters, 1));
     myForAlternating.add(false);
     myForSequence.add(true);
-    myMethods.add(new WynnEpsilon(myTol, myMaxIters, 1, ShanksMethod.WYNN));
+    myMethods.add(new WynnEpsilonComplex(myTol, myMaxIters, 1, ShanksMethod.WYNN));
     myForAlternating.add(false);
     myForSequence.add(true);
-    myMethods.add(new Levin(myTol, myMaxIters, 1, RemainderSequence.T));
+    myMethods.add(new LevinComplex(myTol, myMaxIters, 1, RemainderSequence.T));
     myForAlternating.add(false);
     myForSequence.add(false);
 
     // for logarithmic series
-    myMethods.add(new Levin(myTol, myMaxIters, 1, RemainderSequence.U));
+    myMethods.add(new LevinComplex(myTol, myMaxIters, 1, RemainderSequence.U));
     myForAlternating.add(false);
     myForSequence.add(false);
-    myMethods.add(new Levin(myTol, myMaxIters, 1, RemainderSequence.V));
+    myMethods.add(new LevinComplex(myTol, myMaxIters, 1, RemainderSequence.V));
     myForAlternating.add(false);
     myForSequence.add(false);
-    myMethods.add(new Richardson(myTol, myMaxIters, 1));
+    myMethods.add(new RichardsonComplex(myTol, myMaxIters, 1));
     myForAlternating.add(false);
     myForSequence.add(false);
-    myMethods.add(new BrezinskiTheta(myTol, myMaxIters, 1));
+    myMethods.add(new BrezinskiThetaComplex(myTol, myMaxIters, 1));
     myForAlternating.add(false);
     myForSequence.add(true);
-    myMethods.add(new IteratedTheta(myTol, myMaxIters, 1));
+    myMethods.add(new IteratedThetaComplex(myTol, myMaxIters, 1));
     myForAlternating.add(false);
     myForSequence.add(true);
-    myMethods.add(new WynnRho(myTol, myMaxIters, 1));
+    myMethods.add(new WynnRhoComplex(myTol, myMaxIters, 1));
     myForAlternating.add(false);
     myForSequence.add(true);
-    myMethods.add(new WynnEpsilon(myTol, myMaxIters, 1, ShanksMethod.ALTERNATING));
+    myMethods.add(new WynnEpsilonComplex(myTol, myMaxIters, 1, ShanksMethod.ALTERNATING));
     myForAlternating.add(false);
     myForSequence.add(true);
   }
 
-  public Ensemble(final double tolerance, final int maxIters, final int patience) {
+  public EnsembleComplex(final double tolerance, final int maxIters, final int patience) {
     this(tolerance, maxIters, patience, 0);
   }
 
   @Override
-  public final double next(final double e, final double term) {
+  public final Complex next(final Complex e, final Complex term) {
 
     // ********************************************************************
     // INITIALIZATION
@@ -106,9 +106,9 @@ public final class Ensemble extends SeriesAlgorithm {
       // initialize variables
       myIsAlternating = true;
       myMethodCount = myMethods.size();
-      myOldSignum = Math.signum(e);
-      myPrevEst = new double[myMethodCount];
-      myEst = new double[myMethodCount];
+      myOldSignum = Math.signum(e.getReal());
+      myPrevEst = new Complex[myMethodCount];
+      myEst = new Complex[myMethodCount];
       myExcept = new boolean[myMethodCount];
 
       // disable methods for series only
@@ -128,7 +128,7 @@ public final class Ensemble extends SeriesAlgorithm {
       // initialize each method
       for (int m = 0; m < myMethodCount; ++m) {
         if (!myExcept[m]) {
-          final SeriesAlgorithm method = myMethods.get(m);
+          final SeriesAlgorithmComplex method = myMethods.get(m);
           method.myIndex = 0;
           myEst[m] = method.next(e, term);
         }
@@ -138,7 +138,7 @@ public final class Ensemble extends SeriesAlgorithm {
       if (myPrint > 0) {
         String line = "";
         line += pad("Index", PRINT_DIGITS + 5);
-        for (final SeriesAlgorithm method : myMethods) {
+        for (final SeriesAlgorithmComplex method : myMethods) {
           line += "\t" + pad(method.getName(), PRINT_DIGITS + 5);
         }
         System.out.println(line);
@@ -157,16 +157,16 @@ public final class Ensemble extends SeriesAlgorithm {
     // SEQUENCE INSPECTION
     // ********************************************************************
     // test for invalid value of series or sequence
-    if (!Double.isFinite(term) || !Double.isFinite(e)) {
+    if (!term.isFinite() || !e.isFinite()) {
       if (myPrint > 0) {
         System.out.println("Aborting due to NaN at iteration " + myIndex);
       }
       ++myIndex;
-      return Double.NaN;
+      return Complex.NaN;
     }
 
     // track the sign of the sequence
-    final double signum = Math.signum(e);
+    final double signum = Math.signum(e.getReal());
     if (myIndex > 0 && myIsAlternating && signum * myOldSignum >= 0) {
       myIsAlternating = false;
     }
@@ -196,12 +196,12 @@ public final class Ensemble extends SeriesAlgorithm {
       }
 
       // estimate the next terms
-      final SeriesAlgorithm method = myMethods.get(m);
+      final SeriesAlgorithmComplex method = myMethods.get(m);
       myPrevEst[m] = myEst[m];
       myEst[m] = method.next(e, term);
 
       // if a method produces an invalid estimate it is excluded
-      if (!Double.isFinite(myEst[m])) {
+      if (!myEst[m].isFinite()) {
         if (myPrint > 0) {
           System.out.println("Disabling method " + method.getName()
               + " due to instability at iteration " + myIndex);
@@ -211,8 +211,9 @@ public final class Ensemble extends SeriesAlgorithm {
       }
 
       // estimate error and best method
-      final double error = Math.abs(myPrevEst[m] - myEst[m]);
-      if (error < bestError && myEst[m] != HUGE) {
+      final double error = myPrevEst[m].subtract(myEst[m]).norm(); // Math.abs(myPrevEst[m] -
+                                                                   // myEst[m]);
+      if (error < bestError && myEst[m].getReal() != HUGE && myEst[m].getImaginary() != HUGE) {
         myBestMethod = m;
         bestError = error;
       }
@@ -230,15 +231,15 @@ public final class Ensemble extends SeriesAlgorithm {
     if (myBestMethod >= 0) {
       return myEst[myBestMethod];
     } else {
-      return Double.NaN;
+      return Complex.NaN;
     }
   }
 
   @Override
-  public final SeriesSolution limit(final Iterable<Double> seq, final boolean series,
+  public final SeriesSolutionComplex limit(final Iterable<Complex> seq, final boolean series,
       final int extrapolateStart) {
     myCheckForSequenceOnly = !series;
-    final SeriesSolution result = super.limit(seq, series, extrapolateStart);
+    final SeriesSolutionComplex result = super.limit(seq, series, extrapolateStart);
     if (myPrint > 0 && myBestMethod >= 0 && result.converged) {
       System.out.println("Converged at iteration " + myIndex + " with method "
           + myMethods.get(myBestMethod).getName());
@@ -258,7 +259,7 @@ public final class Ensemble extends SeriesAlgorithm {
       if (myExcept[m]) {
         str = "-";
       } else {
-        str = Double.toString(myEst[m]);
+        str = myEst[m].toString();
       }
       line += "\t" + pad(str, PRINT_DIGITS);
     }

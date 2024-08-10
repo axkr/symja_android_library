@@ -5,13 +5,15 @@ import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.numerics.series.dp.Ensemble;
-import org.matheclipse.core.numerics.series.dp.SeriesAlgorithm;
-import org.matheclipse.core.numerics.series.dp.SeriesAlgorithm.SeriesSolution;
+import org.matheclipse.core.numerics.series.dp.complex.DirectComplex;
+import org.matheclipse.core.numerics.series.dp.complex.EnsembleComplex;
+import org.matheclipse.core.numerics.series.dp.complex.SeriesAlgorithmComplex;
+import org.matheclipse.core.numerics.series.dp.complex.SeriesAlgorithmComplex.SeriesSolutionComplex;
 import org.matheclipse.core.numerics.utils.Sequences;
 
 public class NSum extends Sum {
@@ -67,36 +69,46 @@ public class NSum extends Sum {
       return arg1.mapThread(ast, 1);
     }
 
-    if (ast.isAST2() && ast.arg2().isList3() || ast.arg2().isList4()) {
-      // if (Summations.isConvergent(ast)) {
-      // ast = ast.apply(S.Sum);
-      // IAST preevaledSum = engine.preevalForwardBackwardAST(ast, 1);
-      //
-      // IExpr temp = evaluateSum(preevaledSum, engine);
-      // if (temp.isPresent()) {
-      // if (temp.isNumericFunction(true)) {
-      // return engine.evalN(temp);
-      // }
-      // if (!temp.isFree(S.Sum, true)) {
-      // temp = F.subst(temp, x -> x == S.Sum ? S.NSum : F.NIL);
-      // }
-      // return temp;
-      // }
-      // }
+    if (ast.isAST2() && ast.arg2().isList3()) {
+      IAST limits = (IAST) engine.evaluate(ast.arg2());
+      IExpr variable = limits.arg1();
+      IExpr lowerLimit = limits.arg2();
+      IExpr upperLimit = limits.arg3();
+      long start = lowerLimit.toLongDefault();
+      long end = upperLimit.toLongDefault() + 1;
+      boolean preevaluateSymbolic = true;
+      if (start != Long.MIN_VALUE || end != Long.MIN_VALUE) {
+        long range = end - start;
+        if (range > 10000 || range < 10000) {
+          preevaluateSymbolic = false;
+        }
+      }
+      if (preevaluateSymbolic) {
+        // if (Summations.isConvergent(ast)) {
+        ast = ast.apply(S.Sum);
+        IAST preevaledSum = engine.preevalForwardBackwardAST(ast, 1);
 
-      if (ast.isAST2() && ast.arg2().isList3()) {
-        IExpr function = arg1;
-        IAST limits = (IAST) engine.evaluate(ast.arg2());
-        IExpr variable = limits.arg1();
-        IExpr lowerLimit = limits.arg2();
-        IExpr upperLimit = limits.arg3();
-        IASTMutable copy = ast.copy();
-        copy.set(1, function);
-        copy.set(2, limits);
-        IExpr temp = nsum(function, variable, lowerLimit, upperLimit, copy);
+        IExpr temp = evaluateSum(preevaledSum, engine);
         if (temp.isPresent()) {
+          if (temp.isNumericFunction(true)) {
+            return engine.evalN(temp);
+          }
+          if (!temp.isFree(S.Sum, true)) {
+            temp = F.subst(temp, x -> x == S.Sum ? S.NSum : F.NIL);
+          }
           return temp;
         }
+        // }
+      }
+
+      IExpr function = arg1;
+
+      IASTMutable copy = ast.copy();
+      copy.set(1, function);
+      copy.set(2, limits);
+      IExpr temp = nsum(function, variable, lowerLimit, upperLimit, copy);
+      if (temp.isPresent()) {
+        return temp;
       }
 
     }
@@ -150,41 +162,65 @@ public class NSum extends Sum {
       long start = lowerLimit.toLongDefault();
       if (start != Long.MIN_VALUE) {
         // if (Summations.isConvergent(ast)) {
-        LongDoubleFunction longDoubleFunction = new LongDoubleFunction(function, variable);
 
-        Iterable<Double> iter = Sequences.toIterable(longDoubleFunction, start);
-        SeriesAlgorithm alg = new Ensemble(1e-8, 1000, 5);
-        SeriesSolution limit = alg.limit(iter, true);
-        return F.num(limit.limit);
+        LongComplexFunction longComplexFunction = new LongComplexFunction(function, variable);
+        Iterable<Complex> seq = Sequences.toIterable(longComplexFunction, start);
+        SeriesAlgorithmComplex alg = new EnsembleComplex(1e-8, 1000, 5);
+        SeriesSolutionComplex limit = alg.limit(seq, true);
+        return F.inexactNum(limit.limit);
 
-        // LongComplexFunction longComplexFunction = new LongComplexFunction(function, variable);
+        // LongDoubleFunction longDoubleFunction = new LongDoubleFunction(function, variable);
         //
-        // Iterable<Complex> iter = Sequences.toIterable(longComplexFunction, start);
+        // Iterable<Double> seq = Sequences.toIterable(longDoubleFunction, start);
         // SeriesAlgorithm alg = new Ensemble(1e-8, 1000, 5);
-        // SeriesSolution limit = alg.limit(iter, true);
+        // SeriesSolution limit = alg.limit(seq, true);
         // return F.num(limit.limit);
-        // }
       }
     } else {
       long start = lowerLimit.toLongDefault();
-      long end = upperLimit.toLongDefault();
-      if (start != Long.MIN_VALUE && end != Long.MIN_VALUE) {
-        LongDoubleFunction longDoubleFunction = new LongDoubleFunction(function, variable);
+      long end = upperLimit.toLongDefault() + 1;
+      if (start != Long.MIN_VALUE && end != Long.MIN_VALUE && start < end) {
 
-        Iterable<Double> iter = Sequences.toIterable(longDoubleFunction, start, end);
-        SeriesAlgorithm alg = new Ensemble(1e-8, 1000, 5);
-        SeriesSolution limit = alg.limit(iter, true);
-        return F.num(limit.limit);
 
-        // LongComplexFunction longComplexFunction = new LongComplexFunction(function, variable);
-        // Iterator<Complex> iter = Sequences.toIterable(longComplexFunction, start,
-        // end).iterator();
-        // Complex result = Complex.ZERO;
-        // for (long i = start; i < end; i++) {
-        // Complex c = iter.next();
-        // result = result.add(c);
-        // }
-        // return F.complexNum(result);
+        long range = end + 1 - start;
+        if (range < Integer.MAX_VALUE) {
+          LongComplexFunction longComplexFunction = new LongComplexFunction(function, variable);
+          Iterable<Complex> seq = Sequences.toIterable(longComplexFunction, start, end);
+          SeriesAlgorithmComplex alg = new DirectComplex(1e-8, (int) range, (int) range);
+          SeriesSolutionComplex limit = alg.limit(seq, true);
+          Complex result = limit.limit;
+          if (result.isNaN()) {
+            alg = new EnsembleComplex(1e-8, 1000, 5);
+            limit = alg.limit(seq, true);
+            return F.inexactNum(limit.limit);
+          }
+          return F.inexactNum(result);
+          // Complex result = Complex.ZERO;
+          // for (final Complex e : seq) {
+          // result = result.add(e);
+          // }
+          // return F.complexNum(result);
+
+          // LongDoubleFunction longDoubleFunction = new LongDoubleFunction(function, variable);
+          // Iterable<Double> seq = Sequences.toIterable(longDoubleFunction, start, end);
+          // double result = 0.0;
+          // for (final double e : seq) {
+          // result += e;
+          // }
+          // return F.num(result);
+        } else {
+          LongComplexFunction longComplexFunction = new LongComplexFunction(function, variable);
+          Iterable<Complex> seq = Sequences.toIterable(longComplexFunction, start, end);
+          SeriesAlgorithmComplex alg = new EnsembleComplex(1e-8, 1000, 5);
+          SeriesSolutionComplex limit = alg.limit(seq, true);
+          return F.inexactNum(limit.limit);
+
+          // LongDoubleFunction longDoubleFunction = new LongDoubleFunction(function, variable);
+          // Iterable<Double> seq = Sequences.toIterable(longDoubleFunction, start, end);
+          // SeriesAlgorithm alg = new Ensemble(1e-8, 1000, 5);
+          // SeriesSolution limit = alg.limit(seq, true);
+          // return F.num(limit.limit);
+        }
       }
     }
     return F.NIL;

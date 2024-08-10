@@ -452,11 +452,12 @@ public class SumTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testNSum001() {
-
     // TODO multi dimensional case
     // check("approxSum = NSum((-1)^n*(2/n)^k/k^2, {n,2,Infinity}, {k,1,Infinity})", //
     // "");
 
+    check("NSum(k, {k, 1, 10})", //
+        "55.0");
     check("approxSum = NSum(1/i^2, {i,100,Infinity})", //
         "0.0100502");
     check("restSum = NSum(1/i^2, {i, 10^6,Infinity})", //
@@ -464,12 +465,12 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("approxSum - restSum", //
         "0.0100497");
     check("NSum(1/i^2, {i, 100, 10^6})", //
-        "0.0100502");
+        "0.0100492");
     check("NSum((-5)^i/i!, {i, 0, Infinity})", //
         "0.00673795");
     //
-    // check("NSum(Log(x)/x^(2+2*I), {x, 1,Infinity})", //
-    // "-0.181854+I*(-0.13788)");
+    check("NSum(Log(x)/x^(2+2*I), {x, 1,Infinity})", //
+        "-0.182175+I*(-0.136618)");
   }
 
   @Test
@@ -479,7 +480,6 @@ public class SumTest extends ExprEvaluatorTestCase {
 
     check("NSum(1/(n^2*Log(n)), {n,2,Infinity})", //
         "0.605523");
-
 
     // reciprocal power
     checkNumeric("NSum((-1)^(k-1)/k^1.5, {k,1,Infinity})", //
@@ -533,6 +533,6 @@ public class SumTest extends ExprEvaluatorTestCase {
     // check("NSum(E^x*Piecewise({{1/(E*x!), x >= 0}}, 0),{x,-Infinity,Infinity})", //
     // "");
     checkNumeric("NSum(1/E^(k^2), {k,-Infinity,Infinity})", //
-        "1.7726372048266523");
+        "1.7726372048266525");
   }
 }

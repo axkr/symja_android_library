@@ -1,4 +1,4 @@
-package org.matheclipse.core.numerics.series.dp;
+package org.matheclipse.core.numerics.series.dp.complex;
 
 import java.util.Iterator;
 import java.util.function.Function;
@@ -6,31 +6,10 @@ import org.hipparchus.complex.Complex;
 
 /**
  * The base class of all convergence acceleration algorithms. Provides functionality for evaluating
- * infinite series and limits of sequences of real values.
+ * infinite series and limits of sequences of complex values.
  */
-public abstract class SeriesAlgorithm {
+public abstract class SeriesAlgorithmComplex {
 
-  public static final class SeriesSolution {
-
-    public final double limit;
-    public final double error;
-    public final int evaluations;
-    public final boolean converged;
-
-    public SeriesSolution(final double est, final double err, final int evals,
-        final boolean success) {
-      limit = est;
-      error = err;
-      evaluations = evals;
-      converged = success;
-    }
-
-    @Override
-    public String toString() {
-      return String.format("%.08f", limit) + " +- " + String.format("%.08f", error) + "\n"
-          + "evaluations: " + evaluations + "\n" + "converged: " + converged;
-    }
-  }
 
   public static final class SeriesSolutionComplex {
 
@@ -72,7 +51,7 @@ public abstract class SeriesAlgorithm {
    *        satisfied to stop the algorithm
    * @param maxIters the maximum number of sequence terms to evaluate before giving up
    */
-  public SeriesAlgorithm(final double tolerance, final int maxIters, final int patience) {
+  public SeriesAlgorithmComplex(final double tolerance, final int maxIters, final int patience) {
     myTol = tolerance;
     myMaxIters = maxIters;
     myPatience = patience;
@@ -85,11 +64,7 @@ public abstract class SeriesAlgorithm {
    * @param term the partial sum of all observed elements of the sequence thus far
    * @return the next estimate of the limit of the sequence
    */
-  public abstract double next(double e, double term);
-
-  public Complex nextComplex(Complex e, Complex term) {
-    return null;
-  }
+  public abstract Complex next(Complex e, Complex term);
 
   /**
    * Returns a string representation of the current algorithm.
@@ -105,7 +80,7 @@ public abstract class SeriesAlgorithm {
    * Given a sequence represented as an Iterable object, numerically evaluates the limit of the
    * sequence or the corresponding series.
    * 
-   * @param seq an Iterable object of type Double whose limit to evaluate
+   * @param seq an Iterable object of type Complex whose limit to evaluate
    * @param series a boolean variable indicating whether to evaluate the limit of the series or the
    *        sequence
    * @param extrapolateStart the number of terms to observe (and sum trivially) before starting
@@ -113,23 +88,27 @@ public abstract class SeriesAlgorithm {
    * @return a Double that approximates the limit of the sequence or corresponding series. If the
    *         limit cannot be determined, returns NaN
    */
-  public SeriesSolution limit(final Iterable<Double> seq, final boolean series,
+  public SeriesSolutionComplex limit(final Iterable<Complex> seq, final boolean series) {
+    return limit(seq, series, 0);
+  }
+
+  public SeriesSolutionComplex limit(final Iterable<Complex> seq, final boolean series,
       final int extrapolateStart) {
     myIndex = 0;
     int convergeSteps = 0;
     int indexBeforeExtrap = 0;
     int evals = 0;
-    double partial = 0.0;
-    double term = 0.0;
-    double est = Double.NaN;
+    Complex partial = Complex.ZERO;
+    Complex term = Complex.ZERO;
+    Complex est = Complex.NaN;
 
-    for (final double e : seq) {
+    for (final Complex e : seq) {
       ++evals;
 
       // check if extrapolation starts
       if (indexBeforeExtrap < extrapolateStart) {
         if (series) {
-          partial += e;
+          partial = partial.add(e);
         }
         ++indexBeforeExtrap;
         continue;
@@ -137,28 +116,28 @@ public abstract class SeriesAlgorithm {
 
       // get the next term of the sequence
       if (series) {
-        term += e;
+        term = term.add(e);
       } else {
         term = e;
       }
 
       // estimate the next term
-      final double oldest = est;
+      final Complex oldest = est;
       est = next(e, term);
-      if (Double.isNaN(est)) {
+      if (est.isNaN()) {
         break;
       }
 
       // monitor convergence
       if (myIndex >= 2) {
-        final double error = Math.abs(oldest - est);
-        if (error <= myTol && est != HUGE) {
+        final double error = oldest.subtract(est).norm();
+        if (error <= myTol && est.getReal() != HUGE && est.getImaginary() != HUGE) {
           ++convergeSteps;
         } else {
           convergeSteps = 0;
         }
         if (convergeSteps >= myPatience) {
-          return new SeriesSolution(est + partial, error, evals, true);
+          return new SeriesSolutionComplex(est.add(partial), error, evals, true);
         }
         if (myIndex >= myMaxIters || !Double.isFinite(error)) {
           break;
@@ -167,82 +146,7 @@ public abstract class SeriesAlgorithm {
     }
 
     // did not achieve the desired error
-    return new SeriesSolution(est + partial, Double.NaN, evals, false);
-  }
-
-  // public SeriesSolutionComplex limitComplex(final Iterable<Complex> seq, final boolean series) {
-  // return limitComplex(seq, series, 0);
-  // }
-  //
-  // public SeriesSolutionComplex limitComplex(final Iterable<Complex> seq, final boolean series,
-  // final int extrapolateStart) {
-  // myIndex = 0;
-  // int convergeSteps = 0;
-  // int indexBeforeExtrap = 0;
-  // int evals = 0;
-  // Complex partial = Complex.ZERO;
-  // Complex term = Complex.ZERO;
-  // Complex est = Complex.NaN;
-  //
-  // for (final Complex e : seq) {
-  // ++evals;
-  //
-  // // check if extrapolation starts
-  // if (indexBeforeExtrap < extrapolateStart) {
-  // if (series) {
-  // partial = partial.add(e);
-  // }
-  // ++indexBeforeExtrap;
-  // continue;
-  // }
-  //
-  // // get the next term of the sequence
-  // if (series) {
-  // term = term.add(e);
-  // } else {
-  // term = e;
-  // }
-  //
-  // // estimate the next term
-  // final Complex oldest = est;
-  // est = nextComplex(e, term);
-  // if (est.isNaN()) {
-  // break;
-  // }
-  //
-  // // monitor convergence
-  // if (myIndex >= 2) {
-  // final double error = oldest.subtract(est).norm();
-  // if (error <= myTol && est.getReal() != HUGE && est.getImaginary() != HUGE) {
-  // ++convergeSteps;
-  // } else {
-  // convergeSteps = 0;
-  // }
-  // if (convergeSteps >= myPatience) {
-  // return new SeriesSolutionComplex(est.add(partial), error, evals, true);
-  // }
-  // if (myIndex >= myMaxIters || !Double.isFinite(error)) {
-  // break;
-  // }
-  // }
-  // }
-  //
-  // // did not achieve the desired error
-  // return new SeriesSolutionComplex(est.add(partial), Double.NaN, evals, false);
-  // }
-
-  /**
-   * Given a sequence represented as an Iterable object, numerically evaluates the limit of the
-   * sequence or the corresponding series.
-   * 
-   * @param seq an Iterable object of type Double whose limit to evaluate
-   * @param series a boolean variable indicating whether to evaluate the limit of the series or the
-   *        sequence
-   * @return a Double that approximates the limit of the sequence or corresponding series. If the
-   *         limit cannot be determined, returns NaN
-   */
-  public SeriesSolution limit(final Iterable<Double> seq, final boolean series) {
-    return limit(seq, series, 0);
+    return new SeriesSolutionComplex(est.add(partial), Double.NaN, evals, false);
   }
 
   /**
@@ -254,29 +158,29 @@ public abstract class SeriesAlgorithm {
    *        sequence
    * @return an Iterable of type Double representing the transformed series or sequence
    */
-  public Iterable<Double> transform(final Iterable<Double> seq, final boolean series) {
+  public Iterable<Complex> transform(final Iterable<Complex> seq, final boolean series) {
     return () -> new Iterator<>() {
 
-      private final Iterator<Double> it = seq.iterator();
+      private final Iterator<Complex> it = seq.iterator();
 
-      private double term = 0.0;
+      private Complex term = Complex.ZERO;
       private int index = 0;
 
       @Override
       public final boolean hasNext() {
-        return index < SeriesAlgorithm.this.myMaxIters && it.hasNext();
+        return index < SeriesAlgorithmComplex.this.myMaxIters && it.hasNext();
       }
 
       @Override
-      public final Double next() {
-        final double e = it.next();
+      public final Complex next() {
+        final Complex e = it.next();
         if (series) {
-          term += e;
+          term = term.add(e);
         } else {
           term = e;
         }
         ++index;
-        return SeriesAlgorithm.this.next(e, term);
+        return SeriesAlgorithmComplex.this.next(e, term);
       }
     };
   }
@@ -314,12 +218,12 @@ public abstract class SeriesAlgorithm {
    * @return a Function representing the resulting alternating sequence obtained with Van
    *         Wijngaarden's transformation
    */
-  public Function<Long, Double> toAlternatingSeries(final Function<? super Long, Double> func,
+  public Function<Long, Complex> toAlternatingSeries(final Function<? super Long, Complex> func,
       final long start) {
     return (k) -> {
 
       // create the condensation sequence with kth term 2^k a(2^k)
-      final Iterable<Double> condensed = () -> new Iterator<>() {
+      final Iterable<Complex> condensed = () -> new Iterator<>() {
 
         private long i = k;
         private double coeff = 1.0;
@@ -330,9 +234,9 @@ public abstract class SeriesAlgorithm {
         }
 
         @Override
-        public final Double next() {
-          final double term = func.apply(i + start - 1);
-          final double result = coeff * term;
+        public final Complex next() {
+          final Complex term = func.apply(i + start - 1);
+          final Complex result = term.multiply(coeff);
           i <<= 1L;
           coeff *= 2.0;
           return result;
@@ -340,12 +244,12 @@ public abstract class SeriesAlgorithm {
       };
 
       // determine the next term as the infinite series of this sequence
-      final SeriesSolution sol = limit(condensed, true);
-      final double term = sol.limit;
+      final SeriesSolutionComplex sol = limit(condensed, true);
+      final Complex term = sol.limit;
       if (((k - 1) & 1L) == 0) {
         return term;
       } else {
-        return -term;
+        return term.negate();
       }
     };
   }
