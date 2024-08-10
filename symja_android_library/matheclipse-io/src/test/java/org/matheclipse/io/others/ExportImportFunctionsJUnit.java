@@ -108,7 +108,7 @@ public class ExportImportFunctionsJUnit extends AbstractTestCase {
     if (Config.FILESYSTEM_ENABLED) {
       String s = System.getProperty("os.name");
       if (s.contains("Windows")) {
-        check("ExportString[{2.1+I*3.4}, \"ExpressionJSON\"]", //
+        check("ExportString({2.1+I*3.4}, \"ExpressionJSON\")", //
             "[\"List\",[\"Complex\",2.1,3.4]]");
       }
     }
@@ -138,11 +138,16 @@ public class ExportImportFunctionsJUnit extends AbstractTestCase {
             "Graphics3D(Line({{1,1,-1},{2,2,1},{3,3,-1},{4,4,1}}))");
 
         check("ExportString(l//N, \"ExpressionJSON\")", //
-            "[\"Graphics3D\"," //
-                + "[\"Line\",[\"List\"," + "[\"List\",1.0,1.0,-1.0]," + "[\"List\",2.0,2.0,1.0],"
-                + "[\"List\",3.0,3.0,-1.0]," + "[\"List\",4.0,4.0,1.0]]" + "]" + "]");
+            "[\"Graphics3D\",[\"Line\",[\"List\",[\"List\",\"1\",\"1\",\"-1\"],[\"List\",\"2\",\"2\",\"1\"],[\"List\",\"3\",\"3\",\"-1\"],[\"List\",\"4\",\"4\",\"1\"]]]]");
       }
     }
+  }
+
+  @Test
+  public void testExportStringBase64() {
+    check(
+        "ExportString(\"Hello world\", \"Base64\")", //
+        "SGVsbG8gd29ybGQ=");
   }
 
   /** The JUnit setup method */

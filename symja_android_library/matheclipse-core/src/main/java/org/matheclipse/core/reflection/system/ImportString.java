@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import java.io.StringReader;
+import java.util.Base64;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.logging.log4j.LogManager;
@@ -46,6 +47,9 @@ public class ImportString extends AbstractEvaluator {
 
     try {
       switch (format) {
+        case BASE64:
+          byte[] decodedBytes = Base64.getDecoder().decode(str1);
+          return F.stringx(new String(decodedBytes));
         case JSON:
           return JSONConvert.importJSON(str1, false);
         case EXPRESSIONJSON:

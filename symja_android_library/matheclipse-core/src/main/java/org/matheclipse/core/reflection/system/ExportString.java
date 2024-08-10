@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -63,7 +64,13 @@ public class ExportString extends AbstractEvaluator {
         return F.stringx(writer.toString());
       }
 
-      if (format.equals(Extension.CSV) || format.equals(Extension.TSV)) {
+      if (format.equals(Extension.BASE64)) {
+        if (arg1.isString()) {
+          String str = ast.arg1().toString();
+          String encodedString = Base64.getEncoder().encodeToString(str.getBytes());
+          return F.stringx(encodedString);
+        }
+      } else if (format.equals(Extension.CSV) || format.equals(Extension.TSV)) {
         if (arg1.isDataset()) {
           ((IASTDataset) arg1).csv(writer);
           return F.stringx(writer.toString());

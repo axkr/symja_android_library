@@ -1569,6 +1569,10 @@ public interface IExpr
     return ExprRingFactory.CONST;
   }
 
+  default IExpr factorial() {
+    return F.NIL;
+  }
+
   default IExpr fibonacci(IExpr arg2) {
     return F.NIL;
   }

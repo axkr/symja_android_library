@@ -9,6 +9,8 @@ import java.util.Locale;
  * See Symja's <code>Import()</code> and <code>Export()</code> functions.
  */
 public enum Extension {
+  /** Base64 encoding, decoding */
+  BASE64,
   /** uncompressed loss-less image format, no alpha channel */
   BMP, //
   /** table */
