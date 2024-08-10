@@ -173,7 +173,7 @@ public class Parser extends Scanner {
   private void getArguments(final FunctionNode function) throws SyntaxError {
     do {
       if (fToken == TT_COMMA) {
-        function.add(fFactory.createSymbol("Null"));
+        function.add(fFactory.createSymbol(IConstantOperators.Null));
       } else {
         function.add(parseExpression());
       }
@@ -184,7 +184,7 @@ public class Parser extends Scanner {
 
       getNextToken();
       if (fToken == TT_PRECEDENCE_CLOSE || fToken == TT_ARGUMENTS_CLOSE) {
-        function.add(fFactory.createSymbol("Null"));
+        function.add(fFactory.createSymbol(IConstantOperators.Null));
         break;
       }
 
@@ -410,7 +410,8 @@ public class Parser extends Scanner {
       ASTNode defaultValue = parseExpression();
       // temp = fFactory.createPattern(null, null, defaultValue);
 
-      final FunctionNode function = fFactory.createAST(fFactory.createSymbol("Optional"));
+      final FunctionNode function =
+          fFactory.createAST(fFactory.createSymbol(IConstantOperators.Optional));
       function.add(fFactory.createPattern(null, null, false));
       function.add(defaultValue);
       temp = function;
@@ -419,7 +420,8 @@ public class Parser extends Scanner {
     if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
       getNextToken();
       ASTNode defaultValue = parseExpression();
-      final FunctionNode function = fFactory.createAST(fFactory.createSymbol("Optional"));
+      final FunctionNode function =
+          fFactory.createAST(fFactory.createSymbol(IConstantOperators.Optional));
       function.add(temp);
       function.add(defaultValue);
       temp = function;
@@ -490,7 +492,7 @@ public class Parser extends Scanner {
       // read '_:'
       getNextToken();
       ASTNode defaultValue = parseExpression();
-      temp = fFactory.createFunction(fFactory.createSymbol("Optional"), //
+      temp = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Optional), //
           fFactory.createPattern(symbol, null, false), //
           defaultValue);
     }
@@ -498,7 +500,8 @@ public class Parser extends Scanner {
     if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
       getNextToken();
       ASTNode defaultValue = parseExpression();
-      temp = fFactory.createFunction(fFactory.createSymbol("Optional"), temp, defaultValue);
+      temp = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Optional), temp,
+          defaultValue);
     }
     return temp;
   }
@@ -889,7 +892,7 @@ public class Parser extends Scanner {
     initialize(expression);
     if (fToken == TT_EOF) {
       // empty expression string or only a comment available in the string
-      return fFactory.createSymbol("Null");
+      return fFactory.createSymbol(IConstantOperators.Null);
     }
     final ASTNode temp = parseExpression();
     if (fToken != TT_EOF) {
@@ -933,10 +936,12 @@ public class Parser extends Scanner {
     if (infixOperator.isOperator(";")) {
       if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
           || fToken == TT_PRECEDENCE_CLOSE || fToken == TT_COMMA) {
-        return infixOperator.createFunction(fFactory, lhs, fFactory.createSymbol("Null"));
+        return infixOperator.createFunction(fFactory, lhs,
+            fFactory.createSymbol(IConstantOperators.Null));
       }
       if (fPackageMode && fRecursionDepth < 1) {
-        return infixOperator.createFunction(fFactory, lhs, fFactory.createSymbol("Null"));
+        return infixOperator.createFunction(fFactory, lhs,
+            fFactory.createSymbol(IConstantOperators.Null));
       }
     }
     return null;
@@ -1151,7 +1156,7 @@ public class Parser extends Scanner {
         if (";".equals(infixOperatorString)) {
           if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
               || fToken == TT_PRECEDENCE_CLOSE || fToken == TT_COMMA) {
-            ((FunctionNode) lhs).add(fFactory.createSymbol("Null"));
+            ((FunctionNode) lhs).add(fFactory.createSymbol(IConstantOperators.Null));
             break;
           }
         }
@@ -1248,7 +1253,8 @@ public class Parser extends Scanner {
                   && (infixOperator.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE))) {
             if (infixOperator.isOperator(";")) {
               if (fPackageMode && fRecursionDepth < 1) {
-                return infixOperator.createFunction(fFactory, rhs, fFactory.createSymbol("Null"));
+                return infixOperator.createFunction(fFactory, rhs,
+                    fFactory.createSymbol(IConstantOperators.Null));
               }
             }
             rhs = parseExpression(rhs, infixOperator.getPrecedence());

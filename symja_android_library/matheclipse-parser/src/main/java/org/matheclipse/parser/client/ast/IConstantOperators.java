@@ -30,6 +30,8 @@ public interface IConstantOperators {
   /** Head for lists (i.e. {a,b,c,...} ) */
   public static final String List = "List";
 
+  public static final String Null = "Null";
+
   public static final String Optional = "Optional";
 
   /** Head for the Out history (needed for the % operator) */

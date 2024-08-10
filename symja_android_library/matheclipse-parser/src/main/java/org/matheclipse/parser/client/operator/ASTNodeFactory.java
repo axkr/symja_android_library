@@ -23,6 +23,7 @@ import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FloatNode;
 import org.matheclipse.parser.client.ast.FractionNode;
 import org.matheclipse.parser.client.ast.FunctionNode;
+import org.matheclipse.parser.client.ast.IConstantOperators;
 import org.matheclipse.parser.client.ast.INodeParserFactory;
 import org.matheclipse.parser.client.ast.IntegerNode;
 import org.matheclipse.parser.client.ast.Pattern2Node;
@@ -60,7 +61,8 @@ public class ASTNodeFactory implements INodeParserFactory {
         return fn;
       }
       // case "@@@"
-      fn.add(factory.createFunction(factory.createSymbol("List"), factory.createInteger(1)));
+      fn.add(factory.createFunction(factory.createSymbol(IConstantOperators.List),
+          factory.createInteger(1)));
       return fn;
     }
   }
@@ -140,18 +142,21 @@ public class ASTNodeFactory implements INodeParserFactory {
       if (lhs instanceof SymbolNode) {
         if (rhs instanceof FunctionNode) {
           FunctionNode pn1 = (FunctionNode) rhs;
-          if (pn1.size() == 3 && pn1.get(0).equals(factory.createSymbol("Pattern"))
+          if (pn1.size() == 3 && pn1.get(0).equals(factory.createSymbol(IConstantOperators.Pattern))
               && (pn1.get(1) instanceof SymbolNode) && (pn1.get(2) instanceof FunctionNode)) {
             FunctionNode pn2 = (FunctionNode) pn1.get(2);
-            if (pn2.size() == 3 && pn2.get(0).equals(factory.createSymbol("Pattern"))) {
-              return factory.createFunction(factory.createSymbol("Optional"),
-                  factory.createFunction(factory.createSymbol("Pattern"), lhs, pn1.get(1)), pn2);
+            if (pn2.size() == 3
+                && pn2.get(0).equals(factory.createSymbol(IConstantOperators.Pattern))) {
+              return factory.createFunction(factory.createSymbol(IConstantOperators.Optional),
+                  factory.createFunction(factory.createSymbol(IConstantOperators.Pattern), lhs,
+                      pn1.get(1)),
+                  pn2);
             }
           }
         }
-        return factory.createFunction(factory.createSymbol("Pattern"), lhs, rhs);
+        return factory.createFunction(factory.createSymbol(IConstantOperators.Pattern), lhs, rhs);
       }
-      return factory.createFunction(factory.createSymbol("Optional"), lhs, rhs);
+      return factory.createFunction(factory.createSymbol(IConstantOperators.Optional), lhs, rhs);
     }
   }
 
