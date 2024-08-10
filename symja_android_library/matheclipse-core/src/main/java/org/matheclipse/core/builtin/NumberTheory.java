@@ -22,7 +22,6 @@ import java.util.SortedMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import org.apfloat.Apcomplex;
-import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.NumericComputationException;
@@ -51,6 +50,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
+import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.AbstractFractionSym;
@@ -60,6 +60,7 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.FractionSym;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -2283,58 +2284,49 @@ public final class NumberTheory {
    * "Not(Factorial(a))"
    * </pre>
    */
-  private static class Factorial extends AbstractTrigArg1 implements IFunctionExpand {
+  private static class Factorial extends AbstractEvaluator implements IFunctionExpand, INumeric {
+    @Override
+    public IExpr numericFunction(IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        IInexactNumber z = (IInexactNumber) ast.arg1();
+        return z.factorial();
+      }
+      return F.NIL;
+    }
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        IExpr z = ast.arg1();
+        // Gamma(1+z)
+        return F.Gamma(F.Plus(F.C1, z));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public double evalReal(double[] stack, int top, int size) {
+      if (size != 1) {
+        throw new UnsupportedOperationException();
+      }
+      return Num.factorial(stack[top]);
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
-      // Gamma(1+z)
-      return F.Gamma(F.Plus(F.C1, z));
-    }
-
-    @Override
-    public IExpr e1ComplexArg(Complex c) {
-      return F.complexNum(Arithmetic.lanczosApproxGamma(c.add(1.0)));
-    }
-
-    @Override
-    public IExpr e1ApcomplexArg(Apcomplex c) {
-      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-      return F.complexNum(h.gamma(h.add(c, Apfloat.ONE)));
-    }
-
-    @Override
-    public IExpr e1ApfloatArg(Apfloat d) {
-      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-      return F.num(h.gamma(h.add(d, Apfloat.ONE)));
-    }
-
-    @Override
-    public IExpr e1DblArg(final double arg1) {
-      double d = org.hipparchus.special.Gamma.gamma(arg1 + 1.0);
-      return F.num(d);
-    }
-
-    /**
-     * Returns the factorial of an integer n
-     *
-     * <p>
-     * See <a href="http://en.wikipedia.org/wiki/Factorial">Factorial</a>
-     */
-    @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
-      if (arg1.isInteger()) {
-        if (arg1.isNegative()) {
+      if (z.isInteger()) {
+        if (z.isNegative()) {
           return F.CComplexInfinity;
         }
-        return factorial((IInteger) arg1);
+        return factorial((IInteger) z);
       }
-      if (arg1.isFraction()) {
-        IFraction frac = (IFraction) arg1;
-        if (arg1.equals(F.C1D2)) {
+      if (z.isFraction()) {
+        IFraction frac = (IFraction) z;
+        if (z.equals(F.C1D2)) {
           return F.Times(F.C1D2, F.Sqrt(S.Pi));
         }
-        if (arg1.equals(F.CN1D2)) {
+        if (z.equals(F.CN1D2)) {
           return F.Sqrt(S.Pi);
         }
 
@@ -2342,17 +2334,19 @@ public final class NumberTheory {
           return F.Gamma(frac.inc());
         }
       }
-      if (arg1.isInfinity()) {
-        return F.CInfinity;
-      }
-      if (arg1.isNegativeInfinity()) {
-        return S.Indeterminate;
-      }
-      if (arg1.isDirectedInfinity(F.CI) || arg1.isDirectedInfinity(F.CNI)) {
-        return F.C0;
-      }
-      if (arg1.isComplexInfinity()) {
-        return S.Indeterminate;
+      if (z.isAST(S.DirectedInfinity)) {
+        if (z.isInfinity()) {
+          return F.CInfinity;
+        }
+        if (z.isNegativeInfinity()) {
+          return S.Indeterminate;
+        }
+        if (z.isDirectedInfinity(F.CI) || z.isDirectedInfinity(F.CNI)) {
+          return F.C0;
+        }
+        if (z.isComplexInfinity()) {
+          return S.Indeterminate;
+        }
       }
       return F.NIL;
     }
@@ -2364,9 +2358,15 @@ public final class NumberTheory {
     }
 
     @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
     }
+
   }
 
   private static class FactorialPower extends AbstractEvaluator {
