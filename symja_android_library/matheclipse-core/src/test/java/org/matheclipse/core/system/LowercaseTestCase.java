@@ -10674,6 +10674,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testImportString() {
+    check("ImportString(\"SGVsbG8gd29ybGQ=\", \"Base64\")", // ??
+        "Hello world");
+
     check(
         "ImportString( \"[\\\"Association\\\",[\\\"Rule\\\",\\\"'x'\\\",\\\"1\\\"],[\\\"Rule\\\",\\\"'y'\\\",\\\"2\\\"],[\\\"Rule\\\",\\\"'z'\\\",\\\"3\\\"]]\", \"ExpressionJSON\") // InputForm", //
         "<|\"x\"->1,\"y\"->2,\"z\"->3|>");

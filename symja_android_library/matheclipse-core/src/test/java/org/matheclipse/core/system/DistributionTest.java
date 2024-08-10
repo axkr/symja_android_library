@@ -260,6 +260,10 @@ public class DistributionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testNExpectation() {
+    // check("NExpectation(E^x, Distributed(x, PoissonDistribution(1.0)))", //
+    // "5.57494");
+
+
     check("NExpectation(Abs(2*x-1), Distributed(x, GammaDistribution(3.5,2)))", //
         "13.00025");
 

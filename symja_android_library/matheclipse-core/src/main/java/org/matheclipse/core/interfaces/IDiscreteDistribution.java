@@ -2,13 +2,8 @@ package org.matheclipse.core.interfaces;
 
 import org.matheclipse.core.eval.util.Assumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
-import org.matheclipse.core.expression.F;
 
 public interface IDiscreteDistribution extends IDistribution {
-
-  default IExpr lowerBound() {
-    return F.C0;
-  }
 
   /**
    * Return the distributions lower and upper bounds reduced by the predicate's assumptions.
