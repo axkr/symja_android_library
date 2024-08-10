@@ -498,6 +498,8 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testFactorial() {
+    check("170.0!", //
+        "7.25742*10^306");
     check("Factorial(5.211111111111111111)", //
         "172.7183563387097672");
     check("(5/2)!", //

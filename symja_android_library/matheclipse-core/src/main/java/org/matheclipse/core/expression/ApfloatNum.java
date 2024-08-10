@@ -775,6 +775,17 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public IExpr factorial() {
+    try {
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+      return valueOf(h.gamma(h.add(fApfloat, Apfloat.ONE)));
+    } catch (ArithmeticException | NumericComputationException e) {
+      // try as computation with complex numbers
+    }
+    return F.complexNum(EvalEngine.getApfloat().gamma(apcomplexValue().add(Apfloat.ONE)));
+  }
+
+  @Override
   public IExpr fibonacci(IExpr arg2) {
     if (arg2 instanceof IReal) {
       try {

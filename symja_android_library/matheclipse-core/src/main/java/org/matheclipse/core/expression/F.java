@@ -131,6 +131,7 @@ import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
@@ -3164,7 +3165,7 @@ public class F extends S {
    * Return a {@link ComplexNum} which wraps a {@link Complex} number with Java double values for
    * the real and imaginary part.
    * 
-   * @param c
+   * @param c the complex number
    * @return
    */
   public static IComplexNum complexNum(final Complex c) {
@@ -3179,6 +3180,21 @@ public class F extends S {
    */
   public static IComplexNum complexNum(final double r) {
     return complexNum(r, 0.0);
+  }
+
+  /**
+   * Return a {@link Num} which wraps a double number, if the imaginary part is <code>0.0</code> or
+   * a {@ComplexNum} which wraps a {@link Complex} number with Java double values for the real and
+   * imaginary part.
+   * 
+   * @param c the complex number
+   * @return
+   */
+  public static IInexactNumber inexactNum(final Complex c) {
+    if (c.getImaginary() == 0.0 || c.getImaginary() == -0.0) {
+      return Num.valueOf(c.getReal());
+    }
+    return ComplexNum.valueOf(c);
   }
 
   /**
@@ -8060,7 +8076,7 @@ public class F extends S {
    * @param y
    * @return
    */
-  public static IAST Plus(final IExpr x, final IExpr y) {
+  public static IASTMutable Plus(final IExpr x, final IExpr y) {
     if (x != null && y != null) {
       return plusOrderless(IExpr::isPlus, x, y);
     }

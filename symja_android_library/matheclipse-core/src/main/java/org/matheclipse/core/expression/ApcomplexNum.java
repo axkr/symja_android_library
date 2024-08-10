@@ -761,6 +761,17 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr factorial() {
+    try {
+      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
+      return valueOf(h.gamma(h.add(fApcomplex, Apfloat.ONE)));
+    } catch (ArithmeticException | NumericComputationException e) {
+      // try as computation with complex numbers
+    }
+    return IComplexNum.super.factorial();
+  }
+
+  @Override
   public IExpr fibonacci(IExpr arg2) {
     if (arg2 instanceof INumber) {
       try {

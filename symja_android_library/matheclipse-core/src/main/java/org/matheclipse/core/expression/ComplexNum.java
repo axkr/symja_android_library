@@ -801,6 +801,16 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr factorial() {
+    try {
+      return F.complexNum(Arithmetic.lanczosApproxGamma(fComplex.add(Complex.ONE)));
+    } catch (ArithmeticException | NumericComputationException e) {
+      // try as computation with complex numbers
+    }
+    return IComplexNum.super.factorial();
+  }
+
+  @Override
   public IExpr fibonacci(IExpr arg2) {
     if (arg2 instanceof INumber) {
       try {
