@@ -127,6 +127,8 @@
  
  Power(Abs(x_),y_Integer) := x^y
   /; EvenQ(y) && Element(x,Reals),
+ Power(Abs(x_),y_Integer) := With({a=Quotient(y,2)},(Im(x)^2+Re(x)^2)^a)
+  /; EvenQ(y),
  Power(I,x_) := E^Distribute(1/2*I*Pi*x),
   
  ProductLog(x_*Log(x_)) := Log(x) 

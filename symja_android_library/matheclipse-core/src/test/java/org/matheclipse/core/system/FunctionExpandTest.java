@@ -244,6 +244,12 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFunctionExpandLaguerreL() {
+    // check("FunctionExpand(LaguerreL(1/2,-1/2,z))", //
+    // "");
+  }
+
+  @Test
   public void testFunctionExpandCos() {
     check("FunctionExpand(Cos(3*Degree))", //
         "(1/8*Sqrt(3)*(-1+Sqrt(5))+Sqrt(1/2*(5+Sqrt(5)))/4)/Sqrt(2)+(1/8*(1-Sqrt(5))+Sqrt(\n" //

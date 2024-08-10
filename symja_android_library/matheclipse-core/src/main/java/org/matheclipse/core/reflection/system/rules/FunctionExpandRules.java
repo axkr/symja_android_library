@@ -267,6 +267,9 @@ public class FunctionExpandRules {
     // Abs(x_)^y_Integer:=x^y/;EvenQ(y)&&x∈Reals
     SetDelayed(Power(Abs(x_),$p(y, Integer)),
       Condition(Power(x,y),And(EvenQ(y),Element(x,Reals)))),
+    // Abs(x_)^y_Integer:=With({a=Quotient(y,2)},(Im(x)^2+Re(x)^2)^a)/;EvenQ(y)
+    SetDelayed(Power(Abs(x_),$p(y, Integer)),
+      Condition(With(list(Set(a,Quotient(y,C2))),Power(Plus(Sqr(Im(x)),Sqr(Re(x))),a)),EvenQ(y))),
     // I^x_:=E^Distribute(1/2*I*Pi*x)
     SetDelayed(Power(CI,x_),
       Exp(Distribute(Times(C1D2,CI,Pi,x)))),
