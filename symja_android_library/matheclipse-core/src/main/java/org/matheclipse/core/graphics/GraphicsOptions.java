@@ -12,7 +12,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.reflection.system.ListPlot;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -776,10 +775,9 @@ public class GraphicsOptions {
     rgbColor = F.RGBColor(0.0, 0.0, 0.0);
   }
 
-  public void setScalingFunctions(IExpr[] options) {
-    // OptionArgs options = options();
-    // IExpr scalingFunctions = options.getOption(S.$Scaling);
-    IExpr scalingFunctions = options[ListPlot.X_$SCALING];
+  public void setScalingFunctions() {
+    OptionArgs options = options();
+    IExpr scalingFunctions = options.getOption(S.$Scaling);
     if (scalingFunctions.isPresent()) {
       if (scalingFunctions.isList1()) {
         setXFunction(getScaling(scalingFunctions.first()));

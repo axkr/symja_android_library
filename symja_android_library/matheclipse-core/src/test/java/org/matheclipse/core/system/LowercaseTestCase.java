@@ -4657,6 +4657,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
             + "\n" //
+            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
+            + "\n" //
             + "ArcSinh(Infinity)=Infinity\n" //
             + "\n" //
             + "ArcSinh(I*Infinity)=Infinity\n" //
@@ -4669,9 +4671,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "ArcSinh(Undefined)=Undefined\n" //
             + "\n" //
-            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
-            + "\n" //
-        + "ArcSinh(ComplexInfinity)=ComplexInfinity");
+            + "ArcSinh(ComplexInfinity)=ComplexInfinity");
 
     check("a := 42", //
         "");
@@ -9142,6 +9142,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
             + "\n" //
+            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
+            + "\n" //
             + "ArcSinh(Infinity)=Infinity\n" //
             + "\n" //
             + "ArcSinh(I*Infinity)=Infinity\n" //
@@ -9153,8 +9155,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "ArcSinh(I*1/2)=I*1/6*Pi\n" //
             + "\n" //
             + "ArcSinh(Undefined)=Undefined\n" //
-            + "\n" //
-            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
             + "\n" //
             + "ArcSinh(ComplexInfinity)=ComplexInfinity");
 
@@ -11963,6 +11963,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testInverseLaplaceTransformNumeric() {
     // check("InverseLaplaceTransform(Erf(s)/Sqrt(s), s, 2.3)", //
     // "");
+
     check("InverseLaplaceTransform(s/(s + 2)^2, s, 2.3)", //
         "-0.0362221");
 
@@ -11970,7 +11971,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLaplaceTransform() {
-
+    check("LaplaceTransform(t*UnitStep(a*t),t,s)", //
+        "LaplaceTransform(t*UnitStep(a*t),t,s)");
+    check("LaplaceTransform(UnitStep(a*t),t,s)", //
+        "Which(Sign(a)==1,1/s,Sign(a)==-1,0,True,0)");
+    check("LaplaceTransform(UnitStep(42*t),t,s)", //
+        "1/s");
     // numerical calculation only supported for unary functions
     check("LaplaceTransform(1/(x + y + 1), {x, y}, {5.4, 4.5})", //
         "LaplaceTransform(1/(1+x+y),{x,y},{5.4,4.5})");
@@ -15545,7 +15551,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("N(f(2, 3))", //
         "f(2,3)");
   }
-
 
 
 
