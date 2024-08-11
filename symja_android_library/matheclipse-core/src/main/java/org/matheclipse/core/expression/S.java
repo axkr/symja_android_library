@@ -4496,6 +4496,8 @@ public class S {
   public final static IBuiltInSymbol GraphPeriphery =
       S.initFinalSymbol("GraphPeriphery", ID.GraphPeriphery);
 
+  public final static IBuiltInSymbol GraphPower = S.initFinalSymbol("GraphPower", ID.GraphPower);
+
   /**
    * GraphQ(expr) - test if `expr` is a graph object.
    * 

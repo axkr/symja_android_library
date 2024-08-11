@@ -426,6 +426,7 @@ Functions in alphabetical order:
 * [Graphics3D](functions/Graphics3D.md)
 * &#x2705; [GraphIntersection](functions/GraphIntersection.md)
 * &#x2705; [GraphPeriphery](functions/GraphPeriphery.md)
+* [GraphPower](functions/GraphPower.md)
 * &#x2705; [GraphQ](functions/GraphQ.md)
 * &#x2705; [GraphRadius](functions/GraphRadius.md)
 * &#x2705; [GraphUnion](functions/GraphUnion.md)

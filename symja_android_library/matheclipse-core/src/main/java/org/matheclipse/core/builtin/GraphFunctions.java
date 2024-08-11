@@ -98,8 +98,9 @@ public class GraphFunctions {
       S.GraphDiameter.setEvaluator(new GraphDiameter());
       S.GraphDisjointUnion.setEvaluator(new GraphDisjointUnion());
       S.GraphIntersection.setEvaluator(new GraphIntersection());
-      S.GraphQ.setEvaluator(new GraphQ());
       S.GraphPeriphery.setEvaluator(new GraphPeriphery());
+      S.GraphPower.setEvaluator(new GraphPower());
+      S.GraphQ.setEvaluator(new GraphQ());
       S.GraphRadius.setEvaluator(new GraphRadius());
       S.GraphUnion.setEvaluator(new GraphUnion());
       S.HamiltonianGraphQ.setEvaluator(new HamiltonianGraphQ());
@@ -653,7 +654,71 @@ public class GraphFunctions {
     }
   }
 
+  private static class GraphPower extends AbstractEvaluator {
 
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int n = ast.arg2().toIntDefault();
+      if (n >= 0) {
+        try {
+          GraphExpr<? extends IExprEdge> gex = (GraphExpr<ExprEdge>) createGraph(ast.arg1());
+          if (gex == null) {
+            return F.NIL;
+          }
+          Graph<IExpr, ? extends IExprEdge> result = graphPower(gex.toData(), n);
+          if (result != null) {
+            return GraphExpr.newInstance(result);
+          }
+
+        } catch (RuntimeException rex) {
+          Errors.printMessage(S.GraphPower, rex, engine);
+        }
+      }
+      return F.NIL;
+    }
+
+    public static Graph<IExpr, ? extends IExprEdge> graphPower(
+        Graph<IExpr, ? extends IExprEdge> graph,
+        int n) {
+      GraphType t = graph.getType();
+      if (t == null) {
+        return null;
+      }
+
+      Graph<IExpr, ExprEdge> result;
+      if (t.isDirected()) {
+        result = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
+      } else {
+        result = new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
+      }
+
+      // Add all vertices to the new graph
+      for (IExpr vertex : graph.vertexSet()) {
+        result.addVertex(vertex);
+      }
+
+      // Add edges to the new graph
+      for (IExpr v1 : graph.vertexSet()) {
+        for (IExpr v2 : graph.vertexSet()) {
+          if (!v1.equals(v2)) {
+            GraphPath<IExpr, ? extends IExprEdge> path =
+                DijkstraShortestPath.findPathBetween(graph, v1, v2);
+            if (path != null && path.getLength() <= n) {
+              result.addEdge(v1, v2);
+            }
+          }
+        }
+      }
+
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
   /**
    *
    *
