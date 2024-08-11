@@ -1,8 +1,6 @@
 { 
  LaplaceTransform(a_. * E^(b_. + c_. * t_), t_, s_) := LaplaceTransform(a * E^b, t, s-c)
    /; FreeQ({b,c,s}, t), 
-  LaplaceTransform(a_ * t_ ^n_., t_, s_Symbol) := (-1)^n * D(LaplaceTransform(a, t, s), {s,n}) 
-   /; FreeQ({n,s}, t) && n>0, 
    
  LaplaceTransform(t_^(1/2), t_, s_) := Sqrt(Pi)/(2*s^(3/2))
    /; FreeQ(s, t),
@@ -16,6 +14,8 @@
    /; FreeQ(s, t),
  LaplaceTransform(Tanh(t_), t_, s_) := (1/2)*(-(2/s)-PolyGamma(0,s/4)+PolyGamma(0,(2+s)/4))
    /; FreeQ(s, t),
+ LaplaceTransform(DiracDelta(a_*t_), t_, s_) := 1/Abs(a)
+   /; FreeQ({a,s}, t),
  LaplaceTransform(E^t_, t_, s_) := 1/(s-1)
    /; FreeQ(s, t),
  LaplaceTransform(Log(t_), t_, s_) := -(EulerGamma+Log(s))/s
@@ -26,7 +26,9 @@
    /; FreeQ(s, t),
  LaplaceTransform(Erf(t_^(1/2)), t_, s_) := 1/(Sqrt(s+1)*s)
    /; FreeQ(s, t),
- 
+ LaplaceTransform(UnitStep(a_.*t_),t_,s_):=Which(Sign(a)==1,1/s,Sign(a)==-1,0,True,0)
+   /; FreeQ({a,s}, t),
+    
  LaplaceTransform(f_'(t_), t_, s_) := s*LaplaceTransform(f(t),t,s)-f(0)
    /; FreeQ(f, t), 
  LaplaceTransform(f_''(t_), t_, s_) := s^2*LaplaceTransform(f(t),t,s)-s*f(0)-f'(0)

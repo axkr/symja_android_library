@@ -5,12 +5,15 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -50,6 +53,7 @@ public class LaplaceTransform extends AbstractFunctionEvaluator {
     IExpr a1 = ast.arg1();
     IExpr t = ast.arg2();
     IExpr s = ast.arg3();
+
     if (!t.isList() && !s.isList() && !t.equals(s)) {
       if (s instanceof INum && t.isSymbol()) {
         double sDouble = s.evalf();
@@ -73,11 +77,39 @@ public class LaplaceTransform extends AbstractFunctionEvaluator {
       if (ast.arg1().isAST()) {
         IAST arg1 = (IAST) ast.arg1();
         if (arg1.isTimes()) {
-          IASTAppendable result = F.TimesAlloc(arg1.size());
-          IASTAppendable rest = F.TimesAlloc(arg1.size());
+          IAST timesAST = arg1;
+          IASTAppendable result = F.TimesAlloc(timesAST.size());
+          IASTAppendable rest = F.TimesAlloc(timesAST.size());
           arg1.filter(result, rest, x -> x.isFree(t));
           if (result.size() > 1) {
             return F.Times(result.oneIdentity1(), F.LaplaceTransform(rest, t, s));
+          }
+          int indexOfPower = timesAST.indexOf(//
+              x -> x.equals(t)//
+                  || (x.isPower() //
+                      && x.base().equals(t)//
+                      && x.exponent().isInteger() //
+                      && x.exponent().isPositive()));
+          if (indexOfPower > 0) {
+            IExpr temp = timesAST.get(indexOfPower);
+            IInteger n;
+            if (temp.isPower()) {
+              n = (IInteger) timesAST.get(indexOfPower).exponent();
+            } else {
+              n = F.C1;
+            }
+            IASTMutable r = timesAST.removeAtCopy(indexOfPower);
+            // LaplaceTransform(r_ * t_ ^n_, t_, s_Symbol) := (-1)^n * D(LaplaceTransform(r, t, s),
+            // {s,n}) /; FreeQ({n,s}, t) && n>0
+            temp = engine.evaluate(F.D(F.LaplaceTransform(r, t, s), F.List(s, n)));
+            if (temp.isAST()) {
+              IAST derivedLaplaceTransform = (IAST) temp;
+              if (derivedLaplaceTransform
+                  .isFree(x -> x.isFunctionID(ID.D, ID.Derivative, ID.LaplaceTransform), true)) {
+                return F.Times(F.Power(F.CN1, n), derivedLaplaceTransform);
+              }
+
+            }
           }
         } else if (arg1.isPower() && arg1.base().equals(t)) {
           IExpr n = arg1.exponent();

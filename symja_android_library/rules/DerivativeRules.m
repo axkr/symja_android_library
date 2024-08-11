@@ -73,6 +73,7 @@ Derivative(1)[CoshIntegral] = Cosh(#)/# &,
 Derivative(1)[LogIntegral] = 1/Log(#) &,
 Derivative(1)[SinIntegral] = Sinc(#) &,
 Derivative(1)[SinhIntegral] = Sinh(#)/# &,
+Derivative(1)[UnitStep] = Piecewise({{Indeterminate, #==0}},0) &,
 
 Derivative(n_)[Cos] := With({t=Cos(n/2*Pi+#)}, t &  
     /; (IntegerQ(n) && n >= 0)||SymbolQ(n)), 

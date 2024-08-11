@@ -13,16 +13,13 @@ public class LaplaceTransformRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 12 };
+  final public static int[] SIZES = { 0, 13 };
 
   final public static IAST RULES = List(
     IInit(LaplaceTransform, SIZES),
     // LaplaceTransform(E^(b_.+c_.*t_)*a_.,t_,s_):=LaplaceTransform(a*E^b,t,-c+s)/;FreeQ({b,c,s},t)
     ISetDelayed(LaplaceTransform(Times(Exp(Plus(b_DEFAULT,Times(c_DEFAULT,t_))),a_DEFAULT),t_,s_),
       Condition(LaplaceTransform(Times(a,Exp(b)),t,Plus(Negate(c),s)),FreeQ(list(b,c,s),t))),
-    // LaplaceTransform(a_*t_^n_.,t_,s_Symbol):=(-1)^n*D(LaplaceTransform(a,t,s),{s,n})/;FreeQ({n,s},t)&&n>0
-    ISetDelayed(LaplaceTransform(Times(a_,Power(t_,n_DEFAULT)),t_,s_Symbol),
-      Condition(Times(Power(CN1,n),D(LaplaceTransform(a,t,s),list(s,n))),And(FreeQ(list(n,s),t),Greater(n,C0)))),
     // LaplaceTransform(Sqrt(t_),t_,s_):=Sqrt(Pi)/(2*s^(3/2))/;FreeQ(s,t)
     ISetDelayed(LaplaceTransform(Sqrt(t_),t_,s_),
       Condition(Times(CSqrtPi,Power(Times(C2,Power(s,QQ(3L,2L))),CN1)),FreeQ(s,t))),
@@ -41,6 +38,9 @@ public class LaplaceTransformRules {
     // LaplaceTransform(Tanh(t_),t_,s_):=1/2*(-2/s-PolyGamma(0,s/4)+PolyGamma(0,1/4*(2+s)))/;FreeQ(s,t)
     ISetDelayed(LaplaceTransform(Tanh(t_),t_,s_),
       Condition(Times(C1D2,Plus(Times(CN1,C2,Power(s,CN1)),Negate(PolyGamma(C0,Times(C1D4,s))),PolyGamma(C0,Times(C1D4,Plus(C2,s))))),FreeQ(s,t))),
+    // LaplaceTransform(DiracDelta(a_*t_),t_,s_):=1/Abs(a)/;FreeQ({a,s},t)
+    ISetDelayed(LaplaceTransform(DiracDelta(Times(a_,t_)),t_,s_),
+      Condition(Power(Abs(a),CN1),FreeQ(list(a,s),t))),
     // LaplaceTransform(E^t_,t_,s_):=1/(-1+s)/;FreeQ(s,t)
     ISetDelayed(LaplaceTransform(Exp(t_),t_,s_),
       Condition(Power(Plus(CN1,s),CN1),FreeQ(s,t))),
@@ -56,6 +56,9 @@ public class LaplaceTransformRules {
     // LaplaceTransform(Erf(Sqrt(t_)),t_,s_):=1/(Sqrt(s+1)*s)/;FreeQ(s,t)
     ISetDelayed(LaplaceTransform(Erf(Sqrt(t_)),t_,s_),
       Condition(Power(Times(Sqrt(Plus(s,C1)),s),CN1),FreeQ(s,t))),
+    // LaplaceTransform(UnitStep(a_.*t_),t_,s_):=Which(Sign(a)==1,1/s,Sign(a)==-1,0,True,0)/;FreeQ({a,s},t)
+    ISetDelayed(LaplaceTransform(UnitStep(Times(a_DEFAULT,t_)),t_,s_),
+      Condition(Which(Equal(Sign(a),C1),Power(s,CN1),Equal(Sign(a),CN1),C0,True,C0),FreeQ(list(a,s),t))),
     // LaplaceTransform(Derivative(1)[f_][t_],t_,s_):=-f(0)+s*LaplaceTransform(f(t),t,s)/;FreeQ(f,t)
     ISetDelayed(LaplaceTransform($($(Derivative(C1),f_),t_),t_,s_),
       Condition(Plus(Negate($(f,C0)),Times(s,LaplaceTransform($(f,t),t,s))),FreeQ(f,t))),

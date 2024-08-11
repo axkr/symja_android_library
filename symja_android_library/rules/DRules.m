@@ -158,6 +158,7 @@
   D(StruveL(f_, g_),x_?NotListQ):=(1/2)*(g^f /(2^f *(Sqrt(Pi)*Gamma(3/2+f))) + StruveL(-1 + f, g)+StruveL(1 + f, g))*D(g,x) + D(f,x)*Derivative(1, 0)[StruveL][f, g],
   
   D(AppellF1(a_,b_,c_,d_,f_,g_),x_?NotListQ) :=  (a*b*AppellF1(1+a,1+b,c,1+d,f,g)*D(f,x))/d+(a*c*AppellF1(1+a,b,1+c,1+d,f,g)*D(g,x))/d
-    /; FreeQ({a,b,c,d},x) 
-  
+    /; FreeQ({a,b,c,d},x),
+    
+  D(UnitStep(f_),x_?NotListQ) :=  Piecewise({{Indeterminate, f == 0}}, 0)*D(f,x)
 }

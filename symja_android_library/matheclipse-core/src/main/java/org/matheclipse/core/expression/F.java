@@ -10665,6 +10665,10 @@ public class F extends S {
     return new AST3(WeibullDistribution, a0, a1, a2);
   }
 
+  public static IAST Which(final IExpr... a) {
+    return ast(a, Which);
+  }
+
   /**
    * Evaluates <code>body</code> as long as <code>test</code> evaluates to {@link S#True}.
    *

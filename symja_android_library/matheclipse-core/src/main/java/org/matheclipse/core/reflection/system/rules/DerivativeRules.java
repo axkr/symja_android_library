@@ -13,7 +13,7 @@ public class DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 126, 0 };
+  final public static int[] SIZES = { 127, 0 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -230,6 +230,9 @@ public class DerivativeRules {
     // Derivative(1)[SinhIntegral]=Sinh(#1)/#1&
     ISet($(Derivative(C1),SinhIntegral),
       Function(Times(Sinh(Slot1),Power(Slot1,CN1))), true),
+    // Derivative(1)[UnitStep]=Piecewise({{Indeterminate,#1==0}},0)&
+    ISet($(Derivative(C1),UnitStep),
+      Function(Piecewise(list(list(Indeterminate,Equal(Slot1,C0))),C0)), true),
     // Derivative(n_)[Cos]:=With({t=Cos(n/2*Pi+#1)},(t&)/;(IntegerQ(n)&&n>=0)||SymbolQ(n))
     ISetDelayed($(Derivative(n_),Cos),
       With(list(Set(t,Cos(Plus(Times(C1D2,n,Pi),Slot1)))),Condition(Function(t),Or(And(IntegerQ(n),GreaterEqual(n,C0)),SymbolQ(n))))),
