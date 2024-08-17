@@ -455,6 +455,7 @@ Functions in alphabetical order:
 * &#x2705; [Histogram](functions/Histogram.md)
 * &#x2705; [Hold](functions/Hold.md)
 * [HoldAll](functions/HoldAll.md)
+* [HoldAllComlete](functions/HoldAllComlete.md)
 * &#x2705; [HoldComplete](functions/HoldComplete.md)
 * [HoldFirst](functions/HoldFirst.md)
 * &#x2705; [HoldForm](functions/HoldForm.md)

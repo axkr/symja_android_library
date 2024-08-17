@@ -4,18 +4,20 @@
 Chop(numerical-expr)
 ```
 
-> replaces numerical values in the `numerical-expr` which are close to zero with symbolic value `0`.
+> replaces numerical values in the `numerical-expr` which are close to zero with symbolic value `0`. 
 
+```
+Chop(numerical-expr, delta)
+```
+
+> uses a tolerance of `delta`. The default tolerance is `10^-10`.
+      
 ### Examples
 
 ```
 >> Chop(0.00000000001)
 0
 ```
-
-
-
-
 
 
 ### Implementation status
