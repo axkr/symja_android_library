@@ -878,6 +878,7 @@ Functions in alphabetical order:
 * [SemanticImport](functions/SemanticImport.md)
 * [SemanticImportString](functions/SemanticImportString.md)
 * &#x2705; [Sequence](functions/Sequence.md)
+* [SequenceHold](functions/SequenceHold.md)
 * &#x2705; [Series](functions/Series.md)
 * &#x2705; [SeriesCoefficient](functions/SeriesCoefficient.md)
 * &#x2705; [SeriesData](functions/SeriesData.md)

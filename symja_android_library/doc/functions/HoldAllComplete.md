@@ -4,7 +4,7 @@
 HoldAllComplete
 ```
 
-> is an attribute specifying that all arguments of a function should be left completely unevaluated and sequences shouldn't be flattende out.
+> is an attribute specifying that all arguments of a function should be left completely unevaluated and `Sequence` expressions shouldn't be flattened out.
 
 
 
