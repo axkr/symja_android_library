@@ -277,7 +277,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         }
         final IAST ast1 = (IAST) patternExpr1;
         final IAST ast2 = (IAST) patternExpr2;
-        return ast1.forAll((arg, i) -> isEquivalent(arg, i, ast2.getRule(i), pm1, pm2), 0);
+        return ast1.forAll((arg, i) -> isEquivalent(arg, ast2.getRule(i), pm1, pm2), 0);
       }
       return false;
     }
@@ -290,7 +290,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     return patternExpr1.equals(patternExpr2);
   }
 
-  private static boolean isEquivalent(IExpr arg1, int i, IExpr arg2, final IPatternMap pm1,
+  private static boolean isEquivalent(IExpr arg1, IExpr arg2, final IPatternMap pm1,
       IPatternMap pm2) {
     if (arg1 == arg2) {
       return true;
