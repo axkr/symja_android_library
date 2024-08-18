@@ -371,6 +371,16 @@ public class PatternMatchingTestCase {
     check("f[c+Pi/2+d*x]", //
         "{c+Pi/2,d}");
   }
+
+  @Test
+  public void testSetSetraw() {
+    // Set: Cannot assign to raw object 42.
+    check("42 = 17-3", //
+        "14");
+    // SetDelayed: Cannot assign to raw object 42.
+    check("42 := 17-3*x", //
+        "17-3*x");
+  }
   // @Test
   // public void testTagSetDelayed1() {
   // check(

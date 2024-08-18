@@ -34,15 +34,15 @@ class BSplineFunctionStringTest {
   @Test
   void testLinear() {
     Function<IExpr, IExpr> bSplineFunction = BSplineFunctionString.of(1, F.List(2, 1, 5, 0, -2));
-    assertEquals(bSplineFunction.apply(F.num(0)), F.ZZ(2));
+    assertEquals(bSplineFunction.apply(F.num(0)), F.num(2.0));
     assertEquals(bSplineFunction.apply(F.QQ(1, 2)), F.QQ(3, 2));
-    assertEquals(bSplineFunction.apply(F.num(1)), F.ZZ(1));
+    assertEquals(bSplineFunction.apply(F.num(1)), F.num(1.0));
     assertEquals(bSplineFunction.apply(F.num(1.25)), F.num(2));
     assertEquals(bSplineFunction.apply(F.num(1.50)), F.num(3));
     assertEquals(bSplineFunction.apply(F.num(1.75)), F.num(4));
-    assertEquals(bSplineFunction.apply(F.num(2)), F.ZZ(5));
+    assertEquals(bSplineFunction.apply(F.num(2)), F.num(5.0));
     assertEquals(bSplineFunction.apply(F.num(2.50)), F.num(2.5));
-    assertEquals(bSplineFunction.apply(F.num(3)), F.ZZ(0));
+    assertEquals(bSplineFunction.apply(F.num(3)), F.num(0.0));
     assertEquals(bSplineFunction.apply(F.num(3.5)), F.num(-1));
     assertEquals(bSplineFunction.apply(F.num(4)), F.ZZ(-2));
   }
@@ -60,7 +60,7 @@ class BSplineFunctionStringTest {
   @Test
   void testQuadratic() {
     Function<IExpr, IExpr> bSplineFunction = BSplineFunctionString.of(2, F.List(2, 1, 5, 0, -2));
-    assertEquals(bSplineFunction.apply(F.num(0)), F.ZZ(2));
+    assertEquals(bSplineFunction.apply(F.num(0)), F.num(2.0));
     assertEquals(bSplineFunction.apply(F.num(1)), F.num(5.0 / 3.0));
     assertEquals(bSplineFunction.apply(F.num(2)), F.num(31.0 / 8.0));
     assertEquals(bSplineFunction.apply(F.num(4)), F.ZZ(-2));
@@ -74,24 +74,24 @@ class BSplineFunctionStringTest {
     IExpr r3 = bSplineFunction.apply(F.num(2.5)); // does not evaluate correctly
     assertTrue(F.isFuzzyEquals(r1.evalf(), 1.0 / 3.0, Config.DOUBLE_TOLERANCE));
     assertEquals(r2.toString(), //
-        "3/2");
+        "1.5");
     assertTrue(F.isFuzzyEquals(r3.evalf(), 8.0 / 3.0, Config.DOUBLE_TOLERANCE));
   }
 
   @Test
   void testCubic() {
     Function<IExpr, IExpr> bSplineFunction = BSplineFunctionString.of(3, F.List(2, 1, 5, 0, -2));
-    assertEquals(bSplineFunction.apply(F.num(0)), F.ZZ(2));
-    assertEquals(bSplineFunction.apply(F.num(0.5)), F.num((double) 173 / 96));
-    assertEquals(bSplineFunction.apply(F.num(1)), F.QQ(23, 12));
+    assertEquals(bSplineFunction.apply(F.num(0)), F.num(2.0));
+    assertEquals(bSplineFunction.apply(F.num(0.5)), F.num(173.0 / 96.0));
+    assertEquals(bSplineFunction.apply(F.num(1)), F.num(23.0 / 12.0));
     assertEquals(bSplineFunction.apply(F.num(4)), F.ZZ(-2));
   }
 
   @Test
   void testCubicLinear() {
     Function<IExpr, IExpr> bSplineFunction = BSplineFunctionString.of(3, F.List(2, 1, 0, -1, -2));
-    assertEquals(bSplineFunction.apply(F.num(0)), F.ZZ(2));
-    assertEquals(bSplineFunction.apply(F.num(1)), F.QQ(13, 12));
+    assertEquals(bSplineFunction.apply(F.num(0)), F.num(2.0));
+    assertEquals(bSplineFunction.apply(F.num(1)), F.num(13.0 / 12.0));
     assertEquals(bSplineFunction.apply(F.num(2)), F.num(0));
     assertTrue(F.isFuzzyEquals(bSplineFunction.apply(F.num(3.999999999999)).evalf(), -2.0,
         Config.DOUBLE_TOLERANCE));

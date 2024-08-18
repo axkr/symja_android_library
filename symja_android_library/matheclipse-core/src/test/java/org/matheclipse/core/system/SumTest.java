@@ -14,8 +14,8 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(k*(-1+k),k)", //
         "1/2*(k-k^2)+1/3*(k/2-3/2*k^2+k^3)");
     check("Sum(k*(-1+k)*(-2+k)*(-3+k),k)", //
-        "3*(k-k^2)+11/3*(k/2-3/2*k^2+k^3)+3/2*(-k^2+2*k^3-k^4)+1/5*(-k/6+5/3*k^3-5/2*k^4+k^\n"
-            + "5)");
+        "-3*(-k+k^2)+11/3*(k/2-3/2*k^2+k^3)+3/2*(-k^2+2*k^3-k^4)+1/5*(-k/6+5/3*k^3-5/2*k^\n"
+            + "4+k^5)");
 
     check("Sum((1-n)^k,{k,0,Infinity})", //
         "1/n");

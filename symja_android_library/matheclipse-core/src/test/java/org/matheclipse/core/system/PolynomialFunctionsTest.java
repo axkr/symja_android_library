@@ -81,8 +81,8 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     checkNumeric("Table(GegenbauerC(10, x), {x, 1, 5})", //
         "{1/5,262087/5,22619537/5,457470751/5,4517251249/5}");
     check("GegenbauerC({1/3, 1/2}, 1/6, 0)", //
-        "{(2^(1/3)*Sqrt(Pi))/(Gamma(1/6)*Gamma(4/3)),(2*Sqrt(2*Pi)*Gamma(5/12))/(Sqrt(Pi)*Gamma(\n"
-            + "1/6)*Gamma(1/4))}");
+        "{(2^(1/3)*Sqrt(Pi))/(Gamma(1/6)*Gamma(4/3)),(2*Sqrt(2)*Gamma(5/12))/(Gamma(1/6)*Gamma(\n" //
+            + "1/4))}");
     check("GegenbauerC({1/3, 1/2}, 1/6, 1)", //
         "{Gamma(2/3)/(Gamma(1/3)*Gamma(4/3)),(2*Gamma(5/6))/(Sqrt(Pi)*Gamma(1/3))}");
     check("GegenbauerC(7/4, 2/3, -1)", //
@@ -99,7 +99,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     check("GegenbauerC(3, l, z)", //
         "-2*l*(1+l)*z+4/3*l*(1+l)*(2+l)*z^3");
     check("GegenbauerC(4, l, z)", //
-        "1/2*l*(1+l)+2*(-1-l)*l*(2+l)*z^2+2/3*l*(1+l)*(2+l)*(3+l)*z^4");
+        "1/2*l*(1+l)-2*l*(1+l)*(2+l)*z^2+2/3*l*(1+l)*(2+l)*(3+l)*z^4");
     check("GegenbauerC(0, l, z)", //
         "1");
     check("GegenbauerC(0, 0, z)", //

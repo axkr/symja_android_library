@@ -9491,6 +9491,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFunctionRange() {
+    check("FunctionRange(Sin(x)*Cos(x),x,y)", //
+        "-1<=y<=1");
     // TODO
     // check("FunctionRange(Sqrt(x^2 - 1)/x, x, y)", //
     // "");
@@ -9511,8 +9513,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0<=y<=1");
     check("FunctionRange(Sqrt(Sin(2*x)),x,y)", //
         "0<=y<=1");
-    check("FunctionRange(Sin(x)*Cos(x),x,y)", //
-        "-1<=y<=1");
+
     check("FunctionRange(Sin(x),x,y)", //
         "-1<=y<=1");
     check("FunctionRange(Cos(x),x,y)", //
@@ -10323,10 +10324,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Hypergeometric2F1(2/3,3/7,10, 1)", //
         "(362880*Gamma(187/21))/(Gamma(28/3)*Gamma(67/7))");
 
-    // message Expand: m^2 and m are incompatible units
+    // message Plus: m^2 and m are incompatible units
     check("Hypergeometric2F1(-5,Quantity(1.2,\"m\"),c,1)", //
-        "Expand((-1.2[m]+c)*(1+-1.2[m]+c)*(2+-1.2[m]+c)*(3+-1.2[m]+c)*(4+-1.2[m]+c))/(c*(\n"
-            + "1+c)*(2+c)*(3+c)*(4+c))");
+        "(-28.8[m]+72.0[m^2]+-60.48[m^3]+20.736[m^4]+-2.48832[m^5]+24*c+-120.0[m]*c+151.2[m^2]*c+-69.12[m^3]*c+10.368[m^4]*c+\n" //
+            + "50*c^2+-126.0[m]*c^2+86.4[m^2]*c^2+-17.28[m^3]*c^2+35*c^3+-48.0[m]*c^3+14.4[m^2]*c^\n" //
+            + "3+10*c^4+-6.0[m]*c^4+c^5)/(c*(1+c)*(2+c)*(3+c)*(4+c))");
 
     // check("Hypergeometric2F1(1317624576693539401,0.333,-3/2,-0.5)", //
     // "Hypergeometric2F1(0.333,1.31762*10^18,-1.5,-0.5)");
@@ -21258,6 +21260,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{t,u},{y,z}}");
     check("B", //
         "{{1,t,u},{4,y,z},{7,8,9}}");
+
+    check("mat = {\n" //
+        + "    {1, 2, 3},\n" //
+        + "    {4, 5, 6},\n" //
+        + "    {7, 8, 9}\n" //
+        + "   };", //
+        "");
+    check("mat[[2]] = mat[[2]] + 10; MatrixForm(mat)", //
+        "{{1,2,3},\n"//
+            + " {14,15,16},\n"//
+            + " {7,8,9}}");
   }
 
   @Test
@@ -23299,6 +23312,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTagSet() {
+    // TagSet: Argument 42 at position 1 is expected to be a symbol.
+    check("42 /: g(h(x)) = 3", //
+        "42/:g(h(x))/:3");
+    // TagSet: Cannot assign to raw object 42.
+    check("zzz /: 42 = 40+2", //
+        "42");
     check("x /: g(h(x)) = 3", //
         "3");
     check("f/:format(f)=0", //
@@ -23315,6 +23334,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTagSetDelayed() {
+    // TagSetDelayed: Argument 42 at position 1 is expected to be a symbol.
+    check("42 /: f(a,g,z_)/;True := {z}", //
+        "TagSetDelayed(42,f(a,g,z_)/;True,{z})");
+
     check("g /: f(a,g,z_)/;True := {z}", //
         "");
     check("f(a,g,test)", //

@@ -370,7 +370,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("1+(-1+x)/(1-x)", "1+(-1+x)/(1-x)");
     check("i * ((1 - ((i * 1) / 10)) / (1 - ((i * 1) / 10)))", "i");
     check("((1 - ((i * 1.0) / 10)) / (1.0 - ((i * 1.0) / 10)))", //
-        "(1-0.1*i)/(1.0-0.1*i)");
+        "(1-i/10)/(1.0-i/10)");
     check("((1 - ((i * 1.0) / 10)) / (1.0 - ((i * 1.0) / 10))) // Simplify", //
         "1");
 
@@ -913,7 +913,6 @@ public class MainTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSystem038() {
-    // bitbucket issue#15
     check("Together(-(2*x-6)^(-1)-2*(-x+2)*(2*x-6)^(-2))", //
         "-1/(-18+12*x-2*x^2)");
     check("Simplify(-(2*x-6)^(-1)-2*(-x+2)*(2*x-6)^(-2))", //
@@ -947,10 +946,9 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("D(Sin(x)^Cos(x),x)", //
         "(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)");
     check("Trace(D(Sin(x)^Cos(x),x))", //
-        "{D(Sin(x)^Cos(x),x),Sin(x)^Cos(x)*(D(Cos(x),x)*Log(Sin(x))+(Cos(x)*D(Sin(x),x))/Sin(x)),{{{D(Cos(x),x),Cos'(x),{Derivative(\n" //
-            + "1)[Cos],-Sin(#1)&},-Sin(#1)&[x],-Sin(x)},-Sin(x)*Log(Sin(x)),-Log(Sin(x))*Sin(x)},{{D(Sin(x),x),Sin'(x),{Derivative(\n" //
-            + "1)[Sin],Cos(#1)&},Cos(#1)&[x],Cos(x)},{1/Sin(x),Csc(x)^1,Csc(x)},Cos(x)*Cos(x)*Csc(x),Cot(x)^\n" //
-            + "1*Cos(x),{Cot(x)^1,Cot(x)},Cos(x)*Cot(x)},Cos(x)*Cot(x)-Log(Sin(x))*Sin(x)},(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)}");
+        "{D(Sin(x)^Cos(x),x),Sin(x)^Cos(x)*(D(Cos(x),x)*Log(Sin(x))+(Cos(x)*D(Sin(x),x))/Sin(x)),{{{D(Cos(x),x),Cos'(x),{Derivative(\n"//
+            + "1)[Cos],-Sin(#1)&},-Sin(#1)&[x],-Sin(x)},-Sin(x)*Log(Sin(x)),-Log(Sin(x))*Sin(x)},{{D(Sin(x),x),Sin'(x),{Derivative(\n"//
+            + "1)[Sin],Cos(#1)&},Cos(#1)&[x],Cos(x)},{1/Sin(x),Csc(x)^1,Csc(x)},Cos(x)*Cos(x)*Csc(x),Cos(x)*Cot(x)},Cos(x)*Cot(x)-Log(Sin(x))*Sin(x)},(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)}");
   }
 
   @Test

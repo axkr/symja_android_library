@@ -1963,6 +1963,12 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check(input, expectedResult);
   }
 
+  @Test
+  public void testSolveReciprocal() {
+    check("Solve(x+1/x==2, x)", //
+        "{{x->1}}");
+
+  }
 
   @Test
   public void testSqrtSqrtSqrt() {
