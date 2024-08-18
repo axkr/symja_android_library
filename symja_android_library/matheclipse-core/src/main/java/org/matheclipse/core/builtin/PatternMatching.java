@@ -1891,6 +1891,7 @@ public final class PatternMatching {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr leftHandSide = ast.arg1();
+
       IExpr head = engine.evaluate(leftHandSide.head());
       if (head.topHead().equals(S.Association)) {
         head = S.Association;
@@ -1901,6 +1902,11 @@ public final class PatternMatching {
       } catch (final ConditionException e) {
       } catch (final ReturnException e) {
         rightHandSide = e.getValue();
+      }
+      if (!leftHandSide.isAST() && !leftHandSide.isSymbolOrPattern()) {
+        // Cannot assign to raw object `1`.
+        Errors.printMessage(S.Set, "setraw", F.list(leftHandSide), engine);
+        return rightHandSide;
       }
 
       try {
@@ -2018,6 +2024,12 @@ public final class PatternMatching {
       }
       try {
         final IExpr rightHandSide = ast.arg2();
+        if (!leftHandSide.isAST() && !leftHandSide.isSymbolOrPattern()) {
+          // Cannot assign to raw object `1`.
+          Errors.printMessage(S.SetDelayed, "setraw", F.list(leftHandSide), engine);
+          return rightHandSide;
+        }
+
         if (leftHandSide.isAST()) {
           if (head.isBuiltInSymbol()) {
             IBuiltInSymbol symbol = (IBuiltInSymbol) head;
@@ -2353,6 +2365,9 @@ public final class PatternMatching {
           Errors.printMessage(ast.topHead(), ve, engine);
           return rightHandSide;
         }
+      } else {
+        // Argument `1` at position `2` is expected to be a symbol.
+        Errors.printMessage(S.TagSet, "sym", F.list(arg1, F.C1), EvalEngine.get());
       }
       return F.NIL;
     }
@@ -2473,6 +2488,9 @@ public final class PatternMatching {
           Errors.printMessage(ast.topHead(), ve, engine);
           return S.Null;
         }
+      } else {
+        // Argument `1` at position `2` is expected to be a symbol.
+        Errors.printMessage(S.TagSetDelayed, "sym", F.list(arg1, F.C1), EvalEngine.get());
       }
       return F.NIL;
     }
@@ -2721,6 +2739,11 @@ public final class PatternMatching {
             return engine.evaluate(temp);
           }
         }
+        if (!leftHandSide.isAST() && !leftHandSide.isSymbolOrPattern()) {
+          // Cannot assign to raw object `1`.
+          Errors.printMessage(S.UpSet, "setraw", F.list(leftHandSide), engine);
+          return rightHandSide;
+        }
         Object[] result = createPatternMatcher(leftHandSide, rightHandSide, false, engine);
         return (IExpr) result[1];
       } catch (final ValidateException ve) {
@@ -2788,6 +2811,12 @@ public final class PatternMatching {
       final IExpr leftHandSide = ast.arg1();
       final IExpr rightHandSide = ast.arg2();
       try {
+        if (!leftHandSide.isAST() && !leftHandSide.isSymbolOrPattern()) {
+          // Cannot assign to raw object `1`.
+          Errors.printMessage(S.UpSetDelayed, "setraw", F.list(leftHandSide), engine);
+          return rightHandSide;
+        }
+
         createPatternMatcher(leftHandSide, rightHandSide, false, engine);
 
         return S.Null;
