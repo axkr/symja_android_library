@@ -925,6 +925,9 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
       return that;
     }
     if (that.isZero()) {
+      if (that.isInexactNumber()) {
+        return numericNumber();
+      }
       return this;
     }
     if (that instanceof IInteger) {
@@ -1130,12 +1133,18 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   @Override
   public INumber times(final INumber that) {
     if (isZero() || that.isZero()) {
+      if (that.isInexactNumber()) {
+        return F.CD0;
+      }
       return F.C0;
     }
     if (isOne()) {
       return that;
     }
     if (that.isOne()) {
+      if (that.isInexactNumber()) {
+        return numericNumber();
+      }
       return this;
     }
     if (that instanceof IInteger) {
