@@ -1,3 +1,4 @@
+- [Arithmetic](#arithmetic)
 - [Combinatorial](#combinatorial)
 - [Comparison](#comparison)
 - [Control flow statements](#control-flow-statements)
@@ -10,6 +11,19 @@
 - [Pattern matching](#pattern-matching)
 - [Plot functions](#plot-functions)
 - [Solvers](#solvers)
+
+## Arithmetic
+
+* [CubeRoot](functions/CubeRoot.md)
+* [Divide](functions/Divide.md)
+* [Minus](functions/Minus.md)
+* [Plus](functions/Plus.md)
+* [Power](functions/Power.md)
+* [Sqrt](functions/Sqrt.md)
+* [Subtract](functions/Subtract.md)
+* [Times](functions/Times.md)
+* [Accumulate](functions/Accumulate.md)
+* [Total](functions/Total.md)
 
 ## Combinatorial
 

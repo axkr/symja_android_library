@@ -54,16 +54,16 @@ g(x,y)
 a+b+c
 ```
 
-Apply can be written using the operator `@@`:
+`Apply` can be written using the operator `@@`:
 
 ```
 >> Times @@ {1, 2, 3, 4}
 24
 ```
 
-This exchanges the head List of `{1, 2, 3, 4}` with `Times`, and then the expression `Times(1, 2, 3, 4)` is evaluated, yielding `24`.
+This exchanges the head `List` of `{1, 2, 3, 4}` with `Times`, and then the expression `Times(1, 2, 3, 4)` is evaluated, yielding `24`.
 
-Apply can also be applied on a certain level of an expression:
+`Apply` can also be applied on a certain level of an expression:
 
 ```
 >> Apply(f, {{1, 2}, {3, 4}}, {1})
@@ -77,7 +77,7 @@ Or even on a range of levels:
 f(f(1,2),f(3,4))
 ```
 
-Apply is similar to Map (operator `/@`):
+`Apply` is similar to `Map` (operator `/@`):
 
 ```
 >> Map(f, {1, 2, 3, 4})
@@ -87,7 +87,7 @@ Apply is similar to Map (operator `/@`):
 {f({1,2}),f({3,4})}
 ```
 
-The atoms of Symja are numbers, symbols, and strings. AtomQ tests whether an expression is an atom:
+The atoms of Symja are numbers, symbols, and strings. `AtomQ` tests whether an expression is an atom:
 
 ```
 >> AtomQ(5)
@@ -121,7 +121,7 @@ Nevertheless, every atom has a head:
 Integer,Rational,Real,Complex,String,Symbol}
 ```
 
-The operator === tests whether two expressions are the same on a structural level:
+The operator `===` tests whether two expressions are the same on a structural level:
 
 ```
 >> 3 === 3
@@ -138,4 +138,4 @@ But
 False
 ```
 
-because 3 (an `Integer`) and 3.0 (a `Real`) are structurally different.
+because `3` (an `Integer`) and `3.0` (a `Real`) are structurally different.
