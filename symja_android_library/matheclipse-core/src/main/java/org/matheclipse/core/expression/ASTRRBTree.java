@@ -256,11 +256,8 @@ public class ASTRRBTree extends AbstractAST
     if (obj == null) {
       return false;
     }
-    if (hashCode() != obj.hashCode()) {
-      return false;
-    }
     if (obj instanceof AbstractAST) {
-      final IAST ast = (AbstractAST) obj;
+      final AbstractAST ast = (AbstractAST) obj;
       final int size = size();
       if (size != ast.size()) {
         return false;
@@ -277,7 +274,7 @@ public class ASTRRBTree extends AbstractAST
       if (hashCode() != ast.hashCode()) {
         return false;
       }
-      return forAll((x, i) -> x.equals(ast.getRule(i)), 1);
+      return parallelAllMatch(ast, 1, size(), (x, y) -> x.equals(y));
     }
     return false;
   }
@@ -365,32 +362,10 @@ public class ASTRRBTree extends AbstractAST
     return new ASTRRBTree(mutableRrb);
   }
 
-  @Override
-  public int hashCode() {
-    if (hashValue == 0) {
-      int size = size();
-      if (size <= 3) {
-        hashValue = (0x811c9dc5 * 16777619) ^ (size & 0xff); // decimal 2166136261;
-        for (int i = 0; i < size; i++) {
-          hashValue = (hashValue * 16777619) ^ (get(i).hashCode() & 0xff);
-        }
-      } else {
-        size = 4;
-        hashValue = (0x811c9dc5 * 16777619) ^ (size & 0xff); // decimal 2166136261;
-        hashValue = (hashValue * 16777619) ^ (head().hashCode() & 0xff);
-        hashValue = (hashValue * 16777619) ^ (arg1().hashCode() & 0xff);
-        hashValue = (hashValue * 16777619) ^ (arg2().hashCode() & 0xff);
-        hashValue = (hashValue * 16777619) ^ (arg3().hashCode() & 0xff);
-      }
-
-      hashValue = 0x811c9dc5; // decimal 2166136261;
-      UnmodListIterator<IExpr> iter = rrbTree.listIterator(0);
-      while (iter.hasNext()) {
-        hashValue = (hashValue * 16777619) ^ (iter.next().hashCode() & 0xff);
-      }
-    }
-    return hashValue;
-  }
+  // @Override
+  // public int hashCode() {
+  // don't override hashCode() from AbstractAST !
+  // }
 
   @Override
   public IExpr head() {

@@ -56,22 +56,30 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
     EMPIRICAL_DISTRIBUTION; // org.hipparchus.stat.fitting.EmpiricalDistribution
   }
 
-  /** NO_FLAG ACTIVATED */
-  public static final int NO_FLAG = 0x0000;
-
-  /** The head or one of the arguments of the list or sublists contains a pattern object */
-  public static final int CONTAINS_PATTERN = 0x0001;
-
-  /** The head or one of the arguments of the list or sublists contains a pattern object */
-  public static final int CONTAINS_PATTERN_SEQUENCE = 0x0002;
+  /**
+   * Is set, if the built-in function associated with this object was evaluated and no further
+   * evaluation is needed for the built-in evaluation function.
+   */
+  public static final int BUILT_IN_EVALED = 0x00040000;
 
   /**
    * One of the arguments of the list contains a pattern object which can be set to a default value.
    */
   public static final int CONTAINS_DEFAULT_PATTERN = 0x0004;
 
+  /** Negative flag mask for CONTAINS_DEFAULT_PATTERN */
+  public static final int CONTAINS_NO_DEFAULT_PATTERN_MASK = 0xFFFB;
+
   /** The list or the lists subexpressions contain no pattern object. */
   public static final int CONTAINS_NO_PATTERN = 0x0008;
+
+  /**
+   * Is set, if one of the (nested) arguments of a numeric function contains a numeric expression.
+   */
+  public static final int CONTAINS_NUMERIC_ARG = 0x00010000;
+
+  /** The head or one of the arguments of the list or sublists contains a pattern object */
+  public static final int CONTAINS_PATTERN = 0x0001;
 
   /**
    * One of the arguments of the list or sublists contains a pattern object. Combination of <code>
@@ -79,17 +87,11 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    */
   public static final int CONTAINS_PATTERN_EXPR = 0x0007;
 
-  /** Negative flag mask for CONTAINS_DEFAULT_PATTERN */
-  public static final int CONTAINS_NO_DEFAULT_PATTERN_MASK = 0xFFFB;
+  /** The head or one of the arguments of the list or sublists contains a pattern object */
+  public static final int CONTAINS_PATTERN_SEQUENCE = 0x0002;
 
-  /** This expression represents a matrix */
-  public static final int IS_MATRIX = 0x0020;
-
-  /** This expression represents a vector */
-  public static final int IS_VECTOR = 0x0040;
-
-  /** This expression represents a matrix or vector if one of the following bits is set. */
-  public static final int IS_MATRIX_OR_VECTOR = 0x0060;
+  /** This expression is already evaluated by ExpandAll() function */
+  public static final int IS_ALL_EXPANDED = 0x2000;
 
   /**
    * This expression represents an already decomposed partial fraction
@@ -98,8 +100,42 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    */
   public static final int IS_DECOMPOSED_PARTIAL_FRACTION = 0x0080;
 
+  /** This expression is already evaluated in the Derivative[] function */
+  public static final int IS_DERIVATIVE_EVALED = 0x8000;
+
+  /** This expression is already evaluated by Expand() function */
+  public static final int IS_EXPANDED = 0x1000;
+
+  /** This expression is an already evaled expression */
+  public static final int IS_FLAT_ORDERLESS_EVALED = 0x0800;
+
   /** This expression is an already flattened expression */
   public static final int IS_FLATTENED = 0x0100;
+
+  /** This expression is an already flattened or sorted expression */
+  public static final int IS_FLATTENED_OR_SORTED_MASK = 0x0300;
+
+  /** This expression is already evaluated by a HashedOrderlessMatcher function */
+  public static final int IS_HASH_EVALED = 0x4000;
+
+  /** This expression has already applied the Listable attribute to its argument expressions */
+  public static final int IS_LISTABLE_THREADED = 0x0400;
+
+  /** This expression represents a matrix */
+  public static final int IS_MATRIX = 0x0020;
+
+  /** This expression represents a matrix or vector if one of the following bits is set. */
+  public static final int IS_MATRIX_OR_VECTOR = 0x0060;
+
+  public static final int IS_NOT_NUMERIC_FUNCTION = 0x00800000;
+
+  public static final int IS_NOT_NUMERIC_FUNCTION_OR_LIST = 0x02000000;
+
+  public static final int IS_NUMERIC_FUNCTION = 0x00400000;
+
+  public static final int IS_NUMERIC_FUNCTION_OR_LIST = 0x01000000;
+
+  public static final int IS_NUMERIC_MASK = 0x03C00000;
 
   /**
    * This expression is an already sorted expression (i.e. sorted with the <code>Order()</code>
@@ -107,59 +143,23 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    */
   public static final int IS_SORTED = 0x0200;
 
-  /** This expression has already applied the Listable attribute to its argument expressions */
-  public static final int IS_LISTABLE_THREADED = 0x0400;
+  /** This expression represents a vector */
+  public static final int IS_VECTOR = 0x0040;
 
-  /** This expression is an already flattened or sorted expression */
-  public static final int IS_FLATTENED_OR_SORTED_MASK = 0x0300;
+  /** NO_FLAG ACTIVATED */
+  public static final int NO_FLAG = 0x0000;
 
-  /** This expression is an already evaled expression */
-  public static final int IS_FLAT_ORDERLESS_EVALED = 0x0800;
+  public static final int NUMERIC_ARBITRARY_EVALED = 0x08000000;
 
-  /** This expression is already evaluated by Expand() function */
-  public static final int IS_EXPANDED = 0x1000;
-
-  /** This expression is already evaluated by ExpandAll() function */
-  public static final int IS_ALL_EXPANDED = 0x2000;
-
-  /** This expression is already evaluated by a HashedOrderlessMatcher function */
-  public static final int IS_HASH_EVALED = 0x4000;
-
-  /** This expression is already evaluated in the Derivative[] function */
-  public static final int IS_DERIVATIVE_EVALED = 0x8000;
-
-  /**
-   * Is set, if one of the (nested) arguments of a numeric function contains a numeric expression.
-   */
-  public static final int CONTAINS_NUMERIC_ARG = 0x00010000;
-
-  /**
-   * Is set, if the built-in function associated with this object was evaluated and no further
-   * evaluation is needed for the built-in evaluation function.
-   */
-  public static final int BUILT_IN_EVALED = 0x00040000;
-
-  public static final int SEQUENCE_FLATTENED = 0x00080000;
+  public static final int NUMERIC_DOUBLE_EVALED = 0x04000000;
 
   /** This List expression args should be printed in multi-line style */
   public static final int OUTPUT_MULTILINE = 0x00100000;
 
+  public static final int SEQUENCE_FLATTENED = 0x00080000;
+
   /** The <code>Times(...)</code> expression was determined implicitly in the expression parser. */
   public static final int TIMES_PARSED_IMPLICIT = 0x00200000;
-
-  public static final int IS_NUMERIC_FUNCTION = 0x00400000;
-
-  public static final int IS_NOT_NUMERIC_FUNCTION = 0x00800000;
-
-  public static final int IS_NUMERIC_FUNCTION_OR_LIST = 0x01000000;
-
-  public static final int IS_NOT_NUMERIC_FUNCTION_OR_LIST = 0x02000000;
-
-  public static final int IS_NUMERIC_MASK = 0x03C00000;
-
-  public static final int NUMERIC_DOUBLE_EVALED = 0x04000000;
-
-  public static final int NUMERIC_ARBITRARY_EVALED = 0x08000000;
 
   default IExpr acceptChecked(IVisitor visitor) {
     try {
@@ -1035,7 +1035,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    */
   default IAST getItems(int[] items, int length) {
     return getItems(items, length, 0);
-  };
+  }
 
   /**
    * Returns <code>length</code> number of elements specified in the <code>items</code> position
@@ -1057,7 +1057,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @param index
    * @return
    */
-  public IAST getList(int index);
+  public IAST getList(int index);;
 
   /**
    * Casts an <code>IExpr</code> at position <code>index</code> to an <code>INumber</code>.
@@ -1607,6 +1607,12 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @see java.util.Optional#orElse(Object)
    */
   public IAST orElse(final IAST other);
+
+  public boolean parallelAllMatch(IAST ast, int startPosition, int endPosition,
+      BiPredicate<? super IExpr, ? super IExpr> predicate);
+
+  public boolean parallelAnyMatch(IAST ast, int startPosition, int endPosition,
+      BiPredicate<? super IExpr, ? super IExpr> predicate);
 
   /**
    * Calculate a special hash value for pattern matching

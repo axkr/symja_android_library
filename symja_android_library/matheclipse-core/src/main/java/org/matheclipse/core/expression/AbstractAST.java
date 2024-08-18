@@ -25,6 +25,7 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.apfloat.Apfloat;
 import org.hipparchus.complex.Complex;
@@ -890,6 +891,18 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     public final <X extends Throwable> IExpr orElseThrow(Supplier<? extends X> exceptionSupplier)
         throws X {
       throw exceptionSupplier.get();
+    }
+
+    @Override
+    public boolean parallelAllMatch(IAST ast, int startPosition, int endPosition,
+        BiPredicate<? super IExpr, ? super IExpr> predicate) {
+      return false;
+    }
+
+    @Override
+    public boolean parallelAnyMatch(IAST ast, int startPosition, int endPosition,
+        BiPredicate<? super IExpr, ? super IExpr> predicate) {
+      return false;
     }
 
     private Object readResolve() {
@@ -1853,11 +1866,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (obj == null) {
       return false;
     }
-    if (hashCode() != obj.hashCode()) {
-      return false;
-    }
     if (obj instanceof AbstractAST) {
-      final IAST ast = (AbstractAST) obj;
+      final AbstractAST ast = (AbstractAST) obj;
       if (size() != ast.size()) {
         return false;
       }
@@ -1870,7 +1880,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       } else if (!head.equals(ast.head())) {
         return false;
       }
-      return forAll((x, i) -> x.equals(ast.get(i)), 1);
+      if (hashCode() != obj.hashCode()) {
+        return false;
+      }
+      return parallelAllMatch(ast, 1, size(), (x, y) -> x.equals(y));
     }
     return false;
   }
@@ -1888,12 +1901,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (size() != other.size()) {
       return false;
     }
-    for (int i = startPosition; i < endPosition; i++) {
-      if (!getRule(i).equals(other.getRule(i))) {
-        return false;
-      }
-    }
-    return true;
+    return parallelAllMatch(other, startPosition, endPosition, (x, y) -> x.equals(y));
   }
 
   /** {@inheritDoc} */
@@ -2353,6 +2361,29 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       }
     }
     return value;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean parallelAllMatch(IAST ast, int startPosition, int endPosition,
+      BiPredicate<? super IExpr, ? super IExpr> predicate) {
+    IntStream stream = IntStream.range(startPosition, endPosition);
+    int rangeSize = endPosition - startPosition;
+    if (rangeSize <= Config.MIN_LIMIT_PERSISTENT_LIST || Config.JAS_NO_THREADS) {
+      return stream.allMatch(i -> predicate.test(getRule(i), ast.getRule(i)));
+    }
+    return stream.parallel().allMatch(i -> predicate.test(getRule(i), ast.getRule(i)));
+  }
+
+  @Override
+  public boolean parallelAnyMatch(IAST ast, int startPosition, int endPosition,
+      BiPredicate<? super IExpr, ? super IExpr> predicate) {
+    IntStream stream = IntStream.range(startPosition, endPosition);
+    int rangeSize = endPosition - startPosition;
+    if (rangeSize <= Config.MIN_LIMIT_PERSISTENT_LIST || Config.JAS_NO_THREADS) {
+      return stream.anyMatch(i -> predicate.test(getRule(i), ast.getRule(i)));
+    }
+    return stream.parallel().anyMatch(i -> predicate.test(getRule(i), ast.getRule(i)));
   }
 
   /** {@inheritDoc} */
