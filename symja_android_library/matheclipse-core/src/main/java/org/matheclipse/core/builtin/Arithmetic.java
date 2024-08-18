@@ -62,6 +62,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
+import org.matheclipse.core.eval.TimesOp;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
@@ -432,7 +433,7 @@ public final class Arithmetic {
   private static class AddTo extends AbstractFunctionEvaluator {
 
     protected IASTMutable getAST(final IExpr value) {
-      return (IASTMutable) F.Plus(null, value);
+      return F.Plus(null, value);
     }
 
     /**
@@ -1170,7 +1171,7 @@ public final class Arithmetic {
   private static class Decrement extends AbstractFunctionEvaluator {
 
     protected IASTMutable getAST() {
-      return (IASTMutable) F.Plus(null, F.CN1);
+      return F.Plus(null, F.CN1);
     }
 
     public Decrement() {
@@ -2364,7 +2365,7 @@ public final class Arithmetic {
 
     @Override
     protected IASTMutable getAST() {
-      return (IASTMutable) F.Plus(null, F.C1);
+      return F.Plus(null, F.C1);
     }
 
     @Override
@@ -4991,7 +4992,7 @@ public final class Arithmetic {
 
     @Override
     protected IASTMutable getAST() {
-      return (IASTMutable) F.Plus(null, F.CN1);
+      return F.Plus(null, F.CN1);
     }
 
     @Override
@@ -5040,7 +5041,7 @@ public final class Arithmetic {
 
     @Override
     protected IASTMutable getAST() {
-      return (IASTMutable) F.Plus(null, F.C1);
+      return F.Plus(null, F.C1);
     }
 
     @Override
@@ -5820,7 +5821,7 @@ public final class Arithmetic {
 
     @Override
     protected IASTMutable getAST(final IExpr value) {
-      return (IASTMutable) F.Plus(null, F.Negate(value));
+      return F.Plus(null, F.Negate(value));
     }
 
     @Override
@@ -6531,6 +6532,16 @@ public final class Arithmetic {
         // OneIdentity ?
         return (ast.head() == S.Times) ? ast.arg1() : F.NIL;
       }
+      IExpr timesOP = TimesOp.getProductNIL(ast);
+      if (timesOP.isPresent()) {
+        if (!timesOP.isTimes()) {
+          return timesOP;
+        }
+        if (timesOP.size() <= 2) {
+          return timesOP;
+        }
+        ast = (IAST) timesOP;
+      }
       if (size > 2 && !engine.isNumericMode()) {
         IAST temp = evaluateHashsRepeated(ast, engine);
         if (temp.isPresent()) {
@@ -6545,10 +6556,10 @@ public final class Arithmetic {
         }
       }
 
-      return evaluateTimesOp(ast, engine);
+      return evaluateTimesOp(ast, engine).orElse(timesOP);
     }
 
-    protected IExpr evaluateTimesOp(final IAST ast, EvalEngine engine) {
+    private IExpr evaluateTimesOp(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       int size = ast.size();
       if (size == 3) {

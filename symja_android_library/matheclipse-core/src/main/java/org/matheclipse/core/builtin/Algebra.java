@@ -43,6 +43,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
+import org.matheclipse.core.eval.TimesOp;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
@@ -1685,6 +1686,13 @@ public class Algebra {
           }
           result = expandTimesBinary(result, arg, engine);
         }
+        if (!timesAST.equals(result)) {
+          temp = EvalEngine.get().evaluateNIL(result);
+          if (temp.isPresent()) {
+            result = temp;
+            evaled = true;
+          }
+        }
         if (!evaled && timesAST.equals(result)) {
           addExpanded(timesAST);
           return F.NIL;
@@ -1763,7 +1771,7 @@ public class Algebra {
         plusAST0.forEach(x -> {
           final IExpr t = x.isPlusTimesPower() ? expandAST((IAST) x).orElse(x) : x;
           plusAST1.forEach(y -> {
-            // evaluate to flatten out Times() expresions
+            // evaluate to flatten out Times() expressions
             evalAndExpandAST(t, false, y, true, plusOp, engine);
           });
         });
@@ -1786,20 +1794,10 @@ public class Algebra {
         if (expr1.isNumber() && expr2.isNumber()) {
           return expr1.times(expr2);
         }
-        int size = expr1.isTimes() ? expr1.size() : 1;
-        size += expr2.isTimes() ? expr2.size() : 1;
-        IASTAppendable timesAST = F.TimesAlloc(size);
-        if (expr1.isTimes()) {
-          timesAST.appendAll((IAST) expr1, 1, expr1.size());
-        } else {
-          timesAST.append(expr1);
-        }
-        if (expr2.isTimes()) {
-          timesAST.appendAll((IAST) expr2, 1, expr2.size());
-        } else {
-          timesAST.append(expr2);
-        }
-        return timesAST;
+        TimesOp timesOp = new TimesOp(32);
+        timesOp.appendRecursive(expr1);
+        timesOp.appendRecursive(expr2);
+        return timesOp.getProduct();
       }
 
       /**
@@ -1844,18 +1842,22 @@ public class Algebra {
         }
         int size = expr1.isTimes() ? expr1.size() : 1;
         size += expr2.isTimes() ? expr2.size() : 1;
-        IASTAppendable timesAST = F.TimesAlloc(size);
-        if (expr1.isTimes()) {
-          timesAST.appendAll((IAST) expr1, 1, expr1.size());
-        } else {
-          timesAST.append(expr1);
-        }
-        if (expr2.isTimes()) {
-          timesAST.appendAll((IAST) expr2, 1, expr2.size());
-        } else {
-          timesAST.append(expr2);
-        }
-        return engine.evaluate(timesAST);
+        TimesOp timesOp = new TimesOp(size);
+        timesOp.appendRecursive(expr1);
+        timesOp.appendRecursive(expr2);
+        return timesOp.getProduct();
+        // IASTAppendable timesAST = F.TimesAlloc(size);
+        // if (expr1.isTimes()) {
+        // timesAST.appendAll((IAST) expr1, 1, expr1.size());
+        // } else {
+        // timesAST.append(expr1);
+        // }
+        // if (expr2.isTimes()) {
+        // timesAST.appendAll((IAST) expr2, 1, expr2.size());
+        // } else {
+        // timesAST.append(expr2);
+        // }
+        // return TimesOp.getProduct(timesAST, engine);
       }
 
       /**
@@ -1915,28 +1917,27 @@ public class Algebra {
         IInteger multinomial = NumberTheory.multinomial(j, n);
         IExpr temp;
         for (int[] indices : perm) {
-          final IASTAppendable timesAST = F.TimesAlloc(m + 8);
+          TimesOp timesOp = new TimesOp(32);
           if (!multinomial.isOne()) {
-            timesAST.append(multinomial);
+            timesOp.appendRecursive(multinomial);
           }
           for (int k = 0; k < m; k++) {
             if (indices[k] != 0) {
               temp = precalculatedPowerASTs.get(k + 1);
               if (indices[k] == 1) {
-                timesAST.append(temp);
+                timesOp.appendRecursive(temp);
               } else {
                 if (temp.isTimes()) {
                   IAST ast = (IAST) temp;
                   final int ki = k;
-                  timesAST.appendArgs(ast.size(), i -> F.Power(ast.get(i), F.ZZ(indices[ki])));
+                  timesOp.appendValues(1, ast.size(), i -> F.Power(ast.get(i), F.ZZ(indices[ki])));
                 } else {
-                  timesAST.append(F.Power(temp, F.ZZ(indices[k])));
+                  timesOp.appendRecursive(F.Power(temp, F.ZZ(indices[k])));
                 }
               }
             }
           }
-          timesAST.setEvalFlags(IAST.IS_SORTED);
-          expandedResult.append(timesAST.oneIdentity0());
+          expandedResult.append(timesOp.getProduct());
         }
       }
 
