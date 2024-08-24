@@ -1,16 +1,43 @@
 package org.matheclipse.core.system;
 
 import org.junit.Test;
+import org.matheclipse.core.basic.ToggleFeature;
 
 /** Tests for FindInstance function */
 public class FindInstanceTest extends ExprEvaluatorTestCase {
 
   @Test
-  public void testDiophantine() {
+  public void testDiophantine001() {
+    if (ToggleFeature.SOLVE_DIOPHANTINE) {
+      // ParabolicSolver
+      check("FindInstance(9*x^2 - 12*x*y + 4*y^2 + 3*x + 2*y == 12,{x,y},Integers, 3)", //
+          "{{x->0,y->-2},{x->1,y->0},{x->2,y->3}}");
+      // QuadraticSolver
+      check("FindInstance(3*x^2 - 8*x*y + 7*y^2 - 4*x + 2*y - 109 == 0,{x,y},Integers, 3)", //
+          "{{x->2,y->-3},{x->2,y->5},{x->14,y->9}}");
+      // Pell 4
+      check("FindInstance(x^2-29986*y^2-4 ==0,{x,y},Integers,1)", //
+          "{{x->135915148103491619905402044543098,y->784889635731418443294120995460}}");
+
+      check("FindInstance(x^2-29986*y^2-4 ==0,{x,y},Integers,3)", //
+          "{{x->-135915148103491619905402044543098,y->784889635731418443294120995460},{x->-\n" //
+              + "2,y->0},{x->135915148103491619905402044543098,y->-784889635731418443294120995460}}");
+    }
+  }
+
+  @Test
+  public void testDiophantine002() {
     // TODO return condition with extra variable C1
-    check("FindInstance(13*x+51*y==0, {x,y}, Integers, 6)", //
-        "{{x->-153,y->39},{x->-102,y->26},{x->-51,y->13},{x->0,y->0},{x->51,y->-13},{x->\n"
-            + "102,y->-26}}");
+    if (ToggleFeature.SOLVE_DIOPHANTINE) {
+      check("FindInstance(13*x+51*y==0, {x,y}, Integers, 6)", //
+          "{{x->-102,y->26},{x->-51,y->13},{x->0,y->0},{x->51,y->-13},{x->102,y->-26},{x->\n" //
+              + "153,y->-39}}");
+    } else {
+      // choco-solver solutions:
+      check("FindInstance(13*x+51*y==0, {x,y}, Integers, 6)", //
+          "{{x->-153,y->39},{x->-102,y->26},{x->-51,y->13},{x->0,y->0},{x->51,y->-13},{x->\n" //
+              + "102,y->-26}}");
+    }
   }
 
   @Test

@@ -16,6 +16,7 @@ import static org.matheclipse.core.expression.F.Times;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -79,6 +80,7 @@ import org.matheclipse.core.interfaces.ISeqBase;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numbertheory.Primality;
+import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.sympy.series.Sequences;
 import org.matheclipse.core.visit.VisitorExpr;
 import com.google.common.math.BigIntegerMath;
@@ -88,8 +90,14 @@ import edu.jas.arith.BigRational;
 import edu.jas.arith.ModInteger;
 import edu.jas.arith.ModIntegerRing;
 import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.Monomial;
 import edu.jas.ufd.FactorAbstract;
 import edu.jas.ufd.FactorFactory;
+import io.github.mangara.diophantine.QuadraticSolver;
+import io.github.mangara.diophantine.Utils;
+import io.github.mangara.diophantine.XYPair;
+import io.github.mangara.diophantine.quadratic.ParabolicSolver;
+import io.github.mangara.diophantine.quadratic.PellsSolver;
 
 public final class NumberTheory {
 
@@ -6614,6 +6622,125 @@ public final class NumberTheory {
         }
       }
     }
+    return F.NIL;
+  }
+
+  public static IAST diophantinePolynomial(final IExpr expr, IAST varList,
+      int maximumNumberOfResults) {
+    VariablesSet varSet = new VariablesSet(varList);
+    IASTMutable result = F.NIL;
+    try {
+      // try to generate a common expression polynomial
+      JASConvert<edu.jas.arith.BigInteger> jas = new JASConvert<edu.jas.arith.BigInteger>(
+          varSet.getArrayList(), edu.jas.arith.BigInteger.ZERO);
+      GenPolynomial<edu.jas.arith.BigInteger> ePoly = jas.expr2JAS(expr, false);
+      result = diophantinePolynomial(ePoly, varList, maximumNumberOfResults);
+      result = QuarticSolver.sortASTArguments(result);
+      return result;
+    } catch (JASConversionException e2) {
+      e2.printStackTrace();
+    }
+    return result;
+  }
+
+  private static IASTAppendable diophantinePolynomial(
+      GenPolynomial<edu.jas.arith.BigInteger> polynomial, IAST varList,
+      int maximumNumberOfResults) {
+    long varDegree = polynomial.degree(0);
+
+    if (polynomial.isConstant()) {
+      return F.ListAlloc(1);
+    }
+    // a*x^2 + b*x*y + c*y^2 + d*x + e*y + f = 0
+    BigInteger a = BigInteger.ZERO;
+    BigInteger b = BigInteger.ZERO;
+    BigInteger c = BigInteger.ZERO;
+    BigInteger d = BigInteger.ZERO;
+    BigInteger e = BigInteger.ZERO;
+    BigInteger f = BigInteger.ZERO;
+    try {
+      if (varDegree <= 2) {
+        if (varList.argSize() == 1) {
+          // x is only variable => b=0;c=0;e=0;
+          for (Monomial<edu.jas.arith.BigInteger> monomial : polynomial) {
+            edu.jas.arith.BigInteger coeff = monomial.coefficient();
+            BigInteger zz = coeff.val;
+            long xExp = monomial.exponent().getVal(0);
+            if (xExp == 2) {
+              a = zz;
+            } else if (xExp == 1) {
+              d = zz;
+            } else if (xExp == 2) {
+              f = zz;
+            } else {
+              throw new ArithmeticException(
+                  "diophantinePolynomial::Unexpected exponent value: " + xExp);
+            }
+          }
+        } else if (varList.argSize() == 2) {
+          // x and y are both variables
+          // a*x^2 + b*x*y + c*y^2 + d*x + e*y + f = 0
+          for (Monomial<edu.jas.arith.BigInteger> monomial : polynomial) {
+            edu.jas.arith.BigInteger coeff = monomial.coefficient();
+            BigInteger zz = coeff.val;
+            int xi = monomial.exponent().varIndex(0);
+            int yi = monomial.exponent().varIndex(1);
+            long xExp = monomial.exponent().getVal(xi);
+            long yExp = monomial.exponent().getVal(yi);
+            if (xExp == 2 && yExp == 0) {
+              a = zz;
+            } else if (xExp == 1 && yExp == 1) {
+              b = zz;
+            } else if (xExp == 0 && yExp == 2) {
+              c = zz;
+            } else if (xExp == 1 && yExp == 0) {
+              d = zz;
+            } else if (xExp == 0 && yExp == 1) {
+              e = zz;
+            } else if (xExp == 0 && yExp == 0) {
+              f = zz;
+            } else {
+              throw new ArithmeticException(
+                  "diophantinePolynomial::Unexpected exponent value: " + xExp);
+            }
+          }
+        }
+        Iterator<XYPair> diophantineSolver = null;
+        IASTAppendable result = F.ListAlloc();
+        if (maximumNumberOfResults == 1 && c.signum() < 0 && f.equals(BigInteger.valueOf(-4))
+            && b.signum() == 0 && d.signum() == 0 && e.signum() == 0) {
+          BigInteger cNegate = c.negate();
+          if (!Utils.isSquare(cNegate)) {
+            // use Pell's equation if -c is not a perfect square
+            XYPair xyPair = PellsSolver.leastPositivePellsFourSolution(cNegate);
+            result.append(F.List(F.Rule(varList.arg1(), F.ZZ(xyPair.x)),
+                F.Rule(varList.arg2(), F.ZZ(xyPair.y))));
+            return result;
+          }
+        }
+        if (a.signum() != 0 || b.signum() != 0 || c.signum() != 0) {
+          // D := b^2 - 4ac && D == 0
+          BigInteger D = b.multiply(b).subtract(a.multiply(c).multiply(BigInteger.valueOf(4)));
+          if (D.signum() == 0) {
+            diophantineSolver = ParabolicSolver.solve(a, b, c, d, e, f);
+          }
+        }
+        if (diophantineSolver == null) {
+          diophantineSolver = QuadraticSolver.solve(a, b, c, d, e, f);
+        }
+
+        int n = 0;
+        while (diophantineSolver.hasNext() && n++ < maximumNumberOfResults) {
+          XYPair xyPair = diophantineSolver.next();
+          result.append(F.List(F.Rule(varList.arg1(), F.ZZ(xyPair.x)),
+              F.Rule(varList.arg2(), F.ZZ(xyPair.y))));
+        }
+        return result;
+      }
+    } catch (ArithmeticException aex) {
+      //
+    }
+
     return F.NIL;
   }
 }

@@ -58,5 +58,11 @@ public class ToggleFeature {
    */
   public static boolean SERIES_DENOMINATOR = false;
 
+  /**
+   * If <code>true</code>, enable solvers from package <code>io.github.mangara.diophantine</code> to
+   * find some solutions in {@link S#FindInstance}
+   */
+  public static boolean SOLVE_DIOPHANTINE = true;
+
   public static boolean SHOW_STEPS = true;
 }

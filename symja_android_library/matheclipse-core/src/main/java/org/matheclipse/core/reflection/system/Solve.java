@@ -9,9 +9,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
+import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.builtin.RootsFunctions;
 import org.matheclipse.core.convert.ChocoConvert;
@@ -1289,6 +1291,19 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         return F.NIL;
       }
       try {
+        if (ToggleFeature.SOLVE_DIOPHANTINE) {
+          if (equationsAndInequations.argSize() == 1) {
+            IExpr eq1 = equationsAndInequations.arg1();
+            if (eq1.isEqual() && eq1.second().isZero()) {
+              IAST diophantineResult = NumberTheory.diophantinePolynomial(eq1.first(),
+                  equationVariables, maximumNumberOfResults);
+              if (diophantineResult.isPresent()) {
+                return diophantineResult;
+              }
+            }
+          }
+        }
+
         if (equationsAndInequations.isFreeAST(x -> chocoSolver(x))) {
           // choco-solver doesn't handle Power() expressions very well at the moment!
           try {

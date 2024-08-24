@@ -356,7 +356,14 @@ public class JASConvert<C extends RingElem<C>> {
             // "JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
           }
           try {
-            return fPolyFactory.univariate(base.getSymbolName(), exponent);
+            GenPolynomial<C> v = fPolyFactory.univariate(base.getSymbolName(), 1L);
+            return v.power(exponent);
+            // int indexOf = fVariables.indexOf(base);
+            // if (indexOf >= 0) {
+            // ExpVectorLong v = new ExpVectorLong(fVariables.size(), indexOf, exponent);
+            // return fPolyFactory.valueOf(fRingFactory.getONE(), v);
+            // }
+            // return fPolyFactory.univariate(base.getSymbolName(), exponent);
           } catch (IllegalArgumentException iae) {
             // fall through
           }
