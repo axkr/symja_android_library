@@ -1440,8 +1440,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     }
     if (defaultValueMatched[0]) {
       if (cloned.isOneIdentityAST1()) {
-        cloned.arg1().addEvalFlags(IAST.CONTAINS_DEFAULT_PATTERN);
-        return cloned.arg1();
+        IExpr arg1 = cloned.arg1();
+        // set IAST.CONTAINS_DEFAULT_PATTERN is necessary by calling #isFreeOfPatterns()
+        arg1.isFreeOfPatterns();
+        return arg1;
       }
       return cloned;
     }
@@ -1746,8 +1748,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     }
     if (defaultValueMatched) {
       if (cloned.isOneIdentityAST1()) {
-        cloned.arg1().addEvalFlags(IAST.CONTAINS_DEFAULT_PATTERN);
-        return cloned.arg1();
+        IExpr arg1 = cloned.arg1();
+        // set IAST.CONTAINS_DEFAULT_PATTERN is necessary by calling #isFreeOfPatterns()
+        arg1.isFreeOfPatterns();
+        return arg1;
       }
       return cloned;
     }

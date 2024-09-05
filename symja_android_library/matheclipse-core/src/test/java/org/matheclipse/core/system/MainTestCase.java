@@ -1797,7 +1797,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Integrate(Log(x)*x^2,x)", //
         "-x^3/9+1/3*x^3*Log(x)");
     check("Integrate((x^2+1)*Log(x),x)", //
-        "-x-x^3/9+x*Log(x)+1/3*x^3*Log(x)");
+        "1/3*(-3*x-x^3/3)+1/3*(3*x+x^3)*Log(x)");
     check("Simplify(D(ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1),x))",
         "x/(1+x^3)");
 
