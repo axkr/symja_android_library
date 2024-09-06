@@ -461,7 +461,6 @@ public class D extends AbstractFunctionEvaluator {
 
     if (functionOfX.isAST()) {
       final IAST function = (IAST) functionOfX;
-      final IExpr header = function.head();
       if (function.isPlus()) {
         // D(a_+b_+c_,x_) -> D(a,x)+D(b,x)+D(c,x)
         return function.mapThread(F.D(F.Slot1, x), 1)//
@@ -471,11 +470,11 @@ public class D extends AbstractFunctionEvaluator {
       } else if (function.isPower()) {
         return power(function, x);
       } else if (function.isAST(S.Surd, 3)) {
-        // Surd[f,g]
+        // Surd(f,g)
         return surd(function, x);
-      } else if ((header == S.Log) && (function.isAST2())) {
+      } else if (function.isAST(S.Log,3)) {
         if (function.isFreeAt(1, x)) {
-          // D[Log[i_FreeQ(x), x_], z_]:= (x*Log[a])^(-1)*D[x,z];
+          // D(Log(i_FreeQ(x), x_), z_):= (x*Log(a))^(-1)*D(x,z);
           return F.Times(F.Power(F.Times(function.arg2(), F.Log(function.arg1())), F.CN1),
               F.D(function.arg2(), x));
         }
@@ -502,6 +501,21 @@ public class D extends AbstractFunctionEvaluator {
         // // D(LaplaceTransform(c,t,s), t) -> 0
         // return F.C0;
         // }
+      } else if (function.isAST(S.Integrate)) {
+        if (function.argSize() == 2 //
+            && function.second().isList3()//
+            && function.second().getAt(3).equals(x)) {
+          // D(Integrate(f(t), {t, a, x}),x) -> f(x)
+          // https://en.wikipedia.org/wiki/Fundamental_theorem_of_calculus#First_part
+          IAST list = (IAST) function.second();
+          IExpr t = list.arg1();
+          if (t.isFree(x, true) //
+              && list.arg2().isFree(x, true) //
+              && list.arg2().isFree(t, true)) {
+            return F.subst(function.arg1(), arg -> arg.equals(t) ? x : F.NIL);
+          }
+        }
+        return F.NIL;
       } else if (function.isAST1() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
         IAST[] derivStruct = function.isDerivativeAST1();
         if (derivStruct != null && derivStruct[2] != null) {
@@ -524,9 +538,10 @@ public class D extends AbstractFunctionEvaluator {
           }
           return F.NIL;
         }
-        return getDerivativeArg1(x, function.arg1(), header, engine);
-      } else if (function.isAST() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
-        return getDerivativeArgN(x, function, header);
+        return getDerivativeArg1(x, function.arg1(), function.head(), engine);
+      }
+      if (ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
+        return getDerivativeArgN(x, function, function.head());
       }
     }
     return F.NIL;
