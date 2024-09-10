@@ -241,8 +241,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     } catch (InterruptedException ignored) {
     }
 
-    IAssumptions oldAssumptions = engine.getAssumptions();
-    boolean numericMode = engine.isNumericMode();
+    final IAssumptions oldAssumptions = engine.getAssumptions();
+    final boolean oldNumericMode = engine.isNumericMode();
     try {
       IExpr assumptionOption = option[0];
       IExpr assumptionExpr = OptionArgs.determineAssumptions(assumptionOption);
@@ -256,10 +256,27 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
 
       boolean evaled = false;
       IExpr result;
-      engine.setNumericMode(false);
       if (argSize < 2 || holdallAST.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
         return F.NIL;
       }
+      if (engine.isNumericMode()) {
+        IExpr arg2 = engine.evaluate(holdallAST.arg2());
+        if (arg2.isList3()) {
+          IAST xList = (IAST) arg2;
+          IASTAppendable copy = holdallAST.apply(S.NIntegrate);
+          copy.set(2, xList);
+          IExpr temp = engine.evaluate(copy);
+          if (temp.isFreeAST(S.NIntegrate)) {
+            return temp;
+          }
+
+          // Invalid integration variable or limit(s) in `1`.
+          return Errors.printMessage(S.Integrate, "ilim", F.List(arg2), engine);
+        }
+        return F.NIL;
+      }
+      engine.setNumericMode(false);
+
       final IExpr arg1Holdall = holdallAST.arg1();
       final IExpr a1 = NumberTheory.rationalize(arg1Holdall, false).orElse(arg1Holdall);
       IExpr arg1 = engine.evaluateNIL(a1);
@@ -298,7 +315,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         // Invalid integration variable or limit(s) in `1`.
         return Errors.printMessage(S.Integrate, "ilim", F.List(arg2), engine);
       }
-      if (arg1.isList() && arg2.isSymbol()) {
+      if (arg1.isList() && arg2.isVariable()) {
         return mapIntegrate((IAST) arg1, arg2);
       }
 
@@ -357,56 +374,30 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           return result;
         }
 
-        if (fx.argSize() > 0 || fx.head().isBuiltInSymbol()) {
+        if (fx.argSize() > 0 || fx.isBuiltInFunction()) {
           IExpr temp = POWER_TIMES_FUNCTION.xPowNTimesFmx(fx, x, engine);
           if (temp.isPresent()) {
             return temp;
           }
         }
+        IExpr temp = integrateTimesPower(fx, x);
+        if (temp.isPresent()) {
+          return temp;
+        }
         result = integrateByRubiRules(fx, x, ast, engine);
         if (result.isPresent()) {
-          IExpr temp = result.replaceAll(f -> {
-            if (f.isAST(UtilityFunctionCtors.Unintegrable, 3)
-                || f.isAST(F.$rubi("CannotIntegrate"), 3)) {
+          return F.subst(result, f -> {
+            if (f.isAST(UtilityFunctionCtors.Unintegrable, 3)) {
               IAST integrate = F.Integrate(f.first(), f.second());
-              integrate.builtinEvaled();
+              integrate.addEvalFlags(IAST.BUILT_IN_EVALED);
+              return integrate;
+            } else if (f.isAST(F.$rubi("CannotIntegrate"), 3)) {
+              IAST integrate = F.Integrate(f.first(), f.second());
+              integrate.addEvalFlags(IAST.BUILT_IN_EVALED);
               return integrate;
             }
             return F.NIL;
           });
-          return temp.orElse(result);
-        }
-
-        if (fx.isTimes()) {
-          IAST[] temp = fx.filter(arg -> arg.isFree(x));
-          IExpr free = temp[0].oneIdentity1();
-          if (!free.isOne()) {
-            IExpr rest = temp[1].oneIdentity1();
-            // Integrate[free_ * rest_,x_Symbol] -> free*Integrate[rest, x] /; FreeQ[free,x]
-            return Times(free, Integrate(rest, x));
-          }
-        }
-        if (fx.isPower()) {
-          // base ^ exponent
-          IExpr base = fx.base();
-          IExpr exponent = fx.exponent();
-          if (base.equals(x) && exponent.isFree(x)) {
-            if (exponent.isMinusOne()) {
-              // Integrate[ 1 / x_ , x_ ] -> Log[x]
-              return Log(x);
-            }
-            // Integrate[ x_ ^n_ , x_ ] -> x^(n+1)/(n+1) /; FreeQ[n, x]
-            IExpr temp = Plus(F.C1, exponent);
-            return Divide(Power(x, temp), temp);
-          }
-          if (exponent.equals(x) && base.isFree(x)) {
-            if (base.isE()) {
-              // E^x
-              return fx;
-            }
-            // a^x / Log(a)
-            return F.Divide(fx, F.Log(base));
-          }
         }
 
         result = callRestIntegrate(fx, x, engine);
@@ -417,8 +408,43 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return evaled ? ast : F.NIL;
     } finally {
       engine.setAssumptions(oldAssumptions);
-      engine.setNumericMode(numericMode);
+      engine.setNumericMode(oldNumericMode);
     }
+  }
+
+  private static IExpr integrateTimesPower(final IAST function, final IExpr x) {
+    if (function.isTimes()) {
+      IAST[] temp = function.filter(arg -> arg.isFree(x));
+      IExpr free = temp[0].oneIdentity1();
+      if (!free.isOne()) {
+        IExpr rest = temp[1].oneIdentity1();
+        // Integrate(free_ * rest_,x_) -> free*Integrate(rest, x) /; FreeQ(free,x)
+        return Times(free, Integrate(rest, x));
+      }
+    }
+    if (function.isPower()) {
+      // base ^ exponent
+      IExpr base = function.base();
+      IExpr exponent = function.exponent();
+      if (base.equals(x) && exponent.isFree(x)) {
+        if (exponent.isMinusOne()) {
+          // Integrate[ 1 / x_ , x_] -> Log[x]
+          return Log(x);
+        }
+        // Integrate[ x_ ^n_ , x_ ] -> x^(n+1)/(n+1) /; FreeQ[n, x]
+        IExpr temp = Plus(F.C1, exponent);
+        return Divide(Power(x, temp), temp);
+      }
+      if (exponent.equals(x) && base.isFree(x)) {
+        if (base.isE()) {
+          // E^x
+          return function;
+        }
+        // a^x / Log(a)
+        return F.Divide(function, F.Log(base));
+      }
+    }
+    return F.NIL;
   }
 
   /**
@@ -785,7 +811,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
               if (temp.equals(ast)) {
                 if (LOGGER.isDebugEnabled()) {
                   engine.setQuietMode(false);
-                  Errors.printMessage(S.Integrate, "rubiendless", F.list(temp), engine);
+                  Errors.printMessage(S.Integrate, "rubiendless",
+                      F.list(temp, F.stringx("UNKNOWN")), engine);
                 }
                 return F.NIL;
               }

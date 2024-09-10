@@ -959,11 +959,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
   private boolean matchASTSpecialBuiltIn(IAST lhsPatternAST, final IExpr lhsEvalExpr,
       EvalEngine engine, StackMatcher stackMatcher) {
     int functionID = lhsPatternAST.headID();
-    if (functionID >= ID.Association && functionID <= ID.Verbatim) {
-      if (functionID == ID.Association) {
-        return matchAssociation(lhsPatternAST, lhsEvalExpr, stackMatcher, engine);
-      }
-      if (lhsPatternAST.size() == 2) {
+    if (functionID >= ID.Alternatives && functionID <= ID.Verbatim) {
+      if (lhsPatternAST.size() == 2 && functionID >= ID.Except) {
         switch (functionID) {
           case ID.Except:
             return matchExcept1(lhsPatternAST, lhsEvalExpr, stackMatcher, engine);
@@ -976,28 +973,29 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
             return lhsPatternAST.arg1().equals(lhsEvalExpr);
           default:
         }
-      } else if (lhsPatternAST.size() == 3) {
-        if (functionID >= ID.Complex && functionID <= ID.Rational) {
-          switch (functionID) {
-            case ID.Complex:
-              return matchComplex(lhsPatternAST, lhsEvalExpr, stackMatcher, engine);
-            case ID.Condition:
-              return matchCondition(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
-            case ID.Except:
-              return matchExcept2(lhsPatternAST, lhsEvalExpr, stackMatcher, engine);
-            case ID.Optional:
-              return matchOptional(lhsPatternAST, lhsEvalExpr, stackMatcher, engine);
-            case ID.PatternTest:
-              return matchPatternTest(lhsPatternAST, lhsEvalExpr, stackMatcher, engine);
-            case ID.Rational:
-              return matchRational(lhsPatternAST, lhsEvalExpr, stackMatcher, engine);
-            default:
-          }
+      } else if (lhsPatternAST.size() == 3 && functionID >= ID.Complex
+          && functionID <= ID.Rational) {
+        switch (functionID) {
+          case ID.Complex:
+            return matchComplex(lhsPatternAST, lhsEvalExpr, stackMatcher, engine);
+          case ID.Condition:
+            return matchCondition(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
+          case ID.Except:
+            return matchExcept2(lhsPatternAST, lhsEvalExpr, stackMatcher, engine);
+          case ID.Optional:
+            return matchOptional(lhsPatternAST, lhsEvalExpr, stackMatcher, engine);
+          case ID.PatternTest:
+            return matchPatternTest(lhsPatternAST, lhsEvalExpr, stackMatcher, engine);
+          case ID.Rational:
+            return matchRational(lhsPatternAST, lhsEvalExpr, stackMatcher, engine);
+          default:
         }
       }
-    } else {
       if (lhsPatternAST.isAlternatives()) {
         return matchAlternatives(lhsPatternAST, lhsEvalExpr, engine);
+      }
+      if (functionID == ID.Association) {
+        return matchAssociation(lhsPatternAST, lhsEvalExpr, stackMatcher, engine);
       }
     }
 

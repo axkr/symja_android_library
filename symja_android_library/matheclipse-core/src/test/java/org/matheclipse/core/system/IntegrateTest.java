@@ -65,6 +65,12 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testIntegratePower() {
+    check("Integrate((x+1)^3 ,x)", //
+        "(1+x)^4/4");
+  }
+
+  @Test
   public void testIntegrateIssue851() {
     check("Integrate(x^n*Haversine(m*x^p),x)", //
         "(x^(1+n)*(2*p*(m^2*x^(2*p))^((1+n)/p)+(1+n)*(I*m*x^p)^((1+n)/p)*Gamma((1+n)/p,-I*m*x^p)+(\n" //
@@ -143,7 +149,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testIntegrate() {
+  public void testIntegrateMessage() {
     // message Integrate: Invalid integration variable or limit(s) in {x}.
     check("Integrate(x^2,{x})", //
         "Integrate(x^2,{x})");
@@ -154,15 +160,17 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
             + "100000*m]");
     check("Integrate(Tan(x),Cos(x))", //
         "Integrate(Tan(x),Cos(x))");
-    check("Integrate(Piecewise({{1/(2 x^2), Abs(x) > 1} },4),x)", //
-        "Piecewise({{-1/(2*x),Abs(x)>1}},4*x)");
-    check("Integrate(Piecewise({{x^2, x <= 0}, {x, x > 0}}),x)", //
-        "Piecewise({{x^3/3,x<=0},{x^2/2,x>0}},0)");
+
+  }
+
+  @Test
+  public void testIntegrateIncomplete() {
 
     check("Integrate((Sinh(x)-x)/(x^2*Sinh(x)),x)", //
         "-1/x-Integrate(Csch(x)/x,x)");
     check("Refine(Integrate(Abs(E+Pi*x^(-8)),x), Element(x,Reals))", //
         "-Pi/(7*x^7)+E*x");
+
     check("Refine(Integrate(Abs(Pi+42*x^6),x), Element(x,Reals))", //
         "Pi*x+6*x^7");
     check("Refine(Integrate(Abs(E+Pi*x^(-1)),x), Element(x,Reals))", //
@@ -171,6 +179,16 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("Refine(Integrate(Abs(E+2*x^(-1)),x), Element(x,Reals))", //
         "Piecewise({{E*x+2*Log(x),x<=-2/E},{-E*x+4*(-2+I*2+Log(2))-2*Log(x),-2/E<x&&x<=0}},E*x+\n"
             + "2*Log(x))");
+  }
+
+  @Test
+  public void testIntegrate() {
+
+    check("Integrate(Piecewise({{1/(2 x^2), Abs(x) > 1} },4),x)", //
+        "Piecewise({{-1/(2*x),Abs(x)>1}},4*x)");
+    check("Integrate(Piecewise({{x^2, x <= 0}, {x, x > 0}}),x)", //
+        "Piecewise({{x^3/3,x<=0},{x^2/2,x>0}},0)");
+
 
     check("Refine(Integrate(Abs(E+2*x),x), Element(x,Reals))", //
         "Piecewise({{-E*x-x^2,x<=-E/2}},E^2/Pi+E*x+x^2)");
@@ -228,7 +246,8 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     // check("Apart(a/((8/3*a*b^(2/3)-16/9*b)^2*(4/3*a*b^(2/3)+16/9*b)))", //
     // "a/(a^3-4/3*a*b^(2/3)+16/27*b)");
     check("Integrate(a/(a^3-4/3*a*b^(2/3)+16/27*b),a)", //
-        "-1/(3*a-2*b^(1/3))+Log(3*a-2*b^(1/3))/(3*b^(1/3))-Log(3*a+4*b^(1/3))/(3*b^(1/3))");
+        "((-3*b^(1/3))/(3*a-2*b^(1/3))+Log(3*a-2*b^(1/3)))/(3*b^(1/3))-Log(3*a+4*b^(1/3))/(\n"
+            + "3*b^(1/3))");
     check(
         "Simplify(D(-1/(3*a-2*b^(1/3))+Log(3*a-2*b^(1/3))/(3*b^(1/3))-Log(3*a+4*b^(1/3))/(3*b^(1/3)),a))", //
         "(27*a)/(27*a^3-36*a*b^(2/3)+16*b)"); // "3/(3*a-2*b^(1/3))^2+1/(3*a*b^(1/3)-2*b^(2/3))-1/(3*a*b^(1/3)+4*b^(2/3))");
@@ -262,7 +281,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "ConditionalExpression(1/(1+n),n>-1)");
     // https://github.com/RuleBasedIntegration/Rubi/issues/12
     check("Integrate(Tan(Log(x)),x)", //
-        "-I*x+I*2*x*Hypergeometric2F1(-I*1/2,1,1-I*1/2,-x^(I*2))");
+        "I*(-x+2*x*Hypergeometric2F1(-I*1/2,1,1-I*1/2,-x^(I*2)))");
 
     check("Integrate(5*E^(3*x),{x,2,a})", //
         "1/3*(-5*E^6+5*E^(3*a))");
@@ -373,4 +392,214 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     checkNumeric("NIntegrate(1/Sin(Sqrt(x)), {x, 0, 1}, PrecisionGoal->10)", //
         "2.1108620052");
   }
+
+  @Test
+  public void testSystem171() {
+    check("N(Integrate(Sin(x),x))", "-Cos(x)");
+    check("N(Sin(x))", "Sin(x)");
+    check("Cancel((1*x+1/2*2)^((-1)*2)*1^(-1)^(-1))", "1/(1+x)^2");
+    check("Integrate(1/(a+b*x),x)", "Log(a+b*x)/b");
+    check("Integrate((a+b*x)^(1/3),x)", "3/4*(a+b*x)^(4/3)/b");
+  }
+
+  @Test
+  public void testSystem171a() {
+    check("Integrate(1/(x^5+x-7),x)", //
+        "Integrate(1/(-7+x+x^5),x)");
+
+    check("Rubi`PolyQ(x/(2*Sqrt(2)),x,1)", //
+        "True");
+    check("Rubi`PolyQ((2+2*x)/(2*Sqrt(2)),x)", //
+        "True");
+    // check("Rubi`PolyQ(2+2 *x,x,1)", //
+    // "True");
+    // check("Rubi`PolyQ(-(ArcTan((1+x)/Sqrt(2))/(2 Sqrt(2))),x )", //
+    // "True");
+    check("Rubi`substaux(-ArcTan(x/(2*Sqrt(2)))/(2*Sqrt(2)),x,2+2*x,True)", //
+        "-ArcTan((1+x)/Sqrt(2))/(2*Sqrt(2))");
+    check("Integrate((x^2+2*x+3)^(-1),x)", //
+        "ArcTan((1+x)/Sqrt(2))/Sqrt(2)");
+
+    check("Integrate((x-2)^(-3),x)", "-1/(2*(2-x)^2)");
+    check("D(-1/(2*(2-x)^2),x)", "-1/(2-x)^3");
+    check("Integrate(Log(x)*x^2,x)", //
+        "-x^3/9+1/3*x^3*Log(x)");
+    check("Integrate((x^2+1)*Log(x),x)", //
+        "1/3*(-3*x-x^3/3)+1/3*(3*x+x^3)*Log(x)");
+    check("Simplify(D(ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1),x))",
+        "x/(1+x^3)");
+
+    check("Integrate(x/(x^3+1),x)", //
+        "ArcTan((-1+2*x)/Sqrt(3))/Sqrt(3)-Log(1+x)/3+Log(1-x+x^2)/6");
+    // check("Simplify(D(ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1),x))",
+    // "x*(x^3+1)^(-1)");
+    check("Integrate(x*Log(x),x)", //
+        "-x^2/4+1/2*x^2*Log(x)");
+    check("D(-1/2*Log(x)*x^2+3/4*x^2+x*(x*Log(x)-x),x)", //
+        "x*Log(x)");
+    check("integrate(x*Exp(-x^2),x)", "-1/(2*E^x^2)");
+    check("D(-Gamma(1,x^2)/2, x)", "x/E^x^2");
+    check("Simplify(x*E^(-x^2))", "x/E^x^2");
+
+    check("Integrate(x^a,x)", "x^(1+a)/(1+a)");
+    check("Integrate(a^x,x)", "a^x/Log(a)");
+    check("Integrate(x^(-1),x)", "Log(x)");
+    check("Integrate(x^a,x)", "x^(1+a)/(1+a)");
+    check("Integrate(x^10,x)", "x^11/11");
+    check("Simplify(1/2*(2*x+2))", "1+x");
+    check("Simplify(1/2*(2*x+2)*(1/2)^(1/2))", //
+        "(1+x)/Sqrt(2)");
+    check("Simplify(Integrate((8*x+1)/(x^2+x+1)^2,x))", //
+        "-(5+2*x)/(1+x+x^2)+(-4*ArcTan((1+2*x)/Sqrt(3)))/Sqrt(3)");
+
+    check("Apart(1/(x^3+1))", //
+        "1/(3*(1+x))+(2-x)/(3*(1-x+x^2))");
+    check("Integrate(1/(x^5+x-7),x)", //
+        "Integrate(1/(-7+x+x^5),x)");
+    check("Integrate(1/(x-2),x)", //
+        "Log(2-x)");
+    check("Integrate((x-2)^(-2),x)", //
+        "1/(2-x)");
+
+    check("Integrate(1/(x^2+1),x)", //
+        "ArcTan(x)");
+    check("Integrate((2*x+5)/(x^2-2*x+5),x)", //
+        "7/2*ArcTan(1/2*(-1+x))+Log(5-2*x+x^2)");
+    check("Integrate((8*x+1)/(x^2+2*x+1),x)", //
+        "7/(1+x)+8*Log(1+x)");
+  }
+
+  @Test
+  public void testSystem171b() {
+    // check("D(2*E^x-Gamma(3,-x),x)", //
+    // "2*E^x-E^x*x^2");
+
+    // check("Simplify(Integrate(1/3*(2-x)*(x^2-x+1)^(-1),x))",
+    // "ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)-1/6*Log(x^2-x+1)");
+    check("Integrate(1/3*(2-x)*(x^2-x+1)^(-1)+1/3*(x+1)^(-1),x)", //
+        "ArcTan((-1+2*x)/Sqrt(3))/Sqrt(3)+Log(1+x)/3-Log(1-x+x^2)/6");
+    check("Integrate(E^x*(2-x^2),x)", //
+        "2*E^x*x-E^x*x^2");
+    check("D(2*E^x-Gamma(3,-x),x)", //
+        "2*E^x-E^x*x^2");
+    check("D(-x-Gamma(2,-3*Log(x))/9+x*Log(x),x)", //
+        "Log(x)+x^2*Log(x)");
+
+    check("Apart(2*x^2/(x^3+1))", //
+        "2/3*1/(1+x)+2/3*(-1+2*x)/(1-x+x^2)");
+
+    check("Integrate(2*x^2/(x^3+1),x)", //
+        "2/3*Log(1+x^3)");
+    check("Integrate(Sin(x)^3,x)", //
+        "-Cos(x)+Cos(x)^3/3");
+
+    check("Integrate(Cos(2*x)^3,x)", //
+        "Sin(2*x)/2-Sin(2*x)^3/6");
+    check("Integrate(x,x)", //
+        "x^2/2");
+    check("Integrate(2*x,x)", //
+        "x^2");
+    check("Integrate(h(x),x)", //
+        "Integrate(h(x),x)");
+    check("Integrate(f(x)+g(x)+h(x),x)", //
+        "Integrate(f(x),x)+Integrate(g(x),x)+Integrate(h(x),x)");
+    check("Integrate(Sin(x),x)", //
+        "-Cos(x)");
+    check("Integrate(Sin(10*x),x)", //
+        "-Cos(10*x)/10");
+    check("Integrate(Sin(Pi+10*x),x)", //
+        "Cos(10*x)/10");
+    check("Integrate(E^(a*x),x)", //
+        "E^(a*x)/a");
+    check("Integrate(x*E^(a*x),x)", //
+        "-E^(a*x)/a^2+(E^(a*x)*x)/a");
+    check("Integrate(x*E^x,x)", //
+        "-E^x+E^x*x");
+    check("Integrate(x^2*E^x,x)", //
+        "2*E^x-2*E^x*x+E^x*x^2");
+    check("Integrate(x^2*E^(a*x),x)", //
+        "(2*E^(a*x))/a^3+(-2*E^(a*x)*x)/a^2+(E^(a*x)*x^2)/a");
+    check("Integrate(x^3*E^(a*x),x)", //
+        "(-6*E^(a*x))/a^4+(6*E^(a*x)*x)/a^3+(-3*E^(a*x)*x^2)/a^2+(E^(a*x)*x^3)/a");
+    check("(-1.0)/48", //
+        "-0.0208333");
+
+    // to low max points
+    checkNumeric("NIntegrate(1/(x^2), {x, 1, 1000}, Method->LegendreGauss, MaxPoints->7)", //
+        "0.1045310822478281");
+    checkNumeric("NIntegrate(1/(x^2), {x, 1, 1000}, Method->LegendreGauss, MaxPoints->100)", //
+        "0.9988852159737875");
+
+    checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Trapezoid)", //
+        "-0.0208333271245165");
+    checkNumeric(
+        "NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Simpson, MaxIterations->10)", //
+        "NIntegrate((-1+x)*(-0.5+x)*(0.5+x)*x*(1+x),{x,0,1},Method->simpson,MaxIterations->\n"
+            + "10)");
+    checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Simpson)", //
+        "-0.0208333320915699");
+
+    checkNumeric(
+        "NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Romberg, MaxIterations->10)", //
+        "-0.0208333333333333");
+    checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Romberg)", //
+        "-0.0208333333333333");
+    checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1})", //
+        "-0.0208333333333333");
+  }
+
+  // @Test
+  // public void testSystem171c() {
+  // check("Integrate(ArcCoth(x^16)^2,x)", //
+  // "1");
+  // }
+
+  @Test
+  public void testSystem172() {
+    check("Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))", //
+        "Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))");
+    check("Integrate(Cos(a*x)*Sin(b*x),x)", //
+        "Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))");
+    check("Integrate(Cos(a*x)*Sin(b*x),x)", //
+        "Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))");
+
+    check("Csc(b*x)^0", //
+        "1");
+    check("Integrate(Cos(x*(a+b)),x)", //
+        "Sin((a+b)*x)/(a+b)");
+    // Integrate[Cos[a*x]*Sin[b*x]^2,x]
+    check("Integrate(Cos(a*x)*Sin(b*x)^2,x)", //
+        "Sin(a*x)/(2*a)-Sin((a-2*b)*x)/(4*(a-2*b))-Sin((a+2*b)*x)/(4*(a+2*b))");
+    check("Integrate(Cos(a*x)^2*Sin(b*x),x)", //
+        "Cos((2*a-b)*x)/(4*(2*a-b))-Cos(b*x)/(2*b)-Cos((2*a+b)*x)/(4*(2*a+b))");
+    check("Integrate(Cos(b*x)^2*Sin(a*x)^2,x)", //
+        "x/4-Sin(2*a*x)/(8*a)-Sin(2*(a-b)*x)/(16*(a-b))+Sin(2*b*x)/(8*b)-Sin(2*(a+b)*x)/(\n"
+            + "16*(a+b))");
+  }
+
+  @Test
+  public void testPowerTimesPower() {
+    check("Integrate(f^(a + b/x^2)*x^8, x)", //
+        "1/2*f^a*x^9*Gamma(-9/2,(-b*Log(f))/x^2)*((-b*Log(f))/x^2)^(9/2)");
+  }
+
+  @Test
+  public void testCosLog() {
+    check("Integrate(Cos(Log(x)), x)", //
+        "1/2*x*Cos(Log(x))+1/2*x*Sin(Log(x))");
+  }
+
+  @Test
+  public void testFundamentalTheoremOfCalculus() {
+    // https://en.wikipedia.org/wiki/Fundamental_theorem_of_calculus#First_part
+    check("D(Integrate(f(t)+g(t), {t, a, x}),x)", //
+        "f(x)+g(x)");
+  }
+
+  @Test
+  public void testN_Integrate() {
+    check("N(Integrate(E^(3*x-x^4),{x,0,Infinity}))", //
+        "6.36777");
+  }
+
 }

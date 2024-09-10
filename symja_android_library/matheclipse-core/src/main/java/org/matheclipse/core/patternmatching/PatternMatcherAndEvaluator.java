@@ -63,9 +63,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     // fSetFlags = setSymbol;
     fRightHandSide = rightHandSide;
     fPatterHash = patternHash;
-    // if (initAll) {
-    // initRHSleafCountSimplify();
-    // }
+    fPatternMap = createPatternMap();
   }
 
   /**
@@ -84,6 +82,9 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     PatternMatcherAndEvaluator v = (PatternMatcherAndEvaluator) super.clone();
     v.fRightHandSide = fRightHandSide;
     v.fReturnResult = F.NIL;
+    if (fPatternMap != null) {
+      v.fPatternMap = fPatternMap.copy();
+    }
     return v;
   }
 
@@ -290,6 +291,25 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     if (fLhsPatternExpr.isASTOrAssociation() && leftHandSide.isASTOrAssociation()) {
       return replaceSubExpressionOrderlessFlat((IAST) fLhsPatternExpr, (IAST) leftHandSide,
           fRightHandSide, engine);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Match the left-hand-side first argument with the pattern-matching rules first argument.
+   * <p>
+   * 
+   * @param leftHandSide
+   * @param patternMap
+   * @param engine
+   * @return
+   */
+  /* package private */ IExpr matchIntegrateFunction(final IExpr leftHandSide,
+      IPatternMap patternMap, EvalEngine engine) {
+    IExpr LhsPatternFunction = fLhsPatternExpr.first();
+    setLHSExprToMatch(LhsPatternFunction);
+    if (matchExpr(LhsPatternFunction, leftHandSide.first(), engine, new StackMatcher(engine))) {
+      return replacePatternMatch(leftHandSide, patternMap, engine, true);
     }
     return F.NIL;
   }

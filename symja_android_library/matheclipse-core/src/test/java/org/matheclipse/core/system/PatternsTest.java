@@ -2,6 +2,7 @@ package org.matheclipse.core.system;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.a_;
 import static org.matheclipse.core.expression.F.ast;
@@ -51,11 +52,21 @@ public class PatternsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testComplicatedPatternRule() {
+  public void testComplicatedPatternRule001() {
     IExpr expr = F.Integrate(F.unaryAST1(F.unaryAST1(F.Derivative(F.n_), F.f_), F.x_), F.x_Symbol);
-    assertEquals("Integrate(Derivative(n_)[f_][x_],x_Symbol)", expr.toString());
+    assertEquals("Integrate(Derivative(n_)[f_][x_],x_Symbol)", //
+        expr.toString());
     boolean isComplicated = RulesData.isComplicatedPatternRule(expr);
     assertTrue(isComplicated);
+  }
+
+  @Test
+  public void testComplicatedPatternRule002() {
+    IExpr expr = F.Integrate(F.Times(F.x_, F.Power(F.y_, F.z_DEFAULT)), F.x_Symbol);
+    assertEquals("Integrate(x_*y_^z_.,x_Symbol)", //
+        expr.toString());
+    boolean isComplicated = RulesData.isComplicatedPatternRule(expr);
+    assertFalse(isComplicated);
   }
 
   @Test

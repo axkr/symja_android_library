@@ -472,7 +472,7 @@ public class D extends AbstractFunctionEvaluator {
       } else if (function.isAST(S.Surd, 3)) {
         // Surd(f,g)
         return surd(function, x);
-      } else if (function.isAST(S.Log,3)) {
+      } else if (function.isLog2()) {
         if (function.isFreeAt(1, x)) {
           // D(Log(i_FreeQ(x), x_), z_):= (x*Log(a))^(-1)*D(x,z);
           return F.Times(F.Power(F.Times(function.arg2(), F.Log(function.arg1())), F.CN1),

@@ -7,7 +7,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IMatch;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
@@ -457,23 +459,24 @@ public final class RulesData implements Serializable {
         if (expr.isASTOrAssociation()) {
           patternHash = ((IAST) expr).patternHashCode();
         }
+        final IExpr integrateVar =
+            expr.isAST(S.Integrate, 3) && expr.second().isSymbol() ? expr.second() : null;
         IEvalStepListener stepListener = engine.getStepListener();
         final boolean isTraceMode =
             Config.TRACE_REWRITE_RULE && engine.isTraceMode() && stepListener != null;
         for (IPatternMatcher patternEvaluator : fPatternDownRules) {
           // if (patternEvaluator.fLhsPatternExpr.isAST(S.Integrate)) {
-          // LOGGER.info(((IPatternMatcher) patternEvaluator).getLHSPriority());
-          // System.out.println("Rule: " + patternEvaluator.getLHSPriority());
-          // if (patternEvaluator.getLHSPriority() >= 7301) {
-          // debug rule from here
-          // rule 7301 is CannotIntegrate on 27th JAN 2024
+          // // System.out.println("Rule: " + patternEvaluator.getLHSPriority());
+          // // if (patternEvaluator.getLHSPriority() >= 7301) {
+          // // debug rule from here
+          // // rule 7301 is CannotIntegrate on 27th JAN 2024
+          // if (patternEvaluator.getLHSPriority() == 7301) {
           // System.out.println("Rule " + patternEvaluator.getLHSPriority() + "found!\n"
           // + patternEvaluator.toString());
           // }
           // }
           if (patternEvaluator.isPatternHashAllowed(patternHash)) {
             pmEvaluator = patternEvaluator.copy();
-
             IExpr result = F.NIL;
             if (isTraceMode) {
               stepListener.setUp(expr, engine.getRecursionCounter(), expr);
@@ -491,10 +494,42 @@ public final class RulesData implements Serializable {
               }
               continue;
             }
-            // try {
-            result = pmEvaluator.eval(expr, engine);
+
+            if (integrateVar != null //
+                && pmEvaluator instanceof PatternMatcherAndEvaluator) {
+              PatternMatcherAndEvaluator patternMatcher = (PatternMatcherAndEvaluator) pmEvaluator;
+              IExpr lhs = patternMatcher.getLHS();
+              if (lhs.isAST(S.Integrate, 3) && lhs.second().equals(F.x_Symbol)) {
+                IPatternMap patternMap = patternMatcher.createPatternMap();
+                patternMap.setValue(F.x_, integrateVar);
+                // compare with '==' operator because F.x_ has unique address:
+                patternMatcher.fLhsPatternExpr =
+                    F.subst(patternMatcher.fLhsPatternExpr, v -> v == F.x_, integrateVar);
+                result = patternMatcher.matchIntegrateFunction(expr, patternMap, engine);
+              } else {
+                result = pmEvaluator.eval(expr, engine);
+              }
+            } else {
+              result = pmEvaluator.eval(expr, engine);
+            }
             if (result.isPresent()) {
-              return result;
+              if (patternEvaluator.fLhsPatternExpr.isAST(S.Integrate)) {
+                if (!expr.equals(result)) {
+                  return result;
+                }
+                boolean quietMode = engine.isQuietMode();
+                try {
+                  engine.setQuietMode(false);
+                  // Endless iteration detected in `1` (rule number `2`) for Rubi pattern-matching
+                  // rules.
+                  Errors.printMessage(S.Integrate, "rubiendless",
+                      F.list(expr, F.ZZ(patternEvaluator.getLHSPriority())), engine);
+                } finally {
+                  engine.setQuietMode(quietMode);
+                }
+              } else {
+                return result;
+              }
             }
             // } catch (Exception ex) {
             // // For Integrate:
@@ -535,6 +570,8 @@ public final class RulesData implements Serializable {
         break;
       case 5:
         match = fMatcher.match5((IAST) expr, engine);
+        break;
+      default:
         break;
     }
     return match;
@@ -594,7 +631,7 @@ public final class RulesData implements Serializable {
   /** @return Returns the equalRules. */
   public final Map<IExpr, PatternMatcherEquals> getEqualDownRules() {
     if (fEqualDownRules == null) {
-      fEqualDownRules = new HashMap<IExpr, PatternMatcherEquals>();
+      fEqualDownRules = new TreeMap<IExpr, PatternMatcherEquals>();
     }
     return fEqualDownRules;
   }
@@ -602,7 +639,7 @@ public final class RulesData implements Serializable {
   /** @return Returns the equalRules. */
   public final Map<IExpr, PatternMatcherEquals> getEqualUpRules() {
     if (fEqualUpRules == null) {
-      fEqualUpRules = new HashMap<IExpr, PatternMatcherEquals>();
+      fEqualUpRules = new TreeMap<IExpr, PatternMatcherEquals>();
     }
     return fEqualUpRules;
   }
@@ -682,12 +719,15 @@ public final class RulesData implements Serializable {
     if (!isComplicatedPatternRule(leftHandSide)) {
       patternHash = leftHandSide.patternHashCode();
     }
-    final PatternMatcherAndEvaluator pmEvaluator = new PatternMatcherAndEvaluator(
-        IPatternMatcher.SET_DELAYED, leftHandSide, rightHandSide, false, patternHash);
+    final PatternMatcher pmEvaluator = new PatternMatcherAndEvaluator(IPatternMatcher.SET_DELAYED,
+        leftHandSide, rightHandSide, false, patternHash);
+    // final PatternMatcher pmEvaluator = new PatternMatcherAndEvaluatorMemoize(
+    // IPatternMatcher.SET_DELAYED, leftHandSide, Suppliers.memoize(() -> rightHandSide), false,
+    // patternHash);
     pmEvaluator.setLHSPriority(priority);
     if (fPatternDownRules == null) {
-      fPatternDownRules = new ArrayList<IPatternMatcher>(7000);
-      fPriorityDownRules = new IntArrayList(7000);
+      fPatternDownRules = new ArrayList<IPatternMatcher>(8000);
+      fPriorityDownRules = new IntArrayList(8000);
     }
     fPatternDownRules.add(pmEvaluator);
     fPriorityDownRules.add(priority);

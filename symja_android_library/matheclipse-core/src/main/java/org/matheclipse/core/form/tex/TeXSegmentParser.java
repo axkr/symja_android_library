@@ -317,7 +317,7 @@ class TeXSegmentParser {
           if (position[0] >= listSize) {
             return lhs;
           }
-          // if (lhs.isAST(S.Log, 3) && !lhs.isFree(DUMMY_SUB_SLOT)) {
+          // if (lhs.isLog2() && !lhs.isFree(DUMMY_SUB_SLOT)) {
           if (!lhs.isFree(DUMMY_SUB_SLOT)) {
             // IExpr rhs = convert(list, position, end, null, Precedence.NO_PRECEDENCE);
             IExpr rhs = convertNextArg(list, position);
@@ -961,7 +961,7 @@ class TeXSegmentParser {
         if (head.isBuiltInSymbol()) {
           ISymbol dummySymbol = F.Dummy("msubsup$" + counter++);
           IExpr arg2 = dummySymbol;
-          if (head.isBuiltInSymbolID() && head != S.Integrate && !head.isString("C")) {
+          if (head != S.Integrate && !head.isString("C")) {
             if (list.getLength() >= 2) {
               Node arg1 = list.item(1);
               IExpr a1 = toExpr(arg1);
