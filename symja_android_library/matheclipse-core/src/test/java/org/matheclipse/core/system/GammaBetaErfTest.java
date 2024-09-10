@@ -813,6 +813,17 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testHarmonicNumber() {
+    checkNumeric("HarmonicNumber(-1.0)", //
+        "ComplexInfinity");
+    checkNumeric("N(HarmonicNumber(-1),30)", //
+        "ComplexInfinity");
+    checkNumeric("HarmonicNumber(-2.5)", //
+        "1.2803723055467762");
+    checkNumeric("HarmonicNumber(-1.0, 2.0)", //
+        "ComplexInfinity");
+    checkNumeric("N(HarmonicNumber(-1, 2),30)", //
+        "ComplexInfinity");
+
     check("HarmonicNumber(Infinity,1)", //
         "Infinity");
     check("HarmonicNumber(Infinity,5)", //
@@ -1012,6 +1023,13 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testLogGamma() {
+    check("LogGamma(0.0)", //
+        "Infinity");
+    checkNumeric("LogGamma(-42.0)", //
+        "Infinity");
+    checkNumeric("LogGamma(-1.5)", //
+        "0.860047015376481+I*(-6.283185307179585)");
+
     check("N(LogGamma(22/10), 50)", //
         "0.096947466790638776492015185854629186237721721052839");
     check("Table(LogGamma(x), {x,0.0, 8.0, 0.25})", //
@@ -1216,6 +1234,29 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolyGamma() {
+    // TODO
+    check("N(PolyGamma(-2,3/2),30)", //
+        "PolyGamma(-2,1.5)");
+    check("N(PolyGamma(-2,0),30)", //
+        "PolyGamma(-2,0)");
+
+    check("PolyGamma(0,-42)", //
+        "ComplexInfinity");
+    check("PolyGamma(-1,z)", //
+        "LogGamma(z)");
+    check("PolyGamma(-1,0)", //
+        "Infinity");
+    check("PolyGamma(-1,12)", //
+        "Log(39916800)");
+    check("PolyGamma(-1,-7)", //
+        "Infinity");
+    check("PolyGamma(-1)", //
+        "ComplexInfinity");
+    check("PolyGamma(-1,1)", //
+        "0");
+    check("PolyGamma(-2)", //
+        "ComplexInfinity");
+
     // TODO calculate for complex n:
     checkNumeric("PolyGamma(6 + I, 2.5 + 3 I)", //
         "PolyGamma(6.0+I*1.0,2.5+I*3.0)");
@@ -1252,22 +1293,6 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
     check("PolyGamma(3)", //
         "3/2-EulerGamma");
 
-    check("PolyGamma(0,-42)", //
-        "ComplexInfinity");
-    check("PolyGamma(-1,z)", //
-        "LogGamma(z)");
-    check("PolyGamma(-1,0)", //
-        "Infinity");
-    check("PolyGamma(-1,12)", //
-        "Log(39916800)");
-    check("PolyGamma(-1,-7)", //
-        "Infinity");
-    check("PolyGamma(-1)", //
-        "ComplexInfinity");
-    check("PolyGamma(-1,1)", //
-        "0");
-    check("PolyGamma(-2)", //
-        "ComplexInfinity");
     check("PolyGamma(1,1/4)//FunctionExpand", //
         "8*Catalan+Pi^2");
     check("PolyGamma(1,3/4)//FunctionExpand", //

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatArithmeticException;
 import org.apfloat.ApfloatMath;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.InfiniteExpansionException;
@@ -373,6 +374,10 @@ public class ApcomplexNum implements IComplexNum {
       try {
         return valueOf(EvalEngine.getApfloat().beta(fApcomplex, ((INumber) a).apcomplexValue(),
             ((INumber) b).apcomplexValue()));
+      } catch (ApfloatArithmeticException aaex) {
+        if ("divide.byZero".equals(aaex.getLocalizationKey())) {
+          return F.ComplexInfinity;
+        }
       } catch (ArithmeticException | NumericComputationException aex) {
         if ("Division by zero".equals(aex.getMessage())) {
           return F.ComplexInfinity;
@@ -390,6 +395,10 @@ public class ApcomplexNum implements IComplexNum {
             ((INumber) a).apcomplexValue(), ((INumber) b).apcomplexValue()));
       } catch (NumericComputationException e) {
         //
+      } catch (ApfloatArithmeticException aaex) {
+        if ("divide.byZero".equals(aaex.getLocalizationKey())) {
+          return F.ComplexInfinity;
+        }
       } catch (ArithmeticException aex) {
         if ("Division by zero".equals(aex.getMessage())) {
           return F.ComplexInfinity;
@@ -705,13 +714,6 @@ public class ApcomplexNum implements IComplexNum {
     } catch (ArithmeticException | NumericComputationException e) {
       e.printStackTrace();
     }
-    // FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-    // try {
-    // Apcomplex c = erf(fApcomplex, h);
-    // return F.complexNum(h.subtract(Apcomplex.ONE, c));
-    // } catch (Exception ce) {
-    // //
-    // }
     return IComplexNum.super.erfc();
   }
 
@@ -881,9 +883,7 @@ public class ApcomplexNum implements IComplexNum {
         return F
             .complexNum(EvalEngine.getApfloat().gamma(fApcomplex, ((INumber) x).apcomplexValue()));
       } catch (ArithmeticException | NumericComputationException are) {
-        // try as computation with complex numbers
-        // java.lang.ArithmeticException: Upper gamma with first argument real part nonpositive and
-        // second argment zero
+        // Upper gamma with first argument real part non-positive and second argment zero
         return Errors.printMessage(S.Gamma, are, EvalEngine.get());
       }
     }
@@ -1305,7 +1305,20 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr logGamma() {
-    return valueOf(EvalEngine.getApfloat().logGamma(fApcomplex));
+    try {
+      Apcomplex logGamma = EvalEngine.getApfloat().logGamma(fApcomplex);
+      return F.complexNum(logGamma);
+    } catch (ApfloatArithmeticException aaex) {
+      String localizationKey = aaex.getLocalizationKey();
+      if ("logGamma.ofZero".equals(localizationKey)) {
+        return F.CInfinity;
+      }
+      if ("logGamma.ofNegativeInteger".equals(localizationKey)) {
+        return F.CInfinity;
+      }
+      aaex.printStackTrace();
+    }
+    return IComplexNum.super.logGamma();
   }
 
   @Override

@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatArithmeticException;
 import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;
 import org.apfloat.FixedPrecisionApfloatHelper;
@@ -375,6 +376,10 @@ public class ApfloatNum implements INum {
       try {
         return valueOf(EvalEngine.getApfloat().beta(fApfloat, ((IReal) a).apfloatValue(),
             ((IReal) b).apfloatValue()));
+      } catch (ApfloatArithmeticException aaex) {
+        if ("divide.byZero".equals(aaex.getLocalizationKey())) {
+          return F.ComplexInfinity;
+        }
       } catch (ArithmeticException | NumericComputationException e) {
         if ("Division by zero".equals(e.getMessage())) {
           return F.ComplexInfinity;
@@ -385,6 +390,10 @@ public class ApfloatNum implements INum {
       try {
         return F.complexNum(EvalEngine.getApfloat().beta(fApfloat, ((INumber) a).apcomplexValue(),
             ((INumber) b).apcomplexValue()));
+      } catch (ApfloatArithmeticException aaex) {
+        if ("divide.byZero".equals(aaex.getLocalizationKey())) {
+          return F.ComplexInfinity;
+        }
       } catch (ArithmeticException | NumericComputationException aex) {
         if ("Division by zero".equals(aex.getMessage())) {
           return F.ComplexInfinity;
@@ -409,6 +418,10 @@ public class ApfloatNum implements INum {
         return F.complexNum(EvalEngine.getApfloat().beta(fApfloat, ((INumber) x2).apcomplexValue(),
             ((INumber) a).apcomplexValue(), ((INumber) b).apcomplexValue()));
       } catch (NumericComputationException aex) {
+      } catch (ApfloatArithmeticException aaex) {
+        if ("divide.byZero".equals(aaex.getLocalizationKey())) {
+          return F.ComplexInfinity;
+        }
       } catch (ArithmeticException aex) {
         if ("Division by zero".equals(aex.getMessage())) {
           return F.ComplexInfinity;
@@ -1124,11 +1137,13 @@ public class ApfloatNum implements INum {
         return F.complexNum(
             EvalEngine.getApfloat().hypergeometric2F1(fApfloat, ((INumber) arg2).apcomplexValue(),
                 ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue()));
+      } catch (ApfloatArithmeticException aaex) {
+        if ("divide.byZero".equals(aaex.getLocalizationKey())) {
+          return F.ComplexInfinity;
+        }
       } catch (ArithmeticException | NumericComputationException aex) {
         if (aex.getMessage().equals("Division by zero")) {
           return F.ComplexInfinity;
-        } else {
-          aex.printStackTrace();
         }
       }
     }
@@ -1528,9 +1543,25 @@ public class ApfloatNum implements INum {
   @Override
   public IExpr logGamma() {
     if (isPositive()) {
-      return valueOf(EvalEngine.getApfloat().logGamma(fApfloat));
+      try {
+        return valueOf(EvalEngine.getApfloat().logGamma(fApfloat));
+      } catch (ArithmeticException | NumericComputationException ex) {
+      }
     }
-    return F.CInfinity;
+    try {
+      Apcomplex logGamma = EvalEngine.getApfloat().logGamma(apcomplexValue());
+      return F.complexNum(logGamma);
+    } catch (ApfloatArithmeticException aaex) {
+      String localizationKey = aaex.getLocalizationKey();
+      if ("logGamma.ofZero".equals(localizationKey)) {
+        return F.CInfinity;
+      }
+      if ("logGamma.ofNegativeInteger".equals(localizationKey)) {
+        return F.CInfinity;
+      }
+      aaex.printStackTrace();
+    }
+    return INum.super.logGamma();
   }
 
   @Override
@@ -1662,6 +1693,12 @@ public class ApfloatNum implements INum {
   public IExpr polyGamma(long n) {
     try {
       Apfloat polygamma = EvalEngine.getApfloat().polygamma(n, fApfloat);
+      return F.num(polygamma);
+    } catch (ArithmeticException | NumericComputationException aex) {
+      // java.lang.ArithmeticException: Polygamma of non-positive integer
+    }
+    try {
+      Apcomplex polygamma = EvalEngine.getApfloat().polygamma(n, apcomplexValue());
       return F.complexNum(polygamma);
     } catch (ArithmeticException | NumericComputationException aex) {
       // java.lang.ArithmeticException: Polygamma of nonpositive integer

@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import java.util.function.Function;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatArithmeticException;
 import org.apfloat.InfiniteExpansionException;
 import org.apfloat.LossOfPrecisionException;
 import org.apfloat.NumericComputationException;
@@ -386,6 +387,10 @@ public class Num implements INum {
         Apfloat beta = EvalEngine.getApfloatDouble().beta(apfloatValue(),
             ((IReal) a).apfloatValue(), ((IReal) b).apfloatValue());
         return F.num(beta.doubleValue());
+      } catch (ApfloatArithmeticException aaex) {
+        if ("divide.byZero".equals(aaex.getLocalizationKey())) {
+          return F.ComplexInfinity;
+        }
       } catch (ArithmeticException | NumericComputationException ex) {
         if ("Division by zero".equals(ex.getMessage())) {
           return F.ComplexInfinity;
@@ -398,6 +403,10 @@ public class Num implements INum {
         Apcomplex beta = EvalEngine.getApfloatDouble().beta(apcomplexValue(),
             ((INumber) a).apcomplexValue(), ((INumber) b).apcomplexValue());
         return F.complexNum(beta.real().doubleValue(), beta.imag().doubleValue());
+      } catch (ApfloatArithmeticException aaex) {
+        if ("divide.byZero".equals(aaex.getLocalizationKey())) {
+          return F.ComplexInfinity;
+        }
       } catch (ArithmeticException | NumericComputationException aex) {
         if ("Division by zero".equals(aex.getMessage())) {
           return F.ComplexInfinity;
@@ -414,6 +423,10 @@ public class Num implements INum {
         Apfloat beta = EvalEngine.getApfloatDouble().beta(apfloatValue(),
             ((IReal) x2).apfloatValue(), ((IReal) a).apfloatValue(), ((IReal) b).apfloatValue());
         return F.num(beta.doubleValue());
+      } catch (ApfloatArithmeticException aaex) {
+        if ("divide.byZero".equals(aaex.getLocalizationKey())) {
+          return F.ComplexInfinity;
+        }
       } catch (ArithmeticException | NumericComputationException ex) {
         if ("Division by zero".equals(ex.getMessage())) {
           return F.ComplexInfinity;
@@ -427,7 +440,10 @@ public class Num implements INum {
                 ((INumber) a).apcomplexValue(), ((INumber) b).apcomplexValue());
         return F.complexNum(beta.real().doubleValue(), beta.imag().doubleValue());
       } catch (NumericComputationException aex) {
-
+      } catch (ApfloatArithmeticException aaex) {
+        if ("divide.byZero".equals(aaex.getLocalizationKey())) {
+          return F.ComplexInfinity;
+        }
       } catch (ArithmeticException aex) {
         if ("Division by zero".equals(aex.getMessage())) {
           return F.ComplexInfinity;
@@ -1177,6 +1193,10 @@ public class Num implements INum {
             ((IReal) arg2).apfloatValue(), ((IReal) arg3).apfloatValue(),
             ((IReal) arg4).apfloatValue());
         return F.num(hypergeometric2f1.doubleValue());
+      } catch (ApfloatArithmeticException aaex) {
+        if ("divide.byZero".equals(aaex.getLocalizationKey())) {
+          return F.ComplexInfinity;
+        }
       } catch (ArithmeticException | NumericComputationException ex) {
         if (ex.getMessage().equals("Division by zero")) {
           return F.ComplexInfinity;
@@ -1191,11 +1211,13 @@ public class Num implements INum {
             ((INumber) arg4).apcomplexValue());
         return F.complexNum(hypergeometric2f1.real().doubleValue(),
             hypergeometric2f1.imag().doubleValue());
+      } catch (ApfloatArithmeticException aaex) {
+        if ("divide.byZero".equals(aaex.getLocalizationKey())) {
+          return F.ComplexInfinity;
+        }
       } catch (ArithmeticException | NumericComputationException aex) {
         if (aex.getMessage().equals("Division by zero")) {
           return F.ComplexInfinity;
-        } else {
-          // aex.printStackTrace();
         }
       }
     }
@@ -1228,6 +1250,10 @@ public class Num implements INum {
             .hypergeometric2F1Regularized(apfloatValue(), ((IReal) arg2).apfloatValue(),
                 ((IReal) arg3).apfloatValue(), ((IReal) arg4).apfloatValue());
         return F.num(hypergeometric2F1Regularized.doubleValue());
+      } catch (ApfloatArithmeticException aaex) {
+        if ("divide.byZero".equals(aaex.getLocalizationKey())) {
+          return F.ComplexInfinity;
+        }
       } catch (ArithmeticException | NumericComputationException ex) {
         if (ex.getMessage().equals("Division by zero")) {
           return F.ComplexInfinity;
@@ -1256,11 +1282,13 @@ public class Num implements INum {
           ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue());
       return F.complexNum(hypergeometricU.real().doubleValue(),
           hypergeometricU.imag().doubleValue());
+    } catch (ApfloatArithmeticException aaex) {
+      if ("divide.byZero".equals(aaex.getLocalizationKey())) {
+        return F.ComplexInfinity;
+      }
     } catch (ArithmeticException aex) {
       if (aex.getMessage().equals("Division by zero")) {
         return F.ComplexInfinity;
-      } else {
-        // aex.printStackTrace();
       }
     }
     return INum.super.hypergeometricU(arg2, arg3);
@@ -1691,7 +1719,20 @@ public class Num implements INum {
       Apfloat logGamma = EvalEngine.getApfloatDouble().logGamma(apfloatValue());
       return F.num(logGamma.doubleValue());
     }
-    return F.CInfinity;
+    try {
+      Apcomplex logGamma = EvalEngine.getApfloatDouble().logGamma(apcomplexValue());
+      return F.complexNum(logGamma.real().doubleValue(), logGamma.imag().doubleValue());
+    } catch (ApfloatArithmeticException aaex) {
+      String localizationKey = aaex.getLocalizationKey();
+      if ("logGamma.ofZero".equals(localizationKey)) {
+        return F.CInfinity;
+      }
+      if ("logGamma.ofNegativeInteger".equals(localizationKey)) {
+        return F.CInfinity;
+      }
+      aaex.printStackTrace();
+    }
+    return INum.super.logGamma();
   }
 
   @Override
@@ -1825,6 +1866,12 @@ public class Num implements INum {
     try {
       Apfloat polygamma = EvalEngine.getApfloatDouble().polygamma(n, apfloatValue());
       return F.num(polygamma.doubleValue());
+    } catch (ArithmeticException | NumericComputationException aex) {
+      // java.lang.ArithmeticException: Polygamma of nonpositive integer
+    }
+    try {
+      Apcomplex polygamma = EvalEngine.getApfloatDouble().polygamma(n, apcomplexValue());
+      return F.complexNum(polygamma.real().doubleValue(), polygamma.imag().doubleValue());
     } catch (ArithmeticException | NumericComputationException aex) {
       // java.lang.ArithmeticException: Polygamma of nonpositive integer
     }

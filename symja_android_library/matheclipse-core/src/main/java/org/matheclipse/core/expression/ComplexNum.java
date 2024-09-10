@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import java.util.function.Function;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatArithmeticException;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.InfiniteExpansionException;
 import org.apfloat.LossOfPrecisionException;
@@ -421,6 +422,10 @@ public class ComplexNum implements IComplexNum {
         Apcomplex beta = EvalEngine.getApfloatDouble().beta(apcomplexValue(),
             ((INumber) a).apcomplexValue(), ((INumber) b).apcomplexValue());
         return F.complexNum(beta.real().doubleValue(), beta.imag().doubleValue());
+      } catch (ApfloatArithmeticException aaex) {
+        if ("divide.byZero".equals(aaex.getLocalizationKey())) {
+          return F.ComplexInfinity;
+        }
       } catch (ArithmeticException | NumericComputationException aex) {
         if ("Division by zero".equals(aex.getMessage())) {
           return F.ComplexInfinity;
@@ -440,6 +445,10 @@ public class ComplexNum implements IComplexNum {
         return F.complexNum(beta.real().doubleValue(), beta.imag().doubleValue());
       } catch (NumericComputationException e) {
         //
+      } catch (ApfloatArithmeticException aaex) {
+        if ("divide.byZero".equals(aaex.getLocalizationKey())) {
+          return F.ComplexInfinity;
+        }
       } catch (ArithmeticException aex) {
         if ("Division by zero".equals(aex.getMessage())) {
           return F.ComplexInfinity;
@@ -1457,13 +1466,20 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr logGamma() {
-    // hipparchus #logGamma(Complex) is not as accurate as apfloat implementation
-    // Complex complexLoggamma = org.hipparchus.special.Gamma.logGamma(fComplex);
-    // if (complexLoggamma.isFinite()) {
-    // return F.complexNum(complexLoggamma);
-    // }
-    Apcomplex logGamma = EvalEngine.getApfloatDouble().logGamma(apcomplexValue());
-    return F.complexNum(logGamma.real().doubleValue(), logGamma.imag().doubleValue());
+    try {
+      Apcomplex logGamma = EvalEngine.getApfloatDouble().logGamma(apcomplexValue());
+      return F.complexNum(logGamma.real().doubleValue(), logGamma.imag().doubleValue());
+    } catch (ApfloatArithmeticException aaex) {
+      String localizationKey = aaex.getLocalizationKey();
+      if ("logGamma.ofZero".equals(localizationKey)) {
+        return F.CInfinity;
+      }
+      if ("logGamma.ofNegativeInteger".equals(localizationKey)) {
+        return F.CInfinity;
+      }
+      aaex.printStackTrace();
+    }
+    return IComplexNum.super.logGamma();
   }
 
   @Override
