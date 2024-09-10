@@ -32,7 +32,7 @@ import edu.jas.util.LongIterable;
  * ordered polynomials over C with Java long exponents.. Almost immutable object, except variable
  * names.
  */
-public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
+public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
   /** Polynomial monomial iterator. */
   private static class GenPolynomialMonomialIterator implements Iterator<ExprPolynomial> {
 

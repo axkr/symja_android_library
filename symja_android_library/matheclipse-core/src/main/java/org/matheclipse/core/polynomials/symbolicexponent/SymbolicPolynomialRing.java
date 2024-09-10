@@ -33,7 +33,7 @@ import edu.jas.util.LongIterable;
  * ordered polynomials over C with Java {@link IExpr} exponents. Almost immutable object, except
  * variable names.
  */
-public class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
+public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynomial> {
 
   /** Comparator for polynomials. */
   private static class SymbolicPolynomialComparator

@@ -30,7 +30,7 @@ import java.util.TreeSet;
 public class OpenIntToSet<T> implements Serializable {
 
   /** Iterator class for the map. */
-  public class Iterator {
+  public final class Iterator {
 
     /** Reference modification count. */
     private final int referenceCount;

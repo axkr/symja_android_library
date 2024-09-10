@@ -29,7 +29,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
  * <a href="https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant">Wikipedia - Jacobian
  * matrix</a>
  */
-public class MultivariateJacobianGradient implements MultivariateJacobianFunction {
+public final class MultivariateJacobianGradient implements MultivariateJacobianFunction {
   final IAST fFunction;
   final IAST fGradientFunctions;
   final IAST fVariableList;

@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 
 /** Represent Sequences in Take[] or Drop[] functions. */
-public class Sequence extends ListSizeSequence {
+public final class Sequence extends ListSizeSequence {
 
   public Sequence(int start, int end) {
     super(start, end, 1, 1);

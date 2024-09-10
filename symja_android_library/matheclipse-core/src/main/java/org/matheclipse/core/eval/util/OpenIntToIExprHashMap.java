@@ -37,7 +37,7 @@ import org.matheclipse.core.interfaces.IExpr;
 public final class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
 
   /** Iterator class for the map. */
-  public class Iterator {
+  public final class Iterator {
 
     /** Reference modification count. */
     private final int referenceCount;

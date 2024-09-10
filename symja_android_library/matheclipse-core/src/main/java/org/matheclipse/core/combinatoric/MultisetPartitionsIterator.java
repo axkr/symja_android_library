@@ -9,7 +9,7 @@ import org.matheclipse.core.patternmatching.FlatOrderlessStepVisitor;
  *
  * @see FlatOrderlessStepVisitor
  */
-public class MultisetPartitionsIterator {
+public final class MultisetPartitionsIterator {
 
   private final int n;
   private final int[] multiset;

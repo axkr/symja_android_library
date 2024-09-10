@@ -17,7 +17,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
-public class TwiceDifferentiableMultiVariateNumerical extends TwiceDifferentiableFunction {
+public final class TwiceDifferentiableMultiVariateNumerical extends TwiceDifferentiableFunction {
   final IExpr fFunction;
   final IAST fGradientFunctions;
   final FieldMatrix<IExpr> fHessianMatrix;
@@ -50,7 +50,7 @@ public class TwiceDifferentiableMultiVariateNumerical extends TwiceDifferentiabl
   public TwiceDifferentiableMultiVariateNumerical(final IExpr function, final IAST variablesList,
       boolean useAbsReal, final EvalEngine engine) {
     if (useAbsReal) {
-      fFunction = F.subst(function, x -> x == S.Abs ? S.RealAbs : F.NIL);
+      fFunction = F.subst(function, x -> x == S.Abs, S.RealAbs);
     } else {
       fFunction = function;
     }

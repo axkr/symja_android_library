@@ -26,7 +26,7 @@ import org.matheclipse.core.interfaces.IAST;
  * <p>
  * Copied from Apache harmony project sources and modified for Symja
  */
-public class RGBColor implements Serializable {
+public final class RGBColor implements Serializable {
   /** */
   private static final long serialVersionUID = 9105970624690865276L;
   /*

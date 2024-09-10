@@ -40,7 +40,7 @@ public final class Simpson extends Quadrature {
   /**
    * Sorts intervals in descending order according to their estimated error.
    */
-  private final class IntervalErrorComparator implements Comparator<double[]> {
+  private static final class IntervalErrorComparator implements Comparator<double[]> {
 
     @Override
     public int compare(double[] o1, double[] o2) {

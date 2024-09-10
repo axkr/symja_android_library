@@ -23,7 +23,7 @@ import org.matheclipse.core.parser.ExprParser;
  * 
  */
 @Deprecated
-public class PatternMatcherAndInvoker extends PatternMatcher {
+public final class PatternMatcherAndInvoker extends PatternMatcher {
   private static final long serialVersionUID = -2448717771259975643L;
 
   private transient Method fMethod;

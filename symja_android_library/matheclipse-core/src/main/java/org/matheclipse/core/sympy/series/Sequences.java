@@ -526,7 +526,7 @@ public class Sequences {
     }
   }
 
-  public static class SeqFormula extends SeqBase {
+  public final static class SeqFormula extends SeqBase {
 
     public SeqFormula(IASTMutable seqFormula) {
       super(seqFormula);

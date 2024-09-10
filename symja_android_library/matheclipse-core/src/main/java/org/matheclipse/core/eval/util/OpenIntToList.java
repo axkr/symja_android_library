@@ -27,7 +27,7 @@ import java.util.NoSuchElementException;
 public class OpenIntToList<T> implements Serializable {
 
   /** Iterator class for the map. */
-  public class Iterator {
+  public final class Iterator {
 
     /** Reference modification count. */
     private final int referenceCount;

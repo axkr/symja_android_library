@@ -13,7 +13,7 @@ import org.matheclipse.parser.client.math.MathException;
  * Specification for number of <a href="https://en.wikipedia.org/wiki/Set_(mathematics)">set
  * elements</a>.
  */
-public class SetSpecification extends SetSpec {
+public final class SetSpecification extends SetSpec {
 
   /** Create a SetSpecification with level from 0 to Integer.MAX_VALUE */
   public SetSpecification() {

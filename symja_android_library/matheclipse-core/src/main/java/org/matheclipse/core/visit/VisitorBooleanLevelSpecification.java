@@ -26,7 +26,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <p>
  * Example: the nested list <code>{x,{y}}</code> has depth <code>3</code>
  */
-public class VisitorBooleanLevelSpecification extends AbstractVisitorBoolean {
+public final class VisitorBooleanLevelSpecification extends AbstractVisitorBoolean {
   protected final Predicate<IExpr> fFunction;
 
   protected int fFromLevel;

@@ -14,7 +14,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 /**
  * A class representing a multivariate vectorial function.
  */
-public class MultiVariateVectorGradient implements MultivariateVectorFunction {
+public final class MultiVariateVectorGradient implements MultivariateVectorFunction {
   final IExpr fFunction;
   final IAST fGradientFunctions;
   final IAST fVariableList;
@@ -53,7 +53,7 @@ public class MultiVariateVectorGradient implements MultivariateVectorFunction {
     }
     fEngine = engine;
     if (useAbsReal) {
-      fFunction = F.subst(function, x -> x == S.Abs ? S.RealAbs : F.NIL);
+      fFunction = F.subst(function, x -> x == S.Abs, S.RealAbs);
     } else {
       fFunction = function;
     }

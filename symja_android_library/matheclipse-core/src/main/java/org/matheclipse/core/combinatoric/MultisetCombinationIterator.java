@@ -48,7 +48,7 @@ import java.util.NoSuchElementException;
  * "http://www.martinbroadhurst.com/combinatorial-algorithms.html#combinations-of-a-multiset"
  * >martinbroadhurst.com Combinations of a Multiset</a>
  */
-public class MultisetCombinationIterator implements Iterator<int[]> {
+public final class MultisetCombinationIterator implements Iterator<int[]> {
 
   private int[] result;
   private final int[] multiset;

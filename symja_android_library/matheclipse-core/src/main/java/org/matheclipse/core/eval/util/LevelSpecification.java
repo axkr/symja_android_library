@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.parser.client.math.MathException;
 
 /** Level specification for expression trees */
-public class LevelSpecification extends LevelSpec {
+public final class LevelSpecification extends LevelSpec {
 
   /** Create a LevelSpecification with level from 0 to Integer.MAX_VALUE */
   public LevelSpecification() {
