@@ -20,6 +20,7 @@ import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.core.patternmatching.PatternMatcherList;
+import com.google.common.collect.ImmutableMap;
 
 public class Functors {
 
@@ -282,21 +283,23 @@ public class Functors {
    * @return a mapping function from lhs arguments to rhs arguments
    */
   public static Function<IExpr, IExpr> equalRules(IAST lhsAST, IAST rhsAST) {
-    final Map<IExpr, IExpr> equalRules;
+    // final Map<IExpr, IExpr> equalRules;
+    ImmutableMap.Builder<IExpr, IExpr> equalRules = ImmutableMap.builder();
     if (lhsAST.size() > 1 && lhsAST.size() == rhsAST.size()) {
-      int argsSize = lhsAST.argSize();
-      if (argsSize <= 5) {
-        equalRules = new OpenFixedSizeMap<IExpr, IExpr>(argsSize * 3 - 1);
-      } else {
-        equalRules = new HashMap<IExpr, IExpr>();
-      }
+      // int argsSize = lhsAST.argSize();
+      // if (argsSize <= 5) {
+      // equalRules = new OpenFixedSizeMap<IExpr, IExpr>(argsSize * 3 - 1);
+      // } else {
+      // equalRules = new HashMap<IExpr, IExpr>();
+      // }
       for (int i = 1; i < lhsAST.size(); i++) {
         equalRules.put(lhsAST.get(i), rhsAST.get(i));
+        // equalRules.put(lhsAST.get(i), rhsAST.get(i));
       }
-      return rules(equalRules);
+      return rules(equalRules.build());
     }
-    equalRules = new HashMap<IExpr, IExpr>();
-    return rules(equalRules);
+    // equalRules = new HashMap<IExpr, IExpr>();
+    return rules(equalRules.build());
   }
 
   private static Function<IExpr, IExpr> rulesFromNestedList(IAST astRules, EvalEngine engine,

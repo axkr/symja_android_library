@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 import org.hipparchus.analysis.UnivariateFunction;
@@ -37,6 +36,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * <pre>
@@ -625,11 +625,11 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
    * @return
    */
   private static Map<IExpr, IExpr> createSubsMap(IAST variables, IAST xCurr) {
-    Map<IExpr, IExpr> map = new HashMap<IExpr, IExpr>();
+    ImmutableMap.Builder<IExpr, IExpr> builder = ImmutableMap.builder();
     for (int i = 1; i < variables.size(); i++) {
-      map.put(variables.get(i), xCurr.get(i));
+      builder.put(variables.get(i), xCurr.get(i));
     }
-    return map;
+    return builder.build();
   }
 
   @Override

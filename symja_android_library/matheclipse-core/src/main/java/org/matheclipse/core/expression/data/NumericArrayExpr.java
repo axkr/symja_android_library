@@ -7,7 +7,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
@@ -24,6 +23,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.parser.trie.Trie;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.UnsignedBytes;
 import com.google.common.primitives.UnsignedInts;
 import com.google.common.primitives.UnsignedLong;
@@ -48,36 +48,40 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
   }
 
 
-  private static final Map<String, Byte> TYPE_MAP = new HashMap<String, Byte>();
+  private static final Map<String, Byte> TYPE_MAP;// = new HashMap<String, Byte>();
 
-  private static final Map<Byte, String> TYPE_STRING_MAP = new HashMap<Byte, String>();
+  private static final Map<Byte, String> TYPE_STRING_MAP;// = new HashMap<Byte, String>();
 
   static {
-    TYPE_MAP.put("Integer8", Integer8);
-    TYPE_MAP.put("Integer16", Integer16);
-    TYPE_MAP.put("Integer32", Integer32);
-    TYPE_MAP.put("Integer64", Integer64);
-    TYPE_MAP.put("UnsignedInteger8", UnsignedInteger8);
-    TYPE_MAP.put("UnsignedInteger16", UnsignedInteger16);
-    TYPE_MAP.put("UnsignedInteger32", UnsignedInteger32);
-    TYPE_MAP.put("UnsignedInteger64", UnsignedInteger64);
-    TYPE_MAP.put("Real32", Real32);
-    TYPE_MAP.put("Real64", Real64);
-    TYPE_MAP.put("ComplexReal32", ComplexReal32);
-    TYPE_MAP.put("ComplexReal64", ComplexReal64);
+    ImmutableMap.Builder<String, Byte> string2ByteBuilderAP = ImmutableMap.builder();
+    string2ByteBuilderAP.put("Integer8", Integer8);
+    string2ByteBuilderAP.put("Integer16", Integer16);
+    string2ByteBuilderAP.put("Integer32", Integer32);
+    string2ByteBuilderAP.put("Integer64", Integer64);
+    string2ByteBuilderAP.put("UnsignedInteger8", UnsignedInteger8);
+    string2ByteBuilderAP.put("UnsignedInteger16", UnsignedInteger16);
+    string2ByteBuilderAP.put("UnsignedInteger32", UnsignedInteger32);
+    string2ByteBuilderAP.put("UnsignedInteger64", UnsignedInteger64);
+    string2ByteBuilderAP.put("Real32", Real32);
+    string2ByteBuilderAP.put("Real64", Real64);
+    string2ByteBuilderAP.put("ComplexReal32", ComplexReal32);
+    string2ByteBuilderAP.put("ComplexReal64", ComplexReal64);
+    TYPE_MAP = string2ByteBuilderAP.build();
 
-    TYPE_STRING_MAP.put(Integer8, "Integer8");
-    TYPE_STRING_MAP.put(Integer16, "Integer16");
-    TYPE_STRING_MAP.put(Integer32, "Integer32");
-    TYPE_STRING_MAP.put(Integer64, "Integer64");
-    TYPE_STRING_MAP.put(UnsignedInteger8, "UnsignedInteger8");
-    TYPE_STRING_MAP.put(UnsignedInteger16, "UnsignedInteger16");
-    TYPE_STRING_MAP.put(UnsignedInteger32, "UnsignedInteger32");
-    TYPE_STRING_MAP.put(UnsignedInteger64, "UnsignedInteger64");
-    TYPE_STRING_MAP.put(Real32, "Real32");
-    TYPE_STRING_MAP.put(Real64, "Real64");
-    TYPE_STRING_MAP.put(ComplexReal32, "ComplexReal32");
-    TYPE_STRING_MAP.put(ComplexReal64, "ComplexReal64");
+    ImmutableMap.Builder<Byte, String> byte2StringBuilder = ImmutableMap.builder();
+    byte2StringBuilder.put(Integer8, "Integer8");
+    byte2StringBuilder.put(Integer16, "Integer16");
+    byte2StringBuilder.put(Integer32, "Integer32");
+    byte2StringBuilder.put(Integer64, "Integer64");
+    byte2StringBuilder.put(UnsignedInteger8, "UnsignedInteger8");
+    byte2StringBuilder.put(UnsignedInteger16, "UnsignedInteger16");
+    byte2StringBuilder.put(UnsignedInteger32, "UnsignedInteger32");
+    byte2StringBuilder.put(UnsignedInteger64, "UnsignedInteger64");
+    byte2StringBuilder.put(Real32, "Real32");
+    byte2StringBuilder.put(Real64, "Real64");
+    byte2StringBuilder.put(ComplexReal32, "ComplexReal32");
+    byte2StringBuilder.put(ComplexReal64, "ComplexReal64");
+    TYPE_STRING_MAP = byte2StringBuilder.build();
   }
 
   private static boolean arrayComplexFloatRecursive(IAST nestedListsOfValues, int level,

@@ -1,6 +1,5 @@
 package org.matheclipse.core.form.output;
 
-import java.util.HashMap;
 import java.util.Map;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -8,33 +7,36 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import com.google.common.collect.ImmutableMap;
 
 /** Converts an internal <code>IExpr</code> into a user readable string. */
 public class JavaDoubleFormFactory extends DoubleFormFactory {
-  private static final Map<ISymbol, String> FUNCTIONS_STR = new HashMap<ISymbol, String>();
+  private static final Map<ISymbol, String> FUNCTIONS_STR;
 
   static {
-    FUNCTIONS_STR.put(S.Abs, "Math.abs");
+    ImmutableMap.Builder<ISymbol, String> builder = ImmutableMap.builder();
+    builder.put(S.Abs, "Math.abs");
 
-    FUNCTIONS_STR.put(S.ArcCos, "Math.acos");
-    FUNCTIONS_STR.put(S.ArcSin, "Math.asin");
-    FUNCTIONS_STR.put(S.ArcTan, "Math.atan");
+    builder.put(S.ArcCos, "Math.acos");
+    builder.put(S.ArcSin, "Math.asin");
+    builder.put(S.ArcTan, "Math.atan");
 
-    FUNCTIONS_STR.put(S.Ceiling, "Math.ceil");
-    FUNCTIONS_STR.put(S.Cos, "Math.cos");
-    FUNCTIONS_STR.put(S.Cosh, "Math.cosh");
-    FUNCTIONS_STR.put(S.Floor, "Math.floor");
+    builder.put(S.Ceiling, "Math.ceil");
+    builder.put(S.Cos, "Math.cos");
+    builder.put(S.Cosh, "Math.cosh");
+    builder.put(S.Floor, "Math.floor");
 
-    FUNCTIONS_STR.put(S.Log, "Math.log");
-    FUNCTIONS_STR.put(S.Max, "Math.max");
-    FUNCTIONS_STR.put(S.Min, "Math.min");
+    builder.put(S.Log, "Math.log");
+    builder.put(S.Max, "Math.max");
+    builder.put(S.Min, "Math.min");
     // Power is handled by coding
     // FUNCTIONS_STR.put(F.Power, "Math.pow");
 
-    FUNCTIONS_STR.put(S.Sin, "Math.sin");
-    FUNCTIONS_STR.put(S.Sinh, "Math.sinh");
-    FUNCTIONS_STR.put(S.Tan, "Math.tan");
-    FUNCTIONS_STR.put(S.Tanh, "Math.tanh");
+    builder.put(S.Sin, "Math.sin");
+    builder.put(S.Sinh, "Math.sinh");
+    builder.put(S.Tan, "Math.tan");
+    builder.put(S.Tanh, "Math.tanh");
+    FUNCTIONS_STR = builder.build();
   }
 
   private JavaDoubleFormFactory(final boolean relaxedSyntax, final boolean reversed,

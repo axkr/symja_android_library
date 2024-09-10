@@ -1,7 +1,6 @@
 package org.matheclipse.core.form.output;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
@@ -19,6 +18,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.Precedence;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Transpile an internal <code>IExpr</code> into a JavaScript string. It can especially generate
@@ -57,195 +57,198 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 
   private List<String> variableNames;
 
-  private static final Map<ISymbol, String> FUNCTIONS_STR_MATHCELL = new HashMap<ISymbol, String>();
-  private static final Map<ISymbol, String> FUNCTIONS_STR_PURE_JS = new HashMap<ISymbol, String>();
+  private static final Map<ISymbol, String> FUNCTIONS_STR_MATHCELL;
+  private static final Map<ISymbol, String> FUNCTIONS_STR_PURE_JS;
 
   static {
     // see https://paulmasson.github.io/math/docs/functions.html
-    FUNCTIONS_STR_MATHCELL.put(S.Abs, "abs");
-    FUNCTIONS_STR_MATHCELL.put(S.Arg, "arg");
-    FUNCTIONS_STR_MATHCELL.put(S.AiryAi, "airyAi");
-    FUNCTIONS_STR_MATHCELL.put(S.AiryBi, "airyBi");
+    ImmutableMap.Builder<ISymbol, String> mathcellBuilder = ImmutableMap.builder();
+    mathcellBuilder.put(S.Abs, "abs");
+    mathcellBuilder.put(S.Arg, "arg");
+    mathcellBuilder.put(S.AiryAi, "airyAi");
+    mathcellBuilder.put(S.AiryBi, "airyBi");
 
-    FUNCTIONS_STR_MATHCELL.put(S.Beta, "beta");
-    FUNCTIONS_STR_MATHCELL.put(S.BernoulliB, "bernoulli");
-    FUNCTIONS_STR_MATHCELL.put(S.BesselJ, "besselJ");
-    FUNCTIONS_STR_MATHCELL.put(S.BesselY, "besselY");
-    FUNCTIONS_STR_MATHCELL.put(S.BesselI, "besselI");
-    FUNCTIONS_STR_MATHCELL.put(S.BesselK, "besselK");
-    FUNCTIONS_STR_MATHCELL.put(S.BesselJZero, "besselJZero ");
-    FUNCTIONS_STR_MATHCELL.put(S.BesselYZero, "besselYZero ");
-    FUNCTIONS_STR_MATHCELL.put(S.BetaRegularized, "betaRegularized");
-    FUNCTIONS_STR_MATHCELL.put(S.Binomial, "binomial");
+    mathcellBuilder.put(S.Beta, "beta");
+    mathcellBuilder.put(S.BernoulliB, "bernoulli");
+    mathcellBuilder.put(S.BesselJ, "besselJ");
+    mathcellBuilder.put(S.BesselY, "besselY");
+    mathcellBuilder.put(S.BesselI, "besselI");
+    mathcellBuilder.put(S.BesselK, "besselK");
+    mathcellBuilder.put(S.BesselJZero, "besselJZero ");
+    mathcellBuilder.put(S.BesselYZero, "besselYZero ");
+    mathcellBuilder.put(S.BetaRegularized, "betaRegularized");
+    mathcellBuilder.put(S.Binomial, "binomial");
 
-    FUNCTIONS_STR_MATHCELL.put(S.CarlsonRC, "carlsonRC");
-    FUNCTIONS_STR_MATHCELL.put(S.CarlsonRD, "carlsonRD");
-    FUNCTIONS_STR_MATHCELL.put(S.CarlsonRF, "carlsonRF");
-    FUNCTIONS_STR_MATHCELL.put(S.CarlsonRG, "carlsonRG");
-    FUNCTIONS_STR_MATHCELL.put(S.CarlsonRJ, "carlsonRJ");
-    FUNCTIONS_STR_MATHCELL.put(S.Ceiling, "ceiling");
-    FUNCTIONS_STR_MATHCELL.put(S.ChebyshevT, "chebyshevT");
-    FUNCTIONS_STR_MATHCELL.put(S.ChebyshevU, "chebyshevU");
-    FUNCTIONS_STR_MATHCELL.put(S.Chop, "chop");
-    FUNCTIONS_STR_MATHCELL.put(S.CosIntegral, "cosIntegral");
-    FUNCTIONS_STR_MATHCELL.put(S.CoshIntegral, "coshIntegral");
+    mathcellBuilder.put(S.CarlsonRC, "carlsonRC");
+    mathcellBuilder.put(S.CarlsonRD, "carlsonRD");
+    mathcellBuilder.put(S.CarlsonRF, "carlsonRF");
+    mathcellBuilder.put(S.CarlsonRG, "carlsonRG");
+    mathcellBuilder.put(S.CarlsonRJ, "carlsonRJ");
+    mathcellBuilder.put(S.Ceiling, "ceiling");
+    mathcellBuilder.put(S.ChebyshevT, "chebyshevT");
+    mathcellBuilder.put(S.ChebyshevU, "chebyshevU");
+    mathcellBuilder.put(S.Chop, "chop");
+    mathcellBuilder.put(S.CosIntegral, "cosIntegral");
+    mathcellBuilder.put(S.CoshIntegral, "coshIntegral");
 
-    FUNCTIONS_STR_MATHCELL.put(S.DirichletEta, "dirichletEta");
+    mathcellBuilder.put(S.DirichletEta, "dirichletEta");
 
-    FUNCTIONS_STR_MATHCELL.put(S.EllipticF, "ellipticF");
-    FUNCTIONS_STR_MATHCELL.put(S.EllipticK, "ellipticK");
-    FUNCTIONS_STR_MATHCELL.put(S.EllipticE, "ellipticE");
-    FUNCTIONS_STR_MATHCELL.put(S.EllipticPi, "ellipticPi");
-    FUNCTIONS_STR_MATHCELL.put(S.EllipticTheta, "jacobiTheta");
-    FUNCTIONS_STR_MATHCELL.put(S.Erf, "erf");
-    FUNCTIONS_STR_MATHCELL.put(S.Erfc, "erfc");
-    FUNCTIONS_STR_MATHCELL.put(S.Erfi, "erfi");
-    FUNCTIONS_STR_MATHCELL.put(S.Exp, "exp");
-    FUNCTIONS_STR_MATHCELL.put(S.ExpIntegralEi, "expIntegralEi");
-    FUNCTIONS_STR_MATHCELL.put(S.ExpIntegralE, "expIntegralE");
+    mathcellBuilder.put(S.EllipticF, "ellipticF");
+    mathcellBuilder.put(S.EllipticK, "ellipticK");
+    mathcellBuilder.put(S.EllipticE, "ellipticE");
+    mathcellBuilder.put(S.EllipticPi, "ellipticPi");
+    mathcellBuilder.put(S.EllipticTheta, "jacobiTheta");
+    mathcellBuilder.put(S.Erf, "erf");
+    mathcellBuilder.put(S.Erfc, "erfc");
+    mathcellBuilder.put(S.Erfi, "erfi");
+    mathcellBuilder.put(S.Exp, "exp");
+    mathcellBuilder.put(S.ExpIntegralEi, "expIntegralEi");
+    mathcellBuilder.put(S.ExpIntegralE, "expIntegralE");
 
-    FUNCTIONS_STR_MATHCELL.put(S.Factorial, "factorial");
-    FUNCTIONS_STR_MATHCELL.put(S.Factorial2, "factorial2");
-    FUNCTIONS_STR_MATHCELL.put(S.Subfactorial, "subfactorial");
-    FUNCTIONS_STR_MATHCELL.put(S.Floor, "floor");
-    FUNCTIONS_STR_MATHCELL.put(S.FractionalPart, "fractionalPart");
-    FUNCTIONS_STR_MATHCELL.put(S.FresnelC, "fresnelC");
-    FUNCTIONS_STR_MATHCELL.put(S.FresnelS, "fresnelS");
+    mathcellBuilder.put(S.Factorial, "factorial");
+    mathcellBuilder.put(S.Factorial2, "factorial2");
+    mathcellBuilder.put(S.Subfactorial, "subfactorial");
+    mathcellBuilder.put(S.Floor, "floor");
+    mathcellBuilder.put(S.FractionalPart, "fractionalPart");
+    mathcellBuilder.put(S.FresnelC, "fresnelC");
+    mathcellBuilder.put(S.FresnelS, "fresnelS");
 
-    FUNCTIONS_STR_MATHCELL.put(S.Gamma, "gamma");
-    FUNCTIONS_STR_MATHCELL.put(S.GammaRegularized, "gammaRegularized");
-    FUNCTIONS_STR_MATHCELL.put(S.Gudermannian, "gudermannian");
+    mathcellBuilder.put(S.Gamma, "gamma");
+    mathcellBuilder.put(S.GammaRegularized, "gammaRegularized");
+    mathcellBuilder.put(S.Gudermannian, "gudermannian");
 
-    FUNCTIONS_STR_MATHCELL.put(S.HankelH1, "hankel1");
-    FUNCTIONS_STR_MATHCELL.put(S.HankelH2, "hankel2");
+    mathcellBuilder.put(S.HankelH1, "hankel1");
+    mathcellBuilder.put(S.HankelH2, "hankel2");
     // TODO https://github.com/paulmasson/math/issues/36
-    FUNCTIONS_STR_MATHCELL.put(S.HarmonicNumber, "harmonic");
-    FUNCTIONS_STR_MATHCELL.put(S.Haversine, "haversine");
-    FUNCTIONS_STR_MATHCELL.put(S.HermiteH, "hermite");
-    FUNCTIONS_STR_MATHCELL.put(S.HurwitzZeta, "hurwitzZeta");
-    FUNCTIONS_STR_MATHCELL.put(S.Hypergeometric0F1, "hypergeometric0F1");
-    FUNCTIONS_STR_MATHCELL.put(S.Hypergeometric1F1, "hypergeometric1F1");
+    mathcellBuilder.put(S.HarmonicNumber, "harmonic");
+    mathcellBuilder.put(S.Haversine, "haversine");
+    mathcellBuilder.put(S.HermiteH, "hermite");
+    mathcellBuilder.put(S.HurwitzZeta, "hurwitzZeta");
+    mathcellBuilder.put(S.Hypergeometric0F1, "hypergeometric0F1");
+    mathcellBuilder.put(S.Hypergeometric1F1, "hypergeometric1F1");
     // FUNCTIONS_STR_MATHCELL.put(S.Hypergeometric2??, "hypergeometric2F0");
-    FUNCTIONS_STR_MATHCELL.put(S.Hypergeometric2F1, "hypergeometric2F1");
-    FUNCTIONS_STR_MATHCELL.put(S.HypergeometricPFQ, "hypergeometricPFQ");
-    FUNCTIONS_STR_MATHCELL.put(S.HypergeometricU, "hypergeometricU");
+    mathcellBuilder.put(S.Hypergeometric2F1, "hypergeometric2F1");
+    mathcellBuilder.put(S.HypergeometricPFQ, "hypergeometricPFQ");
+    mathcellBuilder.put(S.HypergeometricU, "hypergeometricU");
 
-    FUNCTIONS_STR_MATHCELL.put(S.Im, "im");
-    FUNCTIONS_STR_MATHCELL.put(S.IntegerPart, "integerPart");
-    FUNCTIONS_STR_MATHCELL.put(S.InverseGudermannian, "inverseGudermannian");
-    FUNCTIONS_STR_MATHCELL.put(S.InverseHaversine, "inverseHaversine");
-    FUNCTIONS_STR_MATHCELL.put(S.InverseWeierstrassP, "inverseWeierstrassP");
+    mathcellBuilder.put(S.Im, "im");
+    mathcellBuilder.put(S.IntegerPart, "integerPart");
+    mathcellBuilder.put(S.InverseGudermannian, "inverseGudermannian");
+    mathcellBuilder.put(S.InverseHaversine, "inverseHaversine");
+    mathcellBuilder.put(S.InverseWeierstrassP, "inverseWeierstrassP");
 
-    FUNCTIONS_STR_MATHCELL.put(S.JacobiAmplitude, "am");
-    FUNCTIONS_STR_MATHCELL.put(S.JacobiCN, "cn");
-    FUNCTIONS_STR_MATHCELL.put(S.JacobiDN, "dn");
-    FUNCTIONS_STR_MATHCELL.put(S.JacobiSN, "sn");
-    FUNCTIONS_STR_MATHCELL.put(S.JacobiZeta, "jacobiZeta");
+    mathcellBuilder.put(S.JacobiAmplitude, "am");
+    mathcellBuilder.put(S.JacobiCN, "cn");
+    mathcellBuilder.put(S.JacobiDN, "dn");
+    mathcellBuilder.put(S.JacobiSN, "sn");
+    mathcellBuilder.put(S.JacobiZeta, "jacobiZeta");
 
-    FUNCTIONS_STR_MATHCELL.put(S.KleinInvariantJ, "kleinJ");
-    FUNCTIONS_STR_MATHCELL.put(S.KroneckerDelta, "kronecker");
+    mathcellBuilder.put(S.KleinInvariantJ, "kleinJ");
+    mathcellBuilder.put(S.KroneckerDelta, "kronecker");
 
-    FUNCTIONS_STR_MATHCELL.put(S.LaguerreL, "laguerre");
-    FUNCTIONS_STR_MATHCELL.put(S.LegendreP, "legendreP");
-    FUNCTIONS_STR_MATHCELL.put(S.LegendreQ, "legendreQ");
-    FUNCTIONS_STR_MATHCELL.put(S.Log, "log");
-    FUNCTIONS_STR_MATHCELL.put(S.LogGamma, "logGamma");
-    FUNCTIONS_STR_MATHCELL.put(S.LogIntegral, "logIntegral");
+    mathcellBuilder.put(S.LaguerreL, "laguerre");
+    mathcellBuilder.put(S.LegendreP, "legendreP");
+    mathcellBuilder.put(S.LegendreQ, "legendreQ");
+    mathcellBuilder.put(S.Log, "log");
+    mathcellBuilder.put(S.LogGamma, "logGamma");
+    mathcellBuilder.put(S.LogIntegral, "logIntegral");
 
-    FUNCTIONS_STR_MATHCELL.put(S.Max, "Math.max");
-    FUNCTIONS_STR_MATHCELL.put(S.Min, "Math.min");
-    FUNCTIONS_STR_MATHCELL.put(S.Multinomial, "multinomial");
+    mathcellBuilder.put(S.Max, "Math.max");
+    mathcellBuilder.put(S.Min, "Math.min");
+    mathcellBuilder.put(S.Multinomial, "multinomial");
 
-    FUNCTIONS_STR_MATHCELL.put(S.PolyGamma, "digamma");
+    mathcellBuilder.put(S.PolyGamma, "digamma");
     // PM: Since polylog is a shortened form of the full function name, polylogarithm, the small "l"
     // is more appropriate here:
-    FUNCTIONS_STR_MATHCELL.put(S.PolyLog, "polylog");
-    FUNCTIONS_STR_MATHCELL.put(S.ProductLog, "lambertW");
+    mathcellBuilder.put(S.PolyLog, "polylog");
+    mathcellBuilder.put(S.ProductLog, "lambertW");
 
-    FUNCTIONS_STR_MATHCELL.put(S.Re, "re");
-    FUNCTIONS_STR_MATHCELL.put(S.Root, "root");
-    FUNCTIONS_STR_MATHCELL.put(S.Round, "round");
+    mathcellBuilder.put(S.Re, "re");
+    mathcellBuilder.put(S.Root, "root");
+    mathcellBuilder.put(S.Round, "round");
 
-    FUNCTIONS_STR_MATHCELL.put(S.Sinc, "sinc");
-    FUNCTIONS_STR_MATHCELL.put(S.Sign, "sign");
-    FUNCTIONS_STR_MATHCELL.put(S.SinIntegral, "sinIntegral");
-    FUNCTIONS_STR_MATHCELL.put(S.SinhIntegral, "sinhIntegral");
-    FUNCTIONS_STR_MATHCELL.put(S.SphericalBesselJ, "sphericalBesselJ");
-    FUNCTIONS_STR_MATHCELL.put(S.SphericalBesselY, "sphericalBesselY");
-    FUNCTIONS_STR_MATHCELL.put(S.SphericalHankelH1, "sphericalHankel1");
-    FUNCTIONS_STR_MATHCELL.put(S.SphericalHankelH2, "sphericalHankel2");
-    FUNCTIONS_STR_MATHCELL.put(S.StruveH, "struveH");
-    FUNCTIONS_STR_MATHCELL.put(S.StruveL, "struveL");
-    FUNCTIONS_STR_MATHCELL.put(S.Surd, "surd");
+    mathcellBuilder.put(S.Sinc, "sinc");
+    mathcellBuilder.put(S.Sign, "sign");
+    mathcellBuilder.put(S.SinIntegral, "sinIntegral");
+    mathcellBuilder.put(S.SinhIntegral, "sinhIntegral");
+    mathcellBuilder.put(S.SphericalBesselJ, "sphericalBesselJ");
+    mathcellBuilder.put(S.SphericalBesselY, "sphericalBesselY");
+    mathcellBuilder.put(S.SphericalHankelH1, "sphericalHankel1");
+    mathcellBuilder.put(S.SphericalHankelH2, "sphericalHankel2");
+    mathcellBuilder.put(S.StruveH, "struveH");
+    mathcellBuilder.put(S.StruveL, "struveL");
+    mathcellBuilder.put(S.Surd, "surd");
 
-    FUNCTIONS_STR_MATHCELL.put(S.WeierstrassHalfPeriods, "weierstrassHalfPeriods");
-    FUNCTIONS_STR_MATHCELL.put(S.WeierstrassInvariants, "weierstrassInvariants");
-    FUNCTIONS_STR_MATHCELL.put(S.WeierstrassP, "weierstrassP");
-    FUNCTIONS_STR_MATHCELL.put(S.WeierstrassPPrime, "weierstrassPPrime");
-    FUNCTIONS_STR_MATHCELL.put(S.WhittakerM, "whittakerM");
-    FUNCTIONS_STR_MATHCELL.put(S.WhittakerW, "whittakerW");
-    FUNCTIONS_STR_MATHCELL.put(S.Zeta, "zeta");
+    mathcellBuilder.put(S.WeierstrassHalfPeriods, "weierstrassHalfPeriods");
+    mathcellBuilder.put(S.WeierstrassInvariants, "weierstrassInvariants");
+    mathcellBuilder.put(S.WeierstrassP, "weierstrassP");
+    mathcellBuilder.put(S.WeierstrassPPrime, "weierstrassPPrime");
+    mathcellBuilder.put(S.WhittakerM, "whittakerM");
+    mathcellBuilder.put(S.WhittakerW, "whittakerW");
+    mathcellBuilder.put(S.Zeta, "zeta");
 
-    // FUNCTIONS_STR_MATHCELL.put(S.SphericalHarmonic, "sphericalHarmonic");
+    // mathcellBuilder.put(S.SphericalHarmonic, "sphericalHarmonic");
+    mathcellBuilder.put(S.Sin, "sin");
+    mathcellBuilder.put(S.Cos, "cos");
+    mathcellBuilder.put(S.Tan, "tan");
+    mathcellBuilder.put(S.Cot, "cot");
+    mathcellBuilder.put(S.Sec, "sec");
+    mathcellBuilder.put(S.Csc, "csc");
 
-    FUNCTIONS_STR_MATHCELL.put(S.Sin, "sin");
-    FUNCTIONS_STR_MATHCELL.put(S.Cos, "cos");
-    FUNCTIONS_STR_MATHCELL.put(S.Tan, "tan");
-    FUNCTIONS_STR_MATHCELL.put(S.Cot, "cot");
-    FUNCTIONS_STR_MATHCELL.put(S.Sec, "sec");
-    FUNCTIONS_STR_MATHCELL.put(S.Csc, "csc");
+    mathcellBuilder.put(S.ArcSin, "arcsin");
+    mathcellBuilder.put(S.ArcCos, "arccos");
+    mathcellBuilder.put(S.ArcTan, "arctan");
+    mathcellBuilder.put(S.ArcCot, "arccot");
+    mathcellBuilder.put(S.ArcSec, "arcsec");
+    mathcellBuilder.put(S.ArcCsc, "arccsc");
 
-    FUNCTIONS_STR_MATHCELL.put(S.ArcSin, "arcsin");
-    FUNCTIONS_STR_MATHCELL.put(S.ArcCos, "arccos");
-    FUNCTIONS_STR_MATHCELL.put(S.ArcTan, "arctan");
-    FUNCTIONS_STR_MATHCELL.put(S.ArcCot, "arccot");
-    FUNCTIONS_STR_MATHCELL.put(S.ArcSec, "arcsec");
-    FUNCTIONS_STR_MATHCELL.put(S.ArcCsc, "arccsc");
+    mathcellBuilder.put(S.Sinh, "sinh");
+    mathcellBuilder.put(S.Cosh, "cosh");
+    mathcellBuilder.put(S.Tanh, "tanh");
+    mathcellBuilder.put(S.Coth, "coth");
+    mathcellBuilder.put(S.Sech, "sech");
+    mathcellBuilder.put(S.Csch, "csch");
 
-    FUNCTIONS_STR_MATHCELL.put(S.Sinh, "sinh");
-    FUNCTIONS_STR_MATHCELL.put(S.Cosh, "cosh");
-    FUNCTIONS_STR_MATHCELL.put(S.Tanh, "tanh");
-    FUNCTIONS_STR_MATHCELL.put(S.Coth, "coth");
-    FUNCTIONS_STR_MATHCELL.put(S.Sech, "sech");
-    FUNCTIONS_STR_MATHCELL.put(S.Csch, "csch");
-
-    FUNCTIONS_STR_MATHCELL.put(S.ArcSinh, "arcsinh");
-    FUNCTIONS_STR_MATHCELL.put(S.ArcCosh, "arccosh");
-    FUNCTIONS_STR_MATHCELL.put(S.ArcTanh, "arctanh");
-    FUNCTIONS_STR_MATHCELL.put(S.ArcCoth, "arccoth");
-    FUNCTIONS_STR_MATHCELL.put(S.ArcSech, "arcsech");
-    FUNCTIONS_STR_MATHCELL.put(S.ArcCsch, "arccsch");
+    mathcellBuilder.put(S.ArcSinh, "arcsinh");
+    mathcellBuilder.put(S.ArcCosh, "arccosh");
+    mathcellBuilder.put(S.ArcTanh, "arctanh");
+    mathcellBuilder.put(S.ArcCoth, "arccoth");
+    mathcellBuilder.put(S.ArcSech, "arcsech");
+    mathcellBuilder.put(S.ArcCsch, "arccsch");
+    FUNCTIONS_STR_MATHCELL = mathcellBuilder.build();
 
     //
     // pure JavaScript mappings
     //
-    FUNCTIONS_STR_PURE_JS.put(S.Abs, "Math.abs");
+    ImmutableMap.Builder<ISymbol, String> pureJSBuilder = ImmutableMap.builder();
+    pureJSBuilder.put(S.Abs, "Math.abs");
 
-    FUNCTIONS_STR_PURE_JS.put(S.ArcCos, "Math.acos");
-    FUNCTIONS_STR_PURE_JS.put(S.ArcCosh, "Math.acosh");
-    FUNCTIONS_STR_PURE_JS.put(S.ArcSin, "Math.asin");
-    FUNCTIONS_STR_PURE_JS.put(S.ArcSinh, "Math.asinh");
-    FUNCTIONS_STR_PURE_JS.put(S.ArcTan, "Math.atan");
-    FUNCTIONS_STR_PURE_JS.put(S.ArcTanh, "Math.atanh");
+    pureJSBuilder.put(S.ArcCos, "Math.acos");
+    pureJSBuilder.put(S.ArcCosh, "Math.acosh");
+    pureJSBuilder.put(S.ArcSin, "Math.asin");
+    pureJSBuilder.put(S.ArcSinh, "Math.asinh");
+    pureJSBuilder.put(S.ArcTan, "Math.atan");
+    pureJSBuilder.put(S.ArcTanh, "Math.atanh");
 
-    FUNCTIONS_STR_PURE_JS.put(S.Ceiling, "Math.ceil");
-    FUNCTIONS_STR_PURE_JS.put(S.Cos, "Math.cos");
-    FUNCTIONS_STR_PURE_JS.put(S.Cosh, "Math.cosh");
-    FUNCTIONS_STR_PURE_JS.put(S.Exp, "Math.exp");
-    FUNCTIONS_STR_PURE_JS.put(S.Floor, "Math.floor");
-    FUNCTIONS_STR_PURE_JS.put(S.IntegerPart, "Math.trunc");
+    pureJSBuilder.put(S.Ceiling, "Math.ceil");
+    pureJSBuilder.put(S.Cos, "Math.cos");
+    pureJSBuilder.put(S.Cosh, "Math.cosh");
+    pureJSBuilder.put(S.Exp, "Math.exp");
+    pureJSBuilder.put(S.Floor, "Math.floor");
+    pureJSBuilder.put(S.IntegerPart, "Math.trunc");
 
-    FUNCTIONS_STR_PURE_JS.put(S.Log, "Math.log");
-    FUNCTIONS_STR_PURE_JS.put(S.Max, "Math.max");
-    FUNCTIONS_STR_PURE_JS.put(S.Min, "Math.min");
+    pureJSBuilder.put(S.Log, "Math.log");
+    pureJSBuilder.put(S.Max, "Math.max");
+    pureJSBuilder.put(S.Min, "Math.min");
     // Power is handled by coding
     // FUNCTIONS_STR_PURE_JS.put(S.Power, "Math.pow");
-    FUNCTIONS_STR_PURE_JS.put(S.Round, "Math.round");
-    FUNCTIONS_STR_PURE_JS.put(S.Sign, "Math.sign");
-    FUNCTIONS_STR_PURE_JS.put(S.Sin, "Math.sin");
-    FUNCTIONS_STR_PURE_JS.put(S.Sinh, "Math.sinh");
-    FUNCTIONS_STR_PURE_JS.put(S.Tan, "Math.tan");
-    FUNCTIONS_STR_PURE_JS.put(S.Tanh, "Math.tanh");
+    pureJSBuilder.put(S.Round, "Math.round");
+    pureJSBuilder.put(S.Sign, "Math.sign");
+    pureJSBuilder.put(S.Sin, "Math.sin");
+    pureJSBuilder.put(S.Sinh, "Math.sinh");
+    pureJSBuilder.put(S.Tan, "Math.tan");
+    pureJSBuilder.put(S.Tanh, "Math.tanh");
+    FUNCTIONS_STR_PURE_JS = pureJSBuilder.build();
   }
 
   public JavaScriptFormFactory(final boolean relaxedSyntax, final boolean reversed,

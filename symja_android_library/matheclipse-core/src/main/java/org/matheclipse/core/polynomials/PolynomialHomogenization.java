@@ -19,6 +19,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Forward and backward substitutions of expressions for polynomials. See <a href=
@@ -37,16 +38,18 @@ public class PolynomialHomogenization {
     Map<IExpr, int[]> statsMap;
 
     public CosSinTransform() {
-      statsMap = toMap(originalVariables.getVariablesSet());
+      statsMap = toMap(originalVariables.toSet());
     }
 
     private Map<IExpr, int[]> toMap(Set<IExpr> set) {
-      Map<IExpr, int[]> map = new HashMap<IExpr, int[]>();
+      ImmutableMap.Builder<IExpr, int[]> builder = ImmutableMap.builder();
+      // Map<IExpr, int[]> map = new HashMap<IExpr, int[]>();
       set.forEach(t -> {
         int[] statsArray = new int[5];
-        map.put(t, statsArray);
+        builder.put(t, statsArray);
+        // map.put(t, statsArray);
       });
-      return map;
+      return builder.build();
     }
 
     /**
