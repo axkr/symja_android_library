@@ -1,6 +1,6 @@
 package org.matheclipse.core.expression.data;
 
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
@@ -59,7 +59,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
     return new IASTAppendable[] {edges, weights};
   }
 
-  public static void edgesToVisjs(Map<IExpr, Integer> map, StringBuilder buf,
+  public static void edgesToVisjs(IdentityHashMap<IExpr, Integer> map, StringBuilder buf,
       Graph<IExpr, ExprEdge> g) {
     Set<ExprEdge> edgeSet = g.edgeSet();
     GraphType type = g.getType();
@@ -158,7 +158,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
   public static IExpr graphToAdjacencyMatrix(Graph<IExpr, ?> graph) {
     Set<IExpr> vertexSet = graph.vertexSet();
     int size = vertexSet.size();
-    Map<IExpr, Integer> map = new HashMap<IExpr, Integer>();
+    IdentityHashMap<IExpr, Integer> map = new IdentityHashMap<IExpr, Integer>();
     int indx = 1;
     for (IExpr expr : vertexSet) {
       map.put(expr, indx++);
@@ -221,7 +221,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
   public String graphToJSForm() {
     GraphExpr<ExprEdge> gex = (GraphExpr<ExprEdge>) this;
     AbstractBaseGraph<IExpr, ?> g = (AbstractBaseGraph<IExpr, ?>) gex.toData();
-    Map<IExpr, Integer> map = new HashMap<IExpr, Integer>();
+    IdentityHashMap<IExpr, Integer> map = new IdentityHashMap<IExpr, Integer>();
     StringBuilder buf = new StringBuilder();
     if (g.getType().isWeighted()) {
       weightedGraphToVisjs(map, buf, (AbstractBaseGraph<IExpr, ExprWeightedEdge>) g);
@@ -231,7 +231,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
     return buf.toString();
   }
 
-  private static void graphToVisjs(Map<IExpr, Integer> map, StringBuilder buf,
+  private static void graphToVisjs(IdentityHashMap<IExpr, Integer> map, StringBuilder buf,
       AbstractBaseGraph<IExpr, ExprEdge> g) {
     vertexToVisjs(map, buf, g);
     edgesToVisjs(map, buf, g);
@@ -251,7 +251,8 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
     return F.mapSet(graph.vertexSet(), x -> x);
   }
 
-  private static void vertexToVisjs(Map<IExpr, Integer> map, StringBuilder buf, Graph<IExpr, ?> g) {
+  private static void vertexToVisjs(IdentityHashMap<IExpr, Integer> map, StringBuilder buf,
+      Graph<IExpr, ?> g) {
     Set<IExpr> vertexSet = g.vertexSet();
     buf.append("var nodes = new vis.DataSet([\n");
     boolean first = true;
@@ -361,7 +362,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
   public static IExpr weightedGraphToAdjacencyMatrix(Graph<IExpr, ExprWeightedEdge> g) {
     Set<IExpr> vertexSet = g.vertexSet();
     int size = vertexSet.size();
-    Map<IExpr, Integer> map = new HashMap<IExpr, Integer>();
+    IdentityHashMap<IExpr, Integer> map = new IdentityHashMap<IExpr, Integer>();
     int indx = 1;
     for (IExpr expr : vertexSet) {
       map.put(expr, indx++);
@@ -382,7 +383,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
     return new SparseArrayExpr(trie, new int[] {size, size}, F.C0, false);
   }
 
-  private static void weightedGraphToVisjs(Map<IExpr, Integer> map, StringBuilder buf,
+  private static void weightedGraphToVisjs(IdentityHashMap<IExpr, Integer> map, StringBuilder buf,
       AbstractBaseGraph<IExpr, ExprWeightedEdge> g) {
     vertexToVisjs(map, buf, g);
     weightedEdgesToVisjs(map, buf, g);
@@ -391,7 +392,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
   public static IExpr weightedGraphToWeightedAdjacencyMatrix(Graph<IExpr, ExprWeightedEdge> g) {
     Set<IExpr> vertexSet = g.vertexSet();
     int size = vertexSet.size();
-    Map<IExpr, Integer> map = new HashMap<IExpr, Integer>();
+    IdentityHashMap<IExpr, Integer> map = new IdentityHashMap<IExpr, Integer>();
     int indx = 1;
     for (IExpr expr : vertexSet) {
       map.put(expr, indx++);
