@@ -13,7 +13,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -21,10 +20,11 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /** Unary numerical function for functions like Plot */
-public class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDifferentiableFunction,
+public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDifferentiableFunction,
     DoubleFunction<IExpr>, DoubleUnaryOperator {
   final IExpr fUnaryFunction;
   final ISymbol fVariable;
+  final ISymbol fDummyVariable;
   final EvalEngine fEngine;
 
   UnaryNumerical fFirstDerivative = null;
@@ -101,21 +101,25 @@ public class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDifferent
           Errors.getMessage("setraw", F.list(variable), EvalEngine.get()));
     }
     fVariable = variable;
+    IExpr function;
     if (useAbsReal) {
-      fUnaryFunction = F.subst(unaryFunction, x -> x == S.Abs ? S.RealAbs : F.NIL);
+      function = F.subst(unaryFunction, x -> x == S.Abs, S.RealAbs);
     } else {
-      fUnaryFunction = unaryFunction;
+      function = unaryFunction;
     }
     fEngine = engine;
     if (firstDerivative) {
-      IExpr temp = engine.evaluate(F.D(fUnaryFunction, fVariable));
+      IExpr temp = engine.evaluate(F.D(function, fVariable));
       fFirstDerivative = new UnaryNumerical(temp, fVariable, false, useAbsReal, engine);
     }
+    fDummyVariable = F.Dummy("$" + fVariable.toString());
+    fUnaryFunction = F.subst(unaryFunction, x -> x.equals(variable) ? fDummyVariable : F.NIL);
   }
 
   @Override
   public IExpr apply(final IExpr value) {
-    return fEngine.evalNumericFunction(F.subst(fUnaryFunction, F.Rule(fVariable, value)));
+    fDummyVariable.assignValue(value);
+    return fEngine.evalNumericFunction(fUnaryFunction);
   }
 
   /**
@@ -127,7 +131,7 @@ public class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDifferent
    */
   public IExpr applyLimit(IExpr value) {
     try {
-      return fEngine.evalNumericFunction(F.Limit(fUnaryFunction, F.Rule(fVariable, value)));
+      return fEngine.evalNumericFunction(F.Limit(fUnaryFunction, F.Rule(fDummyVariable, value)));
     } catch (RuntimeException rex) {
       return S.Indeterminate;
     }
@@ -142,7 +146,8 @@ public class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDifferent
   @Override
   public IExpr apply(double value) {
     try {
-      return fEngine.evalNumericFunction(F.subst(fUnaryFunction, F.Rule(fVariable, F.num(value))));
+      fDummyVariable.assignValue(F.num(value));
+      return fEngine.evalNumericFunction(fUnaryFunction);
     } catch (RuntimeException rex) {
       return S.Indeterminate;
     }
@@ -158,8 +163,8 @@ public class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDifferent
   @Override
   public double value(double value) {
     try {
-      // substitution is more thread safe than direct value assigning to global variable
-      return fUnaryFunction.evalf(x -> x.equals(fVariable) ? Num.valueOf(value) : F.NIL);
+      fDummyVariable.assignValue(F.num(value));
+      return fUnaryFunction.evalf();
     } catch (RuntimeException rex) {
       return Double.NaN;
     }
@@ -175,7 +180,7 @@ public class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDifferent
    */
   public double valueLimit(double value) {
     try {
-      return fEngine.evalDouble(F.Limit(fUnaryFunction, F.Rule(fVariable, F.num(value))));
+      return fEngine.evalDouble(F.Limit(fUnaryFunction, F.Rule(fDummyVariable, F.num(value))));
     } catch (RuntimeException rex) {
       return Double.NaN;
     }
@@ -236,7 +241,8 @@ public class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDifferent
 
   @Override
   public double applyAsDouble(double value) {
-    return F.subst(fUnaryFunction, F.Rule(fVariable, F.num(value))).evalf();
+    fDummyVariable.assignValue(F.num(value));
+    return fUnaryFunction.evalf();
   }
 
   public static double[] vectorValue(UnivariateFunction function, double[] t) {
