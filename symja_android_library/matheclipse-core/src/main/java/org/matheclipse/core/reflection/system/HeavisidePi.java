@@ -3,18 +3,20 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * HeavisideTheta function returns <code>1</code> for all x greater than <code>0</code> and <code>0
- * </code> for all x less than <code>0</code>,
+ * The <code>HeavisidePi</code> function returns <code>1</code> for all <code>Abs(x)</code> less
+ * than <code>1/2</code> and <code>0</code> for all <code>Abs(x)</code> greater than
+ * <code>1/2</code>,
  */
-public class HeavisideTheta extends AbstractEvaluator {
+public class HeavisidePi extends AbstractEvaluator {
 
-  public HeavisideTheta() {}
+  public HeavisidePi() {}
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -22,24 +24,11 @@ public class HeavisideTheta extends AbstractEvaluator {
     if (size > 1) {
       for (int i = 1; i < size; i++) {
         IExpr expr = ast.get(i);
-        IReal temp = expr.evalReal();
+        IReal temp = expr.abs().evalReal();
         if (temp != null) {
-          if (temp.complexSign() < 0) {
+          if (temp.isGT(F.C1D2)) {
             return F.C0;
-          } else if (temp.complexSign() > 0) {
-            continue;
-          }
-        } else {
-          if (expr.isNegativeResult()) {
-            return F.C0;
-          }
-          if (expr.isPositiveResult()) {
-            continue;
-          }
-          if (expr.isNegativeInfinity()) {
-            return F.C0;
-          }
-          if (expr.isInfinity()) {
+          } else if (temp.isLT(F.C1D2)) {
             continue;
           }
         }
@@ -47,6 +36,11 @@ public class HeavisideTheta extends AbstractEvaluator {
       }
     }
     return F.C1;
+  }
+
+  @Override
+  public int status() {
+    return ImplementationStatus.EXPERIMENTAL;
   }
 
   @Override

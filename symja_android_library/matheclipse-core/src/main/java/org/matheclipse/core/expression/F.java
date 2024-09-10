@@ -20,7 +20,6 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -151,6 +150,7 @@ import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.trie.TrieMatch;
+import com.google.common.base.Supplier;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.math.DoubleMath;
@@ -788,6 +788,12 @@ public class F extends S {
   /** Represents <code>#3</code>, the third argument of a pure function. */
   public static final IAST Slot3;
 
+  public static final IAST Slot4;
+
+  public static final IAST Slot5;
+
+  public static final IAST Slot6;
+
   public static final Field<IExpr> EXPR_FIELD = new ExprField();
 
   /** Constant integer &quot;-1&quot; */
@@ -923,11 +929,17 @@ public class F extends S {
       Slot1 = new B1.Slot(C1);
       Slot2 = new B1.Slot(C2);
       Slot3 = new B1.Slot(C3);
+      Slot4 = new B1.Slot(C4);
+      Slot5 = new B1.Slot(C5);
+      Slot6 = new B1.Slot(C6);
       SLOT_CACHE[0] = Slot0;
       SLOT_CACHE[1] = Slot1;
       SLOT_CACHE[2] = Slot2;
       SLOT_CACHE[3] = Slot3;
-      for (int i = 4; i < 100; i++) {
+      SLOT_CACHE[4] = Slot4;
+      SLOT_CACHE[5] = Slot5;
+      SLOT_CACHE[6] = Slot6;
+      for (int i = 7; i < 100; i++) {
         SLOT_CACHE[i] = new B1.Slot(i);
       }
 
@@ -4936,6 +4948,14 @@ public class F extends S {
    */
   public static final IASTMutable headAST0(final IExpr head) {
     return new AST0(head);
+  }
+
+  public static IAST HeavisideLambda(final IExpr a0) {
+    return new AST1(HeavisideLambda, a0);
+  }
+
+  public static IAST HeavisidePi(final IExpr a0) {
+    return new AST1(HeavisidePi, a0);
   }
 
   public static IAST HeavisideTheta(final IExpr a0) {
@@ -9659,8 +9679,12 @@ public class F extends S {
    * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or
    *         the substituted expression.
    */
-  public static IExpr subst(IExpr expr, final Function<IExpr, IExpr> function) {
+  public static final IExpr subst(IExpr expr, final Function<IExpr, IExpr> function) {
     return expr.replaceAll(function).orElse(expr);
+  }
+
+  public static final IExpr subst(IExpr expr, final Predicate<IExpr> predicate, final IExpr value) {
+    return expr.replaceAll(x -> predicate.test(x) ? value : F.NIL).orElse(expr);
   }
 
   /**

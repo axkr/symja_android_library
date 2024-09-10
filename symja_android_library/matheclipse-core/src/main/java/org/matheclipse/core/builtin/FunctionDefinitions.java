@@ -47,6 +47,8 @@ public final class FunctionDefinitions {
 
       S.FrobeniusSolve.setEvaluator(new org.matheclipse.core.reflection.system.FrobeniusSolve());
       S.FunctionExpand.setEvaluator(new org.matheclipse.core.reflection.system.FunctionExpand());
+      S.HeavisideLambda.setEvaluator(new org.matheclipse.core.reflection.system.HeavisideLambda());
+      S.HeavisidePi.setEvaluator(new org.matheclipse.core.reflection.system.HeavisidePi());
       S.HeavisideTheta.setEvaluator(new org.matheclipse.core.reflection.system.HeavisideTheta());
       S.Horner.setEvaluator(new org.matheclipse.core.reflection.system.Horner());
       S.ImportString.setEvaluator(new org.matheclipse.core.reflection.system.ImportString());

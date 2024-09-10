@@ -4673,6 +4673,11 @@ public class S {
 
   public final static IBuiltInSymbol Heads = S.initFinalSymbol("Heads", ID.Heads);
 
+  public final static IBuiltInSymbol HeavisideLambda =
+      S.initFinalSymbol("HeavisideLambda", ID.HeavisideLambda);
+
+  public final static IBuiltInSymbol HeavisidePi = S.initFinalSymbol("HeavisidePi", ID.HeavisidePi);
+
   /**
    * HeavisideTheta(expr1, expr2, ... exprN) - returns `1` if all `expr1, expr2, ... exprN` are
    * positive and `0` if one of the `expr1, expr2, ... exprN` is negative. `HeavisideTheta(0)`
@@ -5875,6 +5880,8 @@ public class S {
   public final static IBuiltInSymbol LaplaceTransform =
       S.initFinalSymbol("LaplaceTransform", ID.LaplaceTransform);
 
+  public final static IBuiltInSymbol Laplacian = S.initFinalSymbol("Laplacian", ID.Laplacian);
+
   public final static IBuiltInSymbol Large = S.initFinalSymbol("Large", ID.Large);
 
   /**
@@ -6671,6 +6678,8 @@ public class S {
       S.initFinalSymbol("MaxMemoryUsed", ID.MaxMemoryUsed);
 
   public final static IBuiltInSymbol MaxPoints = S.initFinalSymbol("MaxPoints", ID.MaxPoints);
+
+  public final static IBuiltInSymbol MaxRoots = S.initFinalSymbol("MaxRoots", ID.MaxRoots);
 
   /**
    * Mean(list) - returns the statistical mean of `list`.
