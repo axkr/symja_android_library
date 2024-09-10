@@ -121,7 +121,7 @@ public class PatternNested extends Pattern {
   @Override
   public int getIndex(IPatternMap pm) {
     if (pm != null) {
-      return pm.get(fSymbol);
+      return pm.indexOf(fSymbol);
     }
     return -1;
   }

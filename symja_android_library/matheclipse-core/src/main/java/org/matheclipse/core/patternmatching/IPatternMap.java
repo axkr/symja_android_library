@@ -48,7 +48,7 @@ public interface IPatternMap {
     public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {}
 
     @Override
-    public int get(IExpr patternOrSymbol) {
+    public int indexOf(IExpr patternOrSymbol) {
       // compare object references with operator '==' here !
       return -1;
     }
@@ -199,7 +199,7 @@ public interface IPatternMap {
     }
 
     @Override
-    public int get(IExpr patternOrSymbol) {
+    public int indexOf(IExpr patternOrSymbol) {
       // compare object references with operator '==' here !
       return (patternOrSymbol == fSymbol1) ? 0 : -1;
     }
@@ -270,10 +270,8 @@ public interface IPatternMap {
 
     @Override
     public boolean isValueAssigned() {
-      if (fValue1 != null) {
-        if (fSymbol1 instanceof ISymbol) {
-          return true;
-        }
+      if (fValue1 != null && fSymbol1 instanceof ISymbol) {
+        return true;
       }
       return false;
     }
@@ -365,7 +363,7 @@ public interface IPatternMap {
     @Override
     public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
       final EvalEngine engine = EvalEngine.get();
-      return rhsExpr.replaceAll((IExpr input) -> {
+      return F.subst(rhsExpr, (IExpr input) -> {
         if (input.isSymbol()) {
           // compare object references with operator '==' here !
           if ((ISymbol) input == fSymbol1) {
@@ -377,19 +375,18 @@ public interface IPatternMap {
           return PatternMatching.optionValueReplace((IAST) input, true, engine);
         }
         return F.NIL;
-      }).orElse(rhsExpr);
+      });
     }
 
     @Override
     public IExpr substitutePatterns(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
-      final EvalEngine engine = EvalEngine.get();
-      return rhsExpr.replaceAll((IExpr input) -> {
+      return F.subst(rhsExpr, (IExpr input) -> {
         if (input == fPatternObject1) {
           // compare object references with operator '==' here !
           return fValue1 != null ? fValue1 : nilOrEmptySequence;
         }
         return F.NIL;
-      }).orElse(rhsExpr);
+      });
     }
 
     @Override
@@ -457,7 +454,7 @@ public interface IPatternMap {
     }
 
     @Override
-    public int get(IExpr patternOrSymbol) {
+    public int indexOf(IExpr patternOrSymbol) {
       // compare object references with operator '==' here !
       return (patternOrSymbol == fSymbol1) ? 0 : (patternOrSymbol == fSymbol2) ? 1 : -1;
     }
@@ -541,20 +538,16 @@ public interface IPatternMap {
 
     @Override
     public boolean isAllPatternsAssigned() {
-      return fValue1 != null && fValue2 != null;
+      return fValue2 != null && fValue1 != null;
     }
 
     @Override
     public boolean isValueAssigned() {
-      if (fValue1 != null) {
-        if (fSymbol1 instanceof ISymbol) {
-          return true;
-        }
+      if (fValue1 != null && fSymbol1 instanceof ISymbol) {
+        return true;
       }
-      if (fValue2 != null) {
-        if (fSymbol2 instanceof ISymbol) {
-          return true;
-        }
+      if (fValue2 != null && fSymbol2 instanceof ISymbol) {
+        return true;
       }
       return false;
     }
@@ -671,7 +664,7 @@ public interface IPatternMap {
     @Override
     public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
       final EvalEngine engine = EvalEngine.get();
-      return rhsExpr.replaceAll((IExpr input) -> {
+      return F.subst(rhsExpr, (IExpr input) -> {
         if (input.isSymbol()) {
           // compare object references with operator '==' here !
           if ((ISymbol) input == fSymbol1) {
@@ -684,13 +677,12 @@ public interface IPatternMap {
           return PatternMatching.optionValueReplace((IAST) input, true, engine);
         }
         return F.NIL;
-      }).orElse(rhsExpr);
+      });
     }
 
     @Override
     public IExpr substitutePatterns(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
-      final EvalEngine engine = EvalEngine.get();
-      return rhsExpr.replaceAll((IExpr input) -> {
+      return F.subst(rhsExpr, (IExpr input) -> {
         if (input == fPatternObject1) {
           // compare object references with operator '==' here !
           return fValue1 != null ? fValue1 : nilOrEmptySequence;
@@ -700,7 +692,7 @@ public interface IPatternMap {
           return fValue2 != null ? fValue2 : nilOrEmptySequence;
         }
         return F.NIL;
-      }).orElse(rhsExpr);
+      });
     }
 
     @Override
@@ -728,6 +720,7 @@ public interface IPatternMap {
       return buf.toString();
     }
   }
+
 
   /**
    * Match exactly three pattern symbols.
@@ -789,7 +782,7 @@ public interface IPatternMap {
     }
 
     @Override
-    public int get(IExpr patternOrSymbol) {
+    public int indexOf(IExpr patternOrSymbol) {
       // compare object references with operator '==' here !
       return (patternOrSymbol == fSymbol1) ? 0
           : (patternOrSymbol == fSymbol2) ? 1 : (patternOrSymbol == fSymbol3) ? 2 : -1;
@@ -849,7 +842,7 @@ public interface IPatternMap {
     @Override
     public List<IExpr> getValuesAsList() {
       if (isAllPatternsAssigned()) {
-        List<IExpr> args = new ArrayList<IExpr>(2);
+        List<IExpr> args = new ArrayList<IExpr>(3);
         args.add(fValue1);
         args.add(fValue2);
         args.add(fValue3);
@@ -890,25 +883,19 @@ public interface IPatternMap {
 
     @Override
     public boolean isAllPatternsAssigned() {
-      return fValue1 != null && fValue2 != null && fValue3 != null;
+      return fValue3 != null && fValue2 != null && fValue1 != null;
     }
 
     @Override
     public boolean isValueAssigned() {
-      if (fValue1 != null) {
-        if (fSymbol1 instanceof ISymbol) {
-          return true;
-        }
+      if (fValue1 != null && fSymbol1 instanceof ISymbol) {
+        return true;
       }
-      if (fValue2 != null) {
-        if (fSymbol2 instanceof ISymbol) {
-          return true;
-        }
+      if (fValue2 != null && fSymbol2 instanceof ISymbol) {
+        return true;
       }
-      if (fValue3 != null) {
-        if (fSymbol3 instanceof ISymbol) {
-          return true;
-        }
+      if (fValue3 != null && fSymbol3 instanceof ISymbol) {
+        return true;
       }
       return false;
     }
@@ -1047,7 +1034,7 @@ public interface IPatternMap {
     @Override
     public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
       final EvalEngine engine = EvalEngine.get();
-      return rhsExpr.replaceAll((IExpr input) -> {
+      return F.subst(rhsExpr, (IExpr input) -> {
         if (input.isSymbol()) {
           // compare object references with operator '==' here !
           if ((ISymbol) input == fSymbol1) {
@@ -1063,13 +1050,12 @@ public interface IPatternMap {
           return PatternMatching.optionValueReplace((IAST) input, true, engine);
         }
         return F.NIL;
-      }).orElse(rhsExpr);
+      });
     }
 
     @Override
     public IExpr substitutePatterns(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
-      final EvalEngine engine = EvalEngine.get();
-      return rhsExpr.replaceAll((IExpr input) -> {
+      return F.subst(rhsExpr, (IExpr input) -> {
         if (input == fPatternObject1) {
           // compare object references with operator '==' here !
           return fValue1 != null ? fValue1 : nilOrEmptySequence;
@@ -1083,7 +1069,7 @@ public interface IPatternMap {
           return fValue3 != null ? fValue3 : nilOrEmptySequence;
         }
         return F.NIL;
-      }).orElse(rhsExpr);
+      });
     }
 
     @Override
@@ -1120,6 +1106,1550 @@ public interface IPatternMap {
       return buf.toString();
     }
   }
+
+  static class PatternMap4 implements IPatternMap {
+    private static final int SIZE = 4;
+
+    IExpr fSymbol1;
+    IExpr fValue1;
+    IPatternObject fPatternObject1;
+
+    IExpr fSymbol2;
+    IExpr fValue2;
+    IPatternObject fPatternObject2;
+
+    IExpr fSymbol3;
+    IExpr fValue3;
+    IPatternObject fPatternObject3;
+
+    IExpr fSymbol4;
+    IExpr fValue4;
+    IPatternObject fPatternObject4;
+
+    private transient boolean evaluatedRHS = false;
+
+    @Override
+    public IPatternMap copy() {
+      PatternMap4 result = new PatternMap4();
+      result.evaluatedRHS = false;
+      result.fSymbol1 = this.fSymbol1;
+      result.fValue1 = this.fValue1;
+      result.fPatternObject1 = this.fPatternObject1;
+
+      result.fSymbol2 = this.fSymbol2;
+      result.fValue2 = this.fValue2;
+      result.fPatternObject2 = this.fPatternObject2;
+
+      result.fSymbol3 = this.fSymbol3;
+      result.fValue3 = this.fValue3;
+      result.fPatternObject3 = this.fPatternObject3;
+
+      result.fSymbol4 = this.fSymbol4;
+      result.fValue4 = this.fValue4;
+      result.fPatternObject4 = this.fPatternObject4;
+
+      return result;
+    }
+
+    @Override
+    public IExpr[] copyPattern() {
+      return new IExpr[] {this.fValue1, this.fValue2, this.fValue3, this.fValue4};
+    }
+
+    @Override
+    public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {
+      for (int i = 0; i < patternMap.size(); i++) {
+        // compare object references with operator '==' here !
+        IExpr temp = getKey(i);
+        if (fSymbol1 == temp) {
+          fValue1 = patternMap.getValue(i);
+        } else if (fSymbol2 == temp) {
+          fValue2 = patternMap.getValue(i);
+        } else if (fSymbol3 == temp) {
+          fValue3 = patternMap.getValue(i);
+        } else if (fSymbol4 == temp) {
+          fValue4 = patternMap.getValue(i);
+        }
+      }
+    }
+
+    @Override
+    public int indexOf(IExpr patternOrSymbol) {
+      // compare object references with operator '==' here !
+      return //
+      (patternOrSymbol == fSymbol1) ? 0
+          : (patternOrSymbol == fSymbol2) ? 1
+              : (patternOrSymbol == fSymbol3) ? 2 : (patternOrSymbol == fSymbol4) ? 3 : -1;
+    }
+
+    @Override
+    public boolean getRHSEvaluated() {
+      return evaluatedRHS;
+    }
+
+    @Override
+    public IExpr getKey(int index) {
+      switch (index) {
+        case 0:
+          return fSymbol1;
+        case 1:
+          return fSymbol2;
+        case 2:
+          return fSymbol3;
+        case 3:
+          return fSymbol4;
+        default:
+          return null;
+      }
+    }
+
+    @Override
+    public IExpr getValue(int index) {
+      switch (index) {
+        case 0:
+          return fValue1;
+        case 1:
+          return fValue2;
+        case 2:
+          return fValue3;
+        case 3:
+          return fValue4;
+        default:
+          return null;
+      }
+    }
+
+    @Override
+    public IExpr getValue(IPatternObject pattern) {
+      IExpr sym = pattern.getSymbol();
+      if (sym == null) {
+        sym = pattern;
+      }
+      if (sym == fSymbol1) {
+        return fValue1;
+      }
+      if (sym == fSymbol2) {
+        return fValue2;
+      }
+      if (sym == fSymbol3) {
+        return fValue3;
+      }
+      if (sym == fSymbol4) {
+        return fValue4;
+      }
+      return null;
+    }
+
+    @Override
+    public List<IExpr> getValuesAsList() {
+      if (isAllPatternsAssigned()) {
+        List<IExpr> args = new ArrayList<IExpr>(4);
+        args.add(fValue1);
+        args.add(fValue2);
+        args.add(fValue3);
+        args.add(fValue4);
+        return args;
+      } else {
+        return null;
+      }
+    }
+
+    @Override
+    public void initPattern() {
+      evaluatedRHS = false;
+      fValue1 = null;
+      fValue2 = null;
+      fValue3 = null;
+      fValue4 = null;
+    }
+
+    @Override
+    public void initPatternBlank() {
+      evaluatedRHS = false;
+      if (fSymbol1 instanceof IPatternObject) {
+        fValue1 = null;
+      }
+      if (fSymbol2 instanceof IPatternObject) {
+        fValue2 = null;
+      }
+      if (fSymbol3 instanceof IPatternObject) {
+        fValue3 = null;
+      }
+      if (fSymbol4 instanceof IPatternObject) {
+        fValue4 = null;
+      }
+    }
+
+    @Override
+    public final void initSlotValues() {
+      fValue1 = F.Slot1;
+      fValue2 = F.Slot2;
+      fValue3 = F.Slot3;
+      fValue4 = F.Slot4;
+    }
+
+    @Override
+    public boolean isAllPatternsAssigned() {
+      return fValue4 != null && fValue3 != null && fValue2 != null && fValue1 != null;
+    }
+
+    @Override
+    public boolean isValueAssigned() {
+      if (fValue1 != null && fSymbol1 instanceof ISymbol) {
+        return true;
+      }
+      if (fValue2 != null && fSymbol2 instanceof ISymbol) {
+        return true;
+      }
+      if (fValue3 != null && fSymbol3 instanceof ISymbol) {
+        return true;
+      }
+      if (fValue4 != null && fSymbol4 instanceof ISymbol) {
+        return true;
+      }
+      return false;
+    }
+
+    @Override
+    public boolean isFreeOfPatternSymbols(IExpr substitutedExpr) {
+      if (isAllPatternsAssigned()) {
+        return true;
+      }
+      return substitutedExpr.isFree(x -> {
+        // compare object references with operator '==' here !
+        return (fSymbol1 != x) && (fSymbol2 != x) && (fSymbol3 != x) && (fSymbol4 != x);
+      }, true);
+    }
+
+    @Override
+    public boolean isRuleWithoutPatterns() {
+      return false;
+    }
+
+    @Override
+    public void resetPattern(IExpr[] patternValuesArray) {
+      evaluatedRHS = false;
+      fValue1 = patternValuesArray[0];
+      fValue2 = patternValuesArray[1];
+      fValue3 = patternValuesArray[2];
+      fValue4 = patternValuesArray[3];
+    }
+
+    @Override
+    public boolean setOptionsPattern(EvalEngine engine, ISymbol lhsHead) {
+      boolean result = false;
+      if (fPatternObject1.isOptionsPattern()) {
+        final OptionsPattern op = (OptionsPattern) fPatternObject1;
+        op.addOptionsPattern(fValue1, engine);
+        if (lhsHead == op.getOptionsPatternHead()) {
+          result = true;
+        }
+      }
+      if (fPatternObject2.isOptionsPattern()) {
+        final OptionsPattern op = (OptionsPattern) fPatternObject2;
+        op.addOptionsPattern(fValue2, engine);
+        if (lhsHead == op.getOptionsPatternHead()) {
+          result = true;
+        }
+      }
+      if (fPatternObject3.isOptionsPattern()) {
+        final OptionsPattern op = (OptionsPattern) fPatternObject3;
+        op.addOptionsPattern(fValue3, engine);
+        if (lhsHead == op.getOptionsPatternHead()) {
+          result = true;
+        }
+      }
+      if (fPatternObject4.isOptionsPattern()) {
+        final OptionsPattern op = (OptionsPattern) fPatternObject4;
+        op.addOptionsPattern(fValue4, engine);
+        if (lhsHead == op.getOptionsPatternHead()) {
+          result = true;
+        }
+      }
+      return result;
+    }
+
+    @Override
+    public void setRHSEvaluated(boolean evaluated) {
+      evaluatedRHS = evaluated;
+    }
+
+    @Override
+    public boolean setValue(IPatternObject pattern, IExpr expr) {
+      ISymbol sym = pattern.getSymbol();
+      IExpr temp = pattern;
+      if (sym != null) {
+        temp = sym;
+      }
+      if (temp == fSymbol1) {
+        fValue1 = expr;
+        if (fValue1.isOneIdentityAST1()) {
+          fValue1 = fValue1.first();
+        }
+        return true;
+      }
+      if (temp == fSymbol2) {
+        fValue2 = expr;
+        if (fValue2.isOneIdentityAST1()) {
+          fValue2 = fValue2.first();
+        }
+        return true;
+      }
+      if (temp == fSymbol3) {
+        fValue3 = expr;
+        if (fValue3.isOneIdentityAST1()) {
+          fValue3 = fValue3.first();
+        }
+        return true;
+      }
+      if (temp == fSymbol4) {
+        fValue4 = expr;
+        if (fValue4.isOneIdentityAST1()) {
+          fValue4 = fValue4.first();
+        }
+        return true;
+      }
+      return false;
+      // throw new IllegalStateException("Pattern:" + pattern + " is not available");
+    }
+
+    @Override
+    public boolean setValue(IPatternSequence pattern, IAST sequence) {
+      ISymbol sym = pattern.getSymbol();
+      IExpr temp = pattern;
+      if (sym != null) {
+        temp = sym;
+      }
+      if (temp == fSymbol1) {
+        fValue1 = sequence;
+        return true;
+      }
+      if (temp == fSymbol2) {
+        fValue2 = sequence;
+        return true;
+      }
+      if (temp == fSymbol3) {
+        fValue3 = sequence;
+        return true;
+      }
+      if (temp == fSymbol4) {
+        fValue4 = sequence;
+        return true;
+      }
+      // throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
+      return false;
+    }
+
+    @Override
+    public int size() {
+      return SIZE;
+    }
+
+    @Override
+    public IExpr substitute(IExpr symbolOrPatternObject) {
+      // compare object references with operator '==' here !
+      if (symbolOrPatternObject == fSymbol1) {
+        return fValue1 != null ? fValue1 : F.NIL;
+      }
+      if (symbolOrPatternObject == fSymbol2) {
+        return fValue2 != null ? fValue2 : F.NIL;
+      }
+      if (symbolOrPatternObject == fSymbol3) {
+        return fValue3 != null ? fValue3 : F.NIL;
+      }
+      if (symbolOrPatternObject == fSymbol4) {
+        return fValue4 != null ? fValue4 : F.NIL;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
+      final EvalEngine engine = EvalEngine.get();
+      return F.subst(rhsExpr, (IExpr input) -> {
+        if (input.isSymbol()) {
+          // compare object references with operator '==' here !
+          if ((ISymbol) input == fSymbol1) {
+            return fValue1 != null ? fValue1 : nilOrEmptySequence;
+          }
+          if ((ISymbol) input == fSymbol2) {
+            return fValue2 != null ? fValue2 : nilOrEmptySequence;
+          }
+          if ((ISymbol) input == fSymbol3) {
+            return fValue3 != null ? fValue3 : nilOrEmptySequence;
+          }
+          if ((ISymbol) input == fSymbol4) {
+            return fValue4 != null ? fValue4 : nilOrEmptySequence;
+          }
+        } else if (input.isAST(S.OptionValue, 2, 4)) {
+          return PatternMatching.optionValueReplace((IAST) input, true, engine);
+        }
+        return F.NIL;
+      });
+    }
+
+    @Override
+    public IExpr substitutePatterns(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
+      return F.subst(rhsExpr, (IExpr input) -> {
+        if (input == fPatternObject1) {
+          // compare object references with operator '==' here !
+          return fValue1 != null ? fValue1 : nilOrEmptySequence;
+        }
+        if (input == fPatternObject2) {
+          // compare object references with operator '==' here !
+          return fValue2 != null ? fValue2 : nilOrEmptySequence;
+        }
+        if (input == fPatternObject3) {
+          // compare object references with operator '==' here !
+          return fValue3 != null ? fValue3 : nilOrEmptySequence;
+        }
+        if (input == fPatternObject4) {
+          // compare object references with operator '==' here !
+          return fValue4 != null ? fValue4 : nilOrEmptySequence;
+        }
+        return F.NIL;
+      });
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder buf = new StringBuilder();
+      buf.append("Patterns[");
+      buf.append(fSymbol1.toString());
+      buf.append(" => ");
+      if (fValue1 != null) {
+        buf.append(fValue1.toString());
+      } else {
+        buf.append("?");
+      }
+
+      buf.append(", ");
+      buf.append(fSymbol2.toString());
+      buf.append(" => ");
+      if (fValue2 != null) {
+        buf.append(fValue2.toString());
+      } else {
+        buf.append("?");
+      }
+
+      buf.append(", ");
+      buf.append(fSymbol3.toString());
+      buf.append(" => ");
+      if (fValue3 != null) {
+        buf.append(fValue3.toString());
+      } else {
+        buf.append("?");
+      }
+
+      buf.append(", ");
+      buf.append(fSymbol4.toString());
+      buf.append(" => ");
+      if (fValue4 != null) {
+        buf.append(fValue4.toString());
+      } else {
+        buf.append("?");
+      }
+
+      buf.append("]");
+      return buf.toString();
+    }
+  }
+  static class PatternMap5 implements IPatternMap {
+    private static final int SIZE = 5;
+
+    IExpr fSymbol1;
+    IExpr fValue1;
+    IPatternObject fPatternObject1;
+
+    IExpr fSymbol2;
+    IExpr fValue2;
+    IPatternObject fPatternObject2;
+
+    IExpr fSymbol3;
+    IExpr fValue3;
+    IPatternObject fPatternObject3;
+
+    IExpr fSymbol4;
+    IExpr fValue4;
+    IPatternObject fPatternObject4;
+
+    IExpr fSymbol5;
+    IExpr fValue5;
+    IPatternObject fPatternObject5;
+
+    private transient boolean evaluatedRHS = false;
+
+    @Override
+    public IPatternMap copy() {
+      PatternMap5 result = new PatternMap5();
+      result.evaluatedRHS = false;
+      result.fSymbol1 = this.fSymbol1;
+      result.fValue1 = this.fValue1;
+      result.fPatternObject1 = this.fPatternObject1;
+
+      result.fSymbol2 = this.fSymbol2;
+      result.fValue2 = this.fValue2;
+      result.fPatternObject2 = this.fPatternObject2;
+
+      result.fSymbol3 = this.fSymbol3;
+      result.fValue3 = this.fValue3;
+      result.fPatternObject3 = this.fPatternObject3;
+
+      result.fSymbol4 = this.fSymbol4;
+      result.fValue4 = this.fValue4;
+      result.fPatternObject4 = this.fPatternObject4;
+
+      result.fSymbol5 = this.fSymbol5;
+      result.fValue5 = this.fValue5;
+      result.fPatternObject5 = this.fPatternObject5;
+
+      return result;
+    }
+
+    @Override
+    public IExpr[] copyPattern() {
+      return new IExpr[] {this.fValue1, this.fValue2, this.fValue3, this.fValue4, this.fValue5};
+    }
+
+    @Override
+    public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {
+      for (int i = 0; i < patternMap.size(); i++) {
+        // compare object references with operator '==' here !
+        IExpr temp = getKey(i);
+        if (fSymbol1 == temp) {
+          fValue1 = patternMap.getValue(i);
+        } else if (fSymbol2 == temp) {
+          fValue2 = patternMap.getValue(i);
+        } else if (fSymbol3 == temp) {
+          fValue3 = patternMap.getValue(i);
+        } else if (fSymbol4 == temp) {
+          fValue4 = patternMap.getValue(i);
+        } else if (fSymbol5 == temp) {
+          fValue5 = patternMap.getValue(i);
+        }
+      }
+    }
+
+    @Override
+    public int indexOf(IExpr patternOrSymbol) {
+      // compare object references with operator '==' here !
+      return //
+      (patternOrSymbol == fSymbol1) ? 0
+          : (patternOrSymbol == fSymbol2) ? 1
+              : (patternOrSymbol == fSymbol3) ? 2
+                  : (patternOrSymbol == fSymbol4) ? 3 : (patternOrSymbol == fSymbol5) ? 4 : -1;
+    }
+
+    @Override
+    public boolean getRHSEvaluated() {
+      return evaluatedRHS;
+    }
+
+    @Override
+    public IExpr getKey(int index) {
+      switch (index) {
+        case 0:
+          return fSymbol1;
+        case 1:
+          return fSymbol2;
+        case 2:
+          return fSymbol3;
+        case 3:
+          return fSymbol4;
+        case 4:
+          return fSymbol5;
+        default:
+          return null;
+      }
+    }
+
+    @Override
+    public IExpr getValue(int index) {
+      switch (index) {
+        case 0:
+          return fValue1;
+        case 1:
+          return fValue2;
+        case 2:
+          return fValue3;
+        case 3:
+          return fValue4;
+        case 4:
+          return fValue5;
+        default:
+          return null;
+      }
+    }
+
+    @Override
+    public IExpr getValue(IPatternObject pattern) {
+      IExpr sym = pattern.getSymbol();
+      if (sym == null) {
+        sym = pattern;
+      }
+      if (sym == fSymbol1) {
+        return fValue1;
+      }
+      if (sym == fSymbol2) {
+        return fValue2;
+      }
+      if (sym == fSymbol3) {
+        return fValue3;
+      }
+      if (sym == fSymbol4) {
+        return fValue4;
+      }
+      if (sym == fSymbol5) {
+        return fValue5;
+      }
+      return null;
+    }
+
+    @Override
+    public List<IExpr> getValuesAsList() {
+      if (isAllPatternsAssigned()) {
+        List<IExpr> args = new ArrayList<IExpr>(5);
+        args.add(fValue1);
+        args.add(fValue2);
+        args.add(fValue3);
+        args.add(fValue4);
+        args.add(fValue5);
+        return args;
+      } else {
+        return null;
+      }
+    }
+
+    @Override
+    public void initPattern() {
+      evaluatedRHS = false;
+      fValue1 = null;
+      fValue2 = null;
+      fValue3 = null;
+      fValue4 = null;
+      fValue5 = null;
+    }
+
+    @Override
+    public void initPatternBlank() {
+      evaluatedRHS = false;
+      if (fSymbol1 instanceof IPatternObject) {
+        fValue1 = null;
+      }
+      if (fSymbol2 instanceof IPatternObject) {
+        fValue2 = null;
+      }
+      if (fSymbol3 instanceof IPatternObject) {
+        fValue3 = null;
+      }
+      if (fSymbol4 instanceof IPatternObject) {
+        fValue4 = null;
+      }
+      if (fSymbol5 instanceof IPatternObject) {
+        fValue5 = null;
+      }
+    }
+
+    @Override
+    public final void initSlotValues() {
+      fValue1 = F.Slot1;
+      fValue2 = F.Slot2;
+      fValue3 = F.Slot3;
+      fValue4 = F.Slot4;
+      fValue5 = F.Slot5;
+    }
+
+    @Override
+    public boolean isAllPatternsAssigned() {
+      return fValue5 != null && fValue4 != null && fValue3 != null && fValue2 != null
+          && fValue1 != null;
+    }
+
+    @Override
+    public boolean isValueAssigned() {
+      if (fValue1 != null && fSymbol1 instanceof ISymbol) {
+        return true;
+      }
+      if (fValue2 != null && fSymbol2 instanceof ISymbol) {
+        return true;
+      }
+      if (fValue3 != null && fSymbol3 instanceof ISymbol) {
+        return true;
+      }
+      if (fValue4 != null && fSymbol4 instanceof ISymbol) {
+        return true;
+      }
+      if (fValue5 != null && fSymbol5 instanceof ISymbol) {
+        return true;
+      }
+      return false;
+    }
+
+    @Override
+    public boolean isFreeOfPatternSymbols(IExpr substitutedExpr) {
+      if (isAllPatternsAssigned()) {
+        return true;
+      }
+      return substitutedExpr.isFree(x -> {
+        // compare object references with operator '==' here !
+        return (fSymbol1 != x) && (fSymbol2 != x) && (fSymbol3 != x) && (fSymbol4 != x)
+            && (fSymbol5 != x);
+      }, true);
+    }
+
+    @Override
+    public boolean isRuleWithoutPatterns() {
+      return false;
+    }
+
+    @Override
+    public void resetPattern(IExpr[] patternValuesArray) {
+      evaluatedRHS = false;
+      fValue1 = patternValuesArray[0];
+      fValue2 = patternValuesArray[1];
+      fValue3 = patternValuesArray[2];
+      fValue4 = patternValuesArray[3];
+      fValue5 = patternValuesArray[4];
+    }
+
+    @Override
+    public boolean setOptionsPattern(EvalEngine engine, ISymbol lhsHead) {
+      boolean result = false;
+      if (fPatternObject1.isOptionsPattern()) {
+        final OptionsPattern op = (OptionsPattern) fPatternObject1;
+        op.addOptionsPattern(fValue1, engine);
+        if (lhsHead == op.getOptionsPatternHead()) {
+          result = true;
+        }
+      }
+      if (fPatternObject2.isOptionsPattern()) {
+        final OptionsPattern op = (OptionsPattern) fPatternObject2;
+        op.addOptionsPattern(fValue2, engine);
+        if (lhsHead == op.getOptionsPatternHead()) {
+          result = true;
+        }
+      }
+      if (fPatternObject3.isOptionsPattern()) {
+        final OptionsPattern op = (OptionsPattern) fPatternObject3;
+        op.addOptionsPattern(fValue3, engine);
+        if (lhsHead == op.getOptionsPatternHead()) {
+          result = true;
+        }
+      }
+      if (fPatternObject4.isOptionsPattern()) {
+        final OptionsPattern op = (OptionsPattern) fPatternObject4;
+        op.addOptionsPattern(fValue4, engine);
+        if (lhsHead == op.getOptionsPatternHead()) {
+          result = true;
+        }
+      }
+      if (fPatternObject5.isOptionsPattern()) {
+        final OptionsPattern op = (OptionsPattern) fPatternObject5;
+        op.addOptionsPattern(fValue5, engine);
+        if (lhsHead == op.getOptionsPatternHead()) {
+          result = true;
+        }
+      }
+      return result;
+    }
+
+    @Override
+    public void setRHSEvaluated(boolean evaluated) {
+      evaluatedRHS = evaluated;
+    }
+
+    @Override
+    public boolean setValue(IPatternObject pattern, IExpr expr) {
+      ISymbol sym = pattern.getSymbol();
+      IExpr temp = pattern;
+      if (sym != null) {
+        temp = sym;
+      }
+      if (temp == fSymbol1) {
+        fValue1 = expr;
+        if (fValue1.isOneIdentityAST1()) {
+          fValue1 = fValue1.first();
+        }
+        return true;
+      }
+      if (temp == fSymbol2) {
+        fValue2 = expr;
+        if (fValue2.isOneIdentityAST1()) {
+          fValue2 = fValue2.first();
+        }
+        return true;
+      }
+      if (temp == fSymbol3) {
+        fValue3 = expr;
+        if (fValue3.isOneIdentityAST1()) {
+          fValue3 = fValue3.first();
+        }
+        return true;
+      }
+      if (temp == fSymbol4) {
+        fValue4 = expr;
+        if (fValue4.isOneIdentityAST1()) {
+          fValue4 = fValue4.first();
+        }
+        return true;
+      }
+      if (temp == fSymbol5) {
+        fValue5 = expr;
+        if (fValue5.isOneIdentityAST1()) {
+          fValue5 = fValue5.first();
+        }
+        return true;
+      }
+      return false;
+      // throw new IllegalStateException("Pattern:" + pattern + " is not available");
+    }
+
+    @Override
+    public boolean setValue(IPatternSequence pattern, IAST sequence) {
+      ISymbol sym = pattern.getSymbol();
+      IExpr temp = pattern;
+      if (sym != null) {
+        temp = sym;
+      }
+      if (temp == fSymbol1) {
+        fValue1 = sequence;
+        return true;
+      }
+      if (temp == fSymbol2) {
+        fValue2 = sequence;
+        return true;
+      }
+      if (temp == fSymbol3) {
+        fValue3 = sequence;
+        return true;
+      }
+      if (temp == fSymbol4) {
+        fValue4 = sequence;
+        return true;
+      }
+      if (temp == fSymbol5) {
+        fValue5 = sequence;
+        return true;
+      }
+      // throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
+      return false;
+    }
+
+    @Override
+    public int size() {
+      return SIZE;
+    }
+
+    @Override
+    public IExpr substitute(IExpr symbolOrPatternObject) {
+      // compare object references with operator '==' here !
+      if (symbolOrPatternObject == fSymbol1) {
+        return fValue1 != null ? fValue1 : F.NIL;
+      }
+      if (symbolOrPatternObject == fSymbol2) {
+        return fValue2 != null ? fValue2 : F.NIL;
+      }
+      if (symbolOrPatternObject == fSymbol3) {
+        return fValue3 != null ? fValue3 : F.NIL;
+      }
+      if (symbolOrPatternObject == fSymbol4) {
+        return fValue4 != null ? fValue4 : F.NIL;
+      }
+      if (symbolOrPatternObject == fSymbol5) {
+        return fValue5 != null ? fValue5 : F.NIL;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
+      final EvalEngine engine = EvalEngine.get();
+      return F.subst(rhsExpr, (IExpr input) -> {
+        if (input.isSymbol()) {
+          // compare object references with operator '==' here !
+          if ((ISymbol) input == fSymbol1) {
+            return fValue1 != null ? fValue1 : nilOrEmptySequence;
+          }
+          if ((ISymbol) input == fSymbol2) {
+            return fValue2 != null ? fValue2 : nilOrEmptySequence;
+          }
+          if ((ISymbol) input == fSymbol3) {
+            return fValue3 != null ? fValue3 : nilOrEmptySequence;
+          }
+          if ((ISymbol) input == fSymbol4) {
+            return fValue4 != null ? fValue4 : nilOrEmptySequence;
+          }
+          if ((ISymbol) input == fSymbol5) {
+            return fValue5 != null ? fValue5 : nilOrEmptySequence;
+          }
+        } else if (input.isAST(S.OptionValue, 2, 4)) {
+          return PatternMatching.optionValueReplace((IAST) input, true, engine);
+        }
+        return F.NIL;
+      });
+    }
+
+    @Override
+    public IExpr substitutePatterns(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
+      return F.subst(rhsExpr, (IExpr input) -> {
+        if (input == fPatternObject1) {
+          // compare object references with operator '==' here !
+          return fValue1 != null ? fValue1 : nilOrEmptySequence;
+        }
+        if (input == fPatternObject2) {
+          // compare object references with operator '==' here !
+          return fValue2 != null ? fValue2 : nilOrEmptySequence;
+        }
+        if (input == fPatternObject3) {
+          // compare object references with operator '==' here !
+          return fValue3 != null ? fValue3 : nilOrEmptySequence;
+        }
+        if (input == fPatternObject4) {
+          // compare object references with operator '==' here !
+          return fValue4 != null ? fValue4 : nilOrEmptySequence;
+        }
+        if (input == fPatternObject5) {
+          // compare object references with operator '==' here !
+          return fValue5 != null ? fValue5 : nilOrEmptySequence;
+        }
+        return F.NIL;
+      });
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder buf = new StringBuilder();
+      buf.append("Patterns[");
+      buf.append(fSymbol1.toString());
+      buf.append(" => ");
+      if (fValue1 != null) {
+        buf.append(fValue1.toString());
+      } else {
+        buf.append("?");
+      }
+
+      buf.append(", ");
+      buf.append(fSymbol2.toString());
+      buf.append(" => ");
+      if (fValue2 != null) {
+        buf.append(fValue2.toString());
+      } else {
+        buf.append("?");
+      }
+
+      buf.append(", ");
+      buf.append(fSymbol3.toString());
+      buf.append(" => ");
+      if (fValue3 != null) {
+        buf.append(fValue3.toString());
+      } else {
+        buf.append("?");
+      }
+
+      buf.append(", ");
+      buf.append(fSymbol4.toString());
+      buf.append(" => ");
+      if (fValue4 != null) {
+        buf.append(fValue4.toString());
+      } else {
+        buf.append("?");
+      }
+
+      buf.append(", ");
+      buf.append(fSymbol5.toString());
+      buf.append(" => ");
+      if (fValue5 != null) {
+        buf.append(fValue5.toString());
+      } else {
+        buf.append("?");
+      }
+
+      buf.append("]");
+      return buf.toString();
+    }
+  }
+  static class PatternMap6 implements IPatternMap {
+    private static final int SIZE = 6;
+
+    IExpr fSymbol1;
+    IExpr fValue1;
+    IPatternObject fPatternObject1;
+
+    IExpr fSymbol2;
+    IExpr fValue2;
+    IPatternObject fPatternObject2;
+
+    IExpr fSymbol3;
+    IExpr fValue3;
+    IPatternObject fPatternObject3;
+
+    IExpr fSymbol4;
+    IExpr fValue4;
+    IPatternObject fPatternObject4;
+
+    IExpr fSymbol5;
+    IExpr fValue5;
+    IPatternObject fPatternObject5;
+
+    IExpr fSymbol6;
+    IExpr fValue6;
+    IPatternObject fPatternObject6;
+
+    private transient boolean evaluatedRHS = false;
+
+    @Override
+    public IPatternMap copy() {
+      PatternMap6 result = new PatternMap6();
+      result.evaluatedRHS = false;
+      result.fSymbol1 = this.fSymbol1;
+      result.fValue1 = this.fValue1;
+      result.fPatternObject1 = this.fPatternObject1;
+
+      result.fSymbol2 = this.fSymbol2;
+      result.fValue2 = this.fValue2;
+      result.fPatternObject2 = this.fPatternObject2;
+
+      result.fSymbol3 = this.fSymbol3;
+      result.fValue3 = this.fValue3;
+      result.fPatternObject3 = this.fPatternObject3;
+
+      result.fSymbol4 = this.fSymbol4;
+      result.fValue4 = this.fValue4;
+      result.fPatternObject4 = this.fPatternObject4;
+
+      result.fSymbol5 = this.fSymbol5;
+      result.fValue5 = this.fValue5;
+      result.fPatternObject5 = this.fPatternObject5;
+
+      result.fSymbol6 = this.fSymbol6;
+      result.fValue6 = this.fValue6;
+      result.fPatternObject6 = this.fPatternObject6;
+
+      return result;
+    }
+
+    @Override
+    public IExpr[] copyPattern() {
+      return new IExpr[] {this.fValue1, this.fValue2, this.fValue3, this.fValue4, this.fValue5,
+          this.fValue6};
+    }
+
+    @Override
+    public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {
+      for (int i = 0; i < patternMap.size(); i++) {
+        // compare object references with operator '==' here !
+        IExpr temp = getKey(i);
+        if (fSymbol1 == temp) {
+          fValue1 = patternMap.getValue(i);
+        } else if (fSymbol2 == temp) {
+          fValue2 = patternMap.getValue(i);
+        } else if (fSymbol3 == temp) {
+          fValue3 = patternMap.getValue(i);
+        } else if (fSymbol4 == temp) {
+          fValue4 = patternMap.getValue(i);
+        } else if (fSymbol5 == temp) {
+          fValue5 = patternMap.getValue(i);
+        } else if (fSymbol6 == temp) {
+          fValue6 = patternMap.getValue(i);
+        }
+      }
+    }
+
+    @Override
+    public int indexOf(IExpr patternOrSymbol) {
+      // compare object references with operator '==' here !
+      return //
+      (patternOrSymbol == fSymbol1) ? 0
+          : (patternOrSymbol == fSymbol2) ? 1
+              : (patternOrSymbol == fSymbol3) ? 2
+                  : (patternOrSymbol == fSymbol4) ? 3
+                      : (patternOrSymbol == fSymbol5) ? 4 //
+                          : (patternOrSymbol == fSymbol6) ? 5 : -1;
+    }
+
+    @Override
+    public boolean getRHSEvaluated() {
+      return evaluatedRHS;
+    }
+
+    @Override
+    public IExpr getKey(int index) {
+      switch (index) {
+        case 0:
+          return fSymbol1;
+        case 1:
+          return fSymbol2;
+        case 2:
+          return fSymbol3;
+        case 3:
+          return fSymbol4;
+        case 4:
+          return fSymbol5;
+        case 5:
+          return fSymbol6;
+        default:
+          return null;
+      }
+    }
+
+    @Override
+    public IExpr getValue(int index) {
+      switch (index) {
+        case 0:
+          return fValue1;
+        case 1:
+          return fValue2;
+        case 2:
+          return fValue3;
+        case 3:
+          return fValue4;
+        case 4:
+          return fValue5;
+        case 5:
+          return fValue6;
+        default:
+          return null;
+      }
+    }
+
+    @Override
+    public IExpr getValue(IPatternObject pattern) {
+      IExpr sym = pattern.getSymbol();
+      if (sym == null) {
+        sym = pattern;
+      }
+      if (sym == fSymbol1) {
+        return fValue1;
+      }
+      if (sym == fSymbol2) {
+        return fValue2;
+      }
+      if (sym == fSymbol3) {
+        return fValue3;
+      }
+      if (sym == fSymbol4) {
+        return fValue4;
+      }
+      if (sym == fSymbol5) {
+        return fValue5;
+      }
+      if (sym == fSymbol6) {
+        return fValue6;
+      }
+      return null;
+    }
+
+    @Override
+    public List<IExpr> getValuesAsList() {
+      if (isAllPatternsAssigned()) {
+        List<IExpr> args = new ArrayList<IExpr>(6);
+        args.add(fValue1);
+        args.add(fValue2);
+        args.add(fValue3);
+        args.add(fValue4);
+        args.add(fValue5);
+        args.add(fValue6);
+        return args;
+      } else {
+        return null;
+      }
+    }
+
+    @Override
+    public void initPattern() {
+      evaluatedRHS = false;
+      fValue1 = null;
+      fValue2 = null;
+      fValue3 = null;
+      fValue4 = null;
+      fValue5 = null;
+      fValue6 = null;
+    }
+
+    @Override
+    public void initPatternBlank() {
+      evaluatedRHS = false;
+      if (fSymbol1 instanceof IPatternObject) {
+        fValue1 = null;
+      }
+      if (fSymbol2 instanceof IPatternObject) {
+        fValue2 = null;
+      }
+      if (fSymbol3 instanceof IPatternObject) {
+        fValue3 = null;
+      }
+      if (fSymbol4 instanceof IPatternObject) {
+        fValue4 = null;
+      }
+      if (fSymbol5 instanceof IPatternObject) {
+        fValue5 = null;
+      }
+      if (fSymbol6 instanceof IPatternObject) {
+        fValue6 = null;
+      }
+    }
+
+    @Override
+    public final void initSlotValues() {
+      fValue1 = F.Slot1;
+      fValue2 = F.Slot2;
+      fValue3 = F.Slot3;
+      fValue4 = F.Slot4;
+      fValue5 = F.Slot5;
+      fValue6 = F.Slot6;
+    }
+
+    @Override
+    public boolean isAllPatternsAssigned() {
+      return fValue6 != null && fValue5 != null && fValue4 != null && fValue3 != null
+          && fValue2 != null && fValue1 != null;
+    }
+
+    @Override
+    public boolean isValueAssigned() {
+      if (fValue1 != null && fSymbol1 instanceof ISymbol) {
+        return true;
+      }
+      if (fValue2 != null && fSymbol2 instanceof ISymbol) {
+        return true;
+      }
+      if (fValue3 != null && fSymbol3 instanceof ISymbol) {
+        return true;
+      }
+      if (fValue4 != null && fSymbol4 instanceof ISymbol) {
+        return true;
+      }
+      if (fValue5 != null && fSymbol5 instanceof ISymbol) {
+        return true;
+      }
+      if (fValue6 != null && fSymbol6 instanceof ISymbol) {
+        return true;
+      }
+      return false;
+    }
+
+    @Override
+    public boolean isFreeOfPatternSymbols(IExpr substitutedExpr) {
+      if (isAllPatternsAssigned()) {
+        return true;
+      }
+      return substitutedExpr.isFree(x -> {
+        // compare object references with operator '==' here !
+        return (fSymbol1 != x) && (fSymbol2 != x) && (fSymbol3 != x) && (fSymbol4 != x)
+            && (fSymbol5 != x) && (fSymbol6 != x);
+      }, true);
+    }
+
+    @Override
+    public boolean isRuleWithoutPatterns() {
+      return false;
+    }
+
+    @Override
+    public void resetPattern(IExpr[] patternValuesArray) {
+      evaluatedRHS = false;
+      fValue1 = patternValuesArray[0];
+      fValue2 = patternValuesArray[1];
+      fValue3 = patternValuesArray[2];
+      fValue4 = patternValuesArray[3];
+      fValue5 = patternValuesArray[4];
+      fValue6 = patternValuesArray[5];
+    }
+
+    @Override
+    public boolean setOptionsPattern(EvalEngine engine, ISymbol lhsHead) {
+      boolean result = false;
+      if (fPatternObject1.isOptionsPattern()) {
+        final OptionsPattern op = (OptionsPattern) fPatternObject1;
+        op.addOptionsPattern(fValue1, engine);
+        if (lhsHead == op.getOptionsPatternHead()) {
+          result = true;
+        }
+      }
+      if (fPatternObject2.isOptionsPattern()) {
+        final OptionsPattern op = (OptionsPattern) fPatternObject2;
+        op.addOptionsPattern(fValue2, engine);
+        if (lhsHead == op.getOptionsPatternHead()) {
+          result = true;
+        }
+      }
+      if (fPatternObject3.isOptionsPattern()) {
+        final OptionsPattern op = (OptionsPattern) fPatternObject3;
+        op.addOptionsPattern(fValue3, engine);
+        if (lhsHead == op.getOptionsPatternHead()) {
+          result = true;
+        }
+      }
+      if (fPatternObject4.isOptionsPattern()) {
+        final OptionsPattern op = (OptionsPattern) fPatternObject4;
+        op.addOptionsPattern(fValue4, engine);
+        if (lhsHead == op.getOptionsPatternHead()) {
+          result = true;
+        }
+      }
+      if (fPatternObject5.isOptionsPattern()) {
+        final OptionsPattern op = (OptionsPattern) fPatternObject5;
+        op.addOptionsPattern(fValue5, engine);
+        if (lhsHead == op.getOptionsPatternHead()) {
+          result = true;
+        }
+      }
+      if (fPatternObject6.isOptionsPattern()) {
+        final OptionsPattern op = (OptionsPattern) fPatternObject6;
+        op.addOptionsPattern(fValue6, engine);
+        if (lhsHead == op.getOptionsPatternHead()) {
+          result = true;
+        }
+      }
+      return result;
+    }
+
+    @Override
+    public void setRHSEvaluated(boolean evaluated) {
+      evaluatedRHS = evaluated;
+    }
+
+    @Override
+    public boolean setValue(IPatternObject pattern, IExpr expr) {
+      ISymbol sym = pattern.getSymbol();
+      IExpr temp = pattern;
+      if (sym != null) {
+        temp = sym;
+      }
+      if (temp == fSymbol1) {
+        fValue1 = expr;
+        if (fValue1.isOneIdentityAST1()) {
+          fValue1 = fValue1.first();
+        }
+        return true;
+      }
+      if (temp == fSymbol2) {
+        fValue2 = expr;
+        if (fValue2.isOneIdentityAST1()) {
+          fValue2 = fValue2.first();
+        }
+        return true;
+      }
+      if (temp == fSymbol3) {
+        fValue3 = expr;
+        if (fValue3.isOneIdentityAST1()) {
+          fValue3 = fValue3.first();
+        }
+        return true;
+      }
+      if (temp == fSymbol4) {
+        fValue4 = expr;
+        if (fValue4.isOneIdentityAST1()) {
+          fValue4 = fValue4.first();
+        }
+        return true;
+      }
+      if (temp == fSymbol5) {
+        fValue5 = expr;
+        if (fValue5.isOneIdentityAST1()) {
+          fValue5 = fValue5.first();
+        }
+        return true;
+      }
+      if (temp == fSymbol6) {
+        fValue6 = expr;
+        if (fValue6.isOneIdentityAST1()) {
+          fValue3 = fValue6.first();
+        }
+        return true;
+      }
+      return false;
+      // throw new IllegalStateException("Pattern:" + pattern + " is not available");
+    }
+
+    @Override
+    public boolean setValue(IPatternSequence pattern, IAST sequence) {
+      ISymbol sym = pattern.getSymbol();
+      IExpr temp = pattern;
+      if (sym != null) {
+        temp = sym;
+      }
+      if (temp == fSymbol1) {
+        fValue1 = sequence;
+        return true;
+      }
+      if (temp == fSymbol2) {
+        fValue2 = sequence;
+        return true;
+      }
+      if (temp == fSymbol3) {
+        fValue3 = sequence;
+        return true;
+      }
+      if (temp == fSymbol4) {
+        fValue4 = sequence;
+        return true;
+      }
+      if (temp == fSymbol5) {
+        fValue5 = sequence;
+        return true;
+      }
+      if (temp == fSymbol6) {
+        fValue6 = sequence;
+        return true;
+      }
+      // throw new IllegalStateException("Patternsequence:" + pattern + " is not available");
+      return false;
+    }
+
+    @Override
+    public int size() {
+      return SIZE;
+    }
+
+    @Override
+    public IExpr substitute(IExpr symbolOrPatternObject) {
+      // compare object references with operator '==' here !
+      if (symbolOrPatternObject == fSymbol1) {
+        return fValue1 != null ? fValue1 : F.NIL;
+      }
+      if (symbolOrPatternObject == fSymbol2) {
+        return fValue2 != null ? fValue2 : F.NIL;
+      }
+      if (symbolOrPatternObject == fSymbol3) {
+        return fValue3 != null ? fValue3 : F.NIL;
+      }
+      if (symbolOrPatternObject == fSymbol4) {
+        return fValue4 != null ? fValue4 : F.NIL;
+      }
+      if (symbolOrPatternObject == fSymbol5) {
+        return fValue5 != null ? fValue5 : F.NIL;
+      }
+      if (symbolOrPatternObject == fSymbol6) {
+        return fValue6 != null ? fValue6 : F.NIL;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
+      final EvalEngine engine = EvalEngine.get();
+      return F.subst(rhsExpr, (IExpr input) -> {
+        if (input.isSymbol()) {
+          // compare object references with operator '==' here !
+          if ((ISymbol) input == fSymbol1) {
+            return fValue1 != null ? fValue1 : nilOrEmptySequence;
+          }
+          if ((ISymbol) input == fSymbol2) {
+            return fValue2 != null ? fValue2 : nilOrEmptySequence;
+          }
+          if ((ISymbol) input == fSymbol3) {
+            return fValue3 != null ? fValue3 : nilOrEmptySequence;
+          }
+          if ((ISymbol) input == fSymbol4) {
+            return fValue4 != null ? fValue4 : nilOrEmptySequence;
+          }
+          if ((ISymbol) input == fSymbol5) {
+            return fValue5 != null ? fValue5 : nilOrEmptySequence;
+          }
+          if ((ISymbol) input == fSymbol6) {
+            return fValue6 != null ? fValue6 : nilOrEmptySequence;
+          }
+        } else if (input.isAST(S.OptionValue, 2, 4)) {
+          return PatternMatching.optionValueReplace((IAST) input, true, engine);
+        }
+        return F.NIL;
+      });
+    }
+
+    @Override
+    public IExpr substitutePatterns(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
+      return F.subst(rhsExpr, (IExpr input) -> {
+        if (input == fPatternObject1) {
+          // compare object references with operator '==' here !
+          return fValue1 != null ? fValue1 : nilOrEmptySequence;
+        }
+        if (input == fPatternObject2) {
+          // compare object references with operator '==' here !
+          return fValue2 != null ? fValue2 : nilOrEmptySequence;
+        }
+        if (input == fPatternObject3) {
+          // compare object references with operator '==' here !
+          return fValue3 != null ? fValue3 : nilOrEmptySequence;
+        }
+        if (input == fPatternObject4) {
+          // compare object references with operator '==' here !
+          return fValue4 != null ? fValue4 : nilOrEmptySequence;
+        }
+        if (input == fPatternObject5) {
+          // compare object references with operator '==' here !
+          return fValue5 != null ? fValue5 : nilOrEmptySequence;
+        }
+        if (input == fPatternObject6) {
+          // compare object references with operator '==' here !
+          return fValue6 != null ? fValue6 : nilOrEmptySequence;
+        }
+        return F.NIL;
+      });
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder buf = new StringBuilder();
+      buf.append("Patterns[");
+      buf.append(fSymbol1.toString());
+      buf.append(" => ");
+      if (fValue1 != null) {
+        buf.append(fValue1.toString());
+      } else {
+        buf.append("?");
+      }
+
+      buf.append(", ");
+      buf.append(fSymbol2.toString());
+      buf.append(" => ");
+      if (fValue2 != null) {
+        buf.append(fValue2.toString());
+      } else {
+        buf.append("?");
+      }
+
+      buf.append(", ");
+      buf.append(fSymbol3.toString());
+      buf.append(" => ");
+      if (fValue3 != null) {
+        buf.append(fValue3.toString());
+      } else {
+        buf.append("?");
+      }
+
+      buf.append(", ");
+      buf.append(fSymbol4.toString());
+      buf.append(" => ");
+      if (fValue4 != null) {
+        buf.append(fValue4.toString());
+      } else {
+        buf.append("?");
+      }
+
+      buf.append(", ");
+      buf.append(fSymbol5.toString());
+      buf.append(" => ");
+      if (fValue5 != null) {
+        buf.append(fValue5.toString());
+      } else {
+        buf.append("?");
+      }
+
+      buf.append(", ");
+      buf.append(fSymbol6.toString());
+      buf.append(" => ");
+      if (fValue6 != null) {
+        buf.append(fValue6.toString());
+      } else {
+        buf.append("?");
+      }
+
+      buf.append("]");
+      return buf.toString();
+    }
+  }
+
 
   /** A map from a pattern to a possibly found value during pattern-matching. */
   static class PatternMap implements IPatternMap, Serializable {
@@ -1212,7 +2742,7 @@ public interface IPatternMap {
 
     /** {@inheritDoc} */
     @Override
-    public int get(IExpr patternOrSymbol) {
+    public int indexOf(IExpr patternOrSymbol) {
       final int length = fSymbolsOrPattern.length;
       for (int i = 0; i < length; i++) {
         // compare object references with operator '==' here !
@@ -1263,7 +2793,7 @@ public interface IPatternMap {
       }
       IExpr temp = pattern;
 
-      int indx = get(temp);
+      int indx = indexOf(temp);
       return indx >= 0 ? fSymbolsOrPatternValues[indx] : null;
     }
 
@@ -1274,7 +2804,7 @@ public interface IPatternMap {
      * @return <code>null</code> if no matched expression exists
      */
     private final IExpr getSymbolValue(ISymbol symbol) {
-      int indx = get(symbol);
+      int indx = indexOf(symbol);
       return indx >= 0 ? fSymbolsOrPatternValues[indx] : null;
     }
 
@@ -1436,13 +2966,9 @@ public interface IPatternMap {
       if (sym != null) {
         temp = sym;
       }
-      int indx = get(temp);
+      int indx = indexOf(temp);
       if (indx >= 0) {
-        if (expr.isOneIdentityAST1()) {
-          fSymbolsOrPatternValues[indx] = expr.first();
-        } else {
-          fSymbolsOrPatternValues[indx] = expr;
-        }
+        fSymbolsOrPatternValues[indx] = expr.isOneIdentityAST1() ? expr.first() : expr;
         return true;
       }
       return false;
@@ -1456,7 +2982,7 @@ public interface IPatternMap {
       if (sym != null) {
         temp = sym;
       }
-      int indx = get(temp);
+      int indx = indexOf(temp);
       if (indx >= 0) {
         fSymbolsOrPatternValues[indx] = sequence;
         return true;
@@ -1498,7 +3024,7 @@ public interface IPatternMap {
     public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
       final EvalEngine engine = EvalEngine.get();
       if (fSymbolsOrPatternValues != null) {
-        return rhsExpr.replaceAll((IExpr input) -> {
+        return F.subst(rhsExpr, (IExpr input) -> {
           if (input.isSymbol()) {
             final ISymbol symbol = (ISymbol) input;
             final int length = fSymbolsOrPattern.length;
@@ -1512,11 +3038,11 @@ public interface IPatternMap {
             return F.NIL;
           }
           if (input.isAST(S.OptionValue, 2, 4)) {
-            final int length = fSymbolsOrPattern.length;
+            // final int length = fSymbolsOrPattern.length;
             return PatternMatching.optionValueReplace((IAST) input, true, engine);
           }
           return F.NIL;
-        }).orElse(rhsExpr);
+        });
       }
       return rhsExpr;
     }
@@ -1524,9 +3050,8 @@ public interface IPatternMap {
 
     @Override
     public IExpr substitutePatterns(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
-      final EvalEngine engine = EvalEngine.get();
       if (fSymbolsOrPatternValues != null) {
-        return rhsExpr.replaceAll((IExpr input) -> {
+        return F.subst(rhsExpr, (IExpr input) -> {
           if (input instanceof IPatternObject) {
             final ISymbol symbol = (ISymbol) input;
             final int length = fSymbolsOrPattern.length;
@@ -1540,7 +3065,7 @@ public interface IPatternMap {
             return F.NIL;
           }
           return F.NIL;
-        }).orElse(rhsExpr);
+        });
       }
       return rhsExpr;
     }
@@ -1576,6 +3101,7 @@ public interface IPatternMap {
     public IExpr[] getSymbolsOrPatternValues() {
       return fSymbolsOrPatternValues;
     }
+
   }
 
   /**
@@ -1657,8 +3183,7 @@ public interface IPatternMap {
     return new PatternMap0();
   }
 
-  public static IPatternMap createSymbolValue(
-      List<GenericPair<IExpr, ISymbol>> patternIndexMap) {
+  public static IPatternMap createSymbolValue(List<GenericPair<IExpr, ISymbol>> patternIndexMap) {
     int size = patternIndexMap.size();
     switch (size) {
       case 1:
@@ -1682,6 +3207,45 @@ public interface IPatternMap {
         patternMap3.fValue3 = patternIndexMap.get(2).getFirst();
         patternMap3.fSymbol3 = patternIndexMap.get(2).getSecond();
         return patternMap3;
+      case 4:
+        PatternMap4 patternMap4 = new PatternMap4();
+        patternMap4.fValue1 = patternIndexMap.get(0).getFirst();
+        patternMap4.fSymbol1 = patternIndexMap.get(0).getSecond();
+        patternMap4.fValue2 = patternIndexMap.get(1).getFirst();
+        patternMap4.fSymbol2 = patternIndexMap.get(1).getSecond();
+        patternMap4.fValue3 = patternIndexMap.get(2).getFirst();
+        patternMap4.fSymbol3 = patternIndexMap.get(2).getSecond();
+        patternMap4.fValue4 = patternIndexMap.get(3).getFirst();
+        patternMap4.fSymbol4 = patternIndexMap.get(3).getSecond();
+        return patternMap4;
+      case 5:
+        PatternMap5 patternMap5 = new PatternMap5();
+        patternMap5.fValue1 = patternIndexMap.get(0).getFirst();
+        patternMap5.fSymbol1 = patternIndexMap.get(0).getSecond();
+        patternMap5.fValue2 = patternIndexMap.get(1).getFirst();
+        patternMap5.fSymbol2 = patternIndexMap.get(1).getSecond();
+        patternMap5.fValue3 = patternIndexMap.get(2).getFirst();
+        patternMap5.fSymbol3 = patternIndexMap.get(2).getSecond();
+        patternMap5.fValue4 = patternIndexMap.get(3).getFirst();
+        patternMap5.fSymbol4 = patternIndexMap.get(3).getSecond();
+        patternMap5.fValue5 = patternIndexMap.get(4).getFirst();
+        patternMap5.fSymbol5 = patternIndexMap.get(4).getSecond();
+        return patternMap5;
+      case 6:
+        PatternMap6 patternMap6 = new PatternMap6();
+        patternMap6.fValue1 = patternIndexMap.get(0).getFirst();
+        patternMap6.fSymbol1 = patternIndexMap.get(0).getSecond();
+        patternMap6.fValue2 = patternIndexMap.get(1).getFirst();
+        patternMap6.fSymbol2 = patternIndexMap.get(1).getSecond();
+        patternMap6.fValue3 = patternIndexMap.get(2).getFirst();
+        patternMap6.fSymbol3 = patternIndexMap.get(2).getSecond();
+        patternMap6.fValue4 = patternIndexMap.get(3).getFirst();
+        patternMap6.fSymbol4 = patternIndexMap.get(3).getSecond();
+        patternMap6.fValue5 = patternIndexMap.get(4).getFirst();
+        patternMap6.fSymbol5 = patternIndexMap.get(4).getSecond();
+        patternMap6.fValue6 = patternIndexMap.get(5).getFirst();
+        patternMap6.fSymbol6 = patternIndexMap.get(5).getSecond();
+        return patternMap6;
     }
     PatternMap patternMap = new PatternMap();
     patternMap.fRuleWithoutPattern = true;
@@ -1698,8 +3262,7 @@ public interface IPatternMap {
   }
 
   public static IPatternMap createPatternMap(
-      List<GenericPair<IExpr, IPatternObject>> patternIndexMap,
-      boolean isRuleWithoutPattern) {
+      List<GenericPair<IExpr, IPatternObject>> patternIndexMap, boolean isRuleWithoutPattern) {
     int size = patternIndexMap.size();
     switch (size) {
       case 1:
@@ -1723,6 +3286,45 @@ public interface IPatternMap {
         patternMap3.fSymbol3 = patternIndexMap.get(2).getFirst();
         patternMap3.fPatternObject3 = patternIndexMap.get(2).getSecond();
         return patternMap3;
+      case 4:
+        PatternMap4 patternMap4 = new PatternMap4();
+        patternMap4.fSymbol1 = patternIndexMap.get(0).getFirst();
+        patternMap4.fPatternObject1 = patternIndexMap.get(0).getSecond();
+        patternMap4.fSymbol2 = patternIndexMap.get(1).getFirst();
+        patternMap4.fPatternObject2 = patternIndexMap.get(1).getSecond();
+        patternMap4.fSymbol3 = patternIndexMap.get(2).getFirst();
+        patternMap4.fPatternObject3 = patternIndexMap.get(2).getSecond();
+        patternMap4.fSymbol4 = patternIndexMap.get(3).getFirst();
+        patternMap4.fPatternObject4 = patternIndexMap.get(3).getSecond();
+        return patternMap4;
+      case 5:
+        PatternMap5 patternMap5 = new PatternMap5();
+        patternMap5.fSymbol1 = patternIndexMap.get(0).getFirst();
+        patternMap5.fPatternObject1 = patternIndexMap.get(0).getSecond();
+        patternMap5.fSymbol2 = patternIndexMap.get(1).getFirst();
+        patternMap5.fPatternObject2 = patternIndexMap.get(1).getSecond();
+        patternMap5.fSymbol3 = patternIndexMap.get(2).getFirst();
+        patternMap5.fPatternObject3 = patternIndexMap.get(2).getSecond();
+        patternMap5.fSymbol4 = patternIndexMap.get(3).getFirst();
+        patternMap5.fPatternObject4 = patternIndexMap.get(3).getSecond();
+        patternMap5.fSymbol5 = patternIndexMap.get(4).getFirst();
+        patternMap5.fPatternObject5 = patternIndexMap.get(4).getSecond();
+        return patternMap5;
+      case 6:
+        PatternMap6 patternMap6 = new PatternMap6();
+        patternMap6.fSymbol1 = patternIndexMap.get(0).getFirst();
+        patternMap6.fPatternObject1 = patternIndexMap.get(0).getSecond();
+        patternMap6.fSymbol2 = patternIndexMap.get(1).getFirst();
+        patternMap6.fPatternObject2 = patternIndexMap.get(1).getSecond();
+        patternMap6.fSymbol3 = patternIndexMap.get(2).getFirst();
+        patternMap6.fPatternObject3 = patternIndexMap.get(2).getSecond();
+        patternMap6.fSymbol4 = patternIndexMap.get(3).getFirst();
+        patternMap6.fPatternObject4 = patternIndexMap.get(3).getSecond();
+        patternMap6.fSymbol5 = patternIndexMap.get(4).getFirst();
+        patternMap6.fPatternObject5 = patternIndexMap.get(4).getSecond();
+        patternMap6.fSymbol6 = patternIndexMap.get(5).getFirst();
+        patternMap6.fPatternObject6 = patternIndexMap.get(5).getSecond();
+        return patternMap6;
     }
     PatternMap patternMap = new PatternMap();
     patternMap.fRuleWithoutPattern = isRuleWithoutPattern;
@@ -1772,8 +3374,14 @@ public interface IPatternMap {
       determinePatternsRecursive(condition, patternIndexMap, dummyPriority, ruleWithoutPattern,
           listEvalFlags, treeLevel);
     } else {
-      lhsPatternExpr.forEachRule(x -> determinePatternsRecursive(x, patternIndexMap, priority,
-          ruleWithoutPattern, listEvalFlags, treeLevel), 0);
+      // get the patterns from right argument to left argument, to get the pattern x_ in D(f,x_) and
+      // Integrate(f,x_) as first pattern in the pattern map
+      for (int i = lhsPatternExpr.size() - 1; i >= 0; i--) {
+        determinePatternsRecursive(i == 0 ? lhsPatternExpr.getValue(i) : lhsPatternExpr.getRule(i),
+            patternIndexMap, priority, ruleWithoutPattern, listEvalFlags, treeLevel);
+      }
+      // lhsPatternExpr.forEachRule(x -> determinePatternsRecursive(x, patternIndexMap, priority,
+      // ruleWithoutPattern, listEvalFlags, treeLevel), 0);
     }
     lhsPatternExpr.setEvalFlags(listEvalFlags[0]);
     // disable flag "pattern with default value"
@@ -1836,12 +3444,12 @@ public interface IPatternMap {
   public void copyPatternValuesFromPatternMatcher(final IPatternMap patternMap);
 
   /**
-   * Get the <code>int</code> value mapped to the given pattern or symbol.
+   * Get the first <code>int</code> index value mapped to the given pattern or symbol.
    *
    * @param patternOrSymbol the given pattern or symbol
    * @return <code>-1</code> if the symbol isn't available in this map.
    */
-  public int get(IExpr patternOrSymbol);
+  public int indexOf(IExpr patternOrSymbol);
 
   public boolean getRHSEvaluated();
 

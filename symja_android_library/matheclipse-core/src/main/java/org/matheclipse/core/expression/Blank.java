@@ -230,7 +230,7 @@ public class Blank implements IPattern {
   @Override
   public int getIndex(IPatternMap pm) {
     if (pm != null) {
-      return pm.get(this);
+      return pm.indexOf(this);
     }
     return -1;
   }

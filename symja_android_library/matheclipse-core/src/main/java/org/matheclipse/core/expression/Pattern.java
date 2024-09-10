@@ -206,7 +206,7 @@ public class Pattern extends Blank {
   @Override
   public int getIndex(IPatternMap pm) {
     if (pm != null) {
-      return pm.get(fSymbol);
+      return pm.indexOf(fSymbol);
     }
     return -1;
   }
