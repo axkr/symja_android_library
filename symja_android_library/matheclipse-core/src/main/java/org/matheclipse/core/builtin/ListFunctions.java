@@ -158,7 +158,10 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(final ISymbol[] variables, final IExpr[] index) {
       if (variables.length == 1) {
-        IExpr temp = F.subst(fValue, x -> x.equals(variables[0]) ? index[0] : F.NIL);
+        if (variables[0] == null) {
+          return fEngine.evaluate(fValue);
+        }
+        IExpr temp = F.subst(fValue, x -> x.equals(variables[0]), index[0]);
         return fEngine.evaluate(temp);
       }
       HashMap<ISymbol, IExpr> map = new HashMap<ISymbol, IExpr>();
@@ -167,6 +170,9 @@ public final class ListFunctions {
         if (variable != null) {
           map.put(variable, index[i]);
         }
+      }
+      if (map.isEmpty()) {
+        return fEngine.evaluate(fValue);
       }
       IExpr temp = map.size() == 0 ? fValue : F.subst(fValue, map);
       return fEngine.evaluate(temp);
@@ -381,7 +387,7 @@ public final class ListFunctions {
       fDefaultValue = defaultValue;
     }
 
-    public IExpr table() {
+    public IExpr tableRecursive() {
       if (fIndex < fIterList.size()) {
         final IIterator<IExpr> iter = fIterList.get(fIndex);
 
@@ -392,7 +398,7 @@ public final class ListFunctions {
               if (iter.hasNext()) {
                 fCurrentIndex[index] = iter.next();
                 fCurrentVariable[index] = iter.getVariable();
-                IExpr temp = table();
+                IExpr temp = tableRecursive();
                 if (temp == null || temp.isNIL()) {
                   temp = fDefaultValue;
                 }
@@ -422,7 +428,7 @@ public final class ListFunctions {
       return fFunction.evaluate(fCurrentVariable, fCurrentIndex);
     }
 
-    public IExpr tableThrow() {
+    public IExpr tableThrowRecursive() {
       if (fIndex < fIterList.size()) {
         final IIterator<IExpr> iter = fIterList.get(fIndex);
 
@@ -433,7 +439,7 @@ public final class ListFunctions {
               if (iter.hasNext()) {
                 fCurrentIndex[index] = iter.next();
                 fCurrentVariable[index] = iter.getVariable();
-                IExpr temp = table();
+                IExpr temp = tableRecursive();
                 if (temp == null || temp.isNIL()) {
                   temp = fDefaultValue;
                 }
@@ -476,7 +482,7 @@ public final class ListFunctions {
       while (iter.hasNext()) {
         fCurrentIndex[index] = iter.next();
         fCurrentVariable[index] = iter.getVariable();
-        IExpr temp = table();
+        IExpr temp = tableRecursive();
         if (temp == null) {
           temp = fDefaultValue;
         }
@@ -517,7 +523,7 @@ public final class ListFunctions {
       while (iter.hasNext()) {
         fCurrentIndex[index] = iter.next();
         fCurrentVariable[index] = iter.getVariable();
-        IExpr temp = table();
+        IExpr temp = tableRecursive();
         if (temp == null) {
           temp = fDefaultValue;
         }
@@ -580,7 +586,7 @@ public final class ListFunctions {
       while (iter.hasNext()) {
         fCurrentIndex[index] = iter.next();
         fCurrentVariable[index] = iter.getVariable();
-        IExpr temp = table();
+        IExpr temp = tableRecursive();
         if (temp == null || temp.isNIL()) {
           result.append(fDefaultValue);
         } else {
@@ -1069,7 +1075,7 @@ public final class ListFunctions {
           final IAST list = F.ast(arg1);
           final TableGenerator generator =
               new TableGenerator(iterList, prototypeList, new MultipleArrayFunction(engine, list));
-          return generator.table();
+          return generator.tableRecursive();
         }
 
       } catch (final ClassCastException | ArithmeticException e) {
@@ -1901,7 +1907,7 @@ public final class ListFunctions {
             }
             final TableGenerator generator = new TableGenerator(iterList, resultList,
                 new MultipleConstArrayFunction(constantExpr));
-            return generator.table();
+            return generator.tableRecursive();
           }
         }
       } catch (final ValidateException ve) {
@@ -5644,7 +5650,7 @@ public final class ListFunctions {
 
           final TableGenerator generator =
               new TableGenerator(iterList, resultList, new UnaryRangeFunction(), F.CEmptyList);
-          return generator.table();
+          return generator.tableRecursive();
         }
       } catch (NoEvalException nev) {
         // Range specification in `1` does not have appropriate bounds.
@@ -7147,7 +7153,7 @@ public final class ListFunctions {
 
           final TableGenerator generator = new TableGenerator(iterList, resultList,
               new TableFunction(engine, ast.arg1()), defaultValue);
-          return generator.table();
+          return generator.tableRecursive();
         }
       } catch (final ArrayIndexOutOfBoundsException e) {
         return Errors.printMessage(S.Table, e, EvalEngine.get());
@@ -7170,7 +7176,7 @@ public final class ListFunctions {
 
           final TableGenerator generator = new TableGenerator(iterList, resultList,
               new TableFunction(engine, ast.arg1()), defaultValue);
-          return generator.tableThrow();
+          return generator.tableThrowRecursive();
         }
       } catch (final ArrayIndexOutOfBoundsException e) {
         return Errors.printMessage(S.Table, e, EvalEngine.get());
@@ -7201,7 +7207,7 @@ public final class ListFunctions {
 
         final TableGenerator generator = new TableGenerator(iterList, resultList,
             new TableFunction(EvalEngine.get(), expr), defaultValue);
-        return generator.table();
+        return generator.tableRecursive();
       } catch (final ArrayIndexOutOfBoundsException e) {
         return Errors.printMessage(S.Table, e, EvalEngine.get());
       } catch (final NoEvalException | ClassCastException | ArithmeticException e) {

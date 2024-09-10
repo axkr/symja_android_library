@@ -81,10 +81,6 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
   private transient int fOrdinal;
 
-  // private BuiltInSymbol(final String symbolName) {
-  // this(symbolName, null);
-  // }
-
   public BuiltInSymbol(final String symbolName, int ordinal) {
     super(symbolName, Context.SYSTEM);
     fEvaluator = DUMMY_EVALUATOR;
@@ -93,15 +89,6 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
       fAttributes = Config.BUILTIN_PROTECTED;
     }
   }
-
-  // private BuiltInSymbol(final String symbolName, final IEvaluator evaluator) {
-  // this(symbolName, Context.SYSTEM, evaluator);
-  // }
-
-  // private BuiltInSymbol(final String symbolName, Context context, final IEvaluator evaluator) {
-  // super(symbolName, context);
-  // fEvaluator = evaluator;
-  // }
 
   /** {@inheritDoc} */
   @Override
@@ -138,7 +125,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
   /** {@inheritDoc} */
   @Override
-  public void clearAll(EvalEngine engine) {
+  public final void clearAll(EvalEngine engine) {
     if (Config.FUZZ_TESTING) {
       // Cannot assign to raw object `1`.
       throw new NullPointerException();
@@ -159,15 +146,12 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   /** {@inheritDoc} */
   @Override
   public final RulesData createRulesData(int[] sizes) {
-    if (fRulesData == null) {
-      fRulesData = new RulesData(sizes, this);
-    }
-    return fRulesData;
+    return (fRulesData == null) ? (fRulesData = new RulesData(sizes, this)) : fRulesData;
   }
 
   /** {@inheritDoc} */
   @Override
-  public boolean equals(final Object obj) {
+  public final boolean equals(final Object obj) {
     return this == obj;
   }
 
@@ -215,25 +199,25 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
   /** {@inheritDoc} */
   @Override
-  public IExpr evaluateHead(IAST ast, EvalEngine engine) {
+  public final IExpr evaluateHead(IAST ast, EvalEngine engine) {
     return isConstantAttribute() ? F.NIL : super.evaluateHead(ast, engine);
   }
 
   /** {@inheritDoc} */
   @Override
-  public IEvaluator getEvaluator() {
+  public final IEvaluator getEvaluator() {
     return fEvaluator;
   }
 
   /** {@inheritDoc} */
   @Override
-  public int hashCode() {
+  public final int hashCode() {
     return fOrdinal;
   }
 
   /** {@inheritDoc} */
   @Override
-  public int ordinal() {
+  public final int ordinal() {
     return fOrdinal;
   }
 
@@ -250,25 +234,25 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
   /** {@inheritDoc} */
   @Override
-  public boolean isCoreFunctionSymbol() {
+  public final boolean isCoreFunctionSymbol() {
     return fEvaluator instanceof ICoreFunctionEvaluator;
   }
 
   /** {@inheritDoc} */
   @Override
-  public boolean isBooleanFormulaSymbol() {
+  public final boolean isBooleanFormulaSymbol() {
     return fEvaluator instanceof IBooleanFormula;
   }
 
   /** {@inheritDoc} */
   @Override
-  public boolean isComparatorFunctionSymbol() {
+  public final boolean isComparatorFunctionSymbol() {
     return fEvaluator instanceof IComparatorFunction;
   }
 
   /** {@inheritDoc} */
   @Override
-  public boolean isPredicateFunctionSymbol() {
+  public final boolean isPredicateFunctionSymbol() {
     return fEvaluator instanceof IPredicate;
   }
 
@@ -342,10 +326,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
   @Override
   public final boolean isPositive() {
-    if (isRealConstant()) {
-      return ((IRealConstant) fEvaluator).isPositive();
-    }
-    return false;
+    return isRealConstant() ? ((IRealConstant) fEvaluator).isPositive() : false;
   }
 
   /** {@inheritDoc} */

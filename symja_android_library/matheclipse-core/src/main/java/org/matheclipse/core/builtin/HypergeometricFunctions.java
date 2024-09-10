@@ -563,8 +563,8 @@ public class HypergeometricFunctions {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
-      IExpr n = ast.arg1();
-      if (ast.argSize() == 2) {
+      if (ast.isAST2()) {
+        IExpr n = ast.arg1();
         IExpr z = ast.arg2();
         // (2*Cos(n*ArcCos(z)))/n
         return F.Times(F.C2, F.Power(n, F.CN1), F.Cos(F.Times(n, F.ArcCos(z))));

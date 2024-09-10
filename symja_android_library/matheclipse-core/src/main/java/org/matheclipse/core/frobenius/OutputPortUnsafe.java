@@ -36,20 +36,20 @@ import java.util.NoSuchElementException;
 public interface OutputPortUnsafe<T> {
   T take();
 
-  public static final class Singleton<T> implements OutputPortUnsafe<T> {
-    private T element;
-
-    public Singleton(T element) {
-      this.element = element;
-    }
-
-    @Override
-    public T take() {
-      T newElement = element;
-      element = null;
-      return newElement;
-    }
-  }
+  // public static final class Singleton<T> implements OutputPortUnsafe<T> {
+  // private T element;
+  //
+  // public Singleton(T element) {
+  // this.element = element;
+  // }
+  //
+  // @Override
+  // public T take() {
+  // T newElement = element;
+  // element = null;
+  // return newElement;
+  // }
+  // }
 
   public static final class PortIterator<T> implements Iterator<T> {
     private final OutputPortUnsafe<T> opu;

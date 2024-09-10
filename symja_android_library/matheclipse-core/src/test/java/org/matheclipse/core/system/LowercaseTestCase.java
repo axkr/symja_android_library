@@ -4657,7 +4657,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
             + "\n" //
-            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
+            + "ArcSinh(Undefined)=Undefined\n" //
             + "\n" //
             + "ArcSinh(Infinity)=Infinity\n" //
             + "\n" //
@@ -4669,7 +4669,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "ArcSinh(I*1/2)=I*1/6*Pi\n" //
             + "\n" //
-            + "ArcSinh(Undefined)=Undefined\n" //
+            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
             + "\n" //
             + "ArcSinh(ComplexInfinity)=ComplexInfinity");
 
@@ -8256,7 +8256,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     }
 
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})", //
-        "{x->3.4341896575482003}");
+        "{x->3.4341896575482007}");
     checkNumeric("$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n"
         + "$R=100;\n" + "$d=0.00;\n" + "$vn=0;\n" + "$EAj=0;\n" + "$zj=0;\n" + "$sz=1;\n"
         + "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA))+(Sum((($R*(1+$d)^(Floor(i0/$Z)))/(1+$AA))*(1+p-$g)^(($n-i0-$vn)/$Z),{i0,0,$n-1}))+(Sum(($EAj*(1+p-$g)^(($n-$zj)/$Z))/(1+$AA),{j,1,$sz})) - 30199, {p, 0, 0.1})", //
@@ -8272,22 +8272,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "31.006276680299816");
     // default to Newton method
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})", //
-        "{x->3.4341896575482003}");
+        "{x->3.4341896575482007}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Brent)", //
-        "{x->3.4341896295968874}");
+        "{x->3.434189629596888}");
 
     // only a start value is given:
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,3}, Method->Newton)", //
-        "{x->3.4341896575482003}");
+        "{x->3.4341896575482007}");
 
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Bisection)", //
         "{x->3.434189647436142}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Brent)", //
-        "{x->3.4341896295968874}");
+        "{x->3.434189629596888}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Muller)", //
         "{x->3.4341896575483015}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Ridders)", //
-        "{x->3.4341896575482003}");
+        "{x->3.4341896575482007}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Secant)", //
         "{x->3.4341896575036097}");
     // FindRoot: maximal count (100) exceeded
@@ -8297,12 +8297,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Method->RegulaFalsi, MaxIterations->32000)", //
         "FindRoot(E^x==Pi^3,{x,1,10},Method->regulafalsi,MaxIterations->32000)");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Illinois)", //
-        "{x->3.434189691505525}");
+        "{x->3.4341896915055257}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Pegasus)", //
-        "{x->3.434189657548197}");
+        "{x->3.4341896575481976}");
 
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Brent)", //
-        "{x->3.4341896295968874}");
+        "{x->3.434189629596888}");
     check("FindRoot(Sin(x),{x,-0.5,0.5}, Secant)", //
         "{x->0.0}");
 
@@ -9142,7 +9142,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
             + "\n" //
-            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
+            + "ArcSinh(Undefined)=Undefined\n" //
             + "\n" //
             + "ArcSinh(Infinity)=Infinity\n" //
             + "\n" //
@@ -9154,7 +9154,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "ArcSinh(I*1/2)=I*1/6*Pi\n" //
             + "\n" //
-            + "ArcSinh(Undefined)=Undefined\n" //
+            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
             + "\n" //
             + "ArcSinh(ComplexInfinity)=ComplexInfinity");
 
@@ -9856,7 +9856,74 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testHeavisideLambda() {
+    // TODO implement for multiple args
+    check("HeavisideLambda(1/4, 1/3, 1/8)", //
+        "HeavisideLambda(1/8,1/4,1/3)");
+    check("HeavisideLambda(0.8,0.6)", //
+        "HeavisideLambda(0.6,0.8)");
+
+
+    check("Table(HeavisideLambda(n), {n, -1, 1, 1/3})", //
+        "{0,1/3,2/3,1,2/3,1/3,0}");
+    check("FunctionExpand(HeavisideLambda(x))", //
+        "-HeavisideTheta(-1+x)+x*HeavisideTheta(-1+x)-2*x*HeavisideTheta(x)+HeavisideTheta(\n" //
+            + "1+x)+x*HeavisideTheta(1+x)");
+    check("HeavisideLambda(D(Sin(x),x))", //
+        "HeavisideLambda(D(Sin(x),x))");
+    check("Derivative(1)[HeavisideLambda]", //
+        "-HeavisidePi(1/2-#1)+HeavisidePi(1/2+#1)&");
+    check("HeavisideLambda(x)", //
+        "HeavisideLambda(x)");
+    check("D(HeavisideLambda(x), x)", //
+        "-HeavisidePi(1/2-x)+HeavisidePi(1/2+x)");
+    check("HeavisideLambda(1/2)", //
+        "1/2");
+    check("HeavisideLambda(1)", //
+        "0");
+    check("HeavisideLambda(-1)", //
+        "0");
+    check("HeavisideLambda(-1/3)", //
+        "2/3");
+    check("HeavisideLambda({1.6, 0.330000000000000000000000})", //
+        "{0,0.67}");
+    check("HeavisideLambda({-1/4, 1/2, 1})", //
+        "{3/4,1/2,0}");
+
+  }
+
+  @Test
+  public void testHeavisidePi() {
+    check("HeavisidePi(D(Sin(x),x))", //
+        "HeavisidePi(Cos(x))");
+    check("Derivative(1)[HeavisidePi]", //
+        "-2*DiracDelta(-1+2*#1)+2*DiracDelta(1+2*#1)&");
+    check("HeavisidePi(x)", //
+        "HeavisidePi(x)");
+    check("D(HeavisideTheta(x), x)", //
+        "DiracDelta(x)");
+    check("HeavisidePi(1/2)", //
+        "HeavisidePi(1/2)");
+    check("HeavisidePi(42)", //
+        "0");
+    check("HeavisidePi(-1)", //
+        "0");
+    check("HeavisidePi(-42)", //
+        "0");
+    check("HeavisidePi({1.6, 0.330000000000000000000000})", //
+        "{0,1}");
+    check("HeavisidePi({-1/4, 1/2, 1})", //
+        "{1,HeavisidePi(1/2),0}");
+    check("HeavisidePi(1/4, 1/3, 1/8)", //
+        "1");
+    check("HeavisidePi(-2, -1, 1, 2)", //
+        "0");
+  }
+
+  @Test
   public void testHeavisideTheta() {
+    check("HeavisideTheta(D(Sin(x),x))", //
+        "HeavisideTheta(Cos(x))");
     check("Derivative(1)[HeavisideTheta]", //
         "DiracDelta(#1)&");
     check("HeavisideTheta(x)", //
@@ -13109,6 +13176,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLog() {
+    checkNumeric("Log(-1.5)", //
+        "0.4054651081081644+I*3.141592653589793");
+    checkNumeric("N(Log(-3/2),30)", //
+        "0.40546510810816438197801311546+I*3.14159265358979323846264338327");
+    // same as in MMA
+    checkNumeric("Log(0.0)", //
+        "Indeterminate");
+    checkNumeric("N(Log(0),30)", //
+        "-Infinity");
+
+
     checkNumeric("Sum(i^(-1)*(-1)^(i - 1)*(x-1)^i, {i, 1, Infinity})", //
         "Log(x)");
     checkNumeric("Log(Exp(1.4))", //
@@ -19586,6 +19664,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRandomVariate() {
+    // message: RandomVariate: The first argument aa is not a valid distribution.
+    check("RandomVariate(aa)", //
+        "RandomVariate(aa)");
+    // message: RandomVariate: The specification lognormal(0.1,1.7) is not a random distribution
+    // recognized
+    // by the system.
+    check("RandomVariate(lognormal(0.1,1.7) )", //
+        "RandomVariate(lognormal(0.1,1.7))");
     // check("RandomVariate(HypergeometricDistribution(44,18,57), 10^2)", //
     // "{16,16,14,11,14,13,14,14,13,15,13,11,14,15,15,13,15,13,14,15,15,13,16,13,14,12,\n" // +
     // "16,12,14,13,13,17,16,15,16,12,15,13,13,16,15,16,15,14,15,14,10,15,17,14,15,13,14,\n" // +
@@ -23048,6 +23134,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testTablePerformance001() {
+    check("$IterationLimit=10000; " //
+        + "  data = Table(\n"//
+        + "                With({r = RandomReal({0, 5}), t = RandomReal({0, 2*Pi})}, " //
+        + "                       {r*Cos(t), r*Sin(t), Sin(r^2)/r^2}), " //
+        + "               {10^4});", //
+        "");
+  }
+
+  @Test
   public void testTableForm() {
     // check(
     // "TableForm({{a, b}, {c, d}, {e, f}}, TableHeadings -> {None, {\"c1\", \"c2\"}})", //
@@ -23170,6 +23266,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Take({{11,12,13},{21,22,23},a,{31,32,33}},3,2)");
     check("Take({a, b, c, d, e, f}, None)", //
         "{}");
+    check("Take({1, 2, 3, 4, 5}, {1, -1, 2})", //
+        "{1,3,5}");
+
   }
 
   @Test

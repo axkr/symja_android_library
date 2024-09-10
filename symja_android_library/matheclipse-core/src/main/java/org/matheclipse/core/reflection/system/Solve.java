@@ -7,6 +7,7 @@ import java.util.TreeSet;
 import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.chocosolver.solver.constraints.extension.hybrid.HybridTuples;
 import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
@@ -1291,6 +1292,10 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         return F.NIL;
       }
       try {
+        // for model#table() method
+        HybridTuples hybridTuples = null;
+        IExpr[] hybridVars = null;
+        // Create a constraint network
         if (ToggleFeature.SOLVE_DIOPHANTINE) {
           if (equationsAndInequations.argSize() == 1) {
             IExpr eq1 = equationsAndInequations.arg1();
@@ -1298,7 +1303,14 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               IAST diophantineResult = NumberTheory.diophantinePolynomial(eq1.first(),
                   equationVariables, maximumNumberOfResults);
               if (diophantineResult.isPresent()) {
-                return diophantineResult;
+                if (equationsAndInequations.argSize() > 1) {
+                  hybridVars = new IExpr[] {F.NIL, F.NIL};
+                  hybridTuples =
+                      ChocoConvert.listOfRulesToTuples(diophantineResult, ast.topHead(), hybridVars,
+                          engine);
+                } else {
+                  return diophantineResult;
+                }
               }
             }
           }
@@ -1309,7 +1321,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           try {
             LOGGER.debug("Choco solver");
             IAST resultList = ChocoConvert.integerSolve(equationsAndInequations, equationVariables,
-                userDefinedVariables, maximumNumberOfResults, engine);
+                userDefinedVariables, maximumNumberOfResults, hybridVars, hybridTuples, engine);
             if (resultList.isPresent()) {
               EvalAttributes.sort((IASTMutable) resultList);
               return resultList;

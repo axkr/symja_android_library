@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Locale;
 import java.util.Random;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -6969,6 +6968,9 @@ public class StatisticsFunctions {
             return Errors.printMessage(S.RandomVariate, rex, engine);
           }
         }
+      } else {
+        // The first argument `1` is not a valid distribution.
+        return Errors.printMessage(ast.topHead(), "unsdst", F.list(ast.arg1()), engine);
       }
       return F.NIL;
     }
@@ -6988,10 +6990,10 @@ public class StatisticsFunctions {
     private static IExpr printMessageUdist(ISymbol head, final IAST ast, IAST dist,
         EvalEngine engine) {
       // The specification `1` is not a random distribution recognized by the system.
-      if (head.getSymbolName().toLowerCase(Locale.US).endsWith("distribution")) {
-        return Errors.printMessage(ast.topHead(), "udist", F.list(dist), engine);
-      }
-      return F.NIL;
+      // if (head.getSymbolName().toLowerCase(Locale.US).endsWith("distribution")) {
+      return Errors.printMessage(ast.topHead(), "udist", F.list(dist), engine);
+      // }
+      // return F.NIL;
     }
 
     @Override

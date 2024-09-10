@@ -80,7 +80,7 @@ public class SymbolicPolynomial
   protected final SortedMap<ExpVectorSymbolic, IExpr> val; // do not change to
   // TreeMap
 
-  private final boolean debug = Config.DEBUG;
+  private final static boolean DEBUG = Config.DEBUG;
 
   // protected GenPolynomial() { ring = null; val = null; } // don't use
 
@@ -201,7 +201,7 @@ public class SymbolicPolynomial
    * @param e exponent.
    */
   public void doPutToMap(ExpVectorSymbolic e, IExpr c) {
-    if (debug) {
+    if (DEBUG) {
       IExpr a = val.get(e);
       if (a != null) {
         // logger.error("map entry exists " + e + " to " + a + " new " + c);
@@ -222,7 +222,7 @@ public class SymbolicPolynomial
    */
   public void doRemoveFromMap(ExpVectorSymbolic e, IExpr c) {
     IExpr b = val.remove(e);
-    if (debug) {
+    if (DEBUG) {
       if (c == null) { // ignore b
         return;
       }
@@ -242,7 +242,7 @@ public class SymbolicPolynomial
   public void doPutToMap(SortedMap<ExpVectorSymbolic, IExpr> vals) {
     for (Map.Entry<ExpVectorSymbolic, IExpr> me : vals.entrySet()) {
       ExpVectorSymbolic e = me.getKey();
-      if (debug) {
+      if (DEBUG) {
         IExpr a = val.get(e);
         if (a != null) {
           // logger.error("map entry exists " + e + " to " + a + " new " + me.getValue());
@@ -1617,7 +1617,7 @@ public class SymbolicPolynomial
       ExpVectorSymbolic e = m.getKey();
       IExpr c1 = m.getValue();
       IExpr c = c1.divide(s);
-      if (debug) {
+      if (DEBUG) {
         IExpr x = c1.remainder(s);
         if (!x.isZERO()) {
           // logger.info("divide x = " + x);

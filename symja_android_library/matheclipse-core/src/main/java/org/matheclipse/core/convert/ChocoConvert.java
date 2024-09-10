@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import org.chocosolver.solver.Model;
 import org.chocosolver.solver.Solution;
+import org.chocosolver.solver.constraints.extension.hybrid.HybridTuples;
+import org.chocosolver.solver.constraints.extension.hybrid.ISupportable;
 import org.chocosolver.solver.exception.ContradictionException;
 import org.chocosolver.solver.expression.continuous.arithmetic.CArExpression;
 import org.chocosolver.solver.expression.continuous.relational.CReExpression;
@@ -21,6 +23,7 @@ import org.chocosolver.solver.search.strategy.strategy.IntStrategy;
 import org.chocosolver.solver.variables.IntVar;
 import org.chocosolver.solver.variables.RealVar;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
@@ -41,17 +44,18 @@ public class ChocoConvert {
   /**
    * Default minimum lower bound for <code>int</code> variables.
    */
-  final private static short CHOCO_MIN_VALUE = Short.MIN_VALUE / 2;
+  final public static short CHOCO_MIN_VALUE = Short.MIN_VALUE / 2;
 
   /**
    * Default maximum upper bound for <code>int</code> variables.
    */
-  final private static short CHOCO_MAX_VALUE = Short.MAX_VALUE / 2;
+  final public static short CHOCO_MAX_VALUE = Short.MAX_VALUE / 2;
 
   private ChocoConvert() {}
 
   private static Model expr2IntegerSolver(final IAST list, final IAST variables,
-      Map<ISymbol, IntVar> map) throws ArgumentTypeException {
+      Map<ISymbol, IntVar> map, IExpr[] hybridVars, HybridTuples hybridTuples)
+      throws ArgumentTypeException {
 
     // Create a constraint network
     Model model = new Model();
@@ -68,6 +72,14 @@ public class ChocoConvert {
         // CHOCO_MAX_VALUE, //
         // model));
       }
+    }
+    if (hybridTuples != null) {
+      IntVar[] vars = new IntVar[hybridVars.length];
+      for (int i = 0; i < hybridVars.length; i++) {
+        IntVar intVar = map.get(hybridVars[i]);
+        vars[i] = intVar;
+      }
+      model.table(vars, hybridTuples);
     }
 
     IntVar[] vars = new IntVar[map.size()];
@@ -298,14 +310,16 @@ public class ChocoConvert {
    * @param equationVariables all variables which are defined in the equations
    * @param userDefinedVariables all variables which are defined by the user. May contain additional
    *        variables which aren't available in <code>equationVariables</code>
+   * @param hybridTuples TODO
    * @param engine
    * @return a list of rules with the integer solutions; or if no solution exists return
    *         {@link F#NIL}
    */
   public static IAST integerSolve(final IAST list, final IAST equationVariables,
-      final IAST userDefinedVariables, final int maximumNumberOfResults, final EvalEngine engine) {
+      final IAST userDefinedVariables, final int maximumNumberOfResults, IExpr[] hybridVars,
+      HybridTuples hybridTuples, final EvalEngine engine) {
     TreeMap<ISymbol, IntVar> map = new TreeMap<ISymbol, IntVar>();
-    Model model = expr2IntegerSolver(list, equationVariables, map);
+    Model model = expr2IntegerSolver(list, equationVariables, map, hybridVars, hybridTuples);
     List<Solution> res = model.getSolver().findAllSolutions(new SolutionCounter(model,
         maximumNumberOfResults < 0 ? Short.MAX_VALUE : maximumNumberOfResults));
     if (res.size() == 0) {
@@ -550,5 +564,32 @@ public class ChocoConvert {
     }
 
     return result;
+  }
+
+  public static HybridTuples listOfRulesToTuples(IAST diophantineResult, ISymbol head,
+      IExpr[] hybridVars, EvalEngine engine) {
+    HybridTuples tuples = new HybridTuples();
+    for (int i = 1; i < diophantineResult.size(); i++) {
+      IAST subList = (IAST) diophantineResult.get(i);
+      ISupportable[] supp = new ISupportable[subList.argSize()];
+      for (int j = 1; j < subList.size(); j++) {
+        IExpr rule = subList.get(j);
+        if (rule.isRuleAST()) {
+          IExpr lhs = rule.first();
+          IExpr rhs = rule.second();
+          int value = rhs.toIntDefault();
+          if (value != Integer.MIN_VALUE) {
+            hybridVars[j - 1] = lhs;
+            supp[j - 1] = HybridTuples.eq(value);
+          } else {
+            // Machine-sized integer expected at position `2` in `1`.
+            Errors.printMessage(head, "intm", F.List(rule, F.C2), engine);
+            return null;
+          }
+        }
+      }
+      tuples.add(supp);
+    }
+    return tuples;
   }
 }

@@ -18,8 +18,7 @@ import edu.jas.kern.PreemptingException;
 
 public class EvalControlledCallable implements Callable<IExpr> {
   private static final Logger LOGGER = LogManager.getLogger();
-
-  private Thread fThread = null;
+ 
   protected final EvalEngine fEngine;
   private IExpr fExpr;
 
@@ -33,7 +32,6 @@ public class EvalControlledCallable implements Callable<IExpr> {
 
   @Override
   public IExpr call() {
-    fThread = Thread.currentThread();
     EvalEngine.remove();
     EvalEngine.setReset(fEngine);
     final StringWriter buf = new StringWriter();

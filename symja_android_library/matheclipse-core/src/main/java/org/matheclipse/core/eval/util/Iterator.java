@@ -978,7 +978,7 @@ public class Iterator {
     }
   }
 
-  private static class IntIterator implements IIterator<IExpr> {
+  private static final class IntIterator implements IIterator<IExpr> {
 
     /**
      * The element which will be returned by {@link #next()} and incremented by step afterwards.
@@ -1507,6 +1507,7 @@ public class Iterator {
           upperLimit = null;
           step = null;
           variable = null;
+          return new ExprIterator(variable, lowerLimit, upperLimit, step, fNumericMode, evalEngine);
       }
       checkAppropriateBounds(list, lowerLimit, upperLimit, step);
       return new ExprIterator(variable, lowerLimit, upperLimit, step, fNumericMode, evalEngine);

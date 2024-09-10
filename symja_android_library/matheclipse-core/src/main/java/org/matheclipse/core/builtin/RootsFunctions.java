@@ -813,8 +813,7 @@ public class RootsFunctions {
       int k = 0; // isNegative?1:0;
       for (int i = 1; i <= size; i++) {
         IExpr power = engine.evaluate(F.Power(F.CN1, F.QQ(k, varDegree)));
-        IAST times1 =
-            F.Times(F.CN1, power, zNumerator, zDenominator);
+        IAST times1 = F.Times(F.CN1, power, zNumerator, zDenominator);
         IAST times2 = F.Times(power, zNumerator, zDenominator);
         result.append(engine.evaluate(times1));
         result.append(engine.evaluate(times2));

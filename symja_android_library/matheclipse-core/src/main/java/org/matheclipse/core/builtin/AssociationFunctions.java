@@ -14,6 +14,7 @@ import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.MutableInt;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
@@ -283,6 +284,11 @@ public class AssociationFunctions {
         return evaled ? assocList : F.NIL;
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1070,6 +1076,11 @@ public class AssociationFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -1172,6 +1183,11 @@ public class AssociationFunctions {
         return ((IASTDataset) arg1).summary();
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override

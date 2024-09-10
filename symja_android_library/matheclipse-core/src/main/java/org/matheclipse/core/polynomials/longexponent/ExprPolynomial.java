@@ -82,7 +82,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
   protected final SortedMap<ExpVectorLong, IExpr> val; // do not change to
   // TreeMap
 
-  private final boolean debug = Config.DEBUG;
+  private final static boolean DEBUG = Config.DEBUG;
 
   // protected GenPolynomial() { ring = null; val = null; } // don't use
 
@@ -203,7 +203,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    * @param e exponent.
    */
   public void doPutToMap(ExpVectorLong e, IExpr c) {
-    if (debug) {
+    if (DEBUG) {
       IExpr a = val.get(e);
       if (a != null) {
         // logger.error("map entry exists " + e + " to " + a + " new " + c);
@@ -224,7 +224,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    */
   public void doRemoveFromMap(ExpVectorLong e, IExpr c) {
     IExpr b = val.remove(e);
-    if (debug) {
+    if (DEBUG) {
       if (c == null) { // ignore b
         return;
       }
@@ -244,7 +244,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
   public void doPutToMap(SortedMap<ExpVectorLong, IExpr> vals) {
     for (Map.Entry<ExpVectorLong, IExpr> me : vals.entrySet()) {
       ExpVectorLong e = me.getKey();
-      if (debug) {
+      if (DEBUG) {
         IExpr a = val.get(e);
         if (a != null) {
           // logger.error("map entry exists " + e + " to " + a + " new " + me.getValue());
@@ -1617,7 +1617,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
       ExpVectorLong e = m.getKey();
       IExpr c1 = m.getValue();
       IExpr c = c1.divide(s);
-      if (debug) {
+      if (DEBUG) {
         IExpr x = c1.remainder(s);
         if (!x.isZERO()) {
           // logger.info("divide x = " + x);

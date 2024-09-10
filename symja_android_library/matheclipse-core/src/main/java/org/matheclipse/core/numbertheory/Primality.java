@@ -63,7 +63,7 @@ public class Primality implements IPrimality {
     }
   }
 
-  private static class SquareFreeTreedMap extends SortedMultiset_BottomUp<BigInteger> {
+  private static class SquareFreeTreeMap extends SortedMultiset_BottomUp<BigInteger> {
     private static final long serialVersionUID = -7769218967264615452L;
 
     @Override
@@ -1067,7 +1067,7 @@ public class Primality implements IPrimality {
     if (value.equals(BigInteger.ONE)) {
       return 1;
     }
-    SortedMultiset<BigInteger> map = new SquareFreeTreedMap();
+    SortedMultiset<BigInteger> map = new SquareFreeTreeMap();
     try {
       Config.PRIME_FACTORS.factorInteger(value, map);
       // value is square-free
@@ -1204,7 +1204,7 @@ public class Primality implements IPrimality {
     if (val.signum() < 0) {
       val = val.negate();
     }
-    SquareFreeTreedMap map = new SquareFreeTreedMap();
+    SquareFreeTreeMap map = new SquareFreeTreeMap();
     try {
       Config.PRIME_FACTORS.factorInteger(val, map);
       for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
