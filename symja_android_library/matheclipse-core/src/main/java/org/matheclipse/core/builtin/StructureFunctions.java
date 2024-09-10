@@ -655,10 +655,10 @@ public class StructureFunctions {
             arg2 = subst;
           }
 
-          return arg2.replaceAll(x -> {
+          return F.subst(arg2, x -> { //
             IExpr temp = getRulesMap(symbolSlots, astEvaled).get(x);
             return temp != null ? temp : F.NIL;
-          }).orElse(arg2);
+          });
         }
 
       }

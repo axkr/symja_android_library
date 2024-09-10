@@ -3130,7 +3130,7 @@ public final class NumberTheory {
                   IExpr nonPeriodReduced = continuedFractionReduce(nonPeriodicPart, engine);
                   if (nonPeriodReduced.isPresent()) {
                     return radSimplify(
-                        F.subst(nonPeriodReduced, arg -> arg.equals(x) ? solution : F.NIL), engine);
+                        F.subst(nonPeriodReduced, arg -> arg.equals(x), solution), engine);
                   }
                 }
               }

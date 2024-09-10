@@ -1509,7 +1509,7 @@ public final class PatternMatching {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = ast.arg1();
-      return arg1.replaceAll(ReleaseHold::releaseHold).orElse(arg1);
+      return F.subst(arg1, ReleaseHold::releaseHold);
     }
 
     private static IExpr releaseHold(IExpr expr) {

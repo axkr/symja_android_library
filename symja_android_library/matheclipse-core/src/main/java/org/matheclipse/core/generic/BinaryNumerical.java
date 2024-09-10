@@ -18,7 +18,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  * @see org.matheclipse.core.reflection.system.Plot3D
  */
-public class BinaryNumerical implements BinaryOperator<IExpr>, BivariateFunction {
+public final class BinaryNumerical implements BinaryOperator<IExpr>, BivariateFunction {
   final IExpr fun;
 
   final ISymbol variable1;

@@ -23,7 +23,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /** Unary numerical function for functions like Plot */
-public class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDifferentiableFunction,
+public final class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDifferentiableFunction,
     DoubleFunction<IExpr>, DoubleUnaryOperator {
   /** only use for information */
   final IExpr fUnaryFunction;

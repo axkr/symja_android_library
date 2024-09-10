@@ -2809,8 +2809,7 @@ public final class StringFunctions {
           }
         }
       }
-      return templateExpr.replaceAll(x -> replaceTemplateSlotFunction(x, context))
-          .orElse(templateExpr);
+      return F.subst(templateExpr, x -> replaceTemplateSlotFunction(x, context));
     }
 
     /**
@@ -2829,8 +2828,7 @@ public final class StringFunctions {
         if (templateIf.size() > 3) {
           elseExpr = templateIf.arg3();
         }
-        condition =
-            condition.replaceAll(x -> replaceTemplateSlotFunction(x, map)).orElse(condition);
+        condition = F.subst(condition, x -> replaceTemplateSlotFunction(x, map));
         boolean b = EvalEngine.get().evalTrue(condition);
         if (b) {
           return thenExpr.replaceAll(x -> replaceTemplateSlotFunction(x, map)).orElse(thenExpr);

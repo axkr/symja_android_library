@@ -1340,12 +1340,7 @@ public class SeriesFunctions {
         heads = ast.arg2().makeList();
       }
       final IExpr arg1 = ast.arg1();
-      // IExpr normal=arg1.normal(true);
-      // if (normal.isPresent()) {
-      // return normal;
-      // }
-      IExpr result = arg1.replaceAll(normal(heads));
-      return result.orElse(arg1);
+      return F.subst(arg1, normal(heads));
     }
 
     private Function<IExpr, IExpr> normal(final IAST heads) {

@@ -186,8 +186,7 @@ public class TeXParser extends TeXScanner {
 
   public IExpr parse(String texStr) {
     IExpr expression = parseTeXExpression(texStr);
-    // IExpr expression = Lambda.replaceSlots(expression, x->.TeXSliceParser.class.);
-    return expression.replaceAll(x -> replaceSlots(x)).orElse(expression);
+    return F.subst(expression, x -> replaceSlots(x));
 
   }
 
