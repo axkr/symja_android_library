@@ -552,6 +552,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
     /** {@inheritDoc} */
     @Override
+    public boolean isBuiltInFunction() {
+      return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public boolean isComparatorFunction() {
       return false;
     }
@@ -2037,115 +2043,89 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public IExpr evaluate(EvalEngine engine) {
     final IExpr head = head();
-    if (head instanceof IBuiltInSymbol) {
-      IBuiltInSymbol symbol = (IBuiltInSymbol) head;
-      final IEvaluator evaluator = symbol.getEvaluator();
-      if (evaluator instanceof ICoreFunctionEvaluator) {
-        if (isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
-          return F.NIL;
-        }
-        try {
-          ICoreFunctionEvaluator functionEvaluator = (ICoreFunctionEvaluator) evaluator;
-          EvalEngine.OptionsResult opres = engine.checkBuiltinArguments(this, functionEvaluator);
-          if (opres == null) {
+    if (head instanceof ISymbol) {
+      if (head instanceof IBuiltInSymbol) {
+        IBuiltInSymbol symbol = (IBuiltInSymbol) head;
+        final IEvaluator evaluator = symbol.getEvaluator();
+        if (evaluator instanceof ICoreFunctionEvaluator) {
+          if (isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
             return F.NIL;
           }
-          IAST ast = opres.result;
-          IBuiltInSymbol header = symbol;
-          if ((header.getAttributes() & ISymbol.SEQUENCEHOLD) != ISymbol.SEQUENCEHOLD) {
-            IExpr temp;
-            if ((temp = F.flattenSequence(this)).isPresent()) {
-              return temp;
+          try {
+            ICoreFunctionEvaluator functionEvaluator = (ICoreFunctionEvaluator) evaluator;
+            EvalEngine.OptionsResult opres = engine.checkBuiltinArguments(this, functionEvaluator);
+            if (opres == null) {
+              return F.NIL;
             }
-          }
-          if (isBooleanFunction()) {
-            IExpr temp = extractConditionalExpression(false);
-            if (temp.isPresent()) {
-              return temp;
-            }
-          }
-
-          IExpr evaluateTemp = evalEvaluate(engine);
-          if (evaluateTemp.isPresent()) {
-            return evaluateTemp;
-          }
-          if (Config.PROFILE_MODE) {
-            long beginTime = System.nanoTime();
-            try {
-              return functionEvaluator.evaluate(ast, engine);
-            } finally {
-              long endTime = System.nanoTime();
-              BuiltinFunctionCalls calls = new BuiltinFunctionCalls(symbol);
-              BuiltinFunctionCalls b = Config.PRINT_PROFILE.get(calls);
-              if (b == null) {
-                Config.PRINT_PROFILE.put(calls, calls);
-              } else {
-                calls = b;
+            IAST ast = opres.result;
+            IBuiltInSymbol header = symbol;
+            if ((header.getAttributes() & ISymbol.SEQUENCEHOLD) != ISymbol.SEQUENCEHOLD) {
+              IExpr temp;
+              if ((temp = F.flattenSequence(this)).isPresent()) {
+                return temp;
               }
-              calls.incCalls(endTime - beginTime);
             }
-          }
-          return functionEvaluator.evaluate(ast, engine);
-        } catch (ValidateException ve) {
-          return Errors.printMessage(topHead(), ve, engine);
-        } catch (FlowControlException e) {
-          throw e;
-        } catch (SymjaMathException ve) {
-          return Errors.printMessage(topHead(), ve, engine);
-        }
-      }
-    } else if (head.isAssociation() && argSize() == 1) {
-      return ((IAssociation) head).getValue(engine.evaluate(arg1()));
-    } else if (head instanceof ISymbol) {
-      ISymbol headSymbol = (ISymbol) head;
-      Class<?> clazz = headSymbol.getContext().getJavaClass();
-      if (clazz != null) {
-        String staticMethodName = headSymbol.getSymbolName();
-        // try {
-        // Method method = clazz.getMethod(staticMethodName);
-        // if (Modifier.isStatic(method.getModifiers())) {
-        // Parameter[] parameters = method.getParameters();
-        // if (parameters.length == argSize()) {
-        // Object[] params = JavaFunctions.determineParameters(this, parameters, 1);
-        // if (params != null) {
-        // Object result;
-        // try {
-        // result = method.invoke(null, params);
-        // if (result instanceof String) {
-        // return F.stringx((String) result);
-        // }
-        // return Object2Expr.convert(result);
-        // } catch (IllegalAccessException
-        // | IllegalArgumentException
-        // | InvocationTargetException e) {
-        // // fall through?
-        // }
-        // }
-        // }
-        // }
-        //
-        // } catch (IllegalArgumentException | NoSuchMethodException | SecurityException e) {
-        // // fall through?
-        // }
-        Method[] methods = clazz.getMethods();
-        for (int i = 0; i < methods.length; i++) {
-          if (Modifier.isStatic(methods[i].getModifiers())) {
-            if (staticMethodName.equals(methods[i].getName())) {
-              Parameter[] parameters = methods[i].getParameters();
-              if (parameters.length == argSize()) {
-                Object[] params = JavaFunctions.determineParameters(this, parameters, 1);
-                if (params != null) {
-                  Object result;
-                  try {
-                    result = methods[i].invoke(null, params);
+            if (isBooleanFunction()) {
+              IExpr temp = extractConditionalExpression(false);
+              if (temp.isPresent()) {
+                return temp;
+              }
+            }
 
-                    if (result instanceof String) {
-                      return F.stringx((String) result);
+            IExpr evaluateTemp = evalEvaluate(engine);
+            if (evaluateTemp.isPresent()) {
+              return evaluateTemp;
+            }
+            if (Config.PROFILE_MODE) {
+              long beginTime = System.nanoTime();
+              try {
+                return functionEvaluator.evaluate(ast, engine);
+              } finally {
+                long endTime = System.nanoTime();
+                BuiltinFunctionCalls calls = new BuiltinFunctionCalls(symbol);
+                BuiltinFunctionCalls b = Config.PRINT_PROFILE.get(calls);
+                if (b == null) {
+                  Config.PRINT_PROFILE.put(calls, calls);
+                } else {
+                  calls = b;
+                }
+                calls.incCalls(endTime - beginTime);
+              }
+            }
+            return functionEvaluator.evaluate(ast, engine);
+          } catch (ValidateException ve) {
+            return Errors.printMessage(topHead(), ve, engine);
+          } catch (FlowControlException e) {
+            throw e;
+          } catch (SymjaMathException ve) {
+            return Errors.printMessage(topHead(), ve, engine);
+          }
+        }
+      } else {
+        ISymbol headSymbol = (ISymbol) head;
+        Class<?> clazz = headSymbol.getContext().getJavaClass();
+        if (clazz != null) {
+          String staticMethodName = headSymbol.getSymbolName();
+          Method[] methods = clazz.getMethods();
+          for (int i = 0; i < methods.length; i++) {
+            if (Modifier.isStatic(methods[i].getModifiers())) {
+              if (staticMethodName.equals(methods[i].getName())) {
+                Parameter[] parameters = methods[i].getParameters();
+                if (parameters.length == argSize()) {
+                  Object[] params = JavaFunctions.determineParameters(this, parameters, 1);
+                  if (params != null) {
+                    Object result;
+                    try {
+                      result = methods[i].invoke(null, params);
+
+                      if (result instanceof String) {
+                        return F.stringx((String) result);
+                      }
+                      return Object2Expr.convert(result, false, true);
+                    } catch (IllegalAccessException | IllegalArgumentException
+                        | InvocationTargetException e) {
+                      // fall through?
                     }
-                    return Object2Expr.convert(result, false, true);
-                  } catch (IllegalAccessException | IllegalArgumentException
-                      | InvocationTargetException e) {
-                    // fall through?
                   }
                 }
               }
@@ -2153,7 +2133,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           }
         }
       }
-
+    } else if (head.isAssociation() && argSize() == 1) {
+      return ((IAssociation) head).getValue(engine.evaluate(arg1()));
     }
 
     final ISymbol symbol = topHead();
@@ -3332,7 +3313,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   @Override
   public boolean isContinuousDistribution() {
-    if (head().isBuiltInSymbol()) {
+    if (isBuiltInFunction()) {
       IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
       return evaluator instanceof IContinuousDistribution;
     }
@@ -3341,7 +3322,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   @Override
   public boolean isDiscreteDistribution() {
-    if (head().isBuiltInSymbol()) {
+    if (isBuiltInFunction()) {
       IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
       return evaluator instanceof IDiscreteDistribution;
     }
@@ -3350,7 +3331,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   @Override
   public boolean isDistribution() {
-    if (head().isBuiltInSymbol()) {
+    if (isBuiltInFunction()) {
       IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
       return evaluator instanceof IDistribution;
     }
@@ -3553,6 +3534,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return head().isPredicateFunctionSymbol()
         || ((head().isBooleanFormulaSymbol() || head().isComparatorFunctionSymbol())
             && forAll(x -> x.isBooleanResult()));
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isBuiltInFunction() {
+    return head() instanceof IBuiltInSymbol;
   }
 
   /** {@inheritDoc} */
@@ -3805,7 +3792,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       boolean directed = true;
       for (int i = 1; i < size(); i++) {
         IExpr temp = get(i);
-        if (temp.isAST2() && temp.head().isBuiltInSymbol()) {
+        if (temp.argSize() == 2 && temp.isBuiltInFunction()) {
           IBuiltInSymbol symbol = (IBuiltInSymbol) temp.head();
           if (symbol == S.DirectedEdge || symbol == S.Rule) {
             continue;
@@ -3832,7 +3819,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isEdge() {
-    if (isAST2() && head().isBuiltInSymbol()) {
+    if (argSize() == 2 && isBuiltInFunction()) {
       IBuiltInSymbol symbol = (IBuiltInSymbol) head();
       return (symbol == S.DirectedEdge || symbol == S.UndirectedEdge || symbol == S.Rule
           || symbol == S.TwoWayRule);
@@ -4141,9 +4128,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return false;
   }
 
-  private boolean hasExpectedArgSize(ISymbol header) {
+  private boolean hasExpectedArgSize(final ISymbol header) {
     if (header.isBuiltInSymbol()) {
-      IEvaluator evaluator = ((IBuiltInSymbol) header).getEvaluator();
+      final IEvaluator evaluator = ((IBuiltInSymbol) header).getEvaluator();
       if (evaluator instanceof IFunctionEvaluator) {
         int[] expected = ((IFunctionEvaluator) evaluator).expectedArgSize(this);
         if (expected != null) {
@@ -4318,7 +4305,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isPolynomialStruct() {
-    if (head().isBuiltInSymbol() && !((ISymbol) head()).isNumericFunctionAttribute()) {
+    if (isBuiltInFunction() && !((ISymbol) head()).isNumericFunctionAttribute()) {
       return false;
     }
     if (exists(x -> !x.isPolynomialStruct())) {
@@ -4474,8 +4461,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (S.True.equals(AbstractAssumptions.assumeReal(this))) {
       return true;
     }
-    final IExpr head = head();
-    if (size() == 2 && head.isBuiltInSymbol()) {
+
+    if (size() == 2 && isBuiltInFunction()) {
       final IExpr arg1 = arg1();
       final int id = headID();
       if (id > 0) {

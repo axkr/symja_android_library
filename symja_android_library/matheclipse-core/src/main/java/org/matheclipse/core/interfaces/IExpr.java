@@ -385,9 +385,11 @@ public interface IExpr
   }
 
   /**
-   * Set an evaluation flag. <b>Note</b> only certain data structures like <code>IAST</code> and
-   * <code>ISparseArray</code> support evaluation flags, otherwise the <code>this</code> object will
-   * be returned without modification.
+   * Add an evaluation flag to the existing ones if supported.
+   * <p>
+   * <b>Note</b> only certain data structures like <code>IAST</code> and <code>ISparseArray</code>
+   * support evaluation flags, otherwise the <code>this</code> object will be returned without
+   * modification.
    *
    * @param evalFlags
    * @return
@@ -1953,9 +1955,8 @@ public interface IExpr
    * @return the ID of this built-in header symbol or <code>-1</code>
    */
   default int headID() {
-    final IExpr head = head();
-    return head.isBuiltInSymbol() ? //
-        ((IBuiltInSymbol) head).ordinal() : //
+    return isBuiltInFunction() ? //
+        ((IBuiltInSymbol) head()).ordinal() : //
         ID.UNKNOWN;
   }
 
@@ -2618,11 +2619,21 @@ public interface IExpr
   /**
    * Test if this expression is a symbol, which has an int ID number in {@link ID} (also instanceof
    * {@link BuiltInSymbol})
-   *
+   * 
    * @return
    */
   default boolean isBuiltInSymbolID() {
     return this instanceof BuiltInSymbol;
+  }
+
+  /**
+   * Test if this expression is a built-in function (i.e. <code>this instanceof IAST</code> and
+   * <code>head() instanceof IBuiltInSymbol</code>)
+   * 
+   * @return
+   */
+  default boolean isBuiltInFunction() {
+    return false;
   }
 
   /**
@@ -3546,12 +3557,21 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is the function <code>Log[&lt;arg&gt;]</code>
+   * Test if this expression is the function <code>Log(&lt;z&gt;)</code>
    *
    * @return
    */
   default boolean isLog() {
     return false;
+  }
+
+  /**
+   * Test if this expression is the function <code>Log(&lt;base&gt;,&lt;z&gt;)</code>
+   * 
+   * @return
+   */
+  default boolean isLog2() {
+    return isAST(S.Log, 3);
   }
 
   /**

@@ -526,7 +526,7 @@ public class GraphicsFunctions {
           ArrayNode array = GraphicsFunctions.JSON_OBJECT_MAPPER.createArrayNode();
           for (int i = 1; i < primitives.size(); i++) {
             IExpr primitive = primitives.get(i);
-            if (primitive.isAST() && primitive.head().isBuiltInSymbol()) {
+            if (primitive.isAST() && primitive.isBuiltInFunction()) {
               IBuiltInSymbol symbol = (IBuiltInSymbol) primitive.head();
               IEvaluator evaluator = symbol.getEvaluator();
               if (evaluator instanceof IGraphics2D) {
@@ -555,7 +555,7 @@ public class GraphicsFunctions {
           ArrayNode array = GraphicsFunctions.JSON_OBJECT_MAPPER.createArrayNode();
           for (int i = 1; i < primitives.size(); i++) {
             IExpr primitive = primitives.get(i);
-            if (primitive.isAST() && primitive.head().isBuiltInSymbol()) {
+            if (primitive.isAST() && primitive.isBuiltInFunction()) {
               IBuiltInSymbol symbol = (IBuiltInSymbol) primitive.head();
               IEvaluator evaluator = symbol.getEvaluator();
               if (evaluator instanceof IGraphics3D) {
@@ -1533,7 +1533,7 @@ public class GraphicsFunctions {
         } else if (ast.isAST(S.Dashing, 2) && ast.arg1().isList()) {
           IAST dashingList = (IAST) ast.arg1();
           // TODO
-        } else if (ast.head().isBuiltInSymbol()) {
+        } else if (ast.isBuiltInFunction()) {
           IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
           IEvaluator evaluator = symbol.getEvaluator();
           if (evaluator instanceof IGraphics2D) {
@@ -1573,7 +1573,7 @@ public class GraphicsFunctions {
             rgbColor = ast;
           } else if (ast.isAST(S.Opacity, 2)) {
             opacity = ast.arg1();
-          } else if (ast.head().isBuiltInSymbol()) {
+          } else if (ast.isBuiltInFunction()) {
             IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
             IEvaluator evaluator = symbol.getEvaluator();
             if (evaluator instanceof IGraphics3D) {
@@ -2047,7 +2047,7 @@ public class GraphicsFunctions {
     for (int i = 1; i < list.size(); i++) {
       if (list.get(i).isAST()) {
         IAST primitive = (IAST) list.get(i);
-        if (primitive.head().isBuiltInSymbol()) {
+        if (primitive.isBuiltInFunction()) {
           IBuiltInSymbol symbol = (IBuiltInSymbol) primitive.head();
           IEvaluator evaluator = symbol.getEvaluator();
           if (evaluator instanceof IGraphics2D) {
@@ -2072,7 +2072,7 @@ public class GraphicsFunctions {
     // IExpr lighting = S.Automatic;
     final OptionArgs options =
         new OptionArgs(graphics2DAST.topHead(), graphics2DAST, 2, engine, true);
-    if (arg1.isAST() && arg1.head().isBuiltInSymbol()
+    if (arg1.isBuiltInFunction()
         && graphics2DJSON(graphics2DBuffer, arg1, options, javaScript, prettyPrint)) {
       return true;
     }
@@ -2100,7 +2100,7 @@ public class GraphicsFunctions {
       // }
     }
 
-    if (arg1.isAST() && arg1.head().isBuiltInSymbol()
+    if (arg1.isBuiltInFunction()
         && graphics3DJSON(graphics3DBuffer, lighting, arg1, javaScript)) {
       return true;
     }

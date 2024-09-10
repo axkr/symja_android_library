@@ -469,7 +469,7 @@ public final class Arithmetic {
       IExpr leftHandSide = ast.arg1();
       final IExpr head = leftHandSide.head();
       try {
-        if (head.isBuiltInSymbol() && leftHandSide.isAST()) {
+        if (leftHandSide.isBuiltInFunction()) {
           IEvaluator eval = ((IBuiltInSymbol) head).getEvaluator();
           if (eval instanceof ISetEvaluator) {
             IExpr temp = engine.evaluateNIL(leftHandSide);

@@ -17,7 +17,7 @@ public interface IIterator<E> extends Iterator<E> {
   }
 
   /**
-   * Set up this iterator.
+   * Set up this iterator and throw a {@link NoEvalException#CONST} exception if it fails.
    *
    * @return
    */
@@ -30,7 +30,7 @@ public interface IIterator<E> extends Iterator<E> {
   }
 
   /**
-   * Get a hint of how much iterations probably will occurr.
+   * Get a hint of how much iterations probably will occur.
    *
    * @return
    */

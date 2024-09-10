@@ -279,6 +279,12 @@ public class ASTRRBTree extends AbstractAST
     return false;
   }
 
+  @Override
+  public int hashCode() {
+    // SpotBugs: HE_EQUALS_NO_HASHCODE
+    return super.hashCode();
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset) {

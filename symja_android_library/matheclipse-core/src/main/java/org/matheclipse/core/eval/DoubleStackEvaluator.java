@@ -46,7 +46,7 @@ public class DoubleStackEvaluator {
 
   @Deprecated
   public static double evalAST(double[] stack, final int top, final IAST ast) {
-    if (ast.head().isBuiltInSymbol()) {
+    if (ast.isBuiltInFunction()) {
       final IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
       final IEvaluator module = symbol.getEvaluator();
       if (module instanceof INumeric) {

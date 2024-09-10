@@ -41,6 +41,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
       return S.And;
     }
 
+    @Override
+    public final int headID() {
+      return ID.And;
+    }
+
     /** {@inheritDoc} */
     @Override
     public final boolean isFlatAST() {
@@ -66,6 +71,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     public final IBuiltInSymbol head() {
       return S.Set;
     }
+
+    @Override
+    public final int headID() {
+      return ID.Set;
+    }
   }
 
   static final class Condition extends B2 {
@@ -85,6 +95,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final IBuiltInSymbol head() {
       return S.Condition;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.Condition;
     }
   }
 
@@ -106,6 +121,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     public final IBuiltInSymbol head() {
       return S.DirectedEdge;
     }
+
+    @Override
+    public final int headID() {
+      return ID.DirectedEdge;
+    }
   }
 
   public static final class Divide extends B2 {
@@ -125,6 +145,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final IBuiltInSymbol head() {
       return S.Divide;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.Divide;
     }
 
     /** {@inheritDoc} */
@@ -177,6 +202,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     public final IBuiltInSymbol head() {
       return S.Equal;
     }
+
+    @Override
+    public final int headID() {
+      return ID.Equal;
+    }
   }
 
   static final class FreeQ extends B2 {
@@ -196,6 +226,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final IBuiltInSymbol head() {
       return S.FreeQ;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.FreeQ;
     }
   }
 
@@ -217,6 +252,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     public final IBuiltInSymbol head() {
       return S.Greater;
     }
+
+    @Override
+    public final int headID() {
+      return ID.Greater;
+    }
   }
 
   static final class GreaterEqual extends B2 {
@@ -236,6 +276,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final IBuiltInSymbol head() {
       return S.GreaterEqual;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.GreaterEqual;
     }
   }
 
@@ -257,6 +302,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     public final IBuiltInSymbol head() {
       return S.If;
     }
+
+    @Override
+    public final int headID() {
+      return ID.If;
+    }
   }
 
   static final class Integrate extends B2 {
@@ -276,6 +326,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final IBuiltInSymbol head() {
       return S.Integrate;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.Integrate;
     }
   }
 
@@ -297,6 +352,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     public final IBuiltInSymbol head() {
       return S.Less;
     }
+
+    @Override
+    public final int headID() {
+      return ID.Less;
+    }
   }
 
   static final class LessEqual extends B2 {
@@ -316,6 +376,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final IBuiltInSymbol head() {
       return S.LessEqual;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.LessEqual;
     }
   }
 
@@ -339,8 +404,19 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public final int headID() {
+      return ID.List;
+    }
+
+    @Override
     public final IBuiltInSymbol topHead() {
       return S.List;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public final boolean isList() {
+      return true;
     }
   }
 
@@ -361,6 +437,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final IBuiltInSymbol head() {
       return S.MemberQ;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.MemberQ;
     }
   }
 
@@ -383,11 +464,17 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
       return S.Or;
     }
 
+    @Override
+    public final int headID() {
+      return ID.Or;
+    }
+
     /** {@inheritDoc} */
     @Override
     public final boolean isFlatAST() {
       return true;
     }
+
   }
 
   static final class Part extends B2 {
@@ -407,6 +494,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final IBuiltInSymbol head() {
       return S.Part;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.Part;
     }
   }
 
@@ -459,6 +551,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     public final IBuiltInSymbol topHead() {
       return S.Plus;
     }
+
+    @Override
+    public final int headID() {
+      return ID.Plus;
+    }
   }
 
   static final class PolynomialQ extends B2 {
@@ -478,6 +575,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final IBuiltInSymbol head() {
       return S.PolynomialQ;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.PolynomialQ;
     }
   }
 
@@ -508,6 +610,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final IBuiltInSymbol head() {
       return S.Power;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.Power;
     }
 
     @Override
@@ -549,6 +656,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     public final IBuiltInSymbol head() {
       return S.Rule;
     }
+
+    @Override
+    public final int headID() {
+      return ID.Rule;
+    }
   }
 
   static final class RuleDelayed extends B2 {
@@ -568,6 +680,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final IBuiltInSymbol head() {
       return S.RuleDelayed;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.RuleDelayed;
     }
   }
 
@@ -589,6 +706,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     public final IBuiltInSymbol head() {
       return S.SameQ;
     }
+
+    @Override
+    public final int headID() {
+      return ID.SameQ;
+    }
   }
 
   public static final class Subtract extends B2 {
@@ -608,6 +730,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final IBuiltInSymbol head() {
       return S.Subtract;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.Subtract;
     }
 
     /** {@inheritDoc} */
@@ -661,6 +788,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
       return S.Times;
     }
 
+    @Override
+    public final int headID() {
+      return ID.Times;
+    }
+
     /** {@inheritDoc} */
     @Override
     public final boolean isFlatAST() {
@@ -711,6 +843,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     public final IBuiltInSymbol head() {
       return S.UndirectedEdge;
     }
+
+    @Override
+    public final int headID() {
+      return ID.UndirectedEdge;
+    }
   }
 
   static final class With extends B2 {
@@ -730,6 +867,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final IBuiltInSymbol head() {
       return S.With;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.With;
     }
   }
 
@@ -1192,6 +1334,12 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   @Override
   public boolean isAST3() {
     return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final boolean isBuiltInFunction() {
+    return true;
   }
 
   /** {@inheritDoc} */

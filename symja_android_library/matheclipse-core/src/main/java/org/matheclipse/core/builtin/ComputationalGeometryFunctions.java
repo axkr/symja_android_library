@@ -184,7 +184,7 @@ public class ComputationalGeometryFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (arg1.isAST() && arg1.head().isBuiltInSymbol()) {
+      if (arg1.isAST() && arg1.isBuiltInFunction()) {
         IAST geoForm = (IAST) ast.arg1();
         int headID = arg1.headID();
         if (headID >= 0) {
@@ -285,7 +285,7 @@ public class ComputationalGeometryFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (arg1.isAST() && arg1.head().isBuiltInSymbol()) {
+      if (arg1.isAST() && arg1.isBuiltInFunction()) {
         IAST geoForm = (IAST) ast.arg1();
         int headID = arg1.headID();
         if (headID >= 0) {
@@ -391,7 +391,7 @@ public class ComputationalGeometryFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (arg1.isAST() && arg1.head().isBuiltInSymbol()) {
+      if (arg1.isAST() && arg1.isBuiltInFunction()) {
         IAST geoForm = (IAST) ast.arg1();
         int headID = arg1.headID();
         if (headID >= 0) {
@@ -495,16 +495,17 @@ public class ComputationalGeometryFunctions {
   }
   private static class ConvexHullMesh extends AbstractEvaluator {
     /**
-     * Three points are a counter-clockwise turn if ccw > 0, clockwise if ccw < 0, and co-linear if
-     * ccw = 0 because ccw is a determinant that gives twice the signed area of the triangle formed
-     * by p1, p2 and p3. (from Wikipedia)
+     * Three points are a counter-clockwise turn (ccw) if <code>ccw > 0</code>, clockwise if
+     * <code>ccw < 0</code>, and co-linear if <code>ccw = 0</code> because <code>ccw</code> is a
+     * determinant that gives twice the signed area of the triangle formed by p1, p2 and p3. (from
+     * Wikipedia)
      * 
      * @param p1
      * @param p2
      * @param p3
      * @return Det2D[p2 - p1, p3 - p1]
      */
-    private static IExpr ccw(IAST p1, IAST p2, IAST p3) {
+    private static IExpr counterClockwise(IAST p1, IAST p2, IAST p3) {
       IAST v1 = (IAST) F.eval(F.Subtract(p2, p1));
       IAST v2 = (IAST) F.eval(F.Subtract(p3, p1));
       // see LinearAlgebra.determinant2x2();
@@ -562,7 +563,7 @@ public class ComputationalGeometryFunctions {
       ++k1;
       // find point not co-linear with point0 and point1
       for (IAST point : list.subList(k1, list.size())) {
-        if (ccw(point0, point1, point).isZero()) {
+        if (counterClockwise(point0, point1, point).isZero()) {
           ++k1;
         } else {
           break;
@@ -572,7 +573,7 @@ public class ComputationalGeometryFunctions {
       for (IAST point : list.subList(k1, list.size())) {
         IAST top = stack.pop();
         while (!stack.isEmpty()) {
-          IExpr ccw = ccw(stack.peek(), top, point);
+          IExpr ccw = counterClockwise(stack.peek(), top, point);
           if (ccw.isPositive()) {
             break;
           }

@@ -133,7 +133,6 @@ public class EvalEngine implements Serializable {
   }
 
   private static class EvalControlledCallable implements Callable<IExpr> {
-    private Thread thread = null;
     private final EvalEngine fEngine;
     private IExpr fExpr;
     private long fSeconds;
@@ -150,7 +149,6 @@ public class EvalEngine implements Serializable {
 
     @Override
     public IExpr call() {
-      this.thread = Thread.currentThread();
       EvalEngine.set(fEngine);
       try {
         long timeConstrainedMillis = System.currentTimeMillis() + fSeconds * 1000L;
@@ -1009,7 +1007,7 @@ public class EvalEngine implements Serializable {
 
     // don't test for OneIdentity here! OneIdentity will only be used in "structural
     // pattern-matching".
-    // Functions like Times and PLus implement OneIdentity as extra transformation!
+    // Functions like Times and Plus implement OneIdentity as extra transformation!
 
     final IExpr arg1 = ast.arg1();
     if ((result = evalArgs(ast, attributes, false)).isPresent()) {
@@ -1018,7 +1016,7 @@ public class EvalEngine implements Serializable {
 
     if (ISymbol.hasFlatAttribute(attributes)) {
       if (arg1.head().equals(symbol)) {
-        // associative
+        // associative law
         return arg1;
       }
       if (arg1.isUnevaluated() && arg1.first().head().equals(symbol) && arg1.first().isAST()) {
@@ -1028,7 +1026,7 @@ public class EvalEngine implements Serializable {
     }
 
     if ((ISymbol.LISTABLE & attributes) == ISymbol.LISTABLE) {
-      if (symbol.isBuiltInSymbol()) {
+      if (ast.isBuiltInFunction()) {
         if (arg1.isRealVector() && ((IAST) arg1).size() > 1) {
           final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
           if (module instanceof DoubleUnaryOperator) {
@@ -1042,37 +1040,36 @@ public class EvalEngine implements Serializable {
             return ASTRealMatrix.map((IAST) arg1, oper);
           }
         }
+      }
 
-        if (arg1.isList()) {
-          // thread over the list
-          return EvalAttributes.threadList(ast, S.List, ast.head(), ((IAST) arg1).argSize());
-        } else if (arg1.isAssociation()) {
-          // thread over the association
-          return arg1.mapThread(ast, 1);
-        } else if (arg1.isSparseArray()) {
-          return ((ISparseArray) arg1).mapThreadSparse(ast, 1);
-        } else if (arg1.isConditionalExpression()) {
-          IExpr temp = ast.extractConditionalExpression(true);
-          if (temp.isPresent()) {
-            return temp;
-          }
+      if (arg1.isList()) {
+        // thread over the list
+        return EvalAttributes.threadList(ast, S.List, ast.head(), ((IAST) arg1).argSize());
+      } else if (arg1.isAssociation()) {
+        // thread over the association
+        return arg1.mapThread(ast, 1);
+      } else if (arg1.isSparseArray()) {
+        return ((ISparseArray) arg1).mapThreadSparse(ast, 1);
+      } else if (arg1.isConditionalExpression()) {
+        IExpr temp = ast.extractConditionalExpression(true);
+        if (temp.isPresent()) {
+          return temp;
         }
       }
     }
 
     if ((ISymbol.NUMERICFUNCTION & attributes) == ISymbol.NUMERICFUNCTION) {
-      if (fNumericMode //
-          && arg1.isInexactNumber() //
-          && ast.head().isBuiltInSymbol()) {
-        IExpr temp = numericFunction(symbol, ast);
-        if (temp.isPresent()) {
-          return temp;
+      if (arg1.isInexactNumber()) {
+        if (fNumericMode //
+            && ast.isBuiltInFunction()) {
+          IExpr temp = numericFunction(symbol, ast);
+          if (temp.isPresent()) {
+            return temp;
+          }
         }
-      }
-      if (arg1.isIndeterminate()) {
+      } else if (arg1.isIndeterminate()) {
         return S.Indeterminate;
-      }
-      if (arg1.isUndefined()) {
+      } else if (arg1.isUndefined()) {
         return S.Undefined;
       }
     }
@@ -1092,16 +1089,12 @@ public class EvalEngine implements Serializable {
    * @return
    */
   private IExpr numericFunction(final ISymbol symbol, final IAST ast) {
-    IExpr result;
     final IEvaluator evaluator = ((IBuiltInSymbol) symbol).getEvaluator();
     if (evaluator instanceof IFunctionEvaluator) {
       // evaluate a built-in function.
       final IFunctionEvaluator functionEvaluator = (IFunctionEvaluator) evaluator;
       try {
-        result = functionEvaluator.numericFunction(ast, this);
-        if (result.isPresent()) {
-          return result;
-        }
+        return functionEvaluator.numericFunction(ast, this);
       } catch (ValidateException ve) {
         ve.printStackTrace();
         return Errors.printMessage(ast.topHead(), ve, this);
@@ -1246,7 +1239,7 @@ public class EvalEngine implements Serializable {
     int argSize = ast.argSize();
     OptionsResult opres = new OptionsResult(ast, argSize, null);
     if ((expected = functionEvaluator.expectedArgSize(ast)) != null) {
-      if (expected.length == 2 && !ast.head().isBuiltInSymbol()) {
+      if (expected.length == 2 && !ast.isBuiltInFunction()) {
         return null;
       } else if (expected.length == 3 && expected[2] > 0) {
         switch (expected[2]) {
@@ -1419,14 +1412,13 @@ public class EvalEngine implements Serializable {
 
       if ((ISymbol.NUMERICFUNCTION & attributes) == ISymbol.NUMERICFUNCTION) {
         if (fNumericMode //
-            && mutableAST.head().isBuiltInSymbol()//
+            && mutableAST.isBuiltInFunction()//
             && mutableAST.forAll(x -> x.isInexactNumber())) {
           IExpr temp = numericFunction(symbol, mutableAST);
           if (temp.isPresent()) {
             return temp;
           }
-        }
-        if (!((ISymbol.HOLDALL & attributes) == ISymbol.HOLDALL)) {
+        } else if (!((ISymbol.HOLDALL & attributes) == ISymbol.HOLDALL)) {
           if (mutableAST.exists(x -> x.isIndeterminate())) {
             return S.Indeterminate;
           }
@@ -2040,12 +2032,11 @@ public class EvalEngine implements Serializable {
     IExpr result = expr;
 
     try {
-      fRecursionCounter++;
-      stackPush(expr);
-
       if (result.isUnevaluated()) {
         return unevaluatedArg1(result.first());
       }
+      fRecursionCounter++;
+      stackPush(expr);
       fTraceStack.setUp(expr, fRecursionCounter, expr);
       boolean isEvaled = false;
       try {

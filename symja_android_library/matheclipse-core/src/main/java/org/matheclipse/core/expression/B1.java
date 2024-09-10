@@ -39,6 +39,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public final int headID() {
+      return ID.Cos;
+    }
+
+    @Override
     public IASTMutable copy() {
       return new Cos(arg1);
     }
@@ -56,6 +61,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final IBuiltInSymbol head() {
       return S.Csc;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.Csc;
     }
 
     @Override
@@ -79,6 +89,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public final int headID() {
+      return ID.IntegerQ;
+    }
+
+    @Override
     public IASTMutable copy() {
       return new IntegerQ(arg1);
     }
@@ -96,6 +111,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final IBuiltInSymbol head() {
       return S.Line;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.Line;
     }
 
     @Override
@@ -119,8 +139,19 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public final int headID() {
+      return ID.List;
+    }
+
+    @Override
     public IASTMutable copy() {
       return new List(arg1);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public final boolean isList() {
+      return true;
     }
   }
 
@@ -136,6 +167,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final IBuiltInSymbol head() {
       return S.Log;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.Log;
     }
 
     @Override
@@ -159,6 +195,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public final int headID() {
+      return ID.Missing;
+    }
+
+    @Override
     public IASTMutable copy() {
       return new Missing(arg1);
     }
@@ -176,6 +217,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final IBuiltInSymbol head() {
       return S.Not;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.Not;
     }
 
     @Override
@@ -199,6 +245,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public final int headID() {
+      return ID.Point;
+    }
+
+    @Override
     public IASTMutable copy() {
       return new Point(arg1);
     }
@@ -219,6 +270,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public final int headID() {
+      return ID.Return;
+    }
+
+    @Override
     public IASTMutable copy() {
       return new Return(arg1);
     }
@@ -236,6 +292,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final IBuiltInSymbol head() {
       return S.Sin;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.Sin;
     }
 
     @Override
@@ -265,6 +326,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public final int headID() {
+      return ID.Slot;
+    }
+
+    @Override
     public IASTMutable copy() {
       return new Slot(arg1);
     }
@@ -285,6 +351,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public final int headID() {
+      return ID.Tan;
+    }
+
+    @Override
     public IASTMutable copy() {
       return new Tan(arg1);
     }
@@ -302,6 +373,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final IBuiltInSymbol head() {
       return S.Throw;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.Throw;
     }
 
     @Override
@@ -696,6 +772,12 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
   @Override
   public boolean isAST3() {
     return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final boolean isBuiltInFunction() {
+    return true;
   }
 
   /** {@inheritDoc} */

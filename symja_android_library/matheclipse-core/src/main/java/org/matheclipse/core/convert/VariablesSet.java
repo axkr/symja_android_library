@@ -56,7 +56,7 @@ public class VariablesSet {
           fCollection.add(list);
         }
       } else {
-        if (!list.head().isBuiltInSymbol()
+        if (!list.isBuiltInFunction()
             || ((ISymbol) list.head()).isNumericFunctionAttribute()) {
           if (!list.isNumericFunction(true)) {
             fCollection.add(list);

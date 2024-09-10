@@ -650,9 +650,8 @@ public abstract class AbstractAssumptions implements IAssumptions {
       return false;
     }
 
-    IExpr head = ast.head();
-    if (head.isBuiltInSymbol()) {
-      IBuiltInSymbol symbol = (IBuiltInSymbol) head;
+    if (ast.isBuiltInFunction()) {
+      IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
       int ordinal = symbol.ordinal();
       if (ordinal >= ID.Log && ordinal <= ID.Times) {
         int size = ast.size();

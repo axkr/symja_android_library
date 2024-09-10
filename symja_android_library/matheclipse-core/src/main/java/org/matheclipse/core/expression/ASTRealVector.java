@@ -48,7 +48,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  * @see AST
  */
-public class ASTRealVector extends AbstractAST
+public final class ASTRealVector extends AbstractAST
     implements Externalizable, RandomAccess, IAtomicEvaluate {
 
   public ASTRealVector() {

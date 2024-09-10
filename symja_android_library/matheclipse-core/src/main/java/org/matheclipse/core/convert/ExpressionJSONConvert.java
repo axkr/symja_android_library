@@ -140,7 +140,7 @@ public class ExpressionJSONConvert {
   // IExpr arg = list.getAST(i);
   // if (arg.isAST()) {
   // IAST ast = (IAST) arg;
-  // if (ast.head().isBuiltInSymbol()) {
+  // if (ast.isBuiltInFunction()) {
   // StringBuilder buf = new StringBuilder();
   // IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
   // IEvaluator evaluator = symbol.getEvaluator();

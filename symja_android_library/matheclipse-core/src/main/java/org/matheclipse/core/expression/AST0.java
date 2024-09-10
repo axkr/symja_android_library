@@ -17,6 +17,7 @@ import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -343,6 +344,13 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
     return arg0;
   }
 
+  @Override
+  public final int headID() {
+    return (arg0 instanceof IBuiltInSymbol) ? //
+        ((IBuiltInSymbol) arg0).ordinal() : //
+        ID.UNKNOWN;
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean isAST0() {
@@ -365,6 +373,18 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
   @Override
   public boolean isAST3() {
     return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final boolean isBuiltInFunction() {
+    return arg0 instanceof IBuiltInSymbol;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final boolean isList() {
+    return arg0 == S.List;
   }
 
   /** {@inheritDoc} */

@@ -75,6 +75,7 @@ public class Errors {
       "base", "Requested base `1` in `2` should be between 2 and `3`.", //
       "bbrac",
       "`1` is only applicable for univariate real functions and requires two real starting values that bracket the root.", //
+      "bdmtrc", "`1` does not define a metric in `2` dimensions.", //
       "bdpt", "Evaluation point `1` is not a valid set of polar or hyperspherical coordinates.", //
       "bset",
       "The second argument `1` of Element should be one of: Primes, Integers, Rationals, Algebraics, Reals, Complexes or Booleans.", //
@@ -227,6 +228,7 @@ public class Errors {
       "nconvss",
       "The argument `1` cannot be converted to a NumericArray of type `2` using method `3`", //
       "ncvi", "NIntegrate failed to converge after `1` refinements in `2` in the region `3`.", //
+      "ndimv", "There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.", //
       "nliter", "Non-list iterator `1` at position `2` does not evaluate to a real numeric value.", //
       "nil", "unexpected NIL expression encountered.", //
       "ninv", "`1` is not invertible modulo `2`.", //
@@ -333,7 +335,9 @@ public class Errors {
       "rvalue", "`1` is not a variable with a value, so its value cannot be changed.", //
       "rvec", "Input `1` is not a vector of reals or integers.", //
       "rvec2", "Input `1` is not a real-valued vector.", //
-      "rubiendless", "Endless iteration detected in `1` for Rubi pattern-matching rules.", //
+      "rubiendless",
+      "Endless iteration detected in `1` (rule number `2`) for Rubi pattern-matching rules.", //
+      "sclr", "The scalar expression `1` does not have a `2`.", //
       "sdmint",
       "The number of subdivisions given in position `1` of `2` should be a positive machine-sized integer.", //
       "seqs",
@@ -367,6 +371,7 @@ public class Errors {
       "tolnn", "Tolerance specification `1` must be a non-negative number.", //
       "udist", "The specification `1` is not a random distribution recognized by the system.", //
       "unkunit", "Unable to interpret unit specification `1`.", //
+      "unsdst", "The first argument `1` is not a valid distribution.", //
       "unsupported", "`1` currently not supported in `2`.", //
       "usraw", "Cannot unset object `1`.", //
       "vctnln",

@@ -28,7 +28,7 @@ import org.organicdesign.fp.collections.UnmodIterator;
 import org.organicdesign.fp.collections.UnmodMap.UnEntry;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
-public class ASTAssociation extends ASTRRBTree implements IAssociation {
+public final class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   /**
    * Map the <code>IExpr()</code> keys to the index of the values in this AST.
@@ -62,7 +62,7 @@ public class ASTAssociation extends ASTRRBTree implements IAssociation {
   }
 
   @Override
-  public boolean append(IExpr expr) {
+  public boolean append(IExpr expr) throws ArgumentTypeException {
     if (expr.isRuleAST() || size() == 0) {
       return super.append(expr);
     }
