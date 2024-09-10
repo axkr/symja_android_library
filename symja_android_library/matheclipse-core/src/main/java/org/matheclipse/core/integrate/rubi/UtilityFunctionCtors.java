@@ -55,10 +55,7 @@ public class UtilityFunctionCtors {
   public static final ISymbol Z = initFinalHiddenSymbol("Z");
 
   public static ISymbol Dist = F.$rubi("Dist");
-  // public static ISymbol IntegerPowerQ = F.$rubi("IntegerPowerQ");
-  // public static ISymbol FractionalPowerQ = F.$rubi("FractionalPowerQ");
 
-  // public static ISymbol EqQ = F.$rubi("EqQ");
   public static ISymbol GeQ = F.$rubi("GeQ");
   public static ISymbol GtQ = F.$rubi("GtQ");
   public static ISymbol IGtQ = F.$rubi("IGtQ");
@@ -69,7 +66,6 @@ public class UtilityFunctionCtors {
   public static ISymbol LtQ = F.$rubi("LtQ");
   public static ISymbol LeQ = F.$rubi("LeQ");
   public static ISymbol NegQ = F.$rubi("NegQ");
-  // public static ISymbol NeQ = F.$rubi("NeQ");
   public static ISymbol PolyQ = F.$rubi("PolyQ");
   public static ISymbol PosQ = F.$rubi("PosQ");
 
@@ -79,6 +75,7 @@ public class UtilityFunctionCtors {
   public static ISymbol FracPart = F.$rubi("FracPart");
   public static ISymbol IntPart = F.$rubi("IntPart");
   public static ISymbol Simp = F.$rubi("Simp");
+  public static ISymbol Star = F.$rubi("Star");
   public static ISymbol Unintegrable = F.$rubi("Unintegrable");
 
   public static ISymbol NormalizeIntegrand = F.$rubi("NormalizeIntegrand");
@@ -139,7 +136,7 @@ public class UtilityFunctionCtors {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.argSize() == 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
-        return arg1.head().equals(F.Power) ? S.True : S.False;
+        return arg1.head().equals(S.Power) ? S.True : S.False;
       }
       return S.False;
     }
@@ -150,7 +147,7 @@ public class UtilityFunctionCtors {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.argSize() == 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
-        return arg1.head().equals(F.Times) ? S.True : S.False;
+        return arg1.head().equals(S.Times) ? S.True : S.False;
       }
       return S.False;
     }
@@ -161,18 +158,17 @@ public class UtilityFunctionCtors {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.argSize() == 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
-        return arg1.head().equals(F.Plus) ? S.True : S.False;
+        return arg1.head().equals(S.Plus) ? S.True : S.False;
       }
       return S.False;
     }
   });
-
   static ISymbol NonsumQ = F.$rubi("NonsumQ", new AbstractCoreFunctionEvaluator() {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.argSize() == 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
-        return arg1.head().equals(F.Plus) ? S.False : S.True;
+        return arg1.head().equals(S.Plus) ? S.False : S.True;
       }
       return S.False;
     }
@@ -184,7 +180,7 @@ public class UtilityFunctionCtors {
         public IExpr evaluate(IAST ast, EvalEngine engine) {
           if (ast.argSize() == 1) {
             IExpr arg1 = engine.evaluate(ast.arg1());
-            return arg1.isPowerInteger() ? S.True : S.False;
+            return arg1.isPower() && arg1.exponent().isInteger() ? S.True : S.False;
           }
           return S.False;
         }
@@ -196,7 +192,7 @@ public class UtilityFunctionCtors {
         public IExpr evaluate(IAST ast, EvalEngine engine) {
           if (ast.argSize() == 1) {
             IExpr arg1 = engine.evaluate(ast.arg1());
-            return arg1.isPowerFraction() ? S.True : S.False;
+            return arg1.isPower() && arg1.exponent().isFraction() ? S.True : S.False;
           }
           return S.False;
         }
@@ -424,14 +420,31 @@ public class UtilityFunctionCtors {
       if (ast.argSize() == 2) {
         // TODO implement Refine
         // Or(Quiet(PossibleZeroQ(Subtract(u,v))),SameQ(Refine(Equal(u,v)),True)))
-        IExpr u = ast.arg1();
-        IExpr v = ast.arg2();
-        if (u.equals(v)) {
+        IExpr arg1 = ast.arg1();
+        IExpr arg2 = ast.arg2();
+        if (arg1.equals(arg2)) {
           return S.True;
         }
-        return u.subtract(v).isPossibleZero(true) ? S.True : S.False;
+        return arg1.subtract(arg2).isPossibleZero(true) ? S.True : S.False;
       }
       return S.False;
+    }
+  });
+
+  static ISymbol NeQ = F.$rubi("NeQ", new AbstractCoreFunctionEvaluator() {
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        // TODO implement Refine
+        // Or(Quiet(PossibleZeroQ(Subtract(u,v))),SameQ(Refine(Equal(u,v)),True)))
+        IExpr arg1 = ast.arg1();
+        IExpr arg2 = ast.arg2();
+        if (arg1.equals(arg2)) {
+          return S.False;
+        }
+        return arg1.subtract(arg2).isPossibleZero(true) ? S.False : S.True;
+      }
+      return S.True;
     }
   });
 
@@ -615,13 +628,13 @@ public class UtilityFunctionCtors {
     return F.binaryAST2(F.$rubi("FixIntRule"), a0, a1);
   }
 
-  public static IAST FixIntRules() {
-    return F.headAST0(F.$rubi("FixIntRules"));
-  }
+  // public static IAST FixIntRules() {
+  // return F.headAST0(F.$rubi("FixIntRules"));
+  // }
 
-  public static IAST FixIntRules(final IExpr a0) {
-    return F.unaryAST1(F.$rubi("FixIntRules"), a0);
-  }
+  // public static IAST FixIntRules(final IExpr a0) {
+  // return F.unaryAST1(F.$rubi("FixIntRules"), a0);
+  // }
 
   public static IAST FixRhsIntRule(final IExpr a0, final IExpr a1) {
     return F.binaryAST2(F.$rubi("FixRhsIntRule"), a0, a1);
@@ -1340,24 +1353,6 @@ public class UtilityFunctionCtors {
     return F.unaryAST1(F.$rubi("NegSumBaseQ"), a0);
   }
 
-
-  static ISymbol NeQ = F.$rubi("NeQ", new AbstractCoreFunctionEvaluator() {
-    @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.argSize() == 2) {
-        // TODO implement Refine
-        // ! Or(Quiet(PossibleZeroQ(Subtract(u,v))),SameQ(Refine(Equal(u,v)),True)))
-        IExpr u = ast.arg1();
-        IExpr v = ast.arg2();
-        if (u.equals(v)) {
-          return S.False;
-        }
-        return u.subtract(v).isPossibleZero(true) ? S.False : S.True;
-      }
-      return S.True;
-    }
-  });
-
   private static final class NeQ extends B2 {
     public NeQ() {
       super();
@@ -1833,6 +1828,26 @@ public class UtilityFunctionCtors {
     return F.unaryAST1(F.$rubi("SignOfFactor"), a0);
   }
 
+  private static final class Simp1 extends B1 {
+    public Simp1() {
+      super();
+    }
+
+    Simp1(IExpr arg1) {
+      super(arg1);
+    }
+
+    @Override
+    public final ISymbol head() {
+      return Simp;
+    }
+
+    @Override
+    public IASTMutable copy() {
+      return new Simp1(arg1);
+    }
+  }
+
   private static final class Simp extends B2 {
     public Simp() {
       super();
@@ -1851,6 +1866,30 @@ public class UtilityFunctionCtors {
     public IASTMutable copy() {
       return new Simp(arg1, arg2);
     }
+  }
+
+  private static final class Star extends B2 {
+    public Star() {
+      super();
+    }
+
+    Star(IExpr arg1, IExpr arg2) {
+      super(arg1, arg2);
+    }
+
+    @Override
+    public final ISymbol head() {
+      return Star;
+    }
+
+    @Override
+    public IASTMutable copy() {
+      return new Star(arg1, arg2);
+    }
+  }
+
+  public static IAST Simp(final IExpr a0) {
+    return new Simp1(a0);
   }
 
   public static IAST Simp(final IExpr a0, final IExpr a1) {
@@ -1948,6 +1987,10 @@ public class UtilityFunctionCtors {
   public static IAST SquareRootOfQuadraticSubst(final IExpr a0, final IExpr a1, final IExpr a2,
       final IExpr a3) {
     return quaternary(F.$rubi("SquareRootOfQuadraticSubst"), a0, a1, a2, a3);
+  }
+
+  public static IAST Star(final IExpr a0, final IExpr a1) {
+    return new Star(a0, a1);
   }
 
   public static IAST StopFunctionQ(final IExpr a0) {
@@ -2525,6 +2568,7 @@ public class UtilityFunctionCtors {
     init = org.matheclipse.core.integrate.rubi.IntRules227.RULES;
     init = org.matheclipse.core.integrate.rubi.IntRules228.RULES;
     init = org.matheclipse.core.integrate.rubi.IntRules229.RULES;
+
     init = org.matheclipse.core.integrate.rubi.IntRules230.RULES;
     init = org.matheclipse.core.integrate.rubi.IntRules231.RULES;
     init = org.matheclipse.core.integrate.rubi.IntRules232.RULES;
@@ -2535,6 +2579,7 @@ public class UtilityFunctionCtors {
     init = org.matheclipse.core.integrate.rubi.IntRules237.RULES;
     init = org.matheclipse.core.integrate.rubi.IntRules238.RULES;
     init = org.matheclipse.core.integrate.rubi.IntRules239.RULES;
+
     init = org.matheclipse.core.integrate.rubi.IntRules240.RULES;
     init = org.matheclipse.core.integrate.rubi.IntRules241.RULES;
     init = org.matheclipse.core.integrate.rubi.IntRules242.RULES;
@@ -2545,6 +2590,7 @@ public class UtilityFunctionCtors {
     init = org.matheclipse.core.integrate.rubi.IntRules247.RULES;
     init = org.matheclipse.core.integrate.rubi.IntRules248.RULES;
     init = org.matheclipse.core.integrate.rubi.IntRules249.RULES;
+
     init = org.matheclipse.core.integrate.rubi.IntRules250.RULES;
     init = org.matheclipse.core.integrate.rubi.IntRules251.RULES;
     init = org.matheclipse.core.integrate.rubi.IntRules252.RULES;
@@ -2555,6 +2601,7 @@ public class UtilityFunctionCtors {
     init = org.matheclipse.core.integrate.rubi.IntRules257.RULES;
     init = org.matheclipse.core.integrate.rubi.IntRules258.RULES;
     init = org.matheclipse.core.integrate.rubi.IntRules259.RULES;
+
     init = org.matheclipse.core.integrate.rubi.IntRules260.RULES;
     init = org.matheclipse.core.integrate.rubi.IntRules261.RULES;
     init = org.matheclipse.core.integrate.rubi.IntRules262.RULES;
@@ -2640,6 +2687,7 @@ public class UtilityFunctionCtors {
     init = org.matheclipse.core.integrate.rubi.IntRules335.RULES;
     init = org.matheclipse.core.integrate.rubi.IntRules336.RULES;
     init = org.matheclipse.core.integrate.rubi.IntRules337.RULES;
+
   }
 
   public static void getUtilityFunctionsRuleASTRubi45() {
@@ -2683,6 +2731,7 @@ public class UtilityFunctionCtors {
     ast = org.matheclipse.core.integrate.rubi.UtilityFunctions37.RULES;
     ast = org.matheclipse.core.integrate.rubi.UtilityFunctions38.RULES;
     ast = org.matheclipse.core.integrate.rubi.UtilityFunctions39.RULES;
+
     // org.matheclipse.core.integrate.rubi.UtilityFunctions.init();
   }
 

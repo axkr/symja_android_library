@@ -8,7 +8,6 @@ import static org.matheclipse.core.expression.F.$s;
 import static org.matheclipse.core.expression.F.And;
 import static org.matheclipse.core.expression.F.AppendTo;
 import static org.matheclipse.core.expression.F.AtomQ;
-import static org.matheclipse.core.expression.F.Block;
 import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C2;
@@ -44,7 +43,6 @@ import static org.matheclipse.core.expression.F.Re;
 import static org.matheclipse.core.expression.F.Rest;
 import static org.matheclipse.core.expression.F.SameQ;
 import static org.matheclipse.core.expression.F.Set;
-import static org.matheclipse.core.expression.F.SetAttributes;
 import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Slot1;
 import static org.matheclipse.core.expression.F.Sqr;
@@ -60,8 +58,6 @@ import static org.matheclipse.core.expression.F.v_;
 import static org.matheclipse.core.expression.F.x_Symbol;
 import static org.matheclipse.core.expression.S.Cos;
 import static org.matheclipse.core.expression.S.False;
-import static org.matheclipse.core.expression.S.HoldAll;
-import static org.matheclipse.core.expression.S.Integrate;
 import static org.matheclipse.core.expression.S.Null;
 import static org.matheclipse.core.expression.S.Sin;
 import static org.matheclipse.core.expression.S.a;
@@ -78,8 +74,6 @@ import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Coeff;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.ComplexNumberQ;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Dist;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.EqQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.FixIntRule;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.FixIntRules;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.FreeFactors;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.FreeTerms;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.GtQ;
@@ -145,10 +139,10 @@ ISetDelayed(684,IntTerm(Times(c_DEFAULT,Power(v_,m_DEFAULT)),x_Symbol),
 ISetDelayed(685,IntTerm(u_,x_Symbol),
     Dist(FreeFactors(u,x),Integrate(NonfreeFactors(u,x),x),x)),
 ISetDelayed(686,RuleName($p("name")),
-    CompoundExpression(AppendTo($s("§$rulenamelist"),$s("name")),Null)),
+          CompoundExpression(AppendTo($s("§$rulenamelist"), $s("name")), Null))
       // ISetDelayed(687,FixIntRules(),
       // CompoundExpression(Set(DownValues(Integrate),FixIntRules(DownValues(Integrate))),Null)),
-ISetDelayed(688,FixIntRules($p("rulelist")),
-    Block(List(Integrate,$rubi("Subst"),$rubi("Simp"),$rubi("Dist")),CompoundExpression(SetAttributes(List($rubi("Simp"),$rubi("Dist"),Integrate,$rubi("Subst")),HoldAll),Map(Function(FixIntRule(Slot1,Part(Slot1,C1,C1,C2,C1))),$s("rulelist")))))
+//ISetDelayed(688,FixIntRules($p("rulelist")),
+//    Block(List(Integrate,$rubi("Subst"),$rubi("Simp"),$rubi("Dist")),CompoundExpression(SetAttributes(List($rubi("Simp"),$rubi("Dist"),Integrate,$rubi("Subst")),HoldAll),Map(Function(FixIntRule(Slot1,Part(Slot1,C1,C1,C2,C1))),$s("rulelist")))))
   );
 }
