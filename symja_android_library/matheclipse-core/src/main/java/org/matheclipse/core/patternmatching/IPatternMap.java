@@ -3650,4 +3650,16 @@ public interface IPatternMap {
   public IExpr substitutePatterns(final IExpr rhsExpr, final IExpr nilOrEmptySequence);
 
   public boolean setOptionsPattern(final EvalEngine engine, ISymbol lhsHead);
+
+  /**
+   * Sets the following flags for pattern matching processing: {@link IAST#CONTAINS_PATTERN},
+   * {@link IAST#CONTAINS_NO_PATTERN}, {@link IAST#CONTAINS_DEFAULT_PATTERN},
+   * {@link IAST#CONTAINS_PATTERN_SEQUENCE}
+   * 
+   * @param lhsPatternAST
+   */
+  public static void setPatternFlags(IAST lhsPatternAST) {
+    // set for example IAST.CONTAINS_DEFAULT_PATTERN after substituting a pattern in lhsPatternAST
+    lhsPatternAST.isFreeOfPatterns();
+  }
 }

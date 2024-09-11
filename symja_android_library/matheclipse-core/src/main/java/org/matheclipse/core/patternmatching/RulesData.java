@@ -18,6 +18,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IEvaluator;
@@ -505,6 +506,9 @@ public final class RulesData implements Serializable {
                 // compare with '==' operator because F.x_ has unique address:
                 patternMatcher.fLhsPatternExpr =
                     F.subst(patternMatcher.fLhsPatternExpr, v -> v == F.x_, integrateVar);
+                if (patternMatcher.fLhsPatternExpr instanceof IASTMutable) {
+                  IPatternMap.setPatternFlags((IASTMutable) patternMatcher.fLhsPatternExpr);
+                }
                 result = patternMatcher.matchIntegrateFunction(expr, patternMap, engine);
               } else {
                 result = pmEvaluator.eval(expr, engine);

@@ -3150,6 +3150,9 @@ public interface IExpr
   /**
    * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the
    * expression itself, are no pattern objects.
+   * <p>
+   * Sets the following flags: {@link IAST#CONTAINS_PATTERN}, {@link IAST#CONTAINS_NO_PATTERN},
+   * {@link IAST#CONTAINS_DEFAULT_PATTERN}, {@link IAST#CONTAINS_PATTERN_SEQUENCE}
    *
    * @return <code>true</code> if the expression contains no <code>IPatternObject</code>.
    */

@@ -353,6 +353,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       }
       break;
     }
+    IPatternMap.setPatternFlags(lhsPatternAST);
     return new IASTAppendable[] {lhsPatternAST, lhsEvalAST};
   }
 
@@ -397,6 +398,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         }
         iIndex++;
       }
+      IPatternMap.setPatternFlags(lhsPatternAST);
       return new IAST[] {lhsPatternAST, lhsEvalAST};
     }
     return new IAST[] {lhsPattern, lhsEval};
@@ -774,8 +776,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
               seq.appendAll(lhsEvalAST, lastPosition, lhsEvalSize);
               if (((IPatternSequence) patternTest.arg1()).matchPatternSequence(seq, fPatternMap,
                   lhsPatternAST.topHead())) {
-                if (matchAST(lhsPatternAST.removeFromEnd(lastPosition),
-                    lhsEvalAST.removeFromEnd(lastPosition), engine, stackMatcher)) {
+                IAST lhsPatternEndRemoved = lhsPatternAST.removeFromEnd(lastPosition);
+                IPatternMap.setPatternFlags(lhsPatternEndRemoved);
+                if (matchAST(lhsPatternEndRemoved, lhsEvalAST.removeFromEnd(lastPosition), engine,
+                    stackMatcher)) {
                   return fPatternMap.isPatternTest(patternTest.arg1(), patternTest.arg2(), engine);
                 }
                 return false;
@@ -1044,7 +1048,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         IAST lhsPatternList = lhsPatternAST;
         if (lhsPatternAST.isAssociation()) {
           lhsPatternList = ((IAssociation) lhsPatternAST).normal(false);
-          ((IASTMutable) lhsPatternList).setEvalFlags(lhsPatternAST.getEvalFlags());
+          lhsPatternList.setEvalFlags(lhsPatternAST.getEvalFlags());
           ((IASTMutable) lhsPatternList).set(0, S.Association);
         }
         IAssociation lhsEvalAssociation = (IAssociation) lhsEvalExpr;
@@ -1387,8 +1391,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       }
     }
     int lhsEvalIndex = 2;
-    IAST reducedLHSPatternAST =
-        lhsPatternAST.removeFromStart(position + 1).addEvalFlags(IAST.CONTAINS_PATTERN_SEQUENCE);
+    IAST reducedLHSPatternAST = lhsPatternAST.removeFromStart(position + 1);
+    IPatternMap.setPatternFlags(reducedLHSPatternAST);
     boolean matched = false;
     final IExpr[] patternValues = fPatternMap.copyPattern();
     final int lhsEvalSize = lhsEvalAST.size();
@@ -1438,11 +1442,9 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     }
     if (defaultValueMatched[0]) {
       if (cloned.isOneIdentityAST1()) {
-        IExpr arg1 = cloned.arg1();
-        // set IAST.CONTAINS_DEFAULT_PATTERN is necessary by calling #isFreeOfPatterns()
-        arg1.isFreeOfPatterns();
-        return arg1;
+        return cloned.arg1();
       }
+      IPatternMap.setPatternFlags(cloned);
       return cloned;
     }
     return F.NIL;
@@ -1485,12 +1487,25 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
   }
 
   /**
-   * Checks if the two expressions match each other
-   *
-   * @return
+   * Checks if the two expressions match each other.
+   * 
+   * 
+   * @param lhsPatternExpr the left-hand-side pattern expression
+   * @param lhsEvalExpr the left-hand-side expression which should match <code>lhsPatternExpr</code>
+   * @param engine the evaluation engine
+   * @return <code>true</code> if the two expressions match each other
    */
   protected boolean matchExpr(IExpr lhsPatternExpr, final IExpr lhsEvalExpr, EvalEngine engine) {
-    return matchExpr(lhsPatternExpr, lhsEvalExpr, engine, new StackMatcher(engine));
+    if (lhsPatternExpr instanceof IPatternObject) {
+      StackMatcher stackMatcher = new StackMatcher(engine);
+      boolean matched =
+          matchPattern((IPatternObject) lhsPatternExpr, lhsEvalExpr, stackMatcher, engine);
+      return matched ? stackMatcher.matchRest() : false;
+    } else if (lhsPatternExpr.isASTOrAssociation()) {
+      StackMatcher stackMatcher = new StackMatcher(engine);
+      return matchASTSpecialBuiltIn((IAST) lhsPatternExpr, lhsEvalExpr, engine, stackMatcher);
+    }
+    return lhsPatternExpr.equals(lhsEvalExpr);
   }
 
   /**
@@ -1499,9 +1514,9 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
    *
    * @param lhsPatternExpr the left-hand-side pattern expression
    * @param lhsEvalExpr the left-hand-side expression which should match <code>lhsPatternExpr</code>
-   * @param engine
-   * @param stackMatcher a stack of entrie of expressions, which have to match each other.
-   * @return
+   * @param engine the evaluation engine
+   * @param stackMatcher a stack of entries of expressions, which have to match each other.
+   * @return <code>true</code> if the two expressions match each other
    */
   protected boolean matchExpr(IExpr lhsPatternExpr, final IExpr lhsEvalExpr, EvalEngine engine,
       StackMatcher stackMatcher) {
@@ -1513,18 +1528,12 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     } else {
       matched = lhsPatternExpr.equals(lhsEvalExpr);
     }
-    if (matched) {
-      return stackMatcher.matchRest();
-    }
-    return false;
+    return matched ? stackMatcher.matchRest() : false;
   }
 
   private boolean matchTrue(IExpr lhsPatternExpr, EvalEngine engine, StackMatcher stackMatcher) {
     IExpr lhsTest = fPatternMap.substituteSymbols(lhsPatternExpr, F.NIL);
-    if (engine.evalTrue(lhsTest)) {
-      return stackMatcher.matchRest();
-    }
-    return false;
+    return engine.evalTrue(lhsTest) ? stackMatcher.matchRest() : false;
   }
 
   /**
@@ -1746,11 +1755,9 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     }
     if (defaultValueMatched) {
       if (cloned.isOneIdentityAST1()) {
-        IExpr arg1 = cloned.arg1();
-        // set IAST.CONTAINS_DEFAULT_PATTERN is necessary by calling #isFreeOfPatterns()
-        arg1.isFreeOfPatterns();
-        return arg1;
+        return cloned.arg1();
       }
+      IPatternMap.setPatternFlags(cloned);
       return cloned;
     }
     return F.NIL;
