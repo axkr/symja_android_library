@@ -525,11 +525,8 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public int complexSign() {
-    final int i = fApcomplex.real().signum();
-    if (i == 0) {
-      return fApcomplex.imag().signum();
-    }
-    return i;
+    final int signum = fApcomplex.real().signum();
+    return (signum == 0) ? fApcomplex.imag().signum() : signum;
   }
 
   /** @return */

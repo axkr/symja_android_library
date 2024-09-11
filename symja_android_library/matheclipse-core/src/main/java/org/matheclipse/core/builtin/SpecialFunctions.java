@@ -60,6 +60,7 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -1724,15 +1725,17 @@ public class SpecialFunctions {
             return F.CComplexInfinity;
           }
         }
+        if (arg2.isZero() && arg1.isNumber()) {
+          IReal realPart = ((INumber) arg1).re();
+          if (realPart.isLT(F.CN1)) {
+            // https://github.com/mtommila/apfloat/issues/54
+            // https://functions.wolfram.com/GammaBetaErf/PolyGamma2/03/01/01/0002/
+            return F.C0;
+          }
+        }
         if (engine.isNumericMode()) {
           if (arg1.isZero()) {
             return arg2.digamma();
-            // if (arg2 instanceof ApfloatNum) {
-            // return e1ApfloatArg(((ApfloatNum) arg2).apfloatValue());
-            // }
-            // if (arg2 instanceof ApcomplexNum) {
-            // return e1ApcomplexArg(((ApcomplexNum) arg2).apcomplexValue());
-            // }
           }
           long n = arg1.toLongDefault();
           if (n != Long.MIN_VALUE && arg2.isNumber()) {

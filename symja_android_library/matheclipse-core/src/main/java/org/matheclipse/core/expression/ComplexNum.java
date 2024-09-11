@@ -577,11 +577,8 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public int complexSign() {
-    final int i = (int) Math.signum(fComplex.getReal());
-    if (i == 0) {
-      return (int) Math.signum(fComplex.getImaginary());
-    }
-    return i;
+    final int signum = (int) Math.signum(fComplex.getReal());
+    return (signum == 0) ? (int) Math.signum(fComplex.getImaginary()) : signum;
   }
 
   public Complex complexValue() {

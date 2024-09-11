@@ -325,13 +325,8 @@ public class ComplexSym implements IComplex {
 
   @Override
   public int complexSign() {
-    final int i = fReal.numerator().complexSign();
-
-    if (i == 0) {
-      return fImaginary.numerator().complexSign();
-    }
-
-    return i;
+    final int signum = fReal.numerator().complexSign();
+    return (signum == 0) ? fImaginary.numerator().complexSign() : signum;
   }
 
   /** {@inheritDoc} */

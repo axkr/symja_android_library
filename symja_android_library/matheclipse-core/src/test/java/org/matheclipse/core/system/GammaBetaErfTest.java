@@ -1237,8 +1237,16 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
     // TODO
     check("N(PolyGamma(-2,3/2),30)", //
         "PolyGamma(-2,1.5)");
+    check("N(PolyGamma(-I*1.0,0),30)", //
+        "PolyGamma(I*(-1),0)");
+    // TODO calculate for complex n:
+    checkNumeric("PolyGamma(6+I,2.5+3*I)", //
+        "PolyGamma(6.0+I*1.0,2.5+I*3.0)");
+
     check("N(PolyGamma(-2,0),30)", //
-        "PolyGamma(-2,0)");
+        "0");
+    check("N(PolyGamma(-2-I*1,0),30)", //
+        "0");
 
     check("PolyGamma(0,-42)", //
         "ComplexInfinity");
@@ -1257,10 +1265,10 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
     check("PolyGamma(-2)", //
         "ComplexInfinity");
 
-    // TODO calculate for complex n:
-    checkNumeric("PolyGamma(6 + I, 2.5 + 3 I)", //
-        "PolyGamma(6.0+I*1.0,2.5+I*3.0)");
-
+    checkNumeric("PolyGamma(-2.5 + 3*I)", //
+        "1.4452083452957394+I*2.358508608801951");
+    checkNumeric("PolyGamma(2.5 + 3*I)", //
+        "1.2812739190662312+I*0.9798053153445596");
 
     checkNumeric("PolyGamma(0, 0.166667)", //
         "-6.332115068746184");
