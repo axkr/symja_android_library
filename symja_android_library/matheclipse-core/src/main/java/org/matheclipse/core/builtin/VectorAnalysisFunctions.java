@@ -1189,7 +1189,7 @@ public class VectorAnalysisFunctions {
     private static IExpr laplacianCartesian(IAST f, IAST variables) {
       VariablesSet variablesSet = new VariablesSet(f);
       IASTAppendable newVariableList = F.ListAlloc(variables.size());
-      for (int i = 1; i <= variables.size(); i++) {
+      for (int i = 1; i < variables.size(); i++) {
         if (variablesSet.contains(variables.get(i))) {
           newVariableList.append(variables.get(i));
         }
