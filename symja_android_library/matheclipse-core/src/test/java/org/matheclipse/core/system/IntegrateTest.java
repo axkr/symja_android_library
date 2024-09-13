@@ -602,4 +602,19 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "6.36777");
   }
 
+  @Test
+  public void testXReciprocalIssue1064() {
+    // message - NIntegrate: maximal count (10,000) exceeded.
+    check("NIntegrate(1/x, {x,0,1},Method->\"GaussKronrod\")", //
+        "NIntegrate(1/x,{x,0,1},Method->GaussKronrod)");
+    check("NIntegrate(1/x, {x,0,1},Method->\"LegendreGauss\")", //
+        "10.37476");
+    check("N(Integrate(1/x, {x,0,1}))", //
+        "10.37476");
+
+    // message - Integrate: Integral of 1/x does not converge on {x,0,1}.
+    check("Integrate(1/x, {x,0,1})", //
+        "Integrate(1/x,{x,0,1})");
+  }
+
 }

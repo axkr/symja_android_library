@@ -132,6 +132,7 @@ public class Errors {
       "herm", "The matrix `1` is not hermitian or real and symmetric.", //
       "idim", "`1` and `2` must have the same length.", //
       "idir", "Direction vector `1` has zero magnitude.", //
+      "idiv", "Integral of `1` does not converge on `2`.", //
       "ifun", "Inverse functions are being used. Values may be lost for multivalued inverses.", //
       "ilsmn",
       "Single or list of non-negative machine-sized integers expected at position `1` of `2`.", //

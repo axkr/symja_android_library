@@ -308,7 +308,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           IAST copy = holdallAST.setAtCopy(2, xList.arg1());
           IExpr temp = engine.evaluate(copy);
           if (temp.isFreeAST(S.Integrate)) {
-            return definiteIntegral(temp, xList, engine);
+            return definiteIntegral(temp, xList, holdallAST, engine);
           }
           return F.NIL;
         }
@@ -633,7 +633,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * @param engine the evaluation engine
    * @return
    */
-  private static IExpr definiteIntegral(IExpr function, IAST xValueList, EvalEngine engine) {
+  private static IExpr definiteIntegral(IExpr function, IAST xValueList, IAST originalAST,
+      EvalEngine engine) {
     // see Rubi rule for definite integrals
     IExpr x = xValueList.arg1();
     IExpr lower = xValueList.arg2();
@@ -653,11 +654,21 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     }
     IExpr lowerLimit = engine.evaluate(F.Limit(function, F.Rule(x, lower), lowerDirection));
     if (!lowerLimit.isFree(S.DirectedInfinity, true) || !lowerLimit.isFree(S.Indeterminate, true)) {
+      if (lowerLimit.isDirectedInfinity() || lowerLimit.isIndeterminate()) {
+        // Integral of `1` does not converge on `2`.
+        return Errors.printMessage(S.Integrate, "idiv", F.List(originalAST.arg1(), xValueList),
+            engine);
+      }
       LOGGER.log(engine.getLogLevel(), "Not integrable: {} for limit {} -> {}", function, x, lower);
       return F.NIL;
     }
     IExpr upperLimit = engine.evaluate(F.Limit(function, F.Rule(x, upper), upperDirection));
     if (!upperLimit.isFree(S.DirectedInfinity, true) || !upperLimit.isFree(S.Indeterminate, true)) {
+      if (upperLimit.isDirectedInfinity() || upperLimit.isIndeterminate()) {
+        // Integral of `1` does not converge on `2`.
+        return Errors.printMessage(S.Integrate, "idiv", F.List(originalAST.arg1(), xValueList),
+            engine);
+      }
       LOGGER.log(engine.getLogLevel(), "Not integrable: {} for limit {} -> {}", function, x, upper);
       return F.NIL;
     }

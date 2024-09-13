@@ -27,7 +27,6 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.integral.ClenshawCurtis;
 import org.matheclipse.core.numerics.integral.GaussLobatto;
@@ -109,8 +108,6 @@ public class NIntegrate extends AbstractFunctionEvaluator {
    */
   public static double integrate(String method, IAST list, final double min, final double max,
       IExpr function, int maxPoints, int maxIterations) throws MathIllegalStateException {
-    GaussIntegratorFactory factory = new GaussIntegratorFactory();
-
     if (!list.arg1().isSymbol()) {
       // `1` is not a valid variable.
       String str = Errors.getMessage("ivar", F.list(list.arg1()), EvalEngine.get());
@@ -173,7 +170,9 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       if (min == Double.NEGATIVE_INFINITY || max == Double.POSITIVE_INFINITY) {
         return gausKronrodRule(maxIterations, f, min, max);
       }
+
       // default: LegendreGauss
+      GaussIntegratorFactory factory = new GaussIntegratorFactory();
       GaussIntegrator integ = factory.legendre(maxPoints, min, max);
       return integ.integrate(f);
     }
@@ -242,7 +241,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       }
       option = options.getOption(S.MaxPoints);
       if (option.isReal()) {
-        maxPoints = ((IReal) option).toIntDefault(-1);
+        maxPoints = option.toIntDefault(-1);
         if (maxPoints <= 0) {
           // Inappropriate parameter: `1`.
           return Errors.printMessage(ast.topHead(), "par", F.List(S.MaxPoints), engine);
@@ -258,7 +257,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       }
       option = options.getOption(S.PrecisionGoal);
       if (option.isReal()) {
-        precisionGoal = ((IReal) option).toIntDefault(-1);
+        precisionGoal = option.toIntDefault(-1);
         if (precisionGoal <= 0) {
           // Inappropriate parameter: `1`.
           return Errors.printMessage(ast.topHead(), "par", F.List(S.PrecisionGoal), engine);
