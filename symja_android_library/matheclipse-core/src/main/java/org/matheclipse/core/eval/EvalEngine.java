@@ -2603,6 +2603,18 @@ public class EvalEngine implements Serializable {
     return evalTimeConstrained(expr, F.NIL, seconds);
   }
 
+  /**
+   * Evaluate the expression <code>expr</code> and return the result. If the evaluation takes longer
+   * than <code>seconds</code> the evaluation is aborted and the <code>defaultValue</code> is
+   * returned.
+   * 
+   * @param expr the expression which should be evaluated
+   * @param defaultValue the value which should be returned if the evaluation takes longer than
+   *        <code>seconds</code>. If <code>defaultValue == F.NIL</code> return {@link S#$Aborted}
+   * @param seconds the time in seconds; a value greater than 0 is expected
+   * @return the result of the evaluation or <code>defaultValue</code> if the evaluation takes
+   *         longer than <code>seconds</code>.
+   */
   public IExpr evalTimeConstrained(final IExpr expr, IExpr defaultValue, long seconds) {
     final ExecutorService executorService = Executors.newSingleThreadExecutor();
     TimeLimiter timeLimiter = SimpleTimeLimiter.create(executorService); // Executors.newSingleThreadExecutor());
