@@ -20691,6 +20691,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testReverse() {
+    // Reverse: Nonatomic expression expected at position 1 in Reverse(f).
+    check("Reverse(f)", //
+        "Reverse(f)");
+
+    check("Reverse(f())", //
+        "f()");
+    check("Reverse(f(a))", //
+        "f(a)");
+    check("Reverse(r(1,2,3,4))", //
+        "r(4,3,2,1)");
     check("Reverse(<|U->1,V->2|>)", //
         "<|V->2,U->1|>");
     check("Reverse({1, 2, 3})", //
@@ -20791,6 +20801,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRotateLeft() {
+    // RotateLeft: Nonatomic expression expected at position 1 in RotateLeft(f).
+    check("RotateLeft(f)", //
+        "RotateLeft(f)");
+
+    check("RotateLeft(r(1,2,3,4))", //
+        "r(2,3,4,1)");
+    check("RotateLeft(r(1,2,3,4),2)", //
+        "r(3,4,1,2)");
     check("RotateLeft({})", //
         "{}");
     check("RotateLeft({a,b,c}, 5)", //
@@ -20808,6 +20826,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRotateRight() {
+    // RotateRight: Nonatomic expression expected at position 1 in RotateRight(f).
+    check("RotateRight(f)", //
+        "RotateRight(f)");
+
+    check("RotateRight(r(1,2,3,4))", //
+        "r(4,1,2,3)");
+    check("RotateRight(r(1,2,3,4),3)", //
+        "r(2,3,4,1)");
     check("RotateRight({})", //
         "{}");
     check("RotateRight({a,b,c}, 5)", //

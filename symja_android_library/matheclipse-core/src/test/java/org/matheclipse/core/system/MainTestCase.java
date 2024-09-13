@@ -2541,31 +2541,6 @@ public class MainTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testSystem300() {
-    check("RotateLeft(r(1,2,3,4))", "r(2,3,4,1)");
-  }
-
-  @Test
-  public void testSystem301() {
-    check("RotateRight(r(1,2,3,4))", "r(4,1,2,3)");
-  }
-
-  @Test
-  public void testSystem302() {
-    check("RotateLeft(r(1,2,3,4),2)", "r(3,4,1,2)");
-  }
-
-  @Test
-  public void testSystem303() {
-    check("RotateRight(r(1,2,3,4),3)", "r(2,3,4,1)");
-  }
-
-  @Test
-  public void testSystem304() {
-    check("Reverse(r(1,2,3,4))", "r(4,3,2,1)");
-  }
-
-  @Test
   public void testSystem305() {
     // ReplaceAll
     check("u(v(w,x,y) /. x->y)", "u(v(w,y,y))");
