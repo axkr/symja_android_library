@@ -10,7 +10,6 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
@@ -51,13 +50,13 @@ public class Matcher implements Function<IExpr, IExpr> {
           return temp;
         }
       }
-      IASTAppendable result = F.NIL;
+      IASTMutable result = F.NIL;
       int i = 1;
       while (i < list.size()) {
         temp = list.get(i).accept(this);
         if (temp.isPresent()) {
           // something was evaluated - return a new IAST:
-          result = list.copyAppendable();
+          result = list.copy();
           result.set(i++, temp);
           break;
         }

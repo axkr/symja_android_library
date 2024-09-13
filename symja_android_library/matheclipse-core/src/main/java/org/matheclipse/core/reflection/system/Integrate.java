@@ -88,6 +88,7 @@ import com.google.common.cache.CacheBuilder;
 public class Integrate extends AbstractFunctionOptionEvaluator {
 
   private static final Logger LOGGER = LogManager.getLogger();
+
   private static Thread INIT_THREAD = null;
 
   private static final CountDownLatch COUNT_DOWN_LATCH = new CountDownLatch(1);
@@ -350,7 +351,6 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       }
       boolean showSteps = false;
       if (showSteps) {
-        LOGGER.info(arg1);
         // if (DEBUG_EXPR.contains(arg1)) {
         // System.exit(-1);
         // }
@@ -820,11 +820,6 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
             IExpr temp = S.Integrate.evalDownRule(EvalEngine.get(), ast);
             if (temp.isPresent()) {
               if (temp.equals(ast)) {
-                if (LOGGER.isDebugEnabled()) {
-                  engine.setQuietMode(false);
-                  Errors.printMessage(S.Integrate, "rubiendless",
-                      F.list(temp, F.stringx("UNKNOWN")), engine);
-                }
                 return F.NIL;
               }
               if (temp.isAST()) {

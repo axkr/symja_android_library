@@ -302,8 +302,7 @@ public class Predicates {
     if (pattern.isOrderlessAST() && pattern.isFreeOfPatterns()) {
       // append a BlankNullSequence[] to match the parts of an Orderless expression
       IPatternSequence blankNullRest = F.$ps(null, true);
-      IASTAppendable newPattern = ((IAST) pattern).copyAppendable();
-      newPattern.append(blankNullRest);
+      IASTAppendable newPattern = ((IAST) pattern).appendClone(blankNullRest);
       matcher = new PatternMatcher(newPattern);
     } else {
       matcher = new PatternMatcher(pattern);

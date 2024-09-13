@@ -378,7 +378,7 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
     nvar = n;
     tord = t;
     partial = false;
-    vars = listOfVariables.copyAppendable();
+    vars = listOfVariables.copy();
     ZERO = new SymbolicPolynomial(this);
     IExpr coeff = coFac.getONE();
     evzero = new ExpVectorSymbolic(nvar);
@@ -968,7 +968,7 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
           "v not matching number of variables: " + v.toString() + ", nvar " + nvar);
     }
     IAST t = vars;
-    vars = v.copyAppendable(); // Arrays.copyOf(v, v.length); // > Java-5
+    vars = v.copy(); // Arrays.copyOf(v, v.length); // > Java-5
     return t;
   }
 

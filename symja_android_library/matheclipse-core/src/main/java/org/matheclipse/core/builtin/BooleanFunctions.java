@@ -2242,15 +2242,14 @@ public final class BooleanFunctions {
       }
       boolean evaled = false;
 
-      IASTAppendable result = astEvaled.copyAppendable();
       IExpr.COMPARE_TERNARY[] cResult = new IExpr.COMPARE_TERNARY[astEvaled.size()];
       cResult[0] = IExpr.COMPARE_TERNARY.TRUE;
       for (int i = 1; i < astEvaled.argSize(); i++) {
-        IExpr arg = result.get(i);
+        IExpr arg = astEvaled.get(i);
         if (arg.equals(S.Undefined)) {
           return S.Undefined;
         }
-        final IExpr.COMPARE_TERNARY b = prepareCompare(arg, result.get(i + 1), engine);
+        final IExpr.COMPARE_TERNARY b = prepareCompare(arg, astEvaled.get(i + 1), engine);
         if (b == IExpr.COMPARE_TERNARY.FALSE) {
           return S.False;
         }
@@ -2266,6 +2265,7 @@ public final class BooleanFunctions {
       }
       int i = 2;
       evaled = false;
+      IASTAppendable result = astEvaled.copyAppendable();
       for (int j = 1; j < astEvaled.size(); j++) {
         if (cResult[j - 1] == IExpr.COMPARE_TERNARY.TRUE
             && cResult[j] == IExpr.COMPARE_TERNARY.TRUE) {

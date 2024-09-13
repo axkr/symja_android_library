@@ -674,7 +674,7 @@ public class ManipulateFunction {
     private static IExpr sliderWithFormulas(IExpr formula, IAST sliderRange, EvalEngine engine) {
       JavaScriptFormFactory toJS =
           new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_MATHCELL);
-      IASTAppendable newsliderRange = sliderRange.copyAppendable();
+      IASTAppendable newsliderRange = sliderRange.copyAppendable(1);
       double stepValue = 1.0;
       double minValue = sliderRange.arg2().evalf();
       double maxValue = sliderRange.arg3().evalf();

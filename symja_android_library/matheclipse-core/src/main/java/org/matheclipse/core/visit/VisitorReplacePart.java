@@ -189,11 +189,10 @@ public class VisitorReplacePart extends AbstractVisitor {
     if (matcher.getLHS().isSequence()) {
       IExpr temp = matcher.eval(positionsToMatch, engine);
       if (temp.isPresent()) {
-        if (result.isNIL()) {
+        if (position == 0 && ast.isAssociation()) {
+          result = ((IAssociation) ast).copyAST();
+        } else if (result.isNIL()) {
           result = ast.copyAppendable();
-        }
-        if (position == 0 && result.isAssociation()) {
-          result = ((IAssociation) result).copyAST();
         }
         result.setValue(position, temp);
         return result;
@@ -201,12 +200,12 @@ public class VisitorReplacePart extends AbstractVisitor {
         if (ast.get(position).isASTOrAssociation()) {
           temp = visitPatternIndexList((IAST) ast.get(position), positionsToMatch);
           if (temp.isPresent()) {
-            if (result.isNIL()) {
+            if (position == 0 && ast.isAssociation()) {
+              result = ((IAssociation) ast).copyAST();
+            } else if (result.isNIL()) {
               result = ast.copyAppendable();
             }
-            if (position == 0 && result.isAssociation()) {
-              result = ((IAssociation) result).copyAST();
-            }
+
             result.setValue(position, temp);
             return result;
           }

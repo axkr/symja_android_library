@@ -584,8 +584,7 @@ public final class OutputFunctions {
         }
         IExpr arg1 = ast.arg1();
         if (arg1.isFunctionID(ID.Plot, ID.ParametricPlot, ID.ParametricPlot)) {
-          IASTAppendable temp = ((IAST) arg1).copyAppendable();
-          temp.append(F.Rule(S.JSForm, S.True));
+          IASTAppendable temp = ((IAST) arg1).appendClone(F.Rule(S.JSForm, S.True));
           arg1 = temp;
         }
         arg1 = engine.evaluate(arg1);

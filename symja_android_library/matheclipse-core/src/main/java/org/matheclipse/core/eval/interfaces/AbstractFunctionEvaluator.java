@@ -173,7 +173,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
    */
   public static IExpr extractImaginaryUnit(final IExpr expression, boolean checkTimes) {
     if (expression.isNumber()) {
-      if (((INumber) expression).isImaginaryUnit()) {
+      if (expression.isImaginaryUnit()) {
         return F.C1;
       }
       if ((expression.isComplex() || expression.isComplexNumeric())//
@@ -186,7 +186,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
           IAST timesAST = ((IAST) expression);
           IExpr arg1 = timesAST.arg1();
           if (arg1.isNumber()) {
-            if (((INumber) arg1).isImaginaryUnit()) {
+            if (arg1.isImaginaryUnit()) {
               return timesAST.rest().oneIdentity1();
             }
             if ((arg1.isComplex() || arg1.isComplexNumeric())//

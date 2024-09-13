@@ -312,7 +312,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
     nvar = n;
     tord = t;
     partial = false; 
-    vars = listOfVariables.copyAppendable();
+    vars = listOfVariables.copy();
     ZERO = new ExprPolynomial(this);
     IExpr coeff = coFac.getONE();
     evzero = new ExpVectorLong(nvar);
@@ -910,7 +910,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
           "v not matching number of variables: " + v.toString() + ", nvar " + nvar);
     }
     IAST t = vars;
-    vars = v.copyAppendable(); // Arrays.copyOf(v, v.length); // > Java-5
+    vars = v.copy(); // Arrays.copyOf(v, v.length); // > Java-5
     return t;
   }
 

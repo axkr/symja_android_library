@@ -1466,7 +1466,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public IASTAppendable appendAtClone(int position, IExpr expr) {
-    IASTAppendable ast = copyAppendable();
+    IASTAppendable ast = copyAppendable(1);
     ast.append(position, expr);
     return ast;
   }
@@ -5172,7 +5172,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       temp = function.apply(get(i));
       if (temp.isPresent()) {
         // something was evaluated - return a new IAST:
-        result = copyAppendable();
+        if (i > 1) {
+          result = copy();
+        } else {
+          result = copyAppendable();
+        }
         result.set(i++, temp);
         break;
       }
@@ -5216,7 +5220,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
     if (temp.isPresent()) {
       // something was evaluated - return a new IAST:
-      result = copyAppendable();
+      if (i > 0) {
+        result = copy();
+      } else {
+        result = copyAppendable();
+      }
       result.set(i++, temp);
     }
     if (result.isPresent()) {

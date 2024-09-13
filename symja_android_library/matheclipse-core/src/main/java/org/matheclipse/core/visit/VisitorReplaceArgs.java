@@ -2,7 +2,6 @@ package org.matheclipse.core.visit;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -33,7 +32,7 @@ public class VisitorReplaceArgs extends VisitorExpr {
   @Override
   public IExpr visit(IASTMutable ast) {
     IExpr temp;
-    IASTAppendable result = F.NIL;
+    IASTMutable result = F.NIL;
     int size = ast.size();
     boolean evaled = false;
     for (int i = 1; i < size; i++) {
@@ -42,7 +41,7 @@ public class VisitorReplaceArgs extends VisitorExpr {
       for (int j = 1; i < astSlots.size(); i++) {
         if (astSlots.get(j).equals(temp)) {
           if (result.isNIL()) {
-            result = ast.copyAppendable();
+            result = ast.copy();
           }
           result.set(i, F.Slot(F.ZZ(j)));
           evaled = true;
@@ -55,7 +54,7 @@ public class VisitorReplaceArgs extends VisitorExpr {
         if (temp.isPresent()) {
           if (result.isNIL()) {
             // something was evaluated - return a new IAST:
-            result = ast.copyAppendable();
+            result = ast.copy();
           }
           result.set(i, temp);
         }

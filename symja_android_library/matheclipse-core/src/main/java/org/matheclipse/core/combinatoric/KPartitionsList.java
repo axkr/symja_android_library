@@ -36,10 +36,9 @@ public final class KPartitionsList implements Iterable<IAST> {
         return null;
       }
       IASTAppendable part = fResultList.copyAppendable();
-      IASTAppendable temp;
       int j = 0;
       for (int i = 1; i < partitionsIndex.length; i++) {
-        temp = fResultList.copyAppendable();
+        IASTAppendable temp = fResultList.copyAppendable();
         for (int m = j; m < partitionsIndex[i]; m++) {
           temp.append(fList.get(m + fOffset));
         }
@@ -47,7 +46,7 @@ public final class KPartitionsList implements Iterable<IAST> {
         part.append(temp);
       }
 
-      temp = fResultList.copyAppendable();
+      IASTAppendable temp = fResultList.copyAppendable();
       int n = fList.size() - fOffset;
       for (int m = j; m < n; m++) {
         temp.append(fList.get(m + fOffset));

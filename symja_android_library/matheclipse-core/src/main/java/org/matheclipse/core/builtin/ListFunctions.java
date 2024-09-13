@@ -984,7 +984,7 @@ public final class ListFunctions {
 
       @Override
       public IExpr evaluate(final ISymbol[] variables, final IExpr[] index) {
-        final IASTAppendable ast = fHeadAST.copyAppendable();
+        final IASTAppendable ast = fHeadAST.copyAppendable(index.length);
         return fEngine.evaluate(ast.appendArgs(0, index.length, i -> index[i]));
       }
     }

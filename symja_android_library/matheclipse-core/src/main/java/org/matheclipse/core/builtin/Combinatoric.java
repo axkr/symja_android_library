@@ -157,8 +157,8 @@ public final class Combinatoric {
         if (empty) {
           throw new RuntimeException("invalid call of next()");
         }
-        // IAST res = (IAST) current.clone();
-        IAST res = current.copyAppendable();
+
+        final IAST res = current.copy();
         // search iterator which hasNext
         int i = compit.size() - 1;
         for (; i >= 0; i--) {
@@ -2687,10 +2687,9 @@ public final class Combinatoric {
             RecursionLimitExceeded.throwIt(counter, ast);
           }
         }
-        IASTAppendable temp;
         for (int j = 1; j < originalList.size(); j++) {
-          temp = subResult.copyAppendable();
-          temp.append(originalList.get(j));
+          IASTAppendable temp = subResult.appendClone(originalList.get(j));
+          // temp.append(originalList.get(j));
           tuples(originalList, n - 1, result, temp, ast, engine);
         }
       } finally {

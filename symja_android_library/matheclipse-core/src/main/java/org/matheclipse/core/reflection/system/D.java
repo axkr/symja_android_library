@@ -286,7 +286,7 @@ public class D extends AbstractFunctionEvaluator {
 
   private static IAST addDerivative(final int pos, IAST deriveHead, final IExpr header,
       final IAST args) {
-    IASTMutable derivativeHead1 = deriveHead.copyAppendable();
+    IASTMutable derivativeHead1 = deriveHead.copy();
     for (int i = 1; i < derivativeHead1.size(); i++) {
       if (i == pos) {
         derivativeHead1.set(i, derivativeHead1.get(i).inc());

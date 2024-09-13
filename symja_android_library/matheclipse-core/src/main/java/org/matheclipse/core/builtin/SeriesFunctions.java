@@ -974,7 +974,7 @@ public class SeriesFunctions {
           }
         }
         if (base.isTimes()) {
-          IAST isFreeResult = ((IAST) base).partitionTimes(x -> x.isFree(data.variable(), true),
+          IAST isFreeResult = base.partitionTimes(x -> x.isFree(data.variable(), true),
               F.C1, F.C1, S.List);
           if (!isFreeResult.arg2().isOne()) {
             return F.Times(F.Power(isFreeResult.arg1(), exponent),
@@ -1886,7 +1886,7 @@ public class SeriesFunctions {
           }
         }
         for (int i = 1; i < rest.size(); i++) {
-          IASTAppendable term = seriesTemplate.copyAppendable();
+          IASTMutable term = seriesTemplate.copy();
           term.set(1, rest.get(i));
           coefficientPlus.append(term);
         }

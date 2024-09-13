@@ -3613,7 +3613,7 @@ public final class Arithmetic {
                 IExpr x = ((IAST) base).arg1();
                 IExpr mNeg = exponent.negate();
                 boolean disabledTrigRules = engine.isDisabledTrigRules();
-                int id = ((IAST) base).headID();
+                int id = base.headID();
                 switch (id) {
                   case ID.Tan:
                     // Tan(x_)^m_?(IntegerQ(#)&&#<0 &):=Cot(x)^(-m),
@@ -4153,7 +4153,7 @@ public final class Arithmetic {
             }
             try {
               long n = ((IInteger) exponent).toLong();
-              return ((INumber) base).power(n);
+              return base.power(n);
             } catch (ArithmeticException ae) {
 
             }

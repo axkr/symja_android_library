@@ -561,15 +561,15 @@ public class Algebra {
      */
     private static Optional<IExpr[]> cancelPlusIntegerGCD(IAST numeratorPlus,
         IInteger denominator) {
-      IASTAppendable plus = numeratorPlus.copyAppendable();
-      IASTAppendable gcd = F.ast(S.GCD, plus.size() + 1);
+      IASTAppendable gcd = F.ast(S.GCD, numeratorPlus.size() + 1);
       gcd.append(denominator);
-      boolean evaled = !plus.exists((IExpr x) -> collectGCDFactors(x, gcd));
+      boolean evaled = !numeratorPlus.exists((IExpr x) -> collectGCDFactors(x, gcd));
       if (evaled) {
         // GCD() has attribute Orderless, so the arguments will
         // be sorted by evaluation!
         IExpr igcd = F.eval(gcd);
         if (igcd.isInteger() && !igcd.isOne()) {
+          IASTAppendable plus = numeratorPlus.copyAppendable();
           return calculatePlusIntegerGCD(plus, denominator, (IInteger) igcd);
         }
       }
@@ -615,7 +615,7 @@ public class Algebra {
         IExpr p10 = parts.get()[1];
         IExpr p11 = F.C1;
         if (p00.isPlus()) {
-          IAST numParts = ((IAST) p00).partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
+          IAST numParts = p00.partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
           if (numParts.isPresent() && !numParts.arg1().isOne()) {
             p00 = numParts.arg1();
             p01 = numParts.arg2();
@@ -623,7 +623,7 @@ public class Algebra {
         }
 
         if (p10.isPlus()) {
-          IAST denParts = ((IAST) p10).partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
+          IAST denParts = p10.partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
           if (denParts.isPresent() && !denParts.arg1().isOne()) {
             p10 = denParts.arg1();
             p11 = denParts.arg2();
@@ -918,8 +918,9 @@ public class Algebra {
           // "rest" variable
           IPatternSequence blankNullRest =
               F.$ps(F.Dummy("§rest§" + EvalEngine.incModuleCounter()), true);
-          IASTAppendable newLHS = ((IAST) x).copyAppendable();
-          newLHS.append(blankNullRest);
+          IASTAppendable newLHS = ((IAST) x).appendClone(blankNullRest);
+          // newLHS.append(blankNullRest);
+
           final IPatternMatcher matcher = engine.evalPatternMatcher(newLHS);
 
           collectTimesToMap(x, poly, matcher, defaultdict, rest, blankNullRest);
@@ -1271,8 +1272,8 @@ public class Algebra {
       }
 
       private void distributeStep(IExpr x, IAST stepResult, int position) {
-        IASTAppendable res2 = stepResult.copyAppendable();
-        res2.append(x);
+        IASTAppendable res2 = stepResult.appendClone(x);
+        // res2.append(x);
         distributePositionRecursive(res2, position + 1);
       }
     }
@@ -4233,7 +4234,7 @@ public class Algebra {
         }
         if (arg1.isAST()) {
           ToRadicalsVisitor visitor = new ToRadicalsVisitor(ast);
-          temp = ((IAST) arg1).accept(visitor);
+          temp = arg1.accept(visitor);
           if (temp.isPresent()) {
             return temp;
           }
@@ -5012,9 +5013,8 @@ public class Algebra {
       }
 
       if (numerator.isPlus() && denominator.isPlus()) {
-        IAST numParts = ((IAST) numerator).partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
-        IAST denParts =
-            ((IAST) denominator).partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
+        IAST numParts = numerator.partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
+        IAST denParts = denominator.partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
         if (denParts.isPresent() && !denParts.arg1().isOne()) {
           Optional<IExpr[]> result = cancelGCD(numParts.arg1(), denParts.arg1());
           if (result.isPresent()) {

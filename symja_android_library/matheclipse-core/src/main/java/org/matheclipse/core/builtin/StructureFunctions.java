@@ -191,7 +191,7 @@ public class StructureFunctions {
       if (ast.argSize() < 2 || ast.argSize() > 4) {
         return Errors.printArgMessage(ast, ARGS_2_4, engine);
       }
-      IASTAppendable evaledAST = ast.copyAppendable();
+      IASTMutable evaledAST = ast.copy();
       evaledAST.setArgs(evaledAST.size(), (int i) -> engine.evaluate(evaledAST.get(i)));
 
       int lastIndex = evaledAST.argSize();
@@ -575,7 +575,7 @@ public class StructureFunctions {
         int[] positions = null;
         if (arg2.isInteger()) {
           positions = new int[1];
-          positions[0] = ((IInteger) arg2).toIntDefault();
+          positions[0] = arg2.toIntDefault();
           if (positions[0] == Integer.MIN_VALUE) {
             return F.NIL;
           }
@@ -2211,7 +2211,7 @@ public class StructureFunctions {
       int listLength = -1;
 
       for (int i = 1; i < list.size(); i++) {
-        if ((list.get(i).isAST()) && (((IAST) list.get(i)).head().equals(head))) {
+        if ((list.get(i).isAST()) && (list.get(i).head().equals(head))) {
           if (listLength == -1) {
             listLength = ((IAST) list.get(i)).argSize();
           } else {
