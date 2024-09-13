@@ -140,7 +140,7 @@ public final class AST3 extends AST2 {
     }
     if (obj instanceof AbstractAST) {
       final IAST list = (IAST) obj;
-      if (arg0 != ((AbstractAST) list).head() && arg0 instanceof ISymbol) {
+      if (arg0 != list.head() && arg0 instanceof ISymbol) {
         // compared with ISymbol object identity
         return false;
       }
@@ -542,6 +542,17 @@ public final class AST3 extends AST2 {
   @Override
   public final IExpr last() {
     return arg3;
+  }
+
+  @Override
+  public IASTAppendable reverse(IASTAppendable resultList) {
+    if (resultList.isNIL()) {
+      resultList = F.ListAlloc(argSize());
+    }
+    resultList.append(arg3);
+    resultList.append(arg2);
+    resultList.append(arg1);
+    return resultList;
   }
 
   @Override

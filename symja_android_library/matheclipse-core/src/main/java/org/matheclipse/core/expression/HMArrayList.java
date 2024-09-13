@@ -1004,6 +1004,31 @@ public abstract class HMArrayList extends AbstractAST
     }
   }
 
+  @Override
+  public IASTAppendable reverse(IASTAppendable resultList) {
+    if (resultList.isNIL()) {
+      resultList = F.ListAlloc(argSize());
+    }
+    if (resultList instanceof HMArrayList) {
+      HMArrayList list = ((HMArrayList) resultList);
+      if (list.array.length < size()) {
+        list.growAtEnd(size());
+      }
+      IExpr[] resultArray = list.array;
+      int i = firstIndex + argSize();
+      while (i > firstIndex) {
+        resultArray[list.lastIndex++] = array[i--];
+      }
+      return list;
+    }
+
+    int i = firstIndex + argSize();
+    while (i > firstIndex) {
+      resultList.append(array[i--]);
+    }
+    return resultList;
+  }
+
   /**
    * Replaces the element at the specified location in this {@code ArrayList} with the specified
    * object. Internally the <code>hashValue</code> will be reset to <code>0</code>.

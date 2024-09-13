@@ -532,7 +532,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     if (obj instanceof AbstractAST) {
       final IAST list = (IAST) obj;
       ISymbol head = head();
-      if (head != ((AbstractAST) list).head()) {
+      if (head != list.head()) {
         // compared with IBuiltInSymbol object identity
         return false;
       }
@@ -850,6 +850,15 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     for (int i = 1; i < SIZE; i++) {
       set(i, (IExpr) objectInput.readObject());
     }
+  }
+
+  @Override
+  public IASTAppendable reverse(IASTAppendable resultList) {
+    if (resultList.isNIL()) {
+      resultList = F.ListAlloc(argSize());
+    }
+    resultList.append(arg1);
+    return resultList;
   }
 
   @Override

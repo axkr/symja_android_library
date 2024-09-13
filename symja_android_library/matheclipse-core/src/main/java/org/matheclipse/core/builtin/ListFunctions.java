@@ -6369,21 +6369,19 @@ public final class ListFunctions {
   private static final class Reverse extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST functionList, EvalEngine engine) {
-      if (functionList.size() != 2) {
-        return F.NIL;
-      }
-      IExpr arg1 = functionList.arg1();
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
       if (arg1.isAssociation()) {
         IAssociation assoc = (IAssociation) arg1;
         return assoc.reverse(F.assoc());
       }
-      if (arg1.isASTOrAssociation()) {
+      if (arg1.isAST()) {
         IAST list = (IAST) arg1;
         return reverse(list);
       }
 
-      return F.NIL;
+      // Nonatomic expression expected at position `1` in `2`.
+      return Errors.printMessage(S.Reverse, "normal", F.list(F.C1, ast), engine);
     }
 
     @Override
@@ -6581,8 +6579,10 @@ public final class ListFunctions {
             return result;
           }
         }
+        return F.NIL;
       }
-      return F.NIL;
+      // Nonatomic expression expected at position `1` in `2`.
+      return Errors.printMessage(S.RotateLeft, "normal", F.list(F.C1, ast), engine);
     }
 
     @Override
@@ -6658,8 +6658,10 @@ public final class ListFunctions {
             return result;
           }
         }
+        return F.NIL;
       }
-      return F.NIL;
+      // Nonatomic expression expected at position `1` in `2`.
+      return Errors.printMessage(S.RotateRight, "normal", F.list(F.C1, ast), engine);
     }
 
     @Override

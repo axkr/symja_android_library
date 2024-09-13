@@ -1831,7 +1831,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     final int start = heads ? 0 : 1;
     for (int i = start; i < size(); i++) {
       if (get(i).isAST()) {
-        d = ((IAST) get(i)).depth(heads);
+        d = get(i).depth(heads);
         if (d > maxDepth) {
           maxDepth = d;
         }
@@ -4747,7 +4747,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   private static boolean isTrigonometricFunction(IExpr x) {
     if (x.isAST1()) {
-      return ((IAST) x).isFunctionID(ID.ArcCos, ID.ArcCsc, ID.ArcCot, ID.ArcSec, ID.ArcSin,
+      return x.isFunctionID(ID.ArcCos, ID.ArcCsc, ID.ArcCot, ID.ArcSec, ID.ArcSin,
           ID.ArcTan, ID.Cos, ID.Cosh, ID.Cot, ID.Coth, ID.Csc, ID.Csch, ID.Haversine,
           ID.InverseHaversine, ID.Sec, ID.Sech, ID.Sin, ID.Sinh, ID.Sinc, ID.Tan, ID.Tanh);
     }
@@ -5536,7 +5536,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           return 17 * head().hashCode();
         } else if (ISymbol.hasFlatAttribute(attr)) {
           if (arg1() instanceof IAST) {
-            return 31 * head().hashCode() + ((IAST) arg1()).head().hashCode();
+            return 31 * head().hashCode() + arg1().head().hashCode();
           }
           return 37 * head().hashCode() + arg1().hashCode();
         }
@@ -5718,7 +5718,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   }
 
   /**
-   * Append the elements in reversed order to the given <code>list</code>
+   * Append the elements in reversed order to the given <code>resultList</code>
    *
    * @param resultList if {@link F.NIL} create a new {@link IASTAppendable} list inside the method
    * @return
@@ -6227,7 +6227,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
     } else if (isAST(S.Slot, 2) && (arg1().isReal())) {
 
-      final int slot = ((IReal) arg1()).toIntDefault();
+      final int slot = arg1().toIntDefault();
       if (slot <= 0) {
         return toFullFormString();
       }

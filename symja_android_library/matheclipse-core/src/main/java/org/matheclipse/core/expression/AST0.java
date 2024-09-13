@@ -466,6 +466,14 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
   }
 
   @Override
+  public IASTAppendable reverse(IASTAppendable resultList) {
+    if (resultList.isNIL()) {
+      resultList = F.ListAlloc(argSize());
+    }
+    return resultList;
+  }
+
+  @Override
   public IAST removeFromEnd(int fromPosition) {
     if (fromPosition == size()) {
       return this;
