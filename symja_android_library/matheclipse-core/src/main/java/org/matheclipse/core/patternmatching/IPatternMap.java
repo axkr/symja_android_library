@@ -55,7 +55,7 @@ public interface IPatternMap {
 
     @Override
     public boolean getRHSEvaluated() {
-      return false; // evaluatedRHS;
+      return false;
     }
 
     @Override
@@ -408,7 +408,7 @@ public interface IPatternMap {
   /**
    * Match exactly two pattern symbols.
    */
-  static class PatternMap2 implements IPatternMap {
+  static final class PatternMap2 implements IPatternMap {
     private static final int SIZE = 2;
 
     IExpr fSymbol1;
@@ -725,7 +725,7 @@ public interface IPatternMap {
   /**
    * Match exactly three pattern symbols.
    */
-  static class PatternMap3 implements IPatternMap {
+  static final class PatternMap3 implements IPatternMap {
     private static final int SIZE = 3;
 
     IExpr fSymbol1;
@@ -1107,7 +1107,7 @@ public interface IPatternMap {
     }
   }
 
-  static class PatternMap4 implements IPatternMap {
+  static final class PatternMap4 implements IPatternMap {
     private static final int SIZE = 4;
 
     IExpr fSymbol1;
@@ -1554,7 +1554,7 @@ public interface IPatternMap {
       return buf.toString();
     }
   }
-  static class PatternMap5 implements IPatternMap {
+  static final class PatternMap5 implements IPatternMap {
     private static final int SIZE = 5;
 
     IExpr fSymbol1;
@@ -2068,7 +2068,7 @@ public interface IPatternMap {
       return buf.toString();
     }
   }
-  static class PatternMap6 implements IPatternMap {
+  static final class PatternMap6 implements IPatternMap {
     private static final int SIZE = 6;
 
     IExpr fSymbol1;
@@ -2652,7 +2652,7 @@ public interface IPatternMap {
 
 
   /** A map from a pattern to a possibly found value during pattern-matching. */
-  static class PatternMap implements IPatternMap, Serializable {
+  static final class PatternMap implements IPatternMap, Serializable {
 
     private static final IExpr[] EMPTY_ARRAY = {};
 
@@ -3152,7 +3152,7 @@ public interface IPatternMap {
       determinePatternsRecursive(patternIndexMap, (IAST) lhsPatternExpr, priority,
           ruleWithoutPattern, 1);
       boolean isRuleWithoutPattern = ruleWithoutPattern[0];
-      return createPatternMap(patternIndexMap, isRuleWithoutPattern);
+      return createSymbolToPatternObjetMap(patternIndexMap, isRuleWithoutPattern);
     } else if (lhsPatternExpr instanceof PatternNested) {
       PatternNested pattern2 = (PatternNested) lhsPatternExpr;
       // PatternMap1 patternMap1 = new PatternMap1();
@@ -3183,7 +3183,7 @@ public interface IPatternMap {
     return new PatternMap0();
   }
 
-  public static IPatternMap createSymbolValue(List<GenericPair<IExpr, ISymbol>> patternIndexMap) {
+  public static IPatternMap createSymbolToValueMap(List<GenericPair<IExpr, ISymbol>> patternIndexMap) {
     int size = patternIndexMap.size();
     switch (size) {
       case 1:
@@ -3261,7 +3261,7 @@ public interface IPatternMap {
     return patternMap;
   }
 
-  public static IPatternMap createPatternMap(
+  public static IPatternMap createSymbolToPatternObjetMap(
       List<GenericPair<IExpr, IPatternObject>> patternIndexMap, boolean isRuleWithoutPattern) {
     int size = patternIndexMap.size();
     switch (size) {

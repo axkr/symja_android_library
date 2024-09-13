@@ -214,7 +214,6 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
    * Check if <code>fPatterHash == 0 || fPatterHash == patternHash;</code>.
    *
    * @param patternHash
-   * @return
    */
   public abstract boolean isPatternHashAllowed(int patternHash);
 
