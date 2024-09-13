@@ -3,7 +3,7 @@ package org.matheclipse.core.patternmatching;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 
-public class PatternMatcherEvalEngine extends PatternMatcher {
+public final class PatternMatcherEvalEngine extends PatternMatcher {
   EvalEngine fEngine;
 
   public PatternMatcherEvalEngine() {

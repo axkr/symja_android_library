@@ -698,7 +698,6 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
   /**
    * Returns true if the given expression contains no patterns
    *
-   * @return
    */
   @Override
   public final boolean isRuleWithoutPatterns() {
@@ -834,12 +833,11 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
    */
   private boolean matchHeads(IAST patternAST, IAST evaledAST, EvalEngine engine) {
     IExpr patternHead = patternAST.head();
-    IExpr evaledHead = evaledAST.head();
     if (patternHead.isSymbol()) {
       // this is the 99 % case
-      return patternHead.equals(evaledHead);
+      return patternHead == evaledAST.head();
     }
-    return matchExpr(patternHead, evaledHead, engine);
+    return matchExpr(patternHead, evaledAST.head(), engine);
   }
 
   private boolean matchASTExpr(IAST lhsPatternAST, final IExpr lhsEvalExpr, EvalEngine engine,

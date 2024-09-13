@@ -6,7 +6,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
-public class PatternMatcherList extends PatternMatcherAndEvaluator {
+public final class PatternMatcherList extends PatternMatcherAndEvaluator {
   IASTAppendable fReplaceList;
 
   public IASTAppendable getReplaceList() {

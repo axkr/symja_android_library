@@ -73,7 +73,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
    * @return
    */
   @Override
-  public boolean isPatternHashAllowed(int patternHash) {
+  public final boolean isPatternHashAllowed(int patternHash) {
     return fPatterHash == 0 || fPatterHash == patternHash;
   }
 
@@ -215,14 +215,22 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
   /** {@inheritDoc} */
   @Override
-  public IExpr eval(final IExpr leftHandSide, EvalEngine engine) {
+  public final IExpr eval(final IExpr leftHandSide, EvalEngine engine) {
     return replaceEvaled(leftHandSide, engine);
   }
 
+  /**
+   * Eval the pattern matcher internally from the generated Java decision tree.
+   * 
+   * @param leftHandSide
+   * @param rightHandSide
+   * @param patternIndexMap
+   * @return
+   */
   public static IExpr evalInternal(final IExpr leftHandSide, final IExpr rightHandSide,
       List<GenericPair<IExpr, ISymbol>> patternIndexMap) {
     PatternMatcherAndEvaluator pm = new PatternMatcherAndEvaluator();
-    IPatternMap patternMap = IPatternMap.createSymbolValue(patternIndexMap);
+    IPatternMap patternMap = IPatternMap.createSymbolToValueMap(patternIndexMap);
     pm.fPatternMap = patternMap;
     pm.fRightHandSide = rightHandSide;
     pm.setLHSExprToMatch(leftHandSide);
@@ -421,11 +429,11 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
   }
 
   @Override
-  public IExpr getRHS() {
+  public final IExpr getRHS() {
     return IExpr.ofNullable(fRightHandSide);
   }
 
-  public IExpr getSubstitutedMatch() {
+  public final IExpr getSubstitutedMatch() {
     return fSubstitutedMatch;
   }
 
