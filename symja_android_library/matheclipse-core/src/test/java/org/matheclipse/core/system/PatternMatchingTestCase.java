@@ -262,7 +262,7 @@ public class PatternMatchingTestCase {
     check("f[x_?NumericQ]:= NIntegrate[Sin[t^3], {t, 0, x}]", //
         "");
     check("f[2]", //
-        "0.4519484771568259");
+        "0.4519484771568257");
     check("f[(1+Sqrt[2])/5]", //
         "0.0135767506042311");
     check("f[a]", //
