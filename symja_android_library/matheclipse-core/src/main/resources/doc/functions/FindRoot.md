@@ -19,7 +19,7 @@ FindRoot(f, {x, xmin, xmax}, AccuracyGoal->n)
 > searches for a numerical root of `f` for the variable `x`, with accuracy `1*^-n`
 
 ```
-FindRoot(f, {x, xmin, xmax}, Method->method_name)
+FindRoot(f, {x, xmin, xmax}, Method->methodName)
 ```
 
 > searches for a numerical root of `f` for the variable `x`, with one of the method names listed below.
@@ -32,8 +32,11 @@ FindRoot({f(x1,x2,...), g(x1,x2,...), ...}, {{x1, initialValue1}, {x2, initialVa
 > searches a multivariate root with Newton's iteration method for a differentiable, multivariate, vector-valued function.
 
 See
+* [Wikipedia - Zero of a function](https://en.wikipedia.org/wiki/Zero_of_a_function)
 * [Wikipedia - Root-finding algorithm](https://en.wikipedia.org/wiki/Root-finding_algorithm)
 * [Wikipedia - Newton's method - k_variables, _k_functions](https://en.wikipedia.org/wiki/Newton%27s_method#k_variables,_k_functions)
+* [Wikipedia - Laguerre's method](https://en.wikipedia.org/wiki/Laguerre%27s_method)
+
 
 #### Brent
 
@@ -41,7 +44,7 @@ Implements the Brent algorithm for finding zeros of real univariate functions (`
 The function should be continuous but not necessarily smooth. 
 The solve method returns a zero `x` of the function `f` in the given interval `[xmin, xmax]`.
 
-This is the default method, if no `method_name` is given.
+This is the default method, if no `methodName` is given.
 
 #### Newton
 
@@ -135,4 +138,4 @@ Using Newton's method for finding the root of a differentiable, multivariate, ve
 
 ### Github
 
-* [Implementation of FindRoot](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/FindRoot.java#L201) 
+* [Implementation of FindRoot](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/FindRoot.java#L204) 

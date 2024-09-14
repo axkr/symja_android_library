@@ -36,4 +36,4 @@ See
 
 ### Github
 
-* [Implementation of FindEulerianCycle](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphFunctions.java#L1552) 
+* [Implementation of FindEulerianCycle](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphFunctions.java#L1637) 

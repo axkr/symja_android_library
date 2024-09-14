@@ -30,4 +30,4 @@ Log(Pi)/2
 
 ### Github
 
-* [Implementation of LogGamma](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SpecialFunctions.java#L1245) 
+* [Implementation of LogGamma](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SpecialFunctions.java#L1522) 

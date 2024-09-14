@@ -25,3 +25,11 @@ See
  {6,9,5,8,1,4,3,2,7},
  {7,8,2,6,9,3,5,4,1}}
 ```
+
+### Implementation status
+
+* &#x2705; - full supported
+
+### Github
+
+* [Implementation of SudokuSolve](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/SudokuSolve.java#L13) 

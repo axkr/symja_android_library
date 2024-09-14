@@ -65,4 +65,4 @@ Gaussian integers:
 
 ### Github
 
-* [Implementation of FactorInteger](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L2694) 
+* [Implementation of FactorInteger](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L2772) 

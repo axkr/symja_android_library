@@ -27,4 +27,4 @@ NRoots(polynomial==0)
 
 ### Github
 
-* [Implementation of NRoots](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/RootsFunctions.java#L169) 
+* [Implementation of NRoots](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/RootsFunctions.java#L171) 

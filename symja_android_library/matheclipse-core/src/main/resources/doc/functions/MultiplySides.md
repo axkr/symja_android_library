@@ -28,4 +28,4 @@ a*x==b*x
 
 ### Github
 
-* [Implementation of MultiplySides](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SidesFunctions.java#L252) 
+* [Implementation of MultiplySides](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SidesFunctions.java#L253) 

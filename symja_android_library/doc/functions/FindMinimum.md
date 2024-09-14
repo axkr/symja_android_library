@@ -50,3 +50,11 @@ This is a derivative, multivariate based method and the functions must be symbol
 ### Related terms 
 [FindMaximum](FindMaximum.md), [FindRoot](FindRoot.md), [NRoots](NRoots.md), [Solve](Solve.md)
  
+
+### Implementation status
+
+* &#x2611; - partially implemented
+
+### Github
+
+* [Implementation of FindMinimum](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/FindMinimum.java#L110) 

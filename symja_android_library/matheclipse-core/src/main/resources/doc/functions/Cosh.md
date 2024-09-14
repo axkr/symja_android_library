@@ -23,6 +23,6 @@ Cosh(z)
 
 ### Github
 
-* [Implementation of Cosh](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L1649) 
+* [Implementation of Cosh](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L1674) 
 
 * [Rule definitions of Cosh](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/CoshRules.m) 

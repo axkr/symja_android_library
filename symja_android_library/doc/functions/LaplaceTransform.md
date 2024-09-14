@@ -27,6 +27,6 @@ See:
 
 ### Github
 
-* [Implementation of LaplaceTransform](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/LaplaceTransform.java#L45) 
+* [Implementation of LaplaceTransform](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/LaplaceTransform.java#L48) 
 
 * [Rule definitions of LaplaceTransform](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/LaplaceTransformRules.m) 

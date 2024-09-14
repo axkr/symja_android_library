@@ -21,6 +21,14 @@ See
 >> GoldbachList(64)
 {{3,61},{5,59},{11,53},{17,47},{23,41}} 
 
->> GoldbachList(3325581707333960528,1)
-{{9781,3325581707333950747}}
+>> GoldbachList(1000000000000000000,1)
+{{11,999999999999999989}}
 ```
+
+### Implementation status
+
+* &#x2611; - partially implemented
+
+### Github
+
+* [Implementation of GoldbachList](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L3233) 

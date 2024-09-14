@@ -60,10 +60,10 @@ Evaluate the `n`th primorial:
 
 ### Implementation status
 
-* &#x2611; - partially implemented
+* &#x1F9EA; - experimental
 
 ### Github
 
-* [Implementation of Product](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Product.java#L103) 
+* [Implementation of Product](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Product.java#L104) 
 
 * [Rule definitions of Product](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rule_sets/ProductRules.m) 

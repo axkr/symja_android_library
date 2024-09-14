@@ -33,4 +33,4 @@ See:
 
 ### Github
 
-* [Implementation of EdgeRules](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphFunctions.java#L1171) 
+* [Implementation of EdgeRules](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphFunctions.java#L1236) 

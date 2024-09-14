@@ -39,3 +39,11 @@ a(x_):=b(x,y)
 b(u_,v_):={{u,v},a}
 ```
 
+
+### Implementation status
+
+* &#x2705; - full supported
+
+### Github
+
+* [Implementation of FullDefinition](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L744) 

@@ -70,4 +70,4 @@ x^2 + y^2
 
 ### Github
 
-* [Implementation of OpenWrite](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/FileFunctions.java#L786) 
+* [Implementation of OpenWrite](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/FileFunctions.java#L785) 

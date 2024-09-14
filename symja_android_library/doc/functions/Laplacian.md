@@ -28,3 +28,12 @@ See:
 >> Laplacian(Sin(r^2), {r, t}, "Polar") 
 4*Cos(r^2)-4*r^2*Sin(r^2)
 ```
+
+
+### Implementation status
+
+* &#x2611; - partially implemented
+
+### Github
+
+* [Implementation of Laplacian](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/VectorAnalysisFunctions.java#L896) 

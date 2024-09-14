@@ -22,6 +22,6 @@ See:
 
 ### Github
 
-* [Implementation of Hypergeometric1F1](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/HypergeometricFunctions.java#L876) 
+* [Implementation of Hypergeometric1F1](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/HypergeometricFunctions.java#L891) 
 
 * [Rule definitions of Hypergeometric1F1](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/Hypergeometric1F1Rules.m) 

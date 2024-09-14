@@ -34,6 +34,6 @@ Csc(1)
 
 ### Github
 
-* [Implementation of Csc](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L1484) 
+* [Implementation of Csc](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L1504) 
 
 * [Rule definitions of Csc](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/CscRules.m) 

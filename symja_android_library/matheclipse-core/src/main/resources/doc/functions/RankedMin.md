@@ -31,4 +31,4 @@ RankedMin({e_1, e_2, ..., e_i}, -n)
 
 ### Github
 
-* [Implementation of RankedMin](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L5617) 
+* [Implementation of RankedMin](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L5720) 

@@ -24,3 +24,11 @@ SGVsbG8gd29ybGQ=
 [Export](Export.md), [Import](Import.md), [ImportString](ImportString.md)
 
  
+
+### Implementation status
+
+* &#x2611; - partially implemented
+
+### Github
+
+* [Implementation of ExportString](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/ExportString.java#L35) 

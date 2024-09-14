@@ -24,4 +24,4 @@ Sin(-y+x)+Sin(y+x)
 
 ### Github
 
-* [Implementation of TrigReduce](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/TrigReduce.java#L54) 
+* [Implementation of TrigReduce](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/TrigReduce.java#L55) 

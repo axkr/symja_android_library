@@ -60,4 +60,4 @@ Depth(f(a, b)[c], Heads->True)
 
 ### Github
 
-* [Implementation of Depth](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StructureFunctions.java#L321) 
+* [Implementation of Depth](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StructureFunctions.java#L317) 

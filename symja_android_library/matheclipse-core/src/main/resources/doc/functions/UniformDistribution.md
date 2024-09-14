@@ -39,4 +39,4 @@ The variance of the uniform distribution is
 
 ### Github
 
-* [Implementation of UniformDistribution](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L7188) 
+* [Implementation of UniformDistribution](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L7636) 

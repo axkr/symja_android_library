@@ -28,4 +28,4 @@ See:
 
 ### Github
 
-* [Implementation of ChebyshevU](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L1377) 
+* [Implementation of ChebyshevU](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L1396) 

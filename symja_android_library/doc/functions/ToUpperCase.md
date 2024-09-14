@@ -26,4 +26,4 @@ THIS IS A TEST
 
 ### Github
 
-* [Implementation of ToUpperCase](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L3223) 
+* [Implementation of ToUpperCase](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L3221) 

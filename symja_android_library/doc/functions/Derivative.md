@@ -10,6 +10,10 @@ Derivative(n1, n2, n3,...)[f]
 ```
 > represents a multivariate derivative.
 
+See: 
+* [Wikipedia - Differentiation rules](https://en.wikipedia.org/wiki/Differentiation_rules)
+* [Wikipedia - Derivative](https://en.wikipedia.org/wiki/Derivative)
+
 ### Examples
 ``` 
 >> Derivative(1)[Sin]    
@@ -47,10 +51,10 @@ Derivative(2,1)[h]
  
 >> Derivative(2, 0, 1, 0)[h(g)]    
 Derivative(2,0,1,0)[h(g)] 
-``` 
+```
 
-
-
+### Related terms 
+[D](D.md), [DSolve](DSolve.md), [Integrate](Integrate.md), [Limit](Limit.md), [ND](ND.md),  [NIntegrate](NIntegrate.md)
 
 
 
@@ -60,6 +64,6 @@ Derivative(2,0,1,0)[h(g)]
 
 ### Github
 
-* [Implementation of Derivative](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Derivative.java#L86) 
+* [Implementation of Derivative](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Derivative.java#L87) 
 
 * [Rule definitions of Derivative](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/DerivativeRules.m) 

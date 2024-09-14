@@ -34,4 +34,4 @@ Suppress the output of the result:
 
 ### Github
 
-* [Implementation of Timing](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L3221) 
+* [Implementation of Timing](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L3269) 

@@ -31,4 +31,4 @@ The `JacobiSymbol(a, n)` is a generalization of the Legendre symbol that allows 
 
 ### Github
 
-* [Implementation of JacobiSymbol](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L3244) 
+* [Implementation of JacobiSymbol](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L3401) 

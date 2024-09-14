@@ -37,4 +37,4 @@ It's important to use the `==` operator to define the equations. If you have uni
 
 ### Github
 
-* [Implementation of NSolve](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/NSolve.java#L13) 
+* [Implementation of NSolve](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/NSolve.java#L14) 

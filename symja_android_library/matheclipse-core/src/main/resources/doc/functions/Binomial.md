@@ -10,6 +10,7 @@ For negative integers `k` this function will return `0` no matter what value is 
 
 See:  
 * [Wikipedia - Binomial coefficient](http://en.wikipedia.org/wiki/Binomial_coefficient)
+* [Wikipedia - Combination](https://en.wikipedia.org/wiki/Combination)
 * [John D. Cook - Binomial coefficients definition](https://www.johndcook.com/blog/binomial_coefficients/)
 * [Kronenburg 2011 - The Binomial Coefficient for Negative Arguments](https://arxiv.org/pdf/1105.3689.pdf)
 * [Fungrim - Factorials and binomial coefficients](http://fungrim.org/topic/Factorials_and_binomial_coefficients/)
@@ -35,4 +36,4 @@ See:
 
 ### Github
 
-* [Implementation of Binomial](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L369) 
+* [Implementation of Binomial](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L442) 

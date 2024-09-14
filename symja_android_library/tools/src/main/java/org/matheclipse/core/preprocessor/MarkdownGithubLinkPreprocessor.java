@@ -52,6 +52,9 @@ public class MarkdownGithubLinkPreprocessor {
             File sourceFile = new File(sourceLocation, files[i]);
 
             String functionName = files[i].substring(0, files[i].length() - 3);
+            // if (!functionName.equals("Laplacian")) {
+            // continue;
+            // }
             String identifier = F.symbolNameNormalized(functionName);
             ISymbol symbol = Context.SYSTEM.get(identifier);
             if (symbol != null) {

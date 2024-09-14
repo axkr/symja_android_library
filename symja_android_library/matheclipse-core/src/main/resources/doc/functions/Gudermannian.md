@@ -28,6 +28,6 @@ See:
 
 ### Github
 
-* [Implementation of Gudermannian](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2035) 
+* [Implementation of Gudermannian](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2091) 
 
 * [Rule definitions of Gudermannian](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/GudermannianRules.m) 

@@ -10,6 +10,7 @@ See:
 * [Wikipedia - Trapezoidal rule](https://en.wikipedia.org/wiki/Trapezoidal_rule)
 * [Wikipedia - Romberg's method](https://en.wikipedia.org/wiki/Romberg%27s_method)
 * [Wikipedia - Riemann sum](https://en.wikipedia.org/wiki/Riemann_sum)
+* [Wikipedia - Simpson's rule](https://en.wikipedia.org/wiki/Simpson%27s_rule)
 * [Wikipedia - Truncation error (numerical integration)](https://en.wikipedia.org/wiki/Truncation_error_(numerical_integration))
 * [Wikipedia - Gauss-Kronrod quadrature formula)](https://en.wikipedia.org/wiki/Gauss%E2%80%93Kronrod_quadrature_formula)
 
@@ -64,4 +65,4 @@ Other options include `MaxIterations` and `MaxPoints`
 
 ### Github
 
-* [Implementation of NIntegrate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/NIntegrate.java#L80) 
+* [Implementation of NIntegrate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/NIntegrate.java#L86) 
