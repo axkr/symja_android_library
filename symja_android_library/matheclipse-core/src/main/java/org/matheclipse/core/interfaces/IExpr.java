@@ -274,18 +274,18 @@ public interface IExpr
   /**
    * Operator overloading for Scala operator <code>/</code>. Calls <code>divide(that)</code>.
    *
-   * @param that
-   * @return
+   * @param that the expression to divide by
+   * @return {@link #divide(IExpr)} {@code this / that}}
    */
   default IExpr $div(final IExpr that) {
     return divide(that);
   }
 
   /**
-   * Operator overloading for Scala operator <code>/</code>. Calls <code>divide(that)</code>.
+   * Operator overloading for Scala operator <code>-</code>. Calls <code>minus(that)</code>.
    *
-   * @param that
-   * @return
+   * @param that the expression to subtract
+   * @return {@link #minus(IExpr)} {@code this - that}}
    */
   default IExpr $minus(final IExpr that) {
     return minus(that);
@@ -294,8 +294,8 @@ public interface IExpr
   /**
    * Operator overloading for Scala operator <code>+</code>. Calls <code>plus(that)</code>.
    *
-   * @param that
-   * @return
+   * @param that the expression to add
+   * @return {@link #plus(IExpr)} {@code this + that}}
    */
   default IExpr $plus(final IExpr that) {
     return plus(that);
@@ -304,8 +304,8 @@ public interface IExpr
   /**
    * Operator overloading for Scala operator <code>*</code>. Calls <code>times(that)</code>.
    *
-   * @param that
-   * @return
+   * @param that the expression to multiply by
+   * @return {@link #times(IExpr)} {@code this * that}}
    */
   default IExpr $times(final IExpr that) {
     return times(that);
@@ -314,8 +314,8 @@ public interface IExpr
   /**
    * Operator overloading for Scala operator <code>^</code>. Calls <code>power(that)</code>.
    *
-   * @param that
-   * @return
+   * @param that the expression to raise to the power of
+   * @return {@link #power(IExpr)} {@code this ^ that}}
    */
   default IExpr $up(final IExpr that) {
     return power(that);
@@ -324,7 +324,7 @@ public interface IExpr
   /**
    * Evaluate the absolute value of this.
    *
-   * @return
+   * @return the absolute value of this
    */
   @Override
   default IExpr abs() {
@@ -343,24 +343,29 @@ public interface IExpr
    * Accept a visitor with return type <code>boolean</code>. The visitor should return
    * <code>true</code> if one of it's members fulfills the specific condition of the visitor.
    *
-   * @param visitor
-   * @return
+   * @param visitor the visitor to accept
+   * @return <code>true</code> if one of it's members fulfills the specific condition of the visitor
    */
   public boolean accept(IVisitorBoolean visitor);
 
   /**
-   * Accept a visitor with return type <code>int</code>
+   * Accept a visitor with return type <code>int</code>.
+   * <p>
+   * <b>Example</b>: the visitor can calculate a hash value of the expression.
    *
-   * @param visitor
-   * @return
+   * @param visitor the visitor to accept
+   * @return the result of the visitor
    */
   public int accept(IVisitorInt visitor);
 
   /**
-   * Accept a visitor with return type <code>long</code>
+   * Accept a visitor with return type <code>long</code>.
+   * <p>
+   * <b>Example</b>: the visitor can calculate a leaf counter of all the atomic expressions visited
+   * in <code>this^</code> expression.
    *
-   * @param visitor
-   * @return
+   * @param visitor the visitor to accept
+   * @return the result of the visitor
    */
   public long accept(IVisitorLong visitor);
 
@@ -391,14 +396,20 @@ public interface IExpr
    * support evaluation flags, otherwise the <code>this</code> object will be returned without
    * modification.
    *
-   * @param evalFlags
-   * @return
+   * @param evalFlags the evaluation flags to add
+   * @return the object with the added evaluation flags
    */
   default IExpr addEvalFlags(final int evalFlags) {
     return this;
   }
 
-  default IExpr agm(IExpr arg2) {
+  /**
+   * Calculate the arithmetic-geometric mean.
+   * 
+   * @param b
+   * @return the arithmetic-geometric mean of this and b
+   */
+  default IExpr agm(IExpr b) {
     return F.NIL;
   }
 
@@ -1037,11 +1048,12 @@ public interface IExpr
   }
 
   /**
-   * Return <code>negate()</code> if <code>number.sign() < 0</code>, otherwise return <code>this
-   * </code>
+   * Return <code>negate()</code> if <code>number.complexSign() < 0</code>, otherwise return
+   * <code>this</code>
    *
-   * @param number
-   * @return
+   * @param number the number to copy the sign from
+   * @return <code>negate()</code> if <code>number.complexSign() < 0</code>, otherwise return
+   *         <code>this</code>
    */
   default IExpr copySign(IReal number) {
     return number.complexSign() < 0 ? negate() : this;
@@ -1082,7 +1094,7 @@ public interface IExpr
    * F.eval(F.Subtract(this, C1))</code> in the common case and uses a specialized implementation
    * for derived number classes.
    *
-   * @return
+   * @return <code>(this - 1)</code>
    */
   default IExpr dec() {
     return plus(F.CN1);
@@ -1122,7 +1134,7 @@ public interface IExpr
    * implementation for derived number classes.
    *
    * @param that
-   * @return
+   * @return <code>(this / that)</code>
    */
   @Override
   default IExpr divide(IExpr that) {
@@ -1183,8 +1195,9 @@ public interface IExpr
    * arguments, where all arguments from position <code>1</code> to the end position are equals each
    * other.
    * 
-   * @param expr
-   * @return
+   * @param expr the expression to compare with
+   * @return <code>true</code> if all arguments of <code>this</code> expression and
+   *         <code>that</code> expression are equal.
    */
   default boolean equalsArgs(final IExpr that) {
     return equalsArgs(that, 1, size());
@@ -1194,10 +1207,11 @@ public interface IExpr
    * Check if this expression and that expression are both {@link IAST}s with the same number of
    * arguments, where all arguments are equals each other.
    * 
-   * @param expr
+   * @param expr the expression to compare with
    * @param startPosition (inclusive)
    * @param endPosition (exclusive)
-   * @return
+   * @return <code>true</code> if the specified arguments of <code>this</code> expression and
+   *         <code>that</code> expression are equal.
    */
   default boolean equalsArgs(final IExpr that, int startPosition, int endPosition) {
     return false;
@@ -1209,12 +1223,22 @@ public interface IExpr
    *
    * @param position the position in the <code>IAST</code> which should be tested for equality
    * @param expr the expression which should be tested for equality
-   * @return
+   * @return <code>true</code> if the expression at the specified position is equal to the specified
+   *         expression
    */
   public default boolean equalsAt(int position, final IExpr expr) {
     return false;
   }
 
+  /**
+   * Check if this expression and that expression are <i>ternary equal</i>. Returns one of the
+   * <code>COMPARE_TERNARY</code> values <code>TRUE, FALSE</code> or <code>UNDECIDABLE</code>
+   * 
+   * @param that the expression to compare with
+   * @param engine the evaluation engine
+   * @return one of the <code>COMPARE_TERNARY</code> values <code>TRUE, FALSE</code> or
+   *         <code>UNDECIDABLE</code>.
+   */
   default IExpr.COMPARE_TERNARY equalTernary(IExpr that, EvalEngine engine) {
     if (isIndeterminate() || that.isIndeterminate()) {
       return IExpr.COMPARE_TERNARY.UNDECIDABLE;
@@ -1291,8 +1315,8 @@ public interface IExpr
    * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
    * </ul>
    *
-   * @param that
-   * @return <code>S.True, S.False or F.NIL</code
+   * @param that the expression to compare with
+   * @return <code>S.True, S.False</code> or <code>F.NIL</code>
    */
   default IExpr equalTo(IExpr that) {
     COMPARE_TERNARY temp = this.equalTernary(that, EvalEngine.get());
@@ -1330,8 +1354,7 @@ public interface IExpr
    * Evaluate the expression in symbolic mode with the {@link EvalEngine} associated with the
    * current thread.
    * 
-   * @return the evaluated expression or <code>this</code> {@link F#NIL} if no evaluation was
-   *         possible.
+   * @return the evaluated expression or <code>this</code> if no evaluation was possible.
    */
   default IExpr eval() {
     return eval(EvalEngine.get());
@@ -1341,8 +1364,7 @@ public interface IExpr
    * Evaluate the expression in symbolic mode with the specified {@link EvalEngine}.
    * 
    * @param engine
-   * @return the evaluated expression or <code>this</code> {@link F#NIL} if no evaluation was
-   *         possible.
+   * @return the evaluated expression or <code>this</code> if no evaluation was possible.
    */
   default IExpr eval(EvalEngine engine) {
     return engine.evaluate(this);
@@ -1375,7 +1397,7 @@ public interface IExpr
   /**
    * Evaluate the expression to a <code>org.hipparchus.complex.Complex</code> complex float value.
    * 
-   * @return
+   * @return the complex float value
    * @throws ArgumentTypeException
    * @deprecated use {@link #evalfc()}
    */
@@ -1387,7 +1409,7 @@ public interface IExpr
   /**
    * Evaluate the expression to a Java <code>double</code> value.
    * 
-   * @return
+   * @return the double value
    * @throws ArgumentTypeException
    * @deprecated use {@link #evalf()}
    */
@@ -1399,6 +1421,7 @@ public interface IExpr
   /**
    * Evaluate the expression to a Java <code>double</code> value.
    *
+   * @return the double value
    * @throws ArgumentTypeException
    */
   default double evalf() throws ArgumentTypeException {
@@ -1418,7 +1441,7 @@ public interface IExpr
   /**
    * Evaluate the expression to a <code>org.hipparchus.complex.Complex</code> complex float value.
    *
-   * @return
+   * @return the complex float value
    * @throws ArgumentTypeException
    */
   default Complex evalfc() throws ArgumentTypeException {
@@ -1429,7 +1452,7 @@ public interface IExpr
    * Evaluate the expression to a <code>org.hipparchus.complex.Complex</code> complex float value.
    *
    * @param function maybe <code>null</code>; returns a substitution value for some expressions
-   * @return
+   * @return the complex float value
    * @throws ArgumentTypeException
    */
   default Complex evalfc(final Function<IExpr, IExpr> function) throws ArgumentTypeException {
@@ -1439,7 +1462,7 @@ public interface IExpr
   /**
    * Evaluate the expression in symbolic mode with the specified {@link EvalEngine}.
    * 
-   * @param engine
+   * @param engine the evaluation engine
    * @return {@link F#NIL} if no evaluation was possible.
    */
   default IExpr evalNIL(EvalEngine engine) {
@@ -1496,9 +1519,10 @@ public interface IExpr
   /**
    * Evaluate an expression if unequal {@link F#NIL} or otherwise return <code>other</code>
    * 
-   * @param engine
-   * @param other
-   * @return
+   * @param engine the evaluation engine
+   * @param other the other expression
+   * @return the evaluated expression or <code>other</code>, if <code>this</code> is
+   *         <code>F.NIL</code>
    */
   default IExpr evaluateOrElse(EvalEngine engine, final IExpr other) {
     return engine.evaluate(this);
@@ -1632,9 +1656,9 @@ public interface IExpr
   }
 
   /**
-   * Return the <code>FullForm()</code> of this expression
+   * Return the {@link S#FullForm} of this expression
    *
-   * @return
+   * @return the <code>FullForm()</code> of this expression
    */
   default String fullFormString() {
     return toString();
@@ -1677,7 +1701,7 @@ public interface IExpr
    * Return the Gaussian integer. If this is not a Gaussian integer return
    * <code>Optional.empty()</code>.
    * 
-   * @return
+   * @return <code>Optional.empty()</code> if this is not a Gaussian integer
    */
   default Optional<GaussianInteger> gaussianInteger() {
     return Optional.empty();
@@ -1687,7 +1711,7 @@ public interface IExpr
    * Return the Gaussian integers real and imaginary parts. If this is not a Gaussian integer return
    * <code>Optional.empty()</code>
    *
-   * @return <code>null</code> if this is not a Gaussian integer
+   * @return <code>Optional.empty()</code> if this is not a Gaussian integer
    */
   @Deprecated
   default Optional<IInteger[]> gaussianIntegers() {
@@ -1699,10 +1723,20 @@ public interface IExpr
     return S.GCD.of(this, that);
   }
 
+  /**
+   * @param arg2 the second argument
+   * @return <code>GegenbauerC(this, arg2)</code>
+   */
   default IExpr gegenbauerC(IExpr arg2) {
     return F.NIL;
   }
 
+  /**
+   * 
+   * @param arg2 the second argument
+   * @param arg3 the third argument
+   * @return <code>GegenbauerC(this, arg2, arg3)</code>
+   */
   default IExpr gegenbauerC(IExpr arg2, IExpr arg3) {
     return F.NIL;
   }
@@ -1719,11 +1753,11 @@ public interface IExpr
   }
 
   /**
-   * Get the element at the specified <code>index</code> if this object is of type <code>IAST</code>
-   * .
+   * Get the element at the specified <code>index</code> if this object is of type
+   * <code>IAST</code>. Otherwise return <code>Part(this, index)</code>.
    *
-   * @param index
-   * @return
+   * @param index the index of the element to return
+   * @return the element at the specified <code>index</code>
    */
   default IExpr getAt(final int index) {
     return S.Part.of(this, F.ZZ(index));
@@ -1764,14 +1798,14 @@ public interface IExpr
    * Evaluate {@link S#Greater} directly if both arguments are real numbers, otherwise evaluate the
    * built-in <code>Greater</code> function.
    *
-   * @param a1
-   * @return
+   * @param that the second argument
+   * @return <code>S.True, S.False</code> or <code>Greater(this, that)</code>
    */
-  default IExpr greater(final IExpr a1) {
-    if (isReal() && a1.isReal()) {
-      return ((IReal) this).isGT(((IReal) a1)) ? S.True : S.False;
+  default IExpr greater(final IExpr that) {
+    if (isReal() && that.isReal()) {
+      return ((IReal) this).isGT(((IReal) that)) ? S.True : S.False;
     }
-    return F.Greater(this, a1)//
+    return F.Greater(this, that)//
         .eval();
   }
 
@@ -1779,14 +1813,14 @@ public interface IExpr
    * Evaluate {@link S#GreaterEqual} directly if both arguments are real numbers, otherwise evaluate
    * the built-in <code>GreaterEqual</code> function.
    * 
-   * @param a1
-   * @return
+   * @param that the second argument
+   * @return <code>S.True, S.False</code> or <code>GreaterEqual(this, that)</code>
    */
-  default IExpr greaterEqual(final IExpr a1) {
-    if (isReal() && a1.isReal()) {
-      return ((IReal) this).isLT(((IReal) a1)) ? S.False : S.True;
+  default IExpr greaterEqual(final IExpr that) {
+    if (isReal() && that.isReal()) {
+      return ((IReal) this).isLT(((IReal) that)) ? S.False : S.True;
     }
-    return F.GreaterEqual(this, a1)//
+    return F.GreaterEqual(this, that)//
         .eval();
   }
 
@@ -1798,8 +1832,8 @@ public interface IExpr
    * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
    * </ul>
    *
-   * @param that
-   * @return <code>S.True, S.False or F.NIL</code
+   * @param that the second argument
+   * @return <code>S.True, S.False or F.NIL</code>
    */
   public default IExpr greaterEqualThan(IExpr that) {
     COMPARE_TERNARY temp =
@@ -1808,18 +1842,18 @@ public interface IExpr
   }
 
   /**
-   * * Compare if <code>this >= other</code:
+   * Compare if <code>this >= that</code:
    * <ul>
    * <li>return S.True if the comparison is <code>true</code></li>
    * <li>return S.False if the comparison is <code>false</code></li>
    * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
    * </ul>
    * 
-   * @param other
-   * @return
+   * @param that the second argument
+   * @return <code>S.True, S.False or F.NIL</code>
    */
-  public default IExpr greaterEqualThan(int other) {
-    return greaterEqualThan(F.ZZ(other));
+  public default IExpr greaterEqualThan(int that) {
+    return greaterEqualThan(F.ZZ(that));
   }
 
   /**
@@ -1831,7 +1865,7 @@ public interface IExpr
    * </ul>
    *
    * @param that
-   * @return <code>S.True, S.False or F.NIL</code
+   * @return <code>S.True, S.False or F.NIL</code>
    */
   public default IExpr greaterThan(IExpr that) {
     COMPARE_TERNARY temp =
@@ -1840,35 +1874,41 @@ public interface IExpr
   }
 
   /**
-   * Compare if <code>this > other</code:
+   * Compare if <code>this > that</code:
    * <ul>
    * <li>return S.True if the comparison is <code>true</code></li>
    * <li>return S.False if the comparison is <code>false</code></li>
    * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
    * </ul>
    * 
-   * @param other
-   * @return
+   * @param that
+   * @return <code>S.True, S.False or F.NIL</code>
    */
-  public default IExpr greaterThan(int other) {
-    return greaterThan(F.ZZ(other));
+  public default IExpr greaterThan(int that) {
+    return greaterThan(F.ZZ(that));
   }
 
+  /**
+   * @return <code>harmonicNumber(this)</code>
+   */
   default IExpr harmonicNumber() {
     return F.NIL;
   }
 
-  default IExpr harmonicNumber(IExpr r) {
+  /**
+   * @return <code>harmonicNumber(this, that)</code>
+   */
+  default IExpr harmonicNumber(IExpr that) {
     return F.NIL;
   }
 
   /**
-   * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the
-   * expression itself, did not match the collection of pattern-matching expressions. Calls
-   * {@link #has(pattern, true)}.
+   * Returns <code>true</code>, if <b>one of the elements</b> in the subexpressions or the
+   * expression itself, match the collection of pattern-matching expressions. Calls
+   * {@link #has(expr, true)} for each element in the collection.
    * 
    * @param collection a collection of pattern-matching expressions
-   * @return
+   * @return <code>true</code> if one of the elements did match the pattern
    */
   default boolean has(Collection<IExpr> collection) {
     for (IExpr expr : collection) {
@@ -1880,11 +1920,11 @@ public interface IExpr
   }
 
   /**
-   * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the
-   * expression itself, did not match the given pattern. Calls {@link #has(pattern, true)}.
+   * Returns <code>true</code>, if <b>one of the elements</b> in the subexpressions or the
+   * expression itself, did match the given pattern. Calls {@link #has(pattern, true)}.
    *
    * @param pattern a pattern-matching expression
-   * @return
+   * @return <code>true</code> if one of the elements did match the pattern
    */
   default boolean has(IExpr pattern) {
     return has(pattern, true);
@@ -1897,7 +1937,7 @@ public interface IExpr
    * @param pattern a pattern-matching expression
    * @param heads if set to <code>false</code>, only the arguments of an IAST should be tested and
    *        not the <code>Head[]</code> element.
-   * @return
+   * @return <code>true</code> if one of the elements did match the pattern
    */
   default boolean has(IExpr pattern, boolean heads) {
     if (pattern.isSymbol() || pattern.isNumber() || pattern.isString()) {
@@ -1914,7 +1954,7 @@ public interface IExpr
    * @param predicate a unary predicate
    * @param heads if set to <code>false</code>, only the arguments of an IAST should be tested and
    *        not the <code>Head[]</code> element.
-   * @return
+   * @return <code>true</code> if one of the elements did match the pattern
    */
   default boolean has(Predicate<IExpr> predicate, boolean heads) {
     return predicate.test(this);
@@ -2090,7 +2130,7 @@ public interface IExpr
    * F.eval(F.Plus(this, C1))</code> in the common case and uses a specialized implementation for
    * derived number classes.
    *
-   * @return
+   * @return <code>this + 1</code>
    */
   default IExpr inc() {
     return plus(F.C1);
@@ -2263,7 +2303,7 @@ public interface IExpr
    * Test if this expression is the <code>Alternatives</code> function <code>
    * Alternatives[&lt;pattern1&gt;, &lt;pattern2&gt;, ...]</code>
    *
-   * @return
+   * @return <code>true</code> if this expression is the <code>Alternatives()</code> function
    */
   default boolean isAlternatives() {
     return false;
@@ -3079,7 +3119,7 @@ public interface IExpr
    * isFree(pattern, true)</code>.
    *
    * @param pattern a pattern-matching expression
-   * @return
+   * @return <code>true</code> if the expression is free of the given pattern.
    */
   default boolean isFree(IExpr pattern) {
     return isFree(pattern, true);
@@ -3092,7 +3132,7 @@ public interface IExpr
    * @param pattern a pattern-matching expression
    * @param heads if set to <code>false</code>, only the arguments of an IAST should be tested and
    *        not the <code>Head[]</code> element.
-   * @return
+   * @return <code>true</code> if the expression is free of the given pattern.
    */
   default boolean isFree(IExpr pattern, boolean heads) {
     Predicate<IExpr> matcher = Predicates.toFreeQ(pattern);
@@ -3106,7 +3146,7 @@ public interface IExpr
    * @param predicate a unary predicate
    * @param heads if set to <code>false</code>, only the arguments of an IAST should be tested and
    *        not the <code>Head[]</code> element.
-   * @return
+   * @return <code>true</code> if the expression is free of the given
    */
   default boolean isFree(IPatternMatcher predicate, boolean heads) {
     return !predicate.test(this);
@@ -3119,7 +3159,7 @@ public interface IExpr
    * @param predicate a unary predicate
    * @param heads if set to <code>false</code>, only the arguments of an IAST should be tested and
    *        not the <code>Head[]</code> element.
-   * @return
+   * @return <code>true</code> if the expression is free of the given
    */
   default boolean isFree(Predicate<IExpr> predicate, boolean heads) {
     return !predicate.test(this);
@@ -3130,7 +3170,7 @@ public interface IExpr
    * expression itself, aren't ASTs with a head which match the given pattern.
    *
    * @param pattern a pattern-matching expression
-   * @return
+   * @return <code>true</code> if the expression contains no <code>IPatternObject</code>.
    */
   default boolean isFreeAST(IExpr pattern) {
     return true;
@@ -3141,7 +3181,7 @@ public interface IExpr
    * expression itself, aren't ASTs with a head which match the given predicate.
    *
    * @param predicate a unary predicate
-   * @return
+   * @return <code>true</code> if the expression contains no <code>IPatternObject</code>.
    */
   default boolean isFreeAST(Predicate<IExpr> predicate) {
     return true;
@@ -3293,9 +3333,9 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a integer number (i.e. instance of type <code>IInteger</code>):
+   * Test if this expression is a integer number (i.e. instance of type {@link IInteger}).
    *
-   * @return
+   * @return <code>true</code>, if the given expression is of type {@link IInteger}.
    */
   default boolean isInteger() {
     return this instanceof IInteger;
@@ -3419,7 +3459,7 @@ public interface IExpr
   /**
    * Test if this expression is a list (i.e. an AST with head List) with exactly 2 arguments
    *
-   * @return
+   * @return <code>true</code>, if the given expression is a list with exactly 2 arguments.
    */
   default boolean isList2() {
     return isList() && size() == 3;
@@ -3428,7 +3468,7 @@ public interface IExpr
   /**
    * Test if this expression is a list (i.e. an AST with head List) with exactly 3 arguments
    *
-   * @return
+   * @return <code>true</code>, if the given expression is a list with exactly 3 arguments.
    */
   default boolean isList3() {
     return isList() && size() == 4;
@@ -3437,7 +3477,7 @@ public interface IExpr
   /**
    * Test if this expression is a list (i.e. an AST with head List) with exactly 4 arguments
    *
-   * @return
+   * @return <code>true</code>, if the given expression is a list with exactly 4 arguments.
    */
   default boolean isList4() {
     return isList() && size() == 5;
@@ -3450,7 +3490,8 @@ public interface IExpr
    * Cos[], Plus[] or Times[]
    * </code>. Therefore this expression is no <b>atomic expression</b>.
    *
-   * @return
+   * @return <code>true</code>, if the given expression is an IAST with attribute
+   *         {@link ISymbol#LISTABLE}
    * @see #isAtom()
    */
   default boolean isListableAST() {
@@ -3458,9 +3499,10 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a list of DirectedEdge or UndirectedEdge
+   * Test if this expression is a list of DirectedEdge or UndirectedEdge expressions
    *
-   * @return
+   * @return <code>true</code>, if the given expression is a list of DirectedEdge or UndirectedEdge
+   *         expressions
    */
   default GraphType isListOfEdges() {
     return null;
@@ -3470,7 +3512,7 @@ public interface IExpr
    * Test if this expression is a list of lists <code>{{...},{...},...}</code> and contains at least
    * 1 sublist. The sublists are allowed to be empty lists.
    *
-   * @return
+   * @return <code>true</code>, if the given expression is a list of lists
    * @see #isList()
    * @see #isMatrix(boolean)
    * @see #isVector()
@@ -3482,7 +3524,7 @@ public interface IExpr
   /**
    * Test if this expression is a list of matrices and contains at least 1 matrix.
    *
-   * @return
+   * @return <code>true</code>, if the given expression is a list of matrices
    */
   default boolean isListOfMatrices() {
     return false;
@@ -3492,8 +3534,8 @@ public interface IExpr
    * Test if <code>this</code> is a list of points in the given dimension. The head of the points
    * can be {@link S#List}, {@link S#Labeled} or {@link S#Style}
    * 
-   * @param pointDimension
-   * @return
+   * @param pointDimension the dimension of the points
+   * @return <code>true</code>, if the given expression is a list of points
    */
   default boolean isListOfPoints(int pointDimension) {
     return false;
@@ -3502,7 +3544,7 @@ public interface IExpr
   /**
    * Test if this expression is a list of rules (head Rule or RuleDelayed)
    *
-   * @return
+   * @return <code>true</code>, if the given expression is a list of rules
    * @see #isList()
    * @see #isMatrix(boolean)
    * @see #isVector()
@@ -3515,9 +3557,8 @@ public interface IExpr
    * Test if this expression is a list of rules (head Rule or RuleDelayed)
    *
    * @param ignoreEmptySublists if <code>true</code>, ignore elements which equals an empty list
-   *        <code>
-   *     { }</code>
-   * @return
+   *        <code>{ }</code>
+   * @return <code>true</code>, if the given expression is a list of rules
    * @see #isList()
    * @see #isMatrix(boolean)
    * @see #isVector()
@@ -3527,12 +3568,12 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a list of rules (head Rule or RuleDelayed) or an Association.
+   * Test if this expression is a list of rules (head Rule or RuleDelayed) or an
+   * {@link S#Association}
    *
    * @param ignoreEmptySublists if <code>true</code>, ignore elements which equals an empty list
-   *        <code>
-   *     { }</code> but only in lists.
-   * @return
+   *        <code>{ }</code> but only in lists.
+   * @return <code>true</code>, if the given expression is a list of rules or an Association
    */
   default boolean isListOfRulesOrAssociation(boolean ignoreEmptySublists) {
     return false;
@@ -3541,7 +3582,7 @@ public interface IExpr
   /**
    * Test if this expression is a list of strings and contains at least 1 element.
    *
-   * @return
+   * @return <code>true</code>, if the given expression is a list of strings
    * @see #isList()
    * @see #isMatrix(boolean)
    * @see #isVector()
@@ -3553,7 +3594,7 @@ public interface IExpr
   /**
    * Test if this expression is a list (i.e. an AST with head List) or an Association
    *
-   * @return
+   * @return <code>true</code>, if the given expression is a list or an Association
    */
   default boolean isListOrAssociation() {
     return isList();
@@ -3562,7 +3603,7 @@ public interface IExpr
   /**
    * Test if this expression is the function <code>Log(&lt;z&gt;)</code>
    *
-   * @return
+   * @return <code>true</code>, if the given expression is the function <code>Log(&lt;z&gt;)</code>
    */
   default boolean isLog() {
     return false;
@@ -3571,7 +3612,8 @@ public interface IExpr
   /**
    * Test if this expression is the function <code>Log(&lt;base&gt;,&lt;z&gt;)</code>
    * 
-   * @return
+   * @return <code>true</code>, if the given expression is the function
+   *         <code>Log(&lt;base&gt;, &lt;z&gt;)</code>
    */
   default boolean isLog2() {
     return isAST(S.Log, 3);
@@ -3592,7 +3634,7 @@ public interface IExpr
    * Test if this expression is a machine-precision (Java double type) real or complex number. I.e.
    * an instance of type <code>Num</code> or <code>ComplexNum</code>.
    *
-   * @return
+   * @return <code>true</code>, if the given expression is a machine-precision number.
    */
   default boolean isMachineNumber() {
     return (this instanceof Num && ((Num) this).precision() <= ParserConfig.MACHINE_PRECISION)
@@ -3603,7 +3645,7 @@ public interface IExpr
    * If this object mathematical has a negative integer number as the result return
    * <code>true</code>.
    * 
-   * @return
+   * @return <code>true</code>, if the result is a negative integer number.
    */
   default boolean isMathematicalIntegerNegative() {
     return isIntegerResult() && isNegativeResult();
@@ -3613,7 +3655,7 @@ public interface IExpr
    * If this object mathematical has a non-negative integer number as the result return
    * <code>true</code>.
    * 
-   * @return
+   * @return <code>true</code>, if the result is a non-negative integer number.
    */
   default boolean isMathematicalIntegerNonNegative() {
     return isIntegerResult() && isNonNegativeResult();

@@ -94,9 +94,10 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   public static final int IS_ALL_EXPANDED = 0x2000;
 
   /**
-   * This expression represents an already decomposed partial fraction
+   * This expression represents an already decomposed partial fraction expression.
+   * <p>
+   * See: {@link S#Apart}
    *
-   * @see Apart
    */
   public static final int IS_DECOMPOSED_PARTIAL_FRACTION = 0x0080;
 
@@ -197,31 +198,32 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   public IASTAppendable appendClone(IExpr expr);
 
   /**
-   * Apply the given head to this expression (i.e. create a list copy and replace the old head with
-   * the given one). <code>F.List(a,b,c).apply(F.Max)</code> gives <code>Max(a,b,c)</code>
+   * Apply the given <code>head</code> to this expression (i.e. create a shallow copy and replace
+   * the old head with the given one). <code>F.List(a,b,c).apply(F.Max)</code> gives
+   * <code>Max(a,b,c)</code>
    *
    * @param head
-   * @return
+   * @return create a shallow copy with element 0 set to <code>head</code>
    */
   public IASTAppendable apply(IExpr head);
 
   /**
-   * Apply the given head to this expression (i.e. create a sublist clone starting from index start
-   * and replacing the old head with the given one)
+   * Apply the given <code>head</code> to this expression (i.e. create a sublist shallow copy
+   * starting from index start and replacing the old head with the given one)
    *
    * @param head
    * @param start the start index
-   * @return
+   * @return a sublist clone with element 0 set to <code>head</code>
    */
   public IAST apply(IExpr head, int start);
 
   /**
-   * Apply the given head to this expression (i.e. create a sublist clone from index start to end,
-   * and replacing the old head with the given one)
+   * Apply the given <code>head</code> to this expression (i.e. create a sublist shallow copy from
+   * index start to end, and replacing the old head with the given one)
    *
    * @param head
-   * @param start the start index
-   * @param end the end index
+   * @param start the start index inclusive
+   * @param end the end index exclusive
    * @return a clone with element set to <code>head</code> at the given <code>0</code>.
    */
   public IAST apply(IExpr head, int start, int end);
@@ -281,6 +283,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    */
   public IExpr arg5();
 
+  /** {@inheritDoc} */
   @Override
   default int argSize() {
     return size() - 1;
@@ -305,7 +308,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   public SortedSet<IExpr> asSortedSet(Comparator<? super IExpr> comparator);
 
   /**
-   * call <code>setEvalFlags(IAST.BUILT_IN_EVALED)</code>
+   * Call <code>setEvalFlags(IAST.BUILT_IN_EVALED)</code>
    */
   public default void builtinEvaled() {
     setEvalFlags(IAST.BUILT_IN_EVALED);
@@ -316,10 +319,11 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
 
   /**
    * Compare all adjacent elements from lowest to highest index and return true, if the binary
-   * predicate gives true in each step. If the size is &lt; 2 the method returns false;
-   *
+   * predicate gives true in each step. If <code>size &lt; 2</code> the method returns
+   * <code>false</code>.
+   * 
    * @param predicate the binary predicate
-   * @return
+   * @return <code>true</code>, if the binary predicate gives true in each step
    */
   public boolean compareAdjacent(BiPredicate<IExpr, IExpr> predicate);
 
@@ -421,19 +425,21 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * <p>
    * 
    * @param position
-   * @return
+   * @return a copy of this <code>AST</code> instance from the given <code>position</code>
+   *         (inclusive)
    */
   public IASTAppendable copyFrom(int position);
 
   /**
    * <p>
    * Create a copy of this <code>AST</code>, which contains the same head and all elements from the
-   * given <code>position</code> (inclusive).
+   * given <code>startPosition</code> (inclusive) to the <code>endPosition</code> (exclusive)
    * <p>
    * 
    * @param startPosition the position to start copying the elements (inclusive)
    * @param endPosition the position to end copying the elements (exclusive)
-   * @return
+   * @return a copy of this <code>AST</code> instance from the given <code>startPosition</code>
+   *         (inclusive) to the <code>endPosition</code> (exclusive)
    */
   public IASTAppendable copyFrom(int startPosition, int endPosition);
 
@@ -447,7 +453,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * <p>
    * This also allows to set the header object to an arbitrary expression.
    *
-   * @return
+   * @return a copy of this <code>IAST</code> instance, which only contains the head.
    */
   public IASTAppendable copyHead();
 
@@ -460,14 +466,14 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * This also allows to set the header object to an arbitrary expression.
    *
    * @param intialCapacity the initial number of arguments
-   * @return
+   * @return a copy of this <code>IAST</code> instance, which only contains the head.
    */
   public IASTAppendable copyHead(final int intialCapacity);
 
   /**
    * Copy the arguments of this AST to a list.
    *
-   * @return
+   * @return a <code>java.util.List</code> containing the arguments of this AST
    */
   default List<IExpr> copyTo() {
     return (List<IExpr>) copyTo(new ArrayList<IExpr>(size()));
@@ -477,7 +483,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * Copy the arguments of this AST to a given collection object.
    *
    * @param collection
-   * @return
+   * @return the given collection object containing the arguments of this IAST
    */
   default Collection<IExpr> copyTo(Collection<IExpr> collection) {
     for (int i = 1; i < size(); i++) {
@@ -490,8 +496,9 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * Create a copy of this <code>AST</code>, which contains the same head and all elements up to the
    * given <code>position</code> (exclusive).
    *
-   * @param position
-   * @return
+   * @param position the position up to which the copy should be created
+   * @return a copy of this <code>AST</code> instance up to the given <code>position</code>
+   *         (exclusive).
    */
   public IASTAppendable copyUntil(int position);
 
@@ -500,8 +507,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * given <code>position</code> (exclusive).
    *
    * @param intialCapacity the initial capacity of elements
-   * @param position
-   * @return
+   * @param position the position up to which the copy should be created
+   * @return a copy of this <code>IAST</code> instance up to the given <code>position</code>
    */
   public IASTAppendable copyUntil(final int intialCapacity, int position);
 
@@ -513,9 +520,9 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * Test each argument with the {@link Predicate} and sum up how often it returns
    * <code>true</code>.
    * 
-   * @param predicate
-   * @param fromIndex
-   * @return
+   * @param predicate the predicate which filters each argument in this <code>AST</code>
+   * @param fromIndex the start index from which the elements have to be tested
+   * @return the number of elements which satisfy the predicate
    */
   public int count(Predicate<? super IExpr> predicate, int fromIndex);
 
@@ -524,7 +531,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    *
    * @param position the position which should be tested for equality
    * @param expr the expr which should be tested for equality
-   * @return
+   * @return <code>true</code> if the element at the given position is equal to the given expr
    */
   @Override
   public boolean equalsAt(int position, final IExpr expr);
@@ -583,10 +590,12 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   /**
    * Compare the arguments pairwise with the <code>stopPredicate</code>. If the predicate gives
    * <code>true</code> return <code>true</code>. If the <code>stopPredicate</code> gives false for
-   * each pairwise comparison return the <code>false</code> at the end.
+   * each pairwise comparison return <code>false</code> at the end.
    *
-   * @param stopPredicate
-   * @return
+   * @param stopPredicate the predicate which filters the arguments pairwise in this
+   *        <code>IAST</code>
+   * @return <code>true</code> if the <code>stopPredicate</code> gives <code>true</code> for of of
+   *         the pairwise comparisons
    */
   default boolean existsLeft(BiPredicate<IExpr, IExpr> stopPredicate) {
     int size = size();
@@ -611,7 +620,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    *
    * @param isUnaryConditionalExpression if <code>true</code> <code>this</code> is of the form
    *        <code>head( ConditionalExpression(expr, condition) )</code>
-   * @return
+   * @return the <code>ConditionalExpression</code> or <code>F.NIL</code>
    */
   public IExpr extractConditionalExpression(boolean isUnaryConditionalExpression);
 
@@ -705,7 +714,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * Find the first argument position, which equals <code>expr</code>. The search starts at index
    * <code>1</code>.
    *
-   * @param expr
+   * @param expr the expression which should be found
    * @return <code>-1</code> if no position was found
    * @deprecated use {@link #indexOf(IExpr)} instead
    */
@@ -810,10 +819,10 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * sub-<code>AST</code>s and return <code>true</code> if all of the leaf elements starting from
    * index <code>startOffset</code> satisfy the predicate.
    * 
-   * @param head
+   * @param head the head which should be ignored
    * @param predicate the predicate which filters each argument in this <code>AST</code>
    * @param startOffset start offset from which the leaf elements have to be tested
-   * @return
+   * @return <code>true</code> if the predicate is true for all leaves of this <code>IAST</code>
    */
   public boolean forAllLeaves(IExpr head, Predicate<? super IExpr> predicate, int startOffset);
 
@@ -843,7 +852,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * <code>size()-1</code> and call the method <code>Consumer.accept()</code> for these elements.
    * <b>Note:</b> the 0-th element (i.e. the head of the AST) will not be selected.
    *
-   * @param action
+   * @param action the action which should be executed for each element
    * @param startOffset the start offset from which the action.accept() method should be executed
    */
   public void forEach(Consumer<? super IExpr> action, int startOffset);
@@ -855,9 +864,9 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * <code>appendableList</code>. Otherwise the result will be appended to
    * <code>appendableList</code>.
    * 
-   * @param appendableList
-   * @param biFunction
-   * @return
+   * @param appendableList the result list
+   * @param biFunction the function which should be applied to the elements
+   * @return the <code>appendableList</code>
    */
   default IASTAppendable forEach(IASTAppendable appendableList,
       BiFunction<IExpr, IExpr, IExpr> biFunction) {
@@ -877,7 +886,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    *
    * @param end end index (exclusive)
    * @param action function which accepts the elements
-   * @return <tt>this</tt>
    */
   default void forEach(int end, Consumer<? super IExpr> action) {
     forEach(1, end, action);
@@ -901,9 +909,9 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * Consume all <code>value-elements</code> generated by the given function from index
    * <code>start</code> inclusive to <code>end</code> exclusive.
    * 
-   * @param start
-   * @param end
-   * @param consumer
+   * @param start start index (inclusive)
+   * @param end end index (exclusive)
+   * @param consumer function which accepts the elements
    */
   default void forEach(int start, int end, ObjIntConsumer<? super IExpr> consumer) {
     for (int i = start; i < end; i++) {
@@ -913,10 +921,10 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
 
   /**
    * Consume all <code>value-elements</code> generated by the given function from index
-   * <code>1</code> inclusive to <code>end</code> exclusive.
+   * <code>1</code> inclusive.
    * 
-   * @param end
-   * @param consumer
+   * @param end end index (exclusive)
+   * @param consumer function which accepts the elements
    */
   default void forEach(int end, ObjIntConsumer<? super IExpr> consumer) {
     forEach(1, end, consumer);
@@ -926,7 +934,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * Consume all <code>value-elements</code> generated by the given function from index
    * <code>1</code> inclusive to <code>size()</code> exclusive.
    * 
-   * @param consumer
+   * @param consumer function which accepts the elements
    */
   default void forEach(ObjIntConsumer<? super IExpr> consumer) {
     forEach(1, size(), consumer);
@@ -946,7 +954,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * (i.e. the head of the AST) will not be selected. If the element is an Association the complete
    * rule will be selected as element.
    *
-   * @param action
+   * @param action the action which should be executed for each element
    * @param startOffset the start offset from which the action.accept() method should be executed
    */
   public void forEachRule(Consumer<? super IExpr> action, int startOffset);
@@ -954,7 +962,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   /**
    * Set {@link IAST#BUILT_IN_EVALED} flag.
    * 
-   * @return
+   * @return <code>this</code> instance
    */
   default IAST functionEvaled() {
     addEvalFlags(IAST.BUILT_IN_EVALED);
@@ -984,8 +992,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   /**
    * Casts an <code>IExpr</code> at position <code>index</code> to an <code>IAST</code>.
    *
-   * @param index
-   * @return
+   * @param index the position of the element which should be cast to an <code>IAST</code>
+   * @return <code>F.NIL</code> if the element at the given position is not an <code>IAST</code>
    */
   public IAST getAST(int index);
 
@@ -1004,14 +1012,14 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   /**
    * Get the evaluation flags for this list.
    *
-   * @return
+   * @return the evaluation flags
    */
   public int getEvalFlags();
 
   /**
    * Get the cached hash value.
    *
-   * @return
+   * @return the cached hash value
    */
   public int getHashCache();
 
@@ -1019,7 +1027,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * Casts an <code>IExpr</code> at position <code>index</code> to an <code>IInteger</code>.
    *
    * @param index
-   * @return
+   * @return the element at the specified position casted to an <code>IInteger</code>
+   * @throws IllegalArgumentException if the cast is not possible
    */
   public IInteger getInt(int index);
 
@@ -1031,7 +1040,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    *     IAST}.
    * @param length the end position (exclusive) to which the <code>items</code> array is filled with
    *        valid element positions
-   * @return
+   * @return the elements specified in the <code>items</code> array
    */
   default IAST getItems(int[] items, int length) {
     return getItems(items, length, 0);
@@ -1045,25 +1054,28 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    *     IAST}.
    * @param length the end position (exclusive) to which the <code>items</code> array is filled with
    *        valid element positions
-   * @param offset TODO
-   * @return
+   * @param offset the start position from which the elements should be selected
+   * @return the elements specified in the <code>items</code> array
    */
   public IAST getItems(int[] items, int length, int offset);
 
   /**
-   * Casts an <code>IExpr</code> which is a list at position <code>index</code> to an <code>IAST
+   * Casts an <code>IExpr</code> which is a {@link S#List} at position <code>index</code> to an
+   * <code>IAST
    * </code>.
    *
-   * @param index
-   * @return
+   * @param index the position of the element which should be cast to an <code>IAST</code>
+   * @return the element at the specified position casted to an <code>IAST</code>
+   * @throws IllegalArgumentException if the cast is not possible
    */
-  public IAST getList(int index);;
+  public IAST getList(int index);
 
   /**
    * Casts an <code>IExpr</code> at position <code>index</code> to an <code>INumber</code>.
    *
-   * @param index
-   * @return
+   * @param index the position of the element which should be cast to an <code>INumber</code>
+   * @return the element at the specified position casted to an <code>INumber</code>
+   * @throws IllegalArgumentException if the cast is not possible
    */
   public INumber getNumber(int index);
 
@@ -1103,8 +1115,9 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * Assuming this is a list of rules or an <code>IAssociation</code>. Return the first rule which
    * equals the <code>key</code> argument.
    *
-   * @param key
-   * @return
+   * @param key the key which should be found in the rules.
+   * @return the first rule which equals the <code>key</code> argument; otherwise return
+   *         {@link F#NIL}
    */
   default IAST getRule(IExpr key) {
     int index = indexOf(x -> x.isRuleAST() && x.first().equals(key));
@@ -1119,7 +1132,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * {@link #get(int)}.
    *
    * @param position
-   * @return
+   * @return the rule at the position for associations or the element at the position.
    */
   default IExpr getRule(int position) {
     return get(position);
@@ -1127,10 +1140,11 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
 
   /**
    * Assuming this is a list of rules or an <code>IAssociation</code>. Return the first rule which
-   * equals the <code>key</code> argument.
+   * equals the <code>key</code> string at the left-hand-side of the rule.
    *
-   * @param key
-   * @return
+   * @param key the key which should be found in the rules.
+   * @return the first rule which equals the <code>key</code> argument; otherwise return
+   *         {@link F#NIL}
    */
   default IAST getRule(String key) {
     int index = indexOf(x -> x.isRuleAST() && x.first().equals(F.$str(key)));
@@ -1145,8 +1159,9 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * is the function {@link F#Unevaluated(IExpr)} return the first argument of the
    * {@link F#Unevaluated(IExpr)} function.
    * 
-   * @param position
-   * @return
+   * @param position the position of the element
+   * @return if this is {@link F#Unevaluated(IExpr)} return the first argument of the
+   *         {@link F#Unevaluated(IExpr)} function.
    */
   default IExpr getUnevaluated(int position) {
     return get(position);
@@ -1156,8 +1171,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * If this is an <code>IAssociation</code> return the value of the rule at the position. Otherwise
    * call {@link #get(int)}.
    *
-   * @param position
-   * @return
+   * @param position the position of the element
+   * @return the value of the rule at the position for associations or the element at the position.
    */
   default IExpr getValue(int position) {
     return get(position);
@@ -1184,7 +1199,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * Test if the last argument contains a pattern with an optional argument. (i.e. <code>x_:value
    * </code>)
    *
-   * @return
+   * @return <code>true</code> if the last argument contains a pattern with an optional argument
    */
   default boolean hasOptionalArgument() {
     return (size() > 1) && last().isPatternDefault();
@@ -1205,7 +1220,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   /**
    * Test if this AST contains no argument
    *
-   * @return
+   * @return <code>true</code> if this IAST is empty
    */
   @Override
   public boolean isEmpty();
@@ -1213,8 +1228,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   /**
    * Are the given evaluation flags disabled for this list ?
    *
-   * @param flags
-   * @return
+   * @param flags the evaluation flags to test against
+   * @return <code>true</code> if the evaluation flags are disabled
    * @see IAST#NO_FLAG
    */
   @Override
@@ -1223,21 +1238,21 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   /**
    * Are the given evaluation flags enabled for this list ?
    *
-   * @param flags
-   * @return
+   * @param flags the evaluation flags to test against
+   * @return <code>true</code> if the evaluation flags are enabled
    * @see IAST#NO_FLAG
    */
   @Override
   public boolean isEvalFlagOn(int flags);
 
   /**
-   * Returns <code>true</code>, if <b>all of the elements</b> in the expressions or the expression
-   * itself at the given <code>position</code>, did not match the <code>pattern</code>. Calls <code>
-   * get(Position).isFree(pattern, true)</code>.
+   * Returns <code>true</code> if the expression at the given <code>position</code>, did not match
+   * the <code>pattern</code>. Calls <code>get(Position).isFree(pattern, true)</code>.
    *
    * @param position
    * @param pattern a pattern-matching expression
-   * @return
+   * @return <code>true</code> if the expression at the given <code>position</code> is free of the
+   *         pattern.
    */
   public boolean isFreeAt(int position, final IExpr pattern);
 
@@ -1278,7 +1293,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    *
    * @param head object to compare with element at location <code>0</code>
    * @param length
-   * @return
+   * @return <code>true</code> if the head is the same object as <code>head</code> and the size of
+   *         the list is greater or equal <code>length</code>
    */
   @Override
   default boolean isSameHeadSizeGE(ISymbol head, int length) {
@@ -1349,7 +1365,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * </pre>
    *
    * @param function a unary function
-   * @return
+   * @return the resulting IAST with the mapped elements
    */
   public IAST map(final Function<IExpr, ? extends IExpr> function);
 
@@ -1366,7 +1382,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    *
    * @param functor a unary function
    * @param startOffset the startOffset from there the <code>functor</code> should be used.
-   * @return
+   * @return the resulting IAST with the mapped elements
    */
   public IAST map(final Function<IExpr, ? extends IExpr> functor, final int startOffset);
 
@@ -1387,7 +1403,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    *
    * @param astResult
    * @param function
-   * @return
+   * @return the resulting IAST with the mapped elements
    */
   public IASTAppendable map(IASTAppendable astResult, IUnaryIndexFunction<IExpr, IExpr> function);
 
@@ -1398,7 +1414,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @param clonedResultAST a list which is cloned from <code>this</code> list or greater or equal
    *        in size of <code>this</code> list.
    * @param functor a unary function
-   * @return
+   * @return the resulting IAST with the mapped elements
    */
   public IAST map(final IASTMutable clonedResultAST, final Function<IExpr, IExpr> functor);
 
@@ -1408,7 +1424,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    *
    * @param head the new head element of the result list
    * @param functor a unary function
-   * @return
+   * @return the resulting IAST with the mapped elements
    */
   public IAST map(final IExpr head, final Function<IExpr, IExpr> functor);
 
@@ -1422,7 +1438,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * 
    * @param testHead if the levels head equals testHead apply mapLeaf on this list element
    * @param function the startOffset from there the <code>functor</code> should be used.
-   * @return
+   * @return the resulting IAST with the mapped leafs
    */
   default IAST mapLeaf(IExpr testHead, final Function<IExpr, IExpr> function) {
     return mapLeaf(testHead, function, 1);
@@ -1435,7 +1451,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @param testHead if the levels head equals testHead apply mapLeaf on this list element
    * @param function functor a unary function
    * @param startOffset the startOffset from there the <code>functor</code> should be used.
-   * @return
+   * @return the resulting IAST with the mapped leafs
    */
   public IAST mapLeaf(IExpr testHead, final Function<IExpr, IExpr> function, final int startOffset);
 
@@ -1452,13 +1468,14 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
 
   /**
    * This method assumes that <code>this</code> is a list of list in matrix form. It combines the
-   * column values in a list as argument for the given <code>function</code>. <b>Example</b> a
-   * matrix <code>{{x1, y1,...}, {x2, y2, ...}, ...}</code> will be converted to <code>
-   * {f.apply({x1, x2,...}), f.apply({y1, y2, ...}), ...}</code>
+   * column values in a list as argument for the given <code>function</code>.
+   * <p>
+   * <b>Example</b> a matrix <code>{{x1, y1,...}, {x2, y2, ...}, ...}</code> will be converted to
+   * <code>{f.apply({x1, x2,...}), f.apply({y1, y2, ...}), ...}</code>
    *
    * @param dim the dimension of the matrix
    * @param f a unary function
-   * @return
+   * @return the resulting IAST with the mapped elements
    */
   @Override
   public IExpr mapMatrixColumns(int[] dim, Function<IExpr, IExpr> f);
@@ -1489,7 +1506,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * <code>function</code>.
    *
    * @param function a unary function which maps each argument
-   * @return
+   * @return the resulting IAST with the mapped elements
    */
   public IASTMutable mapThread(Function<IExpr, IExpr> function);
 
@@ -1529,7 +1546,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    *        currently mapped argument of this {@link IAST}.
    * @param positionInReplacement the position in <code>replacement</code> which should be replaced
    *        by the corresponding argument of this {@link IAST}
-   * @return
+   * @return the resulting IAST with the mapped elements
    * @see IAST#map(Function, int)
    */
   public IASTMutable mapThreadEvaled(EvalEngine engine, final IAST replacement,
@@ -1573,15 +1590,19 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * <code>Times[]</code>) you can call <code>getOneIdentity(F.C1)</code>.
    *
    * @param defaultValue default value, if <code>size() < 2</code>.
-   * @return
+   * @return the argument at index 1, if the <code>argSize() == 1</code> or
+   *         <code>defaultValue</code>, if the <code>argSize() == 0</code>; otherwise return
+   *         <code>this</code>
    */
   public IExpr oneIdentity(IExpr defaultValue);
 
   /**
-   * Return the argument at index 1, if the <code>argSize() == 1</code>. Or return the complete ast
-   * if the <code>argSize() > 1</code> If the <code>argSize() == 0</code> return <code>0</code>.
+   * Return the argument at index <code>1</code>, if the <code>argSize() == 1</code>. Or return the
+   * complete IAST if the <code>argSize() > 1</code> If the <code>argSize() == 0</code> return
+   * <code>0</code>.
    *
-   * @return
+   * @return the argument at index <code>1</code>, if the <code>argSize() == 1</code> or
+   *         <code>0</code> if the <code>argSize() == 0</code>; otherwise return <code>this</code>.
    */
   default IExpr oneIdentity0() {
     return oneIdentity(F.C0);
@@ -1591,7 +1612,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * Return the argument at index 1, if the <code>argSize() == 1</code>. Or return the complete ast
    * if the <code>argSize() > 1</code> If the <code>argSize() == 0</code> return <code>1</code>.
    *
-   * @return
+   * @return the argument at index 1, if the <code>argSize() == 1</code> or <code>1</code> if the
+   *         <code>argSize() == 0</code>; otherwise return <code>this</code>.
    */
   default IExpr oneIdentity1() {
     return oneIdentity(F.C1);
@@ -1615,16 +1637,16 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
       BiPredicate<? super IExpr, ? super IExpr> predicate);
 
   /**
-   * Calculate a special hash value for pattern matching
+   * Calculate a hash value especially for pattern matching
    *
-   * @return
+   * @return the pattern hash value
    */
   public int patternHashCode();
 
   /**
    * Prepend an expression to this list.
    *
-   * @param expr
+   * @param expr the expression to prepend
    * @return <code>this</code> after prepending the given expression.
    */
   public IASTAppendable prependClone(IExpr expr);
@@ -1634,8 +1656,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   /**
    * Removes all objects which satisfy the given predicate.
    *
-   * @param predicate
-   * @return <code>F.NIL</code> if no element could be removed
+   * @param predicate the predicate which filters the arguments
+   * @return {@link F#NIL} if no element could be removed
    */
   public IASTAppendable remove(Predicate<? super IExpr> predicate);
 
@@ -1643,16 +1665,16 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not
    * copied) and remove the element at the given <code>position</code>.
    *
-   * @param i
-   * @return a clone with removed element at the given position.
+   * @param position the position of the element which should be removed
+   * @return a shallow copy with removed element at the given position.
    */
-  public IASTAppendable removeAtClone(int i);
+  public IASTAppendable removeAtClone(int position);
 
   /**
    * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not
    * copied) and remove the element at the given <code>position</code>.
    *
-   * @param position
+   * @param position the position of the element which should be removed
    * @return an IAST with removed element at the given position.
    */
   public IASTMutable removeAtCopy(int position);
@@ -1662,7 +1684,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * inclusive to the end of this AST.
    *
    * @param fromPosition
-   * @return
+   * @return the resulting AST with removed element at the given position
+   * @throws IndexOutOfBoundsException if the <code>fromPosition</code> is out of range
    */
   public default IAST removeFromEnd(int fromPosition) {
     if (0 < fromPosition && fromPosition <= size()) {
@@ -1679,19 +1702,19 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   }
 
   /**
-   * Copy to a new <code>IAST</code> and remove all arguments from position <code>1</code> inclusive
-   * to the <code>firstPosition</code> exclusive of this AST.
+   * Copy to a new <code>IAST</code> and remove all arguments from start position <code>1</code>
+   * inclusive to the <code>firstPosition</code> exclusive of this AST.
    *
-   * @param firstPosition
-   * @return
+   * @param endPosition the end position (exclusive) to which the elements will be removed
+   * @throws IndexOutOfBoundsException if the <code>fromPosition</code> is out of range
    */
-  public default IAST removeFromStart(int firstPosition) {
-    if (0 < firstPosition && firstPosition <= size()) {
-      if (firstPosition == 1) {
+  public default IAST removeFromStart(int endPosition) {
+    if (0 < endPosition && endPosition <= size()) {
+      if (endPosition == 1) {
         return this;
       }
       int last = size();
-      int size = last - firstPosition + 1;
+      int size = last - endPosition + 1;
       switch (size) {
         case 1:
           return F.headAST0(head());
@@ -1702,10 +1725,10 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
         case 4:
           return F.ternaryAST3(head(), get(last - 3), get(last - 2), get(last - 1));
       }
-      return copyFrom(firstPosition);
+      return copyFrom(endPosition);
     } else {
       throw new IndexOutOfBoundsException(
-          "Index: " + Integer.valueOf(firstPosition) + ", Size: " + size());
+          "Index: " + Integer.valueOf(endPosition) + ", Size: " + size());
     }
   }
 
@@ -1733,14 +1756,14 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
 
   /**
    * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not
-   * copied) and replace the <code>replacePosition</code> with <code>newEntry</code> and remove the
-   * elements defined in the given <code>removedPositionsArray</code>
+   * copied) and replace the <code>replacePosition</code> with <code>newEntries</code> and remove
+   * the elements defined in the given <code>removePositions</code>
    * 
-   * @param replacePosition
-   * @param newEntries
-   * @param removePositions
+   * @param replacePosition the position which should be replaced
+   * @param newEntries the new entries which should be inserted at the given position
+   * @param removePositions the positions which should be removed
    * 
-   * @return
+   * @return an IAST with removed element at the given position.
    */
   public IASTAppendable replaceSubset(int[] replacePosition, IExpr[] newEntries,
       int[] removePositions);
@@ -1769,7 +1792,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   /**
    * Append the elements in reversed order to the <code>resultList</code>
    *
-   * @param resultList
+   * @param resultList the list to which the elements are appended in reversed order
    * @return the <code>resultList</code>
    */
   public IASTAppendable reverse(IASTAppendable resultList);
@@ -1778,8 +1801,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * Rotate the elements to the left by n places and append the resulting elements to the <code>
    * resultList</code>
    *
-   * @param resultList
-   * @param n
+   * @param resultList the list to which the elements are appended in rotated order
+   * @param n the number of places to rotate
    * @return the <code>resultList</code>
    */
   public IAST rotateLeft(IASTAppendable resultList, final int n);
@@ -1788,8 +1811,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * Rotate the elements to the right by n places and append the resulting elements to the <code>
    * resultList</code>
    *
-   * @param resultList
-   * @param n
+   * @param resultList the list to which the elements are appended in rotated order
+   * @param n the number of places to rotate
    * @return the <code>resultList</code>
    */
   public IAST rotateRight(IASTAppendable resultList, final int n);
@@ -1802,10 +1825,10 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
 
   /**
    * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST
-   * </code> and append the arguments which satisfy the predicate.
+   * </code> and append the arguments which satisfy the predicate to the result.
    *
    * @param predicate the predicate which filters each argument in this <code>AST</code>
-   * @return the selected ast
+   * @return the selected IAST with the arguments which satisfy the predicate
    */
   public IAST select(Predicate<? super IExpr> predicate);
 
