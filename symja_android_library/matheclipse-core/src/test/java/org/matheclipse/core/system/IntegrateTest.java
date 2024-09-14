@@ -262,10 +262,10 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     // see github #120
     check("Integrate(Ln(x)^2, {x,0,2})", //
         "4-4*Log(2)+2*Log(2)^2");
-    check("Integrate(Ln(x)^2, {x,0,2}) // N", //
-        "2.18832");
-    check("NIntegrate(Ln(x)^2, {x,0,2}) // N", //
-        "2.1857");
+    checkNumeric("Integrate(Ln(x)^2, {x,0,2}) // N", //
+        "2.1883173055966214");
+    checkNumeric("NIntegrate(Ln(x)^2, {x,0,2}) // N", //
+        "2.188317305596199");
 
     // see github #116
     // should give (2*ArcTan((1 + 2*x)/Sqrt(3)))/Sqrt(3)
@@ -390,16 +390,21 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     checkNumeric("NIntegrate(Cos(x), {x, 0, Pi})", //
         "1.0E-16");
     checkNumeric("NIntegrate(1/Sin(Sqrt(x)), {x, 0, 1}, PrecisionGoal->10)", //
-        "2.1108620052");
+        "2.1195255867");
   }
 
   @Test
   public void testSystem171() {
-    check("N(Integrate(Sin(x),x))", "-Cos(x)");
-    check("N(Sin(x))", "Sin(x)");
-    check("Cancel((1*x+1/2*2)^((-1)*2)*1^(-1)^(-1))", "1/(1+x)^2");
-    check("Integrate(1/(a+b*x),x)", "Log(a+b*x)/b");
-    check("Integrate((a+b*x)^(1/3),x)", "3/4*(a+b*x)^(4/3)/b");
+    check("N(Integrate(Sin(x),x))", //
+        "-Cos(x)");
+    check("N(Sin(x))", //
+        "Sin(x)");
+    check("Cancel((1*x+1/2*2)^((-1)*2)*1^(-1)^(-1))", //
+        "1/(1+x)^2");
+    check("Integrate(1/(a+b*x),x)", //
+        "Log(a+b*x)/b");
+    check("Integrate((a+b*x)^(1/3),x)", //
+        "3/4*(a+b*x)^(4/3)/b");
   }
 
   @Test
@@ -610,11 +615,15 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("NIntegrate(1/x, {x,0,1},Method->\"LegendreGauss\")", //
         "10.37476");
     check("N(Integrate(1/x, {x,0,1}))", //
-        "10.37476");
+        "Integrate(1/x,{x,0,1})");
 
     // message - Integrate: Integral of 1/x does not converge on {x,0,1}.
     check("Integrate(1/x, {x,0,1})", //
         "Integrate(1/x,{x,0,1})");
+
+    checkNumeric("Integrate(Abs(x^2-2*x), {x, -10, 10}) // N", //
+        "669.3282335875249");
+
   }
 
 }

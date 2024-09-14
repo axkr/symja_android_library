@@ -229,7 +229,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
    */
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    String method = "LegendreGauss";
+    String method = "";
     int maxPoints = DEFAULT_MAX_POINTS;
     int maxIterations = DEFAULT_MAX_ITERATIONS;
     int precisionGoal = 16; // automatic scale value
@@ -270,12 +270,22 @@ public class NIntegrate extends AbstractFunctionEvaluator {
       IAST list = (IAST) ast.arg2();
       IExpr function = ast.arg1();
       if (list.isAST3() && list.arg1().isSymbol()) {
+        IExpr x = list.arg1();
         double min = list.arg2().evalf();
         double max = list.arg3().evalf();
-        // if (min != null && max != null) {
         if (function.isEqual()) {
           IAST equalAST = (IAST) function;
           function = F.Plus(equalAST.arg1(), F.Negate(equalAST.arg2()));
+        }
+        if (method.isEmpty()) {
+          method = "Romberg";
+          if (list.arg2().isDirectedInfinity() || list.arg3().isDirectedInfinity()) {
+            method = "LegendreGauss";
+          } else if (!function.isFree(a -> a == S.Abs || a == S.RealAbs, true)) {
+            method = "LegendreGauss";
+          } else if (!function.isFree(a -> a.isPower() && a.exponent().isFree(x), false)) {
+            method = "GaussKronrod";
+          }
         }
         try {
           double result = integrate(method, list, min, max, function, maxPoints, maxIterations);
