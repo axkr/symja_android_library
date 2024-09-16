@@ -418,6 +418,12 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     public final boolean isList() {
       return true;
     }
+
+    @Override
+    public boolean isList2() {
+      return true;
+    }
+
   }
 
   static final class MemberQ extends B2 {
@@ -1345,6 +1351,31 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   /** {@inheritDoc} */
   @Override
   public boolean isFlatAST() {
+    return false;
+  }
+
+  @Override
+  public boolean isList() {
+    return false;
+  }
+
+  @Override
+  public boolean isList1() {
+    return false;
+  }
+
+  @Override
+  public boolean isList2() {
+    return false;
+  }
+
+  @Override
+  public boolean isList3() {
+    return false;
+  }
+
+  @Override
+  public boolean isList4() {
     return false;
   }
 

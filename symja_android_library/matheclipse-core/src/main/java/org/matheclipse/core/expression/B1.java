@@ -153,6 +153,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     public final boolean isList() {
       return true;
     }
+
+    @Override
+    public boolean isList1() {
+      return true;
+    }
   }
 
   static class Log extends B1 {
@@ -778,6 +783,31 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
   @Override
   public final boolean isBuiltInFunction() {
     return true;
+  }
+
+  @Override
+  public boolean isList() {
+    return false;
+  }
+
+  @Override
+  public boolean isList1() {
+    return false;
+  }
+
+  @Override
+  public boolean isList2() {
+    return false;
+  }
+
+  @Override
+  public boolean isList3() {
+    return false;
+  }
+
+  @Override
+  public boolean isList4() {
+    return false;
   }
 
   /** {@inheritDoc} */
