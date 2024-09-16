@@ -381,7 +381,8 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     }
     int l1 = listOfEquations.isVector();
     int l2 = arg2.argSize();
-    if ((needsComplexComputation || l2 > 1) && l1 == l2 && listOfEquations.isList() && arg2.isList()) {
+    if ((needsComplexComputation || l2 > 1) && l1 == l2 && listOfEquations.isList()
+        && arg2.isList()) {
       double accuracy = accuracy(accuracyGoal);
       return multivariateFindRoot(listOfEquations, arg2, accuracy, maxIterations, engine);
     } else if ((arg2.isList2() || arg2.isList3()) && !arg2.isListOfLists()) {
@@ -500,7 +501,8 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
           initialGuess.append(complexValue);
         }
       } else {
-        return F.NIL;
+        // Form of start specification `1` supports only one start value for a variable.
+        return Errors.printMessage(S.FindRoot, "fdguess", F.List(variableInitialGuessPair), engine);
       }
       IExpr equation = listOfEquations.get(i);
       if (equation.isEqual()) {

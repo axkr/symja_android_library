@@ -8168,24 +8168,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + "        tb - 320 -8.164*^-8*(qs +qw)} /. {tw->2400.0,t1->2385.213,t2->708.4835,t3->680.6299,tb->320.0402,qw->461596.8,qs->31318.22}", //
         "{-0.816406,1.94471,-2.61528*10^7,0.245478,-0.000178,-35512.4,-0.0000415822}");
 
-    // https://en.wikipedia.org/wiki/Newton%27s_method#Example
-    check("FindRoot({5*x1^2+x1*x2^2+Sin(2*x2)^2==2, Exp(2*x1-x2)+4*x2==3},{{x1, 1.0},{x2, 1.0}})", //
-        "{x1->0.567297,x2->-0.309442}");
-
-    // other multivariate cases
-    check("FindRoot({2*x1+x2==E^(-x1), -x1+2*x2==E^(-x2)},{{x1, 0.0},{x2, 1.0}})", //
-        "{x1->0.197594,x2->0.425514}");
-    check(
-        "FindRoot({Exp(-Exp(-(x1+x2)))-x2*(1+x1^2), x1*Cos(x2)+x2*Sin(x1)-0.5},{{x1, 0.0},{x2,0.0}})", //
-        "{x1->0.353247,x2->0.606082}");
-
-    check("FindRoot({Exp(x - 2) == y, y^2 == x}, {{x, 1}, {y, 1}})", //
-        "{x->0.019026,y->0.137935}");
-    check("FindRoot({y == E^x, x + y == 2}, {{x, 1}, {y, 1}})", //
-        "{x->0.442854,y->1.55715}");
-    check("FindRoot({Sin(x + y), Cos(x - y), x^2 + y^2 - z}, {{x, 1}, {y, 0}, {z, 0}})", //
-        "{x->0.785398,y->-0.785398,z->1.2337}");
-
     // automatic: AccuracyGoal->6
     checkNumeric("10-x /. FindRoot(Sin(x - 10) - x + 10, {x, 0})", //
         "1.498271155142561E-6");
@@ -8317,14 +8299,34 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // TODO
     // check("FindRoot(Zeta(1/2 + I*t), {t, 12})", //
     // " ");
-    check("FindRoot({Sin(x)==Cos(y), x+y==1}, {{x, 1}, {y, 1}})", //
-        "{x->-1.85619,y->2.85619}");
     // TODO solve linear equation
     // check("FindRoot({{1, 2}, {3, 4}} . x == {5, 6}, {x, {1, 1}})", //
     // " ");
 
   }
 
+  @Test
+  public void testFindRootMultivariate() {
+    // https://en.wikipedia.org/wiki/Newton%27s_method#Example
+    check("FindRoot({5*x1^2+x1*x2^2+Sin(2*x2)^2==2, Exp(2*x1-x2)+4*x2==3},{{x1, 1.0},{x2, 1.0}})", //
+        "{x1->0.567297,x2->-0.309442}");
+
+    // other multivariate cases
+    check("FindRoot({2*x1+x2==E^(-x1), -x1+2*x2==E^(-x2)},{{x1, 0.0},{x2, 1.0}})", //
+        "{x1->0.197594,x2->0.425514}");
+    check(
+        "FindRoot({Exp(-Exp(-(x1+x2)))-x2*(1+x1^2), x1*Cos(x2)+x2*Sin(x1)-0.5},{{x1, 0.0},{x2,0.0}})", //
+        "{x1->0.353247,x2->0.606082}");
+
+    check("FindRoot({Exp(x - 2) == y, y^2 == x}, {{x, 1}, {y, 1}})", //
+        "{x->0.019026,y->0.137935}");
+    check("FindRoot({y == E^x, x + y == 2}, {{x, 1}, {y, 1}})", //
+        "{x->0.442854,y->1.55715}");
+    check("FindRoot({Sin(x + y), Cos(x - y), x^2 + y^2 - z}, {{x, 1}, {y, 0}, {z, 0}})", //
+        "{x->0.785398,y->-0.785398,z->1.2337}");
+    check("FindRoot({Sin(x)==Cos(y), x+y==1}, {{x, 1}, {y, 1}})", //
+        "{x->-1.85619,y->2.85619}");
+  }
 
   @Test
   public void testFirst() {

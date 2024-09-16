@@ -120,6 +120,7 @@ public class Errors {
       "exdims", "The dimensions cannot be determined from the position `1`.", //
       "experimental", "Experimental implementation (search in Github issues for identifier `1`).",
       "fdup", "Duplicate parameter `1` found in `2`.", //
+      "fdguess", "Form of start specification `1` supports only one start value for a variable.",
       "fdss", "Search specification `1` should be a list with 1 to 3 elements.", //
       "flpar", "Parameter specification `1` in `2` should be a symbol or a list of symbols.", //
       "fftl", "Argument `1` is not a non-empty list or rectangular array of numeric quantities.", //
