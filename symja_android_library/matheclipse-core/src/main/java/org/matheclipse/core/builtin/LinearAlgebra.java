@@ -4626,14 +4626,22 @@ public final class LinearAlgebra {
         normFunction = ast.arg2();
       }
       IExpr arg1 = ast.arg1();
-      if (arg1.isEmptyList() && ast.isAST1()) {
+      if (arg1.isEmptyList()) {
         return arg1;
       }
-      IExpr norm = engine.evaluate(F.unaryAST1(normFunction, ast.arg1()));
-      if (norm.isZero()) {
-        return arg1;
+      if (ast.isAST1() && arg1.isMatrix(false) != null) {
+        // The first argument is not a number or a vector, or the second argument is not a norm
+        // function that always returns a non-negative real number for any numeric argument.
+        return Errors.printMessage(S.Normalize, "nlnmt2", ast, engine);
       }
-      return F.Divide(ast.arg1(), norm);
+      if (ast.isAST2() || arg1.isNumber() || arg1.isVector() > 0) {
+        IExpr norm = engine.evaluate(F.unaryAST1(normFunction, arg1));
+        if (norm.isZero()) {
+          return arg1;
+        }
+        return F.Divide(arg1, norm);
+      }
+      return F.NIL;
     }
 
     @Override

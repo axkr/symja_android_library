@@ -231,6 +231,8 @@ public class Errors {
       "ncvi", "NIntegrate failed to converge after `1` refinements in `2` in the region `3`.", //
       "ndimv", "There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.", //
       "nliter", "Non-list iterator `1` at position `2` does not evaluate to a real numeric value.", //
+      "nlnmt2",
+      "The first argument is not a number or a vector, or the second argument is not a norm function that always returns a non-negative real number for any numeric argument.", // ",
       "nil", "unexpected NIL expression encountered.", //
       "ninv", "`1` is not invertible modulo `2`.", //
       "nmet", "Unable to find the domain with the available methods.", //

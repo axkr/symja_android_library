@@ -15818,6 +15818,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNormalize() {
+    // message Normalize: The first argument is not a number or a vector, or the second argument is
+    // not a norm function that always returns a non-negative real number for any numeric argument.
+    check("Normalize({{1, 2}, {4, 5}})", //
+        "Normalize({{1,2},{4,5}})");
+    // set the name of the norm to get a result
+    check("Normalize({{1, 2}, {4, 5}}, Norm)", //
+        "{{0.147758,0.295516},{0.591031,0.738789}}");
+
     check(
         "Normalize({0.9999999999999999, -0.12609662354252538+I*0.3870962681438435, 0.3692814336284687+I*0.0968290630091466})", //
         "{0.8732080940136610352,-0.1101085923051267364+I*0.33801559450568667,0.3224595368133474565+I*0.0845519215553456008}");
@@ -15836,11 +15844,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1/Sqrt(91),(I*2)/Sqrt(91),3/Sqrt(91),(I*4)/Sqrt(91),5/Sqrt(91),(I*6)/Sqrt(91)}");
     check("Normalize(N({1, 2*I, 3, 4*I, 5, 6*I}))", //
         "{0.104828,I*0.209657,0.314485,I*0.419314,0.524142,I*0.628971}");
-    check("Normalize({{1, 2}, {4, 5}}, Norm)", //
-        "{{0.147758,0.295516},{0.591031,0.738789}}");
+
     check("Normalize(1 + x + x^2, Integrate(#^2, {x, -1, 1}) &)", //
         "5/22*(1+x+x^2)");
-
+    check("Normalize(1 + x + x^2)", //
+        "Normalize(1+x+x^2)");
     check("Normalize({1, 1, 1, 1})", //
         "{1/2,1/2,1/2,1/2}");
     check("Normalize(1 + I)", //
@@ -19909,7 +19917,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testRationalizeIssue1065() {
+    // issue 1065
+    checkNumeric("Rationalize(878159.58,1*10^-12) - Rationalize(431874.32,1*10^-12)", //
+        "22314263/50");
+    checkNumeric("22314263/50 // N", //
+        "446285.26");
+  }
+
+  @Test
   public void testRationalize() {
+
     // check("Rationalize(0.1234567*^2)", //
     // "1234567/100000");
     // // check("Rationalize(0.12345678*^2)", //
