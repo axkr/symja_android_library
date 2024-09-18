@@ -14,6 +14,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apfloat.ApfloatInterruptedException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.NumberTheory;
@@ -44,6 +45,7 @@ import org.matheclipse.core.patternmatching.Matcher;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.reflection.system.rules.IntegratePowerTimesFunctionRules;
 import com.google.common.cache.CacheBuilder;
+import edu.jas.kern.PreemptingException;
 
 /**
  *
@@ -834,6 +836,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
             engine.setRecursionLimit(limit);
             LOGGER.log(engine.getLogLevel(), "Integrate(Rubi recursion)", rle);
             return F.NIL;
+          } catch (ApfloatInterruptedException | PreemptingException ex) {
+            throw ex;
           } catch (RuntimeException rex) {
             engine.setRecursionLimit(limit);
             LOGGER.log(engine.getLogLevel(),
