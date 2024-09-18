@@ -1968,6 +1968,10 @@ public class EvalEngine implements Serializable {
     if ((fRecursionLimit > 0) && (fRecursionCounter > fRecursionLimit)) {
       RecursionLimitExceeded.throwIt(fRecursionLimit, expr);
     }
+    if (Thread.currentThread().isInterrupted()) {
+      // check before going one recursion deeper
+      throw TimeoutException.TIMED_OUT;
+    }
 
     long iterationCounter = 0;
     if (fTraceMode) {
@@ -2049,6 +2053,10 @@ public class EvalEngine implements Serializable {
       try {
         IExpr temp = result.evaluate(this);
         if (temp.isPresent()) {
+          if (Thread.currentThread().isInterrupted()) {
+            throw TimeoutException.TIMED_OUT;
+          }
+
           fTraceStack.add(expr, temp, fRecursionCounter, 0L, EVALUATION_LOOP);
           result = temp;
           long iterationCounter = 1;
