@@ -784,6 +784,17 @@ public class EvalEngine implements Serializable {
       //
     }
   }
+  // public void setDeterminePrecision(IExpr expr, boolean postParserProcessing) {
+  // try {
+  // // determine the precision of the input before evaluation
+  // long precision = expr.determinePrecision(postParserProcessing);
+  // if (precision > getNumericPrecision()) {
+  // setNumericPrecision(precision);
+  // }
+  // } catch (RecursionLimitExceeded rle) {
+  // //
+  // }
+  // }
 
   private IAST endTrace() {
     setTraceMode(false);
@@ -1957,10 +1968,6 @@ public class EvalEngine implements Serializable {
     if ((fRecursionLimit > 0) && (fRecursionCounter > fRecursionLimit)) {
       RecursionLimitExceeded.throwIt(fRecursionLimit, expr);
     }
-    if (Thread.interrupted()) {
-      // check before going one recursion deeper
-      throw TimeoutException.TIMED_OUT;
-    }
 
     long iterationCounter = 0;
     if (fTraceMode) {
@@ -2042,10 +2049,6 @@ public class EvalEngine implements Serializable {
       try {
         IExpr temp = result.evaluate(this);
         if (temp.isPresent()) {
-          if (Thread.interrupted()) {
-            throw TimeoutException.TIMED_OUT;
-          }
-
           fTraceStack.add(expr, temp, fRecursionCounter, 0L, EVALUATION_LOOP);
           result = temp;
           long iterationCounter = 1;
