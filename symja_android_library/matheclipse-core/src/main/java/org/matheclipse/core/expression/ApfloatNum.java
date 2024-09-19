@@ -13,6 +13,7 @@ import org.apfloat.LossOfPrecisionException;
 import org.apfloat.NumericComputationException;
 import org.apfloat.OverflowException;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -694,6 +695,7 @@ public class ApfloatNum implements INum {
       return fApfloat.intValueExact() == i;
     } catch (RuntimeException rex) {
       // ArithmeticException
+      Errors.rethrowsInterruptException(rex);
     }
     return false;
   }
@@ -1969,6 +1971,7 @@ public class ApfloatNum implements INum {
       return fApfloat.intValueExact();
     } catch (RuntimeException rex) {
       // ArithmeticException
+      Errors.rethrowsInterruptException(rex);
     }
     return defaultValue;
   }
@@ -1986,6 +1989,7 @@ public class ApfloatNum implements INum {
       return fApfloat.longValueExact();
     } catch (RuntimeException rex) {
       // ArithmeticException
+      Errors.rethrowsInterruptException(rex);
     }
     return defaultValue;
   }

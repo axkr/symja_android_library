@@ -207,6 +207,7 @@ public class UnitTestingFunctions {
         actualOutput = engine.evaluate(input);
 
       } catch (Exception ex) {
+        Errors.rethrowsInterruptException(ex);
         LOGGER.debug("VerificationTest.evaluate", ex);
         actualOutput = S.None;
       }
@@ -248,6 +249,7 @@ public class UnitTestingFunctions {
         assoc.appendRule(F.Rule("TestID", testID));
         return TestResultObjectExpr.newInstance(assoc);
       } catch (Exception ex) {
+        Errors.rethrowsInterruptException(ex);
         LOGGER.debug("VerificationTest.evaluate() failed", ex);
       }
       return F.NIL;

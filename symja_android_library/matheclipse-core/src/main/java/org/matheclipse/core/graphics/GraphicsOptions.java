@@ -2,9 +2,12 @@ package org.matheclipse.core.graphics;
 
 import java.util.Locale;
 import java.util.function.Function;
+
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.RGBColor;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -637,6 +640,7 @@ public class GraphicsOptions {
           pointSize = pointSizeAST.arg1().evalf();
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         pointSize = MEDIUM_POINTSIZE;
       }
     }

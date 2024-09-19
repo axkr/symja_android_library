@@ -107,6 +107,7 @@ public class SemanticImportString extends AbstractFunctionOptionEvaluator {
       Errors.printMessage(S.SemanticImport, "shapespec", F.List(formShape), engine);
       return S.$Failed;
     } catch (Exception rex) {
+      Errors.rethrowsInterruptException(rex);
       LOGGER.log(engine.getLogLevel(), "SemanticImportString ", rex);
       return F.NIL;
     }

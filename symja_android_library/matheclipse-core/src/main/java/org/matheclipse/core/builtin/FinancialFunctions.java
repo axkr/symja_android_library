@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -148,6 +149,7 @@ public class FinancialFunctions {
               p); // $$;
 
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(S.TimeValue, rex, engine);
         }
       }
@@ -183,6 +185,7 @@ public class FinancialFunctions {
           }
 
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(S.TimeValue, rex, engine);
         }
       }

@@ -4,6 +4,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.matheclipse.core.basic.OperationSystem;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.expression.ApcomplexNum;
@@ -164,6 +166,7 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
       } catch (LimitException le) {
         throw le;
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         LOGGER.debug("AbstractArg12.binaryOperator() failed", rex);
         return F.NIL;
       }

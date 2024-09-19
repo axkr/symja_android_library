@@ -28,6 +28,7 @@ import org.logicng.transformations.cnf.BDDCNFTransformation;
 import org.logicng.transformations.cnf.CNFFactorization;
 import org.logicng.transformations.dnf.DNFFactorization;
 import org.logicng.transformations.simplification.AdvancedSimplifier;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -1277,6 +1278,7 @@ public final class BooleanFunctions {
         // int number validation
         Errors.printMessage(ast.topHead(), ve, engine);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
 
       }
       return ast.arg1();
@@ -4904,7 +4906,7 @@ public final class BooleanFunctions {
         return F.booleSymbol(q1.value().equals(q2.value()));
       }
     } catch (RuntimeException rex) {
-      //
+      Errors.rethrowsInterruptException(rex);
     }
     return F.NIL;
   }
@@ -4929,7 +4931,7 @@ public final class BooleanFunctions {
         return F.booleSymbol(!q1.value().equals(q2.value()));
       }
     } catch (RuntimeException rex) {
-      //
+      Errors.rethrowsInterruptException(rex);
     }
     return F.NIL;
   }
@@ -4955,7 +4957,7 @@ public final class BooleanFunctions {
         return q1.value().compareTo(q2.value());
       }
     } catch (RuntimeException rex) {
-      //
+      Errors.rethrowsInterruptException(rex);
     }
     return Integer.MIN_VALUE;
   }

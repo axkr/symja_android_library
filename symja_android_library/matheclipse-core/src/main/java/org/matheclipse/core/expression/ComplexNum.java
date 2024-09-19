@@ -12,6 +12,7 @@ import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.Errors;
@@ -726,6 +727,7 @@ public class ComplexNum implements IComplexNum {
           return F.complexNum(complexErfc);
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
       }
       Apcomplex erfc = EvalEngine.getApfloatDouble().erfc(apcomplexValue());
       return F.complexNum(erfc.real().doubleValue(), erfc.imag().doubleValue());
@@ -1083,6 +1085,7 @@ public class ComplexNum implements IComplexNum {
       return F
           .complexNum(HypergeometricJS.hypergeometric0F1(fComplex, ((ComplexNum) arg2).evalfc()));
     } catch (RuntimeException e) {
+      Errors.rethrowsInterruptException(e);
       // try as computation with complex numbers
     }
     return IComplexNum.super.hypergeometric0F1(arg2);
@@ -1106,6 +1109,7 @@ public class ComplexNum implements IComplexNum {
           arg2.evalfc(), //
           arg3.evalfc()));
     } catch (RuntimeException e) {
+      Errors.rethrowsInterruptException(e);
       // try as computation with complex numbers
     }
     return IComplexNum.super.hypergeometric1F1(arg2, arg3);

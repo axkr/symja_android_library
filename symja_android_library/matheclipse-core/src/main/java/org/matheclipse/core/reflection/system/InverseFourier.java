@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.hipparchus.complex.Complex;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -32,7 +33,8 @@ public class InverseFourier extends AbstractFunctionEvaluator {
         }
       }
     } catch (RuntimeException rex) {
-      //
+      Errors.rethrowsInterruptException(rex);
+
     }
     // Argument `1` is not a non-empty list or rectangular array of numeric quantities.
     return Errors.printMessage(S.InverseFourier, "fftl", F.list(expr), engine);

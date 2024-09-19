@@ -1,6 +1,7 @@
 // code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor;
 
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -31,6 +32,7 @@ public class QuantityParser {
       EvalEngine engine = new EvalEngine(true);
       return engine.evaluate(string, true);
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       Errors.printMessage(S.Quantity, rex, EvalEngine.get());
       throw new IllegalArgumentException(string, rex);
     }

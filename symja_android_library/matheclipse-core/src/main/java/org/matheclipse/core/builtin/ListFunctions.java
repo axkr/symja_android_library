@@ -20,6 +20,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import org.hipparchus.stat.StatUtils;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
@@ -3339,6 +3340,7 @@ public final class ListFunctions {
           return evaluateNestList4(ast, engine);
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.FoldList, rex, engine);
       }
       return F.NIL;
@@ -4474,6 +4476,7 @@ public final class ListFunctions {
         }
         return result;
       } catch (RuntimeException e) {
+        Errors.rethrowsInterruptException(e);
       }
       return F.NIL;
     }
@@ -7285,6 +7288,7 @@ public final class ListFunctions {
         engine.setReapList(null);
         return engine.evalBlock(expr, localVariablesList);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         // ignore
       } finally {
         engine.setReapList(reapList);
@@ -7681,6 +7685,7 @@ public final class ListFunctions {
             }
           }
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(S.TakeLargest, rex, EvalEngine.get());
         }
       }
@@ -7741,6 +7746,7 @@ public final class ListFunctions {
             }
           }
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(S.TakeLargestBy, rex, EvalEngine.get());
         }
       }
@@ -7790,6 +7796,7 @@ public final class ListFunctions {
             }
           }
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(S.TakeSmallest, rex, EvalEngine.get());
         }
       }
@@ -7848,6 +7855,7 @@ public final class ListFunctions {
             }
           }
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(S.TakeSmallestBy, rex, EvalEngine.get());
         }
       }
@@ -8006,6 +8014,7 @@ public final class ListFunctions {
             }
             return engine.evaluate(temp);
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             Errors.printMessage(S.Total, rex, EvalEngine.get());
             return F.NIL;
           }

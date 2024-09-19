@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -84,6 +85,7 @@ public class FindInstance extends Solve {
           }
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
       }
 
       ISymbol domain = S.Complexes;
@@ -110,6 +112,7 @@ public class FindInstance extends Solve {
     } catch (final ValidateException ve) {
       return Errors.printMessage(ast.topHead(), ve, engine);
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       return Errors.printMessage(S.FindInstance, rex, engine);
     }
   }

@@ -1074,6 +1074,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
       OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax()).convertSymbol(sb, this);
       return sb.toString();
     } catch (Exception e1) {
+      Errors.rethrowsInterruptException(e1);
       return fSymbolName;
     }
   }

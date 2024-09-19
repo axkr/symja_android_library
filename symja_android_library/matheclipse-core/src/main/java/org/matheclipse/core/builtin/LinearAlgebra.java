@@ -55,6 +55,7 @@ import org.hipparchus.linear.RiccatiEquationSolver;
 import org.hipparchus.linear.RiccatiEquationSolverImpl;
 import org.hipparchus.linear.SchurTransformer;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.combinatoric.KSubsetsIterable;
 import org.matheclipse.core.convert.Convert;
@@ -2032,6 +2033,7 @@ public final class LinearAlgebra {
             j -> S.Normalize.of(engine, Convert.complexVector2List(ced.getEigenvector(j))));
         return F.List(values, vectors);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
 
       }
       EigenDecompositionNonSymmetric edns = new EigenDecompositionNonSymmetric(matrix);
@@ -2271,6 +2273,7 @@ public final class LinearAlgebra {
           return F.complexNum(eigenvalues[i].getReal(), eigenvalues[i].getImaginary());
         });
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         // rex.printStackTrace();
       }
       EigenDecompositionNonSymmetric edns = new EigenDecompositionNonSymmetric(matrix);
@@ -2593,6 +2596,7 @@ public final class LinearAlgebra {
         return F.mapRange(0, vectorSize,
             j -> S.Normalize.of(engine, Convert.complexVector2List(ced.getEigenvector(j))));
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
 
       }
       EigenDecompositionNonSymmetric edns = new EigenDecompositionNonSymmetric(matrix);

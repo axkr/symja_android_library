@@ -1,5 +1,7 @@
 package org.matheclipse.core.form.tex;
 
+import org.matheclipse.core.basic.OperationSystem;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.parser.client.Characters;
 
 public abstract class TeXScanner {
@@ -754,6 +756,7 @@ public abstract class TeXScanner {
               return result;
             }
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             //
           }
           throwSyntaxError(

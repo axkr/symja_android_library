@@ -3,6 +3,8 @@ package org.matheclipse.core.eval.interfaces;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.hipparchus.complex.Complex;
+import org.matheclipse.core.basic.OperationSystem;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.expression.ApcomplexNum;
@@ -49,6 +51,7 @@ public abstract class AbstractArg1 extends AbstractFunctionEvaluator {
         } catch (LimitException le) {
           throw le;
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           // EvalEngine.get().printMessage(ast.topHead().toString() + ": " + rex.getMessage());
           return F.NIL;
         }

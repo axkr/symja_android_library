@@ -8,6 +8,7 @@ import java.util.TreeSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.JASModInteger;
@@ -217,6 +218,7 @@ public class PolynomialFunctions {
       } catch (LimitException le) {
         throw le;
       } catch (RuntimeException ae) {
+        Errors.rethrowsInterruptException(ae);
         LOGGER.debug("Coefficient.evaluate() failed", ae);
         return F.C0;
       }
@@ -280,6 +282,7 @@ public class PolynomialFunctions {
         ExprPolynomial poly = ring.create(expr, false, true, true);
         return poly.coefficientArrays((int) poly.degree());
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         LOGGER.debug("CoefficientArrays.evaluate() failed", rex);
       }
 
@@ -354,6 +357,7 @@ public class PolynomialFunctions {
             try {
               return coefficientRulesModulus(expr, varList, termOrder, option);
             } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
               // toInt() conversion failed
               LOGGER.debug("CoefficientRules.evaluate() failed", rex);
             }
@@ -368,6 +372,7 @@ public class PolynomialFunctions {
         ExprPolynomial poly = ring.create(expr, false, true, true);
         return poly.coefficientRules();
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         LOGGER.debug("CoefficientRules.evaluate() failed", rex);
       }
       // default mapping
@@ -733,6 +738,7 @@ public class PolynomialFunctions {
         return F.Divide(F.Times(F.Power(F.CN1, (n * (n - 1) / 2)),
             F.Resultant(poly.getExpr(), polyDiff.getExpr(), arg2)), fN);
       } catch (RuntimeException ex) {
+        Errors.rethrowsInterruptException(ex);
         LOGGER.log(engine.getLogLevel(), "{}: polynomial expected at position 1 instead of {}",
             ast.topHead(), ast.arg1());
         return F.NIL;
@@ -979,6 +985,7 @@ public class PolynomialFunctions {
           // check if a is a polynomial otherwise check ArithmeticException, ClassCastException
           ring.create(a);
         } catch (RuntimeException ex) {
+          Errors.rethrowsInterruptException(ex);
           // Polynomial expected at position `1` in `2`.
           return Errors.printMessage(ast.topHead(), "polynomial", F.list(ast.get(1), F.C1), engine);
         }
@@ -990,6 +997,7 @@ public class PolynomialFunctions {
             return F.Together(resultant);
           }
         } catch (RuntimeException ex) {
+          Errors.rethrowsInterruptException(ex);
           // Polynomial expected at position `1` in `2`.
           return Errors.printMessage(ast.topHead(), "polynomial", F.list(ast.get(2), F.C2), engine);
         }
@@ -1064,6 +1072,7 @@ public class PolynomialFunctions {
           p1 = factory.resultant(p1, p2);
           return jas.exprPoly2Expr(p1);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.debug("Resultant.jasResultant() failed", rex);
         }
       }
@@ -2324,6 +2333,7 @@ public class PolynomialFunctions {
             try {
               return monomialListModulus(expr, varList, termOrder, option);
             } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
               LOGGER.debug("MonomialList.evaluate() failed", rex);
             }
           }
@@ -2337,6 +2347,7 @@ public class PolynomialFunctions {
         ExprPolynomial poly = ring.create(expr, false, true, true);
         return poly.monomialList();
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         LOGGER.debug("MonomialList.evaluate() failed", rex);
       }
       // default mapping
@@ -2446,6 +2457,7 @@ public class PolynomialFunctions {
     } catch (LimitException le) {
       throw le;
     } catch (RuntimeException ex) {
+      Errors.rethrowsInterruptException(ex);
       // org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing.create()
       LOGGER.debug("PolynomialFunctions.coefficientList() failed", ex);
     }

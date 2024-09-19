@@ -1,8 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
 import java.util.function.Function;
+
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -499,7 +502,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       }
       return true;
     } catch (RuntimeException rex) {
-      //
+      Errors.rethrowsInterruptException(rex);
     }
     return false;
   }
@@ -517,7 +520,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       }
       return true;
     } catch (RuntimeException rex) {
-      //
+      Errors.rethrowsInterruptException(rex);
     }
     return false;
   }

@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.apfloat.Apfloat;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
@@ -798,6 +799,7 @@ public class IntegerFunctions {
           }
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         LOGGER.debug("FractionalPart.evaluate() failed", rex);
       }
       return F.NIL;
@@ -834,6 +836,7 @@ public class IntegerFunctions {
           try {
             return F.ZZ(new BigInteger(str.toString(), radix));
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             //
           }
         }
@@ -1055,6 +1058,7 @@ public class IntegerFunctions {
           }
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         // IReal#floor() or #ceil() may throw ArithmeticException
         LOGGER.debug("IntegerPart.evaluate() failed", rex);
       }
@@ -1344,6 +1348,7 @@ public class IntegerFunctions {
               zDouble = z.evalf();
               nDouble = n.evalf();
             } catch (RuntimeException ve) {
+              Errors.rethrowsInterruptException(ve);
             }
             if (Double.isNaN(zDouble) || Double.isNaN(nDouble)) {
               Complex zComplex = z.evalfc();
@@ -1356,6 +1361,7 @@ public class IntegerFunctions {
           } catch (ValidateException ve) {
             return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
         }
@@ -1478,6 +1484,7 @@ public class IntegerFunctions {
               zDouble = arg1.evalf();
               nDouble = arg2.evalf();
             } catch (RuntimeException ve) {
+              Errors.rethrowsInterruptException(ve);
             }
             if (Double.isNaN(zDouble) || Double.isNaN(nDouble)) {
               Complex zComplex = arg1.evalfc();
@@ -1492,10 +1499,12 @@ public class IntegerFunctions {
           } catch (ValidateException ve) {
             return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         LOGGER.log(engine.getLogLevel(), "QuotientRemainder", rex);
       }
       return F.NIL;

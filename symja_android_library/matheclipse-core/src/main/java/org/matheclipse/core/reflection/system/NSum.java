@@ -2,6 +2,8 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.function.Function;
 import org.hipparchus.complex.Complex;
+import org.matheclipse.core.basic.OperationSystem;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -34,6 +36,7 @@ public class NSum extends Sum {
       try {
         return unaryFunction.evalf(x -> x.equals(variable) ? F.ZZ(value) : F.NIL);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         return Double.NaN;
       }
     }
@@ -53,6 +56,7 @@ public class NSum extends Sum {
       try {
         return unaryFunction.evalfc(x -> x.equals(variable) ? F.ZZ(value) : F.NIL);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         return Complex.NaN;
       }
     }

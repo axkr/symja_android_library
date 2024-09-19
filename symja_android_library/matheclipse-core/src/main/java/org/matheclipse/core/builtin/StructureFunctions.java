@@ -7,6 +7,8 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
+
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -993,6 +995,7 @@ public class StructureFunctions {
           } catch (final ValidateException ve) {
             return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             return Errors.printMessage(S.MapAt, rex, engine);
           }
         }
@@ -1930,6 +1933,7 @@ public class StructureFunctions {
           }
           return shallowCopy;
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(S.Sort, rex, engine);
         }
       } else {
@@ -2024,6 +2028,7 @@ public class StructureFunctions {
         } catch (ValidateException ve) {
           return Errors.printMessage(S.SortBy, ve, engine);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(S.SortBy, rex, engine);
         }
       }

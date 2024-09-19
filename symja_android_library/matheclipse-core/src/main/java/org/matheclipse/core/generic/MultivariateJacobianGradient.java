@@ -7,6 +7,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFunction;
 import org.hipparchus.util.Pair;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -104,6 +105,7 @@ public final class MultivariateJacobianGradient implements MultivariateJacobianF
           double entry = row.get(j).evalf(function);
           jacobian.setEntry(i - 1, j - 1, entry);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           jacobian.setEntry(i - 1, j - 1, Double.NaN);
         }
       }

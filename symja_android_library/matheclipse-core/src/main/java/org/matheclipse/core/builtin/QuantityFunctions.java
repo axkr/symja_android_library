@@ -14,6 +14,7 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -117,6 +118,7 @@ public class QuantityFunctions {
           }
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
       return F.NIL;
@@ -151,6 +153,7 @@ public class QuantityFunctions {
           }
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
       return F.NIL;
@@ -198,6 +201,7 @@ public class QuantityFunctions {
           return F.NIL;
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
       return F.NIL;
@@ -243,6 +247,7 @@ public class QuantityFunctions {
           return F.NIL;
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
       return F.NIL;
@@ -301,6 +306,7 @@ public class QuantityFunctions {
 
         }
       } catch (RuntimeException e) {
+        Errors.rethrowsInterruptException(e);
         LOGGER.log(engine.getLogLevel(), "Quantity", e);
       }
       return F.NIL;
@@ -367,6 +373,7 @@ public class QuantityFunctions {
           }
         }
       } catch (RuntimeException e) {
+        Errors.rethrowsInterruptException(e);
         LOGGER.log(engine.getLogLevel(), "QuantityMagnitude", e);
       }
       return F.NIL;
@@ -443,6 +450,7 @@ public class QuantityFunctions {
           }
         }
       } catch (RuntimeException e) {
+        Errors.rethrowsInterruptException(e);
         LOGGER.log(engine.getLogLevel(), "UnitConvert", e);
       }
       return F.NIL;

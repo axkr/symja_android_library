@@ -24,6 +24,7 @@ import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.ExpressionJSONConvert;
 import org.matheclipse.core.convert.JSONConvert;
 import org.matheclipse.core.convert.matlab.Mat5Symja;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -144,6 +145,7 @@ public class Import extends AbstractEvaluator {
     } catch (SyntaxError se) {
       LOGGER.log(engine.getLogLevel(), "Import: file {} syntax error!", fileName, se);
     } catch (Exception ex) {
+      Errors.rethrowsInterruptException(ex);
       LOGGER.log(engine.getLogLevel(), "Import: file {} ", fileName, ex);
     } finally {
       if (reader != null) {

@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.ExpressionJSONConvert;
 import org.matheclipse.core.convert.JSONConvert;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -83,6 +84,7 @@ public class ImportString extends AbstractEvaluator {
     } catch (SyntaxError se) {
       LOGGER.log(engine.getLogLevel(), "ImportString: syntax error!", se);
     } catch (Exception ex) {
+      Errors.rethrowsInterruptException(ex);
       LOGGER.log(engine.getLogLevel(), "ImportString", ex);
     }
     return F.NIL;

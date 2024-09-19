@@ -39,6 +39,7 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.AndroidLoggerFix;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.AssociationFunctions;
@@ -5237,6 +5238,7 @@ public class F extends S {
           // no read access for current user
           LOGGER.warn("Cannot read packages in autoload folder:", acex);
         } catch (RuntimeException ex) {
+          Errors.rethrowsInterruptException(ex);
           LOGGER.error(ex);
         }
         // if (!noPackageLoading) {
@@ -10955,7 +10957,8 @@ public class F extends S {
     try {
       return QuantityParser.of(string);
     } catch (Exception exception) {
-      // ---
+      Errors.rethrowsInterruptException(exception);
+
     }
     return stringx(string);
   }
@@ -10981,6 +10984,8 @@ public class F extends S {
       }
       return showGraphic(expr);
     } catch (Exception ex) {
+      Errors.rethrowsInterruptException(ex);
+
       LOGGER.debug("F.show() failed", ex);
     }
     return null;
@@ -10996,6 +11001,7 @@ public class F extends S {
             String html = JSBuilder.buildGraphics2D(JSBuilder.GRAPHICS2D_TEMPLATE, graphicsStr);
             return openHTMLOnDesktop(html);
           } catch (Exception ex) {
+            Errors.rethrowsInterruptException(ex);
             LOGGER.debug("JSBuilder.buildGraphics2D() failed", ex);
           }
         }
@@ -11008,6 +11014,7 @@ public class F extends S {
             String html = JSBuilder.buildGraphics3D(JSBuilder.GRAPHICS3D_TEMPLATE, graphics3DStr);
             return openHTMLOnDesktop(html);
           } catch (Exception ex) {
+            Errors.rethrowsInterruptException(ex);
             LOGGER.debug("JSBuilder.buildGraphics3D() failed", ex);
           }
         }
@@ -11033,6 +11040,7 @@ public class F extends S {
         return buf.toString();
       }
     } catch (Exception ex) {
+      Errors.rethrowsInterruptException(ex);
       LOGGER.debug("F.showGraphic() failed", ex);
     }
     return null;
@@ -11046,6 +11054,7 @@ public class F extends S {
         String html = JSBuilder.buildMathcell(JSBuilder.MATHCELL_TEMPLATE, manipulateStr);
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
+        Errors.rethrowsInterruptException(ex);
         LOGGER.debug("F.printJSFormData() failed", ex);
       }
       // } else if (jsFormData.arg2().toString().equals("graphics3d")) {
@@ -11063,6 +11072,7 @@ public class F extends S {
         String html = JSBuilder.buildJSXGraph(JSBuilder.JSXGRAPH_TEMPLATE, manipulateStr);
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
+        Errors.rethrowsInterruptException(ex);
         LOGGER.debug("F.printJSFormData() failed", ex);
       }
     } else if (jsFormData.arg2().toString().equals("mermaid")) {
@@ -11071,6 +11081,7 @@ public class F extends S {
         String html = JSBuilder.buildMermaid(JSBuilder.MERMAID_TEMPLATE, manipulateStr);
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
+        Errors.rethrowsInterruptException(ex);
         LOGGER.debug("F.printJSFormData() failed", ex);
       }
     } else if (jsFormData.arg2().toString().equals("plotly")) {
@@ -11079,6 +11090,7 @@ public class F extends S {
         String html = JSBuilder.buildPlotly(JSBuilder.PLOTLY_TEMPLATE, manipulateStr);
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
+        Errors.rethrowsInterruptException(ex);
         LOGGER.debug("F.printJSFormData() failed", ex);
       }
     } else if (jsFormData.arg2().toString().equals("treeform")) {
@@ -11098,6 +11110,7 @@ public class F extends S {
         );
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
+        Errors.rethrowsInterruptException(ex);
         LOGGER.debug("F.printJSFormData() failed", ex);
       }
     } else if (jsFormData.arg2().toString().equals("traceform")) {
@@ -11107,6 +11120,7 @@ public class F extends S {
         html = StringUtils.replace(html, "`1`", jsStr);
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
+        Errors.rethrowsInterruptException(ex);
         LOGGER.debug("F.printJSFormData() failed", ex);
       }
     }

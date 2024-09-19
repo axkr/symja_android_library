@@ -9,6 +9,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
@@ -1083,6 +1084,7 @@ public final class PatternMatching {
           }
           return S.Null;
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(S.Information, rex, engine);
         }
       }

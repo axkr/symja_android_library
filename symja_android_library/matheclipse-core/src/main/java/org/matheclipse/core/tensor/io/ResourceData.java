@@ -4,6 +4,8 @@ package org.matheclipse.core.tensor.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.interfaces.IAST;
 
 /**
@@ -38,6 +40,7 @@ public class ResourceData {
     try (InputStream inputStream = ResourceData.class.getResourceAsStream(string)) {
       return ImportHelper.of(new Filename(string), inputStream);
     } catch (Exception exception) {
+      Errors.rethrowsInterruptException(exception);
       throw new RuntimeException(exception);
     }
   }

@@ -16,6 +16,7 @@ import org.jgrapht.nio.GraphExporter;
 import org.jgrapht.nio.csv.CSVExporter;
 import org.jgrapht.nio.dot.DOTExporter;
 import org.jgrapht.nio.graphml.GraphMLExporter;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.ExpressionJSONConvert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -115,6 +116,7 @@ public class ExportString extends AbstractEvaluator {
     } catch (IOException ioex) {
       return Errors.printMessage(S.ExportString, ioex, EvalEngine.get());
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       return Errors.printMessage(S.ExportString, rex, EvalEngine.get());
     }
     return F.NIL;

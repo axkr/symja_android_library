@@ -11,6 +11,9 @@ import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+
+import org.matheclipse.core.basic.OperationSystem;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -652,6 +655,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
         }
       }
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       numericKeys = false;
     }
     if (numericKeys) {

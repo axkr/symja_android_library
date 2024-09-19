@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.hipparchus.analysis.solvers.LaguerreSolver;
 import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Expr2Object;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.Object2Expr;
@@ -540,6 +541,7 @@ public class RootsFunctions {
           i -> F.chopExpr(F.complexNum(complexRoots[i].getReal(), complexRoots[i].getImaginary()),
               Config.DEFAULT_ROOTS_CHOP_DELTA));
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       // solveAllComplex may throw MathIllegalArgumentException, NullArgumentException,
       // MathIllegalStateException
       Errors.printMessage(S.Roots, rex, EvalEngine.get());
@@ -989,6 +991,7 @@ public class RootsFunctions {
       }
       return QuarticSolver.evalAndSort(newResult, sort);
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       // JAS or "findRoots" may throw RuntimeExceptions
       result = rootsOfExprPolynomial(expr, variables, true);
     }
@@ -1083,6 +1086,7 @@ public class RootsFunctions {
       }
       return result;
     } catch (RuntimeException ex) {
+      Errors.rethrowsInterruptException(ex);
       // Polynomial expected!
       return null;
     }

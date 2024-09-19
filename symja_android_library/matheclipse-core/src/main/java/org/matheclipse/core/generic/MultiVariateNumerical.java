@@ -2,6 +2,7 @@ package org.matheclipse.core.generic;
 
 import java.util.ArrayList;
 import org.hipparchus.analysis.MultivariateFunction;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -48,6 +49,7 @@ public class MultiVariateNumerical implements MultivariateFunction {
       }
       return fFunction.evalf();
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       return Double.NaN;
     }
   }

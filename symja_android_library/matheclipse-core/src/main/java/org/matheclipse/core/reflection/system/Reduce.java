@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.util.Map;
 import java.util.Set;
 import org.hipparchus.complex.Complex;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -624,6 +625,7 @@ public class Reduce extends AbstractEvaluator {
       IExpr reduced = rc.evaluate(logicalExpand);
       return reduced.orElse(logicalExpand);
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       rex.printStackTrace();
     }
     return F.NIL;

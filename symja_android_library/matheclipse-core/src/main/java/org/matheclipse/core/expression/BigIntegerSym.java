@@ -9,6 +9,8 @@ import java.math.RoundingMode;
 import java.util.function.Function;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
@@ -799,6 +801,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
     } catch (LimitException lime) {
       throw lime;
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       return F.Sqrt(this);
     }
   }

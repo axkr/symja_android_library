@@ -3,6 +3,8 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.Show;
 import static org.matheclipse.core.expression.F.SurfaceGraphics;
+
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -101,6 +103,7 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
           return Show(graphics);
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(S.Plot3D, rex, engine);
       }
     }

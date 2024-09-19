@@ -26,6 +26,8 @@ import org.jgrapht.nio.csv.CSVExporter;
 import org.jgrapht.nio.dot.DOTExporter;
 import org.jgrapht.nio.graphml.GraphMLExporter;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -76,6 +78,7 @@ public class Export extends AbstractEvaluator {
             return arg1;
           }
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           rex.printStackTrace();
         }
         // }
@@ -132,6 +135,7 @@ public class Export extends AbstractEvaluator {
       } catch (IOException ioe) {
         LOGGER.log(engine.getLogLevel(), "Export: file {} not found!", arg1, ioe);
       } catch (Exception ex) {
+        Errors.rethrowsInterruptException(ex);
         LOGGER.log(engine.getLogLevel(), "Export: file {}", arg1, ex);
       }
     }

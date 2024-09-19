@@ -329,7 +329,7 @@ public class OptionArgs {
           return rule[0].arg2();
         }
       } catch (Exception e) {
-
+        Errors.rethrowsInterruptException(e);
       }
     }
     if (fDefaultOptionsList.isPresent()) {
@@ -347,7 +347,7 @@ public class OptionArgs {
           return rule[0].arg2();
         }
       } catch (Exception e) {
-
+        Errors.rethrowsInterruptException(e);
       }
     }
     return F.NIL;

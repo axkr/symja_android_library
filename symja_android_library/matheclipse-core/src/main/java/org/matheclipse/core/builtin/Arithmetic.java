@@ -59,6 +59,7 @@ import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
@@ -723,6 +724,7 @@ public final class Arithmetic {
       try {
         return F.subst(expr, x -> chopNumber(x, delta));
       } catch (Exception e) {
+        Errors.rethrowsInterruptException(e);
         LOGGER.debug("Chop.evaluate() failed", e);
       }
 
@@ -876,6 +878,7 @@ public final class Arithmetic {
           // }
         }
       } catch (Exception e) {
+        Errors.rethrowsInterruptException(e);
         LOGGER.debug("Complex.evaluate() failed", e);
       }
 
@@ -1119,6 +1122,7 @@ public final class Arithmetic {
             try {
               return F.num(h.cbrt(((IReal) base).apfloatValue()));
             } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
               //
             }
           }
@@ -5131,6 +5135,7 @@ public final class Arithmetic {
           return F.fraction(numerator, denominator);
 
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(S.Rational, rex, engine);
         }
       }

@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.Errors;
@@ -1425,6 +1426,7 @@ public class TeXFormFactory {
       }
       return true;
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       LOGGER.debug("TeXFormFactory.convert() failed", rex);
     } catch (OutOfMemoryError oome) {
     }

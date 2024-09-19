@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval.interfaces;
 
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -75,6 +76,7 @@ public abstract class AbstractEvaluator implements IFunctionEvaluator {
     try {
       return evalCatched(ast, engine);
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       Errors.printMessage(ast.topHead(), rex, engine);
     }
     return defaultReturn();

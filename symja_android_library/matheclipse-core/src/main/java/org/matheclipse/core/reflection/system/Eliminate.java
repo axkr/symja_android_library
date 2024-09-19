@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.RootsFunctions;
@@ -808,6 +809,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       }
       return resultAsAndEquations(result);
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       return Errors.printMessage(S.Eliminate, rex, EvalEngine.get());
     }
   }

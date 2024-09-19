@@ -27,6 +27,7 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -270,6 +271,7 @@ public class FileFunctions {
             return S.Null;
           }
         } catch (RuntimeException | RangeException | TypeException | IOException e) {
+          Errors.rethrowsInterruptException(e);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
           return F.$Failed;
         }
@@ -497,6 +499,7 @@ public class FileFunctions {
             return FileExpr.newInstance(arg1.toString());
           }
         } catch (RuntimeException ex) {
+          Errors.rethrowsInterruptException(ex);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
         }
       }
@@ -1313,6 +1316,7 @@ public class FileFunctions {
             }
           }
         } catch (RuntimeException | IOException ex) {
+          Errors.rethrowsInterruptException(ex);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
         }
       }

@@ -2,6 +2,8 @@ package org.matheclipse.core.form.output;
 
 import java.util.Map;
 import org.hipparchus.complex.Complex;
+import org.matheclipse.core.basic.OperationSystem;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -132,6 +134,7 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
           return;
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         //
       }
     }

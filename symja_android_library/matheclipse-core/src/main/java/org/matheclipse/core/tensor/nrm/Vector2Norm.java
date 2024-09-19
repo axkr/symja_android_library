@@ -1,6 +1,7 @@
 // code adapted from https://github.com/datahaki/tensor
 package org.matheclipse.core.tensor.nrm;
 
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -23,6 +24,7 @@ public class Vector2Norm {
       // Hypot prevents the incorrect evaluation: Norm_2[ {1e-300, 1e-300} ] == 0
       return Hypot.ofVector(vector);
     } catch (Exception exception) {
+      Errors.rethrowsInterruptException(exception);
       // <- when vector is a scalar
       // <- when vector is empty, or contains NaN
     }

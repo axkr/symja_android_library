@@ -2,6 +2,7 @@ package org.matheclipse.core.eval.interfaces;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
@@ -300,6 +301,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
     } catch (LimitException le) {
       throw le;
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
     }
     return F.NIL;

@@ -24,6 +24,7 @@ import org.hipparchus.optim.nonlinear.scalar.MultivariateOptimizer;
 import org.hipparchus.optim.nonlinear.scalar.ObjectiveFunction;
 import org.hipparchus.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Expr2LP;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
@@ -450,7 +451,8 @@ public class MinMaxFunctions {
         }
 
       } catch (RuntimeException rex) {
-        rex.printStackTrace();
+        Errors.rethrowsInterruptException(rex);
+        //rex.printStackTrace();
         LOGGER.debug("FunctionRange.evaluate() failed", rex);
       }
       return F.NIL;
@@ -1306,6 +1308,7 @@ public class MinMaxFunctions {
         return F.CEmptyList;
       }
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       LOGGER.log(engine.getLogLevel(), head, rex);
     }
     return F.NIL;
@@ -1461,6 +1464,7 @@ public class MinMaxFunctions {
         return F.CEmptyList;
       }
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       LOGGER.log(engine.getLogLevel(), head, rex);
     }
     return F.NIL;
