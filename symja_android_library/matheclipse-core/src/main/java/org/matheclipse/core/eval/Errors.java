@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.ApfloatInterruptedException;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.exception.TimeoutException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -851,7 +852,7 @@ public class Errors {
 
 
   public static void rethrowsInterruptException(Exception e) {
-    if (e instanceof ApfloatInterruptedException || e instanceof PreemptingException) {
+    if (e instanceof ApfloatInterruptedException || e instanceof PreemptingException || e instanceof TimeoutException) {
       throw (RuntimeException) e;
     }
     if (e instanceof RuntimeException && e.getCause() instanceof InterruptedException) {
