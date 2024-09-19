@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import org.hipparchus.linear.FieldMatrix;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
@@ -258,6 +259,7 @@ public final class OutputFunctions {
           int result = RomanArabicConverter.romanToArabic(romanNumber);
           return F.ZZ(result);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(S.FromRomanNumeral, rex, engine);
         }
       }
@@ -563,6 +565,7 @@ public final class OutputFunctions {
         String resultStr = javaForm(arg1, strictJava, usePrefix).toString();
         return F.$str(resultStr, IStringX.APPLICATION_JAVA);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(S.JavaForm, rex, engine);
       }
     }
@@ -604,6 +607,7 @@ public final class OutputFunctions {
       } catch (IOException ioex) {
         return Errors.printMessage(S.JSForm, ioex, engine);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(S.JSForm, rex, engine);
       }
     }
@@ -673,6 +677,7 @@ public final class OutputFunctions {
           String result = RomanArabicConverter.arabicToRoman(value);
           return F.stringx(result);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(S.RomanNumeral, rex, engine);
         }
       }
@@ -974,6 +979,7 @@ public final class OutputFunctions {
         }
 
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(S.TreeForm, rex, engine);
       }
     }

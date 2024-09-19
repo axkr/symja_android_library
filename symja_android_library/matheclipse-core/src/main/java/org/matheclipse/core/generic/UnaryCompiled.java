@@ -8,6 +8,7 @@ import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.CompilerFunctions;
 import org.matheclipse.core.builtin.CompilerFunctions.CompiledFunctionArg;
 import org.matheclipse.core.eval.Errors;
@@ -115,6 +116,7 @@ public final class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDiff
     try {
       return fEngine.evalNumericFunction(F.Limit(fUnaryFunction, F.Rule(fVariable, value)));
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       return S.Indeterminate;
     }
   }
@@ -130,6 +132,7 @@ public final class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDiff
     try {
       return fEngine.evalNumericFunction(F.subst(fUnaryFunction, F.Rule(fVariable, F.num(value))));
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       return S.Indeterminate;
     }
   }
@@ -149,6 +152,7 @@ public final class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDiff
         return evaluated.evalf();
       }
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
 
     }
     return Double.NaN;
@@ -166,6 +170,7 @@ public final class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDiff
     try {
       return fEngine.evalDouble(F.Limit(fUnaryFunction, F.Rule(fVariable, F.num(value))));
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       return Double.NaN;
     }
   }

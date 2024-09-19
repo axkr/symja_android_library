@@ -40,6 +40,7 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultUndirectedGraph;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -154,6 +155,7 @@ public class GraphFunctions {
         return GraphExpr.newInstance(resultGraph);
 
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.GraphIntersection, rex, engine);
       }
       return F.NIL;
@@ -229,6 +231,7 @@ public class GraphFunctions {
 
 
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.GraphComplement, rex, engine);
       }
       return F.NIL;
@@ -269,6 +272,7 @@ public class GraphFunctions {
         }
 
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.GraphDifference, rex, engine);
       }
       return F.NIL;
@@ -326,6 +330,7 @@ public class GraphFunctions {
         }
 
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.IndexGraph, rex, engine);
       }
       return F.NIL;
@@ -474,6 +479,7 @@ public class GraphFunctions {
           }
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.Graph, rex, engine);
       }
       return F.NIL;
@@ -532,6 +538,7 @@ public class GraphFunctions {
         IASTMutable list = F.ListAlloc(centerSet);
         return list;
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.GraphCenter, rex, engine);
       }
       return F.NIL;
@@ -589,6 +596,7 @@ public class GraphFunctions {
         }
         return diameter;
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.GraphDiameter, rex, engine);
       }
       return F.NIL;
@@ -643,6 +651,7 @@ public class GraphFunctions {
         Set<IExpr> centerSet = graphMeasurer.getGraphPeriphery();
         return F.ListAlloc(centerSet);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.GraphPeriphery, rex, engine);
       }
       return F.NIL;
@@ -672,6 +681,7 @@ public class GraphFunctions {
           }
 
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           Errors.printMessage(S.GraphPower, rex, engine);
         }
       }
@@ -770,6 +780,7 @@ public class GraphFunctions {
           }
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.GraphQ, rex, engine);
       }
       return S.False;
@@ -824,6 +835,7 @@ public class GraphFunctions {
         }
         return radius;
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.GraphRadius, rex, engine);
       }
       return F.NIL;
@@ -977,6 +989,7 @@ public class GraphFunctions {
           }
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.FindShortestTour, rex, engine);
       }
       return F.NIL;
@@ -1050,6 +1063,7 @@ public class GraphFunctions {
           }
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.FindSpanningTree, rex, engine);
       }
       return F.NIL;
@@ -1842,6 +1856,7 @@ public class GraphFunctions {
         // Graph must be undirected
         Errors.printMessage(S.FindVertexCover, iae, engine);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.FindVertexCover, rex, engine);
       }
       return F.NIL;

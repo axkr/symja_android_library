@@ -3,6 +3,8 @@ package org.matheclipse.core.sympy.series;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
+
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -246,6 +248,7 @@ public class Formal {
         term = pt_ak.times(pt_xk);
         // } catch( IndexError ie) {
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         term = F.C0;
       }
 

@@ -13,6 +13,7 @@ import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
 import java.math.RoundingMode;
 import org.hipparchus.complex.Complex;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -536,6 +537,7 @@ public class BesselFunctions {
           } catch (ValidateException ve) {
             return Errors.printMessage(S.BesselJ, ve, engine);
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             return Errors.printMessage(S.BesselJ, rex, engine);
           }
         }
@@ -600,6 +602,7 @@ public class BesselFunctions {
               return F.num(BesselJS.besselJZero(n.evalf(), k));
             }
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             // org.hipparchus.exception.MathIllegalArgumentException:
             // interval does not bracket a root
             return Errors.printMessage(S.BesselJZero, rex, engine);
@@ -722,6 +725,7 @@ public class BesselFunctions {
           } catch (ValidateException ve) {
             return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             return Errors.printMessage(S.BesselI, rex, engine);
           }
         }
@@ -831,6 +835,7 @@ public class BesselFunctions {
           } catch (ValidateException ve) {
             return Errors.printMessage(S.BesselK, ve, engine);
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             return Errors.printMessage(S.BesselK, rex, engine);
           }
         }
@@ -941,6 +946,7 @@ public class BesselFunctions {
           } catch (ValidateException ve) {
             return Errors.printMessage(S.BesselY, ve, engine);
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             return Errors.printMessage(S.BesselY, rex, engine);
           }
         }
@@ -975,6 +981,7 @@ public class BesselFunctions {
             return F.num(BesselJS.besselYZero(n.evalf(), k));
           }
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           // org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a root
           return Errors.printMessage(S.BesselYZero, rex, engine);
         }
@@ -1035,6 +1042,7 @@ public class BesselFunctions {
             }
 
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             return Errors.printMessage(S.HankelH1, rex, engine);
           }
         } else if (engine.isArbitraryMode()) {
@@ -1095,6 +1103,7 @@ public class BesselFunctions {
             }
 
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             return Errors.printMessage(S.HankelH2, rex, engine);
           }
         } else if (engine.isArbitraryMode()) {
@@ -1205,6 +1214,7 @@ public class BesselFunctions {
           }
 
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(S.SphericalBesselJ, rex, engine);
         }
       }
@@ -1303,6 +1313,7 @@ public class BesselFunctions {
           // return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
           return functionExpand(ast, engine);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(S.SphericalHankelH1, rex, engine);
         }
       }
@@ -1372,6 +1383,7 @@ public class BesselFunctions {
         try {
           return functionExpand(ast, engine);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(S.SphericalHankelH2, rex, engine);
         }
       }
@@ -1458,6 +1470,7 @@ public class BesselFunctions {
             return F.complexNum(BesselJS.sphericalBesselY(nDouble, zDouble));
           }
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(S.SphericalBesselY, rex, engine);
         }
       }
@@ -1531,6 +1544,7 @@ public class BesselFunctions {
               return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
 
             } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
               return Errors.printMessage(S.WeberE, rex, engine);
             }
           }
@@ -1545,6 +1559,7 @@ public class BesselFunctions {
             try {
               return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
             } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
               return Errors.printMessage(S.WeberE, rex, engine);
             }
           }

@@ -2,6 +2,8 @@ package org.matheclipse.core.eval.exception;
 
 import java.io.IOException;
 import java.math.BigInteger;
+
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.Context;
@@ -69,6 +71,7 @@ public final class Validate {
           }
           return result;
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           //
         }
       }
@@ -114,6 +117,7 @@ public final class Validate {
           }
           return result;
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           Errors.printMessage(ast.topHead(), rex, engine);
         }
       }
@@ -164,6 +168,7 @@ public final class Validate {
           }
           return result;
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           // `1`.
           Errors.printMessage(ast.topHead(), "error",
               F.List("RuntimeException in Validate#checkListOfInts()"));
@@ -213,6 +218,7 @@ public final class Validate {
           }
           return result;
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           //
         }
       }
@@ -285,6 +291,7 @@ public final class Validate {
           }
           return result;
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           //
         }
       }
@@ -327,6 +334,7 @@ public final class Validate {
           }
           return result;
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           //
         }
       }

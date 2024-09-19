@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.hipparchus.stat.descriptive.moment.Mean;
 import org.hipparchus.stat.descriptive.moment.StandardDeviation;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -219,6 +220,7 @@ public class Plot extends ListPlot {
 
           }
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           rex.printStackTrace();
         }
       }

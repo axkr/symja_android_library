@@ -9,6 +9,7 @@ import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -831,6 +832,7 @@ class TeXSegmentParser {
       }
       return F.ZZ(text, 10);
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       LOGGER.debug("TeXParser.mn() failed", rex);
     }
     throw new AbortException();

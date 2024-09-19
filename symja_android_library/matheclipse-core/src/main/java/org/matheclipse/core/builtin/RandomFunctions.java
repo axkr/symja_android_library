@@ -8,6 +8,7 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.util.MathArrays;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.StatisticsFunctions.IRandomVariate;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -307,6 +308,7 @@ public final class RandomFunctions {
       } catch (ValidateException ve) {
         return Errors.printMessage(ast.topHead(), ve, engine);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         //
       }
       return F.NIL;
@@ -531,6 +533,7 @@ public final class RandomFunctions {
           }
           return randomPrime(lowerLimit, upperLimit, engine);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           // There are no primes in the specified interval.
           return Errors.printMessage(ast.topHead(), "noprime", F.CEmptyList, engine);
         }

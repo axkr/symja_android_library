@@ -14,6 +14,7 @@ import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.Precision;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -297,6 +298,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
         } catch (MathRuntimeException mre) {
           return Errors.printMessage(ast.topHead(), mre, engine);
         } catch (RuntimeException e) {
+          Errors.rethrowsInterruptException(e);
           return Errors.printMessage(ast.topHead(), e, engine);
         }
       }

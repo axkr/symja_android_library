@@ -10,7 +10,9 @@ import java.util.Arrays;
 import java.util.Map;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.LinearAlgebra;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
@@ -574,6 +576,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
             break;
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
 
       }
     }

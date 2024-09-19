@@ -29,6 +29,7 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.builtin.functions.ZetaJS;
@@ -244,6 +245,7 @@ public class SpecialFunctions {
       } catch (ValidateException ve) {
         return Errors.printMessage(S.Beta, ve, engine);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.Beta, rex, engine);
       }
       return F.NIL;
@@ -316,6 +318,7 @@ public class SpecialFunctions {
       } catch (ValidateException ve) {
         return Errors.printMessage(S.Beta, ve, engine);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.Beta, rex, engine);
       }
       return F.NIL;
@@ -509,6 +512,7 @@ public class SpecialFunctions {
           return F.Times(F.Power(z, a), sum);
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.BetaRegularized, rex, engine);
       }
       return F.NIL;
@@ -540,6 +544,7 @@ public class SpecialFunctions {
           }
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.BetaRegularized, rex, engine);
       }
       return F.NIL;
@@ -905,6 +910,7 @@ public class SpecialFunctions {
         return Errors.printMessage(S.GammaRegularized, "argillegal",
             F.list(F.stringx(miae.getMessage()), ast), engine);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(S.GammaRegularized, "argillegal",
             F.list(F.stringx(rex.getMessage()), ast), engine);
       }
@@ -1153,6 +1159,7 @@ public class SpecialFunctions {
           Errors.printMessage(S.HurwitzZeta, te, engine);
           return te.getValue();
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           Errors.printMessage(S.HurwitzZeta, rex, engine);
         }
       }
@@ -1399,6 +1406,7 @@ public class SpecialFunctions {
         return Errors.printMessage(S.InverseBetaRegularized, "argillegal",
             F.list(F.stringx(miae.getMessage()), ast), engine);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(S.InverseBetaRegularized, "argillegal",
             F.list(F.stringx(rex.getMessage()), ast), engine);
       }
@@ -2275,6 +2283,7 @@ public class SpecialFunctions {
           }
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.StruveH, rex, engine);
       }
       return F.NIL;
@@ -2374,6 +2383,7 @@ public class SpecialFunctions {
           }
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.StruveL, rex, engine);
       }
       return F.NIL;
@@ -2559,6 +2569,7 @@ public class SpecialFunctions {
             Errors.printMessage(S.Zeta, te, engine);
             return te.getValue();
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             Errors.printMessage(S.Zeta, rex, engine);
           }
         }

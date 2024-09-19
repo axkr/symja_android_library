@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.PiecewiseFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
@@ -380,6 +382,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
         buf.append("(" + value + ")");
         return;
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         //
       }
     }

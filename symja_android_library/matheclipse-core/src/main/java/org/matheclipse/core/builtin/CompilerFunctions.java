@@ -10,6 +10,7 @@ import java.util.Map;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.SimpleCompiler;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.OutputFunctions.VariableManager;
 import org.matheclipse.core.eval.Errors;
@@ -637,6 +638,7 @@ public class CompilerFunctions {
         }
 
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         //
       }
       try {
@@ -656,7 +658,7 @@ public class CompilerFunctions {
         return 2;
 
       } catch (RuntimeException rex) {
-        //
+        Errors.rethrowsInterruptException(rex);
       }
       return 0;
     }
@@ -672,7 +674,7 @@ public class CompilerFunctions {
             }));
         return true;
       } catch (RuntimeException rex) {
-        //
+        Errors.rethrowsInterruptException(rex);
       }
       return false;
     }
@@ -699,6 +701,7 @@ public class CompilerFunctions {
         try {
           result = compiledFunction.evaluate(ast, engine);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(S.CompiledFunction, rex, engine);
         }
         if (result.isPresent()) {

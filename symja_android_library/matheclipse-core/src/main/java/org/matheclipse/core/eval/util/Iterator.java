@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.Less;
 import static org.matheclipse.core.expression.F.Subtract;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -1356,6 +1357,7 @@ public class Iterator {
     } catch (ArgumentTypeException atex) {
       throw atex;
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       // Argument `1` at position `2` does not have the correct form for an iterator.
       String str = Errors.getMessage("itform", F.list(list, F.ZZ(position)), EvalEngine.get());
       throw new ArgumentTypeException(str);
@@ -1516,6 +1518,7 @@ public class Iterator {
     } catch (ArgumentTypeException atex) {
       throw atex;
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       throw new ClassCastException();
     } finally {
       evalEngine.setNumericMode(localNumericMode);

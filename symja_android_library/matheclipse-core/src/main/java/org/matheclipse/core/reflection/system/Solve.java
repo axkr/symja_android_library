@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.chocosolver.solver.constraints.extension.hybrid.HybridTuples;
 import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
@@ -1020,6 +1021,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         LOGGER.debug("Solve.solveTimesEquationsRecursively() failed", le);
         throw le;
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         LOGGER.debug("Solve.solveTimesEquationsRecursively() failed", rex);
         if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
@@ -1231,6 +1233,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       } catch (LimitException e) {
         LOGGER.log(engine.getLogLevel(), S.Solve, e);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         LOGGER.debug("Solve.of() failed() failed", rex);
       }
       return F.NIL;
@@ -1327,6 +1330,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               return resultList;
             }
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             // try 2nd solver
             // if (Config.SHOW_STACKTRACE) {
             rex.printStackTrace();
@@ -1347,6 +1351,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         LOGGER.debug("Solve.of() failed", le);
         throw le;
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         LOGGER.log(engine.getLogLevel(), "Integers solution not found", rex);
         return F.NIL;
       }

@@ -4,6 +4,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -1524,6 +1525,7 @@ public class GraphicsFunctions {
           try {
             opacity = ast.arg1().evalf();
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             //
           }
           GraphicsOptions.optionDouble(arrayNode, "opacity", opacity);
@@ -1744,6 +1746,7 @@ public class GraphicsFunctions {
         }
         return true;
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.Graphics, rex, EvalEngine.get());
       }
     }
@@ -1862,6 +1865,7 @@ public class GraphicsFunctions {
         }
         return true;
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.Graphics3D, rex, EvalEngine.get());
       }
     }

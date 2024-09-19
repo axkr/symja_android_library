@@ -6,6 +6,7 @@ import java.util.function.Predicate;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
@@ -1997,7 +1998,7 @@ public class PredicateQ {
         // }
       }
     } catch (RuntimeException rex) {
-      //
+      Errors.rethrowsInterruptException(rex);
     }
     return IExpr.COMPARE_TERNARY.UNDECIDABLE;
   }
@@ -2027,7 +2028,7 @@ public class PredicateQ {
         }
       }
     } catch (RuntimeException rex) {
-      //
+      Errors.rethrowsInterruptException(rex);
     }
     return IExpr.COMPARE_TERNARY.UNDECIDABLE;
   }

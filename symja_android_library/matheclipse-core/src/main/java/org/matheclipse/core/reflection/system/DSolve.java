@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -204,6 +205,7 @@ public class DSolve extends AbstractFunctionEvaluator {
             return linearODE(p, q, xVar, C_1, engine);
           }
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(S.DSolve, rex, engine);
         }
       }
@@ -222,6 +224,7 @@ public class DSolve extends AbstractFunctionEvaluator {
         }
       }
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       Errors.printMessage(S.DSolve, rex, EvalEngine.get());
     }
     return order;

@@ -13,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -3370,6 +3371,7 @@ public final class Programming {
 
           return engine.evalTrace(temp, matcher);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           Errors.printMessage(S.Trace, rex, EvalEngine.get());
         }
       }
@@ -3404,6 +3406,7 @@ public final class Programming {
             createTree(jsControl, temp);
             return F.JSFormData(jsControl.toString(), "traceform");
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             Errors.printMessage(S.TraceForm, rex, EvalEngine.get());
           }
         }

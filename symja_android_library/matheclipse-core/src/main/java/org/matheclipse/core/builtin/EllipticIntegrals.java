@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.special.elliptic.carlson.CarlsonEllipticIntegral;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.functions.EllipticFunctionsJS;
 import org.matheclipse.core.builtin.functions.EllipticIntegralsJS;
 import org.matheclipse.core.convert.Object2Expr;
@@ -357,6 +358,7 @@ public class EllipticIntegrals {
         } catch (ValidateException ve) {
           LOGGER.debug("CarlsonRG.evaluate() failed", ve);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
@@ -427,6 +429,7 @@ public class EllipticIntegrals {
         } catch (ValidateException ve) {
           LOGGER.debug("CarlsonRJ.evaluate() failed", ve);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
@@ -520,6 +523,7 @@ public class EllipticIntegrals {
           } catch (ValidateException ve) {
             LOGGER.debug("EllipticE.evaluate() failed", ve);
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
             return F.NIL;
           }
@@ -689,6 +693,7 @@ public class EllipticIntegrals {
         } catch (ValidateException ve) {
           LOGGER.debug("EllipticF.evaluate() failed", ve);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
         }
@@ -900,6 +905,7 @@ public class EllipticIntegrals {
           } catch (ValidateException ve) {
             LOGGER.debug("EllipticPi.evaluate() failed", ve);
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
             return F.NIL;
           }
@@ -959,6 +965,7 @@ public class EllipticIntegrals {
         } catch (ValidateException ve) {
           LOGGER.debug("EllipticPi.evaluate() failed", ve);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
         }
@@ -1025,6 +1032,7 @@ public class EllipticIntegrals {
               try {
                 return F.complexNum(EllipticFunctionsJS.jacobiTheta(a, x.evalf(), m.evalf()));
               } catch (RuntimeException rex) {
+                Errors.rethrowsInterruptException(rex);
                 LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
               }
             } else if (x.isInexactNumber() && m.isInexactNumber()) {
@@ -1033,6 +1041,7 @@ public class EllipticIntegrals {
               } catch (ValidateException ve) {
                 return Errors.printMessage(ast.topHead(), ve, engine);
               } catch (RuntimeException rex) {
+                Errors.rethrowsInterruptException(rex);
                 LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
               }
             }
@@ -1058,6 +1067,7 @@ public class EllipticIntegrals {
             try {
               return F.complexNum(EllipticFunctionsJS.jacobiTheta(a, 0.0, m.evalf()));
             } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
               LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
             }
           } else if (m.isInexactNumber()) {
@@ -1065,6 +1075,7 @@ public class EllipticIntegrals {
               return F.complexNum(EllipticFunctionsJS.jacobiTheta(a,
                   org.hipparchus.complex.Complex.ZERO, m.evalfc()));
             } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
               LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
             }
           }
@@ -1155,6 +1166,7 @@ public class EllipticIntegrals {
         } catch (ValidateException ve) {
           LOGGER.debug("InverseJacobiCD.evaluate() failed", ve);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
@@ -1214,6 +1226,7 @@ public class EllipticIntegrals {
         } catch (ValidateException ve) {
           LOGGER.debug("InverseJacobiCN.evaluate() failed", ve);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
@@ -1264,6 +1277,7 @@ public class EllipticIntegrals {
         } catch (ValidateException ve) {
           LOGGER.debug("InverseJacobiDN.evaluate() failed", ve);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
@@ -1324,6 +1338,7 @@ public class EllipticIntegrals {
         } catch (ValidateException ve) {
           LOGGER.debug("InverseJacobiSC.evaluate() failed", ve);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
@@ -1378,6 +1393,7 @@ public class EllipticIntegrals {
         } catch (ValidateException ve) {
           LOGGER.debug("InverseJacobiSD.evaluate() failed", ve);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
@@ -1438,6 +1454,7 @@ public class EllipticIntegrals {
         } catch (ValidateException ve) {
           LOGGER.debug("InverseJacobiSN.evaluate() failed", ve);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
@@ -1504,6 +1521,7 @@ public class EllipticIntegrals {
           }
           return F.complexNum(EllipticFunctionsJS.jacobiAmplitude(z.evalfc(), m.evalfc()));
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           return F.NIL;
         }
@@ -1584,6 +1602,7 @@ public class EllipticIntegrals {
         } catch (ValidateException ve) {
           LOGGER.debug("JacobiCD.evaluate() failed", ve);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
@@ -1662,6 +1681,7 @@ public class EllipticIntegrals {
         } catch (ValidateException ve) {
           LOGGER.debug("JacobiCN.evaluate() failed", ve);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
@@ -1740,6 +1760,7 @@ public class EllipticIntegrals {
         } catch (ValidateException ve) {
           LOGGER.debug("JacobiDN.evaluate() failed", ve);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
@@ -1818,6 +1839,7 @@ public class EllipticIntegrals {
         } catch (ValidateException ve) {
           LOGGER.debug("JacobiSC.evaluate() failed", ve);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
@@ -1896,6 +1918,7 @@ public class EllipticIntegrals {
         } catch (ValidateException ve) {
           LOGGER.debug("JacobiSD.evaluate() failed", ve);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
@@ -1974,6 +1997,7 @@ public class EllipticIntegrals {
         } catch (ValidateException ve) {
           LOGGER.debug("JacobiSN.evaluate() failed", ve);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
@@ -2072,6 +2096,7 @@ public class EllipticIntegrals {
         } catch (ValidateException ve) {
           LOGGER.debug("KleinInvariantJ.evaluate() failed", ve);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
@@ -2106,6 +2131,7 @@ public class EllipticIntegrals {
                   EllipticFunctionsJS.weierstrassHalfPeriods(g2.evalfc(), g3.evalfc());
               return Object2Expr.convertComplex(false, invariants);
             } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
               LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
             }
           }
@@ -2144,6 +2170,7 @@ public class EllipticIntegrals {
             } catch (ValidateException ve) {
               return Errors.printMessage(ast.topHead(), ve, engine);
             } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
               LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
             }
           }
@@ -2189,6 +2216,7 @@ public class EllipticIntegrals {
             return F
                 .complexNum(EllipticFunctionsJS.weierstrassP(u.evalfc(), g2.evalfc(), g3.evalfc()));
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
         }
@@ -2234,6 +2262,7 @@ public class EllipticIntegrals {
             return F.complexNum(
                 EllipticFunctionsJS.weierstrassPPrime(u.evalfc(), g2.evalfc(), g3.evalfc()));
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
         }

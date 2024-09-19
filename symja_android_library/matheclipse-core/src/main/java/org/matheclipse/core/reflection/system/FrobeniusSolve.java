@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
@@ -95,6 +96,7 @@ public class FrobeniusSolve extends AbstractEvaluator {
       } catch (LimitException le) {
         throw le;
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(S.FrobeniusSolve, rex, engine);
       }
     }

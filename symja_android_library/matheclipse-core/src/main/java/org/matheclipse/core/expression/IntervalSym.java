@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import java.util.Comparator;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -139,6 +140,7 @@ public class IntervalSym {
       }
       return F.NIL;
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       Errors.printMessage(S.Interval, rex, engine);
     }
     return F.NIL;
@@ -297,6 +299,7 @@ public class IntervalSym {
           }
           return result;
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           //
         }
       }

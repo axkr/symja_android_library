@@ -34,6 +34,7 @@ import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.Combinatoric.KPermutationsIterable;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
@@ -2332,6 +2333,7 @@ public class Algebra {
           // } catch (TimeExceededException texex) {
           // LOGGER.debug("Factor.factor() time limit exceeded", texex);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.debug("Factor.factor() failed", rex);
           return expr;
         }
@@ -2784,6 +2786,7 @@ public class Algebra {
           map = factorAbstract.factors(poly);
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         // JAS may throw RuntimeExceptions
         return F.list(expr);
       }
@@ -3206,6 +3209,7 @@ public class Algebra {
           }
           return F.NIL;
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.debug("PolynomialExtendedGCD.evaluate() failed", rex);
         }
       }
@@ -3341,6 +3345,7 @@ public class Algebra {
             // }
             // return jas.exprPoly2Expr(p1);
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             LOGGER.debug("PolynomialGCD.evaluate() failed", rex);
           }
         }
@@ -3507,6 +3512,7 @@ public class Algebra {
                 }
                 return jas.exprPoly2Expr(p1);
               } catch (RuntimeException rex) {
+                Errors.rethrowsInterruptException(rex);
                 LOGGER.debug("PolynomialLCM.evaluate() failed", rex);
               }
             }
@@ -3798,6 +3804,7 @@ public class Algebra {
         } catch (LimitException le) {
           throw le;
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           // rex.printStackTrace();
           LOGGER.debug("PolynomialQuotientRemainder.quotientRemainder() failed", rex);
         }
@@ -3873,6 +3880,7 @@ public class Algebra {
         // division by zero
         LOGGER.log(engine.getLogLevel(), S.PolynomialQuotientRemainder, aex);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         LOGGER.debug("PolynomialQuotientRemainder.evaluate() failed", rex);
       }
       return F.NIL;
@@ -3990,6 +3998,7 @@ public class Algebra {
         // division by zero
         LOGGER.log(engine.getLogLevel(), S.PolynomialRemainder, aex);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         LOGGER.debug("PolynomialRemainder.evaluate() failed", rex);
       }
       return F.NIL;
@@ -4786,6 +4795,7 @@ public class Algebra {
         result[2] = substitutions.replaceBackward(result[2]);
         return Optional.of(result);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
 
       }
       List<IExpr> varList = eVar.getVarList().copyTo();
@@ -4817,6 +4827,7 @@ public class Algebra {
       result[2] = substitutions.replaceBackward(result[2]);
       return Optional.of(result);
     } catch (RuntimeException e) {
+      Errors.rethrowsInterruptException(e);
       LOGGER.debug("Algebra.cancelGCD() failed", e);
     }
     return Optional.empty();
@@ -5224,6 +5235,7 @@ public class Algebra {
         return factorRational(polyRat, jas, head);
       }
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       LOGGER.debug("Algebra.factorComplex() failed", rex);
     }
     return expr;
@@ -5303,6 +5315,7 @@ public class Algebra {
         map = factorAbstract.factors(poly);
       }
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       // JAS may throw RuntimeExceptions
       return F.NIL;
     }
@@ -5909,6 +5922,7 @@ public class Algebra {
         return pf.getResult();
       }
     } catch (RuntimeException e) {
+      Errors.rethrowsInterruptException(e);
       // JAS may throw JASConversionException and RuntimeExceptions
       LOGGER.debug("Algebra.partialFractionDecompositionRational() failed", e);
     }
@@ -5930,6 +5944,7 @@ public class Algebra {
       }
       return seriesData;
     } catch (RuntimeException e) {
+      Errors.rethrowsInterruptException(e);
       // JAS may throw JASConversionException and RuntimeExceptions
       LOGGER.debug("Algebra.polynomialTaylorSeries() failed", e);
     }

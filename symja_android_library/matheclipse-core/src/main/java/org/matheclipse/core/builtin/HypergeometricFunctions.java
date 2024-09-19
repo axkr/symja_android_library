@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 import org.apfloat.NumericComputationException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -819,6 +820,7 @@ public class HypergeometricFunctions {
         } catch (ValidateException ve) {
           return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
@@ -1421,6 +1423,7 @@ public class HypergeometricFunctions {
       } catch (ValidateException ve) {
         return Errors.printMessage(ast.topHead(), ve, engine);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
 
@@ -1502,6 +1505,7 @@ public class HypergeometricFunctions {
           } catch (ValidateException ve) {
             return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
         } else if (engine.isDoubleMode()) {
@@ -1513,6 +1517,7 @@ public class HypergeometricFunctions {
           } catch (ValidateException ve) {
             return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
           }
 
@@ -1560,6 +1565,7 @@ public class HypergeometricFunctions {
       } catch (ValidateException ve) {
         return Errors.printMessage(ast.topHead(), ve, engine);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
       return F.NIL;

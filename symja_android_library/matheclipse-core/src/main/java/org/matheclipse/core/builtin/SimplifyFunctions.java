@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -300,6 +301,7 @@ public class SimplifyFunctions {
             result = temp;
           }
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           //
         }
 
@@ -373,6 +375,7 @@ public class SimplifyFunctions {
             expandAllCounter = fComplexityFunction.apply(temp);
             simplifiedResult.checkLess(temp);
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             //
           }
 
@@ -853,6 +856,7 @@ public class SimplifyFunctions {
             }
 
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             Errors.printMessage(fFullSimplify ? S.FullSimplify : S.Simplify, rex, EvalEngine.get());
           }
         }
@@ -1212,6 +1216,7 @@ public class SimplifyFunctions {
             sResult.checkLess(expr);
             return;
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             //
           }
         } else if (fFullSimplify) {
@@ -1222,6 +1227,7 @@ public class SimplifyFunctions {
               IExpr temp = argReXImY(re, im, fEngine);
               sResult.checkLess(temp);
             } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
               //
             }
           } else if (expr.isTimes()) {
@@ -1234,6 +1240,7 @@ public class SimplifyFunctions {
                 }
               }
             } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
               //
             }
           }
@@ -1241,6 +1248,7 @@ public class SimplifyFunctions {
             expr = eval(F.FunctionExpand(expr));
             sResult.checkLess(expr);
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             //
           }
         } else {
@@ -1250,6 +1258,7 @@ public class SimplifyFunctions {
               expr = eval(F.FunctionExpand(expr));
               sResult.checkLessEqual(expr);
             } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
               //
             }
           }

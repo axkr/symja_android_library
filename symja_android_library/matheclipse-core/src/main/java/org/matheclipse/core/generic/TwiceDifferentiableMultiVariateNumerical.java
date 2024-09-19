@@ -7,6 +7,7 @@ import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.nonlinear.vector.constrained.TwiceDifferentiableFunction;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -153,6 +154,7 @@ public final class TwiceDifferentiableMultiVariateNumerical extends TwiceDiffere
       };
       return fFunction.evalf(function);
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       return Double.NaN;
     }
   }

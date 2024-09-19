@@ -6,6 +6,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+
+import org.matheclipse.core.basic.OperationSystem;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -302,6 +305,7 @@ public class JASConvert<C extends RingElem<C>> {
     } catch (JASConversionException jce) {
       throw jce;
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       throw new JASConversionException();
     }
   }
@@ -662,6 +666,7 @@ public class JASConvert<C extends RingElem<C>> {
     try {
       return numericExpr2Poly(exprPoly);
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       throw new JASConversionException();
     }
   }

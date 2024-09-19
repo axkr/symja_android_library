@@ -22,6 +22,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -955,6 +956,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         }
         return result;
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.SparseArray, rex, engine);
       }
     }

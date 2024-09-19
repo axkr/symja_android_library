@@ -11,6 +11,7 @@ import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -1111,12 +1112,14 @@ public class Num implements INum {
     try {
       return F.num(HypergeometricJS.hypergeometric0F1(value, arg2.evalf()));
     } catch (RuntimeException e) {
+      Errors.rethrowsInterruptException(e);
       // try as computation with complex numbers
     }
     try {
       return F.complexNum(
           HypergeometricJS.hypergeometric0F1(new Complex(value), ((ComplexNum) arg2).evalfc()));
     } catch (RuntimeException e) {
+      Errors.rethrowsInterruptException(e);
       // try as computation with complex numbers
     }
     return INum.super.hypergeometric0F1(arg2);
@@ -1150,6 +1153,7 @@ public class Num implements INum {
           arg2.evalf(), //
           arg3.evalf()));
     } catch (RuntimeException e) {
+      Errors.rethrowsInterruptException(e);
       // try as computation with complex numbers
     }
 
@@ -1158,6 +1162,7 @@ public class Num implements INum {
           arg2.evalfc(), //
           arg3.evalfc()));
     } catch (RuntimeException e) {
+      Errors.rethrowsInterruptException(e);
       // try as computation with complex numbers
     }
     return INum.super.hypergeometric1F1(arg2, arg3);

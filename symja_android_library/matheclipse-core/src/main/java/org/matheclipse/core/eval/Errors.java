@@ -7,9 +7,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import edu.jas.kern.PreemptingException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apfloat.ApfloatInterruptedException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -846,4 +849,13 @@ public class Errors {
     return templateStr;
   }
 
+
+  public static void rethrowsInterruptException(Exception e) {
+    if (e instanceof ApfloatInterruptedException || e instanceof PreemptingException) {
+      throw (RuntimeException) e;
+    }
+    if (e instanceof RuntimeException && e.getCause() instanceof InterruptedException) {
+      throw (RuntimeException)  e;
+    }
+  }
 }

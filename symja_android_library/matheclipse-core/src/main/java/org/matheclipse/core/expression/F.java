@@ -39,6 +39,7 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.AndroidLoggerFix;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.AssociationFunctions;
@@ -5237,6 +5238,7 @@ public class F extends S {
           // no read access for current user
           LOGGER.warn("Cannot read packages in autoload folder:", acex);
         } catch (RuntimeException ex) {
+          Errors.rethrowsInterruptException(ex);
           LOGGER.error(ex);
         }
         // if (!noPackageLoading) {

@@ -8,6 +8,7 @@ import org.hipparchus.fitting.SimpleCurveFitter;
 import org.hipparchus.fitting.WeightedObservedPoints;
 import org.hipparchus.stat.regression.SimpleRegression;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -250,6 +251,7 @@ public class CurveFitterFunctions {
           } catch (ValidateException ve) {
             return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
             return Errors.printMessage(S.FindFit, rex, engine);
           }
         }
@@ -304,6 +306,7 @@ public class CurveFitterFunctions {
             try {
               return Convert.polynomialFunction2Expr(fitter.fit(obs.toList()), ast.arg3());
             } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
               return Errors.printMessage(S.Fit, rex, engine);
             }
           }

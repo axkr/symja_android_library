@@ -28,6 +28,7 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.JDKRandomGenerator;
 import org.hipparchus.random.RandomVectorGenerator;
 import org.hipparchus.random.UncorrelatedRandomVectorGenerator;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
@@ -502,7 +503,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       }
       return realNumber;
     } catch (RuntimeException rex) {
-      //
+      Errors.rethrowsInterruptException(rex);
     }
     // The Function value `1` is not a real number at `2`=`3`.
     return Errors.printMessage(goalType == GoalType.MINIMIZE ? S.FindMinimum : S.FindMaximum,
@@ -559,6 +560,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
           }
           return F.NIL;
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           rex.printStackTrace();
           method = "Powell";
         }

@@ -10,6 +10,7 @@ import org.hipparchus.stat.StatUtils;
 import org.hipparchus.stat.descriptive.moment.Mean;
 import org.hipparchus.stat.descriptive.moment.StandardDeviation;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.RGBColor;
@@ -1063,6 +1064,7 @@ public class ManipulateFunction {
           plotRangeXMin = engine.evalDouble(plotRangeX.arg2());
           plotRangeXMax = engine.evalDouble(plotRangeX.arg3());
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
         }
       }
       IExpr option = options.getOption(S.PlotStyle);
@@ -1096,6 +1098,7 @@ public class ManipulateFunction {
             }
             plotRangeEvaled = true;
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
           }
         } else if (plotRangeY.isReal()) {
           if ((plotID == ID.Plot) //
@@ -1106,6 +1109,7 @@ public class ManipulateFunction {
               plotRangeYMax = engine.evalDouble(plotRangeY);
               plotRangeEvaled = true;
             } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
             }
           }
         } else if (plotRangeY == S.Automatic) {
@@ -1142,6 +1146,7 @@ public class ManipulateFunction {
           plotRangeXMin = plotRangeYMin;
           plotRangeXMax = plotRangeYMax;
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
         }
       }
 
@@ -2120,6 +2125,7 @@ public class ManipulateFunction {
       } catch (ValidateException ve) {
         return Errors.printMessage(manipulateAST.topHead(), ve, engine);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(manipulateAST.topHead(), rex, engine);
       }
       return F.NIL;
@@ -2674,7 +2680,7 @@ public class ManipulateFunction {
         }
       }
     } catch (RuntimeException rex) {
-      //
+      Errors.rethrowsInterruptException(rex);
     }
   }
 
@@ -2742,7 +2748,7 @@ public class ManipulateFunction {
             }
           }
         } catch (RuntimeException rex) {
-          //
+          Errors.rethrowsInterruptException(rex);
         }
       }
       if (u.isPresent()) {
@@ -2754,7 +2760,7 @@ public class ManipulateFunction {
             }
           }
         } catch (RuntimeException rex) {
-          //
+          Errors.rethrowsInterruptException(rex);
         }
       }
     }
@@ -2790,7 +2796,7 @@ public class ManipulateFunction {
             }
           }
         } catch (RuntimeException rex) {
-          //
+          Errors.rethrowsInterruptException(rex);
         }
       }
       if (u.isPresent()) {
@@ -2802,7 +2808,7 @@ public class ManipulateFunction {
             }
           }
         } catch (RuntimeException rex) {
-          //
+          Errors.rethrowsInterruptException(rex);
         }
       }
     }
@@ -2820,7 +2826,7 @@ public class ManipulateFunction {
         }
       }
     } catch (RuntimeException rex) {
-      //
+      Errors.rethrowsInterruptException(rex);
     }
   }
 

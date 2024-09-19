@@ -2,6 +2,8 @@ package org.matheclipse.core.convert;
 
 import java.math.RoundingMode;
 import org.hipparchus.util.OpenIntToDoubleHashMap;
+import org.matheclipse.core.basic.OperationSystem;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -140,6 +142,7 @@ public class Expr2Object {
         return map;
       }
     } catch (RuntimeException ex) {
+      Errors.rethrowsInterruptException(ex);
       // roundToInt() throws ArithmeticException
     }
     return null;

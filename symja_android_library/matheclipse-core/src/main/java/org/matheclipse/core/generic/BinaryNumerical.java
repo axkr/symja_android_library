@@ -3,6 +3,7 @@ package org.matheclipse.core.generic;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import org.hipparchus.analysis.BivariateFunction;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -69,6 +70,7 @@ public final class BinaryNumerical implements BinaryOperator<IExpr>, BivariateFu
       };
       result = fun.evalf(function);
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       return Double.NaN;
     }
     return result;

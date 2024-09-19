@@ -31,6 +31,7 @@ import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
@@ -226,6 +227,7 @@ public final class NumberTheory {
           }
         }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.BellB, rex, engine);
       }
       return F.NIL;
@@ -706,6 +708,7 @@ public final class NumberTheory {
       } catch (LimitException le) {
         throw le;
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(S.CatalanNumber, rex, engine);
       }
       return F.NIL;
@@ -4766,6 +4769,7 @@ public final class NumberTheory {
         try {
           return F.ZZ(Primality.prime(nthPrime));
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           Errors.printMessage(S.Prime, rex, engine);
         }
       }
@@ -5006,6 +5010,7 @@ public final class NumberTheory {
         } catch (LimitException le) {
           throw le;
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           Errors.printMessage(S.PrimitiveRoot, rex, engine);
         }
       }
@@ -5071,6 +5076,7 @@ public final class NumberTheory {
         } catch (LimitException le) {
           throw le;
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           Errors.printMessage(S.PrimitiveRootList, rex, engine);
         }
       }
@@ -5263,6 +5269,7 @@ public final class NumberTheory {
         // try to convert into a fractional number
         return rationalize(arg1, epsilon, useConvergenceMethod).orElse(arg1);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         // ex.printStackTrace();
         Errors.printMessage(S.Rationalize, rex, engine);
       }
@@ -5414,6 +5421,7 @@ public final class NumberTheory {
         }
         return F.booleSymbol(isSquarefree(expr, varList));
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         // JAS may throw RuntimeExceptions
         Errors.printMessage(S.SquareFreeQ, rex, engine);
       }

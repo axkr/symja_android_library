@@ -7,6 +7,9 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Objects;
 import java.util.function.Function;
+
+import org.matheclipse.core.basic.OperationSystem;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
@@ -108,6 +111,7 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
         double qDouble = value.evalf();
         return ofUnit(F.num(qDouble));
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
       }
     }
     return F.NIL;

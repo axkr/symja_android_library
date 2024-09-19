@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -22,6 +23,7 @@ public class BezierFunction extends AbstractEvaluator {
       try {
         return ((BezierFunctionExpr) head).evaluate(ast, engine);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(S.BezierFunction, rex, engine);
       }
     } else if (head == S.BezierFunction && ast.isAST1()) {

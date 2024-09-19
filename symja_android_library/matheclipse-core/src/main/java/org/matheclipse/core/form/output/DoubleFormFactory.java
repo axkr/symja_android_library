@@ -8,8 +8,10 @@ import org.apfloat.Apfloat;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
@@ -435,6 +437,7 @@ public abstract class DoubleFormFactory {
         buf.append("(" + value + ")");
         return;
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         //
       }
     }
@@ -1255,6 +1258,7 @@ public abstract class DoubleFormFactory {
         buf.append("(" + value + ")");
         return;
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         //
       }
     }

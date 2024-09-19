@@ -1,5 +1,8 @@
 package org.matheclipse.core.io;
 
+import org.matheclipse.core.basic.OperationSystem;
+import org.matheclipse.core.eval.Errors;
+
 import java.util.Locale;
 
 /**
@@ -57,7 +60,7 @@ public enum Extension {
         return true;
       }
     } catch (RuntimeException rex) {
-      //
+      Errors.rethrowsInterruptException(rex);
     }
     return false;
   }
@@ -86,7 +89,7 @@ public enum Extension {
         return valueOf(ucExtension);
       }
     } catch (RuntimeException rex) {
-      //
+      Errors.rethrowsInterruptException(rex);
     }
     return DAT;
   }
@@ -112,7 +115,7 @@ public enum Extension {
       }
       return valueOf(extensionString.toUpperCase(Locale.US));
     } catch (RuntimeException rex) {
-      //
+      Errors.rethrowsInterruptException(rex);
     }
     return DAT;
   }
@@ -141,7 +144,7 @@ public enum Extension {
         return valueOf(extensionString);
       }
     } catch (RuntimeException rex) {
-      //
+      Errors.rethrowsInterruptException(rex);
     }
     return STRING;
   }
@@ -157,7 +160,7 @@ public enum Extension {
     try {
       return valueOf(extensionString.toUpperCase(Locale.US));
     } catch (RuntimeException rex) {
-      //
+      Errors.rethrowsInterruptException(rex);
     }
     if (extensionString.equals("Text")) {
       return TXT;

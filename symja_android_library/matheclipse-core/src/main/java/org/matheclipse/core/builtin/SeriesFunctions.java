@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
@@ -883,6 +884,7 @@ public class SeriesFunctions {
           }
           return evalLimitQuiet(F.Times(coeff, F.CInfinity), data);
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
         }
       }
       IAST mapLimit = data.mapLimit(plusAST);
@@ -1149,6 +1151,7 @@ public class SeriesFunctions {
             return limitsInfinityOfRationalFunctions(numeratorPoly, denominatorPoly, symbol, limit,
                 data);
           } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
           }
         }
 
@@ -1893,6 +1896,7 @@ public class SeriesFunctions {
         return coefficientPlus.oneIdentity0();
         // }
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.SeriesCoefficient, rex, engine);
       }
       return F.NIL;

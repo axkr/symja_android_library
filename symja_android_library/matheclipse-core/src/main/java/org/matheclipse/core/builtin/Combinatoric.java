@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.combinatoric.KPartitionsIterable;
 import org.matheclipse.core.combinatoric.KPartitionsList;
 import org.matheclipse.core.combinatoric.KSubsetsIterable;
@@ -935,6 +936,7 @@ public final class Combinatoric {
         } catch (LimitException le) {
           throw le;
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           Errors.printMessage(S.IntegerPartitions, rex, engine);
         }
       }

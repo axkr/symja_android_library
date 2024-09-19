@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -22,6 +23,7 @@ public class InterpolatingFunction extends AbstractEvaluator {
       try {
         return ((InterpolatingFunctionExpr<IExpr>) head).evaluate(ast, engine);
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(S.InterpolatingFunction, rex, engine);
       }
     }

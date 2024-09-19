@@ -17,6 +17,7 @@ import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
@@ -1671,6 +1672,7 @@ public final class StringFunctions {
         buf.append(str1.substring(lastPos));
         return F.$str(buf.toString());
       } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
         // example java.lang.StringIndexOutOfBoundsException
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         return F.NIL;
@@ -3058,6 +3060,7 @@ public final class StringFunctions {
             return temp;
           }
         } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
           LOGGER.debug("ToExpression.evaluate() failed", rex);
           return S.$Aborted;
         }
@@ -3308,6 +3311,7 @@ public final class StringFunctions {
         return buf.toString();
       }
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       LOGGER.debug("StringFunctions.inputForm() failed", rex);
     }
     return null;

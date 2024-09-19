@@ -25,6 +25,7 @@ import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.FieldSinhCosh;
 import org.jgrapht.GraphType;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.convert.VariablesSet;
@@ -6005,6 +6006,7 @@ public interface IExpr
     try {
       return accept(new VisitorReplaceAll(function));
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
@@ -6024,6 +6026,7 @@ public interface IExpr
     try {
       return accept(new VisitorReplaceAll(listOfRules));
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
@@ -6043,6 +6046,7 @@ public interface IExpr
     try {
       return accept(new VisitorReplaceAll(map));
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
@@ -6064,6 +6068,7 @@ public interface IExpr
     try {
       return this.accept(new VisitorReplacePart(astRules, heads));
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
@@ -6126,6 +6131,7 @@ public interface IExpr
       }
       return result;
     } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       if (Config.SHOW_STACKTRACE) {
         rex.printStackTrace();
       }
