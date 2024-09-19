@@ -1064,7 +1064,7 @@ public class SpecialFunctions {
       try {
         return F.num(h.zeta(a1.apfloatValue(), a2.apfloatValue()));
       } catch (Exception ce) {
-        //
+        Errors.rethrowsInterruptException(ce);
       }
       return F.NIL;
     }
@@ -1074,7 +1074,8 @@ public class SpecialFunctions {
       try {
         return F.complexNum(h.zeta(a1.apcomplexValue(), a2.apcomplexValue()));
       } catch (Exception ce) {
-        //
+        Errors.rethrowsInterruptException(ce);
+
       }
       return F.NIL;
     }
@@ -1628,7 +1629,8 @@ public class SpecialFunctions {
       try {
         return F.num(h.digamma(arg1));
       } catch (Exception ce) {
-        //
+        Errors.rethrowsInterruptException(ce);
+
       }
       return F.NIL;
     }
@@ -1638,7 +1640,8 @@ public class SpecialFunctions {
       try {
         return F.complexNum(h.digamma(arg1));
       } catch (Exception ce) {
-        //
+        Errors.rethrowsInterruptException(ce);
+
       }
       return F.NIL;
     }
@@ -2002,6 +2005,7 @@ public class SpecialFunctions {
         Apcomplex productLog = h.w(ac);
         return F.complexNum(productLog.real().doubleValue(), productLog.imag().doubleValue());
       } catch (Exception ce) {
+        Errors.rethrowsInterruptException(ce);
 
       }
       Apcomplex c = ApcomplexMath.w(new Apfloat(d.doubleValue()));
@@ -2028,6 +2032,7 @@ public class SpecialFunctions {
       try {
         return F.num(h.w(arg1));
       } catch (Exception ce) {
+        Errors.rethrowsInterruptException(ce);
 
       }
       return F.complexNum(h.w(arg1, 0));
@@ -2415,7 +2420,8 @@ public class SpecialFunctions {
       try {
         return F.num(h.zeta(arg1));
       } catch (Exception ce) {
-        //
+        Errors.rethrowsInterruptException(ce);
+
       }
       return F.NIL;
     }
@@ -2426,7 +2432,7 @@ public class SpecialFunctions {
       try {
         return F.complexNum(h.zeta(arg1));
       } catch (Exception ce) {
-        //
+        Errors.rethrowsInterruptException(ce);
       }
       return F.NIL;
     }
@@ -2438,7 +2444,7 @@ public class SpecialFunctions {
         Apcomplex zeta = h.zeta(num.apfloatValue());
         return F.num(zeta.doubleValue());
       } catch (Exception ce) {
-        //
+        Errors.rethrowsInterruptException(ce);
       }
       return F.NIL;
     }
@@ -2450,7 +2456,7 @@ public class SpecialFunctions {
         Apcomplex zeta = h.zeta(cNum.apcomplexValue());
         return F.complexNum(zeta.real().doubleValue(), zeta.imag().doubleValue());
       } catch (Exception ce) {
-        //
+        Errors.rethrowsInterruptException(ce);
       }
       return F.NIL;
     }
@@ -2461,7 +2467,7 @@ public class SpecialFunctions {
       try {
         return F.num(h.zeta(a1.apfloatValue(), a2.apfloatValue()));
       } catch (Exception ce) {
-        //
+        Errors.rethrowsInterruptException(ce);
       }
       return F.NIL;
     }
@@ -2472,7 +2478,7 @@ public class SpecialFunctions {
       try {
         return F.complexNum(h.zeta(a1.apcomplexValue(), a2.apcomplexValue()));
       } catch (Exception ce) {
-        //
+        Errors.rethrowsInterruptException(ce);
       }
       return F.NIL;
     }

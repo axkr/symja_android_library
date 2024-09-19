@@ -976,6 +976,7 @@ public class ComplexSym implements IComplex {
           OutputFormFactory.NO_PLUS_CALL);
       return sb.toString();
     } catch (Exception e1) {
+      Errors.rethrowsInterruptException(e1);
       // fall back to simple output format
       final StringBuilder tb = new StringBuilder();
       tb.append('(');

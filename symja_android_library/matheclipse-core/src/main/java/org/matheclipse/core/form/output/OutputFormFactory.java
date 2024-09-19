@@ -14,6 +14,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
@@ -1863,6 +1864,7 @@ public class OutputFormFactory {
         call = PLUS_CALL;
       }
     } catch (Exception ex) {
+      Errors.rethrowsInterruptException(ex);
       return false;
     }
     if (Precedence.PLUS < precedence) {
@@ -1882,6 +1884,7 @@ public class OutputFormFactory {
     try {
       buf.append(quantity.toString());
     } catch (Exception ex) {
+      Errors.rethrowsInterruptException(ex);
       return false;
     }
     if (Precedence.PLUS < precedence) {

@@ -135,6 +135,7 @@ public class Export extends AbstractEvaluator {
       } catch (IOException ioe) {
         LOGGER.log(engine.getLogLevel(), "Export: file {} not found!", arg1, ioe);
       } catch (Exception ex) {
+        Errors.rethrowsInterruptException(ex);
         LOGGER.log(engine.getLogLevel(), "Export: file {}", arg1, ex);
       }
     }

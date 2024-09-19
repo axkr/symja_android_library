@@ -724,6 +724,7 @@ public final class Arithmetic {
       try {
         return F.subst(expr, x -> chopNumber(x, delta));
       } catch (Exception e) {
+        Errors.rethrowsInterruptException(e);
         LOGGER.debug("Chop.evaluate() failed", e);
       }
 
@@ -877,6 +878,7 @@ public final class Arithmetic {
           // }
         }
       } catch (Exception e) {
+        Errors.rethrowsInterruptException(e);
         LOGGER.debug("Complex.evaluate() failed", e);
       }
 

@@ -292,14 +292,14 @@ public final class NumberTheory {
               try {
                 return F.num(h.bernoulli(ln));
               } catch (Exception ce) {
-                //
+                Errors.rethrowsInterruptException(ce);
               }
             } else {
               h = EvalEngine.getApfloatDouble(engine);
               try {
                 return F.num(h.bernoulli(ln).doubleValue());
               } catch (Exception ce) {
-                //
+                Errors.rethrowsInterruptException(ce);
               }
             }
 
@@ -449,7 +449,7 @@ public final class NumberTheory {
       try {
         return F.num(h.binomial(a1.apfloatValue(), a2.apfloatValue()));
       } catch (Exception ce) {
-        //
+        Errors.rethrowsInterruptException(ce);
       }
       return F.NIL;
     }
@@ -460,7 +460,7 @@ public final class NumberTheory {
       try {
         return F.complexNum(h.binomial(a1.apcomplexValue(), a2.apcomplexValue()));
       } catch (Exception ce) {
-        //
+        Errors.rethrowsInterruptException(ce);
       }
       return F.NIL;
     }

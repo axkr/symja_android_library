@@ -2278,6 +2278,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       }
 
     } catch (Exception ex) {
+      Errors.rethrowsInterruptException(ex);
       LOGGER.debug("MathMLFormFactory.convertSeriesData() failed", ex);
       return false;
     }

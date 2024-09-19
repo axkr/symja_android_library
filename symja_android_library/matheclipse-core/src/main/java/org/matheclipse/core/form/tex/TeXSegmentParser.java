@@ -1232,6 +1232,7 @@ class TeXSegmentParser {
         LOGGER.warn(errors.get(i));
       }
     } catch (Exception e) {
+      Errors.rethrowsInterruptException(e);
       if (Config.SHOW_STACKTRACE) {
         System.out.println(texStr);
         e.printStackTrace();

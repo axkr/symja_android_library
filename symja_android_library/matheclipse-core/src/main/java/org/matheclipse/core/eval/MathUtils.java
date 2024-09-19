@@ -333,6 +333,8 @@ public class MathUtils {
       dEval.parse(fun);
       return true;
     } catch (Exception e) {
+      Errors.rethrowsInterruptException(e);
+
       return false;
     }
   }
@@ -348,6 +350,7 @@ public class MathUtils {
         dEval.parse(fun[i]);
         b[i] = true;
       } catch (Exception e) {
+        Errors.rethrowsInterruptException(e);
         b[i] = false;
       }
     }
@@ -568,6 +571,7 @@ public class MathUtils {
         // throws MathException exception, if syntax isn't valid
         return p.parse(evalStr);
       } catch (Exception e2) {
+        Errors.rethrowsInterruptException(e2);
         return null;
       }
     }

@@ -11,6 +11,7 @@ import org.apache.commons.io.IOUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import org.matheclipse.core.eval.Errors;
 
 /** A map for the description templates of the rule steps. */
 public class RuleDescription {
@@ -44,8 +45,9 @@ public class RuleDescription {
         }
       }
 
-    } catch (Exception ignored) {
-      ignored.printStackTrace();
+    } catch (Exception e) {
+      Errors.rethrowsInterruptException(e);
+      e.printStackTrace();
     }
   }
 

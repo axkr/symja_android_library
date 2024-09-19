@@ -825,6 +825,7 @@ public abstract class ComplexFormFactory {
     try {
       buf.append(quantity.toString());
     } catch (Exception ex) {
+      Errors.rethrowsInterruptException(ex);
       return false;
     }
     if (Precedence.PLUS < precedence) {

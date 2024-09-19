@@ -3,6 +3,8 @@ package org.matheclipse.core.convert;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -75,6 +77,7 @@ public class JASModInteger {
     try {
       return expr2Poly(exprPoly, false);
     } catch (Exception ae) {
+      Errors.rethrowsInterruptException(ae);
       throw new JASConversionException();
     }
   }
@@ -93,6 +96,7 @@ public class JASModInteger {
     try {
       return numericExpr2Poly(exprPoly);
     } catch (Exception ae) {
+      Errors.rethrowsInterruptException(ae);
       throw new JASConversionException();
     }
   }
@@ -110,6 +114,7 @@ public class JASModInteger {
     try {
       return expr2IExprPoly(exprPoly);
     } catch (Exception ae) {
+      Errors.rethrowsInterruptException(ae);
       throw new JASConversionException();
     }
   }

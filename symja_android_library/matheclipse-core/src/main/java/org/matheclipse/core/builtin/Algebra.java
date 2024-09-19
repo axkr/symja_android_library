@@ -878,6 +878,7 @@ public class Algebra {
         }
         return arg1;
       } catch (Exception e) {
+        Errors.rethrowsInterruptException(e);
         LOGGER.debug("Collect.evaluate() failed", e);
       }
       return F.NIL;

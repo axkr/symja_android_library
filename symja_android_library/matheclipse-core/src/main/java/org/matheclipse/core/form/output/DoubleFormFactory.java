@@ -1153,6 +1153,7 @@ public abstract class DoubleFormFactory {
         call = PLUS_CALL;
       }
     } catch (Exception ex) {
+      Errors.rethrowsInterruptException(ex);
       return false;
     }
     if (Precedence.PLUS < precedence) {
@@ -1172,6 +1173,7 @@ public abstract class DoubleFormFactory {
     try {
       buf.append(quantity.toString());
     } catch (Exception ex) {
+      Errors.rethrowsInterruptException(ex);
       return false;
     }
     if (Precedence.PLUS < precedence) {

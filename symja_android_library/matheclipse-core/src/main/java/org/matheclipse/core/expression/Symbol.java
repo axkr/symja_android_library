@@ -442,6 +442,7 @@ public class Symbol implements ISymbol, Serializable {
       OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax()).convertSymbol(sb, this);
       return sb.toString();
     } catch (Exception e1) {
+      Errors.rethrowsInterruptException(e1);
       return fSymbolName;
     }
   }
@@ -1087,6 +1088,7 @@ public class Symbol implements ISymbol, Serializable {
       OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax()).convertSymbol(sb, this);
       return sb.toString();
     } catch (Exception e1) {
+      Errors.rethrowsInterruptException(e1);
       return fSymbolName;
     }
   }
