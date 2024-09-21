@@ -31,7 +31,6 @@ import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
@@ -1007,7 +1006,7 @@ public final class NumberTheory {
           for (int i = 2; i <= size; i++) {
             IExpr temp;
             if (result.isAST()) {
-              temp = engine.evaluate(F.Together(((IAST) result).copy()));
+              temp = engine.evaluate(F.Together(result.copy()));
             } else {
               temp = engine.evaluate(result);
             }
@@ -1418,7 +1417,7 @@ public final class NumberTheory {
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInteger() && arg1.isNonNegativeResult()) {
-        int n = ((IInteger) arg1).toIntDefault();
+        int n = arg1.toIntDefault();
         if (n >= 0) {
           if (n >= NumberTheory.DEDEKIND_7.length) {
             int restIndex = n - 7;
@@ -1870,7 +1869,7 @@ public final class NumberTheory {
         return F.NIL;
       }
       if (arg1.isInteger()) {
-        int n = ((IInteger) arg1).toIntDefault(-1);
+        int n = arg1.toIntDefault(-1);
         if (n >= 0) {
           if ((n & 0x00000001) == 0x00000001) {
             return F.C0;
@@ -2391,7 +2390,7 @@ public final class NumberTheory {
           if (((IInteger) x).isLT((IInteger) n)) {
             return F.C0;
           }
-          if (((IInteger) x).equals(n)) {
+          if (x.equals(n)) {
             if (x.isZero()) {
               return F.C1;
             }
@@ -2668,7 +2667,7 @@ public final class NumberTheory {
         if (!arg1.isNegative()) {
           return factorial2((IInteger) arg1);
         }
-        int n = ((IInteger) arg1).toIntDefault(0);
+        int n = arg1.toIntDefault(0);
         if (n < 0) {
           switch (n) {
             case -1:
@@ -2883,7 +2882,7 @@ public final class NumberTheory {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isInteger()) {
-        int n = ((IInteger) arg1).toIntDefault();
+        int n = arg1.toIntDefault();
         if (n > Integer.MIN_VALUE) {
           if (ast.isAST2()) {
             if (ast.arg2().isSymbol() || ast.arg2().isNumber() || ast.arg2().isAST()) {
@@ -3132,8 +3131,8 @@ public final class NumberTheory {
                   IASTMutable nonPeriodicPart = list.setAtCopy(list.argSize(), x);
                   IExpr nonPeriodReduced = continuedFractionReduce(nonPeriodicPart, engine);
                   if (nonPeriodReduced.isPresent()) {
-                    return radSimplify(
-                        F.subst(nonPeriodReduced, arg -> arg.equals(x), solution), engine);
+                    return radSimplify(F.subst(nonPeriodReduced, arg -> arg.equals(x), solution),
+                        engine);
                   }
                 }
               }
@@ -3306,7 +3305,7 @@ public final class NumberTheory {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isInteger()) {
-        int n = ((IInteger) arg1).toIntDefault(0);
+        int n = arg1.toIntDefault(0);
         if (-8 <= n && n <= 7) {
           // long integer results
           switch (n) {
@@ -3516,7 +3515,7 @@ public final class NumberTheory {
             INumber num = F.C0;
             int k = size - 1;
             for (int i = 1; i < size1; i++) {
-              num = (INumber) num.plus(((INumber) list1.get(i)).times(result.get(k--)));
+              num = (INumber) num.plus(list1.get(i).times(result.get(k--)));
             }
             result.append(num);
             counter++;
@@ -3628,7 +3627,7 @@ public final class NumberTheory {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isInteger()) {
-        int n = ((IInteger) arg1).toIntDefault();
+        int n = arg1.toIntDefault();
         if (n > Integer.MIN_VALUE) {
           if (ast.isAST2()) {
             return lucasLPolynomialIterative(n, ast.arg2(), ast, engine);
@@ -3832,7 +3831,7 @@ public final class NumberTheory {
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInteger() && arg1.isPositive()) {
-        int n = ((IInteger) arg1).toIntDefault();
+        int n = arg1.toIntDefault();
         if (n > 0) {
           if (n > NumberTheory.MPE_51.length) {
             return F.NIL;
@@ -4647,7 +4646,7 @@ public final class NumberTheory {
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInteger() && arg1.isPositive()) {
-        int n = ((IInteger) arg1).toIntDefault();
+        int n = arg1.toIntDefault();
         if (n >= 0) {
           if (n > NumberTheory.MPE_51.length) {
             return F.NIL;
@@ -4757,7 +4756,7 @@ public final class NumberTheory {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.arg1().isInteger()) {
-        int nthPrime = ((IInteger) ast.arg1()).toIntDefault();
+        int nthPrime = ast.arg1().toIntDefault();
         if (nthPrime <= 0) {
           // Positive integer argument expected in `1`.
           return Errors.printMessage(ast.topHead(), "intpp", F.list(ast), engine);
@@ -4817,7 +4816,7 @@ public final class NumberTheory {
       if (x.isInteger() && x.isPositive()) {
         // TODO improve performance by caching some values?
 
-        int maxK = ((IInteger) x).toIntDefault();
+        int maxK = x.toIntDefault();
         if (maxK >= 0) {
           int result = 0;
           BigInteger max = BigInteger.valueOf(maxK);
@@ -6678,7 +6677,7 @@ public final class NumberTheory {
               a = zz;
             } else if (xExp == 1) {
               d = zz;
-            } else if (xExp == 2) {
+            } else if (xExp == 0) {
               f = zz;
             } else {
               throw new ArithmeticException(
@@ -6747,6 +6746,7 @@ public final class NumberTheory {
       }
     } catch (ArithmeticException aex) {
       //
+      aex.printStackTrace();
     }
 
     return F.NIL;

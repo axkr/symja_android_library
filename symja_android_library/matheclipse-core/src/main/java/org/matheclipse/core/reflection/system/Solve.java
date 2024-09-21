@@ -10,7 +10,6 @@ import org.apache.logging.log4j.Logger;
 import org.chocosolver.solver.constraints.extension.hybrid.HybridTuples;
 import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
@@ -1302,7 +1301,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         if (ToggleFeature.SOLVE_DIOPHANTINE) {
           if (equationsAndInequations.argSize() == 1) {
             IExpr eq1 = equationsAndInequations.arg1();
-            if (eq1.isEqual() && eq1.second().isZero()) {
+            if (eq1.isEqual() && eq1.second().isZero() && equationVariables.argSize() == 2) {
               IAST diophantineResult = NumberTheory.diophantinePolynomial(eq1.first(),
                   equationVariables, maximumNumberOfResults);
               if (diophantineResult.isPresent()) {

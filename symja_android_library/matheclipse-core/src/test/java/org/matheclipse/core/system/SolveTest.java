@@ -1323,10 +1323,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // "x==-(-1+I)^(1/4)||x==(-1+I)^(1/4)||x==I*(-1+I)^(1/4)||x==-I*(-1+I)^(1/4)");
     // check("Solve(x^3 == 1 - I, x)", //
     // "{{x->-(-1+I)^(1/3)},{x->(-1+I)^(1/3)},{x->-(-1)^(2/3)*(-1+I)^(1/3)}}");
-    check("Solve(1-1/10*i*1==0,{},Integers)", //
-        "{{i->10}}");
-    check("Solve(1-1/10*i*1==0,{i,Null},Integers)", //
-        "{{i->ConditionalExpression(10,Null∈Integers)}}");
+
+    check("Solve(1-1/10*i*1==0,{i,y},Integers)", //
+        "{{i->ConditionalExpression(10,y∈Integers)}}");
     check("Solve({},{x,y},Integers)", //
         "{{}}");
     check("Solve(1 - (i*1)/10 == 0, i, Integers)", //
