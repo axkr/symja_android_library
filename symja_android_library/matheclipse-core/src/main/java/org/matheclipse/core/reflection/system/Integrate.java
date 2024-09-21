@@ -16,7 +16,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.ApfloatInterruptedException;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.eval.Errors;
@@ -793,10 +792,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     if (arg1.isFreeAST(s -> s.isSymbol() && ((ISymbol) s).isContext(Context.RUBI))) {
       int limit = engine.getRecursionLimit();
       boolean quietMode = engine.isQuietMode();
-      ISymbol head = arg1.topHead();
-
-      if (head.isNumericFunctionAttribute() || INT_RUBI_FUNCTIONS.contains(head)
-          || head.getSymbolName().startsWith("§")) {
+      if (arg1.isNumericFunctionAST() || INT_RUBI_FUNCTIONS.contains(arg1.topHead())
+          || arg1.topHead().getSymbolName().startsWith("§")) {
 
         boolean newCache = false;
         try {

@@ -14926,12 +14926,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     ApfloatNum num = ApfloatNum.valueOf("1.7", 30);
 
     IASTMutable times = F.Times(num, zero);
-    assertEquals(times.determinePrecision(), 30);
+    assertEquals(times.determinePrecision(true), 30);
   }
 
   @Test
   public void testN() {
-
     check("N((-1)^(1/180), 50)", //
         "0.99984769515639123915701155881391485169274031058318+I*0.01745240643728351281941897851631619247225272030713");
 
@@ -15009,6 +15008,35 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("N(Pi, 50)", "3.1415926535897932384626433832795028841971693993751");
     // check("N(1/7)", "0.14285714285714285");
     // check("N(1/7, 20)", "1.4285714285714285714e-1");
+  }
+
+  @Test
+  public void testNIssue1065() {
+    check("m = {{-2,-2,4},{-1,-3,7},{2,4,6}};", //
+        "");
+    check("s= Transpose(Eigenvectors(m));", //
+        "");
+    check("j = {{1+Sqrt(61),0,0},{0,1-Sqrt(61),0},{0,0,-1}};", //
+        "");
+    check("s1 = Inverse(s);", //
+        "");
+    try {
+      Config.USE_EXTENDED_PRECISION_IN_N = true;
+      check("-650282536985455220412264441675776 + 83260147110523554988992408780800 * Sqrt(61) // N", //
+          "4.51742*10^20");
+      // correct result by using apfloat precision evaluation in N()
+      check("s.j.s1 // N", //
+          "{{-2.0,-2.0,4.0},{-1.0,-3.0,7.0},{2.0,4.0,6.0}}");
+    } finally {
+      Config.USE_EXTENDED_PRECISION_IN_N = false;
+    }
+
+    check("-650282536985455220412264441675776 + 83260147110523554988992408780800 * Sqrt(61) // N", //
+        "4.51657*10^20");
+    // returns wrong result because of precision loss:
+    check("s.j.s1 // N", //
+        "{{-1.76672,-2.0,4.0},{-0.883359,-3.0,7.0},{1.99962,4.0,6.0}}");
+
   }
 
   @Test

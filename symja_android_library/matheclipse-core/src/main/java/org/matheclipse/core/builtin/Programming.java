@@ -2529,7 +2529,7 @@ public final class Programming {
             // `1` is not a variable with a value, so its value cannot be changed.
             return Errors.printMessage(builtinSymbol, "rvalue", F.list(symbol), engine);
           } else {
-            if (symbol.isProtected()) {
+            if (symbol.hasProtectedAttribute()) {
               return Errors.printMessage(builtinSymbol, "write", F.list(symbol), EvalEngine.get());
             }
             try {

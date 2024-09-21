@@ -294,7 +294,7 @@ public class Derivative extends AbstractFunctionEvaluator {
     IExpr temp = newFunction;
     if (headDerivative.arg1().isBuiltInSymbol()) {
       IBuiltInSymbol builtin = (IBuiltInSymbol) headDerivative.arg1();
-      if (builtin.isNumericFunctionAttribute()) {
+      if (builtin.hasNumericFunctionAttribute()) {
         if (head.isAST1()) {
           int n = head.first().toIntDefault();
           if (n > 0) {

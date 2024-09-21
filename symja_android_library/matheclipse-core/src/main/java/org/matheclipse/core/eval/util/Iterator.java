@@ -4,7 +4,6 @@ import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.Less;
 import static org.matheclipse.core.expression.F.Subtract;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -381,7 +380,7 @@ public class Iterator {
     }
   }
 
-  private static class DoubleIterator implements IIterator<IExpr> {
+  public static class DoubleIterator implements IIterator<IExpr> {
     double count;
 
     double lowerLimit;
@@ -1208,7 +1207,7 @@ public class Iterator {
 
           if (list.arg1() instanceof ISymbol) {
             ISymbol sym = (ISymbol) list.arg1();
-            if (!sym.isVariable() || sym.isProtected()) {
+            if (!sym.isVariable() || sym.hasProtectedAttribute()) {
               // Cannot assign to raw object `1`.
               throw new ArgumentTypeException(
                   Errors.getMessage("setraw", F.list(sym), EvalEngine.get()));
@@ -1253,7 +1252,7 @@ public class Iterator {
 
           if (list.arg1().isSymbol()) {
             ISymbol sym = (ISymbol) list.arg1();
-            if (!sym.isVariable() || sym.isProtected()) {
+            if (!sym.isVariable() || sym.hasProtectedAttribute()) {
               // Cannot assign to raw object `1`.
               throw new ArgumentTypeException(
                   Errors.getMessage("setraw", F.list(sym), EvalEngine.get()));
@@ -1299,7 +1298,7 @@ public class Iterator {
           step = evalEngine.evalWithoutNumericReset(list.arg4());
           if (list.arg1() instanceof ISymbol) {
             ISymbol sym = (ISymbol) list.arg1();
-            if (!sym.isVariable() || sym.isProtected()) {
+            if (!sym.isVariable() || sym.hasProtectedAttribute()) {
               // Cannot assign to raw object `1`.
               throw new ArgumentTypeException(
                   Errors.getMessage("setraw", F.list(sym), EvalEngine.get()));
@@ -1384,7 +1383,7 @@ public class Iterator {
     ISymbol variable;
     boolean fNumericMode;
 
-    if (symbol != null && (!symbol.isVariable() || symbol.isProtected())) {
+    if (symbol != null && (!symbol.isVariable() || symbol.hasProtectedAttribute())) {
       // Cannot assign to raw object `1`.
       throw new ArgumentTypeException(
           Errors.getMessage("setraw", F.list(symbol), EvalEngine.get()));
@@ -1432,7 +1431,7 @@ public class Iterator {
           variable = symbol;
           if (upperLimit.isList()) {
             if (variable != null) {
-              if (!variable.isVariable() || variable.isProtected()) {
+              if (!variable.isVariable() || variable.hasProtectedAttribute()) {
                 // Cannot assign to raw object `1`.
                 throw new ArgumentTypeException(
                     Errors.getMessage("setraw", F.list(variable), EvalEngine.get()));

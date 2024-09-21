@@ -59,7 +59,7 @@ public class SystemConfigurationTest extends ExprEvaluatorTestCase {
     ApfloatNum num = ApfloatNum.valueOf("1.7", 30);
 
     IASTMutable times = F.Times(num, zero);
-    assertEquals(times.determinePrecision(), 30);
+    assertEquals(times.determinePrecision(true), 30);
   }
 
   @Test

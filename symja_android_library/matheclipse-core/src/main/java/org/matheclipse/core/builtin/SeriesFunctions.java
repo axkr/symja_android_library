@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
@@ -357,7 +356,7 @@ public class SeriesFunctions {
           return powerLimit(ast, data, engine);
         } else if (ast.isAST(S.Piecewise, 3)) {
           return piecewiseLimit(ast, data, engine);
-        } else if (ast.argSize() > 0 && ast.topHead().isNumericFunctionAttribute()) {
+        } else if (ast.argSize() > 0 && ast.isNumericFunctionAST()) {
           IASTMutable copy = ast.copy();
           IExpr temp = F.NIL;
           boolean indeterminate = false;

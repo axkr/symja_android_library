@@ -230,7 +230,7 @@ public final class PatternMatching {
         if (x.isNIL()) {
           return F.NIL;
         }
-        if (((ISymbol) x).isProtected()) {
+        if (((ISymbol) x).hasProtectedAttribute()) {
           // Symbol `1` is Protected.
           Errors.printMessage(ast.topHead(), "wrsym", F.list(x), engine);
           return S.Null;
@@ -271,7 +271,7 @@ public final class PatternMatching {
         if (x.isNIL()) {
           return F.NIL;
         }
-        if (((ISymbol) x).isProtected()) {
+        if (((ISymbol) x).hasProtectedAttribute()) {
           // Symbol `1` is Protected.
           Errors.printMessage(ast.topHead(), "wrsym", F.list(x), engine);
           return S.Null;
@@ -435,7 +435,7 @@ public final class PatternMatching {
           return rightHandSide;
         }
         ISymbol symbol = (ISymbol) leftHandSide.first();
-        if (symbol.isProtected()) {
+        if (symbol.hasProtectedAttribute()) {
           Errors.printMessage(S.Default, "write", F.list(symbol, leftHandSide), EvalEngine.get());
           throw new FailedException();
         }
@@ -1131,7 +1131,7 @@ public final class PatternMatching {
         IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       if (leftHandSide.isAST(S.MessageName, 3, 4) && leftHandSide.first().isSymbol()) {
         ISymbol symbol = (ISymbol) leftHandSide.first();
-        if (!symbol.isProtected()) {
+        if (!symbol.hasProtectedAttribute()) {
           String messageName = leftHandSide.second().toString();
           rightHandSide = engine.evaluate(rightHandSide);
           IStringX message;
@@ -1275,7 +1275,7 @@ public final class PatternMatching {
         IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       if (leftHandSide.isAST(S.Options, 2) && leftHandSide.first().isSymbol()) {
         ISymbol symbol = (ISymbol) leftHandSide.first();
-        if (!symbol.isProtected()) {
+        if (!symbol.hasProtectedAttribute()) {
           try {
             if (!builtinSymbol.equals(S.SetDelayed)) {
               rightHandSide = engine.evaluate(rightHandSide);
@@ -2212,7 +2212,7 @@ public final class PatternMatching {
     // final Object[] result = new Object[] { null, rightHandSide };
     if (leftHandSide.isAST()) {
       final ISymbol lhsSymbol = determineRuleTag(leftHandSide);
-      if (lhsSymbol.isProtected()) {
+      if (lhsSymbol.hasProtectedAttribute()) {
         // Symbol `1` is Protected.
         Errors.printMessage(S.Set, "wrsym", F.list(lhsSymbol), EvalEngine.get());
         return rightHandSide;
@@ -2223,7 +2223,7 @@ public final class PatternMatching {
     }
     if (leftHandSide.isSymbol()) {
       final ISymbol lhsSymbol = (ISymbol) leftHandSide;
-      if (lhsSymbol.isProtected()) {
+      if (lhsSymbol.hasProtectedAttribute()) {
         // Symbol `1` is Protected.
         Errors.printMessage(S.Set, "wrsym", F.list(lhsSymbol), EvalEngine.get());
         return rightHandSide;
@@ -2282,7 +2282,7 @@ public final class PatternMatching {
       lhsSymbol = determineRuleTag(leftHandSide);
     }
     if (lhsSymbol != null) {
-      if (lhsSymbol.isProtected()) {
+      if (lhsSymbol.hasProtectedAttribute()) {
         // Symbol `1` is Protected.
         Errors.printMessage(S.SetDelayed, "wrsym", F.list(lhsSymbol), EvalEngine.get());
         throw new FailedException();
@@ -2298,7 +2298,7 @@ public final class PatternMatching {
     }
     if (leftHandSide.isSymbol()) {
       lhsSymbol = (ISymbol) leftHandSide;
-      if (lhsSymbol.isProtected()) {
+      if (lhsSymbol.hasProtectedAttribute()) {
         // Symbol `1` is Protected.
         Errors.printMessage(S.SetDelayed, "wrsym", F.list(lhsSymbol), EvalEngine.get());
         throw new FailedException();
@@ -2340,7 +2340,7 @@ public final class PatternMatching {
         } catch (final ReturnException e) {
           rightHandSide = e.getValue();
         }
-        if (symbol.isProtected()) {
+        if (symbol.hasProtectedAttribute()) {
           // Tag `1` in `2` is Protected.
           Errors.printMessage(S.TagSet, "write", F.list(symbol, leftHandSide), EvalEngine.get());
           throw new FailedException();
@@ -2425,7 +2425,7 @@ public final class PatternMatching {
       }
       if (putDownRule) {
         boolean pMode = packageMode;
-        if (!packageMode && tagSetSymbol.isProtected()) {
+        if (!packageMode && tagSetSymbol.hasProtectedAttribute()) {
           // Tag `1` in `2` is Protected.
           Errors.printMessage(tagSymbol.topHead(), "write", F.list(tagSetSymbol, leftHandSide),
               EvalEngine.get());
@@ -2477,7 +2477,7 @@ public final class PatternMatching {
         ISymbol symbol = (ISymbol) arg1;
         final IExpr leftHandSide = ast.arg2();
         final IExpr rightHandSide = ast.arg3();
-        if (symbol.isProtected()) {
+        if (symbol.hasProtectedAttribute()) {
           // Tag `1` in `2` is Protected.
           Errors.printMessage(ast.topHead(), "write", F.list(symbol, leftHandSide),
               EvalEngine.get());
@@ -2652,7 +2652,7 @@ public final class PatternMatching {
 
         if (leftHandSide.isAST()) {
           final ISymbol lhsSymbol = determineRuleTag(leftHandSide);
-          if (lhsSymbol.isProtected()) {
+          if (lhsSymbol.hasProtectedAttribute()) {
             // Symbol `1` is Protected.
             Errors.printMessage(ast.topHead(), "wrsym", F.list(lhsSymbol), EvalEngine.get());
             throw new FailedException();
@@ -2660,7 +2660,7 @@ public final class PatternMatching {
         }
         if (leftHandSide.isSymbol()) {
           final ISymbol lhsSymbol = (ISymbol) leftHandSide;
-          if (lhsSymbol.isProtected()) {
+          if (lhsSymbol.hasProtectedAttribute()) {
             // Symbol `1` is Protected.
             Errors.printMessage(ast.topHead(), "wrsym", F.list(lhsSymbol), EvalEngine.get());
             throw new FailedException();

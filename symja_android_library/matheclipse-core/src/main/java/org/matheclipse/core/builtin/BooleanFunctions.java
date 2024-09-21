@@ -436,7 +436,7 @@ public final class BooleanFunctions {
         if (symbol.isTrue()) {
           return factory.verum();
         }
-        if (!symbol.isVariable() || symbol.isProtected()) {
+        if (!symbol.isVariable() || symbol.hasProtectedAttribute()) {
           // `1` is not a valid variable.
           String message = Errors.getMessage("ivar", F.list(symbol), EvalEngine.get());
           throw new ArgumentTypeException(message);

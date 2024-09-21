@@ -757,7 +757,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public boolean isProtected() {
+  public boolean hasProtectedAttribute() {
     return false;
   }
 

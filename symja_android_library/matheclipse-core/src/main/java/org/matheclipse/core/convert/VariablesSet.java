@@ -56,8 +56,7 @@ public class VariablesSet {
           fCollection.add(list);
         }
       } else {
-        if (!list.isBuiltInFunction()
-            || ((ISymbol) list.head()).isNumericFunctionAttribute()) {
+        if (!list.isBuiltInFunction() || list.isNumericFunctionAST()) {
           if (!list.isNumericFunction(true)) {
             fCollection.add(list);
           }
@@ -75,6 +74,7 @@ public class VariablesSet {
       return false;
     }
   }
+
 
   /**
    * Collect the variables which satisfy the <code>IExpr#isVariable()</code> predicate and which are
@@ -111,6 +111,7 @@ public class VariablesSet {
       return false;
     }
   }
+
 
   static class BooleanVariablesPureFunctionVisitor extends AbstractVisitorBoolean {
     int highestSlotNumber;
@@ -151,6 +152,7 @@ public class VariablesSet {
 
   }
 
+
   /**
    * Return <code>true</code>, if the expression contains one of the variable store in the internal
    * <code>java.util.Set</code>.
@@ -175,6 +177,7 @@ public class VariablesSet {
       return false;
     }
   }
+
 
   /**
    * Collect the variables with the <code>IExpr#isVariable()</code> method.
@@ -218,6 +221,7 @@ public class VariablesSet {
       }
       return false;
     }
+
   }
 
   /**

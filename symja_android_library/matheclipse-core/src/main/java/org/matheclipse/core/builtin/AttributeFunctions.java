@@ -193,7 +193,7 @@ public class AttributeFunctions {
           throw new RuleCreationError(sym);
         }
       }
-      if (sym.isProtected()) {
+      if (sym.hasProtectedAttribute()) {
         // Tag `1` in `2` is Protected.
         Errors.printMessage(S.ClearAttributes, "write", F.list(sym, expr), EvalEngine.get());
         throw new FailedException();
@@ -216,8 +216,7 @@ public class AttributeFunctions {
             ISymbol attribute = (ISymbol) lst.get(i);
             if (!clearAttributes(sym, attribute)) {
               // `1` is not a known attribute.
-              return Errors.printMessage(S.ClearAttributes, "attnf", F.List(attribute),
-                  engine);
+              return Errors.printMessage(S.ClearAttributes, "attnf", F.List(attribute), engine);
             }
           }
           return S.Null;
@@ -301,13 +300,17 @@ public class AttributeFunctions {
         mutable.set(i, x);
       }
       final IASTAppendable result = F.ListAlloc(mutable.size());
-      mutable.forEach(x -> appendProtected(result, x));
+      mutable.forEach(x -> {
+        if (x.isSymbol()) {
+          appendProtected(result, (ISymbol) x);
+        }
+      });
       return result;
     }
 
-    private static void appendProtected(final IASTAppendable result, IExpr x) {
-      ISymbol symbol = (ISymbol) x;
-      if (!symbol.isProtected()) {
+    private static void appendProtected(final IASTAppendable result, ISymbol x) {
+      ISymbol symbol = x;
+      if (!symbol.hasProtectedAttribute()) {
         symbol.addAttributes(ISymbol.PROTECTED);
         result.append(x);
       }
@@ -344,7 +347,7 @@ public class AttributeFunctions {
 
     private static void appendUnprotected(final IASTAppendable result, IExpr x) {
       ISymbol symbol = (ISymbol) x;
-      if (symbol.isProtected()) {
+      if (symbol.hasProtectedAttribute()) {
         symbol.clearAttributes(ISymbol.PROTECTED);
         result.append(x);
       }
@@ -411,7 +414,7 @@ public class AttributeFunctions {
       for (int i = 1; i < listOfSymbols.size(); i++) {
         final IExpr arg = listOfSymbols.get(i);
         if (arg.isSymbol()) {
-          if (((ISymbol) arg).isProtected()) {
+          if (((ISymbol) arg).hasProtectedAttribute()) {
             Errors.printMessage(S.ClearAttributes, "write", F.list(arg), EvalEngine.get());
             throw new FailedException();
           }
@@ -473,7 +476,7 @@ public class AttributeFunctions {
      * @param attribute
      */
     private static boolean addAttributes(final ISymbol sym, ISymbol attribute) {
-      if (sym.isProtected()) {
+      if (sym.hasProtectedAttribute()) {
         Errors.printMessage(S.SetAttributes, "write", F.list(sym), EvalEngine.get());
         throw new FailedException();
       }

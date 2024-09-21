@@ -899,7 +899,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     try {
       IExpr head = lhsPatternAST.head();
       boolean flat = lhsPatternAST.isFlatAST();
-      boolean oneIdentity = head.isSymbol() ? ((ISymbol) head).isOneIdentityAttribute() : false;
+      boolean oneIdentity = head.isSymbol() ? ((ISymbol) head).hasOneIdentityAttribute() : false;
       if (lhsPatternAST.size() == lhsEvalAST.size()) {
         IAST[] removed = remove(lhsPatternAST, lhsEvalAST, engine, stackMatcher);
         if (removed == null) {

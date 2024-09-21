@@ -19,7 +19,7 @@ public class BuiltInRubi extends BuiltInDummy {
 
   /** {@inheritDoc} */
   @Override
-  public boolean isProtected() {
+  public boolean hasProtectedAttribute() {
     return true;
   }
 }
