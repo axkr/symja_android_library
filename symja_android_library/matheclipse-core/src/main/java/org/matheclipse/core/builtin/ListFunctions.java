@@ -20,7 +20,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import org.hipparchus.stat.StatUtils;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
@@ -144,15 +143,20 @@ public final class ListFunctions {
 
   private interface IVariablesFunction {
     public IExpr evaluate(final ISymbol[] variables, final IExpr[] index);
+
+    public void replacePartNumeric();
   }
 
   private static class TableFunction implements IVariablesFunction {
     final EvalEngine fEngine;
 
-    final IExpr fValue;
+    final IExpr fOriginalValue;
+
+    IExpr fValue;
 
     public TableFunction(final EvalEngine engine, final IExpr value) {
       fEngine = engine;
+      fOriginalValue = value;
       fValue = value;
     }
 
@@ -177,6 +181,13 @@ public final class ListFunctions {
       }
       IExpr temp = map.size() == 0 ? fValue : F.subst(fValue, map);
       return fEngine.evaluate(temp);
+    }
+
+    @Override
+    public void replacePartNumeric() {
+      if (fValue.isNumericFunctionAST()) {
+        fValue = F.subst(fValue, x -> x.isNumericFunction() ? fEngine.evalN(x) : F.NIL);
+      }
     }
   }
 
@@ -305,6 +316,10 @@ public final class ListFunctions {
     public IExpr evaluate(final ISymbol[] variables, final IExpr[] index) {
       return fConstantExpr;
     }
+
+    @Override
+    public void replacePartNumeric() {
+    }
   }
 
   private static class ArrayIterator implements IIterator<IExpr> {
@@ -389,9 +404,15 @@ public final class ListFunctions {
     }
 
     public IExpr tableRecursive() {
+
       if (fIndex < fIterList.size()) {
         final IIterator<IExpr> iter = fIterList.get(fIndex);
-
+        if (fFunction instanceof TableFunction) {
+          if (iter instanceof Iterator.DoubleIterator
+              || ((TableFunction) fFunction).fEngine.isNumericMode()) {
+            fFunction.replacePartNumeric();
+          }
+        }
         if (iter.setUp()) {
           try {
             final int index = fIndex++;
@@ -987,6 +1008,10 @@ public final class ListFunctions {
       public IExpr evaluate(final ISymbol[] variables, final IExpr[] index) {
         final IASTAppendable ast = fHeadAST.copyAppendable(index.length);
         return fEngine.evaluate(ast.appendArgs(0, index.length, i -> index[i]));
+      }
+
+      @Override
+      public void replacePartNumeric() {
       }
     }
 
@@ -5582,6 +5607,10 @@ public final class ListFunctions {
       @Override
       public IExpr evaluate(final ISymbol[] variables, final IExpr[] index) {
         return index[0];
+      }
+
+      @Override
+      public void replacePartNumeric() {
       }
     }
 
