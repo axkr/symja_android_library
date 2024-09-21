@@ -218,12 +218,12 @@ public class BigFractionSym extends AbstractFractionSym {
     }
     long numeratorDigitCount = -1;
     IInteger numerator = this.numerator();
-    if (numerator.compareTo(maxSafeInt) < 0 || numerator.compareTo(maxSafeInt) > 0) {
+    if (numerator.compareTo(minSafeInt) < 0 || numerator.compareTo(maxSafeInt) > 0) {
       numeratorDigitCount = NumberUtil.calculateApproximatelyDigitCount(toBigNumerator());
     }
     long denominatorDigitCount = -1;
     IInteger denominator = this.denominator();
-    if (denominator.compareTo(maxSafeInt) < 0 || denominator.compareTo(maxSafeInt) > 0) {
+    if (denominator.compareTo(minSafeInt) < 0 || denominator.compareTo(maxSafeInt) > 0) {
       denominatorDigitCount = NumberUtil.calculateApproximatelyDigitCount(toBigDenominator());
     }
     long max = Math.max(numeratorDigitCount, denominatorDigitCount);
