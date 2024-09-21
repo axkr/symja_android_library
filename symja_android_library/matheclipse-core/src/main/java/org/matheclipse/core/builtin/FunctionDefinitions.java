@@ -87,6 +87,7 @@ public final class FunctionDefinitions {
       S.MatrixD.setEvaluator(new org.matheclipse.core.reflection.system.MatrixD());
       S.MeijerG.setEvaluator(new org.matheclipse.core.reflection.system.MeijerG());
 
+      S.N.setEvaluator(new org.matheclipse.core.reflection.system.N());
       S.ND.setEvaluator(new org.matheclipse.core.reflection.system.ND());
       S.NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
       S.NFourierTransform

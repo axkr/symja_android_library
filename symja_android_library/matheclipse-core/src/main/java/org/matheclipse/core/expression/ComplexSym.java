@@ -347,6 +347,20 @@ public class ComplexSym implements IComplex {
   }
 
   @Override
+  public long determinePrecision(boolean postParserProcessing) {
+    if (postParserProcessing) {
+      return -1;
+    }
+    long realPrecision = fReal.determinePrecision(false);
+    long imginaryPrecision = fImaginary.determinePrecision(false);
+    long max = Math.max(realPrecision, imginaryPrecision);
+    if (max > ParserConfig.MACHINE_PRECISION) {
+      return max;
+    }
+    return -1;
+  }
+
+  @Override
   public boolean equals(final Object obj) {
     if (obj instanceof ComplexSym) {
       if (hashCode() != obj.hashCode()) {
@@ -668,7 +682,7 @@ public class ComplexSym implements IComplex {
         Apcomplex temp = apcomplexValue().add(((ApcomplexNum) that).apcomplexValue());
         return F.complexNum(temp);
       }
-      return F.complexNum(evalfc().add(((IComplexNum) that).evalfc()));
+      return F.complexNum(evalfc().add(that.evalfc()));
     }
     if (that instanceof IInteger) {
       return this.add(valueOf((IInteger) that));
@@ -719,7 +733,7 @@ public class ComplexSym implements IComplex {
       } else if (that.isMinusOne()) {
         return inverse();
       }
-      long n = ((IInteger) that).toLongDefault();
+      long n = that.toLongDefault();
       if (n != Long.MIN_VALUE) {
         return power(n);
       }
@@ -931,7 +945,7 @@ public class ComplexSym implements IComplex {
         Apcomplex temp = apcomplexValue().multiply(((ApcomplexNum) that).apcomplexValue());
         return F.complexNum(temp);
       }
-      return F.complexNum(evalfc().multiply(((IComplexNum) that).evalfc()));
+      return F.complexNum(evalfc().multiply(that.evalfc()));
     }
     if (that instanceof IInteger) {
       return this.multiply(valueOf((IInteger) that));

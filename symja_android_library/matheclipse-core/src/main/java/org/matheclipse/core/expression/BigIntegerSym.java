@@ -9,7 +9,6 @@ import java.math.RoundingMode;
 import java.util.function.Function;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
 import org.matheclipse.core.eval.exception.LimitException;
@@ -146,7 +145,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
       return this;
     }
     if (parm1 instanceof IFraction) {
-      return ((IFraction) parm1).add(this);
+      return parm1.add(this);
     }
     IInteger p1 = (IInteger) parm1;
     BigInteger newnum = toBigNumerator().add(p1.toBigNumerator());
@@ -339,6 +338,18 @@ public class BigIntegerSym extends AbstractIntegerSym {
   @Override
   public IInteger denominator() {
     return F.C1;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public long determinePrecision(boolean postParserProcessing) {
+    if (postParserProcessing) {
+      return -1;
+    }
+    if (this.compareTo(minSafeInt) < 0 || this.compareTo(maxSafeInt) > 0) {
+      return NumberUtil.calculateApproximatelyDigitCount(toBigNumerator());
+    }
+    return -1;
   }
 
   /** {@inheritDoc} */
@@ -647,7 +658,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
       return this.negate();
     }
     if (parm1 instanceof IFraction) {
-      return ((IFraction) parm1).multiply(this);
+      return parm1.multiply(this);
     }
     IInteger p1 = (IInteger) parm1;
     BigInteger newnum = toBigNumerator().multiply(p1.toBigNumerator());

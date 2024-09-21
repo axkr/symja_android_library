@@ -255,7 +255,7 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public long determinePrecision() {
+  public long determinePrecision(boolean postParserProcessing) {
     IExpr assignedValue = assignedValue();
     if (assignedValue != null) {
       EvalEngine engine = EvalEngine.get();
@@ -267,7 +267,7 @@ public class Symbol implements ISymbol, Serializable {
             RecursionLimitExceeded.throwIt(counter, this);
           }
         }
-        return assignedValue.determinePrecision();
+        return assignedValue.determinePrecision(postParserProcessing);
       } finally {
         if (recursionLimit > 0) {
           engine.decRecursionCounter();

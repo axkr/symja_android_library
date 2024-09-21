@@ -773,10 +773,10 @@ public class EvalEngine implements Serializable {
     return --fRecursionCounter;
   }
 
-  public void setDeterminePrecision(IExpr expr) {
+  public void setDeterminePrecision(IExpr expr, boolean postParserProcessing) {
     try {
       // determine the precision of the input before evaluation
-      long precision = expr.determinePrecision();
+      long precision = expr.determinePrecision(postParserProcessing);
       if (precision > getNumericPrecision()) {
         setNumericPrecision(precision);
       }

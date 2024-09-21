@@ -1159,7 +1159,7 @@ public class FuzzyParser extends Scanner {
       throwSyntaxError("End-of-file not reached.");
     }
     // determine the precision of the input before evaluation
-    long precision = temp.determinePrecision();
+    long precision = temp.determinePrecision(true);
     if (precision > fEngine.getNumericPrecision()) {
       fEngine.setNumericPrecision(precision);
     }

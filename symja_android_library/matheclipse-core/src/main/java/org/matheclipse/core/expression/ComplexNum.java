@@ -644,7 +644,7 @@ public class ComplexNum implements IComplexNum {
 
   /** {@inheritDoc} */
   @Override
-  public long determinePrecision() {
+  public long determinePrecision(boolean postParserProcessing) {
     return ParserConfig.MACHINE_PRECISION;
   }
 

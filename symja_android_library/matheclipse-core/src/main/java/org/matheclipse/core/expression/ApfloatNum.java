@@ -601,7 +601,7 @@ public class ApfloatNum implements INum {
 
   /** {@inheritDoc} */
   @Override
-  public long determinePrecision() {
+  public long determinePrecision(boolean postParserProcessing) {
     return precision();
   }
 

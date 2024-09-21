@@ -1142,7 +1142,7 @@ public class ExprParser extends Scanner {
 
       throwSyntaxError("End-of-file not reached.");
     }
-    fEngine.setDeterminePrecision(temp);
+    fEngine.setDeterminePrecision(temp, true);
     return temp;
   }
 

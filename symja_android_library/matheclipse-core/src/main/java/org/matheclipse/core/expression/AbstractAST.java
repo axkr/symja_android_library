@@ -731,6 +731,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
     /** {@inheritDoc} */
     @Override
+    public boolean isNumericFunctionAST() {
+      return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public final boolean isNumericMode() {
       return false;
     }
@@ -1842,10 +1848,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public long determinePrecision() {
+  public long determinePrecision(boolean postParserProcessing) {
     long precision = -1;
     if (isAST(S.N, 3)) {
-      long determinedPrecision = arg1().determinePrecision();
+      long determinedPrecision = arg1().determinePrecision(postParserProcessing);
       if (determinedPrecision > 0) {
         return determinedPrecision;
       }
@@ -1856,7 +1862,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return precision;
     }
     for (int i = 1; i < size(); i++) {
-      long p = get(i).determinePrecision();
+      long p = get(i).determinePrecision(postParserProcessing);
       if (p > precision && p != Apfloat.INFINITE) {
         precision = p;
       }
@@ -4090,43 +4096,42 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         }
       }
     }
-    if (head().isSymbol()) {
-      ISymbol header = (ISymbol) head();
-      if (allowList) {
-        if (header.isNumericFunctionAttribute() || isList()) {
-          // check if all arguments are &quot;numeric&quot;
-          boolean forAll = forAll(x -> x.isNumericFunction(allowList), 1);
-          if (forAll && !isList()) {
-            forAll = hasExpectedArgSize(header);
-          }
-          addEvalFlags(
-              forAll ? IAST.IS_NUMERIC_FUNCTION_OR_LIST : IAST.IS_NOT_NUMERIC_FUNCTION_OR_LIST);
-          return forAll;
+
+    if (allowList) {
+      if (isNumericFunctionAST() || isList()) {
+        // check if all arguments are &quot;numeric&quot;
+        boolean forAll = forAll(x -> x.isNumericFunction(allowList), 1);
+        if (forAll && !isList()) {
+          forAll = hasExpectedArgSize(topHead());
         }
-      } else {
-        if (header.isNumericFunctionAttribute()) {
-          // check if all arguments are &quot;numeric&quot;
-          boolean forAll = forAll(x -> x.isNumericFunction(allowList), 1);
-          if (forAll) {
-            forAll = hasExpectedArgSize(header);
-          }
-          addEvalFlags(forAll ? IAST.IS_NUMERIC_FUNCTION : IAST.IS_NOT_NUMERIC_FUNCTION);
-          return forAll;
-        }
+        addEvalFlags(
+            forAll ? IAST.IS_NUMERIC_FUNCTION_OR_LIST : IAST.IS_NOT_NUMERIC_FUNCTION_OR_LIST);
+        return forAll;
       }
-      if (isAST(S.Boole, 2) && arg1().isComparatorFunction()) {
-        AbstractAST comparatorFunction = (AbstractAST) arg1();
-        boolean forAll = comparatorFunction.forAll(x -> x.isNumericFunction(allowList), 1);
+    } else {
+      if (isNumericFunctionAST()) {
+        // check if all arguments are &quot;numeric&quot;
+        boolean forAll = forAll(x -> x.isNumericFunction(allowList), 1);
         if (forAll) {
-          forAll = comparatorFunction.hasExpectedArgSize(comparatorFunction.topHead());
+          forAll = hasExpectedArgSize(topHead());
         }
         addEvalFlags(forAll ? IAST.IS_NUMERIC_FUNCTION : IAST.IS_NOT_NUMERIC_FUNCTION);
         return forAll;
-      } else if (isPiecewise() != null) {
-        VariablesSet varSet = new VariablesSet(this);
-        return varSet.size() == 0;
       }
     }
+    if (isAST(S.Boole, 2) && arg1().isComparatorFunction()) {
+      AbstractAST comparatorFunction = (AbstractAST) arg1();
+      boolean forAll = comparatorFunction.forAll(x -> x.isNumericFunction(allowList), 1);
+      if (forAll) {
+        forAll = comparatorFunction.hasExpectedArgSize(comparatorFunction.topHead());
+      }
+      addEvalFlags(forAll ? IAST.IS_NUMERIC_FUNCTION : IAST.IS_NOT_NUMERIC_FUNCTION);
+      return forAll;
+    } else if (isPiecewise() != null) {
+      VariablesSet varSet = new VariablesSet(this);
+      return varSet.size() == 0;
+    }
+
     return false;
   }
 
@@ -4155,7 +4160,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isNumericFunction(VariablesSet varSet) {
-    if (head().isSymbol() && ((ISymbol) head()).isNumericFunctionAttribute() || isList()) {
+    if (head().isSymbol() && ((ISymbol) head()).hasNumericFunctionAttribute() || isList()) {
       // check if all arguments are &quot;numeric&quot;
       return forAll(x -> x.isNumericFunction(varSet));
     }
@@ -4165,7 +4170,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isNumericFunction(IExpr expr) {
-    if (head().isSymbol() && ((ISymbol) head()).isNumericFunctionAttribute() || isList()) {
+    if (head().isSymbol() && ((ISymbol) head()).hasNumericFunctionAttribute() || isList()) {
       // check if all arguments are &quot;numeric&quot;
       return forAll(x -> x.isNumericFunction(expr));
     }
@@ -4175,7 +4180,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isNumericFunction(Function<IExpr, String> list) {
-    if (head().isSymbol() && ((ISymbol) head()).isNumericFunctionAttribute() || isList()
+    if (head().isSymbol() && ((ISymbol) head()).hasNumericFunctionAttribute() || isList()
         || list.apply(this) != null) {
       // check if all arguments are &quot;numeric&quot;
       return forAll(x -> x.isNumericFunction(list));
@@ -4187,7 +4192,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public boolean isNumericMode() {
     ISymbol symbol = topHead();
-    if (isList() || symbol.isNumericFunctionAttribute()) {
+    if (isList() || symbol.hasNumericFunctionAttribute()) {
       // check if one of the arguments is &quot;numeric&quot;
       for (int i = 1; i < size(); i++) {
         if (get(i).isNumericMode()) {
@@ -4221,6 +4226,13 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public final boolean isOrderlessAST() {
     final IExpr head = head();
     return head.isSymbol() ? ((ISymbol) head).hasOrderlessAttribute() : false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isNumericFunctionAST() {
+    final IExpr head = head();
+    return head.isSymbol() ? ((ISymbol) head).hasNumericFunctionAttribute() : false;
   }
 
   /** {@inheritDoc} */
@@ -4307,7 +4319,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isPolynomialStruct() {
-    if (isBuiltInFunction() && !((ISymbol) head()).isNumericFunctionAttribute()) {
+    if (isBuiltInFunction() && !((ISymbol) head()).hasNumericFunctionAttribute()) {
       return false;
     }
     if (exists(x -> !x.isPolynomialStruct())) {
@@ -4747,9 +4759,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   private static boolean isTrigonometricFunction(IExpr x) {
     if (x.isAST1()) {
-      return x.isFunctionID(ID.ArcCos, ID.ArcCsc, ID.ArcCot, ID.ArcSec, ID.ArcSin,
-          ID.ArcTan, ID.Cos, ID.Cosh, ID.Cot, ID.Coth, ID.Csc, ID.Csch, ID.Haversine,
-          ID.InverseHaversine, ID.Sec, ID.Sech, ID.Sin, ID.Sinh, ID.Sinc, ID.Tan, ID.Tanh);
+      return x.isFunctionID(ID.ArcCos, ID.ArcCsc, ID.ArcCot, ID.ArcSec, ID.ArcSin, ID.ArcTan,
+          ID.Cos, ID.Cosh, ID.Cot, ID.Coth, ID.Csc, ID.Csch, ID.Haversine, ID.InverseHaversine,
+          ID.Sec, ID.Sech, ID.Sin, ID.Sinh, ID.Sinc, ID.Tan, ID.Tanh);
     }
     if (x.isAST2()) {
       return x.head() == S.ArcTan;
@@ -6282,7 +6294,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     IExpr head = head();
     if (head.isSymbol()) {
       ISymbol symbol = (ISymbol) head;
-      if (symbol.isNumericFunctionAttribute() || symbol.isBooleanFormulaSymbol()
+      if (symbol.hasNumericFunctionAttribute() || symbol.isBooleanFormulaSymbol()
           || symbol.isComparatorFunctionSymbol()) {
         int indx = indexOf(x -> x.isConditionalExpression());
         if (indx > 0) {

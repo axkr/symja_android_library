@@ -17,6 +17,7 @@ import org.matheclipse.core.expression.BuiltinFunctionCalls;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -368,6 +369,9 @@ public class Config {
 
   /** The maximum precision which could be requested from a user for numerical calculations. */
   public static long MAX_PRECISION_APFLOAT = 512;
+
+  /** The extended precision in {@link S#N} function if exact numbers extend double precision. */
+  public static boolean USE_EXTENDED_PRECISION_IN_N = false;
 
   /** Print trigonometric functions in lower case characters. */
   public static boolean MATHML_TRIG_LOWERCASE = true;

@@ -25,7 +25,6 @@ import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.FieldSinhCosh;
 import org.jgrapht.GraphType;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.convert.VariablesSet;
@@ -1112,11 +1111,13 @@ public interface IExpr
   }
 
   /**
-   * Determine precision of this expression. Return -1 for symbolic evaluation.
+   * Determine precision of this expression
+   * 
+   * @param postParserProcessing TODO
    *
-   * @return the precision of this expression. -1 for symbolic evaluation.
+   * @return the precision of this expression
    */
-  default long determinePrecision() {
+  default long determinePrecision(boolean postParserProcessing) {
     return -1;
   }
 
@@ -3092,10 +3093,12 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is an AST list, which contains a <b>header element</b> (i.e. a function
-   * symbol like for example <code>Dot, Plus or Times</code>) with attribute <code>Flat</code> at
-   * index position <code>0</code> and some optional <b>argument elements</b> at the index positions
-   * <code>1..(size()-1)</code>. Examples for <code>Flat</code> functions are <code>
+   * Test if this expression is an {@link IAST} list, which contains a <b>header element</b> (i.e. a
+   * function symbol like for example <code>Dot, Plus or Times</code>) with attribute
+   * {@link ISymbol#FLAT} at index position <code>0</code> and some optional <b>argument
+   * elements</b> at the index positions <code>1..(size()-1)</code>.
+   * <p>
+   * Examples for <code>Flat</code> functions are <code>
    * Dot[], Plus[] or Times[]</code>. Therefore this expression is no <b>atomic expression</b>.
    *
    * @return
@@ -4100,6 +4103,19 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is an {@link IAST} which contains a <b>header element</b> (i.e. a
+   * function symbol like for example <code>ArcSin, Cos, Plus or Times</code>) with attribute
+   * {@link ISymbol#NUMERICFUNCTION} at index position <code>0</code>.
+   *
+   * @return <code>true</code>, if the given expression is an IAST with attribute
+   *         {@link ISymbol#NUMERICFUNCTION}
+   * @see #isAtom()
+   */
+  default boolean isNumericFunctionAST() {
+    return false;
+  }
+
+  /**
    * Test if this expression contains a numeric number (i.e. of type <code>INum</code> or <code>
    * IComplexNum</code>.
    *
@@ -4196,13 +4212,14 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is an AST list, which contains a <b>header element</b> (i.e. a function
-   * symbol like for example <code>Plus or Times</code>) with attribute <code>Orderless</code> at
-   * index position <code>0</code> and some optional <b>argument elements</b> at the index positions
-   * <code>1..n</code>. Examples for <code>Orderless</code> functions are <code>Plus[] or Times[]
+   * Test if this expression is an {@link IAST} list, which contains a <b>header element</b> (i.e. a
+   * function symbol like for example <code>Plus or Times</code>) with attribute
+   * {@link ISymbol#ORDERLESS} at index position <code>0</code> and some optional <b>argument
+   * elements</b> at the index positions <code>1..n</code>. Examples for <code>Orderless</code>
+   * functions are <code>Plus[] or Times[]
    * </code>. Therefore this expression is no <b>atomic expression</b>.
    *
-   * @return
+   * @return <code>true</code>, if the given expression is an IAST with attribute Orderless.
    * @see #isAtom()
    */
   default boolean isOrderlessAST() {

@@ -8,6 +8,7 @@ import org.apfloat.Apfloat;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import com.google.common.math.DoubleMath;
@@ -131,7 +132,7 @@ public class NumberUtil {
   @Deprecated
   public static boolean isZero(final IExpr e) {
     if (e instanceof INumber) {
-      return ((INumber) e).isZero();
+      return e.isZero();
     }
     return false;
   }
@@ -648,4 +649,31 @@ public class NumberUtil {
     throw new ArithmeticException("BigInteger out of long range");
   }
 
+  /**
+   * This method calculate approximately size of {@link BigInteger} object that is based on the
+   * formula: sizeof(mag) + sizeof(signum) + sizeof(bitCount) + sizeof(bitLength) +
+   * sizeof(lowestSetBit) + sizeof(firstNonzeroIntNum) = mag.length * 4 + 20
+   * <p>
+   * Note: C is class size
+   */
+  public static int calculateApproximatelySizeOf(BigInteger number) {
+    return number.bitLength() * 4 + 20 + 32/* Class size */;
+  }
+
+  public static long calculateApproximatelySizeOf(IInteger number) {
+    return number.bitLength() * 4 + 20 + 32/* Class size */;
+  }
+
+  public static int calculateApproximatelyDigitCount(BigInteger number) {
+    // log(10, 2^n) = n * log(10, 2)
+    if (number == null) {
+      return 0;
+    }
+    // double factor = Math.log(2) / Math.log(10); = 0.30102999566398114
+    return (int) (/* factor */ 0.30102999566398114 * number.bitLength() + 1);
+  }
+
+  public static boolean isMachineDouble(double v) {
+    return !Double.isNaN(v) && !Double.isInfinite(v) && Double.isFinite(v);
+  }
 }

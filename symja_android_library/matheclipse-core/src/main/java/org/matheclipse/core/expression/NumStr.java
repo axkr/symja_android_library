@@ -124,7 +124,7 @@ public final class NumStr extends Num {
 
   /** {@inheritDoc} */
   @Override
-  public long determinePrecision() {
+  public long determinePrecision(boolean postParserProcessing) {
     return precision();
   }
 

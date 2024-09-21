@@ -618,7 +618,7 @@ public class ApcomplexNum implements IComplexNum {
 
   /** {@inheritDoc} */
   @Override
-  public long determinePrecision() {
+  public long determinePrecision(boolean postParserProcessing) {
     return precision();
   }
 

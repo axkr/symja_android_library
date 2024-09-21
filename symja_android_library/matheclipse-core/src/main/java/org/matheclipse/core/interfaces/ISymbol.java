@@ -179,7 +179,7 @@ public interface ISymbol extends IExpr {
       symbolSet.add((ISymbol) symbolsList.get(i));
     }
     ISymbol.collectSymbolsRecursive(symbolsList, symbolSet,
-        x -> x.isSymbol() && !(x.isProtected()));
+        x -> x.isSymbol() && !(x.hasProtectedAttribute()));
     if (symbolSet.size() > 0) {
       IASTAppendable fullDefinition = F.ListAlloc();
       Iterator<ISymbol> iterator = symbolSet.iterator();
@@ -219,8 +219,7 @@ public interface ISymbol extends IExpr {
   /**
    * Does the attributes flag set contains the {@link ISymbol#FLAT} bit set?
    *
-   * @return <code>true</code> if this attribute set contains the <code>ISymbol.Flat</code>
-   *         attribute.
+   * @return <code>true</code> if this attribute set contains the {@link ISymbol#FLAT} attribute.
    */
   public static boolean hasFlatAttribute(int attributes) {
     return (attributes & FLAT) == FLAT;
@@ -247,7 +246,7 @@ public interface ISymbol extends IExpr {
   }
 
   /**
-   * Does this symbols attribute set contains the <code>Orderless</code> attribute?
+   * Does this symbols attribute set contains the {@link ISymbol#ORDERLESS} attribute?
    *
    * @return <code>true</code> if this symbols attribute set contains the <code>Orderless</code>
    *         attribute.
@@ -257,14 +256,23 @@ public interface ISymbol extends IExpr {
   }
 
   /**
-   * Does the attributes flag set contains the <code>ISymbol.Flat</code> and <code>ISymbol.Orderless
-   * </code> bits set?
+   * Does the attributes flag set contains the {@link ISymbol#FLAT} and {@link ISymbol#ORDERLESS}
+   * bits set?
    *
-   * @return <code>true</code> if this attribute set contains the <code>ISymbol.Flat</code> and
-   *         <code>ISymbol.Orderless</code> attribute.
+   * @return <code>true</code> if this attribute set contains the {@link ISymbol#FLAT} and
+   *         {@link ISymbol#ORDERLESS} attribute.
    */
   public static boolean hasOrderlessFlatAttribute(int attributes) {
     return (attributes & FLATORDERLESS) == FLATORDERLESS;
+  }
+
+  /**
+   * Does this symbol have the {@link ISymbol#PROTECTED} attribute set?
+   * 
+   * 
+   */
+  default boolean hasProtectedAttribute() {
+    return ((getAttributes() & PROTECTED) == PROTECTED);
   }
 
   static IAST symbolDefinition(ISymbol symbol) {
@@ -544,6 +552,14 @@ public interface ISymbol extends IExpr {
   boolean hasListableAttribute();
 
   /**
+   * Does this symbol have the <code>ISymbol.NUMERICFUNCTION</code> attribute set?
+   * 
+   */
+  default boolean hasNumericFunctionAttribute() {
+    return ((getAttributes() & NUMERICFUNCTION) == NUMERICFUNCTION);
+  }
+
+  /**
    * Does this symbols attribute set contains the <code>OneIdentity</code> attribute?
    *
    * @return <code>true</code> if this symbols attribute set contains the <code>OneIdentity</code>
@@ -619,16 +635,34 @@ public interface ISymbol extends IExpr {
     return isConstantAttribute();
   }
 
+  /**
+   * Does this symbol have the {@link ISymbol#NUMERICFUNCTION} attribute set?
+   * 
+   * @deprecated use {@link #hasNumericFunctionAttribute()} instead
+   */
+  @Deprecated
   default boolean isNumericFunctionAttribute() {
-    return ((getAttributes() & NUMERICFUNCTION) == NUMERICFUNCTION);
+    return hasNumericFunctionAttribute();
   }
 
+  /**
+   * Does this symbol have the {@link ISymbol#ONEIDENTITY} attribute set?
+   * 
+   * @deprecated use {@link #hasOneIdentityAttribute()} instead
+   */
+  @Deprecated
   default boolean isOneIdentityAttribute() {
-    return (getAttributes() & ONEIDENTITY) == ONEIDENTITY;
+    return hasOneIdentityAttribute();
   }
 
+  /**
+   * Does this symbol have the {@link ISymbol#PROTECTED} attribute set?
+   * 
+   * @deprecated use {@link #hasProtectedAttribute()} instead
+   */
+  @Deprecated
   default boolean isProtected() {
-    return ((getAttributes() & PROTECTED) == PROTECTED);
+    return hasProtectedAttribute();
   }
 
   /**

@@ -211,6 +211,28 @@ public class BigFractionSym extends AbstractFractionSym {
     return add(F.CN1);
   }
 
+  @Override
+  public long determinePrecision(boolean postParserProcessing) {
+    if (postParserProcessing) {
+      return -1;
+    }
+    long numeratorDigitCount = -1;
+    IInteger numerator = this.numerator();
+    if (numerator.compareTo(maxSafeInt) < 0 || numerator.compareTo(maxSafeInt) > 0) {
+      numeratorDigitCount = NumberUtil.calculateApproximatelyDigitCount(toBigNumerator());
+    }
+    long denominatorDigitCount = -1;
+    IInteger denominator = this.denominator();
+    if (denominator.compareTo(maxSafeInt) < 0 || denominator.compareTo(maxSafeInt) > 0) {
+      denominatorDigitCount = NumberUtil.calculateApproximatelyDigitCount(toBigDenominator());
+    }
+    long max = Math.max(numeratorDigitCount, denominatorDigitCount);
+    if (max > ParserConfig.MACHINE_PRECISION) {
+      return max;
+    }
+    return -1;
+  }
+
   /** {@inheritDoc} */
   @Override
   public IRational inc() {

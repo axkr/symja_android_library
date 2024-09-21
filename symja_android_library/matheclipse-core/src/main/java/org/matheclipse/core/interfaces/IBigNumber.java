@@ -1,5 +1,6 @@
 package org.matheclipse.core.interfaces;
 
+import org.matheclipse.core.expression.IntegerSym;
 import edu.jas.arith.BigComplex;
 
 /**
@@ -7,6 +8,13 @@ import edu.jas.arith.BigComplex;
  * IComplex)
  */
 public interface IBigNumber extends INumber {
+
+  // -(2^53 - 1)
+  public static final IInteger minSafeInt = IntegerSym.valueOf(-9007199254740991L);
+
+  // 2^53 - 1
+  public static final IInteger maxSafeInt = IntegerSym.valueOf(9007199254740991L);
+
   /**
    * Create a numeric number from this exact &quot;symbolic&quot; number.
    *
