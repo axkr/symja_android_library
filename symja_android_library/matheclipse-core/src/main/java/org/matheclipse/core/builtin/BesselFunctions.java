@@ -13,7 +13,6 @@ import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
 import java.math.RoundingMode;
 import org.hipparchus.complex.Complex;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -1020,34 +1019,41 @@ public class BesselFunctions {
         return F.CComplexInfinity;
       }
       if (n.isNumber() && z.isNumber()) {
-        if (engine.isDoubleMode()) {
-          try {
-            double nDouble = Double.NaN;
-            double zDouble = Double.NaN;
-            try {
-              nDouble = n.evalf();
-              zDouble = z.evalf();
-            } catch (ValidateException ve) {
-            }
-            if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
-              Complex nc = n.evalfc();
-              Complex zc = z.evalfc();
-              return F.complexNum(BesselJS.hankelH1(nc, zc));
-            } else {
-              Complex hankelH1 = BesselJS.hankelH1(nDouble, zDouble);
-              if (F.isZero(hankelH1.getImaginary())) {
-                return F.num(hankelH1.getReal());
-              }
-              return F.complexNum(hankelH1);
-            }
+        // if (engine.isDoubleMode()) {
+        // try {
+        // double nDouble = Double.NaN;
+        // double zDouble = Double.NaN;
+        // try {
+        // nDouble = n.evalf();
+        // zDouble = z.evalf();
+        // } catch (ValidateException ve) {
+        // }
+        // if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
+        // Complex nc = n.evalfc();
+        // Complex zc = z.evalfc();
+        // return F.complexNum(BesselJS.hankelH1(nc, zc));
+        // } else {
+        // Complex hankelH1 = BesselJS.hankelH1(nDouble, zDouble);
+        // if (F.isZero(hankelH1.getImaginary())) {
+        // return F.num(hankelH1.getReal());
+        // }
+        // return F.complexNum(hankelH1);
+        // }
+        //
+        // } catch (RuntimeException rex) {
+        // return Errors.printMessage(S.HankelH1, rex, engine);
+        // }
+        // } else if (engine.isArbitraryMode()) {
 
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            return Errors.printMessage(S.HankelH1, rex, engine);
-          }
-        } else if (engine.isArbitraryMode()) {
-          return functionExpand(ast, engine);
+        // if (n.isNumber() && z.isNumber()) {
+        IExpr besselJ = n.besselJ(z);
+        IExpr besselY = n.besselY(z);
+        if (besselJ.isNumber() && besselY.isNumber()) {
+          // BesselJ(n,z)+I*BesselY(n,z)
+          return besselJ.plus(F.CI.multiply(besselY));
         }
+        // }
+        // }
       }
       return F.NIL;
     }
@@ -1081,33 +1087,38 @@ public class BesselFunctions {
         return F.CComplexInfinity;
       }
       if (n.isNumber() && z.isNumber()) {
-        if (engine.isDoubleMode()) {
-          try {
-            double nDouble = Double.NaN;
-            double zDouble = Double.NaN;
-            try {
-              nDouble = n.evalf();
-              zDouble = z.evalf();
-            } catch (ValidateException ve) {
-            }
-            if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
-              Complex nc = n.evalfc();
-              Complex zc = z.evalfc();
-              return F.complexNum(BesselJS.hankelH2(nc, zc));
-            } else {
-              Complex hankelH2 = BesselJS.hankelH2(nDouble, zDouble);
-              if (F.isZero(hankelH2.getImaginary())) {
-                return F.num(hankelH2.getReal());
-              }
-              return F.complexNum(hankelH2);
-            }
-
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            return Errors.printMessage(S.HankelH2, rex, engine);
-          }
-        } else if (engine.isArbitraryMode()) {
-          return F.Plus(F.BesselJ(n, z), F.Times(F.CNI, F.BesselY(n, z)));
+        // if (engine.isDoubleMode()) {
+        // try {
+        // double nDouble = Double.NaN;
+        // double zDouble = Double.NaN;
+        // try {
+        // nDouble = n.evalf();
+        // zDouble = z.evalf();
+        // } catch (ValidateException ve) {
+        // }
+        // if (Double.isNaN(nDouble) || Double.isNaN(zDouble)) {
+        // Complex nc = n.evalfc();
+        // Complex zc = z.evalfc();
+        // return F.complexNum(BesselJS.hankelH2(nc, zc));
+        // } else {
+        // Complex hankelH2 = BesselJS.hankelH2(nDouble, zDouble);
+        // if (F.isZero(hankelH2.getImaginary())) {
+        // return F.num(hankelH2.getReal());
+        // }
+        // return F.complexNum(hankelH2);
+        // }
+        //
+        // } catch (RuntimeException rex) {
+        // return Errors.printMessage(S.HankelH2, rex, engine);
+        // }
+        // } else if (engine.isArbitraryMode()) {
+        // return F.Plus(F.BesselJ(n, z), F.Times(F.CNI, F.BesselY(n, z)));
+        // }
+        IExpr besselJ = n.besselJ(z);
+        IExpr besselY = n.besselY(z);
+        if (besselJ.isNumber() && besselY.isNumber()) {
+          // BesselJ(n,z)-I*BesselY(n,z)
+          return besselJ.plus(F.CNI.multiply(besselY));
         }
       }
       return F.NIL;
