@@ -1113,7 +1113,9 @@ public interface IExpr
   /**
    * Determine precision of this expression
    * 
-   * @param postParserProcessing TODO
+   * @param postParserProcessing if <code>true</code> only the numeric input values are considered
+   *        for the precision calculation. if <code>false</code> the precision of the exact number
+   *        type is also considered.
    *
    * @return the precision of this expression
    */
@@ -5840,6 +5842,9 @@ public interface IExpr
   default IExpr plus(final IExpr that) {
     if (that.isZero()) {
       return this;
+    }
+    if (this.isZero()) {
+      return that;
     }
     EvalEngine engine = EvalEngine.get();
     if (engine.isTogetherMode() && (this.isPlusTimesPower() || that.isPlusTimesPower())) {

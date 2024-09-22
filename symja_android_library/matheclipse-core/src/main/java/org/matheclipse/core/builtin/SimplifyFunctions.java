@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -60,14 +59,11 @@ public class SimplifyFunctions {
 
     final Function<IExpr, Long> complexityFunction;
 
-    public SimplifiedResult(IExpr result, IExpr minExpr, Function<IExpr, Long> complexityFunction) {
-      this.result = result;
+    public SimplifiedResult(IExpr minExpr, Function<IExpr, Long> complexityFunction) {
+      // this(minExpr, minExpr, complexityFunction);
+      this.result = minExpr;
       this.complexityFunction = complexityFunction;
       this.minCounter = complexityFunction.apply(minExpr);
-    }
-
-    public SimplifiedResult(IExpr minExpr, Function<IExpr, Long> complexityFunction) {
-      this(minExpr, minExpr, complexityFunction);
     }
 
     public boolean checkLessEqual(IExpr expr) {
@@ -86,6 +82,30 @@ public class SimplifyFunctions {
         this.minCounter = counter;
         this.result = expr;
         return true;
+      } else if (counter == this.minCounter && expr != this.result) {
+        if (expr.isPlusTimesPower() && this.result.isPlusTimesPower()) {
+          int exprID = expr.headID();
+          int resultID = this.result.headID();
+          if (exprID != resultID) {
+            switch (exprID) {
+              case ID.Plus: // precedence 310
+                if (resultID == ID.Times // precedence 400
+                    || resultID == ID.Power) { // precedence 590
+                  this.minCounter = counter;
+                  this.result = expr;
+                  return true;
+                }
+                break;
+              case ID.Times: // precedence 400
+                if (resultID == ID.Power) { // precedence 590
+                  this.minCounter = counter;
+                  this.result = expr;
+                  return true;
+                }
+                break;
+            }
+          }
+        }
       }
       return false;
     }
@@ -536,7 +556,7 @@ public class SimplifyFunctions {
 
       @Override
       public IExpr visit(IASTMutable ast) {
-        SimplifiedResult sResult = new SimplifiedResult(F.NIL, ast, fComplexityFunction);
+        SimplifiedResult sResult = new SimplifiedResult(ast, fComplexityFunction);
 
         IExpr temp = visitAST(ast);
         if (temp.isPresent()) {

@@ -1,5 +1,7 @@
 package org.matheclipse.core.sympy.core;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import java.util.TreeMap;
 import org.junit.Test;
 import org.matheclipse.core.expression.F;
@@ -7,9 +9,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.sympy.core.ExprTools.Factors;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 public class TestExprTools extends ExprEvaluatorTestCase {
 
@@ -239,7 +238,7 @@ public class TestExprTools extends ExprEvaluatorTestCase {
         true);
     // assert Factors(x**sqrt(2)**3).as_expr() == x**(2*sqrt(2))
     assertEquals(new Factors(F.Power(x, F.Power(F.Sqrt(F.C2), F.C3))).asExpr().toString(), //
-        "x^(2*Sqrt(2))");
+        "x^(Sqrt(2))^3");
     // assert Factors(x)**Factors(S(2)) == Factors(x**2)
     assertEquals(new Factors(x).pow(F.C2).toString(), //
         "{x=2}");

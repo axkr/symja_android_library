@@ -725,6 +725,21 @@ public class Convert {
       // isMatrix() must be used!
       result.isMatrix(true);
     }
+    if (rowSize < 5 && colSize < 5) {
+      EvalEngine engine = EvalEngine.get();
+      if (!engine.isNumericMode() && engine.isTogetherMode()) {
+        for (int i = 1; i < rowSize + 1; i++) {
+          IASTMutable row = (IASTMutable) result.get(i);
+          for (int j = 1; j < colSize + 1; j++) {
+            IExpr value = row.get(j);
+            if (value.isPlusTimesPower()) {
+              IExpr t = engine.evaluate(F.Simplify(value));
+              row.set(j, t);
+            }
+          }
+        }
+      }
+    }
     return result;
   }
 

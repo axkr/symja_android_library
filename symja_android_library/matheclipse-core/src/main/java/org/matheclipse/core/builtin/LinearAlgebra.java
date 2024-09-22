@@ -55,7 +55,6 @@ import org.hipparchus.linear.RiccatiEquationSolver;
 import org.hipparchus.linear.RiccatiEquationSolverImpl;
 import org.hipparchus.linear.SchurTransformer;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.combinatoric.KSubsetsIterable;
 import org.matheclipse.core.convert.Convert;
