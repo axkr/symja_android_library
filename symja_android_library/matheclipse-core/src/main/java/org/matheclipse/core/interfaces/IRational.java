@@ -2,6 +2,8 @@ package org.matheclipse.core.interfaces;
 
 import java.math.BigInteger;
 import org.hipparchus.fraction.BigFraction;
+import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
 import org.matheclipse.core.expression.F;
 import edu.jas.arith.BigComplex;
 
@@ -17,7 +19,13 @@ public interface IRational extends IReal, IBigNumber {
   @Override
   public IInteger ceil();
 
-  public void checkBitLength();
+  /**
+   * Check if the bit length of the numerator or denominator is greater than
+   * {@link Config#MAX_BIT_LENGTH}.
+   * <p>
+   * If <code>true</code> throw BigIntegerLimitExceeded
+   */
+  public void checkBitLength() throws BigIntegerLimitExceeded;
 
   public int compareInt(final int value);
 

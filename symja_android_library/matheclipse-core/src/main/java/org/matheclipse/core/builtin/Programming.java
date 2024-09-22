@@ -13,7 +13,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -2948,8 +2947,8 @@ public final class Programming {
       java.util.Iterator<IExpr> iter = stack.descendingIterator();
       IASTAppendable result = F.ListAlloc(stack.size());
       if (ast.isAST1()) {
-        IExpr arg1 = ast.arg1();
-        if (arg1.isBlank()) {
+        IExpr pattern = ast.arg1();
+        if (pattern.isBlank()) {
           while (iter.hasNext()) {
             IExpr expr = iter.next();
             if (expr != ast) {
@@ -2957,7 +2956,7 @@ public final class Programming {
             }
           }
         } else {
-          IPatternMatcher matcher = engine.evalPatternMatcher(arg1);
+          IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
           while (iter.hasNext()) {
             IExpr expr = iter.next();
             if (expr != ast && //
@@ -2967,6 +2966,7 @@ public final class Programming {
           }
         }
       } else {
+        // AST0
         while (iter.hasNext()) {
           IExpr expr = iter.next();
           if (expr != ast) {
