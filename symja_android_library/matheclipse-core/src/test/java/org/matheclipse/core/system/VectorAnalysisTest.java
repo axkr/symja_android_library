@@ -241,7 +241,7 @@ public class VectorAnalysisTest extends ExprEvaluatorTestCase {
   public void testLaplacian() {
     // https://mathematica.stackexchange.com/a/196958/21734
     check("Laplacian(Sin(x^2 + y^2), {x, y}) // Simplify", //
-        "4*(Cos(x^2+y^2)-x^2*Sin(x^2+y^2)-y^2*Sin(x^2+y^2))");
+        "4*Cos(x^2+y^2)-4*x^2*Sin(x^2+y^2)-4*y^2*Sin(x^2+y^2)");
     check("Laplacian(Sin(x^2 + y^2), {x, y}, \"Cartesian\")", //
         "4*Cos(x^2+y^2)-4*x^2*Sin(x^2+y^2)-4*y^2*Sin(x^2+y^2)");
     check("Laplacian(Sin(r^2), {r, t}, \"Polar\")", //
