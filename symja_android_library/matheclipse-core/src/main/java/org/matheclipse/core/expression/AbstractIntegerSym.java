@@ -249,51 +249,51 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     final int length = integerString.length();
     if (radix == 10) {
       if (length == 1) {
-        char ch = integerString.charAt(0);
-        switch (ch) {
-          case '0':
+        int digit = Character.digit(integerString.charAt(0), radix);
+        switch (digit) {
+          case 0:
             return F.C0;
-          case '1':
+          case 1:
             return F.C1;
-          case '2':
+          case 2:
             return F.C2;
-          case '3':
+          case 3:
             return F.C3;
-          case '4':
+          case 4:
             return F.C4;
-          case '5':
+          case 5:
             return F.C5;
-          case '6':
+          case 6:
             return F.C6;
-          case '7':
+          case 7:
             return F.C7;
-          case '8':
+          case 8:
             return F.C8;
-          case '9':
+          case 9:
             return F.C9;
         }
       } else if (length == 2 && integerString.charAt(0) == '-') {
-        char ch = integerString.charAt(1);
-        switch (ch) {
-          case '0':
+        int digit = Character.digit(integerString.charAt(1), radix);
+        switch (digit) {
+          case 0:
             return F.C0;
-          case '1':
+          case 1:
             return F.CN1;
-          case '2':
+          case 2:
             return F.CN2;
-          case '3':
+          case 3:
             return F.CN3;
-          case '4':
+          case 4:
             return F.CN4;
-          case '5':
+          case 5:
             return F.CN5;
-          case '6':
+          case 6:
             return F.CN6;
-          case '7':
+          case 7:
             return F.CN7;
-          case '8':
+          case 8:
             return F.CN8;
-          case '9':
+          case 9:
             return F.CN9;
         }
       }
@@ -975,7 +975,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
       } else if (that.isMinusOne()) {
         return inverse();
       }
-      long n = ((IInteger) that).toLongDefault();
+      long n = that.toLongDefault();
       if (n != Long.MIN_VALUE) {
         return power(n);
       }
