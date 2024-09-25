@@ -98,7 +98,7 @@ public final class RulesData implements Serializable {
 
   private Map<IExpr, PatternMatcherEquals> fEqualDownRules;
 
-  private IMatch fMatcher;
+  private transient IMatch fMatcher;
 
   /**
    * List of pattern matchers. The corresponding priority is stored in <code>fPriorityDownRules

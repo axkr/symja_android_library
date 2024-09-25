@@ -158,7 +158,7 @@ public class Show3D2ThreeJS {
             buf.append("}], ");
           }
         }
-      } else if (arg1.isList() && ((IAST) arg1).isAST3()) {
+      } else if (arg1.isList() && arg1.isAST3()) {
         try {
           buf.append("\"elements\": [{\"coords\": [");
           addCoordsToElements(buf, ((IAST) arg1));

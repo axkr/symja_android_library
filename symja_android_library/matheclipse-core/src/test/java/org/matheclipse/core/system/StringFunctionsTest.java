@@ -585,6 +585,9 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
 
    @Test
    public void testStringReplace() {
+     // TODO use MMA logic for lists of rules
+     // check("StringReplace(\"ABBA\", {\"A\" -> \"AB\", \"B\" -> \"BA\"})", //
+     // "ABBABAAB ");
     check(
         "StringReplace(\"The number 17 is a prime number, 42 is not\", WordBoundary ~~ x:DigitCharacter.. ~~ WordBoundary /; PrimeQ(ToExpression(x)) :> \"*\" <> x <> \"*\")", //
         "The number *17* is a prime number, 42 is not");

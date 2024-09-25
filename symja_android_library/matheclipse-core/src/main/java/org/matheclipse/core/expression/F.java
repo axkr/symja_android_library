@@ -39,7 +39,6 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.AndroidLoggerFix;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.AssociationFunctions;
@@ -2853,7 +2852,7 @@ public class F extends S {
           return F.complexNum(Apfloat.ZERO, imag);
         }
       } else {
-        Complex c = ((IComplexNum) arg).evalfc();
+        Complex c = arg.evalfc();
         if (isZero(c.getReal(), delta)) {
           if (isZero(c.getImaginary(), delta)) {
             return C0;
@@ -4451,8 +4450,9 @@ public class F extends S {
     return new AST2(Fibonacci, a0, a1);
   }
 
-  public static IAST FindFit(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
-    return quaternary(FindFit, a0, a1, a2, a3);
+  public static IAST FindFit(final IExpr data, final IExpr expr, final IExpr variablesList,
+      final IExpr xVariable) {
+    return quaternary(FindFit, data, expr, variablesList, xVariable);
   }
 
   public static IAST FindFormula(final IExpr data, final IExpr x) {
