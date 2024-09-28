@@ -1,7 +1,7 @@
 ## Fit  
 
 ```
-Fit(list-of-data-points, degree, variable)
+Fit(list-of-data-points, terms-list, variable)
 ```
  
 > solve a least squares problem using the Levenberg-Marquardt algorithm.
@@ -12,15 +12,12 @@ See:
 ### Examples
 
 ```
->> Fit({{1,1},{2,4},{3,9},{4,16}},2,x)
-x^2.0
+>> Fit({{1,1},{2,4},{3,9},{4,16}},{1,x,x^2},x) // Chop
+x^2
 ```
 
 ### Related terms 
 [FindFit](FindFit.md), [FittedModel](FittedModel.md), [LinearModelFit](LinearModelFit.md) 
-
-
-
 
 
 

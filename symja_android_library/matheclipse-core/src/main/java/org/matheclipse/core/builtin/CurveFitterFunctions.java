@@ -3,26 +3,23 @@ package org.matheclipse.core.builtin;
 import org.hipparchus.analysis.ParametricUnivariateFunction;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.fitting.AbstractCurveFitter;
-import org.hipparchus.fitting.PolynomialCurveFitter;
 import org.hipparchus.fitting.SimpleCurveFitter;
 import org.hipparchus.fitting.WeightedObservedPoints;
 import org.hipparchus.stat.regression.SimpleRegression;
-import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
-import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.generic.SumCurveFitter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
+import org.matheclipse.core.interfaces.ISymbol;
 
 public class CurveFitterFunctions {
 
@@ -236,6 +233,7 @@ public class CurveFitterFunctions {
         listOfSymbols = initialGuess(listOfSymbols, initialGuess);
         if (listOfSymbols.isPresent()) {
           try {
+            function = F.substAbs(function);
             IExpr gradientList = S.Grad.of(engine, function, listOfSymbols);
             if (gradientList.isList()) {
               AbstractCurveFitter fitter =
@@ -293,24 +291,55 @@ public class CurveFitterFunctions {
 
     @Override
     public IExpr numericEval(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList() && ast.arg2().isReal() && ast.arg3().isVariable()) {
-        int polynomialDegree = ast.arg2().toIntDefault();
-        if (polynomialDegree > 0) {
-          if (Config.MAX_AST_SIZE < polynomialDegree) {
-            ASTElementLimitExceeded.throwIt(polynomialDegree);
+      if (ast.arg1().isList() && ast.arg3().isVariable()) {
+        IAST termList = ast.arg2().makeList();
+        IASTAppendable vars = F.ListAlloc(termList.size());
+        IASTAppendable plusExpr = F.PlusAlloc(termList.size());
+        ISymbol dummy = F.Dummy();
+        vars.append(dummy);
+        plusExpr.append(dummy);
+        for (int i = 1; i < termList.size(); i++) {
+          dummy = F.Dummy();
+          vars.append(dummy);
+          plusExpr.append(F.Times(dummy, termList.get(i)));
+        }
+        IExpr function = F.substAbs(plusExpr);
+        IExpr gradientList = S.Grad.of(engine, function, vars);
+        if (gradientList.isList()) {
+          double[] initialGuess = new double[vars.argSize()];
+          for (int i = 0; i < initialGuess.length; i++) {
+            initialGuess[i] = 1.0;
           }
-          AbstractCurveFitter fitter = PolynomialCurveFitter.create(polynomialDegree);
+          AbstractCurveFitter fitter =
+              SumCurveFitter.create(new FindFit.FindFitParametricFunction(function,
+                  (IAST) gradientList, vars, ast.arg3(), engine), initialGuess,
+                  Integer.MAX_VALUE);
           IAST data = (IAST) ast.arg1();
           WeightedObservedPoints obs = new WeightedObservedPoints();
           if (addWeightedObservedPoints(data, obs)) {
             try {
-              return Convert.polynomialFunction2Expr(fitter.fit(obs.toList()), ast.arg3());
+              double[] coefficients = fitter.fit(obs.toList());
+              if (coefficients[0] == 0.0) {
+                if (coefficients.length == 1) {
+                  return F.C0;
+                }
+              }
+              return F.mapRange(S.Plus, 0, coefficients.length, i -> {
+                if (i == 0) {
+                  return F.num(coefficients[0]);
+                } else if (coefficients[i] != 0) {
+                  return F.Times(F.num(coefficients[i]), termList.get(i));
+                }
+                return F.NIL;
+              });
             } catch (RuntimeException rex) {
+              rex.printStackTrace();
               Errors.rethrowsInterruptException(rex);
               return Errors.printMessage(S.Fit, rex, engine);
             }
           }
         }
+
       }
       return F.NIL;
     }

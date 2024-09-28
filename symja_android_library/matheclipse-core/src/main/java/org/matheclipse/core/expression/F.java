@@ -9685,8 +9685,30 @@ public class F extends S {
     return expr.replaceAll(function).orElse(expr);
   }
 
+  /**
+   * Substitute all (sub-) expressions if the given binary predicate returns <code>true</code>. If
+   * no substitution matches, the method returns the given <code>expr</code>.
+   * 
+   * @param expr
+   * @param predicate if the unary predicate <code>test()</code> method returns <code>false</code>
+   *        the expression isn't substituted.
+   * @param value
+   * @return
+   */
   public static final IExpr subst(IExpr expr, final Predicate<IExpr> predicate, final IExpr value) {
     return expr.replaceAll(x -> predicate.test(x) ? value : F.NIL).orElse(expr);
+  }
+
+  /**
+   * Substitute all (sub-) expressions which contain a &quot;complex&quot; {@link S#Abs} function
+   * with the corresponding &quot;real&quot; {@link S#RealAbs} function. For {@link S#RealAbs} a
+   * derivative <code>x/RealAbs(x)</code> is defined.
+   * 
+   * @param expr
+   * @return
+   */
+  public static final IExpr substAbs(IExpr expr) {
+    return subst(expr, x -> x.isAbs() ? F.RealAbs(x.first()) : F.NIL);
   }
 
   /**
@@ -11066,6 +11088,15 @@ public class F extends S {
       // } catch (Exception ex) {
       // LOGGER.debug("F.printJSFormData() failed", ex);
       // }
+    } else if (jsFormData.arg2().toString().equals("echarts")) {
+      try {
+        String manipulateStr = jsFormData.arg1().toString();
+        String html = JSBuilder.buildECharts(JSBuilder.ECHARTS_TEMPLATE, manipulateStr);
+        return openHTMLOnDesktop(html);
+      } catch (Exception ex) {
+        Errors.rethrowsInterruptException(ex);
+        LOGGER.debug("F.printJSFormData() failed", ex);
+      }
     } else if (jsFormData.arg2().toString().equals("jsxgraph")) {
       try {
         String manipulateStr = jsFormData.arg1().toString();

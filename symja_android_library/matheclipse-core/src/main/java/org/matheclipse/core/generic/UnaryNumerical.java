@@ -8,7 +8,6 @@ import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -104,7 +103,7 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
     fVariable = variable;
     IExpr function;
     if (useAbsReal) {
-      function = F.subst(unaryFunction, x -> x == S.Abs, S.RealAbs);
+      function = F.substAbs(unaryFunction);
     } else {
       function = unaryFunction;
     }
