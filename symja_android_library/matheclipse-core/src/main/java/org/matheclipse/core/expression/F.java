@@ -11088,15 +11088,15 @@ public class F extends S {
       // } catch (Exception ex) {
       // LOGGER.debug("F.printJSFormData() failed", ex);
       // }
-    } else if (jsFormData.arg2().toString().equals("echarts")) {
-      try {
-        String manipulateStr = jsFormData.arg1().toString();
-        String html = JSBuilder.buildECharts(JSBuilder.ECHARTS_TEMPLATE, manipulateStr);
-        return openHTMLOnDesktop(html);
-      } catch (Exception ex) {
-        Errors.rethrowsInterruptException(ex);
-        LOGGER.debug("F.printJSFormData() failed", ex);
-      }
+      // } else if (jsFormData.arg2().toString().equals("echarts")) {
+      // try {
+      // String manipulateStr = jsFormData.arg1().toString();
+      // String html = JSBuilder.buildECharts(JSBuilder.ECHARTS_TEMPLATE, manipulateStr);
+      // return openHTMLOnDesktop(html);
+      // } catch (Exception ex) {
+      // Errors.rethrowsInterruptException(ex);
+      // LOGGER.debug("F.printJSFormData() failed", ex);
+      // }
     } else if (jsFormData.arg2().toString().equals("jsxgraph")) {
       try {
         String manipulateStr = jsFormData.arg1().toString();
