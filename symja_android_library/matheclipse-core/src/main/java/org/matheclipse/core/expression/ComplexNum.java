@@ -12,7 +12,6 @@ import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.Errors;
@@ -1013,6 +1012,11 @@ public class ComplexNum implements IComplexNum {
       temp = 0.0;
     }
     return temp;
+  }
+
+  @Override
+  public IExpr getAddendum() {
+    return F.complexNum(new Complex(0, fComplex.getImaginary()));
   }
 
   @Override

@@ -1768,6 +1768,11 @@ public interface IExpr
   }
 
   @Override
+  default IExpr getAddendum() {
+    return isFinite() ? subtract(re()) : zero();
+  }
+
+  @Override
   public default Field<IExpr> getField() {
     return F.EXPR_FIELD;
   }

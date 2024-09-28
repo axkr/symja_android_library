@@ -13,7 +13,6 @@ import org.apfloat.LossOfPrecisionException;
 import org.apfloat.NumericComputationException;
 import org.apfloat.OverflowException;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -965,6 +964,11 @@ public class ApfloatNum implements INum {
       }
     }
     return INum.super.gegenbauerC(arg2, arg3);
+  }
+
+  @Override
+  public IExpr getAddendum() {
+    return isFinite() ? valueOf(fApfloat.subtract(fApfloat.real())) : zero();
   }
 
   @Override

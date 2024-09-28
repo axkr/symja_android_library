@@ -943,6 +943,11 @@ public class ApcomplexNum implements IComplexNum {
     return IComplexNum.super.gegenbauerC(arg2, arg3);
   }
 
+  @Override
+  public IExpr getAddendum() {
+    return valueOf(Apfloat.ZERO, fApcomplex.imag());
+  }
+
   public Complex getCMComplex() {
     return new Complex(fApcomplex.real().doubleValue(), fApcomplex.imag().doubleValue());
   }

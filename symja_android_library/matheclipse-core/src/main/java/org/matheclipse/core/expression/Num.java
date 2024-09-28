@@ -11,7 +11,6 @@ import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -1017,6 +1016,11 @@ public class Num implements INum {
       }
     }
     return INum.super.gegenbauerC(arg2, arg3);
+  }
+
+  @Override
+  public IExpr getAddendum() {
+    return zero();
   }
 
   @Override
