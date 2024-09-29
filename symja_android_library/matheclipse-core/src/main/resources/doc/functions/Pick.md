@@ -15,6 +15,15 @@ Pick(nestedList, nestedSelection, pattern)
 ```
 >> Pick({{1, 2}, {2, 3}, {5, 6}}, {{1}, {2, 3}, {{3, 4}, {4, 5}}}, {1} | 2 | {4, 5}) 
 {{1,2},{2},{6}}
+
+>> Pick({a, b, c}, {False, True, False}) 
+{b}
+
+>> Pick(f(g(1, 2), h(3, 4)), {{True, False}, {False, True}}) 
+f(g(1),h(4))
+
+>> Pick({a, b, c, d, e}, {1, 2, 3.5, 4, 5.5}, _Integer) 
+{a,b,d}
 ```
 
 ### Related terms 
