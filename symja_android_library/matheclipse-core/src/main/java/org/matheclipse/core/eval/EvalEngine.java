@@ -933,7 +933,7 @@ public class EvalEngine implements Serializable {
           numericMode = fNumericMode;
           try {
             final boolean nMode = localNumericMode;
-            ast.forEach(2, astSize, (arg, i) -> {
+            ast.forEach2((arg, i) -> {
               if (!arg.isUnevaluated()) {
                 selectNumericMode(attributes, ISymbol.NHOLDREST, nMode);
                 evalArg(rlist, ast, arg, i, isNumericFunction);
@@ -950,7 +950,7 @@ public class EvalEngine implements Serializable {
             numericMode = fNumericMode;
             try {
               selectNumericMode(attributes, ISymbol.NHOLDREST, localNumericMode);
-              ast.forEach(2, astSize, (arg, i) -> {
+              ast.forEach2((arg, i) -> {
                 if (arg.isAST(S.Evaluate)) {
                   evalArg(rlist, ast, arg, i, isNumericFunction);
                 }
@@ -1469,7 +1469,7 @@ public class EvalEngine implements Serializable {
     final boolean localNumericMode = fNumericMode;
     final boolean argNumericMode = isNumericArg(mutableAST);
     IASTMutable[] rlist = new IASTMutable[] {F.NIL};
-    mutableAST.forEach(1, astSize, (arg, i) -> {
+    mutableAST.forEach((arg, i) -> {
       if (!arg.isUnevaluated()) {
         fNumericMode = localNumericMode;
         evalArg(rlist, mutableAST, arg, i, argNumericMode);

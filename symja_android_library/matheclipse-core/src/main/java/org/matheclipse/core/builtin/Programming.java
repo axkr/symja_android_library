@@ -771,7 +771,7 @@ public final class Programming {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         final java.util.List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
-        ast.forEach(2, ast.size(), (x, i) -> iterList.add(Iterator.create((IAST) x, i, engine)));
+        ast.forEach2((x, i) -> iterList.add(Iterator.create((IAST) x, i, engine)));
         final DoIterator generator = new DoIterator(iterList, engine);
         return generator.doIt(ast.arg1());
       } catch (final NoEvalException | ClassCastException e) {

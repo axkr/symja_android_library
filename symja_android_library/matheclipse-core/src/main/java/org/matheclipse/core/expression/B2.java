@@ -1195,21 +1195,21 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
   /** {@inheritDoc} */
   @Override
-  public void forEach(int startOffset, int endOffset, Consumer<? super IExpr> action) {
+  public void forEach(int startOffset, final int endOffset, final Consumer<? super IExpr> action) {
     if (startOffset < endOffset) {
       switch (startOffset) {
         case 0:
           action.accept(head());
-          if (startOffset + 1 < endOffset) {
+          if (++startOffset < endOffset) {
             action.accept(arg1);
-            if (startOffset + 2 < endOffset) {
+            if (++startOffset < endOffset) {
               action.accept(arg2);
             }
           }
           break;
         case 1:
           action.accept(arg1);
-          if (startOffset + 1 < endOffset) {
+          if (++startOffset < endOffset) {
             action.accept(arg2);
           }
           break;
@@ -1224,21 +1224,21 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   }
 
   @Override
-  public void forEach(int start, int end, ObjIntConsumer<? super IExpr> action) {
+  public void forEach(int start, final int end, ObjIntConsumer<? super IExpr> action) {
     if (start < end) {
       switch (start) {
         case 0:
           action.accept(head(), 0);
-          if (start + 1 < end) {
+          if (++start < end) {
             action.accept(arg1, 1);
-            if (start + 2 < end) {
+            if (++start < end) {
               action.accept(arg2, 2);
             }
           }
           break;
         case 1:
           action.accept(arg1, 1);
-          if (start + 1 < end) {
+          if (++start < end) {
             action.accept(arg2, 2);
           }
           break;
@@ -1246,10 +1246,20 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
           action.accept(arg2, 2);
           break;
         default:
-          throw new IndexOutOfBoundsException(
-              "Index: " + Integer.valueOf(start) + ", Size: 3");
+          throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(start) + ", Size: 3");
       }
     }
+  }
+
+  @Override
+  public final void forEach(ObjIntConsumer<? super IExpr> action) {
+    action.accept(arg1, 1);
+    action.accept(arg2, 2);
+  }
+
+  @Override
+  public final void forEach2(ObjIntConsumer<? super IExpr> action) {
+    action.accept(arg2, 2);
   }
 
   @Override

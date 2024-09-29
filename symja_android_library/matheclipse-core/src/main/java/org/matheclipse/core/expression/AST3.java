@@ -412,6 +412,19 @@ public final class AST3 extends AST2 {
   }
 
   @Override
+  public final void forEach(ObjIntConsumer<? super IExpr> action) {
+    action.accept(arg1, 1);
+    action.accept(arg2, 2);
+    action.accept(arg3, 3);
+  }
+
+  @Override
+  public final void forEach2(ObjIntConsumer<? super IExpr> action) {
+    action.accept(arg2, 2);
+    action.accept(arg3, 3);
+  }
+
+  @Override
   public int indexOf(final IExpr expr) {
     if (arg1.equals(expr)) {
       return 1;

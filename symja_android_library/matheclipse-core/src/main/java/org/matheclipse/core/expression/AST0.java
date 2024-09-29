@@ -290,6 +290,16 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
     }
   }
 
+  @Override
+  public void forEach(ObjIntConsumer<? super IExpr> action) {
+    // do nothing
+  }
+
+  @Override
+  public void forEach2(ObjIntConsumer<? super IExpr> action) {
+    // do nothing
+  }
+
   /** {@inheritDoc} */
   @Override
   public int indexOf(final IExpr expr) {

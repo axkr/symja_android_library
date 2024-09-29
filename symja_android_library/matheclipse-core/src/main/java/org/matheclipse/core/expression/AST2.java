@@ -345,6 +345,17 @@ public class AST2 extends AST1 {
   }
 
   @Override
+  public void forEach(ObjIntConsumer<? super IExpr> action) {
+    action.accept(arg1, 1);
+    action.accept(arg2, 2);
+  }
+
+  @Override
+  public void forEach2(ObjIntConsumer<? super IExpr> action) {
+    action.accept(arg2, 2);
+  }
+
+  @Override
   public int indexOf(final IExpr expr) {
     if (arg1.equals(expr)) {
       return 1;

@@ -2036,7 +2036,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public IExpr evalEvaluate(EvalEngine engine) {
     IASTMutable[] rlist = new IASTMutable[] {F.NIL};
     if (!isHoldAllCompleteAST()) {
-      forEach(1, size(), (x, i) -> {
+      forEach((x, i) -> {
         if (x.isAST(S.Evaluate)) {
           engine.evalArg(rlist, this, x, i, false);
         }

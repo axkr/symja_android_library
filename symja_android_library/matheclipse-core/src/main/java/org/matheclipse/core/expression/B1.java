@@ -696,6 +696,16 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
+  @Override
+  public final void forEach(ObjIntConsumer<? super IExpr> action) {
+    action.accept(arg1, 1);
+  }
+
+  @Override
+  public void forEach2(ObjIntConsumer<? super IExpr> action) {
+    // do nothing
+  }
+
   /** {@inheritDoc} */
   @Override
   public int indexOf(final IExpr expr) {
