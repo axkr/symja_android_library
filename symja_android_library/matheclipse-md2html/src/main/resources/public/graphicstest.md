@@ -74,7 +74,15 @@ Graphics[ Table[{Hue[RandomReal[]], Arrow[RandomReal[1, {2, 2}]]}, {75}]]
 ```
 
 ```mma
+Graphics[Table[{Hue[h, s], Disk[{12h, 8s}]}, {h, 0, 1, 1/6}, {s, 0, 1, 1/4}]]
+```
+
+```mma
 Graphics[Table[{EdgeForm[{GrayLevel[0, 0.5]}], Hue[(-11+q+10*r)/72, 1, 1, 0.6], Disk[(8-r)*{Cos[2*Pi*q/12], Sin[2*Pi*q/12]}, (8-r)/3]}, {r,6}, {q, 12}]]
+```
+
+```mma
+Graphics[Table[{AbsoluteThickness[t], Line[{{20 t, 10}, {20 t, 80}}], Text[ToString[t]<>"pt", {20 t, 0}]}, {t, 0, 10}]]
 ```
 
 ```mma
