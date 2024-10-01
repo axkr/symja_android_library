@@ -9932,6 +9932,57 @@ public class F extends S {
   }
 
   /**
+   * Create a list of {@link S#Plus} expressions (sums), with an evaluated number in position 1 for
+   * the sum of each step of the <code>function.apply(position)</code> from <code>iMin</code>
+   * (inclusive) to <code>iMax</code> (inclusive).
+   * 
+   * @param function the function which should be applied on each iteration step
+   * @param startValue will be used as placeholder in position 1 of plusList
+   * @param iMin from this position (included)
+   * @param iMax to this position (included)
+   * @return a list of {@link S#Plus} expressions with the evaluated number in position 1
+   */
+  public static IAST intSumList(final IntFunction<IExpr> function, IExpr startValue, final int iMin,
+      final int iMax) {
+    if (iMin > iMax) {
+      return F.CEmptyList;
+    }
+    IASTAppendable result = F.ListAlloc(F.allocMin32(iMax - iMin + 1));
+    int numberOfLeaves = 0;
+    EvalEngine engine = EvalEngine.get();
+    IASTAppendable plusList = F.PlusAlloc(F.allocMin32(iMax - iMin + 1));
+    // insert 0 as a placeholder for number calculations in intSumList()
+    INumber numberPlaceholder = F.C0;
+    if (startValue.isNumber()) {
+      numberPlaceholder = (INumber) startValue;
+      plusList.append(numberPlaceholder);
+    } else {
+      plusList.append(numberPlaceholder);
+      plusList.append(startValue);
+    }
+
+    // INumber numberPlaceholder = startValue;
+    for (int i = iMin; i <= iMax; i += 1) {
+      IExpr temp = engine.evaluate(function.apply(i));
+      if (temp.isNumber()) {
+        numberPlaceholder = numberPlaceholder.plus((INumber) temp);
+        if (numberPlaceholder instanceof IInteger //
+            && ((IInteger) numberPlaceholder).bitLength() > Config.MAX_BIT_LENGTH / 100) {
+          BigIntegerLimitExceeded.throwIt(Config.MAX_BIT_LENGTH / 100);
+        }
+      } else {
+        numberOfLeaves += temp.leafCount() + 1;
+        if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
+          ASTElementLimitExceeded.throwIt(numberOfLeaves);
+        }
+        plusList.append(temp);
+      }
+      result.append(plusList.setAtCopy(1, numberPlaceholder));
+    }
+    return result;
+  }
+
+  /**
    * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code> and
    * evaluate the {@link S#Sum}
    *
