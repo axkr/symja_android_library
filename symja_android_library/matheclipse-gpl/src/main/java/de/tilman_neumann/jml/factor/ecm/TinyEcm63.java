@@ -34,9 +34,7 @@ package de.tilman_neumann.jml.factor.ecm;
 
 import java.math.BigInteger;
 import java.util.Random;
-
 import org.apache.log4j.Logger;
-
 import de.tilman_neumann.jml.base.Uint128;
 import de.tilman_neumann.jml.factor.FactorAlgorithm;
 import de.tilman_neumann.util.ConfigUtil;
@@ -150,7 +148,8 @@ public class TinyEcm63 extends FactorAlgorithm {
 
 	long LCGSTATE;
 
-	public String getName() {
+	@Override
+  public String getName() {
 		return "TinyEcm63";
 	}
 
@@ -235,7 +234,7 @@ public class TinyEcm63 extends FactorAlgorithm {
 		if (DEBUG) LOG.debug("LCGSTATE=" + LCGSTATE);
 		
 		// fix rng for negative upper values;
-		long upperl = (long) upper;
+		long upperl = upper;
 		if (upperl<0) upperl += (1L<<32);
 		long diff = upperl - lower;
 		if (DEBUG) LOG.debug("lower=" + lower + ", upper=" + upperl + ", diff=" + diff);
@@ -245,7 +244,7 @@ public class TinyEcm63 extends FactorAlgorithm {
 		long LCGSTATE_shifted = LCGSTATE >>> 32;
 		if (DEBUG) LOG.debug("LCGSTATE=" + LCGSTATE + ", LCGSTATE_shifted=" + LCGSTATE_shifted);
 		
-		double quot = (double)LCGSTATE_shifted / 4294967296.0; // dividend is 2^32
+		double quot = LCGSTATE_shifted / 4294967296.0; // dividend is 2^32
 		double prod = diff * quot;
 		int rand = (int)(0xFFFFFFFF & (long)prod); // (int)prod does not work for prod >= 2^31
 		int result = lower + rand;
@@ -441,14 +440,15 @@ public class TinyEcm63 extends FactorAlgorithm {
 		return;
 	}
 
-	void prac(long rho, ecm_work work, ecm_pt P, long c, double v)
+    void prac(long rho, ecm_work work, ecm_pt P, long c, double v)
+        throws UnsupportedOperationException
 	{
 		long d, e, r;
 		long s1, s2, d1, d2;
 		long swp;
 
 		d = c;
-		r = (long)((double)d * v + 0.5);
+		r = (long)(d * v + 0.5);
 
 		s1 = work.sum1;
 		s2 = work.sum2;
@@ -514,9 +514,10 @@ public class TinyEcm63 extends FactorAlgorithm {
 				// empirically, tiny B1 values only need the above prac cases.
 				// just in case, fall back on this.
 				LOG.error("unhandled case in prac");
-				System.exit(1);
+                throw new UnsupportedOperationException("unhandled case in prac");
+                // System.exit(1);
 			}
-		}
+          }
 
 		add(rho, work, work.pt1, work.pt2, work.pt3, P);		// A = A + B (C)
 
@@ -600,7 +601,7 @@ public class TinyEcm63 extends FactorAlgorithm {
 		
 		if (sigma == 0)
 		{
-			work.sigma = spRand(7, (int)-1);
+			work.sigma = spRand(7, -1);
 			if (DEBUG) LOG.debug("random sigma=" + work.sigma);
 		}
 		else
@@ -710,7 +711,7 @@ public class TinyEcm63 extends FactorAlgorithm {
 		x *= 2 - n * x;               // here x*a==1 mod 2**16
 		x *= 2 - n * x;               // here x*a==1 mod 2**32         
 		x *= 2 - n * x;               // here x*a==1 mod 2**64
-		rho = (long)0 - x;
+		rho = 0 - x;
 		if (DEBUG) LOG.debug("rho = " + Long.toUnsignedString(rho));
 		
 		work.n = n;
@@ -756,7 +757,7 @@ public class TinyEcm63 extends FactorAlgorithm {
 	ecm_pt ecm_stage1(long rho, ecm_work work, ecm_pt P)
 	{
 		long q;
-		long stg1 = (long)work.stg1_max;
+		long stg1 = work.stg1_max;
 
 		// handle the only even case 
 		if (DEBUG) LOG.debug("P.X=" + P.X + ", P.Z=" + P.Z);
@@ -1091,7 +1092,8 @@ public class TinyEcm63 extends FactorAlgorithm {
         return (f>1 && f<n) ? f : 0;
 	}
 
-	public BigInteger findSingleFactor(BigInteger N) {
+	@Override
+  public BigInteger findSingleFactor(BigInteger N) {
 		Random rng = new Random();
 		rng.setSeed(42);
 //		LCGSTATE = 65537 * rng.nextInt(); // original rng is not comparable with C version
