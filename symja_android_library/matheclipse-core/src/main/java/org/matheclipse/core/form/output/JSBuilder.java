@@ -48,6 +48,37 @@ public class JSBuilder {
           + "</body>\n" //
           + "</html>";
 
+  public static final String ECHARTS_IFRAME_TEMPLATE = //
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
+          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + "\n"
+          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>ECharts</title>\n" + "\n"
+          + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          // 1 - libraries
+          + "`1`\n"
+          + "<div id=\"main\" style=\"display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden\">\n"
+          + "<script>\n"
+          // 2 - JavaScript string
+          + "`2`\n" + "</script>\n"
+          // 3 - JSFiddle string
+          + "`3`\n" + "</div>\n" + "</body>\n" + "</html>";
+
+  /** HTML template for Apache ECharts */
+  public static final String ECHARTS_TEMPLATE = //
+      "<html>\n" + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>ECharts</title>\n"
+      // 1 - libraries
+          + "`1`\n" + "</head>\n" + "<body>\n"
+          + "<div id=\"main\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
+          + "<script>\n"
+          // 2 - JavaScript string
+          + "`2`\n" + "</script>\n"
+          // 3 - JSFiddle string
+          + "`3`\n" //
+          + "</div>\n"//
+          + "</body>\n" //
+          + "</html>"; //
+
   public static final String GRAPHICS2D_IFRAME_TEMPLATE = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
           + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
@@ -244,24 +275,31 @@ public class JSBuilder {
           // 3 - JSFiddle string
           + "`3`\n" + "</div>\n" + "</body>\n" + "</html>"; //
 
+
   /** CSS libraries */
-  private static final String[] CSS_CDN_GRAPHICS3D = {};
+  private static final String[] CSS_CDN_ECHARTS = {};
+
+  private static final String[] JS_CDN_ECHARTS = { //
+      "https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"};
 
   private static final String[] JS_CDN_MERMAID = { //
       "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs"};
   // "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs"};
+
+  /** CSS libraries */
+  private static final String[] CSS_CDN_GRAPHICS3D = {};
 
   private static final String[] JS_CDN_GRAPHICS3D = { //
       "https://cdn.jsdelivr.net/npm/@mathicsorg/mathics-threejs-backend"};
 
   /** CSS libraries */
   private static final String[] CSS_CDN_JSXGRAPH =
-      {"https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css"};
+      {"https://cdn.jsdelivr.net/npm/jsxgraph@1.10.0/distrib/jsxgraph.css"};
 
   /** CDN JavaScript libraries */
   private static final String[] JS_CDN_JSXGRAPH =
       {"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.10/build/math.js",
-          "https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js",
+          "https://cdn.jsdelivr.net/npm/jsxgraph@1.10.0/distrib/jsxgraphcore.js",
           "https://cdn.jsdelivr.net/npm/json2d_jsxgraph@1.0.1/drawGraphics2d.js"};
 
   /** CSS libraries */
@@ -327,6 +365,12 @@ public class JSBuilder {
     return buildModule(pageTemplate, manipulateStr, "", new String[0], JS_CDN_MERMAID);
   }
 
+  public static String buildECharts(String pageTemplate, String manipulateStr) {
+    return build(pageTemplate, manipulateStr,
+        "<div id=\"main\" style=\"width:600px; height:400px;\"></div>", CSS_CDN_ECHARTS,
+        JS_CDN_ECHARTS);
+  }
+
   public static String buildGraphics2D(String pageTemplate, String manipulateStr) {
     return build(pageTemplate, manipulateStr,
         "<div id='graphics2d' style=\"width:600px; height:400px;\"></div>", CSS_CDN_JSXGRAPH,
@@ -346,7 +390,7 @@ public class JSBuilder {
   }
 
   public static String buildMathcell(String pageTemplate, String manipulateStr) {
-    // don't append the cloding </div> for jsFiddle to work as expected
+    // don't append the closing </div> for jsFiddle to work as expected
     return build(pageTemplate, manipulateStr,
         "<div class=\"mathcell\" style=\"width:600px; height:400px;\">", CSS_CDN_MATHCELL,
         JS_CDN_MATHCELL);
