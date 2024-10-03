@@ -1616,13 +1616,13 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
    */
   @Override
   public int compareTo(final IExpr rhsExpr) {
+    if (rhsExpr.isNumber()) {
+      // O-7
+      return 1;
+    }
     final int lhsOrdinal = headID();
     int rhsOrdinal = -1;
     if (lhsOrdinal < 0) {
-      if (rhsExpr.isNumber()) {
-        // O-7
-        return 1;
-      }
       rhsOrdinal = rhsExpr.headID();
       if (rhsOrdinal < 0) {
         if (rhsExpr.isAST()) {
@@ -1634,18 +1634,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       }
     } else {
       if (lhsOrdinal == ID.DirectedInfinity && isDirectedInfinity()) {
-        if (rhsExpr.isNumber()) {
-          // O-7
-          return 1;
-        }
         if (!rhsExpr.isDirectedInfinity()) {
           return -1;
         }
         return compareToASTIncreasing(this, (IAST) rhsExpr);
-      }
-      if (rhsExpr.isNumber()) {
-        // O-7
-        return 1;
       }
       rhsOrdinal = rhsExpr.headID();
     }
@@ -5463,7 +5455,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
             }
             return rest();
           }
-          return setAtCopy(1, ((INumber) arg1).negate());
+          return setAtCopy(1, arg1.negate());
         }
         IASTAppendable timesAST = copyAppendable();
         timesAST.append(1, F.CN1);
