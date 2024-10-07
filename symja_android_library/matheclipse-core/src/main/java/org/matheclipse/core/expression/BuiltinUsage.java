@@ -392,6 +392,7 @@ public class BuiltinUsage {
     USAGE[ID.OneIdentity] =
         "attribute specifying that a function behaves like the Identity in pattern matching";
     USAGE[ID.Operate] = "apply a function to the head of an expression";
+    USAGE[ID.OptionsPattern] = "a sequence of optional named arguments";
     USAGE[ID.Or] = "logic (inclusive) disjunction";
     USAGE[ID.Order] = "order expressions";
     USAGE[ID.OrderedQ] = "test whether elements are canonically sorted";

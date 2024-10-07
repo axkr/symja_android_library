@@ -237,6 +237,13 @@ public class PatternsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testOptionValue() {
+
+    check("gg(x_, OptionsPattern({n->2})) := x ^ OptionValue(n)", //
+        "");
+    check("gg(x, n->4)", //
+        "x^4");
+    check("gg(x, {{{n->4}}})", //
+        "x^4");
     // TODO
     check("OptionValue({foo`a -> 1}, bar`a)", //
         "1");

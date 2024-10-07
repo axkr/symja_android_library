@@ -234,7 +234,8 @@ public class OptionsPattern extends AbstractPatternSequence {
       return patternMap.setValue(this, sequence);
     }
     for (int i = 1; i < sequence.size(); i++) {
-      if (!sequence.get(i).isRuleAST()) {
+      IExpr ruleAST = ruleASTRecursive(sequence.get(i));
+      if (ruleAST.isNIL()) {
         return false;
       }
     }
@@ -244,18 +245,46 @@ public class OptionsPattern extends AbstractPatternSequence {
       if (value.isList() || value.isSequence()) {
         IAST list = (IAST) value;
         for (int i = 1; i < list.size(); i++) {
-          if (!list.get(i).isRuleAST()) {
+          IExpr ruleAST = ruleASTRecursive(list.get(i));
+          if (ruleAST.isNIL()) {
             return false;
           }
         }
-      } else if (!value.isRuleAST()) {
-        return false;
+      } else {
+        IExpr ruleAST = ruleASTRecursive(value);
+        if (ruleAST.isNIL()) {
+          return false;
+        }
       }
       this.fOptionsPatternHead = optionsPatternHead;
       return true;
     }
     this.fOptionsPatternHead = optionsPatternHead;
     return patternMap.setValue(this, sequence);
+  }
+
+  /**
+   * Extract the rule from the argument. If the argument is a {@link S#Rule} or
+   * {@link S#RuleDelayed} AST return the argument. If the argument is a list with exactly one
+   * argument, call this method recursively with the first argument of the list.
+   * 
+   * @param arg
+   * @return the rule or {@link F#NIL} if no rule was found
+   */
+  private static IExpr ruleASTRecursive(IExpr arg) {
+    if (arg.isRuleAST()) {
+      return arg;
+    }
+    if (arg.isList()) {
+      IAST list = (IAST) arg;
+      for (int i = 1; i < list.size(); i++) {
+        IExpr element = ruleASTRecursive(list.get(i));
+        if (element.isPresent()) {
+          return element;
+        }
+      }
+    }
+    return F.NIL;
   }
 
   /**
