@@ -99,6 +99,7 @@ public class BuiltinUsage {
     USAGE[ID.Complexes] = "the domain of Complex numbers";
     USAGE[ID.CompoundExpression] = "execute expressions in sequence";
     USAGE[ID.CompositeQ] = "test whether a number is composite";
+    USAGE[ID.Condition] = "conditional definition";
     USAGE[ID.Conjugate] = "complex conjugate value";
     USAGE[ID.ConjugateTranspose] = "conjugate transposed matrix";
     USAGE[ID.Context] = "the context of a symbol";
@@ -406,6 +407,7 @@ public class BuiltinUsage {
     USAGE[ID.ParametricPlot] = "2D parametric curves or regions";
     USAGE[ID.Partition] = "partition a list into sublists of a given length";
     USAGE[ID.PartitionsP] = "number of unrestricted partitions";
+    USAGE[ID.PatternTest] = "match to a pattern conditioned to a test result";
     USAGE[ID.PauliMatrix] = "Pauli spin matrix";
     USAGE[ID.Permutations] = "form permutations of a list";
     USAGE[ID.Pi] = "Pi, \u03c0≃3.1416";
