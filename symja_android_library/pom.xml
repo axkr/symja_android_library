@@ -289,6 +289,12 @@
 				<groupId>org.choco-solver</groupId>
 				<artifactId>choco-solver</artifactId>
 				<version>4.10.17</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.knowm.xchart</groupId>
+						<artifactId>xchart</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
