@@ -107,7 +107,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.version>11</java.version>
+		<java.version>17</java.version>
 		<release.build>false</release.build>
 		<deployment.suppress>false</deployment.suppress> <!-- child modules can
 		set this true to not be published -->
