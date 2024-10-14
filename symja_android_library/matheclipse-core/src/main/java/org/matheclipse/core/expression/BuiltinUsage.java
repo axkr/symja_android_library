@@ -32,6 +32,7 @@ public class BuiltinUsage {
     USAGE[ID.AnyTrue] = "some of the elements are True";
     USAGE[ID.AngleVector] = "create a vector at a specified angle";
     USAGE[ID.Apart] = "partial fraction decomposition";
+    USAGE[ID.Apply] = "apply a function to a list, at specified levels";
     USAGE[ID.ArcCos] = "inverse cosine function";
     USAGE[ID.ArcCosh] = "inverse hyperbolic cosine function";
     USAGE[ID.ArcCot] = "inverse cotangent function";
@@ -173,6 +174,7 @@ public class BuiltinUsage {
         "forces evaluation of $expr$, even if it occurs inside a held argument or a 'Hold' form";
     USAGE[ID.EvenQ] = "test whether elements are even numbers";
     USAGE[ID.ExactNumberQ] = "test if an expression is an exact real or complex number";
+    USAGE[ID.Except] = "match to expressions that do not match with a pattern";
     USAGE[ID.Exp] = "exponential function";
     USAGE[ID.Expand] = "expand out products and powers";
     USAGE[ID.ExpandAll] = "expand products and powers, including negative integer powers";
@@ -242,6 +244,7 @@ public class BuiltinUsage {
         "prevents $expr$ from being evaluated, and also prevents 'sequence' objects from being spliced into argument lists";
     USAGE[ID.HoldFirst] = "attribute specifying that the first argument should be left unevaluated";
     USAGE[ID.HoldForm] = "is equivalent to 'Hold[$expr$]', but prints as $expr$";
+    USAGE[ID.HoldPattern] = "took the expression as a literal pattern";
     USAGE[ID.HoldRest] =
         "attribute specifying that all but the first argument should be left unevaluated";
 
@@ -324,6 +327,10 @@ public class BuiltinUsage {
 
     USAGE[ID.MachineNumberQ] = "test if expression is a machine precision real or complex number";
     USAGE[ID.MantissaExponent] = "decomposes numbers as mantissa and exponent";
+    USAGE[ID.Map] = "map a function over a list, at specified levels";
+    USAGE[ID.MapAt] = "map a function at particular positions";
+    USAGE[ID.MapIndexed] = "map a function, including index information";
+    USAGE[ID.MapThread] = "map a function across corresponding elements in multiple lists";
     USAGE[ID.MatchingDissimilarity] = "simple matching dissimilarity";
     USAGE[ID.MathMLForm] = "format expression as MathML commands";
     USAGE[ID.MatrixExp] = "matrix exponentiation";
@@ -408,6 +415,7 @@ public class BuiltinUsage {
     USAGE[ID.ParametricPlot] = "2D parametric curves or regions";
     USAGE[ID.Partition] = "partition a list into sublists of a given length";
     USAGE[ID.PartitionsP] = "number of unrestricted partitions";
+    USAGE[ID.Pattern] = "a named pattern";
     USAGE[ID.PatternTest] = "match to a pattern conditioned to a test result";
     USAGE[ID.PauliMatrix] = "Pauli spin matrix";
     USAGE[ID.Permutations] = "form permutations of a list";
@@ -502,6 +510,7 @@ public class BuiltinUsage {
 
     USAGE[ID.SameQ] = "literal symbolic identity";
     USAGE[ID.ScalingTransform] = "symbolic representation of a scale transformation";
+    USAGE[ID.Scan] = "scan over every element of a list, applying a function";
     USAGE[ID.Sec] = "secant function";
     USAGE[ID.Sech] = "hyperbolic secant function";
     USAGE[ID.Select] = "pick elements according to a criterion";
@@ -587,6 +596,7 @@ public class BuiltinUsage {
     USAGE[ID.Tanh] = "hyperbolic tangent function";
     USAGE[ID.TensorProduct] = "tensor product";
     USAGE[ID.TeXForm] = "formatted expression as TeX commands";
+    USAGE[ID.Thread] = "thread a function across lists that appear in its arguments";
     USAGE[ID.ThreeJSymbol] = "values of the Wigner 3-j symbol";
     USAGE[ID.Through] = "distribute operators that appears inside the head of expressions";
     USAGE[ID.Throw] = "throw an expression to be caught by a surrounding 'Catch'";
