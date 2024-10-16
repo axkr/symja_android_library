@@ -1083,14 +1083,9 @@ public class Symbol implements ISymbol, Serializable {
 
   @Override
   public String toString() {
-    try {
-      StringBuilder sb = new StringBuilder();
-      OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax()).convertSymbol(sb, this);
-      return sb.toString();
-    } catch (Exception e1) {
-      Errors.rethrowsInterruptException(e1);
-      return fSymbolName;
-    }
+    final Context context = getContext();
+    final String symbolName = getSymbolName();
+    return ISymbol.toString(context, symbolName, EvalEngine.get());
   }
 
   @Override

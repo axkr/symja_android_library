@@ -834,23 +834,24 @@ public class OutputFormFactory {
   }
 
   public void convertSymbol(final Appendable buf, final ISymbol symbol) throws IOException {
-    Context context = symbol.getContext();
-    if (context == Context.DUMMY) {
-      append(buf, symbol.getSymbolName());
-      return;
-    }
-    if (context.equals(Context.SYSTEM)) {
-      String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(symbol.getSymbolName());
-      if (str != null) {
-        append(buf, str);
-        return;
-      }
-    }
-    if (EvalEngine.get().getContextPath().contains(context)) {
-      append(buf, symbol.getSymbolName());
-    } else {
-      append(buf, context.completeContextName() + symbol.getSymbolName());
-    }
+    append(buf, ISymbol.toString(symbol.getContext(), symbol.getSymbolName(), EvalEngine.get()));
+    // Context context = symbol.getContext();
+    // if (context == Context.DUMMY) {
+    // append(buf, symbol.getSymbolName());
+    // return;
+    // }
+    // if (context.equals(Context.SYSTEM)) {
+    // String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(symbol.getSymbolName());
+    // if (str != null) {
+    // append(buf, str);
+    // return;
+    // }
+    // }
+    // if (EvalEngine.get().getContextPath().contains(context)) {
+    // append(buf, symbol.getSymbolName());
+    // } else {
+    // append(buf, context.completeContextName() + symbol.getSymbolName());
+    // }
   }
 
   public void convertPattern(final Appendable buf, final IPatternObject pattern)
@@ -1539,7 +1540,7 @@ public class OutputFormFactory {
     } else if (o instanceof IPatternObject) {
       convertPattern(buf, (IPatternObject) o);
     } else if (o instanceof IStringX) {
-      convertString(buf, ((IStringX) o).toString());
+      convertString(buf, o.toString());
     } else {
       convertString(buf, o.toString());
     }

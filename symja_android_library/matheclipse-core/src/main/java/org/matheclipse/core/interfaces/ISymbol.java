@@ -11,6 +11,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import org.hipparchus.special.elliptic.jacobi.Theta;
 import org.matheclipse.core.builtin.AttributeFunctions;
+import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -276,7 +277,7 @@ public interface ISymbol extends IExpr {
   }
 
   static IAST symbolDefinition(ISymbol symbol) {
-  
+
     if (symbol.equals(S.In)) {
       IAST list = EvalEngine.get().getEvalHistory().definitionIn();
       IASTAppendable result = F.ListAlloc(list.isNIL() ? 1 : list.size());
@@ -288,7 +289,7 @@ public interface ISymbol extends IExpr {
       result.appendArgs(list);
       return result;
     }
-  
+
     List<IAST> rules = null;
     RulesData rulesData = symbol.getRulesData();
     if (rulesData != null) {
@@ -296,7 +297,7 @@ public interface ISymbol extends IExpr {
     }
     IASTAppendable result = F.ListAlloc(rules == null ? 1 : rules.size() + 1);
     result = F.ListAlloc(rules == null ? 1 : rules.size() + 1);
-  
+
     if (symbol.hasAssignedSymbolValue()) {
       IExpr assignedValue = symbol.assignedValue();
       if (symbol.isEvalFlagOn(SETDELAYED_FLAG_ASSIGNED_VALUE)) {
@@ -1092,7 +1093,24 @@ public interface ISymbol extends IExpr {
    *
    * @param stream
    * @throws java.io.IOException
-   * @return <code>false</code> if the symbol contains no rule definion.
+   * @return <code>false</code> if the symbol contains no rule definition.
    */
   public boolean writeRules(java.io.ObjectOutputStream stream) throws java.io.IOException;
+
+  public static String toString(final Context context, final String symbolName, EvalEngine engine) {
+    if (context == Context.SYSTEM) {
+      String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(symbolName);
+      if (str != null) {
+        return str;
+      }
+    } else if (context == Context.DUMMY) {
+      return symbolName;
+    } else if (context == Context.RUBI) {
+      return context.completeContextName() + symbolName;
+    }
+    if (engine != null && engine.getContextPath().contains(context)) {
+      return symbolName;
+    }
+    return context.completeContextName() + symbolName;
+  }
 }
