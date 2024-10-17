@@ -96,7 +96,6 @@ import edu.jas.ufd.FactorFactory;
 import io.github.mangara.diophantine.QuadraticSolver;
 import io.github.mangara.diophantine.Utils;
 import io.github.mangara.diophantine.XYPair;
-import io.github.mangara.diophantine.quadratic.ParabolicSolver;
 import io.github.mangara.diophantine.quadratic.PellsSolver;
 
 public final class NumberTheory {
@@ -6723,13 +6722,6 @@ public final class NumberTheory {
             result.append(F.List(F.Rule(varList.arg1(), F.ZZ(xyPair.x)),
                 F.Rule(varList.arg2(), F.ZZ(xyPair.y))));
             return result;
-          }
-        }
-        if (a.signum() != 0 || b.signum() != 0 || c.signum() != 0) {
-          // D := b^2 - 4ac && D == 0
-          BigInteger D = b.multiply(b).subtract(a.multiply(c).multiply(BigInteger.valueOf(4)));
-          if (D.signum() == 0) {
-            diophantineSolver = ParabolicSolver.solve(a, b, c, d, e, f);
           }
         }
         if (diophantineSolver == null) {
