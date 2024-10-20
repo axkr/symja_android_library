@@ -20,6 +20,7 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.ComplexSym;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
@@ -59,6 +60,7 @@ public class IntegerFunctions {
       S.IntegerLength.setEvaluator(new IntegerLength());
       S.IntegerPart.setEvaluator(new IntegerPart());
       S.Mod.setEvaluator(new Mod());
+      S.NumberDigit.setEvaluator(new NumberDigit());
       S.PowerMod.setEvaluator(new PowerMod());
       S.Quotient.setEvaluator(new Quotient());
       S.QuotientRemainder.setEvaluator(new QuotientRemainder());
@@ -1181,6 +1183,49 @@ public class IntegerFunctions {
     }
   }
 
+  private static class NumberDigit extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int n = ast.arg2().toIntDefault();
+      if (n != Integer.MIN_VALUE) {
+        IExpr x = ast.arg1();
+        int b = 10;
+        if (ast.isAST3()) {
+          b = ast.arg3().toIntDefault();
+          if (b <= 1) {
+            if (ast.arg3().isNumber()) {
+              // Base `1` is not a real number greater than 1.
+              Errors.printMessage(S.NumberDigit, "rbase", F.List(ast.arg3()), engine);
+            }
+            return F.NIL;
+          }
+        }
+        IExpr realDigits = realDigits(x);
+        if (realDigits.isList2()&&realDigits.isList()) {
+          IAST resultList = (IAST) realDigits.first();
+          return resultList.get(resultList.argSize() - n);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
+
   /**
    *
    *
@@ -1531,70 +1576,10 @@ public class IntegerFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (arg1.isInteger()) {
-        IInteger number = (IInteger) arg1;
-        if (number.isNegative()) {
-          number = number.abs();
-        }
-        IAST list = integerDigits(number, F.C10, 0);
-        return F.list(list, F.ZZ(list.size() - 1));
-      }
       try {
-        IReal number = null;
-        if (arg1.isReal()) {
-          number = (IReal) arg1;
-        } else {
-          number = arg1.evalReal();
-        }
-        if (number != null) {
-          if (number.isNegative()) {
-            number = number.abs();
-          }
-
-          if (number instanceof ApfloatNum) {
-            Apfloat apfloat = number.apfloatValue();
-            String str = apfloat.toString();
-            IASTAppendable list = F.ListAlloc(str.length() + 1);
-            int numberOfLeftDigits = 0;
-            for (int i = 0; i < str.length(); i++) {
-              char ch = str.charAt(i);
-              if (ch == '.') {
-                numberOfLeftDigits = i;
-                continue;
-              }
-              if (ch == 'e' || ch == 'E') {
-                String exponentStr = str.substring(i + 1);
-                int exponent = Integer.parseInt(exponentStr);
-
-                numberOfLeftDigits += exponent;
-
-                break;
-              }
-              list.append(ch);
-            }
-
-            return F.list(list, F.ZZ(numberOfLeftDigits));
-          } else if (number instanceof Num) {
-            String str = Double.toString(number.doubleValue());
-            IASTAppendable list = F.ListAlloc(str.length() + 1);
-            int numberOfLeftDigits = 0;
-            for (int i = 0; i < str.length(); i++) {
-              char ch = str.charAt(i);
-              if (ch == '.') {
-                numberOfLeftDigits = i;
-                continue;
-              }
-              if (ch == 'e' || ch == 'E') {
-                String exponentStr = str.substring(i + 1);
-                int exponent = Integer.parseInt(exponentStr);
-                numberOfLeftDigits += exponent;
-                break;
-              }
-              list.append(ch);
-            }
-
-            return F.list(list, F.ZZ(numberOfLeftDigits));
-          }
+        IExpr realDigits = realDigits(arg1);
+        if (realDigits.isPresent()) {
+          return realDigits;
         }
       } catch (NumberFormatException | ArgumentTypeException atex) {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), atex);
@@ -1607,6 +1592,8 @@ public class IntegerFunctions {
       }
       return F.NIL;
     }
+
+
 
     @Override
     public int[] expectedArgSize(IAST ast) {
@@ -1771,5 +1758,74 @@ public class IntegerFunctions {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
+  }
+
+
+  public static IExpr realDigits(IExpr arg1) {
+    if (arg1.isInteger()) {
+      IInteger number = (IInteger) arg1;
+      if (number.isNegative()) {
+        number = number.abs();
+      }
+      IAST list = integerDigits(number, F.C10, 0);
+      return F.list(list, F.ZZ(list.size() - 1));
+    }
+    IReal number = null;
+    if (arg1.isReal()) {
+      number = (IReal) arg1;
+    } else {
+      number = arg1.evalReal();
+    }
+    if (number != null) {
+      if (number.isNegative()) {
+        number = number.abs();
+      }
+
+      if (number instanceof ApfloatNum) {
+        Apfloat apfloat = number.apfloatValue();
+        String str = apfloat.toString();
+        IASTAppendable list = F.ListAlloc(str.length() + 1);
+        int numberOfLeftDigits = 0;
+        for (int i = 0; i < str.length(); i++) {
+          char ch = str.charAt(i);
+          if (ch == '.') {
+            numberOfLeftDigits = i;
+            continue;
+          }
+          if (ch == 'e' || ch == 'E') {
+            String exponentStr = str.substring(i + 1);
+            int exponent = Integer.parseInt(exponentStr);
+
+            numberOfLeftDigits += exponent;
+
+            break;
+          }
+          list.append(ch);
+        }
+
+        return F.list(list, F.ZZ(numberOfLeftDigits));
+      } else if (number instanceof Num) {
+        String str = Double.toString(number.doubleValue());
+        IASTAppendable list = F.ListAlloc(str.length() + 1);
+        int numberOfLeftDigits = 0;
+        for (int i = 0; i < str.length(); i++) {
+          char ch = str.charAt(i);
+          if (ch == '.') {
+            numberOfLeftDigits = i;
+            continue;
+          }
+          if (ch == 'e' || ch == 'E') {
+            String exponentStr = str.substring(i + 1);
+            int exponent = Integer.parseInt(exponentStr);
+            numberOfLeftDigits += exponent;
+            break;
+          }
+          list.append(ch);
+        }
+
+        return F.list(list, F.ZZ(numberOfLeftDigits));
+      }
+    }
+    return F.NIL;
   }
 }

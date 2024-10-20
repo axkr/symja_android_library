@@ -263,7 +263,7 @@ public final class Arithmetic {
       @Override
       public IExpr apply(IExpr expr) {
         if (expr.isNumber()) {
-          return ((INumber) expr).abs();
+          return expr.abs();
         }
         IExpr temp = F.eval(F.Abs(expr));
         if (!temp.isAbs()) {
@@ -585,7 +585,7 @@ public final class Arithmetic {
         return arg1.mapThread(F.Arg(F.Slot1), 1);
       }
       if (arg1.isNumber()) {
-        return ((INumber) arg1).complexArg();
+        return arg1.complexArg();
       } else if (arg1.isIndeterminate()) {
         return S.Indeterminate;
       } else if (arg1.isDirectedInfinity()) {
@@ -990,14 +990,11 @@ public final class Arithmetic {
      * @return {@link F#NIL} if the evaluation wasn't possible
      */
     private IExpr conjugate(IExpr arg1) {
-      if (arg1.isNumber()) {
-        return ((INumber) arg1).conjugate();
+      if (arg1.isNumber() || arg1.isQuantity()) {
+        return arg1.conjugate();
       }
       if (arg1.isRealResult() || arg1.isRealVector() || arg1.isRealMatrix()) {
         return arg1;
-      }
-      if (arg1.isQuantity()) {
-        return arg1.conjugate();
       }
       if (arg1.isDirectedInfinity()) {
         IAST directedInfininty = (IAST) arg1;
@@ -2571,7 +2568,6 @@ public final class Arithmetic {
       return ARGS_1_1;
     }
   }
-
 
 
 
@@ -6059,9 +6055,7 @@ public final class Arithmetic {
     public IExpr e2ObjArg(IAST ast, final IExpr arg1, final IExpr arg2) {
 
       // the case where both args are numbers is already handled in binaryOperator()
-      if (arg1 == arg2) {
-        return F.Power(arg1, C2);
-      } else if (arg1.isZero()) {
+      if (arg1.isZero()) {
         return evalZeroTimesX(arg1, arg2, false);
       } else if (arg2.isZero()) {
         return evalZeroTimesX(arg2, arg1, true);
@@ -6069,6 +6063,8 @@ public final class Arithmetic {
         return arg2;
       } else if (arg2.isOne()) {
         return arg1;
+      } else if (arg1 == arg2) {
+        return F.Power(arg1, C2);
       } else if (arg1 instanceof INum && arg2.isAST(S.Overflow, 1)) {
         return arg2;
       } else if (arg2 instanceof INum && arg1.isAST(S.Overflow, 1)) {
@@ -6136,7 +6132,7 @@ public final class Arithmetic {
               if (arg2.isRealResult()) {
                 return IntervalDataSym.times(arg2, (IAST) arg1);
               }
-              // donn't create Power(...,...)
+              // don't create Power(...,...)
               return F.NIL;
             }
             break;
@@ -6164,12 +6160,6 @@ public final class Arithmetic {
               }
             }
             break;
-          // case ID.Quantity:
-          // if (arg1.isQuantity()) {
-          // IQuantity q = (IQuantity) arg1;
-          // return q.times(arg2);
-          // }
-          // break;
           default:
         }
 
@@ -6217,17 +6207,16 @@ public final class Arithmetic {
               return IntervalSym.times(arg1, (IAST) arg2);
             }
             if (arg1.isRealResult()) {
-              // return timesInterval(arg1, arg2);
               return IntervalSym.times(arg1, (IAST) arg2);
             }
-            // donn't create Power(...,...)
+            // don't create Power(...,...)
             return F.NIL;
           case ID.IntervalData:
             if (arg2.isIntervalData()) {
               if (arg1.isRealResult()) {
                 return IntervalDataSym.times(arg1, (IAST) arg2);
               }
-              // donn't create Power(...,...)
+              // don't create Power(...,...)
               return F.NIL;
             }
             break;
@@ -6282,11 +6271,12 @@ public final class Arithmetic {
 
     /**
      * Return <code>0</code> if <code>zeroArg</code> is an exact number or <code>otherArg</code>
-     * contains no {@link S#Slot} or {@link S#SlotSequence} AST expression.
+     * contains no quantity or infinity expression.
      * 
      * @param zeroArg {@link IExpr#isZero()} returns true for this expression
-     * @param otherArg
-     * @param swappedArgs TODO
+     * @param otherArg the second argument of the multiplication
+     * @param swappedArgs if <code>true</code> the arguments <code>zeroArg</code> and
+     *        <code>otherArg</code> are swapped in the original expression
      * @return
      */
     private static IExpr evalZeroTimesX(final IExpr zeroArg, final IExpr otherArg,
@@ -6312,59 +6302,6 @@ public final class Arithmetic {
     public IExpr eComIntArg(final IComplex c0, final IInteger i1) {
       return c0.multiply(F.CC(i1));
     }
-
-    // private IExpr evalNumericMode(final IAST ast) {
-    // INum number = F.CD1;
-    // int start = -1;
-    // for (int i = 1; i < ast.size(); i++) {
-    // final IExpr arg = ast.get(i);
-    // if (arg instanceof INum) {
-    // if (arg instanceof ApfloatNum) {
-    // number = number.multiply((INum) arg);
-    // } else {
-    // if (number instanceof ApfloatNum) {
-    // number = number.multiply(((INum) arg).apfloatNumValue());
-    // } else {
-    // number = number.multiply((INum) arg);
-    // }
-    // }
-    // } else if (arg instanceof IComplexNum) {
-    // start = i;
-    // break;
-    // } else {
-    // return F.NIL;
-    // }
-    // }
-    // if (start < 0) {
-    // return number;
-    // }
-    // IComplexNum complexNumber;
-    // if (number instanceof Num) {
-    // complexNumber = F.complexNum(((Num) number).doubleValue());
-    // } else {
-    // complexNumber = F.complexNum(number.apfloatValue());
-    // }
-    // for (int i = start; i < ast.size(); i++) {
-    // final IExpr arg = ast.get(i);
-    // if (arg instanceof INum) {
-    // number = (INum) arg;
-    // if (number instanceof Num) {
-    // complexNumber = complexNumber.multiply(F.complexNum(((Num) number).doubleValue()));
-    // } else {
-    // complexNumber = complexNumber.multiply(F.complexNum(number.apfloatValue()));
-    // }
-    // } else if (arg instanceof IComplexNum) {
-    // if (complexNumber instanceof ApcomplexNum) {
-    // complexNumber = complexNumber.multiply(((IComplexNum) arg).apcomplexNumValue());
-    // } else {
-    // complexNumber = complexNumber.multiply((IComplexNum) arg);
-    // }
-    // } else {
-    // return F.NIL;
-    // }
-    // }
-    // return complexNumber;
-    // }
 
     @Override
     public double evalReal(final double[] stack, final int top, final int size) {

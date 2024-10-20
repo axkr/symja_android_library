@@ -88,7 +88,6 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISparseArray;
@@ -4556,7 +4555,7 @@ public final class LinearAlgebra {
           return F.NIL;
         }
         // absolute Value of a number
-        return ((INumber) arg1).abs();
+        return arg1.abs();
       }
       if (arg1.isNumericFunction(true) && !arg1.isList()) {
         if (ast.isAST2()) {

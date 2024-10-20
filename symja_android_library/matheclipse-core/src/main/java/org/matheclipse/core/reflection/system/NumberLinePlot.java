@@ -60,7 +60,7 @@ public class NumberLinePlot extends ListPlot {
       GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
       graphicsOptions.setJoined(false);
       ast = ast.setAtCopy(1, result);
-      IAST graphicsPrimitives = listPlot(ast, graphicsOptions, engine);
+      IAST graphicsPrimitives = listPlot(ast, options, graphicsOptions, engine);
       if (graphicsPrimitives.isPresent()) {
         graphicsOptions.addPadding();
         IAST listOfOptions = F.List(//

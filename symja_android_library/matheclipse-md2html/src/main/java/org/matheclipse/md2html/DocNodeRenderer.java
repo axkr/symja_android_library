@@ -159,7 +159,7 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
           }
         } else if (result.isAST(F.JSFormData, 3)) {
           IAST jsFormData = (IAST) result;
-          if (jsFormData.arg2().toString().equals("mathcell")) {
+          if (jsFormData.arg2().toString().equals(JSBuilder.MATHCELL_STR)) {
 
             String htmlStr = JSBuilder.buildMathcell(JSBuilder.MATHCELL_IFRAME_TEMPLATE,
                 jsFormData.arg1().toString());
@@ -167,8 +167,15 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
             html.raw("<iframe srcdoc=\"" + htmlStr
                 + "\" style=\"display: block; width: 600px; height: 600px; border: none;\" ></iframe>");
             return true;
+          } else if (jsFormData.arg2().toString().equals(JSBuilder.ECHARTS_STR)) {
 
-          } else if (jsFormData.arg2().toString().equals("jsxgraph")) {
+            String htmlStr = JSBuilder.buildECharts(JSBuilder.ECHARTS_IFRAME_TEMPLATE,
+                jsFormData.arg1().toString());
+            htmlStr = StringEscapeUtils.escapeHtml4(htmlStr);
+            html.raw("<iframe srcdoc=\"" + htmlStr
+                + "\" style=\"display: block; width: 600px; height: 600px; border: none;\" ></iframe>");
+            return true;
+          } else if (jsFormData.arg2().toString().equals(JSBuilder.JSXGRAPH_STR)) {
 
             String htmlStr = JSBuilder.buildJSXGraph(JSBuilder.JSXGRAPH_IFRAME_TEMPLATE,
                 jsFormData.arg1().toString());
@@ -177,14 +184,14 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
                 + "\" style=\"display: block; width: 600px; height: 600px; border: none;\" ></iframe>");
             return true;
 
-          } else if (jsFormData.arg2().toString().equals("plotly")) {
+          } else if (jsFormData.arg2().toString().equals(JSBuilder.PLOTLY_STR)) {
             String htmlStr = JSBuilder.buildPlotly(JSBuilder.PLOTLY_IFRAME_TEMPLATE,
                 jsFormData.arg1().toString());
             htmlStr = StringEscapeUtils.escapeHtml4(htmlStr);
             html.raw("<iframe srcdoc=\"" + htmlStr
                 + "\" style=\"display: block; width: 600px; height: 600px; border: none;\" ></iframe>");
             return true;
-          } else if (jsFormData.arg2().toString().equals("treeform")) {
+          } else if (jsFormData.arg2().toString().equals(JSBuilder.TREEFORM_STR)) {
             String manipulateStr = jsFormData.arg1().toString();
             String htmlStr = JSBuilder.VISJS_IFRAME;
             htmlStr = StringUtils.replace(htmlStr, "`1`", manipulateStr);

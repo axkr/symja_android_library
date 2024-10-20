@@ -2,8 +2,6 @@ package org.matheclipse.core.eval;
 
 import java.io.Writer;
 import java.util.function.Predicate;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -12,7 +10,6 @@ import org.matheclipse.parser.client.SyntaxError;
 
 /** Utility to evaluate math expressions. */
 public class EvalUtilities extends MathMLUtilities {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * Constructor for an object which evaluates an expression. By default the internal <code>
@@ -239,7 +236,7 @@ public class EvalUtilities extends MathMLUtilities {
         return toMathML(result, out);
       }
     } catch (final RuntimeException rex) {
-      LOGGER.debug("EvalUtilities.toMathML() failed", rex);
+      // LOGGER.debug("EvalUtilities.toMathML() failed", rex);
     }
     return false;
   }

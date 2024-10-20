@@ -669,7 +669,7 @@ public abstract class ComplexFormFactory {
           return true;
         }
         if (list.size() == 4 && list.arg2().equals(F.CListC1)) {
-          convertInfixOperator(head, buf, list, ASTNodeFactory.APPLY_LEVEL_OPERATOR, precedence);
+          convertInfixOperator(head, buf, list, ASTNodeFactory.MAPAPPLY_OPERATOR, precedence);
           return true;
         }
         return false;

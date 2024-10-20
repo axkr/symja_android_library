@@ -174,6 +174,26 @@ public final class Comparators {
     }
   }
 
+  static final class ExprReversed implements Comparator<IExpr>, Serializable {
+    private static final long serialVersionUID = 6629821962352737882L;
+
+    Comparator<IExpr> comparator = new ExprComparator();
+
+    public ExprReversed(Comparator<IExpr> comparator) {
+      this.comparator = comparator;
+    }
+
+    /**
+     * Compares an expression with another expression for order. Returns a negative integer, zero,
+     * or a positive integer if this expression is canonical greater than, equal to, or less than
+     * the specified expression.
+     */
+    @Override
+    public int compare(final IExpr o1, final IExpr o2) {
+      return comparator.compare(o2, o1);
+    }
+  }
+
   /**
    * Compares an expression with another expression for order. Returns a negative integer, zero, or
    * a positive integer if this expression is canonical less than, equal to, or greater than the
@@ -204,6 +224,9 @@ public final class Comparators {
   public static final ComplexNormReverseComparator COMPLEX_NORM_REVERSE_COMPARATOR =
       new ComplexNormReverseComparator();
 
+  public static Comparator<IExpr> reversedComparator(Comparator<IExpr> comparator) {
+    return new ExprReversed(comparator);
+  }
 
   /**
    * Comparator for using an internal {@link BiPredicate} from

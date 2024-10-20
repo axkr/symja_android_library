@@ -1153,7 +1153,7 @@ public class Iterator {
     boolean fNumericMode;
     // fNumericMode = evalEngine.isNumericMode() ||
     // list.isMember(Predicates.isNumeric(), false);
-    boolean localNumericMode = evalEngine.isNumericMode();
+    boolean oldNumericMode = evalEngine.isNumericMode();
     try {
       if (list.hasNumericArgument()) {
         evalEngine.setNumericMode(true);
@@ -1361,7 +1361,7 @@ public class Iterator {
       String str = Errors.getMessage("itform", F.list(list, F.ZZ(position)), EvalEngine.get());
       throw new ArgumentTypeException(str);
     } finally {
-      evalEngine.setNumericMode(localNumericMode);
+      evalEngine.setNumericMode(oldNumericMode);
     }
   }
 

@@ -13,7 +13,6 @@ import org.apache.logging.log4j.Logger;
 import org.apfloat.NumericComputationException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -152,17 +151,19 @@ public class HypergeometricFunctions {
       if (z.isZero()) {
         return F.CNInfinity;
       }
-      if (z.isInfinity()) {
-        return F.C0;
-      }
-      if (z.isNegativeInfinity()) {
-        return F.Times(F.CI, S.Pi);
-      }
-      if (z.isDirectedInfinity(F.CI) || z.isDirectedInfinity(F.CNI)) {
-        return F.CInfinity;
-      }
-      if (z.isComplexInfinity()) {
-        return S.Indeterminate;
+      if (z.isAST(S.DirectedInfinity)) {
+        if (z.isInfinity()) {
+          return F.C0;
+        }
+        if (z.isNegativeInfinity()) {
+          return F.Times(F.CI, S.Pi);
+        }
+        if (z.isDirectedInfinity(F.CI) || z.isDirectedInfinity(F.CNI)) {
+          return F.CInfinity;
+        }
+        if (z.isComplexInfinity()) {
+          return S.Indeterminate;
+        }
       }
       return F.NIL;
     }
@@ -234,20 +235,22 @@ public class HypergeometricFunctions {
       if (z.isZero()) {
         return F.CNInfinity;
       }
-      if (z.isInfinity()) {
-        return F.CInfinity;
-      }
-      if (z.isNegativeInfinity()) {
-        return F.CInfinity;
-      }
-      if (z.isDirectedInfinity(F.CI)) {
-        return F.Times(F.CPiHalf, F.CI);
-      }
-      if (z.isDirectedInfinity(F.CNI)) {
-        return F.Times(F.CNPiHalf, F.CI);
-      }
-      if (z.isComplexInfinity()) {
-        return S.Indeterminate;
+      if (z.isAST(S.DirectedInfinity)) {
+        if (z.isInfinity()) {
+          return F.CInfinity;
+        }
+        if (z.isNegativeInfinity()) {
+          return F.CInfinity;
+        }
+        if (z.isDirectedInfinity(F.CI)) {
+          return F.Times(F.CPiHalf, F.CI);
+        }
+        if (z.isDirectedInfinity(F.CNI)) {
+          return F.Times(F.CNPiHalf, F.CI);
+        }
+        if (z.isComplexInfinity()) {
+          return S.Indeterminate;
+        }
       }
       return F.NIL;
     }
@@ -412,20 +415,22 @@ public class HypergeometricFunctions {
       if (z.isZero()) {
         return F.CNInfinity;
       }
-      if (z.isInfinity()) {
-        return F.CInfinity;
-      }
-      if (z.isNegativeInfinity()) {
-        return F.C0;
-      }
-      if (z.isDirectedInfinity(F.CI)) {
-        return F.Times(F.CI, S.Pi);
-      }
-      if (z.isDirectedInfinity(F.CNI)) {
-        return F.Times(F.CNI, S.Pi);
-      }
-      if (z.isComplexInfinity()) {
-        return S.Indeterminate;
+      if (z.isAST(S.DirectedInfinity)) {
+        if (z.isInfinity()) {
+          return F.CInfinity;
+        }
+        if (z.isNegativeInfinity()) {
+          return F.C0;
+        }
+        if (z.isDirectedInfinity(F.CI)) {
+          return F.Times(F.CI, S.Pi);
+        }
+        if (z.isDirectedInfinity(F.CNI)) {
+          return F.Times(F.CNI, S.Pi);
+        }
+        if (z.isComplexInfinity()) {
+          return S.Indeterminate;
+        }
       }
       return F.NIL;
     }
@@ -468,20 +473,22 @@ public class HypergeometricFunctions {
           return arg1.fresnelC();
         }
       }
-      if (arg1.isInfinity()) {
-        return F.C1D2;
-      }
-      if (arg1.isNegativeInfinity()) {
-        return F.CN1D2;
-      }
-      if (arg1.equals(F.CIInfinity)) {
-        return F.Divide(F.CI, F.C2);
-      }
-      if (arg1.equals(F.CNIInfinity)) {
-        return F.Divide(F.CNI, F.C2);
-      }
-      if (arg1.equals(F.CComplexInfinity)) {
-        return S.Indeterminate;
+      if (arg1.isAST(S.DirectedInfinity)) {
+        if (arg1.isInfinity()) {
+          return F.C1D2;
+        }
+        if (arg1.isNegativeInfinity()) {
+          return F.CN1D2;
+        }
+        if (arg1.equals(F.CIInfinity)) {
+          return F.Divide(F.CI, F.C2);
+        }
+        if (arg1.equals(F.CNIInfinity)) {
+          return F.Divide(F.CNI, F.C2);
+        }
+        if (arg1.equals(F.CComplexInfinity)) {
+          return S.Indeterminate;
+        }
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
@@ -520,20 +527,22 @@ public class HypergeometricFunctions {
           return arg1.fresnelS();
         }
       }
-      if (arg1.isInfinity()) {
-        return F.C1D2;
-      }
-      if (arg1.isNegativeInfinity()) {
-        return F.CN1D2;
-      }
-      if (arg1.equals(F.CIInfinity)) {
-        return F.Divide(F.CNI, F.C2);
-      }
-      if (arg1.equals(F.CNIInfinity)) {
-        return F.Divide(F.CI, F.C2);
-      }
-      if (arg1.equals(F.CComplexInfinity)) {
-        return S.Indeterminate;
+      if (arg1.isAST(S.DirectedInfinity)) {
+        if (arg1.isInfinity()) {
+          return F.C1D2;
+        }
+        if (arg1.isNegativeInfinity()) {
+          return F.CN1D2;
+        }
+        if (arg1.equals(F.CIInfinity)) {
+          return F.Divide(F.CNI, F.C2);
+        }
+        if (arg1.equals(F.CNIInfinity)) {
+          return F.Divide(F.CI, F.C2);
+        }
+        if (arg1.equals(F.CComplexInfinity)) {
+          return S.Indeterminate;
+        }
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
@@ -1603,11 +1612,13 @@ public class HypergeometricFunctions {
       if (arg1.isOne()) {
         return F.CNInfinity;
       }
-      if (arg1.isInfinity()) {
-        return F.CInfinity;
-      }
-      if (arg1.isComplexInfinity()) {
-        return F.CComplexInfinity;
+      if (arg1.isAST(S.DirectedInfinity)) {
+        if (arg1.isInfinity()) {
+          return F.CInfinity;
+        }
+        if (arg1.isComplexInfinity()) {
+          return F.CComplexInfinity;
+        }
       }
       return F.NIL;
     }
@@ -1666,17 +1677,19 @@ public class HypergeometricFunctions {
       if (z.isZero()) {
         return F.C0;
       }
-      if (z.isInfinity()) {
-        return F.CPiHalf;
-      }
-      if (z.isNegativeInfinity()) {
-        return F.CNPiHalf;
-      }
-      if (z.isDirectedInfinity(F.CI)) {
-        return z;
-      }
-      if (z.isComplexInfinity()) {
-        return S.Indeterminate;
+      if (z.isAST(S.DirectedInfinity)) {
+        if (z.isInfinity()) {
+          return F.CPiHalf;
+        }
+        if (z.isNegativeInfinity()) {
+          return F.CNPiHalf;
+        }
+        if (z.isDirectedInfinity(F.CI)) {
+          return z;
+        }
+        if (z.isComplexInfinity()) {
+          return S.Indeterminate;
+        }
       }
       return F.NIL;
     }
@@ -1762,17 +1775,19 @@ public class HypergeometricFunctions {
       if (z.isZero()) {
         return F.C0;
       }
-      if (z.isInfinity()) {
-        return F.CInfinity;
-      }
-      if (z.isNegativeInfinity()) {
-        return F.CNInfinity;
-      }
-      if (z.isDirectedInfinity(F.CI)) {
-        return F.Times(F.CI, F.CPiHalf);
-      }
-      if (z.isComplexInfinity()) {
-        return S.Indeterminate;
+      if (z.isAST(S.DirectedInfinity)) {
+        if (z.isInfinity()) {
+          return F.CInfinity;
+        }
+        if (z.isNegativeInfinity()) {
+          return F.CNInfinity;
+        }
+        if (z.isDirectedInfinity(F.CI)) {
+          return F.Times(F.CI, F.CPiHalf);
+        }
+        if (z.isComplexInfinity()) {
+          return S.Indeterminate;
+        }
       }
       return F.NIL;
     }

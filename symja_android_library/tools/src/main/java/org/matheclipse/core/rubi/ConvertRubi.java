@@ -32,7 +32,11 @@ public class ConvertRubi {
       + "\n" + "import static org.matheclipse.core.expression.F.*;\n"
       + "import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.*;\n"
       + "import static org.matheclipse.core.integrate.rubi.UtilityFunctions.*;\n"
-      + "import org.matheclipse.core.interfaces.IAST;\n" + "\n" + "/** \n"
+      + "import org.matheclipse.core.interfaces.IExpr;\n"
+      + "import org.matheclipse.core.interfaces.IAST;\n"
+      + "import com.google.common.base.Supplier;\n" //
+      + "\n" //
+      + "/** \n" //
       + " * IndefiniteIntegrationRules from the <a href=\"https://rulebasedintegration.org/\">Rubi -\n"
       + " * rule-based integrator</a>.\n" + " *  \n" + " */\n" + "class IntRules";
 
@@ -155,6 +159,7 @@ public class ConvertRubi {
 
     IExpr leftHandSide = ast.get(1);
     IExpr rightHandSide = ast.arg2();
+    boolean isIIntegrate = false;
     // if (!rightHandSide.isFree(x -> x.topHead().toString().equalsIgnoreCase("unintegrable"),
     // true)) {
     // System.out.println("IGNORED: " + ast.toString());
@@ -171,6 +176,7 @@ public class ConvertRubi {
           ((IASTMutable) temp).set(0, S.Integrate);
         }
         buffer.append("IIntegrate(" + GLOBAL_COUNTER + ",");
+        // isIIntegrate = true;
       } else {
         try {
           leftHandSide = EvalEngine.get().evalHoldPattern((IAST) temp);
@@ -196,11 +202,22 @@ public class ConvertRubi {
       rightHandSide = temp;
     }
     // for Rubi patternExpression must be set to true in internalFormString() for right-hand-side
+    if (isIIntegrate) {
+      buffer.append("((Supplier<IExpr>) () -> \n");
+    }
     buffer.append(rightHandSide.internalFormString(true, 0));
     if (last) {
-      buffer.append(")\n");
+      if (isIIntegrate) {
+        buffer.append("))\n");
+      } else {
+        buffer.append(")\n");
+      }
     } else {
-      buffer.append("),\n");
+      if (isIIntegrate) {
+        buffer.append(")),\n");
+      } else {
+        buffer.append("),\n");
+      }
     }
     // }
     listOfRules.append(F.List(leftHandSide, rightHandSide));

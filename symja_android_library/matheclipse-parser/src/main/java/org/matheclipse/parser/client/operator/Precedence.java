@@ -52,6 +52,7 @@ public class Precedence {
   public static final int LESS = 290;
   public static final int LESSEQUAL = 290;
   public static final int MAP = 620;
+  public static final int MAPAPPLY = 620;
   public static final int MAPALL = 620;
   public static final int MESSAGENAME = 750;
   public static final int NONCOMMUTATIVEMULTIPLY = 510;

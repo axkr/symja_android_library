@@ -103,8 +103,6 @@ import edu.jas.kern.PreemptingException;
 @NotThreadSafe
 public class EvalEngine implements Serializable {
 
-  // private static final Logger LOGGER = LogManager.getLogger();
-
   private static final IStringX EVALUATION_LOOP = StringX.valueOf("EvalLoop");
 
   public static class OptionsResult {
