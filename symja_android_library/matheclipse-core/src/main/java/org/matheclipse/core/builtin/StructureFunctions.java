@@ -7,8 +7,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
-
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -21,12 +19,14 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.Predicates.IsBinaryFalse;
 import org.matheclipse.core.interfaces.IAST;
@@ -66,6 +66,7 @@ public class StructureFunctions {
 
     private static void init() {
       S.Apply.setEvaluator(new Apply());
+      S.MapApply.setEvaluator(new MapApply());
       S.ByteCount.setEvaluator(new ByteCount());
       S.Depth.setEvaluator(new Depth());
       S.Exit.setEvaluator(new QuitExit());
@@ -87,6 +88,7 @@ public class StructureFunctions {
       S.ParallelMap.setEvaluator(new ParallelMap());
       S.PatternOrder.setEvaluator(new PatternOrder());
       S.Quit.setEvaluator(new QuitExit());
+      S.ReverseSort.setEvaluator(new ReverseSort());
       S.Scan.setEvaluator(new Scan());
       S.Sort.setEvaluator(new Sort());
       S.SortBy.setEvaluator(new SortBy());
@@ -186,30 +188,35 @@ public class StructureFunctions {
    * Apply(f, {a, b, c}, x + y)
    * </pre>
    */
-  private static final class Apply extends AbstractCoreFunctionEvaluator {
-
+  private static class Apply extends AbstractFunctionOptionEvaluator {
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.argSize() < 2 || ast.argSize() > 4) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine, IAST originalAST) {
+      return apply(ast, argSize, option, engine);
+    }
+
+    public static IExpr apply(IAST ast, int argSize, IExpr[] option, EvalEngine engine) {
+      if (argSize < 2 || argSize > 4) {
         return Errors.printArgMessage(ast, ARGS_2_4, engine);
       }
-      IASTMutable evaledAST = ast.copy();
-      evaledAST.setArgs(evaledAST.size(), (int i) -> engine.evaluate(evaledAST.get(i)));
-
-      int lastIndex = evaledAST.argSize();
-      boolean heads = false;
-      final OptionArgs options = new OptionArgs(evaledAST.topHead(), evaledAST, lastIndex, engine);
-      IExpr option = options.getOption(S.Heads);
-      if (option.isPresent()) {
-        lastIndex--;
-        if (option.isTrue()) {
-          heads = true;
-        }
-      } else {
-        if (ast.argSize() == 4) {
-          return Errors.printArgMessage(ast, ARGS_2_3, engine);
-        }
-      }
+      // IASTMutable evaledAST = ast.copy();
+      // evaledAST.setArgs(evaledAST.size(), (int i) -> engine.evaluate(evaledAST.get(i)));
+      IAST evaledAST = ast;
+      int lastIndex = argSize;
+      boolean heads = option[0].isTrue();
+      // final OptionArgs options = new OptionArgs(evaledAST.topHead(), evaledAST, lastIndex,
+      // engine);
+      // IExpr option = options.getOption(S.Heads);
+      // if (option.isPresent()) {
+      // lastIndex--;
+      // if (option.isTrue()) {
+      // heads = true;
+      // }
+      // } else {
+      // if (ast.argSize() == 4) {
+      // return Errors.printArgMessage(ast, ARGS_2_3, engine);
+      // }
+      // }
 
       IExpr arg1 = evaledAST.arg1();
       IExpr arg2 = evaledAST.arg2();
@@ -255,6 +262,34 @@ public class StructureFunctions {
       return F.NIL;
     }
 
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.Heads, S.False);
+    }
+
+  }
+
+  private static final class MapApply extends Apply {
+    @Override
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine, IAST originalAST) {
+      if (argSize >= 2) {
+        IASTMutable applyFunction = ast.appendAtClone(3, F.CListC1);
+        applyFunction.set(0, S.Apply);
+        return super.evaluate(applyFunction, argSize + 1, option, engine, originalAST);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.Heads, S.False);
+    }
   }
 
   private static class ByteCount extends AbstractCoreFunctionEvaluator {
@@ -1760,6 +1795,26 @@ public class StructureFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALL);
+    }
+  }
+
+  private static class ReverseSort extends Sort {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg2 = F.NIL;
+      Comparator<IExpr> comparator = Comparators.CANONICAL_COMPARATOR;
+      if (ast.isAST2()) {
+        arg2 = ast.arg2();
+        comparator = new Predicates.IsBinaryFalse(arg2);
+      }
+      comparator = Comparators.reversedComparator(comparator);
+      return super.sortByComparator(comparator, ast, engine);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
   }
 

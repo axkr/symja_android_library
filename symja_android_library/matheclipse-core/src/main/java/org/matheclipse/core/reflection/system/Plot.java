@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.hipparchus.stat.descriptive.moment.Mean;
 import org.hipparchus.stat.descriptive.moment.StandardDeviation;
-import org.matheclipse.core.basic.OperationSystem;
+import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -15,11 +15,11 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
+import org.matheclipse.core.graphics.ECharts;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -169,16 +169,18 @@ public class Plot extends ListPlot {
 
 
   @Override
-  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
-      final EvalEngine engine, IAST originalAST) {
-    if (options[0].isTrue()) { // JSForm option
-      IExpr temp = S.Manipulate.of(engine, ast);
-      if (temp.headID() == ID.JSFormData) {
-        return temp;
-      }
-      return F.NIL;
-    }
-
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
+      IAST originalAST) {
+    GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
+    ECharts.setGraphicOptions(graphicsOptions, ast, 2, options, engine);
+    // if (options[0].isTrue()) { // JSForm option
+    // IExpr temp = S.Manipulate.of(engine, ast);
+    // if (temp.headID() == ID.JSFormData) {
+    // return temp;
+    // }
+    // return F.NIL;
+    // }
+    //
     final OptionArgs optionArgs = new OptionArgs(ast.topHead(), ast, 3, engine, true);
     if (optionArgs.isTrue(S.JSForm)) {
       IExpr temp = S.Manipulate.of(engine, ast);
@@ -197,7 +199,7 @@ public class Plot extends ListPlot {
       if (variable.isVariable()) {
         try {
           if (rangeList.isList3()) {
-            GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
+
             setGraphicOptions(graphicsOptions);
             graphicsOptions.setOptions(optionArgs);
             final IAST listOfLines =
@@ -206,16 +208,29 @@ public class Plot extends ListPlot {
               return F.NIL;
             }
 
-            // simulate ListPlot data
-            GraphicsOptions listPlotOptions = graphicsOptions.copy();
-            IASTMutable listPlot = ast.setAtCopy(1, listOfLines);
-            IAST graphicsPrimitives = plot(listPlot, listPlotOptions, engine);
-            if (graphicsPrimitives.isPresent()) {
-              graphicsOptions.addPadding();
-              listPlotOptions.setBoundingBox(graphicsOptions.boundingBox());
-              // listPlotOptions.mergeOptions(listPlotOptions.options().getListOfRules());
-              IAST listOfOptions = listOfOptionRules(listPlotOptions);
-              return createGraphicsFunction(graphicsPrimitives, listOfOptions, listPlotOptions);
+            if (ToggleFeature.JS_ECHARTS) {
+              String graphicsPrimitivesStr = listPlotECharts(listOfLines, graphicsOptions);
+              if (graphicsPrimitivesStr != null) {
+                StringBuilder jsControl = new StringBuilder();
+                jsControl.append("var eChart = echarts.init(document.getElementById('main'));\n");
+                jsControl.append(graphicsPrimitivesStr);
+                jsControl.append("\neChart.setOption(option);");
+
+                return F.JSFormData(jsControl.toString(), "echarts");
+              }
+              return F.NIL;
+            } else {
+              // simulate ListPlot data
+              GraphicsOptions listPlotOptions = graphicsOptions.copy();
+              IASTMutable listPlot = ast.setAtCopy(1, listOfLines);
+              IAST graphicsPrimitives = plot(listPlot, options, listPlotOptions, engine);
+              if (graphicsPrimitives.isPresent()) {
+                graphicsOptions.addPadding();
+                listPlotOptions.setBoundingBox(graphicsOptions.boundingBox());
+                // listPlotOptions.mergeOptions(listPlotOptions.options().getListOfRules());
+                IAST listOfOptions = listOfOptionRules(listPlotOptions);
+                return createGraphicsFunction(graphicsPrimitives, listOfOptions, listPlotOptions);
+              }
             }
 
           }
@@ -425,7 +440,7 @@ public class Plot extends ListPlot {
     }
 
     double vmax = yValues[n2] + 0.05 * vrange;// 5% extra looks nice
-    if (yValues[yValues.length-1] < 10.0) {
+    if (yValues[yValues.length - 1] < 10.0) {
       vmax = yValues[yValues.length - 1];
     } else if (vmax > yValues[yValues.length - 1]) {
       vmax = yValues[yValues.length - 1];
@@ -636,7 +651,9 @@ public class Plot extends ListPlot {
   @Override
   public void setUp(final ISymbol newSymbol) {
     newSymbol.setAttributes(ISymbol.HOLDALL);
-    setOptions(newSymbol, new IBuiltInSymbol[] {S.JSForm, S.Axes, S.PlotRange},
-        new IExpr[] {S.False, S.True, S.Automatic});
+    // setOptions(newSymbol, new IBuiltInSymbol[] {S.JSForm, S.Axes, S.PlotRange},
+    // new IExpr[] {S.False, S.True, S.Automatic});
+    setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(),
+        GraphicsOptions.listPlotDefaultOptionValues(true));
   }
 }

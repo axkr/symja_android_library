@@ -309,35 +309,42 @@ public class AJAXQueryServlet extends HttpServlet {
           } else if (outExpr.isAST(S.JSFormData, 3)) {
             IAST jsFormData = (IAST) outExpr;
             String jsLibraryType = jsFormData.arg2().toString();
-            if (jsLibraryType.equals("mathcell")) {
+            if (jsLibraryType.equals(JSBuilder.MATHCELL_STR)) {
               try {
                 return JSONBuilder.createMathcellIFrame(JSBuilder.MATHCELL_IFRAME_TEMPLATE,
                     jsFormData.arg1().toString());
               } catch (Exception ex) {
                 LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
-            } else if (jsLibraryType.equals("jsxgraph")) {
+            } else if (jsLibraryType.equals(JSBuilder.ECHARTS_STR)) {
+              try {
+                return JSONBuilder.createEChartsIFrame(JSBuilder.ECHARTS_IFRAME_TEMPLATE,
+                    jsFormData.arg1().toString());
+              } catch (Exception ex) {
+                LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
+              }
+            } else if (jsLibraryType.equals(JSBuilder.JSXGRAPH_STR)) {
               try {
                 return JSONBuilder.createJSXGraphIFrame(JSBuilder.JSXGRAPH_IFRAME_TEMPLATE,
                     jsFormData.arg1().toString());
               } catch (Exception ex) {
                 LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
-            } else if (jsLibraryType.equals("mermaid")) {
+            } else if (jsLibraryType.equals(JSBuilder.MERMAID_STR)) {
               try {
                 return JSONBuilder.createMermaidIFrame(JSBuilder.MERMAID_IFRAME_TEMPLATE,
                     jsFormData.arg1().toString());
               } catch (Exception ex) {
                 LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
-            } else if (jsLibraryType.equals("plotly")) {
+            } else if (jsLibraryType.equals(JSBuilder.PLOTLY_STR)) {
               try {
                 return JSONBuilder.createPlotlyIFrame(JSBuilder.PLOTLY_IFRAME_TEMPLATE,
                     jsFormData.arg1().toString());
               } catch (Exception ex) {
                 LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
-            } else if (jsLibraryType.equals("treeform")) {
+            } else if (jsLibraryType.equals(JSBuilder.TREEFORM_STR)) {
               try {
                 String manipulateStr = jsFormData.arg1().toString();
                 String html = VISJS_IFRAME;

@@ -4,8 +4,19 @@ public class PlotExample extends BasePlotExample {
 
   @Override
   public String exampleFunction() {
-    return "model=NDSolve({x'(t) == 10*(y(t) - x(t)), y'(t) == x(t)*(28 - z(t)) - y(t), z'(t) == x(t)*y(t) - 8/3*z(t), x(0)== 0, y(0) == 1, z(0) == 0}, {x, y, z}, {t, 0, 20});"
-        + "Plot({Evaluate(z(t) /.model)}, {t, 0, 20}, JSForm->True)";
+    return null;
+
+  }
+
+  @Override
+  public String[] exampleFunctions() {
+    return new String[] {//
+        "model=NDSolve({x'(t) == 10*(y(t) - x(t)), y'(t) == x(t)*(28 - z(t)) - y(t), z'(t) == x(t)*y(t) - 8/3*z(t), x(0)== 0, y(0) == 1, z(0) == 0}, {x, y, z}, {t, 0, 20});"
+            + "Plot({Evaluate(z(t) /.model)}, {t, 0, 20})", //
+        "Plot(Evaluate(Table(BernsteinBasis(3, k, x), {k, 0, 3})), {x, 0, 1})", //
+        "Plot(Tan(x), {x, -10, 10},PlotStyle->{Purple})", //
+        "Plot(Evaluate(Table(BesselJ(n, x), {n, 4})), {x, 0, 10})"
+    };
 
     // return "Plot(Evaluate(Table(BernsteinBasis(3, k, x), {k, 0, 3})), {x, 0, 1})";
 
@@ -17,6 +28,7 @@ public class PlotExample extends BasePlotExample {
 
     // return "Plot(Tan(x), {x, -10, 10},PlotStyle->{Purple})"; // PlotRange->{-20,20},
 
+    // TODO very slow:
     // return "Plot(SinIntegral(x), {x, -20, 20})";
 
     // return "Plot({x, Surd(x, 3), Surd(x, 5), Surd(x, 7)}, {x, -1, 1}, PlotLegends ->
@@ -32,7 +44,6 @@ public class PlotExample extends BasePlotExample {
 
     // return "Plot(Evaluate(Table(BesselJ(n, x), {n, 4})), {x, 0, 10})";
   }
-
   public static void main(String[] args) {
     PlotExample p = new PlotExample();
     p.generateHTML();

@@ -49,43 +49,65 @@ public class JSBuilder {
           + "</html>";
 
   public static final String ECHARTS_IFRAME_TEMPLATE = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
-          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + "\n"
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" //
+          + "\n" //
+          + "<!DOCTYPE html PUBLIC\n" //
+          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n" //
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" //
+          + "\n" //
           + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
           + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>ECharts</title>\n" + "\n"
           + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
           // 1 - libraries
           + "`1`\n"
-          + "<div id=\"main\" style=\"display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden\">\n"
+          + "<div id=\"main\" style=\"display: flex; width: 100%; height: 400px; margin: 0; flex-direction: column; overflow: hidden\">\n"
           + "<script>\n"
           // 2 - JavaScript string
           + "`2`\n" + "</script>\n"
+          + "</div>\n"//
           // 3 - JSFiddle string
-          + "`3`\n" + "</div>\n" + "</body>\n" + "</html>";
+          + "`3`\n" //
+          + "</body>\n" //
+          + "</html>";
 
   /** HTML template for Apache ECharts */
   public static final String ECHARTS_TEMPLATE = //
-      "<html>\n" + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>ECharts</title>\n"
-      // 1 - libraries
-          + "`1`\n" + "</head>\n" + "<body>\n"
-          + "<div id=\"main\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
-          + "<script>\n"
+
+      "<!DOCTYPE html PUBLIC\n" //
+          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n" //
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" //
+          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          + "<head>\n" //
+          + "<meta charset=\"utf-8\">\n" //
+          + "<title>ECharts</title>\n"
+          // 1 - libraries
+          + "`1`\n" //
+          + "</head>\n" //
+          + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          + "<div id=\"main\"  style=\"display: flex; width: 100%; height: 400px; margin: 0; flex-direction: column; overflow: hidden\">\n"
+          + "<script>\n" //
           // 2 - JavaScript string
-          + "`2`\n" + "</script>\n"
+          + "`2`\n" //
+          + "</script>\n" //
           // 3 - JSFiddle string
-          + "`3`\n" //
           + "</div>\n"//
+          + "`3`\n" //
           + "</body>\n" //
           + "</html>"; //
 
   public static final String GRAPHICS2D_IFRAME_TEMPLATE = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" //
+          + "\n" //
+          + "<!DOCTYPE html PUBLIC\n" //
           + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
           + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + "\n"
           + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%;margin: 0; padding: 0\">\n"
-          + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>Graphics 2D</title>\n" + "</head>\n"
-          + "\n" + "<body>\n"
+          + "<head>\n" //
+          + "<meta charset=\"utf-8\">\n" //
+          + "<title>Graphics 2D</title>\n"//
+          + "</head>\n" //
+          + "\n" //
+          + "<body>\n"
           // 1 - libraries
           + "`1`\n" //
           // + "<script src=\"/media/js/drawGraphics2d.js\"></script>\n"
@@ -167,9 +189,13 @@ public class JSBuilder {
           + "</body>"; //
 
   public static final String IMAGE_TEMPLATE = //
-      "<html>\n" + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>Image</title>\n"
-          + "</head>\n" + "<body>\n"
-          + "<div id=\"image\" style=\"width:100%; height:100%; margin: 0; padding: 0\">\n"
+      "<html>\n" //
+          + "<head>\n" //
+          + "<meta charset=\"utf-8\">\n" //
+          + "<title>Image</title>\n" //
+          + "</head>\n" //
+          + "<body>\n" //
+          + "<div id=\"image\" style=\"width:100%; height:100%; margin: 0; padding: 0\">\n" //
           + "    <img src=\"data:image/png;base64, `1`\"/> \n" //
           + "</div>\n" //
           + "</body>\n" + "</html>"; //
@@ -194,7 +220,9 @@ public class JSBuilder {
   public static final String JSXGRAPH_TEMPLATE = //
       "<html>\n" + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>JSXGraph</title>\n"
       // 1 - libraries
-          + "`1`\n" + "</head>\n" + "<body>\n"
+          + "`1`\n" //
+          + "</head>\n"//
+          + "<body>\n" //
           + "<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
           + "<script>\n"
           // 2 - JavaScript string
@@ -262,7 +290,9 @@ public class JSBuilder {
           // 2 - JavaScript string
           + "`2`\n" + "</script>\n"
           // 3 - JSFiddle string
-          + "`3`\n" + "</div>" + "</body>\n" + "</html>";
+          + "`3`\n" + "</div>" //
+          + "</body>\n" //
+          + "</html>";
 
   public static final String PLOTLY_TEMPLATE = //
       "<html>\n" + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>Plotly</title>\n"
@@ -359,6 +389,21 @@ public class JSBuilder {
           "</body>\n" + //
           "</html>"; //
 
+  // output formats
+  public static final String HTML_STR = "html";
+  public static final String PLAIN_STR = "plaintext";
+  public static final String SYMJA_STR = "sinput";
+  public static final String MATHML_STR = "mathml";
+  public static final String LATEX_STR = "latex";
+  public static final String MARKDOWN_STR = "markdown";
+  public static final String MATHCELL_STR = "mathcell";
+  public static final String JSXGRAPH_STR = "jsxgraph";
+  public static final String PLOTLY_STR = "plotly";
+  public static final String TREEFORM_STR = "treeform";
+  public static final String TRACEFORM_STR = "traceform";
+  public static final String MERMAID_STR = "mermaid";
+  public static final String ECHARTS_STR = "echarts";
+
   private JSBuilder() {}
 
   public static String buildMermaid(String pageTemplate, String manipulateStr) {
@@ -436,6 +481,7 @@ public class JSBuilder {
     }
     return Errors.templateRender(pageTemplate, jsxGraphArgs);
   }
+
   private static String build(String pageTemplate, String manipulateStr, String htmlStr,
       String[] css, String[] libs) {
     String[] jsxGraphArgs = new String[3];

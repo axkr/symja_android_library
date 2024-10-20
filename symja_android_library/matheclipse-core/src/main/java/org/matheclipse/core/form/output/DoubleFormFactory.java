@@ -8,7 +8,6 @@ import org.apfloat.Apfloat;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.Errors;
@@ -531,7 +530,7 @@ public abstract class DoubleFormFactory {
         IExpr arg1 = timesAST.arg1();
 
         if (arg1.isNumber() && (((INumber) arg1).complexSign() < 0)) {
-          if (((INumber) arg1).isOne()) {
+          if (arg1.isOne()) {
             showOperator = false;
           } else {
             if (arg1.isMinusOne()) {
@@ -864,11 +863,15 @@ public abstract class DoubleFormFactory {
     convertInternal(buf, expr, Integer.MIN_VALUE, false, true);
   }
 
+  public void convertExpr(final StringBuilder buf, final IExpr expr) {
+    convertInternal(buf, expr, Integer.MIN_VALUE, false, true);
+  }
+
   protected void convertInternal(final StringBuilder buf, final IExpr o) {
     convertInternal(buf, o, Integer.MIN_VALUE, false, true);
   }
 
-  private void convertNumber(final StringBuilder buf, final INumber o, final int precedence,
+  protected void convertNumber(final StringBuilder buf, final INumber o, final int precedence,
       boolean caller) {
     if (o instanceof INum) {
       convertDouble(buf, (INum) o, precedence, caller);
@@ -912,7 +915,7 @@ public abstract class DoubleFormFactory {
           }
         }
       }
-      convertAST(buf, list, eval);
+      convertAST(buf, list, precedence, eval);
       return;
     }
     if (o instanceof IReal) {
@@ -965,7 +968,7 @@ public abstract class DoubleFormFactory {
           return true;
         }
         if (list.size() == 4 && list.arg2().equals(F.CListC1)) {
-          convertInfixOperator(head, buf, list, ASTNodeFactory.APPLY_LEVEL_OPERATOR, precedence);
+          convertInfixOperator(head, buf, list, ASTNodeFactory.MAPAPPLY_OPERATOR, precedence);
           return true;
         }
         return false;
@@ -1253,12 +1256,15 @@ public abstract class DoubleFormFactory {
    * @param eval TODO
    * @throws IOException
    */
-  public void convertAST(final StringBuilder buf, final IAST function, boolean eval) {
+  public void convertAST(final StringBuilder buf, final IAST function, final int precedence,
+      boolean eval) {
     if (function.isNumericFunction(true)) {
       try {
-        double value = EvalEngine.get().evalDouble(function);
-        buf.append("(" + value + ")");
-        return;
+        INumber value = function.evalNumber();
+        if (value != null) {
+          convertNumber(buf, value, precedence, NO_PLUS_CALL);
+          return;
+        }
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         //

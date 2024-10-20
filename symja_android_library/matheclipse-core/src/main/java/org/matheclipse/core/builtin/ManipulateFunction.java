@@ -1504,7 +1504,7 @@ public class ManipulateFunction {
       jsControl.append("board.suspendUpdate();\n");
       jsControl.append(js);
       jsControl.append("board.unsuspendUpdate();\n");
-      return F.JSFormData(jsControl.toString(), "jsxgraph");
+      return F.JSFormData(jsControl.toString(), JSBuilder.JSXGRAPH_STR);
     }
 
     // private static void range(StringBuilder graphicControl, IAST plotRange, int steps,

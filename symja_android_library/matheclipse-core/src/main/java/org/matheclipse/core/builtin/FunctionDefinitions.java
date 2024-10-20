@@ -80,6 +80,7 @@ public final class FunctionDefinitions {
       S.ListPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot3D());
       S.ListPointPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListPointPlot3D());
       S.ListPolarPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListPolarPlot());
+      S.ListStepPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListStepPlot());
       S.LogPlot.setEvaluator(new org.matheclipse.core.reflection.system.LogPlot());
       S.LogLinearPlot.setEvaluator(new org.matheclipse.core.reflection.system.LogLinearPlot());
       S.LogLogPlot.setEvaluator(new org.matheclipse.core.reflection.system.LogLogPlot());

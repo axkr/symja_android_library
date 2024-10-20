@@ -232,7 +232,7 @@ public class Plot {
       try {
         return f.applyAsDouble(x);
       } catch (ArgumentTypeException ate) {
-
+        // ate.printStackTrace();
       }
       return Double.NaN;
     }

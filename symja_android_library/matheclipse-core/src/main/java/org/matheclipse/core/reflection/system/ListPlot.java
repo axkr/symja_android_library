@@ -1,8 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import java.util.function.Function;
-
-import org.matheclipse.core.basic.OperationSystem;
+import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.eval.Errors;
@@ -14,12 +13,12 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.ECharts;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -30,13 +29,148 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
 
   public ListPlot() {}
 
-  @Override
-  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
+  public IExpr evaluateECharts(IAST ast, final int argSize, final IExpr[] options,
       final EvalEngine engine, IAST originalAST) {
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
-    if (options[0].isTrue()) {
+
+    GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
+    String graphicsPrimitivesStr = listPlotECharts(ast, options, graphicsOptions, engine);
+    if (graphicsPrimitivesStr != null) {
+      StringBuilder jsControl = new StringBuilder();
+      jsControl.append("var eChart = echarts.init(document.getElementById('main'));\n");
+      jsControl.append(graphicsPrimitivesStr);
+      jsControl.append("\neChart.setOption(option);");
+
+      return F.JSFormData(jsControl.toString(), "echarts");
+    }
+    return F.NIL;
+  }
+
+  protected static String listPlotECharts(IAST plot, IExpr[] options,
+      GraphicsOptions graphicsOptions, EvalEngine engine) {
+    if (plot.size() < 2) {
+      return null;
+    }
+    ECharts.setGraphicOptions(graphicsOptions, plot, 2, options, engine);
+
+    IExpr arg1 = plot.arg1();
+    if (!arg1.isList()) {
+      arg1 = engine.evaluate(arg1);
+    }
+    if (arg1.isAssociation()) {
+      IAssociation assoc = ((IAssociation) arg1);
+      arg1 = assoc.matrixOrList();
+    }
+    return listPlotECharts(arg1, graphicsOptions);
+  }
+
+  protected static String listPlotECharts(IExpr listData, GraphicsOptions graphicsOptions) {
+    if (listData.isNonEmptyList()) {
+      IAST pointList = (IAST) listData;
+      double[] minMax = new double[] {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY,
+          Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
+      // IASTAppendable[] pointSets =
+      // org.matheclipse.core.reflection.system.ListPlot.pointsOfListPlot(pointList, minMax);
+      // if (pointSets != null) {
+      if (pointList.isListOfLists()) {
+        StringBuilder yAxisSeriesBuffer = new StringBuilder();
+        // StringBuilder xAxisCategoryBuffer = new StringBuilder();
+        if (pointList.isListOfPoints(2)) {
+          ECharts.yAxisSingleSeries(yAxisSeriesBuffer, pointList, graphicsOptions, minMax);
+        } else {
+          for (int i = 1; i < pointList.size(); i++) {
+            IExpr pointSet = pointList.get(i);
+            if (pointSet != null && pointSet.isListOfLists()) {
+              if (i > 1) {
+                yAxisSeriesBuffer.append(",\n");
+              }
+              ECharts.yAxisSingleSeries(yAxisSeriesBuffer, (IAST) pointSet, graphicsOptions,
+                  minMax);
+            }
+          }
+        }
+        ECharts echarts = ECharts.build(graphicsOptions, null, yAxisSeriesBuffer);
+        echarts.setXAxisPlot();
+        if (minMax[2] < -1000.0) {
+          minMax[2] = -50;
+        }
+        if (minMax[3] > 1000.0) {
+          minMax[3] = 50;
+        }
+        echarts.setYAxisPlot(minMax[2], minMax[3]);
+        return echarts.getJSONStr();
+      }
+
+      // TODO Labeled lists
+      if (pointList.isList()) {// x -> x.isList())) {
+        if (pointList.isListOfPoints(2)) {
+          return point2DListLinePlot(pointList, graphicsOptions);
+        }
+        if (pointList.isListOfLists()) {
+          IAST listOfLists = pointList;
+          StringBuilder yAxisSeriesBuffer = new StringBuilder();
+          String type = graphicsOptions.isJoined() ? ECharts.TYPE_LINE : ECharts.TYPE_SCATTER;
+          ECharts.seriesData(yAxisSeriesBuffer, listOfLists, graphicsOptions, type, "");
+          StringBuilder xAxisCategoryBuffer = new StringBuilder();
+          ECharts.xAxisCategory(xAxisCategoryBuffer, (IAST) listOfLists.arg1());
+          ECharts echarts = ECharts.build(graphicsOptions, xAxisCategoryBuffer, yAxisSeriesBuffer);
+          echarts.setXAxisPlot();
+          echarts.setYAxisPlot(minMax[2], minMax[3]);
+          return echarts.getJSONStr();
+        }
+
+      }
+      return yValueListLinePlot(pointList, graphicsOptions);
+    }
+    return null;
+  }
+
+  /**
+   * Plot a list of 2D points.
+   * 
+   * @param pointList2D list of 2D points
+   * @return
+   */
+  private static String point2DListLinePlot(IAST pointList2D, GraphicsOptions graphicsOptions) {
+    StringBuilder xAxisString = new StringBuilder();
+    StringBuilder yAxisString = new StringBuilder();
+    // yAxisString.append( //
+    // "{\n" //
+    // + " name: 'List 1',\n" //
+    // + " type: 'line',\n");
+    ECharts.xyAxesPoint2D(pointList2D, xAxisString, yAxisString, graphicsOptions);
+
+    ECharts echarts = ECharts.build(graphicsOptions, xAxisString, yAxisString);
+    echarts.setXAxis();
+    echarts.setYAxis("value");
+    return echarts.getJSONStr();
+  }
+
+  private static String yValueListLinePlot(IAST pointList, GraphicsOptions graphicsOptions) {
+    double[] minMax = new double[] {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY,
+        Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
+    // y-axis values
+    StringBuilder yAxisString = new StringBuilder();
+    ECharts.yAxisSingleSeries(yAxisString, pointList, graphicsOptions, minMax);
+
+    // x-axis categories
+    StringBuilder xAxisString = new StringBuilder();
+    ECharts.xAxisCategory(xAxisString, pointList);
+    ECharts echarts = ECharts.build(graphicsOptions, xAxisString, yAxisString);
+    echarts.setXAxis();
+    echarts.setYAxis("value");
+    return echarts.getJSONStr();
+  }
+
+  @Override
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
+      IAST originalAST) {
+    if (ToggleFeature.JS_ECHARTS) {
+      return evaluateECharts(ast, argSize, options, engine, originalAST);
+    }
+    if (options[ECharts.X_JSFORM].isTrue()) {
       IExpr temp = S.Manipulate.of(engine, ast);
       if (temp.headID() == ID.JSFormData) {
         return temp;
@@ -44,11 +178,10 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
-
     GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
     // boundingbox an array of double values (length 4) which describes the bounding box
     // <code>[xMin, xMax, yMin, yMax]</code>
-    IAST graphicsPrimitives = listPlot(ast, graphicsOptions, engine);
+    IAST graphicsPrimitives = listPlot(ast, options, graphicsOptions, engine);
     if (graphicsPrimitives.isPresent()) {
       graphicsOptions.addPadding();
       IAST listOfOptions = F.List(F.Rule(S.Axes, S.True), //
@@ -76,16 +209,18 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
    * @param colour
    * @return
    */
-  protected static IAST plot(IAST plot, GraphicsOptions graphicsOptions, EvalEngine engine) {
+  protected static IAST plot(IAST plot, IExpr[] options, GraphicsOptions graphicsOptions,
+      EvalEngine engine) {
     if (plot.size() < 2) {
       return F.NIL;
     }
-    final OptionArgs options = new OptionArgs(plot.topHead(), plot, 3, engine, true);
-    if (options.isTrue(S.Joined)) {
-      graphicsOptions.setJoined(true);
-    }
-    graphicsOptions.setOptions(options);
-    graphicsOptions.setScalingFunctions();
+    ECharts.setGraphicOptions(graphicsOptions, plot, 3, options, engine);
+    // final OptionArgs optionArgs = new OptionArgs(plot.topHead(), plot, 3, engine, true);
+    // if (options[ECharts.X_JOINED].isTrue()) {
+    // graphicsOptions.setJoined(true);
+    // }
+    // graphicsOptions.setOptions(optionArgs);
+    // graphicsOptions.setScalingFunctions(options);
 
     IExpr arg1 = plot.arg1();
     if (!arg1.isList()) {
@@ -118,21 +253,23 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
   /**
    * 
    * @param plot
+   * @param options TODO
    * @param graphicsOptions TODO
    * @param engine
    * @param colour
    * @return
    */
-  protected static IAST listPlot(IAST plot, GraphicsOptions graphicsOptions, EvalEngine engine) {
+  protected static IAST listPlot(IAST plot, IExpr[] options, GraphicsOptions graphicsOptions,
+      EvalEngine engine) {
     if (plot.size() < 2) {
       return F.NIL;
     }
-    final OptionArgs options = new OptionArgs(plot.topHead(), plot, 2, engine, true);
-    if (options.isTrue(S.Joined)) {
+    final OptionArgs optionArgs = new OptionArgs(plot.topHead(), plot, 2, engine, true);
+    if (options[ECharts.X_JOINED].isTrue()) {
       graphicsOptions.setJoined(true);
     }
-    graphicsOptions.setOptions(options);
-    graphicsOptions.setScalingFunctions();
+    graphicsOptions.setOptions(optionArgs);
+    graphicsOptions.setScalingFunctions(options);
 
     IExpr arg1 = plot.arg1();
     if (!arg1.isList()) {
@@ -309,7 +446,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     // }
   }
 
-  private static IAST getPoint2D(IExpr arg) {
+  protected static IAST getPoint2D(IExpr arg) {
     if (arg.isList2()) {
       return (IAST) arg;
     }
@@ -322,7 +459,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     return F.NIL;
   }
 
-  private static IExpr getPointY(IExpr arg) {
+  protected static IExpr getPointY(IExpr arg) {
     if (arg.isASTSizeGE(S.Style, 1) //
         || arg.isASTSizeGE(S.Labeled, 1)) {
       return arg.first();
@@ -461,7 +598,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     return false;
   }
 
-  private static boolean addIndexedYPoint(IASTAppendable pointPrimitives,
+  protected static boolean addIndexedYPoint(IASTAppendable pointPrimitives,
       IASTAppendable textPrimitives, double[] boundingbox, EvalEngine engine, IExpr xScaled,
       IExpr yScaled, IExpr currentYPrimitive) {
     IReal y = yScaled.evalReal();
@@ -489,7 +626,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     return isNonReal(lastPointX) || isNonReal(lastPointY);
   }
 
-  private static boolean xBoundingBox(double[] boundingbox, IExpr xExpr, EvalEngine engine) {
+  protected static boolean xBoundingBox(double[] boundingbox, IExpr xExpr, EvalEngine engine) {
     try {
       double xValue = engine.evalDouble(xExpr);
       if (Double.isFinite(xValue)) {
@@ -507,7 +644,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     return false;
   }
 
-  private static boolean yBoundingBox(double[] boundingbox, IExpr yExpr, EvalEngine engine) {
+  protected static boolean yBoundingBox(double[] boundingbox, IExpr yExpr, EvalEngine engine) {
     try {
       double yValue = engine.evalDouble(yExpr);
       if (Double.isFinite(yValue)) {
@@ -545,8 +682,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       }
     } else {
       if (arg1.isList()) {
-        IAST list = getPoint2D(arg1);
-        return pointsOfMatrix(list, minMax);
+        // IAST list = getPoint2D(arg1);
+        return pointsOfMatrix((IAST) arg1, minMax);
       }
     }
     return null;
@@ -638,9 +775,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    IBuiltInSymbol[] optionKeys =
-        new IBuiltInSymbol[] {S.JSForm, S.Filling, S.Axes, S.PlotRange, S.$Scaling};
-    IExpr[] optionValues = new IExpr[] {S.False, S.None, S.True, S.Automatic, S.Automatic};
-    setOptions(newSymbol, optionKeys, optionValues);
+    setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(),
+        GraphicsOptions.listPlotDefaultOptionValues(false));
   }
 }

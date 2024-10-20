@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.PiecewiseFunctions;
 import org.matheclipse.core.eval.Errors;
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -17,6 +15,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.Precedence;
@@ -375,12 +374,15 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
   }
 
   @Override
-  public void convertAST(final StringBuilder buf, final IAST function, boolean eval) {
+  public void convertAST(final StringBuilder buf, final IAST function, final int precedence,
+      boolean eval) {
     if (eval && function.isNumericFunction(true)) {
       try {
-        double value = EvalEngine.get().evalDouble(function);
-        buf.append("(" + value + ")");
-        return;
+        INumber value = function.evalNumber();
+        if (value != null) {
+          convertNumber(buf, value, precedence, NO_PLUS_CALL);
+          return;
+        }
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         //
@@ -780,7 +782,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
       final StringBuilder buf, final int precedence, ISymbol head) {
     if (!super.convertOperator(operator, list, buf, precedence, head)) {
       if (javascriptFlavor == USE_MATHCELL) {
-        convertAST(buf, list, true);
+        convertAST(buf, list, precedence, true);
         return true;
       }
       return false;

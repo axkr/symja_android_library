@@ -248,6 +248,13 @@ public class JSONBuilder {
         + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
   }
 
+  public static String[] createJEChartsIFrame(String html, String manipulateStr) {
+    html = JSBuilder.buildECharts(html, manipulateStr);
+    html = StringEscapeUtils.escapeHtml4(html);
+    return createJSONJavaScript("<iframe srcdoc=\"" + html
+        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
+  }
+
   public static String[] createGraphics2DIFrame(String html, String manipulateStr) {
     html = JSBuilder.buildGraphics2D(html, manipulateStr);
     html = StringEscapeUtils.escapeHtml4(html);
@@ -264,6 +271,13 @@ public class JSONBuilder {
 
   public static String[] createMathcellIFrame(String html, String manipulateStr) {
     html = JSBuilder.buildMathcell(html, manipulateStr);
+    html = StringEscapeUtils.escapeHtml4(html);
+    return createJSONJavaScript("<iframe srcdoc=\"" + html
+        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
+  }
+
+  public static String[] createEChartsIFrame(String html, String manipulateStr) {
+    html = JSBuilder.buildECharts(html, manipulateStr);
     html = StringEscapeUtils.escapeHtml4(html);
     return createJSONJavaScript("<iframe srcdoc=\"" + html
         + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");

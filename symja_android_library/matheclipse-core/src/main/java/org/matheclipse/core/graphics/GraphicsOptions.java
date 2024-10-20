@@ -2,8 +2,6 @@ package org.matheclipse.core.graphics;
 
 import java.util.Locale;
 import java.util.function.Function;
-
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.RGBColor;
@@ -14,6 +12,7 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -332,6 +331,14 @@ public class GraphicsOptions {
    */
   boolean joined = false;
 
+  IExpr axes = S.False;
+
+  IExpr axesLabel = S.None;
+
+  IExpr plotLabel = S.None;
+
+  IExpr plotLegends = S.None;
+
   double[] boundingbox =
       new double[] {Double.MAX_VALUE, Double.MIN_VALUE, Double.MAX_VALUE, Double.MIN_VALUE};
 
@@ -601,6 +608,22 @@ public class GraphicsOptions {
     return options;
   }
 
+  public IExpr axes() {
+    return axes;
+  }
+
+  public IExpr axesLabel() {
+    return axesLabel;
+  }
+
+  public IExpr plotLabel() {
+    return plotLabel;
+  }
+
+  public IExpr plotLegends() {
+    return plotLegends;
+  }
+
   /**
    * Return <code>PlotRange</code> (extent) option rule.
    * 
@@ -645,6 +668,14 @@ public class GraphicsOptions {
       }
     }
     return pointSize;
+  }
+
+  public void setAxes(IExpr axes) {
+    this.axes = axes;
+  }
+
+  public void setAxesLabel(IExpr axesLabel) {
+    this.axesLabel = axesLabel;
   }
 
   public void setBoundingBox(double[] boundingbox) {
@@ -751,6 +782,14 @@ public class GraphicsOptions {
     this.options = options;
   }
 
+  public void setPlotLabel(IExpr plotLabel) {
+    this.plotLabel = plotLabel;
+  }
+
+  public void setPlotLegends(IExpr plotLegends) {
+    this.plotLegends = plotLegends;
+  }
+
   public void setPointSize(double pointSize) {
     this.pointSize = pointSize;
   }
@@ -779,9 +818,10 @@ public class GraphicsOptions {
     rgbColor = F.RGBColor(0.0, 0.0, 0.0);
   }
 
-  public void setScalingFunctions() {
-    OptionArgs options = options();
-    IExpr scalingFunctions = options.getOption(S.$Scaling);
+  public void setScalingFunctions(IExpr[] options) {
+    // OptionArgs options = options();
+    // IExpr scalingFunctions = options.getOption(S.$Scaling);
+    IExpr scalingFunctions = options[ECharts.X_$SCALING];
     if (scalingFunctions.isPresent()) {
       if (scalingFunctions.isList1()) {
         setXFunction(getScaling(scalingFunctions.first()));
@@ -837,5 +877,19 @@ public class GraphicsOptions {
 
   public String yScale() {
     return yScale;
+  }
+
+  public static IBuiltInSymbol[] listPlotDefaultOptionKeys() {
+    return new IBuiltInSymbol[] {//
+        S.JSForm, S.Filling, S.Axes, S.PlotRange, S.$Scaling, //
+        S.Joined, //
+        S.PlotLegends, S.PlotLabel, S.AxesLabel};
+  }
+
+  public static IExpr[] listPlotDefaultOptionValues(boolean joined) {
+    return new IExpr[] {//
+        S.False, S.None, S.True, S.Automatic, S.Automatic, //
+        joined ? S.True : S.False, //
+        S.None, S.None, S.None};
   }
 }
