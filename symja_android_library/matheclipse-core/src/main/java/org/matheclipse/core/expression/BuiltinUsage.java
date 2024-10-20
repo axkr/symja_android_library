@@ -59,6 +59,7 @@ public class BuiltinUsage {
     USAGE[ID.BaseForm] = "print with all numbers given in a base";
     USAGE[ID.BaseDecode] = "decode a base64 string";
     USAGE[ID.BaseEncode] = "encode an element as a base64 string";
+    USAGE[ID.BellB] = "Bell numbers";
     USAGE[ID.BernoulliB] = "Bernoulli number and polynomial";
     USAGE[ID.Beta] = "Euler's Beta function";
     USAGE[ID.Boole] = "translate 'True' to 1, and 'False' to 0";
@@ -168,6 +169,7 @@ public class BuiltinUsage {
     USAGE[ID.Equivalent] = "logic equivalence";
     USAGE[ID.Erf] = "error function";
     USAGE[ID.Erfc] = "complementary error function";
+    USAGE[ID.EulerE] = "Euler numbers";
     USAGE[ID.EulerGamma] = "Euler's constant γ≃0.5772";
     USAGE[ID.EulerPhi] = "Euler totient function";
     USAGE[ID.Evaluate] =
@@ -194,6 +196,7 @@ public class BuiltinUsage {
     USAGE[ID.FactorTermsList] = "a polynomial as a list of factors";
     // USAGE[ID.Failure] = "a failure at the level of the interpreter";
     USAGE[ID.False] = "boolean constant for False";
+    USAGE[ID.Fibonacci] = "Fibonacci's numbers";
     USAGE[ID.FileFormat] = "determine the file format of a file";
     USAGE[ID.FindMaximum] = "local maximum optimization";
     USAGE[ID.FindMinimum] = "local minimum optimization";
@@ -215,6 +218,8 @@ public class BuiltinUsage {
     USAGE[ID.FreeQ] = "test whether an expression is free of subexpressions matching a pattern";
     USAGE[ID.FresnelC] = "Fresnel's integral C";
     USAGE[ID.FresnelC] = "Fresnel's integral S";
+
+    USAGE[ID.FractionalPart] = "fractional part of a number";
     USAGE[ID.FromCharacterCode] = "convert from a list of character codes to a string";
     USAGE[ID.FromContinuedFraction] =
         "reconstructs a number from its continued fraction representation";
@@ -247,7 +252,7 @@ public class BuiltinUsage {
     USAGE[ID.HoldPattern] = "took the expression as a literal pattern";
     USAGE[ID.HoldRest] =
         "attribute specifying that all but the first argument should be left unevaluated";
-
+    USAGE[ID.HypergeometricU] = "Tricomi confluent hypergeometric function";
     USAGE[ID.Increment] =
         "increases the value by one and assigns that returning the original value";
     USAGE[ID.Indeterminate] = "indeterminate value";
@@ -269,6 +274,8 @@ public class BuiltinUsage {
     USAGE[ID.InputForm] = "plain-text input format";
     USAGE[ID.Insert] = "insert an element at a given position";
     USAGE[ID.Integer] = "head for integer numbers";
+    USAGE[ID.IntegerPart] = "integer part of a number";
+    USAGE[ID.IntegerPartitions] = "list integer partitions";
     USAGE[ID.IntegerQ] = "test whether an expression is an integer";
     USAGE[ID.Integers] = "the domain of Integer numbers";
     USAGE[ID.Integrate] = "indefinite or definite integral of a function";
@@ -283,6 +290,7 @@ public class BuiltinUsage {
 
     USAGE[ID.JaccardDissimilarity] = "Jaccard dissimilarity";
     // USAGE[ID.JacobiP] = "Jacobi's polynomials";
+    USAGE[ID.JacobiSymbol] = "Jacobi symbol";
     USAGE[ID.JavaForm] = "translate expressions as Java source code";
     USAGE[ID.Join] = "join lists together at any level";
 
@@ -291,6 +299,7 @@ public class BuiltinUsage {
     USAGE[ID.Khinchin] = "Khinchin's constant K≃2.6854";
     // USAGE[ID.KnownUnitQ] = "tests whether its argument is a canonical unit.";
     USAGE[ID.KroneckerProduct] = "Kronecker product";
+    USAGE[ID.KroneckerSymbol] = "Kronecker symbol";
     USAGE[ID.Kurtosis] = "kurtosis coefficient";
 
     USAGE[ID.LaguerreL] = "Laguerre's polynomials";
@@ -324,11 +333,13 @@ public class BuiltinUsage {
     USAGE[ID.Lookup] =
         "perform lookup of a value by key, returning a specified default if it is not found";
     USAGE[ID.LowerCaseQ] = "test wether all the characters are lower-case letters";
+    USAGE[ID.LucasL] = "Lucas number";
 
     USAGE[ID.MachineNumberQ] = "test if expression is a machine precision real or complex number";
     USAGE[ID.MantissaExponent] = "decomposes numbers as mantissa and exponent";
     USAGE[ID.Map] = "map a function over a list, at specified levels";
     USAGE[ID.MapAt] = "map a function at particular positions";
+    USAGE[ID.MapApply] = "apply a function to a list, at the top level";
     USAGE[ID.MapIndexed] = "map a function, including index information";
     USAGE[ID.MapThread] = "map a function across corresponding elements in multiple lists";
     USAGE[ID.MatchingDissimilarity] = "simple matching dissimilarity";
@@ -355,6 +366,7 @@ public class BuiltinUsage {
     USAGE[ID.Missing] = "default value if a key is not found";
     USAGE[ID.Mod] = "the remainder in an integer division";
     USAGE[ID.ModularInverse] = "returns the modular inverse k^(-1) MOD n";
+    USAGE[ID.MoebiusMu] = "Mobius function";
     USAGE[ID.Most] = "remove the last element";
     USAGE[ID.Multinomial] = "multinomial coefficients";
 
@@ -384,6 +396,7 @@ public class BuiltinUsage {
     USAGE[ID.NotListQ] = "test if an expression is not a list";
     USAGE[ID.Null] = "implicit result for expressions that do not yield a result";
     USAGE[ID.NullSpace] = "generator for the null space of a matrix";
+    // USAGE[ID.NumberDigits] = "digits of a real number";
     USAGE[ID.NumberLinePlot] = "plot along a number line";
     USAGE[ID.NumberQ] = "test whether an expression is a number";
     USAGE[ID.NumberString] = "characters in string representation of a number";
@@ -427,6 +440,8 @@ public class BuiltinUsage {
     USAGE[ID.Pochhammer] = "Pochhammer's symbols";
     USAGE[ID.PolarPlot] = "draw a polar plot";
     USAGE[ID.PolyGamma] = "polygamma function";
+    USAGE[ID.PolyLog] = "polylogarithm function";
+    USAGE[ID.PolygonalNumber] = "polygonal number";
     USAGE[ID.PolynomialQ] = "test if the expression is a polynomial in a variable";
     USAGE[ID.PossibleZeroQ] = "test whether an expression is estimated to be zero";
     USAGE[ID.Position] = "positions of matching elements";
@@ -435,6 +450,7 @@ public class BuiltinUsage {
     USAGE[ID.Power] = "exponentiate";
     USAGE[ID.PowerExpand] = "expand out powers";
     USAGE[ID.PowerMod] = "modular powers and roots";
+    USAGE[ID.PowersRepresentations] = "represent a number as a sum of powers";
     USAGE[ID.PreDecrement] = "decrease the value by one and assigns that returning the new value";
     USAGE[ID.Prefix] = "prefix form";
     USAGE[ID.PreIncrement] = "increase the value by one and assigns that returning the new value";
@@ -481,6 +497,7 @@ public class BuiltinUsage {
     USAGE[ID.Re] = "returns the real component of the complex number $z$";
     USAGE[ID.ReadProtected] = "attribute of symbols with hidden definitions";
     USAGE[ID.RealAbs] = "real absolute value";
+    USAGE[ID.RealDigits] = "digits of a real number";
     USAGE[ID.Reals] = "the domain of the Real numbers";
     USAGE[ID.RealSign] = "real sign";
     USAGE[ID.Reap] = "create lists of elements \"sown\" inside programs";
@@ -518,6 +535,7 @@ public class BuiltinUsage {
     USAGE[ID.SequenceHold] =
         "attribute that prevents 'Sequence' objects from being spliced into a function's arguments.";
     USAGE[ID.Series] = "power series and asymptotic expansions";
+    USAGE[ID.SeriesCoefficient] = "power series coefficient";
     USAGE[ID.SeriesData] = "power series of a variable about a point";
     USAGE[ID.SetAttributes] = "set attributes for a symbol";
     USAGE[ID.Set] = "assign a value";
@@ -566,6 +584,7 @@ public class BuiltinUsage {
     USAGE[ID.StringSplit] = "split strings at whitespace, or at a pattern";
     USAGE[ID.StringTake] = "sub-string from a range of positions";
     USAGE[ID.StringTrim] = "trim whitespace etc. from strings";
+    USAGE[ID.Subfactorial] = "subfactorial";
     USAGE[ID.Subscript] = "format an expression with a subscript";
     USAGE[ID.SubsetQ] = "test if a list is a subset of another list";
     USAGE[ID.Subsets] = "list all the subsets";

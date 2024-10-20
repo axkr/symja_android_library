@@ -99,6 +99,31 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
+  static class Im extends B1 {
+    public Im() {
+      super();
+    }
+
+    Im(IExpr arg1) {
+      super(arg1);
+    }
+
+    @Override
+    public final IBuiltInSymbol head() {
+      return S.Im;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.Im;
+    }
+
+    @Override
+    public IASTMutable copy() {
+      return new Im(arg1);
+    }
+  }
+
   static class Line extends B1 {
     public Line() {
       super();
@@ -257,6 +282,31 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public IASTMutable copy() {
       return new Point(arg1);
+    }
+  }
+
+  static class Re extends B1 {
+    public Re() {
+      super();
+    }
+
+    Re(IExpr arg1) {
+      super(arg1);
+    }
+
+    @Override
+    public final IBuiltInSymbol head() {
+      return S.Re;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.Re;
+    }
+
+    @Override
+    public IASTMutable copy() {
+      return new Re(arg1);
     }
   }
 

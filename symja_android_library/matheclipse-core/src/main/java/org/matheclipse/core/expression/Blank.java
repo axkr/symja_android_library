@@ -29,8 +29,10 @@ public class Blank implements IPattern {
   /** */
   private static final long serialVersionUID = 1306007999071682207L;
 
+  private static final Blank BLANK_PATTERN = new Blank();
+
   public static IPattern valueOf() {
-    return new Blank(); // NULL_PATTERN;
+    return BLANK_PATTERN;
   }
 
   public static IPattern valueOf(final IExpr condition) {

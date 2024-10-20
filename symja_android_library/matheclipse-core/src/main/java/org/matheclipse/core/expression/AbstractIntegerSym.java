@@ -801,6 +801,26 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     if (isZero()) {
       return F.C0;
     }
+    if (b.isProbablePrime()) {
+      IInteger mod = mod(b);
+      if (mod.isZero()) {
+        return F.C0;
+      }
+      // PowerMod(a, (b - 1)/2, b) == 1
+
+      // (b - 1) / 2
+      IInteger quotient = b.subtract(F.C1).quotient(F.C2);
+      IInteger modPow = modPow(quotient, b);
+      if (modPow.isOne()) {
+        return F.C1;
+      }
+      return F.CN1;
+
+    }
+    if (b.isOne()) {
+      return F.C1;
+    }
+
     if (equals(F.C2)) {
       return b.jacobiSymbolF();
     }

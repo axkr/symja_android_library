@@ -47,6 +47,7 @@ import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
+@Deprecated // This class is not really usable at the moment. It is kept for future improvements.
 public class KryoUtil {
   /** The list of all the WXF tokens. */
   private static class WXF_CONSTANTS {
@@ -336,6 +337,8 @@ public class KryoUtil {
     kryo.register(Trie.class);
     kryo.register(java.util.ArrayList.class);
     kryo.register(java.util.HashMap.class);
+    kryo.register(java.util.TreeMap.class);
+    kryo.register(org.matheclipse.core.eval.util.OpenIntToIExprHashMap.class);
     kryo.register(it.unimi.dsi.fastutil.ints.IntArrayList.class);
     kryo.register(org.matheclipse.core.patternmatching.RulesData.class);
     kryo.register(org.matheclipse.core.patternmatching.PatternMatcherEquals.class);
@@ -379,6 +382,7 @@ public class KryoUtil {
 
     kryo.register(B1.Cos.class);
     kryo.register(B1.Csc.class);
+    kryo.register(B1.Im.class);
     kryo.register(B1.IntegerQ.class);
     kryo.register(B1.Line.class);
     kryo.register(B1.List.class);
@@ -386,8 +390,10 @@ public class KryoUtil {
     kryo.register(B1.Missing.class);
     kryo.register(B1.Not.class);
     kryo.register(B1.Point.class);
+    kryo.register(B1.Re.class);
     kryo.register(B1.Return.class);
     kryo.register(B1.Sin.class);
+    kryo.register(B1.Slot.class);
     kryo.register(B1.Tan.class);
     kryo.register(B1.Throw.class);
 

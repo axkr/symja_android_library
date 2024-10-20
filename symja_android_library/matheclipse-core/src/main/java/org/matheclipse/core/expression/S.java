@@ -431,6 +431,8 @@ public class S {
 
   public final static IBuiltInSymbol AngerJ = S.initFinalSymbol("AngerJ", ID.AngerJ);
 
+  public final static IBuiltInSymbol AnglePath = S.initFinalSymbol("AnglePath", ID.AnglePath);
+
   /**
    * AngleVector(phi) - returns the point at angle `phi` on the unit circle.
    * 
@@ -3613,6 +3615,9 @@ public class S {
 
   public final static IBuiltInSymbol FileHash = S.initFinalSymbol("FileHash", ID.FileHash);
 
+  public final static IBuiltInSymbol FileNameDrop =
+      S.initFinalSymbol("FileNameDrop", ID.FileNameDrop);
+
   public final static IBuiltInSymbol FileNameJoin =
       S.initFinalSymbol("FileNameJoin", ID.FileNameJoin);
 
@@ -5841,6 +5846,9 @@ public class S {
   public final static IBuiltInSymbol KroneckerProduct =
       S.initFinalSymbol("KroneckerProduct", ID.KroneckerProduct);
 
+  public final static IBuiltInSymbol KroneckerSymbol =
+      S.initFinalSymbol("KroneckerSymbol", ID.KroneckerSymbol);
+
   /**
    * Kurtosis(list) - gives the Pearson measure of kurtosis for `list` (a measure of existing
    * outliers).
@@ -6291,6 +6299,10 @@ public class S {
   public final static IBuiltInSymbol ListStreamPlot =
       S.initFinalSymbol("ListStreamPlot", ID.ListStreamPlot);
 
+  public final static IBuiltInSymbol ListStepPlot =
+      S.initFinalSymbol("ListStepPlot", ID.ListStepPlot);
+
+
   public final static IBuiltInSymbol ListVectorPlot =
       S.initFinalSymbol("ListVectorPlot", ID.ListVectorPlot);
 
@@ -6507,6 +6519,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Map = S.initFinalSymbol("Map", ID.Map);
+
+  public final static IBuiltInSymbol MapApply = S.initFinalSymbol("MapApply", ID.MapApply);
 
   public final static IBuiltInSymbol MapAll = S.initFinalSymbol("MapAll", ID.MapAll);
 
@@ -7382,6 +7396,8 @@ public class S {
    */
   public final static IBuiltInSymbol NumberQ = S.initFinalSymbol("NumberQ", ID.NumberQ);
 
+  public final static IBuiltInSymbol NumberDigit = S.initFinalSymbol("NumberDigit", ID.NumberDigit);
+
   /**
    * NumberString - represents the characters in a number.
    * 
@@ -8042,6 +8058,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Plot3D = S.initFinalSymbol("Plot3D", ID.Plot3D);
+
+  public final static IBuiltInSymbol PlotLabel = S.initFinalSymbol("PlotLabel", ID.PlotLabel);
 
   public final static IBuiltInSymbol PlotLegends = S.initFinalSymbol("PlotLegends", ID.PlotLegends);
 
@@ -9027,6 +9045,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Reverse = S.initFinalSymbol("Reverse", ID.Reverse);
+
+  public final static IBuiltInSymbol ReverseSort = S.initFinalSymbol("ReverseSort", ID.ReverseSort);
 
   public final static IBuiltInSymbol RGBColor = S.initFinalSymbol("RGBColor", ID.RGBColor);
 

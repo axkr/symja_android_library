@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.NotThreadSafe;
 import org.apfloat.ApfloatInterruptedException;
 import org.hipparchus.complex.Complex;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ContinueException;

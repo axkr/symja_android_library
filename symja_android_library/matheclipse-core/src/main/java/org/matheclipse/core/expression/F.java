@@ -1123,11 +1123,15 @@ public class F extends S {
     UNARY_INVERSE_FUNCTIONS.put(ArcSinh, Sinh);
     UNARY_INVERSE_FUNCTIONS.put(ArcTanh, Tanh);
     UNARY_INVERSE_FUNCTIONS.put(Log, Exp);
+    UNARY_INVERSE_FUNCTIONS.put(Log2, F.Function(F.Power(F.C2, F.Slot1)));
+    UNARY_INVERSE_FUNCTIONS.put(Log10, F.Function(F.Power(F.C10, F.Slot1)));
     UNARY_INVERSE_FUNCTIONS.put(Identity, Identity);
 
     UNARY_INVERSE_FUNCTIONS.put(Conjugate, Conjugate);
     UNARY_INVERSE_FUNCTIONS.put(Erf, InverseErf);
     UNARY_INVERSE_FUNCTIONS.put(Erfc, InverseErfc);
+    UNARY_INVERSE_FUNCTIONS.put(Erfi,
+        F.Function(F.Times(F.CNI, F.InverseErf(F.Times(F.CI, F.Slot1)))));
 
     UNARY_INVERSE_FUNCTIONS.put(Haversine, InverseHaversine);
     UNARY_INVERSE_FUNCTIONS.put(InverseHaversine, Haversine);
@@ -1745,14 +1749,6 @@ public class F extends S {
     return function(And, expr);
   }
 
-  public static IAST AngerJ(final IExpr v, final IExpr z) {
-    return new AST2(AngerJ, v, z);
-  }
-
-  public static IAST AngerJ(final IExpr v, final IExpr m, final IExpr z) {
-    return new AST3(AngerJ, v, m, z);
-  }
-
   /**
    * <code>expr1 && expr2</code> evaluates each expression in turn, returning {@link S#False} as
    * soon as an expression evaluates to {@link S#False}. If all expressions evaluate to
@@ -1786,6 +1782,14 @@ public class F extends S {
    */
   public static IAST And(final IExpr expr1, final IExpr expr2, final IExpr expr3) {
     return new B3.And(expr1, expr2, expr3);
+  }
+
+  public static IAST AngerJ(final IExpr v, final IExpr z) {
+    return new AST2(AngerJ, v, z);
+  }
+
+  public static IAST AngerJ(final IExpr v, final IExpr m, final IExpr z) {
+    return new AST3(AngerJ, v, m, z);
   }
 
   public static IAST AngleVector(final IExpr a0) {
@@ -1829,19 +1833,12 @@ public class F extends S {
     return new AST2(Apply, a0, a1);
   }
 
-  public static IASTMutable ApplySides(final IExpr a0, final IExpr equationOrInequality) {
-    return new AST2(ApplySides, a0, equationOrInequality);
+  public static IASTMutable Apply(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(Apply, a0, a1, a2);
   }
 
-  /**
-   * Operator <code>@@@</code>
-   *
-   * @param a0
-   * @param a1
-   * @return
-   */
-  public static IASTMutable ApplyListC1(final IExpr a0, final IExpr a1) {
-    return new AST3(Apply, a0, a1, CListC1);
+  public static IASTMutable ApplySides(final IExpr a0, final IExpr equationOrInequality) {
+    return new AST2(ApplySides, a0, equationOrInequality);
   }
 
   public static IAST AiryAi(final IExpr a0) {
@@ -5122,7 +5119,7 @@ public class F extends S {
     if (a0 != null && a0.isNumber()) {
       return ((INumber) a0).im();
     }
-    return new AST1(Im, a0);
+    return new B1.Im(a0);
   }
 
   public static IAST Implies(final IExpr a0, final IExpr a1) {
@@ -5311,6 +5308,10 @@ public class F extends S {
 
   public static IAST IntegerPart(final IExpr a0) {
     return new AST1(IntegerPart, a0);
+  }
+
+  public static IAST IntegerPartitions(final IExpr n, final IExpr k, final IExpr p) {
+    return new AST3(IntegerPartitions, n, k, p);
   }
 
   public static IAST IntegerName(final IExpr a0) {
@@ -6019,6 +6020,10 @@ public class F extends S {
     return new AST2(JacobiSN, a0, a1);
   }
 
+  public static IAST JacobiSymbol(final IExpr a0, final IExpr a1) {
+    return new AST2(JacobiSymbol, a0, a1);
+  }
+
   public static IAST JavaForm(final IExpr a0, final IExpr a1) {
     return new AST2(JavaForm, a0, a1);
   }
@@ -6049,6 +6054,10 @@ public class F extends S {
 
   public static IAST KroneckerDelta(final IExpr a0, final IExpr a1) {
     return new AST2(KroneckerDelta, a0, a1);
+  }
+
+  public static IAST KroneckerSymbol(final IExpr a0, final IExpr a1) {
+    return new AST2(KroneckerSymbol, a0, a1);
   }
 
   public static IAST LaguerreL(final IExpr a0, final IExpr a1) {
@@ -7167,6 +7176,10 @@ public class F extends S {
 
   public static IAST Map(final IExpr f, final IExpr expr, final IExpr levelspec) {
     return new AST3(Map, f, expr, levelspec);
+  }
+
+  public static IASTMutable MapApply(final IExpr f, final IExpr expr) {
+    return new AST2(MapApply, f, expr);
   }
 
   public static IAST MapThread(final IExpr f, final IExpr expr) {
@@ -8603,7 +8616,7 @@ public class F extends S {
     if (a0 != null && a0.isNumber()) {
       return ((INumber) a0).re();
     }
-    return new AST1(Re, a0);
+    return new B1.Re(a0);
   }
 
   public static IAST RealAbs(final IExpr a) {
@@ -9643,6 +9656,20 @@ public class F extends S {
 
   public static IAST Subscript(final IExpr x, final IExpr y) {
     return new AST2(Subscript, x, y);
+  }
+
+  /**
+   * Substitute all (sub-) expressions <code>x</code> in <code>expr</code> with <code>y</code>. If
+   * no substitution matches, the method returns the given <code>expr</code>.
+   *
+   * @param expr the complete expresssion
+   * @param x the subexpression which should be replaced
+   * @param y the expression which replaces <code>x</code>
+   * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or
+   *         the substituted expression.
+   */
+  public static IExpr xreplace(final IExpr expr, final IExpr x, final IExpr y) {
+    return expr.xreplace(x, y);
   }
 
   /**
@@ -11121,7 +11148,7 @@ public class F extends S {
 
   private static String printJSFormData(IExpr expr) {
     IAST jsFormData = (IAST) expr;
-    if (jsFormData.arg2().toString().equals("mathcell")) {
+    if (jsFormData.arg2().toString().equals(JSBuilder.MATHCELL_STR)) {
       try {
         String manipulateStr = jsFormData.arg1().toString();
         String html = JSBuilder.buildMathcell(JSBuilder.MATHCELL_TEMPLATE, manipulateStr);
@@ -11139,16 +11166,16 @@ public class F extends S {
       // } catch (Exception ex) {
       // LOGGER.debug("F.printJSFormData() failed", ex);
       // }
-      // } else if (jsFormData.arg2().toString().equals("echarts")) {
-      // try {
-      // String manipulateStr = jsFormData.arg1().toString();
-      // String html = JSBuilder.buildECharts(JSBuilder.ECHARTS_TEMPLATE, manipulateStr);
-      // return openHTMLOnDesktop(html);
-      // } catch (Exception ex) {
-      // Errors.rethrowsInterruptException(ex);
-      // LOGGER.debug("F.printJSFormData() failed", ex);
-      // }
-    } else if (jsFormData.arg2().toString().equals("jsxgraph")) {
+    } else if (jsFormData.arg2().toString().equals(JSBuilder.ECHARTS_STR)) {
+      try {
+        String manipulateStr = jsFormData.arg1().toString();
+        String html = JSBuilder.buildECharts(JSBuilder.ECHARTS_TEMPLATE, manipulateStr);
+        return openHTMLOnDesktop(html);
+      } catch (Exception ex) {
+        Errors.rethrowsInterruptException(ex);
+        LOGGER.debug("F.printJSFormData() failed", ex);
+      }
+    } else if (jsFormData.arg2().toString().equals(JSBuilder.JSXGRAPH_STR)) {
       try {
         String manipulateStr = jsFormData.arg1().toString();
         String html = JSBuilder.buildJSXGraph(JSBuilder.JSXGRAPH_TEMPLATE, manipulateStr);
@@ -11157,7 +11184,7 @@ public class F extends S {
         Errors.rethrowsInterruptException(ex);
         LOGGER.debug("F.printJSFormData() failed", ex);
       }
-    } else if (jsFormData.arg2().toString().equals("mermaid")) {
+    } else if (jsFormData.arg2().toString().equals(JSBuilder.MERMAID_STR)) {
       try {
         String manipulateStr = jsFormData.arg1().toString();
         String html = JSBuilder.buildMermaid(JSBuilder.MERMAID_TEMPLATE, manipulateStr);
@@ -11166,7 +11193,7 @@ public class F extends S {
         Errors.rethrowsInterruptException(ex);
         LOGGER.debug("F.printJSFormData() failed", ex);
       }
-    } else if (jsFormData.arg2().toString().equals("plotly")) {
+    } else if (jsFormData.arg2().toString().equals(JSBuilder.PLOTLY_STR)) {
       try {
         String manipulateStr = jsFormData.arg1().toString();
         String html = JSBuilder.buildPlotly(JSBuilder.PLOTLY_TEMPLATE, manipulateStr);
@@ -11175,7 +11202,7 @@ public class F extends S {
         Errors.rethrowsInterruptException(ex);
         LOGGER.debug("F.printJSFormData() failed", ex);
       }
-    } else if (jsFormData.arg2().toString().equals("treeform")) {
+    } else if (jsFormData.arg2().toString().equals(JSBuilder.TREEFORM_STR)) {
       try {
         String manipulateStr = jsFormData.arg1().toString();
         String html = Config.VISJS_PAGE;
@@ -11195,7 +11222,7 @@ public class F extends S {
         Errors.rethrowsInterruptException(ex);
         LOGGER.debug("F.printJSFormData() failed", ex);
       }
-    } else if (jsFormData.arg2().toString().equals("traceform")) {
+    } else if (jsFormData.arg2().toString().equals(JSBuilder.TRACEFORM_STR)) {
       try {
         String jsStr = jsFormData.arg1().toString();
         String html = Config.TRACEFORM_PAGE;

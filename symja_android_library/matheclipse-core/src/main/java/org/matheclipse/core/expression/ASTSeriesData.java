@@ -220,8 +220,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     IExpr coeff0 = series2.coefficient(0);
     if (!coeff0.equals(x0)) {
       // `1`.
-      Errors.printMessage(S.SeriesData, "error", F.List("Constant" + coeff0 + "of series " + series2
-          + "unequals point " + x0 + " of series " + this));
+      Errors.printMessage(S.SeriesData, "error", F.List("Constant " + coeff0 + " of series "
+          + series2 + " unequals point " + x0 + " of series " + this));
       return null;
     }
     ASTSeriesData series =
