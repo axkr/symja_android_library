@@ -40,7 +40,6 @@ import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -64,6 +63,7 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -88,6 +88,7 @@ public class ExpTrigsFunctions {
   private static class Initializer {
 
     private static void init() {
+      S.AnglePath.setEvaluator(new AnglePath());
       S.AngleVector.setEvaluator(new AngleVector());
       S.ArcCos.setEvaluator(new ArcCos());
       S.ArcCosh.setEvaluator(new ArcCosh());
@@ -125,6 +126,109 @@ public class ExpTrigsFunctions {
       S.Sinh.setEvaluator(new Sinh());
       S.Tan.setEvaluator(new Tan());
       S.Tanh.setEvaluator(new Tanh());
+    }
+  }
+  private static final class AnglePath extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        IExpr arg1 = ast.arg1();
+        if (arg1.isList()) {
+          IAST list = (IAST) arg1;
+          if (!arg1.isListOfLists()) {
+            IASTMutable list2 = list.copyAppendable();
+            for (int i = 1; i < list.size(); i++) {
+              list2.set(i, F.list(F.C1, list.get(i)));
+            }
+            return anglePath(F.C0, F.C0, F.C0, list2);
+          } else if (list.forAll(e -> e.isList2())) {
+            return anglePath(F.C0, F.C0, F.C0, list);
+          }
+        }
+      } else if (ast.isAST2()) {
+        IExpr arg1 = ast.first();
+        IExpr arg2 = ast.arg2();
+        if (arg1.isList2()) {
+          if (arg1.first().isList2()) {
+            IAST list2 = (IAST) arg1.first();
+
+            IExpr x = list2.arg1();
+            IExpr y = list2.arg2();
+            IExpr t0 = arg1.second();
+            if (arg2.isList()) {
+              IAST list = (IAST) arg2;
+              if (!list.isListOfLists()) {
+                IASTMutable vector = list.copyAppendable();
+                for (int i = 1; i < list.size(); i++) {
+                  vector.set(i, F.list(F.C1, list.get(i)));
+                }
+                return anglePath(x, y, t0, vector);
+              } else if (list.forAll(e -> e.isList2())) {
+                return anglePath(x, y, t0, list);
+              }
+            }
+          }
+        }
+
+      }
+      return F.NIL;
+
+    }
+
+    /**
+     * <code>AnglePath({{x, y},t0}, {{r1,t1}, {r2, t2}, {r3, t3}, ..., {rn, tn}})</code>
+     * <p>
+     * Returns:
+     * <code>{{x, y}, {x + r1*Cos(t0 + t1), y + r1*Sin(t0 + t1)}, {x + r1*Cos(t0 + t1) + r2*Cos(t0 + t1 + t2), y + r1*Sin(t0 + t1) + r2*Sin(t0 + t1 + t2)},...}</code>
+     * 
+     * @param x
+     * @param y
+     * @param t0
+     * @param list
+     * @return
+     */
+    private static IExpr anglePath(IExpr x, IExpr y, IExpr t0, IAST list) {
+      // {{x, y}, {x + r1*Cos(t0 + t1), y + r1*Sin(t0 + t1)},
+      // {x + r1*Cos(t0 + t1) + r2*Cos(t0 + t1 + t2), y + r1*Sin(t0 + t1) +
+      // r2*Sin(t0 + t1 + t2)},...}
+
+      // IASTAppendable plusResultList2 = F.ListAlloc(list.size());
+      // IASTAppendable plusList = F.PlusAlloc(list.size());
+      // plusList.append(t0);
+      // // plusResultList.append(plusList.copy());
+      // for (int i = 1; i < list.size(); i++) {
+      // plusList.append(list.get(i).second());
+      // plusResultList.append(plusList.copy());
+      // }
+      IAST plusResultList = F.intSumList(i -> list.get(i).second(), t0, 1, list.size() - 1);
+
+      IASTAppendable resultList = F.ListAlloc(list.size());
+      resultList.append(F.List(x, y));
+      for (int i = 1; i < list.size(); i++) {
+        IASTAppendable plusCos = F.PlusAlloc(i);
+        IASTAppendable plusSin = F.PlusAlloc(i);
+        plusCos.append(x);
+        plusSin.append(y);
+        for (int j = 1; j <= i; j++) {
+          IExpr rj = list.get(j).first();
+          IExpr radian = ((IAST) plusResultList.get(j)).oneIdentity0();
+          plusCos.append(F.Times(rj, F.Cos(radian)));
+          plusSin.append(F.Times(rj, F.Sin(radian)));
+        }
+        resultList.append(F.List(plusCos, plusSin));
+      }
+      return resultList;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      // don't set NUMERICFUNCTION
     }
   }
 
@@ -905,8 +1009,7 @@ public class ExpTrigsFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" >
    * Inverse_trigonometric functions</a>
    */
-  private static final class ArcTan extends AbstractArg12 implements INumeric, IRewrite, IMatch
-  {
+  private static final class ArcTan extends AbstractArg12 implements INumeric, IRewrite, IMatch {
 
     @Override
     public IExpr match3(IAST ast, EvalEngine engine) {
@@ -2064,7 +2167,7 @@ public class ExpTrigsFunctions {
           IInexactNumber z = (IInexactNumber) ast.arg1();
           if (z.isNumber()) {
             IExpr result = z.exp();
-            if (result instanceof INumber && ((INumber) result).isInfinite()) {
+            if (result instanceof INumber && result.isInfinite()) {
               return F.Overflow();
             }
             return result;
