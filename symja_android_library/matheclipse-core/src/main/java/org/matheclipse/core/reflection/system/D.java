@@ -392,6 +392,18 @@ public class D extends AbstractFunctionEvaluator {
               // D(a_+b_+c_,x_) -> D(a,x)+D(b,x)+D(c,x)
               return fx.mapThread(F.D(F.Slot1, xList), 1);
             }
+            if (fx.isTimes()) {
+              IAST timesAST = (IAST) fx;
+              final IExpr v = x;
+              IASTAppendable[] filter = timesAST.filter(m -> m.isFree(v));
+              if (filter[0].size() > 0) {
+                return F.Times(filter[0], F.D(filter[1], xList));
+              }
+            }
+            if (fx.isPower() && fx.base().isE() && fx.exponent().equals(x)) {
+              // D(E^x, x) -> E^x
+              return F.Power(S.E, x);
+            }
             return F.NIL;
           }
           if (!x.isVariable()) {

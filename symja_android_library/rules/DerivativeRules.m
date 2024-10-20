@@ -24,7 +24,7 @@ Derivative(1)[Erfc] = (-2*E^(-#^(2))/Sqrt(Pi)) &,
 Derivative(1)[Erfi] = (2*E^(#^(2))/Sqrt(Pi)) &,
 Derivative(1)[ExpIntegralEi] = E^#/# &,
 Derivative(1)[Factorial] = Gamma(1+#)*PolyGamma(0,1+#) &,
-Derivative(1)[Factorial2] = 1/2*Factorial2(#1)*(Log(2)  + PolyGamma(0,1+#1/2) + 1/2*Pi*Log(2/Pi)*Sin(Pi*#1)) &,
+Derivative(1)[Factorial2] = 1/2*Factorial2(#)*(Log(2)  + PolyGamma(0,1+#/2) + 1/2*Pi*Log(2/Pi)*Sin(Pi*#)) &,
 Derivative(1)[Floor] = Piecewise({{0, #>Floor(#)}}, Indeterminate) &,
 Derivative(1)[FractionalPart] = 1 &,
 Derivative(1)[FresnelC] = Cos((Pi*#^2)/2) &,
@@ -46,10 +46,12 @@ Derivative(1)[InverseGudermannian] = Sec(#) &,
 Derivative(1)[KelvinBei] = ((2*KelvinBei(1, #) - 2*KelvinBer(1, #))/(2*Sqrt(2))) &,
 Derivative(1)[KelvinBer] = ((2*KelvinBei(1, #) + 2*KelvinBer(1, #))/(2*Sqrt(2))) &,
 Derivative(1)[Log] = #^(-1) &,
+Derivative(1)[Log10] = 1/(Log(10)*#) &,
+Derivative(1)[Log2] = 1/(Log(2)*#) &,
 Derivative(1)[LogGamma] = PolyGamma(0,#) &,
 Derivative(1)[LogisticSigmoid] = LogisticSigmoid(#)*(1-LogisticSigmoid(#)) &,
 Derivative(1)[PolyGamma] = PolyGamma(1,#) &, 
-Derivative(0,n_)[PolyGamma] := PolyGamma(n+#1, #2) &
+Derivative(0,n_)[PolyGamma] := PolyGamma(n+#, #2) &
     /; (IntegerQ(n) && n >= 0)||SymbolQ(n),
     
 Derivative(1)[ProductLog] = ProductLog(#)/((1 + ProductLog(#))*#) &,
@@ -86,6 +88,10 @@ Derivative(n_)[Cosh] := With({t=(-I)^n*Cos((n*Pi)/2 - I*#)}, t &
 Derivative(n_)[Sinh] := With({t=I*(-I)^n*Sin((n*Pi)/2 - I*#)}, t &
     /; (IntegerQ(n) && n >= 0)||SymbolQ(n)), 
     
+Derivative(n_)[LogisticSigmoid] := KroneckerDelta(n)*LogisticSigmoid(#)-(1-KroneckerDelta(n))*PolyLog(-n,-E^#) &
+    /; (IntegerQ(n) && n >= 0)||SymbolQ(n),
+Derivative(n_)[Exp] = E^# &,
+    
 Derivative(0,1)[BesselJ] = 1/2*(BesselJ(-1+#,#2)-BesselJ(1+#,#2)) &,
 Derivative(0,1)[BesselY] = 1/2*(BesselY(-1+#,#2)-BesselY(1+#,#2)) &,
 Derivative(0,1)[BesselI] = ((BesselI(-1+#, #2) + BesselI(1+#, #2))/2) &,
@@ -109,7 +115,7 @@ Derivative(1,0)[InverseErf] = E^(InverseErf[#,#2]^2-#^2)&,
 
 Derivative(0,1)[Gamma] = (-E^(-#2))*#2^(-1+#) &,
 Derivative(1,0)[Gamma] =  Gamma(#, #2)*Log(#2) + MeijerG({{}, {1, 1}}, {{0, 0, #}, {}}, #2) &,
-Derivative(1,0)[HarmonicNumber] = #2*(Zeta(#2+1) - HarmonicNumber(#1,#2+1)) &,
+Derivative(1,0)[HarmonicNumber] = #2*(Zeta(#2+1) - HarmonicNumber(#,#2+1)) &,
 Derivative(0,1)[HankelH1] = ((HankelH1(-1+#, #2) - HankelH1(1 + #, #2))/2) &,
 Derivative(0,1)[HankelH2] = ((HankelH2(-1+#, #2) - HankelH2(1 + #, #2))/2) &,
 

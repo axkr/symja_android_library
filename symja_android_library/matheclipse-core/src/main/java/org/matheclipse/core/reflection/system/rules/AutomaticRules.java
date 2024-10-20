@@ -67,7 +67,6 @@ public class AutomaticRules {
     rules = RGBColorRules.RULES;
     rules = SechRules.RULES;
     rules = SecRules.RULES;
-    rules = SeriesCoefficientRules.RULES;
     rules = SincRules.RULES;
     rules = SinhRules.RULES;
     rules = SinRules.RULES;

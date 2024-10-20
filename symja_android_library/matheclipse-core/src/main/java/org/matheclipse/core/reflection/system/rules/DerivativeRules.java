@@ -13,7 +13,7 @@ public class DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 129, 0 };
+  final public static int[] SIZES = { 132, 0 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -158,6 +158,12 @@ public class DerivativeRules {
     // Derivative(1)[Log]=1/#1&
     ISet($(Derivative(C1),Log),
       Function(Power(Slot1,CN1)), true),
+    // Derivative(1)[Log10]=1/(Log(10)*#1)&
+    ISet($(Derivative(C1),Log10),
+      Function(Power(Times(Log(C10),Slot1),CN1)), true),
+    // Derivative(1)[Log2]=1/(Log(2)*#1)&
+    ISet($(Derivative(C1),Log2),
+      Function(Power(Times(Log(C2),Slot1),CN1)), true),
     // Derivative(1)[LogGamma]=PolyGamma(0,#1)&
     ISet($(Derivative(C1),LogGamma),
       Function(PolyGamma(C0,Slot1)), true),
@@ -251,6 +257,12 @@ public class DerivativeRules {
     // Derivative(n_)[Sinh]:=With({t=I*-I^n*Sin(1/2*n*Pi-I*#1)},(t&)/;(IntegerQ(n)&&n>=0)||SymbolQ(n))
     ISetDelayed($(Derivative(n_),Sinh),
       With(list(Set(t,Times(CI,Power(CNI,n),Sin(Plus(Times(C1D2,n,Pi),Times(CNI,Slot1)))))),Condition(Function(t),Or(And(IntegerQ(n),GreaterEqual(n,C0)),SymbolQ(n))))),
+    // Derivative(n_)[LogisticSigmoid]:=(KroneckerDelta(n)*LogisticSigmoid(#1)-(1-KroneckerDelta(n))*PolyLog(-n,-E^#1)&)/;(IntegerQ(n)&&n>=0)||SymbolQ(n)
+    ISetDelayed($(Derivative(n_),LogisticSigmoid),
+      Condition(Function(Plus(Times(KroneckerDelta(n),LogisticSigmoid(Slot1)),Times(CN1,Subtract(C1,KroneckerDelta(n)),PolyLog(Negate(n),Negate(Exp(Slot1)))))),Or(And(IntegerQ(n),GreaterEqual(n,C0)),SymbolQ(n)))),
+    // Derivative(n_)[Exp]=E^#1&
+    ISet($(Derivative(n_),Exp),
+      Function(Exp(Slot1))),
     // Derivative(0,1)[BesselJ]=1/2*(BesselJ(-1+#1,#2)-BesselJ(1+#1,#2))&
     ISet($(Derivative(C0,C1),BesselJ),
       Function(Times(C1D2,Subtract(BesselJ(Plus(CN1,Slot1),Slot2),BesselJ(Plus(C1,Slot1),Slot2)))), true),

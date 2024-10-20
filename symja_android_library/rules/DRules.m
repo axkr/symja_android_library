@@ -122,13 +122,13 @@
     Sum((((-1)^k*k! * Pochhammer(2*k - n + 2, 2*(n - k) - 2))/ ((n - k - 1)! * (2*x)^(n - 2*k - 1)))*(1 + x^2)^(-k - 1), {k, 0, n - 1})
     /; (IntegerQ(n) && n >= 0)||FreeQ(n,_?NumberQ), 
 
-  D(Cot(x_), {x_, n_Integer}) := Cot(x)*KroneckerDelta(n) - Csc(x)^2*KroneckerDelta(n - 1) - 
+  D(Cot(x_), {x_, n_}) := Cot(x)*KroneckerDelta(n) - Csc(x)^2*KroneckerDelta(n - 1) - 
     n*Sum((((-1)^j*Binomial(n - 1, k))/(k + 1))*Sin(x)^(-2*k - 2)*2^(n - 2*k)*Binomial(2*k, j)*(k - j)^(n - 1)*Sin((n*Pi)/2 + 2*(k - j)*x), {k, 0, n - 1}, {j, 0, k - 1}) 
-      /; (IntegerQ(n) && n >= 0)||FreeQ(n,_?NumberQ), 
- 
-  D(Tan(x_), {x_, n_Integer}) := Tan(x)*KroneckerDelta(n) + Sec(x)^2* KroneckerDelta(n - 1) + 
+      /; !NumericQ(n), 
+  D(Tan(x_), {x_, n_}) := Tan(x)*KroneckerDelta(n) + Sec(x)^2* KroneckerDelta(n - 1) + 
     n*Sum((((-1)^k*Binomial(n - 1, k))/(k + 1))*Cos(x)^(-2*k - 2)*2^(n - 2*k)*Binomial(2*k, j)*(k - j)^(n - 1)*Sin((n*Pi)/2 + 2*(k - j)*x), {k, 0, n - 1}, {j, 0, k - 1})
-      /; (IntegerQ(n) && n >= 0)||FreeQ(n,_?NumberQ), 
+      /; !NumericQ(n), 
+      
   D(Log(x_), {x_, n_Integer}) := ((-1)^(n - 1)*(n - 1)!)/x^n
     /; (IntegerQ(n) && n >= 0)||FreeQ(n,_?NumberQ), 
 
