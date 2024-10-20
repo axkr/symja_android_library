@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 import org.hipparchus.linear.AnyMatrix;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
+import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Comparators;
@@ -364,8 +365,9 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * <p>
    * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not
    * copied). In contrast to the {@link #copyAppendable()} method, this method returns exactly the
-   * same type for <code>AST0, AST1, AST2, AST3</code> and tries to transform <code>AST</code>
-   * objects to <code>AST0, AST1, AST2, AST3</code> if possible.
+   * same type for <code>AST0, AST1, AST2, AST3, ASTRealVector, ASTRealMatrix</code> and tries to
+   * transform {@link IAST} objects to
+   * <code>AST0, AST1, AST2, AST3, ASTRealVector, ASTRealMatrix</code> if possible.
    * <p>
    * Because it's not allowed to set the header object (offset 0) to an arbitrary expression after a
    * <code>copy()</code>, this method should only be used if the arguments (offset 1..argSize)
@@ -380,8 +382,9 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * <p>
    * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not
    * copied). In contrast to the {@link #copy()} method, this method doesn't return exactly the same
-   * type for a given <code>AST0, AST1, AST2, AST3...</code> object but transforms it into a new
-   * <code>AST</code> object, so that additional arguments could be appended at the end.
+   * type for a given <code>AST0, AST1, AST2, AST3, ASTRealVector, ASTRealMatrix,...</code> object
+   * but transforms it into a new {@link AST} object, so that additional arguments could be appended
+   * at the end.
    * <p>
    * This also allows to set the header object to an arbitrary expression.
    *
@@ -404,7 +407,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
 
   /**
    * <p>
-   * Return a copy of the pure <code>IAST</code> instance (the elements themselves are not copied).
+   * Return a copy of the pure {@link IAST} instance (the elements themselves are not copied).
    * Additionally to the <code>copy()</code> method, if this is a {@link IAssociation} the values of
    * the rules are copied.
    * <p>

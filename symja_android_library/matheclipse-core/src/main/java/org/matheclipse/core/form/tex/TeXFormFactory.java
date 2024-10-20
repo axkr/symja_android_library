@@ -10,7 +10,6 @@ import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.Errors;
@@ -673,7 +672,7 @@ public class TeXFormFactory {
           } else {
             if (expr.isNumber() && (((INumber) expr).complexSign() < 0)) {
               buffer.append("-");
-              expr = ((INumber) expr).negate();
+              expr = expr.negate();
             } else if (expr.isASTSizeGE(S.Plus, 2)) {
               if (fPlusReversed) {
                 if (!expr.last().isNegativeSigned()) {

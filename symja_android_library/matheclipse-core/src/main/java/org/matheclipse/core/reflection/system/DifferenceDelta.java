@@ -66,7 +66,7 @@ public class DifferenceDelta extends AbstractCoreFunctionEvaluator {
             IASTAppendable result = F.PlusAlloc(n + 1);
 
             for (int i = 0; i <= n; i++) {
-              IExpr diffTerm = F.subs(arg1, symbolX, F.Plus(F.Times(F.ZZ(i), stepH), symbolX));
+              IExpr diffTerm = F.xreplace(arg1, symbolX, F.Plus(F.Times(F.ZZ(i), stepH), symbolX));
               result.append(F.Times(F.Power(F.CN1, n - i), F.Binomial(n, i), diffTerm));
             }
             return result;
@@ -75,7 +75,7 @@ public class DifferenceDelta extends AbstractCoreFunctionEvaluator {
       }
       return F.NIL;
     }
-    IExpr f2 = F.subs(arg1, arg2, F.Plus(F.C1, arg2));
+    IExpr f2 = F.xreplace(arg1, arg2, F.Plus(F.C1, arg2));
     return F.Subtract(f2, arg1);
   }
 

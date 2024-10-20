@@ -779,7 +779,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
      */
     private static IAST substituteConstantSymbolByValue(IExpr expr, IExpr constantSymbol,
         IExpr numericValue, IAST lastRuleUsedForVariableElimination, EvalEngine engine) {
-      IExpr numericResult = engine.evalN(F.subs(expr, constantSymbol, numericValue));
+      IExpr numericResult = engine.evalN(F.xreplace(expr, constantSymbol, numericValue));
       if (numericResult.isNumber()) {
         // Inverse functions are being used. Values may be lost for multivalued inverses.
         Errors.printMessage(S.Solve, "ifun", F.List());

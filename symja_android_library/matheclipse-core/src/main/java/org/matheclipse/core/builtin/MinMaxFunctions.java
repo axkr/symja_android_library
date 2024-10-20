@@ -1291,9 +1291,9 @@ public class MinMaxFunctions {
         if (candidates.isListOfLists()) {
           for (int i = 1; i < candidates.size(); i++) {
             IExpr candidate = ((IAST) candidates).get(i).first().second();
-            IExpr value = engine.evaluate(F.subs(second_derivative, x, candidate));
+            IExpr value = engine.evaluate(F.xreplace(second_derivative, x, candidate));
             if (value.isNegative()) {
-              IExpr functionValue = engine.evaluate(F.subs(function, x, candidate));
+              IExpr functionValue = engine.evaluate(F.xreplace(function, x, candidate));
               if (functionValue.greater(maxValue).isTrue()) {
                 // if (S.Greater.ofQ(functionValue, maxValue)) {
                 maxValue = functionValue;
@@ -1448,9 +1448,9 @@ public class MinMaxFunctions {
         if (candidates.isListOfLists()) {
           for (int i = 1; i < candidates.size(); i++) {
             IExpr candidate = ((IAST) candidates).get(i).first().second();
-            IExpr value = engine.evaluate(F.subs(second_derivative, x, candidate));
+            IExpr value = engine.evaluate(F.xreplace(second_derivative, x, candidate));
             if (value.isPositiveResult()) {
-              IExpr functionValue = engine.evaluate(F.subs(function, x, candidate));
+              IExpr functionValue = engine.evaluate(F.xreplace(function, x, candidate));
               if (S.Less.ofQ(functionValue, minValue)) {
                 minValue = functionValue;
                 minCandidate = candidate;

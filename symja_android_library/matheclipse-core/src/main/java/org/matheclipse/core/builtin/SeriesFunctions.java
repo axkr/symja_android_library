@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
@@ -32,9 +33,12 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.Matcher;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
+import org.matheclipse.core.reflection.system.rulesets.SeriesCoefficientRules;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import edu.jas.arith.BigRational;
 import edu.jas.poly.GenPolynomial;
@@ -807,9 +811,9 @@ public class SeriesFunctions {
                   && arg2Comparison.second().equals(limit)) {
                 tempComparison = ((IAST) arg2Comparison).setAtCopy(0, S.LessEqual);
               }
-              IExpr temp = engine.evaluate(F.subs(tempComparison, variable, limit));
+              IExpr temp = engine.evaluate(F.xreplace(tempComparison, variable, limit));
               if (temp.isTrue()) {
-                temp = engine.evaluate(F.subs(arg1Result, variable, limit));
+                temp = engine.evaluate(F.xreplace(arg1Result, variable, limit));
                 if (limitFromBelow.isPresent() && !limitFromBelow.equals(temp)) {
                   return S.Indeterminate;
                 }
@@ -826,9 +830,9 @@ public class SeriesFunctions {
                   && arg2Comparison.second().equals(limit)) {
                 tempComparison = ((IAST) arg2Comparison).setAtCopy(0, S.GreaterEqual);
               }
-              IExpr temp = engine.evaluate(F.subs(tempComparison, variable, limit));
+              IExpr temp = engine.evaluate(F.xreplace(tempComparison, variable, limit));
               if (temp.isTrue()) {
-                temp = engine.evaluate(F.subs(arg1Result, variable, limit));
+                temp = engine.evaluate(F.xreplace(arg1Result, variable, limit));
                 if (limitFromAbove.isPresent() && !limitFromAbove.equals(temp)) {
                   return S.Indeterminate;
                 }
@@ -844,20 +848,20 @@ public class SeriesFunctions {
             if (limitFromBelow.isPresent()) {
               return limitFromBelow;
             }
-            return engine.evaluate(F.subs(defaultPiecewiseValue, variable, limit));
+            return engine.evaluate(F.xreplace(defaultPiecewiseValue, variable, limit));
           }
           if (data.direction == Direction.FROM_ABOVE) {
             if (limitFromAbove.isPresent()) {
               return limitFromAbove;
             }
-            return engine.evaluate(F.subs(defaultPiecewiseValue, variable, limit));
+            return engine.evaluate(F.xreplace(defaultPiecewiseValue, variable, limit));
           }
           if (data.direction == Direction.TWO_SIDED) {
             if (limitFromBelow.isPresent() && limitFromBelow.equals(limitFromAbove)) {
               return limitFromBelow;
             }
             if (limitFromBelow.isNIL() && limitFromAbove.isNIL()) {
-              return engine.evaluate(F.subs(defaultPiecewiseValue, variable, limit));
+              return engine.evaluate(F.xreplace(defaultPiecewiseValue, variable, limit));
             }
             return S.Indeterminate;
           }
@@ -975,8 +979,8 @@ public class SeriesFunctions {
           }
         }
         if (base.isTimes()) {
-          IAST isFreeResult = base.partitionTimes(x -> x.isFree(data.variable(), true),
-              F.C1, F.C1, S.List);
+          IAST isFreeResult =
+              base.partitionTimes(x -> x.isFree(data.variable(), true), F.C1, F.C1, S.List);
           if (!isFreeResult.arg2().isOne()) {
             return F.Times(F.Power(isFreeResult.arg1(), exponent),
                 data.limit(F.Power(isFreeResult.arg2(), exponent)));
@@ -1657,10 +1661,19 @@ public class SeriesFunctions {
    * </pre>
    */
   private static final class SeriesCoefficient extends AbstractFunctionEvaluator {
+    private static Supplier<Matcher> MATCHER1;
 
+    private static Matcher matcher1() {
+      return MATCHER1.get();
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // IExpr result = matcher1().apply(ast);
+      // if (result.isPresent()) {
+      // return result;
+      // }
+
       if (ast.isAST2()) {
         if (ast.arg1() instanceof ASTSeriesData && ast.arg2().isInteger()) {
           ASTSeriesData series = (ASTSeriesData) ast.arg1();
@@ -1675,7 +1688,7 @@ public class SeriesFunctions {
           }
           return F.NIL;
         }
-        if (ast.arg2().isVector() == 3 && !(ast.arg1() instanceof ASTSeriesData)) {
+        if (ast.arg2().isList3() && !(ast.arg1() instanceof ASTSeriesData)) {
           IExpr function = ast.arg1();
 
           IAST list = (IAST) ast.arg2();
@@ -1683,7 +1696,12 @@ public class SeriesFunctions {
           IExpr x0 = list.arg2();
 
           IExpr n = list.arg3();
-          return functionCoefficient(ast, function, x, x0, n, engine);
+          IExpr functionCoefficient = functionCoefficient(ast, function, x, x0, n, engine);
+          if (functionCoefficient.isPresent()
+              && functionCoefficient.isFree(f -> f.isIndeterminate(), true)) {
+            return functionCoefficient;
+          }
+          return matcher1().apply(ast);
         }
       }
 
@@ -1785,7 +1803,8 @@ public class SeriesFunctions {
         return F.ReplaceAll(function, F.Rule(x, x0));
       }
       IExpr derivedFunction = S.D.of(engine, function, F.list(x, n));
-      return F.Times(F.Power(F.Factorial(n), F.CN1), F.ReplaceAll(derivedFunction, F.Rule(x, x0)));
+      return engine.evaluate(F.Together(
+          F.Times(F.Power(F.Factorial(n), F.CN1), F.ReplaceAll(derivedFunction, F.Rule(x, x0)))));
     }
 
     /**
@@ -1899,6 +1918,11 @@ public class SeriesFunctions {
         Errors.printMessage(S.SeriesCoefficient, rex, engine);
       }
       return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      MATCHER1 = Suppliers.memoize(SeriesCoefficientRules::init1);
     }
   }
 

@@ -322,7 +322,7 @@ class TeXSegmentParser {
           if (!lhs.isFree(DUMMY_SUB_SLOT)) {
             // IExpr rhs = convert(list, position, end, null, Precedence.NO_PRECEDENCE);
             IExpr rhs = convertNextArg(list, position);
-            lhs = F.subs(lhs, DUMMY_SUB_SLOT, rhs);
+            lhs = F.xreplace(lhs, DUMMY_SUB_SLOT, rhs);
           }
         }
 
@@ -383,7 +383,7 @@ class TeXSegmentParser {
                     return args;
                   }
                   if (lhs.isFunction() && lhs.size() == 2) {
-                    IExpr temp = F.subs(lhs.first(), DUMMY_SUB_SLOT, args);
+                    IExpr temp = F.xreplace(lhs.first(), DUMMY_SUB_SLOT, args);
                     // IExpr temp = Lambda.replaceSlots(lhs.first(), F.list(args));
                     if (temp.isPresent()) {
                       lhs = temp;
@@ -473,7 +473,7 @@ class TeXSegmentParser {
         // invisible times?
         if (!lhs.isFree(DUMMY_SUB_SLOT)) {
           // issue #712
-          lhs = F.subs(lhs, DUMMY_SUB_SLOT, rhs);
+          lhs = F.xreplace(lhs, DUMMY_SUB_SLOT, rhs);
           result = lhs;
         } else {
           result = F.Times(lhs, rhs);
@@ -715,12 +715,12 @@ class TeXSegmentParser {
     if (dxStart > position[0]) {
       IExpr arg1 = convert(parentList, position, dxStart, null, 0);
       position[0] = dxEnd;
-      arg1 = F.subs(arg1, dummySymbol, x);
-      symbolOrList = F.subs(symbolOrList, dummySymbol, x);
+      arg1 = F.xreplace(arg1, dummySymbol, x);
+      symbolOrList = F.xreplace(symbolOrList, dummySymbol, x);
       return F.binaryAST2(S.Integrate, arg1, symbolOrList);
     } else if (dxStart == position[0]) {
       position[0] = dxEnd;
-      symbolOrList = F.subs(symbolOrList, dummySymbol, x);
+      symbolOrList = F.xreplace(symbolOrList, dummySymbol, x);
       return F.binaryAST2(S.Integrate, dxValue, symbolOrList);
     }
     throw new AbortException();

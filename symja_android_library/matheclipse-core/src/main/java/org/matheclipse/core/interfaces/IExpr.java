@@ -50,6 +50,7 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.Pair;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.WolframFormFactory;
+import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -6355,14 +6356,42 @@ public interface IExpr
 
   /**
    * The subs method replaces all instances of <code>x</code> in an expression with an
-   * <code>y</code>expression.
+   * <code>y</code> expression.
    * 
    * @param x
    * @param y
    * @return
    */
   default IExpr subs(IExpr x, IExpr y) {
+    Function<IExpr, IExpr> subsFunction = Functors.subsFunction(F.List(F.Rule(x, y)));
+    return replaceAll(subsFunction).orElse(this);
+    // return replaceAll(F.Rule(x, y)).orElse(this);
+  }
+
+  default IExpr subs(IAST listOfRules) {
+    Function<IExpr, IExpr> subsFunction = Functors.subsFunction(listOfRules);
+    IExpr replaceAll = replaceAll(subsFunction);
+    if (replaceAll.isPresent()) {
+      return EvalEngine.get().evaluate(replaceAll);
+    }
+    return this;
+    // return replaceAll(F.Rule(x, y)).orElse(this);
+  }
+
+  /**
+   * The subs method replaces all instances of <code>x</code> in an expression with an
+   * <code>y</code> expression.
+   * 
+   * @param x
+   * @param y
+   * @return
+   */
+  default IExpr xreplace(IExpr x, IExpr y) {
     return replaceAll(F.Rule(x, y)).orElse(this);
+  }
+
+  default IExpr xreplace(IAST listOfRules) {
+    return replaceAll(listOfRules).orElse(this);
   }
 
   @Override

@@ -17,7 +17,6 @@ import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
@@ -36,6 +35,7 @@ import org.matheclipse.core.expression.RepeatedPattern;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
+import org.matheclipse.core.expression.data.FileExpr;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IAST;
@@ -184,6 +184,7 @@ public final class StringFunctions {
       S.CharacterRange.setEvaluator(new CharacterRange());
       S.EditDistance.setEvaluator(new EditDistance());
 
+      S.FileNameDrop.setEvaluator(new FileNameDrop());
       S.FileNameJoin.setEvaluator(new FileNameJoin());
       S.FileNameTake.setEvaluator(new FileNameTake());
       S.FromCharacterCode.setEvaluator(new FromCharacterCode());
@@ -412,6 +413,87 @@ public final class StringFunctions {
     }
   }
 
+  private static class FileNameDrop extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      int n = ast.arg2().toIntDefault();
+      if (n != Integer.MIN_VALUE) {
+        String fileName = null;
+        if (arg1.isString()) {
+          fileName = arg1.toString();
+        } else if (arg1 instanceof FileExpr) {
+          File file = ((FileExpr) arg1).toData();
+          fileName = file.getAbsolutePath();
+        }
+        if (fileName != null) {
+          if (n == 0) {
+            return arg1;
+          }
+          return fileDrop(fileName, n);
+        }
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Drop the first <code>n</code> elements from the file name. If <code>n</code> is negative,
+     * drop the last <code>n</code> elements. The file separator character is the system dependent
+     * {@link File#separatorChar}.
+     * 
+     * @param fileName the file name
+     * @param n the number of path elements to drop
+     * @return
+     */
+    private static IExpr fileDrop(String fileName, int n) {
+      return fileDrop(fileName, n, File.separatorChar);
+    }
+
+    /**
+     * Drop the first <code>n</code> elements from the file name. If <code>n</code> is negative,
+     * drop the last <code>n</code> elements.
+     * 
+     * @param fileName the file name
+     * @param n the number of path elements to drop
+     * @param separator the filename separator character
+     * @return
+     */
+    private static IExpr fileDrop(String fileName, int n, char separator) {
+      if (n < 0) {
+        int fromIndex = fileName.length() - 1;
+        while (n < 0) {
+          int lastIndex = fileName.lastIndexOf(separator, fromIndex);
+          if (lastIndex < 0) {
+            return F.NIL;
+          }
+          if (n++ == -1) {
+            return F.stringx(fileName.substring(0, lastIndex));
+          }
+          fromIndex = lastIndex - 1;
+        }
+      } else if (n > 0) {
+        int fromIndex = 0;
+        while (n > 0) {
+          int index = fileName.indexOf(separator, fromIndex);
+          if (index < 0) {
+            return F.NIL;
+          }
+          if (n-- == 1) {
+            return F.stringx(fileName.substring(index + 1));
+          }
+          fromIndex = index + 1;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
   private static class FileNameJoin extends AbstractFunctionEvaluator {
 
     @Override
@@ -464,7 +546,7 @@ public final class StringFunctions {
       IExpr arg1 = ast.arg1();
       try {
         if (arg1.isString()) {
-          String fileName = ((IStringX) arg1).toString();
+          String fileName = arg1.toString();
           String separator = "/";
           if (ast.isAST1()) {
             // first try Java dependent
@@ -1161,7 +1243,7 @@ public final class StringFunctions {
         if (arg1.isString()) {
           boolean ignoreCase = option[0].isTrue();
 
-          String str = ((IStringX) arg1).toString();
+          String str = arg1.toString();
           IExpr arg2 = ast.arg2();
           if (!arg2.isList()) {
             arg2 = F.list(arg2);
@@ -1241,7 +1323,7 @@ public final class StringFunctions {
         if (arg1.isString()) {
           boolean ignoreCase = option[0].isTrue();
 
-          String str = ((IStringX) arg1).toString();
+          String str = arg1.toString();
           IExpr arg2 = ast.arg2().makeList();
           IAST list = (IAST) arg2;
           int counter = 0;
@@ -1637,8 +1719,8 @@ public final class StringFunctions {
       if (!arg2.isString()) {
         return F.NIL;
       }
-      String str1 = ((IStringX) arg1).toString();
-      String str2 = ((IStringX) arg2).toString();
+      String str1 = arg1.toString();
+      String str2 = arg2.toString();
       int[] listOfInts;
       if (ast.arg3().isList()) {
         listOfInts = Validate.checkListOfInts(ast, ast.arg3(), -str1.length() - 1,
@@ -1945,7 +2027,7 @@ public final class StringFunctions {
       if (arg2.isList()) {
         return arg2.mapThread(ast, 2);
       }
-      String str = ((IStringX) ast.arg1()).toString();
+      String str = ast.arg1().toString();
       int part = arg2.toIntDefault();
       if (part > 0) {
         if (part > str.length()) {
@@ -2140,7 +2222,7 @@ public final class StringFunctions {
         if (!arg1.isString()) {
           return F.NIL;
         }
-        String str = ((IStringX) arg1).toString();
+        String str = arg1.toString();
         IExpr arg2 = ast.arg2();
         if (!arg2.isListOfRules(false)) {
           if (arg2.isRuleAST()) {
@@ -2259,7 +2341,7 @@ public final class StringFunctions {
       for (Map.Entry<ISymbol, String> group : namedRegexGroups.entrySet()) {
         String groupValue = matcher.group(group.getValue());
         if (groupValue != null) {
-          expr = F.subs(expr, group.getKey(), F.stringx(groupValue));
+          expr = F.xreplace(expr, group.getKey(), F.stringx(groupValue));
         }
       }
       return expr;
@@ -2449,7 +2531,7 @@ public final class StringFunctions {
         // String or list of strings expected at position `1` in `2`.
         return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
       }
-      String str1 = ((IStringX) arg1).toString().trim();
+      String str1 = arg1.toString().trim();
       if (ast.isAST1()) {
         return splitList(str1, str1.split("\\s+"));
       }
@@ -2698,7 +2780,7 @@ public final class StringFunctions {
           if (!ast.arg1().isString()) {
             return F.NIL;
           }
-          String str = ((IStringX) ast.arg1()).toString();
+          String str = ast.arg1().toString();
           try {
             Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
             String regex = toRegexString(ast.arg2(), true, ast, REGEX_LONGEST, groups, engine);
@@ -2930,7 +3012,7 @@ public final class StringFunctions {
 
     protected static void of(IExpr arg1, StringBuilder buf) {
       if (arg1.isString()) {
-        buf.append(((IStringX) arg1).toString());
+        buf.append(arg1.toString());
         return;
       }
       buf.append(arg1.toString());
@@ -3438,10 +3520,10 @@ public final class StringFunctions {
         return Pattern.quote(str);
       }
     } else if (partOfRegex.isAST(S.Characters, 2) && partOfRegex.first().isString()) {
-      String str = ((IStringX) partOfRegex.first()).toString();
+      String str = partOfRegex.first().toString();
       return "[" + str + "]";
     } else if (partOfRegex.isAST(S.RegularExpression, 2) && partOfRegex.first().isString()) {
-      return ((IStringX) partOfRegex.first()).toString();
+      return partOfRegex.first().toString();
     } else if (partOfRegex instanceof RepeatedPattern) {
       RepeatedPattern repeated = (RepeatedPattern) partOfRegex;
       IExpr expr = repeated.getRepeatedExpr();
