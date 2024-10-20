@@ -10,7 +10,6 @@ import org.hipparchus.stat.StatUtils;
 import org.hipparchus.stat.descriptive.moment.Mean;
 import org.hipparchus.stat.descriptive.moment.StandardDeviation;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.RGBColor;
@@ -24,6 +23,7 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.form.output.JavaScriptFormFactory;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.graphics.Dimensions2D;
@@ -1438,7 +1438,7 @@ public class ManipulateFunction {
      */
     private static IExpr boundingBox(IAST ast, double[] boundingbox, String function,
         JavaScriptFormFactory toJS, boolean fixedBounds, boolean axes) {
-      String js = ManipulateFunction.JSXGRAPH;
+
       if (!fixedBounds) {
         if (F.isFuzzyEquals(Double.MAX_VALUE, boundingbox[0], Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
           boundingbox[0] = -5.0;
@@ -1476,6 +1476,7 @@ public class ManipulateFunction {
       boundingbox[1] = boundingbox[1] + yPadding; // yMax
       boundingbox[3] = boundingbox[3] - yPadding; // yMin
 
+      String js = ManipulateFunction.JSXGRAPH;
       js = JSXGraph.slidersFromList(ast, js, boundingbox, toJS);
 
       js = js.replace("`2`", function);
@@ -1487,10 +1488,10 @@ public class ManipulateFunction {
       StringBuilder jsControl = new StringBuilder();
       if (axes) {
         jsControl.append(
-            "var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,showCopyright:false,boundingbox:[");
+            "var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,showCopyright:false,showScreenshot:true,boundingbox:[");
       } else {
         jsControl.append(
-            "var board = JXG.JSXGraph.initBoard('jxgbox', {axis:false,showCopyright:false,boundingbox:[");
+            "var board = JXG.JSXGraph.initBoard('jxgbox', {axis:false,showCopyright:false,showScreenshot:true,boundingbox:[");
       }
 
       for (int i = 0; i < boundingbox.length; i++) {
