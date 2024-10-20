@@ -137,6 +137,7 @@ public interface IInteger extends IRational {
    *
    * @return
    */
+  @Override
   public IInteger factorial();
 
   /**
@@ -369,6 +370,12 @@ public interface IInteger extends IRational {
    */
   public IInteger[] primitiveRootList() throws ArithmeticException;
 
+  /**
+   * Returns the quotient of the division of this integer by the specified value.
+   * 
+   * @param that the divisor
+   * @return
+   */
   public IInteger quotient(final IInteger that);
 
   public IInteger shiftLeft(final int n);

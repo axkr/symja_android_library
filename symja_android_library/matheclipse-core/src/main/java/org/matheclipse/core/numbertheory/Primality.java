@@ -95,7 +95,7 @@ public class Primality implements IPrimality {
   /* Private Fields */
 
   /** All prime numbers with bit length lesser than 10 bits. */
-  private static final int primes[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53,
+  private static final int PRIMES_2_1021[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53,
       59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151,
       157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257,
       263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373,
@@ -109,7 +109,7 @@ public class Primality implements IPrimality {
   /**
    * All prime numbers shorter than Short.MAX_VALUE which are not in <code>primes[]</code> array.
    */
-  private static final short[] SHORT_PRIMES = {1031, 1033, 1039, 1049, 1051, 1061, 1063, 1069, 1087,
+  private static final short[] PRIMES_1031_32749 = {1031, 1033, 1039, 1049, 1051, 1061, 1063, 1069, 1087,
       1091, 1093, 1097, 1103, 1109, 1117, 1123, 1129, 1151, 1153, 1163, 1171, 1181, 1187, 1193,
       1201, 1213, 1217, 1223, 1229, 1231, 1237, 1249, 1259, 1277, 1279, 1283, 1289, 1291, 1297,
       1301, 1303, 1307, 1319, 1321, 1327, 1361, 1367, 1373, 1381, 1399, 1409, 1423, 1427, 1429,
@@ -358,7 +358,7 @@ public class Primality implements IPrimality {
       32693, 32707, 32713, 32717, 32719, 32749};
 
   /** All {@code BigInteger} prime numbers with bit length lesser than 8 bits. */
-  private static final BigInteger BIprimes[] = new BigInteger[primes.length];
+  private static final BigInteger BIprimes[] = new BigInteger[PRIMES_2_1021.length];
 
   /**
    * It encodes how many iterations of Miller-Rabin test are need to get an error bound not greater
@@ -378,8 +378,8 @@ public class Primality implements IPrimality {
       {null, null, {0, 2}, {2, 2}, {4, 2}, {6, 5}, {11, 7}, {18, 13}, {31, 23}, {54, 43}, {97, 75}};
 
   static { // To initialize the dual table of BigInteger primes
-    for (int i = 0; i < primes.length; i++) {
-      BIprimes[i] = BigInteger.valueOf(primes[i]);
+    for (int i = 0; i < PRIMES_2_1021.length; i++) {
+      BIprimes[i] = BigInteger.valueOf(PRIMES_2_1021[i]);
     }
   }
 
@@ -401,14 +401,14 @@ public class Primality implements IPrimality {
     BigInteger[] divRem;
     BigInteger result = val;
     int count;
-    for (int i = 0; i < primes.length; i++) {
+    for (int i = 0; i < PRIMES_2_1021.length; i++) {
       if (result.compareTo(BIprimes[i]) < 0) {
         break;
       }
       divRem = result.divideAndRemainder(BIprimes[i]);
       if (divRem[1].signum() == 0) {
         count = 0;
-        Integer iCount = map.get(primes[i]);
+        Integer iCount = map.get(PRIMES_2_1021[i]);
         if (iCount != null) {
           count = iCount;
         }
@@ -420,7 +420,7 @@ public class Primality implements IPrimality {
           }
           divRem = result.divideAndRemainder(BIprimes[i]);
         } while (divRem[1].signum() == 0);
-        map.put(primes[i], count);
+        map.put(PRIMES_2_1021[i], count);
       }
     }
     return result;
@@ -437,28 +437,28 @@ public class Primality implements IPrimality {
     int count;
     int divide;
     int remainder;
-    for (int i = 0; i < primes.length; i++) {
-      if (n < primes[i]) {
+    for (int i = 0; i < PRIMES_2_1021.length; i++) {
+      if (n < PRIMES_2_1021[i]) {
         break;
       }
-      divide = n / primes[i];
-      remainder = n % primes[i];
+      divide = n / PRIMES_2_1021[i];
+      remainder = n % PRIMES_2_1021[i];
       if (remainder == 0) {
         count = 0;
-        Integer iCount = map.get(primes[i]);
+        Integer iCount = map.get(PRIMES_2_1021[i]);
         if (iCount != null) {
           count = iCount;
         }
         do {
           count++;
           n = divide; // quotient
-          if (n < primes[i]) {
+          if (n < PRIMES_2_1021[i]) {
             break;
           }
-          divide = n / primes[i];
-          remainder = n % primes[i];
+          divide = n / PRIMES_2_1021[i];
+          remainder = n % PRIMES_2_1021[i];
         } while (remainder == 0);
-        map.put(primes[i], count);
+        map.put(PRIMES_2_1021[i], count);
       }
     }
     return n;
@@ -513,7 +513,7 @@ public class Primality implements IPrimality {
       }
       result = base.negate();
     }
-    for (int i = 0; i < primes.length; i++) {
+    for (int i = 0; i < PRIMES_2_1021.length; i++) {
       if (result.compareTo(BIprimes[i]) < 0) {
         break;
       }
@@ -528,12 +528,12 @@ public class Primality implements IPrimality {
           }
           divRem = result.divideAndRemainder(BIprimes[i]);
         } while (divRem[1].signum() == 0);
-        IExpr exp = map.get(primes[i]);
+        IExpr exp = map.get(PRIMES_2_1021[i]);
         if (exp == null) {
-          map.put(primes[i], F.ZZ(count).times(exponent));
+          map.put(PRIMES_2_1021[i], F.ZZ(count).times(exponent));
         } else {
           evaled[0] = true;
-          map.put(primes[i], exp.add(F.ZZ(count).times(exponent)));
+          map.put(PRIMES_2_1021[i], exp.add(F.ZZ(count).times(exponent)));
         }
       }
     }
@@ -585,32 +585,32 @@ public class Primality implements IPrimality {
       }
     }
 
-    for (int i = 1; i < primes.length; i++) {
-      if (result < primes[i]) {
+    for (int i = 1; i < PRIMES_2_1021.length; i++) {
+      if (result < PRIMES_2_1021[i]) {
         break;
       }
-      int div = result / primes[i];
-      int rem = result % primes[i];
+      int div = result / PRIMES_2_1021[i];
+      int rem = result % PRIMES_2_1021[i];
       if (rem == 0) {
         count = 0;
         do {
           count++;
           result = div; // quotient
-          if (result < primes[i]) {
+          if (result < PRIMES_2_1021[i]) {
             break;
           }
-          div = result / primes[i];
-          rem = result % primes[i];
+          div = result / PRIMES_2_1021[i];
+          rem = result % PRIMES_2_1021[i];
         } while (rem == 0);
-        IExpr exp = map.get(primes[i]);
+        IExpr exp = map.get(PRIMES_2_1021[i]);
         if (exp == null) {
           if (setEvaled && count > 1) {
             evaled[0] = true;
           }
-          map.put(primes[i], F.ZZ(count).times(exponent));
+          map.put(PRIMES_2_1021[i], F.ZZ(count).times(exponent));
         } else {
           evaled[0] = true;
-          map.put(primes[i], exp.add(F.ZZ(count).times(exponent)));
+          map.put(PRIMES_2_1021[i], exp.add(F.ZZ(count).times(exponent)));
         }
       }
     }
@@ -629,13 +629,13 @@ public class Primality implements IPrimality {
     BigInteger[] divRem;
     BigInteger result = val;
     // int count = 0;
-    for (int i = 0; i < primes.length; i++) {
+    for (int i = 0; i < PRIMES_2_1021.length; i++) {
       if (result.compareTo(BIprimes[i]) < 0) {
         break;
       }
       divRem = result.divideAndRemainder(BIprimes[i]);
       if (divRem[1].signum() == 0) {
-        int count = map.get(primes[i]);
+        int count = map.get(PRIMES_2_1021[i]);
         do {
           count++;
           result = divRem[0]; // quotient
@@ -644,7 +644,7 @@ public class Primality implements IPrimality {
           }
           divRem = result.divideAndRemainder(BIprimes[i]);
         } while (divRem[1].signum() == 0);
-        map.put(primes[i], count);
+        map.put(PRIMES_2_1021[i], count);
       }
     }
     if (result.isProbablePrime(32)) {
@@ -653,8 +653,8 @@ public class Primality implements IPrimality {
     BigInteger b;
     int prime;
     BigInteger sqrt = BigIntegerMath.sqrt(result, RoundingMode.UP);
-    for (int i = 0; i < SHORT_PRIMES.length; i++) {
-      prime = SHORT_PRIMES[i];
+    for (int i = 0; i < PRIMES_1031_32749.length; i++) {
+      prime = PRIMES_1031_32749[i];
       b = BigInteger.valueOf(prime);
       if (sqrt.compareTo(b) < 0) {
         break;
@@ -851,7 +851,7 @@ public class Primality implements IPrimality {
       }
     }
 
-    for (int i = 1; i < primes.length; i++) {
+    for (int i = 1; i < PRIMES_2_1021.length; i++) {
       if (sqrt.compareTo(BIprimes[i]) < 0) {
         break;
       }
@@ -900,30 +900,30 @@ public class Primality implements IPrimality {
       }
     }
 
-    for (int i = 1; i < primes.length; i++) {
-      if (sqrt < primes[i]) {
+    for (int i = 1; i < PRIMES_2_1021.length; i++) {
+      if (sqrt < PRIMES_2_1021[i]) {
         break;
       }
       count = 0;
       // divRem = temp.divideAndRemainder(BIprimes[i]);
       long[] divRem = new long[2];
-      divRem[0] = temp / primes[i];
-      divRem[1] = temp % primes[i];
+      divRem[0] = temp / PRIMES_2_1021[i];
+      divRem[1] = temp % PRIMES_2_1021[i];
       while (divRem[1] == 0L) {
         count++;
         if (count == root) {
           count = 0;
           // result[1] = result[1] / (primes[i].pow(root));
-          result[1] = result[1] / pow(primes[i], root);
-          result[0] = result[0] * primes[i];
+          result[1] = result[1] / pow(PRIMES_2_1021[i], root);
+          result[0] = result[0] * PRIMES_2_1021[i];
         }
         temp = divRem[0]; // quotient
-        if (temp < primes[i]) {
+        if (temp < PRIMES_2_1021[i]) {
           break;
         }
         // divRem = temp.divideAndRemainder(BIprimes[i]);
-        divRem[0] = temp / primes[i];
-        divRem[1] = temp % primes[i];
+        divRem[0] = temp / PRIMES_2_1021[i];
+        divRem[1] = temp % PRIMES_2_1021[i];
       }
     }
     return result;

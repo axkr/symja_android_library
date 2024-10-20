@@ -1119,7 +1119,7 @@ public final class NumberTheory {
         s = s.negate();
       }
 
-      IExpr n = S.Times.of(engine, Plus(p, F.Times(s, sd)));
+      IExpr n = S.Times.of(engine, F.Plus(p, F.Times(s, sd)));
       if (n.isNegativeResult()) {
         IAST resultList =
             continuedFractionPeriodic(p.negate(), q, d, s.negate(), true, maxIterations, engine);
@@ -3403,14 +3403,71 @@ public final class NumberTheory {
 
     @Override
     public IExpr e2IntArg(final IInteger i0, final IInteger i1) {
-      try {
-        if (i0.isNegative() || i1.isNegative()) {
-          // not defined for negative arguments
-          return F.NIL;
+      return jacobiSymbol(i0, i1);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
+
+  private static class KroneckerSymbol extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      if (arg2.isZero()) {
+        if (arg1.isNumber()) {
+          if (arg1.abs().isOne()) {
+            return F.C1;
+          }
+          return F.C0;
         }
-        return i0.jacobiSymbol(i1);
-      } catch (ArithmeticException e) {
-        // integer to large?
+        return F.NIL;
+      }
+      if (arg2.isOne()) {
+        return F.C1;
+      }
+      if (arg2.isMinusOne()) {
+        if (arg1.isNegativeResult()) {
+          return F.CN1;
+        } else if (arg1.isPositiveResult()) {
+          return F.C1;
+        }
+        return F.NIL;
+      }
+      if (arg2.isNumEqualInteger(F.C2)) {
+        if (arg1.isInteger()) {
+          IInteger a = (IInteger) arg1;
+          if (a.isEven()) {
+            return F.C0;
+          }
+          IInteger mod = a.mod(F.C8);
+          if (mod.isOne() || mod.isNumEqualInteger(F.C7)) {
+            return F.C1;
+          }
+          return F.CN1;
+        }
+        return F.NIL;
+      }
+      if (arg1.isInteger() && arg2.isInteger()) {
+        IInteger a = (IInteger) arg1;
+        IInteger n = (IInteger) arg2;
+        if (n.isPositive() && n.isOdd()) {
+          return jacobiSymbol(a, n);
+        }
+
+        // Times@@MapApply(KroneckerSymbol(a,#1)^#2&,FactorInteger(n))
+        return F.Apply(F.Times, F.MapApply(
+            F.Function(F.Power(F.KroneckerSymbol(a, F.Slot1), F.Slot2)), F.FactorInteger(n)));
+
       }
       return F.NIL;
     }
@@ -3419,6 +3476,11 @@ public final class NumberTheory {
     @Override
     public int status() {
       return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
     }
 
     @Override
@@ -3445,7 +3507,7 @@ public final class NumberTheory {
           }
           return linearRecurrence(list1, list2, n, ast, engine);
         }
-        if (arg3.isList() && arg3.size() == 2 && arg3.first().isReal()) {
+        if (arg3.isList1() && arg3.first().isReal()) {
           int n = arg3.first().toIntDefault();
           if (n != Integer.MIN_VALUE) {
             if (n < 0) {
@@ -3457,6 +3519,28 @@ public final class NumberTheory {
               return result.get(n);
             }
           }
+          return F.NIL;
+        }
+        if (arg3.isList2() && arg3.first().isReal() && arg3.second().isReal()) {
+          int nmin = arg3.first().toIntDefault();
+          if (nmin != Integer.MIN_VALUE) {
+            if (nmin < 0) {
+              // Positive integer expected at position `2` in `1`.
+              return Errors.printMessage(S.LinearRecurrence, "intp", F.List(arg3, F.C1), engine);
+            }
+            int nmax = arg3.second().toIntDefault();
+            if (nmax != Integer.MIN_VALUE) {
+              if (nmax < 0) {
+                // Positive integer expected at position `2` in `1`.
+                return Errors.printMessage(S.LinearRecurrence, "intp", F.List(arg3, F.C2), engine);
+              }
+              IAST result = linearRecurrence(list1, list2, nmax, ast, engine);
+              if (result.isPresent()) {
+                return result.copyFrom(nmin, nmax + 1);
+              }
+            }
+          }
+          return F.NIL;
         }
       }
       return F.NIL;
@@ -4571,7 +4655,7 @@ public final class NumberTheory {
       if (sum2.isNIL()) {
         return F.NIL;
       }
-      return Plus(Times(nInverse, sum1), Times(F.CN2, nInverse, sum2)).eval(engine);
+      return Plus(F.Times(nInverse, sum1), F.Times(F.CN2, nInverse, sum2)).eval(engine);
     }
 
     private static IExpr sumPartitionsQ1(EvalEngine engine, IInteger n) {
@@ -4598,7 +4682,7 @@ public final class NumberTheory {
     private static IExpr termPartitionsQ1(EvalEngine engine, IInteger n, int k) {
       // DivisorSigma(1, k)*PartitionsQ(n - k)
       final IInteger k2 = F.ZZ(k);
-      return Times(F.DivisorSigma(F.C1, k2), F.PartitionsQ(Plus(Negate(k2), n))).eval(engine);
+      return F.Times(F.DivisorSigma(F.C1, k2), F.PartitionsQ(F.Plus(Negate(k2), n))).eval(engine);
     }
 
     private static IExpr sumPartitionsQ2(EvalEngine engine, IInteger n) {
@@ -4625,7 +4709,7 @@ public final class NumberTheory {
       // DivisorSigma(1, k)*PartitionsQ(n - 2*k)
       IInteger k2 = F.ZZ(k);
       return engine
-          .evaluate(Times(F.DivisorSigma(C1, k2), F.PartitionsQ(Plus(Times(F.CN2, k2), n))));
+          .evaluate(F.Times(F.DivisorSigma(C1, k2), F.PartitionsQ(F.Plus(F.Times(F.CN2, k2), n))));
     }
 
 
@@ -5575,9 +5659,38 @@ public final class NumberTheory {
         return Errors.printMessage(S.SquaresR, "pint", F.List(ast.arg1(), F.C1), engine);
       }
       IExpr arg2 = ast.arg2();
-      if (d == 2 && arg2.isInteger()) {
+      if (arg2.isInteger()) {
         IInteger n = (IInteger) arg2;
-        return squaresR2(n, engine);
+        switch (d) {
+          case 2:
+            return squaresR2(n, engine);
+          case 4:
+            // 8*Total(Select(Divisors(n),Mod(#1,4)!=0&))
+            return F.Times(F.C8, F
+                .Total(F.Select(F.Divisors(n), F.Function(F.Unequal(F.Mod(F.Slot1, F.C4), F.C0)))));
+          case 6:
+            // 4*Total((#1^2*(4*KroneckerSymbol(-4,n/#1)-KroneckerSymbol(-4,#1))&)/@Divisors(n))
+            return F
+                .Times(
+                    F.C4, F
+                        .Total(
+                            F.Map(F.Function(F.Times(F.Sqr(F.Slot1),
+                                F.Subtract(
+                                    F.Times(F.C4,
+                                        F.KroneckerSymbol(F.CN4,
+                                            F.Times(n, F.Power(F.Slot1, F.CN1)))),
+                                    F.KroneckerSymbol(F.CN4, F.Slot1)))),
+                                F.Divisors(n))));
+          case 8:
+            // 16*Total(((-1)^(n+#1)*#1^3&)/@Divisors(n))
+            return F.Times(F.ZZ(16L),
+                F.Total(F.Map(
+                    F.Function(F.Times(F.Power(F.CN1, F.Plus(n, F.Slot1)), F.Power(F.Slot1, F.C3))),
+                    F.Divisors(n))));
+          default:
+            break;
+        }
+
       }
       int n = ast.arg2().toIntDefault();
       if (n == Integer.MIN_VALUE) {
@@ -5690,6 +5803,7 @@ public final class NumberTheory {
         return F.CEmptyList;
       }
 
+
       try {
         IASTAppendable result = F.ListAlloc();
         powersRepresentationsRecursive(result, F.ListAlloc(k), 0, n, k, p);
@@ -5750,7 +5864,7 @@ public final class NumberTheory {
     private static IExpr stirlingS1(IInteger n, IInteger m) {
       IInteger nSubtract1 = n.subtract(F.C1);
       if (n.isPositive() && m.isOne()) {
-        return Times(Power(F.CN1, nSubtract1), F.Factorial(nSubtract1));
+        return Times(F.Power(F.CN1, nSubtract1), F.Factorial(nSubtract1));
       }
       IInteger factorPlusMinus1;
       if (n.isPositive() && m.equals(F.C2)) {
@@ -6079,6 +6193,7 @@ public final class NumberTheory {
       S.FromContinuedFraction.setEvaluator(new FromContinuedFraction());
       S.Hyperfactorial.setEvaluator(new Hyperfactorial());
       S.JacobiSymbol.setEvaluator(new JacobiSymbol());
+      S.KroneckerSymbol.setEvaluator(new KroneckerSymbol());
       S.LinearRecurrence.setEvaluator(new LinearRecurrence());
       S.LiouvilleLambda.setEvaluator(new LiouvilleLambda());
       S.LucasL.setEvaluator(new LucasL());
@@ -6392,6 +6507,24 @@ public final class NumberTheory {
       return sum.toBigNumerator();
     }
     return null;
+  }
+
+
+  /**
+   * Gives the <a href="https://en.wikipedia.org/wiki/Jacobi_symbol">Jacobi symbol</a>
+   * <code>(n/m)</code> of two integers.
+   * 
+   * @param n
+   * @param m
+   * @return <code>(n/m)</code>
+   */
+  public static IExpr jacobiSymbol(final IInteger n, final IInteger m) {
+    try {
+      return n.jacobiSymbol(m);
+    } catch (ArithmeticException e) {
+      // integer to large?
+    }
+    return F.NIL;
   }
 
   /**
