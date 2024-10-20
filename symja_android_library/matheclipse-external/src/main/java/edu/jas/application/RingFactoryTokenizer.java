@@ -10,25 +10,22 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StreamTokenizer;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Scanner;
-
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
-
 import edu.jas.arith.BigComplex;
 import edu.jas.arith.BigDecimal;
 import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigQuaternion;
 import edu.jas.arith.BigQuaternionRing;
 import edu.jas.arith.BigRational;
+import edu.jas.arith.ModIntRing;
 import edu.jas.arith.ModInteger;
 import edu.jas.arith.ModIntegerRing;
-import edu.jas.arith.ModIntRing;
 import edu.jas.arith.ModLongRing;
 import edu.jas.poly.AlgebraicNumberRing;
 import edu.jas.poly.ExpVector;
@@ -40,8 +37,6 @@ import edu.jas.poly.GenSolvablePolynomialRing;
 import edu.jas.poly.InvalidExpressionException;
 import edu.jas.poly.RelationTable;
 import edu.jas.poly.TermOrder;
-import edu.jas.poly.ModuleList;
-import edu.jas.poly.PolynomialList;
 import edu.jas.structure.RingFactory;
 import edu.jas.ufd.Quotient;
 import edu.jas.ufd.QuotientRing;
@@ -110,7 +105,7 @@ public class RingFactoryTokenizer {
      * No-args constructor reads from System.in.
      */
     public RingFactoryTokenizer() {
-        this(new BufferedReader(new InputStreamReader(System.in, Charset.forName("UTF8"))));
+      this(new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8)));
     }
 
 
@@ -489,12 +484,12 @@ public class RingFactoryTokenizer {
                     vars = ovars;
                     if (tcfac instanceof ModIntegerRing) {
                         GenPolynomial<ModInteger> gfmod;
-                        gfmod = (GenPolynomial<ModInteger>) mod;
+                        gfmod = mod;
                         coeff = new AlgebraicNumberRing<ModInteger>(gfmod);
                         ct = coeffType.ANmod;
                     } else {
                         GenPolynomial<BigRational> anmod;
-                        anmod = (GenPolynomial<BigRational>) mod;
+                        anmod = mod;
                         coeff = new AlgebraicNumberRing<BigRational>(anmod);
                         ct = coeffType.ANrat;
                     }

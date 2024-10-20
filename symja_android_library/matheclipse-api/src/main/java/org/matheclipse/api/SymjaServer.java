@@ -14,6 +14,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.form.output.JSBuilder;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -46,7 +47,7 @@ public class SymjaServer {
           String strict = SymjaServer.getParam(queryParameters, "strict", "s", "");
           String inputStr = SymjaServer.getParam(queryParameters, "input", "i", "");
           String[] formformatStrs =
-              SymjaServer.getParams(queryParameters, "format", "f", Pods.PLAIN_STR);
+              SymjaServer.getParams(queryParameters, "format", "f", JSBuilder.PLAIN_STR);
           int formats = Pods.internFormat(formformatStrs);
           try {
             jsonStr = Pods.calculateResult(inputStr, formats, !strict.isEmpty(), EvalEngine.get());

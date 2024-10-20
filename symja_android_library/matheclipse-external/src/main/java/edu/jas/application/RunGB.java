@@ -14,12 +14,11 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
 import edu.jas.gb.GroebnerBaseAbstract;
 import edu.jas.gb.GroebnerBaseDistributedEC;
 import edu.jas.gb.GroebnerBaseDistributedHybridEC;
@@ -482,7 +481,7 @@ public class RunGB {
         Reader problem = null;
         Exception fnf = null;
         try {
-            problem = new InputStreamReader(new FileInputStream(filename), Charset.forName("UTF8"));
+          problem = new InputStreamReader(new FileInputStream(filename), StandardCharsets.UTF_8);
             problem = new BufferedReader(problem);
         } catch (FileNotFoundException e) {
             fnf = e;
@@ -499,7 +498,7 @@ public class RunGB {
                 fnf.printStackTrace();
                 return problem;
             }
-            problem = new InputStreamReader(jf.getInputStream(je), Charset.forName("UTF8"));
+            problem = new InputStreamReader(jf.getInputStream(je), StandardCharsets.UTF_8);
             problem = new BufferedReader(problem);
         } catch (FileNotFoundException e) {
             fnf.printStackTrace();

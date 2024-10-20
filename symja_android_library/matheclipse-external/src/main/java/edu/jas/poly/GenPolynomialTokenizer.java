@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StreamTokenizer;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -18,10 +18,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import edu.jas.arith.BigComplex;
 import edu.jas.arith.BigDecimal;
 import edu.jas.arith.BigInteger;
@@ -33,8 +31,6 @@ import edu.jas.arith.ModIntRing;
 import edu.jas.arith.ModInteger;
 import edu.jas.arith.ModIntegerRing;
 import edu.jas.arith.ModLongRing;
-import edu.jas.structure.Power;
-import edu.jas.structure.MonoidElem;
 import edu.jas.structure.RingElem;
 import edu.jas.structure.RingFactory;
 
@@ -106,7 +102,7 @@ public class GenPolynomialTokenizer {
      * No-args constructor reads from System.in.
      */
     public GenPolynomialTokenizer() {
-        this(new BufferedReader(new InputStreamReader(System.in, Charset.forName("UTF8"))));
+      this(new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8)));
     }
 
 
@@ -875,12 +871,12 @@ public class GenPolynomialTokenizer {
                     vars = ovars;
                     if (tcfac instanceof ModIntegerRing) {
                         GenPolynomial<ModInteger> gfmod;
-                        gfmod = (GenPolynomial<ModInteger>) mod;
+                        gfmod = mod;
                         coeff = new AlgebraicNumberRing<ModInteger>(gfmod);
                         ct = coeffType.ANmod;
                     } else {
                         GenPolynomial<BigRational> anmod;
-                        anmod = (GenPolynomial<BigRational>) mod;
+                        anmod = mod;
                         coeff = new AlgebraicNumberRing<BigRational>(anmod);
                         ct = coeffType.ANrat;
                     }

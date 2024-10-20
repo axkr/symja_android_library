@@ -6,16 +6,15 @@ package edu.jas.util;
 
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileInputStream;
-import java.io.InputStreamReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager; 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger; 
 
 
 // import edu.unima.ky.parallel.ChannelFactory;
@@ -93,7 +92,8 @@ public class ExecutableChannels {
         if (mfile == null || mfile.length() == 0) {
             mfile = DEFAULT_MFILE;
         }
-        InputStreamReader isr = new InputStreamReader(new FileInputStream(mfile),Charset.forName("UTF8"));
+        InputStreamReader isr =
+            new InputStreamReader(new FileInputStream(mfile), StandardCharsets.UTF_8);
         BufferedReader in = new BufferedReader(isr);
         String line = null;
         List<String> list = new ArrayList<String>();
