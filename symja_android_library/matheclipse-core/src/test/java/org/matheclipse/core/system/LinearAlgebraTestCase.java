@@ -42,6 +42,32 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testAnglePath() {
+    // avoid index out of bounds exception
+    check("AnglePath(RandomReal({-1, 1}, {100}));", //
+        "");
+    check("AnglePath({90*Degree, 90*Degree, 90*Degree})", //
+        "{{0,0},{0,1},{-1,1},{-1,0}}");
+    check("AnglePath({90*Degree, Pi/3, -Pi/4})", //
+        "{{0,0},{0,1},{-Sqrt(3)/2,3/2},{(1-Sqrt(3))/(2*Sqrt(2))-Sqrt(3)/2,3/2+(1+Sqrt(3))/(\n"
+            + "2*Sqrt(2))}}");
+    check("AnglePath({{0.7, 90*Degree}, {2.3, Pi/3}, {3.5, -Pi/4}})", //
+        "{{0,0},{0.0,0.7},{-1.99186,1.85},{-2.89773,5.23074}}");
+
+    check("AnglePath({t1,t2,t3})", //
+        "{{0,0},{Cos(t1),Sin(t1)},{Cos(t1)+Cos(t1+t2),Sin(t1)+Sin(t1+t2)},{Cos(t1)+Cos(t1+t2)+Cos(t1+t2+t3),Sin(t1)+Sin(t1+t2)+Sin(t1+t2+t3)}}");
+
+    check("AnglePath({{r1,t1},{r2,t2},{r3,t3}})", //
+        "{{0,0},{r1*Cos(t1),r1*Sin(t1)},{r1*Cos(t1)+r2*Cos(t1+t2),r1*Sin(t1)+r2*Sin(t1+t2)},{r1*Cos(t1)+r2*Cos(t1+t2)+r3*Cos(t1+t2+t3),r1*Sin(t1)+r2*Sin(t1+t2)+r3*Sin(t1+t2+t3)}}");
+
+    check("AnglePath({{x, y},t0}, {{r1,t1},{r2,t2},{r3,t3}})", //
+        "{{x,y},{x+r1*Cos(t0+t1),y+r1*Sin(t0+t1)},{x+r1*Cos(t0+t1)+r2*Cos(t0+t1+t2),y+r1*Sin(t0+t1)+r2*Sin(t0+t1+t2)},{x+r1*Cos(t0+t1)+r2*Cos(t0+t1+t2)+r3*Cos(t0+t1+t2+t3),y+r1*Sin(t0+t1)+r2*Sin(t0+t1+t2)+r3*Sin(t0+t1+t2+t3)}}");
+    check("AnglePath({{x, y},t0}, { })", //
+        "{{x,y}}");
+
+  }
+
+  @Test
   public void testAngleVector() {
     check("AngleVector(x)", //
         "{Cos(x),Sin(x)}");
@@ -51,6 +77,8 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{0,1}");
     check("AngleVector({1, 10}, a)", //
         "{1+Cos(a),10+Sin(a)}");
+    check("AngleVector({x,y}, {r,t})", //
+        "{x+r*Cos(t),y+r*Sin(t)}");
   }
 
   @Test

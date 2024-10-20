@@ -7,8 +7,6 @@ import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.Apfloat;
 import org.hamcrest.core.IsInstanceOf;
 import org.junit.Test;
@@ -27,7 +25,6 @@ import org.matheclipse.core.interfaces.IInteger;
 
 @RunWith(JUnit4.class)
 public class NumberTest {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   @Test
   public void testComplexNum() {
@@ -75,7 +72,8 @@ public class NumberTest {
         fail();
       }
     } catch (RuntimeException rex) {
-      LOGGER.debug("NumberTest.testNumberFormat() failed", rex);
+      rex.printStackTrace();
+      fail("NumberTest.testNumberFormat() failed");
     }
     assertEquals(buf.toString(), "12345.12");
   }

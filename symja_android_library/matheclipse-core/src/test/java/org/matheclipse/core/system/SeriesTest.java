@@ -117,6 +117,11 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testCoefficientList() {
+    check("CoefficientList(Series(Log(1-x), {x, 0, 9}), x)", //
+        "{0,-1,-1/2,-1/3,-1/4,-1/5,-1/6,-1/7,-1/8,-1/9}");
+  }
+  @Test
   public void testSeries() {
     // TODO check max power
     check("Series(Sin(x)^2,{x,0,5})//FullForm", //
@@ -145,7 +150,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     // "");
 
     check("Series((1 + x)^n, {x, 0, 4})", //
-        "1+n*x+1/2*(-1+n)*n*x^2+1/6*(-2+n)*(-1+n)*n*x^3+1/24*(-3+n)*(-2+n)*(-1+n)*n*x^4+O(x)^\n"
+        "1+n*x+1/2*(-1+n)*n*x^2+1/6*(2*n-3*n^2+n^3)*x^3+1/24*(-6*n+11*n^2-6*n^3+n^4)*x^4+O(x)^\n"
             + "5");
     check("Series(x^x, {x, 0, 4})", //
         "1+Log(x)*x+1/2*Log(x)^2*x^2+1/6*Log(x)^3*x^3+1/24*Log(x)^4*x^4+O(x)^5");
@@ -433,6 +438,10 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSeriesCoefficient() {
+    check("SeriesCoefficient(ArcTan(x),{x,n,12})", //
+        "(3*n-55*n^3+198*n^5-198*n^7+55*n^9-3*n^11)/(3*(1+12*n^2+66*n^4+220*n^6+495*n^8+\n" //
+            + "792*n^10+924*n^12+792*n^14+495*n^16+220*n^18+66*n^20+12*n^22+n^24))");
+
     check("SeriesCoefficient(Fibonacci(z), {z, 0, n})", //
         "Piecewise({{(-(-I*Pi-ArcCsch(2))^n-(I*Pi-ArcCsch(2))^n+2*ArcCsch(2)^n)/(2*Sqrt(5)*n!),n>=\n" //
             + "1}},0)");
@@ -464,7 +473,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "Log(x)^4/24");
 
     check("SeriesCoefficient(ChebyshevT(k, x), {x, 0, 2})", //
-        "((-1+k)*(1+k)*k^2*Pi)/(8*Gamma(1/2*(3-k))*Gamma(1/2*(3+k)))");
+        "1/2*k^2*Cos(1/2*(-2+k)*Pi)");
     check("SeriesCoefficient(d+4*x^e+7*x^f,{x, a, n})", //
         "Piecewise({{(4*a^e*Binomial(e,n)+7*a^f*Binomial(f,n))/a^n,n>0},{4*a^e+7*a^f+d,n==\n"
             + "0}},0)");
@@ -612,7 +621,8 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   @Test
   public void testPowerSeries() {
     check("Series((a + x)^n, {x, 0, 2})", //
-        "a^n+(n*x)/a^(1-n)+((-1+n)*n*x^2)/(2*a^(2-n))+O(x)^3");
+        "a^n+(n*x)/a^(1-n)+((-a^n*n+a^n*n^2)*x^2)/(2*a^2)+O(x)^3");
+    // "a^n+(n*x)/a^(1-n)+((-1+n)*n*x^2)/(2*a^(2-n))+O(x)^3");
     check("Series((a(x) + x)^n, {x, 0, 2})", //
         "a(0)^n+(n*(1+a'(0))*x)/a(0)^(1-n)+1/2*(((-1+n)*n*(1+a'(0))^2)/a(0)^(2-n)+(n*a''(\n"
             + "0))/a(0)^(1-n))*x^2+O(x)^3");

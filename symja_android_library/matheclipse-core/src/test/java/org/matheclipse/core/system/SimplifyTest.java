@@ -850,16 +850,16 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
 
     // assert TR10i(cos(x)/sqrt(6) + sin(x)/sqrt(2) +
     // cos(x)/sqrt(6)/3 + sin(x)/sqrt(2)/3) == 4*sqrt(6)*sin(x + pi/6)/9
-     tr10i = TrigSimplifyFu.tr10i(F.Plus(//
-     F.Times(F.C1DSqrt6, F.Cos(F.x)), //
-     F.Times(F.C1DSqrt2, F.Sin(F.x)), //
-     F.Times(F.C1D3, F.C1DSqrt6, F.Cos(F.x)), //
-     F.Times(F.C1D3, F.C1DSqrt2, F.Sin(F.x))));
-     tr10i = F.eval(tr10i);
-     assertEquals(tr10i.toString(), //
-     // 4*sqrt(6)*sin(x + pi/6)/9
-     "4/3*Sqrt(2/3)*Sin(Pi/6+x)");
-    
+    tr10i = TrigSimplifyFu.tr10i(F.Plus(//
+        F.Times(F.C1DSqrt6, F.Cos(F.x)), //
+        F.Times(F.C1DSqrt2, F.Sin(F.x)), //
+        F.Times(F.C1D3, F.C1DSqrt6, F.Cos(F.x)), //
+        F.Times(F.C1D3, F.C1DSqrt2, F.Sin(F.x))));
+    tr10i = F.eval(tr10i);
+    assertEquals(tr10i.toString(), //
+        // 4*sqrt(6)*sin(x + pi/6)/9
+        "4/3*Sqrt(2/3)*Sin(Pi/6+x)");
+
     // // assert TR10i(cos(x)/sqrt(6) + sin(x)/sqrt(2) +
     // // cos(y)/sqrt(6)/3 + sin(y)/sqrt(2)/3) == \
     // // sqrt(6)*sin(x + pi/6)/3 + sqrt(6)*sin(y + pi/6)/9
@@ -955,6 +955,30 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     tr11 = F.eval(tr11);
     assertEquals(tr11.toString(), //
         "4*Cos(x)*Sin(x)*(1-2*Sin(x)^2)");
+  }
+
+  @Test
+  public void testTrigSimplifyTR11Simple() {
+    IExpr tr11 = TrigSimplifyFu.tr11(F.Cos(F.C2));
+    assertEquals(tr11.toString(), //
+        "Cos(2)");
+
+    // TODO use base to get -Sin(2)^2 + Cos(2)**2
+    // tr11 = TrigSimplifyFu.tr11(F.Cos(F.C2), 2);
+    // assertEquals(tr11.toString(), //
+    // " ");
+  }
+
+  @Test
+  public void testTrigSimplifySO24819() {
+    // https://stackoverflow.com/a/79095795/24819
+    // TR6(TR11(S('2 - 2*cos(2*pi*(x - y)/p)')))
+    IExpr tr11 = TrigSimplifyFu.tr11(F.Subtract(F.C2,
+        F.Times(F.C2, F.Cos(F.Divide(F.Times(F.Times(F.C2, F.Pi), F.Subtract(F.x, F.y)), F.p)))));
+    IExpr tr6 = TrigSimplifyFu.tr6(tr11);
+    // TODO
+    assertEquals(tr6.toString(), //
+        "2-2*Cos((2*Pi*(x-y))/p)");
   }
 
   @Test

@@ -462,7 +462,6 @@ public class BooleanTest extends ExprEvaluatorTestCase {
     // "0.1111111111111111 == 0.1111111111111126", //
     // "True");
 
-    // mathics expects result: 2. + 3.14159 I == 2 + 3 a
     check("2.+ I*Pi == 2 + 3*a", //
         "a==I*1.0472");
 

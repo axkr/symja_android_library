@@ -283,7 +283,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
               + "    double xd = engine.evalDouble(x);\n" //
               + "    stack.set(top++, F.num(xd));\n" //
               + "    \n" //
-              + "    return F.num((20.085536923187668)-Math.cos((9.869604401089358)/evalDouble(stack.get(1))));\n" //
+              + "    return F.num(20.085536923187668-Math.cos(9.869604401089358/evalDouble(stack.get(1))));\n" //
               + "    \n" //
               + "  }\n" //
               + "  public double evalDouble(IExpr expr)  {\n" //

@@ -7,8 +7,8 @@ import org.matheclipse.core.eval.EvalEngine;
 /** Tests for string functions */
 public class StringFunctionsTest extends ExprEvaluatorTestCase {
 
-   @Test
-   public void testEditDistance() {
+  @Test
+  public void testEditDistance() {
     check("EditDistance(\"kitten\", \"kitchen\")", //
         "2");
     check("EditDistance(\"abc\", \"ac\")", //
@@ -21,8 +21,19 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "2");
   }
 
-   @Test
-   public void testFileNameJoin() {
+  @Test
+  public void testFileNameDrop() {
+    String s = System.getProperty("os.name");
+    if (s.contains("Windows")) {
+      check("FileNameDrop(\"\\\\a\\\\b\\\\c\", 2)", //
+          "b\\c");
+      check("FileNameDrop(\"\\\\a\\\\b\\\\c\", -1)", //
+          "\\a\\b");
+    }
+  }
+
+  @Test
+  public void testFileNameJoin() {
     String s = System.getProperty("os.name");
     if (s.contains("Windows")) {
       check("FileNameJoin({\"a\",\"b\",\"c\"})", //
@@ -30,8 +41,8 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
     }
   }
 
-   @Test
-   public void testFileNameTake() {
+  @Test
+  public void testFileNameTake() {
     String s = System.getProperty("os.name");
     if (s.contains("Windows")) {
       check("FileNameTake(\"/a/b/c.txt\")", //
@@ -39,8 +50,8 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
     }
   }
 
-   @Test
-   public void testFromLetterNumber() {
+  @Test
+  public void testFromLetterNumber() {
     check("FromLetterNumber({1,4,10,17})", //
         "{a,d,j,q}");
     check("FromLetterNumber(26, \"Dutch\")", //
@@ -53,16 +64,16 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "Missing(NotApplicable)");
   }
 
-   @Test
-   public void testHammingDistance() {
+  @Test
+  public void testHammingDistance() {
     check("HammingDistance(\"time\", \"dime\")", //
         "1");
     check("HammingDistance(\"TIME\", \"dime\", IgnoreCase -> True)", //
         "1");
   }
 
-   @Test
-   public void testAlphabet() {
+  @Test
+  public void testAlphabet() {
     // check(
     // "Alphabet(\"Hindi\")", //
     // "{अ,आ,इ,ई,उ,ऊ,ऋ,ए,ऐ,ओ,औ,क,ख,ग,घ,ङ,च,छ,ज,झ,ञ,ट,ठ,ड,ढ,ण,त,थ,द,ध,न,प,फ,ब,भ,म,य,र,ल,व,श,ष,स,ह}");
@@ -95,8 +106,8 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "{a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z}");
   }
 
-   @Test
-   public void testLetterNumber() {
+  @Test
+  public void testLetterNumber() {
     // English alphabet has only single character elements
     check("LetterNumber({\"P\", \"Pe\", \"P1\", \"eck\"})", //
         "{16,{16,5},{16,0},{5,3,11}}");
@@ -132,16 +143,16 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "8");
   }
 
-   @Test
-   public void testLongest() {
+  @Test
+  public void testLongest() {
     check("StringCases(\"aabaaab\", Longest(\"a\" ~~ __ ~~ \"b\"))", //
         "{aabaaab}");
     check("StringCases(\"aabaaabaaabaaabaaab\", Longest(RegularExpression(\"a+b\")))", //
         "{aab,aaab,aaab,aaab,aaab}");
   }
 
-   @Test
-   public void testShortest() {
+  @Test
+  public void testShortest() {
     check("StringCases(\"-(a)--(bb)--(c)-\", \"(\" ~~ __ ~~ \")\")", //
         "{(a)--(bb)--(c)}");
     check("StringCases(\"-(a)--(bb)--(c)-\", Shortest(\"(\" ~~ __ ~~ \")\"))", //
@@ -153,8 +164,8 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "{aab,aaab,aaab,aaab,aaab}");
   }
 
-   @Test
-   public void testString() {
+  @Test
+  public void testString() {
     check("Head(\"abc\")", //
         "String");
     check("\"abc\"", //
@@ -175,14 +186,14 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
             "next line");
   }
 
-   @Test
-   public void testStringExpression() {
+  @Test
+  public void testStringExpression() {
     check("\"a\" ~~ \"b\" ~~ \"c\" // FullForm ", //
         "\"abc\"");
   }
 
-   @Test
-   public void testStringForm() {
+  @Test
+  public void testStringForm() {
     // TODO fix case of mixing notations:
     // check("StringForm(\"`1` bla `2` blub `` bla `2`\", a, b, c)", //
     // "a bla b blub c bla b");
@@ -196,8 +207,8 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "e1  e2  e3  e4  e5");
   }
 
-   @Test
-   public void testStringFormat() {
+  @Test
+  public void testStringFormat() {
     check("StringFormat(\"abcd 1234\")", //
         "Text");
     check("StringFormat(\"1 2 3\\n 5 6 7\\n 8 9 0\\n\")", //
@@ -208,8 +219,8 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "TSV");
   }
 
-   @Test
-   public void testStringFreeQ() {
+  @Test
+  public void testStringFreeQ() {
     check("StringFreeQ(2^x,\"a\")", //
         "StringFreeQ(2^x,a)");
     check("StringFreeQ(\"symja\", \"s\" ~~__ ~~\"a\")", //
@@ -228,8 +239,8 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "{True,True,False,False,False}");
   }
 
-   @Test
-   public void testStringCount() {
+  @Test
+  public void testStringCount() {
     check(
         "StringCount(\"https://github.com/axkr/symja_android_library\", #) & /@ CharacterRange(\"a\", \"z\")", //
         "{4,2,1,2,0,0,1,2,3,1,1,1,2,1,2,1,0,4,2,3,1,0,0,1,2,0}");
@@ -250,8 +261,8 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "1");
   }
 
-   @Test
-   public void testStringCases() {
+  @Test
+  public void testStringCases() {
     check("StringCases(\"AaBBccDDeefG\", CharacterRange(\"A\", \"Z\") ..)", //
         "{A,BB,DD,G}");
     check("StringCases(\"a#ä_123\", WordCharacter)", //
@@ -277,8 +288,8 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "{ab,ac,adaf}");
   }
 
-   @Test
-   public void testStringContainsQ() {
+  @Test
+  public void testStringContainsQ() {
     check("StringContainsQ( \"BC\" , IgnoreCase -> True)[\"abcd\"]", //
         "True");
     check("StringContainsQ({\"the quick brown fox\", \"jumps\", \"over the lazy dog\"}, \"the\")", //
@@ -310,8 +321,8 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "True");
   }
 
-   @Test
-   public void testStringDrop() {
+  @Test
+  public void testStringDrop() {
     check("StringDrop(\"abcdefghijklm\", 4)", //
         "efghijklm");
     check("StringDrop(\"abcdefghijklm\", -4)", //
@@ -320,8 +331,8 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "StringDrop(,-1)");
   }
 
-   @Test
-   public void testStringInsert() {
+  @Test
+  public void testStringInsert() {
     check("StringInsert({\"\", \"Symja\"}, \"\", {1, 1, -1})", //
         "{,Symja}");
     check("StringInsert({\"\", \"Symja\"}, \"X\", {1, 1, -1})", //
@@ -346,8 +357,8 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "1.234.567.890.123.456");
   }
 
-   @Test
-   public void testStringJoin() {
+  @Test
+  public void testStringJoin() {
     check("StringJoin({\"a\", \"b\"})// InputForm", //
         "\"ab\"");
     check("StringJoin(\"test\")", //
@@ -366,14 +377,14 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "Java8");
   }
 
-   @Test
-   public void testStringLength() {
+  @Test
+  public void testStringLength() {
     check("StringLength(\"symja\")", //
         "5");
   }
 
-   @Test
-   public void testStringMatchQ() {
+  @Test
+  public void testStringMatchQ() {
     // message: StringMatchQ: String or list of strings expected at position 1 in
     // StringMatchQ(1/2,y___).
     check("StringMatchQ(1/2,y___)", //
@@ -413,8 +424,8 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "True");
   }
 
-   @Test
-   public void testStringPart() {
+  @Test
+  public void testStringPart() {
     check("StringPart(\"abcdefghijlkm\", 14)", //
         "StringPart(abcdefghijlkm,14)");
     check("StringPart(\"abcdefghijlkm\", 13)", //
@@ -429,8 +440,8 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "{1,3,0}");
   }
 
-   @Test
-   public void testStringPosition() {
+  @Test
+  public void testStringPosition() {
     check("StringPosition(1317624576693539401)[2^10007,{x__},1/0]", //
         "StringPosition(1317624576693539401)[2553680789607370732651189968234988907294075944814326342210571455811768170268409\\\n"
             + "1688857550955566329085311143845661707679067592308927249639830520045993083294666\\\n"
@@ -477,8 +488,8 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "{{4,6},{9,11}}");
   }
 
-   @Test
-   public void testStringTrim() {
+  @Test
+  public void testStringTrim() {
     check("StringJoin(\"a\", StringTrim(\" \\tb\\n \"), \"c\")", //
         "abc");
     check("StringTrim(\"ababaxababyaabab\", RegularExpression(\"(ab)+\"))", //
@@ -491,16 +502,16 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "\"aaa bbb ccc   \"");
   }
 
-   @Test
-   public void testStringQ() {
+  @Test
+  public void testStringQ() {
     check("StringQ(a)", //
         "False");
     check("StringQ(\"a\")", //
         "True");
   }
 
-   @Test
-   public void testStringSplit() {
+  @Test
+  public void testStringSplit() {
     check("StringSplit(\"a bbb cccc aa d\")", //
         "{a,bbb,cccc,aa,d}");
     check("StringSplit(\"a--bbb---ccc--dddd\", \"--\")", //
@@ -569,25 +580,25 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "{a,b,c,d,efghijlkm}");
   }
 
-   @Test
-   public void testStringExpresion() {
+  @Test
+  public void testStringExpresion() {
     check("\"ab\" ~~ _", //
         "ab~~_");
   }
 
-   @Test
-   public void testStringRepeat() {
+  @Test
+  public void testStringRepeat() {
     check("StringRepeat(\"abc\", 3)", //
         "abcabcabc");
     check("StringRepeat(\"abc\", 10, 7)", //
         "abcabca");
   }
 
-   @Test
-   public void testStringReplace() {
-     // TODO use MMA logic for lists of rules
-     // check("StringReplace(\"ABBA\", {\"A\" -> \"AB\", \"B\" -> \"BA\"})", //
-     // "ABBABAAB ");
+  @Test
+  public void testStringReplace() {
+    // TODO use MMA logic for lists of rules
+    // check("StringReplace(\"ABBA\", {\"A\" -> \"AB\", \"B\" -> \"BA\"})", //
+    // "ABBABAAB ");
     check(
         "StringReplace(\"The number 17 is a prime number, 42 is not\", WordBoundary ~~ x:DigitCharacter.. ~~ WordBoundary /; PrimeQ(ToExpression(x)) :> \"*\" <> x <> \"*\")", //
         "The number *17* is a prime number, 42 is not");
@@ -631,15 +642,22 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "\"  see you later alligator.\"");
   }
 
-   @Test
-   public void testStringReverse() {
+  @Test
+  public void testStringReplace_List() {
+    // https://en.wikipedia.org/wiki/Palindrome
+    check("StringReplace({\"abbaabbaa\",\"abababa\"}, \"ab\" -> \"X\")", //
+        "{XbaXbaa,XXXa}");
+  }
+
+  @Test
+  public void testStringReverse() {
     // https://en.wikipedia.org/wiki/Palindrome
     check("StringReverse(\"Never odd or even\")", //
         "neve ro ddo reveN");
   }
 
-   @Test
-   public void testStringRiffle() {
+  @Test
+  public void testStringRiffle() {
     check("StringRiffle({\"a\", \"b\", \"c\", \"d\", \"e\"})", //
         "a b c d e");
 
@@ -666,8 +684,8 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "(a-b-c\n" + "d-e-f)");
   }
 
-   @Test
-   public void testStringTake() {
+  @Test
+  public void testStringTake() {
     // TODO
     // check(
     // "StringTake( \"abc\",{{1,1},{1,3},{0,0},{1,2},{-1},{4}}) // InputForm", //
@@ -755,16 +773,16 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "jklm");
   }
 
-   @Test
-   public void testStringTemplate() {
+  @Test
+  public void testStringTemplate() {
     // operator form
     check(
         "StringTemplate(\"The quick brown `a` jumps over the lazy `b`.\")[<|\"a\" -> \"fox\", \"b\" -> \"dog\"|>]", //
         "The quick brown fox jumps over the lazy dog.");
   }
 
-   @Test
-   public void testTemplateApply() {
+  @Test
+  public void testTemplateApply() {
     check(
         "TemplateApply(\"The quick brown `a` jumps over the lazy `b`.\",<|\"a\" -> \"fox\", \"b\" -> \"dog\"|>)", //
         "The quick brown fox jumps over the lazy dog.");
@@ -803,8 +821,8 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "We use the Pebble template engine.");
   }
 
-   @Test
-   public void testTemplateIf() {
+  @Test
+  public void testTemplateIf() {
     check(
         "t=TemplateIf( TemplateSlot(\"summer\"), \"in summer ice cream is delicious\", \"ice cream is boring in winter\"); TemplateApply(t, <|\"summer\" -> True|>)", //
         "in summer ice cream is delicious");
@@ -813,20 +831,20 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "True");
   }
 
-   @Test
-   public void testToLowerCase() {
+  @Test
+  public void testToLowerCase() {
     check("ToLowerCase(\"This is a Test\")", //
         "this is a test");
   }
 
-   @Test
-   public void testToUpperCase() {
+  @Test
+  public void testToUpperCase() {
     check("ToUpperCase(\"This is a Test\")", //
         "THIS IS A TEST");
   }
 
-   @Test
-   public void testWhitespace() {
+  @Test
+  public void testWhitespace() {
     check("StringMatchQ(\"\\r \\n\", Whitespace)", //
         "True");
 
@@ -834,22 +852,22 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "{a,b,c,d}");
   }
 
-   @Test
-   public void testWhitespaceCharacter() {
+  @Test
+  public void testWhitespaceCharacter() {
     check("StringMatchQ(\"\\n\", WhitespaceCharacter)", //
         "True");
     check("StringSplit(\"a\\nb\\nc d\", WhitespaceCharacter)", //
         "{a,b,c,d}");
   }
 
-   @Test
-   public void testWordBoundary() {
+  @Test
+  public void testWordBoundary() {
     check("StringReplace(\"apple banana orange artichoke\", \"e\" ~~ WordBoundary -> \"E\")", //
         "applE banana orangE artichokE");
   }
 
-   @Test
-   public void testWordCharacter() {
+  @Test
+  public void testWordCharacter() {
     check("StringMatchQ(#, WordCharacter) &/@ {\"1\", \"a\", \"A\", \",\", \" \"}", //
         "{True,True,True,False,False}");
     check("StringMatchQ(\"abc123DEF\", WordCharacter..)", //

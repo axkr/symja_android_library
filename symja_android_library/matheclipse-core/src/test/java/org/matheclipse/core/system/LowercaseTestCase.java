@@ -4303,6 +4303,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testD() {
+    // check("D(a*3^x,{x,n})", //
+    // "a*E^x");
+    // TODO
+    check("D(a*Exp(x),{x,n})", //
+        "a*E^x");
+    check("D(a*f(x),{x,10})", //
+        "a*Derivative(10)[f][x]");
+    check("D(a*Exp(x),{x,3})", //
+        "a*E^x");
+    check("D(Tan(x),{x,3})", //
+        "2*Sec(x)^4+4*Sec(x)^2*Tan(x)^2");
+    check("D(Cot(x),{x,5})", //
+        "-16*Cot(x)^4*Csc(x)^2-88*Cot(x)^2*Csc(x)^4-16*Csc(x)^6");
+
     check("D((2*Sqrt(2)*(x^3))/(x^4),x)", //
         "(-2*Sqrt(2))/x^2");
     check("D(z^n*E^(z),{z,n})", //
@@ -4753,10 +4767,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Identity(a,b,c)");
     check("Delete({ }, 0)", //
         "Identity()");
-    // print Cannot delete position 5 in {a,b,c,d}
+    check("Delete({1, 2}, 0)", //
+        "Identity(1,2)");
+    // Delete: Part {5} of {a,b,c,d} does not exist.
     check("Delete({a, b, c, d}, 5)", //
         "Delete({a,b,c,d},5)");
-
+    // List: List of Java int numbers expected in {1,n}.
+    check("Delete({a, b, c, d}, {1, n})", //
+        "Delete({a,b,c,d},{1,n})");
     check("Delete({a, b, c, d}, 3)", //
         "{a,b,d}");
     check("Delete({a, b, c, d}, -2)", //
@@ -4778,6 +4796,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Delete(pos)[x]");
     check("Delete(2)[{1,2,3,4}]", //
         "{1,3,4}");
+
+    check("Delete(f[a, b, u + v, c], {3, 0})", //
+        "f(a,b,u,v,c)");
   }
 
   @Test
@@ -5055,6 +5076,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDerivative() {
+    check("Derivative(1)[Log10]", //
+        "1/(Log(10)*#1)&");
+    check("Derivative(1)[Log2]", //
+        "1/(Log(2)*#1)&");
+    check("Derivative(1)[Exp]", //
+        "E^#1&");
+    check("Derivative(1)[Abs]", //
+        "Derivative(1)[Abs]");
+    check("Derivative(1)[RealAbs]", //
+        "#1/RealAbs(#1)&");
+    check("Derivative(3)[ArcCos]", //
+        "-(1+2*#1^2)/(1-#1^2)^(5/2)&");
     check("Derivative(0,0,0,n)[Hypergeometric2F1Regularized]", //
         "Hypergeometric2F1Regularized(n+#1,n+#2,n+#3,#4)*Pochhammer(#1,n)*Pochhammer(#2,n)&");
     check("Derivative(0,0,0,Sin(7))[Hypergeometric2F1Regularized]", //
@@ -5063,8 +5096,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Hypergeometric2F1Regularized(3+#1,3+#2,3+#3,#4)*Pochhammer(#1,3)*Pochhammer(#2,3)&");
     check("Derivative(0,0,0)[Sequence()]", //
         "Derivative(0,0,0)[]");
-    check("Derivative(1)[Abs]", //
-        "Derivative(1)[Abs]");
 
     check("Derivative(1,0)[StruveH][#1,#2]", //
         "Derivative(1,0)[StruveH][#1,#2]");
@@ -8682,6 +8713,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFlatten() {
+
     // message Flatten: Level specification value greater equal 0 expected instead of -Infinity.
     check("Flatten(f(g(u, v), f(x, y)), -Infinity, f)", //
         "Flatten(f(g(u,v),f(x,y)),-Infinity,f)");
@@ -11425,6 +11457,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testInverseFunction() {
+    check("InverseFunction(Log2)", //
+        "2^#1&");
+    check("InverseFunction(Log10)", //
+        "10^#1&");
+    check("InverseFunction(Erfi)", //
+        "-I*InverseErf(I*#1)&");
+
     check("InverseFunction(Power,1,2)", //
         "#1^(1/#2)&");
     check("InverseFunction(Power,2,2)", //
@@ -11593,7 +11632,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
     // check("JacobiSymbol(n, 1)", "n");
     check("JacobiSymbol(-3, {1, 3, 5, 7})", //
-        "{JacobiSymbol(-3,1),JacobiSymbol(-3,3),JacobiSymbol(-3,5),JacobiSymbol(-3,7)}");
+        "{1,0,-1,1}");
   }
 
   @Test
@@ -11624,9 +11663,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("JavaForm(E^3-Cos(Pi^2/x), Prefix->True)", //
         "F.Subtract(F.Exp(F.C3),F.Cos(F.Times(F.Sqr(F.Pi),F.Power(F.x,F.CN1))))");
     check("JavaForm(E^3-Cos(Pi^2/x), Float->True)", //
-        "(20.085536923187668)-Math.cos((9.869604401089358)/x)");
+        "20.085536923187668-Math.cos(9.869604401089358/x)");
     check("JavaForm(E^3-Cos(Pi^2/x), Float)", //
-        "(20.085536923187668)-Math.cos((9.869604401089358)/x)");
+        "20.085536923187668-Math.cos(9.869604401089358/x)");
 
     check("JavaForm(Hold(D(sin(x)*cos(x),x)), prefix->True)", //
         "F.D(F.Times(F.Sin(F.x),F.Cos(F.x)),F.x)");
@@ -11673,7 +11712,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + " return x;})()\n" + "");
 
     check("JSForm(E^3-Cos(Pi^2/x))", //
-        "(20.085536923187668)-Math.cos((9.869604401089358)/x)");
+        "20.085536923187668-Math.cos(9.869604401089358/x)");
 
     check("Piecewise({{x, 0 < x < 1}, {x^3, 1 < x < 2}}) // JSForm", //
         "\n" //
@@ -11701,7 +11740,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("JSForm(a+b)", //
         "a+b");
     check("JSForm(E^3-Cos(Pi^2/x) )", //
-        "(20.085536923187668)-Math.cos((9.869604401089358)/x)");
+        "20.085536923187668-Math.cos(9.869604401089358/x)");
     // JSXGraph.org syntax
     EvalEngine.resetModuleCounter4JUnit();
     // check(
@@ -11903,6 +11942,25 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1.0,0.387321+I*(-0.100372),-0.051849,0.387321+I*0.100372,1.0,0.387321+I*(-0.100372),-0.051849," //
             + "0.387321+I*0.100372,1.0,0.387321+I*(-0.100372),-0.051849,0.387321+I*0.100372,1.0," //
             + "0.387321+I*(-0.100372),-0.051849,0.387321+I*0.100372,1.0}");
+  }
+
+  @Test
+  public void testKronekerSymbol() {
+
+    check("KroneckerSymbol(2,3)", //
+        "-1");
+    check("Table(KroneckerSymbol(n, m), {n, 0, 5}, {m, 0, 5})", //
+        "{{0,1,0,0,0,0},{1,1,1,1,1,1},{0,1,0,-1,0,-1},{0,1,-1,0,1,-1},{0,1,0,1,0,1},{0,1,-\n" //
+            + "1,-1,1,0}}");
+    check("Table(KroneckerSymbol(n, m), {n, -5, -1}, {m, -5, -1})", //
+        "{{0,-1,-1,1,-1},{-1,0,1,0,-1},{1,-1,0,1,-1},{1,0,-1,0,-1},{-1,-1,1,-1,-1}}");
+    check("KroneckerSymbol(10,13)", //
+        "1");
+    check("KroneckerSymbol(10^11 + 1, Prime(2000))", //
+        "-1");
+    check("KroneckerSymbol({2, 3, 5, 7, 11}, 6)", //
+        "{0,0,1,1,1}");
+
   }
 
   @Test
@@ -13063,6 +13121,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLinearRecurrence() {
+    check("LinearRecurrence({1, 1}, {1, 1}, {5, 5})", //
+        "{5}");
     check("LinearRecurrence({0, 1, 1}, {1, 1, 1}, 0)", //
         "LinearRecurrence({0,1,1},{1,1,1},0)");
     check("LinearRecurrence({0, 1, 1}, {1, 1, 1}, 1)", //
@@ -13381,6 +13441,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLog10() {
+    checkNumeric("10*Log10(1000)", //
+        "30");
     checkNumeric("Log10(Interval({1/3, 2}))", //
         "Interval({-Log(3)/Log(10),Log(2)/Log(10)})");
     check("N(Log10(45), 100)", //
@@ -13677,6 +13739,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{x(a),{{x(b),x(c)},x(d),{x(e),{x(f),x(g)}}}}");
     check("Map(x, {a, {{b, c}, d, {e, {f, g}}}}, {-2})", //
         "{a,{x({b,c}),d,{e,x({f,g})}}}");
+  }
+
+  @Test
+  public void testMapApply() {
+    check("MapApply(h, {{a, b}, {c, d}})", //
+        "{h(a,b),h(c,d)}");
+    check("h@@@{{a,b},{c,d}}", //
+        "{h(a,b),h(c,d)}");
+    check("MapApply(h)[{{a, b}, {c}, {d, e}}]", //
+        "{h(a,b),h(c),h(d,e)}");
+    check("MapApply(h, p(x)[q(y)], Heads -> True)", //
+        "h(x)[h(y)]");
   }
 
   @Test
@@ -15987,6 +16061,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testNumberDigit() {
+    check("RealDigits(123456)", //
+        "{{1,2,3,4,5,6},6}");
+    check("NumberDigit(123456, 2)", //
+        "4");
+    // TODO
+    // check("NumberDigit(12.3456, -1)", //
+    // "4");
+  }
+
+  @Test
   public void testNumberQ() {
     check("NumberQ(3,4)", //
         "NumberQ(3,4)");
@@ -17191,6 +17276,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPick() {
+    check("Pick({a, b, c}, {False, True, False})", //
+        "{b}");
+    check("Pick(f(g(1, 2), h(3, 4)), {{True, False}, {False, True}})", //
+        "f(g(1),h(4))");
+    check("Pick({a, b, c, d, e}, {1, 2, 3.5, 4, 5.5}, _Integer)", //
+        "{a,b,d}");
+
     // check(
     // "Pick(<|s1-><|a->0,b:>1|>,s2:><|a->0,b:>1|>|>,(1+Sqrt(5))/2,5)", //
     // "{RuleDelayed(Association(0))}");
@@ -17457,6 +17549,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testPolyLog() {
     // check("PolyLog(10007,-1.5707963267948966)", //
     // "");
+    check("PolyLog(-7.0, I)", //
+        "136.0");
     check("PolyLog(1, 3, z)", //
         "Pi^4/90-1/6*Log(1-z)^3*Log(z)-1/2*Log(1-z)^2*PolyLog(2,1-z)+Log(1-z)*PolyLog(3,1-z)-PolyLog(\n" //
             + "4,1-z)");
@@ -21345,6 +21439,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSequence() {
+    check("Sequence( )", //
+        "Identity()");
     check("Sequence(a,b,c)", //
         "Identity(a,b,c)");
     check("{Sequence( ),a}", //
@@ -22310,6 +22406,29 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testReverseSort() {
+    check("ReverseSort({4, 1.0, a, 3+I})", //
+        "{a,4,3+I,1.0}");
+
+    check("ReverseSort({c, b, d, a})", //
+        "{d,c,b,a}");
+    check("ReverseSort({-42,0,17,11,3,4,9})", //
+        "{17,11,9,4,3,0,-42}");
+    // TODO sort `e` before `d`
+    check("ReverseSort(<|a -> 4, b -> 1, c -> 3, d -> 2, e -> 2|>)", //
+        "<|a->4,c->3,d->2,e->2,b->1|>");
+    check("ReverseSort({0, 11, 13, 4, 9}, Greater)", //
+        "{0,4,9,11,13}");
+    check("ReverseSort({c, b, d, a}, OrderedQ({#1, #2}) &)", //
+        "{d,c,b,a}");
+
+    // TODO define AlphabeticOrder
+    // check("ReverseSort({\"cat\", \"fish\", \"catfish\", \"Cat\"}, AlphabeticOrder(\"English\"))",
+    // //
+    // "{cat,fish,catfish,Cat}");
+  }
+
+  @Test
   public void testSortBy() {
     check("SortBy({{5, 1}, {10, -1}}, Last)", //
         "{{10,-1},{5,1}}");
@@ -22539,6 +22658,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSquaresR() {
+    check("Table(SquaresR(8, n), {n, 10})", //
+        "{16,112,448,1136,2016,3136,5504,9328,12112,14112}");
     // TODO
     // check("TimeConstrained(SquaresR({3},2147483647),3)", //
     // "");
