@@ -15,6 +15,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -130,6 +131,96 @@ public class Functors {
                 fResult.append(list.get(j));
               }
               return list;
+            }
+          }
+        }
+      }
+      return F.NIL;
+    }
+  }
+
+  private static class SubsFunctor implements Function<IExpr, IExpr> {
+    private final IAST listOfRules;
+
+    public SubsFunctor(IAST rulesList) {
+      this.listOfRules = rulesList;
+    }
+
+    @Override
+    public IExpr apply(final IExpr arg1) {
+      for (int i = 1; i < listOfRules.size(); i++) {
+        IAST rule = (IAST) listOfRules.get(i);
+        if (rule.arg1().equals(arg1)) {
+          return rule.arg2();
+        }
+        if (rule.arg1().isPlus()) {
+          IAST plus = (IAST) rule.arg1();
+          if (arg1.isPlus()) {
+            IAST plus2 = (IAST) arg1;
+            if (plus2.size() >= plus.size() && plus.size() > 1) {
+              IASTAppendable result = plus2.copyAppendable();
+              int j = 1;
+              while (j < plus.size()) {
+                IExpr timesArg = plus.get(j);
+                int k = 1;
+                while (k < result.size()) {
+                  if (result.get(k).equals(timesArg)) {
+                    result.remove(k);
+                    break;
+                  }
+                  k++;
+                }
+                if (k >= result.size()) {
+                  return F.NIL;
+                }
+                j++;
+              }
+              result.append(rule.arg2());
+              return result;
+
+            }
+          }
+        } else if (rule.arg1().isTimes()) {
+          IAST times = (IAST) rule.arg1();
+          if (arg1.isTimes()) {
+            IAST times2 = (IAST) arg1;
+            if (times2.size() >= times.size() && times.size() > 1) {
+              IASTAppendable result = times2.copyAppendable();
+              int j = 1;
+              while (!times.isEmpty() && j < times.size()) {
+                IExpr timesArg = times.get(j);
+                int k = 1;
+                while (k < result.size()) {
+                  if (result.get(k).equals(timesArg)) {
+                    result.remove(k);
+                    break;
+                  }
+                  k++;
+                }
+                if (k >= result.size()) {
+                  return F.NIL;
+                }
+                j++;
+              }
+              result.append(rule.arg2());
+              return result;
+            }
+          }
+        } else if (rule.arg1().isPower()) {
+          IAST power = (IAST) rule.arg1();
+          if (arg1.isPower() && power.base().equals(arg1.base())) {
+            if (arg1.exponent().isInteger()) {
+              IInteger exponent1 = (IInteger) arg1.exponent();
+              if (power.exponent().isInteger()) {
+                IInteger exponent2 = (IInteger) power.exponent();
+                if (exponent2.isLT(exponent1)) {
+                  IInteger mod = exponent1.mod(exponent2);
+                  if (mod.isZero()) {
+                    IInteger quotient = exponent1.quotient(exponent2);
+                    return F.Power(rule.arg2(), quotient);
+                  }
+                }
+              }
             }
           }
         }
@@ -381,6 +472,10 @@ public class Functors {
       return new ListRulesPatternFunctor(equalRules, matchers, result, engine);
     }
     return listRules(equalRules, result);
+  }
+
+  public static Function<IExpr, IExpr> subsFunction(IAST rulesList) {
+    return new SubsFunctor(rulesList);
   }
 
   public static SubsetPatternFunctor subsetRules(IAST astRules, EvalEngine engine) {
