@@ -33,11 +33,6 @@ AngleVector({x, y}, {r, phi})
 >> AngleVector({1, 10}, a)
 {1+Cos(a),10+Sin(a)}
 ```
- 
-
-
-
-
 
 
 ### Implementation status

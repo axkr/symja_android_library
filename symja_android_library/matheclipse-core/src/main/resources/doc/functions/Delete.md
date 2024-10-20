@@ -3,9 +3,14 @@
 ```
 Delete(expr, n)
 ```
+      
+> deletes the element at position `n` in `expr`. The position is counted from the end if `n` is negative.
 
-> returns `expr` with part `n` removed. 
+```
+Delete(expr, {m,n, ...})
+```
 
+> deletes the element at position `{m, n, ...}`.
 
 ### Examples
 

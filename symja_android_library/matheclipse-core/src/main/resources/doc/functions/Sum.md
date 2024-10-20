@@ -91,6 +91,20 @@ Sum(i/Log(i),{i,1,Infinity})
 Sum(Cos(i*Pi),{i,1,Infinity})  
 ```
 
+Non-integer bounds:
+
+```
+>> Sum(i, {i, 1, 2.5})
+3.0
+
+>> Sum(i, {i, 1.1, 2.5})
+3.2
+
+>> Sum(k, {k, I, I+1.5})
+1.0+2.0*I
+```
+     
+
 
 ### Implementation status
 

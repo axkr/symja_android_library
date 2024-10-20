@@ -14,7 +14,7 @@ OptionsPattern({opt1->value1, ...})
 
 ### Examples
 
-The option values can be accessed using 'OptionValue'.
+The option values can be accessed using `OptionValue`.
 
 ```
 >> f(x_, OptionsPattern({n->2})) := x ^ OptionValue(n)
