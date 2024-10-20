@@ -73,7 +73,7 @@ public class FuzzyParserFactory implements IParserFactory {
         return F.Apply(lhs, rhs);
       }
       // case "@@@"
-      return F.ApplyListC1(lhs, rhs);
+      return F.MapApply(lhs, rhs);
     }
   }
 
@@ -209,7 +209,8 @@ public class FuzzyParserFactory implements IParserFactory {
       new ApplyOperator("@@", "Apply", 620, FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE);
 
   public static final ApplyOperator APPLY_LEVEL_OPERATOR = //
-      new ApplyOperator("@@@", "Apply", 620, FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE);
+      new ApplyOperator("@@@", "MapApply", 620,
+          FuzzyInfixExprOperator.RIGHT_ASSOCIATIVE);
 
   public static final FuzzyInfixExprOperator EQUAL_OPERATOR = //
       new FuzzyInfixExprOperator("==", "Equal", EQUAL_PRECEDENCE, FuzzyInfixExprOperator.NONE);

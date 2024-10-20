@@ -78,7 +78,7 @@ public class ExprParserFactory implements IParserFactory {
         return F.Apply(lhs, rhs);
       }
       // case "@@@"
-      return F.ApplyListC1(lhs, rhs);
+      return F.MapApply(lhs, rhs);
     }
   }
 
@@ -242,12 +242,12 @@ public class ExprParserFactory implements IParserFactory {
         return new B2.Subtract(lhs, rhs);
       } else {
         if (rhs.isNumber()) {
-          return (IASTMutable) F.Plus(lhs, rhs.negate());
+          return F.Plus(lhs, rhs.negate());
         }
         if (rhs.isTimes() && rhs.first().isNumber()) {
-          return (IASTMutable) F.Plus(lhs, ((IAST) rhs).setAtCopy(1, rhs.first().negate()));
+          return F.Plus(lhs, ((IAST) rhs).setAtCopy(1, rhs.first().negate()));
         }
-        return (IASTMutable) F.Plus(lhs, F.Times(F.CN1, rhs));
+        return F.Plus(lhs, F.Times(F.CN1, rhs));
       }
     }
   }
@@ -264,8 +264,9 @@ public class ExprParserFactory implements IParserFactory {
   public static final ApplyOperator APPLY_OPERATOR = //
       new ApplyOperator("@@", "Apply", Precedence.APPLY, InfixExprOperator.RIGHT_ASSOCIATIVE);
 
-  public static final ApplyOperator APPLY_LEVEL_OPERATOR = //
-      new ApplyOperator("@@@", "Apply", Precedence.APPLY, InfixExprOperator.RIGHT_ASSOCIATIVE);
+  public static final ApplyOperator MAPAPPLY_OPERATOR = //
+      new ApplyOperator("@@@", "MapApply", Precedence.MAPAPPLY,
+          InfixExprOperator.RIGHT_ASSOCIATIVE);
 
   public static final InfixExprOperator EQUAL_OPERATOR = //
       new InfixExprOperator("==", "Equal", Precedence.EQUAL, InfixExprOperator.NONE);
@@ -365,7 +366,7 @@ public class ExprParserFactory implements IParserFactory {
           new InfixExprOperator("/@", "Map", Precedence.MAP, InfixExprOperator.RIGHT_ASSOCIATIVE), //
           new PostfixExprOperator("=.", "Unset", Precedence.UNSET), //
           APPLY_OPERATOR, //
-          APPLY_LEVEL_OPERATOR, //
+          MAPAPPLY_OPERATOR, //
           new InfixExprOperator("//.", "ReplaceRepeated", Precedence.REPLACEREPEATED,
               InfixExprOperator.LEFT_ASSOCIATIVE), //
           new InfixExprOperator("<", "Less", Precedence.LESS, InfixExprOperator.NONE), //

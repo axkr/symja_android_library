@@ -299,8 +299,8 @@ public class ASTNodeFactory implements INodeParserFactory {
       new ApplyOperator("@", "Apply", Precedence.APPLY_HEAD, InfixOperator.RIGHT_ASSOCIATIVE);
   public static final ApplyOperator APPLY_OPERATOR =
       new ApplyOperator("@@", "Apply", Precedence.APPLY, InfixOperator.RIGHT_ASSOCIATIVE);
-  public static final ApplyOperator APPLY_LEVEL_OPERATOR =
-      new ApplyOperator("@@@", "Apply", Precedence.APPLY, InfixOperator.RIGHT_ASSOCIATIVE);
+  public static final ApplyOperator MAPAPPLY_OPERATOR =
+      new ApplyOperator("@@@", "MapApply", Precedence.MAPAPPLY, InfixOperator.RIGHT_ASSOCIATIVE);
 
   public static final TagSetOperator TAG_SET_OPERATOR =
       new TagSetOperator("/:", "TagSet", Precedence.TAGSET, InfixOperator.NONE);
@@ -337,7 +337,7 @@ public class ASTNodeFactory implements INodeParserFactory {
           APPLY_HEAD_OPERATOR,
           new InfixOperator("/@", "Map", Precedence.MAP, InfixOperator.RIGHT_ASSOCIATIVE),
           new PostfixOperator("=.", "Unset", Precedence.UNSET), APPLY_OPERATOR,
-          APPLY_LEVEL_OPERATOR,
+          MAPAPPLY_OPERATOR,
           // new ApplyOperator("@@", "Apply", APPLY_PRECEDENCE,
           // InfixOperator.RIGHT_ASSOCIATIVE),
           // new ApplyOperator("@@@", "Apply", APPLY_PRECEDENCE,
