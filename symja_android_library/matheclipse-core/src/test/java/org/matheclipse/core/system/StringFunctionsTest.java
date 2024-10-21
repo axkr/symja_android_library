@@ -25,10 +25,25 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
   public void testFileNameDrop() {
     String s = System.getProperty("os.name");
     if (s.contains("Windows")) {
+      check("FileNameDrop(\"\\\\a\\\\b\\\\c\", -3)", //
+          "\\");
+
       check("FileNameDrop(\"\\\\a\\\\b\\\\c\", 2)", //
           "b\\c");
+      check("FileNameDrop(\"\\\\a\\\\b\\\\c\", 3)", //
+          "c");
+      check("FileNameDrop(\"\\\\a\\\\b\\\\c\", 4)", //
+          "");
       check("FileNameDrop(\"\\\\a\\\\b\\\\c\", -1)", //
           "\\a\\b");
+      check("FileNameDrop(\"\\\\a\\\\b\\\\c\", -2)", //
+          "\\a");
+      check("FileNameDrop(\"\\\\a\\\\b\\\\c\", -3)", //
+          "\\");
+      check("FileNameDrop(\"\\\\a\\\\b\\\\c\", -4)", //
+          "");
+      check("FileNameDrop({\"\\\\a\\\\b\\\\c\", \"\\\\a\\\\b\\\\c\"}, 2)", //
+          "{b\\c,b\\c}");
     }
   }
 

@@ -418,6 +418,9 @@ public final class StringFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (arg1.isList()) {
+        return arg1.mapThread(F.FileNameDrop(F.Slot1, ast.arg2()), 1);
+      }
       int n = ast.arg2().toIntDefault();
       if (n != Integer.MIN_VALUE) {
         String fileName = null;
@@ -465,9 +468,12 @@ public final class StringFunctions {
         while (n < 0) {
           int lastIndex = fileName.lastIndexOf(separator, fromIndex);
           if (lastIndex < 0) {
-            return F.NIL;
+            return F.CEmptyString;
           }
           if (n++ == -1) {
+            if (lastIndex == 0 && fileName.length() >= 1) {
+              return F.stringx(fileName.substring(0, 1));
+            }
             return F.stringx(fileName.substring(0, lastIndex));
           }
           fromIndex = lastIndex - 1;
@@ -477,7 +483,7 @@ public final class StringFunctions {
         while (n > 0) {
           int index = fileName.indexOf(separator, fromIndex);
           if (index < 0) {
-            return F.NIL;
+            return F.CEmptyString;
           }
           if (n-- == 1) {
             return F.stringx(fileName.substring(index + 1));

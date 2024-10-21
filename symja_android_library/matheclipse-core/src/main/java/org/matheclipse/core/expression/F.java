@@ -4447,6 +4447,14 @@ public class F extends S {
     return new AST2(Fibonacci, a0, a1);
   }
 
+  public static IAST FileNameDrop(final IExpr data, final IExpr x) {
+    return new AST2(FileNameDrop, data, x);
+  }
+
+  public static IAST FileNameJoin(final IExpr a0) {
+    return new AST1(FileNameJoin, a0);
+  }
+
   public static IAST FindFit(final IExpr data, final IExpr expr, final IExpr variablesList,
       final IExpr xVariable) {
     return quaternary(FindFit, data, expr, variablesList, xVariable);
