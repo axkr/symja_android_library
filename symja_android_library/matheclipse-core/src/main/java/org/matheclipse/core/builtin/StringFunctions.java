@@ -418,10 +418,12 @@ public final class StringFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      final IExpr arg2 = ast.isAST1() ? F.CN1 : ast.arg2();
       if (arg1.isList()) {
-        return arg1.mapThread(F.FileNameDrop(F.Slot1, ast.arg2()), 1);
+        return arg1.mapThread(F.FileNameDrop(F.Slot1, arg2), 1);
       }
-      int n = ast.arg2().toIntDefault();
+      // TODO add implementation for sequence specs at arg2
+      int n = arg2.toIntDefault();
       if (n != Integer.MIN_VALUE) {
         String fileName = null;
         if (arg1.isString()) {
@@ -437,7 +439,8 @@ public final class StringFunctions {
           return fileDrop(fileName, n);
         }
       }
-      return F.NIL;
+      // Sequence specification (+n,-n,{+n},{-n} or {m,n}) expected at position `2` in `1`.
+      return Errors.printMessage(S.FileNameDrop, "seqso", F.List(ast, F.C2), engine);
     }
 
     /**
@@ -496,7 +499,7 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_1_2;
     }
   }
 

@@ -349,6 +349,8 @@ public class Errors {
       "The number of subdivisions given in position `1` of `2` should be a positive machine-sized integer.", //
       "seqs",
       "Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in `1`.", //
+      "seqso",
+      "Sequence specification (+n,-n,{+n},{-n} or {m,n}) expected at position `2` in `1`.", //
       "setp", "Part assignment to `1` could not be made", //
       "setraw", "Cannot assign to raw object `1`.", //
       "setps", "`1` in the part assignment is not a symbol.", //

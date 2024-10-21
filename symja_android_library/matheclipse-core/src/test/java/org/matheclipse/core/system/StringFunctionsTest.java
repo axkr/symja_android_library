@@ -25,8 +25,8 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
   public void testFileNameDrop() {
     String s = System.getProperty("os.name");
     if (s.contains("Windows")) {
-      check("FileNameDrop(\"\\\\a\\\\b\\\\c\", -3)", //
-          "\\");
+      check("FileNameDrop(\"\\\\a\\\\b\\\\c\")", //
+          "\\a\\b");
 
       check("FileNameDrop(\"\\\\a\\\\b\\\\c\", 2)", //
           "b\\c");
