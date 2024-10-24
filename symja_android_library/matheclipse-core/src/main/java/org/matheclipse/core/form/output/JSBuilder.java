@@ -63,8 +63,7 @@ public class JSBuilder {
           + "<div id=\"main\" style=\"display: flex; width: 100%; height: 400px; margin: 0; flex-direction: column; overflow: hidden\">\n"
           + "<script>\n"
           // 2 - JavaScript string
-          + "`2`\n" + "</script>\n"
-          + "</div>\n"//
+          + "`2`\n" + "</script>\n" + "</div>\n"//
           // 3 - JSFiddle string
           + "`3`\n" //
           + "</body>\n" //
@@ -201,32 +200,45 @@ public class JSBuilder {
           + "</body>\n" + "</html>"; //
 
   public static final String JSXGRAPH_IFRAME_TEMPLATE = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" //
+          + "\n" //
+          + "<!DOCTYPE html PUBLIC\n"
           + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + "\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" //
+          + "\n"
           + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>JSXGraph</title>\n" + "\n"
+          + "<head>\n" + "<meta charset=\"utf-8\">\n"//
+          + "<title>JSXGraph</title>\n" //
+          + "\n" //
           + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
           // 1 - libraries
-          + "`1`\n"
+          + "`1`\n" //
           + "<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden\">\n"
           + "<script>\n"
           // 2 - JavaScript string
-          + "`2`\n" + "</script>\n"
+          + "`2`\n" //
+          + "</script>\n"
           // 3 - JSFiddle string
-          + "`3`\n" + "</div>\n" + "</body>\n" + "</html>";
+          + "`3`\n" //
+          + "</div>\n" //
+          + "</body>\n" //
+          + "</html>";
 
   /** HTML template for JSXGraph */
   public static final String JSXGRAPH_TEMPLATE = //
-      "<html>\n" + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>JSXGraph</title>\n"
-      // 1 - libraries
+      "<html>\n" //
+          + "<head>\n" //
+          + "<meta charset=\"utf-8\">\n" //
+          + "<title>JSXGraph</title>\n"
+          // 1 - libraries
           + "`1`\n" //
           + "</head>\n"//
           + "<body>\n" //
           + "<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
           + "<script>\n"
           // 2 - JavaScript string
-          + "`2`\n" + "</script>\n"
+          + "`2`\n" //
+          + "</script>\n" //
           // 3 - JSFiddle string
           + "`3`\n" //
           + "</div>\n"//
@@ -324,12 +336,12 @@ public class JSBuilder {
 
   /** CSS libraries */
   private static final String[] CSS_CDN_JSXGRAPH =
-      {"https://cdn.jsdelivr.net/npm/jsxgraph@1.10.0/distrib/jsxgraph.css"};
+      {"https://cdn.jsdelivr.net/npm/jsxgraph@1.10.1/distrib/jsxgraph.css"};
 
   /** CDN JavaScript libraries */
   private static final String[] JS_CDN_JSXGRAPH =
       {"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.10/build/math.js",
-          "https://cdn.jsdelivr.net/npm/jsxgraph@1.10.0/distrib/jsxgraphcore.js",
+          "https://cdn.jsdelivr.net/npm/jsxgraph@1.10.1/distrib/jsxgraphcore.js",
           "https://cdn.jsdelivr.net/npm/json2d_jsxgraph@1.0.1/drawGraphics2d.js"};
 
   /** CSS libraries */
