@@ -430,8 +430,14 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @param position
    * @return a copy of this <code>AST</code> instance from the given <code>position</code>
    *         (inclusive)
+   * @deprecated use {@link #subList(int)} instead
    */
+  @Deprecated
   public IASTAppendable copyFrom(int position);
+
+  default IASTAppendable subList(int startPosition) {
+    return copyFrom(startPosition);
+  }
 
   /**
    * <p>
@@ -443,8 +449,16 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @param endPosition the position to end copying the elements (exclusive)
    * @return a copy of this <code>AST</code> instance from the given <code>startPosition</code>
    *         (inclusive) to the <code>endPosition</code> (exclusive)
+   * @deprecated use {@link #subList(int, int)} instead
    */
+  @Deprecated
   public IASTAppendable copyFrom(int startPosition, int endPosition);
+
+  default IASTAppendable subList(int startPosition, int endPosition) {
+    return copyFrom(startPosition, endPosition);
+  }
+
+
 
   /**
    * <p>
