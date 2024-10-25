@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.PriorityQueue;
 import java.util.Stack;
 import java.util.function.DoubleUnaryOperator;
+import org.matheclipse.core.expression.F;
 
 /**
  * A local and global adaptive numerical integrator based on Simpson's rule [1]. For all
@@ -224,7 +225,7 @@ public final class Simpson extends Quadrature {
       final double err = Math.abs(fine - crude);
 
       // if the error is within the tolerance, update the global integral estimate
-      if (fev > 5 && (err <= 15.0 * eps || wid == 0.0 || eps * 2 == eps)) {
+      if (fev > 5 && (err <= 15.0 * eps || F.isZero(wid) || F.isZero(eps + eps, eps))) {
         est += fine + (fine - crude) / 15.0;
         continue;
       }

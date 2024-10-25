@@ -1,6 +1,7 @@
 package org.matheclipse.core.numerics.integral;
 
 import java.util.function.DoubleUnaryOperator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.numerics.utils.Constants;
 import org.matheclipse.core.numerics.utils.SimpleMath;
 
@@ -484,7 +485,7 @@ public final class ClenshawCurtis extends Quadrature {
       if (next == 4) {
 
         // UPDATE
-        if (n != 4 || !(caution || (xa == a && div == 0))) {
+        if (n != 4 || !(caution || (F.isEqual(xa, a) && div == 0))) {
           if (e < re) {
             e = re;
           }

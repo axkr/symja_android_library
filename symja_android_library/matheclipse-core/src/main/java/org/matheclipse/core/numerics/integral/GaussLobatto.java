@@ -1,6 +1,7 @@
 package org.matheclipse.core.numerics.integral;
 
 import java.util.function.DoubleUnaryOperator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.numerics.utils.Constants;
 
 /**
@@ -78,7 +79,7 @@ public final class GaussLobatto extends Quadrature {
     s += Y[4] * (y5 + y9) + Y[5] * (f5 + f6) + Y[6] * y7;
     s *= h;
     double rtol = myTol;
-    if (est1 != s) {
+    if (!F.isEqual(est1, s)) {
       final double r = Math.abs(est2 - s) / Math.abs(est1 - s);
       if (r > 0.0 && r < 1.0) {
         rtol /= r;
@@ -128,7 +129,7 @@ public final class GaussLobatto extends Quadrature {
     est2 *= (h / 1470.0);
 
     // check the convergence
-    if (s + (est2 - est1) == s || mll <= a || b <= mrr) {
+    if (F.isZero(est2 - est1) || mll <= a || b <= mrr) {
       return est2;
     }
 
