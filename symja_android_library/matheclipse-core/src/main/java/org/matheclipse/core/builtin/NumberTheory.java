@@ -3877,37 +3877,39 @@ public final class NumberTheory {
     }
   }
 
+
   /**
-   *
-   *
    * <pre>
-   * MersennePrimeExponent(n)
+   * <code>MersennePrimeExponent(n)
+   * </code>
    * </pre>
-   *
-   * <blockquote>
-   *
+   * 
    * <p>
    * returns the <code>n</code>th mersenne prime exponent. <code>2^n - 1</code> must be a prime
-   * number. Currently <code>0 &lt;= n &lt;= 47</code> can be computed, otherwise the function
+   * number. Currently <code>0 &lt; n &lt;= 52</code> can be computed, otherwise the function
    * returns unevaluated.
-   *
-   * </blockquote>
-   *
+   * </p>
+   * 
    * <p>
-   * See:<br>
-   *
+   * See
+   * </p>
    * <ul>
-   * <li><a href="https://en.wikipedia.org/wiki/Mersenne_prime">Wikipedia - Mersenne prime</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Mersenne_prime">Wikipedia - Mersenne prime</a></li>
    * <li><a href="https://en.wikipedia.org/wiki/List_of_perfect_numbers">Wikipedia - List of perfect
-   * numbers</a>
+   * numbers</a></li>
    * </ul>
-   *
    * <h3>Examples</h3>
-   *
+   * 
    * <pre>
-   * &gt;&gt; Table(MersennePrimeExponent(i), {i,20})
+   * <code>&gt;&gt; Table(MersennePrimeExponent(i), {i,20})
    * {2,3,5,7,13,17,19,31,61,89,107,127,521,607,1279,2203,2281,3217,4253,4423}
+   * </code>
    * </pre>
+   * 
+   * <h3>Implementation status</h3>
+   * <ul>
+   * <li>☑ - partially implemented</li>
+   * </ul>
    */
   private static class MersennePrimeExponent extends AbstractTrigArg1 {
 
@@ -3916,10 +3918,10 @@ public final class NumberTheory {
       if (arg1.isInteger() && arg1.isPositive()) {
         int n = arg1.toIntDefault();
         if (n > 0) {
-          if (n > NumberTheory.MPE_51.length) {
+          if (n > NumberTheory.MPE_52.length) {
             return F.NIL;
           }
-          return F.ZZ(NumberTheory.MPE_51[n - 1]);
+          return F.ZZ(NumberTheory.MPE_52[n - 1]);
         }
       }
       return F.NIL;
@@ -3933,35 +3935,36 @@ public final class NumberTheory {
   }
 
   /**
-   *
-   *
    * <pre>
-   * MersennePrimeExponentQ(n)
+   * <code>MersennePrimeExponentQ(n)
+   * </code>
    * </pre>
-   *
-   * <blockquote>
-   *
+   * 
    * <p>
-   * returns <code>True</code> if <code>2^n - 1</code> is a prime number. Currently <code>
-   * 0 &lt;= n &lt;= 47</code> can be computed in reasonable time.
-   *
-   * </blockquote>
-   *
+   * returns <code>True</code> if <code>2^n - 1</code> is a prime number. Currently
+   * <code>0 &lt;= n &lt;= 52</code> can be computed in reasonable time.
+   * </p>
+   * 
    * <p>
-   * See:<br>
-   *
+   * See
+   * </p>
    * <ul>
-   * <li><a href="https://en.wikipedia.org/wiki/Mersenne_prime">Wikipedia - Mersenne prime</a>
+   * <li><a href="https://en.wikipedia.org/wiki/Mersenne_prime">Wikipedia - Mersenne prime</a></li>
    * <li><a href="https://en.wikipedia.org/wiki/List_of_perfect_numbers">Wikipedia - List of perfect
-   * numbers</a>
+   * numbers</a></li>
    * </ul>
-   *
    * <h3>Examples</h3>
-   *
+   * 
    * <pre>
-   * &gt;&gt; Select(Range(10000), MersennePrimeExponentQ)
+   * <code>&gt;&gt; Select(Range(10000), MersennePrimeExponentQ)
    * {2,3,5,7,13,17,19,31,61,89,107,127,521,607,1279,2203,2281,3217,4253,4423,9689,9941}
+   * </code>
    * </pre>
+   * 
+   * <h3>Implementation status</h3>
+   * <ul>
+   * <li>☑ - partially implemented</li>
+   * </ul>
    */
   private static class MersennePrimeExponentQ extends AbstractFunctionEvaluator {
 
@@ -3974,9 +3977,9 @@ public final class NumberTheory {
 
       try {
         long n = ((IInteger) arg1).toLong();
-        if (n <= MPE_51[MPE_51.length - 1]) {
-          for (int i = 0; i < MPE_51.length; i++) {
-            if (MPE_51[i] == n) {
+        if (n <= MPE_52[MPE_52.length - 1]) {
+          for (int i = 0; i < MPE_52.length; i++) {
+            if (MPE_52[i] == n) {
               return S.True;
             }
           }
@@ -4731,13 +4734,13 @@ public final class NumberTheory {
       if (arg1.isInteger() && arg1.isPositive()) {
         int n = arg1.toIntDefault();
         if (n >= 0) {
-          if (n > NumberTheory.MPE_51.length) {
+          if (n > NumberTheory.MPE_52.length) {
             return F.NIL;
           }
           if (n <= NumberTheory.PN_8.length) {
             return F.ZZ(NumberTheory.PN_8[n - 1]);
           }
-          int p = NumberTheory.MPE_51[n - 1];
+          int p = NumberTheory.MPE_52[n - 1];
           if (p > Config.MAX_BIT_LENGTH) {
             BigIntegerLimitExceeded.throwIt(p);
           }
@@ -6644,11 +6647,12 @@ public final class NumberTheory {
    * <p>
    * See <a href="https://en.wikipedia.org/wiki/Mersenne_prime">Mersenne prime</a>
    */
-  private static final int[] MPE_51 = {2, 3, 5, 7, 13, 17, 19, 31, 61, 89, 107, 127, 521, 607, 1279,
+  private static final int[] MPE_52 = {2, 3, 5, 7, 13, 17, 19, 31, 61, 89, 107, 127, 521, 607,
+      1279,
       2203, 2281, 3217, 4253, 4423, 9689, 9941, 11213, 19937, 21701, 23209, 44497, 86243, 110503,
       132049, 216091, 756839, 859433, 1257787, 1398269, 2976221, 3021377, 6972593, 13466917,
       20996011, 24036583, 25964951, 30402457, 32582657, 37156667, 42643801, 43112609, 57885161,
-      74207281, 77232917, 82589933};
+      74207281, 77232917, 82589933, 136279841};
 
   /**
    * The first 7 Dedekind numbers.

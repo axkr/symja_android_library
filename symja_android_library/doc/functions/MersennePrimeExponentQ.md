@@ -4,7 +4,7 @@
 MersennePrimeExponentQ(n)
 ```
 
-> returns `True` if `2^n - 1` is a prime number. Currently `0 <= n <= 51` can be computed in reasonable time.
+> returns `True` if `2^n - 1` is a prime number. Currently `0 <= n <= 52` can be computed in reasonable time.
 
 See
 * [Wikipedia - Mersenne prime](https://en.wikipedia.org/wiki/Mersenne_prime)
