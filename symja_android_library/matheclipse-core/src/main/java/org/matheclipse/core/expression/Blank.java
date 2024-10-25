@@ -45,7 +45,7 @@ public class Blank implements IPattern {
   /** Use the default value, if no matching expression was found */
   protected final boolean fDefault;
 
-  public Blank() {
+  protected Blank() {
     this(null);
   }
 

@@ -7468,6 +7468,10 @@ public class F extends S {
     return new AST2(N, symbolicExpr, precision);
   }
 
+  public static IAST N(final IExpr symbolicExpr, long precision) {
+    return new AST2(N, symbolicExpr, F.ZZ(precision));
+  }
+
   public static IAST NakagamiDistribution(final IExpr a0, final IExpr a1) {
     return new AST2(NakagamiDistribution, a0, a1);
   }
