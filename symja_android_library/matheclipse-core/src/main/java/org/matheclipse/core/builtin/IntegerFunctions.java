@@ -6,6 +6,8 @@ import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apfloat;
+import org.apfloat.Apint;
+import org.apfloat.Aprational;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
@@ -16,13 +18,11 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
-import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.ComplexSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalSym;
-import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.interfaces.IAST;
@@ -30,11 +30,13 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.utils.RealDigitsResult;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -69,48 +71,48 @@ public class IntegerFunctions {
     }
   }
 
-  private static IAST integerDigits(IInteger n, IInteger base, int padLeftZeros) {
-    IASTAppendable list = F.ListAlloc(16);
-    if (n.isZero()) {
-      list.append(F.C0);
-    } else {
-      if (base.equals(F.C2)) {
-        BitSet bs = integerToBitSet(n);
-        int last = 0;
-        for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1)) {
-          if (i > 0) {
-            for (int j = last; j < i; j++) {
-              list.append(F.C0);
-            }
-          }
-          last = i + 1;
-          list.append(F.C1);
-        }
-      } else {
-        while (n.isPositive()) {
-          IInteger mod = n.mod(base);
-          list.append(mod);
-          n = n.subtract(mod).div(base);
-        }
-      }
-    }
-
-    if (padLeftZeros < list.argSize() && padLeftZeros > 0) {
-      IASTAppendable result = F.ListAlloc(list.argSize());
-      result = list.reverse(result);
-      return result.copyFrom(list.size() - padLeftZeros);
-    } else {
-      int padSizeZeros = padLeftZeros - list.argSize();
-      if (padSizeZeros < 0) {
-        padSizeZeros = 0;
-      }
-      IASTAppendable result = F.ListAlloc(list.argSize() + padSizeZeros);
-      for (int i = 0; i < padSizeZeros; i++) {
-        result.append(F.C0);
-      }
-      return list.reverse(result);
-    }
-  }
+  // private static IAST integerDigits(IInteger n, IInteger base, int padLeftZeros) {
+  // IASTAppendable list = F.ListAlloc(16);
+  // if (n.isZero()) {
+  // list.append(F.C0);
+  // } else {
+  // if (base.equals(F.C2)) {
+  // BitSet bs = integerToBitSet(n);
+  // int last = 0;
+  // for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1)) {
+  // if (i > 0) {
+  // for (int j = last; j < i; j++) {
+  // list.append(F.C0);
+  // }
+  // }
+  // last = i + 1;
+  // list.append(F.C1);
+  // }
+  // } else {
+  // while (n.isPositive()) {
+  // IInteger mod = n.mod(base);
+  // list.append(mod);
+  // n = n.subtract(mod).div(base);
+  // }
+  // }
+  // }
+  //
+  // if (padLeftZeros < list.argSize() && padLeftZeros > 0) {
+  // IASTAppendable result = F.ListAlloc(list.argSize());
+  // result = list.reverse(result);
+  // return result.copyFrom(list.size() - padLeftZeros);
+  // } else {
+  // int padSizeZeros = padLeftZeros - list.argSize();
+  // if (padSizeZeros < 0) {
+  // padSizeZeros = 0;
+  // }
+  // IASTAppendable result = F.ListAlloc(list.argSize() + padSizeZeros);
+  // for (int i = 0; i < padSizeZeros; i++) {
+  // result.append(F.C0);
+  // }
+  // return list.reverse(result);
+  // }
+  // }
 
   public static BitSet integerToBitSet(int n) {
     BigInteger bn = BigInteger.valueOf(n);
@@ -459,17 +461,21 @@ public class IntegerFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      IInteger base = F.C10;
+      int base = 10;
       int padLeftZeros = 0;
-      if (ast.size() >= 3) {
-        IExpr arg2 = ast.arg2();
-        if (arg2.isInteger() && ((IInteger) arg2).compareInt(1) > 0) {
-          base = (IInteger) arg2;
-        } else {
-          return F.NIL;
+      if (ast.argSize() >= 2) {
+        base = ast.arg2().toIntDefault();
+        if (base < 2) {
+          // Base `1` is not an integer greater than `2`.
+          return Errors.printMessage(S.IntegerDigits, "ibase", F.List(ast.arg2(), F.C1), engine);
+        }
+        if (base > 36) {
+          // `1` currently not supported in `2`.
+          return Errors.printMessage(S.IntegerDigits, "unsupported",
+              F.List("Base greater than 36", "IntegerDigits"), engine);
         }
       }
-      if (ast.size() >= 4) {
+      if (ast.isAST3()) {
         padLeftZeros = ast.arg3().toIntDefault();
         if (padLeftZeros < 0) {
           return F.NIL;
@@ -478,7 +484,25 @@ public class IntegerFunctions {
       IExpr arg1 = ast.arg1();
       if (arg1.isInteger()) {
         IInteger n = ((IInteger) arg1).abs();
-        return integerDigits(n, base, padLeftZeros);
+
+        Apfloat apfloat = new Apint(n.toBigNumerator());
+        RealDigitsResult rd = RealDigitsResult.create(apfloat, base);
+        if (rd != null) {
+          IASTAppendable digitsList = rd.getDigitsList();
+
+          if (padLeftZeros < digitsList.argSize() && padLeftZeros > 0) {
+            return digitsList.subList(digitsList.size() - padLeftZeros);
+          } else {
+            int padSizeZeros = padLeftZeros - digitsList.argSize();
+            if (padSizeZeros < 0) {
+              padSizeZeros = 0;
+            }
+            for (int i = 0; i < padSizeZeros; i++) {
+              digitsList.append(1, F.C0);
+            }
+            return digitsList;
+          }
+        }
       }
       return F.NIL;
     }
@@ -1187,24 +1211,35 @@ public class IntegerFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int n = ast.arg2().toIntDefault();
-      if (n != Integer.MIN_VALUE) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isList()) {
+        IAST list = (IAST) arg1;
+        return list.mapThread(ast.setAtCopy(1, F.Slot1), 1);
+      }
+      if (ast.arg2().isList()) {
+        IAST list = (IAST) ast.arg2();
+        return list.mapThread(ast.setAtCopy(2, F.Slot1), 2);
+      }
+      long n = ast.arg2().toLongDefault();
+      if (n != Long.MIN_VALUE) {
         IExpr x = ast.arg1();
-        int b = 10;
+        int base = 10;
         if (ast.isAST3()) {
-          b = ast.arg3().toIntDefault();
-          if (b <= 1) {
-            if (ast.arg3().isNumber()) {
-              // Base `1` is not a real number greater than 1.
-              Errors.printMessage(S.NumberDigit, "rbase", F.List(ast.arg3()), engine);
-            }
-            return F.NIL;
+          base = ast.arg3().toIntDefault();
+          if (base < 2) {
+            // Base `1` is not an integer greater than `2`.
+            return Errors.printMessage(S.NumberDigit, "ibase", F.List(ast.arg3(), F.C1), engine);
+          }
+          if (base > 36) {
+            // `1` currently not supported in `2`.
+            return Errors.printMessage(S.NumberDigit, "unsupported",
+                F.List("Base greater than 36", "NumberDigit"), engine);
           }
         }
-        IExpr realDigits = realDigits(x);
-        if (realDigits.isList2()&&realDigits.isList()) {
+        IExpr realDigits = realDigits(x, base, 1L, n);
+        if (realDigits.isList2() && realDigits.first().isList()) {
           IAST resultList = (IAST) realDigits.first();
-          return resultList.get(resultList.argSize() - n);
+          return resultList.get(1);
         }
       }
       return F.NIL;
@@ -1220,10 +1255,6 @@ public class IntegerFunctions {
       return ARGS_2_3;
     }
 
-    @Override
-    public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
   }
 
   /**
@@ -1577,7 +1608,39 @@ public class IntegerFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       try {
-        IExpr realDigits = realDigits(arg1);
+        int base = 10;
+        long length = Long.MIN_VALUE;
+        long startDigit = Long.MIN_VALUE;
+        if (ast.argSize() >= 2) {
+          base = ast.arg2().toIntDefault();
+          if (base < 2) {
+            // Base `1` is not an integer greater than `2`.
+            return Errors.printMessage(S.RealDigits, "ibase", F.List(ast.arg2(), F.C1), engine);
+          }
+          if (base > 36) {
+            // `1` currently not supported in `2`.
+            return Errors.printMessage(S.RealDigits, "unsupported",
+                F.List("Base greater than 36", "RealDigits"), engine);
+          }
+          if (ast.argSize() >= 3) {
+            length = ast.arg3().toLongDefault();
+            if (length == Long.MIN_VALUE) {
+              return F.NIL;
+            }
+            if (ast.argSize() == 4) {
+              startDigit = ast.arg4().toLongDefault();
+              if (startDigit == Long.MIN_VALUE) {
+                return F.NIL;
+              }
+            }
+          }
+        }
+
+        if (length != Long.MIN_VALUE && length < 0) {
+          // Non-negative machine-sized integer expected at position `2` in `1`
+          return Errors.printMessage(ast.topHead(), "intnm", F.list(F.C3, ast.arg3()), engine);
+        }
+        IExpr realDigits = realDigits(arg1, base, length, startDigit);
         if (realDigits.isPresent()) {
           return realDigits;
         }
@@ -1597,7 +1660,7 @@ public class IntegerFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_4;
     }
 
     @Override
@@ -1761,70 +1824,53 @@ public class IntegerFunctions {
   }
 
 
-  public static IExpr realDigits(IExpr arg1) {
-    if (arg1.isInteger()) {
-      IInteger number = (IInteger) arg1;
-      if (number.isNegative()) {
-        number = number.abs();
-      }
-      IAST list = integerDigits(number, F.C10, 0);
-      return F.list(list, F.ZZ(list.size() - 1));
-    }
-    IReal number = null;
+  public static IExpr realDigits(IExpr arg1, int radix, long length, long startDigit) {
+    INumber number = null;
     if (arg1.isReal()) {
       number = (IReal) arg1;
     } else {
-      number = arg1.evalReal();
+      if (length != Long.MIN_VALUE) {
+        long precision = length + Math.abs(startDigit);
+        if (precision <= 0) {
+          precision = 1;
+        }
+        IExpr expr = EvalEngine.get().evaluate(F.N(arg1, precision));
+        if (expr.isReal()) {
+          number = (IReal) expr;
+        }
+      } else {
+        number = arg1.evalNumber();
+      }
     }
-    if (number != null) {
-      if (number.isNegative()) {
-        number = number.abs();
+    if (number != null && number.isReal()) {
+      IReal realNumber = (IReal) number;
+      if (realNumber.isNegative()) {
+        realNumber = realNumber.abs();
       }
 
-      if (number instanceof ApfloatNum) {
-        Apfloat apfloat = number.apfloatValue();
-        String str = apfloat.toString();
-        IASTAppendable list = F.ListAlloc(str.length() + 1);
-        int numberOfLeftDigits = 0;
-        for (int i = 0; i < str.length(); i++) {
-          char ch = str.charAt(i);
-          if (ch == '.') {
-            numberOfLeftDigits = i;
-            continue;
-          }
-          if (ch == 'e' || ch == 'E') {
-            String exponentStr = str.substring(i + 1);
-            int exponent = Integer.parseInt(exponentStr);
-
-            numberOfLeftDigits += exponent;
-
-            break;
-          }
-          list.append(ch);
+      Apfloat apfloat;
+      if (realNumber.isInteger()) {
+        apfloat = new Apint(((IInteger) realNumber).toBigNumerator());
+      } else if (realNumber.isFraction() && length == Long.MIN_VALUE
+          && startDigit == Long.MIN_VALUE) {
+        Apint numer = new Apint(((IFraction) realNumber).toBigNumerator());
+        Apint denom = new Apint(((IFraction) realNumber).toBigDenominator());
+        Aprational aprational = new Aprational(numer, denom);
+        RealDigitsResult rd = RealDigitsResult.create(aprational, radix);
+        if (rd != null) {
+          return F.list(rd.getDigitsList(), F.ZZ(rd.getNumberOfLeftDigits()));
         }
-
-        return F.list(list, F.ZZ(numberOfLeftDigits));
-      } else if (number instanceof Num) {
-        String str = Double.toString(number.doubleValue());
-        IASTAppendable list = F.ListAlloc(str.length() + 1);
-        int numberOfLeftDigits = 0;
-        for (int i = 0; i < str.length(); i++) {
-          char ch = str.charAt(i);
-          if (ch == '.') {
-            numberOfLeftDigits = i;
-            continue;
-          }
-          if (ch == 'e' || ch == 'E') {
-            String exponentStr = str.substring(i + 1);
-            int exponent = Integer.parseInt(exponentStr);
-            numberOfLeftDigits += exponent;
-            break;
-          }
-          list.append(ch);
-        }
-
-        return F.list(list, F.ZZ(numberOfLeftDigits));
+        return F.NIL;
+      } else {
+        apfloat = realNumber.apfloatValue();
       }
+
+
+      RealDigitsResult rd = RealDigitsResult.create(apfloat, radix, length, startDigit);
+      if (rd != null) {
+        return F.list(rd.getDigitsList(), F.ZZ(rd.getNumberOfLeftDigits()));
+      }
+
     }
     return F.NIL;
   }

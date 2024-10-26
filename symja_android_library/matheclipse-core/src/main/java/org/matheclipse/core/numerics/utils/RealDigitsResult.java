@@ -11,8 +11,10 @@ import org.apfloat.Apint;
 import org.apfloat.Aprational;
 import org.apfloat.AprationalMath;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IExpr;
 
 public class RealDigitsResult {
   public static RealDigitsResult create(Apfloat a) {
@@ -85,13 +87,19 @@ public class RealDigitsResult {
         if (padLength > Integer.MAX_VALUE) {
           throw new RuntimeException("List size exceeded");
         }
-        IASTAppendable constantArray = F.constantArray(F.C0, (int) padLength);
-        digitsList.appendArgs(constantArray);
+        pad(padLength, F.C0);
       } else if (adjust > startDigit) {
         // Truncate first significant digits
         a = ApfloatMath.scale(a, -startDigit - 1);
         a = a.frac();
         a = ApfloatMath.scale(a, startDigit + 1);
+        // If the number now has some extra leading zeros (i.e. the scale became smaller) they won't
+        // be printed, print them explicitly
+        adjust = a.scale() - 1;
+        if (adjust < startDigit) {
+          long padLength = Math.min(length, startDigit - adjust);
+          pad(padLength, F.C0);
+        }
       }
       numberOfLeftDigits = startDigit + 1;
     }
@@ -134,8 +142,7 @@ public class RealDigitsResult {
       if (padLength > Integer.MAX_VALUE) {
         throw new RuntimeException("List size exceeded");
       }
-      IASTAppendable constantArray = F.constantArray(F.C0, (int) padLength);
-      digitsList.appendArgs(constantArray);
+      pad(padLength, F.C0);
     }
     if (length > digitsList.argSize()) {
       // Pad the remaining requested length with nulls as no significant digits exist
@@ -143,8 +150,7 @@ public class RealDigitsResult {
       if (padLength > Integer.MAX_VALUE) {
         throw new RuntimeException("List size exceeded");
       }
-      IASTAppendable constantArray = F.constantArray(F.C0, (int) padLength);
-      digitsList.appendArgs(constantArray);
+      pad(padLength, S.Indeterminate);
     }
   }
 
@@ -232,5 +238,12 @@ public class RealDigitsResult {
     return numberOfLeftDigits;
   }
 
+  private void pad(long padLength, IExpr digit) {
+    if (padLength > Integer.MAX_VALUE) {
+      throw new RuntimeException("List size exceeded");
+    }
+    IASTAppendable constantArray = F.constantArray(digit, (int) padLength);
+    digitsList.appendArgs(constantArray);
+  }
 
 }

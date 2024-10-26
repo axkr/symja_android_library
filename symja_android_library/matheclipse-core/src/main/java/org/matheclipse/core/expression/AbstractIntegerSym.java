@@ -12,6 +12,7 @@ import java.util.Stack;
 import java.util.TreeSet;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.apfloat.Apint;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.basic.Config;
@@ -355,7 +356,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
   @Override
   public Apfloat apfloatValue() {
-    return new Apfloat(toBigNumerator(), EvalEngine.getApfloat().precision());
+    return new Apint(toBigNumerator());
+    // return new Apfloat(toBigNumerator(), EvalEngine.getApfloat().precision());
   }
 
   @Override

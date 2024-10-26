@@ -11027,12 +11027,29 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testIntegerDigits() {
+    // message: IntegerDigits: Base 1 is not an integer greater than 1.
+    check("IntegerDigits(11,1)", //
+        "IntegerDigits(11,1)");
+    // message: IntegerDigits: Base greater than 36 currently not supported in IntegerDigits.
+    check("IntegerDigits(11,37)", //
+        "IntegerDigits(11,37)");
+
+    check("IntegerDigits(25, 8)", //
+        "{3,1}");
+    check("IntegerDigits(11,2,3)", //
+        "{0,1,1}");
+
     check("IntegerDigits({123,456,789}, 2, 10)", //
         "{{0,0,0,1,1,1,1,0,1,1},{0,1,1,1,0,0,1,0,0,0},{1,1,0,0,0,1,0,1,0,1}}");
 
     // Long.MAX_VALUE == 9_223_372_036_854_775_807L
-    // check("IntegerDigits(9223372036854775807,2)", //
-    // "{0,1,1}");
+    check("IntegerDigits(9223372036854775807,2)", //
+        "{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,\n" //
+            + "1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}");
+    // Long.MAX_VALUE == 9_223_372_036_854_775_807L + 1L
+    check("IntegerDigits(9223372036854775808,2)", //
+        "{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,\n" //
+            + "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}");
 
     check("IntegerDigits(11,2,3)", //
         "{0,1,1}");
@@ -11072,6 +11089,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{0},{1},{1,0},{1,1},{1,0,0},{1,0,1},{1,1,0},{1,1,1}}");
     check("IntegerDigits(Range(0,7), 2, 3)", //
         "{{0,0,0},{0,0,1},{0,1,0},{0,1,1},{1,0,0},{1,0,1},{1,1,0},{1,1,1}}");
+    check("IntegerDigits(6345354,10,4)", //
+        "{5,3,5,4}");
+
+    check("Table(If(FreeQ(IntegerDigits(n-1, 3), 1), 1, 0), {n, 27})", //
+        "{1,0,1,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,1,0,1}");
+    // TODO max radix is 36 at the moment
+    check("Table(FromDigits(IntegerDigits(2, b), 1/b)/b, {b,2,36})", //
+        "{1/4,2/3,1/2,2/5,1/3,2/7,1/4,2/9,1/5,2/11,1/6,2/13,1/7,2/15,1/8,2/17,1/9,2/19,1/\n" //
+            + "10,2/21,1/11,2/23,1/12,2/25,1/13,2/27,1/14,2/29,1/15,2/31,1/16,2/33,1/17,2/35,1/\n" //
+            + "18}");
   }
 
   @Test
@@ -14477,6 +14504,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "37156667");
     check("MersennePrimeExponent(47)", //
         "43112609");
+    check("MersennePrimeExponent(52)", //
+        "136279841");
   }
 
   @Test
@@ -16062,13 +16091,30 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNumberDigit() {
-    check("RealDigits(123456)", //
-        "{{1,2,3,4,5,6},6}");
+    check("NumberDigit(Pi, -1, 2)", //
+        "0");
+    check("NumberDigit(Pi, -2, 2)", //
+        "0");
+    check("NumberDigit(Pi, -3, 2)", //
+        "1");
+
+    check("Range(2, -4, -1)", //
+        "{2,1,0,-1,-2,-3,-4}");
+
+    check("NumberDigit(Pi, Range(2, -4, -1), 2)", //
+        "{0,1,1,0,0,1,0}");
+    check("NumberDigit({Pi, E, 99352, 11/7}, {4, 0, -2})", //
+        "{{0,3,4},{0,2,1},{9,2,0},{0,1,7}}");
+    check("NumberDigit(Pi, Range(2, -2, -1))", //
+        "{0,0,3,1,4}");
+    check("NumberDigit(Pi, Range(2, -2, -1),16)", //
+        "{0,0,3,2,4}");
     check("NumberDigit(123456, 2)", //
         "4");
-    // TODO
-    // check("NumberDigit(12.3456, -1)", //
-    // "4");
+    check("RealDigits(123456)", //
+        "{{1,2,3,4,5,6},6}");
+    check("NumberDigit(12.3456, -1)", //
+        "3");
   }
 
   @Test
@@ -20242,24 +20288,121 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRealDigits() {
+    // message RealDigits: Non-negative machine-sized integer expected at position -1 in 3.
+    check("RealDigits(Pi,2,-1,2)", //
+        "RealDigits(Pi,2,-1,2)");
+
+
+    check("RealDigits(5.635, 10, 20)", //
+        "{{5,6,3,5,0,0,0,0,0,0,0,0,0,0,0,0,Indeterminate,Indeterminate,Indeterminate,Indeterminate},\n" //
+            + "1}");
+
+    check("RealDigits(Pi,2,1,2)", //
+        "{{0},3}");
+    check("RealDigits(Pi,2,1,1)", //
+        "{{1},2}");
+    check("RealDigits(Pi,2,1,0)", //
+        "{{1},1}");
+    check("RealDigits(Pi,2,1,-1)", //
+        "{{0},0}");
+    check("RealDigits(Pi,2,1,-2)", //
+        "{{0},-1}");
+    check("RealDigits(Pi,2,1,-3)", //
+        "{{1},-2}");
+
+    check("RealDigits(Pi,2,0,2)", //
+        "{{},3}");
+    check("RealDigits(Pi,2,0,1)", //
+        "{{},2}");
+    check("RealDigits(Pi,2,0,0)", //
+        "{{},1}");
+    check("RealDigits(Pi,2,0,-1)", //
+        "{{},0}");
+    check("RealDigits(Pi,2,0,-2)", //
+        "{{},-1}");
+    check("RealDigits(Pi,2,0,-3)", //
+        "{{},-2}");
+
+    check("RealDigits(0)", //
+        "{{0},1}");
+    check("RealDigits(0.1, 2)", //
+        "{{1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,\n" //
+            + "0,1,1,0,0,1,1,0,0,1,1,0,0,1},-3}");
+    check("RealDigits(Pi, 10, 1, -500)", //
+        "{{2},-499}");
+    check("RealDigits(Pi, 10, 1, -501)", //
+        "{{9},-500}");
+
+
+    check("RealDigits(Pi, 10, 20, -5)", //
+        "{{9,2,6,5,3,5,8,9,7,9,3,2,3,8,4,6,2,6,4,3},-4}");
+    check("RealDigits(Pi, 10, 20, 5)", //
+        "{{0,0,0,0,0,3,1,4,1,5,9,2,6,5,3,5,8,9,7,9},6}");
+
+    check("RealDigits(1.234, 2, 15)", //
+        "{{1,0,0,1,1,1,0,1,1,1,1,1,0,0,1},1}");
+    check("RealDigits(19/7, 10, 25)", //
+        "{{2,7,1,4,2,8,5,7,1,4,2,8,5,7,1,4,2,8,5,7,1,4,2,8,5},1}");
+
+    check("RealDigits(2,10,8,-1)", //
+        "{{0,0,0,0,0,0,0,0},0}");
+    check("RealDigits(2,10,8,0)", //
+        "{{2,0,0,0,0,0,0,0},1}");
     check("RealDigits(423.012345678*^-11)", //
-        "{{4,2,3,0,1,2,3,4,5,6,7,8},-8}");
+        "{{4,2,3,0,1,2,3,4,5,6,7,8,0,0,0,0},-8}");
     check("RealDigits(423.012345678*^9)", //
-        "{{4,2,3,0,1,2,3,4,5,6,7,8},12}");
+        "{{4,2,3,0,1,2,3,4,5,6,7,8,0,0,0,0},12}");
     check("RealDigits(1.012345678*^-11)", //
-        "{{1,0,1,2,3,4,5,6,7,8},-10}");
+        "{{1,0,1,2,3,4,5,6,7,8,0,0,0,0,0,0},-10}");
     check("RealDigits(1.012345678*^9)", //
-        "{{1,0,1,2,3,4,5,6,7,8},10}");
+        "{{1,0,1,2,3,4,5,6,7,8,0,0,0,0,0,0},10}");
     check("RealDigits(1.012345678*^-42)", //
-        "{{1,0,1,2,3,4,5,6,7,8},-41}");
+        "{{1,0,1,2,3,4,5,6,7,8,0,0,0,0,0,0},-41}");
     check("RealDigits(1.012345678*^123)", //
-        "{{1,0,1,2,3,4,5,6,7,8},124}");
+        "{{1,0,1,2,3,4,5,6,7,8,0,0,0,0,0,0},124}");
+    check(" RealDigits(N(Pi+42 ,30))", //
+        "{{4,5,1,4,1,5,9,2,6,5,3,5,8,9,7,9,3,2,3,8,4,6,2,6,4,3,3,8,3,2},2}");
     check("N(RealDigits(Pi+42),30)", //
         "{{4,5,1,4,1,5,9,2,6,5,3,5,8,9,7,9,3,2,3,8,4,6,2,6,4,3,3,8,3,2},2}");
     check("RealDigits(-42)", //
         "{{4,2},2}");
     check("RealDigits(123.33333)", //
-        "{{1,2,3,3,3,3,3,3},3}");
+        "{{1,2,3,3,3,3,3,3,0,0,0,0,0,0,0,0},3}");
+  }
+
+  @Test
+  public void testRealDigitsRational() {
+    check("RealDigits(19/7)", //
+        "{{2,{7,1,4,2,8,5}},1}");
+    check("RealDigits(19/7, 11)", //
+        "{{2,{7,9,4}},1}");
+    check("RealDigits(1/7)", //
+        "{{{1,4,2,8,5,7}},0}");
+    check("RealDigits(1/32)", //
+        "{{3,1,2,5},-1}");
+    check("RealDigits(33/32)", //
+        "{{1,0,3,1,2,5},1}");
+    check("RealDigits(1/11)", //
+        "{{{9,0}},-1}");
+    check("RealDigits(12/11)", //
+        "{{1,{0,9}},1}");
+    check("RealDigits(1/81)", //
+        "{{{1,2,3,4,5,6,7,9,0}},-1}");
+    check("RealDigits(10/13)", //
+        "{{{7,6,9,2,3,0}},0}");
+    check("RealDigits(1/36)", //
+        "{{2,{7}},-1}");
+    check("RealDigits(1/37)", //
+        "{{{2,7,0}},-1}");
+    check("RealDigits(1/97)", //
+        "{{{1,0,3,0,9,2,7,8,3,5,0,5,1,5,4,6,3,9,1,7,5,2,5,7,7,3,1,9,5,8,7,6,2,8,8,6,5,9,7,\n" //
+            + "9,3,8,1,4,4,3,2,9,8,9,6,9,0,7,2,1,6,4,9,4,8,4,5,3,6,0,8,2,4,7,4,2,2,6,8,0,4,1,2,\n" //
+            + "3,7,1,1,3,4,0,2,0,6,1,8,5,5,6,7,0}},-1}");
+    check("RealDigits(201/10)", //
+        "{{2,0,1},2}");
+    check("RealDigits(141/7)", //
+        "{{2,0,{1,4,2,8,5,7}},2}");
+
   }
 
   @Test
