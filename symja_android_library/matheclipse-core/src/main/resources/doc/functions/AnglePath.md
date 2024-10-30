@@ -7,13 +7,13 @@ AnglePath({phi1, phi2, ...})
 > returns the points formed by a turtle starting at `{0, 0}` and angled at `0` degrees going through the turns given by angles`phi1, phi2, ...` and using distance `1` for each step.
 
 ```
-AnglePath({{r1, phi1}, {r2, phi2}, ...})'
+AnglePath({{r1, phi1}, {r2, phi2}, ...})
 ```
 
 > instead of using `1` as distance, use `$r1$, $r2$, ...` as distances for the respective steps.
       
 ```
-AnglePath({{x, y}, phi0}, {phi1, phi2, ...})'
+AnglePath({{x, y}, phi0}, {phi1, phi2, ...})
 ```
 
 > specifies initial position `{x, y}` and initial direction `phi0`.
