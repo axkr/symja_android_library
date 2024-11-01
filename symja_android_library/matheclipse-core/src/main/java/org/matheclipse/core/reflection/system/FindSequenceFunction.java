@@ -79,6 +79,7 @@ public class FindSequenceFunction extends AbstractEvaluator {
         if (result.isPresent()) {
           return result;
         }
+
         result = findIntegerFunction(sequence, F.C2, variable, engine);
         if (result.isPresent()) {
           return result;
@@ -88,7 +89,7 @@ public class FindSequenceFunction extends AbstractEvaluator {
     return F.NIL;
   }
 
-  protected IExpr findIntegerFunction(IInteger[] sequence, IInteger startValue, IExpr variable,
+  private static IExpr findIntegerFunction(IInteger[] sequence, IInteger startValue, IExpr variable,
       EvalEngine engine) {
     IInteger factor = F.C1;
     IInteger addend = F.C0;
@@ -97,16 +98,18 @@ public class FindSequenceFunction extends AbstractEvaluator {
       IInteger[] newSequence = null;
       if (!startValue.isZero() && sequence[0].mod(startValue).equals(F.C0)) {
         factor = sequence[0].divideBy(startValue).numerator();
-        hasFactor = true;
-        newSequence = new IInteger[sequence.length];
-        for (int i = 0; i < sequence.length; i++) {
-          IRational divideBy = sequence[i].divideBy(factor);
-          if (!divideBy.denominator().isOne()) {
-            hasFactor = false;
-            factor = F.C1;
-            break;
+        if (!factor.isZero()) {
+          hasFactor = true;
+          newSequence = new IInteger[sequence.length];
+          for (int i = 0; i < sequence.length; i++) {
+            IRational divideBy = sequence[i].divideBy(factor);
+            if (!divideBy.denominator().isOne()) {
+              hasFactor = false;
+              factor = F.C1;
+              break;
+            }
+            newSequence[i] = divideBy.numerator();
           }
-          newSequence[i] = divideBy.numerator();
         }
       }
       if (!hasFactor) {
@@ -131,7 +134,7 @@ public class FindSequenceFunction extends AbstractEvaluator {
     return F.NIL;
   }
 
-  protected IExpr findIntegerFunction0(IInteger[] sequence, IExpr variable, IInteger factor,
+  private static IExpr findIntegerFunction0(IInteger[] sequence, IExpr variable, IInteger factor,
       IInteger addend, EvalEngine engine) {
     IExpr result =
         compareSequence(F.PrimePi(F.Slot1), PRIMEPI100, sequence, factor, addend, variable, engine);
@@ -139,10 +142,15 @@ public class FindSequenceFunction extends AbstractEvaluator {
       return result;
     }
 
+    result = compareSequence(F.Subfactorial(F.Slot1), SUBFACTORIAL12, sequence, factor, addend,
+        variable, engine);
+    if (result.isPresent()) {
+      return result;
+    }
     return F.NIL;
   }
 
-  protected IExpr findIntegerFunction1(IInteger[] sequence, IExpr variable, IInteger factor,
+  private static IExpr findIntegerFunction1(IInteger[] sequence, IExpr variable, IInteger factor,
       IInteger addend, EvalEngine engine) {
     IExpr result = compareSequence(F.Factorial(F.Slot1), FACTORIAL12, sequence, factor, addend,
         variable, engine);
@@ -207,10 +215,15 @@ public class FindSequenceFunction extends AbstractEvaluator {
       return result;
     }
 
+    result = compareSequence(F.Hyperfactorial(F.Slot1), HYPERFACTORIAL5, sequence, factor, addend,
+        variable, engine);
+    if (result.isPresent()) {
+      return result;
+    }
     return F.NIL;
   }
 
-  protected IExpr findIntegerFunction2(IInteger[] sequence, IExpr variable, IInteger factor,
+  private static IExpr findIntegerFunction2(IInteger[] sequence, IExpr variable, IInteger factor,
       IInteger addend, EvalEngine engine) {
     IExpr result =
         compareSequence(F.Prime(F.Slot1), PRIME40, sequence, factor, addend, variable, engine);
@@ -250,6 +263,12 @@ public class FindSequenceFunction extends AbstractEvaluator {
       {1, 2, 3, 8, 15, 48, 105, 384, 945, 3840, 10395, 46080, 135135, 645120, 2027025, 10321920,
           34459425, 185794560, 654729075};
 
+  private final static int[] HYPERFACTORIAL5 = //
+      {1, 4, 108, 27648, 86400000};
+
+  private final static int[] SUBFACTORIAL12 = //
+      {0, 1, 2, 9, 44, 265, 1854, 14833, 133496, 1334961, 14684570, 176214841};
+
   private final static int[] FIBONACCI40 = //
       {1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946,
           17711, 28657, 46368, 75025, 121393, 196418, 317811, 514229, 832040, 1346269, 2178309,
@@ -284,26 +303,33 @@ public class FindSequenceFunction extends AbstractEvaluator {
           21, 21, 21, 21, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24,
           25, 25, 25, 25};
 
-  private static IExpr compareSequence(IExpr intFunction, int[] intSequence, IInteger[] sequence,
+  private static IExpr compareSequence(IExpr intFunction, int[] startSequence, IInteger[] inputSequence,
       IInteger factor, IInteger addend, IExpr variable, EvalEngine engine) {
-    if (sequence.length <= intSequence.length) {
-      for (int i = 0; i < sequence.length; i++) {
-        if (!sequence[i].equalsInt(intSequence[i])) {
+    if (inputSequence.length <= startSequence.length) {
+      for (int i = 0; i < inputSequence.length; i++) {
+        if (!inputSequence[i].equalsInt(startSequence[i])) {
           return F.NIL;
         }
       }
-
-      if (!addend.isZero()) {
-        IExpr plus = F.Plus(addend, intFunction);
-        IAST function = F.Function(plus);
-        return createFunction(function, variable, engine);
+    }
+    if (inputSequence.length > startSequence.length) {
+      for (int i = startSequence.length; i < inputSequence.length; i++) {
+        IAST function = F.unaryAST1(F.Function(intFunction), F.ZZ(i));
+        IExpr bigValue = engine.evaluate(function);
+        if (!inputSequence[i - 1].equals(bigValue)) {
+          return F.NIL;
+        }
       }
-      IExpr times = factor.isOne() ? intFunction : F.Times(factor, intFunction);
-      IAST function = F.Function(times);
-      return createFunction(function, variable, engine);
     }
 
-    return F.NIL;
+    if (!addend.isZero()) {
+      IExpr plus = F.Plus(addend, intFunction);
+      IAST function = F.Function(plus);
+      return createFunction(function, variable, engine);
+    }
+    IExpr times = factor.isOne() ? intFunction : F.Times(factor, intFunction);
+    IAST function = F.Function(times);
+    return createFunction(function, variable, engine);
   }
 
   private static IExpr createFunction(IAST function, IExpr variable, EvalEngine engine) {
