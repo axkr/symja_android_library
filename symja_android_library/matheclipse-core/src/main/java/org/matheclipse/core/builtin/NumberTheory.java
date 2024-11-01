@@ -23,6 +23,9 @@ import java.util.SortedMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import org.apfloat.Apcomplex;
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
+import org.apfloat.Apint;
 import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.NumericComputationException;
@@ -1194,11 +1197,11 @@ public final class NumberTheory {
         return Errors.printMessage(S.ContinuedFraction, "realx", F.list(arg1), engine);
       }
 
-      int maxIterations = Integer.MAX_VALUE;
+      int maxNTerms = Integer.MAX_VALUE;
       if (ast.isAST2()) {
         if (ast.arg2().isNumber()) {
-          maxIterations = ast.arg2().toIntDefault();
-          if (maxIterations <= 0) {
+          maxNTerms = ast.arg2().toIntDefault();
+          if (maxNTerms <= 0) {
             // Positive integer (less equal 2147483647) expected at position `2` in `1`.
             return Errors.printMessage(S.ContinuedFraction, "intpm", F.list(ast, F.C2), engine);
           }
@@ -1210,16 +1213,26 @@ public final class NumberTheory {
       IAST list4 = quadraticIrrational(ast.arg1());
       if (list4.isPresent()) {
         return continuedFractionPeriodic((IInteger) list4.arg1(), (IInteger) list4.arg2(),
-            (IInteger) list4.arg3(), (IInteger) list4.arg4(), false, maxIterations, engine);
+            (IInteger) list4.arg3(), (IInteger) list4.arg4(), false, maxNTerms, engine);
       }
 
-      if (arg1 instanceof INum) {
+      if (arg1 instanceof INum && maxNTerms == Integer.MAX_VALUE) {
         // arg1 = F.fraction(((INum) arg1).getRealPart());
-        return realToContinuedFraction(((INum) arg1), maxIterations, engine);
-      } else if (arg1.isAST() || arg1.isSymbol() && arg1.isNumericFunction(true)) {
-        IExpr num = engine.evalN(arg1);
+        return realToContinuedFraction(((INum) arg1), maxNTerms, engine);
+      } else if (!arg1.isRational() && arg1.isNumericFunction(true)) {
+
+        final IExpr num;
+        if (maxNTerms < Integer.MAX_VALUE) {
+          num = engine.evalN(arg1, maxNTerms * 3);
+          if (num instanceof ApfloatNum) {
+            return apfloatToContinuedFraction(((ApfloatNum) num).apfloatValue(), maxNTerms, engine);
+          }
+        } else {
+          num = engine.evalN(arg1);
+        }
+
         if (num instanceof INum) {
-          return realToContinuedFraction(((INum) num), maxIterations, engine);
+          return realToContinuedFraction(((INum) num), maxNTerms, engine);
         }
       }
 
@@ -1231,14 +1244,29 @@ public final class NumberTheory {
         if (isNegative) {
           numerator = numerator.negate();
         }
-        return rationalToContinuedFraction(numerator, denominator, isNegative, maxIterations,
-            false);
+        return rationalToContinuedFraction(numerator, denominator, isNegative, maxNTerms, false);
       }
 
       return F.NIL;
     }
 
-    private static IAST realToContinuedFraction(INum value, int iterationLimit, EvalEngine engine) {
+    private static IExpr apfloatToContinuedFraction(final Apfloat apfloat, int maxNTerms,
+        EvalEngine engine) {
+      Apint[] continuedFraction = ApfloatMath.continuedFraction(apfloat, maxNTerms);
+      final int length = continuedFraction.length;
+      if (length < maxNTerms) {
+        // Warning: `1` terminated before `2` terms.
+        Errors.printMessage(S.ContinuedFraction, "incompCF",
+            F.list(S.ContinuedFraction, F.ZZ(maxNTerms)), engine);
+      }
+      IASTAppendable continuedFractionList = F.ListAlloc(maxNTerms + 1);
+      for (int i = 0; i < length; i++) {
+        continuedFractionList.append(F.ZZ(continuedFraction[i].toBigInteger()));
+      }
+      return continuedFractionList;
+    }
+
+    private static IAST realToContinuedFraction(INum value, int precision, EvalEngine engine) {
       double doubleValue = value.getRealPart();
       if (value.isNumIntValue()) {
         return F.list(F.ZZ((int) Math.rint(doubleValue)));
@@ -1249,7 +1277,7 @@ public final class NumberTheory {
       }
       BigFraction bigFraction = new BigFraction(doubleValue);
       return rationalToContinuedFraction(bigFraction.getNumerator(), bigFraction.getDenominator(),
-          isNegative, iterationLimit, true);
+          isNegative, precision, true);
     }
 
     private static IAST rationalToContinuedFraction(BigInteger numerator, BigInteger denominator,
@@ -6647,8 +6675,7 @@ public final class NumberTheory {
    * <p>
    * See <a href="https://en.wikipedia.org/wiki/Mersenne_prime">Mersenne prime</a>
    */
-  private static final int[] MPE_52 = {2, 3, 5, 7, 13, 17, 19, 31, 61, 89, 107, 127, 521, 607,
-      1279,
+  private static final int[] MPE_52 = {2, 3, 5, 7, 13, 17, 19, 31, 61, 89, 107, 127, 521, 607, 1279,
       2203, 2281, 3217, 4253, 4423, 9689, 9941, 11213, 19937, 21701, 23209, 44497, 86243, 110503,
       132049, 216091, 756839, 859433, 1257787, 1398269, 2976221, 3021377, 6972593, 13466917,
       20996011, 24036583, 25964951, 30402457, 32582657, 37156667, 42643801, 43112609, 57885161,

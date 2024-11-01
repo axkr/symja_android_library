@@ -3525,6 +3525,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testContinuedFraction() {
+    // ContinuedFraction: Warning: ContinuedFraction terminated before 20 terms.
+    check("ContinuedFraction(1/2, 20)", //
+        "{0,2}");
+
     // print message: ContinuedFraction: Positive integer (less than 2147483647) expected at
     // position 2 in
     // ContinuedFraction(Pi,-20).
@@ -3537,12 +3541,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ContinuedFraction(7283752929681393 / 4096)", //
         "{1778259992597,1,272,15}");
     check("ContinuedFraction(30000000000000/53*Pi,10)", //
-        "{1778259992597,1,272,15}");
+        "{1778259992597,1,260,3,1,1,4,1,1,1}");
 
     check("ContinuedFraction(-7283752929681393 / 4096)", //
         "{-1778259992597,-1,-272,-15}");
     check("ContinuedFraction(-30000000000000/53*Pi,10)", //
-        "{-1778259992597,-1,-272,-15}");
+        "{-1778259992597,-1,-260,-3,-1,-1,-4,-1,-1,-1}");
 
     check("ContinuedFraction(2476979795053773 / 4503599627370496)", //
         "{0,1,1,4,2,56294995342130,1,3}");
@@ -3609,12 +3613,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-2.0");
 
     check("ContinuedFraction(E,100)", //
-        "{2,1,2,1,1,4,1,1,6,1,1,8,1,1,10,1,1,12,1,1,11,1,1,1,11,5,1,1,2,1,4,2,1,1,9,17,3}");
+        "{2,1,2,1,1,4,1,1,6,1,1,8,1,1,10,1,1,12,1,1,14,1,1,16,1,1,18,1,1,20,1,1,22,1,1,24,\n" //
+            + "1,1,26,1,1,28,1,1,30,1,1,32,1,1,34,1,1,36,1,1,38,1,1,40,1,1,42,1,1,44,1,1,46,1,1,\n" //
+            + "48,1,1,50,1,1,52,1,1,54,1,1,56,1,1,58,1,1,60,1,1,62,1,1,64,1,1,66,1}");
 
-    // print message: ContinuedFraction: calculations of double number values require a iteration
-    // limit less equal 100.
+
     check("ContinuedFraction(E,101)", //
-        "{2,1,2,1,1,4,1,1,6,1,1,8,1,1,10,1,1,12,1,1,11,1,1,1,11,5,1,1,2,1,4,2,1,1,9,17,3}");
+        "{2,1,2,1,1,4,1,1,6,1,1,8,1,1,10,1,1,12,1,1,14,1,1,16,1,1,18,1,1,20,1,1,22,1,1,24,\n" //
+            + "1,1,26,1,1,28,1,1,30,1,1,32,1,1,34,1,1,36,1,1,38,1,1,40,1,1,42,1,1,44,1,1,46,1,1,\n" //
+            + "48,1,1,50,1,1,52,1,1,54,1,1,56,1,1,58,1,1,60,1,1,62,1,1,64,1,1,66,1,1}");
     check("ContinuedFraction(Sqrt(0))", //
         "{0}");
     check("ContinuedFraction(Sqrt(2))", //
@@ -3639,7 +3646,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ContinuedFraction(-0.55)", //
         "{0,-1,-1,-4,-2}");
     check("ContinuedFraction(Pi,30)", //
-        "{3,7,15,1,292,1,1,1,2,1,3,1,14,3,3,2,1,3,3,7,2,1,1,3,2,42,2}");
+        "{3,7,15,1,292,1,1,1,2,1,3,1,14,2,1,1,2,2,2,2,1,84,2,1,1,15,3,13,1,4}");
     check("ContinuedFraction(47/17)", //
         "{2,1,3,4}");
     check("ContinuedFraction(Sqrt(13))", //
