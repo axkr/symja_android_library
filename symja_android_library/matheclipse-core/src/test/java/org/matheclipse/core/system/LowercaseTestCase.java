@@ -8349,6 +8349,36 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindSequenceFunction() {
+    check("FindSequenceFunction({1, 1, 2, 2, 4, 2, 6, 4},n)", //
+        "EulerPhi(n)");
+    check("FindSequenceFunction({1, 1, 2, 2, 4, 2, 6, 2},n)", //
+        "CarmichaelLambda(n)");
+
+    check(
+        "FindSequenceFunction({-3, -2, -1, -1, 0, 0, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 5, 5},n)", //
+        "-3+PrimePi(n)");
+    check("FindSequenceFunction({0, 1, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5, 6, 6, 6, 6, 7, 7, 8, 8},n)", //
+        "PrimePi(n)");
+
+    check("FindSequenceFunction({5, 6, 8, 10, 14, 16, 20, 22},n)", //
+        "3+Prime(n)");
+    check("FindSequenceFunction({2, 3, 5, 7, 11, 13, 17, 19},n)", //
+        "Prime(n)");
+
+    check("FindSequenceFunction({1, 2, 3, 5, 7, 11},n)", //
+        "PartitionsP(n)");
+    check("FindSequenceFunction({1, 1, 2, 2, 3, 4, 5, 6},n)", //
+        "PartitionsQ(n)");
+    check("FindSequenceFunction({1, 3, 4, 7, 11, 18, 29, 47, 76, 123, 199, 322},n)", //
+        "LucasL(n)");
+    check("FindSequenceFunction({1, 2, 5, 15, 52},n)", //
+        "BellB(n)");
+    check("FindSequenceFunction({1, 3, 6, 10, 15, 21},n)", //
+        "1/2*n*(1+n)");
+    check("FindSequenceFunction({18, 19, 22, 31, 59} ,n)", //
+        "17+CatalanNumber(n)");
+    check("FindSequenceFunction({1, 2, 5, 14, 42, 132, 429, 1430} ,n)", //
+        "CatalanNumber(n)");
     check("FindSequenceFunction({1*3, 2*3, 6*3, 24*3, 120*3, 720*3, 5040*3} ,n)", //
         "3*n!");
     check("FindSequenceFunction({1, 2, 6, 24, 120}, n)", //

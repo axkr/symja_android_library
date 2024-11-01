@@ -8186,6 +8186,10 @@ public class F extends S {
     return new AST1(Polygon, a0);
   }
 
+  public static IAST PolygonalNumber(final IExpr a) {
+    return new AST1(PolygonalNumber, a);
+  }
+
   public static IAST PolyLog(final IExpr a0, final IExpr a1) {
     return new AST2(PolyLog, a0, a1);
   }
@@ -8333,6 +8337,10 @@ public class F extends S {
   public static IAST Prepend(final IExpr a0, final IExpr a1) {
 
     return new AST2(Prepend, a0, a1);
+  }
+
+  public static IAST Prime(final IExpr a0) {
+    return new AST1(Prime, a0);
   }
 
   public static IAST PrimeOmega(final IExpr a0) {
