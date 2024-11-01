@@ -2170,6 +2170,10 @@ public class EvalEngine implements Serializable {
     return evaluate(F.N(expr));
   }
 
+  public final IExpr evalN(final IExpr expr, long precision) {
+    return evaluate(F.N(expr, F.ZZ(precision)));
+  }
+
   public final IAST evalArgsOrderlessN(IAST ast1) {
     int numericFlag =
         isArbitraryMode() ? IAST.NUMERIC_ARBITRARY_EVALED : IAST.NUMERIC_DOUBLE_EVALED;

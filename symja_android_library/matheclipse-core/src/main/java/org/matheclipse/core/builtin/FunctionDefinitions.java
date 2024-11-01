@@ -35,6 +35,8 @@ public final class FunctionDefinitions {
       S.FindMaximum.setEvaluator(new org.matheclipse.core.reflection.system.FindMaximum());
       S.FindMinimum.setEvaluator(new org.matheclipse.core.reflection.system.FindMinimum());
       S.FindRoot.setEvaluator(new org.matheclipse.core.reflection.system.FindRoot());
+      S.FindSequenceFunction
+          .setEvaluator(new org.matheclipse.core.reflection.system.FindSequenceFunction());
       S.Fourier.setEvaluator(new org.matheclipse.core.reflection.system.Fourier());
       S.FourierCosTransform
           .setEvaluator(new org.matheclipse.core.reflection.system.FourierCosTransform());

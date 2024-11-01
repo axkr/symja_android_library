@@ -8348,6 +8348,29 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFindSequenceFunction() {
+    check("FindSequenceFunction({1*3, 2*3, 6*3, 24*3, 120*3, 720*3, 5040*3} ,n)", //
+        "3*n!");
+    check("FindSequenceFunction({1, 2, 6, 24, 120}, n)", //
+        "n!");
+    check("FindSequenceFunction({1, 2, 3, 8, 15, 48, 105} , n)", //
+        "n!!");
+    check("FindSequenceFunction({1, 1, 2, 3, 5, 8, 13}, n)", //
+        "Fibonacci(n)");
+    check("FindSequenceFunction({6,18,54,162},n)", //
+        "2*3^n");
+    check("FindSequenceFunction({3,9,27,81},n)", //
+        "3^n");
+    check("FindSequenceFunction({7,9,11,13,15})", //
+        "5+2*#1&");
+    check("FindSequenceFunction({1,2,3,4,5})", //
+        "#1&");
+    check("FindSequenceFunction({1,2,3,4,5},n)", //
+        "n");
+
+  }
+
+  @Test
   public void testFindRootMultivariate() {
     // https://en.wikipedia.org/wiki/Newton%27s_method#Example
     check("FindRoot({5*x1^2+x1*x2^2+Sin(2*x2)^2==2, Exp(2*x1-x2)+4*x2==3},{{x1, 1.0},{x2, 1.0}})", //

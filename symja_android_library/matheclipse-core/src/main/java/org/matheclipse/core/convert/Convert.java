@@ -1113,16 +1113,34 @@ public class Convert {
     return null;
   }
 
+  public static IInteger[] toIntegerArray(IExpr expr) {
+    if (expr.isList()) {
+      IAST listOfIntegers = (IAST) expr;
+      IInteger[] result = new IInteger[listOfIntegers.argSize()];
+
+      for (int i = 1; i < listOfIntegers.size(); i++) {
+        if (listOfIntegers.get(i) instanceof IInteger) {
+          result[i - 1] = (IInteger) listOfIntegers.get(i);
+        } else {
+          return null;
+        }
+      }
+      return result;
+    }
+    return null;
+  }
+
   public static List<Integer> toIntegerList(IExpr expr) {
     if (expr.isList()) {
-      List<Integer> result = new ArrayList<Integer>(expr.size() - 1);
       IAST listOfIntegers = (IAST) expr;
+      List<Integer> result = new ArrayList<Integer>(listOfIntegers.argSize());
+
       for (int i = 1; i < listOfIntegers.size(); i++) {
         if (listOfIntegers.get(i) instanceof IInteger) {
           result.add(((IInteger) listOfIntegers.get(i)).toInt());
-          continue;
+        } else {
+          return null;
         }
-        return null;
       }
       return result;
     } else {

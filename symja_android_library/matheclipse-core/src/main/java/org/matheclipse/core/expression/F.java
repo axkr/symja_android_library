@@ -8259,7 +8259,7 @@ public class F extends S {
    * @param exponent
    * @return
    */
-  public static IAST Power(final IExpr base, final IExpr exponent) {
+  public static IASTMutable Power(final IExpr base, final IExpr exponent) {
     return new B2.Power(base, exponent);
   }
 

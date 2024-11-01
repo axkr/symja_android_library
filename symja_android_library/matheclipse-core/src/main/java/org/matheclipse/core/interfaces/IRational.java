@@ -16,6 +16,10 @@ public interface IRational extends IReal, IBigNumber {
 
   public IRational add(IRational parm1);
 
+  default IRational add(int parm1) {
+    return add(F.ZZ(parm1));
+  }
+
   @Override
   public IInteger ceil();
 
@@ -40,6 +44,10 @@ public interface IRational extends IReal, IBigNumber {
   public IInteger denominator();
 
   public IRational divideBy(IRational parm1);
+
+  default IRational divideBy(int parm1) {
+    return divideBy(F.ZZ(parm1));
+  }
 
   /**
    * Check if this number equals the given fraction <code>numerator/denominator</code> number.
@@ -200,6 +208,10 @@ public interface IRational extends IReal, IBigNumber {
   public IRational roundClosest(IReal factor);
 
   public IRational subtract(IRational parm1);
+
+  default IRational subtract(int parm1) {
+    return subtract(F.ZZ(parm1));
+  }
 
   /**
    * Returns the denominator of this fraction.

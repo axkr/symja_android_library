@@ -3788,6 +3788,9 @@ public class S {
    */
   public final static IBuiltInSymbol FindRoot = S.initFinalSymbol("FindRoot", ID.FindRoot);
 
+  public final static IBuiltInSymbol FindSequenceFunction =
+      S.initFinalSymbol("FindSequenceFunction", ID.FindSequenceFunction);
+
   /**
    * FindShortestPath(graph, source, destination) - find a shortest path in the `graph` from
    * `source` to `destination`.
