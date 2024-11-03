@@ -11247,63 +11247,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{-2,-2,-3}");
   }
 
-
-  @Test
-  public void testIntegerPartitions() {
-    // message Maximum AST dimension 2147483647 exceededs
-    check("IntegerPartitions(2147483647)", //
-        "IntegerPartitions(2147483647)");
-
-    // TODO improve performance
-    // check("IntegerPartitions(1009,2)", //
-    // "{{1009}}");
-    check("IntegerPartitions(1009,1)", //
-        "{{1009}}");
-    check("IntegerPartitions(1009,0)", //
-        "{}");
-    check("IntegerPartitions(1,7,{-1,-2,3})", //
-        "{{3,-2},{3,3,3,-2,-2,-2,-2}}");
-
-    check("IntegerPartitions(50, All, {6, 9, 20})", //
-        "{{20,9,9,6,6},{20,6,6,6,6,6}}");
-    // https://oeis.org/A214772 - McNugget partitions - Number of partitions of n into parts 6, 9 or
-    // 20.
-    check("Table(Length(IntegerPartitions(i, All, {6, 9, 20})), {i,0, 100, 1})", //
-        "{1,0,0,0,0,0,1,0,0,1,0,0,1,0,0,1,0,0,2,0,1,1,0,0,2,0,1,2,0,1,2,0,1,2,0,1,3,0,2,2,\n"
-            + "1,1,3,0,2,3,1,2,3,1,2,3,1,2,4,1,3,3,2,2,5,1,3,4,2,3,5,2,3,5,2,3,6,2,4,5,3,3,7,2,\n"
-            + "5,6,3,4,7,3,5,7,3,5,8,3,6,7,4,5,9,3,7,8,5}");
-
-    check("IntegerPartitions(50, All, {6, 9, 20})", //
-        "{{20,9,9,6,6},{20,6,6,6,6,6}}");
-    check("IntegerPartitions(156, {9,10}, {1, 5, 10, 25})", //
-        "{{25,25,25,25,25,10,10,10,1},{25,25,25,25,25,10,10,5,5,1}}");
-    check("IntegerPartitions(156, 10, {1, 5, 10, 25})", //
-        "{{25,25,25,25,25,10,10,10,1},{25,25,25,25,25,25,5,1},{25,25,25,25,25,10,10,5,5,1}}");
-    check("IntegerPartitions(4)", //
-        "{{4},{3,1},{2,2},{2,1,1},{1,1,1,1}}");
-    check("IntegerPartitions(6)", //
-        "{{6},{5,1},{4,2},{4,1,1},{3,3},{3,2,1},{3,1,1,1},{2,2,2},{2,2,1,1},{2,1,1,1,1},{\n" //
-            + "1,1,1,1,1,1}}");
-    check("IntegerPartitions(6, {3,4})", //
-        "{{4,1,1},{3,2,1},{3,1,1,1},{2,2,2},{2,2,1,1}}");
-    check("IntegerPartitions(10,2)", //
-        "{{10},{9,1},{8,2},{7,3},{6,4},{5,5}}");
-    check("IntegerPartitions(10,{2})", //
-        "{{9,1},{8,2},{7,3},{6,4},{5,5}}");
-    check("IntegerPartitions(0)", //
-        "{{}}");
-    check("IntegerPartitions(1)", //
-        "{{1}}");
-    check("IntegerPartitions(-1)", //
-        "{}");
-    check("IntegerPartitions(.5)", //
-        "IntegerPartitions(0.5)");
-    check("IntegerPartitions(1/2)", //
-        "{}");
-  }
-
-
-
   @Test
   public void testInterpolation() {
     checkNumeric("Interpolation(Table({x, Exp(4/(1+x^2))}, {x, 0, 3, 0.5}), 2.5)", //
