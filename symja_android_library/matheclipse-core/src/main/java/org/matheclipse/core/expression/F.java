@@ -5318,6 +5318,10 @@ public class F extends S {
     return new AST1(IntegerPart, a0);
   }
 
+  public static IAST IntegerPartitions(final IExpr n, final IExpr k) {
+    return new AST2(IntegerPartitions, n, k);
+  }
+
   public static IAST IntegerPartitions(final IExpr n, final IExpr k, final IExpr p) {
     return new AST3(IntegerPartitions, n, k, p);
   }
@@ -9017,6 +9021,10 @@ public class F extends S {
     return new AST1(Reverse, a);
   }
 
+  public static IAST ReverseSort(final IExpr a) {
+    return new AST1(ReverseSort, a);
+  }
+
   public static IAST RomanNumeral(final IExpr a) {
     return new AST1(RomanNumeral, a);
   }
@@ -9807,6 +9815,11 @@ public class F extends S {
     return expr.replaceAll(Functors.rules(Rule(subExpr, replacementExpr), EvalEngine.get()))
         .orElse(expr);
   }
+
+  public static IAST SubsetQ(IExpr x, IExpr y) {
+    return new AST2(S.SubsetQ, x, y);
+  }
+
 
   /**
    * Return <code>x + (-1)*y</code>
@@ -10646,6 +10659,10 @@ public class F extends S {
    */
   public static IAST TrueQ(final IExpr expr) {
     return new AST1(TrueQ, expr);
+  }
+
+  public static IAST Tuples(final IExpr x, final IExpr y) {
+    return new AST2(Tuples, x, y);
   }
 
   /**

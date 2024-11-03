@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.combinatoric.KPartitionsIterable;
 import org.matheclipse.core.combinatoric.KPartitionsList;
 import org.matheclipse.core.combinatoric.KSubsetsIterable;
@@ -821,7 +820,39 @@ public final class Combinatoric {
               max = range.maximum();
             }
             if (ast.isAST3()) {
-              return frobeniusPartition(ast, engine);
+              IExpr kspec = ast.arg2();
+              if (ast.arg3().equals(S.All)) {
+                // IntegerPartitions(n_Integer, kspec_, All) := IntegerPartitions(n, kspec)
+                return F.IntegerPartitions(F.ZZ(n), kspec);
+              }
+              if (ast.arg3().isList()) {
+                IAST s = (IAST) ast.arg3();
+                if (kspec.isList1() && kspec.first().isInteger()) {
+                  IInteger k = (IInteger) kspec.first();
+                  // "IntegerPartitions(n_Integer, {k_Integer}, s_List) :=
+                  // ReverseSort@Select(Union(ReverseSort /@ Tuples(s, k)), Total(#) == n &),
+                  return F.ReverseSort(F.Select(F.Union(F.Map(S.ReverseSort, F.Tuples(s, k))),
+                      F.Function(F.Equal(F.Total(F.Slot1), n))));
+                }
+                if (!s.forAll(x -> x.isInteger() && x.isPositive())) {
+                  return F.NIL;
+                }
+              }
+              IExpr frobeniusPartition = frobeniusPartition(ast, engine);
+              if (frobeniusPartition.isList()) {
+                IASTMutable mutableList = ((IAST) frobeniusPartition).copy();
+                EvalAttributes.sort(mutableList,
+                    Comparators.reversedComparator(Comparators.LEXICAL_COMPARATOR));
+                return mutableList;
+              }
+              return F.NIL;
+            } else if (ast.argSize() == 4) {
+              IExpr kspec = ast.arg2();
+              IExpr sspec = ast.arg3();
+              IExpr m = ast.arg4();
+              // "IntegerPartitions(n_Integer, kspec_, sspec_, m_) := Take(IntegerPartitions(n, k,
+              // sspec), m)",
+              return F.Take(F.IntegerPartitions(F.ZZ(n), kspec, sspec), m);
             }
 
             if (n == 0) {
@@ -979,9 +1010,10 @@ public final class Combinatoric {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_3;
+      return ARGS_1_4;
     }
   }
+
 
   /**
    *
@@ -1054,6 +1086,7 @@ public final class Combinatoric {
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
+
 
   private static final class KOrderlessPartitions extends AbstractFunctionEvaluator {
 
@@ -1157,6 +1190,7 @@ public final class Combinatoric {
     }
   }
 
+
   /**
    * Generate a list of all all k-partitions for a given list with N elements. <br>
    * See <a href="http://en.wikipedia.org/wiki/Partition_of_a_set">Wikipedia - Partition of a
@@ -1188,6 +1222,7 @@ public final class Combinatoric {
       return ARGS_2_2;
     }
   }
+
 
   /**
    *
@@ -1255,6 +1290,7 @@ public final class Combinatoric {
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
+
 
   /**
    *
@@ -1351,6 +1387,7 @@ public final class Combinatoric {
       return ARGS_2_3;
     }
   }
+
 
   /**
    *
@@ -1474,6 +1511,7 @@ public final class Combinatoric {
     }
   }
 
+
   /**
    *
    *
@@ -1540,6 +1578,7 @@ public final class Combinatoric {
     }
   }
 
+
   /**
    *
    *
@@ -1594,6 +1633,7 @@ public final class Combinatoric {
       return ARGS_1_1;
     }
   }
+
 
   /**
    *
@@ -1699,6 +1739,7 @@ public final class Combinatoric {
     }
   }
 
+
   /**
    *
    *
@@ -1753,6 +1794,7 @@ public final class Combinatoric {
       return ARGS_1_1;
     }
   }
+
 
   /**
    *
@@ -1851,6 +1893,7 @@ public final class Combinatoric {
       return ARGS_2_2;
     }
   }
+
 
   /**
    *
@@ -2068,6 +2111,7 @@ public final class Combinatoric {
     }
   }
 
+
   private static final class PolygonalNumber extends AbstractFunctionEvaluator {
 
     @Override
@@ -2092,6 +2136,7 @@ public final class Combinatoric {
       super.setUp(newSymbol);
     }
   }
+
 
   /**
    *
@@ -2174,6 +2219,7 @@ public final class Combinatoric {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+
   /**
    *
    *
@@ -2250,6 +2296,7 @@ public final class Combinatoric {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+
   /**
    *
    *
@@ -2315,6 +2362,7 @@ public final class Combinatoric {
       return ARGS_1_1;
     }
   }
+
 
   /**
    *
@@ -2396,6 +2444,7 @@ public final class Combinatoric {
       newSymbol.addAttributes(ISymbol.NHOLDALL);
     }
   }
+
 
   /**
    *
@@ -2585,6 +2634,7 @@ public final class Combinatoric {
     }
   }
 
+
   /**
    *
    *
@@ -2734,6 +2784,7 @@ public final class Combinatoric {
     }
   }
 
+
   /**
    *
    *
@@ -2814,6 +2865,7 @@ public final class Combinatoric {
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
+
 
   /**
    * Generate an <code>java.lang.Iterable</code> for (multiset) permutations
@@ -2965,6 +3017,7 @@ public final class Combinatoric {
     public Iterator<int[]> iterator() {
       return new KPermutationsIterator();
     }
+
   }
 
   /**
