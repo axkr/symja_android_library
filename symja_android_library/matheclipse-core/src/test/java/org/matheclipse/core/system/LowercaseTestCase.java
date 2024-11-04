@@ -2732,6 +2732,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCoefficientList() {
+
+    check("CoefficientList(Series(2*x, {x, 0, 9}), x)", //
+        "{0,2}");
+    check("Series(2*x, {x, 0, 9})", //
+        "2*x+O(x)^10");
+
+    check("CoefficientList((x + y)^3, z)", //
+        "{(x+y)^3}");
+    check("CoefficientList((x - 2 y + 3 z)^3, {x, y, z})", //
+        "{{{0,0,0,27},{0,0,-54,0},{0,36,0,0},{-8,0,0,0}},{{0,0,27,0},{0,-36,0,0},{12,0,0,\n" //
+            + "0},{0,0,0,0}},{{0,9,0,0},{-6,0,0,0},{0,0,0,0},{0,0,0,0}},{{1,0,0,0},{0,0,0,0},{0,\n" //
+            + "0,0,0},{0,0,0,0}}}");
+
+    check("CoefficientList(Series(Log(1-x), {x, 0, 9}),x)", //
+        "{0,-1,-1/2,-1/3,-1/4,-1/5,-1/6,-1/7,-1/8,-1/9}");
+
+
     // check("1.0 * 10.0* x^9", //
     // "10.0*x^9");
     check("Expand((1.0 + x)^10)", //
@@ -15989,6 +16006,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNormal() {
+    check("s=Series(Exp(x), {x, 0, 5})", //
+        "1+x+x^2/2+x^3/6+x^4/24+x^5/120+O(x)^6");
+    check("Normal(s)", //
+        "1+x+x^2/2+x^3/6+x^4/24+x^5/120");
+    check("Normal(Pi)", //
+        "Pi");
     check("Normal( ConditionalExpression( 1, Element(a,Reals)&&b>0&&n>0 ) + z^3 )", //
         "1+z^3");
     check("Normal( ConditionalExpression( 1, Element(a,Reals)&&b>0&&n>0 ) + z^3, ByteArray)", //
@@ -20331,6 +20354,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{},-2}");
 
     check("RealDigits(0)", //
+        "{{0},1}");
+    check("RealDigits(0,20)", //
         "{{0},1}");
     check("RealDigits(0.1, 2)", //
         "{{1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,\n" //

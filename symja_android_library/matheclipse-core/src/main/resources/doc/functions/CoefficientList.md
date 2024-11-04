@@ -21,6 +21,12 @@ See:
 
 >> CoefficientList(a+c*x^2, x)
 {a,0,c}
+
+>> CoefficientList((x + y)^3, z)
+{(x+y)^3}
+        
+>> CoefficientList(Series(2*x, {x, 0, 9}), x)
+{0,2}
 ```
 
 In the next line `Coefficient` returns the coefficient of a particular term of a polynomial. In this case `(-210*c^2 * x^2*y*z^2)` is a term of `(c*x-2*y+z)^7` after it's expanded.

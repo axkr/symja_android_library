@@ -8,7 +8,6 @@ import java.util.TreeSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.JASModInteger;
@@ -303,8 +302,13 @@ public class PolynomialFunctions {
       if (ast.arg1().isList()) {
         return arg1.mapThread(ast, 1);
       }
-      IExpr expr = F.evalExpandAll(arg1, engine).normal(false);
       IAST list = ast.arg2().makeList();
+      IExpr expr = arg1.normal(false);
+      if (expr.isAST() && !expr.isFree(x -> list.indexOf(x) > 0, true)) {
+        expr = F.evalExpandAll(arg1, engine);
+      }
+      expr = engine.evaluate(expr.normal(false));
+
       return coefficientList(expr, list);
     }
 
@@ -1684,7 +1688,7 @@ public class PolynomialFunctions {
           return F.NIL;
         }
         varList.add((ISymbol) listOfVariables.get(i));
-        pvars[i - 1] = ((ISymbol) listOfVariables.get(i)).toString();
+        pvars[i - 1] = listOfVariables.get(i).toString();
       }
 
       List<GenPolynomial<BigRational>> polyList =
@@ -2072,7 +2076,7 @@ public class PolynomialFunctions {
         // https://en.wikipedia.org/wiki/Laguerre_polynomials#Physicist_Scaling_Convention
         // (Gamma(l+n+1)*Hypergeometric1F1(-n,l+1,z))/(Gamma(l+1)*n!)
         INumber nNumber = n;
-        IExpr v1 = ((INumber) l).plus(F.C1);
+        IExpr v1 = l.plus(F.C1);
         return F.Times(F.Power(F.Factorial(n), F.CN1), F.Power(F.Gamma(v1), F.CN1),
             F.Gamma(F.Plus(n, v1)), F.Hypergeometric1F1(nNumber.negate(), v1, z));
 
