@@ -13,7 +13,7 @@ public class DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 132, 0 };
+  final public static int[] SIZES = { 134, 0 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -439,6 +439,12 @@ public class DerivativeRules {
       Times(CN1D2,Log(C2Pi)), true),
     // Zeta'(-1)=1/12-Log(Glaisher)
     ISet($($(Derivative(C1),Zeta),CN1),
-      Subtract(QQ(1L,12L),Log(Glaisher)), true)
+      Subtract(QQ(1L,12L),Log(Glaisher)), true),
+    // Derivative(1,0,0)[LerchPhi]=(LerchPhi(1,-1+#2,#3)-LerchPhi(#1,#2,#3)*#3)/#1&
+    ISet($(Derivative(C1,C0,C0),LerchPhi),
+      Function(Times(Power(Slot1,CN1),Plus(LerchPhi(C1,Plus(CN1,Slot2),Slot(C3)),Times(CN1,LerchPhi(Slot1,Slot2,Slot(C3)),Slot(C3))))), true),
+    // Derivative(0,0,1)[LerchPhi]=-LerchPhi(#1,1+#2,#3)*#2&
+    ISet($(Derivative(C0,C0,C1),LerchPhi),
+      Function(Times(CN1,LerchPhi(Slot1,Plus(C1,Slot2),Slot(C3)),Slot2)), true)
   );
 }

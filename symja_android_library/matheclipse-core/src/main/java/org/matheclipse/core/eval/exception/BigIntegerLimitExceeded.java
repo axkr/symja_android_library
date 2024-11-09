@@ -1,6 +1,8 @@
 package org.matheclipse.core.eval.exception;
 
-/** Exception which will be thrown, if the Config.MAX_AST_SIZE limit was exceeded. */
+import org.matheclipse.core.basic.Config;
+
+/** Exception which will be thrown, if the {@link Config#MAX_BIT_LENGTH} was exceeded. */
 public class BigIntegerLimitExceeded extends LimitException {
 
   private static final long serialVersionUID = 8925451277545397036L;
@@ -11,27 +13,27 @@ public class BigIntegerLimitExceeded extends LimitException {
     fLimit = limit;
   }
 
-  /**
-   * Set the exceeded limit to <code>(long)rowDimension*(long)columnDimension</code>.
-   *
-   * @param rowDimension
-   * @param columnDimension
-   */
-  public BigIntegerLimitExceeded(int rowDimension, int columnDimension) {
-    fLimit = rowDimension * (long) columnDimension;
-  }
-
   @Override
   public String getMessage() {
     return "BigInteger bit length " + fLimit + " exceeded";
   }
 
+  /**
+   * Throws a new <code>BigIntegerLimitExceeded</code> exception, if the
+   * {@link Config#MAX_BIT_LENGTH} limit was exceeded.
+   * 
+   * <p>
+   * Usage:
+   *
+   * <pre>
+   * if (((IInteger) number).bitLength() > Config.MAX_BIT_LENGTH / 100) {
+   *   BigIntegerLimitExceeded.throwIt(Config.MAX_BIT_LENGTH / 100);
+   * }
+   * </pre>
+   * 
+   * @param limit
+   */
   public static void throwIt(final long limit) {
-    // HeapContext.enter();
-    // try {
-    throw new BigIntegerLimitExceeded(limit); // .copy());
-    // } finally {
-    // HeapContext.exit();
-    // }
+    throw new BigIntegerLimitExceeded(limit);
   }
 }

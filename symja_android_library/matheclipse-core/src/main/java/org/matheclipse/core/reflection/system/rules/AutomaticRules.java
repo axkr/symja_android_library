@@ -55,7 +55,6 @@ public class AutomaticRules {
     rules = LaplaceTransformRules.RULES;
     rules = LegendrePRules.RULES;
     rules = LegendreQRules.RULES;
-    rules = LerchPhiRules.RULES;
     rules = LimitRules.RULES;
     rules = LogRules.RULES;
     rules = MatrixDRules.RULES;

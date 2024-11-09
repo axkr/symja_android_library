@@ -10085,7 +10085,7 @@ public class F extends S {
         number = number.plus((INumber) temp);
         if (number instanceof IInteger //
             && ((IInteger) number).bitLength() > Config.MAX_BIT_LENGTH / 100) {
-          BigIntegerLimitExceeded.throwIt(Config.MAX_BIT_LENGTH / 100);
+          BigIntegerLimitExceeded.throwIt(((IInteger) number).bitLength());
         }
       } else {
         numberOfLeaves += temp.leafCount() + 1;

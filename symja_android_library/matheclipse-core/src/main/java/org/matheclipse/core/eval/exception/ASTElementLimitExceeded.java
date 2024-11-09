@@ -1,6 +1,6 @@
 package org.matheclipse.core.eval.exception;
 
-/** Exception which will be thrown, if the Config.MAX_AST_SIZE limit was exceeded. */
+/** Exception which will be thrown, if the {@link Config#MAX_AST_SIZE} limit was exceeded. */
 public class ASTElementLimitExceeded extends LimitException {
 
   private static final long serialVersionUID = 8925451277545397036L;
@@ -27,7 +27,8 @@ public class ASTElementLimitExceeded extends LimitException {
   }
 
   /**
-   * Throws exception which will be thrown, if the Config.MAX_AST_SIZE limit was exceeded.
+   * Throws a new <code>ASTElementLimitExceeded</code> exception, if the {@link Config#MAX_AST_SIZE}
+   * limit was exceeded.
    *
    * <p>
    * Usage:

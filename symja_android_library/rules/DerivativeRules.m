@@ -167,6 +167,9 @@ Derivative(0,1)[StruveH] = (1/2)*(StruveH(#-1, #2) - StruveH(#+1, #2) + (#2/2)^#
 Derivative(0,1)[StruveL] = (1/2)*(StruveL(#-1, #2) + StruveL(#+1, #2) + (#2/2)^#/(Sqrt(Pi)*Gamma(#+3/2))) &,
 
 Derivative(1)[Zeta][0] = (-1/2)*Log(2*Pi),
-Derivative(1)[Zeta][-1] = 1/12-Log(Glaisher)
+Derivative(1)[Zeta][-1] = 1/12-Log(Glaisher),
+
+Derivative(1,0,0)[LerchPhi] = (LerchPhi(1,-1+#2,#3)-LerchPhi(#,#2,#3)*#3)/# &,
+Derivative(0,0,1)[LerchPhi] = (-LerchPhi(#, 1 + #2, #3))*#2 &  
 
 }

@@ -264,6 +264,9 @@ public class FunctionExpandRules {
     // PolyLog(2,1/2*(-1-Sqrt(5)))=(-1)*1/10*Pi^2-ArcCsch(2)^2
     Set(PolyLog(C2,Times(C1D2,Subtract(CN1,CSqrt5))),
       Subtract(Times(QQ(-1L,10L),Sqr(Pi)),Sqr(ArcCsch(C2)))),
+    // PolyLog(2,1/2-I*1/2)=-I*Catalan+Pi^2/48-(I*1/4*Pi-Log(2)/2)^2/2
+    Set(PolyLog(C2,CC(1L,2L,-1L,2L)),
+      Plus(Times(CNI,Catalan),Times(QQ(1L,48L),Sqr(Pi)),Times(CN1D2,Sqr(Plus(Times(CC(0L,1L,1L,4L),Pi),Times(CN1D2,Log(C2))))))),
     // Abs(x_)^y_Integer:=x^y/;EvenQ(y)&&x∈Reals
     SetDelayed(Power(Abs(x_),$p(y, Integer)),
       Condition(Power(x,y),And(EvenQ(y),Element(x,Reals)))),

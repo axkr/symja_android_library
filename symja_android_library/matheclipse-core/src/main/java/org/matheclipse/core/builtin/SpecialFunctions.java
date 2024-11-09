@@ -29,7 +29,6 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.builtin.functions.ZetaJS;
@@ -1489,24 +1488,95 @@ public class SpecialFunctions {
       IExpr s = ast.arg2();
       IExpr a = ast.arg3();
       if (s.isZero()) {
+        // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/LerchPhi/03/01/02/01/0007/
         return F.Power(F.Subtract(F.C1, z), F.CN1);
       }
 
-      if (a.isZero()) {
-        return F.PolyLog(s, z);
+      if (z.isZero()) {
+        if (s.isOne() && a.isZero()) {
+          // LerchPhi(0,1,0)
+          return F.C0;
+        }
+        // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/LerchPhi/03/01/03/01/0002/
+        // (a^2)^(-s/2)
+        return F.Power(F.Power(a, 2), s.isOne() ? F.CN1D2 : F.Times(F.CN1D2, s));
       }
-      if (a.isOne()) {
-        // PolyLog(s, z)/z
-        return F.Times(F.PolyLog(s, z), F.Power(z, F.CN1));
+      if (z.isMinusOne()) {
+        if (s.isOne() && a.isZero()) {
+          // LerchPhi(-1,1,0)
+          // -Log(2)
+          return F.Negate(F.Log(F.C2));
+        }
+        if (s.isNumEqualInteger(F.C2) && a.isRationalValue(F.C1D2)) {
+          // LerchPhi(-1,2,1/2)
+          // 4*Catalan
+          return F.Times(F.C4, F.Catalan);
+        }
+        if (a.isOne()) {
+          // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/LerchPhi/03/01/05/01/
+          // (1-2^(1-s))*Zeta(s)
+          return F.Times(F.Subtract(F.C1, F.Power(F.C2, F.Subtract(F.C1, s))), F.Zeta(s));
+        }
+        // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/LerchPhi/03/01/03/01/0001/
+        // Zeta(s,a/2)/2^s-Zeta(s,1/2*(1+a))/2^s
+        return F.Plus(F.Times(F.Power(F.Power(F.C2, s), F.CN1), F.Zeta(s, F.Times(F.C1D2, a))),
+            F.Times(F.CN1, F.Power(F.Power(F.C2, s), F.CN1),
+                F.Zeta(s, F.Times(F.C1D2, F.Plus(F.C1, a)))));
+      }
+      if (z.isOne()) {
+        if (s.isOne() && a.isNumber()) {
+          return F.CInfinity;
+        }
+        if (s.isNumEqualInteger(F.C2) && a.isOne()) {
+          // LerchPhi(1, 2, 1)
+          // Pi^2/6
+          return F.Times(F.QQ(1L, 6L), F.Sqr(F.Pi));
+        }
+
+
+        if (a.isOne()) {
+          IExpr re = s.re();
+          if (re.isReal() && ((IReal) re).isGT(F.C1)) {
+            // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/LerchPhi/03/01/05/01/0001/
+            return F.Zeta(s);
+          }
+        }
+      } else if (z.isNumEqualInteger(F.C2)) {
+        if (s.isOne() && a.isZero()) {
+          // LerchPhi(2, 1, 0)
+          // -I*Pi
+          F.Times(F.CNI, F.Pi);
+        }
+      } else if (z.equals(F.CC(1, 2, -1, 2))) {
+        if (s.isNumEqualInteger(F.C2) && a.isOne()) {
+          // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/LerchPhi/03/02/01/0003/
+          // LerchPhi(1/2-1/2*I, 2, 1)
+          // (1+I)*PolyLog(2,1/2-I/2)
+          return F.Times(F.Plus(F.C1, F.CI), F.PolyLog(F.C2, F.CC(1, 2, -1, 2)));
+        }
+
       }
 
-      if (z.isZero()) {
-        if (s.isOne()) {
-          return F.Power(F.Power(a, 2), F.CN1D2);
+      int n = a.toIntDefault();
+      if (n != Integer.MIN_VALUE) {
+        IExpr polyLog = engine.evaluate(F.PolyLog(s, z));
+        if (n <= 0) {
+          n = -n;
+          // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/LerchPhi/03/01/01/01/0002/
+          // z^n*(PolyLog(s,z)+Sum(1/(z^k*k^s),{k,1,n}))
+          return F.Times(F.Power(z, n), //
+              F.Plus(polyLog, //
+                  F.sum(k -> F.Power(F.Times(F.Power(z, k), F.Power(k, s)), F.CN1), 1, n)));
+        } else {
+          // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/LerchPhi/03/01/01/01/0009/
+          // (PolyLog(s,z)-Sum(z^k/k^s,{k,1,-1+n}))/z^n
+          return F.Times(F.Power(z, -n), //
+              F.Subtract(polyLog, //
+                  F.sum(k -> F.Times(F.Power(F.Power(k, s), F.CN1), F.Power(z, k)), 1, n - 1)));
         }
-        // (a^2)^(-s/2)
-        return F.Power(F.Power(a, F.C2), F.Times(F.CN1D2, s));
       }
+
+
       return F.NIL;
     }
 

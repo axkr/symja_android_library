@@ -124,7 +124,8 @@
  PolyLog(2,(-1+Sqrt(5))/2) = Pi^2/10 - ArcCsch(2)^2,
  PolyLog(2,(1-Sqrt(5))/2) = -(Pi^2/10) + ArcCsch(2)^2 + (1/2)*(Pi^2/15 - ArcCsch(2)^2) ,
  PolyLog(2,(-1-Sqrt(5))/2) = -(Pi^2/10) - ArcCsch(2)^2,
- 
+ PolyLog(2,Complex(1/2,-1/2)) = -I*Catalan+Pi^2/48-(I*1/4*Pi-Log(2)/2)^2/2,
+  
  Power(Abs(x_),y_Integer) := x^y
   /; EvenQ(y) && Element(x,Reals),
  Power(Abs(x_),y_Integer) := With({a=Quotient(y,2)},(Im(x)^2+Re(x)^2)^a)
