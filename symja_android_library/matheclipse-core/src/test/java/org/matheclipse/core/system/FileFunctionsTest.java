@@ -2,8 +2,25 @@ package org.matheclipse.core.system;
 
 import org.junit.Test;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 
 public class FileFunctionsTest extends ExprEvaluatorTestCase {
+
+  @Override
+  public void setUp() {
+    super.setUp();
+    try {
+      F.initSymbols();
+      F.await();
+      // wait especially for Rubi` context to be initialized otherwise
+      // java.util.ConcurrentModificationException can occur in saving Global` context in
+      // testSaveGlobalContext()
+      S.Integrate.getEvaluator().await();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
 
   @Test
   public void testSave() {
