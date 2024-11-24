@@ -217,7 +217,7 @@ public class PiecewiseFunctions {
       IExpr vMax = null;
       if (ast.size() == 4) {
         IExpr arg3 = ast.arg3();
-        if (arg3.isAST(S.List, 3)) {
+        if (arg3.isList2()) {
           // { vMin, vMax } as 3rd argument expected
           vMin = arg3.first();
           vMax = arg3.second();
@@ -227,7 +227,7 @@ public class PiecewiseFunctions {
       }
       if (ast.size() >= 3) {
         IExpr arg2 = ast.arg2();
-        if (arg2.isAST(S.List, 3)) {
+        if (arg2.isList2()) {
           // { min, max } as 2nd argument expected
           IExpr min = arg2.first();
           IExpr max = arg2.second();

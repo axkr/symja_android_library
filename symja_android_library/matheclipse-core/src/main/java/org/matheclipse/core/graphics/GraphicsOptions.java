@@ -740,7 +740,7 @@ public class GraphicsOptions {
         setColor(json, red, green, blue);
         //
         return;
-      } else if (rgbColor.isAST(S.RGBColor, 1) && rgbColor.arg1().isAST(S.List, 4)) {
+      } else if (rgbColor.isAST(S.RGBColor, 1) && rgbColor.arg1().isList3()) {
         IAST list = (IAST) rgbColor.arg1();
         double red = list.arg1().toDoubleDefault(0.0);
         double green = list.arg2().toDoubleDefault(0.0);
@@ -805,7 +805,7 @@ public class GraphicsOptions {
           opacity = color.arg4().toDoubleDefault(1.0);
         }
         return;
-      } else if (color.isAST(S.RGBColor, 1) && color.arg1().isAST(S.List, 4)) {
+      } else if (color.isAST(S.RGBColor, 1) && color.arg1().isList3()) {
         IAST list = (IAST) color.arg1();
         double red = list.arg1().toDoubleDefault(0.0);
         double green = list.arg2().toDoubleDefault(0.0);

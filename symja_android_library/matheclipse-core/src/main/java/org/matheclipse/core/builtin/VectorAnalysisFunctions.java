@@ -1228,7 +1228,7 @@ public class VectorAnalysisFunctions {
         // [$ {{Cos(theta),-Sin(theta)},{Sin(theta),Cos(theta)}} $]
         F.list(F.list(F.Cos(theta), F.Negate(F.Sin(theta))), F.list(F.Sin(theta), F.Cos(theta))); // $$;
       }
-      if (ast.isAST2() && ast.arg2().isAST(S.List, 4)) {
+      if (ast.isAST2() && ast.arg2().isList3()) {
         // TODO generalize for all rotations
         // see https://github.com/corywalker/expreduce/blob/master/expreduce/resources/trig.m
         IExpr theta = ast.arg1();

@@ -307,7 +307,7 @@ public class SeriesFunctions {
       if (result.isNumericFunction(true)) {
         return result;
       }
-      if (!result.equals(S.Indeterminate)) {
+      if (!result.isIndeterminate()) {
         expression = result;
       }
       if (result.isFree(data.variable(), true)) {
@@ -1046,7 +1046,7 @@ public class SeriesFunctions {
               return F.C0;
             }
             return F.NIL;
-          } else if (temp.equals(S.Indeterminate) || temp.isAST(S.Limit)) {
+          } else if (temp.isIndeterminate() || temp.isAST(S.Limit)) {
             return F.NIL;
           }
           if (n.isPositive()) {

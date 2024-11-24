@@ -8,7 +8,6 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.util.MathArrays;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.StatisticsFunctions.IRandomVariate;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -258,7 +257,7 @@ public final class RandomFunctions {
           double im = tlr.nextDouble();
           return F.complexNum(re, im);
         } else if (ast.isAST1()) {
-          if (ast.arg1().isAST(S.List, 3)) {
+          if (ast.arg1().isList2()) {
             Complex min = engine.evalComplex(ast.arg1().first());
             Complex max = engine.evalComplex(ast.arg1().second());
             double minRe = min.getReal();
@@ -350,7 +349,7 @@ public final class RandomFunctions {
         return randomBigInteger(BigInteger.ONE, false, tlr);
       }
 
-      if (ast.arg1().isAST(S.List, 3)) {
+      if (ast.arg1().isList2()) {
         int min = ast.arg1().first().toIntDefault();
         int max = ast.arg1().second().toIntDefault();
         if (min != Integer.MIN_VALUE && max != Integer.MIN_VALUE) {

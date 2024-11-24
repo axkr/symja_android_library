@@ -43,12 +43,12 @@ public class GeodesyFunctions {
         return F.UnitConvert(F.Quantity(F.num(gm.getPointToPointDistance()), F.stringx("m")),
             F.stringx("mi"));
       }
-      if (ast.arg1().isAST(S.List, 3) && ast.arg2().isAST(S.List, 3)) {
+      if (ast.arg1().isList2() && ast.arg2().isList2()) {
         GeodeticCalculator geoCalc = new GeodeticCalculator();
         Ellipsoid reference = Ellipsoid.WGS84;
 
-        double[] list1 = ((IAST) ast.arg1()).toDoubleVector();
-        double[] list2 = ((IAST) ast.arg2()).toDoubleVector();
+        double[] list1 = ast.arg1().toDoubleVector();
+        double[] list2 = ast.arg2().toDoubleVector();
         if (list1 != null && list2 != null) {
           GlobalPosition p1 = new GlobalPosition(list1[0], list1[1], 0.0);
           GlobalPosition p2 = new GlobalPosition(list2[0], list2[1], 0.0);
@@ -73,7 +73,7 @@ public class GeodesyFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         if (ast.arg1().isList()) {
-          double[] list1 = ((IAST) ast.arg1()).toDoubleVector();
+          double[] list1 = ast.arg1().toDoubleVector();
           if (list1 != null) {
             if (list1.length == 2) {
               return GeoPositionExpr.newInstance(new GlobalPosition(list1[0], list1[1], 0.0));

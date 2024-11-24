@@ -172,10 +172,6 @@ public class IntervalDataSym {
     return interval.isEvalFlagOn(IAST.BUILT_IN_EVALED);
   }
 
-  public static boolean isInterval(final IExpr interval) {
-    return interval.isAST(S.IntervalData);
-  }
-
   public static boolean isEmptySet(final IExpr interval) {
     return interval.isAST(S.IntervalData, 1);
   }

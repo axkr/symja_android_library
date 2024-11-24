@@ -194,7 +194,7 @@ public class CurveFitterFunctions {
         if (temp.isSymbol()) {
           initialGuess[i - 1] = 1.0;
           return temp;
-        } else if (temp.isAST(S.List, 3) && temp.first().isSymbol()) {
+        } else if (temp.isList2() && temp.first().isSymbol()) {
           final IReal realNumber = temp.second().evalReal();
           if (realNumber != null) {
             initialGuess[i - 1] = realNumber.doubleValue();

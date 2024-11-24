@@ -24,7 +24,6 @@ import org.hipparchus.optim.nonlinear.scalar.MultivariateOptimizer;
 import org.hipparchus.optim.nonlinear.scalar.ObjectiveFunction;
 import org.hipparchus.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Expr2LP;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
@@ -417,12 +416,12 @@ public class MinMaxFunctions {
           IExpr min = engine.evalQuiet(F.Minimize(function, xExpr));
           IExpr max = engine.evalQuiet(F.Maximize(function, xExpr));
           IASTMutable minMaxList = F.binaryAST2(S.List, F.CNInfinity, F.CInfinity);
-          if (min.isAST(S.List, 3)) {
+          if (min.isList2()) {
             minMaxList.set(1, min.first());
           } else {
             evaled = false;
           }
-          if (max.isAST(S.List, 3)) {
+          if (max.isList2()) {
             minMaxList.set(2, max.first());
           } else {
             evaled = false;
@@ -452,7 +451,7 @@ public class MinMaxFunctions {
 
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        //rex.printStackTrace();
+        // rex.printStackTrace();
         LOGGER.debug("FunctionRange.evaluate() failed", rex);
       }
       return F.NIL;
@@ -711,7 +710,7 @@ public class MinMaxFunctions {
         IAST f2 = relationToInterval(expr, symbol2, value2);
         if (f1.isPresent() && f2.isPresent()) {
           IExpr temp = F.IntervalIntersection.of(engine, f1, f2);
-          if (temp.isAST(S.IntervalData)) {
+          if (temp.isIntervalData()) {
             return (IAST) temp;
           }
         }
@@ -720,7 +719,7 @@ public class MinMaxFunctions {
 
       private void intervalIntersection(IAST interval) {
         IExpr temp = F.IntervalIntersection.of(engine, resultInterval, interval);
-        if (!temp.isAST(S.IntervalData)) {
+        if (!temp.isIntervalData()) {
           throw new ArgumentTypeStopException("IntervalIntersection failed");
         }
         resultInterval = (IAST) temp;
@@ -728,7 +727,7 @@ public class MinMaxFunctions {
 
       private IAST intervalUnion(IAST interval1, IAST interval2) {
         IExpr temp = F.IntervalUnion.of(engine, interval1, interval2);
-        if (!temp.isAST(S.IntervalData)) {
+        if (!temp.isIntervalData()) {
           throw new ArgumentTypeStopException("IntervalIntersection failed");
         }
         return (IAST) temp;
@@ -743,7 +742,7 @@ public class MinMaxFunctions {
             if (arg.isRealResult()) {
               IAST notInRange = IntervalDataSym.notInRange(arg);
               IExpr temp = F.IntervalIntersection.of(engine, resultInterval, notInRange);
-              if (!temp.isAST(S.IntervalData)) {
+              if (!temp.isIntervalData()) {
                 throw new ArgumentTypeStopException("IntervalIntersection failed");
               }
               resultInterval = (IAST) temp;
@@ -913,17 +912,22 @@ public class MinMaxFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() == 3) {
-        IExpr function = ast.arg1();
-        IExpr x = ast.arg2();
-        if (x.isAST(S.List, 2)) {
-          x = ast.arg2().first();
-        }
-        ISymbol head = ast.topHead();
-        if (x.isSymbol() || (x.isAST() && !x.isList())) {
-          return maximize(head, function, x, engine);
+      IExpr function = ast.arg1();
+      IExpr x = ast.arg2();
+      if (x.isList()) {
+        if (x.isList1()) {
+          x = x.first();
+        } else {
+          // `1` currently not supported in `2`.
+          return Errors.printMessage(S.Maximize, "unsupported",
+              F.List("Multiple variables", "Maximize"), engine);
         }
       }
+      ISymbol head = ast.topHead();
+      if (x.isSymbol() || (x.isAST() && !x.isList())) {
+        return maximize(head, function, x, engine);
+      }
+
       return F.NIL;
     }
 
@@ -973,16 +977,20 @@ public class MinMaxFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() == 3) {
-        IExpr function = ast.arg1();
-        IExpr x = ast.arg2();
-        if (x.isAST(S.List, 2)) {
-          x = ast.arg2().first();
+      IExpr function = ast.arg1();
+      IExpr x = ast.arg2();
+      if (x.isList()) {
+        if (x.isList1()) {
+          x = x.first();
+        } else {
+          // `1` currently not supported in `2`.
+          return Errors.printMessage(S.Minimize, "unsupported",
+              F.List("Multiple variables", "Minimize"), engine);
         }
-        ISymbol head = ast.topHead();
-        if (x.isSymbol() || (x.isAST() && !x.isList())) {
-          return minimize(head, function, x, engine);
-        }
+      }
+      ISymbol head = ast.topHead();
+      if (x.isSymbol() || (x.isAST() && !x.isList())) {
+        return minimize(head, function, x, engine);
       }
       return F.NIL;
     }

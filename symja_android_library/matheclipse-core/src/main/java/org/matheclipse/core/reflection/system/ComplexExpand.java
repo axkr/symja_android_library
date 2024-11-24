@@ -81,7 +81,7 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
 
     @Override
     public IExpr visit(IASTMutable ast) {
-      if ((ast.isAST(S.Re, 2) || ast.isAST(S.Im, 2) || ast.isAST(S.Arg, 2))//
+      if ((ast.isRe() || ast.isIm() || ast.isAST(S.Arg, 2))//
           && ast.arg1().isSymbol()) {
         return F.NIL;
       }

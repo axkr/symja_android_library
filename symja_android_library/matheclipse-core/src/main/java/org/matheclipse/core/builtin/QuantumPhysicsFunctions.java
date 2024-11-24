@@ -56,10 +56,13 @@ public class QuantumPhysicsFunctions {
         if (threeJSymbol.isPresent()) {
           // res = (-1) ** sympify(j_1 - j_2 + m_3) * sqrt(2 * j_3 + 1) * \
           // wigner_3j(j_1, j_2, j_3, m_1, m_2, -m_3)
-          IExpr res = F.Times(F.Power(F.CN1, F.Plus(j1, F.Negate(j2), m3)),
+          return F.Times(F.Power(F.CN1, F.Plus(j1, F.Negate(j2), m3)),
               F.Sqrt(F.Plus(F.Times(F.C2, j3), F.C1)), threeJSymbol);
-          return res;
         }
+        // (-1)^(j1-j2+m3)*Sqrt(1+2*j3)*ThreeJSymbol({j1,m1},{j2,m2},{j3,-m3})
+        return F.Times(F.Power(F.CN1, F.Plus(j1, F.Negate(j2), m3)),
+            F.Sqrt(F.Plus(F.C1, F.Times(F.C2, j3))),
+            F.ThreeJSymbol(F.list(j1, m1), F.list(j2, m2), F.list(j3, F.Negate(m3))));
         // }
       }
       return F.NIL;

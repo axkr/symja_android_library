@@ -128,7 +128,7 @@ public class HornerScheme {
             IAST temp = F.ast(term, S.Times, false, i, i + 1);
             addToMap(F.C1, temp);
             return;
-          } else if (term.get(i).isAST(S.Power, 3)) {
+          } else if (term.get(i).isPower()) {
             IAST pow = (IAST) term.get(i);
             if (pow.arg1().equals(sym) && pow.arg2() instanceof IReal) {
               IAST temp = F.ast(term, S.Times, false, i, i + 1);
@@ -137,7 +137,7 @@ public class HornerScheme {
             }
           }
         }
-      } else if (term.isAST(S.Power, 3)) {
+      } else if (term.isPower()) {
         if (term.arg1().equals(sym) && term.arg2() instanceof IReal) {
           addToMap((IReal) term.arg2(), F.C1);
           return;
@@ -159,7 +159,7 @@ public class HornerScheme {
             IAST temp = F.ast(term, S.Times, false, i, i + 1);
             addToMap(F.CD1, temp);
             return;
-          } else if (term.get(i).isAST(S.Power, 3)) {
+          } else if (term.get(i).isPower()) {
             IAST pow = (IAST) term.get(i);
             if (pow.arg1().equals(sym) && pow.arg2().isReal()) {
               IAST temp = F.ast(term, S.Times, false, i, i + 1);
@@ -168,7 +168,7 @@ public class HornerScheme {
             }
           }
         }
-      } else if (term.isAST(S.Power, 3)) {
+      } else if (term.isPower()) {
         if (term.arg1().equals(sym) && term.arg2().isReal()) {
           addToMap((IReal) term.arg2(), F.CD1);
           return;

@@ -580,7 +580,7 @@ public class Assumptions extends AbstractAssumptions {
           if (!addLessEqual(temp, assumptions)) {
             return null;
           }
-        } else if (temp.isAST(S.Equal, 3)) {
+        } else if (temp.isEqual()) {
           if (!addEqual(temp, assumptions)) {
             return null;
           }
@@ -669,7 +669,7 @@ public class Assumptions extends AbstractAssumptions {
         if (addLessEqual(ast, this)) {
           return this;
         }
-      } else if (ast.isAST(S.Equal, 3)) {
+      } else if (ast.isEqual()) {
         if (addEqual(ast, this)) {
           return this;
         }

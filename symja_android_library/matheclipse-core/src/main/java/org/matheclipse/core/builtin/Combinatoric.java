@@ -925,7 +925,7 @@ public final class Combinatoric {
             IInteger upperLimitOfCoins = F.ZZ(Integer.MAX_VALUE);
             if (ast.arg2().isInteger()) {
               upperLimitOfCoins = (IInteger) ast.arg2();
-            } else if (ast.arg2().isAST(S.List, 3) && ast.arg2().first().isInteger()
+            } else if (ast.arg2().isList2() && ast.arg2().first().isInteger()
                 && ast.arg2().second().isInteger()) {
               lowerLimitOfCoins = (IInteger) ast.arg2().first();
               upperLimitOfCoins = (IInteger) ast.arg2().second();

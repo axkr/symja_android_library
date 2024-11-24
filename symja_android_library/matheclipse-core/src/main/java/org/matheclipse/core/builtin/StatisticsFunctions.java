@@ -17,7 +17,6 @@ import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.stat.projection.PCA;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -7118,15 +7117,15 @@ public class StatisticsFunctions {
         return rescale(x, min, max, engine);
       }
       if (ast.size() >= 3) {
-        if (ast.arg2().isAST(S.List, 3)) {
+        if (ast.arg2().isList2()) {
           IAST list1 = (IAST) ast.arg2();
-          IExpr min = list1.first();
-          IExpr max = list1.second();
+          IExpr min = list1.arg1();
+          IExpr max = list1.arg2();
           if (ast.size() == 4) {
-            if (ast.arg3().isAST(S.List, 3)) {
+            if (ast.arg3().isList2()) {
               IAST list2 = (IAST) ast.arg3();
-              IExpr ymin = list2.first();
-              IExpr ymax = list2.second();
+              IExpr ymin = list2.arg1();
+              IExpr ymax = list2.arg2();
               // (arg1*(ymax - ymin))/(max - min) - (min*ymax - max*ymin)/(max - min)
               return F.Plus(
                   F.Times(x, F.Power(F.Plus(max, F.Negate(min)), -1), F.Plus(ymax, F.Negate(ymin))),

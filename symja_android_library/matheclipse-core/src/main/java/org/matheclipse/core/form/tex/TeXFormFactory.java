@@ -186,7 +186,7 @@ public class TeXFormFactory {
       if (f.isAST2()) {
         IExpr arg2 = f.arg2();
         int n = 1;
-        if (arg2.isAST(S.List, 3) && arg2.second().isInteger()) {
+        if (arg2.isList2() && arg2.second().isInteger()) {
           n = arg2.second().toIntDefault();
           if (n <= 0) {
             return false;

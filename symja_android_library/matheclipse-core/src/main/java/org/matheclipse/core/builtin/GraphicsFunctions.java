@@ -4,7 +4,6 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -250,7 +249,7 @@ public class GraphicsFunctions {
         dim.minMax(cx - rx, cx + rx, cy - ry, cy + ry);
         return true;
       } else if (ast.size() == 2) {
-        if (ast.arg1().isAST(S.List, 3)) {
+        if (ast.arg1().isList2()) {
           IAST list1 = (IAST) ast.arg1();
 
           double cx = ((IReal) list1.arg1()).doubleValue();
@@ -261,7 +260,7 @@ public class GraphicsFunctions {
           dim.minMax(cx - rx, cx + rx, cy - ry, cy + ry);
           return true;
         }
-      } else if (ast.size() == 3 && ast.arg1().isAST(S.List, 3) && ast.arg2().isAST(S.List, 3)) {
+      } else if (ast.size() == 3 && ast.arg1().isList2() && ast.arg2().isAST(S.List, 3)) {
         IAST list1 = (IAST) ast.arg1();
         IAST list2 = (IAST) ast.arg2();
 
@@ -898,12 +897,12 @@ public class GraphicsFunctions {
         if (arg1.isListOfLists()) {
           IAST list = (IAST) arg1;
           for (int i = 1; i < list.size(); i++) {
-            if (list.get(i).isAST(S.List, 3)) {
+            if (list.get(i).isList2()) {
               IAST point = (IAST) list.get(i);
               singlePointDimensions(point, dim);
             }
           }
-        } else if (arg1.isAST(S.List, 3)) {
+        } else if (arg1.isList2()) {
           IAST point = (IAST) ast.arg1();
 
           singlePointDimensions(point, dim);
@@ -1468,7 +1467,7 @@ public class GraphicsFunctions {
                 array.add(green);
                 array.add(blue);
                 edgeList.set("color", array);
-              } else if (expr.isAST(S.RGBColor, 1) && expr.first().isAST(S.List, 4)) {
+              } else if (expr.isAST(S.RGBColor, 1) && expr.first().isList3()) {
                 IAST list4 = (IAST) expr.first();
                 double red = list4.arg1().toDoubleDefault(0.0);
                 double green = list4.arg2().toDoubleDefault(0.0);

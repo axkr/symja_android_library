@@ -122,6 +122,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     public IASTMutable copy() {
       return new Im(arg1);
     }
+
+    @Override
+    public final boolean isIm() {
+      return true;
+    }
   }
 
   static class Line extends B1 {
@@ -307,6 +312,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public IASTMutable copy() {
       return new Re(arg1);
+    }
+
+    @Override
+    public final boolean isRe() {
+      return true;
     }
   }
 

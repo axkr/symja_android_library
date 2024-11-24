@@ -90,14 +90,14 @@ public class IntRangeSpec {
       if (max < 0) {
         return null;
       }
-    } else if (specification.isAST(S.List, 2)) {
+    } else if (specification.isList1()) {
       // {k} - exactly k
       min = specification.first().toIntDefault(-1);
       if (min < 0) {
         return null;
       }
       max = min;
-    } else if (specification.isAST(S.List, 3)) {
+    } else if (specification.isList2()) {
       // {min, max}
       min = specification.first().toIntDefault(-1);
       if (min < 0) {
