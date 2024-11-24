@@ -151,7 +151,7 @@ public class HypergeometricFunctions {
       if (z.isZero()) {
         return F.CNInfinity;
       }
-      if (z.isAST(S.DirectedInfinity)) {
+      if (z.isDirectedInfinity()) {
         if (z.isInfinity()) {
           return F.C0;
         }
@@ -235,7 +235,7 @@ public class HypergeometricFunctions {
       if (z.isZero()) {
         return F.CNInfinity;
       }
-      if (z.isAST(S.DirectedInfinity)) {
+      if (z.isDirectedInfinity()) {
         if (z.isInfinity()) {
           return F.CInfinity;
         }
@@ -415,7 +415,7 @@ public class HypergeometricFunctions {
       if (z.isZero()) {
         return F.CNInfinity;
       }
-      if (z.isAST(S.DirectedInfinity)) {
+      if (z.isDirectedInfinity()) {
         if (z.isInfinity()) {
           return F.CInfinity;
         }
@@ -473,7 +473,7 @@ public class HypergeometricFunctions {
           return arg1.fresnelC();
         }
       }
-      if (arg1.isAST(S.DirectedInfinity)) {
+      if (arg1.isDirectedInfinity()) {
         if (arg1.isInfinity()) {
           return F.C1D2;
         }
@@ -527,7 +527,7 @@ public class HypergeometricFunctions {
           return arg1.fresnelS();
         }
       }
-      if (arg1.isAST(S.DirectedInfinity)) {
+      if (arg1.isDirectedInfinity()) {
         if (arg1.isInfinity()) {
           return F.C1D2;
         }
@@ -1612,7 +1612,7 @@ public class HypergeometricFunctions {
       if (arg1.isOne()) {
         return F.CNInfinity;
       }
-      if (arg1.isAST(S.DirectedInfinity)) {
+      if (arg1.isDirectedInfinity()) {
         if (arg1.isInfinity()) {
           return F.CInfinity;
         }
@@ -1677,7 +1677,7 @@ public class HypergeometricFunctions {
       if (z.isZero()) {
         return F.C0;
       }
-      if (z.isAST(S.DirectedInfinity)) {
+      if (z.isDirectedInfinity()) {
         if (z.isInfinity()) {
           return F.CPiHalf;
         }
@@ -1775,7 +1775,7 @@ public class HypergeometricFunctions {
       if (z.isZero()) {
         return F.C0;
       }
-      if (z.isAST(S.DirectedInfinity)) {
+      if (z.isDirectedInfinity()) {
         if (z.isInfinity()) {
           return F.CInfinity;
         }

@@ -2371,7 +2371,7 @@ public final class NumberTheory {
           return F.Gamma(frac.inc());
         }
       }
-      if (z.isAST(S.DirectedInfinity)) {
+      if (z.isDirectedInfinity()) {
         if (z.isInfinity()) {
           return F.CInfinity;
         }

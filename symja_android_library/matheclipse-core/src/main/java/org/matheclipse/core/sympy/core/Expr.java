@@ -460,6 +460,13 @@ public class Expr {
     return F.NIL;
   }
 
+  /**
+   * Returns the order of the expression.
+   * 
+   * @param self
+   * @return
+   * @throws UnsupportedOperationException
+   */
   public static IExpr getN(IExpr self) throws UnsupportedOperationException {
     // Returns the order of the expression.
     //

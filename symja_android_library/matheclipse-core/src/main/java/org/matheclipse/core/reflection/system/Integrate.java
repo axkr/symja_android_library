@@ -656,23 +656,25 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     }
     IExpr lowerLimit = engine.evaluate(F.Limit(function, F.Rule(x, lower), lowerDirection));
     if (!lowerLimit.isFree(S.DirectedInfinity, true) || !lowerLimit.isFree(S.Indeterminate, true)) {
-      if (lowerLimit.isDirectedInfinity() || lowerLimit.isIndeterminate()) {
-        // Integral of `1` does not converge on `2`.
-        return Errors.printMessage(S.Integrate, "idiv", F.List(originalAST.arg1(), xValueList),
-            engine);
-      }
-      LOGGER.log(engine.getLogLevel(), "Not integrable: {} for limit {} -> {}", function, x, lower);
-      return F.NIL;
+      // if (lowerLimit.isDirectedInfinity() || lowerLimit.isIndeterminate()) {
+      // Integral of `1` does not converge on `2`.
+      return Errors.printMessage(S.Integrate, "idiv", F.List(originalAST.arg1(), xValueList),
+          engine);
+      // }
+      // LOGGER.log(engine.getLogLevel(), "Not integrable: {} for limit {} -> {}", function, x,
+      // lower);
+      // return F.NIL;
     }
     IExpr upperLimit = engine.evaluate(F.Limit(function, F.Rule(x, upper), upperDirection));
     if (!upperLimit.isFree(S.DirectedInfinity, true) || !upperLimit.isFree(S.Indeterminate, true)) {
-      if (upperLimit.isDirectedInfinity() || upperLimit.isIndeterminate()) {
-        // Integral of `1` does not converge on `2`.
-        return Errors.printMessage(S.Integrate, "idiv", F.List(originalAST.arg1(), xValueList),
-            engine);
-      }
-      LOGGER.log(engine.getLogLevel(), "Not integrable: {} for limit {} -> {}", function, x, upper);
-      return F.NIL;
+      // if (upperLimit.isDirectedInfinity() || upperLimit.isIndeterminate()) {
+      // Integral of `1` does not converge on `2`.
+      return Errors.printMessage(S.Integrate, "idiv", F.List(originalAST.arg1(), xValueList),
+          engine);
+      // }
+      // LOGGER.log(engine.getLogLevel(), "Not integrable: {} for limit {} -> {}", function, x,
+      // upper);
+      // return F.NIL;
     }
 
     if (upperLimit.isAST() && lowerLimit.isAST()) {
