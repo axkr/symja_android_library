@@ -44,7 +44,7 @@ public class SimplifyFunctions {
 
   private static HashedOrderlessMatcherTimes initTimesHashMatcher() {
     HashedOrderlessMatcherTimes timesMatcher = new HashedOrderlessMatcherTimes();
-    // Abs(z)*Sign(z) == z
+    // Abs(x_)*Sign(x_) := x
     timesMatcher.defineHashRule(new HashedPatternRulesTimes( //
         F.Abs(x_), //
         F.Sign(x_), //
@@ -528,7 +528,7 @@ public class SimplifyFunctions {
         for (int i = 0; i < vars.size(); i++) {
           temp = EvalEngine.get()
               .evaluate(F.PolynomialQuotientRemainder(numerator, denominator, vars.get(i)));
-          if (temp.isAST(S.List, 3) && //
+          if (temp.isList2() && //
               temp.second().isZero()) {
             // the remainder is 0 here:
             IExpr arg1 = temp.first();
@@ -542,7 +542,7 @@ public class SimplifyFunctions {
           for (int i = 0; i < vars.size(); i++) {
             temp = EvalEngine.get()
                 .evaluate(F.PolynomialQuotientRemainder(denominator, numerator, vars.get(i)));
-            if (temp.isAST(S.List, 3) && //
+            if (temp.isList2() && //
                 temp.second().isZero()) {
               // the remainder is 0 here:
               IExpr arg1 = temp.first().reciprocal();
@@ -1160,7 +1160,7 @@ public class SimplifyFunctions {
           if (x.isPower() && x.exponent().isNumEqualInteger(F.C2) && x.base().size() == 2 && //
               (x.base().isTrigFunction() || x.base().isHyperbolicFunction())) {
             return new int[] {i, SQR_ARG};
-          } else if (x.isAST(S.Times, 3) && x.first().isMinusOne() && x.second().isPower() && //
+          } else if (x.isTimes2() && x.first().isMinusOne() && x.second().isPower() && //
               x.second().exponent().isNumEqualInteger(F.C2) && x.second().base().size() == 2 && //
               (x.second().base().isTrigFunction() || x.second().base().isHyperbolicFunction())) {
             return new int[] {i, NEGATIVE_SQR_ARG};
@@ -1184,7 +1184,7 @@ public class SimplifyFunctions {
           for (int i = 1; i < plusAST.size(); i++) {
             IExpr a2 = plusAST.get(i);
             IExpr arg = F.NIL;
-            if (a2.isAST(S.Times, 3) && a2.first().isInteger() && //
+            if (a2.isTimes2() && a2.first().isInteger() && //
                 a2.second().isLog() && a2.second().first().isReal()) {
               arg = S.Power.of(a2.second().first(), a2.first());
             } else if (a2.isLog() && a2.first().isReal()) {
@@ -1240,6 +1240,13 @@ public class SimplifyFunctions {
             //
           }
         } else if (fFullSimplify) {
+          try {
+            expr = eval(F.FunctionExpand(expr));
+            sResult.checkLess(expr);
+          } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
+            //
+          }
           if (expr.isAST(S.Arg, 2)) {
             try {
               IExpr re = expr.first().re();
@@ -1250,10 +1257,50 @@ public class SimplifyFunctions {
               Errors.rethrowsInterruptException(rex);
               //
             }
+          } else if (expr.isAST(S.Mod, 3) && expr.first().isPlus()) {
+            IAST plusAST = (IAST) expr.first();
+            IExpr arg2Mod = expr.second();
+            int indexOf = plusAST.indexOf(x -> x.isAST(S.Mod, 3) && x.second().equals(arg2Mod));
+            if (indexOf > 0) {
+              // Mod(Mod(a_, m_) + Mod(b_, m_) + x_, m_) := Mod(a + b + x, m)
+              IASTMutable result = plusAST.copy();
+              IExpr indexOfArg = result.get(indexOf);
+              result.set(indexOf, indexOfArg.first());
+              for (int i = indexOf; i < plusAST.size(); i++) {
+                IExpr arg = plusAST.get(i);
+                if (arg.isAST(S.Mod, 3) && arg.second().equals(arg2Mod)) {
+                  result.set(i, arg.first());
+                }
+              }
+              sResult.checkLess(F.Mod(result, arg2Mod));
+            }
           } else if (expr.isTimes()) {
             try {
-              HashedOrderlessMatcher hashRuleMap = TIMES_ORDERLESS_MATCHER;
-              if (hashRuleMap != null) {
+              // this rule can't be used in TIMES_ORDERLESS_MATCHER, because 2 IAST args are
+              // expected:
+              // x_ * Conjugate(x_) := Abs(x)^2
+              IAST times = (IAST) expr;
+              int index1 = times.indexOf(x -> x.isAST(S.Conjugate, 2));
+              if (index1 > 0) {
+                IExpr conjugateArg = times.get(index1).first();
+                int index2 = expr.indexOf(x -> x.equals(conjugateArg));
+                if (index2 > 0) {
+                  final IASTAppendable removeAtClone;
+                  if (index2 > index1) {
+                    removeAtClone = times.removeAtClone(index2);
+                    removeAtClone.remove(index1);
+                  } else {
+                    removeAtClone = times.removeAtClone(index1);
+                    removeAtClone.remove(index2);
+                  }
+                  removeAtClone.append(F.Sqr(F.Abs(conjugateArg)));
+                  if (sResult.checkLessEqual(removeAtClone.oneIdentity1())) {
+                    expr = sResult.result;
+                  }
+                }
+              }
+
+              if (TIMES_ORDERLESS_MATCHER != null) {
                 IAST temp = TIMES_ORDERLESS_MATCHER.evaluateRepeatedNoCache((IAST) expr, fEngine);
                 if (temp.isPresent()) {
                   sResult.checkLess(temp);
@@ -1264,13 +1311,7 @@ public class SimplifyFunctions {
               //
             }
           }
-          try {
-            expr = eval(F.FunctionExpand(expr));
-            sResult.checkLess(expr);
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
-          }
+
         } else {
           if (expr.isLog() //
               || (expr.isPower() && expr.first().isAbs())) {
@@ -1627,8 +1668,8 @@ public class SimplifyFunctions {
     }
 
     final IExpr arg;
-    if (realPart.isAST(S.Re, 2) && realPart.first().isSymbol() //
-        && imaginaryPart.isAST(S.Im, 2) //
+    if (realPart.isRe() && realPart.first().isSymbol() //
+        && imaginaryPart.isIm() //
         && realPart.first().equals(imaginaryPart.first())) {
       ISymbol symbol = (ISymbol) realPart.first();
       arg = F.Arg(negativeFactor ? F.Times(F.CN1, symbol) : symbol);
