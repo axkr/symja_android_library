@@ -803,6 +803,13 @@ public class BooleanTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testLess() {
+    check("1<2<3", //
+        "True");
+    check("1<a<-1", //
+        "False");
+    check("1<-1<a", //
+        "False");
+
     check("Infinity<Infinity", //
         "False");
 

@@ -28,7 +28,6 @@ import org.logicng.transformations.cnf.BDDCNFTransformation;
 import org.logicng.transformations.cnf.CNFFactorization;
 import org.logicng.transformations.dnf.DNFFactorization;
 import org.logicng.transformations.simplification.AdvancedSimplifier;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -2246,19 +2245,30 @@ public final class BooleanFunctions {
 
       IExpr.COMPARE_TERNARY[] cResult = new IExpr.COMPARE_TERNARY[astEvaled.size()];
       cResult[0] = IExpr.COMPARE_TERNARY.TRUE;
+      IReal lastReal = null;
       for (int i = 1; i < astEvaled.argSize(); i++) {
-        IExpr arg = astEvaled.get(i);
+        final IExpr arg = astEvaled.get(i);
         if (arg.equals(S.Undefined)) {
           return S.Undefined;
         }
-        final IExpr.COMPARE_TERNARY b = prepareCompare(arg, astEvaled.get(i + 1), engine);
-        if (b == IExpr.COMPARE_TERNARY.FALSE) {
+        IExpr.COMPARE_TERNARY ternaryCompare = prepareCompare(arg, astEvaled.get(i + 1), engine);
+        if (ternaryCompare == IExpr.COMPARE_TERNARY.FALSE) {
           return S.False;
         }
-        if (b == IExpr.COMPARE_TERNARY.TRUE) {
+        if (ternaryCompare == IExpr.COMPARE_TERNARY.TRUE) {
           evaled = true;
         }
-        cResult[i] = b;
+        cResult[i] = ternaryCompare;
+        if (arg.isReal()) {
+          if (isTernaryFalse(lastReal, (IReal) arg, engine)) {
+            return S.False;
+          }
+          lastReal = (IReal) arg;
+        }
+      }
+      final IExpr lastArg = astEvaled.get(astEvaled.argSize());
+      if (lastArg.isReal() && isTernaryFalse(lastReal, (IReal) lastArg, engine)) {
+        return S.False;
       }
       cResult[astEvaled.argSize()] = IExpr.COMPARE_TERNARY.TRUE;
       if (!evaled) {
@@ -2273,9 +2283,9 @@ public final class BooleanFunctions {
             && cResult[j] == IExpr.COMPARE_TERNARY.TRUE) {
           evaled = true;
           result.remove(i - 1);
-        } else {
-          i++;
+          continue;
         }
+        i++;
       }
 
       if (evaled) {
@@ -2285,6 +2295,16 @@ public final class BooleanFunctions {
         return result;
       }
       return F.NIL;
+    }
+
+    private boolean isTernaryFalse(IReal lastArg, IReal currentArg, EvalEngine engine) {
+      if (lastArg != null) {
+        IExpr.COMPARE_TERNARY ternaryCompare = prepareCompare(lastArg, currentArg, engine);
+        if (ternaryCompare == IExpr.COMPARE_TERNARY.FALSE) {
+          return true;
+        }
+      }
+      return false;
     }
 
     @Override
