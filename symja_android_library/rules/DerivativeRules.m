@@ -92,6 +92,10 @@ Derivative(n_)[LogisticSigmoid] := KroneckerDelta(n)*LogisticSigmoid(#)-(1-Krone
     /; (IntegerQ(n) && n >= 0)||SymbolQ(n),
 Derivative(n_)[Exp] = E^# &,
     
+Derivative(1,0)[Binomial] = Binomial(#,#2)*(PolyGamma(0,1+#)-PolyGamma(0,1+#-#2))&,
+Derivative(0,1)[Binomial] = Binomial(#,#2)*(PolyGamma(0,1+#-#2)-PolyGamma(0,1+#2))&,
+Derivative(1,1)[Binomial] = Binomial(#,#2)*(PolyGamma(0,1+#)-PolyGamma(0,1+#-#2))*(PolyGamma(0,1+#-#2)-PolyGamma(0,1+#2))+Binomial(#,#2)*PolyGamma(1,1+#-#2)&,
+
 Derivative(0,1)[BesselJ] = 1/2*(BesselJ(-1+#,#2)-BesselJ(1+#,#2)) &,
 Derivative(0,1)[BesselY] = 1/2*(BesselY(-1+#,#2)-BesselY(1+#,#2)) &,
 Derivative(0,1)[BesselI] = ((BesselI(-1+#, #2) + BesselI(1+#, #2))/2) &,

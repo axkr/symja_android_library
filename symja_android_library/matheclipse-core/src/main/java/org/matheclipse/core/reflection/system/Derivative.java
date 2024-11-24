@@ -213,8 +213,7 @@ public class Derivative extends AbstractFunctionEvaluator {
         int iterationLimit = engine.getIterationLimit();
         if (iterationLimit > 0 && iterationLimit < ni) {
           // Iteration limit of `1` exceeded.
-          return Errors.printMessage(S.Derivative, "itlim", F.list(F.ZZ(iterationLimit)),
-              engine);
+          return Errors.printMessage(S.Derivative, "itlim", F.list(F.ZZ(iterationLimit)), engine);
         }
       }
       dExpr = F.D(newFunction, F.list(symbol, n));
@@ -283,8 +282,7 @@ public class Derivative extends AbstractFunctionEvaluator {
           int iterationLimit = engine.getIterationLimit();
           if (iterationLimit > 0 && iterationLimit < ni) {
             // Iteration limit of `1` exceeded.
-            return Errors.printMessage(S.Derivative, "itlim", F.list(F.ZZ(iterationLimit)),
-                engine);
+            return Errors.printMessage(S.Derivative, "itlim", F.list(F.ZZ(iterationLimit)), engine);
           }
           list.append(F.list(symbol, n));
         }
@@ -308,6 +306,8 @@ public class Derivative extends AbstractFunctionEvaluator {
           IExpr dResult = S.Derivative.evalDownRule(engine, headDerivative);
           if (dResult.isPresent()) {
             doEval = true;
+          } else if (builtin == S.Multinomial) {
+            return multinomial(head);
           }
         }
       }
@@ -322,6 +322,29 @@ public class Derivative extends AbstractFunctionEvaluator {
       dExpr.append(temp);
       dExpr.appendArgs(list); // w.r.t these symbols
       return F.Function(engine.evaluate(dExpr));
+    }
+    return F.NIL;
+  }
+
+  private static IExpr multinomial(IAST head) {
+    int argSize = head.argSize();
+    IASTAppendable multinomial = F.ast(S.Multinomial, argSize);
+    IASTAppendable harmonicPlus = F.ast(S.Plus, argSize);
+    IASTAppendable singleHarmonic = F.ast(S.HarmonicNumber, 1);
+    int countOne = 0;
+    for (int i = 1; i <= argSize; i++) {
+      final IAST slot = F.Slot(i);
+      multinomial.append(slot);
+      harmonicPlus.append(slot);
+      if (head.get(i).isOne()) {
+        singleHarmonic.append(slot);
+        countOne++;
+      }
+    }
+    if (countOne == 1) {
+      // (-HarmonicNumber(#[i])+HarmonicNumber(harmonicPlus))*multinomial&
+      return F.Function(
+          F.Times(F.Plus(F.Negate(singleHarmonic), F.HarmonicNumber(harmonicPlus)), multinomial));
     }
     return F.NIL;
   }

@@ -13,7 +13,7 @@ public class DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 134, 0 };
+  final public static int[] SIZES = { 137, 0 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -263,6 +263,15 @@ public class DerivativeRules {
     // Derivative(n_)[Exp]=E^#1&
     ISet($(Derivative(n_),Exp),
       Function(Exp(Slot1))),
+    // Derivative(1,0)[Binomial]=Binomial(#1,#2)*(PolyGamma(0,1+#1)-PolyGamma(0,1+#1-#2))&
+    ISet($(Derivative(C1,C0),Binomial),
+      Function(Times(Binomial(Slot1,Slot2),Subtract(PolyGamma(C0,Plus(C1,Slot1)),PolyGamma(C0,Plus(C1,Slot1,Negate(Slot2)))))), true),
+    // Derivative(0,1)[Binomial]=Binomial(#1,#2)*(PolyGamma(0,1+#1-#2)-PolyGamma(0,1+#2))&
+    ISet($(Derivative(C0,C1),Binomial),
+      Function(Times(Binomial(Slot1,Slot2),Subtract(PolyGamma(C0,Plus(C1,Slot1,Negate(Slot2))),PolyGamma(C0,Plus(C1,Slot2))))), true),
+    // Derivative(1,1)[Binomial]=Binomial(#1,#2)*(PolyGamma(0,1+#1)-PolyGamma(0,1+#1-#2))*(PolyGamma(0,1+#1-#2)-PolyGamma(0,1+#2))+Binomial(#1,#2)*PolyGamma(1,1+#1-#2)&
+    ISet($(Derivative(C1,C1),Binomial),
+      Function(Plus(Times(Binomial(Slot1,Slot2),Subtract(PolyGamma(C0,Plus(C1,Slot1)),PolyGamma(C0,Plus(C1,Slot1,Negate(Slot2)))),Subtract(PolyGamma(C0,Plus(C1,Slot1,Negate(Slot2))),PolyGamma(C0,Plus(C1,Slot2)))),Times(Binomial(Slot1,Slot2),PolyGamma(C1,Plus(C1,Slot1,Negate(Slot2)))))), true),
     // Derivative(0,1)[BesselJ]=1/2*(BesselJ(-1+#1,#2)-BesselJ(1+#1,#2))&
     ISet($(Derivative(C0,C1),BesselJ),
       Function(Times(C1D2,Subtract(BesselJ(Plus(CN1,Slot1),Slot2),BesselJ(Plus(C1,Slot1),Slot2)))), true),
