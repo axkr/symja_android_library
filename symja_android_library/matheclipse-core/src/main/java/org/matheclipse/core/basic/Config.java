@@ -155,12 +155,14 @@ public class Config {
   /** Maximum number of loop runs in some Symja functions */
   public static long MAX_LOOP_COUNT = Long.MAX_VALUE;
 
+  /** Maximum number of (partition) combinations to test in pattern matching */
+  public static long MAX_PATTERN_MATCHING_COMBINATIONS = 1800;
+
   /**
    * The minimum capacity of elements needed in an {@link IAST} to switch to persistence list
    * implementation with structural sharing
    */
   public static final int MIN_LIMIT_PERSISTENT_LIST = 32;
-
 
   /**
    * <p>

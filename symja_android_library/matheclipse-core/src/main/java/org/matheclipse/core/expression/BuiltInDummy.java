@@ -475,7 +475,10 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   public IExpr getDefaultValue(int pos) {
     // default value at this position
     IExpr value = fRulesData != null ? fRulesData.getDefaultValue(pos) : null;
-    return value == null ? F.NIL : value;
+    if (value == null) {
+      return getDefaultValue();
+    }
+    return value;
   }
 
   @Override

@@ -45,7 +45,7 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
   }
 
   /** Set all pattern values to <code>null</code>; */
-  public void initPatternMap() {
+  protected void initPatternMap() {
     fPatternMap.initPattern();
   }
 

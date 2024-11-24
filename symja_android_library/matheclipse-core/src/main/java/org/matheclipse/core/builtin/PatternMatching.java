@@ -9,7 +9,6 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
@@ -444,8 +443,8 @@ public final class PatternMatching {
           return rightHandSide;
         } else if (leftHandSide.size() == 3 && leftHandSide.first().isSymbol()) {
           int pos = leftHandSide.second().toIntDefault();
-          if (pos > 1) {
-            symbol.setDefaultValue(rightHandSide);
+          if (pos > 0) {
+            symbol.setDefaultValue(pos, rightHandSide);
             return rightHandSide;
           }
         }

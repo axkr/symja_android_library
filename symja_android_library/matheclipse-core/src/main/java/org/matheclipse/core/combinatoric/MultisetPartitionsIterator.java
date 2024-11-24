@@ -1,6 +1,8 @@
 package org.matheclipse.core.combinatoric;
 
 import org.hipparchus.util.RosenNumberPartitionIterator;
+import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.patternmatching.FlatOrderlessStepVisitor;
 
 /**
@@ -11,6 +13,16 @@ import org.matheclipse.core.patternmatching.FlatOrderlessStepVisitor;
  */
 public final class MultisetPartitionsIterator {
 
+  /** StopException will be thrown, if maximum number of Cases results are reached */
+  public static class StopException extends FlowControlException {
+    private static final long serialVersionUID = -8839477630696222675L;
+
+    public StopException() {
+      super("Stop VisitorDeleteLevelSpecification evaluation");
+    }
+  }
+
+  private int iterationCounter = 0;
   private final int n;
   private final int[] multiset;
   private final int[][] result;
@@ -48,11 +60,16 @@ public final class MultisetPartitionsIterator {
   // }
 
   public boolean execute() {
-    while (rosen.hasNext()) {
-      currentRosen = rosen.next();
-      if (multisetCombinationRecursive(multiset, 0)) {
-        return false;
+    iterationCounter = 0;
+    try {
+      while (rosen.hasNext()) {
+        currentRosen = rosen.next();
+        if (multisetCombinationRecursive(multiset, 0)) {
+          return false;
+        }
       }
+    } catch (StopException e) {
+      //
     }
     return true;
   }
@@ -62,6 +79,10 @@ public final class MultisetPartitionsIterator {
       final MultisetCombinationIterator iter =
           new MultisetCombinationIterator(multiset, currentRosen[i]);
       while (iter.hasNext()) {
+        if (Config.MAX_PATTERN_MATCHING_COMBINATIONS > 0
+            && ++iterationCounter > Config.MAX_PATTERN_MATCHING_COMBINATIONS) {
+          throw new StopException();
+        }
         final int[] currentSubset = iter.next();
         result[i] = currentSubset;
         int[] wc = ArrayUtils.deleteSubset(multiset, currentSubset);
@@ -71,7 +92,12 @@ public final class MultisetPartitionsIterator {
       }
       return false;
     }
+    if (Config.MAX_PATTERN_MATCHING_COMBINATIONS > 0
+        && ++iterationCounter > Config.MAX_PATTERN_MATCHING_COMBINATIONS) {
+      throw new StopException();
+    }
     return !handler.visit(result);
+
   }
 
   @Override
