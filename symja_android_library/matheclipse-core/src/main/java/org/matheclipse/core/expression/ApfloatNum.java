@@ -573,7 +573,9 @@ public class ApfloatNum implements INum {
   @Override
   public IExpr coshIntegral() {
     try {
-      return valueOf(EvalEngine.getApfloat().coshIntegral(fApfloat));
+      if (isNonNegativeResult()) {
+        return valueOf(EvalEngine.getApfloat().coshIntegral(fApfloat));
+      }
     } catch (ArithmeticException aex) {
       // java.lang.ArithmeticException: Result would be complex
     }
@@ -584,7 +586,9 @@ public class ApfloatNum implements INum {
   @Override
   public IExpr cosIntegral() {
     try {
-      return valueOf(EvalEngine.getApfloat().cosIntegral(fApfloat));
+      if (isNonNegativeResult()) {
+        return valueOf(EvalEngine.getApfloat().cosIntegral(fApfloat));
+      }
     } catch (ArithmeticException aex) {
       // java.lang.ArithmeticException: Result would be complex
     }
@@ -1573,7 +1577,9 @@ public class ApfloatNum implements INum {
   @Override
   public IExpr logIntegral() {
     try {
-      return valueOf(EvalEngine.getApfloat().logIntegral(fApfloat));
+      if (isNonNegativeResult()) {
+        return valueOf(EvalEngine.getApfloat().logIntegral(fApfloat));
+      }
     } catch (ArithmeticException | NumericComputationException ex) {
       // java.lang.ArithmeticException: Result would be complex
     }

@@ -574,8 +574,10 @@ public class Num implements INum {
   @Override
   public IExpr coshIntegral() {
     try {
-      Apfloat coshIntegral = EvalEngine.getApfloatDouble().coshIntegral(apfloatValue());
-      return F.num(coshIntegral.doubleValue());
+      if (isNonNegativeResult()) {
+        Apfloat coshIntegral = EvalEngine.getApfloatDouble().coshIntegral(apfloatValue());
+        return F.num(coshIntegral.doubleValue());
+      }
     } catch (ArithmeticException aex) {
       // java.lang.ArithmeticException: Result would be complex
     }
@@ -586,8 +588,10 @@ public class Num implements INum {
   @Override
   public IExpr cosIntegral() {
     try {
-      Apfloat cosIntegral = EvalEngine.getApfloatDouble().cosIntegral(apfloatValue());
-      return F.num(cosIntegral.doubleValue());
+      if (isNonNegativeResult()) {
+        Apfloat cosIntegral = EvalEngine.getApfloatDouble().cosIntegral(apfloatValue());
+        return F.num(cosIntegral.doubleValue());
+      }
     } catch (ArithmeticException aex) {
       // java.lang.ArithmeticException: Result would be complex
     }
@@ -1747,8 +1751,10 @@ public class Num implements INum {
   @Override
   public IExpr logIntegral() {
     try {
-      Apfloat logIntegral = EvalEngine.getApfloatDouble().logIntegral(apfloatValue());
-      return F.num(logIntegral.doubleValue());
+      if (isNonNegativeResult()) {
+        Apfloat logIntegral = EvalEngine.getApfloatDouble().logIntegral(apfloatValue());
+        return F.num(logIntegral.doubleValue());
+      }
     } catch (ArithmeticException | NumericComputationException ex) {
       // java.lang.ArithmeticException: Result would be complex
     }
@@ -1858,11 +1864,17 @@ public class Num implements INum {
   @Override
   public IExpr pochhammer(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      if (arg2 instanceof IReal) {
-        Apfloat pochhammer =
-            EvalEngine.getApfloatDouble().pochhammer(apfloatValue(), ((IReal) arg2).apfloatValue());
-        return F.num(pochhammer.doubleValue());
+      if (arg2 instanceof INum) {
+        if (arg2 instanceof ComplexNum || arg2 instanceof Num) {
+          return plus(arg2).gamma().divide(gamma());
+        }
+        if (arg2 instanceof ApfloatNum) {
+          Apfloat pochhammer = EvalEngine.getApfloatDouble().pochhammer(apfloatValue(),
+              ((IReal) arg2).apfloatValue());
+          return F.num(pochhammer.doubleValue());
+        }
       }
+
       Apcomplex pochhammer = EvalEngine.getApfloatDouble().pochhammer(apfloatValue(),
           ((INumber) arg2).apcomplexValue());
       return F.complexNum(pochhammer.real().doubleValue(), pochhammer.imag().doubleValue());

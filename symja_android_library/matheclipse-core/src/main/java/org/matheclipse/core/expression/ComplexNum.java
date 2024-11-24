@@ -1604,6 +1604,9 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr pochhammer(IExpr arg2) {
     if (arg2 instanceof INumber) {
+      if (arg2 instanceof ComplexNum || arg2 instanceof Num) {
+        return plus(arg2).gamma().divide(gamma());
+      }
       Apcomplex pochhammer = EvalEngine.getApfloatDouble().pochhammer(apcomplexValue(),
           ((INumber) arg2).apcomplexValue());
       return F.complexNum(pochhammer.real().doubleValue(), pochhammer.imag().doubleValue());
