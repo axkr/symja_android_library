@@ -1,10 +1,24 @@
 package org.matheclipse.core.system;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.BuiltinFunctionCalls;
+import org.matheclipse.core.expression.S;
 
 public class IntegrateTest extends ExprEvaluatorTestCase {
+  /** The JUnit setup method */
+  @Override
+  @Before
+  public void setUp() {
+    super.setUp();
+    try {
+      S.Integrate.getEvaluator().await();
+    } catch (InterruptedException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+  }
 
   @Test
   public void testIntegrateDefinite() {
@@ -165,7 +179,8 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testIntegrateIncomplete() {
-
+    check("Integrate(Csch(x)/x,x)", //
+        "Integrate(Csch(x)/x,x)");
     check("Integrate((Sinh(x)-x)/(x^2*Sinh(x)),x)", //
         "-1/x-Integrate(Csch(x)/x,x)");
     check("Refine(Integrate(Abs(E+Pi*x^(-8)),x), Element(x,Reals))", //

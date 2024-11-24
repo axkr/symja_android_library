@@ -32,7 +32,7 @@ public class ListLogLogPlot extends ListPlot {
     return F.NIL;
   }
 
-  public static JFreeChart listLogLogPlot(VisualSet visualSet, boolean joined) {
+  private static JFreeChart listLogLogPlot(VisualSet visualSet, boolean joined) {
     visualSet.getAxisX().setType(Axis.Type.LOGARITHMIC);
     visualSet.getAxisY().setType(Axis.Type.LOGARITHMIC);
     return listPlot(visualSet, joined);

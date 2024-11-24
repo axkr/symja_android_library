@@ -12,6 +12,7 @@ public class ImageInit {
     S.ListDensityPlot.setEvaluator(new org.matheclipse.image.builtin.ListDensityPlot());
     // S.ListLogPlot.setEvaluator(new org.matheclipse.image.builtin.ListLogPlot());
     // S.ListLogLogPlot.setEvaluator(new org.matheclipse.image.builtin.ListLogLogPlot());
+    // S.ListPlot.setEvaluator(new org.matheclipse.image.builtin.ListPlot());
 
   }
 }

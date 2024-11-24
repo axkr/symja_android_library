@@ -239,8 +239,8 @@ public class ExprEvaluatorTests {
         F.Missing("test"), //
         F.complex(-0.5, 0.5), //
         F.complex(0.0, 0.5), //
-        F.complex(0.0, -1.0), //
-        F.complex(0.0, 1.0), //
+        F.CDI, //
+        F.CDNI, //
         F.complex(2.0, -1.0), //
         F.complex(2.0, 1.0), //
         F.complex(-2.0, -2.0), //
@@ -248,6 +248,7 @@ public class ExprEvaluatorTests {
         F.complexNum("-0.8", "1.2", 30), //
         // F.complexNum(new Apfloat(Long.MIN_VALUE, 30), new Apfloat(Long.MAX_VALUE,
         // 30)), //
+        F.CD0, //
         F.num(0.5), //
         F.num(-0.5), //
         F.num(Math.PI * (-0.5)), //

@@ -2195,6 +2195,17 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
+  public void testSolveConjugate() {
+    check("InverseFunction(Conjugate)", //
+        "Conjugate");
+    check("Solve(z^3==z,z)", //
+        "{{z->-1},{z->0},{z->1}}");
+    // TODO get {{z->-1},{z->0},{z->-I},{z->I},{z -> 1}}
+    check("Solve(z^3==Conjugate(z),z)", //
+        "Solve(z^3==Conjugate(z),z)");
+  }
+
   /** The JUnit setup method */
   @Override
   public void setUp() {

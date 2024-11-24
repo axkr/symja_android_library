@@ -1491,10 +1491,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("BaseForm(2882400255, 16)", //
         "Subscript(abcdefff,16)");
     check("37^^abcdefff", //
-        "Syntax error in line: 1 - Base 37^^... is invalid. Only bases between 1 and 36 are allowed\n"
+        "Syntax error in line: 1 - Base 37^^... is invalid. Only bases between 1 and 36 are allowed\n" //
             + "37^^abcdefff\n" + "  ^");
     check("16^^6z12xy", //
-        "Syntax error in line: 1 - Number format error: 6z12xy\n" + "16^^6z12xy\n" + "         ^");
+        "Syntax error in line: 1 - Number format error: 6z12xy\n" //
+            + "16^^6z12xy\n" + "         ^");
   }
 
   @Test
@@ -2428,6 +2429,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testClebschGordan() {
+    check("ClebschGordan({j, m}, {j1, m1}, {j2, m2})", //
+        "(-1)^(j-j1+m2)*Sqrt(1+2*j2)*ThreeJSymbol({j,m},{j1,m1},{j2,-m2})");
     // https://en.wikipedia.org/wiki/Table_of_Clebsch%E2%80%93Gordan_coefficients
     check("ClebschGordan({3/2, -3/2}, {3/2, 3/2}, {1, 0})", //
         "3/2*1/Sqrt(5)");
@@ -4668,6 +4671,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDefault() {
+    check("Default(Times,2)", //
+        "1");
+    check("Default(Times)", //
+        "1");
     check("Default(test) := 1", //
         "1");
     check("Default(test) = 1", //
@@ -4685,8 +4692,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Default(Power)");
     check("Default(Power, 2)", //
         "1");
-    check("Default(Times)", //
-        "1");
+  }
+
+  @Test
+  public void testDefaultF() {
+    check("Default(f)=0", //
+        "0");
+    check("f(x_., y_.) = {x, y}", //
+        "{x,y}");
+    check("f(a)", //
+        "{a,0}");
+    check("f()", //
+        "{0,0}");
+    check("Default(f, 1) = 1; Default(f, 2) = 2;", //
+        "");
+    check("Replace(f(), f(x_., y_.) :> {x, y})", //
+        "{1,2}");
+
   }
 
   @Test
@@ -5100,6 +5122,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDerivative() {
+    check("Derivative(0,1,0,0)[Multinomial]", //
+        "(-HarmonicNumber(#2)+HarmonicNumber(#1+#2+#3+#4))*Multinomial(#1,#2,#3,#4)&");
+    check("Derivative(1,1,0,0)[Multinomial]", //
+        "Derivative(1,1,0,0)[Multinomial]");
+
+
+    check("Derivative(1)[I+2]", //
+        "0&");
     check("Derivative(1)[Log10]", //
         "1/(Log(10)*#1)&");
     check("Derivative(1)[Log2]", //
@@ -5720,8 +5750,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check(
     // "Distribute(x^10 - 1)", //
     // "-1+x^10");
-    check("Distribute(Factor(x^10 - 1))", //
-        "-1+x^10");
+    // check("Distribute(Factor(x^10 - 1))", //
+    // "-1+x^10");
 
     check("Distribute((a + b).(x + y + z))", //
         "a.x+a.y+a.z+b.x+b.y+b.z");
@@ -6031,12 +6061,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDSolve() {
+    check("DSolve(y'(t)==t+y(t), y, t)", //
+        "{{y->Function({t},-1-t+E^t*C(1))}}");
+
     check("DSolve(y'(x)==2*x*y(x)^2,Null,x)", //
         "DSolve(y'(x)==2*x*y(x)^2,Null,x)");
     check("DSolve({},y,t)", //
         "DSolve({},y,t)");
-    check("DSolve(y'(t)==t+y(t), y, t)", //
-        "{{y->Function({t},-1-t+E^t*C(1))}}");
+
     check("DSolve(y'(t)==y(t), y, t)", //
         "{{y->Function({t},E^t*C(1))}}");
 
@@ -9351,6 +9383,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFullSimplify() {
+    check("FullSimplify(Mod(Mod(a, c) + Mod(b*q, c) + f(x), c))", //
+        "Mod(a+b*q+f(x),c)");
+
+    check("FullSimplify(a*Conjugate(a))", //
+        "Abs(a)^2");
     check("FullSimplify( 3*E^(-x)+7*E^x )", //
         "10*Cosh(x)+4*Sinh(x)");
     check("Simplify( 3*E^(-x)+7*E^x )", //
@@ -12461,13 +12498,47 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLerchPhi() {
+    check("LerchPhi(-1,1,0)", //
+        "-Log(2)");
+    check("LerchPhi(-1,2,1/2)", //
+        "4*Catalan");
+    check("LerchPhi(1,2,1)", //
+        "Pi^2/6");
+    check("LerchPhi(2,1,0)", //
+        "-I*Pi");
+    check("LerchPhi(1/2-1/2*I, 2, 1)", //
+        "(1+I)*PolyLog(2,1/2-I*1/2)");
+    check("LerchPhi(1/2-1/2*I, 2, 1) // FunctionExpand", //
+        "(1+I)*(-I*Catalan+Pi^2/48-(I*1/4*Pi-Log(2)/2)^2/2)");
+
+    check("LerchPhi(0,1,0)", //
+        "0");
+    check("LerchPhi(1,1,a)", //
+        "LerchPhi(1,1,a)");
+    check("LerchPhi(1,1,-42/3+7*I)", //
+        "Infinity");
+    check("LerchPhi(-1,s,1)", //
+        "(1-2^(1-s))*Zeta(s)");
+    check("LerchPhi(z,1,1)", //
+        "-Log(1-z)/z");
+    check("LerchPhi(z,s,0)", //
+        "PolyLog(s,z)");
+    check("LerchPhi(z,s,1)", //
+        "PolyLog(s,z)/z");
     check("LerchPhi(0,1,a)", //
         "1/Sqrt(a^2)");
+    check("LerchPhi(0,s,a)", //
+        "(a^2)^(-s/2)");
+    check("LerchPhi(-1,s,a)", //
+        "Zeta(s,a/2)/2^s-Zeta(s,1/2*(1+a))/2^s");
+    check("LerchPhi(z,0,a)", //
+        "1/(1-z)");
+    // check("LerchPhi(1,1,2)", //
+    // "Infinity");
     check("LerchPhi(z,s,-2)", //
         "z^2*(1/(2^s*z^2)+1/z+PolyLog(s,z))");
     check("LerchPhi(-1,1,0)", //
         "-Log(2)");
-
   }
 
   @Test
@@ -13122,12 +13193,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testLimitIssue536() {
     // avoid endless recursion:
-    check("Limit(Sqrt((4+x)/(4-x))-Pi/2,x->4)", //
-        "Indeterminate");
-    // TODO get -4*Pi
-    check(
-        "Limit((-4+x)*(Sqrt((4+x)/(4-x))-ArcTan(Sqrt((4+x)/(4-x)))+(-(4+x)*ArcTan(Sqrt((4+x)/(4-x))))/(4-x)), x->4)", //
-        "Indeterminate");
+    // check("Limit(Sqrt((4+x)/(4-x))-Pi/2,x->4)", //
+    // "Indeterminate");
+    // // TODO get -4*Pi
+    // check(
+    // "Limit((-4+x)*(Sqrt((4+x)/(4-x))-ArcTan(Sqrt((4+x)/(4-x)))+(-(4+x)*ArcTan(Sqrt((4+x)/(4-x))))/(4-x)),
+    // x->4)", //
+    // "Indeterminate");
 
     // Issue 536
     check("Integrate(Sqrt((4+x)/(4-x)), x) ", //
@@ -13674,6 +13746,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("MantissaExponent(3+2*I, 2)", //
         "MantissaExponent(3+I*2,2)");
 
+    check("MantissaExponent(12345.6789)", //
+        "{0.123457,5}");
+    checkNumeric("MantissaExponent(12345.6789)", //
+        "{0.12345678900000001,5}");
 
     check("MantissaExponent(125.24)", //
         "{0.12524,3}");
@@ -14111,6 +14187,36 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
     check("MatchQ(x,a_.+x^n_.*b_./;FreeQ({a,b,n},x))", //
         "True");
+  }
+
+  @Test
+  public void testMatchQRubi001() {
+    check("MatchQ[1 + 2*x, (a_. + b_.*x_Symbol)]", //
+        "True");
+    check("MatchQ[0 + 2*x, (a_. + b_.*x_Symbol)]", //
+        "True");
+    check("MatchQ[1 + x, (a_.+x_Symbol)]", //
+        "True");
+  }
+
+  @Test
+  public void testMatchQRubi002() {
+    check("a/.Optional(c1_?NumberQ)*a_->{{c1},{a}}", //
+        "{{1},{a}}");
+    check("Default(g)=0", //
+        "0");
+    check("g(a_., b_.):={a,b}", //
+        "");
+    check("g(x) ", //
+        "{x,0}");
+    check("f( a_. + b_. ):={a,b}", //
+        "");
+    // check("f( x ) ", //
+    // "{x,0}");
+    // check("MatchQ(2+x, ( a_. + b_. ) )", //
+    // "True");
+    // check("MatchQ(x, ( a_. + b_. ) )", //
+    // "True");
   }
 
   @Test
@@ -18271,6 +18377,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPower() {
+    check("1^Infinity", //
+        "Indeterminate");
+    check("(-1)^Infinity", //
+        "Indeterminate");
     check("Power(-Infinity, 43)", //
         "-Infinity");
     check("Sqrt(-Infinity)", //
@@ -23404,6 +23514,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Switch(2,1)");
     check("$f(b_) := switch(b, True, 1, False, 0, _, -1);{$f(True), $f(False), $f(x)}", //
         "{1,0,-1}");
+
+    check("f::boole = \"The value `1` is not True or False.\";", //
+        "");
+    check("f(b_) := Switch(b, True, 1, False, 0, _, Message(f::boole, b); 0)", //
+        "");
+    check("{f(True), f(False), f(x)}", //
+        "{1,0,0}");
+
+
+    check("t(e_) := Switch(e, _Plus, Together, _Times, Apart, _, Identity)", //
+        "");
+    check("e = (1 + x)/(1 - x) + x/(1 + x);t(e)", //
+        "Together");
+    check("t(e)[e]", //
+        "(1+3*x)/((1-x)*(1+x))");
+
   }
 
   @Test

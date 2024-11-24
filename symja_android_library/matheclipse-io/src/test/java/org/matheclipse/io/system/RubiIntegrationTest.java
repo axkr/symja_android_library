@@ -59,6 +59,7 @@ import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Subst;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SubstAux;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.TrigSimplifyAux;
 import javax.script.ScriptException;
+import org.junit.Before;
 import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -70,6 +71,18 @@ import org.matheclipse.core.interfaces.IExpr;
  * integrator</a>.
  */
 public class RubiIntegrationTest extends AbstractTestCase {
+  /** The JUnit setup method */
+  @Override
+  @Before
+  public void setUp() {
+    super.setUp();
+    try {
+      S.Integrate.getEvaluator().await();
+    } catch (InterruptedException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+  }
 
   @Override
   public void check(String evalString, String expectedResult) {
@@ -155,10 +168,19 @@ public class RubiIntegrationTest extends AbstractTestCase {
   public void testRubiRule005() {
     try {
       fScriptEngine.put("RETURN_OBJECT", Boolean.TRUE);
+
+
+
       IExpr lhsEval = (IExpr) fScriptEngine.eval("Integrate(F^(a+b/(c+d*x)^3)*(c+d*x),x)");
+
       assertEquals(lhsEval.toString(),
           "(F^a*(c+d*x)^2*Gamma(-2/3,(-b*Log(F))/(c+d*x)^3)*((-b*Log(F))/(c+d*x)^3)^(2/3))/(\n"
               + "3*d)");
+      // assertEquals(lhsEval.toString(),
+      // "(c*F^a*(c+d*x)*Gamma(-1/3,(-b*Log(F))/(c+d*x)^3)*((-b*Log(F))/(c+d*x)^3)^(1/3))/(\n"
+      // + "3*d)+d*((c*F^a*(-c-d*x)*Gamma(-1/3,(-b*Log(F))/(c+d*x)^3)*((-b*Log(F))/(c+d*x)^3)^(\n"
+      // + "1/3))/(3*d^2)+(F^a*(c+d*x)^2*Gamma(-2/3,(-b*Log(F))/(c+d*x)^3)*((-b*Log(F))/(c+d*x)^\n"
+      // + "3)^(2/3))/(3*d^2))");
     } catch (ScriptException e) {
       e.printStackTrace();
     }
@@ -223,6 +245,8 @@ public class RubiIntegrationTest extends AbstractTestCase {
   @Test
   public void testRubi003() {
     IAST ast;
+    ast = FunctionOfTrigOfLinearQ(F.Csch(Times(2, x)), x);
+    check(ast, "True");
 
     ast = MemberQ(List($s("Sin"), $s("Cos"), $s("Tan"), $s("Cot"), $s("Sec"), $s("Csc")),
         If(AtomQ(Sin(Times(C2, x))), Sin(Times(C2, x)), Head(Sin(Times(C2, x)))));

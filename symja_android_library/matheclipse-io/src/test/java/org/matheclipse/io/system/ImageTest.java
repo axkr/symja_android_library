@@ -1,5 +1,6 @@
 package org.matheclipse.io.system;
 
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -10,9 +11,14 @@ import org.matheclipse.core.tensor.api.TensorUnaryOperator;
 import org.matheclipse.core.tensor.img.ColorDataGradients;
 import org.matheclipse.core.tensor.img.ImageCrop;
 
-import static org.junit.Assert.assertEquals;
-
 public class ImageTest extends AbstractTestCase {
+
+  @Test
+  public void testArrayPlot001() {
+    // TODO throws exception
+    // check("ArrayPlot({{1, 0, 0, 0.3}, {1, 1, 0, 0.3}, {1, 0, 1, 0.7}})", //
+    // "");
+  }
 
   @Test
   public void testImageGray001() {

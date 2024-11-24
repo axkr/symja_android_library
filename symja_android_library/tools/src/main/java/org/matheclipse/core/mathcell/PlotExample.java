@@ -14,7 +14,7 @@ public class PlotExample extends BasePlotExample {
         "model=NDSolve({x'(t) == 10*(y(t) - x(t)), y'(t) == x(t)*(28 - z(t)) - y(t), z'(t) == x(t)*y(t) - 8/3*z(t), x(0)== 0, y(0) == 1, z(0) == 0}, {x, y, z}, {t, 0, 20});"
             + "Plot({Evaluate(z(t) /.model)}, {t, 0, 20})", //
         "Plot(Evaluate(Table(BernsteinBasis(3, k, x), {k, 0, 3})), {x, 0, 1})", //
-        "Plot(Tan(x), {x, -10, 10},PlotStyle->{Purple})", //
+        "Plot(Tan(x), {x, -10, 10},PlotRange->{-10,10},PlotStyle->{Purple})", //
         "Plot(Evaluate(Table(BesselJ(n, x), {n, 4})), {x, 0, 10})"
     };
 

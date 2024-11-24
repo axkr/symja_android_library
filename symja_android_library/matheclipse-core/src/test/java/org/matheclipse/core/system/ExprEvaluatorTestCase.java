@@ -100,7 +100,8 @@ public abstract class ExprEvaluatorTestCase {
         assertEquals(expectedResult, evaledResult);
       }
     } catch (SyntaxError e) {
-      e.printStackTrace();
+      System.err.println(e.getMessage());
+      // e.printStackTrace();
       assertEquals(e.getMessage(), expectedResult);
     } catch (Exception e) {
       e.printStackTrace();
