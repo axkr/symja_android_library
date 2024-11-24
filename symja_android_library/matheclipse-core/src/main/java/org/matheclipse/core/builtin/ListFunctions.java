@@ -1176,7 +1176,7 @@ public final class ListFunctions {
         IAST arg1 = (IAST) ast.arg1();
         int m = -1;
         int n = -1;
-        if (ast.arg2().isAST(S.List, 3)) {
+        if (ast.arg2().isList2()) {
           IAST list = (IAST) ast.arg2();
           m = list.arg1().toIntDefault(-1);
           n = list.arg2().toIntDefault(-1);
@@ -2948,7 +2948,7 @@ public final class ListFunctions {
     // temp = F.NIL;
     // }
     // }
-    // } else if (positions.get(i).isAST(S.Key, 2)) {
+    // } else if (positions.get(i).isKey()) {
     // expr = temp.get(p);
     // if (expr.isASTOrAssociation()) {
     // temp = (IAST) expr;
@@ -8305,7 +8305,8 @@ public final class ListFunctions {
    * @return
    */
   private static IAST cleanList(IAST list) {
-    return list.select(x -> !(x.equals(S.Indeterminate) || x.equals(S.Null) || x.equals(S.None)
+    return list.select(
+        x -> !(x.isIndeterminate() || x.equals(S.Null) || x.equals(S.None)
         || x.isAST(S.Missing)));
   }
 

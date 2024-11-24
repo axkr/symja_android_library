@@ -1096,6 +1096,7 @@ public class F extends S {
 
   private static void createInverseFunctionMap() {
     UNARY_INVERSE_FUNCTIONS.put(Abs, Function(Times(CN1, Slot1)));
+    UNARY_INVERSE_FUNCTIONS.put(Conjugate, Conjugate);
     UNARY_INVERSE_FUNCTIONS.put(ProductLog, Function(Times(Slot1, Power(E, Slot1))));
     UNARY_INVERSE_FUNCTIONS.put(Cos, ArcCos);
     UNARY_INVERSE_FUNCTIONS.put(Cot, ArcCot);
@@ -10366,9 +10367,17 @@ public class F extends S {
     return new B2.Times(x, y);
   }
 
-  public static IExpr timesDistribute(@Nonnull IExpr x, @Nonnull final IExpr y, EvalEngine engine) {
+  /**
+   * Distribute {@link S#Plus} function expressions on <code>Times(x,y)</code> if <code>x</code> or
+   * <code>y</code> is a {@link S#Plus} expression.
+   * 
+   * @param x maybe a {@link S#Plus} function expression
+   * @param y maybe a {@link S#Plus} function expression
+   * @return
+   */
+  public static IExpr distributePlusOnTimes(@Nonnull IExpr x, @Nonnull final IExpr y) {
     if (x.isPlus() || y.isPlus()) {
-      return engine.evaluate(F.Distribute(new B2.Times(x, y)));
+      return Algebra.distribute(F.Distribute(new B2.Times(x, y)), S.Plus);
     }
     return timesOrderless(IExpr::isTimes, x, y);
   }

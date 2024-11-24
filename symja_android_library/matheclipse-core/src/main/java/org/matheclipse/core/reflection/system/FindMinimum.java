@@ -28,7 +28,6 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.JDKRandomGenerator;
 import org.hipparchus.random.RandomVectorGenerator;
 import org.hipparchus.random.UncorrelatedRandomVectorGenerator;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
@@ -242,7 +241,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       for (int i = 1; i < andAST.size(); i++) {
         IExpr temp = andAST.get(i);
         if (temp.isRelationalBinary()) {
-          if (temp.isAST(S.Equal, 3)) {
+          if (temp.isEqual()) {
             if (!createEqualityRelation((IAST) temp, equalitiesList, equalitiesConstants,
                 equalitiesConstantsIndex, varsList, engine)) {
               return false;

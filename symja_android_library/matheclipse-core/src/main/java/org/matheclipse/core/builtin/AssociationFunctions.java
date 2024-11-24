@@ -24,7 +24,6 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class AssociationFunctions {
@@ -592,7 +591,7 @@ public class AssociationFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().isAST(S.Key, 2)) {
+      if (ast.head().isKey()) {
         if (ast.isAST1() && ast.arg1().isAssociation()) {
           IExpr key = ast.head().first();
           IAssociation arg1 = (IAssociation) ast.arg1();
@@ -876,7 +875,7 @@ public class AssociationFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isString()) {
-        String str = ((IStringX) arg1).toString();
+        String str = arg1.toString();
         HashMap<Character, MutableInt> map = new HashMap<Character, MutableInt>();
         for (int i = 0; i < str.length(); i++) {
           map.compute(str.charAt(i), //
@@ -959,7 +958,7 @@ public class AssociationFunctions {
             if (key.isList()) {
               return key.mapThread(ast, 2);
             }
-            if (key.isAST(S.Key, 2)) {
+            if (key.isKey()) {
               key = key.first();
             }
             IAST listOfRules = (IAST) arg1;
@@ -984,7 +983,7 @@ public class AssociationFunctions {
           if (key.isList()) {
             return ((IAST) key).mapThread(ast, 2);
           }
-          if (key.isAST(S.Key, 2)) {
+          if (key.isKey()) {
             key = key.first();
           }
 
@@ -995,7 +994,7 @@ public class AssociationFunctions {
           if (key.isList()) {
             return ((IAST) key).mapThread(ast, 2);
           }
-          if (key.isAST(S.Key, 2)) {
+          if (key.isKey()) {
             key = key.first();
           }
           final IExpr arg3 = ast.arg3();

@@ -1771,7 +1771,7 @@ public final class Arithmetic {
           // mirror symmetry for Conjugate()
           return Conjugate(F.Gamma(z.arg1()));
         }
-        if (z.isAST(S.Overflow, 1) || z.isAST(S.Underflow, 1)) {
+        if (z.isOverflow() || z.isUnderflow()) {
           return F.Overflow();
         }
       }
@@ -2278,7 +2278,7 @@ public final class Arithmetic {
         IExpr temp = engine.evaluateNIL(F.Im(x));
         if (temp.isPresent()) {
           evaled[0] = true;
-          if (temp.isAST(S.Im, 2)) {
+          if (temp.isIm()) {
             rest.append(temp.first());
           } else {
             result.append(temp);
@@ -5100,7 +5100,7 @@ public final class Arithmetic {
         IExpr temp = engine.evaluateNIL(F.Re(x));
         if (temp.isPresent()) {
           evaled[0] = true;
-          if (temp.isAST(S.Re, 2)) {
+          if (temp.isRe()) {
             rest.append(temp.first());
           } else {
             result.append(temp);
@@ -6065,9 +6065,9 @@ public final class Arithmetic {
         return arg1;
       } else if (arg1 == arg2) {
         return F.Power(arg1, C2);
-      } else if (arg1 instanceof INum && arg2.isAST(S.Overflow, 1)) {
+      } else if (arg1 instanceof INum && arg2.isOverflow()) {
         return arg2;
-      } else if (arg2 instanceof INum && arg1.isAST(S.Overflow, 1)) {
+      } else if (arg2 instanceof INum && arg1.isOverflow()) {
         return arg1;
       } else if (arg1.isNumber() && arg2.isNumber()) {
         return F.NIL;
@@ -6089,24 +6089,24 @@ public final class Arithmetic {
             }
             break;
           case ID.Underflow:
-            if (arg1.isAST(S.Underflow, 1)) {
+            if (arg1.isUnderflow()) {
               if (arg2.isNumericFunction()) {
                 if (EvalEngine.get().isNumericMode()) {
                   return F.CD0;
                 }
                 return arg1;
               }
-              if (arg2.isAST(S.Overflow, 1)) {
+              if (arg2.isOverflow()) {
                 return S.Indeterminate;
               }
             }
             break;
           case ID.Overflow:
-            if (arg1.isAST(S.Overflow, 1)) {
+            if (arg1.isOverflow()) {
               if (arg2.isNumericFunction()) {
                 return arg1;
               }
-              if (arg2.isAST(S.Underflow, 1)) {
+              if (arg2.isUnderflow()) {
                 return S.Indeterminate;
               }
             }
@@ -6177,24 +6177,24 @@ public final class Arithmetic {
             }
             break;
           case ID.Underflow:
-            if (arg2.isAST(S.Underflow, 1)) {
+            if (arg2.isUnderflow()) {
               if (arg1.isNumericFunction()) {
                 if (EvalEngine.get().isNumericMode()) {
                   return F.CD0;
                 }
                 return arg2;
               }
-              if (arg1.isAST(S.Overflow, 1)) {
+              if (arg1.isOverflow()) {
                 return S.Indeterminate;
               }
             }
             break;
           case ID.Overflow:
-            if (arg2.isAST(S.Overflow, 1)) {
+            if (arg2.isOverflow()) {
               if (arg1.isNumericFunction()) {
                 return arg2;
               }
-              if (arg1.isAST(S.Underflow, 1)) {
+              if (arg1.isUnderflow()) {
                 return S.Indeterminate;
               }
             }

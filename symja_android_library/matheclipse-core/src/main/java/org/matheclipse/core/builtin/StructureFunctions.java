@@ -1003,7 +1003,7 @@ public class StructureFunctions {
           try {
             final IExpr arg1 = ast.arg1();
             IExpr arg3 = ast.arg3();
-            if (arg3.isInteger() || arg3.isString() || arg3.isAST(S.Key, 2) || arg3.equals(S.All)) {
+            if (arg3.isInteger() || arg3.isString() || arg3.isKey() || arg3.equals(S.All)) {
               arg3 = F.list(arg3);
             }
             if (arg3.isListOfLists()) {
@@ -1062,7 +1062,7 @@ public class StructureFunctions {
         }
         return subResult;
       }
-      if (pos.isString() || pos.isAST(S.Key, 2)) {
+      if (pos.isString() || pos.isKey()) {
         if (result.isAssociation()) {
           IExpr key = pos.isString() ? pos : pos.first();
           IAST rule = ((IAssociation) result).getRule(key);

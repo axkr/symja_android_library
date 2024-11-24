@@ -367,7 +367,7 @@ public class ManipulateFunction {
       IExpr plotRange = options.getOption(S.PlotRange);
       IAST optionPlotRange = F.NIL;
       if (plotRange.isPresent()) {
-        if (plotRange.isAST(S.List, 3)) {
+        if (plotRange.isList2()) {
           optionPlotRange = F.list(S.Full, F.list(plotRange.first(), plotRange.second()));
         } else if (plotRange.isReal()) {
           if (plotID == ID.Plot) {
@@ -493,11 +493,11 @@ public class ManipulateFunction {
         graphicControl.append("var config = { type: 'svg' ");
         if (optionPlotRange.isPresent()) {
           // IExpr option = optionPlotRange.arg2();
-          // if (option.isAST(S.List, 3)) {
+          // if (option.isList2()) {
           // plotRangeY = F.list(option.first(), option.second());
           // }
         }
-        if (optionPlotRange.isPresent() && optionPlotRange.second().isAST(S.List, 3)) {
+        if (optionPlotRange.isPresent() && optionPlotRange.second().isList2()) {
           IAST list = (IAST) optionPlotRange.second();
           // var config = { type: 'svg', yMin: -5, yMax: 5 };
           graphicControl.append(", yMin: ");
@@ -567,7 +567,7 @@ public class ManipulateFunction {
       }
 
       graphicControl.append("\n  var config = { type: 'threejs' ");
-      if (optionPlotRange.isPresent() && optionPlotRange.second().isAST(S.List, 3)) {
+      if (optionPlotRange.isPresent() && optionPlotRange.second().isList2()) {
         IAST list = (IAST) optionPlotRange.second();
         // var config = { type: 'svg', yMin: -5, yMax: 5 };
         graphicControl.append(", zMin: ");
@@ -621,7 +621,7 @@ public class ManipulateFunction {
         setBoxRatios(graphicControl, rangeXY);
       }
 
-      if (optionPlotRange.isPresent() && optionPlotRange.second().isAST(S.List, 3)) {
+      if (optionPlotRange.isPresent() && optionPlotRange.second().isList2()) {
         IAST list = (IAST) optionPlotRange.second();
         // var config = { type: 'svg', yMin: -5, yMax: 5 };
         graphicControl.append(", zMin: ");
@@ -1059,7 +1059,7 @@ public class ManipulateFunction {
       double plotRangeYMin = Double.MAX_VALUE;
       double plotRangeXMax = Double.MIN_VALUE;
       double plotRangeXMin = Double.MAX_VALUE;
-      if (plotRangeX.isAST(S.List, 4)) {
+      if (plotRangeX.isList3()) {
         try {
           plotRangeXMin = engine.evalDouble(plotRangeX.arg2());
           plotRangeXMax = engine.evalDouble(plotRangeX.arg3());
@@ -1082,10 +1082,10 @@ public class ManipulateFunction {
       // IAST optionPlotRange = F.NIL;
       if (plotRangeY.isPresent()) {
         boolean plotRangeEvaled = false;
-        if (plotRangeY.isAST(S.List, 3)) {
+        if (plotRangeY.isList2()) {
           try {
-            if (plotRangeY.first().isAST(S.List, 3) //
-                && plotRangeY.second().isAST(S.List, 3)) {
+            if (plotRangeY.first().isList2() //
+                && plotRangeY.second().isList2()) {
               IAST list = (IAST) plotRangeY.first();
               plotRangeXMin = engine.evalDouble(list.first());
               plotRangeXMax = engine.evalDouble(list.second());

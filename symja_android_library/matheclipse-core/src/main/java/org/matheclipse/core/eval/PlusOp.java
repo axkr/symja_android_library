@@ -218,7 +218,7 @@ public final class PlusOp {
         }
       }
 
-      if (numberValue.isAST(S.Overflow, 1) && arg.isNumericFunction()) {
+      if (numberValue.isOverflow() && arg.isNumericFunction()) {
         evaled = true;
         return F.NIL;
       }
@@ -277,7 +277,7 @@ public final class PlusOp {
         // }
       } else if (arg.isAST()) {
         final IAST ast = (IAST) arg;
-        final int headID = ((IAST) arg).headID();
+        final int headID = arg.headID();
         if (headID >= ID.DirectedInfinity) {
           switch (headID) {
             case ID.DirectedInfinity:
@@ -423,7 +423,7 @@ public final class PlusOp {
                 if (numberValue.isNIL()) {
                   numberValue = arg;
                   return F.NIL;
-                } else if (numberValue.isAST(S.Underflow, 1)) {
+                } else if (numberValue.isUnderflow()) {
                   numberValue = arg;
                   evaled = true;
                   return F.NIL;
@@ -445,7 +445,7 @@ public final class PlusOp {
                   }
                   numberValue = arg;
                   return F.NIL;
-                } else if (numberValue.isAST(S.Overflow, 1)) {
+                } else if (numberValue.isOverflow()) {
                   evaled = true;
                   return F.NIL;
                 } else if (EvalEngine.get().isNumericMode()) {

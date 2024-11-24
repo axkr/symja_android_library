@@ -21,7 +21,8 @@ public class Util {
     IAST cont_domain = F.NIL;
     if (domain == S.Reals) {
       cont_domain = IntervalDataSym.reals();
-    } else if (IntervalDataSym.isInterval(domain)) {
+      // } else if (IntervalDataSym.isInterval(domain)) {
+    } else if (domain.isIntervalData()) {
       if (IntervalDataSym.isEmptySet(domain)) {
         return IntervalDataSym.emptySet();
       }

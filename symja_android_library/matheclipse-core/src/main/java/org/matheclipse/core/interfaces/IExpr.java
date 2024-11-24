@@ -2287,9 +2287,9 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is the function <code>Abs[&lt;arg&gt;]</code>
+   * Test if this expression is the function <code>Abs(&lt;arg&gt;)</code> by checking the head is
+   * equal to {@link S#Abs} and the function contains only one argument.
    *
-   * @return
    */
   default boolean isAbs() {
     return false;
@@ -2303,7 +2303,6 @@ public interface IExpr
    * Test if this expression and all subexpressions are already expanded i.e. all <code>
    * Plus, Times, Power</code> (sub-)expressions are expanded.
    *
-   * @return
    */
   default boolean isAllExpanded() {
     return true;
@@ -2323,7 +2322,6 @@ public interface IExpr
    * Test if this expression is the function <code>And[&lt;arg&gt;,...]</code> and has at least 2
    * arguments.
    *
-   * @return
    */
   default boolean isAnd() {
     return false;
@@ -2332,7 +2330,6 @@ public interface IExpr
   /**
    * Test if this expression is the function <code>ArcCos[&lt;arg&gt;]</code>
    *
-   * @return
    */
   default boolean isArcCos() {
     return false;
@@ -2341,7 +2338,6 @@ public interface IExpr
   /**
    * Test if this expression is the function <code>ArcCosh[&lt;arg&gt;]</code>
    *
-   * @return
    */
   default boolean isArcCosh() {
     return false;
@@ -2350,7 +2346,6 @@ public interface IExpr
   /**
    * Test if this expression is the function <code>ArcSin[&lt;arg&gt;]</code>
    *
-   * @return
    */
   default boolean isArcSin() {
     return false;
@@ -2359,7 +2354,6 @@ public interface IExpr
   /**
    * Test if this expression is the function <code>ArcSinh[&lt;arg&gt;]</code>
    *
-   * @return
    */
   default boolean isArcSinh() {
     return false;
@@ -2368,7 +2362,6 @@ public interface IExpr
   /**
    * Test if this expression is the function <code>ArcTan[&lt;arg&gt;]</code>
    *
-   * @return
    */
   default boolean isArcTan() {
     return false;
@@ -2377,7 +2370,6 @@ public interface IExpr
   /**
    * Test if this expression is the function <code>ArcTanh[&lt;arg&gt;]</code>
    *
-   * @return
    */
   default boolean isArcTanh() {
     return false;
@@ -2387,7 +2379,6 @@ public interface IExpr
    * Test if this AST is an association <code>&lt;|a-&gt;b, c-&gt;d|&gt;</code>(i.e. type <code>
    * AssociationAST</code>)
    *
-   * @return
    */
   default boolean isAssociation() {
     return false;
@@ -2399,7 +2390,6 @@ public interface IExpr
    * the index positions <code>1..n</code>. Therefore this expression is no <b>atomic
    * expression</b>.
    *
-   * @return
    * @see #isAtom()
    */
   default boolean isAST() {
@@ -2412,7 +2402,7 @@ public interface IExpr
    * <code>1..(size()-1)</code>. Therefore this expression is not an <b>atomic expression</b>.
    *
    * @param header the header element at position 0, which should be tested
-   * @return
+   * 
    * @see #isAtom()
    */
   default boolean isAST(IExpr header) {
@@ -2427,7 +2417,7 @@ public interface IExpr
    *
    * @param header the header element at position 0, which should be tested
    * @param length the size the AST expression must have (<b>inclusive head element</b>)
-   * @return
+   * 
    * @see #isAtom()
    */
   default boolean isAST(IExpr header, int length) {
@@ -2448,7 +2438,7 @@ public interface IExpr
    * @param length the size the AST expression must have
    * @param args the arguments of this AST which should be tested, if they are equal, a <code>null
    *     </code> value argument skips the equals check.
-   * @return
+   * 
    * @see #isAtom()
    */
   default boolean isAST(IExpr header, int length, IExpr... args) {
@@ -2464,7 +2454,7 @@ public interface IExpr
    * @param header the header element at position 0, which should be tested
    * @param minLength the minimum size the AST expression must have
    * @param maxLength the maximum size the AST expression must have
-   * @return
+   * 
    * @see #isAtom()
    */
   default boolean isAST(IExpr header, int minLength, int maxLength) {
@@ -2486,7 +2476,7 @@ public interface IExpr
    *
    * @param headerStr string representation of the <b>header element</b> at index position <code>0
    *     </code>
-   * @return
+   * 
    * @see #isAtom()
    */
   default boolean isAST(String headerStr) {
@@ -2503,7 +2493,7 @@ public interface IExpr
    * @param headerStr string representation of the <b>header element</b> at index position <code>0
    *     </code>
    * @param length the size the AST expression must have
-   * @return
+   * 
    * @see #isAtom()
    */
   default boolean isAST(String headerStr, int length) {
@@ -2515,7 +2505,6 @@ public interface IExpr
    * (i.e. the function name) at index position <code>0</code> and no <b>argument elements</b>. <br>
    * Therefore this expression is no <b>atomic expression</b>.
    *
-   * @return
    * @see #isAtom()
    */
   default boolean isAST0() {
@@ -2528,7 +2517,6 @@ public interface IExpr
    * the index position <code>1</code>.<br>
    * Therefore this expression is no <b>atomic expression</b>.
    *
-   * @return
    * @see #isAtom()
    */
   default boolean isAST1() {
@@ -2553,8 +2541,7 @@ public interface IExpr
    * (i.e. the function name) at index position <code>0</code> and three <b>argument elements</b> at
    * the index positions <code>1, 2, 3</code>.<br>
    * Therefore this expression is no <b>atomic expression</b>.
-   *
-   * @return
+   * 
    * @see #isAtom()
    */
   default boolean isAST3() {
@@ -2565,8 +2552,7 @@ public interface IExpr
    * Test if this expression is an {@link IAST} function or an {@link IAssociation}, which contains
    * a <b>header element</b> (i.e. the function name) at index position <code>0</code> and some
    * optional <b>argument elements</b> at the index positions <code>1..n</code>.
-   *
-   * @return
+   * 
    */
   default boolean isASTOrAssociation() {
     return false;
@@ -2581,7 +2567,7 @@ public interface IExpr
    *
    * @param header the header element at position 0, which should be tested
    * @param length the size the AST expression must have
-   * @return
+   * 
    * @see #isAtom()
    */
   default boolean isASTSizeGE(IExpr header, int length) {
@@ -2590,8 +2576,6 @@ public interface IExpr
 
   /**
    * Test if this expression is an atomic expression (i.e. no AST expression)
-   *
-   * @return
    */
   default boolean isAtom() {
     return true;
@@ -2600,8 +2584,6 @@ public interface IExpr
 
   /**
    * Test if this expression is a <code>Blank[]</code> object
-   *
-   * @return
    */
   default boolean isBlank() {
     return false;
@@ -2622,8 +2604,6 @@ public interface IExpr
   /**
    * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the evaluator implements
    * <code>IBooleanFormula</code>.
-   *
-   * @return
    */
   default boolean isBooleanFormulaSymbol() {
     return false;
@@ -2632,8 +2612,6 @@ public interface IExpr
   /**
    * Test if this expression is a boolean function with head <code>
    * And, Equivalent, Nand, Nor, Not, Or, Xor</code>.
-   *
-   * @return
    */
   default boolean isBooleanFunction() {
     return false;
@@ -2659,8 +2637,6 @@ public interface IExpr
   /**
    * Test if this expression is a symbol (instanceof {@link BuiltInSymbol}, {@link BuiltInDummy},
    * {@link IBuiltInSymbol})
-   *
-   * @return
    */
   default boolean isBuiltInSymbol() {
     return this instanceof IBuiltInSymbol;
@@ -2669,8 +2645,6 @@ public interface IExpr
   /**
    * Test if this expression is a symbol, which has an int ID number in {@link ID} (also instanceof
    * {@link BuiltInSymbol})
-   * 
-   * @return
    */
   default boolean isBuiltInSymbolID() {
     return this instanceof BuiltInSymbol;
@@ -2679,8 +2653,6 @@ public interface IExpr
   /**
    * Test if this expression is a built-in function (i.e. <code>this instanceof IAST</code> and
    * <code>head() instanceof IBuiltInSymbol</code>)
-   * 
-   * @return
    */
   default boolean isBuiltInFunction() {
     return false;
@@ -2700,8 +2672,6 @@ public interface IExpr
   /**
    * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the evaluator implements
    * <code>IComparatorFunction</code>.
-   *
-   * @return
    */
   default boolean isComparatorFunctionSymbol() {
     return false;
@@ -2709,8 +2679,6 @@ public interface IExpr
 
   /**
    * Test if this expression is a symbolic complex number (i.e. <code>instanceof IComplex</code>)
-   *
-   * @return
    */
   default boolean isComplex() {
     return this instanceof IComplex;
@@ -2718,8 +2686,6 @@ public interface IExpr
 
   /**
    * Test if this expression is representing ComplexInfinity (i.e. DirectedInfinity[])
-   *
-   * @return
    */
   default boolean isComplexInfinity() {
     return false;
@@ -2727,8 +2693,6 @@ public interface IExpr
 
   /**
    * Test if this expression is a numeric complex number (i.e. <code>instanceof IComplexNum</code>)
-   *
-   * @return
    */
   default boolean isComplexNumeric() {
     return this instanceof IComplexNum;
@@ -2737,8 +2701,6 @@ public interface IExpr
   /**
    * Test if this expression is the Condition function <code>Condition[&lt;arg1&gt;, &lt;arg2&gt;]
    * </code>
-   *
-   * @return
    */
   default boolean isCondition() {
     return false;
@@ -2747,8 +2709,6 @@ public interface IExpr
   /**
    * Test if this expression is the ConditionalExpression function <code>
    * ConditionalExpression[&lt;arg1&gt;, &lt;arg2&gt;]</code>
-   *
-   * @return
    */
   default boolean isConditionalExpression() {
     return false;
@@ -2756,8 +2716,6 @@ public interface IExpr
 
   /**
    * Test if this expression is the function <code>Conjugate[&lt;arg&gt;]</code>
-   *
-   * @return
    */
   default boolean isConjugate() {
     return false;
@@ -2766,8 +2724,7 @@ public interface IExpr
   /**
    * Test if this expression is a symbol with attribute <code>Constant</code>. Therefore numbers
    * return <code>false</code> for this method!
-   *
-   * @return
+   * 
    * @see #isRealResult()
    * @see #isNumericFunction(boolean)
    */
@@ -2778,8 +2735,6 @@ public interface IExpr
   /**
    * Test if this expression is a continuous distribution AST (i.e. evakuator is instanceof
    * {@link IContinuousDistribution}
-   *
-   * @return
    */
   default boolean isContinuousDistribution() {
     return false;
@@ -2788,8 +2743,6 @@ public interface IExpr
   /**
    * Test if this expression is a {@link IBuiltInSymbol} symbol and the evaluator implements
    * {@link ICoreFunctionEvaluator}.
-   *
-   * @return
    */
   default boolean isCoreFunctionSymbol() {
     return false;
@@ -2805,8 +2758,6 @@ public interface IExpr
 
   /**
    * Test if this expression is the function <code>Cosh[&lt;arg&gt;]</code>
-   *
-   * @return
    */
   default boolean isCosh() {
     return false;
@@ -2814,8 +2765,6 @@ public interface IExpr
 
   /**
    * Test if this AST is a <code>Dataset</code> (i.e. instance of <code>IASTDataset</code>).
-   *
-   * @return
    */
   default boolean isDataset() {
     return this instanceof IASTDataset;
@@ -2823,8 +2772,6 @@ public interface IExpr
 
   /**
    * Test if this expression is the function <code>Defer[&lt;arg&gt;]</code>
-   *
-   * @return
    */
   default boolean isDefer() {
     return false;
@@ -2885,30 +2832,24 @@ public interface IExpr
    * Test if this expression is representing a DirectedInfinity (i.e. <code>
    * Infinity->DirectedInfinity[1]</code>, <code>-Infinity->DirectedInfinity[-1]</code>, <code>
    * ComplexInfinity->DirectedInfinity[]</code>)
-   *
-   * @return
    */
   default boolean isDirectedInfinity() {
     return false;
   }
 
   /**
-   * Test if this expression is representing a DirectedInfinity (i.e. <code>
-   * Infinity->DirectedInfinity[1]</code>, <code>-Infinity->DirectedInfinity[-1]</code>, <code>
-   * ComplexInfinity->DirectedInfinity[]</code>)
+   * Test if this expression is representing a {@link S#DirectedInfinity} which is a positive real
+   * multiple of the complex number <code>x</code>.
    *
    * @param x
-   * @return
    */
-  default boolean isDirectedInfinity(IExpr x) {
+  default boolean isDirectedInfinity(INumber x) {
     return false;
   }
 
   /**
    * Test if this expression is a discrete distribution AST (i.e. BinomialDistribution(),
    * PoissonDistribution(),...)
-   *
-   * @return
    */
   default boolean isDiscreteDistribution() {
     return false;
@@ -2917,8 +2858,6 @@ public interface IExpr
   /**
    * Test if this expression is a distribution AST (i.e. NormalDistribution(),
    * PoissonDistribution(),...)
-   *
-   * @return
    */
   default boolean isDistribution() {
     return false;
@@ -2929,8 +2868,6 @@ public interface IExpr
    * equal to 2.71828...) in symbolic or numeric mode. <br>
    * See <a href="http://en.wikipedia.org/wiki/E_%28mathematical_constant%29">e (mathematical
    * constant)</a>
-   *
-   * @return
    */
   default boolean isE() {
     return false;
@@ -2938,8 +2875,6 @@ public interface IExpr
 
   /**
    * Test if this expression is an DirectedEdge, UndirectedEdge, Rule, TwoWayRule.
-   *
-   * @return
    */
   default boolean isEdge() {
     return false;
@@ -2947,8 +2882,6 @@ public interface IExpr
 
   /**
    * Test if this expression is an {@link IAST} and contains no argument
-   *
-   * @return
    */
   default public boolean isEmpty() {
     return false;
@@ -2960,8 +2893,6 @@ public interface IExpr
 
   /**
    * Test if this expression is an empty list (i.e. a list <code>{}</code>)
-   *
-   * @return
    */
   default boolean isEmptyList() {
     return false;
@@ -2969,8 +2900,6 @@ public interface IExpr
 
   /**
    * Test if this expression is the function <code>Equal[&lt;arg1&gt;, &lt;arg2&gt;]</code>
-   *
-   * @return
    */
   default boolean isEqual() {
     return false;
@@ -2980,7 +2909,6 @@ public interface IExpr
    * Are the given evaluation flags disabled for this list ?
    *
    * @param flags
-   * @return
    * @see IAST#NO_FLAG
    */
   default boolean isEvalFlagOff(int flags) {
@@ -2991,7 +2919,6 @@ public interface IExpr
    * Are the given evaluation flags enabled for this list ?
    *
    * @param flags
-   * @return
    * @see IAST#NO_FLAG
    */
   default boolean isEvalFlagOn(int flags) {
@@ -3030,8 +2957,6 @@ public interface IExpr
   /**
    * Test if this expression is an exact number. I.e. an instance of type <code>IRational</code> or
    * <code>IComplex</code>.
-   *
-   * @return
    */
   default boolean isExactNumber() {
     return this instanceof IRational || this instanceof IComplex;
@@ -3040,8 +2965,6 @@ public interface IExpr
   /**
    * Test if this expression is the <code>Except</code> function <code>Except(&lt;pattern1&gt;)
    * </code> or <code>Except(&lt;pattern1&gt;, &lt;pattern2&gt;)</code>
-   *
-   * @return
    */
   default boolean isExcept() {
     return false;
@@ -3050,8 +2973,6 @@ public interface IExpr
   /**
    * Test if this expression is the function <code>E^&lt;x&gt;</code> or in full form <code>
    * Power[E, &lt;x&gt;]</code>
-   *
-   * @return
    */
   default boolean isExp() {
     return isPower() && first().isE();
@@ -3060,8 +2981,6 @@ public interface IExpr
   /**
    * Test if this expression is already expanded i.e. <code>Plus, Times, Power</code> expression is
    * expanded.
-   *
-   * @return
    */
   default boolean isExpanded() {
     return true;
@@ -3291,16 +3210,23 @@ public interface IExpr
    * <p>
    * <b> Note</b>: All detected function types have 1 argument.
    *
-   * @return
    */
   default boolean isHyperbolicFunction() {
     return false;
   }
 
   /**
+   * Test if this expression is the function <code>Im(arg)</code> by checking the head is equal to
+   * {@link S#Im} and the function has one argument.
+   *
+   */
+  default boolean isIm() {
+    return false;
+  }
+
+  /**
    * Test if this expression is representing <code>I</code>.
    *
-   * @return
    */
   default boolean isImaginaryUnit() {
     return false;
@@ -3309,7 +3235,6 @@ public interface IExpr
   /**
    * Test if this expression is representing <code>Indeterminate</code>
    *
-   * @return
    */
   default boolean isIndeterminate() {
     return false;
@@ -3319,7 +3244,6 @@ public interface IExpr
    * Test if this expression is an inexact number. I.e. an instance of type <code>INum</code> or
    * <code>IComplexNum</code>.
    *
-   * @return
    */
   default boolean isInexactNumber() {
     return this instanceof IInexactNumber;
@@ -3419,6 +3343,16 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is the function <code>Key(&lt;key&gt;)</code> by checking the head is
+   * equal to {@link S#Key} and the function contains only one argument.
+   *
+   * @return
+   */
+  default boolean isKey() {
+    return false;
+  }
+
+  /**
    * Compares this expression with the specified expression for order. Returns true if this
    * expression is canonical less than or equal to the specified expression (&lt;= relation).
    *
@@ -3460,7 +3394,9 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a list (i.e. an AST with head List) with exactly 1 arguments
+   * Test if this expression is a list (i.e. an AST with head List) with exactly 1 arguments.
+   * <p>
+   * Example list with one argument a: <code>{a}</code>
    *
    * @return
    */
@@ -3470,7 +3406,9 @@ public interface IExpr
 
   /**
    * Test if this expression is a list (i.e. an AST with head List) with exactly 2 arguments
-   *
+   * <p>
+   * Example list with two arguments a,b: <code>{a, b}</code>
+   * 
    * @return <code>true</code>, if the given expression is a list with exactly 2 arguments.
    */
   default boolean isList2() {
@@ -3479,7 +3417,9 @@ public interface IExpr
 
   /**
    * Test if this expression is a list (i.e. an AST with head List) with exactly 3 arguments
-   *
+   * <p>
+   * Example list with three arguments a,b,c: <code>{a, b, c}</code>
+   * 
    * @return <code>true</code>, if the given expression is a list with exactly 3 arguments.
    */
   default boolean isList3() {
@@ -3488,7 +3428,9 @@ public interface IExpr
 
   /**
    * Test if this expression is a list (i.e. an AST with head List) with exactly 4 arguments
-   *
+   * <p>
+   * Example list with four arguments a,b,c,d: <code>{a, b, c, d}</code>
+   * 
    * @return <code>true</code>, if the given expression is a list with exactly 4 arguments.
    */
   default boolean isList4() {
@@ -3853,8 +3795,9 @@ public interface IExpr
   /**
    * Checks if the expression equals the {@link F#NIL} <i>Not In List</i> expression. Often
    * {@link F#NIL} is returned for a functions expression which couldn't be evaluated. {@link F#NIL}
-   * is used to define a value similar to <code>null</code>. Return {@code true} if this expression
-   * equals {@link F#NIL}, otherwise {@code false}.
+   * is used to define a value similar to the Java value <code>null</code>.
+   * <p>
+   * Return {@code true} if this expression equals {@link F#NIL}, otherwise {@code false}.
    *
    * @return {@code true} if the expression equals {@link F#NIL}, otherwise {@code false}.
    * @see java.util.Optional#isPresent()
@@ -4235,6 +4178,16 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is the function <code>Overflow( )</code> by checking the head is equal
+   * to {@link S#Overflow} and the function contains no arguments.
+   *
+   * @return
+   */
+  default boolean isOverflow() {
+    return false;
+  }
+
+  /**
    * Test if this expression is a <code>Pattern[symbol]</code> object
    *
    * @return
@@ -4246,7 +4199,7 @@ public interface IExpr
   /**
    * Return <code>true</code>, if the expression is a pattern object with an associated default
    * value (for example <code>0</code> is the default value for the addition expression <code>x_+y_.
-   * </code>)
+   * </code>) or if the expression is a {@link S#Optional} expression.
    *
    * @return
    */
@@ -4363,7 +4316,8 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a <code>Plus, Power or Times</code> function.
+   * Test if this expression is an &quot;arithmetic&quot; function with head {@link S#Plus},
+   * {@link S#Power} or {@link S#Times}.
    *
    * @return
    */
@@ -4564,6 +4518,16 @@ public interface IExpr
    * @return
    */
   default boolean isRationalValue(IRational value) {
+    return false;
+  }
+
+  /**
+   * Test if this expression is the function <code>Re(arg)</code> by checking the head is equal to
+   * {@link S#Re} and the function has one argument.
+   *
+   * @return
+   */
+  default boolean isRe() {
     return false;
   }
 
@@ -4974,6 +4938,16 @@ public interface IExpr
    * @return
    */
   default boolean isUndefined() {
+    return false;
+  }
+
+  /**
+   * Test if this expression is the function <code>Underflow( )</code> by checking the head is equal
+   * to {@link S#Underflow} and the function contains no arguments.
+   *
+   * @return
+   */
+  default boolean isUnderflow() {
     return false;
   }
 
@@ -6363,23 +6337,28 @@ public interface IExpr
    * @return
    */
   default IExpr subs(IExpr x, IExpr y) {
-    Function<IExpr, IExpr> subsFunction = Functors.subsFunction(F.List(F.Rule(x, y)));
-    return replaceAll(subsFunction).orElse(this);
-    // return replaceAll(F.Rule(x, y)).orElse(this);
+    return subs(F.List(F.Rule(x, y)));
   }
 
+  /**
+   * The subs method replaces all instances of <code>x</code> in an expression with an
+   * <code>y</code> expression. Substitutes similar to the Sympy <code>subs()</code> method.
+   * 
+   * @param listOfRules
+   * @return
+   */
   default IExpr subs(IAST listOfRules) {
-    Function<IExpr, IExpr> subsFunction = Functors.subsFunction(listOfRules);
+    IAST list = listOfRules.makeList();
+    Function<IExpr, IExpr> subsFunction = Functors.subsFunction(list);
     IExpr replaceAll = replaceAll(subsFunction);
     if (replaceAll.isPresent()) {
       return EvalEngine.get().evaluate(replaceAll);
     }
     return this;
-    // return replaceAll(F.Rule(x, y)).orElse(this);
   }
 
   /**
-   * The subs method replaces all instances of <code>x</code> in an expression with an
+   * The xreplace method replaces all instances of <code>x</code> in an expression with an
    * <code>y</code> expression.
    * 
    * @param x

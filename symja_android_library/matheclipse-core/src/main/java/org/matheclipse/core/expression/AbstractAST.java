@@ -749,6 +749,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
     /** {@inheritDoc} */
     @Override
+    public final boolean isOverflow() {
+      return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public int[] isPiecewise() {
       return null;
     }
@@ -781,9 +787,13 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return false;
     }
 
-    /** {@inheritDoc} */
     @Override
     public boolean isRealResult() {
+      return false;
+    }
+
+    @Override
+    public boolean isRe() {
       return false;
     }
 
@@ -858,9 +868,21 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return false;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public final boolean isUnderflow() {
+      return false;
+    }
+
     @Override
     public final int isVector() {
       return -1;
+    }
+
+
+    @Override
+    public boolean isIm() {
+      return false;
     }
 
     @Override
@@ -2892,7 +2914,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return text.append(')');
     }
 
-    if (isAST(S.Times, 3)) {
+    if (isTimes2()) {
       if (arg2().equals(S.Pi)) {
         if (equals(F.CNPi)) {
           return new StringBuilder(prefix).append("CNPi");
@@ -2923,7 +2945,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
             .append(arg2().internalJavaString(properties, depth + 1, variables)).append(")");
       }
     } else if (isAST(S.Plus, 3)) {
-      if (arg2().isAST(S.Times, 3) && arg2().first().isMinusOne()) {
+      if (arg2().isTimes2() && arg2().first().isMinusOne()) {
         return new StringBuilder(prefix).append("Subtract(")
             .append(arg1().internalJavaString(properties, depth + 1, variables)).append(",")
             .append(arg2().second().internalJavaString(properties, depth + 1, variables))
@@ -3305,7 +3327,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public final boolean isDirectedInfinity(IExpr x) {
+  public final boolean isDirectedInfinity(INumber x) {
     return isSameHead(S.DirectedInfinity, 2) && arg1().equals(x);
   }
 
@@ -3447,7 +3469,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       IExpr temp = getRule(i);
       if (temp.isASTOrAssociation() && !temp.isFreeOfPatterns()) {
         isFreeOfPatterns = false;
-        addEvalFlags(((IAST) temp).getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR);
+        if (temp.isOptional()) {
+          addEvalFlags(IAST.CONTAINS_DEFAULT_PATTERN | IAST.CONTAINS_PATTERN);
+        } else {
+          addEvalFlags(((IAST) temp).getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR);
+        }
         continue;
       } else if (temp instanceof IPatternObject) {
         isFreeOfPatterns = false;
@@ -3663,7 +3689,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isInterval1() {
-    return isSameHead(S.Interval, 2) && arg1().isAST(S.List, 3);
+    return isSameHead(S.Interval, 2) && arg1().isList2();
   }
 
   /** {@inheritDoc} */
@@ -3676,6 +3702,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public boolean isNonEmptyList() {
     return isList() && size() > 1;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isKey() {
+    return isSameHead(S.Key, 2);
   }
 
   /** {@inheritDoc} */
@@ -4222,6 +4254,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
+  public boolean isOverflow() {
+    return isSameHead(S.Overflow, 1);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public boolean isNumericFunctionAST() {
     final IExpr head = head();
     return head.isSymbol() ? ((ISymbol) head).hasNumericFunctionAttribute() : false;
@@ -4401,6 +4439,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return true;
     }
     return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isRe() {
+    return isSameHead(S.Re, 2);
   }
 
   /** {@inheritDoc} */
@@ -4783,6 +4827,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
+  public boolean isUnderflow() {
+    return isSameHead(S.Underflow, 1);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public final boolean isUnevaluated() {
     return isSameHead(S.Unevaluated, 2);
   }
@@ -4872,6 +4922,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return length;
     }
     return -1;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isIm() {
+    return isSameHead(S.Im, 2);
   }
 
   /** {@inheritDoc} */

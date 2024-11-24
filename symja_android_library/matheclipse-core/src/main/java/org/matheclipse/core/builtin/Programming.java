@@ -4059,7 +4059,7 @@ public final class Programming {
             } else {
               return F.NIL;
             }
-          } else if (listArg.isAST(S.Key, 2)) {
+          } else if (listArg.isKey()) {
             result.appendRule(assoc.getRule(listArg.first()));
           } else if (listArg.isString()) {
             result.appendRule(assoc.getRule(listArg));
@@ -4072,7 +4072,7 @@ public final class Programming {
       }
 
       IExpr result = F.NIL;
-      if (arg2.isAST(S.Key, 2)) {
+      if (arg2.isKey()) {
         result = assoc.getValue(arg2.first());
       } else if (arg2.isString()) {
         result = assoc.getValue(arg2);

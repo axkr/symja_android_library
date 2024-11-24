@@ -241,10 +241,10 @@ public class ExpTrigsFunctions {
       if (ast.isAST2()) {
         IExpr arg2 = ast.second();
 
-        if (arg1.isAST(S.List, 3)) {
+        if (arg1.isList2()) {
           IExpr x = arg1.first();
           IExpr y = arg1.second();
-          if (arg2.isAST(S.List, 3)) {
+          if (arg2.isList2()) {
             // AngleVector({x_, y_}, {r_, phi_}) := {x + r * Cos(phi), y + r * Sin(phi)}
             IExpr r = arg2.first();
             phi = arg2.second();
@@ -258,7 +258,7 @@ public class ExpTrigsFunctions {
         return F.NIL;
       }
 
-      if (arg1.isAST(S.List, 3)) {
+      if (arg1.isList2()) {
         // AngleVector({r_, phi_}) := {r * Cos(phi), r * Sin(phi)}
         IExpr r = ((IAST) arg1).arg1();
         phi = ((IAST) arg1).arg2();
@@ -1434,7 +1434,7 @@ public class ExpTrigsFunctions {
         IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
         if (t.isPresent() && t.im().isZero()) {
           // 1/2 * t
-          IExpr temp = F.timesDistribute(F.C1D2, t, engine);
+          IExpr temp = F.distributePlusOnTimes(F.C1D2, t);
           if (temp.isIntegerResult()) {
             return F.C1;
           }
@@ -1711,7 +1711,7 @@ public class ExpTrigsFunctions {
           }
 
           // 1/2 * t
-          IExpr temp1 = F.timesDistribute(F.C1D2, t, engine);
+          IExpr temp1 = F.distributePlusOnTimes(F.C1D2, t);
           // 1/2 * t - 1/4
           IExpr temp2 = engine.evaluate(F.Plus(temp1, F.CN1D4));
           if (temp2.isIntegerResult()) {
@@ -2513,10 +2513,10 @@ public class ExpTrigsFunctions {
       if (arg1.isInterval()) {
         return IntervalSym.log((IAST) arg1);
       }
-      if (arg1.isAST(S.Overflow, 1)) {
+      if (arg1.isOverflow()) {
         return F.Overflow();
       }
-      if (arg1.isAST(S.Underflow, 1)) {
+      if (arg1.isUnderflow()) {
         return F.Underflow();
       }
       if (arg1.isNumericFunction()) {
@@ -2822,7 +2822,7 @@ public class ExpTrigsFunctions {
         IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
         if (t.isPresent() && t.im().isZero()) {
           // 1/2 * t
-          IExpr temp1 = F.timesDistribute(F.C1D2, t, engine);
+          IExpr temp1 = F.distributePlusOnTimes(F.C1D2, t);
           if (temp1.isIntegerResult()) {
             return F.C1;
           }
@@ -3109,7 +3109,7 @@ public class ExpTrigsFunctions {
           }
 
           // 1/2 * t
-          IExpr temp1 = F.timesDistribute(F.C1D2, t, engine);
+          IExpr temp1 = F.distributePlusOnTimes(F.C1D2, t);
           // 1/2 * t - 1/4
           IExpr temp2 = engine.evaluate(F.Plus(temp1, F.CN1D4));
           if (temp2.isIntegerResult()) {

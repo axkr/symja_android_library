@@ -990,7 +990,7 @@ public class Pods {
                 if (outExpr.isBooleanFormula()) {
                   numpods += booleanPods(podsArray, outExpr, variables, formats, engine);
                 }
-                if (outExpr.isAST(S.Equal, 3)) {
+                if (outExpr.isEqual()) {
                   IExpr arg1 = outExpr.first();
                   IExpr arg2 = outExpr.second();
                   if (arg1.isNumericFunction(varSet) //
@@ -1091,8 +1091,8 @@ public class Pods {
                     IExpr x = variables.first();
                     inExpr = F.Minimize(outExpr, x);
                     podOut = engine.evaluate(inExpr);
-                    if (podOut.isAST(S.List, 3) && podOut.first().isNumber()
-                        && podOut.second().isAST(S.List, 2)) {
+                    if (podOut.isList2() && podOut.first().isNumber()
+                        && podOut.second().isList1()) {
                       IExpr rule = podOut.second().first();
                       if (rule.isRule()) {
                         StringBuilder buf = new StringBuilder();
@@ -1112,8 +1112,8 @@ public class Pods {
 
                     inExpr = F.Maximize(outExpr, x);
                     podOut = engine.evaluate(inExpr);
-                    if (podOut.isAST(S.List, 3) && podOut.first().isNumber()
-                        && podOut.second().isAST(S.List, 2)) {
+                    if (podOut.isList2() && podOut.first().isNumber()
+                        && podOut.second().isList1()) {
                       IExpr rule = podOut.second().first();
                       if (rule.isRule()) {
                         StringBuilder buf = new StringBuilder();

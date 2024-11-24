@@ -356,7 +356,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
   private static boolean ok(IExpr k, IExpr e, boolean half) {
     return (e.isIntegerResult() || k.isPositive())//
         && (k.isCos() || k.isSin())
-        || (half && k.isPlus() && (k.argSize() >= 2) && ((IAST) k).indexOf(x -> x.isCos()) > 0);
+        || (half && k.isPlus() && (k.argSize() >= 2) && k.indexOf(x -> x.isCos()) > 0);
   }
 
   public static void factorize(DefaultDict<IExpr> d, IASTAppendable ddone, boolean half) {

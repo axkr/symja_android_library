@@ -2405,7 +2405,7 @@ public final class StringFunctions {
         IExpr arg2 = ast.arg2();
         if (arg2.isString()) {
           sep1 = arg2.toString();
-        } else if (arg2.isAST(S.List, 4)) {
+        } else if (arg2.isList3()) {
           IAST list = (IAST) arg2;
           left = list.arg1().toString();
           sep1 = list.arg2().toString();

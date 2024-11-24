@@ -6,7 +6,6 @@ import java.util.function.Predicate;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
@@ -1298,7 +1297,7 @@ public class PredicateQ {
         }
         return F.booleSymbol(arg1.isReal());
       }
-      if (arg1.isAST(S.Overflow, 1) || arg1.isAST(S.Underflow, 1)) {
+      if (arg1.isOverflow() || arg1.isUnderflow()) {
         return S.True;
       }
       return S.False;
@@ -1323,7 +1322,7 @@ public class PredicateQ {
         }
         return F.booleSymbol(arg1.isReal());
       }
-      if (arg1.isAST(S.Overflow, 1) || arg1.isAST(S.Underflow, 1)) {
+      if (arg1.isOverflow() || arg1.isUnderflow()) {
         return S.True;
       }
       return S.False;
