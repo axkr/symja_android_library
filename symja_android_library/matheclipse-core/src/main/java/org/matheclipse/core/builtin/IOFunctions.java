@@ -301,6 +301,9 @@ public class IOFunctions {
             IExpr temp = Errors.message((ISymbol) messageName.arg1(), messageShortcut, ast,
                 engine.getOutputSizeLimit());
             if (temp.isPresent()) {
+              if (!engine.isQuietMode()) {
+                engine.getErrorPrintStream().append(temp.toString() + "\n");
+              }
               return temp;
             }
           }

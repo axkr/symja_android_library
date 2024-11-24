@@ -603,7 +603,7 @@ public class Errors {
     return F.NIL;
   }
 
-  private static void logMessage(ISymbol symbol, String str, EvalEngine engine) {
+  public static void logMessage(ISymbol symbol, String str, EvalEngine engine) {
     if (engine.isQuietMode()) {
       LOGGER.log(engine.getLogLevel(), "{}: {}", symbol, str);
     } else {
