@@ -64,9 +64,16 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   public static final int BUILT_IN_EVALED = 0x00040000;
 
   /**
-   * One of the arguments of the list contains a pattern object which can be set to a default value.
+   * One of the arguments of the list contains a pattern object which can be set to a default value
+   * (or optional value).
    */
   public static final int CONTAINS_DEFAULT_PATTERN = 0x0004;
+
+  /**
+   * All of the arguments of the list are pattern objects which can be set to a default value (or
+   * optional value).
+   */
+  public static final int CONTAINS_ALL_DEFAULT_PATTERN = 0x10000000;
 
   /** Negative flag mask for CONTAINS_DEFAULT_PATTERN */
   public static final int CONTAINS_NO_DEFAULT_PATTERN_MASK = 0xFFFB;

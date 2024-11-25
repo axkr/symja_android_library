@@ -14211,12 +14211,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{x,0}");
     check("f( a_. + b_. ):={a,b}", //
         "");
-    // check("f( x ) ", //
-    // "{x,0}");
-    // check("MatchQ(2+x, ( a_. + b_. ) )", //
-    // "True");
-    // check("MatchQ(x, ( a_. + b_. ) )", //
-    // "True");
+    check("f( x ) ", //
+        "{x,0}");
+    check("MatchQ(2+x, ( a_. + b_. ) )", //
+        "True");
+    check("MatchQ(x, ( a_. + b_. ) )", //
+        "True");
   }
 
   @Test

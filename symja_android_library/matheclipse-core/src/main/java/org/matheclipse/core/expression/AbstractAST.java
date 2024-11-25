@@ -3464,6 +3464,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return false;
     }
     boolean isFreeOfPatterns = true;
+    int defaultOrOptionalCounter = 0;
     for (int i = 0; i < size(); i++) {
       // all elements including head element
       IExpr temp = getRule(i);
@@ -3471,6 +3472,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         isFreeOfPatterns = false;
         if (temp.isOptional()) {
           addEvalFlags(IAST.CONTAINS_DEFAULT_PATTERN | IAST.CONTAINS_PATTERN);
+          defaultOrOptionalCounter++;
         } else {
           addEvalFlags(((IAST) temp).getEvalFlags() & IAST.CONTAINS_PATTERN_EXPR);
         }
@@ -3480,12 +3482,14 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         if (temp instanceof IPatternSequence) {
           if (temp.isPatternDefault()) {
             addEvalFlags(IAST.CONTAINS_DEFAULT_PATTERN | IAST.CONTAINS_PATTERN_SEQUENCE);
+            defaultOrOptionalCounter++;
           } else {
             addEvalFlags(IAST.CONTAINS_PATTERN_SEQUENCE);
           }
         } else {
           if (temp.isPatternDefault()) {
             addEvalFlags(IAST.CONTAINS_DEFAULT_PATTERN | IAST.CONTAINS_PATTERN);
+            defaultOrOptionalCounter++;
           } else {
             addEvalFlags(IAST.CONTAINS_PATTERN);
           }
@@ -3494,6 +3498,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
     if (isFreeOfPatterns) {
       addEvalFlags(IAST.CONTAINS_NO_PATTERN);
+    } else {
+      if (defaultOrOptionalCounter == argSize()) {
+        addEvalFlags(IAST.CONTAINS_ALL_DEFAULT_PATTERN);
+      }
     }
     return isFreeOfPatterns;
   }

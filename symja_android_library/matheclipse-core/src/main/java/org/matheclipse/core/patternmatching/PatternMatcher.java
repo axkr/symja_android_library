@@ -881,23 +881,25 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
             if (head.isSymbol()) {
               ISymbol patternHead = (ISymbol) head;
               IExpr evalHead = lhsEvalExpr.head();
-              // if (patternHead.hasOneIdentityAttribute() && lhsPatternAST.isOrderlessAST()) {
-              // if (patternHead.equals(evalHead) && lhsEvalExpr.isAST()) {
-              // if (lhsPatternAST.size() - 1 >= lhsEvalExpr.size()) {
-              // IAST lhsEvalAST = (IAST) lhsEvalExpr;
-              // int[] ignoredPositions = new int[lhsEvalAST.size()];
-              // matched = matchDefaultArgsRecursive(patternHead, evalHead, lhsPatternAST,
-              // lhsEvalAST, 1, patternValues, lastStackSize, ignoredPositions, engine,
-              // stackMatcher);
-              // }
-              // } else {
-              // IAST lhsEvalAST = F.unaryAST1(patternHead, lhsEvalExpr);
-              // int[] ignoredPositions = new int[lhsEvalAST.size()];
-              // matched =
-              // matchDefaultArgsRecursive(patternHead, evalHead, lhsPatternAST, lhsEvalAST, 1,
-              // patternValues, lastStackSize, ignoredPositions, engine, stackMatcher);
-              // }
-              // }
+              if ((lhsPatternAST.getEvalFlags()
+                  & IAST.CONTAINS_ALL_DEFAULT_PATTERN) == IAST.CONTAINS_ALL_DEFAULT_PATTERN
+                  && patternHead.hasOneIdentityAttribute() && lhsPatternAST.isOrderlessAST()) {
+                if (patternHead.equals(evalHead) && lhsEvalExpr.isAST()) {
+                  if (lhsPatternAST.size() - 1 >= lhsEvalExpr.size()) {
+                    IAST lhsEvalAST = (IAST) lhsEvalExpr;
+                    int[] ignoredPositions = new int[lhsEvalAST.size()];
+                    matched = matchDefaultArgsRecursive(patternHead, evalHead, lhsPatternAST,
+                        lhsEvalAST, 1, patternValues, lastStackSize, ignoredPositions, engine,
+                        stackMatcher);
+                  }
+                } else {
+                  IAST lhsEvalAST = F.unaryAST1(patternHead, lhsEvalExpr);
+                  int[] ignoredPositions = new int[lhsEvalAST.size()];
+                  matched =
+                      matchDefaultArgsRecursive(patternHead, evalHead, lhsPatternAST, lhsEvalAST, 1,
+                          patternValues, lastStackSize, ignoredPositions, engine, stackMatcher);
+                }
+              }
               if (!matched) {
                 IExpr temp = matchDefaultArgumentsAST(patternHead, lhsPatternAST, engine);
                 if (temp.isPresent()) {

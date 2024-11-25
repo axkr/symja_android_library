@@ -3183,7 +3183,8 @@ public interface IPatternMap {
     return new PatternMap0();
   }
 
-  public static IPatternMap createSymbolToValueMap(List<GenericPair<IExpr, ISymbol>> patternIndexMap) {
+  public static IPatternMap createSymbolToValueMap(
+      List<GenericPair<IExpr, ISymbol>> patternIndexMap) {
     int size = patternIndexMap.size();
     switch (size) {
       case 1:
@@ -3374,18 +3375,24 @@ public interface IPatternMap {
       determinePatternsRecursive(condition, patternIndexMap, dummyPriority, ruleWithoutPattern,
           listEvalFlags, treeLevel);
     } else {
+      // int[] dummyPriority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};
+      // determinePatternsRecursive(lhsPatternExpr, patternIndexMap, dummyPriority,
+      // ruleWithoutPattern,
+      // listEvalFlags, treeLevel);
+
       // get the patterns from right argument to left argument, to get the pattern x_ in D(f,x_) and
       // Integrate(f,x_) as first pattern in the pattern map
       for (int i = lhsPatternExpr.size() - 1; i >= 0; i--) {
         determinePatternsRecursive(i == 0 ? lhsPatternExpr.getValue(i) : lhsPatternExpr.getRule(i),
             patternIndexMap, priority, ruleWithoutPattern, listEvalFlags, treeLevel);
       }
-      // lhsPatternExpr.forEachRule(x -> determinePatternsRecursive(x, patternIndexMap, priority,
-      // ruleWithoutPattern, listEvalFlags, treeLevel), 0);
     }
     lhsPatternExpr.setEvalFlags(listEvalFlags[0]);
-    // disable flag "pattern with default value"
-    // listEvalFlags &= IAST.CONTAINS_NO_DEFAULT_PATTERN_MASK;
+    if (lhsPatternExpr.size() > 1 //
+        && ((listEvalFlags[0] & IAST.CONTAINS_DEFAULT_PATTERN) == IAST.CONTAINS_DEFAULT_PATTERN)//
+        && lhsPatternExpr.forAll(IExpr::isPatternDefault)) {
+      lhsPatternExpr.addEvalFlags(IAST.CONTAINS_ALL_DEFAULT_PATTERN);
+    }
     return listEvalFlags[0];
   }
 
@@ -3401,7 +3408,11 @@ public interface IPatternMap {
           ruleWithoutPattern, treeLevel + 1);
       priority[0] -= 11;
       if (x.isPatternDefault()) {
-        listEvalFlags[0] |= IAST.CONTAINS_DEFAULT_PATTERN;
+        listEvalFlags[0] |= IAST.CONTAINS_DEFAULT_PATTERN | IAST.CONTAINS_ALL_DEFAULT_PATTERN;
+      } else if (lhsPatternAST.size() > 1 //
+          && ((listEvalFlags[0] & IAST.CONTAINS_DEFAULT_PATTERN) == IAST.CONTAINS_DEFAULT_PATTERN) //
+          && lhsPatternAST.forAll(IExpr::isPatternDefault)) {
+        lhsPatternAST.addEvalFlags(IAST.CONTAINS_ALL_DEFAULT_PATTERN);
       }
     } else if (x instanceof IPatternObject) {
       ruleWithoutPattern[0] = false;
