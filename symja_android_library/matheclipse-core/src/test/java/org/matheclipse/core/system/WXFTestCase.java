@@ -1,13 +1,12 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.interfaces.IExpr;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Unit tests for handling the WXF serialization format.

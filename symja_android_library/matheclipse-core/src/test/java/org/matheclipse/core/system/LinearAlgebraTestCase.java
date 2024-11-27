@@ -468,8 +468,8 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("{{3,4}}.{{a},{3}}", //
         "{{3*(4+a)}}");
     check("{{a,2},{3,4}}.{{a,2},{3,4}}", //
-        "{{6+a^2,8+2*a},\n" //
-            + " {3*(4+a),22}}");
+        "{{6+a^2,2*(4+a)},\n" //
+        + " {3*(4+a),22}}");
 
     check("{{1, 2, 3}, {3, 4, 11}, {13, 7, 8}}.{-11/4,33/4,-5/4}", //
         "{10,11,12}");
@@ -1295,7 +1295,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testMatrixPower() {
     check("MatrixPower({{a,2},{3,4}},3)", //
-        "{{24+12*a+a^3,44+8*a+2*a^2},\n"//
+        "{{24+12*a+a^3,2*(22+4*a+a^2)},\n" //
             + " {3*(22+4*a+a^2),112+6*a}}");
 
 
@@ -1549,6 +1549,18 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNullSpace() {
+    // TODO improve Zero tests
+    // see https://docs.sympy.org/latest/tutorials/intro-tutorial/matrices.html#zero-testing
+    check("NullSpace({{-2*Cosh(q/3),Exp(-q),1},{Exp(q),-2*Cosh(q/3),1},{1,1,-2*Cosh(q/3)}})", //
+        "{{-(-40*E^q-8*E^(3*q)-32*E^(2*q)*Cosh(q/3)+32*E^q*Cosh(q/3)^2+64*E^(2*q)*Cosh(q/\n" //
+            + "3)^3-4*Sech(q/3)-8*E^(2*q)*Sech(q/3)+8*E^q*Sech(q/3)^2+2*E^(3*q)*Sech(q/3)^2+Sech(q/\n" //
+            + "3)^3+3*E^(2*q)*Sech(q/3)^3)/(E^(2*q)*(-4*Cosh(q/3)+Sech(q/3))*(-8+16*Cosh(q/3)^2+Sech(q/\n" //
+            + "3)^2)),(2*(4+8*E^q+20*E^(2*q)+32*E^q*Cosh(q/3)-8*E^(2*q)*Cosh(q/3)-16*E^q*Cosh(q/\n" //
+            + "3)^2-16*E^(2*q)*Cosh(q/3)^2-32*E^q*Cosh(q/3)^3-4*E^q*Sech(q/3)+4*E^(2*q)*Sech(q/\n" //
+            + "3)+2*E^(3*q)*Sech(q/3)-Sech(q/3)^2-E^q*Sech(q/3)^2-4*E^(2*q)*Sech(q/3)^2-1/2*E^q*Sech(q/\n" //
+            + "3)^3-1/2*E^(2*q)*Sech(q/3)^3-1/2*E^(3*q)*Sech(q/3)^3))/(E^q*(-4*Cosh(q/3)+Sech(q/\n" //
+            + "3))*(-8+16*Cosh(q/3)^2+Sech(q/3)^2)),1}}");
+
     check("NullSpace({{10, 4, -6, -4}, {4, 10, -15, -4}, {0, 0, 0, 0}, {4, 4, -6, 2}} )", //
         "{{0,3,2,0}}");
 

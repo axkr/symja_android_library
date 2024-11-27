@@ -160,13 +160,8 @@ public class Derivative extends AbstractFunctionEvaluator {
             int n = ((IInteger) head.arg1()).toInt();
             IExpr arg1 = ast.arg1();
             if (n >= 0) {
-              if (arg1.isSymbol()) {
-                ISymbol symbol = (ISymbol) arg1;
-                // return derivative(n, symbol, engine);
-              } else {
-                if (arg1.isFunction()) {
-                  return derivative(n, (IAST) arg1, engine);
-                }
+              if (arg1.isFunction()) {
+                return derivative(n, (IAST) arg1, engine);
               }
             }
           } catch (ArithmeticException ae) {
