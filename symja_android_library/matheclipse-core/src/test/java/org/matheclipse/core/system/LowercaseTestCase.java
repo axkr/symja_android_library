@@ -2907,9 +2907,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Collect((1 + a + x)^4, x)", //
         "1+4*a+6*a^2+4*a^3+a^4+(4+12*a+12*a^2+4*a^3)*x+(6+12*a+6*a^2)*x^2+(4+4*a)*x^3+x^4");
     check("Collect((1 + a + x)^4, x, Simplify)", //
-        "(1+a)^4+4*(1+a)^3*x+6*(1+a)^2*x^2+(4+4*a)*x^3+x^4");
-    check("Collect((1 + a + x)^4, x, Simplify)", //
-        "(1+a)^4+4*(1+a)^3*x+6*(1+a)^2*x^2+(4+4*a)*x^3+x^4");
+        "(1+a)^4+4*(1+a)^3*x+6*(1+a)^2*x^2+4*(1+a)*x^3+x^4");
     check("Collect(x^2 + y*x^2 + x*y + y + a*y, {x, y})", //
         "(1+a)*y+x*y+x^2*(1+y)");
     check("Collect(a*x^2 + b*x^2 + a*x - b*x + c, x)", //
@@ -3655,7 +3653,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ContinuedFraction(Sqrt(919))", //
         "{30,{3,5,1,2,1,2,1,1,1,2,3,1,19,2,3,1,1,4,9,1,7,1,3,6,2,11,1,1,1,29,1,1,1,11,2,6,\n" //
             + "3,1,7,1,9,4,1,1,3,2,19,1,3,2,1,1,1,2,1,2,1,5,3,60}}");
-    check("ContinuedFraction(Sqrt(13))", "{3,{1,1,1,1,6}}");
+    check("ContinuedFraction(Sqrt(13))", //
+        "{3,{1,1,1,1,6}}");
 
     check("ContinuedFraction(0.753)", //
         "{0,1,3,20,1,1,2,1,1}");
@@ -9211,7 +9210,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Sqrt(20541813482020954028041088271392963168222371159)/4727827637485585077281", //
         "Sqrt(919)");
     check("FromContinuedFraction({1, 4, 2, {3, 1}})", //
-        "1/34*(41+Sqrt(3/7))");
+        "1/238*(287+Sqrt(21))");
     // check(
     //
     // "FromContinuedFraction({30,{3,5,1,2,1,2,1,1,1,2,3,1,19,2,3,1,1,4,9,1,7,1,3,6,2,11,1,1,1,29,1,1,1,11,2,6,3,1,7,1,9,4,1,1,3,2,19,1,3,2,1,1,1,2,1,2,1,5,3,60}})
@@ -9247,7 +9246,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FromContinuedFraction({3,{1,1,1,1,6}})", //
         "Sqrt(13)");
     check("FromContinuedFraction({0,1,{8,3,34,3}})", //
-        "1/5+2/5*Sqrt(3)");
+        "1/5*(1+2*Sqrt(3))");
     check("FromContinuedFraction({8,{2,1,2,1,2,16}})", //
         "Sqrt(70)");
     check("FromContinuedFraction({0,1,{108,2,4,4,4,2}})", //
@@ -9448,7 +9447,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "FullSimplify(Denominator((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / "
             //
             + "(-((4*e*x^2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)^2) + (2*e*x)/(d + e*x^2) + (2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2))))", //
-        "(2*e*(d+e*x^2))/(-d*Sqrt(-e/d)+2*e*x+e*Sqrt(-e/d)*x^2)");
+        "(d*(2*d*Sqrt(-e/d)+4*e*x-2*e*Sqrt(-e/d)*x^2))/(d+e*x^2)");
     check("Together( 1+(-2*x*(d*Sqrt(-e/d)+e*x))/(d+e*x^2) )", //
         "(d-2*d*Sqrt(-e/d)*x-e*x^2)/(d+e*x^2)");
     check("Together( (d*(2*d*Sqrt(-e/d)+4*e*x-2*e*Sqrt(-e/d)*x^2))/(d+e*x^2) )", //
@@ -9479,7 +9478,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("Together(D( 1-(2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2),x))",//
     // "(-2*d^2*Sqrt(-e/d)-4*d*e*x+2*d*e*Sqrt(-e/d)*x^2)/(d^2+2*d*e*x^2+e^2*x^4)");
     check("FullSimplify(D( 1-(2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2),x))", //
-        "2/(-Sqrt(-d/e)-2*x+(e*x^2)/(d*Sqrt(-e/d)))");
+        "(-2*d*Sqrt(-e/d)-4*e*x+2*e*Sqrt(-e/d)*x^2)/(d+2*e*x^2)");
 
     check("p = Expand((x + 1)^2 (x + 2)^2 (x + 3)^3)", //
         "108+432*x+711*x^2+625*x^3+318*x^4+94*x^5+15*x^6+x^7");
@@ -17860,6 +17859,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolynomialExtendedGCD() {
+    check("PolynomialExtendedGCD(e*x^2 + d, ( -2*d*e^2*Sqrt(-e/d) )*x + 2*d*e^2, x )", //
+        "{-1/Sqrt(-e/d)+x,{0,-1/(2*d*e^2*Sqrt(-e/d))}}");
+
     check("PolynomialExtendedGCD(e*x^2+d,-2*d*e^2*Sqrt(-e/d)*x+2*d*e^2,z)", //
         "{1,{0,1/(2*d*e^2-2*d*e^2*Sqrt(-e/d)*x)}}");
     check("PolynomialExtendedGCD(e*x^2+d,-2*d*e^2*Sqrt(-e/d)*x+2*d*e^2,Infinity)", //
@@ -18307,7 +18309,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPossibleZeroQ() {
-
+    check("PossibleZeroQ((-Exp(q) - 2*Cosh(q/3))*(-2*Cosh(q/3) - Exp(-q)) - (4*Cosh(q/3)^2 - 1)^2)", //
+        "True");
+    check("PossibleZeroQ(-Cos(x)/(1-Cos(x))+Sin(x)^2/(1-Cos(x))^2-1/(1-Cos(x)))", //
+        "True");
     check("PossibleZeroQ((x + 1) (x - 1) - x^2 + 1)", //
         "True");
     check("PossibleZeroQ(Sqrt(x^2)-x,Assumptions -> Re(x)>0)", //
@@ -18357,8 +18362,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("PossibleZeroQ(x*E^(I*Pi/4)  - x*(-1)^(1/4))", //
         "True");
 
-    check("PossibleZeroQ(-Cos(x)/(1-Cos(x))+Sin(x)^2/(1-Cos(x))^2-1/(1-Cos(x)))", //
-        "True");
     check("PossibleZeroQ(2^(2*I) - 2^(-2*I) - 2*I*Sin(Log(4)))", //
         "True");
     check("PossibleZeroQ(E^Pi - Pi^E)", //
@@ -20782,9 +20785,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Refine(Sqrt(x^2 y^2), x>0&&y<-10)", //
         "-x*y");
     check("Refine(Csc(Pi*(1/2+m)), Element(m, Integers))", //
-        "I^(-1+2*(1/2+m))");
+        "I^(2*m)");
     check("Refine(Csc(Pi*(-1/2+m)), Element(m, Integers))", //
-        "I^(-1+2*(-1/2+m))");
+        "I^(2*(-1+m))");
     check("Refine(Csc(Pi*(1/4+m)), Element(m, Integers))", //
         "Csc((1/4+m)*Pi)");
     check("Refine(Csc(Pi*(-1/4+m)), Element(m, Integers))", //
@@ -20793,9 +20796,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(-1)^k*Csc(x)");
 
     check("Refine(Sin(Pi*(1/2+m)), Element(m, Integers))", //
-        "I^(-1+2*(1/2+m))");
+        "I^(2*m)");
     check("Refine(Sin(Pi*(-1/2+m)), Element(m, Integers))", //
-        "I^(-1+2*(-1/2+m))");
+        "I^(2*(-1+m))");
     check("Refine(Sin(Pi*(1/4+m)), Element(m, Integers))", //
         "Sin((1/4+m)*Pi)");
     check("Refine(Sin(Pi*(-1/4+m)), Element(m, Integers))", //
@@ -21969,6 +21972,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSign() {
+    check(
+        "Simplify((1/3+(1/3)*(-2)^(-1/3)*2^(-2/3)*(1+(0+1*I)*3^(1/2))+(1/6)*(-1)^(1/3)*(1+(0+-1*I)*3^(1/2)))^2)", //
+        "1");
+
     check("Sign(Sign(z))", //
         "Sign(z)");
     check("Sign(Power(z, (-11)^(-1)))", //
@@ -22054,6 +22061,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSimplify() {
+    check("Simplify(a-a*b-a*c)", //
+        "a*(1-b-c)");
+    check("Simplify(a-a*b+a*c)", //
+        "a*(1-b+c)");
+
     // issue #930
     check("Simplify(Sin(Pi*Cosh(45522*Csc(17/36*Pi))))", //
         "Sin(Pi*Cosh(45522*Csc(17/36*Pi)))");
@@ -22169,7 +22181,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Simplify(a+Log(1/6)-2*Log(1/7)+7*Log(3/4)+z())", //
         "a+Log(35721/32768)+z()");
     check("Simplify(1+n/2)", //
-        "1+n/2");
+        "1/2*(2+n)");
     check("Simplify((9-Sqrt(57))*x^2)", //
         "(9-Sqrt(57))*x^2");
     check("Simplify(-a/(-b+a*c))", //
@@ -22192,9 +22204,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Simplify(x^(5/2) - Sqrt(x^5), x>=0)", //
         "0");
     check("Simplify(-136+40*Sqrt(17))", //
-        "-136+40*Sqrt(17)");
+        "8*(-17+5*Sqrt(17))");
     check("Simplify(Sqrt(17)/(5+Sqrt(17)))", //
-        "-17/8+5/8*Sqrt(17)");
+        "1/8*(-17+5*Sqrt(17))");
 
     // check("Simplify(Cos(b*x)/(-Cos(b*x)/x^2-CosIntegral(b*x)/x^2))", //
     // "(x^2*Cos(b*x))/(-Cos(b*x)-CosIntegral(b*x))");
@@ -22263,10 +22275,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Simplify(2*Sqrt(2))", //
         "2*Sqrt(2)");
     check("Simplify(6+2*a)", //
-        "6+2*a");
+        "2*(3+a)");
     check("Simplify(2*(3+a))", //
-        "6+2*a");
-
+        "2*(3+a)");
   }
 
   @Test

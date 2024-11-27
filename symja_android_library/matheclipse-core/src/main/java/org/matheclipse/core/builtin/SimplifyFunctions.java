@@ -82,6 +82,16 @@ public class SimplifyFunctions {
         this.minCounter = counter;
         this.result = expr;
         return true;
+      }
+      return false;
+    }
+
+    public boolean checkLessPlusTimesPower(IExpr expr) {
+      long counter = complexityFunction.apply(expr);
+      if (counter < this.minCounter) {
+        this.minCounter = counter;
+        this.result = expr;
+        return true;
       } else if (counter == this.minCounter && expr != this.result) {
         if (expr.isPlusTimesPower() && this.result.isPlusTimesPower()) {
           int exprID = expr.headID();
@@ -347,6 +357,132 @@ public class SimplifyFunctions {
             if (temp.isPresent()) {
               simplifiedResult.checkLessEqual(temp);
             }
+          }
+
+          if (simplifiedResult.result.isAST()) {
+            expr = simplifiedResult.result;
+          }
+
+          try {
+            temp = F.evalExpandAll(expr);
+            expandAllCounter = fComplexityFunction.apply(temp);
+            simplifiedResult.checkLessPlusTimesPower(temp);
+          } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
+            //
+          }
+
+          if (simplifiedResult.result.isAST()) {
+            expr = simplifiedResult.result;
+          }
+
+          if (((IAST) expr).hasTrigonometricFunction()) {
+
+            try {
+              temp = eval(F.TrigExpand(expr));
+              simplifiedResult.checkLessPlusTimesPower(temp);
+            } catch (ValidateException ve) {
+              //
+            }
+
+            try {
+              temp = eval(F.TrigToExp(expr));
+              if (!simplifiedResult.checkLessPlusTimesPower(temp)) {
+                if (fFullSimplify) {
+                  temp = eval(F.Factor(temp));
+                  simplifiedResult.checkLessPlusTimesPower(temp);
+                }
+              }
+            } catch (ValidateException ve) {
+              //
+            }
+
+            try {
+              temp = eval(F.TrigReduce(expr));
+              simplifiedResult.checkLessPlusTimesPower(temp);
+            } catch (ValidateException ve) {
+              //
+            }
+          }
+
+          try {
+            IExpr together = expr;
+            if (simplifiedResult.minCounter < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT) {
+              together = eval(F.Together(expr));
+              simplifiedResult.checkLessPlusTimesPower(together);
+            }
+
+            if (fFullSimplify) {
+              if (together.isTimes()) {
+                IExpr[] parts =
+                    Algebra.numeratorDenominator((IAST) together, true, EvalEngine.get());
+                IExpr numerator = parts[0];
+                IExpr denominator = parts[1];
+                // common factors in numerator, denominator may be canceled here, so check if we
+                // have
+                // a new minimal expression
+                IExpr divide = F.Divide(parts[0], parts[1]);
+                simplifiedResult.checkLessPlusTimesPower(divide);
+
+                if (!numerator.isOne() && //
+                    !denominator.isOne()) {
+                  tryPolynomialQuotientRemainder(numerator, denominator, simplifiedResult);
+                }
+              }
+
+              temp = eval(F.ExpToTrig(expr));
+              simplifiedResult.checkLessPlusTimesPower(temp);
+
+            }
+
+          } catch (ValidateException wat) {
+            //
+          }
+
+          try {
+            // TODO: Factor is not fast enough for large expressions!
+            // Maybe restricting factoring to smaller expressions is necessary here
+            temp = F.NIL;
+            if (fFullSimplify && expandAllCounter < 50) { // Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
+              temp = eval(F.Factor(expr));
+              simplifiedResult.checkLessPlusTimesPower(temp);
+            }
+            // if (fFullSimplify
+            // && (minCounter >= Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT || !temp.equals(expr))) {
+            // if (expandAllCounter < (Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT / 2) && !fFullSimplify)
+            // {
+            // temp = eval(F.Factor(expr));
+            // count = fComplexityFunction.apply(temp);
+            // if (count < minCounter) {
+            // minCounter = count;
+            // result = temp;
+            // }
+            // } else
+            if (expandAllCounter < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
+              temp = eval(F.FactorSquareFree(expr));
+              simplifiedResult.checkLessPlusTimesPower(temp);
+            }
+
+          } catch (ValidateException ve) {
+            //
+          }
+
+          try {
+            if (!fNoApart //
+                && simplifiedResult.minCounter < Config.MAX_SIMPLIFY_APART_LEAFCOUNT) {
+              temp = eval(F.Apart(expr));
+              simplifiedResult.checkLessPlusTimesPower(temp);
+            }
+          } catch (ValidateException ve) {
+            //
+          }
+
+          // expr = simplifiedResult.result;
+          if (expr.isPlus()) {
+            temp = Algebra.factorTermsPlus((IAST) expr, EvalEngine.get());
+            if (temp.isPresent()) {
+              simplifiedResult.checkLessEqual(temp);
+            }
 
             Optional<IExpr[]> commonFactors =
                 Algebra.InternalFindCommonFactorPlus.findCommonFactors((IAST) expr, true);
@@ -364,145 +500,8 @@ public class SimplifyFunctions {
               temp = eval(temp);
               simplifiedResult.checkLessEqual(temp);
             }
-            // } else if (expr.isExp() && expr.second().isTimes()) {
-            // IAST times = (IAST) expr.second();
-            // IExpr i = Times.of(times, F.CNI, F.Power(F.Pi, F.CN1));
-            // if (i.isRational()) {
-            // IRational rat = (IRational) i;
-            // if (rat.isGT(F.C1) || rat.isLE(F.CN1)) {
-            // IInteger t = rat.trunc();
-            // t = t.add(t.mod(F.C2));
-            // // exp(I*(i - t)*Pi)
-            // return F.Exp.of(F.Times(F.CI, F.Pi, F.Subtract(i, t)));
-            // } else {
-            // IRational t1 = rat.multiply(F.C6).normalize();
-            // IRational t2 = rat.multiply(F.C4).normalize();
-            // if (t1.isInteger() || t2.isInteger()) {
-            // // Cos(- I*times) + I*Sin(- I*times)
-            // return F.Plus.of(F.Cos(F.Times(F.CNI, times)),
-            // F.Times(F.CI, F.Sin(F.Times(F.CNI, times))));
-            // }
-            // }
-            // }
           }
 
-          if (simplifiedResult.result.isAST()) {
-            expr = simplifiedResult.result;
-          }
-
-          try {
-            temp = F.evalExpandAll(expr);
-            expandAllCounter = fComplexityFunction.apply(temp);
-            simplifiedResult.checkLess(temp);
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
-          }
-
-          if (simplifiedResult.result.isAST()) {
-            expr = simplifiedResult.result;
-          }
-
-          if (((IAST) expr).hasTrigonometricFunction()) {
-
-            try {
-              temp = eval(F.TrigExpand(expr));
-              simplifiedResult.checkLess(temp);
-            } catch (ValidateException ve) {
-              //
-            }
-
-            try {
-              temp = eval(F.TrigToExp(expr));
-              if (!simplifiedResult.checkLess(temp)) {
-                if (fFullSimplify) {
-                  temp = eval(F.Factor(temp));
-                  simplifiedResult.checkLess(temp);
-                }
-              }
-            } catch (ValidateException ve) {
-              //
-            }
-
-            try {
-              temp = eval(F.TrigReduce(expr));
-              simplifiedResult.checkLess(temp);
-            } catch (ValidateException ve) {
-              //
-            }
-          }
-
-          try {
-            IExpr together = expr;
-            if (simplifiedResult.minCounter < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT) {
-              together = eval(F.Together(expr));
-              simplifiedResult.checkLess(together);
-            }
-
-            if (fFullSimplify) {
-              if (together.isTimes()) {
-                IExpr[] parts =
-                    Algebra.numeratorDenominator((IAST) together, true, EvalEngine.get());
-                IExpr numerator = parts[0];
-                IExpr denominator = parts[1];
-                // common factors in numerator, denominator may be canceled here, so check if we
-                // have
-                // a new minimal expression
-                IExpr divide = F.Divide(parts[0], parts[1]);
-                simplifiedResult.checkLess(divide);
-
-                if (!numerator.isOne() && //
-                    !denominator.isOne()) {
-                  tryPolynomialQuotientRemainder(numerator, denominator, simplifiedResult);
-                }
-              }
-
-              temp = eval(F.ExpToTrig(expr));
-              simplifiedResult.checkLess(temp);
-
-            }
-
-          } catch (ValidateException wat) {
-            //
-          }
-
-          try {
-            // TODO: Factor is not fast enough for large expressions!
-            // Maybe restricting factoring to smaller expressions is necessary here
-            temp = F.NIL;
-            if (fFullSimplify && expandAllCounter < 50) { // Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
-              temp = eval(F.Factor(expr));
-              simplifiedResult.checkLess(temp);
-            }
-            // if (fFullSimplify
-            // && (minCounter >= Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT || !temp.equals(expr))) {
-            // if (expandAllCounter < (Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT / 2) && !fFullSimplify)
-            // {
-            // temp = eval(F.Factor(expr));
-            // count = fComplexityFunction.apply(temp);
-            // if (count < minCounter) {
-            // minCounter = count;
-            // result = temp;
-            // }
-            // } else
-            if (expandAllCounter < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
-              temp = eval(F.FactorSquareFree(expr));
-              simplifiedResult.checkLess(temp);
-            }
-
-          } catch (ValidateException ve) {
-            //
-          }
-
-          try {
-            if (!fNoApart //
-                && simplifiedResult.minCounter < Config.MAX_SIMPLIFY_APART_LEAFCOUNT) {
-              temp = eval(F.Apart(expr));
-              simplifiedResult.checkLess(temp);
-            }
-          } catch (ValidateException ve) {
-            //
-          }
           return simplifiedResult.result;
         } catch (LimitException aele) {
           //
@@ -532,7 +531,7 @@ public class SimplifyFunctions {
               temp.second().isZero()) {
             // the remainder is 0 here:
             IExpr arg1 = temp.first();
-            if (sResult.checkLess(arg1)) {
+            if (sResult.checkLessPlusTimesPower(arg1)) {
               evaled = true;
               break;
             }
@@ -546,7 +545,7 @@ public class SimplifyFunctions {
                 temp.second().isZero()) {
               // the remainder is 0 here:
               IExpr arg1 = temp.first().reciprocal();
-              if (sResult.checkLess(arg1)) {
+              if (sResult.checkLessPlusTimesPower(arg1)) {
                 break;
               }
             }
@@ -605,8 +604,8 @@ public class SimplifyFunctions {
             return temp;
           }
         }
-        temp = F.evalExpandAll(ast);
-        sResult.checkLess(temp);
+        // temp = F.evalExpandAll(ast);
+        // sResult.checkLess(temp);
 
         functionExpand(ast, sResult);
         return sResult.result;
@@ -623,7 +622,7 @@ public class SimplifyFunctions {
           IExpr expr = eval(F.Expand(F.Times(plus1, plus2)));
           if (expr.isNumber() && !expr.isZero()) {
             IExpr powerSimplified = S.Times.of(expr.inverse(), plus2);
-            if (sResult.checkLess(powerSimplified)) {
+            if (sResult.checkLessPlusTimesPower(powerSimplified)) {
               return powerSimplified;
             }
           }
@@ -861,14 +860,14 @@ public class SimplifyFunctions {
             }
             temp = eval(F.Expand(temp));
             temp = numberFactors.times(temp);
-            if (sResult.checkLess(temp)) {
+            if (sResult.checkLessPlusTimesPower(temp)) {
               if (temp.isAtom()) {
                 return temp;
               }
             }
             if (temp.isTimes()) {
               temp = eval(F.Expand(temp));
-              if (sResult.checkLess(temp)) {
+              if (sResult.checkLessPlusTimesPower(temp)) {
                 if (temp.isAtom()) {
                   return temp;
                 }
@@ -911,7 +910,7 @@ public class SimplifyFunctions {
             if (!temp.isPlus()) {
               return temp;
             }
-            if (sResult.checkLess(temp)) {
+            if (sResult.checkLessPlusTimesPower(temp)) {
               temp = sResult.result;
               if (temp.isPlus()) {
                 plusAST = (IASTMutable) sResult.result;
@@ -939,7 +938,7 @@ public class SimplifyFunctions {
             temp = hashRuleMap.evaluateRepeated(plusAST, fEngine);
             if (temp.isPresent()) {
               temp = eval(temp);
-              if (sResult.checkLess(temp)) {
+              if (sResult.checkLessPlusTimesPower(temp)) {
                 return temp;
               }
             }
@@ -1130,7 +1129,7 @@ public class SimplifyFunctions {
                 }
                 IExpr temp = result.oneIdentity0();
                 if (temp.isPlus()) {
-                  sResult.checkLess(temp);
+                  sResult.checkLessPlusTimesPower(temp);
                   return F.NIL;
                 }
                 return temp;
@@ -1233,7 +1232,7 @@ public class SimplifyFunctions {
         if (expr.isBooleanFunction()) {
           try {
             expr = eval(F.BooleanMinimize(expr));
-            sResult.checkLess(expr);
+            sResult.checkLessPlusTimesPower(expr);
             return;
           } catch (RuntimeException rex) {
             Errors.rethrowsInterruptException(rex);
@@ -1242,7 +1241,7 @@ public class SimplifyFunctions {
         } else if (fFullSimplify) {
           try {
             expr = eval(F.FunctionExpand(expr));
-            sResult.checkLess(expr);
+            sResult.checkLessPlusTimesPower(expr);
           } catch (RuntimeException rex) {
             Errors.rethrowsInterruptException(rex);
             //
@@ -1252,7 +1251,7 @@ public class SimplifyFunctions {
               IExpr re = expr.first().re();
               IExpr im = expr.first().im();
               IExpr temp = argReXImY(re, im, fEngine);
-              sResult.checkLess(temp);
+              sResult.checkLessPlusTimesPower(temp);
             } catch (RuntimeException rex) {
               Errors.rethrowsInterruptException(rex);
               //
@@ -1272,7 +1271,7 @@ public class SimplifyFunctions {
                   result.set(i, arg.first());
                 }
               }
-              sResult.checkLess(F.Mod(result, arg2Mod));
+              sResult.checkLessPlusTimesPower(F.Mod(result, arg2Mod));
             }
           } else if (expr.isTimes()) {
             try {
@@ -1303,7 +1302,7 @@ public class SimplifyFunctions {
               if (TIMES_ORDERLESS_MATCHER != null) {
                 IAST temp = TIMES_ORDERLESS_MATCHER.evaluateRepeatedNoCache((IAST) expr, fEngine);
                 if (temp.isPresent()) {
-                  sResult.checkLess(temp);
+                  sResult.checkLessPlusTimesPower(temp);
                 }
               }
             } catch (RuntimeException rex) {
