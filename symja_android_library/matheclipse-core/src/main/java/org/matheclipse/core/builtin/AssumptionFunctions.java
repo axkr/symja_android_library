@@ -14,7 +14,6 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -179,7 +178,7 @@ public class AssumptionFunctions {
     private IExpr assumeDomain(final IExpr expr, final ISymbol domain, EvalEngine engine) {
       if (domain.isBuiltInSymbol()) {
         ISymbol truthValue;
-        final int symbolID = ((IBuiltInSymbol) domain).ordinal();
+        final int symbolID = domain.ordinal();
         switch (symbolID) {
           case ID.Algebraics:
             truthValue = AbstractAssumptions.assumeAlgebraic(expr);
@@ -304,7 +303,7 @@ public class AssumptionFunctions {
    * Sin(k*Pi)
    * </pre>
    */
-  private static class Refine extends AbstractCoreFunctionEvaluator {
+  private static class Refine extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -319,7 +318,7 @@ public class AssumptionFunctions {
       } else {
         assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance();
       }
-      return refineAssumptions(ast.arg1(), assumptions, engine);
+      return refineAssumptions(F.Simplify(ast.arg1()), assumptions, engine);
     }
 
     @Override
