@@ -14,7 +14,10 @@ import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.ParserConfig;
@@ -565,6 +568,62 @@ public class RulesToDecisionTree {
     }
   }
 
+  public static void generateBuiltInStrings(IExpr expr, File targetLocation) {
+
+    PrintWriter automaticRules = null;
+
+
+    StringBuilder buffer;
+    EvalEngine engine = new EvalEngine(true);
+
+
+
+    if (expr == null) {
+      System.err.println();
+      System.err.println("Expression == null");
+      return;
+    } else {
+      buffer = new StringBuilder(100000);
+      PrintWriter out;
+      try {
+        String className = "Integrate"; // files[i].substring(0, files[i].length() - 2);
+        String symbolName = "Integrate"; // className.substring(0, className.length() - 5);
+
+        // if (!createMatcher) {
+        // if (!isSpecialRuleList(className)) {
+        // automaticRules.println(" rules = " + className + ".RULES;");
+        // }
+        // }
+
+        File targetFile = new File(targetLocation, className + ".java");
+        // if (targetFile.exists()) {
+        // if (!ignoreTimestamp
+        // && (sourceFile.lastModified() <= targetFile.lastModified())) {
+        // // only copy if timestamp is newer than
+        // // existing ones
+        // continue;
+        // }
+        // }
+        System.out.println(className);
+
+        out = createHeader(className, targetFile, false);
+        convert(expr, "", out, symbolName, false, engine);
+        out.println(FOOTER1);
+        out.close();
+
+        // } catch (IOException e) {
+        // e.printStackTrace();
+      } catch (Exception e) {
+        System.err.println();
+        System.err.println("Abort after exception.");
+        e.printStackTrace();
+        return;
+      }
+    }
+
+
+  }
+
   private static boolean isSpecialRuleList(String className) {
     return className.equals("IntegratePowerTimesFunctionRules")
         || className.equals("FunctionExpandRules") || className.equals("FunctionRangeRules")
@@ -668,25 +727,46 @@ public class RulesToDecisionTree {
 
     F.initSymbols();
 
-    System.out.println("Generate Java source files from rule definitions");
+    if (args != null && args.length > 0) {
 
-    String userHome = System.getProperty("user.home");
-    File sourceLocation =
-        new File(userHome + "/git/symja_android_library/symja_android_library/rules/");
-    File javaTargetLocation = new File(userHome
-        + "/git/symja_android_library/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/rules");
-    generateFunctionStrings(sourceLocation, javaTargetLocation, false, true);
+      System.out.println("Generate Java source files from symbol definitions " + args[0]);
+      ISymbol symbol = F.symbol(args[0]);
+      if (symbol.isBuiltInSymbol()) {
+        IEvaluator evaluator = ((IBuiltInSymbol) symbol).getEvaluator();
+        try {
+          evaluator.await();
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+          return;
+        }
+        IAST definitions = symbol.fullDefinition();
+        String userHome = System.getProperty("user.home");
+        File javaTargetLocation = new File(userHome
+            + "/git/symja_android_library/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/rules");
 
-    sourceLocation =
-        new File(userHome + "/git/symja_android_library/symja_android_library/rule_sets/");
-    javaTargetLocation = new File(userHome
-        + "/git/symja_android_library/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system\\rulesets");
-    generateFunctionStrings(sourceLocation, javaTargetLocation, true, true);
+        generateBuiltInStrings(definitions, javaTargetLocation);
+        // generateFunctionStrings(new File(args[0]), new File(args[1]), true, true);
+      } else {
+        System.out.println("Symbol " + args[0] + " is not implemented");
+      }
+      return;
+    }
+    System.out.println("Generate Java source files from rule definitions is disabled");
+
+    // String userHome = System.getProperty("user.home");
+    // File sourceLocation =
+    // new File(userHome + "/git/symja_android_library/symja_android_library/rules/");
+    // File javaTargetLocation = new File(userHome
+    // +
+    // "/git/symja_android_library/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/rules");
+    // generateFunctionStrings(sourceLocation, javaTargetLocation, false, true);
     //
-    // System.out.println("Generate binary serialized files in internal format from rule
-    // definitions");
-    // File binTargetLocation =
-    // new File("..\\symja_android_library\\matheclipse-core\\src\\main\\resources\\rules");
-    // generateFunctionSerialized(sourceLocation, binTargetLocation, true);
+    // sourceLocation =
+    // new File(userHome + "/git/symja_android_library/symja_android_library/rule_sets/");
+    // javaTargetLocation = new File(userHome
+    // +
+    // "/git/symja_android_library/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system\\rulesets");
+    // generateFunctionStrings(sourceLocation, javaTargetLocation, true, true);
+
   }
 }
