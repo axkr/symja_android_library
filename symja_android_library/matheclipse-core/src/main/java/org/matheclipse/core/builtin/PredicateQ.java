@@ -1765,9 +1765,23 @@ public class PredicateQ {
       IAST variables = varSet.getVarList();
 
       if (function.leafCount() < Config.MAX_POSSIBLE_ZERO_LEAFCOUNT / 5) {
-        IExpr expr = F.TrigExpand.of(engine, function);
-        expr = F.expandAll(expr, true, true);
-        expr = engine.evaluate(expr);
+        IExpr expr;
+        if (function.hasTrigonometricFunction()) {
+          expr = S.TrigToExp.of(engine, function);
+          if (expr.leafCount() < Config.MAX_SIMPLIFY_APART_LEAFCOUNT) {
+            expr = SimplifyFunctions.simplifyStep(expr, expr, !fastTest, true, engine);
+          } else {
+            expr = engine.evaluate(expr);
+          }
+        } else {
+          // expr = S.TrigExpand.of(engine, function);
+          expr = F.evalExpandAll(function);
+          if (expr.isZero()) {
+            return true;
+          }
+          // expr = engine.evaluate(expr);
+        }
+
         if (!expr.isAST()) {
           return expr.isZero();
         }
