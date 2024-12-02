@@ -3969,15 +3969,36 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCosineDistance() {
+    check("CosineDistance(Sin(Pi/111) ,Cos(E))", //
+        "2");
+    check("CosineDistance(17,47)", //
+        "0");
+    check("CosineDistance(2/3,-3/7)", //
+        "2");
+    check("CosineDistance(2/3*I,-3/11)", //
+        "1+I");
+    check("CosineDistance(-Sin(Pi^2)+I , Cos(E))", //
+        "1+(I-Sin(Pi^2))/Sqrt(1+Sin(Pi^2)^2)");
+
+
+    // CosineDistance: The arguments {a,b} and {x,y,z} do not have compatible dimensions.
+    check("CosineDistance({a, b}, {x, y, z})", //
+        "CosineDistance({a,b},{x,y,z})");
+
+
+    check("CosineDistance({1, 0}, {x, y})", //
+        "1-Conjugate(x)/Sqrt(Abs(x)^2+Abs(y)^2)");
+    check("CosineDistance({a, b, c}, {x, y, z})", //
+        "1-(a*Conjugate(x)+b*Conjugate(y)+c*Conjugate(z))/Sqrt((Abs(a)^2+Abs(b)^2+Abs(c)^\n" //
+            + "2)*(Abs(x)^2+Abs(y)^2+Abs(z)^2))");
+
     check("CosineDistance({7.0, 9}, {71, 89})", //
         "0.0000759646");
     check("N(CosineDistance({7, 9}, {71, 89}))", //
         "0.0000759646");
     check("CosineDistance({a, b}, {c, d})", //
         "1-(a*Conjugate(c)+b*Conjugate(d))/Sqrt((Abs(a)^2+Abs(b)^2)*(Abs(c)^2+Abs(d)^2))");//
-    check("CosineDistance({a, b, c}, {x, y, z})", //
-        "1-(a*Conjugate(x)+b*Conjugate(y)+c*Conjugate(z))/Sqrt((Abs(a)^2+Abs(b)^2+Abs(c)^\n" //
-            + "2)*(Abs(x)^2+Abs(y)^2+Abs(z)^2))");
+
   }
 
   @Test
@@ -10991,6 +11012,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testIndeterminate() {
+    check("Infinity-Infinity", //
+        "Indeterminate");
+    check("ComplexInfinity+ComplexInfinity", //
+        "Indeterminate");
+    check("Indeterminate+1", //
+        "Indeterminate");
+    check("0*Indeterminate", //
+        "Indeterminate");
+    check("0*ComplexInfinity", //
+        "Indeterminate");
     check("Tan(Indeterminate)", //
         "Indeterminate");
     check("{And(True, Indeterminate), And(False, Indeterminate)}", //
@@ -10999,6 +11030,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Indeterminate==Indeterminate");
     check("Indeterminate===Indeterminate", //
         "True");
+    check("Indeterminate!=Indeterminate", //
+        "Indeterminate!=Indeterminate");
     check("{Re(Indeterminate), Im(Indeterminate)}", //
         "{Indeterminate,Indeterminate}");
     check("NumberQ(Indeterminate)", //
@@ -24704,6 +24737,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testToExpression() {
+    // TODO print syntax error to error stream
+    check("ToExpression(\"1+2}\")", //
+        "$Failed");
+    check("ToExpression(\"1+2\")", //
+        "3");
+    check("ToExpression(\"{2, 3, 1}\", InputForm, Max)", //
+        "3");
+    check("ToExpression(\"2 3\", InputForm)", //
+        "6");
+
     check("ToExpression(\"\\\\begin{matrix}\n" //
         + "1 & 2 \\\\\\\\\n" //
         + " 7 & 8\n" //
@@ -25957,6 +26000,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testWith() {
+    check("Block({i = 0}, With({}, Module({j = i}, i=i+1; j)))", //
+        "0");
     EvalEngine.resetModuleCounter4JUnit();
 
     // print message: Set: Cannot unset object 2.0.

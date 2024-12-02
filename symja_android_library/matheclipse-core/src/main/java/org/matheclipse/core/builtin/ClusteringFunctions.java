@@ -25,6 +25,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
 
 public class ClusteringFunctions {
 
@@ -34,6 +35,14 @@ public class ClusteringFunctions {
 
     public abstract IExpr distance(IExpr a, IExpr b, EvalEngine engine);
 
+    public IExpr scalarDistance(INumber a, INumber b, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    public IExpr numericFunctionDistance(IExpr a, IExpr b, EvalEngine engine) {
+      return F.NIL;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
@@ -42,12 +51,24 @@ public class ClusteringFunctions {
       int dim1 = arg1.isVector();
       if (dim1 > (-1)) {
         int dim2 = arg2.isVector();
-        if (dim1 == dim2) {
-          if (dim1 == 0) {
-            return F.NIL;
+        if (dim2 > (-1)) {
+          if (dim1 != dim2) {
+            // The arguments `1` and `2` do not have compatible dimensions.
+            return Errors.printMessage(ast.topHead(), "bldim", F.List(arg1, arg2), engine);
           }
-          return vectorDistance(arg1, arg2, engine);
+          if (dim1 != 0) {
+            return vectorDistance(arg1, arg2, engine);
+          }
         }
+        return F.NIL;
+      }
+      if (arg1.isNumber() && arg2.isNumber()) {
+        INumber n1 = (INumber) arg1;
+        INumber n2 = (INumber) arg2;
+        return scalarDistance(n1, n2, engine);
+      }
+      if (arg1.isNumericFunction() && arg2.isNumericFunction()) {
+        return numericFunctionDistance(arg1, arg2, engine);
       }
       return F.NIL;
     }
@@ -374,6 +395,35 @@ public class ClusteringFunctions {
     }
 
     @Override
+    public IExpr scalarDistance(INumber arg1, INumber arg2, EvalEngine engine) {
+      IExpr norm1 = arg1.abs();
+      if (norm1.isZero()) {
+        return F.C0;
+      }
+      IExpr norm2 = arg2.abs();
+      if (norm2.isZero()) {
+        return F.C0;
+      }
+      final INumber c = arg1.times(arg2.conjugate());
+      return engine.evaluate(F.Subtract(F.C1, F.Divide(c, F.Times(norm1, norm2))));
+    }
+
+
+    @Override
+    public IExpr numericFunctionDistance(IExpr arg1, IExpr arg2, EvalEngine engine) {
+      IExpr norm1 = arg1.abs();
+      if (norm1.isPossibleZero(true)) {
+        return F.C0;
+      }
+      IExpr norm2 = arg2.abs();
+      if (norm2.isPossibleZero(true)) {
+        return F.C0;
+      }
+      return engine.evaluate(
+          F.Subtract(F.C1, F.Divide(F.Times(arg1, F.Conjugate(arg2)), F.Times(norm1, norm2))));
+    }
+
+    @Override
     public IExpr distance(IExpr arg1, IExpr arg2, EvalEngine engine) {
       IExpr norm1 = F.Norm.of(engine, arg1);
       if (norm1.isZero()) {
@@ -383,7 +433,8 @@ public class ClusteringFunctions {
       if (norm2.isZero()) {
         return F.C0;
       }
-      return F.Subtract(F.C1, F.Divide(F.Dot(arg1, F.Conjugate(arg2)), F.Times(norm1, norm2)));
+      return engine.evaluate(
+          F.Subtract(F.C1, F.Divide(F.Dot(arg1, F.Conjugate(arg2)), F.Times(norm1, norm2))));
     }
 
     @Override

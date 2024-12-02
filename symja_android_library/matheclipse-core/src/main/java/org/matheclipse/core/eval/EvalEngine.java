@@ -3079,6 +3079,11 @@ public class EvalEngine implements Serializable {
     return fContextPath;
   }
 
+  /**
+   * Get the current error print stream. If no user error print stream is defined, the standard
+   * error print stream {@link System#err} is returned.
+   * 
+   */
   public PrintStream getErrorPrintStream() {
     return fErrorPrintStream != null ? fErrorPrintStream : System.err;
   }
@@ -3162,6 +3167,11 @@ public class EvalEngine implements Serializable {
     return fOptionsStack.iterator();
   }
 
+  /**
+   * Get the current output print stream. If no user output print stream is defined, the standard
+   * output print stream {@link System#out} is returned.
+   * 
+   */
   public PrintStream getOutPrintStream() {
     return fOutPrintStream != null ? fOutPrintStream : System.out;
   }

@@ -83,6 +83,7 @@ public class Errors {
       "bset",
       "The second argument `1` of Element should be one of: Primes, Integers, Rationals, Algebraics, Reals, Complexes or Booleans.", //
       "bfun", "`1` is not a boolean-valued pure function.", //
+      "bldim", "The arguments `1` and `2` do not have compatible dimensions.", //
       "boxfmt", "`1` is not a box formatting type.", //
       "bdomv", "Warning: `1` is not a valid domain specification.", //
       "cfn", "Numerical error encountered, proceeding with uncompiled evaluation.", //
@@ -351,8 +352,7 @@ public class Errors {
       "The number of subdivisions given in position `1` of `2` should be a positive machine-sized integer.", //
       "seqs",
       "Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in `1`.", //
-      "seqso",
-      "Sequence specification (+n,-n,{+n},{-n} or {m,n}) expected at position `2` in `1`.", //
+      "seqso", "Sequence specification (+n,-n,{+n},{-n} or {m,n}) expected at position `2` in `1`.", //
       "setp", "Part assignment to `1` could not be made", //
       "setraw", "Cannot assign to raw object `1`.", //
       "setps", "`1` in the part assignment is not a symbol.", //
@@ -542,7 +542,7 @@ public class Errors {
 
   /**
    * Format a message according to the shortcut from the {@link MESSAGES} array and print it to the
-   * error stream with the <code>engine.printMessage()</code>method.
+   * error stream with the help of the {@link EvalEngine#getErrorPrintStream()} method.
    *
    * <p>
    * Usage pattern:
@@ -557,7 +557,7 @@ public class Errors {
    * @param listOfParameters a list of arguments which should be inserted into the message shortcuts
    *        placeholder
    * @param engine
-   * @return always <code>F.NIL</code>
+   * @return always {@link F#NIL}
    */
   public static IAST printMessage(ISymbol symbol, String messageShortcut,
       final IAST listOfParameters, EvalEngine engine) {
@@ -855,11 +855,12 @@ public class Errors {
 
 
   public static void rethrowsInterruptException(Exception e) {
-    if (e instanceof ApfloatInterruptedException || e instanceof PreemptingException || e instanceof TimeoutException) {
+    if (e instanceof ApfloatInterruptedException || e instanceof PreemptingException
+        || e instanceof TimeoutException) {
       throw (RuntimeException) e;
     }
     if (e instanceof RuntimeException && e.getCause() instanceof InterruptedException) {
-      throw (RuntimeException)  e;
+      throw (RuntimeException) e;
     }
   }
 }
