@@ -3291,7 +3291,7 @@ public final class Arithmetic {
    * a^b
    * </pre>
    */
-  private static class Power extends AbstractFunctionEvaluator
+  public /*for steps module*/ static class Power extends AbstractFunctionEvaluator
       implements INumeric, IFunctionExpand {
 
     @Override
@@ -5840,7 +5840,7 @@ public final class Arithmetic {
    * 30
    * </pre>
    */
-  private static class Times extends AbstractArgMultiple implements INumeric {
+  public /*for steps module*/ static class Times extends AbstractArgMultiple implements INumeric {
     /** Constructor for the singleton */
     public static final Times CONST = new Times();
 
