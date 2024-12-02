@@ -50,6 +50,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.ParserConfig;
+import org.matheclipse.parser.client.SyntaxError;
 import com.google.common.base.CharMatcher;
 import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParser;
@@ -3122,7 +3123,7 @@ public final class StringFunctions {
       IExpr head = F.NIL;
       if (arg1.isString()) {
         ISymbol form = S.InputForm;
-        if (ast.size() == 3) {
+        if (ast.argSize() >= 2) {
           IExpr arg2 = ast.arg2();
           if (arg2.equals(S.InputForm)) {
             form = S.InputForm;
@@ -3132,7 +3133,7 @@ public final class StringFunctions {
             return F.NIL;
           }
         }
-        if (ast.size() == 4) {
+        if (ast.isAST3()) {
           head = ast.arg3();
         }
         try {
@@ -3150,10 +3151,12 @@ public final class StringFunctions {
             }
             return temp;
           }
+        } catch (SyntaxError sntx) {
+          return S.$Failed;
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
           LOGGER.debug("ToExpression.evaluate() failed", rex);
-          return S.$Aborted;
+          return S.$Failed;
         }
       } else {
         // `1` is not a string.
