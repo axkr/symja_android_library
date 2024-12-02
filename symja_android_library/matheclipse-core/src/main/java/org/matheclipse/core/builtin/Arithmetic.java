@@ -3291,7 +3291,7 @@ public final class Arithmetic {
    * a^b
    * </pre>
    */
-  public /*for steps module*/ static class Power extends AbstractFunctionEvaluator
+  public /*public for steps module*/ static class Power extends AbstractFunctionEvaluator
       implements INumeric, IFunctionExpand {
 
     @Override
@@ -6352,7 +6352,8 @@ public final class Arithmetic {
       return evaluateTimesOp(ast, engine).orElse(timesOP);
     }
 
-    private IExpr evaluateTimesOp(final IAST ast, EvalEngine engine) {
+    // public method for steps module
+    public IExpr evaluateTimesOp(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       int size = ast.size();
       if (size == 3) {
