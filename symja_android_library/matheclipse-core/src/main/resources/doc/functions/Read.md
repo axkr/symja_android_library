@@ -16,7 +16,7 @@ Read(input-stream, object-type)
 Read(input-stream, {object-type1, object-type2, ...})
 ```
 
-> reads the `input-stream` AND RETURN A LIST OF EXPRESSIONS
+> reads the `input-stream` and return a list of expressions.
 
 ### Examples
 
