@@ -1,10 +1,10 @@
 package org.matheclipse.core.builtin;
 
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -66,6 +66,11 @@ public class FilterFunctions {
               list.slice(Math.max(1, i - radius), Math.min(size, i + radius + 1)) //
           ))));
       return result;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
     }
 
     @Override

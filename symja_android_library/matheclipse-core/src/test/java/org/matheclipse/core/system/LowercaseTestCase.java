@@ -3170,16 +3170,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("f(-3)", //
         "f(-3)");
 
-    check("f(x_) := Module({u}, u^2 /; ((u = x - 1) > 0))", //
+    check("Clear(f);f(x_) := Module({u}, u^2 /; ((u = x - 1) > 0))", //
         "");
     check("f(0)", //
         "f(0)");
+    check("f(6)", //
+        "25");
     check("g(x_) := Module({a}, a = Prime(10^x); (FactorInteger(a + 1)) /; a < 10^6)", //
         "");
     check("g(4)", //
         "{{2,1},{3,1},{5,1},{3491,1}}");
     check("g(5)", //
         "g(5)");
+
+    check("Cases({{a, b}, {1, 2, 3}, {{d, 6}, {d, 10}}}, {x_,y_} /; ! ListQ(x) && ! ListQ(y))", //
+        "{{a,b}}");
+    check("Cases({{a, b}, {1, 2, 3}, {{d, 6}, {d, 10}}}, {_, _}?VectorQ)", //
+        "{{a,b}}");
   }
 
   @Test
@@ -21697,6 +21704,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSelect() {
+    check("Select({},_,1000)", //
+        "{}");
+    check("Select({},_)", //
+        "{}");
+    check("Select({},#1>2&)", //
+        "{}");
     check("Select({1,2,4,7,6,2},#1>2&,0)", //
         "{}");
     check("Select({-3, 0}, #>10&)", //
@@ -21730,6 +21743,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "f(1,2,3)");
     check("Select(Range(100), Mod(#, 3) == 1 && Mod(#, 5) == 1 &)", //
         "{1,16,31,46,61,76,91}");
+    check("Select({-3, 0, 10, 3, a}, #>0&, 1)", //
+        "{10}");
   }
 
   @Test

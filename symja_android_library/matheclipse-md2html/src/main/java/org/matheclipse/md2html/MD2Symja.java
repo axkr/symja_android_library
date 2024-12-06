@@ -98,44 +98,6 @@ public class MD2Symja {
     return renderer.render(document);
   }
 
-  private static String MARKDOWN_TEST = //
-      "An example of a `ListPlot` function\n"//
-          + "```mma\n"//
-          + "ListPlot3D[{{1, 1, 1, 1}, {1, 2, 1, 2}, {1, 1, 3, 1}, {1, 2, 1, 4}}]\n"//
-          + "```\n"//
-          + "\n"//
-          + "```mma\n"//
-          + "Plot3D[Sin[x + y^2], {x, -3, 3}, {y, -2, 2}]\n"//
-          + "```\n"//
-          + "\n"//
-          + "```mma\n"//
-          + "Plot[Sin[x], {x, -Pi, Pi}]\n"//
-          + "```\n"//
-          + "\n"//
-          + "Graphics3D object:\n"//
-          + "```mma\n"//
-          + "Graphics3D[Sphere[{0, 1, 0}]]\n"//
-          + "```\n"//
-          + "\n"//
-          + "```mma\n"//
-          + "Image[RandomVariate[NormalDistribution[.5, .1], {100, 100}]]\n"//
-          + "```\n"//
-          + "\n"//
-          + "```mma\n"//
-          + "Graph[{1,2,3,4,6,5,7,8},{1->2,1->3,1->4,2->6,5->3,5->7,5->8}]\n"//
-          + "```\n"//
-          + "\n"//
-          + "```mma\n"//
-          + "TreeForm[a+(b*q*s)^(2*y)+Sin[c]^(3-z)]\n"//
-          + "```\n"//
-          + "\n"//
-          //
-          + "use inline tex \\\\(\\sqrt x\\\\)\n"//
-          + "or display form TeX:\n"//
-          + "```tex\n"//
-          + "1/3 + y/x > 0\n"//
-          + "```";
-
   public static void main(String[] args) {
     init();
 

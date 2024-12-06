@@ -515,7 +515,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(ISymbol.HOLDFIRST);
     }
   }
 
@@ -1236,7 +1236,7 @@ public final class Arithmetic {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      newSymbol.setAttributes(ISymbol.HOLDFIRST);
     }
   }
 

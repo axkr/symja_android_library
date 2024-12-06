@@ -6,8 +6,8 @@ import org.matheclipse.core.eval.EvalEngine;
 
 public class StreamTest extends ExprEvaluatorTestCase {
 
-   @Test
-   public void testBinaryWrite001() {
+  @Test
+  public void testBinaryWrite001() {
     call("f = File(\"test.bin\")");
     check("BinaryWrite(f, {8, 97, 255, 255, 255});", //
         "");
@@ -26,8 +26,8 @@ public class StreamTest extends ExprEvaluatorTestCase {
         "EndOfFile");
   }
 
-   @Test
-   public void testRead001() {
+  @Test
+  public void testRead001() {
     call("str = StringToStream(\"4711 dummy 0815\")");
     check("Read(str, Number)", //
         "4711");
@@ -39,8 +39,8 @@ public class StreamTest extends ExprEvaluatorTestCase {
         "String");
   }
 
-   @Test
-   public void testRead002() {
+  @Test
+  public void testRead002() {
     call("str = StringToStream(\"4711 dummy 0815\")");
     check("Read(str, Number)", //
         "4711");
@@ -52,8 +52,8 @@ public class StreamTest extends ExprEvaluatorTestCase {
         "String");
   }
 
-   @Test
-   public void testRead003() {
+  @Test
+  public void testRead003() {
     check("str = \"foo::usage = \\\"foo is ...\\\";\n" + "bar::usage = \\\"bar is ...\\\";\"", //
         "foo::usage = \"foo is ...\";\n" + "bar::usage = \"bar is ...\";");
     check("strm = StringToStream(str);", //
@@ -66,8 +66,8 @@ public class StreamTest extends ExprEvaluatorTestCase {
         "String");
   }
 
-   @Test
-   public void testRead004() {
+  @Test
+  public void testRead004() {
     // newline after ::usage
     check("str = \"foo::usage = \n \\\"foo is ...\\\";\n" + "bar::usage = \\\"bar is ...\\\";\"", //
         "foo::usage = \n" + " \"foo is ...\";\n" + "bar::usage = \"bar is ...\";");
@@ -81,8 +81,30 @@ public class StreamTest extends ExprEvaluatorTestCase {
         "String");
   }
 
-   @Test
-   public void testFile001() {
+  @Test
+  public void testReadList001() {
+    check("ReadList(StringToStream(\"123\\n45\\nx\\ny\"), String) // InputForm", //
+        "{\"123\",\"45\",\"x\",\"y\"}");
+    check("ReadList(StringToStream(\"123\\n45\\nx\\ny\"))", //
+        "{123,45,x,y}");
+  }
+
+  @Test
+  public void testReadList002() {
+    check("ReadList(StringToStream(\"(**)\\n\\n\\n{0, x, 1, 0}\\n{1, x, 1, x}\"))", //
+        "{Null,{0,x,1,0},{1,x,1,x}}");
+    check("ReadList(StringToStream(\"(**)\\n\\n\\n{0, x, 1, 0}\\n{1, x, 1, x}\"), Expression)", //
+        "{Null,{0,x,1,0},{1,x,1,x}}");
+    check("ReadList(StringToStream(\"(**)\\n\\n\\n{0, x, 1, 0}\\n{1, x, 1, x}\"), Expression, 2)", //
+        "{Null,{0,x,1,0}}");
+
+    check(
+        "ReadList(StringToStream(\"(**)\\n\\n\\n{0, x, 1, 0}\\n{1, x, 1, x}\"), String) // InputForm", //
+        "{\"(**)\",\"{0, x, 1, 0}\",\"{1, x, 1, x}\"}");
+  }
+
+  @Test
+  public void testFile001() {
     call("f = File(\"test.txt\")");
     check("Write(f, a + b)", //
         "");
@@ -90,8 +112,8 @@ public class StreamTest extends ExprEvaluatorTestCase {
         "{a,+,b}");
   }
 
-   @Test
-   public void testStringToStream() {
+  @Test
+  public void testStringToStream() {
     call("str = StringToStream(\"234,32412,4234\")");
     check("Read(str, Number)", //
         "234");
@@ -101,8 +123,8 @@ public class StreamTest extends ExprEvaluatorTestCase {
         "String");
   }
 
-   @Test
-   public void testOpenAppend001() {
+  @Test
+  public void testOpenAppend001() {
     call("f = FileNameJoin({$TemporaryDirectory, \"test_open.txt\"});Print(f)");
     check("str = OpenWrite(f);", //
         "");
@@ -123,8 +145,8 @@ public class StreamTest extends ExprEvaluatorTestCase {
         "");
   }
 
-   @Test
-   public void testOpenAppend002() {
+  @Test
+  public void testOpenAppend002() {
     // create temporary file and open output stream
     check("str = OpenWrite();Print(str);", //
         "");
