@@ -27,7 +27,6 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -39,6 +38,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.FileExpr;
 import org.matheclipse.core.expression.data.InputStreamExpr;
@@ -94,6 +94,7 @@ public class FileFunctions {
         S.OutputStream.setEvaluator(new OutputStream());
         S.Put.setEvaluator(new Put());
         S.Read.setEvaluator(new Read());
+        S.ReadList.setEvaluator(new ReadList());
         S.ReadString.setEvaluator(new ReadString());
         S.Save.setEvaluator(new Save());
         S.StringToStream.setEvaluator(new StringToStream());
@@ -196,33 +197,9 @@ public class FileFunctions {
       return F.NIL;
     }
 
-    private static IExpr readType(DataInput reader, String typeStr) {
-      try {
-        if (typeStr.equals("Byte")) {
-          typeStr = "UnsignedInteger8";
-        }
-        byte typeByte = NumericArrayExpr.toType(typeStr);
-        if (typeByte == NumericArrayExpr.UNDEFINED) {
-          if (typeStr.equals("Character8")) {
-            int uInt = Byte.toUnsignedInt(reader.readByte());
-            char ch = (char) uInt;
-            return F.stringx(ch);
-          }
-          return S.$Failed;
-        }
-        switch (typeByte) {
-          case NumericArrayExpr.Integer8:
-            byte sByte = reader.readByte();
-            return F.ZZ(sByte);
-          case NumericArrayExpr.UnsignedInteger8:
-            byte uByte = reader.readByte();
-            return F.ZZ(Byte.toUnsignedInt(uByte));
-        }
-      } catch (EOFException ex) {
-        return S.EndOfFile;
-      } catch (IOException e) {
-      }
-      return S.$Failed;
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -293,6 +270,11 @@ public class FileFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
     }
@@ -318,6 +300,11 @@ public class FileFunctions {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -351,6 +338,11 @@ public class FileFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_1;
     }
@@ -373,6 +365,11 @@ public class FileFunctions {
         }
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -507,6 +504,11 @@ public class FileFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -527,6 +529,11 @@ public class FileFunctions {
         return S.None;
       }
       return F.stringx(format.toString());
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -581,6 +588,11 @@ public class FileFunctions {
         }
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -692,7 +704,7 @@ public class FileFunctions {
             // String expected at position `1` in `2`.
             return Errors.printMessage(S.Get, "string", F.List(), engine);
           }
-          String arg1Str = ((IStringX) ast.arg1()).toString();
+          String arg1Str = ast.arg1().toString();
           if (arg1Str.startsWith("https://") || arg1Str.startsWith("http://")) {
             URL url = new URL(arg1Str);
             return getURL(url, ast, arg1Str, engine);
@@ -719,6 +731,11 @@ public class FileFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -742,6 +759,11 @@ public class FileFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -752,6 +774,11 @@ public class FileFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       return openOutputStream(ast, true, engine);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -777,6 +804,11 @@ public class FileFunctions {
         }
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -819,6 +851,11 @@ public class FileFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_1;
     }
@@ -842,6 +879,11 @@ public class FileFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -855,6 +897,11 @@ public class FileFunctions {
         return super.evaluate(ast, engine);
       }
       return S.Null;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -902,6 +949,11 @@ public class FileFunctions {
         return S.Null;
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1147,8 +1199,100 @@ public class FileFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+  }
+
+  private static final class ReadList extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (Config.isFileSystemEnabled(engine)) {
+        try {
+          IExpr arg1 = ast.arg1();
+          final DataInput reader;
+          if (arg1 instanceof FileExpr) {
+            InputStreamExpr stream = InputStreamExpr.getFromFile((FileExpr) arg1, "String", engine);
+            reader = stream.getDataInput();
+          } else if (arg1 instanceof InputStreamExpr) {
+            reader = ((InputStreamExpr) arg1).getDataInput();
+          } else {
+            reader = null;
+          }
+          if (reader != null) {
+            if (ast.argSize() >= 2) {
+              IExpr typeExpr = ast.arg2();
+              if (typeExpr.isList()) {
+                return F.mapList((IAST) typeExpr, t -> readType(reader, t.toString()));
+              }
+            }
+            int n = Integer.MAX_VALUE;
+            if (ast.isAST3()) {
+              n = ast.arg3().toIntDefault();
+              if (n <= 0) {
+                // Non-negative machine-sized integer expected at position `2` in `1`
+                return Errors.printMessage(S.ReadList, "intnm", F.List(F.C3, ast), engine);
+              }
+            }
+            IExpr type = ast.isAST2() ? ast.arg2() : S.Expression;
+            if (type == S.Expression || type == S.String) {
+              IASTAppendable result = F.ListAlloc();
+              int counter = 0;
+              try {
+                do {
+                  String line = reader.readLine();
+                  if (line == null) {
+                    break;
+                  }
+                  if (line.trim().length() == 0) {
+                    continue;
+                  }
+                  if (type == S.String) {
+                    result.append(F.stringx(line));
+                    counter++;
+                  } else {
+                    IExpr toExpr = S.ToExpression.ofNIL(engine, F.stringx(line));
+                    if (toExpr.isPresent() && toExpr != S.$Failed) {
+                      result.append(toExpr);
+                      counter++;
+                    }
+                  }
+                  if (counter >= n) {
+                    break;
+                  }
+                } while (true);
+              } catch (IOException e) {
+                //
+              }
+              if (result.isPresent()) {
+                return result;
+              }
+            }
+          }
+        } catch (EOFException ex) {
+          return S.EndOfFile;
+        } catch (IOException | RuntimeException ex) {
+          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
+          return S.$Failed;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
     }
   }
 
@@ -1161,7 +1305,7 @@ public class FileFunctions {
         if (!(ast.arg1() instanceof IStringX)) {
           return Errors.printMessage(ast.topHead(), "string", F.List(), engine);
         }
-        String arg1 = ((IStringX) ast.arg1()).toString();
+        String arg1 = ast.arg1().toString();
         if (arg1.startsWith("https://") || arg1.startsWith("http://")) {
           try (java.io.InputStream in = new URL(arg1).openStream()) {
             String str = new String(in.readAllBytes(), StandardCharsets.UTF_8);
@@ -1183,6 +1327,11 @@ public class FileFunctions {
         }
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1292,6 +1441,11 @@ public class FileFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -1324,6 +1478,11 @@ public class FileFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_1;
     }
@@ -1336,7 +1495,7 @@ public class FileFunctions {
       if (!(ast.arg1() instanceof IStringX)) {
         return Errors.printMessage(ast.topHead(), "string", F.List(), engine);
       }
-      String arg1Str = ((IStringX) ast.arg1()).toString();
+      String arg1Str = ast.arg1().toString();
       if (arg1Str.startsWith("https://") || arg1Str.startsWith("http://")) {
         try (java.io.InputStream in = new URL(arg1Str).openStream()) {
           String str = new String(in.readAllBytes(), StandardCharsets.UTF_8);
@@ -1349,6 +1508,11 @@ public class FileFunctions {
       }
       // Cannot open `1`.
       return Errors.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1389,6 +1553,11 @@ public class FileFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -1419,6 +1588,11 @@ public class FileFunctions {
         return S.Null;
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1516,6 +1690,35 @@ public class FileFunctions {
     final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
     final List<ASTNode> node = parser.parsePackage(builder.toString());
     return node;
+  }
+
+  private static IExpr readType(DataInput reader, String typeStr) {
+    try {
+      if (typeStr.equals("Byte")) {
+        typeStr = "UnsignedInteger8";
+      }
+      byte typeByte = NumericArrayExpr.toType(typeStr);
+      if (typeByte == NumericArrayExpr.UNDEFINED) {
+        if (typeStr.equals("Character8")) {
+          int uInt = Byte.toUnsignedInt(reader.readByte());
+          char ch = (char) uInt;
+          return F.stringx(ch);
+        }
+        return S.$Failed;
+      }
+      switch (typeByte) {
+        case NumericArrayExpr.Integer8:
+          byte sByte = reader.readByte();
+          return F.ZZ(sByte);
+        case NumericArrayExpr.UnsignedInteger8:
+          byte uByte = reader.readByte();
+          return F.ZZ(Byte.toUnsignedInt(uByte));
+      }
+    } catch (EOFException ex) {
+      return S.EndOfFile;
+    } catch (IOException e) {
+    }
+    return S.$Failed;
   }
 
   public static void initialize() {
