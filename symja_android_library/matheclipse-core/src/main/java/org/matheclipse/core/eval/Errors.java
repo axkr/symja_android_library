@@ -285,7 +285,8 @@ public class Errors {
       "openx", "`1` is not open.", //
       "optb", "Optional object `1` in `2` is not a single blank.", //
       "optnf", "Option name `2` not found in defaults for `1`.", //
-      "opttf", "Value of option `1`->`2` should be True or False.", //
+      "opttf", "Value of option `1` -> `2` should be True or False.", //
+      "opttfa", "Value of option `1` -> `2` should be True, False or Automatic.", //
       "optx", "Unknown option `1` in `2`.", //
       "ovfl", "Overflow occurred in computation.", //
       "ovls", "Value of option `1` must be True, False or All.", //
@@ -323,6 +324,8 @@ public class Errors {
       "precgt", "Requested precision `1` is greater than `2`.", //
       "prng",
       "Value of option `1` is not All, Full, Automatic, a positive machine number, or an appropriate list of range specifications.",
+      "psl",
+      "Position specification `1` in `2` is not a machine sized integer or a list of machine-sized integers.", //
       "psl1", "Position specification `1` in `2` is not applicable.", //
       "pspec", "Part specification `1` is neither an integer nor a list of integer.", //
       "pts", "`1` should be a non-empty list of points.", //

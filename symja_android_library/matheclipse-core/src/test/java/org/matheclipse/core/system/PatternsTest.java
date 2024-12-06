@@ -877,6 +877,12 @@ public class PatternsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testReplacePartPattern() {
+    // message: ReplacePart: Value of option Heads -> murks should be True, False or Automatic.
+    check("ReplacePart(f(x, y), _ -> g, Heads -> murks)", //
+        "ReplacePart(f(x,y),_->g,Heads->murks)");
+    // operator form
+    check("ReplacePart(3 -> xxx)[{a, b, c, d, e}]", //
+        "{a,b,xxx,d,e}");
 
     check("ReplacePart(f(x, y), _ -> g, Heads -> True)", //
         "g(g,g)");
@@ -912,51 +918,51 @@ public class PatternsTest extends ExprEvaluatorTestCase {
         "{{-1,2},{3,-1}}");
 
 
-    // check("ReplacePart({a, b, c}, 1 -> t)", //
-    // "{t,b,c}");
-    // check("ReplacePart({{a, b}, {c, d}}, {2, 1} -> t)", //
-    // "{{a,b},{t,d}}");
-    // check("ReplacePart({{a, b}, {c, d}}, {{2, 1} -> t, {1, 1} -> t})", //
-    // "{{t,b},{t,d}}");
-    // check("ReplacePart({a, b, c}, {{1}, {2}} -> t)", //
-    // "{t,t,c}");
-    //
-    // check("n = 1", "1");
-    // check("ReplacePart({a, b, c, d}, {{1}, {3}} :> n++)", //
-    // "{1,b,2,d}");
+    check("ReplacePart({a, b, c}, 1 -> t)", //
+        "{t,b,c}");
+    check("ReplacePart({{a, b}, {c, d}}, {2, 1} -> t)", //
+        "{{a,b},{t,d}}");
+    check("ReplacePart({{a, b}, {c, d}}, {{2, 1} -> t, {1, 1} -> t})", //
+        "{{t,b},{t,d}}");
+    check("ReplacePart({a, b, c}, {{1}, {2}} -> t)", //
+        "{t,t,c}");
 
-    // check("ReplacePart({a, b, c}, 4 -> t)", //
-    // "{a,b,c}");
-    // check("ReplacePart({a, b, c}, 0 -> Times)", //
-    // "a*b*c");
-    // check("ReplacePart({a, b, c}, -1 -> t)", //
-    // "{a,b,t}");
-    //
-    // check("ReplacePart({a,b,c^n}, x+y, {{3, 2}, 2})", //
-    // "{a,x+y,c^(x+y)}");
+    check("n = 1", "1");
+    check("ReplacePart({a, b, c, d}, {{1}, {3}} :> n++)", //
+        "{1,b,2,d}");
+
+    check("ReplacePart({a, b, c}, 4 -> t)", //
+        "{a,b,c}");
+    check("ReplacePart({a, b, c}, 0 -> Times)", //
+        "a*b*c");
+    check("ReplacePart({a, b, c}, -1 -> t)", //
+        "{a,b,t}");
+
+    check("ReplacePart({a,b,c^n}, x+y, {{3, 2}, 2})", //
+        "ReplacePart({a,b,c^3},x+y,{{3,2},2})");
 
     // >>>
     check("ReplacePart({a, b, c, d, e}, {3 -> u, _ -> x})", //
         "{x,x,u,x,x}");
 
 
-    // check("ReplacePart({a, b, c, d, e}, 3 -> xxx)", //
-    // "{a,b,xxx,d,e}");
-    // check("ReplacePart({a, b, c, d, e}, {2 -> xx, 5 -> yy})", //
-    // "{a,xx,c,d,yy}");
-    // check("ReplacePart({{a, b}, {c, d}}, {2, 1} -> xx)", //
-    // "{{a,b},{xx,d}}");
+    check("ReplacePart({a, b, c, d, e}, 3 -> xxx)", //
+        "{a,b,xxx,d,e}");
+    check("ReplacePart({a, b, c, d, e}, {2 -> xx, 5 -> yy})", //
+        "{a,xx,c,d,yy}");
+    check("ReplacePart({{a, b}, {c, d}}, {2, 1} -> xx)", //
+        "{{a,b},{xx,d}}");
     check("ReplacePart({{a, b}, {c, d}}, {i_, i_} -> xx)", //
         "{{xx,b},{c,xx}}");
-    // check("ReplacePart({a,b,c^n}, {{3, 2} -> x + y, 2 -> b^100})", //
-    // "{a,b^100,c^(x+y)}");
-    // check("ReplacePart(3 -> xxx)[{a, b, c, d, e}]", //
-    // "{a,b,xxx,d,e}");
+    check("ReplacePart({a,b,c^n}, {{3, 2} -> x + y, 2 -> b^100})", //
+        "{a,b^100,c^(x+y)}");
+    check("ReplacePart(3 -> xxx)[{a, b, c, d, e}]", //
+        "{a,b,xxx,d,e}");
 
-    // check("ReplacePart({a, b, c, d, e, f, g}, -3 -> xxx)", //
-    // "{a,b,c,d,xxx,f,g}");
-    // check("ReplacePart({a, b, c, d, e, f, g}, {{1}, {3}, {5}} -> xxx)", //
-    // "{xxx,b,xxx,d,xxx,f,g}");
+    check("ReplacePart({a, b, c, d, e, f, g}, -3 -> xxx)", //
+        "{a,b,c,d,xxx,f,g}");
+    check("ReplacePart({a, b, c, d, e, f, g}, {{1}, {3}, {5}} -> xxx)", //
+        "{xxx,b,xxx,d,xxx,f,g}");
     check("ReplacePart({a, b, c, d, e, f, g}, (1 | 3 | 5) -> xxx)", //
         "{xxx,b,xxx,d,xxx,f,g}");
     check("ReplacePart({a, b, c, d, e, f, g}, Except[1 | 3 | 5] -> xxx)", //
@@ -975,25 +981,27 @@ public class PatternsTest extends ExprEvaluatorTestCase {
         "{<|x->f,y->2|>,<|x->f,y->4|>}");
 
 
-    //
-    // check("ReplacePart({a, b, c, d}, 5 -> x)", //
-    // "{a,b,c,d}");
-    // check("ReplacePart(ReplacePart(a + b + c, 1 -> x), 3 -> y)", //
-    // "b+c+y");
+    check("ReplacePart(ReplacePart(a + b + c, 1 -> x), 3 -> y)", //
+        "b+c+y");
 
     check("ReplacePart(h(a, b), {} -> x)", //
         "h(a,b)");
-    // check("ReplacePart(h(a, b), {{}} -> x)", //
-    // "x");
-    // check("ReplacePart(<|\"x\" -> 1, \"y\" -> 2|>, {0} -> List)", //
-    // "{1,2}");
-    // check("Normal(<|\"x\" -> 1, \"y\" -> 2|>)", //
-    // "{x->1,y->2}");
+    check("ReplacePart(h(a, b), {{}} -> x)", //
+        "x");
+    check("ReplacePart(<|\"x\" -> 1, \"y\" -> 2|>, {0} -> List)", //
+        "{1,2}");
+    check("Normal(<|\"x\" -> 1, \"y\" -> 2|>)", //
+        "{x->1,y->2}");
 
   }
 
   @Test
   public void testReplacePartIntegerPositions() {
+    check("ReplacePart({4,-1},-x,2)", //
+        "{4,-x}");
+    check("ReplacePart({4,{1,3,7,11,19}},tt,{2,5})", //
+        "{4,{1,3,7,11,tt}}");
+
     check("ReplacePart({{a, b}, {c, d}}, {{2, 1} -> t, {1, 1} -> t})", //
         "{{t,b},{t,d}}");
 
@@ -1033,7 +1041,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
         "{a,b,t}");
 
     check("ReplacePart({a,b,c^n}, x+y, {{3, 2}, 2})", //
-        "{a,x+y,c^(x+y)}");
+        "ReplacePart({a,b,c^3},x+y,{{3,2},2})");
 
     check("ReplacePart({a, b, c, d, e}, 3 -> xxx)", //
         "{a,b,xxx,d,e}");

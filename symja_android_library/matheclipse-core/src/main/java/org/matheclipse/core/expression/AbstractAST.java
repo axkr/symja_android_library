@@ -27,7 +27,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import org.apfloat.Apfloat;
+import org.apfloat.Apcomplex;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.RealMatrix;
@@ -127,8 +127,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
     @Override
     public IExpr next() {
-      if (_nextIndex == _end)
+      if (_nextIndex == _end) {
         throw new NoSuchElementException();
+      }
       _currentIndex = _nextIndex++;
       return _table.get(_currentIndex);
     }
@@ -140,8 +141,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
     @Override
     public IExpr previous() {
-      if (_nextIndex == _start)
+      if (_nextIndex == _start) {
         throw new NoSuchElementException();
+      }
       _currentIndex = --_nextIndex;
       return _table.get(_currentIndex);
     }
@@ -1520,7 +1522,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public IAST apply(final IExpr head, final int start, final int end) {
     final IASTAppendable ast = F.ast(head, end - start);
-    ast.appendArgs(start, end, i -> get(i));
+    ast.appendArgs(start, end, (IntFunction<IExpr>) this::get);
     return ast;
   }
 
@@ -1546,11 +1548,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public DefaultDict<IExpr> asPowersDict() {
     if (isPower()) {
-      DefaultDict<IExpr> dict = new DefaultDict<IExpr>(() -> F.C0);
+      DefaultDict<IExpr> dict = new DefaultDict<>(() -> F.C0);
       dict.put(base(), exponent());
       return dict;
     } else if (isASTSizeGE(S.Times, 1)) {
-      DefaultDict<IExpr> dict = new DefaultDict<IExpr>(() -> F.C0);
+      DefaultDict<IExpr> dict = new DefaultDict<>(() -> F.C0);
       for (int i = 1; i < size(); i++) {
         IExpr a = get(i);
         if (a.isPower()) {
@@ -1877,7 +1879,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
     for (int i = 1; i < size(); i++) {
       long p = get(i).determinePrecision(postParserProcessing);
-      if (p > precision && p != Apfloat.INFINITE) {
+      if (p > precision && p != Apcomplex.INFINITE) {
         precision = p;
       }
     }
@@ -1909,7 +1911,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       if (hashCode() != obj.hashCode()) {
         return false;
       }
-      return parallelAllMatch(ast, 1, size(), (x, y) -> x.equals(y));
+      return parallelAllMatch(ast, 1, size(), IExpr::equals);
     }
     return false;
   }
@@ -1927,7 +1929,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (size() != other.size()) {
       return false;
     }
-    return parallelAllMatch(other, startPosition, endPosition, (x, y) -> x.equals(y));
+    return parallelAllMatch(other, startPosition, endPosition, IExpr::equals);
   }
 
   /** {@inheritDoc} */
@@ -2127,16 +2129,16 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         if (clazz != null) {
           String staticMethodName = headSymbol.getSymbolName();
           Method[] methods = clazz.getMethods();
-          for (int i = 0; i < methods.length; i++) {
-            if (Modifier.isStatic(methods[i].getModifiers())) {
-              if (staticMethodName.equals(methods[i].getName())) {
-                Parameter[] parameters = methods[i].getParameters();
+          for (Method method : methods) {
+            if (Modifier.isStatic(method.getModifiers())) {
+              if (staticMethodName.equals(method.getName())) {
+                Parameter[] parameters = method.getParameters();
                 if (parameters.length == argSize()) {
                   Object[] params = JavaFunctions.determineParameters(this, parameters, 1);
                   if (params != null) {
                     Object result;
                     try {
-                      result = methods[i].invoke(null, params);
+                      result = method.invoke(null, params);
 
                       if (result instanceof String) {
                         return F.stringx((String) result);
@@ -2697,7 +2699,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   @Override
   public final boolean hasTrigonometricFunction() {
-    return has(x -> isTrigonometricFunction(x), false);
+    return has(AbstractAST::isTrigonometricFunction, false);
   }
 
   /**
@@ -2783,10 +2785,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       Function<ISymbol, ? extends CharSequence> variables) {
     final String sep = ",";
     final IExpr temp = head();
-    if (temp.equals(S.HoldForm) && size() == 2) {
-      return arg1().internalJavaString(properties, depth, variables);
-    }
-    if (temp.equals(S.Hold) && size() == 2) {
+    if ((temp.equals(S.HoldForm) && size() == 2) || (temp.equals(S.Hold) && size() == 2)) {
       return arg1().internalJavaString(properties, depth, variables);
     }
     String prefix = SourceCodeProperties.getPrefixF(properties);
@@ -3427,10 +3426,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public final boolean isFreeAST(Predicate<IExpr> predicate) {
-    if (predicate.test(this)) {
-      return false;
-    }
-    if (predicate.test(head())) {
+    if (predicate.test(this) || predicate.test(head())) {
       return false;
     }
     for (int i = 1; i < size(); i++) {
@@ -3535,8 +3531,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public boolean isFunctionID(int... builtinIDs) {
     int id = headID();
     if (id >= 0) {
-      for (int i = 0; i < builtinIDs.length; i++) {
-        if (id == builtinIDs[i]) {
+      for (int builtinID : builtinIDs) {
+        if (id == builtinID) {
           return true;
         }
       }
@@ -3559,7 +3555,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isBooleanFormula() {
-    return head().isBooleanFormulaSymbol() && forAll(x -> x.isBooleanFormula());
+    return head().isBooleanFormulaSymbol() && forAll((Predicate<? super IExpr>) IExpr::isBooleanFormula);
   }
 
   /** {@inheritDoc} */
@@ -3567,7 +3563,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public boolean isBooleanResult() {
     return head().isPredicateFunctionSymbol()
         || ((head().isBooleanFormulaSymbol() || head().isComparatorFunctionSymbol())
-            && forAll(x -> x.isBooleanResult()));
+            && forAll((Predicate<? super IExpr>) IExpr::isBooleanResult));
   }
 
   /** {@inheritDoc} */
@@ -3656,7 +3652,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         COMPARE_TERNARY irrational = arg.isIrrational();
         if (irrational == COMPARE_TERNARY.TRUE) {
           IAST others = plusAST.removeAtCopy(i);
-          if (others.forAll(x -> x.isRational())) {
+          if (others.forAll((Predicate<? super IExpr>) IExpr::isRational)) {
             return COMPARE_TERNARY.TRUE;
           }
           return COMPARE_TERNARY.UNDECIDABLE;
@@ -3681,7 +3677,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           return COMPARE_TERNARY.UNDECIDABLE;
         }
       }
-      if (timesAST.forAll(x -> x.isReal())) {
+      if (timesAST.forAll((Predicate<? super IExpr>) IExpr::isReal)) {
         return COMPARE_TERNARY.FALSE;
       }
     }
@@ -4176,10 +4172,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           int argSize = argSize();
           if (argSize < expected[0] || argSize > expected[1]
               || (expected[1] == Integer.MAX_VALUE && expected.length == 2)) {
-            if (argSize < expected[0]) {
-              return false;
-            }
-            if (argSize > expected[1]) {
+            if ((argSize < expected[0]) || (argSize > expected[1])) {
               return false;
             }
           }
@@ -4357,10 +4350,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isPolynomialStruct() {
-    if (isBuiltInFunction() && !((ISymbol) head()).hasNumericFunctionAttribute()) {
-      return false;
-    }
-    if (exists(x -> !x.isPolynomialStruct())) {
+    if ((isBuiltInFunction() && !((ISymbol) head()).hasNumericFunctionAttribute()) || exists(x -> !x.isPolynomialStruct())) {
       return false;
     }
     return true;
@@ -4532,10 +4522,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         if (isFunctionID(ID.Re, ID.Im, ID.Abs, ID.Arg, ID.RealSign)) {
           return true;
         }
-        if (isFunctionID(ID.Log, ID.LogGamma)) {
-          return arg1.isPositiveResult();
-        }
-        if (isFunctionID(ID.ProductLog)) {
+        if (isFunctionID(ID.Log, ID.LogGamma) || isFunctionID(ID.ProductLog)) {
           // TODO improve for arg1 >= (-1/E)
           return arg1.isPositiveResult();
         }
@@ -4560,13 +4547,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
     if (isPower() && (!exponent().isZero() || !base().isZero())) {
       final IExpr base = base();
-      if (!base.isRealResult()) {
-        return false;
-      }
-      if (base.isNegativeResult()) {
-        return false;
-      }
-      if (!exponent().isRealResult()) {
+      if (!base.isRealResult() || base.isNegativeResult() || !exponent().isRealResult()) {
         return false;
       }
       return true;
@@ -4851,10 +4832,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (isZero()) {
       return false;
     }
-    if (isNumber()) {
-      return true;
-    }
-    if (isConstantAttribute()) {
+    if (isNumber() || isConstantAttribute()) {
       return true;
     }
     IExpr temp = F.eval(F.Times(this, F.Power(this, F.CN1)));
@@ -4943,7 +4921,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public int isInexactVector() {
     int result = isVector();
     if (result >= 0) {
-      if (exists(x -> x.isInexactNumber())) {
+      if (exists((Predicate<? super IExpr>) IExpr::isInexactNumber)) {
         return result;
       }
     }
@@ -4953,7 +4931,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isNumericAST() {
-    return exists(x -> x.isInexactNumber());
+    return exists((Predicate<? super IExpr>) IExpr::isInexactNumber);
   }
 
   /** {@inheritDoc} */
@@ -5121,7 +5099,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /**
    * Helper method for {@link #linearPower(IExpr)}. Assumes that {@link IExpr#isPlus()} returns true
    * for this {@link IAST}.
-   * 
+   *
    * @param variable the variable <code>x</code> in the formula
    * @return
    */
@@ -5157,7 +5135,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /**
    * Helper method for {@link #linearPower(IExpr)}. Assumes that {@link IExpr#isTimes()} returns
    * true for this {@link IAST}.
-   * 
+   *
    * @param variable the variable <code>x</code> in the formula
    * @return
    */
@@ -5532,7 +5510,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         return F.CNInfinity;
       }
       if (isPlus()) {
-        return map(x -> x.negate(), 1);
+        return map((Function<IExpr, ? extends IExpr>) IExpr::negate, 1);
       }
     }
     return F.Times(F.CN1, this);
@@ -5654,7 +5632,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     Cache<IAST, EnumMap<PROPERTY, Object>> propertyCache = propertyCache();
     EnumMap<PROPERTY, Object> map = propertyCache.getIfPresent(this);
     if (map == null) {
-      map = new EnumMap<PROPERTY, Object>(PROPERTY.class);
+      map = new EnumMap<>(PROPERTY.class);
       propertyCache.put(this, map);
     }
     return map.put(key, value);
@@ -5697,8 +5675,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (howMany > 0) {
       ast.removeRange(index, index + howMany);
     }
-    for (int i = 0; i < items.length; i++) {
-      ast.append(index++, items[i]);
+    for (IExpr item : items) {
+      ast.append(index++, item);
     }
     return ast;
   }
@@ -6352,7 +6330,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       ISymbol symbol = (ISymbol) head;
       if (symbol.hasNumericFunctionAttribute() || symbol.isBooleanFormulaSymbol()
           || symbol.isComparatorFunctionSymbol()) {
-        int indx = indexOf(x -> x.isConditionalExpression());
+        int indx = indexOf((Predicate<? super IExpr>) IExpr::isConditionalExpression);
         if (indx > 0) {
           IAST conditionalExpr = (IAST) get(indx);
           IASTAppendable andExpr = F.And();

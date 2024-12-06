@@ -319,8 +319,7 @@ public final class ListFunctions {
     }
 
     @Override
-    public void replacePartNumeric() {
-    }
+    public void replacePartNumeric() {}
   }
 
   private static class ArrayIterator implements IIterator<IExpr> {
@@ -1012,8 +1011,7 @@ public final class ListFunctions {
       }
 
       @Override
-      public void replacePartNumeric() {
-      }
+      public void replacePartNumeric() {}
     }
 
     @Override
@@ -5616,8 +5614,7 @@ public final class ListFunctions {
       }
 
       @Override
-      public void replacePartNumeric() {
-      }
+      public void replacePartNumeric() {}
     }
 
     @Override
@@ -6176,65 +6173,76 @@ public final class ListFunctions {
    * {a,b,t}
    * </pre>
    */
-  private static final class ReplacePart extends AbstractEvaluator {
+  private static final class ReplacePart extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-
-      COMPARE_TERNARY heads = COMPARE_TERNARY.UNDECIDABLE;
-      if (ast.size() > 3) {
-        final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
-        IExpr option = options.getOption(S.Heads);
-
-        if (option.isTrue()) {
-          heads = COMPARE_TERNARY.TRUE;
-        } else if (option.isFalse()) {
-          heads = COMPARE_TERNARY.FALSE;
-        } else {
-          IExpr result = ast.arg1();
-          if (ast.arg3().isList()) {
-            for (IExpr subList : (IAST) ast.arg3()) {
-              IExpr expr = result.replacePart(F.Rule(subList, ast.arg2()), heads);
-              if (expr.isPresent()) {
-                result = expr;
-              }
-            }
-            return result;
-          }
-          return result.replacePart(F.Rule(ast.arg3(), ast.arg2()), heads).orElse(result);
-        }
-      }
-
-      if (ast.arg2().isListOfRules()) {
-        IExpr result = ast.arg1();
-        IExpr expr = result.replacePart((IAST) ast.arg2(), heads);
-        if (expr.isPresent()) {
-          result = expr;
-        }
-        // for (IExpr subList : (IAST) ast.arg2()) {
-        // if (subList.isRuleAST()) {
-        // IExpr expr = result.replacePart((IAST) subList, heads);
-        // if (expr.isPresent()) {
-        // result = expr;
-        // }
-        // }
-        // }
-        return result;
-      }
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
+        IAST originalAST) {
       IExpr result = ast.arg1();
+      COMPARE_TERNARY heads = COMPARE_TERNARY.UNDECIDABLE;
+      IExpr headsOption = option[0];
+      if (headsOption.isTrue()) {
+        heads = COMPARE_TERNARY.TRUE;
+      } else if (headsOption.isFalse()) {
+        heads = COMPARE_TERNARY.FALSE;
+      } else {
+        if (headsOption != S.Automatic) {
+          // Value of option `1` -> `2` should be True, False or Automatic.
+          return Errors.printMessage(S.ReplacePart, "opttfa", F.List(S.Heads, headsOption), engine);
+        }
+      }
+      if (argSize == 3) {
+        IExpr arg3 = ast.arg3();
+        if (arg3.isList()) {
+          if (arg3.exists(x -> !x.isInteger())) {
+            // Position specification `1` in `2` is not a machine sized integer or a list of
+            // machine-sized integers.
+            return Errors.printMessage(S.ReplacePart, "psl", F.List(F.C3, ast), engine);
+          }
+        } else {
+          int position = arg3.toIntDefault();
+          if (position == Integer.MIN_VALUE) {
+            // Position specification `1` in `2` is not a machine sized integer or a list of
+            // machine-sized integers.
+            return Errors.printMessage(S.ReplacePart, "psl", F.List(F.C3, ast), engine);
+          }
+        }
+        return result.replacePart(F.Rule(arg3, ast.arg2()), heads).orElse(result);
+      }
       if (ast.arg2().isRuleAST()) {
         return ast.arg1().replacePart((IAST) ast.arg2(), heads).orElse(ast.arg1());
+      }
+
+      if (ast.arg2().isList()) {
+        if (ast.arg2().isListOfRules()) {
+          IExpr expr = result.replacePart((IAST) ast.arg2(), heads);
+          if (expr.isPresent()) {
+            result = expr;
+          }
+          return result;
+        }
+        for (IExpr subList : (IAST) ast.arg2()) {
+          IExpr expr = result.replacePart(F.Rule(subList, ast.arg2()), heads);
+          if (expr.isPresent()) {
+            result = expr;
+          }
+        }
+        // return result.replacePart(F.Rule(ast.arg3(), ast.arg2()), heads).orElse(result);
       }
       return result;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_4_1;
+      return ARGS_2_3_1;
     }
 
     @Override
-    public void setUp(final ISymbol newSymbol) {}
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.Heads, S.Automatic);
+    }
+
+
   }
 
   /**
@@ -8306,8 +8314,7 @@ public final class ListFunctions {
    */
   private static IAST cleanList(IAST list) {
     return list.select(
-        x -> !(x.isIndeterminate() || x.equals(S.Null) || x.equals(S.None)
-        || x.isAST(S.Missing)));
+        x -> !(x.isIndeterminate() || x.equals(S.Null) || x.equals(S.None) || x.isAST(S.Missing)));
   }
 
   /**
