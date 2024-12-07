@@ -6192,22 +6192,24 @@ public final class ListFunctions {
         }
       }
       if (argSize == 3) {
-        IExpr arg3 = ast.arg3();
-        if (arg3.isList()) {
-          if (arg3.exists(x -> !x.isInteger())) {
+        IExpr lhs = ast.arg3(); 
+        IExpr rhs = ast.arg2();
+        if (lhs.isList()) {
+          if (lhs.exists(x -> !x.isInteger())) {
             // Position specification `1` in `2` is not a machine sized integer or a list of
             // machine-sized integers.
             return Errors.printMessage(S.ReplacePart, "psl", F.List(F.C3, ast), engine);
           }
         } else {
-          int position = arg3.toIntDefault();
+          int position = lhs.toIntDefault();
           if (position == Integer.MIN_VALUE) {
             // Position specification `1` in `2` is not a machine sized integer or a list of
             // machine-sized integers.
             return Errors.printMessage(S.ReplacePart, "psl", F.List(F.C3, ast), engine);
           }
         }
-        return result.replacePart(F.Rule(arg3, ast.arg2()), heads).orElse(result);
+        // Note: Rubi uses this kind of rule:
+        return result.replacePart(lhs, rhs, heads).orElse(result);
       }
       if (ast.arg2().isRuleAST()) {
         return ast.arg1().replacePart((IAST) ast.arg2(), heads).orElse(ast.arg1());

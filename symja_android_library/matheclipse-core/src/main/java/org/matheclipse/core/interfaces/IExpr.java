@@ -6059,7 +6059,7 @@ public interface IExpr
   /**
    * Replace all subexpressions with the given rule set. A rule must contain the position of the
    * subexpression which should be replaced on the left-hand-side. If no substitution matches, the
-   * method returns <code>F.NIL</code>.
+   * method returns {@link F#NIL}.
    *
    * @param astRules rules of the form <code>position-&gt;y</code> or <code>
    *     {position1-&gt;b, position2-&gt;d}</code>
@@ -6069,6 +6069,28 @@ public interface IExpr
   default IExpr replacePart(final IAST astRules, IExpr.COMPARE_TERNARY heads) {
     try {
       return this.accept(new VisitorReplacePart(astRules, heads));
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      if (Config.SHOW_STACKTRACE) {
+        rex.printStackTrace();
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * All subexpressions whose positions matches the left-hand-side (<code>lhs</code>) are replaced
+   * with the right-hand-side (<code>rhs</code>). If no substitution matches, the method returns
+   * {@link F#NIL}.
+   * 
+   * @param lhs the left-hand-side of the rule
+   * @param rhs the right-hand-side of the rule
+   * @param heads if <code>TRUE</code> also replace the heads of expressions
+   * @return
+   */
+  default IExpr replacePart(final IExpr lhs, IExpr rhs, IExpr.COMPARE_TERNARY heads) {
+    try {
+      return this.accept(new VisitorReplacePart(lhs, rhs, heads));
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       if (Config.SHOW_STACKTRACE) {

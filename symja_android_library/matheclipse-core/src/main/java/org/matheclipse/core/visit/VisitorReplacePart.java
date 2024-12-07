@@ -27,7 +27,7 @@ public class VisitorReplacePart extends AbstractVisitor {
    * <code>0</code> or <code>1</code>, depending if option <code>Heads->True</code> is set or the
    * <code>0</code> index position is used in the left-hand-side of a rule.
    */
-  private int offset;
+  private int startOffset;
 
   /**
    * The current evaluation engine for this thread.
@@ -43,25 +43,50 @@ public class VisitorReplacePart extends AbstractVisitor {
   public VisitorReplacePart(IAST rule, IExpr.COMPARE_TERNARY heads) {
     super();
     engine = EvalEngine.get();
+    startOffset = heads == IExpr.COMPARE_TERNARY.TRUE ? 0 : 1;
     if (rule.isRuleAST()) {
       rule = F.list(rule);
     }
     if (rule.isListOfRules()) {
       IAST list = rule;
       this.patternMatcherList = new ArrayList<IPatternMatcher>(list.argSize() + 3);
-      offset = heads == IExpr.COMPARE_TERNARY.TRUE ? 0 : 1;
+
       for (int i = 1; i < list.size(); i++) {
         rule = (IAST) list.get(i);
-        initPatternMatcher(rule, heads);
+        initPatternMatcher(rule.arg1(), rule.arg2(), heads);
       }
       if (heads == COMPARE_TERNARY.FALSE) {
-        offset = 1;
+        // if set explicitly to FALSE, then startOffset is always 1, otherwise startOffset may be
+        // changed in initPatternMatcher()
+        startOffset = 1;
       }
     }
   }
 
-  private void initPatternMatcher(IAST rule, IExpr.COMPARE_TERNARY heads) {
-    IExpr fromPositions = rule.arg1();
+  public VisitorReplacePart(IExpr lhs, IExpr rhs, IExpr.COMPARE_TERNARY heads) {
+    super();
+    engine = EvalEngine.get();
+    this.patternMatcherList = new ArrayList<IPatternMatcher>(1);
+    startOffset = heads == IExpr.COMPARE_TERNARY.TRUE ? 0 : 1;
+    initPatternMatcher(lhs, rhs, heads);
+    if (heads == COMPARE_TERNARY.FALSE) {
+      startOffset = 1;
+    }
+  }
+
+  /**
+   * Initialize the pattern matcher. If the left-hand-side is a list of lists of integers, then the
+   * right-hand-side is matched against the positions in the list.
+   * <p>
+   * <b>Note</b>: the {@link #startOffset} is set to <code>0</code> if a position <code>0</code> is
+   * found.
+   * 
+   * @param lhs
+   * @param rhs
+   * @param heads
+   */
+  private void initPatternMatcher(IExpr lhs, IExpr rhs, IExpr.COMPARE_TERNARY heads) {
+    IExpr fromPositions = lhs;
     try {
       // try extracting an int[] array of expressions
       if (fromPositions.isList()) {
@@ -76,11 +101,11 @@ public class VisitorReplacePart extends AbstractVisitor {
                 throw ReturnException.RETURN_FALSE;
               }
               if (positions[k - 1] == 0) {
-                offset = 0;
+                startOffset = 0;
               }
             }
             IPatternMatcher evalPatternMatcher =
-                engine.evalPatternMatcher(F.Sequence(positions), rule.arg2());
+                engine.evalPatternMatcher(F.Sequence(positions), rhs);
             this.patternMatcherList.add(evalPatternMatcher);
           }
         } else {
@@ -93,34 +118,33 @@ public class VisitorReplacePart extends AbstractVisitor {
                 throw ReturnException.RETURN_FALSE;
               }
               if (positions[j - 1] == 0) {
-                offset = 0;
+                startOffset = 0;
               }
             }
             IPatternMatcher evalPatternMatcher =
-                engine.evalPatternMatcher(F.Sequence(positions), rule.arg2());
+                engine.evalPatternMatcher(F.Sequence(positions), rhs);
             this.patternMatcherList.add(evalPatternMatcher);
           }
         }
       } else {
-        int[] positions = new int[] {rule.arg1().toIntDefault()};
+        int[] positions = new int[] {lhs.toIntDefault()};
         if (positions[0] == Integer.MIN_VALUE) {
           throw ReturnException.RETURN_FALSE;
         }
         if (positions[0] == 0) {
-          offset = 0;
+          startOffset = 0;
         }
-        IPatternMatcher evalPatternMatcher =
-            engine.evalPatternMatcher(F.Sequence(positions), rule.arg2());
+        IPatternMatcher evalPatternMatcher = engine.evalPatternMatcher(F.Sequence(positions), rhs);
         this.patternMatcherList.add(evalPatternMatcher);
 
       }
     } catch (ReturnException rex) {
       if (fromPositions.isList()) {
         IAST list = ((IAST) fromPositions).apply(S.Sequence, 1);
-        IPatternMatcher evalPatternMatcher = engine.evalPatternMatcher(list, rule.arg2());
+        IPatternMatcher evalPatternMatcher = engine.evalPatternMatcher(list, rhs);
         this.patternMatcherList.add(evalPatternMatcher);
       } else {
-        IPatternMatcher evalPatternMatcher = engine.evalPatternMatcher(fromPositions, rule.arg2());
+        IPatternMatcher evalPatternMatcher = engine.evalPatternMatcher(fromPositions, rhs);
         this.patternMatcherList.add(evalPatternMatcher);
       }
     }
@@ -128,7 +152,7 @@ public class VisitorReplacePart extends AbstractVisitor {
 
   private IExpr visitPatternIndexList(IAST ast, IASTAppendable positions) {
     IASTAppendable result = F.NIL;
-    for (int i = offset; i < ast.size(); i++) {
+    for (int i = startOffset; i < ast.size(); i++) {
       final IInteger position = F.ZZ(i);
       for (int j = 0; j < patternMatcherList.size(); j++) {
         IPatternMatcher matcher = patternMatcherList.get(j);
