@@ -150,6 +150,7 @@ public class EvalEngine implements Serializable {
       EvalEngine.set(fEngine);
       try {
         long timeConstrainedMillis = System.currentTimeMillis() + fSeconds * 1000L;
+        // System.out.println("TimeConstrainedMillis: " + timeConstrainedMillis);
         fEngine.setTimeConstrainedMillis(timeConstrainedMillis);
         return fEngine.evaluate(fExpr);
       } catch (PreemptingException | ApfloatInterruptedException
@@ -289,12 +290,16 @@ public class EvalEngine implements Serializable {
   transient int fRecursionCounter;
 
   /**
-   * The time in milliseconds the current <code>TimeConstrained</code> operation should stop. <code>
-   * -1</code> is set for Infinity
+   * The time in milliseconds the current {@link S#TimeConstrained} operation should stop. <code>
+   * -1</code> is set for Infinity. For nested {@link S#TimeConstrained} calls the earliest time
+   * constraint is used in {@link S#TimeRemaining}.
+   * 
+   * @see #setTimeConstrainedMillis(long)
    */
   transient long fTimeConstrainedMillis = -1;
 
   transient long fSeconds;
+
   /**
    * if <code>true</code> the engine evaluates in &quot;numeric&quot; mode, otherwise the engine
    * evaluates in &quot;symbolic&quot; mode.
@@ -682,6 +687,7 @@ public class EvalEngine implements Serializable {
     engine.fRecursionLimit = fRecursionLimit;
     engine.fRelaxedSyntax = fRelaxedSyntax;
     engine.fSeconds = fSeconds;
+    engine.fTimeConstrainedMillis = fTimeConstrainedMillis;
     engine.fSessionID = fSessionID;
     // engine.fStopRequested = false;
     engine.fTogetherMode = fTogetherMode;
@@ -2634,7 +2640,8 @@ public class EvalEngine implements Serializable {
     EvalControlledCallable work = new EvalControlledCallable(this);
 
     try {
-      seconds = seconds > 1 ? seconds - 1 : seconds;
+      // seconds = seconds > 1 ? seconds - 1 : seconds;
+      seconds = setSeconds(seconds);
       work.setExpr(expr, seconds);
       return timeLimiter.callWithTimeout(work, seconds, TimeUnit.SECONDS);
     } catch (org.matheclipse.core.eval.exception.TimeoutException
@@ -3780,16 +3787,32 @@ public class EvalEngine implements Serializable {
 
   /**
    * Set the time in milliseconds then the current TimeConstrained operation should stop. <code>-1
-   * </code> is set for Infinity
+   * </code> is set for Infinity. For nested {@link S#TimeConstrained} calls the earliest time
+   * constraint is used in {@link S#TimeRemaining}
    *
    * @param timeConstrainedMillis
    */
   public void setTimeConstrainedMillis(final long timeConstrainedMillis) {
+    if (fTimeConstrainedMillis > 0 && timeConstrainedMillis > fTimeConstrainedMillis) {
+      return;
+    }
     fTimeConstrainedMillis = timeConstrainedMillis;
   }
 
-  public void setSeconds(long fSeconds) {
-    this.fSeconds = fSeconds;
+  /**
+   * Set the time in seconds then the current {@link S#TimeConstrained} operation should stop. For
+   * nested {@link S#TimeConstrained} calls the earliest time constraint is used to calculate the
+   * {@link S#TimeRemaining}.
+   * 
+   * @param seconds
+   * @return
+   */
+  public long setSeconds(long seconds) {
+    if (fSeconds > 0 && seconds > fSeconds) {
+      return this.fSeconds;
+    }
+    this.fSeconds = seconds;
+    return this.fSeconds;
   }
 
   public Random getRandom() {

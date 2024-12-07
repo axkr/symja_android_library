@@ -24300,6 +24300,24 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testTimeRemaining() {
+    if (!Config.TIMECONSTRAINED_NO_THREAD) {
+      //
+      try {
+        check("tc=TimeConstrained(TimeConstrained(TimeRemaining(), 2), 5);tc<=2.0&&tc>=1.9", //
+            "True");
+        check("tc=TimeConstrained(TimeConstrained(TimeRemaining(), 5), 2);tc<=2.0&&tc>=1.9", //
+            "True");
+        check(
+            "tc=TimeConstrained(Pause(2); TimeConstrained(TimeRemaining(), 4), 5);tc<=3.0&&tc>=2.9", //
+            "True");
+      } finally {
+        //
+      }
+    }
+  }
+
+  @Test
   public void testTimeObject() {
     // Current time
     // check("TimeObject()", //
