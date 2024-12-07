@@ -997,6 +997,9 @@ public class PatternsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testReplacePartIntegerPositions() {
+    check("ReplacePart({a, b, c}, {{1}, {2}} -> t)", //
+        "{t,t,c}");
+
     check("ReplacePart({4,-1},-x,2)", //
         "{4,-x}");
     check("ReplacePart({4,{1,3,7,11,19}},tt,{2,5})", //

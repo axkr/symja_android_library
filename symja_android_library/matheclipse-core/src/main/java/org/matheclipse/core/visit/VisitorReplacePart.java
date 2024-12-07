@@ -1,6 +1,5 @@
 package org.matheclipse.core.visit;
 
-import java.util.ArrayList;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
@@ -21,8 +20,9 @@ public class VisitorReplacePart extends AbstractVisitor {
    * A list of pattern matchers which should be matched against, for every possible position of an
    * {@link IAST} structure.
    */
-  private ArrayList<IPatternMatcher> patternMatcherList;
+  private IPatternMatcher[] patternMatcherList;
 
+  private int listLength;
   /**
    * <code>0</code> or <code>1</code>, depending if option <code>Heads->True</code> is set or the
    * <code>0</code> index position is used in the left-hand-side of a rule.
@@ -49,7 +49,7 @@ public class VisitorReplacePart extends AbstractVisitor {
     }
     if (rule.isListOfRules()) {
       IAST list = rule;
-      this.patternMatcherList = new ArrayList<IPatternMatcher>(list.argSize() + 3);
+      this.patternMatcherList = new IPatternMatcher[list.argSize()];
 
       for (int i = 1; i < list.size(); i++) {
         rule = (IAST) list.get(i);
@@ -66,7 +66,11 @@ public class VisitorReplacePart extends AbstractVisitor {
   public VisitorReplacePart(IExpr lhs, IExpr rhs, IExpr.COMPARE_TERNARY heads) {
     super();
     engine = EvalEngine.get();
-    this.patternMatcherList = new ArrayList<IPatternMatcher>(1);
+    if (lhs.isList()) {
+      this.patternMatcherList = new IPatternMatcher[lhs.argSize()];
+    } else {
+      this.patternMatcherList = new IPatternMatcher[1];
+    }
     startOffset = heads == IExpr.COMPARE_TERNARY.TRUE ? 0 : 1;
     initPatternMatcher(lhs, rhs, heads);
     if (heads == COMPARE_TERNARY.FALSE) {
@@ -106,7 +110,7 @@ public class VisitorReplacePart extends AbstractVisitor {
             }
             IPatternMatcher evalPatternMatcher =
                 engine.evalPatternMatcher(F.Sequence(positions), rhs);
-            this.patternMatcherList.add(evalPatternMatcher);
+            this.patternMatcherList[listLength++] = evalPatternMatcher;
           }
         } else {
           if (list.argSize() > 0) {
@@ -123,7 +127,7 @@ public class VisitorReplacePart extends AbstractVisitor {
             }
             IPatternMatcher evalPatternMatcher =
                 engine.evalPatternMatcher(F.Sequence(positions), rhs);
-            this.patternMatcherList.add(evalPatternMatcher);
+            this.patternMatcherList[listLength++] = evalPatternMatcher;
           }
         }
       } else {
@@ -135,17 +139,17 @@ public class VisitorReplacePart extends AbstractVisitor {
           startOffset = 0;
         }
         IPatternMatcher evalPatternMatcher = engine.evalPatternMatcher(F.Sequence(positions), rhs);
-        this.patternMatcherList.add(evalPatternMatcher);
+        this.patternMatcherList[listLength++] = evalPatternMatcher;
 
       }
     } catch (ReturnException rex) {
       if (fromPositions.isList()) {
         IAST list = ((IAST) fromPositions).apply(S.Sequence, 1);
         IPatternMatcher evalPatternMatcher = engine.evalPatternMatcher(list, rhs);
-        this.patternMatcherList.add(evalPatternMatcher);
+        this.patternMatcherList[listLength++] = evalPatternMatcher;
       } else {
         IPatternMatcher evalPatternMatcher = engine.evalPatternMatcher(fromPositions, rhs);
-        this.patternMatcherList.add(evalPatternMatcher);
+        this.patternMatcherList[listLength++] = evalPatternMatcher;
       }
     }
   }
@@ -154,8 +158,11 @@ public class VisitorReplacePart extends AbstractVisitor {
     IASTAppendable result = F.NIL;
     for (int i = startOffset; i < ast.size(); i++) {
       final IInteger position = F.ZZ(i);
-      for (int j = 0; j < patternMatcherList.size(); j++) {
-        IPatternMatcher matcher = patternMatcherList.get(j);
+      for (int j = 0; j < listLength; j++) {
+        IPatternMatcher matcher = patternMatcherList[j];
+        if (matcher == null) {
+          continue;
+        }
         IASTAppendable positionsToMatch = positions.copyAppendable();
         positionsToMatch.append(position);
 
@@ -251,8 +258,11 @@ public class VisitorReplacePart extends AbstractVisitor {
   @Override
   public IExpr visit(IASTMutable ast) {
     IASTAppendable positionsToMatch = F.ast(S.Sequence);
-    for (int j = 0; j < patternMatcherList.size(); j++) {
-      IPatternMatcher matcher = patternMatcherList.get(j);
+    for (int j = 0; j < listLength; j++) {
+      IPatternMatcher matcher = patternMatcherList[j];
+      if (matcher == null) {
+        continue;
+      }
       IExpr lhs = matcher.getLHS();
       if (lhs.isAST(S.Sequence, 1)) {
         // empty sequence matches with complete expression

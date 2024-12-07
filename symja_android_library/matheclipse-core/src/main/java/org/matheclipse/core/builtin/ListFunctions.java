@@ -6211,25 +6211,27 @@ public final class ListFunctions {
         // Note: Rubi uses this kind of rule:
         return result.replacePart(lhs, rhs, heads).orElse(result);
       }
+
       if (ast.arg2().isRuleAST()) {
-        return ast.arg1().replacePart((IAST) ast.arg2(), heads).orElse(ast.arg1());
+        IAST ruleAST = (IAST) ast.arg2();
+        return ast.arg1().replacePart(ruleAST.arg1(), ruleAST.arg2(), heads).orElse(ast.arg1());
       }
 
       if (ast.arg2().isList()) {
+        IAST listAST = (IAST) ast.arg2();
         if (ast.arg2().isListOfRules()) {
-          IExpr expr = result.replacePart((IAST) ast.arg2(), heads);
+          IExpr expr = result.replacePart(listAST, heads);
           if (expr.isPresent()) {
             result = expr;
           }
           return result;
         }
-        for (IExpr subList : (IAST) ast.arg2()) {
+        for (IExpr subList : listAST) {
           IExpr expr = result.replacePart(F.Rule(subList, ast.arg2()), heads);
           if (expr.isPresent()) {
             result = expr;
           }
         }
-        // return result.replacePart(F.Rule(ast.arg3(), ast.arg2()), heads).orElse(result);
       }
       return result;
     }
