@@ -21710,6 +21710,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{}");
     check("Select({},#1>2&)", //
         "{}");
+    // Select: Non-negative integer or Infinity expected at position 3 in
+    // Select({1,2,4,7,6,2},#1>2&,-1).
+    check("Select({1,2,4,7,6,2},#1>2&,-1)", //
+        "Select({1,2,4,7,6,2},#1>2&,-1)");
     check("Select({1,2,4,7,6,2},#1>2&,0)", //
         "{}");
     check("Select({-3, 0}, #>10&)", //

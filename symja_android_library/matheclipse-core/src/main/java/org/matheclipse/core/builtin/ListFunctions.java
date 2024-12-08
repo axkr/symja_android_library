@@ -6078,8 +6078,15 @@ public final class ListFunctions {
           IExpr rules = ast.arg2();
           if (ast.isAST3()) {
             IExpr arg3 = engine.evaluate(ast.arg3());
-            if (arg3.isReal()) {
-              maxNumberOfResults = ((IReal) arg3).toInt();
+            if (!ast.arg3().isInfinity()) {
+              maxNumberOfResults = arg3.toIntDefault();
+            }
+            if (maxNumberOfResults < 0) {
+              // Non-negative integer or Infinity expected at position `1` in `2`.
+              return Errors.printMessage(S.ReplaceList, "innf", F.List(F.C3, ast), engine);
+            }
+            if (maxNumberOfResults == 0) {
+              return F.CEmptyList;
             }
           }
           IASTAppendable result = F.ListAlloc();
@@ -6192,7 +6199,7 @@ public final class ListFunctions {
         }
       }
       if (argSize == 3) {
-        IExpr lhs = ast.arg3(); 
+        IExpr lhs = ast.arg3();
         IExpr rhs = ast.arg2();
         if (lhs.isList()) {
           if (lhs.exists(x -> !x.isInteger())) {
@@ -6765,33 +6772,37 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      int size = ast.size();
-      if (size >= 3) {
-        try {
-
-          if (ast.arg1().isASTOrAssociation()) {
-            IAST list = (IAST) ast.arg1();
-            IExpr predicateHead = ast.arg2();
-            if (size == 3) {
-              return list.select(x -> engine.evalTrue(predicateHead, x));
-            } else if ((size == 4) && ast.arg3().isInteger()) {
-              final int resultLimit = Validate.checkIntType(ast, 3);
-              if (resultLimit == 0) {
+      try {
+        if (ast.arg1().isASTOrAssociation()) {
+          int maxNumberOfResults = Integer.MAX_VALUE;
+          IAST list = (IAST) ast.arg1();
+          IExpr predicateHead = ast.arg2();
+          if (ast.isAST2()) {
+            return list.select(x -> engine.evalTrue(predicateHead, x));
+          } else if (ast.isAST3()) {
+            IExpr arg3 = engine.evaluate(ast.arg3());
+            if (!ast.arg3().isInfinity()) {
+              maxNumberOfResults = arg3.toIntDefault();
+              if (maxNumberOfResults < 0) {
+                // Non-negative integer or Infinity expected at position `1` in `2`.
+                return Errors.printMessage(S.Select, "innf", F.List(F.C3, ast), engine);
+              }
+              if (maxNumberOfResults == 0) {
                 return F.CEmptyList;
               }
-              return list.select(x -> engine.evalTrue(predicateHead, x), resultLimit);
             }
+            return list.select(x -> engine.evalTrue(predicateHead, x), maxNumberOfResults);
           }
-        } catch (IllegalArgumentException iae) {
-          return Errors.printMessage(S.Select, iae, engine);
         }
+      } catch (IllegalArgumentException iae) {
+        return Errors.printMessage(S.Select, iae, engine);
       }
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_3_1;
+      return ARGS_2_3_1;
     }
 
     @Override

@@ -683,6 +683,14 @@ public class PatternsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testReplaceList() {
+    check("ReplaceList(a,b->x)", //
+        "{}");
+    // ReplaceList: Non-negative integer or Infinity expected at position 3 in
+    // ReplaceList(a+b+c+d+e+f,x_+y_+z_:>{{x},{y},{z}},-1).
+    check("ReplaceList(a+b+c+d+e+f,(x_+y_+z_) :> {{x},{y},{z}},-1)", //
+        "ReplaceList(a+b+c+d+e+f,x_+y_+z_:>{{x},{y},{z}},-1)");
+    check("ReplaceList(a+b+c+d+e+f,(x_+y_+z_) :> {{x},{y},{z}}, 0)", //
+        "{}");
     check("ReplaceList(a+b+c+d+e+f,(x_+y_+z_) :> {{x},{y},{z}}, 3)", //
         "{{{a},{b},{c+d+e+f}},"//
             + "{{a},{c},{b+d+e+f}},"//
