@@ -16,13 +16,20 @@ package tech.tablesaw.table;
 
 import javax.annotation.concurrent.Immutable;
 import tech.tablesaw.api.ColumnType;
+import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.columns.Column;
 import tech.tablesaw.selection.BitmapBackedSelection;
 import tech.tablesaw.selection.Selection;
 
-/** A static utility class for row operations */
+/**
+ * A static utility class for row operations
+ *
+ * @deprecated Functionality provided by this class is methods in the {@link
+ *     tech.tablesaw.api.Table} class hierarchy, and/or by methods in {@link tech.tablesaw.api.Row}
+ */
 @Immutable
+@Deprecated
 public final class Rows {
 
   // Don't instantiate
@@ -31,7 +38,10 @@ public final class Rows {
   /**
    * Copies the rows indicated by the row index values in the given selection from oldTable to
    * newTable
+   *
+   * @deprecated Use the instance method {Table:where(Selection} instead
    */
+  @Deprecated
   @SuppressWarnings({"rawtypes", "unchecked"})
   public static void copyRowsToTable(Selection rows, Table oldTable, Table newTable) {
     for (int columnIndex = 0; columnIndex < oldTable.columnCount(); columnIndex++) {
@@ -46,7 +56,11 @@ public final class Rows {
 
   /**
    * Copies the rows indicated by the row index values in the given array from oldTable to newTable
+   *
+   * @deprecated Use the instance method {@link tech.tablesaw.api.Table#copyRowsToTable(int[],
+   *     Table)} instead
    */
+  @Deprecated
   @SuppressWarnings({"rawtypes", "unchecked"})
   public static void copyRowsToTable(int[] rows, Table oldTable, Table newTable) {
     for (int columnIndex = 0; columnIndex < oldTable.columnCount(); columnIndex++) {
@@ -59,6 +73,12 @@ public final class Rows {
     }
   }
 
+  /**
+   * Appends a row from oldTable to newTable
+   *
+   * @deprecated Use the instance method {@link tech.tablesaw.api.Table#append(Row)} instead
+   */
+  @Deprecated
   @SuppressWarnings({"rawtypes", "unchecked"})
   public static void appendRowToTable(int row, Table oldTable, Table newTable) {
     int[] rows = new int[] {row};
@@ -70,6 +90,11 @@ public final class Rows {
     }
   }
 
+  /**
+   * @deprecated Use the static method {@link tech.tablesaw.api.Table#compareRows(int, Table,
+   *     Table)} instead
+   */
+  @Deprecated
   public static boolean compareRows(int rowInOriginal, Table original, Table tempTable) {
     int columnCount = original.columnCount();
     boolean result;
@@ -85,6 +110,12 @@ public final class Rows {
     return true;
   }
 
+  /**
+   * Copies the first n rows to a new table
+   *
+   * @deprecated Use {@link tech.tablesaw.api.Table#first(int)} instead
+   */
+  @Deprecated
   public static void head(int rowCount, Table oldTable, Table newTable) {
     Selection rows = new BitmapBackedSelection(rowCount);
     for (int i = 0; i < rowCount; i++) {
@@ -93,6 +124,12 @@ public final class Rows {
     copyRowsToTable(rows, oldTable, newTable);
   }
 
+  /**
+   * Copies the last n rows to a new table
+   *
+   * @deprecated Use {@link tech.tablesaw.api.Table#last(int)} instead
+   */
+  @Deprecated
   public static void tail(int rowsToInclude, Table oldTable, Table newTable) {
     int oldTableSize = oldTable.rowCount();
     int start = oldTableSize - rowsToInclude;

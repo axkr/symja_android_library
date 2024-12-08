@@ -14,7 +14,9 @@
 
 package tech.tablesaw.columns.strings;
 
-public interface StringReduceUtils extends Iterable<String> {
+import tech.tablesaw.columns.Column;
+
+public interface StringReduceUtils extends Column<String>, Iterable<String> {
 
   /**
    * Returns a single string made by appending all the strings in this column, separated by the
@@ -42,6 +44,4 @@ public interface StringReduceUtils extends Iterable<String> {
   default String appendAll() {
     return appendAll(" ");
   }
-
-  int size();
 }

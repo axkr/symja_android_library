@@ -35,11 +35,7 @@ import tech.tablesaw.util.StringUtils;
  *
  * <p>This code was developed as part of Apache Commons Text.
  */
-public interface StringMapFunctions {
-
-  int size();
-
-  String getString(int idx);
+public interface StringMapFunctions extends Column<String> {
 
   default StringColumn upperCase() {
     StringColumn newColumn = StringColumn.create(this.name() + "[ucase]");
@@ -205,8 +201,7 @@ public interface StringMapFunctions {
    */
   default IntColumn parseInt() {
     IntColumn newColumn = IntColumn.create(name() + "[parsed]");
-    for (int i = 0; i < size(); i++) {
-      String s = getString(i);
+    for (String s : this) {
       if (StringColumn.valueIsMissing(s)) {
         newColumn.appendMissing();
       } else {
@@ -224,8 +219,7 @@ public interface StringMapFunctions {
    */
   default DoubleColumn parseDouble() {
     DoubleColumn newColumn = DoubleColumn.create(name() + "[parsed]");
-    for (int i = 0; i < size(); i++) {
-      String s = getString(i);
+    for (String s : this) {
       if (StringColumn.valueIsMissing(s)) {
         newColumn.appendMissing();
       } else {
@@ -243,8 +237,7 @@ public interface StringMapFunctions {
    */
   default FloatColumn parseFloat() {
     FloatColumn newColumn = FloatColumn.create(name() + "[parsed]");
-    for (int i = 0; i < size(); i++) {
-      String s = getString(i);
+    for (String s : this) {
       if (StringColumn.valueIsMissing(s)) {
         newColumn.appendMissing();
       } else {
@@ -508,6 +501,4 @@ public interface StringMapFunctions {
     }
     return newColumn;
   }
-
-  String name();
 }

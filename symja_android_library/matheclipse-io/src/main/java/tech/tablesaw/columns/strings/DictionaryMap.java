@@ -15,7 +15,7 @@ import tech.tablesaw.selection.Selection;
  * StringColumn, as well as the primitive values that represent the individual instances of the
  * String in the column.
  */
-public interface DictionaryMap extends StringReduceUtils, StringFilters {
+public interface DictionaryMap {
 
   void sortDescending();
 
@@ -93,41 +93,10 @@ public interface DictionaryMap extends StringReduceUtils, StringFilters {
     return selection;
   }
 
-  @Override
-  default String get(int index) {
-    return getValueForIndex(index);
-  }
-
-  @Override
-  default Selection isIn(String... strings) {
-    return selectIsIn(strings);
-  }
-
-  @Override
-  default Selection isIn(Collection<String> strings) {
-    return selectIsIn(strings);
-  }
-
-  @Override
-  default Selection isNotIn(String... strings) {
-    Selection results = new BitmapBackedSelection();
-    results.addRange(0, size());
-    results.andNot(isIn(strings));
-    return results;
-  }
-
-  @Override
-  default Selection isNotIn(Collection<String> strings) {
-    Selection results = new BitmapBackedSelection();
-    results.addRange(0, size());
-    results.andNot(isIn(strings));
-    return results;
-  }
-
   List<BooleanColumn> getDummies();
 
   /** Returns the contents of the cell at rowNumber as a byte[] */
-  byte[] asBytes(int rowNumber);
+  public byte[] asBytes(int rowNumber);
 
   /** Returns the count of missing values in this column */
   int countMissing();
@@ -141,10 +110,4 @@ public interface DictionaryMap extends StringReduceUtils, StringFilters {
   DictionaryMap promoteYourself();
 
   int nextKeyWithoutIncrementing();
-
-  boolean canPromoteToText();
-
-  default boolean isEmpty() {
-    return size() == 0;
-  }
 }

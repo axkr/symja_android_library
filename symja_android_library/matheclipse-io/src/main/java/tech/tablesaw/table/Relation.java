@@ -14,7 +14,6 @@
 
 package tech.tablesaw.table;
 
-import static tech.tablesaw.joining.JoinType.FULL_OUTER;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +36,7 @@ import tech.tablesaw.api.Row;
 import tech.tablesaw.api.ShortColumn;
 import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
+import tech.tablesaw.api.TextColumn;
 import tech.tablesaw.api.TimeColumn;
 import tech.tablesaw.columns.Column;
 import tech.tablesaw.conversion.TableConverter;
@@ -202,6 +202,21 @@ public abstract class Relation implements Iterable<Row> {
   /**
    * Returns an array of the column types of all columns in the relation, including duplicates as
    * appropriate, and maintaining order
+   *
+   * @deprecated for API name consistency. Use {@link #typeArray()} instead.
+   */
+  @Deprecated
+  public ColumnType[] columnTypes() {
+    ColumnType[] columnTypes = new ColumnType[columnCount()];
+    for (int i = 0; i < columnCount(); i++) {
+      columnTypes[i] = columns().get(i).type();
+    }
+    return columnTypes;
+  }
+
+  /**
+   * Returns an array of the column types of all columns in the relation, including duplicates as
+   * appropriate, and maintaining order
    */
   public ColumnType[] typeArray() {
     ColumnType[] columnTypes = new ColumnType[columnCount()];
@@ -298,12 +313,7 @@ public abstract class Relation implements Iterable<Row> {
       Table columnSummary = this.column(i).summary();
       columnSummary.column(1).setName(this.column(i).name());
       summaryTable =
-          summaryTable
-              .joinOn("Measure")
-              .with(columnSummary)
-              .rightJoinColumns(columnSummary.column(0).name())
-              .type(FULL_OUTER)
-              .join();
+          summaryTable.joinOn("Measure").fullOuter(columnSummary, columnSummary.column(0).name());
     }
     summaryTable.column(0).setName("Summary");
     return summaryTable;
@@ -602,6 +612,22 @@ public abstract class Relation implements Iterable<Row> {
    */
   public StringColumn stringColumn(int columnIndex) {
     return (StringColumn) column(columnIndex);
+  }
+
+  /**
+   * Returns a TextColumn with the given name if it is present in this Relation. If the column has a
+   * different type, a ClassCastException is thrown.
+   */
+  public TextColumn textColumn(String columnName) {
+    return (TextColumn) column(columnName);
+  }
+
+  /**
+   * Returns the TextColumn at the given 0-based index if present. A ClassCastException is the
+   * column is of a different type.
+   */
+  public TextColumn textColumn(int columnIndex) {
+    return (TextColumn) column(columnIndex);
   }
 
   /**

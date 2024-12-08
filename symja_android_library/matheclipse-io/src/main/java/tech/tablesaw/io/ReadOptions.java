@@ -24,6 +24,7 @@ import static tech.tablesaw.api.ColumnType.LOCAL_TIME;
 import static tech.tablesaw.api.ColumnType.LONG;
 import static tech.tablesaw.api.ColumnType.SHORT;
 import static tech.tablesaw.api.ColumnType.STRING;
+import static tech.tablesaw.api.ColumnType.TEXT;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -51,8 +52,7 @@ public class ReadOptions {
 
   private static final List<ColumnType> DEFAULT_TYPES =
       Lists.newArrayList(
-          LOCAL_DATE_TIME, LOCAL_TIME, LOCAL_DATE, BOOLEAN, INTEGER, LONG, DOUBLE, STRING // , TEXT
-          );
+          LOCAL_DATE_TIME, LOCAL_TIME, LOCAL_DATE, BOOLEAN, INTEGER, LONG, DOUBLE, STRING, TEXT);
 
   /**
    * An extended list of types that are used if minimizeColumnSizes is true. By including extra
@@ -71,7 +71,8 @@ public class ReadOptions {
           LONG,
           FLOAT,
           DOUBLE,
-          STRING);
+          STRING,
+          TEXT);
 
   protected final Source source;
   protected final String tableName;
@@ -273,6 +274,13 @@ public class ReadOptions {
       return this;
     }
 
+    /** Deprecated. Use dateFormat(DateTimeFormatter dateFormat) instead */
+    @Deprecated
+    public Builder dateFormat(String dateFormat) {
+      this.dateFormat = dateFormat;
+      return this;
+    }
+
     public Builder dateFormat(DateTimeFormatter dateFormat) {
       this.dateFormatter = dateFormat;
       return this;
@@ -283,8 +291,22 @@ public class ReadOptions {
       return this;
     }
 
+    /** Deprecated. Use timeFormat(DateTimeFormatter dateFormat) instead */
+    @Deprecated
+    public Builder timeFormat(String timeFormat) {
+      this.timeFormat = timeFormat;
+      return this;
+    }
+
     public Builder timeFormat(DateTimeFormatter dateFormat) {
       this.timeFormatter = dateFormat;
+      return this;
+    }
+
+    /** Deprecated. Use dateTimeFormat(DateTimeFormatter dateFormat) instead */
+    @Deprecated
+    public Builder dateTimeFormat(String dateTimeFormat) {
+      this.dateTimeFormat = dateTimeFormat;
       return this;
     }
 

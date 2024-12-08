@@ -27,7 +27,6 @@ import tech.tablesaw.api.BooleanColumn;
 import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
-import tech.tablesaw.columns.booleans.BooleanColumnType;
 import tech.tablesaw.selection.BitmapBackedSelection;
 import tech.tablesaw.selection.Selection;
 
@@ -42,8 +41,6 @@ public class ByteDictionaryMap implements DictionaryMap {
   private static final byte MISSING_VALUE = Byte.MAX_VALUE;
 
   private static final byte DEFAULT_RETURN_VALUE = Byte.MIN_VALUE;
-
-  private boolean canPromoteToText = Boolean.TRUE;
 
   private final ByteComparator reverseDictionarySortComparator =
       (i, i1) ->
@@ -77,12 +74,6 @@ public class ByteDictionaryMap implements DictionaryMap {
   public ByteDictionaryMap() {
     valueToKey.defaultReturnValue(DEFAULT_RETURN_VALUE);
     keyToCount.defaultReturnValue(0);
-  }
-
-  public ByteDictionaryMap(boolean canPromoteToText) {
-    valueToKey.defaultReturnValue(DEFAULT_RETURN_VALUE);
-    keyToCount.defaultReturnValue(0);
-    this.canPromoteToText = canPromoteToText;
   }
 
   private ByteDictionaryMap(ByteDictionaryBuilder builder) {
@@ -374,9 +365,12 @@ public class ByteDictionaryMap implements DictionaryMap {
       String category = getValueForKey(next);
       for (BooleanColumn column : results) {
         if (category.equals(column.name())) {
-          column.append(BooleanColumnType.BYTE_TRUE);
+          // TODO(lwhite): update the correct row more efficiently, by using set rather than add &
+          // only
+          // updating true
+          column.append(true);
         } else {
-          column.append(BooleanColumnType.BYTE_FALSE);
+          column.append(false);
         }
       }
     }
@@ -401,7 +395,7 @@ public class ByteDictionaryMap implements DictionaryMap {
 
   @Override
   public Iterator<String> iterator() {
-    return new Iterator<>() {
+    return new Iterator<String>() {
 
       private final ByteListIterator valuesIt = values.iterator();
 
@@ -449,11 +443,6 @@ public class ByteDictionaryMap implements DictionaryMap {
   @Override
   public int nextKeyWithoutIncrementing() {
     return nextIndex.get();
-  }
-
-  @Override
-  public boolean canPromoteToText() {
-    return canPromoteToText;
   }
 
   public static class ByteDictionaryBuilder {

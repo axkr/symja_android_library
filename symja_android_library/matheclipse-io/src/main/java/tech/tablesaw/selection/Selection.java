@@ -15,7 +15,6 @@
 package tech.tablesaw.selection;
 
 import it.unimi.dsi.fastutil.ints.IntIterable;
-import org.roaringbitmap.RoaringBitmap;
 
 /**
  * A selection maintains an ordered set of ints that can be used to filter rows from a table or
@@ -97,11 +96,6 @@ public interface Selection extends IntIterable {
   /** Returns a Selection containing all indexes in the array */
   static Selection with(int... rows) {
     return BitmapBackedSelection.with(rows);
-  }
-
-  /** */
-  static Selection fromBitmap(RoaringBitmap bitmap) {
-    return BitmapBackedSelection.fromBitmap(bitmap);
   }
 
   /**

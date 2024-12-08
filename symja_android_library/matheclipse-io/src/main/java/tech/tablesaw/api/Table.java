@@ -19,28 +19,21 @@ import static tech.tablesaw.aggregate.AggregateFunctions.count;
 import static tech.tablesaw.aggregate.AggregateFunctions.countMissing;
 import static tech.tablesaw.api.QuerySupport.not;
 import static tech.tablesaw.selection.Selection.selectNRowsAtRandom;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.function.Function;
-import java.util.function.IntFunction;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.roaringbitmap.RoaringBitmap;
+
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Streams;
+import com.google.common.collect.*;
 import com.google.common.primitives.Ints;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntArrays;
-import it.unimi.dsi.fastutil.ints.IntComparator;
+import it.unimi.dsi.fastutil.ints.*;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.roaringbitmap.RoaringBitmap;
 import tech.tablesaw.aggregate.AggregateFunction;
 import tech.tablesaw.aggregate.CrossTab;
 import tech.tablesaw.aggregate.PivotTable;
@@ -58,10 +51,7 @@ import tech.tablesaw.selection.Selection;
 import tech.tablesaw.sorting.Sort;
 import tech.tablesaw.sorting.SortUtils;
 import tech.tablesaw.sorting.comparators.IntComparatorChain;
-import tech.tablesaw.table.Relation;
-import tech.tablesaw.table.StandardTableSliceGroup;
-import tech.tablesaw.table.TableSlice;
-import tech.tablesaw.table.TableSliceGroup;
+import tech.tablesaw.table.*;
 
 /**
  * A table of data, consisting of some number of columns, each of which has the same number of rows.
@@ -125,7 +115,7 @@ public class Table extends Relation implements Iterable<Row> {
   /** TODO: Add documentation */
   private static void autoRegisterReadersAndWriters() {
     try (ScanResult scanResult =
-        new ClassGraph().enableAllInfo().acceptPackages("tech.tablesaw.io").scan()) {
+        new ClassGraph().enableAllInfo().whitelistPackages("tech.tablesaw.io").scan()) {
       List<String> classes = new ArrayList<>();
       classes.addAll(scanResult.getClassesImplementing(DataWriter.class.getName()).getNames());
       classes.addAll(scanResult.getClassesImplementing(DataReader.class.getName()).getNames());
@@ -231,7 +221,7 @@ public class Table extends Relation implements Iterable<Row> {
     return key;
   }
 
-  /** Returns an object that can be used to read data from a file into a new Table */
+  /** Returns an object that an be used to read data from a file into a new Table */
   public static DataFrameReader read() {
     return new DataFrameReader(defaultReaderRegistry);
   }
@@ -454,7 +444,6 @@ public class Table extends Relation implements Iterable<Row> {
    *
    * @throws IllegalArgumentException if the column is not present in this table
    */
-  @Override
   public int columnIndex(Column<?> column) {
     int columnIndex = -1;
     for (int i = 0; i < columnList.size(); i++) {
@@ -477,7 +466,6 @@ public class Table extends Relation implements Iterable<Row> {
   }
 
   /** Returns a List of the names of all the columns in this table */
-  @Override
   public List<String> columnNames() {
     return columnList.stream().map(Column::name).collect(toList());
   }
@@ -542,17 +530,20 @@ public class Table extends Relation implements Iterable<Row> {
   }
 
   /**
-   * Returns {@code true} if the row @rowNumber in table1 holds the same data as the row at
-   * rowNumber in table2
+   * Returns {@code true} if the row {@code rowNumber} in {@code table1} holds the same values than the row at
+   * {@code rowNumber} in {@code table2}. Returns false if the number of columns is different in the two tables.
+   * @param rowNumber the row to compare
+   * @param table1 the first table to compare
+   * @param table2 the second table to compare
+   * @return false if row {@code rowNumber} is different in {@code table1} and {@code table2}
+   * @throws {@code IndexOutOfBoundsException} if {@code rownumber} exceeds either table number of rows
    */
   public static boolean compareRows(int rowNumber, Table table1, Table table2) {
-    int columnCount = table1.columnCount();
-    boolean result;
+    final int columnCount = table1.columnCount();
+    if (columnCount != table2.columnCount()) return false;
     for (int columnIndex = 0; columnIndex < columnCount; columnIndex++) {
       ColumnType columnType = table1.column(columnIndex).type();
-      result =
-          columnType.compare(rowNumber, table2.column(columnIndex), table1.column(columnIndex));
-      if (!result) {
+      if (!columnType.compare(rowNumber, table2.column(columnIndex), table1.column(columnIndex))) {
         return false;
       }
     }
@@ -660,7 +651,6 @@ public class Table extends Relation implements Iterable<Row> {
   }
 
   /** Returns a new table containing the first {@code nrows} of data in this table */
-  @Override
   public Table first(int nRows) {
     int newRowCount = Math.min(nRows, rowCount());
     return inRange(0, newRowCount);
@@ -786,6 +776,18 @@ public class Table extends Relation implements Iterable<Row> {
   public void addRow(int rowIndex, Table sourceTable) {
     for (int i = 0; i < columnCount(); i++) {
       column(i).appendObj(sourceTable.column(i).get(rowIndex));
+    }
+  }
+
+  /**
+   * Adds the given row to this table
+   *
+   * @deprecated Use {@link #append(Row)} instead.
+   */
+  @Deprecated
+  public void addRow(Row row) {
+    for (int i = 0; i < row.columnCount(); i++) {
+      column(i).appendObj(row.getObject(i));
     }
   }
 
@@ -984,12 +986,10 @@ public class Table extends Relation implements Iterable<Row> {
       Row oldRow = this.row(key);
       if (duplicateRows(row, oldRow)) {
         return true;
-      } else {
-        uniqueHashes.get(hash).add(row.getRowNumber());
-        return false;
       }
     }
-    return true;
+    uniqueHashes.get(hash).add(row.getRowNumber());
+    return false;
   }
 
   /** Returns only those records in this table that have no columns with missing values */
@@ -1030,6 +1030,17 @@ public class Table extends Relation implements Iterable<Row> {
   /**
    * Returns a new table containing copies of the selected columns from this table
    *
+   * @param columns The columns to copy into the new table
+   * @see #retainColumns(Column[])
+   * @deprecated Use {@link #selectColumns(Column[])} instead
+   */
+  public Table select(Column<?>... columns) {
+    return selectColumns(columns);
+  }
+
+  /**
+   * Returns a new table containing copies of the selected columns from this table
+   *
    * @param columnNames The names of the columns to include
    * @see #retainColumns(String[])
    */
@@ -1039,6 +1050,17 @@ public class Table extends Relation implements Iterable<Row> {
       t.addColumns(column(s).copy());
     }
     return t;
+  }
+
+  /**
+   * Returns a new table containing copies of the selected columns from this table
+   *
+   * @param columnNames The names of the columns to include
+   * @see #retainColumns(String[])
+   * @deprecated Use {@link #selectColumns(String[])} instead
+   */
+  public Table select(String... columnNames) {
+    return selectColumns(columnNames);
   }
 
   /**
@@ -1718,6 +1740,9 @@ public class Table extends Relation implements Iterable<Row> {
       if (columnType.equals(ColumnType.STRING)) {
         StringColumn sc = (StringColumn) resultColumn;
         sc.append(row.getString(resultColumn.name()));
+      } else if (columnType.equals(ColumnType.TEXT)) {
+        TextColumn sc = (TextColumn) resultColumn;
+        sc.append(row.getString(resultColumn.name()));
       } else if (columnType.equals(ColumnType.INTEGER)) {
         IntColumn ic = (IntColumn) resultColumn;
         ic.append(row.getInt(resultColumn.name()));
@@ -1800,6 +1825,10 @@ public class Table extends Relation implements Iterable<Row> {
           StringColumn source = (StringColumn) sliceTable.column(idColumn.name());
           StringColumn dest = (StringColumn) result.column(idColumn.name());
           dest.append(source.get(0));
+        } else if (columnType.equals(ColumnType.TEXT)) {
+          TextColumn source = (TextColumn) sliceTable.column(idColumn.name());
+          TextColumn dest = (TextColumn) result.column(idColumn.name());
+          dest.append(source.get(0));
         } else if (columnType.equals(ColumnType.INTEGER)) {
           IntColumn source = (IntColumn) sliceTable.column(idColumn.name());
           IntColumn dest = (IntColumn) result.column(idColumn.name());
@@ -1846,5 +1875,84 @@ public class Table extends Relation implements Iterable<Row> {
       }
     }
     return result;
+  }
+
+  /**
+   * Applies the operation in {@code doable} to every row in the table
+   *
+   * @deprecated use {@code stream().forEach}
+   */
+  @Deprecated
+  public void doWithRows(Consumer<Row> doable) {
+    stream().forEach(doable);
+  }
+
+  /**
+   * Applies the predicate to each row, and return true if any row returns true
+   *
+   * @deprecated use {@code stream().anyMatch}
+   */
+  @Deprecated
+  public boolean detect(Predicate<Row> predicate) {
+    return stream().anyMatch(predicate);
+  }
+
+  /** @deprecated use steppingStream(n).forEach(rowConsumer) */
+  @Deprecated
+  public void stepWithRows(Consumer<Row[]> rowConsumer, int n) {
+    steppingStream(n).forEach(rowConsumer);
+  }
+
+  /** @deprecated use stream(2).forEach(rowConsumer) */
+  @Deprecated
+  public void doWithRows(Pairs pairs) {
+    rollingStream(2).forEach(rows -> pairs.doWithPair(rows[0], rows[1]));
+  }
+
+  /** @deprecated use stream(2).forEach(rowConsumer) */
+  @Deprecated
+  public void doWithRowPairs(Consumer<RowPair> pairConsumer) {
+    rollingStream(2).forEach(rows -> pairConsumer.accept(new RowPair(rows[0], rows[1])));
+  }
+
+  /** @deprecated use stream(n).forEach(rowConsumer) */
+  @Deprecated
+  public void rollWithRows(Consumer<Row[]> rowConsumer, int n) {
+    rollingStream(n).forEach(rowConsumer);
+  }
+
+  @Deprecated
+  public static class RowPair {
+    private final Row first;
+    private final Row second;
+
+    public RowPair(Row first, Row second) {
+      this.first = first;
+      this.second = second;
+    }
+
+    public Row getFirst() {
+      return first;
+    }
+
+    public Row getSecond() {
+      return second;
+    }
+  }
+
+  @Deprecated
+  interface Pairs {
+
+    void doWithPair(Row row1, Row row2);
+
+    /**
+     * Returns an object containing the results of applying doWithPair() to the rows in a table.
+     *
+     * <p>The default implementation throws an exception, to be used if the operation produces only
+     * side effects
+     */
+    default Object getResult() {
+      throw new UnsupportedOperationException("This Pairs function returns no results");
+    }
   }
 }

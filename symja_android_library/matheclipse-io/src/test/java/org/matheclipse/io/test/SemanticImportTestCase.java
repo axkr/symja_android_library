@@ -3,7 +3,7 @@ package org.matheclipse.io.test;
 import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 
-public class FunctionsTestCase extends AbstractTestCase {
+public class SemanticImportTestCase extends AbstractTestCase {
 
   @Test
   public void testSemanticImport() {

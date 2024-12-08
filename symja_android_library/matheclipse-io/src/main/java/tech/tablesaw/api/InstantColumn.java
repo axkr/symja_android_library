@@ -79,8 +79,8 @@ public class InstantColumn extends AbstractColumn<InstantColumn, Instant>
 
   private final IntComparator comparator =
       (r1, r2) -> {
-        long f1 = getPackedInstant(r1);
-        long f2 = getPackedInstant(r2);
+        long f1 = getPackedDateTime(r1);
+        long f2 = getPackedDateTime(r2);
         return Long.compare(f1, f2);
       };
 
@@ -292,13 +292,13 @@ public class InstantColumn extends AbstractColumn<InstantColumn, Instant>
   /** {@inheritDoc} */
   @Override
   public String getString(int row) {
-    return printFormatter.format(getPackedInstant(row));
+    return printFormatter.format(getPackedDateTime(row));
   }
 
   /** {@inheritDoc} */
   @Override
   public String getUnformattedString(int row) {
-    return PackedInstant.toString(getPackedInstant(row));
+    return PackedInstant.toString(getPackedDateTime(row));
   }
 
   /** {@inheritDoc} */
@@ -403,15 +403,15 @@ public class InstantColumn extends AbstractColumn<InstantColumn, Instant>
     return data.getLong(index);
   }
 
-  /** Returns the long-encoded version of the instant at the given index */
-  protected long getPackedInstant(int index) {
+  // TODO: Name?
+  protected long getPackedDateTime(int index) {
     return getLongInternal(index);
   }
 
   /** {@inheritDoc} */
   @Override
   public Instant get(int index) {
-    return PackedInstant.asInstant(getPackedInstant(index));
+    return PackedInstant.asInstant(getPackedDateTime(index));
   }
 
   /** {@inheritDoc} */
@@ -439,7 +439,7 @@ public class InstantColumn extends AbstractColumn<InstantColumn, Instant>
   public int countMissing() {
     int count = 0;
     for (int i = 0; i < size(); i++) {
-      if (getPackedInstant(i) == InstantColumnType.missingValueIndicator()) {
+      if (getPackedDateTime(i) == InstantColumnType.missingValueIndicator()) {
         count++;
       }
     }
@@ -690,11 +690,11 @@ public class InstantColumn extends AbstractColumn<InstantColumn, Instant>
   /** Returns the contents of the cell at rowNumber as a byte[] */
   @Override
   public byte[] asBytes(int rowNumber) {
-    return ByteBuffer.allocate(byteSize()).putLong(getPackedInstant(rowNumber)).array();
+    return ByteBuffer.allocate(byteSize()).putLong(getPackedDateTime(rowNumber)).array();
   }
 
   public double getDouble(int i) {
-    return getPackedInstant(i);
+    return getPackedDateTime(i);
   }
 
   public double[] asDoubleArray() {

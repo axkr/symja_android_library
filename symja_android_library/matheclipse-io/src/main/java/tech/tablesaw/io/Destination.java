@@ -35,11 +35,6 @@ public class Destination {
   }
 
   public Writer createWriter() {
-    if (writer != null) {
-      return writer;
-    } else {
-      assert stream != null;
-      return new OutputStreamWriter(stream);
-    }
+    return writer != null ? writer : new OutputStreamWriter(stream);
   }
 }

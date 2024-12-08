@@ -17,15 +17,21 @@ package tech.tablesaw.api;
 import static com.google.common.base.Preconditions.checkArgument;
 import static tech.tablesaw.api.ColumnType.*;
 
-import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.IntComparator;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
-import tech.tablesaw.columns.AbstractColumn;
 import tech.tablesaw.columns.AbstractColumnParser;
 import tech.tablesaw.columns.Column;
-import tech.tablesaw.columns.strings.*;
+import tech.tablesaw.columns.strings.AbstractStringColumn;
+import tech.tablesaw.columns.strings.ByteDictionaryMap;
+import tech.tablesaw.columns.strings.DictionaryMap;
+import tech.tablesaw.columns.strings.NoKeysAvailableException;
+import tech.tablesaw.columns.strings.StringColumnType;
 import tech.tablesaw.selection.BitmapBackedSelection;
 import tech.tablesaw.selection.Selection;
 
@@ -37,12 +43,10 @@ import tech.tablesaw.selection.Selection;
  * <p>Because the MISSING_VALUE for this column type is an empty string, there is little or no need
  * for special handling of missing values in this class's methods.
  */
-public class StringColumn extends AbstractColumn<StringColumn, String>
-    implements CategoricalColumn<String>, StringFilters, StringMapFunctions, StringReduceUtils {
+public class StringColumn extends AbstractStringColumn<StringColumn> {
 
-  private DictionaryMap data;
-
-  private StringColumnFormatter printFormatter = new StringColumnFormatter();
+  // a bidirectional map of keys to backing string values.
+  private DictionaryMap lookupTable = new ByteDictionaryMap();
 
   private final IntComparator rowComparator =
       (i, i1) -> {
@@ -58,7 +62,7 @@ public class StringColumn extends AbstractColumn<StringColumn, String>
   /** {@inheritDoc} */
   @Override
   public StringColumn appendMissing() {
-    data.appendMissing();
+    lookupTable.appendMissing();
     return this;
   }
 
@@ -82,12 +86,6 @@ public class StringColumn extends AbstractColumn<StringColumn, String>
     return new StringColumn(name, strings);
   }
 
-  /*
-    public static StringColumn create(String name, StringData stringData) {
-      return new StringColumn(name, stringData);
-    }
-  */
-
   public static StringColumn create(String name, Collection<String> strings) {
     return new StringColumn(name, strings);
   }
@@ -97,8 +95,7 @@ public class StringColumn extends AbstractColumn<StringColumn, String>
   }
 
   public static StringColumn create(String name, int size) {
-    // TODO Pick map implementation based on array size
-    StringColumn column = new StringColumn(name);
+    StringColumn column = new StringColumn(name, new ArrayList<>(size));
     for (int i = 0; i < size; i++) {
       column.appendMissing();
     }
@@ -113,50 +110,31 @@ public class StringColumn extends AbstractColumn<StringColumn, String>
 
   private StringColumn(String name, Collection<String> strings) {
     super(StringColumnType.instance(), name, StringColumnType.DEFAULT_PARSER);
-    // TODO Pick map implementation based on array size
-    data = new ByteDictionaryMap();
-    for (String s : strings) {
-      append(s);
-    }
-  }
-
-  private StringColumn(String name, DictionaryMap map) {
-    super(StringColumnType.instance(), name, StringColumnType.DEFAULT_PARSER);
-    data = map;
-  }
-
-  private StringColumn(String name) {
-    super(StringColumnType.instance(), name, StringColumnType.DEFAULT_PARSER);
-    data = new ByteDictionaryMap();
-  }
-
-  private StringColumn(String name, String[] strings) {
-    super(StringColumnType.instance(), name, StringColumnType.DEFAULT_PARSER);
-    // TODO Pick map implementation based on array size
-    data = new ByteDictionaryMap();
     for (String string : strings) {
       append(string);
     }
   }
 
-  /**
-   * Sets an {@link StringColumnFormatter} which will be used to format the display of data from
-   * this column when it is printed (using, for example, Table:print()) and optionally when written
-   * to a text file like a CSV.
-   */
-  public void setPrintFormatter(StringColumnFormatter formatter) {
-    Preconditions.checkNotNull(formatter);
-    this.printFormatter = formatter;
+  private StringColumn(String name, DictionaryMap map) {
+    super(StringColumnType.instance(), name, StringColumnType.DEFAULT_PARSER);
+    lookupTable = map;
   }
 
-  /** Returns the current {@link StringColumnFormatter}. */
-  public StringColumnFormatter getPrintFormatter() {
-    return printFormatter;
+  private StringColumn(String name) {
+    super(StringColumnType.instance(), name, StringColumnType.DEFAULT_PARSER);
   }
+
+  private StringColumn(String name, String[] strings) {
+    super(StringColumnType.instance(), name, StringColumnType.DEFAULT_PARSER);
+    for (String string : strings) {
+      append(string);
+    }
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean isMissing(int rowNumber) {
-    return data.isMissing(rowNumber);
+    return lookupTable.isMissing(rowNumber);
   }
 
   /** {@inheritDoc} */
@@ -176,13 +154,13 @@ public class StringColumn extends AbstractColumn<StringColumn, String>
   /** {@inheritDoc} */
   @Override
   public void sortAscending() {
-    data.sortAscending();
+    lookupTable.sortAscending();
   }
 
   /** {@inheritDoc} */
   @Override
   public void sortDescending() {
-    data.sortDescending();
+    lookupTable.sortDescending();
   }
 
   /**
@@ -192,7 +170,7 @@ public class StringColumn extends AbstractColumn<StringColumn, String>
    */
   @Override
   public int size() {
-    return data.size();
+    return lookupTable.size();
   }
 
   /**
@@ -204,7 +182,7 @@ public class StringColumn extends AbstractColumn<StringColumn, String>
    */
   @Override
   public String get(int rowIndex) {
-    return data.get(rowIndex);
+    return lookupTable.getValueForIndex(rowIndex);
   }
 
   /**
@@ -251,13 +229,13 @@ public class StringColumn extends AbstractColumn<StringColumn, String>
   /** {@inheritDoc} */
   @Override
   public Table countByCategory() {
-    return data.countByCategory(name());
+    return lookupTable.countByCategory(name());
   }
 
   /** {@inheritDoc} */
   @Override
   public void clear() {
-    data.clear();
+    lookupTable.clear();
   }
 
   /** {@inheritDoc} */
@@ -319,11 +297,11 @@ public class StringColumn extends AbstractColumn<StringColumn, String>
       return setMissing(rowIndex);
     }
     try {
-      data.set(rowIndex, stringValue);
+      lookupTable.set(rowIndex, stringValue);
     } catch (NoKeysAvailableException ex) {
-      data = data.promoteYourself();
+      lookupTable = lookupTable.promoteYourself();
       try {
-        data.set(rowIndex, stringValue);
+        lookupTable.set(rowIndex, stringValue);
       } catch (NoKeysAvailableException e) {
         // this can't happen
         throw new IllegalStateException(e);
@@ -335,7 +313,7 @@ public class StringColumn extends AbstractColumn<StringColumn, String>
   /** {@inheritDoc} */
   @Override
   public int countUnique() {
-    return data.countUnique();
+    return lookupTable.countUnique();
   }
 
   /**
@@ -385,32 +363,22 @@ public class StringColumn extends AbstractColumn<StringColumn, String>
     return rowComparator;
   }
 
-  @Override
-  public Selection isMissing() {
-    return data.isMissing();
-  }
-
-  @Override
-  public Selection isNotMissing() {
-    return data.isNotMissing();
-  }
-
   /** {@inheritDoc} */
   @Override
   public boolean isEmpty() {
-    return data.isEmpty();
+    return lookupTable.size() == 0;
   }
 
   /** {@inheritDoc} */
   @Override
   public Selection isEqualTo(String string) {
-    return data.isEqualTo(string);
+    return lookupTable.isEqualTo(string);
   }
 
   /** {@inheritDoc} */
   @Override
   public Selection isNotEqualTo(String string) {
-    return data.isNotEqualTo(string);
+    return lookupTable.isNotEqualTo(string);
   }
 
   /**
@@ -422,7 +390,7 @@ public class StringColumn extends AbstractColumn<StringColumn, String>
    * @return a list of {@link BooleanColumn}
    */
   public List<BooleanColumn> getDummies() {
-    return data.getDummies();
+    return lookupTable.getDummies();
   }
 
   /**
@@ -432,8 +400,8 @@ public class StringColumn extends AbstractColumn<StringColumn, String>
    */
   @Override
   public StringColumn unique() {
-    List<String> strings = new ArrayList<>(data.asSet());
-    return new StringColumn(name(), strings);
+    List<String> strings = new ArrayList<>(lookupTable.asSet());
+    return StringColumn.create(name() + " Unique values", strings);
   }
 
   public DoubleColumn asDoubleColumn() {
@@ -463,7 +431,7 @@ public class StringColumn extends AbstractColumn<StringColumn, String>
   @Override
   public StringColumn append(Column<String> column) {
     checkArgument(
-        column.type().equals(STRING),
+        column.type() == TEXT || column.type().equals(STRING),
         "Column '%s' has type %s, but column '%s' has type %s.",
         name(),
         type(),
@@ -479,7 +447,7 @@ public class StringColumn extends AbstractColumn<StringColumn, String>
   /** Returns the count of missing values in this column */
   @Override
   public int countMissing() {
-    return data.countMissing();
+    return lookupTable.countMissing();
   }
 
   /** {@inheritDoc} */
@@ -497,36 +465,38 @@ public class StringColumn extends AbstractColumn<StringColumn, String>
   /** {@inheritDoc} */
   @Override
   public Iterator<String> iterator() {
-    return data.iterator();
+    return lookupTable.iterator();
   }
 
   public Set<String> asSet() {
-    return data.asSet();
+    return lookupTable.asSet();
   }
 
   /** Returns the contents of the cell at rowNumber as a byte[] */
   @Override
   public byte[] asBytes(int rowNumber) {
-    return data.asBytes(rowNumber);
+    return lookupTable.asBytes(rowNumber);
   }
 
   public double getDouble(int i) {
-    return (double) data.uniqueValuesAt(data.firstIndexOf(data.getValueForIndex(i))) - 1;
+    return (double)
+            lookupTable.uniqueValuesAt(lookupTable.firstIndexOf(lookupTable.getValueForIndex(i)))
+        - 1;
   }
 
   public double[] asDoubleArray() {
-    return Arrays.stream(data.asIntArray()).asDoubleStream().toArray();
+    return Arrays.stream(lookupTable.asIntArray()).asDoubleStream().toArray();
   }
 
   /** Added for naming consistency with all other columns */
   @Override
   public StringColumn append(String value) {
     try {
-      data.append(value);
+      lookupTable.append(value);
     } catch (NoKeysAvailableException ex) {
-      data = data.promoteYourself();
+      lookupTable = lookupTable.promoteYourself();
       try {
-        data.append(value);
+        lookupTable.append(value);
       } catch (NoKeysAvailableException e) {
         // this can't happen
         throw new IllegalStateException(e);
@@ -551,13 +521,13 @@ public class StringColumn extends AbstractColumn<StringColumn, String>
   /** {@inheritDoc} */
   @Override
   public Selection isIn(String... strings) {
-    return data.isIn(strings);
+    return lookupTable.selectIsIn(strings);
   }
 
   /** {@inheritDoc} */
   @Override
   public Selection isIn(Collection<String> strings) {
-    return data.isIn(strings);
+    return lookupTable.selectIsIn(strings);
   }
 
   /** {@inheritDoc} */
@@ -579,17 +549,17 @@ public class StringColumn extends AbstractColumn<StringColumn, String>
   }
 
   public int firstIndexOf(String value) {
-    return data.firstIndexOf(value);
+    return lookupTable.firstIndexOf(value);
   }
 
   public int countOccurrences(String value) {
-    return data.countOccurrences(value);
+    return lookupTable.countOccurrences(value);
   }
 
   /** {@inheritDoc} */
   @Override
   public String[] asObjectArray() {
-    return data.asObjectArray();
+    return lookupTable.asObjectArray();
   }
 
   /** {@inheritDoc} */
@@ -598,78 +568,16 @@ public class StringColumn extends AbstractColumn<StringColumn, String>
     return copy();
   }
 
-  /** For tablesaw internal use Note: This method returns null if the stringDataType is TEXTUAL */
-  public @Nullable DictionaryMap getDictionary() {
-    return data;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public String getString(int row) {
-    return printFormatter.format(get(row));
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public String getUnformattedString(int row) {
-    return String.valueOf(get(row));
-  }
-
-  /**
-   * Returns the largest ("top") n values in the column
-   *
-   * @param n The maximum number of records to return. The actual number will be smaller if n is
-   *     greater than the number of observations in the column
-   * @return A list, possibly empty, of the largest observations
-   */
-  public List<String> top(int n) {
-    List<String> top = new ArrayList<>();
-    Column<String> copy = this.copy();
-    copy.sortDescending();
-    for (int i = 0; i < n; i++) {
-      top.add(copy.get(i));
+  public TextColumn asTextColumn() {
+    TextColumn textColumn = TextColumn.create(name(), size());
+    for (int i = 0; i < size(); i++) {
+      textColumn.set(i, get(i));
     }
-    return top;
+    return textColumn;
   }
 
-  /**
-   * Returns the smallest ("bottom") n values in the column
-   *
-   * @param n The maximum number of records to return. The actual number will be smaller if n is
-   *     greater than the number of observations in the column
-   * @return A list, possibly empty, of the smallest n observations
-   */
-  public List<String> bottom(int n) {
-    List<String> bottom = new ArrayList<>();
-    Column<String> copy = this.copy();
-    copy.sortAscending();
-    for (int i = 0; i < n; i++) {
-      bottom.add(copy.get(i));
-    }
-    return bottom;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Column<String> append(Column<String> column, int row) {
-    return append(column.getUnformattedString(row));
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Column<String> set(int row, Column<String> column, int sourceRow) {
-    return set(row, column.getUnformattedString(sourceRow));
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public int byteSize() {
-    return type().byteSize();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public int compare(String o1, String o2) {
-    return o1.compareTo(o2);
+  /** For tablesaw internal use only */
+  public DictionaryMap getDictionary() {
+    return lookupTable;
   }
 }
