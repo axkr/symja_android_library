@@ -2576,6 +2576,13 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = ast.arg1();
+      if (!arg1.isASTOrAssociation() && !arg1.isSparseArray()) {
+        // Nonatomic expression expected at position `1` in `2`.
+        return Errors.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
+      }
+      if (ast.isAST2() && ast.arg2().isZero()) {
+        return arg1;
+      }
       try {
         final ISequence[] sequ = Sequence.createSequences(ast, 2, "drop", engine);
         if (sequ == null) {
@@ -2591,9 +2598,6 @@ public final class ListFunctions {
           final IASTAppendable resultList = ((ISparseArray) arg1).normal(false).copyAppendable();
           drop(resultList, 0, sequ);
           return resultList;
-        } else {
-          // Nonatomic expression expected at position `1` in `2`.
-          return Errors.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
         }
       } catch (ValidateException ve) {
         Errors.printMessage(ast.topHead(), ve, engine);
