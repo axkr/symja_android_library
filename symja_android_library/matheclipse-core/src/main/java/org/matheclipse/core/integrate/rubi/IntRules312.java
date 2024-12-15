@@ -4,7 +4,9 @@ package org.matheclipse.core.integrate.rubi;
 import static org.matheclipse.core.expression.F.*;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.*;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctions.*;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IAST;
+import com.google.common.base.Supplier;
 
 /** 
  * IndefiniteIntegrationRules from the <a href="https://rulebasedintegration.org/">Rubi -

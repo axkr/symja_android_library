@@ -771,12 +771,12 @@ public class ConvertRubi {
     addPredefinedSymbols();
     // use same order as in Rubi.m
     String userHome = System.getProperty("user.home");
-    // String[] fileNames = { //
-    // userHome
-    // + "/git/symja_android_library/symja_android_library/Rubi/RubiRules4.16.0_FullLHS.m",};
     String[] fileNames = { //
         userHome
-            + "/git/symja_android_library/symja_android_library/Rubi/RubiRules_4.17.3.0_FullLHS.m",};
+            + "/git/symja_android_library/symja_android_library/Rubi/RubiRules4.16.0_FullLHS.m",};
+    // String[] fileNames = { //
+    // userHome
+    // + "/git/symja_android_library/symja_android_library/Rubi/RubiRules_4.17.3.0_FullLHS.m",};
 
     IASTAppendable listOfRules = F.ListAlloc(10000);
     int fcnt = 0;

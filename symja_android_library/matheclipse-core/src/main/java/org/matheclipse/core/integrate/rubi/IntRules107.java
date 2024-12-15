@@ -4,7 +4,9 @@ package org.matheclipse.core.integrate.rubi;
 import static org.matheclipse.core.expression.F.*;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.*;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctions.*;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IAST;
+import com.google.common.base.Supplier;
 
 /** 
  * IndefiniteIntegrationRules from the <a href="https://rulebasedintegration.org/">Rubi -
@@ -46,7 +48,7 @@ IIntegrate(2155,Integrate(Times(Power(x_,m_DEFAULT),Power(Plus(c_,Times(d_DEFAUL
 IIntegrate(2156,Integrate(Times(u_DEFAULT,Power(Plus(c_,Times(d_DEFAULT,Power(x_,n_)),Times(e_DEFAULT,Sqrt(Plus(a_,Times(b_DEFAULT,Power(x_,n_)))))),CN1)),x_Symbol),
     Condition(Subtract(Dist(c,Integrate(Times(u,Power(Plus(Sqr(c),Times(CN1,a,Sqr(e)),Times(c,d,Power(x,n))),CN1)),x),x),Dist(Times(a,e),Integrate(Times(u,Power(Times(Plus(Sqr(c),Times(CN1,a,Sqr(e)),Times(c,d,Power(x,n))),Sqrt(Plus(a,Times(b,Power(x,n))))),CN1)),x),x)),And(FreeQ(List(a,b,c,d,e,n),x),EqQ(Subtract(Times(b,c),Times(a,d)),C0)))),
 IIntegrate(2157,Integrate(Power(u_,m_DEFAULT),x_Symbol),
-    Condition(With(list(Set(c,Simplify(D(u,x)))),Dist(Power(c,CN1),Subst(Integrate(Power(x,m),x),x,u),x)),And(FreeQ(m,x),PiecewiseLinearQ(u,x)))),
+    Condition(With(list(Set(c,Simplify(D(u,x)))),Dist(Power(c,CN1),Subst(Integrate(Power(x,m),x),x,u),x)),And(FreeQ(m,x),PiecewiseLinearQ(u,x),NeQ(Power(u,m),x)))),
 IIntegrate(2158,Integrate(Times(Power(u_,CN1),v_),x_Symbol),
     Condition(With(list(Set(a,Simplify(D(u,x))),Set(b,Simplify(D(v,x)))),Condition(Subtract(Simp(Times(b,x,Power(a,CN1)),x),Dist(Times(Subtract(Times(b,u),Times(a,v)),Power(a,CN1)),Integrate(Power(u,CN1),x),x)),NeQ(Subtract(Times(b,u),Times(a,v)),C0))),PiecewiseLinearQ(u,v,x))),
 IIntegrate(2159,Integrate(Times(Power(u_,CN1),Power(v_,n_)),x_Symbol),
