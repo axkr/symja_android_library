@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -373,16 +374,20 @@ public class ApfloatNum implements INum {
   @Override
   public IExpr beta(IExpr a, IExpr b) {
     if (a instanceof IReal && b instanceof IReal) {
-      try {
-        return valueOf(EvalEngine.getApfloat().beta(fApfloat, ((IReal) a).apfloatValue(),
-            ((IReal) b).apfloatValue()));
-      } catch (ApfloatArithmeticException aaex) {
-        if ("divide.byZero".equals(aaex.getLocalizationKey())) {
-          return F.ComplexInfinity;
-        }
-      } catch (ArithmeticException | NumericComputationException e) {
-        if ("Division by zero".equals(e.getMessage())) {
-          return F.ComplexInfinity;
+      Apfloat af = ((IReal) a).apfloatValue();
+      Apfloat bf = ((IReal) b).apfloatValue();
+      if (!(fApfloat.signum() == 0 && af.signum() < 0 && !af.isInteger()
+          || fApfloat.signum() < 0 && !af.isInteger())) {
+        try {
+          return valueOf(EvalEngine.getApfloat().beta(fApfloat, af, bf));
+        } catch (ApfloatArithmeticException aaex) {
+          if ("divide.byZero".equals(aaex.getLocalizationKey())) {
+            return F.ComplexInfinity;
+          }
+        } catch (ArithmeticException | NumericComputationException e) {
+          if ("Division by zero".equals(e.getMessage())) {
+            return F.ComplexInfinity;
+          }
         }
       }
     }
@@ -406,11 +411,16 @@ public class ApfloatNum implements INum {
   @Override
   public IExpr beta(IExpr x2, IExpr a, IExpr b) {
     if (x2 instanceof IReal && a instanceof IReal && b instanceof IReal) {
-      try {
-        return valueOf(EvalEngine.getApfloat().beta(fApfloat, ((IReal) x2).apfloatValue(),
-            ((IReal) a).apfloatValue(), ((IReal) b).apfloatValue()));
-      } catch (ArithmeticException | NumericComputationException e) {
-        // try as computation with complex numbers
+      Apfloat x2f = ((IReal) x2).apfloatValue();
+      Apfloat af = ((IReal) a).apfloatValue();
+      Apfloat bf = ((IReal) b).apfloatValue();
+      if (!((fApfloat.signum() == 0 || x2f.signum() == 0) && af.signum() < 0 && !af.isInteger()
+          || (fApfloat.signum() < 0 || x2f.signum() < 0) && !af.isInteger())) {
+        try {
+          return valueOf(EvalEngine.getApfloat().beta(fApfloat, x2f, af, bf));
+        } catch (ArithmeticException | NumericComputationException e) {
+          // try as computation with complex numbers
+        }
       }
     }
     if (x2 instanceof INumber && a instanceof INumber && b instanceof INumber) {
@@ -877,7 +887,7 @@ public class ApfloatNum implements INum {
       return F.CInfinity;
     }
     if (x instanceof IReal) {
-      if (isPositive() && x.isPositive()) {
+      if (!(x.isNegative() && !(isMathematicalIntegerNonNegative() && !isZero()))) {
         try {
           return valueOf(EvalEngine.getApfloat().gamma(fApfloat, ((IReal) x).apfloatValue()));
         } catch (ArithmeticException | NumericComputationException e) {
@@ -1706,12 +1716,20 @@ public class ApfloatNum implements INum {
     try {
       Apfloat polygamma = EvalEngine.getApfloat().polygamma(n, fApfloat);
       return F.num(polygamma);
+    } catch (ApfloatArithmeticException aaex) {
+      if ("polygamma.ofNonpositiveInteger".equals(aaex.getLocalizationKey())) {
+        return F.ComplexInfinity;
+      }
     } catch (ArithmeticException | NumericComputationException aex) {
       // java.lang.ArithmeticException: Polygamma of non-positive integer
     }
     try {
       Apcomplex polygamma = EvalEngine.getApfloat().polygamma(n, apcomplexValue());
       return F.complexNum(polygamma);
+    } catch (ApfloatArithmeticException aaex) {
+      if ("polygamma.ofNonpositiveInteger".equals(aaex.getLocalizationKey())) {
+        return F.ComplexInfinity;
+      }
     } catch (ArithmeticException | NumericComputationException aex) {
       // java.lang.ArithmeticException: Polygamma of nonpositive integer
     }
@@ -1749,6 +1767,17 @@ public class ApfloatNum implements INum {
 
   @Override
   public ApfloatNum pow(int n) {
+    if (n == (-1)) {
+      return inverse();
+    }
+    return valueOf(EvalEngine.getApfloat().pow(fApfloat, n));
+  }
+
+  @Override
+  public ApfloatNum power(long n) {
+    if (n == (-1L)) {
+      return inverse();
+    }
     return valueOf(EvalEngine.getApfloat().pow(fApfloat, n));
   }
 
@@ -2035,5 +2064,19 @@ public class ApfloatNum implements INum {
   @Override
   public ApfloatNum zero() {
     return valueOf(Apfloat.ZERO);
+  }
+
+  public static void checkHypergeometric2F1(Apfloat a, Apfloat b, Apfloat x)
+      throws ArithmeticException {
+    // With real a, b and c the result is real if z <= 1 except if it's a polynomial, in which case
+    // it's always real (nb. additional checks might throw an exception later)
+    if (x.compareTo(Apfloat.ONE) > 0 && maxNonPositiveInteger(a, b) == null) {
+      throw new ApfloatArithmeticException("Result would be complex", "complex");
+    }
+  }
+
+  private static Apfloat maxNonPositiveInteger(Apcomplex... a) {
+    return Arrays.stream(a).filter(Apcomplex::isInteger).map(Apcomplex::real)
+        .filter(x -> x.signum() <= 0).reduce(ApfloatMath::max).orElse(null);
   }
 }

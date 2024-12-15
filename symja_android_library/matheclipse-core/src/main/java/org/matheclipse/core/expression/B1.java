@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -96,6 +97,15 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public IASTMutable copy() {
       return new IntegerQ(arg1);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evaluate(EvalEngine engine) {
+      if (arg1.isNumber()) {
+        return arg1.isInteger() ? S.True : S.False;
+      }
+      return engine.evaluate(arg1).isInteger() ? S.True : S.False;
     }
   }
 
@@ -343,6 +353,13 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     public IASTMutable copy() {
       return new Return(arg1);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evaluate(EvalEngine engine) {
+      return S.Return.evaluate(this, engine);
+    }
+
   }
 
   static class Sin extends B1 {
@@ -448,6 +465,12 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public IASTMutable copy() {
       return new Throw(arg1);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evaluate(EvalEngine engine) {
+      return S.Throw.evaluate(this, engine);
     }
   }
 
@@ -750,8 +773,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
           action.accept(arg1, 1);
           break;
         default:
-          throw new IndexOutOfBoundsException(
-              "Index: " + Integer.valueOf(start) + ", Size: 2");
+          throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(start) + ", Size: 2");
       }
     }
   }

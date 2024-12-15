@@ -1252,9 +1252,13 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public INumber inverse() {
-    final double tmp = (fComplex.getReal() * fComplex.getReal())
-        + (fComplex.getImaginary() * fComplex.getImaginary());
-    return valueOf(fComplex.getReal() / tmp, -fComplex.getImaginary() / tmp);
+    if (isOne()) {
+      return this;
+    }
+    return valueOf(fComplex.reciprocal());
+    // final double tmp = (fComplex.getReal() * fComplex.getReal())
+    // + (fComplex.getImaginary() * fComplex.getImaginary());
+    // return valueOf(fComplex.getReal() / tmp, -fComplex.getImaginary() / tmp);
   }
 
   @Override
@@ -1619,6 +1623,10 @@ public class ComplexNum implements IComplexNum {
     try {
       Apcomplex polygamma = EvalEngine.getApfloatDouble().polygamma(n, apcomplexValue());
       return F.complexNum(polygamma.real().doubleValue(), polygamma.imag().doubleValue());
+    } catch (ApfloatArithmeticException aaex) {
+      if ("polygamma.ofNonpositiveInteger".equals(aaex.getLocalizationKey())) {
+        return F.ComplexInfinity;
+      }
     } catch (ArithmeticException | NumericComputationException aex) {
       // java.lang.ArithmeticException: Polygamma of nonpositive integer
     }
@@ -1664,6 +1672,9 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr pow(int n) {
+    if (n == (-1)) {
+      return inverse();
+    }
     return valueOf(fComplex.pow(n));
   }
 

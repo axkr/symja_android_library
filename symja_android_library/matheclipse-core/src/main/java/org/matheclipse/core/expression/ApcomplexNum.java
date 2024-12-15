@@ -1152,6 +1152,9 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public INumber inverse() {
+    if (isOne()) {
+      return this;
+    }
     return valueOf(EvalEngine.getApfloat().inverseRoot(fApcomplex, 1));
   }
 
@@ -1427,6 +1430,10 @@ public class ApcomplexNum implements IComplexNum {
     try {
       Apcomplex polygamma = EvalEngine.getApfloat().polygamma(n, fApcomplex);
       return F.complexNum(polygamma);
+    } catch (ApfloatArithmeticException aaex) {
+      if ("polygamma.ofNonpositiveInteger".equals(aaex.getLocalizationKey())) {
+        return F.ComplexInfinity;
+      }
     } catch (ArithmeticException | NumericComputationException aex) {
       // java.lang.ArithmeticException: Polygamma of nonpositive integer
     }
@@ -1461,6 +1468,9 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr pow(int n) {
+    if (n == (-1)) {
+      return inverse();
+    }
     return valueOf(EvalEngine.getApfloat().pow(fApcomplex, n));
   }
 

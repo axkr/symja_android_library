@@ -295,7 +295,7 @@ public class Predicates {
    * @see IExpr#isFree(Predicate, boolean)
    */
   public static Predicate<IExpr> toFreeQ(IExpr pattern) {
-    if (pattern.isSymbol() || pattern.isNumber() || pattern.isString()) {
+    if (pattern.isSymbol() || pattern.isAtomicConstant()) {
       return x -> x.equals(pattern);
     }
     final IPatternMatcher matcher;

@@ -550,9 +550,9 @@ public class PredicateQ {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
-        final IExpr arg1 = engine.evaluate(ast.arg1());
-        final IExpr arg2 = engine.evalPattern(ast.arg2());
-        return F.booleSymbol(arg1.isFree(arg2, true));
+        IExpr a1 = ast.arg1();
+        IExpr a2 = ast.arg2();
+        return freeQ(a1, a2, engine);
       }
       return F.NIL;
     }
@@ -1947,6 +1947,16 @@ public class PredicateQ {
   public static boolean isSquareMatrix(IExpr expr) {
     int[] dims = expr.isMatrix();
     return dims != null && dims[0] == dims[1];
+  }
+
+  public static IExpr freeQ(IExpr a1, IExpr a2, EvalEngine engine) {
+    final IExpr arg1 = a1.isAtomicConstant() ? a1 : engine.evaluate(a1);
+    final IExpr arg2 = a2.isAtomicConstant() ? a2 : engine.evalPattern(a2);
+    if ((arg1.isSymbol() || arg1.isAtomicConstant())
+        && (arg2.isSymbol() || arg2.isAtomicConstant())) {
+      return F.booleSymbol(!arg1.equals(arg2));
+    }
+    return F.booleSymbol(arg1.isFree(arg2, true));
   }
 
   /**

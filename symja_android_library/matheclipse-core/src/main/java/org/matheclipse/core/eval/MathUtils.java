@@ -13,7 +13,7 @@ import org.matheclipse.parser.client.eval.DoubleVariable;
 import org.matheclipse.parser.client.math.MathException;
 
 public class MathUtils {
-  public static Double[][] rom;
+  private static Double[][] rom;
 
   private static double romberg(int i, int j) {
     if (j == 0) {

@@ -13,12 +13,14 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public abstract class B3 extends AbstractAST implements Externalizable, RandomAccess {
@@ -196,6 +198,12 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
     public IASTMutable copy() {
       return new If(arg1, arg2, arg3);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evaluate(EvalEngine engine) {
+      return S.If.evaluate(this, engine);
+    }
   }
 
   static final class Less extends B3 {
@@ -334,6 +342,16 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
       return new Plus(arg1, arg2, arg3);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evaluate(EvalEngine engine) {
+      if (arg3.isNumber() && arg2.isNumber() && arg1.isNumber()) {
+        INumber result = ((INumber) arg1).plus((INumber) arg2).plus((INumber) arg3);
+        return result;
+      }
+      return super.evaluate(engine);
+    }
+
     @Override
     public boolean isPlus() {
       return true;
@@ -388,6 +406,16 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public IASTMutable copy() {
       return new Times(arg1, arg2, arg3);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evaluate(EvalEngine engine) {
+      if (arg3.isNumber() && arg2.isNumber() && arg1.isNumber()) {
+        INumber result = ((INumber) arg1).times((INumber) arg2).times((INumber) arg3);
+        return result;
+      }
+      return super.evaluate(engine);
     }
 
     @Override

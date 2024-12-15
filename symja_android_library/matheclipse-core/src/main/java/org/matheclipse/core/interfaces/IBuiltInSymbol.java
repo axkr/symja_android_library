@@ -2,6 +2,7 @@ package org.matheclipse.core.interfaces;
 
 import java.util.function.Predicate;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 
 /** An expression representing a symbol (i.e. variable- constant- or function-name) */
 public interface IBuiltInSymbol extends ISymbol {
@@ -13,6 +14,10 @@ public interface IBuiltInSymbol extends ISymbol {
    *         is associated
    */
   public IEvaluator getEvaluator();
+
+  public default IExpr evaluate(IAST ast, EvalEngine engine) {
+    return ((IFunctionEvaluator) this.getEvaluator()).evaluate(ast, engine);
+  }
 
   /** Set the current evaluator which is associated to this symbol */
   public void setEvaluator(IEvaluator module);

@@ -10,7 +10,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Pair;
 
 /** Implemented by all number interfaces */
-public interface INumber extends IExpr, IAtomicEvaluate {
+public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
 
   /**
    * Get the absolute value for a given number

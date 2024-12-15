@@ -679,7 +679,7 @@ public abstract class AbstractFractionSym implements IFraction {
       return other;
     }
     if (other.isMinusOne()) {
-      return ((IFraction) this).negate();
+      return this.negate();
     }
 
     BigInteger newnum = toBigNumerator().multiply(other.toBigNumerator());
@@ -720,7 +720,7 @@ public abstract class AbstractFractionSym implements IFraction {
 
   @Override
   public IReal opposite() {
-    return ((IFraction) this).negate();
+    return this.negate();
   }
 
   /** {@inheritDoc} */
@@ -778,7 +778,7 @@ public abstract class AbstractFractionSym implements IFraction {
       } else if (that.isMinusOne()) {
         return inverse();
       }
-      long n = ((IInteger) that).toLongDefault();
+      long n = that.toLongDefault();
       if (n != Long.MIN_VALUE) {
         return power(n);
       }
@@ -893,11 +893,14 @@ public abstract class AbstractFractionSym implements IFraction {
   /** {@inheritDoc} */
   @Override
   public INumber times(INumber that) {
-    if (that.isZero()) {
-      return F.C0;
-    }
     if (that.isOne()) {
       return this;
+    }
+    if (that.isMinusOne()) {
+      return negate();
+    }
+    if (that.isZero()) {
+      return F.C0;
     }
     if (that instanceof IFraction) {
       return this.mul((IFraction) that).normalize();

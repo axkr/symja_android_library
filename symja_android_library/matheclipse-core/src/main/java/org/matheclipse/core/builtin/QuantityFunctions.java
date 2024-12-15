@@ -14,7 +14,6 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -25,7 +24,6 @@ import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.expression.data.TimeObjectExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.core.tensor.qty.IUnit;
@@ -176,7 +174,7 @@ public class QuantityFunctions {
             return ast.arg1().mapThread(ast, 1);
           }
           if (arg1.isString()) {
-            String str = ((IStringX) arg1).toString();
+            String str = arg1.toString();
             Function<LocalDateTime, IExpr> function = DATEVALUE_MAP.get(str);
             if (function != null) {
               return function.apply(LocalDateTime.now());
@@ -192,7 +190,7 @@ public class QuantityFunctions {
           }
           if (arg1 instanceof DateObjectExpr && arg2.isString()) {
             LocalDateTime ldt = ((DateObjectExpr) arg1).toData();
-            String str = ((IStringX) arg2).toString();
+            String str = arg2.toString();
             Function<LocalDateTime, IExpr> function = DATEVALUE_MAP.get(str);
             if (function != null) {
               return function.apply(ldt);

@@ -13,12 +13,15 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
+import org.matheclipse.core.builtin.PredicateQ;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public abstract class B2 extends AbstractAST implements Externalizable, RandomAccess {
@@ -90,6 +93,12 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public IASTMutable copy() {
       return new Condition(arg1, arg2);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evaluate(EvalEngine engine) {
+      return S.Condition.evaluate(this, engine);
     }
 
     @Override
@@ -223,6 +232,12 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
       return new FreeQ(arg1, arg2);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evaluate(EvalEngine engine) {
+      return PredicateQ.freeQ(arg1, arg2, engine);
+    }
+
     @Override
     public final IBuiltInSymbol head() {
       return S.FreeQ;
@@ -296,6 +311,12 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public IASTMutable copy() {
       return new If(arg1, arg2);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evaluate(EvalEngine engine) {
+      return S.If.evaluate(this, engine);
     }
 
     @Override
@@ -522,6 +543,17 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
       return new Plus(arg1, arg2);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evaluate(EvalEngine engine) {
+      if (arg1.isNumber() && arg2.isNumber()) {
+        INumber result = ((INumber) arg1).plus((INumber) arg2);
+        // System.out.println("Plus: " + arg1 + "+" + arg2 + "=>" + result);
+        return result;
+      }
+      return super.evaluate(engine);
+    }
+
     @Override
     public final IBuiltInSymbol head() {
       return S.Plus;
@@ -607,6 +639,32 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     public IASTMutable copy() {
       return new Power(arg1, arg2);
     }
+
+    // @Override
+    // public IExpr evaluate(EvalEngine engine) {
+    // if (arg1.isNumber() && arg2.isInteger()) {
+    // long exp = arg2.toLongDefault();
+    // if (exp != Long.MIN_VALUE) {
+    // // System.out.println("Power: " + arg1 + "^" + exp);
+    // if (exp > 0) {
+    // if (exp == 1 || arg1.isZero() || arg1.isOne()) {
+    // return arg1;
+    // }
+    // return arg1.power(exp);
+    // } else if (exp <= 0 && !arg1.isZero()) {
+    // if (exp == 0) {
+    // return F.C1;
+    // }
+    // // if (exp == -1) {
+    // // System.out.println("Power: " + arg1 + "^" + exp);
+    // // return arg1.inverse();
+    // // }
+    // // return arg1.power(-exp).inverse();
+    // }
+    // }
+    // }
+    // return super.evaluate(engine);
+    // }
 
     @Override
     public IExpr exponent() {
@@ -733,6 +791,17 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
       return new Subtract(arg1, arg2);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evaluate(EvalEngine engine) {
+      if (arg1.isNumber() && arg2.isNumber()) {
+        INumber result = ((INumber) arg1).subtract((INumber) arg2);
+        // System.out.println("Subtract: " + arg1 + "-" + arg2 + "=>" + result);
+        return result;
+      }
+      return super.evaluate(engine);
+    }
+
     @Override
     public final IBuiltInSymbol head() {
       return S.Subtract;
@@ -787,6 +856,21 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public IASTMutable copy() {
       return new Times(arg1, arg2);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evaluate(EvalEngine engine) {
+      if (arg1.isNumber() && arg2.isNumber()) {
+        INumber result = ((INumber) arg1).times((INumber) arg2);
+        // System.out.println("Times: " + arg1 + "*" + arg2 + "=>" + result);
+        return result;
+      }
+      // if (arg1.isNumber() && arg2.isNumber()) {
+      // IExpr result = super.evaluate(engine);
+      // System.out.println("Times: " + arg1 + "*" + arg2 + "=>" + result);
+      // }
+      return super.evaluate(engine);
     }
 
     @Override
@@ -856,6 +940,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
+
   static final class With extends B2 {
     public With() {
       super();
@@ -868,6 +953,12 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public IASTMutable copy() {
       return new With(arg1, arg2);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evaluate(EvalEngine engine) {
+      return S.With.evaluate(this, engine);
     }
 
     @Override

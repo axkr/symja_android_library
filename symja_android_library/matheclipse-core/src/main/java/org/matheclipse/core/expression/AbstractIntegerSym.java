@@ -1154,20 +1154,29 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
   @Override
   public INumber times(final INumber that) {
-    if (isZero() || that.isZero()) {
-      if (that.isInexactNumber()) {
-        return F.CD0;
-      }
-      return F.C0;
-    }
     if (isOne()) {
       return that;
+    }
+    if (isMinusOne()) {
+      return that.negate();
     }
     if (that.isOne()) {
       if (that.isInexactNumber()) {
         return numericNumber();
       }
       return this;
+    }
+    if (that.isMinusOne()) {
+      if (that.isInexactNumber()) {
+        return negate().numericNumber();
+      }
+      return negate();
+    }
+    if (isZero() || that.isZero()) {
+      if (that.isInexactNumber()) {
+        return F.CD0;
+      }
+      return F.C0;
     }
     if (that instanceof IInteger) {
       return this.multiply((IInteger) that);

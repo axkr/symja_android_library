@@ -934,6 +934,12 @@ public class ComplexSym implements IComplex {
 
   @Override
   public INumber times(final INumber that) {
+    if (that.isOne()) {
+      return this;
+    }
+    if (that.isMinusOne()) {
+      return negate();
+    }
     if (that.isZero()) {
       return F.C0;
     }
