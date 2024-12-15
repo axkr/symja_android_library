@@ -1803,10 +1803,32 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public IASTAppendable copyFrom(int startPosition, int endPosition) {
+  public IASTAppendable subList(int startPosition, int endPosition) {
     AST result = new AST(endPosition - startPosition + 1, false);
     result.append(head());
     result.appendAll(this, startPosition, endPosition);
+    return result;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IASTAppendable subList(int startPosition, int endPosition, int step) {
+    AST result;
+    if (step < 0) {
+      // start position should be greater than end position in this case
+      result = new AST(startPosition - endPosition + 1, false);
+      result.append(head());
+      for (int i = startPosition; i > endPosition; i += step) {
+        result.append(get(i));
+      }
+    } else {
+      result = new AST(endPosition - startPosition + 1, false);
+      result.append(head());
+      for (int i = startPosition; i < endPosition; i += step) {
+        result.append(get(i));
+      }
+    }
+
     return result;
   }
 
@@ -3555,7 +3577,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isBooleanFormula() {
-    return head().isBooleanFormulaSymbol() && forAll((Predicate<? super IExpr>) IExpr::isBooleanFormula);
+    return head().isBooleanFormulaSymbol()
+        && forAll((Predicate<? super IExpr>) IExpr::isBooleanFormula);
   }
 
   /** {@inheritDoc} */
@@ -4350,7 +4373,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isPolynomialStruct() {
-    if ((isBuiltInFunction() && !((ISymbol) head()).hasNumericFunctionAttribute()) || exists(x -> !x.isPolynomialStruct())) {
+    if ((isBuiltInFunction() && !((ISymbol) head()).hasNumericFunctionAttribute())
+        || exists(x -> !x.isPolynomialStruct())) {
       return false;
     }
     return true;

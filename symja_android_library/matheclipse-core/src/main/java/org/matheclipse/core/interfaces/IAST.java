@@ -459,11 +459,26 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @deprecated use {@link #subList(int, int)} instead
    */
   @Deprecated
-  public IASTAppendable copyFrom(int startPosition, int endPosition);
-
-  default IASTAppendable subList(int startPosition, int endPosition) {
-    return copyFrom(startPosition, endPosition);
+  default IASTAppendable copyFrom(int startPosition, int endPosition) {
+    return subList(startPosition, endPosition);
   }
+
+  public IASTAppendable subList(int startPosition, int endPosition);
+
+  /**
+   * <p>
+   * Create a copy of this <code>AST</code>, which contains the same head and all elements from the
+   * given <code>startPosition</code> (inclusive) to the <code>endPosition</code> (exclusive).
+   * <p>
+   * 
+   * @param startPosition the position to start copying the elements (inclusive)
+   * @param endPosition the position to end copying the elements (exclusive)
+   * @param step the step size for copying the elements. If step is negative
+   *        <code>startPosition</code> must be greater than <code>endPosition</code>
+   * @return a copy of this <code>AST</code> instance from the given <code>startPosition</code>
+   *         (inclusive) to the <code>endPosition</code> (exclusive)
+   */
+  public IASTAppendable subList(int startPosition, int endPosition, int step);
 
 
 
