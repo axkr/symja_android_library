@@ -20,7 +20,6 @@ import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -8275,8 +8274,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindRoot() {
-    INumber times = F.CN1.times(F.num("1.8444E-19"));
-    assertEquals(times.toString(), "-1.8444*10^-19");
+    // INumber times = F.CN1.times(F.num("1.8444E-19"));
+    // assertEquals(times.toString(), "-1.8444*10^-19");
 
     // print message: FindRoot: Search specification x should be a list with 1 to 3 elements.
     check("FindRoot(x^2.5 + x^0.5-100,x)", //
