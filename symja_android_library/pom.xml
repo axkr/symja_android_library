@@ -53,6 +53,7 @@
 		<module>matheclipse-gpl</module>
 		<module>matheclipse-image</module>
 		<module>matheclipse-nlp</module>
+<!-- 		<module>matheclipse-llm</module> -->
 		<module>matheclipse-api</module>
 		<module>matheclipse-io</module>
 		<module>matheclipse-discord</module>

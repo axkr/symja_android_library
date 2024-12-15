@@ -80,11 +80,11 @@ public class InputStreamExpr extends DataExpr<InputStream> implements Externaliz
   public static InputStreamExpr getFromFile(final FileExpr fileExpr, String streamName,
       EvalEngine engine) throws FileNotFoundException {
     File file = fileExpr.toData();
-    IExpr temp = engine.rememberMap.get(file);
+    IExpr temp = engine.getRemember(file);
     if (temp == null || !(temp instanceof InputStreamExpr)) {
       // don't close FileInputStream here
       InputStreamExpr stream = new InputStreamExpr(new FileInputStream(file));
-      engine.rememberMap.put(file, stream);
+      engine.putRememberMap(file, stream);
       return stream;
     }
     return (InputStreamExpr) temp;

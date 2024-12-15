@@ -6311,6 +6311,8 @@ public class S {
 
   public final static IBuiltInSymbol Literal = S.initFinalSymbol("Literal", ID.Literal);
 
+  public final static IBuiltInSymbol LLMFunction = S.initFinalSymbol("LLMFunction", ID.LLMFunction);
+
   /**
    * LoadJavaClass["class-name"] - loads the class with the specified `class-name` and return a
    * `JavaClass` expression. All static method names are assigned to a context which will be created
