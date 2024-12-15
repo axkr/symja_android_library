@@ -16,18 +16,18 @@ public class TraceInfo {
   public final List<TraceInfo> fTraceInfos;
 
   // What input is calculating
-  public IExpr input;
+  /* package private */ IExpr input;
 
   // The result after calculate the input.
-  public IExpr result;
+  /* package private */ IExpr result;
+
+  // Details about this trace
+  /* package private */ IAST info = F.List();
 
   // debug property
   protected Object stackMarker;
   // debug property
   protected StackTraceElement[] allocationStackTraceElements;
-
-  // Details about this trace
-  public IAST info = F.List();
 
   public TraceInfo(List<TraceInfo> fInfo) {
     fTraceInfos = new ArrayList<>(fInfo);

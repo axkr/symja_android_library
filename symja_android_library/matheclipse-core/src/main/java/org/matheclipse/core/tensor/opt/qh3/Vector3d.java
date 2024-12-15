@@ -33,11 +33,11 @@ public class Vector3d {
   /** Precision of a double. */
   static private final double DOUBLE_PREC = 2.2204460492503131e-16;
   /** First element */
-  public IExpr x;
+  /* package private */ IExpr x;
   /** Second element */
-  public IExpr y;
+  /* package private */ IExpr y;
   /** Third element */
-  public IExpr z;
+  /* package private */ IExpr z;
 
   /** Creates a 3-vector and initializes its elements to 0. */
   public Vector3d() {}
