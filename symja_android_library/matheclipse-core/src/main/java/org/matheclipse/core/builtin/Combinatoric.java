@@ -2577,14 +2577,11 @@ public final class Combinatoric {
     /** {@inheritDoc} */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.isAST0()) {
-        return F.NIL;
-      }
       if (ast.arg1().isAST()) {
         final IAST f = (IAST) ast.arg1();
         int n = f.argSize();
         SetSpecification level = new SetSpecification(0, n);
-        if (ast.isAST2()) {
+        if (ast.argSize() >= 2) {
           IExpr arg2 = ast.arg2();
           if (arg2 != S.All && !arg2.isInfinity()) {
             if (arg2.isInteger()) {
@@ -2618,6 +2615,92 @@ public final class Combinatoric {
           level.incCurrentCounter();
         }
 
+        if (ast.isAST3()) {
+          IExpr arg3 = ast.arg3();
+          if (arg3.isList1()) {
+            int s = arg3.first().toIntDefault();
+            if (s != Integer.MIN_VALUE) {
+              if (s < 0) {
+                if (result.argSize() >= -s) {
+                  return F.List(result.get(result.argSize() + s + 1));
+                }
+              } else {
+                if (result.argSize() >= s) {
+                  return F.List(result.get(s));
+                }
+              }
+              // Cannot take positions `1` through `2` in `3`.
+              // Errors.printMessage(S.Subsets, "take", F.List(F.C3, ast), engine);
+              return F.CEmptyList;
+            }
+          } else if (arg3.isList2()) {
+            int s1 = arg3.first().toIntDefault();
+            int s2 = arg3.second().toIntDefault();
+            if (s1 != Integer.MIN_VALUE && s2 != Integer.MIN_VALUE) {
+              if (s1 > s2) {
+                return F.CEmptyList;
+              }
+              if (s2 < 0) {
+                if (result.argSize() >= -s1 && result.argSize() >= -s2) {
+                  return result.subList(result.argSize() + s1 + 1, result.argSize() + s2 + 2);
+                }
+              } else if (s1 > 0) {
+                if (result.argSize() >= s1 && result.argSize() >= s1) {
+                  return result.subList(s1, s2 + 1);
+                }
+              }
+              return F.CEmptyList;
+            }
+          } else if (arg3.isList3()) {
+            IAST list = (IAST) arg3;
+            int s1 = list.arg1().toIntDefault();
+            int s2 = list.arg2().toIntDefault();
+            int step = list.arg3().toIntDefault();
+            if (s1 != Integer.MIN_VALUE && s2 != Integer.MIN_VALUE && step != Integer.MIN_VALUE) {
+              if (s1 > s2) {
+                if (step < 0) {
+                  if (s2 < 0) {
+                    // Function `1` not implemented
+                    return Errors.printMessage(S.Subsets, "zznotimpl", F.List(ast), engine);
+                  }
+                } else {
+                  return F.CEmptyList;
+                }
+              }
+              if (s2 < 0 && step < 0) {
+                if (result.argSize() >= -s1 && result.argSize() >= -s2) {
+                  return result.subList(result.argSize() + s1 + 1, result.argSize() + s2 + 1,
+                      -step);
+                }
+              } else if (s1 > 0) {
+                if (result.argSize() >= s1 && result.argSize() >= s2) {
+                  // step can be negative and s1 > s2
+                  return result.subList(s1, step < 0 ? s2 - 1 : s2 + 1, step);
+                }
+              }
+              return F.CEmptyList;
+            }
+          } else {
+            int s = arg3.toIntDefault();
+            if (s != Integer.MIN_VALUE) {
+              if (s < 0) {
+                if (result.argSize() >= -s) {
+                  return result.subList(result.argSize() + s + 1);
+                }
+              } else {
+                if (result.argSize() >= s) {
+                  return result.subList(1, s + 1);
+                }
+              }
+              // Cannot take positions `1` through `2` in `3`.
+              // Errors.printMessage(S.Subsets, "take", F.List(F.C3, ast), engine);
+              return F.CEmptyList;
+            }
+          }
+          // Position `1` of `2` must be All, None an integer, or a list of 1,2 or 3 integers, with
+          // the third (if present) nonzero.
+          return Errors.printMessage(S.Subsets, "seq", F.List(F.C3, ast), engine);
+        }
         return result;
       }
       return F.NIL;
@@ -2625,7 +2708,7 @@ public final class Combinatoric {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_0_2;
+      return ARGS_1_3;
     }
 
     public static KSubsetsList createKSubsets(final IAST list, final int k, IAST resultList,
