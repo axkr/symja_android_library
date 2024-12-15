@@ -20,6 +20,7 @@ import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -6036,11 +6037,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "<|1->a|>");
     check("Drop(<|1 -> a, 2 -> b, 3 -> c|>, {2})", //
         "<|1->a,3->c|>");
-    check("Drop({}, 0)", //
-        "{}");
     check("Drop({}, 1)", //
         "Drop({},1)");
-
     check("Drop({a, b, c, d}, 3)", //
         "{d}");
     check("Drop({a, b, c, d}, -2)", //
@@ -6073,6 +6071,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{23},{33}}");
     check("Drop({{11, 12, 13}, {21, 22, 23}, a, {31, 32, 33}}, 1, 2)", //
         "Drop({{11,12,13},{21,22,23},a,{31,32,33}},1,2)");
+  }
+
+  @Test
+  public void testDrop0() {
+    check("Drop({2,3}, 0)", //
+        "{2,3}");
+    check("Drop({}, 0)", //
+        "{}");
   }
 
   // @Test
@@ -8269,6 +8275,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindRoot() {
+    INumber times = F.CN1.times(F.num("1.8444E-19"));
+    assertEquals(times.toString(), "-1.8444*10^-19");
+
     // print message: FindRoot: Search specification x should be a list with 1 to 3 elements.
     check("FindRoot(x^2.5 + x^0.5-100,x)", //
         "FindRoot(-100+Sqrt(x)+x^2.5,x)");
@@ -9999,6 +10008,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHarmonicMean() {
+    checkNumeric("(1.01646-I*1.0)^(-1)", //
+        "0.4999333728092652+I*0.49183772387429436");
     checkNumeric("HarmonicMean({-3.1415,2.987,-1,1})", //
         "242.94266666666653");
     checkNumeric("HarmonicMean({-3.1415,2.987,I,1})", //
@@ -23394,6 +23405,47 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{a,b},{a,c},{b,c}}");
     check("Subsets({a,b,c,d},{2})", //
         "{{a,b},{a,c},{a,d},{b,c},{b,d},{c,d}}");
+  }
+
+  @Test
+  public void testPartialSubsets() {
+    check("Subsets({a, b, c, d}, All, {1, 15, 2})", //
+        "{{},{b},{d},{a,c},{b,c},{c,d},{a,b,d},{b,c,d}}");
+    check("Subsets({a, b, c, d}, All, {15, 1, -2})", //
+        "{{b,c,d},{a,b,d},{c,d},{b,c},{a,c},{d},{b},{}}");
+    check("Subsets(f[a, b, c, d, e], {3},{3,8,3})", //
+        "{f(a,b,e),f(a,d,e)}");
+    check("Subsets({a, b, c, d, e}, {3},{-3,-8,-3})", //
+        "Subsets({a,b,c,d,e},{3},{-3,-8,-3})");
+    check("Subsets({a, b, c, d, e}, {3},{3,8,3})", //
+        "{{a,b,e},{a,d,e}}");
+    check("Subsets({a, b, c, d, e}, {3},{3,8})", //
+        "{{a,b,e},{a,c,d},{a,c,e},{a,d,e},{b,c,d},{b,c,e}}");
+
+
+
+    check("Subsets({a, b, c, d, e}, {3}, 3)", //
+        "{{a,b,c},{a,b,d},{a,b,e}}");
+    check("Subsets({a, b, c, d, e}, {3}, -4)", //
+        "{{b,c,d},{b,c,e},{b,d,e},{c,d,e}}");
+    check("Subsets({a, b, c, d, e}, {3}, {3})", //
+        "{{a,b,e}}");
+    check("Subsets({a, b, c, d, e}, {3},  {3,4})", //
+        "{{a,b,e},{a,c,d}}");
+    check("Subsets({a, b, c, d, e}, {3},  {-3,-4})", //
+        "{}");
+    check("Subsets({a, b, c, d, e}, {3},  {-4,-3})", //
+        "{{b,c,d},{b,c,e}}");
+    check("Subsets({a, b, c, d, e}, {3},  {-4,-1})", //
+        "{{b,c,d},{b,c,e},{b,d,e},{c,d,e}}");
+    check("Subsets({a, b, c, d, e}, {3},  {-4,1})", //
+        "{}");
+    check("Subsets({a, b, c, d, e}, {3}, {-4})", //
+        "{{b,c,d}}");
+    check("Subsets({a, b, c, d, e}, {3})", //
+        "{{a,b,c},{a,b,d},{a,b,e},{a,c,d},{a,c,e},{a,d,e},{b,c,d},{b,c,e},{b,d,e},{c,d,e}}");
+    check("Subsets(Range(10), All, {1024})", //
+        "{{1,2,3,4,5,6,7,8,9,10}}");
   }
 
   @Test
