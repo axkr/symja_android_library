@@ -59,6 +59,7 @@ import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.core.sympy.exception.ValueError;
 import org.matheclipse.core.sympy.simplify.Powsimp;
 import org.matheclipse.core.sympy.utilities.Iterables;
+import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
@@ -2581,6 +2582,13 @@ public interface IExpr
     return true;
   }
 
+  /**
+   * Test if this expression is an atomic constant (i.e. {@link INumber}, {@link IQuantity} or
+   * {@link IStringX} object)
+   */
+  default boolean isAtomicConstant() {
+    return this instanceof IAtomicConstant;
+  }
 
   /**
    * Test if this expression is a <code>Blank[]</code> object
