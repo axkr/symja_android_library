@@ -209,7 +209,7 @@ public class EvalEngine implements Serializable {
    */
   public transient Cache<IAST, IExpr> rubiASTCache = null;
 
-  public transient Map<Object, IExpr> rememberMap = null;
+  private transient Map<Object, IExpr> rememberMap = null;
 
   public static final boolean DEBUG = false;
 
@@ -4162,5 +4162,11 @@ public class EvalEngine implements Serializable {
     get().fApfloatHelper = helper;
   }
 
+  public IExpr getRemember(Object key) {
+    return rememberMap.get(key);
+  }
 
+  public void putRememberMap(Object key, IExpr value) {
+    rememberMap.put(key, value);
+  }
 }

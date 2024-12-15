@@ -3,7 +3,6 @@ package org.matheclipse.core.convert;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.expression.F;
@@ -78,7 +77,7 @@ public class JASModInteger {
       return expr2Poly(exprPoly, false);
     } catch (Exception ae) {
       Errors.rethrowsInterruptException(ae);
-      throw new JASConversionException();
+      throw JASConversionException.FAILED;
     }
   }
 
@@ -97,7 +96,7 @@ public class JASModInteger {
       return numericExpr2Poly(exprPoly);
     } catch (Exception ae) {
       Errors.rethrowsInterruptException(ae);
-      throw new JASConversionException();
+      throw JASConversionException.FAILED;
     }
   }
 
@@ -115,7 +114,7 @@ public class JASModInteger {
       return expr2IExprPoly(exprPoly);
     } catch (Exception ae) {
       Errors.rethrowsInterruptException(ae);
-      throw new JASConversionException();
+      throw JASConversionException.FAILED;
     }
   }
 
@@ -193,7 +192,7 @@ public class JASModInteger {
       // class cast exception
     } else if (exprPoly instanceof IInteger) {
       return fPolyFactory.fromInteger(
-          (java.math.BigInteger) ((IInteger) exprPoly).asType(java.math.BigInteger.class));
+          (java.math.BigInteger) exprPoly.asType(java.math.BigInteger.class));
     }
     throw new ClassCastException(exprPoly.toString());
   }
@@ -255,7 +254,7 @@ public class JASModInteger {
       return new GenPolynomial(fPolyFactory, exprPoly);
     } else if (exprPoly instanceof IInteger) {
       return fPolyFactory.fromInteger(
-          (java.math.BigInteger) ((IInteger) exprPoly).asType(java.math.BigInteger.class));
+          (java.math.BigInteger) exprPoly.asType(java.math.BigInteger.class));
     } else if (exprPoly instanceof IFraction) {
       return fraction2Poly((IFraction) exprPoly);
     }

@@ -390,7 +390,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
     if (exprPoly instanceof IAST) {
       final IAST ast = (IAST) exprPoly;
       if (ast.isDirectedInfinity()) {
-        throw new JASConversionException();
+        throw JASConversionException.FAILED;
       }
       ExprPolynomial result = getZero();
       ExprPolynomial p = getZero();
@@ -441,7 +441,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
       }
     } else if (exprPoly instanceof ISymbol) {
       if (exprPoly.isIndeterminate()) {
-        throw new JASConversionException();
+        throw JASConversionException.FAILED;
       }
       if (coefficient) {
         return new ExprPolynomial(this, exprPoly);
@@ -450,7 +450,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
         if (exprPoly.isNumericFunction(true)) {
           return new ExprPolynomial(this, exprPoly);
         }
-        throw new JASConversionException();
+        throw JASConversionException.FAILED;
       } else {
         return new ExprPolynomial(this, exprPoly);
       }
@@ -460,7 +460,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
     if (exprPoly.isFree(Predicates.in(vars), true) && !(exprPoly instanceof IDataExpr)) {
       return new ExprPolynomial(this, exprPoly);
     }
-    throw new JASConversionException();
+    throw JASConversionException.FAILED;
   }
 
   /**

@@ -1455,8 +1455,13 @@ public class SeriesFunctions {
         return F.NIL;
       }
       GenPolynomial<BigRational> numerator = jas.expr2JAS(numeratorDenominatorParts[0], false);
+      if (numerator == null) {
+        return F.NIL;
+      }
       GenPolynomial<BigRational> denominator = jas.expr2JAS(numeratorDenominatorParts[1], false);
-
+      if (denominator == null) {
+        return F.NIL;
+      }
       GenPolynomialRing<BigRational> pr = fac.polyRing();
       QuotientRing<BigRational> qr = new QuotientRing<BigRational>(pr);
       Quotient<BigRational> p = new Quotient<BigRational>(qr, numerator, denominator);

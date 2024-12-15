@@ -6,10 +6,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
-
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.exception.JASConversionException;
+// import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -220,10 +219,9 @@ public class JASConvert<C extends RingElem<C>> {
    * throws a <code>JASConversionException</code>.
    *
    * @param complexValue the complex value containing a rational real and imaginary part
-   * @return a jas polynomial
-   * @throws JASConversionException
+   * @return a jas polynomial or <code>null</code> if the conversion isn't possible
    */
-  private GenPolynomial<C> complex2Poly(final IComplex complexValue) throws JASConversionException {
+  private GenPolynomial<C> complex2Poly(final IComplex complexValue) {
     IRational reRational = complexValue.reRational();
     IRational imRational = complexValue.imRational();
     BigRational nre = new BigRational(reRational.toBigNumerator());
@@ -236,10 +234,12 @@ public class JASConvert<C extends RingElem<C>> {
       ComplexRing ring = (ComplexRing) fRingFactory;
       Complex<BigRational> c = new Complex<BigRational>(ring, re, im);
       return new GenPolynomial(fPolyFactory, c);
-    } else {
-      // "ComplexRing expected"
-      throw new JASConversionException();
     }
+    // else {
+    // // "ComplexRing expected"
+    // throw new JASConversionException();
+    // }
+    return null;
   }
 
   public IExpr complexIntegerPoly2Expr(final GenPolynomial<Complex<edu.jas.arith.BigInteger>> poly)
@@ -298,6 +298,14 @@ public class JASConvert<C extends RingElem<C>> {
     return result.oneIdentity0();
   }
 
+  /**
+   * Convert a JAS polynomial to <code>IExpr</code>.
+   * 
+   * @param exprPoly
+   * @param numeric2Rational
+   * @return <code>null</code> if the conversion isn't possible
+   * @throws JASConversionException
+   */
   public GenPolynomial<C> expr2JAS(final IExpr exprPoly, boolean numeric2Rational)
       throws JASConversionException {
     try {
@@ -306,8 +314,8 @@ public class JASConvert<C extends RingElem<C>> {
       throw jce;
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
-      throw new JASConversionException();
     }
+    throw JASConversionException.FAILED;
   }
 
   /**
@@ -317,12 +325,11 @@ public class JASConvert<C extends RingElem<C>> {
    * @param exprPoly
    * @param numeric2Rational if <code>true</code>, <code>INum</code> double values are converted to
    *        <code>BigRational</code> internally
-   * @return
+   * @return <code>null</code> if the conversion isn't possible
    * @throws ArithmeticException
-   * @throws JASConversionException
    */
   private GenPolynomial<C> expr2Poly(final IExpr exprPoly, boolean numeric2Rational)
-      throws ArithmeticException, JASConversionException {
+      throws ArithmeticException {
     if (exprPoly instanceof IAST) {
       final IAST ast = (IAST) exprPoly;
       if (ast.isSlot()) {
@@ -337,18 +344,30 @@ public class JASConvert<C extends RingElem<C>> {
         if (ast.isPlus()) {
           IExpr expr = ast.arg1();
           result = expr2Poly(expr, numeric2Rational);
+          if (result == null) {
+            return null;
+          }
           for (int i = 2; i < ast.size(); i++) {
             expr = ast.get(i);
             p = expr2Poly(expr, numeric2Rational);
+            if (p == null) {
+              return null;
+            }
             result = result.sum(p);
           }
           return result;
         } else if (ast.isTimes()) {
           IExpr expr = ast.arg1();
           result = expr2Poly(expr, numeric2Rational);
+          if (result == null) {
+            return null;
+          }
           for (int i = 2; i < ast.size(); i++) {
             expr = ast.get(i);
             p = expr2Poly(expr, numeric2Rational);
+            if (p == null) {
+              return null;
+            }
             result = result.multiply(p);
           }
           return result;
@@ -356,18 +375,16 @@ public class JASConvert<C extends RingElem<C>> {
           final ISymbol base = (ISymbol) ast.base();
           int exponent = ast.exponent().toIntDefault();
           if (exponent < 0) {
-            throw new JASConversionException();
+            return null;
+            // throw new JASConversionException();
             // "JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
           }
           try {
-            GenPolynomial<C> v = fPolyFactory.univariate(base.getSymbolName(), 1L);
-            return v.power(exponent);
-            // int indexOf = fVariables.indexOf(base);
-            // if (indexOf >= 0) {
-            // ExpVectorLong v = new ExpVectorLong(fVariables.size(), indexOf, exponent);
-            // return fPolyFactory.valueOf(fRingFactory.getONE(), v);
-            // }
-            // return fPolyFactory.univariate(base.getSymbolName(), exponent);
+            int indexOf = fVariables.indexOf(base);
+            if (indexOf >= 0) {
+              GenPolynomial<C> v = fPolyFactory.univariate(base.getSymbolName(), 1L);
+              return v.power(exponent);
+            }
           } catch (IllegalArgumentException iae) {
             // fall through
           }
@@ -375,9 +392,8 @@ public class JASConvert<C extends RingElem<C>> {
           final IAST base = (IAST) ast.arg1();
           int exponent = ast.exponent().toIntDefault();
           if (exponent < 0) {
-            throw new JASConversionException();
-            // throw new ArithmeticException(
-            // "JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
+            return null;
+            // throw new JASConversionException();
           }
           try {
             return fPolyFactory.univariate(base.toString(), exponent);
@@ -387,21 +403,25 @@ public class JASConvert<C extends RingElem<C>> {
         }
       }
     } else if (exprPoly instanceof ISymbol) {
+      ISymbol symbol = (ISymbol) exprPoly;
       try {
         if (exprPoly.isIndeterminate()) {
-          throw new JASConversionException();
+          return null;
+          // throw new JASConversionException();
         }
-        return fPolyFactory.univariate(((ISymbol) exprPoly).getSymbolName(), 1L);
+        int indexOf = fVariables.indexOf(symbol);
+        if (indexOf >= 0) {
+          return fPolyFactory.univariate(symbol.getSymbolName(), 1L);
+        }
       } catch (IllegalArgumentException iae) {
         // java.lang.IllegalArgumentException: variable 'XXX' not defined in polynomial ring
       }
     } else if (exprPoly instanceof IInteger) {
-      return fPolyFactory.fromInteger(
-          (java.math.BigInteger) ((IInteger) exprPoly).asType(java.math.BigInteger.class));
+      return fPolyFactory
+          .fromInteger((java.math.BigInteger) exprPoly.asType(java.math.BigInteger.class));
     } else if (exprPoly instanceof IFraction) {
       return fraction2Poly((IFraction) exprPoly);
     } else if (exprPoly instanceof IComplex) {
-      // may throw JASConversionException
       return complex2Poly((IComplex) exprPoly);
     } else if (exprPoly instanceof INum && numeric2Rational) {
       IFraction frac = F.fraction(((INum) exprPoly).getRealPart());
@@ -413,7 +433,8 @@ public class JASConvert<C extends RingElem<C>> {
         return fraction2Poly(frac);
       }
     }
-    throw new JASConversionException();
+    return null;
+    // throw new JASConversionException();
   }
 
   private boolean expVectorToExpr(ExpVector exp, IASTAppendable monomTimes) {
@@ -467,9 +488,8 @@ public class JASConvert<C extends RingElem<C>> {
       ComplexRing<BigRational> ring = (ComplexRing<BigRational>) fRingFactory;
       Complex<BigRational> c = new Complex<BigRational>(ring, r);
       return new GenPolynomial(fPolyFactory, c);
-    } else {
-      return new GenPolynomial(fPolyFactory, r);
     }
+    return new GenPolynomial(fPolyFactory, r);
   }
 
   public RingFactory<C> getCoefficientRingFactory() {
@@ -667,8 +687,8 @@ public class JASConvert<C extends RingElem<C>> {
       return numericExpr2Poly(exprPoly);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
-      throw new JASConversionException();
     }
+    return null;
   }
 
   /**
@@ -677,12 +697,11 @@ public class JASConvert<C extends RingElem<C>> {
    * </code> was called for the expression
    *
    * @param exprPoly
-   * @return
+   * @return <code>null</code> if the conversion isn't possible
    * @throws ArithmeticException
-   * @throws JASConversionException
    */
   private GenPolynomial<C> numericExpr2Poly(final IExpr exprPoly)
-      throws ArithmeticException, JASConversionException {
+      throws ArithmeticException {
     return expr2Poly(exprPoly, true);
   }
 

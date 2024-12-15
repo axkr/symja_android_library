@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.SortedMap;
-
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -172,7 +171,7 @@ public class JASIExpr {
       return expr2IExprPoly(exprPoly);
     } catch (Exception ae) {
       Errors.rethrowsInterruptException(ae);
-      throw new JASConversionException();
+      throw JASConversionException.FAILED;
     }
   }
 

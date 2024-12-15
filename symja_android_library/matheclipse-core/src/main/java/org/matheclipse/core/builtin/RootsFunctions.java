@@ -9,7 +9,6 @@ import org.apache.logging.log4j.Logger;
 import org.hipparchus.analysis.solvers.LaguerreSolver;
 import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Expr2Object;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.Object2Expr;
@@ -103,41 +102,44 @@ public class RootsFunctions {
         JASConvert<Complex<BigRational>> jas = new JASConvert<Complex<BigRational>>(varList, cfac);
         GenPolynomial<Complex<BigRational>> poly = jas.numericExpr2JAS(expr);
 
-        Squarefree<Complex<BigRational>> squarefreeEngine =
-            SquarefreeFactory.<Complex<BigRational>>getImplementation(cfac);
-        poly = squarefreeEngine.squarefreePart(poly);
+        if (poly != null) {
+          Squarefree<Complex<BigRational>> squarefreeEngine =
+              SquarefreeFactory.<Complex<BigRational>>getImplementation(cfac);
+          poly = squarefreeEngine.squarefreePart(poly);
 
-        List<Rectangle<BigRational>> roots = cr.complexRoots(poly);
+          List<Rectangle<BigRational>> roots = cr.complexRoots(poly);
 
-        BigRational len = new BigRational(1, 100000L);
+          BigRational len = new BigRational(1, 100000L);
 
-        IASTAppendable resultList = F.ListAlloc(roots.size());
+          IASTAppendable resultList = F.ListAlloc(roots.size());
 
-        if (numeric) {
-          for (Rectangle<BigRational> root : roots) {
-            Rectangle<BigRational> refine = cr.complexRootRefinement(root, poly, len);
-            resultList.append(
-                JASConvert.jas2Numeric(refine.getCenter(), Config.DEFAULT_ROOTS_CHOP_DELTA));
+          if (numeric) {
+            for (Rectangle<BigRational> root : roots) {
+              Rectangle<BigRational> refine = cr.complexRootRefinement(root, poly, len);
+              resultList.append(
+                  JASConvert.jas2Numeric(refine.getCenter(), Config.DEFAULT_ROOTS_CHOP_DELTA));
+            }
+          } else {
+            IASTAppendable rectangleList;
+            for (Rectangle<BigRational> root : roots) {
+              rectangleList = F.ListAlloc(4);
+
+              Rectangle<BigRational> refine = cr.complexRootRefinement(root, poly, len);
+              rectangleList.append(JASConvert.jas2Complex(refine.getNW()));
+              rectangleList.append(JASConvert.jas2Complex(refine.getSW()));
+              rectangleList.append(JASConvert.jas2Complex(refine.getSE()));
+              rectangleList.append(JASConvert.jas2Complex(refine.getNE()));
+              resultList.append(rectangleList);
+            }
           }
-        } else {
-          IASTAppendable rectangleList;
-          for (Rectangle<BigRational> root : roots) {
-            rectangleList = F.ListAlloc(4);
-
-            Rectangle<BigRational> refine = cr.complexRootRefinement(root, poly, len);
-            rectangleList.append(JASConvert.jas2Complex(refine.getNW()));
-            rectangleList.append(JASConvert.jas2Complex(refine.getSW()));
-            rectangleList.append(JASConvert.jas2Complex(refine.getSE()));
-            rectangleList.append(JASConvert.jas2Complex(refine.getNE()));
-            resultList.append(rectangleList);
-          }
+          EvalAttributes.sort(resultList);
+          return resultList;
         }
-        EvalAttributes.sort(resultList);
-        return resultList;
       } catch (IllegalArgumentException | InvalidBoundaryException | JASConversionException e) {
-        // Illegal arguments: \"`1`\" in `2`
-        return Errors.printMessage(S.RootIntervals, "argillegal", F.List(arg), engine);
+        //
       }
+      // Illegal arguments: \"`1`\" in `2`
+      return Errors.printMessage(S.RootIntervals, "argillegal", F.List(arg), engine);
     }
   }
 
@@ -935,6 +937,14 @@ public class RootsFunctions {
 
       JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
       GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numericSolutions);
+      if (polyRat == null) {
+        result = rootsOfExprPolynomial(expr, variables, true);
+        if (result.isPresent()) {
+          return rootsOfVariableEndProcessing(result, variables, denominator, createSet, sort,
+              engine);
+        }
+        return F.NIL;
+      }
       // if (polyRat.degree(0) <= 2) {
       result = rootsOfExprPolynomial(expr, variables, false);
       if (result.isPresent()) {
@@ -961,6 +971,14 @@ public class RootsFunctions {
           }
         } else {
           polyRat = jas.expr2JAS(temp, numericSolutions);
+          if (polyRat == null) {
+            result = rootsOfExprPolynomial(expr, variables, true);
+            if (result.isPresent()) {
+              return rootsOfVariableEndProcessing(result, variables, denominator, createSet, sort,
+                  engine);
+            }
+            return F.NIL;
+          }
           IAST factorComplex = Algebra.factorRational(polyRat, jas, S.List);
           if (factorComplex.isNIL()) {
             factorComplex = F.Times(expr);
@@ -996,31 +1014,36 @@ public class RootsFunctions {
       result = rootsOfExprPolynomial(expr, variables, true);
     }
     if (result.isPresent()) {
-      if (!denominator.isNumber()) {
-        // eliminate roots from the result list, which occur in the
-        // denominator
-        int i = 1;
-        IASTAppendable appendable = F.NIL;
-        while (i < result.size()) {
-          IExpr temp = denominator.replaceAll(F.Rule(variables.arg1(), result.get(i)));
-          if (temp.isPresent() && engine.evaluate(temp).isZero()) {
-            if (appendable.isNIL()) {
-              appendable = result.removeAtClone(i);
-              continue;
-            }
-            appendable.remove(i);
-            continue;
-          }
-          i++;
-        }
-      }
-      IASTAppendable newResult = result.copyAppendable();
-      if (createSet) {
-        return QuarticSolver.createSet(newResult);
-      }
-      return QuarticSolver.evalAndSort(newResult, sort);
+      return rootsOfVariableEndProcessing(result, variables, denominator, createSet, sort, engine);
     }
     return F.NIL;
+  }
+
+  private static IAST rootsOfVariableEndProcessing(IASTMutable result, final IAST variables,
+      final IExpr denominator, boolean createSet, boolean sort, EvalEngine engine) {
+    if (!denominator.isNumber()) {
+      // eliminate roots from the result list, which occur in the
+      // denominator
+      int i = 1;
+      IASTAppendable appendable = F.NIL;
+      while (i < result.size()) {
+        IExpr temp = denominator.replaceAll(F.Rule(variables.arg1(), result.get(i)));
+        if (temp.isPresent() && engine.evaluate(temp).isZero()) {
+          if (appendable.isNIL()) {
+            appendable = result.removeAtClone(i);
+            continue;
+          }
+          appendable.remove(i);
+          continue;
+        }
+        i++;
+      }
+    }
+    IASTAppendable newResult = result.copyAppendable();
+    if (createSet) {
+      return QuarticSolver.createSet(newResult);
+    }
+    return QuarticSolver.evalAndSort(newResult, sort);
   }
 
   /**

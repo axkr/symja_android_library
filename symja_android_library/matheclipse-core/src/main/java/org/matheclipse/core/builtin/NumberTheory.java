@@ -5550,7 +5550,9 @@ public final class NumberTheory {
         throws JASConversionException {
       JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
       GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
-
+      if (poly == null) {
+        throw JASConversionException.FAILED;
+      }
       FactorAbstract<BigRational> factorAbstract = FactorFactory.getImplementation(BigRational.ONE);
       return factorAbstract.isSquarefree(poly);
     }
@@ -5565,7 +5567,9 @@ public final class NumberTheory {
         ModIntegerRing modIntegerRing = JASConvert.option2ModIntegerRing((IReal) option);
         JASConvert<ModInteger> jas = new JASConvert<ModInteger>(varList, modIntegerRing);
         GenPolynomial<ModInteger> poly = jas.expr2JAS(expr, false);
-
+        if (poly == null) {
+          throw JASConversionException.FAILED;
+        }
         FactorAbstract<ModInteger> factorAbstract = FactorFactory.getImplementation(modIntegerRing);
         return factorAbstract.isSquarefree(poly);
       }
@@ -6804,11 +6808,16 @@ public final class NumberTheory {
       JASConvert<edu.jas.arith.BigInteger> jas = new JASConvert<edu.jas.arith.BigInteger>(
           varSet.getArrayList(), edu.jas.arith.BigInteger.ZERO);
       GenPolynomial<edu.jas.arith.BigInteger> ePoly = jas.expr2JAS(expr, false);
+      if (ePoly == null) {
+        return F.NIL;
+      }
       result = diophantinePolynomial(ePoly, varList, maximumNumberOfResults);
       result = QuarticSolver.sortASTArguments(result);
       return result;
     } catch (JASConversionException e2) {
-      e2.printStackTrace();
+      if (Config.SHOW_STACKTRACE) {
+        e2.printStackTrace();
+      } ;
     }
     return result;
   }

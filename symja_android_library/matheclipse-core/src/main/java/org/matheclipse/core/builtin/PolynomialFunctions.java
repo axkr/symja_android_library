@@ -1052,33 +1052,42 @@ public class PolynomialFunctions {
         JASConvert<edu.jas.arith.BigInteger> jas =
             new JASConvert<edu.jas.arith.BigInteger>(varList, edu.jas.arith.BigInteger.ZERO);
         GenPolynomial<edu.jas.arith.BigInteger> p1 = jas.expr2JAS(a, false);
+        if (p1 == null) {
+          return resultantExpr(a, b, eVar);
+        }
         GenPolynomial<edu.jas.arith.BigInteger> p2 = jas.expr2JAS(b, false);
+        if (p2 == null) {
+          return resultantExpr(a, b, eVar);
+        }
         GreatestCommonDivisorAbstract<edu.jas.arith.BigInteger> factory =
             GCDFactory.getImplementation(edu.jas.arith.BigInteger.ZERO);
         p1 = factory.resultant(p1, p2);
         return jas.integerPoly2Expr(p1);
       } catch (ClassCastException | JASConversionException e) {
-        try {
-          if (eVar.size() == 0) {
-            return F.NIL;
-          }
-          IAST vars = eVar.getVarList();
-          ExprPolynomialRing ring = new ExprPolynomialRing(vars);
-          ExprPolynomial pol1 = ring.create(a);
-          ExprPolynomial pol2 = ring.create(b);
-          List<IExpr> varList = eVar.getVarList().copyTo();
-          JASIExpr jas = new JASIExpr(varList, true);
-          GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
-          GenPolynomial<IExpr> p2 = jas.expr2IExprJAS(pol2);
+        return resultantExpr(a, b, eVar);
+      }
+    }
 
-          GreatestCommonDivisor<IExpr> factory =
-              GCDFactory.getImplementation(ExprRingFactory.CONST);
-          p1 = factory.resultant(p1, p2);
-          return jas.exprPoly2Expr(p1);
-        } catch (RuntimeException rex) {
-          Errors.rethrowsInterruptException(rex);
-          LOGGER.debug("Resultant.jasResultant() failed", rex);
+    private static IExpr resultantExpr(IExpr a, IExpr b, VariablesSet eVar) {
+      try {
+        if (eVar.size() == 0) {
+          return F.NIL;
         }
+        IAST vars = eVar.getVarList();
+        ExprPolynomialRing ring = new ExprPolynomialRing(vars);
+        ExprPolynomial pol1 = ring.create(a);
+        ExprPolynomial pol2 = ring.create(b);
+        List<IExpr> varList = eVar.getVarList().copyTo();
+        JASIExpr jas = new JASIExpr(varList, true);
+        GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
+        GenPolynomial<IExpr> p2 = jas.expr2IExprJAS(pol2);
+
+        GreatestCommonDivisor<IExpr> factory = GCDFactory.getImplementation(ExprRingFactory.CONST);
+        p1 = factory.resultant(p1, p2);
+        return jas.exprPoly2Expr(p1);
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        LOGGER.debug("Resultant.jasResultant() failed", rex);
       }
       return F.NIL;
     }
@@ -1699,6 +1708,9 @@ public class PolynomialFunctions {
         IExpr expr = F.evalExpandAll(listOfPolynomials.get(i));
         try {
           GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
+          if (poly == null) {
+            return F.NIL;
+          }
           polyList.add(poly);
         } catch (JASConversionException e) {
           return F.NIL;
@@ -2498,7 +2510,11 @@ public class PolynomialFunctions {
       IExpr expr = F.evalExpandAll(listOfPolynomials.get(i));
       try {
         GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
-        polyList.add(poly);
+        if (poly == null) {
+          rest.append(expr);
+        } else {
+          polyList.add(poly);
+        }
       } catch (JASConversionException e) {
         rest.append(expr);
       }
