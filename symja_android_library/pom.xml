@@ -42,7 +42,8 @@
 		See description of 'skipNexusStagingDeployMojo'
 		in
 		https://github.com/sonatype/nexus-maven-plugins/blob/master/staging/maven-plugin/README.md#plugin-flags-->
-		<module>matheclipse-beakerx</module>
+<!--	https://jitpack.io repository doesn't work anymore -->
+<!--		<module>matheclipse-beakerx</module> -->
 		<module>matheclipse-jar</module>
 		<module>tools</module>
 		<module>matheclipse-md2html</module>
@@ -300,12 +301,12 @@
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
-				<version>2.1.0-alpha1</version>
+				<version>2.0.16</version>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-simple</artifactId>
-				<version>2.1.0-alpha1</version>
+				<version>2.0.16</version>
 			</dependency>
 			<dependency>
 				<groupId>org.roaringbitmap</groupId>
