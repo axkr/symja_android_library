@@ -16,23 +16,19 @@ See
 The defining equation:
 
 ```
->> z == ProductLog(z) * E ^ ProductLog(z)    
-True    
+>> z == ProductLog(z) * E ^ ProductLog(z)
+True
 ```
 
 Some special values:  
   
 ```
->> ProductLog(0)    
-0 
+>> ProductLog(0)
+0
 
->> ProductLog(E)    
-1   
+>> ProductLog(E)
+1
 ```
- 
-
-
-
 
 
 
