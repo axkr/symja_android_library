@@ -127,11 +127,18 @@
 				<artifactId>jackson-datatype-jsr310</artifactId>
 				<version>2.18.2</version>
 			</dependency>
+<!--
 			<dependency>
 				<groupId>com.github.twosigma.beakerx</groupId>
 				<artifactId>beaker-kernel-base</artifactId>
 				<version>1.5.0</version>
 			</dependency>
+			<dependency>
+				<groupId>io.javalin</groupId>
+				<artifactId>javalin</artifactId>
+				<version>6.4.0</version>
+			</dependency>
+			-->
 			<dependency>
 				<groupId>com.github.wnameless.json</groupId>
 				<artifactId>json-flattener</artifactId>
@@ -166,11 +173,6 @@
 				<groupId>io.github.classgraph</groupId>
 				<artifactId>classgraph</artifactId>
 				<version>4.8.179</version>
-			</dependency>
-			<dependency>
-				<groupId>io.javalin</groupId>
-				<artifactId>javalin</artifactId>
-				<version>6.4.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.pebbletemplates</groupId>
