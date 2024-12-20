@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 
@@ -25,23 +26,27 @@ public final class Sequence extends ListSizeSequence {
    * with the argument at position <code>offset</code>.
    *
    * @param ast
-   * @param offset the position in <code>ast</code>, where the first ISequence specification starts.
+   * @param startPosition the position in <code>ast</code> inclusive, where the first ISequence
+   *        specification starts.
+   * @param endPosition the position in <code>ast</code> exclusive.
    * @param messageShortcut
+   * @param head the header symbol we create th sequence for
    * @param engine
    * @return <code>null</code> if no <code>Sequence[]</code> can be created
    */
-  public static Sequence[] createSequences(final IAST ast, final int offset, String messageShortcut,
-      EvalEngine engine) {
-    final Sequence[] sequArray = new Sequence[ast.size() - offset];
+  public static Sequence[] createSequences(final IAST ast, final int startPosition,
+      int endPosition,
+      String messageShortcut, IBuiltInSymbol head, EvalEngine engine) {
+    final Sequence[] sequArray = new Sequence[endPosition - startPosition];
     Sequence sequ = null;
     int j = 0;
-    for (int i = offset; i < ast.size(); i++) {
+    for (int i = startPosition; i < endPosition; i++) {
       IExpr element = ast.get(i);
       if (element.isList()) {
         if (element.argSize() < 1 || element.argSize() > 3) {
           // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
           // `1`.
-          Errors.printMessage(ast.topHead(), "seqs", F.list(ast.arg2(), F.ZZ(i)), engine);
+          Errors.printMessage(head, "seqs", F.list(ast.arg2(), F.ZZ(i)), engine);
           return null;
         }
         sequ = new Sequence((IAST) element);
@@ -77,7 +82,7 @@ public final class Sequence extends ListSizeSequence {
       }
       // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
       // `1`.
-      Errors.printMessage(ast.topHead(), "seqs", F.list(ast.arg2(), F.ZZ(i)), engine);
+      Errors.printMessage(head, "seqs", F.list(element, F.ZZ(i)), engine);
       return null;
     }
     return sequArray;

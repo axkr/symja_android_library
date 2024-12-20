@@ -8639,6 +8639,8 @@ public class S {
   public final static IBuiltInSymbol RamseyNumber =
       S.initFinalSymbol("RamseyNumber", ID.RamseyNumber);
 
+  public final static IBuiltInSymbol Random = S.initFinalSymbol("Random", ID.Random);
+
   /**
    * RandomChoice({item1, item2, item3,...}) - randomly picks one `item` from items.
    * 

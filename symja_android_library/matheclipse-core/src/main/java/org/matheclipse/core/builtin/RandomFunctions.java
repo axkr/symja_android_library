@@ -19,6 +19,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Tensors;
 import org.matheclipse.core.interfaces.IAST;
@@ -92,6 +93,7 @@ public final class RandomFunctions {
 
     private static void init() {
       S.SeedRandom.setEvaluator(new SeedRandom());
+      S.Random.setEvaluator(new RandomSymbol());
       S.RandomInteger.setEvaluator(new RandomInteger());
       S.RandomPrime.setEvaluator(new RandomPrime());
       S.RandomChoice.setEvaluator(new RandomChoice());
@@ -99,6 +101,55 @@ public final class RandomFunctions {
       S.RandomPermutation.setEvaluator(new RandomPermutation());
       S.RandomReal.setEvaluator(new RandomReal());
       S.RandomSample.setEvaluator(new RandomSample());
+    }
+  }
+
+  private static final class RandomSymbol extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int argSize = ast.argSize();
+      if (argSize == 0) {
+        return S.RandomReal.evaluate(F.RandomReal(), engine);
+      }
+      if (argSize == 1) {
+        IExpr arg1 = ast.arg1();
+        if (arg1 == S.Integer) {
+          return S.RandomInteger.evaluate(F.RandomInteger(), engine);
+        }
+        if (arg1 == S.Real) {
+          return S.RandomReal.evaluate(F.RandomReal(), engine);
+        }
+        if (arg1 == S.Complex) {
+          return S.RandomReal.evaluate(F.RandomComplex(), engine);
+        }
+        return F.NIL;
+      }
+      if (argSize == 2) {
+        IExpr arg1 = ast.arg1();
+        IExpr arg2 = ast.arg2();
+
+        if (arg1 == S.Integer) {
+          return S.RandomInteger.evaluate(F.RandomInteger(arg2), engine);
+        }
+        if (arg1 == S.Real) {
+          return S.RandomReal.evaluate(F.RandomReal(arg2), engine);
+        }
+        if (arg1 == S.Complex) {
+          return S.RandomReal.evaluate(F.RandomComplex(arg2), engine);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.DEPRECATED;
     }
   }
 

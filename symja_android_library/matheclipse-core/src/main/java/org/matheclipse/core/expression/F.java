@@ -3327,6 +3327,8 @@ public class F extends S {
   public static IASTMutable function(IExpr head, final IExpr... a) {
     final int size = a.length;
     switch (size) {
+      case 0:
+        return new AST0(head);
       case 1:
         return new AST1(head, a[0]);
       case 2:
@@ -8564,12 +8566,24 @@ public class F extends S {
     return new AST3(Quotient, a0, a1, a2);
   }
 
+  public static IAST RandomComplex() {
+    return new AST0(RandomComplex);
+  }
+
   public static IAST RandomComplex(final IExpr a0) {
     return new AST1(RandomComplex, a0);
   }
 
+  public static IAST RandomInteger() {
+    return new AST0(RandomInteger);
+  }
+
   public static IAST RandomInteger(final IExpr a0) {
     return new AST1(RandomInteger, a0);
+  }
+
+  public static IAST RandomReal() {
+    return new AST0(RandomReal);
   }
 
   public static IAST RandomReal(final IExpr a0) {

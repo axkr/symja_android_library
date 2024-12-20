@@ -4833,9 +4833,26 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDelete() {
-    // TODO
-    // check("Delete({{1,2},{3,4}},{{1,2},{2,1},{2,1}})", //
-    // "{{1},{4}}");
+    // Delete: Part {3,4} of {1,0} does not exist.
+    check("Delete({{1,2},{3,4}})[{1,0}]", //
+        "Delete({{1,2},{3,4}})[{1,0}]");
+    check("Delete({1,0})[{{1,2},{3,4}}]", //
+        "{1,2,{3,4}}");
+    // TODO - implement Delete for associations
+    check("Delete(<|a -> b, \"a\" -> c|>, \"a\")", //
+        "Delete(<|a->b,a->c|>,a)");
+
+    check("Delete({{1,2},{3,4}},{1,0})", //
+        "{1,2,{3,4}}");
+    check("Delete({{1,2},{3,4}},{1,2})", //
+        "{{1},{3,4}}");
+    check("Delete({{a,b},{c,d}},{{1,2},{2,1},{2,1}})", //
+        "{{a},{d}}");
+
+    check("var=b", //
+        "b");
+    check("Delete({a, b, var, d}, -2)", //
+        "{a,b,d}");
 
     check("Delete(a+b+c,0)", //
         "Identity(a,b,c)");
@@ -4854,10 +4871,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Delete({a, b, c, d}, -2)", //
         "{a,b,d}");
 
-    check("Delete({{1,2},{3,4}},{1,2})", //
-        "{{1},{3,4}}");
-    check("Delete({{1,2},{3,4}},{1,0})", //
-        "{1,2,{3,4}}");
+
     // check("Delete({{1,2},{3,4}},{{1,2},{2,1}})", //
     // "{{1},{4}}");
     // check("Delete({{1,2},{3,4}},{{1,2},{2,1},{2,1}})", //
@@ -11162,6 +11176,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testInsert() {
+    check("Insert(x,3)[{a, b, c, d, e}]", //
+        "{a,b,x,c,d,e}");
+
+    // check("Insert({a, b, c, d, e}, x, {{1}, {3}, {-1}})", //
+    // "");
+
     // print: The argument x is not a rule or a list of rules.
     check("Insert(<||>, x, 1)", //
         "<||>");

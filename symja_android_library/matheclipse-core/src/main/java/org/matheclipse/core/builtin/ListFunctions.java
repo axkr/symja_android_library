@@ -28,6 +28,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.ResultException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -2105,13 +2106,18 @@ public final class ListFunctions {
   }
 
   /** Delete(list,n) - delete the n-th argument from the list. Negative n counts from the end. */
-  private static class Delete extends AbstractCoreFunctionEvaluator {
+  private static class Delete extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      final IExpr arg1 = engine.evaluate(ast.arg1());
-      final IExpr arg2 = engine.evaluate(ast.arg2());
-      if (arg1.isASTOrAssociation()) {
+      final IExpr arg1 = ast.arg1();
+      final IExpr arg2 = ast.arg2();
+      if (arg1.isAssociation()) {
+        final IAssociation assoc = (IAssociation) arg1;
+        // TODO: implement for associations
+        return Errors.printMessage(S.Delete, "zznotimpl", F.List(ast), engine);
+      }
+      if (arg1.isAST()) {
         final IAST list = (IAST) arg1;
         if (arg2.isInteger()) {
           int indx = 0;
@@ -2139,17 +2145,21 @@ public final class ListFunctions {
         } else if (arg2.isList()) {
           final IAST indxList = (IAST) arg2;
           if (indxList.isListOfLists()) {
-            // IAST result = list;
-            // for (int i = 1; i < indxList.size(); i++) {
-            // result = deleteListOfPositions(result, (IAST) indxList.get(i), engine);
-            // if (result.isNIL()) {
-            // return F.NIL;
-            // }
-            // }
-            // return result;
+            IAST result = list;
+            for (int i = 1; i < indxList.size(); i++) {
+              IAST temp = setToNIL(result, (IAST) indxList.get(i), engine);
+              if (temp.isNIL()) {
+                continue;
+              }
+              result = temp;
+            }
+            return removeNILRecursive(result);
           } else {
-
-            return deleteListOfPositions(list, indxList, engine);
+            IAST result = setToNIL(list, indxList, engine);
+            if (result.isNIL()) {
+              return F.NIL;
+            }
+            return removeNILRecursive(result);
           }
         }
       }
@@ -2157,38 +2167,62 @@ public final class ListFunctions {
     }
 
     /**
-     * Remove a list of <code>int</code> positions from the <code>list</code>.
+     * Remove all {@link F#NIL} entries from the list.
      *
-     * @param list the list in which sub-positions should be removed
-     * @param listOfIntPositions a list of int positions <code>{2,4,-3,5,...}</code>
-     * @param engine the evaluation engine
+     * @param list the list in which NIL entries should be removed
      * @return
      */
-    private IAST deleteListOfPositions(final IAST list, final IAST listOfIntPositions,
-        EvalEngine engine) {
-      int[] indx;
-      try {
-        indx = Validate.checkListOfInts(list, listOfIntPositions, Integer.MIN_VALUE,
-            Integer.MAX_VALUE, engine);
-        if (indx == null) {
-          return F.NIL;
-        }
-        return deletePartRecursive(list, indx, 0);
-      } catch (final RuntimeException rex) {
-        return Errors.printMessage(S.Delete, rex, engine);
+    private static IAST removeNILRecursive(IAST list) {
+      IASTAppendable result;
+      if (list.isAssociation()) {
+        result = F.assoc();
+      } else {
+        result = F.ast(list.head(), list.size());
       }
+      for (int i = 1; i < list.size(); i++) {
+        IExpr x = list.getRule(i);
+        if (x.isPresent()) {
+          if (x.isASTOrAssociation()) {
+            IAST temp = removeNILRecursive((IAST) x);
+            if (temp.isPresent()) {
+              result.append(temp);
+            }
+          } else {
+            result.append(x);
+          }
+        }
+      }
+      return result;
     }
 
     /**
-     * Delete the position index recursively from the list.
+     * Set a list of <code>int</code> positions to {@link F#NIL}.
      *
-     * @param list the list in which sub-positions should be removed
+     * @param list the list in which sub-positions should be set to {@link F#NIL}
+     * @param listOfPositions a list of int positions <code>{2,4,-3,5,...}</code>
+     * @param engine the evaluation engine
+     * @return
+     */
+    private static IAST setToNIL(final IAST list, final IAST listOfPositions, EvalEngine engine) {
+      int[] indx;
+      indx = Validate.checkListOfInts(list, listOfPositions, Integer.MIN_VALUE, Integer.MAX_VALUE,
+          engine);
+      if (indx == null) {
+        return F.NIL;
+      }
+      return setPartToNILRecursive(list, indx, 0);
+    }
+
+    /**
+     * Set the position index recursively to {@link F#NIL}.
+     *
+     * @param list the list in which sub-positions should be set to {@link F#NIL}
      * @param indx a list of int sub-positions from <code>list</code>
      * @param indxPosition the current position in <code>indx</code>. Increased by 1 in each
      *        recursion step.
      * @return
      */
-    private IAST deletePartRecursive(IAST list, int[] indx, int indxPosition) {
+    private static IAST setPartToNILRecursive(IAST list, int[] indx, int indxPosition) {
       int position = indx[indxPosition];
       if (position < 0) {
         // negative n counts from the end
@@ -2201,13 +2235,22 @@ public final class ListFunctions {
         if (position == 0) {
           return list.setAtCopy(0, S.Sequence);
         }
-        return list.splice(position);
+        return list.setAtCopy(position, F.NIL);
+      }
+      if (list.size() <= position) {
+        // Part `1` of `2` does not exist.
+        throw new ArgumentTypeStopException("partw", F.list(F.List(indx), list));
       }
       IExpr temp = list.get(position);
       if (temp.isASTOrAssociation()) {
-        IAST subResult = deletePartRecursive((IAST) temp, indx, indxPosition + 1);
+        IAST subResult = setPartToNILRecursive((IAST) temp, indx, indxPosition + 1);
         if (subResult.isPresent()) {
           return list.setAtCopy(position, subResult);
+        }
+      } else {
+        if (indx.length <= indxPosition + 1) {
+          // Part `1` of `2` does not exist.
+          throw new ArgumentTypeStopException("partw", F.list(F.List(indx), list));
         }
       }
       return F.NIL;
@@ -2584,7 +2627,8 @@ public final class ListFunctions {
         return arg1;
       }
       try {
-        final ISequence[] sequ = Sequence.createSequences(ast, 2, "drop", engine);
+        final ISequence[] sequ =
+            Sequence.createSequences(ast, 2, ast.size(), "drop", S.Drop, engine);
         if (sequ == null) {
           return F.NIL;
         }
@@ -3792,23 +3836,23 @@ public final class ListFunctions {
     }
   }
 
-  private static class Insert extends AbstractCoreFunctionEvaluator {
+  private static class Insert extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST1() || ast.isAST2()) {
-        ast = F.operatorFormAppend2(ast);
-        if (ast.isNIL()) {
-          return F.NIL;
-        }
-      }
+      // if (ast.isAST1() || ast.isAST2()) {
+      // ast = F.operatorFormAppend2(ast);
+      // if (ast.isNIL()) {
+      // return F.NIL;
+      // }
+      // }
       IExpr arg1 = engine.evaluate(ast.arg1());
       IAST arg1AST = Validate.checkASTOrAssociationType(ast, arg1, 1, engine);
       if (arg1AST.isNIL()) {
         return F.NIL;
       }
-      IExpr arg2 = engine.evaluate(ast.arg2());
-      IExpr arg3 = engine.evaluate(ast.arg3());
+      IExpr arg2 = ast.arg2();// engine.evaluate(ast.arg2());
+      IExpr arg3 = ast.arg3();// engine.evaluate(ast.arg3());
       if (arg3.isInteger()) {
         try {
           int i = Validate.checkIntType(S.Insert, arg3, Integer.MIN_VALUE, engine);
@@ -3837,7 +3881,7 @@ public final class ListFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_3_0;
+      return ARGS_3_3_1;
     }
   }
 
@@ -7532,7 +7576,8 @@ public final class ListFunctions {
       // }
 
       try {
-        final ISequence[] sequ = Sequence.createSequences(ast, 2, "take", engine);
+        final ISequence[] sequ =
+            Sequence.createSequences(ast, 2, ast.size(), "take", S.Take, engine);
         if (sequ == null) {
           return F.NIL;
         }

@@ -483,6 +483,7 @@ public class BuiltinUsage {
     USAGE[ID.QRDecomposition] = "QR decomposition of a matrix";
 
     USAGE[ID.RamseyNumber] = "known Ramsey numbers";
+    USAGE[ID.Random] = "pick a random number (deprecated function)";
     USAGE[ID.RandomInteger] = "pick an integer number at random from a range";
     USAGE[ID.RandomChoice] = "choice items at random from a list";
     USAGE[ID.RandomComplex] = "pick a complex number at random from a rectangular region";

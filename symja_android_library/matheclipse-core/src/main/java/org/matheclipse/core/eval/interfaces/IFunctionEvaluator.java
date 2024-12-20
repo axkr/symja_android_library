@@ -195,6 +195,12 @@ public interface IFunctionEvaluator extends IEvaluator {
   int[] ARGS_3_3 = new int[] {3, 3};
 
   /**
+   * The function is allowed to have 2 or 4 arguments and the head must be the built-in symbol name
+   * of the function or can be an {@link F#operatorForm1Append(IAST)}.
+   */
+  int[] ARGS_3_3_1 = new int[] {3, 3, 1};
+
+  /**
    * The function is allowed to have 3 or 4 arguments and the head must be the built-in symbol name
    * of the function.
    */
