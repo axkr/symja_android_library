@@ -39,12 +39,12 @@ public class MapPositions {
    * 
    * @param f function to apply
    * @param ast
-   * @param listOfPoints
+   * @param listOfPositions
    */
-  public static IExpr mapListOfPoints(Function<IExpr, IExpr> f, IAST ast, IAST listOfPoints) {
+  public static IExpr mapListOfPositions(Function<IExpr, IExpr> f, IAST ast, IAST listOfPositions) {
     MapPositions mapPositions = new MapPositions(f);
-    for (int i = 1; i < listOfPoints.size(); i++) {
-      mapPositions.reset(listOfPoints.getAST(i));
+    for (int i = 1; i < listOfPositions.size(); i++) {
+      mapPositions.reset(listOfPositions.getAST(i));
       IExpr temp = mapPositions.mapAtRecursive(ast);
       if (temp.isPresent()) {
         if (temp.isASTOrAssociation()) {

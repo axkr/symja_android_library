@@ -1010,7 +1010,7 @@ public class StructureFunctions {
             }
             if (arg3.isListOfLists()) {
               IAST listOfLists = ((IAST) arg3);
-              return MapPositions.mapListOfPoints(x -> F.unaryAST1(arg1, x), (IAST) arg2,
+              return MapPositions.mapListOfPositions(x -> F.unaryAST1(arg1, x), (IAST) arg2,
                   listOfLists);
             } else if (arg3.isList()) {
               IExpr temp = MapPositions.mapPositions(x -> F.unaryAST1(arg1, x), ((IAST) arg2), (IAST) arg3);
