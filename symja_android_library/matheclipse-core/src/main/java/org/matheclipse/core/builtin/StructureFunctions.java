@@ -7,12 +7,12 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.EvalHistory;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -23,6 +23,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.eval.util.OptionArgs;
+import org.matheclipse.core.eval.util.positions.MapPositions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -990,8 +991,9 @@ public class StructureFunctions {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         if (ast.head().isAST2() && ast.isAST1()) {
+          // use operator form: MapAt(f, 3)[{a, b, c, d}] -> {a,b,f(c),d}
           IAST headAST = (IAST) ast.head();
-          ast = F.ternaryAST3(headAST.topHead(), headAST.arg1(), ast.arg1(), headAST.arg2());
+          ast = F.ternaryAST3(S.MapAt, headAST.arg1(), ast.arg1(), headAST.arg2());
         } else {
           return F.NIL;
         }
@@ -1008,20 +1010,10 @@ public class StructureFunctions {
             }
             if (arg3.isListOfLists()) {
               IAST listOfLists = ((IAST) arg3);
-              IAST result = ((IAST) arg2);
-              for (int i = 1; i < listOfLists.size(); i++) {
-                IExpr temp =
-                    mapAtRecursive(x -> F.unaryAST1(arg1, x), result, listOfLists.getAST(i), 1);
-                if (temp.isPresent()) {
-                  if (temp.isAST()) {
-                    result = (IAST) temp;
-                  }
-                }
-              }
-              return result;
-
+              return MapPositions.mapListOfPoints(x -> F.unaryAST1(arg1, x), (IAST) arg2,
+                  listOfLists);
             } else if (arg3.isList()) {
-              IExpr temp = mapAtRecursive(x -> F.unaryAST1(arg1, x), ((IAST) arg2), (IAST) arg3, 1);
+              IExpr temp = MapPositions.mapPositions(x -> F.unaryAST1(arg1, x), ((IAST) arg2), (IAST) arg3);
               if (temp.isPresent()) {
                 return temp;
               }
@@ -1030,102 +1022,15 @@ public class StructureFunctions {
           } catch (final ValidateException ve) {
             return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
+            if (Config.DEBUG) {
+              rex.printStackTrace();
+            }
             Errors.rethrowsInterruptException(rex);
             return Errors.printMessage(S.MapAt, rex, engine);
           }
         }
       }
       return F.NIL;
-    }
-
-    private static IExpr mapAtRecursive(java.util.function.Function<IExpr, IExpr> f, IAST result,
-        IAST positions, int index) {
-      IExpr pos = positions.get(index);
-      if (pos.equals(S.All)) {
-        IASTMutable subResult;
-        if (index == positions.size() - 1) {
-          subResult = result.copy();
-          for (int i = 1; i < result.size(); i++) {
-            IExpr temp = f.apply(result.get(i));
-            if (temp.isPresent()) {
-              subResult.set(i, temp);
-            }
-          }
-        } else {
-          subResult = result.copy();
-          for (int i = 1; i < result.size(); i++) {
-            IExpr temp = mapAtRecursive(f, subResult.getAST(i), positions, index + 1);
-            if (temp.isPresent()) {
-              subResult.set(i, temp);
-            }
-          }
-        }
-        return subResult;
-      }
-      if (pos.isString() || pos.isKey()) {
-        if (result.isAssociation()) {
-          IExpr key = pos.isString() ? pos : pos.first();
-          IAST rule = ((IAssociation) result).getRule(key);
-          if (rule.isPresent()) {
-            if (index == positions.size() - 1) {
-              IExpr temp = f.apply(rule.second());
-              if (temp.isPresent()) {
-                rule = rule.setAtCopy(2, temp);
-                IASTAppendable association = result.copyAppendable();
-                association.appendRule(rule);
-                return association;
-              }
-
-            } else {
-              IExpr arg = rule.second();
-              if (arg.isASTOrAssociation()) {
-                IExpr temp = mapAtRecursive(f, ((IAST) arg), positions, index + 1);
-                if (temp.isPresent()) {
-                  rule = rule.setAtCopy(2, temp);
-                  IASTAppendable association = result.copyAppendable();
-                  association.appendRule(rule);
-                  return association;
-                }
-              }
-            }
-          }
-          // Part `1` of `2` does not exist.
-          throw new ArgumentTypeException("partw", F.list(F.list(pos), result));
-        }
-      }
-
-      int p = pos.toIntDefault();
-      if (p == Integer.MIN_VALUE) {
-        // Part `1` of `2` does not exist.
-        throw new ArgumentTypeException("partw", F.list(F.list(pos), result));
-      }
-      if (p < 0) {
-        p = result.size() + p;
-      }
-
-      if (p >= 0 && p < result.size()) {
-        if (index == positions.size() - 1) {
-          IExpr temp = f.apply(result.get(p));
-          if (temp.isPresent()) {
-            if (result.isAssociation()) {
-              IExpr rule = ((IAST) result.getRule(p)).setAtCopy(2, temp);
-              return result.setAtCopy(p, rule);
-            }
-            return result.setAtCopy(p, temp);
-          }
-        } else {
-
-          IExpr arg = result.get(p);
-          if (arg.isASTOrAssociation()) {
-            IExpr temp = mapAtRecursive(f, ((IAST) arg), positions, index + 1);
-            if (temp.isPresent()) {
-              return result.setAtCopy(p, temp);
-            }
-          }
-        }
-      }
-      // Part `1` of `2` does not exist.
-      throw new ArgumentTypeException("partw", F.list(F.list(pos), result));
     }
 
     @Override

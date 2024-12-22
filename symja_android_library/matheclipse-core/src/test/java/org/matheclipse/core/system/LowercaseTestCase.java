@@ -13952,6 +13952,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMapAt() {
+    check("MapAt(f,{{a, b}, {c, d}},{{2, 1},{1,2}})", //
+        "{{a,f(b)},{f(c),d}}");
+    check("MapAt(f, {a, b, c, d},{{3},{3}})", //
+        "{a,b,f(f(c)),d}");
     check("MapAt(f, {{a, b, c}, {d, e}}, {All, 2})", //
         "{{a,f(b),c},{d,f(e)}}");
     check("MapAt(f, <|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3, \"d\" -> 4, \"e\" -> 5|>, Key(\"b\"))", //
@@ -13962,8 +13966,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "<|a->1,b->2,c->f(3),d->4,e->5|>");
     check("MapAt(f, <|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3, \"d\" -> 4, \"e\" -> 5|>, -3)", //
         "<|a->1,b->2,c->f(3),d->4,e->5|>");
+    check("MapAt(f, <|\"a\" -> 1, \"b\" -> {2, 3}, \"c\" -> 4, \"d\" -> 5|>, {\"b\", 1})", //
+        "<|a->1,b->{f(2),3},c->4,d->5|>");
     check("MapAt(f, {{a, b, c}, {d, e}}, {2, 1})", //
         "{{a,b,c},{f(d),e}}");
+    check("MapAt(f, <|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3, \"d\" -> 4|>, {{\"a\"}, {\"b\"}})", //
+        "<|a->f(1),b->f(2),c->3,d->4|>");
     check("MapAt(f, {a, b, c, d}, {{1}, {4}})", //
         "{f(a),b,c,f(d)}");
     check("MapAt(f,3)[x]", //
