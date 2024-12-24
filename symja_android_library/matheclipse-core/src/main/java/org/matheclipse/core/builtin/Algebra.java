@@ -21,6 +21,7 @@ import static org.matheclipse.core.expression.S.Power;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -48,7 +49,6 @@ import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
@@ -3660,7 +3660,7 @@ public class Algebra {
    *
    * </blockquote>
    */
-  private static class PolynomialQ extends AbstractCoreFunctionEvaluator
+  private static class PolynomialQ extends AbstractFunctionEvaluator
       implements BiPredicate<IExpr, IExpr> {
 
     /**
@@ -3669,27 +3669,49 @@ public class Algebra {
      */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.isAST2()) {
-        IExpr cached = engine.getCache(ast);
-        if (cached != null) {
-          return cached;
-        }
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        IExpr arg2 = engine.evaluate(ast.arg2());
-
-        IAST variablesList = arg2.makeList();
-        IAST subst = substituteVariablesInPolynomial(arg1, variablesList, "§PolynomialQ", true);
-        if (subst.isPresent()) {
-          IExpr result = F.booleSymbol(subst.arg1().isPolynomial((IAST) subst.arg2()));
-          engine.putCache(ast, result);
-          return result;
-        }
-        return F.NIL;
-      }
+      IAST variablesList = F.NIL;
+      IExpr arg1 = ast.arg1();
       if (ast.isAST1()) {
-        return S.True;
+        // mimic S.Variables
+        IAST temp = VariablesSet.getAlgebraicVariables(arg1);
+        if (temp.isList()) {
+          variablesList = temp;
+        } else {
+          return F.NIL;
+        }
+
+        if (variablesList.size() == 0) {
+          return S.True;
+        }
+      } else {
+        variablesList = ast.arg2().makeList();
+        Set<IExpr> fVariablesSet = new HashSet<IExpr>();
+        VariablesSet.addAlgebraicVariables(fVariablesSet, variablesList);
+        for (int i = 1; i < variablesList.size(); i++) {
+          IExpr variable = variablesList.get(i);
+          if (variable.isPlus() || variable.isTimes()) {
+            // `1` is not a valid variable.
+            Errors.printMessage(S.General, "ivar", F.List(variable));
+            return F.NIL;
+          }
+        }
+        // if (!fVariablesSet.contains(variable)) {
+        // // `1` is not a valid variable.
+        // Errors.printMessage(S.General, "ivar", F.List(variable));
+        // return F.NIL;
+        // }
       }
-      return S.False;
+      IExpr cached = engine.getCache(ast);
+      if (cached != null) {
+        return cached;
+      }
+      IAST subst = substituteVariablesInPolynomial(arg1, variablesList, "§PolynomialQ", false);
+      if (subst.isPresent()) {
+        IExpr result = F.booleSymbol(subst.arg1().isPolynomial((IAST) subst.arg2()));
+        engine.putCache(ast, result);
+        return result;
+      }
+      return F.NIL;
     }
 
     @Override

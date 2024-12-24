@@ -665,14 +665,19 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
         return true;
       } else if (ast.isPower()) {
         IExpr base = ast.base();
+        IExpr exponent = ast.exponent();
         for (int i = 1; i < vars.size(); i++) {
           IExpr variable = vars.get(i);
           if (variable.equals(base)) {
-            int exponent = ast.exponent().toIntDefault();
-            if (exponent < 0) {
-              return false;
+            if (exponent.isRational() && exponent.isNonNegativeResult()) {
+              return true;
             }
-            return true;
+            return false;
+            // int exponent = ast.exponent().toIntDefault();
+            // if (exponent < 0) {
+            // return false;
+            // }
+            // return true;
           } else if (variable.isPower() && variable.base().equals(ast.base())
               && variable.exponent().isRational()) {
             IExpr expr = variable.exponent().reciprocal().times(ast.exponent());
