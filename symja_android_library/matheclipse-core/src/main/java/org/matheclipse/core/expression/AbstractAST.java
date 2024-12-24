@@ -1281,6 +1281,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     @Override
+    public int getRulePosition(IExpr key) {
+      ArgumentTypeException.throwNIL();
+      return -1;
+    }
+
+    @Override
     public IAST getRule(IExpr key) {
       ArgumentTypeException.throwNIL();
       return null;

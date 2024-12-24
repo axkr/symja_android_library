@@ -98,6 +98,12 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   /** The head or one of the arguments of the list or sublists contains a pattern object */
   public static final int CONTAINS_PATTERN_SEQUENCE = 0x0002;
 
+  /**
+   * Flag which will be set for new allocated IAST expressions during a capsulated traversal
+   * algorithm. Temporary flag which should be deleted after traversing the expression
+   */
+  public static final int IS_COPIED = 0x20000000;
+
   /** This expression is already evaluated by ExpandAll() function */
   public static final int IS_ALL_EXPANDED = 0x2000;
 

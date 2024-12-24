@@ -4838,9 +4838,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Delete({{1,2},{3,4}})[{1,0}]");
     check("Delete({1,0})[{{1,2},{3,4}}]", //
         "{1,2,{3,4}}");
-    // TODO - implement Delete for associations
+
+    check("Delete(<|a -> b, \"a\" -> c|>,0)", //
+        "Identity(b,c)");
     check("Delete(<|a -> b, \"a\" -> c|>, \"a\")", //
-        "Delete(<|a->b,a->c|>,a)");
+        "<|a->b|>");
 
     check("Delete({{1,2},{3,4}},{1,0})", //
         "{1,2,{3,4}}");
@@ -11176,21 +11178,33 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testInsert() {
-    check("Insert(x,3)[{a, b, c, d, e}]", //
-        "{a,b,x,c,d,e}");
-
-    // check("Insert({a, b, c, d, e}, x, {{1}, {3}, {-1}})", //
-    // "");
-
-    // print: The argument x is not a rule or a list of rules.
+    check("Insert(<|\"z\"->t|>, {x->y,a->b}, 1)", //
+        "<|x->y,a->b,z->t|>");
+    check("Insert(<|\"z\"->t|>, {x->y,a->b},\"z\")", //
+        "<|x->y,a->b,z->t|>");
+    check("Insert(<||>, {x->y,a->b}, 1)", //
+        "<|x->y,a->b|>");
+    check("Insert(<||>, x->y, 1)", //
+        "<|x->y|>");
+    // Insert: The argument x is not a rule or a list of rules.
     check("Insert(<||>, x, 1)", //
         "<||>");
+    // Insert: Part {3} of <||> does not exist.
     check("Insert(<||>, x->y, 3)", //
         "Insert(<||>,x->y,3)");
     check("Insert({a, b, c, d, e}, x, 3)", //
         "{a,b,x,c,d,e}");
+
     check("Insert({a, b, c, d, e}, x, -2)", //
         "{a,b,c,d,x,e}");
+    check("Insert({a, b, c, d, e}, x, {{1}, {3}, {-1}})", //
+        "{x,a,b,x,c,d,e,x}");
+
+    check("Insert(<|a -> 1, b -> 2|>, c -> 3, Key(a))", //
+        "<|c->3,a->1,b->2|>");
+    check("Insert(x,3)[{a, b, c, d, e}]", //
+        "{a,b,x,c,d,e}");
+
 
     // test operator form
     check("Insert(e, pos)", //
@@ -12845,6 +12859,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLimit() {
+    // TODO
+    // check("Limit(((1/Abs(n)))^(1/n),n->Infinity)", //
+    // "1");
+    check("Limit(a^(1/n),n->Infinity)", //
+        "1");
     check("Limit((1+1/n)^n,n->Infinity)", //
         "E");
     check("Limit(Sin(x)/x,x->0)", //
@@ -13997,6 +14016,38 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "f(List)[a,b,c,d,e]");
     check("MapAt(f, {a, b, c, d}, 2)", //
         "{a,f(b),c,d}");
+  }
+
+  @Test
+  public void testReplaceAt() {
+    // TODO allow Span definitions
+    check("ReplaceAt({a, a, a, a, a}, a -> xx, 2 ;; 4)", //
+        "ReplaceAt({a,a,a,a,a},a->xx,2;;4)");
+
+    // operator form
+    check("ReplaceAt(x -> y, 2)[{a, x, y, z}]", //
+        "{a,y,y,z}");
+
+    check("ReplaceAt({a, a, a, a}, a -> xx, 2)", //
+        "{a,xx,a,a}");
+    check("ReplaceAt({a, a, a, a}, a -> xx, {{1}, {4}})", //
+        "{xx,a,a,xx}");
+    check("ReplaceAt({{a, a}, {a, a}}, a -> xx, {2, 1})", //
+        "{{a,a},{xx,a}}");
+    check("ReplaceAt({a, a, a, a}, a -> xx, -2)", //
+        "{a,a,xx,a}");
+    check("ReplaceAt({1, 2, 3, 4}, x_ :> 2 x - 1, {{2}, {4}})", //
+        "{1,3,3,7}");
+    check("ReplaceAt({a, b, c, d}, {a -> xx, _ -> yy}, {{1}, {2}, {4}})", //
+        "{xx,yy,c,yy}");
+    check("ReplaceAt(<|\"a\" -> a, \"b\" -> a|>, a -> xx, Key(\"a\"))", //
+        "<|a->xx,b->a|>");
+    check("ReplaceAt(<|\"a\" -> {a, a}, \"b\" -> {a, a}|>, a -> xx, {Key(\"a\"), All})", //
+        "<|a->{xx,xx},b->{a,a}|>");
+    check("ReplaceAt({{a, b}, {c, d}, e}, x_ :> f[x], {{1, 2}, {2, 2}, {3}})", //
+        "{{a,f(b)},{c,f(d)},f(e)}");
+
+
   }
 
   @Test
@@ -18092,8 +18143,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolynomialQ() {
+    check("PolynomialQ(x^(1/2) + 6*Sin(x))", //
+        "True");
+    check("Variables(x^(1/2) + 6*Sin(x))", //
+        "{x,Sin(x)}");
+    check("PolynomialQ(1/x(1)^2, x(1))", //
+        "False");
+    check("PolynomialQ(1/x(1)^2)", //
+        "False");
+    check("PolynomialQ(x(1)^2)", //
+        "True");
+    check("PolynomialQ(y(1)^3/6+y(3)/3 + y(1)*y(2)/2)", //
+        "True");
     check("PolynomialQ(x, 1234)", //
-        "PolynomialQ(x,1234)");
+        "True");
 
     // message: General: x+y is not a valid variable.
     check("PolynomialQ(x, x+y)", //
@@ -18109,9 +18172,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("PolynomialQ(x^2 + 7*x + 6)", //
         "True");
     check("PolynomialQ(x^(1/2) + 6*Sin(x), {})", //
-        "True");
-    // only 1 arg gives always True ?
-    check("PolynomialQ(x^(1/2) + 6*Sin(x))", //
         "True");
 
     check("PolynomialQ(Cos(x*y), Cos(x*y))", //
@@ -23004,6 +23064,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("FullForm( ;; )", //
         "Span(1, All)");
+    check("FullForm( ;;;;3 )", //
+        "Span(1, All, 3)");
+    check("FullForm( 2;;;;3 )", //
+        "Span(2, All, 3)");
     check("FullForm(1;;4;;2)", //
         "Span(1, 4, 2)");
     check("FullForm(2;;-2)", //

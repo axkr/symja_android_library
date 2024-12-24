@@ -6,22 +6,18 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 
-public class MapPositions {
+public class DeletePositions {
   int index;
   IAST positions;
-  final Function<IExpr, IExpr> f;
 
-  public MapPositions(Function<IExpr, IExpr> f) {
-    this.f = f;
+  public DeletePositions(Function<IExpr, IExpr> f) {
     reset(F.CEmptyList);
   }
 
-  public MapPositions(Function<IExpr, IExpr> f, IAST positions) {
-    this.f = f;
+  public DeletePositions(Function<IExpr, IExpr> f, IAST positions) {
     reset(positions);
   }
 
@@ -39,19 +35,18 @@ public class MapPositions {
    * @param ast
    * @param listOfPositions
    */
-  public static IExpr mapListOfPositions(Function<IExpr, IExpr> f, IAST ast, IAST listOfPositions) {
-    MapPositions mapPositions = new MapPositions(f);
+  public static IAST deleteListOfPositions(IAST ast, IAST listOfPositions) {
+    DeletePositions deletePositions = new DeletePositions(x -> null);
     for (int i = 1; i < listOfPositions.size(); i++) {
-      mapPositions.reset(listOfPositions.getAST(i));
-      IExpr temp = mapPositions.mapAtRecursive(ast);
+      deletePositions.reset(listOfPositions.getAST(i));
+      IExpr temp = deletePositions.mapAtRecursive(ast);
       if (temp.isPresent()) {
         if (temp.isASTOrAssociation()) {
           ast = (IAST) temp;
         }
       }
     }
-    removeIsCopiedRecursive(ast);
-    return ast;
+    return removeNILRecursive(ast);
   }
 
   /**
@@ -63,23 +58,19 @@ public class MapPositions {
    * @param listOfPositions list of positions
    * @return
    */
-  public static IAST mapPositions(Function<IExpr, IExpr> f, IAST ast, IAST listOfPositions) {
-    MapPositions mapPositions = new MapPositions(f, listOfPositions);
-    IAST result = mapPositions.mapAtRecursive(ast);
-    removeIsCopiedRecursive(result);
-    return result;
+  public static IAST deletePositions(IAST ast, IAST listOfPositions) {
+    DeletePositions deletePositions = new DeletePositions(x -> null, listOfPositions);
+    IASTAppendable result = deletePositions.mapAtRecursive(ast);
+    return removeNILRecursive(result);
   }
 
-  protected IAST mapAtRecursive(IAST ast) {
+  protected IASTAppendable mapAtRecursive(IAST ast) {
     IExpr pos = positions.get(index);
     if (pos.equals(S.All)) {
-      IASTMutable subResult = getMutableAST(ast);
+      IASTAppendable subResult = MapPositions.getAppendableAST(ast);
       if (index == positions.size() - 1) {
         for (int i = 1; i < ast.size(); i++) {
-          IExpr temp = f.apply(ast.get(i));
-          if (temp.isPresent()) {
-            subResult.set(i, temp);
-          }
+          subResult.set(i, F.NIL);
         }
       } else {
         index++;
@@ -99,14 +90,10 @@ public class MapPositions {
         IAST rule = ((IAssociation) ast).getRule(key);
         if (rule.isPresent()) {
           if (index == positions.size() - 1) {
-            IExpr temp = f.apply(rule.second());
-            if (temp.isPresent()) {
-              rule = rule.setAtCopy(2, temp);
-              IASTAppendable association = getAppendableAST(ast);
-              association.appendRule(rule);
-              return association;
-            }
-
+            rule = rule.setAtCopy(2, F.NIL);
+            IASTAppendable association = MapPositions.getAppendableAST(ast);
+            association.appendRule(rule);
+            return association;
           } else {
             IExpr arg = rule.second();
             if (arg.isASTOrAssociation()) {
@@ -114,7 +101,7 @@ public class MapPositions {
               IExpr temp = mapAtRecursive(((IAST) arg));
               if (temp.isPresent()) {
                 rule = rule.setAtCopy(2, temp);
-                IASTAppendable association = getAppendableAST(ast);
+                IASTAppendable association = MapPositions.getAppendableAST(ast);
                 association.appendRule(rule);
                 index--;
                 return association;
@@ -139,18 +126,33 @@ public class MapPositions {
 
     if (p >= 0 && p < ast.size()) {
       if (index == positions.size() - 1) {
-        IExpr temp = f.apply(ast.get(p));
-        if (temp.isPresent()) {
+        if (p == 0) {
           if (ast.isAssociation()) {
-            IExpr rule = ((IAST) ast.getRule(p)).setAtCopy(2, temp);
-            return ast.setAtCopy(p, rule);
+            IASTAppendable result = F.IdentityAlloc(ast.argSize());
+            result.addEvalFlags(IAST.IS_COPIED);
+            for (int i = 1; i < ast.size(); i++) {
+              IExpr rule = ast.getRule(i);
+              result.append(rule.second());
+            }
+            return result;
           }
-          return ast.setAtCopy(p, temp);
+          IASTAppendable subResult = MapPositions.getAppendableAST(ast);
+          subResult.set(0, S.Sequence);
+          return subResult;
         }
+        if (ast.isAssociation()) {
+          IASTAppendable result = MapPositions.getAppendableAST(ast);
+          IExpr rule = ((IAST) ast.getRule(p)).setAtCopy(2, F.NIL);
+          result.set(p, rule);
+          return result;
+        }
+        IASTAppendable result = MapPositions.getAppendableAST(ast);
+        result.set(p, F.NIL);
+        return result;
       } else {
         IExpr arg = ast.get(p);
         if (arg.isASTOrAssociation()) {
-          IASTMutable subResult = getMutableAST(ast);
+          IASTAppendable subResult = MapPositions.getAppendableAST(ast);
           index++;
           IExpr temp = mapAtRecursive((IAST) arg);
           if (temp.isPresent()) {
@@ -166,34 +168,55 @@ public class MapPositions {
     throw new ArgumentTypeException("partw", F.list(F.list(pos), ast));
   }
 
-  protected static IASTAppendable getAppendableAST(IAST ast) {
-    if (ast.isEvalFlagOn(IAST.IS_COPIED)) {
-      return (IASTAppendable) ast;
-    }
-    IASTAppendable appendable = ast.copyAppendable();
-    appendable.addEvalFlags(IAST.IS_COPIED);
-    return appendable;
-  }
-
-  private static IASTMutable getMutableAST(IAST ast) {
-    if (ast.isEvalFlagOn(IAST.IS_COPIED)) {
-      return (IASTMutable) ast;
-    }
-    IASTMutable mutable = ast.copy();
-    mutable.addEvalFlags(IAST.IS_COPIED);
-    return mutable;
-  }
-
-  protected static void removeIsCopiedRecursive(IAST list) {
+  /**
+   * Remove all {@link F#NIL} entries from the list.
+   *
+   * @param list the list in which NIL entries should be removed
+   * @return
+   */
+  private static IAST removeNILRecursive(IAST list) {
     if (list.isEvalFlagOn(IAST.IS_COPIED)) {
       int evalFlags = list.getEvalFlags();
       list.setEvalFlags(evalFlags ^ IAST.IS_COPIED);
-      for (int i = 0; i < list.size(); i++) {
-        IExpr element = list.getRule(i);
-        if (element.isEvalFlagOn(IAST.IS_COPIED)) {
-          removeIsCopiedRecursive((IAST) element);
+
+      if (list.isAssociation()) {
+        IAssociation result = (IAssociation) list;
+        for (int i = 1; i < list.size(); i++) {
+          IAST rule = (IAST) list.getRule(i);
+          IExpr rhs = rule.second();
+          if (rhs.isPresent()) {
+            if (rhs.isASTOrAssociation()) {
+              IAST temp = removeNILRecursive((IAST) rhs);
+              if (temp.isPresent()) {
+                result.appendRule(rule.setAtCopy(i, temp));
+              } else {
+                result.remove(i);
+              }
+            }
+          } else {
+            result.remove(i);
+          }
+        }
+        return result;
+      }
+
+      IASTAppendable result = F.ast(list.head(), list.size());
+      for (int i = 1; i < list.size(); i++) {
+        IExpr x = list.getRule(i);
+        if (x.isPresent()) {
+          if (x.isASTOrAssociation()) {
+            IAST temp = removeNILRecursive((IAST) x);
+            if (temp.isPresent()) {
+              result.append(temp);
+            }
+          } else {
+            result.append(x);
+          }
         }
       }
+      return result;
     }
+    return list;
   }
+
 }

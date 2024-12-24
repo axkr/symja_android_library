@@ -8968,6 +8968,8 @@ public class S {
    */
   public final static IBuiltInSymbol Replace = S.initFinalSymbol("Replace", ID.Replace);
 
+  public final static IBuiltInSymbol ReplaceAt = S.initFinalSymbol("ReplaceAt", ID.ReplaceAt);
+
   /**
    * ReplaceAll(expr, i -> new) - replaces all `i` in `expr` with `new`.
    * 

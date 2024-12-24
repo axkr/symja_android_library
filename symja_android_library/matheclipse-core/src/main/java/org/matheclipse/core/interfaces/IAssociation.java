@@ -42,6 +42,7 @@ public interface IAssociation extends IASTAppendable {
    */
   public IExpr getKey(int position);
 
+
   /**
    * Assuming this is a list of rules or an <code>IAssociation</code>. Return the first rule which
    * equals the <code>key</code> argument, otherwise return <code>F.NIL</code>.
@@ -51,6 +52,14 @@ public interface IAssociation extends IASTAppendable {
    */
   @Override
   public IAST getRule(IExpr key);
+
+  /**
+   * Return the <code>position</code> of the rule with the given <code>key</code>.
+   * 
+   * @param key
+   * @return
+   */
+  public int getRulePosition(IExpr key);
 
   @Override
   public IAST getRule(int position);

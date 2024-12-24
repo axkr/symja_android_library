@@ -11,8 +11,6 @@ import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -83,7 +81,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   public final void appendRule(IExpr rule) {
     int index = size();
     if (rule.isRuleAST()) {
-      int value = getInt(rule.first());
+      int value = getRulePosition(rule.first());
       if (value == 0) {
         append(rule);
         keyToIndexMap.assoc(rule.first(), index++);
@@ -99,7 +97,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   private static final int appendRule(ASTAssociation assoc, int index, IAST rule) {
     if (rule.isRuleAST()) {
-      int indexValue = assoc.getInt(rule.first());
+      int indexValue = assoc.getRulePosition(rule.first());
       if (indexValue == 0) {
         assoc.appendRule(rule);
       } else {
@@ -116,7 +114,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
    * @param key
    * @return <code>0</code> if no value-index was found for the key
    */
-  private int getInt(IExpr key) {
+  public int getRulePosition(IExpr key) {
     Integer value = keyToIndexMap.get(key);
     return (value == null) ? 0 : value;
   }
@@ -384,7 +382,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   @Override
   public IAST getRule(String key) {
-    int index = getInt(F.$str(key));
+    int index = getRulePosition(F.$str(key));
     if (index > 0) {
       return getRule(index);
     }
@@ -393,7 +391,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   @Override
   public IAST getRule(IExpr key) {
-    int index = getInt(key);
+    int index = getRulePosition(key);
     if (index > 0) {
       return getRule(index);
     }
@@ -416,7 +414,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   @Override
   public IExpr getValue(IExpr key, Supplier<IExpr> defaultValue) {
-    int index = getInt(key);
+    int index = getRulePosition(key);
     if (index == 0) {
       return defaultValue.get(); // F.Missing(F.stringx("KeyAbsent"), key);
     }
@@ -594,7 +592,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
     ASTAssociation assoc = new ASTAssociation();
     for (int i = 1; i < list.size(); i++) {
       IExpr key = list.get(i);
-      int value = getInt(key);
+      int value = getRulePosition(key);
       assoc.appendRule(getRule(value));
     }
     return assoc;
@@ -705,7 +703,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   @Override
   public final void prependRule(IExpr rule) {
     if (rule.isRuleAST()) {
-      int value = getInt(rule.first());
+      int value = getRulePosition(rule.first());
       hashValue = 0;
       if (value != 0) {
         remove(value);
@@ -742,7 +740,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   public final void mergeRule(IAST rule, IExpr head, EvalEngine engine) {
     int index = size();
     if (rule.isRuleAST()) {
-      int valueIndex = getInt(rule.first());
+      int valueIndex = getRulePosition(rule.first());
       if (valueIndex == 0) {
         append(rule.setAtClone(2, F.List(rule.second())));
         keyToIndexMap.assoc(rule.first(), index++);

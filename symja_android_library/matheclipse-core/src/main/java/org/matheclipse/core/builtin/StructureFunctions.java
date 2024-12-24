@@ -79,6 +79,7 @@ public class StructureFunctions {
       S.Map.setEvaluator(new Map());
       S.MapAll.setEvaluator(new MapAll());
       S.MapAt.setEvaluator(new MapAt());
+      S.ReplaceAt.setEvaluator(new ReplaceAt());
       S.MapIndexed.setEvaluator(new MapIndexed());
       S.MapThread.setEvaluator(new MapThread());
       S.NumericalOrder.setEvaluator(new NumericalOrder());
@@ -1003,21 +1004,22 @@ public class StructureFunctions {
         final IExpr arg2 = ast.arg2();
         if (arg2.isASTOrAssociation()) {
           try {
+            final IAST ast2 = (IAST) arg2;
             final IExpr arg1 = ast.arg1();
+            java.util.function.Function<IExpr, IExpr> function = x -> F.unaryAST1(arg1, x);
             IExpr arg3 = ast.arg3();
             if (arg3.isInteger() || arg3.isString() || arg3.isKey() || arg3.equals(S.All)) {
               arg3 = F.list(arg3);
             }
             if (arg3.isListOfLists()) {
               IAST listOfLists = ((IAST) arg3);
-              return MapPositions.mapListOfPositions(x -> F.unaryAST1(arg1, x), (IAST) arg2,
-                  listOfLists);
+              return MapPositions.mapListOfPositions(function, ast2, listOfLists);
             } else if (arg3.isList()) {
-              IExpr temp = MapPositions.mapPositions(x -> F.unaryAST1(arg1, x), ((IAST) arg2), (IAST) arg3);
+              IExpr temp = MapPositions.mapPositions(function, ast2, (IAST) arg3);
               if (temp.isPresent()) {
                 return temp;
               }
-              return arg2;
+              return ast2;
             }
           } catch (final ValidateException ve) {
             return Errors.printMessage(ast.topHead(), ve, engine);
@@ -1038,6 +1040,68 @@ public class StructureFunctions {
       return ARGS_1_3_0;
     }
   }
+
+  private static class ReplaceAt extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        if (ast.head().isAST2() && ast.isAST1()) {
+          // use operator form:
+          IAST headAST = (IAST) ast.head();
+          ast = F.ternaryAST3(S.ReplaceAt, ast.arg1(), headAST.arg1(), headAST.arg2());
+        } else {
+          return F.NIL;
+        }
+      }
+
+      if (ast.isAST3()) {
+        final IExpr arg1 = ast.arg1();
+        if (arg1.isASTOrAssociation()) {
+          try {
+            final IAST ast1 = (IAST) arg1;
+            final IExpr arg2 = ast.arg2();
+            java.util.function.Function<IExpr, IExpr> function = x -> {
+              IExpr temp = S.Replace.ofNIL(engine, x, arg2);
+              if (temp.isPresent()) {
+                return temp;
+              }
+              return F.NIL;
+            };
+            IExpr arg3 = ast.arg3();
+            if (arg3.isInteger() || arg3.isString() || arg3.isKey() || arg3.equals(S.All)) {
+              arg3 = F.list(arg3);
+            }
+            if (arg3.isListOfLists()) {
+              IAST listOfLists = ((IAST) arg3);
+              return MapPositions.mapListOfPositions(function, ast1, listOfLists);
+            } else if (arg3.isList()) {
+              IExpr temp = MapPositions.mapPositions(function, ast1, (IAST) arg3);
+              if (temp.isPresent()) {
+                return temp;
+              }
+              return arg2;
+            }
+          } catch (final ValidateException ve) {
+            return Errors.printMessage(ast.topHead(), ve, engine);
+          } catch (RuntimeException rex) {
+            if (Config.DEBUG) {
+              rex.printStackTrace();
+            }
+            Errors.rethrowsInterruptException(rex);
+            return Errors.printMessage(S.ReplaceAt, rex, engine);
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3_0;
+    }
+  }
+
 
   /**
    *
@@ -1118,6 +1182,7 @@ public class StructureFunctions {
       return ARGS_2_3_2;
     }
   }
+
 
   /**
    *
@@ -1269,6 +1334,7 @@ public class StructureFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -1326,6 +1392,7 @@ public class StructureFunctions {
     }
   }
 
+
   private static final class NumericalOrder extends Order {
 
     @Override
@@ -1347,6 +1414,7 @@ public class StructureFunctions {
 
   }
 
+
   private static class NumericalSort extends Sort {
 
     @Override
@@ -1366,6 +1434,7 @@ public class StructureFunctions {
     }
 
   }
+
 
   /**
    *
@@ -1439,6 +1508,7 @@ public class StructureFunctions {
       return true;
     }
   }
+
 
   /**
    *
@@ -1583,6 +1653,7 @@ public class StructureFunctions {
     }
   }
 
+
   private static class ParallelMap extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -1620,6 +1691,7 @@ public class StructureFunctions {
       return ARGS_2_4_2;
     }
   }
+
 
   private static final class PatternOrder extends AbstractFunctionEvaluator {
 
@@ -1662,6 +1734,7 @@ public class StructureFunctions {
     }
   }
 
+
   /** Implements both the <code>Exit()</code> and <code>Quit()</code> function. */
   private static final class QuitExit extends AbstractFunctionEvaluator {
 
@@ -1703,6 +1776,7 @@ public class StructureFunctions {
     }
   }
 
+
   private static class ReverseSort extends Sort {
 
     @Override
@@ -1722,6 +1796,7 @@ public class StructureFunctions {
       return ARGS_1_2;
     }
   }
+
 
   /**
    *
@@ -1819,6 +1894,7 @@ public class StructureFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -1907,6 +1983,7 @@ public class StructureFunctions {
       return ARGS_1_2;
     }
   }
+
 
   /**
    *
@@ -2001,6 +2078,7 @@ public class StructureFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -2048,6 +2126,7 @@ public class StructureFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -2086,6 +2165,7 @@ public class StructureFunctions {
       return ARGS_1_1;
     }
   }
+
 
   /**
    *
@@ -2197,6 +2277,7 @@ public class StructureFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -2259,6 +2340,7 @@ public class StructureFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
+
   }
 
   /**

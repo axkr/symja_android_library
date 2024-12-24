@@ -5058,6 +5058,10 @@ public class F extends S {
     return new AST3(HypergeometricU, a0, a1, a2);
   }
 
+  public static IASTAppendable IdentityAlloc(int capacity) {
+    return AST.newInstance(capacity, Identity);
+  }
+
   public static IAST Identity(final IExpr a0) {
     return new AST1(Identity, a0);
   }
