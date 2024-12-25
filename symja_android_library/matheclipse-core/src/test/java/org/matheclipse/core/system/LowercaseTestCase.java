@@ -4887,8 +4887,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Delete(2)[{1,2,3,4}]", //
         "{1,3,4}");
 
+    check("Delete({a, {x, y}, b, c}, {2, 0})", //
+        "{a,x,y,b,c}");
     check("Delete(f[a, b, u + v, c], {3, 0})", //
         "f(a,b,u,v,c)");
+    check("Delete({a, b, c}, 0)", //
+        "Identity(a,b,c)");
+    check("Delete(h(a, b), {})", //
+        "h(a,b)");
+    check("Delete(h(a, b), {{}})", //
+        "Identity()");
+
   }
 
   @Test
@@ -11215,6 +11224,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{a,b,c,d,e,2}");
     check("Insert(2, -2)[{a, b, c, d, e}]", //
         "{a,b,c,d,2,e}");
+
+
+    check("Insert(1 + x^(a + b) + y^(c + d),zzz, {3,2,3})", //
+        "1+x^(a+b)+y^(c+d+zzz)");
+
+    check("Insert(h(a,b),x, { })", //
+        "h(a,b)");
+    check("Insert(h(a,b),x, {{}})", //
+        "Insert(h(a,b),x,{{}})");
   }
 
   @Test
@@ -13482,6 +13500,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
   }
 
+  // @Test
+  // public void testListLinePlot() {
+  // checkNumeric("ListLinePlot({{}, {{1., 1.}}, {{1., 2.}}, {}})", //
+  // "ListLinePlot({{},{{1.0,1.0}},{{1.0,2.0}},{}})");
+  // }
+
   @Test
   public void testLog() {
     checkNumeric("Log(-1.5)", //
@@ -14016,6 +14040,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "f(List)[a,b,c,d,e]");
     check("MapAt(f, {a, b, c, d}, 2)", //
         "{a,f(b),c,d}");
+    check("sparr=SparseArray({1 -> 1, 2 -> 2, 10 -> 10});", //
+        "");
+    check("MapAt(f, sparr, {{1}, {5}, {10}})", //
+        "{f(1),2,0,0,f(0),0,0,0,0,f(10)}");
+
+
+    check("MapAt(f, h(a, b), {})", //
+        "h(a,b)");
+    check("MapAt(f, h(a, b), {{}})", //
+        "f(h(a,b))");
   }
 
   @Test
@@ -14036,10 +14070,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{a,a},{xx,a}}");
     check("ReplaceAt({a, a, a, a}, a -> xx, -2)", //
         "{a,a,xx,a}");
-    check("ReplaceAt({1, 2, 3, 4}, x_ :> 2 x - 1, {{2}, {4}})", //
+    check("ReplaceAt({1, 2, 3, 4}, x_ :> 2*x - 1, {{2}, {4}})", //
         "{1,3,3,7}");
-    check("ReplaceAt({a, b, c, d}, {a -> xx, _ -> yy}, {{1}, {2}, {4}})", //
+    check("ReplaceAt({a, b, c, d}, {a->xx, _->yy}, {{1}, {2}, {4}})", //
         "{xx,yy,c,yy}");
+    check("ReplaceAt({{a, a}, {a, a}}, a -> xx, {All, 2})", //
+        "{{a,xx},{a,xx}}");
     check("ReplaceAt(<|\"a\" -> a, \"b\" -> a|>, a -> xx, Key(\"a\"))", //
         "<|a->xx,b->a|>");
     check("ReplaceAt(<|\"a\" -> {a, a}, \"b\" -> {a, a}|>, a -> xx, {Key(\"a\"), All})", //
@@ -14047,6 +14083,24 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ReplaceAt({{a, b}, {c, d}, e}, x_ :> f[x], {{1, 2}, {2, 2}, {3}})", //
         "{{a,f(b)},{c,f(d)},f(e)}");
 
+    check("ReplaceAt({{a, b}, {c, d}, e}, x_:>f(x), 2)", //
+        "{{a,b},f({c,d}),e}");
+    check("ReplaceAt({{a, b}, {c, d}, e}, x_ :> f(x), {{1, 2}, {2, 2}, {3}})", //
+        "{{a,f(b)},{c,f(d)},f(e)}");
+
+    check("ReplaceAt(a + b + c + d, _ -> x, 2)", //
+        "a+c+d+x");
+    check("ReplaceAt(x^2 + y^2, _->z, {{1, 1}, {2, 1}})", //
+        "2*z^2");
+    check("ReplaceAt(<|3 -> \"a\", 2 -> \"b\", 1 -> \"c\"|>, _->xx , {{1}, {Key(1)}})", //
+        "<|3->xx,2->b,1->xx|>");
+    check("ReplaceAt({a, b, c}, _ -> f, 0)", //
+        "f(a,b,c)");
+
+    check("sparr = SparseArray({1 -> 1, 2 -> 2, 10 -> 10})", //
+        "SparseArray(Number of elements: 3 Dimensions: {10} Default value: 0)");
+    check("ReplaceAt(sparr, _ -> xx, {{2}, {3}})", //
+        "{1,xx,xx,0,0,0,0,0,0,10}");
 
   }
 

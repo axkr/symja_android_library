@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.basic.ToggleFeature;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -120,6 +121,11 @@ public class ListLinePlot extends ListPlot {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    IExpr arg1 = ast.arg1();
+    if (!checkList(engine, arg1)) {
+      // `1` is not a list of numbers or pairs of numbers.
+      return Errors.printMessage(ast.topHead(), "lpn", F.List(arg1), engine);
+    }
     if (ToggleFeature.JS_ECHARTS) {
       return evaluateECharts(ast, argSize, options, engine, originalAST);
     }

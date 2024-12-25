@@ -33,12 +33,18 @@ public class DeletePositions {
    * 
    * @param f function to apply
    * @param ast
-   * @param listOfPositions
+   * @param listOfListsOfPositions
    */
-  public static IAST deleteListOfPositions(IAST ast, IAST listOfPositions) {
+  public static IAST deleteListOfPositions(IAST ast, IAST listOfListsOfPositions) {
     DeletePositions deletePositions = new DeletePositions(x -> null);
-    for (int i = 1; i < listOfPositions.size(); i++) {
-      deletePositions.reset(listOfPositions.getAST(i));
+    for (int i = 1; i < listOfListsOfPositions.size(); i++) {
+      IAST subList = (IAST) listOfListsOfPositions.get(i);
+      if (subList.isEmpty()) {
+        ast = F.Sequence();
+        continue;
+      }
+
+      deletePositions.reset(subList);
       IExpr temp = deletePositions.mapAtRecursive(ast);
       if (temp.isPresent()) {
         if (temp.isASTOrAssociation()) {
@@ -59,6 +65,9 @@ public class DeletePositions {
    * @return
    */
   public static IAST deletePositions(IAST ast, IAST listOfPositions) {
+    if (listOfPositions.isEmpty()) {
+      return ast;
+    }
     DeletePositions deletePositions = new DeletePositions(x -> null, listOfPositions);
     IASTAppendable result = deletePositions.mapAtRecursive(ast);
     return removeNILRecursive(result);

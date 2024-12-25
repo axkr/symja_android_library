@@ -1001,7 +1001,10 @@ public class StructureFunctions {
       }
 
       if (ast.isAST3()) {
-        final IExpr arg2 = ast.arg2();
+        IExpr arg2 = ast.arg2();
+        if (arg2.isSparseArray()) {
+          arg2 = arg2.normal(false);
+        }
         if (arg2.isASTOrAssociation()) {
           try {
             final IAST ast2 = (IAST) arg2;
@@ -1056,7 +1059,10 @@ public class StructureFunctions {
       }
 
       if (ast.isAST3()) {
-        final IExpr arg1 = ast.arg1();
+        IExpr arg1 = ast.arg1();
+        if (arg1.isSparseArray()) {
+          arg1 = arg1.normal(false);
+        }
         if (arg1.isASTOrAssociation()) {
           try {
             final IAST ast1 = (IAST) arg1;

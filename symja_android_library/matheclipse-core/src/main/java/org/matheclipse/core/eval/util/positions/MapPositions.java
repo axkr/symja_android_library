@@ -37,12 +37,24 @@ public class MapPositions {
    * 
    * @param f function to apply
    * @param ast
-   * @param listOfPositions
+   * @param listOfListsOfPositions
    */
-  public static IExpr mapListOfPositions(Function<IExpr, IExpr> f, IAST ast, IAST listOfPositions) {
+  public static IExpr mapListOfPositions(Function<IExpr, IExpr> f, IAST ast,
+      IAST listOfListsOfPositions) {
     MapPositions mapPositions = new MapPositions(f);
-    for (int i = 1; i < listOfPositions.size(); i++) {
-      mapPositions.reset(listOfPositions.getAST(i));
+    for (int i = 1; i < listOfListsOfPositions.size(); i++) {
+      IAST subList = (IAST) listOfListsOfPositions.get(i);
+      if (subList.isEmpty()) {
+        IExpr temp = f.apply(ast);
+        if (temp.isPresent()) {
+          if (temp.isASTOrAssociation()) {
+            ast = (IAST) temp;
+          }
+        }
+        continue;
+      }
+
+      mapPositions.reset(subList);
       IExpr temp = mapPositions.mapAtRecursive(ast);
       if (temp.isPresent()) {
         if (temp.isASTOrAssociation()) {
@@ -64,6 +76,9 @@ public class MapPositions {
    * @return
    */
   public static IAST mapPositions(Function<IExpr, IExpr> f, IAST ast, IAST listOfPositions) {
+    if (listOfPositions.isEmpty()) {
+      return ast;
+    }
     MapPositions mapPositions = new MapPositions(f, listOfPositions);
     IAST result = mapPositions.mapAtRecursive(ast);
     removeIsCopiedRecursive(result);

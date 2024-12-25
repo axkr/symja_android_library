@@ -167,6 +167,11 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    IExpr arg1 = ast.arg1();
+    if (!checkList(engine, arg1)) {
+      // `1` is not a list of numbers or pairs of numbers.
+      return Errors.printMessage(ast.topHead(), "lpn", F.List(arg1), engine);
+    }
     if (ToggleFeature.JS_ECHARTS) {
       return evaluateECharts(ast, argSize, options, engine, originalAST);
     }
@@ -190,6 +195,21 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     }
 
     return F.NIL;
+  }
+
+  protected static boolean checkList(final EvalEngine engine, IExpr arg1) {
+    if (arg1.isListOfLists()) {
+      IAST list = (IAST) arg1;
+      for (int i = 1; i < list.size(); i++) {
+        IExpr temp = list.get(i);
+        if (temp.isList()) {
+          if (temp.isEmpty()) {
+            return false;
+          }
+        }
+      }
+    }
+    return true;
   }
 
   protected IExpr createGraphicsFunction(IAST graphicsPrimitives, IAST listOfOptions,

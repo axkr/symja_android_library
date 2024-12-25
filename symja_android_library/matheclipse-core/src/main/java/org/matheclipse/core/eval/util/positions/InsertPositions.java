@@ -1,6 +1,7 @@
 package org.matheclipse.core.eval.util.positions;
 
 import java.util.IdentityHashMap;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.expression.F;
@@ -42,12 +43,18 @@ public class InsertPositions {
    * 
    * @param f function to apply
    * @param ast
-   * @param listOfPositions
+   * @param listOfListsOfPositions
    */
-  public static IExpr insertListOfPositions(IAST ast, IExpr element, IAST listOfPositions) {
+  public static IExpr insertListOfPositions(IAST ast, IExpr element, IAST listOfListsOfPositions) {
     InsertPositions mapPositions = new InsertPositions(element);
-    for (int i = 1; i < listOfPositions.size(); i++) {
-      mapPositions.reset(listOfPositions.getAST(i));
+    for (int i = 1; i < listOfListsOfPositions.size(); i++) {
+      IAST subList = (IAST) listOfListsOfPositions.get(i);
+      if (subList.isEmpty()) {
+        // Cannot insert at position `1` in `2`.
+        return Errors.printMessage(S.Insert, "ins", F.List(F.CEmptyList, ast));
+      }
+
+      mapPositions.reset(subList);
       IExpr temp = mapPositions.mapAtRecursive(ast);
       if (temp.isPresent()) {
         if (temp.isASTOrAssociation()) {
@@ -69,6 +76,9 @@ public class InsertPositions {
    * @return
    */
   public static IExpr insertPositions(IAST ast, IExpr element, IAST listOfPositions) {
+    if (listOfPositions.isEmpty()) {
+      return ast;
+    }
     InsertPositions mapPositions = new InsertPositions(element, listOfPositions);
     IAST result = mapPositions.mapAtRecursive(ast);
     MapPositions.removeIsCopiedRecursive(result);
@@ -108,22 +118,12 @@ public class InsertPositions {
         }
         IExpr key = pos.isString() ? pos : pos.first();
         final Object[] pair = getAppendableIntPair(ast);
-        final IASTAppendable association = (IASTAppendable) pair[0];
+        final IAssociation association = (IAssociation) pair[0];
         // IntArrayList insertedPositions = (IntArrayList) pair[1];
         if (index == positions.size() - 1) {
           int keyPosition = ((IAssociation) ast).getRulePosition(key);
           if (keyPosition > 0) {
-            if (element.isListOfRules()) {
-              IAST list = (IAST) element;
-              for (int i = list.argSize(); i > 0; i--) {
-                IExpr rule = list.getRule(i);
-                association.append(keyPosition, rule);
-              }
-            } else {
-              association.append(keyPosition, element);
-            }
-
-            return association;
+            return appendElement(association, keyPosition);
           }
         } else {
           IAST rule = ((IAssociation) ast).getRule(key);
@@ -170,16 +170,7 @@ public class InsertPositions {
           if (ast.size() > p) {
             IExpr temp = ast.getRule(p);
             if (temp.isPresent()) {
-              if (element.isListOfRules()) {
-                IAST list = (IAST) element;
-                for (int i = list.argSize(); i > 0; i--) {
-                  IExpr rule = list.getRule(i);
-                  subResult.append(p, rule);
-                }
-              } else {
-                subResult.append(p, element);
-              }
-              return subResult;
+              return appendElement((IAssociation) subResult, p);
             } else {
               throw new ArgumentTypeException("ins", F.list(F.ZZ(p), ast));
             }
@@ -218,6 +209,27 @@ public class InsertPositions {
     }
     // Part `1` of `2` does not exist.
     throw new ArgumentTypeException("partw", F.list(F.list(pos), ast));
+  }
+
+  /**
+   * Append the element to the result at position `p`. If element is a {@link S#List} expression,
+   * the list elements are appended.
+   * 
+   * @param result
+   * @param p
+   * @return
+   */
+  protected IAST appendElement(IAssociation result, int p) {
+    if (element.isListOfRules()) {
+      IAST list = (IAST) element;
+      for (int i = list.argSize(); i > 0; i--) {
+        IExpr rule = list.getRule(i);
+        result.append(p, rule);
+      }
+      return result;
+    }
+    result.append(p, element);
+    return result;
   }
 
   /**
