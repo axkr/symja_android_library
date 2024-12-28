@@ -1501,7 +1501,7 @@ public class PredicateQ {
 
     @Override
     public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
-      return arg1.isString() ? ExprParser.test(arg1.toString(), engine) : false;
+      return arg1.isString() ? ExprParser.isSyntax(arg1.toString(), engine) : false;
     }
   }
 

@@ -67,7 +67,16 @@ public class ExprParser extends Scanner {
     return str.length();
   }
 
-  public static boolean test(final String str, EvalEngine engine) {
+  /**
+   * Check if the given string is valid Symja syntax for the given engine. This test is used for
+   * {@link S#SyntaxQ}. In the case of an parser error, the method returns <code>false</code> and
+   * doesn't print any syntax error message.
+   * 
+   * @param str
+   * @param engine
+   * @return <code>true</code> if the string is valid Symja syntax
+   */
+  public static boolean isSyntax(final String str, EvalEngine engine) {
     try {
       ExprParser fParser = new ExprParser(engine);
       final IExpr parsedExpression = fParser.parse(str);
@@ -75,7 +84,7 @@ public class ExprParser extends Scanner {
         return true;
       }
     } catch (final SyntaxError e) {
-
+      // syntax errors give false for SyntaxQ
     }
     return false;
   }
@@ -1420,7 +1429,7 @@ public class ExprParser extends Scanner {
       result.append(head);
     });
     InfixExprOperator compareOperator = determineBinaryOperator();
-    result.set(result.size() - 1, F.$s(compareOperator.getFunctionName()));
+    result.set(result.argSize(), F.$s(compareOperator.getFunctionName()));
     getNextToken();
     while (fToken == TT_NEWLINE) {
       getNextToken();
