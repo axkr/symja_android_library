@@ -23,7 +23,6 @@ import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DateObjectExpr;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.IInteger;
@@ -472,11 +471,7 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      IASTAppendable result = F.ListAlloc(ContextPath.PACKAGES.size());
-      for (String str : ContextPath.PACKAGES) {
-        result.append(F.$str(str));
-      }
-      return result;
+      return ContextPath.getContexts();
     }
   }
 

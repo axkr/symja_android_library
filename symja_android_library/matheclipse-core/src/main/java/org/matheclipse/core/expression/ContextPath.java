@@ -140,6 +140,14 @@ public final class ContextPath implements Iterable<Context> {
     return fContextMap.computeIfAbsent(name, n -> new Context(contextName, parentContext));
   }
 
+  public static IAST getContexts() {
+    IASTAppendable result = F.ListAlloc(ContextPath.PACKAGES.size());
+    for (String str : ContextPath.PACKAGES) {
+      result.append(F.$str(str));
+    }
+    return result;
+  }
+
   public Context getGlobalContext() {
     return fContextMap.get(Context.GLOBAL_CONTEXT_NAME);
   }

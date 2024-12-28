@@ -25,6 +25,7 @@ import org.matheclipse.core.eval.interfaces.ISetValueEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.BuiltinUsage;
+import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -90,6 +91,7 @@ public final class PatternMatching {
         S.Clear.setEvaluator(new Clear());
         S.ClearAll.setEvaluator(new ClearAll());
         S.Context.setEvaluator(new Context());
+        S.Contexts.setEvaluator(new Contexts());
         S.Definition.setEvaluator(new Definition());
         S.FullDefinition.setEvaluator(new FullDefinition());
         S.OptionsPattern.setEvaluator(OptionsPattern.CONST);
@@ -349,6 +351,24 @@ public final class PatternMatching {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_1;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDFIRST);
+    }
+  }
+
+  private static final class Contexts extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return ContextPath.getContexts();
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_0;
     }
 
     @Override
