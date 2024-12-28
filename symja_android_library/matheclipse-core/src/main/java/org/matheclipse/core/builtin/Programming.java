@@ -2680,7 +2680,7 @@ public final class Programming {
             if (arg2.isList()) {
               IAST matcherAST = (IAST) arg2;
 
-              matcher = new IPatternMatcher[matcherAST.size() - 1];
+              matcher = new IPatternMatcher[matcherAST.argSize()];
               for (int i = 1; i < matcherAST.size(); i++) {
                 matcher[i - 1] = engine.evalPatternMatcher(matcherAST.get(i));
               }
@@ -3548,7 +3548,7 @@ public final class Programming {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (((ast.argSize()) & 0x0001) == 0x0001) {
         // `1`.
-        return Errors.printMessage(S.Which, "error", F.List("Number of arguments must be even"),
+        return Errors.printMessage(S.Which, "error", F.List("Number of arguments must be even."),
             engine);
       }
       for (int i = 1; i < ast.size(); i += 2) {
@@ -3709,43 +3709,48 @@ public final class Programming {
    */
   private static boolean rememberWithVariables(IAST variablesList,
       final java.util.Map<ISymbol, IExpr> variablesMap, EvalEngine engine) {
-    ISymbol oldSymbol;
+    final java.util.Set<ISymbol> localVarsMap = new java.util.HashSet<>();
     for (int i = 1; i < variablesList.size(); i++) {
-      if (variablesList.get(i).isAST(S.Set, 3)) {
-        final IAST setFun = (IAST) variablesList.get(i);
-        if (!setFun.arg1().isSymbol()) {
-          // Local variable specification `1` contains `2`, which is an assignment to `3`; only
-          // assignments to symbols are allowed.
-          Errors.printMessage(S.With, "lvset",
-              F.list(variablesList, variablesList.get(i), setFun.arg1()), engine);
-          return false;
+      IExpr varExpr = variablesList.get(i);
+      if (varExpr.isAST(S.Set, 3) || varExpr.isAST(S.SetDelayed, 3)) {
+        if (getSingleWithVariable((IAST) varExpr, variablesList, localVarsMap, variablesMap,
+            engine)) {
+          continue;
         }
-        oldSymbol = (ISymbol) setFun.arg1();
-        IExpr rightHandSide = setFun.arg2();
-        IExpr temp = engine.evaluate(rightHandSide);
-        VariablesSet set = new VariablesSet(temp);
-        set.putAllSymbols(variablesMap);
-        variablesMap.put(oldSymbol, temp);
-      } else if (variablesList.get(i).isAST(S.SetDelayed, 3)) {
-        final IAST setFun = (IAST) variablesList.get(i);
-        if (!setFun.arg1().isSymbol()) {
-          // Local variable specification `1` contains `2`, which is an assignment to `3`; only
-          // assignments to symbols are allowed.
-          Errors.printMessage(S.With, "lvset",
-              F.list(variablesList, variablesList.get(i), setFun.arg1()), engine);
-          return false;
-        }
-        oldSymbol = (ISymbol) setFun.arg1();
-        IExpr rightHandSide = setFun.arg2();
-        VariablesSet set = new VariablesSet(rightHandSide);
-        set.putAllSymbols(variablesMap);
-        variablesMap.put(oldSymbol, rightHandSide);
       } else {
         // Variable `1` in local variable specification `2` requires assigning a value
-        Errors.printMessage(S.With, "lvws", F.list(variablesList.get(i), variablesList), engine);
-        return false;
+        Errors.printMessage(S.With, "lvws", F.list(varExpr, variablesList), engine);
       }
+      return false;
     }
+    return true;
+  }
+
+  private static boolean getSingleWithVariable(final IAST setFunction, IAST variablesList,
+      final java.util.Set<ISymbol> localVarsMap, final java.util.Map<ISymbol, IExpr> variablesMap,
+      EvalEngine engine) {
+    ISymbol oldSymbol;
+    if (!setFunction.arg1().isSymbol()) {
+      // Local variable specification `1` contains `2`, which is an assignment to `3`; only
+      // assignments to symbols are allowed.
+      Errors.printMessage(S.With, "lvset", F.list(variablesList, setFunction, setFunction.arg1()),
+          engine);
+      return false;
+    }
+    oldSymbol = (ISymbol) setFunction.arg1();
+    if (localVarsMap.contains(oldSymbol)) {
+      // Duplicate local variable `1` found in local variable specification `2`.
+      Errors.printMessage(S.With, "dup", F.list(oldSymbol, variablesList), engine);
+      return false;
+    }
+    localVarsMap.add(oldSymbol);
+    IExpr rightHandSide = setFunction.arg2();
+    if (setFunction.isAST(S.Set)) {
+      rightHandSide = engine.evaluate(rightHandSide);
+    }
+    final VariablesSet set = new VariablesSet(rightHandSide);
+    set.putAllSymbols(variablesMap);
+    variablesMap.put(oldSymbol, rightHandSide);
     return true;
   }
 
@@ -3762,14 +3767,22 @@ public final class Programming {
       final java.util.Map<ISymbol, IExpr> variablesMap, final EvalEngine engine) {
     ISymbol oldSymbol;
     ISymbol newSymbol;
+    final java.util.Set<ISymbol> localVarsMap = new java.util.HashSet<>();
     for (int i = 1; i < variablesList.size(); i++) {
-      if (variablesList.get(i).isSymbol()) {
-        oldSymbol = (ISymbol) variablesList.get(i);
+      IExpr varExpr = variablesList.get(i);
+      if (varExpr.isSymbol()) {
+        oldSymbol = (ISymbol) varExpr;
+        if (localVarsMap.contains(oldSymbol)) {
+          // Duplicate local variable `1` found in local variable specification `2`.
+          Errors.printMessage(S.Module, "dup", F.list(oldSymbol, variablesList), engine);
+          return false;
+        }
+        localVarsMap.add(oldSymbol);
         newSymbol = F.Dummy(oldSymbol.toString() + varAppend);
         variablesMap.put(oldSymbol, newSymbol);
       } else {
-        if (variablesList.get(i).isAST(S.Set, 3)) {
-          final IAST setFun = (IAST) variablesList.get(i);
+        if (varExpr.isAST(S.Set, 3)) {
+          final IAST setFun = (IAST) varExpr;
           if (!setFun.arg1().isSymbol()) {
             // Local variable specification `1` contains `2`, which is an assignment to `3`; only
             // assignments to symbols are allowed.
@@ -3778,13 +3791,19 @@ public final class Programming {
             return false;
           }
           oldSymbol = (ISymbol) setFun.arg1();
+          if (localVarsMap.contains(oldSymbol)) {
+            // Duplicate local variable `1` found in local variable specification `2`.
+            Errors.printMessage(S.Module, "dup", F.list(oldSymbol, variablesList), engine);
+            return false;
+          }
+          localVarsMap.add(oldSymbol);
           newSymbol = F.Dummy(oldSymbol.toString() + varAppend);
           variablesMap.put(oldSymbol, newSymbol);
           newSymbol.assignValue(engine.evaluate(setFun.arg2()));
         } else {
           // Local variable specification `1` contains `2` which is not a symbol or an assignment to
           // a symbol.
-          Errors.printMessage(S.Module, "lvsym", F.List(variablesList, variablesList.get(i)),
+          Errors.printMessage(S.Module, "lvsym", F.List(variablesList, varExpr),
               engine);
           return false;
         }
@@ -3990,7 +4009,7 @@ public final class Programming {
       int step = span[2];
       return spanPart(ast, pos, arg1, arg2, start, last, step, p1, engine);
     } else if (arg2.equals(S.All)) {
-      return spanPart(ast, pos, arg1, arg2, 1, arg1.size() - 1, 1, p1, engine);
+      return spanPart(ast, pos, arg1, arg2, 1, arg1.argSize(), 1, p1, engine);
     } else if (arg2.isReal()) {
       final int indx = ast.get(pos).toIntDefault();
       if (indx == Integer.MIN_VALUE) {
