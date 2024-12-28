@@ -6,6 +6,8 @@ public class BuiltinUsage {
   private static final String[] USAGE = new String[ID.Zeta + 10];
 
   static {
+
+    USAGE[ID.$ContextPath] = "the current context search path";
     USAGE[ID.$IterationLimit] =
         "specifies the maximum number of times a reevaluation of an expression may happen";
 
@@ -59,9 +61,12 @@ public class BuiltinUsage {
     USAGE[ID.BaseForm] = "print with all numbers given in a base";
     USAGE[ID.BaseDecode] = "decode a base64 string";
     USAGE[ID.BaseEncode] = "encode an element as a base64 string";
+    USAGE[ID.Begin] = "temporarily set the current context";
+    USAGE[ID.BeginPackage] = "temporarily set the context and clean the context path";
     USAGE[ID.BellB] = "Bell numbers";
     USAGE[ID.BernoulliB] = "Bernoulli number and polynomial";
     USAGE[ID.Beta] = "Euler's Beta function";
+    USAGE[ID.Block] = "evaluate an expression using local values for some given symbols";
     USAGE[ID.Boole] = "translate 'True' to 1, and 'False' to 0";
     USAGE[ID.Booleans] = "domain of boolean values";
     USAGE[ID.BooleanQ] = "test whether the expression evaluates to a boolean constant";
@@ -76,6 +81,8 @@ public class BuiltinUsage {
     USAGE[ID.Catenate] = "catenate elements from a list of lists";
     USAGE[ID.CentralMoment] = "central moments of distributions and data";
     USAGE[ID.Condition] = "expression defined under condition";
+    USAGE[ID.Context] = "the current context";
+    USAGE[ID.Contexts] = "list all the defined contexts";
     USAGE[ID.Characters] = "list the characters in a string";
     USAGE[ID.CharacterRange] = "range of characters with successive character codes";
     USAGE[ID.ChebyshevT] = "Chebyshev's polynomials of the first kind";
@@ -164,7 +171,10 @@ public class BuiltinUsage {
     USAGE[ID.EllipticF] = "elliptic integral F(ϕ|m)";
     USAGE[ID.EllipticK] = "elliptic integral of the first kind K(m)";
     USAGE[ID.EllipticPi] = "elliptic integral of the third kind P(n|m)";
+    USAGE[ID.End] = "revert to the context previous to the nearest `Begin` statement";
     USAGE[ID.EndOfLine] = "a string pattern matching EOL";
+    USAGE[ID.EndPackage] =
+        "restore the context and the context path to the state before the nearest call to `BeginPackage`";
     USAGE[ID.Equal] = "numerical equality";
     USAGE[ID.Equivalent] = "logic equivalence";
     USAGE[ID.Erf] = "error function";
@@ -210,6 +220,7 @@ public class BuiltinUsage {
     USAGE[ID.FixedPointList] = "nest until a fixed point is reached return a list";
     USAGE[ID.Flat] = "attribute for functions that must be flattened";
     USAGE[ID.Flatten] = "flatten out any sequence of levels in a nested list";
+    USAGE[ID.FlattenAt] = "flatten out sequences at particular positions";
     USAGE[ID.Fold] = "iterative application of a binary operation over elements of a list";
     USAGE[ID.FoldList] =
         "list of the results of applying a binary operation interatively over elements of a list";
@@ -365,6 +376,8 @@ public class BuiltinUsage {
     USAGE[ID.MinimalPolynomial] = "minimal polynomial for a general algebraic number";
     USAGE[ID.Missing] = "default value if a key is not found";
     USAGE[ID.Mod] = "the remainder in an integer division";
+    USAGE[ID.Module] =
+        "generates symbols with names of the form x$nnn to represent each local variable.";
     USAGE[ID.ModularInverse] = "returns the modular inverse k^(-1) MOD n";
     USAGE[ID.MoebiusMu] = "Mobius function";
     USAGE[ID.Most] = "remove the last element";
@@ -511,6 +524,7 @@ public class BuiltinUsage {
     USAGE[ID.RealValuedNumberQ] =
         "returns 'True' if $expr$ is an explicit number with no imaginary component";
     USAGE[ID.RegularExpression] = "string to regular expression";
+    USAGE[ID.ReplaceAt] = "replace an expression at particular positions";
     USAGE[ID.ReplacePart] = "replace elements at given positions";
     USAGE[ID.Rest] = "remove the first element";
     USAGE[ID.Return] = "return from a function";
@@ -598,6 +612,7 @@ public class BuiltinUsage {
     USAGE[ID.Symbol] = "the head of a symbol; create a symbol from a name";
     USAGE[ID.SymbolName] = "give the name of a symbol as a string";
     // USAGE[ID.SymjaForml] = "translate expressions to Symja";
+    USAGE[ID.SyntaxQ] = "test whether a string is a syntactically-correct expression";
     // USAGE[ID.Syntax] = "syntax messages";
 
     USAGE[ID.Table] = "make a table of values of an expression";
@@ -646,7 +661,9 @@ public class BuiltinUsage {
     USAGE[ID.Unevaluated] =
         "temporarily leaves $expr$ in an unevaluated form when it appears as a function argument";
     USAGE[ID.Union] = "enumerate all distinct elements in a list";
+    USAGE[ID.Unique] = "generate a new symbols with a unique name";
     USAGE[ID.UnitConvert] = "convert between units";
+    USAGE[ID.UnitStep] = "unit step function of a number";
     USAGE[ID.UnitVector] = "unit vector along a coordinate direction";
     USAGE[ID.Unprotect] = "remove protection against redefinitions";
     USAGE[ID.UnsameQ] = "not literal symbolic identity";
@@ -668,6 +685,7 @@ public class BuiltinUsage {
     USAGE[ID.Whitespace] = "sequence of whitespace characters";
     USAGE[ID.WhitespaceCharacter] = "space, newline, tab, or other whitespace character";
     USAGE[ID.WordBoundary] = "boundary between word characters and others";
+    USAGE[ID.With] = "replace variables by some constant values";
     USAGE[ID.WordCharacter] = "letter or digit";
 
     USAGE[ID.Xor] = "logic (exclusive) disjunction";
