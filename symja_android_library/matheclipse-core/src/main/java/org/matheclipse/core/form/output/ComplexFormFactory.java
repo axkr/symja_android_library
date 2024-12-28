@@ -8,7 +8,6 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -391,7 +390,7 @@ public abstract class ComplexFormFactory {
     for (int i = 1; i < operatorAST.size(); i++) {
       final IExpr plusArg = operatorAST.get(i);
       convertInternal(buf, plusArg);
-      if (i < operatorAST.size() - 1) {
+      if (i < operatorAST.argSize()) {
         buf.append("." + operatorStr + "(");
         j++;
       }
@@ -525,7 +524,7 @@ public abstract class ComplexFormFactory {
         append(buf, oper.getOperatorString());
         convertInternal(buf, list.get(i), oper.getPrecedence(), false);
 
-        if (i < list.size() - 1) {
+        if (i < list.argSize()) {
           buf.append(" && ");
           convertInternal(buf, list.get(i), oper.getPrecedence(), false);
         }
@@ -885,7 +884,7 @@ public abstract class ComplexFormFactory {
   public void convertArgs(final StringBuilder buf, IExpr head, final IAST function,
       int startIndex) {
     append(buf, "(");
-    final int argumentSize = function.size() - 1;
+    final int argumentSize = function.argSize();
     for (int i = startIndex; i <= argumentSize; i++) {
       convertInternal(buf, function.get(i));
       if (i < argumentSize) {

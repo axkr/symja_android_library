@@ -337,8 +337,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     }
 
     // now start from the end
-    iIndex = lhsPatternAST.size() - 1;
-    int jIndex = lhsEvalAST.size() - 1;
+    iIndex = lhsPatternAST.argSize();
+    int jIndex = lhsEvalAST.argSize();
     while (iIndex > 0) {
       IExpr temp = lhsPatternAST.get(iIndex);
       if (!(temp instanceof IPatternObject) && temp.isFreeOfPatterns()) {
@@ -885,7 +885,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
                   & IAST.CONTAINS_ALL_DEFAULT_PATTERN) == IAST.CONTAINS_ALL_DEFAULT_PATTERN
                   && patternHead.hasOneIdentityAttribute() && lhsPatternAST.isOrderlessAST()) {
                 if (patternHead.equals(evalHead) && lhsEvalExpr.isAST()) {
-                  if (lhsPatternAST.size() - 1 >= lhsEvalExpr.size()) {
+                  if (lhsPatternAST.argSize() >= lhsEvalExpr.size()) {
                     IAST lhsEvalAST = (IAST) lhsEvalExpr;
                     int[] ignoredPositions = new int[lhsEvalAST.size()];
                     matched = matchDefaultArgsRecursive(patternHead, evalHead, lhsPatternAST,
@@ -2175,7 +2175,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
    */
   private IAST[] remove(final IAST lhsPattern, final IAST lhsEval, EvalEngine engine,
       StackMatcher stackMatcher) {
-    int[] removedPositionsArray = new int[lhsPattern.size() - 1];
+    int[] removedPositionsArray = new int[lhsPattern.argSize()];
     int removedPosition = 0;
     boolean matchedPattern = false;
     for (int i = 1; i < lhsPattern.size(); i++) {
@@ -2183,7 +2183,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       IExpr rhs = lhsEval.getRule(i);
       if (lhs instanceof IPatternObject) {
         if (lhs instanceof IPatternSequence) {
-          if (i == lhsPattern.size() - 1) {
+          if (i == lhsPattern.argSize()) {
             IPatternSequence pattern = (IPatternSequence) lhs;
             if (pattern.getSymbol() != null && !pattern.isPatternDefault()) {
               if (matchPattern((IPatternSequence) lhs, rhs, stackMatcher, engine)) {

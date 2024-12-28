@@ -81,7 +81,7 @@ public class InverseFunction extends AbstractFunctionEvaluator {
       IAST composition = (IAST) arg1;
       if (composition.forAll(x -> x.isSymbol())) {
         IASTAppendable result = F.ast(composition.head(), composition.size());
-        for (int i = composition.size() - 1; i >= 1; i--) {
+        for (int i = composition.argSize(); i >= 1; i--) {
           result.append(F.InverseFunction(composition.get(i)));
         }
         return result;

@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import org.hipparchus.linear.FieldMatrix;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
@@ -702,7 +701,7 @@ public final class OutputFunctions {
         StringBuilder buf = new StringBuilder();
         for (int i = 1; i < list.size(); i++) {
           buf.append(list.getRule(i).toString());
-          if (i < list.size() - 1) {
+          if (i < list.argSize()) {
             buf.append(separator);
           }
         }

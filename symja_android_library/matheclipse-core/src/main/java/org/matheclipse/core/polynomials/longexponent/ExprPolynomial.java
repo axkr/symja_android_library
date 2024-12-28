@@ -2345,7 +2345,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
    * @return the coefficients of a univariate polynomial up to n degree
    */
   public IAST coefficientList() {
-    final int argsSize = ring.getVars().size() - 1;
+    final int argsSize = ring.getVars().argSize();
     if (argsSize == 1) {
       long exp;
       if (ring.tord.getEvord() == ExprTermOrder.IGRLEX

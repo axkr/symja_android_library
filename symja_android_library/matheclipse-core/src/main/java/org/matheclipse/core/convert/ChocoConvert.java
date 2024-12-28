@@ -89,7 +89,7 @@ public class ChocoConvert {
     }
     model.getSolver()
         .setSearch(new IntStrategy(vars, new InputOrder<>(model), new IntDomainClosest()));
-    ReExpression[] array = new ReExpression[list.size() - 1];
+    ReExpression[] array = new ReExpression[list.argSize()];
     for (int i = 1; i < list.size(); i++) {
       IExpr element = list.get(i);
       if (element instanceof IAST) {
@@ -259,7 +259,7 @@ public class ChocoConvert {
       } else if (ast.isPower()) {
         IExpr exponent = ast.exponent();
         if (exponent.isInteger()) {
-          int value = ((IInteger) exponent).toIntDefault();
+          int value = exponent.toIntDefault();
           if (value > 0) {
             IExpr base = ast.base();
             ArExpression result = integerExpression(net, base, map);
@@ -419,7 +419,7 @@ public class ChocoConvert {
           return realExpression(net, exponent, map).exp();
         }
         if (exponent.isInteger()) {
-          int value = ((IInteger) exponent).toIntDefault();
+          int value = exponent.toIntDefault();
           if (value >= -3) {
             if (value == -1) {
               CArExpression result = realExpression(net, base, map);

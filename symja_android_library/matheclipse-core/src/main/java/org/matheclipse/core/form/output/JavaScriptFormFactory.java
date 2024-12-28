@@ -427,7 +427,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
       buf.append("[");
       for (int i = 1; i < function.size(); i++) {
         convertInternal(buf, function.get(i));
-        if (i < function.size() - 1) {
+        if (i < function.argSize()) {
           buf.append(",");
         }
       }
@@ -442,7 +442,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
     if (javascriptFlavor == USE_MATHCELL) {
       if (function.isPlus() || function.isTimes()) {
         if (function.size() >= 3) {
-          for (int i = 1; i < function.size() - 1; i++) {
+          for (int i = 1; i < function.argSize(); i++) {
             if (function.isPlus()) {
               buf.append("add(");
             } else {
@@ -454,7 +454,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
           for (int i = 2; i < function.size(); i++) {
             convertInternal(buf, function.get(i));
             buf.append(")");
-            if (i < function.size() - 1) {
+            if (i < function.argSize()) {
               buf.append(",");
             }
           }

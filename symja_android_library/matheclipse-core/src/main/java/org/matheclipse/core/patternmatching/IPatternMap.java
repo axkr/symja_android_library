@@ -3382,7 +3382,7 @@ public interface IPatternMap {
 
       // get the patterns from right argument to left argument, to get the pattern x_ in D(f,x_) and
       // Integrate(f,x_) as first pattern in the pattern map
-      for (int i = lhsPatternExpr.size() - 1; i >= 0; i--) {
+      for (int i = lhsPatternExpr.argSize(); i >= 0; i--) {
         determinePatternsRecursive(i == 0 ? lhsPatternExpr.getValue(i) : lhsPatternExpr.getRule(i),
             patternIndexMap, priority, ruleWithoutPattern, listEvalFlags, treeLevel);
       }

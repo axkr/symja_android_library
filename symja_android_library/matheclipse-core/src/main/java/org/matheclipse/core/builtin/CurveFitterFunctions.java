@@ -229,7 +229,7 @@ public class CurveFitterFunctions {
         IAST listOfSymbols = (IAST) ast.arg3();
         IExpr x = ast.arg4();
 
-        double[] initialGuess = new double[listOfSymbols.size() - 1];
+        double[] initialGuess = new double[listOfSymbols.argSize()];
         listOfSymbols = initialGuess(listOfSymbols, initialGuess);
         if (listOfSymbols.isPresent()) {
           try {

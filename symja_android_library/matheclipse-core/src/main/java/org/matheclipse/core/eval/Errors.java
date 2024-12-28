@@ -110,6 +110,7 @@ public class Errors {
       "dsdelim", "The delimiter specification is not valid.", //
       "dstlms",
       "The requested number of elements `1` is greater than the number of distinct elements `2`. Only `2` elements will be returned.", //
+      "dup", "Duplicate local variable `1` found in local variable specification `2`.", //
       "dvar",
       "Multiple derivative specifier `1` does not have the form {variable, n} where n is a symbolic expression or a non-negative integer.", //
       "empt", "Argument `1` should be a non-empty list.", //
@@ -119,7 +120,7 @@ public class Errors {
       "Constraints in `1` are not all equality or inequality constraints. Constraints with Unequal(!=) are not supported.", //
       "eqgele",
       "Constraints in `1` are not all 'equality' or 'less equal' or 'greater equal' linear constraints. Constraints with Unequal(!=) are not supported.", //
-      "error", "`1`.", //
+      "error", "`1`", // without terminating '.'
       "exact", "Argument `1` is not an exact number.", //
       "exdims", "The dimensions cannot be determined from the position `1`.", //
       "experimental", "Experimental implementation (search in Github issues for identifier `1`).",

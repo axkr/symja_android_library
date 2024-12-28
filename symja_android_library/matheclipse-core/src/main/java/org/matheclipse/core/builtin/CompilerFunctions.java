@@ -10,7 +10,6 @@ import java.util.Map;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.SimpleCompiler;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.OutputFunctions.VariableManager;
 import org.matheclipse.core.eval.Errors;
@@ -334,7 +333,7 @@ public class CompilerFunctions {
           tryBegin(methods);
           StringBuilder expressions;
           StringBuilder subMethods = new StringBuilder();
-          for (int i = 1; i < f.size() - 1; i++) {
+          for (int i = 1; i < f.argSize(); i++) {
             expressions = new StringBuilder();
             fFactory.convert(expressions, subMethods, f.get(i), false, true);
             methods.append(expressions.toString() + ";\n");

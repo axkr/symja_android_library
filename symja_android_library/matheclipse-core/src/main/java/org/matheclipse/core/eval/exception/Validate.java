@@ -169,7 +169,7 @@ public final class Validate {
           Errors.rethrowsInterruptException(rex);
           // `1`.
           Errors.printMessage(ast.topHead(), "error",
-              F.List("RuntimeException in Validate#checkListOfInts()"));
+              F.List("RuntimeException in Validate#checkListOfInts()."));
         }
       }
     }
@@ -251,8 +251,7 @@ public final class Validate {
               if (intValue == Integer.MIN_VALUE) {
                 // Sequence specification or a list of sequence specifications expected at position
                 // `1` in `2`.
-                Errors.printMessage(ast.topHead(), "mseqs", F.list(F.ZZ(position), ast),
-                    engine);
+                Errors.printMessage(ast.topHead(), "mseqs", F.list(F.ZZ(position), ast), engine);
                 return null;
               }
               result[i - 1][0] = intValue;
@@ -261,8 +260,7 @@ public final class Validate {
               if (intValue == Integer.MIN_VALUE) {
                 // Sequence specification or a list of sequence specifications expected at position
                 // `1` in `2`.
-                Errors.printMessage(ast.topHead(), "mseqs", F.list(F.ZZ(position), ast),
-                    engine);
+                Errors.printMessage(ast.topHead(), "mseqs", F.list(F.ZZ(position), ast), engine);
                 return null;
               }
               result[i - 1][0] = intValue;
@@ -352,7 +350,8 @@ public final class Validate {
    * @param startValue
    * @return
    */
-  public static int checkIntType(IAST ast, int position, int startValue) {
+  public static int checkIntType(IAST ast, int position, int startValue)
+      throws ArgumentTypeException {
     final IExpr arg = ast.get(position);
     if (arg instanceof IntegerSym) {
       // IntegerSym always fits into an int number
@@ -364,7 +363,7 @@ public final class Validate {
       }
       return result;
     }
-    if (arg.isReal()) {
+    if (arg.isReal() || arg.isRational()) {
       int result = arg.toIntDefault();
       if (result == Integer.MIN_VALUE || startValue > result) {
         // Machine-sized integer expected at position `2` in `1`.
@@ -409,8 +408,7 @@ public final class Validate {
       int result = ast.get(pos).toIntDefault();
       if (result == Integer.MIN_VALUE || 0 >= result) {
         // Positive machine-sized integer expected at position `2` in `1`.
-        String str =
-            Errors.getMessage("intpm", F.list(ast.topHead(), F.ZZ(pos)), EvalEngine.get());
+        String str = Errors.getMessage("intpm", F.list(ast.topHead(), F.ZZ(pos)), EvalEngine.get());
         throw new ArgumentTypeException(str);
       }
       return result;
@@ -419,15 +417,13 @@ public final class Validate {
       int result = ast.get(pos).toIntDefault();
       if (result == Integer.MIN_VALUE || 0 >= result) {
         // Positive machine-sized integer expected at position `2` in `1`.
-        String str =
-            Errors.getMessage("intpm", F.list(ast.topHead(), F.ZZ(pos)), EvalEngine.get());
+        String str = Errors.getMessage("intpm", F.list(ast.topHead(), F.ZZ(pos)), EvalEngine.get());
         throw new ArgumentTypeException(str);
       }
       return result;
     }
     // Positive machine-sized integer expected at position `2` in `1`.
-    String str =
-        Errors.getMessage("intpm", F.list(ast.topHead(), F.ZZ(pos)), EvalEngine.get());
+    String str = Errors.getMessage("intpm", F.list(ast.topHead(), F.ZZ(pos)), EvalEngine.get());
     throw new ArgumentTypeException(str);
   }
 
@@ -465,15 +461,14 @@ public final class Validate {
       int result = Integer.MIN_VALUE;
       if (startValue > result) {
         // Level specification value greater equal `1` expected instead of `2`.
-        String str = Errors.getMessage("intlevel", F.list(F.ZZ(startValue), F.CNInfinity),
-            EvalEngine.get());
+        String str =
+            Errors.getMessage("intlevel", F.list(F.ZZ(startValue), F.CNInfinity), EvalEngine.get());
         throw new ArgumentTypeException(str);
       }
       return result;
     }
     // Level specification value greater equal `1` expected instead of `2`.
-    String str =
-        Errors.getMessage("intlevel", F.list(F.ZZ(startValue), expr), EvalEngine.get());
+    String str = Errors.getMessage("intlevel", F.list(F.ZZ(startValue), expr), EvalEngine.get());
     throw new ArgumentTypeException(str);
   }
 
@@ -622,8 +617,7 @@ public final class Validate {
         }
         // Local variable specification `1` contains `2` which is not a symbol or an assignment to
         // a symbol.
-        return Errors.printMessage(ast.topHead(), "lvsym", F.list(ast.get(position), arg),
-            engine);
+        return Errors.printMessage(ast.topHead(), "lvsym", F.list(ast.get(position), arg), engine);
       }
       return listOfSymbols;
     }
@@ -891,7 +885,7 @@ public final class Validate {
     if (expr.isASTSizeGE(S.Equal, 3)) {
       IAST equal = (IAST) expr;
       IExpr last = equal.last();
-      for (int i = 1; i < equal.size() - 1; i++) {
+      for (int i = 1; i < equal.argSize(); i++) {
         IExpr temp = F.evalExpandAll(F.Subtract(equal.get(i), last));
         termsEqualNumberList.append(temp);
       }

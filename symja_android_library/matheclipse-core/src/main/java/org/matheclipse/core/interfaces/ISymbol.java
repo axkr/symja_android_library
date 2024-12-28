@@ -209,7 +209,7 @@ public interface ISymbol extends IExpr {
       if (!off.convert(buf, fullDefinition.getRule(i))) {
         return "ERROR-IN-OUTPUTFORM";
       }
-      if (i < fullDefinition.size() - 1) {
+      if (i < fullDefinition.argSize()) {
         buf.append("\n\n");
         off.setColumnCounter(0);
       }

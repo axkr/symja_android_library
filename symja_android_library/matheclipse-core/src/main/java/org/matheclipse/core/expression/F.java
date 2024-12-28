@@ -9392,7 +9392,7 @@ public class F extends S {
     if (!solve.isListOfLists()) {
       return new IExpr[0];
     }
-    IExpr[] result = new IExpr[solve.size() - 1];
+    IExpr[] result = new IExpr[solve.argSize()];
     int j = 0;
     for (int i = 1; i < solve.size(); i++) {
       IAST listRule = (IAST) solve.getAt(i);
@@ -9401,7 +9401,7 @@ public class F extends S {
         result[j++] = rule.second();
       }
     }
-    if (j < solve.size() - 1) {
+    if (j < solve.argSize()) {
       IExpr[] newResult = new IExpr[j];
       System.arraycopy(result, 0, newResult, 0, j);
       return newResult;

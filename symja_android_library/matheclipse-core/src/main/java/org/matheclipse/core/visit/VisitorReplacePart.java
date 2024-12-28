@@ -173,7 +173,7 @@ public class VisitorReplacePart extends AbstractVisitor {
         }
 
         IInteger negativePart = F.ZZUniqueReference(i - ast.size());
-        positionsToMatch.set(positionsToMatch.size() - 1, negativePart);
+        positionsToMatch.set(positionsToMatch.argSize(), negativePart);
         temp = patternIndexRecursive(matcher, ast, positionsToMatch, i, result);
         if (temp.isPresent()) {
           IExpr ex = temp.replaceAll(x -> {
@@ -193,7 +193,7 @@ public class VisitorReplacePart extends AbstractVisitor {
 
         if (ast.isAssociation() && i > 0) {
           // for associations the key instead of the position can also match
-          positionsToMatch.set(positionsToMatch.size() - 1, ast.getRule(i).first());
+          positionsToMatch.set(positionsToMatch.argSize(), ast.getRule(i).first());
           temp = patternIndexRecursive(matcher, ast, positionsToMatch, i, result);
           if (temp.isPresent()) {
             result = temp;

@@ -523,7 +523,7 @@ public final class StringFunctions {
             String arg = list.get(i).toString();
             if (arg.length() > 0) {
               buf.append(arg);
-              if (i < list.size() - 1 //
+              if (i < list.argSize() //
                   && arg.charAt(arg.length() - 1) != separator) {
                 buf.append(separator);
               }
@@ -2433,11 +2433,11 @@ public final class StringFunctions {
           IAST row = (IAST) list1.get(i);
           for (int j = 1; j < row.size(); j++) {
             TextString.of(row.get(j), buf);
-            if (j < row.size() - 1) {
+            if (j < row.argSize()) {
               buf.append(sep2);
             }
           }
-          if (i < list1.size() - 1) {
+          if (i < list1.argSize()) {
             buf.append(sep1);
           }
         }
@@ -2449,7 +2449,7 @@ public final class StringFunctions {
         buf.append(left);
         for (int j = 1; j < list1.size(); j++) {
           TextString.of(list1.get(j), buf);
-          if (j < list1.size() - 1) {
+          if (j < list1.argSize()) {
             buf.append(sep1);
           }
         }
@@ -3639,7 +3639,7 @@ public final class StringFunctions {
           return null;
         }
         pieces.append(str);
-        if (i < alternatives.size() - 1) {
+        if (i < alternatives.argSize()) {
           pieces.append('|');
         }
       }

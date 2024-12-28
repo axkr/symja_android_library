@@ -2696,7 +2696,7 @@ public final class BooleanFunctions {
 
       IASTAppendable res = F.ast(S.Inequality);
       IExpr lastOp = F.NIL;
-      for (int i = 0; i < (ast.size() - 1) / 2; i++) {
+      for (int i = 0; i < ast.argSize() / 2; i++) {
         final IExpr lhs = ast.get(2 * i + 1);
         final IExpr op = ast.get(2 * i + 2);
         final IExpr rhs = ast.get(2 * i + 3);
@@ -2709,7 +2709,7 @@ public final class BooleanFunctions {
         }
         IExpr evalRes = engine.evaluate(F.binaryAST2(op, lhs, rhs));
         if (!evalRes.isTrue()) {
-          if (engine.evaluate(F.SameQ(lhs, res.get(res.size() - 1))).isFalse()) {
+          if (engine.evaluate(F.SameQ(lhs, res.get(res.argSize()))).isFalse()) {
             if (lastOp.isPresent() && res.size() > 2) {
               res.append(lastOp);
             }

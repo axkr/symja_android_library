@@ -572,7 +572,7 @@ public final class ASTRealVector extends AbstractAST
       buf.append('}');
     } catch (IOException e) {
       // `1`.
-      Errors.printMessage(S.List, "error", F.List("IOException in ASTRealVector#toString()"));
+      Errors.printMessage(S.List, "error", F.List("IOException in ASTRealVector#toString()."));
     }
   }
 

@@ -373,6 +373,21 @@ public class PatternMatchingTestCase {
   }
 
   @Test
+  public void testMathicsPMWithCondition() {
+    // TODO make rule ordering more compatible with WMA
+    // see mathics-core #1233
+    check("Bug[n_Integer,_] :={\"Negative\", n} /; (n<0)", //
+        "");
+    check("Bug[-5,3]", //
+        "{Negative,-5}");
+
+    check("Bug[n_Integer,maxpart_Integer] :={\"Integer\", n}", //
+        "");
+    check("Bug[-5,3]", //
+        "{Integer,-5}");
+  }
+
+  @Test
   public void testSetSetraw() {
     // Set: Cannot assign to raw object 42.
     check("42 = 17-3", //

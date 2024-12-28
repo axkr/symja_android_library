@@ -2206,7 +2206,7 @@ public final class Arithmetic {
       }
       if (expr.isRealVector()) {
         // 0.0 - vector
-        return new ASTRealVector(new ArrayRealVector(expr.size() - 1, 0.0), false);
+        return new ASTRealVector(new ArrayRealVector(expr.argSize(), 0.0), false);
       }
       if (expr.isRealMatrix()) {
         ASTRealMatrix matrix = (ASTRealMatrix) expr;

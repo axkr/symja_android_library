@@ -4804,7 +4804,7 @@ public class Algebra {
   private static boolean checkPolyStruct(final IAST ast, EvalEngine engine) {
     for (int i = 1; i < ast.size(); i++) {
       final IExpr arg = ast.get(i);
-      if (i == ast.size() - 1) {
+      if (i == ast.argSize()) {
         if (arg.isRuleAST()) {
           // an option rule is used as last arg
           continue;

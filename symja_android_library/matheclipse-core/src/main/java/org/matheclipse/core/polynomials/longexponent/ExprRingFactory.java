@@ -94,7 +94,7 @@ public class ExprRingFactory implements RingFactory<IExpr> {
       return EvalEngine.get().parse(s);
     } catch (IOException e) {
       // `1`.
-      Errors.printMessage(S.List, "error", F.List("IOException in ExprRingFactory#parse()"));
+      Errors.printMessage(S.List, "error", F.List("IOException in ExprRingFactory#parse()."));
     }
     return S.Undefined;
   }

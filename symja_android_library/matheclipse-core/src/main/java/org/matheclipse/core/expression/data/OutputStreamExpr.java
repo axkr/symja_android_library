@@ -96,7 +96,7 @@ public class OutputStreamExpr extends DataExpr<OutputStream> implements External
       } catch (IOException e) {
         // `1`.
         Errors.printMessage(S.List, "error",
-            F.List("IOException in OutputStreamExpr.newInstance#newInstance()"));
+            F.List("IOException in OutputStreamExpr.newInstance#newInstance()."));
       }
     }
     // OutputStreamWriter osw = new OutputStreamWriter(fos);

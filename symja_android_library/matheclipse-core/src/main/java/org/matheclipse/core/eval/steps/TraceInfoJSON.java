@@ -165,7 +165,7 @@ public class TraceInfoJSON {
    */
   private String renderStepDescriptionTemplate(final String stepDescriptionTemplate,
       final String expressionAsTeX, final String prevExpressionAsTeX, final IAST infoParameters) {
-    String[] templateParameters = new String[infoParameters.size() - 1];
+    String[] templateParameters = new String[infoParameters.argSize()];
 
     templateParameters[0] = expressionAsTeX;
     templateParameters[1] = prevExpressionAsTeX;

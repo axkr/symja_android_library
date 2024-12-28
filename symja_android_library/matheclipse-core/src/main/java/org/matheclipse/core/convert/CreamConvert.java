@@ -65,7 +65,7 @@ public class CreamConvert {
           }
         }
         result.append(temp);
-        if (result.size() - 1 >= maximumNumberOfResults) {
+        if (result.argSize() >= maximumNumberOfResults) {
           return false;
         }
       }

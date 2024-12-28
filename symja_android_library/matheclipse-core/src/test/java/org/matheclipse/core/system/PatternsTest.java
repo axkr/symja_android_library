@@ -362,6 +362,10 @@ public class PatternsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testReplace() {
+    check(
+        "Replace({1,3,2},{{1,2,3}->1,{1,3,2}->2,{2,1,3}->3,{2,3,1}->4,{3,1,2}->5,{3,2,1}->6,_->0})", //
+        "2");
+
     check("Replace(<| key -> <|a -> 1, b -> 2|>|>, <|k_ -> v_, y___|> -> {k, v,  y}, {1})", //
         "<|Key->{a,1,b->2}|>");
     check("f( <|key_ -> val_|> ) := <|val -> key|>", //
@@ -885,6 +889,9 @@ public class PatternsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testReplacePartPattern() {
+    check("ReplacePart({{a, b}, {c, d}},(2;;4) -> xx)", //
+        "{{a,b},{c,d}}");
+
     // message: ReplacePart: Value of option Heads -> murks should be True, False or Automatic.
     check("ReplacePart(f(x, y), _ -> g, Heads -> murks)", //
         "ReplacePart(f(x,y),_->g,Heads->murks)");
@@ -906,10 +913,6 @@ public class PatternsTest extends ExprEvaluatorTestCase {
     check("ReplacePart(f(x, y), _ -> g, Heads -> True)", //
         "g(g,g)");
 
-    // check("ReplacePart(<|\"x\" -> 1, \"y\" -> 2|>, {0} -> f)", //
-    // "f(1,2)");
-    // check("ReplacePart({<|\"x\" -> 1, \"y\" -> 2|>}, {1, 1} -> g)", //
-    // "{<|x->g,y->2|>}");
     check("ReplacePart({{a, b, c}, {d, e}, {f}}, i__ -> s(i))", //
         "{s(1),s(2),s(3)}");
     check("ReplacePart({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}}, {___, 2, ___} -> x)", //
@@ -984,11 +987,6 @@ public class PatternsTest extends ExprEvaluatorTestCase {
     check("ReplacePart({{a, b, c}, {d, e}, {f}}, {_, -1} -> xx)", //
         "{{a,b,xx},{d,xx},{xx}}");
 
-
-    check("ReplacePart({<|\"x\" -> 1, \"y\" -> 2|>, <|\"x\" -> 3, \"y\" -> 4|>}, {_, \"x\"} -> f)", //
-        "{<|x->f,y->2|>,<|x->f,y->4|>}");
-
-
     check("ReplacePart(ReplacePart(a + b + c, 1 -> x), 3 -> y)", //
         "b+c+y");
 
@@ -996,6 +994,15 @@ public class PatternsTest extends ExprEvaluatorTestCase {
         "h(a,b)");
     check("ReplacePart(h(a, b), {{}} -> x)", //
         "x");
+    check("ReplacePart(h(a, b), {{} -> x})", //
+        "h(a,b)");
+
+    check("ReplacePart(<|\"x\" -> 1, \"y\" -> 2|>, {0} -> f)", //
+        "f(1,2)");
+    check("ReplacePart({<|\"x\" -> 1, \"y\" -> 2|>}, {1, 1} -> g)", //
+        "{<|x->g,y->2|>}");
+    check("ReplacePart({<|\"x\" -> 1, \"y\" -> 2|>, <|\"x\" -> 3, \"y\" -> 4|>}, {_, \"x\"} -> f)", //
+        "{<|x->f,y->2|>,<|x->f,y->4|>}");
     check("ReplacePart(<|\"x\" -> 1, \"y\" -> 2|>, {0} -> List)", //
         "{1,2}");
     check("Normal(<|\"x\" -> 1, \"y\" -> 2|>)", //

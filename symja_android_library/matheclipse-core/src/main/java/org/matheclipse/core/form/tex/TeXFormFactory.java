@@ -149,7 +149,7 @@ public class TeXFormFactory {
           } else {
             buffer.append("\\right] ");
           }
-          if (i < f.size() - 1) {
+          if (i < f.argSize()) {
             buffer.append("\\cup ");
           }
         }
@@ -931,7 +931,7 @@ public class TeXFormFactory {
 
       for (int i = 2; i < f.size(); i++) {
         fFactory.convertInternal(buffer, f.get(i), precedence, NO_PLUS_CALL);
-        if (i < f.size() - 1) {
+        if (i < f.argSize()) {
           buffer.append(',');
         }
       }
@@ -1603,7 +1603,7 @@ public class TeXFormFactory {
                   convertInternal(buf, max, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
                 }
                 buf.append("\\}");
-                if (i < interval.size() - 1) {
+                if (i < interval.argSize()) {
                   buf.append(",");
                 }
               }

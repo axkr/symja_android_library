@@ -753,7 +753,7 @@ public class AssociationFunctions {
           items[length++] = i;
         }
       }
-      if (length == assoc.size() - 1) {
+      if (length == assoc.argSize()) {
         return assoc;
       }
       IAssociation result = F.assoc();

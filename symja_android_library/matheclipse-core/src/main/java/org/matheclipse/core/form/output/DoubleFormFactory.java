@@ -807,7 +807,7 @@ public abstract class DoubleFormFactory {
         append(buf, oper.getOperatorString());
         convertInternal(buf, list.get(i), oper.getPrecedence(), false, true);
 
-        if (i < list.size() - 1) {
+        if (i < list.argSize()) {
           buf.append(" && ");
           convertInternal(buf, list.get(i), oper.getPrecedence(), false, true);
         }

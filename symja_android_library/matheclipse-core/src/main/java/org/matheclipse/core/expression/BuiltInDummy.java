@@ -290,7 +290,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
       if (!off.convert(buf, list.get(i))) {
         return "ERROR-IN-OUTPUTFORM";
       }
-      if (i < list.size() - 1) {
+      if (i < list.argSize()) {
         buf.append("\n");
         off.setColumnCounter(0);
       }

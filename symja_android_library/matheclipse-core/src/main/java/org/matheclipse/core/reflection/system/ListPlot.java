@@ -563,7 +563,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
         addIndexedYPoint(pointPrimitives, graphicsExtraPrimitives, boundingbox, engine,
             xFunction.apply(F.num(lastPosition)), yFunction.apply(lastPoint), lastArg);
         addIndexedYPoint(pointPrimitives, graphicsExtraPrimitives, boundingbox, engine,
-            xFunction.apply(F.num(pointList.size() - 1)), yFunction.apply(lastPoint), lastArg);
+            xFunction.apply(F.num(pointList.argSize())), yFunction.apply(lastPoint), lastArg);
       }
 
       if (pointPrimitives.argSize() > 0) {

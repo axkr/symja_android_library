@@ -2262,7 +2262,7 @@ public class UtilityFunctionCtors {
    * @return
    */
   public static IExpr evalRubiDistPlus(IAST astPlus, EvalEngine engine) {
-    for (int i = 1; i < astPlus.size() - 1; i++) {
+    for (int i = 1; i < astPlus.argSize(); i++) {
       IExpr arg1 = astPlus.get(i);
       if (arg1.isAST(Dist) && arg1.size() == 4) {
         // dist1 = Dist[u_,v_,x_]

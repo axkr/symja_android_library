@@ -196,7 +196,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
             } else {
               // Non-list iterator `1` at position `2` does not evaluate to a real numeric value.
               return Errors.printMessage(preevaledSum.topHead(), "nliter",
-                  F.list(argN, F.ZZ(preevaledSum.size() - 1)), engine);
+                  F.list(argN, F.ZZ(preevaledSum.argSize())), engine);
             }
           }
         }

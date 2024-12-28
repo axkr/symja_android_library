@@ -1145,7 +1145,7 @@ public final class NumberTheory {
       Map<IAST, Integer> pqPeriodic2Index = new HashMap<IAST, Integer>();
       IAST key = F.list(p, q);
       do {
-        pqPeriodic2Index.put(key, integerTerms.size() - 1);
+        pqPeriodic2Index.put(key, integerTerms.argSize());
         IExpr quotient = S.Quotient.of(engine, F.Plus(p, sd), q);
         if (!quotient.isInteger()) {
           return F.NIL;
@@ -5481,7 +5481,7 @@ public final class NumberTheory {
                   + exprVariables.size() //
                   + ") unequals number of user variables (" //
                   + eVar.size() //
-                  + ")")),
+                  + ").")),
               engine);
           return F.NIL;
         }

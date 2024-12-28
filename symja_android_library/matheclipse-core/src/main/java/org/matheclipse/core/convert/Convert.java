@@ -1093,7 +1093,7 @@ public class Convert {
    */
   public static List<String> toStringList(IExpr expr) {
     if (expr.isList()) {
-      List<String> result = new ArrayList<String>(expr.size() - 1);
+      List<String> result = new ArrayList<String>(expr.argSize());
       IAST listOfStrings = (IAST) expr;
       for (int i = 1; i < listOfStrings.size(); i++) {
         if (listOfStrings.get(i) instanceof IStringX) {
@@ -1161,7 +1161,7 @@ public class Convert {
    */
   public static <T> List<T> toList(IExpr expr, Function<IExpr, T> function) {
     if (expr.isList()) {
-      List<T> result = new ArrayList<T>(expr.size() - 1);
+      List<T> result = new ArrayList<T>(expr.argSize());
       IAST list = (IAST) expr;
       for (int i = 1; i < list.size(); i++) {
         result.add(function.apply(list.get(i)));

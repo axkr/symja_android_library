@@ -341,7 +341,7 @@ public class AttributeFunctions {
         return result;
       }
       return Errors.printMessage(ast.topHead(), "error",
-          F.List("Unprotect not allowed. Set Config.UNPROTECT_ALLOWED on Java level if necessary"),
+          F.List("Unprotect not allowed. Set Config.UNPROTECT_ALLOWED on Java level if necessary."),
           engine);
     }
 

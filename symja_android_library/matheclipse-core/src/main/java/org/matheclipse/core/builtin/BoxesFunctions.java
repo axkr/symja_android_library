@@ -105,7 +105,7 @@ public class BoxesFunctions {
             IASTAppendable argsList = F.ListAlloc(function.size());
             for (int i = 1; i < function.size(); i++) {
               argsList.append(standardFormRecursive(function.get(i), precedence));
-              if (i < function.size() - 1) {
+              if (i < function.argSize()) {
                 argsList.append(",");
               }
             }
@@ -128,7 +128,7 @@ public class BoxesFunctions {
           IASTAppendable argsList = F.ListAlloc(function.size());
           for (int i = 1; i < function.size(); i++) {
             argsList.append(standardFormRecursive(function.get(i), precedence));
-            if (i < function.size() - 1) {
+            if (i < function.argSize()) {
               argsList.append(",");
             }
           }

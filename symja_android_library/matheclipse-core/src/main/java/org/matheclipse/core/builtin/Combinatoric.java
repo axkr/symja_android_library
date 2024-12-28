@@ -589,7 +589,7 @@ public final class Combinatoric {
      * @return the permutation list of all integer position permutations.
      */
     private static IAST permutationList(IAST ast1, IAST ast2) {
-      int positions[] = new int[ast1.size() - 1];
+      int positions[] = new int[ast1.argSize()];
       for (int i = 0; i < positions.length; i++) {
         positions[i] = i + 1;
       }

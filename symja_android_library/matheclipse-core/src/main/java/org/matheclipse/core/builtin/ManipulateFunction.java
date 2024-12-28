@@ -132,7 +132,7 @@ public class ManipulateFunction {
                 function.append(",");
                 toJS.convert(function, rowList.arg2());
                 function.append("] ");
-                if (i < pointList.size() - 1) {
+                if (i < pointList.argSize()) {
                   function.append(",");
                 }
                 function.append("\n");
@@ -150,7 +150,7 @@ public class ManipulateFunction {
                 toJS.convert(function, rowList.arg2());
                 function.append("], ");
                 function.append(" {size: 2 } )");
-                if (i < pointList.size() - 1) {
+                if (i < pointList.argSize()) {
                   function.append(",");
                 }
                 function.append("\n");
@@ -186,7 +186,7 @@ public class ManipulateFunction {
               toJS.convert(function, rowList.arg3());
               function.append("], ");
               function.append(" {size: 2 } )");
-              if (i < pointList.size() - 1) {
+              if (i < pointList.argSize()) {
                 function.append(",");
               }
               function.append("\n");
@@ -221,7 +221,7 @@ public class ManipulateFunction {
               function.append(",");
               toJS.convert(function, pointList.get(i));
               function.append("] ");
-              if (i < pointList.size() - 1) {
+              if (i < pointList.argSize()) {
                 function.append(",");
               }
               function.append("\n");
@@ -238,7 +238,7 @@ public class ManipulateFunction {
               toJS.convert(function, pointList.get(i));
               function.append("], ");
               function.append(" {size: 2 } )");
-              if (i < pointList.size() - 1) {
+              if (i < pointList.argSize()) {
                 function.append(",");
               }
               function.append("\n");
@@ -279,11 +279,11 @@ public class ManipulateFunction {
           function.append(",");
           toJS.convert(function, rowList.get(j));
           function.append("], {size: 4 } )");
-          if (j < rowList.size() - 1) {
+          if (j < rowList.argSize()) {
             function.append(", ");
           }
         }
-        if (i < heightValueMatrix.size() - 1) {
+        if (i < heightValueMatrix.argSize()) {
           function.append(",");
         }
         function.append("\n");
@@ -484,7 +484,7 @@ public class ManipulateFunction {
           for (int i = 1; i < listOfFunctions.size(); i++) {
             graphicControl.append("p");
             graphicControl.append(i);
-            if (i < listOfFunctions.size() - 1) {
+            if (i < listOfFunctions.argSize()) {
               graphicControl.append(", ");
             }
           }
@@ -535,7 +535,7 @@ public class ManipulateFunction {
       graphicControl.append("  var data = [");
       for (int i = 1; i < listOfFunctions.size(); i++) {
         graphicControl.append("p" + i);
-        if (i < listOfFunctions.size() - 1) {
+        if (i < listOfFunctions.argSize()) {
           graphicControl.append(",");
         }
       }
@@ -580,7 +580,7 @@ public class ManipulateFunction {
       graphicControl.append("  var data = [");
       for (int i = 1; i < listOfFunctions.size(); i++) {
         graphicControl.append("p" + i);
-        if (i < listOfFunctions.size() - 1) {
+        if (i < listOfFunctions.argSize()) {
           graphicControl.append(",");
         }
       }
@@ -596,7 +596,7 @@ public class ManipulateFunction {
         graphicControl.append("z" + i + "(");
         toJS.convert(graphicControl, plotSymbolX);
         graphicControl.append(")");
-        if (i < listOfFunctions.size() - 1) {
+        if (i < listOfFunctions.argSize()) {
           graphicControl.append(",");
         }
       }
@@ -633,7 +633,7 @@ public class ManipulateFunction {
       graphicControl.append("  var data = [");
       for (int i = 1; i < listOfFunctions.size(); i++) {
         graphicControl.append("p" + i);
-        if (i < listOfFunctions.size() - 1) {
+        if (i < listOfFunctions.argSize()) {
           graphicControl.append(",");
         }
       }
@@ -731,7 +731,7 @@ public class ManipulateFunction {
           texForm = texForm.replace("\\", "\\\\\\\\");
           graphicControl.append(texForm);
           graphicControl.append("'");
-          if (i < listOfFormulas.size() - 1) {
+          if (i < listOfFormulas.argSize()) {
             graphicControl.append(",\n");
           }
         }
@@ -794,7 +794,7 @@ public class ManipulateFunction {
             toJS.convert(slider, listOfButtons.get(j));
             slider.append("'");
           }
-          if (j < listOfButtons.size() - 1) {
+          if (j < listOfButtons.argSize()) {
             slider.append(",");
           }
         }
@@ -804,7 +804,7 @@ public class ManipulateFunction {
           slider.append("'");
           slider.append(listOfButtons.get(j).toString());
           slider.append("'");
-          if (j < listOfButtons.size() - 1) {
+          if (j < listOfButtons.argSize()) {
             slider.append(",");
           }
         }
@@ -1166,7 +1166,7 @@ public class ManipulateFunction {
       }
 
       IAST listOfFunctions = (IAST) arg1;
-      String[] functionNames = new String[listOfFunctions.size() - 1];
+      String[] functionNames = new String[listOfFunctions.argSize()];
       for (int i = 0; i < functionNames.length; i++) {
         functionNames[i] = EvalEngine.uniqueName("$f");
       }
@@ -1242,7 +1242,7 @@ public class ManipulateFunction {
         list = (IAST) arg;
       }
 
-      String[] functionNames = new String[list.size() - 1];
+      String[] functionNames = new String[list.argSize()];
       for (int i = 0; i < functionNames.length; i++) {
         functionNames[i] = EvalEngine.uniqueName("$f");
       }
@@ -1287,7 +1287,7 @@ public class ManipulateFunction {
             function.append("(");
             toJS.convert(function, plotSymbolX);
             function.append(");}");
-            if (j < listOfFunctions.size() - 1) {
+            if (j < listOfFunctions.argSize()) {
               function.append(",");
             }
           }
@@ -1334,7 +1334,7 @@ public class ManipulateFunction {
         listOfFunctions = (IAST) listOfFunctions.arg1();
       }
 
-      String[] functionNames = new String[listOfFunctions.size() - 1];
+      String[] functionNames = new String[listOfFunctions.argSize()];
       for (int i = 0; i < functionNames.length; i++) {
         functionNames[i] = EvalEngine.uniqueName("$f");
       }
@@ -1852,7 +1852,7 @@ public class ManipulateFunction {
         buf.append("var data = [");
         for (int i = 1; i < listOfLists.size(); i++) {
           buf.append("trace" + i);
-          if (i < listOfLists.size() - 1) {
+          if (i < listOfLists.argSize()) {
             buf.append(",");
           }
         }
@@ -2653,7 +2653,7 @@ public class ManipulateFunction {
         }
         toJS.convert(function, currentPointY);
         yBoundingBox(engine, boundingbox, currentPointY);
-        if (i < pointList.size() - 1) {
+        if (i < pointList.argSize()) {
           function.append(",");
         }
       }

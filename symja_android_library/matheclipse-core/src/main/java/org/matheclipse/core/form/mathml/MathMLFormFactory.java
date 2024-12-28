@@ -12,7 +12,6 @@ import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.Errors;
@@ -830,7 +829,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       fFactory.tagStart(buf, "mrow");
       for (int i = 2; i < f.size(); i++) {
         fFactory.convertInternal(buf, f.get(i), fPrecedence, false);
-        if (i < f.size() - 1) {
+        if (i < f.argSize()) {
           buf.append("<mo>,</mo>");
         }
       }
@@ -2073,7 +2072,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
         }
         tag(buf, "mo", "}");
         tagEnd(buf, "mrow");
-        if (i < interval.size() - 1) {
+        if (i < interval.argSize()) {
           tag(buf, "mo", ",");
         }
       }

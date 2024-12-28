@@ -20,7 +20,7 @@ public class OptionArgs {
 
   public static OptionArgs createOptionArgs(IAST ast, EvalEngine engine) {
     final OptionArgs options = new OptionArgs(ast.topHead(), ast, ast.size() - 1, engine, false);
-    return options.fInvalidPosition == ast.size() - 1 ? null : options;
+    return options.fInvalidPosition == ast.argSize() ? null : options;
   }
 
   public static IExpr determineAssumptions(final IAST ast, int position, OptionArgs options) {

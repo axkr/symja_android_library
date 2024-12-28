@@ -259,7 +259,7 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
         for (int i = replaceList.size() - 2; i > 0; i--) {
           final IExpr lhs = replaceList.get(i).first();
           IExpr rhs = replaceList.get(i).second();
-          for (int j = replaceList.size() - 1; j > i; j--) {
+          for (int j = replaceList.argSize(); j > i; j--) {
             IExpr temp = rhs.replaceAll((IAST) variableSubstitutions.get(j));
             if (temp.isPresent()) {
               rhs = temp;

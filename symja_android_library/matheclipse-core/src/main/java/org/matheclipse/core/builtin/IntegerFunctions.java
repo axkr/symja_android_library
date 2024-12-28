@@ -894,7 +894,7 @@ public class IntegerFunctions {
     private IExpr fromDigits(IAST list, IExpr radix) {
       IASTAppendable result = F.PlusAlloc(list.size());
       int exp = 0;
-      for (int i = list.size() - 1; i >= 1; i--) {
+      for (int i = list.argSize(); i >= 1; i--) {
         result.append(list.get(i).abs().times(radix.power(exp++)));
       }
       return result;

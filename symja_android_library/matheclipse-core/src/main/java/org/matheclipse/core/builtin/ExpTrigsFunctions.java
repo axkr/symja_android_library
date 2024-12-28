@@ -201,7 +201,7 @@ public class ExpTrigsFunctions {
       // plusList.append(list.get(i).second());
       // plusResultList.append(plusList.copy());
       // }
-      IAST plusResultList = F.intSumList(i -> list.get(i).second(), t0, 1, list.size() - 1);
+      IAST plusResultList = F.intSumList(i -> list.get(i).second(), t0, 1, list.argSize());
 
       IASTAppendable resultList = F.ListAlloc(list.size());
       resultList.append(F.List(x, y));

@@ -232,10 +232,10 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     if (andAST.size() > 1) {
       int varsSize = vars.size();
       IASTAppendable varsList = vars.getVarList();
-      double[] inequalitiesConstants = new double[andAST.size() - 1];
+      double[] inequalitiesConstants = new double[andAST.argSize()];
       ArrayList<double[]> inequalitiesList = new ArrayList<double[]>();
       int[] inequalitiesConstantsIndex = new int[] {0};
-      double[] equalitiesConstants = new double[andAST.size() - 1];
+      double[] equalitiesConstants = new double[andAST.argSize()];
       ArrayList<double[]> equalitiesList = new ArrayList<double[]>();
       int[] equalitiesConstantsIndex = new int[] {0};
       for (int i = 1; i < andAST.size(); i++) {
@@ -283,7 +283,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
   private static boolean createEqualityRelation(IAST relation, ArrayList<double[]> equalitiesList,
       double[] equalitiesConstants, int[] equalitiesConstantsIndex, IASTAppendable varsList,
       EvalEngine engine) {
-    double[] coefficients = new double[varsList.size() - 1];
+    double[] coefficients = new double[varsList.argSize()];
     equalitiesList.add(coefficients);
     IASTAppendable rhs = F.PlusAlloc(4);
     IExpr lhs;
@@ -324,7 +324,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       ArrayList<double[]> inequalitiesList, double[] inequalitiesConstants,
       int[] inequalitiesConstantsIndex, IASTAppendable varsList, boolean lessOperator,
       EvalEngine engine) {
-    double[] coefficients = new double[varsList.size() - 1];
+    double[] coefficients = new double[varsList.argSize()];
     inequalitiesList.add(coefficients);
     IASTAppendable rhs = F.PlusAlloc(4);
     IExpr lhs;

@@ -640,7 +640,7 @@ public class SimplifyFunctions {
                 int indx2 = timesAST.indexOf(x -> x.isLog(), indx1 + 1);
                 if (indx2 < 0) {
                   if (plusResult.isNIL()) {
-                    plusResult = plusAST.copyUntil(plusAST.size() - 1, i);
+                    plusResult = plusAST.copyUntil(plusAST.argSize(), i);
                     logFactor = F.TimesAlloc(10);
                   }
                   logFactor
@@ -650,7 +650,7 @@ public class SimplifyFunctions {
               }
             } else if (plusArg.isLog()) {
               if (plusResult.isNIL()) {
-                plusResult = plusAST.copyUntil(plusAST.size() - 1, i);
+                plusResult = plusAST.copyUntil(plusAST.argSize(), i);
                 logFactor = F.TimesAlloc(10);
               }
               logFactor.append(plusArg.first());

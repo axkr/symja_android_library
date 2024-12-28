@@ -4865,7 +4865,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // Delete: Part {5} of {a,b,c,d} does not exist.
     check("Delete({a, b, c, d}, 5)", //
         "Delete({a,b,c,d},5)");
-    // List: List of Java int numbers expected in {1,n}.
+    // Delete: Part {1,n} of {a,b,c,d} does not exist.
     check("Delete({a, b, c, d}, {1, n})", //
         "Delete({a,b,c,d},{1,n})");
     check("Delete({a, b, c, d}, 3)", //
@@ -4874,10 +4874,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{a,b,d}");
 
 
-    // check("Delete({{1,2},{3,4}},{{1,2},{2,1}})", //
-    // "{{1},{4}}");
-    // check("Delete({{1,2},{3,4}},{{1,2},{2,1},{2,1}})", //
-    // "{{1},{4}}");
+    check("Delete({{1,2},{3,4}},{{1,2},{2,1}})", //
+        "{{1},{4}}");
+    check("Delete({{1,2},{3,4}},{{1,2},{2,1},{2,1}})", //
+        "{{1},{4}}");
 
     // test operator form
     check("Delete(pos)", //
@@ -8930,6 +8930,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFlattenAt() {
+
+    check("FlattenAt({a, {b, {c}}, d, {e}}, {{2},{4},{-3}})", //
+        "{a,b,{c},d,e}");
+    check("FlattenAt({a, {b, {c}}, d, {e}}, {{2},{4}})", //
+        "{a,b,{c},d,e}");
+    check("FlattenAt({a, {b, {c}}, d, {e}}, {{2, 2},{4},{2,2}})", //
+        "{a,{b,c},d,e}");
+    check("FlattenAt({a, {b, {c}}, d, {e}}, {{2, 2}, {4}})", //
+        "{a,{b,c},d,e}");
     check("FlattenAt(2)[{a, {b, c}, {d, e}, {f}}]", //
         "{a,b,c,{d,e},{f}}");
     check("FlattenAt({a, {b, c}, {d, e}, {f}}, 2)", //
@@ -8942,6 +8951,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "f(a,g(b,c),{d,e},f)");
     check("Table(FlattenAt(f({a}, {b}, {c}, {d}), i), {i, 4})", //
         "{f(a,{b},{c},{d}),f({a},b,{c},{d}),f({a},{b},c,{d}),f({a},{b},{c},d)}");
+
+    check("FlattenAt(f(g(1, 2), g(3, 4), g(5)), {2})", //
+        "f(g(1,2),3,4,g(5))");
+
+    check("FlattenAt(f[a, g[b, c], d, {e}], {{2}, {4}})", //
+        "f(a,b,c,d,e)");
+    check("MapAt(Delete(0), f(a, g(b, c), d, {e}), {{2}, {4}})", //
+        "f(a,b,c,d,e)");
+
+    check("FlattenAt({1, {{2}, {3}}, 4}, {2})", //
+        "{1,{2},{3},4}");
+    check("MapAt(Flatten, {1, {{2}, {3}}, 4}, {2})", //
+        "{1,{2,3},4}");
+
   }
 
   @Test
@@ -13995,6 +14018,27 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMapAt() {
+    // MapAt: Part {5} of {a,b,c,d} does not exist.
+    check("MapAt(f, {a, b, c, d}, 5)", //
+        "MapAt(f,{a,b,c,d},5)");
+    // MapAt: Part {1,5} of {{a,b,c,d}} does not exist.
+    check("MapAt(f, {{a, b, c, d}},{1,5})", //
+        "MapAt(f,{{a,b,c,d}},{1,5})");
+
+    check("MapAt(f, {a, b, c, d}, -5)", //
+        "f(List)[a,b,c,d]");
+    // MapAt: Part {-6} of {a,b,c,d} does not exist.
+    check("MapAt(f, {a, b, c, d}, -6)", //
+        "MapAt(f,{a,b,c,d},-6)");
+    // MapAt: Part {1,1} of {a,b,c,d} does not exist.
+    check("MapAt(f, {a, b, c, d}, {1, 1})", //
+        "MapAt(f,{a,b,c,d},{1,1})");
+
+    check("MapAt(0&, {{0, 1}, {1, 0}}, {2, 1})", //
+        "{{0,1},{0,0}}");
+    check("MapAt(0&, {{0, 1}, {1, 0}}, {{2}, {1}})", //
+        "{0,0}");
+
     check("MapAt(f,{{a, b}, {c, d}},{{2, 1},{1,2}})", //
         "{{a,f(b)},{f(c),d}}");
     check("MapAt(f, {a, b, c, d},{{3},{3}})", //
@@ -14054,10 +14098,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testReplaceAt() {
-    // TODO allow Span definitions
+    // ReplaceAt: Cannot take positions 2 through 6 in {a,a,a,a,a}.
+    check("ReplaceAt({a, a, a, a, a}, a -> xx, 2 ;; 6)", //
+        "ReplaceAt({a,a,a,a,a},a->xx,2;;6)");
+    check("ReplaceAt({a, a, a, a, a}, a -> xx, 2 ;; 5)", //
+        "{a,xx,xx,xx,xx}");
     check("ReplaceAt({a, a, a, a, a}, a -> xx, 2 ;; 4)", //
-        "ReplaceAt({a,a,a,a,a},a->xx,2;;4)");
-
+        "{a,xx,xx,xx,a}");
+    check("ReplaceAt({a, a, a, a, a}, a -> xx, 2 ;; 4 ;; 3)", //
+        "{a,xx,a,a,a}");
+    check("ReplaceAt({a, a, a, a, a}, a -> xx, -2 ;; -4)", //
+        "{a,a,a,a,a}");
+    check("ReplaceAt({a, a, a, a, a}, a -> xx, -4 ;; -1)", //
+        "{a,a,a,a,a}");
     // operator form
     check("ReplaceAt(x -> y, 2)[{a, x, y, z}]", //
         "{a,y,y,z}");
@@ -14080,8 +14133,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "<|a->xx,b->a|>");
     check("ReplaceAt(<|\"a\" -> {a, a}, \"b\" -> {a, a}|>, a -> xx, {Key(\"a\"), All})", //
         "<|a->{xx,xx},b->{a,a}|>");
-    check("ReplaceAt({{a, b}, {c, d}, e}, x_ :> f[x], {{1, 2}, {2, 2}, {3}})", //
-        "{{a,f(b)},{c,f(d)},f(e)}");
 
     check("ReplaceAt({{a, b}, {c, d}, e}, x_:>f(x), 2)", //
         "{{a,b},f({c,d}),e}");
@@ -15112,6 +15163,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testModule() {
+    // message: Module: Duplicate local variable x found in local variable specification {x=a,x=b}.
+    check("Module({x = a, x=b}, x^2)", //
+        "Module({x=a,x=b},x^2)");
     EvalEngine.resetModuleCounter4JUnit();
     // check("num=Sin(3*I);Module({v=N(num)},If(PossibleZeroQ(Re(v)),Im(v)>0,Re(v)>0))",
     // "True");
@@ -25808,6 +25862,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testUnitStep() {
+
+    check("Table(UnitStep(x), {x, -3, 3})", //
+        "{0,0,0,1,1,1,1}");
+    check("UnitStep(-Pi*E)", //
+        "0");
     check("UnitStep(-Infinity)", //
         "0");
     check("UnitStep(Infinity)", //
@@ -26239,11 +26298,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testWith() {
+    // message: With: Duplicate local variable x found in local variable specification {x=a,x=b}.
+    check("With({x = a, x=b}, x^2)", //
+        "With({x=a,x=b},x^2)");
     check("Block({i = 0}, With({}, Module({j = i}, i=i+1; j)))", //
         "0");
     EvalEngine.resetModuleCounter4JUnit();
 
-    // print message: Set: Cannot unset object 2.0.
+    // message: Set: Cannot unset object 2.0.
     check("With({x = 2.0}, x=3.0;Sqrt(x) + 1 )", //
         "2.41421");
     check("With({x = 2.0}, Sqrt(x) + 1)", //

@@ -1093,7 +1093,7 @@ public class WL {
       }
     } catch (IOException ex) {
       // `1`.
-      throw new ArgumentTypeException("error", F.List("IOException in WL#deserializeResource()"));
+      throw new ArgumentTypeException("error", F.List("IOException in WL#deserializeResource()."));
     }
   }
 
@@ -1144,7 +1144,7 @@ public class WL {
         return wo.toByteArray();
       } catch (IOException e) {
         // `1`.
-        throw new ArgumentTypeException("error", F.List("IOException in WL#serialize()"));
+        throw new ArgumentTypeException("error", F.List("IOException in WL#serialize()."));
       }
     }
     return null;
@@ -1167,7 +1167,7 @@ public class WL {
         return wo.toByteArray();
       } catch (IOException e) {
         // `1`.
-        throw new ArgumentTypeException("error", F.List("IOException in WL#serializeInternal()"));
+        throw new ArgumentTypeException("error", F.List("IOException in WL#serializeInternal()."));
       }
     }
     return null;
@@ -1180,10 +1180,10 @@ public class WL {
    * @return <code>null</code> if the list is nota a list of bytes
    */
   public static byte[] toByteArray(IAST list) {
-    byte[] result = new byte[list.size() - 1];
+    byte[] result = new byte[list.argSize()];
     for (int i = 1; i < list.size(); i++) {
       if (list.get(i).isInteger()) {
-        final int val = ((IInteger) list.get(i)).toIntDefault();
+        final int val = list.get(i).toIntDefault();
         if (val >= 0 && val < 256) {
           result[i - 1] = (byte) val;
           continue;

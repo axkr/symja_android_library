@@ -152,7 +152,7 @@ public class ECharts {
       }
       ECharts.yAxisSingleSeries(yAxisString, singlePointList, legends[i - 1], type, stepI, minMax);
       yAxisSeriesBuffer.append(yAxisString);
-      if (i < listOfLists.size() - 1) {
+      if (i < listOfLists.argSize()) {
         yAxisSeriesBuffer.append(",\n");
       }
     }
@@ -238,7 +238,7 @@ public class ECharts {
       xAxisString.append("'");
       xAxisString.append(i);
       xAxisString.append("'");
-      if (i < pointList.size() - 1) {
+      if (i < pointList.argSize()) {
         xAxisString.append(", ");
       }
     }
@@ -289,7 +289,7 @@ public class ECharts {
           toJS.convertExpr(values, yValue);
         }
       }
-      if (i < pointList2D.size() - 1) {
+      if (i < pointList2D.argSize()) {
         values.append(", ");
         xAxisBuffer.append(", ");
       }
@@ -365,7 +365,7 @@ public class ECharts {
           }
           toJS.convertExpr(values, arg);
         }
-        if (i < pointList.size() - 1) {
+        if (i < pointList.argSize()) {
           values.append(", ");
         }
       }
@@ -400,7 +400,7 @@ public class ECharts {
             }
             toJS.convertExpr(values, yExpr);
           }
-          if (i < pointList.size() - 1) {
+          if (i < pointList.argSize()) {
             values.append(", ");
           }
         }

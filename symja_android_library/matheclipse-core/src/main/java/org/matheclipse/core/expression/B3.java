@@ -546,7 +546,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
 
   /** {@inheritDoc} */
   @Override
-  public int argSize() {
+  final public int argSize() {
     return SIZE - 1;
   }
 
@@ -1185,7 +1185,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
    * @return the number of elements in this {@code ArrayList}.
    */
   @Override
-  public int size() {
+  final public int size() {
     return SIZE;
   }
 
