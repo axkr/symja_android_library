@@ -6,6 +6,12 @@ UnitStep(expr)
 
 > returns `0`, if `expr` is less than `0` and returns `1`, if `expr` is greater equal than `0`.
 
+```
+UnitStep(x1, x2, ...)
+```
+
+> return the multidimensional unit step function which is `1` only if none of the `xi` are negative.
+  
 See
 * [Wikipedia - Heaviside step function](https://en.wikipedia.org/wiki/Heaviside_step_function)  
 * [Wikipedia - Step function](https://en.wikipedia.org/wiki/Step_function)
@@ -19,10 +25,6 @@ See
 
 ### Related terms 
 [Piecewise](Piecewise.md)
-
-
-
-
 
 
 ### Implementation status
