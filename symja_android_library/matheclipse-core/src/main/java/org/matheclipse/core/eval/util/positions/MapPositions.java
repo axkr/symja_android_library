@@ -2,6 +2,7 @@ package org.matheclipse.core.eval.util.positions;
 
 import java.util.function.Function;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -11,22 +12,25 @@ import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class MapPositions {
-  int index;
-  IAST positions;
+  final IAST originalAST;
   final Function<IExpr, IExpr> f;
+  int level;
+  IAST positions;
 
-  public MapPositions(Function<IExpr, IExpr> f) {
+  public MapPositions(Function<IExpr, IExpr> f, IAST ast) {
     this.f = f;
+    this.originalAST = ast;
     reset(F.CEmptyList);
   }
 
-  public MapPositions(Function<IExpr, IExpr> f, IAST positions) {
+  public MapPositions(Function<IExpr, IExpr> f, IAST ast, IAST positions) {
     this.f = f;
+    this.originalAST = ast;
     reset(positions);
   }
 
   protected void reset(IAST positions) {
-    this.index = 1;
+    this.level = 1;
     this.positions = positions;
   }
 
@@ -41,7 +45,7 @@ public class MapPositions {
    */
   public static IExpr mapListOfPositions(Function<IExpr, IExpr> f, IAST ast,
       IAST listOfListsOfPositions) {
-    MapPositions mapPositions = new MapPositions(f);
+    MapPositions mapPositions = new MapPositions(f, ast);
     for (int i = 1; i < listOfListsOfPositions.size(); i++) {
       IAST subList = (IAST) listOfListsOfPositions.get(i);
       if (subList.isEmpty()) {
@@ -79,41 +83,26 @@ public class MapPositions {
     if (listOfPositions.isEmpty()) {
       return ast;
     }
-    MapPositions mapPositions = new MapPositions(f, listOfPositions);
+    MapPositions mapPositions = new MapPositions(f, ast, listOfPositions);
     IAST result = mapPositions.mapAtRecursive(ast);
     removeIsCopiedRecursive(result);
     return result;
   }
 
   protected IAST mapAtRecursive(IAST ast) {
-    IExpr pos = positions.get(index);
-    if (pos.equals(S.All)) {
-      IASTMutable subResult = getMutableAST(ast);
-      if (index == positions.size() - 1) {
-        for (int i = 1; i < ast.size(); i++) {
-          IExpr temp = f.apply(ast.get(i));
-          if (temp.isPresent()) {
-            subResult.set(i, temp);
-          }
-        }
-      } else {
-        index++;
-        for (int i = 1; i < ast.size(); i++) {
-          IExpr temp = mapAtRecursive(subResult.getAST(i));
-          if (temp.isPresent()) {
-            subResult.set(i, temp);
-          }
-        }
-        index--;
-      }
-      return subResult;
+    IExpr position = positions.get(level);
+    if (position.equals(S.All)) {
+      return mapAtRecursiveSpan(ast, 1, ast.size(), 1);
     }
-    if (pos.isString() || pos.isKey()) {
+    if (position.isAST(S.Span, 3, 4)) {
+      return mapAtRecursiveSpan(ast, (IAST) position);
+    }
+    if (position.isString() || position.isKey()) {
       if (ast.isAssociation()) {
-        IExpr key = pos.isString() ? pos : pos.first();
+        IExpr key = position.isString() ? position : position.first();
         IAST rule = ((IAssociation) ast).getRule(key);
         if (rule.isPresent()) {
-          if (index == positions.size() - 1) {
+          if (level == positions.argSize()) {
             IExpr temp = f.apply(rule.second());
             if (temp.isPresent()) {
               rule = rule.setAtCopy(2, temp);
@@ -125,35 +114,35 @@ public class MapPositions {
           } else {
             IExpr arg = rule.second();
             if (arg.isASTOrAssociation()) {
-              index++;
+              level++;
               IExpr temp = mapAtRecursive(((IAST) arg));
               if (temp.isPresent()) {
                 rule = rule.setAtCopy(2, temp);
                 IASTAppendable association = getAppendableAST(ast);
                 association.appendRule(rule);
-                index--;
+                level--;
                 return association;
               }
-              index--;
+              level--;
             }
           }
         }
-        // Part `1` of `2` does not exist.
-        throw new ArgumentTypeException("partw", F.list(F.list(pos), ast));
       }
+      // Part `1` of `2` does not exist.
+      throw new ArgumentTypeException("partw", F.list(positions, originalAST));
     }
 
-    int p = pos.toIntDefault();
+    int p = position.toIntDefault();
     if (p == Integer.MIN_VALUE) {
       // Part `1` of `2` does not exist.
-      throw new ArgumentTypeException("partw", F.list(F.list(pos), ast));
+      throw new ArgumentTypeException("partw", F.list(positions, originalAST));
     }
     if (p < 0) {
       p = ast.size() + p;
     }
 
     if (p >= 0 && p < ast.size()) {
-      if (index == positions.size() - 1) {
+      if (level == positions.argSize()) {
         IExpr temp = f.apply(ast.get(p));
         if (temp.isPresent()) {
           if (ast.isAssociation()) {
@@ -165,20 +154,74 @@ public class MapPositions {
       } else {
         IExpr arg = ast.get(p);
         if (arg.isASTOrAssociation()) {
-          IASTMutable subResult = getMutableAST(ast);
-          index++;
+          IASTMutable subResult = getAppendableAST(ast);
+          level++;
           IExpr temp = mapAtRecursive((IAST) arg);
           if (temp.isPresent()) {
-            index--;
+            level--;
             subResult.set(p, temp);
             return subResult;
           }
-          index--;
+          level--;
         }
       }
     }
     // Part `1` of `2` does not exist.
-    throw new ArgumentTypeException("partw", F.list(F.list(pos), ast));
+    throw new ArgumentTypeException("partw", F.list(positions, originalAST));
+  }
+
+  protected IAST mapAtRecursiveSpan(IAST ast, IAST span) {
+    int startPosition = Validate.checkIntType(span, 1, Integer.MIN_VALUE);
+    if (startPosition < 0) {
+      startPosition = ast.size() + startPosition;
+      if (startPosition < 0) {
+        // Cannot take positions `1` through `2` in `3`.
+        throw new ArgumentTypeException("take", F.list(span.arg1(), span.arg2(), ast));
+      }
+    } else if (startPosition > ast.size()) {
+      // Cannot take positions `1` through `2` in `3`.
+      throw new ArgumentTypeException("take", F.list(span.arg1(), span.arg2(), ast));
+    }
+    int endPosition = Validate.checkIntType(span, 2, Integer.MIN_VALUE) + 1;
+    if (endPosition < 0) {
+      endPosition = ast.size() + endPosition;
+      if (endPosition < 0) {
+        // Cannot take positions `1` through `2` in `3`.
+        throw new ArgumentTypeException("take", F.list(span.arg1(), span.arg2(), ast));
+      }
+    } else if (endPosition > ast.size()) {
+      // Cannot take positions `1` through `2` in `3`.
+      throw new ArgumentTypeException("take", F.list(span.arg1(), span.arg2(), ast));
+    }
+    int step = 1;
+    if (span.isAST3()) {
+      step = Validate.checkIntType(span, 3, 0);
+    }
+
+    return mapAtRecursiveSpan(ast, startPosition, endPosition, step);
+  }
+
+
+  protected IAST mapAtRecursiveSpan(IAST ast, int startPosition, int endPosition, int step) {
+    IASTMutable result = getAppendableAST(ast);
+    if (level == positions.argSize()) {
+      for (int i = startPosition; i < endPosition; i += step) {
+        IExpr temp = f.apply(ast.get(i));
+        if (temp.isPresent()) {
+          result.set(i, temp);
+        }
+      }
+    } else {
+      level++;
+      for (int i = startPosition; i < endPosition; i += step) {
+        IExpr temp = mapAtRecursive(result.getAST(i));
+        if (temp.isPresent()) {
+          result.set(i, temp);
+        }
+      }
+      level--;
+    }
+    return result;
   }
 
   protected static IASTAppendable getAppendableAST(IAST ast) {

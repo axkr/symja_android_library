@@ -2137,6 +2137,8 @@ public class S {
    */
   public final static IBuiltInSymbol Context = S.initFinalSymbol("Context", ID.Context);
 
+  public final static IBuiltInSymbol Contexts = S.initFinalSymbol("Contexts", ID.Contexts);
+
   /**
    * Continue() - continues with the next iteration in a `For`, `While`, or `Do` loop.
    * 

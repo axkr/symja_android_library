@@ -13,26 +13,29 @@ import org.matheclipse.core.interfaces.IExpr;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 public class InsertPositions {
-  final IdentityHashMap<IAST, IExpr> resultASTCache = new IdentityHashMap<IAST, IExpr>();
   final IdentityHashMap<IAST, IntArrayList> insertASTCache =
       new IdentityHashMap<IAST, IntArrayList>();
 
-  int index;
-  IAST positions;
+  final IAST originalAST;
   final IExpr element;
 
-  public InsertPositions(IExpr element) {
+  int level;
+  IAST positions;
+
+  public InsertPositions(IExpr element, IAST ast) {
     this.element = element;
+    this.originalAST = ast;
     reset(F.CEmptyList);
   }
 
-  public InsertPositions(IExpr element, IAST positions) {
+  public InsertPositions(IExpr element, IAST ast, IAST positions) {
     this.element = element;
+    this.originalAST = ast;
     reset(positions);
   }
 
   protected void reset(IAST positions) {
-    this.index = 1;
+    this.level = 1;
     this.positions = positions;
   }
 
@@ -46,7 +49,7 @@ public class InsertPositions {
    * @param listOfListsOfPositions
    */
   public static IExpr insertListOfPositions(IAST ast, IExpr element, IAST listOfListsOfPositions) {
-    InsertPositions mapPositions = new InsertPositions(element);
+    InsertPositions mapPositions = new InsertPositions(element, ast);
     for (int i = 1; i < listOfListsOfPositions.size(); i++) {
       IAST subList = (IAST) listOfListsOfPositions.get(i);
       if (subList.isEmpty()) {
@@ -79,48 +82,27 @@ public class InsertPositions {
     if (listOfPositions.isEmpty()) {
       return ast;
     }
-    InsertPositions mapPositions = new InsertPositions(element, listOfPositions);
+    InsertPositions mapPositions = new InsertPositions(element, ast, listOfPositions);
     IAST result = mapPositions.mapAtRecursive(ast);
     MapPositions.removeIsCopiedRecursive(result);
     return result;
   }
 
   protected IAST mapAtRecursive(IAST ast) {
-    IExpr pos = positions.get(index);
-    if (pos.equals(S.All)) {
-      Object[] pair = getAppendableIntPair(ast);
-      final IASTAppendable subResult = (IASTAppendable) pair[0];
-      final IntArrayList insertedPositions = (IntArrayList) pair[1];
-      if (index == positions.size() - 1) {
-        int position = 1;
-        for (int i = 1; i < ast.size(); i++) {
-          insertedPositions.add(i);
-          subResult.set(position++, element);
-          position++;
-        }
-      } else {
-        index++;
-        for (int i = 1; i < ast.size(); i++) {
-          IExpr temp = mapAtRecursive(subResult.getAST(i));
-          if (temp.isPresent()) {
-            subResult.set(i, temp);
-          }
-        }
-        index--;
-      }
-      return subResult;
-    }
-    if (pos.isString() || pos.isKey()) {
+    IExpr position = positions.get(level);
+    // Note: `All` and `Span` cannot be used in Delete and Insert
+
+    if (position.isString() || position.isKey()) {
       if (ast.isAssociation()) {
         if (!element.isRuleAST() && !element.isListOfRules()) {
           // The argument `1` is not a rule or a list of rules.
           throw new ArgumentTypeStopException("invdt2", F.list(element, ast));
         }
-        IExpr key = pos.isString() ? pos : pos.first();
+        IExpr key = position.isString() ? position : position.first();
         final Object[] pair = getAppendableIntPair(ast);
         final IAssociation association = (IAssociation) pair[0];
         // IntArrayList insertedPositions = (IntArrayList) pair[1];
-        if (index == positions.size() - 1) {
+        if (level == positions.argSize()) {
           int keyPosition = ((IAssociation) ast).getRulePosition(key);
           if (keyPosition > 0) {
             return appendElement(association, keyPosition);
@@ -130,38 +112,37 @@ public class InsertPositions {
           if (rule.isPresent()) {
             IExpr arg = rule.second();
             if (arg.isASTOrAssociation()) {
-              index++;
+              level++;
               IExpr temp = mapAtRecursive(((IAST) arg));
               if (temp.isPresent()) {
                 rule = rule.setAtCopy(2, temp);
                 association.appendRule(rule);
-                index--;
+                level--;
                 return association;
               }
-              index--;
+              level--;
             }
           }
         }
-
-        // Part `1` of `2` does not exist.
-        throw new ArgumentTypeException("partw", F.list(F.list(pos), ast));
       }
+      // Part `1` of `2` does not exist.
+      throw new ArgumentTypeException("partw", F.list(positions, originalAST));
     }
 
-    int p = pos.toIntDefault();
+    int p = position.toIntDefault();
     if (p == Integer.MIN_VALUE) {
       // Part `1` of `2` does not exist.
-      throw new ArgumentTypeException("partw", F.list(F.list(pos), ast));
+      throw new ArgumentTypeException("partw", F.list(positions, originalAST));
     }
     Object[] pair = getAppendableIntPair(ast);
     IASTAppendable subResult = (IASTAppendable) pair[0];
     IntArrayList insertedPositions = (IntArrayList) pair[1];
     if (p < 0) {
-      p = subResult.size() - insertedPositions.size() + p + 1;
+      p = subResult.size() - getInsertPositionSize(insertedPositions) + p + 1;
     }
 
     if (p >= 0 && p < ast.size() + 1) {
-      if (index == positions.size() - 1) {
+      if (level == positions.argSize()) {
         if (ast.isAssociation()) {
           if (!element.isRuleAST() && !element.isListOfRules()) {
             // The argument `1` is not a rule or a list of rules.
@@ -196,19 +177,19 @@ public class InsertPositions {
         IExpr arg = ast.get(p);
         if (arg.isASTOrAssociation()) {
           // subResult = getAppendableAST(ast);
-          index++;
+          level++;
           IExpr temp = mapAtRecursive((IAST) arg);
           if (temp.isPresent()) {
-            index--;
+            level--;
             subResult.set(p, temp);
             return subResult;
           }
-          index--;
+          level--;
         }
       }
     }
     // Part `1` of `2` does not exist.
-    throw new ArgumentTypeException("partw", F.list(F.list(pos), ast));
+    throw new ArgumentTypeException("partw", F.list(positions, originalAST));
   }
 
   /**
@@ -248,6 +229,11 @@ public class InsertPositions {
     }
     return position;
   }
+
+  protected int getInsertPositionSize(IntArrayList insertedPositions) {
+    return insertedPositions.size();
+  }
+
 
   /**
    * Get the pair of [{@link IASTAppendable}, {@link IntArrayList}] list of already inserted

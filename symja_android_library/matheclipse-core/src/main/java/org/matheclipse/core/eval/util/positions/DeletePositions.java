@@ -10,19 +10,24 @@ import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class DeletePositions {
-  int index;
+
+  final IAST originalAST;
+
+  int level;
   IAST positions;
 
-  public DeletePositions(Function<IExpr, IExpr> f) {
+  public DeletePositions(Function<IExpr, IExpr> f, IAST ast) {
+    this.originalAST = ast;
     reset(F.CEmptyList);
   }
 
-  public DeletePositions(Function<IExpr, IExpr> f, IAST positions) {
+  public DeletePositions(Function<IExpr, IExpr> f, IAST ast, IAST positions) {
+    this.originalAST = ast;
     reset(positions);
   }
 
   protected void reset(IAST positions) {
-    this.index = 1;
+    this.level = 1;
     this.positions = positions;
   }
 
@@ -36,7 +41,7 @@ public class DeletePositions {
    * @param listOfListsOfPositions
    */
   public static IAST deleteListOfPositions(IAST ast, IAST listOfListsOfPositions) {
-    DeletePositions deletePositions = new DeletePositions(x -> null);
+    DeletePositions deletePositions = new DeletePositions(x -> null, ast);
     for (int i = 1; i < listOfListsOfPositions.size(); i++) {
       IAST subList = (IAST) listOfListsOfPositions.get(i);
       if (subList.isEmpty()) {
@@ -68,37 +73,20 @@ public class DeletePositions {
     if (listOfPositions.isEmpty()) {
       return ast;
     }
-    DeletePositions deletePositions = new DeletePositions(x -> null, listOfPositions);
+    DeletePositions deletePositions = new DeletePositions(x -> null, ast, listOfPositions);
     IASTAppendable result = deletePositions.mapAtRecursive(ast);
     return removeNILRecursive(result);
   }
 
   protected IASTAppendable mapAtRecursive(IAST ast) {
-    IExpr pos = positions.get(index);
-    if (pos.equals(S.All)) {
-      IASTAppendable subResult = MapPositions.getAppendableAST(ast);
-      if (index == positions.size() - 1) {
-        for (int i = 1; i < ast.size(); i++) {
-          subResult.set(i, F.NIL);
-        }
-      } else {
-        index++;
-        for (int i = 1; i < ast.size(); i++) {
-          IExpr temp = mapAtRecursive(subResult.getAST(i));
-          if (temp.isPresent()) {
-            subResult.set(i, temp);
-          }
-        }
-        index--;
-      }
-      return subResult;
-    }
-    if (pos.isString() || pos.isKey()) {
+    IExpr position = positions.get(level);
+    // Note: `All` and `Span` cannot be used in Delete and Insert
+    if (position.isString() || position.isKey()) {
       if (ast.isAssociation()) {
-        IExpr key = pos.isString() ? pos : pos.first();
+        IExpr key = position.isString() ? position : position.first();
         IAST rule = ((IAssociation) ast).getRule(key);
         if (rule.isPresent()) {
-          if (index == positions.size() - 1) {
+          if (level == positions.argSize()) {
             rule = rule.setAtCopy(2, F.NIL);
             IASTAppendable association = MapPositions.getAppendableAST(ast);
             association.appendRule(rule);
@@ -106,35 +94,35 @@ public class DeletePositions {
           } else {
             IExpr arg = rule.second();
             if (arg.isASTOrAssociation()) {
-              index++;
+              level++;
               IExpr temp = mapAtRecursive(((IAST) arg));
               if (temp.isPresent()) {
                 rule = rule.setAtCopy(2, temp);
                 IASTAppendable association = MapPositions.getAppendableAST(ast);
                 association.appendRule(rule);
-                index--;
+                level--;
                 return association;
               }
-              index--;
+              level--;
             }
           }
         }
-        // Part `1` of `2` does not exist.
-        throw new ArgumentTypeException("partw", F.list(F.list(pos), ast));
       }
+      // Part `1` of `2` does not exist.
+      throw new ArgumentTypeException("partw", F.list(positions, originalAST));
     }
 
-    int p = pos.toIntDefault();
+    int p = position.toIntDefault();
     if (p == Integer.MIN_VALUE) {
       // Part `1` of `2` does not exist.
-      throw new ArgumentTypeException("partw", F.list(F.list(pos), ast));
+      throw new ArgumentTypeException("partw", F.list(positions, originalAST));
     }
     if (p < 0) {
       p = ast.size() + p;
     }
 
     if (p >= 0 && p < ast.size()) {
-      if (index == positions.size() - 1) {
+      if (level == positions.argSize()) {
         if (p == 0) {
           if (ast.isAssociation()) {
             IASTAppendable result = F.IdentityAlloc(ast.argSize());
@@ -162,19 +150,19 @@ public class DeletePositions {
         IExpr arg = ast.get(p);
         if (arg.isASTOrAssociation()) {
           IASTAppendable subResult = MapPositions.getAppendableAST(ast);
-          index++;
+          level++;
           IExpr temp = mapAtRecursive((IAST) arg);
           if (temp.isPresent()) {
-            index--;
+            level--;
             subResult.set(p, temp);
             return subResult;
           }
-          index--;
+          level--;
         }
       }
     }
     // Part `1` of `2` does not exist.
-    throw new ArgumentTypeException("partw", F.list(F.list(pos), ast));
+    throw new ArgumentTypeException("partw", F.list(positions, originalAST));
   }
 
   /**

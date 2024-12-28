@@ -703,17 +703,17 @@ public class Functors {
    *
    * @param astRules a possibly nested list of rules of the form <code>x-&gt;y</code> or <code>
    *     x:&gt;y</code>
-   * @return
+   * @param engine the evaluation engine
    */
-  public static Function<IExpr, IExpr> rules(IAST astRules, EvalEngine engine) {
+  public static Function<IExpr, IExpr> rules(IExpr astRules, EvalEngine engine) {
     final Map<IExpr, IExpr> equalRules;
     IAST rule;
     List<PatternMatcherAndEvaluator> matchers = new ArrayList<PatternMatcherAndEvaluator>();
     if (astRules.isList()) {
-      return rulesFromNestedList(astRules, engine, matchers);
+      return rulesFromNestedList((IAST) astRules, engine, matchers);
     } else {
       if (astRules.isRuleAST()) {
-        rule = astRules;
+        rule = (IAST) astRules;
         equalRules = new OpenFixedSizeMap<IExpr, IExpr>(3);
         addRuleToCollection(equalRules, matchers, rule);
       } else {

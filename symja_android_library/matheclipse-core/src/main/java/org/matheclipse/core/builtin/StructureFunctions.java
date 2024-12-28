@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.EvalHistory;
+import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -23,11 +24,13 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.eval.util.OptionArgs;
+import org.matheclipse.core.eval.util.positions.FlattenPositions;
 import org.matheclipse.core.eval.util.positions.MapPositions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Comparators;
+import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.Predicates.IsBinaryFalse;
 import org.matheclipse.core.interfaces.IAST;
@@ -609,31 +612,39 @@ public class StructureFunctions {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       IExpr arg2 = engine.evaluate(ast.arg2());
+
       if (arg1.isAST()) {
-        IAST arg1AST = (IAST) arg1;
-        int[] positions = null;
-        if (arg2.isInteger()) {
-          positions = new int[1];
-          positions[0] = arg2.toIntDefault();
-          if (positions[0] == Integer.MIN_VALUE) {
-            return F.NIL;
+        try {
+          IAST ast1 = (IAST) arg1;
+          if (arg2.isInteger()) {
+            arg2 = arg2.makeList();
           }
-        }
-        if (positions != null) {
-          int size = arg1AST.size();
-          for (int i = 0; i < positions.length; i++) {
-            if (positions[i] < 0) {
-              positions[i] = size + positions[i];
+          if (arg2.isListOfLists()) {
+            IAST listOfLists = ((IAST) arg2);
+            return FlattenPositions.flattenListOfPositions(ast1, listOfLists);
+          } else if (arg2.isList()) {
+            IExpr temp = FlattenPositions.flattenPositions(ast1, (IAST) arg2);
+            if (temp.isPresent()) {
+              return temp;
             }
+            return ast1;
           }
-          IAST resultList = EvalAttributes.flattenAt(arg1AST.topHead(), arg1AST, positions);
-          if (resultList.isPresent()) {
-            return resultList;
+        } catch (final ValidateException ve) {
+          return Errors.printMessage(ast.topHead(), ve, engine);
+        } catch (final ArgumentTypeStopException atse) {
+          Errors.printMessage(ast.topHead(), atse, engine);
+          return arg1;
+        } catch (RuntimeException rex) {
+          if (Config.DEBUG) {
+            rex.printStackTrace();
           }
-          return arg1AST;
+          Errors.rethrowsInterruptException(rex);
+          return Errors.printMessage(S.Delete, rex, engine);
         }
+        return F.NIL;
       }
-      return F.NIL;
+      // Part `1` of `2` does not exist.
+      return Errors.printMessage(ast.topHead(), "partw", F.list(arg2, arg1), engine);
     }
 
     @Override
@@ -1011,7 +1022,8 @@ public class StructureFunctions {
             final IExpr arg1 = ast.arg1();
             java.util.function.Function<IExpr, IExpr> function = x -> F.unaryAST1(arg1, x);
             IExpr arg3 = ast.arg3();
-            if (arg3.isInteger() || arg3.isString() || arg3.isKey() || arg3.equals(S.All)) {
+            if (arg3.isInteger() || arg3.isString() || arg3.isKey() || arg3.equals(S.All)
+                || arg3.isAST(S.Span, 3, 4)) {
               arg3 = F.list(arg3);
             }
             if (arg3.isListOfLists()) {
@@ -1067,15 +1079,10 @@ public class StructureFunctions {
           try {
             final IAST ast1 = (IAST) arg1;
             final IExpr arg2 = ast.arg2();
-            java.util.function.Function<IExpr, IExpr> function = x -> {
-              IExpr temp = S.Replace.ofNIL(engine, x, arg2);
-              if (temp.isPresent()) {
-                return temp;
-              }
-              return F.NIL;
-            };
+            java.util.function.Function<IExpr, IExpr> function = Functors.rules(arg2, engine);
             IExpr arg3 = ast.arg3();
-            if (arg3.isInteger() || arg3.isString() || arg3.isKey() || arg3.equals(S.All)) {
+            if (arg3.isInteger() || arg3.isString() || arg3.isKey() || arg3.equals(S.All)
+                || arg3.isAST(S.Span, 3, 4)) {
               arg3 = F.list(arg3);
             }
             if (arg3.isListOfLists()) {
