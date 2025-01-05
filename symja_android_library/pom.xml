@@ -86,7 +86,7 @@
 	<repositories>
 		<repository>
 			<id>orekit</id>
-			<url>https://packages.orekit.org/repository/maven-public/</url>
+			<url>https://packages.orekit.org/repository/maven-snapshots/</url>
 			<releases>
 				<enabled>false</enabled>
 			</releases>
