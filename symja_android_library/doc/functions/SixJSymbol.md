@@ -12,13 +12,6 @@ See:
 ### Examples
 
 ```  
- 
+>> SixJSymbol({1, 2, 3}, {1, 2, 3})
+1/105
 ```
-
-### Implementation status
-
-* &#x274C; - currently not supported
-
-### Github
-
-* [Implementation of SixJSymbol](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/QuantumPhysicsFunctions.java#L113) 
