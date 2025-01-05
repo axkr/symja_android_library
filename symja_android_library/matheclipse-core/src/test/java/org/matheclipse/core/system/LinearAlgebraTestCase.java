@@ -1759,8 +1759,8 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPauliMatrix() {
-    check("PauliMatrix({1,2,3,4})", //
-        "{{{0,1},{1,0}},{{0,-I},{I,0}},{{1,0},{0,-1}},{{1,0},{0,1}}}");
+    check("PauliMatrix({0,1,2,3,4})", //
+        "{{{1,0},{0,1}},{{0,1},{1,0}},{{0,-I},{I,0}},{{1,0},{0,-1}},{{1,0},{0,1}}}");
   }
 
   @Test
