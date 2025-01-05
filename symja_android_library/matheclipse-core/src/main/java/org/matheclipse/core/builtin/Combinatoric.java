@@ -2598,7 +2598,7 @@ public final class Combinatoric {
         }
 
         int k;
-        final IASTAppendable result = F.ast(S.List);
+        final IASTAppendable result = F.ast(S.List, 31);
         level.setMinCountAsCurrent();
         while (level.isInRange()) {
           k = level.getCurrentCounter();

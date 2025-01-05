@@ -391,6 +391,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     @Override
+    public IExpr eval(EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
     public IExpr evalEvaluate(EvalEngine engine) {
       ArgumentTypeException.throwNIL();
       return F.NIL;
@@ -2188,7 +2193,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     final ISymbol symbol = topHead();
-    return engine.evalAttributes(symbol, this).orElseGet(() -> engine.evalRules(symbol, this));
+    boolean oldNumericMode = engine.isNumericMode();
+    try {
+      return engine.evalAttributes(symbol, this).orElseGet(() -> engine.evalRules(symbol, this));
+    } finally {
+      engine.setNumericMode(oldNumericMode);
+    }
   }
 
   /** {@inheritDoc} */
@@ -3619,8 +3629,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (S.True.equals(AbstractAssumptions.assumeInteger(this))) {
       return true;
     }
-    ISymbol symbol = topHead();
-    if (symbol.equals(S.Floor) || symbol.equals(S.Ceiling) || symbol.equals(S.IntegerPart)) {
+    if (isFunctionID(ID.Ceiling, ID.Floor, ID.IntegerPart)) {
       return true;
     }
     if (isPowerInteger() && base().isPositive()) {
@@ -3629,7 +3638,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       }
       return false;
     }
-    if (isPlus() || isTimes() || symbol.equals(S.Binomial) || symbol.equals(S.Factorial)) {
+    IExpr head = head();
+    if (isPlus() || isTimes() || head == S.Binomial || head == S.Factorial) {
       // TODO add more integer functions
       // check if all arguments are &quot;integer functions&quot;
       for (int i = 1; i < size(); i++) {
@@ -5566,14 +5576,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public final IAST partition(ISymbol operator, Predicate<? super IExpr> predicate, IExpr init1,
       IExpr init2, ISymbol combiner, ISymbol action) {
     if (Objects.equals(head(), operator)) {
+      int newSize = F.allocMax64(this);
       IASTAppendable result = F.ast(action, 3);
       final int size = size();
-      int newSize = (size + 1) / 2;
-      if (newSize <= 4) {
-        newSize = 5;
-      } else {
-        newSize += 4;
-      }
       IASTAppendable yesAST = F.ast(combiner, newSize);
       IASTAppendable noAST = F.ast(combiner, newSize);
       forEach(size, x -> {

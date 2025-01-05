@@ -1,5 +1,7 @@
 package org.matheclipse.core.interfaces;
 
+import org.matheclipse.core.eval.EvalEngine;
+
 /**
  * The IInexactNumber interface represents an inexact number in the system. It extends the INumber
  * interface, inheriting all of its methods. In addition to the methods inherited from INumber,
@@ -7,6 +9,11 @@ package org.matheclipse.core.interfaces;
  * are specific to inexact numbers.
  */
 public interface IInexactNumber extends INumber {
+
+  @Override
+  default IInexactNumber eval(EvalEngine engine) {
+    return this;
+  }
 
   public IInexactNumber plus(final IInexactNumber that);
 
@@ -25,6 +32,9 @@ public interface IInexactNumber extends INumber {
   public IInexactNumber cos();
 
   @Override
+  public IInexactNumber exp();
+
+  @Override
   public IInexactNumber sin();
 
   @Override
@@ -41,6 +51,9 @@ public interface IInexactNumber extends INumber {
 
   @Override
   public IInexactNumber tanh();
+
+  @Override
+  public IInexactNumber times(INumber that);
 
   @Override
   public IInexactNumber log();

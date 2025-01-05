@@ -276,8 +276,8 @@ public class QuantityFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
+        IExpr arg1 = ast.arg1();
         if (ast.isAST1()) {
-          IExpr arg1 = engine.evaluate(ast.arg1());
           if (!arg1.isString()) {
             return Errors.printMessage(S.Quantity, "unkunit", F.List(arg1));
           }
@@ -288,7 +288,6 @@ public class QuantityFunctions {
           return IQuantity.of(F.C1, unit);
         }
         if (ast.isAST2()) {
-          IExpr arg1 = engine.evaluate(ast.arg1());
           if (arg1.isList()) {
             return arg1.mapThread(F.Quantity(F.Slot1, ast.arg2()), 1);
           }
@@ -431,14 +430,13 @@ public class QuantityFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
+        IExpr arg1 = ast.arg1().eval(engine);
         if (ast.size() == 2) {
-          IExpr arg1 = engine.evaluate(ast.arg1());
           if (arg1.isQuantity()) {
             return UnitSystem.SI().apply(arg1);
           }
         } else if (ast.size() == 3) {
-          IExpr arg1 = engine.evaluate(ast.arg1());
-          IExpr arg2 = engine.evaluate(ast.arg2());
+          IExpr arg2 = ast.arg2().eval(engine);
           if (arg1.isQuantity()) {
             IUnit unit = IUnit.of(arg2.toString());
             if (unit == null) {

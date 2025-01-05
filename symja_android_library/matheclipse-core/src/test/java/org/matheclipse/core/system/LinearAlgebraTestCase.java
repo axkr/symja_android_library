@@ -469,7 +469,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{3*(4+a)}}");
     check("{{a,2},{3,4}}.{{a,2},{3,4}}", //
         "{{6+a^2,2*(4+a)},\n" //
-        + " {3*(4+a),22}}");
+            + " {3*(4+a),22}}");
 
     check("{{1, 2, 3}, {3, 4, 11}, {13, 7, 8}}.{-11/4,33/4,-5/4}", //
         "{10,11,12}");
@@ -585,6 +585,13 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testEigensystem() {
+    // example from https://github.com/Hipparchus-Math/hipparchus/issues/365
+    check("Eigensystem({{1,1,0.0}, {1,1,1}, {0.0,1,1}})", //
+        "{{2.41421,1.0,-0.414214},{{0.5,0.707107,0.5},{0.707107,-4.54581*10^-29,-0.707107},{-0.5,0.707107,-0.5}}}");
+    check("Eigensystem({{1,1,1.0*^-16 }, {1,1,1}, {1.0*^-17,1,1}})", //
+        "{{2.41421,1.0,-0.414214},{{0.5,0.707107,0.5},{0.707107,3.57168*10^-17,-0.707107},{-0.5,0.707107,-0.5}}}");
+
+    //
     check("Eigensystem(Table(If(Abs(i - j) < 3, 1.0, 0), {i, 5}, {j, 5}), 3)", //
         "{{3.93543,1.61803,-0.618034},"//
             + "{{0.350542,0.469959,0.559033,0.469959,0.350542}," //

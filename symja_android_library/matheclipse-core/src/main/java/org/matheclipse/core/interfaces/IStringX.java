@@ -2,6 +2,7 @@ package org.matheclipse.core.interfaces;
 
 import java.text.Collator;
 import java.util.Locale;
+import org.matheclipse.core.eval.EvalEngine;
 
 /** (I)nterface for a (String) e(X)pression */
 public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
@@ -28,6 +29,11 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
    * @return
    */
   public boolean contentEquals(final CharSequence cs);
+
+  @Override
+  default IExpr eval(EvalEngine engine) {
+    return evaluate(engine).orElse(this);
+  }
 
   /**
    * Get the mime tpe of this string.

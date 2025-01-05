@@ -618,16 +618,23 @@ public class SpecialFunctions {
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
-        // (1-2^(1-z))*Zeta(z)
-        IExpr z = ast.arg1();
-        return F.Times(F.Subtract(F.C1, F.Power(F.C2, F.Subtract(F.C1, z))), F.Zeta(z));
+        return functionExpand(ast.arg1());
       }
       return F.NIL;
+    }
+
+    private static IExpr functionExpand(final IExpr z) {
+      // (1-2^(1-z))*Zeta(z)
+      return F.Times(F.Subtract(F.C1, F.Power(F.C2, F.Subtract(F.C1, z))), F.Zeta(z));
     }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
+      return dirirchletEta(z, engine.isNumericMode()).eval(engine);
+    }
+
+    private static IExpr dirirchletEta(IExpr z, boolean numericMode) {
       if (z.isMinusOne()) {
         return F.C1D4;
       }
@@ -637,8 +644,8 @@ public class SpecialFunctions {
       if (z.isOne()) {
         return F.Log(F.C2);
       }
-      if (engine.isNumericMode() || z.isInteger()) {
-        return functionExpand(ast, engine);
+      if (numericMode || z.isInteger()) {
+        return functionExpand(z);
       }
       return NIL;
     }
@@ -1376,31 +1383,13 @@ public class SpecialFunctions {
           IExpr z = ast.arg1();
           IExpr a = ast.arg2();
           IExpr b = ast.arg3();
-          if (a.isPositiveResult()) {
-            if (z.isZero()) {
-              return F.C0;
-            }
-            if (z.isOne()) {
-              return F.C1;
-            }
-          }
-          if (engine.isDoubleMode() && (z.isNumericFunction(true) && a.isNumericFunction(true)
-              && b.isNumericFunction(true))) {
-            org.hipparchus.distribution.continuous.BetaDistribution beta = //
-                new org.hipparchus.distribution.continuous.BetaDistribution(a.evalf(), b.evalf());
-            return F.num(beta.inverseCumulativeProbability(z.evalf()));
-          }
+          return inverseBetaRegularized3(z, a, b, engine.isDoubleMode()).eval(engine);
         } else {
           IExpr z1 = ast.arg1();
           IExpr z2 = ast.arg2();
-          if (z2.isZero()) {
-            return z1;
-          }
           IExpr a = ast.arg3();
           IExpr b = ast.arg4();
-          if (z1.isZero()) {
-            return F.InverseBetaRegularized(z2, a, b);
-          }
+          return inverseBetaRegularized2(z1, z2, a, b).eval(engine);
         }
       } catch (MathIllegalArgumentException miae) {
         return Errors.printMessage(S.InverseBetaRegularized, "argillegal",
@@ -1409,6 +1398,33 @@ public class SpecialFunctions {
         Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(S.InverseBetaRegularized, "argillegal",
             F.list(F.stringx(rex.getMessage()), ast), engine);
+      }
+    }
+
+    private static IExpr inverseBetaRegularized2(IExpr z1, IExpr z2, IExpr a, IExpr b) {
+      if (z2.isZero()) {
+        return z1;
+      }
+      if (z1.isZero()) {
+        return F.InverseBetaRegularized(z2, a, b);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr inverseBetaRegularized3(IExpr z, IExpr a, IExpr b, boolean doubleMode) {
+      if (a.isPositiveResult()) {
+        if (z.isZero()) {
+          return F.C0;
+        }
+        if (z.isOne()) {
+          return F.C1;
+        }
+      }
+      if (doubleMode && (z.isNumericFunction(true) && a.isNumericFunction(true)
+          && b.isNumericFunction(true))) {
+        org.hipparchus.distribution.continuous.BetaDistribution beta = //
+            new org.hipparchus.distribution.continuous.BetaDistribution(a.evalf(), b.evalf());
+        return F.num(beta.inverseCumulativeProbability(z.evalf()));
       }
       return F.NIL;
     }
@@ -1933,13 +1949,13 @@ public class SpecialFunctions {
         IExpr z = ast.arg3();
         IExpr temp = polyLogSymbolic(n, x, z);
         if (temp.isPresent()) {
-          return temp;
+          return temp.eval(engine);
         }
         return F.NIL;
       }
       IExpr temp = polyLogSymbolic(n, x);
       if (temp.isPresent()) {
-        return temp;
+        return temp.eval(engine);
       }
       return F.NIL;
     }
@@ -1952,7 +1968,7 @@ public class SpecialFunctions {
 
         IExpr temp = polyLogSymbolic(v, z);
         if (temp.isPresent()) {
-          return temp;
+          return temp.eval(engine);
         }
         // issue #929
         return v.polyLog(z);
@@ -2305,28 +2321,15 @@ public class SpecialFunctions {
       }
       return F.NIL;
     }
-    // public IExpr e2DblArg(final INum d0, final INum d1) {
-    // double v = d0.reDoubleValue();
-    // double z = d1.reDoubleValue();
-    // try {
-    // final double iterationSum = 100;
-    // double fraction = 0;
-    // double fractionFactor = Math.pow((0.5 * z), v + 1);
-    // for (int i = 0; i < iterationSum; ++i) {
-    // double fractionTopPart = Math.pow(-1, i) * Math.pow(0.5 * z, 2.0 * i);
-    // double fractionBottomPart = Gamma.gamma(i + 1.5) * Gamma.gamma(i + v + 1.5);
-    // fraction = fraction + (fractionTopPart / fractionBottomPart);
-    // }
-    // return F.num(fractionFactor * fraction);
-    // } catch (Exception e) {
-    // throw e;
-    // }
-    // }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
+      return struveH(arg1, arg2).eval(engine);
+    }
+
+    private IExpr struveH(IExpr arg1, IExpr arg2) {
       try {
         if (arg2.isZero()) {
           IExpr re = arg1.re();
@@ -2359,7 +2362,7 @@ public class SpecialFunctions {
         }
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        Errors.printMessage(S.StruveH, rex, engine);
+        Errors.printMessage(S.StruveH, rex);
       }
       return F.NIL;
     }
@@ -2405,28 +2408,14 @@ public class SpecialFunctions {
       return F.NIL;
     }
 
-    // public IExpr e2DblArg(final INum d0, final INum d1) {
-    // double v = d0.reDoubleValue();
-    // double z = d1.reDoubleValue();
-    // try {
-    // final int iterationSum = 100;
-    // double fraction = 0;
-    // double fractionFactor = Math.pow((0.5 * z), v + 1);
-    // for (int i = 0; i < iterationSum; ++i) {
-    // double fractionTopPart = 1 * Math.pow((0.5 * z), (2.0 * i));
-    // double fractionBottomPart = Gamma.gamma (i + (1.5)) * Gamma.gamma(i + v + (1.5));
-    // fraction = fraction + (fractionTopPart / fractionBottomPart);
-    // }
-    // return F.num(fractionFactor * fraction);
-    // } catch (Exception e) {
-    // throw e;
-    // }
-    // }
-
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
+      return struveL(arg1, arg2).eval(engine);
+    }
+
+    private static IExpr struveL(IExpr arg1, IExpr arg2) {
       try {
         if (arg2.isZero()) {
           IExpr re = arg1.re();
@@ -2459,7 +2448,7 @@ public class SpecialFunctions {
         }
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        Errors.printMessage(S.StruveL, rex, engine);
+        Errors.printMessage(S.StruveL, rex);
       }
       return F.NIL;
     }

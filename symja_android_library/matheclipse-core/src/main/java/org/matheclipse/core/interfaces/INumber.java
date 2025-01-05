@@ -147,6 +147,11 @@ public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
   public boolean equalsInt(int i);
 
   @Override
+  default IExpr eval(EvalEngine engine) {
+    return evaluate(engine).orElse(this);
+  }
+
+  @Override
   default Complex evalfc() throws ArgumentTypeException {
     return new Complex(reDoubleValue(), imDoubleValue());
   }

@@ -90,10 +90,10 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
     IExpr arg1 = ast.arg1();
     int[] dim = checkMatrixDimensions(arg1);
     if (dim != null) {
-      int maxValues = -1;
-      if (ast.isAST2()) {
-        maxValues = ast.arg2().toIntDefault(-1);
-      }
+      // int maxValues = -1;
+      // if (ast.isAST2()) {
+      // maxValues = ast.arg2().toIntDefault(-1);
+      // }
       try {
         if (engine.isArbitraryMode()) {
           FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(arg1);

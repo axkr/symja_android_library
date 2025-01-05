@@ -26,7 +26,6 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.reflection.system.FunctionExpand;
 import com.google.common.math.IntMath;
 
 public class BesselFunctions {
@@ -67,26 +66,12 @@ public class BesselFunctions {
       IExpr b = ast.arg2();
       if (ast.isAST3()) {
         IExpr c = ast.arg2();
-        // (Cos(1/2*a*Pi)*Gamma(1+b)*HypergeometricPFQ({1/2+b/2,1+b/2},{1/2,1-a/2+b/2,1+a/2+b/2},(-1)*1/4*c^2))/(Gamma(1-a/2+b/2)*Gamma(1+a/2+b/2))+(c*Gamma(2+b)*HypergeometricPFQ({1+b/2,3/2+b/2},{3/2,3/2-a/2+b/2,3/2+a/2+b/2},(-1)*1/4*c^2)*Sin(1/2*a*Pi))/(2*Gamma(3/2-a/2+b/2)*Gamma(3/2+a/2+b/2))
-        IExpr v8 = F.Sqr(c);
-        IExpr v7 = F.Times(F.C1D2, b);
-        IExpr v6 = F.Times(F.C1D2, a, F.Pi);
-        IExpr v5 = F.Plus(F.C1, v7);
-        IExpr v4 = F.Plus(F.C1, F.Times(F.CN1D2, a));
-        IExpr v3 = F.Plus(F.C1, F.Times(F.C1D2, a), v7);
-        IExpr v2 = F.Plus(F.QQ(3L, 2L), F.Times(F.C1D2, a), v7);
-        IExpr v1 = F.Plus(F.QQ(3L, 2L), F.Times(F.CN1D2, a), v7);
-        return F.Plus(
-            F.Times(F.Cos(v6), F.Gamma(F.Plus(F.C1, b)), F.Power(F.Gamma(v3), F.CN1),
-                F.Power(F.Gamma(F.Plus(v4, v7)), F.CN1),
-                F.HypergeometricPFQ(F.list(v5, F.Plus(F.C1D2, v7)),
-                    F.list(F.C1D2, v3, F.Plus(v4, v7)), F.Times(F.CN1D4, v8))),
-            F.Times(F.C1D2, c, F.Gamma(F.Plus(F.C2, b)), F.Power(F.Gamma(v1), F.CN1),
-                F.Power(F.Gamma(v2), F.CN1),
-                F.HypergeometricPFQ(F.list(v5, F.Plus(F.QQ(3L, 2L), v7)),
-                    F.list(F.QQ(3L, 2L), v1, v2), F.Times(F.CN1D4, v8)),
-                F.Sin(v6)));
+        return functionExpand3(a, b, c);
       }
+      return functionExpand2(a, b);
+    }
+
+    private static IExpr functionExpand2(IExpr a, IExpr b) {
       // (2*Cos(1/2*a*Pi)*HypergeometricPFQ({1},{1-a/2,1+a/2},(-1)*1/4*b^2)*Sin(1/2*a*Pi))/(a*Pi)+(-2*b*Cos(1/2*a*Pi)*HypergeometricPFQ({1},{3/2-a/2,3/2+a/2},(-1)*1/4*b^2)*Sin(1/2*a*Pi))/((-1+a)*(1+a)*Pi)
       IExpr v6 = F.list(F.C1);
       IExpr v5 = F.Times(F.C1D2, a);
@@ -100,7 +85,27 @@ public class BesselFunctions {
           F.Times(F.CN2, F.Power(F.Plus(F.CN1, a), F.CN1), F.Power(F.Plus(F.C1, a), F.CN1), b,
               F.Power(F.Pi, F.CN1), v2, v3, F.HypergeometricPFQ(v6,
                   F.list(F.Plus(F.QQ(3L, 2L), v4), F.Plus(F.QQ(3L, 2L), v5)), v1)));
+    }
 
+    private static IExpr functionExpand3(IExpr a, IExpr b, IExpr c) {
+      // (Cos(1/2*a*Pi)*Gamma(1+b)*HypergeometricPFQ({1/2+b/2,1+b/2},{1/2,1-a/2+b/2,1+a/2+b/2},(-1)*1/4*c^2))/(Gamma(1-a/2+b/2)*Gamma(1+a/2+b/2))+(c*Gamma(2+b)*HypergeometricPFQ({1+b/2,3/2+b/2},{3/2,3/2-a/2+b/2,3/2+a/2+b/2},(-1)*1/4*c^2)*Sin(1/2*a*Pi))/(2*Gamma(3/2-a/2+b/2)*Gamma(3/2+a/2+b/2))
+      IExpr v8 = F.Sqr(c);
+      IExpr v7 = F.Times(F.C1D2, b);
+      IExpr v6 = F.Times(F.C1D2, a, F.Pi);
+      IExpr v5 = F.Plus(F.C1, v7);
+      IExpr v4 = F.Plus(F.C1, F.Times(F.CN1D2, a));
+      IExpr v3 = F.Plus(F.C1, F.Times(F.C1D2, a), v7);
+      IExpr v2 = F.Plus(F.QQ(3L, 2L), F.Times(F.C1D2, a), v7);
+      IExpr v1 = F.Plus(F.QQ(3L, 2L), F.Times(F.CN1D2, a), v7);
+      return F.Plus(
+          F.Times(F.Cos(v6), F.Gamma(F.Plus(F.C1, b)), F.Power(F.Gamma(v3), F.CN1),
+              F.Power(F.Gamma(F.Plus(v4, v7)), F.CN1),
+              F.HypergeometricPFQ(F.list(v5, F.Plus(F.C1D2, v7)),
+                  F.list(F.C1D2, v3, F.Plus(v4, v7)), F.Times(F.CN1D4, v8))),
+          F.Times(F.C1D2, c, F.Gamma(F.Plus(F.C2, b)), F.Power(F.Gamma(v1), F.CN1),
+              F.Power(F.Gamma(v2), F.CN1), F.HypergeometricPFQ(F.list(v5, F.Plus(F.QQ(3L, 2L), v7)),
+                  F.list(F.QQ(3L, 2L), v1, v2), F.Times(F.CN1D4, v8)),
+              F.Sin(v6)));
     }
 
     @Override
@@ -110,36 +115,42 @@ public class BesselFunctions {
       if (ast.isAST2()) {
         // https://dlmf.nist.gov/11.10#vii
         final IExpr z = ast.arg2();
-        if (z.isZero()) {
-          // Sinc(n*Pi)
-          return F.Sinc(F.Times(n, F.Pi));
-        }
-        int ni = n.toIntDefault();
-        if (ni != Integer.MIN_VALUE) {
-          if (ni >= 0) {
-            return F.BesselJ(n, z);
-          } else {
-            if ((ni & 0x1) == 0x1) {
-              return F.Negate(F.BesselJ(F.ZZ(-ni), z));
-            }
-            return F.BesselJ(F.ZZ(-ni), z);
-          }
-        }
-
-        if (engine.isNumericMode()) {
-          if (n.isNumber() && z.isNumber()) {
-            return functionExpand(ast, engine);
-          }
-        }
-        return F.NIL;
+        return angerJ2(n, z, engine.isNumericMode()).eval(engine);
       }
-      if (ast.isAST3()) {
-        IExpr m = ast.arg2();
-        IExpr z = ast.arg3();
-        if (engine.isNumericMode()) {
-          if (n.isNumber() && m.isNumber() && z.isNumber()) {
-            return functionExpand(ast, engine);
+      IExpr m = ast.arg2();
+      IExpr z = ast.arg3();
+      return angerJ3(n, m, z, engine.isNumericMode()).eval(engine);
+    }
+
+    private static IExpr angerJ3(final IExpr n, IExpr m, IExpr z, boolean numericMode) {
+      if (numericMode) {
+        if (n.isNumber() && m.isNumber() && z.isNumber()) {
+          return functionExpand3(n, m, z);
+        }
+      }
+      return F.NIL;
+    }
+
+    private static IExpr angerJ2(final IExpr n, final IExpr z, boolean numericMode) {
+      if (z.isZero()) {
+        // Sinc(n*Pi)
+        return F.Sinc(F.Times(n, F.Pi));
+      }
+      int ni = n.toIntDefault();
+      if (ni != Integer.MIN_VALUE) {
+        if (ni >= 0) {
+          return F.BesselJ(n, z);
+        } else {
+          if ((ni & 0x1) == 0x1) {
+            return F.Negate(F.BesselJ(F.ZZ(-ni), z));
           }
+          return F.BesselJ(F.ZZ(-ni), z);
+        }
+      }
+
+      if (numericMode) {
+        if (n.isNumber() && z.isNumber()) {
+          return functionExpand2(n, z);
         }
       }
       return F.NIL;
@@ -468,6 +479,10 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
+      return besselJ(n, z, engine.isNumericMode()).eval(engine);
+    }
+
+    private static IExpr besselJ(IExpr n, IExpr z, boolean numericMode) {
       final int order = n.toIntDefault();
       if (z.isZero()) {
         if (n.isZero()) {
@@ -527,17 +542,17 @@ public class BesselFunctions {
       // }
       // }
       if (n.isNumber() && z.isNumber()) {
-        if (engine.isDoubleMode() || engine.isArbitraryMode()) {
+        if (numericMode) {
           try {
             IExpr res = n.besselJ(z);
             if (res.isNumber()) {
               return res;
             }
           } catch (ValidateException ve) {
-            return Errors.printMessage(S.BesselJ, ve, engine);
+            return Errors.printMessage(S.BesselJ, ve);
           } catch (RuntimeException rex) {
             Errors.rethrowsInterruptException(rex);
-            return Errors.printMessage(S.BesselJ, rex, engine);
+            return Errors.printMessage(S.BesselJ, rex);
           }
         }
       }
@@ -592,22 +607,26 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
+      return besselJZero(n, z, engine.isDoubleMode()).eval(engine);
+    }
+
+    private IExpr besselJZero(IExpr n, IExpr z, boolean doubleMode) {
       final int k = z.toIntDefault();
-      if (engine.isDoubleMode() && n.isNumber()) {
-        if (k > 0 && engine.isDoubleMode()) {
-          try {
-            // numeric mode evaluation
-            if (n.isReal()) {
-              return F.num(BesselJS.besselJZero(n.evalf(), k));
-            }
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            // org.hipparchus.exception.MathIllegalArgumentException:
-            // interval does not bracket a root
-            return Errors.printMessage(S.BesselJZero, rex, engine);
+
+      if (k > 0 && doubleMode) {
+        try {
+          // numeric mode evaluation
+          if (n.isReal()) {
+            return F.num(BesselJS.besselJZero(n.evalf(), k));
           }
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          // org.hipparchus.exception.MathIllegalArgumentException:
+          // interval does not bracket a root
+          return Errors.printMessage(S.BesselJZero, rex);
         }
       }
+
 
       return F.NIL;
     }
@@ -670,6 +689,11 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
+      return besselI(n, z, engine.isNumericMode()).eval(engine);
+    }
+
+
+    private static IExpr besselI(IExpr n, IExpr z, boolean numericMode) {
       // final int order = n.toIntDefault();
       if (z.isZero()) {
         if (n.isZero()) {
@@ -715,17 +739,17 @@ public class BesselFunctions {
         // return Errors.printMessage(S.BesselI, rex, engine);
         // }
         // }
-        if (engine.isDoubleMode() || engine.isArbitraryMode()) {
+        if (numericMode) {
           try {
             IExpr res = n.besselI(z);
             if (res.isNumber()) {
               return res;
             }
           } catch (ValidateException ve) {
-            return Errors.printMessage(ast.topHead(), ve, engine);
+            return Errors.printMessage(S.BesselI, ve);
           } catch (RuntimeException rex) {
             Errors.rethrowsInterruptException(rex);
-            return Errors.printMessage(S.BesselI, rex, engine);
+            return Errors.printMessage(S.BesselI, rex);
           }
         }
       }
@@ -786,6 +810,11 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
+      return besselK(engine, n, z).eval(engine);
+    }
+
+
+    private static IExpr besselK(EvalEngine engine, IExpr n, IExpr z) {
       // final int order = n.toIntDefault();
       if (z.isZero()) {
         if (n.isZero()) {
@@ -896,13 +925,18 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
+      return besselY(n, z, engine.isNumericMode()).eval(engine);
+    }
+
+
+    private static IExpr besselY(IExpr n, IExpr z, boolean numericMode) {
       // final int order = n.toIntDefault();
 
       if (z.isZero()) {
         if (n.isZero()) {
           return F.CNInfinity;
         }
-        IExpr re = S.Re.of(engine, n);
+        IExpr re = n.re();
         if (re.isZero() && n.isNumber() && !n.isZero()) {
           return S.Indeterminate;
         }
@@ -936,17 +970,17 @@ public class BesselFunctions {
       // }
       // }
       if (n.isNumber() && z.isNumber()) {
-        if (engine.isDoubleMode() || engine.isArbitraryMode()) {
+        if (numericMode) {
           try {
             IExpr res = n.besselY(z);
             if (res.isNumber()) {
               return res;
             }
           } catch (ValidateException ve) {
-            return Errors.printMessage(S.BesselY, ve, engine);
+            return Errors.printMessage(S.BesselY, ve);
           } catch (RuntimeException rex) {
             Errors.rethrowsInterruptException(rex);
-            return Errors.printMessage(S.BesselY, rex, engine);
+            return Errors.printMessage(S.BesselY, rex);
           }
         }
       }
@@ -971,9 +1005,13 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
+      return besselYZero(n, z, engine.isDoubleMode()).eval(engine);
+    }
+
+    private IExpr besselYZero(IExpr n, IExpr z, boolean doubleMode) {
       final int k = z.toIntDefault();
 
-      if (k > 0 && engine.isDoubleMode() && n.isNumber()) {
+      if (k > 0 && doubleMode && n.isNumber()) {
         try {
           // numeric mode evaluation
           if (n.isReal()) {
@@ -982,7 +1020,7 @@ public class BesselFunctions {
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
           // org.hipparchus.exception.MathIllegalArgumentException: interval does not bracket a root
-          return Errors.printMessage(S.BesselYZero, rex, engine);
+          return Errors.printMessage(S.BesselYZero, rex);
         }
       }
 
@@ -1504,7 +1542,71 @@ public class BesselFunctions {
     }
   }
 
-  private static final class WeberE extends AbstractFunctionEvaluator {
+  private static final class WeberE extends AbstractFunctionEvaluator implements IFunctionExpand {
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      IExpr a = ast.arg1();
+      IExpr b = ast.arg2();
+      if (ast.isAST3()) {
+        IExpr c = ast.arg2();
+        return functionExpand3(a, b, c);
+      }
+      return functionExpand2(a, b);
+
+    }
+
+    private static IExpr functionExpand3(IExpr a, IExpr b, IExpr c) {
+      // (-c*Cos(1/2*a*Pi)*Gamma(2+b)*HypergeometricPFQ({1+b/2,3/2+b/2},{3/2,3/2-a/2+b/2,
+      // 3/2+a/2+b/2},(-1)*1/4*c^2))/(2*Gamma(3/2-a/2+b/2)*Gamma(3/2+a/2+b/2))+(Gamma(1+b)*HypergeometricPFQ({
+      // 1/2+b/2,1+b/2},{1/2,1-a/2+b/2,1+a/2+b/2},(-1)*1/4*c^2)*Sin(1/2*a*Pi))/(Gamma(1-a/
+      // 2+b/2)*Gamma(1+a/2+b/2))
+      return F.Plus(
+          F.Times(F.CN1, c, F.Cos(F.Times(F.C1D2, a, F.Pi)),
+              F.Power(F.Times(F.C2,
+                  F.Gamma(F.Plus(F.QQ(3L, 2L), F.Times(F.CN1D2, a), F.Times(F.C1D2, b))),
+                  F.Gamma(F.Plus(F.QQ(3L, 2L), F.Times(F.C1D2, a), F.Times(F.C1D2, b)))), F.CN1),
+              F.Gamma(F.Plus(F.C2, b)),
+              F.HypergeometricPFQ(
+                  F.list(F.Plus(F.C1, F.Times(F.C1D2, b)),
+                      F.Plus(F.QQ(3L, 2L), F.Times(F.C1D2, b))),
+                  F.list(F.QQ(3L, 2L),
+                      F.Plus(F.QQ(3L, 2L), F.Times(F.CN1D2, a), F.Times(F.C1D2, b)),
+                      F.Plus(F.QQ(3L, 2L), F.Times(F.C1D2, a), F.Times(F.C1D2, b))),
+                  F.Times(F.CN1, F.C1D4, F.Sqr(c)))),
+          F.Times(
+              F.Power(F.Times(F.Gamma(F.Plus(F.C1, F.Times(F.CN1D2, a), F.Times(F.C1D2, b))),
+                  F.Gamma(F.Plus(F.C1, F.Times(F.C1D2, a), F.Times(F.C1D2, b)))), F.CN1),
+              F.Gamma(F.Plus(F.C1, b)),
+              F.HypergeometricPFQ(
+                  F.list(F.Plus(F.C1D2, F.Times(F.C1D2, b)), F.Plus(F.C1, F.Times(F.C1D2, b))),
+                  F.list(F.C1D2, F.Plus(F.C1, F.Times(F.CN1D2, a), F.Times(F.C1D2, b)),
+                      F.Plus(F.C1, F.Times(F.C1D2, a), F.Times(F.C1D2, b))),
+                  F.Times(F.CN1, F.C1D4, F.Sqr(c))),
+              F.Sin(F.Times(F.C1D2, a, F.Pi))));
+    }
+
+    private static IExpr functionExpand2(IExpr a, IExpr b) {
+      // (2*b*Cos(1/2*a*Pi)^2*HypergeometricPFQ({1},{3/2-a/2,3/2+a/2},(-1)*1/4*b^2))/((-1+a)*(
+      // 1+a)*Pi)+(2*HypergeometricPFQ({1},{1-a/2,1+a/2},(-1)*1/4*b^2)*Sin(1/2*a*Pi)^2)/(a*Pi)
+      return F.Plus(
+          F.Times(F.C2, b, F.Power(F.Times(F.Plus(F.CN1, a), F.Plus(F.C1, a), F.Pi), F.CN1),
+              F.Sqr(F.Cos(F.Times(F.C1D2, a, F.Pi))),
+              F.HypergeometricPFQ(F.list(F.C1),
+                  F.list(F.Plus(F.QQ(3L, 2L), F.Times(F.CN1D2, a)),
+                      F.Plus(F.QQ(3L, 2L), F.Times(F.C1D2, a))),
+                  F.Times(F.CN1, F.C1D4, F.Sqr(b)))),
+          F.Times(F.C2, F.Power(F.Times(a, F.Pi), F.CN1),
+              F.HypergeometricPFQ(F.list(F.C1),
+                  F.list(F.Plus(F.C1, F.Times(F.CN1D2, a)), F.Plus(F.C1, F.Times(F.C1D2, a))),
+                  F.Times(F.CN1, F.C1D4, F.Sqr(b))),
+              F.Sqr(F.Sin(F.Times(F.C1D2, a, F.Pi)))));
+    }
+
+    // WeberE(a_,b_) :=
+    // (2*b*Cos((a*Pi)/2)^2*HypergeometricPFQ({1},{3/2-a/2,3/2+a/2},-(b^2/4)))/((-1+a)*(1+a)*Pi)+(2*HypergeometricPFQ({1},{1-a/2,1+a/2},-(b^2/4))*Sin((a*Pi)/2)^2)/(a*Pi),
+    // WeberE(a_,b_,c_) :=
+    // -((c*Cos((a*Pi)/2)*Gamma(2+b)*HypergeometricPFQ({1+b/2,3/2+b/2},{3/2,3/2-a/2+b/2,3/2+a/2+b/2},-(c^2/4)))/(2*Gamma(3/2-a/2+b/2)*Gamma(3/2+a/2+b/2)))+(Gamma(1+b)*HypergeometricPFQ({1/2+b/2,1+b/2},{1/2,1-a/2+b/2,1+a/2+b/2},-(c^2/4))*Sin((a*Pi)/2))/(Gamma(1-a/2+b/2)*Gamma(1+a/2+b/2)),
+    //
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr n = ast.arg1();
@@ -1512,67 +1614,75 @@ public class BesselFunctions {
       if (ast.isAST2()) {
         // https://dlmf.nist.gov/11.10#vii
         final IExpr z = ast.arg2();
-        if (n.isZero()) {
-          if (z.isZero()) {
-            return F.C0;
-          }
-          return F.Negate(F.StruveH(n, z));
-        }
-        if (z.isZero()) {
-          // 1/2*n*Pi*Sinc(1/2*n*Pi)^2
-          return F.Times(F.C1D2, n, F.Pi, F.Sqr(F.Sinc(F.Times(F.C1D2, n, F.Pi))));
-        }
-
-        int ni = n.toIntDefault();
-        if (ni != Integer.MIN_VALUE) {
-          // https://dlmf.nist.gov/11.10#vi
-          if (ni > 0) {
-            // -StruveH(n,z)+Sum(Gamma(k+1/2)/((z/2)^(1+2*k-n)*Gamma(-k+n+1/2)),{k,0,Floor(1/2*(-1+n))})/Pi
-            int maxK = (ni - 1) / 2;
-            IExpr sum = F.sum(k -> F.Times(F.Gamma(F.Plus(k, F.C1D2)),
-                F.Power(F.Times(F.C1D2, z), F.Plus(F.CN1, F.Times(F.CN2, k), n)),
-                F.Power(F.Gamma(F.Plus(F.Negate(k), n, F.C1D2)), F.CN1)), 0, maxK);
-            return engine
-                .evaluate(F.Plus(F.Negate(F.StruveH(n, z)), F.Times(F.Power(F.Pi, F.CN1), sum)));
-          }
-          if (ni < 0) {
-            IExpr npos = F.ZZ(-ni);
-            // -StruveH(n,z)+(-1)^(npos+1)/Pi*Sum(((z/2)^(n+2*k+1)*Gamma(-1/2-k+npos))/Gamma(k+3/2),{k,0,Ceiling(1/2*(-3+npos))})
-            int maxK = IntMath.divide(-ni - 3, 2, RoundingMode.CEILING);
-            IExpr sum = F.sum(
-                k -> F.Times(F.Times(F.Power(F.Times(F.C1D2, z), F.Plus(n, F.Times(F.C2, k), F.C1)),
-                    F.Power(F.Gamma(F.Plus(k, F.QQ(3L, 2L))), F.CN1),
-                    F.Gamma(F.Plus(F.CN1D2, F.Negate(k), npos)))),
-                0, maxK);
-            return F.Plus(F.Negate(F.StruveH(n, z)),
-                F.Times(F.Power(F.CN1, F.Plus(npos, F.C1)), F.Power(F.Pi, F.CN1), sum));
-          }
-        }
-
-        if (engine.isNumericMode()) {
-          if (n.isNumber() && z.isNumber()) {
-            try {
-              return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
-
-            } catch (RuntimeException rex) {
-              Errors.rethrowsInterruptException(rex);
-              return Errors.printMessage(S.WeberE, rex, engine);
-            }
-          }
-        }
-        return F.NIL;
+        return weber2(n, z, engine.isNumericMode()).eval(engine);
       }
-      if (ast.isAST3()) {
-        IExpr m = ast.arg2();
-        IExpr z = ast.arg3();
-        if (engine.isNumericMode()) {
-          if (n.isNumber() && m.isNumber() && z.isNumber()) {
-            try {
-              return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
-            } catch (RuntimeException rex) {
-              Errors.rethrowsInterruptException(rex);
-              return Errors.printMessage(S.WeberE, rex, engine);
-            }
+      IExpr m = ast.arg2();
+      IExpr z = ast.arg3();
+      return weber3(n, m, z, engine.isNumericMode()).eval(engine);
+    }
+
+    private static IExpr weber3(final IExpr n, IExpr m, IExpr z, boolean numericMode) {
+      if (numericMode) {
+        if (n.isNumber() && m.isNumber() && z.isNumber()) {
+          try {
+            return functionExpand3(n, m, z);
+            // return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
+          } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
+            return Errors.printMessage(S.WeberE, rex);
+          }
+        }
+      }
+
+      return F.NIL;
+    }
+
+    private static IExpr weber2(final IExpr n, final IExpr z, boolean numericMode) {
+      if (n.isZero()) {
+        if (z.isZero()) {
+          return F.C0;
+        }
+        return F.Negate(F.StruveH(n, z));
+      }
+      if (z.isZero()) {
+        // 1/2*n*Pi*Sinc(1/2*n*Pi)^2
+        return F.Times(F.C1D2, n, F.Pi, F.Sqr(F.Sinc(F.Times(F.C1D2, n, F.Pi))));
+      }
+
+      int ni = n.toIntDefault();
+      if (ni != Integer.MIN_VALUE) {
+        // https://dlmf.nist.gov/11.10#vi
+        if (ni > 0) {
+          // -StruveH(n,z)+Sum(Gamma(k+1/2)/((z/2)^(1+2*k-n)*Gamma(-k+n+1/2)),{k,0,Floor(1/2*(-1+n))})/Pi
+          int maxK = (ni - 1) / 2;
+          IExpr sum = F.sum(k -> F.Times(F.Gamma(F.Plus(k, F.C1D2)),
+              F.Power(F.Times(F.C1D2, z), F.Plus(F.CN1, F.Times(F.CN2, k), n)),
+              F.Power(F.Gamma(F.Plus(F.Negate(k), n, F.C1D2)), F.CN1)), 0, maxK);
+          return F.Plus(F.Negate(F.StruveH(n, z)), F.Times(F.Power(F.Pi, F.CN1), sum));
+        }
+        if (ni < 0) {
+          IExpr npos = F.ZZ(-ni);
+          // -StruveH(n,z)+(-1)^(npos+1)/Pi*Sum(((z/2)^(n+2*k+1)*Gamma(-1/2-k+npos))/Gamma(k+3/2),{k,0,Ceiling(1/2*(-3+npos))})
+          int maxK = IntMath.divide(-ni - 3, 2, RoundingMode.CEILING);
+          IExpr sum = F.sum(
+              k -> F.Times(F.Times(F.Power(F.Times(F.C1D2, z), F.Plus(n, F.Times(F.C2, k), F.C1)),
+                  F.Power(F.Gamma(F.Plus(k, F.QQ(3L, 2L))), F.CN1),
+                  F.Gamma(F.Plus(F.CN1D2, F.Negate(k), npos)))),
+              0, maxK);
+          return F.Plus(F.Negate(F.StruveH(n, z)),
+              F.Times(F.Power(F.CN1, F.Plus(npos, F.C1)), F.Power(F.Pi, F.CN1), sum));
+        }
+      }
+
+      if (numericMode) {
+        if (n.isNumber() && z.isNumber()) {
+          try {
+            return functionExpand2(n, z);
+            // return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
+
+          } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
+            return Errors.printMessage(S.WeberE, rex);
           }
         }
       }

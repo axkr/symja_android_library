@@ -325,9 +325,6 @@ public class ClusteringFunctions {
           plusNumerator.append(F.Times(p1, F.Conjugate(p2)));
           plusV1.append(F.Sqr(F.Abs(p1)));
           plusV2.append(F.Sqr(F.Abs(p2)));
-
-          factorV1.append(v1Arg);
-          factorV1.append(v2Arg);
         }
         IExpr denominator = engine.evaluate(F.Sqrt(F.Times(plusV1, plusV2)));
         if (denominator.isZero()) {
@@ -337,19 +334,6 @@ public class ClusteringFunctions {
       }
       return F.NIL;
     }
-    // @Override
-    // public IExpr distance(IExpr arg1, IExpr arg2, EvalEngine engine) {
-    // int v1Length = arg1.isVector();
-    // int v2Length = arg2.isVector();
-    // if (v1Length == v2Length && v2Length > 0) {
-    // IExpr mean1 = S.Mean.of(engine, F.Unevaluated(arg1)).negate();
-    // IExpr mean2 = S.Mean.of(engine, F.Unevaluated(arg2)).negate();
-    // IExpr u = arg1.mapExpr(x -> x.plus(mean1));
-    // IExpr v = arg2.mapExpr(x -> x.plus(mean2));
-    // return super.distance(u, v, engine);
-    // }
-    // return F.NIL;
-    // }
 
     @Override
     public int[] expectedArgSize(IAST ast) {

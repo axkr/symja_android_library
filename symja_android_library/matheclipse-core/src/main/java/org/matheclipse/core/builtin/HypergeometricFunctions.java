@@ -8,8 +8,6 @@ import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.NumericComputationException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
@@ -36,7 +34,6 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class HypergeometricFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -79,6 +76,10 @@ public class HypergeometricFunctions {
       IExpr c = ast.arg4();
       IExpr z1 = ast.arg5();
       IExpr z2 = ast.get(6);
+      return appellF1(a, b1, b2, c, z1, z2).eval(engine);
+    }
+
+    private static IExpr appellF1(IExpr a, IExpr b1, IExpr b2, IExpr c, IExpr z1, IExpr z2) {
       // // https://functions.wolfram.com/HypergeometricFunctions/AppellF1/04/03/02/0001/
       // if (b1.compareTo(b2) > 0) {
       // // MMA doesn't swap args
@@ -172,7 +173,7 @@ public class HypergeometricFunctions {
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
-        IExpr temp = basicRewrite(z);
+        IExpr temp = basicRewrite(z).eval(engine);
         if (temp.isPresent()) {
           return temp;
         }
@@ -265,7 +266,7 @@ public class HypergeometricFunctions {
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
-        IExpr temp = basicRewrite(z);
+        IExpr temp = basicRewrite(z).eval(engine);
         if (temp.isPresent()) {
           return temp;
         }
@@ -382,7 +383,7 @@ public class HypergeometricFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
-        IExpr temp = basicRewrite(n, z);
+        IExpr temp = basicRewrite(n, z).eval(engine);
         if (temp.isPresent()) {
           return temp;
         }
@@ -439,7 +440,7 @@ public class HypergeometricFunctions {
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
-        IExpr temp = basicRewrite(z);
+        IExpr temp = basicRewrite(z).eval(engine);
         if (temp.isPresent()) {
           return temp;
         }
@@ -817,9 +818,9 @@ public class HypergeometricFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber b = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
-        IExpr result = basicRewrite(b, z, engine);
+        IExpr result = basicRewrite(b, z, engine).eval(engine);
         if (result.isPresent()) {
-          return engine.evaluate(result);
+          return result;
         }
         try {
           IExpr res = b.hypergeometric0F1(z);
@@ -830,7 +831,7 @@ public class HypergeometricFunctions {
           return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          Errors.printMessage(S.Hypergeometric0F1, rex, engine);
         }
       }
       return F.NIL;
@@ -870,9 +871,9 @@ public class HypergeometricFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber a = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
-        IExpr result = basicRewrite(a, z);
+        IExpr result = basicRewrite(a, z).eval(engine);
         if (result.isPresent()) {
-          return engine.evaluate(result);
+          return result;
         }
         try {
           return a.hypergeometric0F1Regularized(z);
@@ -998,9 +999,9 @@ public class HypergeometricFunctions {
         IInexactNumber a = (IInexactNumber) ast.arg1();
         IInexactNumber b = (IInexactNumber) ast.arg2();
         IInexactNumber z = (IInexactNumber) ast.arg3();
-        IExpr result = basicRewrite(a, b, z);
+        IExpr result = basicRewrite(a, b, z).eval(engine);
         if (result.isPresent()) {
-          return engine.evaluate(result);
+          return result;
         }
         try {
           result = a.hypergeometric1F1(b, z);
@@ -1062,9 +1063,9 @@ public class HypergeometricFunctions {
         IInexactNumber a = (IInexactNumber) ast.arg1();
         IInexactNumber b = (IInexactNumber) ast.arg2();
         IInexactNumber z = (IInexactNumber) ast.arg3();
-        IExpr result = basicRewrite(a, b, z);
+        IExpr result = basicRewrite(a, b, z).eval(engine);
         if (result.isPresent()) {
-          return engine.evaluate(result);
+          return result;
         }
         try {
           return a.hypergeometric1F1Regularized(b, z);
@@ -1237,9 +1238,9 @@ public class HypergeometricFunctions {
         IInexactNumber b = (IInexactNumber) ast.arg2();
         IInexactNumber c = (IInexactNumber) ast.arg3();
         IInexactNumber z = (IInexactNumber) ast.arg4();
-        IExpr result = basicRewrite(a, b, c, z, engine);
+        IExpr result = basicRewrite(a, b, c, z, engine).eval(engine);
         if (result.isPresent()) {
-          return engine.evaluate(result);
+          return result;
         }
         try {
           result = a.hypergeometric2F1(b, c, z);
@@ -1319,7 +1320,7 @@ public class HypergeometricFunctions {
         IInexactNumber b = (IInexactNumber) ast.arg2();
         IInexactNumber c = (IInexactNumber) ast.arg3();
         IInexactNumber z = (IInexactNumber) ast.arg4();
-        IExpr temp = basicRewrite(a, b, c, z);
+        IExpr temp = basicRewrite(a, b, c, z).eval(engine);
         if (temp.isPresent()) {
           return temp;
         }
@@ -1363,6 +1364,10 @@ public class HypergeometricFunctions {
         // thread elementwise over list in arg3
         return z.mapThread(ast.setAtCopy(3, F.Slot1), 3);
       }
+      return hypergeometricPFQ(engine, a, b, z).eval(engine);
+    }
+
+    private static IExpr hypergeometricPFQ(EvalEngine engine, IExpr a, IExpr b, IExpr z) {
       if (z.isZero() && a.isList() && b.isList()) {
         return F.C1;
       }
@@ -1402,12 +1407,12 @@ public class HypergeometricFunctions {
         }
       }
       if (z.isInexactNumber() || a.isInexactVector() > 0 || b.isInexactVector() > 0) {
-        return numericHypergeometricPFQ(a, b, z, ast, engine);
+        return numericHypergeometricPFQ(a, b, z, engine);
       }
       return F.NIL;
     }
 
-    private IExpr numericHypergeometricPFQ(IExpr a, IExpr b, IExpr c, IAST ast, EvalEngine engine) {
+    private static IExpr numericHypergeometricPFQ(IExpr a, IExpr b, IExpr c, EvalEngine engine) {
       try {
         double A[] = a.toDoubleVector();
         double B[] = b.toDoubleVector();
@@ -1430,10 +1435,10 @@ public class HypergeometricFunctions {
         }
 
       } catch (ValidateException ve) {
-        return Errors.printMessage(ast.topHead(), ve, engine);
+        return Errors.printMessage(S.HypergeometricPFQ, ve, engine);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        Errors.printMessage(S.HypergeometricPFQ, rex, engine);
       }
 
       return F.NIL;
@@ -1468,6 +1473,10 @@ public class HypergeometricFunctions {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
       IExpr z = ast.arg3();
+      return hypergeometricU(a, b, z, engine).eval(engine);
+    }
+
+    private static IExpr hypergeometricU(IExpr a, IExpr b, IExpr z, EvalEngine engine) {
       if (a.isZero()) {
         return F.C0;
       }
@@ -1512,10 +1521,10 @@ public class HypergeometricFunctions {
               return res;
             }
           } catch (ValidateException ve) {
-            return Errors.printMessage(ast.topHead(), ve, engine);
+            return Errors.printMessage(S.HypergeometricU, ve, engine);
           } catch (RuntimeException rex) {
             Errors.rethrowsInterruptException(rex);
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+            Errors.printMessage(S.HypergeometricU, rex, engine);
           }
         } else if (engine.isDoubleMode()) {
           try {
@@ -1524,10 +1533,10 @@ public class HypergeometricFunctions {
               return res;
             }
           } catch (ValidateException ve) {
-            return Errors.printMessage(ast.topHead(), ve, engine);
+            return Errors.printMessage(S.HypergeometricU, ve, engine);
           } catch (RuntimeException rex) {
             Errors.rethrowsInterruptException(rex);
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+            Errors.printMessage(S.HypergeometricU, rex, engine);
           }
 
           // double aDouble = Double.NaN;
@@ -1572,10 +1581,10 @@ public class HypergeometricFunctions {
         // LOGGER.debug("HypergeometricU.evaluate() failed", te);
         return te.getValue();
       } catch (ValidateException ve) {
-        return Errors.printMessage(ast.topHead(), ve, engine);
+        return Errors.printMessage(S.HypergeometricU, ve, engine);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        Errors.printMessage(S.HypergeometricU, rex, engine);
       }
       return F.NIL;
     }
@@ -1627,7 +1636,7 @@ public class HypergeometricFunctions {
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
-        IExpr temp = basicRewrite(z);
+        IExpr temp = basicRewrite(z).eval(engine);
         if (temp.isPresent()) {
           return temp;
         }
@@ -1698,7 +1707,7 @@ public class HypergeometricFunctions {
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
-        IExpr temp = basicRewrite(z);
+        IExpr temp = basicRewrite(z).eval(engine);
         if (temp.isPresent()) {
           return temp;
         }
@@ -1796,7 +1805,7 @@ public class HypergeometricFunctions {
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber z = (IInexactNumber) ast.arg1();
-        IExpr temp = basicRewrite(z);
+        IExpr temp = basicRewrite(z).eval(engine);
         if (temp.isPresent()) {
           return temp;
         }
@@ -1825,45 +1834,34 @@ public class HypergeometricFunctions {
     }
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-      IExpr k = ast.arg1();
-      IExpr m = ast.arg2();
-      IExpr z = ast.arg3();
-
-      if (engine.isNumericMode()) {
-        if (k.isNumber() && m.isNumber() && z.isNumber()) {
-          // (z^(1/2+m)*Hypergeometric1F1(1/2-k+m,1+2*m,z))/E^(z/2)
-          return F.Times(F.Power(F.Exp(F.Times(F.C1D2, z)), F.CN1), F.Power(z, F.Plus(F.C1D2, m)),
-              F.Hypergeometric1F1(F.Plus(F.C1D2, F.Negate(k), m), F.Plus(F.C1, F.Times(F.C2, m)),
-                  z));
+    public IExpr numericFunction(IAST ast, EvalEngine engine) {
+      if (ast.isAST3()) {
+        IInexactNumber k = (IInexactNumber) ast.arg1();
+        IInexactNumber m = (IInexactNumber) ast.arg2();
+        IInexactNumber z = (IInexactNumber) ast.arg3();
+        // (z^(1/2+m)*Hypergeometric1F1(1/2-k+m,1+2*m,z))/E^(z/2)
+        IExpr hypergeometric1f1 = engine.evaluateNIL(
+            F.Hypergeometric1F1(F.Plus(F.C1D2, F.Negate(k), m), F.Plus(F.C1, F.Times(F.C2, m)), z));
+        if (hypergeometric1f1.isPresent()) {
+          IInexactNumber exp = z.times(F.CN1D2).exp();
+          return F.Times(exp, F.Power(z, F.Plus(F.C1D2, m)), hypergeometric1f1).eval(engine);
         }
       }
-      // if (engine.isDoubleMode()) {
-      // try {
-      // double kDouble = Double.NaN;
-      // double mDouble = Double.NaN;
-      // double zDouble = Double.NaN;
-      // try {
-      // kDouble = k.evalf();
-      // mDouble = m.evalf();
-      // zDouble = z.evalf();
-      // return F.complexNum(HypergeometricJS.whittakerM(new Complex(kDouble),
-      // new Complex(mDouble), new Complex(zDouble)));
-      // } catch (ValidateException ve) {
-      // Errors.printMessage(ast.topHead(), ve, engine);
-      // }
-      // Complex kc = k.evalfc();
-      // Complex mc = m.evalfc();
-      // Complex zc = z.evalfc();
-      // return F.complexNum(HypergeometricJS.whittakerM(kc, mc, zc));
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      // IExpr k = ast.arg1();
+      // IExpr m = ast.arg2();
+      // IExpr z = ast.arg3();
       //
-      // } catch (ThrowException te) {
-      // LOGGER.debug("WhittakerM.evaluate() failed", te);
-      // return te.getValue();
-      // } catch (ValidateException ve) {
-      // return Errors.printMessage(ast.topHead(), ve, engine);
-      // } catch (RuntimeException rex) {
-      // LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+      // if (engine.isNumericMode()) {
+      // if (k.isNumber() && m.isNumber() && z.isNumber()) {
+      // // (z^(1/2+m)*Hypergeometric1F1(1/2-k+m,1+2*m,z))/E^(z/2)
+      // return F.Times(F.Power(F.Exp(F.Times(F.C1D2, z)), F.CN1), F.Power(z, F.Plus(F.C1D2, m)),
+      // F.Hypergeometric1F1(F.Plus(F.C1D2, F.Negate(k), m), F.Plus(F.C1, F.Times(F.C2, m)),
+      // z));
       // }
       // }
       return F.NIL;
@@ -1888,6 +1886,26 @@ public class HypergeometricFunctions {
 
   private static class WhittakerW extends AbstractFunctionEvaluator implements IMatch {
     @Override
+    public IExpr numericFunction(IAST ast, EvalEngine engine) {
+      if (ast.isAST3()) {
+        IInexactNumber k = (IInexactNumber) ast.arg1();
+        IInexactNumber m = (IInexactNumber) ast.arg2();
+        IInexactNumber z = (IInexactNumber) ast.arg3();
+        if (!z.isZero()) {
+          // (z^(1/2+m)*HypergeometricU(1/2-k+m,1+2*m,z))/E^(z/2)
+          IExpr hypergeometricU = engine.evaluateNIL(
+              F.HypergeometricU(F.Plus(F.C1D2, F.Negate(k), m), F.Plus(F.C1, F.Times(F.C2, m)), z));
+          if (hypergeometricU.isPresent()) {
+            IInexactNumber exp = z.times(F.CN1D2).exp();
+            return F.Times(exp, F.Power(z, F.Plus(F.C1D2, m)), hypergeometricU).eval(engine);
+          }
+
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
     public IExpr match4(IAST ast, EvalEngine engine) {
       return F.NIL;
       // return WhittakerWRules.match4(ast, engine);
@@ -1895,16 +1913,16 @@ public class HypergeometricFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      IExpr k = ast.arg1();
-      IExpr m = ast.arg2();
-      IExpr z = ast.arg3();
-      if (engine.isNumericMode()) {
-        if (k.isNumber() && m.isNumber() && z.isNumber() && !z.isZero()) {
-          // (z^(1/2+m)*HypergeometricU(1/2-k+m,1+2*m,z))/E^(z/2)
-          return F.Times(F.Power(F.Exp(F.Times(F.C1D2, z)), F.CN1), F.Power(z, F.Plus(F.C1D2, m)),
-              F.HypergeometricU(F.Plus(F.C1D2, F.Negate(k), m), F.Plus(F.C1, F.Times(F.C2, m)), z));
-        }
-      }
+      // IExpr k = ast.arg1();
+      // IExpr m = ast.arg2();
+      // IExpr z = ast.arg3();
+      // if (engine.isNumericMode()) {
+      // if (k.isNumber() && m.isNumber() && z.isNumber() && !z.isZero()) {
+      // // (z^(1/2+m)*HypergeometricU(1/2-k+m,1+2*m,z))/E^(z/2)
+      // return F.Times(F.Power(F.Exp(F.Times(F.C1D2, z)), F.CN1), F.Power(z, F.Plus(F.C1D2, m)),
+      // F.HypergeometricU(F.Plus(F.C1D2, F.Negate(k), m), F.Plus(F.C1, F.Times(F.C2, m)), z));
+      // }
+      // }
       return F.NIL;
     }
 

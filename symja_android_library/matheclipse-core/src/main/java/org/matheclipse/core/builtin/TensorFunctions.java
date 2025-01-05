@@ -465,13 +465,14 @@ public class TensorFunctions {
       int kernelSize = kernel.size();
       int tensorSize = tensor.size();
       if (kernelSize <= tensorSize) {
-        IASTAppendable result = F.ListAlloc();
         IntList kernelDimension = LinearAlgebra.dimensions(kernel);
         IntList tensorDimension = LinearAlgebra.dimensions(tensor);
         final int kernelDimensionSize = kernelDimension.size();
         if (kernelDimensionSize <= tensorDimension.size()) {
+
           if (kernelDimensionSize == 1) {
             int diff1 = tensorDimension.getInt(0) - kernelDimension.getInt(0) + 1;
+            IASTAppendable result = F.ListAlloc(diff1);
             for (int i = 0; i < diff1; i++) {
               IASTAppendable subList = F.ast(plusFunction, kernelDimension.size());
               for (int j = 1; j < kernelSize; j++) {
@@ -483,8 +484,9 @@ public class TensorFunctions {
           } else if (kernelDimensionSize == 2) {
             int diff1 = tensorDimension.getInt(0) - kernelDimension.getInt(0) + 1;
             int diff2 = tensorDimension.getInt(1) - kernelDimension.getInt(1) + 1;
+            IASTAppendable result = F.ListAlloc(diff1 + 1);
             for (int k = 1; k <= diff1; k++) {
-              IASTAppendable list = F.ListAlloc(kernelDimension.size());
+              IASTAppendable list = F.ListAlloc(diff2 + 1);
 
               for (int i = 1; i <= diff2; i++) {
                 IASTAppendable subList = F.ast(plusFunction, kernelDimension.size());

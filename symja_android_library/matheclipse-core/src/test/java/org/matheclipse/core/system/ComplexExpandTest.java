@@ -66,7 +66,7 @@ public class ComplexExpandTest extends ExprEvaluatorTestCase {
     check("Refine(Arg(a+I*x),{Element(a,Reals), Element(x,Reals)})", //
         "Arg(a+I*x)");
     check("ComplexExpand((-42.0)^y)", //
-        "42.0^y*Cos(3.14159*y)+(I*1.0)*42.0^y*Sin(3.14159*y)");
+        "42.0^y*Cos(Pi*y)+I*42.0^y*Sin(Pi*y)");
     check("ComplexExpand((-1/3)^y)", //
         "(1/3)^y*Cos(Pi*y)+I*(1/3)^y*Sin(Pi*y)");
     check("ComplexExpand((a+I*x)^y)", //

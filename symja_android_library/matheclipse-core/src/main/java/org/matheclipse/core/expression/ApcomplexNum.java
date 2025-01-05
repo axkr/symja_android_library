@@ -1646,7 +1646,7 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
-  public INumber times(final INumber that) {
+  public IInexactNumber times(final INumber that) {
     return ApcomplexNum
         .valueOf(EvalEngine.getApfloat().multiply(fApcomplex, that.apcomplexValue()));
   }

@@ -1,10 +1,7 @@
 package org.matheclipse.core.builtin;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.special.elliptic.carlson.CarlsonEllipticIntegral;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.functions.EllipticFunctionsJS;
 import org.matheclipse.core.builtin.functions.EllipticIntegralsJS;
 import org.matheclipse.core.convert.Object2Expr;
@@ -24,7 +21,6 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class EllipticIntegrals {
-  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -121,6 +117,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr x = ast.arg1();
       IExpr y = ast.arg2();
+      return carlsonRC(engine, x, y).eval(engine);
+    }
+
+    private static IExpr carlsonRC(EvalEngine engine, IExpr x, IExpr y) {
       if (x.equals(y)) {
         IExpr reCondition = S.LessEqual.of(engine, F.Re(x), F.C0);
         IExpr imCondition = S.Equal.of(engine, F.Im(x), F.C0);
@@ -204,7 +204,11 @@ public class EllipticIntegrals {
       IExpr x = ast.arg1();
       IExpr y = ast.arg2();
       IExpr z = ast.arg3();
-      if (engine.isDoubleMode()) {
+      return carlsonRD(x, y, z, engine.isDoubleMode()).eval(engine);
+    }
+
+    private static IExpr carlsonRD(IExpr x, IExpr y, IExpr z, boolean doubleMode) {
+      if (doubleMode) {
         double xd = Double.NaN;
         double yd = Double.NaN;
         double zd = Double.NaN;
@@ -264,11 +268,15 @@ public class EllipticIntegrals {
       IExpr x = ast.arg1();
       IExpr y = ast.arg2();
       IExpr z = ast.arg3();
+      return carlsonRF(x, y, z, engine.isDoubleMode()).eval(engine);
+    }
+
+    private static IExpr carlsonRF(IExpr x, IExpr y, IExpr z, boolean doubleMode) {
       if (x.equals(y) && x.equals(z)) {
         // 1 / Sqrt(x)
-        return F.Power.of(engine, x, F.CN1D2);
+        return F.Power(x, F.CN1D2);
       }
-      if (engine.isDoubleMode()) {
+      if (doubleMode) {
         double xd = Double.NaN;
         double yd = Double.NaN;
         double zd = Double.NaN;
@@ -328,15 +336,19 @@ public class EllipticIntegrals {
       IExpr x = ast.arg1();
       IExpr y = ast.arg2();
       IExpr z = ast.arg3();
+      return carlsonRG(x, y, z, engine.isDoubleMode()).eval();
+    }
+
+    private static IExpr carlsonRG(IExpr x, IExpr y, IExpr z, boolean doubleMode) {
       if (x.equals(y)) {
         if (x.equals(z)) {
           // 1 / Sqrt(x)
-          return F.Power.of(engine, x, F.CN1D2);
+          return F.Power(x, F.CN1D2);
         }
         // (1/2) * (Sqrt(z) + x*CarlsonRF(x,x,z))
-        return S.Times.of(engine, F.C1D2, F.Plus(F.Sqrt(z), F.Times(x, F.CarlsonRF(x, x, z))));
+        return F.Times(F.C1D2, F.Plus(F.Sqrt(z), F.Times(x, F.CarlsonRF(x, x, z))));
       }
-      if (engine.isDoubleMode()) {
+      if (doubleMode) {
         try {
           double xd = Double.NaN;
           double yd = Double.NaN;
@@ -356,10 +368,10 @@ public class EllipticIntegrals {
             return F.num(EllipticIntegralsJS.carlsonRG(xd, yd, zd));
           }
         } catch (ValidateException ve) {
-          LOGGER.debug("CarlsonRG.evaluate() failed", ve);
+          throw ve;
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          Errors.printMessage(S.CarlsonRG, rex);
         }
       }
       return F.NIL;
@@ -404,7 +416,11 @@ public class EllipticIntegrals {
       IExpr y = ast.arg2();
       IExpr z = ast.arg3();
       IExpr p = ast.arg4();
-      if (engine.isDoubleMode()) {
+      return carlsonRG(x, y, z, p, engine.isDoubleMode()).eval(engine);
+    }
+
+    private static IExpr carlsonRG(IExpr x, IExpr y, IExpr z, IExpr p, boolean doubleMode) {
+      if (doubleMode) {
         try {
           double xd = Double.NaN;
           double yd = Double.NaN;
@@ -427,10 +443,10 @@ public class EllipticIntegrals {
             return F.num(EllipticIntegralsJS.carlsonRJ(xd, yd, zd, pd));
           }
         } catch (ValidateException ve) {
-          LOGGER.debug("CarlsonRJ.evaluate() failed", ve);
+          throw ve; // NOPMD
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          Errors.printMessage(S.CarlsonRJ, rex);
         }
       }
       return F.NIL;
@@ -483,66 +499,19 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       if (ast.isAST2()) {
-        IExpr m = ast.arg2();
-        if (m.isZero()) {
-          return z;
-        }
-        if (z.isZero()) {
-          return F.C0;
-        }
-        if (m.isOne()) {
-          // Abs(Re(z)) <= Pi/2
-          if (engine.evalLessEqual(F.Abs(F.Re(z)), F.CPiHalf)) {
-            return F.Sin(z);
-          }
-        }
-        if (m.isInfinity() || m.isNegativeInfinity()) {
-          return F.CComplexInfinity;
-        }
-        if (z.equals(F.CPiHalf)) {
-          // EllipticE(Pi/2, m) = EllipticE(m)
-          return F.EllipticE(m);
-        }
-
-        if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
-          try {
-            double zDouble = Double.NaN;
-            double mDouble = Double.NaN;
-            try {
-              zDouble = z.evalf();
-              mDouble = m.evalf();
-            } catch (ValidateException ve) {
-            }
-            if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-              Complex zc = z.evalfc();
-              Complex mc = m.evalfc();
-              return F.complexNum(EllipticIntegralsJS.ellipticE(zc, mc));
-            } else {
-              return F.complexNum(EllipticIntegralsJS.ellipticE(zDouble, mDouble));
-            }
-          } catch (ValidateException ve) {
-            LOGGER.debug("EllipticE.evaluate() failed", ve);
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-            return F.NIL;
-          }
-        }
-
-        IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
-        if (negExpr.isPresent()) {
-          // EllipticE(-z,m) = -EllipticE(z,m)
-          return F.Negate(F.EllipticE(negExpr, m));
-        }
-        return F.NIL;
+        return ellipticE2(z, ast, engine).eval(engine);
       }
 
+      return ellipticE3(z).eval(engine);
+    }
+
+    private static IExpr ellipticE3(IExpr z) {
       if (z.isZero()) {
         // Pi/2
         return F.CPiHalf;
       }
       if (z.isOne()) {
-        return F.C1;
+        return z;
       }
       if (z.isNumEqualRational(F.C1D2)) {
         // (Pi^2 + 2 Gamma(3/4)^4)/(4*Sqrt(Pi)*Gamma(3/4)^2)
@@ -579,6 +548,61 @@ public class EllipticIntegrals {
 
       if (z.isInfinity() || z.isNegativeInfinity() || z.isComplexInfinity()) {
         return F.CComplexInfinity;
+      }
+      return F.NIL;
+    }
+
+    private static IExpr ellipticE2(IExpr z, IAST ast, EvalEngine engine) {
+      IExpr m = ast.arg2();
+      if (m.isZero()) {
+        return z;
+      }
+      if (z.isZero()) {
+        return z;
+      }
+      if (m.isOne()) {
+        // Abs(Re(z)) <= Pi/2
+        if (engine.evalLessEqual(F.Abs(F.Re(z)), F.CPiHalf)) {
+          return F.Sin(z);
+        }
+      }
+      if (m.isInfinity() || m.isNegativeInfinity()) {
+        return F.CComplexInfinity;
+      }
+      if (z.equals(F.CPiHalf)) {
+        // EllipticE(Pi/2, m) = EllipticE(m)
+        return F.EllipticE(m);
+      }
+
+      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
+        try {
+          double zDouble = Double.NaN;
+          double mDouble = Double.NaN;
+          try {
+            zDouble = z.evalf();
+            mDouble = m.evalf();
+          } catch (ValidateException ve) {
+          }
+          if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
+            Complex zc = z.evalfc();
+            Complex mc = m.evalfc();
+            return F.complexNum(EllipticIntegralsJS.ellipticE(zc, mc));
+          } else {
+            return F.complexNum(EllipticIntegralsJS.ellipticE(zDouble, mDouble));
+          }
+        } catch (ValidateException ve) {
+          throw ve;
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          Errors.printMessage(S.EllipticE, rex);
+          return F.NIL;
+        }
+      }
+
+      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
+      if (negExpr.isPresent()) {
+        // EllipticE(-z,m) = -EllipticE(z,m)
+        return F.Negate(F.EllipticE(negExpr, m));
       }
       return F.NIL;
     }
@@ -640,6 +664,11 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+
+      return ellipticF(z, m, engine).eval(engine);
+    }
+
+    private static IExpr ellipticF(IExpr z, IExpr m, EvalEngine engine) {
       if (z.isZero() || m.isInfinity() || m.isNegativeInfinity()) {
         return F.C0;
       }
@@ -691,11 +720,10 @@ public class EllipticIntegrals {
             return F.complexNum(EllipticIntegralsJS.ellipticF(zDouble, mDouble));
           }
         } catch (ValidateException ve) {
-          LOGGER.debug("EllipticF.evaluate() failed", ve);
+          throw ve;
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-          return F.NIL;
+          return Errors.printMessage(S.EllipticF, rex);
         }
       }
 
@@ -765,6 +793,10 @@ public class EllipticIntegrals {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr m = ast.arg1();
+      return ellipticK(m).eval(engine);
+    }
+
+    private static IExpr ellipticK(IExpr m) {
       if (m.isInfinity() || m.isNegativeInfinity() || m.isDirectedInfinity(F.CI)
           || m.isDirectedInfinity(F.CNI)) {
         return F.C0;
@@ -783,6 +815,9 @@ public class EllipticIntegrals {
         // (8 Pi^(3/2))/Gamma(-(1/4))^2
         return F.Times(F.C8, F.Power(S.Pi, F.QQ(3L, 2L)), F.Power(F.Gamma(F.CN1D4), -2));
       }
+      if (m.isInexactNumber()) {
+        return m.ellipticK();
+      }
       if (m.isNumber()) {
         // EllipticK(m_) := Pi/(2*ArithmeticGeometricMean(1,Sqrt(1-m)))
         INumber m1 = ((INumber) m).negate().plus(F.C1);
@@ -795,27 +830,24 @@ public class EllipticIntegrals {
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.isAST1()) {
         IInexactNumber m = (IInexactNumber) ast.arg1();
-        if (m.isZero()) {
-          return F.CPiHalf;
-        }
-        if (m.isOne()) {
-          return F.CComplexInfinity;
-        }
-        if (m.isMinusOne()) {
-          // Gamma(1/4)^2/(4*Sqrt(2*Pi))
-          return F.Times(F.C1D4, F.C1DSqrt2, F.Power(S.Pi, F.CN1D2), F.Sqr(F.Gamma(F.C1D4)));
-        }
-        if (m.isNumEqualRational(F.C1D2)) {
-          // (8 Pi^(3/2))/Gamma(-(1/4))^2
-          return F.Times(F.C8, F.Power(S.Pi, F.QQ(3L, 2L)), F.Power(F.Gamma(F.CN1D4), -2));
-        }
-
-        return m.ellipticK();
-
-
-        // EllipticK(m_) := Pi/(2*ArithmeticGeometricMean(1,Sqrt(1-m)))
-        // INumber m1 = m.negate().plus(F.C1);
-        // return F.Times(F.C1D2, S.Pi, F.Power(F.ArithmeticGeometricMean(F.C1, F.Sqrt(m1)), -1));
+        return ellipticK(m).eval(engine);
+        // return ellipticK(m).eval(engine);
+        // if (m.isZero()) {
+        // return F.CPiHalf;
+        // }
+        // if (m.isOne()) {
+        // return F.CComplexInfinity;
+        // }
+        // if (m.isMinusOne()) {
+        // // Gamma(1/4)^2/(4*Sqrt(2*Pi))
+        // return F.Times(F.C1D4, F.C1DSqrt2, F.Power(S.Pi, F.CN1D2), F.Sqr(F.Gamma(F.C1D4)));
+        // }
+        // if (m.isNumEqualRational(F.C1D2)) {
+        // // (8 Pi^(3/2))/Gamma(-(1/4))^2
+        // return F.Times(F.C8, F.Power(S.Pi, F.QQ(3L, 2L)), F.Power(F.Gamma(F.CN1D4), -2));
+        // }
+        //
+        // return m.ellipticK();
       }
       return F.NIL;
     }
@@ -878,55 +910,13 @@ public class EllipticIntegrals {
       if (ast.isAST3()) {
         IExpr z = ast.arg2();
         IExpr m = ast.arg3();
-
-        if (engine.isDoubleMode() && z.isNumber() && n.isNumber() && m.isNumber()) {
-          try {
-            double nDouble = Double.NaN;
-            double zDouble = Double.NaN;
-            double mDouble = Double.NaN;
-            try {
-              nDouble = n.evalf();
-              zDouble = z.evalf();
-              mDouble = m.evalf();
-            } catch (ValidateException ve) {
-            }
-            if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-              Complex nc = n.evalfc();
-              Complex zc = z.evalfc();
-              Complex mc = m.evalfc();
-              Complex ellipticPi = EllipticIntegralsJS.ellipticPi(nc, zc, mc);
-              if (F.isZero(ellipticPi.getImaginary())) {
-                return F.num(ellipticPi.getReal());
-              }
-              return F.complexNum(ellipticPi);
-            } else {
-              return F.complexNum(EllipticIntegralsJS.ellipticPi(nDouble, zDouble, mDouble));
-            }
-          } catch (ValidateException ve) {
-            LOGGER.debug("EllipticPi.evaluate() failed", ve);
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-            return F.NIL;
-          }
-        }
-        if (z.equals(F.CPiHalf)) {
-          if (n.isZero()) {
-            // EllipticPi(0,Pi/2,z) = EllipticK(z)
-            return F.EllipticK(ast.arg3());
-          }
-          if (n.equals(ast.arg3())) {
-            // EllipticPi(n,Pi/2,n) = EllipticE(n)/(1-n)
-            return F.Times(F.Power(F.Plus(F.C1, F.Negate(n)), -1), F.EllipticE(n));
-          }
-          return F.EllipticPi(n, ast.arg3());
-        }
-        if (n.isZero()) {
-          return F.EllipticF(z, ast.arg3());
-        }
-        return F.NIL;
+        return ellipticPi3(n, z, m, engine.isDoubleMode()).eval(engine);
       }
       IExpr m = ast.arg2();
+      return ellipticPi2(n, m, engine.isDoubleMode()).eval(engine);
+    }
+
+    private static IExpr ellipticPi2(IExpr n, IExpr m, boolean doubleMode) {
       if (n.isZero()) {
         return F.EllipticK(m);
       }
@@ -946,7 +936,7 @@ public class EllipticIntegrals {
         return F.Times(F.Power(F.Plus(F.C1, F.Negate(n)), -1), F.EllipticE(n));
       }
 
-      if (engine.isDoubleMode()) {
+      if (doubleMode) {
         try {
           double nDouble = Double.NaN;
           double mDouble = Double.NaN;
@@ -963,10 +953,10 @@ public class EllipticIntegrals {
             return F.complexNum(EllipticIntegralsJS.ellipticPi(nDouble, Math.PI / 2.0, mDouble));
           }
         } catch (ValidateException ve) {
-          LOGGER.debug("EllipticPi.evaluate() failed", ve);
+          throw ve;
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          Errors.printMessage(S.EllipticPi, rex);
           return F.NIL;
         }
       }
@@ -987,6 +977,55 @@ public class EllipticIntegrals {
       // return engine.printMessage("EllipticPi: " + rte.getMessage());
       // }
       // }
+      return F.NIL;
+    }
+
+    private static IExpr ellipticPi3(IExpr n, IExpr z, final IExpr m, boolean doubleMode) {
+      if (doubleMode && z.isNumber() && n.isNumber() && m.isNumber()) {
+        try {
+          double nDouble = Double.NaN;
+          double zDouble = Double.NaN;
+          double mDouble = Double.NaN;
+          try {
+            nDouble = n.evalf();
+            zDouble = z.evalf();
+            mDouble = m.evalf();
+          } catch (ValidateException ve) {
+          }
+          if (Double.isNaN(nDouble) || Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
+            Complex nc = n.evalfc();
+            Complex zc = z.evalfc();
+            Complex mc = m.evalfc();
+            Complex ellipticPi = EllipticIntegralsJS.ellipticPi(nc, zc, mc);
+            if (F.isZero(ellipticPi.getImaginary())) {
+              return F.num(ellipticPi.getReal());
+            }
+            return F.complexNum(ellipticPi);
+          } else {
+            return F.complexNum(EllipticIntegralsJS.ellipticPi(nDouble, zDouble, mDouble));
+          }
+        } catch (ValidateException ve) {
+          throw ve;
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          Errors.printMessage(S.EllipticPi, rex);
+          return F.NIL;
+        }
+      }
+      if (z.equals(F.CPiHalf)) {
+        if (n.isZero()) {
+          // EllipticPi(0,Pi/2,z) = EllipticK(z)
+          return F.EllipticK(m);
+        }
+        if (n.equals(m)) {
+          // EllipticPi(n,Pi/2,n) = EllipticE(n)/(1-n)
+          return F.Times(F.Power(F.Plus(F.C1, F.Negate(n)), -1), F.EllipticE(n));
+        }
+        return F.EllipticPi(n, m);
+      }
+      if (n.isZero()) {
+        return F.EllipticF(z, m);
+      }
       return F.NIL;
     }
 
@@ -1011,46 +1050,14 @@ public class EllipticIntegrals {
       if (ast.isAST3()) {
         IExpr x = ast.arg2();
         IExpr m = ast.arg3();
-
-        if (a >= 1 && a <= 4) {
-          if (m.isZero()) {
-            switch (a) {
-              case 1:
-              case 2:
-                return F.C0;
-              case 3:
-              case 4:
-                return F.C1;
-            }
-          } else if (a == 1) {
-            if (x.isZero() || (x.isPi() && m.isNumEqualRational(F.C1D2))) {
-              return F.C0;
-            }
-          }
-          if (engine.isDoubleMode() && x.isNumber() && m.isNumber()) {
-            if (x.isReal() && m.isReal()) {
-              try {
-                return F.complexNum(EllipticFunctionsJS.jacobiTheta(a, x.evalf(), m.evalf()));
-              } catch (RuntimeException rex) {
-                Errors.rethrowsInterruptException(rex);
-                LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-              }
-            } else if (x.isInexactNumber() && m.isInexactNumber()) {
-              try {
-                return F.complexNum(EllipticFunctionsJS.jacobiTheta(a, x.evalfc(), m.evalfc()));
-              } catch (ValidateException ve) {
-                return Errors.printMessage(ast.topHead(), ve, engine);
-              } catch (RuntimeException rex) {
-                Errors.rethrowsInterruptException(rex);
-                LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-              }
-            }
-          }
-        }
-        return F.NIL;
+        return ellipticTheta3(a, x, m, engine).eval(engine);
       }
 
       IExpr m = ast.arg2();
+      return ellipticTheta2(a, m, engine.isDoubleMode()).eval(engine);
+    }
+
+    private static IExpr ellipticTheta2(int a, IExpr m, boolean doubleMode) {
       if (a >= 1 && a <= 4) {
         if (m.isZero()) {
           switch (a) {
@@ -1062,13 +1069,13 @@ public class EllipticIntegrals {
               return F.C1;
           }
         }
-        if (engine.isDoubleMode() && m.isNumber()) {
+        if (doubleMode && m.isNumber()) {
           if (m.isReal()) {
             try {
               return F.complexNum(EllipticFunctionsJS.jacobiTheta(a, 0.0, m.evalf()));
             } catch (RuntimeException rex) {
               Errors.rethrowsInterruptException(rex);
-              LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+              Errors.printMessage(S.EllipticTheta, rex);
             }
           } else if (m.isInexactNumber()) {
             try {
@@ -1076,7 +1083,48 @@ public class EllipticIntegrals {
                   org.hipparchus.complex.Complex.ZERO, m.evalfc()));
             } catch (RuntimeException rex) {
               Errors.rethrowsInterruptException(rex);
-              LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+              Errors.printMessage(S.EllipticTheta, rex);
+            }
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    private static IExpr ellipticTheta3(int a, IExpr x, IExpr m, EvalEngine engine) {
+      if (a >= 1 && a <= 4) {
+        if (m.isZero()) {
+          switch (a) {
+            case 1:
+            case 2:
+              return F.C0;
+            case 3:
+            case 4:
+              return F.C1;
+          }
+        } else if (a == 1) {
+          if (x.isZero() || (x.isPi() && m.isNumEqualRational(F.C1D2))) {
+            return F.C0;
+          }
+        }
+        if (engine.isDoubleMode() && x.isNumber() && m.isNumber()) {
+          if (x.isReal() && m.isReal()) {
+            try {
+              return F.complexNum(EllipticFunctionsJS.jacobiTheta(a, x.evalf(), m.evalf()));
+            } catch (ValidateException ve) {
+              throw ve;
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              Errors.printMessage(S.EllipticTheta, rex);
+            }
+          } else if (x.isInexactNumber() && m.isInexactNumber()) {
+            try {
+              return F.complexNum(EllipticFunctionsJS.jacobiTheta(a, x.evalfc(), m.evalfc()));
+            } catch (ValidateException ve) {
+              throw ve;
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              Errors.printMessage(S.EllipticTheta, rex);
             }
           }
         }
@@ -1137,6 +1185,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      return inverseJacobiCD(z, m, engine.isDoubleMode()).eval(engine);
+    }
+
+    private static IExpr inverseJacobiCD(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
         return F.ArcCos(z);
       }
@@ -1149,7 +1201,7 @@ public class EllipticIntegrals {
       if (m.isInfinity() || m.isNegativeInfinity()) {
         return F.C0;
       }
-      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
+      if (doubleMode && z.isNumber() && m.isNumber()) {
         try {
           // double zDouble = Double.NaN;
           // double mDouble = Double.NaN;
@@ -1164,10 +1216,10 @@ public class EllipticIntegrals {
           // return F.num(EllipticFunctionsJS.inverseJacobiCD(zDouble, mDouble));
           // }
         } catch (ValidateException ve) {
-          LOGGER.debug("InverseJacobiCD.evaluate() failed", ve);
+          throw ve;
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          Errors.printMessage(S.InverseJacobiCD, rex);
         }
       }
       return F.NIL;
@@ -1191,6 +1243,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      return inverseJacobiCN(z, m, engine.isDoubleMode()).eval(engine);
+    }
+
+    private static IExpr inverseJacobiCN(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
         return F.ArcCos(z);
       }
@@ -1209,7 +1265,7 @@ public class EllipticIntegrals {
       if (m.isInfinity() || m.isNegativeInfinity()) {
         return F.C0;
       }
-      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
+      if (doubleMode && z.isNumber() && m.isNumber()) {
         try {
           // double zDouble = Double.NaN;
           // double mDouble = Double.NaN;
@@ -1224,10 +1280,10 @@ public class EllipticIntegrals {
           // return F.num(EllipticFunctionsJS.inverseJacobiCN(zDouble, mDouble));
           // }
         } catch (ValidateException ve) {
-          LOGGER.debug("InverseJacobiCN.evaluate() failed", ve);
+          throw ve;
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          Errors.printMessage(S.InverseJacobiCN, rex);
         }
       }
       return F.NIL;
@@ -1251,6 +1307,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      return inverseJacobiDN(z, m, engine.isDoubleMode()).eval(engine);
+    }
+
+    private static IExpr inverseJacobiDN(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isOne()) {
         return F.ArcSech(z);
       }
@@ -1260,7 +1320,7 @@ public class EllipticIntegrals {
       if (m.isInfinity() || m.isNegativeInfinity()) {
         return F.C0;
       }
-      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
+      if (doubleMode && z.isNumber() && m.isNumber()) {
         try {
           // double zDouble = Double.NaN;
           // double mDouble = Double.NaN;
@@ -1275,10 +1335,10 @@ public class EllipticIntegrals {
           // return F.num(EllipticFunctionsJS.inverseJacobiDN(zDouble, mDouble));
           // }
         } catch (ValidateException ve) {
-          LOGGER.debug("InverseJacobiDN.evaluate() failed", ve);
+          throw ve;
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          Errors.printMessage(S.InverseJacobiDN, rex);
         }
       }
       return F.NIL;
@@ -1302,6 +1362,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      return inverseJacobiSC(z, m, engine.isDoubleMode()).eval(engine);
+    }
+
+    private static IExpr inverseJacobiSC(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
         return F.ArcTan(z);
       }
@@ -1321,7 +1385,7 @@ public class EllipticIntegrals {
       if (negExpr.isPresent()) {
         return F.Negate(F.InverseJacobiSC(negExpr, m));
       }
-      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
+      if (doubleMode && z.isNumber() && m.isNumber()) {
         try {
           // double zDouble = Double.NaN;
           // double mDouble = Double.NaN;
@@ -1336,10 +1400,10 @@ public class EllipticIntegrals {
           // return F.num(EllipticFunctionsJS.inverseJacobiSC(zDouble, mDouble));
           // }
         } catch (ValidateException ve) {
-          LOGGER.debug("InverseJacobiSC.evaluate() failed", ve);
+          throw ve;
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          Errors.printMessage(S.InverseJacobiSC, rex);
         }
       }
       return F.NIL;
@@ -1363,6 +1427,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      return inverseJacobiSD(z, m, engine.isDoubleMode()).eval(engine);
+    }
+
+    private static IExpr inverseJacobiSD(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
         return F.ArcSin(z);
       }
@@ -1376,7 +1444,7 @@ public class EllipticIntegrals {
       if (negExpr.isPresent()) {
         return F.Negate(F.InverseJacobiSD(negExpr, m));
       }
-      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
+      if (doubleMode && z.isNumber() && m.isNumber()) {
         try {
           // double zDouble = Double.NaN;
           // double mDouble = Double.NaN;
@@ -1391,10 +1459,10 @@ public class EllipticIntegrals {
           // return F.num(EllipticFunctionsJS.inverseJacobiSD(zDouble, mDouble));
           // }
         } catch (ValidateException ve) {
-          LOGGER.debug("InverseJacobiSD.evaluate() failed", ve);
+          throw ve;
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          Errors.printMessage(S.InverseJacobiSD, rex);
         }
       }
       return F.NIL;
@@ -1418,6 +1486,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      return inverseJacobiSN(z, m, engine.isDoubleMode()).eval(engine);
+    }
+
+    private static IExpr inverseJacobiSN(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
         return F.ArcSin(z);
       }
@@ -1437,7 +1509,7 @@ public class EllipticIntegrals {
       if (negExpr.isPresent()) {
         return F.Negate(F.InverseJacobiSN(negExpr, m));
       }
-      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
+      if (doubleMode && z.isNumber() && m.isNumber()) {
         try {
           // double zDouble = Double.NaN;
           // double mDouble = Double.NaN;
@@ -1452,10 +1524,10 @@ public class EllipticIntegrals {
           // return F.num(EllipticFunctionsJS.inverseJacobiSN(zDouble, mDouble));
           // }
         } catch (ValidateException ve) {
-          LOGGER.debug("InverseJacobiSN.evaluate() failed", ve);
+          throw ve;
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          Errors.printMessage(S.InverseJacobiSN, rex);
         }
       }
       return F.NIL;
@@ -1501,6 +1573,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      return jacobiAmplitude(z, m, engine.isDoubleMode()).eval(engine);
+    }
+
+    private static IExpr jacobiAmplitude(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
         return z;
       }
@@ -1514,7 +1590,7 @@ public class EllipticIntegrals {
       if (F.EllipticK(m).equals(z)) {
         return F.CPiHalf;
       }
-      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
+      if (doubleMode && z.isNumber() && m.isNumber()) {
         try {
           if (z.isReal() && m.isReal()) {
             return F.complexNum(EllipticFunctionsJS.jacobiAmplitude(z.evalf(), m.evalf()));
@@ -1522,8 +1598,7 @@ public class EllipticIntegrals {
           return F.complexNum(EllipticFunctionsJS.jacobiAmplitude(z.evalfc(), m.evalfc()));
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-          return F.NIL;
+          return Errors.printMessage(S.JacobiAmplitude, rex);
         }
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
@@ -1579,13 +1654,17 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      return jacobiCD(z, m, engine.isDoubleMode()).eval(engine);
+    }
+
+    private static IExpr jacobiCD(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
         return F.Cos(z);
       }
       if (m.isOne() || z.isZero()) {
         return F.C1;
       }
-      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
+      if (doubleMode && z.isNumber() && m.isNumber()) {
         try {
           double zDouble = Double.NaN;
           double mDouble = Double.NaN;
@@ -1600,10 +1679,10 @@ public class EllipticIntegrals {
             return F.num(EllipticFunctionsJS.jacobiCD(zDouble, mDouble));
           }
         } catch (ValidateException ve) {
-          LOGGER.debug("JacobiCD.evaluate() failed", ve);
+          throw ve;
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          Errors.printMessage(S.JacobiCD, rex);
         }
       }
       return F.NIL;
@@ -1655,6 +1734,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      return jacobiCN(z, m, engine.isDoubleMode()).eval(engine);
+    }
+
+    private static IExpr jacobiCN(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
         return F.Cos(z);
       }
@@ -1664,7 +1747,7 @@ public class EllipticIntegrals {
       if (z.isZero()) {
         return F.C1;
       }
-      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
+      if (doubleMode && z.isNumber() && m.isNumber()) {
         try {
           double zDouble = Double.NaN;
           double mDouble = Double.NaN;
@@ -1679,10 +1762,10 @@ public class EllipticIntegrals {
             return F.num(EllipticFunctionsJS.jacobiCN(zDouble, mDouble));
           }
         } catch (ValidateException ve) {
-          LOGGER.debug("JacobiCN.evaluate() failed", ve);
+          throw ve;
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          Errors.printMessage(S.JacobiCN, rex);
         }
       }
       return F.NIL;
@@ -1734,6 +1817,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      return jacobiDN(z, m, engine.isDoubleMode()).eval(engine);
+    }
+
+    private static IExpr jacobiDN(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
         return F.C1;
       }
@@ -1743,7 +1830,7 @@ public class EllipticIntegrals {
       if (z.isZero()) {
         return F.C1;
       }
-      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
+      if (doubleMode && z.isNumber() && m.isNumber()) {
         try {
           double zDouble = Double.NaN;
           double mDouble = Double.NaN;
@@ -1758,10 +1845,10 @@ public class EllipticIntegrals {
             return F.num(EllipticFunctionsJS.jacobiDN(zDouble, mDouble));
           }
         } catch (ValidateException ve) {
-          LOGGER.debug("JacobiDN.evaluate() failed", ve);
+          throw ve;
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          Errors.printMessage(S.JacobiDN, rex);
         }
       }
       return F.NIL;
@@ -1813,6 +1900,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      return jacobiSC(z, m, engine.isDoubleMode()).eval(engine);
+    }
+
+    private static IExpr jacobiSC(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
         return F.Tan(z);
       }
@@ -1822,7 +1913,7 @@ public class EllipticIntegrals {
       if (z.isZero()) {
         return F.C0;
       }
-      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
+      if (doubleMode && z.isNumber() && m.isNumber()) {
         try {
           double zDouble = Double.NaN;
           double mDouble = Double.NaN;
@@ -1837,10 +1928,10 @@ public class EllipticIntegrals {
             return F.num(EllipticFunctionsJS.jacobiSC(zDouble, mDouble));
           }
         } catch (ValidateException ve) {
-          LOGGER.debug("JacobiSC.evaluate() failed", ve);
+          throw ve;
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          Errors.printMessage(S.JacobiSC, rex);
         }
       }
       return F.NIL;
@@ -1892,6 +1983,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      return jacobiSD(z, m, engine.isDoubleMode()).eval(engine);
+    }
+
+    private static IExpr jacobiSD(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
         return F.Sin(z);
       }
@@ -1901,7 +1996,7 @@ public class EllipticIntegrals {
       if (z.isZero()) {
         return F.C0;
       }
-      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
+      if (doubleMode && z.isNumber() && m.isNumber()) {
         try {
           double zDouble = Double.NaN;
           double mDouble = Double.NaN;
@@ -1916,10 +2011,10 @@ public class EllipticIntegrals {
             return F.num(EllipticFunctionsJS.jacobiSD(zDouble, mDouble));
           }
         } catch (ValidateException ve) {
-          LOGGER.debug("JacobiSD.evaluate() failed", ve);
+          throw ve;
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          Errors.printMessage(S.JacobiSD, rex);
         }
       }
       return F.NIL;
@@ -1971,6 +2066,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      return jacobiSN(z, m, engine.isDoubleMode()).eval(engine);
+    }
+
+    private static IExpr jacobiSN(IExpr z, IExpr m, boolean doubleMode) {
       if (m.isZero()) {
         return F.Sin(z);
       }
@@ -1980,7 +2079,7 @@ public class EllipticIntegrals {
       if (z.isZero()) {
         return F.C0;
       }
-      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
+      if (doubleMode && z.isNumber() && m.isNumber()) {
         try {
           double zDouble = Double.NaN;
           double mDouble = Double.NaN;
@@ -1995,10 +2094,10 @@ public class EllipticIntegrals {
             return F.num(EllipticFunctionsJS.jacobiSN(zDouble, mDouble));
           }
         } catch (ValidateException ve) {
-          LOGGER.debug("JacobiSN.evaluate() failed", ve);
+          throw ve;
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          Errors.printMessage(S.JacobiSN, rex);
         }
       }
       return F.NIL;
@@ -2022,6 +2121,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      return jacobiZeta(z, m, engine).eval(engine);
+    }
+
+    private static IExpr jacobiZeta(IExpr z, IExpr m, EvalEngine engine) {
       if (m.isZero()) {
         return F.C0;
       }
@@ -2060,13 +2163,17 @@ public class EllipticIntegrals {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr t = ast.arg1();
-      IExpr im = S.Im.of(engine, t);
+      return kleinInvariantJ(t, engine.isNumericMode()).eval(engine);
+    }
+
+    private static IExpr kleinInvariantJ(IExpr t, boolean numericMode) {
+      IExpr im = t.im();
 
       if (im.isZero()) {
         return F.NIL;
       }
       if (im.isOne()) {
-        IExpr re = S.Re.of(engine, t);
+        IExpr re = t.re();
         if (re.isInteger()) {
           // KleinInvariantJ(re+I) = 1 and re is Integer
           return F.C1;
@@ -2077,7 +2184,7 @@ public class EllipticIntegrals {
           return F.C1;
         }
       }
-      if (engine.isDoubleMode() && t.isNumber()) {
+      if (numericMode && t.isNumber()) {
         try {
           double tDouble = Double.NaN;
           try {
@@ -2093,11 +2200,9 @@ public class EllipticIntegrals {
         } catch (ArithmeticException ae) {
           // unevaluated
           return F.NIL;
-        } catch (ValidateException ve) {
-          LOGGER.debug("KleinInvariantJ.evaluate() failed", ve);
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+          // LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;
@@ -2123,17 +2228,22 @@ public class EllipticIntegrals {
         IAST list = (IAST) ast.arg1();
         IExpr g2 = list.arg1();
         IExpr g3 = list.arg2();
-        // numeric mode isn't set here
-        if (g2.isInexactNumber() || g3.isInexactNumber()) {
-          if (g2.isNumber() && g3.isNumber()) {
-            try {
-              org.hipparchus.complex.Complex[] invariants =
-                  EllipticFunctionsJS.weierstrassHalfPeriods(g2.evalfc(), g3.evalfc());
-              return Object2Expr.convertComplex(false, invariants);
-            } catch (RuntimeException rex) {
-              Errors.rethrowsInterruptException(rex);
-              LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-            }
+        return weierstrassHalfPeriods(g2, g3).eval(engine);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr weierstrassHalfPeriods(IExpr g2, IExpr g3) {
+      // numeric mode isn't set here
+      if (g2.isInexactNumber() || g3.isInexactNumber()) {
+        if (g2.isNumber() && g3.isNumber()) {
+          try {
+            org.hipparchus.complex.Complex[] invariants =
+                EllipticFunctionsJS.weierstrassHalfPeriods(g2.evalfc(), g3.evalfc());
+            return Object2Expr.convertComplex(false, invariants);
+          } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
+            Errors.printMessage(S.WeierstrassHalfPeriods, rex);
           }
         }
       }
@@ -2160,19 +2270,24 @@ public class EllipticIntegrals {
         IAST list = (IAST) ast.arg1();
         IExpr g2 = list.arg1();
         IExpr g3 = list.arg2();
-        // numeric mode isn't set here
-        if (g2.isInexactNumber() || g3.isInexactNumber()) {
-          if (g2.isNumber() && g3.isNumber()) {
-            try {
-              org.hipparchus.complex.Complex[] invariants =
-                  EllipticFunctionsJS.weierstrassInvariants(g2.evalfc(), g3.evalfc());
-              return Object2Expr.convertComplex(false, invariants);
-            } catch (ValidateException ve) {
-              return Errors.printMessage(ast.topHead(), ve, engine);
-            } catch (RuntimeException rex) {
-              Errors.rethrowsInterruptException(rex);
-              LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-            }
+        return weierstrassInvariants(g2, g3).eval(engine);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr weierstrassInvariants(IExpr g2, IExpr g3) {
+      // numeric mode isn't set here
+      if (g2.isInexactNumber() || g3.isInexactNumber()) {
+        if (g2.isNumber() && g3.isNumber()) {
+          try {
+            org.hipparchus.complex.Complex[] invariants =
+                EllipticFunctionsJS.weierstrassInvariants(g2.evalfc(), g3.evalfc());
+            return Object2Expr.convertComplex(false, invariants);
+          } catch (ValidateException ve) {
+            throw ve;
+          } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
+            Errors.printMessage(S.WeierstrassInvariants, rex);
           }
         }
       }
@@ -2203,22 +2318,27 @@ public class EllipticIntegrals {
         IAST list = (IAST) ast.arg2();
         IExpr g2 = list.arg1();
         IExpr g3 = list.arg2();
-        if (g2.isZero() && g3.isZero()) {
-          return F.Power(u, F.CN2);
-        }
-        if (g2.isNumEqualInteger(F.C3) && g3.isOne()) {
-          // 1 + (3/2) Cot(Sqrt(3/2)*u)^2
-          return F.Plus(F.C1, F.Times(F.C3D2, F.Sqr(F.Cot(F.Times(F.Sqrt(F.C3D2), u)))));
-        }
-        // numeric mode isn't set here
-        if (u.isInexactNumber() && g2.isNumber() && g3.isNumber()) {
-          try {
-            return F
-                .complexNum(EllipticFunctionsJS.weierstrassP(u.evalfc(), g2.evalfc(), g3.evalfc()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-          }
+        return weierstrassP(u, g2, g3).eval(engine);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr weierstrassP(IExpr u, IExpr g2, IExpr g3) {
+      if (g2.isZero() && g3.isZero()) {
+        return F.Power(u, F.CN2);
+      }
+      if (g2.isNumEqualInteger(F.C3) && g3.isOne()) {
+        // 1 + (3/2) Cot(Sqrt(3/2)*u)^2
+        return F.Plus(F.C1, F.Times(F.C3D2, F.Sqr(F.Cot(F.Times(F.Sqrt(F.C3D2), u)))));
+      }
+      // numeric mode isn't set here
+      if (u.isInexactNumber() && g2.isNumber() && g3.isNumber()) {
+        try {
+          return F
+              .complexNum(EllipticFunctionsJS.weierstrassP(u.evalfc(), g2.evalfc(), g3.evalfc()));
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          Errors.printMessage(S.WeierstrassP, rex);
         }
       }
       return F.NIL;
@@ -2248,23 +2368,28 @@ public class EllipticIntegrals {
         IAST list = (IAST) ast.arg2();
         IExpr g2 = list.arg1();
         IExpr g3 = list.arg2();
-        if (g2.isZero() && g3.isZero()) {
-          return F.Times(F.CN2, F.Power(u, F.CN3));
-        }
-        if (g2.isNumEqualInteger(F.C3) && g3.isOne()) {
-          // -3 * Sqrt(3/2) * Cot(Sqrt(3/2)*u) * Csc(Sqrt(3/2)*u)^2
-          return F.Times(F.CN3, F.Sqrt(F.C3D2), F.Cot(F.Times(F.Sqrt(F.C3D2), u)),
-              F.Sqr(F.Csc(F.Times(F.Sqrt(F.C3D2), u))));
-        }
-        // numeric mode isn't set here
-        if (u.isInexactNumber() && g2.isNumber() && g3.isNumber()) {
-          try {
-            return F.complexNum(
-                EllipticFunctionsJS.weierstrassPPrime(u.evalfc(), g2.evalfc(), g3.evalfc()));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-          }
+        return weierstrassPPrime(u, g2, g3).eval(engine);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr weierstrassPPrime(IExpr u, IExpr g2, IExpr g3) {
+      if (g2.isZero() && g3.isZero()) {
+        return F.Times(F.CN2, F.Power(u, F.CN3));
+      }
+      if (g2.isNumEqualInteger(F.C3) && g3.isOne()) {
+        // -3 * Sqrt(3/2) * Cot(Sqrt(3/2)*u) * Csc(Sqrt(3/2)*u)^2
+        return F.Times(F.CN3, F.Sqrt(F.C3D2), F.Cot(F.Times(F.Sqrt(F.C3D2), u)),
+            F.Sqr(F.Csc(F.Times(F.Sqrt(F.C3D2), u))));
+      }
+      // numeric mode isn't set here
+      if (u.isInexactNumber() && g2.isNumber() && g3.isNumber()) {
+        try {
+          return F.complexNum(
+              EllipticFunctionsJS.weierstrassPPrime(u.evalfc(), g2.evalfc(), g3.evalfc()));
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          Errors.printMessage(S.WeierstrassPPrime, rex);
         }
       }
       return F.NIL;

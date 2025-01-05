@@ -87,7 +87,9 @@ public class Util {
       return F.C0;
     }
 
-    ISymbol temp = F.Dummy("x", F.Element(F.Slot1, F.Reals));
+    // the method periodicity is called recursively, so we need to make sure that the dummy symbols
+    // are unique
+    ISymbol temp = F.Dummy("x" + EvalEngine.incModuleCounter(), F.Element(F.Slot1, F.Reals));
     f = f.subs(symbol, temp);
     symbol = temp;
 
@@ -97,7 +99,7 @@ public class Util {
     if (f.isRelationalBinary()) {
       f = f.first().subtract(f.second());
     }
-    EvalEngine engine = EvalEngine.get();
+    final EvalEngine engine = EvalEngine.get();
     f = engine.evaluate(F.Simplify(f));
 
     if (f.isAST()) {

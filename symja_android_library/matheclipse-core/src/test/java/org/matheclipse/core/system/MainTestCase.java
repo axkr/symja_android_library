@@ -2168,7 +2168,8 @@ public class MainTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSystem239() {
-    check("SignCmp(0.0)", "0.0");
+    check("SignCmp(0.0)", //
+        "0");
   }
 
   @Test

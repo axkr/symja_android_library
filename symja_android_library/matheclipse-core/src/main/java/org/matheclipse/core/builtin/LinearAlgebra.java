@@ -860,11 +860,19 @@ public final class LinearAlgebra {
           int[] columnDimensions = new int[columnSize];
           if (resultDimensions(list, rank, rowDimensions, columnDimensions, engine)) {
             try {
-              IASTAppendable resultMatrix = F.ListAlloc();
+              int resultMatrixSize = 1;
+              for (int i = 1; i < list.size(); i++) {
+                resultMatrixSize += rowDimensions[i - 1];
+              }
+              IASTAppendable resultMatrix = F.ListAlloc(resultMatrixSize);
               for (int i = 1; i < list.size(); i++) {
                 IAST subList = (IAST) list.get(i);
                 for (int l = 0; l < rowDimensions[i - 1]; l++) {
-                  IASTAppendable resultRow = F.ListAlloc();
+                  int resultRowSize = 1;
+                  for (int j = 1; j < subList.size(); j++) {
+                    resultRowSize += columnDimensions[j - 1];
+                  }
+                  IASTAppendable resultRow = F.ListAlloc(resultRowSize);
                   for (int j = 1; j < subList.size(); j++) {
                     IExpr element = subList.get(j);
                     boolean isScalar = true;

@@ -7875,7 +7875,7 @@ public final class ListFunctions {
       IExpr arg2 = ast.arg2();
       if (arg1.isAST()) {
         IAST list = (IAST) arg1;
-        IASTAppendable result = F.ast(list.head());
+        IASTAppendable result = F.ast(list.head(), F.allocMax32(list));
         list.forAll(x -> {
           if (engine.evalTrue(arg2, x)) {
             result.append(x);

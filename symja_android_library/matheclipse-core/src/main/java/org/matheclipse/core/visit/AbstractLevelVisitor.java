@@ -48,7 +48,7 @@ public abstract class AbstractLevelVisitor extends AbstractVisitor {
       int startValueForAll, final EvalEngine engine) {
     this.fIncludeHeads = includeHeads;
     this.fEngine = engine;
-    IExpr levelExpr = engine.evaluate(unevaledLevelExpr);
+    IExpr levelExpr = unevaledLevelExpr.eval(engine);
     fFromLevel = fToLevel = -1;
     fFromDepth = fToDepth = 0;
     if (levelExpr instanceof IInteger) {

@@ -6425,6 +6425,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testEllipticE() {
+    check("EllipticE(0.0,0.5)", //
+        "0.0");
+
     // TODO implement second kind arbitrary precision
     checkNumeric("N(EllipticE(2/3,2),50)", //
         "EllipticE(0.66666666666666666666666666666666666666666666666666,2)");
@@ -6523,6 +6526,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testEllipticK() {
+    check("EllipticK(0.5)", //
+        "1.85407");
 
     check("N(EllipticK(8/10), 50)", //
         "2.2572053268208536550832560045233873972354192817399");
@@ -8930,6 +8935,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFlattenAt() {
+    check("FlattenAt({a, {{}, {c}}, d, {e}}, {{2,1},{2,1}})", //
+        "{a,{{c}},d,{e}}");
+    check("FlattenAt({a, {{}, {c}}, d, {e}}, {{2,1},{4}})", //
+        "{a,{{c}},d,e}");
+
 
     check("FlattenAt({a, {b, {c}}, d, {e}}, {{2},{4},{-3}})", //
         "{a,b,{c},d,e}");
@@ -8969,6 +8979,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFloor() {
+    check("Floor({-2.4, -2.5, -3.0})", //
+        "{-3,-3,-3}");
+    check("Floor(Ceiling(x))", //
+        "Ceiling(x)");
+    check("Floor(IntegerPart(x))", //
+        "IntegerPart(x)");
     check("Floor(Quantity(8.5, \"Meters\"))", //
         "8[Meters]");
     check("Floor(DirectedInfinity(0))", //
@@ -19541,21 +19557,40 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPrime() {
-    check("Prime(10^6)", //
-        "15485863");
-    check("Prime(10^7)", //
-        "179424673");
-    // check("Prime(10^8)", "2038074743");
-    // check("Prime(103000000)", "2102429869");
-
-    // above the limit return Prime(...)
-    // check("Prime(10^9)", "22801763489");
-    // check("Prime(10^10)", "252097800623");
-    // check("Prime(10^11)", "2760727302517");
+    check("Prime(171)", //
+        "1019");
+    check("Prime(172)", //
+        "1021");
+    check("Prime(173)", //
+        "1031");
+    check("Prime(174)", //
+        "1033");
+    check("Prime(3512)", //
+        "32749");
+    check("Prime(3513)", //
+        "32771");
     check("Prime(1)", //
         "2");
     check("Prime(167)", //
         "991");
+    check("Prime(167)", //
+        "991");
+    check("Prime(10^6)", //
+        "15485863");
+    check("Prime(10^7)", //
+        "179424673");
+    check("Prime(10^8)", //
+        "2038074743");
+    // check("Prime(103000000)", //
+    // "2102429869");
+
+    // above the limit return Prime(...)
+    // Prime: Maximum Prime limit 103000000 exceeded.
+    check("Prime(10^9)", //
+        "Prime(1000000000)");
+    // check("Prime(10^10)", "252097800623");
+    // check("Prime(10^11)", "2760727302517");
+
   }
 
   @Test
@@ -22795,23 +22830,32 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSixJSymbol() {
-    // check("SixJSymbol({1, 2, 1}, {4,5,Pi})", //
-    // "0");
-    // check("SixJSymbol({1, 2, 1}, {4,5,12})", //
-    // "0");
+    check("SixJSymbol({1, 2, 3}, {1, 2, 3})", //
+        "1/105");
+    check("SixJSymbol({1/2, 1/2, 1}, {5/2, 7/2, 3})", //
+        "-1/Sqrt(21)");
+    check("SixJSymbol({1, 2, 3}, {2, 1, 2})", //
+        "1/(5*Sqrt(21))");
+    checkNumeric("SixJSymbol({1.0, 2.0, 1.0}, {2,3,2})", //
+        "0.043643578047198484");
+    checkNumeric("SixJSymbol({1.0, 1.0, 2.0}, {5,7,6})", //
+        "0.12403473458920847");
 
-    // // TODO implement for half-integers
-    // // check("SixJSymbol({1/2, 1/2, 1}, {5/2,7/2,3})", //
-    // // "SixJSymbol({1/2,1/2,1},{5/2,7/2,3})");
-    //
-    // check("SixJSymbol({1, 1, 2}, {5,7,6})", //
-    // "1/Sqrt(65)");
-    // check("SixJSymbol({1, 2, 1}, {2,3,2})", //
-    // "1/(5*Sqrt(21))");
-    // check("SixJSymbol({1, 2, 3}, {2, 1, 2})", //
-    // "1/(5*Sqrt(21))");
-    // check("SixJSymbol({1, 2, 3}, {1,2,2})", //
-    // "1/15");
+    // SixJSymbol: SixJSymbol({1,2,1},{4,5,Pi}) is not triangular.
+    check("SixJSymbol({1, 2, 1}, {4,5,Pi})", //
+        "0");
+    // SixJSymbol: SixJSymbol({1,2,1},{4,5,12}) is not triangular.
+    check("SixJSymbol({1, 2, 1}, {4,5,12})", //
+        "0");
+
+    check("SixJSymbol({1, 1, 2}, {5,7,6})", //
+        "1/Sqrt(65)");
+    check("SixJSymbol({1, 2, 1}, {2,3,2})", //
+        "1/(5*Sqrt(21))");
+    check("SixJSymbol({1, 2, 3}, {2, 1, 2})", //
+        "1/(5*Sqrt(21))");
+    check("SixJSymbol({1, 2, 3}, {1,2,2})", //
+        "1/15");
   }
 
   @Test
@@ -24471,11 +24515,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testThreeJSymbol() {
-    check("ThreeJSymbol({2, 0}, {6, 0}, {4, 0})", //
-        "Sqrt(5/143)");
+    check("ThreeJSymbol({2, 1}, {2, 4}, {4, 2})", //
+        "0");
+
+    checkNumeric("ThreeJSymbol({1.5, -1.5}, {3/2, 3/2}, {1, 0})", //
+        "0.3872983346207417");
+    checkNumeric("ThreeJSymbol({1/2, -1/2}, {1/2, -1/2}, {1.0, 1.0})", //
+        "-0.5773502691896257");
+
 
     check("ThreeJSymbol({3/2, -3/2}, {3/2, 3/2}, {1, 0})", //
         "Sqrt(3/5)/2");
+    check("ThreeJSymbol({1/2, -1/2}, {1/2, -1/2}, {1, 1})", //
+        "-1/Sqrt(3)");
+
+    check("ThreeJSymbol({2, 0}, {6, 0}, {4, 0})", //
+        "Sqrt(5/143)");
 
     check("ThreeJSymbol({5, 0}, {4, 0}, {1, 0})", //
         "-Sqrt(5/11)/3");
@@ -24483,8 +24538,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Sqrt(5/143)");
     check("ThreeJSymbol({2, 1}, {2, 2}, {4, -3})", //
         "-1/(3*Sqrt(2))");
-    check("ThreeJSymbol({1/2, -1/2}, {1/2, -1/2}, {1, 1})", //
-        "-1/Sqrt(3)");
 
 
     check("{j1, j2} = {3, 2};\n" //
@@ -26272,6 +26325,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testWhittakerW() {
+    checkNumeric("WhittakerW(6, 4, 2.0)", //
+        "1374.6407375519752");
+    checkNumeric("WhittakerW(6, 4, -2.0)", //
+        "2333.061819317495+I*38.12532949300777");
     checkNumeric("N(WhittakerW(2, 1/2, 2*2*I))", //
         "-0.6160300298511752+I*17.877933521588048");
 
@@ -26285,7 +26342,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-0.2422894111164979908");
 
     checkNumeric("N(WhittakerW(1/5, 2 - I, 2))", //
-        "0.3147585139185293+I*(-1.2734460466128783)");
+        "0.31475851391852927+I*(-1.273446046612878)");
 
     checkNumeric("WhittakerW(6, 4, 1.7)", //
         "1740.5462418091338");
@@ -26293,7 +26350,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     checkNumeric("WhittakerW(2, 0.5, 0.0)", //
         "WhittakerW(2.0,0.5,0.0)");
     checkNumeric("Table( WhittakerW(6, 4, x), {x,-2.0,2,0.25})", //
-        "{2333.0618193174946+I*38.12532949300777,1090.9576562383038+I*73.572156765819,464.5499885712877+I*152.9453283147011,174.10978469218307+I*351.7626599831295,54.254490548428286+I*935.8127384437696,12.63276840854038+I*3129.88616177697,1.7295419807639405+I*15861.825767596809,0.06481415341111611+I*220852.59445363315,WhittakerW(6.0,4.0,0.0),339121.7767806576,37468.50169122885,11421.860441795448,5313.868067440274,3138.141359549763,2164.6812989167843,1662.3688694569848,1374.640737551975}");
+        "{2333.061819317495+I*38.12532949300777,1090.9576562383038+I*73.572156765819,464.5499885712877+I*152.9453283147011,174.10978469218307+I*351.76265998312954,54.25449054842829+I*935.8127384437696,12.63276840854038+I*3129.88616177697,1.7295419807639405+I*15861.825767596809,0.06481415341111611+I*220852.59445363315,WhittakerW(6.0,4.0,0.0),339121.77678065764,37468.50169122885,11421.860441795448,5313.868067440274,3138.141359549763,2164.6812989167843,1662.3688694569848,1374.6407375519752}");
   }
 
   @Test

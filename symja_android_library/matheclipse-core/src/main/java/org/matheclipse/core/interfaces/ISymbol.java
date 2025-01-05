@@ -411,6 +411,11 @@ public interface ISymbol extends IExpr {
   public String definitionToString() throws IOException;
 
   @Override
+  default IExpr eval(EvalEngine engine) {
+    return evaluate(engine).orElse(this);
+  }
+
+  @Override
   default IExpr evalAsLeadingTerm(ISymbol x, IExpr logx, int cdir) {
     return x;
   }

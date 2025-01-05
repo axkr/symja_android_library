@@ -387,6 +387,7 @@ public class Errors {
       "tllen", "Lists of unequal length in `1` cannot be added.", //
       "toggle", "ToggleFeature `1` is disabled.", //
       "tolnn", "Tolerance specification `1` must be a non-negative number.", //
+      "tri", "`1` is not triangular.", //
       "udist", "The specification `1` is not a random distribution recognized by the system.", //
       "unkunit", "Unable to interpret unit specification `1`.", //
       "unsdst", "The first argument `1` is not a valid distribution.", //
@@ -479,6 +480,18 @@ public class Errors {
       mex.printStackTrace();
     }
     return printMessage(symbol, "error", F.List(mex.getMessage()), engine);
+  }
+
+  /**
+   * Print the exception into the default error log.
+   * 
+   * @param symbol
+   * @param mex
+   * @param engine
+   * @return
+   */
+  public static IAST printMessage(ISymbol symbol, final Throwable exception) {
+    return printMessage(symbol, exception, EvalEngine.get());
   }
 
   /**

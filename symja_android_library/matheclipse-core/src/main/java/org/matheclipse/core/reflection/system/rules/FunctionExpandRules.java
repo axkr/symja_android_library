@@ -309,12 +309,6 @@ public class FunctionExpandRules {
     // SphericalHarmonicY(l_,m_,t_,p_):=(E^(I*m*p)*Sqrt(1+2*l)*Sqrt(Gamma(1+l-m))*Hypergeometric2F1(-l,1+l,1-m,Sin(t/2)^2)*Sin(t)^m)/((1-Cos(t))^m*2*Sqrt(Pi)*Gamma(1-m)*Sqrt(Gamma(1+l+m)))
     SetDelayed(SphericalHarmonicY(l_,m_,t_,p_),
       Times(Exp(Times(CI,m,p)),Sqrt(Plus(C1,Times(C2,l))),Sqrt(Gamma(Plus(C1,l,Negate(m)))),Power(Times(Power(Subtract(C1,Cos(t)),m),C2,CSqrtPi,Gamma(Subtract(C1,m)),Sqrt(Gamma(Plus(C1,l,m)))),CN1),Hypergeometric2F1(Negate(l),Plus(C1,l),Subtract(C1,m),Sqr(Sin(Times(C1D2,t)))),Power(Sin(t),m))),
-    // WeberE(a_,b_):=(2*b*Cos(1/2*a*Pi)^2*HypergeometricPFQ({1},{3/2-a/2,3/2+a/2},(-1)*1/4*b^2))/((-1+a)*(1+a)*Pi)+(2*HypergeometricPFQ({1},{1-a/2,1+a/2},(-1)*1/4*b^2)*Sin(1/2*a*Pi)^2)/(a*Pi)
-    SetDelayed(WeberE(a_,b_),
-      Plus(Times(C2,b,Power(Times(Plus(CN1,a),Plus(C1,a),Pi),CN1),Sqr(Cos(Times(C1D2,a,Pi))),HypergeometricPFQ(list(C1),list(Plus(QQ(3L,2L),Times(CN1D2,a)),Plus(QQ(3L,2L),Times(C1D2,a))),Times(CN1,C1D4,Sqr(b)))),Times(C2,Power(Times(a,Pi),CN1),HypergeometricPFQ(list(C1),list(Plus(C1,Times(CN1D2,a)),Plus(C1,Times(C1D2,a))),Times(CN1,C1D4,Sqr(b))),Sqr(Sin(Times(C1D2,a,Pi)))))),
-    // WeberE(a_,b_,c_):=(-c*Cos(1/2*a*Pi)*Gamma(2+b)*HypergeometricPFQ({1+b/2,3/2+b/2},{3/2,3/2-a/2+b/2,3/2+a/2+b/2},(-1)*1/4*c^2))/(2*Gamma(3/2-a/2+b/2)*Gamma(3/2+a/2+b/2))+(Gamma(1+b)*HypergeometricPFQ({1/2+b/2,1+b/2},{1/2,1-a/2+b/2,1+a/2+b/2},(-1)*1/4*c^2)*Sin(1/2*a*Pi))/(Gamma(1-a/2+b/2)*Gamma(1+a/2+b/2))
-    SetDelayed(WeberE(a_,b_,c_),
-      Plus(Times(CN1,c,Cos(Times(C1D2,a,Pi)),Power(Times(C2,Gamma(Plus(QQ(3L,2L),Times(CN1D2,a),Times(C1D2,b))),Gamma(Plus(QQ(3L,2L),Times(C1D2,a),Times(C1D2,b)))),CN1),Gamma(Plus(C2,b)),HypergeometricPFQ(list(Plus(C1,Times(C1D2,b)),Plus(QQ(3L,2L),Times(C1D2,b))),list(QQ(3L,2L),Plus(QQ(3L,2L),Times(CN1D2,a),Times(C1D2,b)),Plus(QQ(3L,2L),Times(C1D2,a),Times(C1D2,b))),Times(CN1,C1D4,Sqr(c)))),Times(Power(Times(Gamma(Plus(C1,Times(CN1D2,a),Times(C1D2,b))),Gamma(Plus(C1,Times(C1D2,a),Times(C1D2,b)))),CN1),Gamma(Plus(C1,b)),HypergeometricPFQ(list(Plus(C1D2,Times(C1D2,b)),Plus(C1,Times(C1D2,b))),list(C1D2,Plus(C1,Times(CN1D2,a),Times(C1D2,b)),Plus(C1,Times(C1D2,a),Times(C1D2,b))),Times(CN1,C1D4,Sqr(c))),Sin(Times(C1D2,a,Pi))))),
     // WhittakerM(k_,m_,z_):=(z^(1/2+m)*Hypergeometric1F1(1/2-k+m,1+2*m,z))/E^(z/2)
     SetDelayed(WhittakerM(k_,m_,z_),
       Times(Power(Exp(Times(C1D2,z)),CN1),Power(z,Plus(C1D2,m)),Hypergeometric1F1(Plus(C1D2,Negate(k),m),Plus(C1,Times(C2,m)),z))),

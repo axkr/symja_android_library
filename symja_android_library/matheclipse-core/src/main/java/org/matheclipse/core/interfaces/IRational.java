@@ -145,6 +145,14 @@ public interface IRational extends IReal, IBigNumber {
   @Override
   public IRational inverse();
 
+  default IRational max(IRational that) {
+    return isGT(that) ? this : that;
+  }
+
+  default IRational min(IRational that) {
+    return isLT(that) ? this : that;
+  }
+
   /**
    * Returns <code>this mod m</code>, a non-negative value less than m. This differs from <code>
    * this % m</code>, which might be negative. For example:

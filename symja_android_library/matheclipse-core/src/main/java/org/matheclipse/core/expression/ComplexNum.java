@@ -1817,7 +1817,7 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
-  public INumber times(final INumber that) {
+  public IInexactNumber times(final INumber that) {
     if (that instanceof IInexactNumber) {
       return times((IInexactNumber) that);
     }

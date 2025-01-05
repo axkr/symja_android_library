@@ -312,7 +312,7 @@ public class Algebra {
           if (!result[0].isOne()) {
             IExpr inverse = result[0].inverse();
 
-            IASTAppendable commonPlus = F.PlusAlloc(list.size());
+            IASTAppendable commonPlus = F.PlusAlloc(list.argSize());
             list.forEach(x -> commonPlus.append(F.Times(inverse, x)));
             if (reduceOneIdentityRest) {
               result[1] = commonPlus.oneIdentity1();
@@ -870,7 +870,7 @@ public class Algebra {
         IAST list = (IAST) arg2;
         if (list.size() > 1) {
           if (ast.isAST3()) {
-            arg3Head = engine.evaluate(ast.arg3());
+            arg3Head = ast.arg3();
           }
           return collectSingleVariableRecursive(arg1, list.arg1(), (IAST) arg2, 2, arg3Head,
               engine);
@@ -4237,7 +4237,7 @@ public class Algebra {
             IAST timesAST = (IAST) x1;
             IASTMutable timesResult = x1.mapThread(Power(F.Slot1, x2), 1);
             if (assumptions) {
-              IASTAppendable plusResult = F.PlusAlloc(timesAST.size() + 1);
+              IASTAppendable plusResult = F.PlusAlloc(timesAST.size());
               plusResult.append(C1D2);
               plusResult.appendArgs(timesAST.size(),
                   i -> Negate(Divide(Arg(timesAST.get(i)), F.C2Pi)));
@@ -5261,7 +5261,7 @@ public class Algebra {
             expandAll((IAST) x, patt, expandNegativePowers, distributePlus, factorTerms, engine);
         if (t.isPresent()) {
           if (result[0].isNIL()) {
-            int size = localASTSize;
+            int size = localASTFinal.size() + 4; // 4 -> empirically determined value in JUnit tests
             if (t.isAST()) {
               size += ((IAST) t).size();
             }

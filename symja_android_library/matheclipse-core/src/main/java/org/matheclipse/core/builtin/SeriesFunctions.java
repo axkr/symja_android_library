@@ -338,6 +338,13 @@ public class SeriesFunctions {
               return temp;
             }
           }
+          // if (expression.isPower() && !expression.first().isE()) {
+          // temp = F.Times(expression.second(), F.Log(expression.first()));
+          // temp = evalLimit(temp, data, engine);
+          // if (temp.isPresent()) {
+          // return temp;
+          // }
+          // }
         }
         IExpr temp = limitInfinityZero((IAST) expression, data, (IAST) limitValue);
         if (temp.isPresent()) {

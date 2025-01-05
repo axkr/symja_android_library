@@ -350,7 +350,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     checkNumeric("NIntegrate(Exp(-x),{x,0,Infinity})", //
         "1.0");
     checkNumeric("NIntegrate(Exp(-x^2),{x,0,Infinity})", //
-        "0.8862269254527579");
+        "0.886226925452758");
     checkNumeric("NIntegrate(Exp(-x^2),{x,-Infinity,Infinity})", //
         "1.772453850905516");
 

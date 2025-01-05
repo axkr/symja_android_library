@@ -344,7 +344,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION | ISymbol.HOLDREST);
       super.setUp(newSymbol);
     }
   }
@@ -681,10 +681,10 @@ public class IntegerFunctions {
         if (ast.isAST2()) {
           return F.Times(F.Floor(F.Divide(ast.arg1(), ast.arg2())), ast.arg2());
         }
-        IExpr arg1 = engine.evaluateNIL(ast.arg1());
-        if (arg1.isPresent()) {
-          return evalFloor(arg1).orElseGet(() -> F.Floor(arg1));
-        }
+        // IExpr arg1 = engine.evaluateNIL(ast.arg1());
+        // if (arg1.isPresent()) {
+        // return evalFloor(arg1).orElseGet(() -> F.Floor(arg1));
+        // }
         return evalFloor(ast.arg1());
       } catch (ArithmeticException ae) {
         // IReal#floor() may throw ArithmeticException
@@ -738,7 +738,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION | ISymbol.HOLDREST);
       super.setUp(newSymbol);
     }
   }
@@ -1053,6 +1053,10 @@ public class IntegerFunctions {
           // the real and imaginary part.
           return ((INumber) arg1).integerPart();
         }
+        // arg1 = engine.evaluateNIL(arg1);
+        // if (arg1.isNIL()) {
+        // arg1 = ast.arg1();
+        // }
         if (arg1.isIntegerResult()) {
           return arg1;
         }
@@ -1097,7 +1101,7 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NHOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
     }
   }
 
@@ -1379,8 +1383,8 @@ public class IntegerFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr z = engine.evaluate(ast.arg1());
-      IExpr n = engine.evaluate(ast.arg2());
+      IExpr z = ast.arg1().eval(engine);
+      IExpr n = ast.arg2().eval(engine);
       if (n.isZero()) {
         LOGGER.log(engine.getLogLevel(), "Quotient: division by zero");
         return F.CComplexInfinity;
@@ -1443,7 +1447,7 @@ public class IntegerFunctions {
         return F.NIL;
       }
       if (ast.isAST3()) {
-        IExpr d = engine.evaluate(ast.arg3());
+        IExpr d = ast.arg3().eval(engine);
         if (z.isInteger() && n.isInteger() && d.isInteger()) {
           // TODO implement for 3 args
         }
@@ -1508,8 +1512,8 @@ public class IntegerFunctions {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
 
       try {
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        IExpr arg2 = engine.evaluate(ast.arg2());
+        IExpr arg1 = ast.arg1().eval(engine);
+        IExpr arg2 = ast.arg2().eval(engine);
         if (arg1.isInteger() && arg2.isInteger()) {
           final IInteger i0 = (IInteger) arg1;
           final IInteger i1 = (IInteger) arg2;

@@ -477,6 +477,10 @@ public final class NumberTheory {
         // use e2IntArg() method
         return F.NIL;
       }
+      return binomialExpr(n, k).eval(EvalEngine.get());
+    }
+
+    private static IExpr binomialExpr(IExpr n, IExpr k) {
       int ni = n.toIntDefault();
       if (ni != Integer.MIN_VALUE) {
         int ki = k.toIntDefault();
@@ -1141,7 +1145,7 @@ public final class NumberTheory {
         q = q.multiply(q);
       }
 
-      IASTAppendable integerTerms = F.ListAlloc();
+      IASTAppendable integerTerms = F.ListAlloc(7);
       Map<IAST, Integer> pqPeriodic2Index = new HashMap<IAST, Integer>();
       IAST key = F.list(p, q);
       do {
@@ -3277,7 +3281,7 @@ public final class NumberTheory {
         }
         IInteger nHalf = n.div(F.C2);
         nHalf.toIntDefault();
-        IASTAppendable list = F.ListAlloc();
+        IASTAppendable list = F.ListAlloc(7);
         for (IInteger i = F.C3; nHalf.isGE(i); i = i.add(2)) {
           if (i.isProbablePrime()) {
             IInteger j = n.subtract(i);
@@ -4877,7 +4881,7 @@ public final class NumberTheory {
         }
         if (nthPrime > 103000000) {
           // Maximum Prime limit `1` exceeded.
-          return Errors.printMessage(ast.topHead(), "zzprime", F.list(ast.arg1()), engine);
+          return Errors.printMessage(ast.topHead(), "zzprime", F.list(F.ZZ(103000000)), engine);
         }
         try {
           return F.ZZ(Primality.prime(nthPrime));
@@ -6110,6 +6114,10 @@ public final class NumberTheory {
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
+      return functionExpand(n);
+    }
+
+    private static IExpr functionExpand(IExpr n) {
       // Gamma(1+n,-1)/E
       return F.Times(F.Exp(F.CN1), F.Gamma(F.Plus(F.C1, n), F.CN1));
     }
@@ -6158,20 +6166,24 @@ public final class NumberTheory {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      return subfactorial(arg1, engine.isNumericMode()).eval(engine);
+    }
+
+    protected IExpr subfactorial(IExpr arg1, boolean numericMode) {
       if (arg1.isInteger() && arg1.isPositive()) {
         try {
           long n = ((IInteger) arg1).toLong();
           return subFactorial(n);
         } catch (ArithmeticException ae) {
-          Errors.printMessage(S.Subfactorial, ae, engine);
+          Errors.printMessage(S.Subfactorial, ae, EvalEngine.get());
         }
         return F.NIL;
       }
       if (arg1.isZero()) {
         return F.C1;
       }
-      if (engine.isNumericMode() && arg1.isNumericFunction()) {
-        return functionExpand(ast, engine);
+      if (numericMode && arg1.isNumericFunction()) {
+        return functionExpand(arg1);
       }
       return F.NIL;
     }

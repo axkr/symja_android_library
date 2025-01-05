@@ -9614,7 +9614,7 @@ public class F extends S {
    * @return a list <code>{0, 1/n,2/n,3/n,...,n}</code>
    */
   public static IAST subdivide(int n) {
-    IASTAppendable result = F.ListAlloc(n);
+    IASTAppendable result = F.ListAlloc(n + 1);
     for (int i = 0; i < n + 1; i++) {
       result.append(F.QQ(i, n));
     }
@@ -9944,7 +9944,7 @@ public class F extends S {
     if (from > to && step > 0) {
       return F.C1;
     }
-    IASTAppendable result = F.TimesAlloc(F.allocMin32(to - from + 1));
+    IASTAppendable result = F.TimesAlloc(F.allocMin32(to - from + 2));
     long numberOfLeaves = 0;
     INumber number = F.C1;
     // insert number as placeholder
@@ -9983,7 +9983,7 @@ public class F extends S {
     if (iMin > iMax) {
       return F.C0;
     }
-    IASTAppendable result = F.PlusAlloc(F.allocMin32(iMax - iMin + 1));
+    IASTAppendable result = F.PlusAlloc(F.allocMin32(iMax - iMin + 2));
     int numberOfLeaves = 0;
     EvalEngine engine = EvalEngine.get();
     INumber number = F.C0;
@@ -10029,7 +10029,7 @@ public class F extends S {
     IASTAppendable result = F.ListAlloc(F.allocMin32(iMax - iMin + 1));
     int numberOfLeaves = 0;
     EvalEngine engine = EvalEngine.get();
-    IASTAppendable plusList = F.PlusAlloc(F.allocMin32(iMax - iMin + 1));
+    IASTAppendable plusList = F.PlusAlloc(F.allocMin32(iMax - iMin + 3));
     // insert 0 as a placeholder for number calculations in intSumList()
     INumber numberPlaceholder = F.C0;
     if (startValue.isNumber()) {
@@ -10092,7 +10092,7 @@ public class F extends S {
     if (from > to && step > 0) {
       return F.C0;
     }
-    IASTAppendable result = F.PlusAlloc(F.allocMin32(to - from + 1));
+    IASTAppendable result = F.PlusAlloc(F.allocMin32(to - from + 2));
     long numberOfLeaves = 0;
     INumber number = F.C0;
     // insert number as placeholder

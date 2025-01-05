@@ -59,7 +59,7 @@ public final class VisitorBooleanLevelSpecification extends AbstractVisitorBoole
    */
   public VisitorBooleanLevelSpecification(final Predicate<IExpr> function,
       final IExpr unevaledLevelExpr, boolean includeHeads, final EvalEngine engine) {
-    IExpr levelExpr = engine.evaluate(unevaledLevelExpr);
+    IExpr levelExpr = unevaledLevelExpr.eval(engine);
     fFromLevel = fToLevel = -1;
     fFromDepth = fToDepth = 0;
     this.fIncludeHeads = includeHeads;

@@ -834,7 +834,7 @@ public interface IExpr
    */
   default IExpr base() {
     if (Config.FUZZ_TESTING) {
-      if (!isPower() && !isAST(S.Surd)) {
+      if (!isAST(S.Power) && !isAST(S.Surd)) {
         throw new NullPointerException();
       }
     }
@@ -5945,6 +5945,9 @@ public interface IExpr
     } else if (n == 1L) {
       return this;
     } else if (this.isNumber()) {
+      if (isMinusOne()) {
+        return n % 2 == 0 ? F.C1 : F.CN1;
+      }
       long exp = n;
       if (n < 0) {
         exp *= -1;

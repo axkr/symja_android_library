@@ -2257,7 +2257,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
           IASTAppendable lhsResultAST = foMatcher.removeUsedIndexPositions();
           IExpr result = fPatternMap.substituteSymbols(rhsExpr, F.NIL);
           try {
-            result = engine.evaluate(result);
+            result = result.eval(engine);
             lhsResultAST.append(result);
             return lhsResultAST;
           } catch (final ConditionException e) {
@@ -2320,7 +2320,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         }
         try {
           IExpr result = fPatternMap.substituteSymbols(rhsExpr, F.CEmptySequence);
-          result = engine.evaluate(result);
+          result = result.eval(engine);
           lhsResultAST.append(i + 1, result);
           return lhsResultAST;
         } catch (final ConditionException e) {

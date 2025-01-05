@@ -33,7 +33,6 @@ public class JacobiTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testInverseJacobiCD() {
-
     check("InverseJacobiCD(0.3,0.5)", //
         "1.54702");
     check("JacobiCD(1.54702,0.5)", //

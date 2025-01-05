@@ -1543,8 +1543,7 @@ public class ExprParser extends Scanner {
     while (fToken == TT_NEWLINE) {
       getNextToken();
     }
-    IExpr temp = parseExpression();
-    fEngine.evaluate(temp);
+    IExpr temp = parseExpression().eval(fEngine);
     // fNodeList.add(temp);
     while (fToken != TT_EOF) {
       if (fToken == TT_PRECEDENCE_CLOSE) {
@@ -1562,8 +1561,7 @@ public class ExprParser extends Scanner {
       if (fToken == TT_EOF) {
         return;
       }
-      temp = parseExpression();
-      fEngine.evaluate(temp);
+      temp = parseExpression().eval(fEngine);
     }
 
   }

@@ -192,10 +192,10 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
                 stepListener.tearDown(F.NIL, 0, true, lhs);
               }
             } else {
-              fReturnResult = engine.evaluate(rhs);
+              fReturnResult = rhs.eval(engine);
             }
           } else {
-            fReturnResult = engine.evaluate(rhs);
+            fReturnResult = rhs.eval(engine);
           }
           matched = true;
         } catch (final ConditionException e) {
@@ -343,7 +343,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
         boolean oldEvalRHSMode = engine.isEvalRHSMode();
         try {
           engine.setEvalRHSMode(true);
-          IExpr temp = engine.evaluate(fReturnResult);
+          IExpr temp = fReturnResult.eval(engine);
           return temp;
         } catch (ConditionException cex) {
           return F.NIL;
@@ -372,7 +372,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
           return engine.addEvaluatedTraceStep(leftHandSide, result, leftHandSide.topHead(),
               F.$str("RewriteRule"));
         }
-        return engine.evaluate(result);
+        return result.eval(engine);
       } else {
         return result;
       }
@@ -385,7 +385,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
           return engine.addEvaluatedTraceStep(leftHandSide, result, leftHandSide.topHead(),
               F.$str("RewriteRule"));
         }
-        return engine.evaluate(result);
+        return result.eval(engine);
       }
       return result;
     } finally {
@@ -413,7 +413,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
           return engine.addEvaluatedTraceStep(leftHandSide, result, leftHandSide.topHead(),
               F.$str("RewriteRule"));
         }
-        return engine.evaluate(result);
+        return result.eval(engine);
       }
       return result;
     } catch (final ConditionException e) {
@@ -424,7 +424,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
         return engine.addEvaluatedTraceStep(leftHandSide, result, leftHandSide.topHead(),
             F.$str("RewriteRule"));
       }
-      return engine.evaluate(result);
+      return result.eval(engine);
     }
   }
 
