@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -23,6 +24,7 @@ public class QuantumPhysicsFunctions {
       S.ClebschGordan.setEvaluator(new ClebschGordan());
       S.ThreeJSymbol.setEvaluator(new ThreeJSymbol());
       S.SixJSymbol.setEvaluator(new SixJSymbol());
+      S.WignerD.setEvaluator(new WignerD());
     }
   }
 
@@ -163,10 +165,102 @@ public class QuantumPhysicsFunctions {
   }
 
 
+  private static class WignerD extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+
+
+      if (arg1.isList3()) {
+        IAST list = (IAST) arg1;
+        try {
+          IRational j = Wigner.intOrHalfInt((IReal) list.arg1());
+          IRational m = Wigner.intOrHalfInt((IReal) list.arg2());
+          IRational n = Wigner.intOrHalfInt((IReal) list.arg3());
+
+          // https://mathworld.wolfram.com/WignerD-Function.html
+          if (j.isNegative()) {
+            // TODO not physical can evaluate numerically
+            return F.NIL;
+          }
+          if (!j.subtract(m).isInteger() //
+              || !j.subtract(n).isInteger() //
+              || !m.subtract(n).isInteger()) {
+            // TODO not physical can evaluate numerically
+            return F.NIL;
+          }
+          if (!(j.negate().isLE(m) && m.isLE(j))) {
+            // TODO not physical can evaluate numerically
+            return F.NIL;
+          }
+          if (!(j.negate().isLE(n) && n.isLE(j))) {
+            // TODO not physical can evaluate numerically
+            return F.NIL;
+          }
+
+          IExpr alpha = F.C0;
+          IExpr beta = F.C0;
+          IExpr gamma = F.C0;
+          switch (ast.argSize()) {
+            case 2:
+              beta = ast.arg2();
+              break;
+            case 3:
+              beta = ast.arg2();
+              gamma = ast.arg3();
+              break;
+            case 4:
+              alpha = ast.arg2();
+              beta = ast.arg3();
+              gamma = ast.arg4();
+              break;
+          }
+
+          // if (alpha.isNumericArgument() || beta.isNumericArgument() || gamma.isNumericArgument())
+          // {
+          // INumber alphaNum = alpha.evalNumber();
+          // INumber betaNum = beta.evalNumber();
+          // INumber gammaNum = gamma.evalNumber();
+          // if (alphaNum == null || betaNum == null || gammaNum == null) {
+          // return F.NIL;
+          // }
+          // boolean oldNumericMode = engine.isNumericMode();
+          // try {
+          // engine.setNumericMode(true);
+          // return Wigner.wignerDEntry(j, m, n, alphaNum, betaNum, gammaNum, engine);
+          // } finally {
+          // engine.setNumericMode(oldNumericMode);
+          // }
+          //
+          // }
+          return Wigner.wignerDEntry(j, m, n, alpha, beta, gamma, engine);
+        } catch (Wigner.TriangularException e) {
+          return Errors.printMessage(S.WignerD, "tri", F.List(ast), engine);
+        } catch (ValidateException e) {
+          e.printStackTrace();
+        }
+
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_4;
+    }
+
+  }
 
   public static void initialize() {
     Initializer.init();
   }
 
   private QuantumPhysicsFunctions() {}
+
 }

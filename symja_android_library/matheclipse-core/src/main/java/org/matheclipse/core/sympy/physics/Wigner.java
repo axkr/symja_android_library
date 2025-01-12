@@ -1,6 +1,8 @@
 package org.matheclipse.core.sympy.physics;
 
 
+import org.hipparchus.linear.Array2DRowFieldMatrix;
+import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -8,6 +10,7 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -15,20 +18,6 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 
 public class Wigner {
-
-  public static class TriangularException extends Exception {
-    IExpr value;
-
-    public TriangularException(IExpr value) {
-      super("");
-      this.value = value;
-    }
-
-    public IExpr getValue() {
-      return value;
-    }
-
-  }
 
   public static class NotPhysicalException extends Exception {
     IExpr value;
@@ -44,184 +33,18 @@ public class Wigner {
 
   }
 
-  private static IRational intOrHalfInt(IReal value) throws TriangularException {
-    if (value.isRational()) {
-      IInteger denominator = ((IRational) value).denominator();
-      if (denominator.equals(F.C1)) {
-        return ((IRational) value).numerator();
-      } else if (denominator.equals(F.C2)) {
-        return (IRational) value;
-      }
-    }
-    int intValue = value.toIntDefault();
-    if (intValue != Integer.MIN_VALUE) {
-      return F.ZZ(intValue);
-    }
-    value = value.multiply(F.C2);
-    intValue = value.toIntDefault();
-    if (intValue != Integer.MIN_VALUE) {
-      return F.QQ(intValue, 2);
-    }
-    throw new Wigner.TriangularException(F.C0);
-  }
+  public static class TriangularException extends Exception {
+    IExpr value;
 
-  public static IExpr wigner3j(IReal j1Num, IReal j2Num, IReal j3Num, IReal m1Num, IReal m2Num,
-      IReal m3Num) throws TriangularException, NotPhysicalException {
-    IRational j1 = intOrHalfInt(j1Num);
-    IRational j2 = intOrHalfInt(j2Num);
-    IRational j3 = intOrHalfInt(j3Num);
-    IRational m1 = intOrHalfInt(m1Num);
-    IRational m2 = intOrHalfInt(m2Num);
-    IRational m3 = intOrHalfInt(m3Num);
-
-    if (!m1.add(m2).add(m3).isZero()) {
-      throw new Wigner.NotPhysicalException(F.C0);
+    public TriangularException(IExpr value) {
+      super("");
+      this.value = value;
     }
 
-    IRational a1 = j1.add(j2).subtract(j3);
-    if (a1.isNegative()) {
-      throw new Wigner.NotPhysicalException(F.C0);
-    }
-    IRational a2 = j1.subtract(j2).add(j3);
-    if (a2.isNegative()) {
-      throw new Wigner.NotPhysicalException(F.C0);
-    }
-    IRational a3 = j2.add(j3).subtract(j1);
-    // double a3 = -j1 + j2 + j3;
-    if (a3.isNegative()) {
-      return F.C0;
-    }
-    if (m1.abs().isGT(j1) || m2.abs().isGT(j2) || m3.abs().isGT(j3)) {
-      return F.C0;
+    public IExpr getValue() {
+      return value;
     }
 
-    // int maxFact = (int) Math.max(j1 + j2 + j3 + 1,
-    // Math.max(j1 + Math.abs(m1), Math.max(j2 + Math.abs(m2), j3 + Math.abs(m3))));
-    // calcFactList(maxFact);
-
-    IInteger multiplyValue = NumberTheory.factorial(j1.add(j2).subtract(j3).numerator()) //
-        .multiply(NumberTheory.factorial(j1.subtract(j2).add(j3).numerator())) //
-        .multiply(NumberTheory.factorial(j2.add(j3).subtract(j1).numerator())) //
-        .multiply(NumberTheory.factorial(j1.subtract(m1).numerator())) //
-        .multiply(NumberTheory.factorial(j1.add(m1).numerator())) //
-        .multiply(NumberTheory.factorial(j2.subtract(m2).numerator())) //
-        .multiply(NumberTheory.factorial(j2.add(m2).numerator())) //
-        .multiply(NumberTheory.factorial(j3.subtract(m3).numerator())) //
-        .multiply(NumberTheory.factorial(j3.add(m3).numerator()));//
-    // .divide(NumberTheory.factorial((int) (j1 + j2 + j3 + 1)));
-
-    // double multiplyValue = argsqrt.doubleValue();
-    IRational divideValue = NumberTheory.factorial(j1.add(j2).add(j3).add(1).numerator());
-    IExpr ressqrt = F.Sqrt(multiplyValue.divide(divideValue));
-    // double ressqrt = Math.sqrt(multiplyValue / divideValue);
-    // if (Double.isInfinite(ressqrt) || Double.isNaN(ressqrt)) {
-    // ressqrt = Math.real(ressqrt);
-    // }
-
-    int imin = j1.add(m2).subtract(j3).max(j2.subtract(m1).subtract(j3).max(F.C0)).toIntDefault();
-    int imax = j2.add(m2).min(j1.subtract(m1).min(j1.add(j2).subtract(j3))).toIntDefault();
-    // int imin = (int) Math.max(-j3 + j1 + m2, Math.max(-j3 + j2 - m1, 0));
-    // int imax = (int) Math.min(j2 + m2, Math.min(j1 - m1, j1 + j2 - j3));
-    if (imin == Integer.MIN_VALUE || imax == Integer.MIN_VALUE) {
-      throw new ArgumentTypeException("error",
-          F.List("Expecting non-negative machine integer, got " + imin + " or " + imax));
-    }
-    IExpr sumres = F.C0;
-    for (int ii = imin; ii <= imax; ii++) {
-      IInteger den = NumberTheory.factorial(ii)//
-          .multiply(NumberTheory.factorial(F.ZZ(ii).add(j3.subtract(j1).subtract(m2).numerator()))) //
-          .multiply(NumberTheory.factorial(j2.add(m2).subtract(F.ZZ(ii)).numerator())) //
-          .multiply(NumberTheory.factorial(j1.subtract(m1).subtract(F.ZZ(ii)).numerator())) //
-          .multiply(NumberTheory.factorial(F.ZZ(ii).add(j3).subtract(j2).add(m1).numerator())) //
-          .multiply(NumberTheory.factorial(j1.add(j2).subtract(j3).subtract(F.ZZ(ii)).numerator()));
-      if (ii == 0) {
-        sumres = sumres.add(F.Power(den, F.CN1));
-      } else {
-        sumres = sumres.add(F.Power(F.CN1, F.ZZ(ii)).divide(den));
-      }
-    }
-
-    IRational exponent = j1.subtract(j2).subtract(m3);
-    if (exponent.isZero()) {
-      return F.Times(ressqrt, sumres);
-    }
-    IExpr prefid = F.Power(F.CN1, exponent);
-    return F.Times(ressqrt, sumres, prefid);
-  }
-
-  public static IExpr racah(IRational aa, IRational bb, IRational cc, IRational dd, IRational ee,
-      IRational ff) throws TriangularException {
-    IExpr prefac = F.Times(bigDeltaCoeff(aa, bb, ee), bigDeltaCoeff(cc, dd, ee),
-        bigDeltaCoeff(aa, cc, ff), bigDeltaCoeff(bb, dd, ff));
-    EvalEngine engine = EvalEngine.get();
-    prefac = engine.evaluate(prefac);
-    if (prefac.isPossibleZero(true)) {
-      return F.C0;
-    }
-
-    int imin = aa.add(bb).add(ee)
-        .max(cc.add(dd).add(ee).max(aa.add(cc).add(ff).max(bb.add(dd).add(ff)))).toIntDefault();
-    int imax = aa.add(bb).add(cc).add(dd)
-        .min(aa.add(dd).add(ee).add(ff).min(bb.add(cc).add(ee).add(ff))).toIntDefault();
-    // int imin =
-    // (int) Math.max(Math.max(aa + bb + ee, cc + dd + ee), Math.max(aa + cc + ff, bb + dd + ff));
-    // int imax = (int) Math.min(Math.min(aa + bb + cc + dd, aa + dd + ee + ff), bb + cc + ee + ff);
-    if (imin == Integer.MIN_VALUE || imax == Integer.MIN_VALUE) {
-      throw new ArgumentTypeException("error",
-          F.List("Expecting non-negative machine integer, got " + imin + " or " + imax));
-    }
-
-    // int maxfact = (int) Math.max(Math.max(imax + 1, aa + bb + cc + dd),
-    // Math.max(aa + dd + ee + ff, bb + cc + ee + ff));
-    // calcFactList(maxfact);
-
-    IExpr sumres = F.C0;
-    for (int kk = imin; kk <= imax; kk++) {
-      // BigInteger den = factList.get(kk - (int) aa - (int) bb - (int) ee)
-      // .multiply(factList.get(kk - (int) cc - (int) dd - (int) ee))
-      // .multiply(factList.get(kk - (int) aa - (int) cc - (int) ff))
-      // .multiply(factList.get(kk - (int) bb - (int) dd - (int) ff))
-      // .multiply(factList.get((int) aa + (int) bb + (int) cc + (int) dd - kk))
-      // .multiply(factList.get((int) aa + (int) dd + (int) ee + (int) ff - kk))
-      // .multiply(factList.get((int) bb + (int) cc + (int) ee + (int) ff - kk));
-      // sumres += Math.pow(-1, kk) * factList.get(kk + 1).doubleValue() / den.doubleValue();
-      IInteger k1 = F.ZZ(kk).subtract(aa).subtract(bb).subtract(ee).numerator();
-      IInteger k2 = F.ZZ(kk).subtract(cc).subtract(dd).subtract(ee).numerator();
-      IInteger k3 = F.ZZ(kk).subtract(aa).subtract(cc).subtract(ff).numerator();
-      IInteger k4 = F.ZZ(kk).subtract(bb).subtract(dd).subtract(ff).numerator();
-
-      IInteger k5 = aa.add(bb).add(cc).add(dd).subtract(F.ZZ(kk)).numerator();
-      IInteger k6 = aa.add(dd).add(ee).add(ff).subtract(F.ZZ(kk)).numerator();
-      IInteger k7 = bb.add(cc).add(ee).add(ff).subtract(F.ZZ(kk)).numerator();
-      IInteger den = NumberTheory.factorial(k1)//
-          .multiply(NumberTheory.factorial(k2)) //
-          .multiply(NumberTheory.factorial(k3))//
-          .multiply(NumberTheory.factorial(k4)) //
-          .multiply(NumberTheory.factorial(k5))//
-          .multiply(NumberTheory.factorial(k6))//
-          .multiply(NumberTheory.factorial(k7));
-
-      IInteger kk1 = NumberTheory.factorial(kk + 1);
-      if (kk == 0) {
-        sumres = sumres.add(F.QQ(kk1, den));
-      } else {
-        sumres = sumres.add(F.CN1.power(F.ZZ(kk)).multiply(F.QQ(kk1, den)));
-      }
-    }
-    IInteger exponent = aa.add(bb).add(cc).add(dd).numerator();
-    return F.Times(prefac, sumres, F.CN1.power(exponent));
-  }
-
-  public static IExpr wigner6j(IReal j1Num, IReal j2Num, IReal j3Num, IReal j4Num, IReal j5Num,
-      IReal j6Num) throws TriangularException {
-    IRational j1 = intOrHalfInt(j1Num);
-    IRational j2 = intOrHalfInt(j2Num);
-    IRational j3 = intOrHalfInt(j3Num);
-    IRational j4 = intOrHalfInt(j4Num);
-    IRational j5 = intOrHalfInt(j5Num);
-    IRational j6 = intOrHalfInt(j6Num);
-    IRational exponent = j1.add(j2).add(j4).add(j5);
-    return F.Times(F.CN1.power(exponent), racah(j1, j2, j5, j4, j3, j6));
   }
 
   private static IExpr bigDeltaCoeff(IRational aa, IRational bb, IRational cc)
@@ -274,6 +97,88 @@ public class Wigner {
     return F.NIL;
   }
 
+  public static IRational[] createMijSequence(IRational j, int jDouble) {
+    IRational[] mijSequence = new IRational[jDouble + 1];
+    for (int i = 0; i < mijSequence.length; i++) {
+      mijSequence[i] = j.subtract(i);
+    }
+    return mijSequence;
+  }
+
+  public static IRational intOrHalfInt(IReal value) throws TriangularException {
+    if (value.isRational()) {
+      IInteger denominator = ((IRational) value).denominator();
+      if (denominator.equals(F.C1)) {
+        return ((IRational) value).numerator();
+      } else if (denominator.equals(F.C2)) {
+        return (IRational) value;
+      }
+    }
+    int intValue = value.toIntDefault();
+    if (intValue != Integer.MIN_VALUE) {
+      return F.ZZ(intValue);
+    }
+    value = value.multiply(F.C2);
+    intValue = value.toIntDefault();
+    if (intValue != Integer.MIN_VALUE) {
+      return F.QQ(intValue, 2);
+    }
+    throw new Wigner.TriangularException(F.C0);
+  }
+
+  public static int jDouble(IRational J) {
+    return J.multiply(F.C2).toIntDefault();
+  }
+
+  public static IExpr racah(IRational aa, IRational bb, IRational cc, IRational dd, IRational ee,
+      IRational ff) throws TriangularException {
+    IExpr prefac = F.Times(bigDeltaCoeff(aa, bb, ee), bigDeltaCoeff(cc, dd, ee),
+        bigDeltaCoeff(aa, cc, ff), bigDeltaCoeff(bb, dd, ff));
+    EvalEngine engine = EvalEngine.get();
+    prefac = engine.evaluate(prefac);
+    if (prefac.isPossibleZero(true)) {
+      return F.C0;
+    }
+
+    int imin = aa.add(bb).add(ee)
+        .max(cc.add(dd).add(ee).max(aa.add(cc).add(ff).max(bb.add(dd).add(ff)))).toIntDefault();
+    int imax = aa.add(bb).add(cc).add(dd)
+        .min(aa.add(dd).add(ee).add(ff).min(bb.add(cc).add(ee).add(ff))).toIntDefault();
+
+    if (imin == Integer.MIN_VALUE || imax == Integer.MIN_VALUE) {
+      throw new ArgumentTypeException("error",
+          F.List("Expecting non-negative machine integer, got " + imin + " or " + imax));
+    }
+
+    IExpr sumres = F.C0;
+    for (int kk = imin; kk <= imax; kk++) {
+      IInteger k1 = F.ZZ(kk).subtract(aa).subtract(bb).subtract(ee).numerator();
+      IInteger k2 = F.ZZ(kk).subtract(cc).subtract(dd).subtract(ee).numerator();
+      IInteger k3 = F.ZZ(kk).subtract(aa).subtract(cc).subtract(ff).numerator();
+      IInteger k4 = F.ZZ(kk).subtract(bb).subtract(dd).subtract(ff).numerator();
+
+      IInteger k5 = aa.add(bb).add(cc).add(dd).subtract(F.ZZ(kk)).numerator();
+      IInteger k6 = aa.add(dd).add(ee).add(ff).subtract(F.ZZ(kk)).numerator();
+      IInteger k7 = bb.add(cc).add(ee).add(ff).subtract(F.ZZ(kk)).numerator();
+      IInteger den = NumberTheory.factorial(k1)//
+          .multiply(NumberTheory.factorial(k2)) //
+          .multiply(NumberTheory.factorial(k3))//
+          .multiply(NumberTheory.factorial(k4)) //
+          .multiply(NumberTheory.factorial(k5))//
+          .multiply(NumberTheory.factorial(k6))//
+          .multiply(NumberTheory.factorial(k7));
+
+      IInteger kk1 = NumberTheory.factorial(kk + 1);
+      if (kk == 0) {
+        sumres = sumres.add(F.QQ(kk1, den));
+      } else {
+        sumres = sumres.add(F.CN1.power(F.ZZ(kk)).multiply(F.QQ(kk1, den)));
+      }
+    }
+    IInteger exponent = aa.add(bb).add(cc).add(dd).numerator();
+    return F.Times(prefac, sumres, F.CN1.power(exponent));
+  }
+
   public static IExpr threeJSymbol(IExpr j1, IExpr j2, IExpr j3, IExpr m1, IExpr m2, IExpr m3,
       final IBuiltInSymbol head, final IAST ast) {
     // https://functions.wolfram.com/HypergeometricFunctions/ThreeJSymbol/02/
@@ -295,9 +200,6 @@ public class Wigner {
       try {
         IExpr wigner3j =
             Wigner.wigner3j((IReal) j1, (IReal) j2, (IReal) j3, (IReal) m1, (IReal) m2, (IReal) m3);
-        // return wigner3j;
-        // double wigner3j =
-        // Wigner.wigner3j(j1.evalf(), j2.evalf(), j3.evalf(), m1.evalf(), m2.evalf(), m3.evalf());
         return F.num(wigner3j.evalf());
       } catch (Wigner.NotPhysicalException wnph) {
         Errors.printMessage(S.ThreeJSymbol, "phy", F.List(ast));
@@ -309,5 +211,249 @@ public class Wigner {
     }
     return F.NIL;
   }
+  // public static IExpr dotRotGradYnm(IExpr j, IExpr p, IExpr l, IExpr m, IExpr theta, IExpr phi) {
+  // IExpr k = F.Dummy("k");
+  //
+  // IExpr alpha = (lExpr, mExpr, jExpr, pExpr, kExpr) -> F
+  // .Sqrt(F.Divide(F.Times(F.Plus(F.Times(2, lExpr), 1), F.Plus(F.Times(2, jExpr), 1),
+  // F.Plus(F.Times(2, kExpr), 1)), F.Times(4, S.Pi)))
+  // .multiply(new Wigner3j().evaluate(F.List(jExpr, lExpr, kExpr, S.C0, S.C0, S.C0),
+  // EvalEngine.get()))
+  // .multiply(new Wigner3j().evaluate(
+  // F.List(jExpr, lExpr, kExpr, pExpr, mExpr, F.Negate(F.Plus(mExpr, pExpr))),
+  // EvalEngine.get()));
+  //
+  // IExpr sum = F.Sum(
+  // F.Times(SphericalHarmonics.Ynm(k, F.Plus(m, p), theta, phi), alpha.apply(l, m, j, p, k),
+  // F.Divide(F.C1, F.C2),
+  // F.Plus(F.Times(k, k), F.Negate(F.Times(j, j)), F.Negate(F.Times(l, l)),
+  // k, F.Negate(j), F.Negate(l))),
+  // F.List(k, F.Abs(F.Negate(F.Plus(l, j))), F.Plus(l, j)));
+  //
+  // return F.Times(F.Power(F.Negate(F.Plus(m, p)), F.C1), sum);
+  // }
+
+  public static IExpr wigner3j(IReal j1Num, IReal j2Num, IReal j3Num, IReal m1Num, IReal m2Num,
+      IReal m3Num) throws TriangularException, NotPhysicalException {
+    IRational j1 = intOrHalfInt(j1Num);
+    IRational j2 = intOrHalfInt(j2Num);
+    IRational j3 = intOrHalfInt(j3Num);
+    IRational m1 = intOrHalfInt(m1Num);
+    IRational m2 = intOrHalfInt(m2Num);
+    IRational m3 = intOrHalfInt(m3Num);
+
+    if (!m1.add(m2).add(m3).isZero()) {
+      throw new Wigner.NotPhysicalException(F.C0);
+    }
+
+    IRational a1 = j1.add(j2).subtract(j3);
+    if (a1.isNegative()) {
+      throw new Wigner.NotPhysicalException(F.C0);
+    }
+    IRational a2 = j1.subtract(j2).add(j3);
+    if (a2.isNegative()) {
+      throw new Wigner.NotPhysicalException(F.C0);
+    }
+    IRational a3 = j2.add(j3).subtract(j1);
+    if (a3.isNegative()) {
+      return F.C0;
+    }
+    if (m1.abs().isGT(j1) || m2.abs().isGT(j2) || m3.abs().isGT(j3)) {
+      return F.C0;
+    }
+
+    IInteger multiplyValue = NumberTheory.factorial(j1.add(j2).subtract(j3).numerator()) //
+        .multiply(NumberTheory.factorial(j1.subtract(j2).add(j3).numerator())) //
+        .multiply(NumberTheory.factorial(j2.add(j3).subtract(j1).numerator())) //
+        .multiply(NumberTheory.factorial(j1.subtract(m1).numerator())) //
+        .multiply(NumberTheory.factorial(j1.add(m1).numerator())) //
+        .multiply(NumberTheory.factorial(j2.subtract(m2).numerator())) //
+        .multiply(NumberTheory.factorial(j2.add(m2).numerator())) //
+        .multiply(NumberTheory.factorial(j3.subtract(m3).numerator())) //
+        .multiply(NumberTheory.factorial(j3.add(m3).numerator()));//
+
+    IRational divideValue = NumberTheory.factorial(j1.add(j2).add(j3).add(1).numerator());
+    IExpr ressqrt = F.Sqrt(multiplyValue.divide(divideValue));
+
+    int imin = j1.add(m2).subtract(j3).max(j2.subtract(m1).subtract(j3).max(F.C0)).toIntDefault();
+    int imax = j2.add(m2).min(j1.subtract(m1).min(j1.add(j2).subtract(j3))).toIntDefault();
+    if (imin == Integer.MIN_VALUE || imax == Integer.MIN_VALUE) {
+      throw new ArgumentTypeException("error",
+          F.List("Expecting non-negative machine integer, got " + imin + " or " + imax));
+    }
+    IExpr sumres = F.C0;
+    for (int ii = imin; ii <= imax; ii++) {
+      IInteger den = NumberTheory.factorial(ii)//
+          .multiply(NumberTheory.factorial(F.ZZ(ii).add(j3.subtract(j1).subtract(m2).numerator()))) //
+          .multiply(NumberTheory.factorial(j2.add(m2).subtract(F.ZZ(ii)).numerator())) //
+          .multiply(NumberTheory.factorial(j1.subtract(m1).subtract(F.ZZ(ii)).numerator())) //
+          .multiply(NumberTheory.factorial(F.ZZ(ii).add(j3).subtract(j2).add(m1).numerator())) //
+          .multiply(NumberTheory.factorial(j1.add(j2).subtract(j3).subtract(F.ZZ(ii)).numerator()));
+      if (ii == 0) {
+        sumres = sumres.add(F.Power(den, F.CN1));
+      } else {
+        sumres = sumres.add(F.Power(F.CN1, F.ZZ(ii)).divide(den));
+      }
+    }
+
+    IRational exponent = j1.subtract(j2).subtract(m3);
+    if (exponent.isZero()) {
+      return F.Times(ressqrt, sumres);
+    }
+    IExpr prefid = F.Power(F.CN1, exponent);
+    return F.Times(ressqrt, sumres, prefid);
+  }
+
+  public static IExpr wigner6j(IReal j1Num, IReal j2Num, IReal j3Num, IReal j4Num, IReal j5Num,
+      IReal j6Num) throws TriangularException {
+    IRational j1 = intOrHalfInt(j1Num);
+    IRational j2 = intOrHalfInt(j2Num);
+    IRational j3 = intOrHalfInt(j3Num);
+    IRational j4 = intOrHalfInt(j4Num);
+    IRational j5 = intOrHalfInt(j5Num);
+    IRational j6 = intOrHalfInt(j6Num);
+    IRational exponent = j1.add(j2).add(j4).add(j5);
+    return F.Times(F.CN1.power(exponent), racah(j1, j2, j5, j4, j3, j6));
+  }
+
+  /**
+   * Return the Wigner D matrix for angular momentum J.
+   * 
+   * @param alpha real numbers representing the Euler angles of rotation about the so-called
+   *        vertical, line of nodes, and figure axes
+   * @param beta real numbers representing the Euler angles of rotation about the so-called
+   *        vertical, line of nodes, and figure axes
+   * @param gamma real numbers representing the Euler angles of rotation about the so-called
+   *        vertical, line of nodes, and figure axes
+   * @return the Wigner D matrix
+   */
+  public static FieldMatrix<IExpr> wignerD(IRational J, IExpr alpha, IExpr beta, IExpr gamma) {
+    int JDouble = jDouble(J);
+    IRational[] M = createMijSequence(J, JDouble);
+    FieldMatrix<IExpr> d = wignerDSmall(M, J, beta, JDouble);
+
+    IExpr[][] zeroM = new IExpr[JDouble + 1][JDouble + 1];
+    for (int i = 0; i < zeroM.length; i++) {
+      for (int j = 0; j < zeroM.length; j++) {
+        zeroM[i][j] = F.C0;
+      }
+    }
+    FieldMatrix<IExpr> D = new Array2DRowFieldMatrix<IExpr>(F.EXPR_FIELD, zeroM);
+
+    for (int i = 0; i < M.length; i++) {
+      for (int j = 0; j < M.length; j++) {
+        IExpr Mi = M[i];
+        IExpr Mj = M[j];
+        D.setEntry(i, j, F.Times(F.Exp(F.Times(S.I, Mi, alpha)), d.getEntry(i, j),
+            F.Exp(F.Times(S.I, Mj, gamma))));
+      }
+    }
+
+    return D;
+  }
+
+  /**
+   * Return the small Wigner d matrix for angular momentum J.
+   * 
+   * @param J an integer, half-integer, or SymPy symbol for the total angular momentum of the
+   *        angular momentum space being rotated
+   * @param beta a real number representing the Euler angle of rotation about the so-called line of
+   *        nodes
+   * @return the small Wigner d matrix
+   */
+  public static FieldMatrix<IExpr> wignerDSmall(IRational J, IExpr beta) {
+    int JDouble = jDouble(J);
+    IRational[] mijSequence = createMijSequence(J, JDouble);
+    return wignerDSmall(mijSequence, J, beta, JDouble);
+  }
+
+  private static FieldMatrix<IExpr> wignerDSmall(IRational[] mijSequence, IRational J, IExpr beta,
+      int JDouble) {
+    EvalEngine engine = EvalEngine.get();
+    FieldMatrix<IExpr> d = new Array2DRowFieldMatrix<IExpr>(F.EXPR_FIELD, JDouble + 1, JDouble + 1);
+    for (int i = 0; i < mijSequence.length; i++) {
+      for (int j = 0; j < mijSequence.length; j++) {
+        IExpr wignerDSmall =
+            wignerDSmallEntry(J, mijSequence[i], mijSequence[j], beta, JDouble, engine);
+        d.setEntry(i, j, wignerDSmall);
+      }
+    }
+    return d;
+  }
+
+  public static IExpr wignerDEntry(IRational J, IRational mi, IRational mj, IExpr alpha, IExpr beta,
+      IExpr gamma, EvalEngine engine) {
+    IExpr entry = wignerDSmallEntry(J, mi, mj, beta, jDouble(J), engine);
+    return engine
+        .evaluate(F.Times(F.Exp(F.Times(S.I, mi, alpha)), entry, F.Exp(F.Times(S.I, mj, gamma))));
+  }
+
+  // public static IExpr wignerDEntry(IRational J, IRational mi, IRational mj, INumber alpha,
+  // INumber beta, INumber gamma, EvalEngine engine) {
+  // IExpr entry = wignerDSmallEntry(J, mi, mj, beta, jDouble(J), engine);
+  // return engine
+  // .evaluate(F.Times(F.Exp(F.Times(S.I, mi, alpha)), entry, F.Exp(F.Times(S.I, mj, gamma))));
+  // }
+
+  public static IExpr wignerDSmallEntry(IRational j, IRational mi, IRational mj, IExpr beta,
+      int jDouble, EvalEngine engine) {
+    IRational sigmamax = j.subtract(mi).min(j.subtract(mj));
+    IRational sigmamin = F.C0.max(mi.add(mj).negate());
+    final IExpr halfBeta = beta.isNumber() ? F.C1D2.times(beta) : F.Times(F.C1D2, beta);
+
+    IExpr dij = S.Sqrt.of(engine, //
+        F.Times( //
+            j.add(mi).factorial(), //
+            j.subtract(mi).factorial(), //
+            F.Power(j.add(mj).factorial(), F.CN1), //
+            F.Power(j.subtract(mj).factorial(), F.CN1)));
+
+    IASTAppendable terms = F.PlusAlloc(16);
+    IRational s = sigmamin;
+    while (s.isLE(sigmamax)) {
+      IRational r1 = j.subtract(mi).subtract(s);
+      terms.append(F.Times(//
+          F.CN1.power(r1), //
+          F.Binomial(j.add(mj), r1), //
+          F.Binomial(j.subtract(mj), s), //
+          F.Power(F.Cos(halfBeta), //
+              s.multiply(F.C2).add(mi).add(mj)), //
+          F.Power(F.Sin(halfBeta), //
+              F.Plus(F.ZZ(jDouble), s.multiply(F.CN2).subtract(mi).subtract(mj)))));
+      s = s.inc();
+    }
+    return engine.evaluate(F.Times(dij, terms));
+  }
+
+  // public static IExpr wignerDSmallEntry(IRational j, IRational mi, IRational mj, INumber beta,
+  // int jDouble, EvalEngine engine) {
+  // IRational sigmamax = j.subtract(mi).min(j.subtract(mj));
+  // IRational sigmamin = F.C0.max(mi.add(mj).negate());
+  // final INumber halfBeta = F.C1D2.times(beta);
+  //
+  // IExpr dij = engine.evaluate( //
+  // F.Sqrt( //
+  // F.Times( //
+  // F.Factorial(F.Plus(j, mi)), //
+  // F.Factorial(F.Subtract(j, mi)), //
+  // F.Power(F.Factorial(F.Plus(j, mj)), F.CN1), //
+  // F.Power(F.Factorial(F.Subtract(j, mj)), F.CN1))));
+  //
+  // IASTAppendable terms = F.PlusAlloc(16);
+  // IRational s = sigmamin;
+  // while (s.isLE(sigmamax)) {
+  // IRational r1 = j.subtract(mi).subtract(s);
+  // terms.append(F.Times(//
+  // F.CN1.power(r1), //
+  // F.Binomial(j.add(mj), r1), //
+  // F.Binomial(j.subtract(mj), s), //
+  // F.Power(F.Cos(halfBeta), //
+  // s.multiply(F.C2).add(mi).add(mj)), //
+  // F.Power(F.Sin(halfBeta), //
+  // F.Plus(F.ZZ(jDouble), s.multiply(F.CN2).subtract(mi).subtract(mj)))));
+  // s = s.inc();
+  // }
+  // return engine.evaluate(F.Times(dij, terms));
+  // }
 
 }
