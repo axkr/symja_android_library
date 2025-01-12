@@ -756,8 +756,10 @@ public abstract class Scanner {
                 fToken = TT_BLANK_OPTIONAL;
               } else if (charAtPosition() == ':') {
                 fCurrentPosition++;
-                if (checkedCharAtPosition() == '>') {
+                if (isOperatorCharacters(charAtPosition())) {
                   fCurrentPosition--;
+                  // } else if (checkedCharAtPosition() == '>') {
+                  // fCurrentPosition--;
                 } else {
                   fToken = TT_BLANK_COLON;
                 }

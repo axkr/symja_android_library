@@ -1,11 +1,10 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.parser.ExprParser;
-
-import static org.junit.Assert.assertEquals;
 
 /** */
 public class ExprParserTestCase extends ExprEvaluatorTestCase {
@@ -35,6 +34,16 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
     IExpr expr = parser.parse("2.2250738585072014`*^-308 // FullForm");
     IExpr result = engine.evaluate(expr);
     assertEquals(result.toString(), "2.2250738585072014`*^-308");
+  }
+
+  @Test
+  public void testParserPatternTest() {
+    EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);
+    ExprParser parser = new ExprParser(engine, true);
+    IExpr expr = parser.parse("Hold(triangle?x_:=x^2) // FullForm");
+    IExpr result = engine.evaluate(expr);
+    assertEquals(result.toString(), //
+        "Hold(SetDelayed(PatternTest(Triangle, Pattern(x, Blank())), Power(x, 2)))");
   }
 
   @Test
