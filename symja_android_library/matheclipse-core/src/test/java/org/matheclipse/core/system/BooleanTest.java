@@ -68,6 +68,37 @@ public class BooleanTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testBetween() {
+    check("Between(a,{x,y})", //
+        "x<=a&&a<=y");
+    check("Between(a,{{x1,y1},{x2,y2}})", //
+        "(x1<=a&&a<=y1)||(x2<=a&&a<=y2)");
+    check("Between(a,Interval({x1,y1},{x2,y2}))", //
+        "(x1<=a&&a<=y1)||(x2<=a&&a<=y2)");
+    check("Between(42,{1,42})", //
+        "True");
+    check("Between(42,{1,41})", //
+        "False");
+    check("Between(42,{43,50})", //
+        "False");
+    check("Between(42,{42,42})", //
+        "True");
+    check("Between(3,{E,Pi})", //
+        "True");
+    check("Select({5, 10, 15, 20, 25}, Between({10, 20}))", //
+        "{10,15,20}");
+    check("Between({4, 10})[6]", //
+        "True");
+    check("Between({4, 10})[206]", //
+        "False");
+    check("Between({2,5})/@ Range(7)", //
+        "{False,True,True,True,True,False,False}");
+
+    check("Between(7, Interval({0, 10}))", //
+        "True");
+  }
+
+  @Test
   public void testBoole() {
     check("Boole(2 == 2)", //
         "1");

@@ -66,6 +66,7 @@ public class BuiltinUsage {
     USAGE[ID.BellB] = "Bell numbers";
     USAGE[ID.BernoulliB] = "Bernoulli number and polynomial";
     USAGE[ID.Beta] = "Euler's Beta function";
+    USAGE[ID.Between] = "test if value or values are in range";
     USAGE[ID.Block] = "evaluate an expression using local values for some given symbols";
     USAGE[ID.Boole] = "translate 'True' to 1, and 'False' to 0";
     USAGE[ID.Booleans] = "domain of boolean values";
@@ -685,6 +686,7 @@ public class BuiltinUsage {
     USAGE[ID.Whitespace] = "sequence of whitespace characters";
     USAGE[ID.WhitespaceCharacter] = "space, newline, tab, or other whitespace character";
     USAGE[ID.WordBoundary] = "boundary between word characters and others";
+    USAGE[ID.WignerD] = "Wigner D-function";
     USAGE[ID.With] = "replace variables by some constant values";
     USAGE[ID.WordCharacter] = "letter or digit";
 

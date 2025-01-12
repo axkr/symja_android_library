@@ -104,6 +104,7 @@ public final class BooleanFunctions {
       S.AllTrue.setEvaluator(new AllTrue());
       S.And.setEvaluator(new And());
       S.AnyTrue.setEvaluator(new AnyTrue());
+      S.Between.setEvaluator(new Between());
       S.Boole.setEvaluator(new Boole());
       S.BooleanConvert.setEvaluator(new BooleanConvert());
       S.BooleanFunction.setEvaluator(new BooleanFunction());
@@ -885,6 +886,61 @@ public final class BooleanFunctions {
         resultCollector.append(temp);
       }
       return false;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
+  private static class Between extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      if (arg2.isListOfLists()) {
+        if (arg2.argSize() > 0) {
+          IAST listOfPairs = (IAST) arg2;
+          if (listOfPairs.forAll(IExpr::isList2)) {
+            return betweenPairs(arg1, listOfPairs);
+          }
+        }
+      } else if (arg2.isList2()) {
+        IExpr min = arg2.first();
+        IExpr max = arg2.second();
+        return F.And(F.LessEqual(min, arg1), F.LessEqual(arg1, max));
+      } else if (arg2.isInterval()) {
+        if (arg2.argSize() == 0) {
+          // the empty interval
+          return S.False;
+        }
+        IAST intervalOfPairs = (IAST) arg2;
+        if (intervalOfPairs.forAll(IExpr::isList2)) {
+          return betweenPairs(arg1, intervalOfPairs);
+        }
+      }
+
+      if (arg2.isList() || arg2.isInterval()) {
+        // Argument `1` is expected to be a pair, a list of pairs or an Interval object.
+        return Errors.printMessage(S.Between, "pair", F.List(arg2), engine);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr betweenPairs(IExpr x, IAST sequenceOfPairs) {
+      IASTAppendable result = F.ast(S.Or, sequenceOfPairs.argSize());
+      for (int i = 1; i < sequenceOfPairs.size(); i++) {
+        IAST pair = (IAST) sequenceOfPairs.get(i);
+        IExpr min = pair.arg1();
+        IExpr max = pair.arg2();
+        result.append(F.And(F.LessEqual(min, x), F.LessEqual(x, max)));
+      }
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2_1;
     }
 
     @Override

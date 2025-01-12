@@ -1093,6 +1093,8 @@ public class S {
   public final static IBuiltInSymbol BetaRegularized =
       S.initFinalSymbol("BetaRegularized", ID.BetaRegularized);
 
+  public final static IBuiltInSymbol Between = S.initFinalSymbol("Between", ID.Between);
+
   /**
    * BetweennessCentrality(graph) - Computes the betweenness centrality of each vertex of a `graph`.
    * 
@@ -11534,6 +11536,8 @@ public class S {
   public final static IBuiltInSymbol WhittakerM = S.initFinalSymbol("WhittakerM", ID.WhittakerM);
 
   public final static IBuiltInSymbol WhittakerW = S.initFinalSymbol("WhittakerW", ID.WhittakerW);
+
+  public final static IBuiltInSymbol WignerD = S.initFinalSymbol("WignerD", ID.WignerD);
 
   /**
    * With({list_of_local_variables}, expr ) - evaluates `expr` for the `list_of_local_variables` by

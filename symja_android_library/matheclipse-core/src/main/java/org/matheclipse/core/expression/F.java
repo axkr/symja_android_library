@@ -11063,7 +11063,7 @@ public class F extends S {
    * @param m the number of elements in one row
    * @return
    */
-  public static IAST matrix(BiIntFunction<? extends IExpr> biFunction, int n, int m) {
+  public static IASTMutable matrix(BiIntFunction<? extends IExpr> biFunction, int n, int m) {
     if (n > Config.MAX_MATRIX_DIMENSION_SIZE || m > Config.MAX_MATRIX_DIMENSION_SIZE) {
       ASTElementLimitExceeded.throwIt(((long) n) * ((long) m));
     }
