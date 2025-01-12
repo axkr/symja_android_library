@@ -1165,6 +1165,17 @@ public class Solve extends AbstractFunctionOptionEvaluator {
      */
     public IExpr of(final IAST ast, final boolean numeric, EvalEngine engine) {
       boolean[] isNumeric = new boolean[] {numeric};
+      int maxRoots = options[1].toIntDefault();
+      if (maxRoots < 1) {
+        if (options[1].isInfinity()) {
+          maxRoots = Integer.MAX_VALUE;
+        } else if (options[1] == S.Automatic) {
+          maxRoots = 1000;
+        } else {
+          // The value `1` of the `2` options is not a positive integer, Infinity or Automatic
+          return Errors.printMessage(S.NSolve, "maxrts", F.List(options[1]));
+        }
+      }
       try {
         if (ast.arg1().isEmptyList()) {
           return F.list(F.CEmptyList);
@@ -1184,10 +1195,10 @@ public class Solve extends AbstractFunctionOptionEvaluator {
             } else {
               domain = (ISymbol) ast.arg3();
               if (domain == S.Booleans) {
-                return BooleanFunctions.solveInstances(ast.arg1(), variables, Integer.MAX_VALUE);
+                return BooleanFunctions.solveInstances(ast.arg1(), variables, maxRoots);
               }
               if (domain == S.Integers) {
-                return solveIntegers(ast, equationVariables, variables, Integer.MAX_VALUE, engine);
+                return solveIntegers(ast, equationVariables, variables, maxRoots, engine);
               }
 
               if (domain != S.Reals && domain != S.Complexes) {
@@ -1213,7 +1224,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                 // The system cannot be solved with the methods available to Solve.
                 return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);
               }
-              return checkDomain(result, domain);
+              return checkDomain(result, domain, maxRoots);
             }
             IASTMutable termsEqualZeroList = lists[0];
             IExpr result =
@@ -1222,7 +1233,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               // The system cannot be solved with the methods available to Solve.
               return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);
             }
-            return checkDomain(result, domain);
+            return checkDomain(result, domain, maxRoots);
           } finally {
             engine.setAssumptions(oldAssumptions);
           }
@@ -1263,13 +1274,14 @@ public class Solve extends AbstractFunctionOptionEvaluator {
    * @param domain
    * @return
    */
-  private static IExpr checkDomain(IExpr expr, ISymbol domain) {
+  private static IExpr checkDomain(IExpr expr, ISymbol domain, int maxRoots) {
     if (expr.isListOfRules() && expr.argSize() > 0) {
       expr = F.list(expr);
     }
+    IExpr result = expr;
     if (expr.isList() && domain.equals(S.Reals)) {
       if (expr.isListOfLists()) {
-        return F.mapList((IAST) expr, x -> {
+        result = F.mapList((IAST) expr, x -> {
           final IAST listOfRules = (IAST) x;
           if (!isComplex(listOfRules)) {
             return listOfRules;
@@ -1278,12 +1290,16 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         });
       } else {
         if (!isComplex(((IAST) expr))) {
-          return expr;
+          result = expr;
+        } else {
+          return F.CEmptyList;
         }
-        return F.CEmptyList;
       }
     }
-    return expr;
+    if (result.isListOfLists() && maxRoots < result.argSize()) {
+      return ((IAST) expr).subList(1, maxRoots + 1);
+    }
+    return result;
   }
 
   public static IExpr solveIntegers(final IAST ast, IAST equationVariables,
@@ -1307,9 +1323,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               if (diophantineResult.isPresent()) {
                 if (equationsAndInequations.argSize() > 1) {
                   hybridVars = new IExpr[] {F.NIL, F.NIL};
-                  hybridTuples =
-                      ChocoConvert.listOfRulesToTuples(diophantineResult, ast.topHead(), hybridVars,
-                          engine);
+                  hybridTuples = ChocoConvert.listOfRulesToTuples(diophantineResult, ast.topHead(),
+                      hybridVars, engine);
                 } else {
                   return diophantineResult;
                 }
@@ -1395,12 +1410,12 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   }
 
   private static IExpr[] defaultOptionValues() {
-    return new IExpr[] {S.False};
+    return new IExpr[] {S.False, F.C1000};
   }
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.GenerateConditions};
+    IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.GenerateConditions, S.MaxRoots};
     IExpr[] optionValues = defaultOptionValues();
     setOptions(newSymbol, optionKeys, optionValues);
   }

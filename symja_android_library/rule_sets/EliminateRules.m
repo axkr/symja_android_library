@@ -19,6 +19,9 @@ elimzeroplus(x_^n_*a_.+m_^x_*b_., x_) := {-((n*ProductLog(-(((-(b/a))^(1/n)*Log(
 elimzeroplus(w_.*Sqrt(a_.+b_.*x_)+z_., x_) := Expand((-a)*w^2 + z^2)/(b*w^2)
   /; FreeQ({a,b,w,z},x),
   
+elimzeroplus(x_^a_.*Log(b_.*x_)+c_., x_) := (-((a*c)/ProductLog(((-a)*c)/(1/b)^a)))^(1/a)
+  /; FreeQ({a,b,c},x),
+  
 elimzeroplus(y_.*x_+w_.*Sqrt(a_.+b_.*x_)+z_., x_) := {(b*w^2-2*y*z-w*Sqrt(b^2*w^2+4*a*y^2-4*b*y*z))/(2*y^2), 
                                                       (b*w^2-2*y*z+w*Sqrt(b^2*w^2+4*a*y^2-4*b*y*z))/(2*y^2)}  
   /; FreeQ({a,b,w,y,z},x)&&!PossibleZeroQ(y),

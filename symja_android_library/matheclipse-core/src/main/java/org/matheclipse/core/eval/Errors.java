@@ -222,6 +222,7 @@ public class Errors {
       "Local variable specification `1` contains `2` which is not a symbol or an assignment to a symbol.", //
       "matrix", "Argument `1` at position `2` is not a non-empty rectangular matrix.", //
       "matsq", "Argument `1` at position `2` is not a non-empty square matrix.", //
+      "maxrts", "The value `1` of the `2` options is not a positive integer, Infinity or Automatic", //
       "memlimit",
       "This computation has exceeded the memeory limit settings of this evaluation engines instance.", //
       "meprec", "Internal precision limit `1` reached while evaluating `2`.", //
@@ -294,6 +295,7 @@ public class Errors {
       "ovls", "Value of option `1` must be True, False or All.", //
       "padlevel",
       "The padding specification `1` involves `2` levels; the list `3` has only `4` level.", //
+      "pair", "Argument `1` is expected to be a pair, a list of pairs or an Interval object.", //
       "pairs", "The first argument `1` of `2` is not a list of pairs.", //
       "par", "Inappropriate parameter: `1`.", //
       "partd", "Part specification `1` is longer than depth of object.", //

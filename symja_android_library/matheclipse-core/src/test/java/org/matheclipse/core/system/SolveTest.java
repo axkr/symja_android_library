@@ -1579,12 +1579,15 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSystem805() {
-    check("Solve({x^2==4,x+20==10},x)", "{}");
+    check("Solve({x^2==4,x+20==10},x)", //
+        "{}");
     check("Solve(4*x^(-2)-1==0,x)", //
         "{{x->-2},{x->2}}");
 
-    check("Solve(x^2==a^2,x)", "{{x->-a},{x->a}}");
-    check("Solve((x^2-1)/(x-1)==0,x)", "{{x->-1}}");
+    check("Solve(x^2==a^2,x)", //
+        "{{x->-a},{x->a}}");
+    check("Solve((x^2-1)/(x-1)==0,x)", //
+        "{{x->-1}}");
 
     // LinearSolve[{{1,1,1},{1,1,-1},{1,-1,-1}},{100,50,10}]
     // Fraction[][] testData = { { new Fraction(1), new Fraction(1), new
@@ -1676,6 +1679,12 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->-2,y->-2*Sqrt(2),z->-3*Sqrt(2)},{x->-2,y->-2*Sqrt(2),z->3*Sqrt(2)},{x->-2,y->\n" //
             + "2*Sqrt(2),z->-3*Sqrt(2)},{x->-2,y->2*Sqrt(2),z->3*Sqrt(2)},{x->2,y->-2,z->-3*Sqrt(\n" //
             + "2)},{x->2,y->-2,z->3*Sqrt(2)},{x->2,y->2,z->-3*Sqrt(2)},{x->2,y->2,z->3*Sqrt(2)}}");
+  }
+
+  @Test
+  public void testSolveMaxRoots() {
+    check("Solve({x^2==4,x+y^2==6,x+y^2+z^2==24},{x,y,z},MaxRoots->2)", //
+        "{{x->-2,y->-2*Sqrt(2),z->-3*Sqrt(2)},{x->-2,y->-2*Sqrt(2),z->3*Sqrt(2)}}");
   }
 
   @Test
@@ -2191,8 +2200,6 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // TODO
     check("Solve(Power(x^(-4), -1/4) - Power(y^(-1/4), -1/4)==0,x)", //
         "{{x->y^(1/16)}}");
-
-
   }
 
   @Test
@@ -2204,6 +2211,31 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // TODO get {{z->-1},{z->0},{z->-I},{z->I},{z -> 1}}
     check("Solve(z^3==Conjugate(z),z)", //
         "Solve(z^3==Conjugate(z),z)");
+  }
+
+  @Test
+  public void testSolveLinearIntegers() {
+    check("Solve(30*p+7*q==1,{p,q},Integers, MaxRoots->10)", //
+        "{{p->-31,q->133},{p->-24,q->103},{p->-17,q->73},{p->-10,q->43},{p->-3,q->13},{p->\n" //
+            + "4,q->-17},{p->11,q->-47},{p->18,q->-77},{p->25,q->-107},{p->32,q->-137}}");
+  }
+
+  @Test
+  public void testSolveExp() {
+    check("Solve(x-E^x==1, x)", //
+        "{{x->1-ProductLog(-E)}}");
+  }
+
+  @Test
+  public void testSolveLog() {
+    check("Solve(x^a*Log(b*x)+c==0, x)", //
+        "{{x->((-a*c)/ProductLog((-a*c)/((1/b))^a))^(1/a)}}");
+    check("Solve(x^c*Log(x)==0, x)", //
+        "{{x->1},{x->0^(1/c)}}");
+    check("Solve(x^c*Log(x)==a, x)", //
+        "{{x->((a*c)/ProductLog(a*c))^(1/c)}}");
+    check("Solve(x*Log(x)==a, x)", //
+        "{{x->a/ProductLog(a)}}");
   }
 
   /** The JUnit setup method */
