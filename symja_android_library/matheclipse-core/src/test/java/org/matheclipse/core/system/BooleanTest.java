@@ -77,6 +77,8 @@ public class BooleanTest extends ExprEvaluatorTestCase {
         "(x1<=a&&a<=y1)||(x2<=a&&a<=y2)");
     check("Between(42,{1,42})", //
         "True");
+    check("Between(42,{{1,42}})", //
+        "True");
     check("Between(42,{1,41})", //
         "False");
     check("Between(42,{43,50})", //

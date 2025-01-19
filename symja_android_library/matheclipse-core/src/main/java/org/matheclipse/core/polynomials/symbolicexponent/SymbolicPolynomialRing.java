@@ -1402,7 +1402,7 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
 
     /** Polynomial iterator constructor. */
     @SuppressWarnings("unchecked")
-    public GenPolynomialIterator(SymbolicPolynomialRing fac) {
+    public GenPolynomialIterator(SymbolicPolynomialRing fac) throws IllegalArgumentException {
       ring = fac;
       IExprIterable li = new IExprIterable();
       li.setNonNegativeIterator();
@@ -1506,7 +1506,8 @@ public final class SymbolicPolynomialRing implements RingFactory<SymbolicPolynom
 
     /** Polynomial iterator constructor. */
     @SuppressWarnings("unchecked")
-    public GenPolynomialMonomialIterator(SymbolicPolynomialRing fac) {
+    public GenPolynomialMonomialIterator(SymbolicPolynomialRing fac)
+        throws IllegalArgumentException {
       ring = fac;
       LongIterable li = new LongIterable();
       li.setNonNegativeIterator();

@@ -93,7 +93,7 @@ public class ASTRRBTree extends AbstractAST
    * 
    * @param ast
    */
-  public ASTRRBTree(IAST ast) {
+  public ASTRRBTree(IAST ast) throws ASTElementLimitExceeded {
     super();
     if (Config.MAX_AST_SIZE < ast.size()) {
       throw new ASTElementLimitExceeded(ast.size());
@@ -108,7 +108,7 @@ public class ASTRRBTree extends AbstractAST
     }
   }
 
-  public ASTRRBTree(MutRrbt<IExpr> list) {
+  public ASTRRBTree(MutRrbt<IExpr> list) throws ASTElementLimitExceeded {
     super();
     if (Config.MAX_AST_SIZE < list.size()) {
       throw new ASTElementLimitExceeded(list.size());
@@ -117,7 +117,7 @@ public class ASTRRBTree extends AbstractAST
     this.rrbTree = list.toMutRrbt();
   }
 
-  public ASTRRBTree(ImRrbt<IExpr> list) {
+  public ASTRRBTree(ImRrbt<IExpr> list) throws ASTElementLimitExceeded {
     super();
     if (Config.MAX_AST_SIZE < list.size()) {
       throw new ASTElementLimitExceeded(list.size());
@@ -126,7 +126,7 @@ public class ASTRRBTree extends AbstractAST
     this.rrbTree = list.toMutRrbt();
   }
 
-  public ASTRRBTree(IExpr[] array) {
+  public ASTRRBTree(IExpr[] array) throws ASTElementLimitExceeded {
     super();
     if (Config.MAX_AST_SIZE < array.length) {
       throw new ASTElementLimitExceeded(array.length);

@@ -147,7 +147,7 @@ public abstract class HMArrayList extends AbstractAST
    *
    * @param capacity the initial capacity of this {@code ArrayList}.
    */
-  public HMArrayList(int capacity) {
+  public HMArrayList(int capacity) throws IllegalArgumentException {
     if (capacity < 0) {
       throw new IllegalArgumentException();
     }

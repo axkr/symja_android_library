@@ -42,7 +42,6 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
-import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.parser.client.Characters;
@@ -1539,9 +1538,8 @@ public class OutputFormFactory {
       convertSymbol(buf, (ISymbol) o);
     } else if (o instanceof IPatternObject) {
       convertPattern(buf, (IPatternObject) o);
-    } else if (o instanceof IStringX) {
-      convertString(buf, o.toString());
     } else {
+      // includes (o instanceof IStringX)
       convertString(buf, o.toString());
     }
   }

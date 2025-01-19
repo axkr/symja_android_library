@@ -45,7 +45,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 
     /** Polynomial iterator constructor. */
     @SuppressWarnings("unchecked")
-    public GenPolynomialMonomialIterator(ExprPolynomialRing fac) {
+    public GenPolynomialMonomialIterator(ExprPolynomialRing fac) throws IllegalArgumentException {
       ring = fac;
       LongIterable li = new LongIterable();
       li.setNonNegativeIterator();
@@ -1351,7 +1351,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 
     /** Polynomial iterator constructor. */
     @SuppressWarnings("unchecked")
-    public GenPolynomialIterator(ExprPolynomialRing fac) {
+    public GenPolynomialIterator(ExprPolynomialRing fac) throws IllegalArgumentException {
       ring = fac;
       LongIterable li = new LongIterable();
       li.setNonNegativeIterator();

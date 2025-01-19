@@ -24,6 +24,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ExprEdge;
 import org.matheclipse.core.expression.data.GraphExpr;
@@ -32,7 +33,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.trie.TrieBuilder;
 import org.matheclipse.parser.trie.TrieMatch;
@@ -99,7 +99,7 @@ public class GraphDataFunctions {
       if (ast.isAST1()) {
         IExpr arg1 = ast.arg1();
         if (arg1.isString()) {
-          String graphName = ((IStringX) arg1).toString();
+          String graphName = arg1.toString();
           Supplier<Graph<IExpr, ?>> supplier = GRAPH_MAP.get(graphName);
           if (supplier != null) {
             return GraphExpr.newInstance(supplier.get());
@@ -110,6 +110,11 @@ public class GraphDataFunctions {
         return Errors.printMessage(S.GraphData, "notent", F.List(arg1), engine);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -195,6 +200,11 @@ public class GraphDataFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -228,6 +238,11 @@ public class GraphDataFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -258,13 +273,18 @@ public class GraphDataFunctions {
     }
 
     private static IExpr gridGraph(EvalEngine engine, int m, int n) {
-      GridGraphGenerator<IExpr, ExprEdge> gen = new GridGraphGenerator<IExpr, ExprEdge>(m, n);
+      GridGraphGenerator<IExpr, ExprEdge> gen = new GridGraphGenerator<IExpr, ExprEdge>(n, m);
       Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
           .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
           .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
           .buildGraph();
       gen.generateGraph(target);
       return GraphExpr.newInstance(target);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -302,6 +322,11 @@ public class GraphDataFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -333,6 +358,11 @@ public class GraphDataFunctions {
         return GraphExpr.newInstance(resultGraph);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -392,6 +422,11 @@ public class GraphDataFunctions {
           new GeneralizedPetersenGraphGenerator<>(5, 2);
       gpgg.generateGraph(target);
       return GraphExpr.newInstance(target);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -457,6 +492,11 @@ public class GraphDataFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -492,6 +532,11 @@ public class GraphDataFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -524,6 +569,11 @@ public class GraphDataFunctions {
       // ExprEdge>(ExprEdge.class);
       gen.generateGraph(target);
       return GraphExpr.newInstance(target);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override

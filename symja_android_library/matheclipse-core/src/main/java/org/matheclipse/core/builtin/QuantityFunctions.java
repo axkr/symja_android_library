@@ -19,6 +19,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.expression.data.TimeObjectExpr;
@@ -123,6 +124,11 @@ public class QuantityFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_2;
     }
@@ -139,7 +145,8 @@ public class QuantityFunctions {
           return F.stringx(dateString);
         }
         if (ast.isAST1()) {
-          long secondsSince1900 = ast.arg1().toLongDefault();
+          IExpr arg1 = ast.arg1();
+          long secondsSince1900 = arg1.toLongDefault();
           if (secondsSince1900 >= 0) {
             Instant base =
                 LocalDate.of(1900, Month.JANUARY, 1).atStartOfDay(ZoneOffset.UTC).toInstant();
@@ -149,12 +156,34 @@ public class QuantityFunctions {
                 date.format(DateTimeFormatter.ofPattern("EEE dd MMM yyyy HH:mm:ss"));
             return F.stringx(dateString);
           }
+
+          if (arg1.isList()) {
+            IAST list = (IAST) arg1;
+            if (list.size() == 4) {
+              int year = list.arg1().toIntDefault();
+              int month = list.arg2().toIntDefault();
+              int day = list.arg3().toIntDefault();
+              if (year != Integer.MIN_VALUE && //
+                  month != Integer.MIN_VALUE && //
+                  day != Integer.MIN_VALUE) {
+                LocalDateTime date = LocalDateTime.of(year, month, day, 0, 0);
+                String dateString =
+                    date.format(DateTimeFormatter.ofPattern("EEE dd MMM yyyy HH:mm:ss"));
+                return F.stringx(dateString);
+              }
+            }
+          }
         }
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
     }
 
     @Override
@@ -206,8 +235,13 @@ public class QuantityFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_3;
+      return ARGS_1_2;
     }
   }
 
@@ -249,6 +283,11 @@ public class QuantityFunctions {
         LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
     }
 
     @Override
@@ -307,6 +346,11 @@ public class QuantityFunctions {
         LOGGER.log(engine.getLogLevel(), "Quantity", e);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -377,6 +421,11 @@ public class QuantityFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -392,6 +441,11 @@ public class QuantityFunctions {
         return F.stringx(unit.toString());
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
     }
 
     @Override
@@ -450,6 +504,11 @@ public class QuantityFunctions {
         LOGGER.log(engine.getLogLevel(), "UnitConvert", e);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override

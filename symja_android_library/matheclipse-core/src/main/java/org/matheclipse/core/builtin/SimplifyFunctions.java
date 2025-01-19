@@ -1231,8 +1231,10 @@ public class SimplifyFunctions {
                                                                           // result) {
         if (expr.isBooleanFunction()) {
           try {
-            expr = eval(F.BooleanMinimize(expr));
-            sResult.checkLessPlusTimesPower(expr);
+            IExpr temp = eval(F.BooleanMinimize(expr));
+            if (sResult.checkLessPlusTimesPower(temp)) {
+              expr = temp;
+            }
             return;
           } catch (RuntimeException rex) {
             Errors.rethrowsInterruptException(rex);
@@ -1240,8 +1242,10 @@ public class SimplifyFunctions {
           }
         } else if (fFullSimplify) {
           try {
-            expr = eval(F.FunctionExpand(expr));
-            sResult.checkLessPlusTimesPower(expr);
+            IExpr temp = eval(F.FunctionExpand(expr));
+            if (sResult.checkLessPlusTimesPower(temp)) {
+              expr = temp;
+            }
           } catch (RuntimeException rex) {
             Errors.rethrowsInterruptException(rex);
             //

@@ -5599,7 +5599,7 @@ public class StatisticsFunctions {
       if (dist.isAST2()) {
         double v = dist.arg2().toDoubleDefault();
         if (v <= 0.0) {
-          if (v != Double.MIN_VALUE) {
+          if (v > Double.MIN_VALUE) {
             // Parameter `1` at position `2` in `3` is expected to be positive.
             return Errors.printMessage(S.NormalDistribution, "posprm",
                 F.list(dist.arg2(), F.C2, dist), EvalEngine.get());

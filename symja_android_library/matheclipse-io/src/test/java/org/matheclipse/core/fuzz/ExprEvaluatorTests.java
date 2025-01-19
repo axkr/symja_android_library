@@ -295,6 +295,7 @@ public class ExprEvaluatorTests {
         F.Power(F.x, F.C2), //
         F.Indeterminate, //
         F.ComplexInfinity, //
+        F.Interval(F.a), //
         F.x_, //
         F.y_, //
         F.x__, // any sequence of one or more expressions
@@ -313,6 +314,7 @@ public class ExprEvaluatorTests {
         SparseArrayExpr.newDenseList(F.List(F.C0, F.C1, F.C0, F.C2), F.C0), //
         SparseArrayExpr.newDenseList(F.List(F.List(F.C0, F.C0), F.List(F.C0, F.C0)), F.C0), //
         SparseArrayExpr.newDenseList(F.List(F.List(F.C1, F.C0), F.List(F.C0, F.C1)), F.C0), //
+        // F.sparseArray(F.Sin(F.x)), //
         F.Function(F.EvenQ(F.Slot1)), //
         F.Function(F.Expand(F.Power(F.Plus(F.C2, F.Slot1), F.C3))), //
         S.Graph.of(F.List(F.Rule(F.C1, F.C2), F.Rule(F.C2, F.C3), F.Rule(F.C3, F.C1))), //

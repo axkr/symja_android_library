@@ -248,7 +248,6 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
    */
   public static IExpr getNormalizedNegativeExpression(final IExpr expression,
       boolean checkTimesPlus) {
-    IASTMutable result = F.NIL;
     if (expression.isNumber()) {
       if (((INumber) expression).complexSign() < 0) {
         return ((INumber) expression).negate();

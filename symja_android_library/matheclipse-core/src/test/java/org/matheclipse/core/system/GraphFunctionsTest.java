@@ -46,8 +46,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testClosenessCentrality() {
-
-    check("ClosenessCentrality[Graph[{1, 2, 3, 4, 5},{1<->2,1<->3,2<->3,3<->4,3<->5}]]", //
+    check("ClosenessCentrality(Graph({1, 2, 3, 4, 5},{1<->2,1<->3,2<->3,3<->4,3<->5}))", //
         "{0.666667,0.666667,1.0,0.571429,0.571429}");
   }
 
@@ -97,7 +96,7 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
   @Test
   public void testConnectedGraphQ() {
     check("ConnectedGraphQ(Graph({1,2,3,4},{1->2, 2->3, 3->4, 2->4}))", //
-        "True");
+        "False");
     check("ConnectedGraphQ(Graph({1,2,3,4},{1<->2, 2<->3, 3<->4}))", //
         "True");
     check("ConnectedGraphQ(Graph({1,2,3,4},{1<->2, 3<->4}))", //
@@ -221,6 +220,17 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "FindIndependentVertexSet(Graph({1,2,3,4,5,6,7},{1<->2,1<->3,2<->4,4<->5,5<->3,4<->6,5<->6,4<->7,5<->7}))");
   }
 
+  // @Test
+  // public void testFindMinimumCostFlow() {
+  // // TODO
+  // check("FindMinimumCostFlow(Graph({1,2,3,4},{1->2,2->3,3->1,3->4})," //
+  // + "1,4)", //
+  // " ");
+  // check("FindMinimumCostFlow(Graph({1,2,3,4,5,6},{1->2,2->3,3->4,1->5,5->6,6->4,2->5,3->6})," //
+  // + "{1,3,4,-3,-4,-1})", //
+  // " ");
+  // }
+
   @Test
   public void testFindVertexCover() {
     // example from wikipedia: https://en.wikipedia.org/wiki/Vertex_cover
@@ -304,13 +314,20 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
   public void testHypercubeGraph() {
     check("HypercubeGraph(4) // AdjacencyMatrix // Normal", //
         "{{0,1,1,0,1,0,0,0,1,0,0,0,0,0,0,0},\n" //
-            + " {1,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0},\n" + " {1,0,0,1,0,0,1,0,0,0,1,0,0,0,0,0},\n"
-            + " {0,1,1,0,0,0,0,1,0,0,0,1,0,0,0,0},\n" + " {1,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0},\n"
-            + " {0,1,0,0,1,0,0,1,0,0,0,0,0,1,0,0},\n" + " {0,0,1,0,1,0,0,1,0,0,0,0,0,0,1,0},\n"
-            + " {0,0,0,1,0,1,1,0,0,0,0,0,0,0,0,1},\n" + " {1,0,0,0,0,0,0,0,0,1,1,0,1,0,0,0},\n"
-            + " {0,1,0,0,0,0,0,0,1,0,0,1,0,1,0,0},\n" + " {0,0,1,0,0,0,0,0,1,0,0,1,0,0,1,0},\n"
-            + " {0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,1},\n" + " {0,0,0,0,1,0,0,0,1,0,0,0,0,1,1,0},\n"
-            + " {0,0,0,0,0,1,0,0,0,1,0,0,1,0,0,1},\n" + " {0,0,0,0,0,0,1,0,0,0,1,0,1,0,0,1},\n"
+            + " {1,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0},\n" //
+            + " {1,0,0,1,0,0,1,0,0,0,1,0,0,0,0,0},\n" //
+            + " {0,1,1,0,0,0,0,1,0,0,0,1,0,0,0,0},\n" //
+            + " {1,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0},\n" //
+            + " {0,1,0,0,1,0,0,1,0,0,0,0,0,1,0,0},\n" //
+            + " {0,0,1,0,1,0,0,1,0,0,0,0,0,0,1,0},\n" //
+            + " {0,0,0,1,0,1,1,0,0,0,0,0,0,0,0,1},\n" //
+            + " {1,0,0,0,0,0,0,0,0,1,1,0,1,0,0,0},\n" //
+            + " {0,1,0,0,0,0,0,0,1,0,0,1,0,1,0,0},\n" //
+            + " {0,0,1,0,0,0,0,0,1,0,0,1,0,0,1,0},\n" //
+            + " {0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,1},\n" //
+            + " {0,0,0,0,1,0,0,0,1,0,0,0,0,1,1,0},\n" //
+            + " {0,0,0,0,0,1,0,0,0,1,0,0,1,0,0,1},\n" //
+            + " {0,0,0,0,0,0,1,0,0,0,1,0,1,0,0,1},\n" //
             + " {0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,0}}");
   }
 
@@ -538,6 +555,23 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testGridGraph() {
+    check("GridGraph({3,4}) // AdjacencyMatrix // MatrixForm", //
+        "{{0,1,0,1,0,0,0,0,0,0,0,0},\n" //
+            + " {1,0,1,0,1,0,0,0,0,0,0,0},\n" //
+            + " {0,1,0,0,0,1,0,0,0,0,0,0},\n" //
+            + " {1,0,0,0,1,0,1,0,0,0,0,0},\n" //
+            + " {0,1,0,1,0,1,0,1,0,0,0,0},\n" //
+            + " {0,0,1,0,1,0,0,0,1,0,0,0},\n" //
+            + " {0,0,0,1,0,0,0,1,0,1,0,0},\n" //
+            + " {0,0,0,0,1,0,1,0,1,0,1,0},\n" //
+            + " {0,0,0,0,0,1,0,1,0,0,0,1},\n" //
+            + " {0,0,0,0,0,0,1,0,0,0,1,0},\n" //
+            + " {0,0,0,0,0,0,0,1,0,1,0,1},\n" //
+            + " {0,0,0,0,0,0,0,0,1,0,1,0}}");
+  }
+
+  @Test
   public void testPathGraphQ() {
     // TODO multi-graph should return false
     // check("PathGraphQ(Graph({1,2,3},{1->2, 2->3, 2->3}))", //
@@ -552,6 +586,12 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testPathGraph() {
+    check("PathGraph({1,2,3,4}) // AdjacencyMatrix // Normal ", //
+        "{{0,1,0,0},\n" //
+            + " {1,0,1,0},\n" //
+            + " {0,1,0,1},\n" //
+            + " {0,0,1,0}}");
+
     check("PathGraph(Range(10))", //
         "Graph({1,2,3,4,5,6,7,8,9,10},{1<->2,2<->3,3<->4,4<->5,5<->6,6<->7,7<->8,8<->9,9<->10})");
   }
@@ -710,7 +750,9 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
   public void testWheelGraph() {
     check("WheelGraph(4) // AdjacencyMatrix // Normal", //
         "{{0,1,1,1},\n" //
-            + " {1,0,1,1},\n" + " {1,1,0,1},\n" + " {1,1,1,0}}");
+            + " {1,0,1,1},\n" //
+            + " {1,1,0,1},\n" //
+            + " {1,1,1,0}}");
   }
 
   /** The JUnit setup method */

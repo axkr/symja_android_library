@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import org.gavaghan.geodesy.Ellipsoid;
 import org.gavaghan.geodesy.GeodeticCalculator;
 import org.gavaghan.geodesy.GeodeticMeasurement;
@@ -18,10 +19,14 @@ import org.jgrapht.alg.cycle.DirectedSimpleCycles;
 import org.jgrapht.alg.cycle.HierholzerEulerianCycle;
 import org.jgrapht.alg.cycle.PatonCycleBase;
 import org.jgrapht.alg.cycle.SzwarcfiterLauerSimpleCycles;
+import org.jgrapht.alg.flow.mincost.CapacityScalingMinimumCostFlow;
+import org.jgrapht.alg.flow.mincost.MinimumCostFlowProblem;
 import org.jgrapht.alg.interfaces.CycleBasisAlgorithm;
 import org.jgrapht.alg.interfaces.CycleBasisAlgorithm.CycleBasis;
 import org.jgrapht.alg.interfaces.EulerianCycleAlgorithm;
 import org.jgrapht.alg.interfaces.HamiltonianCycleAlgorithm;
+import org.jgrapht.alg.interfaces.MinimumCostFlowAlgorithm;
+import org.jgrapht.alg.interfaces.MinimumCostFlowAlgorithm.MinimumCostFlow;
 import org.jgrapht.alg.interfaces.PlanarityTestingAlgorithm;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm.SingleSourcePaths;
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm;
@@ -40,13 +45,13 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultUndirectedGraph;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ExprEdge;
 import org.matheclipse.core.expression.data.ExprWeightedEdge;
@@ -88,6 +93,7 @@ public class GraphFunctions {
       S.FindHamiltonianCycle.setEvaluator(new FindHamiltonianCycle());
       S.FindGraphIsomorphism.setEvaluator(new FindGraphIsomorphism());
       S.FindIndependentVertexSet.setEvaluator(new FindIndependentVertexSet());
+      S.FindMinimumCostFlow.setEvaluator(new FindMinimumCostFlow());
       S.FindVertexCover.setEvaluator(new FindVertexCover());
       S.FindShortestPath.setEvaluator(new FindShortestPath());
       S.FindShortestTour.setEvaluator(new FindShortestTour());
@@ -198,6 +204,11 @@ public class GraphFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_INFINITY;
     }
@@ -235,6 +246,11 @@ public class GraphFunctions {
         Errors.printMessage(S.GraphComplement, rex, engine);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -276,6 +292,11 @@ public class GraphFunctions {
         Errors.printMessage(S.GraphDifference, rex, engine);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -334,6 +355,11 @@ public class GraphFunctions {
         Errors.printMessage(S.IndexGraph, rex, engine);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -545,6 +571,11 @@ public class GraphFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -600,6 +631,11 @@ public class GraphFunctions {
         Errors.printMessage(S.GraphDiameter, rex, engine);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -689,8 +725,7 @@ public class GraphFunctions {
     }
 
     public static Graph<IExpr, ? extends IExprEdge> graphPower(
-        Graph<IExpr, ? extends IExprEdge> graph,
-        int n) {
+        Graph<IExpr, ? extends IExprEdge> graph, int n) {
       GraphType t = graph.getType();
       if (t == null) {
         return null;
@@ -787,6 +822,11 @@ public class GraphFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -839,6 +879,11 @@ public class GraphFunctions {
         Errors.printMessage(S.GraphRadius, rex, engine);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -996,6 +1041,11 @@ public class GraphFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
     }
@@ -1070,6 +1120,11 @@ public class GraphFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -1126,6 +1181,11 @@ public class GraphFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -1177,6 +1237,11 @@ public class GraphFunctions {
       }
 
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1241,6 +1306,11 @@ public class GraphFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -1257,6 +1327,11 @@ public class GraphFunctions {
       }
       Graph<IExpr, ?> g = gex.toData();
       return GraphExpr.edgesToRules(g)[0];
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1309,6 +1384,11 @@ public class GraphFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -1327,7 +1407,12 @@ public class GraphFunctions {
         return F.NIL;
       }
       Graph<IExpr, ? extends IExprEdge> graph = (Graph<IExpr, ? extends IExprEdge>) gex.toData();
-      return GraphTests.isConnected(graph) ? S.True : S.False;
+      return GraphTests.isStronglyConnected(graph) ? S.True : S.False;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1363,6 +1448,11 @@ public class GraphFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -1391,6 +1481,11 @@ public class GraphFunctions {
       // } catch (RuntimeException rex) {
       // }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.NO_SUPPORT;
     }
 
     @Override
@@ -1442,6 +1537,11 @@ public class GraphFunctions {
       // }
 
       return S.False;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1512,6 +1612,11 @@ public class GraphFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -1539,6 +1644,11 @@ public class GraphFunctions {
           new AHUUnrootedTreeIsomorphismInspector<>((Graph<IExpr, ExprEdge>) gex1.toData(),
               (Graph<IExpr, ExprEdge>) gex2.toData());
       return F.booleSymbol(isomorphism.isomorphismExists());
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1606,6 +1716,11 @@ public class GraphFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
     }
@@ -1668,6 +1783,11 @@ public class GraphFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -1724,6 +1844,11 @@ public class GraphFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -1751,6 +1876,11 @@ public class GraphFunctions {
         return F.CEmptyList;
       }
       return F.list(F.assoc(F.mapMap(mapping.getForwardMapping(), (k, v) -> F.Rule(k, v))));
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1793,12 +1923,106 @@ public class GraphFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.NO_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
   }
 
+  private static class FindMinimumCostFlow extends AbstractEvaluator {
+    public class MinimumCostFlowProblemImpl implements MinimumCostFlowProblem<IExpr, ExprEdge> {
+      private final Graph<IExpr, ExprEdge> graph;
+      private final Map<IExpr, Integer> supplyMap;
+      private final Map<ExprEdge, Integer> capacityMap;
+      private final Map<ExprEdge, Integer> costMap;
 
+      public MinimumCostFlowProblemImpl(Graph<IExpr, ExprEdge> graph, Map<IExpr, Integer> supplyMap,
+          Map<ExprEdge, Integer> capacityMap, Map<ExprEdge, Integer> costMap) {
+        this.graph = graph;
+        this.supplyMap = supplyMap;
+        this.capacityMap = capacityMap;
+        this.costMap = costMap;
+      }
+
+      @Override
+      public Graph<IExpr, ExprEdge> getGraph() {
+        return graph;
+      }
+
+      @Override
+      public Function<IExpr, Integer> getNodeSupply() {
+        return v -> {
+          int val = supplyMap.getOrDefault(v, 0);
+          return val;
+        };
+      }
+
+      @Override
+      public Function<ExprEdge, Integer> getArcCapacityLowerBounds() {
+        return e -> costMap.getOrDefault(e, 0);
+      }
+
+      @Override
+      public Function<ExprEdge, Integer> getArcCapacityUpperBounds() {
+        return e -> capacityMap.getOrDefault(e, 0);
+      }
+
+      @Override
+      public Function<ExprEdge, Double> getArcCosts() {
+        return x -> 0.0;
+      }
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      try {
+        IExpr startVertex = ast.arg2();
+        IExpr endVertex = ast.arg3();
+        // if (!arg2.isList()) {
+        // return F.NIL;
+        // }
+        GraphExpr<?> gex = createGraph(ast.arg1());
+        if (gex == null) {
+          return F.NIL;
+        }
+
+        Graph<IExpr, ExprEdge> graph = (Graph<IExpr, ExprEdge>) gex.toData();
+        Map<ExprEdge, Integer> capacityMap = new HashMap<>();
+        Map<ExprEdge, Integer> costMap = new HashMap<>();
+        Map<IExpr, Integer> supplyMap = new HashMap<>();
+        supplyMap.put(startVertex, 1);
+        supplyMap.put(endVertex, -1);
+
+        MinimumCostFlowProblem<IExpr, ExprEdge> problem =
+            new MinimumCostFlowProblemImpl(graph, supplyMap, capacityMap, costMap);
+        MinimumCostFlowAlgorithm<IExpr, ExprEdge> algorithm =
+            new CapacityScalingMinimumCostFlow<>();
+
+        MinimumCostFlow<ExprEdge> minimumCostFlow = algorithm.getMinimumCostFlow(problem);
+
+        return F.num(minimumCostFlow.getCost());
+      } catch (RuntimeException rex) {
+        rex.printStackTrace();
+        Errors.rethrowsInterruptException(rex);
+        Errors.printMessage(S.FindMinimumCostFlow, rex, engine);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.NO_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
+    }
+  }
   /**
    *
    *
@@ -1863,6 +2087,11 @@ public class GraphFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -1913,6 +2142,11 @@ public class GraphFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
     }
@@ -1938,6 +2172,11 @@ public class GraphFunctions {
       // } catch (RuntimeException rex) {
       // }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.NO_SUPPORT;
     }
 
     @Override
@@ -1990,6 +2229,11 @@ public class GraphFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -2020,6 +2264,11 @@ public class GraphFunctions {
       PlanarityTestingAlgorithm<IExpr, ExprEdge> inspector =
           new BoyerMyrvoldPlanarityInspector<IExpr, ExprEdge>(g);
       return F.booleSymbol(inspector.isPlanar());
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -2084,6 +2333,11 @@ public class GraphFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -2130,6 +2384,11 @@ public class GraphFunctions {
       }
       Graph<IExpr, ?> g = gex.toData();
       return GraphExpr.vertexToIExpr(g);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -2190,6 +2449,11 @@ public class GraphFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -2207,6 +2471,11 @@ public class GraphFunctions {
       Graph<IExpr, ? extends IExprEdge> graph = (Graph<IExpr, ? extends IExprEdge>) gex.toData();
       return GraphTests.isWeaklyConnected(graph) ? S.True : S.False;
 
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -2231,6 +2500,11 @@ public class GraphFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -2251,6 +2525,11 @@ public class GraphFunctions {
         return S.True;
       }
       return S.False;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override

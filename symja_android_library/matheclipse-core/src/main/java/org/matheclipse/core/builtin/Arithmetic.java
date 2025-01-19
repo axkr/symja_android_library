@@ -548,7 +548,7 @@ public final class Arithmetic {
    * Pi/4
    * </pre>
    */
-  private static class Arg extends AbstractCoreFunctionEvaluator
+  private static class Arg extends AbstractFunctionEvaluator
       implements INumeric, DoubleUnaryOperator {
 
     @Override
@@ -574,16 +574,10 @@ public final class Arithmetic {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr result = F.NIL;
-      IExpr arg1 = engine.evaluateNIL(ast.arg1());
-      if (arg1.isPresent()) {
-        result = F.Arg(arg1);
-      } else {
-        arg1 = ast.arg1();
-      }
-      if (arg1.isList()) {
-        return arg1.mapThread(F.Arg(F.Slot1), 1);
-      }
+      IExpr arg1 = ast.arg1();
+      // if (arg1.isList()) {
+      // return arg1.mapThread(F.Arg(F.Slot1), 1);
+      // }
       if (arg1.isNumber()) {
         return arg1.complexArg();
       } else if (arg1.isIndeterminate()) {
@@ -662,7 +656,7 @@ public final class Arithmetic {
       if (AbstractAssumptions.assumePositive(arg1)) {
         return F.C0;
       }
-      return result;
+      return F.NIL;
     }
 
     @Override

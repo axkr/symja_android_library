@@ -346,7 +346,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
     if (postParserProcessing) {
       return -1;
     }
-    if (this.compareTo(minSafeInt) < 0 || this.compareTo(maxSafeInt) > 0) {
+    if (this.compareTo(F.MIN_SAFE_INT) < 0 || this.compareTo(F.MAX_SAVE_INT) > 0) {
       return NumberUtil.calculateApproximatelyDigitCount(toBigNumerator());
     }
     return -1;

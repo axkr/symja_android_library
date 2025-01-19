@@ -27,6 +27,7 @@ import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.expression.Blank;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.output.DoubleFormFactory;
@@ -108,6 +109,11 @@ public final class OutputFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -125,6 +131,11 @@ public final class OutputFunctions {
         return F.stringx(arg1.head() + " @ " + arg1.first().toString());
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -146,6 +157,11 @@ public final class OutputFunctions {
         return F.stringx(arg1.first().toString() + " // " + arg1.head());
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -172,6 +188,11 @@ public final class OutputFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -192,6 +213,11 @@ public final class OutputFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.NO_SUPPORT;
     }
 
     @Override
@@ -263,6 +289,11 @@ public final class OutputFunctions {
         }
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -573,6 +604,11 @@ public final class OutputFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
   }
 
   private static class JSForm extends AbstractCoreFunctionEvaluator {
@@ -612,6 +648,11 @@ public final class OutputFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -640,6 +681,11 @@ public final class OutputFunctions {
       StringWriter stw = new StringWriter();
       mathMLUtil.toMathML(arg1, stw);
       return F.stringx(stw.toString(), IStringX.TEXT_MATHML);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -684,6 +730,11 @@ public final class OutputFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -709,6 +760,11 @@ public final class OutputFunctions {
       }
 
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -839,6 +895,11 @@ public final class OutputFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -869,6 +930,11 @@ public final class OutputFunctions {
         return F.NIL;
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.NO_SUPPORT;
     }
 
     @Override
@@ -981,6 +1047,11 @@ public final class OutputFunctions {
         Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(S.TreeForm, rex, engine);
       }
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override

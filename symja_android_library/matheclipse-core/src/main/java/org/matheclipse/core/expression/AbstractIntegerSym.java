@@ -230,9 +230,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     if (Integer.MIN_VALUE < newnum && newnum <= Integer.MAX_VALUE) {
       return valueOf((int) newnum);
     }
-    BigIntegerSym z = new BigIntegerSym(newnum);
-    // z.fBigIntValue = BigInteger.valueOf(newnum);
-    return z;
+    return new BigIntegerSym(newnum);
   }
 
   /**

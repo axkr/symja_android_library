@@ -154,6 +154,8 @@ public class QuantityTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testQuantityUnit() {
+    check("QuantityUnit(Quantity(42, \"Kilograms\"))", //
+        "Kilograms");
     check("QuantityUnit(Quantity(3.4, \"Meters\"))", //
         "Meters");
     check("QuantityUnit(Quantity(19.25, \"Acres\"))", //
