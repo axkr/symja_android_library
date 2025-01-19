@@ -6,7 +6,7 @@ Between(expr, {min, max})
 Between(expr, Interval({min, max})) 
 ```
 
-> equivalent to `min <= expr <= max`.
+> equivalent to `(min <= expr) && (expr <= max)`.
 
 ```
 Between(expr, {{min1, max1}, {min2, max2},...}) 
@@ -14,7 +14,7 @@ Between(expr, {{min1, max1}, {min2, max2},...})
 Between(expr, Interval({min1, max1}, {min2, max2},...)) 
 ```
 
-> equivalent to `(min1 <= expr <= max1) || (min2 <= expr <= max2) || ...`.
+> equivalent to `(min1 <= expr) && (expr <= max1) || (min2 <= expr) && (expr <= max2) || ...`.
 
 ```
 Between({min, max}) 

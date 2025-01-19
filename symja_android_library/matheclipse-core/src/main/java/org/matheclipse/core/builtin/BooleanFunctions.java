@@ -928,6 +928,12 @@ public final class BooleanFunctions {
     }
 
     private static IExpr betweenPairs(IExpr x, IAST sequenceOfPairs) {
+      if (sequenceOfPairs.argSize() == 1) {
+        IAST pair = (IAST) sequenceOfPairs.arg1();
+        IExpr min = pair.arg1();
+        IExpr max = pair.arg2();
+        return F.And(F.LessEqual(min, x), F.LessEqual(x, max));
+      }
       IASTAppendable result = F.ast(S.Or, sequenceOfPairs.argSize());
       for (int i = 1; i < sequenceOfPairs.size(); i++) {
         IAST pair = (IAST) sequenceOfPairs.get(i);
