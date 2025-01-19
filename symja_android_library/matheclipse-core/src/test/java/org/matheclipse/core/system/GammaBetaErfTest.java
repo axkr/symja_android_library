@@ -255,7 +255,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
   @Test
   public void testCosIntegral() {
     checkNumeric("CosIntegral(2.8)", //
-        "0.18648838964317577");
+        "0.18648838964345027");
     check("Table(CosIntegral(x), {x,-4.0, 4.0, 1/4})", //
         "{-0.140982+I*3.14159,-0.093103+I*3.14159,-0.0321285+I*3.14159,0.0398086+I*3.14159,0.11963+I*3.14159," //
             + "0.203307+I*3.14159,0.285871+I*3.14159,0.361402+I*3.14159,0.422981+I*3.14159,0.46252+I*3.14159," //
@@ -448,6 +448,10 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testExpIntegralE() {
+    checkNumeric("N(ExpIntegralE(3, 22/10), 50)", //
+        "0.023520656648276500007831719911764625915312610516518");
+    checkNumeric("ExpIntegralE(1.0+I,2.0+3.0*I)", //
+        "-0.01894383050841671+I*0.020443770103244958");
     check("ExpIntegralE(0,z)", //
         "1/(E^z*z)");
     check("ExpIntegralE(n,0)", //
@@ -472,13 +476,13 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
     check("ExpIntegralEi(-Infinity)", //
         "0");
     checkNumeric("ExpIntegralEi(I*1.0)", //
-        "0.3374039229009681+I*2.5168793971620795");
+        "0.3374039229708732+I*2.516879397177189");
     checkNumeric("ExpIntegralEi(-I*1.0)", //
-        "0.3374039229009681+I*(-2.5168793971620795)");
+        "0.3374039229708732+I*(-2.516879397177189)");
     checkNumeric("ExpIntegralEi(-1.0)", //
-        "-0.21938393439552029");
+        "-0.21938393443307924");
     checkNumeric("ExpIntegralEi(1.0)", //
-        "1.895117816355937");
+        "1.8951178163550635");
     check("ExpIntegralEi(I*Infinity)", //
         "I*Pi");
     check("ExpIntegralEi(-I*Infinity)", //
@@ -1326,7 +1330,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
             + "3-Cos(x)/x+(-6*Sin(x))/x^4+(3*Sin(x))/x^2}");
 
     checkNumeric("SinIntegral(-3.1)", //
-        "-1.8516593076745196");
+        "-1.8516593076748515");
     check("SinIntegral(-3/4*I*x)", //
         "-I*SinhIntegral(3/4*x)");
     check("SinIntegral(Infinity)", //
@@ -1340,7 +1344,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
     check("SinIntegral(I*1/2*x)", //
         "I*SinhIntegral(x/2)");
     checkNumeric("SinIntegral(2.8)", //
-        "1.8320965890813223");
+        "1.8320965890790646");
     check("Table(SinIntegral(x), {x,-4.0, 4.0, 1/4})", //
         "{-1.7582,-1.80123,-1.83313,-1.85011,-1.84865,-1.82564,-1.77852,-1.70546,-1.60541,-1.47823,-1.32468,-1.14645," //
             + "-0.946083,-0.726954,-0.493107,-0.249134,0.0,0.249134,0.493107,0.726954,0.946083,1.14645,1.32468," //
@@ -1358,7 +1362,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
   @Test
   public void testSinhIntegral() {
     checkNumeric("SinhIntegral(-3.1)", //
-        "-5.318897351437731");
+        "-5.318897351437391");
     check("SinhIntegral(93/13*I*x)", //
         "I*SinIntegral(93/13*x)");
     check("SinhIntegral(-x)", //
@@ -1374,7 +1378,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
     check("SinhIntegral(I*1/2*x)", //
         "I*SinIntegral(x/2)");
     checkNumeric("SinhIntegral(2.8)", //
-        "4.348076508127191");
+        "4.348076508124867");
     check("Table(SinhIntegral(x), {x,-4.0, 4.0, 1/4})", //
         "{-9.81733,-8.26122,-6.96616,-5.88341,-4.97344,-4.20414,-3.54934,-2.98767,-2.50157,-2.07657,-1.70065," //
             + "-1.36373,-1.05725,-0.773837,-0.506997,-0.25087,0.0,0.25087,0.506997,0.773837,1.05725,1.36373," //

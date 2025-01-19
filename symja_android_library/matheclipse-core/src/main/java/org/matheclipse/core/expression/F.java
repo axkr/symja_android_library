@@ -543,6 +543,12 @@ public class F extends S {
   /** Constant integer &quot;1000&quot; */
   public static final IInteger C1000 = new IntegerSym(1000);
 
+  /** -(2^53 - 1) */
+  public static final IInteger MIN_SAFE_INT = AbstractIntegerSym.valueOf(-9007199254740991L);
+
+  /** 2^53 - 1 */
+  public static final IInteger MAX_SAVE_INT = AbstractIntegerSym.valueOf(9007199254740991L);
+
   /**
    * Complex imaginary unit &quot;0 + I&quot;. The parsed symbol &quot;I&quot; is converted on input
    * to this constant.
@@ -2072,7 +2078,8 @@ public class F extends S {
    * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SparseArray.md">SparseArray</a>
    *
    * @param arrayRulesList
-   * @return a ISparseArray instance
+   * @return a ISparseArray instance or <code>null</code> if a new <code>SparseArrayExpr</code>
+   *         cannot be created.
    */
   public static ISparseArray sparseArray(final IAST arrayRulesList) {
     return SparseArrayExpr.newArrayRules(arrayRulesList, null, -1, C0);
@@ -2087,7 +2094,8 @@ public class F extends S {
    *
    * @param arrayRulesList
    * @param dimension
-   * @return a ISparseArray instance
+   * @return a ISparseArray instance or <code>null</code> if a new <code>SparseArrayExpr</code>
+   *         cannot be created.
    */
   public static ISparseArray sparseArray(final IAST arrayRulesList, int[] dimension) {
     return SparseArrayExpr.newArrayRules(arrayRulesList, dimension, 0, C0);
@@ -2113,7 +2121,7 @@ public class F extends S {
    *        in the sparse matrix
    * @param n the number of rows of the matrix.
    * @param m the number of columns of the matrix.
-   * @return
+   * @return <code>null</code> if a new sparse matrix cannot be created
    */
   public static ISparseArray sparseMatrix(BiIntFunction<? extends IExpr> binaryFunction, int n,
       int m) {
@@ -2122,6 +2130,9 @@ public class F extends S {
     }
     int[] dimension = new int[] {n, m};
     SparseArrayExpr sparseMatrix = SparseArrayExpr.newArrayRules(F.CEmptyList, dimension, 0, C0);
+    if (sparseMatrix == null) {
+      return null;
+    }
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < m; j++) {
         IExpr value = binaryFunction.apply(i, j);
@@ -3179,6 +3190,20 @@ public class F extends S {
    * @return
    */
   public static IComplexNum complexNum(final Complex c) {
+    return ComplexNum.valueOf(c);
+  }
+
+  /**
+   * Return a {@link ComplexNum} which wraps a {@link Complex} number or a {@link Num}, if the
+   * imaginary part is zerro.
+   * 
+   * @param c
+   * @return
+   */
+  public static IInexactNumber complexReduced(final Complex c) {
+    if (F.isZero(c.getImaginary())) {
+      return Num.valueOf(c.getReal());
+    }
     return ComplexNum.valueOf(c);
   }
 
@@ -11363,5 +11388,6 @@ public class F extends S {
     list.addEvalFlags(IAST.SEQUENCE_FLATTENED);
     return NIL;
   }
+
 
 }

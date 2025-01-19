@@ -99,11 +99,15 @@ public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
   public IExpr complexArg();
 
   /**
-   * Get a <code>ComplexNum</code> number bject.
+   * Get a <code>ComplexNum</code> number object.
    *
    * @return
    */
   public ComplexNum complexNumValue();
+
+  default Complex complexValue() {
+    return complexNumValue().complexValue();
+  }
 
   /**
    * Gets the signum value of a complex number

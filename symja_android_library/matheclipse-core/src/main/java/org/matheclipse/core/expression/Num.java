@@ -11,6 +11,7 @@ import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -560,7 +561,13 @@ public class Num implements INum {
   @Override
   public ComplexNum complexNumValue() {
     // double precision complex number
-    return ComplexNum.valueOf(doubleValue(), 0.0);
+    return ComplexNum.valueOf(value, 0.0);
+  }
+
+  @Override
+  public Complex complexValue() {
+    // double precision complex number
+    return new Complex(value);
   }
 
   @Override
@@ -585,30 +592,32 @@ public class Num implements INum {
 
   @Override
   public IExpr coshIntegral() {
-    try {
-      if (isNonNegativeResult()) {
-        Apfloat coshIntegral = EvalEngine.getApfloatDouble().coshIntegral(apfloatValue());
-        return F.num(coshIntegral.doubleValue());
-      }
-    } catch (ArithmeticException aex) {
-      // java.lang.ArithmeticException: Result would be complex
-    }
-    Apcomplex coshIntegral = EvalEngine.getApfloatDouble().coshIntegral(apcomplexValue());
-    return F.complexNum(coshIntegral.real().doubleValue(), coshIntegral.imag().doubleValue());
+    return F.complexReduced(GammaJS.coshIntegral(new Complex(value)));
+    // try {
+    // if (isNonNegativeResult()) {
+    // Apfloat coshIntegral = EvalEngine.getApfloatDouble().coshIntegral(apfloatValue());
+    // return F.num(coshIntegral.doubleValue());
+    // }
+    // } catch (ArithmeticException aex) {
+    // // java.lang.ArithmeticException: Result would be complex
+    // }
+    // Apcomplex coshIntegral = EvalEngine.getApfloatDouble().coshIntegral(apcomplexValue());
+    // return F.complexNum(coshIntegral.real().doubleValue(), coshIntegral.imag().doubleValue());
   }
 
   @Override
   public IExpr cosIntegral() {
-    try {
-      if (isNonNegativeResult()) {
-        Apfloat cosIntegral = EvalEngine.getApfloatDouble().cosIntegral(apfloatValue());
-        return F.num(cosIntegral.doubleValue());
-      }
-    } catch (ArithmeticException aex) {
-      // java.lang.ArithmeticException: Result would be complex
-    }
-    Apcomplex cosIntegral = EvalEngine.getApfloatDouble().cosIntegral(apcomplexValue());
-    return F.complexNum(cosIntegral.real().doubleValue(), cosIntegral.imag().doubleValue());
+    return F.complexReduced(GammaJS.cosIntegral(new Complex(value)));
+    // try {
+    // if (isNonNegativeResult()) {
+    // Apfloat cosIntegral = EvalEngine.getApfloatDouble().cosIntegral(apfloatValue());
+    // return F.num(cosIntegral.doubleValue());
+    // }
+    // } catch (ArithmeticException aex) {
+    // // java.lang.ArithmeticException: Result would be complex
+    // }
+    // Apcomplex cosIntegral = EvalEngine.getApfloatDouble().cosIntegral(apcomplexValue());
+    // return F.complexNum(cosIntegral.real().doubleValue(), cosIntegral.imag().doubleValue());
   }
 
   /** {@inheritDoc} */
@@ -798,25 +807,27 @@ public class Num implements INum {
 
   @Override
   public IExpr expIntegralE(IExpr z) {
-    if (z instanceof IReal) {
-      try {
-        return valueOf(EvalEngine.getApfloatDouble()
-            .expIntegralE(apfloatValue(), ((IReal) z).apfloatValue()).doubleValue());
-      } catch (ArithmeticException | NumericComputationException e) {
-        // try as computation with complex numbers
-      }
-    }
+    // if (z instanceof IReal) {
+    // try {
+    // return valueOf(EvalEngine.getApfloatDouble()
+    // .expIntegralE(apfloatValue(), ((IReal) z).apfloatValue()).doubleValue());
+    // } catch (ArithmeticException | NumericComputationException e) {
+    // // try as computation with complex numbers
+    // }
+    // }
     if (z instanceof INumber) {
-      Apcomplex expIntegralE = EvalEngine.getApfloatDouble().expIntegralE(apfloatValue(),
-          ((INumber) z).apcomplexValue());
-      return F.complexNum(expIntegralE.real().doubleValue(), expIntegralE.imag().doubleValue());
+      return F.complexReduced(GammaJS.expIntegralE(complexValue(), ((INumber) z).complexValue()));
+      // Apcomplex expIntegralE = EvalEngine.getApfloatDouble().expIntegralE(apfloatValue(),
+      // ((INumber) z).apcomplexValue());
+      // return F.complexNum(expIntegralE.real().doubleValue(), expIntegralE.imag().doubleValue());
     }
     return INum.super.expIntegralE(z);
   }
 
   @Override
   public IExpr expIntegralEi() {
-    return valueOf(EvalEngine.getApfloatDouble().expIntegralEi(apfloatValue()).doubleValue());
+    return F.complexReduced(GammaJS.expIntegralEi(new Complex(value)));
+    // return valueOf(EvalEngine.getApfloatDouble().expIntegralEi(apfloatValue()).doubleValue());
   }
 
   /**
@@ -1764,16 +1775,17 @@ public class Num implements INum {
 
   @Override
   public IExpr logIntegral() {
-    try {
-      if (isNonNegativeResult()) {
-        Apfloat logIntegral = EvalEngine.getApfloatDouble().logIntegral(apfloatValue());
-        return F.num(logIntegral.doubleValue());
-      }
-    } catch (ArithmeticException | NumericComputationException ex) {
-      // java.lang.ArithmeticException: Result would be complex
-    }
-    Apcomplex logIntegral = EvalEngine.getApfloatDouble().logIntegral(apcomplexValue());
-    return F.complexNum(logIntegral.real().doubleValue(), logIntegral.imag().doubleValue());
+    return F.complexReduced(GammaJS.logIntegral(new Complex(value)));
+    // try {
+    // if (isNonNegativeResult()) {
+    // Apfloat logIntegral = EvalEngine.getApfloatDouble().logIntegral(apfloatValue());
+    // return F.num(logIntegral.doubleValue());
+    // }
+    // } catch (ArithmeticException | NumericComputationException ex) {
+    // // java.lang.ArithmeticException: Result would be complex
+    // }
+    // Apcomplex logIntegral = EvalEngine.getApfloatDouble().logIntegral(apcomplexValue());
+    // return F.complexNum(logIntegral.real().doubleValue(), logIntegral.imag().doubleValue());
   }
 
   @Override
@@ -2066,14 +2078,16 @@ public class Num implements INum {
 
   @Override
   public IExpr sinhIntegral() {
-    Apfloat sinhIntegral = EvalEngine.getApfloatDouble().sinhIntegral(apfloatValue());
-    return F.num(sinhIntegral.doubleValue());
+    return F.complexReduced(GammaJS.sinhIntegral(new Complex(value)));
+    // Apfloat sinhIntegral = EvalEngine.getApfloatDouble().sinhIntegral(apfloatValue());
+    // return F.num(sinhIntegral.doubleValue());
   }
 
   @Override
   public IExpr sinIntegral() {
-    Apfloat sinIntegral = EvalEngine.getApfloatDouble().sinIntegral(apfloatValue());
-    return F.num(sinIntegral.doubleValue());
+    return F.complexReduced(GammaJS.sinIntegral(new Complex(value)));
+    // Apfloat sinIntegral = EvalEngine.getApfloatDouble().sinIntegral(apfloatValue());
+    // return F.num(sinIntegral.doubleValue());
   }
 
   @Override

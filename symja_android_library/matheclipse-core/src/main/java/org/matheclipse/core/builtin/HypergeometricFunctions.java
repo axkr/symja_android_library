@@ -322,6 +322,19 @@ public class HypergeometricFunctions {
           }
           return F.NIL;
         }
+        if (v.isOne()) {
+          // https://functions.wolfram.com/GammaBetaErf/ExpIntegralE/03/01/02/0007/
+          // -ExpIntegralEi(-z)+1/2*(-Log(-1/z)+Log(-z))-Log(z)
+          return F.Plus(F.Negate(F.ExpIntegralEi(F.Negate(z))),
+              F.Times(F.C1D2,
+                  F.Plus(F.Negate(F.Log(F.Negate(F.Power(z, F.CN1)))), F.Log(F.Negate(z)))),
+              F.Negate(F.Log(z)));
+        }
+        if (v.isMinusOne()) {
+          // https://functions.wolfram.com/GammaBetaErf/ExpIntegralE/03/01/02/0011/
+          // (z+z^2)/(E^z*z^3)
+          return F.Times(F.Plus(z, F.Sqr(z)), F.Power(F.Times(F.Exp(z), F.Power(z, F.C3)), F.CN1));
+        }
         // Gamma(1-v,z)/z^(1-v)
         return F.Times(F.Power(z, F.Plus(F.CN1, v)), F.Gamma(F.Subtract(F.C1, v), z));
       }

@@ -13,6 +13,7 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
+import org.matheclipse.core.builtin.functions.GammaJS;
 import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -625,8 +626,9 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr cosIntegral() {
-    Apcomplex cosIntegral = EvalEngine.getApfloatDouble().cosIntegral(apcomplexValue());
-    return F.complexNum(cosIntegral.real().doubleValue(), cosIntegral.imag().doubleValue());
+    return F.complexNum(GammaJS.cosIntegral(fComplex));
+    // Apcomplex cosIntegral = EvalEngine.getApfloatDouble().cosIntegral(apcomplexValue());
+    // return F.complexNum(cosIntegral.real().doubleValue(), cosIntegral.imag().doubleValue());
   }
 
   /** {@inheritDoc} */
@@ -792,10 +794,10 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr expIntegralE(IExpr z) {
     if (z instanceof INumber) {
-
-      Apcomplex expIntegralE = EvalEngine.getApfloatDouble().expIntegralE(apcomplexValue(),
-          ((INumber) z).apcomplexValue());
-      return valueOf(expIntegralE.real().doubleValue(), expIntegralE.imag().doubleValue());
+      return F.complexNum(GammaJS.expIntegralE(fComplex, ((INumber) z).complexValue()));
+      // Apcomplex expIntegralE = EvalEngine.getApfloatDouble().expIntegralE(apcomplexValue(),
+      // ((INumber) z).apcomplexValue());
+      // return valueOf(expIntegralE.real().doubleValue(), expIntegralE.imag().doubleValue());
 
     }
     return IComplexNum.super.expIntegralE(z);
@@ -803,8 +805,9 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr expIntegralEi() {
-    Apcomplex expIntegralEi = EvalEngine.getApfloatDouble().expIntegralEi(apcomplexValue());
-    return valueOf(expIntegralEi.real().doubleValue(), expIntegralEi.imag().doubleValue());
+    return F.complexNum(GammaJS.expIntegralEi(fComplex));
+    // Apcomplex expIntegralEi = EvalEngine.getApfloatDouble().expIntegralEi(apcomplexValue());
+    // return valueOf(expIntegralEi.real().doubleValue(), expIntegralEi.imag().doubleValue());
   }
 
   @Override
@@ -1493,8 +1496,9 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr logIntegral() {
-    Apcomplex logIntegral = EvalEngine.getApfloatDouble().logIntegral(apcomplexValue());
-    return F.complexNum(logIntegral.real().doubleValue(), logIntegral.imag().doubleValue());
+    return F.complexNum(GammaJS.logIntegral(fComplex));
+    // Apcomplex logIntegral = EvalEngine.getApfloatDouble().logIntegral(apcomplexValue());
+    // return F.complexNum(logIntegral.real().doubleValue(), logIntegral.imag().doubleValue());
   }
 
   @Override
@@ -1738,14 +1742,16 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr sinhIntegral() {
-    Apcomplex sinhIntegral = EvalEngine.getApfloatDouble().sinhIntegral(apcomplexValue());
-    return F.complexNum(sinhIntegral.real().doubleValue(), sinhIntegral.imag().doubleValue());
+    return F.complexNum(GammaJS.sinhIntegral(fComplex));
+    // Apcomplex sinhIntegral = EvalEngine.getApfloatDouble().sinhIntegral(apcomplexValue());
+    // return F.complexNum(sinhIntegral.real().doubleValue(), sinhIntegral.imag().doubleValue());
   }
 
   @Override
   public IExpr sinIntegral() {
-    Apcomplex sinIntegral = EvalEngine.getApfloatDouble().sinIntegral(apcomplexValue());
-    return F.complexNum(sinIntegral.real().doubleValue(), sinIntegral.imag().doubleValue());
+    return F.complexNum(GammaJS.sinIntegral(fComplex));
+    // Apcomplex sinIntegral = EvalEngine.getApfloatDouble().sinIntegral(apcomplexValue());
+    // return F.complexNum(sinIntegral.real().doubleValue(), sinIntegral.imag().doubleValue());
   }
 
   @Override

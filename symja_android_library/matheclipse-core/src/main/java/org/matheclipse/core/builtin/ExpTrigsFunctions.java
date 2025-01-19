@@ -2165,13 +2165,11 @@ public class ExpTrigsFunctions {
       if (ast.argSize() == 1) {
         try {
           IInexactNumber z = (IInexactNumber) ast.arg1();
-          if (z.isNumber()) {
-            IExpr result = z.exp();
-            if (result instanceof INumber && result.isInfinite()) {
-              return F.Overflow();
-            }
-            return result;
+          IExpr result = z.exp();
+          if (result.isInfinite()) {
+            return F.Overflow();
           }
+          return result;
         } catch (ValidateException ve) {
           return Errors.printMessage(ast.topHead(), ve, engine);
         } catch (RuntimeException rex) {
