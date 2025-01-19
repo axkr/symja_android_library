@@ -3771,6 +3771,9 @@ public class S {
    */
   public final static IBuiltInSymbol FindMinimum = S.initFinalSymbol("FindMinimum", ID.FindMinimum);
 
+  public final static IBuiltInSymbol FindMinimumCostFlow =
+      S.initFinalSymbol("FindMinimumCostFlow", ID.FindMinimumCostFlow);
+
   /**
    * FindPermutation(list1, list2) - create a `Cycles({{...},{...}, ...})` permutation expression,
    * for two lists whose arguments are the same but may be differently arranged.
