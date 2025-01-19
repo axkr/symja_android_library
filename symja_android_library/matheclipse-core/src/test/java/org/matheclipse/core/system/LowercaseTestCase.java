@@ -910,6 +910,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testArg() {
+    check("Arg((x + 1)*(x - 1) - x^2 + 1)//Simplify", //
+        "0");
+    check("Arg({x,y})", //
+        "{Arg(x),Arg(y)}");
     check("FullSimplify(Arg(-I*41*Im(z)-41*Re(z)))", //
         "Arg(-z)");
     check("FullSimplify(Arg(I*2*Im(z)+2*Re(z)))", //
@@ -991,6 +995,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Indeterminate");
     check("Arg(0)", //
         "0");
+    check("Arg(Infinity)", //
+        "0");
+    check("Arg(DirectedInfinity(1+I))", //
+        "Pi/4");
     check("Arg(10/3)", //
         "0");
     check("Arg(-10/3)", //
@@ -4962,6 +4970,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDateString() {
+    check("DateString({2016,8,1})", //
+        "Mon 01 Aug 2016 00:00:00");
     check("DateString(3155673600)", //
         "Sat 01 Jan 2000 00:00:00");
     // check(
@@ -14016,6 +14026,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("MapAt(f, {a, b, c, d}, {1, 1})", //
         "MapAt(f,{a,b,c,d},{1,1})");
 
+    check("MapAt(f, {a, b, c}, 2)", //
+        "{a,f(b),c}");
+    check("MapAt(f, -1)[{a, b, c}]", //
+        "{a,b,f(c)}");
+
     check("MapAt(0&, {{0, 1}, {1, 0}}, {2, 1})", //
         "{{0,1},{0,0}}");
     check("MapAt(0&, {{0, 1}, {1, 0}}, {{2}, {1}})", //
@@ -15049,6 +15064,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMod() {
+    check("Mod(m,n) // FunctionExpand", //
+        "m-n*Floor(m/n)");
+    check("Mod(m,n,d) // FunctionExpand", //
+        "m-n*Floor((-d+m)/n)");
+
+    check("Table(Mod(7, 3, i),{i,-10,10})", //
+        "{-8,-8,-8,-5,-5,-5,-2,-2,-2,1,1,1,4,4,4,7,7,7,10,10,10}");
     check("Mod(Infinity, 1+I)", //
         "Indeterminate");
     check("Mod(Infinity, 3)", //
@@ -20024,6 +20046,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testQuotient() {
+    check("Quotient(m,n) // FunctionExpand", //
+        "Floor(m/n)");
+    check("Quotient(m,n,d) // FunctionExpand", //
+        "Floor((-d+m)/n)");
+
+    check("Quotient(Range(10), 3, I)", //
+        "{0,1,1,1,2,2,2,3,3,3}");
+    check("Table(Quotient(7, 3, i),{i,-10,10})", //
+        "{5,5,5,4,4,4,3,3,3,2,2,2,1,1,1,0,0,0,-1,-1,-1}");
+
     check("Table(Quotient(x + y*I, y + x*I), {x, -3.9,3.9,0.5}, {y,  -3.9,3.9,0.5})", //
         "{{1,1,1,1,1-I,1-I,-I,-I,-I,-I,-1-I,-1-I,-1-I,-1,-1,-1},{1,1,1,1,1-I,1-I,-I,-I,-I,-I,-\n"
             + "1-I,-1-I,-1,-1,-1,-1},{1,1,1,1,1,1-I,1-I,-I,-I,-I,-1-I,-1-I,-1,-1,-1,-1},{1,1,1,\n"

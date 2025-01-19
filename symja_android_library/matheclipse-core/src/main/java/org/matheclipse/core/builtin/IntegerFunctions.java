@@ -17,6 +17,7 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.ComplexSym;
@@ -1138,7 +1139,26 @@ public class IntegerFunctions {
    * Mod(5, 0)
    * </pre>
    */
-  private static class Mod extends AbstractFunctionEvaluator {
+  private static class Mod extends AbstractFunctionEvaluator implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        IExpr m = ast.arg1();
+        IExpr n = ast.arg2();
+        // m-n*Floor(m/n)
+        return F.Plus(m, F.Times(F.CN1, n, F.Floor(F.Times(m, F.Power(n, F.CN1)))));
+      }
+      if (ast.isAST3()) {
+        IExpr m = ast.arg1();
+        IExpr n = ast.arg2();
+        IExpr d = ast.arg3();
+        // m-n*Floor((-d+m)/n)
+        return F.Plus(m,
+            F.Times(F.CN1, n, F.Floor(F.Times(F.Plus(F.Negate(d), m), F.Power(n, F.CN1)))));
+      }
+      return F.NIL;
+    }
 
     /**
      * See: <a href="http://en.wikipedia.org/wiki/Modular_arithmetic">Wikipedia - Modular
@@ -1153,27 +1173,13 @@ public class IntegerFunctions {
         Errors.printMessage(ast.topHead(), "indet", F.list(ast), engine);
         return S.Indeterminate;
       }
-      if (ast.isAST3()) {
-        // 3 args
-        IExpr d = ast.arg3();
-        if (m.isNumber() && n.isNumber() && d.isNumber()) {
-          if (m.isInteger() && n.isInteger() && d.isInteger()) {
-            IExpr subExpr = ((IReal) m.subtract(d).divide(n)).floorFraction();
-            return m.plus(F.CN1.times(n).times(subExpr));
-          }
-          if (m.isComplex() || n.isComplex() || d.isComplex() || m.isComplexNumeric()
-              || n.isComplexNumeric() || d.isComplexNumeric()) {
-            // https://mathematica.stackexchange.com/a/114373/21734
-            IExpr subExpr = engine.evaluate(F.Divide(F.Subtract(m, d), n));
-            IExpr re = S.Round.of(subExpr.re());
-            IExpr im = S.Round.of(subExpr.im());
-            return F.Plus(m, F.Times(F.CN1, n, re), F.Times(F.CI, im));
-          }
-        }
-        return F.NIL;
+      if (ast.isAST2()) {
+        return mod(m, n, engine);
       }
+      return mod(m, n, ast.arg3(), engine);
+    }
 
-      // 2 args
+    private static IExpr mod(IExpr m, IExpr n, EvalEngine engine) {
       if (m.isInteger() && n.isInteger()) {
         final IInteger i0 = (IInteger) m;
         final IInteger i1 = (IInteger) n;
@@ -1196,6 +1202,25 @@ public class IntegerFunctions {
         return F.Subtract(m, F.Times(n, F.Floor(div)));
       }
 
+      return F.NIL;
+    }
+
+    private static IExpr mod(IExpr m, IExpr n, IExpr d, EvalEngine engine) {
+      if (m.isNumber() && n.isNumber() && d.isNumber()) {
+        // m-n*Floor((-d+m)/n)
+        if (m.isInteger() && n.isInteger() && d.isInteger()) {
+          IExpr subExpr = ((IReal) m.subtract(d).divide(n)).floorFraction();
+          return m.plus(F.CN1.times(n).times(subExpr));
+        }
+        if (m.isComplex() || n.isComplex() || d.isComplex() || m.isComplexNumeric()
+            || n.isComplexNumeric() || d.isComplexNumeric()) {
+          // https://mathematica.stackexchange.com/a/114373/21734
+          IExpr subExpr = engine.evaluate(F.Divide(F.Subtract(m, d), n));
+          IExpr re = S.Round.of(subExpr.re());
+          IExpr im = S.Round.of(subExpr.im());
+          return F.Plus(m, F.Times(F.CN1, n, re), F.Times(F.CI, im));
+        }
+      }
       return F.NIL;
     }
 
@@ -1379,82 +1404,123 @@ public class IntegerFunctions {
    * -5
    * </pre>
    */
-  private static class Quotient extends AbstractCoreFunctionEvaluator {
+  private static class Quotient extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr z = ast.arg1().eval(engine);
-      IExpr n = ast.arg2().eval(engine);
-      if (n.isZero()) {
-        LOGGER.log(engine.getLogLevel(), "Quotient: division by zero");
-        return F.CComplexInfinity;
-      }
+    public IExpr functionExpand(IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
-        if (z.isInteger() && n.isInteger()) {
-          return ((IInteger) z).quotient((IInteger) n);
-        }
-        if (z.isReal() && n.isReal()) {
-          return ((IReal) z).divideBy((IReal) n).floorFraction();
-        }
-        if (z.isComplex() || n.isComplex()) {
-          IComplex c1 = null;
-          if (z.isComplex()) {
-            c1 = (IComplex) z;
-          } else if (z.isRational()) {
-            c1 = F.complex((IRational) z);
-          }
-          if (c1 != null) {
-            IComplex c2 = null;
-            if (n.isComplex()) {
-              c2 = (ComplexSym) n;
-            } else if (n.isRational()) {
-              c2 = F.complex((IRational) n);
-            }
-            if (c2 != null) {
-              IComplex[] result = c1.quotientRemainder(c2);
-              if (result != null) {
-                return result[0];
-              }
-            }
-          }
-        }
-
-        if (z.isNumericFunction(true) && n.isNumericFunction(true)) {
-          try {
-            double zDouble = Double.NaN;
-            double nDouble = Double.NaN;
-            try {
-              zDouble = z.evalf();
-              nDouble = n.evalf();
-            } catch (RuntimeException ve) {
-              Errors.rethrowsInterruptException(ve);
-            }
-            if (Double.isNaN(zDouble) || Double.isNaN(nDouble)) {
-              Complex zComplex = z.evalfc();
-              Complex nComplex = n.evalfc();
-              Complex[] qr = ComplexNum.quotientRemainder(zComplex, nComplex);
-              return F.complexNum(qr[0]).floorFraction();
-            } else {
-              return F.num(zDouble / nDouble).floorFraction();
-            }
-          } catch (ValidateException ve) {
-            return Errors.printMessage(ast.topHead(), ve, engine);
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
-          }
-        }
-        return F.NIL;
+        IExpr m = ast.arg1();
+        IExpr n = ast.arg2();
+        // Floor(m/n)
+        return F.Floor(F.Divide(m, n));
       }
       if (ast.isAST3()) {
-        IExpr d = ast.arg3().eval(engine);
-        if (z.isInteger() && n.isInteger() && d.isInteger()) {
-          // TODO implement for 3 args
-        }
-        return F.NIL;
+        IExpr m = ast.arg1();
+        IExpr n = ast.arg2();
+        IExpr d = ast.arg3();
+        // Floor((-d+m)/n)
+        return F.Floor(F.Times(F.Plus(F.Negate(d), m), F.Power(n, F.CN1)));
       }
       return F.NIL;
     }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr m = ast.arg1();
+      IExpr n = ast.arg2();
+      if (n.isZero()) {
+        // Infinite expression `1` encountered.
+        Errors.printMessage(S.Quotient, "infy", F.List(ast), engine);
+        return F.CComplexInfinity;
+      }
+      if (ast.isAST2()) {
+        return quotient(m, n);
+      }
+      return quotient(m, n, ast.arg3(), engine);
+    }
+
+    /**
+     * Quotient function for 2 arguments.
+     * 
+     * @param z
+     * @param n
+     * @return
+     */
+    private static IExpr quotient(IExpr z, IExpr n) {
+      if (z.isInteger() && n.isInteger()) {
+        return ((IInteger) z).quotient((IInteger) n);
+      }
+      if (z.isReal() && n.isReal()) {
+        return ((IReal) z).divideBy((IReal) n).floorFraction();
+      }
+      if (z.isComplex() || n.isComplex()) {
+        IComplex c1 = null;
+        if (z.isComplex()) {
+          c1 = (IComplex) z;
+        } else if (z.isRational()) {
+          c1 = F.CC((IRational) z);
+        }
+        if (c1 != null) {
+          IComplex c2 = null;
+          if (n.isComplex()) {
+            c2 = (ComplexSym) n;
+          } else if (n.isRational()) {
+            c2 = F.CC((IRational) n);
+          }
+          if (c2 != null) {
+            IComplex[] result = c1.quotientRemainder(c2);
+            if (result != null) {
+              return result[0];
+            }
+          }
+        }
+      }
+
+      if (z.isNumericFunction(true) && n.isNumericFunction(true)) {
+        try {
+          double zDouble = Double.NaN;
+          double nDouble = Double.NaN;
+          try {
+            zDouble = z.evalf();
+            nDouble = n.evalf();
+          } catch (RuntimeException ve) {
+            Errors.rethrowsInterruptException(ve);
+          }
+          if (Double.isNaN(zDouble) || Double.isNaN(nDouble)) {
+            Complex zComplex = z.evalfc();
+            Complex nComplex = n.evalfc();
+            Complex[] qr = ComplexNum.quotientRemainder(zComplex, nComplex);
+            return F.complexNum(qr[0]).floorFraction();
+          } else {
+            return F.num(zDouble / nDouble).floorFraction();
+          }
+        } catch (ValidateException ve) {
+          return Errors.printMessage(S.Quotient, ve);
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          return Errors.printMessage(S.Quotient, rex);
+        }
+      }
+      return F.NIL;
+    }
+
+    private static IExpr quotient(IExpr m, IExpr n, IExpr d, EvalEngine engine) {
+      if (m.isComplex() || n.isComplex() || d.isComplex() || m.isComplexNumeric()
+          || n.isComplexNumeric() || d.isComplexNumeric()) {
+        // https://mathematica.stackexchange.com/a/114373/21734
+        IExpr subExpr = engine.evaluate(F.Divide(F.Subtract(m, d), n));
+        IExpr re = S.Round.of(engine, subExpr.re());
+        IExpr im = S.Round.of(engine, subExpr.im());
+        return F.Plus(re, F.Times(F.CI, im));
+      }
+      if (m.isNumber() && n.isNumber() && d.isNumber()) {
+        // Floor((-d+m)/n)
+        return F.Floor(F.Times(F.Plus(F.Negate(d), m), F.Power(n, F.CN1)));
+      }
+      return F.NIL;
+    }
+
+
 
     @Override
     public int[] expectedArgSize(IAST ast) {
@@ -1465,6 +1531,7 @@ public class IntegerFunctions {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
     }
+
   }
 
   /**
@@ -1861,10 +1928,7 @@ public class IntegerFunctions {
         Apint denom = new Apint(((IFraction) realNumber).toBigDenominator());
         Aprational aprational = new Aprational(numer, denom);
         RealDigitsResult rd = RealDigitsResult.create(aprational, radix);
-        if (rd != null) {
-          return F.list(rd.getDigitsList(), F.ZZ(rd.getNumberOfLeftDigits()));
-        }
-        return F.NIL;
+        return F.list(rd.getDigitsList(), F.ZZ(rd.getNumberOfLeftDigits()));
       } else {
         apfloat = realNumber.apfloatValue();
       }
