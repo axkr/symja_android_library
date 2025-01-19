@@ -11,13 +11,13 @@ ToExpression("string", form)
 ```
 
 > converts the `string` given in `form` into an expression.
- 
+
 ```
 ToExpression("string", form, head)
 ```
 
 > applies the `head` to the expression before evaluating it.
-      
+
 ### Examples
 
 ```

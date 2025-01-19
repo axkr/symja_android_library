@@ -16,9 +16,29 @@ MapAt(f, expr, {i, j, ...})
 MapAt(f, pos)
 ```
 
-> represents an operator form of MapAt that can be applied to an expression..
+> represents an operator form of `MapAt` that can be applied to an expression..
 
 ### Examples
 
+Map function `f` to the second element of a simple flat list:
+
 ```
+>> MapAt(f, {a, b, c}, 2)
+{a,f(b),c}
+```
+
+Above, we specified a simple integer value `2`. In general, the expression can be an arbitrary vector.
+
+Using `MapAt` with `Function(0)`, we can zero a value or values in a vector:
+
+```
+>> MapAt(0&, {{0, 1}, {1, 0}}, {2, 1})
+{{0,1},{0,0}}
+```
+
+Use the operator form of `MapAt`:
+
+```
+>> MapAt(f, -1)[{a, b, c}] 
+{a,b,f(c)}
 ```

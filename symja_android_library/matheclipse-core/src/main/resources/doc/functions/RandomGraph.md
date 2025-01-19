@@ -6,6 +6,10 @@ RandomGraph({number-of-vertices,number-of-edges})
 
 > create a random graph with `number-of-vertices` vertices and `number-of-edges` edges. 
 
+See
+* [Wikipedia - Random graph](https://en.wikipedia.org/wiki/Random_graph) 
+
+
 ### Examples
 
 ```
