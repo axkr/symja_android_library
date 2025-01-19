@@ -14,6 +14,10 @@ NSolve(equations, vars, domain)
 
 **Note:** `NSolve` calls [Solve](Solve.md) in numeric mode.
 
+### Options
+
+- `MaxRoots` the maximum number of roots, which should be returned
+
 ### Examples
 
 It's important to use the `==` operator to define the equations. If you have unintentionally assigned a value to the variables `x, y` with the `=` operator you have to call `Clear(x,y)` to clear the definitions for these variables.
@@ -25,10 +29,6 @@ It's important to use the `==` operator to define the equations. If you have uni
 
 ### Related terms 
 [Solve](Solve.md), [Reduce](Reduce.md), [Roots](Roots.md) 
-
-
-
-
 
 
 ### Implementation status

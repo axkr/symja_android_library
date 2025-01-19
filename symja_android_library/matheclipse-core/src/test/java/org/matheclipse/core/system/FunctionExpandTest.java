@@ -257,6 +257,24 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFunctionExpandExpIntegralE() {
+    // https://functions.wolfram.com/GammaBetaErf/ExpIntegralE/03/01/02/0007/
+    check("FunctionExpand(ExpIntegralE(1,z))", //
+        "-ExpIntegralEi(-z)+1/2*(-Log(-1/z)+Log(-z))-Log(z)");
+
+    // https://functions.wolfram.com/GammaBetaErf/ExpIntegralE/03/01/02/0011/
+    check("FunctionExpand(ExpIntegralE(-1,z))", //
+        "(z+z^2)/(E^z*z^3)");
+
+    // https://functions.wolfram.com/GammaBetaErf/ExpIntegralE/03/01/02/0003/
+    check("FunctionExpand(ExpIntegralE(1/2,z))", //
+        "(Sqrt(Pi)*Erfc(Sqrt(z)))/Sqrt(z)");
+
+    check("FunctionExpand(ExpIntegralE(-1/2,z))", //
+        "(Sqrt(z)/E^z+1/2*Sqrt(Pi)*(1-Erf(Sqrt(z))))/z^(3/2)");
+  }
+
+  @Test
   public void testFunctionExpandSin() {
     check("FunctionExpand(Sin(3*Degree))", //
         "(1/8*Sqrt(3)*(-1+Sqrt(5))+Sqrt(1/2*(5+Sqrt(5)))/4)/Sqrt(2)+(1/8*(-1+Sqrt(5))-Sqrt(\n"

@@ -45,6 +45,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPair;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -1197,8 +1198,13 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               if (domain == S.Booleans) {
                 return BooleanFunctions.solveInstances(ast.arg1(), variables, maxRoots);
               }
-              if (domain == S.Integers) {
-                return solveIntegers(ast, equationVariables, variables, maxRoots, engine);
+              if (domain == S.Integers || domain == S.Primes) {
+                IExpr integersResult =
+                    solveIntegers(ast, equationVariables, variables, maxRoots, domain, engine);
+                if (domain == S.Primes) {
+                  return checkDomain(integersResult, domain, maxRoots);
+                }
+                return integersResult;
               }
 
               if (domain != S.Reals && domain != S.Complexes) {
@@ -1267,6 +1273,15 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     return false;
   }
 
+  private static boolean isPrime(IAST listOfRules) {
+    if (listOfRules.isListOfRules(false)) {
+      return listOfRules.exists(x -> !x.second().isInteger() //
+          || !((IInteger) x.second()).isProbablePrime());
+    }
+    return false;
+  }
+
+
   /**
    * Check if all solutions are in the given domain (currently only <code>Reals</code> is checked).
    *
@@ -1279,20 +1294,38 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       expr = F.list(expr);
     }
     IExpr result = expr;
-    if (expr.isList() && domain.equals(S.Reals)) {
-      if (expr.isListOfLists()) {
-        result = F.mapList((IAST) expr, x -> {
-          final IAST listOfRules = (IAST) x;
-          if (!isComplex(listOfRules)) {
-            return listOfRules;
-          }
-          return F.NIL;
-        });
-      } else {
-        if (!isComplex(((IAST) expr))) {
-          result = expr;
+    if (expr.isList()) {
+      if (domain.equals(S.Reals)) {
+        if (expr.isListOfLists()) {
+          result = F.mapList((IAST) expr, x -> {
+            final IAST listOfRules = (IAST) x;
+            if (!isComplex(listOfRules)) {
+              return listOfRules;
+            }
+            return F.NIL;
+          });
         } else {
-          return F.CEmptyList;
+          if (!isComplex(((IAST) expr))) {
+            result = expr;
+          } else {
+            return F.CEmptyList;
+          }
+        }
+      } else if (domain.equals(S.Primes)) {
+        if (expr.isListOfLists()) {
+          result = F.mapList((IAST) expr, x -> {
+            final IAST listOfRules = (IAST) x;
+            if (!isPrime(listOfRules)) {
+              return listOfRules;
+            }
+            return F.NIL;
+          });
+        } else {
+          if (!isComplex(((IAST) expr))) {
+            result = expr;
+          } else {
+            return F.CEmptyList;
+          }
         }
       }
     }
@@ -1302,8 +1335,19 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     return result;
   }
 
+  /**
+   * Solve the given equations and inequations for {@link S#Integers} or {@link S#Primes} domains.
+   * 
+   * @param ast
+   * @param equationVariables
+   * @param userDefinedVariables
+   * @param maximumNumberOfResults
+   * @param domain {@link S#Integers} or {@link S#Primes}
+   * @param engine
+   * @return
+   */
   public static IExpr solveIntegers(final IAST ast, IAST equationVariables,
-      IAST userDefinedVariables, int maximumNumberOfResults, EvalEngine engine) {
+      IAST userDefinedVariables, int maximumNumberOfResults, ISymbol domain, EvalEngine engine) {
     if (!userDefinedVariables.isEmpty()) {
       IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
       if (equationsAndInequations.isEmpty()) {
@@ -1338,7 +1382,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           try {
             LOGGER.debug("Choco solver");
             IAST resultList = ChocoConvert.integerSolve(equationsAndInequations, equationVariables,
-                userDefinedVariables, maximumNumberOfResults, hybridVars, hybridTuples, engine);
+                userDefinedVariables, maximumNumberOfResults, hybridVars, hybridTuples, domain,
+                engine);
             if (resultList.isPresent()) {
               EvalAttributes.sort((IASTMutable) resultList);
               return resultList;

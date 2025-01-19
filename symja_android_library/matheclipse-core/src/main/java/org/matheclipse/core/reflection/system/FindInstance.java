@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -96,8 +95,8 @@ public class FindInstance extends Solve {
         } else {
           if (ast.arg3() == S.Booleans || formula) {
             return BooleanFunctions.solveInstances(ast.arg1(), vars, maxChoices);
-          } else if (ast.arg3() == S.Integers) {
-            return Solve.solveIntegers(ast, vars, vars, maxChoices, engine);
+          } else if (ast.arg3() == S.Integers || ast.arg3() == S.Primes) {
+            return Solve.solveIntegers(ast, vars, vars, maxChoices, domain, engine);
           }
           if (domain != S.Reals && domain != S.Complexes) {
             // Warning: `1` is not a valid domain specification.

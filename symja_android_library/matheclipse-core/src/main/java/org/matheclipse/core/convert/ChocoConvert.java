@@ -5,8 +5,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Predicate;
 import org.chocosolver.solver.Model;
 import org.chocosolver.solver.Solution;
+import org.chocosolver.solver.constraints.Constraint;
+import org.chocosolver.solver.constraints.Propagator;
+import org.chocosolver.solver.constraints.PropagatorPriority;
 import org.chocosolver.solver.constraints.extension.hybrid.HybridTuples;
 import org.chocosolver.solver.constraints.extension.hybrid.ISupportable;
 import org.chocosolver.solver.exception.ContradictionException;
@@ -22,12 +26,14 @@ import org.chocosolver.solver.search.strategy.selectors.variables.InputOrder;
 import org.chocosolver.solver.search.strategy.strategy.IntStrategy;
 import org.chocosolver.solver.variables.IntVar;
 import org.chocosolver.solver.variables.RealVar;
+import org.chocosolver.util.ESat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -40,6 +46,80 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <a href="https://github.com/chocoteam/choco-solver">Choco solver</a>
  */
 public class ChocoConvert {
+  private static class IExprPropagator extends Propagator<IntVar> {
+    private final IntVar[] vars;
+    private final Predicate<IExpr[]> predicate;
+
+    public IExprPropagator(IntVar[] vars, Predicate<IExpr[]> predicate) {
+      super(vars, PropagatorPriority.VERY_SLOW, false);
+      this.vars = vars;
+      this.predicate = predicate;
+    }
+
+    @Override
+    public void propagate(int evtmask) throws ContradictionException {
+      for (int i = 0; i < vars.length; i++) {
+        for (int value = vars[i].getLB(); value <= vars[i].getUB(); value =
+            vars[i].nextValue(value)) {
+          IExpr[] exprs = new IExpr[vars.length];
+          for (int j = 0; j < vars.length; j++) {
+            exprs[j] = F.ZZ(vars[j].getValue());
+          }
+          if (!predicate.test(exprs)) {
+            vars[i].removeValue(value, this);
+          }
+        }
+      }
+    }
+
+    @Override
+    public ESat isEntailed() {
+      IExpr[] exprs = new IExpr[vars.length];
+      for (int i = 0; i < vars.length; i++) {
+        exprs[i] = F.ZZ(vars[i].getValue());
+      }
+      return predicate.test(exprs) ? ESat.TRUE : ESat.FALSE;
+    }
+
+    @Override
+    public void propagate(int idxVarInProp, int mask) throws ContradictionException {
+      propagate(mask);
+    }
+  }
+  private static class PredicatePropagator extends Propagator<IntVar> {
+    private final IntVar var;
+    private final Predicate<Integer> predicate;
+
+    public PredicatePropagator(IntVar var, Predicate<Integer> predicate) {
+      super(new IntVar[] {var}, PropagatorPriority.LINEAR, false);
+      this.var = var;
+      this.predicate = predicate;
+    }
+
+    @Override
+    public void propagate(int evtmask) throws ContradictionException {
+      for (int value = var.getLB(); value <= var.getUB(); value = var.nextValue(value)) {
+        if (!predicate.test(value)) {
+          var.removeValue(value, this);
+        }
+      }
+    }
+
+    @Override
+    public ESat isEntailed() {
+      for (int value = var.getLB(); value <= var.getUB(); value = var.nextValue(value)) {
+        if (predicate.test(value)) {
+          return ESat.TRUE;
+        }
+      }
+      return ESat.FALSE;
+    }
+
+    @Override
+    public void propagate(int idxVarInProp, int mask) throws ContradictionException {
+      propagate(mask);
+    }
+  }
 
   /**
    * Default minimum lower bound for <code>int</code> variables.
@@ -47,30 +127,59 @@ public class ChocoConvert {
   final public static short CHOCO_MIN_VALUE = Short.MIN_VALUE / 2;
 
   /**
+   * Default minimum lower bound for <code>int</code> variables in the {@link S#Primes} domain.
+   */
+  final public static short CHOCO_MIN_PRIME = 2;
+
+  /**
    * Default maximum upper bound for <code>int</code> variables.
    */
   final public static short CHOCO_MAX_VALUE = Short.MAX_VALUE / 2;
 
+  /**
+   * Default maximum upper bound for <code>int</code> variables in the {@link S#Primes} domain.
+   */
+  final public static short CHOCO_MAX_PRIME = 32749;
+
   private ChocoConvert() {}
 
+  /**
+   * Convert a list of equations to a Choco solver model.
+   * 
+   * @param list
+   * @param variables
+   * @param map
+   * @param hybridVars
+   * @param hybridTuples
+   * @param domain {@link S#Integers} or {@link S#Primes}
+   * @return
+   * @throws ArgumentTypeException
+   */
   private static Model expr2IntegerSolver(final IAST list, final IAST variables,
-      Map<ISymbol, IntVar> map, IExpr[] hybridVars, HybridTuples hybridTuples)
+      Map<ISymbol, IntVar> map, IExpr[] hybridVars, HybridTuples hybridTuples, ISymbol domain)
       throws ArgumentTypeException {
-
+    final Predicate<IExpr> isPrime =
+        (domain == S.Primes) ? Predicates.isTrue(EvalEngine.get(), S.PrimeQ) : null;
     // Create a constraint network
     Model model = new Model();
     for (int i = 1; i < variables.size(); i++) {
       IExpr expr = variables.get(i);
       if (expr instanceof ISymbol) {
-        map.put((ISymbol) expr, model.intVar(//
-            expr.toString(), //
-            CHOCO_MIN_VALUE, //
-            CHOCO_MAX_VALUE));
-        // map.put((ISymbol) variables.get(i), new IntervalIntVarImpl(//
-        // variables.get(i).toString(), //
-        // CHOCO_MIN_VALUE, //
-        // CHOCO_MAX_VALUE, //
-        // model));
+        final IntVar intVar;
+        if (domain == S.Primes) {
+          intVar = model.intVar(//
+              expr.toString(), //
+              CHOCO_MIN_PRIME, //
+              CHOCO_MAX_PRIME);
+          model.post(new Constraint("PrimeConstraint",
+              new PredicatePropagator(intVar, x -> isPrime.test(F.ZZ(x)))));
+        } else {
+          intVar = model.intVar(//
+              expr.toString(), //
+              CHOCO_MIN_VALUE, //
+              CHOCO_MAX_VALUE);
+        }
+        map.put((ISymbol) expr, intVar);
       }
     }
     if (hybridTuples != null) {
@@ -310,16 +419,19 @@ public class ChocoConvert {
    * @param equationVariables all variables which are defined in the equations
    * @param userDefinedVariables all variables which are defined by the user. May contain additional
    *        variables which aren't available in <code>equationVariables</code>
+   * @param maximumNumberOfResults the maximum number of results to return; if < 0 return all
    * @param hybridTuples TODO
+   * @param domain {@link S#Integers} or {@link S#Primes}
    * @param engine
    * @return a list of rules with the integer solutions; or if no solution exists return
    *         {@link F#NIL}
    */
   public static IAST integerSolve(final IAST list, final IAST equationVariables,
       final IAST userDefinedVariables, final int maximumNumberOfResults, IExpr[] hybridVars,
-      HybridTuples hybridTuples, final EvalEngine engine) {
+      HybridTuples hybridTuples, ISymbol domain, final EvalEngine engine) {
     TreeMap<ISymbol, IntVar> map = new TreeMap<ISymbol, IntVar>();
-    Model model = expr2IntegerSolver(list, equationVariables, map, hybridVars, hybridTuples);
+    Model model =
+        expr2IntegerSolver(list, equationVariables, map, hybridVars, hybridTuples, domain);
     List<Solution> res = model.getSolver().findAllSolutions(new SolutionCounter(model,
         maximumNumberOfResults < 0 ? Short.MAX_VALUE : maximumNumberOfResults));
     if (res.size() == 0) {
